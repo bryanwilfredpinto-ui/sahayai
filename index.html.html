@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAHAY AI — Bharat ka apna Chitti</title>
+  <meta name="description" content="Chitti — India's first AI companion. Coming May 1, 2026."/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root { --navy:#0D1B2A; --saffron:#FF6B00; --green:#138808; --white:#FFFFFF; --mgrey:#9A9A9A; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .tricolour { position:fixed; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--saffron) 33.3%,var(--white) 33.3% 66.6%,var(--green) 66.6%); }
+    .glow { position:fixed; width:600px; height:600px; background:radial-gradient(circle,rgba(255,107,0,0.12) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .content { position:relative; z-index:1; max-width:520px; }
+    .flag { font-size:48px; margin-bottom:24px; display:block; }
+    .logo { font-family:'Playfair Display',serif; font-size:48px; font-weight:900; letter-spacing:-1px; margin-bottom:6px; }
+    .logo span { color:var(--saffron); }
+    .tagline { font-size:13px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--mgrey); margin-bottom:40px; }
+    .message { font-family:'Playfair Display',serif; font-size:clamp(22px,4vw,32px); font-weight:700; line-height:1.4; margin-bottom:16px; }
+    .message em { color:var(--saffron); font-style:normal; }
+    .sub { font-size:16px; color:rgba(255,255,255,0.55); line-height:1.7; margin-bottom:48px; }
+    .countdown-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--saffron); margin-bottom:20px; }
+    .countdown { display:flex; gap:16px; justify-content:center; margin-bottom:48px; flex-wrap:wrap; }
+    .cd-box { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:20px 24px; min-width:90px; }
+    .cd-num { display:block; font-size:40px; font-weight:700; color:var(--white); line-height:1; }
+    .cd-unit { display:block; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mgrey); margin-top:6px; }
+    .btn-wa { display:inline-flex; align-items:center; gap:10px; background:#25D366; color:var(--white); padding:16px 36px; border-radius:100px; font-size:16px; font-weight:700; text-decoration:none; transition:all 0.2s; box-shadow:0 8px 28px rgba(37,211,102,0.3); margin-bottom:20px; }
+    .btn-wa:hover { background:#1fb855; transform:translateY(-2px); }
+    .hint { font-size:13px; color:rgba(255,255,255,0.35); }
+    .launch-tag { display:inline-block; margin-top:40px; background:rgba(19,136,8,0.12); border:1px solid rgba(19,136,8,0.3); border-radius:100px; padding:8px 24px; font-size:13px; font-weight:600; color:#2ECC71; letter-spacing:1px; }
+    footer { position:fixed; bottom:20px; font-size:12px; color:rgba(255,255,255,0.25); }
+    @media(max-width:480px){ .logo{font-size:36px;} .cd-box{padding:16px 18px;min-width:72px;} .cd-num{font-size:32px;} }
+  </style>
+</head>
+<body>
+<div class="tricolour"></div>
+<div class="glow"></div>
+<div class="content">
+  <span class="flag">🇮🇳</span>
+  <h1 class="logo">SAHAY <span>AI</span></h1>
+  <p class="tagline">Bharat ka apna Chitti</p>
+  <h2 class="message">Something big is coming<br/>for <em>every Indian.</em></h2>
+  <p class="sub">A loyal companion. Always present. Always protecting.<br/>In your language. On WhatsApp. Under ₹500/month.</p>
+  <p class="countdown-label">🚀 Launching in</p>
+  <div class="countdown">
+    <div class="cd-box"><span class="cd-num" id="cd-days">29</span><span class="cd-unit">Days</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-hours">00</span><span class="cd-unit">Hours</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-mins">00</span><span class="cd-unit">Mins</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-secs">00</span><span class="cd-unit">Secs</span></div>
+  </div>
+  <a href="https://wa.me/919403721332?text=Hi%20Chitti" class="btn-wa" target="_blank">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Say Hi to Chitti 🤖
+  </a>
+  <p class="hint">+91 94037 21332</p>
+  <div class="launch-tag">🇮🇳 May 1, 2026 — Labour Day</div>
+</div>
+<footer>© 2026 SAHAY AI · sahayai.in · hello@sahayai.in</footer>
+<script>
+  const launch = new Date('2026-05-01T00:00:00+05:30').getTime();
+  function tick() {
+    const diff = Math.max(0, launch - Date.now());
+    const pad = n => String(Math.floor(n)).padStart(2,'0');
+    document.getElementById('cd-days').textContent  = pad(diff/86400000);
+    document.getElementById('cd-hours').textContent = pad((diff%86400000)/3600000);
+    document.getElementById('cd-mins').textContent  = pad((diff%3600000)/60000);
+    document.getElementById('cd-secs').textContent  = pad((diff%60000)/1000);
+  }
+  tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
