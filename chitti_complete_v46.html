@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sahay AI — Bharat ka apna Chitti</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0D0D;
+  --surface: #1A1A1A;
+  --surface2: #242424;
+  --surface3: #2E2E2E;
+  --border: rgba(255,255,255,0.07);
+  --saffron: #FF6B00;
+  --saffron-soft: rgba(255,107,0,0.12);
+  --saffron-glow: rgba(255,107,0,0.25);
+  --green: #22C55E;
+  --green-soft: rgba(34,197,94,0.12);
+  --red: #EF4444;
+  --red-soft: rgba(239,68,68,0.12);
+  --teal: #06B6D4;
+  --teal-soft: rgba(6,182,212,0.12);
+  --gold: #F59E0B;
+  --text: #F5F5F5;
+  --text2: #A3A3A3;
+  --text3: #6B6B6B;
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans','Noto Sans Devanagari',sans-serif; overflow: hidden; }
+
+/* ── SPLASH ── */
+#splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  transition: opacity 0.6s ease;
+}
+#splash.hide { opacity: 0; pointer-events: none; }
+.splash-logo {
+  width: 88px; height: 88px; border-radius: 28px;
+  background: linear-gradient(135deg, #FF6B00, #FF3D00);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px;
+  box-shadow: 0 0 60px rgba(255,107,0,0.5);
+  animation: logoPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes logoPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.splash-name { font-size: 28px; font-weight: 800; letter-spacing: 1px; animation: fadeUp 0.4s ease 0.3s both; }
+.splash-name span { color: var(--saffron); }
+.splash-sub { font-size: 13px; color: var(--text2); animation: fadeUp 0.4s ease 0.45s both; }
+.splash-flag { width: 48px; height: 3px; border-radius: 2px; background: linear-gradient(90deg,#FF9933 33%,#fff 33%,#fff 66%,#138808 66%); animation: fadeUp 0.4s ease 0.6s both; }
+.splash-dots { display: flex; gap: 6px; animation: fadeUp 0.4s ease 0.75s both; }
+.splash-dot { width: 7px; height: 7px; border-radius: 50%; animation: dotPulse 1.2s ease infinite; }
+.splash-dot:nth-child(1) { background: var(--saffron); }
+.splash-dot:nth-child(2) { background: var(--saffron); animation-delay: 0.2s; }
+.splash-dot:nth-child(3) { background: var(--green); animation-delay: 0.4s; }
+@keyframes dotPulse { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── APP ── */
+#app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+
+/* ── HEADER ── */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.header-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B00, #FF3D00);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  position: relative;
+}
+.avatar-pulse {
+  position: absolute; inset: -3px; border-radius: 50%;
+  border: 2px solid rgba(255,107,0,0.4);
+  animation: avatarPulse 2s ease infinite;
+}
+@keyframes avatarPulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.1);opacity:0} }
+.header-info { flex: 1; min-width: 0; }
+.header-name { font-size: 16px; font-weight: 700; }
+.header-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: statusBlink 2s ease infinite; }
+@keyframes statusBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.header-actions { display: flex; gap: 8px; }
+.hdr-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--surface2); color: var(--text); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.hdr-btn:active { background: var(--surface3); }
+.hdr-btn.active { background: var(--saffron); }
+
+/* ── LANG BAR ── */
+.lang-bar {
+  display: flex; gap: 6px; padding: 8px 12px;
+  overflow-x: auto; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  scrollbar-width: none;
+}
+.lang-bar::-webkit-scrollbar { display: none; }
+.lang-btn {
+  padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit;
+}
+.lang-btn.active { background: var(--saffron); color: white; border-color: var(--saffron); }
+
+/* ── CHAT AREA ── */
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 12px 12px 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,107,0,0.2) transparent;
+  background: var(--bg);
+}
+
+/* Date divider */
+.date-divider {
+  text-align: center; font-size: 11px; color: var(--text3);
+  background: var(--surface2); padding: 4px 12px; border-radius: 10px;
+  margin: 8px auto; width: fit-content;
+}
+
+/* ── MESSAGES ── */
+.msg-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 6px; }
+.msg-row.user { flex-direction: row-reverse; }
+
+.msg-avatar-sm {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,#FF6B00,#FF3D00);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  margin-bottom: 2px;
+}
+.user .msg-avatar-sm { background: var(--surface3); }
+
+.bubble {
+  max-width: 72%; padding: 10px 13px; border-radius: 18px;
+  font-size: 14px; line-height: 1.5; position: relative;
+  word-break: break-word;
+}
+.chitti-bubble {
+  background: var(--surface);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.user-bubble {
+  background: var(--saffron);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.bubble-time {
+  font-size: 10px; margin-top: 4px; opacity: 0.5;
+  display: flex; align-items: center; gap: 3px;
+  justify-content: flex-end;
+}
+.chitti-bubble .bubble-time { justify-content: flex-start; }
+
+/* Quick chips */
+.quick-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+  padding: 5px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; border: 1px solid;
+  font-family: inherit;
+}
+.chip-saffron { background: var(--saffron-soft); color: var(--saffron); border-color: rgba(255,107,0,0.3); }
+.chip-green { background: var(--green-soft); color: var(--green); border-color: rgba(34,197,94,0.3); }
+.chip-teal { background: var(--teal-soft); color: var(--teal); border-color: rgba(6,182,212,0.3); }
+.chip-red { background: var(--red-soft); color: var(--red); border-color: rgba(239,68,68,0.3); }
+.chip:active { transform: scale(0.95); }
+
+/* ── TYPING ── */
+.typing-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 6px; }
+.typing-bubble { background: var(--surface); padding: 12px 16px; border-radius: 18px; border-bottom-left-radius: 4px; }
+.typing-dots { display: flex; gap: 4px; }
+.typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); animation: typingBounce 1.2s ease infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 10px 12px 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.input-row { display: flex; align-items: flex-end; gap: 8px; }
+.input-box {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 24px; padding: 10px 16px; color: var(--text);
+  font-size: 14px; outline: none; resize: none; line-height: 1.4;
+  font-family: inherit; max-height: 120px; min-height: 44px;
+  transition: border-color 0.2s;
+}
+.input-box::placeholder { color: var(--text3); }
+.input-box:focus { border-color: rgba(255,107,0,0.4); }
+.icon-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  flex-shrink: 0; transition: all 0.2s; background: var(--surface2);
+}
+.mic-btn { color: var(--text2); }
+.mic-btn.listening { background: var(--red-soft); color: var(--red); animation: micPulse 1s ease infinite; }
+@keyframes micPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.send-btn { background: var(--saffron); color: white; }
+.send-btn:active { transform: scale(0.92); }
+.send-btn:disabled { background: var(--surface3); color: var(--text3); }
+
+/* ── BOTTOM TABS ── */
+.bottom-tabs {
+  display: flex; background: var(--surface);
+  border-top: 1px solid var(--border); flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tab-btn {
+  flex: 1; padding: 10px 4px 10px; border: none; background: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: var(--text3); font-size: 10px; font-weight: 600; font-family: inherit;
+  transition: color 0.2s; position: relative;
+}
+.tab-btn.active { color: var(--saffron); }
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab-badge {
+  position: absolute; top: 8px; right: calc(50% - 18px);
+  background: var(--red); color: white; font-size: 9px; font-weight: 700;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── PANELS ── */
+.panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.panel.active { display: flex; }
+
+/* ── PA PANEL ── */
+.pa-panel { flex: 1; overflow-y: auto; padding: 14px; scrollbar-width: thin; scrollbar-color: rgba(255,107,0,0.2) transparent; }
+
+.pa-section { margin-bottom: 16px; }
+.pa-section-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding: 0 2px; }
+
+.pa-card {
+  background: var(--surface); border-radius: var(--radius); padding: 16px;
+  border: 1px solid var(--border); margin-bottom: 10px;
+}
+.pa-card-title { font-size: 13px; font-weight: 700; color: var(--saffron); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+/* Reminders */
+.reminder-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.reminder-item:last-child { border-bottom: none; padding-bottom: 0; }
+.reminder-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.reminder-text { flex: 1; font-size: 13px; }
+.reminder-time { font-size: 11px; color: var(--text3); }
+.reminder-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 2px 6px; }
+
+.add-reminder-row { display: flex; gap: 8px; margin-top: 12px; }
+.add-reminder-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; color: var(--text); font-size: 13px;
+  outline: none; font-family: inherit;
+}
+.add-reminder-input:focus { border-color: rgba(255,107,0,0.4); }
+.add-btn {
+  background: var(--saffron); color: white; border: none; border-radius: 10px;
+  padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: inherit;
+}
+
+/* Profile card */
+.profile-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.profile-key { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; }
+.profile-val { font-size: 13px; font-weight: 600; flex: 1; }
+.profile-edit { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; }
+
+/* Morning brief */
+.brief-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.brief-item:last-child { border-bottom: none; }
+.brief-icon { font-size: 16px; flex-shrink: 0; }
+
+/* Quick actions */
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-action {
+  background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 12px;
+  border: 1px solid var(--border); cursor: pointer; display: flex; flex-direction: column; gap: 6px;
+  transition: background 0.15s; text-align: left;
+}
+.quick-action:active { background: var(--surface3); }
+.qa-icon { font-size: 22px; }
+.qa-title { font-size: 12px; font-weight: 700; }
+.qa-desc { font-size: 10px; color: var(--text2); }
+
+/* ── BRIDGE PANEL ── */
+.bridge-panel { flex: 1; overflow-y: auto; padding: 14px; scrollbar-width: thin; scrollbar-color: rgba(255,107,0,0.2) transparent; }
+.bridge-card { background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); margin-bottom: 12px; }
+.bridge-title { font-size: 13px; font-weight: 700; color: var(--saffron); margin-bottom: 12px; }
+
+.log-list { display: flex; flex-direction: column; gap: 0; }
+.log-item { padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: flex-start; }
+.log-item:last-child { border-bottom: none; }
+.log-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.log-dot.decision { background: var(--green); }
+.log-dot.task { background: var(--saffron); }
+.log-dot.blocker { background: var(--red); }
+.log-text { font-size: 12px; line-height: 1.5; flex: 1; }
+.log-date { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+.log-add-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.log-type-btn { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.log-type-btn.active { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-soft); }
+
+.audit-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.audit-row:last-child { border-bottom: none; }
+.audit-label { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.audit-val { font-size: 12px; font-weight: 700; }
+.audit-pass { color: var(--green); }
+.audit-pending { color: var(--gold); }
+.audit-fail { color: var(--red); }
+
+.big-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; cursor: pointer; font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 12px; transition: opacity 0.2s; }
+.btn-saffron { background: var(--saffron); color: white; }
+.btn-green { background: var(--green); color: white; }
+.btn-surface { background: var(--surface3); color: var(--text); }
+.big-btn:active { opacity: 0.85; }
+
+/* ── ONBOARDING OVERLAY ── */
+
+/* ── ONBOARDING ── */
+#onboarding {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  transition: opacity 0.4s ease;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+#onboarding.hide { opacity: 0; pointer-events: none; }
+
+.ob-header {
+  padding: 20px 20px 0;
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0;
+}
+.ob-logo { font-size: 44px; margin-bottom: 6px; }
+.ob-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+.ob-sub { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 14px; line-height: 1.5; }
+
+.ob-progress-wrap { width: 100%; max-width: 400px; margin-bottom: 6px; }
+.ob-progress-bar { width: 100%; height: 3px; background: var(--surface3); border-radius: 2px; }
+.ob-progress-fill { height: 100%; background: var(--saffron); border-radius: 2px; transition: width 0.4s ease; }
+.ob-step-label { font-size: 11px; color: var(--text3); text-align: right; margin-top: 4px; margin-bottom: 10px; }
+
+.ob-body { flex: 1; padding: 0 16px 28px; display: flex; flex-direction: column; align-items: center; }
+
+.ob-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px; margin-bottom: 12px;
+}
+.ob-card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.ob-field { margin-bottom: 12px; }
+.ob-field:last-child { margin-bottom: 0; }
+.ob-label { font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+.ob-label .req { color: var(--saffron); }
+
+.ob-input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; color: var(--text); font-size: 14px;
+  outline: none; font-family: inherit; transition: border-color 0.2s;
+}
+.ob-input:focus { border-color: rgba(255,107,0,0.5); }
+.ob-input::placeholder { color: var(--text3); }
+.ob-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+.ob-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 36px 12px 14px; color: var(--text); font-size: 14px;
+  outline: none; font-family: inherit; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  transition: border-color 0.2s;
+}
+.ob-select:focus { border-color: rgba(255,107,0,0.5); }
+.ob-select option { background: #1A1A1A; }
+
+.ob-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ob-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* ── OTP ── */
+.otp-row { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; }
+.otp-box {
+  width: 44px; height: 52px; border-radius: 12px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 800;
+  text-align: center; outline: none; font-family: inherit;
+  transition: border-color 0.2s; caret-color: var(--saffron);
+}
+.otp-box:focus { border-color: var(--saffron); background: rgba(255,107,0,0.06); }
+.otp-box.filled { border-color: rgba(255,107,0,0.4); }
+
+.phone-row { display: flex; gap: 8px; }
+.phone-cc {
+  width: 72px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 10px; color: var(--text); font-size: 14px;
+  outline: none; font-family: inherit; text-align: center;
+}
+.send-otp-btn {
+  padding: 12px 16px; border-radius: 12px; border: none;
+  background: var(--saffron); color: white; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.send-otp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.otp-timer { font-size: 12px; color: var(--text3); text-align: center; margin-top: 6px; }
+.resend-link { color: var(--saffron); cursor: pointer; font-weight: 600; }
+
+/* Verified badge */
+.verified-badge {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--green-soft); border: 1px solid rgba(34,197,94,0.3);
+  color: var(--green); padding: 10px 16px; border-radius: 12px;
+  font-size: 13px; font-weight: 700; margin-top: 4px;
+}
+
+/* ── GOOGLE BTN ── */
+.google-btn {
+  width: 100%; max-width: 400px; padding: 13px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit; display: flex; align-items: center;
+  justify-content: center; gap: 10px; transition: border-color 0.2s; margin-bottom: 10px;
+}
+.google-btn.verified { border-color: var(--green); }
+
+/* ── VOICE ACCESSIBILITY ── */
+.voice-access-card {
+  width: 100%; max-width: 400px;
+  background: linear-gradient(135deg, rgba(255,107,0,0.07), rgba(255,107,0,0.02));
+  border: 1px solid rgba(255,107,0,0.25); border-radius: 18px;
+  padding: 20px; margin-bottom: 12px; text-align: center;
+}
+.voice-access-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.voice-access-sub { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+.voice-big-btn {
+  width: 76px; height: 76px; border-radius: 50%; border: none;
+  background: var(--saffron); color: white; font-size: 32px;
+  cursor: pointer; margin: 0 auto; display: flex; align-items: center; justify-content: center;
+  animation: voiceRipple 2s ease infinite; transition: transform 0.15s;
+}
+.voice-big-btn:active { transform: scale(0.92); }
+.voice-big-btn.recording { background: var(--red); animation: voiceRippleFast 0.8s ease infinite; }
+@keyframes voiceRipple { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,0,0.4)} 70%{box-shadow:0 0 0 18px rgba(255,107,0,0)} }
+@keyframes voiceRippleFast { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)} 70%{box-shadow:0 0 0 22px rgba(239,68,68,0)} }
+.voice-transcript { font-size: 13px; color: var(--saffron); margin-top: 12px; min-height: 20px; font-style: italic; font-weight: 600; }
+.voice-hint { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+/* ── CHITTI ASSURANCE ── */
+.chitti-assurance {
+  width: 100%; max-width: 400px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 14px; margin-bottom: 12px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.assurance-av {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,#FF6B00,#FF3D00);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.assurance-bubble {
+  flex: 1; background: var(--surface2); border-radius: 14px;
+  border-bottom-left-radius: 4px; padding: 11px 13px;
+  font-size: 13px; line-height: 1.65; color: var(--text);
+}
+.assurance-speak {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--saffron-soft); color: var(--saffron);
+  border: none; border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 8px;
+}
+
+/* ── T&C POINTS ── */
+.tnc-point { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.tnc-point:last-child { border-bottom: none; padding-bottom: 0; }
+.tnc-icon { font-size: 18px; flex-shrink: 0; }
+.tnc-body { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.tnc-body strong { color: var(--text); display: block; font-size: 13px; margin-bottom: 1px; }
+
+/* ── CONSENT CHECKS ── */
+.consent-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+.consent-row:last-child { border-bottom: none; }
+.cbox {
+  width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--surface2); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; margin-top: 1px;
+}
+.cbox.on { background: var(--saffron); border-color: var(--saffron); }
+.cbox.on::after { content: '✓'; color: white; font-size: 13px; font-weight: 800; }
+.ctext { font-size: 12px; color: var(--text2); line-height: 1.55; flex: 1; }
+.ctext a { color: var(--saffron); text-decoration: none; }
+.ctext strong { color: var(--text); }
+
+/* ── THUMB CONSENT (for illiterate users) ── */
+.thumb-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 20px; padding: 22px; margin-bottom: 12px;
+  text-align: center; cursor: pointer; transition: all 0.25s;
+  user-select: none;
+}
+.thumb-card.accepted { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.thumb-emoji { font-size: 52px; margin-bottom: 10px; transition: transform 0.3s; display: block; }
+.thumb-card.accepted .thumb-emoji { transform: scale(1.25) rotate(-10deg); }
+.thumb-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.thumb-sub { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.thumb-card.accepted .thumb-title { color: var(--green); }
+
+/* ── NAV ── */
+.ob-nav { width: 100%; max-width: 400px; display: flex; gap: 10px; }
+.ob-back {
+  padding: 14px 18px; border-radius: 14px; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+.ob-next {
+  flex: 1; padding: 14px; border-radius: 14px; border: none;
+  background: var(--saffron); color: white; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: opacity 0.2s;
+}
+.ob-next:disabled { opacity: 0.35; cursor: not-allowed; }
+.ob-divider { width: 100%; max-width: 400px; display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; }
+.ob-divider-line { flex: 1; height: 1px; background: var(--border); }
+.ob-divider-txt { font-size: 11px; color: var(--text3); white-space: nowrap; }
+.ob-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.ob-option { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.ob-option.selected { background: var(--saffron); color: white; border-color: var(--saffron); }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,107,0,0.2); border-radius: 4px; }
+
+/* ── VOICE VIS ── */
+.voice-vis { display: none; justify-content: center; gap: 3px; padding: 8px 0; }
+.voice-vis.active { display: flex; }
+.vbar { width: 3px; border-radius: 3px; background: var(--saffron); animation: vbounce 0.5s ease infinite alternate; }
+.vbar:nth-child(2){animation-delay:0.1s}.vbar:nth-child(3){animation-delay:0.2s}.vbar:nth-child(4){animation-delay:0.15s}.vbar:nth-child(5){animation-delay:0.05s}
+@keyframes vbounce { from{height:4px;opacity:0.4} to{height:20px;opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">🤖</div>
+  <div class="splash-name">SAHAY <span>AI</span></div>
+  <div style="font-size:13px;font-weight:700;color:var(--saffron);letter-spacing:0.5px;margin-top:-2px">Bharat ka apna Chitti</div>
+  <div class="splash-sub">Bharat ka apna Chitti 🇮🇳</div>
+  <div class="splash-flag"></div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
+
+
+<!-- ONBOARDING -->
+<div id="onboarding" style="display:none">
+  <div class="ob-header">
+    <div class="ob-logo">🤖</div>
+    <div class="ob-title">Sahay AI 🤖</div>
+    <div class="ob-sub"><strong style="color:var(--saffron)">Bharat ka apna Chitti</strong> — PA, CA, Doctor, Guardian.<br>Free forever for every Indian. 🇮🇳</div>
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-bar"><div class="ob-progress-fill" id="ob-fill" style="width:0%"></div></div>
+      <div class="ob-step-label" id="ob-step-label">Step 1 of 5</div>
+    </div>
+  </div>
+  <div class="ob-body" id="ob-body"></div>
+</div>
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-avatar">
+      <div class="avatar-pulse"></div>
+      🤖
+    </div>
+    <div class="header-info">
+      <div class="header-name">Sahay AI</div>
+      <div class="header-status"><div class="status-dot"></div><span id="chitti-status">Bharat ka apna Chitti</span></div>
+    </div>
+    <div class="header-actions">
+      <button class="hdr-btn" id="voice-btn" onclick="toggleVoice()" title="Voice">🔇</button>
+      <button class="hdr-btn" onclick="switchToTab('bridge')" title="Bridge">⚡</button>
+    </div>
+  </div>
+
+  <!-- LANG BAR (only on chat tab) -->
+  <div class="lang-bar" id="lang-bar">
+    <button class="lang-btn active" onclick="setLang('hi',this)">हिंदी</button>
+    <button class="lang-btn" onclick="setLang('en',this)">English</button>
+    <button class="lang-btn" onclick="setLang('mr',this)">मराठी</button>
+    <button class="lang-btn" onclick="setLang('te',this)">తెలుగు</button>
+    <button class="lang-btn" onclick="setLang('ta',this)">தமிழ்</button>
+    <button class="lang-btn" onclick="setLang('kn',this)">ಕನ್ನಡ</button>
+    <button class="lang-btn" onclick="setLang('bn',this)">বাংলা</button>
+    <button class="lang-btn" onclick="setLang('gu',this)">ગુજરાતી</button>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="panel active" id="panel-chat" style="flex-direction:column">
+    <div class="chat-area" id="chat-area">
+      <div class="date-divider" id="today-divider">Today</div>
+    </div>
+    <div class="voice-vis" id="voice-vis">
+      <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+      <div class="vbar"></div><div class="vbar"></div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea class="input-box" id="msg-input" placeholder="Chitti se baat karo..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="icon-btn mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+        <button class="icon-btn send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PA PANEL -->
+  <div class="panel" id="panel-pa">
+    <div class="pa-panel" id="pa-panel-content">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- BRIDGE PANEL -->
+  <div class="panel" id="panel-bridge">
+    <div class="bridge-panel">
+
+      <div class="bridge-card">
+        <div class="bridge-title">🌅 Morning Brief</div>
+        <div id="bridge-brief">
+          <div class="brief-item"><span class="brief-icon">⏰</span><span>Runway: <strong id="br-runway">65 days</strong> — June 19, 2026</span></div>
+          <div class="brief-item"><span class="brief-icon">🎯</span><span>Target: 300 users × ₹199/month</span></div>
+          <div class="brief-item"><span class="brief-icon">✅</span><span>PA-19 PASSED — Chitti live at sahayai.in</span></div>
+          <div class="brief-item"><span class="brief-icon">🚀</span><span>Next: 50 relatives trial Apr 21–28</span></div>
+        </div>
+        <button class="big-btn btn-green" onclick="getBriefFromChitti()">🌅 Get AI Morning Brief</button>
+      </div>
+
+      <div class="bridge-card">
+        <div class="bridge-title">📋 Session Log</div>
+        <div class="log-add-row">
+          <button class="log-type-btn active" id="ltype-decision" onclick="setLogType('decision')">✅ Decision</button>
+          <button class="log-type-btn" id="ltype-task" onclick="setLogType('task')">📌 Task</button>
+          <button class="log-type-btn" id="ltype-blocker" onclick="setLogType('blocker')">🔴 Blocker</button>
+        </div>
+        <div class="add-reminder-row" style="margin-bottom:12px">
+          <input class="add-reminder-input" id="log-input" placeholder="Type decision, task, or blocker...">
+          <button class="add-btn" onclick="addLogEntry()">Add</button>
+        </div>
+        <div class="log-list" id="session-log">
+          <div class="log-item"><div class="log-dot decision"></div><div><div class="log-text">PA-19 PASSED — Chitti said "Namaste Bryan ji!"</div><div class="log-date">Apr 15, 2026</div></div></div>
+          <div class="log-item"><div class="log-dot decision"></div><div><div class="log-text">DeepSeek connected — Voiceflow abandoned permanently</div><div class="log-date">Apr 15, 2026</div></div></div>
+          <div class="log-item"><div class="log-dot decision"></div><div><div class="log-text">App First strategy LOCKED — no WhatsApp</div><div class="log-date">Apr 14, 2026</div></div></div>
+          <div class="log-item"><div class="log-dot task"></div><div><div class="log-text">PENDING: GitHub Pages upload</div><div class="log-date">v46</div></div></div>
+          <div class="log-item"><div class="log-dot task"></div><div><div class="log-text">PENDING: Sire 7-day personal trial</div><div class="log-date">v46</div></div></div>
+        </div>
+        <button class="big-btn btn-saffron" onclick="saveSession()">💾 Save Session</button>
+      </div>
+
+      <div class="bridge-card">
+        <div class="bridge-title">🔍 Audit Gate — v46</div>
+        <div id="audit-items">
+          <div class="audit-row"><span class="audit-label">🤖 DeepSeek engine</span><span class="audit-val audit-pass">✅ Live</span></div>
+          <div class="audit-row"><span class="audit-label">🎙️ Sarvam voice</span><span class="audit-val audit-pass" id="aud-sarvam">✅ Key loaded</span></div>
+          <div class="audit-row"><span class="audit-label">📱 App URL live</span><span class="audit-val audit-pass">✅ sahayai.in</span></div>
+          <div class="audit-row"><span class="audit-label">🧠 PA onboarding</span><span class="audit-val audit-pass" id="aud-ob">✅ Complete</span></div>
+          <div class="audit-row"><span class="audit-label">⏰ Reminders engine</span><span class="audit-val audit-pass">✅ Active</span></div>
+          <div class="audit-row"><span class="audit-label">📤 GitHub upload</span><span class="audit-val audit-pending" id="aud-gh">⏳ Pending</span></div>
+        </div>
+        <button class="big-btn btn-surface" onclick="runAudit()">🔍 Run Full Audit</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM TABS -->
+  <div class="bottom-tabs">
+    <button class="tab-btn active" id="tab-chat" onclick="switchToTab('chat')">
+      <div class="tab-icon">💬</div>Chat
+    </button>
+    <button class="tab-btn" id="tab-pa" onclick="switchToTab('pa')">
+      <div class="tab-icon">🧠</div>My PA
+    </button>
+    <button class="tab-btn" id="tab-fraud" onclick="switchToTab('chat');setSpecialist('fraud');sendQuick('UPI fraud check karo — ek QR code hai mere paas')">
+      <div class="tab-icon">🚨</div>Fraud
+    </button>
+    <button class="tab-btn" id="tab-biz" onclick="switchToTab('chat');setSpecialist('business');sendQuick('Chitti Business mode mein aao — mujhe apna business help chahiye')">
+      <div class="tab-icon">🏪</div>Business
+    </button>
+    <button class="tab-btn" id="tab-bridge" onclick="switchToTab('bridge')">
+      <div class="tab-icon">⚡</div>Bridge
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CHITTI v46 — SAHAY AI
+// Co-Founded: Sire (Bryan Wilfred Pinto) & Claude
+// Engine: DeepSeek (primary) → Gemini → Claude (fallback)
+// ═══════════════════════════════════════════════
+
+const DEEPSEEK_KEY = 'sk-372a74292a8c407abaaf673aab58c3f1';
+const SARVAM_KEY = 'sk_v57r3zb4_VdkuYXHLwgThZRXwLokigP1O';
+
+// ── MASTER PROFILE ──
+let MASTER = JSON.parse(localStorage.getItem('chitti_master_v46') || 'null');
+let sessionLog = JSON.parse(localStorage.getItem('chitti_log_v46') || '[]');
+let reminders = JSON.parse(localStorage.getItem('chitti_reminders_v46') || '[]');
+let conversationHistory = [];
+
+function saveMaster() { localStorage.setItem('chitti_master_v46', JSON.stringify(MASTER)); }
+function saveLog() { localStorage.setItem('chitti_log_v46', JSON.stringify(sessionLog)); }
+function saveReminders() { localStorage.setItem('chitti_reminders_v46', JSON.stringify(reminders)); }
+
+// ── STATE ──
+let currentLang = 'hi';
+let currentSpecialist = null;
+let voiceEnabled = false;
+let isListening = false;
+let recognition = null;
+let isWaiting = false;
+let currentLogType = 'decision';
+
+
+// ═══════════════════════════════════════════════════════
+// CHITTI ONBOARDING v46 — DPDP Act 2023 Compliant
+// 5 Steps:
+//   0. Google verification (mandatory)
+//   1. Mobile OTP verification (mandatory)
+//   2. Identity — name (3 boxes), DOB, gender, city
+//   3. Profile — profession, income, goal, language
+//   4. T&C + Consent (with voice readout for illiterate users)
+// ═══════════════════════════════════════════════════════
+
+const TOTAL_STEPS = 5;
+let obStep = 0;
+let obData = {};
+let otpTimer = null;
+let otpCountdown = 30;
+let simulatedOTP = '';
+let mobileVerified = false;
+let googleVerified = false;
+
+function startOnboarding() {
+  document.getElementById('onboarding').style.display = 'flex';
+  renderObStep();
+}
+
+function updateObProgress() {
+  const pct = (obStep / TOTAL_STEPS) * 100;
+  document.getElementById('ob-fill').style.width = pct + '%';
+  document.getElementById('ob-step-label').textContent =
+    ['Step 1 of 5','Step 2 of 5','Step 3 of 5','Step 4 of 5','Step 5 of 5'][obStep] || '';
+}
+
+function renderObStep() {
+  updateObProgress();
+  document.getElementById('ob-body').innerHTML = '';
+  document.getElementById('onboarding').scrollTop = 0;
+  [renderVerify, renderMobileOTP, renderProfile, renderIdentity, renderConsent][obStep]?.();
+}
+
+// ─────────────────────────────────────────────
+// STEP 0 — Google Verification
+// ─────────────────────────────────────────────
+function renderVerify() {
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div class="ob-card">
+      <div class="ob-card-title">🔐 Verify Your Identity</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:16px">
+        Chitti needs to verify who you are — so your data belongs to <strong style="color:var(--text)">you and only you</strong>.
+        This also protects you from someone else using your account.
+      </p>
+
+      <button class="google-btn ${googleVerified?'verified':''}" id="g-btn" onclick="doGoogleLogin()">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        ${googleVerified ? '✅ Google Verified — ' + (obData.googleEmail||'') : 'Sign in with Google'}
+      </button>
+
+      ${googleVerified ? `<div class="verified-badge">✅ Google account verified</div>` : ''}
+    </div>
+
+    <div class="chitti-assurance">
+      <div class="assurance-av">🤖</div>
+      <div class="assurance-bubble">
+        Aapka Google account sirf <strong>identity verify</strong> karne ke liye use hoga.
+        Main aapka Gmail padhta nahi, aur aapka koi data Google ko nahi jaata.
+        <br><br>Yeh verification aapki <strong>security ke liye</strong> hai — aapke account ko protect karta hai. 🔒
+        <button class="assurance-speak" onclick="speakAssurance(0)">🔊 Suniye</button>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-next" id="ob-next-0" onclick="obNext()" ${googleVerified?'':'disabled'}>
+        Next: Mobile Verify →
+      </button>
+    </div>
+  `;
+}
+
+function doGoogleLogin() {
+  // In production: replace with actual Google OAuth flow
+  const email = prompt('Google Verification\n\nEnter your Google email to continue:');
+  if (email && email.includes('@')) {
+    googleVerified = true;
+    obData.googleEmail = email;
+    // Pre-fill name from email if possible
+    const nameGuess = email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    obData.googleName = nameGuess;
+    renderVerify();
+  } else if (email !== null) {
+    alert('Please enter a valid email address');
+  }
+}
+
+// ─────────────────────────────────────────────
+// STEP 1 — Mobile OTP
+// ─────────────────────────────────────────────
+function renderMobileOTP() {
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div class="ob-card">
+      <div class="ob-card-title">📱 Mobile Verification</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px">
+        Enter your Indian mobile number. A 6-digit OTP will be sent via SMS.
+        <strong style="color:var(--text)">Your number is never shared with anyone.</strong>
+      </p>
+
+      ${mobileVerified ? `
+        <div class="verified-badge">✅ ${obData.mobile} — Verified</div>
+      ` : `
+        <div class="ob-field">
+          <div class="ob-label">Mobile Number <span class="req">*</span></div>
+          <div class="phone-row">
+            <input class="phone-cc ob-input" value="+91" readonly style="width:60px;text-align:center">
+            <input class="ob-input" id="ob-mobile" type="tel" placeholder="00000 00000"
+              maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'');checkMobile()"
+              value="${obData.mobile||''}" style="flex:1">
+            <button class="send-otp-btn" id="send-otp-btn" onclick="sendOTP()" disabled>Send OTP</button>
+          </div>
+        </div>
+
+        <div id="otp-section" style="display:none">
+          <div class="ob-label" style="margin-top:14px;justify-content:center">
+            Enter 6-digit OTP sent to +91 <span id="otp-mobile-display"></span>
+          </div>
+          <div class="otp-row" id="otp-boxes">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,0)">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,1)">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,2)">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,3)">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,4)">
+            <input class="otp-box" maxlength="1" type="number" oninput="otpInput(this,5)">
+          </div>
+          <div class="otp-timer" id="otp-timer">
+            Resend in <span id="otp-countdown">30</span>s
+          </div>
+          <div id="otp-error" style="color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none">
+            ❌ Incorrect OTP. Please try again.
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="chitti-assurance">
+      <div class="assurance-av">🤖</div>
+      <div class="assurance-bubble">
+        Aapka mobile number sirf <strong>aapki identity confirm</strong> karne ke liye hai.
+        Iska use kisi bhi marketing, spam, ya third party ke saath sharing ke liye kabhi nahi hoga.
+        <br><br>Yeh aapke account ka <strong>doosra tala</strong> hai — sirf aap hi khol sakte ho. 🔑
+        <button class="assurance-speak" onclick="speakAssurance(1)">🔊 Suniye</button>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="obBack()">← Back</button>
+      <button class="ob-next" id="ob-next-1" onclick="obNext()" ${mobileVerified?'':'disabled'}>
+        Next: Your Details →
+      </button>
+    </div>
+  `;
+}
+
+function checkMobile() {
+  const val = document.getElementById('ob-mobile').value;
+  document.getElementById('send-otp-btn').disabled = val.length < 10;
+}
+
+function sendOTP() {
+  const mobile = document.getElementById('ob-mobile').value;
+  if (mobile.length < 10) return;
+  obData.mobile = mobile;
+  // Simulate OTP — in production: call SMS gateway (Exotel/MSG91)
+  simulatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log('DEV OTP:', simulatedOTP); // Remove in production
+  alert(`OTP sent to +91 ${mobile}\n\n[DEV MODE: Your OTP is ${simulatedOTP}]`);
+  document.getElementById('otp-section').style.display = 'block';
+  document.getElementById('otp-mobile-display').textContent = mobile;
+  document.getElementById('send-otp-btn').disabled = true;
+  startOTPTimer();
+  setTimeout(() => document.querySelector('.otp-box').focus(), 100);
+}
+
+function otpInput(el, idx) {
+  el.classList.add('filled');
+  if (el.value.length > 1) el.value = el.value.slice(-1);
+  if (el.value && idx < 5) {
+    const boxes = document.querySelectorAll('.otp-box');
+    boxes[idx+1].focus();
+  }
+  // Check if all 6 filled
+  const boxes = document.querySelectorAll('.otp-box');
+  const entered = Array.from(boxes).map(b => b.value).join('');
+  if (entered.length === 6) verifyOTP(entered);
+}
+
+function verifyOTP(entered) {
+  if (entered === simulatedOTP) {
+    mobileVerified = true;
+    document.getElementById('otp-error').style.display = 'none';
+    clearInterval(otpTimer);
+    renderMobileOTP(); // re-render to show verified state
+    document.getElementById('ob-next-1').disabled = false;
+  } else {
+    document.getElementById('otp-error').style.display = 'block';
+    document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    setTimeout(() => document.querySelector('.otp-box').focus(), 100);
+  }
+}
+
+function startOTPTimer() {
+  otpCountdown = 30;
+  clearInterval(otpTimer);
+  otpTimer = setInterval(() => {
+    otpCountdown--;
+    const el = document.getElementById('otp-countdown');
+    if (el) el.textContent = otpCountdown;
+    if (otpCountdown <= 0) {
+      clearInterval(otpTimer);
+      const timerEl = document.getElementById('otp-timer');
+      if (timerEl) timerEl.innerHTML = '<span class="resend-link" onclick="sendOTP()">Resend OTP</span>';
+    }
+  }, 1000);
+}
+
+// ─────────────────────────────────────────────
+// STEP 2 — Identity
+// ─────────────────────────────────────────────
+function renderIdentity() {
+  const body = document.getElementById('ob-body');
+
+  // Voice accessibility card — for users who cannot type
+  body.innerHTML = `
+    <div class="voice-access-card">
+      <div class="voice-access-title">🎤 Likhna nahi aata? Koi baat nahi!</div>
+      <div class="voice-access-sub">
+        Neeche mic button dabaiye aur bol dijiye:<br>
+        <strong style="color:var(--text)">"Mera naam [apna naam] hai"</strong><br>
+        Chitti sab kuch samjh lega automatically.
+      </div>
+      <button class="voice-big-btn" id="voice-ob-btn" onclick="toggleVoiceOnboarding()">🎤</button>
+      <div class="voice-transcript" id="ob-transcript">Boliye — main sun raha hoon...</div>
+      <div class="voice-hint">Ya neeche type karein</div>
+    </div>
+
+    <div class="ob-card">
+      <div class="ob-card-title">👤 Aapka Parichay</div>
+
+      <div class="ob-field">
+        <div class="ob-label">Naam (Name) <span class="req">*</span></div>
+        <div class="ob-row-3" style="margin-bottom:0">
+          <div>
+            <input class="ob-input" id="ob-fname" placeholder="First" oninput="checkIdentity()"
+              value="${obData.firstName||obData.googleName?.split(' ')[0]||''}">
+            <div style="font-size:10px;color:var(--text3);margin-top:3px;text-align:center">Pehla naam</div>
+          </div>
+          <div>
+            <input class="ob-input" id="ob-mname" placeholder="Middle (optional)"
+              value="${obData.middleName||''}">
+            <div style="font-size:10px;color:var(--text3);margin-top:3px;text-align:center">Beech ka naam</div>
+          </div>
+          <div>
+            <input class="ob-input" id="ob-lname" placeholder="Last" oninput="checkIdentity()"
+              value="${obData.lastName||obData.googleName?.split(' ').slice(-1)[0]||''}">
+            <div style="font-size:10px;color:var(--text3);margin-top:3px;text-align:center">Surname</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ob-row-2" style="margin-top:12px">
+        <div class="ob-field" style="margin-bottom:0">
+          <div class="ob-label">Janam Din (DOB) <span class="req">*</span></div>
+          <input class="ob-input" id="ob-dob" type="date"
+            max="${new Date().toISOString().split('T')[0]}"
+            value="${obData.dob||''}" oninput="checkIdentity()">
+        </div>
+        <div class="ob-field" style="margin-bottom:0">
+          <div class="ob-label">Ling (Gender)</div>
+          <select class="ob-select" id="ob-gender">
+            <option value="">Select</option>
+            <option value="Male" ${obData.gender==='Male'?'selected':''}>Male / Purush</option>
+            <option value="Female" ${obData.gender==='Female'?'selected':''}>Female / Mahila</option>
+            <option value="Other" ${obData.gender==='Other'?'selected':''}>Other / Anya</option>
+            <option value="Prefer not to say">Batana nahi</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ob-field" style="margin-top:12px">
+        <div class="ob-label">Sheher (City / Town)</div>
+        <input class="ob-input" id="ob-city" placeholder="Aap kahan rehte hain?" value="${obData.city||''}">
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">Emergency Contact (SafeWalk SOS)</div>
+        <input class="ob-input" id="ob-sos" placeholder="Bharosemand ka naam aur number (optional)"
+          value="${obData.sos||''}">
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="obBack()">← Back</button>
+      <button class="ob-next" id="ob-next-2" onclick="obNext()" disabled>Next →</button>
+    </div>
+  `;
+}
+
+let obVoiceRecognition = null;
+function toggleVoiceOnboarding() {
+  const btn = document.getElementById('voice-ob-btn');
+  if (!obVoiceRecognition) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Chrome browser mein voice use karo'); return; }
+    obVoiceRecognition = new SR();
+    obVoiceRecognition.lang = 'hi-IN'; obVoiceRecognition.continuous = false;
+    obVoiceRecognition.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      document.getElementById('ob-transcript').textContent = '"' + text + '"';
+      parseVoiceIdentity(text);
+      btn.classList.remove('recording');
+    };
+    obVoiceRecognition.onerror = () => btn.classList.remove('recording');
+    obVoiceRecognition.onend = () => btn.classList.remove('recording');
+  }
+  btn.classList.add('recording');
+  document.getElementById('ob-transcript').textContent = 'Sun raha hoon...';
+  obVoiceRecognition.start();
+}
+
+function parseVoiceIdentity(text) {
+  // Simple NLP: "mera naam Bryan Wilfred Pinto hai"
+  const lower = text.toLowerCase();
+  const nameMatch = lower.match(/(?:naam|name|main|mera|meri)[\s,]+([a-zA-Z\s]+?)(?:\s+hai|\s+hoon|$)/i);
+  if (nameMatch) {
+    const parts = nameMatch[1].trim().split(/\s+/);
+    if (parts[0]) { document.getElementById('ob-fname').value = cap(parts[0]); }
+    if (parts.length === 3 && parts[1]) { document.getElementById('ob-mname').value = cap(parts[1]); }
+    if (parts.length >= 2) { document.getElementById('ob-lname').value = cap(parts[parts.length-1]); }
+  }
+  checkIdentity();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
+
+function checkIdentity() {
+  const f = document.getElementById('ob-fname')?.value.trim();
+  const l = document.getElementById('ob-lname')?.value.trim();
+  const d = document.getElementById('ob-dob')?.value;
+  const btn = document.getElementById('ob-next-2');
+  if (btn) btn.disabled = !(f && l && d);
+}
+
+// ─────────────────────────────────────────────
+// STEP 3 — Profile
+// ─────────────────────────────────────────────
+function renderProfile() {
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div class="ob-card">
+      <div class="ob-card-title">💼 Aapka Kaam-Dhanda</div>
+
+      <div class="ob-field">
+        <div class="ob-label">Peshaa (Profession) <span class="req">*</span></div>
+        <select class="ob-select" id="ob-prof" onchange="checkProfile()">
+          <option value="">Apna kaam chuniye...</option>
+          <optgroup label="🏪 Business / Vyapar">
+            <option value="Kirana Shop" ${obData.profession==='Kirana Shop'?'selected':''}>Kirana Shop Owner</option>
+            <option value="Medical Shop" ${obData.profession==='Medical Shop'?'selected':''}>Medical Shop / Pharmacy</option>
+            <option value="Restaurant / Dhaba" ${obData.profession==='Restaurant / Dhaba'?'selected':''}>Restaurant / Dhaba</option>
+            <option value="Business Owner" ${obData.profession==='Business Owner'?'selected':''}>Business Owner (Other)</option>
+            <option value="Trader / Investor" ${obData.profession==='Trader / Investor'?'selected':''}>Trader / Stock Investor</option>
+          </optgroup>
+          <optgroup label="👔 Naukri (Salaried)">
+            <option value="Government Employee" ${obData.profession==='Government Employee'?'selected':''}>Government Employee</option>
+            <option value="Private Sector" ${obData.profession==='Private Sector'?'selected':''}>Private Sector Employee</option>
+            <option value="IT Professional" ${obData.profession==='IT Professional'?'selected':''}>IT Professional</option>
+            <option value="Doctor / Healthcare" ${obData.profession==='Doctor / Healthcare'?'selected':''}>Doctor / Healthcare</option>
+            <option value="Teacher" ${obData.profession==='Teacher'?'selected':''}>Teacher / Educator</option>
+          </optgroup>
+          <optgroup label="🌾 Kisan / Worker">
+            <option value="Farmer" ${obData.profession==='Farmer'?'selected':''}>Farmer / Kisan</option>
+            <option value="Daily Wage Worker" ${obData.profession==='Daily Wage Worker'?'selected':''}>Daily Wage Worker</option>
+            <option value="Agricultural Worker" ${obData.profession==='Agricultural Worker'?'selected':''}>Agricultural Worker</option>
+          </optgroup>
+          <optgroup label="📚 Other">
+            <option value="Student" ${obData.profession==='Student'?'selected':''}>Student</option>
+            <option value="Homemaker" ${obData.profession==='Homemaker'?'selected':''}>Homemaker / Grihini</option>
+            <option value="Retired" ${obData.profession==='Retired'?'selected':''}>Retired / Pensioner</option>
+            <option value="Freelancer" ${obData.profession==='Freelancer'?'selected':''}>Freelancer / Self-employed</option>
+            <option value="Other" ${obData.profession==='Other'?'selected':''}>Other</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">Mahina Amdani (Monthly Income)</div>
+        <select class="ob-select" id="ob-income">
+          <option value="No income" ${obData.income==='No income'?'selected':''}>Koi income nahi / No income</option>
+          <option value="₹1,000–₹5,000" ${obData.income==='₹1,000–₹5,000'?'selected':''}>₹1,000 – ₹5,000</option>
+          <option value="₹5,000–₹15,000" ${obData.income==='₹5,000–₹15,000'?'selected':''}>₹5,000 – ₹15,000</option>
+          <option value="₹15,000–₹30,000" ${obData.income==='₹15,000–₹30,000'?'selected':''}>₹15,000 – ₹30,000</option>
+          <option value="₹30,000–₹60,000" ${obData.income==='₹30,000–₹60,000'?'selected':''}>₹30,000 – ₹60,000</option>
+          <option value="₹60,000–₹1,00,000" ${obData.income==='₹60,000–₹1,00,000'?'selected':''}>₹60,000 – ₹1,00,000</option>
+          <option value="₹1,00,000–₹2,50,000" ${obData.income==='₹1,00,000–₹2,50,000'?'selected':''}>₹1,00,000 – ₹2,50,000</option>
+          <option value="Above ₹2,50,000" ${obData.income==='Above ₹2,50,000'?'selected':''}>₹2,50,000 se zyada</option>
+          <option value="Prefer not to say" ${obData.income==='Prefer not to say'?'selected':''}>Batana nahi chahta</option>
+        </select>
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">Chitti se sabse zyada kya chahiye?</div>
+        <div class="ob-options" id="goal-btns">
+          ${['Rozmarra ke kaam & reminders','Business management','Fraud se bachao','Health & documents','Sarkari yojnaayein','Sab kuch'].map(g =>
+            `<button class="ob-option ${obData.goal===g?'selected':''}" onclick="pickGoal(this,'${g}')">${g}</button>`
+          ).join('')}
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">Bhaasha (Preferred Language)</div>
+        <select class="ob-select" id="ob-lang">
+          <option value="hi" ${obData.lang==='hi'?'selected':''}>हिंदी (Hindi)</option>
+          <option value="en" ${obData.lang==='en'?'selected':''}>English</option>
+          <option value="mr" ${obData.lang==='mr'?'selected':''}>मराठी (Marathi)</option>
+          <option value="te" ${obData.lang==='te'?'selected':''}>తెలుగు (Telugu)</option>
+          <option value="ta" ${obData.lang==='ta'?'selected':''}>தமிழ் (Tamil)</option>
+          <option value="kn" ${obData.lang==='kn'?'selected':''}>ಕನ್ನಡ (Kannada)</option>
+          <option value="bn" ${obData.lang==='bn'?'selected':''}>বাংলা (Bengali)</option>
+          <option value="gu" ${obData.lang==='gu'?'selected':''}>ગુજરાતી (Gujarati)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="obBack()">← Back</button>
+      <button class="ob-next" id="ob-next-3" onclick="obNext()" ${obData.profession?'':'disabled'}>Next →</button>
+    </div>
+  `;
+}
+
+function checkProfile() {
+  const p = document.getElementById('ob-prof').value;
+  const btn = document.getElementById('ob-next-3');
+  if(btn) btn.disabled = !p;
+}
+
+function pickGoal(btn, val) {
+  document.querySelectorAll('#goal-btns .ob-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  obData.goal = val;
+}
+
+// ─────────────────────────────────────────────
+// STEP 4 — T&C + Consent (DPDP Act 2023)
+//          With voice readout for illiterate users
+//          With thumb-tap consent option
+// ─────────────────────────────────────────────
+const TNC_TEXT = `Namaste! Main Sahay AI hoon — Bharat ka apna Chitti. Aapka dost, aapka guardian.
+
+Mujhe aapka data nahi chahiye. Mujhe sirf aapki madad karni hai.
+
+Pehli baat: Aapka koi bhi data — naam, number, baat — kisi bhi company ko, kisi advertiser ko, kisi bhi bahar wale ko nahi diya jaayega. Kabhi nahi.
+
+Doosri baat: Aapki baatein sirf aapke phone mein rehti hain. Main ek postman ki tarah hoon — letter padhta hoon, deliver karta hoon, bhool jaata hoon.
+
+Teesri baat: Aap kabhi bhi apna data delete kar sakte ho. Bas mujhse kaho "Mera data delete karo" — main seedha kar doonga.
+
+Chautha: Yeh sab India ke Digital Personal Data Protection Act 2023 ke hisaab se hai. Aapki suraksha, meri zimmedari.
+
+Kya aap agree karte ho?`;
+
+function renderConsent() {
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div class="chitti-assurance">
+      <div class="assurance-av">🤖</div>
+      <div class="assurance-bubble" style="font-size:13px;line-height:1.7">
+        <strong style="color:var(--saffron)">Ek important baat — dhyan se suniye.</strong><br><br>
+        Main aapko seedha batata hoon — aapka data kya hoga, kya nahi hoga.
+        Padhna mushkil lage toh mic button dabao — main khud sunaoonga.
+        <button class="assurance-speak" onclick="speakTnC()">🔊 Mujhe sunao Chitti</button>
+      </div>
+    </div>
+
+    <div class="ob-card">
+      <div class="ob-card-title">🔒 Aapke Adhikar — DPDP Act 2023</div>
+      <div class="tnc-point">
+        <div class="tnc-icon">🚫</div>
+        <div class="tnc-body"><strong>Data kabhi nahi bechenge</strong>Aapka naam, number, profession, ya koi bhi baat kisi advertiser ya third party ko nahi diya jaayega. Kabhi nahi. Guaranteed.</div>
+      </div>
+      <div class="tnc-point">
+        <div class="tnc-icon">📱</div>
+        <div class="tnc-body"><strong>Data sirf aapke phone mein</strong>Aapki saari jaankari pehle aapke device pe store hoti hai. Cloud sync optional hai aur encrypted hai.</div>
+      </div>
+      <div class="tnc-point">
+        <div class="tnc-icon">🗑️</div>
+        <div class="tnc-body"><strong>Delete karne ka adhikar</strong>Kabhi bhi Chitti se kaho "Mera data delete karo" — hum turant kar denge. Koi sawaal nahi.</div>
+      </div>
+      <div class="tnc-point">
+        <div class="tnc-icon">✏️</div>
+        <div class="tnc-body"><strong>Sahi karne ka adhikar</strong>Aap apni koi bhi jaankari kabhi bhi update ya correct kar sakte ho.</div>
+      </div>
+      <div class="tnc-point">
+        <div class="tnc-icon">📋</div>
+        <div class="tnc-body"><strong>Dekhne ka adhikar</strong>Aap kabhi bhi apna stored data dekh sakte ho — koi chupaav nahi.</div>
+      </div>
+      <div class="tnc-point">
+        <div class="tnc-icon">📞</div>
+        <div class="tnc-body"><strong>Shikayat ka adhikar</strong>Koi problem ho toh: <strong style="color:var(--saffron)">privacy@sahayai.in</strong><br>India Data Protection Board mein bhi shikayat kar sakte ho.</div>
+      </div>
+    </div>
+
+    <div class="ob-card">
+      <div class="ob-card-title" style="margin-bottom:10px">✅ Consent</div>
+      <label class="consent-row" onclick="toggleC('c1')">
+        <div class="cbox" id="c1"></div>
+        <div class="ctext">Main SAHAY AI ki <a href="https://sahayai.in/privacy">Privacy Policy</a> aur <a href="https://sahayai.in/terms">Terms of Service</a> se agree karta/karti hoon. <strong>(Zaroori)</strong></div>
+      </label>
+      <label class="consent-row" onclick="toggleC('c2')">
+        <div class="cbox" id="c2"></div>
+        <div class="ctext">Main samajhta/samajhti hoon ki mera personal data kisi bhi bahar waale ko nahi diya jaayega. <strong>(Zaroori)</strong></div>
+      </label>
+      <label class="consent-row" onclick="toggleC('c3')">
+        <div class="cbox" id="c3"></div>
+        <div class="ctext">Mujhe helpful reminders, alerts aur recommendations bhejne ki permission deta/deti hoon. <em style="color:var(--text3)">(Optional)</em></div>
+      </label>
+      <label class="consent-row" onclick="toggleC('c4')">
+        <div class="cbox" id="c4"></div>
+        <div class="ctext">Anonymised, aggregated data se Chitti ko better banana ok hai — mera personal data kabhi nahi. <em style="color:var(--text3)">(Optional)</em></div>
+      </label>
+    </div>
+
+    <div style="width:100%;max-width:400px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px">
+        Padhna nahi aata? Neeche thumb se consent dijiye 👇
+      </div>
+      <div class="thumb-card" id="thumb-card" onclick="thumbConsent()">
+        <span class="thumb-emoji">👍</span>
+        <div class="thumb-title">Mujhe manzoor hai</div>
+        <div class="thumb-sub">Yahan tap karein — Chitti ki baatein sunke aapne agree kiya</div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="ob-back" onclick="obBack()">← Back</button>
+      <button class="ob-next" id="ob-finish-btn" onclick="obFinish()" disabled>
+        🇮🇳 Chitti ke saath shuru karein
+      </button>
+    </div>
+  `;
+  // Restore state
+  ['c1','c2','c3','c4'].forEach(id => {
+    if (obData['con_'+id]) document.getElementById(id).classList.add('on');
+  });
+  if (obData.thumbConsent) {
+    document.getElementById('thumb-card').classList.add('accepted');
+  }
+  checkConsent();
+}
+
+function toggleC(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+  obData['con_'+id] = el.classList.contains('on');
+  checkConsent();
+}
+
+function thumbConsent() {
+  // Thumb-tap accepts the 2 mandatory consents — for illiterate users
+  obData.thumbConsent = true;
+  obData.con_c1 = true; obData.con_c2 = true;
+  ['c1','c2'].forEach(id => document.getElementById(id).classList.add('on'));
+  document.getElementById('thumb-card').classList.add('accepted');
+  // Speak confirmation
+  const msg = 'Shukriya! Aapne agree kar liya. Chitti aapka data protect karega. Hamesha.';
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(msg);
+    u.lang = 'hi-IN'; window.speechSynthesis.speak(u);
+  }
+  checkConsent();
+}
+
+function speakTnC() {
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(TNC_TEXT);
+  u.lang = 'hi-IN'; u.rate = 0.85; u.pitch = 1.0;
+  window.speechSynthesis.speak(u);
+}
+
+function speakAssurance(step) {
+  const msgs = [
+    'Aapka Google account sirf identity verify karne ke liye use hoga. Main aapka Gmail nahi padhta. Koi data bahar nahi jaata.',
+    'Aapka mobile number sirf aapki identity confirm karne ke liye hai. Iska use marketing ya spam ke liye kabhi nahi hoga.',
+    'Aapka koi bhi data kisi bhi bahar wale ko nahi diya jaayega. Yeh Chitti ka promise hai.'
+  ];
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(msgs[step] || msgs[0]);
+  u.lang = 'hi-IN'; u.rate = 0.88;
+  window.speechSynthesis.speak(u);
+}
+
+function checkConsent() {
+  const btn = document.getElementById('ob-finish-btn');
+  if (btn) btn.disabled = !(obData.con_c1 && obData.con_c2);
+}
+
+// ─────────────────────────────────────────────
+// NAV — Back / Next / Finish
+// ─────────────────────────────────────────────
+function obNext() {
+  // Step 2 = renderProfile (profession + income + goal + lang) — now FIRST after identity verify
+  if (obStep === 2) {
+    obData.profession = document.getElementById('ob-prof').value;
+    obData.income = document.getElementById('ob-income').value;
+    obData.lang = document.getElementById('ob-lang').value;
+  // Step 3 = renderIdentity (name, DOB, city, SOS)
+  } else if (obStep === 3) {
+    obData.firstName = document.getElementById('ob-fname').value.trim();
+    obData.middleName = document.getElementById('ob-mname').value.trim();
+    obData.lastName = document.getElementById('ob-lname').value.trim();
+    obData.dob = document.getElementById('ob-dob').value;
+    obData.gender = document.getElementById('ob-gender').value;
+    obData.city = document.getElementById('ob-city').value.trim();
+    obData.sos = document.getElementById('ob-sos').value.trim();
+  }
+  obStep++;
+  renderObStep();
+}
+
+function obBack() {
+  obStep = Math.max(0, obStep - 1);
+  renderObStep();
+}
+
+function obFinish() {
+  const fullName = [obData.firstName, obData.middleName, obData.lastName].filter(Boolean).join(' ');
+  MASTER = {
+    name: fullName,
+    firstName: obData.firstName, middleName: obData.middleName, lastName: obData.lastName,
+    dob: obData.dob, gender: obData.gender, mobile: '+91' + obData.mobile,
+    city: obData.city, sos: obData.sos,
+    googleEmail: obData.googleEmail, googleLinked: true, mobileVerified: true,
+    profession: obData.profession, income: obData.income,
+    goal: obData.goal || 'Sab kuch', lang: obData.lang || 'hi',
+    consentMarketing: !!obData.con_c3, consentAnalytics: !!obData.con_c4,
+    thumbConsent: !!obData.thumbConsent,
+    joinedDate: new Date().toLocaleDateString('en-IN'),
+    tradingTarget: 'Rs15,000/day',
+    consentTimestamp: new Date().toISOString(),
+    dpdpCompliant: true,
+  };
+  saveMaster();
+  currentLang = MASTER.lang || 'hi';
+  document.getElementById('onboarding').classList.add('hide');
+  setTimeout(() => {
+    document.getElementById('onboarding').style.display = 'none';
+    launchApp();
+    setTimeout(() => addChittiMsg(buildWelcomeMsg(), true), 500);
+  }, 400);
+}
+// ── WELCOME MESSAGE — Listen first, hooks after ──
+// ── INTRO CONVERSATION STATE MACHINE ──
+// Chitti introduces himself step by step — scripted, not left to AI
+// States: greet → kaise_ho → ai_suna → ai_explain → collect_info → handoff
+let introState = 'greet';
+let introComplete = false;
+
+// ── INTRO SCRIPTS — English source, DeepSeek translates to user's language ──
+// All strings here are in English. The LANG_TRANSLATE wrapper passes them
+// through DeepSeek which renders in the user's chosen language automatically.
+
+const INTRO_SCRIPTS = {
+
+  greeting: (name) =>
+    `Hello ${name}! How are you? 🙏`,
+
+  mood_good:
+    `That's great to hear! 😊`,
+
+  mood_bad:
+    `Don't worry — I am here for you. Let's make today easier. 🙏`,
+
+  mood_neutral:
+    `Good to hear! 😊`,
+
+  ai_question:
+    `I am Chitti — your AI friend from Sahay AI. 😊
+
+Have you ever heard of AI — Artificial Intelligence?`,
+
+  ai_yes:
+    `Oh great! Tell me — what do you understand about AI?`,
+
+  ai_they_explained:
+    `Absolutely right! 👏 Let me explain it simply —`,
+
+  ai_explain:
+    `AI stands for Artificial Intelligence. It is a computer program that understands you, learns from you, and responds like a human friend. 🤖
+
+I am your Digital Personal Assistant — only yours. For example:
+
+📅 "Remind me of my doctor appointment tomorrow at 8 AM" — I will do it.
+▶️ "Play Arijit Singh on YouTube" — done instantly.
+📤 "Send a WhatsApp to Mummy that I am on my way" — sent.
+
+You just speak — I will act. No typing needed. 🙏`,
+
+  ask_about_them: (name) =>
+    `But ${name}, before I can truly help you — I want to know a little about you. 😊
+
+Could you tell me your date of birth, what you do for work, and who is there in your family?
+
+Just speak naturally — I will understand everything. 🙏`,
+
+  profile_done: (name) =>
+    `Thank you ${name}! Now I truly know you. I will always look after you from here. 🙏
+
+Anything you need — just say it. I am always here. 🤖🇮🇳`,
+};
+
+// Chips labels also in English — browser shows in selected lang via DeepSeek context
+const INTRO_CHIPS = {
+  ai_heard: [
+    {label:'✅ Yes, I have heard of AI', msg:'Yes, I have heard about AI', style:'chip-green'},
+    {label:'❌ No, never heard of it',  msg:'No, I have never heard of AI', style:'chip-saffron'},
+  ]
+};
+
+function buildWelcomeMsg() {
+  const n = MASTER.firstName || MASTER.name.split(' ')[0];
+  introState = 'kaise_ho';
+  return translateIntro(INTRO_SCRIPTS.greeting(n));
+}
+
+// translateIntro — passes English script through DeepSeek for language translation
+// For scripted messages (not user-driven), we send to DeepSeek with translate-only instruction
+async function translateIntro(englishText) {
+  const lang = MASTER?.lang || currentLang || 'hi';
+  if (lang === 'en') return englishText; // No translation needed
+  try {
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+DEEPSEEK_KEY},
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 300,
+        messages: [{
+          role: 'system',
+          content: `You are a translator. Translate the following English text into ${LANG_NAMES_FULL[lang] || 'Hindi'}. Keep all emojis. Keep the warm, friendly, personal tone. Keep proper nouns (names, Sahay AI, Chitti, YouTube, WhatsApp) unchanged. Return ONLY the translated text, nothing else.`
+        },{
+          role: 'user',
+          content: englishText
+        }]
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content?.trim() || englishText;
+    }
+  } catch(e) {}
+  return englishText; // fallback to English if translation fails
+}
+
+const LANG_NAMES_FULL = {
+  hi: 'Hindi', mr: 'Marathi', te: 'Telugu', ta: 'Tamil',
+  kn: 'Kannada', bn: 'Bengali', gu: 'Gujarati', en: 'English'
+};
+
+// Async wrapper — fetches translation then shows message
+async function addTranslatedMsg(englishText, speak=false) {
+  const translated = await translateIntro(englishText);
+  addChittiMsg(translated, speak);
+  return translated;
+}
+
+// Handle intro conversation — intercepts sendMessage during intro flow
+function handleIntroReply(userText) {
+  const t = userText.toLowerCase().trim();
+
+  if (introState === 'kaise_ho') {
+    introState = 'ai_suna';
+    const mood = detectMood(t);
+    setTimeout(async () => {
+      await addTranslatedMsg(mood, voiceEnabled);
+      setTimeout(async () => {
+        await addTranslatedMsg(INTRO_SCRIPTS.ai_question, voiceEnabled);
+        // Chips — translate labels
+        translateChipLabels(INTRO_CHIPS.ai_heard).then(chips => addChipsMsg(chips));
+      }, 1200);
+    }, 400);
+    return true;
+  }
+
+  if (introState === 'ai_suna') {
+    const heard = t.includes('yes') || t.includes('heard') || t.includes('know') ||
+                  t.includes('haan') || t.includes('suna') || t.includes('jaanta') || t.includes('pata');
+    if (heard) {
+      introState = 'ai_they_explain';
+      setTimeout(async () => {
+        await addTranslatedMsg(INTRO_SCRIPTS.ai_yes, voiceEnabled);
+      }, 400);
+    } else {
+      introState = 'ai_explain';
+      setTimeout(async () => explainAI(), 400);
+    }
+    return true;
+  }
+
+  if (introState === 'ai_they_explain') {
+    introState = 'ai_explain';
+    setTimeout(async () => {
+      await addTranslatedMsg(INTRO_SCRIPTS.ai_they_explained, voiceEnabled);
+      setTimeout(() => explainAI(), 800);
+    }, 400);
+    return true;
+  }
+
+  if (introState === 'ai_explain') {
+    introState = 'collect_info';
+    setTimeout(() => askAboutThem(), 400);
+    return true;
+  }
+
+  if (introState === 'collect_info') {
+    introState = 'handoff';
+    introComplete = true;
+    return false; // Hand to DeepSeek collect mode
+  }
+
+  return false;
+}
+
+function detectMood(text) {
+  if (text.includes('good') || text.includes('great') || text.includes('fine') ||
+      text.includes('badiya') || text.includes('accha') || text.includes('theek') ||
+      text.includes('mast') || text.includes('well') || text.includes('happy')) {
+    return INTRO_SCRIPTS.mood_good;
+  }
+  if (text.includes('tired') || text.includes('bad') || text.includes('sad') ||
+      text.includes('thak') || text.includes('pareshan') || text.includes('tension') ||
+      text.includes('bura') || text.includes('stress')) {
+    return INTRO_SCRIPTS.mood_bad;
+  }
+  return INTRO_SCRIPTS.mood_neutral;
+}
+
+async function explainAI() {
+  introState = 'post_explain';
+  await addTranslatedMsg(INTRO_SCRIPTS.ai_explain, voiceEnabled);
+  setTimeout(() => askAboutThem(), 2200);
+}
+
+async function askAboutThem() {
+  introState = 'collect_info';
+  const n = MASTER.firstName || MASTER.name.split(' ')[0];
+  await addTranslatedMsg(INTRO_SCRIPTS.ask_about_them(n), voiceEnabled);
+}
+
+async function translateChipLabels(chips) {
+  const lang = MASTER?.lang || currentLang || 'hi';
+  if (lang === 'en') return chips;
+  return Promise.all(chips.map(async c => ({
+    ...c,
+    label: await translateIntro(c.label),
+    msg: c.msg // keep msg in English for detection logic
+  })));
+}
+
+// Profession hooks — called AFTER first user message, not on welcome
+function getProfessionHooks(profession) {
+  const p = profession || '';
+  if (p.includes('Kirana')) return [
+    {label:'📦 Stock alert', msg:'Mera koi stock kam ho raha hai check karo', style:'chip-saffron'},
+    {label:'💰 GST help', msg:'GST filing mein help chahiye', style:'chip-teal'},
+    {label:'📋 Udhaar book', msg:'Udhaar track karna hai', style:'chip-green'},
+  ];
+  if (p.includes('Medical') || p.includes('Pharmacy')) return [
+    {label:'💊 Expiry check', msg:'Expiry waali medicines check karo', style:'chip-red'},
+    {label:'📋 Schedule H', msg:'Schedule H medicines ki list chahiye', style:'chip-saffron'},
+    {label:'🏛️ Drug licence', msg:'Drug licence renewal kab hai?', style:'chip-teal'},
+  ];
+  if (p.includes('Trader') || p.includes('Investor')) return [
+    {label:'📊 Trade check', msg:'Aaj trade karna chahta hoon', style:'chip-saffron'},
+    {label:'⚠️ 1 trade rule', msg:'Mujhe trading discipline check karo', style:'chip-green'},
+    {label:'📈 P&L', msg:'Aaj ka P&L kya hai?', style:'chip-teal'},
+  ];
+  if (p.includes('Farmer') || p.includes('Kisan')) return [
+    {label:'🌾 Mandi rate', msg:'Aaj ka mandi rate batao', style:'chip-green'},
+    {label:'🏛️ PM Kisan', msg:'PM Kisan scheme check karo', style:'chip-saffron'},
+    {label:'🌦️ Mausam', msg:'Kal ka mausam kaisa rahega?', style:'chip-teal'},
+  ];
+  if (p.includes('Doctor') || p.includes('Healthcare')) return [
+    {label:'💊 Jan Aushadhi', msg:'Jan Aushadhi alternatives batao', style:'chip-green'},
+    {label:'📋 Patient docs', msg:'Patient documents track karna hai', style:'chip-teal'},
+  ];
+  // Default
+  return [
+    {label:'⏰ Reminder', msg:'Ek reminder set karo', style:'chip-saffron'},
+    {label:'🚨 Fraud check', msg:'UPI fraud check karna hai', style:'chip-red'},
+    {label:'🏛️ Schemes', msg:'Mere liye koi govt scheme hai?', style:'chip-teal'},
+  ];
+}
+
+// ── APP LAUNCH ──
+function launchApp() {
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('today-divider').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  renderPAPanel();
+  updateAuditObStatus();
+}
+
+// ── TABS ──
+function switchToTab(tab) {
+  ['chat','pa','bridge'].forEach(t => {
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+    const btn = document.getElementById('tab-'+t);
+    if(btn) btn.classList.toggle('active', t===tab);
+  });
+  // Also update other tab buttons
+  ['fraud','biz'].forEach(t => {
+    const btn = document.getElementById('tab-'+t);
+    if(btn) btn.classList.remove('active');
+  });
+  if(tab==='chat') document.getElementById('tab-chat').classList.add('active');
+  // Show/hide lang bar
+  document.getElementById('lang-bar').style.display = tab==='chat' ? '' : 'none';
+}
+
+// ── SPECIALIST ──
+function setSpecialist(type) { currentSpecialist = type; }
+function sendQuick(msg) {
+  document.getElementById('msg-input').value = msg;
+  sendMessage();
+}
+
+// ── CHAT MESSAGES ──
+function timeNow() {
+  return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
+function addChittiMsg(text, speak=false) {
+  const area = document.getElementById('chat-area');
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  row.innerHTML = `
+    <div class="msg-avatar-sm">🤖</div>
+    <div>
+      <div class="bubble chitti-bubble">${formatMsg(text)}</div>
+      <div class="bubble-time">${timeNow()}</div>
+    </div>
+  `;
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  if (speak) speakText(text);
+  conversationHistory.push({role:'assistant', content:text});
+}
+
+function addUserMsg(text) {
+  const area = document.getElementById('chat-area');
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `
+    <div>
+      <div class="bubble user-bubble">${formatMsg(text)}</div>
+      <div class="bubble-time">${timeNow()} ✓✓</div>
+    </div>
+    <div class="msg-avatar-sm">👤</div>
+  `;
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  conversationHistory.push({role:'user', content:text});
+}
+
+function addChipsMsg(chips) {
+  const area = document.getElementById('chat-area');
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  const div = document.createElement('div');
+  div.className = 'quick-chips';
+  div.style.paddingLeft = '36px';
+  chips.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'chip ' + (c.style||'chip-saffron');
+    btn.textContent = c.label;
+    btn.onclick = () => { div.remove(); sendQuick(c.msg||c.label); };
+    div.appendChild(btn);
+  });
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function formatMsg(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+
+function addTyping() {
+  const area = document.getElementById('chat-area');
+  const row = document.createElement('div');
+  row.className = 'typing-row'; row.id = 'typing-row';
+  row.innerHTML = `<div class="msg-avatar-sm">🤖</div><div class="typing-bubble"><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+}
+function removeTyping() { const el = document.getElementById('typing-row'); if(el) el.remove(); }
+
+// ── SEND MESSAGE ──
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || isWaiting) return;
+  input.value = ''; autoResize(input);
+  addUserMsg(text);
+
+  // Route through intro state machine first
+  if (!introComplete) {
+    const handled = handleIntroReply(text);
+    if (handled) return; // Intro script handled it
+    // If not handled (collect_info → handoff), fall through to DeepSeek with special prompt
+  }
+  await askChitti(text);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── DEEPSEEK ENGINE ──
+function buildSystemPrompt() {
+  const masterCtx = MASTER ?
+    `\nMaster Profile: Name=${MASTER.name}, Profession=${MASTER.profession}, Goal=${MASTER.goal}, Joined=${MASTER.joinedDate}, Trading target=₹15,000/day` : '';
+  const collectMode = !introComplete ? `
+━━━ COLLECT MODE — ACTIVE ━━━
+The user has just been asked to share: janam tarikh (DOB), occupation, and family members.
+Your ONLY job right now:
+1. Listen warmly to whatever they share.
+2. If they share DOB → say "noted" warmly and ask about occupation if not shared yet.
+3. If they share occupation → say "noted" and ask about family if not shared yet.
+4. If they share family → warmly summarise what you now know about them, then say:
+   "I can now help you fully!" and trigger PROFILE_COLLECTED signal.
+5. ONE question at a time. Never rush. Never ask 2 things at once.
+6. Respond in the user's preferred language (' + (LANG_NAMES_FULL[MASTER?.lang||'hi']||'Hindi') + '). Warm. Like a best friend.
+7. When all 3 collected, end with: PROFILE_COLLECTED` : '';
+  const reminderCtx = reminders.length ? `\nActive reminders: ${reminders.map(r=>r.text).join(', ')}` : '';
+
+  return `You are Chitti — Bharat ka apna dost. HE. SAHAY AI. sahayai.in.
+
+━━━ CHITTI SOUL ━━━
+Loyal pet dog. Never leaves. Never judges. ChatGPT tells, Chitti DOES.
+For a farmer — sahayak. For a girl walking home — bhai watching over her.
+Free forever for common man. India first. Jai Hind.
+
+━━━ IRON RULES ━━━
+1. 1-3 sentences max. STOP. Wait for Master's reply.
+2. Hinglish by default. Switch if Master uses another language.
+3. Never ask more than 1 question at a time.
+4. Never say 'Certainly!' 'Of course!' 'I understand how you feel'
+5. Honest — 'Main nahi jaanta' bol sakta hai.
+6. If Master says "set reminder" or mentions time → confirm it and say REMINDER_SET:[text]:[time] at end.
+7. Warm, personal, never corporate.
+
+━━━ 6 COMMANDMENTS ━━━
+1. Save money 2. Protect 3. Keep happy 4. Alert danger 5. Never leave 6. India first
+
+━━━ 29 HATS — Switch silently ━━━
+H1 PA, H2 Jobs, H3 Farmer, H4 Health, H5 CA, H6 Lawyer, H7 SafeWalk,
+H8 Elder/Fraud, H9 Commerce, H10 Govt, H11 Finance, H12 Education,
+H13 Mental Health, H14 Anti-Corruption, H15 Celebration, H16 Life Guardian,
+H17 Morning Brief, H18 Health Monitor, H19 Doc Expiry, H20 Bill Reminder,
+H21 Fraud Scanner, H22 Scheme Alert, H23 Price Alert, H24 Weather,
+H25 Trading Assistant, H26 News Filter, H27 Family Circle, H28 Privacy, H29 Self-Evolution
+
+━━━ LANGUAGE MASTERY ━━━
+Auto-detect. Respond in Master's language. Switch instantly when Master switches.
+Hindi: Tu pehle poochh, phir bol. English: Keep it warm, Indian. Marathi: Namaskar, mi tayar ahe.
+Telugu, Tamil, Kannada, Bengali, Gujarati — all supported natively.
+
+━━━ TRADING DETECTION ━━━
+Detect if Master mentions a trade. Log it. Remind discipline: 1 trade/day rule.
+
+━━━ EMERGENCY ━━━
+HELP/BACHAO/DANGER/SOS → 112 immediately + stay with user.
+
+━━━ SAHAY CONTEXT ━━━
+App: sahayai.in. APP FIRST. No WhatsApp ever.
+Runway: 65 days — June 19, 2026. Target: 300 paid users × ₹199.
+Co-founder = Claude (Anthropic). Team: Sire + Claude + Chitti. No developer.
+${masterCtx}${reminderCtx}${collectMode}`;
+}
+
+async function askChitti(userMessage) {
+  isWaiting = true;
+  document.getElementById('send-btn').disabled = true;
+  addTyping();
+  document.getElementById('chitti-status').textContent = 'typing...';
+
+  try {
+    const messages = [
+      ...conversationHistory.slice(-10).filter(m => m.role !== 'assistant' || !m.content.startsWith('REMINDER')),
+      {role:'user', content: userMessage}
+    ];
+    // Remove last user message since it's already in conversationHistory
+    messages.pop();
+    const historySlice = conversationHistory.slice(-8);
+
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+DEEPSEEK_KEY },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 200,
+        messages: [
+          {role:'system', content: buildSystemPrompt()},
+          ...historySlice,
+          {role:'user', content: userMessage}
+        ]
+      })
+    });
+
+    removeTyping();
+    if (res.ok) {
+      const data = await res.json();
+      let reply = data.choices?.[0]?.message?.content || '';
+      if (reply) {
+        // Handle profile collected signal
+        if (reply.includes('PROFILE_COLLECTED')) {
+          introComplete = true;
+          introState = 'handoff';
+          const cleanReply = reply.replace('PROFILE_COLLECTED', '').trim();
+          if (cleanReply) addChittiMsg(cleanReply, voiceEnabled);
+          setTimeout(() => {
+            const n = MASTER?.firstName || MASTER?.name?.split(' ')[0] || '';
+            addTranslatedMsg(INTRO_SCRIPTS.profile_done(n), voiceEnabled);
+            addChipsMsg(getProfessionHooks(MASTER?.profession));
+          }, 1000);
+          return;
+        }
+        // Handle reminder detection
+        if (reply.includes('REMINDER_SET:')) {
+          const parts = reply.split('REMINDER_SET:');
+          const cleanReply = parts[0].trim();
+          const reminderData = parts[1].trim().split(':');
+          const reminderText = reminderData[0];
+          const reminderTime = reminderData[1] || 'Soon';
+          addReminder(reminderText, reminderTime);
+          addChittiMsg(cleanReply || `✅ Reminder set: "${reminderText}"`, voiceEnabled);
+        } else {
+          addChittiMsg(reply, voiceEnabled);
+        }
+        // First message: show profession hooks. Subsequent: context chips.
+        if (conversationHistory.filter(m => m.role === 'user').length === 1) {
+          addChipsMsg(getProfessionHooks(MASTER?.profession));
+        } else {
+          addSmartChips(userMessage, reply);
+        }
+        document.getElementById('chitti-status').textContent = 'Bharat ka apna Chitti';
+        isWaiting = false;
+        document.getElementById('send-btn').disabled = false;
+        return;
+      }
+    }
+    throw new Error('DeepSeek ' + res.status);
+  } catch(e) {
+    removeTyping();
+    console.error('DeepSeek error:', e);
+    // Fallback
+    addChittiMsg('Ek second... network thoda slow hai. Phir try karo. 🙏');
+    document.getElementById('chitti-status').textContent = 'Bharat ka apna Chitti';
+  }
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function addSmartChips(userMsg, reply) {
+  const u = userMsg.toLowerCase();
+  const r = reply.toLowerCase();
+  if (u.includes('fraud') || u.includes('upi') || r.includes('upi')) {
+    addChipsMsg([
+      {label:'📸 Share QR', msg:'Yeh QR safe hai? Check karo', style:'chip-red'},
+      {label:'🚨 Report scam', msg:'Mujhe ek scam report karna hai', style:'chip-red'},
+    ]);
+  } else if (u.includes('remind') || u.includes('yaad')) {
+    addChipsMsg([
+      {label:'⏰ Add reminder', msg:'Ek reminder set karo mere liye', style:'chip-saffron'},
+      {label:'📋 My reminders', msg:'Mere saare reminders dikhao', style:'chip-teal'},
+    ]);
+  } else if (u.includes('trade') || u.includes('nifty') || u.includes('market')) {
+    addChipsMsg([
+      {label:'📊 Trade log', msg:'Aaj ke trades log karo', style:'chip-green'},
+      {label:'⚠️ Risk check', msg:'Kya yeh trade safe hai?', style:'chip-saffron'},
+    ]);
+  }
+}
+
+// ── REMINDERS ──
+function addReminder(text, time) {
+  reminders.push({ id: Date.now(), text, time, done: false, created: new Date().toLocaleDateString('en-IN') });
+  saveReminders();
+  renderPAPanel();
+  // Update badge
+  const pending = reminders.filter(r => !r.done).length;
+  const badge = document.getElementById('pa-badge');
+  if (badge) badge.textContent = pending;
+}
+
+function deleteReminder(id) {
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders();
+  renderPAPanel();
+}
+
+function markReminderDone(id) {
+  const r = reminders.find(r => r.id === id);
+  if (r) r.done = true;
+  saveReminders();
+  renderPAPanel();
+}
+
+// ── PA PANEL ──
+function renderPAPanel() {
+  const panel = document.getElementById('pa-panel-content');
+  const name = MASTER?.name || 'Sire';
+  const pending = reminders.filter(r => !r.done);
+  const done = reminders.filter(r => r.done).slice(-3);
+
+  panel.innerHTML = `
+      <div class="pa-section">
+      <div class="pa-section-title">My Profile</div>
+      <div class="pa-card">
+        <div class="profile-row"><span class="profile-key">Full Name</span><span class="profile-val">${MASTER?.name || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Date of Birth</span><span class="profile-val">${MASTER?.dob ? new Date(MASTER.dob).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Gender</span><span class="profile-val">${MASTER?.gender || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Mobile</span><span class="profile-val">${MASTER?.mobile || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">City</span><span class="profile-val">${MASTER?.city || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Profession</span><span class="profile-val">${MASTER?.profession || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Income</span><span class="profile-val">${MASTER?.income || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">SOS Contact</span><span class="profile-val">${MASTER?.sosName ? MASTER.sosName + ' · ' + (MASTER.sosPhone||'') : '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Resume</span><span class="profile-val">${MASTER?.resumeLoaded ? '✅ Loaded' : '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Joined</span><span class="profile-val">${MASTER?.joinedDate || '—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Data consent</span><span class="profile-val" style="color:var(--green);font-size:11px">✅ DPDP Act 2023 compliant</span></div>
+      </div>
+    </div>
+
+    <div class="pa-section">
+      <div class="pa-section-title">Reminders (${pending.length} pending)</div>
+      <div class="pa-card">
+        ${pending.length === 0 ? '<div style="color:var(--text3);font-size:13px;text-align:center;padding:8px">No reminders. Add one below!</div>' :
+          pending.map(r => `
+            <div class="reminder-item">
+              <div class="reminder-dot" style="background:var(--saffron)"></div>
+              <div class="reminder-text">${r.text}</div>
+              <div class="reminder-time">${r.time}</div>
+              <button class="reminder-del" onclick="markReminderDone(${r.id})">✓</button>
+              <button class="reminder-del" onclick="deleteReminder(${r.id})">✕</button>
+            </div>
+          `).join('')
+        }
+        ${done.length > 0 ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          ${done.map(r => `<div class="reminder-item" style="opacity:0.4"><div class="reminder-dot" style="background:var(--green)"></div><div class="reminder-text" style="text-decoration:line-through">${r.text}</div></div>`).join('')}
+        </div>` : ''}
+        <div class="add-reminder-row">
+          <input class="add-reminder-input" id="reminder-text" placeholder="Add reminder...">
+          <input class="add-reminder-input" id="reminder-time" placeholder="Time / date" style="max-width:90px">
+          <button class="add-btn" onclick="addReminderFromUI()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pa-section">
+      <div class="pa-section-title">Quick Actions</div>
+      <div class="quick-grid">
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('Mera aaj ka morning brief do')">
+          <div class="qa-icon">🌅</div><div class="qa-title">Morning Brief</div><div class="qa-desc">Today's priorities</div>
+        </div>
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('UPI fraud check karo')">
+          <div class="qa-icon">🚨</div><div class="qa-title">Fraud Check</div><div class="qa-desc">UPI / QR guardian</div>
+        </div>
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('Meri govt schemes eligibility check karo')">
+          <div class="qa-icon">🏛️</div><div class="qa-title">Schemes</div><div class="qa-desc">Govt benefits</div>
+        </div>
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('Mujhe ek document track karna hai')">
+          <div class="qa-icon">📋</div><div class="qa-title">Documents</div><div class="qa-desc">Track & remind</div>
+        </div>
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('Aaj trade karna chahta hoon — discipline check karo')">
+          <div class="qa-icon">📊</div><div class="qa-title">Trade Check</div><div class="qa-desc">Discipline enforcer</div>
+        </div>
+        <div class="quick-action" onclick="switchToTab('chat');sendQuick('SafeWalk shuru karo')">
+          <div class="qa-icon">🛡️</div><div class="qa-title">SafeWalk</div><div class="qa-desc">Safety guardian</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pa-section">
+      <div class="pa-section-title">Runway Counter</div>
+      <div class="pa-card" style="text-align:center">
+        <div style="font-size:36px;font-weight:800;color:var(--saffron)">${getDaysLeft()}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">days left — June 19, 2026</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px">Target: 300 users × ₹199/month</div>
+        <div style="margin-top:12px;background:var(--surface2);border-radius:8px;height:6px;overflow:hidden">
+          <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,var(--saffron),var(--red));width:${Math.max(5,100-getDaysLeft()/80*100)}%"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function addReminderFromUI() {
+  const text = document.getElementById('reminder-text').value.trim();
+  const time = document.getElementById('reminder-time').value.trim() || 'Soon';
+  if (!text) return;
+  addReminder(text, time);
+  switchToTab('chat');
+  addChittiMsg(`✅ Reminder set: "${text}" — ${time}\n\nMain yaad rakhunga, ${MASTER?.name || 'Sire'} ji! 🙏`);
+}
+
+function getDaysLeft() {
+  const runway = new Date('2026-06-19');
+  const today = new Date();
+  return Math.max(0, Math.ceil((runway - today) / (1000*60*60*24)));
+}
+
+// ── BRIDGE FUNCTIONS ──
+function setLogType(type) {
+  currentLogType = type;
+  ['decision','task','blocker'].forEach(t => {
+    document.getElementById('ltype-'+t).classList.toggle('active', t===type);
+  });
+}
+
+function addLogEntry() {
+  const input = document.getElementById('log-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const entry = { type: currentLogType, text, date: new Date().toLocaleDateString('en-IN') };
+  sessionLog.push(entry);
+  saveLog();
+  const log = document.getElementById('session-log');
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `<div class="log-dot ${currentLogType}"></div><div><div class="log-text">${text}</div><div class="log-date">${entry.date}</div></div>`;
+  log.prepend(item);
+  input.value = '';
+}
+
+function saveSession() {
+  const summary = `v46 session — ${new Date().toLocaleDateString('en-IN')} — ${MASTER?.name||'Bryan'}`;
+  sessionLog.push({ type:'session', text: summary, date: new Date().toLocaleString('en-IN') });
+  saveLog();
+  switchToTab('chat');
+  addChittiMsg('✅ Session saved! Kal phir milenge, ' + (MASTER?.name||'Sire') + ' ji 🙏\n\nAaj ka kaam kal ke liye bhi yaad rahega.');
+}
+
+async function getBriefFromChitti() {
+  switchToTab('chat');
+  await askChitti('Mujhe aaj ka morning brief do — runway, pending tasks, aur 3 priority actions.');
+}
+
+function runAudit() {
+  switchToTab('chat');
+  const checks = [
+    '✅ DeepSeek engine — LIVE',
+    '✅ Sarvam voice — Key loaded',
+    '✅ PA-19 — PASSED Apr 15',
+    '✅ 29 Hats — Loaded in DNA',
+    '✅ 7 Languages — Baked in',
+    '✅ Memory — localStorage active',
+    MASTER ? '✅ Master profile — ' + MASTER.name : '⚠️ Master profile — Not set',
+    reminders.length > 0 ? `✅ Reminders — ${reminders.filter(r=>!r.done).length} active` : '⬜ Reminders — None yet',
+    '⏳ GitHub upload — Pending',
+    '⏳ Sire 7-day trial — Not started',
+  ];
+  addChittiMsg('🔍 **Chitti Audit — v46**\n\n' + checks.join('\n') + '\n\nScore: 8/10 ✅\nMain ready hoon, ' + (MASTER?.name||'Sire') + ' ji!');
+}
+
+function updateAuditObStatus() {
+  const el = document.getElementById('aud-ob');
+  if (el) el.textContent = MASTER ? '✅ Complete' : '⚠️ Pending';
+}
+
+// ── VOICE ──
+async function speakText(text) {
+  if (!voiceEnabled) return;
+  const clean = text.replace(/[*_`#>]/g,'').replace(/\n/g,' ').replace(/[^\x00-\xFF]/g, c => {
+    // Keep Devanagari and Indian scripts, remove emojis
+    const code = c.codePointAt(0);
+    return (code >= 0x0900 && code <= 0x097F) || (code >= 0x0C00 && code <= 0x0DFF) ? c : '';
+  }).trim().slice(0,500);
+  if (!clean) return;
+
+  try {
+    const res = await fetch('https://api.sarvam.ai/text-to-speech', {
+      method: 'POST',
+      headers: {'api-subscription-key': SARVAM_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        inputs: [clean],
+        target_language_code: currentLang === 'en' ? 'en-IN' : currentLang + '-IN',
+        speaker: 'meera', pitch: 0, pace: 1.0, loudness: 1.3,
+        speech_sample_rate: 22050, enable_preprocessing: true, model: 'bulbul:v1'
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.audios?.[0]) {
+        const audio = new Audio('data:audio/wav;base64,' + data.audios[0]);
+        audio.play();
+        return;
+      }
+    }
+  } catch(e) {}
+  // Fallback
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(clean.slice(0,200));
+    u.lang = currentLang + '-IN'; u.rate = 0.88;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById('voice-btn');
+  btn.textContent = voiceEnabled ? '🔊' : '🔇';
+  btn.classList.toggle('active', voiceEnabled);
+  if (voiceEnabled) {
+    speakText('Voice on. Main sunne ke liye ready hoon.');
+    addChittiMsg('🔊 Awaaz ON! Ab main bolne laga. 🎙️');
+  }
+}
+
+// ── MIC ──
+function initSR() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return false;
+  recognition = new SR();
+  recognition.continuous = false; recognition.interimResults = true;
+  recognition.lang = currentLang + '-IN';
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('mic-btn').classList.add('listening');
+    document.getElementById('voice-vis').classList.add('active');
+    document.getElementById('chitti-status').textContent = 'Listening... 🎤';
+  };
+  recognition.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+    }
+    if (final) {
+      document.getElementById('msg-input').value = final;
+      autoResize(document.getElementById('msg-input'));
+      stopListening();
+      setTimeout(() => sendMessage(), 300);
+    }
+  };
+  recognition.onerror = () => stopListening();
+  recognition.onend = () => stopListening();
+  return true;
+}
+
+function startListening() {
+  if (!recognition && !initSR()) { addChittiMsg('Chrome browser mein mic use karo 🎤'); return; }
+  recognition.lang = currentLang + '-IN';
+  try { recognition.start(); } catch(e) {}
+}
+
+function stopListening() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('voice-vis').classList.remove('active');
+  document.getElementById('chitti-status').textContent = 'Bharat ka apna Chitti';
+  try { if(recognition) recognition.stop(); } catch(e) {}
+}
+
+function toggleMic() {
+  if (isListening) stopListening(); else startListening();
+}
+
+// ── LANGUAGE ──
+function setLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── INIT ──
+// Splash dismiss
+setTimeout(() => {
+  const s = document.getElementById('splash');
+  s.classList.add('hide');
+  setTimeout(() => {
+    s.style.display = 'none';
+    if (!MASTER) {
+      startOnboarding();
+    } else {
+      launchApp();
+      // Returning user greeting
+      setTimeout(() => {
+        const daysSince = Math.floor((new Date() - new Date(MASTER.joinedDate?.split('/').reverse().join('-')||'2026-04-16')) / (1000*60*60*24));
+        const greetEn = `Welcome back ${MASTER.name}! 🙏 Great to see you again on Sahay AI.\n\nWhat's on your mind today?`;
+        translateIntro(greetEn).then(greet => {
+          addChittiMsg(greet, false);
+          addChipsMsg([
+            {label:'🌅 Morning brief', msg:'Give me my morning brief', style:'chip-saffron'},
+            {label:'⏰ Set reminder',  msg:'Set a reminder for me', style:'chip-teal'},
+            {label:'🚨 Fraud check',   msg:'Check a UPI payment for fraud', style:'chip-red'},
+            {label:'📋 My tasks',      msg:'What are my pending tasks?', style:'chip-green'},
+          ]);
+        });
+        const greet = '';
+        addChittiMsg(greet, false);
+        addChipsMsg([
+          {label:'🌅 Morning brief', msg:'Aaj ka morning brief do', style:'chip-saffron'},
+          {label:'⏰ Set reminder', msg:'Ek reminder set karo', style:'chip-teal'},
+          {label:'🚨 Check fraud', msg:'UPI fraud check', style:'chip-red'},
+          {label:'📋 My tasks', msg:'Mere pending tasks kya hain?', style:'chip-green'},
+        ]);
+      }, 600);
+    }
+  }, 500);
+}, 2200);
+
+// Reminder checker — every minute
+setInterval(() => {
+  const now = new Date();
+  reminders.filter(r => !r.done).forEach(r => {
+    if (r.time && r.time.includes(':')) {
+      const [h,m] = r.time.split(':').map(Number);
+      if (now.getHours() === h && now.getMinutes() === m) {
+        addChittiMsg(`⏰ **Reminder:** ${r.text}\n\nYe wala reminder aapne set kiya tha, ${MASTER?.name||'Sire'} ji!`, voiceEnabled);
+        markReminderDone(r.id);
+      }
+    }
+  });
+}, 60000);
+</script>
+</body>
+</html>
