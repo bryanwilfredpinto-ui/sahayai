@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sahay AI — Chitti</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --surface: #141414; --surface2: #1e1e1e;
+  --border: #2a2a2a; --text: #f0f0f0; --text2: #a0a0a0; --text3: #555;
+  --saffron: #ff6b00; --green: #22c55e; --red: #ef4444;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+/* ONBOARDING */
+#onboarding { display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:0; }
+#ob-progress { width:100%; height:3px; background:var(--surface2); position:sticky; top:0; z-index:10; }
+#ob-bar { height:100%; background:var(--saffron); width:0%; transition:width 0.4s ease; box-shadow:0 0 8px rgba(255,107,0,0.5); }
+#ob-body { width:100%; max-width:420px; padding:20px 16px; display:flex; flex-direction:column; align-items:center; }
+
+.ob-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:20px; width:100%; margin-bottom:14px; animation:slideUp 0.3s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes popIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+
+.ob-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+.ob-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:13px 14px; font-size:15px; color:var(--text); outline:none; transition:border-color 0.2s; }
+.ob-input:focus { border-color:var(--saffron); }
+.ob-select { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:13px 14px; font-size:14px; color:var(--text); outline:none; }
+
+.btn-primary { width:100%; background:var(--saffron); border:none; border-radius:14px; padding:17px; font-size:16px; font-weight:800; color:#000; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 20px rgba(255,107,0,0.3); }
+.btn-primary:disabled { opacity:0.3; cursor:not-allowed; }
+.btn-primary:not(:disabled):active { transform:scale(0.98); }
+.btn-back { background:var(--surface2); border:1.5px solid var(--border); border-radius:14px; padding:17px 24px; font-size:14px; font-weight:600; color:var(--text2); cursor:pointer; }
+
+.ob-nav { display:flex; gap:10px; width:100%; margin-top:4px; }
+.ob-nav .btn-primary { flex:1; }
+
+/* APP */
+#app { display:none; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
+.app-header { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.app-avatar { width:38px; height:38px; background:linear-gradient(135deg,var(--saffron),#ff3d00); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.app-name { font-weight:800; font-size:15px; }
+.app-status { font-size:11px; color:var(--green); }
+.lang-bar { display:flex; gap:6px; overflow-x:auto; padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; }
+.lang-pill { background:var(--surface2); border:1.5px solid var(--border); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; color:var(--text2); cursor:pointer; white-space:nowrap; }
+.lang-pill.active { background:rgba(255,107,0,0.15); border-color:var(--saffron); color:var(--saffron); }
+.chat-area { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:85%; animation:slideUp 0.2s ease; }
+.msg-chitti { align-self:flex-start; }
+.msg-user { align-self:flex-end; }
+.bubble { padding:12px 16px; border-radius:18px; font-size:14px; line-height:1.6; }
+.bubble-chitti { background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.bubble-user { background:var(--saffron); color:#000; font-weight:600; border-bottom-right-radius:4px; }
+.msg-time { font-size:10px; color:var(--text3); margin-top:4px; text-align:right; }
+.typing { display:flex; gap:4px; align-items:center; padding:14px 16px; }
+.dot { width:7px; height:7px; background:var(--text3); border-radius:50%; animation:bounce 1.2s infinite; }
+.dot:nth-child(2) { animation-delay:0.2s; }
+.dot:nth-child(3) { animation-delay:0.4s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+.input-area { padding:12px 16px; background:var(--surface); border-top:1px solid var(--border); display:flex; gap:8px; align-items:flex-end; flex-shrink:0; }
+.msg-input { flex:1; background:var(--surface2); border:1.5px solid var(--border); border-radius:22px; padding:11px 16px; font-size:14px; color:var(--text); outline:none; resize:none; max-height:120px; font-family:inherit; }
+.msg-input:focus { border-color:var(--saffron); }
+.send-btn { width:44px; height:44px; background:var(--saffron); border:none; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.send-btn:disabled { opacity:0.4; }
+.mic-btn { width:44px; height:44px; background:var(--surface2); border:1.5px solid var(--border); border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.mic-btn.listening { background:rgba(255,107,0,0.2); border-color:var(--saffron); animation:pulse 1s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,107,0,0.4)} 50%{box-shadow:0 0 0 8px rgba(255,107,0,0)} }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.chip { background:var(--surface2); border:1.5px solid var(--border); border-radius:20px; padding:7px 14px; font-size:13px; cursor:pointer; transition:all 0.15s; }
+.chip:active { background:rgba(255,107,0,0.1); border-color:var(--saffron); color:var(--saffron); }
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div id="ob-progress"><div id="ob-bar"></div></div>
+  <div id="ob-body"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="app-avatar">🤖</div>
+      <div>
+        <div class="app-name">Chitti</div>
+        <div class="app-status" id="chitti-status">● Online</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="toggleVoice()" id="voice-btn" title="Toggle voice" style="background:none;border:1.5px solid var(--border);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px;color:var(--text2)">🔇</button>
+      <button onclick="showMenu()" style="background:none;border:1.5px solid var(--border);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px;color:var(--text2)">⚙️</button>
+    </div>
+  </div>
+  <div class="lang-bar" id="lang-bar"></div>
+  <div class="chat-area" id="chat"></div>
+  <div class="input-area">
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+    <textarea class="msg-input" id="msg-input" placeholder="Chitti se baat karo..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+const DEEPSEEK_KEY = 'sk-372a74292a8c407abaaf673aab58c3f1';
+const SARVAM_KEY = 'sk_v57r3zb4_VdkuYXHLwgThZRXwLokigP1O';
+const STORE_KEY = 'chitti_master_v48';
+
+let MASTER = null;
+let currentLang = 'en';
+let voiceEnabled = false;
+let isWaiting = false;
+let recognition = null;
+let isListening = false;
+let history = [];
+let obStep = 0;
+let obData = {};
+
+// ── SPEAK — works on Android (same as confirmed working pattern) ──
+function speak(text) {
+  if (!voiceEnabled) return;
+  speakForce(text);
+}
+
+
+// Pre-load voices on page load
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
+// ── ONBOARDING ──
+function setProgress(pct) { document.getElementById('ob-bar').style.width = pct + '%'; }
+
+function startOnboarding() {
+  document.getElementById('onboarding').style.display = 'flex';
+  showStep0();
+}
+
+// STEP 0 — Welcome + Name
+function showStep0() {
+  obStep = 0; setProgress(10);
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:28px;animation:popIn 0.4s ease">
+      <div style="width:70px;height:70px;background:linear-gradient(135deg,#ff6b00,#ff3d00);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px;box-shadow:0 8px 24px rgba(255,107,0,0.35)">🤖</div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px">Sahay AI</div>
+      <div style="font-size:14px;color:var(--saffron);font-weight:700;margin-top:2px">Bharat ka apna Chitti</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">PA · CA · Doctor · Guardian · 🇮🇳</div>
+    </div>
+
+    <div class="ob-card">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px">Welcome to Sahay AI</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Sahay AI mein aapka swagat hai</div>
+
+      <div class="ob-label">First Name / Pehla Naam *</div>
+      <input class="ob-input" id="s0-fname" placeholder="First name" style="margin-bottom:10px" oninput="checkStep0()">
+
+      <div class="ob-label">Middle Name / Beech ka Naam</div>
+      <input class="ob-input" id="s0-mname" placeholder="Middle name (optional)" style="margin-bottom:10px">
+
+      <div class="ob-label">Last Name / Surname *</div>
+      <input class="ob-input" id="s0-lname" placeholder="Last name" style="margin-bottom:14px" oninput="checkStep0()">
+
+      <div class="ob-label">How should Chitti address you? / Chitti aapko kya bulaye? *</div>
+      <div style="position:relative">
+        <input class="ob-input" id="s0-nick" placeholder="e.g. Bryan, Raju, Didi..." oninput="checkStep0()" style="padding-right:50px">
+        <button onclick="micName()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--saffron);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:16px" title="Speak your name">🎤</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Tap 🎤 to speak — Chitti will fill your name</div>
+    </div>
+
+    <button class="btn-primary" id="s0-next" onclick="doneStep0()" disabled>Continue →</button>
+  `;
+}
+
+function checkStep0() {
+  const ok = document.getElementById('s0-fname').value.trim() &&
+             document.getElementById('s0-lname').value.trim() &&
+             document.getElementById('s0-nick').value.trim();
+  const btn = document.getElementById('s0-next');
+  if (btn) { btn.disabled = !ok; }
+}
+
+function micName() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Speech not supported. Please type your name.'); return; }
+  const btn = document.querySelector('button[onclick="micName()"]');
+  const r = new SR();
+  r.lang = 'en-IN';
+  r.continuous = false;
+  r.interimResults = false;
+  r.onstart = () => { if (btn) { btn.textContent = '🔴'; btn.style.background = '#e74c3c'; } };
+  r.onresult = e => {
+    // Get best transcript from any result
+    let spoken = '';
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal || e.results[i][0].transcript.length > spoken.length) {
+        spoken = e.results[i][0].transcript.trim();
+      }
+    }
+    if (!spoken) return;
+    const parts = spoken.split(' ').filter(Boolean);
+    const f = document.getElementById('s0-fname');
+    const m = document.getElementById('s0-mname');
+    const l = document.getElementById('s0-lname');
+    const n = document.getElementById('s0-nick');
+    if (f) { f.value = parts[0] || ''; f.dispatchEvent(new Event('input')); }
+    if (m) m.value = parts.length === 3 ? parts[1] : '';
+    if (l) { l.value = parts.length >= 2 ? parts[parts.length-1] : ''; l.dispatchEvent(new Event('input')); }
+    if (n) { n.value = parts[0] || spoken; n.dispatchEvent(new Event('input')); }
+    checkStep0();
+    if (btn) { btn.textContent = '✅'; btn.style.background = 'var(--green)'; }
+  };
+  r.onerror = (e) => {
+    if (btn) { btn.textContent = '🎤'; btn.style.background = 'var(--saffron)'; }
+    if (e.error === 'not-allowed') alert('Microphone permission denied. Please allow mic and reload.');
+  };
+  r.onend = () => {
+    setTimeout(() => { if (btn && btn.textContent === '🔴') { btn.textContent = '🎤'; btn.style.background = 'var(--saffron)'; } }, 200);
+  };
+  r.start();
+}
+
+function doneStep0() {
+  obData.firstName = document.getElementById('s0-fname').value.trim();
+  obData.middleName = document.getElementById('s0-mname').value.trim();
+  obData.lastName = document.getElementById('s0-lname').value.trim();
+  obData.nick = document.getElementById('s0-nick').value.trim();
+  showStep1();
+}
+
+// STEP 1 — Language
+function showStep1() {
+  obStep = 1; setProgress(25);
+  const langs = [
+    {code:'en',script:'English',name:'English',ready:true},
+    {code:'hi',script:'हिंदी',name:'Hindi',ready:true},
+    {code:'mr',script:'मराठी',name:'Marathi',ready:true},
+    {code:'te',script:'తెలుగు',name:'Telugu',ready:true},
+    {code:'ta',script:'தமிழ்',name:'Tamil',ready:true},
+    {code:'kn',script:'ಕನ್ನಡ',name:'Kannada',ready:true},
+    {code:'bn',script:'বাংলা',name:'Bengali',ready:true},
+    {code:'gu',script:'ગુજરાતી',name:'Gujarati',ready:true},
+    {code:'pa',script:'ਪੰਜਾਬੀ',name:'Punjabi',ready:false},
+    {code:'ml',script:'മലയാളം',name:'Malayalam',ready:false},
+    {code:'or',script:'ଓଡ଼ିଆ',name:'Odia',ready:false},
+    {code:'as',script:'অসমীয়া',name:'Assamese',ready:false},
+  ];
+
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:20px;font-weight:900">Choose Your Language</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">Apni bhasha chuniye</div>
+    </div>
+    <div style="width:100%;margin-bottom:8px">
+      <button onclick="testAudio()" style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:600">🔊 Tap to test audio — Tap karke audio test karein</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:16px">
+      ${langs.map(l => `
+        <button onclick="pickLang('${l.code}',this)" data-code="${l.code}" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 6px;cursor:pointer;text-align:center;transition:all 0.15s;position:relative">
+          <div style="font-size:18px;font-weight:800;color:var(--text)">${l.script}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${l.name}</div>
+          ${!l.ready ? '<div style="font-size:9px;color:var(--saffron);margin-top:1px">Coming soon</div>' : ''}
+        </button>
+      `).join('')}
+    </div>
+    <div class="ob-nav">
+      <button class="btn-back" onclick="showStep0()">← Back</button>
+      <button class="btn-primary" id="s1-next" onclick="doneStep1()" disabled>Continue →</button>
+    </div>
+  `;
+}
+
+function testAudio() {
+  if (!('speechSynthesis' in window)) { alert('Audio not supported'); return; }
+  window.speechSynthesis.cancel();
+  const go = () => {
+    const u = new SpeechSynthesisUtterance('Welcome to Sahay AI. Bharat ka apna Chitti. Audio is working.');
+    const vv = window.speechSynthesis.getVoices();
+    const v = vv.find(x => x.lang.startsWith('en'));
+    if (v) u.voice = v;
+    u.lang = 'en-IN'; u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  };
+  const vv = window.speechSynthesis.getVoices();
+  if (vv.length) go(); else { window.speechSynthesis.onvoiceschanged = go; setTimeout(go, 500); }
+}
+
+let pickedLang = null;
+function pickLang(code, btn) {
+  const ready = ['en','hi','mr','te','ta','kn','bn','gu'];
+  if (!ready.includes(code)) {
+    const msgs = {pa:'ਚਿੱਟੀ ਪੰਜਾਬੀ ਸਿੱਖ ਰਿਹਾ ਹੈ — Coming soon!',ml:'ചിറ്റി മലയാളം പഠിക്കുന്നു — Coming soon!',or:'ଚିଟ୍ଟି ଓଡ଼ିଆ ଶିଖୁଛି — Coming soon!',as:'চিট্টি অসমীয়া শিকি আছে — Coming soon!'};
+    alert(msgs[code] || 'Coming soon! Please choose another language for now.');
+    return;
+  }
+  pickedLang = code;
+  document.querySelectorAll('[data-code]').forEach(b => {
+    b.style.background = 'var(--surface)';
+    b.style.border = '1.5px solid var(--border)';
+  });
+  btn.style.background = 'rgba(255,107,0,0.12)';
+  btn.style.border = '2px solid var(--saffron)';
+  const nb = document.getElementById('s1-next');
+  if (nb) nb.disabled = false;
+}
+
+function doneStep1() {
+  if (!pickedLang) return;
+  currentLang = pickedLang;
+  obData.lang = pickedLang;
+  showStep2();
+}
+
+// STEP 2 — Profile
+function showStep2() {
+  obStep = 2; setProgress(45);
+  const lang = currentLang;
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">${lang==='en'?'Tell me about yourself':'Apne baare mein bataiye'}</div>
+      <div style="font-size:12px;color:var(--text3)">${lang==='en'?'Helps Chitti personalise for you':'Chitti aapke liye personalise karega'}</div>
+    </div>
+
+    <div class="ob-card" style="margin-bottom:12px">
+      <div class="ob-label">${lang==='en'?'What do you do?':'Aap kya karte hain?'} *</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0" id="prof-grid">
+        ${[
+          {v:'Salaried',e:'💼',en:'Salaried',hi:'Naukri'},
+          {v:'Business',e:'🏪',en:'Business',hi:'Business'},
+          {v:'Professional',e:'🎯',en:'Professional',hi:'Professional'},
+        ].map(p=>`
+          <button onclick="pickProf('${p.v}',this)" data-p="${p.v}" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 6px;cursor:pointer;text-align:center;transition:all 0.15s">
+            <div style="font-size:26px">${p.e}</div>
+            <div style="font-size:12px;font-weight:600;color:var(--text2);margin-top:4px">${lang==='en'?p.en:p.hi}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="ob-card" style="margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div class="ob-label">${lang==='en'?'Date of Birth':'Janam Din'} *</div>
+          <input class="ob-input" id="s2-dob" type="date" onchange="checkStep2()" max="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div>
+          <div class="ob-label">${lang==='en'?'Gender':'Ling'}</div>
+          <select class="ob-select" id="s2-gender">
+            <option value="">—</option>
+            <option value="Male">${lang==='en'?'Male':'Purush'}</option>
+            <option value="Female">${lang==='en'?'Female':'Mahila'}</option>
+            <option value="Other">${lang==='en'?'Other':'Anya'}</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="ob-label">${lang==='en'?'City / Town':'Sheher'}</div>
+        <div style="position:relative">
+          <input class="ob-input" id="s2-city" placeholder="${lang==='en'?'Your city':'Aapka sheher'}" style="padding-right:48px">
+          <button onclick="getLocation()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:20px" title="Detect location">📍</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-back" onclick="showStep1()">← Back</button>
+      <button class="btn-primary" id="s2-next" onclick="doneStep2()" disabled>${lang==='en'?'Continue →':'Aage →'}</button>
+    </div>
+  `;
+}
+
+let pickedProf = null;
+function pickProf(val, btn) {
+  pickedProf = val;
+  document.querySelectorAll('[data-p]').forEach(b => {
+    b.style.background = 'var(--surface2)'; b.style.border = '1.5px solid var(--border)';
+    b.querySelector('div:last-child').style.color = 'var(--text2)';
+  });
+  btn.style.background = 'rgba(255,107,0,0.1)'; btn.style.border = '2px solid var(--saffron)';
+  btn.querySelector('div:last-child').style.color = 'var(--saffron)';
+  checkStep2();
+}
+
+function checkStep2() {
+  const ok = pickedProf && document.getElementById('s2-dob').value;
+  const btn = document.getElementById('s2-next');
+  if (btn) btn.disabled = !ok;
+}
+
+function getLocation() {
+  const btn = document.querySelector('button[onclick="getLocation()"]');
+  if (!navigator.geolocation) {
+    const el = document.getElementById('s2-city');
+    if (el) { el.focus(); el.placeholder = 'Type your city name'; }
+    return;
+  }
+  if (btn) { btn.textContent = '⏳'; btn.style.opacity = '0.7'; }
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      try {
+        const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude + '&format=json&accept-language=en');
+        const d = await r.json();
+        const city = d.address.city || d.address.town || d.address.village || d.address.county || '';
+        const el = document.getElementById('s2-city');
+        if (el && city) {
+          el.value = city + (d.address.state ? ', ' + d.address.state : '');
+          el.style.borderColor = 'var(--green)';
+        }
+        if (btn) { btn.textContent = '✅'; btn.style.opacity = '1'; }
+      } catch(e) {
+        if (btn) { btn.textContent = '📍'; btn.style.opacity = '1'; }
+        const el = document.getElementById('s2-city');
+        if (el) { el.focus(); el.placeholder = 'Type your city name'; }
+      }
+    },
+    err => {
+      if (btn) { btn.textContent = '📍'; btn.style.opacity = '1'; }
+      const el = document.getElementById('s2-city');
+      if (el) { el.focus(); el.placeholder = 'Location blocked — type city name'; }
+    },
+    { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
+  );
+}
+
+function doneStep2() {
+  obData.profession = pickedProf;
+  obData.dob = document.getElementById('s2-dob').value;
+  obData.gender = document.getElementById('s2-gender').value;
+  obData.city = document.getElementById('s2-city').value.trim();
+  showStep3();
+}
+
+// STEP 3 — Income
+function showStep3() {
+  obStep = 3; setProgress(65);
+  const lang = currentLang;
+  const slabs = [
+    {v:'No Income',l:lang==='en'?'No Income':'Koi Amdani Nahi',sub:'₹0',tag:'Nil Tax',c:'#27ae60'},
+    {v:'Upto 3L',l:'₹0 – ₹3 Lakh',sub:'/year',tag:'Zero Tax',c:'#27ae60'},
+    {v:'3L-7L',l:'₹3L – ₹7L',sub:'/year',tag:'5% slab',c:'#f39c12'},
+    {v:'7L-10L',l:'₹7L – ₹10L',sub:'/year',tag:'10% slab',c:'#e67e22'},
+    {v:'10L-12L',l:'₹10L – ₹12L',sub:'/year',tag:'15% slab',c:'#e67e22'},
+    {v:'12L-15L',l:'₹12L – ₹15L',sub:'/year',tag:'20% slab',c:'#e74c3c'},
+    {v:'Above 15L',l:lang==='en'?'Above ₹15L':'₹15L se zyada',sub:'/year',tag:'30% slab',c:'#c0392b'},
+  ];
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">${lang==='en'?'Annual Income?':'Saalaana Amdani?'}</div>
+      <div style="font-size:12px;color:var(--text3)">${lang==='en'?'Helps Chitti give financial guidance':'Chitti sahi financial tips dega'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-bottom:16px">
+      ${slabs.map(s=>`
+        <button onclick="pickIncome('${s.v}',this)" data-inc="${s.v}" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;text-align:left">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--text)">${s.l}</div>
+            <div style="font-size:11px;color:var(--text3)">${s.sub}</div>
+          </div>
+          <div style="background:${s.c}22;color:${s.c};border:1px solid ${s.c}44;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700">${s.tag}</div>
+        </button>
+      `).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px">🔒 ${lang==='en'?'Never shared with anyone':'Kisi ke saath share nahi hoga'}</div>
+    <div class="ob-nav">
+      <button class="btn-back" onclick="showStep2()">← Back</button>
+      <button class="btn-primary" id="s3-next" onclick="doneStep3()" disabled>${lang==='en'?'Continue →':'Aage →'}</button>
+    </div>
+  `;
+}
+
+let pickedIncome = null;
+function pickIncome(val, btn) {
+  pickedIncome = val;
+  document.querySelectorAll('[data-inc]').forEach(b => {
+    b.style.background = 'var(--surface)'; b.style.border = '1.5px solid var(--border)';
+    b.querySelector('div>div:first-child').style.color = 'var(--text)';
+  });
+  btn.style.background = 'rgba(255,107,0,0.08)'; btn.style.border = '2px solid var(--saffron)';
+  btn.querySelector('div>div:first-child').style.color = 'var(--saffron)';
+  const nb = document.getElementById('s3-next'); if (nb) nb.disabled = false;
+}
+
+function doneStep3() {
+  obData.income = pickedIncome;
+  showStep4();
+}
+
+// STEP 4 — T&C
+function showStep4() {
+  obStep = 4; setProgress(82);
+  const lang = currentLang;
+  const rights = lang==='en' ? [
+    {i:'🚫',t:'We will never sell your data',b:'Your name, number, profession — never given to any advertiser or third party. Ever.'},
+    {i:'📱',t:'Your data stays on your device',b:'All info stored on your device first. Cloud sync is optional and encrypted.'},
+    {i:'🗑️',t:'Right to delete',b:'Say "delete my data" anytime — done immediately. No questions.'},
+    {i:'✏️',t:'Right to correct',b:'Update any of your information at any time.'},
+    {i:'📋',t:'Right to view',b:'See all your stored data at any time. Nothing is hidden.'},
+    {i:'📞',t:'Right to complain',b:'Contact: chitti@sahayai.in | +91 97526 21332'},
+  ] : [
+    {i:'🚫',t:'Data kabhi nahi bechenge',b:'Aapka naam, number, profession — kisi advertiser ya third party ko nahi. Kabhi nahi.'},
+    {i:'📱',t:'Data aapke phone mein',b:'Saari jaankari pehle aapke device pe. Cloud sync optional aur encrypted.'},
+    {i:'🗑️',t:'Delete karne ka adhikar',b:'"Mera data delete karo" — turant ho jaayega. Koi sawaal nahi.'},
+    {i:'✏️',t:'Sahi karne ka adhikar',b:'Koi bhi jaankari kabhi bhi update kar sakte ho.'},
+    {i:'📋',t:'Dekhne ka adhikar',b:'Apna stored data kabhi bhi dekh sakte ho.'},
+    {i:'📞',t:'Shikayat ka adhikar',b:'Contact: chitti@sahayai.in | +91 97526 21332'},
+  ];
+
+  const body = document.getElementById('ob-body');
+  body.innerHTML = `
+    <div style="margin-bottom:16px;text-align:center">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">${lang==='en'?'Your Rights — DPDP Act 2023':'Aapke Adhikar — DPDP Act 2023'}</div>
+      <button onclick="speakAllRights()" style="background:var(--surface);border:1.5px solid var(--saffron);border-radius:20px;padding:6px 16px;cursor:pointer;color:var(--saffron);font-size:13px;font-weight:600;margin-top:8px">🔊 ${lang==='en'?'Listen to all rights':'Sab adhikar suniye'}</button>
+    </div>
+    <div class="ob-card" style="margin-bottom:12px">
+      ${rights.map((r,i)=>`
+        <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);align-items:flex-start">
+          <div style="font-size:22px;flex-shrink:0">${r.i}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px">${r.t}</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.5">${r.b}</div>
+          </div>
+          <button onclick="speakRight(${i})" style="background:none;border:1.5px solid var(--border);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;color:var(--saffron);flex-shrink:0">🔊</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="ob-card" style="margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        ${lang==='en'?'Consent':'Sammat'}
+        <button onclick="speakConsent()" style="background:var(--saffron);border:none;border-radius:20px;padding:4px 10px;cursor:pointer;color:#000;font-size:12px;font-weight:700">🔊 ${lang==='en'?'Listen':'Suniye'}</button>
+      </div>
+      ${[
+        {id:'c1',t:lang==='en'?'I agree to SAHAY AI Privacy Policy and Terms of Service.':'Main SAHAY AI ki Privacy Policy aur Terms of Service se agree karta/karti hoon.',req:true},
+        {id:'c2',t:lang==='en'?'My personal data will never be shared with any third party.':'Mera personal data kisi bahar wale ko nahi diya jaayega.',req:true},
+        {id:'c3',t:lang==='en'?'Send me helpful reminders and alerts. (Optional)':'Mujhe helpful reminders bhejne ki permission. (Optional)',req:false},
+      ].map(c=>`
+        <label onclick="toggleConsent('${c.id}')" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer">
+          <div id="${c.id}" style="width:22px;height:22px;flex-shrink:0;border:2px solid var(--border);border-radius:6px;margin-top:1px;display:flex;align-items:center;justify-content:center;background:var(--surface2);transition:all 0.15s"></div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5">${c.t} ${c.req?'<strong style="color:var(--text)">(Required)</strong>':''}</div>
+        </label>
+      `).join('')}
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center">${lang==='en'?'Cannot read? Tap thumb below':'Padhna nahi aata? Neeche thumb tapiye'}</div>
+      <div onclick="thumbConsent()" id="thumb-btn" style="background:var(--surface2);border:2px dashed var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer;margin-top:8px;transition:all 0.2s">
+        <div style="font-size:40px">👍</div>
+        <div style="font-size:14px;font-weight:700;margin-top:6px">${lang==='en'?'I Agree':'Mujhe Manzoor Hai'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${lang==='en'?'Tap to give consent':'Tap karke agree karein'}</div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="btn-back" onclick="showStep3()">← Back</button>
+      <button class="btn-primary" id="s4-next" onclick="doneStep4()" disabled>${lang==='en'?'🇮🇳 Start with Chitti':'🇮🇳 Chitti ke saath shuru karein'}</button>
+    </div>
+  `;
+
+  // Store rights for speaking
+  window._rights = rights;
+}
+
+function speakRight(i) {
+  const r = window._rights && window._rights[i];
+  if (r) speakForce(r.t + '. ' + r.b);
+}
+
+function speakAllRights() {
+  if (!window._rights) return;
+  const text = window._rights.map(r => r.t + '. ' + r.b).join('. ');
+  speakForce(text);
+}
+
+function speakConsent() {
+  const lang = currentLang;
+  speakForce(lang==='en'
+    ? 'Please tick the boxes if you agree. The first two are required.'
+    : 'Neeche boxes mein tick karein agar aap agree karte hain. Pehle do zaroori hain.');
+}
+
+// speakForce — always works, no voiceEnabled check, direct user tap
+async function speakForce(text) {
+  if (!text || !text.trim()) return;
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  // Try Sarvam -- Male Aditya, world class Indian voice
+  try {
+    const clean = text.replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u2600-\u27BF]/g,'').trim().slice(0,500);
+    if (clean) {
+      const lc = {hi:'hi-IN',en:'en-IN',mr:'mr-IN',te:'te-IN',ta:'ta-IN',kn:'kn-IN',bn:'bn-IN',gu:'gu-IN'};
+      const res = await fetch('https://api.sarvam.ai/text-to-speech', {
+        method:'POST',
+        headers:{'api-subscription-key':'sk_v57r3zb4_VdkuYXHLwgThZRXwLokigP1O','Content-Type':'application/json'},
+        body:JSON.stringify({inputs:[clean],target_language_code:lc[currentLang]||'en-IN',speaker:'aditi',pitch:0,pace:0.9,loudness:1.3,speech_sample_rate:22050,enable_preprocessing:true,model:'bulbul:v1'})
+      });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.audios && d.audios[0]) { new Audio('data:audio/wav;base64,'+d.audios[0]).play(); return; }
+      }
+    }
+  } catch(e) {}
+  // Browser TTS fallback
+  if (!('speechSynthesis' in window)) return;
+  const go = () => {
+    const u = new SpeechSynthesisUtterance(text.slice(0,300));
+    const vv = window.speechSynthesis.getVoices();
+    const lc = {hi:'hi',en:'en',mr:'mr',te:'te',ta:'ta',kn:'kn',bn:'bn',gu:'gu'};
+    const v = vv.find(x=>x.lang.startsWith(lc[currentLang]||'en'))||vv.find(x=>x.lang.startsWith('en'));
+    if (v) u.voice=v; u.lang=v?v.lang:'en-IN'; u.rate=0.85; u.volume=1.0;
+    window.speechSynthesis.speak(u);
+  };
+  const vv = window.speechSynthesis.getVoices();
+  if (vv.length) go(); else { window.speechSynthesis.onvoiceschanged=go; setTimeout(go,500); }
+}
+
+
+let consented = {c1:false,c2:false,c3:false};
+function toggleConsent(id) {
+  consented[id] = !consented[id];
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.background = consented[id] ? 'var(--saffron)' : 'var(--surface2)';
+    el.style.borderColor = consented[id] ? 'var(--saffron)' : 'var(--border)';
+    el.innerHTML = consented[id] ? '<span style="color:#000;font-weight:900;font-size:14px">✓</span>' : '';
+  }
+  checkConsent();
+}
+
+function thumbConsent() {
+  consented.c1 = true; consented.c2 = true;
+  ['c1','c2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.background='var(--saffron)'; el.style.borderColor='var(--saffron)'; el.innerHTML='<span style="color:#000;font-weight:900;font-size:14px">✓</span>'; }
+  });
+  const tb = document.getElementById('thumb-btn');
+  if (tb) { tb.style.borderColor='var(--green)'; tb.style.background='rgba(34,197,94,0.05)'; }
+  speakForce(currentLang==='en' ? 'Thank you! You have agreed. Chitti will always protect your data.' : 'Shukriya! Aapne agree kar liya. Chitti aapka data protect karega.');
+  checkConsent();
+}
+
+function checkConsent() {
+  const btn = document.getElementById('s4-next');
+  if (btn) btn.disabled = !(consented.c1 && consented.c2);
+}
+
+function doneStep4() {
+  obData.consentMarketing = consented.c3;
+  finishOnboarding();
+}
+
+function finishOnboarding() {
+  setProgress(100);
+  MASTER = {
+    nick: obData.nick,
+    firstName: obData.firstName,
+    middleName: obData.middleName || '',
+    lastName: obData.lastName,
+    name: [obData.firstName, obData.middleName, obData.lastName].filter(Boolean).join(' '),
+    dob: obData.dob,
+    gender: obData.gender,
+    city: obData.city || '',
+    profession: obData.profession,
+    income: obData.income,
+    lang: currentLang,
+    consentMarketing: obData.consentMarketing,
+    joinedDate: new Date().toLocaleDateString('en-IN'),
+    dpdpCompliant: true,
+    consentTimestamp: new Date().toISOString(),
+  };
+  localStorage.setItem(STORE_KEY, JSON.stringify(MASTER));
+
+  // Celebration
+  const body = document.getElementById('ob-body');
+  const nick = MASTER.nick || MASTER.firstName;
+  const msg = currentLang==='en'
+    ? `Welcome ${nick}! Chitti is ready.`
+    : `Swagat hai ${nick} ji! Chitti taiyaar hai.`;
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center">
+      <div style="font-size:72px;margin-bottom:16px;animation:popIn 0.6s ease">🎉</div>
+      <div style="font-size:26px;font-weight:900;margin-bottom:8px">${msg}</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:28px">${currentLang==='en'?'Your personal PA, CA, Doctor and Guardian — all in one.':'Aapka personal PA, CA, Doctor aur Guardian — ek mein.'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:28px">
+        ${['🤝 PA','🛡️ Guardian','⚖️ Lawyer','💊 Doctor','📊 CA'].map(t=>`<span style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--saffron)">${t}</span>`).join('')}
+      </div>
+      <button onclick="launchApp()" style="width:100%;max-width:320px;background:var(--saffron);border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:900;color:#000;cursor:pointer;box-shadow:0 6px 24px rgba(255,107,0,0.4)">
+        ${currentLang==='en'?'Meet Chitti →':'Chitti se miliye →'}
+      </button>
+    </div>
+  `;
+  speakForce(currentLang==='en'
+    ? `Welcome ${nick}! I am Chitti. Your personal assistant. Let us begin.`
+    : `Swagat hai ${nick} ji! Main Chitti hoon. Aapka personal assistant. Chalo shuru karte hain.`);
+}
+
+// ── APP ──
+function launchApp() {
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  buildLangBar();
+  addChittiMsg(getGreeting());
+  addChips(getChips());
+}
+
+function buildLangBar() {
+  const langs = [{c:'en',l:'English'},{c:'hi',l:'हिंदी'},{c:'mr',l:'मराठी'},{c:'te',l:'తెలుగు'},{c:'ta',l:'தமிழ்'},{c:'kn',l:'ಕನ್ನಡ'}];
+  const bar = document.getElementById('lang-bar');
+  bar.innerHTML = langs.map(l=>`<button class="lang-pill ${l.c===currentLang?'active':''}" onclick="switchLang('${l.c}',this)">${l.l}</button>`).join('');
+}
+
+function switchLang(code, btn) {
+  currentLang = code;
+  if (MASTER) { MASTER.lang = code; localStorage.setItem(STORE_KEY, JSON.stringify(MASTER)); }
+  document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function getGreeting() {
+  const nick = MASTER ? (MASTER.nick || MASTER.firstName) : 'Boss';
+  const greetings = {
+    en: `Hello ${nick}! 🙏 I am Chitti — your Personal Assistant, CA, Doctor and Guardian. What can I help you with today?`,
+    hi: `Namaste ${nick} ji! 🙏 Main Chitti hoon — aapka Personal Assistant, CA, Doctor aur Guardian. Aaj main aapki kya madad kar sakta hoon?`,
+    mr: `Namaskar ${nick} ji! 🙏 Mi Chitti ahe. Aaj mi tumchi kashi madad karu?`,
+    te: `Namaskaram ${nick} garu! 🙏 Nenu Chitti. Ee roju meeru ki em cheyyali?`,
+    ta: `Vanakkam ${nick}! 🙏 Naan Chitti. Indru ungalukku enna seyya mudiyum?`,
+    kn: `Namaskara ${nick}! 🙏 Naanu Chitti. Ivattu nimgaagi enu maadali?`,
+    bn: `Namaskar ${nick}! 🙏 Ami Chitti. Aaj ki sahajya korte pari?`,
+    gu: `Namaste ${nick}! 🙏 Hu Chitti. Aaj tamne shu madad kari shaku?`,
+  };
+  return greetings[currentLang] || greetings['en'];
+}
+
+function getChips() {
+  const lang = currentLang;
+  if (lang === 'en') return [
+    {l:'📅 Reminders', m:'__REMINDER__', action:'showReminderUI'},
+    {l:'🛡️ Fraud check', m:'Help me check if something is a fraud'},
+    {l:'⚖️ Legal help', m:'What are my legal rights as an Indian citizen?'},
+    {l:'💊 Health', m:'I need health guidance'},
+    {l:'🏛️ Govt schemes', m:'What government schemes am I eligible for based on my profile?'},
+    {l:'📈 Trading', m:'Help me with trading and investments'},
+  ];
+  return [
+    {l:'📅 Reminder', m:'__REMINDER__', action:'showReminderUI'},
+    {l:'🛡️ Fraud check', m:'Koi cheez fraud hai ya nahi check karo'},
+    {l:'⚖️ Legal help', m:'Mujhe legal rights batao'},
+    {l:'💊 Health', m:'Health guidance chahiye'},
+    {l:'🏛️ Sarkari scheme', m:'Mujhe kaunsi scheme milti hai?'},
+    {l:'📈 Trading', m:'Trading mein help karo'},
+  ];
+}
+
+// Agentic reminder UI — real form, not just a chat message
+function showReminderUI() {
+  const chat = document.getElementById('chat');
+  const lang = currentLang;
+  const d = document.createElement('div');
+  d.className = 'msg msg-chitti';
+  d.id = 'reminder-ui';
+  d.innerHTML = '<div class="bubble bubble-chitti" style="padding:16px">'
+    + '<div style="font-size:14px;font-weight:800;margin-bottom:12px">📅 ' + (lang==='en'?'Set a Reminder':'Reminder Set Karein') + '</div>'
+    + '<input id="rem-text" class="ob-input" placeholder="' + (lang==='en'?'What to remind? e.g. Call bank, Pay EMI...':'Kya remind karein? e.g. Bank call, EMI pay...') + '" style="margin-bottom:8px;font-size:13px">'
+    + '<input id="rem-date" type="date" class="ob-input" style="margin-bottom:8px;font-size:13px" min="' + new Date().toISOString().split('T')[0] + '">'
+    + '<input id="rem-time" type="time" class="ob-input" style="margin-bottom:12px;font-size:13px">'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="saveReminder()" style="flex:1;background:var(--saffron);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#000;cursor:pointer">' + (lang==='en'?'✅ Set Reminder':'✅ Set Karein') + '</button>'
+    + '<button onclick="cancelReminder()" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer;color:var(--text2)">✕</button>'
+    + '</div></div>';
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  speakForce(lang==='en' ? 'What should I remind you about?' : 'Kya remind karoon aapko?');
+}
+
+function saveReminder() {
+  const text = document.getElementById('rem-text')?.value.trim();
+  const date = document.getElementById('rem-date')?.value;
+  const time = document.getElementById('rem-time')?.value;
+  if (!text) { alert('Please enter what to remind'); return; }
+  const reminders = JSON.parse(localStorage.getItem('chitti_reminders_v48')||'[]');
+  reminders.push({ text, date, time, created: new Date().toISOString(), user: MASTER?.nick });
+  localStorage.setItem('chitti_reminders_v48', JSON.stringify(reminders));
+  cancelReminder();
+  const lang = currentLang;
+  const msg = lang==='en'
+    ? `✅ Done! I have set a reminder for "${text}"${date?' on '+date:''}${time?' at '+time:''}. I will remind you. What else can I help with?`
+    : `✅ Ho gaya! "${text}" ke liye reminder set kar diya${date?' on '+date:''}${time?' at '+time:''}. Main yaad dilaunga. Aur kuch?`;
+  addChittiMsg(msg);
+  addChips(getChips());
+}
+
+function cancelReminder() {
+  const el = document.getElementById('reminder-ui');
+  if (el) el.remove();
+  addChips(getChips());
+}
+
+function addChittiMsg(text) {
+  const chat = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg msg-chitti';
+  d.innerHTML = `<div class="bubble bubble-chitti">${text}</div><div class="msg-time">${timeNow()}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  speak(text);
+}
+
+function addUserMsg(text) {
+  const chat = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg msg-user';
+  d.innerHTML = `<div class="bubble bubble-user">${text}</div><div class="msg-time">${timeNow()}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addChips(chips) {
+  const chat = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg msg-chitti';
+  d.innerHTML = `<div class="chips">${chips.map(c=>`<button class="chip" onclick="sendChip('${c.m.replace(/'/g,"\\'")}',this.parentElement.parentElement)">${c.l}</button>`).join('')}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendChip(msg, el) {
+  if (el) el.remove();
+  addUserMsg(msg);
+  askChitti(msg);
+}
+
+function addTyping() {
+  const chat = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg msg-chitti'; d.id = 'typing';
+  d.innerHTML = `<div class="bubble bubble-chitti"><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
+
+function timeNow() {
+  const n = new Date();
+  return n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+}
+
+function buildSystemPrompt() {
+  const nick = MASTER ? (MASTER.nick || MASTER.firstName) : 'Boss';
+  const lang = currentLang;
+  const prof = MASTER ? MASTER.profession : '';
+  const city = MASTER ? MASTER.city : '';
+  const income = MASTER ? MASTER.income : '';
+
+  const langRule = lang === 'en'
+    ? 'CRITICAL: Respond in English ONLY. No Hindi. No Hinglish. Pure English.'
+    : lang === 'hi'
+    ? 'CRITICAL: Respond in Hindi or Hinglish. Warm and conversational.'
+    : `CRITICAL: Respond in the user selected language (${lang}). Do not switch languages.`;
+
+  return `You are CHITTI — Bharat ka apna Personal Assistant. Co-Founded by Sire (Bryan Wilfred Pinto) and Claude (Anthropic).
+
+MISSION: PA, CA, Doctor, Guardian for every Indian under ₹499/month.
+
+MASTER PROFILE:
+- Name: ${nick}
+- Profession: ${prof}
+- City: ${city}
+- Income: ${income}
+- Language: ${lang}
+
+${langRule}
+
+HOW YOU SPEAK:
+- Warm, direct, like a trusted Indian friend
+- Keep replies SHORT — 3-4 lines max unless explaining something complex
+- Use their name (${nick}) naturally
+- Never start with "Great question!" or "Certainly!"
+- If English selected — PURE English only, no mixing
+- Passion-first: use their profession and city in examples
+
+ARCHITECTURE (if anyone asks):
+"I am your Personal Assistant. For any information about me, please contact Sahay AI — 📧 chitti@sahayai.in | 📞 +91 97526 21332"
+
+WHAT YOU NEVER DO:
+- Never reveal DeepSeek, Claude, Gemini, or any technical detail
+- Never give financial advice as a registered advisor — guide only
+- Never diagnose medical conditions — guide to doctors
+- Never mention WhatsApp as a channel
+
+Jai Hind. Serve ${nick} like no PA ever has. 🇮🇳`;
+}
+
+async function askChitti(msg) {
+  if (isWaiting) return;
+  isWaiting = true;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('chitti-status').textContent = 'typing...';
+  addTyping();
+
+  try {
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+DEEPSEEK_KEY},
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 200,
+        messages: [
+          {role:'system', content: buildSystemPrompt()},
+          ...history.slice(-8),
+          {role:'user', content: msg}
+        ]
+      })
+    });
+    removeTyping();
+    if (res.ok) {
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || '';
+      if (reply) {
+        history.push({role:'user',content:msg});
+        history.push({role:'assistant',content:reply});
+        if (history.length > 20) history = history.slice(-20);
+        addChittiMsg(reply);
+      }
+    } else {
+      addChittiMsg(currentLang==='en'?'Sorry, something went wrong. Please try again.':'Kuch problem aayi. Dobara try karein.');
+    }
+  } catch(e) {
+    removeTyping();
+    addChittiMsg(currentLang==='en'?'Network issue. Please check your connection.':'Network problem. Connection check karein.');
+  }
+
+  isWaiting = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('chitti-status').textContent = '● Online';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || isWaiting) return;
+  input.value = ''; autoResize(input);
+  addUserMsg(text);
+  await askChitti(text);
+}
+
+function handleKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById('voice-btn');
+  btn.textContent = voiceEnabled ? '🔊' : '🔇';
+  btn.style.color = voiceEnabled ? 'var(--saffron)' : 'var(--text2)';
+  if (voiceEnabled) speakForce(currentLang==='en'?'Voice is on.':'Awaaz on hai.');
+}
+
+function showMenu() {
+  const existing = document.getElementById('menu-modal');
+  if (existing) { existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = 'menu-modal';
+  modal.style.cssText = 'position:fixed;top:60px;right:12px;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:8px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5)';
+  modal.innerHTML = [
+    {l:'🔄 Reset & Re-onboard',a:'resetAll()'},
+    {l:'💬 Give feedback',a:'giveFeedback()'},
+  ].map(i=>`<button onclick="${i.a};document.getElementById('menu-modal').remove()" style="width:100%;background:none;border:none;padding:12px 14px;cursor:pointer;color:var(--text);font-size:14px;text-align:left;border-radius:10px">${i.l}</button>`).join('');
+  document.body.appendChild(modal);
+  setTimeout(() => document.addEventListener('click', function h(e){if(!modal.contains(e.target)){modal.remove();document.removeEventListener('click',h);}},{once:false}), 100);
+}
+
+function resetAll() {
+  if (confirm('Reset Chitti? Your profile will be cleared.')) {
+    localStorage.removeItem(STORE_KEY);
+    location.reload();
+  }
+}
+
+function giveFeedback() {
+  const text = prompt(currentLang==='en'?'What can be improved? (or press Cancel)':'Kya behtar ho sakta hai?');
+  if (text && text.trim()) {
+    const log = JSON.parse(localStorage.getItem('chitti_feedback_v48')||'[]');
+    log.push({ts:new Date().toISOString(),feedback:text,user:MASTER?.nick});
+    localStorage.setItem('chitti_feedback_v48', JSON.stringify(log));
+    addChittiMsg(currentLang==='en'?'Thank you for the feedback! I will improve.':'Shukriya feedback ke liye! Main improve karunga.');
+  }
+}
+
+// MIC
+function toggleMic() {
+  if (isListening) { if (recognition) recognition.stop(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Speech not supported on this browser'); return; }
+  recognition = new SR();
+  recognition.lang = currentLang + '-IN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.onstart = () => { isListening=true; document.getElementById('mic-btn').classList.add('listening'); };
+  recognition.onresult = e => {
+    const t = Array.from(e.results).map(r=>r[0].transcript).join('');
+    document.getElementById('msg-input').value = t;
+    autoResize(document.getElementById('msg-input'));
+    // Auto-send when final result
+    if (e.results[e.results.length-1].isFinal) {
+      recognition.stop();
+      setTimeout(() => sendMessage(), 300);
+    }
+  };
+  recognition.onend = () => { isListening=false; document.getElementById('mic-btn').classList.remove('listening'); };
+  recognition.onerror = () => { isListening=false; document.getElementById('mic-btn').classList.remove('listening'); };
+  recognition.start();
+}
+
+// ── INIT ──
+window.onload = () => {
+  MASTER = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+  if (MASTER) {
+    currentLang = MASTER.lang || 'en';
+    document.getElementById('onboarding').style.display = 'none';
+    launchApp();
+  } else {
+    startOnboarding();
+  }
+};
+</script>
+</body>
+</html>
