@@ -1,3 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SAHAY | CHITTI PA COMPLETE</title>
+    <style>
+        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; }
+        body { margin: 0; font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; height: 100vh; }
+        header { background: var(--navy); color: white; padding: 15px 30px; border-bottom: 4px solid var(--saffron); font-weight: bold; display: flex; justify-content: space-between; }
+        .container { display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; flex: 1; }
+        .main-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .orb { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold; transition: 0.3s; }
+        .pulse { animation: p 1.5s infinite; }
+        @keyframes p { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(232, 106, 23, 0); } 100% { transform: scale(1); } }
+        #transcriptHUD { background: #fff8e1; border: 2px dashed var(--gold); border-radius: 12px; padding: 20px; min-height: 80px; margin-top: 20px; text-align: left; color: #5d4037; }
+        .ledger { background: var(--navy); color: white; border-radius: 20px; padding: 20px; border-left: 6px solid var(--gold); }
+        .status-tag { color: var(--gold); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        button { background: var(--saffron); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>SAHAY | CHITTI PA</div>
+    <div id="cycleStatus" style="color: var(--gold)">READY, SIRE.</div>
+</header>
+
+<div class="container">
+    <div class="main-card">
+        <div id="orb" class="orb" onclick="startListening()">C</div>
+        <h3 id="displayHeader">Standing by for the Master...</h3>
+        <div id="transcriptHUD">Words will appear here as you speak...</div>
+        <button onclick="stopAndCertify()">STOP & EXECUTE</button>
+        <input type="hidden" id="userInput">
+    </div>
+
+    <div class="ledger">
+        <span class="status-tag">Sire Execution Ledger</span>
+        <p id="ledgerTask" style="font-size: 14px; margin-top: 15px; color: #cbd5e0;">No active tasks.</p>
+        <hr style="border: 0; border-top: 1px solid #2d3748; margin: 15px 0;">
+        <span class="status-tag">Current Stage</span>
+        <p id="ledgerStage" style="color: var(--gold); font-weight: bold;">IDLE</p>
+    </div>
+</div>
+
 <script>
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-IN';
@@ -8,8 +53,12 @@
 
     function startListening() {
         masterTranscript = ""; 
-        recognition.start();
-        updateUI("LISTENING...", true);
+        document.getElementById('transcriptHUD').innerText = "";
+        document.getElementById('userInput').value = "";
+        try {
+            recognition.start();
+            updateUI("SIRE IS COMMANDING...", true);
+        } catch(e) { console.log("Already listening"); }
     }
 
     recognition.onresult = (event) => {
@@ -21,7 +70,6 @@
                 interim += event.results[i][0].transcript;
             }
         }
-        // Update HUD instantly so Sire sees the progress
         const liveOutput = masterTranscript + interim;
         document.getElementById('transcriptHUD').innerText = liveOutput;
         document.getElementById('userInput').value = liveOutput;
@@ -30,17 +78,14 @@
     function stopAndCertify() {
         recognition.stop();
         const finalCommand = document.getElementById('userInput').value;
-        
         if (!finalCommand.trim()) return updateUI("NO COMMAND DETECTED", false);
 
-        // AGENTIC HANDSHAKE
-        updateUI("CERTIFYING WITH DA...", false);
+        updateUI("CERTIFYING...", false);
         document.getElementById('ledgerTask').innerText = finalCommand;
         document.getElementById('ledgerStage').innerText = "AUDIT: 95% ACCURACY GATE";
         
-        speak("Command captured. Co-founder and DA are certifying against Master Doc.");
+        speak("Command captured. Certifying against Master Doc.");
 
-        // Simulate Agentic Processing
         setTimeout(() => {
             document.getElementById('ledgerStage').innerText = "CERTIFIED & EXECUTED";
             document.getElementById('orb').classList.remove('pulse');
@@ -55,8 +100,8 @@
 
     function speak(t) {
         window.speechSynthesis.cancel();
-        const s = new SpeechSynthesisUtterance(t);
-        s.lang = 'en-IN';
-        window.speechSynthesis.speak(s);
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(t));
     }
 </script>
+</body>
+</html>
