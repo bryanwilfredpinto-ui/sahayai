@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Chitti Bharat Premium AI OS | Sahay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --saffron: #E86A17;
@@ -16,7 +17,7 @@
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(180deg, var(--bg), #fff);
             color: var(--text);
             height: 100vh;
@@ -24,6 +25,7 @@
             flex-direction: column;
         }
 
+        /* PREMIUM HEADER */
         header {
             padding: 15px 25px;
             background: linear-gradient(135deg, var(--navy), #16376a);
@@ -32,6 +34,7 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 2px solid var(--gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
         .brand { display: flex; align-items: center; gap: 12px; }
@@ -43,9 +46,9 @@
             box-shadow: 0 4px 10px rgba(232, 106, 23, 0.3);
         }
 
-        .wrap { max-width: 1200px; margin: auto; padding: 25px; flex-grow: 1; }
+        .wrap { max-width: 1200px; margin: auto; padding: 25px; flex-grow: 1; overflow-y: auto; }
         
-        /* THE 3rd IMAGE LAYOUT: TWO COLUMN HERO */
+        /* TWO COLUMN LAYOUT (Ref: 3rd Image) */
         .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: start; }
 
         .card { 
@@ -59,8 +62,8 @@
             background: #fff1d6; color: #8a5a00; font-size: 11px; font-weight: 700; margin-bottom: 12px;
         }
 
-        h1 { font-size: 38px; line-height: 1.1; margin: 0 0 12px; color: var(--navy); }
-        .muted { opacity: 0.7; line-height: 1.5; margin-bottom: 20px; }
+        h1 { font-size: 36px; line-height: 1.1; margin: 0 0 12px; color: var(--navy); }
+        .muted { opacity: 0.7; line-height: 1.5; margin-bottom: 20px; font-size: 14px; }
 
         .btns { display: flex; gap: 12px; margin-bottom: 24px; }
         .btn { 
@@ -70,16 +73,23 @@
         .pri { background: linear-gradient(135deg, var(--saffron), #ff9b4a); color: white; }
         .sec { background: #eef3fb; color: var(--navy); }
 
-        /* AGENT GRID INSIDE THE LEFT CARD */
+        /* AGENT GRID */
         .agent-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .mini-agent { 
             padding: 15px; border-radius: 18px; background: #fafafa; border: 1px solid #f0f0f0;
-            font-size: 14px; font-weight: 600;
+            font-size: 14px; font-weight: 600; position: relative;
         }
         .mini-agent small { display: block; opacity: 0.6; font-weight: 400; font-size: 11px; margin-top: 4px; }
+        
+        .speaker-btn {
+            position: absolute; right: 10px; top: 15px; 
+            background: none; border: none; cursor: pointer; font-size: 18px;
+            opacity: 0.5; transition: 0.3s;
+        }
+        .speaker-btn:hover { opacity: 1; color: var(--saffron); }
 
-        /* THE CHAT INTERFACE (RIGHT CARD) */
-        .chat { height: 480px; display: flex; flex-direction: column; }
+        /* CHAT INTERFACE */
+        .chat { height: 500px; display: flex; flex-direction: column; }
         .msgs { flex: 1; overflow: auto; padding-bottom: 15px; }
         .bubble { 
             padding: 12px 16px; border-radius: 18px; margin: 8px 0; max-width: 85%; font-size: 14px; line-height: 1.4;
@@ -89,6 +99,11 @@
 
         .input-row { display: flex; gap: 10px; margin-top: 15px; }
         .input { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid #ddd; outline: none; }
+
+        /* COMPLIANCE BADGE */
+        .legal-tag { font-size: 10px; color: #10B981; font-weight: 800; margin-top: 10px; text-transform: uppercase; }
+
+        @media(max-width: 860px) { .hero { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -101,7 +116,7 @@
             <div style="font-size:10px; opacity:0.8; font-weight:bold;">Bharat Premium AI OS</div>
         </div>
     </div>
-    <div style="font-size: 12px; font-weight: 800; color: var(--gold);">MASTER AUDIT: 95% 🛡️</div>
+    <div style="font-size: 12px; font-weight: 800; color: var(--gold);">DPDP COMPLIANT 🇮🇳</div>
 </header>
 
 <main class="wrap">
@@ -109,25 +124,41 @@
         <div class="card">
             <span class="badge">Founder Edition • Bilingual</span>
             <h1>Bharat ka apna <span style="color:var(--saffron)">Agentic AI</span></h1>
-            <p class="muted">Namaste Sire, Chitti is coordinating your specialists. Personal, business, and family agents — all in one premium experience.</p>
+            <p class="muted">Namaste Sire, I am your Coordinating PA. I manage the Research, CD, and DA agents to ensure world-class 95% passing standards.</p>
             
             <div class="btns">
-                <button class="btn pri" onclick="location.href='https://colab.research.google.com/'">Coach (Training)</button>
+                <button class="btn pri" onclick="window.open('https://colab.research.google.com/')">Coach (Live Training)</button>
                 <button class="btn sec">Explore Agents</button>
-                <button class="btn sec">Investor Mode</button>
             </div>
 
             <div class="agent-mini-grid">
-                <div class="mini-agent">🧠 Memory Agent<small>Remembers preferences & family</small></div>
-                <div class="mini-agent">💼 Business Agent<small>Sales, GST, Gullak tracking</small></div>
-                <div class="mini-agent">❤️ Emotion Agent<small>Understands mood & support</small></div>
-                <div class="mini-agent">🎤 Voice Agent<small>Natural Hindi/English voice UX</small></div>
+                <div class="mini-agent">
+                    🧠 Memory Agent
+                    <small>Recalls preferences & DPDP consent.</small>
+                    <button class="speaker-btn" onclick="speak('The Memory Agent securely recalls your preferences in accordance with Indian Law.')">🔊</button>
+                </div>
+                <div class="mini-agent" style="border-color: var(--saffron);">
+                    ⚖️ Devil's Advocate
+                    <small>Audits Master Doc & Compliance.</small>
+                    <button class="speaker-btn" onclick="speak('I am the Devils Advocate. I challenge every assumption to prevent substandard execution.')">🔊</button>
+                </div>
+                <div class="mini-agent">
+                    💼 Business Agent
+                    <small>Sales, GST & Gullak tracking.</small>
+                    <button class="speaker-btn" onclick="speak('The Business Agent optimizes your growth and financial compliance.')">🔊</button>
+                </div>
+                <div class="mini-agent">
+                    🌊 Chitti Konkani
+                    <small>Regional Specialist (Training...)</small>
+                    <div class="legal-tag">Status: 74% Trained</div>
+                    <button class="speaker-btn" onclick="speak('Chitti Konkani is currently training to meet the ninety-five percent passing standard.')">🔊</button>
+                </div>
             </div>
         </div>
 
         <div class="card chat">
             <div class="msgs" id="msgs">
-                <div class="bubble ai">🙏 Namaste, Sire! I am Chitti. How may I coordinate your specialists today?<br><small style="opacity:0.6;">चिठ्ठी आपकी कैसे मदद कर सकती है?</small></div>
+                <div class="bubble ai">🙏 Namaste, Sire! Everything is in accordance with Indian Law. How shall we coordinate today?<br><small style="opacity:0.6;">चिठ्ठी आपकी कैसे मदद कर सकती है?</small></div>
             </div>
             <div class="input-row">
                 <input id="txt" class="input" placeholder="Type a command to your PA...">
@@ -138,6 +169,16 @@
 </main>
 
 <script>
+    // PRECISE VOICE ENGINE
+    function speak(text) {
+        window.speechSynthesis.cancel(); // Stop previous audio
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-IN';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // SIRE PROTOCOL: PA LOGIC
     function send() {
         const i = document.getElementById('txt');
         const v = i.value.trim();
@@ -152,15 +193,19 @@
         i.value = '';
         msgs.scrollTop = msgs.scrollHeight;
 
-        // PA LOGIC BRIDGE
         setTimeout(() => {
             const ai = document.createElement('div');
             ai.className = 'bubble ai';
-            ai.innerHTML = "🧠 <b>Chitti PA:</b> Requirement received. Updating the Master Document and alerting the Architect. <br><small>आदेश प्राप्त हुआ। मास्टर डॉक्यूमेंट अपडेट किया जा रहा है।</small>";
+            ai.innerHTML = "🧠 <b>Chitti PA:</b> Understood. I am routing this to the <b>Devil's Advocate</b> for a compliance check and the <b>Architect</b> for a Master Doc update. <br><small>आदेश प्राप्त हुआ। इसे समीक्षा के लिए भेजा जा रहा है।</small>";
             msgs.appendChild(ai);
             msgs.scrollTop = msgs.scrollHeight;
-        }, 800);
+        }, 1000);
     }
+
+    // Allow Enter key to send
+    document.getElementById('txt').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') send();
+    });
 </script>
 
 </body>
