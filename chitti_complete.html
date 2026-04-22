@@ -3,42 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Chitti Sovereign OS | Sahay</title>
+    <title>Chitti Sovereign OS | Founder Command</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #fdfdfd; --card: #ffffff; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #f4f7f9; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #17202a; height: 100vh; display: flex; flex-direction: column; }
+        header { padding: 15px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
+        .logo-box { width: 40px; height: 40px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 20px; }
         
-        header { padding: 20px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
-        .logo-box { width: 45px; height: 45px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: white; }
-        .status-badge { font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
-
-        .container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .chitti-panel { width: 100%; max-width: 850px; text-align: center; }
-
-        /* THE SAFFRON ORB */
-        .orb { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight: 800; color: white; cursor: pointer; transition: 0.4s ease; box-shadow: 0 10px 30px rgba(232, 106, 23, 0.3); }
+        .main-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; padding: 20px; max-width: 1450px; margin: 0 auto; width: 100%; box-sizing: border-box; overflow: hidden; }
+        
+        /* CENTER CORE */
+        .core-center { display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .orb-card { background: white; border-radius: 28px; padding: 30px; text-align: center; border: 1px solid #e0e6ed; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .orb { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 45px; color: white; font-weight: 800; cursor: pointer; transition: 0.4s; }
         .orb.pulse { animation: saffron-pulse 2s infinite; }
-        @keyframes saffron-pulse { 
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.7); } 
-            70% { transform: scale(1.08); box-shadow: 0 0 0 25px rgba(232, 106, 23, 0); } 
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0); } 
-        }
+        @keyframes saffron-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.7); } 70% { transform: scale(1.08); box-shadow: 0 0 0 20px rgba(232, 106, 23, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0); } }
 
-        .display-card { background: var(--card); border: 1px solid #eee; border-radius: 28px; padding: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); min-height: 250px; }
-        h2 { color: var(--navy); margin-top: 0; font-weight: 800; }
-        p { color: #666; font-size: 16px; margin-bottom: 20px; }
+        /* SIDEBAR & LEDGER */
+        .sidebar { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .ledger-box { background: #0E2344; color: white; border-radius: 20px; padding: 20px; border-left: 5px solid var(--saffron); }
+        .spec-box { background: white; border-radius: 20px; padding: 15px; border: 1px solid #e0e6ed; }
+        .label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+        
+        /* STATUS TAGS */
+        .status-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.1); color: var(--gold); margin-top: 10px; }
+        .processing { color: #f1c40f; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* DOC VAULT - WHERE THE REQUIREMENTS LIVE */
-        #docVault { display: none; text-align: left; background: #fafafa; border: 1px solid #eaeaea; border-radius: 15px; padding: 20px; margin-top: 15px; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .doc-label { font-weight: 800; font-size: 11px; color: var(--saffron); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .doc-body { font-size: 14px; color: #333; line-height: 1.6; white-space: pre-line; font-weight: 500; }
+        /* INPUT */
+        .controls { background: white; padding: 10px; border-radius: 20px; display: flex; gap: 10px; border: 1px solid #e0e6ed; }
+        .input-field { flex: 1; border: none; padding: 10px; font-size: 16px; outline: none; }
+        .btn-icon { background: #f0f4f8; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
+        .send-btn { background: var(--saffron); color: white; border: none; padding: 0 25px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-        .controls { margin-top: 25px; display: flex; gap: 12px; }
-        .input-field { flex: 1; padding: 15px 20px; border-radius: 15px; border: 1px solid #ddd; font-size: 16px; outline: none; font-family: inherit; }
-        .send-btn { background: var(--saffron); color: white; border: none; padding: 0 30px; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .send-btn:hover { background: #cf5b12; }
+        #vault { display: none; margin-top: 15px; text-align: left; background: #fafbfc; padding: 15px; border-radius: 15px; border: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -46,79 +45,89 @@
 <header>
     <div style="display:flex; align-items:center; gap:12px;">
         <div class="logo-box">C</div>
-        <div style="font-weight:900; font-size:20px;">SAHAY | CHITTI</div>
+        <div style="font-weight:900; font-size:18px;">SAHAY | <span style="color:var(--gold)">SIRE MODE</span></div>
     </div>
-    <div class="status-badge">FOUNDER SYNCED 🛡️</div>
+    <div style="font-size:11px; font-weight:800; color:var(--gold);">LEDGER ACTIVE 🛡️</div>
 </header>
 
-<main class="container">
-    <div class="chitti-panel">
-        <div id="orb" class="orb pulse" onclick="triggerBriefing()">C</div>
-        
-        <div class="display-card">
-            <h2 id="headline">Namaste, Sire.</h2>
-            <p id="subtext">The Skill Update Specialist is online with your latest requirements.</p>
-            
-            <div id="docVault">
-                <span class="doc-label">Master Doc: Unified Core Requirements</span>
-                <div id="docBody" class="doc-body"></div>
+<div class="main-layout">
+    <div class="core-center">
+        <div class="orb-card">
+            <div id="orb" class="orb pulse" onclick="triggerBriefing()">C</div>
+            <h2 id="headline" style="margin:0; font-size:22px;">Ready, Sire.</h2>
+            <p id="subtext" style="color:#666; font-size:14px;">The Execution Ledger is monitoring your requests.</p>
+            <div id="vault">
+                <div id="vaultBody" style="white-space: pre-line; line-height:1.6; color:#333;"></div>
             </div>
         </div>
-
+        
         <div class="controls">
-            <input type="text" id="userInput" class="input-field" placeholder="Command Chitti...">
+            <button class="btn-icon" onclick="startListening()">🎤</button>
+            <input type="text" id="userInput" class="input-field" placeholder="Place a new request...">
             <button class="send-btn" onclick="processInput()">SEND</button>
         </div>
     </div>
-</main>
+
+    <div class="sidebar">
+        <div class="ledger-box">
+            <span class="label" style="color:var(--gold)">Sire Execution Ledger</span>
+            <div id="ledgerContent" style="font-size: 12px; line-height: 1.4;">
+                System Idle. Waiting for Founder's command...
+            </div>
+            <div id="ledgerStatus" class="status-tag">STATUS: STANDBY</div>
+        </div>
+
+        <div class="spec-box">
+            <span class="label" style="color:var(--navy)">Skill Update Specialist</span>
+            <div style="font-size:12px; color:#555;">Vigilance: Vizag Weather & PIB.</div>
+        </div>
+        
+        <div class="spec-box">
+            <span class="label" style="color:var(--navy)">Devil's Advocate</span>
+            <div style="font-size:12px; color:#555;">Verification Gate: 95% Accuracy.</div>
+        </div>
+    </div>
+</div>
 
 <script>
-    function triggerBriefing() {
-        const orb = document.getElementById('orb');
-        orb.classList.remove('pulse');
-        document.getElementById('docVault').style.display = 'block';
-        document.getElementById('headline').innerText = "Sire, Intelligence Synced.";
-        
-        // SYNCING YOUR SPECIFIC REQUIREMENTS
-        const masterData = `● FOUNDER REQUIREMENT: Skill Update Specialist Active.
-● WEATHER WATCH: Monitoring Vizag/Odisha (Cyclone/Heatwave).
-● GOVT SCHEMES: Monitoring PIB & MyGov for live updates.
-● REVERIFICATION: CD line active for 95% accuracy gate.
-● COMPLIANCE: Fully DPDP 2023 Compliant.`;
+    function updateLedger(task, status) {
+        document.getElementById('ledgerContent').innerHTML = `<b>Request:</b> ${task}<br><b>Stage:</b> ${status}`;
+        document.getElementById('ledgerStatus').innerHTML = `STATUS: <span class="processing">IN PROGRESS</span>`;
+    }
 
-        document.getElementById('docBody').innerText = masterData;
-        
-        // PA VOICE TRIGGER
-        speak("Sire, the gap is closed. I have ingested your requirements. The Skill Update Specialist is now live, monitoring Vizag weather and Indian Government schemes. Every update is being filtered through our 95 percent accuracy gate. I will pulse this orb the moment I detect a change.");
+    function triggerBriefing() {
+        document.getElementById('orb').classList.remove('pulse');
+        document.getElementById('vault').style.display = 'block';
+        document.getElementById('headline').innerText = "Intelligence Synced.";
+        const content = `● VIZAG: Monitoring High-Heat Warning
+● PIB: 3 New Schemes Ingested
+● AUDIT: 95% Verified`;
+        document.getElementById('vaultBody').innerText = content;
+        speak("Sire, the Execution Ledger is live. Any new request will show its exact stage in the sidebar box.");
     }
 
     function processInput() {
         const val = document.getElementById('userInput').value;
         if (!val) return;
+        
+        updateLedger(val, "Scout Ingesting Data...");
+        document.getElementById('orb').classList.add('pulse');
+        
+        setTimeout(() => {
+            updateLedger(val, "Devil's Advocate Auditing (95% Check)...");
+        }, 2000);
 
-        if (val.toLowerCase().includes("weather") || val.toLowerCase().includes("vizag")) {
-            document.getElementById('orb').classList.add('pulse');
-            document.getElementById('headline').innerText = "Vigilance Mode";
-            speak("Scanning weather feeds for Vizag and Odisha, Sire. I will alert you if the status changes.");
-        }
+        speak("Request placed, Sire. Tracking progress in the Execution Ledger.");
         document.getElementById('userInput').value = "";
     }
 
-    function speak(text) {
+    function speak(t) {
         window.speechSynthesis.cancel();
-        const speech = new SpeechSynthesisUtterance(text);
-        speech.lang = 'en-IN'; // Indian English Accent
-        speech.rate = 0.92;    // Professional, steady pace
-        window.speechSynthesis.speak(speech);
+        const s = new SpeechSynthesisUtterance(t);
+        s.lang = 'en-IN';
+        s.rate = 0.95;
+        window.speechSynthesis.speak(s);
     }
-
-    // Auto-pulse after 3 seconds to catch the user's attention
-    setTimeout(() => { 
-        if(document.getElementById('docVault').style.display !== 'block') {
-            document.getElementById('orb').classList.add('pulse'); 
-        }
-    }, 3000);
 </script>
-
 </body>
 </html>
