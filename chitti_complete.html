@@ -1,131 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Chitti Bharat Premium AI OS | Sahay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #f8f4ee; --card: #ffffff; --text: #17202a; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(180deg, var(--bg), #fff); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { padding: 15px 25px; background: linear-gradient(135deg, var(--navy), #16376a); color: #fff; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--gold); }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .logo { width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--saffron), var(--gold)); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: white; }
-        .wrap { max-width: 1200px; margin: auto; padding: 20px; flex-grow: 1; overflow-y: auto; width: 100%; box-sizing: border-box; }
-        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: start; }
-        .card { background: var(--card); border: 1px solid #eee; border-radius: 28px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
-        h1 { font-size: 32px; line-height: 1.1; margin: 0 0 10px; color: var(--navy); }
-        .muted { opacity: 0.7; font-size: 14px; margin-bottom: 15px; }
-        .agent-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .mini-agent { padding: 15px; border-radius: 18px; background: #fafafa; border: 1px solid #f0f0f0; font-size: 13px; font-weight: 600; position: relative; }
-        .speaker-btn { position: absolute; right: 8px; top: 12px; background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.4; }
-        
-        /* CHAT BOX */
-        .chat { height: 520px; display: flex; flex-direction: column; position: relative; }
-        .msgs { flex: 1; overflow: auto; padding-bottom: 80px; }
-        .bubble { padding: 12px 16px; border-radius: 18px; margin: 8px 0; max-width: 85%; font-size: 14px; line-height: 1.4; }
-        .ai { background: #fff4e8; border: 1px solid #ffd4aa; color: #5d4037; }
-        .me { background: #edf4ff; border: 1px solid #c9defe; margin-left: auto; color: #1a237e; }
-
-        /* THE RESTORED VOICE INPUT BAR */
-        .input-area { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 10px; align-items: center; background: white; padding: 10px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #eee; }
-        .input { flex: 1; border: none; outline: none; font-size: 15px; padding: 5px 10px; }
-        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--saffron); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.3s; box-shadow: 0 4px 12px rgba(232,106,23,0.3); }
-        .mic-btn.active { animation: pulse 1.5s infinite; background: #ff4444; }
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 68, 68, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); } }
-
-        @media(max-width: 860px) { .hero { grid-template-columns: 1fr; } .chat { height: 450px; } }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="brand"><div class="logo">C</div><div><div style="font-weight:900; font-size:18px;">CHITTI</div><div style="font-size:9px; opacity:0.8;">Bharat Premium AI OS</div></div></div>
-    <div style="font-size: 11px; font-weight: 800; color: var(--gold);">DPDP COMPLIANT 🇮🇳</div>
-</header>
-
-<main class="wrap">
-    <section class="hero">
-        <div class="card">
-            <h1>Bharat ka apna <span style="color:var(--saffron)">Agentic AI</span></h1>
-            <p class="muted">Namaste Sire. I am coordinating the Research, CD, and DA agents for your next assignment.</p>
-            <div class="agent-mini-grid">
-                <div class="mini-agent">🧠 Memory Agent<button class="speaker-btn" onclick="speak('Memory agent online.')">🔊</button></div>
-                <div class="mini-agent" style="border: 1px solid var(--saffron);">⚖️ Devil's Advocate<button class="speaker-btn" onclick="speak('Ready to audit, Sire.')">🔊</button></div>
-                <div class="mini-agent">🌊 Chitti Konkani<small>Status: 74% Trained</small><button class="speaker-btn" onclick="speak('Konkani specialist in training.')">🔊</button></div>
-                <div class="mini-agent">🛡️ DPDP Officer<small>Legal Guardrail</small><button class="speaker-btn" onclick="speak('Data protection active.')">🔊</button></div>
-            </div>
-        </div>
-
-        <div class="card chat">
-            <div class="msgs" id="msgs">
-                <div class="bubble ai">🙏 Namaste, Sire! I am listening. Tap the <b>Saffron Mic</b> to give your next assignment.<br><small style="opacity:0.6;">आदेश दें, मैं सुन रही हूँ।</small></div>
-            </div>
-            <div class="input-area">
-                <input id="txt" class="input" placeholder="Speak or type to your PA...">
-                <button id="mic" class="mic-btn" onclick="toggleMic()">🎤</button>
-            </div>
-        </div>
-    </section>
-</main>
+<style>
+    .update-glow {
+        animation: blue-glow 2s infinite;
+        border: 2px solid #3b82f6 !important;
+        cursor: pointer;
+    }
+    @keyframes blue-glow {
+        0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+        50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+    }
+</style>
 
 <script>
-    const mic = document.getElementById('mic');
-    const txt = document.getElementById('txt');
-    const msgs = document.getElementById('msgs');
-    let isListening = false;
-
-    // VOICE-TO-TEXT (SIRE'S COMMANDS)
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.lang = 'en-IN';
-
-        recognition.onstart = () => { isListening = true; mic.classList.add('active'); };
-        recognition.onend = () => { isListening = false; mic.classList.remove('active'); };
-        recognition.onresult = (event) => {
-            const result = event.results[0][0].transcript;
-            txt.value = result;
-            send(result);
+    // This function simulates the PA receiving the Master Doc from the Architect
+    function notifySire() {
+        const paBox = document.getElementById('msgs');
+        const alert = document.createElement('div');
+        alert.className = 'bubble ai update-glow';
+        alert.innerHTML = "<b>✨ Master Doc Update:</b> Sire, I have received the blueprint. <b>Click here</b> to hear the briefing.<br><small>नया मास्टर डॉक तैयार है। सुनने के लिए यहां क्लिक करें।</small>";
+        alert.onclick = () => {
+            alert.classList.remove('update-glow');
+            speakBriefing();
         };
-
-        function toggleMic() {
-            if (isListening) recognition.stop();
-            else recognition.start();
-        }
-    } else {
-        alert("Voice recognition not supported in this browser. Please use Chrome/Safari.");
+        paBox.appendChild(alert);
+        paBox.scrollTop = paBox.scrollHeight;
     }
 
-    function send(val) {
-        const message = val || txt.value.trim();
-        if (!message) return;
-        
-        const me = document.createElement('div');
-        me.className = 'bubble me';
-        me.textContent = message;
-        msgs.appendChild(me);
-        txt.value = '';
-        msgs.scrollTop = msgs.scrollHeight;
-
-        // PA ROUTING LOGIC
-        setTimeout(() => {
-            const ai = document.createElement('div');
-            ai.className = 'bubble ai';
-            ai.innerHTML = "🧠 <b>Chitti PA:</b> Routing assignment to the Research Agent and DA. Master Doc summary coming soon... <br><small>कार्यवाही शुरू कर दी गई है।</small>";
-            msgs.appendChild(ai);
-            msgs.scrollTop = msgs.scrollHeight;
-            speak("Understood Sire. Routing to research and auditing agents.");
-        }, 800);
-    }
-
-    function speak(t) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(t);
-        u.lang = 'en-IN';
-        window.speechSynthesis.speak(u);
+    function speakBriefing() {
+        speak("Sire, the Master Doc summary is ready. We are focusing on DPDP compliance and the 95% passing standard. The Devil's Advocate is standing by for your approval.");
     }
 </script>
-</body>
-</html>
