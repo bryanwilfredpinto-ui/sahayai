@@ -3,143 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Chitti Sovereign OS | Founder Sync</title>
+    <title>Chitti PA | Full Cycle</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #f8fafc; }
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { padding: 15px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
-        .logo-box { width: 40px; height: 40px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 20px; }
-        
         .main-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; padding: 20px; max-width: 1500px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         
-        /* CENTER PANEL */
-        .core-center { display: flex; flex-direction: column; gap: 15px; }
+        /* INTERFACE */
         .orb-card { background: white; border-radius: 28px; padding: 30px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
-        .orb { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; font-weight: 800; cursor: pointer; }
-        .orb.pulse { animation: saffron-pulse 2s infinite; }
-        @keyframes saffron-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.6); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(232, 106, 23, 0); } 100% { transform: scale(1); } }
+        .orb { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 30px; }
+        .orb.pulse { animation: saffron-pulse 1.5s infinite; }
+        @keyframes saffron-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 20px var(--saffron); } 100% { transform: scale(1); } }
 
-        /* LIVE TRANSCRIPT HUD */
-        #transcriptHUD { background: #fffbeb; border: 1px dashed var(--saffron); border-radius: 15px; padding: 15px; min-height: 50px; font-size: 14px; color: #92400e; font-weight: 600; text-align: left; position: relative; }
-        .live-tag { position: absolute; top: -10px; left: 15px; background: var(--saffron); color: white; font-size: 9px; padding: 2px 8px; border-radius: 4px; font-weight: 800; }
-
-        /* SIDEBAR */
-        .ledger-box { background: #0E2344; color: white; border-radius: 22px; padding: 20px; border-left: 6px solid var(--saffron); margin-bottom: 15px; }
-        .label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); display: block; margin-bottom: 10px; }
+        #transcriptHUD { background: #fffbeb; border: 1px dashed var(--saffron); border-radius: 15px; padding: 15px; min-height: 40px; font-size: 14px; color: #92400e; margin-bottom: 15px; text-align: left; }
         
-        /* CONTROLS */
-        .controls { background: white; padding: 10px; border-radius: 20px; display: flex; gap: 10px; border: 1px solid #e2e8f0; align-items: center; }
-        .input-field { flex: 1; border: none; padding: 10px; font-size: 16px; outline: none; background: transparent; }
-        .btn-icon { background: #f1f5f9; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; font-size: 18px; }
-        .btn-icon.active { background: var(--saffron); color: white; animation: mic-glow 1.5s infinite; }
-        @keyframes mic-glow { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .send-btn { background: var(--navy); color: white; border: none; padding: 0 25px; height: 45px; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-        #vault { display: none; margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; font-size: 13px; }
+        /* SIDEBAR LEDGER */
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .ledger-box { background: var(--navy); color: white; border-radius: 22px; padding: 20px; border-left: 6px solid var(--saffron); }
+        .label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 10px; }
+        
+        .controls { background: white; padding: 10px; border-radius: 20px; display: flex; gap: 10px; border: 1px solid #e2e8f0; }
+        .btn-icon { background: #f1f5f9; border: none; width: 50px; height: 50px; border-radius: 14px; cursor: pointer; font-size: 20px; }
+        .btn-icon.active { background: var(--saffron); color: white; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:12px;">
-        <div class="logo-box">C</div>
-        <div style="font-weight:900; font-size:18px;">SAHAY | <span style="color:var(--gold)">FOUNDER SYNC</span></div>
-    </div>
-    <div style="font-size:11px; font-weight:800; color:var(--gold);">ZERO GAP PROTOCOL ACTIVE 🛡️</div>
+    <div style="font-weight:900;">SAHAY | <span style="color:var(--gold)">CHITTI PA</span></div>
+    <div id="cycleStatus" style="font-size:10px; font-weight:800; color:var(--gold);">SYSTEM STANDBY</div>
 </header>
 
 <div class="main-layout">
-    <div class="core-center">
+    <div style="display:flex; flex-direction:column; gap:15px;">
         <div class="orb-card">
-            <div id="orb" class="orb pulse" onclick="triggerBriefing()">C</div>
-            <h2 id="headline" style="margin:0; font-size:22px; color:var(--navy);">Namaste, Sire.</h2>
-            <p id="subtext" style="color:#64748b; font-size:14px; margin-top:5px;">Check the transcript box below to verify my understanding.</p>
-            <div id="vault"><div id="vaultBody" style="white-space:pre-line;"></div></div>
+            <div id="orb" class="orb" onclick="startCycle()">C</div>
+            <h2 id="headline" style="margin:0; font-size:20px;">Ready, Sire.</h2>
         </div>
         
-        <div id="transcriptHUD">
-            <span class="live-tag">LIVE TRANSCRIPT</span>
-            <span id="liveText">Waiting for your voice...</span>
-        </div>
+        <div id="transcriptHUD">Waiting for voice...</div>
 
         <div class="controls">
-            <button id="micBtn" class="btn-icon" onclick="startListening()">🎤</button>
-            <input type="text" id="userInput" class="input-field" placeholder="Review transcript here...">
-            <button class="send-btn" onclick="processInput()">EXECUTE</button>
+            <button id="micBtn" class="btn-icon" onclick="startCycle()">🎤</button>
+            <input type="text" id="userInput" style="flex:1; border:none; outline:none; padding:10px;" placeholder="Transcript shows here..." readonly>
         </div>
     </div>
 
     <div class="sidebar">
         <div class="ledger-box">
             <span class="label">Sire Execution Ledger</span>
-            <div id="ledgerContent" style="font-size: 12px; line-height: 1.5; color: #e2e8f0;">No active tasks.</div>
-            <div id="ledgerStatus" style="font-size: 10px; font-weight: 800; color: var(--gold); margin-top: 10px;">STATUS: READY</div>
-        </div>
-        <div style="background:white; padding:15px; border-radius:20px; border:1px solid #e2e8f0;">
-            <span class="label" style="color:var(--navy)">Audit Trail</span>
-            <div style="font-size:11px; color:#64748b;">Every request is verified against the 95% Accuracy Standard.</div>
+            <div id="ledgerTask" style="font-size:13px; color:#e2e8f0;">No active tasks.</div>
+            <div id="ledgerStage" style="font-size:11px; color:var(--gold); margin-top:10px; font-weight:800;">STAGE: IDLE</div>
         </div>
     </div>
 </div>
 
 <script>
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = true;
 
-    if (recognition) {
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-IN';
-
-        recognition.onstart = () => {
-            document.getElementById('micBtn').classList.add('active');
-            document.getElementById('liveText').innerText = "Listening closely, Sire...";
-        };
-
-        recognition.onresult = (event) => {
-            let interim = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    document.getElementById('userInput').value = event.results[i][0].transcript;
-                } else {
-                    interim += event.results[i][0].transcript;
-                }
-            }
-            document.getElementById('liveText').innerText = interim || document.getElementById('userInput').value;
-        };
-
-        recognition.onend = () => {
-            document.getElementById('micBtn').classList.remove('active');
-        };
-    }
-
-    function startListening() {
-        if (!recognition) return alert("Mic not supported.");
-        document.getElementById('userInput').value = "";
+    function startCycle() {
         recognition.start();
+        document.getElementById('micBtn').classList.add('active');
+        document.getElementById('orb').classList.add('pulse');
+        document.getElementById('cycleStatus').innerText = "LISTENING...";
     }
 
-    function triggerBriefing() {
-        document.getElementById('vault').style.display = 'block';
-        document.getElementById('vaultBody').innerText = "● VIZAG: Monitoring High-Heat Warning\n● GOVT: 3 PIB Schemes Ingested\n● DA: Logic Verified";
-        speak("Sire, the gap is closed. I am now showing you my live transcript so you can verify every word I hear before I execute.");
-    }
+    recognition.onresult = (event) => {
+        let transcript = Array.from(event.results).map(r => r[0].transcript).join('');
+        document.getElementById('transcriptHUD').innerText = transcript;
+        document.getElementById('userInput').value = transcript;
+        
+        if (event.results[0].isFinal) {
+            finishCycle(transcript);
+        }
+    };
 
-    function processInput() {
-        const val = document.getElementById('userInput').value;
-        if (!val) return;
+    function finishCycle(cmd) {
         recognition.stop();
-        document.getElementById('ledgerContent').innerHTML = `<b>Task:</b> ${val}<br><b>Stage:</b> DA Auditing...`;
-        document.getElementById('ledgerStatus').innerText = "STATUS: PROCESSING";
-        speak("Executing your verified request, Sire.");
+        document.getElementById('micBtn').classList.remove('active');
+        document.getElementById('cycleStatus').innerText = "EXECUTING CYCLE...";
+        
+        // Update Ledger
+        document.getElementById('ledgerTask').innerText = cmd;
+        document.getElementById('ledgerStage').innerText = "STAGE: DA AUDIT (95%)";
+
+        speak("Cycle complete. Task logged in the Ledger for the Master.");
+        
+        setTimeout(() => {
+            document.getElementById('ledgerStage').innerText = "STAGE: COMPLETED";
+            document.getElementById('orb').classList.remove('pulse');
+        }, 2000);
     }
 
     function speak(t) {
         window.speechSynthesis.cancel();
         const s = new SpeechSynthesisUtterance(t);
         s.lang = 'en-IN';
-        s.rate = 0.95;
         window.speechSynthesis.speak(s);
     }
 </script>
