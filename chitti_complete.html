@@ -1,57 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sahay AI - Chitti Trilingual</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; }
-        .chat-container { width: 400px; height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; margin-top: 50px; }
-        .transcript-box { flex-grow: 1; padding: 20px; overflow-y: auto; border-bottom: 1px solid #eee; }
-        .status-badge { align-self: center; background: #e1f5fe; color: #01579b; padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-top: 10px; font-weight: bold; }
-        .controls { padding: 15px; display: flex; justify-content: space-around; }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-    </style>
-</head>
-<body>
+// This targets the exact specialist file you just deployed
+const VAULT_URL = "https://raw.githubusercontent.com/bryanwilfredpinto-ui/sahayai/main/specialist_Bangla.json";
 
-    <div class="chat-container">
-        <div class="status-badge" id="chitti-status">Chitti: Initializing...</div>
+async function updateTranscript(lang) {
+    try {
+        // Fetch the 96% rigor test data from your vault
+        const response = await fetch(VAULT_URL);
+        const data = await response.json();
         
-        <div class="transcript-box" id="transcript">
-            <p><i>Select a language to start the live transcript...</i></p>
-        </div>
+        // Update your original status badge with the 'Certified' status
+        const statusBadge = document.querySelector('.status-badge'); // Adjust selector to your original class
+        if(statusBadge) statusBadge.innerText = `Chitti: ${data.status} (Score: ${data.score})`;
 
-        <div class="controls">
-            <button onclick="updateTranscript('en')">English</button>
-            <button onclick="updateTranscript('hi')">Hindi</button>
-            <button onclick="updateTranscript('bn')">Bangla</button>
-        </div>
-    </div>
-
-    <script>
-        // This targets the exact file you just deployed to GitHub
-        const VAULT_URL = "https://raw.githubusercontent.com/bryanwilfredpinto-ui/sahayai/main/specialist_Bangla.json";
-
-        async function updateTranscript(lang) {
-            try {
-                const response = await fetch(VAULT_URL);
-                const data = await response.json();
-                
-                // Updates the badge based on your successful 96% score
-                document.getElementById('chitti-status').innerText = `Chitti: ${data.status} (Score: ${data.score})`;
-
-                const transcript = document.getElementById('transcript');
-                if(lang === 'bn') {
-                    transcript.innerHTML = "<p><b>Chitti:</b> আমি আপনাকে সাহায্য করতে পারি। (I can help you.)</p>";
-                } else if(lang === 'hi') {
-                    transcript.innerHTML = "<p><b>Chitti:</b> मैं आपकी मदद कर सकता हूँ।</p>";
-                } else {
-                    transcript.innerHTML = "<p><b>Chitti:</b> I am here to assist you.</p>";
-                }
-            } catch (error) {
-                console.error("Vault access failed:", error);
-            }
+        // Original logic for updating the text box
+        const transcript = document.getElementById('transcript');
+        if(lang === 'bn') {
+            transcript.innerHTML = "<p><b>Chitti:</b> আমি আপনাকে সাহায্য করতে পারি। (I can help you.)</p>";
+        } else if(lang === 'hi') {
+            transcript.innerHTML = "<p><b>Chitti:</b> मैं आपकी मदद कर सकता हूँ।</p>";
+        } else {
+            transcript.innerHTML = "<p><b>Chitti:</b> I am here to assist you.</p>";
         }
-    </script>
-</body>
-</html>
+    } catch (error) {
+        console.error("Vault access failed:", error);
+    }
+}
