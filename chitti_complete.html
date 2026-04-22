@@ -1,102 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Chitti PA | Full Cycle</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #f8fafc; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { padding: 15px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
-        .main-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; padding: 20px; max-width: 1500px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        
-        /* INTERFACE */
-        .orb-card { background: white; border-radius: 28px; padding: 30px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
-        .orb { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 30px; }
-        .orb.pulse { animation: saffron-pulse 1.5s infinite; }
-        @keyframes saffron-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 20px var(--saffron); } 100% { transform: scale(1); } }
-
-        #transcriptHUD { background: #fffbeb; border: 1px dashed var(--saffron); border-radius: 15px; padding: 15px; min-height: 40px; font-size: 14px; color: #92400e; margin-bottom: 15px; text-align: left; }
-        
-        /* SIDEBAR LEDGER */
-        .sidebar { display: flex; flex-direction: column; gap: 15px; }
-        .ledger-box { background: var(--navy); color: white; border-radius: 22px; padding: 20px; border-left: 6px solid var(--saffron); }
-        .label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 10px; }
-        
-        .controls { background: white; padding: 10px; border-radius: 20px; display: flex; gap: 10px; border: 1px solid #e2e8f0; }
-        .btn-icon { background: #f1f5f9; border: none; width: 50px; height: 50px; border-radius: 14px; cursor: pointer; font-size: 20px; }
-        .btn-icon.active { background: var(--saffron); color: white; }
-    </style>
-</head>
-<body>
-
-<header>
-    <div style="font-weight:900;">SAHAY | <span style="color:var(--gold)">CHITTI PA</span></div>
-    <div id="cycleStatus" style="font-size:10px; font-weight:800; color:var(--gold);">SYSTEM STANDBY</div>
-</header>
-
-<div class="main-layout">
-    <div style="display:flex; flex-direction:column; gap:15px;">
-        <div class="orb-card">
-            <div id="orb" class="orb" onclick="startCycle()">C</div>
-            <h2 id="headline" style="margin:0; font-size:20px;">Ready, Sire.</h2>
-        </div>
-        
-        <div id="transcriptHUD">Waiting for voice...</div>
-
-        <div class="controls">
-            <button id="micBtn" class="btn-icon" onclick="startCycle()">🎤</button>
-            <input type="text" id="userInput" style="flex:1; border:none; outline:none; padding:10px;" placeholder="Transcript shows here..." readonly>
-        </div>
-    </div>
-
-    <div class="sidebar">
-        <div class="ledger-box">
-            <span class="label">Sire Execution Ledger</span>
-            <div id="ledgerTask" style="font-size:13px; color:#e2e8f0;">No active tasks.</div>
-            <div id="ledgerStage" style="font-size:11px; color:var(--gold); margin-top:10px; font-weight:800;">STAGE: IDLE</div>
-        </div>
-    </div>
-</div>
-
 <script>
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-IN';
+    recognition.continuous = true; 
     recognition.interimResults = true;
 
-    function startCycle() {
+    let masterTranscript = "";
+
+    function startListening() {
+        masterTranscript = ""; 
         recognition.start();
-        document.getElementById('micBtn').classList.add('active');
-        document.getElementById('orb').classList.add('pulse');
-        document.getElementById('cycleStatus').innerText = "LISTENING...";
+        updateUI("LISTENING...", true);
     }
 
     recognition.onresult = (event) => {
-        let transcript = Array.from(event.results).map(r => r[0].transcript).join('');
-        document.getElementById('transcriptHUD').innerText = transcript;
-        document.getElementById('userInput').value = transcript;
-        
-        if (event.results[0].isFinal) {
-            finishCycle(transcript);
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                masterTranscript += event.results[i][0].transcript + " ";
+            } else {
+                interim += event.results[i][0].transcript;
+            }
         }
+        // Update HUD instantly so Sire sees the progress
+        const liveOutput = masterTranscript + interim;
+        document.getElementById('transcriptHUD').innerText = liveOutput;
+        document.getElementById('userInput').value = liveOutput;
     };
 
-    function finishCycle(cmd) {
+    function stopAndCertify() {
         recognition.stop();
-        document.getElementById('micBtn').classList.remove('active');
-        document.getElementById('cycleStatus').innerText = "EXECUTING CYCLE...";
+        const finalCommand = document.getElementById('userInput').value;
         
-        // Update Ledger
-        document.getElementById('ledgerTask').innerText = cmd;
-        document.getElementById('ledgerStage').innerText = "STAGE: DA AUDIT (95%)";
+        if (!finalCommand.trim()) return updateUI("NO COMMAND DETECTED", false);
 
-        speak("Cycle complete. Task logged in the Ledger for the Master.");
+        // AGENTIC HANDSHAKE
+        updateUI("CERTIFYING WITH DA...", false);
+        document.getElementById('ledgerTask').innerText = finalCommand;
+        document.getElementById('ledgerStage').innerText = "AUDIT: 95% ACCURACY GATE";
         
+        speak("Command captured. Co-founder and DA are certifying against Master Doc.");
+
+        // Simulate Agentic Processing
         setTimeout(() => {
-            document.getElementById('ledgerStage').innerText = "STAGE: COMPLETED";
+            document.getElementById('ledgerStage').innerText = "CERTIFIED & EXECUTED";
             document.getElementById('orb').classList.remove('pulse');
-        }, 2000);
+        }, 2500);
+    }
+
+    function updateUI(status, pulsing) {
+        document.getElementById('cycleStatus').innerText = status;
+        const orb = document.getElementById('orb');
+        pulsing ? orb.classList.add('pulse') : orb.classList.remove('pulse');
     }
 
     function speak(t) {
@@ -106,5 +60,3 @@
         window.speechSynthesis.speak(s);
     }
 </script>
-</body>
-</html>
