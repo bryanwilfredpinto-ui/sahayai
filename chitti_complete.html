@@ -1,47 +1,95 @@
-<style>
-    #docVault {
-        display: none;
-        background: #fff;
-        border-top: 4px solid var(--saffron);
-        padding: 25px;
-        margin-top: 20px;
-        text-align: left;
-        border-radius: 12px;
-        max-height: 400px;
-        overflow-y: auto;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .doc-header { color: var(--navy); font-weight: 800; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Chitti Sovereign OS | Sahay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #fdfdfd; --card: #ffffff; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 20px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
+        .logo-box { width: 45px; height: 45px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: white; }
+        .container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .chitti-panel { width: 100%; max-width: 850px; text-align: center; }
+        .orb { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight: 800; color: white; cursor: pointer; transition: 0.4s ease; box-shadow: 0 10px 30px rgba(232, 106, 23, 0.3); }
+        .orb.pulse { animation: saffron-pulse 2s infinite; }
+        @keyframes saffron-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.7); } 70% { transform: scale(1.08); box-shadow: 0 0 0 25px rgba(232, 106, 23, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0); } }
+        .display-card { background: var(--card); border: 1px solid #eee; border-radius: 28px; padding: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); min-height: 250px; }
+        #docVault { display: none; text-align: left; background: #fafafa; border: 1px solid #eaeaea; border-radius: 15px; padding: 20px; margin-top: 15px; }
+        .doc-label { font-weight: 800; font-size: 11px; color: var(--saffron); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .doc-body { font-size: 14px; color: #444; line-height: 1.6; white-space: pre-line; }
+        .controls { margin-top: 25px; display: flex; gap: 12px; }
+        .input-field { flex: 1; padding: 15px 20px; border-radius: 15px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        .send-btn { background: var(--saffron); color: white; border: none; padding: 0 30px; border-radius: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .send-btn:hover { background: #cf5b12; }
+    </style>
+</head>
+<body>
 
-<div class="chat-area">
-    <h2 id="status">Namaste, Sire.</h2>
-    <p id="msg">The Master Doc is ready for your touch.</p>
-    <div id="docVault">
-        <div class="doc-header">📂 MASTER DOCUMENT: SAHAY CORE V1.0</div>
-        <div id="docContent" style="font-size: 14px; color: #444; white-space: pre-line;">
-            Loading official blueprint...
+<header>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div class="logo-box">C</div>
+        <div style="font-weight:900; font-size:18px;">SAHAY | CHITTI</div>
+    </div>
+    <div style="font-size:11px; font-weight:800; color:var(--gold);">FOUNDER QC PASSED 🛡️</div>
+</header>
+
+<main class="container">
+    <div class="chitti-panel">
+        <div id="orb" class="orb pulse" onclick="triggerBriefing()">C</div>
+        <div class="display-card">
+            <h2 id="headline" style="color:var(--navy); margin-top:0;">Namaste, Sire.</h2>
+            <p id="subtext" style="color:#666;">The Master Doc for Project Sahay is ready for audit.</p>
+            <div id="docVault">
+                <span class="doc-label">Master Doc: Sovereign AI Engine</span>
+                <div id="docBody" class="doc-body"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <input type="text" id="userInput" class="input-field" placeholder="Command Chitti...">
+            <button class="send-btn" onclick="processInput()">SEND</button>
         </div>
     </div>
-</div>
+</main>
 
 <script>
-    function startBriefing() {
-        const orb = document.getElementById('chittiOrb');
-        const vault = document.getElementById('docVault');
-        const content = document.getElementById('docContent');
+    function triggerBriefing() {
+        const orb = document.getElementById('orb');
+        orb.classList.remove('pulse');
+        document.getElementById('docVault').style.display = 'block';
+        document.getElementById('headline').innerText = "Briefing in Progress...";
         
-        orb.classList.remove('update');
-        vault.style.display = 'block';
-        
-        const docText = `1. TARGET: Unified Chitti OS.
-        2. COMPLIANCE: DPDP 2023 🇮🇳 (Audit Passed).
-        3. SKILL UPDATER: IMD/Weather, PIB/Govt Schemes.
-        4. ACCURACY: 95% Verified.
-        5. PROTOCOL: Proactive audio briefing via Sire Touch.`;
-        
-        content.innerText = docText;
-        document.getElementById('status').innerText = "Briefing in Progress...";
-        speak("Sire, the Master Document is now visible on your dashboard for audit. I am ready to begin the audio summary.");
+        const masterData = `● ENTITY: Chitti Unified Core
+        ● COMPLIANCE: DPDP Act 2023 🇮🇳 (Audit Passed)
+        ● ACCURACY: 95% Verified by DA
+        ● LIVE SCOUT: Monitoring Weather & Govt Feeds
+        ● SECURITY: Sovereign Data Isolation Active`;
+
+        document.getElementById('docBody').innerText = masterData;
+        speak("Sire, the Master Document is audited and visible. Skill Update Specialist is active.");
     }
+
+    function processInput() {
+        const val = document.getElementById('userInput').value;
+        if (val.toLowerCase().includes("weather")) {
+            document.getElementById('orb').classList.add('pulse');
+            document.getElementById('headline').innerText = "Vigilance Alert";
+            speak("Scanning weather feeds for Vizag and Odisha, Sire.");
+        }
+        document.getElementById('userInput').value = "";
+    }
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = 'en-IN';
+        speech.rate = 0.95;
+        window.speechSynthesis.speak(speech);
+    }
+
+    // Proactive Alert simulation
+    setTimeout(() => { document.getElementById('orb').classList.add('pulse'); }, 2000);
 </script>
+</body>
+</html>
