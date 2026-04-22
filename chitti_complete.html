@@ -1,26 +1,25 @@
-// This targets the exact specialist file you just deployed
-const VAULT_URL = "https://raw.githubusercontent.com/bryanwilfredpinto-ui/sahayai/main/specialist_Bangla.json";
+<script>
+    const VAULT_URL = "https://raw.githubusercontent.com/bryanwilfredpinto-ui/sahayai/main/specialist_Bangla.json";
 
-async function updateTranscript(lang) {
-    try {
-        // Fetch the 96% rigor test data from your vault
-        const response = await fetch(VAULT_URL);
-        const data = await response.json();
-        
-        // Update your original status badge with the 'Certified' status
-        const statusBadge = document.querySelector('.status-badge'); // Adjust selector to your original class
-        if(statusBadge) statusBadge.innerText = `Chitti: ${data.status} (Score: ${data.score})`;
+    async function updateTranscript(lang) {
+        try {
+            const response = await fetch(VAULT_URL);
+            const data = await response.json();
+            
+            // This updates the badge with your 96% certification score
+            const statusBadge = document.getElementById('chitti-status'); 
+            if(statusBadge) statusBadge.innerText = `Chitti: ${data.status} (Score: ${data.score})`;
 
-        // Original logic for updating the text box
-        const transcript = document.getElementById('transcript');
-        if(lang === 'bn') {
-            transcript.innerHTML = "<p><b>Chitti:</b> আমি আপনাকে সাহায্য করতে পারি। (I can help you.)</p>";
-        } else if(lang === 'hi') {
-            transcript.innerHTML = "<p><b>Chitti:</b> मैं आपकी मदद कर सकता हूँ।</p>";
-        } else {
-            transcript.innerHTML = "<p><b>Chitti:</b> I am here to assist you.</p>";
+            const transcript = document.getElementById('transcript');
+            if(lang === 'bn') {
+                transcript.innerHTML = "<p><b>Chitti:</b> আমি আপনাকে সাহায্য করতে পারি। (I can help you.)</p>";
+            } else if(lang === 'hi') {
+                transcript.innerHTML = "<p><b>Chitti:</b> मैं आपकी मदद कर सकता हूँ।</p>";
+            } else {
+                transcript.innerHTML = "<p><b>Chitti:</b> I am here to assist you.</p>";
+            }
+        } catch (error) {
+            console.error("Vault access failed:", error);
         }
-    } catch (error) {
-        console.error("Vault access failed:", error);
     }
-}
+</script>
