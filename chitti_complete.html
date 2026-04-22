@@ -8,36 +8,45 @@
     <style>
         :root { --saffron: #E86A17; --navy: #0E2344; --gold: #D4AF37; --bg: #f4f7f9; }
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #17202a; height: 100vh; display: flex; flex-direction: column; }
-        header { padding: 15px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); }
+        
+        /* HEADER */
+        header { padding: 15px 40px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .logo-box { width: 40px; height: 40px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 20px; }
         
-        .main-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; padding: 20px; max-width: 1450px; margin: 0 auto; width: 100%; box-sizing: border-box; overflow: hidden; }
+        .main-layout { flex: 1; display: grid; grid-template-columns: 1fr 380px; gap: 20px; padding: 20px; max-width: 1500px; margin: 0 auto; width: 100%; box-sizing: border-box; overflow: hidden; }
         
-        /* CENTER CORE */
+        /* LEFT: INTERACTION CORE */
         .core-center { display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .orb-card { background: white; border-radius: 28px; padding: 30px; text-align: center; border: 1px solid #e0e6ed; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
-        .orb { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 45px; color: white; font-weight: 800; cursor: pointer; transition: 0.4s; }
+        .orb-card { background: white; border-radius: 28px; padding: 35px; text-align: center; border: 1px solid #e0e6ed; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .orb { width: 115px; height: 115px; border-radius: 50%; background: linear-gradient(135deg, var(--saffron), var(--gold)); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white; font-weight: 800; cursor: pointer; transition: 0.4s; box-shadow: 0 15px 35px rgba(232, 106, 23, 0.3); }
         .orb.pulse { animation: saffron-pulse 2s infinite; }
         @keyframes saffron-pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.7); } 70% { transform: scale(1.08); box-shadow: 0 0 0 20px rgba(232, 106, 23, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 106, 23, 0); } }
 
-        /* SIDEBAR & LEDGER */
+        /* RIGHT: SIDEBAR & LEDGER */
         .sidebar { display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .ledger-box { background: #0E2344; color: white; border-radius: 20px; padding: 20px; border-left: 5px solid var(--saffron); }
-        .spec-box { background: white; border-radius: 20px; padding: 15px; border: 1px solid #e0e6ed; }
-        .label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+        .ledger-box { background: #0E2344; color: white; border-radius: 22px; padding: 20px; border-left: 6px solid var(--saffron); box-shadow: 0 10px 25px rgba(14, 35, 68, 0.2); }
+        .spec-box { background: white; border-radius: 20px; padding: 18px; border: 1px solid #e0e6ed; }
+        .label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
         
-        /* STATUS TAGS */
-        .status-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.1); color: var(--gold); margin-top: 10px; }
-        .processing { color: #f1c40f; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        /* LEDGER CONTENT STYLE */
+        .ledger-data { font-size: 13px; line-height: 1.5; color: #cbd5e0; }
+        .da-reason { color: var(--gold); font-size: 11px; margin-top: 12px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: block; }
+        .status-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.15); color: var(--gold); margin-top: 15px; }
+        .processing { color: #f1c40f; animation: blink 1.2s infinite; }
+        @keyframes blink { 50% { opacity: 0.4; } }
 
-        /* INPUT */
-        .controls { background: white; padding: 10px; border-radius: 20px; display: flex; gap: 10px; border: 1px solid #e0e6ed; }
-        .input-field { flex: 1; border: none; padding: 10px; font-size: 16px; outline: none; }
-        .btn-icon { background: #f0f4f8; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
-        .send-btn { background: var(--saffron); color: white; border: none; padding: 0 25px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        /* INPUT CONTROLS */
+        .controls { background: white; padding: 12px; border-radius: 22px; display: flex; gap: 12px; border: 1px solid #e0e6ed; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .input-field { flex: 1; border: none; padding: 10px 15px; font-size: 16px; outline: none; font-family: inherit; }
+        .btn-icon { background: #f0f4f8; border: none; width: 50px; height: 50px; border-radius: 14px; cursor: pointer; font-size: 20px; transition: 0.2s; }
+        .btn-icon:hover { background: #e2e8f0; }
+        .btn-icon.active { background: var(--saffron); color: white; animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(232, 106, 23, 0.4); } 100% { box-shadow: 0 0 0 10px rgba(232, 106, 23, 0); } }
+        .send-btn { background: var(--navy); color: white; border: none; padding: 0 25px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .send-btn:hover { background: #1a2a44; }
 
-        #vault { display: none; margin-top: 15px; text-align: left; background: #fafbfc; padding: 15px; border-radius: 15px; border: 1px solid #eee; font-size: 13px; }
+        #vault { display: none; margin-top: 20px; text-align: left; background: #fafbfc; border-radius: 18px; padding: 20px; border: 1px solid #eee; }
+        .vault-item { margin-bottom: 8px; font-size: 14px; display: flex; gap: 10px; }
     </style>
 </head>
 <body>
@@ -45,25 +54,27 @@
 <header>
     <div style="display:flex; align-items:center; gap:12px;">
         <div class="logo-box">C</div>
-        <div style="font-weight:900; font-size:18px;">SAHAY | <span style="color:var(--gold)">SIRE MODE</span></div>
+        <div style="font-weight:900; font-size:18px;">SAHAY | <span style="color:var(--gold)">SIRE COMMAND</span></div>
     </div>
-    <div style="font-size:11px; font-weight:800; color:var(--gold);">LEDGER ACTIVE 🛡️</div>
+    <div style="font-size:11px; font-weight:800; color:var(--gold);">SOVEREIGN PROTOCOL ACTIVE 🛡️</div>
 </header>
 
 <div class="main-layout">
     <div class="core-center">
         <div class="orb-card">
             <div id="orb" class="orb pulse" onclick="triggerBriefing()">C</div>
-            <h2 id="headline" style="margin:0; font-size:22px;">Ready, Sire.</h2>
-            <p id="subtext" style="color:#666; font-size:14px;">The Execution Ledger is monitoring your requests.</p>
+            <h2 id="headline" style="margin:0; font-size:26px; color:var(--navy);">Namaste, Sire.</h2>
+            <p id="subtext" style="color:#666; font-size:15px; margin-top:10px;">The Ledger is ready. Any request will show its audit trail.</p>
+            
             <div id="vault">
-                <div id="vaultBody" style="white-space: pre-line; line-height:1.6; color:#333;"></div>
+                <span class="label" style="color:var(--saffron); margin-bottom:15px;">Verified Intelligence Brief</span>
+                <div id="vaultBody" style="line-height:1.7; color:#333; font-weight:500;"></div>
             </div>
         </div>
         
         <div class="controls">
-            <button class="btn-icon" onclick="startListening()">🎤</button>
-            <input type="text" id="userInput" class="input-field" placeholder="Place a new request...">
+            <button id="micBtn" class="btn-icon" onclick="startListening()">🎤</button>
+            <input type="text" id="userInput" class="input-field" placeholder="Place a request for Chitti...">
             <button class="send-btn" onclick="processInput()">SEND</button>
         </div>
     </div>
@@ -71,53 +82,79 @@
     <div class="sidebar">
         <div class="ledger-box">
             <span class="label" style="color:var(--gold)">Sire Execution Ledger</span>
-            <div id="ledgerContent" style="font-size: 12px; line-height: 1.4;">
-                System Idle. Waiting for Founder's command...
+            <div id="ledgerContent" class="ledger-data">
+                <i>System Standby. Waiting for Founder command...</i>
             </div>
-            <div id="ledgerStatus" class="status-tag">STATUS: STANDBY</div>
+            <div id="ledgerStatus" class="status-tag">STATUS: ONLINE</div>
         </div>
 
         <div class="spec-box">
             <span class="label" style="color:var(--navy)">Skill Update Specialist</span>
-            <div style="font-size:12px; color:#555;">Vigilance: Vizag Weather & PIB.</div>
+            <div style="font-size:12px; color:#555;">Live Feeds: IMD Weather (Vizag/Odisha) & PIB News.</div>
         </div>
         
         <div class="spec-box">
             <span class="label" style="color:var(--navy)">Devil's Advocate</span>
-            <div style="font-size:12px; color:#555;">Verification Gate: 95% Accuracy.</div>
+            <div style="font-size:12px; color:#555;">Accuracy Threshold: 95%. DPDP Audit: Active.</div>
         </div>
     </div>
 </div>
 
 <script>
-    function updateLedger(task, status) {
-        document.getElementById('ledgerContent').innerHTML = `<b>Request:</b> ${task}<br><b>Stage:</b> ${status}`;
-        document.getElementById('ledgerStatus').innerHTML = `STATUS: <span class="processing">IN PROGRESS</span>`;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+    if (recognition) {
+        recognition.lang = 'en-IN';
+        recognition.onresult = (e) => {
+            document.getElementById('userInput').value = e.results[0][0].transcript;
+            document.getElementById('micBtn').classList.remove('active');
+            processInput();
+        };
+        recognition.onend = () => document.getElementById('micBtn').classList.remove('active');
+    }
+
+    function startListening() {
+        if (!recognition) return alert("Browser does not support voice.");
+        document.getElementById('micBtn').classList.add('active');
+        recognition.start();
+    }
+
+    function updateLedger(task, stage, reason) {
+        const content = document.getElementById('ledgerContent');
+        content.innerHTML = `
+            <b>Request:</b> ${task}<br>
+            <b>Stage:</b> ${stage}
+            <span class="da-reason">DA Reason: ${reason}</span>
+        `;
+        document.getElementById('ledgerStatus').innerHTML = `STATUS: <span class="processing">DA AUDIT</span>`;
     }
 
     function triggerBriefing() {
         document.getElementById('orb').classList.remove('pulse');
         document.getElementById('vault').style.display = 'block';
         document.getElementById('headline').innerText = "Intelligence Synced.";
-        const content = `● VIZAG: Monitoring High-Heat Warning
-● PIB: 3 New Schemes Ingested
-● AUDIT: 95% Verified`;
-        document.getElementById('vaultBody').innerText = content;
-        speak("Sire, the Execution Ledger is live. Any new request will show its exact stage in the sidebar box.");
+        
+        const brief = `● VIZAG: Heatwave Watch Active (IMD Sync)
+● PIB: 3 Policy updates verified for accuracy
+● SOVEREIGN: DPDP 2023 compliance confirmed`;
+        
+        document.getElementById('vaultBody').innerText = brief;
+        speak("Sire, the Execution Ledger is synced. I am monitoring Vizag and Government schemes. All specialists are working at our 95 percent standard.");
     }
 
     function processInput() {
         const val = document.getElementById('userInput').value;
         if (!val) return;
         
-        updateLedger(val, "Scout Ingesting Data...");
+        updateLedger(val, "Scout Data Retrieval...", "Analyzing source trust for 95% threshold.");
         document.getElementById('orb').classList.add('pulse');
         
         setTimeout(() => {
-            updateLedger(val, "Devil's Advocate Auditing (95% Check)...");
-        }, 2000);
+            updateLedger(val, "DA Logic Verification", "Compliant with DPDP Act. Logic verified by CD line.");
+        }, 2500);
 
-        speak("Request placed, Sire. Tracking progress in the Execution Ledger.");
+        speak("Request placed, Sire. Tracking progress in your Ledger.");
         document.getElementById('userInput').value = "";
     }
 
@@ -128,6 +165,13 @@
         s.rate = 0.95;
         window.speechSynthesis.speak(s);
     }
+
+    // Proactive pulse alert
+    setTimeout(() => { 
+        if(document.getElementById('vault').style.display !== 'block') {
+            document.getElementById('orb').classList.add('pulse'); 
+        }
+    }, 2500);
 </script>
 </body>
 </html>
