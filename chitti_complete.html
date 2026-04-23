@@ -1,199 +1,126 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Chitti Elite — Commando Mode</title>
+    <title>Sahay AI — Chitti Elite Commando</title>
     <style>
+        /* ELITE DESIGN TOKENS */
         :root {
-            --elite-navy: #0A192F;
-            --elite-gold: #D4AF37;
-            --commando-red: #B22222;
-            --safe-green: #10B981;
-            --glass: rgba(255, 255, 255, 0.98);
+            --saffron: #E8520A; --navy: #1B3A6B; --gold: #D4A017;
+            --bg: #F8F4F0; --surface: #FFFFFF; --commando-red: #B22222;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: #F8FAFC;
-            color: var(--elite-navy);
-            margin: 0;
-            padding-bottom: 100px;
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--navy); margin: 0; padding-bottom: 80px; }
+
+        /* COMMANDO HEADER */
+        .elite-header {
+            background: var(--navy); color: white; padding: 25px 20px;
+            border-bottom: 4px solid var(--saffron); text-align: center;
         }
 
-        /* ── DPDP COMPLIANCE HEADER ── */
-        .legal-banner {
-            background: #F1F5F9;
-            padding: 10px 20px;
-            font-size: 11px;
-            text-align: center;
-            border-bottom: 1px solid #E2E8F0;
-            font-weight: 600;
+        .status-badge {
+            background: var(--saffron); color: white; font-size: 10px;
+            font-weight: 900; padding: 4px 12px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
-        header {
-            background: var(--elite-navy);
-            padding: 30px 20px;
-            color: white;
-            text-align: center;
-            border-bottom: 4px solid var(--elite-gold);
+        /* SPECIALIST GRID */
+        .specialist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .spec-card {
+            background: white; border-radius: 20px; padding: 15px;
+            border: 1px solid #E0D5C8; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .spec-card:active { transform: scale(0.95); }
+        .spec-icon { font-size: 24px; margin-bottom: 8px; }
+        .spec-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+        .spec-desc { font-size: 11px; color: #666; }
+
+        /* CREATIVE LEARNING HUB */
+        .tool-vault {
+            margin: 20px; background: #FFF9F2; border: 2px dashed var(--gold);
+            border-radius: 20px; padding: 20px;
         }
 
-        .premium-tag {
-            background: linear-gradient(45deg, var(--elite-gold), #FDE68A);
-            color: var(--elite-navy);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            display: inline-block;
-            margin-bottom: 10px;
+        /* DUAL-INPUT CONTROL (SPEAK & TYPE) */
+        .commando-input-bar {
+            position: fixed; bottom: 0; width: 100%; max-width: 480px;
+            background: white; border-top: 1px solid #ddd; padding: 15px;
+            display: flex; gap: 10px; align-items: center; z-index: 1000;
         }
-
-        /* ── COMMANDO DASHBOARD ── */
-        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
-
-        .chitti-status {
-            background: white;
-            border-radius: 24px;
-            padding: 20px;
-            margin-top: -40px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .input-box {
+            flex: 1; padding: 12px 15px; border-radius: 15px;
+            border: 1.5px solid #ddd; outline: none; font-size: 14px;
         }
-
-        .orb {
-            width: 50px; height: 50px;
-            background: var(--elite-gold);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        .mic-trigger {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: var(--saffron); border: none; color: white;
+            font-size: 20px; cursor: pointer; animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(232, 82, 10, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(232, 82, 10, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(232, 82, 10, 0); }
         }
-
-        /* ── SPECIALIST ARMY SCROLL ── */
-        .army-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .specialist-card {
-            background: white;
-            border: 1px solid #E2E8F0;
-            border-radius: 20px;
-            padding: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .badge-soon {
-            position: absolute; top: 10px; right: 10px;
-            font-size: 8px; font-weight: 900;
-            background: #F1F5F9; padding: 2px 6px; border-radius: 4px;
-        }
-
-        .icon-box { font-size: 24px; margin-bottom: 10px; }
-        .card-title { font-size: 14px; font-weight: 800; margin-bottom: 5px; }
-        .card-desc { font-size: 11px; color: #64748B; line-height: 1.4; }
-
-        /* ── EXECUTION BAR ── */
-        .commando-dock {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: var(--elite-navy);
-            border-radius: 35px;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            z-index: 1000;
-        }
-
-        .commando-btn {
-            background: var(--elite-gold);
-            border: none;
-            color: var(--elite-navy);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 800;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
     </style>
 </head>
 <body>
 
-<div class="legal-banner">DPDP Compliant: Your data is encrypted in your personal vault.</div>
+<div class="elite-header">
+    <span class="status-badge">Commando Active</span>
+    <h1 style="margin: 10px 0 5px;">CHITTI ELITE</h1>
+    <p style="font-size: 12px; opacity: 0.8;">Powered by DeepSeek • Certified in Bangla</p>
+</div>
 
-<header>
-    <div class="premium-tag">COMMANDO MODE</div>
-    <h1 style="margin:0;">SAHAY ELITE</h1>
-    <p style="font-size: 12px; opacity: 0.8;">The Loyal Protector of Bharat</p>
-</header>
-
-<div class="container">
-    <div class="chitti-status">
-        <div class="orb"></div>
-        <div>
-            <div style="font-size: 16px; font-weight: 800;">Chitti is Active</div>
-            <div style="font-size: 12px; color: var(--safe-green);">🛡️ 14 Fraud Attempts Blocked Today</div>
-        </div>
+<div class="specialist-grid">
+    <div class="spec-card">
+        <div class="spec-icon">🛡️</div>
+        <div class="spec-title">Chitti Feedback</div>
+        <div class="spec-desc">Auditing Master's progress & quality daily.</div>
     </div>
-
-    <div class="army-grid">
-        <div class="specialist-card">
-            <div class="icon-box">🛒</div>
-            <div class="card-title">Kirana Commando</div>
-            <div class="card-desc">Supplier calls, Udhaar tracking, and stock alerts.</div>
-        </div>
-
-        <div class="specialist-card">
-            <div class="icon-box">✨</div>
-            <div class="card-title">Beauty Advisor</div>
-            <div class="card-desc">Actor looks on a budget. Ingredient safety check.</div>
-        </div>
-
-        <div class="specialist-card">
-            <div class="icon-box">👮</div>
-            <div class="card-title">Safe Walk</div>
-            <div class="card-desc">Live GPS escort for girls, boys, and elders.</div>
-        </div>
-
-        <div class="specialist-card">
-            <div class="icon-box">🕵️</div>
-            <div class="card-title">Ghost Reporter</div>
-            <div class="badge-soon">PHASE 2</div>
-            <div class="card-desc">Anonymous civic complaints to authorities.</div>
-        </div>
+    <div class="spec-card">
+        <div class="spec-icon">💰</div>
+        <div class="spec-title">Chitti Sales</div>
+        <div class="spec-desc">Pitching Sahay AI to the next 1M users.</div>
     </div>
-
-    <div style="margin-top: 30px;">
-        <h3 style="font-size: 16px;">Elite Capabilities (Coming Soon)</h3>
-        <div style="background: #EEF2FF; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--elite-navy);">
-            <div style="font-weight: 800; font-size: 13px;">📞 Chitti Voice Liaison</div>
-            <div style="font-size: 11px;">"Chitti, call my distributor and ask for the pending invoice."</div>
-        </div>
-        <div style="background: #FFFBEB; padding: 15px; border-radius: 15px; border-left: 4px solid var(--elite-gold);">
-            <div style="font-weight: 800; font-size: 13px;">🛡️ UPI Fraud Protection</div>
-            <div style="font-size: 11px;">Real-time scanning of QR codes for known scammer IDs.</div>
-        </div>
+    <div class="spec-card">
+        <div class="spec-icon">🚀</div>
+        <div class="spec-title">Onboarding</div>
+        <div class="spec-desc">Seamless entry for the 100 Founders.</div>
+    </div>
+    <div class="spec-card">
+        <div class="spec-icon">🎨</div>
+        <div class="spec-title">Logo & Video</div>
+        <div class="spec-desc">Learning free tools (Canva, CapCut) daily.</div>
     </div>
 </div>
 
-<div class="commando-dock">
-    <span style="color: white; font-size: 13px; font-weight: 700;">COMMANDO READY</span>
-    <button class="commando-btn" onclick="alert('Starting Safe-Walk Mode...')">START ESCORT</button>
+<div class="tool-vault">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 16px;">Creative Vault (Free Tools)</h3>
+        <button style="font-size: 10px; border: none; background: var(--gold); color: white; border-radius: 5px; padding: 2px 6px;">LIVE UPDATES</button>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; line-height: 1.6;">
+        <div>✅ <strong>Logo Maker:</strong> Canva (Free Tier) - Updated Today</div>
+        <div>✅ <strong>Video Editor:</strong> CapCut - Best for Mobile Creators</div>
+        <div>⏳ <strong>Oriya Learning:</strong> Chitti is currently studying...</div>
+    </div>
 </div>
+
+<div class="commando-input-bar">
+    <button class="mic-trigger" onclick="startDualInput()">🎤</button>
+    <input type="text" class="input-box" placeholder="Speak and type simultaneously..." id="chitti-input">
+    <button style="border: none; background: none; font-size: 24px; cursor: pointer;">➤</button>
+</div>
+
+<script>
+    function startDualInput() {
+        // Simultaneous Voice & Type Logic for DeepSeek
+        alert("Chitti is now listening. You may type while speaking.");
+    }
+</script>
 
 </body>
 </html>
