@@ -1,126 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Sahay AI — Chitti Elite Commando</title>
-    <style>
-        /* ELITE DESIGN TOKENS */
-        :root {
-            --saffron: #E8520A; --navy: #1B3A6B; --gold: #D4A017;
-            --bg: #F8F4F0; --surface: #FFFFFF; --commando-red: #B22222;
-        }
+<div id="chitti-factory-view" style="background:#111; color:#0f0; border:2px solid var(--gold); border-radius:15px; padding:20px; margin:20px 0;">
+    <h4 style="color:var(--gold); margin-bottom:10px;">🏭 CHITTI FACTORY: LIVE STATUS</h4>
+    
+    <div class="pipeline-step" id="step-pa">🔵 PA: Delegating 'Upsell' Task... <span class="time">19:45</span></div>
+    <div class="pipeline-step" id="step-colab">⏳ COLAB: Training Brain (200 Books)... <span class="progress">45%</span></div>
+    <div class="pipeline-step" id="step-da">⚪ DA: Audit Stress Test... <span class="status">Waiting</span></div>
+    <div class="pipeline-step" id="step-cert">⚪ CERT: Gemini Certification... <span class="status">Locked</span></div>
 
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--navy); margin: 0; padding-bottom: 80px; }
-
-        /* COMMANDO HEADER */
-        .elite-header {
-            background: var(--navy); color: white; padding: 25px 20px;
-            border-bottom: 4px solid var(--saffron); text-align: center;
-        }
-
-        .status-badge {
-            background: var(--saffron); color: white; font-size: 10px;
-            font-weight: 900; padding: 4px 12px; border-radius: 20px;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        /* SPECIALIST GRID */
-        .specialist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .spec-card {
-            background: white; border-radius: 20px; padding: 15px;
-            border: 1px solid #E0D5C8; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
-        .spec-card:active { transform: scale(0.95); }
-        .spec-icon { font-size: 24px; margin-bottom: 8px; }
-        .spec-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
-        .spec-desc { font-size: 11px; color: #666; }
-
-        /* CREATIVE LEARNING HUB */
-        .tool-vault {
-            margin: 20px; background: #FFF9F2; border: 2px dashed var(--gold);
-            border-radius: 20px; padding: 20px;
-        }
-
-        /* DUAL-INPUT CONTROL (SPEAK & TYPE) */
-        .commando-input-bar {
-            position: fixed; bottom: 0; width: 100%; max-width: 480px;
-            background: white; border-top: 1px solid #ddd; padding: 15px;
-            display: flex; gap: 10px; align-items: center; z-index: 1000;
-        }
-        .input-box {
-            flex: 1; padding: 12px 15px; border-radius: 15px;
-            border: 1.5px solid #ddd; outline: none; font-size: 14px;
-        }
-        .mic-trigger {
-            width: 45px; height: 45px; border-radius: 50%;
-            background: var(--saffron); border: none; color: white;
-            font-size: 20px; cursor: pointer; animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(232, 82, 10, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(232, 82, 10, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(232, 82, 10, 0); }
-        }
-    </style>
-</head>
-<body>
-
-<div class="elite-header">
-    <span class="status-badge">Commando Active</span>
-    <h1 style="margin: 10px 0 5px;">CHITTI ELITE</h1>
-    <p style="font-size: 12px; opacity: 0.8;">Powered by DeepSeek • Certified in Bangla</p>
-</div>
-
-<div class="specialist-grid">
-    <div class="spec-card">
-        <div class="spec-icon">🛡️</div>
-        <div class="spec-title">Chitti Feedback</div>
-        <div class="spec-desc">Auditing Master's progress & quality daily.</div>
+    <div id="factory-logs" style="background:#000; height:100px; overflow-y:auto; font-size:10px; margin-top:10px; padding:10px; border:1px solid #333;">
+        [INFO] Initializing SPIN Selling dataset...
+        [INFO] Applying 'Humble Worker' tone weights...
+        [INFO] Syncing with DeepSeek API...
     </div>
-    <div class="spec-card">
-        <div class="spec-icon">💰</div>
-        <div class="spec-title">Chitti Sales</div>
-        <div class="spec-desc">Pitching Sahay AI to the next 1M users.</div>
-    </div>
-    <div class="spec-card">
-        <div class="spec-icon">🚀</div>
-        <div class="spec-title">Onboarding</div>
-        <div class="spec-desc">Seamless entry for the 100 Founders.</div>
-    </div>
-    <div class="spec-card">
-        <div class="spec-icon">🎨</div>
-        <div class="spec-title">Logo & Video</div>
-        <div class="spec-desc">Learning free tools (Canva, CapCut) daily.</div>
+
+    <div id="master-doc-vault" style="display:none; margin-top:15px; padding:10px; background:rgba(212, 160, 23, 0.1); border-radius:10px;">
+        <span style="color:var(--gold)">🏆 MASTER DOC READY:</span> 
+        <a href="#" style="color:#fff; text-decoration:underline;">Download CHITTI_SALES_CERT_V1.docx</a>
     </div>
 </div>
-
-<div class="tool-vault">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 16px;">Creative Vault (Free Tools)</h3>
-        <button style="font-size: 10px; border: none; background: var(--gold); color: white; border-radius: 5px; padding: 2px 6px;">LIVE UPDATES</button>
-    </div>
-    <div style="margin-top: 10px; font-size: 12px; line-height: 1.6;">
-        <div>✅ <strong>Logo Maker:</strong> Canva (Free Tier) - Updated Today</div>
-        <div>✅ <strong>Video Editor:</strong> CapCut - Best for Mobile Creators</div>
-        <div>⏳ <strong>Oriya Learning:</strong> Chitti is currently studying...</div>
-    </div>
-</div>
-
-<div class="commando-input-bar">
-    <button class="mic-trigger" onclick="startDualInput()">🎤</button>
-    <input type="text" class="input-box" placeholder="Speak and type simultaneously..." id="chitti-input">
-    <button style="border: none; background: none; font-size: 24px; cursor: pointer;">➤</button>
-</div>
-
-<script>
-    function startDualInput() {
-        // Simultaneous Voice & Type Logic for DeepSeek
-        alert("Chitti is now listening. You may type while speaking.");
-    }
-</script>
-
-</body>
-</html>
