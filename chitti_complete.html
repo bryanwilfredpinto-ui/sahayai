@@ -2,59 +2,231 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sahay AI - Chitti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Chitti Elite — Sahay AI</title>
     <style>
-        /* This restores your original clean look */
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .container { width: 400px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .status-badge { background: #e3f2fd; color: #1976d2; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 20px; display: inline-block; }
-        .transcript-area { min-height: 150px; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: left; line-height: 1.6; }
-        .btn-group { display: flex; justify-content: space-between; gap: 10px; }
-        button { flex: 1; padding: 10px; border: none; border-radius: 6px; background: #007bff; color: white; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
+        :root {
+            --elite-navy: #0A192F;
+            --elite-gold: #D4AF37;
+            --elite-saffron: #E86A17;
+            --elite-bg: #FDFBF7;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--elite-bg);
+            color: var(--elite-navy);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* ── ELITE HEADER ── */
+        header {
+            background: var(--elite-navy);
+            padding: 25px 20px;
+            color: white;
+            text-align: center;
+            border-bottom: 3px solid var(--elite-gold);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .premium-badge {
+            background: linear-gradient(45deg, var(--elite-gold), #FFF5D1);
+            color: var(--elite-navy);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── ONBOARDING HOOK ── */
+        .hero-section {
+            padding: 40px 20px;
+            text-align: center;
+            background: radial-gradient(circle at top, #FFF, var(--elite-bg));
+        }
+
+        .chitti-avatar {
+            width: 100px; height: 100px;
+            background: var(--elite-saffron);
+            border-radius: 30px;
+            margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 50px; color: white;
+            box-shadow: 0 15px 35px rgba(232, 106, 23, 0.3);
+        }
+
+        /* ── THE CHITTI ARMY SCROLL ── */
+        .army-container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .chitti-card {
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .chitti-card:hover { transform: translateY(-5px); border-color: var(--elite-gold); }
+
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+
+        .icon-box {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+
+        .description-box {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4B5563;
+            margin-bottom: 15px;
+        }
+
+        .lang-pill {
+            display: inline-block;
+            background: #F3F4F6;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--elite-navy);
+            margin-right: 5px;
+        }
+
+        .speak-btn {
+            background: var(--elite-saffron);
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            float: right;
+        }
+
+        /* ── UPSELL MODAL ── */
+        .upsell-trigger {
+            background: var(--elite-navy);
+            color: var(--elite-gold);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 800;
+            margin: 20px;
+            cursor: pointer;
+            border: 2px solid var(--elite-gold);
+        }
+
+        /* ── FEEDBACK BAR ── */
+        .feedback-anchor {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--elite-saffron);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(232, 106, 23, 0.4);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="status-badge" id="chitti-status">Chitti: Online</div>
-        
-        <div class="transcript-area" id="transcript">
-            <p>Welcome, Sire. How can I assist you today?</p>
-        </div>
+<header>
+    <div class="premium-badge">Elite Access</div>
+    <h1 style="margin: 10px 0 5px;">SAHAY AI</h1>
+    <p style="font-size: 12px; opacity: 0.8; letter-spacing: 2px;">BHARAT'S AGENTIC OS</p>
+</header>
 
-        <div class="btn-group">
-            <button onclick="updateTranscript('en')">English</button>
-            <button onclick="updateTranscript('hi')">Hindi</button>
-            <button onclick="updateTranscript('bn')">Bangla</button>
+<div class="hero-section">
+    <div class="chitti-avatar">C</div>
+    <h2>Namaste, I am Chitti.</h2>
+    <p>Your Elite Army of Specialized Workers is ready.</p>
+</div>
+
+<div class="army-container">
+    <div class="chitti-card">
+        <div class="card-header">
+            <div class="icon-box" style="background: #E0F2FE;">🎓</div>
+            <div>
+                <h3 style="margin:0;">Chitti Coach</h3>
+                <span class="lang-pill">English</span><span class="lang-pill">हिंदी</span>
+            </div>
+            <button class="speak-btn" onclick="speak('coach')">🔊</button>
+        </div>
+        <div class="description-box" id="desc-coach">
+            "I help you learn new skills, from coding to English, simplified for the common man."<br>
+            <i style="color: #6B7280;">"Main aapko nayi skills sikhata hoon, bilkul aasaan bhasha mein."</i>
         </div>
     </div>
 
-    <script>
-        // Links directly to your 211th commit
-        const VAULT_URL = "https://raw.githubusercontent.com/bryanwilfredpinto-ui/sahayai/main/specialist_Bangla.json";
+    <div class="chitti-card">
+        <div class="card-header">
+            <div class="icon-box" style="background: #FEE2E2;">🏥</div>
+            <div>
+                <h3 style="margin:0;">Chitti Oncology</h3>
+                <span class="lang-pill">ಕನ್ನಡ</span><span class="lang-pill">हिंदी</span>
+            </div>
+            <button class="speak-btn" onclick="speak('oncology')">🔊</button>
+        </div>
+        <div class="description-box" id="desc-oncology">
+            "Navigating cancer care is hard. I manage your reports, diet, and appointments."<br>
+            <i style="color: #6B7280;">"Cancer ka ilaaj mushkil hai. Main aapke reports aur diet ka dhyan rakhta hoon."</i>
+        </div>
+    </div>
 
-        async function updateTranscript(lang) {
-            try {
-                const response = await fetch(VAULT_URL);
-                const data = await response.json();
-                
-                // Updates score to 96 as seen in your Colab
-                document.getElementById('chitti-status').innerText = `Chitti: ${data.status} (Score: ${data.score})`;
+    <div class="chitti-card">
+        <div class="card-header">
+            <div class="icon-box" style="background: #FEF3C7;">🛒</div>
+            <div>
+                <h3 style="margin:0;">Chitti Kirana</h3>
+                <span class="lang-pill">English</span><span class="lang-pill">हिंदी</span>
+            </div>
+            <button class="speak-btn" onclick="speak('kirana')">🔊</button>
+        </div>
+        <div class="description-box">
+            "I track your udhaar (credit), stock levels, and daily profit so you can grow."<br>
+            <i style="color: #6B7280;">"Main aapka udhaar aur profit manage karta hoon taki aapka dhanda bade."</i>
+        </div>
+    </div>
 
-                const transcript = document.getElementById('transcript');
-                if(lang === 'bn') {
-                    transcript.innerHTML = "<b>Chitti:</b> আমি আপনাকে সাহায্য করতে পারি। (I can help you.)";
-                } else if(lang === 'hi') {
-                    transcript.innerHTML = "<b>Chitti:</b> मैं आपकी मदद कर सकता हूँ।";
-                } else {
-                    transcript.innerHTML = "<b>Chitti:</b> I am here to assist you.";
-                }
-            } catch (error) {
-                console.error("Vault access failed:", error);
-            }
-        }
-    </script>
+    <div class="upsell-trigger" onclick="alert('Upgrading to Business Brain (₹499)...')">
+        UPGRADE TO BUSINESS BRAIN (₹499)
+        <div style="font-size: 10px; font-weight: 400; margin-top: 5px;">Unlock CA, Legal, and Marketing Chittis</div>
+    </div>
+</div>
+
+<div class="feedback-anchor" onclick="alert('Chitti is listening... tell me your pain points.')">
+    🎤 Chai Pe Charcha (Feedback)
+</div>
+
+<script>
+    function speak(type) {
+        const voices = {
+            coach: "I am Chitti Coach. I simplify learning for you. Main aapko sikhata hoon.",
+            oncology: "I am Chitti Oncology. I am with you in your health journey.",
+            kirana: "I am Chitti Kirana. I help your shop earn more money."
+        };
+        const utterance = new SpeechSynthesisUtterance(voices[type]);
+        window.speechSynthesis.speak(utterance);
+    }
+</script>
+
 </body>
 </html>
