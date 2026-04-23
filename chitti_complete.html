@@ -1,19 +1,22 @@
-<div id="chitti-factory-view" style="background:#111; color:#0f0; border:2px solid var(--gold); border-radius:15px; padding:20px; margin:20px 0;">
-    <h4 style="color:var(--gold); margin-bottom:10px;">🏭 CHITTI FACTORY: LIVE STATUS</h4>
+<div id="admin-factory-panel" style="display:none; background:#000; color:#0f0; padding:20px; font-family:monospace;">
+    <h3 style="color:var(--gold);">🏭 FACTORY LIVE: UPSELL SPECIALIST BUILD</h3>
+    <hr style="border:1px solid #333;">
     
-    <div class="pipeline-step" id="step-pa">🔵 PA: Delegating 'Upsell' Task... <span class="time">19:45</span></div>
-    <div class="pipeline-step" id="step-colab">⏳ COLAB: Training Brain (200 Books)... <span class="progress">45%</span></div>
-    <div class="pipeline-step" id="step-da">⚪ DA: Audit Stress Test... <span class="status">Waiting</span></div>
-    <div class="pipeline-step" id="step-cert">⚪ CERT: Gemini Certification... <span class="status">Locked</span></div>
+    <div style="display:flex; gap:20px;">
+        <div style="flex:2;">
+            <h4>[ BACKEND LOGS ]</h4>
+            <div id="factory-terminal" style="height:250px; overflow-y:auto; background:#111; padding:10px; border:1px solid #0f0;">
+                > Initializing Upsell Brain...
+            </div>
+        </div>
 
-    <div id="factory-logs" style="background:#000; height:100px; overflow-y:auto; font-size:10px; margin-top:10px; padding:10px; border:1px solid #333;">
-        [INFO] Initializing SPIN Selling dataset...
-        [INFO] Applying 'Humble Worker' tone weights...
-        [INFO] Syncing with DeepSeek API...
-    </div>
-
-    <div id="master-doc-vault" style="display:none; margin-top:15px; padding:10px; background:rgba(212, 160, 23, 0.1); border-radius:10px;">
-        <span style="color:var(--gold)">🏆 MASTER DOC READY:</span> 
-        <a href="#" style="color:#fff; text-decoration:underline;">Download CHITTI_SALES_CERT_V1.docx</a>
+        <div style="flex:1;">
+            <h4>[ CERTIFICATION ]</h4>
+            <div id="audit-status" style="margin-bottom:10px;">Status: Training...</div>
+            <div id="cert-link-box" style="display:none; border:2px solid var(--gold); padding:10px;">
+                <span>🏆 Master Doc Ready</span><br>
+                <a href="#" id="word-doc-download" style="color:#0f0; text-decoration:underline;">Download (.docx)</a>
+            </div>
+        </div>
     </div>
 </div>
