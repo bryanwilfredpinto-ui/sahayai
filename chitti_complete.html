@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Sahay AI — Chitti v45</title>
 <style>
-/* ── EVOLVED DESIGN TOKENS ─────────────────────── */
+/* ── UPDATED DESIGN TOKENS ──────────────────────── */
 :root {
   --saffron: #E8520A;
   --navy:    #1B3A6B;
@@ -24,16 +24,16 @@ body {
   color: var(--text);
   max-width: 480px;
   margin: 0 auto;
-  line-height: 1.5;
+  overflow-x: hidden;
 }
 
-/* ── MODULAR PAGE SYSTEM ───────────────────────── */
+/* ── PAGE SYSTEM ───────────────────────────────── */
 .page { 
   display: none; 
   min-height: 100vh; 
   padding: 20px;
   opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease;
 }
 .page.active { 
   display: flex; 
@@ -41,42 +41,33 @@ body {
   opacity: 1; 
 }
 
-/* ── ENHANCED CARDS ────────────────────────────── */
-.card {
-  background: var(--surface);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-  border: 1px solid transparent;
-  transition: transform 0.2s, border-color 0.2s;
-}
-.card:active { transform: scale(0.98); }
-.card.selected { border-color: var(--saffron); background: rgba(232,82,10,0.02); }
-
-/* ── VOICE INTERFACE ───────────────────────────── */
-.voice-node {
+/* ── COMPONENT: AGENT BUBBLE ───────────────────── */
+.agent-node {
   display: flex;
-  align-items: center;
   gap: 12px;
-  background: var(--navy);
-  color: white;
-  padding: 12px 16px;
-  border-radius: 50px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  animation: slideUp 0.4s ease;
 }
-
-.spkr-btn {
+.avatar {
+  width: 40px; height: 40px;
   background: var(--saffron);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(232,82,10,0.3);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 900;
+}
+.bubble {
+  background: var(--surface);
+  padding: 16px;
+  border-radius: 18px;
+  border-top-left-radius: 4px;
+  box-shadow: var(--shadow);
+  position: relative;
+  flex: 1;
 }
 
-/* ── DYNAMIC BUTTONS ───────────────────────────── */
+/* ── ANIMATIONS ────────────────────────────────── */
+@keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
 .btn-primary {
   width: 100%;
   padding: 18px;
@@ -84,82 +75,67 @@ body {
   border: none;
   border-radius: 16px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   cursor: pointer;
+  margin-top: auto;
 }
 </style>
 </head>
 <body>
 
 <main id="app-shell">
-  <section class="page active" id="pg-splash">
-    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-       <div class="card" style="background:var(--navy); color:white; text-align:center;">
-          <h1 style="letter-spacing:4px;">SAHAY AI</h1>
-          <p style="color:var(--saffron); font-style:italic;">Chitti is warming up...</p>
+  <section class="page active" id="pg-lang">
+    <div class="agent-node">
+       <div class="avatar">C</div>
+       <div class="bubble">
+          <strong>"Namaste! Main Chitti hoon."</strong>
+          <p style="font-size: 0.9rem; margin-top: 4px; color: #666;">Which language do you prefer for our conversation?</p>
        </div>
-       <button class="btn-primary" onclick="App.nav('pg-lang')">Get Started →</button>
     </div>
+    
+    <div class="card" onclick="App.setLang('en')" id="lang-en">
+       <strong>English</strong>
+       <span>Global Standard</span>
+    </div>
+
+    <div class="card" onclick="App.setLang('hi')" id="lang-hi">
+       <strong>हिंदी</strong>
+       <span>भारत की आवाज़</span>
+    </div>
+
+    <button class="btn-primary" onclick="App.nav('pg-privacy')">Continue →</button>
   </section>
 
-  <section class="page" id="pg-lang">
-    <div class="voice-node">
-       <button class="spkr-btn">🔊</button>
-       <span>"Namaste! Which language should we use?"</span>
+  <section class="page" id="pg-privacy">
+    <h2 style="margin-bottom: 12px;">Your Data is Yours.</h2>
+    <div class="bubble" style="background: #E0F2FE; border: 1px solid #BAE6FD;">
+       <p>🔒 Chitti never shares your personal details. Everything stays on your device first.</p>
     </div>
-    
-    <div class="card selected" onclick="App.setLang('en')">
-       <strong>English</strong>
-       <p style="font-size:0.8rem; opacity:0.7;">Global communication</p>
-    </div>
-
-    <div class="card" onclick="App.setLang('hi')">
-       <strong>हिंदी</strong>
-       <p style="font-size:0.8rem; opacity:0.7;">भारत की धड़कन</p>
-    </div>
-    
-    <button class="btn-primary" onclick="App.nav('pg-privacy')">Next Step</button>
+    <button class="btn-primary" onclick="App.nav('pg-dashboard')">I Agree</button>
   </section>
 </main>
 
 <script>
-/* ── CENTRALIZED STATE MANAGER ─────────────────── */
+/* ── CENTRALIZED STATE ENGINE ─────────────────── */
 const App = {
   state: {
     lang: 'en',
-    currentPage: 'pg-splash',
-    user: {}
+    current: 'pg-lang'
   },
 
-  nav(pageId) {
+  nav(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    this.state.currentPage = pageId;
-    this.save();
+    const next = document.getElementById(id);
+    next.classList.add('active');
+    this.state.current = id;
+    localStorage.setItem('CHITTI_STATE', JSON.stringify(this.state));
   },
 
   setLang(l) {
     this.state.lang = l;
-    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
-    this.save();
-  },
-
-  save() {
-    localStorage.setItem('SAHAY_CORE', JSON.stringify(this.state));
-  },
-
-  init() {
-    const backup = localStorage.getItem('SAHAY_CORE');
-    if(backup) {
-      this.state = JSON.parse(backup);
-      this.nav(this.state.currentPage);
-    }
+    console.log("Language updated to:", l);
+    // Add visual feedback for selection here
   }
 };
-
-window.onload = () => App.init();
 </script>
 </body>
 </html>
