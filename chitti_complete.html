@@ -1,54 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sahay Hybrid v44</title>
-    <style>
-        :root { --gold: #D4AF37; --bg: #0f172a; }
-        body { font-family: sans-serif; background: var(--bg); color: white; padding: 20px; }
-        .nav { display: flex; gap: 10px; margin-bottom: 20px; border: 1px solid var(--gold); padding: 5px; border-radius: 50px; }
-        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 50px; }
-        .active { background: var(--gold); color: black; font-weight: bold; }
-        .card { background: #1e293b; padding: 20px; border-radius: 15px; border-left: 5px solid var(--gold); margin-bottom: 15px; }
-        .hidden { display: none; }
-        button { background: var(--gold); border: none; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sahay AI — Chitti v45</title>
+<style>
+:root {
+  --saffron: #E8520A;
+  --navy:    #1B3A6B;
+  --green:   #1A7A4A;
+  --teal:    #0891B2;
+  --gold:    #D4A017;
+  --bg:      #0f172a;
+  --surface: #1e293b;
+  --text:    #f8fafc;
+  --border:  #334155;
+}
+
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── MODE SWITCHER ── */
+.top-nav {
+  display: flex;
+  background: var(--navy);
+  padding: 10px;
+  gap: 10px;
+  border-bottom: 2px solid var(--saffron);
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.active { background: var(--saffron); color: white; }
+.inactive { background: var(--surface); color: #94a3b8; }
+
+/* ── CONTENT CARDS ── */
+.scroll-area { padding: 20px; overflow-y: auto; flex-grow: 1; }
+
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--saffron);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--saffron);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hidden { display: none; }
+
+button.action {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: none;
+  background: var(--saffron);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+</style>
 </head>
 <body>
 
-    <div class="nav">
-        <div id="t1" class="tab active" onclick="sw('P')">INDIVIDUAL PA</div>
-        <div id="t2" class="tab" onclick="sw('B')">BUSINESS PRO</div>
+<nav class="top-nav">
+  <button id="p-btn" class="mode-btn active" onclick="setMode('P')">PERSONAL PA</button>
+  <button id="b-btn" class="mode-btn inactive" onclick="setMode('B')">BUSINESS PRO</button>
+</nav>
+
+<div class="scroll-area">
+  <div id="p-view">
+    <div class="card">
+      <span class="label">Morning Ritual</span>
+      <p style="font-size: 1.1rem; margin-top: 10px;">"Bhai, ek baat batao — subah uthte hi sabse pehle kya cheez dimag mein aati hai?"</p>
+    </div>
+    
+    <div class="card" style="border-left-color: var(--green);">
+      <span class="label">Social Safety Net</span>
+      <h3>Govt Scheme Tracker</h3>
+      <p style="color:#94a3b8;">Scanning for local benefits in your region...</p>
+    </div>
+  </div>
+
+  <div id="b-view" class="hidden">
+    <div class="card" style="border-left-color: var(--teal);">
+      <span class="label">Recruitment Expert</span>
+      <h3>Resume Pipeline</h3>
+      <p>3 candidates match your criteria for the Sales Manager role.</p>
+      <button class="action" style="background:var(--teal)">Review Candidates</button>
     </div>
 
-    <div id="P">
-        <div class="card">
-            <h3>Morning Ritual</h3>
-            <p>"Bhai, ek baat batao — subah uthte hi sabse pehle kya cheez dimag mein aati hai?"</p>
-        </div>
+    <div class="card" style="border-left-color: var(--gold);">
+      <span class="label">Supply Chain</span>
+      <h3>Inventory Alert</h3>
+      <p>Milk stock is low. Drafted WhatsApp order for Supplier A.</p>
+      <button class="action" style="background:var(--gold); color:black;">Send Order</button>
     </div>
+  </div>
+</div>
 
-    <div id="B" class="hidden">
-        <div class="card">
-            <h3>Supplier Handshake</h3>
-            <p>Stock for 'Milk' is Low. Drafted WhatsApp order.</p>
-            <button onclick="alert('Order Sent!')">APPROVE ORDER</button>
-        </div>
-        <div class="card">
-            <h3>Upsell Pattern</h3>
-            <p>Suggesting 'Ghee' with 'Rice' purchase.</p>
-            <button onclick="alert('Pattern Applied')">APPLY UPSELL</button>
-        </div>
-    </div>
+<script>
+function setMode(mode) {
+  const pView = document.getElementById('p-view');
+  const bView = document.getElementById('b-view');
+  const pBtn = document.getElementById('p-btn');
+  const bBtn = document.getElementById('b-btn');
 
-    <script>
-        function sw(m) {
-            document.getElementById('P').classList.toggle('hidden', m === 'B');
-            document.getElementById('B').classList.toggle('hidden', m === 'P');
-            document.getElementById('t1').classList.toggle('active', m === 'P');
-            document.getElementById('t2').classList.toggle('active', m === 'B');
-        }
-    </script>
+  if(mode === 'B') {
+    pView.classList.add('hidden'); bView.classList.remove('hidden');
+    bBtn.className = 'mode-btn active'; pBtn.className = 'mode-btn inactive';
+  } else {
+    bView.classList.add('hidden'); pView.classList.remove('hidden');
+    pBtn.className = 'mode-btn active'; bBtn.className = 'mode-btn inactive';
+  }
+}
+</script>
+
 </body>
 </html>
