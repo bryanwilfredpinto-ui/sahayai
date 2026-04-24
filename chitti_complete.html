@@ -9,7 +9,201 @@
 :root {
   --saffron: #E8520A;
   --navy:    #1B3A6B;
+  --green:   #1A7A4A;<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sahay AI — Chitti</title>
+<style>
+/* ── DESIGN TOKENS (REFINED) ─────────────────────────────── */
+:root {
+  --saffron: #E8520A;
+  --navy:    #1B3A6B;
   --green:   #1A7A4A;
+  --purple:  #7C3AED;
+  --teal:    #0891B2;
+  --gold:    #D4A017;
+  --bg:      #FAF9F6; /* Softer, more premium ivory */
+  --surface: #FFFFFF;
+  --surface2:#F2EDE7;
+  --border:  #E8E0D5;
+  --text:    #1A1A1A;
+  --text2:   #444444;
+  --text3:   #8C8C8C;
+  --red:     #DC2626;
+  --shadow:  0 8px 30px rgba(0,0,0,0.06); /* Premium depth */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--bg); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  transition: background 0.5s ease;
+}
+
+/* ── PROGRESS BAR (BEAUTIFIED) ──────────────────────────────── */
+#progress-wrap {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  height: 6px; background: var(--border); z-index: 100;
+}
+#progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--saffron), #FF7A3D);
+  width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 12px rgba(232,82,10,0.4);
+}
+
+/* ── PAGE SYSTEM ───────────────────────────────── */
+.page { display: none; min-height: 100vh; padding-top: 6px; background: var(--bg); }
+.page.active { display: flex; flex-direction: column; animation: slideUp 0.4s ease-out; }
+
+/* ── CARDS (PREMIUM) ─────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px; /* More rounded for modern feel */
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.card:active { transform: scale(0.98); }
+.card.selected { border-color: var(--saffron); border-width: 2px; background: rgba(232,82,10,0.04); }
+
+/* ── SPEAKER BUTTON ────────────────────────────── */
+.spkr, .spkr-inline {
+  width: 32px; height: 32px;
+  background: var(--saffron);
+  border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(232,82,10,0.3);
+  font-size: 14px; transition: transform 0.1s;
+}
+.spkr:active { transform: scale(0.9); }
+
+/* ── CHAT BUBBLES (REFRESHED) ──────────────────────────────── */
+.bubble-wrap { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+.avatar { 
+  width: 40px; height: 40px; border-radius: 14px; 
+  background: var(--saffron); display: flex; align-items: center; 
+  justify-content: center; font-weight: 800; color: #fff;
+  animation: pulseAvatar 2s infinite; 
+}
+
+@keyframes pulseAvatar {
+  0% { box-shadow: 0 0 0 0 rgba(232,82,10, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(232,82,10, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(232,82,10, 0); }
+}
+
+.bubble {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; border-top-left-radius: 4px;
+  padding: 14px 18px; font-size: 15px; line-height: 1.6;
+  max-width: 85%; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+.bubble.user { 
+  background: linear-gradient(135deg, var(--saffron), #FF7A3D); 
+  color: white; border: none; border-top-right-radius: 4px; 
+  border-top-left-radius: 20px; font-weight: 600; 
+}
+
+/* ── BUTTONS ───────────────────────────────────── */
+.btn-primary {
+  width: 100%; padding: 18px;
+  background: var(--saffron); color: #fff;
+  border: none; border-radius: 20px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 8px 25px rgba(232,82,10,0.3);
+  transition: all 0.2s;
+}
+.btn-primary:active { transform: translateY(2px); box-shadow: 0 4px 15px rgba(232,82,10,0.2); }
+
+/* ── ANIMATIONS ────────────────────────────────── */
+@keyframes slideUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+/* ── PAGE: SPLASH (PREMIUM NAVY) ─────────────────────────── */
+#page-splash {
+  background: linear-gradient(180deg, var(--navy), #0F203D);
+  justify-content: center; align-items: center;
+}
+.splash-logo { 
+  width: 100px; height: 100px; background: var(--saffron); 
+  border-radius: 28px; display: flex; align-items: center; 
+  justify-content: center; font-size: 48px; color: #fff; 
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
+}
+</style>
+</head>
+<body>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<div class="page active" id="page-splash" onclick="goTo('page-lang')">
+  <div class="splash-logo">C</div>
+  <h1 style="color:white; margin-top:24px; letter-spacing:4px;">SAHAY AI</h1>
+  <p style="color:#FFB380; font-style:italic; margin-top:8px;">Bharat ka apna Chitti</p>
+</div>
+
+<div class="page" id="page-lang">
+  <div style="padding: 24px 20px;">
+    <div class="bubble-wrap">
+      <div class="avatar">C</div>
+      <div class="bubble">
+        <strong>Welcome to Sahay AI!</strong><br>
+        I am Chitti — your personal assistant. Tell me, which language do you prefer?
+      </div>
+    </div>
+
+    <div class="card selected">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="margin-bottom:4px;">English</h3>
+          <p style="font-size:12px; color:var(--text3);">Primary Support</p>
+        </div>
+        <button class="spkr-inline">🔊</button>
+      </div>
+    </div>
+
+    <div class="card" style="opacity:0.8;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="margin-bottom:4px;">हिंदी (Hindi)</h3>
+          <p style="font-size:12px; color:var(--text3);">Coming Soon</p>
+        </div>
+        <button class="spkr-inline" style="background:#ccc;">🔊</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="margin-top:20px;">Continue Setup →</button>
+  </div>
+</div>
+
+<script>
+  function goTo(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    
+    // Update progress bar example
+    const bar = document.getElementById('progress-bar');
+    if(pageId === 'page-lang') bar.style.width = '20%';
+  }
+</script>
+
+</body>
+</html>
   --bg:      #F8F4F0;
   --surface: #FFFFFF;
   --text:    #1A1A1A;
