@@ -1,48 +1,142 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width,initial-scale=1'>
-<title>Chitti V4 Unicorn</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Ultimate V1</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f8f7f4;color:#111}.app{max-width:480px;margin:auto;min-height:100vh;background:#fff}.top{padding:18px;background:linear-gradient(135deg,#ff7a00,#ffb347);color:#fff}.logo{width:54px;height:54px;border-radius:18px;background:#fff;color:#ff7a00;display:grid;place-items:center;font-weight:900;font-size:28px}.row{display:flex;gap:12px;align-items:center}.hero{margin-top:14px;background:rgba(255,255,255,.18);padding:14px;border-radius:18px}.mic{width:100%;padding:14px;border:none;border-radius:16px;font-weight:700;margin-top:10px}.wrap{padding:16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:#fff;border:1px solid #eee;border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.06)}.dark{background:#111;color:#fff}.pillbar{display:flex;gap:8px;overflow:auto;padding:12px 16px}.pill{padding:8px 12px;background:#fff;border:1px solid #eee;border-radius:999px;white-space:nowrap}.footer{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;padding:10px;display:flex;gap:8px}.footer input{flex:1;padding:12px;border-radius:16px;border:1px solid #ddd}.send{padding:12px 16px;border:none;border-radius:16px;background:#ff7a00;color:#fff;font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f5f5f5;color:#111}
+.container{max-width:480px;margin:auto;background:#fff;min-height:100vh}
+header{background:linear-gradient(135deg,#ff7a00,#ff9f1c);color:#fff;padding:20px}
+.logo{font-size:34px;font-weight:900}
+.sub{font-size:14px;opacity:.9}
+select,button,input{border:none;border-radius:12px;padding:12px;font-size:15px}
+.top-controls{display:flex;gap:10px;margin-top:15px}
+select{flex:1}
+button{cursor:pointer;font-weight:700}
+.mic{background:#fff;color:#ff7a00;flex:1}
+.section{padding:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.card h3{font-size:18px;margin-bottom:8px}
+.chatbox{background:#111;color:#fff;border-radius:16px;padding:14px;margin-top:16px;min-height:120px}
+input{width:100%;border:1px solid #ddd;margin-top:12px}
+.footer{padding:15px;text-align:center;font-size:12px;color:#666}
 </style>
 </head>
 <body>
-<div class='app'>
-<div class='top'>
-<div class='row'><div class='logo'>C</div><div><div style='font-size:12px;font-weight:700'>SAHAY AI</div><div style='font-size:28px;font-weight:900'>Chitti V4</div><div>Bharat SuperApp</div></div></div>
-<div class='pillbar' style='padding-left:0;margin-top:10px'><div class='pill'>English</div><div class='pill'>हिंदी</div><div class='pill'>বাংলা</div><div class='pill'>தமிழ்</div><div class='pill'>मराठी</div></div>
-<div class='hero'>Namaste Bryan ji 🙏<br>What shall we solve today?<button class='mic'>🎤 Talk to Chitti</button></div>
+
+<div class="container">
+
+<header>
+<div class="logo">Chitti</div>
+<div class="sub">Bharat's AI Saathi</div>
+
+<div class="top-controls">
+<select id="lang">
+<option value="en-US">English</option>
+<option value="hi-IN">हिंदी</option>
+<option value="bn-BD">বাংলা</option>
+</select>
+
+<button class="mic" onclick="startListening()">🎤 Speak</button>
 </div>
-<div class='wrap'>
-<div class='grid'>
-<div class='card'>💰<h3>Money Help</h3><small>Bills, savings, loans</small></div>
-<div class='card'>📜<h3>Govt Schemes</h3><small>Find benefits</small></div>
-<div class='card'>🏥<h3>Health</h3><small>Reminders & help</small></div>
-<div class='card'>💼<h3>Jobs</h3><small>Nearby opportunities</small></div>
-<div class='card'>🛒<h3>Inventory</h3><small>Voice stock control</small></div>
-<div class='card'>📲<h3>WhatsApp Orders</h3><small>Sell instantly</small></div>
+</header>
+
+<div class="section">
+
+<div class="grid">
+<div class="card" onclick="talk('money')">
+<h3>💰 Money Help</h3>
+<p>Bills, savings, loans</p>
 </div>
-<div class='card' style='margin-top:14px'>
-<h3>🏪 Shopkeeper Dashboard</h3>
-<div class='grid'>
-<div class='card'>124 Items</div><div class='card'>18 Orders</div><div class='card'>₹8,420 Sales</div><div class='card'>7 Udhaar</div>
+
+<div class="card" onclick="talk('govt')">
+<h3>📜 Govt Help</h3>
+<p>Schemes & support</p>
 </div>
+
+<div class="card" onclick="talk('health')">
+<h3>🏥 Health</h3>
+<p>Reminder & support</p>
 </div>
-<div class='card dark' style='margin-top:14px'>
-<h3>🔔 Smart Alerts</h3>
-<p>• Electricity bill due tomorrow</p>
-<p>• 2 customers pending payment</p>
-<p>• New subsidy available</p>
-<p>• Medicine reminder 8 PM</p>
-</div>
-<div class='card' style='margin-top:14px'>
-<h3>🌍 Chitti Bangla Ready</h3>
-<p>বাংলায় কথা বলুন • দোকান চালান • পরিবার সহায়তা</p>
+
+<div class="card" onclick="talk('shop')">
+<h3>🏪 Shopkeeper</h3>
+<p>Inventory & orders</p>
 </div>
 </div>
-<div class='footer'><input placeholder='Type or speak...'><button class='send'>Send</button></div>
+
+<div class="chatbox" id="chat">
+Namaste 🙏 Ask Chitti anything.
 </div>
+
+<input id="msg" placeholder="Type message..." onkeydown="if(event.key==='Enter')manualSend()">
+
+</div>
+
+<div class="footer">
+Chitti Ultimate V1 • English • Hindi • Bangla
+</div>
+
+</div>
+
+<script>
+function speak(text){
+let msg=new SpeechSynthesisUtterance(text);
+msg.lang=document.getElementById("lang").value;
+speechSynthesis.speak(msg);
+}
+
+function show(text){
+document.getElementById("chat").innerHTML=text;
+speak(text);
+}
+
+function talk(type){
+if(type==="money") show("I can help you save money and manage bills.");
+if(type==="govt") show("I can help you find government schemes.");
+if(type==="health") show("Take medicines on time and stay healthy.");
+if(type==="shop") show("Track stock, orders and customer payments.");
+}
+
+function manualSend(){
+let text=document.getElementById("msg").value;
+if(text.trim()=="") return;
+document.getElementById("chat").innerHTML="You: "+text;
+reply(text.toLowerCase());
+document.getElementById("msg").value="";
+}
+
+function reply(t){
+if(t.includes("hello")||t.includes("hi")) show("Hello! How can I help?");
+else if(t.includes("money")) show("Save 20 percent income monthly.");
+else if(t.includes("job")) show("I can help find nearby jobs.");
+else if(t.includes("shop")) show("Let's manage your business.");
+else if(t.includes("বাংলা")) show("আমি বাংলা বলতে পারি।");
+else show("I understood. Let me help you.");
+}
+
+function startListening(){
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Voice recognition not supported in this browser.");
+return;
+}
+
+const recog=new SpeechRecognition();
+recog.lang=document.getElementById("lang").value;
+recog.start();
+
+recog.onresult=function(event){
+let text=event.results[0][0].transcript;
+document.getElementById("chat").innerHTML="You said: "+text;
+reply(text.toLowerCase());
+}
+}
+</script>
+
 </body>
 </html>
