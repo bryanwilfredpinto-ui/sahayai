@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "language": "bangla",
+  "purpose": "Cultural knowledge base for Chitti Bangla. Used for: (1) recognizing names in user speech, (2) responding with appropriate reverence, (3) cultural context in conversations.",
+  "reverence_protocol": {
+    "rule": "When user mentions any person in this list, Chitti MUST respond with appropriate honorific suffix (-জী, ঠাকুর, কবিগুরু, etc.) per the 'honorific' field. Never use plain first name alone.",
+    "register": "Always use আপনি (formal-respectful) when discussing these figures, never তুমি or তুই."
+  },
+  "people": [
+    {
+      "id": "tagore",
+      "name_bangla": "রবীন্দ্রনাথ ঠাকুর",
+      "name_english": "Rabindranath Tagore",
+      "honorific": "কবিগুরু",
+      "category": "literature",
+      "lived": "1861-1941",
+      "achievement": "Nobel Prize in Literature, 1913 — first non-European laureate",
+      "key_works": ["গীতাঞ্জলি", "গোরা", "ঘরে বাইরে", "জনগণমন (Indian national anthem)", "আমার সোনার বাংলা (Bangladesh national anthem)"],
+      "context_for_chitti": "The single most reverenced figure in Bangla culture. Both India and Bangladesh's national anthems are his. Mentioning him casually without honorific is jarring to a Bangla speaker.",
+      "trigger_phrases": ["রবি ঠাকুর", "কবিগুরু", "Tagore", "টেগোর", "রবীন্দ্রনাথ"]
+    },
+    {
+      "id": "nazrul",
+      "name_bangla": "কাজী নজরুল ইসলাম",
+      "name_english": "Kazi Nazrul Islam",
+      "honorific": "বিদ্রোহী কবি",
+      "category": "literature",
+      "lived": "1899-1976",
+      "achievement": "National Poet of Bangladesh. Composer of বিদ্রোহী (The Rebel).",
+      "key_works": ["বিদ্রোহী", "অগ্নিবীণা", "নজরুল গীতি"],
+      "context_for_chitti": "Known as the 'Rebel Poet'. Iconic for anti-colonial verse and Hindu-Muslim unity. His songs (Nazrul Geeti) are a distinct musical tradition.",
+      "trigger_phrases": ["নজরুল", "কাজী নজরুল", "বিদ্রোহী কবি", "Nazrul"]
+    },
+    {
+      "id": "satyajit_ray",
+      "name_bangla": "সত্যজিৎ রায়",
+      "name_english": "Satyajit Ray",
+      "honorific": "মানিকদা",
+      "category": "cinema",
+      "lived": "1921-1992",
+      "achievement": "Academy Honorary Award (1992). Director of পথের পাঁচালী (Pather Panchali).",
+      "key_works": ["পথের পাঁচালী", "অপরাজিত", "অপুর সংসার (Apu Trilogy)", "চারুলতা", "ফেলুদা series"],
+      "context_for_chitti": "Affectionately called 'Manik-da' by Bengalis. Filmmaker, illustrator, composer, writer — a polymath. Feluda detective stories are part of every Bengali childhood.",
+      "trigger_phrases": ["সত্যজিৎ", "মানিকদা", "Ray", "ফেলুদা", "রায়বাবু"]
+    },
+    {
+      "id": "vivekananda",
+      "name_bangla": "স্বামী বিবেকানন্দ",
+      "name_english": "Swami Vivekananda",
+      "honorific": "স্বামীজী",
+      "category": "philosophy_spirituality",
+      "lived": "1863-1902",
+      "achievement": "1893 Chicago Parliament of Religions speech. Founded Ramakrishna Mission.",
+      "key_works": ["রাজযোগ", "কর্মযোগ", "জ্ঞানযোগ", "ভক্তিযোগ"],
+      "context_for_chitti": "Born Narendranath Datta in Kolkata. His January 12 birthday is National Youth Day in India. Always referred to as 'Swamiji'.",
+      "trigger_phrases": ["বিবেকানন্দ", "স্বামীজী", "Vivekananda", "নরেন্দ্রনাথ"]
+    },
+    {
+      "id": "amartya_sen",
+      "name_bangla": "অমর্ত্য সেন",
+      "name_english": "Amartya Sen",
+      "honorific": "প্রফেসর",
+      "category": "economics",
+      "lived": "1933-present",
+      "achievement": "Nobel Memorial Prize in Economic Sciences, 1998. Bharat Ratna, 1999.",
+      "key_works": ["Development as Freedom", "The Argumentative Indian", "Poverty and Famines"],
+      "context_for_chitti": "Born in Santiniketan. Welfare economics, social choice theory. Living legend.",
+      "trigger_phrases": ["অমর্ত্য", "অমর্ত্য সেন", "Amartya Sen", "সেনবাবু"]
+    },
+    {
+      "id": "mamata_banerjee",
+      "name_bangla": "মমতা বন্দ্যোপাধ্যায়",
+      "name_english": "Mamata Banerjee",
+      "honorific": "দিদি",
+      "category": "politics_living",
+      "lived": "1955-present",
+      "achievement": "Chief Minister of West Bengal (since 2011). Founder, All India Trinamool Congress.",
+      "context_for_chitti": "Universally called 'Didi' (elder sister) in West Bengal. Politically polarizing — Chitti must remain neutral, never praise or criticize unprompted. State this objectively in factual queries only.",
+      "neutrality_required": true,
+      "trigger_phrases": ["মমতা", "দিদি", "Mamata", "বন্দ্যোপাধ্যায়"]
+    },
+    {
+      "id": "suvendu_adhikari",
+      "name_bangla": "শুভেন্দু অধিকারী",
+      "name_english": "Suvendu Adhikari",
+      "honorific": "শ্রী",
+      "category": "politics_living",
+      "lived": "1970-present",
+      "achievement": "Leader of Opposition, West Bengal Legislative Assembly. BJP.",
+      "context_for_chitti": "Politically polarizing — Chitti must remain neutral, factual only. Never editorialize.",
+      "neutrality_required": true,
+      "trigger_phrases": ["শুভেন্দু", "অধিকারী", "Suvendu"]
+    },
+    {
+      "id": "swarnadyuti_nath",
+      "name_bangla": "ড. স্বর্ণদীপ নাথ",
+      "name_english": "Dr. Swarnadyuti Nath",
+      "honorific": "ড.",
+      "category": "media",
+      "lived": "contemporary",
+      "achievement": "Anchor, DD Bangla. Reference voice for Chitti Bangla pronunciation.",
+      "context_for_chitti": "Pronunciation reference for Chitti's voice training. When user asks about news anchors or DD Bangla, mention with respect.",
+      "trigger_phrases": ["স্বর্ণদীপ", "Swarnadyuti", "ডিডি বাংলা অ্যাঙ্কর"]
+    }
+  ]
+}
