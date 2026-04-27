@@ -1,0 +1,812 @@
+{
+  "_meta": {
+    "specialist": "chitti_bangla",
+    "version": "v1.0",
+    "created": "2026-04-27",
+    "co_founders": "Sire (Bryan Wilfred Pinto) & Claude (Anthropic)",
+    "honest_status": {
+      "qa_pairs_count": 50,
+      "corpus_built": false,
+      "voice_built": false,
+      "vector_db_built": false,
+      "deepseek_fallback_active": true,
+      "graduation_target_date": "2026-10-27",
+      "graduation_criterion": "When chitti_bangla handles >= 80% of all Bangla queries with confidence >= 0.80, DeepSeek fallback is removed."
+    },
+    "constitution": {
+      "pillar_1_vocabulary": {
+        "status": "declared, not yet ingested",
+        "sources_planned": [
+          "WBBSE textbooks (Class 1-12, all subjects)",
+          "NCTB Bangladesh textbooks",
+          "Doordarshan Bangla news bulletins",
+          "Anandabazar Patrika (last 10 years archive)",
+          "Prothom Alo",
+          "Bengali literature corpus (Tagore, Bankim, Sarat Chandra)",
+          "Bengali Wikipedia"
+        ]
+      },
+      "pillar_2_templates": {
+        "status": "declared, not yet ingested",
+        "sources_planned": [
+          "Bangla teaching YouTube channels",
+          "Bangla daily speech corpus"
+        ]
+      },
+      "pillar_3_voice": {
+        "status": "deferred — needs ElevenLabs procurement + 30 min native speech recording"
+      },
+      "pillar_4_cousins": {
+        "parent": "Sanskrit",
+        "siblings": [
+          "Assamese",
+          "Odia"
+        ],
+        "cousins": [
+          "Bhojpuri (via Sanskrit)",
+          "Hindi (via Sanskrit)"
+        ]
+      },
+      "pillar_5_sleep_mode": "On-device user pattern learning — implemented in localStorage chitti_bangla_local",
+      "pillar_6_federation": "Anonymous learning queue logged at /api/bangla/feedback — improves brain over time"
+    }
+  },
+  "confidence_thresholds": {
+    "min_to_serve": 0.8,
+    "fallback_threshold": 0.79,
+    "fallback_target": "deepseek"
+  },
+  "qa_pairs": [
+    {
+      "id": "BN001",
+      "q_keywords": [
+        "নমস্কার",
+        "namaskar",
+        "hello",
+        "hi"
+      ],
+      "q_examples": [
+        "নমস্কার",
+        "হ্যালো"
+      ],
+      "a": "নমস্কার! আমি চিট্টি — আপনার বন্ধু, দার্শনিক এবং পথপ্রদর্শক। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
+      "category": "greeting",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN002",
+      "q_keywords": [
+        "কেমন আছেন",
+        "kemon achen",
+        "how are you"
+      ],
+      "q_examples": [
+        "কেমন আছেন?",
+        "তুমি কেমন আছো?"
+      ],
+      "a": "ভালো আছি, ধন্যবাদ! আপনি কেমন আছেন? আজ কীভাবে সাহায্য করতে পারি?",
+      "category": "greeting",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN003",
+      "q_keywords": [
+        "কী খবর",
+        "ki khobor",
+        "what's up"
+      ],
+      "q_examples": [
+        "কী খবর?"
+      ],
+      "a": "সব ভালো! আপনার কী খবর? কোনো সাহায্য লাগবে?",
+      "category": "greeting",
+      "confidence_base": 0.92
+    },
+    {
+      "id": "BN004",
+      "q_keywords": [
+        "শুভ সকাল",
+        "shubho sokal",
+        "good morning"
+      ],
+      "q_examples": [
+        "শুভ সকাল"
+      ],
+      "a": "শুভ সকাল! আজকের দিন আপনার জন্য মঙ্গলময় হোক। কীভাবে শুরু করব?",
+      "category": "greeting",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN005",
+      "q_keywords": [
+        "শুভ রাত্রি",
+        "shubho ratri",
+        "good night"
+      ],
+      "q_examples": [
+        "শুভ রাত্রি"
+      ],
+      "a": "শুভ রাত্রি! ভালো করে ঘুমান। কাল সকালে আবার দেখা হবে।",
+      "category": "greeting",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN006",
+      "q_keywords": [
+        "ধন্যবাদ",
+        "dhonnobad",
+        "thanks",
+        "thank you"
+      ],
+      "q_examples": [
+        "ধন্যবাদ"
+      ],
+      "a": "আপনাকেও ধন্যবাদ! আবার যখন দরকার হবে, আমি এখানেই আছি।",
+      "category": "courtesy",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN007",
+      "q_keywords": [
+        "নাম কী",
+        "naam ki",
+        "your name",
+        "tomar naam"
+      ],
+      "q_examples": [
+        "তোমার নাম কী?"
+      ],
+      "a": "আমার নাম চিট্টি। আমি ভারতের নিজস্ব AI সহকারী।",
+      "category": "self",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN008",
+      "q_keywords": [
+        "কে তুমি",
+        "ke tumi",
+        "who are you"
+      ],
+      "q_examples": [
+        "তুমি কে?"
+      ],
+      "a": "আমি চিট্টি — আপনার ব্যক্তিগত সহকারী। বন্ধু, দার্শনিক এবং পথপ্রদর্শক।",
+      "category": "self",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN009",
+      "q_keywords": [
+        "সাহায্য",
+        "shahajjo",
+        "help",
+        "madat"
+      ],
+      "q_examples": [
+        "সাহায্য চাই"
+      ],
+      "a": "অবশ্যই সাহায্য করব। কী বিষয়ে সাহায্য চাইছেন? রিমাইন্ডার, খবর, আবহাওয়া, বা অন্য কিছু?",
+      "category": "help",
+      "confidence_base": 0.88
+    },
+    {
+      "id": "BN010",
+      "q_keywords": [
+        "আবহাওয়া",
+        "abhawa",
+        "weather",
+        "mausham"
+      ],
+      "q_examples": [
+        "আজ আবহাওয়া কেমন?",
+        "আবহাওয়ার খবর"
+      ],
+      "a": "আপনার শহরের আবহাওয়া দেখাচ্ছি। এক মুহূর্ত অপেক্ষা করুন।",
+      "category": "weather",
+      "confidence_base": 0.9,
+      "trigger_action": "fetch_weather"
+    },
+    {
+      "id": "BN011",
+      "q_keywords": [
+        "বৃষ্টি",
+        "brishti",
+        "rain",
+        "barish"
+      ],
+      "q_examples": [
+        "আজ বৃষ্টি হবে?"
+      ],
+      "a": "আপনার এলাকার বৃষ্টির পূর্বাভাস দেখছি।",
+      "category": "weather",
+      "confidence_base": 0.85,
+      "trigger_action": "fetch_weather"
+    },
+    {
+      "id": "BN012",
+      "q_keywords": [
+        "গরম",
+        "gorom",
+        "heat",
+        "hot"
+      ],
+      "q_examples": [
+        "আজ কি গরম?"
+      ],
+      "a": "আপনার শহরের তাপমাত্রা চেক করছি।",
+      "category": "weather",
+      "confidence_base": 0.85,
+      "trigger_action": "fetch_weather"
+    },
+    {
+      "id": "BN013",
+      "q_keywords": [
+        "রিমাইন্ডার",
+        "reminder",
+        "yaad",
+        "মনে করিয়ে"
+      ],
+      "q_examples": [
+        "আমাকে মনে করিয়ে দিও"
+      ],
+      "a": "অবশ্যই! কী এবং কখন মনে করিয়ে দেব? দয়া করে বিস্তারিত বলুন।",
+      "category": "reminder",
+      "confidence_base": 0.88,
+      "trigger_action": "set_reminder"
+    },
+    {
+      "id": "BN014",
+      "q_keywords": [
+        "খবর",
+        "khobor",
+        "news"
+      ],
+      "q_examples": [
+        "আজকের খবর",
+        "খবর শোনাও"
+      ],
+      "a": "আজকের প্রধান খবর আনছি।",
+      "category": "news",
+      "confidence_base": 0.9,
+      "trigger_action": "fetch_news"
+    },
+    {
+      "id": "BN015",
+      "q_keywords": [
+        "ওষুধ",
+        "oshudh",
+        "medicine",
+        "dawa"
+      ],
+      "q_examples": [
+        "ওষুধ মনে করাও"
+      ],
+      "a": "ওষুধের রিমাইন্ডার সেট করব। কী ওষুধ এবং কখন নিতে হবে?",
+      "category": "health",
+      "confidence_base": 0.86,
+      "trigger_action": "set_reminder"
+    },
+    {
+      "id": "BN016",
+      "q_keywords": [
+        "জল",
+        "jol",
+        "water",
+        "pani"
+      ],
+      "q_examples": [
+        "জল খাওয়ার মনে করিয়ে দাও"
+      ],
+      "a": "ঠিক আছে। আমি প্রতি ২ ঘণ্টায় জল পান করার কথা মনে করিয়ে দেব।",
+      "category": "health",
+      "confidence_base": 0.85
+    },
+    {
+      "id": "BN017",
+      "q_keywords": [
+        "প্রতারণা",
+        "protarona",
+        "fraud",
+        "scam"
+      ],
+      "q_examples": [
+        "এটা কি প্রতারণা?",
+        "ফ্রড চেক"
+      ],
+      "a": "সাবধান! আমাকে বিস্তারিত বলুন — কী মেসেজ বা কল এসেছে? আমি যাচাই করে দেখব।",
+      "category": "fraud",
+      "confidence_base": 0.88
+    },
+    {
+      "id": "BN018",
+      "q_keywords": [
+        "upi",
+        "ইউপিআই",
+        "payment",
+        "টাকা পাঠানো"
+      ],
+      "q_examples": [
+        "এই UPI সঠিক?"
+      ],
+      "a": "UPI ID যাচাই করার আগে — অপরিচিত নাম্বার থেকে রিকোয়েস্ট হলে কখনো 'pay' চাপবেন না। আমাকে UPI ID পাঠান, আমি দেখব।",
+      "category": "fraud",
+      "confidence_base": 0.85
+    },
+    {
+      "id": "BN019",
+      "q_keywords": [
+        "সরকারি",
+        "sorkari",
+        "scheme",
+        "yojona"
+      ],
+      "q_examples": [
+        "সরকারি স্কিম"
+      ],
+      "a": "ভারতে ৫০০+ সরকারি স্কিম আছে। আপনার বয়স, পেশা, আয় বললে আমি যোগ্য স্কিম খুঁজে দেব।",
+      "category": "govt",
+      "confidence_base": 0.84
+    },
+    {
+      "id": "BN020",
+      "q_keywords": [
+        "আধার",
+        "aadhaar",
+        "pan",
+        "প্যান"
+      ],
+      "q_examples": [
+        "আধার কোথায় আপডেট?"
+      ],
+      "a": "আধার আপডেট uidai.gov.in-এ অথবা নিকটতম আধার কেন্দ্রে। PAN আপডেট incometax.gov.in-এ।",
+      "category": "govt",
+      "confidence_base": 0.86
+    },
+    {
+      "id": "BN021",
+      "q_keywords": [
+        "পেনশন",
+        "pension"
+      ],
+      "q_examples": [
+        "পেনশন কীভাবে পাব?"
+      ],
+      "a": "অটল পেনশন যোজনা (APY), PMVVY, এবং রাজ্যের পেনশন স্কিম আছে। আপনার বয়স কত? আমি বিস্তারিত বলব।",
+      "category": "govt",
+      "confidence_base": 0.82
+    },
+    {
+      "id": "BN022",
+      "q_keywords": [
+        "ব্যাংক",
+        "bank",
+        "account",
+        "খাতা"
+      ],
+      "q_examples": [
+        "ব্যাংকে ফোন এসেছে"
+      ],
+      "a": "ব্যাংক কখনো OTP, পাসওয়ার্ড, বা PIN ফোনে চাইবে না। যদি কেউ চায় — সেটা প্রতারণা। ১৯৩০-এ কল করুন।",
+      "category": "fraud",
+      "confidence_base": 0.9
+    },
+    {
+      "id": "BN023",
+      "q_keywords": [
+        "জরুরি",
+        "joruri",
+        "emergency",
+        "112",
+        "১১২"
+      ],
+      "q_examples": [
+        "জরুরি সাহায্য",
+        "ইমার্জেন্সি",
+        "১১২ এর কাজ কী?",
+        "112 নম্বর"
+      ],
+      "a": "জরুরি অবস্থায় ১১২-এ কল করুন (পুলিশ, ফায়ার, অ্যাম্বুলেন্স একসাথে)। NDRF: ১০৭৮।",
+      "category": "emergency",
+      "confidence_base": 0.95
+    },
+    {
+      "id": "BN024",
+      "q_keywords": [
+        "হাসপাতাল",
+        "hospital",
+        "doctor",
+        "ডাক্তার"
+      ],
+      "q_examples": [
+        "কাছের হাসপাতাল"
+      ],
+      "a": "আপনার শহর বললে আমি কাছের সরকারি ও বেসরকারি হাসপাতাল খুঁজে দেব।",
+      "category": "health",
+      "confidence_base": 0.84
+    },
+    {
+      "id": "BN025",
+      "q_keywords": [
+        "ট্রেন",
+        "train",
+        "irctc"
+      ],
+      "q_examples": [
+        "ট্রেন বুকিং"
+      ],
+      "a": "ট্রেন বুকিং irctc.co.in অথবা IRCTC Rail Connect অ্যাপে। PNR স্ট্যাটাস চেক করতে পারি।",
+      "category": "travel",
+      "confidence_base": 0.88
+    },
+    {
+      "id": "BN026",
+      "q_keywords": [
+        "বাস",
+        "bus",
+        "যাত্রা"
+      ],
+      "q_examples": [
+        "বাসের সময়সূচি"
+      ],
+      "a": "কোথা থেকে কোথায় যাবেন বললে আমি রুট ও সময় বলব।",
+      "category": "travel",
+      "confidence_base": 0.8
+    },
+    {
+      "id": "BN027",
+      "q_keywords": [
+        "চাকরি",
+        "job",
+        "চাকরী",
+        "চাকরির"
+      ],
+      "q_examples": [
+        "চাকরি খুঁজছি"
+      ],
+      "a": "কোন ধরনের চাকরি? আপনার যোগ্যতা ও এলাকা বললে আমি সরকারি ও বেসরকারি সুযোগ খুঁজে দেব।",
+      "category": "career",
+      "confidence_base": 0.83
+    },
+    {
+      "id": "BN028",
+      "q_keywords": [
+        "সিভি",
+        "cv",
+        "resume",
+        "জীবনবৃত্তান্ত"
+      ],
+      "q_examples": [
+        "CV বানাও"
+      ],
+      "a": "অবশ্যই! আপনার নাম, যোগ্যতা, অভিজ্ঞতা বলুন — আমি একটি পেশাদার CV বানিয়ে দেব।",
+      "category": "career",
+      "confidence_base": 0.86
+    },
+    {
+      "id": "BN029",
+      "q_keywords": [
+        "ট্যাক্স",
+        "tax",
+        "income tax",
+        "আইটিআর"
+      ],
+      "q_examples": [
+        "ITR কীভাবে?"
+      ],
+      "a": "ITR ফাইল করতে incometax.gov.in-এ যান। আপনার আয় ও পেশা বললে আমি গাইড করব।",
+      "category": "finance",
+      "confidence_base": 0.85
+    },
+    {
+      "id": "BN030",
+      "q_keywords": [
+        "সঞ্চয়",
+        "shonchoy",
+        "savings",
+        "investment"
+      ],
+      "q_examples": [
+        "টাকা কোথায় রাখব?"
+      ],
+      "a": "আপনার আয় ও বয়স অনুসারে — PPF, NPS, FD, মিউচুয়াল ফান্ড সবই বিকল্প। আপনার লক্ষ্য কী?",
+      "category": "finance",
+      "confidence_base": 0.83
+    },
+    {
+      "id": "BN031",
+      "q_keywords": [
+        "বিল",
+        "bill",
+        "invoice"
+      ],
+      "q_examples": [
+        "বিল বানাও"
+      ],
+      "a": "GST সঠিক বিল বানিয়ে দেব। আপনার ব্যবসার নাম, GSTIN, এবং পণ্যের তালিকা দিন।",
+      "category": "business",
+      "confidence_base": 0.84
+    },
+    {
+      "id": "BN032",
+      "q_keywords": [
+        "জিএসটি",
+        "gst"
+      ],
+      "q_examples": [
+        "GST কী?"
+      ],
+      "a": "GST = Goods and Services Tax। ভারতে ৫%, ১২%, ১৮%, ২৮% — পণ্য অনুযায়ী। আপনার পণ্যের GST রেট জানতে বললে দেখব।",
+      "category": "business",
+      "confidence_base": 0.88
+    },
+    {
+      "id": "BN033",
+      "q_keywords": [
+        "মান্ডি",
+        "mandi",
+        "ফসলের দাম"
+      ],
+      "q_examples": [
+        "আজ ধানের দাম"
+      ],
+      "a": "agmarknet.gov.in-এ আপনার এলাকার মান্ডি দাম পাবেন। কোন ফসল ও জেলা?",
+      "category": "agriculture",
+      "confidence_base": 0.83
+    },
+    {
+      "id": "BN034",
+      "q_keywords": [
+        "ফসল",
+        "fosol",
+        "crop",
+        "চাষ"
+      ],
+      "q_examples": [
+        "কোন ফসল লাগাব?"
+      ],
+      "a": "আপনার মাটি, পানি, ও আবহাওয়া অনুযায়ী পরামর্শ দেব। জেলা ও বর্তমান চাষ বলুন।",
+      "category": "agriculture",
+      "confidence_base": 0.78
+    },
+    {
+      "id": "BN035",
+      "q_keywords": [
+        "শিক্ষা",
+        "education",
+        "পড়াশোনা",
+        "school"
+      ],
+      "q_examples": [
+        "সরকারি স্কুল"
+      ],
+      "a": "RTE Act-এ ৬-১৪ বছরের সব শিশু বিনামূল্যে শিক্ষা পায়। আপনার শিশুর বয়স ও এলাকা বলুন।",
+      "category": "education",
+      "confidence_base": 0.82
+    },
+    {
+      "id": "BN036",
+      "q_keywords": [
+        "স্কলারশিপ",
+        "scholarship",
+        "বৃত্তি"
+      ],
+      "q_examples": [
+        "স্কলারশিপ কোথায়?"
+      ],
+      "a": "scholarships.gov.in (NSP) — কেন্দ্র ও রাজ্যের সব স্কলারশিপ এখানে। আপনার ক্লাস ও আয় বলুন।",
+      "category": "education",
+      "confidence_base": 0.85
+    },
+    {
+      "id": "BN037",
+      "q_keywords": [
+        "মানসিক",
+        "manoshik",
+        "stress",
+        "tension",
+        "অবসাদ"
+      ],
+      "q_examples": [
+        "মন ভালো নেই"
+      ],
+      "a": "আমি বুঝতে পারছি। iCall (৯১৫২৯৮৭৮২১) এবং Vandrevala Foundation (১৮৬০-২৬৬-২৩৪৫) — ২৪/৭ মানসিক সাহায্য, ফ্রি, বাংলায়। আপনি একা নন।",
+      "category": "mental_health",
+      "confidence_base": 0.92
+    },
+    {
+      "id": "BN038",
+      "q_keywords": [
+        "মেয়ে",
+        "meye",
+        "নারী",
+        "women",
+        "safety"
+      ],
+      "q_examples": [
+        "মহিলা হেল্পলাইন"
+      ],
+      "a": "মহিলা হেল্পলাইন: ১০৯১। সমস্যা হলে ১১২-এ কল। আপনি নিরাপদ থাকুন।",
+      "category": "safety",
+      "confidence_base": 0.93
+    },
+    {
+      "id": "BN039",
+      "q_keywords": [
+        "পুলিশ",
+        "police",
+        "fir"
+      ],
+      "q_examples": [
+        "FIR কীভাবে করব?"
+      ],
+      "a": "যেকোনো থানায় FIR করতে পারেন। অনলাইন: আপনার রাজ্যের পুলিশ ওয়েবসাইটে। থানা না নিলে SP-এর কাছে অভিযোগ করুন।",
+      "category": "legal",
+      "confidence_base": 0.86
+    },
+    {
+      "id": "BN040",
+      "q_keywords": [
+        "আরটিআই",
+        "rti",
+        "right to information"
+      ],
+      "q_examples": [
+        "RTI কীভাবে?"
+      ],
+      "a": "RTI আবেদন: ১০ টাকা ফি, A4 কাগজে আপনার প্রশ্ন লিখুন, সংশ্লিষ্ট অফিসের PIO-কে পাঠান। rtionline.gov.in-এ অনলাইনেও করতে পারেন।",
+      "category": "legal",
+      "confidence_base": 0.86
+    },
+    {
+      "id": "BN041",
+      "q_keywords": [
+        "বিদ্যুৎ",
+        "biddut",
+        "electricity",
+        "current"
+      ],
+      "q_examples": [
+        "বিদ্যুৎ বিল"
+      ],
+      "a": "WBSEDCL (পশ্চিমবঙ্গ) ওয়েবসাইট বা অ্যাপে বিল দেখুন ও ভরুন। গ্রাহক নাম্বার থাকলে আরো সাহায্য করব।",
+      "category": "utility",
+      "confidence_base": 0.83
+    },
+    {
+      "id": "BN042",
+      "q_keywords": [
+        "গ্যাস",
+        "gas",
+        "lpg",
+        "সিলিন্ডার",
+        "এলপিজি"
+      ],
+      "q_examples": [
+        "গ্যাস বুকিং"
+      ],
+      "a": "Indane: 7718955555 (SMS/IVRS)। HP: 9222201122। Bharat: 7718012345। mylpg.in-এ অনলাইনেও।",
+      "category": "utility",
+      "confidence_base": 0.88
+    },
+    {
+      "id": "BN043",
+      "q_keywords": [
+        "পাসপোর্ট",
+        "passport"
+      ],
+      "q_examples": [
+        "পাসপোর্ট আবেদন"
+      ],
+      "a": "passportindia.gov.in-এ অনলাইনে আবেদন করুন। নিকটতম PSK-এ অ্যাপয়েন্টমেন্ট নিন। দরকারি কাগজ: জন্ম প্রমাণ, ঠিকানা প্রমাণ।",
+      "category": "govt",
+      "confidence_base": 0.85
+    },
+    {
+      "id": "BN044",
+      "q_keywords": [
+        "ভোটার",
+        "voter",
+        "election",
+        "কার্ড"
+      ],
+      "q_examples": [
+        "ভোটার কার্ড"
+      ],
+      "a": "voters.eci.gov.in-এ নতুন ভোটার ID, সংশোধন, বা স্থানান্তরের আবেদন।",
+      "category": "govt",
+      "confidence_base": 0.86
+    },
+    {
+      "id": "BN045",
+      "q_keywords": [
+        "ভূমিকম্প",
+        "earthquake",
+        "ভূকম্পন"
+      ],
+      "q_examples": [
+        "ভূমিকম্প হলে কী করব?"
+      ],
+      "a": "DROP-COVER-HOLD: হাঁটু গেড়ে বসুন, শক্ত টেবিলের নীচে যান, কাঁপুনি না থামা পর্যন্ত ধরে থাকুন। জানালা ও ভারী আসবাব থেকে দূরে। বাইরে থাকলে খোলা মাঠে যান।",
+      "category": "emergency",
+      "confidence_base": 0.93
+    },
+    {
+      "id": "BN046",
+      "q_keywords": [
+        "বন্যা",
+        "bonna",
+        "flood"
+      ],
+      "q_examples": [
+        "বন্যা হলে"
+      ],
+      "a": "উঁচু জায়গায় যান। বহমান জলে হাঁটবেন না — ৬ ইঞ্চি জলেই পড়ে যেতে পারেন। বিদ্যুৎ মেইন বন্ধ করুন। SOS: ১১২।",
+      "category": "emergency",
+      "confidence_base": 0.92
+    },
+    {
+      "id": "BN047",
+      "q_keywords": [
+        "ঘূর্ণিঝড়",
+        "cyclone",
+        "cyclonic"
+      ],
+      "q_examples": [
+        "ঘূর্ণিঝড় সতর্কতা"
+      ],
+      "a": "জানালা থেকে দূরে থাকুন। ৩ দিনের জল-খাবার-ফার্স্ট এড মজুত রাখুন। ফোন চার্জ করুন। ঝড়ের 'চোখ'-এ বাইরে যাবেন না — হাওয়া আবার ফিরে আসবে।",
+      "category": "emergency",
+      "confidence_base": 0.92
+    },
+    {
+      "id": "BN048",
+      "q_keywords": [
+        "আজ",
+        "aaj",
+        "today",
+        "dinner",
+        "lunch"
+      ],
+      "q_examples": [
+        "আজ কী রান্না করব?"
+      ],
+      "a": "আপনার পছন্দ ও বর্তমান উপাদান বললে আমি ঐতিহ্যবাহী বাংলা রেসিপি সাজেস্ট করব।",
+      "category": "lifestyle",
+      "confidence_base": 0.75
+    },
+    {
+      "id": "BN049",
+      "q_keywords": [
+        "ছুটি",
+        "chhuti",
+        "holiday",
+        "leave"
+      ],
+      "q_examples": [
+        "আজ ছুটি?"
+      ],
+      "a": "ভারতীয় ক্যালেন্ডার অনুসারে আজকের ছুটি দেখাচ্ছি। কোন রাজ্য?",
+      "category": "lifestyle",
+      "confidence_base": 0.8
+    },
+    {
+      "id": "BN050",
+      "q_keywords": [
+        "বিদায়",
+        "biday",
+        "bye",
+        "tata"
+      ],
+      "q_examples": [
+        "আসি"
+      ],
+      "a": "আসুন! যখন দরকার হবে আমি আছি। ভালো থাকবেন।",
+      "category": "courtesy",
+      "confidence_base": 0.95
+    }
+  ],
+  "fallback_template": {
+    "to_user": "এই প্রশ্নটি আমি এখনো শিখছি। আপনাকে সাহায্য করতে আমি একটু চিন্তা করি...",
+    "log_for_learning": true
+  }
+}
