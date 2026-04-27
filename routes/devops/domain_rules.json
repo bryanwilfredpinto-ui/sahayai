@@ -1,0 +1,162 @@
+{
+  "_meta": {
+    "specialist": "chitti_devops",
+    "version": "v1.0",
+    "purpose": "Single source of truth: maps a specialist NAME to its category, confidence, PII tier, update frequency, and authoritative sources. DevOps consults this when 'Deploy Chitti [NAME]' arrives.",
+    "honest_status": {
+      "rules_count": 25,
+      "graduation_criterion": "Rules expand only when Sire ratifies a new domain."
+    }
+  },
+
+  "categories": {
+    "knowledge": "Ingest a corpus, answer questions. Examples: bangla, ca, legal, health, government.",
+    "action":    "Perform tasks on user's behalf using user's own channels. Examples: whatsapp, youtube, calendar, email, maps, phone."
+  },
+
+  "rules": [
+    {
+      "name": "bangla",   "aliases": ["bn", "bengali"],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.80, "update_frequency": "weekly",
+      "sources_planned": ["WBBSE textbooks", "NCTB textbooks", "Doordarshan Bangla", "Anandabazar", "Prothom Alo", "Bengali Wikipedia"],
+      "ingest_script": "ingest_bangla.py", "language_codes": ["bn"]
+    },
+    {
+      "name": "ca", "aliases": ["chartered_accountant", "tax"],
+      "category": "knowledge", "pii_tier": "sensitive",
+      "confidence_min": 0.90, "update_frequency": "weekly",
+      "sources_planned": ["Income Tax Act PDFs", "GST Act", "ICAI bulletins", "CBDT circulars"],
+      "ingest_script": "ingest_ca.py", "language_codes": ["en", "hi"]
+    },
+    {
+      "name": "legal", "aliases": ["lawyer", "law"],
+      "category": "knowledge", "pii_tier": "critical",
+      "confidence_min": 0.92, "update_frequency": "weekly",
+      "sources_planned": ["IPC", "CrPC", "CPC", "Supreme Court judgements", "RTI portal"],
+      "ingest_script": "ingest_legal.py", "language_codes": ["en", "hi"]
+    },
+    {
+      "name": "health", "aliases": ["medical", "doctor"],
+      "category": "knowledge", "pii_tier": "sensitive",
+      "confidence_min": 0.92, "update_frequency": "monthly",
+      "sources_planned": ["WHO guidelines", "ICMR guidelines", "MoHFW circulars", "AIIMS protocols"],
+      "ingest_script": "ingest_health.py", "language_codes": ["en", "hi", "bn"]
+    },
+    {
+      "name": "government", "aliases": ["govt", "schemes", "yojana"],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.85, "update_frequency": "daily",
+      "sources_planned": ["myScheme.gov.in", "PIB", "PMO releases", "state govt portals"],
+      "ingest_script": "ingest_government.py", "language_codes": ["en", "hi", "bn", "mr", "ta", "te", "gu", "kn"]
+    },
+    {
+      "name": "news", "aliases": ["headlines"],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.75, "update_frequency": "continuous",
+      "sources_planned": ["NewsAPI", "Reuters", "PTI", "ANI", "Doordarshan"],
+      "ingest_script": "ingest_news.py", "language_codes": ["en", "hi"]
+    },
+    {
+      "name": "weather", "aliases": ["mausam"],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.80, "update_frequency": "continuous",
+      "sources_planned": ["Open-Meteo", "IMD", "NDMA"],
+      "ingest_script": null, "language_codes": ["en", "hi", "bn"],
+      "note": "Already live as routes/guardian. DevOps will refuse to re-install."
+    },
+    {
+      "name": "cricket", "aliases": [],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.80, "update_frequency": "continuous",
+      "sources_planned": ["Cricbuzz", "ESPNcricinfo", "BCCI", "ICC"],
+      "ingest_script": "ingest_cricket.py", "language_codes": ["en", "hi"],
+      "parent": "sports"
+    },
+    {
+      "name": "mf", "aliases": ["mutual_fund", "mutual_funds"],
+      "category": "knowledge", "pii_tier": "sensitive",
+      "confidence_min": 0.88, "update_frequency": "daily",
+      "sources_planned": ["AMFI", "Value Research", "Morningstar India"],
+      "ingest_script": "ingest_mf.py", "language_codes": ["en", "hi"],
+      "parent": "finance"
+    },
+    {
+      "name": "shares", "aliases": ["stocks", "equity"],
+      "category": "knowledge", "pii_tier": "sensitive",
+      "confidence_min": 0.88, "update_frequency": "continuous",
+      "sources_planned": ["BSE", "NSE", "SEBI", "Moneycontrol"],
+      "ingest_script": "ingest_shares.py", "language_codes": ["en", "hi"],
+      "parent": "finance"
+    },
+    {
+      "name": "agriculture", "aliases": ["farmer", "krishi"],
+      "category": "knowledge", "pii_tier": "safe",
+      "confidence_min": 0.85, "update_frequency": "daily",
+      "sources_planned": ["Agmarknet", "ICAR", "KVK", "PM-Kisan portal"],
+      "ingest_script": "ingest_agriculture.py", "language_codes": ["en", "hi", "mr", "te", "ta", "kn", "bn"]
+    },
+    {
+      "name": "elder_fraud", "aliases": ["scam", "upi_fraud"],
+      "category": "knowledge", "pii_tier": "sensitive",
+      "confidence_min": 0.90, "update_frequency": "daily",
+      "sources_planned": ["Cyber Dost", "RBI circulars", "Sancharsaathi"],
+      "ingest_script": "ingest_elder_fraud.py", "language_codes": ["en", "hi", "bn"]
+    },
+
+    {
+      "name": "whatsapp", "aliases": ["wa"],
+      "category": "action", "pii_tier": "sensitive",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "user_whatsapp",
+      "implementation": "android_accessibility + meta_cloud_api",
+      "note": "Acts on behalf of master using master's own WhatsApp. NO Twilio. NO Aisensy."
+    },
+    {
+      "name": "youtube", "aliases": ["yt"],
+      "category": "action", "pii_tier": "safe",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "youtube_intent",
+      "implementation": "android_intent + youtube_data_api"
+    },
+    {
+      "name": "calendar", "aliases": ["cal"],
+      "category": "action", "pii_tier": "sensitive",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "user_google_calendar",
+      "implementation": "oauth2"
+    },
+    {
+      "name": "email", "aliases": ["gmail", "mail"],
+      "category": "action", "pii_tier": "sensitive",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "user_gmail",
+      "implementation": "oauth2"
+    },
+    {
+      "name": "maps", "aliases": ["nav", "navigation"],
+      "category": "action", "pii_tier": "sensitive",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "google_maps",
+      "implementation": "android_intent + maps_api"
+    },
+    {
+      "name": "phone_call", "aliases": ["call", "dial"],
+      "category": "action", "pii_tier": "critical",
+      "confidence_min": null, "update_frequency": null,
+      "channel": "user_phone",
+      "implementation": "android_dialer_intent",
+      "note": "pii_tier critical — number never leaves device."
+    }
+  ],
+
+  "default_for_unknown": {
+    "category": "knowledge",
+    "pii_tier": "sensitive",
+    "confidence_min": 0.85,
+    "update_frequency": "weekly",
+    "note": "Unknown domain → conservative defaults. Sire must ratify before going live."
+  },
+
+  "blocked_names": ["chat", "bangla", "guardian", "news", "feedback", "whatsapp", "morning_brief", "reminder", "devops"]
+}
