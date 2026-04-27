@@ -1,0 +1,95 @@
+routes/bangla/data/scam_patterns_bn.json{
+  "schema_version": "1.0",
+  "language": "bn",
+  "purpose": "Pattern library for Guardian scam detection. Each pattern has Bangla regex/keywords + alert level + Bangla user-facing message.",
+
+  "alert_levels": {
+    "green": {
+      "name_bangla": "সবুজ",
+      "name_english": "Safe",
+      "action": "normal_response",
+      "user_message": null
+    },
+    "yellow": {
+      "name_bangla": "হলুদ",
+      "name_english": "Caution",
+      "action": "warn_user_continue",
+      "user_message": "এই বিষয়ে ঝুঁকি আছে। বিকল্প বিবেচনা করুন।"
+    },
+    "red": {
+      "name_bangla": "লাল",
+      "name_english": "Danger",
+      "action": "block_with_warning",
+      "user_message": "থামুন। এটি ব্যবহার করবেন না। কারণ হলো নিচে দেওয়া আছে।"
+    },
+    "black": {
+      "name_bangla": "কালো",
+      "name_english": "Critical",
+      "action": "block_and_alert_sire",
+      "user_message": "জরুরি সতর্কতা! এটি একটি নিশ্চিত প্রতারণা। দয়া করে কোনো তথ্য বা টাকা শেয়ার করবেন না।"
+    }
+  },
+
+  "patterns": [
+    {
+      "id": "otp_share_request",
+      "level": "black",
+      "category": "ওটিপি স্ক্যাম",
+      "bangla_keywords": ["ওটিপি দিন", "ওটিপি বলুন", "ওটিপি শেয়ার করুন", "OTP দাও", "ওটিপি পাঠাও"],
+      "english_keywords": ["share OTP", "tell OTP", "OTP send"],
+      "explanation_bangla": "কোনো ব্যাংক, সরকার, বা কোম্পানি কখনোই ওটিপি চাইবে না। এটি ১০০% প্রতারণা।",
+      "user_action_bangla": "এই কথোপকথন এখনই বন্ধ করুন। কাউকে ওটিপি দেবেন না।",
+      "savings_estimate_inr": 50000
+    },
+    {
+      "id": "fake_government_scheme",
+      "level": "red",
+      "category": "ভুয়া সরকারি প্রকল্প",
+      "bangla_keywords": ["প্রধানমন্ত্রী যোজনা", "ফ্রি টাকা", "সরকারি ভর্তুকি লিঙ্ক", "₹১০,০০০ পান", "নিবন্ধন ফি"],
+      "english_keywords": ["PM scheme registration fee", "free money government", "subsidy link"],
+      "explanation_bangla": "আসল সরকারি প্রকল্পের জন্য কখনো নিবন্ধন ফি লাগে না। অজানা লিঙ্কে ক্লিক করবেন না।",
+      "user_action_bangla": "শুধুমাত্র সরকারি ওয়েবসাইট (.gov.in) থেকে যাচাই করুন।",
+      "savings_estimate_inr": 5000
+    },
+    {
+      "id": "lottery_prize",
+      "level": "red",
+      "category": "ভুয়া লটারি",
+      "bangla_keywords": ["আপনি জিতেছেন", "লটারি জয়", "প্রসেসিং ফি", "টাকা পেতে"],
+      "english_keywords": ["you won", "lottery winner", "claim prize fee"],
+      "explanation_bangla": "আপনি যে লটারিতে অংশই নেননি, তাতে জিতেছেন বললে — সেটা প্রতারণা।",
+      "user_action_bangla": "মেসেজ মুছে ফেলুন। নম্বরটি ব্লক করুন।",
+      "savings_estimate_inr": 10000
+    },
+    {
+      "id": "unrealistic_investment_returns",
+      "level": "red",
+      "category": "অবাস্তব বিনিয়োগ রিটার্ন",
+      "bangla_keywords": ["মাসে ৫০% রিটার্ন", "নিশ্চিত মুনাফা", "ডবল করে দেব", "ক্রিপ্টো গ্যারান্টি"],
+      "english_keywords": ["guaranteed 50% monthly", "double your money", "guaranteed crypto"],
+      "explanation_bangla": "কোনো আসল বিনিয়োগ নিশ্চিত উচ্চ রিটার্ন দেয় না। SEBI অনুমোদিত নয় এমন স্কিমে টাকা দেবেন না।",
+      "user_action_bangla": "SEBI ওয়েবসাইটে যাচাই করুন। পরিবারের সাথে আলোচনা করুন।",
+      "savings_estimate_inr": 100000
+    },
+    {
+      "id": "impersonation_relative",
+      "level": "black",
+      "category": "আত্মীয় সাজার প্রতারণা",
+      "bangla_keywords": ["আমি তোমার ছেলে", "জরুরি টাকা পাঠাও", "হাসপাতালে আছি", "একটু পরে ফোন করব"],
+      "english_keywords": ["I am your son urgent", "hospital emergency money"],
+      "explanation_bangla": "প্রতারক আপনার ছেলে/মেয়ে/আত্মীয় সেজে জরুরি টাকা চাইছে। প্রথমে আসল নম্বরে ফোন করুন।",
+      "user_action_bangla": "টাকা পাঠানোর আগে আত্মীয়ের পরিচিত নম্বরে সরাসরি ফোন করুন।",
+      "savings_estimate_inr": 75000
+    },
+    {
+      "id": "fake_bank_kyc",
+      "level": "red",
+      "category": "ভুয়া KYC আপডেট",
+      "bangla_keywords": ["KYC আপডেট করুন", "অ্যাকাউন্ট বন্ধ হবে", "এই লিঙ্কে ক্লিক", "ব্যাংকের পক্ষ থেকে"],
+      "english_keywords": ["KYC update link", "account will be blocked", "bank verification link"],
+      "explanation_bangla": "ব্যাংক কখনোই SMS বা WhatsApp লিঙ্কে KYC চায় না। শাখায় গিয়ে যাচাই করুন।",
+      "user_action_bangla": "লিঙ্কে ক্লিক করবেন না। সরাসরি ব্যাংকে যান বা অফিসিয়াল হেল্পলাইনে কল করুন।",
+      "savings_estimate_inr": 25000
+    }
+  ]
+}
