@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sahay AI — Chitti</title>
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────── */
+:root {
+  --saffron: #E8520A;
+  --navy:    #1B3A6B;
+  --green:   #1A7A4A;
+  --purple:  #7C3AED;
+  --teal:    #0891B2;
+  --gold:    #D4A017;
+  --bg:      #F8F4F0;
+  --surface: #FFFFFF;
+  --surface2:#F0EBE4;
+  --border:  #E0D5C8;
+  --text:    #1A1A1A;
+  --text2:   #4A4A4A;
+  --text3:   #888888;
+  --red:     #DC2626;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { background: #F8F4F0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+/* ── PROGRESS BAR ──────────────────────────────── */
+#progress-wrap {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  height: 4px; background: var(--border); z-index: 100;
+}
+#progress-bar {
+  height: 100%; background: var(--saffron);
+  width: 0%; transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(232,82,10,0.4);
+}
+
+/* ── PAGE SYSTEM ───────────────────────────────── */
+.page { display: none; min-height: 100vh; padding-top: 4px; background: var(--bg); }
+.page.active { display: flex; flex-direction: column; }
+
+/* ── CARDS ─────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  position: relative;
+}
+.card.selected { border-color: var(--saffron); border-width: 2px; background: rgba(232,82,10,0.04); }
+.card.green-selected { border-color: var(--green); border-width: 2px; background: rgba(26,122,74,0.04); }
+
+/* ── SPEAKER BUTTON ────────────────────────────── */
+.spkr {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px;
+  background: var(--saffron);
+  border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(232,82,10,0.35);
+  font-size: 14px; flex-shrink: 0;
+  transition: transform 0.1s;
+}
+.spkr:active { transform: scale(0.92); }
+.spkr-inline {
+  width: 30px; height: 30px; min-width: 30px;
+  background: var(--saffron);
+  border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(232,82,10,0.3);
+}
+
+/* ── BUTTONS ───────────────────────────────────── */
+.btn-primary {
+  width: 100%; padding: 17px;
+  background: var(--saffron); color: #000;
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(232,82,10,0.35);
+  transition: all 0.15s; margin-top: 8px;
+}
+.btn-primary:disabled { background: #CCC; color: #888; box-shadow: none; cursor: not-allowed; }
+.btn-primary:not(:disabled):active { transform: scale(0.98); }
+
+.btn-secondary {
+  width: 100%; padding: 14px;
+  background: var(--surface2); color: var(--text2);
+  border: 1.5px solid var(--border); border-radius: 16px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  margin-top: 8px; transition: all 0.15s;
+}
+
+.btn-green {
+  width: 100%; padding: 17px;
+  background: var(--green); color: #fff;
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(26,122,74,0.3);
+  margin-top: 8px;
+}
+
+/* ── INPUTS ────────────────────────────────────── */
+.inp-wrap { margin-bottom: 14px; }
+.inp-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.inp {
+  width: 100%; padding: 13px 14px;
+  background: var(--surface2); color: var(--text);
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-size: 15px; outline: none;
+  transition: border-color 0.2s; -webkit-appearance: none;
+}
+.inp:focus { border-color: var(--saffron); background: var(--surface); }
+.inp-row { display: flex; gap: 8px; align-items: center; }
+.inp-row .inp { flex: 1; }
+
+/* ── MIC BUTTON ────────────────────────────────── */
+.mic-btn {
+  width: 42px; height: 42px; min-width: 42px;
+  border-radius: 50%; border: 2px solid var(--border);
+  background: var(--surface2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; transition: all 0.2s;
+}
+.mic-btn.ready { background: rgba(34,197,94,0.15); border-color: #22c55e; }
+.mic-btn.recording { background: rgba(220,38,38,0.15); border-color: var(--red); animation: pulse-red 1s infinite; }
+@keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.4)} 50%{box-shadow:0 0 0 8px rgba(220,38,38,0)} }
+
+/* ── LANGUAGE PILLS ────────────────────────────── */
+.lang-btn {
+  width: 100%; padding: 15px 18px;
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; cursor: pointer; text-align: left;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; transition: all 0.15s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.lang-btn.picked { border-color: var(--saffron); background: rgba(232,82,10,0.06); }
+.lang-btn .lang-name { font-size: 18px; font-weight: 800; }
+.lang-btn .lang-sub { font-size: 11px; color: var(--text3); }
+.lang-badge { background: var(--green); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+/* ── CHAT BUBBLES ──────────────────────────────── */
+.bubble-wrap { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+.bubble-wrap.user { flex-direction: row-reverse; }
+.avatar { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background: var(--saffron); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; }
+.bubble {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; border-top-left-radius: 4px;
+  padding: 12px 14px; font-size: 14px; line-height: 1.5;
+  max-width: 82%; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  position: relative;
+}
+.bubble.user { background: var(--saffron); color: #000; border: none; border-top-right-radius: 4px; border-top-left-radius: 16px; font-weight: 600; }
+.bubble .spkr { top: 6px; right: 6px; width: 24px; height: 24px; font-size: 11px; }
+
+/* ── INCOME SLABS ──────────────────────────────── */
+.slab {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: var(--surface);
+  border: 2px solid var(--border); border-radius: 14px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+.slab.picked { border-color: var(--saffron); background: rgba(232,82,10,0.05); }
+.slab-left { display: flex; align-items: center; gap: 12px; }
+.slab-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.slab-name { font-size: 14px; font-weight: 700; }
+.slab-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+/* ── TERMS ─────────────────────────────────────── */
+.term-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 14px;
+  margin-bottom: 8px; position: relative;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+.term-card.highlight { border-color: var(--saffron); border-width: 2px; background: rgba(232,82,10,0.04); }
+.term-num { width: 26px; height: 26px; min-width: 26px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.term-text { font-size: 13px; line-height: 1.5; color: var(--text); flex: 1; padding-right: 28px; }
+.term-card .spkr { top: 8px; right: 8px; width: 24px; height: 24px; font-size: 11px; }
+
+/* ── CHECKBOXES ────────────────────────────────── */
+.check-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 14px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.check-row.checked { background: rgba(26,122,74,0.05); border-color: var(--green); }
+.checkbox { width: 24px; height: 24px; min-width: 24px; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; transition: all 0.15s; }
+.check-row.checked .checkbox { background: var(--green); border-color: var(--green); }
+.check-label { font-size: 13px; line-height: 1.5; color: var(--text2); flex: 1; }
+
+/* ── CATEGORY CARDS ────────────────────────────── */
+.cat-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 18px; padding: 16px;
+  margin-bottom: 10px; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.15s; position: relative;
+}
+.cat-card.picked-saf { border-color: var(--saffron); background: rgba(232,82,10,0.04); }
+.cat-card.picked-grn { border-color: var(--green); background: rgba(26,122,74,0.04); }
+.cat-card.picked-nav { border-color: var(--navy); background: rgba(27,58,107,0.04); }
+.cat-card.picked-pur { border-color: var(--purple); background: rgba(124,58,237,0.04); }
+.cat-header { display: flex; align-items: center; gap: 12px; }
+.cat-icon { width: 48px; height: 48px; min-width: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: #fff; }
+.cat-title { font-size: 15px; font-weight: 800; }
+.cat-price { font-size: 12px; font-weight: 700; margin-top: 2px; }
+.cat-dropdown {
+  margin-top: 10px; width: 100%; padding: 10px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; font-size: 13px; color: var(--text2);
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  cursor: pointer;
+}
+.cat-others-input { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.cat-others-input input { flex: 1; }
+
+/* ── RATING ────────────────────────────────────── */
+.rating-wrap { display: flex; gap: 4px; margin: 10px 0; }
+.rating-dot {
+  flex: 1; height: 32px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  cursor: pointer; transition: all 0.15s;
+}
+.rating-dot.picked { background: var(--green); border-color: var(--green); color: #fff; }
+.rating-dot:nth-child(8),.rating-dot:nth-child(9),.rating-dot:nth-child(10) { background: rgba(26,122,74,0.08); border-color: rgba(26,122,74,0.3); color: var(--green); }
+.rating-dot:nth-child(8).picked,.rating-dot:nth-child(9).picked,.rating-dot:nth-child(10).picked { background: var(--green); color: #fff; }
+
+/* ── FEEDBACK BOX ──────────────────────────────── */
+.feedback-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px; margin-top: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.fb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.fb-title { font-size: 12px; font-weight: 700; color: var(--text2); }
+.fb-mic-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.fb-input-row { display: flex; gap: 8px; margin-top: 8px; }
+.fb-input { flex: 1; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text); outline: none; }
+.fb-send { padding: 9px 14px; background: var(--saffron); color: #000; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.fb-thanks { font-size: 12px; color: var(--green); text-align: center; margin-top: 6px; display: none; }
+
+/* ── EMOJI REACTIONS ───────────────────────────── */
+.emoji-row { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
+.emoji-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; }
+.emoji-circle { width: 56px; height: 56px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 26px; transition: all 0.15s; }
+.emoji-btn.picked .emoji-circle { border-color: var(--saffron); background: rgba(232,82,10,0.1); transform: scale(1.1); }
+.emoji-label { font-size: 11px; color: var(--text3); font-weight: 600; }
+.emoji-btn.picked .emoji-label { color: var(--saffron); }
+
+/* ── PAGE HEADER ───────────────────────────────── */
+.page-header { padding: 16px 20px 0; }
+.page-step { font-size: 11px; color: var(--text3); font-weight: 600; text-align: right; margin-bottom: 4px; }
+.page-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+
+/* ── CONTAINER ─────────────────────────────────── */
+.pg-body { padding: 16px 20px 100px; flex: 1; }
+
+/* ── SAVE BADGE ────────────────────────────────── */
+.save-badge { display: flex; align-items: center; gap: 6px; background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 5px 12px; font-size: 11px; color: #2563EB; font-weight: 600; margin-bottom: 12px; width: fit-content; }
+
+/* ── VOICE INPUT BAR ───────────────────────────── */
+.voice-bar { display: flex; align-items: center; gap: 6px; background: rgba(232,82,10,0.08); border: 1.5px solid rgba(232,82,10,0.3); border-radius: 20px; padding: 8px 14px; margin-bottom: 12px; }
+.voice-bar span { font-size: 12px; color: var(--saffron); font-weight: 600; flex: 1; }
+
+/* ── ANIMATIONS ────────────────────────────────── */
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes popIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.slide-up { animation: slideUp 0.3s ease; }
+.pop-in { animation: popIn 0.4s ease; }
+
+/* ── SPLASH SCREEN ─────────────────────────────── */
+#page-splash {
+  background: var(--navy);
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+.splash-logo { width: 90px; height: 90px; background: var(--saffron); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 900; color: #fff; margin-bottom: 24px; box-shadow: 0 12px 40px rgba(232,82,10,0.4); animation: popIn 0.6s ease; }
+.splash-brand { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 3px; margin-bottom: 8px; }
+.splash-tag { font-size: 15px; color: #FFB380; font-style: italic; }
+.splash-dots { display: flex; gap: 8px; margin-top: 40px; }
+.splash-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+.splash-dot.active { background: var(--saffron); }
+
+/* ── RESUME BANNER ─────────────────────────────── */
+#resume-banner { display: none; background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.25); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; }
+#resume-banner p { font-size: 13px; color: #1D4ED8; font-weight: 600; }
+#resume-banner button { margin-top: 8px; padding: 8px 16px; background: #2563EB; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<!-- PAGE 1: SPLASH -->
+<div class="page active" id="page-splash" onclick="advanceSplash()">
+  <div class="splash-logo">C</div>
+  <div class="splash-brand">SAHAY AI</div>
+  <div class="splash-tag">Bharat ka apna Chitti</div>
+  <div class="splash-dots">
+    <div class="splash-dot active" id="sd0"></div>
+    <div class="splash-dot" id="sd1"></div>
+    <div class="splash-dot" id="sd2"></div>
+  </div>
+</div>
+
+<!-- PAGE 2: LANGUAGE -->
+<div class="page" id="page-lang">
+  <div class="pg-body slide-up">
+    <div style="padding-top:20px"></div>
+
+    <!-- Chitti speaks first -->
+    <div class="bubble-wrap">
+      <div class="avatar">C</div>
+      <div class="bubble">
+        <button class="spkr" onclick="speak(chittiWelcomeMsg())">🔊</button>
+        <strong id="welcome-bold">Welcome to Sahay AI!</strong>
+        <span id="welcome-text"> I am Chitti — Bharat ka apna PA. Hope you are having a great time. Please tell me about yourself.</span>
+        <div style="font-size:11px;color:var(--saffron);margin-top:6px;font-style:italic" id="speaking-label">🔊 Speaking...</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:13px;color:var(--text3);font-weight:600;margin:16px 0 10px">
+      Choose your language / अपनी भाषा चुनें
+    </div>
+
+    <!-- Language buttons -->
+    <div class="lang-btn picked" onclick="pickLang('en',this)" id="lb-en">
+      <div>
+        <div class="lang-name">English</div>
+        <div class="lang-sub">English</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="lang-badge" id="lb-en-badge">Selected ✓</span>
+        <button class="spkr-inline" onclick="event.stopPropagation();speak('English')">🔊</button>
+      </div>
+    </div>
+
+    <div class="lang-btn" onclick="pickLang('hi',this)" id="lb-hi">
+      <div>
+        <div class="lang-name">हिंदी</div>
+        <div class="lang-sub">Hindi</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--text3);font-weight:600">Available</span>
+        <button class="spkr-inline" onclick="event.stopPropagation();speak('Hindi')">🔊</button>
+      </div>
+    </div>
+
+    <!-- My language not listed -->
+    <div style="background:#EFF6FF;border:1px solid #BAE6FD;border-radius:14px;padding:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#0369A1">🌐 My language isn't listed</div>
+        <div style="font-size:12px;color:#0369A1;margin-top:2px">Chitti will learn it for you</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="requestLang()" style="background:#0369A1;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">Request</button>
+        <button class="spkr-inline" onclick="speak('My language is not listed. Chitti will learn it for you.')">🔊</button>
+      </div>
+    </div>
+
+    <!-- After request flow (hidden initially) -->
+    <div id="lang-request-box" style="display:none;background:#F0FDF4;border:1px solid #86EFAC;border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">Which language do you speak?</div>
+      <div class="inp-row">
+        <input class="inp" id="lang-request-input" placeholder="Type language name..." style="flex:1">
+        <button class="mic-btn" id="lang-req-mic" onclick="micInput('lang-request-input','lang-req-mic')">🎤</button>
+        <button class="spkr-inline" onclick="speak('Which language do you speak? Please type or say the name.')">🔊</button>
+      </div>
+      <button onclick="submitLangRequest()" style="margin-top:8px;padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">Submit</button>
+    </div>
+
+    <div id="lang-feedback"></div>
+
+    <!-- Feedback box -->
+    <div class="feedback-box">
+      <div class="fb-header">
+        <span class="fb-title">Page 2 Feedback</span>
+        <button class="spkr-inline" onclick="speak('How is this page?')">🔊</button>
+      </div>
+      <div class="rating-wrap" id="fb-rating-2"></div>
+      <div class="fb-mic-row">
+        <button class="mic-btn" id="fb-mic-2" onclick="micFeedback('fb-mic-2','fb-input-2')">🎤</button>
+        <div style="font-size:11px;color:var(--text3)">Tap → <span style="color:#22c55e;font-weight:700">Ready</span> → <span style="color:var(--red);font-weight:700">Recording</span></div>
+      </div>
+      <div class="fb-input-row">
+        <input class="fb-input" id="fb-input-2" placeholder="Or type feedback...">
+        <button class="fb-send" onclick="submitFeedback(2)">Send</button>
+      </div>
+      <div class="fb-thanks" id="fb-thanks-2">✅ Thank you!</div>
+    </div>
+
+    <button class="btn-primary" id="lang-next-btn" onclick="goTo('page-conv1')" style="margin-top:16px" id="lang-btn-text">Continue in English →</button>
+  </div>
+</div>
+
+<!-- PAGE 3: CONVERSATION PART 1 -->
+<div class="page" id="page-conv1">
+  <div class="pg-body slide-up">
+    <div class="page-step" id="step-conv1">Step 2 of 7</div>
+    <div class="save-badge">💾 Progress auto-saved</div>
+
+    <div id="conv1-chat"></div>
+
+    <div style="background:rgba(255,251,235,0.8);border:1px solid #FCD34D;border-radius:12px;padding:12px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#92400E">Passion Detection (in conversation)</div>
+      <div style="font-size:12px;color:#78350F;margin-top:2px;font-style:italic">"Free time mein kya karna pasand hai? Cricket? Movies?"</div>
+    </div>
+
+    <!-- Q progress tracker -->
+    <div style="display:flex;gap:4px;margin-bottom:8px" id="q-progress"></div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px" id="q-label">Question 1 of 6</div>
+
+    <div class="feedback-box">
+      <div class="fb-header">
+        <span class="fb-title">Page 3 Feedback</span>
+        <button class="spkr-inline" onclick="speak('How is this page?')">🔊</button>
+      </div>
+      <div class="rating-wrap" id="fb-rating-3"></div>
+      <div class="fb-mic-row">
+        <button class="mic-btn" id="fb-mic-3" onclick="micFeedback('fb-mic-3','fb-input-3')">🎤</button>
+        <div style="font-size:11px;color:var(--text3)">Tap → <span style="color:#22c55e;font-weight:700">Ready</span> → <span style="color:var(--red);font-weight:700">Recording</span></div>
+      </div>
+      <div class="fb-input-row">
+        <input class="fb-input" id="fb-input-3" placeholder="Or type feedback...">
+        <button class="fb-send" onclick="submitFeedback(3)">Send</button>
+      </div>
+      <div class="fb-thanks" id="fb-thanks-3">✅ Thank you!</div>
+    </div>
+
+    <!-- Answer input -->
+    <div style="position:sticky;bottom:0;background:var(--bg);padding:12px 0 0">
+      <div class="inp-row">
+        <input class="inp" id="conv1-input" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')submitConv1()">
+        <button class="mic-btn" id="conv1-mic" onclick="micInput('conv1-input','conv1-mic')">🎤</button>
+        <button onclick="submitConv1()" style="width:42px;height:42px;background:var(--navy);border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: PRIVACY -->
+<div class="page" id="page-privacy">
+  <div class="pg-body slide-up">
+    <div class="page-step">Step 3 of 7</div>
+
+    <div style="text-align:center;margin:10px 0 16px">
+      <div style="width:72px;height:72px;background:var(--saffron);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;box-shadow:0 6px 24px rgba(232,82,10,0.35)">C</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px">
+        <div style="font-size:22px;font-weight:900">Your Data is YOURS.</div>
+        <button class="spkr-inline" onclick="speak('Your Data is YOURS. Not mine. Not Sahay AI. Not anyone else.')">🔊</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Not mine. Not Sahay AI's. Not anyone's.</div>
+    </div>
+
+    <!-- Promises -->
+    <div class="card" style="background:rgba(240,253,244,1);border-color:#86EFAC;border-width:2px">
+      <button class="spkr" onclick="speak('Your data promises: Never shared with anyone. Delete anytime by saying it. Not even Sire can read it. Stored on your device first. You own it. Always.')">🔊</button>
+      <div style="padding-right:30px">
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(134,239,172,0.4);font-size:14px">🔒 Never shared with anyone</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(134,239,172,0.4);font-size:14px">🗑️ Delete anytime — just say it</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(134,239,172,0.4);font-size:14px">👁️ Not even Sire can read it</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(134,239,172,0.4);font-size:14px">📱 Stored on your device first</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px">✅ You own it. Always.</div>
+      </div>
+    </div>
+
+    <!-- Postman Principle -->
+    <div class="card" style="border-color:var(--saffron);background:rgba(255,247,237,1)">
+      <button class="spkr" onclick="speak('The Postman Principle. I deliver your messages. I do not read them. I do not store them. I do not share them.')">🔊</button>
+      <div style="font-size:14px;font-weight:700;color:var(--saffron);margin-bottom:6px;padding-right:30px">The Postman Principle</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;padding-right:30px">I deliver. I don't read. I don't store. I don't share.</div>
+    </div>
+
+    <!-- Limited Mode -->
+    <div class="card" style="border-color:#BAE6FD;background:#F0F9FF">
+      <button class="spkr" onclick="speak('Limited Mode means: No name, family, or income stored. Only general answers, no personalisation. You can upgrade anytime by saying: Chitti, save my data.')">🔊</button>
+      <div style="font-size:13px;font-weight:700;color:#0369A1;margin-bottom:6px;padding-right:30px">Limited Mode means:</div>
+      <div style="font-size:12px;color:#0369A1;line-height:1.6;padding-right:30px">
+        • No name/family/income stored<br>
+        • General answers only (no personalisation)<br>
+        • Upgrade anytime: say <strong>"Chitti, save my data"</strong>
+      </div>
+    </div>
+
+    <button class="btn-green" onclick="goTo('page-conv2')">✓  Yes, I understand and agree</button>
+    <button class="btn-secondary" onclick="limitedMode()">No — use Limited Mode instead</button>
+  </div>
+</div>
+
+<!-- PAGE 5: CONVERSATION PART 2 (INCOME) -->
+<div class="page" id="page-conv2">
+  <div class="pg-body slide-up">
+    <div class="page-step">Step 4 of 7</div>
+    <div class="save-badge">💾 Progress auto-saved</div>
+
+    <div class="bubble-wrap">
+      <div class="avatar">C</div>
+      <div class="bubble">
+        <button class="spkr" onclick="speak('Thank you for trusting me. One more thing — your income helps me give you the right financial guidance.')">🔊</button>
+        <div style="padding-right:28px">Thank you for trusting me. One more thing — your income helps me give you the right financial guidance.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:20px;font-weight:900" id="income-title">Annual Income?</div>
+      <button class="spkr-inline" onclick="speak('What is your annual income?')">🔊</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Helps give better financial guidance · 🔒 Never shared</div>
+
+    <div id="income-slabs"></div>
+
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px;font-style:italic">
+      This is asked after Privacy — because your trust matters first.
+    </div>
+
+    <div class="feedback-box">
+      <div class="fb-header">
+        <span class="fb-title">Page 5 Feedback</span>
+        <button class="spkr-inline" onclick="speak('How is this page?')">🔊</button>
+      </div>
+      <div class="rating-wrap" id="fb-rating-5"></div>
+      <div class="fb-mic-row">
+        <button class="mic-btn" id="fb-mic-5" onclick="micFeedback('fb-mic-5','fb-input-5')">🎤</button>
+        <div style="font-size:11px;color:var(--text3)">Tap → <span style="color:#22c55e;font-weight:700">Ready</span> → <span style="color:var(--red);font-weight:700">Recording</span></div>
+      </div>
+      <div class="fb-input-row">
+        <input class="fb-input" id="fb-input-5" placeholder="Or type feedback...">
+        <button class="fb-send" onclick="submitFeedback(5)">Send</button>
+      </div>
+      <div class="fb-thanks" id="fb-thanks-5">✅ Thank you!</div>
+    </div>
+
+    <button class="btn-primary" id="income-next" onclick="goTo('page-terms')" disabled>Continue →</button>
+  </div>
+</div>
+
+<!-- PAGE 6: TERMS -->
+<div class="page" id="page-terms">
+  <div class="pg-body slide-up">
+    <div class="page-step">Step 5 of 7</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-size:22px;font-weight:900">Terms &amp; Conditions</div>
+      <button class="spkr-inline" onclick="speak('Terms and Conditions')">🔊</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;font-style:italic">Plain language · In your language · No legal jargon</div>
+
+    <div id="terms-list"></div>
+
+    <div style="margin:14px 0;font-weight:700;font-size:13px;color:var(--text2)">Required:</div>
+    <div class="check-row" id="ck-terms" onclick="toggleCheck('ck-terms','terms-check')">
+      <div class="checkbox" id="terms-check"></div>
+      <div class="check-label">I have read and agree to these Terms &amp; Conditions.</div>
+      <button class="spkr-inline" onclick="event.stopPropagation();speak('I have read and agree to these Terms and Conditions.')">🔊</button>
+    </div>
+    <div class="check-row" id="ck-age" onclick="toggleCheck('ck-age','age-check')">
+      <div class="checkbox" id="age-check"></div>
+      <div class="check-label">I confirm I am 18 years or older (or have parental consent).</div>
+      <button class="spkr-inline" onclick="event.stopPropagation();speak('I confirm I am 18 years or older, or have parental consent.')">🔊</button>
+    </div>
+
+    <div class="feedback-box" style="margin-top:14px">
+      <div class="fb-header">
+        <span class="fb-title">Page 6 Feedback</span>
+        <button class="spkr-inline" onclick="speak('How is this page?')">🔊</button>
+      </div>
+      <div class="rating-wrap" id="fb-rating-6"></div>
+      <div class="fb-mic-row">
+        <button class="mic-btn" id="fb-mic-6" onclick="micFeedback('fb-mic-6','fb-input-6')">🎤</button>
+        <div style="font-size:11px;color:var(--text3)">Tap → <span style="color:#22c55e;font-weight:700">Ready</span> → <span style="color:var(--red);font-weight:700">Recording</span></div>
+      </div>
+      <div class="fb-input-row">
+        <input class="fb-input" id="fb-input-6" placeholder="Or type feedback...">
+        <button class="fb-send" onclick="submitFeedback(6)">Send</button>
+      </div>
+      <div class="fb-thanks" id="fb-thanks-6">✅ Thank you!</div>
+    </div>
+    <button class="btn-primary" id="terms-next" onclick="goTo('page-choose')" disabled style="margin-top:10px">Continue →</button>
+  </div>
+</div>
+
+<!-- PAGE 7: CHOOSE YOUR CHITTI -->
+<div class="page" id="page-choose">
+  <div class="pg-body slide-up">
+    <div class="page-step">Step 6 of 7</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:4px">How do you want to use Chitti?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Select your category — and who you are</div>
+
+    <!-- Mic option -->
+    <div class="voice-bar">
+      <button class="mic-btn" id="cat-mic" onclick="micInput('cat-voice','cat-mic')">🎤</button>
+      <span>Or say: "I am a doctor" / "I run a kirana shop"</span>
+      <input id="cat-voice" style="display:none">
+    </div>
+
+    <!-- PA Card -->
+    <div class="cat-card" id="cat-pa" onclick="pickCat('pa')">
+      <button class="spkr" onclick="event.stopPropagation();speak('Chitti PA — Personal Assistant, CA, Doctor, Guardian. 199 rupees per month after 15 day free trial.')">🔊</button>
+      <div class="cat-header">
+        <div class="cat-icon" style="background:var(--saffron)">C</div>
+        <div>
+          <div class="cat-title">Chitti PA — Personal</div>
+          <div class="cat-price" style="color:var(--saffron)">₹199/month · 15 days free</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">PA · CA · Doctor · Guardian</div>
+        </div>
+      </div>
+      <select class="cat-dropdown" id="pa-sub" onclick="event.stopPropagation()" onchange="pickCat('pa')">
+        <option value="">Individual ▾</option>
+        <option value="individual">Individual</option>
+        <option value="student">Student</option>
+        <option value="homemaker">Homemaker</option>
+        <option value="retired">Retired</option>
+        <option value="farmer">Farmer</option>
+      </select>
+    </div>
+
+    <!-- Business Card -->
+    <div class="cat-card" id="cat-biz" onclick="pickCat('biz')">
+      <button class="spkr" onclick="event.stopPropagation();speak('Chitti Business — Billing, Stock, GST, Customer tracking. 499 rupees per month after 15 day free trial.')">🔊</button>
+      <div class="cat-header">
+        <div class="cat-icon" style="background:var(--green)">S</div>
+        <div>
+          <div class="cat-title">Chitti Business</div>
+          <div class="cat-price" style="color:var(--green)">₹499/month · 15 days free</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Billing · Stock · GST · Customers</div>
+        </div>
+      </div>
+      <select class="cat-dropdown" id="biz-sub" onclick="event.stopPropagation()" onchange="pickCat('biz')">
+        <option value="">Select business type ▾</option>
+        <option value="kirana">Kirana Shop</option>
+        <option value="medical">Medical Shop</option>
+        <option value="restaurant">Restaurant</option>
+        <option value="tailor">Tailor</option>
+        <option value="auto">Auto / Cab Driver</option>
+        <option value="dental">Dental Clinic</option>
+        <option value="salon">Salon / Parlour</option>
+      </select>
+    </div>
+
+    <!-- Professional Card -->
+    <div class="cat-card" id="cat-pro" onclick="pickCat('pro')">
+      <button class="spkr" onclick="event.stopPropagation();speak('Chitti Professional — for Doctors, CAs, Lawyers, Architects, Engineers. 499 rupees per month after 15 day free trial.')">🔊</button>
+      <div class="cat-header">
+        <div class="cat-icon" style="background:var(--navy)">P</div>
+        <div>
+          <div class="cat-title">Chitti Professional</div>
+          <div class="cat-price" style="color:var(--navy)">₹499/month · 15 days free</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Doctor · CA · Lawyer · Architect · Engineer</div>
+        </div>
+      </div>
+      <select class="cat-dropdown" id="pro-sub" onclick="event.stopPropagation()" onchange="pickCat('pro')">
+        <option value="">Select profession ▾</option>
+        <option value="doctor">Doctor</option>
+        <option value="ca">CA / Accountant</option>
+        <option value="lawyer">Lawyer</option>
+        <option value="architect">Architect</option>
+        <option value="engineer">Engineer</option>
+        <option value="consultant">Consultant</option>
+        <option value="teacher">Teacher</option>
+        <option value="nurse">Nurse / Healthcare</option>
+      </select>
+    </div>
+
+    <!-- Separator -->
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="font-size:11px;color:var(--text3);font-weight:600">OR</div>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+
+    <!-- Others Card -->
+    <div class="cat-card" id="cat-other" onclick="pickCat('other')">
+      <button class="spkr" onclick="event.stopPropagation();speak('Others — Tell Chitti what you do. Chitti will create a specialist engine just for you.')">🔊</button>
+      <div class="cat-header">
+        <div class="cat-icon" style="background:var(--purple)">?</div>
+        <div>
+          <div class="cat-title">Others — Tell Chitti</div>
+          <div class="cat-price" style="color:var(--purple)">Chitti creates your specialist engine</div>
+        </div>
+      </div>
+      <div class="cat-others-input">
+        <input class="inp" id="others-input" placeholder="Type your profession..." onclick="event.stopPropagation()" style="margin:0">
+        <button class="mic-btn" id="others-mic" onclick="event.stopPropagation();micInput('others-input','others-mic')">🎤</button>
+        <button class="spkr-inline" onclick="event.stopPropagation();speak('Type or say your profession. Chitti will create your specialist engine.')">🔊</button>
+      </div>
+    </div>
+
+    <!-- City -->
+    <div style="display:flex;align-items:center;gap:8px;margin:14px 0 4px">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px">Your City *</div>
+      <button class="spkr-inline" onclick="speak('What is your city?')">🔊</button>
+    </div>
+    <div class="inp-row" style="margin-bottom:4px">
+      <input class="inp" id="city-input" placeholder="Type city name..." oninput="citySearch(this.value)" autocomplete="off" style="margin:0">
+      <button class="mic-btn" id="city-mic" onclick="micInput('city-input','city-mic')">🎤</button>
+    </div>
+    <div id="city-suggestions" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;max-height:160px;overflow-y:auto;margin-bottom:4px"></div>
+    <div style="font-size:11px;color:#2563EB;margin-bottom:14px">ℹ️ City is NOT used for advertising — only for local service quality</div>
+
+    <div class="feedback-box">
+      <div class="fb-header">
+        <span class="fb-title">Page 7 Feedback</span>
+        <button class="spkr-inline" onclick="speak('How is this page?')">🔊</button>
+      </div>
+      <div class="rating-wrap" id="fb-rating-7"></div>
+      <div class="fb-mic-row">
+        <button class="mic-btn" id="fb-mic-7" onclick="micFeedback('fb-mic-7','fb-input-7')">🎤</button>
+        <div style="font-size:11px;color:var(--text3)">Tap → <span style="color:#22c55e;font-weight:700">Ready</span> → <span style="color:var(--red);font-weight:700">Recording</span></div>
+      </div>
+      <div class="fb-input-row">
+        <input class="fb-input" id="fb-input-7" placeholder="Or type feedback...">
+        <button class="fb-send" onclick="submitFeedback(7)">Send</button>
+      </div>
+      <div class="fb-thanks" id="fb-thanks-7">✅ Thank you!</div>
+    </div>
+
+    <button class="btn-primary" id="choose-next" onclick="goTo('page-feedback')" disabled style="margin-top:14px">Continue →</button>
+  </div>
+</div>
+
+<!-- PAGE 8: FEEDBACK + CELEBRATION -->
+<div class="page" id="page-feedback">
+  <div class="pg-body slide-up" style="display:flex;flex-direction:column;align-items:center;text-align:center">
+    <div style="font-size:56px;margin:20px 0 10px;animation:popIn 0.5s ease">🎉</div>
+    <div style="width:72px;height:72px;background:var(--saffron);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;margin-bottom:14px;box-shadow:0 6px 24px rgba(232,82,10,0.35)">C</div>
+    <div style="font-size:22px;font-weight:900;margin-bottom:6px">Welcome to Sahay AI!</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:24px">You are now part of the Chitti family. 🇮🇳</div>
+
+    <div class="card" style="width:100%;text-align:left">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:16px;font-weight:800">How was your onboarding?</div>
+        <button class="spkr-inline" onclick="speak('How was your onboarding experience?')">🔊</button>
+      </div>
+
+      <!-- Emoji reactions -->
+      <div class="emoji-row" id="emoji-row">
+        <div class="emoji-btn" onclick="pickEmoji(this,'amazing')"><div class="emoji-circle">😄</div><div class="emoji-label">Amazing</div></div>
+        <div class="emoji-btn" onclick="pickEmoji(this,'good')"><div class="emoji-circle">😊</div><div class="emoji-label">Good</div></div>
+        <div class="emoji-btn" onclick="pickEmoji(this,'okay')"><div class="emoji-circle">😐</div><div class="emoji-label">Okay</div></div>
+        <div class="emoji-btn" onclick="pickEmoji(this,'issues')"><div class="emoji-circle">😕</div><div class="emoji-label">Issues</div></div>
+      </div>
+
+      <!-- Rating -->
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600">Rate your experience (1-10):</div>
+      <div class="rating-wrap" id="fb-rating-8"></div>
+
+      <!-- Voice speak button -->
+      <button style="width:100%;padding:13px;background:rgba(232,82,10,0.08);border:2px solid rgba(232,82,10,0.3);border-radius:14px;font-size:14px;font-weight:700;color:var(--saffron);cursor:pointer;margin:10px 0;display:flex;align-items:center;justify-content:center;gap:8px" id="fb8-voice-btn" onclick="micFeedback('fb8-voice-btn','fb-input-8')">
+        🎤 Tap to speak your feedback
+      </button>
+
+      <!-- Text + bug -->
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="fb-input" id="fb-input-8" placeholder="Or type here..." style="flex:1">
+        <button onclick="reportBug()" style="padding:9px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;font-size:12px;font-weight:700;color:var(--red);cursor:pointer;white-space:nowrap">🐛 Bug</button>
+        <button class="fb-send" onclick="submitFeedback(8)">Send</button>
+      </div>
+
+      <!-- Call me -->
+      <button style="width:100%;padding:10px;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;font-size:13px;color:#0369A1;cursor:pointer;font-weight:600">📞 Call me — for complex issues</button>
+
+      <!-- Bug response -->
+      <div id="bug-response" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:10px;margin-top:8px;font-size:12px;color:var(--red)">
+        I'm sorry you faced an issue. Can you tell me what happened? Sire will be notified immediately.
+      </div>
+
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:10px">Feedback stored anonymously in Sahay AI War Room</div>
+      <div class="fb-thanks" id="fb-thanks-8">✅ Thank you! Sire will review this.</div>
+    </div>
+
+    <button class="btn-secondary" onclick="goTo('page-chat')" style="margin-top:8px">Skip — Take me to Chitti →</button>
+    <button class="btn-primary" onclick="goTo('page-chat')" style="margin-top:8px">Meet Chitti →</button>
+  </div>
+</div>
+
+<!-- PAGE 9: CHITTI LIVE -->
+<div class="page" id="page-chat" style="background:var(--bg)">
+  <!-- Header -->
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:4px;z-index:50">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">C</div>
+      <div>
+        <div style="font-weight:800;font-size:14px">Chitti</div>
+        <div style="font-size:11px;color:var(--green);font-weight:600">● Online</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="product-badge" style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:12px;padding:4px 10px;font-size:11px;color:var(--green);font-weight:700">PA</div>
+      <button onclick="openWeatherBox()" id="weather-box-btn" style="background:none;border:1.5px solid var(--border);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px;position:relative" title="Weather">
+        🌦️
+        <span id="weather-box-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:10px;min-width:18px;height:18px;font-size:10px;font-weight:800;padding:0 4px;line-height:18px;text-align:center">0</span>
+      </button>
+      <button onclick="showMenu()" style="background:none;border:1.5px solid var(--border);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Lang bar -->
+  <div style="display:flex;gap:6px;overflow-x:auto;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);scrollbar-width:none" id="chat-lang-bar"></div>
+
+  <!-- Chat area -->
+  <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--bg);min-height:calc(100vh - 230px)" id="chat-area"></div>
+
+  <!-- Quick chips -->
+  <div style="padding:8px 16px;background:var(--bg);border-top:1px solid var(--border)" id="quick-chips"></div>
+
+  <!-- Input bar -->
+  <div style="padding:10px 16px;background:var(--surface);border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;position:sticky;bottom:0">
+    <button class="mic-btn" id="chat-mic" onclick="toggleChatMic()">🎤</button>
+    <textarea id="chat-input" placeholder="Type or speak..." rows="1" style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;resize:none;font-family:inherit;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    <button onclick="sendChat()" style="width:40px;height:40px;background:var(--saffron);border:none;border-radius:50%;color:#000;font-size:16px;cursor:pointer;font-weight:700">➤</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────
+const STORE_KEY = 'chitti_v3';
+// ── BACKEND CONFIG ───────────────────────────────────────────
+// DeepSeek key is NEVER in frontend — lives in Railway backend
+const API_BASE = 'https://sahayai-5m6q.onrender.com'; // Update with your Railway URL
+const API_CHAT     = API_BASE + '/api/chat';
+const API_BANGLA   = API_BASE + '/api/bangla/chat';
+const API_GUARDIAN = API_BASE + '/api/guardian/proactive';
+const API_WEATHER  = API_BASE + '/api/weather';
+const API_NEWS     = API_BASE + '/api/news';
+const API_FEEDBACK = API_BASE + '/api/feedback';
+const API_WHATSAPP = API_BASE + '/api/whatsapp';
+const CITIES = ['Mumbai','Delhi','Bangalore','Hyderabad','Chennai','Kolkata','Pune','Ahmedabad','Jaipur','Surat','Lucknow','Kanpur','Nagpur','Indore','Thane','Bhopal','Visakhapatnam','Patna','Vadodara','Ghaziabad','Ludhiana','Agra','Nashik','Faridabad','Meerut','Rajkot','Varanasi','Srinagar','Aurangabad','Ranchi','Howrah','Coimbatore','Jabalpur','Gwalior','Vijayawada','Jodhpur','Madurai','Raipur','Kota','Guwahati','Chandigarh','Solapur','Mysore','Gurgaon','Noida','Dehradun','Amravati','Jamshedpur','Cuttack','Kochi','Nellore','Ujjain','Erode','Asansol','Ajmer','Udaipur','Kakinada','Mangalore','Belgaum','Tirunelveli','Bhilai','Firozabad','Bokaro','Kolhapur','Nanded','Thiruvananthapuram'].sort();
+
+// ── STATE ─────────────────────────────────────────
+let MASTER = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+let currentLang = 'en';
+let pickedIncome = null;
+let pickedCat = null;
+let consentTerms = false, consentAge = false;
+let chatHistory = [];
+let isListening = false;
+let voiceEnabled = true;
+let fbRatings = {};
+let fbEmoji = null;
+
+// Conversation state
+const CONV1_QS = ['full_name','father','mother','siblings','profession','dob'];
+const CONV1_LABELS = ['What is your full name?','What is your father\'s name?','What is your mother\'s name?','How many siblings do you have? (You can skip)','What is your profession?','What is your date of birth? (DD/MM/YYYY)'];
+let conv1Idx = 0;
+let conv1Data = {};
+
+// ── TRANSLATIONS ──────────────────────────────────
+const T = {
+  en: {
+    welcome_bold: 'Welcome to Sahay AI!',
+    welcome_text: ' I am Chitti — Bharat ka apna PA. Hope you are having a great time. Please tell me about yourself.',
+    income_title: 'Annual Income?',
+    continue: 'Continue →',
+    meet: 'Meet Chitti →',
+    greeting: (n) => `Namaste ${n}! 🙏 I am Chitti — your Friend, Philosopher and Guide. What can I help you with today?`,
+  },
+  hi: {
+    welcome_bold: 'सहाय एआई में स्वागत है!',
+    welcome_text: ' मैं चिट्टी हूँ — भारत का अपना PA। उम्मीद है आपका दिन अच्छा जा रहा है। कृपया मुझे अपने बारे में बताएं।',
+    income_title: 'सालाना आमदनी?',
+    continue: 'आगे →',
+    meet: 'चिट्टी से मिलिए →',
+    greeting: (n) => `नमस्ते ${n} जी! 🙏 मैं चिट्टी हूँ — आपका दोस्त, दार्शनिक और मार्गदर्शक। आज मैं आपकी क्या मदद करूँ?`,
+  },
+  bn: {
+    welcome_bold: 'সহায় এআই-তে স্বাগতম!',
+    welcome_text: ' আমি চিট্টি — ভারতের নিজস্ব PA। আশা করি আপনি ভালো আছেন। দয়া করে নিজের সম্পর্কে বলুন।',
+    income_title: 'বার্ষিক আয়?',
+    continue: 'এগিয়ে যান →',
+    meet: 'চিট্টির সাথে দেখা করুন →',
+    greeting: (n) => `নমস্কার ${n}! 🙏 আমি চিট্টি — আপনার বন্ধু, দার্শনিক এবং পথপ্রদর্শক। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?`,
+  }
+};
+
+function t(key) { return (T[currentLang] && T[currentLang][key]) || T['en'][key] || key; }
+
+// ── SPEAK ─────────────────────────────────────────
+function speak(text) {
+  if (!voiceEnabled) return;
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const langCode = currentLang === 'hi' ? 'hi-IN' : currentLang === 'bn' ? 'bn-IN' : 'en-IN';
+  const langPrefix = currentLang === 'hi' ? 'hi' : currentLang === 'bn' ? 'bn' : 'en';
+  const doSpeak = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = langCode;
+    u.rate = 0.88; u.pitch = 1.05; u.volume = 1.0;
+    const vv = window.speechSynthesis.getVoices();
+    const v = vv.find(x => x.lang === langCode) ||
+              vv.find(x => x.lang.startsWith(langPrefix)) ||
+              vv[0];
+    if (v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  };
+  if (window.speechSynthesis.getVoices().length > 0) {
+    doSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => { doSpeak(); window.speechSynthesis.onvoiceschanged = null; };
+    setTimeout(doSpeak, 300);
+  }
+}
+
+function chittiWelcomeMsg() {
+  return t('welcome_bold') + t('welcome_text');
+}
+
+// ── PROGRESS ──────────────────────────────────────
+const PAGES = ['page-splash','page-lang','page-conv1','page-privacy','page-conv2','page-terms','page-choose','page-feedback','page-chat'];
+function setProgress(pct) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// ── PAGE NAVIGATION ───────────────────────────────
+function goTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  page.classList.add('active');
+  page.scrollTop = 0;
+  const pct = (PAGES.indexOf(pageId) / (PAGES.length - 1)) * 100;
+  setProgress(pct);
+  saveProgress(pageId);
+
+  // Page-specific init
+  if (pageId === 'page-chat') initChat();
+  if (pageId === 'page-conv1') initConv1();
+}
+
+// ── SAVE/RESTORE ──────────────────────────────────
+function saveProgress(page) {
+  const data = { page, currentLang, conv1Data, pickedIncome, pickedCat, consentTerms, consentAge, city: document.getElementById('city-input')?.value || '' };
+  localStorage.setItem(STORE_KEY + '_progress', JSON.stringify(data));
+}
+
+function restoreProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY + '_progress'));
+    if (!saved || saved.page === 'page-splash') return false;
+    currentLang = saved.currentLang || 'en';
+    conv1Data = saved.conv1Data || {};
+    pickedIncome = saved.pickedIncome;
+    pickedCat = saved.pickedCat;
+    return saved.page;
+  } catch(e) { return false; }
+}
+
+// ── RATINGS INIT ──────────────────────────────────
+function initRatings() {
+  ['2','3','5','6','7','8'].forEach(pg => {
+    const wrap = document.getElementById('fb-rating-' + pg);
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+      const d = document.createElement('div');
+      d.className = 'rating-dot';
+      d.textContent = i;
+      d.onclick = () => {
+        wrap.querySelectorAll('.rating-dot').forEach(x => x.classList.remove('picked'));
+        d.classList.add('picked');
+        fbRatings[pg] = i;
+      };
+      wrap.appendChild(d);
+    }
+  });
+}
+
+// ── SPLASH ────────────────────────────────────────
+let splashTimer, splashDot = 0;
+function startSplash() {
+  splashTimer = setInterval(() => {
+    splashDot++;
+    document.querySelectorAll('.splash-dot').forEach((d,i) => {
+      d.classList.toggle('active', i === splashDot % 3);
+    });
+    if (splashDot >= 3) { clearInterval(splashTimer); advanceSplash(); }
+  }, 1000);
+  // Auto-speak tagline
+  setTimeout(() => speak('Welcome to Sahay AI. Bharat ka apna Chitti.'), 500);
+}
+
+function advanceSplash() {
+  clearInterval(splashTimer);
+  goTo('page-lang');
+  // Speak welcome after lang page loads
+  setTimeout(() => {
+    speak(chittiWelcomeMsg());
+    document.getElementById('speaking-label').style.display = 'block';
+    setTimeout(() => { document.getElementById('speaking-label').style.display = 'none'; }, 4000);
+  }, 300);
+}
+
+// ── LANGUAGE ──────────────────────────────────────
+let pickedLangBtn = null;
+function pickLang(code, btn) {
+  currentLang = code;
+  speak(code === 'hi' ? 'हिंदी चुना गया' : 'English selected');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('picked'));
+  btn.classList.add('picked');
+  pickedLangBtn = btn;
+  // Update badge
+  document.querySelectorAll('.lang-badge').forEach(b => b.remove());
+  const badge = document.createElement('span');
+  badge.className = 'lang-badge';
+  badge.textContent = 'Selected ✓';
+  btn.querySelector('div:last-child').prepend(badge);
+  // Update button text
+  document.getElementById('lang-next-btn').textContent = code === 'hi' ? 'हिंदी में जारी रखें →' : 'Continue in English →';
+  // Update translations
+  document.getElementById('welcome-bold').textContent = t('welcome_bold');
+  document.getElementById('welcome-text').textContent = t('welcome_text');
+  speak(t('welcome_bold') + t('welcome_text'));
+}
+
+function requestLang() {
+  document.getElementById('lang-request-box').style.display = 'block';
+  speak('Which language do you speak? Please type or say the name.');
+}
+
+function submitLangRequest() {
+  const lang = document.getElementById('lang-request-input').value.trim();
+  if (!lang) return;
+  // Save to feedback log
+  const log = JSON.parse(localStorage.getItem('chitti_lang_requests') || '[]');
+  log.push({ lang, ts: new Date().toISOString() });
+  localStorage.setItem('chitti_lang_requests', JSON.stringify(log));
+  document.getElementById('lang-feedback').innerHTML = `<div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:12px;padding:12px;font-size:13px;color:var(--green)">✅ Thank you! <strong>${lang}</strong> has been added to Chitti's learning queue. Sire has been notified. Until then, shall we continue in English or Hindi?</div>`;
+  document.getElementById('lang-request-box').style.display = 'none';
+  speak(`Thank you! ${lang} has been added to Chitti's learning queue. Sire has been notified.`);
+}
+
+// ── CONVERSATION 1 ────────────────────────────────
+function initConv1() {
+  conv1Idx = Object.keys(conv1Data).length;
+  renderConv1();
+}
+
+function renderConv1() {
+  const chat = document.getElementById('conv1-chat');
+  chat.innerHTML = '';
+  // Show answered Q&A
+  CONV1_QS.slice(0, conv1Idx).forEach((q, i) => {
+    if (conv1Data[q]) {
+      chat.innerHTML += `<div class="bubble-wrap"><div class="avatar">C</div><div class="bubble"><button class="spkr" onclick="speak('${CONV1_LABELS[i]}')">🔊</button><div style="padding-right:28px">${CONV1_LABELS[i]}</div></div></div>`;
+      chat.innerHTML += `<div class="bubble-wrap user"><div class="bubble user">${conv1Data[q]}</div></div>`;
+    }
+  });
+  // Ask current Q
+  if (conv1Idx < CONV1_QS.length) {
+    const qLabel = CONV1_LABELS[conv1Idx];
+    chat.innerHTML += `<div class="bubble-wrap"><div class="avatar">C</div><div class="bubble"><button class="spkr" onclick="speak('${qLabel}')">🔊</button><div style="padding-right:28px">${qLabel}</div></div></div>`;
+    setTimeout(() => speak(qLabel), 200);
+  }
+  // Update progress dots
+  const qp = document.getElementById('q-progress');
+  qp.innerHTML = '';
+  CONV1_QS.forEach((q, i) => {
+    const d = document.createElement('div');
+    d.style.cssText = `flex:1;height:6px;border-radius:3px;background:${i < conv1Idx ? 'var(--saffron)' : i === conv1Idx ? 'var(--navy)' : 'var(--border)'}`;
+    qp.appendChild(d);
+  });
+  document.getElementById('q-label').textContent = conv1Idx < CONV1_QS.length ? `Question ${conv1Idx + 1} of ${CONV1_QS.length}` : 'All done!';
+  // Scroll to bottom
+  setTimeout(() => chat.scrollTop = chat.scrollHeight, 100);
+}
+
+function submitConv1() {
+  const inp = document.getElementById('conv1-input');
+  const val = inp.value.trim();
+  if (!val && conv1Idx !== 3) return; // siblings is optional
+  const answer = val || '(skipped)';
+  conv1Data[CONV1_QS[conv1Idx]] = answer;
+  inp.value = '';
+  conv1Idx++;
+  if (conv1Idx >= CONV1_QS.length) {
+    // Done — go to privacy
+    renderConv1();
+    setTimeout(() => goTo('page-privacy'), 800);
+  } else {
+    renderConv1();
+  }
+  saveProgress('page-conv1');
+}
+
+// ── PRIVACY ───────────────────────────────────────
+function limitedMode() {
+  if (confirm('Limited Mode: Chitti will NOT store your personal data and will give general answers only. You can upgrade later. Continue in Limited Mode?')) {
+    MASTER = { limited: true, lang: currentLang };
+    localStorage.setItem(STORE_KEY, JSON.stringify(MASTER));
+    goTo('page-choose');
+  }
+}
+
+// ── INCOME SLABS ─────────────────────────────────
+const SLABS = [
+  { v:'no_income', l:'No Income', sub:'₹0 / year', c:'#1A7A4A' },
+  { v:'upto_3l',   l:'Up to ₹3 Lakh', sub:'Zero Tax', c:'#1A7A4A' },
+  { v:'3l_7l',     l:'₹3L – ₹7L', sub:'5% slab', c:'#D97706' },
+  { v:'7l_12l',    l:'₹7L – ₹12L', sub:'10–15% slab', c:'#EA580C' },
+  { v:'12l_15l',   l:'₹12L – ₹15L', sub:'20% slab', c:'#DC2626' },
+  { v:'above_15l', l:'Above ₹15L', sub:'30% slab', c:'#7F1D1D' },
+];
+
+function initIncome() {
+  const wrap = document.getElementById('income-slabs');
+  wrap.innerHTML = '';
+  SLABS.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'slab';
+    d.innerHTML = `
+      <div class="slab-left">
+        <div class="slab-dot" style="background:${s.c}"></div>
+        <div class="slab-name">${s.l}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="slab-badge" style="background:${s.c}22;color:${s.c};border:1px solid ${s.c}44">${s.sub}</span>
+        <button class="spkr-inline" onclick="event.stopPropagation();speak('${s.l}, ${s.sub}')">🔊</button>
+      </div>`;
+    d.onclick = () => {
+      document.querySelectorAll('.slab').forEach(x => x.classList.remove('picked'));
+      d.classList.add('picked');
+      pickedIncome = s.v;
+      document.getElementById('income-next').disabled = false;
+      speak(s.l + '. ' + s.sub);
+    };
+    wrap.appendChild(d);
+  });
+  document.getElementById('income-title').textContent = t('income_title');
+}
+
+// ── TERMS ─────────────────────────────────────────
+const TERMS_DATA = [
+  ['Chitti is an AI. I try my best but can make mistakes. Verify important decisions with a real expert.', false],
+  ['I will NEVER sell your data. Not for any price. Ever.', true],
+  ['Delete your data anytime. Just say: "Chitti, delete my data."', false],
+  ['Free for 15 days. Then ₹199/month (PA) or ₹499/month (Business). You will be reminded before any payment.', false],
+  ['If under 18 — parent or guardian must supervise your use of Chitti.', false],
+  ['No hate speech, harassment or illegal activities. Misuse = I stop responding.', false],
+];
+
+function initTerms() {
+  const wrap = document.getElementById('terms-list');
+  wrap.innerHTML = '';
+  TERMS_DATA.forEach(([text, hi], i) => {
+    const d = document.createElement('div');
+    d.className = 'term-card' + (hi ? ' highlight' : '');
+    d.style.cursor = 'pointer';
+    const safeText = text.replace(/'/g,"\'");
+    d.innerHTML = `
+      <div class="term-num">${i+1}</div>
+      <div class="term-text">${text}</div>
+      <button class="spkr" onclick="event.stopPropagation();speak('${safeText}')">🔊</button>`;
+    d.addEventListener('click', function() {
+      wrap.querySelectorAll('.term-card').forEach(c => {
+        c.style.background = '';
+        c.style.border = '1px solid var(--border)';
+      });
+      d.style.background = 'rgba(232,82,10,0.06)';
+      d.style.border = '2px solid var(--saffron)';
+      speak(text);
+    });
+    wrap.appendChild(d);
+  });
+}
+
+
+function toggleCheck(rowId, checkId) {
+  const row = document.getElementById(rowId);
+  const check = document.getElementById(checkId);
+  row.classList.toggle('checked');
+  check.textContent = row.classList.contains('checked') ? '✓' : '';
+  if (rowId === 'ck-terms') consentTerms = row.classList.contains('checked');
+  if (rowId === 'ck-age') consentAge = row.classList.contains('checked');
+  document.getElementById('terms-next').disabled = !(consentTerms && consentAge);
+}
+
+// ── CHOOSE CHITTI ─────────────────────────────────
+function pickCat(type) {
+  pickedCat = type;
+  ['pa','biz','pro','other'].forEach(c => {
+    const el = document.getElementById('cat-' + c);
+    el.classList.remove('picked-saf','picked-grn','picked-nav','picked-pur');
+  });
+  const classMap = { pa:'picked-saf', biz:'picked-grn', pro:'picked-nav', other:'picked-pur' };
+  document.getElementById('cat-' + type)?.classList.add(classMap[type]);
+  checkChooseNext();
+}
+
+function checkChooseNext() {
+  const city = document.getElementById('city-input')?.value.trim();
+  document.getElementById('choose-next').disabled = !(pickedCat && city);
+}
+
+// ── CITY AUTOCOMPLETE ─────────────────────────────
+function citySearch(val) {
+  const s = document.getElementById('city-suggestions');
+  if (!val || val.length < 2) { s.style.display = 'none'; return; }
+  const matches = CITIES.filter(c => c.toLowerCase().startsWith(val.toLowerCase())).slice(0, 6);
+  if (!matches.length) { s.style.display = 'none'; return; }
+  s.style.display = 'block';
+  s.innerHTML = matches.map(c => `<div onclick="selectCity('${c}')" style="padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text)">${c}</div>`).join('');
+}
+
+function selectCity(city) {
+  document.getElementById('city-input').value = city;
+  document.getElementById('city-suggestions').style.display = 'none';
+  checkChooseNext();
+}
+
+// ── MIC INPUT ─────────────────────────────────────
+function micInput(inputId, btnId) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice not supported — please type.'); return; }
+  const btn = document.getElementById(btnId);
+  btn.classList.add('ready');
+  const r = new SR();
+  r.lang = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+  r.continuous = false; r.interimResults = false;
+  r.onstart = () => { btn.classList.remove('ready'); btn.classList.add('recording'); btn.textContent = '🔴'; };
+  r.onresult = e => {
+    const text = e.results[0][0].transcript;
+    document.getElementById(inputId).value = text;
+    document.getElementById(inputId).dispatchEvent(new Event('input'));
+    if (inputId === 'city-input') citySearch(text);
+    if (inputId === 'conv1-input') {};
+  };
+  r.onend = () => { btn.classList.remove('recording','ready'); btn.textContent = '🎤'; };
+  r.onerror = () => { btn.classList.remove('recording','ready'); btn.textContent = '🎤'; };
+  r.start();
+}
+
+function micFeedback(btnId, inputId) {
+  micInput(inputId, btnId);
+}
+
+// ── FEEDBACK ─────────────────────────────────────
+function submitFeedback(page) {
+  const rating = fbRatings[String(page)] || null;
+  const text = document.getElementById('fb-input-' + page)?.value || '';
+  const entry = { page, rating, text, ts: new Date().toISOString(), lang: currentLang };
+  const log = JSON.parse(localStorage.getItem('chitti_page_feedback') || '[]');
+  log.push(entry);
+  localStorage.setItem('chitti_page_feedback', JSON.stringify(log));
+  const thanks = document.getElementById('fb-thanks-' + page);
+  if (thanks) {
+    // Show structured report
+    const allFeedback = log.filter(e => e.page === page);
+    const avgRating = allFeedback.filter(e=>e.rating).reduce((s,e)=>s+e.rating,0) / (allFeedback.filter(e=>e.rating).length || 1);
+    thanks.innerHTML = `✅ Saved! Page ${page} avg rating: ${avgRating.toFixed(1)}/10 · ${allFeedback.length} response(s)`;
+    thanks.style.display = 'block';
+    setTimeout(() => { thanks.style.display = 'none'; thanks.innerHTML = '✅ Thank you!'; }, 3500);
+  }
+}
+
+function pickEmoji(btn, val) {
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('picked'));
+  btn.classList.add('picked');
+  fbEmoji = val;
+}
+
+function reportBug() {
+  document.getElementById('bug-response').style.display = 'block';
+  speak('I am sorry you faced an issue. Can you tell me what happened? Sire will be notified.');
+  // Log it
+  const log = JSON.parse(localStorage.getItem('chitti_bugs') || '[]');
+  log.push({ ts: new Date().toISOString(), page: 'onboarding', text: document.getElementById('fb-input-8')?.value || '' });
+  localStorage.setItem('chitti_bugs', JSON.stringify(log));
+}
+
+// ── CHAT ─────────────────────────────────────────
+function initChat() {
+  // Load existing MASTER or build from onboarding
+  const existingMaster = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+  if (existingMaster && existingMaster.name) {
+    // RETURNING USER — restore from storage, don't overwrite
+    MASTER = existingMaster;
+    currentLang = MASTER.lang || 'en';
+    pickedCat = MASTER.productType || 'pa';
+  } else {
+    // NEW USER — build MASTER from onboarding answers
+    const city = document.getElementById('city-input')?.value.trim() || '';
+    const proSub = document.getElementById('pa-sub')?.value || document.getElementById('biz-sub')?.value || document.getElementById('pro-sub')?.value || document.getElementById('others-input')?.value || '';
+    MASTER = {
+      name: conv1Data.full_name || '',
+      nick: (conv1Data.full_name || '').split(' ')[0] || 'Friend',
+      father: conv1Data.father || '',
+      mother: conv1Data.mother || '',
+      siblings: conv1Data.siblings || '',
+      profession: conv1Data.profession || '',
+      dob: conv1Data.dob || '',
+      income: pickedIncome || '',
+      productType: pickedCat || 'pa',
+      productSub: proSub,
+      city,
+      lang: currentLang,
+      joinedDate: new Date().toLocaleDateString('en-IN'),
+      consentTimestamp: new Date().toISOString(),
+    };
+    localStorage.setItem(STORE_KEY, JSON.stringify(MASTER));
+  }
+
+  // Product badge
+  const badgeEl = document.getElementById('product-badge');
+  if (pickedCat === 'biz') { badgeEl.textContent = 'Business'; badgeEl.style.background = '#F0FDF4'; badgeEl.style.color = 'var(--green)'; }
+  else if (pickedCat === 'pro') { badgeEl.textContent = 'Professional'; badgeEl.style.background = '#EFF6FF'; badgeEl.style.color = '#1D4ED8'; }
+  else { badgeEl.textContent = 'PA'; }
+
+  // Lang bar
+  const langs = [{c:'en',l:'English'},{c:'hi',l:'हिंदी'},{c:'bn',l:'বাংলা'},{c:'mr',l:'मराठी'},{c:'te',l:'తెలుగు'},{c:'ta',l:'தமிழ்'},{c:'kn',l:'ಕನ್ನಡ'}];
+  document.getElementById('chat-lang-bar').innerHTML = langs.map(l =>
+    `<button style="padding:5px 12px;border-radius:16px;border:${l.c===currentLang?'2px solid var(--saffron)':'1.5px solid var(--border)'};background:${l.c===currentLang?'rgba(232,82,10,0.1)':'var(--surface)'};color:${l.c===currentLang?'var(--saffron)':'var(--text3)'};font-size:12px;font-weight:${l.c===currentLang?'700':'500'};white-space:nowrap;cursor:pointer" onclick="switchLang('${l.c}')">${l.l}</button>`
+  ).join('');
+
+  // Check and show due reminders
+  setTimeout(showDueReminders, 1500);
+
+  // Show due reminders
+  setTimeout(showDueReminders, 1500);
+
+  // Greeting — pure from onboarding data, no hardcoding
+  const nick = MASTER.nick || MASTER.name?.split(' ')[0] || 'Friend';
+  const greeting = T[currentLang]?.greeting(nick) || T.en.greeting(nick);
+  addChatMsg(greeting, 'chitti');
+  setTimeout(() => speak(greeting), 300);
+
+  // Quick chips
+  initChips();
+
+  // ── PROACTIVE GUARDIAN ─────────────────────────────
+  // The whole point: Chitti tells you, you don't ask.
+  // Calls /api/guardian/proactive — returns alerts ONLY if tomorrow has something.
+  // Silence on calm days. Loud on dangerous days.
+  updateWeatherBoxBadge();
+  setTimeout(() => fetchAndShowGuardian(false), 1800);
+}
+
+function initChips() {
+  const PA_CHIPS = ['📅 My Reminders','📅 Set Reminder','🚨 Check Fraud','💊 Health Advice','🏛️ Govt Scheme','🎂 Birthday'];
+  const BIZ_CHIPS = ['📅 Reminder','📊 Today\'s Sales','💰 Credit Recovery','📞 Customer Follow-up','📦 Stock Alert','🧾 GST'];
+  const PRO_CHIPS = ['📅 Reminder','👤 Client Record','📋 Case Brief','💰 Invoice','📄 Draft Document','📊 Monthly Report'];
+  const chips = pickedCat === 'biz' ? BIZ_CHIPS : pickedCat === 'pro' ? PRO_CHIPS : PA_CHIPS;
+  document.getElementById('quick-chips').innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap">${chips.map(c => `<button onclick="sendChip('${c}')" style="padding:7px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;color:var(--text2);white-space:nowrap">${c}</button>`).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHITTI GUARDIAN — PROACTIVE WEATHER
+// Sire's vision: Chitti tells you tomorrow's weather BEFORE you ask.
+// Silent on calm days. Loud on dangerous days. No spam.
+// ═══════════════════════════════════════════════════════════════
+
+const WBOX_KEY = 'chitti_weather_box_v1';
+
+// Load Weather box (queue of dismissed alerts) from storage
+function loadWeatherBox() {
+  try {
+    return JSON.parse(localStorage.getItem(WBOX_KEY) || '{"items":[],"unread":0}');
+  } catch(e) {
+    return { items: [], unread: 0 };
+  }
+}
+
+function saveWeatherBox(box) {
+  localStorage.setItem(WBOX_KEY, JSON.stringify(box));
+  updateWeatherBoxBadge();
+}
+
+function updateWeatherBoxBadge() {
+  const box = loadWeatherBox();
+  const badge = document.getElementById('weather-box-badge');
+  if (!badge) return;
+  if (box.unread > 0) {
+    badge.style.display = 'block';
+    badge.textContent = box.unread > 9 ? '9+' : String(box.unread);
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Add an alert to the Weather box as unread
+function addToWeatherBox(alert, city) {
+  const box = loadWeatherBox();
+  box.items.unshift({
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    type: alert.type,
+    severity: alert.severity,
+    message: alert.message,
+    city,
+    forecast_value: alert.forecast_value,
+    threshold: alert.threshold,
+    authority: alert.authority,
+    received_at: new Date().toISOString(),
+    read: false
+  });
+  // Keep last 50 only
+  box.items = box.items.slice(0, 50);
+  box.unread = box.items.filter(i => !i.read).length;
+  saveWeatherBox(box);
+}
+
+// Fetch tomorrow's forecast — show alerts in chat if any
+async function fetchAndShowGuardian(forceShow) {
+  const city = MASTER?.city || 'Indore';
+  const lang = currentLang || 'en';
+  try {
+    const res = await fetch(`${API_GUARDIAN}?city=${encodeURIComponent(city)}&lang=${lang}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.alerts || data.alerts.length === 0) {
+      // Calm day — show nothing unless forced (e.g. user asked "weather?")
+      if (forceShow) {
+        const calmMsg = lang === 'bn' ? `${city}-এ আগামীকাল আবহাওয়া স্বাভাবিক। ✅` :
+                        lang === 'hi' ? `${city} में कल का मौसम सामान्य है। ✅` :
+                        `${city} — tomorrow looks calm. ✅`;
+        addChatMsg(calmMsg, 'chitti');
+      }
+      return;
+    }
+    // Show each alert as a Chitti message + add to Weather box
+    data.alerts.forEach((alert, idx) => {
+      setTimeout(() => {
+        addGuardianAlert(alert, city);
+      }, idx * 1200);
+    });
+  } catch(e) {
+    console.warn('Guardian fetch failed', e);
+  }
+}
+
+// Render a Guardian alert with Dismiss → goes to Weather box
+function addGuardianAlert(alert, city) {
+  const area = document.getElementById('chat-area');
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap';
+  const sevColor = alert.severity === 'red' ? 'var(--red)' : 'var(--saffron)';
+  wrap.innerHTML = `
+    <div class="avatar" style="background:${sevColor}">⚠️</div>
+    <div class="bubble" style="border-left:3px solid ${sevColor};max-width:85%">
+      <button class="spkr" onclick="speak(this.closest('.bubble').dataset.text)">🔊</button>
+      <div style="padding-right:28px;font-size:13px;line-height:1.5" data-text="${alert.message.replace(/"/g,'&quot;')}">${alert.message}</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text3);font-weight:600">📡 ${alert.authority}</span>
+        <button onclick="dismissGuardianAlert(this, '${alert.type}', '${city}', \`${alert.message.replace(/`/g,"'").replace(/'/g,"\\'")}\`, '${alert.severity}', ${alert.forecast_value}, ${alert.threshold}, '${alert.authority}')" style="margin-left:auto;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;color:var(--text2)">Dismiss ✕</button>
+      </div>
+    </div>`;
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+  speak(alert.message);
+}
+
+// Dismiss a Guardian alert from chat → goes to Weather box as unread
+function dismissGuardianAlert(btn, type, city, message, severity, fv, threshold, authority) {
+  addToWeatherBox({
+    type, severity, message,
+    forecast_value: fv,
+    threshold,
+    authority
+  }, city);
+  // Remove the bubble from chat
+  const wrap = btn.closest('.bubble-wrap');
+  if (wrap) {
+    wrap.style.transition = 'opacity 0.3s';
+    wrap.style.opacity = '0';
+    setTimeout(() => wrap.remove(), 300);
+  }
+}
+
+// Open the Weather box modal
+function openWeatherBox() {
+  const existing = document.getElementById('wbox-modal');
+  if (existing) { existing.remove(); return; }
+  const box = loadWeatherBox();
+
+  // Mark all as read on open
+  box.items.forEach(i => i.read = true);
+  box.unread = 0;
+  saveWeatherBox(box);
+
+  const modal = document.createElement('div');
+  modal.id = 'wbox-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end';
+
+  const titleByLang = currentLang === 'bn' ? 'আবহাওয়া' : currentLang === 'hi' ? 'मौसम' : 'Weather';
+  const emptyByLang = currentLang === 'bn' ? 'কোনো আবহাওয়া বার্তা নেই। আগামীকাল কিছু গুরুত্বপূর্ণ হলে চিট্টি জানাবে।' :
+                     currentLang === 'hi' ? 'कोई मौसम सूचना नहीं। कल कुछ ज़रूरी हुआ तो चिट्टी बताएगा।' :
+                     'No weather alerts. Chitti will tell you if tomorrow needs attention.';
+  const closeByLang = currentLang === 'bn' ? 'বন্ধ করুন' : currentLang === 'hi' ? 'बंद करें' : 'Close';
+  const clearByLang = currentLang === 'bn' ? 'সব মুছুন' : currentLang === 'hi' ? 'सब मिटाएं' : 'Clear all';
+
+  let listHtml = '';
+  if (box.items.length === 0) {
+    listHtml = `<div style="padding:40px 20px;text-align:center;color:var(--text3);font-size:13px">🌤️<br><br>${emptyByLang}</div>`;
+  } else {
+    listHtml = box.items.map(item => {
+      const sevColor = item.severity === 'red' ? 'var(--red)' : 'var(--saffron)';
+      const when = new Date(item.received_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="width:8px;height:8px;background:${sevColor};border-radius:50%;margin-top:6px;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;line-height:1.5;color:var(--text)">${item.message}</div>
+            <div style="margin-top:6px;display:flex;gap:8px;font-size:10px;color:var(--text3);flex-wrap:wrap">
+              <span>${item.city}</span><span>·</span><span>${item.authority}</span><span>·</span><span>${when}</span>
+              <button onclick="speak('${item.message.replace(/'/g,"\\'")}')"  style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px">🔊</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  modal.innerHTML = `
+    <div onclick="document.getElementById('wbox-modal').remove();updateWeatherBoxBadge()" style="flex:1;background:rgba(0,0,0,0.5)"></div>
+    <div style="background:var(--bg);max-height:80vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0;overflow:hidden">
+      <div style="padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">🌦️</span>
+          <div>
+            <div style="font-weight:800;font-size:15px">${titleByLang}</div>
+            <div style="font-size:11px;color:var(--text3)">${box.items.length} ${currentLang==='bn'?'বার্তা':currentLang==='hi'?'सूचनाएं':'alerts'}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${box.items.length > 0 ? `<button onclick="clearWeatherBox()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;color:var(--text2)">${clearByLang}</button>` : ''}
+          <button onclick="document.getElementById('wbox-modal').remove();updateWeatherBoxBadge()" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;color:var(--text2)">${closeByLang}</button>
+        </div>
+      </div>
+      <div style="overflow-y:auto;flex:1">${listHtml}</div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function clearWeatherBox() {
+  saveWeatherBox({ items: [], unread: 0 });
+  document.getElementById('wbox-modal')?.remove();
+  updateWeatherBoxBadge();
+}
+
+function switchLang(code) {
+  currentLang = code;
+  if (MASTER) { MASTER.lang = code; localStorage.setItem(STORE_KEY, JSON.stringify(MASTER)); }
+  document.querySelectorAll('#chat-lang-bar button').forEach((b, i) => {
+    const langs = ['en','hi','bn','mr','te','ta','kn'];
+    const isActive = langs[i] === code;
+    b.style.border = isActive ? '2px solid var(--saffron)' : '1.5px solid var(--border)';
+    b.style.background = isActive ? 'rgba(232,82,10,0.1)' : 'var(--surface)';
+    b.style.color = isActive ? 'var(--saffron)' : 'var(--text3)';
+    b.style.fontWeight = isActive ? '700' : '500';
+  });
+}
+
+function addChatMsg(text, from) {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'bubble-wrap' + (from === 'user' ? ' user' : '');
+  if (from === 'chitti') {
+    div.innerHTML = `<div class="avatar">C</div><div class="bubble"><button class="spkr" onclick="speak(this.closest('.bubble').dataset.text)">🔊</button><div style="padding-right:28px" data-text="${text.replace(/"/g,'&quot;')}">${text}</div></div>`;
+  } else {
+    div.innerHTML = `<div class="bubble user">${text}</div>`;
+  }
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  chatHistory.push({ role: from === 'user' ? 'user' : 'assistant', content: text });
+}
+
+function sendChip(text) {
+  if (text === '📅 My Reminders') { showAllReminders(); return; }
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = ''; input.style.height = 'auto';
+  addChatMsg(msg, 'user');
+  // Check reminder intent first
+  const wasReminder = await handleReminderIntent(msg);
+  if (wasReminder) return;
+
+  // Typing indicator
+  const area = document.getElementById('chat-area');
+  const typing = document.createElement('div');
+  typing.className = 'bubble-wrap';
+  typing.id = 'typing-ind';
+  typing.innerHTML = `<div class="avatar">C</div><div class="bubble"><span style="color:var(--text3)">Chitti is thinking...</span></div>`;
+  area.appendChild(typing);
+  area.scrollTop = area.scrollHeight;
+
+  try {
+    // ROUTE: Bangla queries → Chitti Bangla brain (with confidence routing).
+    // Other languages → standard /api/chat (DeepSeek with master profile).
+    const endpoint = currentLang === 'bn' ? API_BANGLA : API_CHAT;
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        history: chatHistory.slice(-10),
+        master_profile: { ...(MASTER || {}), lang: currentLang }
+      })
+    });
+    const data = await res.json();
+    document.getElementById('typing-ind')?.remove();
+    const reply = data.reply || (currentLang === 'bn' ? 'একটু সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'Kuch technical issue hua. Please try again.');
+    addChatMsg(reply, 'chitti');
+    speak(reply);
+
+    // If Bangla brain triggered an action (e.g. weather/news), execute it
+    if (data.trigger_action === 'fetch_weather') {
+      setTimeout(() => fetchAndShowGuardian(true), 600);
+    }
+  } catch(e) {
+    document.getElementById('typing-ind')?.remove();
+    const errMsg = currentLang === 'bn' ? 'নেটওয়ার্ক সমস্যা — সংযোগ চেক করে আবার চেষ্টা করুন।' : 'Network issue — please check your connection and try again.';
+    addChatMsg(errMsg, 'chitti');
+  }
+}
+
+function buildSystemPrompt() {
+  return buildMasterPrompt();
+}
+
+function buildMasterPrompt() {
+  const nick = MASTER?.nick || 'Friend';
+  const city = MASTER?.city || '';
+  const prod = MASTER?.productType || 'pa';
+  const prof = MASTER?.profession || '';
+  const income = MASTER?.income || '';
+  return `You are CHITTI — Bharat ka apna ${prod === 'biz' ? 'Business Assistant' : prod === 'pro' ? 'Professional Assistant' : 'Personal Assistant'}.
+Master: ${nick} | City: ${city} | Profession: ${prof} | Income: ${income} | Language: ${currentLang}
+Product: ${prod === 'biz' ? 'Chitti Business' : prod === 'pro' ? 'Chitti Professional' : 'Chitti PA'}
+Voice: Warm like Indian RJ. Lively, vibrant, humorous — like a trusted Friend, Philosopher and Guide.
+Keep responses SHORT (3-4 lines). Use ${nick}'s name naturally. No "Great question!".
+Language: ${currentLang === 'hi' ? 'Hindi/Hinglish' : 'English'}.
+${prod === 'biz' ? 'Focus on: billing, stock, GST, customers, sales. Reminder engine stores ALL business reminders — GST deadlines, credit recovery, staff salary, licence renewal, stock expiry, customer follow-ups.' : prod === 'pro' ? 'Focus on: practice management, client records, professional tools.' : 'Focus on: personal reminders (birthday/medicine/appointments), health guidance, legal help, government schemes, fraud protection. Reminder engine stores ALL personal reminders.'}`;
+}
+
+// ── MENU ──────────────────────────────────────────
+function showMenu() {
+  const existing = document.getElementById('menu-modal');
+  if (existing) { existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = 'menu-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end';
+  modal.innerHTML = `
+    <div onclick="document.getElementById('menu-modal').remove()" style="flex:1;background:rgba(0,0,0,0.5)"></div>
+    <div style="background:var(--surface);border-radius:24px 24px 0 0;padding:20px;max-height:70vh;overflow-y:auto">
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-weight:800;font-size:16px;margin-bottom:14px">Chitti Settings</div>
+      ${[
+        ['🔊','Toggle Voice','toggleVoice()'],
+        ['📋','View Feedback Log','viewFeedback()'],
+        ['🌐','Change Language','goTo(\'page-lang\');document.getElementById(\'menu-modal\').remove()'],
+        ['🗑️','Delete My Data','deleteData()'],
+        ['🔄','Reset & Re-onboard','resetAll()'],
+      ].map(([i,l,a]) => `<button onclick="${a};document.getElementById('menu-modal')?.remove()" style="width:100%;background:none;border:none;border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);text-align:left;margin-bottom:4px"><span style="font-size:20px">${i}</span>${l}</button>`).join('')}
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  if (!voiceEnabled) window.speechSynthesis?.cancel();
+  alert(voiceEnabled ? '🔊 Voice is ON' : '🔇 Voice is OFF');
+}
+
+function viewFeedback() {
+  const log = JSON.parse(localStorage.getItem('chitti_page_feedback') || '[]');
+  if (!log.length) { alert('No feedback yet.'); return; }
+  alert('FEEDBACK:\n\n' + log.map(e => `Page ${e.page} | Rating: ${e.rating || '-'} | ${e.text || '-'}`).join('\n'));
+}
+
+function deleteData() {
+  if (confirm('Delete all your Chitti data? This cannot be undone.')) {
+    localStorage.removeItem(STORE_KEY);
+    localStorage.removeItem(STORE_KEY + '_progress');
+    alert('Data deleted. Redirecting to start.');
+    location.reload();
+  }
+}
+
+function resetAll() {
+  if (confirm('Reset Chitti? Your profile will be cleared.')) {
+    localStorage.removeItem(STORE_KEY);
+    localStorage.removeItem(STORE_KEY + '_progress');
+    location.reload();
+  }
+}
+
+// ── CHAT MIC ──────────────────────────────────────
+function toggleChatMic() {
+  micInput('chat-input', 'chat-mic');
+}
+
+
+// ═══════════════════════════════════════════════════════
+// CHITTI REMINDER AGENT
+// ═══════════════════════════════════════════════════════
+const REMINDER_KEY = 'chitti_reminders';
+
+function loadReminders() {
+  try { return JSON.parse(localStorage.getItem(REMINDER_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveReminder(r) {
+  const all = loadReminders();
+  r.id = Date.now();
+  r.created = new Date().toISOString();
+  r.status = 'active';
+  all.push(r);
+  localStorage.setItem(REMINDER_KEY, JSON.stringify(all));
+  return r;
+}
+
+function deleteReminder(id) {
+  const all = loadReminders().filter(r => r.id !== id);
+  localStorage.setItem(REMINDER_KEY, JSON.stringify(all));
+}
+
+function doneReminder(id) {
+  const all = loadReminders().map(r => r.id === id ? {...r, status:'done'} : r);
+  localStorage.setItem(REMINDER_KEY, JSON.stringify(all));
+}
+
+function checkDueReminders() {
+  const reminders = loadReminders().filter(r => r.status === 'active');
+  const now = new Date();
+  const today = now.toDateString();
+  const due = [];
+  reminders.forEach(r => {
+    if (r.when_date) {
+      const adv = new Date(r.when_date);
+      adv.setDate(adv.getDate() - (r.advance_days || 0));
+      if (now >= adv && r.last_reminded !== today) {
+        due.push(r);
+        const upd = loadReminders().map(x => x.id === r.id ? {...x, last_reminded:today} : x);
+        localStorage.setItem(REMINDER_KEY, JSON.stringify(upd));
+      }
+    }
+    if (r.repeat_type === 'daily' && r.last_reminded !== today) {
+      due.push(r);
+      const upd = loadReminders().map(x => x.id === r.id ? {...x, last_reminded:today} : x);
+      localStorage.setItem(REMINDER_KEY, JSON.stringify(upd));
+    }
+    if (r.repeat_type === 'weekly') {
+      const day = now.toLocaleDateString('en-IN', {weekday:'long'});
+      if (r.repeat_day === day && r.last_reminded !== today) {
+        due.push(r);
+        const upd = loadReminders().map(x => x.id === r.id ? {...x, last_reminded:today} : x);
+        localStorage.setItem(REMINDER_KEY, JSON.stringify(upd));
+      }
+    }
+    if (r.repeat_type === 'monthly' && r.repeat_date === now.getDate()) {
+      const my = now.getMonth() + '-' + now.getFullYear();
+      if (r.last_reminded !== my) {
+        due.push(r);
+        const upd = loadReminders().map(x => x.id === r.id ? {...x, last_reminded:my} : x);
+        localStorage.setItem(REMINDER_KEY, JSON.stringify(upd));
+      }
+    }
+  });
+  return due;
+}
+
+function showDueReminders() {
+  const due = checkDueReminders();
+  if (!due.length) return;
+  const nick = MASTER?.nick || 'Friend';
+  due.forEach(r => {
+    const msg = currentLang === 'hi'
+      ? nick + ' ji, yaad dilana tha: ' + r.what
+      : nick + ', reminder: ' + r.what;
+    addChatMsg(msg, 'chitti');
+    speak(msg);
+    const area = document.getElementById('chat-area');
+    const btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:8px;margin:4px 0 12px 46px;flex-wrap:wrap';
+    btns.innerHTML =
+      '<button onclick="doneReminder(' + r.id + ');this.closest(\'div\').remove();addChatMsg(\'Done! Reminder removed.\',\'chitti\')" style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer">✓ Done</button>' +
+      '<button onclick="this.closest(\'div\').remove()" style="padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;font-size:12px;cursor:pointer">Later</button>' +
+      '<button onclick="deleteReminder(' + r.id + ');this.closest(\'div\').remove()" style="padding:6px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;font-size:12px;color:var(--red);cursor:pointer">Delete</button>';
+    area.appendChild(btns);
+    area.scrollTop = area.scrollHeight;
+  });
+}
+
+function showAllReminders() {
+  const reminders = loadReminders().filter(r => r.status === 'active');
+  const area = document.getElementById('chat-area');
+  if (!reminders.length) {
+    addChatMsg("No active reminders. Say 'Chitti, remind me...' to add one!", 'chitti');
+    return;
+  }
+  const card = document.createElement('div');
+  card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05)';
+  let inner = '<div style="font-weight:800;font-size:14px;margin-bottom:10px;color:var(--navy)">📅 Your Reminders (' + reminders.length + ')</div>';
+  reminders.forEach(function(r) {
+    inner += '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px">' +
+      '<div style="flex:1">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text)">' + r.what + '</div>' +
+        '<div style="font-size:11px;color:var(--text3);margin-top:3px">' +
+          (r.when_text || '') +
+          (r.repeat_type && r.repeat_type !== 'none' ? ' · Repeats ' + r.repeat_type : '') +
+          (r.type ? ' · ' + r.type : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0">' +
+        '<button onclick="doneReminder(' + r.id + ');this.closest(\'[style]\').remove()" style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">Done</button>' +
+        '<button onclick="deleteReminder(' + r.id + ');this.closest(\'[style]\').remove()" style="padding:4px 10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:11px;color:var(--red);cursor:pointer">✕</button>' +
+      '</div>' +
+    '</div>';
+  });
+  card.innerHTML = inner;
+  area.appendChild(card);
+  area.scrollTop = area.scrollHeight;
+  speak('You have ' + reminders.length + ' reminders');
+}
+
+async function parseReminderIntent(userMsg) {
+  try {
+    const today = new Date().toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const res = await fetch(API_CHAT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        message: 'REMINDER EXTRACTION TASK. Extract reminder from: "' + userMsg + '". Today is ' + today + '. Respond ONLY in valid JSON: {"understood":true,"reminder":{"what":"text","when_text":"when","when_date":"YYYY-MM-DD or null","repeat_type":"none/daily/weekly/monthly","repeat_day":"Sunday etc or null","repeat_date":18,"advance_days":1,"type":"personal/business/professional/strategic","confirmation":"short confirmation"}} OR {"understood":false}',
+        history: [],
+        master_profile: { nick: 'reminder_extraction', lang: currentLang }
+      })
+    });
+    const data = await res.json();
+    const text = data.reply || '{"understood":false}';
+    return JSON.parse(text.replace(/```json|```/g,'').trim());
+  } catch(e) { return {understood:false}; }
+}
+
+async function handleReminderIntent(msg) {
+  const lower = msg.toLowerCase();
+  if (lower.includes('my reminder') || lower.includes('show reminder') ||
+      lower === 'reminders' || lower.includes('list reminder')) {
+    showAllReminders(); return true;
+  }
+  const kw = ['remind','reminder','याद','alert','notify','dont forget',"don't forget",'set reminder'];
+  if (!kw.some(k => lower.includes(k))) return false;
+
+  const area = document.getElementById('chat-area');
+  const typing = document.createElement('div');
+  typing.id = 'rem-thinking';
+  typing.className = 'bubble-wrap';
+  typing.innerHTML = '<div class="avatar">C</div><div class="bubble"><span style="color:var(--text3)">Setting reminder...</span></div>';
+  area.appendChild(typing); area.scrollTop = area.scrollHeight;
+
+  const result = await parseReminderIntent(msg);
+  document.getElementById('rem-thinking') && document.getElementById('rem-thinking').remove();
+
+  if (result.understood && result.reminder) {
+    const r = result.reminder;
+    saveReminder(r);
+    const conf = r.confirmation || ('Reminder set: ' + r.what);
+    addChatMsg(conf, 'chitti'); speak(conf);
+    const card = document.createElement('div');
+    card.style.cssText = 'background:rgba(26,122,74,0.06);border:2px solid var(--green);border-radius:14px;padding:12px;margin:4px 0 12px 46px';
+    card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+      '<span style="font-size:16px">📅</span>' +
+      '<span style="font-weight:800;font-size:13px;color:var(--green)">Reminder Saved</span>' +
+      '<button class="spkr-inline" onclick="speak(\'' + (r.what||'').replace(/'/g,"\'") + '\')">🔊</button>' +
+      '</div>' +
+      '<div style="font-size:13px;font-weight:700">' + (r.what||'') + '</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-top:4px">' + (r.when_text||'') + (r.repeat_type && r.repeat_type!=='none' ? ' · Repeats '+r.repeat_type : '') + '</div>';
+    area.appendChild(card); area.scrollTop = area.scrollHeight;
+    return true;
+  }
+  return false;
+}
+
+
+// ── INIT ──────────────────────────────────────────
+window.onload = () => {
+  // Check for resume
+  const savedPage = restoreProgress();
+
+  // Init components
+  initRatings();
+  initIncome();
+  initTerms();
+
+  // Load voices
+  window.speechSynthesis?.getVoices();
+
+  // Check if existing user
+  MASTER = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+  if (MASTER && MASTER.name) {
+    currentLang = MASTER.lang || 'en';
+    goTo('page-chat');
+    return;
+  }
+
+  // Resume or fresh start
+  if (savedPage && savedPage !== 'page-splash' && savedPage !== 'page-chat') {
+    const resumeBanner = document.createElement('div');
+    resumeBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:200;background:#1D4ED8;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600';
+    resumeBanner.innerHTML = `<span>💾 Resume where you left off?</span><div style="display:flex;gap:8px"><button onclick="this.closest('div[style]').remove();goTo('${savedPage}')" style="background:#fff;color:#1D4ED8;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">Resume</button><button onclick="this.closest('div[style]').remove()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer">Start fresh</button></div>`;
+    document.body.appendChild(resumeBanner);
+  }
+
+  startSplash();
+};
+</script>
+</body>
+</html>
