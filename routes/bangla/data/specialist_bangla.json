@@ -1,0 +1,139 @@
+{
+  "specialist": "chitti_bangla",
+  "version": "1.0.0-v1",
+  "build_date": "2026-04-26",
+  "v2_hooks_scaffolded": true,
+  "tagline_bangla": "চিট্টি — আপনার ডিজিটাল জীবনের অনুপস্থিত অংশ।",
+  "tagline_english": "Chitti — the missing piece of your digital life.",
+
+  "language_config": {
+    "primary_language": "bn",
+    "script": "Bengali",
+    "fallback_language": "en",
+    "supported_dialects_v1": ["standard"],
+    "supported_dialects_v2_planned": ["kolkata", "dhaka", "sylheti", "chittagonian", "rarhi", "bardhaman"]
+  },
+
+  "engagement_model": {
+    "daily_user_hours_target": 5,
+    "implication": "Chitti is a daily companion, not a translation tool. Personality consistency, register awareness, and emotional attunement are first-class concerns.",
+    "register_default": "তুমি",
+    "register_rules": "See REGISTER_MAP. Lock in user's preferred register within first 3 turns."
+  },
+
+  "vocabulary_sources": {
+    "textbooks": {
+      "path": "1_SOURCE_DOCUMENTS/Textbooks/Bangla/",
+      "sources": ["WBBSE Classes 1-12", "NCTB Bangladesh"],
+      "target_word_count": 12000,
+      "vector_path": "2_VECTOR_DATABASE/textbook_vectors/"
+    },
+    "youtube": {
+      "path": "1_SOURCE_DOCUMENTS/YouTube_Transcripts/Bangla/",
+      "playlist_url": "https://www.youtube.com/playlist?list=PLe_24GBEOEsN68jjtQMVllbqn92Me3pOU",
+      "playlist_name": "Learn Basic Bengali Conversation by RASELraju Institute",
+      "video_count": 38,
+      "vector_path": "2_VECTOR_DATABASE/youtube_vectors/"
+    },
+    "dd_bangla": {
+      "path": "1_SOURCE_DOCUMENTS/DD_Transcripts/Bangla/",
+      "channel_url": "https://www.youtube.com/@ddbangla/videos",
+      "video_count": 15,
+      "audio_target_minutes": "20-30",
+      "audio_path": "3_VOICE_DATABASE/dd_anchor_clips/",
+      "phoneme_map": "3_VOICE_DATABASE/phoneme_map.json",
+      "vector_path": "2_VECTOR_DATABASE/dd_vectors/"
+    },
+    "conversational_corpus_v2_hook": {
+      "path": "1_SOURCE_DOCUMENTS/Conversational_Corpus/",
+      "vector_path": "2_VECTOR_DATABASE/conversational_vectors/",
+      "status_v1": "EMPTY_PLACEHOLDER",
+      "v2_planned_sources": [
+        "Bengali Wikipedia talk pages",
+        "Public-domain Satyajit Ray screenplay dialogue",
+        "Lalon Geeti / Rabindrasangeet lyrics (public domain)",
+        "Bangla folktales (Thakurmar Jhuli — public domain)",
+        "Conversational subtitles from public-domain Bangla cinema (pre-1958)"
+      ],
+      "rationale": "Textbook + news Bangla is too formal for 5hr/day companion use. v2 needs how Bangla is *lived*."
+    }
+  },
+
+  "cultural_knowledge": {
+    "path": "4_CULTURAL_KNOWLEDGE/respected_people.json",
+    "people_count": 8,
+    "honorific_enforcement": true
+  },
+
+  "confidence_routing": {
+    "core_rule": "DeepSeek is BACKUP ONLY — used when Chitti confidence < 80%",
+    "threshold": 0.80,
+    "primary": "chitti_bangla_specialist",
+    "fallback": "deepseek_api",
+    "user_visibility": "DeepSeek invocation is INVISIBLE to user. User always sees response as Chitti.",
+    "logging": {
+      "log_low_confidence_queries": true,
+      "log_path": "logs/low_confidence_queries.jsonl",
+      "sire_alert_threshold": 100,
+      "sire_alert_rule": "If 100+ users hit DeepSeek for the same word/phrase, escalate to Sire for permanent KG addition."
+    },
+    "month_3_target": "DeepSeek fallback rate < 5%. If higher, training corpus is insufficient — escalate."
+  },
+
+  "sleep_mode": {
+    "enabled": true,
+    "battery_budget_pct_per_hour": 1.0,
+    "extracts": ["user_accent_patterns", "user_dialect_signal", "user_frequent_phrases", "user_register_preference"],
+    "privacy": {
+      "raw_audio_saved": false,
+      "raw_text_saved": false,
+      "patterns_only": true,
+      "on_device_only": true
+    }
+  },
+
+  "federated_learning": {
+    "enabled": true,
+    "upload_frequency": "daily",
+    "download_frequency": "daily",
+    "global_pattern_threshold": 100,
+    "privacy": "Aggregated patterns only. No PII. No user-identifiable data."
+  },
+
+  "savings_tracker": {
+    "enabled": true,
+    "currency": "INR",
+    "display_language": "bn",
+    "categories": ["translation", "scheme_discovery", "scam_prevention", "learning"],
+    "report_template_path": "4_CULTURAL_KNOWLEDGE/savings_report_template_bn.md"
+  },
+
+  "guardian_alerts": {
+    "enabled": true,
+    "levels": ["green", "yellow", "red", "black"],
+    "language": "bn",
+    "scam_pattern_path": "4_CULTURAL_KNOWLEDGE/scam_patterns_bn.json",
+    "black_alert_action": "Notify Sire dashboard immediately"
+  },
+
+  "v2_hooks": {
+    "CONVERSATIONAL_CORPUS_PATH": "1_SOURCE_DOCUMENTS/Conversational_Corpus/",
+    "detect_dialect_function": "src/dialect.py::detect_dialect",
+    "REGISTER_MAP_path": "7_CONFIG/register_map.json",
+    "conversational_vectors_path": "2_VECTOR_DATABASE/conversational_vectors/",
+    "v1_behavior": "All hooks return safe defaults (standard dialect, তুমি register, empty corpus). v2 swaps internals without changing API."
+  },
+
+  "deployment": {
+    "phase_5a_sire_approval_required": true,
+    "tat_hours": 8,
+    "principles": [
+      "Chitti tries first. Always.",
+      "DeepSeek is insurance, not a teacher.",
+      "Chitti is free. Always.",
+      "Chitti saves user money. Quantified in ₹. In Bangla.",
+      "Chitti guards against scams. In Bangla.",
+      "Over time, Chitti becomes fluent."
+    ]
+  }
+}
