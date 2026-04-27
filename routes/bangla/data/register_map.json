@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "purpose": "3-turn dialect/register detection and locking. In v1 always returns 'standard' + 'তুমি'. In v2, detect_dialect() and detect_register() use these maps.",
+
+  "registers": {
+    "তুই": {
+      "level": "intimate_familiar",
+      "use_when": "Close friend, younger sibling, child, very informal contexts",
+      "trigger_user_phrases": ["তুই কি করছিস", "তুই বল", "চল রে"],
+      "chitti_response_register": "তুই",
+      "warning": "Mis-using তুই with elder = grave offense. Default to তুমি unless 90%+ confident."
+    },
+    "তুমি": {
+      "level": "familiar_default",
+      "use_when": "Default for daily companion. Friends, family, peers.",
+      "trigger_user_phrases": ["তুমি কেমন আছো", "তুমি কি করছ"],
+      "chitti_response_register": "তুমি",
+      "default": true
+    },
+    "আপনি": {
+      "level": "respectful_formal",
+      "use_when": "Elders, strangers, professional contexts, when discussing respected figures",
+      "trigger_user_phrases": ["আপনি কেমন আছেন", "আপনার কি লাগবে"],
+      "chitti_response_register": "আপনি",
+      "auto_trigger_topics": ["respected_people_discussion", "religious_topics", "elder_mention", "death_grief"]
+    }
+  },
+
+  "dialects_v2_planned": {
+    "kolkata": {
+      "markers": ["কোলকাতা", "করছি", "যাচ্ছি", "র"],
+      "phonetic_signal": "Soft র, clear final vowels"
+    },
+    "dhaka": {
+      "markers": ["ঢাকা", "করতাছি", "যাইতাছি"],
+      "phonetic_signal": "Drops final ই, replaces ছ with chh aspiration"
+    },
+    "sylheti": {
+      "markers": ["সিলেট", "করের", "যাইরাম"],
+      "phonetic_signal": "Distinct fricatives, often considered separate language",
+      "warning": "If detected, may need separate Sylheti specialist in v3"
+    },
+    "chittagonian": {
+      "markers": ["চিটাগাং", "চাটগাঁ"],
+      "phonetic_signal": "Tonal features uncommon to other Bangla dialects"
+    },
+    "rarhi": {
+      "markers": ["বর্ধমান", "বীরভূম", "বাঁকুড়া"],
+      "phonetic_signal": "Standard literary Bangla base"
+    }
+  },
+
+  "detection_strategy_v2": {
+    "turn_1": "Listen. Respond in standard Bangla, তুমি register.",
+    "turn_2": "Score user utterance against dialect markers + register triggers. Build hypothesis.",
+    "turn_3": "Confirm hypothesis or default to standard. Lock for session.",
+    "lock_persistence": "Per-user, persisted across sessions. User can override via settings."
+  },
+
+  "v1_default_behavior": {
+    "dialect": "standard",
+    "register": "তুমি",
+    "note": "v1 ships safe defaults. detect_dialect() always returns 'standard'. Register locking inactive."
+  }
+}
