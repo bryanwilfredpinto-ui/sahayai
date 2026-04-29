@@ -85,6 +85,59 @@ def debug_nse():
     return {"healthcheck": health, "sample_quotes": sample}
 
 
+# ---- Index ingest from external source (laptop pusher script) ----
+# Workaround for cloud IP blocks: user's laptop fetches NSE and POSTs here.
+
+from fastapi import Body, HTTPException
+
+
+@app.post("/debug/ingest-indices")
+def ingest_indices(payload: dict = Body(...)):
+    """
+    Accepts:  {"secret": "...", "quotes": [{"canonical": "NSE:NIFTY 50",
+              "last_price": 24300.5, "prev_close": 24250.0, ...}, ...]}
+    Stores each quote in the index_quotes table (upsert).
+    Auth: simple shared secret (CRON_SECRET env var).
+    """
+    from config import settings
+    from models.index_quote import IndexQuote
+    from database import SessionLocal
+    from datetime import datetime as _dt, timezone as _tz
+
+    secret = payload.get("secret")
+    if not secret or secret != settings.CRON_SECRET:
+        raise HTTPException(status_code=401, detail="Bad or missing secret")
+    quotes = payload.get("quotes") or []
+    if not isinstance(quotes, list):
+        raise HTTPException(status_code=400, detail="quotes must be a list")
+
+    db = SessionLocal()
+    try:
+        upserted = 0
+        for q in quotes:
+            canonical = q.get("canonical")
+            if not canonical:
+                continue
+            row = db.query(IndexQuote).filter(IndexQuote.canonical == canonical).first()
+            if row is None:
+                row = IndexQuote(canonical=canonical)
+                db.add(row)
+            row.last_price = q.get("last_price")
+            row.prev_close = q.get("prev_close")
+            row.day_open = q.get("day_open")
+            row.day_high = q.get("day_high")
+            row.day_low = q.get("day_low")
+            row.change = q.get("change")
+            row.pchange = q.get("pchange")
+            row.updated_at = _dt.now(_tz.utc)
+            upserted += 1
+        db.commit()
+        return {"ok": True, "upserted": upserted}
+    finally:
+        db.close()
+
+
+
 # ---- Global exception handler for budget cap ----
 
 @app.exception_handler(CapExceeded)
