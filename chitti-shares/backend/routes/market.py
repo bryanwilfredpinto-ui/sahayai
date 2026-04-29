@@ -228,10 +228,27 @@ async def market_view(
         log.exception("Market view: data fetch failed")
         raise HTTPException(status_code=502, detail=str(e))
 
-    nifty_price = n_q.get("last_price") or n_candles[-1]["close"]
-    sensex_price = s_q.get("last_price") or s_candles[-1]["close"]
-    nifty_prev = n_q.get("prev_close") or n_candles[-2]["close"]
-    sensex_prev = s_q.get("prev_close") or s_candles[-2]["close"]
+   nifty_price = n_q.get("last_price") or (n_candles[-1]["close"] if n_candles else 0)
+    sensex_price = s_q.get("last_price") or (s_candles[-1]["close"] if s_candles else 0)
+    nifty_prev = n_q.get("prev_close") or (
+        n_candles[-2]["close"] if len(n_candles) >= 2 else nifty_price
+    )
+    sensex_prev = s_q.get("prev_close") or (
+        s_candles[-2]["close"] if len(s_candles) >= 2 else sensex_price
+    )
+
+    # If Yahoo returned no data, return friendly fallback instead of crashing
+    if not nifty_price and not sensex_price:
+        return {
+            "summary": (
+                "Market data is currently unavailable. "
+                "Yahoo Finance may be temporarily rate-limiting our server. "
+                "Please refresh in a few minutes."
+            ),
+            "market_state": "OPEN" if ds_market_open() else "CLOSED",
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "stale": True,
+        }
 
     n = analyze_index(n_candles, nifty_price, nifty_prev, bucket_step=50)
     s = analyze_index(s_candles, sensex_price, sensex_prev, bucket_step=100)
