@@ -84,6 +84,11 @@ def debug_nse():
             sample = {"error": str(e)}
     return {"healthcheck": health, "sample_quotes": sample}
 
+@app.get("/debug/angel")
+def debug_angel():
+    from services import angel_client
+    return angel_client.healthcheck()
+
 from fastapi import Body, HTTPException
 
 
