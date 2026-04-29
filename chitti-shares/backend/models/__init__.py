@@ -9,3 +9,4 @@ from models.stock import (  # noqa: F401
 )
 from models.quota import UsageLog, DailyQuotaSummary  # noqa: F401
 from models.stock_universe import Stock  # noqa: F401
+from models.index_quote import IndexQuote  # noqa: F401
