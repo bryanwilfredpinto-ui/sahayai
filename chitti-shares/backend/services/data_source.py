@@ -106,22 +106,45 @@ def get_quote(canonical_symbols: list[str], db: Session | None = None) -> dict:
     """
     Returns {canonical_symbol: {last_price, prev_close, day_high, day_low,
                                  day_open, volume, currency}}.
+
+    Index symbols (NIFTY 50, SENSEX, BANKNIFTY) are routed to NSE's
+    public endpoints first because Yahoo blocks them from cloud IPs.
+    Stocks still go through the configured DATA_SOURCE.
     """
+    # Step 1: route any index symbols through NSE
+    nse_results: dict = {}
+    try:
+        from services import nse_client
+        index_syms = [s for s in canonical_symbols if nse_client.is_nse_index_symbol(s)]
+        if index_syms:
+            nse_results = nse_client.get_index_quote(index_syms)
+            log.info("nse_client served %d/%d index quotes", len(nse_results), len(index_syms))
+    except Exception as e:  # noqa: BLE001
+        log.warning("NSE index quote failed, will fall back to default source: %s", e)
+
+    # Step 2: anything NSE didn't fill, route through default data source
+    remaining = [s for s in canonical_symbols if s not in nse_results]
+    if not remaining:
+        return nse_results
+
     src = _active()
     if src == "yahoo":
         from services import yahoo_client
-        return yahoo_client.quote(canonical_symbols)
-    if src == "kite":
+        yahoo_results = yahoo_client.quote(remaining)
+    elif src == "kite":
         if db is None:
             raise DataSourceError("Kite source requires a DB session")
         from services import kite_client
         try:
-            kite_syms = canonical_symbols  # Kite already uses NSE:/BSE:
-            raw = kite_client.quote(db, kite_syms)
+            raw = kite_client.quote(db, remaining)
         except kite_client.KiteAuthRequired as e:
             raise DataSourceAuthError(str(e))
-        return _normalise_kite_quote(raw)
-    raise DataSourceError(f"Unknown DATA_SOURCE: {src}")
+        yahoo_results = _normalise_kite_quote(raw)
+    else:
+        raise DataSourceError(f"Unknown DATA_SOURCE: {src}")
+
+    # Merge: NSE wins for indices, default source for everything else
+    return {**yahoo_results, **nse_results}
 
 
 def get_history(canonical_symbol: str, days: int = 90,
@@ -130,7 +153,21 @@ def get_history(canonical_symbol: str, days: int = 90,
     Returns list of {date, open, high, low, close, volume} for the last N days.
     interval: 'day' | 'week' | 'month' (yfinance + kite both support these
     directly or via aggregation).
+
+    Index symbols route to NSE first (Yahoo blocks them from cloud IPs).
     """
+    # Index history via NSE
+    try:
+        from services import nse_client
+        if nse_client.is_nse_index_symbol(canonical_symbol):
+            candles = nse_client.get_index_history(canonical_symbol, days=days)
+            if candles:
+                log.info("nse_client served %d candles for %s", len(candles), canonical_symbol)
+                return candles
+            log.warning("NSE returned no history for %s, falling back", canonical_symbol)
+    except Exception as e:  # noqa: BLE001
+        log.warning("NSE history failed for %s, falling back: %s", canonical_symbol, e)
+
     src = _active()
     if src == "yahoo":
         from services import yahoo_client
