@@ -63,6 +63,28 @@ app.add_middleware(
 )
 
 
+# ---- Public NSE healthcheck (no auth needed; for debugging cloud IP blocks) ----
+
+@app.get("/debug/nse")
+def debug_nse():
+    """
+    Public endpoint. Hits NSE directly from this server and returns the
+    raw NIFTY 50 + SENSEX numbers. Use this to verify whether NSE is
+    reachable from Render's IPs WITHOUT going through auth.
+    """
+    from services import nse_client
+    health = nse_client.healthcheck()
+    sample = {}
+    if health.get("ok"):
+        try:
+            sample = nse_client.get_index_quote([
+                "NSE:NIFTY 50", "BSE:SENSEX", "NSE:BANKNIFTY",
+            ])
+        except Exception as e:  # noqa: BLE001
+            sample = {"error": str(e)}
+    return {"healthcheck": health, "sample_quotes": sample}
+
+
 # ---- Global exception handler for budget cap ----
 
 @app.exception_handler(CapExceeded)
