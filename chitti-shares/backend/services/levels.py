@@ -106,27 +106,75 @@ def _fit_line(xs, ys):
 
 
 def _best_trendline(pivots, df, direction, min_pivots, min_r2):
-    if len(pivots) < min_pivots:
+    """
+    Strict tip-anchored trendline.
+
+    Rules:
+      - resistance line MUST touch the wick tips (high) of pivot highs
+      - support line MUST touch the wick tips (low) of pivot lows
+      - the line MUST NOT cross through any candle body between its anchors
+
+    Algorithm:
+      1. Walk pivots newest-to-oldest in pairs.
+      2. For each pair (older, newer): compute the straight line through their tips.
+      3. Verify no candle body between them crosses the line on the wrong side
+         (resistance: candle high should not exceed line; support: candle low
+         should not fall below line).
+      4. Return the FIRST valid pair (most recent valid trendline). The angle
+         direction also has to match (rising support / falling resistance).
+    """
+    if len(pivots) < 2:
         return None
+
     cands = sorted(pivots, key=lambda p: p.idx)
-    for w in range(len(cands), min_pivots - 1, -1):
-        recent = cands[-w:]
-        xs = np.array([p.idx for p in recent], dtype=float)
-        ys = np.array([p.price for p in recent], dtype=float)
-        slope, intercept, r2 = _fit_line(xs, ys)
-        if direction == "rising_support" and slope <= 0:
-            continue
-        if direction == "falling_resistance" and slope >= 0:
-            continue
-        if r2 < min_r2:
-            continue
-        return {"slope": round(slope, 6),
+    is_resistance = (direction == "falling_resistance")
+    series = df["high"].to_numpy(dtype=float) if is_resistance else df["low"].to_numpy(dtype=float)
+
+    # Walk pairs, newest first. For each newer pivot, try older pivots from
+    # most-recent to oldest.
+    for i in range(len(cands) - 1, 0, -1):
+        newer = cands[i]
+        for j in range(i - 1, -1, -1):
+            older = cands[j]
+            x1, y1 = older.idx, older.price
+            x2, y2 = newer.idx, newer.price
+            if x2 == x1:
+                continue
+            slope = (y2 - y1) / (x2 - x1)
+            intercept = y1 - slope * x1
+
+            # Direction filter
+            if direction == "rising_support" and slope <= 0:
+                continue
+            if direction == "falling_resistance" and slope >= 0:
+                continue
+
+            # Strict no-cross check between x1 and x2
+            crosses = False
+            for k in range(x1 + 1, x2):
+                line_y = slope * k + intercept
+                if is_resistance:
+                    # Any candle's high above the line means body/wick crosses through.
+                    if series[k] > line_y:
+                        crosses = True
+                        break
+                else:
+                    # Any candle's low below the line means body/wick crosses through.
+                    if series[k] < line_y:
+                        crosses = True
+                        break
+            if crosses:
+                continue
+
+            return {
+                "slope": round(slope, 6),
                 "intercept": round(intercept, 4),
-                "start_date": recent[0].date.strftime("%Y-%m-%d"),
-                "end_date": recent[-1].date.strftime("%Y-%m-%d"),
+                "start_date": older.date.strftime("%Y-%m-%d"),
+                "end_date": newer.date.strftime("%Y-%m-%d"),
                 "kind": "support" if direction == "rising_support" else "resistance",
-                "r2": round(r2, 3),
-                "pivot_count": len(recent)}
+                "r2": 1.0,           # exact two-point fit
+                "pivot_count": 2,
+            }
     return None
 
 
