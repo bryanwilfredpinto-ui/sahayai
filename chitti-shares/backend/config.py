@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # Get these by creating an app at https://developers.kite.trade
     KITE_API_KEY: str = ""
     KITE_API_SECRET: str = ""
+    ANGEL_API_KEY: str = ""
+    ANGEL_CLIENT_CODE: str = ""
+    ANGEL_PIN: str = ""
+    ANGEL_TOTP_SECRET: str = ""
 
     # The redirect URL you registered in the Kite developer console.
     # Must match EXACTLY (case + slash). Defaults to BACKEND_URL + path.
