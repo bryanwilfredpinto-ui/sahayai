@@ -104,6 +104,34 @@ def api_technical(symbol: str, indicators: str = ""):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/scan/roshan")
+def api_scan_roshan(call: str = "Positional", universe: str = "nifty50",
+                   max_stocks: int = 0, force: bool = False):
+    """
+    Run Roshan Scanner across a stock universe.
+    call: Long-term | Positional | Swing | Intraday
+    universe: nifty50 | largecap | midcap | smallcap | microcap
+    max_stocks: 0 = use default cap; otherwise scan up to N stocks
+    force: true = bypass 5-min cache
+    """
+    from services import scanner
+    try:
+        return scanner.scan_roshan(
+            call=call,
+            universe_name=universe,
+            max_stocks=(max_stocks or None),
+            force_refresh=force,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/scan/cache")
+def api_scan_cache():
+    """Diagnostic: what's currently cached."""
+    from services import scanner
+    return scanner.cache_status()
+
 from fastapi import Body, HTTPException
 
 
