@@ -131,12 +131,16 @@ def _best_trendline(pivots, df, direction, min_pivots, min_r2):
 
 
 def compute_levels(symbol: str, timeframe: str = "Daily") -> dict:
-    from services import technical
+    # Route based on timeframe: intraday -> intraday_candles; everything else -> technical.
+    from services import technical, intraday_candles
     if timeframe not in _TF_PARAMS:
         raise ValueError(f"Unknown timeframe: {timeframe}. Valid: {list(_TF_PARAMS)}")
     p = _TF_PARAMS[timeframe]
     try:
-        df = technical.fetch_candles(symbol, timeframe).tail(p["days_back"])
+        if intraday_candles.is_intraday_timeframe(timeframe):
+            df = intraday_candles.fetch_intraday_candles(symbol, timeframe).tail(p["days_back"])
+        else:
+            df = technical.fetch_candles(symbol, timeframe).tail(p["days_back"])
     except Exception as e:
         log.warning("levels: fetch_candles failed for %s [%s]: %s", symbol, timeframe, e)
         return {"support": [], "resistance": [], "trendlines": []}
