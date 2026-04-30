@@ -337,12 +337,13 @@ export default function StockChart() {
         </label>
         <span style={{ borderLeft: "1px solid #ccc", paddingLeft: 12, display: "flex", gap: 12, flexWrap: "wrap" }}>
           {TIMEFRAMES.map((t) => (
-            <label key={t} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <label key={t} style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
               <input type="checkbox" checked={!!tfEnabled[t]}
                 onChange={(e) => setTfEnabled(prev => ({ ...prev, [t]: e.target.checked }))} />
-              <span style={{ display: "inline-block", width: 10, height: 10,
-                background: TF_COLORS[t], border: "1px solid #999", borderRadius: 2 }} />
-              {t}
+              <span style={{ display: "inline-block", width: 12, height: 12,
+                background: TF_COLORS[t], border: "1px solid #999", borderRadius: 2,
+                flexShrink: 0 }} />
+              <span style={{ marginLeft: 2 }}>{t}</span>
             </label>
           ))}
         </span>
