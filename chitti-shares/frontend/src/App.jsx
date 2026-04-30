@@ -9,6 +9,7 @@ import Alerts from './pages/Alerts'
 import Calls from './pages/Calls'
 import ChittiChat from './pages/ChittiChat'
 import Dashboard from './pages/Dashboard'
+import Technical from './pages/Technical'
 import Login from './pages/Login'
 import Markets from './pages/Markets'
 import OTPVerify from './pages/OTPVerify'
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/verify" element={<PublicOnly><OTPVerify /></PublicOnly>} />
 
         <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+        <Route path="/technical" element={<Protected><Technical /></Protected>} />
         <Route path="/markets" element={<Protected><Markets /></Protected>} />
         <Route path="/portfolio" element={<Protected><Portfolio /></Protected>} />
         <Route path="/alerts" element={<Protected><Alerts /></Protected>} />
