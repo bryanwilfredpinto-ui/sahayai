@@ -113,6 +113,20 @@ def get_quote(canonical_symbols: list[str], db: Session | None = None) -> dict:
     """
     # Step 1: route any index symbols through NSE
     nse_results: dict = {}
+    # Step 0: try Angel One first (works from Render, no IP block)
+    angel_results: dict = {}
+    try:
+        from services import angel_client
+        if angel_client.is_configured():
+            angel_results = angel_client.get_quote(canonical_symbols)
+            log.info("angel_client served %d/%d quotes", len(angel_results), len(canonical_symbols))
+    except Exception as e:  # noqa: BLE001
+        log.warning("Angel One quote failed, will fall back: %s", e)
+
+    # Anything Angel served, skip from further lookups
+    canonical_symbols = [s for s in canonical_symbols if s not in angel_results]
+    if not canonical_symbols:
+        return angel_results
     try:
         from services import nse_client
         index_syms = [s for s in canonical_symbols if nse_client.is_nse_index_symbol(s)]
@@ -144,7 +158,7 @@ def get_quote(canonical_symbols: list[str], db: Session | None = None) -> dict:
         raise DataSourceError(f"Unknown DATA_SOURCE: {src}")
 
     # Merge: NSE wins for indices, default source for everything else
-    return {**yahoo_results, **nse_results}
+    return {**yahoo_results, **nse_results, **angel_results}
 
 
 def get_history(canonical_symbol: str, days: int = 90,
