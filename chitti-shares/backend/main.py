@@ -133,6 +133,19 @@ def api_scan_cache():
     return scanner.cache_status()
 
 
+@app.get("/api/levels/{symbol:path}")
+def api_levels(symbol: str, timeframe: str = "Daily"):
+    """
+    Auto-computed support/resistance + trendlines for a symbol/timeframe.
+    Used by StockChart to draw colored horizontal lines and trendlines.
+    """
+    from services import levels
+    try:
+        return levels.compute_levels(symbol, timeframe)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/candles/{symbol:path}")
 def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
     """
