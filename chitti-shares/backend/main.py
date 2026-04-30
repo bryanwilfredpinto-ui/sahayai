@@ -132,6 +132,32 @@ def api_scan_cache():
     from services import scanner
     return scanner.cache_status()
 
+
+@app.get("/api/candles/{symbol:path}")
+def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
+    """
+    OHLCV candles for a symbol on a given timeframe.
+    Used by the StockChart page (lightweight-charts).
+    timeframe: Monthly | Weekly | Daily | 4H | 1H
+    days_back: how many candles back from latest (default 180)
+    """
+    from services import technical
+    try:
+        df = technical.fetch_candles(symbol, timeframe).tail(days_back)
+        return [
+            {
+                "time": int(t.timestamp()),
+                "open": float(row.open),
+                "high": float(row.high),
+                "low": float(row.low),
+                "close": float(row.close),
+                "volume": float(row.volume) if hasattr(row, "volume") else 0.0,
+            }
+            for t, row in df.iterrows()
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 from fastapi import Body, HTTPException
 
 
