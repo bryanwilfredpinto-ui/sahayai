@@ -303,6 +303,94 @@ def healthcheck() -> dict:
         return {"ok": False, "error": str(e)}
 
 
+def get_candles(symbol: str, interval: str = "ONE_DAY", days_back: int = 365):
+    """
+    Fetch OHLC candles via Angel One getCandleData.
+
+    interval: ONE_MINUTE | THREE_MINUTE | FIVE_MINUTE | TEN_MINUTE |
+              FIFTEEN_MINUTE | THIRTY_MINUTE | ONE_HOUR | ONE_DAY
+    days_back: how far back to look (Angel limit: 30 days for intraday,
+               2000 days for ONE_DAY)
+
+    Returns DataFrame indexed by datetime with columns:
+    open, high, low, close, volume.
+    """
+    import pandas as pd
+    from datetime import datetime, timedelta
+
+    if not is_configured():
+        return pd.DataFrame()
+
+    with _lock:
+        try:
+            jwt = _ensure_jwt()
+        except Exception as e:  # noqa: BLE001
+            log.error("[angel] candles auth failed: %s", e)
+            return pd.DataFrame()
+        tokens = _resolve_tokens([symbol])
+
+    if symbol not in tokens:
+        log.warning("[angel] candle: symbol not resolved: %s", symbol)
+        return pd.DataFrame()
+
+    exch, tok = tokens[symbol]
+
+    if interval == "ONE_DAY":
+        days_back = min(days_back, 2000)
+    else:
+        days_back = min(days_back, 30)
+
+    to_dt = datetime.now()
+    from_dt = to_dt - timedelta(days=days_back)
+    fmt = "%Y-%m-%d %H:%M"
+    payload = {
+        "exchange": exch,
+        "symboltoken": tok,
+        "interval": interval,
+        "fromdate": from_dt.strftime(fmt),
+        "todate":   to_dt.strftime(fmt),
+    }
+    headers = {
+        "Authorization": f"Bearer {jwt}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-UserType": "USER",
+        "X-SourceID": "WEB",
+        "X-ClientLocalIP": "127.0.0.1",
+        "X-ClientPublicIP": "127.0.0.1",
+        "X-MACAddress": "00:00:00:00:00:00",
+        "X-PrivateKey": settings.ANGEL_API_KEY,
+    }
+    try:
+        with httpx.Client(timeout=30.0) as c:
+            r = c.post(
+                f"{_API_BASE}/rest/secure/angelbroking/historical/v1/getCandleData",
+                json=payload,
+                headers=headers,
+            )
+    except Exception as e:  # noqa: BLE001
+        log.error("[angel] candles network err: %s", e)
+        return pd.DataFrame()
+
+    if r.status_code != 200:
+        log.error("[angel] candles HTTP %s: %s", r.status_code, r.text[:200])
+        return pd.DataFrame()
+    j = r.json()
+    if not j.get("status"):
+        log.error("[angel] candles payload err: %s", j.get("message"))
+        return pd.DataFrame()
+
+    rows = j.get("data") or []
+    if not rows:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(rows, columns=["ts", "open", "high", "low", "close", "volume"])
+    df["ts"] = pd.to_datetime(df["ts"])
+    df = df.set_index("ts")
+    for col in ("open", "high", "low", "close", "volume"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df.dropna(how="all")
+
 def _f(v: Any) -> float | None:
     if v is None or v == "":
         return None
