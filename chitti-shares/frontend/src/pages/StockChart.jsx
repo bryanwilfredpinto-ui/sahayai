@@ -249,11 +249,19 @@ export default function StockChart() {
           const series = chartRef.current.addLineSeries({
             color, lineWidth: 2, lineStyle: LineStyle.Solid,
             priceLineVisible: false, lastValueVisible: false,
+            crosshairMarkerVisible: false,
           });
-          series.setData([
-            { time: candles[startIdx].time, value: yStart },
-            { time: candles[endIdx].time,   value: yEnd },
-          ]);
+          // Bound the trendline strictly to its pivot range. No extrapolation.
+          // Build sparse points only between startIdx and endIdx; lightweight-charts
+          // will linearly interpolate between adjacent points.
+          const linePts = [];
+          for (let j = startIdx; j <= endIdx; j++) {
+            linePts.push({
+              time: candles[j].time,
+              value: tl.slope * j + tl.intercept,
+            });
+          }
+          series.setData(linePts);
           trendSeriesRef.current.push(series);
         });
       }
