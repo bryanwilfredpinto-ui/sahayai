@@ -87,12 +87,17 @@ export default function StockChart() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tf, symbol]);
 
+  // Reset level cache and refetch all enabled TFs whenever symbol changes.
+  useEffect(() => {
+    setLevelsByTf({});
+  }, [symbol]);
+
   useEffect(() => {
     TIMEFRAMES.forEach(t => {
       if (tfEnabled[t] && !levelsByTf[t]) fetchLevels(t);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tfEnabled, symbol]);
+  }, [tfEnabled, symbol, levelsByTf]);
 
   // ---------- chart init ----------
   useEffect(() => {
