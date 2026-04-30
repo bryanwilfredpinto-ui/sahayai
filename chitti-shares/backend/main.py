@@ -151,12 +151,18 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
     """
     OHLCV candles for a symbol on a given timeframe.
     Used by the StockChart page (lightweight-charts).
-    timeframe: Monthly | Weekly | Daily | 4H | 1H
+    timeframe: Monthly | Weekly | Daily | 4H | 1H | 15min | 5min | 1min
     days_back: how many candles back from latest (default 180)
+
+    Intraday timeframes (15min/5min/1min) route through services.intraday_candles
+    for direct Angel One fetches; everything else uses services.technical.
     """
-    from services import technical
+    from services import technical, intraday_candles
     try:
-        df = technical.fetch_candles(symbol, timeframe).tail(days_back)
+        if intraday_candles.is_intraday_timeframe(timeframe):
+            df = intraday_candles.fetch_intraday_candles(symbol, timeframe).tail(days_back)
+        else:
+            df = technical.fetch_candles(symbol, timeframe).tail(days_back)
         return [
             {
                 "time": int(t.timestamp()),
