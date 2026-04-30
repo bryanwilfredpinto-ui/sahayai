@@ -10,6 +10,8 @@ import Calls from './pages/Calls'
 import ChittiChat from './pages/ChittiChat'
 import Dashboard from './pages/Dashboard'
 import Technical from './pages/Technical'
+import Scanner from './pages/Scanner'
+import StockChart from './pages/StockChart'
 import Login from './pages/Login'
 import Markets from './pages/Markets'
 import OTPVerify from './pages/OTPVerify'
@@ -56,6 +58,8 @@ export default function App() {
 
         <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
         <Route path="/technical" element={<Protected><Technical /></Protected>} />
+          <Route path="/scanner" element={<Protected><Scanner /></Protected>} />
+          <Route path="/chart/:symbol" element={<Protected><StockChart /></Protected>} />
         <Route path="/markets" element={<Protected><Markets /></Protected>} />
         <Route path="/portfolio" element={<Protected><Portfolio /></Protected>} />
         <Route path="/alerts" element={<Protected><Alerts /></Protected>} />
