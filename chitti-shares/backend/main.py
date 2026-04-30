@@ -89,6 +89,21 @@ def debug_angel():
     from services import angel_client
     return angel_client.healthcheck()
 
+@app.get("/api/technical/{symbol:path}")
+def api_technical(symbol: str, indicators: str = ""):
+    """
+    Get full technical analysis for a symbol.
+    symbol: e.g. NSE:RELIANCE, NSE:NIFTY 50, BSE:SENSEX
+    indicators: optional comma-separated list, e.g. "RSI,MACD,Roshan Indicator"
+                If empty, runs all indicators.
+    """
+    from services import technical
+    ind_list = [s.strip() for s in indicators.split(",") if s.strip()] or None
+    try:
+        return technical.technical_report(symbol, indicators=ind_list)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 from fastapi import Body, HTTPException
 
 
