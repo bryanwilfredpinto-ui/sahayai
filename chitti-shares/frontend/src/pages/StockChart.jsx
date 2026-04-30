@@ -13,15 +13,18 @@ import { createChart, CrosshairMode, LineStyle } from "lightweight-charts";
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
 
-const TIMEFRAMES = ["Monthly", "Weekly", "Daily", "4H", "1H"];
+const TIMEFRAMES = ["Monthly", "Weekly", "Daily", "4H", "1H", "15min", "5min", "1min"];
 
 // Per-spec timeframe colors for S/R + trendlines
 const TF_COLORS = {
-  Monthly: "#9333ea", // purple
-  Weekly:  "#ffffff", // white (with subtle outline so it's visible on light bg)
-  Daily:   "#dc2626", // red
-  "4H":    "#b45309", // dark yellow / amber-700
-  "1H":    "#16a34a", // green (1H — distinct from BUY-green, but close)
+  Monthly:  "#9333ea", // purple
+  Weekly:   "#ffffff", // white
+  Daily:    "#dc2626", // red
+  "4H":     "#b45309", // dark yellow / amber-700
+  "1H":     "#16a34a", // green
+  "15min":  "#fb923c", // orange
+  "5min":   "#38bdf8", // sky blue
+  "1min":   "#ec4899", // pink
 };
 
 export default function StockChart() {
@@ -33,6 +36,7 @@ export default function StockChart() {
   const [showTrend, setShowTrend] = useState(true);
   const [tfEnabled, setTfEnabled] = useState({
     Monthly: true, Weekly: true, Daily: true, "4H": true, "1H": true,
+    "15min": false, "5min": false, "1min": false,
   });
 
   const [candles, setCandles] = useState([]);
