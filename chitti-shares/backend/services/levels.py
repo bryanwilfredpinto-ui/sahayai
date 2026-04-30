@@ -13,16 +13,26 @@ import pandas as pd
 log = logging.getLogger("levels")
 
 _TF_PARAMS = {
-    "Monthly": dict(k=2, cluster_tol=0.025, min_pivot_count=1, top_n=3,
-                    trend_min_pivots=2, trend_min_r2=0.70, days_back=120),
-    "Weekly":  dict(k=3, cluster_tol=0.020, min_pivot_count=1, top_n=3,
-                    trend_min_pivots=2, trend_min_r2=0.70, days_back=156),
-    "Daily":   dict(k=5, cluster_tol=0.015, min_pivot_count=2, top_n=3,
-                    trend_min_pivots=3, trend_min_r2=0.70, days_back=180),
-    "4H":      dict(k=5, cluster_tol=0.012, min_pivot_count=2, top_n=3,
-                    trend_min_pivots=3, trend_min_r2=0.70, days_back=120),
-    "1H":      dict(k=4, cluster_tol=0.010, min_pivot_count=2, top_n=3,
-                    trend_min_pivots=3, trend_min_r2=0.70, days_back=90),
+    # Loosened defaults: shorter histories naturally have fewer pivots, so the
+    # original strict thresholds were producing empty results on common stocks.
+    # Lowering min_pivot_count to 1 and min_r2 to 0.55 keeps quality reasonable
+    # while ensuring every symbol gets at least some levels drawn.
+    "Monthly": dict(k=2, cluster_tol=0.030, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=120),
+    "Weekly":  dict(k=3, cluster_tol=0.025, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=156),
+    "Daily":   dict(k=4, cluster_tol=0.020, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=180),
+    "4H":      dict(k=3, cluster_tol=0.018, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=120),
+    "1H":      dict(k=3, cluster_tol=0.015, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=90),
+    "15min":   dict(k=3, cluster_tol=0.012, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=30),
+    "5min":    dict(k=3, cluster_tol=0.008, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=10),
+    "1min":    dict(k=3, cluster_tol=0.005, min_pivot_count=1, top_n=3,
+                    trend_min_pivots=2, trend_min_r2=0.55, days_back=3),
 }
 
 
