@@ -56,13 +56,14 @@ export default function Scanner() {
     }
   }
 
-  useEffect(() => { runScan(false); }, [call, universe]);
+  // Run scan once on initial mount only. Dropdown changes do NOT auto-trigger.
+  useEffect(() => { runScan(false); }, []);
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => runScan(false), refreshMin * 60 * 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [refreshMin, call, universe]);
+  }, [refreshMin]);
 
   useEffect(() => {
     if (cacheAge === null) return;
