@@ -235,33 +235,35 @@ export default function StockChart() {
           // Reconstruct line over the chart's visible range.
           // Backend gives slope/intercept in candle-index space.
           // We'll draw from tl.start_date to tl.end_date.
+          // Trust dates from backend, not slope/intercept (those are computed in
+          // a different candle-index space and don't translate to this chart).
+          // We need to find the two endpoint prices from the cluster:
+          // backend already told us the line is fit through pivots — we can recompute
+          // start/end prices directly from the candle data at those dates.
           const startTs = dateStrToUnix(tl.start_date);
           const endTs   = dateStrToUnix(tl.end_date);
-          // Find the candle indices that match
           const startIdx = candles.findIndex(c => c.time >= startTs);
           let endIdx = candles.findIndex(c => c.time >= endTs);
           if (endIdx === -1) endIdx = candles.length - 1;
           if (startIdx === -1 || endIdx <= startIdx) return;
 
-          const yStart = tl.slope * startIdx + tl.intercept;
-          const yEnd   = tl.slope * endIdx   + tl.intercept;
+          // Use the candle's high (for resistance) or low (for support)
+          // at the start and end dates as the trendline anchor points.
+          // This matches how the user visually expects the line to sit.
+          const isResistance = tl.kind === "resistance";
+          const yStart = isResistance ? candles[startIdx].high : candles[startIdx].low;
+          const yEnd   = isResistance ? candles[endIdx].high   : candles[endIdx].low;
 
           const series = chartRef.current.addLineSeries({
             color, lineWidth: 2, lineStyle: LineStyle.Solid,
             priceLineVisible: false, lastValueVisible: false,
             crosshairMarkerVisible: false,
           });
-          // Bound the trendline strictly to its pivot range. No extrapolation.
-          // Build sparse points only between startIdx and endIdx; lightweight-charts
-          // will linearly interpolate between adjacent points.
-          const linePts = [];
-          for (let j = startIdx; j <= endIdx; j++) {
-            linePts.push({
-              time: candles[j].time,
-              value: tl.slope * j + tl.intercept,
-            });
-          }
-          series.setData(linePts);
+          // Two-point line strictly bounded to the pivot date range.
+          series.setData([
+            { time: candles[startIdx].time, value: yStart },
+            { time: candles[endIdx].time,   value: yEnd },
+          ]);
           trendSeriesRef.current.push(series);
         });
       }
