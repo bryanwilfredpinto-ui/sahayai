@@ -122,13 +122,14 @@ def api_scan_roshan(call: str = "Positional", universe: str = "nifty50",
 @app.get("/api/scan/{indicator:path}")
 def api_scan_indicator(indicator: str, call: str = "Positional",
                        universe: str = "nifty50", max_stocks: int = 0,
-                       force: bool = False):
+                       force: bool = False,
+                       tf1: str = "", tf2: str = "", pullback: str = ""):
     """
     Generic scanner for ANY indicator from technical.py.
     indicator: URL-encoded indicator name e.g. MACD, Force+Index, RSI
-    call: Long-term | Positional | Swing | Intraday
+    call: Long-term | Positional | Swing | Intraday | Custom
+    tf1, tf2, pullback: used when call=Custom (e.g. tf1=Daily&tf2=4H&pullback=1H)
     universe: nifty50 | largecap | midcap | smallcap | microcap
-    Returns: { buys: [...], shorts: [...], scanned_count, indicator, call }
     """
     from services import scanner
     try:
@@ -138,6 +139,9 @@ def api_scan_indicator(indicator: str, call: str = "Positional",
             universe_name=universe,
             max_stocks=(max_stocks or None),
             force_refresh=force,
+            custom_tf1=tf1 or None,
+            custom_tf2=tf2 or None,
+            custom_pullback=pullback or None,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
