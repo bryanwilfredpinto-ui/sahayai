@@ -1,58 +1,105 @@
 // chitti-shares/frontend/src/pages/Scanner.jsx
-//
-// Roshan Scanner — production polish.
-// Design references: Tickertape header style, Kite table density, Chartink
-// scan-results pattern. Tailwind utility classes only; no inline styles.
-//
-// Functional contract is unchanged from the previous version:
-//   - Dropdowns DO NOT auto-trigger scans. Only "Scan now" + initial mount
-//     + auto-refresh interval trigger fetches.
-//   - Two columns: BUY (left) and SHORT (right).
-//   - Click a stock row -> /chart/{symbol}.
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
+
+const INDICATORS = [
+  { group: "Chitti Special", items: [{ value: "Roshan Indicator", label: "Roshan Indicator (default)" }]},
+  { group: "Momentum", items: [
+    { value: "RSI", label: "RSI (14)" },
+    { value: "Stochastic", label: "Stochastic" },
+    { value: "Stochastic RSI", label: "Stochastic RSI" },
+    { value: "Williams %R", label: "Williams %R" },
+    { value: "CCI", label: "CCI" },
+    { value: "ROC", label: "ROC" },
+    { value: "Momentum", label: "Momentum" },
+    { value: "TRIX", label: "TRIX" },
+    { value: "Ultimate Oscillator", label: "Ultimate Oscillator" },
+  ]},
+  { group: "Trend", items: [
+    { value: "MACD", label: "MACD" },
+    { value: "ADX", label: "ADX" },
+    { value: "Aroon", label: "Aroon" },
+    { value: "Parabolic SAR", label: "Parabolic SAR" },
+    { value: "Supertrend", label: "Supertrend" },
+    { value: "Ichimoku", label: "Ichimoku" },
+    { value: "Elder Ray", label: "Elder Ray" },
+    { value: "Elder Impulse", label: "Elder Impulse" },
+  ]},
+  { group: "Volatility", items: [
+    { value: "Bollinger Bands", label: "Bollinger Bands" },
+    { value: "ATR", label: "ATR" },
+    { value: "Keltner Channels", label: "Keltner Channels" },
+    { value: "Donchian Channels", label: "Donchian Channels" },
+  ]},
+  { group: "Volume", items: [
+    { value: "OBV", label: "OBV" },
+    { value: "Force Index", label: "Force Index" },
+    { value: "Accumulation/Distribution", label: "Accumulation/Distribution" },
+    { value: "Chaikin Money Flow", label: "Chaikin Money Flow" },
+    { value: "MFI", label: "MFI" },
+    { value: "VWAP", label: "VWAP" },
+  ]},
+  { group: "Moving Averages", items: [
+    { value: "SMA(20)", label: "SMA (20)" },
+    { value: "SMA(50)", label: "SMA (50)" },
+    { value: "SMA(200)", label: "SMA (200)" },
+    { value: "EMA(20)", label: "EMA (20)" },
+    { value: "EMA(50)", label: "EMA (50)" },
+    { value: "EMA(200)", label: "EMA (200)" },
+  ]},
+];
 
 const CALLS = ["Long-term", "Positional", "Swing", "Intraday"];
 const UNIVERSES = [
-  { value: "nifty50",  label: "Nifty 50" },
+  { value: "nifty50", label: "Nifty 50" },
   { value: "largecap", label: "Largecap" },
-  { value: "midcap",   label: "Midcap" },
+  { value: "midcap", label: "Midcap" },
   { value: "smallcap", label: "Smallcap" },
   { value: "microcap", label: "Microcap" },
 ];
 const REFRESH_OPTS = [5, 15, 30, 60];
 
+const IND_PLAIN = {
+  "Roshan Indicator": "Checks RSI momentum + candle direction on 2 timeframes. All must agree.",
+  "RSI": "Speed of price. Below 30 = may rise. Above 70 = may fall.",
+  "MACD": "Fast trend vs slow. When fast crosses slow upward = BUY.",
+  "Force Index": "Price move x volume. Above zero = buyers in control.",
+  "Supertrend": "Line flips green or red. Price above = BUY. Below = SHORT.",
+  "Bollinger Bands": "Price bands. Touch lower = may bounce up. Touch upper = may fall.",
+  "OBV": "Volume direction. Rising = buyers accumulating.",
+  "VWAP": "Average price by volume. Price above = strong buyers today.",
+  "ADX": "Trend strength. Above 25 = strong trend.",
+  "Stochastic": "Momentum. Below 20 = oversold. Above 80 = overbought.",
+  "Ichimoku": "Cloud of support/resistance. Price above green cloud = uptrend.",
+};
+function getPlain(ind) { return IND_PLAIN[ind] || "Detects BUY or SHORT signals from price movement."; }
+
 export default function Scanner() {
   const navigate = useNavigate();
-  const [indicator] = useState("Roshan");
-  const [call, setCall]         = useState("Positional");
+  const [indicator, setIndicator] = useState("Roshan Indicator");
+  const [call, setCall] = useState("Positional");
   const [universe, setUniverse] = useState("nifty50");
   const [refreshMin, setRefreshMin] = useState(15);
-  const [data, setData]       = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [err, setErr]         = useState("");
+  const [err, setErr] = useState("");
   const [cacheAge, setCacheAge] = useState(null);
   const intervalRef = useRef(null);
 
-  async function runScan(forceRefresh = false) {
-    setLoading(true);
-    setErr("");
+  async function runScan(force = false) {
+    setLoading(true); setErr("");
     try {
-      const url =
-        `${API_BASE}/api/scan/roshan` +
-        `?call=${encodeURIComponent(call)}` +
-        `&universe=${encodeURIComponent(universe)}` +
-        `&force=${forceRefresh ? "true" : "false"}`;
+      const isRoshan = indicator === "Roshan Indicator";
+      const endpoint = isRoshan ? "roshan" : encodeURIComponent(indicator);
+      const url = `${API_BASE}/api/scan/${endpoint}?call=${encodeURIComponent(call)}&universe=${encodeURIComponent(universe)}&force=${force}`;
       const r = await fetch(url);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const json = await r.json();
       setData(json);
       setCacheAge(json.cache_age_sec ?? null);
-    } catch (e) {
+    } catch(e) {
       setErr(e.message || "Scan failed");
     } finally {
       setLoading(false);
@@ -60,251 +107,144 @@ export default function Scanner() {
   }
 
   useEffect(() => { runScan(false); }, []);
-
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => runScan(false), refreshMin * 60 * 1000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => clearInterval(intervalRef.current);
   }, [refreshMin]);
-
   useEffect(() => {
     if (cacheAge === null) return;
-    const t = setInterval(() => setCacheAge((a) => (a === null ? null : a + 1)), 1000);
+    const t = setInterval(() => setCacheAge(a => a === null ? null : a + 1), 1000);
     return () => clearInterval(t);
   }, [cacheAge]);
 
-  const buys   = data?.buys   || [];
+  const buys = data?.buys || [];
   const shorts = data?.shorts || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 [font-family:system-ui,'Segoe_UI',Roboto,sans-serif] [font-feature-settings:'tnum']">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="text-2xl font-semibold tracking-tight">Roshan Scanner</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Multi-timeframe technical scan. BUY and SHORT columns refresh on demand.
-          </p>
+    <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+
+        <div style={{ marginBottom: 16 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: "#0f172a" }}>Chitti Scanner</h1>
+          <p style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Select any indicator. Chitti scans all stocks and shows BUY + SHORT signals.</p>
         </div>
 
-        {/* Controls card */}
-        <div className="bg-white border border-slate-200 rounded-lg p-4 mb-4 shadow-sm">
-          <div className="flex flex-wrap items-end gap-3">
-            <Dropdown label="Indicator" value={indicator} disabled
-                      options={[{ value: "Roshan", label: "Roshan" }]} />
-            <Dropdown label="Call" value={call} onChange={setCall}
-                      options={CALLS.map(c => ({ value: c, label: c }))} />
-            <Dropdown label="Universe" value={universe} onChange={setUniverse}
-                      options={UNIVERSES} />
-            <Dropdown label="Auto-refresh" value={refreshMin}
-                      onChange={(v) => setRefreshMin(Number(v))}
-                      options={REFRESH_OPTS.map(n => ({ value: n, label: `${n} min` }))} />
-            <button
-              onClick={() => runScan(true)}
-              disabled={loading}
-              className={
-                "ml-auto inline-flex items-center justify-center gap-1.5 " +
-                "px-4 py-2 rounded-md text-sm font-medium " +
-                "border border-emerald-800 bg-emerald-800 text-white " +
-                "hover:bg-emerald-900 active:bg-emerald-950 " +
-                "transition-colors duration-100 " +
-                "disabled:opacity-60 disabled:cursor-not-allowed"
-              }
-            >
-              {loading ? (
-                <>
-                  <Spinner />
-                  Scanning…
-                </>
-              ) : (
-                "Scan now"
-              )}
-            </button>
+        <div style={{ padding: "6px 12px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, fontSize: 11, color: "#92400e", marginBottom: 12 }}>
+          ⚠️ <b>Not SEBI Registered.</b> Educational tool only. Not investment advice. | <b>SEBI पंजीकृत नहीं।</b> यह निवेश सलाह नहीं है।
+        </div>
+
+        <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 8, padding: 16, marginBottom: 12 }}>
+          <div style={{ marginBottom: 10 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Indicator</label>
+            <select value={indicator} onChange={e => setIndicator(e.target.value)}
+              style={{ width: "100%", padding: "8px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #cbd5e1" }}>
+              {INDICATORS.map(g => (
+                <optgroup key={g.group} label={g.group}>
+                  {g.items.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </optgroup>
+              ))}
+            </select>
+            <div style={{ marginTop: 6, fontSize: 11, color: "#64748b", background: "#f8fafc", borderRadius: 4, padding: "5px 8px" }}>
+              💡 {getPlain(indicator)}
+            </div>
           </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {[
+              { label: "Call Type", val: call, set: setCall, opts: CALLS.map(c => ({value:c,label:c})) },
+              { label: "Universe",  val: universe, set: setUniverse, opts: UNIVERSES },
+              { label: "Auto Refresh", val: refreshMin, set: v => setRefreshMin(Number(v)), opts: REFRESH_OPTS.map(n => ({value:n,label:`${n} min`})) },
+            ].map(({label, val, set, opts}) => (
+              <div key={label} style={{ flex: 1, minWidth: 100 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{label}</label>
+                <select value={val} onChange={e => set(e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #cbd5e1" }}>
+                  {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={() => runScan(true)} disabled={loading}
+            style={{ marginTop: 12, width: "100%", padding: 10, fontSize: 14, fontWeight: 700,
+              borderRadius: 6, border: "none", cursor: loading ? "not-allowed" : "pointer",
+              background: loading ? "#94a3b8" : "#0f5132", color: "white" }}>
+            {loading ? "⏳ Scanning…" : `▶ Scan — ${indicator}`}
+          </button>
         </div>
 
-        {/* Status strip */}
         {data && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mb-3">
-            <span>Scanned <span className="font-medium text-slate-700">{data.scanned_count}</span> stocks</span>
-            <Dot />
-            <span>Last update <span className="font-medium text-slate-700">{data.scanned_at ? new Date(data.scanned_at).toLocaleTimeString() : "—"}</span></span>
-            <Dot />
-            <span>Cache <span className="font-medium text-slate-700">{cacheAge != null ? `${cacheAge}s` : "—"}</span></span>
-            <span className={data.from_cache ? "text-amber-700" : "text-emerald-700"}>
-              {data.from_cache ? "(cached)" : "(fresh)"}
-            </span>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <span>✅ Scanned <b>{data.scanned_count}</b> stocks</span>
+            <span>🕐 {data.scanned_at ? new Date(data.scanned_at).toLocaleTimeString() : "—"}</span>
+            <span>{data.from_cache ? `📦 Cached (${cacheAge}s)` : "🔄 Fresh"}</span>
+            <span>⏱ {data.scan_duration_sec}s</span>
           </div>
         )}
 
-        {/* Error */}
         {err && (
-          <div className="flex items-center gap-3 p-3 mb-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-md text-sm">
-            <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-            <span className="flex-1">Error: {err}</span>
-            <button onClick={() => runScan(true)}
-                    className="text-xs font-medium underline hover:no-underline">
-              Retry
-            </button>
+          <div style={{ padding: "10px 14px", marginBottom: 12, background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, fontSize: 13 }}>
+            ❌ {err} — <button onClick={() => runScan(true)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", textDecoration: "underline" }}>Retry</button>
           </div>
         )}
 
-        {/* Two-column results */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Column
-            title="BUY"
-            count={buys.length}
-            tone="buy"
-            stocks={buys}
-            loading={loading}
-            onClickStock={(sym) => navigate(`/chart/${encodeURIComponent(sym)}`)}
-          />
-          <Column
-            title="SHORT"
-            count={shorts.length}
-            tone="short"
-            stocks={shorts}
-            loading={loading}
-            onClickStock={(sym) => navigate(`/chart/${encodeURIComponent(sym)}`)}
-          />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <ResultColumn title="BUY" tone="buy" stocks={buys} loading={loading}
+            onClickStock={sym => navigate(`/chart/${encodeURIComponent(sym)}`)} />
+          <ResultColumn title="SHORT" tone="short" stocks={shorts} loading={loading}
+            onClickStock={sym => navigate(`/chart/${encodeURIComponent(sym)}`)} />
         </div>
       </div>
     </div>
   );
 }
 
-function Dropdown({ label, value, onChange, options, disabled }) {
-  return (
-    <label className="flex flex-col gap-1 min-w-[140px]">
-      <span className="text-[11px] uppercase tracking-wide text-slate-500 font-medium">{label}</span>
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange && onChange(e.target.value)}
-        className={
-          "px-3 py-2 text-sm rounded-md border border-slate-300 " +
-          "bg-white text-slate-900 " +
-          "hover:border-slate-400 focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-100 " +
-          "disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed " +
-          "transition-colors duration-100"
-        }
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function Column({ title, count, tone, stocks, loading, onClickStock }) {
+function ResultColumn({ title, tone, stocks, loading, onClickStock }) {
   const isBuy = tone === "buy";
-  const headerColor = isBuy
-    ? "bg-emerald-800 text-white"
-    : "bg-rose-900 text-white";
-
   return (
-    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-      {/* Column header */}
-      <div className={`flex items-center justify-between px-4 py-2.5 ${headerColor}`}>
-        <div className="flex items-center gap-2">
-          {isBuy ? (
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clipRule="evenodd"/></svg>
-          ) : (
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clipRule="evenodd"/></svg>
-          )}
-          <span className="font-semibold tracking-wide text-sm uppercase">{title}</span>
-        </div>
-        <span className="text-xs font-medium bg-white/20 rounded-full px-2 py-0.5">
-          {count}
-        </span>
+    <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden" }}>
+      <div style={{ background: isBuy ? "#0f5132" : "#9f1239", padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{isBuy ? "▲" : "▼"} {title}</span>
+        <span style={{ background: "rgba(255,255,255,0.2)", color: "white", borderRadius: 20, padding: "1px 8px", fontSize: 11 }}>{stocks.length}</span>
       </div>
-
-      {/* Rows */}
-      <div className="divide-y divide-slate-100">
+      <div>
         {loading && stocks.length === 0 && <Skeleton />}
         {!loading && stocks.length === 0 && (
-          <div className="px-4 py-12 text-center text-sm text-slate-400">
-            No qualifying stocks for this scan
-          </div>
+          <div style={{ padding: "32px 16px", textAlign: "center", fontSize: 12, color: "#94a3b8" }}>No {title} signals found</div>
         )}
         {stocks.map((s, i) => (
-          <Row key={s.symbol || i} stock={s} tone={tone} onClick={() => onClickStock(s.symbol)} />
+          <button key={s.symbol || i} onClick={() => onClickStock(s.symbol)}
+            aria-label={`${(s.symbol||"").split(":").pop()}, ${isBuy?"buy":"short"} signal`}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 14px", background: "white", border: "none", borderBottom: "1px solid #f1f5f9", cursor: "pointer", textAlign: "left" }}
+            onMouseEnter={e => e.currentTarget.style.background = isBuy ? "#f0fdf4" : "#fff1f2"}
+            onMouseLeave={e => e.currentTarget.style.background = "white"}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{(s.symbol||"").split(":").pop()}</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{s.symbol}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              {s.last_price != null && <div style={{ fontSize: 13, fontWeight: 600 }}>₹{Number(s.last_price).toLocaleString("en-IN",{minimumFractionDigits:2})}</div>}
+              {s.pchange != null && <div style={{ fontSize: 11, color: s.pchange>=0?"#15803d":"#be123c", fontWeight:600 }}>{s.pchange>=0?"+":""}{Number(s.pchange).toFixed(2)}%</div>}
+              <div style={{ fontSize: 10, fontWeight: 700, color: isBuy?"#15803d":"#be123c" }}>{isBuy?"▲ BUY":"▼ SHORT"}</div>
+            </div>
+          </button>
         ))}
       </div>
     </div>
-  );
-}
-
-function Row({ stock, tone, onClick }) {
-  const sym  = stock.symbol || "";
-  const name = stock.name || sym.split(":").pop();
-  const last = stock.last_price ?? stock.price ?? null;
-  const pch  = stock.pchange ?? stock.change_pct ?? null;
-  const isBuy = tone === "buy";
-  const hoverBg = isBuy ? "hover:bg-emerald-50" : "hover:bg-rose-50";
-
-  const pchClass =
-    pch == null   ? "text-slate-400"
-    : pch >= 0    ? "text-emerald-700 bg-emerald-50"
-    :               "text-rose-700 bg-rose-50";
-
-  return (
-    <button
-      onClick={onClick}
-      className={
-        "w-full flex items-center justify-between px-4 py-3 " +
-        "text-left transition-colors duration-75 " +
-        hoverBg + " active:bg-slate-100 " +
-        "focus:outline-none focus:bg-slate-100"
-      }
-    >
-      <div className="min-w-0">
-        <div className="text-sm font-semibold text-slate-900 truncate">{name}</div>
-        <div className="text-[11px] text-slate-500 mt-0.5">{sym}</div>
-      </div>
-      <div className="text-right ml-3 flex-shrink-0">
-        <div className="text-sm font-semibold text-slate-900">
-          {last != null ? `\u20B9${Number(last).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-        </div>
-        {pch != null && (
-          <div className={`inline-block mt-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded ${pchClass}`}>
-            {pch >= 0 ? "+" : ""}{Number(pch).toFixed(2)}%
-          </div>
-        )}
-      </div>
-    </button>
   );
 }
 
 function Skeleton() {
   return (
-    <div className="divide-y divide-slate-100">
-      {[0,1,2,3,4].map(i => (
-        <div key={i} className="px-4 py-3 flex items-center justify-between animate-pulse">
-          <div className="flex-1">
-            <div className="h-3 w-24 bg-slate-200 rounded" />
-            <div className="h-2 w-16 bg-slate-100 rounded mt-2" />
-          </div>
-          <div className="text-right ml-3">
-            <div className="h-3 w-16 bg-slate-200 rounded" />
-            <div className="h-2 w-10 bg-slate-100 rounded mt-2 ml-auto" />
-          </div>
+    <div>
+      {[0,1,2,3].map(i => (
+        <div key={i} style={{ padding: "10px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between" }}>
+          <div><div style={{ height:12, width:80, background:"#e2e8f0", borderRadius:4 }}/><div style={{ height:10, width:50, background:"#f1f5f9", borderRadius:4, marginTop:6 }}/></div>
+          <div><div style={{ height:12, width:60, background:"#e2e8f0", borderRadius:4 }}/><div style={{ height:10, width:40, background:"#f1f5f9", borderRadius:4, marginTop:6 }}/></div>
         </div>
       ))}
     </div>
   );
-}
-
-function Spinner() {
-  return (
-    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-    </svg>
-  );
-}
-
-function Dot() {
-  return <span className="text-slate-300">·</span>;
 }
