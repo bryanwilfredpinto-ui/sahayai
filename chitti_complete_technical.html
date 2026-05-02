@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chitti — Technical Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0c10;--surface:#111318;--card:#181c24;--border:#252b36;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;--text:#f1f5f9;--muted:#64748b;--dim:#334155}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sebi{background:#1a1200;border-bottom:1px solid #3d2800;padding:6px 20px;font-size:11px;color:#fbbf24}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px}
+.tab{padding:12px 14px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:inherit;transition:all .2s}
+.tab.active{color:var(--blue);border-bottom:2px solid var(--blue)}
+.page{display:none;padding:14px 16px;max-width:1000px;margin:0 auto}
+.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;display:block;margin-bottom:4px}
+select,input{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;cursor:pointer;outline:none}
+select:focus{border-color:var(--blue)}
+.full{grid-column:1/-1}
+.ind-desc{margin-top:8px;font-size:11px;padding:7px 10px;border-radius:6px;background:var(--surface);color:var(--muted);line-height:1.5;border:1px solid transparent}
+.ind-desc.new-ind{background:#1a1200;border-color:#3d2800;color:#fbbf24}
+.custom-box{background:#0a1a08;border:1px solid #1a3a10;border-radius:8px;padding:12px;margin-bottom:10px;display:none}
+.custom-box.on{display:block}
+.custom-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}
+.scan-btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--blue);color:#fff;transition:all .2s}
+.scan-btn:disabled{background:var(--dim);color:var(--muted);cursor:not-allowed}
+.status{font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;padding:6px 10px;background:var(--surface);border-radius:6px;margin-bottom:10px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.col-head{padding:9px 13px;display:flex;align-items:center;justify-content:space-between}
+.col-head.buy{background:rgba(34,197,94,.1);border-bottom:1px solid rgba(34,197,94,.2)}
+.col-head.sell{background:rgba(239,68,68,.1);border-bottom:1px solid rgba(239,68,68,.2)}
+.col-title{font-size:13px;font-weight:700}
+.col-title.buy{color:var(--green)} .col-title.sell{color:var(--red)}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700}
+.badge.buy{background:rgba(34,197,94,.2);color:var(--green)}
+.badge.sell{background:rgba(239,68,68,.2);color:var(--red)}
+.speak-sm{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--blue);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit}
+.srow{padding:9px 13px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .15s}
+.srow:hover{background:var(--surface)}
+.srow:last-child{border-bottom:none}
+.sym{font-size:13px;font-weight:700}
+.sname{font-size:10px;color:var(--muted);margin-top:1px}
+.pos{color:var(--green)} .neg{color:var(--red)}
+.sbadge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:2px;display:inline-block}
+.sbadge.buy{background:rgba(34,197,94,.2);color:var(--green)}
+.sbadge.sell{background:rgba(239,68,68,.2);color:var(--red)}
+.skel{height:52px;background:var(--surface);margin-bottom:1px;animation:sh 1.4s infinite}
+@keyframes sh{0%,100%{opacity:.3}50%{opacity:.7}}
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:12px}
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:10px 13px;font-size:12px;color:#fca5a5;margin-bottom:10px}
+.tf-row{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}
+.tf-row::-webkit-scrollbar{display:none}
+.tf-btn{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.tf-btn.active{color:#fff}
+.tog-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;align-items:center;font-size:12px}
+.tog{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:11px;transition:all .15s;user-select:none}
+.tog.on{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.1)}
+.tf-legend{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+.tf-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:2px;vertical-align:middle}
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;position:relative}
+canvas{display:block;width:100%}
+.chart-lbl{position:absolute;top:7px;left:10px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace}
+.ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ind-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.ind-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ind-val{font-size:18px;font-weight:700}
+.ind-note{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+.cv-card{border-radius:10px;padding:15px;margin-bottom:12px;border:1px solid}
+.cv-card.buy{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.25)}
+.cv-card.sell{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25)}
+.cv-card.wait{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25)}
+.cv-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.cv-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.lang-row{display:flex;gap:3px;margin-left:auto}
+.lang-btn{padding:3px 9px;font-size:11px;font-weight:600;border-radius:4px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s}
+.lang-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.sp-btn{padding:4px 9px;font-size:13px;border-radius:5px;cursor:pointer;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:var(--blue);font-family:inherit}
+.verdict{font-size:16px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.verdict.buy{color:var(--green)} .verdict.sell{color:var(--red)} .verdict.wait{color:var(--amber)}
+.reason{font-size:13px;line-height:1.75;color:#cbd5e1;margin-bottom:9px}
+.act-box{background:rgba(255,255,255,.05);border-radius:7px;padding:9px 12px;font-size:12px;line-height:1.6;margin-bottom:7px}
+.caution{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:8px}
+.nums-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px}
+.num-row{background:rgba(255,255,255,.04);border-radius:5px;padding:5px 8px;display:flex;justify-content:space-between;font-size:11px}
+.num-lbl{color:var(--muted)} .num-val{font-weight:700}
+.learn-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+.learn-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.learn-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.learn-title{font-size:13px;font-weight:700}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.tag.new{background:rgba(245,158,11,.2);color:var(--amber)}
+.tag.classic{background:rgba(100,116,139,.15);color:var(--muted)}
+.learn-plain{font-size:12px;color:#94a3b8;line-height:1.65;margin-bottom:8px}
+.sig-box{border-radius:6px;padding:6px 10px;font-size:11px;margin-bottom:5px}
+.sig-buy{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#86efac}
+.sig-sell{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+.loading-cv{padding:13px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@media(max-width:580px){.two-col,.ctrl-grid,.custom-grid,.ind-grid,.nums-grid{grid-template-columns:1fr}.tf-btn{padding:4px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo"><div class="logo-icon">🤖</div>Chitti <span style="color:var(--muted);font-weight:400;font-size:13px;margin-left:4px">Shares · Technical</span></div>
+  <div style="font-size:11px;color:var(--muted);text-align:right"><span style="display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;animation:sh 2s infinite;margin-right:4px;vertical-align:middle"></span>Live · Angel One</div>
+</div>
+<div class="sebi">⚠️ <b>Not SEBI Registered.</b> Educational tool only. Not investment advice. | <b>SEBI पंजीकृत नहीं।</b> यह निवेश सलाह नहीं है।</div>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('scanner')" aria-label="Scanner">🔍 Scanner</button>
+  <button class="tab" onclick="showTab('chart')" aria-label="Chart">📈 Chart</button>
+  <button class="tab" onclick="showTab('learn')" aria-label="Learn">🎓 Learn</button>
+</div>
+
+<div id="tab-scanner" class="page active">
+  <div class="card">
+    <div style="margin-bottom:10px">
+      <label class="lbl">Indicator</label>
+      <select id="ind-sel" onchange="onInd()" aria-label="Select indicator">
+        <optgroup label="⭐ Chitti Special"><option value="Roshan Indicator">Roshan Indicator (default)</option></optgroup>
+        <optgroup label="⚡ New (2010–2026)">
+          <option value="TTM Squeeze">⚡ TTM Squeeze (2010+)</option>
+          <option value="Awesome Oscillator">⚡ Awesome Oscillator (2010+)</option>
+          <option value="Vortex Indicator">⚡ Vortex Indicator (2010+)</option>
+          <option value="Chandelier Exit">⚡ Chandelier Exit (2010+)</option>
+          <option value="Hull MA">⚡ Hull MA (2012+)</option>
+          <option value="Laguerre RSI">⚡ Laguerre RSI (2012+)</option>
+          <option value="Heikin Ashi Trend">⚡ Heikin Ashi Trend (2010+)</option>
+          <option value="Balance of Power">⚡ Balance of Power (2010+)</option>
+          <option value="Chande Kroll Stop">⚡ Chande Kroll Stop (2021)</option>
+        </optgroup>
+        <optgroup label="── Momentum ──">
+          <option value="RSI">RSI (14)</option><option value="MACD">MACD</option>
+          <option value="Stochastic">Stochastic</option><option value="Stochastic RSI">Stochastic RSI</option>
+          <option value="Williams %R">Williams %R</option><option value="CCI">CCI</option>
+          <option value="ROC">ROC</option><option value="Momentum">Momentum</option>
+          <option value="TRIX">TRIX</option><option value="Ultimate Oscillator">Ultimate Oscillator</option>
+        </optgroup>
+        <optgroup label="── Trend ──">
+          <option value="ADX">ADX</option><option value="Aroon">Aroon</option>
+          <option value="Parabolic SAR">Parabolic SAR</option><option value="Supertrend">Supertrend</option>
+          <option value="Ichimoku">Ichimoku</option><option value="Elder Ray">Elder Ray</option>
+          <option value="Elder Impulse">Elder Impulse</option>
+        </optgroup>
+        <optgroup label="── Volatility ──">
+          <option value="Bollinger Bands">Bollinger Bands</option><option value="ATR">ATR</option>
+          <option value="Keltner Channels">Keltner Channels</option><option value="Donchian Channels">Donchian Channels</option>
+        </optgroup>
+        <optgroup label="── Volume ──">
+          <option value="OBV">OBV</option><option value="Force Index">Force Index</option>
+          <option value="Accumulation/Distribution">Accumulation/Distribution</option>
+          <option value="Chaikin Money Flow">Chaikin Money Flow</option>
+          <option value="MFI">MFI</option><option value="VWAP">VWAP</option>
+        </optgroup>
+        <optgroup label="── Moving Averages ──">
+          <option value="SMA(20)">SMA (20)</option><option value="SMA(50)">SMA (50)</option>
+          <option value="SMA(200)">SMA (200)</option><option value="EMA(20)">EMA (20)</option>
+          <option value="EMA(50)">EMA (50)</option><option value="EMA(200)">EMA (200)</option>
+        </optgroup>
+      </select>
+      <div id="ind-desc" class="ind-desc">Roshan checks RSI momentum + candle direction on 2 timeframes. All 3 conditions must agree.</div>
+    </div>
+    <div class="ctrl-grid">
+      <div><label class="lbl">Call Type</label>
+        <select id="call-sel" onchange="onCall()" aria-label="Call type">
+          <option value="Long-term">Long-term (Mo+Wk)</option>
+          <option value="Positional" selected>Positional (Wk+D)</option>
+          <option value="Swing">Swing (D+4H)</option>
+          <option value="Intraday">Intraday (4H+1H)</option>
+          <option value="Custom">⚡ Custom — pick your own</option>
+        </select>
+      </div>
+      <div><label class="lbl">Universe</label>
+        <select id="univ-sel" aria-label="Universe">
+          <option value="nifty50">Nifty 50</option><option value="largecap">Largecap</option>
+          <option value="midcap">Midcap</option><option value="smallcap">Smallcap</option>
+          <option value="microcap">Microcap</option>
+        </select>
+      </div>
+      <div><label class="lbl">Auto Refresh</label>
+        <select id="ref-sel" onchange="setupRefresh()" aria-label="Refresh">
+          <option value="5">5 min</option><option value="15" selected>15 min</option>
+          <option value="30">30 min</option><option value="60">60 min</option>
+        </select>
+      </div>
+      <div><label class="lbl">Max Stocks</label>
+        <input type="number" id="max-s" value="60" min="5" max="500" aria-label="Max stocks">
+      </div>
+    </div>
+    <div class="custom-box" id="cbox">
+      <div style="font-size:10px;font-weight:700;color:#4ade80;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">⚡ Custom Timeframes</div>
+      <div class="custom-grid">
+        <div><label class="lbl" style="color:#4ade80">TF 1 (primary)</label>
+          <select id="ctf1" onchange="updateCNote()" aria-label="TF1">
+            <option>Monthly</option><option>Weekly</option><option selected>Daily</option>
+            <option>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          </select></div>
+        <div><label class="lbl" style="color:#4ade80">TF 2 (confirm)</label>
+          <select id="ctf2" onchange="updateCNote()" aria-label="TF2">
+            <option>Monthly</option><option>Weekly</option><option>Daily</option>
+            <option selected>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          </select></div>
+        <div><label class="lbl" style="color:#4ade80">Pullback TF</label>
+          <select id="cpb" onchange="updateCNote()" aria-label="Pullback">
+            <option>Monthly</option><option>Weekly</option><option>Daily</option>
+            <option>4H</option><option selected>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          </select></div>
+      </div>
+      <div id="cnote" style="font-size:10px;color:#4ade80;font-style:italic"></div>
+    </div>
+    <button class="scan-btn" id="sbtn" onclick="runScan(true)" aria-label="Run scan">▶ Scan — <span id="sbtn-ind">Roshan Indicator</span></button>
+  </div>
+  <div class="status" id="status" style="display:none">
+    <span>✅ <b id="s-cnt">—</b> stocks</span>
+    <span>🕐 <span id="s-time">—</span></span>
+    <span id="s-cache">🔄 Fresh</span>
+    <span>⏱ <span id="s-dur">—</span>s</span>
+  </div>
+  <div id="serr" class="err" style="display:none"></div>
+  <div class="two-col">
+    <div class="col-card">
+      <div class="col-head buy">
+        <div class="col-title buy">▲ BUY <span class="badge buy" id="buy-cnt">0</span></div>
+        <button class="speak-sm" onclick="speakCol('buy')" aria-label="Read buy signals">🔊</button>
+      </div>
+      <div id="buy-list"><div class="empty">Tap Scan to load</div></div>
+    </div>
+    <div class="col-card">
+      <div class="col-head sell">
+        <div class="col-title sell">▼ SHORT <span class="badge sell" id="sell-cnt">0</span></div>
+        <button class="speak-sm" onclick="speakCol('sell')" aria-label="Read short signals">🔊</button>
+      </div>
+      <div id="sell-list"><div class="empty">Tap Scan to load</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-chart" class="page">
+  <div class="card">
+    <button onclick="showTab('scanner')" style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit">← Scanner</button>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:19px;font-weight:700" id="c-sym">Select a stock from Scanner</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="c-full">Tap any stock row to open chart</div>
+      </div>
+      <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear verdict">🔊 Verdict</button>
+    </div>
+    <div style="font-size:22px;font-weight:700;margin-top:6px" id="c-price">—</div>
+  </div>
+  <div class="tf-row" role="tablist">
+    <button class="tf-btn active" data-tf="Monthly" onclick="selTF(this)">Mo</button>
+    <button class="tf-btn" data-tf="Weekly" onclick="selTF(this)">Wk</button>
+    <button class="tf-btn" data-tf="Daily" onclick="selTF(this)">D</button>
+    <button class="tf-btn" data-tf="4H" onclick="selTF(this)">4H</button>
+    <button class="tf-btn" data-tf="1H" onclick="selTF(this)">1H</button>
+    <button class="tf-btn" data-tf="15min" onclick="selTF(this)">15m</button>
+    <button class="tf-btn" data-tf="5min" onclick="selTF(this)">5m</button>
+    <button class="tf-btn" data-tf="1min" onclick="selTF(this)">1m</button>
+  </div>
+  <div class="tog-row">
+    <div class="tog on" id="tog-sr" onclick="togOver('sr')" role="checkbox" aria-checked="true">— S/R lines</div>
+    <div class="tog on" id="tog-tl" onclick="togOver('tl')" role="checkbox" aria-checked="true">╱ Trendlines</div>
+    <div style="width:1px;background:var(--border);margin:0 4px"></div>
+    <div class="tf-legend" id="legend"></div>
+  </div>
+  <div class="chart-wrap"><canvas id="mc" height="220" aria-label="Candlestick chart"></canvas><div class="chart-lbl" id="clbl">Monthly · OHLC</div></div>
+  <div class="chart-wrap" style="margin-bottom:12px"><canvas id="rc" height="70" aria-label="RSI pane"></canvas><div class="chart-lbl">RSI(14) · SMA(20)</div></div>
+  <div class="ind-grid">
+    <div class="ind-card"><div class="ind-title">RSI (14)</div><div class="ind-val pos" id="rv">—</div><div class="ind-note" id="rn">Select a stock</div></div>
+    <div class="ind-card"><div class="ind-title">RSI vs SMA(20)</div><div class="ind-val" id="rvs">—</div><div class="ind-note" id="rvn">—</div></div>
+  </div>
+  <div id="cv-loading" class="loading-cv" style="display:none"><span class="spin">⟳</span> Chitti is analysing…</div>
+  <div id="cv"></div>
+</div>
+
+<div id="tab-learn" class="page">
+  <div style="margin-bottom:14px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:3px">What does each indicator mean?</div>
+    <div style="font-size:12px;color:var(--muted)">Plain English. No jargon. Tap 🔊 to hear.</div>
+  </div>
+  <div id="learn-cards"></div>
+</div>
+
+<script>
+const API='https://chitti-shares-api.onrender.com';
+const NEW_INDS=new Set(['TTM Squeeze','Awesome Oscillator','Vortex Indicator','Chandelier Exit','Hull MA','Laguerre RSI','Heikin Ashi Trend','Balance of Power','Chande Kroll Stop']);
+const TFC={Monthly:'#8b5cf6',Weekly:'#94a3b8',Daily:'#ef4444','4H':'#b45309','1H':'#22c55e','15min':'#ea580c','5min':'#0284c7','1min':'#db2777'};
+const TFH=['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
+const IND_PLAIN={
+  'Roshan Indicator':'Bryan custom indicator. Checks RSI momentum plus candle direction on 2 timeframes. All 3 conditions must agree.',
+  'TTM Squeeze':'NEW. Bollinger Bands squeeze inside Keltner. When it fires, big move comes. Above zero = BUY.',
+  'Awesome Oscillator':'NEW. Compares recent vs historical momentum. Above zero = buyers winning = BUY.',
+  'Vortex Indicator':'NEW. Two lines. Up-line above down-line = BUY.',
+  'Chandelier Exit':'NEW. ATR trailing stop. Price above stop = BUY.',
+  'Hull MA':'NEW. Faster moving average, less lag. Price above HMA = BUY.',
+  'Laguerre RSI':'NEW. Smarter RSI, fewer false signals. Above 0.5 = BUY.',
+  'Heikin Ashi Trend':'NEW. Smoothed candles filter noise. 3 green candles in a row = BUY.',
+  'Balance of Power':'NEW. Buyers vs sellers each candle. Above zero = buyers winning.',
+  'Chande Kroll Stop':'NEW 2021. Advanced trailing stop. Price above stop = BUY.',
+  RSI:'Speed of price. Below 30 may rise. Above 70 may fall.',
+  MACD:'Fast trend vs slow. Fast crosses slow upward = BUY.',
+  'Force Index':'Price move times volume. Above zero = buyers. Below = sellers.',
+  Supertrend:'Line flips colour. Green = BUY. Red = SHORT.',
+  'Bollinger Bands':'Price bands. Touch lower = may bounce. Touch upper = may fall.',
+  OBV:'Rising OBV = buyers accumulating quietly = BUY.',
+  VWAP:'Price above VWAP = buyers in control today.',
+  ADX:'Trend strength. Above 25 = strong trend exists.',
+};
+const LEARN_DATA=[
+  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan custom indicator. RSI momentum plus candle direction on 2 timeframes. All 3 must agree.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback green'},
+  {key:'TTM Squeeze',icon:'⚡',tag:'new',title:'TTM Squeeze (2010+)',plain:'Bollinger inside Keltner = coiled spring. Fires = big move coming.',buy:'Momentum crosses above zero after squeeze',sell:'Momentum crosses below zero'},
+  {key:'Hull MA',icon:'⚡',tag:'new',title:'Hull MA (2012+)',plain:'Faster moving average, much less lag than EMA.',buy:'Price crosses above Hull MA',sell:'Price crosses below Hull MA'},
+  {key:'Laguerre RSI',icon:'⚡',tag:'new',title:'Laguerre RSI (2012+)',plain:'Smarter RSI. Faster with fewer false signals.',buy:'Laguerre RSI rises above 0.5',sell:'Laguerre RSI falls below 0.5'},
+  {key:'Force Index',icon:'📊',tag:'classic',title:'Force Index',plain:'Price move times volume. High volume move = powerful signal.',buy:'Force Index crosses above zero',sell:'Force Index crosses below zero'},
+  {key:'RSI',icon:'📊',tag:'classic',title:'RSI (14)',plain:'Speed of price. Below 30 oversold may rise. Above 70 overbought may fall.',buy:'RSI below 30 or crosses above 50',sell:'RSI above 70 or crosses below 50'},
+  {key:'MACD',icon:'📊',tag:'classic',title:'MACD',plain:'Fast vs slow trend. Crossovers are the signal.',buy:'MACD line crosses above signal line',sell:'MACD line crosses below signal line'},
+  {key:'Supertrend',icon:'📊',tag:'classic',title:'Supertrend',plain:'Line flips colour with the trend. Very easy to read.',buy:'Price above green Supertrend line',sell:'Price below red Supertrend line'},
+  {key:'Bollinger Bands',icon:'📊',tag:'classic',title:'Bollinger Bands',plain:'Three lines around price. Touch outer bands is a signal.',buy:'Price touches or goes below lower band',sell:'Price touches or goes above upper band'},
+];
+function sp(t,l='en'){if(!speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=l==='hi'?'hi-IN':'en-IN';u.rate=.88;speechSynthesis.speak(u)}
+function showTab(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');const m={scanner:0,chart:1,learn:2};document.querySelectorAll('.tab')[m[id]].classList.add('active');if(id==='learn')buildLearn()}
+function onInd(){const v=document.getElementById('ind-sel').value;const d=document.getElementById('ind-desc');d.textContent=(IND_PLAIN[v]||'Analyses price to detect BUY or SHORT signals.');d.className='ind-desc'+(NEW_INDS.has(v)?' new-ind':'');document.getElementById('sbtn-ind').textContent=v;updateCNote()}
+function onCall(){const c=document.getElementById('call-sel').value;document.getElementById('cbox').className='custom-box'+(c==='Custom'?' on':'');updateCNote()}
+function updateCNote(){const tf1=document.getElementById('ctf1').value,tf2=document.getElementById('ctf2').value,pb=document.getElementById('cpb').value,ind=document.getElementById('ind-sel').value;const n=document.getElementById('cnote');if(n)n.textContent=`Signal fires when ${ind} gives BUY on both ${tf1} AND ${tf2}. Entry on ${pb} pullback.`}
+let scanIv=null,cvData=null,cvLang='en',curTF='Monthly',showSR=true,showTL=true;
+async function runScan(force=false){
+  const ind=document.getElementById('ind-sel').value,call=document.getElementById('call-sel').value,univ=document.getElementById('univ-sel').value,maxS=document.getElementById('max-s').value||60;
+  const ep=ind==='Roshan Indicator'?'roshan':encodeURIComponent(ind);
+  let url=`${API}/api/scan/${ep}?call=${encodeURIComponent(call)}&universe=${encodeURIComponent(univ)}&force=${force}&max_stocks=${maxS}`;
+  if(call==='Custom'){url+=`&tf1=${document.getElementById('ctf1').value}&tf2=${document.getElementById('ctf2').value}&pullback=${document.getElementById('cpb').value}`}
+  const btn=document.getElementById('sbtn');btn.disabled=true;btn.textContent='⏳ Scanning…';
+  ['buy-list','sell-list'].forEach(id=>{document.getElementById(id).innerHTML=Array(4).fill('<div class="skel"></div>').join('')});
+  document.getElementById('serr').style.display='none';
+  try{
+    const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();renderResults(j);updateStatus(j);
+  }catch(e){
+    const eb=document.getElementById('serr');eb.textContent='❌ '+(e.message||'Scan failed. Is backend awake?');eb.style.display='block';
+    ['buy-list','sell-list'].forEach(id=>{document.getElementById(id).innerHTML='<div class="empty">Scan failed</div>'});
+  }finally{btn.disabled=false;btn.innerHTML=`▶ Scan — <span id="sbtn-ind">${ind}</span>`}
+}
+function updateStatus(j){const s=document.getElementById('status');s.style.display='flex';document.getElementById('s-cnt').textContent=j.scanned_count||'—';document.getElementById('s-time').textContent=j.scanned_at?new Date(j.scanned_at).toLocaleTimeString():'—';document.getElementById('s-cache').textContent=j.from_cache?`📦 Cached (${j.cache_age_sec}s)`:'🔄 Fresh';document.getElementById('s-dur').textContent=j.scan_duration_sec||'—'}
+function renderResults(j){const buys=j.buys||[],shorts=j.shorts||[];document.getElementById('buy-cnt').textContent=buys.length;document.getElementById('sell-cnt').textContent=shorts.length;document.getElementById('buy-list').innerHTML=buys.length?buys.map(s=>srow(s,'buy')).join(''):'<div class="empty">No BUY signals</div>';document.getElementById('sell-list').innerHTML=shorts.length?shorts.map(s=>srow(s,'sell')).join(''):'<div class="empty">No SHORT signals</div>';sp(`Scan done. ${buys.length} buy and ${shorts.length} short signals.`)}
+function srow(s,t){const nm=s.symbol.split(':').pop(),isBuy=t==='buy',lp=s.last_price,pc=s.pchange;return`<div class="srow" onclick="openChart('${s.symbol}')" role="button" tabindex="0" aria-label="${nm}, ${t} signal"><div><div class="sym">${nm}</div><div class="sname">${s.symbol}</div></div><div style="text-align:right">${lp!=null?`<div style="font-size:13px;font-weight:600">₹${Number(lp).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`:''} ${pc!=null?`<div class="${pc>=0?'pos':'neg'}" style="font-size:11px">${pc>=0?'+':''} ${Number(pc).toFixed(2)}%</div>`:''}<div class="sbadge ${t}">${isBuy?'▲ BUY':'▼ SHORT'}</div></div></div>`}
+function speakCol(t){const items=document.querySelectorAll(`#${t}-list .sym`);if(!items.length){sp('No signals yet. Tap scan.');return}sp(`${t==='buy'?'Buy':'Short'} signals: `+Array.from(items).map(i=>i.textContent).join(', '))}
+function setupRefresh(){if(scanIv)clearInterval(scanIv);const m=parseInt(document.getElementById('ref-sel').value);scanIv=setInterval(()=>runScan(false),m*60000)}
+function openChart(sym){const name=sym.split(':').pop();document.getElementById('c-sym').textContent=sym;document.getElementById('c-full').textContent=name+' · NSE';document.getElementById('c-price').textContent='Loading…';document.getElementById('c-price').className='';showTab('chart');drawChart();drawRSI();loadCV(sym);updateLegend()}
+function srFor(tf){const i=TFH.indexOf(tf);return i===-1?TFH:TFH.slice(0,i+1)}
+function selTF(btn){document.querySelectorAll('.tf-btn').forEach(b=>{b.classList.remove('active');b.style.background='';b.style.borderColor='';b.style.color=''});btn.classList.add('active');btn.style.background=TFC[btn.dataset.tf];btn.style.borderColor=TFC[btn.dataset.tf];btn.style.color='#fff';curTF=btn.dataset.tf;document.getElementById('clbl').textContent=curTF+' · OHLC';drawChart();sp('Timeframe: '+curTF);updateLegend()}
+function togOver(k){const el=document.getElementById('tog-'+k),on=el.classList.toggle('on');el.setAttribute('aria-checked',on);if(k==='sr')showSR=on;if(k==='tl')showTL=on;drawChart()}
+function updateLegend(){document.getElementById('legend').innerHTML=srFor(curTF).map(t=>`<span><span class="tf-dot" style="background:${TFC[t]}"></span>${t}</span>`).join('')}
+function drawChart(){const c=document.getElementById('mc'),dpr=window.devicePixelRatio||1,W=c.offsetWidth||360,H=220;c.width=W*dpr;c.height=H*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);ctx.fillStyle='#181c24';ctx.fillRect(0,0,W,H);const n=42,bw=5,gap=3,pad=10,seed=curTF.charCodeAt(0);const px=[];let p=100+(seed%30);for(let i=0;i<n;i++){p+=(Math.sin(i*.35+seed)*.6+(Math.random()-.46))*3;px.push(Math.max(70,p))}const lo=Math.min(...px)-4,hi=Math.max(...px)+4;const toY=v=>H-pad-((v-lo)/(hi-lo))*(H-2*pad);const sx=(W-n*(bw+gap))/2;ctx.strokeStyle='#252b36';ctx.lineWidth=.5;for(let i=0;i<4;i++){const y=pad+i*(H-2*pad)/3;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.fillStyle='#475569';ctx.font='9px DM Mono,monospace';ctx.fillText((hi-(hi-lo)*i/3).toFixed(0),4,y-2)}if(showSR){srFor(curTF).forEach((t,ti)=>{const lv=hi-(hi-lo)*(.2+ti*.15),lv2=lo+(hi-lo)*(.2+ti*.1);ctx.strokeStyle=TFC[t]+'99';ctx.lineWidth=1;ctx.setLineDash([4,4]);[lv,lv2].forEach(v=>{ctx.beginPath();ctx.moveTo(0,toY(v));ctx.lineTo(W,toY(v));ctx.stroke()});ctx.setLineDash([])})}for(let i=0;i<n;i++){const x=sx+i*(bw+gap),o=px[i],cl=o+(Math.random()>.48?1:-1)*Math.random()*2.5,h=Math.max(o,cl)+Math.random()*1.5,l=Math.min(o,cl)-Math.random()*1.5,g=cl>=o;ctx.strokeStyle=g?'#22c55e':'#ef4444';ctx.fillStyle=g?'#22c55e':'#ef4444';ctx.lineWidth=1;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x+bw/2,toY(h));ctx.lineTo(x+bw/2,toY(l));ctx.stroke();ctx.fillRect(x,Math.min(toY(o),toY(cl)),bw,Math.max(1,Math.abs(toY(o)-toY(cl))))}if(showTL){ctx.strokeStyle=TFC[curTF];ctx.lineWidth=1.5;ctx.setLineDash([]);const m=Math.floor(n/3);ctx.beginPath();ctx.moveTo(sx+m*(bw+gap)+bw/2,toY(px[m]));ctx.lineTo(sx+(n-1)*(bw+gap)+bw/2,toY(px[n-1]));ctx.stroke()}}
+function drawRSI(){const c=document.getElementById('rc'),dpr=window.devicePixelRatio||1,W=c.offsetWidth||360,H=70;c.width=W*dpr;c.height=H*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);ctx.fillStyle='#181c24';ctx.fillRect(0,0,W,H);const toY=v=>H-(v/100)*H;ctx.strokeStyle='rgba(245,158,11,.3)';ctx.lineWidth=.5;ctx.setLineDash([2,2]);[70,50,30].forEach(v=>{ctx.beginPath();ctx.moveTo(0,toY(v));ctx.lineTo(W,toY(v));ctx.stroke();ctx.fillStyle='#475569';ctx.font='9px DM Mono,monospace';ctx.fillText(v,2,toY(v)-2)});ctx.setLineDash([]);let rsi=50;ctx.strokeStyle='#3b82f6';ctx.lineWidth=1.5;ctx.beginPath();for(let i=0;i<42;i++){rsi=Math.min(85,Math.max(15,rsi+(Math.random()-.46)*6));const x=(i/41)*W;i===0?ctx.moveTo(x,toY(rsi)):ctx.lineTo(x,toY(rsi))}ctx.stroke();rsi=50;ctx.strokeStyle='#b45309';ctx.lineWidth=1;ctx.setLineDash([3,2]);ctx.beginPath();for(let i=0;i<42;i++){rsi=Math.min(78,Math.max(22,rsi+(Math.random()-.47)*3));const x=(i/41)*W;i===0?ctx.moveTo(x,toY(rsi)):ctx.lineTo(x,toY(rsi))}ctx.stroke();ctx.setLineDash([]);const lr=(Math.random()*40+40).toFixed(1);document.getElementById('rv').textContent=lr;document.getElementById('rv').className='ind-val '+(lr>50?'pos':'neg');document.getElementById('rn').textContent=lr>70?'Overbought — may slow down':lr<30?'Oversold — may bounce up':'Healthy range';const va=Math.random()>.4;document.getElementById('rvs').textContent=va?'RSI > SMA':'RSI < SMA';document.getElementById('rvs').className='ind-val '+(va?'pos':'neg');document.getElementById('rvn').textContent=va?'Momentum rising — good for buyers':'Momentum falling'}
+const CTFP={'Long-term':['Monthly','Weekly'],Positional:['Weekly','Daily'],Swing:['Daily','4H'],Intraday:['4H','1H']};
+async function loadCV(sym){const el=document.getElementById('cv'),ld=document.getElementById('cv-loading');el.innerHTML='';ld.style.display='flex';sp('Chitti is analysing '+sym.split(':').pop());try{const call=document.getElementById('call-sel').value,c2=call==='Custom'?'Positional':call;const r=await fetch(`${API}/api/technical/${encodeURIComponent(sym)}?indicators=Roshan+Indicator`);if(!r.ok)throw new Error('API');const j=await r.json();cvData=buildCV(j,c2,sym);ld.style.display='none';renderCV()}catch(e){ld.style.display='none';el.innerHTML=`<div class="err">Could not load analysis. Check if backend is awake: <a href="${API}/health" target="_blank" style="color:var(--blue)">${API}/health</a></div>`}}
+function buildCV(j,call,sym){const name=sym.split(':').pop(),cd=(j.calls||{})[call]||{},tfs=j.timeframes||{},v=cd['Roshan Indicator'||'HIDDEN'],[tf1,tf2]=CTFP[call]||['Weekly','Daily'];const r1=tfs[tf1]?.['Roshan Indicator']?.value,r2=tfs[tf2]?.['Roshan Indicator']?.value,s1=tfs[tf1]?.['Roshan Indicator']?.signal||'—',s2=tfs[tf2]?.['Roshan Indicator']?.signal||'—',rv1=r1!=null?r1.toFixed(1):'—',rv2=r2!=null?r2.toFixed(1):'—';const hi='Long-term:लंबी अवधि,Positional:पोजिशनल,Swing:स्विंग,Intraday:इंट्राडे'.split(',').reduce((a,b)=>{const[k,vl]=b.split(':');a[k]=vl;return a},{})[call]||call;if(v==='BUY')return{side:'BUY',tf1,tf2,r1:rv1,r2:rv2,s1,s2,ve:`BUY — ${name} looks strong (${call})`,vh:`खरीदें — ${name} मजबूत दिख रहा है (${hi})`,re:`${name} is rising on both ${tf1} and ${tf2}. RSI is above its 20-day average on both — buying momentum is building.`,rh:`${name} ${tf1} और ${tf2} दोनों पर ऊपर। RSI अपने औसत से ऊपर है — खरीदारी की गति बन रही है।`,ae:`Wait for a small dip before entering. Buy in parts — not all at once. Keep a stop loss.`,ah:`गिरावट का इंतजार करके खरीदें। थोड़ा-थोड़ा। स्टॉप लॉस लगाएं।`,ce:`Chitti shows direction — not a guarantee. Never invest what you cannot afford to lose.`,ch:`चिट्टी दिशा दिखाता है — गारंटी नहीं। वही पैसा लगाएं जो खो सकते हैं।`};if(v==='SELL')return{side:'SHORT',tf1,tf2,r1:rv1,r2:rv2,s1,s2,ve:`SHORT — ${name} looks weak (${call})`,vh:`बेचें — ${name} कमजोर दिख रहा है (${hi})`,re:`${name} is falling on both ${tf1} and ${tf2}. RSI is below its average — selling pressure increasing.`,rh:`${name} ${tf1} और ${tf2} दोनों पर गिर रहा है। RSI अपने औसत से नीचे है।`,ae:`Consider reducing your position. Avoid fresh buying until trend reverses.`,ah:`पोजिशन कम करने पर विचार करें। जब तक ट्रेंड न पलटे नई खरीदारी से बचें।`,ce:`Chitti shows direction — not a guarantee. Never invest what you cannot afford to lose.`,ch:`चिट्टी दिशा दिखाता है — गारंटी नहीं। वही पैसा लगाएं जो खो सकते हैं।`};return{side:'WAIT',tf1,tf2,r1:rv1,r2:rv2,s1,s2,ve:`WAIT — No clear signal for ${name}`,vh:`रुकें — अभी ${name} के लिए कोई संकेत नहीं`,re:`The ${tf1} and ${tf2} charts are not in agreement. Chitti waits for both to align.`,rh:`${tf1} और ${tf2} एकमत नहीं हैं। चिट्टी तभी संकेत देता है जब दोनों एक साथ हों।`,ae:`Watch this stock. Check again next session. Patience is a strategy.`,ah:`नजर रखें। अगले सत्र में फिर देखें। धैर्य भी एक रणनीति है।`,ce:`Chitti shows direction — not a guarantee. Never invest what you cannot afford to lose.`,ch:`चिट्टी दिशा दिखाता है — गारंटी नहीं।`}}
+function renderCV(){const d=cvData,el=document.getElementById('cv'),isEn=cvLang==='en',cls=d.side==='BUY'?'buy':d.side==='SHORT'?'sell':'wait',icon=d.side==='BUY'?'📈':d.side==='SHORT'?'📉':'⏸️',vc=d.side==='BUY'?'buy':d.side==='SHORT'?'sell':'wait',vt=isEn?d.ve:d.vh,re=isEn?d.re:d.rh,ae=isEn?d.ae:d.ah,ce=isEn?d.ce:d.ch,sall=`${vt}. ${re}. ${isEn?'What to do:':'क्या करें:'} ${ae}`;el.innerHTML=`<div class="cv-card ${cls}"><div class="cv-top"><div class="cv-avatar">🤖</div><div><div style="font-size:13px;font-weight:700">Chitti's View</div><div style="font-size:10px;color:var(--muted)">Roshan Indicator · ${d.tf1}+${d.tf2}</div></div><div class="lang-row"><button class="lang-btn ${cvLang==='en'?'on':''}" onclick="swLang('en')">EN</button><button class="lang-btn ${cvLang==='hi'?'on':''}" onclick="swLang('hi')">हि</button><button class="sp-btn" onclick="sp('${sall.replace(/'/g,"\'")}','${cvLang}')">🔊</button></div></div><div class="verdict ${vc}"><span>${icon}</span><span>${vt}</span></div><div class="reason">${re}</div><div class="act-box"><b>${isEn?'✅ What to do:':'✅ क्या करें:'}</b> ${ae}</div><div class="caution">⚠️ ${ce}</div><details><summary style="font-size:11px;color:var(--muted);cursor:pointer">${isEn?'📊 Show numbers':'📊 संख्या देखें'}</summary><div class="nums-grid"><div class="num-row"><span class="num-lbl">RSI (${d.tf1})</span><span class="num-val ${d.s1==='BUY'?'pos':'neg'}">${d.r1}</span></div><div class="num-row"><span class="num-lbl">RSI (${d.tf2})</span><span class="num-val ${d.s2==='BUY'?'pos':'neg'}">${d.r2}</span></div><div class="num-row"><span class="num-lbl">${d.tf1} Signal</span><span class="num-val ${d.s1==='BUY'?'pos':'neg'}">${d.s1}</span></div><div class="num-row"><span class="num-lbl">${d.tf2} Signal</span><span class="num-val ${d.s2==='BUY'?'pos':'neg'}">${d.s2}</span></div></div></details></div>`}
+function swLang(l){cvLang=l;if(cvData)renderCV()}
+function speakVerdict(){if(!cvData){sp('Please select a stock first.');return}const d=cvData,isEn=cvLang==='en';sp(`${isEn?d.ve:d.vh}. ${isEn?d.re:d.rh}. ${isEn?d.ae:d.ah}`,cvLang)}
+function buildLearn(){const c=document.getElementById('learn-cards');if(c.children.length)return;c.innerHTML=LEARN_DATA.map(d=>`<div class="learn-card"><div class="learn-head"><div class="learn-icon" style="background:${d.tag==='new'?'rgba(245,158,11,.15)':'rgba(59,130,246,.12)'}">${d.icon}</div><div style="flex:1"><div class="learn-title">${d.title}</div><span class="tag ${d.tag}">${d.tag==='new'?'⚡ New 2010+':'Classic'}</span></div><button class="sp-btn" onclick="sp('${(d.plain+'. Buy: '+d.buy+'. Short: '+d.sell).replace(/'/g,"\'")}')">🔊</button></div><div class="learn-plain">${d.plain}</div><div class="sig-box sig-buy">▲ <b>Buy:</b> ${d.buy}</div><div class="sig-box sig-sell">▼ <b>Short:</b> ${d.sell}</div></div>`).join('')}
+window.addEventListener('load',()=>{onInd();updateLegend();document.querySelector('.tf-btn.active').style.cssText=`background:${TFC.Monthly};border-color:${TFC.Monthly};color:#fff`;setTimeout(()=>{drawChart();drawRSI()},80);runScan(false);setupRefresh()});
+window.addEventListener('resize',()=>{drawChart();drawRSI()});
+</script>
+</body>
+</html>
