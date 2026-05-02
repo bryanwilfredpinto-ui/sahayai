@@ -851,7 +851,95 @@ body {
     </div>
 
     <button class="btn-secondary" onclick="goTo('page-chat')" style="margin-top:8px">Skip — Take me to Chitti →</button>
-    <button class="btn-primary" onclick="goTo('page-chat')" style="margin-top:8px">Meet Chitti →</button>
+        <button class="btn-primary" onclick="goTo('page-dashboard')" style="margin-top:8px">Meet Chitti ←</button>
+  </div>
+</div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div style="padding:16px 16px 80px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--text)">Sahay AI</div>
+        <div style="font-size:12px;color:var(--text3)" id="db-greet">What would you like to do today?</div>
+      </div>
+      <div style="width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px">🤖</div>
+    </div>
+    <div style="padding:6px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;font-size:10px;color:#e65100;margin-bottom:14px">
+      ⚠️ <b>Not SEBI Registered.</b> Educational only. Not investment advice. | <b>SEBI पंजीकृत नहीं।</b>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div onclick="goTo('page-shares')" style="background:linear-gradient(135deg,#0f5132,#1a7a4a);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="Shares">
+        <div style="font-size:28px;margin-bottom:6px">📈</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Shares</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Technical · Fundamental</div>
+        <div style="position:absolute;right:-8px;bottom:-8px;font-size:44px;opacity:.12">📊</div>
+      </div>
+      <div onclick="goTo('page-chat')" style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="Chat">
+        <div style="font-size:28px;margin-bottom:6px">💬</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Chat</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Ask Chitti anything</div>
+        <div style="position:absolute;right:-8px;bottom:-8px;font-size:44px;opacity:.12">🤖</div>
+      </div>
+      <div onclick="dbComingSoon('News')" style="background:linear-gradient(135deg,#b71c1c,#c62828);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="News coming soon">
+        <div style="font-size:28px;margin-bottom:6px">📰</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">News</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Coming soon</div>
+      </div>
+      <div onclick="dbComingSoon('Weather')" style="background:linear-gradient(135deg,#01579b,#0277bd);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="Weather coming soon">
+        <div style="font-size:28px;margin-bottom:6px">🌤️</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Weather</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Coming soon</div>
+      </div>
+      <div onclick="dbComingSoon('Reminders')" style="background:linear-gradient(135deg,#4a148c,#6a1b9a);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="Reminders coming soon">
+        <div style="font-size:28px;margin-bottom:6px">🔔</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Reminders</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Coming soon</div>
+      </div>
+      <div onclick="speakDashboard()" style="background:linear-gradient(135deg,#e65100,#f57c00);border-radius:12px;padding:16px;cursor:pointer;position:relative;overflow:hidden" role="button" tabindex="0" aria-label="Speak options aloud">
+        <div style="font-size:28px;margin-bottom:6px">🔊</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">Speak</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px">Hear options aloud</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: SHARES HUB -->
+<div class="page" id="page-shares">
+  <div style="padding:16px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="goTo('page-dashboard')" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text)" aria-label="Back">←</button>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--text)">Shares</div>
+        <div style="font-size:11px;color:var(--text3)">Choose your analysis type</div>
+      </div>
+    </div>
+    <div style="padding:6px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;font-size:10px;color:#e65100;margin-bottom:14px">
+      ⚠️ <b>Not SEBI Registered.</b> Educational only. | <b>SEBI पंजीकृत नहीं।</b>
+    </div>
+    <div onclick="window.location.href='chitti_complete_technical.html'" style="background:linear-gradient(135deg,#0f5132,#1a7a4a);border-radius:12px;padding:20px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:14px" role="button" tabindex="0" aria-label="Technical Analysis">
+      <div style="font-size:36px">📈</div>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;color:#fff">Technical Analysis</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:3px">Scanner · Charts · 34+ Indicators</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Roshan · TTM Squeeze · MACD · Force Index</div>
+      </div>
+      <div style="font-size:20px;color:rgba(255,255,255,.6)">→</div>
+    </div>
+    <div onclick="dbComingSoon('Fundamental Analysis')" style="background:linear-gradient(135deg,#37474f,#455a64);border-radius:12px;padding:20px;cursor:pointer;display:flex;align-items:center;gap:14px;opacity:.8" role="button" tabindex="0" aria-label="Fundamental coming soon">
+      <div style="font-size:36px">📊</div>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;color:#fff">Fundamental Analysis</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:3px">PE Ratio · Revenue · Debt · Management</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Coming soon</div>
+      </div>
+      <div style="font-size:20px;color:rgba(255,255,255,.4)">🔒</div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:#f8f9fa;border-radius:10px;font-size:12px;color:#555;line-height:1.7">
+      <b>📈 Technical</b> — Right time to buy or sell based on price charts.<br>
+      <b>📊 Fundamental</b> — Company health — profits, debt, management quality.
+    </div>
   </div>
 </div>
 
@@ -1147,7 +1235,7 @@ function chittiWelcomeMsg() {
 }
 
 // ── PROGRESS ──────────────────────────────────────
-const PAGES = ['page-splash','page-lang','page-conv1','page-privacy','page-conv2','page-terms','page-choose','page-feedback','page-chat'];
+const PAGES = ['page-splash','page-lang','page-conv1','page-privacy','page-conv2','page-terms','page-choose','page-dashboard','page-shares','page-feedback','page-chat'];
 function setProgress(pct) {
   document.getElementById('progress-bar').style.width = pct + '%';
 }
@@ -1504,6 +1592,23 @@ function micFeedback(btnId, inputId) {
 }
 
 // ── FEEDBACK ─────────────────────────────────────
+  function dbComingSoon(f) {
+    if (window.speechSynthesis) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(f + ' is coming soon.'); u.lang='en-IN'; u.rate=.88; speechSynthesis.speak(u); }
+    alert(f + ' — Coming soon! 🚀');
+  }
+  function speakDashboard() {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance('Welcome. You have 6 options. One: Shares, for stock market analysis. Two: Chat, talk to Chitti. Three: News, coming soon. Four: Weather, coming soon. Five: Reminders, coming soon. Six: Speak, to hear this again.');
+    u.lang = typeof currentLang !== "undefined" && currentLang === "hi" ? "hi-IN" : "en-IN";
+    u.rate = .85; speechSynthesis.speak(u);
+  }
+  function setDbGreeting() {
+    const h = new Date().getHours();
+    const g = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+    const el = document.getElementById('db-greet');
+    if (el) el.textContent = g + ' — What would you like to do today?';
+  }
 function submitFeedback(page) {
   const rating = fbRatings[String(page)] || null;
   const text = document.getElementById('fb-input-' + page)?.value || '';
@@ -1539,6 +1644,7 @@ function reportBug() {
 
 // ── CHAT ─────────────────────────────────────────
 function initChat() {
+    setDbGreeting();
   // Load existing MASTER or build from onboarding
   const existingMaster = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
   if (existingMaster && existingMaster.name) {
