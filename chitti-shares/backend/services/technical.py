@@ -348,6 +348,132 @@ def _roshan(close: pd.Series) -> tuple[pd.Series, pd.Series]:
     return rsi, rsi_sma
 
 
+
+
+# ============================================================
+# NEW INDICATORS (2010-2026) — pure numpy/pandas, no paid libs
+# ============================================================
+
+def _hma(close: pd.Series, n: int = 20) -> pd.Series:
+    """Hull Moving Average (2012+) — faster, smoother, less lag than EMA."""
+    half = _wma(close, n // 2)
+    full = _wma(close, n)
+    raw  = 2 * half - full
+    return _wma(raw, int(np.sqrt(n)))
+
+def _wma(s: pd.Series, n: int) -> pd.Series:
+    """Weighted Moving Average — helper for HMA."""
+    weights = np.arange(1, n + 1, dtype=float)
+    return s.rolling(n).apply(lambda x: np.dot(x, weights) / weights.sum(), raw=True)
+
+def _awesome_oscillator(high: pd.Series, low: pd.Series) -> pd.Series:
+    """Awesome Oscillator (Bill Williams, widely adopted 2010+).
+    Midpoint SMA(5) minus midpoint SMA(34). Above zero = bullish momentum."""
+    mid = (high + low) / 2
+    return _sma(mid, 5) - _sma(mid, 34)
+
+def _vortex(high: pd.Series, low: pd.Series, close: pd.Series, n: int = 14):
+    """Vortex Indicator (2010) — two lines showing trend direction.
+    Returns (VI+, VI-). VI+ > VI- = bullish."""
+    tr = pd.concat([
+        high - low,
+        (high - close.shift(1)).abs(),
+        (low  - close.shift(1)).abs()
+    ], axis=1).max(axis=1)
+    vm_plus  = (high - low.shift(1)).abs()
+    vm_minus = (low  - high.shift(1)).abs()
+    vi_plus  = vm_plus.rolling(n).sum()  / tr.rolling(n).sum().replace(0, np.nan)
+    vi_minus = vm_minus.rolling(n).sum() / tr.rolling(n).sum().replace(0, np.nan)
+    return vi_plus, vi_minus
+
+def _chandelier_exit(high: pd.Series, low: pd.Series, close: pd.Series,
+                     n: int = 22, mult: float = 3.0):
+    """Chandelier Exit (2010+) — ATR-based trailing stop.
+    Returns (long_stop, short_stop). Price above long_stop = BUY."""
+    atr = _atr(high, low, close, n)
+    long_stop  = high.rolling(n).max() - mult * atr
+    short_stop = low.rolling(n).min()  + mult * atr
+    return long_stop, short_stop
+
+def _ttm_squeeze(high: pd.Series, low: pd.Series, close: pd.Series,
+                 bb_n: int = 20, bb_mult: float = 2.0,
+                 kc_n: int = 20, kc_mult: float = 1.5):
+    """TTM Squeeze (popularised 2010+) — Bollinger Bands inside Keltner = squeeze.
+    Returns (momentum, squeeze_on).
+    momentum > 0 = BUY, squeeze_on = coiled spring about to fire."""
+    # Bollinger Bands
+    bb_mid  = _sma(close, bb_n)
+    bb_std  = close.rolling(bb_n).std()
+    bb_upper = bb_mid + bb_mult * bb_std
+    bb_lower = bb_mid - bb_mult * bb_std
+    # Keltner Channels
+    kc_mid   = _ema(close, kc_n)
+    kc_range = _atr(high, low, close, kc_n)
+    kc_upper = kc_mid + kc_mult * kc_range
+    kc_lower = kc_mid - kc_mult * kc_range
+    # Squeeze = BB inside KC
+    squeeze_on = (bb_upper < kc_upper) & (bb_lower > kc_lower)
+    # Momentum = delta of midpoint linear regression
+    delta = close - (high.rolling(kc_n).max() + low.rolling(kc_n).min()) / 2
+    delta = (delta + _sma(delta, kc_n)) / 2
+    momentum = _ema(delta, kc_n)
+    return momentum, squeeze_on.astype(float)
+
+def _balance_of_power(open_: pd.Series, high: pd.Series,
+                       low: pd.Series, close: pd.Series, n: int = 14) -> pd.Series:
+    """Balance of Power (2010+) — who is winning each candle.
+    (Close - Open) / (High - Low). Smoothed. Above zero = buyers."""
+    raw = (close - open_) / (high - low).replace(0, np.nan)
+    return _sma(raw, n)
+
+def _laguerre_rsi(close: pd.Series, gamma: float = 0.5) -> pd.Series:
+    """Laguerre RSI (adopted 2012+) — faster RSI, less whipsaw.
+    Range 0-1. Above 0.5 = BUY."""
+    L0 = pd.Series(0.0, index=close.index)
+    L1 = pd.Series(0.0, index=close.index)
+    L2 = pd.Series(0.0, index=close.index)
+    L3 = pd.Series(0.0, index=close.index)
+    for i in range(1, len(close)):
+        L0.iloc[i] = (1 - gamma) * close.iloc[i] + gamma * L0.iloc[i-1]
+        L1.iloc[i] = -gamma * L0.iloc[i] + L0.iloc[i-1] + gamma * L1.iloc[i-1]
+        L2.iloc[i] = -gamma * L1.iloc[i] + L1.iloc[i-1] + gamma * L2.iloc[i-1]
+        L3.iloc[i] = -gamma * L2.iloc[i] + L2.iloc[i-1] + gamma * L3.iloc[i-1]
+    cu = ((L0 - L1).clip(lower=0) + (L1 - L2).clip(lower=0) + (L2 - L3).clip(lower=0))
+    cd = ((-L0 + L1).clip(lower=0) + (-L1 + L2).clip(lower=0) + (-L2 + L3).clip(lower=0))
+    denom = cu + cd
+    return cu / denom.replace(0, np.nan)
+
+def _heikin_ashi_trend(open_: pd.Series, high: pd.Series,
+                        low: pd.Series, close: pd.Series, n: int = 3) -> pd.Series:
+    """Heikin Ashi Trend (popularised 2010+).
+    Returns +1 (uptrend) / -1 (downtrend) based on n consecutive HA candles."""
+    ha_close = (open_ + high + low + close) / 4
+    ha_open  = ha_close.copy()
+    for i in range(1, len(ha_open)):
+        ha_open.iloc[i] = (ha_open.iloc[i-1] + ha_close.iloc[i-1]) / 2
+    ha_green = (ha_close > ha_open).astype(int)
+    # n consecutive green = +1, n consecutive red = -1
+    trend = pd.Series(0, index=close.index)
+    for i in range(n - 1, len(close)):
+        window = ha_green.iloc[i - n + 1 : i + 1]
+        if window.sum() == n:
+            trend.iloc[i] = 1
+        elif window.sum() == 0:
+            trend.iloc[i] = -1
+    return trend
+
+def _chande_kroll_stop(high: pd.Series, low: pd.Series, close: pd.Series,
+                        atr_n: int = 10, atr_mult: float = 1.5, stop_n: int = 9):
+    """Chande Kroll Stop (2021) — stop-and-reverse trend indicator.
+    Returns (stop_short, stop_long). Price above stop_long = BUY."""
+    atr = _atr(high, low, close, atr_n)
+    first_high = high.rolling(atr_n).max() - atr_mult * atr
+    first_low  = low.rolling(atr_n).min()  + atr_mult * atr
+    stop_short = first_high.rolling(stop_n).max()
+    stop_long  = first_low.rolling(stop_n).min()
+    return stop_short, stop_long
+
+
 # ============================================================
 # 3. SIGNAL LOGIC — turn each indicator into BUY / SELL / WAIT
 # ============================================================
@@ -588,6 +714,72 @@ def _signals_for_df(df: pd.DataFrame, indicators: list[str]) -> dict[str, dict]:
                                    "signal": sig,
                                    "note": "Roshan: RSI(14) > SMA20 of RSI = BUY (custom indicator)"}
 
+    # ── NEW INDICATORS (2010-2026) ──────────────────────────────────────────
+    if "TTM Squeeze" in indicators:
+        mom, sqz = _ttm_squeeze(high, low, close)
+        v = mom.iloc[last]
+        sig = "BUY" if pd.notna(v) and v > 0 else ("SELL" if pd.notna(v) and v < 0 else "WAIT")
+        out["TTM Squeeze"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                              "note": "TTM Squeeze: momentum > 0 = BUY, < 0 = SHORT. Squeeze firing = explosive move coming."}
+
+    if "Awesome Oscillator" in indicators:
+        v = _awesome_oscillator(high, low).iloc[last]
+        sig = "BUY" if pd.notna(v) and v > 0 else ("SELL" if pd.notna(v) and v < 0 else "WAIT")
+        out["Awesome Oscillator"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                                     "note": "Awesome Oscillator: above zero = bullish momentum = BUY"}
+
+    if "Vortex Indicator" in indicators:
+        vi_plus, vi_minus = _vortex(high, low, close)
+        vp, vm = vi_plus.iloc[last], vi_minus.iloc[last]
+        sig = "BUY" if pd.notna(vp) and pd.notna(vm) and vp > vm else \
+              ("SELL" if pd.notna(vp) and pd.notna(vm) and vm > vp else "WAIT")
+        out["Vortex Indicator"] = {"value": float(vp) if pd.notna(vp) else None, "signal": sig,
+                                   "note": "Vortex: VI+ above VI- = uptrend = BUY"}
+
+    if "Chandelier Exit" in indicators:
+        long_stop, _ = _chandelier_exit(high, low, close)
+        v = long_stop.iloc[last]
+        cl = close.iloc[last]
+        sig = "BUY" if pd.notna(v) and cl > v else ("SELL" if pd.notna(v) and cl < v else "WAIT")
+        out["Chandelier Exit"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                                  "note": "Chandelier Exit: price above stop line = BUY, below = exit/SHORT"}
+
+    if "Hull MA" in indicators:
+        hma = _hma(close)
+        v = hma.iloc[last]
+        cl = close.iloc[last]
+        sig = "BUY" if pd.notna(v) and cl > v else ("SELL" if pd.notna(v) and cl < v else "WAIT")
+        out["Hull MA"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                          "note": "Hull MA: price above HMA = BUY. Faster than EMA, less lag."}
+
+    if "Laguerre RSI" in indicators:
+        v = _laguerre_rsi(close).iloc[last]
+        sig = "BUY" if pd.notna(v) and v > 0.5 else ("SELL" if pd.notna(v) and v < 0.5 else "WAIT")
+        out["Laguerre RSI"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                               "note": "Laguerre RSI: above 0.5 = BUY. Faster than standard RSI, fewer false signals."}
+
+    if "Heikin Ashi Trend" in indicators:
+        if "open" in df.columns:
+            v = _heikin_ashi_trend(df["open"], high, low, close).iloc[last]
+            sig = "BUY" if v == 1 else ("SELL" if v == -1 else "WAIT")
+            out["Heikin Ashi Trend"] = {"value": float(v), "signal": sig,
+                                        "note": "Heikin Ashi: 3 consecutive green HA candles = BUY. Smoothed, noise-filtered."}
+
+    if "Balance of Power" in indicators:
+        if "open" in df.columns:
+            v = _balance_of_power(df["open"], high, low, close).iloc[last]
+            sig = "BUY" if pd.notna(v) and v > 0 else ("SELL" if pd.notna(v) and v < 0 else "WAIT")
+            out["Balance of Power"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                                       "note": "Balance of Power: above zero = buyers winning. Below = sellers winning."}
+
+    if "Chande Kroll Stop" in indicators:
+        _, stop_long = _chande_kroll_stop(high, low, close)
+        v = stop_long.iloc[last]
+        cl = close.iloc[last]
+        sig = "BUY" if pd.notna(v) and cl > v else ("SELL" if pd.notna(v) and cl < v else "WAIT")
+        out["Chande Kroll Stop"] = {"value": float(v) if pd.notna(v) else None, "signal": sig,
+                                    "note": "Chande Kroll Stop (2021): price above stop = BUY. Trend-following stop."}
+
     return out
 
 
@@ -609,6 +801,10 @@ ALL_INDICATORS = [
     "Chaikin Money Flow", "MFI", "VWAP",
     # Moving Averages
     "SMA(20)", "SMA(50)", "SMA(200)", "EMA(20)", "EMA(50)", "EMA(200)",
+    # New Indicators (2010-2026)
+    "TTM Squeeze", "Awesome Oscillator", "Vortex Indicator",
+    "Chandelier Exit", "Hull MA", "Laguerre RSI",
+    "Heikin Ashi Trend", "Balance of Power", "Chande Kroll Stop",
 ]
 
 ALL_TIMEFRAMES = ["Monthly", "Weekly", "Daily", "4H", "1H"]
