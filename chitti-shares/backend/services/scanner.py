@@ -241,3 +241,99 @@ def cache_status() -> dict:
 def clear_cache():
     with _cache_lock:
         _cache.clear()
+
+
+def scan_indicator(indicator: str, call: str = "Positional",
+                   universe_name: str = "nifty50",
+                   max_stocks: int | None = None,
+                   force_refresh: bool = False) -> dict:
+    """
+    Generic scanner — works for ANY indicator in technical.ALL_INDICATORS.
+    BUY  = indicator signal is BUY  on both timeframes in the call pair.
+    SHORT = indicator signal is SELL on both timeframes in the call pair.
+    """
+    # Roshan has its own optimised scanner
+    if indicator.lower() in ("roshan", "roshan indicator"):
+        return scan_roshan(call=call, universe_name=universe_name,
+                           max_stocks=max_stocks, force_refresh=force_refresh)
+
+    if call not in CALL_DEFS:
+        raise ValueError(f"Unknown call: {call}")
+
+    universe_name = universe_name.lower().strip()
+    cache_key = (universe_name, call, indicator)
+
+    if not force_refresh:
+        with _cache_lock:
+            cached = _cache.get(cache_key)
+        if cached and (time.time() - cached[0]) < _CACHE_TTL_SEC:
+            payload = dict(cached[1])
+            payload["from_cache"] = True
+            payload["cache_age_sec"] = int(time.time() - cached[0])
+            return payload
+
+    symbols = universes.get_universe(universe_name)
+    if not symbols:
+        return {"error": f"empty universe: {universe_name}"}
+
+    if max_stocks is None:
+        max_stocks = min(len(symbols), 60)
+
+    cfg = CALL_DEFS[call]
+    tf_a, tf_b = cfg["pair"]
+
+    log.info("[scanner] indicator=%s call=%s universe=%s cap=%d",
+             indicator, call, universe_name, max_stocks)
+    t0 = time.time()
+
+    buys: list[dict] = []
+    shorts: list[dict] = []
+
+    for sym in symbols[:max_stocks]:
+        try:
+            df_a = technical.fetch_candles(sym, tf_a)
+            df_b = technical.fetch_candles(sym, tf_b)
+            sigs_a = technical._signals_for_df(df_a, [indicator])
+            sigs_b = technical._signals_for_df(df_b, [indicator])
+            sig_a = sigs_a.get(indicator, {}).get("signal", "WAIT")
+            sig_b = sigs_b.get(indicator, {}).get("signal", "WAIT")
+            val_a = sigs_a.get(indicator, {}).get("value")
+            val_b = sigs_b.get(indicator, {}).get("value")
+
+            entry = {
+                "symbol": sym,
+                tf_a: {"signal": sig_a, "value": val_a},
+                tf_b: {"signal": sig_b, "value": val_b},
+            }
+
+            if sig_a == "BUY" and sig_b == "BUY":
+                buys.append({**entry, "side": "BUY"})
+            elif sig_a == "SELL" and sig_b == "SELL":
+                shorts.append({**entry, "side": "SHORT"})
+
+        except Exception as e:
+            log.warning("[scanner] %s %s failed: %s", indicator, sym, e)
+            continue
+
+    elapsed = time.time() - t0
+    log.info("[scanner] done %.1fs: %d buys %d shorts", elapsed, len(buys), len(shorts))
+
+    payload = {
+        "indicator": indicator,
+        "call": call,
+        "universe": universe_name,
+        "timeframes": [tf_a, tf_b],
+        "scanned_at": datetime.now(IST).isoformat(),
+        "scanned_count": min(len(symbols), max_stocks),
+        "scan_duration_sec": round(elapsed, 1),
+        "from_cache": False,
+        "cache_age_sec": 0,
+        "buys": buys,
+        "shorts": shorts,
+    }
+
+    with _cache_lock:
+        _cache[cache_key] = (time.time(), payload)
+
+    return payload
+
