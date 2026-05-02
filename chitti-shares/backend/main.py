@@ -107,16 +107,33 @@ def api_technical(symbol: str, indicators: str = ""):
 @app.get("/api/scan/roshan")
 def api_scan_roshan(call: str = "Positional", universe: str = "nifty50",
                    max_stocks: int = 0, force: bool = False):
-    """
-    Run Roshan Scanner across a stock universe.
-    call: Long-term | Positional | Swing | Intraday
-    universe: nifty50 | largecap | midcap | smallcap | microcap
-    max_stocks: 0 = use default cap; otherwise scan up to N stocks
-    force: true = bypass 5-min cache
-    """
     from services import scanner
     try:
         return scanner.scan_roshan(
+            call=call,
+            universe_name=universe,
+            max_stocks=(max_stocks or None),
+            force_refresh=force,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/scan/{indicator:path}")
+def api_scan_indicator(indicator: str, call: str = "Positional",
+                       universe: str = "nifty50", max_stocks: int = 0,
+                       force: bool = False):
+    """
+    Generic scanner for ANY indicator from technical.py.
+    indicator: URL-encoded indicator name e.g. MACD, Force+Index, RSI
+    call: Long-term | Positional | Swing | Intraday
+    universe: nifty50 | largecap | midcap | smallcap | microcap
+    Returns: { buys: [...], shorts: [...], scanned_count, indicator, call }
+    """
+    from services import scanner
+    try:
+        return scanner.scan_indicator(
+            indicator=indicator,
             call=call,
             universe_name=universe,
             max_stocks=(max_stocks or None),
