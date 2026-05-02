@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chitti — Technical Analysis</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0a0c10;--surface:#111318;--card:#181c24;--border:#252b36;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;--text:#f1f5f9;--muted:#64748b;--dim:#334155}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
 .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
@@ -67,7 +67,7 @@ select:focus{border-color:var(--blue)}
 .tf-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:2px;vertical-align:middle}
 .chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;position:relative}
 canvas{display:block;width:100%}
-.chart-lbl{position:absolute;top:7px;left:10px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace}
+.chart-lbl{position:absolute;top:7px;left:10px;font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace}
 .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .ind-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
 .ind-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
@@ -248,7 +248,7 @@ canvas{display:block;width:100%}
     <button onclick="showTab('scanner')" style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit">← Scanner</button>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <div>
-        <div style="font-size:19px;font-weight:700" id="c-sym">Select a stock from Scanner</div>
+        <div style="font-size:19px;font-weight:800;font-family:'Syne',sans-serif;letter-spacing:-.02em" id="c-sym">Select a stock from Scanner</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px" id="c-full">Tap any stock row to open chart</div>
       </div>
       <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear verdict">🔊 Verdict</button>
@@ -271,7 +271,7 @@ canvas{display:block;width:100%}
     <div style="width:1px;background:var(--border);margin:0 4px"></div>
     <div class="tf-legend" id="legend"></div>
   </div>
-  <div class="chart-wrap"><canvas id="mc" height="220" aria-label="Candlestick chart"></canvas><div class="chart-lbl" id="clbl">Monthly · OHLC</div></div>
+  <div class="chart-wrap" id="chart-outer"><canvas id="mc" height="220" aria-label="Candlestick chart"></canvas><div class="chart-lbl" id="clbl">Monthly · OHLC</div><button onclick="toggleFS()" id="fs-btn" aria-label="Expand chart" style="position:absolute;top:8px;right:8px;background:rgba(13,17,23,.85);border:1px solid #252b36;border-radius:5px;padding:4px 9px;cursor:pointer;font-size:13px;color:#64748b;z-index:10">⛶</button></div>
   <div class="chart-wrap" style="margin-bottom:12px"><canvas id="rc" height="70" aria-label="RSI pane"></canvas><div class="chart-lbl">RSI(14) · SMA(20)</div></div>
   <div class="ind-grid">
     <div class="ind-card"><div class="ind-title">RSI (14)</div><div class="ind-val pos" id="rv">—</div><div class="ind-note" id="rn">Select a stock</div></div>
@@ -367,7 +367,16 @@ function swLang(l){cvLang=l;if(cvData)renderCV()}
 function speakVerdict(){if(!cvData){sp('Please select a stock first.');return}const d=cvData,isEn=cvLang==='en';sp(`${isEn?d.ve:d.vh}. ${isEn?d.re:d.rh}. ${isEn?d.ae:d.ah}`,cvLang)}
 function buildLearn(){const c=document.getElementById('learn-cards');if(c.children.length)return;c.innerHTML=LEARN_DATA.map(d=>`<div class="learn-card"><div class="learn-head"><div class="learn-icon" style="background:${d.tag==='new'?'rgba(245,158,11,.15)':'rgba(59,130,246,.12)'}">${d.icon}</div><div style="flex:1"><div class="learn-title">${d.title}</div><span class="tag ${d.tag}">${d.tag==='new'?'⚡ New 2010+':'Classic'}</span></div><button class="sp-btn" onclick="sp('${(d.plain+'. Buy: '+d.buy+'. Short: '+d.sell).replace(/'/g,"\'")}')">🔊</button></div><div class="learn-plain">${d.plain}</div><div class="sig-box sig-buy">▲ <b>Buy:</b> ${d.buy}</div><div class="sig-box sig-sell">▼ <b>Short:</b> ${d.sell}</div></div>`).join('')}
 window.addEventListener('load',()=>{onInd();updateLegend();document.querySelector('.tf-btn.active').style.cssText=`background:${TFC.Monthly};border-color:${TFC.Monthly};color:#fff`;setTimeout(()=>{drawChart();drawRSI()},80);runScan(false);setupRefresh()});
-window.addEventListener('resize',()=>{drawChart();drawRSI()});
+window.addEventListener('resize',()=>{drawChart();drawRSI();});
+let isFS=false;
+function toggleFS(){
+  const o=document.getElementById('chart-outer'),b=document.getElementById('fs-btn');
+  isFS=!isFS;
+  if(isFS){o.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;margin:0;background:#181c24';b.textContent='✕';}
+  else{o.style.cssText='';b.textContent='⛶';}
+  setTimeout(()=>drawChart(),50);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isFS)toggleFS();});
 </script>
 </body>
 </html>
