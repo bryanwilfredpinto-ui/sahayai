@@ -70,7 +70,16 @@ const INDICATORS = [
   ]},
 ];
 
-const CALLS = ["Long-term", "Positional", "Swing", "Intraday"];
+const CALLS = ["Long-term", "Positional", "Swing", "Intraday", "Custom"];
+
+const CALL_TIMEFRAMES = {
+  "Long-term":  { tf1: "Monthly", tf2: "Weekly",  pullback: "Daily" },
+  "Positional": { tf1: "Weekly",  tf2: "Daily",   pullback: "4H" },
+  "Swing":      { tf1: "Daily",   tf2: "4H",      pullback: "1H" },
+  "Intraday":   { tf1: "4H",      tf2: "1H",      pullback: "15min" },
+};
+
+const ALL_TFS = ["Monthly", "Weekly", "Daily", "4H", "1H", "15min", "5min", "1min"];
 const UNIVERSES = [
   { value: "nifty50", label: "Nifty 50" },
   { value: "largecap", label: "Largecap" },
@@ -108,6 +117,9 @@ export default function Scanner() {
   const navigate = useNavigate();
   const [indicator, setIndicator] = useState("Roshan Indicator");
   const [call, setCall] = useState("Positional");
+  const [customTf1, setCustomTf1] = useState("Daily");
+  const [customTf2, setCustomTf2] = useState("4H");
+  const [customPullback, setCustomPullback] = useState("1H");
   const [universe, setUniverse] = useState("nifty50");
   const [refreshMin, setRefreshMin] = useState(15);
   const [data, setData] = useState(null);
@@ -121,7 +133,12 @@ export default function Scanner() {
     try {
       const isRoshan = indicator === "Roshan Indicator";
       const endpoint = isRoshan ? "roshan" : encodeURIComponent(indicator);
-      const url = `${API_BASE}/api/scan/${endpoint}?call=${encodeURIComponent(call)}&universe=${encodeURIComponent(universe)}&force=${force}`;
+      const isCustom = call === "Custom";
+      const tf1 = isCustom ? customTf1 : (CALL_TIMEFRAMES[call]?.tf1 || "Weekly");
+      const tf2 = isCustom ? customTf2 : (CALL_TIMEFRAMES[call]?.tf2 || "Daily");
+      const pullback = isCustom ? customPullback : (CALL_TIMEFRAMES[call]?.pullback || "4H");
+      const scanCall = isCustom ? "Custom" : call;
+      const url = `${API_BASE}/api/scan/${endpoint}?call=${encodeURIComponent(scanCall)}&universe=${encodeURIComponent(universe)}&force=${force}&tf1=${tf1}&tf2=${tf2}&pullback=${pullback}`;
       const r = await fetch(url);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const json = await r.json();
@@ -200,6 +217,53 @@ export default function Scanner() {
               </div>
             ))}
           </div>
+
+          {/* Custom timeframe pickers — shown only when Call = Custom */}
+          {call === "Custom" && (
+            <div style={{ marginTop: 10, padding: "10px 12px", background: "#fefce8",
+              border: "1px solid #fde68a", borderRadius: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#92400e",
+                marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                ⚡ Custom Timeframes
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 100 }}>
+                  <label style={{ fontSize: 10, color: "#92400e", display: "block",
+                    marginBottom: 3, fontWeight: 600 }}>Timeframe 1 (primary)</label>
+                  <select value={customTf1} onChange={e => setCustomTf1(e.target.value)}
+                    aria-label="Primary timeframe"
+                    style={{ width: "100%", padding: "6px 8px", fontSize: 12,
+                      borderRadius: 5, border: "1px solid #fde68a", background: "white" }}>
+                    {ALL_TFS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1, minWidth: 100 }}>
+                  <label style={{ fontSize: 10, color: "#92400e", display: "block",
+                    marginBottom: 3, fontWeight: 600 }}>Timeframe 2 (confirm)</label>
+                  <select value={customTf2} onChange={e => setCustomTf2(e.target.value)}
+                    aria-label="Confirmation timeframe"
+                    style={{ width: "100%", padding: "6px 8px", fontSize: 12,
+                      borderRadius: 5, border: "1px solid #fde68a", background: "white" }}>
+                    {ALL_TFS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1, minWidth: 100 }}>
+                  <label style={{ fontSize: 10, color: "#92400e", display: "block",
+                    marginBottom: 3, fontWeight: 600 }}>Pullback TF (entry)</label>
+                  <select value={customPullback} onChange={e => setCustomPullback(e.target.value)}
+                    aria-label="Pullback timeframe for entry"
+                    style={{ width: "100%", padding: "6px 8px", fontSize: 12,
+                      borderRadius: 5, border: "1px solid #fde68a", background: "white" }}>
+                    {ALL_TFS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ fontSize: 10, color: "#92400e", marginTop: 6, fontStyle: "italic" }}>
+                Signal fires when {indicator} gives BUY on both {customTf1} AND {customTf2}.
+                Entry on {customPullback} pullback.
+              </div>
+            </div>
+          )}
 
           <button onClick={() => runScan(true)} disabled={loading}
             style={{ marginTop: 12, width: "100%", padding: 10, fontSize: 14, fontWeight: 700,
