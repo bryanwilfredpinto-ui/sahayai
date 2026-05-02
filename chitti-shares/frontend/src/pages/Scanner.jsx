@@ -4,49 +4,68 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
 
+const NEW_IND = new Set([
+  "TTM Squeeze","Awesome Oscillator","Vortex Indicator",
+  "Chandelier Exit","Hull MA","Laguerre RSI",
+  "Heikin Ashi Trend","Balance of Power","Chande Kroll Stop",
+]);
+
 const INDICATORS = [
-  { group: "Chitti Special", items: [{ value: "Roshan Indicator", label: "Roshan Indicator (default)" }]},
-  { group: "Momentum", items: [
-    { value: "RSI", label: "RSI (14)" },
-    { value: "Stochastic", label: "Stochastic" },
-    { value: "Stochastic RSI", label: "Stochastic RSI" },
-    { value: "Williams %R", label: "Williams %R" },
-    { value: "CCI", label: "CCI" },
-    { value: "ROC", label: "ROC" },
-    { value: "Momentum", label: "Momentum" },
-    { value: "TRIX", label: "TRIX" },
+  { group: "⭐ Chitti Special", items: [
+    { value: "Roshan Indicator", label: "Roshan Indicator (default)" },
+  ]},
+  { group: "⚡ New (2010–2026)", items: [
+    { value: "TTM Squeeze",        label: "⚡ TTM Squeeze (2010+)" },
+    { value: "Awesome Oscillator", label: "⚡ Awesome Oscillator (2010+)" },
+    { value: "Vortex Indicator",   label: "⚡ Vortex Indicator (2010+)" },
+    { value: "Chandelier Exit",    label: "⚡ Chandelier Exit (2010+)" },
+    { value: "Hull MA",            label: "⚡ Hull MA (2012+)" },
+    { value: "Laguerre RSI",       label: "⚡ Laguerre RSI (2012+)" },
+    { value: "Heikin Ashi Trend",  label: "⚡ Heikin Ashi Trend (2010+)" },
+    { value: "Balance of Power",   label: "⚡ Balance of Power (2010+)" },
+    { value: "Chande Kroll Stop",  label: "⚡ Chande Kroll Stop (2021)" },
+  ]},
+  { group: "── Momentum ──", items: [
+    { value: "RSI",                 label: "RSI (14)" },
+    { value: "Stochastic",          label: "Stochastic" },
+    { value: "Stochastic RSI",      label: "Stochastic RSI" },
+    { value: "Williams %R",         label: "Williams %R" },
+    { value: "CCI",                 label: "CCI" },
+    { value: "ROC",                 label: "ROC" },
+    { value: "Momentum",            label: "Momentum" },
+    { value: "TRIX",                label: "TRIX" },
     { value: "Ultimate Oscillator", label: "Ultimate Oscillator" },
   ]},
-  { group: "Trend", items: [
-    { value: "MACD", label: "MACD" },
-    { value: "ADX", label: "ADX" },
-    { value: "Aroon", label: "Aroon" },
+  { group: "── Trend ──", items: [
+    { value: "MACD",          label: "MACD" },
+    { value: "ADX",           label: "ADX" },
+    { value: "Aroon",         label: "Aroon" },
     { value: "Parabolic SAR", label: "Parabolic SAR" },
-    { value: "Supertrend", label: "Supertrend" },
-    { value: "Ichimoku", label: "Ichimoku" },
-    { value: "Elder Ray", label: "Elder Ray" },
+    { value: "Supertrend",    label: "Supertrend" },
+    { value: "Ichimoku",      label: "Ichimoku" },
+    { value: "Elder Ray",     label: "Elder Ray" },
     { value: "Elder Impulse", label: "Elder Impulse" },
   ]},
-  { group: "Volatility", items: [
-    { value: "Bollinger Bands", label: "Bollinger Bands" },
-    { value: "ATR", label: "ATR" },
-    { value: "Keltner Channels", label: "Keltner Channels" },
+  { group: "── Volatility ──", items: [
+    { value: "Bollinger Bands",   label: "Bollinger Bands" },
+    { value: "ATR",               label: "ATR" },
+    { value: "Keltner Channels",  label: "Keltner Channels" },
     { value: "Donchian Channels", label: "Donchian Channels" },
   ]},
-  { group: "Volume", items: [
-    { value: "OBV", label: "OBV" },
-    { value: "Force Index", label: "Force Index" },
+  { group: "── Volume ──", items: [
+    { value: "OBV",                       label: "OBV" },
+    { value: "Force Index",               label: "Force Index" },
     { value: "Accumulation/Distribution", label: "Accumulation/Distribution" },
-    { value: "Chaikin Money Flow", label: "Chaikin Money Flow" },
-    { value: "MFI", label: "MFI" },
-    { value: "VWAP", label: "VWAP" },
+    { value: "Chaikin Money Flow",        label: "Chaikin Money Flow" },
+    { value: "MFI",                       label: "MFI" },
+    { value: "VWAP",                      label: "VWAP" },
   ]},
-  { group: "Moving Averages", items: [
-    { value: "SMA(20)", label: "SMA (20)" },
-    { value: "SMA(50)", label: "SMA (50)" },
+  { group: "── Moving Averages ──", items: [
+    { value: "SMA(20)",  label: "SMA (20)" },
+    { value: "SMA(50)",  label: "SMA (50)" },
     { value: "SMA(200)", label: "SMA (200)" },
-    { value: "EMA(20)", label: "EMA (20)" },
-    { value: "EMA(50)", label: "EMA (50)" },
+    { value: "EMA(20)",  label: "EMA (20)" },
+    { value: "EMA(50)",  label: "EMA (50)" },
     { value: "EMA(200)", label: "EMA (200)" },
   ]},
 ];
@@ -62,6 +81,15 @@ const UNIVERSES = [
 const REFRESH_OPTS = [5, 15, 30, 60];
 
 const IND_PLAIN = {
+  "TTM Squeeze":        "⚡ NEW — Bollinger inside Keltner = coiled spring. Fires = big move. Above zero = BUY.",
+  "Awesome Oscillator": "⚡ NEW — Compares recent vs historical momentum. Above zero = buyers winning = BUY.",
+  "Vortex Indicator":   "⚡ NEW — Two lines. Up-line above down-line = BUY signal.",
+  "Chandelier Exit":    "⚡ NEW — ATR trailing stop. Price above stop line = BUY. Below = exit.",
+  "Hull MA":            "⚡ NEW — Faster moving average, less lag than EMA. Price above HMA = BUY.",
+  "Laguerre RSI":       "⚡ NEW — Smarter RSI, fewer false signals. Above 0.5 = BUY.",
+  "Heikin Ashi Trend":  "⚡ NEW — Smoothed candles, filters noise. 3 green candles in a row = BUY.",
+  "Balance of Power":   "⚡ NEW — Buyers vs sellers each candle. Above zero = buyers winning = BUY.",
+  "Chande Kroll Stop":  "⚡ NEW (2021) — Advanced trailing stop. Price above stop = BUY.",
   "Roshan Indicator": "Checks RSI momentum + candle direction on 2 timeframes. All must agree.",
   "RSI": "Speed of price. Below 30 = may rise. Above 70 = may fall.",
   "MACD": "Fast trend vs slow. When fast crosses slow upward = BUY.",
@@ -141,12 +169,19 @@ export default function Scanner() {
               style={{ width: "100%", padding: "8px 10px", fontSize: 13, borderRadius: 6, border: "1px solid #cbd5e1" }}>
               {INDICATORS.map(g => (
                 <optgroup key={g.group} label={g.group}>
-                  {g.items.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  {g.items.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </optgroup>
               ))}
             </select>
-            <div style={{ marginTop: 6, fontSize: 11, color: "#64748b", background: "#f8fafc", borderRadius: 4, padding: "5px 8px" }}>
-              💡 {getPlain(indicator)}
+            <div style={{
+              marginTop: 6, fontSize: 11, borderRadius: 4, padding: "5px 8px",
+              background: NEW_IND.has(indicator) ? "#fefce8" : "#f8fafc",
+              border: NEW_IND.has(indicator) ? "1px solid #fde68a" : "none",
+              color: NEW_IND.has(indicator) ? "#92400e" : "#64748b",
+            }}>
+              {NEW_IND.has(indicator) ? "⚡" : "💡"} {getPlain(indicator)}
             </div>
           </div>
 
