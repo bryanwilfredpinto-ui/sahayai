@@ -176,8 +176,20 @@ def scan_roshan(call: str, universe_name: str = "nifty50",
         # Keep total under ~180 calls per scan.
         max_stocks = min(len(symbols), 60)
 
-    cfg = CALL_DEFS[call]
-    tf_a, tf_b = cfg["pair"]
+    # Custom call type — user picks their own timeframes
+    if call == "Custom" and custom_tf1 and custom_tf2:
+        tf_a = custom_tf1
+        tf_b = custom_tf2
+        tf_pull = custom_pullback or None
+        log.info("[scanner] custom call: tf1=%s tf2=%s pullback=%s", tf_a, tf_b, tf_pull)
+    elif call in CALL_DEFS:
+        cfg = CALL_DEFS[call]
+        tf_a, tf_b = cfg["pair"]
+        tf_pull = cfg.get("pullback")
+    else:
+        # Fallback to Positional
+        tf_a, tf_b = "Weekly", "Daily"
+        tf_pull = "4H"
     tf_pull = cfg["pullback"]
 
     log.info("[scanner] start: call=%s universe=%s tf=(%s,%s,pull=%s) cap=%d",
@@ -246,7 +258,10 @@ def clear_cache():
 def scan_indicator(indicator: str, call: str = "Positional",
                    universe_name: str = "nifty50",
                    max_stocks: int | None = None,
-                   force_refresh: bool = False) -> dict:
+                   force_refresh: bool = False,
+                   custom_tf1: str | None = None,
+                   custom_tf2: str | None = None,
+                   custom_pullback: str | None = None) -> dict:
     """
     Generic scanner — works for ANY indicator in technical.ALL_INDICATORS.
     BUY  = indicator signal is BUY  on both timeframes in the call pair.
@@ -261,7 +276,7 @@ def scan_indicator(indicator: str, call: str = "Positional",
         raise ValueError(f"Unknown call: {call}")
 
     universe_name = universe_name.lower().strip()
-    cache_key = (universe_name, call, indicator)
+    cache_key = (universe_name, call, indicator, custom_tf1 or "", custom_tf2 or "")
 
     if not force_refresh:
         with _cache_lock:
@@ -279,8 +294,20 @@ def scan_indicator(indicator: str, call: str = "Positional",
     if max_stocks is None:
         max_stocks = min(len(symbols), 60)
 
-    cfg = CALL_DEFS[call]
-    tf_a, tf_b = cfg["pair"]
+    # Custom call type — user picks their own timeframes
+    if call == "Custom" and custom_tf1 and custom_tf2:
+        tf_a = custom_tf1
+        tf_b = custom_tf2
+        tf_pull = custom_pullback or None
+        log.info("[scanner] custom call: tf1=%s tf2=%s pullback=%s", tf_a, tf_b, tf_pull)
+    elif call in CALL_DEFS:
+        cfg = CALL_DEFS[call]
+        tf_a, tf_b = cfg["pair"]
+        tf_pull = cfg.get("pullback")
+    else:
+        # Fallback to Positional
+        tf_a, tf_b = "Weekly", "Daily"
+        tf_pull = "4H"
 
     log.info("[scanner] indicator=%s call=%s universe=%s cap=%d",
              indicator, call, universe_name, max_stocks)
@@ -315,6 +342,18 @@ def scan_indicator(indicator: str, call: str = "Positional",
             log.warning("[scanner] %s %s failed: %s", indicator, sym, e)
             continue
 
+    # Also add quote data (last price, pchange) for display in frontend
+    try:
+        all_syms = [s.get("symbol") for s in buys + shorts if s.get("symbol")]
+        if all_syms:
+            quotes = angel_client.get_quote(all_syms)
+            for entry in buys + shorts:
+                q = quotes.get(entry.get("symbol"), {})
+                entry["last_price"] = q.get("last_price")
+                entry["pchange"]    = q.get("pchange")
+    except Exception as e:
+        log.warning("[scanner] quote enrichment failed: %s", e)
+
     elapsed = time.time() - t0
     log.info("[scanner] done %.1fs: %d buys %d shorts", elapsed, len(buys), len(shorts))
 
@@ -323,6 +362,7 @@ def scan_indicator(indicator: str, call: str = "Positional",
         "call": call,
         "universe": universe_name,
         "timeframes": [tf_a, tf_b],
+        "pullback_timeframe": tf_pull,
         "scanned_at": datetime.now(IST).isoformat(),
         "scanned_count": min(len(symbols), max_stocks),
         "scan_duration_sec": round(elapsed, 1),
