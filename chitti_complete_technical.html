@@ -7,354 +7,329 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="chitti-ui-kit.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0c10;--surface:#111318;--card:#181c24;--border:#252b36;
-  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;
-  --text:#f1f5f9;--muted:#64748b;--dim:#334155;
+  --bg:#0b0e14;--s1:#131720;--s2:#1a1f2e;--s3:#222840;
+  --border:#252d3d;--border2:#1e2535;
+  --green:#26a69a;--red:#ef5350;--amber:#f59e0b;--blue:#2962ff;--purple:#7b61ff;
+  --green2:#4caf50;--red2:#f44336;
+  --text:#d1d4dc;--muted:#787b86;--dim:#363a45;
+  --up:#26a69a;--dn:#ef5350;
 }
-html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;overflow-x:hidden}
 
-/* ── A11Y BAR ── */
-.a11y-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:5px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.a11y-bar span{font-size:11px;color:var(--muted);flex:1}
-.a11y-btn{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:var(--blue);border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;min-height:32px}
+/* HEADER */
+.hdr{background:var(--s1);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center;padding:0 12px;gap:10px;position:sticky;top:0;z-index:300}
+.logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px;text-decoration:none}
+.logo-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;box-shadow:0 0 6px var(--blue)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.live-badge{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:2px 8px}
+.live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(38,166,154,.4)}50%{opacity:.7;box-shadow:0 0 0 4px rgba(38,166,154,0)}}
 
-/* ── HEADER ── */
-.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
-.logo{font-size:16px;font-weight:800;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:7px}
-.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.live{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
-.dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* SEBI */
+.sebi{background:#120f00;border-bottom:1px solid #2a1f00;height:28px;display:flex;align-items:center;padding:0 12px;font-size:10px;color:#b8960c;gap:8px}
+.sebi strong{color:#f59e0b}
+.sebi-btn{margin-left:auto;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#f59e0b;border-radius:3px;padding:1px 7px;font-size:10px;cursor:pointer;font-family:inherit}
 
-/* ── SEBI ── */
-.sebi-bar{background:#110a00;border-bottom:1px solid #3d2800;padding:5px 14px;font-size:11px;color:#fbbf24;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* A11Y */
+.a11y{background:var(--s2);border-bottom:1px solid var(--border);height:32px;display:flex;align-items:center;padding:0 12px;gap:6px}
+.a11y span{font-size:10px;color:var(--muted);flex:1}
+.a11y-btn{background:rgba(41,98,255,.1);border:1px solid rgba(41,98,255,.25);color:#5c8fff;border-radius:3px;padding:2px 8px;font-size:10px;cursor:pointer;font-family:inherit}
 
-/* ── TABS ── */
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 12px;overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:10px 13px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;border:none;border-bottom:2px solid transparent;background:none;font-family:inherit;transition:all .18s;min-height:42px}
-.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* TABS */
+.tabs{background:var(--s1);border-bottom:1px solid var(--border);display:flex;padding:0 8px}
+.tab{padding:0 14px;height:38px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px}
+.tab.active{color:#fff;border-bottom-color:var(--blue)}
+.tab:hover:not(.active){color:var(--text)}
 
-/* ── PAGES ── */
-.page{display:none;padding:11px 13px;max-width:1100px;margin:0 auto}
+/* PAGES */
+.page{display:none;padding:10px 12px;max-width:1200px;margin:0 auto}
 .page.active{display:block}
 
-/* ── GENERIC CARD ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
-.lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;display:block;margin-bottom:4px}
-select,input[type=number]{width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s}
+/* SCANNER CONTROLS */
+.ctrl-card{background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;display:block;margin-bottom:3px}
+select,input[type=number]{width:100%;background:var(--s2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 8px;font-size:12px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s;-webkit-appearance:none}
 select:focus,input:focus{border-color:var(--blue)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
-.full{grid-column:1/-1}
-
-/* ── SCANNER ── */
-.ind-desc{margin-top:6px;padding:7px 10px;border-radius:6px;background:var(--surface);color:var(--muted);font-size:11px;line-height:1.55;border:1px solid transparent}
-.ind-desc.new{background:#1a1200;border-color:#3d2800;color:#fbbf24}
-.cbox{background:#0a1a08;border:1px solid #1a3a10;border-radius:8px;padding:10px;margin-bottom:9px;display:none}
+.ind-desc{margin-top:5px;padding:6px 8px;border-radius:4px;background:var(--s2);color:var(--muted);font-size:10px;line-height:1.5;border-left:2px solid var(--border)}
+.ind-desc.new{border-left-color:var(--amber);color:#c8960c;background:#110d00}
+.cbox{background:#0a1208;border:1px solid #1a2e12;border-radius:5px;padding:9px;margin-bottom:8px;display:none}
 .cbox.on{display:block}
-.scan-btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;letter-spacing:.02em;transition:all .2s;min-height:46px}
-.scan-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.scan-btn{width:100%;padding:10px;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.03em;background:var(--blue);color:#fff;transition:all .15s;margin-top:8px}
+.scan-btn:hover:not(:disabled){background:#1a50e0;transform:translateY(-1px)}
 .scan-btn:disabled{background:var(--dim);color:var(--muted);cursor:not-allowed;transform:none}
-.status-row{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;padding:5px 10px;background:var(--surface);border-radius:6px;margin-bottom:9px}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.col-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.col-hd{padding:8px 12px;display:flex;align-items:center;justify-content:space-between}
-.col-hd.b{background:rgba(34,197,94,.07);border-bottom:1px solid rgba(34,197,94,.15)}
-.col-hd.s{background:rgba(239,68,68,.07);border-bottom:1px solid rgba(239,68,68,.15)}
-.col-title{font-size:12px;font-weight:700}
-.col-title.b{color:var(--green)} .col-title.s{color:var(--red)}
-.bdg{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700}
-.bdg.b{background:rgba(34,197,94,.18);color:var(--green)}
-.bdg.s{background:rgba(239,68,68,.18);color:var(--red)}
-.spk-sm{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:var(--blue);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;min-height:28px}
-.srow{padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .12s;min-height:46px}
-.srow:hover{background:rgba(59,130,246,.05)}
+.status-row{font-size:10px;color:var(--muted);display:flex;gap:10px;padding:4px 8px;background:var(--s2);border-radius:4px;margin-bottom:8px;flex-wrap:wrap}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.col-card{background:var(--s1);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.col-hd{padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.col-hd.b{background:rgba(38,166,154,.06)}
+.col-hd.s{background:rgba(239,83,80,.06)}
+.col-title{font-size:11px;font-weight:700}
+.col-title.b{color:var(--up)} .col-title.s{color:var(--dn)}
+.bdg{font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px}
+.bdg.b{background:rgba(38,166,154,.2);color:var(--up)}
+.bdg.s{background:rgba(239,83,80,.2);color:var(--dn)}
+.spk-sm{background:rgba(41,98,255,.1);border:1px solid rgba(41,98,255,.2);color:#5c8fff;border-radius:3px;padding:2px 7px;font-size:9px;cursor:pointer;font-family:inherit}
+.srow{padding:7px 10px;border-bottom:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;min-height:42px}
+.srow:hover{background:rgba(41,98,255,.05)}
 .srow:last-child{border-bottom:none}
-.sym{font-size:13px;font-weight:700;font-family:'Syne',sans-serif}
-.sname{font-size:10px;color:var(--muted);margin-top:1px}
-.pos{color:var(--green)} .neg{color:var(--red)}
-.sbdg{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:2px;display:inline-block}
-.sbdg.b{background:rgba(34,197,94,.18);color:var(--green)}
-.sbdg.s{background:rgba(239,68,68,.18);color:var(--red)}
-.skel{height:48px;background:var(--surface);margin-bottom:1px;animation:sk 1.4s ease-in-out infinite}
-@keyframes sk{0%,100%{opacity:.2}50%{opacity:.55}}
-.empty{padding:22px;text-align:center;color:var(--muted);font-size:12px;line-height:1.65}
-.err{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:8px 12px;font-size:12px;color:#fca5a5;margin-bottom:9px}
+.sym{font-size:12px;font-weight:700;font-family:'Syne',sans-serif;color:#fff}
+.sname{font-size:9px;color:var(--muted);margin-top:1px}
+.pos{color:var(--up)} .neg{color:var(--dn)}
+.sbdg{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;display:inline-block}
+.sbdg.b{background:rgba(38,166,154,.18);color:var(--up)}
+.sbdg.s{background:rgba(239,83,80,.18);color:var(--dn)}
+.skel{height:42px;background:var(--s2);margin-bottom:1px;border-radius:0;animation:sk 1.2s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:.15}50%{opacity:.4}}
+.empty{padding:20px;text-align:center;color:var(--muted);font-size:11px;line-height:1.7}
+.err{background:rgba(239,83,80,.07);border:1px solid rgba(239,83,80,.2);border-radius:4px;padding:7px 10px;font-size:11px;color:#ef9a9a;margin-bottom:8px}
 
-/* ── CHART PAGE LAYOUT ── */
-.chart-topcard{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:9px}
-.c-sym{font-size:22px;font-weight:800;font-family:'Syne',sans-serif;letter-spacing:-.02em}
-.c-price{font-size:18px;font-weight:600;font-family:'JetBrains Mono',monospace;margin-top:3px}
-.c-change{font-size:12px;margin-top:2px;font-family:'JetBrains Mono',monospace}
-.sp-btn{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--blue);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit;min-height:36px}
+/* ── CHART PAGE ── */
+/* Stock info bar — TradingView style */
+.stock-bar{background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stock-sym{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.stock-exch{font-size:10px;color:var(--muted);background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:1px 5px}
+.stock-price{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:#fff}
+.stock-chg{font-family:'JetBrains Mono',monospace;font-size:13px;padding:2px 8px;border-radius:3px}
+.stock-chg.up{background:rgba(38,166,154,.15);color:var(--up)}
+.stock-chg.dn{background:rgba(239,83,80,.15);color:var(--dn)}
+.stock-bar-right{margin-left:auto;display:flex;gap:6px}
+.verdict-btn{background:var(--blue);border:none;color:#fff;border-radius:4px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
 
-/* TF row */
-.tf-row{display:flex;gap:4px;overflow-x:auto;margin-bottom:8px;scrollbar-width:none}
-.tf-row::-webkit-scrollbar{display:none}
-.tf-btn{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;min-height:32px}
-/* Active state picks the TF colour */
-.tf-btn.active[data-tf="Monthly"]{background:#f59e0b;border-color:#f59e0b;color:#000}
-.tf-btn.active[data-tf="Weekly"] {background:#38bdf8;border-color:#38bdf8;color:#000}
-.tf-btn.active[data-tf="Daily"]  {background:#4ade80;border-color:#4ade80;color:#000}
-.tf-btn.active[data-tf="4H"]     {background:#fb923c;border-color:#fb923c;color:#000}
-.tf-btn.active[data-tf="1H"]     {background:#a78bfa;border-color:#a78bfa;color:#000}
-.tf-btn.active[data-tf="15min"]  {background:#f472b6;border-color:#f472b6;color:#000}
-.tf-btn.active[data-tf="5min"]   {background:#2dd4bf;border-color:#2dd4bf;color:#000}
-.tf-btn.active[data-tf="1min"]   {background:#94a3b8;border-color:#94a3b8;color:#fff}
+/* TF bar — exactly like TradingView */
+.tf-bar{display:flex;align-items:center;gap:2px;background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:3px 4px;margin-bottom:6px;overflow-x:auto;scrollbar-width:none}
+.tf-bar::-webkit-scrollbar{display:none}
+.tf-btn{flex-shrink:0;padding:4px 10px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.tf-btn:hover{color:var(--text);background:var(--s2)}
+.tf-btn.active{color:#fff;font-weight:700}
+.tf-btn.active[data-tf="Monthly"]{background:rgba(245,158,11,.2);color:#f59e0b}
+.tf-btn.active[data-tf="Weekly"] {background:rgba(56,189,248,.2);color:#38bdf8}
+.tf-btn.active[data-tf="Daily"]  {background:rgba(74,222,128,.2);color:#4ade80}
+.tf-btn.active[data-tf="4H"]     {background:rgba(251,146,60,.2);color:#fb923c}
+.tf-btn.active[data-tf="1H"]     {background:rgba(167,139,250,.2);color:#a78bfa}
+.tf-btn.active[data-tf="15min"]  {background:rgba(244,114,182,.2);color:#f472b6}
+.tf-btn.active[data-tf="5min"]   {background:rgba(45,212,191,.2);color:#2dd4bf}
+.tf-btn.active[data-tf="1min"]   {background:rgba(148,163,184,.2);color:#94a3b8}
 
-/* Overlay control bar */
-.ctrl-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
-.tog{display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:11px;font-weight:600;transition:all .15s;user-select:none;min-height:30px}
-.tog.on{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.09)}
-.vsep{width:1px;height:18px;background:var(--border);flex-shrink:0}
-.legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.leg-chip{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
-.leg-line{width:16px;height:2px;border-radius:1px;flex-shrink:0}
+/* Toolbar row */
+.toolbar{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.tog{display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:4px;border:1px solid var(--border);background:var(--s1);color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;transition:all .12s;user-select:none}
+.tog.on{border-color:var(--blue);color:#5c8fff;background:rgba(41,98,255,.08)}
+.toolbar-sep{width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px}
+.legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.leg{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted)}
+.leg-ln{height:2px;width:14px;border-radius:1px;flex-shrink:0}
 
-/* Chart containers */
-.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;margin-bottom:3px}
-.chart-wrap.rsi{border-top:none;border-radius:0 0 8px 8px;margin-bottom:10px}
-#main-chart{height:360px;width:100%}
-#rsi-chart{height:80px;width:100%}
-.chart-topbar{position:absolute;top:7px;left:9px;right:9px;display:flex;justify-content:space-between;pointer-events:none;z-index:5}
-.ohlc-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);background:rgba(10,12,16,.8);padding:2px 7px;border-radius:4px;pointer-events:none;line-height:1.6}
-.fs-btn{pointer-events:all;background:rgba(13,17,23,.85);border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:12px;color:var(--muted)}
-.fs-btn:hover{color:var(--text)}
-.chart-loading{position:absolute;inset:0;background:rgba(10,12,16,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;border-radius:10px}
-.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
+/* Chart area — TradingView style */
+.chart-area{background:var(--s1);border:1px solid var(--border);border-radius:6px;overflow:hidden;position:relative}
+#main-chart{width:100%;height:380px}
+#rsi-chart{width:100%;height:70px;border-top:1px solid var(--border)}
+.chart-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(11,14,20,.9);z-index:10;flex-direction:column;gap:8px;border-radius:6px}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.chart-err{position:absolute;inset:0;background:rgba(10,12,16,.92);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fca5a5;padding:20px;text-align:center;z-index:10;border-radius:10px;display:none}
+.ohlc-bar{position:absolute;top:6px;left:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);pointer-events:none;z-index:5;background:rgba(11,14,20,.7);padding:2px 6px;border-radius:3px}
+.fs-btn{position:absolute;top:6px;right:6px;background:rgba(11,14,20,.8);border:1px solid var(--border);border-radius:3px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--muted);z-index:5}
+.fs-btn:hover{color:#fff}
+.rsi-lbl{position:absolute;bottom:76px;left:8px;font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;pointer-events:none;z-index:5}
 
-/* Indicator tiles */
-.ind-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
-.tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
-.tile-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:3px}
-.tile-val{font-size:17px;font-weight:700;font-family:'JetBrains Mono',monospace}
-.tile-note{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35}
-
-/* Chitti's View */
-.cv-wrap{margin-bottom:12px}
-
-/* Combined verdict badge */
-.cv-combined{border-radius:10px;padding:14px 15px;margin-bottom:9px;border:1px solid}
-.cv-combined.BUY {background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.25)}
-.cv-combined.SHORT{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25)}
-.cv-combined.WAIT{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25)}
-.cv-top{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap}
-.cv-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.cv-verdict{font-size:17px;font-weight:800;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:7px}
-.cv-verdict.BUY  {color:var(--green)}
-.cv-verdict.SHORT{color:var(--red)}
-.cv-verdict.WAIT {color:var(--amber)}
-.lang-row{display:flex;gap:3px;margin-left:auto}
-.lang-btn{padding:3px 8px;font-size:11px;font-weight:600;border-radius:4px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s}
-.lang-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.cv-reason{font-size:13px;line-height:1.75;color:#cbd5e1;margin-bottom:8px}
-.cv-action{background:rgba(255,255,255,.04);border-radius:7px;padding:8px 11px;font-size:12px;line-height:1.65;margin-bottom:7px;border-left:3px solid var(--blue)}
-.cv-caution{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:9px}
-.cv-nums{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.cv-num{background:rgba(255,255,255,.03);border-radius:5px;padding:5px 8px;display:flex;justify-content:space-between;font-size:11px}
-.num-l{color:var(--muted)} .num-v{font-weight:700;font-family:'JetBrains Mono',monospace}
+/* Indicator row */
+.ind-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
+.ind-tile{background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:8px 10px}
+.ind-tile .lbl{margin-bottom:2px}
+.ind-val{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
+.ind-note{font-size:9px;color:var(--muted);margin-top:3px}
 
 /* Per-TF verdict strip */
-.tf-verdicts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
-.tf-verdict-chip{border-radius:7px;padding:7px 11px;border:1px solid var(--border);font-size:11px;flex:1;min-width:100px}
-.tf-verdict-chip .tvlbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:3px}
-.tf-verdict-chip .tvval{font-size:13px;font-weight:700}
-.tf-verdict-chip.BUY  {background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2)}
-.tf-verdict-chip.SHORT{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2)}
-.tf-verdict-chip.WAIT {background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2)}
-.tvval.BUY  {color:var(--green)}
-.tvval.SHORT{color:var(--red)}
-.tvval.WAIT {color:var(--amber)}
+.tf-strip{display:flex;gap:5px;margin-bottom:6px;overflow-x:auto;scrollbar-width:none}
+.tf-strip::-webkit-scrollbar{display:none}
+.tf-chip{flex-shrink:0;background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:6px 10px;min-width:72px;text-align:center}
+.tf-chip .tc-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.tf-chip .tc-val{font-size:11px;font-weight:700;margin-top:2px}
+.tf-chip .tc-rsi{font-size:9px;color:var(--muted);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.tf-chip.BUY  {border-color:rgba(38,166,154,.35);background:rgba(38,166,154,.05)}
+.tf-chip.SHORT{border-color:rgba(239,83,80,.35);background:rgba(239,83,80,.05)}
+.tc-val.BUY  {color:var(--up)}
+.tc-val.SHORT{color:var(--dn)}
+.tc-val.WAIT {color:var(--amber)}
 
-.cv-loading{padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
-.spin-sm{animation:spin .9s linear infinite;display:inline-block}
+/* Chitti's View */
+.cv-card{border-radius:6px;padding:12px 14px;border:1px solid;margin-bottom:8px}
+.cv-card.BUY  {background:rgba(38,166,154,.05);border-color:rgba(38,166,154,.25)}
+.cv-card.SHORT{background:rgba(239,83,80,.05);border-color:rgba(239,83,80,.25)}
+.cv-card.WAIT {background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.25)}
+.cv-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cv-bot{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cv-verdict{font-family:'Syne',sans-serif;font-size:16px;font-weight:800}
+.cv-verdict.BUY  {color:var(--up)}
+.cv-verdict.SHORT{color:var(--dn)}
+.cv-verdict.WAIT {color:var(--amber)}
+.cv-tf-lbl{font-size:10px;color:var(--muted);margin-left:2px}
+.lang-row{display:flex;gap:3px;margin-left:auto;align-items:center}
+.lang-btn{padding:2px 7px;font-size:10px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .12s}
+.lang-btn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.spk-v{background:rgba(41,98,255,.1);border:1px solid rgba(41,98,255,.2);color:#5c8fff;border-radius:3px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:inherit}
+.cv-reason{font-size:12px;line-height:1.75;color:#a0aabb;margin-bottom:7px}
+.cv-action{background:rgba(255,255,255,.03);border-left:2px solid var(--blue);border-radius:0 4px 4px 0;padding:7px 10px;font-size:11px;line-height:1.6;margin-bottom:7px}
+.cv-caution{font-size:10px;color:var(--muted);font-style:italic;margin-bottom:8px}
+.cv-nums{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.cv-num{background:rgba(255,255,255,.02);border-radius:3px;padding:4px 7px;display:flex;justify-content:space-between;font-size:10px}
+.nl{color:var(--muted)} .nv{font-weight:600;font-family:'JetBrains Mono',monospace}
+.cv-loading{display:flex;align-items:center;gap:7px;padding:10px;background:var(--s1);border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--muted);margin-bottom:8px}
+.spin-sm{animation:spin .8s linear infinite;display:inline-block}
+details summary{font-size:10px;color:var(--muted);cursor:pointer;user-select:none;margin-top:6px}
 
-/* ── LEARN PAGE ── */
-.learn-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:9px}
-.learn-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.learn-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--surface)}
-.learn-title{font-size:13px;font-weight:700}
-.tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+/* ── LEARN ── */
+.learn-search{width:100%;background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:8px 12px;font-size:13px;color:var(--text);font-family:inherit;margin-bottom:10px;outline:none}
+.learn-search:focus{border-color:var(--blue)}
+.learn-card{background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:10px 12px;margin-bottom:6px;transition:border-color .12s}
+.learn-card:hover{border-color:var(--dim)}
+.learn-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.learn-icon{font-size:16px;width:28px;text-align:center;flex-shrink:0}
+.learn-title{font-size:12px;font-weight:700;color:#fff;flex:1}
+.tag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0}
 .tag.new{background:rgba(245,158,11,.18);color:var(--amber)}
-.tag.classic{background:rgba(100,116,139,.12);color:var(--muted)}
-.learn-plain{font-size:12px;color:#94a3b8;line-height:1.65;margin-bottom:8px}
-.sig-buy{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:6px;padding:5px 9px;font-size:11px;color:#86efac;margin-bottom:5px}
-.sig-sell{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:6px;padding:5px 9px;font-size:11px;color:#fca5a5}
+.tag.classic{background:rgba(120,123,134,.12);color:var(--muted)}
+.learn-plain{font-size:11px;color:#7a8294;line-height:1.65;margin-bottom:6px}
+.sig-b{background:rgba(38,166,154,.06);border:1px solid rgba(38,166,154,.15);border-radius:3px;padding:4px 8px;font-size:10px;color:#80cbc4;margin-bottom:4px}
+.sig-s{background:rgba(239,83,80,.06);border:1px solid rgba(239,83,80,.15);border-radius:3px;padding:4px 8px;font-size:10px;color:#ef9a9a}
 
-/* ── RESPONSIVE ── */
-@media(max-width:580px){
-  .two-col,.g2,.g3,.ind-tiles,.cv-nums{grid-template-columns:1fr}
-  .tf-verdicts{flex-direction:column}
+/* RESPONSIVE */
+@media(max-width:600px){
+  .two-col,.g2,.g3,.ind-row,.cv-nums{grid-template-columns:1fr}
   #main-chart{height:280px}
+  .stock-price{font-size:18px}
+  .stock-sym{font-size:16px}
 }
 </style>
 </head>
 <body>
 
-<!-- A11Y BAR -->
-<div class="a11y-bar" role="banner">
-  <span>👁️ Blind user? Tap Read Page to hear everything aloud.</span>
+<div class="a11y" role="banner">
+  <span>👁️ Blind users: tap Read Page to hear everything aloud</span>
   <button class="a11y-btn" onclick="speakPage()" aria-label="Read page aloud">🔊 Read Page</button>
-  <button class="a11y-btn" onclick="speakHelp()" aria-label="How to use step by step">🎙️ How to Use</button>
+  <button class="a11y-btn" onclick="speakHelp()" aria-label="How to use">🎙️ How to Use</button>
 </div>
 
-<!-- HEADER -->
 <div class="hdr">
-  <div class="logo">
-    <div class="logo-icon">🤖</div>
-    Chitti <span style="color:var(--muted);font-weight:400;font-size:13px;margin-left:4px">Shares · Technical</span>
+  <div class="logo"><span class="logo-dot"></span>Chitti <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:3px">Shares · Technical</span></div>
+  <div class="hdr-right">
+    <div class="live-badge"><span class="live-dot"></span>Live · Angel One</div>
   </div>
-  <div class="live"><span class="dot"></span> Live · Angel One</div>
 </div>
 
-<!-- SEBI -->
-<div class="sebi-bar" id="sebi-banner" role="note" aria-label="Legal disclaimer"></div>
+<div class="sebi" id="sebi-bar" role="note" aria-label="Legal disclaimer">
+  <span>⚠️ <strong>Not SEBI Registered</strong> · Educational only · Not investment advice · <strong>SEBI पंजीकृत नहीं</strong> · निवेश सलाह नहीं</span>
+  <button class="sebi-btn" onclick="Chitti.Speech.speakDisclaimer()" aria-label="Hear disclaimer">🔊</button>
+</div>
 
-<!-- TABS -->
 <div class="tabs" role="tablist">
-  <button class="tab active" onclick="showTab('scanner')" aria-label="Scanner tab" role="tab">🔍 Scanner</button>
-  <button class="tab" onclick="showTab('chart')" aria-label="Chart tab" role="tab">📈 Chart</button>
-  <button class="tab" onclick="showTab('learn')" aria-label="Learn tab" role="tab">🎓 Learn</button>
+  <button class="tab active" onclick="showTab('scanner')" role="tab">🔍 Scanner</button>
+  <button class="tab" onclick="showTab('chart')" role="tab">📈 Chart</button>
+  <button class="tab" onclick="showTab('learn')" role="tab">🎓 Learn</button>
 </div>
 
-<!-- ═══════════════════ SCANNER ═══════════════════ -->
+<!-- ══ SCANNER ══ -->
 <div id="tab-scanner" class="page active" role="tabpanel">
-  <div class="card">
-    <div style="margin-bottom:9px">
-      <label class="lbl" for="ind-sel">Indicator</label>
-      <select id="ind-sel" onchange="onInd()" aria-label="Select indicator">
-        <optgroup label="⭐ Chitti Special">
-          <option value="Roshan Indicator">Roshan Indicator (default)</option>
-        </optgroup>
-        <optgroup label="⚡ New 2010–2026">
-          <option value="TTM Squeeze">⚡ TTM Squeeze (2010+)</option>
-          <option value="Awesome Oscillator">⚡ Awesome Oscillator (2010+)</option>
-          <option value="Vortex Indicator">⚡ Vortex Indicator (2010+)</option>
-          <option value="Chandelier Exit">⚡ Chandelier Exit (2010+)</option>
-          <option value="Hull MA">⚡ Hull MA (2012+)</option>
-          <option value="Laguerre RSI">⚡ Laguerre RSI (2012+)</option>
-          <option value="Heikin Ashi Trend">⚡ Heikin Ashi Trend (2010+)</option>
-          <option value="Balance of Power">⚡ Balance of Power (2010+)</option>
-          <option value="Chande Kroll Stop">⚡ Chande Kroll Stop (2021)</option>
-        </optgroup>
-        <optgroup label="── Momentum ──">
-          <option value="RSI">RSI (14)</option><option value="MACD">MACD</option>
-          <option value="Stochastic">Stochastic</option><option value="Stochastic RSI">Stochastic RSI</option>
-          <option value="Williams %R">Williams %R</option><option value="CCI">CCI</option>
-          <option value="ROC">ROC</option><option value="Momentum">Momentum</option>
-          <option value="TRIX">TRIX</option><option value="Ultimate Oscillator">Ultimate Oscillator</option>
-        </optgroup>
-        <optgroup label="── Trend ──">
-          <option value="ADX">ADX</option><option value="Aroon">Aroon</option>
-          <option value="Parabolic SAR">Parabolic SAR</option><option value="Supertrend">Supertrend</option>
-          <option value="Ichimoku">Ichimoku</option><option value="Elder Ray">Elder Ray</option>
-          <option value="Elder Impulse">Elder Impulse</option>
-        </optgroup>
-        <optgroup label="── Volatility ──">
-          <option value="Bollinger Bands">Bollinger Bands</option><option value="ATR">ATR</option>
-          <option value="Keltner Channels">Keltner Channels</option><option value="Donchian Channels">Donchian Channels</option>
-        </optgroup>
-        <optgroup label="── Volume ──">
-          <option value="OBV">OBV</option><option value="Force Index">Force Index</option>
-          <option value="Accumulation/Distribution">Accumulation/Distribution</option>
-          <option value="Chaikin Money Flow">Chaikin Money Flow</option>
-          <option value="MFI">MFI</option><option value="VWAP">VWAP</option>
-        </optgroup>
-        <optgroup label="── Moving Averages ──">
-          <option value="SMA(20)">SMA (20)</option><option value="SMA(50)">SMA (50)</option>
-          <option value="SMA(200)">SMA (200)</option><option value="EMA(20)">EMA (20)</option>
-          <option value="EMA(50)">EMA (50)</option><option value="EMA(200)">EMA (200)</option>
-        </optgroup>
-      </select>
-      <div id="ind-desc" class="ind-desc">Roshan checks RSI momentum + candle direction on 2 timeframes. All 3 conditions must agree.</div>
-    </div>
-    <div class="g2">
-      <div>
-        <label class="lbl" for="call-sel">Call Type</label>
+  <div class="ctrl-card">
+    <label class="lbl" for="ind-sel">Indicator</label>
+    <select id="ind-sel" onchange="onInd()" aria-label="Select indicator">
+      <optgroup label="⭐ Chitti Special"><option value="Roshan Indicator">Roshan Indicator (default)</option></optgroup>
+      <optgroup label="⚡ New 2010–2026">
+        <option value="TTM Squeeze">⚡ TTM Squeeze</option><option value="Awesome Oscillator">⚡ Awesome Oscillator</option>
+        <option value="Vortex Indicator">⚡ Vortex Indicator</option><option value="Chandelier Exit">⚡ Chandelier Exit</option>
+        <option value="Hull MA">⚡ Hull MA</option><option value="Laguerre RSI">⚡ Laguerre RSI</option>
+        <option value="Heikin Ashi Trend">⚡ Heikin Ashi Trend</option><option value="Balance of Power">⚡ Balance of Power</option>
+        <option value="Chande Kroll Stop">⚡ Chande Kroll Stop</option>
+      </optgroup>
+      <optgroup label="── Momentum ──">
+        <option value="RSI">RSI (14)</option><option value="MACD">MACD</option><option value="Stochastic">Stochastic</option>
+        <option value="Stochastic RSI">Stochastic RSI</option><option value="Williams %R">Williams %R</option><option value="CCI">CCI</option>
+        <option value="ROC">ROC</option><option value="Momentum">Momentum</option><option value="TRIX">TRIX</option><option value="Ultimate Oscillator">Ultimate Oscillator</option>
+      </optgroup>
+      <optgroup label="── Trend ──">
+        <option value="ADX">ADX</option><option value="Aroon">Aroon</option><option value="Parabolic SAR">Parabolic SAR</option>
+        <option value="Supertrend">Supertrend</option><option value="Ichimoku">Ichimoku</option>
+        <option value="Elder Ray">Elder Ray</option><option value="Elder Impulse">Elder Impulse</option>
+      </optgroup>
+      <optgroup label="── Volatility ──">
+        <option value="Bollinger Bands">Bollinger Bands</option><option value="ATR">ATR</option>
+        <option value="Keltner Channels">Keltner Channels</option><option value="Donchian Channels">Donchian Channels</option>
+      </optgroup>
+      <optgroup label="── Volume ──">
+        <option value="OBV">OBV</option><option value="Force Index">Force Index</option>
+        <option value="Accumulation/Distribution">Accumulation/Distribution</option><option value="Chaikin Money Flow">Chaikin Money Flow</option>
+        <option value="MFI">MFI</option><option value="VWAP">VWAP</option>
+      </optgroup>
+      <optgroup label="── Moving Averages ──">
+        <option value="SMA(20)">SMA (20)</option><option value="SMA(50)">SMA (50)</option><option value="SMA(200)">SMA (200)</option>
+        <option value="EMA(20)">EMA (20)</option><option value="EMA(50)">EMA (50)</option><option value="EMA(200)">EMA (200)</option>
+      </optgroup>
+    </select>
+    <div id="ind-desc" class="ind-desc">Roshan checks RSI momentum + candle direction on 2 timeframes. All 3 conditions must agree simultaneously.</div>
+
+    <div class="g2" style="margin-top:8px">
+      <div><label class="lbl">Call Type</label>
         <select id="call-sel" onchange="onCall()" aria-label="Call type">
-          <option value="Long-term">Long-term (Mo+Wk)</option>
-          <option value="Positional" selected>Positional (Wk+D)</option>
-          <option value="Swing">Swing (D+4H)</option>
-          <option value="Intraday">Intraday (4H+1H)</option>
-          <option value="Custom">⚡ Custom — pick your own</option>
-        </select>
-      </div>
-      <div>
-        <label class="lbl" for="univ-sel">Universe</label>
+          <option value="Long-term">Long-term (Mo+Wk)</option><option value="Positional" selected>Positional (Wk+D)</option>
+          <option value="Swing">Swing (D+4H)</option><option value="Intraday">Intraday (4H+1H)</option>
+          <option value="Custom">⚡ Custom</option>
+        </select></div>
+      <div><label class="lbl">Universe</label>
         <select id="univ-sel" aria-label="Universe">
-          <option value="nifty50">Nifty 50</option>
-          <option value="largecap">Largecap</option>
-          <option value="midcap">Midcap</option>
-          <option value="smallcap">Smallcap</option>
-          <option value="microcap">Microcap</option>
-        </select>
-      </div>
-      <div>
-        <label class="lbl" for="ref-sel">Auto Refresh</label>
-        <select id="ref-sel" onchange="setupRefresh()" aria-label="Auto refresh">
-          <option value="5">5 min</option>
-          <option value="15" selected>15 min</option>
-          <option value="30">30 min</option>
-          <option value="60">60 min</option>
-        </select>
-      </div>
-      <div>
-        <label class="lbl" for="max-s">Max Stocks</label>
-        <input type="number" id="max-s" value="10" min="5" max="500" aria-label="Max stocks">
-      </div>
+          <option value="nifty50">Nifty 50</option><option value="largecap">Largecap</option>
+          <option value="midcap">Midcap</option><option value="smallcap">Smallcap</option><option value="microcap">Microcap</option>
+        </select></div>
+      <div><label class="lbl">Auto Refresh</label>
+        <select id="ref-sel" onchange="setupRefresh()" aria-label="Refresh interval">
+          <option value="5">5 min</option><option value="15" selected>15 min</option><option value="30">30 min</option><option value="60">60 min</option>
+        </select></div>
+      <div><label class="lbl">Max Stocks</label>
+        <input type="number" id="max-s" value="10" min="5" max="500" aria-label="Max stocks"></div>
     </div>
-    <!-- Custom TF box -->
+
     <div class="cbox" id="cbox">
-      <div style="font-size:10px;font-weight:700;color:#4ade80;margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em">⚡ Custom Timeframes</div>
+      <div style="font-size:10px;font-weight:700;color:#4ade80;margin-bottom:7px;text-transform:uppercase;letter-spacing:.07em">⚡ Custom Timeframes</div>
       <div class="g3">
         <div><label class="lbl" style="color:#4ade80">TF 1 (primary)</label>
-          <select id="ctf1" onchange="updateCNote()" aria-label="Primary TF">
-            <option>Monthly</option><option>Weekly</option><option selected>Daily</option>
-            <option>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          <select id="ctf1" onchange="updateCNote()" aria-label="TF1">
+            <option>Monthly</option><option>Weekly</option><option selected>Daily</option><option>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
           </select></div>
         <div><label class="lbl" style="color:#4ade80">TF 2 (confirm)</label>
-          <select id="ctf2" onchange="updateCNote()" aria-label="Confirm TF">
-            <option>Monthly</option><option>Weekly</option><option>Daily</option>
-            <option selected>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          <select id="ctf2" onchange="updateCNote()" aria-label="TF2">
+            <option>Monthly</option><option>Weekly</option><option>Daily</option><option selected>4H</option><option>1H</option><option>15min</option><option>5min</option><option>1min</option>
           </select></div>
         <div><label class="lbl" style="color:#4ade80">Pullback TF</label>
-          <select id="cpb" onchange="updateCNote()" aria-label="Pullback TF">
-            <option>Monthly</option><option>Weekly</option><option>Daily</option>
-            <option>4H</option><option selected>1H</option><option>15min</option><option>5min</option><option>1min</option>
+          <select id="cpb" onchange="updateCNote()" aria-label="Pullback">
+            <option>Monthly</option><option>Weekly</option><option>Daily</option><option>4H</option><option selected>1H</option><option>15min</option><option>5min</option><option>1min</option>
           </select></div>
       </div>
-      <div id="cnote" style="font-size:10px;color:#4ade80;font-style:italic"></div>
+      <div id="cnote" style="font-size:10px;color:#4ade80;font-style:italic;margin-top:4px"></div>
     </div>
-    <button class="scan-btn" id="sbtn" onclick="runScan(true)" aria-label="Run scan">
-      ▶ Scan — <span id="sbtn-ind">Roshan Indicator</span>
-    </button>
+
+    <button class="scan-btn" id="sbtn" onclick="runScan(true)" aria-label="Run scan">▶ Scan — <span id="sbtn-ind">Roshan Indicator</span></button>
   </div>
 
   <div class="status-row" id="status" style="display:none">
-    <span>✅ <b id="s-cnt">—</b> stocks</span>
-    <span>🕐 <span id="s-time">—</span></span>
-    <span id="s-cache">🔄 Fresh</span>
-    <span>⏱ <span id="s-dur">—</span>s</span>
+    <span>✅ <b id="s-cnt">—</b> stocks</span><span>🕐 <span id="s-time">—</span></span>
+    <span id="s-cache">🔄 Fresh</span><span>⏱ <span id="s-dur">—</span>s</span>
   </div>
   <div id="serr" class="err" style="display:none"></div>
 
   <div class="two-col">
     <div class="col-card">
       <div class="col-hd b">
-        <div class="col-title b">▲ BUY <span class="bdg b" id="buy-cnt">0</span></div>
+        <span class="col-title b">▲ BUY <span class="bdg b" id="buy-cnt">0</span></span>
         <button class="spk-sm" onclick="speakCol('buy')" aria-label="Speak buy signals">🔊 Speak BUY</button>
       </div>
       <div id="buy-list"><div class="empty">Tap Scan to load</div></div>
     </div>
     <div class="col-card">
       <div class="col-hd s">
-        <div class="col-title s">▼ SHORT <span class="bdg s" id="sell-cnt">0</span></div>
+        <span class="col-title s">▼ SHORT <span class="bdg s" id="sell-cnt">0</span></span>
         <button class="spk-sm" onclick="speakCol('sell')" aria-label="Speak short signals">🔊 Speak SHORT</button>
       </div>
       <div id="sell-list"><div class="empty">Tap Scan to load</div></div>
@@ -362,802 +337,650 @@ select:focus,input:focus{border-color:var(--blue)}
   </div>
 </div>
 
-<!-- ═══════════════════ CHART ═══════════════════ -->
+<!-- ══ CHART ══ -->
 <div id="tab-chart" class="page" role="tabpanel">
-  <div class="card">
-    <button onclick="showTab('scanner')" style="font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;margin-bottom:8px;font-family:inherit;padding:0" aria-label="Back to scanner">← Scanner</button>
-    <div class="chart-topcard">
-      <div>
-        <div class="c-sym" id="c-sym">Select a stock</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="c-full">Tap any stock row to open chart</div>
-        <div class="c-price" id="c-price"></div>
-        <div class="c-change" id="c-change"></div>
+
+  <div class="stock-bar">
+    <div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <span class="stock-sym" id="c-sym">—</span>
+        <span class="stock-exch" id="c-exch">NSE</span>
       </div>
-      <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear Chitti verdict aloud">🔊 Verdict</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="stock-price" id="c-price">—</span>
+        <span class="stock-chg" id="c-chg"></span>
+      </div>
+    </div>
+    <div class="stock-bar-right">
+      <button onclick="showTab('scanner')" style="background:var(--s2);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:inherit">← Scanner</button>
+      <button class="verdict-btn" onclick="speakVerdict()" aria-label="Hear Chitti verdict">🔊 Verdict</button>
     </div>
   </div>
 
-  <!-- TF buttons -->
-  <div class="tf-row" role="tablist" aria-label="Timeframe selector">
-    <button class="tf-btn active" data-tf="Monthly" onclick="selTF(this)" aria-label="Monthly">Mo</button>
-    <button class="tf-btn" data-tf="Weekly"  onclick="selTF(this)" aria-label="Weekly">Wk</button>
-    <button class="tf-btn" data-tf="Daily"   onclick="selTF(this)" aria-label="Daily">D</button>
-    <button class="tf-btn" data-tf="4H"      onclick="selTF(this)" aria-label="4 Hour">4H</button>
-    <button class="tf-btn" data-tf="1H"      onclick="selTF(this)" aria-label="1 Hour">1H</button>
-    <button class="tf-btn" data-tf="15min"   onclick="selTF(this)" aria-label="15 minutes">15m</button>
-    <button class="tf-btn" data-tf="5min"    onclick="selTF(this)" aria-label="5 minutes">5m</button>
-    <button class="tf-btn" data-tf="1min"    onclick="selTF(this)" aria-label="1 minute">1m</button>
+  <div class="tf-bar" role="tablist">
+    <button class="tf-btn" data-tf="Monthly" onclick="selTF(this)">Mo</button>
+    <button class="tf-btn" data-tf="Weekly"  onclick="selTF(this)">Wk</button>
+    <button class="tf-btn active" data-tf="Daily" onclick="selTF(this)">D</button>
+    <button class="tf-btn" data-tf="4H"      onclick="selTF(this)">4H</button>
+    <button class="tf-btn" data-tf="1H"      onclick="selTF(this)">1H</button>
+    <button class="tf-btn" data-tf="15min"   onclick="selTF(this)">15m</button>
+    <button class="tf-btn" data-tf="5min"    onclick="selTF(this)">5m</button>
+    <button class="tf-btn" data-tf="1min"    onclick="selTF(this)">1m</button>
   </div>
 
-  <!-- Overlay toggles + legend -->
-  <div class="ctrl-bar" role="group" aria-label="Chart overlays">
-    <div class="tog on" id="tog-sr" onclick="togOver('sr')" role="checkbox" aria-checked="true" tabindex="0">— S/R Lines</div>
-    <div class="tog on" id="tog-tl" onclick="togOver('tl')" role="checkbox" aria-checked="true" tabindex="0">╱ Trendlines</div>
-    <div class="vsep"></div>
+  <div class="toolbar">
+    <div class="tog on" id="tog-sr" onclick="togOver('sr')" role="checkbox" aria-checked="true">— S/R Lines</div>
+    <div class="tog on" id="tog-tl" onclick="togOver('tl')" role="checkbox" aria-checked="true">╱ Trendlines</div>
+    <div class="toolbar-sep"></div>
     <div class="legend" id="tf-legend"></div>
   </div>
 
-  <!-- Main chart -->
-  <div class="chart-wrap" id="chart-outer">
+  <div class="chart-area" id="chart-area">
     <div id="main-chart" aria-label="Candlestick chart"></div>
-    <div class="chart-topbar">
-      <div class="ohlc-lbl" id="ohlc-lbl">Select a stock to load chart</div>
-      <button class="fs-btn" onclick="toggleFS()" id="fs-btn" aria-label="Fullscreen chart">⛶</button>
+    <div id="rsi-chart" aria-label="RSI pane"></div>
+    <div class="ohlc-bar" id="ohlc-bar">Select a stock from Scanner</div>
+    <div class="rsi-lbl">RSI(14) · SMA(20)</div>
+    <button class="fs-btn" onclick="toggleFS()" id="fs-btn" aria-label="Fullscreen">⛶</button>
+    <div class="chart-overlay" id="chart-overlay">
+      <div style="font-size:12px;color:var(--muted)">Select a stock from the Scanner tab</div>
     </div>
-    <div class="chart-loading" id="chart-loading" style="display:none">
-      <div class="spinner"></div>
-      <span style="font-size:12px;color:var(--muted)" id="chart-loading-msg">Loading candles…</span>
-    </div>
-    <div class="chart-err" id="chart-err"></div>
   </div>
 
-  <!-- RSI chart -->
-  <div class="chart-wrap rsi">
-    <div id="rsi-chart" aria-label="RSI indicator pane"></div>
-    <div style="position:absolute;top:5px;left:8px;font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;pointer-events:none">RSI(14) · SMA(20)</div>
+  <div class="ind-row" id="ind-row">
+    <div class="ind-tile"><div class="lbl">RSI (14)</div><div class="ind-val" id="t-rsi">—</div><div class="ind-note" id="t-rsi-n">—</div></div>
+    <div class="ind-tile"><div class="lbl">RSI vs SMA(20)</div><div class="ind-val" id="t-rsivs">—</div><div class="ind-note" id="t-rsivs-n">—</div></div>
+    <div class="ind-tile"><div class="lbl">Close</div><div class="ind-val" id="t-close">—</div><div class="ind-note" id="t-close-n">—</div></div>
+    <div class="ind-tile"><div class="lbl">Volume</div><div class="ind-val" id="t-vol">—</div><div class="ind-note" id="t-vol-n">—</div></div>
   </div>
 
-  <!-- Indicator tiles -->
-  <div class="ind-tiles" id="ind-tiles">
-    <div class="tile"><div class="tile-lbl">RSI (14)</div><div class="tile-val" id="t-rsi">—</div><div class="tile-note" id="t-rsi-n">Select a stock</div></div>
-    <div class="tile"><div class="tile-lbl">RSI vs SMA(20)</div><div class="tile-val" id="t-rsivs">—</div><div class="tile-note" id="t-rsivs-n">—</div></div>
-    <div class="tile"><div class="tile-lbl">Last Close</div><div class="tile-val" id="t-close">—</div><div class="tile-note" id="t-close-n">—</div></div>
-    <div class="tile"><div class="tile-lbl">Volume</div><div class="tile-val" id="t-vol">—</div><div class="tile-note" id="t-vol-n">vs avg</div></div>
+  <div id="tf-strip-wrap" style="display:none;margin-bottom:6px">
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:5px">Signal by Timeframe</div>
+    <div class="tf-strip" id="tf-strip"></div>
   </div>
 
-  <!-- Per-TF verdicts strip -->
-  <div id="tf-verdicts-wrap" style="display:none">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Signal by Timeframe</div>
-    <div class="tf-verdicts" id="tf-verdicts"></div>
-  </div>
-
-  <!-- Chitti's View -->
-  <div class="cv-loading" id="cv-loading" style="display:none">
-    <span class="spin-sm">⟳</span> Chitti is analysing…
-  </div>
-  <div class="cv-wrap" id="cv"></div>
+  <div class="cv-loading" id="cv-loading" style="display:none"><span class="spin-sm">⟳</span> Chitti is analysing…</div>
+  <div id="cv"></div>
 </div>
 
-<!-- ═══════════════════ LEARN ═══════════════════ -->
+<!-- ══ LEARN ══ -->
 <div id="tab-learn" class="page" role="tabpanel">
-  <div style="margin-bottom:12px">
-    <div style="font-size:16px;font-weight:700;margin-bottom:3px;font-family:'Syne',sans-serif">What does each indicator mean?</div>
-    <div style="font-size:12px;color:var(--muted)">Plain English. No jargon. Tap 🔊 to hear.</div>
+  <div style="margin-bottom:10px">
+    <div style="font-size:15px;font-weight:700;color:#fff;font-family:'Syne',sans-serif;margin-bottom:3px">What does each indicator mean?</div>
+    <div style="font-size:11px;color:var(--muted)">All 35 indicators · Plain English · No jargon · Tap 🔊 to hear</div>
   </div>
+  <input class="learn-search" type="text" placeholder="Search indicators…" oninput="filterLearn(this.value)" aria-label="Search indicators">
   <div id="learn-cards"></div>
 </div>
 
 <script>
-/* ══════════════════════════════════════════════════════════
-   CHITTI TECHNICAL — main.js (inline)
-   All frontend logic. Backend calls only — no mock data.
-   API base: chitti-shares-api.onrender.com
-══════════════════════════════════════════════════════════ */
-const API = 'https://chitti-shares-api.onrender.com';
-const NEW_INDS = new Set(['TTM Squeeze','Awesome Oscillator','Vortex Indicator','Chandelier Exit','Hull MA','Laguerre RSI','Heikin Ashi Trend','Balance of Power','Chande Kroll Stop']);
+const API='https://chitti-shares-api.onrender.com';
+const NEW_SET=new Set(['TTM Squeeze','Awesome Oscillator','Vortex Indicator','Chandelier Exit','Hull MA','Laguerre RSI','Heikin Ashi Trend','Balance of Power','Chande Kroll Stop']);
 
-const IND_PLAIN = {
-  'Roshan Indicator':'Bryan custom indicator. Checks RSI momentum + candle direction on 2 timeframes. All 3 conditions must agree.',
-  'TTM Squeeze':'NEW. Bollinger squeeze inside Keltner = coiled spring. When it fires, a big move is coming. Above zero = BUY.',
-  'Awesome Oscillator':'NEW. Compares recent vs historical momentum. Above zero = buyers winning = BUY.',
-  'Vortex Indicator':'NEW. Two lines. Up-line crosses above down-line = BUY signal.',
-  'Chandelier Exit':'NEW. ATR-based trailing stop. Price above stop line = BUY.',
-  'Hull MA':'NEW. Faster moving average, almost no lag. Price above Hull MA = BUY.',
-  'Laguerre RSI':'NEW. Smarter RSI, fewer false signals. Above 0.5 = BUY.',
-  'Heikin Ashi Trend':'NEW. Smoothed candles filter market noise. 3 green candles = BUY.',
-  'Balance of Power':'NEW. Buyers vs sellers inside each candle. Above zero = buyers winning.',
-  'Chande Kroll Stop':'NEW 2021. Advanced trailing stop. Price above stop = BUY.',
-  RSI:'Speed of price movement. Below 30 = may bounce up. Above 70 = may fall.',
-  MACD:'Fast vs slow trend line. Fast crosses slow upward = BUY signal.',
-  Stochastic:'Is price high or low vs recent range? Below 20 = oversold = may rise.',
-  'Stochastic RSI':'RSI inside a Stochastic. More sensitive than RSI alone.',
-  'Williams %R':'Opposite of Stochastic. Below -80 = oversold = may rise.',
-  CCI:'How far is price from its average? Below -100 = oversold.',
-  ROC:'Rate of change. Shows how fast price is moving up or down.',
-  Momentum:'Raw speed of price. Positive = moving up, negative = moving down.',
-  TRIX:'Triple smoothed momentum. Filters noise. Crosses zero = signal.',
-  'Ultimate Oscillator':'Combines 3 timeframes into one oscillator. Below 30 = BUY zone.',
-  ADX:'Strength of the trend. Above 25 = strong trend is in place.',
-  Aroon:'Two lines. Aroon-Up crosses Aroon-Down = BUY.',
-  'Parabolic SAR':'Dots below price = BUY. Dots above price = SHORT.',
-  Supertrend:'Flips colour. Green = BUY. Red = SHORT. Very easy to read.',
-  Ichimoku:'Cloud system. Price above cloud = BUY. Below cloud = SHORT.',
-  'Elder Ray':'Bull/Bear power around EMA. Bull power positive + rising = BUY.',
-  'Elder Impulse':'Color-coded bars. Green = BUY zone. Red = SHORT zone.',
-  'Bollinger Bands':'Price envelope. Touch lower band = may bounce = BUY.',
-  ATR:'Average True Range = how much price moves per bar. Higher = more volatile.',
-  'Keltner Channels':'ATR-based envelope. Price outside upper band = breakout.',
-  'Donchian Channels':'Highest high / lowest low channel. Breakout above = BUY.',
-  OBV:'Tracks volume direction. Rising OBV = buyers accumulating quietly = BUY.',
-  'Force Index':'Price move × volume. Above zero = strong buying force.',
-  'Accumulation/Distribution':'Tracks money flow in/out. Rising = accumulation = BUY.',
-  'Chaikin Money Flow':'Volume-weighted flow. Above zero = money flowing in = BUY.',
-  MFI:'Money Flow Index. Below 20 = oversold = may rise.',
-  VWAP:'Volume-Weighted Average Price. Price above VWAP = buyers in control today.',
-  'SMA(20)':'20-day simple moving average. Short-term trend guide.',
-  'SMA(50)':'50-day average. Medium-term direction.',
-  'SMA(200)':'200-day average. Long-term trend. Price above = bull market.',
-  'EMA(20)':'Like SMA but reacts faster to recent price moves.',
-  'EMA(50)':'Medium-term fast average.',
-  'EMA(200)':'Long-term fast average.',
+/* ─ IND DESCRIPTIONS ─ */
+const IND_PLAIN={
+  'Roshan Indicator':'Bryan\'s custom indicator. Checks RSI momentum + candle direction on 2 timeframes simultaneously. All 3 conditions must agree before firing.',
+  'Accumulation/Distribution':'Tracks money flowing in or out of a stock using price and volume. Rising line = money flowing in = BUY.',
+  ADX:'Measures trend strength — not direction. Above 25 = strong trend is in place. Use with another indicator for direction.',
+  Aroon:'Two lines that show how recently a high or low was made. Up-line above down-line = BUY.',
+  ATR:'Average True Range = how much price moves per bar on average. Higher ATR = more volatile stock.',
+  'Awesome Oscillator':'NEW. Compares recent 5-bar momentum to 34-bar momentum. Above zero = buyers winning = BUY.',
+  'Balance of Power':'NEW. Measures buying vs selling pressure inside each candle. Consistently above zero = buyers in control.',
+  'Bollinger Bands':'Three lines around price. When price touches the lower band, it often bounces. When it touches upper, it often falls.',
+  'Chaikin Money Flow':'Volume-weighted buying/selling pressure over 20 bars. Above zero = money flowing in = BUY.',
+  'Chande Kroll Stop':'NEW 2021. Advanced dual-ATR trailing stop. Price above the stop line = BUY trend confirmed.',
+  'Chandelier Exit':'NEW. ATR-based trailing stop that uses the highest high. Price above the stop = BUY.',
+  CCI:'Commodity Channel Index. Shows how far price is from its average. Below -100 = oversold = may rise.',
+  'Donchian Channels':'Highest high and lowest low over N bars. Price breaking above the upper band = BUY breakout.',
+  'Elder Impulse':'Color-coded bars combining EMA direction + MACD. Green bar = BUY zone. Red bar = SHORT zone.',
+  'Elder Ray':'Bull Power and Bear Power around an EMA. Bull Power positive and rising = BUY.',
+  'EMA(20)':'20-bar Exponential Moving Average. Reacts faster to recent price than SMA. Price above = bullish bias.',
+  'EMA(50)':'50-bar EMA. Medium-term trend guide. Used by institutions to assess trend direction.',
+  'EMA(200)':'200-bar EMA. The most watched long-term average. Price above = bull market for that stock.',
+  'Force Index':'Price move multiplied by volume. High positive value = strong buying force. Above zero = BUY.',
+  'Heikin Ashi Trend':'NEW. Smoothed candles that filter out noise. Three consecutive green Heikin Ashi candles = BUY.',
+  'Hull MA':'NEW. Much faster moving average than EMA — almost zero lag. Price crosses above Hull MA = BUY.',
+  Ichimoku':'Full cloud system. Price above the cloud = BUY. Price below the cloud = SHORT. Inside = wait.',
+  'Keltner Channels':'ATR-based envelope around EMA. Price breaks above upper band = strong breakout = BUY.',
+  'Laguerre RSI':'NEW. Smarter RSI using Laguerre transform. Fewer false signals than standard RSI. Above 0.5 = BUY.',
+  MACD:'Fast EMA minus slow EMA. When MACD line crosses above Signal line = BUY. Below = SHORT.',
+  MFI:'Money Flow Index — RSI applied to volume. Below 20 = oversold = may rise. Above 80 = overbought.',
+  Momentum:'Raw speed of price change. Positive and rising = buying pressure. Negative = selling pressure.',
+  OBV:'On Balance Volume. Adds volume on up-days, subtracts on down-days. Rising OBV = accumulation = BUY.',
+  'Parabolic SAR':'Dots that follow price. Dots below price = BUY trend. Dots flip above = trend ended.',
+  ROC:'Rate of Change. How fast is price moving as a percentage. Positive = upward momentum.',
+  RSI:'Relative Strength Index. Speed of price. Below 30 = may bounce (oversold). Above 70 = may fall (overbought).',
+  'Roshan Indicator':'Bryan\'s custom indicator. RSI momentum + candle direction on 2 timeframes. All 3 must agree.',
+  'SMA(20)':'20-bar Simple Moving Average. Short-term trend guide. Price above = short-term bullish.',
+  'SMA(50)':'50-bar SMA. Medium-term direction. Common institutional reference level.',
+  'SMA(200)':'200-bar SMA. Long-term trend. The most important moving average. Price above = bull market.',
+  Stochastic:'Compares close to recent high-low range. Below 20 = oversold = may rise. Above 80 = overbought.',
+  'Stochastic RSI':'RSI calculated inside a Stochastic. More sensitive and faster than RSI alone.',
+  Supertrend:'A single line that flips colour with the trend. Green = BUY. Red = SHORT. Very beginner-friendly.',
+  TRIX:'Triple-smoothed momentum. Filters out noise. Crosses above zero = BUY. Below zero = SHORT.',
+  'TTM Squeeze':'NEW. Bollinger Bands squeeze inside Keltner Channels = coiled spring. Fires = big move coming.',
+  'Ultimate Oscillator':'Combines 3 timeframes (7, 14, 28) into one oscillator. Below 30 = oversold = BUY zone.',
+  'Vortex Indicator':'NEW. Two lines — VI+ and VI-. VI+ crossing above VI- = BUY signal.',
+  VWAP:'Volume-Weighted Average Price. Price above VWAP = buyers in control. Used by institutions daily.',
+  'Williams %R':'Opposite of Stochastic. Below -80 = oversold = may bounce. Above -20 = overbought.',
 };
 
-const LEARN_DATA = [
-  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan\'s custom indicator. Combines RSI momentum with candle direction across 2 timeframes. All 3 conditions must align.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback candle red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback candle green'},
-  {key:'TTM Squeeze',icon:'⚡',tag:'new',title:'TTM Squeeze (2010+)',plain:'When Bollinger Bands squeeze inside Keltner Channels, a big move is about to happen. The squeeze fires the signal.',buy:'Momentum histogram crosses above zero after squeeze ends',sell:'Momentum crosses below zero'},
-  {key:'Hull MA',icon:'⚡',tag:'new',title:'Hull MA (2012+)',plain:'Much faster moving average than EMA. Almost no lag — reacts to price quickly.',buy:'Price crosses above Hull Moving Average',sell:'Price crosses below Hull Moving Average'},
-  {key:'Laguerre RSI',icon:'⚡',tag:'new',title:'Laguerre RSI (2012+)',plain:'A smarter version of RSI. Less whipsawing, cleaner signals.',buy:'Laguerre RSI rises above 0.5 from below',sell:'Laguerre RSI falls below 0.5 from above'},
-  {key:'Supertrend',icon:'📊',tag:'classic',title:'Supertrend',plain:'A line that flips colour when trend changes. Most beginner-friendly trend indicator.',buy:'Price moves above the line → line turns green',sell:'Price moves below the line → line turns red'},
-  {key:'RSI',icon:'📊',tag:'classic',title:'RSI (14)',plain:'Measures the speed of price. Think of it as a speedometer. Below 30 = engine stalled. Above 70 = overheating.',buy:'RSI below 30 (oversold) or crosses above 50 from below',sell:'RSI above 70 (overbought) or crosses below 50 from above'},
-  {key:'MACD',icon:'📊',tag:'classic',title:'MACD',plain:'Two moving averages chasing each other. When they cross, trend is changing.',buy:'MACD line crosses above Signal line',sell:'MACD line crosses below Signal line'},
-  {key:'Bollinger Bands',icon:'📊',tag:'classic',title:'Bollinger Bands',plain:'Three lines around price. When price touches the outer bands, it often bounces back to center.',buy:'Price touches or goes below the lower band',sell:'Price touches or goes above the upper band'},
-  {key:'OBV',icon:'📊',tag:'classic',title:'On Balance Volume',plain:'Tracks whether volume is flowing in or out. Smart money accumulates quietly — OBV reveals it.',buy:'OBV making higher highs even as price consolidates',sell:'OBV making lower lows — distribution happening'},
-  {key:'VWAP',icon:'📊',tag:'classic',title:'VWAP',plain:'The average price weighted by volume for the day. Institutions use this to measure their trades.',buy:'Price consistently above VWAP during session',sell:'Price consistently below VWAP during session'},
-];
+/* ─ ALL 35 INDICATORS FOR LEARN — ALPHABETICAL ─ */
+const LEARN_ALL=[
+  {key:'Accumulation/Distribution',icon:'📊',tag:'classic',buy:'A/D line making new highs while price rises',sell:'A/D line falling while price rises (divergence)'},
+  {key:'ADX',icon:'📊',tag:'classic',buy:'ADX above 25 + +DI line above -DI line',sell:'ADX above 25 + -DI line above +DI line'},
+  {key:'Aroon',icon:'📊',tag:'classic',buy:'Aroon-Up crosses above Aroon-Down',sell:'Aroon-Down crosses above Aroon-Up'},
+  {key:'ATR',icon:'📊',tag:'classic',buy:'Not a directional signal — use for stop loss sizing',sell:'Not a directional signal — use for stop loss sizing'},
+  {key:'Awesome Oscillator',icon:'⚡',tag:'new',buy:'Histogram crosses above zero from below',sell:'Histogram crosses below zero from above'},
+  {key:'Balance of Power',icon:'⚡',tag:'new',buy:'Balance of Power consistently above zero',sell:'Balance of Power consistently below zero'},
+  {key:'Bollinger Bands',icon:'📊',tag:'classic',buy:'Price touches or closes below the lower band',sell:'Price touches or closes above the upper band'},
+  {key:'Chaikin Money Flow',icon:'📊',tag:'classic',buy:'CMF crosses above zero (money flowing in)',sell:'CMF crosses below zero (money flowing out)'},
+  {key:'Chande Kroll Stop',icon:'⚡',tag:'new',buy:'Price moves above the Chande Kroll stop line',sell:'Price moves below the Chande Kroll stop line'},
+  {key:'Chandelier Exit',icon:'⚡',tag:'new',buy:'Price remains above the chandelier exit line',sell:'Price drops below the chandelier exit line'},
+  {key:'CCI',icon:'📊',tag:'classic',buy:'CCI crosses above -100 from below (oversold recovery)',sell:'CCI crosses below +100 from above (overbought)'},
+  {key:'Donchian Channels',icon:'📊',tag:'classic',buy:'Price breaks above the upper Donchian channel',sell:'Price breaks below the lower Donchian channel'},
+  {key:'Elder Impulse',icon:'📊',tag:'classic',buy:'Bar turns green (EMA rising + MACD histogram rising)',sell:'Bar turns red (EMA falling + MACD histogram falling)'},
+  {key:'Elder Ray',icon:'📊',tag:'classic',buy:'Bull Power above zero and rising',sell:'Bear Power below zero and falling'},
+  {key:'EMA(20)',icon:'📈',tag:'classic',buy:'Price crosses above 20 EMA from below',sell:'Price crosses below 20 EMA from above'},
+  {key:'EMA(50)',icon:'📈',tag:'classic',buy:'Price above 50 EMA + 50 EMA pointing up',sell:'Price below 50 EMA + 50 EMA pointing down'},
+  {key:'EMA(200)',icon:'📈',tag:'classic',buy:'Price above 200 EMA = long-term bull market',sell:'Price below 200 EMA = long-term bear market'},
+  {key:'Force Index',icon:'📊',tag:'classic',buy:'Force Index crosses above zero with strong volume',sell:'Force Index crosses below zero with strong volume'},
+  {key:'Heikin Ashi Trend',icon:'⚡',tag:'new',buy:'3+ consecutive green Heikin Ashi candles with no lower shadows',sell:'3+ consecutive red Heikin Ashi candles with no upper shadows'},
+  {key:'Hull MA',icon:'⚡',tag:'new',buy:'Price crosses above Hull Moving Average',sell:'Price crosses below Hull Moving Average'},
+  {key:'Ichimoku',icon:'📊',tag:'classic',buy:'Price above the cloud + Tenkan crosses above Kijun',sell:'Price below the cloud + Tenkan crosses below Kijun'},
+  {key:'Keltner Channels',icon:'📊',tag:'classic',buy:'Price breaks above the upper Keltner channel',sell:'Price breaks below the lower Keltner channel'},
+  {key:'Laguerre RSI',icon:'⚡',tag:'new',buy:'Laguerre RSI rises above 0.5 from below',sell:'Laguerre RSI falls below 0.5 from above'},
+  {key:'MACD',icon:'📊',tag:'classic',buy:'MACD line crosses above Signal line',sell:'MACD line crosses below Signal line'},
+  {key:'MFI',icon:'📊',tag:'classic',buy:'MFI rises above 20 from below (oversold recovery)',sell:'MFI falls below 80 from above (overbought)'},
+  {key:'Momentum',icon:'📊',tag:'classic',buy:'Momentum crosses above zero from below',sell:'Momentum crosses below zero from above'},
+  {key:'OBV',icon:'📊',tag:'classic',buy:'OBV making higher highs confirming price highs',sell:'OBV making lower lows while price holds up (divergence)'},
+  {key:'Parabolic SAR',icon:'📊',tag:'classic',buy:'Dots flip from above price to below price',sell:'Dots flip from below price to above price'},
+  {key:'ROC',icon:'📊',tag:'classic',buy:'ROC crosses above zero from below',sell:'ROC crosses below zero from above'},
+  {key:'Roshan Indicator',icon:'⭐',tag:'classic',buy:'RSI above SMA(20) on BOTH timeframes + both candles green + pullback candle red',sell:'RSI below SMA(20) on BOTH timeframes + both candles red + pullback candle green'},
+  {key:'RSI',icon:'📊',tag:'classic',buy:'RSI below 30 (oversold) or crosses above 50 from below',sell:'RSI above 70 (overbought) or crosses below 50 from above'},
+  {key:'SMA(20)',icon:'📈',tag:'classic',buy:'Price crosses above 20 SMA',sell:'Price crosses below 20 SMA'},
+  {key:'SMA(50)',icon:'📈',tag:'classic',buy:'Price above 50 SMA + SMA slope is up',sell:'Price below 50 SMA + SMA slope is down'},
+  {key:'SMA(200)',icon:'📈',tag:'classic',buy:'Price above 200 SMA = long-term bullish',sell:'Price below 200 SMA = long-term bearish'},
+  {key:'Stochastic',icon:'📊',tag:'classic',buy:'%K crosses above %D below 20 (oversold)',sell:'%K crosses below %D above 80 (overbought)'},
+  {key:'Stochastic RSI',icon:'📊',tag:'classic',buy:'Stoch RSI crosses above 0.2 from below',sell:'Stoch RSI crosses below 0.8 from above'},
+  {key:'Supertrend',icon:'📊',tag:'classic',buy:'Price moves above the line — line turns green',sell:'Price moves below the line — line turns red'},
+  {key:'TRIX',icon:'📊',tag:'classic',buy:'TRIX crosses above zero or crosses above Signal line',sell:'TRIX crosses below zero or crosses below Signal line'},
+  {key:'TTM Squeeze',icon:'⚡',tag:'new',buy:'Squeeze fires + momentum histogram crosses above zero',sell:'Squeeze fires + momentum histogram crosses below zero'},
+  {key:'Ultimate Oscillator',icon:'📊',tag:'classic',buy:'Ultimate Oscillator rises above 30 after being below 30',sell:'Ultimate Oscillator falls below 70 after being above 70'},
+  {key:'Vortex Indicator',icon:'⚡',tag:'new',buy:'VI+ line crosses above VI- line',sell:'VI- line crosses above VI+ line'},
+  {key:'VWAP',icon:'📊',tag:'classic',buy:'Price stays consistently above VWAP during session',sell:'Price stays consistently below VWAP during session'},
+  {key:'Williams %R',icon:'📊',tag:'classic',buy:'Williams %R rises above -80 from below (oversold recovery)',sell:'Williams %R falls below -20 from above (overbought)'},
+].sort((a,b)=>a.key.localeCompare(b.key));
 
-/* ── STATE ─────────────────────────────────────────────── */
-let curSymbol = null, curTF = 'Monthly';
-let showSR = true, showTL = true;
-let scanIv = null, cvLang = 'en', cvData = null;
-let mainChart = null, candleSeries = null, rsiChart = null, rsiSeries = null, rsiSmaSeries = null;
-let srLines = [], tlLines = [];
-let candleCache = {}; // { 'NSE:TCS|Daily': [...candles] }
+/* ─ STATE ─ */
+let curSymbol=null,curTF='Daily';
+let showSR=true,showTL=true,cvLang='en',cvData=null,scanIv=null;
+let mainChart=null,candleSeries=null,rsiChart=null,rsiSeries=null,rsiSmaSeries=null;
+let srLines=[],tlSeries=[];
+let cacheCandles={};
 
-/* ── INIT ─────────────────────────────────────────────── */
-window.addEventListener('load', () => {
-  // Wire SEBI banner via kit
-  Chitti.SEBI.renderSEBIBanner(document.getElementById('sebi-banner'));
-  // Build legend
+/* ─ INIT ─ */
+window.addEventListener('load',()=>{
   buildLegend();
-  // Init charts (empty)
   initCharts();
-  // Learn tab
   buildLearn();
-  // Auto-speak
-  setTimeout(() => Chitti.Speech.sp('Chitti Technical Analysis loaded. I will tell you when scan results are ready.'), 1200);
-  // Default refresh
   setupRefresh();
+  setTimeout(()=>Chitti.Speech.sp('Chitti Technical Analysis loaded. Tap Scan to find signals.'),1200);
 });
 
-/* ── CHARTS INIT ──────────────────────────────────────── */
-function initCharts() {
-  const chartOpts = {
-    layout: { background: { color: '#181c24' }, textColor: '#64748b' },
-    grid: { vertLines: { color: '#1e2430' }, horzLines: { color: '#1e2430' } },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { borderColor: '#252b36', scaleMarginTop: 0.1, scaleMarginBottom: 0.1 },
-    timeScale: { borderColor: '#252b36', timeVisible: true, secondsVisible: false },
-    handleScale: true,
-    handleScroll: true,
-  };
-
-  mainChart = LightweightCharts.createChart(document.getElementById('main-chart'), { ...chartOpts, height: 360 });
-  candleSeries = mainChart.addCandlestickSeries({
-    upColor: '#22c55e', downColor: '#ef4444',
-    borderUpColor: '#22c55e', borderDownColor: '#ef4444',
-    wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+/* ─ CHARTS ─ */
+function initCharts(){
+  const base={layout:{background:{color:'#0b0e14'},textColor:'#787b86'},grid:{vertLines:{color:'#131720'},horzLines:{color:'#131720'}},crosshair:{mode:LightweightCharts.CrosshairMode.Normal},rightPriceScale:{borderColor:'#252d3d'},timeScale:{borderColor:'#252d3d',timeVisible:true,secondsVisible:false},handleScale:true,handleScroll:true};
+  mainChart=LightweightCharts.createChart(document.getElementById('main-chart'),{...base,height:380});
+  candleSeries=mainChart.addCandlestickSeries({upColor:'#26a69a',downColor:'#ef5350',borderUpColor:'#26a69a',borderDownColor:'#ef5350',wickUpColor:'#26a69a',wickDownColor:'#ef5350'});
+  rsiChart=LightweightCharts.createChart(document.getElementById('rsi-chart'),{...base,height:70,rightPriceScale:{...base.rightPriceScale,scaleMarginTop:.1,scaleMarginBottom:.1}});
+  rsiSeries=rsiChart.addLineSeries({color:'#2962ff',lineWidth:1.5});
+  rsiSmaSeries=rsiChart.addLineSeries({color:'#f59e0b',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+  // RSI ref lines
+  [[30,'rgba(38,166,154,.2)'],[50,'rgba(120,123,134,.3)'],[70,'rgba(239,83,80,.2)']].forEach(([v,c])=>{
+    const s=rsiChart.addLineSeries({color:c,lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,lastValueVisible:false,priceLineVisible:false});
+    // will be set when data loads
+    rsiChart._refLines=rsiChart._refLines||[];
+    rsiChart._refLines.push({series:s,value:v});
   });
-
-  rsiChart = LightweightCharts.createChart(document.getElementById('rsi-chart'), {
-    ...chartOpts,
-    height: 80,
-    rightPriceScale: { borderColor: '#252b36', scaleMarginTop: 0.2, scaleMarginBottom: 0.2 },
+  mainChart.subscribeCrosshairMove(p=>{
+    if(!p||!p.time||!candleSeries)return;
+    const d=p.seriesData.get(candleSeries);
+    if(d)document.getElementById('ohlc-bar').textContent=`O ${d.open.toFixed(2)}  H ${d.high.toFixed(2)}  L ${d.low.toFixed(2)}  C ${d.close.toFixed(2)}`;
   });
-  rsiSeries = rsiChart.addLineSeries({ color: '#3b82f6', lineWidth: 1.5, title: 'RSI' });
-  rsiSmaSeries = rsiChart.addLineSeries({ color: '#f59e0b', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, title: 'SMA20' });
-
-  // RSI reference lines
-  [30, 50, 70].forEach(level => {
-    rsiChart.addLineSeries({
-      color: level === 50 ? '#334155' : '#1e3a2a',
-      lineWidth: 1,
-      lineStyle: LightweightCharts.LineStyle.Dotted,
-      lastValueVisible: false, priceLineVisible: false,
-    }).setData([]);
-  });
-
-  // OHLC tooltip on crosshair
-  mainChart.subscribeCrosshairMove(param => {
-    if (!param || !param.time || !candleSeries) return;
-    const d = param.seriesData.get(candleSeries);
-    if (!d) return;
-    document.getElementById('ohlc-lbl').textContent =
-      `O ${d.open.toFixed(2)}  H ${d.high.toFixed(2)}  L ${d.low.toFixed(2)}  C ${d.close.toFixed(2)}`;
-  });
-
-  // Sync timescales
-  mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-    if (range) rsiChart.timeScale().setVisibleLogicalRange(range);
-  });
+  mainChart.timeScale().subscribeVisibleLogicalRangeChange(r=>{if(r)rsiChart.timeScale().setVisibleLogicalRange(r);});
 }
 
-/* ── LEGEND ───────────────────────────────────────────── */
-function buildLegend() {
-  const { TF_STYLE, TF_ORDER } = Chitti.Colours;
-  const el = document.getElementById('tf-legend');
-  el.innerHTML = TF_ORDER.map(tf => {
-    const s = TF_STYLE[tf];
-    const dashStyle = s.dash.length ? `repeating-linear-gradient(to right,${s.color} 0,${s.color} 5px,transparent 5px,transparent 8px)` : `linear-gradient(to right,${s.color},${s.color})`;
-    return `<div class="leg-chip">
-      <div class="leg-line" style="background:${dashStyle};height:${s.width}px;opacity:${s.srAlpha}"></div>
-      <span>${s.label}</span>
-    </div>`;
+/* ─ LEGEND ─ */
+function buildLegend(){
+  const{TF_STYLE,TF_ORDER}=Chitti.Colours;
+  document.getElementById('tf-legend').innerHTML=TF_ORDER.map(tf=>{
+    const s=TF_STYLE[tf];
+    const bg=s.dash.length?`repeating-linear-gradient(90deg,${s.color} 0,${s.color} 5px,transparent 5px,transparent 9px)`:`${s.color}`;
+    return`<div class="leg"><div class="leg-ln" style="background:${bg};height:${s.width}px;opacity:${s.srAlpha}"></div><span>${s.label}</span></div>`;
   }).join('');
 }
 
-/* ── TF SELECT ────────────────────────────────────────── */
-function selTF(btn) {
-  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+/* ─ TF SELECT ─ */
+function selTF(btn){
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  curTF = btn.dataset.tf;
-  if (curSymbol) loadChart(curSymbol, curTF);
-  Chitti.Speech.sp(`Timeframe: ${curTF}. Support and resistance updated.`);
+  curTF=btn.dataset.tf;
+  if(curSymbol)loadChart(curSymbol,curTF);
+  Chitti.Speech.sp(`Timeframe ${curTF} selected. Support and resistance lines updating.`);
 }
 
-/* ── OVERLAY TOGGLES ──────────────────────────────────── */
-function togOver(type) {
-  if (type === 'sr') {
-    showSR = !showSR;
-    document.getElementById('tog-sr').classList.toggle('on', showSR);
-    document.getElementById('tog-sr').setAttribute('aria-checked', showSR);
-    srLines.forEach(l => l.applyOptions({ visible: showSR }));
-    Chitti.Speech.sp('Support and resistance lines ' + (showSR ? 'shown' : 'hidden'));
-  } else {
-    showTL = !showTL;
-    document.getElementById('tog-tl').classList.toggle('on', showTL);
-    document.getElementById('tog-tl').setAttribute('aria-checked', showTL);
-    tlLines.forEach(l => l.applyOptions({ visible: showTL }));
-    Chitti.Speech.sp('Trendlines ' + (showTL ? 'shown' : 'hidden'));
-  }
+/* ─ OVERLAYS ─ */
+function togOver(type){
+  if(type==='sr'){showSR=!showSR;document.getElementById('tog-sr').classList.toggle('on',showSR);srLines.forEach(l=>{try{candleSeries.removePriceLine(l)}catch(e){}});srLines=[];if(showSR&&curSymbol)redrawSR();}
+  else{showTL=!showTL;document.getElementById('tog-tl').classList.toggle('on',showTL);tlSeries.forEach(s=>{try{mainChart.removeSeries(s)}catch(e){}});tlSeries=[];if(showTL&&curSymbol)redrawTL();}
+  Chitti.Speech.sp((type==='sr'?'Support and resistance lines ':'Trendlines ')+(type==='sr'?showSR?'shown':'hidden':showTL?'shown':'hidden'));
 }
 
-/* ── OPEN CHART FROM SCANNER ROW ─────────────────────── */
-function openChart(sym) {
-  curSymbol = sym;
-  const name = sym.split(':').pop();
-  document.getElementById('c-sym').textContent = name;
-  document.getElementById('c-full').textContent = sym;
+/* ─ OPEN FROM SCANNER ─ */
+function openChart(sym){
+  curSymbol=sym;
+  const nm=sym.split(':').pop();
+  document.getElementById('c-sym').textContent=nm;
+  document.getElementById('c-exch').textContent=sym.split(':')[0]||'NSE';
   showTab('chart');
-  // Set TF to Daily as default when opening stock
-  const defaultTF = 'Daily';
-  document.querySelectorAll('.tf-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tf === defaultTF);
-  });
-  curTF = defaultTF;
-  loadChart(sym, curTF);
+  // Default to Daily
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf==='Daily'));
+  curTF='Daily';
+  loadChart(sym,'Daily');
 }
 
-/* ── LOAD CHART ───────────────────────────────────────── */
-async function loadChart(sym, tf) {
-  if (!sym) return;
-  showChartLoading(true, 'Loading candles from Angel One…');
-  clearOverlays();
-  document.getElementById('cv').innerHTML = '';
-  document.getElementById('tf-verdicts-wrap').style.display = 'none';
-
-  try {
-    const candles = await fetchCandles(sym, tf);
+/* ─ LOAD CHART ─ */
+async function loadChart(sym,tf){
+  if(!sym)return;
+  document.getElementById('chart-overlay').innerHTML='<div class="spinner"></div><div style="font-size:11px;color:var(--muted);margin-top:4px">Loading '+tf+' candles from Angel One…</div>';
+  document.getElementById('chart-overlay').style.display='flex';
+  document.getElementById('cv').innerHTML='';
+  document.getElementById('cv-loading').style.display='none';
+  document.getElementById('tf-strip-wrap').style.display='none';
+  try{
+    const candles=await fetchCandles(sym,tf);
     renderCandles(candles);
-    drawOverlays(candles, tf);
+    clearOverlays();
+    await drawOverlays(sym,tf);
     updateTiles(candles);
-    loadChittisView(sym, tf, candles);
-    document.getElementById('ohlc-lbl').textContent = `${tf} · OHLC`;
-    showChartLoading(false);
-  } catch (e) {
-    showChartLoading(false);
-    showChartErr(`Failed to load ${tf} candles: ${e.message}`);
+    document.getElementById('ohlc-bar').textContent=tf+' · OHLC';
+    document.getElementById('chart-overlay').style.display='none';
+    loadCV(sym,tf,candles);
+    loadTFStrip(sym);
+  }catch(e){
+    document.getElementById('chart-overlay').innerHTML=`<div style="font-size:12px;color:#ef9a9a;padding:16px;text-align:center">❌ ${e.message}<br><br><button onclick="loadChart('${sym}','${tf}')" style="background:var(--blue);border:none;color:#fff;border-radius:4px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:11px">Retry</button></div>`;
   }
 }
 
-/* ── FETCH CANDLES (real Angel One) ───────────────────── */
-async function fetchCandles(sym, tf) {
-  const cacheKey = `${sym}|${tf}`;
-  if (candleCache[cacheKey]) return candleCache[cacheKey];
-
-  const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${encodeURIComponent(tf)}&days_back=200`);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const data = await r.json();
-  if (!Array.isArray(data) || data.length === 0) throw new Error('No candle data returned');
-  // Sort by time ascending (lightweight-charts requires this)
-  data.sort((a, b) => a.time - b.time);
-  candleCache[cacheKey] = data;
-  return data;
+/* ─ FETCH CANDLES ─ */
+async function fetchCandles(sym,tf){
+  const k=`${sym}|${tf}`;
+  if(cacheCandles[k])return cacheCandles[k];
+  const r=await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${encodeURIComponent(tf)}&days_back=200`);
+  if(!r.ok)throw new Error(`HTTP ${r.status} — backend may be waking up`);
+  const d=await r.json();
+  if(!Array.isArray(d)||!d.length)throw new Error('No candle data returned');
+  d.sort((a,b)=>a.time-b.time);
+  cacheCandles[k]=d;
+  return d;
 }
 
-/* ── RENDER CANDLES ───────────────────────────────────── */
-function renderCandles(candles) {
-  candleSeries.setData(candles.map(c => ({
-    time: c.time,
-    open: c.open, high: c.high, low: c.low, close: c.close,
-  })));
-
-  // Compute RSI + SMA on frontend from candle closes
-  const rsiData = computeRSI(candles, 14);
-  const smaData = computeSMA(rsiData.map(d => d.value), 20);
+/* ─ RENDER CANDLES ─ */
+function renderCandles(candles){
+  candleSeries.setData(candles.map(c=>({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close})));
+  const rsiData=calcRSI(candles,14);
+  const smaData=calcSMAonRSI(rsiData,20);
   rsiSeries.setData(rsiData);
-  rsiSmaSeries.setData(smaData.map((v, i) => ({ time: rsiData[i + 20 - 1]?.time, value: v })).filter(d => d.time && d.value != null));
-
+  rsiSmaSeries.setData(smaData);
+  // RSI ref lines
+  if(rsiChart._refLines&&rsiData.length){
+    const t0=rsiData[0].time,tN=rsiData[rsiData.length-1].time;
+    rsiChart._refLines.forEach(({series,value})=>series.setData([{time:t0,value},{time:tN,value}]));
+  }
   mainChart.timeScale().fitContent();
-  rsiChart.timeScale().fitContent();
-
-  // Update price display
-  const last = candles[candles.length - 1];
-  const prev = candles[candles.length - 2];
-  document.getElementById('c-price').textContent = Chitti.Utils.formatINR(last.close);
-  if (prev) {
-    const pct = ((last.close - prev.close) / prev.close) * 100;
-    const el = document.getElementById('c-change');
-    el.textContent = (pct >= 0 ? '▲ +' : '▼ ') + pct.toFixed(2) + '%';
-    el.className = 'c-change ' + (pct >= 0 ? 'pos' : 'neg');
-  }
+  const last=candles[candles.length-1],prev=candles[candles.length-2];
+  document.getElementById('c-price').textContent=Chitti.Utils.formatINR(last.close);
+  if(prev){const p=((last.close-prev.close)/prev.close)*100;const el=document.getElementById('c-chg');el.textContent=(p>=0?'▲ +':'▼ ')+p.toFixed(2)+'%';el.className='stock-chg '+(p>=0?'up':'dn');}
 }
 
-/* ── DRAW CASCADING S/R + TRENDLINES ─────────────────── */
-async function drawOverlays(currentTFCandles, currentTF) {
-  clearOverlays();
-  const tfsToShow = Chitti.Colours.visibleTFs(currentTF);
-
-  for (const tf of tfsToShow) {
-    const style = Chitti.Colours.TF_STYLE[tf];
+/* ─ CASCADING S/R + TRENDLINES ─ */
+async function drawOverlays(sym,currentTF){
+  const tfsToShow=Chitti.Colours.visibleTFs(currentTF);
+  for(const tf of tfsToShow){
+    const style=Chitti.Colours.TF_STYLE[tf];
     let candles;
-    try {
-      // Use cached candles if available, else fetch
-      candles = await fetchCandles(curSymbol, tf);
-    } catch (e) {
-      console.warn(`S/R: could not load ${tf} candles`, e);
-      continue;
-    }
-
-    const { supports, resistances } = Chitti.SR.computeSR(candles);
-    const { upLines, downLines } = Chitti.SR.computeTrendlines(candles);
-
-    // Draw S/R horizontal lines
-    if (showSR) {
-      [...supports, ...resistances].forEach(price => {
-        const line = candleSeries.createPriceLine({
+    try{candles=await fetchCandles(sym,tf);}catch(e){continue;}
+    /* S/R horizontal lines */
+    if(showSR){
+      const{supports,resistances}=Chitti.SR.computeSR(candles);
+      [...supports,...resistances].forEach(price=>{
+        const ln=candleSeries.createPriceLine({
           price,
-          color: Chitti.Utils.hexAlpha(style.color, style.srAlpha),
-          lineWidth: style.width,
-          lineStyle: style.dash.length
-            ? LightweightCharts.LineStyle.Dashed
-            : LightweightCharts.LineStyle.Solid,
-          axisLabelVisible: true,
-          title: style.label,
+          color:Chitti.Utils.hexAlpha(style.color,style.srAlpha),
+          lineWidth:style.width,
+          lineStyle:style.dash.length?LightweightCharts.LineStyle.Dashed:LightweightCharts.LineStyle.Solid,
+          axisLabelVisible:true,
+          title:style.label,
         });
-        srLines.push(line);
+        srLines.push(ln);
       });
     }
-
-    // Draw trendlines as line series
-    if (showTL) {
-      const times = candles.map(c => c.time);
-      [...upLines, ...downLines].forEach(tl => {
-        const tlSeries = mainChart.addLineSeries({
-          color: Chitti.Utils.hexAlpha(style.color, style.tlAlpha),
-          lineWidth: style.width,
-          lineStyle: style.dash.length
-            ? LightweightCharts.LineStyle.Dashed
-            : LightweightCharts.LineStyle.Solid,
-          lastValueVisible: false,
-          priceLineVisible: false,
-          crosshairMarkerVisible: false,
-          visible: showTL,
+    /* Trendlines — using real time coordinates from the kit */
+    if(showTL){
+      const{upLines,downLines}=Chitti.SR.computeTrendlines(candles);
+      [...upLines,...downLines].forEach(tl=>{
+        if(!tl.t1||!tl.t2||isNaN(tl.p1)||isNaN(tl.p2))return;
+        const s=mainChart.addLineSeries({
+          color:Chitti.Utils.hexAlpha(style.color,style.tlAlpha),
+          lineWidth:style.width,
+          lineStyle:style.dash.length?LightweightCharts.LineStyle.Dashed:LightweightCharts.LineStyle.Solid,
+          lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false,
         });
-        const t1 = times[tl.x1], t2 = times[tl.x2];
-        if (t1 && t2) {
-          tlSeries.setData([{ time: t1, value: tl.y1 }, { time: t2, value: tl.y2 }]);
-          tlLines.push(tlSeries);
-        }
+        s.setData([{time:tl.t1,value:tl.p1},{time:tl.t2,value:tl.p2}]);
+        tlSeries.push(s);
       });
     }
   }
 }
 
-/* ── CLEAR OVERLAYS ───────────────────────────────────── */
-function clearOverlays() {
-  srLines.forEach(l => { try { candleSeries.removePriceLine(l); } catch(e){} });
-  tlLines.forEach(s => { try { mainChart.removeSeries(s); } catch(e){} });
-  srLines = []; tlLines = [];
-}
-
-/* ── INDICATOR TILES ──────────────────────────────────── */
-function updateTiles(candles) {
-  const last = candles[candles.length - 1];
-  const rsiArr = computeRSI(candles, 14);
-  const rsiVal = rsiArr.length ? rsiArr[rsiArr.length - 1].value : null;
-  const smaArr = computeSMA(rsiArr.map(d => d.value), 20);
-  const smaVal = smaArr.length ? smaArr[smaArr.length - 1] : null;
-
-  const rsiEl = document.getElementById('t-rsi');
-  if (rsiVal != null) {
-    rsiEl.textContent = rsiVal.toFixed(1);
-    rsiEl.className = 'tile-val ' + (rsiVal > 70 ? 'neg' : rsiVal < 30 ? 'pos' : '');
-    document.getElementById('t-rsi-n').textContent = rsiVal > 70 ? 'May have risen too fast' : rsiVal < 30 ? 'May bounce up soon' : 'Neutral zone';
+async function redrawSR(){
+  const tfs=Chitti.Colours.visibleTFs(curTF);
+  for(const tf of tfs){
+    const style=Chitti.Colours.TF_STYLE[tf];
+    try{
+      const candles=await fetchCandles(curSymbol,tf);
+      const{supports,resistances}=Chitti.SR.computeSR(candles);
+      [...supports,...resistances].forEach(price=>{
+        srLines.push(candleSeries.createPriceLine({price,color:Chitti.Utils.hexAlpha(style.color,style.srAlpha),lineWidth:style.width,lineStyle:style.dash.length?LightweightCharts.LineStyle.Dashed:LightweightCharts.LineStyle.Solid,axisLabelVisible:true,title:style.label}));
+      });
+    }catch(e){}
   }
-  if (rsiVal != null && smaVal != null) {
-    const above = rsiVal > smaVal;
-    const el = document.getElementById('t-rsivs');
-    el.textContent = above ? '▲ Above' : '▼ Below';
-    el.className = 'tile-val ' + (above ? 'pos' : 'neg');
-    document.getElementById('t-rsivs-n').textContent = above ? 'Momentum building' : 'Momentum fading';
-  }
-  document.getElementById('t-close').textContent = Chitti.Utils.formatINR(last.close);
-  document.getElementById('t-close-n').textContent = `H: ${Chitti.Utils.formatINR(last.high)} · L: ${Chitti.Utils.formatINR(last.low)}`;
-
-  const vol = last.volume;
-  document.getElementById('t-vol').textContent = vol > 1e7 ? (vol/1e7).toFixed(1)+'Cr' : vol > 1e5 ? (vol/1e5).toFixed(1)+'L' : vol.toFixed(0);
-  document.getElementById('t-vol-n').textContent = 'Latest candle volume';
 }
-
-/* ── CHITTI'S VIEW ────────────────────────────────────── */
-async function loadChittisView(sym, currentTF, currentCandles) {
-  document.getElementById('cv-loading').style.display = 'flex';
-  document.getElementById('cv').innerHTML = '';
-
-  try {
-    // Fetch technical report from backend (all indicators computed server-side)
-    const r = await fetch(`${API}/api/technical/${encodeURIComponent(sym)}`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const report = await r.json();
-    cvData = { report, sym, currentTF };
-    renderChittisView(report, sym, currentTF, currentCandles);
-
-    // Also load per-TF signals
-    await loadTFVerdicts(sym);
-  } catch (e) {
-    document.getElementById('cv').innerHTML = `<div class="err">Could not load Chitti's analysis: ${e.message}</div>`;
-  } finally {
-    document.getElementById('cv-loading').style.display = 'none';
+async function redrawTL(){
+  const tfs=Chitti.Colours.visibleTFs(curTF);
+  for(const tf of tfs){
+    const style=Chitti.Colours.TF_STYLE[tf];
+    try{
+      const candles=await fetchCandles(curSymbol,tf);
+      const{upLines,downLines}=Chitti.SR.computeTrendlines(candles);
+      [...upLines,...downLines].forEach(tl=>{
+        if(!tl.t1||!tl.t2)return;
+        const s=mainChart.addLineSeries({color:Chitti.Utils.hexAlpha(style.color,style.tlAlpha),lineWidth:style.width,lineStyle:style.dash.length?LightweightCharts.LineStyle.Dashed:LightweightCharts.LineStyle.Solid,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
+        s.setData([{time:tl.t1,value:tl.p1},{time:tl.t2,value:tl.p2}]);
+        tlSeries.push(s);
+      });
+    }catch(e){}
   }
 }
 
-async function loadTFVerdicts(sym) {
-  // Fetch scan result for this stock across call types to show per-TF signals
-  const callTypes = ['Long-term','Positional','Swing','Intraday'];
-  const labels = { 'Long-term':'Monthly+Weekly','Positional':'Weekly+Daily','Swing':'Daily+4H','Intraday':'4H+1H' };
-  const verdicts = [];
+function clearOverlays(){
+  srLines.forEach(l=>{try{candleSeries.removePriceLine(l)}catch(e){}});
+  tlSeries.forEach(s=>{try{mainChart.removeSeries(s)}catch(e){}});
+  srLines=[];tlSeries=[];
+}
 
-  // Use the technical report indicators for a simplified per-TF verdict
-  // from RSI data on each timeframe
-  const tfsToCheck = ['Monthly','Weekly','Daily','4H','1H'];
-  for (const tf of tfsToCheck) {
-    try {
-      const candles = await fetchCandles(sym, tf);
-      const rsiArr = computeRSI(candles, 14);
-      const smaArr = computeSMA(rsiArr.map(d => d.value), 20);
-      const rsiVal = rsiArr.length ? rsiArr[rsiArr.length - 1].value : null;
-      const smaVal = smaArr.length ? smaArr[smaArr.length - 1] : null;
-      const last = candles[candles.length - 1];
-      const green = last.close > last.open;
-      let verdict = 'WAIT';
-      if (rsiVal != null && smaVal != null) {
-        if (rsiVal > smaVal && green) verdict = 'BUY';
-        else if (rsiVal < smaVal && !green) verdict = 'SHORT';
-      }
-      verdicts.push({ tf, verdict, rsi: rsiVal });
-    } catch(e) { verdicts.push({ tf, verdict: 'WAIT', rsi: null }); }
+/* ─ TILES ─ */
+function updateTiles(candles){
+  const last=candles[candles.length-1];
+  const rsiArr=calcRSI(candles,14);
+  const rsiVal=rsiArr.length?rsiArr[rsiArr.length-1].value:null;
+  const smaArr=calcSMAonRSI(rsiArr,20);
+  const smaVal=smaArr.length?smaArr[smaArr.length-1].value:null;
+  if(rsiVal!=null){
+    const el=document.getElementById('t-rsi');
+    el.textContent=rsiVal.toFixed(1);
+    el.className='ind-val '+(rsiVal>70?'neg':rsiVal<30?'pos':'');
+    document.getElementById('t-rsi-n').textContent=rsiVal>70?'May have risen too fast':rsiVal<30?'May bounce up soon':'Neutral zone';
   }
+  if(rsiVal!=null&&smaVal!=null){
+    const above=rsiVal>smaVal;
+    document.getElementById('t-rsivs').textContent=above?'▲ Above':'▼ Below';
+    document.getElementById('t-rsivs').className='ind-val '+(above?'pos':'neg');
+    document.getElementById('t-rsivs-n').textContent=above?'Momentum building':'Momentum fading';
+  }
+  document.getElementById('t-close').textContent=Chitti.Utils.formatINR(last.close);
+  document.getElementById('t-close-n').textContent=`H ${Chitti.Utils.formatINR(last.high)} · L ${Chitti.Utils.formatINR(last.low)}`;
+  document.getElementById('t-vol').textContent=Chitti.Utils.shortVol(last.volume||0);
+}
 
-  const wrap = document.getElementById('tf-verdicts-wrap');
-  const cont = document.getElementById('tf-verdicts');
-  wrap.style.display = 'block';
-  cont.innerHTML = verdicts.map(v => `
-    <div class="tf-verdict-chip ${v.verdict}">
-      <div class="tvlbl">${Chitti.Colours.TF_STYLE[v.tf]?.label || v.tf}</div>
-      <div class="tvval ${v.verdict}">${v.verdict === 'BUY' ? '▲ ' : v.verdict === 'SHORT' ? '▼ ' : '⏸ '}${v.verdict}</div>
-      ${v.rsi != null ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">RSI ${v.rsi.toFixed(1)}</div>` : ''}
+/* ─ TF STRIP ─ */
+async function loadTFStrip(sym){
+  const tfs=['Monthly','Weekly','Daily','4H','1H'];
+  const chips=[];
+  for(const tf of tfs){
+    try{
+      const candles=await fetchCandles(sym,tf);
+      const rsiArr=calcRSI(candles,14);
+      const smaArr=calcSMAonRSI(rsiArr,20);
+      const rsiVal=rsiArr.length?rsiArr[rsiArr.length-1].value:null;
+      const smaVal=smaArr.length?smaArr[smaArr.length-1].value:null;
+      const last=candles[candles.length-1];
+      const green=last.close>last.open;
+      let v='WAIT';
+      if(rsiVal!=null&&smaVal!=null){if(rsiVal>smaVal&&green)v='BUY';else if(rsiVal<smaVal&&!green)v='SHORT';}
+      chips.push({tf,v,rsi:rsiVal});
+    }catch(e){chips.push({tf,v:'WAIT',rsi:null});}
+  }
+  document.getElementById('tf-strip-wrap').style.display='block';
+  document.getElementById('tf-strip').innerHTML=chips.map(c=>`
+    <div class="tf-chip ${c.v}">
+      <div class="tc-lbl">${Chitti.Colours.TF_STYLE[c.tf]?.label||c.tf}</div>
+      <div class="tc-val ${c.v}">${c.v==='BUY'?'▲ BUY':c.v==='SHORT'?'▼ SHORT':'⏸ WAIT'}</div>
+      ${c.rsi!=null?`<div class="tc-rsi">${c.rsi.toFixed(1)}</div>`:''}
     </div>`).join('');
 }
 
-function renderChittisView(report, sym, tf, candles) {
-  const name = sym.split(':').pop();
-  const last = candles[candles.length - 1];
-  const rsiArr = computeRSI(candles, 14);
-  const smaArr = computeSMA(rsiArr.map(d => d.value), 20);
-  const rsiVal = rsiArr.length ? rsiArr[rsiArr.length - 1].value : null;
-  const smaVal = smaArr.length ? smaArr[smaArr.length - 1] : null;
-  const green = last.close > last.open;
-  const pct = candles.length > 1 ? ((last.close - candles[candles.length-2].close)/candles[candles.length-2].close*100) : 0;
-
-  let verdict = 'WAIT', icon = '⏸️';
-  if (rsiVal != null && smaVal != null) {
-    if (rsiVal > smaVal && rsiVal > 50 && green) { verdict = 'BUY'; icon = '📈'; }
-    else if (rsiVal < smaVal && rsiVal < 50 && !green) { verdict = 'SHORT'; icon = '📉'; }
-  }
-
-  const reasonEN = buildReason(name, verdict, rsiVal, smaVal, pct, tf);
-  const reasonHI = buildReasonHI(name, verdict, rsiVal, pct);
-  const actionEN = buildAction(verdict);
-  const actionHI = buildActionHI(verdict);
-
-  const html = `
-  <div class="cv-combined ${verdict}" id="cv-card">
-    <div class="cv-top">
-      <div class="cv-avatar">🤖</div>
-      <div class="cv-verdict ${verdict}">${icon} ${verdict} — ${name} <span style="font-size:13px;font-weight:500;opacity:.7">(${tf})</span></div>
-      <div class="lang-row">
-        <button class="lang-btn on" id="lb-en" onclick="switchLang('en')" aria-label="English">EN</button>
-        <button class="lang-btn" id="lb-hi" onclick="switchLang('hi')" aria-label="Hindi">हि</button>
-        <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear verdict" style="margin-left:4px;padding:3px 8px;font-size:12px">🔊</button>
-      </div>
-    </div>
-    <div class="cv-reason" id="cv-reason-en">${reasonEN}</div>
-    <div class="cv-reason" id="cv-reason-hi" style="display:none">${reasonHI}</div>
-    <div class="cv-action" id="cv-action-en">${actionEN}</div>
-    <div class="cv-action" id="cv-action-hi" style="display:none">${actionHI}</div>
-    <div class="cv-caution">⚠️ Chitti shows direction — not a guarantee. Never invest money you cannot afford to lose.</div>
-    <details style="margin-top:6px">
-      <summary style="font-size:11px;color:var(--muted);cursor:pointer;user-select:none">Show numbers</summary>
-      <div class="cv-nums" style="margin-top:7px">
-        <div class="cv-num"><span class="num-l">RSI (14)</span><span class="num-v ${rsiVal>50?'pos':'neg'}">${rsiVal!=null?rsiVal.toFixed(2):'—'}</span></div>
-        <div class="cv-num"><span class="num-l">RSI SMA(20)</span><span class="num-v">${smaVal!=null?smaVal.toFixed(2):'—'}</span></div>
-        <div class="cv-num"><span class="num-l">Last Close</span><span class="num-v">${Chitti.Utils.formatINR(last.close)}</span></div>
-        <div class="cv-num"><span class="num-l">Change</span><span class="num-v ${pct>=0?'pos':'neg'}">${Chitti.Utils.formatPct(pct)}</span></div>
-        <div class="cv-num"><span class="num-l">High</span><span class="num-v">${Chitti.Utils.formatINR(last.high)}</span></div>
-        <div class="cv-num"><span class="num-l">Low</span><span class="num-v">${Chitti.Utils.formatINR(last.low)}</span></div>
-      </div>
-    </details>
-  </div>`;
-  document.getElementById('cv').innerHTML = html;
-  cvData = { verdict, name, reasonEN, actionEN, rsiVal, pct };
-}
-
-function buildReason(name, verdict, rsi, sma, pct, tf) {
-  if (verdict === 'BUY') return `${name} is showing buying strength on the ${tf} chart. RSI is at ${rsi?.toFixed(1)} — above its 20-bar average of ${sma?.toFixed(1)}, meaning buying momentum is building. The latest candle closed green${pct >= 0 ? `, up ${pct.toFixed(2)}%` : ''}.`;
-  if (verdict === 'SHORT') return `${name} is showing selling pressure on the ${tf} chart. RSI is at ${rsi?.toFixed(1)} — below its 20-bar average of ${sma?.toFixed(1)}, meaning selling momentum is building. The latest candle closed red${pct < 0 ? `, down ${Math.abs(pct).toFixed(2)}%` : ''}.`;
-  return `${name} is in a neutral zone on the ${tf} chart. RSI is at ${rsi?.toFixed(1)} — no clear direction yet. Wait for a stronger signal before acting.`;
-}
-function buildReasonHI(name, verdict, rsi, pct) {
-  if (verdict === 'BUY') return `${name} ${curTF} चार्ट पर खरीदारी की ताकत दिखा रहा है। RSI ${rsi?.toFixed(1)} पर है — momentum बन रहा है।`;
-  if (verdict === 'SHORT') return `${name} ${curTF} चार्ट पर बिकवाली का दबाव दिखा रहा है। RSI ${rsi?.toFixed(1)} — momentum कमज़ोर है।`;
-  return `${name} अभी neutral zone में है। कोई स्पष्ट signal नहीं है। थोड़ा इंतज़ार करें।`;
-}
-function buildAction(verdict) {
-  if (verdict === 'BUY') return '✅ Wait for a small dip before entering. Buy in parts — not all at once. Always keep a stop loss below the last support level.';
-  if (verdict === 'SHORT') return '🔴 Wait for a small bounce before shorting. Enter in parts. Keep a stop loss above the last resistance level.';
-  return '⏸️ No action yet. Wait for RSI to clearly cross above or below its average. Patience protects capital.';
-}
-function buildActionHI(verdict) {
-  if (verdict === 'BUY') return '✅ थोड़ी गिरावट का इंतज़ार करें फिर खरीदें। एक साथ नहीं, parts में खरीदें। Stop loss ज़रूर लगाएं।';
-  if (verdict === 'SHORT') return '🔴 छोटी bounce का इंतज़ार करें फिर short करें। Parts में enter करें। Stop loss लगाएं।';
-  return '⏸️ अभी कोई action नहीं। RSI के clearly cross करने का इंतज़ार करें।';
-}
-
-function switchLang(lang) {
-  cvLang = lang;
-  ['en','hi'].forEach(l => {
-    document.getElementById('cv-reason-'+l).style.display = l===lang ? '' : 'none';
-    document.getElementById('cv-action-'+l).style.display = l===lang ? '' : 'none';
-    document.getElementById('lb-'+l).classList.toggle('on', l===lang);
-  });
-}
-
-function speakVerdict() {
-  if (!cvData) { Chitti.Speech.sp('No verdict yet. Select a stock and open chart.'); return; }
-  const text = cvLang === 'hi'
-    ? `चिट्टी का विश्लेषण: ${cvData.name} — ${cvData.verdict}. ${buildReasonHI(cvData.name, cvData.verdict, cvData.rsiVal, cvData.pct)} ${buildActionHI(cvData.verdict)} ${Chitti.SEBI.DISCLAIMER_HI}`
-    : `Chitti's analysis: ${cvData.name} — ${cvData.verdict}. ${cvData.reasonEN} ${cvData.actionEN} ${Chitti.SEBI.DISCLAIMER_EN}`;
-  Chitti.Speech.sp(text, cvLang);
-}
-
-/* ── RSI COMPUTATION (frontend, from candle closes) ───── */
-function computeRSI(candles, period = 14) {
-  if (candles.length < period + 1) return [];
-  const closes = candles.map(c => c.close);
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const diff = closes[i] - closes[i-1];
-    if (diff >= 0) gains += diff; else losses -= diff;
-  }
-  let avgGain = gains / period, avgLoss = losses / period;
-  const result = [];
-  for (let i = period; i < closes.length; i++) {
-    if (i > period) {
-      const diff = closes[i] - closes[i-1];
-      avgGain = (avgGain * (period-1) + Math.max(diff, 0)) / period;
-      avgLoss = (avgLoss * (period-1) + Math.max(-diff, 0)) / period;
+/* ─ CHITTI'S VIEW ─ */
+async function loadCV(sym,tf,candles){
+  document.getElementById('cv-loading').style.display='flex';
+  try{
+    const rsiArr=calcRSI(candles,14);
+    const smaArr=calcSMAonRSI(rsiArr,20);
+    const rsiVal=rsiArr.length?rsiArr[rsiArr.length-1].value:null;
+    const smaVal=smaArr.length?smaArr[smaArr.length-1].value:null;
+    const last=candles[candles.length-1],prev=candles[candles.length-2];
+    const green=last.close>last.open;
+    const pct=prev?((last.close-prev.close)/prev.close*100):0;
+    const name=sym.split(':').pop();
+    let verdict='WAIT',icon='⏸️';
+    if(rsiVal!=null&&smaVal!=null){
+      if(rsiVal>smaVal&&rsiVal>50&&green){verdict='BUY';icon='📈';}
+      else if(rsiVal<smaVal&&rsiVal<50&&!green){verdict='SHORT';icon='📉';}
     }
-    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-    result.push({ time: candles[i].time, value: parseFloat((100 - 100/(1+rs)).toFixed(2)) });
+    const rEN=buildReason(name,verdict,rsiVal,smaVal,pct,tf);
+    const rHI=buildReasonHI(name,verdict,rsiVal,pct);
+    const aEN=buildAction(verdict);
+    const aHI=buildActionHI(verdict);
+    cvData={verdict,name,rEN,aEN,rsiVal,smaVal,pct};
+    document.getElementById('cv').innerHTML=`
+    <div class="cv-card ${verdict}" id="cv-card">
+      <div class="cv-head">
+        <div class="cv-bot">🤖</div>
+        <div class="cv-verdict ${verdict}">${icon} ${verdict}</div>
+        <span class="cv-tf-lbl">— ${name} · ${tf}</span>
+        <div class="lang-row">
+          <button class="lang-btn on" id="lb-en" onclick="switchLang('en')">EN</button>
+          <button class="lang-btn" id="lb-hi" onclick="switchLang('hi')">हि</button>
+          <button class="spk-v" onclick="speakVerdict()">🔊</button>
+        </div>
+      </div>
+      <div class="cv-reason" id="cv-r-en">${rEN}</div>
+      <div class="cv-reason" id="cv-r-hi" style="display:none">${rHI}</div>
+      <div class="cv-action" id="cv-a-en">${aEN}</div>
+      <div class="cv-action" id="cv-a-hi" style="display:none">${aHI}</div>
+      <div class="cv-caution">⚠️ Chitti shows direction — not a guarantee. Never invest money you cannot afford to lose.</div>
+      <details>
+        <summary>Show numbers</summary>
+        <div class="cv-nums" style="margin-top:6px">
+          <div class="cv-num"><span class="nl">RSI (14)</span><span class="nv ${rsiVal>50?'pos':'neg'}">${rsiVal!=null?rsiVal.toFixed(2):'—'}</span></div>
+          <div class="cv-num"><span class="nl">SMA(20) of RSI</span><span class="nv">${smaVal!=null?smaVal.toFixed(2):'—'}</span></div>
+          <div class="cv-num"><span class="nl">Last Close</span><span class="nv">${Chitti.Utils.formatINR(last.close)}</span></div>
+          <div class="cv-num"><span class="nl">Change</span><span class="nv ${pct>=0?'pos':'neg'}">${Chitti.Utils.formatPct(pct)}</span></div>
+          <div class="cv-num"><span class="nl">High</span><span class="nv">${Chitti.Utils.formatINR(last.high)}</span></div>
+          <div class="cv-num"><span class="nl">Low</span><span class="nv">${Chitti.Utils.formatINR(last.low)}</span></div>
+        </div>
+      </details>
+    </div>`;
+  }finally{document.getElementById('cv-loading').style.display='none';}
+}
+
+function buildReason(name,v,rsi,sma,pct,tf){
+  if(v==='BUY')return`${name} is showing buying strength on the ${tf} chart. RSI is ${rsi?.toFixed(1)} — above its 20-bar average of ${sma?.toFixed(1)}, meaning buying momentum is building. Latest candle closed green${pct>0?`, up ${pct.toFixed(2)}%`:''}.`;
+  if(v==='SHORT')return`${name} is showing selling pressure on the ${tf} chart. RSI is ${rsi?.toFixed(1)} — below its 20-bar average of ${sma?.toFixed(1)}, meaning selling momentum is building. Latest candle closed red${pct<0?`, down ${Math.abs(pct).toFixed(2)}%`:''}.`;
+  return`${name} is in a neutral zone on the ${tf} chart. RSI is ${rsi?.toFixed(1)} with no clear direction yet. Wait for a stronger signal before acting.`;
+}
+function buildReasonHI(name,v,rsi,pct){
+  if(v==='BUY')return`${name} ${curTF} चार्ट पर खरीदारी की ताकत दिखा रहा है। RSI ${rsi?.toFixed(1)} — momentum बन रहा है।`;
+  if(v==='SHORT')return`${name} ${curTF} चार्ट पर बिकवाली का दबाव है। RSI ${rsi?.toFixed(1)} — momentum कमज़ोर है।`;
+  return`${name} अभी neutral zone में है। कोई स्पष्ट signal नहीं। थोड़ा इंतज़ार करें।`;
+}
+function buildAction(v){
+  if(v==='BUY')return'✅ Wait for a small dip before entering. Buy in parts — not all at once. Keep a stop loss below the nearest support level.';
+  if(v==='SHORT')return'🔴 Wait for a small bounce before shorting. Enter in parts. Keep a stop loss above the nearest resistance level.';
+  return'⏸️ No clear signal yet. Wait for RSI to clearly cross above or below its average. Patience protects capital.';
+}
+function buildActionHI(v){
+  if(v==='BUY')return'✅ थोड़ी गिरावट का इंतज़ार करें फिर खरीदें। Parts में खरीदें। Stop loss ज़रूर लगाएं।';
+  if(v==='SHORT')return'🔴 छोटी bounce का इंतज़ार करें। Parts में short करें। Stop loss लगाएं।';
+  return'⏸️ अभी कोई action नहीं। RSI के clearly cross करने का इंतज़ार करें।';
+}
+function switchLang(l){
+  cvLang=l;
+  ['en','hi'].forEach(x=>{document.getElementById('cv-r-'+x).style.display=x===l?'':'none';document.getElementById('cv-a-'+x).style.display=x===l?'':'none';document.getElementById('lb-'+x).classList.toggle('on',x===l);});
+}
+function speakVerdict(){
+  if(!cvData){Chitti.Speech.sp('No verdict yet. Select a stock first.');return;}
+  const t=cvLang==='hi'?`चिट्टी का विश्लेषण: ${cvData.name} — ${cvData.verdict}. ${buildReasonHI(cvData.name,cvData.verdict,cvData.rsiVal,cvData.pct)} ${buildActionHI(cvData.verdict)} ${Chitti.SEBI.DISCLAIMER_HI}`:`Chitti's analysis: ${cvData.name} — ${cvData.verdict}. ${cvData.rEN} ${cvData.aEN} ${Chitti.SEBI.DISCLAIMER_EN}`;
+  Chitti.Speech.sp(t,cvLang);
+}
+
+/* ─ RSI CALC ─ */
+function calcRSI(candles,period=14){
+  if(candles.length<period+1)return[];
+  const closes=candles.map(c=>c.close);
+  let g=0,l=0;
+  for(let i=1;i<=period;i++){const d=closes[i]-closes[i-1];if(d>=0)g+=d;else l-=d;}
+  let ag=g/period,al=l/period;
+  const r=[];
+  for(let i=period;i<closes.length;i++){
+    if(i>period){const d=closes[i]-closes[i-1];ag=(ag*(period-1)+Math.max(d,0))/period;al=(al*(period-1)+Math.max(-d,0))/period;}
+    r.push({time:candles[i].time,value:parseFloat((100-100/(1+(al===0?100:ag/al))).toFixed(2))});
   }
-  return result;
+  return r;
 }
-
-function computeSMA(values, period) {
-  const result = [];
-  for (let i = period - 1; i < values.length; i++) {
-    const sum = values.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
-    result.push(parseFloat((sum / period).toFixed(2)));
+function calcSMAonRSI(rsiArr,period=20){
+  const r=[];
+  for(let i=period-1;i<rsiArr.length;i++){
+    const sum=rsiArr.slice(i-period+1,i+1).reduce((a,b)=>a+b.value,0);
+    r.push({time:rsiArr[i].time,value:parseFloat((sum/period).toFixed(2))});
   }
-  return result;
+  return r;
 }
 
-/* ── SCANNER ──────────────────────────────────────────── */
-const NEW_INDS_SET = new Set(['TTM Squeeze','Awesome Oscillator','Vortex Indicator','Chandelier Exit','Hull MA','Laguerre RSI','Heikin Ashi Trend','Balance of Power','Chande Kroll Stop']);
-
-function onInd() {
-  const v = document.getElementById('ind-sel').value;
-  const d = document.getElementById('ind-desc');
-  d.textContent = IND_PLAIN[v] || 'Analyses price to detect BUY or SHORT signals.';
-  d.className = 'ind-desc' + (NEW_INDS_SET.has(v) ? ' new' : '');
-  document.getElementById('sbtn-ind').textContent = v;
+/* ─ SCANNER ─ */
+function onInd(){
+  const v=document.getElementById('ind-sel').value;
+  const d=document.getElementById('ind-desc');
+  d.textContent=IND_PLAIN[v]||'Analyses price to detect BUY or SHORT signals.';
+  d.className='ind-desc'+(NEW_SET.has(v)?' new':'');
+  document.getElementById('sbtn-ind').textContent=v;
 }
+function onCall(){document.getElementById('cbox').className='cbox'+(document.getElementById('call-sel').value==='Custom'?' on':'');updateCNote();}
+function updateCNote(){const tf1=document.getElementById('ctf1').value,tf2=document.getElementById('ctf2').value,pb=document.getElementById('cpb').value,ind=document.getElementById('ind-sel').value;document.getElementById('cnote').textContent=`Signal fires when ${ind} gives BUY on both ${tf1} AND ${tf2}. Entry on ${pb} pullback.`;}
 
-function onCall() {
-  const c = document.getElementById('call-sel').value;
-  document.getElementById('cbox').className = 'cbox' + (c === 'Custom' ? ' on' : '');
-  updateCNote();
-}
-
-function updateCNote() {
-  const tf1 = document.getElementById('ctf1').value, tf2 = document.getElementById('ctf2').value, pb = document.getElementById('cpb').value;
-  const ind = document.getElementById('ind-sel').value;
-  const n = document.getElementById('cnote');
-  if (n) n.textContent = `Signal fires when ${ind} gives BUY on both ${tf1} AND ${tf2}. Entry on ${pb} pullback.`;
-}
-
-async function runScan(force = false) {
-  const ind = document.getElementById('ind-sel').value;
-  const call = document.getElementById('call-sel').value;
-  const univ = document.getElementById('univ-sel').value;
-  const maxS = document.getElementById('max-s').value || 10;
-  const ep = ind === 'Roshan Indicator' ? 'roshan' : encodeURIComponent(ind);
-  let url = `${API}/api/scan/${ep}?call=${encodeURIComponent(call)}&universe=${encodeURIComponent(univ)}&force=${force}&max_stocks=${maxS}`;
-  if (call === 'Custom') {
-    url += `&tf1=${document.getElementById('ctf1').value}&tf2=${document.getElementById('ctf2').value}&pullback=${document.getElementById('cpb').value}`;
-  }
-  const btn = document.getElementById('sbtn');
-  btn.disabled = true; btn.textContent = '⏳ Scanning…';
-  ['buy-list','sell-list'].forEach(id => { document.getElementById(id).innerHTML = [1,2,3,4].map(()=>'<div class="skel"></div>').join(''); });
-  document.getElementById('serr').style.display = 'none';
+async function runScan(force=false){
+  const ind=document.getElementById('ind-sel').value,call=document.getElementById('call-sel').value,univ=document.getElementById('univ-sel').value,maxS=document.getElementById('max-s').value||10;
+  const ep=ind==='Roshan Indicator'?'roshan':encodeURIComponent(ind);
+  let url=`${API}/api/scan/${ep}?call=${encodeURIComponent(call)}&universe=${encodeURIComponent(univ)}&force=${force}&max_stocks=${maxS}`;
+  if(call==='Custom')url+=`&tf1=${document.getElementById('ctf1').value}&tf2=${document.getElementById('ctf2').value}&pullback=${document.getElementById('cpb').value}`;
+  const btn=document.getElementById('sbtn');btn.disabled=true;btn.textContent='⏳ Scanning…';
+  ['buy-list','sell-list'].forEach(id=>{document.getElementById(id).innerHTML=[1,2,3,4].map(()=>'<div class="skel"></div>').join('');});
+  document.getElementById('serr').style.display='none';
   Chitti.Speech.sp(`Scanning ${univ}. Please wait.`);
-  try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    renderResults(j);
-    updateStatus(j);
-    Chitti.Speech.sp(`Scan complete. ${(j.buys||[]).length} buy signal${(j.buys||[]).length!==1?'s':''} and ${(j.shorts||[]).length} short signal${(j.shorts||[]).length!==1?'s':''} found. Tap Speak BUY to hear stock names.`);
-  } catch (e) {
-    const eb = document.getElementById('serr');
-    eb.textContent = '❌ ' + (e.message || 'Scan failed. Is backend awake?');
-    eb.style.display = 'block';
-    ['buy-list','sell-list'].forEach(id => { document.getElementById(id).innerHTML = '<div class="empty">Scan failed. Tap Scan again.</div>'; });
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `▶ Scan — <span id="sbtn-ind">${ind}</span>`;
-  }
+  try{
+    const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();renderResults(j);updateStatus(j);
+    Chitti.Speech.sp(`Scan complete. ${(j.buys||[]).length} buy and ${(j.shorts||[]).length} short signals. Tap Speak BUY to hear stock names.`);
+  }catch(e){
+    document.getElementById('serr').textContent='❌ '+(e.message||'Scan failed');
+    document.getElementById('serr').style.display='block';
+    ['buy-list','sell-list'].forEach(id=>{document.getElementById(id).innerHTML='<div class="empty">Scan failed. Tap Scan again.</div>';});
+  }finally{btn.disabled=false;btn.innerHTML=`▶ Scan — <span id="sbtn-ind">${ind}</span>`;}
 }
-
-function renderResults(j) {
-  const buys = j.buys || [], shorts = j.shorts || [];
-  document.getElementById('buy-cnt').textContent = buys.length;
-  document.getElementById('sell-cnt').textContent = shorts.length;
-  document.getElementById('buy-list').innerHTML = buys.length ? buys.map(s => srow(s,'b')).join('') : '<div class="empty">No BUY signals this scan.<br>Try a different indicator or universe.</div>';
-  document.getElementById('sell-list').innerHTML = shorts.length ? shorts.map(s => srow(s,'s')).join('') : '<div class="empty">No SHORT signals this scan.</div>';
+function renderResults(j){
+  const b=j.buys||[],s=j.shorts||[];
+  document.getElementById('buy-cnt').textContent=b.length;
+  document.getElementById('sell-cnt').textContent=s.length;
+  document.getElementById('buy-list').innerHTML=b.length?b.map(x=>srow(x,'b')).join(''):'<div class="empty">No BUY signals.<br>Try a different indicator or universe.</div>';
+  document.getElementById('sell-list').innerHTML=s.length?s.map(x=>srow(x,'s')).join(''):'<div class="empty">No SHORT signals.</div>';
 }
-
-function srow(s, t) {
-  const nm = s.symbol.split(':').pop();
-  const lp = s.last_price, pc = s.pchange;
-  return `<div class="srow" onclick="openChart('${s.symbol}')" role="button" tabindex="0"
-    aria-label="${nm}, ${t==='b'?'buy':'short'} signal, price ${lp?Chitti.Utils.formatINR(lp):''}"
-    onkeydown="if(event.key==='Enter')openChart('${s.symbol}')">
+function srow(s,t){
+  const nm=s.symbol.split(':').pop(),lp=s.last_price,pc=s.pchange;
+  return`<div class="srow" onclick="openChart('${s.symbol}')" role="button" tabindex="0" aria-label="${nm} ${t==='b'?'buy':'short'} signal" onkeydown="if(event.key==='Enter')openChart('${s.symbol}')">
     <div><div class="sym">${nm}</div><div class="sname">${s.symbol}</div></div>
     <div style="text-align:right">
-      ${lp!=null?`<div style="font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace">${Chitti.Utils.formatINR(lp)}</div>`:''}
-      ${pc!=null?`<div class="${pc>=0?'pos':'neg'}" style="font-size:11px;font-family:'JetBrains Mono',monospace">${pc>=0?'▲ +':'▼ '}${Number(pc).toFixed(2)}%</div>`:''}
+      ${lp!=null?`<div style="font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace">${Chitti.Utils.formatINR(lp)}</div>`:''}
+      ${pc!=null?`<div class="${pc>=0?'pos':'neg'}" style="font-size:10px;font-family:'JetBrains Mono',monospace">${pc>=0?'▲ +':'▼ '}${Number(pc).toFixed(2)}%</div>`:''}
       <div class="sbdg ${t}">${t==='b'?'▲ BUY':'▼ SHORT'}</div>
     </div>
   </div>`;
 }
+function updateStatus(j){
+  document.getElementById('status').style.display='flex';
+  document.getElementById('s-cnt').textContent=j.scanned_count||'—';
+  document.getElementById('s-time').textContent=j.scanned_at?new Date(j.scanned_at).toLocaleTimeString():'—';
+  document.getElementById('s-cache').textContent=j.from_cache?`📦 Cached (${j.cache_age_sec}s)`:'🔄 Fresh';
+  document.getElementById('s-dur').textContent=j.scan_duration_sec||'—';
+}
+function speakCol(t){
+  const items=document.querySelectorAll(`#${t}-list .sym`);
+  if(!items.length){Chitti.Speech.sp('No signals yet. Tap scan first.');return;}
+  Chitti.Speech.sp(`${t==='buy'?'Buy':'Short'} signals: `+Array.from(items).map(i=>i.textContent).join(', '));
+}
+function setupRefresh(){if(scanIv)clearInterval(scanIv);const m=parseInt(document.getElementById('ref-sel').value);scanIv=setInterval(()=>runScan(false),m*60000);}
 
-function updateStatus(j) {
-  const s = document.getElementById('status'); s.style.display = 'flex';
-  document.getElementById('s-cnt').textContent = j.scanned_count || '—';
-  document.getElementById('s-time').textContent = j.scanned_at ? new Date(j.scanned_at).toLocaleTimeString() : '—';
-  document.getElementById('s-cache').textContent = j.from_cache ? `📦 Cached (${j.cache_age_sec}s)` : '🔄 Fresh';
-  document.getElementById('s-dur').textContent = j.scan_duration_sec || '—';
+/* ─ TABS ─ */
+function showTab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const i={scanner:0,chart:1,learn:2}[id];
+  document.querySelectorAll('.tab')[i].classList.add('active');
 }
 
-function speakCol(t) {
-  const items = document.querySelectorAll(`#${t==='buy'?'buy':'sell'}-list .sym`);
-  if (!items.length) { Chitti.Speech.sp('No signals yet. Tap scan first.'); return; }
-  Chitti.Speech.sp(`${t==='buy'?'Buy':'Short'} signals: ` + Array.from(items).map(i=>i.textContent).join(', '));
-}
-
-function setupRefresh() {
-  if (scanIv) clearInterval(scanIv);
-  const m = parseInt(document.getElementById('ref-sel').value);
-  scanIv = setInterval(() => runScan(false), m * 60000);
-}
-
-/* ── TABS ─────────────────────────────────────────────── */
-function showTab(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  const idx = { scanner: 0, chart: 1, learn: 2 }[id];
-  document.querySelectorAll('.tab')[idx].classList.add('active');
-}
-
-/* ── CHART HELPERS ────────────────────────────────────── */
-function showChartLoading(show, msg = '') {
-  const el = document.getElementById('chart-loading');
-  el.style.display = show ? 'flex' : 'none';
-  if (msg) document.getElementById('chart-loading-msg').textContent = msg;
-}
-function showChartErr(msg) {
-  const el = document.getElementById('chart-err');
-  el.textContent = '❌ ' + msg;
-  el.style.display = 'flex';
-}
-
-let isFS = false;
-function toggleFS() {
-  const outer = document.getElementById('chart-outer');
-  const chartDiv = document.getElementById('main-chart');
-  if (!isFS) {
-    outer.style.cssText = 'position:fixed;inset:0;z-index:999;border-radius:0;margin:0';
-    chartDiv.style.height = '100dvh';
-    mainChart.applyOptions({ height: window.innerHeight });
-    document.getElementById('fs-btn').textContent = '✕';
-    isFS = true;
-  } else {
-    outer.style.cssText = '';
-    chartDiv.style.height = '360px';
-    mainChart.applyOptions({ height: 360 });
-    document.getElementById('fs-btn').textContent = '⛶';
-    isFS = false;
-  }
+/* ─ FULLSCREEN ─ */
+let isFS=false;
+function toggleFS(){
+  const a=document.getElementById('chart-area'),m=document.getElementById('main-chart');
+  if(!isFS){a.style.cssText='position:fixed;inset:0;z-index:999;border-radius:0;margin:0';m.style.height=(window.innerHeight-70)+'px';mainChart.applyOptions({height:window.innerHeight-70});document.getElementById('fs-btn').textContent='✕';isFS=true;}
+  else{a.style.cssText='';m.style.height='380px';mainChart.applyOptions({height:380});document.getElementById('fs-btn').textContent='⛶';isFS=false;}
   mainChart.timeScale().fitContent();
 }
 
-/* ── A11Y SPEAK ───────────────────────────────────────── */
-function speakPage() {
-  const ind = document.getElementById('ind-sel').value;
-  const buys = document.getElementById('buy-cnt').textContent;
-  const shorts = document.getElementById('sell-cnt').textContent;
-  Chitti.Speech.sp(`Chitti Technical Analysis. Scanner tab. ${ind} selected. ${buys} buy signals and ${shorts} short signals. Tap Speak BUY to hear stock names. Tap any stock row to open its chart.`);
-}
-function speakHelp() {
-  Chitti.Speech.sp('How to use Chitti Technical Analysis. Step one: choose an indicator. Roshan is the default and recommended. Step two: choose call type. Positional means weekly and daily charts. Step three: tap Scan. Step four: tap Speak BUY to hear buy signals aloud. Tap any stock row to open its chart. On the chart, tap Verdict to hear Chitti analysis.');
-}
+/* ─ A11Y SPEAK ─ */
+function speakPage(){Chitti.Speech.sp(`Chitti Technical Analysis. ${document.getElementById('ind-sel').value} selected. ${document.getElementById('buy-cnt').textContent} buy signals and ${document.getElementById('sell-cnt').textContent} short signals. Tap Speak BUY to hear stock names. Tap any stock row to open its chart.`);}
+function speakHelp(){Chitti.Speech.sp('How to use. Step one: choose indicator. Roshan is recommended. Step two: choose call type. Step three: tap Scan. Step four: tap Speak BUY. Tap any stock row to see the chart. On chart, tap Verdict to hear analysis.');}
 
-/* ── LEARN ────────────────────────────────────────────── */
-function buildLearn() {
-  document.getElementById('learn-cards').innerHTML = LEARN_DATA.map(d => `
+/* ─ LEARN ─ */
+function buildLearn(){
+  renderLearn(LEARN_ALL);
+}
+function filterLearn(q){
+  const f=q.toLowerCase().trim();
+  renderLearn(f?LEARN_ALL.filter(d=>d.key.toLowerCase().includes(f)||IND_PLAIN[d.key]?.toLowerCase().includes(f)):LEARN_ALL);
+}
+function renderLearn(data){
+  document.getElementById('learn-cards').innerHTML=data.map(d=>`
     <div class="learn-card">
       <div class="learn-head">
-        <div class="learn-icon">${d.icon}</div>
-        <div>
-          <div class="learn-title">${d.title} <span class="tag ${d.tag}">${d.tag === 'new' ? '⚡ New' : 'Classic'}</span></div>
-        </div>
-        <button onclick="Chitti.Speech.sp('${d.plain} Buy signal: ${d.buy}. Short signal: ${d.sell}')" class="spk-sm" style="margin-left:auto" aria-label="Hear ${d.title} explanation">🔊</button>
+        <span class="learn-icon">${d.icon}</span>
+        <span class="learn-title">${d.key}</span>
+        <span class="tag ${d.tag}">${d.tag==='new'?'⚡ New':'Classic'}</span>
+        <button onclick="Chitti.Speech.sp(\`${(IND_PLAIN[d.key]||'').replace(/`/g,"'")}\`)" class="spk-sm" aria-label="Hear ${d.key}">🔊</button>
       </div>
-      <div class="learn-plain">${d.plain}</div>
-      <div class="sig-buy">▲ BUY when: ${d.buy}</div>
-      <div class="sig-sell">▼ SHORT when: ${d.sell}</div>
+      <div class="learn-plain">${IND_PLAIN[d.key]||'—'}</div>
+      <div class="sig-b">▲ BUY when: ${d.buy}</div>
+      <div class="sig-s">▼ SHORT when: ${d.sell}</div>
     </div>`).join('');
 }
 </script>
