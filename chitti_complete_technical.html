@@ -237,6 +237,43 @@ textarea:focus{border-color:var(--blue)}
   .filter-row{flex-wrap:wrap}
   .fgroup{min-width:120px}
 }
+
+/* ── ROBINHOOD: Empty state ── */
+.empty-state{padding:36px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.empty-icon{font-size:32px;margin-bottom:4px}
+.empty-title{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;color:var(--text)}
+.empty-msg{font-size:12px;color:var(--muted);line-height:1.7;max-width:280px}
+.empty-action{margin-top:8px;padding:8px 20px;border-radius:20px;border:1px solid var(--blue);background:var(--blue-dim);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;min-height:36px}
+.empty-action:hover{background:var(--blue);color:#fff}
+
+/* ── ROBINHOOD: Verdict hero ── */
+.verdict-hero{border-radius:10px;padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.verdict-hero.buy{background:linear-gradient(135deg,rgba(0,200,150,.18),rgba(0,200,150,.06));border:1px solid rgba(0,200,150,.3)}
+.verdict-hero.sell{background:linear-gradient(135deg,rgba(255,71,87,.18),rgba(255,71,87,.06));border:1px solid rgba(255,71,87,.3)}
+.verdict-hero.wait{background:linear-gradient(135deg,rgba(255,179,0,.18),rgba(255,179,0,.06));border:1px solid rgba(255,179,0,.3)}
+.verdict-icon{font-size:28px;flex-shrink:0}
+.verdict-text{font-size:17px;font-weight:800;font-family:'Syne',sans-serif;letter-spacing:-.01em;line-height:1.3}
+.verdict-hero.buy .verdict-text{color:var(--green)}
+.verdict-hero.sell .verdict-text{color:var(--red)}
+.verdict-hero.wait .verdict-text{color:var(--amber)}
+
+/* ── ROBINHOOD: Horizontal insight scroll ── */
+.insight-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.insight-scroll::-webkit-scrollbar{display:none}
+.insight-card{flex-shrink:0;width:240px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;animation:fadein .35s ease both}
+.insight-num{font-size:11px;font-weight:700;color:var(--blue);font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+.insight-text{font-size:12px;color:#b8ccff;line-height:1.65}
+.insight-text b{color:var(--blue)}
+
+/* ── ROBINHOOD: Micro-interactions ── */
+.srow{transition:background .12s,transform .1s}
+.srow:active{transform:scale(0.985)}
+.tf-btn{transition:all .15s}
+.tf-btn:active{transform:scale(0.93)}
+.scan-btn{transition:background .25s,box-shadow .25s,transform .12s}
+.a11y-btn{transition:all .15s}
+.rtab{transition:all .15s}
+.rtab:active{transform:scale(0.96)}
 </style>
 </head>
 <body>
@@ -446,14 +483,14 @@ textarea:focus{border-color:var(--blue)}
   </div>
 
 <div class="tf-row" role="tablist" aria-label="Timeframe selector">
-    <button class="tf-btn active" data-tf="Monthly" onclick="selTF(this)" aria-label="Monthly">Mo</button>
-    <button class="tf-btn" data-tf="Weekly" onclick="selTF(this)" aria-label="Weekly">Wk</button>
-    <button class="tf-btn" data-tf="Daily" onclick="selTF(this)" aria-label="Daily">D</button>
-    <button class="tf-btn" data-tf="4H" onclick="selTF(this)" aria-label="4 hour">4H</button>
-    <button class="tf-btn" data-tf="1H" onclick="selTF(this)" aria-label="1 hour">1H</button>
-    <button class="tf-btn" data-tf="15min" onclick="selTF(this)" aria-label="15 minute">15m</button>
-    <button class="tf-btn" data-tf="5min" onclick="selTF(this)" aria-label="5 minute">5m</button>
-    <button class="tf-btn" data-tf="1min" onclick="selTF(this)" aria-label="1 minute">1m</button>
+    <button class="tf-btn active" data-tf="Monthly" onclick="selTF(this)" aria-label="Monthly chart">1M</button>
+    <button class="tf-btn" data-tf="Weekly" onclick="selTF(this)" aria-label="Weekly chart">1W</button>
+    <button class="tf-btn" data-tf="Daily" onclick="selTF(this)" aria-label="Daily chart">1D</button>
+    <button class="tf-btn" data-tf="4H" onclick="selTF(this)" aria-label="4 hour chart">4H</button>
+    <button class="tf-btn" data-tf="1H" onclick="selTF(this)" aria-label="1 hour chart">1H</button>
+    <button class="tf-btn" data-tf="15min" onclick="selTF(this)" aria-label="15 minute chart">15M</button>
+    <button class="tf-btn" data-tf="5min" onclick="selTF(this)" aria-label="5 minute chart">5M</button>
+    <button class="tf-btn" data-tf="1min" onclick="selTF(this)" aria-label="1 minute chart">1m</button>
   </div>
   <!-- Angel One style: overlay toggle chips -->
   <div class="tog-row" style="flex-wrap:wrap;gap:6px">
@@ -745,6 +782,15 @@ function showTab(id) {
   if (id === 'journal') renderJournal();
   if (id === 'analytics') renderAnalytics();
   if (id === 'scanner') renderStockList();
+  if (id === 'chart') {
+    // Chart tab just became visible — force correct dimensions
+    requestAnimationFrame(() => {
+      const el = document.getElementById('lw-chart');
+      const w = el.clientWidth || el.offsetWidth || 800;
+      if (lwChart) lwChart.applyOptions({width: w, height: 300});
+      if (lwRsiChart) lwRsiChart.applyOptions({width: w, height: 90});
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -820,6 +866,23 @@ function renderResults(j) {
   document.getElementById('sell-list').innerHTML = shorts.map(s => srow(s,'sell')).join('');
   // unified Angel One style list — show active tab's results
   renderStockList();
+  // Robinhood: colour feedback on scan button
+  const btn = document.getElementById('sbtn');
+  const hasResults = buys.length + shorts.length > 0;
+  btn.style.background = hasResults
+    ? 'linear-gradient(135deg,#00c896,#00a07a)'
+    : 'linear-gradient(135deg,#ff4757,#cc2233)';
+  btn.style.boxShadow = hasResults
+    ? '0 2px 16px rgba(0,200,150,.4)'
+    : '0 2px 16px rgba(255,71,87,.35)';
+  btn.textContent = hasResults
+    ? `✓ ${buys.length} BUY · ${shorts.length} SHORT`
+    : '✕ No signals found';
+  setTimeout(() => {
+    btn.style.background = 'linear-gradient(135deg,#4c7fff,#2d5ce8)';
+    btn.style.boxShadow = '0 2px 16px rgba(76,127,255,.3)';
+    btn.innerHTML = `▶ Scan — <span id="sbtn-ind">${document.getElementById('ind-sel').value}</span>`;
+  }, 3000);
   sp(`Scan complete. ${buys.length} buy signal${buys.length !== 1 ? 's' : ''} and ${shorts.length} short signal${shorts.length !== 1 ? 's' : ''} found.`);
 }
 let activeResult = 'buy';
@@ -834,13 +897,45 @@ function switchResult(t) {
 function renderStockList() {
   const list = document.getElementById('stock-list');
   const src = document.getElementById(activeResult + '-list');
-  if (!src || !src.children.length || src.children[0].className === 'empty') {
-    const other = activeResult === 'buy' ? 'sell' : 'buy';
-    const otherSrc = document.getElementById(other + '-list');
-    const cnt = activeResult === 'buy' ? document.getElementById('buy-cnt').textContent : document.getElementById('sell-cnt').textContent;
-    list.innerHTML = cnt === '0'
-      ? '<div class="empty">No ' + (activeResult === 'buy' ? 'BUY' : 'SHORT') + ' signals. Try scanning or switch tab.</div>'
-      : src.innerHTML;
+  const cnt = parseInt(activeResult === 'buy'
+    ? document.getElementById('buy-cnt').textContent
+    : document.getElementById('sell-cnt').textContent) || 0;
+  const otherCnt = parseInt(activeResult === 'buy'
+    ? document.getElementById('sell-cnt').textContent
+    : document.getElementById('buy-cnt').textContent) || 0;
+  const otherLabel = activeResult === 'buy' ? 'SHORT' : 'BUY';
+  const thisLabel  = activeResult === 'buy' ? 'BUY' : 'SHORT';
+  if (cnt === 0) {
+    // Robinhood-style contextual empty state
+    const buyCnt  = parseInt(document.getElementById('buy-cnt').textContent)  || 0;
+    const sellCnt = parseInt(document.getElementById('sell-cnt').textContent) || 0;
+    const neverScanned = buyCnt + sellCnt === 0;
+    if (neverScanned) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">⚡</div>
+        <div class="empty-title">Ready to scan</div>
+        <div class="empty-msg">Choose an indicator and tap Scan.<br>Chitti will find the best setups across Nifty 50.</div>
+      </div>`;
+    } else {
+      const ist = new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'});
+      const isMarketHours = (() => {
+        const n = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+        const m = n.getHours()*60+n.getMinutes(), d = n.getDay();
+        return d>=1&&d<=5&&m>=555&&m<=930;
+      })();
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">${activeResult==='buy'?'📈':'📉'}</div>
+        <div class="empty-title">No ${thisLabel} signals right now</div>
+        <div class="empty-msg">${
+          !isMarketHours
+            ? 'Market is closed. Signals are strongest between 9:15 AM – 3:30 PM IST on weekdays.'
+            : otherCnt > 0
+              ? `${otherCnt} ${otherLabel} signal${otherCnt!==1?'s':''} found. Tap the ${otherLabel} tab above to see them.`
+              : 'No strong setups right now. Try a different indicator or universe.'
+        }</div>
+        ${otherCnt > 0 ? `<button class="empty-action" onclick="switchResult('${activeResult==='buy'?'sell':'buy'}')" aria-label="Switch to ${otherLabel}">See ${otherCnt} ${otherLabel} signal${otherCnt!==1?'s':''} →</button>` : ''}
+      </div>`;
+    }
   } else {
     list.innerHTML = src.innerHTML;
   }
@@ -890,8 +985,8 @@ function initCharts() {
   // Main candlestick chart
   const chartEl = document.getElementById('lw-chart');
   lwChart = LightweightCharts.createChart(chartEl, {
-    width: chartEl.clientWidth,
-    height: chartEl.clientHeight,
+    width: chartEl.clientWidth || chartEl.offsetWidth || 800,
+    height: 300,
     layout: { background: {color:'#181c24'}, textColor: '#94a3b8' },
     grid: { vertLines: {color:'#252b36'}, horzLines: {color:'#252b36'} },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
@@ -914,8 +1009,8 @@ function initCharts() {
   // RSI chart
   const rsiEl = document.getElementById('lw-rsi');
   lwRsiChart = LightweightCharts.createChart(rsiEl, {
-    width: rsiEl.clientWidth,
-    height: rsiEl.clientHeight,
+    width: rsiEl.clientWidth || rsiEl.offsetWidth || 800,
+    height: 90,
     layout: { background: {color:'#181c24'}, textColor: '#94a3b8' },
     grid: { vertLines: {color:'#252b36'}, horzLines: {color:'#252b36'} },
     rightPriceScale: { borderColor: '#252b36', autoScale: false, minValue: 0, maxValue: 100 },
@@ -964,8 +1059,9 @@ function initCharts() {
 
   // Resize observer
   const ro = new ResizeObserver(() => {
-    lwChart.applyOptions({width: chartEl.clientWidth});
-    lwRsiChart.applyOptions({width: rsiEl.clientWidth});
+    const w = chartEl.clientWidth || 800;
+    lwChart.applyOptions({width: w, height: 300});
+    lwRsiChart.applyOptions({width: rsiEl.clientWidth || 800, height: 90});
   });
   ro.observe(chartEl);
   ro.observe(rsiEl);
@@ -1427,10 +1523,13 @@ function renderCV() {
       <div class="lang-row">
         <button class="lang-btn ${cvLang==='en'?'on':''}" onclick="swLang('en')" aria-label="English">EN</button>
         <button class="lang-btn ${cvLang==='hi'?'on':''}" onclick="swLang('hi')" aria-label="Hindi">हि</button>
-        <button class="sp-btn" onclick="sp('${sall.replace(/'/g,"\\'")}','${cvLang}')" aria-label="Speak verdict">🔊</button>
+        <button class="sp-btn" onclick="speakVerdict()" aria-label="Speak verdict aloud">🔊</button>
       </div>
     </div>
-    <div class="verdict ${cls}"><span>${icon}</span><span>${vt}</span></div>
+    <div class="verdict-hero ${cls}">
+      <div class="verdict-icon">${icon}</div>
+      <div class="verdict-text">${vt}</div>
+    </div>
     <div class="reason">${re}</div>
     <div class="act-box"><b>${isEn ? '✅ What to do:' : '✅ क्या करें:'}</b> ${ae}</div>
     <div class="caution">⚠️ ${ce}</div>
@@ -1686,9 +1785,20 @@ function renderAnalytics() {
   if (best >= 3)
     insights.push(`<b>Win streak of ${best}:</b> You have shown the ability to stay disciplined in a run. Recall what you were doing right during that streak.`);
 
-  document.getElementById('a-insights').innerHTML = insights.length
-    ? insights.map(i => `<div class="insight-box">💡 ${i}</div>`).join('')
-    : '<div class="insight-box" style="color:var(--muted)">Add more trades to unlock personalised insights.</div>';
+  // Robinhood: horizontal scroll insight cards
+  const insightHTML = insights.length
+    ? `<div class="insight-scroll" role="region" aria-label="Trading insights">
+        ${insights.map((i,idx) => `<div class="insight-card" style="animation-delay:${idx*0.08}s">
+          <div class="insight-num">${String(idx+1).padStart(2,'0')}</div>
+          <div class="insight-text">💡 ${i}</div>
+        </div>`).join('')}
+       </div>
+       <button class="sp-btn" style="margin-top:10px;width:100%" onclick="speakAnalytics()" aria-label="Hear all insights">🔊 Hear all insights</button>`
+    : `<div class="insight-card" style="color:var(--muted);border-style:dashed">
+        <div class="insight-num">—</div>
+        <div class="insight-text">Add more closed trades to unlock personalised insights.</div>
+       </div>`;
+  document.getElementById('a-insights').innerHTML = insightHTML;
 }
 
 function speakAnalytics() {
@@ -1705,6 +1815,12 @@ function speakAnalytics() {
 // ═══════════════════════════════════════════════════════════
 // LEARN
 // ═══════════════════════════════════════════════════════════
+function speakLearn(btn) {
+  const key = btn.getAttribute('data-key');
+  const d = LEARN_DATA.find(x => x.key === key);
+  if (!d) return;
+  sp(d.plain + '. Buy signal: ' + d.buy + '. Short signal: ' + d.sell);
+}
 function buildLearn() {
   const c = document.getElementById('learn-cards');
   if (c.children.length) return;
@@ -1716,7 +1832,7 @@ function buildLearn() {
           <div class="learn-title">${d.title}</div>
           <span class="tag ${d.tag}">${d.tag === 'new' ? '⚡ New 2010+' : 'Classic'}</span>
         </div>
-        <button class="sp-btn" onclick="sp('${(d.plain + '. Buy signal: ' + d.buy + '. Short signal: ' + d.sell).replace(/'/g,"\\'")}');" aria-label="Hear explanation">🔊</button>
+        <button class="sp-btn" onclick="speakLearn(this)" data-key="${d.key}" aria-label="Hear explanation">🔊</button>
       </div>
       <div class="learn-plain">${d.plain}</div>
       <div class="sig-box sig-buy">▲ <b>Buy:</b> ${d.buy}</div>
@@ -1761,8 +1877,9 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('resize', () => {
-  if (lwChart) lwChart.applyOptions({width: document.getElementById('lw-chart').clientWidth});
-  if (lwRsiChart) lwRsiChart.applyOptions({width: document.getElementById('lw-rsi').clientWidth});
+  const cw = document.getElementById('lw-chart').clientWidth || 800;
+  if (lwChart) lwChart.applyOptions({width: cw, height: 300});
+  if (lwRsiChart) lwRsiChart.applyOptions({width: cw, height: 90});
 });
 </script>
 </body>
