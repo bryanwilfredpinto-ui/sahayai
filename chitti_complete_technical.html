@@ -60,6 +60,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .tab.active .tab-icon{opacity:1}
 .page{display:none}
 .page.active{display:block}
+#tab-chart.active{padding:0;max-width:none}
+#tab-chart.active{padding:0}
 
 /* ── SCANNER: Angel One flat filter strip ── */
 .filter-strip{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
@@ -135,9 +137,10 @@ textarea:focus{border-color:var(--blue)}
 .tf-legend{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-left:auto}
 .tf-dot{width:7px;height:7px;border-radius:2px;display:inline-block;margin-right:2px;vertical-align:middle}
 .chart-wrap{background:var(--card);border-bottom:1px solid var(--border);position:relative}
-#lw-chart{height:300px}
-#lw-rsi{height:90px}
-.chart-lbl{position:absolute;top:8px;left:12px;font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;pointer-events:none;z-index:1;letter-spacing:.04em}
+#lw-chart{height:420px}
+#lw-rsi{height:100px}
+@media(max-width:900px){#lw-chart{height:340px}#lw-rsi{height:90px}}
+.chart-lbl{position:absolute;top:8px;left:12px;font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;pointer-events:none;z-index:2;letter-spacing:.04em;background:rgba(26,30,40,.7);padding:2px 6px;border-radius:4px}
 
 /* ── CHART STOCK HEADER ── */
 .chart-stock-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border)}
@@ -238,6 +241,14 @@ textarea:focus{border-color:var(--blue)}
   .fgroup{min-width:120px}
 }
 
+/* ── MARKET OVERVIEW ── */
+.idx-pill{flex-shrink:0;padding:8px 14px;font-size:12px;font-weight:600;border:none;
+  background:none;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;
+  border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;min-height:36px}
+.idx-pill:hover{color:var(--text)}
+.idx-pill.active{color:var(--blue);border-bottom-color:var(--blue)}
+#idx-strip::-webkit-scrollbar{display:none}
+
 /* ── ROBINHOOD: Empty state ── */
 .empty-state{padding:36px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .empty-icon{font-size:32px;margin-bottom:4px}
@@ -312,6 +323,50 @@ textarea:focus{border-color:var(--blue)}
 
 <!-- SCANNER TAB — Angel One layout -->
 <div id="tab-scanner" class="page active" role="tabpanel">
+
+
+  <!-- MARKET OVERVIEW — Angel One style index strip -->
+  <div id="market-overview" style="background:var(--surface);border-bottom:1px solid var(--border)">
+    <!-- Index selector pills -->
+    <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:10px 14px 0;border-bottom:1px solid var(--border)" id="idx-strip">
+      <button class="idx-pill active" data-sym="NSE:NIFTY 50" data-name="Nifty 50" onclick="selectIndex(this)" aria-label="Nifty 50">Nifty 50</button>
+      <button class="idx-pill" data-sym="BSE:SENSEX" data-name="Sensex" onclick="selectIndex(this)" aria-label="Sensex">Sensex</button>
+      <button class="idx-pill" data-sym="NSE:BANKNIFTY" data-name="Bank Nifty" onclick="selectIndex(this)" aria-label="Bank Nifty">Bank Nifty</button>
+      <button class="idx-pill" data-sym="NSE:NIFTY MIDCAP 100" data-name="Midcap 100" onclick="selectIndex(this)" aria-label="Midcap 100">Midcap 100</button>
+      <button class="idx-pill" data-sym="NSE:NIFTY IT" data-name="Nifty IT" onclick="selectIndex(this)" aria-label="Nifty IT">Nifty IT</button>
+    </div>
+    <!-- Index price bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="idx-name" style="font-size:16px;font-weight:800;font-family:'Syne',sans-serif">Nifty 50</span>
+          <span id="idx-signal" style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;display:none"></span>
+        </div>
+        <div id="idx-date" style="font-size:10px;color:var(--muted);margin-top:1px"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="idx-price" style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace">—</div>
+        <div id="idx-change" style="font-size:12px;font-weight:600"></div>
+      </div>
+    </div>
+    <!-- Mini chart -->
+    <div style="position:relative">
+      <div id="idx-chart" style="height:130px" aria-label="Index mini chart"></div>
+      <div id="idx-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--card);font-size:11px;color:var(--muted)">
+        <span class="spin">⟳</span>&nbsp;Loading…
+      </div>
+    </div>
+    <!-- Chitti's Price Action comment -->
+    <div id="idx-comment" style="padding:10px 14px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">🤖 Chitti's View — Price Action</div>
+        <div id="idx-comment-text" style="font-size:12px;color:#c0ccee;line-height:1.65">Analysing market…</div>
+        <div id="idx-sr-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+      </div>
+      <button class="sp-btn" onclick="speakIndexComment()" aria-label="Hear market comment" style="flex-shrink:0">🔊</button>
+    </div>
+  </div>
+  <!-- end market overview -->
 
   <!-- Flat filter strip — no card border -->
   <div class="filter-strip">
@@ -452,7 +507,7 @@ textarea:focus{border-color:var(--blue)}
 </div>
 
 <!-- ════════════════════ CHART TAB ════════════════════ -->
-<div id="tab-chart" class="page" role="tabpanel">
+<div id="tab-chart" class="page" role="tabpanel" style="max-width:none;padding:0">
 
   <!-- Stock header — Angel One style, edge to edge -->
   <div class="chart-stock-bar">
@@ -786,9 +841,13 @@ function showTab(id) {
     // Chart tab just became visible — force correct dimensions
     requestAnimationFrame(() => {
       const el = document.getElementById('lw-chart');
-      const w = el.clientWidth || el.offsetWidth || 800;
-      if (lwChart) lwChart.applyOptions({width: w, height: 300});
-      if (lwRsiChart) lwRsiChart.applyOptions({width: w, height: 90});
+      const w = el.clientWidth || el.offsetWidth || window.innerWidth || 1200;
+      const isMobile = window.innerWidth <= 580;
+      const isTablet = window.innerWidth <= 900;
+      const chartH = isMobile ? 240 : isTablet ? 340 : 420;
+      const rsiH   = isMobile ? 75  : isTablet ? 90  : 100;
+      if (lwChart) lwChart.applyOptions({width: w, height: chartH});
+      if (lwRsiChart) lwRsiChart.applyOptions({width: w, height: rsiH});
     });
   }
 }
@@ -985,19 +1044,19 @@ function initCharts() {
   // Main candlestick chart
   const chartEl = document.getElementById('lw-chart');
   lwChart = LightweightCharts.createChart(chartEl, {
-    width: chartEl.clientWidth || chartEl.offsetWidth || 800,
-    height: 300,
-    layout: { background: {color:'#181c24'}, textColor: '#94a3b8' },
-    grid: { vertLines: {color:'#252b36'}, horzLines: {color:'#252b36'} },
+    width: chartEl.clientWidth || chartEl.offsetWidth || window.innerWidth || 1200,
+    height: 420,
+    layout: { background: {color:'#1a1e28'}, textColor: '#6b7a99' },
+    grid: { vertLines: {color:'#2a303f'}, horzLines: {color:'#2a303f'} },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderColor: '#252b36', scaleMargins: {top:0.1, bottom:0.25} },
     timeScale: { borderColor: '#252b36', timeVisible: true, secondsVisible: false },
     handleScroll: true, handleScale: true,
   });
   lwCandleSeries = lwChart.addCandlestickSeries({
-    upColor: '#22c55e', downColor: '#ef4444',
-    borderUpColor: '#22c55e', borderDownColor: '#ef4444',
-    wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+    upColor: '#00c896',     downColor: '#ff4757',
+    borderUpColor: '#00c896', borderDownColor: '#ff4757',
+    wickUpColor:   '#00c896', wickDownColor:   '#ff4757',
   });
   lwVolSeries = lwChart.addHistogramSeries({
     priceFormat: {type:'volume'},
@@ -1009,10 +1068,10 @@ function initCharts() {
   // RSI chart
   const rsiEl = document.getElementById('lw-rsi');
   lwRsiChart = LightweightCharts.createChart(rsiEl, {
-    width: rsiEl.clientWidth || rsiEl.offsetWidth || 800,
-    height: 90,
-    layout: { background: {color:'#181c24'}, textColor: '#94a3b8' },
-    grid: { vertLines: {color:'#252b36'}, horzLines: {color:'#252b36'} },
+    width: rsiEl.clientWidth || rsiEl.offsetWidth || window.innerWidth || 1200,
+    height: 100,
+    layout: { background: {color:'#1a1e28'}, textColor: '#6b7a99' },
+    grid: { vertLines: {color:'#2a303f'}, horzLines: {color:'#2a303f'} },
     rightPriceScale: { borderColor: '#252b36', autoScale: false, minValue: 0, maxValue: 100 },
     timeScale: { borderColor: '#252b36', timeVisible: true, secondsVisible: false },
     handleScroll: true, handleScale: true,
@@ -1059,9 +1118,13 @@ function initCharts() {
 
   // Resize observer
   const ro = new ResizeObserver(() => {
-    const w = chartEl.clientWidth || 800;
-    lwChart.applyOptions({width: w, height: 300});
-    lwRsiChart.applyOptions({width: rsiEl.clientWidth || 800, height: 90});
+    const w = chartEl.clientWidth || window.innerWidth || 1200;
+    const isMobile = window.innerWidth <= 580;
+    const isTablet = window.innerWidth <= 900;
+    const chartH = isMobile ? 240 : isTablet ? 340 : 420;
+    const rsiH   = isMobile ? 75  : isTablet ? 90  : 100;
+    lwChart.applyOptions({width: w, height: chartH});
+    lwRsiChart.applyOptions({width: w, height: rsiH});
   });
   ro.observe(chartEl);
   ro.observe(rsiEl);
@@ -1434,16 +1497,21 @@ function togOver(k) {
 function toggleFS() {
   const o = document.getElementById('chart-outer'), b = document.getElementById('fs-btn');
   isFS = !isFS;
+  const isMobile = window.innerWidth <= 580;
+  const isTablet = window.innerWidth <= 900;
+  const normH = isMobile ? 240 : isTablet ? 340 : 420;
   if (isFS) {
     o.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;margin:0;background:#181c24';
     b.textContent = '✕';
-    document.getElementById('lw-chart').style.height = (window.innerHeight * 0.75) + 'px';
-    lwChart?.applyOptions({width: window.innerWidth, height: window.innerHeight * 0.75});
+    const fsH = Math.floor(window.innerHeight * 0.78);
+    document.getElementById('lw-chart').style.height = fsH + 'px';
+    lwChart?.applyOptions({width: window.innerWidth, height: fsH});
   } else {
     o.style.cssText = '';
     b.textContent = '⛶';
-    document.getElementById('lw-chart').style.height = '320px';
-    lwChart?.applyOptions({width: document.getElementById('lw-chart').clientWidth, height: 320});
+    document.getElementById('lw-chart').style.height = normH + 'px';
+    const w = document.getElementById('lw-chart').clientWidth || window.innerWidth;
+    lwChart?.applyOptions({width: w, height: normH});
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && isFS) toggleFS(); });
@@ -1841,6 +1909,192 @@ function buildLearn() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// MARKET OVERVIEW — Index mini chart + Chitti price action
+// ═══════════════════════════════════════════════════════════
+let idxChart = null, idxSeries = null, idxCurrentSym = 'NSE:NIFTY 50';
+let idxCommentText = '';
+
+function initIndexChart() {
+  const el = document.getElementById('idx-chart');
+  if (!el || idxChart) return;
+  idxChart = LightweightCharts.createChart(el, {
+    width: el.clientWidth || window.innerWidth || 1200,
+    height: 130,
+    layout: { background: {color:'#1a1e28'}, textColor: '#6b7a99' },
+    grid: { vertLines: {color:'rgba(42,48,63,0)'}, horzLines: {color:'#2a303f'} },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderVisible: false, scaleMargins: {top:0.05, bottom:0.05} },
+    timeScale: { borderVisible: false, timeVisible: false },
+    handleScroll: true, handleScale: true,
+    leftPriceScale: { visible: false },
+  });
+  idxSeries = idxChart.addAreaSeries({
+    topColor: 'rgba(76,127,255,.25)',
+    bottomColor: 'rgba(76,127,255,.02)',
+    lineColor: '#4c7fff',
+    lineWidth: 2,
+    crosshairMarkerVisible: false,
+  });
+  const ro = new ResizeObserver(() => {
+    idxChart?.applyOptions({width: el.clientWidth || window.innerWidth});
+  });
+  ro.observe(el);
+}
+
+function chittiIndexComment(candles, name) {
+  if (!candles || candles.length < 10) return 'Not enough data to analyse.';
+  const closes = candles.map(c => c.close);
+  const last = closes[closes.length - 1];
+
+  // 50-day SMA (or all if less)
+  const period = Math.min(50, closes.length);
+  const sma50 = closes.slice(-period).reduce((a,b) => a+b, 0) / period;
+  const smaDiff = ((last - sma50) / sma50 * 100);
+
+  // Find S/R levels — round to nearest 50 (indices) or 100 (Sensex)
+  const step = name.includes('Sensex') ? 500 : 50;
+  const levels = {};
+  candles.slice(-50).forEach(c => {
+    [c.high, c.low].forEach(v => {
+      const bucket = Math.round(v / step) * step;
+      levels[bucket] = (levels[bucket] || 0) + 1;
+    });
+  });
+  const support    = Object.entries(levels).filter(([k]) => Number(k) < last)
+    .sort((a,b) => b[1]-a[1]).slice(0,3).map(([k])=>Number(k)).sort((a,b)=>b-a)[0];
+  const resistance = Object.entries(levels).filter(([k]) => Number(k) > last)
+    .sort((a,b) => b[1]-a[1]).slice(0,3).map(([k])=>Number(k)).sort((a,b)=>a-b)[0];
+
+  // Trend: last 5 closes direction
+  const recent = closes.slice(-5);
+  const trendUp = recent[recent.length-1] > recent[0];
+
+  // Build plain English comment
+  let verdict = '', action = '';
+  if (smaDiff > 0.5) {
+    verdict = `${name} is above its 50-day average — buyers are in control.`;
+    action  = trendUp
+      ? `The recent trend is rising. Watch for continuation above ₹${resistance?.toLocaleString('en-IN') || '—'}.`
+      : `Short-term pullback in progress. A bounce near ₹${support?.toLocaleString('en-IN') || '—'} is possible.`;
+  } else if (smaDiff < -0.5) {
+    verdict = `${name} is below its 50-day average — sellers have the upper hand.`;
+    action  = trendUp
+      ? `Recovery attempt underway. Needs to reclaim ₹${resistance?.toLocaleString('en-IN') || '—'} to confirm strength.`
+      : `Downtrend continuing. Key support to watch: ₹${support?.toLocaleString('en-IN') || '—'}.`;
+  } else {
+    verdict = `${name} is near its 50-day average — market is undecided.`;
+    action  = `Wait for a clear break above ₹${resistance?.toLocaleString('en-IN') || '—'} or below ₹${support?.toLocaleString('en-IN') || '—'} before taking a position.`;
+  }
+
+  return { verdict, action, support, resistance, signal: smaDiff > 0.5 ? 'Bullish' : smaDiff < -0.5 ? 'Bearish' : 'Neutral', smaDiff };
+}
+
+async function loadIndexData(sym, name) {
+  document.getElementById('idx-loading').style.display = 'flex';
+  document.getElementById('idx-comment-text').textContent = 'Analysing market…';
+  document.getElementById('idx-sr-chips').innerHTML = '';
+  document.getElementById('idx-signal').style.display = 'none';
+
+  const cacheKey = 'chitti_idx_' + sym.replace(/[^A-Z0-9]/g,'_');
+  let candles = null;
+
+  try {
+    const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=Daily&days_back=60`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    candles = await r.json();
+    candles.sort((a,b) => a.time - b.time);
+    // Cache it
+    try { localStorage.setItem(cacheKey, JSON.stringify({candles, savedAt: Date.now(), name})); } catch(e){}
+  } catch(e) {
+    // Try cache
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (cached?.candles?.length > 10) candles = cached.candles;
+    } catch(e2) {}
+  }
+
+  document.getElementById('idx-loading').style.display = 'none';
+  if (!candles || !candles.length) {
+    document.getElementById('idx-comment-text').textContent = 'Chart data unavailable. Try during market hours (9:15 AM – 3:30 PM IST).';
+    return;
+  }
+
+  // Update mini chart — use close prices as area series
+  if (!idxChart) initIndexChart();
+  const areaData = candles.map(c => ({time: c.time, value: c.close}));
+  idxSeries.setData(areaData);
+  idxChart.timeScale().fitContent();
+
+  // Price display
+  const last = candles[candles.length - 1];
+  const prev = candles[candles.length - 2];
+  if (last && prev) {
+    const chg = last.close - prev.close;
+    const pct = (chg / prev.close * 100);
+    const up = chg >= 0;
+    const priceEl = document.getElementById('idx-price');
+    priceEl.textContent = '₹' + last.close.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    priceEl.style.color = up ? 'var(--green)' : 'var(--red)';
+    const chgEl = document.getElementById('idx-change');
+    chgEl.textContent = (up ? '▲ +' : '▼ ') + Math.abs(chg).toFixed(2) + ' (' + Math.abs(pct).toFixed(2) + '%)';
+    chgEl.style.color = up ? 'var(--green)' : 'var(--red)';
+    // Update area series colour based on direction
+    idxSeries.applyOptions({
+      topColor: up ? 'rgba(0,200,150,.2)' : 'rgba(255,71,87,.2)',
+      bottomColor: up ? 'rgba(0,200,150,.02)' : 'rgba(255,71,87,.02)',
+      lineColor: up ? '#00c896' : '#ff4757',
+    });
+  }
+
+  // Date range
+  const fmtD = t => new Date(t*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('idx-date').textContent =
+    fmtD(candles[0].time) + ' – ' + fmtD(last.time);
+
+  // Chitti's comment
+  const comment = chittiIndexComment(candles, name);
+  if (typeof comment === 'string') {
+    document.getElementById('idx-comment-text').textContent = comment;
+  } else {
+    document.getElementById('idx-comment-text').innerHTML =
+      `<b>${comment.verdict}</b><br>${comment.action}`;
+    idxCommentText = comment.verdict + ' ' + comment.action;
+
+    // Signal pill
+    const sigEl = document.getElementById('idx-signal');
+    sigEl.textContent = comment.signal;
+    sigEl.style.display = 'inline';
+    const sigColors = {
+      Bullish: 'background:rgba(0,200,150,.15);color:var(--green);border:1px solid rgba(0,200,150,.3)',
+      Bearish: 'background:rgba(255,71,87,.15);color:var(--red);border:1px solid rgba(255,71,87,.3)',
+      Neutral: 'background:rgba(255,179,0,.15);color:var(--amber);border:1px solid rgba(255,179,0,.3)',
+    };
+    sigEl.style.cssText += ';' + (sigColors[comment.signal] || '');
+
+    // S/R chips
+    const chips = [];
+    if (comment.support)    chips.push(`<span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.25);font-family:'JetBrains Mono',monospace">▼ S ₹${comment.support.toLocaleString('en-IN')}</span>`);
+    if (comment.resistance) chips.push(`<span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25);font-family:'JetBrains Mono',monospace">▲ R ₹${comment.resistance.toLocaleString('en-IN')}</span>`);
+    document.getElementById('idx-sr-chips').innerHTML = chips.join('');
+  }
+}
+
+function selectIndex(btn) {
+  document.querySelectorAll('.idx-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const sym  = btn.getAttribute('data-sym');
+  const name = btn.getAttribute('data-name');
+  idxCurrentSym = sym;
+  document.getElementById('idx-name').textContent = name;
+  loadIndexData(sym, name);
+}
+
+function speakIndexComment() {
+  if (!idxCommentText) { sp('Market data is loading. Please wait.'); return; }
+  sp(idxCommentText);
+}
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 window.addEventListener('load', () => {
@@ -1868,6 +2122,10 @@ window.addEventListener('load', () => {
       '<span style="color:var(--red)">⚠️ Chart library failed to load. Please refresh.</span>';
   }
 
+  // Market overview
+  initIndexChart();
+  loadIndexData('NSE:NIFTY 50', 'Nifty 50');
+
   // Auto-scan
   runScan(false);
   setupRefresh();
@@ -1877,9 +2135,14 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('resize', () => {
-  const cw = document.getElementById('lw-chart').clientWidth || 800;
-  if (lwChart) lwChart.applyOptions({width: cw, height: 300});
-  if (lwRsiChart) lwRsiChart.applyOptions({width: cw, height: 90});
+  const el = document.getElementById('lw-chart');
+  const cw = el.clientWidth || window.innerWidth || 1200;
+  const isMobile = window.innerWidth <= 580;
+  const isTablet = window.innerWidth <= 900;
+  const chartH = isMobile ? 240 : isTablet ? 340 : 420;
+  const rsiH   = isMobile ? 75  : isTablet ? 90  : 100;
+  if (lwChart) lwChart.applyOptions({width: cw, height: chartH});
+  if (lwRsiChart) lwRsiChart.applyOptions({width: cw, height: rsiH});
 });
 </script>
 </body>
