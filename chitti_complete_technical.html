@@ -2321,7 +2321,7 @@ function speakIndexComment() {
 // ═══════════════════════════════════════════════════════════
 // STOCK SEARCH — Nifty 500 symbol list for chart tab search
 // ═══════════════════════════════════════════════════════════
-if(typeof NIFTY500===\'undefined\') var NIFTY500 = [
+const NIFTY500 = [
   'RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','HINDUNILVR','KOTAKBANK','SBIN','BHARTIARTL','ITC',
   'BAJFINANCE','AXISBANK','ASIANPAINT','MARUTI','SUNPHARMA','TITAN','ULTRACEMCO','NESTLEIND','TECHM','WIPRO',
   'POWERGRID','NTPC','HCLTECH','ONGC','TATAMOTORS','JSWSTEEL','TATASTEEL','INDUSINDBK','BAJAJFINSV','HDFCLIFE',
@@ -2451,7 +2451,7 @@ const LEARN_PATTERNS = [
 ];
 
 const LEARN_DATA = [
-  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan's custom indicator. Checks RSI momentum plus candle direction on 2 timeframes. All 3 conditions must agree before giving a signal.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback candle red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback green'},
+  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan\'s custom indicator. Checks RSI momentum plus candle direction on 2 timeframes. All 3 conditions must agree before giving a signal.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback candle red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback green'},
   {key:'TTM Squeeze',icon:'⚡',tag:'new',title:'TTM Squeeze (2010+)',plain:'Bollinger Bands squeeze inside Keltner Channel = price coiled like a spring. When it fires, a big move comes. Above zero = buyers winning.',buy:'Momentum crosses above zero after a squeeze period',sell:'Momentum crosses below zero'},
   {key:'RSI',icon:'📊',tag:'classic',title:'RSI (14)',plain:'Relative Strength Index. Measures how fast price is moving. Below 30 = oversold, may bounce up. Above 70 = overbought, may fall. Best used with another indicator.',buy:'RSI crosses above 30 from below (oversold recovery) or above 50',sell:'RSI crosses below 70 from above (overbought reversal) or below 50'},
   {key:'MACD',icon:'📊',tag:'classic',title:'MACD (12,26,9)',plain:'Moving Average Convergence Divergence. Two lines: fast and slow. When fast crosses slow upward = momentum building. Histogram shows the difference.',buy:'MACD line crosses above signal line + histogram turns green',sell:'MACD line crosses below signal line + histogram turns red'},
