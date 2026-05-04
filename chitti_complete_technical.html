@@ -252,7 +252,7 @@ textarea:focus{border-color:var(--blue)}
 /* ── OVERLAY CHIPS ── */
 .ov-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;
   border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:11px;
-  font-weight:500;cursor:pointer;transition:all .15s;user-select:none;min-height:26px}
+  font-weight:500;cursor:pointer;transition:all .15s;user-select:none;min-height:26px;flex-shrink:0;white-space:nowrap}
 .ov-chip:hover{border-color:var(--blue);color:var(--text)}
 .ov-chip input[type=checkbox]{accent-color:var(--blue);width:12px;height:12px;cursor:pointer}
 .ov-chip:has(input:checked){border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
@@ -372,8 +372,8 @@ textarea:focus{border-color:var(--blue)}
         <div id="idx-change" style="font-size:12px;font-weight:600"></div>
       </div>
     </div>
-    <!-- Mini chart -->
-    <div style="position:relative">
+    <!-- Mini chart - collapsed by default, tap ▼ to expand -->
+    <div id="idx-chart-wrap" style="position:relative;overflow:hidden;max-height:0;transition:max-height .35s ease">
       <div id="idx-chart" style="height:130px" aria-label="Index mini chart"></div>
       <div id="idx-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--card);font-size:11px;color:var(--muted)">
         <span class="spin">⟳</span>&nbsp;Loading…
@@ -390,6 +390,14 @@ textarea:focus{border-color:var(--blue)}
     </div>
   </div>
   <!-- end market overview -->
+
+  <!-- Top Movers strip — Angel One style -->
+  <div id="movers-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:6px 14px;overflow-x:auto;scrollbar-width:none;display:none">
+    <div style="display:flex;align-items:center;gap:12px;width:max-content">
+      <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;flex-shrink:0">Today</span>
+      <div id="movers-inner" style="display:flex;gap:8px"></div>
+    </div>
+  </div>
 
   <!-- Flat filter strip — no card border -->
   <div class="filter-strip">
@@ -514,6 +522,14 @@ textarea:focus{border-color:var(--blue)}
       </button>
     </div>
     <div class="speak-row">
+      <select id="sort-sel" onchange="renderStockList()" aria-label="Sort results"
+        style="background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:5px;
+          padding:3px 7px;font-size:11px;cursor:pointer;min-height:28px">
+        <option value="default">Sort: Default</option>
+        <option value="change_desc">▲ Change % ↓</option>
+        <option value="change_asc">▼ Change % ↑</option>
+        <option value="strength">Signal Strength</option>
+      </select>
       <button class="speak-sm" onclick="speakCol('buy')" aria-label="Speak buy signals">🔊 BUY</button>
       <button class="speak-sm" onclick="speakCol('sell')" aria-label="Speak short signals">🔊 SHORT</button>
     </div>
@@ -558,6 +574,10 @@ textarea:focus{border-color:var(--blue)}
           <span class="cexch" id="c-exchange" style="display:none">NSE</span>
         </div>
         <div style="font-size:10px;color:var(--muted)" id="c-full"></div>
+        <div id="c-meta" style="margin-top:3px;display:none;flex-wrap:wrap;gap:6px;align-items:center">
+          <span id="c-sector" style="font-size:10px;background:var(--blue-dim);color:var(--blue);padding:1px 6px;border-radius:4px;border:1px solid var(--blue-border)"></span>
+          <span id="c-52w" style="font-size:10px;color:var(--muted)"></span>
+        </div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap">
@@ -607,14 +627,16 @@ textarea:focus{border-color:var(--blue)}
   </div>
 
   <!-- ── CHART TOOLBAR ROW 2: Overlays + Lower indicator tabs ── -->
-  <div style="display:flex;align-items:center;gap:6px;background:var(--card);border-bottom:1px solid var(--border);padding:7px 12px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:6px;background:var(--card);border-bottom:1px solid var(--border);padding:7px 12px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap">
     <!-- Overlay checkboxes -->
-    <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-right:2px">Overlay</span>
+    <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-right:2px;flex-shrink:0">Overlay</span>
     <label class="ov-chip"><input type="checkbox" id="ov-sma20"  onchange="toggleOverlay('sma20')" > SMA 20</label>
     <label class="ov-chip"><input type="checkbox" id="ov-sma50"  onchange="toggleOverlay('sma50')" > SMA 50</label>
     <label class="ov-chip"><input type="checkbox" id="ov-sma200" onchange="toggleOverlay('sma200')"> SMA 200</label>
     <label class="ov-chip"><input type="checkbox" id="ov-ema20"  onchange="toggleOverlay('ema20')" > EMA 20</label>
     <label class="ov-chip"><input type="checkbox" id="ov-bb"     onchange="toggleOverlay('bb')"    > BB</label>
+    <label class="ov-chip"><input type="checkbox" id="ov-vwap"   onchange="toggleOverlay('vwap')"  > VWAP</label>
+    <label class="ov-chip"><input type="checkbox" id="ov-st"     onchange="toggleOverlay('st')"    > Supertrend</label>
     <div style="width:1px;background:var(--border);margin:0 4px;height:16px"></div>
     <!-- S/R + Trend toggles -->
     <div class="tog on" id="tog-sr" onclick="togOver('sr')" role="checkbox" aria-checked="true" tabindex="0">— S/R</div>
@@ -639,15 +661,21 @@ textarea:focus{border-color:var(--blue)}
 
   <!-- ── LOWER INDICATOR TABS: RSI / MACD / Volume ── -->
   <div style="background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:0">
-    <button class="li-tab active" id="li-rsi"  onclick="setLowerIndicator('rsi')"    aria-label="RSI">RSI</button>
-    <button class="li-tab"        id="li-macd" onclick="setLowerIndicator('macd')"   aria-label="MACD">MACD</button>
-    <button class="li-tab"        id="li-vol"  onclick="setLowerIndicator('volume')" aria-label="Volume">Volume</button>
+    <button class="li-tab active" id="li-rsi"   onclick="setLowerIndicator('rsi')"    aria-label="RSI">RSI</button>
+    <button class="li-tab"        id="li-macd"  onclick="setLowerIndicator('macd')"   aria-label="MACD">MACD</button>
+    <button class="li-tab"        id="li-stoch" onclick="setLowerIndicator('stoch')"  aria-label="Stochastic RSI">Stoch RSI</button>
+    <button class="li-tab"        id="li-vol"   onclick="setLowerIndicator('volume')" aria-label="Volume">Volume</button>
   </div>
 
   <!-- RSI Pane -->
   <div id="pane-rsi" class="chart-wrap" style="margin-bottom:0;border-radius:0;border-left:none;border-right:none">
     <div id="lw-rsi" aria-label="RSI indicator" style="height:100px"></div>
     <div class="chart-lbl">RSI(14) · SMA(20)</div>
+  </div>
+  <!-- Stochastic RSI Pane -->
+  <div id="pane-stoch" class="chart-wrap" style="display:none;margin-bottom:0;border-radius:0;border-left:none;border-right:none">
+    <div id="lw-stoch" aria-label="Stochastic RSI" style="height:100px"></div>
+    <div class="chart-lbl">Stoch RSI(14,3,3)</div>
   </div>
   <!-- MACD Pane -->
   <div id="pane-macd" class="chart-wrap" style="display:none;margin-bottom:0;border-radius:0;border-left:none;border-right:none">
@@ -684,7 +712,58 @@ textarea:focus{border-color:var(--blue)}
     </div>
   </div>
 
+  <!-- ── INDICATOR QUICK-SELECT (Chart tab) ── -->
+  <div style="padding:8px 14px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Quick Indicator</span>
+    <select id="chart-ind-sel" onchange="runChartIndicator()" aria-label="Indicator for this stock"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;
+        padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;flex:1;max-width:280px">
+      <option value="">Select an indicator…</option>
+      <option value="Roshan Indicator">⭐ Roshan Indicator</option>
+      <option value="RSI">RSI (14)</option>
+      <option value="MACD">MACD</option>
+      <option value="Supertrend">Supertrend</option>
+      <option value="Bollinger Bands">Bollinger Bands</option>
+      <option value="TTM Squeeze">⚡ TTM Squeeze</option>
+      <option value="Hull MA">⚡ Hull MA</option>
+      <option value="EMA(20)">EMA (20)</option>
+      <option value="EMA(50)">EMA (50)</option>
+      <option value="ADX">ADX</option>
+      <option value="VWAP">VWAP</option>
+    </select>
+    <div id="chart-ind-result" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;display:none"></div>
+    <button class="sp-btn" onclick="speakChartIndResult()" id="chart-ind-speak" style="display:none;font-size:12px;padding:3px 8px" aria-label="Hear indicator result">🔊</button>
+  </div>
+
   <!-- ── CHITTI'S VIEW ── -->
+  <!-- Chitti Trade Setup — Entry/SL/Target from real S/R levels -->
+  <div id="trade-setup" style="display:none;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">🎯 Chitti Trade Setup</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">
+      <div style="text-align:center;background:var(--surface);border-radius:7px;padding:8px">
+        <div style="font-size:10px;color:var(--muted)">Entry</div>
+        <div id="ts-entry" style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text)">—</div>
+      </div>
+      <div style="text-align:center;background:rgba(239,68,68,.08);border-radius:7px;padding:8px;border:1px solid rgba(239,68,68,.2)">
+        <div style="font-size:10px;color:var(--red)">Stop Loss</div>
+        <div id="ts-sl" style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red)">—</div>
+      </div>
+      <div style="text-align:center;background:rgba(0,200,150,.08);border-radius:7px;padding:8px;border:1px solid rgba(0,200,150,.2)">
+        <div style="font-size:10px;color:var(--green)">Target</div>
+        <div id="ts-tgt" style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green)">—</div>
+      </div>
+      <div style="text-align:center;background:rgba(76,127,255,.08);border-radius:7px;padding:8px;border:1px solid rgba(76,127,255,.2)">
+        <div style="font-size:10px;color:var(--blue)">R:R</div>
+        <div id="ts-rr" style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--blue)">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="addToJournalFromChart()" class="scan-btn" style="flex:1;padding:8px;font-size:12px;background:var(--green)" aria-label="Add this trade to journal">
+        📓 Add to Journal
+      </button>
+      <button onclick="speakTradeSetup()" class="sp-btn" style="padding:8px 12px" aria-label="Hear trade setup">🔊</button>
+    </div>
+  </div>
   <div id="cv-loading" class="loading-cv cv-wrap" style="display:none"><span class="spin">⟳</span> Chitti is analysing…</div>
   <div id="cv" class="cv-wrap"></div>
 
@@ -884,6 +963,51 @@ textarea:focus{border-color:var(--blue)}
 
 <script>
 if(!window._chittiLoaded){
+// Stock metadata: sector + full name
+const STOCK_META = {
+  'RELIANCE': {name:'Reliance Industries', sector:'Oil & Gas'},
+  'TCS': {name:'Tata Consultancy Services', sector:'IT'},
+  'HDFCBANK': {name:'HDFC Bank', sector:'Banking'},
+  'INFY': {name:'Infosys', sector:'IT'},
+  'ICICIBANK': {name:'ICICI Bank', sector:'Banking'},
+  'HINDUNILVR': {name:'Hindustan Unilever', sector:'FMCG'},
+  'KOTAKBANK': {name:'Kotak Mahindra Bank', sector:'Banking'},
+  'SBIN': {name:'State Bank of India', sector:'Banking'},
+  'BHARTIARTL': {name:'Bharti Airtel', sector:'Telecom'},
+  'ITC': {name:'ITC Limited', sector:'FMCG'},
+  'BAJFINANCE': {name:'Bajaj Finance', sector:'NBFC'},
+  'AXISBANK': {name:'Axis Bank', sector:'Banking'},
+  'ASIANPAINT': {name:'Asian Paints', sector:'Paints'},
+  'MARUTI': {name:'Maruti Suzuki', sector:'Auto'},
+  'SUNPHARMA': {name:'Sun Pharma', sector:'Pharma'},
+  'TITAN': {name:'Titan Company', sector:'Consumer'},
+  'TATAMOTORS': {name:'Tata Motors', sector:'Auto'},
+  'WIPRO': {name:'Wipro', sector:'IT'},
+  'HCLTECH': {name:'HCL Technologies', sector:'IT'},
+  'TECHM': {name:'Tech Mahindra', sector:'IT'},
+  'ONGC': {name:'ONGC', sector:'Oil & Gas'},
+  'NTPC': {name:'NTPC', sector:'Power'},
+  'POWERGRID': {name:'Power Grid', sector:'Power'},
+  'COALINDIA': {name:'Coal India', sector:'Mining'},
+  'LT': {name:'Larsen & Toubro', sector:'Infrastructure'},
+  'ADANIENT': {name:'Adani Enterprises', sector:'Conglomerate'},
+  'ADANIPORTS': {name:'Adani Ports', sector:'Logistics'},
+  'JSWSTEEL': {name:'JSW Steel', sector:'Steel'},
+  'TATASTEEL': {name:'Tata Steel', sector:'Steel'},
+  'HINDALCO': {name:'Hindalco', sector:'Metals'},
+  'ZOMATO': {name:'Zomato', sector:'Food Tech'},
+  'IRCTC': {name:'IRCTC', sector:'Tourism'},
+  'TATAPOWER': {name:'Tata Power', sector:'Power'},
+  'DIXON': {name:'Dixon Technologies', sector:'Electronics'},
+  'SUZLON': {name:'Suzlon Energy', sector:'Renewables'},
+  'ADANIGREEN': {name:'Adani Green Energy', sector:'Renewables'},
+  'DMART': {name:'Avenue Supermarts', sector:'Retail'},
+  'TRENT': {name:'Trent Limited', sector:'Retail'},
+  'NIFTY 50': {name:'Nifty 50 Index', sector:'Index'},
+  'BANKNIFTY': {name:'Bank Nifty Index', sector:'Index'},
+  'SENSEX': {name:'BSE Sensex', sector:'Index'},
+};
+
 window._chittiLoaded=true;
 
 // ═══════════════════════════════════════════════════════════
@@ -1010,6 +1134,14 @@ function onInd() {
   d.textContent = IND_PLAIN[v] || 'Analyses price to detect BUY or SHORT signals.';
   d.className = 'ind-desc' + (NEW_INDS.has(v) ? ' new-ind' : '');
   document.getElementById('sbtn-ind').textContent = v;
+  // Flash scan button orange to signal re-scan needed
+  const btn = document.getElementById('sbtn');
+  if (btn) {
+    btn.style.background = 'linear-gradient(135deg,#ff9500,#e07000)';
+    btn.style.boxShadow  = '0 2px 16px rgba(255,149,0,.5)';
+    setTimeout(() => { btn.style.background=''; btn.style.boxShadow=''; }, 2500);
+  }
+  sp(v + ' selected. Tap Scan to get fresh results.');
   updateCNote();
 }
 function onCall() {
@@ -1092,6 +1224,33 @@ function renderResults(j) {
     btn.innerHTML = `▶ Scan — <span id="sbtn-ind">${document.getElementById('ind-sel').value}</span>`;
   }, 3000);
   sp(`Scan complete. ${buys.length} buy signal${buys.length !== 1 ? 's' : ''} and ${shorts.length} short signal${shorts.length !== 1 ? 's' : ''} found.`);
+  // Update movers strip with top movers from scan results
+  updateMoversStrip([...buys, ...shorts]);
+}
+
+function updateMoversStrip(stocks) {
+  const strip = document.getElementById('movers-strip');
+  const inner = document.getElementById('movers-inner');
+  if (!strip || !inner || !stocks.length) return;
+  // Sort by absolute % change
+  const sorted = stocks
+    .filter(s => s.pchange != null)
+    .sort((a,b) => Math.abs(Number(b.pchange)) - Math.abs(Number(a.pchange)))
+    .slice(0, 8);
+  if (!sorted.length) { strip.style.display='none'; return; }
+  inner.innerHTML = sorted.map(s => {
+    const pc = Number(s.pchange), up = pc >= 0;
+    const nm = s.symbol.split(':').pop();
+    return `<div onclick="openChart('${s.symbol}')" style="cursor:pointer;padding:3px 8px;border-radius:5px;
+      background:${up?'rgba(0,200,150,.1)':'rgba(255,71,87,.1)'};
+      border:1px solid ${up?'rgba(0,200,150,.25)':'rgba(255,71,87,.25)'};
+      display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0"
+      aria-label="${nm} ${up?'up':'down'} ${Math.abs(pc).toFixed(2)}%">
+      <span style="font-size:11px;font-weight:700;font-family:'Syne',sans-serif">${nm}</span>
+      <span style="font-size:10px;font-weight:600;color:${up?'var(--green)':'var(--red)'}">${up?'▲ +':'▼ '}${Math.abs(pc).toFixed(2)}%</span>
+    </div>`;
+  }).join('');
+  strip.style.display = 'block';
 }
 let activeResult = 'buy';
 function switchResult(t) {
@@ -1104,7 +1263,26 @@ function switchResult(t) {
 }
 function renderStockList() {
   const list = document.getElementById('stock-list');
-  const src = document.getElementById(activeResult + '-list');
+  const sort = document.getElementById('sort-sel')?.value || 'default';
+  // Re-sort the hidden lists based on sort selection
+  const srcId = activeResult + '-list';
+  const src = document.getElementById(srcId);
+  if (src && src.children.length > 1 && sort !== 'default') {
+    const rows = Array.from(src.children).filter(el => el.classList.contains('srow'));
+    if (rows.length > 1) {
+      rows.sort((a, b) => {
+        const pA = parseFloat(a.querySelector('.schange')?.textContent?.replace(/[▲▼ %+]/g,'') || '0');
+        const pB = parseFloat(b.querySelector('.schange')?.textContent?.replace(/[▲▼ %+]/g,'') || '0');
+        const dotsA = (a.querySelector('.sname')?.textContent?.match(/●/g)||[]).length;
+        const dotsB = (b.querySelector('.sname')?.textContent?.match(/●/g)||[]).length;
+        if (sort === 'change_desc') return pB - pA;
+        if (sort === 'change_asc')  return pA - pB;
+        if (sort === 'strength')    return dotsB - dotsA;
+        return 0;
+      });
+      rows.forEach(r => src.appendChild(r));
+    }
+  }
   const cnt = parseInt(activeResult === 'buy'
     ? document.getElementById('buy-cnt').textContent
     : document.getElementById('sell-cnt').textContent) || 0;
@@ -1161,7 +1339,7 @@ function srow(s, t) {
     <div class="savatar ${t}">${nm.slice(0,2)}</div>
     <div class="sinfo">
       <div class="sym">${nm}</div>
-      <div class="sname">NSE · Equity <span class="sbadge ${t}">${isBuy ? '▲ BUY' : '▼ SHORT'}</span></div>
+      <div class="sname">NSE · <span style="opacity:.7">${(function(){const p=Math.abs(pcNum||0);const dots=p>3?5:p>2?4:p>1?3:p>0.5?2:1;return '●'.repeat(dots)+'○'.repeat(5-dots);})()} </span><span class="sbadge ${t}">${isBuy ? '▲ BUY' : '▼ SHORT'}</span></div>
     </div>
     <div class="sprice">
       <div class="sltp">${lpFmt}</div>
@@ -1208,6 +1386,45 @@ function calcEMA(data, period) {
   });
   return result;
 }
+function calcStochRSI(candles, rsiPeriod=14, stochPeriod=14, kPeriod=3, dPeriod=3) {
+  // Step 1: RSI
+  const closes = candles.map(c => c.close);
+  const rsiVals = [];
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= rsiPeriod; i++) {
+    const d = closes[i] - closes[i-1];
+    if (d > 0) gains += d; else losses -= d;
+  }
+  let avgG = gains/rsiPeriod, avgL = losses/rsiPeriod;
+  for (let i = rsiPeriod; i < closes.length; i++) {
+    if (i > rsiPeriod) {
+      const d = closes[i] - closes[i-1];
+      avgG = (avgG*(rsiPeriod-1) + Math.max(d,0)) / rsiPeriod;
+      avgL = (avgL*(rsiPeriod-1) + Math.max(-d,0)) / rsiPeriod;
+    }
+    rsiVals.push({ time: candles[i].time, value: avgL===0 ? 100 : 100 - 100/(1+avgG/avgL) });
+  }
+  // Step 2: Stochastic of RSI
+  const kLine = [], dLine = [];
+  for (let i = stochPeriod-1; i < rsiVals.length; i++) {
+    const slice = rsiVals.slice(i-stochPeriod+1, i+1).map(x => x.value);
+    const minR = Math.min(...slice), maxR = Math.max(...slice);
+    const k = maxR === minR ? 0 : ((rsiVals[i].value - minR) / (maxR - minR)) * 100;
+    kLine.push({ time: rsiVals[i].time, value: k });
+  }
+  // Smooth K with SMA(kPeriod)
+  const kSmooth = kLine.map((_, i) => {
+    if (i < kPeriod-1) return null;
+    return { time: kLine[i].time, value: kLine.slice(i-kPeriod+1,i+1).reduce((a,b)=>a+b.value,0)/kPeriod };
+  }).filter(Boolean);
+  // D = SMA(kPeriod) of smoothed K
+  const dSmooth = kSmooth.map((_, i) => {
+    if (i < dPeriod-1) return null;
+    return { time: kSmooth[i].time, value: kSmooth.slice(i-dPeriod+1,i+1).reduce((a,b)=>a+b.value,0)/dPeriod };
+  }).filter(Boolean);
+  return { k: kSmooth, d: dSmooth };
+}
+
 function calcRSI(candles, period = 14) {
   const closes = candles.map(c => c.close);
   const rsi = [], sma20 = [];
@@ -1249,6 +1466,42 @@ function calcMACD(candles, fast=12, slow=26, signal=9) {
   });
   return { macdLine, signalLine, histogram };
 }
+function calcSupertrend(candles, period=10, multiplier=3) {
+  // Calculate ATR
+  const tr = candles.map((c, i) => {
+    if (i === 0) return c.high - c.low;
+    const prev = candles[i-1];
+    return Math.max(c.high - c.low, Math.abs(c.high - prev.close), Math.abs(c.low - prev.close));
+  });
+  const atr = tr.map((_, i) => {
+    if (i < period-1) return null;
+    return tr.slice(i-period+1, i+1).reduce((a,b) => a+b, 0) / period;
+  });
+
+  const upTrend = [], downTrend = [];
+  let trend = 1; // 1 = up, -1 = down
+  let prevUpper = 0, prevLower = 0;
+
+  for (let i = period; i < candles.length; i++) {
+    const c = candles[i];
+    const mid = (c.high + c.low) / 2;
+    const band = multiplier * atr[i];
+    const upper = mid + band;
+    const lower = mid - band;
+    const finalUpper = (upper < prevUpper || candles[i-1].close > prevUpper) ? upper : prevUpper;
+    const finalLower = (lower > prevLower || candles[i-1].close < prevLower) ? lower : prevLower;
+
+    if (trend === 1 && c.close < finalLower) trend = -1;
+    else if (trend === -1 && c.close > finalUpper) trend = 1;
+
+    if (trend === 1) upTrend.push({time: c.time, value: finalLower});
+    else downTrend.push({time: c.time, value: finalUpper});
+
+    prevUpper = finalUpper; prevLower = finalLower;
+  }
+  return { upTrend, downTrend };
+}
+
 function calcBB(candles, period=20, mult=2) {
   const upper=[], lower=[], mid=[];
   const closes = candles.map(c => c.close);
@@ -1396,6 +1649,29 @@ function initCharts() {
   lwMacdHist   = lwMacdChart.addHistogramSeries({priceScaleId:'macd-hist', color:'#00c896'});
   lwMacdChart.priceScale('macd-hist').applyOptions({scaleMargins:{top:0.7, bottom:0}});
 
+  // Stochastic RSI chart
+  const stochEl = document.getElementById('lw-stoch');
+  const lwStochChart = LightweightCharts.createChart(stochEl, {
+    width:w, height:rsiH,
+    layout:{background:{color:'#1a1e28'}, textColor:'#6b7a99'},
+    grid:{vertLines:{color:'#2a303f'}, horzLines:{color:'#2a303f'}},
+    rightPriceScale:{borderColor:'#2a303f'},
+    timeScale:{borderColor:'#2a303f', timeVisible:true, secondsVisible:false},
+    handleScroll:true, handleScale:true,
+  });
+  const lwStochK = lwStochChart.addLineSeries({color:'#4c7fff', lineWidth:2, title:'%K'});
+  const lwStochD = lwStochChart.addLineSeries({color:'#ffb300', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed, title:'%D'});
+  [80,50,20].forEach(v => {
+    const s = lwStochChart.addLineSeries({color:v===50?'#2a303f':'#252b3a', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dotted, priceLineVisible:false, lastValueVisible:false});
+    window._stochRefLines = window._stochRefLines || [];
+    window._stochRefLines.push({series:s, value:v});
+  });
+  window._lwStochChart = lwStochChart;
+  window._lwStochK = lwStochK;
+  window._lwStochD = lwStochD;
+  lwChart.timeScale().subscribeVisibleLogicalRangeChange(r => { if(r) lwStochChart.timeScale().setVisibleLogicalRange(r); });
+  lwStochChart.timeScale().subscribeVisibleLogicalRangeChange(r => { if(r) lwChart.timeScale().setVisibleLogicalRange(r); });
+
   // Volume standalone chart
   const volPaneEl = document.getElementById('lw-vol-pane');
   lwVolChart = LightweightCharts.createChart(volPaneEl, {
@@ -1463,9 +1739,10 @@ function setLowerIndicator(ind) {
   curLowerIndicator = ind;
   document.querySelectorAll('.li-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('li-' + ind).classList.add('active');
-  document.getElementById('pane-rsi').style.display  = ind === 'rsi'    ? '' : 'none';
-  document.getElementById('pane-macd').style.display = ind === 'macd'   ? '' : 'none';
-  document.getElementById('pane-vol').style.display  = ind === 'volume' ? '' : 'none';
+  document.getElementById('pane-rsi').style.display   = ind === 'rsi'    ? '' : 'none';
+  document.getElementById('pane-macd').style.display  = ind === 'macd'   ? '' : 'none';
+  document.getElementById('pane-stoch').style.display = ind === 'stoch'  ? '' : 'none';
+  document.getElementById('pane-vol').style.display   = ind === 'volume' ? '' : 'none';
   // Trigger resize on newly visible pane
   const { rsiH } = getResponsiveHeights();
   const w = document.getElementById('lw-chart').clientWidth || window.innerWidth || 1200;
@@ -1511,6 +1788,17 @@ function updateLowerIndicator(candles) {
     lwMacdSignal.setData(signalLine);
     lwMacdHist.setData(histogram);
     lwMacdChart?.timeScale().fitContent();
+  } else if (curLowerIndicator === 'stoch' && window._lwStochK) {
+    const { k, d } = calcStochRSI(candles);
+    window._lwStochK.setData(k);
+    window._lwStochD.setData(d);
+    window._lwStochChart?.timeScale().fitContent();
+    if (window._stochRefLines && k.length >= 2) {
+      const t0 = k[0].time, t1 = k[k.length-1].time;
+      window._stochRefLines.forEach(({series, value}) => {
+        try { series.setData([{time:t0,value},{time:t1,value}]); } catch(e){}
+      });
+    }
   } else if (curLowerIndicator === 'volume' && lwVolBar) {
     lwVolBar.setData(candles.map(c => ({time:c.time, value:c.volume, color: c.close>=c.open?'#00c89677':'#ff475777'})));
     lwVolChart?.timeScale().fitContent();
@@ -1559,6 +1847,27 @@ function toggleOverlay(key) {
     const sm = lwChart.addLineSeries({color:'#ff4757aa', lineWidth:1, priceLineVisible:false, lastValueVisible:false, title:'BB Mid'});
     su.setData(upper); sl.setData(lower); sm.setData(mid);
     overlaySeriesMap[key] = [su, sl, sm];
+  } else if (key === 'vwap') {
+    // VWAP: cumulative (price * volume) / cumulative volume
+    let cumPV = 0, cumV = 0;
+    const vwapData = lastCandles.map(c => {
+      const typical = (c.high + c.low + c.close) / 3;
+      cumPV += typical * (c.volume || 1);
+      cumV  += (c.volume || 1);
+      return { time: c.time, value: cumPV / cumV };
+    });
+    const sv = lwChart.addLineSeries({color:'#ffb300', lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:'VWAP'});
+    sv.setData(vwapData);
+    overlaySeriesMap[key] = sv;
+  } else if (key === 'st') {
+    // Supertrend: ATR-based trailing stop
+    const atr = 3, mult = 10;
+    const st = calcSupertrend(lastCandles, atr, mult);
+    const upSeries   = lwChart.addLineSeries({color:'#00c896', lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:'ST Buy'});
+    const downSeries = lwChart.addLineSeries({color:'#ff4757', lineWidth:2, priceLineVisible:false, lastValueVisible:true, title:'ST Sell'});
+    upSeries.setData(st.upTrend);
+    downSeries.setData(st.downTrend);
+    overlaySeriesMap[key] = [upSeries, downSeries];
   }
 }
 
@@ -1568,14 +1877,36 @@ function clearOverlays() {
   tlLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
   srLineSeries = []; tlLineSeries = [];
 }
+function srStyleForTF(tf) {
+  // Bryan's spec: Monthly=purple bold, Weekly=white, Daily=red, 4H=dark yellow dashed, 1H=green
+  const styles = {
+    Monthly:  {color:'#9c7cff', lineWidth:3, lineStyle:LightweightCharts.LineStyle.Solid},
+    Weekly:   {color:'#e2e8f0', lineWidth:2, lineStyle:LightweightCharts.LineStyle.Solid},
+    Daily:    {color:'#ff4757', lineWidth:2, lineStyle:LightweightCharts.LineStyle.Solid},
+    '4H':     {color:'#d4a017', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed},
+    '1H':     {color:'#00c896', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Solid},
+    '15min':  {color:'#4c7fff', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dotted},
+    '5min':   {color:'#4c7fff', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dotted},
+    '1min':   {color:'#4c7fff', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dotted},
+  };
+  return styles[tf] || {color:'#94a3b8', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed};
+}
 function drawSRLines(candles, tf) {
   if (!showSR || !lwChart) return;
   const levels = findSRLevels(candles);
   const lastClose = candles[candles.length-1]?.close || 0;
+  const style = srStyleForTF(tf);
   levels.forEach(lv => {
+    // Resistance slightly more opaque, support slightly less
     const isRes = lv.price > lastClose;
-    const color = isRes ? '#ff475766' : '#00c89666';
-    const s = lwChart.addLineSeries({color, lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed, priceLineVisible:false, lastValueVisible:false});
+    const s = lwChart.addLineSeries({
+      color: style.color + (isRes ? 'cc' : '88'),
+      lineWidth: style.lineWidth,
+      lineStyle: style.lineStyle,
+      priceLineVisible: false,
+      lastValueVisible: true,  // Shows ₹ price label on the line — Angel One style
+      title: (isRes ? 'R' : 'S'),
+    });
     s.setData([{time:candles[0].time, value:lv.price},{time:candles[candles.length-1].time, value:lv.price}]);
     srLineSeries.push(s);
   });
@@ -1628,6 +1959,13 @@ async function loadChart(sym) {
     renderCandleData(candles);
     lwVolSeries.setData(candles.map(c => ({time:c.time, value:c.volume, color:c.close>=c.open?'#00c89633':'#ff475733'})));
     lwChart.timeScale().fitContent();
+    // Force full-width render after data loads
+    requestAnimationFrame(() => {
+      const el = document.getElementById('lw-chart');
+      const w = el.clientWidth || window.innerWidth;
+      if (w > 100) lwChart.applyOptions({width: w});
+      lwChart.timeScale().fitContent();
+    });
 
     // Lower indicator
     updateLowerIndicator(candles);
@@ -1665,6 +2003,12 @@ async function loadChart(sym) {
       const chgEl = document.getElementById('c-change');
       if (chgEl) { chgEl.textContent=(up?'▲ +':'▼ ')+absChg.toFixed(2)+' ('+pct.toFixed(2)+'%)'; chgEl.style.color=up?'var(--green)':'var(--red)'; }
       document.getElementById('c-sym').textContent = sym.split(':').pop();
+      // 52-week high/low from loaded candles
+      const w52 = candles.slice(-252); // ~252 trading days in a year
+      const hi52 = Math.max(...w52.map(c => c.high));
+      const lo52 = Math.min(...w52.map(c => c.low));
+      const w52El = document.getElementById('c-52w');
+      if (w52El) w52El.textContent = '52W: ₹' + lo52.toLocaleString('en-IN',{maximumFractionDigits:0}) + ' – ₹' + hi52.toLocaleString('en-IN',{maximumFractionDigits:0});
       const fmtD = t=>new Date(t*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
       document.getElementById('c-full').textContent = 'NSE · '+tf+' · '+fmtD(candles[0].time)+' – '+fmtD(last.time);
     }
@@ -1680,6 +2024,10 @@ async function loadChart(sym) {
       }).join('');
       lRow.style.display = 'block';
     }
+
+  // Calculate trade setup from loaded candles
+    if (lastCandles.length && cvData) calcTradeSetup(lastCandles, cvData.side);
+    else if (lastCandles.length) calcTradeSetup(lastCandles);
 
   } catch(e) {
     // Fallback cache
@@ -1716,6 +2064,14 @@ function openChart(sym) {
   const name = sym.split(':').pop();
   const exchange = sym.includes(':')?sym.split(':')[0]:'NSE';
   document.getElementById('c-sym').textContent = name;
+  // Show company meta
+  const meta = STOCK_META[name];
+  const sectorEl = document.getElementById('c-sector');
+  const metaEl = document.getElementById('c-meta');
+  if (sectorEl && meta) {
+    sectorEl.textContent = meta.sector;
+    if (metaEl) metaEl.style.display = 'flex';
+  } else if (metaEl) { metaEl.style.display = 'none'; }
   const exEl = document.getElementById('c-exchange'); if(exEl) exEl.textContent = exchange;
   document.getElementById('c-full').textContent = name+' · '+exchange;
   document.getElementById('c-price').textContent = '…';
@@ -1863,6 +2219,134 @@ function renderCV() {
   </div>`;
 }
 function swLang(l) { cvLang = l; if (cvData) renderCV(); }
+function runChartIndicator() {
+  const ind = document.getElementById('chart-ind-sel').value;
+  if (!ind || !currentSymbol) return;
+  const sym = currentSymbol.split(':').pop();
+  const resultEl = document.getElementById('chart-ind-result');
+  const speakEl = document.getElementById('chart-ind-speak');
+  resultEl.style.display = 'none'; speakEl.style.display = 'none';
+  // Use the already-loaded candles + indicator logic
+  if (!lastCandles.length) { sp('No chart data. Please wait for chart to load.'); return; }
+  let signal = '', note = '', color = 'var(--muted)';
+  if (ind === 'RSI') {
+    const { rsi } = calcRSI(lastCandles);
+    const v = rsi[rsi.length-1]?.value;
+    if (v) {
+      signal = v > 70 ? '▼ OVERBOUGHT' : v < 30 ? '▲ OVERSOLD' : v > 50 ? '▲ BULLISH' : '▼ BEARISH';
+      note = `RSI: ${v.toFixed(1)}`;
+      color = v > 70 ? 'var(--amber)' : v < 30 ? 'var(--purple)' : v > 50 ? 'var(--green)' : 'var(--red)';
+    }
+  } else if (ind === 'MACD') {
+    const { macdLine, signalLine } = calcMACD(lastCandles);
+    const last = macdLine[macdLine.length-1]?.value, sig = signalLine[signalLine.length-1]?.value;
+    if (last !== undefined && sig !== undefined) {
+      signal = last > sig ? '▲ BUY — MACD above signal' : '▼ SELL — MACD below signal';
+      color = last > sig ? 'var(--green)' : 'var(--red)';
+    }
+  } else if (ind === 'Bollinger Bands') {
+    const { upper, lower } = calcBB(lastCandles);
+    const lc = lastCandles[lastCandles.length-1]?.close;
+    const u = upper[upper.length-1]?.value, l = lower[lower.length-1]?.value;
+    if (lc && u && l) {
+      signal = lc > u ? '▼ Above upper band — may fall' : lc < l ? '▲ Below lower band — may bounce' : '— Inside bands';
+      color = lc > u ? 'var(--amber)' : lc < l ? 'var(--green)' : 'var(--muted)';
+    }
+  } else {
+    // For indicators that need backend, call the technical API
+    fetch(`${API}/api/technical/${encodeURIComponent(currentSymbol)}?indicators=${encodeURIComponent(ind)}`)
+      .then(r => r.json()).then(j => {
+        const v = (j.calls?.Positional || j.calls?.Swing || {})[ind];
+        if (v) {
+          signal = v === 'BUY' ? '▲ BUY' : v === 'SELL' ? '▼ SELL/SHORT' : '⏸ WAIT';
+          color = v === 'BUY' ? 'var(--green)' : v === 'SELL' ? 'var(--red)' : 'var(--amber)';
+          resultEl.textContent = signal + ' — ' + sym;
+          resultEl.style.background = v === 'BUY' ? 'rgba(0,200,150,.12)' : v === 'SELL' ? 'rgba(255,71,87,.12)' : 'rgba(255,179,0,.12)';
+          resultEl.style.color = color;
+          resultEl.style.display = 'block';
+          speakEl.style.display = 'block';
+          window._chartIndText = signal + ' on ' + sym + ' using ' + ind;
+          sp(window._chartIndText);
+        }
+      }).catch(() => {});
+    return;
+  }
+  if (signal) {
+    resultEl.textContent = signal;
+    resultEl.style.background = color === 'var(--green)' ? 'rgba(0,200,150,.12)' : color === 'var(--red)' ? 'rgba(255,71,87,.12)' : 'rgba(255,179,0,.12)';
+    resultEl.style.color = color;
+    resultEl.style.display = 'block';
+    speakEl.style.display = 'block';
+    window._chartIndText = signal + ' on ' + sym + ' using ' + ind + (note ? '. ' + note : '');
+    sp(window._chartIndText);
+  }
+}
+function speakChartIndResult() {
+  sp(window._chartIndText || 'Select an indicator first.');
+}
+
+function calcTradeSetup(candles, signal) {
+  if (!candles.length) return;
+  const last = candles[candles.length-1];
+  const levels = findSRLevels(candles);
+  const price = last.close;
+  const supports    = levels.filter(l => l.price < price).sort((a,b) => b.price - a.price);
+  const resistances = levels.filter(l => l.price > price).sort((a,b) => a.price - b.price);
+  const isBuy = signal === 'BUY' || !signal;
+
+  let entry, sl, tgt;
+  if (isBuy) {
+    entry = price;
+    sl    = supports[0]?.price    || price * 0.97;
+    tgt   = resistances[0]?.price || price * 1.05;
+  } else {
+    entry = price;
+    sl    = resistances[0]?.price || price * 1.03;
+    tgt   = supports[0]?.price    || price * 0.95;
+  }
+
+  const risk   = Math.abs(entry - sl);
+  const reward = Math.abs(tgt - entry);
+  const rr     = risk > 0 ? (reward/risk).toFixed(2) : '—';
+
+  const fmt = v => '₹' + v.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('ts-entry').textContent = fmt(entry);
+  document.getElementById('ts-sl').textContent    = fmt(sl);
+  document.getElementById('ts-tgt').textContent   = fmt(tgt);
+  document.getElementById('ts-rr').textContent    = rr + 'x';
+  document.getElementById('trade-setup').style.display = 'block';
+
+  window._tradeSetup = { entry, sl, tgt, rr, sym: currentSymbol };
+  sp('Trade setup: Entry ' + fmt(entry) + '. Stop loss ' + fmt(sl) + '. Target ' + fmt(tgt) + '. Risk reward ' + rr + 'x.');
+}
+
+function speakTradeSetup() {
+  const ts = window._tradeSetup;
+  if (!ts) { sp('No trade setup calculated yet.'); return; }
+  const fmt = v => '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0});
+  sp('Entry ' + fmt(ts.entry) + '. Stop loss ' + fmt(ts.sl) + '. Target ' + fmt(ts.tgt) + '. Risk reward ' + ts.rr + 'x.');
+}
+
+function addToJournalFromChart() {
+  const ts = window._tradeSetup;
+  if (!ts) { sp('No trade setup. Select a stock first.'); return; }
+  // Pre-fill journal form
+  const sym = ts.sym ? ts.sym.split(':').pop() : '';
+  const el = id => document.getElementById(id);
+  if (el('j-stock')) el('j-stock').value = sym;
+  if (el('j-entry')) el('j-entry').value = ts.entry.toFixed(2);
+  if (el('j-sl'))    el('j-sl').value    = ts.sl.toFixed(2);
+  if (el('j-tgt'))   el('j-tgt').value   = ts.tgt.toFixed(2);
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  if (el('j-date'))  el('j-date').value  = today;
+  // Switch to journal tab and open add form
+  showTab('journal');
+  const details = document.getElementById('add-trade-details');
+  if (details) details.open = true;
+  sp('Journal pre-filled for ' + sym + '. Review and save.');
+}
+
 function speakVerdict() {
   if (!cvData) { sp('Please select a stock first.'); return; }
   const d = cvData, isEn = cvLang === 'en';
@@ -2303,6 +2787,22 @@ async function loadIndexData(sym, name) {
   }
 }
 
+let _idxOpen = false;
+function toggleIdxChart() {
+  _idxOpen = !_idxOpen;
+  const wrap = document.getElementById('idx-chart-wrap');
+  const btn  = document.getElementById('idx-toggle-btn');
+  if (wrap) wrap.style.maxHeight = _idxOpen ? '140px' : '0';
+  if (btn)  { btn.textContent = _idxOpen ? '📉' : '📈'; }
+  if (_idxOpen && idxChart) {
+    requestAnimationFrame(() => {
+      const el = document.getElementById('idx-chart');
+      idxChart.applyOptions({width: el.clientWidth || window.innerWidth});
+    });
+  }
+  sp(_idxOpen ? 'Index chart expanded.' : 'Index chart collapsed.');
+}
+
 function selectIndex(btn) {
   document.querySelectorAll('.idx-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2322,18 +2822,42 @@ function speakIndexComment() {
 // STOCK SEARCH — Nifty 500 symbol list for chart tab search
 // ═══════════════════════════════════════════════════════════
 const NIFTY500 = [
+  // Nifty 50
   'RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','HINDUNILVR','KOTAKBANK','SBIN','BHARTIARTL','ITC',
   'BAJFINANCE','AXISBANK','ASIANPAINT','MARUTI','SUNPHARMA','TITAN','ULTRACEMCO','NESTLEIND','TECHM','WIPRO',
   'POWERGRID','NTPC','HCLTECH','ONGC','TATAMOTORS','JSWSTEEL','TATASTEEL','INDUSINDBK','BAJAJFINSV','HDFCLIFE',
   'DIVISLAB','CIPLA','DRREDDY','EICHERMOT','BPCL','COALINDIA','HEROMOTOCO','GRASIM','ADANIENT','ADANIPORTS',
-  'BRITANNIA','APOLLOHOSP','TATACONSUM','SBILIFE','GODREJCP','PIDILITIND','NIFTY 50','BANKNIFTY','SENSEX',
-  'NIFTY MIDCAP 100','NIFTY IT','LT','M&M','VEDL','HINDALCO','GAIL','SIEMENS','AMBUJACEM','SHREECEM',
-  'BERGEPAINT','MUTHOOTFIN','BANKBARODA','CANBK','PNB','IDBI','IOC','AUROPHARMA','BIOCON','CADILAHC',
-  'MOTHERSON','HAVELLS','VOLTAS','WHIRLPOOL','MCDOWELL-N','JUBLFOOD','DOMINOS','ZOMATO','NYKAA','PAYTM',
-  'DMART','TRENT','ABFRL','PAGEIND','VBL','RADICO','UBL','JYOTHYLAB','COLPAL','MARICO','DABUR',
-  'EMAMILTD','GILLETTE','HINDPETRO','MRPL','RECLTD','PFC','IRFC','HUDCO','CAMS','CDSL','BSE',
-  'IRCTC','CONCOR','RVNL','RAILTEL','GPPL','ASTRAL','SUPREMEIND','RELAXO','BATA','METRO','CAMPUS',
-  'POLICYBZR','STAR','MFSL','ICICIGI','BAJAJ-AUTO','TVSMOTOR','ESCORTS','M&MFIN','CHOLAFIN','SUNDARMFIN',
+  'BRITANNIA','APOLLOHOSP','TATACONSUM','SBILIFE','GODREJCP','PIDILITIND','LT','M&M','HINDALCO','VEDL',
+  // Nifty Next 50
+  'BANKBARODA','CANBK','PNB','IOC','GAIL','SIEMENS','AMBUJACEM','SHREECEM','BERGEPAINT','MUTHOOTFIN',
+  'AUROPHARMA','BIOCON','MOTHERSON','HAVELLS','VOLTAS','DMART','TRENT','ZOMATO','NYKAA','PAYTM',
+  'IRCTC','CONCOR','RVNL','RAILTEL','RECLTD','PFC','IRFC','HUDCO','CAMS','CDSL','BSE',
+  'COLPAL','MARICO','DABUR','EMAMILTD','GILLETTE','HINDPETRO','MRPL','ASTRAL','SUPREMEIND',
+  'POLICYBZR','MFSL','ICICIGI','BAJAJ-AUTO','TVSMOTOR','ESCORTS','M&MFIN','CHOLAFIN','SUNDARMFIN',
+  // Midcap - Solar, Power, New Energy
+  'DIXON','WAAREE','WAREE','WAAREEENGG','SOLARINDS','TATAPOWER','ADANIGREEN','ADANIPOWER','TORNTPOWER',
+  'CESC','NHPC','SJVN','BFUTILITIE','RPOWER','SUZLON','INOXWIND','GREENKO',
+  // Midcap - Manufacturing
+  'KALYANKJIL','BLUEDART','APOLLOTYRE','BALKRISIND','CEAT','MRF','EXIDEIND','AMARAJABAT',
+  'BHARATFORG','SUNDRMFAST','CRAFTSMAN','GRINDWELL','SKFINDIA','SCHAEFFLER','TIMKEN','NRB',
+  // Midcap - Financials
+  'IDFCFIRSTB','FEDERALBNK','RBLBANK','DCBBANK','KARURVYSYA','CITYUNIONB','SOUTHBANK','UJJIVANSFB',
+  'EQUITASBNK','SURYODAY','LTTS','PERSISTENT','MPHASIS','COFORGE','KPITTECH','TATAELXSI','MASTEK',
+  // Midcap - Consumer
+  'PAGEIND','VBL','RADICO','UBL','JYOTHYLAB','RELAXO','BATA','METRO','CAMPUS',
+  'JUBLFOOD','DEVYANI','SAPPHIRE','WESTLIFE','BURGER','EASEMYTRIP','IXIGO','MAKEMYTRIP',
+  // Midcap - Healthcare
+  'LAURUSLABS','GRANULES','IPCA','AJANTPHARM','ALKEM','NATCOPHARM','GLENMARK','TORNTPHARM',
+  'SYNGENE','LALPATHLAB','METROPOLIS','KRSNAA','POLYMED','VINATIORGA',
+  // Midcap - Chemicals
+  'AAVAS','HOMEFIRST','AARTI','DEEPAKNTR','NAVINFLUOR','FINEORG','TATACHEM','PCBL','GHCL',
+  'ALKYLAMINE','HFCL','STLTECH','TATACOMM','TTML','TANLA',
+  // Smallcap popular
+  'ORIENTELEC','KAJARIACER','SOMANYCER','ASTERDM','YATHARTH','MEDPLUS','VIJAYA','CSBBANK',
+  'KFINTECH','LATENTVIEW','RATEGAIN','AFFLE','INDIGOPNTS','GLOBUSSPR','NUVOCO',
+  // Indices
+  'NIFTY 50','BANKNIFTY','SENSEX','NIFTY MIDCAP 100','NIFTY IT','NIFTY FMCG','NIFTY PHARMA',
+  'NIFTY AUTO','NIFTY METAL','NIFTY REALTY','NIFTY ENERGY',
 ];
 
 function onSearchKey(e) {
@@ -2365,26 +2889,35 @@ function onStockSearch(val) {
   const drop = document.getElementById('search-drop');
   if (!val || val.length < 1) { drop.innerHTML=''; drop.style.display='none'; return; }
   const q = val.toUpperCase().trim();
-  const matches = NIFTY500.filter(s => s.includes(q)).slice(0, 12);
-  if (!matches.length) { drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted)">No matches. Try NSE:SYMBOL format.</div>'; drop.style.display='block'; return; }
-  drop.innerHTML = matches.map(s =>
+  const matches = NIFTY500.filter(s => s.toUpperCase().includes(q)).slice(0, 10);
+
+  const makeRow = (sym, label, sub) =>
     `<div role="option" tabindex="0"
-      style="padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;
-        border-bottom:1px solid var(--border);transition:background .1s"
-      onmousedown="selectSearchStock('${s}')"
+      style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"
+      onmousedown="selectSearchStock('${sym}')"
       onmouseover="this.style.background='var(--card2)'"
       onmouseout="this.style.background=''"
-      aria-label="${s}">
-      ${s}
-      <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:8px">NSE</span>
-    </div>`
-  ).join('');
+      aria-label="${label}">
+      <span style="font-size:13px;font-weight:700;font-family:'Syne',sans-serif">${label}</span>
+      <span style="font-size:10px;color:var(--muted)">${sub}</span>
+    </div>`;
+
+  let rows = matches.map(s => makeRow(s, s, 'NSE'));
+
+  // Always add a "Try any symbol" row so user can load ANY NSE stock
+  rows.push(makeRow(q,
+    '🔍 Load NSE:' + q,
+    'Try directly'
+  ));
+
+  drop.innerHTML = rows.join('');
   drop.style.display = 'block';
 }
 
 function selectSearchStock(sym) {
   const fullSym = sym.includes(':') ? sym : 'NSE:' + sym;
-  document.getElementById('stock-search').value = sym;
+  const displayName = sym.replace('NSE:','').replace('BSE:','');
+  document.getElementById('stock-search').value = displayName;
   document.getElementById('search-drop').style.display = 'none';
   openChart(fullSym);
 }
