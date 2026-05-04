@@ -534,29 +534,45 @@ textarea:focus{border-color:var(--blue)}
 
   <!-- ── STOCK HEADER BAR ── -->
   <div class="chart-stock-bar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="cback" onclick="showTab('scanner')" aria-label="Back to scanner">←</button>
-      <div>
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+      <button class="cback" onclick="showTab('scanner')" aria-label="Back to scanner" title="Back to Scanner">←</button>
+      <!-- Stock search box — type any NSE symbol -->
+      <div style="position:relative;flex:1;max-width:280px">
+        <input id="stock-search" type="text" placeholder="Search stock… e.g. RELIANCE"
+          autocomplete="off" spellcheck="false"
+          style="width:100%;background:var(--card);color:var(--text);border:1px solid var(--border);
+            border-radius:8px;padding:7px 12px 7px 32px;font-size:13px;font-family:inherit;outline:none"
+          oninput="onStockSearch(this.value)"
+          onkeydown="onSearchKey(event)"
+          onfocus="if(this.value)onStockSearch(this.value)"
+          onblur="setTimeout(()=>document.getElementById('search-drop').style.display='none',250)"
+          aria-label="Search for a stock symbol" aria-autocomplete="list" aria-controls="search-drop">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none">🔍</span>
+        <div id="search-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);
+          border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:200;
+          max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)" role="listbox"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;min-width:0">
         <div style="display:flex;align-items:center;gap:7px">
-          <div class="csym" id="c-sym">Select a stock</div>
-          <span class="cexch" id="c-exchange">NSE</span>
+          <div class="csym" id="c-sym" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+          <span class="cexch" id="c-exchange" style="display:none">NSE</span>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px" id="c-full">Tap any stock row to open its chart</div>
+        <div style="font-size:10px;color:var(--muted)" id="c-full"></div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap">
       <div style="text-align:right">
-        <div class="cltp" id="c-price">—</div>
-        <div class="cchange" id="c-change"></div>
+        <div class="cltp" id="c-price" style="font-size:16px"></div>
+        <div class="cchange" id="c-change" style="font-size:11px"></div>
       </div>
-      <div id="c-ohlc">
-        <span style="color:var(--muted)">O</span> <b id="ohlc-o">—</b>&nbsp;
-        <span style="color:var(--green)">H</span> <b id="ohlc-h">—</b>&nbsp;
-        <span style="color:var(--red)">L</span> <b id="ohlc-l">—</b>&nbsp;
-        <span style="color:var(--muted)">C</span> <b id="ohlc-c">—</b>&nbsp;
-        <span style="color:var(--muted)">V</span> <b id="ohlc-v">—</b>
+      <div id="c-ohlc" style="font-size:10px">
+        <span style="color:var(--muted)">O</span><b id="ohlc-o"> —</b>
+        <span style="color:var(--green)"> H</span><b id="ohlc-h"> —</b>
+        <span style="color:var(--red)"> L</span><b id="ohlc-l"> —</b>
+        <span style="color:var(--muted)"> C</span><b id="ohlc-c"> —</b>
+        <span style="color:var(--muted)"> V</span><b id="ohlc-v"> —</b>
       </div>
-      <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear Chitti verdict">🔊</button>
+      <button class="sp-btn" onclick="speakVerdict()" aria-label="Hear Chitti verdict" style="padding:4px 8px;font-size:12px">🔊</button>
     </div>
   </div>
 
@@ -573,13 +589,18 @@ textarea:focus{border-color:var(--blue)}
       <button class="tf-btn" data-tf="5min"    onclick="selTF(this)" aria-label="5 min">5M</button>
       <button class="tf-btn" data-tf="1min"    onclick="selTF(this)" aria-label="1 min">1m</button>
     </div>
-    <!-- Chart type selector -->
-    <div style="display:flex;gap:3px;padding:8px 10px;flex-shrink:0;border-left:1px solid var(--border)">
-      <button class="ct-btn active" data-ct="candle"  onclick="setChartType(this)" aria-label="Candlestick" title="Candlestick">🕯</button>
-      <button class="ct-btn" data-ct="heikin"         onclick="setChartType(this)" aria-label="Heikin Ashi" title="Heikin Ashi">HA</button>
-      <button class="ct-btn" data-ct="line"           onclick="setChartType(this)" aria-label="Line"        title="Line">╱</button>
-      <button class="ct-btn" data-ct="area"           onclick="setChartType(this)" aria-label="Area"        title="Area">◿</button>
-      <button class="ct-btn" data-ct="bar"            onclick="setChartType(this)" aria-label="Bar/OHLC"    title="Bar">▯</button>
+    <!-- Chart type selector — labelled for User 3 -->
+    <div style="padding:6px 10px;flex-shrink:0;border-left:1px solid var(--border)">
+      <select id="chart-type-sel" onchange="setChartTypeFromSelect(this)"
+        aria-label="Chart type selector"
+        style="background:var(--card);color:var(--text);border:1px solid var(--border);
+          border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;cursor:pointer;min-height:32px">
+        <option value="candle">🕯 Candlestick</option>
+        <option value="heikin">📊 Heikin Ashi</option>
+        <option value="line">╱ Line</option>
+        <option value="area">◿ Area</option>
+        <option value="bar">▯ Bar (OHLC)</option>
+      </select>
     </div>
     <!-- Fullscreen -->
     <button onclick="toggleFS()" id="fs-btn" aria-label="Toggle fullscreen" style="padding:8px 12px;background:none;border:none;border-left:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:15px;min-height:44px">⛶</button>
@@ -676,78 +697,137 @@ textarea:focus{border-color:var(--blue)}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
       <div>
         <div style="font-size:15px;font-weight:700;font-family:'Syne',sans-serif">📓 Trading Journal</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Log every trade. Your journal is your mirror.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Record every trade honestly. Your journal is your mirror.</div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="sp-btn" onclick="speakJournalSummary()" aria-label="Hear journal summary">🔊 Summary</button>
-        <button class="speak-sm" onclick="importFromExcel()" aria-label="Import from Excel">📥 Import Excel</button>
+        <button class="speak-sm" onclick="importFromExcel()" aria-label="Import from Excel">📥 Import</button>
       </div>
     </div>
-    <!-- Add Trade Form -->
+
     <details id="add-trade-details" open>
       <summary style="font-size:12px;font-weight:600;color:var(--blue);cursor:pointer;padding:6px 0;user-select:none">+ Add New Trade</summary>
       <div style="margin-top:10px">
-        <div class="jnl-form-grid">
-          <div><label class="lbl">Stock / Symbol</label><input id="j-stock" placeholder="e.g. RELIANCE, NIFTY" aria-label="Stock symbol"></div>
+        <!-- BASIC fields — always visible -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label class="lbl">Stock / Symbol</label><input id="j-stock" placeholder="e.g. NIFTY, RELIANCE" aria-label="Stock symbol"></div>
           <div><label class="lbl">Date</label><input type="date" id="j-date" aria-label="Trade date"></div>
           <div><label class="lbl">Direction</label>
-            <select id="j-dir" aria-label="Trade direction">
+            <select id="j-dir" aria-label="Direction">
               <option value="LONG">▲ LONG (Buy)</option>
               <option value="SHORT">▼ SHORT (Sell)</option>
-            </select>
-          </div>
+            </select></div>
           <div><label class="lbl">Setup Type</label>
             <select id="j-setup" aria-label="Setup type">
-              <option>Support Buy</option><option>Resistance Short</option>
-              <option>Trendline Break</option><option>Triangle Break</option>
-              <option>Channel Break</option><option>Gap Fill</option>
-              <option>Opening Range Break</option><option>Flag Pattern</option>
-              <option>Custom</option>
-            </select>
-          </div>
+              <option>Triangle Break</option><option>Channel Break</option><option>S&amp;R Bounce</option>
+              <option>Trendline Break</option><option>Gap Fill</option><option>Opening Range Break</option>
+              <option>Flag Pattern</option><option>Double Top</option><option>Double Bottom</option>
+              <option>Head &amp; Shoulders</option><option>VWAP Bounce</option><option>News Trade</option><option>Other</option>
+            </select></div>
           <div><label class="lbl">Entry Price ₹</label><input type="number" id="j-entry" placeholder="24082" step="0.05" aria-label="Entry price"></div>
-          <div><label class="lbl">Exit Price ₹</label><input type="number" id="j-exit" placeholder="24280 (blank if open)" step="0.05" aria-label="Exit price"></div>
-          <div><label class="lbl">Stop Loss ₹</label><input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss price"></div>
+          <div><label class="lbl">Exit Price ₹</label><input type="number" id="j-exit" placeholder="Blank if open" step="0.05" aria-label="Exit price"></div>
+          <div><label class="lbl">Stop Loss ₹</label><input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss"></div>
           <div><label class="lbl">Target Price ₹</label><input type="number" id="j-tgt" placeholder="24322" step="0.05" aria-label="Target price"></div>
-          <div><label class="lbl">Quantity / Lots</label><input type="number" id="j-qty" placeholder="6" min="1" aria-label="Quantity or lots"></div>
+          <div><label class="lbl">Lots / Qty</label><input type="number" id="j-qty" placeholder="6" min="1" aria-label="Quantity"></div>
           <div><label class="lbl">Indicator Used</label>
-            <select id="j-ind" aria-label="Indicator used for this trade">
+            <select id="j-ind" aria-label="Indicator">
               <option>Roshan Indicator</option><option>RSI</option><option>MACD</option>
-              <option>Supertrend</option><option>Bollinger Bands</option><option>TTM Squeeze</option>
-              <option>Hull MA</option><option>Price Action</option><option>Other</option>
-            </select>
-          </div>
-          <div class="full"><label class="lbl">Notes / Lesson Learned</label>
-            <textarea id="j-notes" rows="2" placeholder="What did you learn? What emotion affected you?" aria-label="Trade notes and lessons"></textarea>
-          </div>
+              <option>Supertrend</option><option>Bollinger Bands</option><option>Price Action</option>
+              <option>VWAP</option><option>EMA Cross</option><option>Other</option>
+            </select></div>
+          <div style="grid-column:1/-1"><label class="lbl">Notes / Lesson Learned</label>
+            <textarea id="j-notes" rows="2" placeholder="What did you learn?" aria-label="Notes"></textarea></div>
         </div>
-        <button class="scan-btn" onclick="addTrade()" aria-label="Save this trade">💾 Save Trade</button>
+
+        <!-- ADVANCED fields — collapsible -->
+        <details style="margin-bottom:10px">
+          <summary style="font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;padding:5px 0;user-select:none">
+            + Psychology & Quality fields (optional but important)
+          </summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+            <div><label class="lbl">Day</label>
+              <select id="j-day" aria-label="Day"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select></div>
+            <div><label class="lbl">Chart Pattern</label>
+              <select id="j-pattern" aria-label="Pattern">
+                <option>Ascending Triangle</option><option>Descending Triangle</option><option>Bull Flag</option><option>Bear Flag</option>
+                <option>Channel Up</option><option>Channel Down</option><option>Double Top</option><option>Double Bottom</option>
+                <option>Head &amp; Shoulders</option><option>Inverse H&amp;S</option><option>Cup &amp; Handle</option>
+                <option>Wedge Up</option><option>Wedge Down</option><option>Range Breakout</option><option>No Pattern</option>
+              </select></div>
+            <div><label class="lbl">Emotion at Entry</label>
+              <select id="j-emotion-entry" aria-label="Emotion at entry">
+                <option>Confident</option><option>Calm</option><option>Disciplined</option><option>Anxious</option>
+                <option>Fearful</option><option>Greedy</option><option>Excited</option><option>FOMO</option>
+                <option>Revenge</option><option>Frustrated</option><option>Impatient</option><option>Distracted</option>
+              </select></div>
+            <div><label class="lbl">Emotion at Exit</label>
+              <select id="j-emotion-exit" aria-label="Emotion at exit">
+                <option>Satisfied</option><option>Calm</option><option>Disciplined</option><option>Regretful</option>
+                <option>Fearful</option><option>Greedy</option><option>Relieved</option><option>Frustrated</option>
+                <option>Angry</option><option>Happy</option><option>Anxious</option><option>Neutral</option>
+              </select></div>
+            <div><label class="lbl">Held to Target?</label>
+              <select id="j-held" aria-label="Held to target">
+                <option>Yes - Full Target Hit</option><option>No - Exited Early (Fear)</option>
+                <option>No - Exited Early (Greed)</option><option>No - SL Hit</option>
+                <option>No - Manual Exit (Valid Reason)</option><option>Partial - Half Position Closed</option>
+              </select></div>
+            <div><label class="lbl">Exit Reason</label>
+              <select id="j-exit-reason" aria-label="Exit reason">
+                <option>Target Hit ✅</option><option>Stop Loss Hit ❌</option><option>Trailing SL Hit</option>
+                <option>Manual Exit - Market Close</option><option>Manual Exit - News Event</option>
+                <option>Manual Exit - Fear</option><option>Manual Exit - Greed</option><option>Manual Exit - Valid Reason</option>
+              </select></div>
+            <div><label class="lbl">Trade Quality</label>
+              <select id="j-quality" aria-label="Quality">
+                <option>A+ Setup - Perfect Entry</option><option>A - Good Setup</option>
+                <option>B - Average Setup</option><option>C - Below Average</option><option>D - Should Not Have Taken</option>
+              </select></div>
+            <div><label class="lbl">Confidence (1–10)</label>
+              <select id="j-confidence" aria-label="Confidence">
+                <option>10 - Extremely Confident</option><option>9 - Very Confident</option><option>8 - Confident</option>
+                <option>7 - Fairly Confident</option><option>6 - Slightly Confident</option><option>5 - Neutral</option>
+                <option>4 - Slightly Doubtful</option><option>3 - Doubtful</option><option>2 - Very Doubtful</option><option>1 - No Confidence</option>
+              </select></div>
+            <div><label class="lbl">Rules Followed?</label>
+              <select id="j-rules" aria-label="Rules followed">
+                <option>✅ Yes - Followed All Rules</option>
+                <option>⚠️ Partial - Broke 1 Rule</option>
+                <option>❌ No - Broke Multiple Rules</option>
+              </select></div>
+            <div><label class="lbl">TF Alignment</label>
+              <select id="j-tfalign" aria-label="TF alignment">
+                <option>All TF Aligned ✅</option><option>Monthly + Weekly Only</option><option>Weekly + Daily Only</option>
+                <option>Daily + 4H Only</option><option>4H + 1H Only</option><option>1H + 15M Only</option>
+                <option>15M + 5M Only</option><option>Mixed Signals ⚠️</option><option>Against Higher TF ❌</option>
+              </select></div>
+          </div>
+        </details>
+        <button class="scan-btn" onclick="addTrade()" aria-label="Save trade">💾 Save Trade</button>
       </div>
     </details>
   </div>
-  <!-- Trade Table -->
-  <div id="jnl-summary" class="card" style="display:none">
+
+  <!-- Summary bar -->
+  <div id="jnl-summary" class="page-card" style="display:none">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
       <div><div id="js-pnl" style="font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace">—</div><div style="font-size:10px;color:var(--muted)">Total P&L</div></div>
       <div><div id="js-wr" style="font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace">—</div><div style="font-size:10px;color:var(--muted)">Win Rate</div></div>
       <div><div id="js-trades" style="font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace">—</div><div style="font-size:10px;color:var(--muted)">Trades</div></div>
     </div>
   </div>
+
   <div id="jnl-err" class="err" style="display:none"></div>
   <div class="jnl-table-wrap">
-    <table class="jnl-table" aria-label="Trade journal entries">
-      <thead>
-        <tr>
-          <th>Date</th><th>Stock</th><th>Dir</th><th>Setup</th>
-          <th>Entry</th><th>Exit</th><th>SL</th><th>Target</th>
-          <th>Qty</th><th>P&L ₹</th><th>R:R</th><th>Result</th>
-          <th>Indicator</th><th>Notes</th><th></th>
-        </tr>
-      </thead>
-      <tbody id="jnl-body">
-        <tr><td colspan="15" class="empty">No trades yet. Add your first trade above.</td></tr>
-      </tbody>
+    <table class="jnl-table" aria-label="Trade journal">
+      <thead><tr>
+        <th>Date</th><th>Stock</th><th>Dir</th><th>Setup</th><th>Entry</th><th>Exit</th>
+        <th>SL</th><th>Target</th><th>Qty</th><th>P&L</th><th>R:R</th><th>Result</th>
+        <th>Quality</th><th>Emotion</th><th>Rules</th><th>Notes</th><th></th>
+      </tr></thead>
+      <tbody id="jnl-body"><tr><td colspan="17" class="empty">No trades yet. Add your first trade above.</td></tr></tbody>
     </table>
+  </div>
   </div>
 </div>
 
@@ -759,32 +839,53 @@ textarea:focus{border-color:var(--blue)}
       <div style="font-size:15px;font-weight:700;font-family:'Syne',sans-serif">📊 Intelligent Analytics</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px">Based on your journal. Objective. No emotions.</div>
     </div>
-    <button class="sp-btn" onclick="speakAnalytics()" aria-label="Hear analytics insights">🔊 Hear Insights</button>
+    <button class="sp-btn" onclick="speakAnalytics()" aria-label="Hear analytics">🔊 Hear Insights</button>
   </div>
   <div class="stat-grid" id="stat-grid">
-    <div class="stat-card"><div class="stat-val" id="a-wr">—</div><div class="stat-lbl">Win Rate</div></div>
-    <div class="stat-card"><div class="stat-val" id="a-pnl">—</div><div class="stat-lbl">Total P&L</div></div>
-    <div class="stat-card"><div class="stat-val" id="a-avg-win">—</div><div class="stat-lbl">Avg Winning Trade</div></div>
-    <div class="stat-card"><div class="stat-val" id="a-avg-loss">—</div><div class="stat-lbl">Avg Losing Trade</div></div>
-    <div class="stat-card"><div class="stat-val" id="a-rr">—</div><div class="stat-lbl">Risk/Reward Ratio</div></div>
-    <div class="stat-card"><div class="stat-val" id="a-streak">—</div><div class="stat-lbl">Best Win Streak</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-wr" style="color:var(--text)">—</div><div class="stat-lbl">Win Rate</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-pnl" style="color:var(--text)">—</div><div class="stat-lbl">Total P&amp;L</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-avg-win" style="color:var(--green)">—</div><div class="stat-lbl">Avg Winning Trade</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-avg-loss" style="color:var(--red)">—</div><div class="stat-lbl">Avg Losing Trade</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-rr" style="color:var(--text)">—</div><div class="stat-lbl">Avg Risk:Reward</div></div>
+    <div class="stat-card"><div class="stat-val" id="a-streak" style="color:var(--text)">—</div><div class="stat-lbl">Best Win Streak</div></div>
+  </div>
+  <!-- Psychology breakdown -->
+  <div class="page-card" id="a-psych" style="display:none">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🧠 Psychology Breakdown</div>
+    <div id="a-psych-content" style="font-size:12px;color:#c0ccee;line-height:1.8"></div>
   </div>
   <div id="a-insights">
-    <div class="insight-box" style="color:var(--muted);font-size:12px">Add at least 5 closed trades in the Journal to unlock analytics insights.</div>
+    <div class="insight-card" style="width:100%;color:var(--muted);border-style:dashed">
+      <div class="insight-num">—</div>
+      <div class="insight-text">Add closed trades in the Journal to unlock personalised insights.</div>
+    </div>
+  </div>
   </div>
 </div>
 
 <!-- LEARN TAB -->
 <div id="tab-learn" class="page" role="tabpanel">
   <div class="page-wrap">
-  <div style="margin-bottom:14px">
-    <div style="font-size:16px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:3px">What does each indicator mean?</div>
-    <div style="font-size:12px;color:var(--muted)">Plain English. No jargon. Tap 🔊 to hear.</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;font-family:'Syne',sans-serif">🎓 Learn Technical Analysis</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Plain English. No jargon. Everything a trader needs to know.</div>
+    </div>
+    <!-- Learn section tabs -->
+    <div style="display:flex;gap:0;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:12px">
+      <button class="li-tab active" id="lt-chart-types" onclick="setLearnTab('chart-types')" aria-label="Chart Types" style="border-radius:5px;flex:1">Chart Types</button>
+      <button class="li-tab" id="lt-patterns" onclick="setLearnTab('patterns')" aria-label="Candlestick Patterns" style="border-radius:5px;flex:1">Patterns</button>
+      <button class="li-tab" id="lt-indicators" onclick="setLearnTab('indicators')" aria-label="Indicators" style="border-radius:5px;flex:1">Indicators</button>
+    </div>
+    <div id="learn-chart-types"></div>
+    <div id="learn-patterns" style="display:none"></div>
+    <div id="learn-indicators" style="display:none"></div>
   </div>
-  <div id="learn-cards"></div>
 </div>
 
 <script>
+if(!window._chittiLoaded){
+window._chittiLoaded=true;
+
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════
@@ -814,18 +915,6 @@ const IND_PLAIN = {
   VWAP:'Price above VWAP = buyers in control today.',
   ADX:'Trend strength. Above 25 = strong trend exists.',
 };
-
-const LEARN_DATA = [
-  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan custom indicator. RSI momentum plus candle direction on 2 timeframes. All 3 must agree.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback green'},
-  {key:'TTM Squeeze',icon:'⚡',tag:'new',title:'TTM Squeeze (2010+)',plain:'Bollinger inside Keltner = coiled spring. Fires = big move coming.',buy:'Momentum crosses above zero after squeeze',sell:'Momentum crosses below zero'},
-  {key:'Hull MA',icon:'⚡',tag:'new',title:'Hull MA (2012+)',plain:'Faster moving average, much less lag than EMA.',buy:'Price crosses above Hull MA',sell:'Price crosses below Hull MA'},
-  {key:'Laguerre RSI',icon:'⚡',tag:'new',title:'Laguerre RSI (2012+)',plain:'Smarter RSI. Faster with fewer false signals.',buy:'Laguerre RSI rises above 0.5',sell:'Laguerre RSI falls below 0.5'},
-  {key:'Force Index',icon:'📊',tag:'classic',title:'Force Index',plain:'Price move times volume. High volume move = powerful signal.',buy:'Force Index crosses above zero',sell:'Force Index crosses below zero'},
-  {key:'RSI',icon:'📊',tag:'classic',title:'RSI (14)',plain:'Speed of price. Below 30 oversold may rise. Above 70 overbought may fall.',buy:'RSI below 30 or crosses above 50',sell:'RSI above 70 or crosses below 50'},
-  {key:'MACD',icon:'📊',tag:'classic',title:'MACD',plain:'Fast vs slow trend. Crossovers are the signal.',buy:'MACD line crosses above signal line',sell:'MACD line crosses below signal line'},
-  {key:'Supertrend',icon:'📊',tag:'classic',title:'Supertrend',plain:'Line flips colour with the trend. Very easy to read.',buy:'Price above green Supertrend line',sell:'Price below red Supertrend line'},
-  {key:'Bollinger Bands',icon:'📊',tag:'classic',title:'Bollinger Bands',plain:'Three lines around price. Touch outer bands is a signal.',buy:'Price touches or goes below lower band',sell:'Price touches or goes above upper band'},
-];
 
 // ═══════════════════════════════════════════════════════════
 // STATE
@@ -1285,9 +1374,11 @@ function initCharts() {
   });
   lwRsiLine  = lwRsiChart.addLineSeries({color:'#4c7fff', lineWidth:2, title:'RSI'});
   lwSmaLine  = lwRsiChart.addLineSeries({color:'#ffb300', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed, title:'SMA20'});
+  // RSI reference lines drawn dynamically after data loads
+  window._rsiRefLines = [];
   [70,50,30].forEach(v => {
     const s = lwRsiChart.addLineSeries({color:v===50?'#2a303f':'#252b3a', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dotted, priceLineVisible:false, lastValueVisible:false});
-    s.setData([{time:946684800, value:v},{time:2000000000, value:v}]);
+    window._rsiRefLines.push({series:s, value:v});
   });
 
   // MACD chart
@@ -1302,7 +1393,8 @@ function initCharts() {
   });
   lwMacdLine   = lwMacdChart.addLineSeries({color:'#4c7fff', lineWidth:1.5, title:'MACD'});
   lwMacdSignal = lwMacdChart.addLineSeries({color:'#ffb300', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed, title:'Signal'});
-  lwMacdHist   = lwMacdChart.addHistogramSeries({priceScaleId:'', color:'#00c896'});
+  lwMacdHist   = lwMacdChart.addHistogramSeries({priceScaleId:'macd-hist', color:'#00c896'});
+  lwMacdChart.priceScale('macd-hist').applyOptions({scaleMargins:{top:0.7, bottom:0}});
 
   // Volume standalone chart
   const volPaneEl = document.getElementById('lw-vol-pane');
@@ -1340,12 +1432,15 @@ function initCharts() {
 }
 
 // ── Chart type ──
+function setChartTypeFromSelect(sel) {
+  curChartType = sel.value;
+  const labels = {candle:'Candlestick', heikin:'Heikin Ashi', line:'Line', area:'Area', bar:'Bar OHLC'};
+  if (lastCandles.length) renderCandleData(lastCandles);
+  sp('Chart type: ' + (labels[curChartType] || curChartType));
+}
 function setChartType(btn) {
-  document.querySelectorAll('.ct-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
   curChartType = btn.getAttribute('data-ct');
   if (lastCandles.length) renderCandleData(lastCandles);
-  sp('Chart type: ' + btn.getAttribute('title'));
 }
 
 function renderCandleData(candles) {
@@ -1385,6 +1480,13 @@ function updateLowerIndicator(candles) {
     const { rsi, sma20 } = calcRSI(candles);
     lwRsiLine.setData(rsi);
     lwSmaLine.setData(sma20);
+    // Draw reference lines aligned to actual data time range
+    if (window._rsiRefLines && rsi.length >= 2) {
+      const t0 = rsi[0].time, t1 = rsi[rsi.length-1].time;
+      window._rsiRefLines.forEach(({series, value}) => {
+        try { series.setData([{time:t0, value},{time:t1, value}]); } catch(e){}
+      });
+    }
     lwRsiChart?.timeScale().fitContent();
     // Update RSI cards
     const lastRSI = rsi[rsi.length-1]?.value;
@@ -1783,6 +1885,7 @@ function addTrade() {
   const date  = document.getElementById('j-date').value;
   const dir   = document.getElementById('j-dir').value;
   const setup = document.getElementById('j-setup').value;
+  const pattern     = document.getElementById('j-pattern')?.value || '';
   const entry = parseFloat(document.getElementById('j-entry').value);
   const exit  = parseFloat(document.getElementById('j-exit').value) || null;
   const sl    = parseFloat(document.getElementById('j-sl').value) || null;
@@ -1790,33 +1893,35 @@ function addTrade() {
   const qty   = parseFloat(document.getElementById('j-qty').value) || 1;
   const ind   = document.getElementById('j-ind').value;
   const notes = document.getElementById('j-notes').value.trim();
+  const day         = document.getElementById('j-day')?.value || '';
+  const tfalign     = document.getElementById('j-tfalign')?.value || '';
+  const emotionEntry= document.getElementById('j-emotion-entry')?.value || '';
+  const emotionExit = document.getElementById('j-emotion-exit')?.value || '';
+  const held        = document.getElementById('j-held')?.value || '';
+  const exitReason  = document.getElementById('j-exit-reason')?.value || '';
+  const quality     = document.getElementById('j-quality')?.value || '';
+  const confidence  = document.getElementById('j-confidence')?.value || '';
+  const rules       = document.getElementById('j-rules')?.value || '';
 
   if (!stock) { showJErr('Stock symbol is required.'); return; }
   if (!date)  { showJErr('Date is required.'); return; }
   if (isNaN(entry)) { showJErr('Entry price is required.'); return; }
 
-  const pnl = exit != null
-    ? (dir === 'LONG' ? (exit - entry) * qty : (entry - exit) * qty)
-    : null;
-  const rr  = (sl != null && tgt != null && entry != null)
-    ? Math.abs((tgt - entry) / (entry - sl)).toFixed(2)
-    : null;
-  const result = pnl == null ? 'OPEN' : pnl > 0 ? 'WIN' : pnl < 0 ? 'LOSS' : 'BREAKEVEN';
+  const pnl = exit != null ? (dir==='LONG' ? (exit-entry)*qty : (entry-exit)*qty) : null;
+  const rr  = (sl!=null && tgt!=null) ? Math.abs((tgt-entry)/(entry-sl)).toFixed(2) : null;
+  const result = pnl==null ? 'OPEN' : pnl>0 ? 'WIN' : pnl<0 ? 'LOSS' : 'BREAKEVEN';
 
   const trades = loadTrades();
-  trades.unshift({
-    id: Date.now(), date, stock, dir, setup, entry, exit, sl, tgt, qty, pnl, rr, result, ind, notes,
-  });
+  trades.unshift({ id:Date.now(), date, day, stock, dir, setup, pattern, entry, exit, sl, tgt,
+    qty, pnl, rr, result, ind, notes, tfalign, emotionEntry, emotionExit, held, exitReason, quality, confidence, rules });
   saveTrades(trades);
 
-  // Reset form
-  ['j-stock','j-exit','j-sl','j-tgt','j-notes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('j-entry').value = '';
-  document.getElementById('j-qty').value = '';
+  ['j-stock','j-exit','j-sl','j-tgt','j-notes','j-entry','j-qty'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
 
   renderJournal();
-  showTab('journal');
-  sp(`Trade saved. ${stock} ${dir}. ${result === 'OPEN' ? 'Position open.' : 'P and L: ' + (pnl >= 0 ? 'plus' : 'minus') + ' rupees ' + Math.abs(pnl).toFixed(0)}.`);
+  sp(`Trade saved. ${stock} ${dir}. ${result==='OPEN'?'Position open.':'P and L: '+(pnl>=0?'plus':'minus')+' rupees '+Math.abs(pnl).toFixed(0)}.`);
 }
 
 function showJErr(msg) {
@@ -1847,24 +1952,27 @@ function renderJournal() {
     const badge = t.result === 'WIN' ? `<span class="win-badge">▲ WIN</span>`
       : t.result === 'LOSS'  ? `<span class="loss-badge">▼ LOSS</span>`
       : t.result === 'OPEN'  ? `<span class="open-badge">⏳ OPEN</span>`
-      : `<span class="open-badge">${t.result}</span>`;
-    const dirColor = t.dir === 'LONG' ? 'pos' : 'neg';
+      : `<span class="open-badge">${t.result||'—'}</span>`;
+    const qColor = t.quality?.startsWith('A+') ? 'var(--green)' : t.quality?.startsWith('A') ? '#80f0c8' : t.quality?.startsWith('B') ? 'var(--amber)' : t.quality?.startsWith('C') || t.quality?.startsWith('D') ? 'var(--red)' : 'var(--muted)';
+    const rulesColor = t.rules?.startsWith('✅') ? 'var(--green)' : t.rules?.startsWith('⚠️') ? 'var(--amber)' : t.rules?.startsWith('❌') ? 'var(--red)' : 'var(--muted)';
     return `<tr>
-      <td>${t.date}</td>
-      <td style="font-family:'Syne',sans-serif;font-weight:700">${t.stock}</td>
-      <td class="${dirColor}">${t.dir === 'LONG' ? '▲' : '▼'} ${t.dir}</td>
-      <td>${t.setup || '—'}</td>
-      <td>${t.entry != null ? '₹' + t.entry.toLocaleString('en-IN') : '—'}</td>
-      <td>${t.exit  != null ? '₹' + t.exit.toLocaleString('en-IN')  : '—'}</td>
-      <td>${t.sl    != null ? '₹' + t.sl.toLocaleString('en-IN')    : '—'}</td>
-      <td>${t.tgt   != null ? '₹' + t.tgt.toLocaleString('en-IN')   : '—'}</td>
-      <td>${t.qty || '—'}</td>
+      <td>${t.date||'—'}</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700">${t.stock||'—'}</td>
+      <td class="${t.dir==='LONG'?'pos':'neg'}">${t.dir==='LONG'?'▲':'▼'} ${t.dir||'—'}</td>
+      <td style="font-size:11px">${t.setup||'—'}</td>
+      <td>${t.entry!=null?'₹'+t.entry.toLocaleString('en-IN'):'—'}</td>
+      <td>${t.exit!=null?'₹'+t.exit.toLocaleString('en-IN'):'—'}</td>
+      <td>${t.sl!=null?'₹'+t.sl.toLocaleString('en-IN'):'—'}</td>
+      <td>${t.tgt!=null?'₹'+t.tgt.toLocaleString('en-IN'):'—'}</td>
+      <td>${t.qty||'—'}</td>
       <td>${pnlStr}</td>
-      <td>${t.rr ? '1:' + t.rr : '—'}</td>
+      <td>${t.rr?'1:'+t.rr:'—'}</td>
       <td>${badge}</td>
-      <td style="font-size:11px;color:var(--muted)">${t.ind || '—'}</td>
-      <td style="font-size:11px;color:var(--muted);max-width:120px;white-space:normal">${t.notes || '—'}</td>
-      <td><button class="jnl-del" onclick="deleteTrade(${t.id})" aria-label="Delete this trade">✕</button></td>
+      <td style="font-size:10px;color:${qColor}">${(t.quality||'—').split(' - ')[0]}</td>
+      <td style="font-size:10px;color:var(--muted)">${t.emotionEntry||'—'}</td>
+      <td style="font-size:10px;color:${rulesColor}">${(t.rules||'—').split(' - ')[0]}</td>
+      <td style="font-size:10px;color:var(--muted);max-width:100px;white-space:normal">${t.notes||'—'}</td>
+      <td><button class="jnl-del" onclick="deleteTrade(${t.id})" aria-label="Delete">✕</button></td>
     </tr>`;
   }).join('');
 
@@ -1890,22 +1998,26 @@ function renderJournal() {
 function importFromExcel() {
   const existing = loadTrades();
   const excelTrades = [
-    {id: 1746300001, date:'2026-03-10', stock:'NIFTY', dir:'LONG', setup:'Support Buy',
-     entry:24082, exit:24280, sl:23902, tgt:24322, qty:6,
-     pnl:1188, rr:'1.1', result:'WIN', ind:'Roshan Indicator', notes:'Fear Of Reversal — exited early. Lesson: move SL to breakeven once in profit.'},
-    {id: 1746300002, date:'2026-03-11', stock:'NIFTY', dir:'SHORT', setup:'Resistance Short',
-     entry:24322, exit:null, sl:24450, tgt:23902, qty:6,
-     pnl:null, rr:'3.2', result:'OPEN', ind:'Roshan Indicator', notes:'Waiting for confirmation at 24322 resistance zone'},
+    {id:1746300001, date:'2026-03-10', day:'Tuesday', stock:'NIFTY', dir:'LONG',
+     setup:'S&R Bounce', pattern:'No Pattern', entry:24082, exit:24280, sl:23902, tgt:24322, qty:6,
+     pnl:1188, rr:'1.1', result:'WIN', ind:'Roshan Indicator',
+     emotionEntry:'Anxious', emotionExit:'Fearful', held:'No - Exited Early (Fear)',
+     exitReason:'Manual Exit - Fear', quality:'B - Average Setup', confidence:'6 - Slightly Confident',
+     rules:'⚠️ Partial - Broke 1 Rule', tfalign:'Weekly + Daily Only',
+     notes:'Fear of reversal — exited early at +198. Lesson: move SL to breakeven once in profit.'},
+    {id:1746300002, date:'2026-03-11', day:'Tuesday', stock:'NIFTY', dir:'SHORT',
+     setup:'S&R Bounce', pattern:'No Pattern', entry:24322, exit:null, sl:24450, tgt:23902, qty:6,
+     pnl:null, rr:'3.2', result:'OPEN', ind:'Roshan Indicator',
+     emotionEntry:'Anxious', emotionExit:'', held:'', exitReason:'', quality:'A - Good Setup',
+     confidence:'8 - Confident', rules:'✅ Yes - Followed All Rules', tfalign:'Daily + 4H Only',
+     notes:'Waiting for confirmation at 24322 resistance zone'},
   ];
-  // Only import ones not already in journal
   const existingIds = new Set(existing.map(t => t.id));
   const toImport = excelTrades.filter(t => !existingIds.has(t.id));
-  if (!toImport.length) {
-    sp('Excel trades already imported.'); return;
-  }
+  if (!toImport.length) { sp('Excel trades already imported.'); return; }
   saveTrades([...toImport, ...existing]);
   renderJournal();
-  sp(`Imported ${toImport.length} trade${toImport.length !== 1 ? 's' : ''} from your Excel journal.`);
+  sp('Imported ' + toImport.length + ' trade' + (toImport.length!==1?'s':'') + ' from your Excel journal.');
 }
 
 function speakJournalSummary() {
@@ -1922,100 +2034,92 @@ function speakJournalSummary() {
 // ANALYTICS
 // ═══════════════════════════════════════════════════════════
 function renderAnalytics() {
-  const trades = loadTrades();
-  const closed = trades.filter(t => t.result !== 'OPEN' && t.pnl != null);
-  const wins   = closed.filter(t => t.result === 'WIN');
-  const losses = closed.filter(t => t.result === 'LOSS');
+  try {
+    const trades = loadTrades();
+    const closed = trades.filter(t => t.result !== 'OPEN' && t.pnl != null);
+    const wins   = closed.filter(t => t.result === 'WIN');
+    const losses = closed.filter(t => t.result === 'LOSS');
 
-  if (closed.length < 2) {
-    document.getElementById('a-insights').innerHTML =
-      '<div class="insight-box" style="color:var(--muted);font-size:12px">Add at least 2 closed trades in the Journal to unlock analytics insights.</div>';
-    ['a-wr','a-pnl','a-avg-win','a-avg-loss','a-rr','a-streak'].forEach(id => {
-      document.getElementById(id).textContent = '—';
-    });
-    return;
+    const totalPnl  = closed.reduce((a,t) => a+t.pnl, 0);
+    const wr        = closed.length ? (wins.length/closed.length*100).toFixed(1)+'%' : '—';
+    const avgWin    = wins.length   ? (wins.reduce((a,t)=>a+t.pnl,0)/wins.length).toFixed(0) : 0;
+    const avgLoss   = losses.length ? (losses.reduce((a,t)=>a+t.pnl,0)/losses.length).toFixed(0) : 0;
+    const rr        = avgLoss && avgLoss !== 0 ? (Math.abs(avgWin/avgLoss)).toFixed(2) : '∞';
+    let streak = 0, best = 0;
+    closed.forEach(t => { if(t.result==='WIN'){streak++;best=Math.max(best,streak);}else streak=0; });
+
+    // Stats
+    const wrEl = document.getElementById('a-wr');
+    if (wrEl) { wrEl.textContent = wr; wrEl.style.color = closed.length && wins.length/closed.length >= 0.5 ? 'var(--green)' : closed.length ? 'var(--red)' : 'var(--text)'; }
+    const pnlEl = document.getElementById('a-pnl');
+    if (pnlEl) { pnlEl.textContent = closed.length ? (totalPnl>=0?'+':'')+'₹'+Math.abs(totalPnl).toLocaleString('en-IN',{maximumFractionDigits:0}) : '—'; pnlEl.style.color=totalPnl>=0?'var(--green)':'var(--red)'; }
+    const awEl = document.getElementById('a-avg-win');   if(awEl) awEl.textContent = wins.length ? '+₹'+Number(avgWin).toLocaleString('en-IN') : '—';
+    const alEl = document.getElementById('a-avg-loss');  if(alEl) alEl.textContent = losses.length ? '₹'+Math.abs(Number(avgLoss)).toLocaleString('en-IN') : '—';
+    const rrEl = document.getElementById('a-rr');        if(rrEl) { rrEl.textContent = rr+'x'; rrEl.style.color = rr>=1?'var(--green)':'var(--amber)'; }
+    const stEl = document.getElementById('a-streak');    if(stEl) stEl.textContent = best+' trades';
+
+    if (closed.length < 2) {
+      document.getElementById('a-psych').style.display = 'none';
+      document.getElementById('a-insights').innerHTML = `<div class="insight-card" style="width:100%;color:var(--muted);border-style:dashed"><div class="insight-num">—</div><div class="insight-text">Add at least 2 closed trades to unlock insights.</div></div>`;
+      return;
+    }
+
+    // Psychology breakdown
+    const emotionWins = {};
+    wins.forEach(t => { if(t.emotionEntry){ emotionWins[t.emotionEntry]=(emotionWins[t.emotionEntry]||0)+1; } });
+    const bestEmotion = Object.entries(emotionWins).sort((a,b)=>b[1]-a[1])[0];
+    const rulesWins = closed.filter(t=>t.rules?.startsWith('✅'));
+    const rulesBroken = closed.filter(t=>t.rules?.startsWith('❌'));
+    const heldWins = wins.filter(t=>t.held?.startsWith('Yes'));
+    const earlyExits = closed.filter(t=>t.held?.includes('Early'));
+
+    const psychLines = [];
+    if (bestEmotion) psychLines.push(`🧘 You trade best when feeling <b>${bestEmotion[0]}</b> — ${bestEmotion[1]} win${bestEmotion[1]!==1?'s':''} in that state.`);
+    if (rulesWins.length && closed.length) psychLines.push(`📋 When you follow ALL rules: ${(rulesWins.filter(t=>t.result==='WIN').length/Math.max(rulesWins.length,1)*100).toFixed(0)}% win rate. When rules broken: ${(rulesBroken.filter(t=>t.result==='WIN').length/Math.max(rulesBroken.length,1)*100).toFixed(0)}% win rate.`);
+    if (heldWins.length) psychLines.push(`🎯 Trades held to target: ${heldWins.length} wins out of ${closed.filter(t=>t.held?.startsWith('Yes')).length} attempts.`);
+    if (earlyExits.length) psychLines.push(`⚠️ Early exits: ${earlyExits.length} trade${earlyExits.length!==1?'s':''} exited before target. Check if fear or greed drove these.`);
+
+    const psychEl = document.getElementById('a-psych');
+    const psychContent = document.getElementById('a-psych-content');
+    if (psychEl && psychContent) {
+      psychEl.style.display = psychLines.length ? 'block' : 'none';
+      psychContent.innerHTML = psychLines.join('<br>');
+    }
+
+    // Build insights
+    const insights = [];
+    if (wins.length/closed.length >= 0.6) insights.push(`<b>Strong win rate of ${wr}.</b> Your edge is real. Protect it by sticking to the same setups and not overtrading.`);
+    else if (wins.length/closed.length < 0.4) insights.push(`<b>Win rate needs work (${wr}).</b> Focus on one setup at a time. Quality over quantity.`);
+    if (rr !== '∞' && Number(rr) < 1) insights.push(`<b>Risk/Reward is below 1x.</b> Your average win (₹${avgWin}) is smaller than your average loss (₹${Math.abs(avgLoss)}). Target at least 1.5x on each trade.`);
+    else if (rr !== '∞' && Number(rr) >= 2) insights.push(`<b>Excellent R:R of ${rr}x.</b> You make ${rr} times what you risk. This is the hallmark of a disciplined trader.`);
+
+    // Best setup
+    const setupW = {}; wins.forEach(t => { if(t.setup) setupW[t.setup]=(setupW[t.setup]||0)+1; });
+    const bestSetup = Object.entries(setupW).sort((a,b)=>b[1]-a[1])[0];
+    if (bestSetup) insights.push(`<b>Best setup: ${bestSetup[0]}</b> — ${bestSetup[1]} win${bestSetup[1]!==1?'s':''}. Consider making this your primary playbook.`);
+
+    // Direction breakdown
+    const longT=closed.filter(t=>t.dir==='LONG'), shortT=closed.filter(t=>t.dir==='SHORT');
+    const longWR=longT.length?(longT.filter(t=>t.result==='WIN').length/longT.length*100).toFixed(0):null;
+    const shortWR=shortT.length?(shortT.filter(t=>t.result==='WIN').length/shortT.length*100).toFixed(0):null;
+    if (longWR && shortWR) {
+      if (parseInt(longWR) > parseInt(shortWR)+15) insights.push(`<b>You trade LONG better (${longWR}%) than SHORT (${shortWR}%).</b> Consider focusing on long-only setups.`);
+      else if (parseInt(shortWR) > parseInt(longWR)+15) insights.push(`<b>You trade SHORT better (${shortWR}%) than LONG (${longWR}%).</b> Lean into short setups.`);
+    }
+
+    if (best >= 3) insights.push(`<b>Best win streak: ${best} in a row.</b> Recall what you were doing right during that run.`);
+
+    const insEl = document.getElementById('a-insights');
+    if (insEl) {
+      insEl.innerHTML = insights.length
+        ? `<div class="insight-scroll">${insights.map((ins,i) => `<div class="insight-card" style="animation-delay:${i*0.08}s"><div class="insight-num">${String(i+1).padStart(2,'0')}</div><div class="insight-text">💡 ${ins}</div></div>`).join('')}</div><button class="sp-btn" style="margin-top:10px;width:100%;font-size:12px" onclick="speakAnalytics()">🔊 Hear all insights</button>`
+        : `<div class="insight-card" style="width:100%;color:var(--muted);border-style:dashed"><div class="insight-num">—</div><div class="insight-text">Add more closed trades to unlock personalised insights.</div></div>`;
+    }
+  } catch(err) {
+    console.error('renderAnalytics error:', err);
+    const insEl = document.getElementById('a-insights');
+    if (insEl) insEl.innerHTML = `<div class="insight-card" style="color:var(--muted)"><div class="insight-text">Analytics unavailable. Try adding trades to the Journal first.</div></div>`;
   }
-
-  const totalPnl   = closed.reduce((a, t) => a + t.pnl, 0);
-  const wr         = (wins.length / closed.length * 100).toFixed(1) + '%';
-  const avgWin     = wins.length ? (wins.reduce((a, t) => a + t.pnl, 0) / wins.length).toFixed(0) : 0;
-  const avgLoss    = losses.length ? (losses.reduce((a, t) => a + t.pnl, 0) / losses.length).toFixed(0) : 0;
-  const rr         = avgLoss !== 0 ? (Math.abs(avgWin / avgLoss)).toFixed(2) : '∞';
-
-  // Best streak
-  let streak = 0, best = 0;
-  closed.forEach(t => { if (t.result === 'WIN') { streak++; best = Math.max(best, streak); } else { streak = 0; } });
-
-  document.getElementById('a-wr').textContent    = wr;
-  document.getElementById('a-wr').style.color    = wins.length / closed.length >= 0.5 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('a-pnl').textContent   = (totalPnl >= 0 ? '+' : '') + '₹' + Math.abs(totalPnl).toLocaleString('en-IN',{maximumFractionDigits:0});
-  document.getElementById('a-pnl').style.color   = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('a-avg-win').textContent  = '+₹' + Number(avgWin).toLocaleString('en-IN');
-  document.getElementById('a-avg-win').style.color  = 'var(--green)';
-  document.getElementById('a-avg-loss').textContent = avgLoss ? '₹' + Number(avgLoss).toLocaleString('en-IN') : '—';
-  document.getElementById('a-avg-loss').style.color = 'var(--red)';
-  document.getElementById('a-rr').textContent    = rr + 'x';
-  document.getElementById('a-rr').style.color    = rr >= 1 ? 'var(--green)' : 'var(--amber)';
-  document.getElementById('a-streak').textContent = best + ' trades';
-
-  // Best indicator
-  const indWins = {};
-  wins.forEach(t => { indWins[t.ind] = (indWins[t.ind] || 0) + 1; });
-  const bestInd = Object.entries(indWins).sort((a,b) => b[1]-a[1])[0];
-
-  // Best setup
-  const setupWins = {};
-  wins.forEach(t => { setupWins[t.setup] = (setupWins[t.setup] || 0) + 1; });
-  const bestSetup = Object.entries(setupWins).sort((a,b) => b[1]-a[1])[0];
-
-  // Direction breakdown
-  const longTrades  = closed.filter(t => t.dir === 'LONG');
-  const shortTrades = closed.filter(t => t.dir === 'SHORT');
-  const longWR  = longTrades.length  ? (longTrades.filter(t => t.result === 'WIN').length / longTrades.length * 100).toFixed(0)  : null;
-  const shortWR = shortTrades.length ? (shortTrades.filter(t => t.result === 'WIN').length / shortTrades.length * 100).toFixed(0) : null;
-
-  const insights = [];
-
-  if (wins.length / closed.length >= 0.6)
-    insights.push(`<b>Strong win rate.</b> You win ${wr} of your trades. Your edge is real — protect it by sticking to the same setups.`);
-  else if (wins.length / closed.length < 0.4)
-    insights.push(`<b>Win rate needs work.</b> You're winning ${wr} of trades. Focus on one setup at a time until it becomes consistently profitable.`);
-
-  if (rr !== '∞' && rr < 1)
-    insights.push(`<b>Risk/Reward needs attention.</b> Your average win (₹${avgWin}) is smaller than your average loss (₹${Math.abs(avgLoss)}). Try targeting at least 1.5x your risk on each trade.`);
-  else if (rr !== '∞' && rr >= 2)
-    insights.push(`<b>Excellent R:R ratio.</b> You make ${rr}x on winning trades vs losses. This is the hallmark of a disciplined trader.`);
-
-  if (bestInd)
-    insights.push(`<b>Best indicator:</b> ${bestInd[0]} gave you ${bestInd[1]} winning trade${bestInd[1] !== 1 ? 's' : ''}. Consider using it as your primary signal.`);
-
-  if (bestSetup)
-    insights.push(`<b>Best setup:</b> Your "${bestSetup[0]}" setup has the most wins. Specialise in it.`);
-
-  if (longWR && shortWR) {
-    if (parseInt(longWR) > parseInt(shortWR) + 15)
-      insights.push(`<b>You trade LONG much better (${longWR}%) than SHORT (${shortWR}%).</b> Consider focusing on long-only setups.`);
-    else if (parseInt(shortWR) > parseInt(longWR) + 15)
-      insights.push(`<b>You trade SHORT better (${shortWR}%) than LONG (${longWR}%).</b> Lean into short setups when the market cooperates.`);
-  }
-
-  if (best >= 3)
-    insights.push(`<b>Win streak of ${best}:</b> You have shown the ability to stay disciplined in a run. Recall what you were doing right during that streak.`);
-
-  // Robinhood: horizontal scroll insight cards
-  const insightHTML = insights.length
-    ? `<div class="insight-scroll" role="region" aria-label="Trading insights">
-        ${insights.map((i,idx) => `<div class="insight-card" style="animation-delay:${idx*0.08}s">
-          <div class="insight-num">${String(idx+1).padStart(2,'0')}</div>
-          <div class="insight-text">💡 ${i}</div>
-        </div>`).join('')}
-       </div>
-       <button class="sp-btn" style="margin-top:10px;width:100%" onclick="speakAnalytics()" aria-label="Hear all insights">🔊 Hear all insights</button>`
-    : `<div class="insight-card" style="color:var(--muted);border-style:dashed">
-        <div class="insight-num">—</div>
-        <div class="insight-text">Add more closed trades to unlock personalised insights.</div>
-       </div>`;
-  document.getElementById('a-insights').innerHTML = insightHTML;
 }
 
 function speakAnalytics() {
@@ -2032,30 +2136,8 @@ function speakAnalytics() {
 // ═══════════════════════════════════════════════════════════
 // LEARN
 // ═══════════════════════════════════════════════════════════
-function speakLearn(btn) {
-  const key = btn.getAttribute('data-key');
-  const d = LEARN_DATA.find(x => x.key === key);
-  if (!d) return;
-  sp(d.plain + '. Buy signal: ' + d.buy + '. Short signal: ' + d.sell);
-}
-function buildLearn() {
-  const c = document.getElementById('learn-cards');
-  if (c.children.length) return;
-  c.innerHTML = LEARN_DATA.map(d => `
-    <div class="learn-card">
-      <div class="learn-head">
-        <div class="learn-icon" style="background:${d.tag === 'new' ? 'rgba(245,158,11,.15)' : 'rgba(59,130,246,.12)'}">${d.icon}</div>
-        <div style="flex:1">
-          <div class="learn-title">${d.title}</div>
-          <span class="tag ${d.tag}">${d.tag === 'new' ? '⚡ New 2010+' : 'Classic'}</span>
-        </div>
-        <button class="sp-btn" onclick="speakLearn(this)" data-key="${d.key}" aria-label="Hear explanation">🔊</button>
-      </div>
-      <div class="learn-plain">${d.plain}</div>
-      <div class="sig-box sig-buy">▲ <b>Buy:</b> ${d.buy}</div>
-      <div class="sig-box sig-sell">▼ <b>Short:</b> ${d.sell}</div>
-    </div>`).join('');
-}
+// speakLearn moved to Learn section JS
+// buildLearn moved below
 
 // ═══════════════════════════════════════════════════════════
 // MARKET OVERVIEW — Index mini chart + Chitti price action
@@ -2077,12 +2159,10 @@ function initIndexChart() {
     handleScroll: true, handleScale: true,
     leftPriceScale: { visible: false },
   });
-  idxSeries = idxChart.addAreaSeries({
-    topColor: 'rgba(76,127,255,.25)',
-    bottomColor: 'rgba(76,127,255,.02)',
-    lineColor: '#4c7fff',
-    lineWidth: 2,
-    crosshairMarkerVisible: false,
+  idxSeries = idxChart.addCandlestickSeries({
+    upColor:'#00c896', downColor:'#ff4757',
+    borderUpColor:'#00c896', borderDownColor:'#ff4757',
+    wickUpColor:'#00c896', wickDownColor:'#ff4757',
   });
   const ro = new ResizeObserver(() => {
     idxChart?.applyOptions({width: el.clientWidth || window.innerWidth});
@@ -2170,8 +2250,8 @@ async function loadIndexData(sym, name) {
 
   // Update mini chart — use close prices as area series
   if (!idxChart) initIndexChart();
-  const areaData = candles.map(c => ({time: c.time, value: c.close}));
-  idxSeries.setData(areaData);
+  const ohlcData = candles.map(c => ({time:c.time, open:c.open, high:c.high, low:c.low, close:c.close}));
+  idxSeries.setData(ohlcData);
   idxChart.timeScale().fitContent();
 
   // Price display
@@ -2187,12 +2267,7 @@ async function loadIndexData(sym, name) {
     const chgEl = document.getElementById('idx-change');
     chgEl.textContent = (up ? '▲ +' : '▼ ') + Math.abs(chg).toFixed(2) + ' (' + Math.abs(pct).toFixed(2) + '%)';
     chgEl.style.color = up ? 'var(--green)' : 'var(--red)';
-    // Update area series colour based on direction
-    idxSeries.applyOptions({
-      topColor: up ? 'rgba(0,200,150,.2)' : 'rgba(255,71,87,.2)',
-      bottomColor: up ? 'rgba(0,200,150,.02)' : 'rgba(255,71,87,.02)',
-      lineColor: up ? '#00c896' : '#ff4757',
-    });
+    // Candlestick series — colours are per-candle, no applyOptions needed
   }
 
   // Date range
@@ -2244,6 +2319,201 @@ function speakIndexComment() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// STOCK SEARCH — Nifty 500 symbol list for chart tab search
+// ═══════════════════════════════════════════════════════════
+if(typeof NIFTY500===\'undefined\') var NIFTY500 = [
+  'RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','HINDUNILVR','KOTAKBANK','SBIN','BHARTIARTL','ITC',
+  'BAJFINANCE','AXISBANK','ASIANPAINT','MARUTI','SUNPHARMA','TITAN','ULTRACEMCO','NESTLEIND','TECHM','WIPRO',
+  'POWERGRID','NTPC','HCLTECH','ONGC','TATAMOTORS','JSWSTEEL','TATASTEEL','INDUSINDBK','BAJAJFINSV','HDFCLIFE',
+  'DIVISLAB','CIPLA','DRREDDY','EICHERMOT','BPCL','COALINDIA','HEROMOTOCO','GRASIM','ADANIENT','ADANIPORTS',
+  'BRITANNIA','APOLLOHOSP','TATACONSUM','SBILIFE','GODREJCP','PIDILITIND','NIFTY 50','BANKNIFTY','SENSEX',
+  'NIFTY MIDCAP 100','NIFTY IT','LT','M&M','VEDL','HINDALCO','GAIL','SIEMENS','AMBUJACEM','SHREECEM',
+  'BERGEPAINT','MUTHOOTFIN','BANKBARODA','CANBK','PNB','IDBI','IOC','AUROPHARMA','BIOCON','CADILAHC',
+  'MOTHERSON','HAVELLS','VOLTAS','WHIRLPOOL','MCDOWELL-N','JUBLFOOD','DOMINOS','ZOMATO','NYKAA','PAYTM',
+  'DMART','TRENT','ABFRL','PAGEIND','VBL','RADICO','UBL','JYOTHYLAB','COLPAL','MARICO','DABUR',
+  'EMAMILTD','GILLETTE','HINDPETRO','MRPL','RECLTD','PFC','IRFC','HUDCO','CAMS','CDSL','BSE',
+  'IRCTC','CONCOR','RVNL','RAILTEL','GPPL','ASTRAL','SUPREMEIND','RELAXO','BATA','METRO','CAMPUS',
+  'POLICYBZR','STAR','MFSL','ICICIGI','BAJAJ-AUTO','TVSMOTOR','ESCORTS','M&MFIN','CHOLAFIN','SUNDARMFIN',
+];
+
+function onSearchKey(e) {
+  const drop = document.getElementById('search-drop');
+  const items = drop.querySelectorAll('[role=option]');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = drop.querySelector('[data-focused]');
+    const nextEl = next ? (next.nextElementSibling || items[0]) : items[0];
+    drop.querySelectorAll('[data-focused]').forEach(el => delete el.dataset.focused);
+    nextEl.dataset.focused = '1'; nextEl.style.background = 'var(--card2)';
+    nextEl.scrollIntoView({block:'nearest'});
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const cur = drop.querySelector('[data-focused]');
+    const prev = cur ? (cur.previousElementSibling || items[items.length-1]) : items[items.length-1];
+    drop.querySelectorAll('[data-focused]').forEach(el => delete el.dataset.focused);
+    prev.dataset.focused = '1'; prev.style.background = 'var(--card2)';
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const focused = drop.querySelector('[data-focused]');
+    if (focused) focused.dispatchEvent(new Event('mousedown'));
+  } else if (e.key === 'Escape') {
+    drop.style.display = 'none';
+  }
+}
+function onStockSearch(val) {
+  const drop = document.getElementById('search-drop');
+  if (!val || val.length < 1) { drop.innerHTML=''; drop.style.display='none'; return; }
+  const q = val.toUpperCase().trim();
+  const matches = NIFTY500.filter(s => s.includes(q)).slice(0, 12);
+  if (!matches.length) { drop.innerHTML='<div style="padding:10px 12px;font-size:12px;color:var(--muted)">No matches. Try NSE:SYMBOL format.</div>'; drop.style.display='block'; return; }
+  drop.innerHTML = matches.map(s =>
+    `<div role="option" tabindex="0"
+      style="padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;
+        border-bottom:1px solid var(--border);transition:background .1s"
+      onmousedown="selectSearchStock('${s}')"
+      onmouseover="this.style.background='var(--card2)'"
+      onmouseout="this.style.background=''"
+      aria-label="${s}">
+      ${s}
+      <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:8px">NSE</span>
+    </div>`
+  ).join('');
+  drop.style.display = 'block';
+}
+
+function selectSearchStock(sym) {
+  const fullSym = sym.includes(':') ? sym : 'NSE:' + sym;
+  document.getElementById('stock-search').value = sym;
+  document.getElementById('search-drop').style.display = 'none';
+  openChart(fullSym);
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEARN TAB — 3 sections: Chart Types, Patterns, Indicators
+// ═══════════════════════════════════════════════════════════
+const LEARN_CHART_TYPES = [
+  {icon:'🕯', title:'Candlestick (Standard)', tag:'essential',
+   plain:'The most common chart. Each candle shows Open, High, Low, Close for one time period. Green = price rose. Red = price fell. The wicks show how far price went before reversing.',
+   buy:'3 or more consecutive green candles with rising lows — buyers in control',
+   sell:'3 or more consecutive red candles with falling highs — sellers in control'},
+  {icon:'🔮', title:'Heikin Ashi', tag:'trending',
+   plain:'Smoothed candles calculated from averages. Green candles with no lower wicks = strong uptrend. Red candles with no upper wicks = strong downtrend. Filters out noise.',
+   buy:'Multiple green candles in a row with no lower wick — strong bullish trend',
+   sell:'Multiple red candles with no upper wick — strong bearish trend'},
+  {icon:'╱', title:'Line Chart', tag:'simple',
+   plain:'Just the closing price connected as a line. Great for seeing the big picture trend. Hides the detail of each candle. Best for checking if a stock is trending up or down quickly.',
+   buy:'Line is rising and above its 20-day average',
+   sell:'Line is falling and below its 20-day average'},
+  {icon:'◿', title:'Area Chart', tag:'simple',
+   plain:'Same as a line chart but the area below is filled with colour. Makes uptrends feel more obvious visually. Popular in stock apps like Robinhood and Zerodha.',
+   buy:'Filled area rising from left to right',
+   sell:'Filled area falling from left to right'},
+  {icon:'▯', title:'Bar / OHLC Chart', tag:'classic',
+   plain:'Old-school bars showing Open, High, Low, Close. A tick on the left = open price. Tick on right = close. Long bars = volatile session. Short bars = quiet session.',
+   buy:'Bars closing near their highs — buyers winning the session',
+   sell:'Bars closing near their lows — sellers winning the session'},
+];
+
+const LEARN_PATTERNS = [
+  {icon:'🔨', title:'Hammer', tag:'bullish reversal',
+   plain:'Small body at the top, long lower wick. Appears after a downtrend. Means: sellers pushed price down but buyers came back strongly. Often signals a reversal up.',
+   buy:'Hammer appears at the bottom of a downtrend — enter next day on confirmation',
+   sell:'No sell signal — this is a bullish pattern'},
+  {icon:'⭐', title:'Doji', tag:'indecision',
+   plain:'Tiny body, almost no difference between open and close. Means: buyers and sellers are equally matched — nobody is winning. Often signals a big move coming.',
+   buy:'Doji after a downtrend — potential reversal. Wait for next candle to confirm direction',
+   sell:'Doji after an uptrend — potential reversal down. Wait for confirmation'},
+  {icon:'🌟', title:'Morning Star', tag:'bullish reversal',
+   plain:'3-candle pattern: big red → small doji → big green. Appears after a downtrend. Strong signal that sellers have given up and buyers are taking over.',
+   buy:'Third candle closes above midpoint of first candle — strong BUY signal',
+   sell:'No sell signal — this is a bullish reversal pattern'},
+  {icon:'🌙', title:'Evening Star', tag:'bearish reversal',
+   plain:'3-candle pattern: big green → small doji → big red. Appears after an uptrend. Strong signal that buyers have given up and sellers are taking over.',
+   buy:'No buy signal — this is a bearish reversal pattern',
+   sell:'Third candle closes below midpoint of first candle — strong SHORT signal'},
+  {icon:'🏋️', title:'Bullish Engulfing', tag:'bullish reversal',
+   plain:'Two candles. Day 1: small red. Day 2: large green that completely covers Day 1. Buyers overwhelmed sellers. Often starts a new uptrend.',
+   buy:'Green candle body is larger than previous red candle — BUY next day',
+   sell:'No sell signal'},
+  {icon:'🧸', title:'Bearish Engulfing', tag:'bearish reversal',
+   plain:'Two candles. Day 1: small green. Day 2: large red that completely covers Day 1. Sellers overwhelmed buyers. Often starts a new downtrend.',
+   buy:'No buy signal',
+   sell:'Red candle body is larger than previous green candle — SHORT next day'},
+  {icon:'⚡', title:'Shooting Star', tag:'bearish reversal',
+   plain:'Small body at the bottom, long upper wick. Appears after an uptrend. Means: buyers pushed price high but sellers came back strongly. Often signals a reversal down.',
+   buy:'No buy signal',
+   sell:'Shooting star at the top of an uptrend — enter short next day on confirmation'},
+  {icon:'🏦', title:'Support Bounce', tag:'support',
+   plain:'Price falls to a level it has bounced from before, then reverses. The more times price bounces from a level, the stronger that support is.',
+   buy:'Price touches support and a green candle forms — buy near support with SL just below',
+   sell:'Support breaks with a strong red candle — sell short below broken support'},
+];
+
+const LEARN_DATA = [
+  {key:'Roshan Indicator',icon:'⭐',tag:'classic',title:'Roshan Indicator',plain:'Bryan's custom indicator. Checks RSI momentum plus candle direction on 2 timeframes. All 3 conditions must agree before giving a signal.',buy:'RSI above SMA(20) on both TFs + both candles green + pullback candle red',sell:'RSI below SMA(20) on both TFs + both candles red + pullback green'},
+  {key:'TTM Squeeze',icon:'⚡',tag:'new',title:'TTM Squeeze (2010+)',plain:'Bollinger Bands squeeze inside Keltner Channel = price coiled like a spring. When it fires, a big move comes. Above zero = buyers winning.',buy:'Momentum crosses above zero after a squeeze period',sell:'Momentum crosses below zero'},
+  {key:'RSI',icon:'📊',tag:'classic',title:'RSI (14)',plain:'Relative Strength Index. Measures how fast price is moving. Below 30 = oversold, may bounce up. Above 70 = overbought, may fall. Best used with another indicator.',buy:'RSI crosses above 30 from below (oversold recovery) or above 50',sell:'RSI crosses below 70 from above (overbought reversal) or below 50'},
+  {key:'MACD',icon:'📊',tag:'classic',title:'MACD (12,26,9)',plain:'Moving Average Convergence Divergence. Two lines: fast and slow. When fast crosses slow upward = momentum building. Histogram shows the difference.',buy:'MACD line crosses above signal line + histogram turns green',sell:'MACD line crosses below signal line + histogram turns red'},
+  {key:'Supertrend',icon:'📊',tag:'classic',title:'Supertrend',plain:'A line that flips from below to above price. When it is below price and green = BUY. When it is above price and red = SHORT. Very easy to read.',buy:'Price closes above green Supertrend line',sell:'Price closes below red Supertrend line'},
+  {key:'Bollinger Bands',icon:'📊',tag:'classic',title:'Bollinger Bands (20,2)',plain:'Three lines around price. Middle = 20-day average. Upper and lower = 2 standard deviations. When price touches the lower band it may bounce. When it touches upper it may fall.',buy:'Price touches or goes below lower band (oversold)',sell:'Price touches or goes above upper band (overbought)'},
+  {key:'EMA',icon:'📊',tag:'classic',title:'EMA (20 / 50 / 200)',plain:'Exponential Moving Average. A smooth line following price. Price above EMA = bullish. Below = bearish. EMA 200 = long-term trend. EMA 20 = short-term momentum.',buy:'Price crosses above EMA from below + EMA is rising',sell:'Price crosses below EMA from above + EMA is falling'},
+  {key:'ADX',icon:'📊',tag:'classic',title:'ADX — Trend Strength',plain:'Average Directional Index. Tells you HOW STRONG a trend is, not which direction. Above 25 = strong trend (trade with it). Below 20 = weak/ranging market (avoid trend trades).',buy:'ADX above 25 with +DI line above -DI line = strong uptrend',sell:'ADX above 25 with -DI line above +DI line = strong downtrend'},
+  {key:'VWAP',icon:'📊',tag:'classic',title:'VWAP — Volume Weighted Price',plain:'Volume Weighted Average Price. The average price adjusted for how much was bought/sold. Used mainly for intraday trading. Price above VWAP = buyers in control today.',buy:'Price rises above VWAP with high volume = intraday bullish',sell:'Price falls below VWAP with high volume = intraday bearish'},
+  {key:'Hull MA',icon:'⚡',tag:'new',title:'Hull MA (2012+)',plain:'Faster moving average with much less lag than EMA. Turns earlier so you catch trends sooner. When price is above HMA and HMA is green = uptrend.',buy:'Price crosses above rising Hull MA',sell:'Price crosses below falling Hull MA'},
+];
+
+function setLearnTab(tab) {
+  ['chart-types','patterns','indicators'].forEach(t => {
+    document.getElementById('learn-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('lt-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'chart-types' && !document.getElementById('learn-chart-types').children.length) buildLearnChartTypes();
+  if (tab === 'patterns' && !document.getElementById('learn-patterns').children.length) buildLearnPatterns();
+  if (tab === 'indicators' && !document.getElementById('learn-indicators').children.length) buildLearnIndicators();
+}
+
+function learnCard(d) {
+  const isNew = d.tag === 'new' || d.tag === 'bullish reversal' || d.tag === 'bearish reversal';
+  return `<div class="learn-card">
+    <div class="learn-head">
+      <div class="learn-icon" style="background:${isNew?'rgba(245,158,11,.15)':'rgba(59,130,246,.12)'}">${d.icon}</div>
+      <div style="flex:1">
+        <div class="learn-title">${d.title}</div>
+        <span class="tag ${isNew?'new':'classic'}">${d.tag}</span>
+      </div>
+      <button class="sp-btn" onclick="speakLearnByKey('${d.key||d.title}')" aria-label="Hear explanation" style="padding:3px 8px;font-size:12px">🔊</button>
+    </div>
+    <div class="learn-plain">${d.plain}</div>
+    <div class="sig-box sig-buy">▲ <b>Buy signal:</b> ${d.buy}</div>
+    <div class="sig-box sig-sell">▼ <b>Short signal:</b> ${d.sell}</div>
+  </div>`;
+}
+
+function buildLearnChartTypes() {
+  document.getElementById('learn-chart-types').innerHTML = LEARN_CHART_TYPES.map(d => learnCard({...d, key:d.title})).join('');
+}
+function buildLearnPatterns() {
+  document.getElementById('learn-patterns').innerHTML = LEARN_PATTERNS.map(d => learnCard({...d, key:d.title})).join('');
+}
+function buildLearnIndicators() {
+  document.getElementById('learn-indicators').innerHTML = LEARN_DATA.map(d => learnCard(d)).join('');
+}
+function buildLearn() {
+  // Called on tab switch — init chart types by default
+  if (!document.getElementById('learn-chart-types').children.length) buildLearnChartTypes();
+}
+function speakLearnByKey(key) {
+  const all = [...LEARN_CHART_TYPES, ...LEARN_PATTERNS, ...LEARN_DATA];
+  const d = all.find(x => (x.key||x.title) === key);
+  if (d) sp(d.plain + '. Buy signal: ' + d.buy + '. Short signal: ' + d.sell);
+}
+function speakLearn(btn) {
+  const key = btn.getAttribute('data-key');
+  if (key) speakLearnByKey(key);
+}
+
+// ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 window.addEventListener('load', () => {
@@ -2265,8 +2535,14 @@ window.addEventListener('load', () => {
   // Init charts
   if (typeof LightweightCharts !== 'undefined') {
     initCharts();
-    initIndexChart();
-    loadIndexData('NSE:NIFTY 50', 'Nifty 50');
+    if (typeof initIndexChart === 'function') {
+      initIndexChart();
+      loadIndexData('NSE:NIFTY 50', 'Nifty 50');
+    }
+    // Pre-init chart with Nifty 50 data but stay on Scanner tab
+    currentSymbol = 'NSE:NIFTY 50';
+    document.getElementById('c-sym').textContent = 'NIFTY 50';
+    const exEl = document.getElementById('c-exchange'); if(exEl) exEl.textContent='NSE';
   } else {
     console.error('LightweightCharts not loaded');
   }
@@ -2289,6 +2565,8 @@ window.addEventListener('resize', () => {
   if (lwChart) lwChart.applyOptions({width: cw, height: chartH});
   if (lwRsiChart) lwRsiChart.applyOptions({width: cw, height: rsiH});
 });
+
+}
 </script>
 </body>
 </html>
