@@ -342,6 +342,7 @@ textarea:focus{border-color:var(--blue)}
   <button class="tab" onclick="showTab('journal')" aria-label="Journal tab" role="tab">📓 Journal</button>
   <button class="tab" onclick="showTab('analytics')" aria-label="Analytics tab" role="tab">📊 Analytics</button>
   <button class="tab" onclick="showTab('learn')" aria-label="Learn tab" role="tab">🎓 Learn</button>
+  <button class="tab" onclick="showTab('calls')" aria-label="Calls" role="tab"><span class="tab-icon">📊</span>Calls</button>
 </div>
 
 <!-- SCANNER TAB — Angel One layout -->
@@ -449,7 +450,7 @@ textarea:focus{border-color:var(--blue)}
     </div>
     <div class="filter-row">
       <div class="fgroup"><label class="flbl" for="call-sel">Call Type</label>
-        <select id="call-sel" onchange="onCall()" aria-label="Call type">
+        <select id="call-sel" onchange="onCall(); scheduleRescan();" aria-label="Call type">
           <option value="Long-term">Long-term (Mo+Wk)</option>
           <option value="Positional" selected>Positional (Wk+D)</option>
           <option value="Swing">Swing (D+4H)</option>
@@ -457,8 +458,8 @@ textarea:focus{border-color:var(--blue)}
           <option value="Custom">⚡ Custom</option>
         </select>
       </div>
-      <div class="fgroup"><label class="flbl" for="univ-sel">Universe</label>
-        <select id="univ-sel" aria-label="Stock universe">
+      <div class="fgroup"><label class="flbl" for="univ-sel">Universe <span id="univ-size" style="color:var(--blue);font-weight:700"></span></label>
+        <select id="univ-sel" onchange="onUniverseChange()" aria-label="Stock universe">
           <option value="nifty50">Nifty 50</option><option value="largecap">Largecap</option>
           <option value="midcap">Midcap</option><option value="smallcap">Smallcap</option>
           <option value="microcap">Microcap</option>
@@ -504,7 +505,7 @@ textarea:focus{border-color:var(--blue)}
 
   <!-- Status bar -->
   <div class="status" id="status" style="display:none" aria-live="polite">
-    <span>✅ <b id="s-cnt">—</b> stocks scanned</span>
+    <span>✅ <b id="s-cnt">—</b> stocks scanned · <b id="s-ind-name" style="color:var(--blue)"></b></span>
     <span>🕐 <span id="s-time">—</span></span>
     <span id="s-cache">🔄 Fresh</span>
     <span>⏱ <span id="s-dur">—</span>s</span>
@@ -585,7 +586,7 @@ textarea:focus{border-color:var(--blue)}
         <div class="cltp" id="c-price" style="font-size:16px"></div>
         <div class="cchange" id="c-change" style="font-size:11px"></div>
       </div>
-      <div id="c-ohlc" style="font-size:10px">
+      <div id="c-ohlc" style="font-size:10px;font-family:'JetBrains Mono',monospace;display:flex;gap:7px;flex-wrap:wrap;align-items:center">
         <span style="color:var(--muted)">O</span><b id="ohlc-o"> —</b>
         <span style="color:var(--green)"> H</span><b id="ohlc-h"> —</b>
         <span style="color:var(--red)"> L</span><b id="ohlc-l"> —</b>
@@ -787,102 +788,149 @@ textarea:focus{border-color:var(--blue)}
     <details id="add-trade-details" open>
       <summary style="font-size:12px;font-weight:600;color:var(--blue);cursor:pointer;padding:6px 0;user-select:none">+ Add New Trade</summary>
       <div style="margin-top:10px">
-        <!-- BASIC fields — always visible -->
+        <!-- BASIC fields — always visible — matches Excel Daily Trade Log exactly -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><label class="lbl">Stock / Symbol</label><input id="j-stock" placeholder="e.g. NIFTY, RELIANCE" aria-label="Stock symbol"></div>
-          <div><label class="lbl">Date</label><input type="date" id="j-date" aria-label="Trade date"></div>
-          <div><label class="lbl">Direction</label>
-            <select id="j-dir" aria-label="Direction">
-              <option value="LONG">▲ LONG (Buy)</option>
-              <option value="SHORT">▼ SHORT (Sell)</option>
+
+          <div><label class="lbl">Date</label>
+            <input type="date" id="j-date" aria-label="Trade date"></div>
+
+          <div><label class="lbl">Day</label>
+            <select id="j-day" aria-label="Day of week">
+              <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+              <option>Thursday</option><option>Friday</option>
             </select></div>
+
+          <div><label class="lbl">Stock / Symbol</label>
+            <input id="j-stock" placeholder="e.g. NIFTY, RELIANCE" aria-label="Stock symbol" autocomplete="off"></div>
+
+          <div><label class="lbl">Long / Short</label>
+            <select id="j-dir" aria-label="Direction">
+              <option value="LONG">▲ LONG</option>
+              <option value="SHORT">▼ SHORT</option>
+            </select></div>
+
           <div><label class="lbl">Setup Type</label>
             <select id="j-setup" aria-label="Setup type">
-              <option>Triangle Break</option><option>Channel Break</option><option>S&amp;R Bounce</option>
-              <option>Trendline Break</option><option>Gap Fill</option><option>Opening Range Break</option>
-              <option>Flag Pattern</option><option>Double Top</option><option>Double Bottom</option>
-              <option>Head &amp; Shoulders</option><option>VWAP Bounce</option><option>News Trade</option><option>Other</option>
+              <option>Triangle Break</option><option>Channel Break</option>
+              <option>S&amp;R Bounce</option><option>Trendline Break</option>
+              <option>Gap Fill</option><option>Opening Range Break</option>
+              <option>Flag Pattern</option><option>Double Top</option>
+              <option>Double Bottom</option><option>Head &amp; Shoulders</option>
+              <option>VWAP Bounce</option><option>News Trade</option><option>Other</option>
             </select></div>
-          <div><label class="lbl">Entry Price ₹</label><input type="number" id="j-entry" placeholder="24082" step="0.05" aria-label="Entry price"></div>
-          <div><label class="lbl">Exit Price ₹</label><input type="number" id="j-exit" placeholder="Blank if open" step="0.05" aria-label="Exit price"></div>
-          <div><label class="lbl">Stop Loss ₹</label><input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss"></div>
-          <div><label class="lbl">Target Price ₹</label><input type="number" id="j-tgt" placeholder="24322" step="0.05" aria-label="Target price"></div>
-          <div><label class="lbl">Lots / Qty</label><input type="number" id="j-qty" placeholder="6" min="1" aria-label="Quantity"></div>
+
+          <div><label class="lbl">TF Alignment</label>
+            <select id="j-tfalign" aria-label="Timeframe alignment">
+              <option>All TF Aligned ✅</option>
+              <option>Monthly + Weekly Only</option><option>Weekly + Daily Only</option>
+              <option>Daily + 4H Only</option><option>4H + 1H Only</option>
+              <option>1H + 15M Only</option><option>15M + 5M Only</option>
+              <option>Mixed Signals ⚠️</option><option>Against Higher TF ❌</option>
+            </select></div>
+
+          <div><label class="lbl">Entry Price ₹</label>
+            <input type="number" id="j-entry" placeholder="24082" step="0.05" aria-label="Entry price"></div>
+
+          <div><label class="lbl">Exit Price ₹</label>
+            <input type="number" id="j-exit" placeholder="Leave blank if open" step="0.05" aria-label="Exit price"></div>
+
+          <div><label class="lbl">Stop Loss ₹</label>
+            <input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss"></div>
+
+          <div><label class="lbl">Target Price ₹</label>
+            <input type="number" id="j-tgt" placeholder="24322" step="0.05" aria-label="Target price"></div>
+
+          <div><label class="lbl">Lots</label>
+            <input type="number" id="j-qty" placeholder="6" min="1" aria-label="Lots"></div>
+
+          <div><label class="lbl">Win / Loss</label>
+            <select id="j-result" aria-label="Result">
+              <option value="">— auto-calculated —</option>
+              <option value="WIN">WIN</option><option value="LOSS">LOSS</option>
+              <option value="BREAKEVEN">BREAKEVEN</option><option value="OPEN">OPEN</option>
+            </select></div>
+
+          <div><label class="lbl">Emotion at Entry</label>
+            <select id="j-emotion-entry" aria-label="Emotion at entry">
+              <option>Confident</option><option>Calm</option><option>Disciplined</option>
+              <option>Anxious</option><option>Fearful</option><option>Greedy</option>
+              <option>Excited</option><option>FOMO</option><option>Revenge</option>
+              <option>Frustrated</option><option>Impatient</option><option>Distracted</option>
+            </select></div>
+
+          <div><label class="lbl">Emotion at Exit</label>
+            <select id="j-emotion-exit" aria-label="Emotion at exit">
+              <option>Satisfied</option><option>Calm</option><option>Disciplined</option>
+              <option>Regretful</option><option>Fearful</option><option>Greedy</option>
+              <option>Relieved</option><option>Frustrated</option><option>Angry</option>
+              <option>Happy</option><option>Anxious</option><option>Neutral</option>
+            </select></div>
+
+          <div><label class="lbl">Held to Target?</label>
+            <select id="j-held" aria-label="Held to target">
+              <option>Yes - Full Target Hit</option>
+              <option>No - Exited Early (Fear)</option>
+              <option>No - Exited Early (Greed)</option>
+              <option>No - SL Hit</option>
+              <option>No - Manual Exit (Valid Reason)</option>
+              <option>Partial - Half Position Closed</option>
+            </select></div>
+
+          <div><label class="lbl">Exit Reason</label>
+            <select id="j-exit-reason" aria-label="Exit reason">
+              <option>Target Hit ✅</option><option>Stop Loss Hit ❌</option>
+              <option>Trailing SL Hit</option>
+              <option>Manual Exit - Market Close</option>
+              <option>Manual Exit - News Event</option>
+              <option>Manual Exit - Fear</option>
+              <option>Manual Exit - Greed</option>
+              <option>Manual Exit - Valid Reason</option>
+            </select></div>
+
+          <div><label class="lbl">Trade Quality</label>
+            <select id="j-quality" aria-label="Trade quality">
+              <option>A+ Setup - Perfect Entry</option>
+              <option>A - Good Setup</option>
+              <option>B - Average Setup</option>
+              <option>C - Below Average</option>
+              <option>D - Should Not Have Taken</option>
+            </select></div>
+
+          <div><label class="lbl">Rules Followed?</label>
+            <select id="j-rules" aria-label="Rules followed">
+              <option>✅ Yes - Followed All Rules</option>
+              <option>⚠️ Partial - Broke 1 Rule</option>
+              <option>❌ No - Broke Multiple Rules</option>
+            </select></div>
+
+          <div><label class="lbl">Chart Pattern</label>
+            <select id="j-pattern" aria-label="Chart pattern">
+              <option>No Pattern</option>
+              <option>Ascending Triangle</option><option>Descending Triangle</option>
+              <option>Symmetrical Triangle</option><option>Bull Flag</option>
+              <option>Bear Flag</option><option>Channel Up</option>
+              <option>Channel Down</option><option>Double Top</option>
+              <option>Double Bottom</option><option>Head &amp; Shoulders</option>
+              <option>Inverse H&amp;S</option><option>Cup &amp; Handle</option>
+              <option>Wedge Up</option><option>Wedge Down</option>
+              <option>Range Breakout</option>
+            </select></div>
+
           <div><label class="lbl">Indicator Used</label>
             <select id="j-ind" aria-label="Indicator">
-              <option>Roshan Indicator</option><option>RSI</option><option>MACD</option>
-              <option>Supertrend</option><option>Bollinger Bands</option><option>Price Action</option>
-              <option>VWAP</option><option>EMA Cross</option><option>Other</option>
+              <option>Roshan Indicator</option><option>Price Action</option>
+              <option>RSI</option><option>MACD</option><option>Supertrend</option>
+              <option>Bollinger Bands</option><option>VWAP</option>
+              <option>EMA Cross</option><option>TTM Squeeze</option><option>Other</option>
             </select></div>
-          <div style="grid-column:1/-1"><label class="lbl">Notes / Lesson Learned</label>
-            <textarea id="j-notes" rows="2" placeholder="What did you learn?" aria-label="Notes"></textarea></div>
-        </div>
 
-        <!-- ADVANCED fields — collapsible -->
-        <details style="margin-bottom:10px">
-          <summary style="font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;padding:5px 0;user-select:none">
-            + Psychology & Quality fields (optional but important)
-          </summary>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-            <div><label class="lbl">Day</label>
-              <select id="j-day" aria-label="Day"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select></div>
-            <div><label class="lbl">Chart Pattern</label>
-              <select id="j-pattern" aria-label="Pattern">
-                <option>Ascending Triangle</option><option>Descending Triangle</option><option>Bull Flag</option><option>Bear Flag</option>
-                <option>Channel Up</option><option>Channel Down</option><option>Double Top</option><option>Double Bottom</option>
-                <option>Head &amp; Shoulders</option><option>Inverse H&amp;S</option><option>Cup &amp; Handle</option>
-                <option>Wedge Up</option><option>Wedge Down</option><option>Range Breakout</option><option>No Pattern</option>
-              </select></div>
-            <div><label class="lbl">Emotion at Entry</label>
-              <select id="j-emotion-entry" aria-label="Emotion at entry">
-                <option>Confident</option><option>Calm</option><option>Disciplined</option><option>Anxious</option>
-                <option>Fearful</option><option>Greedy</option><option>Excited</option><option>FOMO</option>
-                <option>Revenge</option><option>Frustrated</option><option>Impatient</option><option>Distracted</option>
-              </select></div>
-            <div><label class="lbl">Emotion at Exit</label>
-              <select id="j-emotion-exit" aria-label="Emotion at exit">
-                <option>Satisfied</option><option>Calm</option><option>Disciplined</option><option>Regretful</option>
-                <option>Fearful</option><option>Greedy</option><option>Relieved</option><option>Frustrated</option>
-                <option>Angry</option><option>Happy</option><option>Anxious</option><option>Neutral</option>
-              </select></div>
-            <div><label class="lbl">Held to Target?</label>
-              <select id="j-held" aria-label="Held to target">
-                <option>Yes - Full Target Hit</option><option>No - Exited Early (Fear)</option>
-                <option>No - Exited Early (Greed)</option><option>No - SL Hit</option>
-                <option>No - Manual Exit (Valid Reason)</option><option>Partial - Half Position Closed</option>
-              </select></div>
-            <div><label class="lbl">Exit Reason</label>
-              <select id="j-exit-reason" aria-label="Exit reason">
-                <option>Target Hit ✅</option><option>Stop Loss Hit ❌</option><option>Trailing SL Hit</option>
-                <option>Manual Exit - Market Close</option><option>Manual Exit - News Event</option>
-                <option>Manual Exit - Fear</option><option>Manual Exit - Greed</option><option>Manual Exit - Valid Reason</option>
-              </select></div>
-            <div><label class="lbl">Trade Quality</label>
-              <select id="j-quality" aria-label="Quality">
-                <option>A+ Setup - Perfect Entry</option><option>A - Good Setup</option>
-                <option>B - Average Setup</option><option>C - Below Average</option><option>D - Should Not Have Taken</option>
-              </select></div>
-            <div><label class="lbl">Confidence (1–10)</label>
-              <select id="j-confidence" aria-label="Confidence">
-                <option>10 - Extremely Confident</option><option>9 - Very Confident</option><option>8 - Confident</option>
-                <option>7 - Fairly Confident</option><option>6 - Slightly Confident</option><option>5 - Neutral</option>
-                <option>4 - Slightly Doubtful</option><option>3 - Doubtful</option><option>2 - Very Doubtful</option><option>1 - No Confidence</option>
-              </select></div>
-            <div><label class="lbl">Rules Followed?</label>
-              <select id="j-rules" aria-label="Rules followed">
-                <option>✅ Yes - Followed All Rules</option>
-                <option>⚠️ Partial - Broke 1 Rule</option>
-                <option>❌ No - Broke Multiple Rules</option>
-              </select></div>
-            <div><label class="lbl">TF Alignment</label>
-              <select id="j-tfalign" aria-label="TF alignment">
-                <option>All TF Aligned ✅</option><option>Monthly + Weekly Only</option><option>Weekly + Daily Only</option>
-                <option>Daily + 4H Only</option><option>4H + 1H Only</option><option>1H + 15M Only</option>
-                <option>15M + 5M Only</option><option>Mixed Signals ⚠️</option><option>Against Higher TF ❌</option>
-              </select></div>
-          </div>
-        </details>
-        <button class="scan-btn" onclick="addTrade()" aria-label="Save trade">💾 Save Trade</button>
+          <div class="full"><label class="lbl">Notes / Lesson Learned</label>
+            <textarea id="j-notes" rows="2"
+              placeholder="What did you learn? What emotion affected your decision?"
+              aria-label="Notes and lessons"></textarea></div>
+
+        </div>
+<button class="scan-btn" onclick="addTrade()" aria-label="Save trade">💾 Save Trade</button>
       </div>
     </details>
   </div>
@@ -951,13 +999,13 @@ textarea:focus{border-color:var(--blue)}
     </div>
     <!-- Learn section tabs -->
     <div style="display:flex;gap:0;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:12px">
-      <button class="li-tab active" id="lt-chart-types" onclick="setLearnTab('chart-types')" aria-label="Chart Types" style="border-radius:5px;flex:1">Chart Types</button>
+      <button class="li-tab" id="lt-chart-types" onclick="setLearnTab('chart-types')" aria-label="Chart Types" style="border-radius:5px;flex:1">Chart Types</button>
       <button class="li-tab" id="lt-patterns" onclick="setLearnTab('patterns')" aria-label="Candlestick Patterns" style="border-radius:5px;flex:1">Patterns</button>
-      <button class="li-tab" id="lt-indicators" onclick="setLearnTab('indicators')" aria-label="Indicators" style="border-radius:5px;flex:1">Indicators</button>
+      <button class="li-tab active" id="lt-indicators" onclick="setLearnTab('indicators')" aria-label="Indicators" style="border-radius:5px;flex:1">Indicators (43)</button>
     </div>
-    <div id="learn-chart-types"></div>
+    <div id="learn-chart-types" style="display:none"></div>
     <div id="learn-patterns" style="display:none"></div>
-    <div id="learn-indicators" style="display:none"></div>
+    <div id="learn-indicators"></div>
   </div>
 </div>
 
@@ -1101,7 +1149,7 @@ setInterval(updateMarketStatus, 60000);
 // ═══════════════════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════════════════
-const TAB_ORDER = ['scanner','chart','journal','analytics','learn'];
+const TAB_ORDER = ['scanner','chart','journal','analytics','learn','calls'];
 function showTab(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1111,6 +1159,7 @@ function showTab(id) {
   if (id === 'learn') buildLearn();
   if (id === 'journal') renderJournal();
   if (id === 'analytics') renderAnalytics();
+  if (id === 'calls') renderCalls();
   if (id === 'scanner') renderStockList();
   if (id === 'chart') {
     requestAnimationFrame(() => {
@@ -1144,7 +1193,24 @@ function onInd() {
   sp(v + ' selected. Tap Scan to get fresh results.');
   updateCNote();
 }
+function onUniverseChange() {
+  const sizes = {nifty50:50, largecap:107, midcap:110, smallcap:105, microcap:52};
+  const sel   = document.getElementById('univ-sel')?.value || 'nifty50';
+  const sizeEl = document.getElementById('univ-size');
+  if (sizeEl) sizeEl.textContent = '(' + (sizes[sel] || '?') + ' stocks)';
+  sp((sel.charAt(0).toUpperCase()+sel.slice(1)) + ' selected. Scanning now.');
+  runScan(true);   // Auto-scan immediately — no extra tap needed
+}
+
+let _rescanTimer = null;
+function scheduleRescan() {
+  clearTimeout(_rescanTimer);
+  _rescanTimer = setTimeout(() => runScan(true), 500);
+}
+
 function onCall() {
+  // Auto-scan when call type changes
+  scheduleRescan();
   const c = document.getElementById('call-sel').value;
   document.getElementById('cbox').className = 'custom-box' + (c === 'Custom' ? ' on' : '');
   updateCNote();
@@ -1193,6 +1259,9 @@ async function runScan(force = false) {
 function updateStatus(j) {
   const s = document.getElementById('status'); s.style.display = 'flex';
   document.getElementById('s-cnt').textContent = j.scanned_count || '—';
+  const _iN = document.getElementById('ind-sel')?.value || 'Roshan';
+  const _iE = document.getElementById('s-ind-name');
+  if (_iE) _iE.textContent = _iN;
   document.getElementById('s-time').textContent = j.scanned_at ? new Date(j.scanned_at).toLocaleTimeString() : '—';
   document.getElementById('s-cache').textContent = j.from_cache ? `📦 Cached (${j.cache_age_sec}s)` : '🔄 Fresh';
   document.getElementById('s-dur').textContent = j.scan_duration_sec || '—';
@@ -1206,6 +1275,10 @@ function renderResults(j) {
   document.getElementById('sell-list').innerHTML = shorts.map(s => srow(s,'sell')).join('');
   // unified Angel One style list — show active tab's results
   renderStockList();
+  // Log to Calls tab — auto-log Roshan signals whenever scan runs
+  if (document.getElementById('ind-sel')?.value === 'Roshan Indicator') {
+    logCallsFromScan(buys, shorts, 'Roshan');
+  }
   // Robinhood: colour feedback on scan button
   const btn = document.getElementById('sbtn');
   const hasResults = buys.length + shorts.length > 0;
@@ -1546,7 +1619,7 @@ function findSRLevels(candles) {
     used.add(i);
     clustered.push({ price: sum/cnt, type: levels[i].type });
   }
-  return clustered.slice(-10);
+  return clustered.slice(-8);  // Max 8 levels — cleaner than 10
 }
 function findTrendlines(candles) {
   const w = 5; const highs = [], lows = [];
@@ -1601,9 +1674,21 @@ function initCharts() {
   // OHLC crosshair update
   lwChart.subscribeCrosshairMove(param => {
     const bar = document.getElementById('c-ohlc');
-    if (!param?.point || !param.seriesData?.size) { if(bar) bar.style.display='none'; return; }
+    if (!param?.point || !param.seriesData?.size) {
+      // No crosshair — show last candle data
+      if (lastCandles.length && bar) {
+        const lc = lastCandles[lastCandles.length-1];
+        const fmt = v => v!=null ? '₹'+Number(v).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+        document.getElementById('ohlc-o').textContent = fmt(lc.open);
+        document.getElementById('ohlc-h').textContent = fmt(lc.high);
+        document.getElementById('ohlc-l').textContent = fmt(lc.low);
+        document.getElementById('ohlc-c').textContent = fmt(lc.close);
+        document.getElementById('ohlc-v').textContent = lc.volume ? (lc.volume>=1e7?(lc.volume/1e7).toFixed(2)+'Cr':lc.volume>=1e5?(lc.volume/1e5).toFixed(1)+'L':lc.volume.toFixed(0)) : '—';
+      }
+      return;
+    }
     const d = param.seriesData.get(lwCandleSeries);
-    if (!d) { if(bar) bar.style.display='none'; return; }
+    if (!d) { return; }
     const fmt = v => v!=null ? '₹'+Number(v).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
     const fmtV = v => v!=null ? (v>=1e7?(v/1e7).toFixed(2)+'Cr':v>=1e5?(v/1e5).toFixed(1)+'L':v.toFixed(0)) : '—';
     document.getElementById('ohlc-o').textContent = fmt(d.open);
@@ -1872,6 +1957,53 @@ function toggleOverlay(key) {
 }
 
 // ── S/R + Trendlines ──
+async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
+  if (!showSR || !lwChart) return;
+  try {
+    // Check cache first
+    const ck = 'chitti_candles_' + sym.replace(/[^A-Z0-9]/g,'_') + '_' + higherTF;
+    let candles = null;
+    try {
+      const cached = JSON.parse(localStorage.getItem(ck) || 'null');
+      if (cached?.candles?.length > 10) candles = cached.candles;
+    } catch(e) {}
+
+    if (!candles) {
+      const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${higherTF}&days_back=365`);
+      if (!r.ok) return;
+      candles = await r.json();
+      candles.sort((a,b) => a.time - b.time);
+    }
+
+    if (!candles?.length) return;
+
+    const levels = findSRLevels(candles);
+    const lastClose = candles[candles.length-1]?.close || 0;
+    const style = srStyleForTF(higherTF);
+
+    levels.forEach(lv => {
+      // Only draw if level is within visible price range (±20% of current price)
+      if (lastClose > 0 && (lv.price > lastClose * 1.25 || lv.price < lastClose * 0.75)) return;
+      const isRes = lv.price > lastClose;
+      try {
+        const s = lwChart.addLineSeries({
+          color: style.color + '66',          // 40% opacity — dimmer than current TF
+          lineWidth: Math.max(1, style.lineWidth - 1),
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          priceLineVisible: false,
+          lastValueVisible: true,
+          title: (isRes ? 'R' : 'S') + ' ' + higherTF.substring(0,1),
+        });
+        // Use current chart time range
+        s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
+        srLineSeries.push(s);
+      } catch(e) {}
+    });
+  } catch(e) {
+    // Silent fail — higher TF data is supplementary, not critical
+  }
+}
+
 function clearOverlays() {
   srLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
   tlLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
@@ -1967,6 +2099,18 @@ async function loadChart(sym) {
       lwChart.timeScale().fitContent();
     });
 
+    // Update OHLC bar with last candle immediately
+    if (candles.length) {
+      const lc = candles[candles.length-1];
+      const fmt = v => v!=null ? '₹'+Number(v).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+      const fmtV = v => v!=null ? (v>=1e7?(v/1e7).toFixed(2)+'Cr':v>=1e5?(v/1e5).toFixed(1)+'L':v.toFixed(0)) : '—';
+      document.getElementById('ohlc-o').textContent = fmt(lc.open);
+      document.getElementById('ohlc-h').textContent = fmt(lc.high);
+      document.getElementById('ohlc-l').textContent = fmt(lc.low);
+      document.getElementById('ohlc-c').textContent = fmt(lc.close);
+      document.getElementById('ohlc-v').textContent = fmtV(lc.volume);
+    }
+
     // Lower indicator
     updateLowerIndicator(candles);
 
@@ -1978,10 +2122,25 @@ async function loadChart(sym) {
       if (document.getElementById('ov-'+k)?.checked) toggleOverlay(k);
     });
 
-    // S/R + Trendlines
+    // S/R + Trendlines — cascading (higher TF levels shown on lower TF charts)
     clearOverlays();
     drawSRLines(candles, tf);
     drawTrendlines(candles, tf);
+    // Cascade: fetch and draw higher TF S/R levels
+    const TFH_ORDER = ['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
+    const tfIdx = TFH_ORDER.indexOf(tf);
+    if (tfIdx >= 2) {
+      // Always show Monthly S/R on all timeframes
+      fetchAndDrawHigherTF(sym, 'Monthly', candles[0].time, candles[candles.length-1].time);
+    }
+    if (tfIdx >= 3) {
+      // Show Weekly S/R on Daily and below
+      fetchAndDrawHigherTF(sym, 'Weekly', candles[0].time, candles[candles.length-1].time);
+    }
+    if (tfIdx >= 4) {
+      // Show Daily S/R on 4H and below
+      fetchAndDrawHigherTF(sym, 'Daily', candles[0].time, candles[candles.length-1].time);
+    }
 
     // Prev day high/low
     if (showPrevD && candles.length >= 2) {
@@ -2028,6 +2187,10 @@ async function loadChart(sym) {
   // Calculate trade setup from loaded candles
     if (lastCandles.length && cvData) calcTradeSetup(lastCandles, cvData.side);
     else if (lastCandles.length) calcTradeSetup(lastCandles);
+    // Auto-run indicator if one is selected
+    const selInd = document.getElementById('chart-ind-sel')?.value;
+    if (selInd) setTimeout(runChartIndicator, 200);
+    else if (lastCandles.length) calcTradeSetup(lastCandles);
 
   } catch(e) {
     // Fallback cache
@@ -2041,6 +2204,12 @@ async function loadChart(sym) {
         lwChart.timeScale().fitContent();
         updateLowerIndicator(cached.candles);
         clearOverlays(); drawSRLines(cached.candles,tf); drawTrendlines(cached.candles,tf);
+        const _t0=cached.candles[0].time, _t1=cached.candles[cached.candles.length-1].time;
+        const _TFH=['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
+        const _ti=_TFH.indexOf(tf);
+        if(_ti>=2) fetchAndDrawHigherTF(sym,'Monthly',_t0,_t1);
+        if(_ti>=3) fetchAndDrawHigherTF(sym,'Weekly',_t0,_t1);
+        if(_ti>=4) fetchAndDrawHigherTF(sym,'Daily',_t0,_t1);
         const fmtD=t=>new Date(t*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
         const c=cached.candles, lc=c[c.length-1];
         document.getElementById('c-full').textContent='NSE · '+tf+' · '+fmtD(c[0].time)+' – '+fmtD(lc.time)+' · ⚠️ Last saved: '+cached.savedAtLabel;
@@ -2994,6 +3163,172 @@ const LEARN_DATA = [
   {key:'ADX',icon:'📊',tag:'classic',title:'ADX — Trend Strength',plain:'Average Directional Index. Tells you HOW STRONG a trend is, not which direction. Above 25 = strong trend (trade with it). Below 20 = weak/ranging market (avoid trend trades).',buy:'ADX above 25 with +DI line above -DI line = strong uptrend',sell:'ADX above 25 with -DI line above +DI line = strong downtrend'},
   {key:'VWAP',icon:'📊',tag:'classic',title:'VWAP — Volume Weighted Price',plain:'Volume Weighted Average Price. The average price adjusted for how much was bought/sold. Used mainly for intraday trading. Price above VWAP = buyers in control today.',buy:'Price rises above VWAP with high volume = intraday bullish',sell:'Price falls below VWAP with high volume = intraday bearish'},
   {key:'Hull MA',icon:'⚡',tag:'new',title:'Hull MA (2012+)',plain:'Faster moving average with much less lag than EMA. Turns earlier so you catch trends sooner. When price is above HMA and HMA is green = uptrend.',buy:'Price crosses above rising Hull MA',sell:'Price crosses below falling Hull MA'},
+  {key:'Williams %R',icon:'📊',tag:'momentum',title:'Williams %R',
+   plain:'Measures how close price is to its 14-day high. Above -20 = overbought. Below -80 = oversold. Works like RSI but inverted — lower number means more oversold.',
+   buy:'Williams %R crosses above -80 from below — oversold recovery',
+   sell:'Williams %R crosses below -20 from above — overbought reversal'},
+
+  {key:'CCI',icon:'📊',tag:'momentum',title:'CCI — Commodity Channel Index',
+   plain:'Measures how far price is from its average. Above +100 = strong uptrend. Below -100 = strong downtrend. Near zero = no clear trend. Good for finding breakouts.',
+   buy:'CCI crosses above +100 with rising price momentum',
+   sell:'CCI crosses below -100 with falling price momentum'},
+
+  {key:'ROC',icon:'📊',tag:'momentum',title:'ROC — Rate of Change',
+   plain:'Shows how fast price is moving in percentage. Above zero = price rising faster. Below zero = price falling. Simple way to see if momentum is building or fading.',
+   buy:'ROC crosses above zero — price gaining positive momentum',
+   sell:'ROC crosses below zero — price losing momentum'},
+
+  {key:'TRIX',icon:'📊',tag:'momentum',title:'TRIX — Triple Exponential Average',
+   plain:'A smoothed momentum indicator. Filters out noise using three layers of EMA. Signal line crossovers are the key — similar to MACD but smoother.',
+   buy:'TRIX line crosses above signal line from below',
+   sell:'TRIX line crosses below signal line from above'},
+
+  {key:'Ultimate Oscillator',icon:'📊',tag:'momentum',title:'Ultimate Oscillator',
+   plain:'Combines 3 timeframes (7, 14, 28 periods) into one reading. Above 70 = overbought. Below 30 = oversold. More reliable than single-period oscillators.',
+   buy:'Ultimate Oscillator crosses above 30 after being oversold',
+   sell:'Ultimate Oscillator crosses below 70 after being overbought'},
+
+  {key:'Aroon',icon:'📊',tag:'trend',title:'Aroon Indicator',
+   plain:'Two lines: Aroon Up and Aroon Down. When Aroon Up is above 70 and Aroon Down is below 30 — strong uptrend. Measures how recently highs and lows were made.',
+   buy:'Aroon Up above 70 and crossing above Aroon Down',
+   sell:'Aroon Down above 70 and crossing above Aroon Up'},
+
+  {key:'Parabolic SAR',icon:'📊',tag:'trend',title:'Parabolic SAR',
+   plain:'Dots that appear above or below price. Dots below price = uptrend, stay long. Dots above price = downtrend, stay short. Flips when trend reverses. Great for trailing stop loss.',
+   buy:'SAR dots move below price — uptrend confirmed, go long',
+   sell:'SAR dots move above price — downtrend confirmed, go short'},
+
+  {key:'Ichimoku',icon:'📊',tag:'trend',title:'Ichimoku Cloud',
+   plain:'A complete system showing support, resistance, trend and momentum in one chart. The cloud (Kumo) is the key — price above cloud = bullish. Below cloud = bearish. A thick cloud = strong zone.',
+   buy:'Price breaks above the cloud with Tenkan crossing Kijun upward',
+   sell:'Price breaks below the cloud with Tenkan crossing Kijun downward'},
+
+  {key:'Elder Ray',icon:'📊',tag:'trend',title:'Elder Ray Index',
+   plain:'Uses EMA plus Bull Power and Bear Power. Bull Power = how far highs are above EMA. Bear Power = how far lows are below EMA. Positive Bear Power = bears are losing grip.',
+   buy:'Bear Power is negative but rising (bears weakening) + price above EMA',
+   sell:'Bull Power is positive but falling (bulls weakening) + price below EMA'},
+
+  {key:'Elder Impulse',icon:'📊',tag:'trend',title:'Elder Impulse System',
+   plain:'Colours each candle green, red or blue. Green = EMA rising AND MACD rising (buy). Red = EMA falling AND MACD falling (sell). Blue = mixed signal — step aside.',
+   buy:'Candle turns GREEN — both trend and momentum aligned upward',
+   sell:'Candle turns RED — both trend and momentum aligned downward'},
+
+  {key:'Keltner Channels',icon:'📊',tag:'volatility',title:'Keltner Channels',
+   plain:'Three lines around price based on ATR. Similar to Bollinger Bands but uses ATR instead of standard deviation. Price outside the channel = breakout. Inside = normal range.',
+   buy:'Price breaks above the upper channel with strong volume',
+   sell:'Price breaks below the lower channel with strong volume'},
+
+  {key:'Donchian Channels',icon:'📊',tag:'volatility',title:'Donchian Channels',
+   plain:'Shows the highest high and lowest low over 20 periods. A breakout above the upper band is a BUY signal. A breakdown below the lower band is a SELL signal. Simple and powerful.',
+   buy:'Price breaks above the 20-period highest high',
+   sell:'Price breaks below the 20-period lowest low'},
+
+  {key:'Accumulation/Distribution',icon:'📊',tag:'volume',title:'Accumulation / Distribution',
+   plain:'Tracks whether money is flowing into or out of a stock. Rising A/D with rising price = strong trend. Falling A/D with rising price = warning sign — distribution happening.',
+   buy:'A/D line rising while price is also rising — confirms uptrend',
+   sell:'A/D line falling while price is rising — bearish divergence, reversal possible'},
+
+  {key:'Chaikin Money Flow',icon:'📊',tag:'volume',title:'Chaikin Money Flow',
+   plain:'Measures buying and selling pressure over 21 days. Above zero = buying pressure. Below zero = selling pressure. Crossing zero is a signal.',
+   buy:'CMF crosses above zero — buyers taking control',
+   sell:'CMF crosses below zero — sellers taking control'},
+
+  {key:'SMA(50)',icon:'📊',tag:'moving average',title:'SMA 50 — 50-Day Average',
+   plain:'The average price over the last 50 days. One of the most watched lines by institutional traders. Price above SMA 50 = medium-term uptrend. A pullback to SMA 50 is often a buying opportunity.',
+   buy:'Price bounces off SMA 50 with green candle confirmation',
+   sell:'Price breaks below SMA 50 with strong volume'},
+
+  {key:'SMA(200)',icon:'📊',tag:'moving average',title:'SMA 200 — 200-Day Average',
+   plain:'The most important moving average. Separates bull markets from bear markets. Price above SMA 200 = bull market. Below = bear market. The Golden Cross (SMA 50 crosses above SMA 200) is the strongest buy signal.',
+   buy:'Price above SMA 200 AND SMA 50 crosses above SMA 200 (Golden Cross)',
+   sell:'Price below SMA 200 AND SMA 50 crosses below SMA 200 (Death Cross)'},
+
+  {key:'EMA(20)',icon:'📊',tag:'moving average',title:'EMA 20 — Fast EMA',
+   plain:'Reacts faster than SMA to recent price changes. Used for short-term trend direction. Price above EMA 20 = short-term bullish. Angel One traders use this for daily timeframe entries.',
+   buy:'Price crosses above EMA 20 and EMA 20 is sloping upward',
+   sell:'Price crosses below EMA 20 and EMA 20 is sloping downward'},
+
+  {key:'EMA(50)',icon:'📊',tag:'moving average',title:'EMA 50 — Medium EMA',
+   plain:'Medium-term trend indicator. Slower than EMA 20 but faster than SMA 200. Used to confirm trend direction before entering. Price above EMA 50 = medium-term bullish.',
+   buy:'Price bounces off EMA 50 in an uptrend',
+   sell:'Price breaks and closes below EMA 50 with volume'},
+
+  {key:'EMA(200)',icon:'📊',tag:'moving average',title:'EMA 200 — Slow EMA',
+   plain:'Long-term trend line. More responsive than SMA 200. Institutional traders watch this level closely. Price crossing EMA 200 is a major signal.',
+   buy:'Price crosses above EMA 200 — potential long-term trend change to bullish',
+   sell:'Price crosses below EMA 200 — potential long-term trend change to bearish'},
+  {key:'Awesome Oscillator',icon:'⚡',tag:'new',title:'Awesome Oscillator (2010+)',
+   plain:'Measures market momentum using the difference between 5-period and 34-period simple moving averages of midpoint price. Green bars = momentum building. Red bars = momentum fading. Twin peaks pattern signals reversal.',
+   buy:'Bars turn green after a red period — buy the momentum shift',
+   sell:'Bars turn red after a green period — momentum weakening'},
+
+  {key:'Vortex Indicator',icon:'⚡',tag:'new',title:'Vortex Indicator (2010+)',
+   plain:'Two lines: VI+ (positive trend) and VI- (negative trend). When VI+ crosses above VI- = new uptrend starting. When VI- crosses above VI+ = new downtrend. Inspired by the movement of water in a vortex.',
+   buy:'VI+ crosses above VI- — new uptrend beginning',
+   sell:'VI- crosses above VI+ — new downtrend beginning'},
+
+  {key:'Chandelier Exit',icon:'⚡',tag:'new',title:'Chandelier Exit (2010+)',
+   plain:'A trailing stop-loss indicator. Hangs from the highest high like a chandelier. When price falls below the chandelier level — the trend has ended. Keeps you in winning trades longer.',
+   buy:'Price stays above the chandelier level — trend intact, hold position',
+   sell:'Price drops below chandelier level — trend broken, exit long'},
+
+  {key:'Laguerre RSI',icon:'⚡',tag:'new',title:'Laguerre RSI (2012+)',
+   plain:'A smoother version of RSI with less noise. Uses a Laguerre filter to reduce false signals. Above 0.85 = overbought. Below 0.15 = oversold. Fewer but more reliable signals than standard RSI.',
+   buy:'Laguerre RSI crosses above 0.15 from oversold territory',
+   sell:'Laguerre RSI crosses below 0.85 from overbought territory'},
+
+  {key:'Heikin Ashi Trend',icon:'⚡',tag:'new',title:'Heikin Ashi Trend (2010+)',
+   plain:'Uses Heikin Ashi candle colours to define the trend. Consecutive green HA candles = strong uptrend. Consecutive red HA candles = strong downtrend. A candle with no lower wick = very strong uptrend.',
+   buy:'3+ consecutive green Heikin Ashi candles with no lower wicks',
+   sell:'3+ consecutive red Heikin Ashi candles with no upper wicks'},
+
+  {key:'Balance of Power',icon:'⚡',tag:'new',title:'Balance of Power (2010+)',
+   plain:'Measures the strength of buyers vs sellers. Calculated as (Close - Open) / (High - Low). Positive = buyers dominated the session. Negative = sellers dominated. Smoothed with an EMA to show the trend.',
+   buy:'Balance of Power turns positive and crosses above its EMA',
+   sell:'Balance of Power turns negative and crosses below its EMA'},
+
+  {key:'Chande Kroll Stop',icon:'⚡',tag:'new',title:'Chande Kroll Stop (2021)',
+   plain:'A trend-following stop system. Two stop lines — when price is above both lines = uptrend. Below both = downtrend. Used as trailing stop or trend filter. Reduces whipsaws in sideways markets.',
+   buy:'Price rises above both Chande Kroll Stop lines',
+   sell:'Price falls below both Chande Kroll Stop lines'},
+
+  {key:'Stochastic',icon:'📊',tag:'momentum',title:'Stochastic Oscillator',
+   plain:'Two lines: %K (fast) and %D (slow). Above 80 = overbought. Below 20 = oversold. Best signal: %K crosses %D in oversold zone = buy. %K crosses %D in overbought zone = sell.',
+   buy:'%K crosses above %D in oversold zone (below 20)',
+   sell:'%K crosses below %D in overbought zone (above 80)'},
+
+  {key:'Stochastic RSI',icon:'📊',tag:'momentum',title:'Stochastic RSI',
+   plain:'Applies the Stochastic formula to RSI values. More sensitive than regular RSI. Above 0.8 = overbought. Below 0.2 = oversold. %K and %D lines — crossovers give buy/sell signals.',
+   buy:'Stoch RSI %K crosses above %D below the 0.2 level',
+   sell:'Stoch RSI %K crosses below %D above the 0.8 level'},
+
+  {key:'OBV',icon:'📊',tag:'volume',title:'OBV — On Balance Volume',
+   plain:'Adds volume on up days, subtracts on down days. Rising OBV with rising price = strong trend. Falling OBV with rising price = warning — price may reverse. Volume confirms or denies the price move.',
+   buy:'OBV rising while price is rising — volume confirming uptrend',
+   sell:'OBV falling while price is rising — bearish divergence warning'},
+
+  {key:'Force Index',icon:'📊',tag:'volume',title:'Force Index',
+   plain:'Combines price movement and volume into one reading. Positive = bulls are in control. Negative = bears in control. Spikes show major entry/exit by big players. Smoothed with 13-period EMA.',
+   buy:'Force Index turns positive after being negative — bulls taking control',
+   sell:'Force Index turns negative after being positive — bears taking control'},
+
+  {key:'MFI',icon:'📊',tag:'volume',title:'MFI — Money Flow Index',
+   plain:'The Volume-weighted RSI. Above 80 = overbought with volume. Below 20 = oversold with volume. More reliable than RSI because it includes volume. A divergence between MFI and price is a powerful signal.',
+   buy:'MFI crosses above 20 from oversold — volume-backed reversal',
+   sell:'MFI crosses below 80 from overbought — volume-backed reversal'},
+
+  {key:'Momentum',icon:'📊',tag:'classic',title:'Momentum',
+   plain:'Measures price change over N periods. Price today higher than 10 days ago = positive momentum. Simple trend strength tool.',
+   buy:'Momentum crosses above zero with rising price',
+   sell:'Momentum crosses below zero with falling price'},
+  {key:'ATR',icon:'📊',tag:'classic',title:'ATR — Average True Range',
+   plain:'Measures how much a stock moves each day on average. High ATR = volatile. Use to set stop loss: SL = 1.5 x ATR below entry.',
+   buy:'ATR expanding with price rising = strong momentum',
+   sell:'ATR expanding with price falling = strong sell pressure'},
+  {key:'SMA(20)',icon:'📊',tag:'classic',title:'SMA 20 — 20-Day Average',
+   plain:'Average closing price of last 20 days. Price above SMA20 = short-term bullish. Classic bounce level for swing traders.',
+   buy:'Price crosses above SMA20 with good volume',
+   sell:'Price crosses below SMA20 with good volume'},
 ];
 
 function setLearnTab(tab) {
@@ -3033,8 +3368,8 @@ function buildLearnIndicators() {
   document.getElementById('learn-indicators').innerHTML = LEARN_DATA.map(d => learnCard(d)).join('');
 }
 function buildLearn() {
-  // Called on tab switch — init chart types by default
-  if (!document.getElementById('learn-chart-types').children.length) buildLearnChartTypes();
+  if (!document.getElementById('learn-indicators').children.length) buildLearnIndicators();
+  setLearnTab('indicators');
 }
 function speakLearnByKey(key) {
   const all = [...LEARN_CHART_TYPES, ...LEARN_PATTERNS, ...LEARN_DATA];
@@ -3044,6 +3379,261 @@ function speakLearnByKey(key) {
 function speakLearn(btn) {
   const key = btn.getAttribute('data-key');
   if (key) speakLearnByKey(key);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CALLS TAB — Chitti Price Action vs Roshan Indicator
+// ═══════════════════════════════════════════════════════════
+const CALLS_KEY = 'chitti_calls_v1';
+
+function loadCalls() {
+  try { return JSON.parse(localStorage.getItem(CALLS_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveCalls(calls) {
+  localStorage.setItem(CALLS_KEY, JSON.stringify(calls));
+}
+
+function calcCallTargetSL(price, direction) {
+  // Simple: target = 3% in direction, SL = 1.5% against
+  const isBuy = direction === 'BUY';
+  const target = isBuy ? price * 1.03 : price * 0.97;
+  const sl     = isBuy ? price * 0.985 : price * 1.015;
+  return {
+    target: parseFloat(target.toFixed(2)),
+    sl:     parseFloat(sl.toFixed(2))
+  };
+}
+
+// Called after scan completes — logs calls from both sources
+function logCallsFromScan(buys, shorts, source) {
+  const calls = loadCalls();
+  const now   = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  const today = now.toISOString().split('T')[0];
+
+  let added = 0;
+  const allSignals = [
+    ...buys.map(s => ({...s, direction:'BUY'})),
+    ...shorts.map(s => ({...s, direction:'SHORT'}))
+  ];
+
+  allSignals.forEach(s => {
+    const sym   = s.symbol.split(':').pop();
+    const price = s.last_price || 0;
+    if (!price) return;
+
+    // Don't duplicate — same source + symbol + direction + date
+    const exists = calls.some(c =>
+      c.source === source && c.symbol === sym &&
+      c.direction === s.direction && c.date === today
+    );
+    if (exists) return;
+
+    const { target, sl } = calcCallTargetSL(price, s.direction);
+    calls.unshift({
+      id:        Date.now() + Math.random(),
+      source,    // 'PA' or 'Roshan'
+      symbol:    sym,
+      direction: s.direction,
+      entry:     parseFloat(price.toFixed(2)),
+      target,
+      sl,
+      date:      today,
+      dateLabel: dateStr + ' ' + timeStr,
+      status:    'OPEN',
+      exitPrice: null,
+      pnlPct:    null,
+    });
+    added++;
+  });
+
+  if (added > 0) {
+    saveCalls(calls);
+    renderCalls();
+  }
+}
+
+// Manual call: add from chart trade setup
+function addCallFromChart(source, symbol, direction, entry, target, sl) {
+  const calls = loadCalls();
+  const now   = new Date();
+  const today = now.toISOString().split('T')[0];
+  const dateStr = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+
+  calls.unshift({
+    id: Date.now() + Math.random(),
+    source, symbol, direction,
+    entry:     parseFloat(entry.toFixed(2)),
+    target:    parseFloat(target.toFixed(2)),
+    sl:        parseFloat(sl.toFixed(2)),
+    date:      today,
+    dateLabel: dateStr + ' ' + timeStr,
+    status:    'OPEN',
+    exitPrice: null,
+    pnlPct:    null,
+  });
+  saveCalls(calls);
+  renderCalls();
+  sp(source + ' call logged. ' + direction + ' ' + symbol + '. Entry ₹' + entry.toFixed(0) + '. Target ₹' + target.toFixed(0) + '. Stop loss ₹' + sl.toFixed(0) + '.');
+}
+
+function updateCallStatus(id, exitPrice) {
+  const calls = loadCalls();
+  const call  = calls.find(c => c.id === id);
+  if (!call) return;
+
+  call.exitPrice = parseFloat(exitPrice);
+  const isBuy    = call.direction === 'BUY';
+  call.pnlPct    = parseFloat(((call.exitPrice - call.entry) / call.entry * 100 * (isBuy ? 1 : -1)).toFixed(2));
+
+  if (exitPrice >= call.target && isBuy)   call.status = 'WIN';
+  else if (exitPrice <= call.sl && isBuy)  call.status = 'LOSS';
+  else if (exitPrice <= call.target && !isBuy) call.status = 'WIN';
+  else if (exitPrice >= call.sl && !isBuy) call.status = 'LOSS';
+  else call.status = call.pnlPct >= 0 ? 'WIN' : 'LOSS';
+
+  saveCalls(calls);
+  renderCalls();
+}
+
+function deleteCall(id) {
+  saveCalls(loadCalls().filter(c => c.id !== id));
+  renderCalls();
+}
+
+function renderCalls() {
+  const calls = loadCalls();
+  const tbody = document.getElementById('calls-body');
+  if (!tbody) return;
+
+  if (!calls.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--muted);font-size:12px">No calls yet. Tap ⚡ Generate Calls or run a scan.</td></tr>';
+    document.getElementById('calls-score').style.display = 'none';
+    return;
+  }
+
+  const fmt = v => v != null ? '₹' + Number(v).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+
+  tbody.innerHTML = calls.map(c => {
+    const isBuy   = c.direction === 'BUY';
+    const dirColor = isBuy ? 'var(--green)' : 'var(--red)';
+    const srcColor = c.source === 'PA' ? '#9c7cff' : '#4c7fff';
+    const srcLabel = c.source === 'PA' ? '🤖 Price Action' : '⭐ Roshan';
+
+    const statusBadge = c.status === 'WIN'
+      ? '<span style="background:rgba(0,200,150,.15);color:var(--green);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid rgba(0,200,150,.3)">✅ WIN</span>'
+      : c.status === 'LOSS'
+      ? '<span style="background:rgba(255,71,87,.15);color:var(--red);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid rgba(255,71,87,.3)">❌ LOSS</span>'
+      : '<span style="background:rgba(245,158,11,.15);color:var(--amber);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid rgba(245,158,11,.3)">⏳ OPEN</span>';
+
+    const pnlStr = c.pnlPct != null
+      ? '<span style="color:' + (c.pnlPct >= 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:700">'
+        + (c.pnlPct >= 0 ? '▲ +' : '▼ ') + Math.abs(c.pnlPct).toFixed(2) + '%</span>'
+      : '—';
+
+    // Exit price input for OPEN calls
+    const exitInput = c.status === 'OPEN'
+      ? `<input type="number" placeholder="Exit ₹" step="0.05"
+           style="width:70px;padding:3px 6px;font-size:11px;background:var(--surface);
+             color:var(--text);border:1px solid var(--border);border-radius:5px;font-family:inherit"
+           onchange="updateCallStatus(${c.id}, this.value)"
+           aria-label="Enter exit price to close call">`
+      : '';
+
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .12s" onmouseover="this.style.background='var(--card)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 12px;white-space:nowrap">
+        <span style="font-size:11px;font-weight:700;color:${srcColor}">${srcLabel}</span>
+      </td>
+      <td style="padding:10px 12px">
+        <div style="font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;color:var(--text)"
+          onclick="openChart('NSE:${c.symbol}')" title="Open chart">${c.symbol}</div>
+      </td>
+      <td style="padding:10px 12px">
+        <span style="color:${dirColor};font-weight:700;font-size:12px">${isBuy ? '▲ BUY' : '▼ SHORT'}</span>
+      </td>
+      <td style="padding:10px 12px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${fmt(c.entry)}</td>
+      <td style="padding:10px 12px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)">${fmt(c.target)}</td>
+      <td style="padding:10px 12px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red)">${fmt(c.sl)}</td>
+      <td style="padding:10px 12px;font-size:11px;color:var(--muted);white-space:nowrap">${c.dateLabel}</td>
+      <td style="padding:10px 12px">${statusBadge}</td>
+      <td style="padding:10px 12px;text-align:right">${pnlStr}</td>
+      <td style="padding:10px 12px;white-space:nowrap">${exitInput}
+        <button onclick="deleteCall(${c.id})" style="background:none;border:none;color:var(--red);cursor:pointer;padding:2px 6px;opacity:.4;font-size:13px;min-height:26px;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.4" aria-label="Delete call">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Score card
+  const score = document.getElementById('calls-score');
+  const closed = calls.filter(c => c.status !== 'OPEN');
+  if (closed.length >= 2 && score) {
+    score.style.display = 'grid';
+    ['PA','Roshan'].forEach((src, i) => {
+      const prefix = i === 0 ? 'pa' : 'ri';
+      const srcClosed = closed.filter(c => c.source === src);
+      const wins   = srcClosed.filter(c => c.status === 'WIN').length;
+      const losses = srcClosed.filter(c => c.status === 'LOSS').length;
+      const wr     = srcClosed.length ? (wins/srcClosed.length*100).toFixed(0)+'%' : '—';
+      const wEl = document.getElementById(prefix+'-wins');
+      const lEl = document.getElementById(prefix+'-losses');
+      const rEl = document.getElementById(prefix+'-wr');
+      if(wEl) wEl.textContent = wins;
+      if(lEl) lEl.textContent = losses;
+      if(rEl) { rEl.textContent = wr; rEl.style.color = wins>losses ? 'var(--green)' : wins<losses ? 'var(--red)' : 'var(--text)'; }
+    });
+  }
+}
+
+async function runCallsScan() {
+  sp('Generating calls. Please wait.');
+  const btn = document.querySelector('[onclick="runCallsScan()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Scanning…'; }
+
+  try {
+    // Run BOTH scanners in parallel
+    const [roshanRes, paRes] = await Promise.allSettled([
+      fetch(`${API}/api/scan/roshan?call=Positional&universe=nifty50&force=false&max_stocks=20`),
+      fetch(`${API}/api/scan/Price%20Action?call=Positional&universe=nifty50&force=false&max_stocks=20`)
+    ]);
+
+    if (roshanRes.status === 'fulfilled' && roshanRes.value.ok) {
+      const j = await roshanRes.value.json();
+      logCallsFromScan(j.buys || [], j.shorts || [], 'Roshan');
+    }
+
+    if (paRes.status === 'fulfilled' && paRes.value.ok) {
+      const j = await paRes.value.json();
+      logCallsFromScan(j.buys || [], j.shorts || [], 'PA');
+    } else {
+      // If Price Action backend not available, use Force Index as proxy for price action
+      const paFallback = await fetch(`${API}/api/scan/Force%20Index?call=Positional&universe=nifty50&force=false&max_stocks=20`);
+      if (paFallback.ok) {
+        const j = await paFallback.json();
+        logCallsFromScan(j.buys || [], j.shorts || [], 'PA');
+      }
+    }
+
+    renderCalls();
+    showTab('calls');
+    sp('Calls generated. Check the Calls tab.');
+  } catch(e) {
+    sp('Could not generate calls. Try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '⚡ Generate Calls'; }
+  }
+}
+
+function speakCalls() {
+  const calls = loadCalls().filter(c => c.status === 'OPEN');
+  if (!calls.length) { sp('No open calls right now.'); return; }
+  const buys  = calls.filter(c => c.direction === 'BUY').map(c => c.symbol).join(', ');
+  const shorts = calls.filter(c => c.direction === 'SHORT').map(c => c.symbol).join(', ');
+  let txt = 'Open calls: ';
+  if (buys)   txt += 'Buy signals: ' + buys + '. ';
+  if (shorts) txt += 'Short signals: ' + shorts + '. ';
+  sp(txt);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3080,6 +3670,12 @@ window.addEventListener('load', () => {
     console.error('LightweightCharts not loaded');
   }
 
+  // Set initial universe size
+  const _initSizes = {nifty50:50, largecap:107, midcap:110, smallcap:105, microcap:52};
+  const _initSel = document.getElementById('univ-sel')?.value || 'nifty50';
+  const _initSizeEl = document.getElementById('univ-size');
+  if (_initSizeEl) _initSizeEl.textContent = '(' + (_initSizes[_initSel] || '50') + ' stocks)';
+
   // Auto-scan
   runScan(false);
   setupRefresh();
@@ -3101,5 +3697,282 @@ window.addEventListener('resize', () => {
 
 }
 </script>
+<!-- CALLS TAB -->
+<div id="tab-calls" class="page" role="tabpanel">
+  <div class="page-wrap">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:700;font-family:'Syne',sans-serif">📊 BUY &amp; SHORT Calls</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Chitti Price Action vs Roshan Indicator — who calls it right?</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="scan-btn" onclick="runCallsScan()" style="padding:8px 16px;font-size:12px;width:auto" aria-label="Generate fresh calls">⚡ Generate Calls</button>
+        <button class="sp-btn" onclick="speakCalls()" aria-label="Hear calls">🔊</button>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#9c7cff;display:inline-block"></span>Chitti Price Action</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#4c7fff;display:inline-block"></span>Roshan Indicator</span>
+      <span style="color:var(--green)">▲ BUY</span>
+      <span style="color:var(--red)">▼ SHORT</span>
+      <span style="color:var(--amber)">⏳ OPEN</span>
+      <span style="color:var(--green)">✅ WIN</span>
+      <span style="color:var(--red)">❌ LOSS</span>
+    </div>
+
+    <!-- Calls table -->
+    <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border)">
+      <table style="width:100%;border-collapse:collapse;font-size:12px" aria-label="Trading calls">
+        <thead>
+          <tr style="background:var(--card2)">
+            <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Source</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Stock</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Call</th>
+            <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Entry ₹</th>
+            <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Target ₹</th>
+            <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">SL ₹</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Date</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">Status</th>
+            <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap">P&amp;L %</th>
+            <th style="padding:8px 12px;border-bottom:1px solid var(--border)"></th>
+          </tr>
+        </thead>
+        <tbody id="calls-body">
+          <tr><td colspan="10" style="padding:32px;text-align:center;color:var(--muted);font-size:12px">
+            Tap ⚡ Generate Calls to create today's Chitti Price Action + Roshan calls.<br>
+            <span style="font-size:11px;opacity:.7">Or tap any stock in the Scanner to add a call manually.</span>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Score card -->
+    <div id="calls-score" style="display:none;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="stat-card" style="border-color:rgba(156,124,255,.3)">
+        <div style="font-size:11px;font-weight:700;color:#9c7cff;margin-bottom:6px">🤖 Chitti Price Action</div>
+        <div style="display:flex;gap:12px">
+          <div><div id="pa-wins" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green)">—</div><div style="font-size:10px;color:var(--muted)">Wins</div></div>
+          <div><div id="pa-losses" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--red)">—</div><div style="font-size:10px;color:var(--muted)">Losses</div></div>
+          <div><div id="pa-wr" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text)">—</div><div style="font-size:10px;color:var(--muted)">Win Rate</div></div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-color:rgba(76,127,255,.3)">
+        <div style="font-size:11px;font-weight:700;color:#4c7fff;margin-bottom:6px">⭐ Roshan Indicator</div>
+        <div style="display:flex;gap:12px">
+          <div><div id="ri-wins" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green)">—</div><div style="font-size:10px;color:var(--muted)">Wins</div></div>
+          <div><div id="ri-losses" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--red)">—</div><div style="font-size:10px;color:var(--muted)">Losses</div></div>
+          <div><div id="ri-wr" style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text)">—</div><div style="font-size:10px;color:var(--muted)">Win Rate</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
-</html>
+</html>        <!-- BASIC fields — always visible -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label class="lbl">Stock / Symbol</label>
+            <input id="j-stock" placeholder="e.g. NIFTY, RELIANCE" aria-label="Stock symbol"></div>
+          <div><label class="lbl">Date</label>
+            <input type="date" id="j-date" aria-label="Trade date"></div>
+          <div><label class="lbl">Direction</label>
+            <select id="j-dir" aria-label="Direction">
+              <option>LONG</option><option>SHORT</option>
+            </select></div>
+          <div><label class="lbl">Day</label>
+            <select id="j-day" aria-label="Day">
+              <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>
+            </select></div>
+          <div><label class="lbl">Setup Type</label>
+            <select id="j-setup" aria-label="Setup type">
+              <option>Triangle Break</option>
+              <option>Channel Break</option>
+              <option>S&R Bounce</option>
+              <option>Trendline Break</option>
+              <option>Gap Fill</option>
+              <option>Opening Range Break</option>
+              <option>Flag Pattern</option>
+              <option>Double Top</option>
+              <option>Double Bottom</option>
+              <option>Head & Shoulders</option>
+              <option>VWAP Bounce</option>
+              <option>News Trade</option>
+              <option>Other</option>
+              <option>Strong Uptrend</option>
+              <option>Weak Uptrend</option>
+              <option>Sideways/Range</option>
+              <option>Weak Downtrend</option>
+              <option>Strong Downtrend</option>
+              <option>High Volatility</option>
+              <option>Low Volatility</option>
+            </select></div>
+          <div><label class="lbl">Chart Pattern</label>
+            <select id="j-pattern" aria-label="Pattern">
+              <option>Ascending Triangle</option>
+              <option>Descending Triangle</option>
+              <option>Symmetrical Triangle</option>
+              <option>Bull Flag</option>
+              <option>Bear Flag</option>
+              <option>Channel Up</option>
+              <option>Channel Down</option>
+              <option>Double Top</option>
+              <option>Double Bottom</option>
+              <option>Head & Shoulders</option>
+              <option>Inverse H&S</option>
+              <option>Cup & Handle</option>
+              <option>Wedge Up</option>
+              <option>Wedge Down</option>
+              <option>Range Breakout</option>
+              <option>No Pattern</option>
+            </select></div>
+          <div><label class="lbl">Entry Price ₹</label>
+            <input type="number" id="j-entry" placeholder="24082" step="0.05" aria-label="Entry price"></div>
+          <div><label class="lbl">Exit Price ₹</label>
+            <input type="number" id="j-exit" placeholder="Blank if open" step="0.05" aria-label="Exit price"></div>
+          <div><label class="lbl">Stop Loss ₹</label>
+            <input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss"></div>
+          <div><label class="lbl">Target Price ₹</label>
+            <input type="number" id="j-tgt" placeholder="24322" step="0.05" aria-label="Target price"></div>
+          <div><label class="lbl">Lots / Qty</label>
+            <input type="number" id="j-qty" placeholder="6" min="1" aria-label="Quantity"></div>
+          <div><label class="lbl">Indicator Used</label>
+            <select id="j-ind" aria-label="Indicator">
+              <option>Roshan Indicator</option>
+              <option>RSI</option>
+              <option>MACD</option>
+              <option>Supertrend</option>
+              <option>Bollinger Bands</option>
+              <option>Price Action</option>
+              <option>VWAP</option>
+              <option>EMA Cross</option>
+              <option>ADX</option>
+              <option>Stochastic</option>
+              <option>Other</option>
+            </select></div>
+          <div style="grid-column:1/-1"><label class="lbl">Notes / Lesson Learned</label>
+            <textarea id="j-notes" rows="2" placeholder="What did you learn? What emotion affected you?" aria-label="Notes"></textarea></div>
+        </div>
+
+        <!-- PSYCHOLOGY & QUALITY — collapsible -->
+        <details style="margin-bottom:10px">
+          <summary style="font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;padding:5px 0;user-select:none">
+            + Psychology &amp; Quality fields (from your Excel)
+          </summary>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+            <div><label class="lbl">Emotion at Entry</label>
+              <select id="j-emotion-entry" aria-label="Emotion at entry">
+              <option>Confident</option>
+              <option>Calm</option>
+              <option>Disciplined</option>
+              <option>Anxious</option>
+              <option>Fearful</option>
+              <option>Greedy</option>
+              <option>Excited</option>
+              <option>FOMO</option>
+              <option>Revenge</option>
+              <option>Frustrated</option>
+              <option>Impatient</option>
+              <option>Distracted</option>
+              </select></div>
+            <div><label class="lbl">Emotion at Exit</label>
+              <select id="j-emotion-exit" aria-label="Emotion at exit">
+              <option>Satisfied</option>
+              <option>Calm</option>
+              <option>Disciplined</option>
+              <option>Regretful</option>
+              <option>Fearful</option>
+              <option>Greedy</option>
+              <option>Relieved</option>
+              <option>Frustrated</option>
+              <option>Angry</option>
+              <option>Happy</option>
+              <option>Anxious</option>
+              <option>Neutral</option>
+              </select></div>
+            <div><label class="lbl">Held to Target?</label>
+              <select id="j-held" aria-label="Held to target">
+              <option>Yes - Full Target Hit</option>
+              <option>No - Exited Early (Fear)</option>
+              <option>No - Exited Early (Greed)</option>
+              <option>No - SL Hit</option>
+              <option>No - Manual Exit (Valid Reason)</option>
+              <option>Partial - Half Position Closed</option>
+              </select></div>
+            <div><label class="lbl">Exit Reason</label>
+              <select id="j-exit-reason" aria-label="Exit reason">
+              <option>Target Hit ✅</option>
+              <option>Stop Loss Hit ❌</option>
+              <option>Trailing SL Hit</option>
+              <option>Manual Exit - Market Close</option>
+              <option>Manual Exit - News Event</option>
+              <option>Manual Exit - Fear</option>
+              <option>Manual Exit - Greed</option>
+              <option>Manual Exit - Valid Reason</option>
+              </select></div>
+            <div><label class="lbl">Trade Quality</label>
+              <select id="j-quality" aria-label="Trade quality">
+              <option>A+ Setup - Perfect Entry</option>
+              <option>A - Good Setup</option>
+              <option>B - Average Setup</option>
+              <option>C - Below Average</option>
+              <option>D - Should Not Have Taken</option>
+              </select></div>
+            <div><label class="lbl">Confidence Level</label>
+              <select id="j-confidence" aria-label="Confidence">
+              <option>10 - Extremely Confident</option>
+              <option>9 - Very Confident</option>
+              <option>8 - Confident</option>
+              <option>7 - Fairly Confident</option>
+              <option>6 - Slightly Confident</option>
+              <option>5 - Neutral</option>
+              <option>4 - Slightly Doubtful</option>
+              <option>3 - Doubtful</option>
+              <option>2 - Very Doubtful</option>
+              <option>1 - No Confidence</option>
+              </select></div>
+            <div><label class="lbl">Rules Followed?</label>
+              <select id="j-rules" aria-label="Rules followed">
+              <option>✅ Yes - Followed All Rules</option>
+              <option>⚠️ Partial - Broke 1 Rule</option>
+              <option>❌ No - Broke Multiple Rules</option>
+              </select></div>
+            <div><label class="lbl">TF Alignment</label>
+              <select id="j-tfalign" aria-label="TF alignment">
+              <option>All TF Aligned ✅</option>
+              <option>Monthly + Weekly Only</option>
+              <option>Weekly + Daily Only</option>
+              <option>Daily + 4H Only</option>
+              <option>4H + 1H Only</option>
+              <option>1H + 15M Only</option>
+              <option>15M + 5M Only</option>
+              <option>Mixed Signals ⚠️</option>
+              <option>Against Higher TF ❌</option>
+              </select></div>
+            <div><label class="lbl">Market Bias</label>
+              <select id="j-bias" aria-label="Market bias">
+              <option>STRONGLY BEARISH</option>
+              <option>BEARISH</option>
+              <option>SLIGHTLY BEARISH</option>
+              <option>NEUTRAL</option>
+              <option>SLIGHTLY BULLISH</option>
+              <option>BULLISH</option>
+              <option>STRONGLY BULLISH</option>
+              </select></div>
+            <div><label class="lbl">Market Condition</label>
+              <select id="j-condition" aria-label="Market condition">
+              <option>Strong Uptrend</option>
+              <option>Weak Uptrend</option>
+              <option>Sideways/Range</option>
+              <option>Weak Downtrend</option>
+              <option>Strong Downtrend</option>
+              <option>High Volatility</option>
+              <option>Low Volatility</option>
+              </select></div>
+          </div>
+        </details>
+
