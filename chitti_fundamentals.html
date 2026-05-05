@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chitti Fundamentals — Stock fundamentals in plain English</title>
+<meta name="description" content="Indian stock fundamentals explained in plain English, with voice readout and visual symbols. For three users: blind, deaf, and first-time investors.">
+<style>
+:root{
+  --bg:#0b1220; --card:#111a2e; --card2:#0f1729;
+  --text:#e6edf7; --muted:#8597b3; --border:#1f2c47;
+  --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --amber:#f59e0b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body{min-height:100vh}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── Header ── */
+header[role="banner"]{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0d1426 0%,var(--bg) 100%)}
+.brand{font-size:18px;font-weight:800;letter-spacing:.01em}
+.tagline{font-size:11px;color:var(--muted);margin-top:2px}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:34px}
+.header-controls button:hover{background:rgba(59,130,246,.2)}
+.header-controls button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+
+/* ── Layout ── */
+main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
+.search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.search-row input{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;min-height:42px}
+.search-row input:focus{outline:none;border-color:var(--blue)}
+.search-row button{background:var(--blue);border:1px solid var(--blue);color:#fff;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;min-height:42px}
+.search-row button:hover{filter:brightness(1.1)}
+.search-row button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+
+/* ── Fundamentals section ── */
+.fund-wrap{margin:0 0 18px;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--card)}
+.fund-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.fund-title{font-size:16px;font-weight:700}
+.fund-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sp-btn{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.4);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:34px}
+.sp-btn:hover{background:rgba(34,197,94,.2)}
+.sp-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.fund-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.fund-card{border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--card2);min-height:96px}
+.fund-card-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.fund-card-val{font-size:17px;font-weight:800;font-family:'JetBrains Mono','Menlo',monospace;margin-top:4px;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px}
+.fund-card-pe{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4}
+.fund-card .ud{font-size:11px;font-weight:700}
+.fund-card .up{color:var(--green)}
+.fund-card .dn{color:var(--red)}
+.fund-card .flat{color:var(--muted)}
+.fund-spk{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;line-height:1;min-width:32px;min-height:24px}
+.fund-spk:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.fund-spk:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.fund-q-tbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.fund-q-tbl th,.fund-q-tbl td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:right}
+.fund-q-tbl th:first-child,.fund-q-tbl td:first-child{text-align:left;color:var(--muted)}
+.fund-q-tbl th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.fund-verdict{margin-top:6px;margin-bottom:12px;padding:10px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);font-size:13px;line-height:1.55;color:var(--text);display:flex;align-items:flex-start;gap:8px}
+.fund-verdict button{flex-shrink:0;align-self:flex-start}
+.fund-empty{text-align:center;padding:18px;color:var(--muted);font-size:12px}
+.quarterly-head{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* ── Welcome / About ── */
+.welcome{margin-top:6px;padding:14px;border:1px dashed var(--border);border-radius:10px;background:rgba(255,255,255,.02)}
+.welcome h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px;font-weight:700}
+.welcome h2:first-child{margin-top:0}
+.welcome p,.welcome li{font-size:13px;line-height:1.55;color:var(--text)}
+.welcome ul{padding-left:20px;margin:0}
+.welcome strong{color:var(--blue)}
+
+footer[role="contentinfo"]{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.55}
+
+/* ── Mobile ── */
+@media (max-width:640px){
+  .brand{font-size:16px}
+  main{padding:12px 12px 32px}
+  .fund-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .fund-card-val{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<header role="banner">
+  <div class="brand">📋 Chitti Fundamentals</div>
+  <div class="tagline">Stock fundamentals in plain English. Voice. Symbols. Built for three users.</div>
+  <div class="header-controls">
+    <button onclick="speakPage()" aria-label="Read whole page aloud">🔊 Read page</button>
+    <button onclick="speakDisclaimer()" aria-label="Read disclaimer">📜 Disclaimer</button>
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
+  </div>
+</header>
+
+<main>
+  <section class="search-row" aria-label="Stock search">
+    <label for="stock-input" class="sr-only">Stock symbol</label>
+    <input id="stock-input" placeholder="e.g. NSE:RELIANCE, NSE:TCS, NSE:HDFCBANK" autocomplete="off" spellcheck="false" aria-label="Stock symbol input" list="recent-stocks">
+    <datalist id="recent-stocks"></datalist>
+    <button id="load-btn" onclick="goLoad()" aria-label="Load fundamentals">Load fundamentals</button>
+  </section>
+
+  <!-- ════════════════════ FUNDAMENTALS SECTION ════════════════════ -->
+  <!-- Shamelessly copied from Angel One Overview / Zerodha Kite / Groww / Screener.in. -->
+  <!-- Three-user lens enforced: ARIA (blind), ▲▼+text (deaf), plain English (everyday). -->
+  <section id="fund-section" class="fund-wrap" role="region" aria-label="Stock fundamentals" style="display:none">
+    <div class="fund-head">
+      <div>
+        <div class="fund-title" id="fund-title">📋 Fundamentals</div>
+        <div class="fund-sub" id="fund-sub">—</div>
+      </div>
+      <button class="sp-btn" onclick="speakFundamentals()" aria-label="Hear fundamentals summary">🔊 Hear summary</button>
+    </div>
+    <div id="fund-loading" class="fund-empty" aria-live="polite">Loading fundamentals…</div>
+    <div id="fund-body" style="display:none">
+      <div class="fund-verdict" id="fund-verdict" aria-live="polite"></div>
+      <div class="fund-grid" id="fund-cards"></div>
+      <div style="margin-top:14px">
+        <div class="quarterly-head">
+          <span>Last 4 quarters</span>
+          <button class="fund-spk" onclick="speakQuarterly()" aria-label="Hear quarterly trend">🔊</button>
+        </div>
+        <div style="overflow-x:auto"><table class="fund-q-tbl" id="fund-qtbl" aria-label="Quarterly revenue and profit"></table></div>
+      </div>
+    </div>
+    <div id="fund-error" class="fund-empty" style="display:none;color:var(--muted)" aria-live="polite"></div>
+  </section>
+
+  <section id="welcome" class="welcome" aria-label="About this page">
+    <h2>What this is</h2>
+    <p>Search any Indian stock and see its fundamentals — Market Cap, P/E, P/B, EPS, dividend yield, 52-week range, debt-to-equity, latest quarterly revenue and net profit — each one explained in plain English with a Speak button.</p>
+    <h2>Reference apps shamelessly copied</h2>
+    <ul>
+      <li><strong>Angel One</strong> — Overview tab metrics (Market Cap, P/E, 52W H/L, dividend yield)</li>
+      <li><strong>Zerodha Kite</strong> — Quarterly results table layout</li>
+      <li><strong>Groww</strong> — Plain-English explanations on every metric card</li>
+      <li><strong>Screener.in</strong> — Data depth and verdict-first chips</li>
+    </ul>
+    <h2>For three users</h2>
+    <ul>
+      <li><strong>Blind</strong>: every card and verdict carries a 🔊 button. ARIA labels on every interactive element. Speech reads verdict first, then reasoning, then numbers.</li>
+      <li><strong>Deaf / Mute</strong>: ▲▼ symbols and word labels (<em>up</em>, <em>down</em>, <em>flat</em>) on every change indicator. Colour is never the only signal.</li>
+      <li><strong>Financially illiterate</strong>: every metric has a 6–12 word plain-English explanation. The verdict at the top says STRONG / MIXED / WEAK in three sentences max.</li>
+    </ul>
+  </section>
+
+  <footer role="contentinfo">
+    <small id="disclaimer-text">Not SEBI Registered. This is an educational tool only, not investment advice. Chitti shows direction, not a guarantee. Never invest money you cannot afford to lose.</small>
+  </footer>
+</main>
+
+<script>
+if(!window._chittiFundLoaded){
+window._chittiFundLoaded = true;
+
+// ═══════════════════════════════════════════════════════════
+// Constants
+// ═══════════════════════════════════════════════════════════
+const API = 'https://chitti-shares-api.onrender.com';
+const RECENT_KEY = 'chitti_fund_recent';
+const RECENT_MAX = 10;
+const DISCLAIMER_EN = 'Not SEBI Registered. This is an educational tool only, not investment advice. Chitti shows direction, not a guarantee. Never invest money you cannot afford to lose.';
+
+// ═══════════════════════════════════════════════════════════
+// Speech (browser SpeechSynthesis — free, native, no cloud cost)
+// ═══════════════════════════════════════════════════════════
+function sp(t, l) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = (l === 'hi') ? 'hi-IN' : 'en-IN';
+  u.rate = 0.88;
+  speechSynthesis.speak(u);
+}
+function speakDisclaimer() { sp(DISCLAIMER_EN); }
+function speakPage() {
+  const sym = document.getElementById('stock-input').value.trim();
+  if (!_fundData) {
+    sp('Chitti Fundamentals. Type any Indian stock symbol like N S E colon Reliance, then tap Load fundamentals. Each metric will be explained in plain English with a speak button next to it.');
+    return;
+  }
+  speakFundamentals();
+}
+
+// ═══════════════════════════════════════════════════════════
+// Recent stocks (localStorage, last 10)
+// ═══════════════════════════════════════════════════════════
+function _getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function _addRecent(sym) {
+  const list = _getRecent().filter(function(s){ return s !== sym; });
+  list.unshift(sym);
+  if (list.length > RECENT_MAX) list.length = RECENT_MAX;
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) {}
+  _renderRecent();
+}
+function _renderRecent() {
+  const dl = document.getElementById('recent-stocks');
+  if (!dl) return;
+  const list = _getRecent();
+  dl.innerHTML = list.map(function(s){ return '<option value="' + s + '"></option>'; }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Symbol normalisation: "RELIANCE" -> "NSE:RELIANCE"
+// ═══════════════════════════════════════════════════════════
+function _normaliseSymbol(raw) {
+  if (!raw) return '';
+  const s = raw.trim().toUpperCase();
+  if (!s) return '';
+  if (s.indexOf(':') >= 0) return s;
+  return 'NSE:' + s;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FUNDAMENTALS — three-user lens enforced on every card
+// ═══════════════════════════════════════════════════════════
+let _fundData = null, _fundLoadingFor = null;
+window._fundSpeakBank = window._fundSpeakBank || {};
+
+function _fmtCr(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const cr = Number(v) / 1e7;
+  if (Math.abs(cr) >= 1e5) return '₹' + (cr/1e5).toFixed(2) + ' L cr';
+  if (Math.abs(cr) >= 1e3) return '₹' + (cr/1e3).toFixed(2) + 'k cr';
+  return '₹' + cr.toFixed(0) + ' cr';
+}
+function _fmtN(v, d) { return (v === null || v === undefined || isNaN(v)) ? '—' : Number(v).toFixed(d == null ? 2 : d); }
+function _fmtPct(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : Number(v).toFixed(2) + '%'; }
+function _udSym(d)  { return d > 0 ? '▲' : d < 0 ? '▼' : '◆'; }
+function _udCls(d)  { return d > 0 ? 'up' : d < 0 ? 'dn' : 'flat'; }
+function _udWord(d) { return d > 0 ? 'up' : d < 0 ? 'down' : 'flat'; }
+
+function _fundCard(opts) {
+  const id = 'sp_' + Math.random().toString(36).slice(2, 9);
+  window._fundSpeakBank[id] = opts.speakText || '';
+  const ud = opts.ud;
+  const udHtml = ud
+    ? '<span class="ud ' + _udCls(ud.delta) + '" aria-label="' + _udWord(ud.delta) + ' ' + Math.abs(ud.pct||0).toFixed(1) + ' percent">' + _udSym(ud.delta) + ' ' + Math.abs(ud.pct||0).toFixed(1) + '%</span>'
+    : '';
+  return '<div class="fund-card" role="group" aria-label="' + opts.label + ': ' + opts.value + '">' +
+           '<div class="fund-card-lbl"><span>' + opts.label + '</span>' +
+             '<button class="fund-spk" onclick="speakFundCard(\'' + id + '\')" aria-label="Hear ' + opts.label + '">🔊</button>' +
+           '</div>' +
+           '<div class="fund-card-val">' + opts.value + udHtml + '</div>' +
+           '<div class="fund-card-pe">' + opts.plain + '</div>' +
+         '</div>';
+}
+function speakFundCard(id) {
+  const t = (window._fundSpeakBank || {})[id];
+  if (t) sp(t);
+}
+
+async function loadFundamentals(sym) {
+  if (!sym) return;
+  _fundLoadingFor = sym;
+  _addRecent(sym);
+  // Welcome panel out of the way once the user loads something
+  const wel = document.getElementById('welcome');
+  if (wel) wel.style.display = 'none';
+
+  const sec  = document.getElementById('fund-section');
+  const lo   = document.getElementById('fund-loading');
+  const body = document.getElementById('fund-body');
+  const err  = document.getElementById('fund-error');
+  const sub  = document.getElementById('fund-sub');
+  if (!sec) return;
+  sec.style.display  = 'block';
+  lo.style.display   = 'block';
+  lo.textContent     = 'Loading fundamentals…';
+  body.style.display = 'none';
+  err.style.display  = 'none';
+  if (sub) sub.textContent = sym.split(':').pop();
+  try {
+    const r = await fetch(API + '/api/fundamentals/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (_fundLoadingFor !== sym) return;
+    _fundData = d;
+    renderFundamentals(d);
+    sp((d.name || sym.split(':').pop()) + ' fundamentals loaded. Tap any speak button to hear a metric.');
+  } catch (e) {
+    if (_fundLoadingFor !== sym) return;
+    lo.style.display   = 'none';
+    body.style.display = 'none';
+    err.style.display  = 'block';
+    err.textContent    = 'Could not load fundamentals — backend offline or symbol unsupported. Try NSE:RELIANCE or NSE:TCS.';
+    sp('Could not load fundamentals. Backend may be offline. Try a different symbol.');
+  }
+}
+
+function _quarterlyChange(q, key) {
+  const a = q[0] && q[0][key], b = q[1] && q[1][key];
+  if (a == null || b == null || b === 0) return null;
+  const delta = a - b;
+  const pct = (delta / Math.abs(b)) * 100;
+  return { delta: delta, pct: pct };
+}
+
+function _peVerdict(v) {
+  if (v == null || isNaN(v)) return 'Not available.';
+  if (v < 12) return 'Cheap. Below 12 is bargain territory for most stocks.';
+  if (v < 25) return 'Reasonable. Most healthy stocks trade here.';
+  if (v < 40) return 'Expensive. The market expects strong growth.';
+  return 'Very expensive. Be careful.';
+}
+function _pbVerdict(v) {
+  if (v == null || isNaN(v)) return 'Not available.';
+  if (v < 1.5) return 'Cheap on book value.';
+  if (v < 3)   return 'Reasonable for most non-banks.';
+  return 'Expensive on book value.';
+}
+function _divVerdict(v) {
+  if (v == null || isNaN(v)) return 'Not available.';
+  if (v < 0.5) return 'Low. This is a growth stock, not an income stock.';
+  if (v < 1.5) return 'Modest dividend.';
+  if (v < 3)   return 'Healthy dividend.';
+  return 'High dividend. A real income stock.';
+}
+function _deVerdict(v) {
+  if (v == null || isNaN(v)) return 'Not available.';
+  // yfinance debt_to_equity is sometimes quoted in % (e.g. 50 = 0.5x). Normalise.
+  const x = v > 5 ? v / 100 : v;
+  if (x < 0.5) return 'Healthy. The company runs mostly on its own funds.';
+  if (x < 1)   return 'Moderate debt.';
+  if (x < 2)   return 'High debt — watch interest costs.';
+  return 'Very high debt. Risky if profits dip.';
+}
+
+function _computeFundVerdict(d) {
+  let good = 0, bad = 0;
+  if (d.pe != null) { if (d.pe < 25) good++; else if (d.pe > 40) bad++; }
+  if (d.pb != null) { if (d.pb < 3)  good++; else if (d.pb > 6)  bad++; }
+  if (d.roe != null) { if (d.roe > 15) good++; else if (d.roe < 8)  bad++; }
+  if (d.debt_to_equity != null) {
+    const x = d.debt_to_equity > 5 ? d.debt_to_equity / 100 : d.debt_to_equity;
+    if (x < 0.5) good++; else if (x > 1.5) bad++;
+  }
+  let tag = 'MIXED';
+  if (good >= 3 && bad === 0) tag = 'STRONG';
+  else if (bad >= 2)          tag = 'WEAK';
+  let reason;
+  if (tag === 'STRONG') {
+    reason = 'Profitable with low debt at a fair price. ' +
+      (d.roe != null ? 'ROE ' + _fmtPct(d.roe) + '. ' : '') +
+      (d.pe  != null ? 'P/E ' + _fmtN(d.pe, 1) + '. ' : '') +
+      'Worth a closer look for a long-term hold.';
+  } else if (tag === 'WEAK') {
+    reason = 'Either expensive, indebted, or low on returns right now. ' +
+      (d.pe != null ? 'P/E ' + _fmtN(d.pe, 1) + '. ' : '') +
+      (d.debt_to_equity != null ? 'D/E ' + _fmtN(d.debt_to_equity, 2) + '. ' : '') +
+      'Wait for better numbers.';
+  } else {
+    reason = 'Some metrics strong, some weak. ' +
+      (d.pe  != null ? 'P/E ' + _fmtN(d.pe, 1) + '. ' : '') +
+      (d.roe != null ? 'ROE ' + _fmtPct(d.roe) + '. ' : '') +
+      'Read each card before deciding.';
+  }
+  return { tag: tag, reason: reason };
+}
+
+function renderFundamentals(d) {
+  const lo      = document.getElementById('fund-loading');
+  const body    = document.getElementById('fund-body');
+  const sub     = document.getElementById('fund-sub');
+  const verdict = document.getElementById('fund-verdict');
+  const cards   = document.getElementById('fund-cards');
+  const qtbl    = document.getElementById('fund-qtbl');
+  if (!body || !d) return;
+
+  lo.style.display   = 'none';
+  body.style.display = 'block';
+
+  const stockName = d.name || d.symbol.split(':').pop();
+  if (sub) sub.textContent = stockName + (d.sector ? ' · ' + d.sector : '');
+
+  const v = _computeFundVerdict(d);
+  verdict.innerHTML =
+    '<button class="fund-spk" onclick="speakFundVerdict()" aria-label="Hear verdict">🔊</button>' +
+    '<span><strong>' + v.tag + '</strong> — ' + v.reason + '</span>';
+
+  const q = d.quarterly || [];
+  const revUd = q.length >= 2 ? _quarterlyChange(q, 'revenue')    : null;
+  const niUd  = q.length >= 2 ? _quarterlyChange(q, 'net_income') : null;
+
+  const out = [];
+
+  out.push(_fundCard({
+    label: 'Market Cap',
+    plain: 'Total value of all the company’s shares put together.',
+    value: _fmtCr(d.market_cap),
+    speakText: 'Market capitalisation ' + _fmtCr(d.market_cap) + '. The total value of all of the company’s shares put together.'
+  }));
+  out.push(_fundCard({
+    label: 'P/E Ratio',
+    plain: 'Price for every rupee of profit. Below 25 is reasonable for most stocks.',
+    value: _fmtN(d.pe, 1),
+    speakText: 'Price to earnings ratio ' + _fmtN(d.pe, 1) + '. ' + _peVerdict(d.pe)
+  }));
+  out.push(_fundCard({
+    label: 'P/B Ratio',
+    plain: 'Price compared to book value. Below 3 is reasonable for most non-banks.',
+    value: _fmtN(d.pb, 2),
+    speakText: 'Price to book ratio ' + _fmtN(d.pb, 2) + '. ' + _pbVerdict(d.pb)
+  }));
+  out.push(_fundCard({
+    label: 'EPS',
+    plain: 'Profit earned per share over the last year.',
+    value: d.eps != null ? '₹' + _fmtN(d.eps, 2) : '—',
+    speakText: 'Earnings per share ' + (d.eps != null ? 'rupees ' + _fmtN(d.eps, 2) : 'not available') + '. The profit earned per share over the last year.'
+  }));
+  out.push(_fundCard({
+    label: 'Dividend Yield',
+    plain: 'Annual dividend as a percent of price. Above 1 percent is a real income stock.',
+    value: _fmtPct(d.dividend_yield),
+    speakText: 'Dividend yield ' + _fmtPct(d.dividend_yield) + '. ' + _divVerdict(d.dividend_yield)
+  }));
+
+  // 52W
+  const lo52 = d.fifty_two_week_low, hi52 = d.fifty_two_week_high, p = d.price;
+  let pos52 = null;
+  if (lo52 != null && hi52 != null && p != null && hi52 > lo52) pos52 = ((p - lo52) / (hi52 - lo52) * 100);
+  out.push(_fundCard({
+    label: '52-Week Range',
+    plain: pos52 != null ? 'Currently ' + pos52.toFixed(0) + '% of the way from yearly low to yearly high.' : 'Yearly low and yearly high prices.',
+    value: (lo52 != null ? '₹' + _fmtN(lo52, 0) : '—') + ' – ' + (hi52 != null ? '₹' + _fmtN(hi52, 0) : '—'),
+    speakText: '52 week range. Low ' + (lo52 != null ? 'rupees ' + _fmtN(lo52, 0) : 'unavailable') + '. High ' + (hi52 != null ? 'rupees ' + _fmtN(hi52, 0) : 'unavailable') + '. ' + (pos52 != null ? 'Currently ' + pos52.toFixed(0) + ' percent of the way from yearly low to yearly high.' : '')
+  }));
+
+  out.push(_fundCard({
+    label: 'Promoter Holding',
+    plain: 'Founders’ stake. Over 50% means founders are deeply invested.',
+    value: d.promoter_holding != null ? _fmtPct(d.promoter_holding) : 'Coming soon',
+    speakText: 'Promoter holding ' + (d.promoter_holding != null ? _fmtPct(d.promoter_holding) : 'not yet available') + '. The percentage of shares held by the founders. Over 50 percent means founders are deeply invested.'
+  }));
+  out.push(_fundCard({
+    label: 'FII Holding',
+    plain: 'Foreign institutional investors. Rising means foreign confidence growing.',
+    value: d.fii_holding != null ? _fmtPct(d.fii_holding) : 'Coming soon',
+    speakText: 'Foreign institutional investor holding ' + (d.fii_holding != null ? _fmtPct(d.fii_holding) : 'not yet available') + '. Rising means foreign funds are increasing their stake.'
+  }));
+  out.push(_fundCard({
+    label: 'DII Holding',
+    plain: 'Domestic mutual funds and insurers. Rising means Indian funds buying.',
+    value: d.dii_holding != null ? _fmtPct(d.dii_holding) : 'Coming soon',
+    speakText: 'Domestic institutional investor holding ' + (d.dii_holding != null ? _fmtPct(d.dii_holding) : 'not yet available') + '. Rising means Indian mutual funds and insurers are buying more.'
+  }));
+  out.push(_fundCard({
+    label: 'Debt to Equity',
+    plain: 'How much debt versus own funds. Below 0.5 is healthy for most companies.',
+    value: _fmtN(d.debt_to_equity, 2),
+    speakText: 'Debt to equity ratio ' + _fmtN(d.debt_to_equity, 2) + '. ' + _deVerdict(d.debt_to_equity)
+  }));
+
+  const latestQ = q[0];
+  out.push(_fundCard({
+    label: 'Revenue (latest Q)',
+    plain: 'Total sales in the most recently reported quarter.',
+    value: latestQ ? _fmtCr(latestQ.revenue) : '—',
+    speakText: 'Revenue last quarter ' + (latestQ ? _fmtCr(latestQ.revenue) : 'unavailable') + '. ' + (revUd ? 'Trend ' + _udWord(revUd.delta) + ' ' + Math.abs(revUd.pct||0).toFixed(1) + ' percent quarter on quarter.' : ''),
+    ud: revUd
+  }));
+  out.push(_fundCard({
+    label: 'Net Profit (latest Q)',
+    plain: 'Money kept after all expenses in the most recent quarter.',
+    value: latestQ ? _fmtCr(latestQ.net_income) : '—',
+    speakText: 'Net profit last quarter ' + (latestQ ? _fmtCr(latestQ.net_income) : 'unavailable') + '. ' + (niUd ? 'Trend ' + _udWord(niUd.delta) + ' ' + Math.abs(niUd.pct||0).toFixed(1) + ' percent quarter on quarter.' : ''),
+    ud: niUd
+  }));
+
+  cards.innerHTML = out.join('');
+
+  // Quarterly table
+  if (q.length) {
+    const headers = q.map(function(x){ return '<th>' + (x.quarter || x.quarter_iso || '') + '</th>'; }).join('');
+    const revRow  = '<tr><td>Revenue</td>'    + q.map(function(x){ return '<td>' + _fmtCr(x.revenue)    + '</td>'; }).join('') + '</tr>';
+    const niRow   = '<tr><td>Net Profit</td>' + q.map(function(x){ return '<td>' + _fmtCr(x.net_income) + '</td>'; }).join('') + '</tr>';
+    qtbl.innerHTML = '<thead><tr><th>Metric</th>' + headers + '</tr></thead><tbody>' + revRow + niRow + '</tbody>';
+  } else {
+    qtbl.innerHTML = '<tbody><tr><td colspan="5" style="text-align:center;color:var(--muted)">No quarterly data</td></tr></tbody>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Page-level speak helpers
+// ═══════════════════════════════════════════════════════════
+function speakFundamentals() {
+  const d = _fundData;
+  if (!d) { sp('No fundamentals loaded yet. Type a stock symbol and tap Load.'); return; }
+  const v = _computeFundVerdict(d);
+  const stock = d.name || d.symbol.split(':').pop();
+  const parts = [stock + '. Verdict ' + v.tag.toLowerCase() + '. ' + v.reason];
+  if (d.market_cap)             parts.push('Market cap ' + _fmtCr(d.market_cap) + '.');
+  if (d.pe != null)             parts.push('P E ratio ' + _fmtN(d.pe, 1) + '.');
+  if (d.pb != null)             parts.push('P B ratio ' + _fmtN(d.pb, 2) + '.');
+  if (d.dividend_yield != null) parts.push('Dividend yield ' + _fmtPct(d.dividend_yield) + '.');
+  if (d.debt_to_equity != null) parts.push('Debt to equity ' + _fmtN(d.debt_to_equity, 2) + '.');
+  sp(parts.join(' '));
+}
+function speakFundVerdict() {
+  if (!_fundData) return;
+  const v = _computeFundVerdict(_fundData);
+  sp('Verdict ' + v.tag.toLowerCase() + '. ' + v.reason);
+}
+function speakQuarterly() {
+  if (!_fundData || !_fundData.quarterly || !_fundData.quarterly.length) {
+    sp('Quarterly data not available.'); return;
+  }
+  const q = _fundData.quarterly;
+  const latest = q[0];
+  const rev = _quarterlyChange(q, 'revenue');
+  const ni  = _quarterlyChange(q, 'net_income');
+  const parts = ['Latest quarter ' + (latest.quarter || '') + '.'];
+  if (latest.revenue    != null) parts.push('Revenue ' + _fmtCr(latest.revenue) + '.');
+  if (latest.net_income != null) parts.push('Net profit ' + _fmtCr(latest.net_income) + '.');
+  if (rev) parts.push('Revenue '    + _udWord(rev.delta) + ' ' + Math.abs(rev.pct).toFixed(1) + ' percent versus previous quarter.');
+  if (ni)  parts.push('Net profit ' + _udWord(ni.delta)  + ' ' + Math.abs(ni.pct).toFixed(1)  + ' percent versus previous quarter.');
+  sp(parts.join(' '));
+}
+
+// ═══════════════════════════════════════════════════════════
+// Entry points
+// ═══════════════════════════════════════════════════════════
+function goLoad() {
+  const inp = document.getElementById('stock-input');
+  const sym = _normaliseSymbol(inp.value);
+  if (!sym) { sp('Please type a stock symbol first.'); inp.focus(); return; }
+  inp.value = sym;
+  // Update URL for shareable deep-link (no page reload)
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('symbol', sym);
+    window.history.replaceState({}, '', url.toString());
+  } catch (e) {}
+  loadFundamentals(sym);
+}
+
+// Enter key on the input triggers load
+document.getElementById('stock-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') goLoad();
+});
+
+// Deep-link: ?symbol=NSE:RELIANCE auto-loads on page open
+(function autoLoadFromQuery() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sym = params.get('symbol');
+    if (sym) {
+      document.getElementById('stock-input').value = sym;
+      loadFundamentals(_normaliseSymbol(sym));
+    }
+  } catch (e) {}
+})();
+
+// Hydrate recent-stocks dropdown on first paint
+_renderRecent();
+
+}
+</script>
+</body>
+</html>
