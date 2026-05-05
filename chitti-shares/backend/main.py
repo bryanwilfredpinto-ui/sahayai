@@ -217,21 +217,37 @@ def api_fundamentals(symbol: str):
     "Coming soon" so the slot is reserved.
     """
     from urllib.parse import unquote
-    from services import yahoo_client
+    from services import screener_client, yahoo_client
     from services.cache import cache as _cache
     sym = unquote(symbol)
     cache_key = f"public_fund:{sym}"
     cached = _cache.get(cache_key)
     if cached:
         return cached
+    # Primary: screener.in scrape (works from Render IPs).
+    # Fallback: yahoo (works locally; blocked from Render but kept for completeness).
+    raw: dict = {}
     try:
-        raw = yahoo_client.fundamentals(sym) or {}
+        raw = screener_client.fundamentals(sym) or {}
     except Exception as e:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=f"fundamentals error: {e}")
+        raw = {}
+    if not raw.get("name"):
+        try:
+            raw = yahoo_client.fundamentals(sym) or raw
+        except Exception:  # noqa: BLE001
+            pass
+    if not raw.get("name"):
+        raise HTTPException(status_code=502, detail=f"fundamentals unavailable for {sym}")
+    qts: list = []
     try:
-        qts = yahoo_client.quarterly(sym, num_quarters=8) or []
+        qts = screener_client.quarterly(sym, num_quarters=8) or []
     except Exception:  # noqa: BLE001
         qts = []
+    if not qts:
+        try:
+            qts = yahoo_client.quarterly(sym, num_quarters=8) or []
+        except Exception:  # noqa: BLE001
+            qts = []
     out = {
         "symbol": sym,
         "name": raw.get("name"),

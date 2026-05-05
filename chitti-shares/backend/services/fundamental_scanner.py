@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from services import yahoo_client
+from services import screener_client, yahoo_client
 from services.cache import cache
 from services.universes import UNIVERSES, get_universe
 
@@ -157,10 +157,20 @@ def _fetch_one(symbol: str):
     cached = cache.get(CACHE_KEY_PREFIX + symbol)
     if cached:
         return cached
+    # Primary: screener.in (works from Render egress).
+    # Fallback: yahoo (blocked from Render, kept for local dev).
+    raw: dict = {}
     try:
-        raw = yahoo_client.fundamentals(symbol) or {}
+        raw = screener_client.fundamentals(symbol) or {}
     except Exception as e:  # noqa: BLE001
-        log.debug("fetch_one(%s) error: %s", symbol, e)
+        log.debug("screener fetch_one(%s) error: %s", symbol, e)
+        raw = {}
+    if not raw.get("name"):
+        try:
+            raw = yahoo_client.fundamentals(symbol) or raw
+        except Exception as e:  # noqa: BLE001
+            log.debug("yahoo fallback fetch_one(%s) error: %s", symbol, e)
+    if not raw.get("name"):
         return None
     out = {
         "symbol": symbol,
