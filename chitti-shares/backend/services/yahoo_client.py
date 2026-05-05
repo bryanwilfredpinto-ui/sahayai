@@ -192,6 +192,10 @@ def fundamentals(canonical_symbol: str) -> dict:
         "price": _f(info.get("currentPrice")) or _f(info.get("regularMarketPrice")),
         "fifty_two_week_high": _f(info.get("fiftyTwoWeekHigh")),
         "fifty_two_week_low": _f(info.get("fiftyTwoWeekLow")),
+        "beta": _f(info.get("beta")),
+        "ev_to_ebitda": _f(info.get("enterpriseToEbitda")),
+        "peg_ratio": _f(info.get("pegRatio")),
+        "shares_outstanding": _f(info.get("sharesOutstanding")),
     }
 
     # Approximate ROCE: EBIT / (Total Assets - Current Liabilities)

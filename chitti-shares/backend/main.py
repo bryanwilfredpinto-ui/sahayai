@@ -229,7 +229,7 @@ def api_fundamentals(symbol: str):
     except Exception as e:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=f"fundamentals error: {e}")
     try:
-        qts = yahoo_client.quarterly(sym, num_quarters=4) or []
+        qts = yahoo_client.quarterly(sym, num_quarters=8) or []
     except Exception:  # noqa: BLE001
         qts = []
     out = {
@@ -242,15 +242,32 @@ def api_fundamentals(symbol: str):
         "fifty_two_week_high": raw.get("fifty_two_week_high"),
         "fifty_two_week_low": raw.get("fifty_two_week_low"),
         "pe": raw.get("pe"),
+        "forward_pe": raw.get("forward_pe"),
         "pb": raw.get("pb"),
         "eps": raw.get("eps"),
         "dividend_yield": raw.get("dividend_yield"),
         "debt_to_equity": raw.get("debt_to_equity"),
         "roe": raw.get("roe"),
+        "roa": raw.get("roa"),
         "roce": raw.get("roce"),
+        "profit_margin": raw.get("profit_margin"),
+        "operating_margin": raw.get("operating_margin"),
+        "current_ratio": raw.get("current_ratio"),
+        "quick_ratio": raw.get("quick_ratio"),
+        "book_value": raw.get("book_value"),
+        "beta": raw.get("beta"),
+        "ev_to_ebitda": raw.get("ev_to_ebitda"),
+        "peg_ratio": raw.get("peg_ratio"),
+        "shares_outstanding": raw.get("shares_outstanding"),
+        "revenue_growth": raw.get("revenue_growth"),
+        "earnings_growth": raw.get("earnings_growth"),
+        # Shareholding — Coming Soon, NSE/BSE shareholding scrape pending
         "promoter_holding": None,
         "fii_holding": None,
         "dii_holding": None,
+        "public_holding": None,
+        "mf_holding": None,
+        "pledged_pct": None,
         "quarterly": qts,
     }
     _cache.set(cache_key, out, 60 * 60)  # 1 hr
