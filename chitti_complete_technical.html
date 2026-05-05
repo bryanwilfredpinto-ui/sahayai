@@ -2222,6 +2222,43 @@ async function fetchAndDrawCascadedSR(sym, higherTFs, currentCandles) {
   });
 }
 
+let rsiSRSeries = [];
+
+function toggleRSISR() {
+  rsiSRSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
+  rsiSRSeries = [];
+  if (document.getElementById('ov-rsi-sr')?.checked && lastCandles.length)
+    drawRSISRLines(lastCandles);
+}
+
+function drawRSISRLines(candles) {
+  if (!lwChart || !candles.length) return;
+  const {rsi} = calcRSI(candles);
+  if (!rsi.length) return;
+  const ob=[], os=[], piv=[];
+  for (let i=1; i<rsi.length; i++) {
+    const ci = candles.findIndex(c=>c.time===rsi[i].time);
+    if (ci<0) continue;
+    const p = candles[ci].close;
+    if (rsi[i-1].value<70 && rsi[i].value>=70) ob.push(p);
+    if (rsi[i-1].value>30 && rsi[i].value<=30) os.push(p);
+    if ((rsi[i-1].value<50&&rsi[i].value>=50)||(rsi[i-1].value>50&&rsi[i].value<=50)) piv.push(p);
+  }
+  const t0=candles[0].time, t1=candles[candles.length-1].time;
+  const S = LightweightCharts.LineStyle;
+  const addLine = (price, color, title, style) => {
+    try {
+      const s = lwChart.addLineSeries({color, lineWidth:2, lineStyle:style, priceLineVisible:false, lastValueVisible:true, title});
+      s.setData([{time:t0,value:price},{time:t1,value:price}]);
+      rsiSRSeries.push(s);
+    } catch(e){}
+  };
+  ob.slice(-2).forEach(p => addLine(p,'rgba(255,71,87,0.9)','RSI 70',S.Dotted));
+  os.slice(-2).forEach(p => addLine(p,'rgba(0,200,150,0.9)','RSI 30',S.Dotted));
+  piv.slice(-1).forEach(p => addLine(p,'rgba(255,179,0,0.7)','RSI 50',S.Dashed));
+  sp('RSI S/R: '+ob.slice(-2).length+' resistance, '+os.slice(-2).length+' support levels marked.');
+}
+
 function clearOverlays() {
   srLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
   tlLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
@@ -2230,42 +2267,42 @@ function clearOverlays() {
 }
 function srStyleForTF(tf) {
   const S = LightweightCharts.LineStyle;
-  return {
-    Monthly: {color:'rgba(156,124,255,1)',   lineWidth:3, lineStyle:S.Solid},
-    Weekly:  {color:'rgba(226,232,240,1)',   lineWidth:2, lineStyle:S.Solid},
-    Daily:   {color:'rgba(255,71,87,1)',     lineWidth:2, lineStyle:S.Solid},
-    '4H':    {color:'rgba(212,160,23,1)',    lineWidth:1, lineStyle:S.Dashed},
-    '1H':    {color:'rgba(0,200,150,1)',     lineWidth:1, lineStyle:S.Solid},
-    '15min': {color:'rgba(76,127,255,1)',    lineWidth:1, lineStyle:S.Dotted},
-    '5min':  {color:'rgba(76,127,255,1)',    lineWidth:1, lineStyle:S.Dotted},
-    '1min':  {color:'rgba(76,127,255,1)',    lineWidth:1, lineStyle:S.Dotted},
-  }[tf] || {color:'rgba(148,163,184,1)', lineWidth:1, lineStyle:S.Dashed};
+  const styles = {
+    Monthly: {color:'rgba(156,124,255,1)', lineWidth:3, lineStyle:S.Solid},
+    Weekly:  {color:'rgba(226,232,240,1)', lineWidth:2, lineStyle:S.Solid},
+    Daily:   {color:'rgba(255,71,87,1)',   lineWidth:2, lineStyle:S.Solid},
+    '4H':    {color:'rgba(212,160,23,1)',  lineWidth:1, lineStyle:S.Dashed},
+    '1H':    {color:'rgba(0,200,150,1)',   lineWidth:1, lineStyle:S.Solid},
+    '15min': {color:'rgba(76,127,255,1)',  lineWidth:1, lineStyle:S.Dotted},
+    '5min':  {color:'rgba(76,127,255,1)',  lineWidth:1, lineStyle:S.Dotted},
+    '1min':  {color:'rgba(76,127,255,1)',  lineWidth:1, lineStyle:S.Dotted},
+  };
+  return styles[tf] || {color:'rgba(148,163,184,1)', lineWidth:1, lineStyle:S.Dashed};
 }
 
 function srLimitForTF(tf) {
-  const limits = {Monthly:1, Weekly:2, Daily:3, '4H':4, '1H':5, '15min':5, '5min':5, '1min':5};
-  return limits[tf] || 3;
+  return {Monthly:1, Weekly:2, Daily:3, '4H':4, '1H':5, '15min':5, '5min':5, '1min':5}[tf] || 3;
 }
 
 function drawSRLines(candles, tf) {
   if (!showSR || !lwChart || !candles.length) return;
-  const levels = findSRLevels(candles);
-  const lastClose = candles[candles.length-1]?.close || 0;
+  const lastClose = candles[candles.length-1].close;
   if (!lastClose) return;
-  const style = srStyleForTF(tf);
-  const limit = srLimitForTF(tf);
 
-  // Filter range depends on timeframe - Monthly needs wider range
-  const filterRange = {Monthly:0.30, Weekly:0.20, Daily:0.15, '4H':0.12, '1H':0.10}[tf] || 0.12;
-  const res = levels.filter(l => l.price > lastClose && l.price < lastClose*(1+filterRange))
-    .sort((a,b)=>a.price-b.price).slice(0,limit);
-  const sup = levels.filter(l => l.price < lastClose && l.price > lastClose*(1-filterRange))
-    .sort((a,b)=>b.price-a.price).slice(0,limit);
+  const range = {Monthly:0.30, Weekly:0.20, Daily:0.15, '4H':0.12, '1H':0.10}[tf] || 0.15;
+  const levels = findSRLevels(candles);
+  const limit = srLimitForTF(tf);
+  const style = srStyleForTF(tf);
+
+  const res = levels.filter(l => l.price > lastClose && l.price <= lastClose*(1+range))
+    .sort((a,b) => a.price - b.price).slice(0, limit);
+  const sup = levels.filter(l => l.price < lastClose && l.price >= lastClose*(1-range))
+    .sort((a,b) => b.price - a.price).slice(0, limit);
 
   const t0 = candles[0].time;
   const t1 = candles[candles.length-1].time;
 
-  [...res,...sup].forEach(lv => {
+  [...res, ...sup].forEach(lv => {
     try {
       const s = lwChart.addLineSeries({
         color: style.color,
@@ -2275,35 +2312,13 @@ function drawSRLines(candles, tf) {
         lastValueVisible: true,
         title: lv.price > lastClose ? 'R' : 'S',
       });
-      s.setData([{time:t0, value:lv.price},{time:t1, value:lv.price}]);
+      s.setData([{time:t0, value:lv.price}, {time:t1, value:lv.price}]);
       srLineSeries.push(s);
-    } catch(e){ console.error('SR line error:', e); }
+    } catch(e) {}
   });
 }
 
-function drawTrendlines(candles, tf) {
-  if (!showTL || !lwChart) return;
-  findTrendlines(candles).forEach(tl => {
-    const color = tl.type === 'R' ? 'rgba(255,71,87,0.67)' : 'rgba(0,200,150,0.67)';
-    const s = lwChart.addLineSeries({color, lineWidth:1.5, priceLineVisible:false, lastValueVisible:false});
-    s.setData([tl.p1, tl.p2]);
-    tlLineSeries.push(s);
-  });
-}
 
-// ── togOver ──
-function togOver(k) {
-  const el = document.getElementById('tog-'+k);
-  const on = el.classList.toggle('on');
-  el.setAttribute('aria-checked', on);
-  if (k==='sr') showSR = on;
-  if (k==='tl') showTL = on;
-  if (k==='prev') showPrevD = on;
-  sp((k==='sr'?'Support and resistance':k==='tl'?'Trendlines':'Previous day levels') + (on?' shown.':' hidden.'));
-  if (currentSymbol) loadChart(currentSymbol);
-}
-
-// ── Main loadChart ──
 async function loadChart(sym) {
   if (!lwChart) initCharts();
   const tf = curTF;
