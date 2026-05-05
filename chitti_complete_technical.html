@@ -2189,7 +2189,8 @@ async function fetchAndDrawCascadedSR(sym, higherTFs, currentCandles) {
       if (!candles?.length) continue;
       const levels = findSRLevels(candles);
       const limit = srLimitForTF(htf);
-      levels.filter(l=>l.price>lastClose*0.85&&l.price<lastClose*1.15)
+      const cRange = {Monthly:0.35, Weekly:0.25, Daily:0.18, '4H':0.15, '1H':0.12}[htf] || 0.15;
+      levels.filter(l=>l.price>lastClose*(1-cRange)&&l.price<lastClose*(1+cRange))
         .sort((a,b)=>Math.abs(a.price-lastClose)-Math.abs(b.price-lastClose))
         .slice(0,limit*2)
         .forEach(l=>allLevels.push({price:l.price, tf:htf, isRes:l.price>lastClose}));
@@ -2254,9 +2255,11 @@ function drawSRLines(candles, tf) {
   const style = srStyleForTF(tf);
   const limit = srLimitForTF(tf);
 
-  const res = levels.filter(l => l.price > lastClose && l.price < lastClose*1.12)
+  // Filter range depends on timeframe - Monthly needs wider range
+  const filterRange = {Monthly:0.30, Weekly:0.20, Daily:0.15, '4H':0.12, '1H':0.10}[tf] || 0.12;
+  const res = levels.filter(l => l.price > lastClose && l.price < lastClose*(1+filterRange))
     .sort((a,b)=>a.price-b.price).slice(0,limit);
-  const sup = levels.filter(l => l.price < lastClose && l.price > lastClose*0.88)
+  const sup = levels.filter(l => l.price < lastClose && l.price > lastClose*(1-filterRange))
     .sort((a,b)=>b.price-a.price).slice(0,limit);
 
   const t0 = candles[0].time;
