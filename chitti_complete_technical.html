@@ -374,7 +374,7 @@ textarea:focus{border-color:var(--blue)}
       </div>
     </div>
     <!-- Mini chart - collapsed by default, tap ▼ to expand -->
-    <div id="idx-chart-wrap" style="position:relative;overflow:hidden;max-height:0;transition:max-height .35s ease">
+    <div id="idx-chart-wrap" style="position:relative;overflow:hidden;max-height:140px;transition:max-height .35s ease">
       <div id="idx-chart" style="height:130px" aria-label="Index mini chart"></div>
       <div id="idx-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--card);font-size:11px;color:var(--muted)">
         <span class="spin">⟳</span>&nbsp;Loading…
@@ -3163,13 +3163,13 @@ async function loadIndexData(sym, name) {
   }
 }
 
-let _idxOpen = false;
+let _idxOpen = true;
 function toggleIdxChart() {
   _idxOpen = !_idxOpen;
   const wrap = document.getElementById('idx-chart-wrap');
   const btn  = document.getElementById('idx-toggle-btn');
   if (wrap) wrap.style.maxHeight = _idxOpen ? '140px' : '0';
-  if (btn)  { btn.textContent = _idxOpen ? '📉' : '📈'; }
+  if (btn)  { btn.textContent = _idxOpen ? '▲' : '▼'; }
   if (_idxOpen && idxChart) {
     requestAnimationFrame(() => {
       const el = document.getElementById('idx-chart');
