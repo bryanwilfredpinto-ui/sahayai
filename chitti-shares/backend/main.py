@@ -201,6 +201,106 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get("/api/fundamentals/{symbol:path}")
+def api_fundamentals(symbol: str):
+    """
+    Public unauthenticated fundamentals endpoint for the in-chart
+    Fundamentals section of chitti_complete_technical.html.
+
+    Mirrors what Angel One Overview / Zerodha Kite Fundamentals / Groww
+    show on a stock page: identity, 52W H/L, P/E, P/B, EPS, dividend
+    yield, D/E, ROE, ROCE, plus last 4 quarters revenue + net profit.
+
+    Promoter / FII / DII shares need an NSE/BSE scrape (yfinance does
+    not expose these); returned as None for now and the frontend shows
+    "Coming soon" so the slot is reserved.
+    """
+    from urllib.parse import unquote
+    from services import yahoo_client
+    from services.cache import cache as _cache
+    sym = unquote(symbol)
+    cache_key = f"public_fund:{sym}"
+    cached = _cache.get(cache_key)
+    if cached:
+        return cached
+    try:
+        raw = yahoo_client.fundamentals(sym) or {}
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"fundamentals error: {e}")
+    try:
+        qts = yahoo_client.quarterly(sym, num_quarters=8) or []
+    except Exception:  # noqa: BLE001
+        qts = []
+    out = {
+        "symbol": sym,
+        "name": raw.get("name"),
+        "sector": raw.get("sector"),
+        "industry": raw.get("industry"),
+        "price": raw.get("price"),
+        "market_cap": raw.get("market_cap"),
+        "fifty_two_week_high": raw.get("fifty_two_week_high"),
+        "fifty_two_week_low": raw.get("fifty_two_week_low"),
+        "pe": raw.get("pe"),
+        "forward_pe": raw.get("forward_pe"),
+        "pb": raw.get("pb"),
+        "eps": raw.get("eps"),
+        "dividend_yield": raw.get("dividend_yield"),
+        "debt_to_equity": raw.get("debt_to_equity"),
+        "roe": raw.get("roe"),
+        "roa": raw.get("roa"),
+        "roce": raw.get("roce"),
+        "profit_margin": raw.get("profit_margin"),
+        "operating_margin": raw.get("operating_margin"),
+        "current_ratio": raw.get("current_ratio"),
+        "quick_ratio": raw.get("quick_ratio"),
+        "book_value": raw.get("book_value"),
+        "beta": raw.get("beta"),
+        "ev_to_ebitda": raw.get("ev_to_ebitda"),
+        "peg_ratio": raw.get("peg_ratio"),
+        "shares_outstanding": raw.get("shares_outstanding"),
+        "revenue_growth": raw.get("revenue_growth"),
+        "earnings_growth": raw.get("earnings_growth"),
+        # Shareholding — Coming Soon, NSE/BSE shareholding scrape pending
+        "promoter_holding": None,
+        "fii_holding": None,
+        "dii_holding": None,
+        "public_holding": None,
+        "mf_holding": None,
+        "pledged_pct": None,
+        "quarterly": qts,
+    }
+    _cache.set(cache_key, out, 60 * 60)  # 1 hr
+    return out
+
+
+@app.get("/api/news/market")
+def api_news_market(limit: int = 20):
+    """
+    Top market-moving headlines for the in-app News tab in
+    chitti_fundamentals.html. Public, unauthenticated. 10 min cache.
+
+    Sources: Moneycontrol RSS (primary), LiveMint RSS, BSE corporate
+    filings RSS, NSE corporate announcements JSON. Failures are silent.
+    """
+    from services import news_client
+    items = news_client.fetch_market_news(limit=max(1, min(limit, 50)))
+    return {"items": items, "count": len(items)}
+
+
+@app.get("/api/news/stock/{symbol:path}")
+def api_news_stock(symbol: str, limit: int = 10):
+    """
+    Headlines that mention the given stock symbol. Public, unauthenticated.
+    Substring match on the headline + exact match on the source's symbol field.
+    """
+    from urllib.parse import unquote
+    from services import news_client
+    sym = unquote(symbol)
+    items = news_client.fetch_stock_news(sym, limit=max(1, min(limit, 25)))
+    return {"items": items, "count": len(items), "symbol": sym}
+
+
 from fastapi import Body, HTTPException
 
 
