@@ -154,6 +154,23 @@ main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
 .scan-actions button{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
 .scan-actions button:hover{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4)}
 
+/* ── Composite Scorecard band (Tickertape / Trendlyne style) ── */
+.score-band{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-bottom:10px}
+.score-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:8px;padding:10px 8px;background:var(--card2);min-height:80px;text-align:center}
+.score-pill.cs{border-style:dashed;opacity:.85}
+.score-pill .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.score-pill .val{font-size:18px;font-weight:800;font-family:'JetBrains Mono','Menlo',monospace;margin:4px 0}
+.score-pill .dim{color:var(--muted);font-size:14px}
+.score-pill .pe{font-size:9px;color:var(--muted);line-height:1.3}
+
+/* ── Financials period × statement tabs ── */
+.fin-period-row,.fin-stmt-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.fin-stmt-row{margin-bottom:12px;padding-bottom:8px}
+.fin-period-btn,.fin-stmt-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;min-height:32px}
+.fin-period-btn:hover,.fin-stmt-btn:hover{color:var(--text);background:rgba(59,130,246,.05)}
+.fin-period-btn.active,.fin-stmt-btn.active{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.5);color:var(--blue)}
+.fin-period-btn:focus-visible,.fin-stmt-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+
 /* ── News tab ── */
 .news-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .news-controls button{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:34px}
@@ -408,16 +425,51 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
 
   <!-- ════════════════════ OVERVIEW TAB ════════════════════ -->
   <section id="tab-overview" class="page" role="tabpanel">
+
+    <!-- Composite Scorecard band — Tickertape / Trendlyne DVM style -->
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">📋 Overview</div>
-          <div class="section-sub">The numbers you see first on Angel One / Zerodha / Groww — sized for one quick glance.</div>
+          <div class="section-title">🏷️ Composite Scorecard <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Tickertape's Quality / Valuation / Growth / Health chips + Trendlyne's Durability-Valuation-Momentum. Composite scoring engine tomorrow.</div>
+        </div>
+        <button class="sp-btn" onclick="speakSection('scorecard')" aria-label="Hear scorecard summary">🔊 Hear scorecard</button>
+      </div>
+      <div class="score-band" role="list" aria-label="Composite scorecard chips">
+        <div class="score-pill cs" role="listitem"><div class="lbl">Quality</div><div class="val dim">—</div><div class="pe">Profitability + return ratios</div></div>
+        <div class="score-pill cs" role="listitem"><div class="lbl">Valuation</div><div class="val dim">—</div><div class="pe">P/E, P/B, PEG vs sector</div></div>
+        <div class="score-pill cs" role="listitem"><div class="lbl">Growth</div><div class="val dim">—</div><div class="pe">Revenue + Profit CAGR</div></div>
+        <div class="score-pill cs" role="listitem"><div class="lbl">Financial Health</div><div class="val dim">—</div><div class="pe">Debt, liquidity, coverage</div></div>
+        <div class="score-pill cs" role="listitem"><div class="lbl">Momentum</div><div class="val dim">—</div><div class="pe">12M return, RSI, trend</div></div>
+        <div class="score-pill cs" role="listitem"><div class="lbl">Durability (DVM)</div><div class="val dim">—</div><div class="pe">Trendlyne-style stability score</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📋 Key Metrics</div>
+          <div class="section-sub">The numbers Angel One / Zerodha / Groww show first — sized for one quick glance.</div>
         </div>
         <button class="sp-btn" onclick="speakSection('overview')" aria-label="Hear Overview summary">🔊 Hear overview</button>
       </div>
       <div id="overview-grid" class="metric-grid">
         <div class="section-empty" style="grid-column:1/-1">Search a stock above to load its overview.</div>
+      </div>
+    </div>
+
+    <!-- Earnings Calendar (Yahoo / Bloomberg style) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📅 Earnings Calendar <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Next earnings date, ex-dividend date, AGM. Source: BSE / NSE corporate-actions feed.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next Earnings</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">When the company will next report quarterly results.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next Ex-Dividend</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Buy before this date to be eligible for the next dividend.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next AGM</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Annual general meeting where shareholders vote.</div></div>
       </div>
     </div>
   </section>
@@ -510,6 +562,93 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
       </div>
       <div style="overflow-x:auto"><table id="q-tbl" class="q-tbl" aria-label="Quarterly results"></table></div>
     </div>
+
+    <!-- Full Financial Statements matrix — Period × Statement -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📊 Financial Statements <span class="coming-soon">Wiring tomorrow</span></div>
+          <div class="section-sub">Screener.in / Bloomberg / Zerodha-style multi-period × multi-statement matrix. Backend scraper is built (services/screener_client.py); endpoint wires next session.</div>
+        </div>
+      </div>
+      <div class="fin-period-row" role="tablist" aria-label="Period">
+        <button class="fin-period-btn active" data-period="q"   onclick="setFinPeriod('q')"   role="tab">Quarterly</button>
+        <button class="fin-period-btn"        data-period="h"   onclick="setFinPeriod('h')"   role="tab">Half-yearly</button>
+        <button class="fin-period-btn"        data-period="y"   onclick="setFinPeriod('y')"   role="tab">Annual</button>
+        <button class="fin-period-btn"        data-period="y10" onclick="setFinPeriod('y10')" role="tab">10-Year</button>
+      </div>
+      <div class="fin-stmt-row" role="tablist" aria-label="Statement">
+        <button class="fin-stmt-btn active" data-stmt="pl"        onclick="setFinStmt('pl')"        role="tab">📊 P&amp;L</button>
+        <button class="fin-stmt-btn"        data-stmt="bs"        onclick="setFinStmt('bs')"        role="tab">⚖️ Balance Sheet</button>
+        <button class="fin-stmt-btn"        data-stmt="cf"        onclick="setFinStmt('cf')"        role="tab">💵 Cash Flow</button>
+        <button class="fin-stmt-btn"        data-stmt="ratios"    onclick="setFinStmt('ratios')"    role="tab">📐 Ratios</button>
+        <button class="fin-stmt-btn"        data-stmt="estimates" onclick="setFinStmt('estimates')" role="tab">🔮 Estimates</button>
+        <button class="fin-stmt-btn"        data-stmt="segments"  onclick="setFinStmt('segments')"  role="tab">🌐 Segments</button>
+      </div>
+      <div id="fin-table" role="region" aria-live="polite" aria-label="Financial statements table"></div>
+    </div>
+
+    <!-- Corporate Actions (Angel One / Moneycontrol) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📅 Corporate Actions <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Dividends, splits, bonus issues, rights — historical timeline. Source: BSE / NSE corporate-actions feed.</div>
+        </div>
+        <button class="metric-spk" onclick="sp('Corporate actions: dividends, splits, bonus issues, rights. Coming soon. Wiring next session from B S E and N S E corporate actions feed.')" aria-label="Hear what corporate actions covers">🔊</button>
+      </div>
+      <table class="fund-q-tbl" aria-label="Corporate actions">
+        <thead><tr><th>Action</th><th>Type</th><th>Ex-Date</th><th>Record Date</th><th>Amount / Ratio</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" class="section-empty">Coming soon — historical dividends, splits, bonus, rights timeline. Wires from BSE / NSE corporate-actions feed next session.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Analyst Estimates & Recommendations (Yahoo / Bloomberg / Tickertape) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🔮 Analyst Estimates &amp; Recommendations <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Consensus EPS, target price, BUY / HOLD / SELL distribution from broker reports. Needs paid analyst-data feed.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Consensus EPS (next Q)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Average analyst forecast for next quarter's EPS.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Consensus Sales (next Q)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Average analyst forecast for next quarter's revenue.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>12-Month Target Price</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Average target price across covering analysts.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Recommendation Mix</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How many BUY / HOLD / SELL ratings.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Last Q Surprise %</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How much the actual EPS beat / missed consensus last quarter.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>EPS Revision Trend</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Are analysts upgrading or downgrading their EPS forecasts?</div></div>
+      </div>
+    </div>
+
+    <!-- Annual Reports & Concalls (Tickertape / Trendlyne / Screener) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📑 Annual Reports &amp; Concalls <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Direct PDF links: latest annual report, investor presentation, concall transcripts, credit-rating reports. Source: BSE / NSE filings.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — wires from BSE / NSE filings feed next session. Will surface the last 5 annual reports plus the most recent earnings deck and concall transcript.</div>
+    </div>
+
+    <!-- Segment & Geographic breakdown (Bloomberg / Yahoo) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🌐 Segment &amp; Geographic Breakdown <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Revenue and operating profit split by business segment and geography (where company reports). Needs annual-report parser.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Revenue by Segment</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Pie chart of revenue split across business segments.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>EBIT by Segment</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Operating profit by business segment.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Revenue by Geography</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Domestic vs International revenue split.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Forex Earnings %</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share of revenue earned in foreign currency.</div></div>
+      </div>
+    </div>
   </section>
 
   <!-- ════════════════════ RATIOS TAB ════════════════════ -->
@@ -581,6 +720,45 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
           <div class="news-take"><div class="lbl">Why this matters</div><div>Block deals are pre-arranged trades of 5 lakh shares or ₹10 crore+. Often signal institutional rebalancing.</div></div>
         </div>
       </div>
+    </div>
+
+    <!-- Insider / Promoter activity (Tickertape / Trendlyne) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🕵️ Insider / Promoter Activity (last 12 months) <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">SEBI-disclosed promoter and insider buying / selling. Skin-in-the-game beats analyst opinions.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Insider activity">
+        <thead><tr><th>Date</th><th>Insider</th><th>Action</th><th>Qty</th><th>Avg Price</th><th>Holding After</th></tr></thead>
+        <tbody><tr><td colspan="6" class="section-empty">Coming soon — wires from BSE / NSE insider-disclosure feed next session.</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Mutual Fund deep-dive (Tickertape) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏦 Mutual Fund Holdings — top 10 schemes <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Which Indian mutual fund schemes own this stock + how their holding has changed quarter over quarter.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Mutual fund top holders">
+        <thead><tr><th>Scheme</th><th>AMC</th><th>Holding %</th><th>Q/Q Change</th><th>Last Action</th></tr></thead>
+        <tbody><tr><td colspan="5" class="section-empty">Coming soon — wires from AMFI monthly portfolios next session.</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Pledged shares timeline (Trendlyne) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">⛓️ Promoter Pledge Timeline <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">How much of the promoter holding is pledged as loan collateral, quarter by quarter. Above 20% is a red flag.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — wires from BSE / NSE pledge disclosures next session.</div>
     </div>
   </section>
 
@@ -1473,6 +1651,98 @@ function renderValuation(d) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// Financials matrix — Period × Statement skeleton
+// (Backend wiring next session; today renders the full row + column
+// structure with Coming Soon placeholders so we know what to build.)
+// ═══════════════════════════════════════════════════════════
+let _finPeriod = 'q', _finStmt = 'pl';
+
+const FIN_ROWS = {
+  pl: ['Sales / Revenue','Expenses','Gross Profit','Operating Profit (EBITDA)','OPM %','Other Income','Interest','Depreciation','Profit before Tax','Tax','Tax %','Net Profit','EPS (₹)','Dividend Payout %'],
+  bs: ['Equity Capital','Reserves','Borrowings','Other Liabilities','Total Liabilities','Fixed Assets','CWIP','Investments','Other Assets','Total Assets','Working Capital','Net Worth','Net Debt'],
+  cf: ['Cash from Operating Activities','Cash from Investing Activities','Cash from Financing Activities','Net Cash Flow','Free Cash Flow','OCF / Net Profit','FCF / Net Profit'],
+  ratios: ['Debtor Days','Inventory Days','Days Payable','Cash Conversion Cycle','Working Capital Days','ROCE %','ROE %','ROA %','Asset Turnover','Interest Coverage','Current Ratio','Quick Ratio'],
+  estimates: ['Consensus Sales (next Q)','Consensus EPS (next Q)','Consensus Sales (FY+1)','Consensus EPS (FY+1)','12-Month Target Price','Beat / Miss last Q','Surprise %','EPS Revision Trend','# Analysts Covering','Recommendation Mix'],
+  segments: ['Segment Revenue Split','Segment EBIT Split','Geographic Revenue Split','Forex Earnings %','Top Customer Concentration','Top Supplier Concentration']
+};
+
+const FIN_PERIOD_LABEL = { q:'Quarterly', h:'Half-yearly', y:'Annual', y10:'10-Year Annual' };
+const FIN_STMT_LABEL   = { pl:'Profit & Loss', bs:'Balance Sheet', cf:'Cash Flow', ratios:'Key Ratios', estimates:'Analyst Estimates', segments:'Segments & Geography' };
+
+function setFinPeriod(p) {
+  _finPeriod = p;
+  document.querySelectorAll('.fin-period-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.period === p); });
+  _renderFinTable();
+  sp(FIN_PERIOD_LABEL[p] + ' selected.');
+}
+function setFinStmt(s) {
+  _finStmt = s;
+  document.querySelectorAll('.fin-stmt-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.stmt === s); });
+  _renderFinTable();
+  sp(FIN_STMT_LABEL[s] + ' selected.');
+}
+
+function _finHeaders(period) {
+  if (period === 'q')   return ['Mar 2024','Jun 2024','Sep 2024','Dec 2024','Mar 2025','Jun 2025','Sep 2025','Dec 2025'];
+  if (period === 'h')   return ['H2 FY24','H1 FY25','H2 FY25','H1 FY26'];
+  if (period === 'y')   return ['Mar 2022','Mar 2023','Mar 2024','Mar 2025','TTM'];
+  if (period === 'y10') return ['Mar 2017','Mar 2018','Mar 2019','Mar 2020','Mar 2021','Mar 2022','Mar 2023','Mar 2024','Mar 2025','TTM'];
+  return [];
+}
+
+// Which (period, statement) combos will have real data once wired? Used for
+// tagging cells: LIVE-when-wired vs forever-Coming-Soon.
+function _finStatus(period, stmt) {
+  // Quarterly: only P&L wires from screener; BS/CF reported annually only.
+  // Half-yearly: P&L computed from quarterly; BS/CF not reported half-yearly.
+  // Annual + 10-Year: P&L / BS / CF all live from screener.
+  // Ratios + Estimates + Segments: deeper sections — Coming Soon for now.
+  if (stmt === 'pl') {
+    if (period === 'q' || period === 'h' || period === 'y' || period === 'y10') return 'wires';
+  }
+  if ((stmt === 'bs' || stmt === 'cf') && (period === 'y' || period === 'y10')) return 'wires';
+  if ((stmt === 'bs' || stmt === 'cf') && (period === 'q' || period === 'h')) return 'annual-only';
+  return 'soon';
+}
+
+function _renderFinTable() {
+  const target = document.getElementById('fin-table');
+  if (!target) return;
+  const rows = FIN_ROWS[_finStmt] || [];
+  const headers = _finHeaders(_finPeriod);
+  const status = _finStatus(_finPeriod, _finStmt);
+
+  let banner = '';
+  if (status === 'wires') {
+    banner = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong> — ' + rows.length + ' rows expected · structure ready</span><span class="coming-soon">Backend wiring tomorrow</span></div>';
+  } else if (status === 'annual-only') {
+    banner = '<div class="scan-note">⚠️ ' + FIN_STMT_LABEL[_finStmt] + ' is reported <strong>annually only</strong> — Indian companies do not break it out per quarter. Switch the Period selector to <strong>Annual</strong> or <strong>10-Year</strong>.</div>';
+  } else {
+    banner = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong> — ' + rows.length + ' rows expected</span><span class="coming-soon">Coming Soon</span></div>';
+  }
+
+  const headRow = '<tr><th>Metric</th>' + headers.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr>';
+  const bodyRows = rows.map(function(label){
+    const safeSpeak = label.replace(/'/g, "\\'");
+    const dim = headers.map(function(){ return '<td style="color:var(--muted)">—</td>'; }).join('');
+    return '<tr><td>' + label + ' <button class="fund-spk" onclick="sp(\'' + safeSpeak + '. Coming soon. Wires next session.\')" aria-label="Hear ' + label + '">🔊</button></td>' + dim + '</tr>';
+  }).join('');
+
+  let footnote = '';
+  if (status === 'wires') {
+    const src = (_finStmt === 'pl' && _finPeriod === 'h') ? 'Computed half-yearly aggregate of quarterly P&L (Q1+Q2 = H1, Q3+Q4 = H2)'
+              : 'Source: screener.in scrape (services/screener_client.py — already built)';
+    footnote = '<div style="font-size:11px;color:var(--muted);margin-top:8px">' + src + '. Endpoint /api/financials/{symbol} wires next session.</div>';
+  }
+
+  target.innerHTML = banner +
+    '<div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="' + FIN_PERIOD_LABEL[_finPeriod] + ' ' + FIN_STMT_LABEL[_finStmt] + '">' +
+    '<thead>' + headRow + '</thead>' +
+    '<tbody>' + bodyRows + '</tbody>' +
+    '</table></div>' + footnote;
+}
+
+// ═══════════════════════════════════════════════════════════
 // Scanner
 // ═══════════════════════════════════════════════════════════
 function onStrategyChange() {
@@ -1930,6 +2200,7 @@ if (_portInput) _portInput.addEventListener('keydown', function(e){ if (e.key ==
 _renderRecent();
 _renderChatPlaceholder();
 _renderPortfolioChips();
+_renderFinTable();
 
 const _langEn = document.getElementById('lang-en'), _langHi = document.getElementById('lang-hi');
 if (_langEn) _langEn.classList.toggle('active', _newsLang === 'en');
