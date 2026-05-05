@@ -257,6 +257,33 @@ def api_fundamentals(symbol: str):
     return out
 
 
+@app.get("/api/news/market")
+def api_news_market(limit: int = 20):
+    """
+    Top market-moving headlines for the in-app News tab in
+    chitti_fundamentals.html. Public, unauthenticated. 10 min cache.
+
+    Sources: Moneycontrol RSS (primary), LiveMint RSS, BSE corporate
+    filings RSS, NSE corporate announcements JSON. Failures are silent.
+    """
+    from services import news_client
+    items = news_client.fetch_market_news(limit=max(1, min(limit, 50)))
+    return {"items": items, "count": len(items)}
+
+
+@app.get("/api/news/stock/{symbol:path}")
+def api_news_stock(symbol: str, limit: int = 10):
+    """
+    Headlines that mention the given stock symbol. Public, unauthenticated.
+    Substring match on the headline + exact match on the source's symbol field.
+    """
+    from urllib.parse import unquote
+    from services import news_client
+    sym = unquote(symbol)
+    items = news_client.fetch_stock_news(sym, limit=max(1, min(limit, 25)))
+    return {"items": items, "count": len(items), "symbol": sym}
+
+
 from fastapi import Body, HTTPException
 
 
