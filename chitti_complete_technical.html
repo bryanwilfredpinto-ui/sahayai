@@ -1437,7 +1437,7 @@ function srow(s, t) {
     <div class="savatar ${t}">${nm.slice(0,2)}</div>
     <div class="sinfo">
       <div class="sym">${nm}</div>
-      <div class="sname">NSE · <span style="opacity:.7">${(function(){const p=Math.abs(pcNum||0);const dots=p>3?5:p>2?4:p>1?3:p>0.5?2:1;return '●'.repeat(dots)+'○'.repeat(5-dots);})()} </span><span class="sbadge ${t}">${isBuy ? '▲ BUY' : '▼ SHORT'}</span></div>
+      <div class="sname">NSE · <span style="opacity:.7">${(function(){const p=Math.abs(pcNum||0);const dots=Math.min(5,Math.max(1,Math.round(p/0.5)));return '●'.repeat(dots)+'○'.repeat(5-dots);})()} </span><span class="sbadge ${t}">${isBuy ? '▲ BUY' : '▼ SHORT'}</span></div>
     </div>
     <div class="sprice">
       <div class="sltp">${lpFmt}</div>
@@ -2012,19 +2012,18 @@ async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
       const isRes = lv.price > lastClose;
       try {
         const s = lwChart.addLineSeries({
-          color: style.color + '66',          // 40% opacity — dimmer than current TF
+          color: style.color + '66',
           lineWidth: Math.max(1, style.lineWidth - 1),
           lineStyle: LightweightCharts.LineStyle.Dashed,
           priceLineVisible: false,
           lastValueVisible: true,
           title: (isRes ? 'R' : 'S') + ' ' + higherTF.substring(0,1),
+          autoscaleInfoProvider: () => null,  // Don't affect Y-axis
         });
-        // Use the higher TF candle time range for alignment
-        if (candles.length >= 2) {
-          s.setData([{time: candles[0].time, value: lv.price}, {time: candles[candles.length-1].time, value: lv.price}]);
-        } else {
-          s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
-        }
+        // Use CURRENT CHART time range (lastCandles) for correct alignment
+        const _t0 = lastCandles.length ? lastCandles[0].time : t0;
+        const _t1 = lastCandles.length ? lastCandles[lastCandles.length-1].time : t1;
+        s.setData([{time: _t0, value: lv.price}, {time: _t1, value: lv.price}]);
         srLineSeries.push(s);
       } catch(e) {}
     });
@@ -2065,8 +2064,9 @@ function drawSRLines(candles, tf) {
       lineWidth: style.lineWidth,
       lineStyle: style.lineStyle,
       priceLineVisible: false,
-      lastValueVisible: true,  // Shows ₹ price label on the line — Angel One style
+      lastValueVisible: true,
       title: (isRes ? 'R' : 'S'),
+      autoscaleInfoProvider: () => null,  // Don't let SR lines affect Y-axis scale
     });
     s.setData([{time:candles[0].time, value:lv.price},{time:candles[candles.length-1].time, value:lv.price}]);
     srLineSeries.push(s);
@@ -2151,10 +2151,22 @@ async function loadChart(sym) {
       if (document.getElementById('ov-'+k)?.checked) toggleOverlay(k);
     });
 
+    // Fit chart FIRST before drawing S/R so candles fill the view
+    lwChart.timeScale().fitContent();
+    lwChart.priceScale('right').applyOptions({autoScale: true});
+
     // S/R + Trendlines — cascading (higher TF levels shown on lower TF charts)
     clearOverlays();
     drawSRLines(candles, tf);
     drawTrendlines(candles, tf);
+
+    // Re-fit after SR lines to ensure candles still fill view
+    setTimeout(() => {
+      if (lwChart) {
+        lwChart.priceScale('right').applyOptions({autoScale: true});
+        lwChart.timeScale().fitContent();
+      }
+    }, 200);
     // Cascade: fetch and draw higher TF S/R levels
     const TFH_ORDER = ['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
     const tfIdx = TFH_ORDER.indexOf(tf);
