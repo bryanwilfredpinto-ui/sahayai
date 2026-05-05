@@ -2329,7 +2329,9 @@ async function loadChart(sym) {
   document.getElementById('clbl').textContent = tf + ' · OHLCV';
 
   try {
-    const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${tf}&days_back=120`);
+    const daysBackMap = {Monthly:730, Weekly:365, Daily:120, '4H':60, '1H':30, '15min':10, '5min':5, '1min':2};
+    const daysBack = daysBackMap[tf] || 60;
+    const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${tf}&days_back=${daysBack}`);
     if (!r.ok) throw new Error('Candles API ' + r.status);
     let candles = await r.json();
     if (!candles.length) throw new Error('No candle data returned');
