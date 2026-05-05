@@ -243,6 +243,17 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
 .mic-btn:focus-visible{outline:2px solid #7c3aed;outline-offset:1px}
 .mic-btn.listening{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.5);animation:micPulse 1.2s ease-in-out infinite}
 @keyframes micPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ── Demo Mode banner + tab ribbon ── */
+.demo-ribbon{display:none;background:linear-gradient(90deg,rgba(124,58,237,.20),rgba(124,58,237,.10));border-bottom:1px solid rgba(124,58,237,.5);padding:6px 14px;font-size:11px;color:var(--text);text-align:center;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.demo-ribbon.shown{display:block}
+.demo-banner{position:fixed;left:14px;right:14px;bottom:14px;max-width:640px;margin:0 auto;background:rgba(124,58,237,.97);border:1px solid #7c3aed;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:300;box-shadow:0 8px 28px rgba(0,0,0,.45);align-items:center;gap:10px;flex-wrap:wrap}
+.demo-banner.shown{display:flex}
+.demo-banner .step{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.92;flex-shrink:0}
+.demo-banner .narr{font-size:13px;flex:1;min-width:160px;line-height:1.5}
+.demo-banner button{background:#fff;color:#7c3aed;border:none;border-radius:6px;padding:7px 14px;font-weight:800;cursor:pointer;font-size:12px;min-height:34px}
+.demo-banner button:hover{filter:brightness(.95)}
+.demo-banner button:focus-visible{outline:2px solid #fff;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -253,6 +264,8 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
   <span class="short"><strong>NOT SEBI REGISTERED</strong> · Educational tool only, not investment advice. <a class="read-more" href="#" onclick="event.preventDefault(); openSebiModal()" role="button">Read full disclaimer</a></span>
   <button class="spk" onclick="speakSebiShort()" aria-label="Hear short disclaimer">🔊</button>
 </div>
+
+<div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite">🎬 DEMO MODE — sample data, not live. Tap Skip to exit.</div>
 
 <div id="sebi-modal" class="sebi-modal" role="dialog" aria-modal="true" aria-labelledby="sebi-modal-title" onclick="if(event.target===this)closeSebiModal()">
   <div class="panel">
@@ -279,6 +292,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
     <a class="switch-btn" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical Analysis">📈 Switch to Technical Analysis →</a>
   </div>
   <div class="header-controls">
+    <button onclick="startDemoMode()" aria-label="Start a 40-second guided demo of Chitti Fundamentals" style="background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.55)">🎬 Demo Mode</button>
     <button onclick="speakPage()" aria-label="Read whole page aloud">🔊 Read page</button>
     <button onclick="speakDisclaimer()" aria-label="Read disclaimer">📜 Disclaimer</button>
     <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
@@ -794,7 +808,117 @@ function openSebiModal() { document.getElementById('sebi-modal').classList.add('
 function closeSebiModal() { document.getElementById('sebi-modal').classList.remove('shown'); }
 function speakSebiShort() { sp('Important disclaimer. Chitti is not SEBI registered. This is an educational tool only, not investment advice. Tap Read full disclaimer for the complete legal notice.'); }
 function speakSebiFull() { sp(SEBI_FULL_EN); }
-document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSebiModal(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeSebiModal(); stopDemoMode(); } });
+
+// ═══════════════════════════════════════════════════════════
+// DEMO MODE — pure frontend, no backend / API key / Angel One needed.
+// Hardcoded RELIANCE-like data set (clearly labelled as DEMO) walks
+// through every tab with Chitti narrating each in plain English.
+// ═══════════════════════════════════════════════════════════
+const DEMO_FUND_DATA = {
+  symbol: 'NSE:RELIANCE',
+  name: 'Reliance Industries Ltd (DEMO)',
+  sector: 'Oil & Gas',
+  industry: 'Refineries',
+  price: 1464,
+  market_cap: 19808250000000,
+  fifty_two_week_high: 1612, fifty_two_week_low: 1290,
+  pe: 24.5, forward_pe: 22.0, pb: 2.19,
+  eps: 67.0, dividend_yield: 0.38, debt_to_equity: 0.41,
+  roe: 9.25, roa: 4.5, roce: 10.5,
+  profit_margin: 9.0, operating_margin: 18.0,
+  current_ratio: 1.5, quick_ratio: 1.0,
+  book_value: 668, beta: 0.9, ev_to_ebitda: 12.0, peg_ratio: 1.4,
+  shares_outstanding: 13533000000,
+  revenue_growth: 7.5, earnings_growth: 12.0,
+  promoter_holding: 50.3, fii_holding: 22.4, dii_holding: 16.8,
+  public_holding: 10.5, mf_holding: 8.1, pledged_pct: 0.0,
+  quarterly: [
+    {quarter:'Mar 2026', revenue:2.36e12, net_income:2.12e11, operating_income:4.25e11},
+    {quarter:'Dec 2025', revenue:2.25e12, net_income:1.96e11, operating_income:4.07e11},
+    {quarter:'Sep 2025', revenue:2.32e12, net_income:1.99e11, operating_income:4.10e11},
+    {quarter:'Jun 2025', revenue:2.08e12, net_income:1.83e11, operating_income:3.81e11},
+    {quarter:'Mar 2025', revenue:2.13e12, net_income:2.13e11, operating_income:3.84e11},
+    {quarter:'Dec 2024', revenue:2.13e12, net_income:1.75e11, operating_income:3.75e11},
+    {quarter:'Sep 2024', revenue:2.15e12, net_income:1.65e11, operating_income:3.80e11},
+    {quarter:'Jun 2024', revenue:2.08e12, net_income:1.55e11, operating_income:3.65e11}
+  ]
+};
+
+const DEMO_STEPS_FUND = [
+  { tab:'overview',   title:'Overview',     narr:'Tab 1 of 6. Overview. Reliance Industries. Market cap nineteen lakh crore. P E twenty four point five. R O E nine percent. Each card has a speak button.' },
+  { tab:'financials', title:'Financials',   narr:'Tab 2 of 6. Financials. Eight quarters of revenue and net profit shown as bars. Latest quarter revenue two point three lakh crore. Trend is up.' },
+  { tab:'ratios',     title:'Ratios',       narr:'Tab 3 of 6. Ratios. R O E nine point two five percent. R O C E ten point five percent. Debt to equity zero point four. Plain English under every number.' },
+  { tab:'ownership',  title:'Ownership',    narr:'Tab 4 of 6. Ownership. Promoter holding fifty percent. F I I twenty two percent. D I I sixteen percent. Pledged shares zero. A clean cap table.' },
+  { tab:'valuation',  title:'Valuation',    narr:'Tab 5 of 6. Valuation. Graham number two hundred sixty rupees. Current price one thousand four hundred sixty four. Trades above Graham fair value.' },
+  { tab:'scanner',    title:'Scanner',      narr:'Tab 6 of 6. Scanner. Thirty one investing strategies — Buffett, Munger, Lynch, Jhunjhunwala, Damani, more. Pick a strategy and a universe, tap Apply.' }
+];
+
+let _demoTimer = null;
+let _demoActive = false;
+let _demoSavedFundData = null;
+
+function startDemoMode() {
+  if (_demoActive) { stopDemoMode(); return; }
+  _demoActive = true;
+  _demoSavedFundData = _fundData;
+  document.getElementById('demo-ribbon').classList.add('shown');
+  _showDemoBanner('Welcome', 'Loading sample stock RELIANCE…');
+  sp('Welcome to Chitti Fundamentals. I am your personal financial guide. Let me show you what I can do.');
+
+  // Render demo data into all tabs (uses existing renderAll path)
+  _fundData = DEMO_FUND_DATA;
+  try { renderAll(DEMO_FUND_DATA); } catch (e) { /* render gracefully even if some optional tab missing */ }
+
+  _demoTimer = setTimeout(function(){ _runDemoStep(0); }, 4500);
+}
+
+function _runDemoStep(i) {
+  if (!_demoActive) return;
+  if (i >= DEMO_STEPS_FUND.length) {
+    _showDemoBanner('Demo complete', 'Tap Stock Detail and search any stock to start.');
+    sp('This is what I do for every stock. Tap Stock Detail and search any stock to get started.');
+    _demoTimer = setTimeout(stopDemoMode, 6000);
+    return;
+  }
+  const step = DEMO_STEPS_FUND[i];
+  showTab(step.tab);
+  _showDemoBanner('Step ' + (i+1) + ' / ' + DEMO_STEPS_FUND.length + ' · ' + step.title, step.narr);
+  sp(step.narr);
+  _demoTimer = setTimeout(function(){ _runDemoStep(i+1); }, 6500);
+}
+
+function _showDemoBanner(label, narration) {
+  let el = document.getElementById('demo-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'demo-banner';
+    el.className = 'demo-banner';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    document.body.appendChild(el);
+  }
+  el.innerHTML = '<span class="step">🎬 ' + label + '</span>' +
+                 '<span class="narr">' + narration + '</span>' +
+                 '<button onclick="stopDemoMode()" aria-label="Skip demo and exit">Skip</button>';
+  el.classList.add('shown');
+}
+
+function stopDemoMode() {
+  if (!_demoActive && !_demoTimer) return;
+  _demoActive = false;
+  if (_demoTimer) { clearTimeout(_demoTimer); _demoTimer = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  const banner = document.getElementById('demo-banner');
+  if (banner) banner.classList.remove('shown');
+  const ribbon = document.getElementById('demo-ribbon');
+  if (ribbon) ribbon.classList.remove('shown');
+  // Restore previously loaded stock data, or clear
+  _fundData = _demoSavedFundData;
+  if (_fundData) {
+    try { renderAll(_fundData); } catch (e) {}
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 // VOICE INPUT — for illiterate / hands-busy users

@@ -311,6 +311,16 @@ textarea:focus{border-color:var(--blue)}
 .mic-btn.listening{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.5);animation:micPulseT 1.2s ease-in-out infinite}
 @keyframes micPulseT{0%,100%{opacity:1}50%{opacity:.55}}
 
+/* ── Demo Mode banner + ribbon ── */
+.demo-ribbon{display:none;background:linear-gradient(90deg,rgba(124,58,237,.20),rgba(124,58,237,.10));border-bottom:1px solid rgba(124,58,237,.5);padding:6px 14px;font-size:11px;color:var(--text);text-align:center;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.demo-ribbon.shown{display:block}
+.demo-banner{position:fixed;left:14px;right:14px;bottom:14px;max-width:640px;margin:0 auto;background:rgba(124,58,237,.97);border:1px solid #7c3aed;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:300;box-shadow:0 8px 28px rgba(0,0,0,.45);align-items:center;gap:10px;flex-wrap:wrap}
+.demo-banner.shown{display:flex}
+.demo-banner .step{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.92;flex-shrink:0}
+.demo-banner .narr{font-size:13px;flex:1;min-width:160px;line-height:1.5}
+.demo-banner button{background:#fff;color:#7c3aed;border:none;border-radius:6px;padding:7px 14px;font-weight:800;cursor:pointer;font-size:12px;min-height:34px}
+.demo-banner button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
 /* ── MARKET OVERVIEW ── */
 .idx-pill{flex-shrink:0;padding:8px 14px;font-size:12px;font-weight:600;border:none;
   background:none;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;
@@ -385,10 +395,12 @@ textarea:focus{border-color:var(--blue)}
 <!-- ════════════════════ A11Y BAR ════════════════════ -->
 <div class="a11y-bar" role="banner">
   <span>👁️ Vision impaired?</span>
+  <button class="a11y-btn" onclick="startDemoMode()" aria-label="Start a guided demo of Chitti Technical Analysis" style="background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.55)">🎬 Demo Mode</button>
   <button class="a11y-btn" onclick="speakPage()" aria-label="Hear this page read aloud">🔊 Read page</button>
   <button class="a11y-btn" onclick="speakHelp()" aria-label="Hear step-by-step instructions">🎙️ How to use</button>
   <button class="a11y-btn" onclick="speakDisclaimer()" aria-label="Hear legal disclaimer">⚠️ Disclaimer</button>
 </div>
+<div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite">🎬 DEMO MODE — guided walk-through. Tap Skip to exit.</div>
 
 <!-- ════════════════════ HEADER ════════════════════ -->
 <div class="header">
@@ -1331,7 +1343,82 @@ function openSebiModal() { const m=document.getElementById('sebi-modal'); if(m){
 function closeSebiModal() { const m=document.getElementById('sebi-modal'); if(m){m.classList.remove('shown');} }
 function speakSebiShort() { sp('Important disclaimer. Chitti is not SEBI registered. This is an educational tool only, not investment advice. Tap Read full disclaimer for the complete legal notice.'); }
 function speakSebiFull() { sp(SEBI_FULL_EN); }
-document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSebiModal(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') { closeSebiModal(); stopDemoMode(); } });
+
+// ═══════════════════════════════════════════════════════════
+// DEMO MODE — guided walk-through of Chitti Technical
+// Uses the live backend (Angel SmartAPI) to load Reliance, then
+// narrates each feature: chart, S/R, trendlines, RSI, Roshan, scanner.
+// User does NOT need their own Angel account — the backend has its own.
+// ═══════════════════════════════════════════════════════════
+const DEMO_STEPS_TECH = [
+  { tab:'chart',   title:'Chart',         narr:'This is the Reliance daily chart. Each candle is one day. Green is up, red is down.' },
+  { tab:'chart',   title:'Support/Resistance', narr:'Support and resistance lines are drawn automatically. They mark price levels where the stock has historically bounced or turned.' },
+  { tab:'chart',   title:'Trendlines',    narr:'Trendlines connect the swing highs and lows automatically. They show whether the stock is in an uptrend, a downtrend, or moving sideways.' },
+  { tab:'chart',   title:'RSI Pane',      narr:'The R S I pane below the price tracks momentum. Above seventy may be overbought, below thirty may be oversold.' },
+  { tab:'chart',   title:'Roshan Indicator', narr:'Bryan custom Roshan indicator combines R S I with candle direction across two timeframes. When all three signals agree, Chitti gives a BUY or SHORT verdict.' },
+  { tab:'scanner', title:'Scanner',       narr:'The scanner runs any indicator across an entire universe — Nifty fifty, Largecap, Midcap, Smallcap or Microcap — and returns matches in seconds.' },
+  { tab:'journal', title:'Journal',       narr:'The journal records every trade with entry, exit, target, stop loss, emotion at entry, emotion at exit. Honest record-keeping is half the edge.' },
+  { tab:'learn',   title:'Learn + Ask Chitti', narr:'The Learn tab has plain-English explanations of every chart pattern and indicator, plus the Ask Chitti chat at the bottom for live questions.' }
+];
+
+let _demoTimerT = null;
+let _demoActiveT = false;
+
+function startDemoMode() {
+  if (_demoActiveT) { stopDemoMode(); return; }
+  _demoActiveT = true;
+  document.getElementById('demo-ribbon').classList.add('shown');
+  _showDemoBannerT('Welcome', 'Loading Reliance daily chart…');
+  sp('Welcome to Chitti Technical Analysis. I am your personal trading guide. Let me show you what I can do.');
+
+  // Open RELIANCE in the chart tab (uses live Angel SmartAPI backend — no user setup required)
+  try {
+    if (typeof openChart === 'function') openChart('NSE:RELIANCE');
+  } catch (e) { /* render gracefully */ }
+
+  _demoTimerT = setTimeout(function(){ _runDemoStepT(0); }, 5000);
+}
+
+function _runDemoStepT(i) {
+  if (!_demoActiveT) return;
+  if (i >= DEMO_STEPS_TECH.length) {
+    _showDemoBannerT('Demo complete', 'Search any stock or tap Scanner to start.');
+    sp('This is what I do for every stock. Search any stock or tap Scanner to get started.');
+    _demoTimerT = setTimeout(stopDemoMode, 6000);
+    return;
+  }
+  const step = DEMO_STEPS_TECH[i];
+  if (typeof showTab === 'function' && step.tab) showTab(step.tab);
+  _showDemoBannerT('Step ' + (i+1) + ' / ' + DEMO_STEPS_TECH.length + ' · ' + step.title, step.narr);
+  sp(step.narr);
+  _demoTimerT = setTimeout(function(){ _runDemoStepT(i+1); }, 6500);
+}
+
+function _showDemoBannerT(label, narration) {
+  let el = document.getElementById('demo-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'demo-banner';
+    el.className = 'demo-banner';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    document.body.appendChild(el);
+  }
+  el.innerHTML = '<span class="step">🎬 ' + label + '</span>' +
+                 '<span class="narr">' + narration + '</span>' +
+                 '<button onclick="stopDemoMode()" aria-label="Skip demo and exit">Skip</button>';
+  el.classList.add('shown');
+}
+
+function stopDemoMode() {
+  if (!_demoActiveT && !_demoTimerT) return;
+  _demoActiveT = false;
+  if (_demoTimerT) { clearTimeout(_demoTimerT); _demoTimerT = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  const banner = document.getElementById('demo-banner'); if (banner) banner.classList.remove('shown');
+  const ribbon = document.getElementById('demo-ribbon'); if (ribbon) ribbon.classList.remove('shown');
+}
 
 // ═══════════════════════════════════════════════════════════
 // VOICE INPUT — for illiterate / hands-busy users
