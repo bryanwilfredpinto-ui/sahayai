@@ -643,8 +643,22 @@ textarea:focus{border-color:var(--blue)}
     <div class="tog on" id="tog-sr" onclick="togOver('sr')" role="checkbox" aria-checked="true" tabindex="0">— S/R</div>
     <div class="tog on" id="tog-tl" onclick="togOver('tl')" role="checkbox" aria-checked="true" tabindex="0">╱ Trend</div>
     <div class="tog"    id="tog-prev" onclick="togOver('prev')" role="checkbox" aria-checked="false" tabindex="0">⬚ Prev D</div>
-    <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap">
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="tf-legend" id="legend"></div>
+      <select id="chart-ind-toolbar" onchange="runChartIndicatorToolbar()"
+        aria-label="Check indicator signal"
+        style="background:var(--card);color:var(--text);border:1px solid var(--border);
+          border-radius:6px;padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;
+          min-height:26px;max-width:170px">
+        <option value="">⚡ Signal check…</option>
+        <optgroup label="⭐ Special"><option value="Roshan Indicator">Roshan</option><option value="Price Action">Price Action</option></optgroup>
+        <optgroup label="Momentum"><option value="RSI">RSI</option><option value="MACD">MACD</option><option value="Stochastic">Stochastic</option><option value="Williams %R">Williams %R</option><option value="CCI">CCI</option></optgroup>
+        <optgroup label="Trend"><option value="Supertrend">Supertrend</option><option value="ADX">ADX</option><option value="Parabolic SAR">Parabolic SAR</option><option value="Ichimoku">Ichimoku</option></optgroup>
+        <optgroup label="Volatility"><option value="Bollinger Bands">Bollinger Bands</option><option value="ATR">ATR</option></optgroup>
+        <optgroup label="Volume"><option value="VWAP">VWAP</option><option value="OBV">OBV</option><option value="MFI">MFI</option></optgroup>
+        <optgroup label="⚡ New"><option value="TTM Squeeze">TTM Squeeze</option><option value="Hull MA">Hull MA</option><option value="Chande Kroll Stop">Chande Kroll</option></optgroup>
+      </select>
+      <div id="chart-ind-toolbar-result" style="display:none;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px"></div>
     </div>
   </div>
 
@@ -1674,19 +1688,96 @@ function findSRLevels(candles) {
   return clustered.slice(-8);  // Max 8 levels — cleaner than 10
 }
 function findTrendlines(candles) {
-  const w = 5; const highs = [], lows = [];
-  for (let i = w; i < candles.length - w; i++) {
-    const h = candles.slice(i-w, i+w+1).map(c=>c.high);
-    const l = candles.slice(i-w, i+w+1).map(c=>c.low);
-    if (candles[i].high === Math.max(...h)) highs.push({i, price:candles[i].high, time:candles[i].time});
-    if (candles[i].low  === Math.min(...l))  lows.push({i,  price:candles[i].low,  time:candles[i].time});
-  }
+  if (candles.length < 20) return [];
   const lines = [];
-  if (highs.length >= 2) { const h1=highs[highs.length-2], h2=highs[highs.length-1]; lines.push({p1:{time:h1.time,value:h1.price},p2:{time:h2.time,value:h2.price},type:'R'}); }
-  if (lows.length  >= 2) { const l1=lows[lows.length-2],   l2=lows[lows.length-1];   lines.push({p1:{time:l1.time,value:l1.price},p2:{time:l2.time,value:l2.price},type:'S'}); }
+
+  // Find significant swing highs (for resistance/downtrend line)
+  // and swing lows (for support/uptrend line)
+  const swingWindow = Math.max(5, Math.floor(candles.length / 20));
+
+  const swingHighs = [];
+  const swingLows = [];
+
+  for (let i = swingWindow; i < candles.length - swingWindow; i++) {
+    const slice = candles.slice(i - swingWindow, i + swingWindow + 1);
+    const maxHigh = Math.max(...slice.map(c => c.high));
+    const minLow  = Math.min(...slice.map(c => c.low));
+
+    if (candles[i].high === maxHigh) {
+      swingHighs.push({ i, time: candles[i].time, price: candles[i].high });
+    }
+    if (candles[i].low === minLow) {
+      swingLows.push({ i, time: candles[i].time, price: candles[i].low });
+    }
+  }
+
+  // Find best downtrend line: two swing highs where second is LOWER than first
+  // and the line between them does NOT cross through candle bodies
+  function findBestTrendLine(points, type) {
+    // Sort by index
+    points.sort((a, b) => a.i - b.i);
+    
+    for (let i = points.length - 1; i >= 1; i--) {
+      const p2 = points[i];
+      for (let j = i - 1; j >= 0; j--) {
+        const p1 = points[j];
+        
+        // Must have meaningful separation (at least 10% of candles apart)
+        if (p2.i - p1.i < Math.floor(candles.length * 0.1)) continue;
+        
+        // For downtrend: p2 must be LOWER than p1 (descending highs)
+        // For uptrend: p2 must be HIGHER than p1 (ascending lows)
+        if (type === 'resistance' && p2.price >= p1.price) continue;
+        if (type === 'support' && p2.price <= p1.price) continue;
+        
+        // Check minimum angle — reject near-horizontal lines
+        const priceDiff = Math.abs(p2.price - p1.price);
+        const avgPrice = (p1.price + p2.price) / 2;
+        const angleRatio = priceDiff / avgPrice;
+        if (angleRatio < 0.005) continue; // Less than 0.5% price change = too flat
+        
+        // Check line does NOT cross through candle bodies between the two points
+        const slope = (p2.price - p1.price) / (p2.i - p1.i);
+        let valid = true;
+        
+        for (let k = p1.i + 1; k < p2.i; k++) {
+          const linePrice = p1.price + slope * (k - p1.i);
+          const c = candles[k];
+          // Line must not pass THROUGH the candle body
+          const bodyHigh = Math.max(c.open, c.close);
+          const bodyLow  = Math.min(c.open, c.close);
+          if (type === 'resistance' && linePrice < bodyHigh && linePrice > bodyLow) {
+            valid = false; break;
+          }
+          if (type === 'support' && linePrice > bodyLow && linePrice < bodyHigh) {
+            valid = false; break;
+          }
+        }
+        
+        if (valid) {
+          // Extend line to last candle only (not beyond)
+          const lastI = candles.length - 1;
+          const endPrice = p1.price + slope * (lastI - p1.i);
+          
+          return {
+            p1: { time: p1.time, value: p1.price },
+            p2: { time: candles[lastI].time, value: endPrice },
+            type: type === 'resistance' ? 'R' : 'S'
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  const downLine = findBestTrendLine(swingHighs, 'resistance');
+  const upLine   = findBestTrendLine(swingLows,  'support');
+
+  if (downLine) lines.push(downLine);
+  if (upLine)   lines.push(upLine);
+
   return lines;
 }
-
 function srFor(tf) { const i=TFH.indexOf(tf); return i===-1?TFH:TFH.slice(0,i+1); }
 function updateLegend() {
   document.getElementById('legend').innerHTML = srFor(curTF).map(t=>`<span><span class="tf-dot" style="background:${TFC[t]}"></span>${t}</span>`).join('');
@@ -2546,6 +2637,26 @@ function runChartIndicator() {
     sp(window._chartIndText);
   }
 }
+function runChartIndicatorToolbar() {
+  const sel = document.getElementById('chart-ind-toolbar');
+  if (!sel) return;
+  // Mirror to the main indicator selector and run
+  const mainSel = document.getElementById('chart-ind-sel');
+  if (mainSel) mainSel.value = sel.value;
+  runChartIndicator();
+  // Show result in toolbar
+  setTimeout(() => {
+    const mainResult = document.getElementById('chart-ind-result');
+    const toolbarResult = document.getElementById('chart-ind-toolbar-result');
+    if (mainResult && toolbarResult && mainResult.style.display !== 'none') {
+      toolbarResult.textContent = mainResult.textContent;
+      toolbarResult.style.background = mainResult.style.background;
+      toolbarResult.style.color = mainResult.style.color;
+      toolbarResult.style.display = 'block';
+    }
+  }, 500);
+}
+
 function speakChartIndResult() {
   sp(window._chartIndText || 'Select an indicator first.');
 }
