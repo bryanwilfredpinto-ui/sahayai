@@ -122,6 +122,38 @@ main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
 .chip{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:'JetBrains Mono','Menlo',monospace;min-height:30px}
 .chip:hover{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4)}
 
+/* ── Scanner: universe selector + Scan All + result cards ── */
+.scanner-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.scanner-actions button{flex:1;min-width:140px;background:var(--blue);border:1px solid var(--blue);color:#fff;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;min-height:44px}
+.scanner-actions button:hover{filter:brightness(1.1)}
+.scanner-actions button.scan-all{background:rgba(124,58,237,.20);border-color:rgba(124,58,237,.55)}
+.scanner-actions button.scan-all:hover{background:rgba(124,58,237,.32)}
+.scanner-actions button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.scan-progress{padding:14px;text-align:center;color:var(--muted);font-size:13px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.3);border-radius:8px;margin-bottom:10px}
+.scan-progress strong{color:var(--text)}
+.scan-progress-bar{height:4px;background:var(--card2);border-radius:2px;overflow:hidden;margin-top:10px;position:relative}
+.scan-progress-fill{position:absolute;height:100%;width:30%;background:var(--blue);border-radius:2px;animation:scanLoad 1.4s ease-in-out infinite}
+@keyframes scanLoad{0%{left:-30%}100%{left:100%}}
+.scan-summary{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.scan-summary strong{color:var(--text)}
+.scan-note{font-size:11px;color:var(--amber);margin-bottom:10px;padding:8px 10px;background:rgba(245,158,11,.08);border-left:3px solid var(--amber);border-radius:4px;line-height:1.5}
+.scan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.scan-card{border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--card2)}
+.scan-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.scan-sym{font-size:14px;font-weight:800;font-family:'JetBrains Mono','Menlo',monospace;color:var(--text)}
+.scan-name{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+.verdict-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1px solid transparent;flex-shrink:0;white-space:nowrap}
+.verdict-pill.strong-buy{color:var(--green);background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.55)}
+.verdict-pill.buy       {color:var(--green);background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.40)}
+.verdict-pill.hold      {color:var(--blue); background:rgba(59,130,246,.10);border-color:rgba(59,130,246,.40)}
+.scan-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 10px;font-size:11px;margin-bottom:10px}
+.scan-metrics > div{display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:3px 0}
+.scan-metrics .m-lbl{color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-size:9px}
+.scan-metrics .m-val{font-family:'JetBrains Mono','Menlo',monospace;font-weight:700}
+.scan-actions{display:flex;gap:6px;justify-content:flex-end}
+.scan-actions button{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+.scan-actions button:hover{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4)}
+
 /* ── News tab ── */
 .news-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .news-controls button{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:34px}
@@ -343,11 +375,21 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
           <option value="hidden">Hidden Gems (Microcap)</option>
         </optgroup>
       </select>
-      <button onclick="applyStrategy()" aria-label="Apply selected strategy">Apply strategy</button>
+      <label for="universe-sel" class="sr-only">Choose stock universe</label>
+      <select id="universe-sel" aria-label="Choose stock universe">
+        <option value="nifty50">Nifty 50 (50 stocks)</option>
+        <option value="largecap">Largecap (107 stocks)</option>
+        <option value="midcap">Midcap (110 stocks)</option>
+        <option value="smallcap">Smallcap (105 stocks)</option>
+        <option value="microcap">Microcap (52 stocks)</option>
+      </select>
+    </div>
+    <div class="scanner-actions">
+      <button onclick="applyStrategy()" aria-label="Apply strategy to selected universe">Apply strategy</button>
+      <button class="scan-all" onclick="scanAll()" aria-label="Scan all five universes combined">🌐 Scan All universes</button>
     </div>
     <div id="strategy-card" class="strategy-card" role="region" aria-label="Strategy details" aria-live="polite"></div>
-    <div id="chip-help" class="chip-help" style="display:none">Tap any stock chip to inspect its fundamentals against this strategy. (Backend filtering across the full universe is wired in the next session.)</div>
-    <div id="chip-row" class="chip-row" aria-label="Quick-inspect stock chips" style="display:none"></div>
+    <div id="scan-results" role="region" aria-label="Scanner results" aria-live="polite"></div>
   </section>
 
   <!-- ════════════════════ OVERVIEW TAB ════════════════════ -->
@@ -693,7 +735,6 @@ const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const SYSTEM_PROMPT_FUND = "You are Chitti, a friendly fundamental analysis guide for Indian investors. Answer in simple plain English. No jargon without explanation. If user writes Hindi, reply in Hindi. End every answer with: This is educational only, not investment advice.";
 const DISCLAIMER_EN = 'Not SEBI Registered. This is an educational tool only, not investment advice. Chitti shows direction, not a guarantee. Never invest money you cannot afford to lose.';
-const NIFTY_CHIPS = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','BHARTIARTL','ITC','SBIN','HINDUNILVR','LT','KOTAKBANK','AXISBANK','MARUTI','ASIANPAINT','TITAN','WIPRO','BAJFINANCE','NESTLEIND','POWERGRID','ULTRACEMCO','SUNPHARMA','ONGC','NTPC','TATAMOTORS','TATASTEEL','M&M','HCLTECH','ADANIENT','JSWSTEEL','TECHM'];
 
 // ═══════════════════════════════════════════════════════════
 // Strategy registry (Scanner tab) — 31 strategies, 6 groups
@@ -1285,11 +1326,17 @@ function onStrategyChange() {
   const s = STRATEGIES[v];
   sp(s.name + ' selected. ' + s.plain);
 }
-function applyStrategy() {
-  const sel = document.getElementById('strategy-sel');
-  const v = sel && sel.value;
-  if (!v || !STRATEGIES[v]) { sp('Pick a strategy from the dropdown first.'); sel && sel.focus(); return; }
-  const s = STRATEGIES[v];
+window._lastScan = null;
+const _UNI_LABEL = {
+  'nifty50':  'Nifty 50 (50 stocks)',
+  'largecap': 'Largecap (107 stocks)',
+  'midcap':   'Midcap (110 stocks)',
+  'smallcap': 'Smallcap (105 stocks)',
+  'microcap': 'Microcap (52 stocks)',
+  'all':      'all 5 universes (~424 stocks)',
+};
+
+function _renderStrategyCard(s) {
   const card = document.getElementById('strategy-card');
   const filtersHtml = (s.filters || []).map(function(f){ return '<li>' + f + '</li>'; }).join('');
   card.innerHTML =
@@ -1300,23 +1347,127 @@ function applyStrategy() {
     '<div class="desc">' + s.plain + '</div>' +
     '<div class="filters"><strong>What it screens for</strong><ul>' + filtersHtml + '</ul></div>';
   card.classList.add('shown');
-  document.getElementById('chip-help').style.display = 'block';
-  const row = document.getElementById('chip-row');
-  row.style.display = 'flex';
-  row.innerHTML = NIFTY_CHIPS.map(function(sym){
-    return '<button class="chip" onclick="inspectFromScanner(\'NSE:' + sym + '\')" aria-label="Inspect ' + sym + ' against this strategy">' + sym + '</button>';
-  }).join('');
-  sp(s.name + '. ' + s.plain);
 }
+
+async function applyStrategy() {
+  const sel    = document.getElementById('strategy-sel');
+  const uniSel = document.getElementById('universe-sel');
+  const v = sel && sel.value;
+  if (!v || !STRATEGIES[v]) { sp('Pick a strategy from the dropdown first.'); sel && sel.focus(); return; }
+  const universe = (uniSel && uniSel.value) || 'nifty50';
+  await _runScan(v, universe);
+}
+
+async function scanAll() {
+  const sel = document.getElementById('strategy-sel');
+  const v = sel && sel.value;
+  if (!v || !STRATEGIES[v]) { sp('Pick a strategy from the dropdown first.'); sel && sel.focus(); return; }
+  await _runScan(v, 'all');
+}
+
+async function _runScan(strategyKey, universe) {
+  const s = STRATEGIES[strategyKey];
+  _renderStrategyCard(s);
+  const wrap = document.getElementById('scan-results');
+  const uniLabel = _UNI_LABEL[universe] || universe;
+  wrap.innerHTML =
+    '<div class="scan-progress"><span>⟳ Scanning <strong>' + uniLabel + '</strong> for <strong>' + s.name + '</strong>… first run can take ~30 seconds while we warm the cache.</span>' +
+    '<div class="scan-progress-bar"><div class="scan-progress-fill"></div></div></div>';
+  sp('Scanning ' + uniLabel + ' for ' + s.name + '. This may take up to thirty seconds.');
+  try {
+    const r = await fetch(API + '/api/fundamental-scan?universe=' + encodeURIComponent(universe) + '&strategy=' + encodeURIComponent(strategyKey));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    window._lastScan = data;
+    _renderScanResults(data, s);
+    sp((data.matched || 0) + ' out of ' + (data.scanned || 0) + ' stocks match ' + s.name + '.');
+  } catch (e) {
+    wrap.innerHTML = '<div class="section-empty" style="color:var(--red)">Scan failed: ' + (e && e.message ? e.message : 'unknown error') + '. Backend may be cold-starting — wait a minute and retry.</div>';
+    sp('Scan failed. Backend may be offline.');
+  }
+}
+
+function _renderScanResults(data, s) {
+  const wrap = document.getElementById('scan-results');
+  const uniLabel = _UNI_LABEL[data.universe] || data.universe;
+  if (!data || !data.matches || !data.matches.length) {
+    let html = '<div class="scan-summary"><span><strong>0</strong> matches in ' + uniLabel + ' · ' + (data.strategy_name || s.name) + '</span></div>';
+    if (data.note) html += '<div class="scan-note">⚠️ ' + data.note + '</div>';
+    html += '<div class="section-empty">No stocks pass this strategy in the chosen universe right now. Try a wider universe (Scan All) or a different strategy.</div>';
+    wrap.innerHTML = html;
+    return;
+  }
+  let html = '<div class="scan-summary">' +
+               '<span><strong>' + data.matched + '</strong> match out of <strong>' + data.scanned + '</strong> scanned · ' + uniLabel + ' · ' + (data.strategy_name || s.name) + '</span>' +
+               '<button class="metric-spk" onclick="speakScanResults()" aria-label="Hear top five matches">🔊 Read top 5</button>' +
+             '</div>';
+  if (data.note) html += '<div class="scan-note">⚠️ ' + data.note + '</div>';
+  html += '<div class="scan-grid">' + data.matches.map(_scanCardHtml).join('') + '</div>';
+  wrap.innerHTML = html;
+}
+
+function _scanCardHtml(m) {
+  const verdictCls  = (m.verdict || 'HOLD').toLowerCase().replace(/\s+/g, '-');
+  const verdictIcon = m.verdict === 'STRONG BUY' ? '🚀' : m.verdict === 'BUY' ? '📈' : '✅';
+  const sym         = m.symbol;
+  const shortSym    = sym.split(':').pop();
+  const sectorTxt   = m.sector ? ' · ' + m.sector : '';
+  return '<div class="scan-card" role="article" aria-label="' + shortSym + ', ' + (m.verdict || 'HOLD') + '">' +
+           '<div class="scan-card-head">' +
+             '<div><div class="scan-sym">' + shortSym + '</div><div class="scan-name">' + (m.name || shortSym) + sectorTxt + '</div></div>' +
+             '<div class="verdict-pill ' + verdictCls + '">' + verdictIcon + ' ' + (m.verdict || 'HOLD') + '</div>' +
+           '</div>' +
+           '<div class="scan-metrics" role="list">' +
+             '<div role="listitem"><span class="m-lbl">P/E</span><span class="m-val">' + _fmtN(m.pe, 1) + '</span></div>' +
+             '<div role="listitem"><span class="m-lbl">ROE</span><span class="m-val">' + _fmtPct(m.roe) + '</span></div>' +
+             '<div role="listitem"><span class="m-lbl">D/E</span><span class="m-val">' + _fmtN(m.debt_to_equity, 2) + '</span></div>' +
+             '<div role="listitem"><span class="m-lbl">Mcap</span><span class="m-val">' + _fmtCr(m.market_cap) + '</span></div>' +
+             '<div role="listitem"><span class="m-lbl">Rev YoY</span><span class="m-val">' + _fmtPct(m.revenue_growth) + '</span></div>' +
+             '<div role="listitem"><span class="m-lbl">Div Yld</span><span class="m-val">' + _fmtPct(m.dividend_yield) + '</span></div>' +
+           '</div>' +
+           '<div class="scan-actions">' +
+             '<button onclick="speakScanCard(\'' + sym + '\')" aria-label="Hear ' + shortSym + ' summary">🔊</button>' +
+             '<button onclick="inspectFromScanner(\'' + sym + '\')" aria-label="View ' + shortSym + ' detail">View detail →</button>' +
+           '</div>' +
+         '</div>';
+}
+
+function speakScanCard(sym) {
+  const data = window._lastScan;
+  if (!data) return;
+  const m = data.matches.find(function(x){ return x.symbol === sym; });
+  if (!m) return;
+  const parts = [(m.name || sym.split(':').pop()) + '.'];
+  parts.push('Verdict ' + (m.verdict || 'hold').toLowerCase() + '.');
+  if (m.pe != null)             parts.push('P E ' + _fmtN(m.pe, 1) + '.');
+  if (m.roe != null)            parts.push('R O E ' + _fmtPct(m.roe) + '.');
+  if (m.debt_to_equity != null) parts.push('Debt to equity ' + _fmtN(m.debt_to_equity, 2) + '.');
+  if (m.revenue_growth != null) parts.push('Revenue growth ' + _fmtPct(m.revenue_growth) + '.');
+  sp(parts.join(' '));
+}
+
+function speakScanResults() {
+  const data = window._lastScan;
+  if (!data || !data.matches || !data.matches.length) { sp('No matches loaded.'); return; }
+  const top = data.matches.slice(0, 5);
+  const parts = ['Top ' + top.length + ' matches for ' + (data.strategy_name || 'this strategy') + '.'];
+  top.forEach(function(m){
+    parts.push((m.name || m.symbol.split(':').pop()) + ', verdict ' + (m.verdict || 'hold').toLowerCase() + ', R O E ' + _fmtPct(m.roe) + '.');
+  });
+  sp(parts.join(' '));
+}
+
 function speakStrategy() {
   const v = document.getElementById('strategy-sel').value;
   if (!v || !STRATEGIES[v]) return;
   const s = STRATEGIES[v];
   sp(['Strategy ' + s.name + '.', s.plain, 'It screens for:'].concat(s.filters || []).join(' '));
 }
+
 function inspectFromScanner(sym) {
   document.getElementById('stock-input').value = sym;
   loadFundamentals(sym);
+  showTab('overview');
 }
 
 // ═══════════════════════════════════════════════════════════

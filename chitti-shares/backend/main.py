@@ -288,6 +288,39 @@ def api_news_market(limit: int = 20):
     return {"items": items, "count": len(items)}
 
 
+@app.get("/api/fundamental-scan")
+def api_fundamental_scan(universe: str = "nifty50", strategy: str = "buffett",
+                         max_stocks: int = 0):
+    """
+    Apply an investing strategy filter across a stock universe and return
+    matched stocks with key metrics + STRONG BUY / BUY / HOLD verdict.
+
+    universe: nifty50 | largecap | midcap | smallcap | microcap | all
+    strategy: buffett | munger | graham | lynch | fisher | greenblatt |
+              pabrai | marks | rj | kedia | rkd | rmd | ns | hdfc |
+              mirae | motilal | jpm | gs | cs1 | cs2 | cs3 | cs4 |
+              pli | china1 | infra | green | defence | digital |
+              div-aristo | turnaround | insider | debt-free | hidden
+    max_stocks: 0 = scan everything (default), N = cap to first N symbols.
+
+    Public, unauthenticated. Concurrent fetch with cached fundamentals
+    (same `public_fund:{symbol}` key as /api/fundamentals/{symbol}).
+    """
+    from services import fundamental_scanner
+    return fundamental_scanner.scan(
+        universe=universe.lower().strip(),
+        strategy=strategy.lower().strip(),
+        max_stocks=max(0, min(max_stocks, 500)),
+    )
+
+
+@app.get("/api/fundamental-scan/strategies")
+def api_fundamental_scan_strategies():
+    """List every strategy slug + plain-English name + any caveat note."""
+    from services import fundamental_scanner
+    return {"strategies": fundamental_scanner.all_strategies()}
+
+
 @app.get("/api/news/stock/{symbol:path}")
 def api_news_stock(symbol: str, limit: int = 10):
     """
