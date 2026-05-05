@@ -183,9 +183,52 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
   .metric-card-val{font-size:15px}
   nav.tabs .tab{font-size:12px;padding:12px 10px}
 }
+
+/* ── SEBI disclaimer banner + modal (legal) ── */
+.sebi-bar{position:sticky;top:0;z-index:50;background:rgba(245,158,11,.10);border-bottom:1px solid rgba(245,158,11,.45);padding:8px 14px;font-size:12px;line-height:1.5;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sebi-bar .ico{font-size:14px;flex-shrink:0}
+.sebi-bar .short{flex:1;min-width:140px;color:var(--text)}
+.sebi-bar .short strong{color:var(--amber);letter-spacing:.04em}
+.sebi-bar a.read-more{color:var(--amber);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-size:12px}
+.sebi-bar a.read-more:hover{color:#fbbf24}
+.sebi-bar button.spk{background:transparent;border:1px solid rgba(245,158,11,.5);color:var(--text);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;min-height:28px;font-weight:600}
+.sebi-bar button.spk:hover{background:rgba(245,158,11,.18)}
+.sebi-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.sebi-modal.shown{display:flex}
+.sebi-modal .panel{background:var(--card);border:1px solid rgba(245,158,11,.55);border-radius:10px;padding:20px;max-width:640px;width:100%;font-size:13px;line-height:1.6;color:var(--text)}
+.sebi-modal .panel h2{font-size:16px;margin:0 0 12px;color:var(--amber)}
+.sebi-modal .panel p{margin:0 0 10px}
+.sebi-modal .panel strong{color:var(--text)}
+.sebi-modal .panel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sebi-modal .panel button.ok{background:var(--amber);border:1px solid var(--amber);color:#0b1220;padding:8px 16px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;min-height:38px}
+.sebi-modal .panel button.spk{background:transparent;border:1px solid rgba(245,158,11,.55);color:var(--amber);padding:8px 14px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;min-height:38px}
+.sebi-modal .panel button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 </style>
 </head>
 <body>
+
+<!-- ════════════════════ SEBI DISCLAIMER (legal) ════════════════════ -->
+<div class="sebi-bar" role="alert" aria-label="Important disclaimer">
+  <span class="ico" aria-hidden="true">⚠️</span>
+  <span class="short"><strong>NOT SEBI REGISTERED</strong> · Educational tool only, not investment advice. <a class="read-more" href="#" onclick="event.preventDefault(); openSebiModal()" role="button">Read full disclaimer</a></span>
+  <button class="spk" onclick="speakSebiShort()" aria-label="Hear short disclaimer">🔊</button>
+</div>
+
+<div id="sebi-modal" class="sebi-modal" role="dialog" aria-modal="true" aria-labelledby="sebi-modal-title" onclick="if(event.target===this)closeSebiModal()">
+  <div class="panel">
+    <h2 id="sebi-modal-title">⚠️ Disclaimer &amp; Risk Notice</h2>
+    <p><strong>Chitti is NOT SEBI registered.</strong> Chitti Shares is an educational tool for Indian retail traders and investors. It is not an investment recommendation, not investment advice, and not a SEBI registered service.</p>
+    <p>We are <strong>not</strong> a SEBI-registered Investment Advisor under the SEBI (Investment Advisers) Regulations 2013, nor a Research Analyst under the SEBI (Research Analysts) Regulations 2014. We do not solicit any investment business and do not provide buy or sell recommendations.</p>
+    <p>The information shown — chart patterns, indicator signals, fundamental ratios, news takes, and AI-generated commentary — is for general education only. <strong>Past performance is not indicative of future results.</strong> Securities markets are subject to market risks; investments can lose value.</p>
+    <p>Data is sourced from public APIs (Angel SmartAPI, Yahoo Finance, NSE / BSE filings, Moneycontrol RSS) and may have errors, delays, or gaps. We make no guarantee of accuracy, completeness, or timeliness, and no liability is accepted for any loss arising from reliance on this content.</p>
+    <p>Before any investment decision, consult a <strong>SEBI-registered investment advisor</strong> and read all relevant offer documents carefully. <strong>You are solely responsible for your investment decisions.</strong></p>
+    <p>By using Chitti, you acknowledge you have read and understood this disclaimer.</p>
+    <div class="row">
+      <button class="ok" onclick="closeSebiModal()" aria-label="I understand and accept">I understand</button>
+      <button class="spk" onclick="speakSebiFull()" aria-label="Hear full disclaimer aloud">🔊 Read aloud</button>
+    </div>
+  </div>
+</div>
 
 <header role="banner">
   <div class="brand-row">
@@ -692,6 +735,14 @@ function sp(t, l) {
   speechSynthesis.speak(u);
 }
 function speakDisclaimer() { sp(DISCLAIMER_EN); }
+
+// SEBI disclaimer modal + short / full speech
+const SEBI_FULL_EN = "Disclaimer and risk notice. Chitti is not SEBI registered. Chitti Shares is an educational tool only, not investment advice. We are not a SEBI registered investment advisor under the SEBI Investment Advisers Regulations 2013, nor a research analyst under the SEBI Research Analysts Regulations 2014. We do not solicit any investment business and do not provide buy or sell recommendations. The information shown is for general education only. Past performance is not indicative of future results. Securities markets are subject to market risks; investments can lose value. Data is sourced from public APIs and may have errors, delays, or gaps. We make no guarantee of accuracy. Before any investment decision, consult a SEBI registered investment advisor. You are solely responsible for your investment decisions.";
+function openSebiModal() { document.getElementById('sebi-modal').classList.add('shown'); sp('Disclaimer opened. Tap Read aloud to hear the full text.'); }
+function closeSebiModal() { document.getElementById('sebi-modal').classList.remove('shown'); }
+function speakSebiShort() { sp('Important disclaimer. Chitti is not SEBI registered. This is an educational tool only, not investment advice. Tap Read full disclaimer for the complete legal notice.'); }
+function speakSebiFull() { sp(SEBI_FULL_EN); }
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSebiModal(); });
 
 // Per-section speak bank
 window._speakBank = window._speakBank || {};
