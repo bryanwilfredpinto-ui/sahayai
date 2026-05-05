@@ -2234,7 +2234,6 @@ async function fetchAndDrawCascadedSR(sym, higherTFs, currentCandles) {
         priceLineVisible: false,
         lastValueVisible: true,
         title: (lv.isRes ? 'R' : 'S') + ' ' + lv.tf.substring(0,1),
-        autoscaleInfoProvider: () => null,
       });
       s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
       srLineSeries.push(s);
@@ -2294,7 +2293,6 @@ function drawSRLines(candles, tf) {
       priceLineVisible: false,
       lastValueVisible: true,
       title: (isRes ? 'R' : 'S'),
-      autoscaleInfoProvider: () => null,
     });
     s.setData([{time:candles[0].time, value:lv.price},{time:candles[candles.length-1].time, value:lv.price}]);
     srLineSeries.push(s);
