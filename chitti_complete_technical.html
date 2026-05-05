@@ -715,22 +715,49 @@ textarea:focus{border-color:var(--blue)}
 
   <!-- ── INDICATOR QUICK-SELECT (Chart tab) ── -->
   <div style="padding:8px 14px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Quick Indicator</span>
-    <select id="chart-ind-sel" onchange="runChartIndicator()" aria-label="Indicator for this stock"
+    <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0">Technical Signal</span>
+    <select id="chart-ind-sel" onchange="runChartIndicator()" aria-label="Select indicator to check signal"
       style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;
-        padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;flex:1;max-width:280px">
-      <option value="">Select an indicator…</option>
-      <option value="Roshan Indicator">⭐ Roshan Indicator</option>
-      <option value="RSI">RSI (14)</option>
-      <option value="MACD">MACD</option>
-      <option value="Supertrend">Supertrend</option>
-      <option value="Bollinger Bands">Bollinger Bands</option>
-      <option value="TTM Squeeze">⚡ TTM Squeeze</option>
-      <option value="Hull MA">⚡ Hull MA</option>
-      <option value="EMA(20)">EMA (20)</option>
-      <option value="EMA(50)">EMA (50)</option>
-      <option value="ADX">ADX</option>
-      <option value="VWAP">VWAP</option>
+        padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer;flex:1;max-width:320px">
+      <option value="">— Select indicator to check signal —</option>
+      <optgroup label="⭐ Chitti Special">
+        <option value="Roshan Indicator">Roshan Indicator (Bryan's)</option>
+        <option value="Price Action">Price Action (Chitti)</option>
+      </optgroup>
+      <optgroup label="📊 Momentum">
+        <option value="RSI">RSI (14)</option>
+        <option value="MACD">MACD (12,26,9)</option>
+        <option value="Stochastic">Stochastic (14,3,3)</option>
+        <option value="Stochastic RSI">Stochastic RSI</option>
+        <option value="Williams %R">Williams %R</option>
+        <option value="CCI">CCI</option>
+        <option value="Momentum">Momentum</option>
+      </optgroup>
+      <optgroup label="📈 Trend">
+        <option value="Supertrend">Supertrend</option>
+        <option value="ADX">ADX</option>
+        <option value="Aroon">Aroon</option>
+        <option value="Parabolic SAR">Parabolic SAR</option>
+        <option value="Ichimoku">Ichimoku</option>
+      </optgroup>
+      <optgroup label="〰 Volatility">
+        <option value="Bollinger Bands">Bollinger Bands</option>
+        <option value="ATR">ATR</option>
+        <option value="Keltner Channels">Keltner Channels</option>
+      </optgroup>
+      <optgroup label="📦 Volume">
+        <option value="VWAP">VWAP</option>
+        <option value="OBV">OBV</option>
+        <option value="MFI">MFI</option>
+        <option value="Force Index">Force Index</option>
+      </optgroup>
+      <optgroup label="⚡ New (2010+)">
+        <option value="TTM Squeeze">TTM Squeeze</option>
+        <option value="Hull MA">Hull MA</option>
+        <option value="Chande Kroll Stop">Chande Kroll Stop</option>
+        <option value="Awesome Oscillator">Awesome Oscillator</option>
+        <option value="Vortex Indicator">Vortex Indicator</option>
+      </optgroup>
     </select>
     <div id="chart-ind-result" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;display:none"></div>
     <button class="sp-btn" onclick="speakChartIndResult()" id="chart-ind-speak" style="display:none;font-size:12px;padding:3px 8px" aria-label="Hear indicator result">🔊</button>
@@ -2008,6 +2035,10 @@ async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
 
     levels.forEach(lv => {
       // Only draw if level is within visible price range (±20% of current price)
+      // Cascading SR: only closest 1-2 levels per side from higher TF
+      const _cascadeLimit = higherTF === 'Monthly' ? 1 : 2;
+      const _isRes = lv.price > lastClose;
+      // Will be filtered below by counting
       if (lastClose > 0 && (lv.price > lastClose * 1.12 || lv.price < lastClose * 0.88)) return;
       const isRes = lv.price > lastClose;
       try {
@@ -2051,13 +2082,29 @@ function srStyleForTF(tf) {
   };
   return styles[tf] || {color:'#94a3b8', lineWidth:1, lineStyle:LightweightCharts.LineStyle.Dashed};
 }
+function srLimitForTF(tf) {
+  const limits = {Monthly:1, Weekly:2, Daily:3, '4H':4, '1H':5, '15min':5, '5min':5, '1min':5};
+  return limits[tf] || 3;
+}
+
 function drawSRLines(candles, tf) {
   if (!showSR || !lwChart) return;
   const levels = findSRLevels(candles);
   const lastClose = candles[candles.length-1]?.close || 0;
   const style = srStyleForTF(tf);
-  levels.forEach(lv => {
-    // Resistance slightly more opaque, support slightly less
+  const limit = srLimitForTF(tf);
+
+  // Separate resistance and support, take only closest N per side
+  const res = levels
+    .filter(lv => lv.price > lastClose && lv.price < lastClose * 1.12)
+    .sort((a,b) => a.price - b.price)
+    .slice(0, limit);
+  const sup = levels
+    .filter(lv => lv.price < lastClose && lv.price > lastClose * 0.88)
+    .sort((a,b) => b.price - a.price)
+    .slice(0, limit);
+
+  [...res, ...sup].forEach(lv => {
     const isRes = lv.price > lastClose;
     const s = lwChart.addLineSeries({
       color: style.color + (isRes ? 'cc' : '88'),
@@ -2066,7 +2113,7 @@ function drawSRLines(candles, tf) {
       priceLineVisible: false,
       lastValueVisible: true,
       title: (isRes ? 'R' : 'S'),
-      autoscaleInfoProvider: () => null,  // Don't let SR lines affect Y-axis scale
+      autoscaleInfoProvider: () => null,
     });
     s.setData([{time:candles[0].time, value:lv.price},{time:candles[candles.length-1].time, value:lv.price}]);
     srLineSeries.push(s);
