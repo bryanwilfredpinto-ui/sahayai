@@ -58,8 +58,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 .tab .tab-icon{font-size:14px;opacity:.7}
 .tab.active .tab-icon{opacity:1}
-.page{display:none}
-.page.active{display:block}
+.page{display:none;overflow:hidden}
+.page.active{display:block;overflow:visible}
 #tab-chart.active{padding:0;max-width:none}
 #tab-chart.active{padding:0}
 
@@ -472,7 +472,7 @@ textarea:focus{border-color:var(--blue)}
         </select>
       </div>
       <div class="fgroup"><label class="flbl" for="max-s">Max</label>
-        <input type="number" id="max-s" value="10" min="5" max="500" aria-label="Max stocks" style="width:70px">
+        <input type="number" id="max-s" value="50" min="5" max="500" aria-label="Max stocks" style="width:70px">
       </div>
     </div>
     <!-- Custom TF box -->
@@ -924,6 +924,28 @@ textarea:focus{border-color:var(--blue)}
               <option>EMA Cross</option><option>TTM Squeeze</option><option>Other</option>
             </select></div>
 
+          <div><label class="lbl">Confidence Level (1-10)</label>
+            <select id="j-confidence" aria-label="Confidence level">
+              <option>10 - Extremely Confident</option><option>9 - Very Confident</option>
+              <option>8 - Confident</option><option>7 - Fairly Confident</option>
+              <option>6 - Slightly Confident</option><option>5 - Neutral</option>
+              <option>4 - Slightly Doubtful</option><option>3 - Doubtful</option>
+              <option>2 - Very Doubtful</option><option>1 - No Confidence</option>
+            </select></div>
+          <div><label class="lbl">Market Bias</label>
+            <select id="j-bias" aria-label="Market bias">
+              <option>STRONGLY BULLISH</option><option>BULLISH</option>
+              <option>SLIGHTLY BULLISH</option><option>NEUTRAL</option>
+              <option>SLIGHTLY BEARISH</option><option>BEARISH</option>
+              <option>STRONGLY BEARISH</option>
+            </select></div>
+          <div><label class="lbl">Market Condition</label>
+            <select id="j-condition" aria-label="Market condition">
+              <option>Strong Uptrend</option><option>Weak Uptrend</option>
+              <option>Sideways/Range</option><option>Weak Downtrend</option>
+              <option>Strong Downtrend</option><option>High Volatility</option>
+              <option>Low Volatility</option>
+            </select></div>
           <div class="full"><label class="lbl">Notes / Lesson Learned</label>
             <textarea id="j-notes" rows="2"
               placeholder="What did you learn? What emotion affected your decision?"
@@ -1276,8 +1298,11 @@ function renderResults(j) {
   // unified Angel One style list — show active tab's results
   renderStockList();
   // Log to Calls tab — auto-log Roshan signals whenever scan runs
-  if (document.getElementById('ind-sel')?.value === 'Roshan Indicator') {
+  const _indVal = document.getElementById('ind-sel')?.value || '';
+  if (_indVal.toLowerCase().includes('roshan')) {
     logCallsFromScan(buys, shorts, 'Roshan');
+  } else if (_indVal) {
+    logCallsFromScan(buys, shorts, 'PA');
   }
   // Robinhood: colour feedback on scan button
   const btn = document.getElementById('sbtn');
@@ -1657,7 +1682,7 @@ function initCharts() {
     layout: { background:{color:'#1a1e28'}, textColor:'#6b7a99' },
     grid: { vertLines:{color:'#2a303f'}, horzLines:{color:'#2a303f'} },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { borderColor:'#2a303f', scaleMargins:{top:0.08, bottom:0.12} },
+    rightPriceScale: { borderColor:'#2a303f', scaleMargins:{top:0.1, bottom:0.25} },
     timeScale: { borderColor:'#2a303f', timeVisible:true, secondsVisible:false },
     handleScroll:true, handleScale:true,
   });
@@ -1983,7 +2008,7 @@ async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
 
     levels.forEach(lv => {
       // Only draw if level is within visible price range (±20% of current price)
-      if (lastClose > 0 && (lv.price > lastClose * 1.25 || lv.price < lastClose * 0.75)) return;
+      if (lastClose > 0 && (lv.price > lastClose * 1.12 || lv.price < lastClose * 0.88)) return;
       const isRes = lv.price > lastClose;
       try {
         const s = lwChart.addLineSeries({
@@ -1994,8 +2019,12 @@ async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
           lastValueVisible: true,
           title: (isRes ? 'R' : 'S') + ' ' + higherTF.substring(0,1),
         });
-        // Use current chart time range
-        s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
+        // Use the higher TF candle time range for alignment
+        if (candles.length >= 2) {
+          s.setData([{time: candles[0].time, value: lv.price}, {time: candles[candles.length-1].time, value: lv.price}]);
+        } else {
+          s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
+        }
         srLineSeries.push(s);
       } catch(e) {}
     });
@@ -2184,7 +2213,15 @@ async function loadChart(sym) {
       lRow.style.display = 'block';
     }
 
-  // Calculate trade setup from loaded candles
+  // Force chart Y-axis reset so candles fill properly
+    setTimeout(() => {
+      if (lwChart) {
+        lwChart.priceScale('right').applyOptions({autoScale: true});
+        lwChart.timeScale().fitContent();
+      }
+    }, 150);
+
+    // Calculate trade setup from loaded candles
     if (lastCandles.length && cvData) calcTradeSetup(lastCandles, cvData.side);
     else if (lastCandles.length) calcTradeSetup(lastCandles);
     // Auto-run indicator if one is selected
@@ -3593,26 +3630,23 @@ async function runCallsScan() {
 
   try {
     // Run BOTH scanners in parallel
-    const [roshanRes, paRes] = await Promise.allSettled([
-      fetch(`${API}/api/scan/roshan?call=Positional&universe=nifty50&force=false&max_stocks=20`),
-      fetch(`${API}/api/scan/Price%20Action?call=Positional&universe=nifty50&force=false&max_stocks=20`)
+    const selectedInd = document.getElementById('calls-ind-sel')?.value || 'Roshan Indicator';
+    const indParam = selectedInd === 'Roshan Indicator' ? 'roshan' : encodeURIComponent(selectedInd);
+    
+    // Run selected indicator as Roshan source + Price Action (Force Index) in parallel
+    const [selectedRes, paRes] = await Promise.allSettled([
+      fetch(`${API}/api/scan/${indParam}?call=Positional&universe=nifty50&force=true&max_stocks=20`),
+      fetch(`${API}/api/scan/Force%20Index?call=Positional&universe=nifty50&force=false&max_stocks=20`)
     ]);
 
-    if (roshanRes.status === 'fulfilled' && roshanRes.value.ok) {
-      const j = await roshanRes.value.json();
-      logCallsFromScan(j.buys || [], j.shorts || [], 'Roshan');
+    if (selectedRes.status === 'fulfilled' && selectedRes.value.ok) {
+      const j = await selectedRes.value.json();
+      logCallsFromScan(j.buys || [], j.shorts || [], selectedInd === 'Roshan Indicator' ? 'Roshan' : selectedInd);
     }
 
     if (paRes.status === 'fulfilled' && paRes.value.ok) {
       const j = await paRes.value.json();
       logCallsFromScan(j.buys || [], j.shorts || [], 'PA');
-    } else {
-      // If Price Action backend not available, use Force Index as proxy for price action
-      const paFallback = await fetch(`${API}/api/scan/Force%20Index?call=Positional&universe=nifty50&force=false&max_stocks=20`);
-      if (paFallback.ok) {
-        const j = await paFallback.json();
-        logCallsFromScan(j.buys || [], j.shorts || [], 'PA');
-      }
     }
 
     renderCalls();
@@ -3623,6 +3657,23 @@ async function runCallsScan() {
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '⚡ Generate Calls'; }
   }
+}
+
+function addManualCall() {
+  const sym   = document.getElementById('mc-sym')?.value?.trim().toUpperCase();
+  const src   = document.getElementById('mc-src')?.value || 'Roshan';
+  const dir   = document.getElementById('mc-dir')?.value || 'BUY';
+  const entry = parseFloat(document.getElementById('mc-entry')?.value || '0');
+
+  if (!sym) { sp('Enter a stock symbol.'); return; }
+  if (!entry || entry <= 0) { sp('Enter the entry price.'); return; }
+
+  const { target, sl } = calcCallTargetSL(entry, dir);
+  addCallFromChart(src, sym, dir, entry, target, sl);
+
+  // Clear form
+  document.getElementById('mc-sym').value = '';
+  document.getElementById('mc-entry').value = '';
 }
 
 function speakCalls() {
@@ -3676,6 +3727,12 @@ window.addEventListener('load', () => {
   const _initSizeEl = document.getElementById('univ-size');
   if (_initSizeEl) _initSizeEl.textContent = '(' + (_initSizes[_initSel] || '50') + ' stocks)';
 
+  // Show initial universe size
+  const _uSizes = {nifty50:'(50 stocks)', largecap:'(107 stocks)', midcap:'(110 stocks)', smallcap:'(105 stocks)', microcap:'(52 stocks)'};
+  const _uEl = document.getElementById('univ-size');
+  const _uSel = document.getElementById('univ-sel')?.value || 'nifty50';
+  if (_uEl) _uEl.textContent = _uSizes[_uSel] || '';
+
   // Auto-scan
   runScan(false);
   setupRefresh();
@@ -3698,7 +3755,7 @@ window.addEventListener('resize', () => {
 }
 </script>
 <!-- CALLS TAB -->
-<div id="tab-calls" class="page" role="tabpanel">
+<div id="tab-calls" class="page" role="tabpanel" style="min-height:100vh">
   <div class="page-wrap">
 
     <!-- Header -->
@@ -3707,7 +3764,20 @@ window.addEventListener('resize', () => {
         <div style="font-size:15px;font-weight:700;font-family:'Syne',sans-serif">📊 BUY &amp; SHORT Calls</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Chitti Price Action vs Roshan Indicator — who calls it right?</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <select id="calls-ind-sel" aria-label="Indicator for calls"
+          style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;
+            padding:6px 10px;font-size:12px;cursor:pointer;min-height:36px">
+          <option value="Roshan Indicator">⭐ Roshan Indicator</option>
+          <option value="RSI">RSI</option>
+          <option value="MACD">MACD</option>
+          <option value="Supertrend">Supertrend</option>
+          <option value="Bollinger Bands">Bollinger Bands</option>
+          <option value="ADX">ADX</option>
+          <option value="TTM Squeeze">⚡ TTM Squeeze</option>
+          <option value="Hull MA">⚡ Hull MA</option>
+          <option value="Chande Kroll Stop">⚡ Chande Kroll Stop</option>
+        </select>
         <button class="scan-btn" onclick="runCallsScan()" style="padding:8px 16px;font-size:12px;width:auto" aria-label="Generate fresh calls">⚡ Generate Calls</button>
         <button class="sp-btn" onclick="speakCalls()" aria-label="Hear calls">🔊</button>
       </div>
@@ -3750,6 +3820,36 @@ window.addEventListener('resize', () => {
       </table>
     </div>
 
+    <!-- Manual add call -->
+    <div style="margin-top:12px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">+ Add Call Manually</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;flex-wrap:wrap">
+        <div>
+          <label class="lbl">Stock</label>
+          <input id="mc-sym" placeholder="RELIANCE" style="width:100%;padding:6px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px" aria-label="Stock symbol">
+        </div>
+        <div>
+          <label class="lbl">Source</label>
+          <select id="mc-src" style="width:100%;padding:6px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px" aria-label="Signal source">
+            <option value="Roshan">⭐ Roshan</option>
+            <option value="PA">🤖 Price Action</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Direction</label>
+          <select id="mc-dir" style="width:100%;padding:6px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px" aria-label="Direction">
+            <option value="BUY">▲ BUY</option>
+            <option value="SHORT">▼ SHORT</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Entry ₹</label>
+          <input id="mc-entry" type="number" placeholder="1467.20" step="0.05" style="width:100%;padding:6px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px" aria-label="Entry price">
+        </div>
+        <button onclick="addManualCall()" style="padding:7px 14px;background:var(--blue);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;min-height:34px" aria-label="Add this call">+ Add</button>
+      </div>
+    </div>
+
     <!-- Score card -->
     <div id="calls-score" style="display:none;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="stat-card" style="border-color:rgba(156,124,255,.3)">
@@ -3774,205 +3874,4 @@ window.addEventListener('resize', () => {
 </div>
 
 </body>
-</html>        <!-- BASIC fields — always visible -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><label class="lbl">Stock / Symbol</label>
-            <input id="j-stock" placeholder="e.g. NIFTY, RELIANCE" aria-label="Stock symbol"></div>
-          <div><label class="lbl">Date</label>
-            <input type="date" id="j-date" aria-label="Trade date"></div>
-          <div><label class="lbl">Direction</label>
-            <select id="j-dir" aria-label="Direction">
-              <option>LONG</option><option>SHORT</option>
-            </select></div>
-          <div><label class="lbl">Day</label>
-            <select id="j-day" aria-label="Day">
-              <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>
-            </select></div>
-          <div><label class="lbl">Setup Type</label>
-            <select id="j-setup" aria-label="Setup type">
-              <option>Triangle Break</option>
-              <option>Channel Break</option>
-              <option>S&R Bounce</option>
-              <option>Trendline Break</option>
-              <option>Gap Fill</option>
-              <option>Opening Range Break</option>
-              <option>Flag Pattern</option>
-              <option>Double Top</option>
-              <option>Double Bottom</option>
-              <option>Head & Shoulders</option>
-              <option>VWAP Bounce</option>
-              <option>News Trade</option>
-              <option>Other</option>
-              <option>Strong Uptrend</option>
-              <option>Weak Uptrend</option>
-              <option>Sideways/Range</option>
-              <option>Weak Downtrend</option>
-              <option>Strong Downtrend</option>
-              <option>High Volatility</option>
-              <option>Low Volatility</option>
-            </select></div>
-          <div><label class="lbl">Chart Pattern</label>
-            <select id="j-pattern" aria-label="Pattern">
-              <option>Ascending Triangle</option>
-              <option>Descending Triangle</option>
-              <option>Symmetrical Triangle</option>
-              <option>Bull Flag</option>
-              <option>Bear Flag</option>
-              <option>Channel Up</option>
-              <option>Channel Down</option>
-              <option>Double Top</option>
-              <option>Double Bottom</option>
-              <option>Head & Shoulders</option>
-              <option>Inverse H&S</option>
-              <option>Cup & Handle</option>
-              <option>Wedge Up</option>
-              <option>Wedge Down</option>
-              <option>Range Breakout</option>
-              <option>No Pattern</option>
-            </select></div>
-          <div><label class="lbl">Entry Price ₹</label>
-            <input type="number" id="j-entry" placeholder="24082" step="0.05" aria-label="Entry price"></div>
-          <div><label class="lbl">Exit Price ₹</label>
-            <input type="number" id="j-exit" placeholder="Blank if open" step="0.05" aria-label="Exit price"></div>
-          <div><label class="lbl">Stop Loss ₹</label>
-            <input type="number" id="j-sl" placeholder="23902" step="0.05" aria-label="Stop loss"></div>
-          <div><label class="lbl">Target Price ₹</label>
-            <input type="number" id="j-tgt" placeholder="24322" step="0.05" aria-label="Target price"></div>
-          <div><label class="lbl">Lots / Qty</label>
-            <input type="number" id="j-qty" placeholder="6" min="1" aria-label="Quantity"></div>
-          <div><label class="lbl">Indicator Used</label>
-            <select id="j-ind" aria-label="Indicator">
-              <option>Roshan Indicator</option>
-              <option>RSI</option>
-              <option>MACD</option>
-              <option>Supertrend</option>
-              <option>Bollinger Bands</option>
-              <option>Price Action</option>
-              <option>VWAP</option>
-              <option>EMA Cross</option>
-              <option>ADX</option>
-              <option>Stochastic</option>
-              <option>Other</option>
-            </select></div>
-          <div style="grid-column:1/-1"><label class="lbl">Notes / Lesson Learned</label>
-            <textarea id="j-notes" rows="2" placeholder="What did you learn? What emotion affected you?" aria-label="Notes"></textarea></div>
-        </div>
-
-        <!-- PSYCHOLOGY & QUALITY — collapsible -->
-        <details style="margin-bottom:10px">
-          <summary style="font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;padding:5px 0;user-select:none">
-            + Psychology &amp; Quality fields (from your Excel)
-          </summary>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-            <div><label class="lbl">Emotion at Entry</label>
-              <select id="j-emotion-entry" aria-label="Emotion at entry">
-              <option>Confident</option>
-              <option>Calm</option>
-              <option>Disciplined</option>
-              <option>Anxious</option>
-              <option>Fearful</option>
-              <option>Greedy</option>
-              <option>Excited</option>
-              <option>FOMO</option>
-              <option>Revenge</option>
-              <option>Frustrated</option>
-              <option>Impatient</option>
-              <option>Distracted</option>
-              </select></div>
-            <div><label class="lbl">Emotion at Exit</label>
-              <select id="j-emotion-exit" aria-label="Emotion at exit">
-              <option>Satisfied</option>
-              <option>Calm</option>
-              <option>Disciplined</option>
-              <option>Regretful</option>
-              <option>Fearful</option>
-              <option>Greedy</option>
-              <option>Relieved</option>
-              <option>Frustrated</option>
-              <option>Angry</option>
-              <option>Happy</option>
-              <option>Anxious</option>
-              <option>Neutral</option>
-              </select></div>
-            <div><label class="lbl">Held to Target?</label>
-              <select id="j-held" aria-label="Held to target">
-              <option>Yes - Full Target Hit</option>
-              <option>No - Exited Early (Fear)</option>
-              <option>No - Exited Early (Greed)</option>
-              <option>No - SL Hit</option>
-              <option>No - Manual Exit (Valid Reason)</option>
-              <option>Partial - Half Position Closed</option>
-              </select></div>
-            <div><label class="lbl">Exit Reason</label>
-              <select id="j-exit-reason" aria-label="Exit reason">
-              <option>Target Hit ✅</option>
-              <option>Stop Loss Hit ❌</option>
-              <option>Trailing SL Hit</option>
-              <option>Manual Exit - Market Close</option>
-              <option>Manual Exit - News Event</option>
-              <option>Manual Exit - Fear</option>
-              <option>Manual Exit - Greed</option>
-              <option>Manual Exit - Valid Reason</option>
-              </select></div>
-            <div><label class="lbl">Trade Quality</label>
-              <select id="j-quality" aria-label="Trade quality">
-              <option>A+ Setup - Perfect Entry</option>
-              <option>A - Good Setup</option>
-              <option>B - Average Setup</option>
-              <option>C - Below Average</option>
-              <option>D - Should Not Have Taken</option>
-              </select></div>
-            <div><label class="lbl">Confidence Level</label>
-              <select id="j-confidence" aria-label="Confidence">
-              <option>10 - Extremely Confident</option>
-              <option>9 - Very Confident</option>
-              <option>8 - Confident</option>
-              <option>7 - Fairly Confident</option>
-              <option>6 - Slightly Confident</option>
-              <option>5 - Neutral</option>
-              <option>4 - Slightly Doubtful</option>
-              <option>3 - Doubtful</option>
-              <option>2 - Very Doubtful</option>
-              <option>1 - No Confidence</option>
-              </select></div>
-            <div><label class="lbl">Rules Followed?</label>
-              <select id="j-rules" aria-label="Rules followed">
-              <option>✅ Yes - Followed All Rules</option>
-              <option>⚠️ Partial - Broke 1 Rule</option>
-              <option>❌ No - Broke Multiple Rules</option>
-              </select></div>
-            <div><label class="lbl">TF Alignment</label>
-              <select id="j-tfalign" aria-label="TF alignment">
-              <option>All TF Aligned ✅</option>
-              <option>Monthly + Weekly Only</option>
-              <option>Weekly + Daily Only</option>
-              <option>Daily + 4H Only</option>
-              <option>4H + 1H Only</option>
-              <option>1H + 15M Only</option>
-              <option>15M + 5M Only</option>
-              <option>Mixed Signals ⚠️</option>
-              <option>Against Higher TF ❌</option>
-              </select></div>
-            <div><label class="lbl">Market Bias</label>
-              <select id="j-bias" aria-label="Market bias">
-              <option>STRONGLY BEARISH</option>
-              <option>BEARISH</option>
-              <option>SLIGHTLY BEARISH</option>
-              <option>NEUTRAL</option>
-              <option>SLIGHTLY BULLISH</option>
-              <option>BULLISH</option>
-              <option>STRONGLY BULLISH</option>
-              </select></div>
-            <div><label class="lbl">Market Condition</label>
-              <select id="j-condition" aria-label="Market condition">
-              <option>Strong Uptrend</option>
-              <option>Weak Uptrend</option>
-              <option>Sideways/Range</option>
-              <option>Weak Downtrend</option>
-              <option>Strong Downtrend</option>
-              <option>High Volatility</option>
-              <option>Low Volatility</option>
-              </select></div>
-          </div>
-        </details>
-
+</html>
