@@ -1363,36 +1363,65 @@ const DEMO_STEPS_TECH = [
 ];
 
 let _demoTimerT = null;
+let _demoSpeakTimerT = null;
 let _demoActiveT = false;
+
+// Speak `text`, then call onDone when speech finishes (or after a safety
+// timeout — Chromium sometimes drops onend on tab switch).
+function _demoSpeakT(text, onDone) {
+  if (_demoSpeakTimerT) { clearTimeout(_demoSpeakTimerT); _demoSpeakTimerT = null; }
+  if (!window.speechSynthesis) {
+    _demoSpeakTimerT = setTimeout(function(){ if (onDone) onDone(); }, 1500);
+    return;
+  }
+  speechSynthesis.cancel();
+  let done = false;
+  const finish = function() {
+    if (done) return; done = true;
+    if (_demoSpeakTimerT) { clearTimeout(_demoSpeakTimerT); _demoSpeakTimerT = null; }
+    if (onDone) onDone();
+  };
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-IN'; u.rate = 0.88;
+  u.onend = finish; u.onerror = finish;
+  speechSynthesis.speak(u);
+  const estimateMs = Math.max(2500, text.length * 70) + 1500;
+  _demoSpeakTimerT = setTimeout(finish, estimateMs);
+}
 
 function startDemoMode() {
   if (_demoActiveT) { stopDemoMode(); return; }
   _demoActiveT = true;
   document.getElementById('demo-ribbon').classList.add('shown');
   _showDemoBannerT('Welcome', 'Loading Reliance daily chart…');
-  sp('Welcome to Chitti Technical Analysis. I am your personal trading guide. Let me show you what I can do.');
 
   // Open RELIANCE in the chart tab (uses live Angel SmartAPI backend — no user setup required)
   try {
     if (typeof openChart === 'function') openChart('NSE:RELIANCE');
   } catch (e) { /* render gracefully */ }
 
-  _demoTimerT = setTimeout(function(){ _runDemoStepT(0); }, 5000);
+  _demoSpeakT('Welcome to Chitti Technical Analysis. I am your personal trading guide. Let me show you what I can do.', function() {
+    if (!_demoActiveT) return;
+    _demoTimerT = setTimeout(function(){ _runDemoStepT(0); }, 400);
+  });
 }
 
 function _runDemoStepT(i) {
   if (!_demoActiveT) return;
   if (i >= DEMO_STEPS_TECH.length) {
     _showDemoBannerT('Demo complete', 'Search any stock or tap Scanner to start.');
-    sp('This is what I do for every stock. Search any stock or tap Scanner to get started.');
-    _demoTimerT = setTimeout(stopDemoMode, 6000);
+    _demoSpeakT('This is what I do for every stock. Search any stock or tap Scanner to get started.', function() {
+      _demoTimerT = setTimeout(stopDemoMode, 1500);
+    });
     return;
   }
   const step = DEMO_STEPS_TECH[i];
   if (typeof showTab === 'function' && step.tab) showTab(step.tab);
   _showDemoBannerT('Step ' + (i+1) + ' / ' + DEMO_STEPS_TECH.length + ' · ' + step.title, step.narr);
-  sp(step.narr);
-  _demoTimerT = setTimeout(function(){ _runDemoStepT(i+1); }, 6500);
+  _demoSpeakT(step.narr, function() {
+    if (!_demoActiveT) return;
+    _demoTimerT = setTimeout(function(){ _runDemoStepT(i+1); }, 600);
+  });
 }
 
 function _showDemoBannerT(label, narration) {
@@ -1412,9 +1441,10 @@ function _showDemoBannerT(label, narration) {
 }
 
 function stopDemoMode() {
-  if (!_demoActiveT && !_demoTimerT) return;
+  if (!_demoActiveT && !_demoTimerT && !_demoSpeakTimerT) return;
   _demoActiveT = false;
-  if (_demoTimerT) { clearTimeout(_demoTimerT); _demoTimerT = null; }
+  if (_demoTimerT)      { clearTimeout(_demoTimerT);      _demoTimerT = null; }
+  if (_demoSpeakTimerT) { clearTimeout(_demoSpeakTimerT); _demoSpeakTimerT = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
   const banner = document.getElementById('demo-banner'); if (banner) banner.classList.remove('shown');
   const ribbon = document.getElementById('demo-ribbon'); if (ribbon) ribbon.classList.remove('shown');

@@ -855,8 +855,33 @@ const DEMO_STEPS_FUND = [
 ];
 
 let _demoTimer = null;
+let _demoSpeakTimer = null;
 let _demoActive = false;
 let _demoSavedFundData = null;
+
+// Speak `text`, then call onDone when speech finishes (or after a safety
+// timeout in case onend doesn't fire — Chromium can drop it on tab switch).
+function _demoSpeak(text, onDone) {
+  if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
+  if (!window.speechSynthesis) {
+    _demoSpeakTimer = setTimeout(function(){ if (onDone) onDone(); }, 1500);
+    return;
+  }
+  speechSynthesis.cancel();
+  let done = false;
+  const finish = function() {
+    if (done) return; done = true;
+    if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
+    if (onDone) onDone();
+  };
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-IN'; u.rate = 0.88;
+  u.onend = finish; u.onerror = finish;
+  speechSynthesis.speak(u);
+  // Safety: estimate ~70ms / char at rate 0.88, plus 1.5s buffer
+  const estimateMs = Math.max(2500, text.length * 70) + 1500;
+  _demoSpeakTimer = setTimeout(finish, estimateMs);
+}
 
 function startDemoMode() {
   if (_demoActive) { stopDemoMode(); return; }
@@ -864,28 +889,33 @@ function startDemoMode() {
   _demoSavedFundData = _fundData;
   document.getElementById('demo-ribbon').classList.add('shown');
   _showDemoBanner('Welcome', 'Loading sample stock RELIANCE…');
-  sp('Welcome to Chitti Fundamentals. I am your personal financial guide. Let me show you what I can do.');
 
   // Render demo data into all tabs (uses existing renderAll path)
   _fundData = DEMO_FUND_DATA;
-  try { renderAll(DEMO_FUND_DATA); } catch (e) { /* render gracefully even if some optional tab missing */ }
+  try { renderAll(DEMO_FUND_DATA); } catch (e) { /* render gracefully */ }
 
-  _demoTimer = setTimeout(function(){ _runDemoStep(0); }, 4500);
+  _demoSpeak('Welcome to Chitti Fundamentals. I am your personal financial guide. Let me show you what I can do.', function() {
+    if (!_demoActive) return;
+    _demoTimer = setTimeout(function(){ _runDemoStep(0); }, 400);
+  });
 }
 
 function _runDemoStep(i) {
   if (!_demoActive) return;
   if (i >= DEMO_STEPS_FUND.length) {
     _showDemoBanner('Demo complete', 'Tap Stock Detail and search any stock to start.');
-    sp('This is what I do for every stock. Tap Stock Detail and search any stock to get started.');
-    _demoTimer = setTimeout(stopDemoMode, 6000);
+    _demoSpeak('This is what I do for every stock. Tap Stock Detail and search any stock to get started.', function() {
+      _demoTimer = setTimeout(stopDemoMode, 1500);
+    });
     return;
   }
   const step = DEMO_STEPS_FUND[i];
   showTab(step.tab);
   _showDemoBanner('Step ' + (i+1) + ' / ' + DEMO_STEPS_FUND.length + ' · ' + step.title, step.narr);
-  sp(step.narr);
-  _demoTimer = setTimeout(function(){ _runDemoStep(i+1); }, 6500);
+  _demoSpeak(step.narr, function() {
+    if (!_demoActive) return;
+    _demoTimer = setTimeout(function(){ _runDemoStep(i+1); }, 600);
+  });
 }
 
 function _showDemoBanner(label, narration) {
@@ -905,9 +935,10 @@ function _showDemoBanner(label, narration) {
 }
 
 function stopDemoMode() {
-  if (!_demoActive && !_demoTimer) return;
+  if (!_demoActive && !_demoTimer && !_demoSpeakTimer) return;
   _demoActive = false;
-  if (_demoTimer) { clearTimeout(_demoTimer); _demoTimer = null; }
+  if (_demoTimer)      { clearTimeout(_demoTimer);      _demoTimer = null; }
+  if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
   const banner = document.getElementById('demo-banner');
   if (banner) banner.classList.remove('shown');
