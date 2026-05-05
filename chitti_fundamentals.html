@@ -171,6 +171,36 @@ main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
 .fin-period-btn.active,.fin-stmt-btn.active{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.5);color:var(--blue)}
 .fin-period-btn:focus-visible,.fin-stmt-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 
+/* ── Pros & Cons (Tickertape style) ── */
+.proscons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:640px){.proscons-grid{grid-template-columns:1fr}}
+.proscons-col{border:1px dashed var(--border);border-radius:8px;padding:10px;background:var(--card2)}
+.proscons-col h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.proscons-col h3.green{color:var(--green)}
+.proscons-col h3.red{color:var(--red)}
+.proscons-col li{font-size:12px;line-height:1.55;margin-bottom:4px;color:var(--text)}
+
+/* ── SWOT (Trendlyne style) ── */
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:640px){.swot-grid{grid-template-columns:1fr}}
+.swot-cell{border:1px dashed var(--border);border-radius:8px;padding:10px;background:var(--card2);min-height:96px}
+.swot-cell h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.swot-cell.s h3{color:var(--green)} .swot-cell.w h3{color:var(--red)}
+.swot-cell.o h3{color:var(--blue)}  .swot-cell.t h3{color:var(--amber)}
+.swot-cell .empty{font-size:11px;color:var(--muted);font-style:italic}
+
+/* ── Chitti Special badge (Chitti's unique features) ── */
+.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#c4b5fd;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.55);vertical-align:middle;margin-left:6px}
+.special-card{border-color:rgba(124,58,237,.55)!important;background:linear-gradient(135deg,rgba(124,58,237,.06),var(--card))}
+
+/* ── Snowflake (Simply Wall St inspired, Chitti Special) ── */
+.snowflake-wrap{display:flex;align-items:center;justify-content:center;padding:14px;background:var(--card2);border-radius:8px;min-height:180px}
+.snowflake-wrap svg{max-width:280px;width:100%;height:auto}
+
+/* ── Confidence dial (Chitti Special) ── */
+.conf-dial{display:flex;align-items:center;gap:14px;padding:10px;background:var(--card2);border-radius:8px}
+.conf-dial .dial{flex-shrink:0;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--blue) 0deg,var(--card) 0deg);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'JetBrains Mono','Menlo',monospace;font-size:18px;border:2px solid var(--border)}
+
 /* ── News tab ── */
 .news-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .news-controls button{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:34px}
@@ -312,6 +342,9 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
     <button onclick="startDemoMode()" aria-label="Start a 40-second guided demo of Chitti Fundamentals" style="background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.55)">🎬 Demo Mode</button>
     <button onclick="speakPage()" aria-label="Read whole page aloud">🔊 Read page</button>
     <button onclick="speakDisclaimer()" aria-label="Read disclaimer">📜 Disclaimer</button>
+    <button onclick="sp('Watchlist coming soon. Will let you star any stock and see live prices in one place.')" aria-label="Watchlist — coming soon" style="background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45)">⭐ Watchlist <span class="coming-soon">Soon</span></button>
+    <button onclick="sp('Price alerts coming soon. Will notify you when any stock crosses a threshold you set.')" aria-label="Price alerts — coming soon" style="background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45)">🔔 Alerts <span class="coming-soon">Soon</span></button>
+    <button onclick="sp('Side by side comparison coming soon. Will compare any two stocks across all metrics with plain English commentary.')" aria-label="Compare — coming soon" style="background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45)">⚖️ Compare <span class="coming-soon">Soon</span></button>
     <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
   </div>
 </header>
@@ -470,6 +503,105 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
         <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next Earnings</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">When the company will next report quarterly results.</div></div>
         <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next Ex-Dividend</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Buy before this date to be eligible for the next dividend.</div></div>
         <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Next AGM</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Annual general meeting where shareholders vote.</div></div>
+      </div>
+    </div>
+
+    <!-- About the company (Angel One / Yahoo Profile) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏢 About the Company <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Sector, sub-industry, ISIN, CIN, listed since, registered office, MD/CEO. Source: BSE/NSE company master.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>ISIN</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Globally unique 12-character security identifier.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>CIN</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Corporate identity number from Ministry of Corporate Affairs.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Listed Since</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Year the stock was first listed on the exchange.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Sub-Industry</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">More granular than sector — e.g. Refineries vs Oil & Gas.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>MD / CEO</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Current managing director or CEO and tenure.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Auditor</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Independent statutory auditor and tenure.</div></div>
+      </div>
+      <div class="section-empty" style="margin-top:8px">Company description (3 sentences plain-English) and registered office wires from BSE master + Wikipedia next session.</div>
+    </div>
+
+    <!-- Pros & Cons (Tickertape signature) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">✅ Pros &amp; ❌ Cons <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Tickertape-style auto-generated bullets — what's strong about this stock, what to watch out for. Computed from the underlying ratios.</div>
+        </div>
+        <button class="metric-spk" onclick="sp('Pros and Cons section. Tickertape style auto generated bullets. Coming soon.')" aria-label="Hear what this section will show">🔊</button>
+      </div>
+      <div class="proscons-grid">
+        <div class="proscons-col">
+          <h3 class="green">✅ PROS</h3>
+          <ul style="margin:0;padding-left:18px"><li class="empty" style="color:var(--muted);font-style:italic">e.g. Stock has delivered ROE > 15% for 5 years</li><li class="empty" style="color:var(--muted);font-style:italic">e.g. Debt-free with positive FCF</li><li class="empty" style="color:var(--muted);font-style:italic">e.g. Promoter holding rising last 4 quarters</li></ul>
+        </div>
+        <div class="proscons-col">
+          <h3 class="red">❌ CONS</h3>
+          <ul style="margin:0;padding-left:18px"><li class="empty" style="color:var(--muted);font-style:italic">e.g. P/E above 5-year own average</li><li class="empty" style="color:var(--muted);font-style:italic">e.g. Promoter pledged shares above 20%</li><li class="empty" style="color:var(--muted);font-style:italic">e.g. Operating margin compressed YoY</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance vs NIFTY (Tickertape / Yahoo) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📈 Performance vs NIFTY 50 <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">How this stock returned vs the index over each timeframe. Beating the index is the alpha.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Performance vs NIFTY">
+        <thead><tr><th>Period</th><th>Stock Return</th><th>NIFTY Return</th><th>Alpha</th></tr></thead>
+        <tbody>
+          <tr><td>1 Month</td>  <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>6 Months</td> <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>1 Year</td>   <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>3 Years</td>  <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>5 Years</td>  <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>10 Years</td> <td colspan="3" class="section-empty" style="text-align:center">Coming soon</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Returns Calculator (Angel One signature) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🧮 Returns Calculator <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">"If you had invested ₹10,000 in 2015, you'd have ₹X today" — lumpsum or monthly SIP.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Lumpsum</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Single one-time investment. Pick year and amount.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Monthly SIP</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Equal monthly buys. Pick start year and monthly amount.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>vs NIFTY 50</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">What you'd have if the same money went into NIFTY index instead.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>vs Bank FD (7%)</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">What you'd have if the same money sat in a fixed deposit at 7% per year.</div></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ CHITTI SPECIAL ════════════════════ -->
+    <!-- Things no other stock app has — Chitti's edge -->
+    <div class="section-card special-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">✨ Chitti Special — what no other app does</div>
+          <div class="section-sub">Features built specifically for Chitti's three-user contract: blind, deaf-mute, and financially-illiterate users. None of Tickertape, Trendlyne, Bloomberg, or Yahoo has these.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-lbl"><span>🎤 Story Mode</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">60-second audio briefing — Chitti narrates the company story like a friend explaining it over chai. Coming next session.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🎯 Risk-Fit Dial</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Conservative / Moderate / Aggressive — does this stock fit your risk persona? Tap to set your persona once.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>📊 Confidence Dial</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How confident is Chitti in its verdict? Out of 10. With reasons for any uncertainty so you can judge.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>💰 Affordability</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Type your budget — Chitti tells you how many shares you can buy after brokerage and STT.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>📴 Pension / SIP Fit</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Suitable for a 10-year SIP? For a retiree's portfolio? Chitti judges fit, not just rating.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🌐 Multi-Indian-Language</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Hindi, Tamil, Bengali, Telugu, Marathi, Gujarati, Kannada audio — not just text translation, full speech.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>👨‍👩‍👧 Family Share</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share Chitti's verdict on WhatsApp with the SEBI disclaimer pre-attached. One tap.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>⚖️ Plain-English Compare</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">"Reliance is 5× bigger than ITC, but ITC pays 7× more dividend." Compare any two stocks in plain words.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>❄️ 5D Snowflake</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Simply-Wall-St-style 5-axis radar: Value / Growth / Quality / Health / Income. One picture.</div></div>
       </div>
     </div>
   </section>
@@ -649,6 +781,33 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
         <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Forex Earnings %</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share of revenue earned in foreign currency.</div></div>
       </div>
     </div>
+
+    <!-- Capex vs Depreciation (Bloomberg-style) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏗️ Capex vs Depreciation <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Is the company reinvesting? Capex above depreciation = growing capacity. Below = harvesting.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Capex (latest FY)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Money spent on plant, machinery, factories, IT.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Depreciation (latest FY)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How much existing assets wore down this year.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Capex / Depreciation</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Above 1.5× = growing fast. Below 1.0× = shrinking capacity.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Capex / Sales</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How capital-intensive the business is.</div></div>
+      </div>
+    </div>
+
+    <!-- Debt Maturity Profile (Bloomberg) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🗓️ Debt Maturity Profile <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">When the company's debt is due. Lumpy near-term maturities = refinancing risk.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — bar chart of debt repayments by year (within 1Y, 1-3Y, 3-5Y, 5Y+) from notes-to-accounts.</div>
+    </div>
   </section>
 
   <!-- ════════════════════ RATIOS TAB ════════════════════ -->
@@ -760,6 +919,70 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
       </div>
       <div class="section-empty">Coming soon — wires from BSE / NSE pledge disclosures next session.</div>
     </div>
+
+    <!-- Top 10 Institutional Holders (Yahoo / Bloomberg) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏛️ Top 10 Institutional Holders <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Bloomberg-style institutional ownership: top 10 funds + Q/Q change + fund manager.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Top institutional holders">
+        <thead><tr><th>#</th><th>Holder</th><th>Type</th><th>Holding %</th><th>Q/Q Change</th><th>Manager</th></tr></thead>
+        <tbody><tr><td colspan="6" class="section-empty">Coming soon — wires from quarterly DII/FII disclosures + AMFI portfolios next session.</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Key Management Personnel (Yahoo Profile / Angel) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">👤 Key Management Personnel (KMP) <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Board members, CEO/CFO/MD with tenure, age, qualifications, and reported compensation.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Key management">
+        <thead><tr><th>Name</th><th>Role</th><th>Since</th><th>Age</th><th>Compensation (FY)</th></tr></thead>
+        <tbody><tr><td colspan="5" class="section-empty">Coming soon — parsed from annual report's KMP section + BSE board disclosures.</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Subsidiary / Group Structure (Annual Reports) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🌳 Subsidiary &amp; Group Structure <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Parent company, subsidiaries, joint ventures, associates — the group tree. Reveals consolidated vs standalone exposure.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — annual-report parser will surface subsidiary list with %-stake and contribution to consolidated revenue.</div>
+    </div>
+
+    <!-- Credit Rating (Trendlyne) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏷️ Credit Rating <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">CRISIL / ICRA / India Ratings — long-term and short-term. Downgrade is an early-warning signal.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Credit rating">
+        <thead><tr><th>Agency</th><th>Long-term</th><th>Short-term</th><th>Outlook</th><th>Last Updated</th></tr></thead>
+        <tbody><tr><td colspan="5" class="section-empty">Coming soon — wires from CRISIL / ICRA / India Ratings RSS feeds.</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Litigation / Regulatory (Corporate filings) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">⚖️ Litigation &amp; Regulatory Issues <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Pending material litigation, SEBI / SEC actions, auditor qualifications. Red flags surface here first.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — auditor qualification field + material-litigation summary parsed from annual report.</div>
+    </div>
   </section>
 
   <!-- ════════════════════ PEERS TAB ════════════════════ -->
@@ -830,6 +1053,72 @@ footer small{font-size:11px;color:var(--muted);line-height:1.55}
           <div class="metric-card-pe">How much above or below the sector this stock trades.</div>
         </div>
       </div>
+    </div>
+
+    <!-- SWOT auto-generated (Trendlyne signature) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🧠 SWOT — auto-generated <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Trendlyne-style auto-generated Strengths, Weaknesses, Opportunities, Threats — derived from the underlying ratios + news.</div>
+        </div>
+        <button class="metric-spk" onclick="sp('S W O T section. Auto generated strengths, weaknesses, opportunities, threats. Coming soon.')" aria-label="Hear what SWOT covers">🔊</button>
+      </div>
+      <div class="swot-grid">
+        <div class="swot-cell s"><h3>🛡️ Strengths</h3><div class="empty">e.g. ROE consistently above 15%; debt-free; promoter holding rising</div></div>
+        <div class="swot-cell w"><h3>⚠️ Weaknesses</h3><div class="empty">e.g. Margins compressed YoY; high promoter pledge; concentrated single-product revenue</div></div>
+        <div class="swot-cell o"><h3>🌱 Opportunities</h3><div class="empty">e.g. PLI scheme beneficiary; export tailwind; large untapped TAM</div></div>
+        <div class="swot-cell t"><h3>⛔ Threats</h3><div class="empty">e.g. Regulatory headwinds; cheaper imports; auditor qualification last quarter</div></div>
+      </div>
+    </div>
+
+    <!-- DCF Calculator (Stockanalysis.com / Bloomberg) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🧮 DCF Calculator <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Discounted-cash-flow fair-value model. Adjust growth + discount rate sliders to see how intrinsic value changes.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>FCF (latest)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Free cash flow most recent year — input to the model.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Growth assumption (next 5Y)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Slider 0–25%. How fast you think FCF will grow.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Discount rate (WACC)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Slider 8–18%. Risk-adjusted required return.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Terminal growth rate</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Slider 2–6%. Long-run perpetual growth.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>DCF Fair Value</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Per-share intrinsic value from the model.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Margin of Safety</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Discount of current price to DCF fair value.</div></div>
+      </div>
+    </div>
+
+    <!-- Analyst Forecast time-series (Tickertape Forecasts) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🔮 Analyst Forecast — next 4 quarters <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Consensus EPS + Sales for the next 4 quarters as a chart. Beat/miss vs. consensus over the last 8 quarters.</div>
+        </div>
+      </div>
+      <div class="bars-wrap" style="min-height:120px"><div class="section-empty">Slot reserved — analyst forecast time-series chart wiring next session (needs paid analyst feed).</div></div>
+    </div>
+
+    <!-- Comparable Multiples (Bloomberg RV) -->
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📊 Comparable Multiples (vs sector median) <span class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">Bloomberg-style relative-valuation view: how each multiple stacks up against sector median + 5Y own median.</div>
+        </div>
+      </div>
+      <table class="fund-q-tbl" aria-label="Comparable multiples">
+        <thead><tr><th>Multiple</th><th>Stock</th><th>5Y own median</th><th>Sector median</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>P/E</td>       <td colspan="4" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>P/B</td>       <td colspan="4" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>EV/EBITDA</td> <td colspan="4" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>EV/Sales</td>  <td colspan="4" class="section-empty" style="text-align:center">Coming soon</td></tr>
+          <tr><td>P/CF</td>      <td colspan="4" class="section-empty" style="text-align:center">Coming soon</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
