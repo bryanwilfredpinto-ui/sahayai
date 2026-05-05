@@ -597,6 +597,67 @@ textarea:focus{border-color:var(--blue)}
     </div>
   </div>
 
+  <!-- ── TECHNICAL SIGNAL ROW — prominent, always visible ── -->
+  <div style="display:flex;align-items:center;gap:10px;background:var(--card);border-bottom:1px solid var(--border);padding:7px 14px;flex-wrap:wrap">
+    <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0">⚡ Technical Signal</span>
+    <select id="chart-ind-toolbar" onchange="runChartIndicatorToolbar()"
+      aria-label="Check indicator signal for this stock"
+      style="flex:1;max-width:260px;background:var(--surface);color:var(--text);border:1px solid var(--blue);
+        border-radius:7px;padding:6px 10px;font-size:12px;font-family:inherit;cursor:pointer;min-height:34px;font-weight:600">
+      <option value="">— Select indicator —</option>
+      <optgroup label="⭐ Chitti Special">
+        <option value="Roshan Indicator">Roshan Indicator (Bryan)</option>
+        <option value="Price Action">Price Action (Chitti)</option>
+      </optgroup>
+      <optgroup label="📊 Momentum">
+        <option value="RSI">RSI (14)</option>
+        <option value="MACD">MACD</option>
+        <option value="Stochastic">Stochastic</option>
+        <option value="Stochastic RSI">Stochastic RSI</option>
+        <option value="Williams %R">Williams %R</option>
+        <option value="CCI">CCI</option>
+        <option value="Momentum">Momentum</option>
+      </optgroup>
+      <optgroup label="📈 Trend">
+        <option value="Supertrend">Supertrend</option>
+        <option value="ADX">ADX</option>
+        <option value="Aroon">Aroon</option>
+        <option value="Parabolic SAR">Parabolic SAR</option>
+        <option value="Ichimoku">Ichimoku</option>
+      </optgroup>
+      <optgroup label="〰️ Volatility">
+        <option value="Bollinger Bands">Bollinger Bands</option>
+        <option value="ATR">ATR</option>
+        <option value="Keltner Channels">Keltner Channels</option>
+      </optgroup>
+      <optgroup label="📦 Volume">
+        <option value="VWAP">VWAP</option>
+        <option value="OBV">OBV</option>
+        <option value="MFI">MFI</option>
+        <option value="Force Index">Force Index</option>
+        <option value="Chaikin Money Flow">Chaikin Money Flow</option>
+      </optgroup>
+      <optgroup label="⚡ New (2010+)">
+        <option value="TTM Squeeze">TTM Squeeze</option>
+        <option value="Hull MA">Hull MA</option>
+        <option value="Chande Kroll Stop">Chande Kroll Stop</option>
+        <option value="Awesome Oscillator">Awesome Oscillator</option>
+        <option value="Vortex Indicator">Vortex Indicator</option>
+        <option value="Chandelier Exit">Chandelier Exit</option>
+      </optgroup>
+    </select>
+    <div id="chart-ind-toolbar-result" style="display:none;font-size:13px;font-weight:800;
+      padding:4px 14px;border-radius:7px;font-family:'JetBrains Mono',monospace"></div>
+    <button onclick="speakChartIndResult()" id="chart-ind-speak" style="display:none;
+      background:none;border:none;cursor:pointer;font-size:14px;padding:4px 6px" 
+      aria-label="Hear signal">🔊</button>
+    <!-- RSI S/R checkbox -->
+    <label class="ov-chip" style="margin-left:auto;flex-shrink:0;border-color:var(--purple)">
+      <input type="checkbox" id="ov-rsi-sr" onchange="toggleRSISR()" style="accent-color:#9c7cff">
+      <span style="color:#9c7cff;font-weight:700">RSI S/R</span>
+    </label>
+  </div>
+
   <!-- ── CHART TOOLBAR ROW 1: Timeframe + Chart Type ── -->
   <div style="display:flex;align-items:center;gap:0;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap">
     <!-- Timeframe pills -->
@@ -645,7 +706,8 @@ textarea:focus{border-color:var(--blue)}
     <div class="tog"    id="tog-prev" onclick="togOver('prev')" role="checkbox" aria-checked="false" tabindex="0">⬚ Prev D</div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div class="tf-legend" id="legend"></div>
-      <select id="chart-ind-toolbar" onchange="runChartIndicatorToolbar()"
+      <!-- indicator dropdown moved to prominent row above -->
+      <select id="chart-ind-toolbar-hidden" style="display:none" onchange="runChartIndicatorToolbar()"
         aria-label="Check indicator signal"
         style="background:var(--card);color:var(--text);border:1px solid var(--border);
           border-radius:6px;padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;
@@ -2100,64 +2162,92 @@ function toggleOverlay(key) {
 }
 
 // ── S/R + Trendlines ──
-async function fetchAndDrawHigherTF(sym, higherTF, t0, t1) {
-  if (!showSR || !lwChart) return;
-  try {
-    // Check cache first
-    const ck = 'chitti_candles_' + sym.replace(/[^A-Z0-9]/g,'_') + '_' + higherTF;
-    let candles = null;
+async function fetchAndDrawCascadedSR(sym, higherTFs, currentCandles) {
+  if (!showSR || !lwChart || !currentCandles.length) return;
+  const t0 = currentCandles[0].time;
+  const t1 = currentCandles[currentCandles.length-1].time;
+  const lastClose = currentCandles[currentCandles.length-1]?.close || 0;
+
+  // Fetch all higher TF candles in parallel
+  const allLevels = []; // {price, tf, isRes}
+
+  for (const higherTF of higherTFs) {
     try {
-      const cached = JSON.parse(localStorage.getItem(ck) || 'null');
-      if (cached?.candles?.length > 10) candles = cached.candles;
-    } catch(e) {}
-
-    if (!candles) {
-      const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${higherTF}&days_back=365`);
-      if (!r.ok) return;
-      candles = await r.json();
-      candles.sort((a,b) => a.time - b.time);
-    }
-
-    if (!candles?.length) return;
-
-    const levels = findSRLevels(candles);
-    const lastClose = candles[candles.length-1]?.close || 0;
-    const style = srStyleForTF(higherTF);
-
-    levels.forEach(lv => {
-      // Only draw if level is within visible price range (±20% of current price)
-      // Cascading SR: only closest 1-2 levels per side from higher TF
-      const _cascadeLimit = higherTF === 'Monthly' ? 1 : 2;
-      const _isRes = lv.price > lastClose;
-      // Will be filtered below by counting
-      if (lastClose > 0 && (lv.price > lastClose * 1.12 || lv.price < lastClose * 0.88)) return;
-      const isRes = lv.price > lastClose;
+      let candles = null;
+      // Check cache first
       try {
-        const s = lwChart.addLineSeries({
-          color: style.color + '66',
-          lineWidth: Math.max(1, style.lineWidth - 1),
-          lineStyle: LightweightCharts.LineStyle.Dashed,
-          priceLineVisible: false,
-          lastValueVisible: true,
-          title: (isRes ? 'R' : 'S') + ' ' + higherTF.substring(0,1),
-          autoscaleInfoProvider: () => null,  // Don't affect Y-axis
-        });
-        // Use CURRENT CHART time range (lastCandles) for correct alignment
-        const _t0 = lastCandles.length ? lastCandles[0].time : t0;
-        const _t1 = lastCandles.length ? lastCandles[lastCandles.length-1].time : t1;
-        s.setData([{time: _t0, value: lv.price}, {time: _t1, value: lv.price}]);
-        srLineSeries.push(s);
+        const ck = 'chitti_candles_' + sym.replace(/[^A-Z0-9]/g,'_') + '_' + higherTF;
+        const cached = JSON.parse(localStorage.getItem(ck) || 'null');
+        if (cached?.candles?.length > 10) candles = cached.candles;
       } catch(e) {}
-    });
-  } catch(e) {
-    // Silent fail — higher TF data is supplementary, not critical
+
+      if (!candles) {
+        const daysBack = {Monthly:730, Weekly:365, Daily:120, '4H':60, '1H':30}[higherTF] || 120;
+        const r = await fetch(`${API}/api/candles/${encodeURIComponent(sym)}?timeframe=${higherTF}&days_back=${daysBack}`);
+        if (!r.ok) continue;
+        candles = await r.json();
+        candles.sort((a,b) => a.time - b.time);
+      }
+
+      if (!candles?.length) continue;
+
+      const levels = findSRLevels(candles);
+      const limit = srLimitForTF(higherTF);
+
+      const res = levels
+        .filter(lv => lv.price > lastClose && lv.price < lastClose * 1.15)
+        .sort((a,b) => a.price - b.price)
+        .slice(0, limit);
+      const sup = levels
+        .filter(lv => lv.price < lastClose && lv.price > lastClose * 0.85)
+        .sort((a,b) => b.price - a.price)
+        .slice(0, limit);
+
+      [...res, ...sup].forEach(lv => {
+        allLevels.push({price: lv.price, tf: higherTF, isRes: lv.price > lastClose});
+      });
+
+    } catch(e) { /* silent fail */ }
   }
+
+  // DEDUPLICATE: if two levels from different TFs are within 0.3% of each other,
+  // keep only the HIGHER timeframe (more important) level
+  const TF_PRIORITY = {Monthly:1, Weekly:2, Daily:3, '4H':4, '1H':5};
+  const deduped = [];
+  const sorted = [...allLevels].sort((a,b) => TF_PRIORITY[a.tf] - TF_PRIORITY[b.tf]); // higher TF first
+
+  sorted.forEach(level => {
+    const isDup = deduped.some(existing =>
+      Math.abs(existing.price - level.price) / existing.price < 0.003
+    );
+    if (!isDup) deduped.push(level);
+  });
+
+  // Draw deduplicated levels
+  deduped.forEach(lv => {
+    const style = srStyleForTF(lv.tf);
+    try {
+      const s = lwChart.addLineSeries({
+        color: style.color + (lv.isRes ? '99' : '77'),
+        lineWidth: Math.max(1, style.lineWidth - 1),
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        priceLineVisible: false,
+        lastValueVisible: true,
+        title: (lv.isRes ? 'R' : 'S') + ' ' + lv.tf.substring(0,1),
+        autoscaleInfoProvider: () => null,
+      });
+      s.setData([{time: t0, value: lv.price}, {time: t1, value: lv.price}]);
+      srLineSeries.push(s);
+    } catch(e) {}
+  });
 }
+
 
 function clearOverlays() {
   srLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
   tlLineSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
-  srLineSeries = []; tlLineSeries = [];
+  rsiSRSeries.forEach(s => { try{lwChart.removeSeries(s)}catch(e){} });
+  srLineSeries = []; tlLineSeries = []; rsiSRSeries = [];
 }
 function srStyleForTF(tf) {
   // Bryan's spec: Monthly=purple bold, Weekly=white, Daily=red, 4H=dark yellow dashed, 1H=green
@@ -2305,20 +2395,24 @@ async function loadChart(sym) {
         lwChart.timeScale().fitContent();
       }
     }, 200);
-    // Cascade: fetch and draw higher TF S/R levels
+    // Cascade S/R — Bryan's spec:
+    // Monthly: Monthly only
+    // Weekly:  Weekly + Monthly (dedup)
+    // Daily:   Daily + Weekly + Monthly (dedup)
+    // 4H:      4H + Daily + Weekly + Monthly (dedup)
+    // 1H:      1H + 4H + Daily + Weekly (dedup)
+    // 15min+:  current + 1H + 4H + Daily (dedup)
     const TFH_ORDER = ['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
     const tfIdx = TFH_ORDER.indexOf(tf);
-    if (tfIdx >= 2) {
-      // Always show Monthly S/R on all timeframes
-      fetchAndDrawHigherTF(sym, 'Monthly', candles[0].time, candles[candles.length-1].time);
-    }
-    if (tfIdx >= 3) {
-      // Show Weekly S/R on Daily and below
-      fetchAndDrawHigherTF(sym, 'Weekly', candles[0].time, candles[candles.length-1].time);
-    }
-    if (tfIdx >= 4) {
-      // Show Daily S/R on 4H and below
-      fetchAndDrawHigherTF(sym, 'Daily', candles[0].time, candles[candles.length-1].time);
+    // Collect all higher TF S/R and deduplicate before drawing
+    const higherTFs = [];
+    if (tfIdx === 1) higherTFs.push('Monthly');                    // Weekly sees Monthly
+    if (tfIdx === 2) higherTFs.push('Weekly','Monthly');           // Daily sees Weekly+Monthly
+    if (tfIdx === 3) higherTFs.push('Daily','Weekly','Monthly');   // 4H sees all three
+    if (tfIdx === 4) higherTFs.push('4H','Daily','Weekly');        // 1H sees 4H+Daily+Weekly
+    if (tfIdx >= 5)  higherTFs.push('1H','4H','Daily');            // 15m+ sees 1H+4H+Daily
+    if (higherTFs.length) {
+      fetchAndDrawCascadedSR(sym, higherTFs, candles);
     }
 
     // Prev day high/low
@@ -2371,6 +2465,9 @@ async function loadChart(sym) {
       }
     }, 150);
 
+    // Redraw RSI S/R if checkbox is ticked
+    if (document.getElementById('ov-rsi-sr')?.checked) drawRSISRLines(candles);
+
     // Calculate trade setup from loaded candles
     if (lastCandles.length && cvData) calcTradeSetup(lastCandles, cvData.side);
     else if (lastCandles.length) calcTradeSetup(lastCandles);
@@ -2391,12 +2488,16 @@ async function loadChart(sym) {
         lwChart.timeScale().fitContent();
         updateLowerIndicator(cached.candles);
         clearOverlays(); drawSRLines(cached.candles,tf); drawTrendlines(cached.candles,tf);
-        const _t0=cached.candles[0].time, _t1=cached.candles[cached.candles.length-1].time;
+        // Cascade for cached data too
         const _TFH=['Monthly','Weekly','Daily','4H','1H','15min','5min','1min'];
         const _ti=_TFH.indexOf(tf);
-        if(_ti>=2) fetchAndDrawHigherTF(sym,'Monthly',_t0,_t1);
-        if(_ti>=3) fetchAndDrawHigherTF(sym,'Weekly',_t0,_t1);
-        if(_ti>=4) fetchAndDrawHigherTF(sym,'Daily',_t0,_t1);
+        const _hTFs=[];
+        if(_ti===1) _hTFs.push('Monthly');
+        if(_ti===2) _hTFs.push('Weekly','Monthly');
+        if(_ti===3) _hTFs.push('Daily','Weekly','Monthly');
+        if(_ti===4) _hTFs.push('4H','Daily','Weekly');
+        if(_ti>=5)  _hTFs.push('1H','4H','Daily');
+        if(_hTFs.length) fetchAndDrawCascadedSR(sym, _hTFs, cached.candles);
         const fmtD=t=>new Date(t*1000).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
         const c=cached.candles, lc=c[c.length-1];
         document.getElementById('c-full').textContent='NSE · '+tf+' · '+fmtD(c[0].time)+' – '+fmtD(lc.time)+' · ⚠️ Last saved: '+cached.savedAtLabel;
