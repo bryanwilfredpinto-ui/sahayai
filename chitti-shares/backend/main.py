@@ -337,6 +337,43 @@ def api_fundamental_scan_strategies():
     return {"strategies": fundamental_scanner.all_strategies()}
 
 
+# ════════════════════════════════════════════════════════════════════
+# CHITTI MedUPI — public, unauthenticated endpoints
+# Spec: CHITTI_MEDUPI_MASTER_SPEC.md (workspace root)
+# ════════════════════════════════════════════════════════════════════
+
+@app.get("/api/medupi/medicine/{name}")
+def api_medupi_medicine(name: str):
+    """Lookup a medicine by name (typed or spoken). Returns brand + composition + risk."""
+    from services import medupi_recognition
+    return medupi_recognition.recognise_text(name)
+
+
+@app.get("/api/medupi/alternatives")
+def api_medupi_alternatives(molecule: str, strength: str, dosage_form: str, current_brand: str = ""):
+    """
+    Same-composition equivalents. STRICT: same molecule + same strength + same dosage form ONLY.
+    Returns alternatives + risk classification + disclaimer.
+    """
+    from services import medupi_alternatives
+    return medupi_alternatives.find(molecule, strength, dosage_form, current_brand)
+
+
+@app.get("/api/medupi/risk/{molecule}")
+def api_medupi_risk(molecule: str):
+    """Classify a molecule as HIGH / MEDIUM / LOW risk for substitution."""
+    from services import medupi_risk
+    return medupi_risk.classify(molecule)
+
+
+@app.get("/api/medupi/jan_aushadhi")
+def api_medupi_jan_aushadhi(lat: float, lng: float, radius_km: float = 5.0, limit: int = 10):
+    """Find Jan Aushadhi stores within radius_km of the given lat/lng."""
+    from services import medupi_jan_aushadhi
+    items = medupi_jan_aushadhi.find_nearby(lat, lng, radius_km=max(0.1, min(radius_km, 50.0)), limit=max(1, min(limit, 50)))
+    return {"items": items, "count": len(items), "centre": {"lat": lat, "lng": lng}, "radius_km": radius_km}
+
+
 @app.get("/api/news/stock/{symbol:path}")
 def api_news_stock(symbol: str, limit: int = 10):
     """

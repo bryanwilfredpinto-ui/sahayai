@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti MedUPI — UPI for your medicine bills · Scan. Compare. Save.</title>
+<meta name="description" content="Scan any medicine, see same-composition equivalents and Jan Aushadhi prices. Save 50–90% on medicine bills. For every Indian family.">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
+  --med-green:#15803d; --med-red:#b91c1c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body{min-height:100vh;position:relative}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Bharat stripe */
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+/* Medical disclaimer banner (sticky, gold/amber on white — medical-safe) */
+.med-bar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(232,106,23,.12),rgba(21,128,61,.10));border-bottom:2px solid #D4AF37;padding:8px 14px;font-size:12px;line-height:1.5;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.med-bar .ico{font-size:14px;flex-shrink:0}
+.med-bar .short{flex:1;min-width:140px;color:var(--text)}
+.med-bar .short strong{color:var(--med-red);letter-spacing:.04em}
+.med-bar a.read-more{color:var(--saffron);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-size:12px}
+.med-bar button.spk{background:transparent;border:1px solid rgba(212,175,55,.5);color:var(--text);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;min-height:28px;font-weight:600}
+
+.med-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.med-modal.shown{display:flex}
+.med-modal .panel{background:#fff;border:1px solid rgba(212,175,55,.55);border-radius:14px;padding:22px;max-width:720px;width:100%;font-size:13px;line-height:1.6;color:var(--text)}
+.med-modal .panel h2{font-size:17px;margin:0 0 12px;color:var(--med-red)}
+.med-modal .panel h3{font-size:13px;margin:14px 0 6px;color:var(--saffron);text-transform:uppercase;letter-spacing:.04em}
+.med-modal .panel p{margin:0 0 10px}
+.med-modal .panel strong{color:var(--text)}
+.med-modal .panel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.med-modal .panel button.ok{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;padding:10px 18px;font-size:13px;font-weight:800;border-radius:8px;cursor:pointer;min-height:40px}
+.med-modal .panel button.spk2{background:transparent;border:1px solid rgba(212,175,55,.55);color:var(--saffron);padding:10px 16px;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;min-height:40px}
+
+/* Header */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.switch-btn-bharat:hover{filter:brightness(1.1)}
+.lang-toggle-bharat{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden}
+.lang-toggle-bharat button{border:none;border-radius:0;background:rgba(255,255,255,.05);color:#fff;padding:7px 12px;font-weight:700;cursor:pointer;font-size:11px}
+.lang-toggle-bharat button.active,.lang-toggle-bharat button[data-active="true"]{background:rgba(255,255,255,.30)}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
+.header-controls button:hover{background:rgba(255,255,255,.22)}
+
+/* Tabs */
+nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:0;z-index:5;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:14px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:46px}
+nav.tabs .tab:hover{color:var(--text)}
+nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
+
+/* Layout */
+main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06);color:var(--text)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.section-title{font-size:14px;font-weight:800}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.section-empty{text-align:center;padding:18px;color:var(--muted);font-size:12px}
+
+/* Coming Soon / Live / Risk badges */
+.coming-soon{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle;margin-left:6px}
+.coming-soon-card{border-style:dashed!important}
+.live-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);vertical-align:middle;margin-left:6px}
+.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7c2d12;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));border:1px solid rgba(232,106,23,.5);vertical-align:middle;margin-left:6px}
+.risk-high{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--med-red);border:1px solid var(--med-red)}
+.risk-medium{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#92400e;background:rgba(245,158,11,.18);border:1px solid #f59e0b}
+.risk-low{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--med-green);background:rgba(34,197,94,.12);border:1px solid var(--med-green)}
+
+/* Metric grid (consistent with Shares) */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.metric-card{border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-height:96px;box-shadow:0 4px 12px rgba(14,35,68,.04)}
+.metric-card-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;line-height:1.3}
+.metric-card-val{font-size:17px;font-weight:800;font-family:'JetBrains Mono','Menlo',monospace;margin-top:6px}
+.metric-card-val.dim{color:var(--muted);font-size:14px}
+.metric-card-pe{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* CTA buttons */
+.cta-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.cta-saffron:hover{filter:brightness(1.05)}
+.cta-navy{background:linear-gradient(135deg,var(--navy),#16376a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(14,35,68,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.metric-spk,.fund-spk{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;line-height:1;min-width:32px;min-height:24px}
+.metric-spk:hover,.fund-spk:hover{background:rgba(232,106,23,.06);color:var(--saffron)}
+
+/* Scan tab specifics */
+.scan-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0}
+.scan-action{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--border);border-radius:14px;padding:22px 14px;background:#fff;min-height:140px;cursor:pointer;transition:all .15s}
+.scan-action:hover{border-color:var(--saffron);background:rgba(232,106,23,.04)}
+.scan-action .ico{font-size:38px;margin-bottom:8px}
+.scan-action .lbl{font-size:13px;font-weight:700;color:var(--text)}
+.scan-action .sub{font-size:11px;color:var(--muted);margin-top:4px;text-align:center}
+
+/* Search bar */
+.search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.search-row input{flex:1;min-width:220px;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:14px;min-height:46px}
+.search-row input:focus{outline:none;border-color:var(--saffron)}
+
+/* Mic */
+.mic-btn{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(232,106,23,.10));border:1px solid #D4AF37;color:var(--text);border-radius:10px;padding:0 14px;font-size:18px;cursor:pointer;min-height:46px;min-width:50px;display:inline-flex;align-items:center;justify-content:center}
+.mic-btn:hover{background:linear-gradient(135deg,rgba(212,175,55,.28),rgba(232,106,23,.18))}
+.mic-btn.listening{background:rgba(220,38,38,.18);border-color:var(--red);animation:micPulse 1.2s ease-in-out infinite}
+@keyframes micPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Footer */
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.6}
+
+@media (max-width:640px){
+  .brand{font-size:18px}
+  main{padding:12px 12px 32px}
+  nav.tabs .tab{font-size:12px;padding:12px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- Bharat stripe at top -->
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<!-- ════════════════════ MEDICAL DISCLAIMER BAR (sticky) ════════════════════ -->
+<div class="med-bar" role="alert" aria-label="Medical disclaimer">
+  <span class="ico" aria-hidden="true">⚠️</span>
+  <span class="short" data-i18n="med.short"><strong>NOT MEDICAL ADVICE</strong> · Same-composition options shown. Consult your doctor / pharmacist before switching. <a class="read-more" href="#" onclick="event.preventDefault(); openMedModal()" role="button" data-i18n="med.read_full">Read full disclaimer</a></span>
+  <button class="spk" onclick="speakMedShort()" aria-label="Hear short medical disclaimer">🔊</button>
+</div>
+
+<!-- Full medical disclaimer modal -->
+<div id="med-modal" class="med-modal" role="dialog" aria-modal="true" aria-labelledby="med-modal-title" onclick="if(event.target===this)closeMedModal()">
+  <div class="panel">
+    <h2 id="med-modal-title" data-i18n="med.modal.title">⚠️ Medical Disclaimer & Compliance Notice</h2>
+    <p><strong data-i18n="med.modal.lead">Chitti MedUPI provides informational insights only and does not prescribe, diagnose, or recommend treatment.</strong></p>
+    <p>The alternatives shown are based on matching composition (active ingredient), strength, and dosage form. Differences in brand, manufacturer, or inactive ingredients may exist.</p>
+    <p><strong>Chitti does not recommend replacing any prescribed medicine. Please consult your doctor or a qualified pharmacist before making any changes.</strong></p>
+    <p>Prices are indicative and may vary by pharmacy and location. Medicine details are extracted using AI and may not always be fully accurate.</p>
+    <p>For certain medicines (e.g., for diabetes, heart conditions, antibiotics, psychiatric drugs), substitution without medical advice may impact treatment.</p>
+
+    <h3>Non-negotiable legal lines</h3>
+    <ul>
+      <li>Chitti does not recommend replacing prescribed medicines.</li>
+      <li>Chitti does not provide medical advice.</li>
+      <li>Final decision must be taken by a licensed healthcare professional.</li>
+    </ul>
+
+    <h3>Liability limitation</h3>
+    <p>Chitti Health Assist shall not be liable for any direct, indirect, incidental, or consequential outcomes resulting from the use of this information. Users are advised to consult licensed healthcare professionals before making any medical decisions.</p>
+
+    <h3>Compliance</h3>
+    <p>CDSCO guidelines · NPPA / DPCO pricing norms · Telemedicine Practice Guidelines · ABDM-ready · Digital Personal Data Protection Act compliant · No selling of personal health data.</p>
+
+    <div class="row">
+      <button class="ok" onclick="closeMedModal()" aria-label="I understand and accept" data-i18n="med.understand">I understand</button>
+      <button class="spk2" onclick="speakMedFull()" aria-label="Hear full disclaimer aloud" data-i18n="med.read_aloud">🔊 Read aloud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ HEADER ════════════════════ -->
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <div class="bharat-logo" aria-hidden="true">💊</div>
+      <div>
+        <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">MedUPI</span></div>
+        <div class="tagline" data-i18n="header.tagline">UPI for your medicine bills · Scan. Compare. Save.</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical" data-i18n="switch.tech">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals" data-i18n="switch.fund">📋 Fundamentals</a>
+      <span class="lang-toggle-bharat" role="group" aria-label="UI language">
+        <button data-lang="en" onclick="setChittiLang('en')" aria-label="English UI" data-active="true">EN</button>
+        <button data-lang="hi" onclick="setChittiLang('hi')" aria-label="हिंदी UI">हिं</button>
+      </span>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button onclick="speakPage()" aria-label="Read whole page aloud" data-i18n="hdr.read">🔊 Read page</button>
+    <button onclick="speakMedShort()" aria-label="Hear medical disclaimer" data-i18n="hdr.disclaimer">⚠️ Disclaimer</button>
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
+  </div>
+</header>
+
+<!-- ════════════════════ TABS ════════════════════ -->
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab active" data-tab="scan"      onclick="showTab('scan')"      role="tab" aria-selected="true"  data-i18n="tab.scan">📷 Scan</button>
+  <button class="tab"        data-tab="compare"   onclick="showTab('compare')"   role="tab" aria-selected="false" data-i18n="tab.compare">💊 Compare</button>
+  <button class="tab"        data-tab="wallet"    onclick="showTab('wallet')"    role="tab" aria-selected="false" data-i18n="tab.wallet">👨‍👩‍👧 Family Wallet</button>
+  <button class="tab"        data-tab="reminders" onclick="showTab('reminders')" role="tab" aria-selected="false" data-i18n="tab.reminders">🔔 Reminders</button>
+  <button class="tab"        data-tab="ja"        onclick="showTab('ja')"        role="tab" aria-selected="false" data-i18n="tab.ja">🏥 Jan Aushadhi</button>
+  <button class="tab"        data-tab="insurance" onclick="showTab('insurance')" role="tab" aria-selected="false" data-i18n="tab.insurance">🛡️ Insurance</button>
+  <button class="tab"        data-tab="learn"     onclick="showTab('learn')"     role="tab" aria-selected="false" data-i18n="tab.learn">🎓 Learn</button>
+  <button class="tab"        data-tab="settings"  onclick="showTab('settings')"  role="tab" aria-selected="false" data-i18n="tab.settings">⚙️ Settings</button>
+</nav>
+
+<main>
+
+  <!-- ════════════════════ SCAN TAB ════════════════════ -->
+  <section id="tab-scan" class="page active" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title" data-i18n="scan.title">📷 Scan a medicine</div>
+          <div class="section-sub" data-i18n="scan.sub">Camera, gallery, prescription, or just speak the name. Chitti reads brand + composition + strength.</div>
+        </div>
+        <button class="metric-spk" onclick="speakSection('scan')" aria-label="Hear what this section does">🔊</button>
+      </div>
+      <div class="scan-row">
+        <button class="scan-action" onclick="comingSoon('Camera scan')" aria-label="Open camera to scan a medicine">
+          <div class="ico">📷</div>
+          <div class="lbl" data-i18n="scan.camera">Camera scan</div>
+          <div class="sub" data-i18n="scan.camera.sub">Point your camera at the strip / bottle / label</div>
+          <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span>
+        </button>
+        <button class="scan-action" onclick="comingSoon('Image upload')" aria-label="Upload a medicine photo">
+          <div class="ico">🖼️</div>
+          <div class="lbl" data-i18n="scan.image">Image / PDF upload</div>
+          <div class="sub" data-i18n="scan.image.sub">From gallery or your prescription PDF</div>
+          <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span>
+        </button>
+        <button class="scan-action" onclick="comingSoon('Voice search')" aria-label="Speak the medicine name">
+          <div class="ico">🎤</div>
+          <div class="lbl" data-i18n="scan.voice">Voice — speak the name</div>
+          <div class="sub" data-i18n="scan.voice.sub">Hindi or English. Hands-free for elderly.</div>
+          <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span>
+        </button>
+      </div>
+      <div class="search-row">
+        <label for="med-search" class="sr-only" data-i18n="scan.search.lbl">Search medicine by name</label>
+        <input id="med-search" placeholder="Type medicine name… e.g. Crocin 650, Glycomet, Telma 40" autocomplete="off" data-i18n-placeholder="scan.search.placeholder">
+        <button id="med-mic" class="mic-btn" type="button" onclick="comingSoon('Voice search mic')" aria-label="Speak the medicine name">🎤</button>
+        <button class="cta-saffron" onclick="comingSoon('Search')" data-i18n="scan.search.btn">Search</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📄 Prescription Decoder <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub" data-i18n="scan.rx.sub">Upload your full prescription. Chitti explains each medicine's purpose in plain Hindi/English (purpose only — never advice).</div>
+        </div>
+      </div>
+      <div class="section-empty" data-i18n="scan.rx.empty">Coming soon — full prescription parser with per-medicine purpose explanation, dosage parsing, and equivalent options for each.</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ COMPARE TAB ════════════════════ -->
+  <section id="tab-compare" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">💊 Same-composition equivalents <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Strict matching engine: same molecule + same strength + same dosage form ONLY. Never therapeutic alternatives.</div>
+        </div>
+      </div>
+      <div style="background:#fbf8f1;border:1px dashed var(--border);border-radius:10px;padding:14px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;line-height:1.7">
+        <div style="font-weight:800;color:var(--saffron)">Sample output (when wired):</div>
+        <div style="margin-top:10px"><strong>Scanned:</strong> Crocin 650</div>
+        <div><strong>Composition:</strong> Paracetamol 650 mg Tablet</div>
+        <div style="margin-top:8px"><strong>Equivalent options:</strong></div>
+        <div>  • Jan Aushadhi Generic → ₹8 <span class="risk-low">LOW RISK</span></div>
+        <div>  • Dolo 650 → ₹20</div>
+        <div>  • Calpol 650 → ₹22</div>
+        <div style="margin-top:8px"><strong>Potential savings:</strong> Up to 70%</div>
+        <div><strong>Nearest Jan Aushadhi:</strong> 1.2 km away</div>
+        <div style="margin-top:10px;padding:8px;background:rgba(232,106,23,.08);border-left:3px solid var(--saffron);border-radius:0 6px 6px 0">⚠️ Same composition. Confirm with your doctor / pharmacist before switching.</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🛡️ Risk Classification <span class="live-badge" data-i18n="badge.live">LIVE skeleton</span></div>
+          <div class="section-sub">Every alternative shown is colour-banded by risk. HIGH-risk meds (antibiotics / cardiac / diabetes / BP / psychiatric) trigger a stop-and-think prompt.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-lbl"><span>HIGH RISK</span><span class="risk-high">HIGH</span></div><div class="metric-card-val" style="color:var(--med-red)">⛔</div><div class="metric-card-pe">Antibiotics, cardiac, diabetes, BP, psychiatric, anti-cancer, thyroid, anticoagulants. Limited alternatives + STRONG warning. Always ask doctor.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>MEDIUM RISK</span><span class="risk-medium">MED</span></div><div class="metric-card-val" style="color:#92400e">⚠️</div><div class="metric-card-pe">Painkillers, fever, antacids. Normal output + mild disclaimer. Confirm with pharmacist.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>LOW RISK</span><span class="risk-low">LOW</span></div><div class="metric-card-val" style="color:var(--med-green)">✅</div><div class="metric-card-pe">Vitamins, basic OTC. Full output with friendly tone — same composition, save money.</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🛒 Optimised Cart Simulator <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Drop your full monthly medicine list — Chitti returns the cheapest equivalent-composition cart with savings vs your usual brands.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — drag-drop your monthly list, see total savings if you switch each line item to its cheapest same-composition equivalent.</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ FAMILY WALLET TAB ════════════════════ -->
+  <section id="tab-wallet" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">👨‍👩‍👧 Family Medicine Wallet <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Multi-profile (self / parents / children). Tracks every medicine bought, every rupee saved.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Profiles</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Add self, mom, dad, kids — separate wallets per person.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>This month spend</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">Total medicine spend across the family this month.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>This month saved</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">How much you saved by choosing same-composition equivalents.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Annual projection</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">Estimated yearly savings if you maintain current pattern.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Chronic Care Mode</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Diabetes / BP / thyroid — tracks long-term cost trajectory.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Insurance match</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Which medicines are covered by Ayushman / CGHS / your private plan.</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📈 Monthly Spend Report <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Bar chart of last 12 months: spend (red) vs savings realised (green).</div>
+        </div>
+      </div>
+      <div class="section-empty" style="min-height:120px">Coming soon — 12-month bar chart with rupee amounts + simple plain-English commentary ("You saved ₹3,400 this year — keep going").</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ REMINDERS TAB ════════════════════ -->
+  <section id="tab-reminders" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🔔 Smart Reminders <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Refill before you run out. Expiry alert before you throw away. Adherence helper.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📅 Refill reminder</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Get a ping ~3 days before your stock runs out, with the cheapest same-composition option pre-selected.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>⏰ Expiry alert</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Scans expiry date off the strip, pings you 30 days before — saves wastage and accidental ingestion.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>💊 Dose reminder</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Daily dose ping (morning / evening / bedtime) for chronic medicines.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🩺 Doctor appointment</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Reminder for next follow-up. Chitti speaks reminder aloud for elderly users.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📞 Voice-call reminder</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Critical reminders trigger a phone call via Twilio. Chitti speaks. Reaches users without smartphones.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>💬 WhatsApp reminder</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">India's most-used channel. WhatsApp Business API. Family member can also receive copy.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ JAN AUSHADHI TAB ════════════════════ -->
+  <section id="tab-ja" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🏥 Jan Aushadhi Store Locator <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Government Pradhan Mantri Bhartiya Janaushadhi Pariyojana stores — typically 50–90% cheaper, same CDSCO standard. 11,000+ outlets across India.</div>
+        </div>
+        <button class="metric-spk" onclick="speakSection('ja')" aria-label="Hear what Jan Aushadhi means">🔊</button>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📍 Nearest store</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Geolocation + radius search. Returns address, hours, phone, distance.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🗺️ Map view</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">All Jan Aushadhi stores within 5 km on a map.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📦 Stock check</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Is your medicine actually in stock at that store today? Phone-call check (or future API integration).</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🚐 Mobile Jan Aushadhi</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Mobile vans schedule + stops near you (rural / Tier-3 reach).</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📚 Why Jan Aushadhi works <span class="live-badge" data-i18n="badge.live">LIVE</span></div>
+          <div class="section-sub">Plain-English explanation for users who've never heard of generics.</div>
+        </div>
+      </div>
+      <div style="font-size:13px;line-height:1.65">
+        <p>Jan Aushadhi (literally "people's medicine") is a Government of India scheme launched in 2008. The medicines sold there are <strong>generics</strong> — same active ingredient, same strength, same dosage form, same CDSCO quality standard as the branded versions sold at regular pharmacies.</p>
+        <p>The price difference comes from <strong>marketing + brand cost</strong>, not quality. A ₹120 paracetamol box at a pharmacy can be ₹15 at Jan Aushadhi.</p>
+        <p>Chitti MedUPI's job: every time you scan a branded medicine, surface the Jan Aushadhi equivalent + the nearest store in one tap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ INSURANCE TAB ════════════════════ -->
+  <section id="tab-insurance" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🛡️ Insurance Optimiser <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Shows whether each medicine is covered by Ayushman Bharat, CGHS, or your private health plan.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🇮🇳 Ayushman Bharat (PM-JAY)</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">₹5 lakh per family per year. Empanelled-hospital medicine list.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🏛️ CGHS</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Central Govt Health Scheme — for serving + retired Central Govt employees + dependents.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🏢 ESI Scheme</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">For workers earning under ₹21,000/month + dependents.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>💼 Private health plan</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Add your insurer + plan — Chitti checks coverage list (when insurers expose API).</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📑 Receipt OCR for claims</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Scan pharmacy bill, build a clean claim file (PDF) ready to upload to insurer.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ LEARN TAB ════════════════════ -->
+  <section id="tab-learn" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🎓 Learn — medicine literacy <span class="live-badge">LIVE skeleton</span></div>
+          <div class="section-sub">Plain-English (and Hindi) primers on what generics are, what NPPA does, what schedule H means, what to ask your doctor.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 What is a generic?</span></div><div class="metric-card-pe">A medicine with the same active ingredient as a branded version, made after the patent expires. Same CDSCO quality, far cheaper.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 What is composition?</span></div><div class="metric-card-pe">The active ingredient (salt) + strength + form. e.g. Paracetamol 650 mg Tablet. Two medicines with same composition are equivalent for that condition.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 What is NPPA?</span></div><div class="metric-card-pe">National Pharmaceutical Pricing Authority. Sets ceiling prices for essential medicines. Anyone selling above ceiling is breaking the law.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 Schedule H</span></div><div class="metric-card-pe">Prescription-only medicines. You cannot legally buy these without a doctor's prescription. Chitti always reminds you.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 Bioequivalence</span></div><div class="metric-card-pe">Two medicines work the same way in your body if they have same composition + bioequivalence (≥80%). All Indian generics meet this standard.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🟢 5 questions to ask your doctor</span></div><div class="metric-card-pe">"Can I switch to a generic?" "Is there a Jan Aushadhi version?" "What's the cheaper alternative?" "How long do I take this?" "What if I miss a dose?"</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">💬 Ask Chitti MedUPI <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
+          <div class="section-sub">Live chat about medicine costs + composition + Jan Aushadhi. Same Anthropic-powered chat as Chitti Shares Learn tab — never gives medical advice, only education.</div>
+        </div>
+      </div>
+      <div class="section-empty">Coming soon — same chat infrastructure as Chitti Fundamentals "Ask Chitti Fundamentals". Per-user Anthropic key in localStorage. System prompt forbids any medical advice; only price + composition + Jan Aushadhi questions.</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ SETTINGS TAB ════════════════════ -->
+  <section id="tab-settings" class="page" role="tabpanel">
+    <div class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">⚙️ Settings &amp; Accessibility</div>
+          <div class="section-sub">Make Chitti MedUPI work the way YOU need it.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-lbl"><span>🌐 UI Language</span><span class="live-badge">LIVE</span></div><div class="metric-card-val">EN / हिं</div><div class="metric-card-pe">Toggle in the header. Translates tabs, buttons, disclaimer. Hindi voice for Chitti.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🔠 Large font mode</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">For elderly users. Doubles all text sizes + button heights.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>📴 Offline mode</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Top 200 medicines + their generics cached locally. Works without internet.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>👥 Family sharing</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share your Chitti wallet view with a family member. Daughter can see mom's medicines + costs.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🎙️ Voice-only mode</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Whole UI driven by voice — for blind users + low-literacy users. Chitti speaks every prompt.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>🔐 Privacy</span><span class="live-badge">LIVE</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">No selling personal health data. Encrypted at rest. ABDM-ready. DPDP Act compliant.</div></div>
+      </div>
+    </div>
+
+    <!-- ✨ Chitti Special section (mirroring Shares pattern) -->
+    <div class="section-card" style="border:1px solid rgba(232,106,23,.45);background:linear-gradient(135deg,rgba(232,106,23,.04),#fff)">
+      <div class="section-head">
+        <div>
+          <div class="section-title">✨ Chitti MedUPI Special — what no other medicine app does</div>
+          <div class="section-sub">Tata 1mg, PharmEasy, NetMeds, Apollo 24|7 — none of them do these. Chitti's edge for Indian families.</div>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-lbl"><span>🎤 Voice-driven everything</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Speak the medicine name in Hindi or English. Chitti reads back the composition, alternatives, savings + nearest Jan Aushadhi — eyes-free.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🏥 Jan Aushadhi-first</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Every scan surfaces the nearest Jan Aushadhi store + same-composition price by default. No other app makes this front-and-centre.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🛡️ Risk classification BEFORE alternatives</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">High-risk medicines (antibiotics / cardiac / diabetes / psychiatric) trigger a stop-and-think prompt. No glib "switch to cheaper" on critical meds.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>👨‍👩‍👧 Family Wallet</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Multi-profile wallet — see exactly how much you saved across the family this month / year. None of the e-pharmacies show the SAVINGS, only spend.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>📞 Phone-call reminders</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Critical refill / dose reminders trigger a phone call via Twilio. Chitti speaks aloud. Works for users without smartphones — reaches grandparents.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🌐 7 Indian languages</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Hindi · Tamil · Bengali · Telugu · Marathi · Gujarati · Kannada — full audio + text. Tier-2/3 reach.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>📅 Expiry scanner</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Scans expiry date off the strip + pings you 30 days before. Saves wastage + prevents accidental ingestion of expired meds.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🩺 Chronic Care projections</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">"At your current pattern, your diabetes meds will cost ₹X over the next 5 years. Switching to Jan Aushadhi saves ₹Y." Long-term financial planning for chronic patients.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>💬 Community price reporting</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Users report local prices — Chitti cross-verifies + flags pharmacies overcharging vs NPPA ceiling. Transparency across India.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🛡️ Insurance + Ayushman matching</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Auto-checks if your medicine is on Ayushman / CGHS / your private list. None of the apps tell you upfront if you'd be reimbursed.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🤝 Family sharing with parent profiles</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Daughter can manage mom's medicines from her phone. Mom doesn't need to use the app. Bharat-realistic family setup.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span>🆓 100% free core + transparent affiliate</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-pe">Core functionality always free. Optional premium for chronic-care analytics. Affiliate links only when transparent — no hidden pushes.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer role="contentinfo">
+    <small>
+      Chitti MedUPI v1.4 · Bharat Premium AI · Backend: <code>chitti-shares-api.onrender.com</code><br>
+      Spec: <a href="CHITTI_MEDUPI_MASTER_SPEC.md">CHITTI_MEDUPI_MASTER_SPEC.md</a> · Sister products: <a href="chitti_complete_technical.html">📈 Technical</a> · <a href="chitti_fundamentals.html">📋 Fundamentals</a><br>
+      Chitti MedUPI provides informational insights only · Not medical advice · Always consult your doctor or pharmacist.
+    </small>
+  </footer>
+</main>
+
+<script>
+if(!window._chittiMedUpiLoaded){
+window._chittiMedUpiLoaded = true;
+
+// ═══════════════════════════════════════════════════════════
+// I18N — Hindi UI toggle
+// ═══════════════════════════════════════════════════════════
+let _chittiLang = (function(){ try { return localStorage.getItem('chitti_lang') || 'en'; } catch(e){ return 'en'; } })();
+
+const I18N = {
+  // Tabs
+  'tab.scan':       { en:'📷 Scan',                 hi:'📷 स्कैन' },
+  'tab.compare':    { en:'💊 Compare',              hi:'💊 तुलना' },
+  'tab.wallet':     { en:'👨‍👩‍👧 Family Wallet',         hi:'👨‍👩‍👧 परिवार का पर्स' },
+  'tab.reminders':  { en:'🔔 Reminders',            hi:'🔔 रिमाइंडर' },
+  'tab.ja':         { en:'🏥 Jan Aushadhi',          hi:'🏥 जन औषधि' },
+  'tab.insurance':  { en:'🛡️ Insurance',             hi:'🛡️ बीमा' },
+  'tab.learn':      { en:'🎓 Learn',                hi:'🎓 सीखें' },
+  'tab.settings':   { en:'⚙️ Settings',              hi:'⚙️ सेटिंग्स' },
+  // Header
+  'header.tagline': { en:'UPI for your medicine bills · Scan. Compare. Save.', hi:'दवाओं के बिल का UPI · स्कैन करें। तुलना करें। बचाएँ।' },
+  'switch.tech':    { en:'📈 Technical',            hi:'📈 टेक्निकल' },
+  'switch.fund':    { en:'📋 Fundamentals',         hi:'📋 फंडामेंटल्स' },
+  'hdr.read':       { en:'🔊 Read page',             hi:'🔊 पेज पढ़ें' },
+  'hdr.disclaimer': { en:'⚠️ Disclaimer',            hi:'⚠️ अस्वीकरण' },
+  // Medical disclaimer
+  'med.short':      { en:'<strong>NOT MEDICAL ADVICE</strong> · Same-composition options shown. Consult your doctor / pharmacist before switching.', hi:'<strong>चिकित्सा सलाह नहीं</strong> · समान संरचना वाले विकल्प दिखाए गए हैं। बदलने से पहले अपने डॉक्टर / केमिस्ट से सलाह लें।' },
+  'med.read_full':  { en:'Read full disclaimer',    hi:'पूरी अस्वीकरण पढ़ें' },
+  'med.modal.title':{ en:'⚠️ Medical Disclaimer & Compliance Notice', hi:'⚠️ चिकित्सा अस्वीकरण और अनुपालन सूचना' },
+  'med.modal.lead': { en:'Chitti MedUPI provides informational insights only and does not prescribe, diagnose, or recommend treatment.', hi:'चिट्टी मेडUPI केवल जानकारीपरक अंतर्दृष्टि प्रदान करता है और कोई भी दवा, निदान या उपचार नहीं सुझाता है।' },
+  'med.understand': { en:'I understand',            hi:'समझ गया' },
+  'med.read_aloud': { en:'🔊 Read aloud',            hi:'🔊 ज़ोर से पढ़ें' },
+  // Scan tab
+  'scan.title':           { en:'📷 Scan a medicine',                    hi:'📷 दवा स्कैन करें' },
+  'scan.sub':             { en:'Camera, gallery, prescription, or just speak the name. Chitti reads brand + composition + strength.', hi:'कैमरा, गैलरी, प्रिस्क्रिप्शन या नाम बोलें। चिट्टी ब्रांड + संरचना + ताकत पढ़ता है।' },
+  'scan.camera':          { en:'Camera scan',                            hi:'कैमरा स्कैन' },
+  'scan.camera.sub':      { en:'Point your camera at the strip / bottle / label', hi:'कैमरा स्ट्रिप / बोतल / लेबल पर लाएँ' },
+  'scan.image':           { en:'Image / PDF upload',                     hi:'इमेज / PDF अपलोड' },
+  'scan.image.sub':       { en:'From gallery or your prescription PDF',  hi:'गैलरी या प्रिस्क्रिप्शन PDF से' },
+  'scan.voice':           { en:'Voice — speak the name',                 hi:'आवाज़ — नाम बोलें' },
+  'scan.voice.sub':       { en:'Hindi or English. Hands-free for elderly.', hi:'हिंदी या अंग्रेज़ी। बुजुर्गों के लिए हाथ-मुक्त।' },
+  'scan.search.lbl':      { en:'Search medicine by name',                hi:'नाम से दवा खोजें' },
+  'scan.search.placeholder':{ en:'Type medicine name… e.g. Crocin 650', hi:'दवा का नाम लिखें… जैसे क्रोसिन 650' },
+  'scan.search.btn':      { en:'Search',                                  hi:'खोजें' },
+  'scan.rx.sub':          { en:'Upload your full prescription. Chitti explains each medicine in plain Hindi/English.', hi:'अपना पूरा पर्चा अपलोड करें। चिट्टी हर दवा का उद्देश्य आसान हिंदी/अंग्रेज़ी में बताता है।' },
+  'scan.rx.empty':        { en:'Coming soon — full prescription parser with per-medicine purpose explanation.', hi:'जल्द आ रहा है — हर दवा के लिए उद्देश्य की व्याख्या के साथ पूरा प्रिस्क्रिप्शन पार्सर।' },
+  // Badges
+  'badge.soon': { en:'Coming Soon', hi:'जल्द आ रहा है' },
+  'badge.live': { en:'LIVE',        hi:'लाइव' },
+};
+
+function t(key) {
+  const e = I18N[key];
+  if (!e) return key;
+  return e[_chittiLang] || e.en || key;
+}
+
+function applyChittiLang(lang) {
+  _chittiLang = lang;
+  try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    const k = el.getAttribute('data-i18n');
+    const v = t(k);
+    if (v == null) return;
+    if (k === 'med.short') el.innerHTML = v + ' <a class="read-more" href="#" onclick="event.preventDefault(); openMedModal()" data-i18n="med.read_full">' + t('med.read_full') + '</a>';
+    else el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.querySelectorAll('.lang-toggle-bharat button').forEach(function(b){
+    const active = b.getAttribute('data-lang') === lang;
+    b.classList.toggle('active', active);
+    b.setAttribute('data-active', active ? 'true' : 'false');
+  });
+  document.documentElement.lang = (lang === 'hi') ? 'hi' : 'en';
+}
+
+function setChittiLang(lang) {
+  applyChittiLang(lang);
+  sp(lang === 'hi' ? 'भाषा हिंदी पर सेट की गई। पूरा यू आई अब हिंदी में है।' : 'Language set to English.', lang);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Speech (browser SpeechSynthesis — free, native)
+// ═══════════════════════════════════════════════════════════
+function sp(text, lang) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const useHi = (lang === 'hi') || (lang == null && _chittiLang === 'hi');
+  u.lang = useHi ? 'hi-IN' : 'en-IN';
+  u.rate = 0.88;
+  speechSynthesis.speak(u);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Medical disclaimer modal + speech
+// ═══════════════════════════════════════════════════════════
+const MED_FULL_EN = "Chitti MedUPI provides informational insights only and does not prescribe, diagnose, or recommend treatment. Alternatives shown are based on matching composition, strength, and dosage form. Differences in brand, manufacturer, or inactive ingredients may exist. Chitti does not recommend replacing any prescribed medicine. Please consult your doctor or a qualified pharmacist before making any changes. Prices are indicative and may vary by pharmacy and location. Medicine details are extracted using AI and may not always be fully accurate. For diabetes, heart conditions, antibiotics and psychiatric medicines, substitution without medical advice may impact treatment.";
+const MED_FULL_HI = "चिट्टी मेडUPI केवल जानकारीपरक अंतर्दृष्टि प्रदान करता है और कोई भी दवा, निदान या उपचार नहीं सुझाता है। जो विकल्प दिखाए गए हैं वे समान संरचना, ताकत और खुराक के रूप पर आधारित हैं। ब्रांड, निर्माता या निष्क्रिय अवयवों में अंतर हो सकते हैं। चिट्टी किसी निर्धारित दवा को बदलने की सिफारिश नहीं करता। कृपया कोई भी बदलाव करने से पहले अपने डॉक्टर या योग्य केमिस्ट से सलाह लें। मूल्य संकेतक हैं और दुकान तथा स्थान के अनुसार बदल सकते हैं। दवा की जानकारी ए आई द्वारा निकाली जाती है और हमेशा पूरी तरह सटीक नहीं हो सकती। मधुमेह, हृदय रोग, एंटीबायोटिक और मानसिक दवाओं के लिए, चिकित्सा सलाह के बिना बदलाव उपचार पर प्रभाव डाल सकता है।";
+function openMedModal() { document.getElementById('med-modal').classList.add('shown'); sp(_chittiLang === 'hi' ? 'अस्वीकरण खुल गया है। पूरा पाठ सुनने के लिए ज़ोर से पढ़ें टैप करें।' : 'Disclaimer opened. Tap Read aloud to hear the full text.'); }
+function closeMedModal() { document.getElementById('med-modal').classList.remove('shown'); }
+function speakMedShort() { sp(_chittiLang === 'hi' ? 'महत्वपूर्ण अस्वीकरण। चिट्टी मेडUPI चिकित्सा सलाह नहीं देता। समान संरचना के विकल्प दिखाए गए हैं। बदलने से पहले अपने डॉक्टर से सलाह लें।' : 'Important medical disclaimer. Chitti MedUPI does not give medical advice. Same-composition options shown. Consult your doctor before switching.'); }
+function speakMedFull() { sp(_chittiLang === 'hi' ? MED_FULL_HI : MED_FULL_EN); }
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMedModal(); });
+
+// ═══════════════════════════════════════════════════════════
+// Tab switching
+// ═══════════════════════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('nav.tabs .tab').forEach(function(t){ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  const sec = document.getElementById('tab-' + name);
+  if (sec) sec.classList.add('active');
+  const btn = document.querySelector('nav.tabs .tab[data-tab="' + name + '"]');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected','true'); }
+}
+
+function speakSection(key) {
+  if (key === 'scan') sp(_chittiLang === 'hi' ? 'स्कैन टैब। दवा को कैमरे से, गैलरी से, या नाम बोलकर खोजें। चिट्टी ब्रांड और संरचना पढ़ता है।' : 'Scan tab. Find a medicine by camera, gallery, or by speaking the name. Chitti reads brand and composition.');
+  else if (key === 'ja') sp(_chittiLang === 'hi' ? 'जन औषधि टैब। यह सरकारी योजना है जहाँ वही दवा 50 से 90 प्रतिशत सस्ती मिलती है। यहाँ नज़दीकी स्टोर ढूँढ़ें।' : 'Jan Aushadhi tab. Government scheme where the same medicine is 50 to 90 percent cheaper. Find the nearest store here.');
+  else sp('Section info not yet wired for speech.');
+}
+
+function speakPage() {
+  sp(_chittiLang === 'hi' ? 'चिट्टी मेडUPI। दवाओं के बिल का UPI। स्कैन, तुलना, बचाएँ। यह केवल जानकारी है, चिकित्सा सलाह नहीं।' : 'Chitti MedUPI. UPI for your medicine bills. Scan, compare, save. This is informational only, not medical advice.');
+}
+
+function comingSoon(label) {
+  const msg = (_chittiLang === 'hi' ? label + ' जल्द आ रहा है। यह अगले सेशन में जुड़ जाएगा।' : label + ' is coming soon. Wires next session.');
+  sp(msg);
+  alert(msg);
+}
+
+// Apply on page load
+applyChittiLang(_chittiLang);
+
+}
+</script>
+</body>
+</html>
