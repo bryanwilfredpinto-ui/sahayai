@@ -31,6 +31,19 @@ body > *{position:relative;z-index:1}
 .med-bar a.read-more{color:var(--saffron);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-size:12px}
 .med-bar button.spk{background:transparent;border:1px solid rgba(212,175,55,.5);color:var(--text);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;min-height:28px;font-weight:600}
 
+/* ── Demo Mode ribbon + bottom banner (Bharat theme — saffron/gold) ── */
+.demo-ribbon{display:none;background:linear-gradient(90deg,rgba(232,106,23,.22),rgba(212,175,55,.18));border-bottom:1px solid #E86A17;padding:7px 14px;font-size:11px;color:var(--text);text-align:center;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.demo-ribbon.shown{display:block}
+.demo-banner{position:fixed;left:14px;right:14px;bottom:14px;max-width:680px;margin:0 auto;background:linear-gradient(135deg,#E86A17,#ff9b4a);border:1px solid #D4AF37;color:#fff;padding:14px 16px;border-radius:14px;display:none;z-index:300;box-shadow:0 10px 32px rgba(14,35,68,.45);align-items:center;gap:12px;flex-wrap:wrap}
+.demo-banner.shown{display:flex}
+.demo-banner .step{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:rgba(255,255,255,.22);padding:4px 10px;border-radius:6px;flex-shrink:0}
+.demo-banner .narr{font-size:14px;flex:1;min-width:180px;line-height:1.5}
+.demo-banner button{background:#fff;color:#E86A17;border:none;border-radius:8px;padding:9px 16px;font-weight:800;cursor:pointer;font-size:13px;min-height:40px;min-width:60px}
+.demo-banner button:hover{filter:brightness(.96)}
+.demo-banner button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.demo-banner button.skip{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.65)}
+.demo-banner button.skip:hover{background:rgba(255,255,255,.12)}
+
 .med-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
 .med-modal.shown{display:flex}
 .med-modal .panel{background:#fff;border:1px solid rgba(212,175,55,.55);border-radius:14px;padding:22px;max-width:720px;width:100%;font-size:13px;line-height:1.6;color:var(--text)}
@@ -191,11 +204,15 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </div>
   <div class="header-controls">
+    <button onclick="startDemoMode()" aria-label="Start a guided demo of Chitti MedUPI in 8 steps" data-i18n="hdr.demo">🎬 Demo Mode</button>
     <button onclick="speakPage()" aria-label="Read whole page aloud" data-i18n="hdr.read">🔊 Read page</button>
     <button onclick="speakMedShort()" aria-label="Hear medical disclaimer" data-i18n="hdr.disclaimer">⚠️ Disclaimer</button>
     <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
   </div>
 </header>
+
+<!-- Demo ribbon — appears at top while demo is running -->
+<div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite" data-i18n="demo.ribbon">🎬 DEMO MODE — sample data, not live. Tap Skip to exit.</div>
 
 <!-- ════════════════════ TABS ════════════════════ -->
 <nav class="tabs" role="tablist" aria-label="Sections">
@@ -593,6 +610,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
+  <!-- Demo banner — bottom-anchored guided narration card -->
+  <div id="demo-banner" class="demo-banner" role="dialog" aria-live="polite" aria-label="Demo Mode guided walk-through">
+    <div class="step" id="demo-step-counter">Step 1 of 8</div>
+    <div class="narr" id="demo-narr">Welcome.</div>
+    <button onclick="_demoNext()" aria-label="Next demo step" data-i18n="demo.next">Next ▶</button>
+    <button class="skip" onclick="stopDemoMode()" aria-label="Exit demo mode" data-i18n="demo.skip">Skip ✕</button>
+  </div>
+
   <footer role="contentinfo">
     <small>
       Chitti MedUPI v1.4 · Bharat Premium AI · Backend: <code>chitti-shares-api.onrender.com</code><br>
@@ -646,8 +671,12 @@ const I18N = {
   'header.tagline': { en:'UPI for your medicine bills · Scan. Compare. Save.', hi:'दवाओं के बिल का UPI · स्कैन करें। तुलना करें। बचाएँ।' },
   'switch.tech':    { en:'📈 Technical',            hi:'📈 टेक्निकल' },
   'switch.fund':    { en:'📋 Fundamentals',         hi:'📋 फंडामेंटल्स' },
+  'hdr.demo':       { en:'🎬 Demo Mode',              hi:'🎬 डेमो मोड' },
   'hdr.read':       { en:'🔊 Read page',             hi:'🔊 पेज पढ़ें' },
   'hdr.disclaimer': { en:'⚠️ Disclaimer',            hi:'⚠️ अस्वीकरण' },
+  'demo.ribbon':    { en:'🎬 DEMO MODE — sample data, not live. Tap Skip to exit.', hi:'🎬 डेमो मोड — नमूना डेटा, असली नहीं। Skip दबाकर बाहर निकलें।' },
+  'demo.next':      { en:'Next ▶',                    hi:'आगे ▶' },
+  'demo.skip':      { en:'Skip ✕',                    hi:'छोड़ें ✕' },
   // Medical disclaimer
   'med.short':      { en:'<strong>NOT MEDICAL ADVICE</strong> · Same-composition options shown. Consult your doctor / pharmacist before switching.', hi:'<strong>चिकित्सा सलाह नहीं</strong> · समान संरचना वाले विकल्प दिखाए गए हैं। बदलने से पहले अपने डॉक्टर / केमिस्ट से सलाह लें।' },
   'med.read_full':  { en:'Read full disclaimer',    hi:'पूरी अस्वीकरण पढ़ें' },
@@ -918,8 +947,9 @@ function _renderScanResult(data){
 
   r.innerHTML = html;
 
-  // Kick off the async loads
-  if (lookupName) {
+  // Kick off the async loads (skipped while Demo Mode is running so the
+  // sample Crocin result doesn't trigger live API calls).
+  if (lookupName && !_demoActive) {
     loadCommunityPrices(lookupName);
   }
 
@@ -1365,6 +1395,222 @@ function _bootLiveTabs(){
     });
   });
 }
+
+// ═══════════════════════════════════════════════════════════
+// DEMO MODE — guided 8-step walk-through for the four-user contract.
+// Pure frontend: no backend, no API key, no Anthropic, no Brave.
+// All visible UI moves so blind users hear narration, deaf users see
+// captions in the banner, mute users tap, illiterate users follow tabs
+// flashing + plain-English captions + emoji.
+// ═══════════════════════════════════════════════════════════
+const DEMO_RESULT_CROCIN = {
+  ok: true,
+  query: 'Crocin 650 (DEMO)',
+  primary: {
+    id: 1, brand_name: 'Crocin 650', salt_composition: 'Paracetamol',
+    strength: '650mg', dosage_form: 'Tablet', pack_size: '15 tablets',
+    manufacturer: 'GSK', mrp: 34, jan_aushadhi_price: 8, nppa_ceiling_price: 34,
+    risk_class: 'L'
+  },
+  matches: [],
+  risk: {
+    class: 'L', symbol: '✅',
+    label_en: 'LOW RISK', label_hi: 'कम जोखिम',
+    warning_en: 'Generic alternatives with the same composition are typically safe to substitute. Confirm with pharmacist if unsure.',
+    warning_hi: 'समान संरचना वाले जेनेरिक विकल्प आमतौर पर सुरक्षित हैं। संदेह हो तो केमिस्ट से पुष्टि कर लें।'
+  },
+  alternatives: [
+    { id: 100, brand_name: 'Jan Aushadhi Paracetamol 650', salt_composition: 'Paracetamol', strength: '650mg', dosage_form: 'Tablet', mrp: 8, jan_aushadhi_price: 8, nppa_ceiling_price: 34, savings_pct: 76.5, freshness_jan_aushadhi: { symbol: '🏥', caption_en: 'Official Jan Aushadhi price', caption_hi: 'आधिकारिक जन औषधि मूल्य', color: 'green' }, freshness_nppa: { symbol: '🛡️', caption_en: 'Maximum legal price', caption_hi: 'अधिकतम कानूनी मूल्य', color: 'navy' } },
+    { id: 101, brand_name: 'Dolo 650', salt_composition: 'Paracetamol', strength: '650mg', dosage_form: 'Tablet', mrp: 30, jan_aushadhi_price: 8, nppa_ceiling_price: 34, savings_pct: 11.8, freshness_mrp: { symbol: '💊', caption_en: 'Last updated 5 days ago', caption_hi: '5 दिन पहले अद्यतन', color: 'green' }, freshness_jan_aushadhi: { symbol: '🏥', caption_en: 'Official Jan Aushadhi price', caption_hi: 'आधिकारिक जन औषधि मूल्य', color: 'green' } },
+    { id: 102, brand_name: 'Calpol 650', salt_composition: 'Paracetamol', strength: '650mg', dosage_form: 'Tablet', mrp: 32, jan_aushadhi_price: 8, nppa_ceiling_price: 34, savings_pct: 5.9, freshness_mrp: { symbol: '💊', caption_en: 'Last updated 12 days ago', caption_hi: '12 दिन पहले अद्यतन', color: 'navy' }, freshness_jan_aushadhi: { symbol: '🏥', caption_en: 'Official Jan Aushadhi price', caption_hi: 'आधिकारिक जन औषधि मूल्य', color: 'green' } },
+    { id: 103, brand_name: 'Crocin 650', salt_composition: 'Paracetamol', strength: '650mg', dosage_form: 'Tablet', mrp: 34, jan_aushadhi_price: 8, nppa_ceiling_price: 34, savings_pct: 0, freshness_mrp: { symbol: '⚠️', caption_en: 'Last updated 45 days ago — price may have changed', caption_hi: '45 दिन पहले — मूल्य बदल सकता है', color: 'amber' } }
+  ],
+  cheapest: null,
+  max_savings_pct: 76.5,
+  disclaimer_en: 'Same composition, strength, and dosage form. Consult your doctor or pharmacist before any change. Prices indicative.',
+  disclaimer_hi: 'समान संरचना, ताकत और खुराक रूप। बदलाव से पहले डॉक्टर या केमिस्ट से सलाह लें। मूल्य संकेतक हैं।',
+  speak_en: 'Found 4 same-composition options for Crocin 650. The cheapest is Jan Aushadhi at 8 rupees. You save up to 76 percent.',
+  speak_hi: 'क्रोसिन 650 के लिए 4 समान-संरचना विकल्प मिले। सबसे सस्ता जन औषधि में 8 रुपये। 76 प्रतिशत तक बचत।',
+  purpose_en: 'Used for fever and mild-to-moderate pain.',
+  purpose_hi: 'बुखार और हल्के दर्द के लिए।'
+};
+
+const DEMO_JA_RESULTS = {
+  items: [
+    { store_code:'JA-MP-001', name:'Jan Aushadhi Bhopal Central', address:'MP Nagar Zone-1, Bhopal', district:'Bhopal', state:'MP', pincode:'462011', phone:'+91-755-2762111', hours:'9 AM – 8 PM', lat:23.2599, lng:77.4126, distance_km: 1.2 },
+    { store_code:'JA-MP-002', name:'Jan Aushadhi Indore Vijay Nagar', address:'Vijay Nagar, Indore', district:'Indore', state:'MP', pincode:'452010', phone:'+91-731-2552111', hours:'9 AM – 8 PM', lat:22.7196, lng:75.8577, distance_km: 3.4 }
+  ],
+  count: 2,
+  speak_en: '2 Jan Aushadhi stores within 5 kilometres.',
+  speak_hi: '5 किलोमीटर के अंदर 2 जन औषधि स्टोर मिले।'
+};
+
+const DEMO_STEPS_MEDUPI = [
+  {
+    tab: 'scan', step_label: 'Step 1 of 8 · Scan',
+    narr_en: 'Step 1. Scan tab. Tap the camera to scan a medicine strip, or just type the name. Here is a sample search for Crocin 650 — Paracetamol 650 milligram tablet. Same composition as Dolo and Calpol. The cheapest is Jan Aushadhi at 8 rupees. You save up to 76 percent.',
+    narr_hi: 'पहला कदम। स्कैन टैब। स्ट्रिप का फोटो लें या नाम लिखें। उदाहरण: क्रोसिन 650, यानी पैरासिटामोल 650 मिलीग्राम टैबलेट। डोलो और कैलपोल से समान संरचना। सबसे सस्ता जन औषधि में 8 रुपये। 76 प्रतिशत तक बचत।',
+    action: function(){
+      const inp = document.getElementById('med-search'); if (inp) inp.value = 'Crocin 650 (DEMO)';
+      _renderScanResult(DEMO_RESULT_CROCIN);
+    }
+  },
+  {
+    tab: 'compare', step_label: 'Step 2 of 8 · Compare',
+    narr_en: 'Step 2. Compare tab. Three risk colours. Red for HIGH RISK — antibiotics, diabetes, heart medicines. I always warn you. Amber for MEDIUM. Green for LOW RISK like vitamins and fever medicines — switch and save.',
+    narr_hi: 'दूसरा कदम। तुलना टैब। तीन रंग। लाल मतलब उच्च जोखिम — एंटीबायोटिक, मधुमेह, हृदय दवा — मैं हमेशा चेतावनी देता हूँ। पीला मध्यम। हरा कम जोखिम जैसे विटामिन और बुखार की दवा — बदलें और बचाएँ।'
+  },
+  {
+    tab: 'wallet', step_label: 'Step 3 of 8 · Family Wallet',
+    narr_en: 'Step 3. Family Wallet. Add self, mother, father, children — separate wallets per person. I track every purchase. This sample shows: this month you spent 850 rupees and saved 1240 rupees by choosing same-composition equivalents.',
+    narr_hi: 'तीसरा कदम। परिवार का पर्स। खुद, माँ, पिताजी, बच्चे — हर सदस्य का अलग पर्स। मैं हर खरीद याद रखता हूँ। नमूना: इस महीने आपने 850 रुपये खर्च किए और 1240 रुपये बचाए।',
+    action: function(){
+      const w = document.getElementById('wallet-report');
+      if (w) w.innerHTML =
+        '<div class="metric-grid">' +
+        '<div class="metric-card"><div class="metric-card-lbl"><span>This month spend</span></div><div class="metric-card-val">₹850</div></div>' +
+        '<div class="metric-card"><div class="metric-card-lbl"><span>This month saved</span><span class="risk-low">SAVINGS</span></div><div class="metric-card-val" style="color:var(--med-green)">₹1,240</div></div>' +
+        '<div class="metric-card"><div class="metric-card-lbl"><span>12 months saved</span></div><div class="metric-card-val" style="color:var(--med-green)">₹14,820</div></div>' +
+        '<div class="metric-card"><div class="metric-card-lbl"><span>Annual projection</span></div><div class="metric-card-val">₹10,200</div></div>' +
+        '</div>';
+      const f = document.getElementById('fam-profiles');
+      if (f) f.innerHTML = '<span style="display:inline-block;padding:4px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:999px;margin:3px 4px 0 0;font-size:12px">Bryan · self</span><span style="display:inline-block;padding:4px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:999px;margin:3px 4px 0 0;font-size:12px">Mom · mother</span><span style="display:inline-block;padding:4px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:999px;margin:3px 4px 0 0;font-size:12px">Dad · father</span>';
+    }
+  },
+  {
+    tab: 'reminders', step_label: 'Step 4 of 8 · Reminders',
+    narr_en: 'Step 4. Reminders. Refill before you run out. Expiry alert before you throw away. Daily dose ping. For grandparents without smartphones, I can phone them and speak the reminder aloud — Chitti Special.',
+    narr_hi: 'चौथा कदम। रिमाइंडर। दवा खत्म होने से पहले याद। एक्सपायरी से पहले चेतावनी। रोज़ की खुराक। बिना स्मार्टफोन के बुजुर्गों के लिए मैं फ़ोन करके बोलकर याद दिलाता हूँ — चिट्टी स्पेशल।',
+    action: function(){
+      const r = document.getElementById('rem-list');
+      if (r) r.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:rgba(232,106,23,.06)"><th style="text-align:left;padding:6px">Medicine</th><th style="text-align:left;padding:6px">Kind</th><th style="text-align:left;padding:6px">When</th></tr></thead><tbody><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">Telma 40 (Mom)</td><td style="padding:6px">refill</td><td style="padding:6px">in 3 days</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px">Crocin 650 (home stock)</td><td style="padding:6px">expiry</td><td style="padding:6px">in 28 days</td></tr></tbody></table>';
+    }
+  },
+  {
+    tab: 'ja', step_label: 'Step 5 of 8 · Jan Aushadhi',
+    narr_en: 'Step 5. Jan Aushadhi tab. Eleven thousand government stores nationwide. Same medicines, fifty to ninety percent cheaper. Tap Find Near Me — I show the closest store, address, hours, phone, and a map link.',
+    narr_hi: 'पाँचवाँ कदम। जन औषधि टैब। पूरे देश में 11,000 सरकारी दुकानें। वही दवा, 50 से 90 प्रतिशत सस्ती। पास खोजें टैप करें — मैं नज़दीकी दुकान, पता, समय, फ़ोन, नक्शा सब दिखाता हूँ।',
+    action: function(){ _renderJaResults(DEMO_JA_RESULTS); }
+  },
+  {
+    tab: 'insurance', step_label: 'Step 6 of 8 · Insurance',
+    narr_en: 'Step 6. Insurance tab. Type any medicine, pick a scheme. I check if it is covered by Ayushman Bharat, CGHS, or ESI. Sample: Telmisartan is covered by Ayushman Bharat. Verify at the empanelled hospital.',
+    narr_hi: 'छठा कदम। बीमा टैब। कोई भी दवा लिखें, योजना चुनें। मैं देखता हूँ कि वह आयुष्मान भारत, CGHS, या ESI में कवर है या नहीं। उदाहरण: टेल्मीसार्टन आयुष्मान भारत में कवर है। सूचीबद्ध अस्पताल पर पुष्टि करें।',
+    action: function(){
+      const el = document.getElementById('ins-results');
+      if (el) el.innerHTML = '<div style="padding:14px;border-radius:12px;background:rgba(34,197,94,.12);border:2px solid var(--med-green)"><div style="font-weight:900;font-size:15px">✅ Ayushman Bharat (PM-JAY)</div><div style="font-size:13px;margin-top:6px">Telmisartan (antihypertensive) is typically covered by Ayushman Bharat. Confirm at the empanelled hospital / pharmacy.</div></div>';
+      const m = document.getElementById('ins-molecule'); if (m) m.value = 'Telmisartan';
+    }
+  },
+  {
+    tab: 'learn', step_label: 'Step 7 of 8 · Learn',
+    narr_en: 'Step 7. Learn tab. What is a generic. What is a composition. What is NPPA. What is Schedule H. And five questions to ask your doctor — to walk into appointments informed and confident.',
+    narr_hi: 'सातवाँ कदम। सीखें टैब। जेनेरिक क्या है। संरचना क्या है। NPPA क्या है। शेड्यूल H क्या है। और डॉक्टर से पूछने के 5 ज़रूरी सवाल — ताकि आप जानकार बनकर डॉक्टर के पास जाएँ।'
+  },
+  {
+    tab: 'settings', step_label: 'Step 8 of 8 · Settings',
+    narr_en: 'Step 8. Settings tab. Hindi toggle. Large font for elderly. Voice-only mode for blind users. Family sharing. Privacy first — no health data sold ever. That is Chitti MedUPI. Tap Skip to exit demo and try it for real.',
+    narr_hi: 'आठवाँ कदम। सेटिंग्स टैब। हिंदी टॉगल। बुजुर्गों के लिए बड़ा फ़ॉन्ट। नेत्रहीन के लिए केवल आवाज़ मोड। परिवार साझा। गोपनीयता पहले — कोई स्वास्थ्य डेटा नहीं बेचा जाता। यह है चिट्टी मेडUPI। Skip दबाकर असली प्रयोग करें।'
+  }
+];
+
+let _demoActive = false;
+let _demoIdx = -1;
+let _demoSpeakTimer = null;
+let _demoAdvanceTimer = null;
+
+function _demoSpeak(text, onDone){
+  if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
+  if (!window.speechSynthesis) {
+    _demoSpeakTimer = setTimeout(function(){ if (onDone) onDone(); }, 2000);
+    return;
+  }
+  speechSynthesis.cancel();
+  let done = false;
+  const finish = function(){ if (done) return; done = true; if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; } if (onDone) onDone(); };
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = (_chittiLang === 'hi') ? 'hi-IN' : 'en-IN';
+  u.rate = 0.88;
+  u.onend = finish; u.onerror = finish;
+  speechSynthesis.speak(u);
+  // Safety: estimate ~70 ms / char + 1.5 s buffer (Chromium can drop onend on tab switch)
+  const est = Math.max(3000, text.length * 70) + 1500;
+  _demoSpeakTimer = setTimeout(finish, est);
+}
+
+function _setDemoBanner(stepLabel, narration){
+  const c = document.getElementById('demo-step-counter'); if (c) c.textContent = stepLabel;
+  const n = document.getElementById('demo-narr'); if (n) n.textContent = narration;
+}
+
+function _runDemoStep(i){
+  if (!_demoActive) return;
+  if (i >= DEMO_STEPS_MEDUPI.length) { stopDemoMode(true); return; }
+  _demoIdx = i;
+  const s = DEMO_STEPS_MEDUPI[i];
+  if (s.tab) showTab(s.tab);
+  if (typeof s.action === 'function') { try { s.action(); } catch(e){ /* keep demo flowing */ } }
+  const lang = _chittiLang;
+  const narration = (lang === 'hi') ? (s.narr_hi || s.narr_en) : (s.narr_en || s.narr_hi);
+  // Localize step counter ("Step 3 of 8 · Wallet" → "कदम 3/8 · पर्स") — keep simple
+  const stepLabel = (lang === 'hi')
+    ? s.step_label.replace(/Step (\d+) of (\d+)/, 'कदम $1 / $2')
+    : s.step_label;
+  _setDemoBanner(stepLabel, narration);
+  _demoSpeak(narration, function(){
+    if (!_demoActive) return;
+    if (_demoAdvanceTimer) { clearTimeout(_demoAdvanceTimer); }
+    _demoAdvanceTimer = setTimeout(function(){
+      if (!_demoActive) return;
+      _runDemoStep(i + 1);
+    }, 800);
+  });
+}
+
+function _demoNext(){
+  if (!_demoActive) return;
+  if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
+  if (_demoAdvanceTimer) { clearTimeout(_demoAdvanceTimer); _demoAdvanceTimer = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  _runDemoStep(_demoIdx + 1);
+}
+
+function startDemoMode(){
+  if (_demoActive) { stopDemoMode(); return; }
+  _demoActive = true;
+  document.getElementById('demo-ribbon').classList.add('shown');
+  document.getElementById('demo-banner').classList.add('shown');
+  // Welcome line, then step 0
+  const lang = _chittiLang;
+  const welcome_en = 'Welcome to Chitti MedUPI. UPI for your medicine bills. Watch me save your family money in 8 steps.';
+  const welcome_hi = 'चिट्टी मेडUPI में आपका स्वागत है। दवाओं के बिल का UPI। 8 कदमों में मैं दिखाता हूँ कैसे आपके परिवार के पैसे बचाने हैं।';
+  _setDemoBanner(lang === 'hi' ? 'स्वागत है' : 'Welcome', lang === 'hi' ? welcome_hi : welcome_en);
+  _demoSpeak(lang === 'hi' ? welcome_hi : welcome_en, function(){
+    if (!_demoActive) return;
+    _demoAdvanceTimer = setTimeout(function(){ _runDemoStep(0); }, 500);
+  });
+}
+
+function stopDemoMode(finished){
+  if (!_demoActive && !finished) return;
+  _demoActive = false;
+  if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
+  if (_demoAdvanceTimer) { clearTimeout(_demoAdvanceTimer); _demoAdvanceTimer = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  document.getElementById('demo-ribbon').classList.remove('shown');
+  document.getElementById('demo-banner').classList.remove('shown');
+  _demoIdx = -1;
+  // Bring user back to Scan tab + clear demo search artefact so the real UI is clean
+  showTab('scan');
+  const inp = document.getElementById('med-search');
+  if (inp && /\(DEMO\)/.test(inp.value)) inp.value = '';
+  if (finished) {
+    sp(_chittiLang === 'hi' ? 'डेमो पूरा। अब असली प्रयोग करें।' : 'Demo complete. Try it for real now.');
+  }
+}
+
+// Escape key exits demo (alongside the existing modal-close handler below)
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && _demoActive) stopDemoMode(); });
 
 // Apply on page load
 applyChittiLang(_chittiLang);
