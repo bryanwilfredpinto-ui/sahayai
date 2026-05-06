@@ -1,7 +1,7 @@
 # CHITTI MedUPI — Master Specification
 
-**Version:** 1.4 (consolidated for build)
-**Date:** 2026-05-06
+**Version:** 1.7 (automated price update system — scheduler + Brave + community)
+**Date:** 2026-05-07
 **Author:** Bryan Wilfred Pinto · drafted by Claude
 **Status:** LIVING DOCUMENT — every Claude session must read this first.
 
@@ -359,21 +359,39 @@ Plus header:
 
 Plus sticky **medical disclaimer banner** at the very top + full legal modal.
 
-### 12.2 Backend (`chitti-shares/backend/`)
+### 12.2 Backend (`chitti-medupi/backend/` — sister to `chitti-shares/backend/`)
 
 ```
-services/
-├── medupi_recognition.py    NEW — OCR via cloud OCR API or open-source Tesseract; LLM (Anthropic) for composition extraction from extracted text
-├── medupi_database.py       NEW — internal master drug DB (CDSCO molecules + NPPA prices + Jan Aushadhi catalog)
-├── medupi_pricing.py        NEW — NPPA ceiling price lookup + market price aggregation
-├── medupi_jan_aushadhi.py   NEW — store locator (CSV of all Jan Aushadhi stores)
-├── medupi_alternatives.py   NEW — STRICT same-composition matcher (molecule + strength + form ONLY)
-├── medupi_risk.py           NEW — risk classification engine (H/M/L per molecule)
-├── medupi_family.py         NEW — multi-profile wallet + spend tracking
-└── medupi_reminders.py      NEW — refill + expiry reminder scheduling
-
-routes/
-└── medupi.py                NEW — public + auth endpoints
+chitti-medupi/backend/
+├── main.py                  FastAPI app · CORS · startup seed · /health · /
+├── config.py                Settings (DATABASE_URL · ANTHROPIC_API_KEY · TWILIO · CORS)
+├── database.py              SQLAlchemy engine + SessionLocal + get_db
+├── requirements.txt         fastapi · sqlalchemy · anthropic · rapidfuzz · psycopg2-binary
+├── runtime.txt              python 3.11.10
+├── render.yaml              Render Blueprint (web service + Postgres DB)
+├── .env.example
+├── data/
+│   ├── medicines_seed.json           top 51 Indian retail brands
+│   ├── jan_aushadhi_seed.json        25 representative stores across 12 states
+│   └── insurance_coverage_seed.json  Ayushman / CGHS / ESI scheme + therapeutic-class tables
+├── models/
+│   ├── medicine.py             brand · salt · strength · form · MRP · Jan Aushadhi · risk · purpose_en/hi
+│   ├── jan_aushadhi.py         store_code · lat · lng · address · hours
+│   ├── family.py               profile (user_token-keyed)
+│   ├── wallet.py               purchase entry · price_paid · cheapest_equivalent · savings_realized
+│   └── reminder.py             refill / expiry / dose / appointment
+├── services/
+│   ├── medupi_database.py      fuzzy brand search · STRICT same-composition lookup · seed_if_empty
+│   ├── medupi_pricing.py       savings %, NPPA-ceiling violation, chronic-care projection
+│   ├── medupi_risk.py          80+ molecule → H/M/L map + EN/HI symbol/label/warning
+│   ├── medupi_alternatives.py  strict matcher · risk-banded response · speak_en/hi · disclaimer_en/hi
+│   ├── medupi_jan_aushadhi.py  haversine geo + by-state fallback · seed_if_empty
+│   ├── medupi_recognition.py   Anthropic vision (image) + fuzzy text path
+│   ├── medupi_family.py        profiles + wallet entries + monthly/annual report
+│   ├── medupi_reminders.py     CRUD + Twilio voice stub
+│   └── medupi_insurance.py     therapeutic-class coverage lookup
+└── routes/
+    └── medupi.py               14 endpoints under /api/medupi/* (X-User-Token light auth)
 ```
 
 **Endpoints (planned):**
@@ -409,27 +427,91 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 
 ---
 
-## 13. Build Status (this session)
+## 13. Build Status
 
-### ✅ DONE tonight
-- Master Doc (this file) created at workspace root + GitHub
-- Frontend skeleton `chitti_medupi.html` shipped with Bharat Premium theme + Hindi UI toggle + all 8 tabs as Coming Soon + medical disclaimer banner & modal + Switch buttons
-- Backend stub directory + skeleton service files (TODOs in each)
-- Memory entry pointing here
+### ✅ DONE — v1.4 backend + frontend wiring (2026-05-06)
+- **New `chitti-medupi/` folder** at workspace root mirroring `chitti-shares/` shape — `frontend/index.html` + `backend/{main,config,database,routes/,services/,models/,data/}` + `render.yaml` + `runtime.txt` + `requirements.txt` + `.env.example` + `README.md`
+- **Master drug DB**: 51-row seeded JSON (`backend/data/medicines_seed.json`) covering top Indian retail brands across paracetamol, antidiabetics, antihypertensives, antibiotics, statins, antacids, thyroid, antiplatelets, NSAIDs, antihistamines, vitamins, asthma, antiemetic, cold-remedy, ORS, insulin — each row with brand · salt · strength · dosage form · MRP · NPPA ceiling · Jan Aushadhi price + code · risk class · schedule · therapeutic class · plain-EN/HI purpose
+- **Jan Aushadhi seed**: 25 representative stores across 12 states (`backend/data/jan_aushadhi_seed.json`) with lat/lng for haversine search
+- **Insurance seed**: Ayushman / CGHS / ESI scheme metadata + therapeutic-class coverage tables (`backend/data/insurance_coverage_seed.json`)
+- **SQLAlchemy models**: `Medicine`, `JanAushadhiStore`, `FamilyProfile`, `WalletEntry`, `Reminder` — registered via `models/__init__.py`
+- **Services (all DB-backed, real logic, not stubs)**:
+  - `medupi_database.py` — fuzzy brand search via rapidfuzz + STRICT same-composition lookup
+  - `medupi_pricing.py` — savings %, NPPA-ceiling violation flag, chronic-care projection
+  - `medupi_risk.py` — 80+ molecule → H/M/L map + symbol + EN/HI labels + EN/HI warning text
+  - `medupi_alternatives.py` — strict matcher with EN/HI `speak_*`, `caption_*`, `disclaimer_*` baked into every response
+  - `medupi_jan_aushadhi.py` — haversine geo lookup + by-state fallback
+  - `medupi_recognition.py` — Anthropic Claude vision for image scan (no Tesseract install pain) + text-search path
+  - `medupi_family.py` — multi-profile CRUD + wallet entries + monthly/annual report with EN/HI speak text
+  - `medupi_reminders.py` — refill / expiry / dose / appointment CRUD + Twilio voice stub
+  - `medupi_insurance.py` — coverage lookup keyed on therapeutic class
+- **Routes**: `routes/medupi.py` mounting 14 endpoints under `/api/medupi/*` with light auth via `X-User-Token` header for family / wallet / reminders
+- **FastAPI app** (`main.py`) with CORS, startup table-create + idempotent seed, `/health`, `/`
+- **Risk-class engine** populated for 80+ molecules (top categories of HIGH/MEDIUM/LOW)
+- **Frontend wired** — `chitti_medupi.html` + mirror at `chitti-medupi/frontend/index.html`:
+  - Scan tab — camera capture (`<input capture=environment>`), gallery upload, voice search (Web Speech API), text search → all hit `/api/medupi/scan` or `/api/medupi/medicine/{name}` and render risk-banded results card with primary medicine + alternatives table + Jan Aushadhi prices + savings % + speak-aloud
+  - Jan Aushadhi tab — "Find near me" (geolocation) + "By state" fallback → live results grid with map links
+  - Insurance tab — molecule + scheme picker → live coverage answer with EN/HI explainer
+  - Family Wallet — add profile, log entry, dashboard with this-month spend / saved + 12-month saved + annual projection + recent entries table
+  - Reminders — add reminder, list active, mark done
+  - Every result auto-speaks (EN or HI based on `_chittiLang`) — four-user contract honoured
+- **Smoke tests**: all 18 backend Python files parse via `ast.parse`; all 3 JSON seeds load; HTML inline script parses via `node -e`
+
+### ✅ DONE — v1.6 real-data loader (2026-05-06, second session)
+- **`chitti-medupi/backend/scripts/`** — full loader CLI for replacing the 51-row seed with 2,000+ medicines and 11,000+ Jan Aushadhi stores from government + free public sources. NEVER scrapes Tata 1mg / PharmEasy / NetMeds / Apollo / Amazon Pharmacy (proprietary; ToS risk).
+- **One CLI**, six per-source loaders:
+  - `scripts/load_real_data.py` — `--source X --file Y --url Z --dry-run --reset --force --verbose`
+  - `loaders/jan_aushadhi.py` — full 11,000+ store CSV/XLSX parser (column-name aliases for every common export variant)
+  - `loaders/bppi_products.py` — Jan Aushadhi product price list (~2,000 medicines · MRP · drug code · therapeutic class) → upserts a `Jan Aushadhi <generic>` brand per row
+  - `loaders/nppa.py` — NPPA ceiling-price list → updates `nppa_ceiling_price` on every existing brand sharing composition+strength+form; falls back to inserting a "Generic <molecule>" row when no brand matches
+  - `loaders/cdsco.py` — CDSCO approved-formulations → updates `schedule` (H/H1/X/OTC) + `prescription_required` + `therapeutic_class` on existing rows
+  - `loaders/rxnorm.py` — NIH RxNorm REST API enrichment (no key) → walks distinct molecules in DB, writes `data_cache/rxnorm_enrichment.json`
+  - `loaders/openfda.py` — OpenFDA REST API enrichment (no key) → US-context warnings, written to `data_cache/openfda_enrichment.json` (cross-reference only — never auto-rendered in UI)
+- **Idempotent** — natural-key upserts: `(brand_name_lower, strength_lower, dosage_form_lower)` for medicines, `store_code` for stores. Safe to re-run on the same file.
+- **Reset-safe** — `--reset` wipes only `medicines` + `jan_aushadhi_stores` (never family / wallet / reminders).
+- **Dry-run** — `--dry-run` parses + logs without writing.
+- **Polite REST** — RxNorm 200 ms / OpenFDA 300 ms between calls; both cache locally so re-runs only fetch new molecules.
+- **Loader deps** added to `requirements.txt` — `pandas` + `openpyxl` (optional at runtime; only the loader imports them).
+- **Documentation** — `scripts/README.md` has the source URLs, the "why government data is better" rationale, the explicit no-scrape policy, the step-by-step download flow, and the validation curl commands.
+- **Smoke tests** — all 10 new Python files parse via `ast.parse`; inline JS in `chitti_medupi.html` re-verified with real `node --check` (extracted to .js).
+
+### ✅ DONE — v1.7 automated price update system (2026-05-07)
+- **In-process scheduler** (`services/medupi_scheduler.py`) — APScheduler in BackgroundScheduler mode, mirrors chitti-shares pattern. Four cron jobs (Asia/Kolkata):
+  - `monthly_jan_aushadhi` — 1st of month, 03:00 IST → downloads BPPI Product Price List, upserts ~2,000 generic rows
+  - `weekly_nppa` — Mondays, 04:00 IST → checks NPPA for new ceiling-price notifications
+  - `daily_top100_brave` — every day, 02:00 IST → refreshes Brave Search snippets for top-100 most-searched medicines
+  - `cache_evict` — daily 02:55 IST → drops expired Brave cache rows
+  - Audit log: every run writes a `loader_runs` row (source · status · upserted/skipped/errors · note · started/finished). Toggle: `SCHEDULER_ENABLED` env var (default true).
+- **Brave Search live-price service** (`services/medupi_brave_search.py`) — free 2,000 queries/month tier. **Snippet-only** (zero scraping policy honoured: we never visit pharmacy URLs). 24-h cache per (query, source_domain). Allowed domains list: 1mg, pharmeasy, netmeds, apollo, medplus, truemeds + others. Rupee-regex extracts the lowest plausible price from title+description.
+- **Community-reported prices** (`services/medupi_community.py` + `models/community_price.py`) — user-submitted "I bought X for ₹Y at <pharmacy> in <city>" rows. Sanity bounds (₹0.50–₹100,000), rate-limit (20/min/device), median + IQR + by-city aggregation. Always rendered with a "User reported — verify before purchase" badge.
+- **Search-frequency log** (`services/medupi_search_log.py` + `models/search_log.py`) — every text search bumps `count` + `last_searched_at` for that normalized query. The daily 02:00 IST job reads `top_n(100)` for Brave refresh.
+- **Price freshness engine** (`services/medupi_price_freshness.py`) — every API response carries per-price badges: official Jan Aushadhi (🏥 green), NPPA ceiling ("Maximum legal price — no pharmacy can charge more" 🛡️ navy), branded "Last updated X days ago" with amber warning >30 days + red "Verify with pharmacy" >90 days, community 👥 amber. EN + HI captions on every badge.
+- **Schema additions** — `medicines.price_source`, `medicines.updated_at` (with `onupdate=`); new tables `price_cache`, `community_prices`, `search_log`, `loader_runs`. Idempotent migration (`services/medupi_migrations.py`) runs on every startup — ALTER TABLE … ADD COLUMN guarded by inspector + backfills `updated_at` for legacy rows. Works on SQLite (local) and Postgres (Render).
+- **Kaggle bulk loader** (`scripts/loaders/kaggle.py`) — A-Z Medicine Dataset of India (~250,000 rows). Merges `short_composition*` columns, infers strength/form from pack labels, batches commits at 500 rows. Stamps `price_source='kaggle'` on every upsert.
+- **Auto-update wrappers** (`scripts/auto_update.py`) — `auto_jan_aushadhi()` + `auto_nppa()` invoked by the scheduler. URLs env-overridable via `JAN_AUSHADHI_PRODUCT_URL` / `NPPA_CEILING_URL`. Best-effort against govt URLs that drift between releases — failures log + write audit row, never raise (so next month's run still fires).
+- **New routes** (`routes/medupi.py`):
+  - `GET  /api/medupi/price/live/{name}` — Brave snippet fetch + 24h cache
+  - `POST /api/medupi/community/price` — user reports a price
+  - `GET  /api/medupi/community/price?medicine_name=&city=` — list reports + median/IQR/by-city stats
+  - `GET  /api/medupi/scheduler/status` — diagnostic (jobs + next run times in IST)
+  - `POST /api/medupi/scheduler/trigger/{job_id}` — force-run a job (admin gate todo)
+  - `GET /api/medupi/medicine/{name}` now records the search in `search_log`
+- **Frontend wiring** (`chitti_medupi.html` + mirror) — every alternative row shows freshness pills next to MRP / NPPA / Jan Aushadhi prices (✓ fresh / ⚠️ stale / ❗ verify). After search results, three async sections render: 👥 community-reported prices (with median + range + by-city), 💰 live pharmacy prices (Brave snippets, on-demand), and a 💬 Report-a-price form. Above-NPPA-ceiling rows get a red `!` flag.
+- **Config** — `BRAVE_SEARCH_API_KEY`, `SCHEDULER_ENABLED`, `JAN_AUSHADHI_PRODUCT_URL`, `NPPA_CEILING_URL` added to `config.py` + `.env.example` + `render.yaml` blueprint.
+- **Smoke tests** — 43 Python files parse via `ast.parse`; inline JS (769 lines) verified with real `node --check`.
 
 ### ⏳ PENDING (next session priority order)
-1. **Master drug DB seed** — scrape NPPA price list (public PDF) + Jan Aushadhi catalog (public CSV) + CDSCO molecule list
-2. **OCR service** — pick Tesseract (offline, free) vs. paid (Google Vision / AWS Textract); MVP with Tesseract
-3. **Anthropic-powered composition extractor** — LLM reads OCR text, extracts brand + salt + strength + form
-4. **`POST /api/medupi/scan` endpoint** — receives image, runs OCR + extractor, returns structured response
-5. **`GET /api/medupi/alternatives` endpoint** — strict matching engine + risk-class warning
-6. **Frontend: Scan tab interactive** — camera capture (`getUserMedia` + canvas), file upload, voice input
-7. **Frontend: Compare tab** — equivalent brands list with savings % + risk badge
-8. **Jan Aushadhi store locator** — geolocation + radius search
-9. **Family Wallet** — auth + multi-profile + monthly spend chart
-10. **Reminders** — service worker + browser notifications + WhatsApp / Phone-call channels (via Twilio)
-11. **Hindi audio** for every disclaimer + every medicine name
-12. **Risk-class engine** — populate H/M/L for top 200 molecules
+1. **Run the loader on real downloads** — Bryan downloads the four government CSV/XLSX files (BPPI products, Jan Aushadhi stores, NPPA ceiling prices, CDSCO approved formulations), then runs `python scripts/load_real_data.py --source <each> --file <path>` four times. Expected DB after: ~2,000 medicines · ~11,000 stores. Then `python scripts/load_real_data.py --source kaggle --file kaggle.csv` (~250k branded rows · ~5 min batch-committed) + `--source rxnorm` (~7 min) + `--source openfda` (~10 min) for enrichment.
+2. **Deploy `chitti-medupi/backend`** to Render as `chitti-medupi-api.onrender.com` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
+3. **Until that ships**, port the upgraded service logic into `chitti-shares/backend/services/medupi_*.py` so the existing `chitti-shares-api` deploy serves the same responses (move the seed JSONs over + add `rapidfuzz` + `anthropic` + `pandas` + `openpyxl` to chitti-shares requirements).
+4. **Live verification** — once deployed, curl `/api/medupi/medicine/Crocin%20650`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`, `/api/medupi/insurance/Telmisartan?scheme=ayushman` from production. Bryan verifies on phone before handover (per the verify-on-live memory).
+5. **Browser push reminders** — service worker + Notification API on top of the live `/api/medupi/reminder` CRUD.
+6. **WhatsApp Business + Twilio voice channels** — `medupi_reminders.send_voice_call` is scaffolded; wire when TWILIO_* env vars are set.
+7. **Prescription decoder** — multi-medicine extraction from a full prescription image (loop the vision pipeline + return per-line risk / alternatives).
+8. **Optimised Cart simulator** — drag-drop monthly list → cheapest-equivalent cart total.
+9. **Insurance coverage** — replace seed therapeutic-class proxy with the official Ayushman empanelled-medicine list when available; consider adding RxCUI-keyed scheme matching once the rxnorm enrichment is folded into the schema.
+10. **Compare tab** — currently the Scan-tab results card already shows the equivalents grid; promote that into a dedicated Compare tab landing if Bryan wants a separate flow.
+11. **Schema upgrade for RxCUI** — add `rxcui` column to `medicines`, write a one-shot migration that folds `rxnorm_enrichment.json` into the table, then OpenFDA cross-references gain a stable join key.
 
 ### 🟡 OUT OF SCOPE (intentionally NOT building)
 - ❌ Doctor consultations (not a 1mg / Apollo replacement)

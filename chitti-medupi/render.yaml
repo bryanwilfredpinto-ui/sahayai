@@ -1,0 +1,39 @@
+# Render Blueprint for Chitti MedUPI
+# Sister to chitti-shares/render.yaml. Stand-alone deploy possible — but for
+# now the live frontend at sahayai.in/chitti_medupi.html targets the shared
+# chitti-shares-api.onrender.com. Spin this up when MedUPI scale demands a
+# carve-out.
+
+services:
+  - type: web
+    name: chitti-medupi-api
+    runtime: python
+    plan: free
+    rootDir: chitti-medupi/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chitti-medupi-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false        # set in dashboard
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-6
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: BACKEND_URL
+        value: https://chitti-medupi-api.onrender.com
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+
+databases:
+  - name: chitti-medupi-db
+    plan: free
+    databaseName: chitti_medupi
