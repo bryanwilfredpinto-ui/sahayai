@@ -408,7 +408,13 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         <div class="tagline">Bharat Premium AI · Indian fundamentals in plain English</div>
       </div>
     </div>
-    <a class="switch-btn shine-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical Analysis">📈 Switch to Chitti Technical →</a>
+    <div style="display:flex;align-items:center;gap:6px">
+      <a class="switch-btn shine-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical Analysis" data-i18n="switch.tech">📈 Switch to Chitti Technical →</a>
+      <span class="lang-toggle-bharat" role="group" aria-label="UI language" style="display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden">
+        <button data-lang="en" onclick="setChittiLang('en')" aria-label="English UI" style="border:none;border-radius:0;background:rgba(255,255,255,.20);color:#fff;padding:8px 12px;font-weight:700;cursor:pointer;font-size:12px">EN</button>
+        <button data-lang="hi" onclick="setChittiLang('hi')" aria-label="हिंदी UI" style="border:none;border-radius:0;background:rgba(255,255,255,.05);color:#fff;padding:8px 12px;font-weight:700;cursor:pointer;font-size:12px">हिं</button>
+      </span>
+    </div>
   </div>
   <div class="header-controls">
     <button onclick="startDemoMode()" aria-label="Start a 40-second guided demo of Chitti Fundamentals" style="background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.55)">🎬 Demo Mode</button>
@@ -422,15 +428,15 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
 </header>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
-  <button class="tab active" data-tab="scanner"    onclick="showTab('scanner')"    role="tab" aria-selected="true">🔍 Scanner</button>
-  <button class="tab"        data-tab="overview"   onclick="showTab('overview')"   role="tab" aria-selected="false">📋 Overview</button>
-  <button class="tab"        data-tab="financials" onclick="showTab('financials')" role="tab" aria-selected="false">📊 Financials</button>
-  <button class="tab"        data-tab="ratios"     onclick="showTab('ratios')"     role="tab" aria-selected="false">📐 Ratios</button>
-  <button class="tab"        data-tab="ownership"  onclick="showTab('ownership')"  role="tab" aria-selected="false">👥 Ownership</button>
-  <button class="tab"        data-tab="peers"      onclick="showTab('peers')"      role="tab" aria-selected="false">🏷️ Peers</button>
-  <button class="tab"        data-tab="valuation"  onclick="showTab('valuation')"  role="tab" aria-selected="false">💰 Valuation</button>
-  <button class="tab"        data-tab="news"       onclick="showTab('news')"       role="tab" aria-selected="false">📰 News<span id="news-badge" style="display:none;margin-left:4px;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></button>
-  <button class="tab"        data-tab="learn"      onclick="showTab('learn')"      role="tab" aria-selected="false">🎓 Learn</button>
+  <button class="tab active" data-tab="scanner"    onclick="showTab('scanner')"    role="tab" aria-selected="true"  data-i18n="tab.scanner">🔍 Scanner</button>
+  <button class="tab"        data-tab="overview"   onclick="showTab('overview')"   role="tab" aria-selected="false" data-i18n="tab.overview">📋 Overview</button>
+  <button class="tab"        data-tab="financials" onclick="showTab('financials')" role="tab" aria-selected="false" data-i18n="tab.financials">📊 Financials</button>
+  <button class="tab"        data-tab="ratios"     onclick="showTab('ratios')"     role="tab" aria-selected="false" data-i18n="tab.ratios">📐 Ratios</button>
+  <button class="tab"        data-tab="ownership"  onclick="showTab('ownership')"  role="tab" aria-selected="false" data-i18n="tab.ownership">👥 Ownership</button>
+  <button class="tab"        data-tab="peers"      onclick="showTab('peers')"      role="tab" aria-selected="false" data-i18n="tab.peers">🏷️ Peers</button>
+  <button class="tab"        data-tab="valuation"  onclick="showTab('valuation')"  role="tab" aria-selected="false" data-i18n="tab.valuation">💰 Valuation</button>
+  <button class="tab"        data-tab="news"       onclick="showTab('news')"       role="tab" aria-selected="false" data-i18n="tab.news">📰 News<span id="news-badge" style="display:none;margin-left:4px;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></button>
+  <button class="tab"        data-tab="learn"      onclick="showTab('learn')"      role="tab" aria-selected="false" data-i18n="tab.learn">🎓 Learn</button>
 </nav>
 
 <main>
@@ -1288,6 +1294,71 @@ const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const SYSTEM_PROMPT_FUND = "You are Chitti, a friendly fundamental analysis guide for Indian investors. Answer in simple plain English. No jargon without explanation. If user writes Hindi, reply in Hindi. End every answer with: This is educational only, not investment advice.";
 const DISCLAIMER_EN = 'Not SEBI Registered. This is an educational tool only, not investment advice. Chitti shows direction, not a guarantee. Never invest money you cannot afford to lose.';
+const DISCLAIMER_HI = 'सेबी पंजीकृत नहीं। यह केवल शैक्षणिक उपकरण है, निवेश सलाह नहीं। चिट्टी दिशा दिखाता है, गारंटी नहीं। ऐसे पैसे कभी न लगाएँ जिन्हें खोने का जोखिम न उठा सकें।';
+
+// ═══════════════════════════════════════════════════════════
+// I18N — Hindi UI toggle (User 3: financially-illiterate Hindi readers)
+// Page-level UI language. Distinct from _newsLang which only affects News tab voice + AI replies.
+// ═══════════════════════════════════════════════════════════
+let _chittiLang = (function(){ try { return localStorage.getItem('chitti_lang') || 'en'; } catch(e){ return 'en'; } })();
+
+const I18N = {
+  // Tabs (Fundamentals)
+  'tab.scanner':    { en:'🔍 Scanner',     hi:'🔍 स्कैनर' },
+  'tab.overview':   { en:'📋 Overview',    hi:'📋 सारांश' },
+  'tab.financials': { en:'📊 Financials',  hi:'📊 वित्तीय' },
+  'tab.ratios':     { en:'📐 Ratios',      hi:'📐 अनुपात' },
+  'tab.ownership':  { en:'👥 Ownership',   hi:'👥 स्वामित्व' },
+  'tab.peers':      { en:'🏷️ Peers',       hi:'🏷️ साथी कंपनियाँ' },
+  'tab.valuation':  { en:'💰 Valuation',   hi:'💰 मूल्यांकन' },
+  'tab.news':       { en:'📰 News',        hi:'📰 समाचार' },
+  'tab.learn':      { en:'🎓 Learn',       hi:'🎓 सीखें' },
+  // Switch
+  'switch.tech':    { en:'📈 Switch to Chitti Technical →', hi:'📈 चिट्टी टेक्निकल पर जाएँ →' },
+  // Verdicts
+  'v.strong_buy': { en:'STRONG BUY', hi:'मज़बूत खरीदें' },
+  'v.buy':        { en:'BUY',        hi:'खरीदें' },
+  'v.hold':       { en:'HOLD',       hi:'रोकें' },
+  'v.sell':       { en:'SELL',       hi:'बेचें' },
+  'v.avoid':      { en:'AVOID',      hi:'बचें' },
+  'v.watch':      { en:'WATCH',      hi:'देखें' },
+  'v.exit':       { en:'EXIT',       hi:'निकलें' },
+  'v.caution':    { en:'CAUTION',    hi:'सावधानी' },
+  // Badges
+  'badge.soon': { en:'Coming Soon', hi:'जल्द आ रहा है' },
+  'badge.live': { en:'LIVE',        hi:'लाइव' },
+};
+
+function t(key) {
+  const e = I18N[key];
+  if (!e) return key;
+  return e[_chittiLang] || e.en || key;
+}
+
+function applyChittiLang(lang) {
+  _chittiLang = lang;
+  try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    const k = el.getAttribute('data-i18n');
+    const v = t(k);
+    if (v) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.querySelectorAll('.lang-toggle-bharat button').forEach(function(b){
+    b.style.background = b.getAttribute('data-lang') === lang ? 'rgba(255,255,255,.30)' : 'rgba(255,255,255,.05)';
+  });
+  document.documentElement.lang = (lang === 'hi') ? 'hi' : 'en';
+}
+
+function setChittiLang(lang) {
+  applyChittiLang(lang);
+  sp(lang === 'hi' ? 'भाषा हिंदी पर सेट की गई। पूरा यू आई अब हिंदी में है।' : 'Language set to English.', lang);
+}
 
 // ═══════════════════════════════════════════════════════════
 // Strategy registry (Scanner tab) — 31 strategies, 6 groups
@@ -1335,11 +1406,15 @@ function sp(t, l) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(t);
-  u.lang = (l === 'hi') ? 'hi-IN' : 'en-IN';
+  // Explicit lang wins; otherwise fall back to Chitti UI language
+  const useHi = (l === 'hi') || (l == null && (typeof _chittiLang !== 'undefined') && _chittiLang === 'hi');
+  u.lang = useHi ? 'hi-IN' : 'en-IN';
   u.rate = 0.88;
   speechSynthesis.speak(u);
 }
-function speakDisclaimer() { sp(DISCLAIMER_EN); }
+function speakDisclaimer() { sp(_chittiLang === 'hi' ? DISCLAIMER_HI : DISCLAIMER_EN, _chittiLang); }
+// Apply Chitti UI language on load (data-i18n elements get translated)
+applyChittiLang(_chittiLang);
 
 // SEBI disclaimer modal + short / full speech
 const SEBI_FULL_EN = "Disclaimer and risk notice. Chitti is not SEBI registered. Chitti Shares is an educational tool only, not investment advice. We are not a SEBI registered investment advisor under the SEBI Investment Advisers Regulations 2013, nor a research analyst under the SEBI Research Analysts Regulations 2014. We do not solicit any investment business and do not provide buy or sell recommendations. The information shown is for general education only. Past performance is not indicative of future results. Securities markets are subject to market risks; investments can lose value. Data is sourced from public APIs and may have errors, delays, or gaps. We make no guarantee of accuracy. Before any investment decision, consult a SEBI registered investment advisor. You are solely responsible for your investment decisions.";
