@@ -1,25 +1,22 @@
 # Chitti MedUPI - Backend dependencies
 # Pinned for reproducible deploys (Render free tier, Python 3.11).
+#
+# Pydantic v1 (no Rust dependency — pure-Python wheels work on every
+# platform). Render's slim image lacks Rust + cmake, so any v2 install
+# fails at pydantic-core's compile step. v1's BaseSettings lives inside
+# pydantic itself, so we drop the separate pydantic-settings package.
+# FastAPI is matched to the last v1-native release (0.95.2).
 
-fastapi==0.115.0
+fastapi==0.95.2                  # last release with native pydantic v1
 uvicorn[standard]==0.30.6
 sqlalchemy==2.0.35
 
-# Pydantic stack — pinned to versions that all ship cp311 manylinux wheels
-# AND are mutually compatible. pydantic 2.5.2 strict-pins pydantic-core
-# to 2.14.5 in its own metadata (they're released together upstream), so
-# this is the only working pair in the 2.5.x line for Render's image.
-# pydantic-settings 2.1.0 is the latest version compatible with pydantic
-# 2.5.x — newer settings (>=2.5) require pydantic>=2.7. The
-# SettingsConfigDict + BaseSettings API used in config.py is present.
-pydantic==2.5.2
-pydantic-core==2.14.5
-pydantic-settings==2.1.0
+pydantic==1.10.13                # pure Python; BaseSettings is in pydantic itself
 
-python-multipart==0.0.12
+python-multipart==0.0.6          # matches FastAPI 0.95.2's expectations
 httpx==0.27.2
 python-dotenv==1.0.1
-psycopg2-binary==2.9.9      # binary distro — never compiles libpq
+psycopg2-binary==2.9.9            # binary distro — never compiles libpq
 email-validator==2.2.0
 
 # Anthropic SDK — used by medupi_recognition.py for image-based composition extraction.
@@ -27,14 +24,12 @@ email-validator==2.2.0
 anthropic==0.39.0
 
 # Fuzzy brand-name matching for typo-tolerant search ("crocon", "Crocine 650").
-# Pinned to 3.6.1: this version ships pre-built manylinux wheels for
-# Python 3.11 on Render's free tier. 3.10.1 forces a source build which
-# fails on Render's slim image (cmake / cython metadata-generation step).
-# The fuzz.WRatio + process.extract API we use is unchanged between the two.
+# 3.6.1 ships pre-built manylinux wheels for Python 3.11; the fuzz.WRatio +
+# process.extract API is unchanged from the latest release.
 rapidfuzz==3.6.1
 
-# In-process scheduler — drives the monthly Jan Aushadhi download, weekly NPPA
-# check, daily 2 AM IST top-100 Brave Search refresh, and 24h cache eviction.
+# In-process scheduler — drives monthly Jan Aushadhi / weekly NPPA /
+# daily 02:00 IST top-100 Brave refresh / cache eviction.
 apscheduler==3.10.4
 tzdata==2024.2
 

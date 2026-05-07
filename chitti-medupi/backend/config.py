@@ -1,12 +1,20 @@
 """
 config.py
 ---------
-Central settings for the Chitti MedUPI backend. Loads env vars via
-pydantic-settings; same pattern as chitti-shares/backend.
+Central settings for the Chitti MedUPI backend.
+
+Pydantic v1 syntax: `BaseSettings` lives inside pydantic itself (in v2
+it was moved to a separate pydantic-settings package). Settings config
+is declared on an inner `Config` class (v2's `model_config =
+SettingsConfigDict(...)` doesn't exist in v1).
+
+Why v1: Render's free-tier image lacks the Rust toolchain, so
+pydantic-core (the v2 backend) can't compile from source and there's
+no wheel for every arch combination. v1 is pure Python and just works.
 """
 from __future__ import annotations
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -28,8 +36,7 @@ class Settings(BaseSettings):
 
     # Brave Search API — free tier 2,000 queries/month.
     # Used for the on-demand "live pharmacy price" snippet fetch + the
-    # daily 2 AM IST top-100 refresh. We only parse SEARCH SNIPPETS, never
-    # visit pharmacy URLs (zero-scrape policy).
+    # daily 2 AM IST top-100 refresh. Snippet-only — never scrapes.
     BRAVE_SEARCH_API_KEY: str = ""
 
     # Scheduler — set to false to disable in tests / one-off scripts
@@ -40,11 +47,10 @@ class Settings(BaseSettings):
     JAN_AUSHADHI_PRODUCT_URL: str = ""
     NPPA_CEILING_URL: str = ""
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
