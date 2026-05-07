@@ -257,9 +257,16 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
           <div class="sub" data-i18n="scan.voice.sub">Hindi or English. Hands-free for elderly.</div>
           <span class="live-badge">LIVE</span>
         </button>
+        <button class="scan-action" id="btn-qr-scan" onclick="openQrScanner()" aria-label="Scan the QR code printed on the medicine pack">
+          <div class="ico">🔲</div>
+          <div class="lbl" data-i18n="scan.qr">Scan QR code</div>
+          <div class="sub" data-i18n="scan.qr.sub">CDSCO traceability QR on the medicine pack</div>
+          <span class="live-badge">LIVE</span>
+        </button>
       </div>
       <input type="file" id="med-file-input"        accept="image/*"        style="display:none" onchange="onScanFileChosen(event)">
       <input type="file" id="med-camera-input"      accept="image/*" capture="environment" style="display:none" onchange="onScanFileChosen(event)">
+      <input type="file" id="med-qr-input"          accept="image/*" capture="environment" style="display:none" onchange="onQrFileChosen(event)">
       <div class="search-row">
         <label for="med-search" class="sr-only" data-i18n="scan.search.lbl">Search medicine by name</label>
         <input id="med-search" placeholder="Type medicine name… e.g. Crocin 650, Glycomet, Telma 40" autocomplete="off" data-i18n-placeholder="scan.search.placeholder" onkeydown="if(event.key==='Enter') searchMedicine()">
@@ -585,6 +592,29 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </div>
     </div>
 
+    <!-- Share QR card — for Bharat-realistic offline word-of-mouth distribution -->
+    <div class="section-card" id="share-qr-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title" data-i18n="share.title">📲 Share Chitti MedUPI <span class="live-badge">LIVE</span></div>
+          <div class="section-sub" data-i18n="share.sub">Show this QR code on a friend's phone — they scan it and Chitti MedUPI opens. Perfect for community health camps, doctor's clinics, and family WhatsApp groups.</div>
+        </div>
+        <button class="metric-spk" onclick="speakShareQr()" aria-label="Hear how to share Chitti MedUPI">🔊</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:center;padding:14px 0">
+        <div id="share-qr-host" style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:inline-block" aria-label="QR code linking to Chitti MedUPI"></div>
+        <div style="flex:1;min-width:220px;font-size:13px;line-height:1.6">
+          <div style="font-weight:800;font-size:14px;margin-bottom:6px" data-i18n="share.url_label">Or share this link:</div>
+          <code id="share-url-text" style="background:#fbf8f1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;display:inline-block;word-break:break-all">https://sahayai.in/chitti_medupi.html</code>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button class="cta-saffron" onclick="copyShareLink()" data-i18n="share.copy">📋 Copy link</button>
+            <button class="cta-navy" onclick="downloadShareQr()" data-i18n="share.download">💾 Save QR</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px" data-i18n="share.hint">Long-press the QR on a phone to save it. Print and put it up at health camps, gram panchayat meetings, RWA notice boards.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ✨ Chitti Special section (mirroring Shares pattern) -->
     <div class="section-card" style="border:1px solid rgba(232,106,23,.45);background:linear-gradient(135deg,rgba(232,106,23,.04),#fff)">
       <div class="section-head">
@@ -693,6 +723,15 @@ const I18N = {
   'scan.image.sub':       { en:'From gallery or your prescription PDF',  hi:'गैलरी या प्रिस्क्रिप्शन PDF से' },
   'scan.voice':           { en:'Voice — speak the name',                 hi:'आवाज़ — नाम बोलें' },
   'scan.voice.sub':       { en:'Hindi or English. Hands-free for elderly.', hi:'हिंदी या अंग्रेज़ी। बुजुर्गों के लिए हाथ-मुक्त।' },
+  'scan.qr':              { en:'Scan QR code',                              hi:'QR कोड स्कैन करें' },
+  'scan.qr.sub':          { en:'CDSCO traceability QR on the medicine pack', hi:'दवा के पैकेट पर CDSCO QR कोड' },
+  // Share QR
+  'share.title':          { en:'📲 Share Chitti MedUPI',                    hi:'📲 चिट्टी मेडUPI शेयर करें' },
+  'share.sub':            { en:'Show this QR code on a friend\'s phone — they scan it and Chitti MedUPI opens. Perfect for community health camps, doctor\'s clinics, and family WhatsApp groups.', hi:'किसी दोस्त के फ़ोन पर यह QR कोड दिखाएँ — वे स्कैन करेंगे और चिट्टी मेडUPI खुल जाएगा। स्वास्थ्य शिविर, डॉक्टर के क्लिनिक और परिवार के WhatsApp ग्रुप के लिए बढ़िया।' },
+  'share.url_label':      { en:'Or share this link:',                       hi:'या यह लिंक शेयर करें:' },
+  'share.copy':           { en:'📋 Copy link',                              hi:'📋 लिंक कॉपी करें' },
+  'share.download':       { en:'💾 Save QR',                                hi:'💾 QR सेव करें' },
+  'share.hint':           { en:'Long-press the QR on a phone to save it. Print and put it up at health camps, gram panchayat meetings, RWA notice boards.', hi:'फ़ोन पर QR को देर तक दबाकर सेव करें। प्रिंट करके स्वास्थ्य शिविर, ग्राम पंचायत बैठक, RWA सूचना पट्ट पर लगाएँ।' },
   'scan.search.lbl':      { en:'Search medicine by name',                hi:'नाम से दवा खोजें' },
   'scan.search.placeholder':{ en:'Type medicine name… e.g. Crocin 650', hi:'दवा का नाम लिखें… जैसे क्रोसिन 650' },
   'scan.search.btn':      { en:'Search',                                  hi:'खोजें' },
@@ -1386,14 +1425,247 @@ async function dismissReminder(id){
 // Boot
 // ═══════════════════════════════════════════════════════════
 function _bootLiveTabs(){
-  // Lazy-load family + reminders the first time those tabs are shown
+  // Lazy-load family + reminders + settings QR the first time each tab is shown
   document.querySelectorAll('nav.tabs .tab').forEach(function(b){
     b.addEventListener('click', function(){
       const t = b.getAttribute('data-tab');
       if (t === 'wallet')    refreshFamilyProfiles();
       if (t === 'reminders') { refreshFamilyProfiles(); refreshReminders(); }
+      if (t === 'settings')  renderShareQr();
     });
   });
+}
+
+// ═══════════════════════════════════════════════════════════
+// QR — medicine-pack scanner (Scan tab) + share-page generator (Settings tab)
+// Two pure-JS libraries loaded on demand from jsDelivr CDN:
+//   jsQR              ~50KB · decodes QR / Datamatrix from ImageData
+//   qrcode-generator  ~10KB · renders QR as inline SVG
+// Lazy-load avoids any cost on initial page load.
+// ═══════════════════════════════════════════════════════════
+const _CDN_JSQR    = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+const _CDN_QR_GEN  = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+
+function _loadScript(src){
+  return new Promise(function(resolve, reject){
+    if (document.querySelector('script[src="' + src + '"]')) return resolve();
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ reject(new Error('Failed to load ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+
+// ───── Medicine-pack QR scanner ─────
+function openQrScanner(){
+  const el = document.getElementById('med-qr-input');
+  if (el) el.click();
+}
+
+async function onQrFileChosen(ev){
+  const f = ev.target.files && ev.target.files[0];
+  if (!f) return;
+  const lang = _chittiLang;
+  const r = document.getElementById('med-results');
+  if (r) r.innerHTML = '<div style="padding:14px;color:var(--saffron);font-weight:700">⏳ ' + (lang === 'hi' ? 'QR कोड पढ़ रहा हूँ…' : 'Decoding QR code…') + '</div>';
+  try {
+    await _loadScript(_CDN_JSQR);
+    const decoded = await _decodeQrFromFile(f);
+    ev.target.value = '';
+    if (!decoded) {
+      _renderScanError(lang === 'hi' ? 'इस इमेज में कोई QR कोड नहीं मिला। बेहतर रोशनी में फिर से कोशिश करें।' : 'No QR code found in that image. Try again in better lighting.');
+      return;
+    }
+    _handleDecodedQr(decoded);
+  } catch (e) {
+    _renderScanError((e && e.message) || String(e));
+    ev.target.value = '';
+  }
+}
+
+function _decodeQrFromFile(file){
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onerror = function(){ reject(new Error('file read failed')); };
+    reader.onload = function(){
+      const img = new Image();
+      img.onerror = function(){ reject(new Error('image load failed')); };
+      img.onload = function(){
+        // jsQR works on ImageData from a canvas. Cap the long side at 1200px
+        // for speed — QRs are typically <800px and high-res phone photos
+        // slow the decode noticeably.
+        const MAX = 1200;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h);
+        try {
+          const code = window.jsQR(data.data, w, h, { inversionAttempts: 'attemptBoth' });
+          resolve(code ? code.data : null);
+        } catch (e) { reject(e); }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function _handleDecodedQr(text){
+  const lang = _chittiLang;
+  // Interpret the decoded string. Three common shapes:
+  //   1. URL → open in new tab + extract any medicine name from the path/query
+  //   2. GS1 DataMatrix string starting with "01" + 14-digit GTIN → can't resolve to brand without
+  //      a GTIN→drug DB; show the raw + invite user to type the medicine name
+  //   3. Plain text (drug name) → feed straight into searchMedicine
+  const trimmed = String(text || '').trim();
+  if (!trimmed) {
+    _renderScanError(lang === 'hi' ? 'खाली QR कोड' : 'Empty QR code');
+    return;
+  }
+  // GS1 / Datamatrix patterns: "01" + 14 digits is a GTIN
+  const gs1 = trimmed.match(/01(\d{14})/);
+  if (gs1 && /^[\d\s()A-Z]+$/i.test(trimmed)) {
+    _renderQrInfo({
+      kind: 'gs1',
+      raw: trimmed,
+      gtin: gs1[1],
+      heading: lang === 'hi' ? 'दवा का GS1 बारकोड' : 'Medicine GS1 barcode',
+      body_en: 'This is a CDSCO traceability code (GTIN ' + gs1[1] + '). It does NOT include the brand name. Type the medicine name above to look up alternatives.',
+      body_hi: 'यह CDSCO ट्रेसेबिलिटी कोड है (GTIN ' + gs1[1] + ')। इसमें ब्रांड का नाम नहीं है। ऊपर दवा का नाम लिखकर विकल्प देखें।',
+    });
+    return;
+  }
+  // URL? Open it + try to extract a medicine name from the last path segment
+  if (/^https?:\/\//i.test(trimmed)) {
+    let guess = '';
+    try {
+      const u = new URL(trimmed);
+      const seg = u.pathname.split('/').filter(Boolean).pop() || '';
+      guess = decodeURIComponent(seg).replace(/[-_]+/g, ' ').replace(/\.(html?|aspx?)$/i, '').trim();
+    } catch (e) {}
+    _renderQrInfo({
+      kind: 'url',
+      raw: trimmed,
+      heading: lang === 'hi' ? 'QR कोड में लिंक मिला' : 'QR contained a link',
+      body_en: 'Opening ' + trimmed + '. Verify on the manufacturer or government portal before trusting any details.',
+      body_hi: 'खोल रहा हूँ ' + trimmed + '। किसी भी जानकारी पर भरोसा करने से पहले निर्माता या सरकारी पोर्टल पर पुष्टि करें।',
+      url: trimmed,
+      guess: guess,
+    });
+    if (guess) {
+      const inp = document.getElementById('med-search');
+      if (inp) inp.value = guess;
+      setTimeout(searchMedicine, 600);
+    }
+    return;
+  }
+  // Plain text → assume it's a medicine name
+  const inp = document.getElementById('med-search');
+  if (inp) inp.value = trimmed;
+  searchMedicine();
+}
+
+function _renderQrInfo(info){
+  const r = document.getElementById('med-results');
+  if (!r) return;
+  const lang = _chittiLang;
+  const body = lang === 'hi' ? info.body_hi : info.body_en;
+  let h = '<div style="padding:14px;border-radius:12px;background:rgba(14,35,68,.05);border:1px solid var(--navy);margin-bottom:10px">';
+  h += '<div style="font-weight:900;font-size:14px">🔲 ' + _esc(info.heading) + '</div>';
+  h += '<div style="font-size:12px;margin-top:6px;line-height:1.55">' + _esc(body) + '</div>';
+  h += '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:monospace;word-break:break-all">' + _esc(info.raw) + '</div>';
+  if (info.url) h += '<div style="margin-top:8px"><a target="_blank" rel="noopener noreferrer" href="' + _esc(info.url) + '" style="font-size:12px">' + (lang === 'hi' ? 'लिंक खोलें →' : 'Open link →') + '</a></div>';
+  h += '</div>';
+  r.innerHTML = h;
+  sp(body);
+}
+
+// ───── Settings → Share QR generator ─────
+const _SHARE_URL = 'https://sahayai.in/chitti_medupi.html';
+let _shareQrRendered = false;
+
+async function renderShareQr(){
+  if (_shareQrRendered) return;
+  const host = document.getElementById('share-qr-host');
+  if (!host) return;
+  try {
+    await _loadScript(_CDN_QR_GEN);
+    // qrcode-generator API: qrcode(typeNumber, errorCorrection)
+    const qr = window.qrcode(0, 'M');
+    qr.addData(_SHARE_URL);
+    qr.make();
+    host.innerHTML = qr.createSvgTag(8, 4);   // 8 px per module, 4-module quiet zone
+    _shareQrRendered = true;
+  } catch (e) {
+    host.innerHTML = '<div style="padding:18px;color:var(--med-red);font-size:12px">⚠️ QR library failed to load: ' + _esc(e.message || e) + '</div>';
+  }
+}
+
+async function copyShareLink(){
+  try {
+    await navigator.clipboard.writeText(_SHARE_URL);
+    sp(_chittiLang === 'hi' ? 'लिंक कॉपी हो गया' : 'Link copied to clipboard');
+  } catch (e) {
+    // Fallback: select the code element so user can ctrl+c
+    const t = document.getElementById('share-url-text');
+    if (t) {
+      const range = document.createRange();
+      range.selectNode(t);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      sp(_chittiLang === 'hi' ? 'लिंक चुना गया, अब कॉपी करें' : 'Link selected — now press Ctrl+C');
+    }
+  }
+}
+
+async function downloadShareQr(){
+  // Render fresh to canvas at higher resolution, then trigger PNG download
+  try {
+    await _loadScript(_CDN_QR_GEN);
+    const qr = window.qrcode(0, 'M');
+    qr.addData(_SHARE_URL);
+    qr.make();
+    const cell = 16;
+    const margin = 4;
+    const moduleCount = qr.getModuleCount();
+    const size = (moduleCount + margin * 2) * cell;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+    for (let r = 0; r < moduleCount; r++) {
+      for (let c = 0; c < moduleCount; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect((c + margin) * cell, (r + margin) * cell, cell, cell);
+        }
+      }
+    }
+    cv.toBlob(function(blob){
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'chitti-medupi-qr.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    });
+  } catch (e) {
+    alert('QR library failed: ' + (e.message || e));
+  }
+}
+
+function speakShareQr(){
+  sp(_chittiLang === 'hi'
+    ? 'सेटिंग्स में QR कोड दिख रहा है। किसी दोस्त के फ़ोन के कैमरे से इसे स्कैन करें — चिट्टी मेडUPI खुल जाएगा।'
+    : 'A QR code is shown in Settings. Scan it with any phone camera — Chitti MedUPI will open.');
 }
 
 // ═══════════════════════════════════════════════════════════
