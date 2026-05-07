@@ -131,6 +131,12 @@ def parse_composition(raw: str | None) -> tuple[str | None, str | None]:
 
 # ---- DB ops ----
 
+def _redact(db_url: str) -> str:
+    """Strip password before logging. 'postgresql://user:pw@host/db' → 'postgresql://user:***@host/db'."""
+    import re as _re
+    return _re.sub(r"(postgresql://[^:/@]+:)[^@]+(@)", r"\1***\2", db_url or "")
+
+
 UPSERT_SQL = """
 INSERT INTO medupi.medicines
   (brand_name, salt_composition, strength, dosage_form,
@@ -193,7 +199,8 @@ def main(csv_path: str) -> int:
         print(f"ERROR: CSV not found at {csv_p}", file=sys.stderr)
         return 2
 
-    print(f"Connecting to {db_url[:55]}…")
+    # Redact password before any logging so it never appears in transcripts.
+    print(f"Connecting to {_redact(db_url)}")
     conn = psycopg2.connect(db_url)
     conn.autocommit = False
     cur = conn.cursor()
