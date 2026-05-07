@@ -37,6 +37,41 @@ import sys
 import time
 from pathlib import Path
 
+
+# ---- Tiny stdlib .env reader (no python-dotenv dep needed) ----
+def _load_dotenv(path: Path) -> None:
+    """
+    Loads `KEY=VALUE` pairs from a .env file into os.environ — only if not
+    already set. Handles inline comments after `#` (unless escaped with \\#),
+    optional surrounding quotes, and ignores blank/comment lines.
+
+    Crucially, values are read RAW — no shell interpolation, no URL-encoding.
+    A password like `Sah@y/2026+!` survives intact, no escaping required.
+    """
+    if not path.exists():
+        return
+    with path.open("r", encoding="utf-8", errors="replace") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            # Strip surrounding quotes if user wrapped the value
+            if (len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'"):
+                value = value[1:-1]
+            # Don't overwrite values already set in real env (real env wins —
+            # so an explicit $env:DATABASE_URL still beats a stale .env line).
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+# Load .env from the backend root (parent of scripts/) at import time.
+_load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 # ---- Optional risk classifier (pure-Python module — no external deps) ----
 HERE = Path(__file__).resolve().parent
 BACKEND_ROOT = HERE.parent
@@ -180,28 +215,60 @@ def ensure_unique_index(cur):
     """)
 
 
-def main(csv_path: str) -> int:
+def _connect():
+    """
+    Connect to Postgres. Supports two .env / env-var styles:
+
+      A) DATABASE_URL=postgresql://user:pw@host:port/db
+         (use only if the password has NO special chars — @ / : ? # & % +)
+
+      B) DB_HOST=...  DB_PORT=...  DB_USER=...  DB_PASSWORD=...  DB_NAME=...
+         (raw fields — works with any password, no URL-encoding required)
+
+    If both are set, A wins. Returns (connection, log_string_with_pw_redacted).
+    """
     db_url = os.environ.get("DATABASE_URL", "").strip()
-    if not db_url:
-        print("ERROR: DATABASE_URL not set in environment.", file=sys.stderr)
-        print(
-            "Set it once with (PowerShell):\n"
-            "  $env:DATABASE_URL = 'postgresql://postgres.xxxx:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres'",
-            file=sys.stderr,
+    if db_url:
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        # Skip if it's still the placeholder from .env template
+        if "PASTE_PASSWORD_HERE" in db_url:
+            db_url = ""
+
+    if db_url:
+        return psycopg2.connect(db_url), _redact(db_url)
+
+    host = os.environ.get("DB_HOST", "").strip()
+    user = os.environ.get("DB_USER", "").strip()
+    pw   = os.environ.get("DB_PASSWORD", "")
+    if host and user and pw:
+        port = int(os.environ.get("DB_PORT", "5432"))
+        dbname = os.environ.get("DB_NAME", "postgres").strip() or "postgres"
+        conn = psycopg2.connect(
+            host=host, port=port, user=user, password=pw, dbname=dbname,
+            sslmode=os.environ.get("DB_SSLMODE", "require"),
         )
-        return 2
+        return conn, f"postgresql://{user}:***@{host}:{port}/{dbname}"
 
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    raise RuntimeError(
+        "No DB credentials found. Either set DATABASE_URL "
+        "or the DB_HOST/DB_USER/DB_PASSWORD/DB_NAME quartet "
+        "(in env vars or chitti-medupi/backend/.env)."
+    )
 
+
+def main(csv_path: str) -> int:
     csv_p = Path(csv_path)
     if not csv_p.exists():
         print(f"ERROR: CSV not found at {csv_p}", file=sys.stderr)
         return 2
 
-    # Redact password before any logging so it never appears in transcripts.
-    print(f"Connecting to {_redact(db_url)}")
-    conn = psycopg2.connect(db_url)
+    try:
+        conn, log_target = _connect()
+    except Exception as e:  # noqa: BLE001
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+    print(f"Connecting to {log_target}")
     conn.autocommit = False
     cur = conn.cursor()
 
