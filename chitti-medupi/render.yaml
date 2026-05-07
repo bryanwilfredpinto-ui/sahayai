@@ -20,15 +20,13 @@ services:
     startCommand: gunicorn main:app --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
-      # Reuse the chitti-shares-db. Render resolves this at deploy time
-      # from any Postgres in the same workspace named `chitti-shares-db`.
-      # If you set up chitti-shares manually (not via Blueprint), the DB
-      # name might differ — in that case paste the Internal Database URL
-      # by hand and remove the fromDatabase block below.
+      # Now points at Supabase (free tier permits more than Render's one-DB
+      # cap). All our tables live under the `medupi` schema — see
+      # backend/models/_schema.py. Paste the Supabase "Direct" connection
+      # string into the Render dashboard env var. Sibling chitti-shares
+      # service uses the same Supabase URL, isolated under `shares.*`.
       - key: DATABASE_URL
-        fromDatabase:
-          name: chitti-shares-db
-          property: connectionString
+        sync: false
 
       # ── Anthropic (image scan via vision) ──
       - key: ANTHROPIC_API_KEY

@@ -18,10 +18,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class KiteToken(Base):
     __tablename__ = "kite_tokens"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True)  # always 1
     access_token = Column(String(200), nullable=False)

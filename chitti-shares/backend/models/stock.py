@@ -18,13 +18,14 @@ from sqlalchemy import (
 )
 
 from database import Base
+from models._schema import TABLE_KW, fk_target
 
 
 class WatchlistItem(Base):
     __tablename__ = "watchlist_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     symbol = Column(String(40), nullable=False)   # canonical e.g. "NSE:RELIANCE"
     note = Column(String(200), nullable=True)
     order_index = Column(Integer, nullable=False, default=0)  # for drag-to-reorder
@@ -32,6 +33,7 @@ class WatchlistItem(Base):
 
     __table_args__ = (
         UniqueConstraint("user_id", "symbol", name="uq_watchlist_user_symbol"),
+        TABLE_KW,
     )
 
 
@@ -39,7 +41,7 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     symbol = Column(String(40), nullable=False)
 
     # 'price_above', 'price_below', 'rsi_above', 'rsi_below',
@@ -57,15 +59,17 @@ class Alert(Base):
 
     __table_args__ = (
         Index("ix_alerts_active_user", "active", "user_id"),
+        TABLE_KW,
     )
 
 
 class AlertEvent(Base):
     __tablename__ = "alert_events"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    alert_id = Column(Integer, ForeignKey("alerts.id"), nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    alert_id = Column(Integer, ForeignKey(fk_target("alerts")), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     symbol = Column(String(40), nullable=False)
     fired_value = Column(Float, nullable=True)
     note = Column(String(300), nullable=True)
@@ -76,9 +80,10 @@ class AlertEvent(Base):
 class CallReport(Base):
     """Every BUY/SELL signal Chitti generates. Tracks performance over time."""
     __tablename__ = "call_reports"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=True, index=True)
     # null user_id = system-wide call (Chitti's market view picks)
 
     symbol = Column(String(40), nullable=False, index=True)
@@ -106,9 +111,10 @@ class CallReport(Base):
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     role = Column(String(16), nullable=False)             # 'user' | 'assistant'
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -119,7 +125,7 @@ class PortfolioHolding(Base):
     __tablename__ = "portfolio_holdings"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     symbol = Column(String(40), nullable=False)
     qty = Column(Float, nullable=False)
     avg_buy_price = Column(Float, nullable=False)
@@ -127,15 +133,17 @@ class PortfolioHolding(Base):
 
     __table_args__ = (
         UniqueConstraint("user_id", "symbol", name="uq_portfolio_user_symbol"),
+        TABLE_KW,
     )
 
 
 class CustomRule(Base):
     """User-saved custom rules (max 5 per user, enforced in route)."""
     __tablename__ = "custom_rules"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
     name = Column(String(80), nullable=False)
     rule_text = Column(String(400), nullable=False)
     signal = Column(String(10), nullable=False, default="BUY")  # BUY|SELL|WAIT

@@ -11,7 +11,7 @@ Switching between SQLite (local) and Postgres (Render) is automatic
 based on the DATABASE_URL env var.
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from config import settings
@@ -21,8 +21,9 @@ connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-# Render gives Postgres URLs starting with "postgres://" but
-# SQLAlchemy 2.x wants "postgresql://" - patch it here.
+# Render / Heroku give Postgres URLs starting with "postgres://" but
+# SQLAlchemy 2.x wants "postgresql://" - patch it here. Supabase URLs
+# already use the modern "postgresql://" prefix so this is a no-op for them.
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -45,3 +46,21 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def ensure_schema() -> None:
+    """
+    CREATE SCHEMA IF NOT EXISTS shares on Postgres. No-op on SQLite.
+    Must be called BEFORE Base.metadata.create_all() so the schema-
+    qualified tables defined in models/* have a place to land.
+
+    On Supabase the chitti-medupi service runs CREATE SCHEMA … medupi
+    against the same DB. Both are independent — neither service sees
+    the other's tables.
+    """
+    # Late import to keep this module's top-level free of model imports.
+    from models._schema import SCHEMA
+    if not SCHEMA:
+        return
+    with engine.begin() as conn:
+        conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS {SCHEMA}'))

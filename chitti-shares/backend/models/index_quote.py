@@ -11,10 +11,12 @@ and POSTs to /debug/ingest-indices. We store the latest values here.
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from database import Base
+from models._schema import TABLE_KW
 
 
 class IndexQuote(Base):
     __tablename__ = "index_quotes"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     canonical = Column(String(64), unique=True, index=True, nullable=False)

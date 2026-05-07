@@ -23,6 +23,7 @@ from sqlalchemy import (
 )
 
 from database import Base
+from models._schema import TABLE_KW, fk_target
 
 
 class UsageLog(Base):
@@ -30,7 +31,7 @@ class UsageLog(Base):
     __tablename__ = "usage_log"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=True, index=True)
     # null user_id = system call (cron job, alert checker, etc.)
 
     provider = Column(String(20), nullable=False)   # 'deepseek', 'fast2sms', 'yahoo'
@@ -50,12 +51,14 @@ class UsageLog(Base):
 
     __table_args__ = (
         Index("ix_usage_provider_date", "provider", "created_at"),
+        TABLE_KW,
     )
 
 
 class DailyQuotaSummary(Base):
     """One row per day. Updated incrementally; cheaper to read for the widget."""
     __tablename__ = "daily_quota_summary"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     date_ist = Column(String(10), nullable=False, unique=True)  # 'YYYY-MM-DD' in IST

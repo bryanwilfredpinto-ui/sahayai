@@ -37,10 +37,13 @@ services:
         value: "15"
       - key: REFRESH_TOKEN_DAYS
         value: "30"
+      # Now points at Supabase (free tier permits more than Render's one-DB
+      # cap). All our tables live under the `shares` schema — see
+      # backend/models/_schema.py. Paste the Supabase "Direct" connection
+      # string into the Render dashboard env var. Sibling chitti-medupi
+      # service uses the same Supabase URL, isolated under `medupi.*`.
       - key: DATABASE_URL
-        fromDatabase:
-          name: chitti-shares-db
-          property: connectionString
+        sync: false
       - key: FAST2SMS_API_KEY
         sync: false           # You set this manually in dashboard
       - key: OTP_LENGTH
@@ -107,7 +110,13 @@ services:
   # Replaced with in-process APScheduler running inside the web service.
   # See services/scheduler.py - free, zero setup, runs while web service is awake.
 
-databases:
-  - name: chitti-shares-db
-    plan: free
-    databaseName: chitti_shares
+# Render-managed Postgres has been retired in favour of Supabase. Leave
+# this block commented out unless you ever fall back. If you do uncomment
+# it, you'll need to flip DATABASE_URL above back to a `fromDatabase` ref
+# and redeploy. The Supabase migration is documented in the project
+# memory entry `project_data_sources.md`.
+#
+# databases:
+#   - name: chitti-shares-db
+#     plan: free
+#     databaseName: chitti_shares

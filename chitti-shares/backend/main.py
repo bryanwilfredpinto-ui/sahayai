@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config import settings
-from database import Base, engine
+from database import Base, engine, ensure_schema
 import models  # noqa: F401  (registers models with Base.metadata)
 from routes import (
     auth, market, user, stocks, technical, portfolio, chat,
@@ -496,7 +496,11 @@ async def cap_exceeded_handler(_request: Request, exc: CapExceeded):
 
 @app.on_event("startup")
 def on_startup():
-    """Create tables and seed initial data. Safe to run repeatedly."""
+    """Create schema (Postgres) + tables + seed initial data. Safe to run repeatedly."""
+    try:
+        ensure_schema()
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_schema skipped: %s", e)
     Base.metadata.create_all(bind=engine)
     # Seed Nifty 500 stock universe (idempotent)
     try:

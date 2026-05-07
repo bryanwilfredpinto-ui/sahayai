@@ -17,10 +17,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     mobile = Column(String(10), unique=True, index=True, nullable=False)

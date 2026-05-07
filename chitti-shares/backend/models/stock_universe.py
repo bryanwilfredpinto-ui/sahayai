@@ -14,6 +14,7 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Float, Integer, String, Index
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class Stock(Base):
@@ -30,4 +31,5 @@ class Stock(Base):
 
     __table_args__ = (
         Index("ix_stocks_name", "name"),
+        TABLE_KW,
     )

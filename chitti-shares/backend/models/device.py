@@ -17,13 +17,15 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW, fk_target
 
 
 class Device(Base):
     __tablename__ = "devices"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey(fk_target("users")), nullable=False, index=True)
 
     # Stable fingerprint of the browser/device (from fingerprintjs)
     device_id = Column(String(128), nullable=False, index=True)
@@ -44,6 +46,7 @@ class Device(Base):
 
 class OTP(Base):
     __tablename__ = "otps"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     mobile = Column(String(10), nullable=False, index=True)
