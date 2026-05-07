@@ -1,21 +1,19 @@
 # Chitti MedUPI - Backend dependencies
 # Pinned for reproducible deploys (Render free tier, Python 3.11).
-#
-# --only-binary=:all: forces pip to install ONLY from pre-built wheels.
-# Render's slim image lacks cmake / cython / rust → any source build
-# during pip install dies at metadata-generation. Wheel-only avoids it.
---only-binary=:all:
 
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 sqlalchemy==2.0.35
 
-# Pydantic stack — pinned to versions that ship cp311 manylinux wheels.
-# pydantic-core is Rust-built; the pinned version has a pre-built wheel.
-# pydantic-settings dropped to 2.1.0 because >=2.5 requires pydantic>=2.7
-# and we're holding pydantic at 2.5.3 for the wheel guarantee.
-pydantic==2.5.3
-pydantic-core==2.14.6
+# Pydantic stack — pinned to versions that all ship cp311 manylinux wheels
+# AND are mutually compatible. pydantic 2.5.2 strict-pins pydantic-core
+# to 2.14.5 in its own metadata (they're released together upstream), so
+# this is the only working pair in the 2.5.x line for Render's image.
+# pydantic-settings 2.1.0 is the latest version compatible with pydantic
+# 2.5.x — newer settings (>=2.5) require pydantic>=2.7. The
+# SettingsConfigDict + BaseSettings API used in config.py is present.
+pydantic==2.5.2
+pydantic-core==2.14.5
 pydantic-settings==2.1.0
 
 python-multipart==0.0.12
