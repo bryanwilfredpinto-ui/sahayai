@@ -1,15 +1,27 @@
 # Chitti MedUPI - Backend dependencies
-# Pinned for reproducible deploys (Render free tier, Python 3.11)
+# Pinned for reproducible deploys (Render free tier, Python 3.11).
+#
+# --only-binary=:all: forces pip to install ONLY from pre-built wheels.
+# Render's slim image lacks cmake / cython / rust → any source build
+# during pip install dies at metadata-generation. Wheel-only avoids it.
+--only-binary=:all:
 
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 sqlalchemy==2.0.35
-pydantic==2.9.2
-pydantic-settings==2.5.2
+
+# Pydantic stack — pinned to versions that ship cp311 manylinux wheels.
+# pydantic-core is Rust-built; the pinned version has a pre-built wheel.
+# pydantic-settings dropped to 2.1.0 because >=2.5 requires pydantic>=2.7
+# and we're holding pydantic at 2.5.3 for the wheel guarantee.
+pydantic==2.5.3
+pydantic-core==2.14.6
+pydantic-settings==2.1.0
+
 python-multipart==0.0.12
 httpx==0.27.2
 python-dotenv==1.0.1
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.9      # binary distro — never compiles libpq
 email-validator==2.2.0
 
 # Anthropic SDK — used by medupi_recognition.py for image-based composition extraction.
@@ -30,7 +42,6 @@ tzdata==2024.2
 
 # ===== Real-data loader (scripts/load_real_data.py) =====
 # CSV / Excel parsing for the NPPA + Jan Aushadhi + CDSCO downloads.
-# Optional at runtime — only the loader scripts import these. Skip this
-# block if you're deploying the API service without ever running the loader.
+# Optional at runtime — only the loader scripts import these.
 pandas>=2.0.0
 openpyxl>=3.1.0
