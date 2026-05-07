@@ -387,6 +387,70 @@ def api_news_stock(symbol: str, limit: int = 10):
     return {"items": items, "count": len(items), "symbol": sym}
 
 
+from pydantic import BaseModel
+
+
+class ChittiViewInput(BaseModel):
+    timeframe: str
+    rsi: float | None = None
+    macd_signal: str | None = None       # "bullish" / "bearish" / "neutral"
+    trend: str | None = None             # "uptrend" / "downtrend" / "sideways"
+    price: float | None = None
+    ma50: float | None = None
+    ma200: float | None = None
+
+
+@app.post("/api/chitti-view/{symbol:path}")
+async def api_chitti_view(symbol: str, payload: ChittiViewInput):
+    """
+    Plain-English BUY / SELL / HOLD verdict + 2-3-sentence summary for the
+    given stock at the given timeframe. Calls services.deepseek_client.
+
+    Built for the Chitti's View card in StockChart.jsx — auto-read aloud
+    by the frontend on arrival (user may be blind, illiterate, or elderly).
+    """
+    from urllib.parse import unquote
+    import re
+    from services import deepseek_client
+    sym = unquote(symbol)
+
+    system = (
+        "You are Chitti, a friendly AI assistant for Indian retail investors. "
+        "The user may be blind, illiterate, or elderly. "
+        "Give a BUY / SELL / HOLD verdict in exactly 2-3 simple sentences. "
+        "No jargon. No numbers unless essential. "
+        "If timeframe is 1H/4H/Daily → this is a short-term trader. "
+        "If timeframe is Weekly/Monthly → this is a long-term investor. "
+        "Always end with one action sentence: what to watch for. "
+        "Begin your response with the single word BUY, SELL, or HOLD followed by a period."
+    )
+
+    parts = [f"Stock: {sym}", f"Timeframe: {payload.timeframe}"]
+    if payload.rsi is not None:           parts.append(f"RSI(14): {payload.rsi:.1f}")
+    if payload.macd_signal:               parts.append(f"MACD signal: {payload.macd_signal}")
+    if payload.trend:                     parts.append(f"Trend: {payload.trend}")
+    if payload.price is not None:         parts.append(f"Price: ₹{payload.price:.2f}")
+    if payload.ma50 is not None:          parts.append(f"50-period MA: ₹{payload.ma50:.2f}")
+    if payload.ma200 is not None:         parts.append(f"200-period MA: ₹{payload.ma200:.2f}")
+    user = "\n".join(parts) + "\n\nGive your verdict and 2-3 sentence plain-English summary."
+
+    try:
+        text = await deepseek_client.chat(system, user, max_tokens=200, temperature=0.7)
+    except deepseek_client.DeepSeekError as e:
+        raise HTTPException(status_code=502, detail=f"chitti-view DeepSeek error: {e}")
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"chitti-view error: {e}")
+
+    m = re.search(r"\b(BUY|SELL|HOLD)\b", (text or "").upper())
+    verdict = m.group(1) if m else "HOLD"
+
+    return {
+        "verdict": verdict,
+        "summary": (text or "").strip(),
+        "language": "en",
+    }
+
+
 from fastapi import Body, HTTPException
 
 

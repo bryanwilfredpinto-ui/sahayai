@@ -44,6 +44,10 @@ export default function StockChart() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
+  // Chitti's View — wired to /api/chitti-view (DeepSeek)
+  const [chittiView, setChittiView] = useState(null);     // { verdict, summary, language } | null
+  const [chittiLoading, setChittiLoading] = useState(false);
+
   // Chart refs
   const chartContainerRef = useRef(null);
   const rsiContainerRef = useRef(null);
@@ -69,6 +73,57 @@ export default function StockChart() {
       setErr(e.message || "Failed to load candles");
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Fetch DeepSeek-powered Chitti's View whenever a fresh candle set lands.
+  // Auto-speaks the summary on arrival (user may be blind / illiterate / elderly).
+  async function fetchChittiView(tfArg) {
+    if (!candles.length) return;
+    setChittiLoading(true);
+    try {
+      const closes = candles.map(c => c.close);
+      const rsiArr = computeRSI(closes, 14);
+      const ma50Arr = computeSMA(closes, 50);
+      const ma200Arr = computeSMA(closes, 200);
+      const last = candles[candles.length - 1];
+      const lastRsi = rsiArr[rsiArr.length - 1];
+      const lastMa50 = ma50Arr[ma50Arr.length - 1];
+      const lastMa200 = ma200Arr[ma200Arr.length - 1];
+      let trend = "sideways";
+      if (last && lastMa50 != null) {
+        if (last.close > lastMa50 && (lastMa200 == null || lastMa50 > lastMa200)) trend = "uptrend";
+        else if (last.close < lastMa50 && (lastMa200 == null || lastMa50 < lastMa200)) trend = "downtrend";
+      }
+      const r = await fetch(`${API_BASE}/api/chitti-view/${encodeURIComponent(symbol)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timeframe: tfArg,
+          rsi: lastRsi != null && !Number.isNaN(lastRsi) ? lastRsi : null,
+          macd_signal: null,
+          trend,
+          price: last ? last.close : null,
+          ma50: lastMa50 != null && !Number.isNaN(lastMa50) ? lastMa50 : null,
+          ma200: lastMa200 != null && !Number.isNaN(lastMa200) ? lastMa200 : null,
+        }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      setChittiView(data);
+      // Auto-speak the verdict + summary — user may be blind
+      if (data?.summary && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(data.summary);
+        u.lang = 'en-IN';
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+      }
+    } catch (e) {
+      console.warn('chitti-view fetch failed', e);
+      setChittiView(null);
+    } finally {
+      setChittiLoading(false);
     }
   }
 
@@ -191,6 +246,10 @@ export default function StockChart() {
 
     chartRef.current?.timeScale().fitContent();
     rsiChartRef.current?.timeScale().fitContent();
+
+    // Trigger Chitti's View on every fresh candle set (covers tf + symbol changes)
+    fetchChittiView(tf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candles]);
 
   // ---------- draw S/R + trendlines as price lines / line series ----------
@@ -367,13 +426,27 @@ export default function StockChart() {
         borderRadius: 6, marginBottom: 16, background: "#fafafa",
       }} />
 
-      {/* Chitti's View placeholder */}
+      {/* Chitti's View — wired to /api/chitti-view (DeepSeek). Auto-speaks. */}
       <div style={{
         padding: 14, background: "#f0f9ff", border: "1px solid #bae6fd",
         borderRadius: 6, fontSize: 14, color: "#0c4a6e",
       }}>
-        <b>Chitti's View</b><br />
-        <span style={{ color: "#666" }}>Coming soon — plain-English verdict on this stock based on the multi-timeframe Roshan signal.</span>
+        <b>Chitti's View</b>
+        {chittiLoading ? (
+          <div style={{ marginTop: 6, color: "#666" }}>Chitti is thinking…</div>
+        ) : chittiView ? (
+          <>
+            <div style={{
+              marginTop: 6, fontSize: 22, fontWeight: 700,
+              color: chittiView.verdict === 'BUY'  ? '#0f5132'
+                   : chittiView.verdict === 'SELL' ? '#842029'
+                   : '#0c4a6e',
+            }}>{chittiView.verdict}</div>
+            <div style={{ marginTop: 6, color: '#0c4a6e', lineHeight: 1.55 }}>{chittiView.summary}</div>
+          </>
+        ) : (
+          <><br /><span style={{ color: "#666" }}>Coming soon — plain-English verdict on this stock based on the multi-timeframe Roshan signal.</span></>
+        )}
       </div>
 
       {loading && (
