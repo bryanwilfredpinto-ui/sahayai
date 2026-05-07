@@ -27,6 +27,7 @@ same ground (composition + ceiling price + nearest-store) without the legal risk
 | **Jan Aushadhi (BPPI) Stores** | https://janaushadhi.gov.in/storelist.aspx | 11,000+ store list with addresses, lat/lng, phone, hours. |
 | **Jan Aushadhi (BPPI) Products** | https://janaushadhi.gov.in/productlist.aspx | ~2,000 generic products with composition + strength + MRP + drug code + therapeutic category. |
 | **CDSCO Approved Formulations** | https://cdsco.gov.in/opencms/opencms/en/Approval_new/ | Composition + schedule (H / H1 / X / OTC). Drives `prescription_required`. |
+| **Kaggle A-Z Medicine Dataset of India** | https://www.kaggle.com/datasets/shudhanshusingh/az-medicine-dataset-of-india | ~250,000 branded MRP rows. One-time bulk reference. |
 | **RxNorm (NIH REST)** | https://rxnav.nlm.nih.gov/REST/ | Canonical molecule names + RxCUI. Used to enrich + normalize. |
 | **OpenFDA REST** | https://api.fda.gov/drug/label.json | US-context warnings + indications. Cross-reference only — not auto-rendered in UI. |
 
@@ -86,7 +87,17 @@ The recommended workflow:
    python scripts/load_real_data.py --source cdsco --file cdsco_approved.csv
    ```
 
-### 5. RxNorm + OpenFDA enrichment (live REST APIs)
+### 5. Kaggle A-Z Medicine Dataset of India (~250,000 branded rows · one-time)
+
+1. Visit https://www.kaggle.com/datasets/shudhanshusingh/az-medicine-dataset-of-india
+2. Download the dataset (free Kaggle account required). Unzip → `kaggle.csv` (or whatever the file is named — the loader reads any CSV/XLSX).
+3. Run:
+   ```bash
+   python scripts/load_real_data.py --source kaggle --file kaggle.csv
+   ```
+4. The loader merges `short_composition*` columns, infers strength + dosage form from pack labels, batches commits at 500 rows. Stamps `price_source='kaggle'` on every row so the freshness UI shows "Last updated X days ago" against the Kaggle date.
+
+### 6. RxNorm + OpenFDA enrichment (live REST APIs)
 
 ```bash
 python scripts/load_real_data.py --source rxnorm
@@ -98,7 +109,7 @@ write JSON to `scripts/data_cache/rxnorm_enrichment.json` /
 `scripts/data_cache/openfda_enrichment.json`. Both are polite (200–300 ms between
 calls). Re-runs use a local cache so you don't re-hit the API for known molecules.
 
-### 6. Or: run everything in one go
+### 7. Or: run everything in one go
 
 ```bash
 python scripts/load_real_data.py --all --file stores.csv  # for the file-based loaders
@@ -108,7 +119,7 @@ python scripts/load_real_data.py --all --file stores.csv  # for the file-based l
 ## Flags
 
 ```
---source  jan_aushadhi | bppi_products | nppa | cdsco | rxnorm | openfda
+--source  jan_aushadhi | bppi_products | nppa | cdsco | kaggle | rxnorm | openfda
 --file    Path to downloaded CSV / XLSX / JSON
 --url     Optional URL to fetch (cached under scripts/data_cache/)
 --dry-run Parse + log counts but do NOT write to DB
