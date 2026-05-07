@@ -63,16 +63,87 @@ def load_font(size: int):
     return ImageFont.load_default()
 
 
-# 1) Individual QRs (Bharat-coloured, white background, high error correction)
+# 1) Individual QR cards — labelled, branded, self-identifying.
+#    Each one is a mini Bharat-poster so the recipient knows what it is
+#    before scanning, even if shared standalone on WhatsApp.
+def build_qr_card(qr_img: Image.Image, brand_word: str, accent_hex: str, url: str, out_path: str) -> None:
+    f_brand    = load_font(72)
+    f_subtitle = load_font(28)
+    f_url      = load_font(20)
+    f_disc     = load_font(18)
+
+    card_w, card_h = 900, 1180
+    card = Image.new("RGB", (card_w, card_h), BHARAT_CREAM)
+    cdraw = ImageDraw.Draw(card)
+
+    # Bharat-stripe at top (always saffron / gold / navy)
+    s_h = 12
+    cdraw.rectangle([0, 0, card_w // 3, s_h], fill=BHARAT_SAFFRON)
+    cdraw.rectangle([card_w // 3, 0, 2 * card_w // 3, s_h], fill=BHARAT_GOLD)
+    cdraw.rectangle([2 * card_w // 3, 0, card_w, s_h], fill=BHARAT_NAVY)
+
+    # Title block — "CHITTI" in navy, product word in accent colour
+    cdraw.text((card_w // 2, 80),  "CHITTI",       font=f_brand, fill=BHARAT_NAVY, anchor="mt")
+    cdraw.text((card_w // 2, 180), brand_word,     font=f_brand, fill=accent_hex, anchor="mt")
+    cdraw.text(
+        (card_w // 2, 290),
+        "Bharat Premium AI  ·  Voice-first  ·  Built for every Indian",
+        font=f_subtitle, fill="#6b7280", anchor="mt",
+    )
+
+    # QR
+    qr_size = 560
+    qr_resized = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
+    qr_x = card_w // 2 - qr_size // 2
+    qr_y = 360
+    card.paste(qr_resized, (qr_x, qr_y))
+    # Accent frame
+    cdraw.rectangle(
+        [qr_x - 8, qr_y - 8, qr_x + qr_size + 8, qr_y + qr_size + 8],
+        outline=accent_hex, width=4,
+    )
+
+    # Scan instruction
+    cdraw.text(
+        (card_w // 2, qr_y + qr_size + 30),
+        "Scan with any phone camera",
+        font=f_subtitle, fill="#374151", anchor="mt",
+    )
+
+    # URL in accent
+    cdraw.text(
+        (card_w // 2, qr_y + qr_size + 80),
+        url,
+        font=f_url, fill=accent_hex, anchor="mt",
+    )
+
+    # Disclaimer
+    cdraw.text(
+        (card_w // 2, card_h - 60),
+        "NOT SEBI Registered.  Educational tool only, not investment advice.",
+        font=f_disc, fill="#8a5a00", anchor="mt",
+    )
+
+    # Mirror Bharat-stripe at bottom (navy / gold / saffron)
+    cdraw.rectangle([0, card_h - s_h, card_w // 3, card_h], fill=BHARAT_NAVY)
+    cdraw.rectangle([card_w // 3, card_h - s_h, 2 * card_w // 3, card_h], fill=BHARAT_GOLD)
+    cdraw.rectangle([2 * card_w // 3, card_h - s_h, card_w, card_h], fill=BHARAT_SAFFRON)
+
+    card.save(out_path, "PNG")
+    print("WROTE:", out_path, "(", card.size, ")")
+
+
 tech_qr = make_qr(TECH_URL, BHARAT_NAVY)
 fund_qr = make_qr(FUND_URL, BHARAT_SAFFRON)
 
-tech_path = os.path.join(OUT_DIR, "qr_chitti_technical.png")
-fund_path = os.path.join(OUT_DIR, "qr_chitti_fundamentals.png")
-tech_qr.save(tech_path)
-fund_qr.save(fund_path)
-print("WROTE:", tech_path, "(", tech_qr.size, ")")
-print("WROTE:", fund_path, "(", fund_qr.size, ")")
+build_qr_card(
+    tech_qr, "TECHNICAL", BHARAT_NAVY, TECH_URL,
+    os.path.join(OUT_DIR, "qr_chitti_technical.png"),
+)
+build_qr_card(
+    fund_qr, "FUNDAMENTALS", BHARAT_SAFFRON, FUND_URL,
+    os.path.join(OUT_DIR, "qr_chitti_fundamentals.png"),
+)
 
 
 # 2) Combined Bharat-themed poster
