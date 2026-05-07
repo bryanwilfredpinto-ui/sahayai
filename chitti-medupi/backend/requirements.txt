@@ -16,8 +16,12 @@ email-validator==2.2.0
 # Vision-capable models read the medicine strip directly. No Tesseract install pain.
 anthropic==0.39.0
 
-# Fuzzy brand-name matching for typo-tolerant search ("crocon", "Crocine 650")
-rapidfuzz==3.10.1
+# Fuzzy brand-name matching for typo-tolerant search ("crocon", "Crocine 650").
+# Pinned to 3.6.1: this version ships pre-built manylinux wheels for
+# Python 3.11 on Render's free tier. 3.10.1 forces a source build which
+# fails on Render's slim image (cmake / cython metadata-generation step).
+# The fuzz.WRatio + process.extract API we use is unchanged between the two.
+rapidfuzz==3.6.1
 
 # In-process scheduler — drives the monthly Jan Aushadhi download, weekly NPPA
 # check, daily 2 AM IST top-100 Brave Search refresh, and 24h cache eviction.
