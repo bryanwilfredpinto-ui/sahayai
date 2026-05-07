@@ -29,7 +29,7 @@ import time
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-import httpx
+import requests
 
 log = logging.getLogger("loaders")
 
@@ -53,14 +53,17 @@ def download_to_cache(url: str, filename: str, force: bool = False, timeout: int
         return dest
     log.info("downloading %s → %s", url, dest)
     headers = {
-        "User-Agent": "ChittiMedUPI/1.5 (+https://sahayai.in/chitti_medupi.html)",
+        "User-Agent": "ChittiMedUPI/1.7 (+https://sahayai.in/chitti_medupi.html)",
         "Accept": "*/*",
     }
-    with httpx.stream("GET", url, headers=headers, timeout=timeout, follow_redirects=True) as r:
+    with requests.get(
+        url, headers=headers, timeout=timeout, allow_redirects=True, stream=True
+    ) as r:
         r.raise_for_status()
         with dest.open("wb") as f:
-            for chunk in r.iter_bytes():
-                f.write(chunk)
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
     log.info("downloaded %s (%s bytes)", dest.name, dest.stat().st_size)
     return dest
 
@@ -68,10 +71,12 @@ def download_to_cache(url: str, filename: str, force: bool = False, timeout: int
 def http_get_json(url: str, params: Optional[dict] = None, timeout: int = 30) -> Any:
     """Tiny JSON GET helper for REST APIs (RxNorm, OpenFDA)."""
     headers = {
-        "User-Agent": "ChittiMedUPI/1.5",
+        "User-Agent": "ChittiMedUPI/1.7",
         "Accept": "application/json",
     }
-    r = httpx.get(url, params=params or {}, headers=headers, timeout=timeout, follow_redirects=True)
+    r = requests.get(
+        url, params=params or {}, headers=headers, timeout=timeout, allow_redirects=True
+    )
     r.raise_for_status()
     return r.json()
 

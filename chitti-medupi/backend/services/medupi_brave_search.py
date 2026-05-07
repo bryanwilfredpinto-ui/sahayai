@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urlparse
 
-import httpx
+import requests
 from sqlalchemy.orm import Session
 
 from config import settings
@@ -167,10 +167,10 @@ def fetch_live(db: Session, query: str, *, refresh: bool = False, limit: int = 6
     }
 
     try:
-        r = httpx.get(BRAVE_ENDPOINT, headers=headers, params=params, timeout=12.0)
+        r = requests.get(BRAVE_ENDPOINT, headers=headers, params=params, timeout=12)
         r.raise_for_status()
         data = r.json()
-    except httpx.HTTPError as e:
+    except requests.exceptions.RequestException as e:
         log.warning("brave search failed: %s", e)
         return {"ok": False, "query": qn, "items": get_cached(db, qn), "source": "error", "error": str(e)}
 

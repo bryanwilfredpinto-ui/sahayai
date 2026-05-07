@@ -1,56 +1,64 @@
 """
 config.py
 ---------
-Central settings for the Chitti MedUPI backend.
+Settings container — reads env vars at import time. No pydantic
+dependency (Render free tier can't compile pydantic-core's Rust
+backend, so we dropped the entire pydantic stack and went to Flask).
 
-Pydantic v1 syntax: `BaseSettings` lives inside pydantic itself (in v2
-it was moved to a separate pydantic-settings package). Settings config
-is declared on an inner `Config` class (v2's `model_config =
-SettingsConfigDict(...)` doesn't exist in v1).
-
-Why v1: Render's free-tier image lacks the Rust toolchain, so
-pydantic-core (the v2 backend) can't compile from source and there's
-no wheel for every arch combination. v1 is pure Python and just works.
+`.env` is loaded first via python-dotenv so local dev still works.
 """
 from __future__ import annotations
 
-from pydantic import BaseSettings
+import os
+
+from dotenv import load_dotenv
+
+# Idempotent — load_dotenv silently no-ops if the file is missing.
+load_dotenv()
 
 
-class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./chitti_medupi.db"
+def _env(key: str, default: str = "") -> str:
+    return os.environ.get(key, default).strip() or default
 
-    ANTHROPIC_API_KEY: str = ""
-    ANTHROPIC_MODEL: str = "claude-sonnet-4-6"
 
-    ALLOWED_ORIGINS: str = (
-        "http://localhost:5173,http://localhost:8001,"
-        "https://sahayai.in,https://www.sahayai.in,"
-        "https://chitti-shares-web.onrender.com"
+def _env_bool(key: str, default: bool = False) -> bool:
+    v = os.environ.get(key)
+    if v is None:
+        return default
+    return v.strip().lower() in ("1", "true", "yes", "on")
+
+
+class Settings:
+    DATABASE_URL: str = _env("DATABASE_URL", "sqlite:///./chitti_medupi.db")
+
+    # Anthropic vision (image scan)
+    ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY", "")
+    ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+
+    ALLOWED_ORIGINS: str = _env(
+        "ALLOWED_ORIGINS",
+        (
+            "http://localhost:5173,http://localhost:8001,"
+            "https://sahayai.in,https://www.sahayai.in,"
+            "https://chitti-shares-web.onrender.com"
+        ),
     )
-    BACKEND_URL: str = "http://localhost:8001"
+    BACKEND_URL: str = _env("BACKEND_URL", "http://localhost:8001")
 
-    TWILIO_ACCOUNT_SID: str = ""
-    TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_FROM_NUMBER: str = ""
+    # Twilio (phone-call reminders — optional)
+    TWILIO_ACCOUNT_SID: str = _env("TWILIO_ACCOUNT_SID", "")
+    TWILIO_AUTH_TOKEN: str = _env("TWILIO_AUTH_TOKEN", "")
+    TWILIO_FROM_NUMBER: str = _env("TWILIO_FROM_NUMBER", "")
 
-    # Brave Search API — free tier 2,000 queries/month.
-    # Used for the on-demand "live pharmacy price" snippet fetch + the
-    # daily 2 AM IST top-100 refresh. Snippet-only — never scrapes.
-    BRAVE_SEARCH_API_KEY: str = ""
+    # Brave Search (live pharmacy prices · free 2,000 q/mo · snippet-only)
+    BRAVE_SEARCH_API_KEY: str = _env("BRAVE_SEARCH_API_KEY", "")
 
     # Scheduler — set to false to disable in tests / one-off scripts
-    SCHEDULER_ENABLED: bool = True
+    SCHEDULER_ENABLED: bool = _env_bool("SCHEDULER_ENABLED", True)
 
-    # Optional URL overrides for the auto-update wrappers (so Bryan can
-    # repoint to a new govt CSV path without code changes).
-    JAN_AUSHADHI_PRODUCT_URL: str = ""
-    NPPA_CEILING_URL: str = ""
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+    # Optional URL overrides for the auto-update wrappers
+    JAN_AUSHADHI_PRODUCT_URL: str = _env("JAN_AUSHADHI_PRODUCT_URL", "")
+    NPPA_CEILING_URL: str = _env("NPPA_CEILING_URL", "")
 
 
 settings = Settings()

@@ -1,26 +1,33 @@
 """
 main.py
 -------
-FastAPI app entrypoint for the Chitti MedUPI backend.
+Flask entrypoint for the Chitti MedUPI backend.
 
-Mirrors the chitti-shares/backend/main.py pattern: build the app, attach
-CORS, create tables, seed the master drug + Jan Aushadhi data on first
-startup, mount the /api/medupi/* router. No auth gate — the family-wallet
-endpoints use a per-device opaque X-User-Token header.
+Why Flask: Render's free-tier slim image lacks Rust + cmake, so
+pydantic-core (and hence FastAPI's v2-native default) cannot compile
+from source. Flask is pure Python, plays nicely with gunicorn, and
+matches every endpoint surface we already had under FastAPI.
 
-Spec: ../CHITTI_MEDUPI_MASTER_SPEC.md
+Boot sequence (runs once per gunicorn worker on import):
+  1. ensure_schema()             — CREATE SCHEMA IF NOT EXISTS medupi (Postgres)
+  2. Base.metadata.create_all()  — creates medupi.medicines etc.
+  3. run_all() migrations        — column-level upgrades for v1.7
+  4. seed_if_empty() ×2          — 51 medicines + 25 stores on first boot
+  5. scheduler.start()           — APScheduler kicks in for the cron jobs
+
+Entrypoint:  uvicorn-style → `gunicorn main:app --bind 0.0.0.0:$PORT`
 """
 from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, jsonify
+from flask_cors import CORS
 
 from config import settings
 from database import Base, engine
 import models  # noqa: F401 — registers all models with Base.metadata
-from routes import medupi as medupi_routes
+from routes.medupi import bp as medupi_bp
 from services import (
     medupi_database,
     medupi_jan_aushadhi,
@@ -34,35 +41,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("main")
 
-app = FastAPI(
-    title="Chitti MedUPI API",
-    version="1.4.0",
-    description="UPI for your medicine bills — Scan. Compare. Save. Backend for chitti_medupi.html.",
-)
 
-allowed = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed or ["*"],
-    allow_credentials=False,            # X-User-Token is the auth shim, not cookies
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ───── Bootstrap (idempotent — safe across gunicorn worker restarts) ─────
 
-
-@app.on_event("startup")
-def on_startup() -> None:
-    """
-    Boot order matters:
-      1. ensure_schema()             — CREATE SCHEMA IF NOT EXISTS medupi
-                                        (Postgres; no-op on SQLite). Must run
-                                        BEFORE create_all so the tables have
-                                        a schema to land in.
-      2. Base.metadata.create_all()  — creates `medupi.medicines` etc.
-      3. run_all()                   — column-level migrations on existing rows
-      4. seed_if_empty() ×2          — seed 51 medicines + 25 stores on first boot
-      5. scheduler.start()           — APScheduler kicks in for the cron jobs
-    """
+def _bootstrap() -> None:
     try:
         medupi_migrations.ensure_schema()
     except Exception as e:  # noqa: BLE001
@@ -91,23 +73,66 @@ def on_startup() -> None:
         log.warning("scheduler failed to start: %s", e)
 
 
-@app.on_event("shutdown")
-def on_shutdown() -> None:
-    try:
-        medupi_scheduler.stop()
-    except Exception:  # noqa: BLE001
-        pass
+# ───── Flask app factory ─────
+
+def _create_app() -> Flask:
+    app = Flask(__name__)
+    app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB upload cap (image scan)
+    app.config["JSON_SORT_KEYS"] = False
+
+    allowed = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
+    CORS(
+        app,
+        origins=allowed or "*",
+        supports_credentials=False,
+        allow_headers="*",
+        methods="*",
+    )
+
+    @app.get("/")
+    def root():
+        return jsonify({
+            "app": "Chitti MedUPI API",
+            "version": "1.7.2-flask",
+            "status": "ok",
+        })
+
+    @app.get("/health")
+    def health():
+        return jsonify({"ok": True})
+
+    # ── Error handlers ──
+
+    def _err(status: int, code: str):
+        def handler(e):
+            detail = str(getattr(e, "description", e))
+            return jsonify({"error": code, "detail": detail}), status
+        handler.__name__ = f"err_{status}"
+        return handler
+
+    app.register_error_handler(400, _err(400, "bad_request"))
+    app.register_error_handler(404, _err(404, "not_found"))
+    app.register_error_handler(405, _err(405, "method_not_allowed"))
+    app.register_error_handler(413, _err(413, "payload_too_large"))
+    app.register_error_handler(415, _err(415, "unsupported_media_type"))
+
+    @app.errorhandler(500)
+    def server_error(e):
+        log.exception("500: %s", e)
+        return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
+
+    app.register_blueprint(medupi_bp)
+    return app
 
 
-@app.get("/")
-def root() -> dict:
-    return {"app": "Chitti MedUPI API", "version": app.version, "status": "ok"}
+# Run bootstrap before exposing the app — gunicorn waits for the module
+# to fully import before serving traffic, so this is safe.
+_bootstrap()
+app = _create_app()
 
 
-@app.get("/health")
-def health() -> dict:
-    """Lightweight check used by Render + frontend wake-up ping."""
-    return {"ok": True}
-
-
-app.include_router(medupi_routes.router)
+if __name__ == "__main__":
+    # Local dev: `python main.py`
+    import os
+    port = int(os.environ.get("PORT", 8001))
+    app.run(host="0.0.0.0", port=port, debug=True)
