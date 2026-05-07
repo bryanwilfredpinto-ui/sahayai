@@ -14,10 +14,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class SearchLog(Base):
     __tablename__ = "search_log"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     query_normalized = Column(String(160), unique=True, index=True, nullable=False)

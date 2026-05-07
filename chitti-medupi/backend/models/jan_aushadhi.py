@@ -14,10 +14,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Float, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class JanAushadhiStore(Base):
     __tablename__ = "jan_aushadhi_stores"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     store_code = Column(String(40), unique=True, index=True, nullable=False)

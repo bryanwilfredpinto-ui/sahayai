@@ -16,10 +16,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Float, Integer, String, Index
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class CommunityPrice(Base):
     __tablename__ = "community_prices"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     user_token = Column(String(80), index=True, nullable=False)

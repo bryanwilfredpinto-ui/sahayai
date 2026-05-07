@@ -3,13 +3,16 @@ services/medupi_migrations.py
 -----------------------------
 One-shot, idempotent schema patches we run on FastAPI startup.
 
-`Base.metadata.create_all()` only creates *missing tables* — it does NOT
-add new columns to existing ones. So when v1.7 added `updated_at` and
-`price_source` to the existing `medicines` table, deployments that
-already had a populated DB needed an ALTER TABLE … ADD COLUMN.
+Two responsibilities:
+  1. ensure_schema()  — CREATE SCHEMA IF NOT EXISTS medupi (Postgres only)
+                         must run BEFORE Base.metadata.create_all() so that
+                         create_all has a place to put the tables.
+  2. run_all()        — ALTER TABLE … ADD COLUMN for v1.7 additions
+                         (`price_source`, `updated_at`) on existing rows.
+                         Idempotent + dialect-aware (SQLite + Postgres).
 
-This module hand-rolls those ALTERs, dialect-aware (SQLite + Postgres),
-and uses IF NOT EXISTS / PRAGMA introspection so re-runs are no-ops.
+All raw SQL is schema-qualified via models._schema.qualified() so we
+hit `medupi.medicines` on Postgres but plain `medicines` on SQLite.
 """
 from __future__ import annotations
 
@@ -19,6 +22,7 @@ from datetime import datetime
 from sqlalchemy import inspect, text
 
 from database import engine
+from models._schema import SCHEMA, qualified
 
 log = logging.getLogger("medupi_migrations")
 
@@ -30,9 +34,25 @@ _PATCHES_MEDICINES = [
 ]
 
 
+# ───── Schema bootstrap ─────
+
+def ensure_schema() -> None:
+    """CREATE SCHEMA IF NOT EXISTS medupi on Postgres. No-op on SQLite."""
+    if not SCHEMA:
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS {SCHEMA}'))
+        log.info("ensure_schema: schema '%s' ready", SCHEMA)
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_schema failed (will retry on next migration): %s", e)
+
+
+# ───── Column-level migrations ─────
+
 def _column_exists(table: str, column: str) -> bool:
     insp = inspect(engine)
-    cols = {c["name"] for c in insp.get_columns(table)}
+    cols = {c["name"] for c in insp.get_columns(table, schema=SCHEMA)}
     return column in cols
 
 
@@ -40,25 +60,33 @@ def _add_column_if_missing(table: str, column: str, ddl_type: str) -> bool:
     """Returns True when the column was actually added."""
     if _column_exists(table, column):
         return False
-    log.info("migration: ALTER TABLE %s ADD COLUMN %s %s", table, column, ddl_type)
+    qname = qualified(table)
+    log.info("migration: ALTER TABLE %s ADD COLUMN %s %s", qname, column, ddl_type)
     with engine.begin() as conn:
-        conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {column} {ddl_type}'))
+        conn.execute(text(f'ALTER TABLE {qname} ADD COLUMN {column} {ddl_type}'))
         # Backfill updated_at for legacy rows
         if column == "updated_at":
-            conn.execute(text(
-                f'UPDATE {table} SET {column} = :ts WHERE {column} IS NULL'
-            ), {"ts": datetime.utcnow()})
+            conn.execute(
+                text(f'UPDATE {qname} SET {column} = :ts WHERE {column} IS NULL'),
+                {"ts": datetime.utcnow()},
+            )
     return True
 
 
 def run_all() -> dict:
     """
-    Apply every migration. Idempotent — safe to call on every startup.
-    Returns a dict with the number of changes per table.
+    Apply every column-level migration. Idempotent — safe to call on
+    every startup. Returns a dict with the number of changes per table.
     """
     insp = inspect(engine)
-    if "medicines" not in insp.get_table_names():
-        return {"note": "medicines table missing — fresh DB, no migration needed"}
+    table_names = set(insp.get_table_names(schema=SCHEMA))
+    if "medicines" not in table_names:
+        return {
+            "note": (
+                f"medicines table missing in {SCHEMA or 'default'} schema "
+                "— fresh DB, no migration needed"
+            )
+        }
 
     changes = 0
     for col, ddl in _PATCHES_MEDICINES:
@@ -67,4 +95,4 @@ def run_all() -> dict:
                 changes += 1
         except Exception as e:  # noqa: BLE001
             log.warning("migration for medicines.%s skipped: %s", col, e)
-    return {"medicines_columns_added": changes}
+    return {"medicines_columns_added": changes, "schema": SCHEMA or "default"}

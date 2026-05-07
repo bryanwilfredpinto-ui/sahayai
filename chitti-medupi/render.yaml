@@ -1,7 +1,14 @@
 # Render Blueprint for Chitti MedUPI
-# Sister to chitti-shares/render.yaml. Stand-alone deploy: spin up the
-# chitti-medupi-api web service + chitti-medupi-db Postgres in one go,
-# then point the frontend at chitti-medupi-api.onrender.com.
+# ------------------------------------------------------------------
+# We REUSE the existing chitti-shares Postgres database (Render free
+# tier permits only one free DB per workspace) and isolate every
+# MedUPI table under a dedicated `medupi` schema. See
+# backend/models/_schema.py for the implementation.
+#
+# Net effect:
+#   - chitti-shares tables live in `public.*`         (default schema)
+#   - chitti-medupi tables live in `medupi.*`         (this Blueprint)
+#   - Zero risk of name collision; tables share storage but not names.
 
 services:
   - type: web
@@ -13,9 +20,14 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
+      # Reuse the chitti-shares-db. Render resolves this at deploy time
+      # from any Postgres in the same workspace named `chitti-shares-db`.
+      # If you set up chitti-shares manually (not via Blueprint), the DB
+      # name might differ — in that case paste the Internal Database URL
+      # by hand and remove the fromDatabase block below.
       - key: DATABASE_URL
         fromDatabase:
-          name: chitti-medupi-db
+          name: chitti-shares-db
           property: connectionString
 
       # ── Anthropic (image scan via vision) ──
@@ -56,7 +68,7 @@ services:
       - key: TWILIO_FROM_NUMBER
         sync: false
 
-databases:
-  - name: chitti-medupi-db
-    plan: free
-    databaseName: chitti_medupi
+# No `databases:` block — we reuse chitti-shares-db. The startup hook in
+# main.py runs `CREATE SCHEMA IF NOT EXISTS medupi` before any
+# Base.metadata.create_all() call, so the schema appears the first time
+# the service boots.

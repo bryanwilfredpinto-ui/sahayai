@@ -15,10 +15,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text, Index
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class Medicine(Base):
     __tablename__ = "medicines"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
 

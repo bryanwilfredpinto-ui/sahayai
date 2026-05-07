@@ -15,10 +15,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class FamilyProfile(Base):
     __tablename__ = "family_profiles"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     user_token = Column(String(80), index=True, nullable=False)

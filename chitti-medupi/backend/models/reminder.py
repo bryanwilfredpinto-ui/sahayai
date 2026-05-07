@@ -13,13 +13,15 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
 from database import Base
+from models._schema import TABLE_KW, fk_target
 
 
 class Reminder(Base):
     __tablename__ = "reminders"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
-    profile_id = Column(Integer, ForeignKey("family_profiles.id"), index=True, nullable=False)
+    profile_id = Column(Integer, ForeignKey(fk_target("family_profiles")), index=True, nullable=False)
     user_token = Column(String(80), index=True, nullable=False)
 
     medicine_name = Column(String(160), nullable=False)

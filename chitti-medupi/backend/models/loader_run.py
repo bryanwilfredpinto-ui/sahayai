@@ -12,10 +12,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class LoaderRun(Base):
     __tablename__ = "loader_runs"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     source = Column(String(40), nullable=False, index=True)   # jan_aushadhi/nppa/top100_brave/manual/community

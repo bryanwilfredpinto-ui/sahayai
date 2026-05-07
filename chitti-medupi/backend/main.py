@@ -52,7 +52,21 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
-    """Create tables + run idempotent migrations + seed master data + start scheduler."""
+    """
+    Boot order matters:
+      1. ensure_schema()             — CREATE SCHEMA IF NOT EXISTS medupi
+                                        (Postgres; no-op on SQLite). Must run
+                                        BEFORE create_all so the tables have
+                                        a schema to land in.
+      2. Base.metadata.create_all()  — creates `medupi.medicines` etc.
+      3. run_all()                   — column-level migrations on existing rows
+      4. seed_if_empty() ×2          — seed 51 medicines + 25 stores on first boot
+      5. scheduler.start()           — APScheduler kicks in for the cron jobs
+    """
+    try:
+        medupi_migrations.ensure_schema()
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_schema skipped: %s", e)
     Base.metadata.create_all(bind=engine)
     try:
         result = medupi_migrations.run_all()

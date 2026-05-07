@@ -18,10 +18,12 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text, Index
 
 from database import Base
+from models._schema import TABLE_KW
 
 
 class PriceCache(Base):
     __tablename__ = "price_cache"
+    __table_args__ = TABLE_KW
 
     id = Column(Integer, primary_key=True, index=True)
     medicine_query = Column(String(160), index=True, nullable=False)   # lowercased search term
