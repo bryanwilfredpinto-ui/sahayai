@@ -41,11 +41,15 @@ from pathlib import Path
 # ---- Tiny stdlib .env reader (no python-dotenv dep needed) ----
 def _load_dotenv(path: Path) -> None:
     """
-    Loads `KEY=VALUE` pairs from a .env file into os.environ — only if not
-    already set. Handles inline comments after `#` (unless escaped with \\#),
-    optional surrounding quotes, and ignores blank/comment lines.
+    Loads `KEY=VALUE` pairs from a .env file into os.environ.
 
-    Crucially, values are read RAW — no shell interpolation, no URL-encoding.
+    .env OVERRIDES existing env vars — opposite of typical dotenv defaults.
+    Reason: this loader is run for a specific deployment target encoded in
+    the .env, and stale Windows User-level env vars (left over from Supabase
+    debugging rounds) were silently winning over the explicit .env value.
+    For a one-shot load script, the file on disk is the source of truth.
+
+    Values are read RAW — no shell interpolation, no URL-encoding.
     A password like `Sah@y/2026+!` survives intact, no escaping required.
     """
     if not path.exists():
@@ -63,9 +67,7 @@ def _load_dotenv(path: Path) -> None:
             # Strip surrounding quotes if user wrapped the value
             if (len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'"):
                 value = value[1:-1]
-            # Don't overwrite values already set in real env (real env wins —
-            # so an explicit $env:DATABASE_URL still beats a stale .env line).
-            if key and key not in os.environ:
+            if key:
                 os.environ[key] = value
 
 
@@ -189,9 +191,57 @@ DO UPDATE SET
 """
 
 
+def ensure_schema_and_table(cur):
+    """
+    Idempotent bootstrap: CREATE SCHEMA + CREATE TABLE if either is missing.
+
+    DDL mirrors models/medicine.py exactly so that, if chitti-medupi-api's
+    startup hook later runs Base.metadata.create_all() against the same DB,
+    SQLAlchemy sees the table already exists and skips silently. Keep this
+    DDL in sync with models/medicine.py if columns are added.
+    """
+    cur.execute("CREATE SCHEMA IF NOT EXISTS medupi;")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS medupi.medicines (
+          id                     SERIAL PRIMARY KEY,
+          brand_name             VARCHAR(140) NOT NULL,
+          salt_composition       VARCHAR(240) NOT NULL,
+          salt_components        TEXT,
+          strength               VARCHAR(60)  NOT NULL,
+          dosage_form            VARCHAR(40)  NOT NULL,
+          pack_size              VARCHAR(60),
+          manufacturer           VARCHAR(160),
+          mrp                    DOUBLE PRECISION,
+          nppa_ceiling_price     DOUBLE PRECISION,
+          jan_aushadhi_price     DOUBLE PRECISION,
+          jan_aushadhi_code      VARCHAR(40),
+          risk_class             VARCHAR(2)   NOT NULL DEFAULT 'L',
+          schedule               VARCHAR(8),
+          prescription_required  INTEGER      NOT NULL DEFAULT 0,
+          therapeutic_class      VARCHAR(80),
+          purpose_en             TEXT,
+          purpose_hi             TEXT,
+          price_source           VARCHAR(40),
+          created_at             TIMESTAMP    NOT NULL DEFAULT NOW(),
+          updated_at             TIMESTAMP    NOT NULL DEFAULT NOW()
+        );
+    """)
+    # Indexes from the model + the strict-match composite
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_brand_name        ON medupi.medicines (brand_name);")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_salt_composition  ON medupi.medicines (salt_composition);")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_strength          ON medupi.medicines (strength);")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_dosage_form       ON medupi.medicines (dosage_form);")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_risk_class        ON medupi.medicines (risk_class);")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_medicines_therapeutic_class ON medupi.medicines (therapeutic_class);")
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_medicines_strict_match
+        ON medupi.medicines (salt_composition, strength, dosage_form);
+    """)
+
+
 def ensure_unique_index(cur):
     """
-    Create the case-insensitive unique constraint we need for ON CONFLICT.
+    Create the unique constraint we need for ON CONFLICT.
     Idempotent — Postgres skips if already present.
     """
     cur.execute("""
@@ -235,8 +285,19 @@ def _connect():
         if "PASTE_PASSWORD_HERE" in db_url:
             db_url = ""
 
+    # TCP keepalives prevent Neon/Supabase pooler from killing idle sockets
+    # mid-batch. Without these the load drops after ~5 min on slow rows.
+    keepalive_kwargs = dict(
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=5,
+        connect_timeout=30,
+        application_name="chitti-medupi/load_apollo_oneshot",
+    )
+
     if db_url:
-        return psycopg2.connect(db_url), _redact(db_url)
+        return psycopg2.connect(db_url, **keepalive_kwargs), _redact(db_url)
 
     host = os.environ.get("DB_HOST", "").strip()
     user = os.environ.get("DB_USER", "").strip()
@@ -247,6 +308,7 @@ def _connect():
         conn = psycopg2.connect(
             host=host, port=port, user=user, password=pw, dbname=dbname,
             sslmode=os.environ.get("DB_SSLMODE", "require"),
+            **keepalive_kwargs,
         )
         return conn, f"postgresql://{user}:***@{host}:{port}/{dbname}"
 
@@ -272,15 +334,41 @@ def main(csv_path: str) -> int:
     conn.autocommit = False
     cur = conn.cursor()
 
+    print("Ensuring schema + table exist (idempotent)…")
+    ensure_schema_and_table(cur)
+    conn.commit()
     print("Ensuring unique constraint exists…")
     ensure_unique_index(cur)
     conn.commit()
 
     print(f"Streaming {csv_p.name} ({csv_p.stat().st_size:,} bytes)…")
     t0 = time.time()
-    total_seen = upserted = skipped = errors = 0
+    total_seen = upserted = skipped = errors = reconnects = 0
     batch: list[tuple] = []
-    BATCH = 500
+    BATCH = 200          # smaller batches → less time per statement → less likely to hit pooler timeouts
+
+    # Mutable holders so reconnect can swap conn/cur across iterations.
+    _conn = [conn]
+    _cur = [cur]
+
+    def _flush_with_retry(batch_rows: list[tuple]) -> int:
+        """Try to flush; if the connection died, reconnect once and retry."""
+        nonlocal reconnects
+        try:
+            return _flush(_cur[0], _conn[0], batch_rows)
+        except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+            print(f"  ! connection dropped ({str(e).strip().splitlines()[0][:80]}) — reconnecting…")
+            try:
+                _conn[0].close()
+            except Exception:
+                pass
+            new_conn, _ = _connect()
+            new_conn.autocommit = False
+            _conn[0] = new_conn
+            _cur[0] = new_conn.cursor()
+            reconnects += 1
+            # Retry exactly once. If this fails too, propagate.
+            return _flush(_cur[0], _conn[0], batch_rows)
 
     with csv_p.open("r", encoding="utf-8", errors="replace", newline="") as f:
         reader = csv.DictReader(f)
@@ -324,22 +412,20 @@ def main(csv_path: str) -> int:
                 continue
 
             if len(batch) >= BATCH:
-                _flush(cur, conn, batch)
-                upserted += len(batch)
+                upserted += _flush_with_retry(batch)
                 batch.clear()
-                if upserted % 10_000 == 0:
+                if upserted // 10_000 != (upserted - 1) // 10_000 and upserted > 0:
                     elapsed = time.time() - t0
                     rate = upserted / elapsed if elapsed > 0 else 0
-                    print(f"  …{upserted:,} upserted ({rate:.0f} rows/sec)")
+                    print(f"  ...{upserted:,} upserted ({rate:.0f} rows/sec)")
 
     if batch:
-        _flush(cur, conn, batch)
-        upserted += len(batch)
+        upserted += _flush_with_retry(batch)
 
-    cur.execute("SELECT COUNT(*) FROM medupi.medicines")
-    total = cur.fetchone()[0]
-    cur.close()
-    conn.close()
+    _cur[0].execute("SELECT COUNT(*) FROM medupi.medicines")
+    total = _cur[0].fetchone()[0]
+    _cur[0].close()
+    _conn[0].close()
 
     elapsed = time.time() - t0
     print()
@@ -348,6 +434,7 @@ def main(csv_path: str) -> int:
     print(f"  upserted      : {upserted:,}")
     print(f"  skipped       : {skipped:,} (missing brand / composition / strength)")
     print(f"  errors        : {errors:,}")
+    print(f"  reconnects    : {reconnects}")
     print(f"  elapsed       : {elapsed:.1f} s")
     print(f"  DB total now  : {total:,} rows in medupi.medicines")
     print("=" * 60)
@@ -355,6 +442,25 @@ def main(csv_path: str) -> int:
 
 
 def _flush(cur, conn, rows):
+    """
+    Upsert a batch. Dedupes within the batch on the unique-constraint key
+    (brand_name, strength, dosage_form) — keep the LAST occurrence.
+
+    Postgres' ON CONFLICT DO UPDATE refuses to operate on the same target
+    row twice in one statement (CardinalityViolation). The Apollo CSV has
+    repeats (same medicine listed under multiple URLs / SKUs), so we
+    collapse them at the application layer before sending.
+
+    Returns the number of rows actually sent to the DB after dedup.
+    """
+    seen: dict[tuple, tuple] = {}
+    for r in rows:
+        # r = (brand, salt, strength, form, manuf, risk, rx_req, price_source)
+        key = (r[0].lower(), r[2].lower(), r[3].lower())
+        seen[key] = r          # last write wins
+    deduped = list(seen.values())
+    if not deduped:
+        return 0
     psycopg2.extras.execute_values(
         cur,
         """
@@ -372,11 +478,12 @@ def _flush(cur, conn, rows):
           price_source          = EXCLUDED.price_source,
           updated_at            = NOW();
         """,
-        rows,
+        deduped,
         template="(%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())",
         page_size=500,
     )
     conn.commit()
+    return len(deduped)
 
 
 if __name__ == "__main__":
