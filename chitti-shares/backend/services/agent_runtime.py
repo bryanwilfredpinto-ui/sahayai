@@ -40,6 +40,15 @@ async def _maybe_await(v: Any) -> Any:
     return v
 
 
+_DS_INPUT_PER_M  = 22.50    # INR / 1M input tokens  (mirrors usage_tracker.PRICING)
+_DS_OUTPUT_PER_M = 91.50    # INR / 1M output tokens
+
+
+def _cost_inr(tokens_in: int, tokens_out: int) -> float:
+    return round((tokens_in / 1_000_000) * _DS_INPUT_PER_M
+                 + (tokens_out / 1_000_000) * _DS_OUTPUT_PER_M, 4)
+
+
 async def run_agent(system: str, user: str,
                     tools: list[dict],
                     executors: dict[str, ToolFn],
@@ -47,12 +56,15 @@ async def run_agent(system: str, user: str,
                     max_steps: int = 6) -> dict:
     """
     Run a tool-using agent loop. Caps at max_steps to bound cost.
+    The response carries `cost: {input_tokens, output_tokens, inr}` so
+    the UI can show "🪙 X in / Y out · ₹Z" next to every Chitti reply.
     """
     messages: list[dict] = [
         {"role": "system", "content": system},
         {"role": "user",   "content": user},
     ]
     trace: list[dict] = []
+    tot_in = tot_out = 0
 
     for step in range(max_steps):
         try:
@@ -63,7 +75,14 @@ async def run_agent(system: str, user: str,
                 "trace": trace,
                 "steps": step,
                 "error": str(e),
+                "cost": {"input_tokens": tot_in, "output_tokens": tot_out,
+                         "inr": _cost_inr(tot_in, tot_out)},
             }
+
+        # Sum tokens across loop steps.
+        tu = res.get("tokens_used") or {}
+        tot_in  += int(tu.get("input")  or 0)
+        tot_out += int(tu.get("output") or 0)
 
         msg = res["message"]
         tool_calls = msg.get("tool_calls") or []
@@ -74,6 +93,8 @@ async def run_agent(system: str, user: str,
                 "answer": (msg.get("content") or "").strip(),
                 "trace": trace,
                 "steps": step + 1,
+                "cost": {"input_tokens": tot_in, "output_tokens": tot_out,
+                         "inr": _cost_inr(tot_in, tot_out)},
             }
 
         # Persist the assistant message verbatim so tool_call_id round-trips.
@@ -118,12 +139,19 @@ async def run_agent(system: str, user: str,
                          "Close with the SEBI/MEDICAL disclaimer relevant to this product."}],
             tools=None, max_tokens=600,
         )
+        tu = res.get("tokens_used") or {}
+        tot_in  += int(tu.get("input")  or 0)
+        tot_out += int(tu.get("output") or 0)
         return {
             "answer": (res["message"].get("content") or "").strip(),
             "trace": trace,
             "steps": max_steps,
             "note": "max_steps reached; forced synthesis",
+            "cost": {"input_tokens": tot_in, "output_tokens": tot_out,
+                     "inr": _cost_inr(tot_in, tot_out)},
         }
     except DeepSeekError as e:
         return {"answer": f"(Agent timed out — {e}).",
-                "trace": trace, "steps": max_steps, "error": str(e)}
+                "trace": trace, "steps": max_steps, "error": str(e),
+                "cost": {"input_tokens": tot_in, "output_tokens": tot_out,
+                         "inr": _cost_inr(tot_in, tot_out)}}

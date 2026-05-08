@@ -787,6 +787,67 @@ def api_returns(payload: dict = None):  # type: ignore[assignment]
 
 
 # =====================================================================
+# PHASE 7E — USAGE / COST VISIBILITY
+# Every Chitti utterance is metered (services/usage_tracker.py logs the
+# DeepSeek call into usage_log). This endpoint surfaces today's running
+# total + per-operation breakdown so the UI can show "₹X spent today".
+# =====================================================================
+
+@app.get("/api/usage/today")
+def api_usage_today():
+    from datetime import datetime
+    from sqlalchemy import func
+    from database import SessionLocal
+    from models.quota import DailyQuotaSummary, UsageLog
+    from services.usage_tracker import today_ist
+    from config import settings
+
+    db = SessionLocal()
+    try:
+        date_ist = today_ist()
+        summ = db.query(DailyQuotaSummary).filter(
+            DailyQuotaSummary.date_ist == date_ist
+        ).first()
+
+        # Per-operation breakdown (today only, IST)
+        rows = db.query(
+            UsageLog.provider, UsageLog.operation,
+            func.count(UsageLog.id).label("n"),
+            func.coalesce(func.sum(UsageLog.input_tokens), 0).label("ti"),
+            func.coalesce(func.sum(UsageLog.output_tokens), 0).label("to"),
+            func.coalesce(func.sum(UsageLog.cost_inr), 0.0).label("inr"),
+        ).filter(
+            func.date(UsageLog.created_at) == datetime.utcnow().date()
+        ).group_by(UsageLog.provider, UsageLog.operation).all()
+
+        breakdown = [
+            {"provider": p, "operation": o, "calls": int(n),
+             "input_tokens": int(ti), "output_tokens": int(to),
+             "inr": round(float(inr), 4)}
+            for (p, o, n, ti, to, inr) in rows
+        ]
+
+        return {
+            "date_ist":     date_ist,
+            "total_inr":    round(summ.total_inr, 4) if summ else 0.0,
+            "deepseek_inr": round(summ.deepseek_inr, 4) if summ else 0.0,
+            "fast2sms_inr": round(summ.fast2sms_inr, 4) if summ else 0.0,
+            "yahoo_inr":    round(summ.yahoo_inr,    4) if summ else 0.0,
+            "calls":        int(summ.call_count) if summ else 0,
+            "blocked":      int(summ.blocked_count) if summ else 0,
+            "soft_cap_inr": settings.DAILY_BUDGET_INR,
+            "hard_cap_inr": settings.HARD_CAP_INR,
+            "breakdown":    breakdown,
+            "pricing": {
+                "deepseek_input_per_million_inr":  22.50,
+                "deepseek_output_per_million_inr": 91.50,
+            },
+        }
+    finally:
+        db.close()
+
+
+# =====================================================================
 # PHASE 7B — AGENTIC /ask ENDPOINTS (true tool-calling loop)
 # DeepSeek tools API; agent_runtime.run_agent orchestrates the
 # LLM-pick-tool / execute / loop / synthesise cycle. One endpoint per

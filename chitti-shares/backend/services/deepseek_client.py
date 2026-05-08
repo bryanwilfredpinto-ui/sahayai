@@ -138,6 +138,13 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
     usage = data.get("usage") or {}
     return {
         "message": msg,
+        # Visible to the caller (the @tracked decorator only strips _meta).
+        # Lets agent_runtime sum tokens across loop steps and surface the
+        # cost in the API response.
+        "tokens_used": {
+            "input":  usage.get("prompt_tokens"),
+            "output": usage.get("completion_tokens"),
+        },
         "_meta": {
             "input_tokens": usage.get("prompt_tokens"),
             "output_tokens": usage.get("completion_tokens"),

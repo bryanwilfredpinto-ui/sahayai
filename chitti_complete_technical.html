@@ -3544,8 +3544,19 @@ function chittiAskOpen() {
       'Hi, I am Chitti Technical. Ask: <em>"Is RELIANCE a buy on Daily?"</em>, <em>"Show Roshan setups in midcap"</em>, <em>"Support and resistance for TCS."</em>' +
       '</div>';
   }
+  _chittiRefreshSpend();
   setTimeout(function(){ const i = document.getElementById('chitti-ask-input'); if (i) i.focus(); }, 50);
 }
+async function _chittiRefreshSpend() {
+  try {
+    const r = await fetch(API + '/api/usage/today');
+    if (!r.ok) return;
+    const d = await r.json();
+    const el = document.getElementById('chitti-spend');
+    if (el) el.textContent = 'Today: ₹' + (d.total_inr || 0).toFixed(2) + ' · ' + (d.calls || 0) + ' calls';
+  } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', _chittiRefreshSpend);
 function chittiAskClose() {
   const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'none';
   if (window.speechSynthesis) speechSynthesis.cancel();
@@ -3597,6 +3608,14 @@ async function chittiAskSend() {
     if (d && d.error) answer += ' (Agent temporarily unavailable — top up DeepSeek to re-enable.)';
     _chittiAskAppend('chitti', answer);
     sp(answer);
+    if (d && d.cost) {
+      const c = d.cost;
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:10px;color:#888;text-align:right;margin-top:-4px;padding:0 10px';
+      div.textContent = '🪙 ' + (c.input_tokens||0) + ' in / ' + (c.output_tokens||0) + ' out · ₹' + (c.inr||0).toFixed(4);
+      document.getElementById('chitti-ask-log').appendChild(div);
+    }
+    _chittiRefreshSpend();
   } catch (e) {
     const log = document.getElementById('chitti-ask-log');
     if (log && log.lastChild) log.removeChild(log.lastChild);
@@ -5366,7 +5385,7 @@ if (_chatTechInput) {
 <div id="chitti-ask-panel" role="dialog" aria-label="Ask Chitti — voice or text" aria-modal="true"
   style="display:none;position:fixed;right:14px;bottom:84px;z-index:91;width:min(360px,calc(100vw - 28px));background:#fff;border:1px solid #e6dfd2;border-radius:14px;box-shadow:0 12px 28px rgba(14,35,68,.18);overflow:hidden">
   <div style="padding:12px 14px;background:#0E2344;color:#fff;display:flex;align-items:center;justify-content:space-between">
-    <div><strong>🎙️ Talk to Chitti</strong><div style="font-size:11px;opacity:.85">Technical — voice or text</div></div>
+    <div><strong>🎙️ Talk to Chitti</strong><div style="font-size:11px;opacity:.85"><span id="chitti-spend">Today: ₹0.00 · 0 calls</span> · Technical</div></div>
     <button onclick="chittiAskClose()" aria-label="Close" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer">✕</button>
   </div>
   <div style="padding:12px 14px;max-height:42vh;overflow:auto" id="chitti-ask-log"></div>
