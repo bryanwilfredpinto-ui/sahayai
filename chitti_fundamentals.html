@@ -734,31 +734,13 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">📈 Revenue &amp; Profit CAGR <span class="coming-soon">Coming Soon</span></div>
-          <div class="section-sub">3-year and 5-year compound growth rates. Needs annual financials wiring in the next session.</div>
+          <div class="section-title">📈 Revenue &amp; Profit CAGR <span id="cagr-badge" class="coming-soon">Coming Soon</span></div>
+          <div class="section-sub">3-year, 5-year and 10-year compound growth rates for Sales, Operating Profit and Net Profit.</div>
         </div>
+        <button class="metric-spk" onclick="speakSection('cagr')" aria-label="Hear CAGR summary">🔊</button>
       </div>
-      <div class="metric-grid">
-        <div class="metric-card coming-soon-card">
-          <div class="metric-card-lbl"><span>Revenue CAGR (3yr)</span><span class="coming-soon">Soon</span></div>
-          <div class="metric-card-val dim">—</div>
-          <div class="metric-card-pe">Average yearly growth in sales over the last 3 years.</div>
-        </div>
-        <div class="metric-card coming-soon-card">
-          <div class="metric-card-lbl"><span>Revenue CAGR (5yr)</span><span class="coming-soon">Soon</span></div>
-          <div class="metric-card-val dim">—</div>
-          <div class="metric-card-pe">Average yearly growth in sales over the last 5 years.</div>
-        </div>
-        <div class="metric-card coming-soon-card">
-          <div class="metric-card-lbl"><span>Profit CAGR (3yr)</span><span class="coming-soon">Soon</span></div>
-          <div class="metric-card-val dim">—</div>
-          <div class="metric-card-pe">Average yearly growth in net profit over the last 3 years.</div>
-        </div>
-        <div class="metric-card coming-soon-card">
-          <div class="metric-card-lbl"><span>Profit CAGR (5yr)</span><span class="coming-soon">Soon</span></div>
-          <div class="metric-card-val dim">—</div>
-          <div class="metric-card-pe">Average yearly growth in net profit over the last 5 years.</div>
-        </div>
+      <div id="cagr-grid" class="metric-grid">
+        <div class="section-empty" style="grid-column:1/-1">Search a stock to load CAGR.</div>
       </div>
     </div>
 
@@ -777,8 +759,8 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">📊 Financial Statements <span class="coming-soon">Wiring tomorrow</span></div>
-          <div class="section-sub">Screener.in / Bloomberg / Zerodha-style multi-period × multi-statement matrix. Backend scraper is built (services/screener_client.py); endpoint wires next session.</div>
+          <div class="section-title">📊 Financial Statements <span id="fin-badge" class="coming-soon">Loading…</span></div>
+          <div class="section-sub">Screener.in-style multi-period × multi-statement matrix. Quarterly &amp; Half-yearly P&amp;L; Annual P&amp;L, Balance Sheet and Cash Flow.</div>
         </div>
       </div>
       <div class="fin-period-row" role="tablist" aria-label="Period">
@@ -928,8 +910,8 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">👥 Shareholding pattern <span class="coming-soon">Coming Soon</span></div>
-          <div class="section-sub">Promoter, FII, DII, MF, Public splits with quarter-on-quarter ▲▼. Needs the NSE/BSE shareholding scrape — slot reserved.</div>
+          <div class="section-title">👥 Shareholding pattern <span id="owners-badge" class="coming-soon">Loading…</span></div>
+          <div class="section-sub">Promoter, FII, DII, Public splits with quarter-on-quarter ▲▼. Last 4 quarters from screener.in.</div>
         </div>
         <button class="sp-btn" onclick="speakSection('owners')" aria-label="Hear shareholding pattern">🔊 Hear all</button>
       </div>
@@ -1857,6 +1839,10 @@ async function loadFundamentals(sym) {
     renderAll(d);
     showTab('overview');
     speakVerdict();
+    // Fire-and-forget parallel loads for the wired endpoints.
+    loadFinancials(sym);
+    loadCagr(sym);
+    loadShareholding(sym);
   } catch (e) {
     if (_fundLoadingFor !== sym) return;
     const vc = document.getElementById('verdict-card');
@@ -2039,23 +2025,120 @@ function renderRatios(d) {
   window._speakBank['ratios-lev']  = 'Leverage and liquidity. Debt to equity ' + _fmtN(d.debt_to_equity, 2) + '. Current ratio ' + _fmtN(d.current_ratio, 2) + '. Quick ratio ' + _fmtN(d.quick_ratio, 2) + '. Interest coverage coming soon.';
 }
 
+// Renders shareholding placeholders synchronously; real wiring is loadShareholding().
 function renderOwnership(d) {
   const grid = document.getElementById('owners-grid');
-  const cards = [];
-  cards.push(metricCard({ label:'Promoter Holding', plain:'Founders\' stake. Over 50% means founders are deeply invested.',
-    comingSoon:true, speakText:'Promoter holding coming soon. The percentage of shares held by the founders.' }));
-  cards.push(metricCard({ label:'FII Holding', plain:'Foreign institutional investors. Rising = foreign confidence growing.',
-    comingSoon:true, speakText:'F I I holding coming soon. Foreign institutional investor stake.' }));
-  cards.push(metricCard({ label:'DII Holding', plain:'Domestic mutual funds and insurers. Rising = Indian funds buying.',
-    comingSoon:true, speakText:'D I I holding coming soon. Domestic institutional investor stake.' }));
-  cards.push(metricCard({ label:'Public Holding', plain:'Retail and small-investor share of the company.',
-    comingSoon:true, speakText:'Public holding coming soon.' }));
-  cards.push(metricCard({ label:'Mutual Fund Holding', plain:'How much Indian mutual funds own — a stronger signal than DII alone.',
-    comingSoon:true, speakText:'Mutual fund holding coming soon.' }));
-  cards.push(metricCard({ label:'Pledge %', plain:'Founder shares pledged as loan collateral. Above 20% is a RED flag.',
-    comingSoon:true, speakText:'Pledge percent coming soon. Above 20 percent is a red flag.' }));
-  grid.innerHTML = cards.join('');
-  window._speakBank['owners'] = 'Shareholding pattern coming soon. Promoter, F I I, D I I, public, mutual fund, and pledge data wiring is pending the N S E and B S E shareholding scrape.';
+  if (!grid) return;
+  grid.innerHTML = '<div class="section-empty" style="grid-column:1/-1">Loading shareholding…</div>';
+}
+
+// ─── Shareholding pattern (live) ───────────────────────────
+// Endpoint: GET /api/shareholding/{symbol}
+// Shape: { name, headers:[quarter labels], rows:[{label, values:[%]}] }
+const _OWNER_PLAIN = {
+  'Promoters': 'Founders\' stake. Over 50% means founders are deeply invested.',
+  'FIIs':      'Foreign institutional investors. Rising = foreign confidence growing.',
+  'DIIs':      'Domestic mutual funds and insurers. Rising = Indian funds buying.',
+  'Government':'Government holding (banks, LIC, etc).',
+  'Public':    'Retail and small-investor share of the company.',
+  'Others':    'Other shareholders not classified above.',
+  'No. of Shareholders': 'Total number of shareholders.'
+};
+function _ownerKey(label) {
+  if (!label) return '';
+  const k = label.trim().toLowerCase();
+  if (k.indexOf('promoter') === 0) return 'Promoters';
+  if (k.indexOf('fii') === 0)      return 'FIIs';
+  if (k.indexOf('dii') === 0)      return 'DIIs';
+  if (k.indexOf('govern') === 0)   return 'Government';
+  if (k.indexOf('public') === 0)   return 'Public';
+  if (k.indexOf('shareholders') !== -1) return 'No. of Shareholders';
+  return label.trim();
+}
+
+async function loadShareholding(sym) {
+  if (!sym) return;
+  const grid  = document.getElementById('owners-grid');
+  const badge = document.getElementById('owners-badge');
+  if (badge) { badge.textContent = 'Loading…'; badge.className = 'coming-soon'; }
+  try {
+    const r = await fetch(API + '/api/shareholding/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const rows = (data && data.rows) || [];
+    const headers = (data && data.headers) || [];
+    if (!rows.length || !headers.length) throw new Error('empty');
+    const cards = [];
+    const speakLines = [];
+    rows.forEach(function(row){
+      const key = _ownerKey(row.label || '');
+      const vals = row.values || [];
+      const latest = vals.length ? vals[vals.length - 1] : null;
+      const prev   = vals.length > 1 ? vals[vals.length - 2] : null;
+      let ud = null;
+      if (typeof latest === 'number' && typeof prev === 'number') {
+        const delta = latest - prev;
+        ud = { delta: delta, pct: prev !== 0 ? (delta / Math.abs(prev)) * 100 : 0 };
+      }
+      const valTxt = (typeof latest === 'number') ? latest.toFixed(2) + '%' : (latest || '—');
+      const plain = _OWNER_PLAIN[key] || ('Holding by ' + key + '.');
+      const speak = key + ' holding ' + valTxt + (ud ? '. ' + _udWord(ud.delta) + ' ' + Math.abs(ud.pct).toFixed(1) + ' percent versus previous quarter' : '') + '.';
+      cards.push(metricCard({ label:key, plain:plain, value:valTxt, ud:ud, speakText:speak }));
+      speakLines.push(key + ' ' + valTxt + (ud ? ', ' + _udWord(ud.delta) + ' ' + Math.abs(ud.pct).toFixed(1) + ' percent' : ''));
+    });
+    grid.innerHTML = cards.join('');
+    const lastQ = headers[headers.length - 1] || '';
+    window._speakBank['owners'] = 'Shareholding pattern as of ' + lastQ + '. ' + speakLines.join('. ') + '.';
+    if (badge) { badge.textContent = 'LIVE'; badge.className = 'live-badge'; }
+  } catch (e) {
+    grid.innerHTML = '<div class="section-empty" style="grid-column:1/-1">Could not load shareholding — try again in a minute.</div>';
+    window._speakBank['owners'] = 'Shareholding pattern unavailable right now.';
+    if (badge) { badge.textContent = 'Coming Soon'; badge.className = 'coming-soon'; }
+  }
+}
+
+// ─── CAGR (live) ───────────────────────────────────────────
+// Endpoint: GET /api/cagr/{symbol}
+// Shape: { symbol, headers, sales:{3y,5y,10y}, op_profit:{...}, net_profit:{...} }
+function _cagrCard(label, plain, val) {
+  const num = (typeof val === 'number' && isFinite(val)) ? val : null;
+  const ud  = (num != null) ? { delta: num, pct: num } : null;
+  const txt = (num != null) ? (num > 0 ? '+' : '') + num.toFixed(1) + '%' : '—';
+  const speak = label + ' ' + (num != null ? (num > 0 ? 'up ' : num < 0 ? 'down ' : 'flat ') + Math.abs(num).toFixed(1) + ' percent per year' : 'not available') + '.';
+  return metricCard({ label:label, plain:plain, value:txt, ud:ud, speakText:speak });
+}
+
+async function loadCagr(sym) {
+  if (!sym) return;
+  const grid  = document.getElementById('cagr-grid');
+  const badge = document.getElementById('cagr-badge');
+  if (badge) { badge.textContent = 'Loading…'; badge.className = 'coming-soon'; }
+  try {
+    const r = await fetch(API + '/api/cagr/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const sales = data.sales || {};
+    const op    = data.op_profit || {};
+    const np    = data.net_profit || {};
+    const cards = [];
+    cards.push(_cagrCard('Sales CAGR (3yr)',   'Average yearly growth in sales over 3 years.',  sales['3y']));
+    cards.push(_cagrCard('Sales CAGR (5yr)',   'Average yearly growth in sales over 5 years.',  sales['5y']));
+    cards.push(_cagrCard('Sales CAGR (10yr)',  'Average yearly growth in sales over 10 years.', sales['10y']));
+    cards.push(_cagrCard('Op Profit CAGR (3yr)', 'Operating profit growth over 3 years.',  op['3y']));
+    cards.push(_cagrCard('Op Profit CAGR (5yr)', 'Operating profit growth over 5 years.',  op['5y']));
+    cards.push(_cagrCard('Op Profit CAGR (10yr)','Operating profit growth over 10 years.', op['10y']));
+    cards.push(_cagrCard('Net Profit CAGR (3yr)',  'Average yearly growth in net profit over 3 years.',  np['3y']));
+    cards.push(_cagrCard('Net Profit CAGR (5yr)',  'Average yearly growth in net profit over 5 years.',  np['5y']));
+    cards.push(_cagrCard('Net Profit CAGR (10yr)', 'Average yearly growth in net profit over 10 years.', np['10y']));
+    grid.innerHTML = cards.join('');
+    const fmt = function(x){ return (typeof x === 'number') ? x.toFixed(1) + ' percent' : 'not available'; };
+    window._speakBank['cagr'] = 'Compound annual growth rates. Sales: 3 year ' + fmt(sales['3y']) + ', 5 year ' + fmt(sales['5y']) + ', 10 year ' + fmt(sales['10y']) + '. Net profit: 3 year ' + fmt(np['3y']) + ', 5 year ' + fmt(np['5y']) + ', 10 year ' + fmt(np['10y']) + '.';
+    if (badge) { badge.textContent = 'LIVE'; badge.className = 'live-badge'; }
+  } catch (e) {
+    grid.innerHTML = '<div class="section-empty" style="grid-column:1/-1">Could not load CAGR — try again in a minute.</div>';
+    window._speakBank['cagr'] = 'CAGR unavailable right now.';
+    if (badge) { badge.textContent = 'Coming Soon'; badge.className = 'coming-soon'; }
+  }
 }
 
 function renderValuation(d) {
@@ -2087,11 +2170,11 @@ function renderValuation(d) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Financials matrix — Period × Statement skeleton
-// (Backend wiring next session; today renders the full row + column
-// structure with Coming Soon placeholders so we know what to build.)
+// Financials matrix — Period × Statement, wired to /api/financials
 // ═══════════════════════════════════════════════════════════
 let _finPeriod = 'q', _finStmt = 'pl';
+let _finData = null;        // last fetched payload from /api/financials
+let _finLoadingFor = null;  // symbol currently being fetched
 
 const FIN_ROWS = {
   pl: ['Sales / Revenue','Expenses','Gross Profit','Operating Profit (EBITDA)','OPM %','Other Income','Interest','Depreciation','Profit before Tax','Tax','Tax %','Net Profit','EPS (₹)','Dividend Payout %'],
@@ -2118,64 +2201,127 @@ function setFinStmt(s) {
   sp(FIN_STMT_LABEL[s] + ' selected.');
 }
 
-function _finHeaders(period) {
-  if (period === 'q')   return ['Mar 2024','Jun 2024','Sep 2024','Dec 2024','Mar 2025','Jun 2025','Sep 2025','Dec 2025'];
-  if (period === 'h')   return ['H2 FY24','H1 FY25','H2 FY25','H1 FY26'];
-  if (period === 'y')   return ['Mar 2022','Mar 2023','Mar 2024','Mar 2025','TTM'];
-  if (period === 'y10') return ['Mar 2017','Mar 2018','Mar 2019','Mar 2020','Mar 2021','Mar 2022','Mar 2023','Mar 2024','Mar 2025','TTM'];
-  return [];
-}
-
-// Which (period, statement) combos will have real data once wired? Used for
-// tagging cells: LIVE-when-wired vs forever-Coming-Soon.
+// Which (period, statement) combos resolve to real data from /api/financials.
+// Quarterly: only P&L (BS/CF are annual-only in India).
+// Half-yearly: only P&L.
+// Annual + 10-Year: P&L / BS / CF live; 10-Year is yearly with full history.
+// Ratios + Estimates + Segments: deeper sections — Coming Soon.
 function _finStatus(period, stmt) {
-  // Quarterly: only P&L wires from screener; BS/CF reported annually only.
-  // Half-yearly: P&L computed from quarterly; BS/CF not reported half-yearly.
-  // Annual + 10-Year: P&L / BS / CF all live from screener.
-  // Ratios + Estimates + Segments: deeper sections — Coming Soon for now.
-  if (stmt === 'pl') {
-    if (period === 'q' || period === 'h' || period === 'y' || period === 'y10') return 'wires';
-  }
+  if (stmt === 'pl' && (period === 'q' || period === 'h' || period === 'y' || period === 'y10')) return 'wires';
   if ((stmt === 'bs' || stmt === 'cf') && (period === 'y' || period === 'y10')) return 'wires';
   if ((stmt === 'bs' || stmt === 'cf') && (period === 'q' || period === 'h')) return 'annual-only';
   return 'soon';
 }
 
+// Pull the matching {headers, rows} block from a /api/financials payload.
+function _finBlock(period, stmt) {
+  if (!_finData) return null;
+  let bucket = null;
+  if (period === 'q')   bucket = _finData.quarterly;
+  else if (period === 'h') bucket = _finData.halfyearly;
+  else if (period === 'y' || period === 'y10') bucket = _finData.yearly;
+  if (!bucket) return null;
+  const block = bucket[stmt];
+  if (!block || !block.headers || !block.rows) return null;
+  // For 'y' (Annual) trim to the last 5 columns; 'y10' keeps everything.
+  if (period === 'y' && block.headers.length > 5) {
+    const start = block.headers.length - 5;
+    return {
+      headers: block.headers.slice(start),
+      rows: block.rows.map(function(r){ return { label:r.label, values:(r.values||[]).slice(start) }; })
+    };
+  }
+  return block;
+}
+
+function _fmtFinCell(v) {
+  if (v == null || v === '' || v === '-' || v === '—') return '<span style="color:var(--muted)">—</span>';
+  // If it's already a string from the backend, render as-is (preserves % / ₹ formatting).
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number') {
+    if (!isFinite(v)) return '<span style="color:var(--muted)">—</span>';
+    // Smart formatting: large numbers as Crores, small as 2 decimals
+    if (Math.abs(v) >= 100) return Math.round(v).toLocaleString('en-IN');
+    return v.toFixed(2);
+  }
+  return String(v);
+}
+
 function _renderFinTable() {
   const target = document.getElementById('fin-table');
   if (!target) return;
-  const rows = FIN_ROWS[_finStmt] || [];
-  const headers = _finHeaders(_finPeriod);
   const status = _finStatus(_finPeriod, _finStmt);
+  const fallbackRows = FIN_ROWS[_finStmt] || [];
 
-  let banner = '';
-  if (status === 'wires') {
-    banner = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong> — ' + rows.length + ' rows expected · structure ready</span><span class="coming-soon">Backend wiring tomorrow</span></div>';
-  } else if (status === 'annual-only') {
-    banner = '<div class="scan-note">⚠️ ' + FIN_STMT_LABEL[_finStmt] + ' is reported <strong>annually only</strong> — Indian companies do not break it out per quarter. Switch the Period selector to <strong>Annual</strong> or <strong>10-Year</strong>.</div>';
-  } else {
-    banner = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong> — ' + rows.length + ' rows expected</span><span class="coming-soon">Coming Soon</span></div>';
+  // Annual-only redirect (BS/CF chosen with quarterly/half-yearly)
+  if (status === 'annual-only') {
+    target.innerHTML = '<div class="scan-note">⚠️ ' + FIN_STMT_LABEL[_finStmt] + ' is reported <strong>annually only</strong> in India. Switch the Period selector to <strong>Annual</strong> or <strong>10-Year</strong>.</div>';
+    return;
   }
 
+  // Coming-soon statements (ratios / estimates / segments)
+  if (status !== 'wires') {
+    const headers = ['—'];
+    const headRow = '<tr><th>Metric</th><th>Status</th></tr>';
+    const bodyRows = fallbackRows.map(function(label){
+      return '<tr><td>' + label + '</td><td style="color:var(--muted)">Coming Soon</td></tr>';
+    }).join('');
+    target.innerHTML = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong></span><span class="coming-soon">Coming Soon</span></div>' +
+      '<div style="overflow-x:auto"><table class="fund-q-tbl"><thead>' + headRow + '</thead><tbody>' + bodyRows + '</tbody></table></div>';
+    return;
+  }
+
+  // status === 'wires': render from _finData if available
+  const block = _finBlock(_finPeriod, _finStmt);
+  if (!block) {
+    target.innerHTML = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong></span><span class="coming-soon">Loading…</span></div>' +
+      '<div class="section-empty">Search a stock to load financials.</div>';
+    return;
+  }
+
+  const headers = block.headers || [];
+  const rows = block.rows || [];
   const headRow = '<tr><th>Metric</th>' + headers.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr>';
-  const bodyRows = rows.map(function(label){
+  const bodyRows = rows.map(function(row){
+    const label = row.label || '';
     const safeSpeak = label.replace(/'/g, "\\'");
-    const dim = headers.map(function(){ return '<td style="color:var(--muted)">—</td>'; }).join('');
-    return '<tr><td>' + label + ' <button class="fund-spk" onclick="sp(\'' + safeSpeak + '. Coming soon. Wires next session.\')" aria-label="Hear ' + label + '">🔊</button></td>' + dim + '</tr>';
+    const cells = (row.values || []).map(function(v){ return '<td>' + _fmtFinCell(v) + '</td>'; }).join('');
+    // Pad short rows
+    const pad = headers.length - (row.values || []).length;
+    const padCells = pad > 0 ? new Array(pad).fill('<td style="color:var(--muted)">—</td>').join('') : '';
+    return '<tr><td>' + label + ' <button class="fund-spk" onclick="sp(\'' + safeSpeak + '\')" aria-label="Hear ' + label + '">🔊</button></td>' + cells + padCells + '</tr>';
   }).join('');
 
-  let footnote = '';
-  if (status === 'wires') {
-    const src = (_finStmt === 'pl' && _finPeriod === 'h') ? 'Computed half-yearly aggregate of quarterly P&L (Q1+Q2 = H1, Q3+Q4 = H2)'
-              : 'Source: screener.in scrape (services/screener_client.py — already built)';
-    footnote = '<div style="font-size:11px;color:var(--muted);margin-top:8px">' + src + '. Endpoint /api/financials/{symbol} wires next session.</div>';
-  }
+  const banner = '<div class="scan-summary"><span><strong>' + FIN_PERIOD_LABEL[_finPeriod] + ' · ' + FIN_STMT_LABEL[_finStmt] + '</strong> · ' + rows.length + ' rows · ' + headers.length + ' periods</span><span class="live-badge">LIVE</span></div>';
+  const footnote = '<div style="font-size:11px;color:var(--muted);margin-top:8px">Source: screener.in (₹ Crores unless marked %).</div>';
 
   target.innerHTML = banner +
     '<div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="' + FIN_PERIOD_LABEL[_finPeriod] + ' ' + FIN_STMT_LABEL[_finStmt] + '">' +
     '<thead>' + headRow + '</thead>' +
     '<tbody>' + bodyRows + '</tbody>' +
     '</table></div>' + footnote;
+}
+
+// Fetch /api/financials/{symbol} and refresh the table.
+async function loadFinancials(sym) {
+  if (!sym) return;
+  _finLoadingFor = sym;
+  const badge = document.getElementById('fin-badge');
+  if (badge) { badge.textContent = 'Loading…'; badge.className = 'coming-soon'; }
+  try {
+    const r = await fetch(API + '/api/financials/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (_finLoadingFor !== sym) return;
+    _finData = d;
+    _renderFinTable();
+    if (badge) { badge.textContent = 'LIVE'; badge.className = 'live-badge'; }
+  } catch (e) {
+    if (_finLoadingFor !== sym) return;
+    _finData = null;
+    _renderFinTable();
+    if (badge) { badge.textContent = 'Coming Soon'; badge.className = 'coming-soon'; }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -327,11 +327,46 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">🛒 Optimised Cart Simulator <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
-          <div class="section-sub">Drop your full monthly medicine list — Chitti returns the cheapest equivalent-composition cart with savings vs your usual brands.</div>
+          <div class="section-title">🛒 Optimised Cart Simulator <span class="live-badge">LIVE</span></div>
+          <div class="section-sub">Drop your full monthly medicine list — Chitti returns the cheapest same-composition cart with monthly + annual savings.</div>
         </div>
+        <button class="metric-spk" onclick="speakCartTotals()" aria-label="Speak cart totals" title="Read totals aloud">🔊</button>
       </div>
-      <div class="section-empty">Coming soon — drag-drop your monthly list, see total savings if you switch each line item to its cheapest same-composition equivalent.</div>
+
+      <!-- Add-a-line form -->
+      <div class="search-row" style="align-items:flex-start;flex-wrap:wrap">
+        <div style="position:relative;flex:1 1 180px;min-width:160px">
+          <input id="cart-mol" placeholder="Molecule (e.g. Paracetamol)" autocomplete="off" aria-label="Molecule" style="width:100%">
+          <button class="med-mic" onclick="cartVoice('cart-mol','molecule')" aria-label="Speak molecule" title="Voice input" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px">🎤</button>
+        </div>
+        <input id="cart-strength" placeholder="Strength (e.g. 650 mg)" autocomplete="off" aria-label="Strength" style="flex:1 1 130px;min-width:110px">
+        <select id="cart-form" aria-label="Dosage form" style="background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:14px;min-height:46px;flex:1 1 130px;min-width:110px">
+          <option value="tablet">Tablet</option>
+          <option value="capsule">Capsule</option>
+          <option value="syrup">Syrup</option>
+          <option value="injection">Injection</option>
+          <option value="ointment">Ointment</option>
+          <option value="drops">Drops</option>
+          <option value="powder">Powder</option>
+        </select>
+        <input id="cart-qty" placeholder="Qty / month" type="number" min="1" value="30" aria-label="Monthly quantity" style="max-width:110px">
+        <input id="cart-price" placeholder="₹ Current price (per unit)" type="number" min="0" step="0.01" aria-label="Current unit price" style="max-width:170px">
+        <input id="cart-brand" placeholder="Current brand (optional)" autocomplete="off" aria-label="Current brand" style="flex:1 1 150px;min-width:130px">
+        <button class="cta-saffron" onclick="addCartLine()" aria-label="Add this medicine line">➕ Add line</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">Tip: add every monthly med — Chitti shows you total savings if you switch each line to the cheapest same-composition equivalent.</div>
+
+      <!-- Drop list (lines added so far) -->
+      <div id="cart-lines" style="margin-top:12px"></div>
+
+      <!-- Action row -->
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="cta-navy" onclick="runCartSim()" aria-label="Calculate savings">💰 Calculate cart savings</button>
+        <button onclick="clearCart()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:12px 14px;font-weight:700;border-radius:10px;cursor:pointer;font-size:13px;min-height:46px" aria-label="Clear all lines">🗑️ Clear all</button>
+      </div>
+
+      <!-- Result block (filled by runCartSim) -->
+      <div id="cart-result" class="section-empty" aria-live="polite" aria-atomic="true" style="margin-top:14px">Add at least one line above and tap Calculate to see your monthly + annual savings.</div>
     </div>
   </section>
 
@@ -1378,6 +1413,152 @@ async function refreshWallet(speakIt){
 }
 
 // ═══════════════════════════════════════════════════════════
+// OPTIMISED CART SIMULATOR — Section A
+// ═══════════════════════════════════════════════════════════
+let _cartLines = [];
+function _renderCartLines(){
+  const el = document.getElementById('cart-lines');
+  if (!el) return;
+  if (!_cartLines.length) {
+    el.innerHTML = '<div style="padding:10px;background:#fbf8f1;border:1px dashed var(--border);border-radius:10px;font-size:12px;color:var(--muted)">' + (_chittiLang === 'hi' ? 'अभी तक कोई दवा नहीं जोड़ी गई। ऊपर एक लाइन जोड़ें।' : 'No lines added yet. Add one above.') + '</div>';
+    return;
+  }
+  let h = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+  h += '<thead><tr style="background:rgba(232,106,23,.06)"><th style="text-align:left;padding:8px">' + (_chittiLang === 'hi' ? 'दवा' : 'Medicine') + '</th><th style="text-align:right;padding:8px">' + (_chittiLang === 'hi' ? 'मात्रा' : 'Qty/mo') + '</th><th style="text-align:right;padding:8px">' + (_chittiLang === 'hi' ? 'मौजूदा ₹' : 'Current ₹') + '</th><th></th></tr></thead><tbody>';
+  _cartLines.forEach(function(l, i){
+    h += '<tr style="border-bottom:1px solid var(--border)">';
+    h += '<td style="padding:8px"><strong>' + _esc(l.molecule) + '</strong> ' + _esc(l.strength) + ' · ' + _esc(l.dosage_form) + (l.current_brand ? ' <span style="color:var(--muted);font-size:11px">(' + _esc(l.current_brand) + ')</span>' : '') + '</td>';
+    h += '<td style="padding:8px;text-align:right;font-family:monospace">' + l.monthly_qty + '</td>';
+    h += '<td style="padding:8px;text-align:right;font-family:monospace">' + _money(l.current_price) + '</td>';
+    h += '<td style="padding:8px;text-align:right"><button onclick="removeCartLine(' + i + ')" aria-label="Remove line" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:var(--med-red)">✕</button></td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  el.innerHTML = h;
+}
+function addCartLine(){
+  const mol      = ((document.getElementById('cart-mol')      || {}).value || '').trim();
+  const strength = ((document.getElementById('cart-strength') || {}).value || '').trim();
+  const form     = ((document.getElementById('cart-form')     || {}).value || 'tablet').trim();
+  const qty      = parseInt((document.getElementById('cart-qty')   || {}).value || '0', 10);
+  const price    = parseFloat((document.getElementById('cart-price') || {}).value || '0');
+  const brand    = ((document.getElementById('cart-brand')    || {}).value || '').trim();
+  if (!mol)      { sp(_chittiLang === 'hi' ? 'दवा का नाम लिखें' : 'Type a molecule'); return; }
+  if (!strength) { sp(_chittiLang === 'hi' ? 'ताकत लिखें' : 'Type the strength'); return; }
+  if (!qty || qty < 1) { sp(_chittiLang === 'hi' ? 'मात्रा सही करें' : 'Enter monthly qty'); return; }
+  if (!(price > 0))    { sp(_chittiLang === 'hi' ? 'मौजूदा कीमत' : 'Enter current price'); return; }
+  _cartLines.push({ molecule: mol, strength: strength, dosage_form: form, monthly_qty: qty, current_price: price, current_brand: brand || null });
+  ['cart-mol','cart-strength','cart-qty','cart-price','cart-brand'].forEach(function(id){
+    const e = document.getElementById(id); if (e) e.value = (id === 'cart-qty' ? '30' : '');
+  });
+  _renderCartLines();
+  sp(_chittiLang === 'hi' ? 'लाइन जोड़ी' : 'Line added');
+}
+function removeCartLine(i){
+  _cartLines.splice(i, 1);
+  _renderCartLines();
+}
+function clearCart(){
+  if (_cartLines.length && !confirm(_chittiLang === 'hi' ? 'सब लाइनें हटाएँ?' : 'Clear all lines?')) return;
+  _cartLines = [];
+  _renderCartLines();
+  const r = document.getElementById('cart-result');
+  if (r) {
+    r.innerHTML = (_chittiLang === 'hi' ? 'खाली। फिर से लाइनें जोड़ें।' : 'Cleared. Add lines again.');
+    r.className = 'section-empty';
+  }
+  window._lastCartTotals = null;
+}
+function _cartRiskBadge(rc){
+  if (rc === 'HIGH' || rc === 'H') return '<span class="risk-high" title="HIGH risk — always ask doctor">HIGH ⛔</span>';
+  if (rc === 'MEDIUM' || rc === 'M') return '<span class="risk-medium" title="MEDIUM risk — confirm with pharmacist">MEDIUM ⚠️</span>';
+  return '<span class="risk-low" title="LOW risk">LOW ✅</span>';
+}
+async function runCartSim(){
+  const el = document.getElementById('cart-result');
+  if (!el) return;
+  if (!_cartLines.length) { sp(_chittiLang === 'hi' ? 'पहले एक लाइन जोड़ें' : 'Add at least one line first'); return; }
+  el.className = '';
+  el.innerHTML = '<div style="padding:14px;color:var(--saffron);font-weight:700">⏳ ' + _esc(_chittiLang === 'hi' ? 'गणना हो रही है…' : 'Calculating cheapest cart…') + '</div>';
+  try {
+    const data = await apiPostJson('/api/medupi/cart-simulator', { items: _cartLines });
+    const lines = data.lines || [];
+    const totals = data.totals || {};
+    let h = '';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'मौजूदा मासिक' : 'Current monthly') + '</span></div><div class="metric-card-val">' + _money(totals.current_total) + '</div></div>';
+    h += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'सुझाया मासिक' : 'Suggested monthly') + '</span><span class="risk-low">CHEAPEST</span></div><div class="metric-card-val" style="color:var(--med-green)">' + _money(totals.suggested_total) + '</div></div>';
+    h += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'मासिक बचत' : 'Monthly savings') + '</span></div><div class="metric-card-val" style="color:var(--med-green)">' + _money(totals.monthly_savings) + (totals.savings_pct != null ? ' <span style="font-size:13px;color:var(--muted);font-weight:600">(' + totals.savings_pct + '%)</span>' : '') + '</div></div>';
+    h += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'वार्षिक बचत' : 'Annual savings') + '</span><span class="risk-low">★</span></div><div class="metric-card-val" style="color:var(--med-green)">' + _money(totals.annual_savings) + '</div></div>';
+    h += '</div>';
+
+    if (lines.length) {
+      h += '<div style="margin-top:14px;font-weight:800;font-size:13px">' + (_chittiLang === 'hi' ? 'हर लाइन' : 'Per-line breakdown') + '</div>';
+      h += '<div style="overflow-x:auto;margin-top:6px"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+      h += '<thead><tr style="background:rgba(232,106,23,.06)"><th style="text-align:left;padding:8px">' + (_chittiLang === 'hi' ? 'दवा' : 'Medicine') + '</th><th style="text-align:left;padding:8px">' + (_chittiLang === 'hi' ? 'सुझाव' : 'Suggested') + '</th><th style="text-align:right;padding:8px">' + (_chittiLang === 'hi' ? 'मौजूदा' : 'Current') + '</th><th style="text-align:right;padding:8px">' + (_chittiLang === 'hi' ? 'सुझाया' : 'Suggested') + '</th><th style="text-align:right;padding:8px">' + (_chittiLang === 'hi' ? 'मासिक बचत' : 'Mo. savings') + '</th><th style="text-align:left;padding:8px">' + (_chittiLang === 'hi' ? 'जोखिम' : 'Risk') + '</th></tr></thead><tbody>';
+      lines.forEach(function(L){
+        const cur = (L.current_price != null ? L.current_price * (L.monthly_qty || 0) : null);
+        const sug = (L.suggested_unit_price != null ? L.suggested_unit_price * (L.monthly_qty || 0) : null);
+        const rc  = (L.risk_class || 'LOW').toUpperCase();
+        const warn = L.risk_warning || '';
+        const rowBg = (rc === 'HIGH' || rc === 'H') ? 'background:rgba(220,38,38,.05)' : '';
+        h += '<tr style="border-bottom:1px solid var(--border);' + rowBg + '">';
+        h += '<td style="padding:8px"><strong>' + _esc(L.molecule || '') + '</strong> ' + _esc(L.strength || '') + ' · ' + _esc(L.dosage_form || '') + (L.current_brand ? '<div style="font-size:11px;color:var(--muted)">' + (_chittiLang === 'hi' ? 'मौजूदा: ' : 'now: ') + _esc(L.current_brand) + '</div>' : '') + '</td>';
+        h += '<td style="padding:8px">' + _esc(L.suggested_brand || '—') + '</td>';
+        h += '<td style="padding:8px;text-align:right;font-family:monospace">' + _money(cur) + '</td>';
+        h += '<td style="padding:8px;text-align:right;font-family:monospace;color:var(--med-green)">' + _money(sug) + '</td>';
+        h += '<td style="padding:8px;text-align:right;font-family:monospace;color:var(--med-green);font-weight:800">' + _money(L.monthly_savings) + '</td>';
+        h += '<td style="padding:8px">' + _cartRiskBadge(rc) + (warn ? '<div style="font-size:11px;color:var(--muted);margin-top:3px;max-width:240px">' + _esc(warn) + '</div>' : '') + '</td>';
+        h += '</tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+
+    if (data.disclaimer) {
+      h += '<div style="margin-top:12px;padding:10px;border-left:3px solid var(--saffron);background:rgba(232,106,23,.06);font-size:12px;line-height:1.55">' + _esc(data.disclaimer) + '</div>';
+    } else {
+      h += '<div style="margin-top:12px;padding:10px;border-left:3px solid var(--saffron);background:rgba(232,106,23,.06);font-size:12px;line-height:1.55">' + _esc(_chittiLang === 'hi' ? 'समान संरचना के विकल्प दिखाए गए हैं। बदलने से पहले अपने डॉक्टर / केमिस्ट से सलाह लें।' : 'Same-composition options shown. Please confirm with your doctor / pharmacist before switching.') + '</div>';
+    }
+
+    el.innerHTML = h;
+
+    // Voice OUT — speak totals
+    window._lastCartTotals = totals;
+    speakCartTotals();
+  } catch (e) {
+    el.className = 'section-empty';
+    el.innerHTML = '<div style="color:var(--med-red);padding:14px"><strong>⚠️ ' + (_chittiLang === 'hi' ? 'त्रुटि' : 'Error') + ':</strong> ' + _esc(e.message || String(e)) + '</div>';
+  }
+}
+function speakCartTotals(){
+  const t = window._lastCartTotals;
+  if (!t) { sp(_chittiLang === 'hi' ? 'पहले गणना करें' : 'Run a calculation first'); return; }
+  const monthly = t.monthly_savings != null ? Math.round(t.monthly_savings) : 0;
+  const annual  = t.annual_savings != null ? Math.round(t.annual_savings) : 0;
+  if (_chittiLang === 'hi') {
+    sp('मासिक बचत ' + monthly + ' रुपये। वार्षिक बचत ' + annual + ' रुपये। समान संरचना वाले विकल्प। बदलने से पहले डॉक्टर से सलाह लें।');
+  } else {
+    sp('Monthly savings: rupees ' + monthly + '. Annual savings: rupees ' + annual + '. Same composition options. Please consult your doctor before switching.');
+  }
+}
+function cartVoice(targetId, kind){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { sp(_chittiLang === 'hi' ? 'इस ब्राउज़र में आवाज़ नहीं चलती' : 'Voice not supported'); return; }
+  const rec = new SR();
+  rec.lang = _chittiLang === 'hi' ? 'hi-IN' : 'en-IN';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  sp(_chittiLang === 'hi' ? 'बोलिए' : 'Listening');
+  rec.onresult = function(ev){
+    const txt = (ev.results[0][0].transcript || '').trim();
+    const inp = document.getElementById(targetId);
+    if (inp) inp.value = txt;
+  };
+  rec.onerror = function(){};
+  rec.start();
+}
+
+// ═══════════════════════════════════════════════════════════
 // REMINDERS
 // ═══════════════════════════════════════════════════════════
 async function refreshReminders(){
@@ -1432,8 +1613,12 @@ function _bootLiveTabs(){
       if (t === 'wallet')    refreshFamilyProfiles();
       if (t === 'reminders') { refreshFamilyProfiles(); refreshReminders(); }
       if (t === 'settings')  renderShareQr();
+      if (t === 'compare')   _renderCartLines();
     });
   });
+  // Render initial cart-lines empty state + boot family wallet preview
+  _renderCartLines();
+  if (typeof refreshFamilyWalletPreview === 'function') refreshFamilyWalletPreview();
 }
 
 // ═══════════════════════════════════════════════════════════
