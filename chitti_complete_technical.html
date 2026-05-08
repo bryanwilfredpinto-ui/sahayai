@@ -3494,6 +3494,46 @@ function speakWatchlist() {
 }
 
 // ──────────────────────────────────────────────────────────────────
+// Auto-inject 🔊 speakers on every box that doesn't already have one.
+// Four-user contract — blind users must be able to hear ANY card.
+// ──────────────────────────────────────────────────────────────────
+function _spBoxRead(el) {
+  if (!el) return;
+  const grab = function(sel){ const n = el.querySelector(sel); return n ? n.textContent.replace(/\s+/g,' ').trim() : ''; };
+  const lbl = grab('.metric-card-lbl, .section-title, h3, h4');
+  const val = grab('.metric-card-val, .section-value');
+  const pe  = grab('.metric-card-pe, .section-sub, .section-empty');
+  const txt = [lbl, val, pe].filter(Boolean).join('. ');
+  if (txt) sp(txt);
+}
+function _spInjectAll() {
+  document.querySelectorAll('.metric-card, .section-card').forEach(function(card){
+    if (card.querySelector(':scope > .metric-spk, :scope > .sp-btn, :scope > .auto-spk, :scope > .metric-card-lbl .metric-spk, :scope > .metric-card-lbl .auto-spk, :scope .section-head .metric-spk, :scope .section-head .sp-btn')) return;
+    const head = card.querySelector(':scope > .metric-card-lbl') ||
+                 card.querySelector(':scope > .section-head') ||
+                 card.querySelector(':scope > h3, :scope > h4');
+    if (!head) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sp-btn auto-spk';
+    btn.setAttribute('aria-label', 'Hear this card');
+    btn.textContent = '🔊';
+    btn.style.cssText = 'margin-left:auto;background:transparent;border:1px solid rgba(14,35,68,.3);color:#0E2344;border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer';
+    btn.onclick = function(e){ e.stopPropagation(); _spBoxRead(card); };
+    head.appendChild(btn);
+  });
+}
+document.addEventListener('DOMContentLoaded', _spInjectAll);
+let _spInjectTimer = null;
+const _spInjectObs = new MutationObserver(function(){
+  if (_spInjectTimer) return;
+  _spInjectTimer = setTimeout(function(){ _spInjectTimer = null; _spInjectAll(); }, 400);
+});
+document.addEventListener('DOMContentLoaded', function(){
+  _spInjectObs.observe(document.body, { childList: true, subtree: true });
+});
+
+// ──────────────────────────────────────────────────────────────────
 // Talk to Chitti — Technical agent. POSTs to /api/agent/technical/ask.
 // ──────────────────────────────────────────────────────────────────
 function chittiAskOpen() {
