@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: chitti-scanner-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 90
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: DEEPSEEK_VISION_MODEL
+        value: "off"
+      - key: ALLOWED_ORIGINS
+        value: https://sahayai.in,https://www.sahayai.in
+      - key: SCANNER_MAX_TOKENS
+        value: "700"
+      - key: SCANNER_TEMPERATURE
+        value: "0.2"
+      - key: MEDUPI_API_BASE
+        value: https://chitti-medupi-api.onrender.com

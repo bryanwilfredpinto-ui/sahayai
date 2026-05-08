@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti UPI Fraud Guard — Bharat's first AI fraud warning · RBI 2026 ready</title>
+<meta name="description" content="Paste a payment request, SMS, WhatsApp message or what a caller told you. Chitti grades the fraud risk in seconds — HIGH (red) / MEDIUM (orange) / LOW (green) — and reads the warning aloud.">
+<meta name="chitti-page-desc" content="Chitti UPI Fraud Guard — paste suspicious payment text. Chitti grades fraud risk and warns you aloud.">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37; --orange:#ea580c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+body{min-height:100vh;position:relative}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+/* Consent gate */
+.consent-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.consent-overlay.hidden{display:none}
+.consent-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:740px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.consent-panel h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
+.consent-panel .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.consent-panel .lang-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:#fbf8f1;border-radius:10px}
+.consent-panel .lang-pick button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.consent-panel .lang-pick button.active{background:var(--saffron);color:#fff;border-color:var(--saffron);font-weight:700}
+.tnc-section{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.tnc-section h3{margin:0 0 6px;font-size:14px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tnc-section h3 .num{background:var(--saffron);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.tnc-section h3 .title-txt{flex:1}
+.tnc-section h3 .spk{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;min-height:30px;flex-shrink:0}
+.tnc-section h3 .spk.playing{background:var(--saffron);color:#fff;animation:micPulse 1.2s ease-in-out infinite}
+.tnc-section p{margin:6px 0 0;font-size:13px}
+.tnc-section ul{margin:6px 0 0;padding-left:20px;font-size:13px}
+.consent-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.consent-actions button.agree{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:10px;padding:14px 22px;font-size:15px;font-weight:800;cursor:pointer;flex:1;min-height:50px;min-width:160px;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.consent-actions button.spk-all{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:10px;padding:14px 18px;font-size:14px;font-weight:700;cursor:pointer;min-height:50px}
+.consent-actions button.decline{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:14px 18px;font-size:14px;cursor:pointer;min-height:50px}
+@keyframes micPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Header */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#dc2626,#E86A17);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(220,38,38,.40);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.lang-toggle-bharat select{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
+
+/* Main */
+main{padding:14px 16px 110px;max-width:920px;margin:0 auto}
+.section-card{margin:0 0 14px;padding:16px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin:0 0 4px}
+.section-title .ico{font-size:20px}
+.section-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+
+.input-row{display:flex;gap:8px;flex-wrap:wrap}
+.input-row textarea{flex:1;min-width:240px;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:14px;min-height:120px;font-family:inherit;resize:vertical}
+.input-row textarea:focus{outline:none;border-color:var(--saffron)}
+.input-row .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.btn-navy{background:linear-gradient(135deg,var(--navy),#16376a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600;border-radius:10px;padding:12px 16px;font-size:13px;min-height:46px;cursor:pointer}
+.mic-btn{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(232,106,23,.10));border:1px solid #D4AF37;color:var(--text);border-radius:10px;padding:0 14px;font-size:18px;cursor:pointer;min-height:46px;min-width:50px}
+.mic-btn.listening{background:rgba(220,38,38,.18);border-color:var(--red);animation:micPulse 1.2s ease-in-out infinite}
+
+/* Verdict bands */
+.verdict{margin-top:14px;border-radius:14px;padding:18px;display:none;border:2px solid transparent}
+.verdict.shown{display:block}
+.verdict.high{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border-color:#7f1d1d;animation:flashHigh 1s ease-in-out 3}
+.verdict.medium{background:linear-gradient(135deg,#ea580c,#f97316);color:#fff;border-color:#9a3412}
+.verdict.low{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border-color:#14532d}
+@keyframes flashHigh{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+.verdict-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.verdict-head .ico{font-size:30px;flex-shrink:0}
+.verdict-head .lvl{font-size:22px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;flex:1}
+.verdict-head .ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.verdict-head .ctrls button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.40);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:700;min-height:32px}
+.verdict-head .ctrls button:hover{background:rgba(255,255,255,.28)}
+.verdict .warning{font-size:18px;font-weight:800;margin:8px 0 6px;line-height:1.4}
+.verdict .reason{font-size:14px;opacity:.95;margin-bottom:8px}
+.verdict .indicators{margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+.verdict .indicators span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.40);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700}
+.verdict .actions{margin:10px 0 0;padding:10px 12px;background:rgba(255,255,255,.14);border-radius:8px;font-size:13px;line-height:1.6}
+.verdict .actions strong{display:block;margin-bottom:4px}
+.verdict .legal{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.50);font-size:12px;line-height:1.5;font-weight:600}
+.verdict .legal div + div{margin-top:4px}
+
+/* Sample / quick-test cards */
+.sample-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.sample-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;cursor:pointer;text-align:left;font-size:12px;color:var(--text);line-height:1.5;display:flex;flex-direction:column;gap:6px}
+.sample-card:hover{border-color:var(--saffron);background:rgba(232,106,23,.04)}
+.sample-card .tag{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(220,38,38,.08);color:var(--red);padding:2px 8px;border-radius:6px;display:inline-block;align-self:flex-start}
+.sample-card .tag.med{background:rgba(234,88,12,.10);color:var(--orange)}
+.sample-card .tag.low{background:rgba(22,163,74,.10);color:var(--green)}
+
+/* RBI rule cards */
+.rule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.rule-card{border:1px solid var(--gold);border-radius:14px;padding:14px;background:linear-gradient(180deg,#fff,#fbf8f1);min-height:160px;display:flex;flex-direction:column;gap:6px}
+.rule-card .row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.rule-card .ico{font-size:28px}
+.rule-card .spk{background:transparent;border:1px solid var(--border);color:var(--saffron);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:700}
+.rule-card .title{font-size:14px;font-weight:800;color:var(--navy)}
+.rule-card .body{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* History */
+.history{margin-top:6px}
+.history-row{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.history-row .badge{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;flex-shrink:0}
+.history-row .badge.high{background:#fee2e2;color:var(--red);border:1px solid var(--red)}
+.history-row .badge.medium{background:#ffedd5;color:var(--orange);border:1px solid var(--orange)}
+.history-row .badge.low{background:#dcfce7;color:var(--green);border:1px solid var(--green)}
+.history-row .q{flex:1;min-width:160px;font-size:12px;color:var(--text)}
+.history-row button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+
+/* Floating SOS */
+.sos-fab{position:fixed;right:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 10px 30px rgba(220,38,38,.45);display:flex;align-items:center;gap:8px;min-height:50px}
+
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.6}
+
+@media (max-width:640px){
+  .brand{font-size:18px}
+  main{padding:12px 12px 100px}
+}
+</style>
+</head>
+<body>
+
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<!-- ════════════ CONSENT GATE ════════════ -->
+<div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+  <div class="consent-panel">
+    <h1 id="consent-title">Chitti UPI Fraud Guard — Terms &amp; Conditions</h1>
+    <div class="sub">Chitti is a warning tool, not a payment blocker. Read each section. Tap 🔊 to hear it aloud. Tap <strong>I AGREE</strong> to start.</div>
+
+    <div class="lang-pick" role="group" aria-label="Choose language">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);align-self:center">Read aloud in:</span>
+      <button data-lang="hi" class="active" onclick="setConsentLang('hi')">हिन्दी</button>
+      <button data-lang="en" onclick="setConsentLang('en')">English</button>
+      <button data-lang="ta" onclick="setConsentLang('ta')">தமிழ்</button>
+      <button data-lang="te" onclick="setConsentLang('te')">తెలుగు</button>
+      <button data-lang="bn" onclick="setConsentLang('bn')">বাংলা</button>
+      <button data-lang="mr" onclick="setConsentLang('mr')">मराठी</button>
+      <button data-lang="gu" onclick="setConsentLang('gu')">ગુજરાતી</button>
+      <button data-lang="kn" onclick="setConsentLang('kn')">ಕನ್ನಡ</button>
+      <button data-lang="ml" onclick="setConsentLang('ml')">മലയാളം</button>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">1</span><span class="title-txt">What Chitti UPI Guard is (and is not)</span><button class="spk" onclick="speakSection(1, this)" aria-label="Hear section 1 aloud">🔊 Hear</button></h3>
+      <p>Chitti reads suspicious payment text and grades the fraud risk: <strong>HIGH</strong> (red), <strong>MEDIUM</strong> (orange), or <strong>LOW</strong> (green). Chitti is <strong>not</strong> a payment processor and <strong>cannot block any payment</strong>. The decision is always yours.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" onclick="speakSection(2, this)" aria-label="Hear section 2 aloud">🔊 Hear</button></h3>
+      <p>Chitti follows <strong>RBI Master Directions on Digital Payments</strong>, the <strong>DPDP Act 2023</strong>, and <strong>IT Rules 2021</strong>. Chitti does <strong>not</strong> ask for your UPI ID, PIN, OTP, account number, or card details — and never will. If you are asked for any of these on this page, close it immediately.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" onclick="speakSection(3, this)" aria-label="Hear section 3 aloud">🔊 Hear</button></h3>
+      <p><strong>None.</strong> Chitti UPI Guard runs entirely on text you paste in. There is no microphone, camera, contacts, or SMS read here.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" onclick="speakSection(4, this)" aria-label="Hear section 4 aloud">🔊 Hear</button></h3>
+      <p>The text you paste is sent to Chitti's AI for risk classification and is <strong>not stored</strong> on our servers. Your check history lives only in your browser (localStorage). Clear it any time.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" onclick="speakSection(5, this)" aria-label="Hear section 5 aloud">🔊 Hear</button></h3>
+      <p>Already lost money or shared OTP? Call <strong>1930</strong> or report at <strong>cybercrime.gov.in</strong> within 1 hour for a chance at recovery. Chitti makes no guarantee that fraud will be prevented; the AI may sometimes misclassify. Always verify with the merchant on a number you already trust.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud">🔊 Hear</button></h3>
+      <p>Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by IT Rules 2021.</p>
+    </div>
+
+    <div class="consent-actions">
+      <button class="agree" onclick="acceptConsent()">✓ I AGREE — start Chitti UPI Guard</button>
+      <button class="spk-all" onclick="speakAllSections()">🔊 Read all sections aloud</button>
+      <button class="decline" onclick="declineConsent()">Not now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ HEADER ════════════ -->
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <div class="bharat-logo" aria-hidden="true">🛡️</div>
+      <div>
+        <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">UPI Fraud Guard</span></div>
+        <div class="tagline">Paste it before you pay it · Bharat's AI second-opinion on UPI risk.</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_complete_technical.html">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_fundamentals.html">📋 Fundamentals</a>
+      <a class="switch-btn-bharat" href="chitti_news.html">📰 News</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_vaani.html">🎙️ Vaani</a>
+      <a class="switch-btn-bharat" href="chitti_scanner.html">📷 Scanner</a>
+      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" onchange="changeLanguage(this.value)">
+        <option value="hi">हिन्दी</option>
+        <option value="en">English</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+        <option value="mr">मराठी</option>
+        <option value="gu">ગુજરાતી</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button onclick="speakIntro()">🔊 How to use</button>
+    <button onclick="clearHistory()">🗑️ Clear history</button>
+    <button onclick="reopenConsent()">📜 Re-read T&amp;C</button>
+  </div>
+</header>
+
+<div id="chitti-speak-bar" style="margin:10px 14px 0"></div>
+
+<main>
+
+  <!-- ════════ INPUT ════════ -->
+  <section class="section-card" aria-labelledby="check-title">
+    <h2 class="section-title" id="check-title"><span class="ico">🔎</span> Check before you pay</h2>
+    <div class="section-sub">Paste the SMS, the WhatsApp text, the merchant name, the QR-code description — or type what the caller told you. Chitti will grade the risk in seconds.</div>
+
+    <div class="input-row">
+      <textarea id="user-text" placeholder="Example: 'Aapka SBI account band ho raha hai, KYC update ke liye is link pe click karein…' " aria-label="Paste suspicious payment text"></textarea>
+      <div class="btn-row" style="flex-direction:column">
+        <button class="btn-saffron" onclick="checkRisk()">🛡️ Check risk now</button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleMic()" aria-label="Speak the message instead of typing">🎙️ Speak</button>
+        <button class="btn-ghost" onclick="clearInput()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Verdict band — colour-coded -->
+    <div id="verdict" class="verdict" role="alert" aria-live="assertive">
+      <div class="verdict-head">
+        <span class="ico" id="verdict-ico">⚠️</span>
+        <span class="lvl" id="verdict-lvl">…</span>
+        <div class="ctrls">
+          <button onclick="speakVerdict()">🔊 Hear again</button>
+          <button onclick="stopSpeaking()">⏹ Stop</button>
+          <button onclick="callVaani()">🎙️ Talk to Vaani</button>
+        </div>
+      </div>
+      <div class="warning" id="verdict-warning">…</div>
+      <div class="reason" id="verdict-reason">…</div>
+      <div class="indicators" id="verdict-indicators"></div>
+      <div class="actions" id="verdict-actions"></div>
+      <div class="legal">
+        <div>📞 Fraud hone par turant 1930 pe call karo ya cybercrime.gov.in pe report karo.</div>
+        <div>🤖 Chitti ek AI warning tool hai — yeh payment block nahi kar sakta.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SAMPLE SCAMS (try-me cards) ════════ -->
+  <section class="section-card" aria-labelledby="samples-title">
+    <h2 class="section-title" id="samples-title"><span class="ico">🧪</span> Try a known scam pattern</h2>
+    <div class="section-sub">Tap a card to load it into the box and check it instantly.</div>
+    <div class="sample-grid">
+      <button class="sample-card" onclick="loadSample(this)" data-text="Dear customer, your SBI YONO account will be blocked today at 6pm. Update KYC immediately at this link: http://sbi-update-secure.in/kyc — call 9XXXXXXXXX">
+        <span class="tag">KYC scam</span>
+        <span>SBI YONO account block warning + suspicious KYC link.</span>
+      </button>
+      <button class="sample-card" onclick="loadSample(this)" data-text="Aapki bijli aaj raat 9 baje kaat di jayegi kyunki aapne pichhle mahine ka bill pay nahi kiya. Turant ₹250 paid karein is number par 9XXXXXXXXX (PhonePe).">
+        <span class="tag">Bijli scam</span>
+        <span>Electricity-disconnection threat + UPI to a personal number.</span>
+      </button>
+      <button class="sample-card" onclick="loadSample(this)" data-text="Hi sir, maine accidentally aapke UPI pe ₹4500 bhej diye, please refund. Yeh mera UPI hai: rohit.k@apl">
+        <span class="tag">Refund trap</span>
+        <span>Stranger claims wrong-payment, asks you to "refund".</span>
+      </button>
+      <button class="sample-card" onclick="loadSample(this)" data-text="Congratulations! You have won ₹25,00,000 in KBC lottery. To claim, send ₹2,500 processing fee to upi-id 8XXXXXXXXX@ybl">
+        <span class="tag">Lottery scam</span>
+        <span>KBC lottery + processing fee request.</span>
+      </button>
+      <button class="sample-card" onclick="loadSample(this)" data-text="This is from CBI cyber-cell. A parcel in your name contains drugs. Verify yourself — share your Aadhaar and OTP, or you will be arrested.">
+        <span class="tag">Fake CBI</span>
+        <span>Impersonation + Aadhaar + OTP request.</span>
+      </button>
+      <button class="sample-card" onclick="loadSample(this)" data-text="Paid ₹599 to BIGBASKET DAILY at 09:42 via PhonePe UPI. Ref no UPI/2026031199142. Receipt sent to your registered email.">
+        <span class="tag low">Looks LOW</span>
+        <span>Routine grocery payment receipt — should grade LOW.</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ════════ RBI 2026 RULE CARDS ════════ -->
+  <section class="section-card" aria-labelledby="rules-title">
+    <h2 class="section-title" id="rules-title"><span class="ico">📜</span> RBI 2026 protections — know them</h2>
+    <div class="section-sub">Four rules every Indian UPI user should know. Tap 🔊 to hear each one.</div>
+    <div id="rules-grid" class="rule-grid"><div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">… loading rules …</div></div>
+  </section>
+
+  <!-- ════════ HISTORY ════════ -->
+  <section class="section-card" aria-labelledby="hist-title">
+    <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent checks</h2>
+    <div class="section-sub">Stays only on this device. Tap 🔊 to hear an old verdict again.</div>
+    <div id="history" class="history"></div>
+  </section>
+
+  <footer>
+    <small>
+      <strong>Chitti UPI Fraud Guard</strong> · Cyber-fraud helpline 1930 · cybercrime.gov.in · Sahayai: sire@sahayai.in<br>
+      Yeh AI ki madad hai. Final decision aap lo — ek bhrosemand number par merchant se confirm kar lo.
+    </small>
+  </footer>
+</main>
+
+<button class="sos-fab" onclick="callVaani()" aria-label="Talk to Chitti Vaani for SOS">🎙️ Talk to Vaani</button>
+
+<script>
+const CONSENT_KEY = 'chitti_upi_consent_given';
+const HISTORY_KEY = 'chitti_upi_history';
+const LANG_KEY    = 'chitti_upi_lang';
+
+const API_BASE = (function(){
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
+  } catch(e){}
+  return 'https://chitti-upi-api.onrender.com';
+})();
+
+let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
+let CONSENT_LANG = CURRENT_LANG;
+let LAST_VERDICT = null;
+let RECOG = null, LISTENING = false;
+
+const SECTIONS = {
+  1: { en: "What Chitti UPI Guard is and is not. Chitti reads suspicious payment text and grades the risk High Red, Medium Orange, or Low Green. Chitti cannot block any payment. The decision is always yours.",
+       hi: "चिट्टी क्या है और क्या नहीं। चिट्टी संदिग्ध पेमेंट टेक्स्ट पढ़ कर जोखिम का दर्जा देती है — हाई लाल, मीडियम नारंगी, लो हरा। चिट्टी पेमेंट रोक नहीं सकती। फ़ैसला हमेशा आपका है।" },
+  2: { en: "Legal compliance. Chitti follows RBI Master Directions on Digital Payments, the DPDP Act 2023, and IT Rules 2021. Chitti never asks for your UPI ID, PIN, OTP, account number, or card details.",
+       hi: "क़ानूनी अनुपालन। चिट्टी RBI के डिजिटल पेमेंट दिशा-निर्देश, DPDP एक्ट 2023, और IT Rules 2021 का पालन करती है। चिट्टी कभी UPI ID, PIN, OTP, खाता या कार्ड नहीं माँगती।" },
+  3: { en: "Permissions required. None. Chitti UPI Guard works only on the text you paste. No microphone, camera, contacts, or SMS read.",
+       hi: "ज़रूरी अनुमतियाँ। कोई नहीं। चिट्टी UPI गार्ड केवल आपके द्वारा डाले गए टेक्स्ट पर काम करती है।" },
+  4: { en: "Data privacy. The text you paste is sent for risk classification and is not stored on our servers. Your check history stays only in your browser.",
+       hi: "डेटा प्राइवेसी। आपका टेक्स्ट जोखिम जाँच के लिए जाता है, हमारे सर्वर पर सहेजा नहीं जाता। आपकी जाँच का इतिहास केवल आपके ब्राउज़र में रहता है।" },
+  5: { en: "Emergency and liability. Already lost money or shared OTP? Call 1930 or report at cybercrime.gov.in within one hour. The AI may sometimes misclassify; always verify with the merchant on a number you trust.",
+       hi: "आपातकाल और जिम्मेदारी। पैसे चले गए हों या OTP शेयर कर दिया हो — एक घंटे के अंदर 1930 पर कॉल करें या cybercrime.gov.in पर रिपोर्ट करें।" },
+  6: { en: "Grievance redressal. Email sire at sahayai dot in. We reply within seven working days as required by IT Rules 2021.",
+       hi: "शिकायत निवारण। sire at sahayai dot in पर ईमेल करें। आईटी रूल्स 2021 के तहत हम सात कार्य दिवसों में जवाब देते हैं।" },
+};
+
+function consentGiven(){ return localStorage.getItem(CONSENT_KEY) === '1'; }
+function setConsentLang(lang){
+  CONSENT_LANG = lang;
+  document.querySelectorAll('.lang-pick button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  CURRENT_LANG = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  const sel = document.getElementById('lang-select');
+  if (sel) sel.value = lang;
+}
+function speakSection(n, btn){
+  stopSpeaking();
+  const txt = (SECTIONS[n] && (SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en)) || '';
+  if (!txt) return;
+  if (btn) btn.classList.add('playing');
+  speakText(txt, CONSENT_LANG, () => { if (btn) btn.classList.remove('playing'); });
+}
+function speakAllSections(){
+  stopSpeaking();
+  const all = [1,2,3,4,5,6].map(n => SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en).join('. ');
+  speakText(all, CONSENT_LANG);
+}
+function acceptConsent(){
+  localStorage.setItem(CONSENT_KEY, '1');
+  document.getElementById('consent-overlay').classList.add('hidden');
+  loadRules();
+  const welcome = CONSENT_LANG === 'en' ? 'Chitti UPI Guard is ready. Paste any suspicious message above.' : 'चिट्टी UPI गार्ड तैयार है। ऊपर कोई भी संदिग्ध मैसेज पेस्ट कीजिए।';
+  setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
+}
+function declineConsent(){ alert('Chitti will not work until you accept. You can come back anytime.'); }
+function reopenConsent(){ document.getElementById('consent-overlay').classList.remove('hidden'); }
+
+function changeLanguage(lang){
+  CURRENT_LANG = lang;
+  localStorage.setItem(LANG_KEY, lang);
+}
+
+/* Speech */
+function bcp47(lang){ return ({hi:'hi-IN',en:'en-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN'})[lang] || 'en-IN'; }
+function speakText(text, lang, onEnd){
+  if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = bcp47(lang || CURRENT_LANG); u.rate = 0.92;
+  if (onEnd) u.onend = onEnd;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking(){ if (window.speechSynthesis) speechSynthesis.cancel(); }
+function speakIntro(){
+  const en = "Chitti UPI Guard is open. Paste any suspicious payment text in the box and tap Check risk now.";
+  const hi = "चिट्टी UPI गार्ड खुला है। संदिग्ध पेमेंट टेक्स्ट को बॉक्स में पेस्ट कीजिए और जोखिम जाँचिए।";
+  speakText(CURRENT_LANG === 'en' ? en : hi, CURRENT_LANG);
+}
+function speakVerdict(){
+  if (!LAST_VERDICT) return;
+  const t = LAST_VERDICT.warning + '. ' + (LAST_VERDICT.reason || '') + '. ' +
+            (LAST_VERDICT.legal_lines || []).join('. ');
+  speakText(t, LAST_VERDICT.language || CURRENT_LANG);
+}
+
+/* Mic input (just dictates into the box) */
+function getRecog(){
+  if (RECOG) return RECOG;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.interimResults = true; r.continuous = false;
+  r.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) final += e.results[i][0].transcript;
+    if (final) document.getElementById('user-text').value = final;
+  };
+  r.onend = () => { LISTENING = false; document.getElementById('mic-btn').classList.remove('listening'); };
+  r.onerror = () => { LISTENING = false; document.getElementById('mic-btn').classList.remove('listening'); };
+  RECOG = r; return r;
+}
+function toggleMic(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const r = getRecog();
+  if (!r) { alert('This browser does not support speech recognition. Please type or paste the text.'); return; }
+  if (LISTENING) { try { r.stop(); } catch(e){} return; }
+  r.lang = bcp47(CURRENT_LANG); LISTENING = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  try { r.start(); } catch(e){}
+}
+
+/* CHECK */
+async function checkRisk(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const text = (document.getElementById('user-text').value || '').trim();
+  if (!text) {
+    speakText(CURRENT_LANG === 'en' ? 'Please paste a message first.' : 'पहले कोई मैसेज पेस्ट कीजिए।', CURRENT_LANG);
+    return;
+  }
+  const v = document.getElementById('verdict');
+  v.classList.remove('shown','high','medium','low');
+  v.classList.add('shown','medium');
+  document.getElementById('verdict-ico').textContent = '⏳';
+  document.getElementById('verdict-lvl').textContent = 'Checking…';
+  document.getElementById('verdict-warning').textContent = '';
+  document.getElementById('verdict-reason').textContent = '';
+  document.getElementById('verdict-indicators').innerHTML = '';
+  document.getElementById('verdict-actions').innerHTML = '';
+
+  let data;
+  try {
+    const r = await fetch(API_BASE + '/api/upi/check', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text, language: CURRENT_LANG }),
+    });
+    data = await r.json();
+  } catch(e) {
+    data = { ok:false, error: 'Network error: ' + e.message };
+  }
+
+  if (!data || !data.ok) {
+    document.getElementById('verdict-ico').textContent = '⚠️';
+    document.getElementById('verdict-lvl').textContent = 'Error';
+    document.getElementById('verdict-warning').textContent = data && data.error || 'Unknown error';
+    return;
+  }
+
+  LAST_VERDICT = data;
+  applyVerdict(data);
+  pushHistory({ q: text, risk: data.risk, warning: data.warning, lang: data.language || CURRENT_LANG, ts: Date.now() });
+}
+
+function applyVerdict(d){
+  const v = document.getElementById('verdict');
+  v.classList.remove('high','medium','low');
+  const klass = d.risk === 'HIGH' ? 'high' : (d.risk === 'LOW' ? 'low' : 'medium');
+  v.classList.add('shown', klass);
+  document.getElementById('verdict-ico').textContent =
+    d.risk === 'HIGH' ? '🚨' : (d.risk === 'LOW' ? '✅' : '⚠️');
+  document.getElementById('verdict-lvl').textContent =
+    (d.risk === 'HIGH' ? 'HIGH RISK · KHATARNAK' : d.risk === 'LOW' ? 'LOW RISK · KAAFI THEEK' : 'MEDIUM RISK · DHYAAN SE');
+  document.getElementById('verdict-warning').textContent = d.warning || '';
+  document.getElementById('verdict-reason').textContent  = d.reason  || '';
+  const ind = document.getElementById('verdict-indicators');
+  ind.innerHTML = (d.indicators || []).map(s => `<span>${escapeHtml(s)}</span>`).join('');
+  const ax = document.getElementById('verdict-actions');
+  if ((d.actions || []).length) {
+    ax.innerHTML = '<strong>Aage kya karein?</strong>' + (d.actions || []).map(a => '• ' + escapeHtml(a)).join('<br>');
+  } else { ax.innerHTML = ''; }
+  // Auto-speak the warning + legal lines
+  const t = (d.warning || '') + '. ' + (d.legal_lines || []).join('. ');
+  speakText(t, d.language || CURRENT_LANG);
+}
+
+/* Samples */
+function loadSample(btn){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('user-text').value = btn.getAttribute('data-text');
+  checkRisk();
+}
+
+/* RBI 2026 cards */
+async function loadRules(){
+  const grid = document.getElementById('rules-grid');
+  try {
+    const r = await fetch(API_BASE + '/api/upi/rules');
+    const d = await r.json();
+    if (!d.ok || !Array.isArray(d.items)) throw new Error('bad payload');
+    grid.innerHTML = d.items.map(it => `
+      <div class="rule-card">
+        <div class="row">
+          <span class="ico">${it.icon || '📜'}</span>
+          <button class="spk" onclick='speakText(${JSON.stringify(it.speak_hi || it.body_hi || it.body_en)}, "hi")' aria-label="Hear this rule aloud">🔊</button>
+        </div>
+        <div class="title">${escapeHtml(CURRENT_LANG === 'en' ? (it.title_en || '') : (it.title_hi || it.title_en || ''))}</div>
+        <div class="body">${escapeHtml(CURRENT_LANG === 'en' ? (it.body_en || '') : (it.body_hi || it.body_en || ''))}</div>
+      </div>`).join('');
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:14px">Could not load rules right now.</div>';
+  }
+}
+
+/* History */
+function loadHistory(){ try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e){ return []; } }
+function pushHistory(e){
+  const h = loadHistory(); h.unshift(e);
+  while (h.length > 20) h.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  renderHistory();
+}
+function clearHistory(){ if (!confirm('Clear check history on this device?')) return; localStorage.removeItem(HISTORY_KEY); renderHistory(); }
+function renderHistory(){
+  const el = document.getElementById('history');
+  const h = loadHistory();
+  if (!h.length) { el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px">No checks yet.</div>'; return; }
+  el.innerHTML = h.map((e,i) => `
+    <div class="history-row">
+      <span class="badge ${e.risk === 'HIGH' ? 'high' : e.risk === 'LOW' ? 'low' : 'medium'}">${escapeHtml(e.risk || 'MED')}</span>
+      <div class="q">${escapeHtml((e.q||'').slice(0,160))}</div>
+      <button onclick="replayHistory(${i})">🔊 Hear</button>
+    </div>`).join('');
+}
+function replayHistory(i){
+  const e = loadHistory()[i]; if (!e) return;
+  speakText((e.warning || '') + '. ' + 'Fraud hone par 1930 pe call karo.', e.lang || CURRENT_LANG);
+}
+
+/* Cross-product hand-off */
+function callVaani(){
+  if (LAST_VERDICT) {
+    try { sessionStorage.setItem('chitti_handoff_text', 'I just got a ' + LAST_VERDICT.risk + '-risk fraud warning. Help me decide what to do.'); } catch(e){}
+  }
+  window.location.href = 'chitti_vaani.html?from=upi';
+}
+function clearInput(){ document.getElementById('user-text').value = ''; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* Boot */
+window.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  setConsentLang(CURRENT_LANG);
+  if (consentGiven()) {
+    document.getElementById('consent-overlay').classList.add('hidden');
+    loadRules();
+  }
+  renderHistory();
+});
+</script>
+
+<script src="chitti_disclaimer.js"></script>
+</body>
+</html>

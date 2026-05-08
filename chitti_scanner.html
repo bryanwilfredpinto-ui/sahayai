@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Product Scanner — Bharat's AI label-reader · Medicine, food, bill, contract</title>
+<meta name="description" content="Snap or type any product label, medicine strip, bill or contract. Chitti reads it, flags warnings, suggests savings, and connects to Jan Aushadhi for cheaper medicines.">
+<meta name="chitti-page-desc" content="Chitti Product Scanner — capture or type a label, Chitti analyses it and reads the result aloud.">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37; --orange:#ea580c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+body{min-height:100vh;position:relative}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+/* Consent gate */
+.consent-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.consent-overlay.hidden{display:none}
+.consent-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:740px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.consent-panel h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
+.consent-panel .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.consent-panel .lang-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:#fbf8f1;border-radius:10px}
+.consent-panel .lang-pick button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.consent-panel .lang-pick button.active{background:var(--saffron);color:#fff;border-color:var(--saffron);font-weight:700}
+.tnc-section{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.tnc-section h3{margin:0 0 6px;font-size:14px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tnc-section h3 .num{background:var(--saffron);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.tnc-section h3 .title-txt{flex:1}
+.tnc-section h3 .spk{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;min-height:30px;flex-shrink:0}
+.tnc-section h3 .spk.playing{background:var(--saffron);color:#fff;animation:micPulse 1.2s ease-in-out infinite}
+.tnc-section p{margin:6px 0 0;font-size:13px}
+.consent-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.consent-actions button.agree{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:10px;padding:14px 22px;font-size:15px;font-weight:800;cursor:pointer;flex:1;min-height:50px;min-width:160px;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.consent-actions button.spk-all{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:10px;padding:14px 18px;font-size:14px;font-weight:700;cursor:pointer;min-height:50px}
+.consent-actions button.decline{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:14px 18px;font-size:14px;cursor:pointer;min-height:50px}
+@keyframes micPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* Header */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.lang-toggle-bharat select{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
+
+/* Main */
+main{padding:14px 16px 110px;max-width:920px;margin:0 auto}
+.section-card{margin:0 0 14px;padding:16px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin:0 0 4px}
+.section-title .ico{font-size:20px}
+.section-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+
+/* Capture row */
+.cap-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:6px 0 10px}
+.cap-card{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--border);border-radius:14px;padding:18px 14px;background:#fff;min-height:130px;cursor:pointer;text-align:center}
+.cap-card:hover{border-color:var(--saffron);background:rgba(232,106,23,.04)}
+.cap-card .ico{font-size:32px;margin-bottom:6px}
+.cap-card .lbl{font-size:13px;font-weight:800}
+.cap-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Camera live preview */
+.cam-stage{margin-top:8px;display:none;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#000}
+.cam-stage.shown{display:block}
+.cam-stage video{width:100%;height:auto;max-height:360px;display:block;background:#000}
+.cam-bar{display:flex;gap:8px;padding:10px;background:#fbf8f1;flex-wrap:wrap;justify-content:center}
+.cam-bar button{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:42px}
+.cam-bar button.cancel{background:transparent;color:var(--text);border:1px solid var(--border);font-weight:700}
+
+/* File preview */
+.preview{margin-top:8px;display:none;align-items:center;gap:10px;padding:10px;background:#fbf8f1;border:1px solid var(--border);border-radius:12px;flex-wrap:wrap}
+.preview.shown{display:flex}
+.preview img{width:80px;height:80px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.preview .meta{flex:1;font-size:12px;min-width:140px}
+.preview button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+
+/* Text fallback */
+.text-fallback{margin-top:14px;padding:12px;background:#fbf8f1;border:1px solid var(--border);border-radius:12px}
+.text-fallback h3{margin:0 0 6px;font-size:13px;color:var(--navy);font-weight:800}
+.text-fallback p{margin:0 0 8px;font-size:12px;color:var(--muted)}
+.text-fallback textarea{width:100%;min-height:90px;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:13px;font-family:inherit;resize:vertical}
+.text-fallback textarea:focus{outline:none;border-color:var(--saffron)}
+.text-fallback .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+/* Buttons */
+.btn-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.btn-navy{background:linear-gradient(135deg,var(--navy),#16376a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600;border-radius:10px;padding:12px 16px;font-size:13px;min-height:46px;cursor:pointer}
+.mic-btn{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(232,106,23,.10));border:1px solid #D4AF37;color:var(--text);border-radius:10px;padding:0 14px;font-size:18px;cursor:pointer;min-height:46px;min-width:50px}
+.mic-btn.listening{background:rgba(220,38,38,.18);border-color:var(--red);animation:micPulse 1.2s ease-in-out infinite}
+
+/* Result */
+.result{display:none;margin-top:14px;padding:14px;background:linear-gradient(180deg,#fff8e1,#fff);border:1px solid var(--gold);border-radius:14px}
+.result.shown{display:block}
+.result-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.result-head .badge{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:var(--saffron);color:#fff}
+.result-head .badge.medicine{background:#0e7490}
+.result-head .badge.food{background:#16a34a}
+.result-head .badge.bill,.result-head .badge.mrp{background:#7c3aed}
+.result-head .badge.legal_doc{background:#1d4ed8}
+.result-head .badge.insurance{background:#9333ea}
+.result-head .badge.other{background:#6b7280}
+.result-head .ctrls{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.result-head .ctrls button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.result h3{margin:8px 0 4px;font-size:13px;font-weight:800;color:var(--navy)}
+.result .summary{font-size:15px;line-height:1.6;font-weight:600}
+.result ul{margin:4px 0 0;padding-left:20px;font-size:13px}
+.result ul li{margin-bottom:3px}
+.result .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-top:6px}
+.result .facts .fct{border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:#fff;font-size:12px}
+.result .facts .fct b{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.result .warns{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;margin-top:8px}
+.result .warns ul{padding-left:18px}
+.result .warns li{color:#991b1b;font-weight:600}
+.result .savings{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;margin-top:8px}
+.result .savings li{color:#166534;font-weight:600}
+.result .legal{margin-top:10px;padding:10px;background:#fff8e1;border:1px solid #fde68a;border-radius:8px;font-size:12px;font-weight:700;color:#92400e}
+.result .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.result .links a, .result .links button{background:linear-gradient(135deg,var(--navy),#16376a);color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:10px 14px;font-size:13px;border:none;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;gap:6px}
+.result .links a:hover, .result .links button:hover{filter:brightness(1.1)}
+
+/* Jan Aushadhi inline panel */
+.ja-panel{display:none;margin-top:10px;padding:12px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px}
+.ja-panel.shown{display:block}
+.ja-panel h4{margin:0 0 6px;font-size:13px;color:#065f46;font-weight:800}
+.ja-panel .alts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:6px}
+.ja-panel .alt{border:1px solid #6ee7b7;border-radius:8px;padding:8px;background:#fff;font-size:12px}
+.ja-panel .alt b{display:block;color:#065f46}
+.ja-panel .alt .sav{color:#16a34a;font-weight:800;margin-top:4px}
+
+/* History */
+.history-row{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.history-row .badge{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;flex-shrink:0;background:var(--gold);color:var(--text)}
+.history-row .q{flex:1;min-width:160px;font-size:12px;color:var(--text)}
+.history-row button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+
+/* Floating Vaani */
+.fab-vaani{position:fixed;right:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 10px 30px rgba(232,106,23,.45);display:flex;align-items:center;gap:8px;min-height:50px}
+
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.6}
+
+@media (max-width:640px){
+  .brand{font-size:18px}
+  main{padding:12px 12px 100px}
+}
+</style>
+</head>
+<body>
+
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<!-- ════════════ CONSENT GATE ════════════ -->
+<div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+  <div class="consent-panel">
+    <h1 id="consent-title">Chitti Product Scanner — Terms &amp; Conditions</h1>
+    <div class="sub">Read each section. Tap 🔊 to hear it aloud. Tap <strong>I AGREE</strong> to start.</div>
+
+    <div class="lang-pick" role="group" aria-label="Choose language">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);align-self:center">Read aloud in:</span>
+      <button data-lang="hi" class="active" onclick="setConsentLang('hi')">हिन्दी</button>
+      <button data-lang="en" onclick="setConsentLang('en')">English</button>
+      <button data-lang="ta" onclick="setConsentLang('ta')">தமிழ்</button>
+      <button data-lang="te" onclick="setConsentLang('te')">తెలుగు</button>
+      <button data-lang="bn" onclick="setConsentLang('bn')">বাংলা</button>
+      <button data-lang="mr" onclick="setConsentLang('mr')">मराठी</button>
+      <button data-lang="gu" onclick="setConsentLang('gu')">ગુજરાતી</button>
+      <button data-lang="kn" onclick="setConsentLang('kn')">ಕನ್ನಡ</button>
+      <button data-lang="ml" onclick="setConsentLang('ml')">മലയാളം</button>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">1</span><span class="title-txt">What Chitti Scanner is (and is not)</span><button class="spk" onclick="speakSection(1, this)">🔊 Hear</button></h3>
+      <p>Chitti reads a label, bill, medicine strip, or document you show it and explains what it sees. Chitti does <strong>not</strong> diagnose, prescribe, or give legal verdicts.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" onclick="speakSection(2, this)">🔊 Hear</button></h3>
+      <p>Chitti follows <strong>FSSAI</strong> labelling guidelines, the <strong>Consumer Protection Act 2019</strong>, the <strong>DPDP Act 2023</strong>, and <strong>IT Rules 2021</strong>. For medicine labels Chitti restates what is on the strip — it never adds dosage instructions of its own.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" onclick="speakSection(3, this)">🔊 Hear</button></h3>
+      <p><strong>Camera access</strong> — only when you tap the camera button. The camera shuts off as soon as you take the photo or close the preview. You can also upload a photo from gallery, or just type out what the label says.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" onclick="speakSection(4, this)">🔊 Hear</button></h3>
+      <p>Images and text you submit are processed in-memory and are <strong>not stored</strong> on our servers. Your scan history lives only in your browser (localStorage) and can be cleared any time.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" onclick="speakSection(5, this)">🔊 Hear</button></h3>
+      <p>For overcharging or counterfeit complaints, the consumer helpline is <strong>1800-11-4000</strong>. For medicine concerns, please consult a doctor or licensed pharmacist. Chitti makes no guarantee of medical, legal, or financial outcomes.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" onclick="speakSection(6, this)">🔊 Hear</button></h3>
+      <p>Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by IT Rules 2021.</p>
+    </div>
+
+    <div class="consent-actions">
+      <button class="agree" onclick="acceptConsent()">✓ I AGREE — start Chitti Scanner</button>
+      <button class="spk-all" onclick="speakAllSections()">🔊 Read all sections aloud</button>
+      <button class="decline" onclick="declineConsent()">Not now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ HEADER ════════════ -->
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <div class="bharat-logo" aria-hidden="true">📷</div>
+      <div>
+        <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Product Scanner</span></div>
+        <div class="tagline">Snap a label · Chitti reads, warns, saves.</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_complete_technical.html">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_fundamentals.html">📋 Fundamentals</a>
+      <a class="switch-btn-bharat" href="chitti_news.html">📰 News</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_vaani.html">🎙️ Vaani</a>
+      <a class="switch-btn-bharat" href="chitti_upi.html">🛡️ UPI Guard</a>
+      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" onchange="changeLanguage(this.value)">
+        <option value="hi">हिन्दी</option>
+        <option value="en">English</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+        <option value="mr">मराठी</option>
+        <option value="gu">ગુજરાતી</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button onclick="speakIntro()">🔊 How to use</button>
+    <button onclick="clearHistory()">🗑️ Clear history</button>
+    <button onclick="reopenConsent()">📜 Re-read T&amp;C</button>
+  </div>
+</header>
+
+<div id="chitti-speak-bar" style="margin:10px 14px 0"></div>
+
+<main>
+
+  <!-- ════════ CAPTURE ════════ -->
+  <section class="section-card" aria-labelledby="cap-title">
+    <h2 class="section-title" id="cap-title"><span class="ico">📷</span> Capture or upload</h2>
+    <div class="section-sub">Camera / gallery / type the label — whichever works best for you.</div>
+
+    <div class="cap-row">
+      <button class="cap-card" onclick="openCamera()">
+        <span class="ico">📷</span>
+        <span class="lbl">Open camera</span>
+        <span class="sub">Hold the label steady, tap capture.</span>
+      </button>
+      <label class="cap-card" for="file-input">
+        <span class="ico">🖼️</span>
+        <span class="lbl">Upload photo</span>
+        <span class="sub">From your gallery / files.</span>
+      </label>
+      <input id="file-input" type="file" accept="image/*" style="display:none" onchange="handleFile(event)">
+      <button class="cap-card" onclick="document.getElementById('typed-text').focus()">
+        <span class="ico">⌨️</span>
+        <span class="lbl">Type the label</span>
+        <span class="sub">If camera does not work — read it out, type it out.</span>
+      </button>
+    </div>
+
+    <!-- Live camera preview -->
+    <div id="cam-stage" class="cam-stage">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <div class="cam-bar">
+        <button onclick="captureFromCamera()">📸 Capture &amp; analyse</button>
+        <button class="cancel" onclick="closeCamera()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- File / capture preview -->
+    <div id="preview" class="preview">
+      <img id="preview-img" alt="Captured product label">
+      <div class="meta">
+        <div id="preview-name">Captured image</div>
+        <div id="preview-size" style="color:var(--muted)"></div>
+      </div>
+      <button onclick="analyseUploadedImage()" class="btn-saffron">Analyse image</button>
+      <button onclick="clearPreview()">✕ Remove</button>
+    </div>
+
+    <!-- Text fallback (always visible — primary v1 path) -->
+    <div class="text-fallback">
+      <h3>⌨️ Or type / paste what the label says</h3>
+      <p>v1 supports text-first analysis even if camera is off. Speak it via the mic button if you can't type.</p>
+      <textarea id="typed-text" placeholder="Example: 'Crocin Advance 500mg, Paracetamol IP 500mg, Mfg Aug 2025, Exp Jul 2027, MRP ₹35'"></textarea>
+      <div class="row">
+        <button class="btn-saffron" onclick="analyseTypedText()">🔎 Analyse text</button>
+        <button class="mic-btn" id="mic-btn" onclick="toggleMic()" aria-label="Speak the label">🎙️ Speak</button>
+        <button class="btn-ghost" onclick="document.getElementById('typed-text').value=''">Clear</button>
+      </div>
+    </div>
+
+    <!-- ════════ RESULT ════════ -->
+    <div id="result" class="result" role="status" aria-live="polite">
+      <div class="result-head">
+        <span class="badge" id="r-type">…</span>
+        <span style="font-size:11px;color:var(--muted)" id="r-source"></span>
+        <div class="ctrls">
+          <button onclick="speakResult()">🔊 Hear again</button>
+          <button onclick="stopSpeaking()">⏹ Stop</button>
+          <button onclick="sendToVaani()">🎙️ Send to Vaani</button>
+        </div>
+      </div>
+      <div class="summary" id="r-summary"></div>
+      <h3>Key facts</h3>
+      <div class="facts" id="r-facts"></div>
+      <h3>Key findings</h3>
+      <ul id="r-findings"></ul>
+      <div class="warns" id="r-warns" style="display:none">
+        <h3 style="margin:0 0 4px;color:#991b1b">⚠️ Warnings</h3>
+        <ul id="r-warns-ul"></ul>
+      </div>
+      <div class="savings" id="r-savings" style="display:none">
+        <h3 style="margin:0 0 4px;color:#166534">💰 Savings</h3>
+        <ul id="r-savings-ul"></ul>
+      </div>
+      <div class="legal" id="r-legal"></div>
+
+      <!-- Cross-product links -->
+      <div class="links" id="r-links"></div>
+
+      <!-- Jan-Aushadhi inline panel (shown when medicine + cross-link exists) -->
+      <div id="ja-panel" class="ja-panel">
+        <h4>💊 Jan Aushadhi alternative</h4>
+        <div id="ja-body" style="font-size:12px;color:var(--muted)">Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ HISTORY ════════ -->
+  <section class="section-card" aria-labelledby="hist-title">
+    <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent scans</h2>
+    <div class="section-sub">Stays only on this device.</div>
+    <div id="history"></div>
+  </section>
+
+  <footer>
+    <small>
+      <strong>Chitti Product Scanner</strong> · Consumer helpline 1800-11-4000 · FSSAI: fssai.gov.in · Sahayai: sire@sahayai.in<br>
+      Yeh AI ki madad hai. Doctor ya vakeel se confirm zaroor karo.
+    </small>
+  </footer>
+</main>
+
+<button class="fab-vaani" onclick="sendToVaani()" aria-label="Send result to Chitti Vaani">🎙️ Read with Vaani</button>
+
+<script>
+const CONSENT_KEY = 'chitti_scanner_consent_given';
+const HISTORY_KEY = 'chitti_scanner_history';
+const LANG_KEY    = 'chitti_scanner_lang';
+
+const API_BASE = (function(){
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
+  } catch(e){}
+  return 'https://chitti-scanner-api.onrender.com';
+})();
+const MEDUPI_API_BASE = (function(){
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('medupi')) return u.searchParams.get('medupi').replace(/\/$/,'');
+  } catch(e){}
+  return 'https://chitti-medupi-api.onrender.com';
+})();
+
+let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
+let CONSENT_LANG = CURRENT_LANG;
+let CAM_STREAM = null;
+let CAM_BLOB   = null;       // captured Blob (from camera)
+let UPLOAD_FILE = null;      // selected File (from gallery)
+let LAST_RESULT = null;
+let RECOG = null, LISTENING = false;
+
+const SECTIONS = {
+  1: { en: "What Chitti Scanner is and is not. Chitti reads a label, bill, medicine strip or document you show it and explains what it sees. Chitti does not diagnose, prescribe, or give legal verdicts.",
+       hi: "चिट्टी स्कैनर क्या है और क्या नहीं। चिट्टी आपकी दिखाई गई लेबल, बिल, दवाई या दस्तावेज़ पढ़ कर समझाती है। चिट्टी निदान, दवाई की सलाह या क़ानूनी फ़ैसला नहीं देती।" },
+  2: { en: "Legal compliance. Chitti follows FSSAI labelling guidelines, the Consumer Protection Act 2019, the DPDP Act 2023, and IT Rules 2021. For medicine labels Chitti only restates what is on the strip.",
+       hi: "क़ानूनी अनुपालन। चिट्टी FSSAI लेबल नियम, उपभोक्ता संरक्षण अधिनियम 2019, DPDP एक्ट 2023, और IT Rules 2021 का पालन करती है।" },
+  3: { en: "Permissions required. Camera access only when you tap the camera button. The camera shuts off as soon as you take the photo or close the preview. You can also upload from gallery or type out the label.",
+       hi: "ज़रूरी अनुमतियाँ। कैमरा तब ही चालू होता है जब आप कैमरा बटन दबाते हैं। फ़ोटो लेने या प्रीव्यू बंद करने पर कैमरा तुरंत बंद हो जाता है।" },
+  4: { en: "Data privacy. Images and text are processed in memory and are not stored on our servers. Your scan history lives only in your browser.",
+       hi: "डेटा प्राइवेसी। तस्वीरें और टेक्स्ट मेमोरी में ही जाँचे जाते हैं, हमारे सर्वर पर सहेजे नहीं जाते। आपका इतिहास केवल आपके ब्राउज़र में रहता है।" },
+  5: { en: "Emergency and liability. For overcharging or counterfeit complaints, call consumer helpline 1800-11-4000. For medicine concerns, consult a doctor or licensed pharmacist. Chitti makes no guarantee of medical, legal, or financial outcomes.",
+       hi: "आपातकाल और जिम्मेदारी। ज़्यादा दाम या नकली सामान के लिए उपभोक्ता हेल्पलाइन 1800-11-4000 पर कॉल करें। दवाई के सवाल के लिए डॉक्टर से मिलें।" },
+  6: { en: "Grievance redressal. Email sire at sahayai dot in. We respond within seven working days as required by IT Rules 2021.",
+       hi: "शिकायत निवारण। sire at sahayai dot in पर ईमेल करें।" },
+};
+
+function consentGiven(){ return localStorage.getItem(CONSENT_KEY) === '1'; }
+function setConsentLang(lang){
+  CONSENT_LANG = lang;
+  document.querySelectorAll('.lang-pick button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  CURRENT_LANG = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = lang;
+}
+function speakSection(n, btn){
+  stopSpeaking();
+  const txt = (SECTIONS[n] && (SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en)) || '';
+  if (!txt) return;
+  if (btn) btn.classList.add('playing');
+  speakText(txt, CONSENT_LANG, () => { if (btn) btn.classList.remove('playing'); });
+}
+function speakAllSections(){
+  stopSpeaking();
+  const all = [1,2,3,4,5,6].map(n => SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en).join('. ');
+  speakText(all, CONSENT_LANG);
+}
+function acceptConsent(){
+  localStorage.setItem(CONSENT_KEY, '1');
+  document.getElementById('consent-overlay').classList.add('hidden');
+  const w = CONSENT_LANG === 'en' ? 'Chitti Scanner is ready. Tap camera, gallery, or type the label.' : 'चिट्टी स्कैनर तैयार है। कैमरा, गैलरी या टेक्स्ट से शुरू कीजिए।';
+  setTimeout(() => speakText(w, CONSENT_LANG), 250);
+}
+function declineConsent(){ alert('Chitti will not work until you accept. You can come back anytime.'); }
+function reopenConsent(){ document.getElementById('consent-overlay').classList.remove('hidden'); }
+function changeLanguage(lang){ CURRENT_LANG = lang; localStorage.setItem(LANG_KEY, lang); }
+
+/* Speech */
+function bcp47(lang){ return ({hi:'hi-IN',en:'en-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN'})[lang] || 'en-IN'; }
+function speakText(text, lang, onEnd){
+  if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = bcp47(lang || CURRENT_LANG); u.rate = 0.92;
+  if (onEnd) u.onend = onEnd;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking(){ if (window.speechSynthesis) speechSynthesis.cancel(); }
+function speakIntro(){
+  const en = "Chitti Scanner is open. Tap camera to take a photo, or type out what the label says. Chitti will read the result aloud.";
+  const hi = "चिट्टी स्कैनर खुला है। कैमरा दबाइए, या लेबल का टेक्स्ट टाइप कीजिए। चिट्टी जवाब बोल कर सुनाएगी।";
+  speakText(CURRENT_LANG === 'en' ? en : hi, CURRENT_LANG);
+}
+function speakResult(){
+  if (!LAST_RESULT) return;
+  const t = (CURRENT_LANG === 'en' ? LAST_RESULT.speak_en : LAST_RESULT.speak_hi)
+         || LAST_RESULT.summary || '';
+  speakText(t + '. ' + (LAST_RESULT.legal_disclaimer || ''), CURRENT_LANG);
+}
+
+/* Mic */
+function getRecog(){
+  if (RECOG) return RECOG;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR(); r.interimResults = true; r.continuous = false;
+  r.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) final += e.results[i][0].transcript;
+    if (final) document.getElementById('typed-text').value = final;
+  };
+  r.onend = () => { LISTENING = false; document.getElementById('mic-btn').classList.remove('listening'); };
+  r.onerror = () => { LISTENING = false; document.getElementById('mic-btn').classList.remove('listening'); };
+  RECOG = r; return r;
+}
+function toggleMic(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const r = getRecog();
+  if (!r) { alert('This browser does not support speech recognition. Please type the label.'); return; }
+  if (LISTENING) { try { r.stop(); } catch(e){} return; }
+  r.lang = bcp47(CURRENT_LANG); LISTENING = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  try { r.start(); } catch(e){}
+}
+
+/* CAMERA */
+async function openCamera(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Camera is not supported in this browser. Please upload a photo or type the label.');
+    return;
+  }
+  try {
+    CAM_STREAM = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false,
+    });
+    const v = document.getElementById('cam-video');
+    v.srcObject = CAM_STREAM;
+    document.getElementById('cam-stage').classList.add('shown');
+  } catch(e) {
+    alert('Could not open camera: ' + e.message + '. Use upload or type instead.');
+  }
+}
+function closeCamera(){
+  if (CAM_STREAM) { CAM_STREAM.getTracks().forEach(t => t.stop()); CAM_STREAM = null; }
+  document.getElementById('cam-stage').classList.remove('shown');
+}
+async function captureFromCamera(){
+  const v = document.getElementById('cam-video');
+  if (!v || !v.videoWidth) { alert('Camera not ready yet.'); return; }
+  const c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  c.toBlob((blob) => {
+    if (!blob) return;
+    CAM_BLOB = blob; UPLOAD_FILE = null;
+    showPreview(blob, 'Captured photo (' + Math.round(blob.size/1024) + ' KB)');
+    closeCamera();
+    analyseUploadedImage();
+  }, 'image/jpeg', 0.85);
+}
+
+/* FILE UPLOAD */
+function handleFile(ev){
+  const f = ev.target.files && ev.target.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+  UPLOAD_FILE = f; CAM_BLOB = null;
+  showPreview(f, f.name + ' (' + Math.round(f.size/1024) + ' KB)');
+}
+function showPreview(blob, label){
+  const url = URL.createObjectURL(blob);
+  document.getElementById('preview-img').src = url;
+  document.getElementById('preview-name').textContent = 'Image ready';
+  document.getElementById('preview-size').textContent = label;
+  document.getElementById('preview').classList.add('shown');
+}
+function clearPreview(){
+  CAM_BLOB = null; UPLOAD_FILE = null;
+  document.getElementById('preview').classList.remove('shown');
+}
+
+/* ANALYSE */
+async function analyseUploadedImage(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const blob = CAM_BLOB || UPLOAD_FILE;
+  if (!blob) { alert('No image selected. Use camera, gallery, or type the label.'); return; }
+  showResultLoading();
+  const fd = new FormData();
+  fd.append('image', blob, 'scan.jpg');
+  fd.append('language', CURRENT_LANG);
+  let data;
+  try {
+    const r = await fetch(API_BASE + '/api/scanner/analyze', { method: 'POST', body: fd });
+    data = await r.json();
+  } catch(e) { data = { ok:false, error: 'Network: ' + e.message }; }
+  applyResult(data);
+}
+async function analyseTypedText(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const text = (document.getElementById('typed-text').value || '').trim();
+  if (!text) { alert('Please type or speak the label first.'); return; }
+  showResultLoading();
+  let data;
+  try {
+    const r = await fetch(API_BASE + '/api/scanner/analyze/text', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text, language: CURRENT_LANG }),
+    });
+    data = await r.json();
+  } catch(e) { data = { ok:false, error: 'Network: ' + e.message }; }
+  applyResult(data);
+}
+
+function showResultLoading(){
+  const r = document.getElementById('result');
+  r.classList.add('shown');
+  document.getElementById('r-type').textContent = '…';
+  document.getElementById('r-type').className = 'badge';
+  document.getElementById('r-source').textContent = '';
+  document.getElementById('r-summary').textContent = 'Chitti analysing…';
+  document.getElementById('r-facts').innerHTML = '';
+  document.getElementById('r-findings').innerHTML = '';
+  document.getElementById('r-warns').style.display = 'none';
+  document.getElementById('r-savings').style.display = 'none';
+  document.getElementById('r-legal').textContent = '';
+  document.getElementById('r-links').innerHTML = '';
+  document.getElementById('ja-panel').classList.remove('shown');
+}
+function applyResult(d){
+  if (!d || !d.ok) {
+    document.getElementById('r-summary').textContent = '⚠️ ' + ((d && d.error) || 'Could not analyse.');
+    return;
+  }
+  LAST_RESULT = d;
+  // Type badge
+  const typeBadge = document.getElementById('r-type');
+  typeBadge.textContent = d.type;
+  typeBadge.className = 'badge ' + d.type;
+  document.getElementById('r-source').textContent = '[' + (d.source || 'deepseek') + (d.model ? ' · ' + d.model : '') + ']';
+  document.getElementById('r-summary').textContent = d.summary || '';
+
+  // Facts
+  const f = d.facts || {};
+  document.getElementById('r-facts').innerHTML = Object.keys(f).map(k =>
+    `<div class="fct"><b>${escapeHtml(k)}</b>${escapeHtml(f[k])}</div>`
+  ).join('') || '<div style="font-size:12px;color:var(--muted)">No structured facts.</div>';
+
+  // Findings / warnings / savings
+  document.getElementById('r-findings').innerHTML = (d.key_findings || []).map(s => '<li>' + escapeHtml(s) + '</li>').join('') || '<li>No findings.</li>';
+  const wEl = document.getElementById('r-warns');
+  if ((d.warnings || []).length) {
+    wEl.style.display = 'block';
+    document.getElementById('r-warns-ul').innerHTML = d.warnings.map(s => '<li>' + escapeHtml(s) + '</li>').join('');
+  } else { wEl.style.display = 'none'; }
+  const sEl = document.getElementById('r-savings');
+  if ((d.savings || []).length) {
+    sEl.style.display = 'block';
+    document.getElementById('r-savings-ul').innerHTML = d.savings.map(s => '<li>' + escapeHtml(s) + '</li>').join('');
+  } else { sEl.style.display = 'none'; }
+
+  // Legal
+  document.getElementById('r-legal').textContent = '⚖️ ' + (d.legal_disclaimer || '');
+
+  // Cross-links
+  const links = (d.cross_links || []).map(l => {
+    if (l.kind === 'tel') {
+      return `<a href="tel:${escapeHtml(l.query)}">${escapeHtml(CURRENT_LANG === 'en' ? l.label_en : l.label_hi)}</a>`;
+    }
+    if (l.kind === 'medupi_lookup') {
+      return `<button onclick="openMedUpiPanel('${escapeJs(l.query)}')">${escapeHtml(CURRENT_LANG === 'en' ? l.label_en : l.label_hi)}</button>`;
+    }
+    if (l.kind === 'upi_check') {
+      return `<button onclick="openUpiGuard('${escapeJs(l.query)}')">${escapeHtml(CURRENT_LANG === 'en' ? l.label_en : l.label_hi)}</button>`;
+    }
+    if (l.kind === 'vaani_read') {
+      return `<button onclick="sendToVaani('${escapeJs(l.query)}')">${escapeHtml(CURRENT_LANG === 'en' ? l.label_en : l.label_hi)}</button>`;
+    }
+    return '';
+  }).filter(Boolean).join('');
+  document.getElementById('r-links').innerHTML = links;
+
+  // AUTO-SPEAK the result + legal line
+  const t = (CURRENT_LANG === 'en' ? d.speak_en : d.speak_hi) || d.summary || '';
+  speakText(t + '. ' + (d.legal_disclaimer || ''), CURRENT_LANG);
+
+  pushHistory({ type: d.type, summary: d.summary, ts: Date.now(), lang: CURRENT_LANG });
+
+  // If medicine + auto-cross-link present, fetch Jan-Aushadhi inline
+  if (d.type === 'medicine') {
+    const ml = (d.cross_links || []).find(x => x.kind === 'medupi_lookup');
+    if (ml && ml.query) openMedUpiPanel(ml.query);
+  }
+}
+
+/* CROSS-PRODUCT: MedUPI inline panel */
+async function openMedUpiPanel(query){
+  const panel = document.getElementById('ja-panel');
+  panel.classList.add('shown');
+  const body = document.getElementById('ja-body');
+  body.textContent = 'Looking up Jan-Aushadhi alternatives for "' + query + '"…';
+  try {
+    const r = await fetch(MEDUPI_API_BASE + '/api/medupi/medicine/' + encodeURIComponent(query));
+    const d = await r.json();
+    const alts = d.alternatives || d.items || [];
+    if (!Array.isArray(alts) || !alts.length) {
+      body.innerHTML = 'No same-composition Jan-Aushadhi alternative was returned for "' + escapeHtml(query) + '". You can search manually on <a href="chitti_medupi.html?q=' + encodeURIComponent(query) + '">Chitti MedUPI</a>.';
+      return;
+    }
+    body.innerHTML = '<div class="alts">' + alts.slice(0,4).map(a =>
+      `<div class="alt"><b>${escapeHtml(a.name || a.brand || a.medicine_name || '')}</b>` +
+      `<div>${escapeHtml(a.composition || a.salt || '')}</div>` +
+      `<div>MRP: ₹${escapeHtml(String(a.mrp || a.price_mrp || '?'))} · JA: ₹${escapeHtml(String(a.ja_price || a.price_ja || '?'))}</div>` +
+      (a.savings_pct ? `<div class="sav">Save ${escapeHtml(String(a.savings_pct))}%</div>` : '') +
+      `</div>`
+    ).join('') + '</div>'
+      + '<div style="margin-top:6px;font-size:11px;color:var(--muted)">Source: Chitti MedUPI · Verify at the pharmacy.</div>';
+  } catch(e) {
+    body.innerHTML = 'Could not reach MedUPI right now. Try <a href="chitti_medupi.html?q=' + encodeURIComponent(query) + '">Chitti MedUPI</a> directly.';
+  }
+}
+
+function openUpiGuard(query){
+  try { sessionStorage.setItem('chitti_handoff_text', query || ''); } catch(e){}
+  window.location.href = 'chitti_upi.html?from=scanner';
+}
+function sendToVaani(query){
+  const t = (typeof query === 'string' && query) ? query :
+    (LAST_RESULT ? ((CURRENT_LANG === 'en' ? LAST_RESULT.speak_en : LAST_RESULT.speak_hi) || LAST_RESULT.summary || '') : '');
+  if (!t) return;
+  try { sessionStorage.setItem('chitti_handoff_text', t); } catch(e){}
+  window.location.href = 'chitti_vaani.html?from=scanner';
+}
+
+/* History */
+function loadHistory(){ try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e){ return []; } }
+function pushHistory(e){
+  const h = loadHistory(); h.unshift(e);
+  while (h.length > 20) h.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  renderHistory();
+}
+function clearHistory(){ if (!confirm('Clear scan history on this device?')) return; localStorage.removeItem(HISTORY_KEY); renderHistory(); }
+function renderHistory(){
+  const el = document.getElementById('history');
+  const h = loadHistory();
+  if (!h.length) { el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px">No scans yet.</div>'; return; }
+  el.innerHTML = h.map((e,i) => `
+    <div class="history-row">
+      <span class="badge">${escapeHtml(e.type || 'other')}</span>
+      <div class="q">${escapeHtml((e.summary||'').slice(0,160))}</div>
+      <button onclick="speakText(${JSON.stringify((e.summary||''))}, '${escapeHtml(e.lang||CURRENT_LANG)}')">🔊 Hear</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeJs(s){ return String(s).replace(/['"\\\n\r]/g, c => '\\' + c.charCodeAt(0).toString(16).padStart(2,'0')); }
+
+/* Boot */
+window.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  setConsentLang(CURRENT_LANG);
+  if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
+  renderHistory();
+  // Pull a hand-off (e.g. from Vaani)
+  try {
+    const h = sessionStorage.getItem('chitti_handoff_text');
+    if (h) {
+      document.getElementById('typed-text').value = h;
+      sessionStorage.removeItem('chitti_handoff_text');
+    }
+  } catch(e){}
+});
+window.addEventListener('beforeunload', () => { if (CAM_STREAM) CAM_STREAM.getTracks().forEach(t => t.stop()); });
+</script>
+
+<script src="chitti_disclaimer.js"></script>
+</body>
+</html>

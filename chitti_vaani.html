@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Vaani — Bharat's voice-first assistant · Speak, listen, summarise calls</title>
+<meta name="description" content="Voice-first AI for every Indian. Tap the mic, speak in 9 languages, hear Chitti reply aloud. Summarise calls. Read any text aloud. Built for blind, deaf, mute, and low-literacy users.">
+<meta name="chitti-page-desc" content="Chitti Vaani — voice assistant. Tap the green mic to speak. Tap a card to choose Ask, Call summary, or Read aloud.">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+body{min-height:100vh;position:relative}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+/* ════════════ CONSENT GATE — locks product until accepted ════════════ */
+.consent-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.consent-overlay.hidden{display:none}
+.consent-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:740px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.consent-panel h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
+.consent-panel .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.consent-panel .lang-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:#fbf8f1;border-radius:10px}
+.consent-panel .lang-pick button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.consent-panel .lang-pick button.active{background:var(--saffron);color:#fff;border-color:var(--saffron);font-weight:700}
+.tnc-section{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.tnc-section h3{margin:0 0 6px;font-size:14px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tnc-section h3 .num{background:var(--saffron);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.tnc-section h3 .title-txt{flex:1}
+.tnc-section h3 .spk{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;min-height:30px;flex-shrink:0}
+.tnc-section h3 .spk:hover{background:rgba(232,106,23,.08)}
+.tnc-section h3 .spk.playing{background:var(--saffron);color:#fff;animation:micPulse 1.2s ease-in-out infinite}
+.tnc-section p{margin:6px 0 0;color:var(--text);font-size:13px}
+.tnc-section ul{margin:6px 0 0;padding-left:20px;font-size:13px}
+.consent-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.consent-actions button.agree{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:10px;padding:14px 22px;font-size:15px;font-weight:800;cursor:pointer;flex:1;min-height:50px;min-width:160px;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.consent-actions button.agree:hover{filter:brightness(1.05)}
+.consent-actions button.spk-all{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:10px;padding:14px 18px;font-size:14px;font-weight:700;cursor:pointer;min-height:50px}
+.consent-actions button.decline{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:14px 18px;font-size:14px;cursor:pointer;min-height:50px}
+@keyframes micPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ════════════ HEADER ════════════ */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.lang-toggle-bharat{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.lang-toggle-bharat select{background:rgba(255,255,255,.08);color:#fff;border:none;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
+.header-controls button:hover{background:rgba(255,255,255,.22)}
+
+/* Speak bar (auto-injected by chitti_disclaimer.js) */
+.speak-bar{margin:10px 14px 0}
+
+/* ════════════ MAIN ════════════ */
+main{padding:14px 16px 110px;max-width:920px;margin:0 auto}
+.section-card{margin:0 0 14px;padding:16px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin:0 0 4px}
+.section-title .ico{font-size:20px}
+.section-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+
+/* Mic stage — the hero block */
+.mic-stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 14px;background:linear-gradient(180deg,#fff,#fbf8f1);border:1px dashed var(--gold);border-radius:18px}
+.mic-big{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;font-size:54px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(232,106,23,.45);transition:transform .15s}
+.mic-big:hover{transform:scale(1.04)}
+.mic-big:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.mic-big.listening{background:linear-gradient(135deg,#dc2626,#ef4444);animation:micPulse 1.2s ease-in-out infinite}
+.mic-hint{font-size:13px;color:var(--muted);text-align:center;max-width:520px}
+.mic-hint strong{color:var(--text)}
+.mode-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.mode-row button{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;min-height:32px;font-weight:600}
+.mode-row button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Text input row */
+.input-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.input-row textarea{flex:1;min-width:240px;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:14px;min-height:80px;font-family:inherit;resize:vertical}
+.input-row textarea:focus{outline:none;border-color:var(--saffron)}
+.input-row .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer;box-shadow:0 6px 18px rgba(232,106,23,.30)}
+.btn-saffron:hover{filter:brightness(1.05)}
+.btn-navy{background:linear-gradient(135deg,var(--navy),#16376a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;min-height:46px;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600;border-radius:10px;padding:12px 16px;font-size:13px;min-height:46px;cursor:pointer}
+
+/* Answer box */
+.answer-box{margin-top:14px;padding:14px;background:linear-gradient(180deg,#fff8e1,#fff);border:1px solid var(--gold);border-radius:14px;display:none}
+.answer-box.shown{display:block}
+.answer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.answer-head .who{font-weight:800;color:var(--saffron);font-size:14px;display:flex;align-items:center;gap:6px}
+.answer-head .ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.answer-head .ctrls button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.answer-text{font-size:15px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word}
+.answer-meta{margin-top:8px;font-size:11px;color:var(--muted);font-family:'JetBrains Mono','Menlo',monospace}
+
+/* Quick-action grid */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.quick-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;cursor:pointer;text-align:left}
+.quick-card:hover{border-color:var(--saffron);background:rgba(232,106,23,.04)}
+.quick-card .ico{font-size:24px}
+.quick-card .lbl{font-size:14px;font-weight:800;color:var(--text)}
+.quick-card .sub{font-size:11px;color:var(--muted)}
+
+/* History */
+.history{margin-top:14px}
+.history-row{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.history-row .q{flex:1;min-width:160px;font-size:13px;color:var(--text)}
+.history-row .a{flex:2;min-width:200px;font-size:12px;color:var(--muted);max-height:60px;overflow:hidden;text-overflow:ellipsis}
+.history-row button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+
+/* SOS button — bottom-right floating, always visible */
+.sos-fab{position:fixed;right:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 10px 30px rgba(220,38,38,.45);display:flex;align-items:center;gap:8px;min-height:50px}
+.sos-fab:hover{filter:brightness(1.1)}
+.sos-fab:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+/* Footer */
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.6}
+
+@media (max-width:640px){
+  .brand{font-size:18px}
+  .mic-big{width:108px;height:108px;font-size:48px}
+  main{padding:12px 12px 100px}
+}
+</style>
+</head>
+<body>
+
+<!-- Bharat stripe -->
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
+<div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+  <div class="consent-panel">
+    <h1 id="consent-title">Chitti Vaani — Terms &amp; Conditions</h1>
+    <div class="sub">First time using Chitti Vaani? Please read each section. Tap 🔊 to hear it spoken in your language. Then tap <strong>I AGREE</strong> to start.</div>
+
+    <div class="lang-pick" role="group" aria-label="Choose language">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);align-self:center">Read aloud in:</span>
+      <button data-lang="hi" class="active" onclick="setConsentLang('hi')">हिन्दी</button>
+      <button data-lang="en" onclick="setConsentLang('en')">English</button>
+      <button data-lang="ta" onclick="setConsentLang('ta')">தமிழ்</button>
+      <button data-lang="te" onclick="setConsentLang('te')">తెలుగు</button>
+      <button data-lang="bn" onclick="setConsentLang('bn')">বাংলা</button>
+      <button data-lang="mr" onclick="setConsentLang('mr')">मराठी</button>
+      <button data-lang="gu" onclick="setConsentLang('gu')">ગુજરાતી</button>
+      <button data-lang="kn" onclick="setConsentLang('kn')">ಕನ್ನಡ</button>
+      <button data-lang="ml" onclick="setConsentLang('ml')">മലയാളം</button>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">1</span><span class="title-txt">What Chitti Vaani is (and is not)</span><button class="spk" data-section="1" onclick="speakSection(1, this)" aria-label="Hear section 1 aloud">🔊 Hear</button></h3>
+      <p>Chitti Vaani is a voice-first AI helper. You speak, Chitti listens, Chitti speaks back. Chitti is <strong>not</strong> a doctor, lawyer, banker, or government officer. Chitti gives general information only.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" data-section="2" onclick="speakSection(2, this)" aria-label="Hear section 2 aloud">🔊 Hear</button></h3>
+      <p>Chitti Vaani complies with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>, TRAI rules on call recording, and the IT Rules 2021. Your voice never leaves your device unless you tap "Send to Chitti". Recordings are not stored on our servers.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" data-section="3" onclick="speakSection(3, this)" aria-label="Hear section 3 aloud">🔊 Hear</button></h3>
+      <ul>
+        <li><strong>Microphone</strong> — to listen when you tap the green mic.</li>
+        <li><strong>Read call logs</strong> (Phase 2 mobile app only) — to summarise calls you ask about.</li>
+        <li><strong>Read contacts</strong> (Phase 2 mobile app only) — only when you ask "call my doctor".</li>
+      </ul>
+      <p>The web version (this page) only uses the microphone, and only while you hold the mic button.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" data-section="4" onclick="speakSection(4, this)" aria-label="Hear section 4 aloud">🔊 Hear</button></h3>
+      <p>Chitti does <strong>not</strong> sell your data. Chitti does <strong>not</strong> share your voice or text with advertisers. Your conversation history lives in your browser (localStorage) — clear it any time from Settings.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" data-section="5" onclick="speakSection(5, this)" aria-label="Hear section 5 aloud">🔊 Hear</button></h3>
+      <p>If this is a medical, fire, or police emergency — call <strong>112</strong> right now. For cyber-fraud call <strong>1930</strong>. Chitti cannot guarantee any medical, legal, or financial outcome. Final decisions are always yours, ideally with a qualified professional.</p>
+    </div>
+
+    <div class="tnc-section">
+      <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" data-section="6" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud">🔊 Hear</button></h3>
+      <p>Issue or complaint? Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by the IT Rules 2021.</p>
+    </div>
+
+    <div class="consent-actions">
+      <button class="agree" onclick="acceptConsent()">✓ I AGREE — start Chitti Vaani</button>
+      <button class="spk-all" onclick="speakAllSections()">🔊 Read all sections aloud</button>
+      <button class="decline" onclick="declineConsent()">Not now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ HEADER ════════════ -->
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <div class="bharat-logo" aria-hidden="true">🎙️</div>
+      <div>
+        <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Vaani</span></div>
+        <div class="tagline">Voice-first assistant for Bharat · Speak, listen, summarise.</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals">📋 Fundamentals</a>
+      <a class="switch-btn-bharat" href="chitti_news.html" aria-label="Switch to Chitti News">📰 News</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html" aria-label="Switch to Chitti MedUPI">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard">🛡️ UPI Guard</a>
+      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner">📷 Scanner</a>
+      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" onchange="changeLanguage(this.value)">
+        <option value="hi">हिन्दी</option>
+        <option value="en">English</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+        <option value="mr">मराठी</option>
+        <option value="gu">ગુજરાતી</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button onclick="speakIntro()" aria-label="Hear how to use this page">🔊 How to use</button>
+    <button onclick="clearHistory()" aria-label="Clear conversation history">🗑️ Clear history</button>
+    <button onclick="reopenConsent()" aria-label="Re-read terms and conditions">📜 Re-read T&amp;C</button>
+  </div>
+</header>
+
+<!-- Speak bar auto-injected -->
+<div id="chitti-speak-bar" class="speak-bar"></div>
+
+<main>
+
+  <!-- ════════ HERO MIC ════════ -->
+  <section class="section-card" aria-labelledby="mic-title">
+    <h2 class="section-title" id="mic-title"><span class="ico">🎙️</span> Talk to Chitti</h2>
+    <div class="section-sub">Tap the green mic. Speak in your language. Chitti listens, thinks, and reads the answer aloud.</div>
+
+    <div class="mic-stage">
+      <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening">🎙️</button>
+      <div class="mic-hint" id="mic-hint"><strong>Tap to speak.</strong> Chitti will reply in your language and read the answer aloud.</div>
+      <div class="mode-row" role="tablist" aria-label="Conversation mode">
+        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 Ask anything</button>
+        <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
+        <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
+        <button data-mode="translate" onclick="setMode('translate',this)">🌐 Translate</button>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <textarea id="user-text" placeholder="Or type / paste here — call notes, a question, a paragraph to read aloud…" aria-label="Type your message"></textarea>
+      <div class="btn-row" style="flex-direction:column">
+        <button class="btn-saffron" onclick="sendToChitti()">Send to Chitti ➜</button>
+        <button class="btn-navy" onclick="speakUserText()">🔊 Read my text</button>
+        <button class="btn-ghost" onclick="clearInput()">Clear</button>
+      </div>
+    </div>
+
+    <div id="answer-box" class="answer-box" role="status" aria-live="polite">
+      <div class="answer-head">
+        <span class="who">🪔 Chitti says</span>
+        <div class="ctrls">
+          <button onclick="speakAnswer()">🔊 Hear again</button>
+          <button onclick="stopSpeaking()">⏹ Stop</button>
+          <button onclick="copyAnswer()">📋 Copy</button>
+          <button onclick="sendToScanner()" title="Send to Scanner so it can read it aloud / share">📤 Share</button>
+        </div>
+      </div>
+      <div id="answer-text" class="answer-text"></div>
+      <div id="answer-meta" class="answer-meta"></div>
+    </div>
+  </section>
+
+  <!-- ════════ QUICK ACTIONS ════════ -->
+  <section class="section-card" aria-labelledby="quick-title">
+    <h2 class="section-title" id="quick-title"><span class="ico">⚡</span> Quick actions</h2>
+    <div class="section-sub">One tap. Chitti will ask the right follow-up question.</div>
+    <div class="quick-grid">
+      <button class="quick-card" onclick="quickAsk('Summarise my last phone call. I will paste the notes next.')">
+        <span class="ico">📞</span><span class="lbl">Summarise a call</span>
+        <span class="sub">Paste notes or speak them — get 3 lines back.</span>
+      </button>
+      <button class="quick-card" onclick="quickAsk('Read this paragraph clearly and slowly.')">
+        <span class="ico">📖</span><span class="lbl">Read text aloud</span>
+        <span class="sub">For blind / low-vision users, or anyone tired of reading.</span>
+      </button>
+      <button class="quick-card" onclick="quickAsk('Translate the next thing I say into the language I selected.')">
+        <span class="ico">🌐</span><span class="lbl">Translate</span>
+        <span class="sub">Between Hindi, English, and 7 Indian languages.</span>
+      </button>
+      <button class="quick-card" onclick="quickAsk('Help me reply to a WhatsApp message politely. I will tell you the message.')">
+        <span class="ico">💬</span><span class="lbl">Reply suggestion</span>
+        <span class="sub">Polite reply for WhatsApp, SMS, or email.</span>
+      </button>
+      <button class="quick-card" onclick="quickAsk('Explain a government letter I just received. I will read it to you.')">
+        <span class="ico">📄</span><span class="lbl">Explain a letter</span>
+        <span class="sub">Sarkari letters in plain Hindi-English.</span>
+      </button>
+      <button class="quick-card" onclick="quickAsk('Help me make a shopping list and a budget for the week.')">
+        <span class="ico">🛒</span><span class="lbl">Shopping list</span>
+        <span class="sub">List + budget in one go.</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ════════ HISTORY ════════ -->
+  <section class="section-card" aria-labelledby="hist-title">
+    <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent</h2>
+    <div class="section-sub">Stays only on this device. Not synced. Tap 🔊 to hear an old answer.</div>
+    <div id="history" class="history"></div>
+  </section>
+
+  <footer>
+    <small>
+      <strong>Chitti Vaani</strong> · ek AI ki madad — Doctor / lawyer / banker se confirm zaroor karein.<br>
+      Emergency: 112 · Cyber fraud: 1930 · Consumer: 1800-11-4000 · Sahayai: sire@sahayai.in
+    </small>
+  </footer>
+</main>
+
+<!-- SOS FAB — always present -->
+<button class="sos-fab" onclick="sosTrigger()" aria-label="Emergency — open SOS dial">🚨 SOS</button>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CHITTI VAANI — frontend
+   ─────────────────────────────────────────────────────────── */
+
+const CONSENT_KEY = 'chitti_vaani_consent_given';
+const HISTORY_KEY = 'chitti_vaani_history';
+const LANG_KEY    = 'chitti_vaani_lang';
+
+// Resolve the backend URL: ?api=… overrides; otherwise default to onrender host.
+const API_BASE = (function(){
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
+  } catch(e){}
+  return 'https://chitti-vaani-api.onrender.com';
+})();
+
+let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
+let CONSENT_LANG = CURRENT_LANG;
+let CURRENT_MODE = 'ask';
+let RECOG = null;       // SpeechRecognition instance (lazy)
+let LISTENING = false;
+let LAST_REPLY = '';
+let LAST_REPLY_LANG = CURRENT_LANG;
+
+/* ── T&C SECTION TEXT (matches the visible HTML, kept in JS so 🔊 can read it cleanly) ── */
+const SECTIONS = {
+  1: {
+    en: "What Chitti Vaani is and is not. Chitti Vaani is a voice-first AI helper. You speak, Chitti listens, Chitti speaks back. Chitti is not a doctor, lawyer, banker, or government officer. Chitti gives general information only.",
+    hi: "चिट्टी वाणी क्या है और क्या नहीं है। चिट्टी वाणी एक आवाज़-आधारित AI सहायक है। आप बोलते हैं, चिट्टी सुनती है, और जवाब बोल कर सुनाती है। चिट्टी डॉक्टर, वकील, बैंकर या सरकारी अधिकारी नहीं है। केवल सामान्य जानकारी देती है।",
+  },
+  2: {
+    en: "Legal compliance. Chitti Vaani complies with the Digital Personal Data Protection Act 2023, TRAI rules on call recording, and IT Rules 2021. Your voice never leaves your device unless you tap Send to Chitti. Recordings are not stored on our servers.",
+    hi: "क़ानूनी अनुपालन। चिट्टी वाणी डिजिटल पर्सनल डेटा प्रोटेक्शन एक्ट 2023, ट्राई के कॉल रिकॉर्डिंग नियम, और आईटी रूल्स 2021 का पालन करती है। आपकी आवाज़ आपके डिवाइस से तभी जाती है जब आप Send to Chitti दबाते हैं।",
+  },
+  3: {
+    en: "Permissions required. Microphone — to listen when you tap the green mic. Read call logs — Phase 2 mobile app only. Read contacts — only when you ask call my doctor. The web version uses microphone only, and only while you hold the mic button.",
+    hi: "ज़रूरी अनुमतियाँ। माइक्रोफ़ोन — हरा माइक दबाने पर सुनने के लिए। कॉल लॉग्स पढ़ना — केवल फ़ोन ऐप में। कांटेक्ट्स — तभी जब आप कहें मेरे डॉक्टर को कॉल करो।",
+  },
+  4: {
+    en: "Data privacy. Chitti does not sell your data. Chitti does not share your voice or text with advertisers. Your conversation history lives in your browser, localStorage. Clear it any time from Settings.",
+    hi: "डेटा प्राइवेसी। चिट्टी आपका डेटा बेचती नहीं है। आपकी आवाज़ या टेक्स्ट विज्ञापन देने वालों के साथ साझा नहीं करती। आपकी बातचीत आपके ब्राउज़र में ही रहती है, और कभी भी हटाई जा सकती है।",
+  },
+  5: {
+    en: "Emergency and liability. Medical, fire, or police emergency — call 112 right now. For cyber-fraud call 1930. Chitti cannot guarantee any medical, legal, or financial outcome. Final decisions are always yours, ideally with a qualified professional.",
+    hi: "आपातकाल और जिम्मेदारी। मेडिकल, आग या पुलिस आपातकाल — अभी 112 पर कॉल करें। साइबर फ्रॉड के लिए 1930। चिट्टी किसी मेडिकल, कानूनी या वित्तीय परिणाम की गारंटी नहीं दे सकती।",
+  },
+  6: {
+    en: "Grievance redressal. For complaints email sire at sahayai dot in. We respond within seven working days as required by IT Rules 2021.",
+    hi: "शिकायत निवारण। शिकायत के लिए sire at sahayai dot in पर ईमेल करें। आईटी रूल्स 2021 के तहत हम सात कार्य दिवसों में जवाब देते हैं।",
+  },
+};
+
+/* ── CONSENT LOGIC ── */
+function consentGiven(){ return localStorage.getItem(CONSENT_KEY) === '1'; }
+function setConsentLang(lang){
+  CONSENT_LANG = lang;
+  document.querySelectorAll('.lang-pick button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  // Also seed the header selector and main app language
+  CURRENT_LANG = lang;
+  localStorage.setItem(LANG_KEY, lang);
+  const sel = document.getElementById('lang-select');
+  if (sel) sel.value = lang;
+}
+function speakSection(n, btn){
+  stopSpeaking();
+  const txt = (SECTIONS[n] && (SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en)) || '';
+  if (!txt) return;
+  if (btn) btn.classList.add('playing');
+  speakText(txt, CONSENT_LANG, () => { if (btn) btn.classList.remove('playing'); });
+}
+function speakAllSections(){
+  stopSpeaking();
+  const all = [1,2,3,4,5,6].map(n => (SECTIONS[n][CONSENT_LANG] || SECTIONS[n].en)).join('. ');
+  speakText(all, CONSENT_LANG);
+}
+function acceptConsent(){
+  localStorage.setItem(CONSENT_KEY, '1');
+  document.getElementById('consent-overlay').classList.add('hidden');
+  // Welcome the user
+  const welcome = CONSENT_LANG === 'en'
+    ? 'Welcome. Chitti is ready. Tap the green microphone to speak.'
+    : 'नमस्ते। चिट्टी तैयार है। हरे माइक्रोफ़ोन को दबा कर बोलिए।';
+  setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
+}
+function declineConsent(){
+  alert('No problem. You can come back anytime. Chitti will not work until you accept.');
+}
+function reopenConsent(){
+  document.getElementById('consent-overlay').classList.remove('hidden');
+}
+
+/* ── LANGUAGE SWITCHING ── */
+function changeLanguage(lang){
+  CURRENT_LANG = lang;
+  localStorage.setItem(LANG_KEY, lang);
+}
+
+/* ── MODE ── */
+function setMode(m, btn){
+  CURRENT_MODE = m;
+  document.querySelectorAll('.mode-row button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+/* ── SPEECH OUT (Web Speech API) ── */
+function bcp47(lang){
+  return ({hi:'hi-IN',en:'en-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN'})[lang] || 'en-IN';
+}
+function speakText(text, lang, onEnd){
+  if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang  = bcp47(lang || CURRENT_LANG);
+  u.rate  = 0.92;
+  u.pitch = 1.0;
+  if (onEnd) u.onend = onEnd;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking(){ if (window.speechSynthesis) speechSynthesis.cancel(); }
+function speakAnswer(){ if (LAST_REPLY) speakText(LAST_REPLY, LAST_REPLY_LANG); }
+function speakUserText(){
+  const t = (document.getElementById('user-text').value || '').trim();
+  if (t) speakText(t, CURRENT_LANG);
+}
+function speakIntro(){
+  const en = "Chitti Vaani is open. Tap the green microphone in the centre and speak. Chitti will reply in your language and read the answer aloud.";
+  const hi = "चिट्टी वाणी खुल चुकी है। बीच में हरे माइक्रोफ़ोन को दबा कर बोलिए। चिट्टी आपकी भाषा में जवाब देगी और बोल कर सुनाएगी।";
+  speakText(CURRENT_LANG === 'en' ? en : hi, CURRENT_LANG);
+}
+
+/* ── SPEECH IN (Web Speech API SpeechRecognition) ── */
+function getRecog(){
+  if (RECOG) return RECOG;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.interimResults = true;
+  r.continuous     = false;
+  r.maxAlternatives = 1;
+  r.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      final += e.results[i][0].transcript;
+    }
+    if (final) document.getElementById('user-text').value = final;
+  };
+  r.onend = () => {
+    LISTENING = false;
+    document.getElementById('mic-big').classList.remove('listening');
+    const txt = (document.getElementById('user-text').value || '').trim();
+    if (txt) sendToChitti();
+  };
+  r.onerror = () => {
+    LISTENING = false;
+    document.getElementById('mic-big').classList.remove('listening');
+  };
+  RECOG = r;
+  return r;
+}
+function toggleMic(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const r = getRecog();
+  if (!r) {
+    alert('This browser does not support speech recognition. Please type your question instead.');
+    document.getElementById('user-text').focus();
+    return;
+  }
+  if (LISTENING) { try{ r.stop(); }catch(e){} return; }
+  r.lang = bcp47(CURRENT_LANG);
+  LISTENING = true;
+  document.getElementById('mic-big').classList.add('listening');
+  document.getElementById('user-text').value = '';
+  try { r.start(); } catch(e){ /* already started */ }
+}
+
+/* ── CALL THE BACKEND ── */
+async function sendToChitti(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const text = (document.getElementById('user-text').value || '').trim();
+  if (!text) {
+    speakText(CURRENT_LANG === 'en' ? 'Please speak or type something first.' : 'कृपया पहले कुछ बोलें या लिखें।', CURRENT_LANG);
+    return;
+  }
+  const ans = document.getElementById('answer-text');
+  const meta = document.getElementById('answer-meta');
+  document.getElementById('answer-box').classList.add('shown');
+  ans.textContent  = '… Chitti soch rahi hai …';
+  meta.textContent = '';
+
+  let data;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ text, language: CURRENT_LANG, mode: CURRENT_MODE }),
+    });
+    data = await r.json();
+  } catch (e) {
+    data = { ok: false, error: 'Network error: ' + e.message };
+  }
+
+  if (!data || !data.ok) {
+    ans.textContent = '⚠️ Chitti could not reply right now. ' + (data && data.error ? data.error : '');
+    return;
+  }
+  LAST_REPLY      = data.reply;
+  LAST_REPLY_LANG = data.language || CURRENT_LANG;
+  ans.textContent = data.reply;
+  meta.textContent = (data.source ? '[source: ' + data.source + ']' : '')
+                   + (data.tokens ? ' [in: ' + (data.tokens.input||0) + ' / out: ' + (data.tokens.output||0) + ']' : '');
+  // AUTO-SPEAK every reply
+  speakText(data.reply, LAST_REPLY_LANG);
+  pushHistory({ q: text, a: data.reply, lang: LAST_REPLY_LANG, mode: CURRENT_MODE, ts: Date.now() });
+}
+
+/* ── INPUT HELPERS ── */
+function clearInput(){ document.getElementById('user-text').value = ''; }
+function quickAsk(prompt){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('user-text').value = prompt;
+  sendToChitti();
+}
+function copyAnswer(){
+  if (!LAST_REPLY) return;
+  navigator.clipboard.writeText(LAST_REPLY).catch(()=>{});
+}
+function sendToScanner(){
+  // Cross-product hand-off (Vaani ↔ Scanner): copy reply + open scanner page
+  if (!LAST_REPLY) return;
+  try { sessionStorage.setItem('chitti_handoff_text', LAST_REPLY); } catch(e){}
+  window.location.href = 'chitti_scanner.html?from=vaani';
+}
+
+/* ── HISTORY ── */
+function loadHistory(){
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function pushHistory(entry){
+  const h = loadHistory();
+  h.unshift(entry);
+  while (h.length > 20) h.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  renderHistory();
+}
+function clearHistory(){
+  if (!confirm('Clear conversation history on this device?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+function renderHistory(){
+  const el = document.getElementById('history');
+  const h = loadHistory();
+  if (!h.length) {
+    el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px">No history yet. Your conversations will appear here.</div>';
+    return;
+  }
+  el.innerHTML = h.map((e,i) => `
+    <div class="history-row">
+      <div class="q"><strong>You:</strong> ${escapeHtml((e.q||'').slice(0,160))}</div>
+      <div class="a"><strong>Chitti:</strong> ${escapeHtml((e.a||'').slice(0,160))}…</div>
+      <button onclick="replayHistory(${i})">🔊 Replay</button>
+    </div>
+  `).join('');
+}
+function replayHistory(idx){
+  const h = loadHistory();
+  const e = h[idx];
+  if (!e) return;
+  speakText(e.a, e.lang || CURRENT_LANG);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ── SOS (Vaani's emergency hand-off) ── */
+function sosTrigger(){
+  stopSpeaking();
+  const msg = CURRENT_LANG === 'en'
+    ? 'Calling emergency. For medical, fire or police, dial 112. For cyber-fraud, dial 1930.'
+    : 'आपातकाल। मेडिकल, आग या पुलिस के लिए 112 लगाइए। साइबर फ्रॉड के लिए 1930 लगाइए।';
+  speakText(msg, CURRENT_LANG);
+  if (confirm('Open emergency dialer for 112?')) window.location.href = 'tel:112';
+}
+
+/* ── BOOT ── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Pre-select stored language
+  const sel = document.getElementById('lang-select');
+  if (sel) sel.value = CURRENT_LANG;
+  setConsentLang(CURRENT_LANG);
+  // Show / hide consent overlay
+  if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
+  renderHistory();
+  // Pull a hand-off (e.g. from Scanner / UPI Guard) if present
+  try {
+    const h = sessionStorage.getItem('chitti_handoff_text');
+    if (h) {
+      document.getElementById('user-text').value = h;
+      sessionStorage.removeItem('chitti_handoff_text');
+    }
+  } catch(e){}
+});
+</script>
+
+<script src="chitti_disclaimer.js"></script>
+</body>
+</html>
