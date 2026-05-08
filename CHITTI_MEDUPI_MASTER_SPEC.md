@@ -1,7 +1,7 @@
 # CHITTI MedUPI — Master Specification
 
-**Version:** 1.7 (automated price update system — scheduler + Brave + community)
-**Date:** 2026-05-07
+**Version:** 1.8 (Phase 7 P1 + agentic /ask)
+**Date:** 2026-05-08
 **Author:** Bryan Wilfred Pinto · drafted by Claude
 **Status:** LIVING DOCUMENT — every Claude session must read this first.
 
@@ -500,8 +500,17 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 - **Config** — `BRAVE_SEARCH_API_KEY`, `SCHEDULER_ENABLED`, `JAN_AUSHADHI_PRODUCT_URL`, `NPPA_CEILING_URL` added to `config.py` + `.env.example` + `render.yaml` blueprint.
 - **Smoke tests** — 43 Python files parse via `ast.parse`; inline JS (769 lines) verified with real `node --check`.
 
+### ✅ DONE — Phase 7 P1 + agentic /ask (2026-05-08)
+- **`POST /api/medupi/cart-simulator`** — drop a monthly med list (molecule + strength + dosage_form + qty + current_price), get the cheapest same-composition equivalent cart + monthly + annual savings + per-line risk badge. Service: `services/medupi_cart.py`.
+- **`GET /api/medupi/family/wallet`** — per-member preview cards (Self / Spouse / Child / Parent) with monthly spend + savings + chronic-meds chip. Currently SKELETON shape; wires to live data once the family-profile + medupi_log tables ship.
+- **`GET /api/medupi/insurance-match?molecule=&scheme=ayushman|cghs|esi|private`** — coverage check chip. Currently SKELETON; full coverage tables seed from the empanelled-medicines list when available.
+- **`GET /api/medupi/jan_aushadhi/stock?store_id=&molecule=&strength=&dosage_form=`** — stock check at a Jan Aushadhi store. SKELETON until the BPPI store-level inventory feed is wired.
+- **`POST /api/medupi/ask`** — TRUE agentic loop on DeepSeek tool-calling. Tools: `search_medicine`, `find_alternatives`, `classify_risk`, `find_jan_aushadhi_stores`, `simulate_cart`. STRICT same-composition rule baked into the system prompt. Closes with the medical disclaimer. Wired and verified — currently blocked by DeepSeek HTTP 402 (account top-up needed); structured 402 returned to caller, never crashes.
+- **Frontend wiring** in `chitti_medupi.html` — Cart Simulator drop-list (with voice IN on molecule, voice OUT on totals); Family Wallet preview (totals strip + per-member cards + chronic-meds chips); 🛡️ Ayushman? chip on every alternative row inside `_renderScanResult`. node --check passes; live on sahayai.in.
+
 ### ⏳ PENDING (next session priority order)
-1. **Run the loader on real downloads** — Bryan downloads the four government CSV/XLSX files (BPPI products, Jan Aushadhi stores, NPPA ceiling prices, CDSCO approved formulations), then runs `python scripts/load_real_data.py --source <each> --file <path>` four times. Expected DB after: ~2,000 medicines · ~11,000 stores. Then `python scripts/load_real_data.py --source kaggle --file kaggle.csv` (~250k branded rows · ~5 min batch-committed) + `--source rxnorm` (~7 min) + `--source openfda` (~10 min) for enrichment.
+1. **Top up DeepSeek balance** — unblocks `/api/agent/medupi/ask`, `/api/agent/technical/ask`, `/api/agent/fundamental/ask`, `/api/chitti-view/`. One billing action; no code change.
+2. **Run the loader on real downloads** — Bryan downloads the four government CSV/XLSX files (BPPI products, Jan Aushadhi stores, NPPA ceiling prices, CDSCO approved formulations), then runs `python scripts/load_real_data.py --source <each> --file <path>` four times. Expected DB after: ~2,000 medicines · ~11,000 stores. Then `python scripts/load_real_data.py --source kaggle --file kaggle.csv` (~250k branded rows · ~5 min batch-committed) + `--source rxnorm` (~7 min) + `--source openfda` (~10 min) for enrichment.
 2. **Deploy `chitti-medupi/backend`** to Render as `chitti-medupi-api.onrender.com` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
 3. **Until that ships**, port the upgraded service logic into `chitti-shares/backend/services/medupi_*.py` so the existing `chitti-shares-api` deploy serves the same responses (move the seed JSONs over + add `rapidfuzz` + `anthropic` + `pandas` + `openpyxl` to chitti-shares requirements).
 4. **Live verification** — once deployed, curl `/api/medupi/medicine/Crocin%20650`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`, `/api/medupi/insurance/Telmisartan?scheme=ayushman` from production. Bryan verifies on phone before handover (per the verify-on-live memory).

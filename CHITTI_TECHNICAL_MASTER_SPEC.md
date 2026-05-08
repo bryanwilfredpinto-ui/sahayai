@@ -1,9 +1,9 @@
 # CHITTI TECHNICAL — Master Specification
 
-**Version:** 1.0  
-**Date:** 2026-05-06  
+**Version:** 1.1  
+**Date:** 2026-05-08 (last refresh)  
 **Maintainer:** Bryan Wilfred Pinto  
-**Sister doc:** [Chitti Fundamentals master spec referenced in `MEMORY.md`]
+**Sister docs:** `CHITTI_FUNDAMENTALS_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`
 
 > Read this first every session. Update before closing. This is the contract.
 
@@ -277,16 +277,36 @@ The Chitti edge — these go in the Chart tab footer + Scanner result row + Call
 
 ---
 
+## 10b. Phase 7 (P1) — Agentic foundations shipped 2026-05-08
+
+The first agentic surface for Chitti Technical is now LIVE on Render. Source-of-truth files: `services/strength.py`, `services/agent_runtime.py`, `services/agent_tools.py` (all NEW, not on the certified list).
+
+| Endpoint | Purpose | Verified |
+|---|---|---|
+| `GET /api/strength/{symbol}?timeframe=` | Composite 0-10 + confluence count | ✅ live |
+| `GET /api/rating-table/{symbol}` | STRONG BUY..STRONG SELL across 5 TFs | ✅ live |
+| `GET /api/quotes?symbols=` | Batch watchlist quotes via Angel | ✅ live |
+| `POST /api/agent/technical/ask` | True tool-calling loop (DeepSeek) | ✅ wired (blocked by 402 — top-up needed) |
+
+Frontend wired in `chitti_complete_technical.html`: Signal Strength + Confluence card grid, multi-TF rating table, ⭐ My Watchlist (localStorage + 15s polling). Open `openChart(sym)` triggers `loadStrengthAndRating(sym)`.
+
+Tools registered with the Technical agent: `get_quote`, `get_signal_strength`, `get_rating_table`, `get_indicator_signals`, `get_levels`, `scan_universe`. System-prompt rules: technical-only persona, Roshan rule baked in, iloc[-2] reminder, SEBI disclaimer auto-appended, Hindi-on-Hindi-input.
+
+Scanner fix shipped same week: full-universe scan (cap removed) + `iloc[-2]` correction across `_candle_color` and `_roshan_signal` + 6-thread `ThreadPoolExecutor` for fan-out. Largecap Intraday now scans 107/107 in ~100s and produces real BUY/SHORT setups instead of the prior 0/0 from the silent 60-cap.
+
+---
+
 ## 11. Next-session priority order
 
-1. **Manual drawing tools** (trendlines + horizontal lines) — biggest visible gap vs TradingView
-2. **Watchlist + price alerts** — highest user-requested feature, page-level
+1. **Top up DeepSeek balance** so all three /api/agent/{product}/ask endpoints actually answer (currently HTTP 402)
+2. **Manual drawing tools** (trendlines + horizontal lines) — biggest visible gap vs TradingView
 3. **Custom rule builder** (basic) — Pine-Script-lite for power users
 4. **Story Mode for individual signals** — Chitti edge, distinguishes from TradingView
 5. **Confidence Dial on every BUY/SHORT verdict** — Chitti edge
 6. **Replay mode** — TradingView signature
 7. **Sector heatmap** — visual scan
-8. **Multi-Indian-language audio** for verdicts and alerts
+8. **Multi-Indian-language audio** for verdicts and alerts (Hindi/Tamil/Bengali/Telugu/Marathi/Gujarati/Kannada)
+9. **Twilio voice/SMS** — phone-call alerts for critical setups
 
 ---
 
