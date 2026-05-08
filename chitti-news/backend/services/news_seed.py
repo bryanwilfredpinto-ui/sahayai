@@ -43,7 +43,7 @@ def seed_sources_if_empty() -> int:
                 state=r.get("state", "india"),
                 language=r.get("language", "en"),
                 category=r.get("category", "national"),
-                enabled=1,
+                enabled=int(r.get("enabled", 1)),
             )
             db.add(s); n += 1
         db.commit()
