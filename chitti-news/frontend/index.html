@@ -98,6 +98,13 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
   .art-card .art-thumb{display:none}
 }
 
+/* Universal speaker button — every box gets one (four-user contract) */
+.spk-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;line-height:1;min-width:32px;min-height:26px;font-weight:600;flex-shrink:0}
+.spk-btn:hover,.spk-btn:focus-visible{background:rgba(232,106,23,.08);color:var(--saffron);border-color:var(--saffron);outline:none}
+.spk-btn.dark{border-color:rgba(255,255,255,.30);color:#fff}
+.spk-btn.dark:hover{background:rgba(255,255,255,.18);border-color:#fff}
+.spk-row{display:flex;align-items:center;gap:6px}
+
 /* Take + factcheck inline panels */
 .art-take{margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,rgba(232,106,23,.05),rgba(212,175,55,.04));border:1px dashed var(--saffron);border-radius:10px;font-size:13px;line-height:1.6}
 .art-take .take-h{font-size:11px;font-weight:900;color:var(--saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
@@ -135,6 +142,7 @@ footer a{color:var(--saffron)}
 <div id="brk-bar" class="brk-bar" role="status" aria-live="polite">
   <span class="pulse"></span>
   <span class="text" id="brk-text">Loading breaking news…</span>
+  <button class="spk-btn" onclick="speakBreaking()" aria-label="Read the breaking-news headline aloud">🔊</button>
   <button class="dismiss" onclick="dismissBreaking()" aria-label="Dismiss breaking news">✕</button>
 </div>
 
@@ -172,6 +180,7 @@ footer a{color:var(--saffron)}
 <div class="picker-bar" role="group" aria-label="Filter news by state, language and category">
   <span class="pick-lbl" data-i18n="pick.state">State</span>
   <select id="pick-state" onchange="onPickerChange()" aria-label="State"></select>
+  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the state and language pickers do">🔊</button>
   <span class="pick-lbl" data-i18n="pick.lang">Lang</span>
   <select id="pick-lang" onchange="onPickerChange()" aria-label="Language">
     <option value="en">English</option>
@@ -200,14 +209,17 @@ footer a{color:var(--saffron)}
 
 <main>
   <section id="page-feed" class="page active" role="tabpanel">
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakFeedStatus()" aria-label="Hear the current feed status">🔊 Feed status</button></div>
     <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true" data-i18n="feed.loading">⏳ Loading the latest news…</div>
     <div id="feed" class="feed"></div>
   </section>
   <section id="page-saved" class="page" role="tabpanel">
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('saved')" aria-label="Hear what's in your Read Later folder">🔊 Read Later</button></div>
     <div id="saved-status" class="section-empty">⭐</div>
     <div id="saved-feed" class="feed"></div>
   </section>
   <section id="page-cancelled" class="page" role="tabpanel">
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('cancelled')" aria-label="Hear what's in your Cancelled folder">🔊 Cancelled</button></div>
     <div id="cancelled-status" class="section-empty">🗑️</div>
     <div id="cancelled-feed" class="feed"></div>
   </section>
@@ -218,15 +230,16 @@ footer a{color:var(--saffron)}
         <div class="section-title" data-i18n="special.title">✨ Chitti News Special — what no other aggregator does</div>
         <div class="section-sub" data-i18n="special.sub">Dailyhunt, Way2News, Bhaskar, Moneycontrol, NewsBreak, SmartNews, CNA — Chitti combines their best edges + Bharat-first AI.</div>
       </div>
+      <button class="spk-btn" onclick="speakSpecialAll()" aria-label="Hear all Chitti News Special features read aloud">🔊</button>
     </div>
-    <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
-      <li><strong>Chitti's Take</strong> — 3-bullet AI summary in your chosen language (CNA's FAST button + Bhasha translation).</li>
-      <li><strong>Fact Checker Agent</strong> — verdict comes from cross-referencing 2+ trusted RSS sources, not opinion.</li>
-      <li><strong>State + Language picker</strong> on first launch — vernacular-first like Dailyhunt, persistent across visits.</li>
-      <li><strong>Read Aloud</strong> in any of the 8 supported Indian languages — for the four-user contract.</li>
-      <li><strong>Cancelled folder</strong> — explicit "I don't want this" signal, separate from saved.</li>
-      <li><strong>One-tap WhatsApp share</strong> — includes a verify-with-source disclaimer.</li>
-      <li><strong>Sub-agents per category</strong> — Politics · Sports · Business · Tech · Entertainment, each with its own context + tone.</li>
+    <ul id="special-list" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
+      <li><span><strong>Chitti's Take</strong> — 3-bullet AI summary in your chosen language (CNA's FAST button + Bhasha translation).</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>Fact Checker Agent</strong> — verdict comes from cross-referencing 2+ trusted RSS sources, not opinion.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>State + Language picker</strong> on first launch — vernacular-first like Dailyhunt, persistent across visits.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>Read Aloud</strong> in any of the 8 supported Indian languages — for the four-user contract.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>Cancelled folder</strong> — explicit "I don't want this" signal, separate from saved.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>One-tap WhatsApp share</strong> — includes a verify-with-source disclaimer.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>Sub-agents per category</strong> — Politics · Sports · Business · Tech · Entertainment, each with its own context + tone.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
     </ul>
   </div>
 
@@ -248,8 +261,13 @@ footer a{color:var(--saffron)}
 <!-- First-launch onboarding modal -->
 <div id="onb-modal" class="onb" role="dialog" aria-modal="true" aria-labelledby="onb-title">
   <div class="panel">
-    <h2 id="onb-title" data-i18n="onb.title">👋 Welcome — pick your state and language</h2>
-    <p data-i18n="onb.sub">Chitti News will only show articles relevant to your state, in your chosen language. You can change this anytime from the header.</p>
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <div style="flex:1">
+        <h2 id="onb-title" data-i18n="onb.title">👋 Welcome — pick your state and language</h2>
+        <p data-i18n="onb.sub">Chitti News will only show articles relevant to your state, in your chosen language. You can change this anytime from the header.</p>
+      </div>
+      <button class="spk-btn" onclick="speakOnboarding()" aria-label="Hear the welcome message read aloud">🔊</button>
+    </div>
     <label style="font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="onb.state_lbl">Your state</label>
     <select id="onb-state"></select>
     <label style="display:block;margin-top:14px;font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="onb.lang_lbl">Your language</label>
@@ -459,6 +477,63 @@ function speakPage(){
   sp(_chittiLang === 'hi'
      ? 'चिट्टी न्यूज़। आपका राज्य, आपकी भाषा, आपकी खबरें। आज की मुख्य ख़बरें नीचे हैं।'
      : 'Chitti News. Your state, your language, your news. Today\'s top stories below.');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Speaker handlers — every box has its own 🔊 (four-user contract)
+// ═══════════════════════════════════════════════════════════
+function speakBreaking(){
+  const el = document.getElementById('brk-text');
+  const txt = (el && el.textContent || '').trim();
+  if (!txt) {
+    sp(_chittiLang === 'hi' ? 'इस समय कोई ब्रेकिंग खबर नहीं।' : 'No breaking news right now.');
+    return;
+  }
+  sp(txt);
+}
+
+function speakPicker(){
+  const state = document.getElementById('pick-state');
+  const lang  = document.getElementById('pick-lang');
+  const stateLabel = state && state.options[state.selectedIndex] ? state.options[state.selectedIndex].text : 'India';
+  const langLabel  = lang  && lang.options[lang.selectedIndex]   ? lang.options[lang.selectedIndex].text   : 'English';
+  sp(_chittiLang === 'hi'
+    ? 'आप ' + stateLabel + ' और ' + langLabel + ' देख रहे हैं। बदलने के लिए ड्रॉपडाउन खोलें।'
+    : 'You are viewing ' + stateLabel + ' in ' + langLabel + '. Open the dropdown to change.');
+}
+
+function speakSpecialAll(){
+  const items = Array.from(document.querySelectorAll('#special-list li > span'))
+    .map(s => (s.textContent || '').trim())
+    .filter(Boolean);
+  if (!items.length) return;
+  sp(items.join('. '));
+}
+
+function speakLi(btn){
+  if (!btn || !btn.parentElement) return;
+  const span = btn.parentElement.querySelector('span');
+  const txt = (span && span.textContent || '').trim();
+  if (txt) sp(txt);
+}
+
+function speakOnboarding(){
+  const lang = _chittiLang;
+  sp(lang === 'hi'
+    ? 'चिट्टी न्यूज़ में आपका स्वागत है। पहले अपना राज्य चुनें। फिर अपनी भाषा। फिर मुझे मेरी खबरें दिखाएँ बटन दबाएँ।'
+    : 'Welcome to Chitti News. First, pick your state. Then pick your language. Then tap Show me my news.');
+}
+
+function speakFeedStatus(){
+  const el = document.getElementById('feed-status');
+  const txt = (el && el.textContent || '').trim();
+  sp(txt || (_chittiLang === 'hi' ? 'फ़ीड लोड हो रहा है।' : 'Feed loading.'));
+}
+
+function speakStatus(folder){
+  const el = document.getElementById(folder + '-status');
+  const txt = (el && el.textContent || '').trim();
+  sp(txt || (_chittiLang === 'hi' ? 'इस फ़ोल्डर में अभी कुछ नहीं है।' : 'This folder is empty.'));
 }
 
 // ═══════════════════════════════════════════════════════════
