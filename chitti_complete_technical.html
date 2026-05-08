@@ -1276,29 +1276,24 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
 
     <div class="section-card" style="padding:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div style="font-size:14px;font-weight:800">📊 Signal Strength &amp; Confluence <span class="coming-soon">Coming Soon</span></div>
+        <div style="font-size:14px;font-weight:800" data-i18n="strength.title">📊 Signal Strength &amp; Confluence</div>
+        <div id="ss-verdict-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eee;color:#444">—</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Signal Strength</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">— / 10</div><div class="metric-card-pe">How strong is the BUY / SHORT signal? Computed from all 43 indicators.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Confluence Score</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">— / 43</div><div class="metric-card-pe">How many indicators agree with the verdict — out of 43 total.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Trend Alignment</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Higher timeframes (Weekly / Monthly) point the same way? Always trade with higher TF.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Volume Confirmation</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Is volume above 20-day average on the signal candle? No volume = weak.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="strength.score">Signal Strength</span></div><div class="metric-card-val" id="ss-strength">— / 10</div><div class="metric-card-pe" data-i18n="strength.score.pe">Composite from all 43 indicators on the Daily timeframe.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="strength.confluence">Confluence Score</span></div><div class="metric-card-val" id="ss-confluence">— / 43</div><div class="metric-card-pe" data-i18n="strength.confluence.pe">How many indicators agree with the verdict.</div></div>
+        <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="strength.trend">Trend Alignment</span></div><div class="metric-card-val" id="ss-trend">—</div><div class="metric-card-pe" data-i18n="strength.trend.pe">Verdict on Weekly + Monthly. Always trade with the higher TF.</div></div>
+        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span data-i18n="strength.volume">Volume Confirmation</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe" data-i18n="strength.volume.pe">Is volume above 20-day average on the signal candle?</div></div>
       </div>
     </div>
 
     <div class="section-card" style="padding:14px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:8px">📋 Multi-Timeframe Indicator Table <span class="coming-soon">Coming Soon</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">TradingView-style: one row per indicator, one column per timeframe, ✅⚠️❌ in each cell.</div>
-      <div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="Multi-timeframe signal table">
-        <thead><tr><th>Indicator</th><th>5m</th><th>15m</th><th>1H</th><th>4H</th><th>1D</th><th>1W</th><th>1M</th></tr></thead>
-        <tbody>
-          <tr><td>Roshan Indicator</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon — current Roshan signal across every timeframe at a glance.</td></tr>
-          <tr><td>RSI (14)</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon</td></tr>
-          <tr><td>MACD</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon</td></tr>
-          <tr><td>Supertrend</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon</td></tr>
-          <tr><td>Bollinger Bands</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon</td></tr>
-          <tr><td>ADX / DMI</td><td colspan="7" class="section-empty" style="text-align:center">Coming soon</td></tr>
-          <tr><td>OVERALL CONSENSUS</td><td colspan="7" class="section-empty" style="text-align:center"><strong>Coming soon — STRONG BUY / BUY / WAIT / SELL / STRONG SELL aggregate</strong></td></tr>
+      <div style="font-size:14px;font-weight:800;margin-bottom:8px" data-i18n="rating.title">📋 Multi-Timeframe Technical Rating</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px" data-i18n="rating.sub">TradingView-style: composite verdict per timeframe. ▲ = bullish, ▼ = bearish, ▬ = neutral.</div>
+      <div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="Multi-timeframe signal table" id="rating-table-tbl">
+        <thead><tr><th data-i18n="rating.col.tf">Timeframe</th><th data-i18n="rating.col.verdict">Verdict</th><th data-i18n="rating.col.score">Score (0-10)</th><th data-i18n="rating.col.confluence">Confluence</th></tr></thead>
+        <tbody id="rating-table-body">
+          <tr><td colspan="4" class="section-empty">Pick a stock to see the rating.</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1320,12 +1315,19 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
     </div>
 
     <div class="section-card" style="padding:14px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:8px">⭐ My Watchlist <span class="coming-soon">Coming Soon</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Tap the star on any stock to add. Live prices update every 15 seconds during market hours. Tap any row to open the chart.</div>
-      <div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="Watchlist">
-        <thead><tr><th>★</th><th>Stock</th><th>LTP</th><th>Day Δ</th><th>Day %</th><th>52W Hi/Lo</th><th>Roshan</th></tr></thead>
-        <tbody>
-          <tr><td colspan="7" class="section-empty">Coming soon — your starred stocks with live prices, day change, and current Roshan signal. Tap a row → chart loads.</td></tr>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:800" data-i18n="watch.title">⭐ My Watchlist</div>
+        <div style="display:flex;gap:6px">
+          <input id="wl-input" placeholder="NSE:RELIANCE" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;width:160px" aria-label="Add a symbol to watchlist"/>
+          <button class="chip" onclick="watchlistAdd()" aria-label="Add to watchlist">＋ Add</button>
+          <button class="chip" onclick="watchlistRefresh()" aria-label="Refresh watchlist quotes">↻</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px" data-i18n="watch.sub">Tap a row to open the chart. Live prices refresh every 15 seconds during market hours.</div>
+      <div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="Watchlist" id="wl-tbl">
+        <thead><tr><th>✕</th><th data-i18n="watch.col.stock">Stock</th><th data-i18n="watch.col.ltp">LTP</th><th data-i18n="watch.col.chg">Day Δ</th><th data-i18n="watch.col.pct">Day %</th><th data-i18n="watch.col.range">Day Hi/Lo</th></tr></thead>
+        <tbody id="wl-body">
+          <tr><td colspan="6" class="section-empty">Watchlist empty. Type a symbol like NSE:RELIANCE and click Add.</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -3305,7 +3307,136 @@ function openChart(sym) {
   updateLegend();
   loadChart(sym);
   loadCV(sym);
+  loadStrengthAndRating(sym);
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Signal Strength + Confluence + Multi-TF Rating Table (Phase 7 P1)
+// ──────────────────────────────────────────────────────────────────
+const VERDICT_COLOR = {
+  'STRONG BUY':   { bg:'#0E2344', fg:'#fff',   sym:'▲▲' },
+  'BUY':          { bg:'#10b981', fg:'#fff',   sym:'▲'  },
+  'NEUTRAL':      { bg:'#eee',    fg:'#444',   sym:'▬'  },
+  'SELL':         { bg:'#E86A17', fg:'#fff',   sym:'▼'  },
+  'STRONG SELL':  { bg:'#a01717', fg:'#fff',   sym:'▼▼' },
+};
+function _verdictChip(v) {
+  const c = VERDICT_COLOR[v] || VERDICT_COLOR['NEUTRAL'];
+  return `<span style="background:${c.bg};color:${c.fg};padding:3px 8px;border-radius:999px;font-weight:700;font-size:11px" aria-label="${v}">${c.sym} ${v}</span>`;
+}
+async function loadStrengthAndRating(sym) {
+  if (!sym) return;
+  const ssTbody = document.getElementById('rating-table-body');
+  const ssV   = document.getElementById('ss-strength');
+  const ssC   = document.getElementById('ss-confluence');
+  const ssT   = document.getElementById('ss-trend');
+  const ssBdg = document.getElementById('ss-verdict-badge');
+  if (ssTbody) ssTbody.innerHTML = '<tr><td colspan="4" class="section-empty">Loading…</td></tr>';
+  if (ssV) ssV.textContent = '…';
+  if (ssC) ssC.textContent = '…';
+  if (ssT) ssT.textContent = '…';
+  try {
+    const [strRes, rtRes] = await Promise.all([
+      fetch(`${API}/api/strength/${encodeURIComponent(sym)}?timeframe=Daily`),
+      fetch(`${API}/api/rating-table/${encodeURIComponent(sym)}`),
+    ]);
+    const str = await strRes.json();
+    const rt  = await rtRes.json();
+    // Headline strength (Daily)
+    if (ssV)   ssV.textContent = `${(str.strength_0_10 ?? 5).toFixed(1)} / 10`;
+    if (ssC)   ssC.textContent = `${str.buys ?? 0} of ${str.total ?? 43} agree`;
+    if (ssBdg) ssBdg.outerHTML = `<div id="ss-verdict-badge">${_verdictChip(str.verdict || 'NEUTRAL')}</div>`;
+    // Trend alignment = Weekly+Monthly verdict aggregate
+    const rows = rt.rows || [];
+    const wk = rows.find(r => r.timeframe === 'Weekly');
+    const mo = rows.find(r => r.timeframe === 'Monthly');
+    if (ssT) {
+      const wv = wk?.verdict || '—', mv = mo?.verdict || '—';
+      const aligned = wv === mv && wv !== 'NEUTRAL' && wv !== '—';
+      ssT.innerHTML = aligned
+        ? `${_verdictChip(wv)} <span style="font-size:11px;color:var(--muted)">W+M aligned</span>`
+        : `<span style="font-size:11px">W: ${wv} · M: ${mv}</span>`;
+    }
+    // Multi-TF rating table
+    if (ssTbody) {
+      ssTbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.timeframe}</strong></td>
+          <td>${_verdictChip(r.verdict)}</td>
+          <td>${(r.strength_0_10 ?? 5).toFixed(1)}</td>
+          <td>${r.buys}↑ / ${r.sells}↓ / ${r.waits}▬</td>
+        </tr>
+      `).join('');
+    }
+  } catch (e) {
+    if (ssTbody) ssTbody.innerHTML = '<tr><td colspan="4" class="section-empty">Could not load rating — try again.</td></tr>';
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Watchlist (Phase 7 P1)
+// ──────────────────────────────────────────────────────────────────
+const WL_KEY = '_chittiWatchlist';
+let _wlTimer = null;
+function watchlistGet() {
+  try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]'); } catch(e) { return []; }
+}
+function watchlistSet(arr) {
+  localStorage.setItem(WL_KEY, JSON.stringify([...new Set(arr)]));
+}
+function watchlistAdd() {
+  const inp = document.getElementById('wl-input');
+  if (!inp) return;
+  let s = (inp.value || '').trim().toUpperCase();
+  if (!s) return;
+  if (!s.includes(':')) s = 'NSE:' + s;
+  const arr = watchlistGet();
+  if (!arr.includes(s)) arr.push(s);
+  watchlistSet(arr);
+  inp.value = '';
+  watchlistRefresh();
+}
+function watchlistRemove(sym) {
+  watchlistSet(watchlistGet().filter(x => x !== sym));
+  watchlistRefresh();
+}
+async function watchlistRefresh() {
+  const tbody = document.getElementById('wl-body');
+  if (!tbody) return;
+  const arr = watchlistGet();
+  if (!arr.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="section-empty">Watchlist empty. Type a symbol like NSE:RELIANCE and click Add.</td></tr>';
+    return;
+  }
+  try {
+    const r = await fetch(`${API}/api/quotes?symbols=${encodeURIComponent(arr.join(','))}`);
+    const j = await r.json();
+    tbody.innerHTML = arr.map(s => {
+      const q = j[s];
+      if (!q) return `<tr><td><button class="chip" onclick="watchlistRemove('${s}')" aria-label="Remove ${s}">✕</button></td><td><a href="#" onclick="openChart('${s}');return false">${s.split(':').pop()}</a></td><td colspan="4" class="section-empty">No data</td></tr>`;
+      const pct = q.pchange ?? 0;
+      const dir = pct > 0 ? '▲' : (pct < 0 ? '▼' : '▬');
+      const col = pct > 0 ? '#10b981' : (pct < 0 ? '#a01717' : '#666');
+      return `<tr>
+        <td><button class="chip" onclick="watchlistRemove('${s}')" aria-label="Remove ${s} from watchlist">✕</button></td>
+        <td><a href="#" onclick="openChart('${s}');return false" style="font-weight:700">${s.split(':').pop()}</a></td>
+        <td>₹${(q.last_price ?? 0).toFixed(2)}</td>
+        <td style="color:${col}">${dir} ${(q.change ?? 0).toFixed(2)}</td>
+        <td style="color:${col}">${dir} ${pct.toFixed(2)}%</td>
+        <td style="font-size:11px;color:var(--muted)">${(q.day_high ?? 0).toFixed(2)} / ${(q.day_low ?? 0).toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="section-empty">Could not refresh quotes — try again.</td></tr>';
+  }
+}
+function watchlistStartPolling() {
+  if (_wlTimer) clearInterval(_wlTimer);
+  _wlTimer = setInterval(() => {
+    if (document.getElementById('tab-watch')?.classList.contains('active')) watchlistRefresh();
+  }, 15000);
+}
+document.addEventListener('DOMContentLoaded', () => { watchlistRefresh(); watchlistStartPolling(); });
 
 function selTF(btn) {
   document.querySelectorAll('.tf-btn').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.borderColor=''; b.style.color=''; });
