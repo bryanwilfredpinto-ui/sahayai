@@ -9,9 +9,10 @@ You're picking up the Chitti project. Bryan Wilfred Pinto is the founder.
 ## 1. Read these FIRST (in order, before any code)
 
 1. `C:\Users\DELL\.claude\projects\c--Users-DELL-sahayai-sahayai\memory\MEMORY.md` — auto-loaded. Index of every project rule + spec.
-2. `CHITTI_TECHNICAL_MASTER_SPEC.md` (workspace root) — full Chitti Technical structure, built vs pending, build rules.
-3. `CHITTI_MEDUPI_MASTER_SPEC.md` (workspace root) — full Chitti MedUPI v1.4 spec.
-4. `chitti-shares/README.md` — backend phase history.
+2. `CHITTI_TECHNICAL_MASTER_SPEC.md` (workspace root) — Chitti Technical.
+3. `CHITTI_MEDUPI_MASTER_SPEC.md` (workspace root) — Chitti MedUPI v1.7.
+4. `CHITTI_NEWS_MASTER_SPEC.md` (workspace root) — Chitti News v1.0.
+5. `chitti-shares/README.md` — backend phase history.
 
 **No equivalent master-spec for Chitti Fundamentals exists yet. Bryan's original Fundamentals spec is in conversation history (Word-doc paste, 2026-05-05). If a session needs it, draft from `chitti_fundamentals.html` + the existing memory entries.**
 
@@ -22,10 +23,15 @@ Chitti (parent brand) at sahayai.in
 ├── Chitti Shares
 │   ├── Chitti Technical    →  sahayai.in/chitti_complete_technical.html
 │   └── Chitti Fundamentals →  sahayai.in/chitti_fundamentals.html
-└── Chitti MedUPI           →  sahayai.in/chitti_medupi.html
+├── Chitti MedUPI           →  sahayai.in/chitti_medupi.html
+└── Chitti News             →  sahayai.in/chitti_news.html
 ```
 
-Backend (FastAPI on Render): `chitti-shares-api.onrender.com`
+Backends on Render:
+- `chitti-shares-api.onrender.com`     (FastAPI · Supabase · `shares.*` schema)
+- `chitti-medupi-api.onrender.com`     (Flask · Supabase · `medupi.*` schema · also runs against Neon for the Apollo 211k-row local load)
+- `chitti-news-api.onrender.com`       (Flask · Supabase · `news.*` schema · NOT YET DEPLOYED — `chitti-news/render.yaml` ready)
+
 Frontend: GitHub Pages serves the workspace root.
 
 ## 3. Hard rules (non-negotiable — prior sessions wasted hours violating these)
@@ -89,26 +95,46 @@ curl -sS "https://chitti-shares-api.onrender.com/<your-new-endpoint>" | head -c 
 | Frontend (Technical) | `chitti_complete_technical.html` |
 | Frontend (Fundamentals) | `chitti_fundamentals.html` |
 | Frontend (MedUPI) | `chitti_medupi.html` |
-| Backend root | `chitti-shares/backend/` |
+| Frontend (News) | `chitti_news.html` |
+| Backend (Shares) | `chitti-shares/backend/` (FastAPI · `shares.*` schema) |
+| Backend (MedUPI) | `chitti-medupi/backend/` (Flask · `medupi.*` schema) |
+| Backend (News) | `chitti-news/backend/` (Flask · `news.*` schema) |
 | Shares services | `services/technical.py`, `scanner.py`, `levels.py`, `intraday_candles.py`, `screener_client.py`, `news_client.py`, `fundamental_scanner.py`, `angel_client.py` |
-| MedUPI services | `services/medupi_recognition.py`, `medupi_database.py`, `medupi_alternatives.py`, `medupi_risk.py`, `medupi_jan_aushadhi.py` |
-| Routes (mounted in `main.py`) | `routes/technical.py`, `routes/stocks.py`, etc. |
-| Master specs (workspace root) | `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md` |
+| MedUPI services | `services/medupi_recognition.py`, `medupi_database.py`, `medupi_alternatives.py`, `medupi_risk.py`, `medupi_jan_aushadhi.py`, `medupi_brave_search.py`, `medupi_community.py`, `medupi_scheduler.py` |
+| News services | `services/news_seed.py`, `news_db.py`, `news_ingest.py`, `news_summary.py`, `news_factcheck.py`, `news_scheduler.py` |
+| News loaders | `chitti-news/backend/data/sources.json` (26 RSS feeds) · `articles_seed.json` (welcome seed) |
+| MedUPI loaders | `chitti-medupi/backend/scripts/load_apollo_oneshot.py` + `scripts/loaders/{jan_aushadhi,bppi_products,nppa,cdsco,kaggle,rxnorm,openfda}.py` |
+| Sub-agent skills (News) | `chitti-news/skills/chitti-news-{summarizer,factcheck,politics,sports,business,tech,entertainment}/SKILL.md` |
+| Master specs (workspace root) | `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md` |
 | Backups | `backups/chitti_*_pre_bharat_2026-05-06.html` |
 
 ## 7. Live URLs to test
 
-- Sites: `https://sahayai.in/chitti_complete_technical.html`, `/chitti_fundamentals.html`, `/chitti_medupi.html`
-- Backend health: `https://chitti-shares-api.onrender.com/health`
-- Sample endpoints: `/api/technical/NSE:RELIANCE`, `/api/fundamentals/NSE:RELIANCE`, `/api/news/market`, `/api/fundamental-scan?universe=nifty50&strategy=buffett`, `/api/medupi/alternatives?molecule=Paracetamol&strength=650mg&dosage_form=Tablet`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`
+- Sites: `/chitti_complete_technical.html`, `/chitti_fundamentals.html`, `/chitti_medupi.html`, `/chitti_news.html` (all under `https://sahayai.in/`)
+- Backend health endpoints:
+  - `https://chitti-shares-api.onrender.com/health`
+  - `https://chitti-medupi-api.onrender.com/health`
+  - `https://chitti-news-api.onrender.com/health` (after deploy)
+- Sample endpoints:
+  - Shares: `/api/technical/NSE:RELIANCE`, `/api/fundamentals/NSE:RELIANCE`, `/api/news/market`, `/api/fundamental-scan?universe=nifty50&strategy=buffett`
+  - MedUPI: `/api/medupi/medicine/Crocin%20650`, `/api/medupi/alternatives?molecule=Paracetamol&strength=650mg&dosage_form=Tablet`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`, `/api/medupi/scheduler/status`
+  - News: `/api/news/india/en/national`, `/api/news/india/hi/business`, `/api/news/article/1/take?language=hi`, `/api/news/article/1/factcheck`, `/api/news/breaking?state=india&language=en`
 
 ## 8. What's pending (in priority order)
+
+**Cross-cutting / urgent**
+1. **Deploy `chitti-news/backend`** to Render — `render.yaml` ready, paste DATABASE_URL (same Supabase URL the others use) + ANTHROPIC_API_KEY.
+2. **Apollo data is in Neon, live MedUPI API queries Supabase.** Decide: switch chitti-medupi-api's DATABASE_URL to Neon, OR re-run the Apollo loader against Supabase. (211,207 rows in `medupi.medicines` on Neon today.)
+3. **Three Supabase passwords leaked in transcripts** (`SahayAI2026`, `Sahay2026`, `7cF7KW9u9muQg96N`) + Neon password (`npg_nqDgROxuE1i4`) — rotate when convenient and don't paste the new ones.
+4. **Stale Windows User-level `DATABASE_URL`** — `[Environment]::SetEnvironmentVariable("DATABASE_URL", $null, "User")` to clean.
 
 **Chitti Technical** — manual drawing tools · watchlist + alerts · custom rule builder · Story Mode per signal · Confidence Dial · sector heatmap · multi-Indian-language audio.
 
 **Chitti Fundamentals** — Tickertape composite scorecard scoring engine · Trendlyne DVM scoring · pros/cons auto-generator · SWOT auto-generator · DCF calculator · returns calculator · top-10 institutional holders + KMP wiring · earnings calendar live data · NSE/BSE shareholding scrape for ownership tab.
 
-**Chitti MedUPI** (full pending list in `CHITTI_MEDUPI_MASTER_SPEC.md` §13) — NPPA price seed · Jan Aushadhi catalog seed · OCR pipeline · Anthropic composition extractor · `/api/medupi/scan` endpoint · camera-capture frontend · Family Wallet auth + multi-profile · Twilio phone-call reminders · Hindi audio for every disclaimer.
+**Chitti MedUPI** (full list in `CHITTI_MEDUPI_MASTER_SPEC.md` §13) — Run NPPA + BPPI products + JA stores + CDSCO loaders to fill prices on the 211k Apollo rows · browser push reminders (service worker) · WhatsApp + Twilio voice reminders · prescription decoder (multi-medicine Rx image) · Optimised Cart simulator · real Ayushman empanelled list · `rxcui` schema column.
+
+**Chitti News** (full list in `CHITTI_NEWS_MASTER_SPEC.md` §12) — Backend Render deploy · live RSS poll verification · regional-language sources (Bangla / Telugu / Tamil / Odia HTML scraping in v1.1) · browser push notifications · topic following · user-feedback loop on Cancelled · daily digest email · citizen reporter submissions · cross-product handoff (e.g. medicine mention in news → Chitti MedUPI).
 
 ## 9. Open with this
 
