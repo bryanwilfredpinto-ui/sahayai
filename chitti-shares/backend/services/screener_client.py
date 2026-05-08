@@ -209,12 +209,12 @@ def fundamentals(canonical_symbol: str) -> dict:
         "dividend_yield": ratios.get("Dividend Yield"),
         "roe": ratios.get("ROE"),
         "roa": None,                             # not on screener top
-        "debt_to_equity": ratios.get("Debt to equity"),
+        "debt_to_equity": ratios.get("Debt to equity") or ratios.get("Debt / Equity"),
         "revenue_growth": None,                  # derived from quarterly below
         "earnings_growth": None,                 # derived from quarterly below
         "profit_margin": None,                   # derived from quarterly below
-        "operating_margin": ratios.get("OPM"),
-        "current_ratio": None,
+        "operating_margin": ratios.get("OPM") or ratios.get("OPM Last Year"),
+        "current_ratio": None,                   # derived from BS below
         "quick_ratio": None,
         "book_value": book_value,
         "price": price,
@@ -246,6 +246,42 @@ def fundamentals(canonical_symbol: str) -> dict:
     # Net profit margin (latest quarter)
     if rev_q and np_q and rev_q[-1] and np_q[-1] is not None and rev_q[-1] != 0:
         out["profit_margin"] = round(np_q[-1] / rev_q[-1] * 100, 2)
+
+    # Operating margin fallback — read latest "OPM %" row from annual P&L
+    # if the top-ratios block did not carry it.
+    if out["operating_margin"] is None and psec:
+        opm_y = _table_row_values(psec, r"OPM\s*%|OPM %")
+        if opm_y:
+            latest = next((v for v in reversed(opm_y) if v is not None), None)
+            if latest is not None:
+                out["operating_margin"] = round(latest, 2)
+
+    # Debt/Equity fallback — derive from latest annual balance sheet:
+    #   D/E = Borrowings / (Reserves + Equity Capital).
+    bsec = _extract_table_section(html, "balance-sheet")
+    if out["debt_to_equity"] is None and bsec:
+        borrow = _table_row_values(bsec, r"^Borrowings|Borrowings\b")
+        reserves = _table_row_values(bsec, r"^Reserves|Reserves\b")
+        equity = _table_row_values(bsec, r"Equity\s*Capital|Share\s*Capital")
+        latest_b = next((v for v in reversed(borrow)   if v is not None), None) if borrow   else None
+        latest_r = next((v for v in reversed(reserves) if v is not None), None) if reserves else None
+        latest_e = next((v for v in reversed(equity)   if v is not None), None) if equity   else None
+        denom = (latest_r or 0) + (latest_e or 0)
+        if latest_b is not None and denom > 0:
+            out["debt_to_equity"] = round(latest_b / denom, 2)
+
+    # Current ratio fallback — derive from latest annual balance sheet:
+    #   CR = Other Assets / Other Liabilities (approximation; screener does
+    #   not break out current vs non-current cleanly, so this is the
+    #   non-fixed-asset / non-equity-debt residual on each side. Adequate
+    #   for a 0..10 health-axis band but tagged as approximate downstream).
+    if bsec:
+        oth_a = _table_row_values(bsec, r"Other\s*Assets")
+        oth_l = _table_row_values(bsec, r"Other\s*Liabilities")
+        latest_oa = next((v for v in reversed(oth_a) if v is not None), None) if oth_a else None
+        latest_ol = next((v for v in reversed(oth_l) if v is not None), None) if oth_l else None
+        if latest_oa is not None and latest_ol and latest_ol > 0:
+            out["current_ratio"] = round(latest_oa / latest_ol, 2)
 
     return out
 

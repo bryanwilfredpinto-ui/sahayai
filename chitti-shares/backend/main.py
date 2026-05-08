@@ -754,6 +754,39 @@ def api_risk_fit(symbol: str, persona: str = "moderate"):
 
 
 # =====================================================================
+# PHASE 7D — RETURNS CALCULATOR + PERFORMANCE vs NIFTY
+# =====================================================================
+
+@app.get("/api/performance/{symbol:path}")
+def api_performance(symbol: str):
+    from urllib.parse import unquote
+    from services import returns
+    from fastapi import HTTPException as _HE
+    try:
+        return returns.performance_vs_nifty(unquote(symbol))
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"performance compute failed: {e}")
+
+
+@app.post("/api/returns")
+def api_returns(payload: dict = None):  # type: ignore[assignment]
+    from services import returns
+    from fastapi import HTTPException as _HE
+    p = payload or {}
+    sym = (p.get("symbol") or "").strip()
+    mode = (p.get("mode") or "lumpsum").lower().strip()
+    years = float(p.get("years") or 5)
+    if not sym:
+        raise _HE(status_code=400, detail="symbol is required")
+    try:
+        if mode == "sip":
+            return returns.returns_sip(sym, float(p.get("monthly_inr") or 5000), years)
+        return returns.returns_lumpsum(sym, float(p.get("amount_inr") or 100000), years)
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"returns compute failed: {e}")
+
+
+# =====================================================================
 # PHASE 7B — AGENTIC /ask ENDPOINTS (true tool-calling loop)
 # DeepSeek tools API; agent_runtime.run_agent orchestrates the
 # LLM-pick-tool / execute / loop / synthesise cycle. One endpoint per
