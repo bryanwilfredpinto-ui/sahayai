@@ -378,6 +378,28 @@ def financials(canonical_symbol: str) -> dict:
     }
 
 
+def shareholding(canonical_symbol: str) -> dict:
+    """
+    Quarterly shareholding pattern from screener.in's 'shareholding' section.
+    Standard rows: Promoters, FIIs, DIIs, Government, Public, Shareholders.
+    Returns {headers: [..quarter labels..], rows: [{label, values: [..%..]}]}.
+    """
+    ticker = _to_ticker(canonical_symbol)
+    if not ticker:
+        return {}
+    html = _fetch_html(ticker)
+    if not html:
+        return {}
+    table = _extract_full_table(html, "shareholding")
+    if not table:
+        return {}
+    return {
+        "name": _extract_company_meta(html).get("name"),
+        "headers": table["headers"],
+        "rows": table["rows"],
+    }
+
+
 def quarterly(canonical_symbol: str, num_quarters: int = 8) -> list[dict]:
     """
     Last N quarters of revenue / net profit / operating profit.

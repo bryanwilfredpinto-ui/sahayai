@@ -545,6 +545,174 @@ def ingest_indices(payload: dict = Body(...)):
 
 
 
+# =====================================================================
+# PHASE 7 — AGENTIC PRIORITY 1 ENDPOINTS
+# Composite scoring + watchlist quotes + financials + CAGR + shareholding
+# + medupi cart simulator. Each endpoint wraps an existing service module
+# (services/strength.py, /fundamentals_extras.py, /medupi_cart.py, etc.).
+# =====================================================================
+
+@app.get("/api/strength/{symbol:path}")
+def api_strength(symbol: str, timeframe: str = "Daily"):
+    """Composite signal strength (0-10) + confluence breakdown for one TF."""
+    from urllib.parse import unquote
+    from services import strength
+    from fastapi import HTTPException as _HE
+    try:
+        return strength.signal_strength(unquote(symbol), timeframe=timeframe)
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=500, detail=str(e))
+
+
+@app.get("/api/rating-table/{symbol:path}")
+def api_rating_table(symbol: str):
+    """STRONG BUY / BUY / NEUTRAL / SELL / STRONG SELL across all timeframes."""
+    from urllib.parse import unquote
+    from services import strength
+    from fastapi import HTTPException as _HE
+    try:
+        return strength.rating_table(unquote(symbol))
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=500, detail=str(e))
+
+
+@app.get("/api/quotes")
+def api_quotes(symbols: str = ""):
+    """
+    Batch live quotes for a watchlist. ?symbols=NSE:RELIANCE,NSE:TCS,...
+    Returns {symbol: {last_price, change, pchange, ...}}.
+    """
+    from services import angel_client
+    syms = [s.strip() for s in symbols.split(",") if s.strip()]
+    if not syms:
+        return {}
+    return angel_client.get_quote(syms)
+
+
+@app.get("/api/financials/{symbol:path}")
+def api_financials(symbol: str):
+    """
+    Full financial statements matrix from screener.in:
+      quarterly P&L, half-yearly P&L (derived), annual P&L + BS + CF.
+    """
+    from urllib.parse import unquote
+    from services import screener_client
+    from fastapi import HTTPException as _HE
+    sym = unquote(symbol)
+    try:
+        out = screener_client.financials(sym)
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"financials scrape failed: {e}")
+    if not out or not out.get("name"):
+        raise _HE(status_code=502, detail=f"financials unavailable for {sym}")
+    return out
+
+
+@app.get("/api/cagr/{symbol:path}")
+def api_cagr(symbol: str):
+    """3Y / 5Y / 10Y CAGR for Sales, Operating Profit, Net Profit."""
+    from urllib.parse import unquote
+    from services import fundamentals_extras
+    from fastapi import HTTPException as _HE
+    try:
+        return fundamentals_extras.cagr(unquote(symbol))
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"cagr compute failed: {e}")
+
+
+@app.get("/api/shareholding/{symbol:path}")
+def api_shareholding(symbol: str):
+    """
+    Quarterly shareholding pattern (Promoter / FII / DII / Public) from
+    screener.in. Empty dict if section is unavailable for the ticker.
+    """
+    from urllib.parse import unquote
+    from services import screener_client
+    return screener_client.shareholding(unquote(symbol)) or {}
+
+
+@app.post("/api/medupi/cart-simulator")
+def api_medupi_cart(payload: dict = None):  # type: ignore[assignment]
+    """
+    Optimised cart simulator — drop a list of monthly meds, get the cheapest
+    same-composition equivalent cart + monthly + annual savings.
+    Body: {"items": [{molecule, strength, dosage_form, monthly_qty, current_price, current_brand?}, ...]}
+    """
+    from services import medupi_cart
+    from fastapi import HTTPException as _HE
+    items = (payload or {}).get("items") or []
+    if not isinstance(items, list):
+        raise _HE(status_code=400, detail="items must be a list")
+    return medupi_cart.simulate(items)
+
+
+@app.get("/api/medupi/family/wallet")
+def api_medupi_family_wallet():
+    """
+    Family Wallet preview — aggregate monthly spend per profile.
+    SKELETON: full multi-profile DB schema is in CHITTI_MEDUPI_MASTER_SPEC §13.
+    Returns sample shape so frontend can wire UI now; live data wires once
+    the family-profile + medupi_log tables land.
+    """
+    from datetime import datetime
+    return {
+        "ok": True,
+        "as_of": datetime.now().date().isoformat(),
+        "members": [
+            {"id": "self",   "label": "Self",          "monthly_spend": 0, "monthly_savings": 0, "chronic_meds": []},
+            {"id": "spouse", "label": "Spouse",        "monthly_spend": 0, "monthly_savings": 0, "chronic_meds": []},
+            {"id": "child1", "label": "Child 1",       "monthly_spend": 0, "monthly_savings": 0, "chronic_meds": []},
+            {"id": "parent", "label": "Parent",        "monthly_spend": 0, "monthly_savings": 0, "chronic_meds": []},
+        ],
+        "totals": {"monthly_spend": 0, "monthly_savings": 0, "annual_projection": 0},
+        "status": "skeleton",
+        "next": "wire family_profile + medupi_log tables (master spec §13).",
+    }
+
+
+@app.get("/api/medupi/insurance-match")
+def api_medupi_insurance_match(molecule: str, scheme: str = "ayushman"):
+    """
+    Skeleton: which scheme covers which medicine.
+    Real coverage tables (Ayushman / CGHS / ESI / private) seed once the
+    NPPA + scheme catalogue is loaded (master spec §13).
+    """
+    scheme = (scheme or "").lower().strip()
+    coverage = {
+        "ayushman": {"covered": True, "ceiling_per_year_inr": 500000, "notes": "PMJAY hospital-stay covers in-patient meds; OPD usually not."},
+        "cghs":     {"covered": True, "ceiling_per_year_inr": None,   "notes": "Coverage subject to CGHS empanelment + scheme rules."},
+        "esi":      {"covered": True, "ceiling_per_year_inr": None,   "notes": "ESIC hospital + dispensary supply."},
+        "private":  {"covered": None, "ceiling_per_year_inr": None,   "notes": "Depends on plan rider; check insurer policy schedule."},
+    }
+    info = coverage.get(scheme) or {"covered": None, "notes": "Unknown scheme."}
+    return {
+        "molecule": molecule,
+        "scheme": scheme,
+        **info,
+        "status": "skeleton",
+        "next": "seed scheme catalogue (master spec §13).",
+    }
+
+
+@app.get("/api/medupi/jan_aushadhi/stock")
+def api_medupi_jan_aushadhi_stock(store_id: str, molecule: str, strength: str = "", dosage_form: str = ""):
+    """
+    Skeleton: stock-availability check at a Jan Aushadhi store.
+    Live wiring requires JAK store-level inventory feed (not yet exposed
+    publicly). Returns 'unknown' until that lands.
+    """
+    return {
+        "store_id": store_id,
+        "molecule": molecule,
+        "strength": strength,
+        "dosage_form": dosage_form,
+        "in_stock": None,
+        "as_of": None,
+        "status": "skeleton",
+        "next": "wire JAK store-level inventory feed once available.",
+    }
+
+
 # ---- Global exception handler for budget cap ----
 
 @app.exception_handler(CapExceeded)
