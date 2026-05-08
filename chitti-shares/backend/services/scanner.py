@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from threading import Lock
 from zoneinfo import ZoneInfo
@@ -73,10 +74,11 @@ def _fetch_candles_for_tf(symbol: str, timeframe: str) -> pd.DataFrame:
 
 
 def _candle_color(df: pd.DataFrame) -> str:
-    """Return 'green' / 'red' / 'flat' for the latest candle."""
-    if df is None or df.empty:
+    """Return 'green' / 'red' / 'flat' for the LAST CLOSED candle (iloc[-2])."""
+    # Spec: always use iloc[-2]; iloc[-1] is the in-progress (unclosed) candle.
+    if df is None or df.empty or len(df) < 2:
         return "flat"
-    last = df.iloc[-1]
+    last = df.iloc[-2]
     if last["close"] > last["open"]:
         return "green"
     if last["close"] < last["open"]:
@@ -89,13 +91,14 @@ def _roshan_signal(df: pd.DataFrame) -> tuple[str, float | None, float | None]:
     Returns (signal, rsi, rsi_sma) for a candle DataFrame.
     Signal: 'BUY' / 'SHORT' / 'WAIT'.
     """
-    if df is None or df.empty or len(df) < 35:
+    # Need at least 36 rows to read iloc[-2] after RSI(14) + SMA(20) warm-up.
+    if df is None or df.empty or len(df) < 36:
         return "WAIT", None, None
     close = df["close"]
     rsi = technical._rsi(close, 14)
     rsi_sma = technical._sma(rsi, 20)
-    v_rsi = rsi.iloc[-1]
-    v_sma = rsi_sma.iloc[-1]
+    v_rsi = rsi.iloc[-2]
+    v_sma = rsi_sma.iloc[-2]
     if pd.isna(v_rsi) or pd.isna(v_sma):
         return "WAIT", None, None
     if v_rsi > v_sma:
@@ -172,9 +175,9 @@ def scan_roshan(call: str, universe_name: str = "nifty50",
         return {"error": f"empty universe: {universe_name}"}
 
     if max_stocks is None:
-        # Cap: pair + pullback = 3 candle calls per stock
-        # Keep total under ~180 calls per scan.
-        max_stocks = min(len(symbols), 60)
+        # Scan the FULL universe (was capped at 60). Concurrency below keeps
+        # full largecap/midcap/smallcap scans inside Render's request window.
+        max_stocks = len(symbols)
 
     # Custom call type — user picks their own timeframes
     if call == "Custom" and custom_tf1 and custom_tf2:
@@ -199,14 +202,26 @@ def scan_roshan(call: str, universe_name: str = "nifty50",
     buys: list[dict] = []
     shorts: list[dict] = []
     scanned = symbols[:max_stocks]
-    for sym in scanned:
-        ev = _evaluate_symbol(sym, tf_a, tf_b, tf_pull)
-        if ev is None:
-            continue
-        if ev["side"] == "BUY":
-            buys.append(ev)
-        else:
-            shorts.append(ev)
+
+    # Parallelise across symbols. angel_client is thread-safe (uses Lock for
+    # its token-map cache) so concurrent get_candles is fine. 6 workers keeps
+    # us well under Angel's per-second limits while finishing largecap (~107)
+    # in <15s on the Render free dyno.
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        futures = {ex.submit(_evaluate_symbol, s, tf_a, tf_b, tf_pull): s
+                   for s in scanned}
+        for fut in as_completed(futures):
+            try:
+                ev = fut.result()
+            except Exception as e:  # noqa: BLE001
+                log.warning("[scanner] %s eval crashed: %s", futures[fut], e)
+                continue
+            if ev is None:
+                continue
+            if ev["side"] == "BUY":
+                buys.append(ev)
+            else:
+                shorts.append(ev)
 
     elapsed = time.time() - t0
     log.info("[scanner] done in %.1fs: %d buys, %d shorts (scanned %d)",
@@ -292,7 +307,8 @@ def scan_indicator(indicator: str, call: str = "Positional",
         return {"error": f"empty universe: {universe_name}"}
 
     if max_stocks is None:
-        max_stocks = min(len(symbols), 60)
+        # Scan the full universe (was capped at 60).
+        max_stocks = len(symbols)
 
     # Custom call type — user picks their own timeframes
     if call == "Custom" and custom_tf1 and custom_tf2:
