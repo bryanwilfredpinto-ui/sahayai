@@ -19,3 +19,13 @@ services:
         value: "600"
       - key: VAANI_TEMPERATURE
         value: "0.4"
+      # Phase 1.6 — Gmail OAuth (required for "send email as Chitti AI")
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        value: https://chitti-vaani-api.onrender.com/api/vaani/email/auth/callback
+      # SQLite path on Render's writable /tmp (free-tier ephemeral; ok for v1)
+      - key: VAANI_TOKEN_DB
+        value: /tmp/chitti_vaani_tokens.sqlite

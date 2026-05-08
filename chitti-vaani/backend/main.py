@@ -19,6 +19,7 @@ from flask_cors import CORS
 
 from config import settings
 from routes.vaani import bp as vaani_bp
+from routes.email import bp as email_bp
 
 logging.basicConfig(
     level=logging.INFO,
@@ -61,6 +62,7 @@ def _create_app() -> Flask:
         return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     app.register_blueprint(vaani_bp)
+    app.register_blueprint(email_bp)
     return app
 
 

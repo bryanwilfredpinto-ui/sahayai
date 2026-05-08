@@ -424,28 +424,28 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <span class="pill android">Phase 1.6 — Gmail OAuth pending</span>
       </button>
 
-      <button class="pro-card" onclick="speakDescriptive('Phone lock', 'Phone lock kewal Android app mein milega — Phase 2.')">
+      <button class="pro-card" onclick="nativeAction('lockPhone')">
         <span class="ico">🔒</span><span class="lbl">Lock my phone</span>
         <span class="sub">"Chitti, phone lock" — locks instantly. Chitti will NEVER unlock by code or by command.</span>
-        <span class="pill android">Android only</span>
+        <span class="pill android" id="pill-lock">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="speakDescriptive('Silent mode', 'Silent mode bhi Android app mein milega.')">
+      <button class="pro-card" onclick="nativeAction('toggleSilent')">
         <span class="ico">🔕</span><span class="lbl">Silent mode</span>
         <span class="sub">"Silent mode on" / "off" — switches phone ringer.</span>
-        <span class="pill android">Android only</span>
+        <span class="pill android" id="pill-silent">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="speakDescriptive('Day call answer', 'Din mein call uthana Android app mein.')">
+      <button class="pro-card" onclick="nativeAction('dialerRole')">
         <span class="ico">📞</span><span class="lbl">Answer call (day)</span>
         <span class="sub">"Chitti, answer" — Chitti picks up, identifies as AI, relays to you in Hindi/your language.</span>
-        <span class="pill android">Android only</span>
+        <span class="pill android" id="pill-call">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="speakDescriptive('Night auto-answer', 'Raat ko auto-answer + emergency wake — Android app mein.')">
+      <button class="pro-card" onclick="nativeAction('callScreening')">
         <span class="ico">🌙</span><span class="lbl">Night auto-answer</span>
         <span class="sub">10 PM – 6 AM, Chitti screens calls, asks "emergency?" — wakes you only if caller says emergency / ambulance / hospital.</span>
-        <span class="pill android">Android only</span>
+        <span class="pill android" id="pill-night">Android only</span>
       </button>
 
       <button class="pro-card" onclick="openLanguageModal()">
@@ -555,10 +555,23 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <div id="email-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="email-title">
   <div class="panel">
     <h2 id="email-title">📧 Send email as Chitti AI</h2>
-    <div class="desc">Phase 1.6 — Gmail OAuth wiring is the next commit. The flow below shows what'll happen. Until OAuth is live, Chitti opens your email app pre-filled (mailto:) so you can review and send.</div>
+    <div class="desc">Chitti will send from your real Gmail account, on your behalf. Every email carries a footer identifying it as AI-assisted. <b>Connect Gmail once, then voice-command works forever.</b></div>
+
+    <div id="em-status" style="padding:10px 12px;border-radius:10px;margin-bottom:10px;background:#fef2f2;border:1px solid #fecaca;font-size:13px">
+      <span id="em-status-text">⏳ Checking Gmail connection…</span>
+    </div>
+    <div id="em-connect-row" style="margin-bottom:10px;display:none">
+      <button class="btn-saffron" onclick="connectGmail()">🔗 Connect Gmail</button>
+      <button class="btn-ghost" onclick="checkEmailStatus()">↻ Refresh status</button>
+    </div>
+    <div id="em-disconnect-row" style="margin-bottom:10px;display:none">
+      <button class="btn-ghost" onclick="disconnectGmail()">🔌 Disconnect Gmail</button>
+    </div>
+
     <div class="field">
-      <label>To (pick from your trusted circle)</label>
+      <label>To (pick from your trusted circle, or type any email)</label>
       <select id="em-to"></select>
+      <input type="email" id="em-to-free" placeholder="or type any email address" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
     </div>
     <div class="field">
       <label>Subject</label>
@@ -574,11 +587,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
     <div class="preview" id="em-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmEmailSend()">📧 Open email app pre-filled</button>
+      <button class="go" onclick="confirmEmailSend()" id="em-send-btn">📧 Send via Gmail</button>
       <button class="spk" onclick="confirmEmailByVoice()">🎙️ Confirm by voice (haan)</button>
       <button class="cancel" onclick="closeModal('email-modal')">Cancel</button>
     </div>
-    <div class="small-note">Outgoing emails will carry a footer: "Sent via Chitti Vaani — an AI assistant for [user]. Replies do not pass through Chitti."</div>
+    <div class="small-note">Footer auto-appended: <em>"Sent via Chitti Vaani — an AI assistant for [your name]. Replies do not pass through Chitti."</em></div>
   </div>
 </div>
 
@@ -668,6 +681,21 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 const CONSENT_KEY = 'chitti_vaani_consent_given';
 const HISTORY_KEY = 'chitti_vaani_history';
 const LANG_KEY    = 'chitti_vaani_lang';
+const USER_TOKEN_KEY = 'chitti_vaani_user_token';
+
+// Per-device UUID — used by the backend to scope OAuth tokens, history, etc.
+function getUserToken(){
+  let t = localStorage.getItem(USER_TOKEN_KEY);
+  if (t && t.length >= 8) return t;
+  // Crypto-strong UUIDv4
+  if (window.crypto && window.crypto.randomUUID) {
+    t = window.crypto.randomUUID();
+  } else {
+    t = 'cv-' + Date.now() + '-' + Math.random().toString(36).slice(2,12);
+  }
+  localStorage.setItem(USER_TOKEN_KEY, t);
+  return t;
+}
 
 // Resolve the backend URL: ?api=… overrides; otherwise default to onrender host.
 const API_BASE = (function(){
@@ -1220,48 +1248,219 @@ function confirmUPISend(){
   }, 600);
 }
 
-/* ── Email (deep-link mailto: today, Gmail OAuth in Phase 1.6) ── */
+/* ── Email (Gmail OAuth — Phase 1.6) ── */
+let EMAIL_CONNECTED = false;
+let EMAIL_ACCOUNT = '';
+
+async function checkEmailStatus(){
+  const userToken = getUserToken();
+  const statusEl = document.getElementById('em-status');
+  const statusText = document.getElementById('em-status-text');
+  const connectRow = document.getElementById('em-connect-row');
+  const disconnectRow = document.getElementById('em-disconnect-row');
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/email/status?user_token=' + encodeURIComponent(userToken));
+    const d = await r.json();
+    if (!d.configured) {
+      statusEl.style.background = '#fef2f2'; statusEl.style.borderColor = '#fecaca';
+      statusText.innerHTML = '⚠️ Gmail OAuth is not configured on the server. Ask the admin to set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in Render.';
+      connectRow.style.display = 'none'; disconnectRow.style.display = 'none';
+      EMAIL_CONNECTED = false; return;
+    }
+    if (d.connected) {
+      EMAIL_CONNECTED = true; EMAIL_ACCOUNT = d.email || '';
+      statusEl.style.background = '#dcfce7'; statusEl.style.borderColor = '#86efac';
+      statusText.innerHTML = '✅ Connected as <b>' + escapeHtml(d.email||'unknown') + '</b>';
+      connectRow.style.display = 'none'; disconnectRow.style.display = 'block';
+    } else {
+      EMAIL_CONNECTED = false; EMAIL_ACCOUNT = '';
+      statusEl.style.background = '#fff8e1'; statusEl.style.borderColor = '#fde68a';
+      statusText.innerHTML = '🔗 No Gmail connected yet. Tap <b>Connect Gmail</b> below — Chitti will then send emails on your behalf, identifying as AI in the footer.';
+      connectRow.style.display = 'block'; disconnectRow.style.display = 'none';
+    }
+  } catch(e) {
+    statusEl.style.background = '#fef2f2'; statusEl.style.borderColor = '#fecaca';
+    statusText.innerHTML = '⚠️ Cannot reach Vaani backend. ' + escapeHtml(e.message);
+    connectRow.style.display = 'none'; disconnectRow.style.display = 'none';
+  }
+}
+async function connectGmail(){
+  const userToken = getUserToken();
+  // Where to bounce back to after Google's consent screen
+  const here = window.location.origin + window.location.pathname + '#email=connected';
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/email/auth/start', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: userToken, redirect: here }),
+    });
+    const d = await r.json();
+    if (!d.ok) { alert('Could not start OAuth: ' + (d.error||'unknown')); return; }
+    speakText(CURRENT_LANG==='en'?'Opening Google to connect your Gmail.':'Google खुल रहा है — Gmail connect करने के लिए।', CURRENT_LANG);
+    window.location.href = d.url;
+  } catch(e) {
+    alert('Network error: ' + e.message);
+  }
+}
+async function disconnectGmail(){
+  if (!confirm('Disconnect Gmail? Chitti will no longer be able to send email until you reconnect.')) return;
+  const userToken = getUserToken();
+  try {
+    await fetch(API_BASE + '/api/vaani/email/disconnect', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: userToken }),
+    });
+    logAction('Disconnected Gmail', EMAIL_ACCOUNT || '');
+  } catch(e){}
+  await checkEmailStatus();
+}
 function openEmailModal(){
   if (!consentGiven()) { reopenConsent(); return; }
   refreshTCDropdown('em-to');
+  document.getElementById('em-to-free').value = '';
   document.getElementById('em-subject').value = '';
   document.getElementById('em-body').value = '';
   document.getElementById('em-preview').style.display = 'none';
   openModal('email-modal');
+  checkEmailStatus();
+}
+function _getEmailRecipient(){
+  const i = document.getElementById('em-to').value;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.email) return { email: c.email, name: c.realname || c.name || '' };
+  }
+  const free = document.getElementById('em-to-free').value.trim();
+  if (free && free.includes('@')) return { email: free, name: '' };
+  return null;
 }
 function buildEmailPreview(){
-  const i = document.getElementById('em-to').value;
-  const c = i !== '' ? loadTC()[Number(i)] : null;
+  const r = _getEmailRecipient();
   const subj = document.getElementById('em-subject').value.trim();
   const body = document.getElementById('em-body').value.trim();
-  if (!c || !c.email) return null;
+  if (!r) return null;
   if (!body) return null;
-  const footer = "\n\n— Sent via Chitti Vaani, an AI assistant for " + (c.realname || 'the user') + ". Replies do not pass through Chitti.";
-  return { contact: c, subj, body: body + footer, preview: 'Email to <b>' + escapeHtml(c.email) + '</b> · subject: ' + escapeHtml(subj||'(no subject)') + '<br><br>' + escapeHtml(body).slice(0,300) + (body.length>300?'…':'') };
+  return {
+    to: r.email, toName: r.name,
+    subj, body,
+    preview: 'Email to <b>' + escapeHtml(r.email) + '</b> · subject: <i>' + escapeHtml(subj||'(no subject)') + '</i><br><br>' + escapeHtml(body).slice(0,400) + (body.length>400?'…':'')
+              + '<br><br><span style="color:var(--muted);font-size:11px">Footer auto-appended: "Sent via Chitti Vaani, an AI assistant…"</span>',
+  };
 }
 function confirmEmailByVoice(){
   const p = buildEmailPreview();
-  if (!p) { alert('Pick a contact with an email and write a body.'); return; }
+  if (!p) { alert('Pick a contact with an email (or type one) and write the body.'); return; }
   document.getElementById('em-preview').innerHTML = p.preview;
   document.getElementById('em-preview').style.display='block';
-  speakText((CURRENT_LANG==='en'?'I will email ':'मैं ईमेल भेज रही हूँ ') + (p.contact.realname||p.contact.email) + '. ' + (CURRENT_LANG==='en'?'Say haan to open email app.':'भेजने के लिए हाँ बोलिए।'), CURRENT_LANG);
+  speakText((CURRENT_LANG==='en'?'I will email ':'मैं ईमेल भेज रही हूँ ') + (p.toName||p.to) + '. ' + (CURRENT_LANG==='en'?'Say haan to send.':'भेजने के लिए हाँ बोलिए।'), CURRENT_LANG);
   setTimeout(() => listenForYes(() => confirmEmailSend()), 1500);
 }
-function confirmEmailSend(){
+async function confirmEmailSend(){
   const p = buildEmailPreview();
-  if (!p) { alert('Pick a contact with an email and write a body.'); return; }
-  const url = 'mailto:' + encodeURIComponent(p.contact.email)
-            + (p.subj ? '?subject=' + encodeURIComponent(p.subj) : '?subject=')
-            + '&body=' + encodeURIComponent(p.body);
-  window.location.href = url;
+  if (!p) { alert('Pick a contact and write a body.'); return; }
+  if (!EMAIL_CONNECTED) {
+    if (confirm('No Gmail connected. Connect now?')) connectGmail();
+    return;
+  }
+  const userToken = getUserToken();
+  const btn = document.getElementById('em-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '… sending …'; }
+  let data;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/email/send', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_token: userToken,
+        to: p.to, subject: p.subj, body: p.body,
+        user_real_name: p.toName || '',
+      }),
+    });
+    data = await r.json();
+  } catch(e) {
+    data = { ok:false, error: 'Network: ' + e.message };
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Send via Gmail'; }
+  }
+  if (!data || !data.ok) {
+    speakText(CURRENT_LANG==='en'?'Email failed.':'ईमेल नहीं भेज पाई।', CURRENT_LANG);
+    alert('Send failed: ' + (data && data.error || 'unknown'));
+    return;
+  }
   closeModal('email-modal');
-  logAction('Email app opened pre-filled', p.contact.email + ' · ' + (p.subj || '(no subject)'), () => {});
-  speakText(CURRENT_LANG==='en'?'Email app opened. Review the draft and tap send.':'ईमेल ऐप खुल गया। ड्राफ़्ट देख कर भेजिए।', CURRENT_LANG);
+  logAction('Email sent via Gmail', p.to + ' · ' + (p.subj||'(no subject)'), null);
+  speakText((CURRENT_LANG==='en' ? data.speak_en : data.speak_hi) || 'Email sent.', CURRENT_LANG);
 }
 
 /* ── Phase-2 cards: descriptive read-aloud (Android-only features) ── */
 function speakDescriptive(en, hi){
   speakText(CURRENT_LANG==='en' ? (en + '. Phase 2 Android app — coming soon.') : (hi + ' Phase 2 के Android ऐप में।'), CURRENT_LANG);
+}
+
+/* ── Native bridge — same HTML serves web + Android WebView ── */
+function hasNativeBridge(){
+  return typeof window.ChittiNative !== 'undefined' && window.ChittiNative.canHostNative && window.ChittiNative.canHostNative();
+}
+function nativeAction(name){
+  if (!consentGiven()) { reopenConsent(); return; }
+  // Hard refusal — front-of-house defence-in-depth (the bridge also refuses)
+  if (/(^|\b)(unlock|kholo|khol\s*do|bypass)/i.test(name)) {
+    speakText(CURRENT_LANG==='en' ? 'Chitti will never unlock the phone.' : 'चिट्टी फ़ोन नहीं खोलेगी। कभी नहीं।', CURRENT_LANG);
+    logAction('REFUSED unlock attempt', name);
+    return;
+  }
+  if (!hasNativeBridge()) {
+    // Web-only fallback — speak the deferral
+    const msgs = {
+      lockPhone:    ['Phone lock works in the Android app — Phase 2.', 'Phone lock Android ऐप में मिलेगा — Phase 2.'],
+      toggleSilent: ['Silent mode works in the Android app.',          'Silent mode Android ऐप में।'],
+      dialerRole:   ['Answer-call works in the Android app.',          'Call uthana Android ऐप में।'],
+      callScreening:['Night auto-answer works in the Android app.',    'Raat ka auto-answer Android ऐप में।'],
+    };
+    const m = msgs[name] || ['This feature needs the Android app.', 'Yeh feature Android ऐप में milega.'];
+    speakText(CURRENT_LANG==='en' ? m[0] : m[1], CURRENT_LANG);
+    return;
+  }
+  // We're inside the Android WebView — call the native method.
+  try {
+    let res = '';
+    if (name === 'lockPhone') {
+      res = window.ChittiNative.lockPhone();
+      if (res === 'needs_device_admin') {
+        speakText(CURRENT_LANG==='en' ? 'I need Device Admin first. Opening settings.' : 'पहले Device Admin चाहिए। Settings खोल रही हूँ।', CURRENT_LANG);
+        window.ChittiNative.requestDeviceAdmin();
+      } else {
+        speakText(CURRENT_LANG==='en' ? 'Phone locked.' : 'फ़ोन लॉक हो गया।', CURRENT_LANG);
+        logAction('Phone locked (native)', '');
+      }
+    } else if (name === 'toggleSilent') {
+      const wantSilent = !confirm('Silent mode? OK = silent · Cancel = ring');
+      // (We ask via confirm() so blind users hear the TTS first; will replace with voice yes/no in Phase 2.3)
+      res = window.ChittiNative.setSilentMode(wantSilent);
+      speakText(CURRENT_LANG==='en' ? 'Set: ' + res : 'सेट किया: ' + res, CURRENT_LANG);
+      logAction('Silent mode', res);
+    } else if (name === 'dialerRole') {
+      res = window.ChittiNative.requestDialerRole();
+      speakText(CURRENT_LANG==='en' ? 'Please grant the dialer role. Settings opened.' : 'कृपया dialer अनुमति दीजिए।', CURRENT_LANG);
+      logAction('Requested dialer role', res);
+    } else if (name === 'callScreening') {
+      res = window.ChittiNative.requestCallScreening();
+      window.ChittiNative.requestNightMode();
+      speakText(CURRENT_LANG==='en' ? 'Night-mode armed. Please grant call screening role.' : 'रात का मोड चालू। Call screening अनुमति दीजिए।', CURRENT_LANG);
+      logAction('Requested call screening + night mode', res);
+    }
+  } catch(e) {
+    speakText(CURRENT_LANG==='en' ? 'Action refused: ' + e.message : 'Action रोक दिया: ' + e.message, CURRENT_LANG);
+    logAction('Native action refused', String(e.message||e));
+  }
+}
+function tagNativeBridgeIfPresent(){
+  if (!hasNativeBridge()) return;
+  ['pill-lock','pill-silent','pill-call','pill-night'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
+  });
 }
 
 /* ── Listen-for-yes (voice "haan" / "yes" capture for confirmations) ── */
@@ -1454,6 +1653,7 @@ function captureVoiceGrant(btn){
 
 /* ── BOOT ── */
 window.addEventListener('DOMContentLoaded', () => {
+  getUserToken();   // ensure per-device UUID exists
   // Pre-select stored language
   const sel = document.getElementById('lang-select');
   if (sel) sel.value = CURRENT_LANG;
@@ -1464,12 +1664,32 @@ window.addEventListener('DOMContentLoaded', () => {
   renderTC();
   renderAudit();
   refreshLangCount();
+  tagNativeBridgeIfPresent();   // re-label Android-only pills if running inside the WebView
   // Pull a hand-off (e.g. from Scanner / UPI Guard) if present
   try {
     const h = sessionStorage.getItem('chitti_handoff_text');
     if (h) {
       document.getElementById('user-text').value = h;
       sessionStorage.removeItem('chitti_handoff_text');
+    }
+  } catch(e){}
+  // OAuth return-trip: ?email_connected=1 OR #email=connected
+  try {
+    const u = new URL(window.location.href);
+    const fromQuery = u.searchParams.get('email_connected') === '1';
+    const fromHash  = (window.location.hash || '').includes('email=connected');
+    if (fromQuery || fromHash) {
+      const email = u.searchParams.get('email') || '';
+      logAction('Gmail connected', email || '(account)');
+      // Clean URL so refreshes don't reopen the modal
+      const cleanUrl = u.origin + u.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+      setTimeout(() => {
+        openEmailModal();
+        speakText((CURRENT_LANG==='en'
+          ? 'Gmail connected. You can send emails as Chitti now.'
+          : 'Gmail जुड़ गया। अब Chitti आपकी तरफ़ से ईमेल भेज सकती है।'), CURRENT_LANG);
+      }, 400);
     }
   } catch(e){}
 });

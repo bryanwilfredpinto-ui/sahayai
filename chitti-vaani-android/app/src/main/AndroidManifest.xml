@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Chitti Vaani — Phase 2 Android skeleton.
+
+  Permissions are grouped by tier (see CHITTI_VAANI_PHASE2_ANDROID_SPEC.md).
+  Each Tier B permission needs runtime prompting; each Tier C role is
+  requested via RoleManager only when the user opts into that capability.
+
+  HARD REFUSAL: there is no UNLOCK permission anywhere in this manifest.
+  The OS does not expose 3rd-party-app unlock; Chitti's lockNow() has no
+  unlockNow() counterpart. This is the technical guarantee, not a promise.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Tier A — install-time -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- Tier B — runtime-prompted -->
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.READ_CALL_LOG"
+        tools:ignore="ProtectedPermissions"/>
+
+    <!-- SMS — heavily restricted on Play Store. Justification:
+         "Chitti reads incoming SMS aloud for blind/illiterate users,
+          and sends SMS on the user's spoken command via on-screen
+          confirmation, identifying as 'Chitti AI on behalf of [user]'." -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.READ_SMS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.SEND_SMS"
+        tools:ignore="ProtectedPermissions"/>
+
+    <!-- Tier C — special role / setting / device admin -->
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN"
+        tools:ignore="ProtectedPermissions"/>
+
+    <queries>
+        <!-- For "open WhatsApp" deep-links and intent resolution -->
+        <package android:name="com.whatsapp"/>
+        <package android:name="com.whatsapp.w4b"/>
+        <!-- UPI apps for ACTION_VIEW upi://pay -->
+        <package android:name="net.one97.paytm"/>
+        <package android:name="com.phonepe.app"/>
+        <package android:name="com.google.android.apps.nbu.paisa.user"/>
+        <package android:name="in.org.npci.upiapp"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Chitti"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="34">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Device Admin: allows lockNow().
+             NOTE: there is no public API to UNLOCK the device from a
+             3rd-party app. lockNow() has no inverse exposed to us. -->
+        <receiver
+            android:name=".services.VaaniDeviceAdminReceiver"
+            android:label="@string/device_admin_label"
+            android:description="@string/device_admin_desc"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin"/>
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- Call screening — for night-mode auto-answer + emergency wake.
+             User must grant the ROLE_CALL_SCREENING role via RoleManager. -->
+        <service
+            android:name=".services.VaaniCallScreeningService"
+            android:permission="android.permission.BIND_SCREENING_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService"/>
+            </intent-filter>
+        </service>
+
+        <!-- In-call (Default Dialer) — for "answer call as Chitti" flow.
+             User must grant ROLE_DIALER. -->
+        <service
+            android:name=".services.VaaniInCallService"
+            android:permission="android.permission.BIND_INCALL_SERVICE"
+            android:exported="true">
+            <meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true"/>
+            <intent-filter>
+                <action android:name="android.telecom.InCallService"/>
+            </intent-filter>
+        </service>
+
+        <!-- Accessibility service — autonomous WhatsApp send (locked to that node only).
+             User must enable in Settings → Accessibility. -->
+        <service
+            android:name=".services.VaaniAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config"/>
+        </service>
+
+        <!-- Night-mode boot/alarm receiver — switches into night-mode behaviour at 22:00 IST. -->
+        <receiver
+            android:name=".services.NightModeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="in.sahayai.chitti.vaani.NIGHT_MODE_TICK"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>
