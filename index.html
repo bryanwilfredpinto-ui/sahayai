@@ -3,46 +3,149 @@
 <head>
 <meta charset='UTF-8'>
 <meta name='viewport' content='width=device-width,initial-scale=1'>
-<title>Chitti V4 Unicorn</title>
+<title>Chitti — Bharat Premium AI · 4 free products for every Indian family</title>
+<meta name='description' content='Chitti Technical · Fundamentals · MedUPI · News — Indian languages, voice-first, free. Built for Tier-2/3 families, elderly users, vernacular speakers.'>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f8f7f4;color:#111}.app{max-width:480px;margin:auto;min-height:100vh;background:#fff}.top{padding:18px;background:linear-gradient(135deg,#ff7a00,#ffb347);color:#fff}.logo{width:54px;height:54px;border-radius:18px;background:#fff;color:#ff7a00;display:grid;place-items:center;font-weight:900;font-size:28px}.row{display:flex;gap:12px;align-items:center}.hero{margin-top:14px;background:rgba(255,255,255,.18);padding:14px;border-radius:18px}.mic{width:100%;padding:14px;border:none;border-radius:16px;font-weight:700;margin-top:10px}.wrap{padding:16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:#fff;border:1px solid #eee;border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.06)}.dark{background:#111;color:#fff}.pillbar{display:flex;gap:8px;overflow:auto;padding:12px 16px}.pill{padding:8px 12px;background:#fff;border:1px solid #eee;border-radius:999px;white-space:nowrap}.footer{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;padding:10px;display:flex;gap:8px}.footer input{flex:1;padding:12px;border-radius:16px;border:1px solid #ddd}.send{padding:12px 16px;border:none;border-radius:16px;background:#ff7a00;color:#fff;font-weight:700}
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#fff; --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:24px 18px}
+.brand-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bharat-logo{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:30px;box-shadow:0 8px 22px rgba(232,106,23,.35);animation:floatB 4s ease-in-out infinite;flex-shrink:0}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand-name{font-weight:900;font-size:28px;line-height:1.05}
+.brand-sub{font-size:13px;color:rgba(255,255,255,.85);margin-top:4px}
+.tagline{margin-top:14px;font-size:14px;color:rgba(255,255,255,.92);line-height:1.55;max-width:640px}
+.lang-pills{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.lang-pills span{padding:5px 11px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em}
+
+main{padding:18px;max-width:980px;margin:0 auto}
+h2.section-h{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--saffron);margin:18px 0 10px}
+h2.section-h .badge{font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:5px;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);margin-left:6px;vertical-align:middle}
+
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+a.product-card{display:flex;flex-direction:column;text-decoration:none;color:var(--text);background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(14,35,68,.06);transition:transform .15s,box-shadow .15s}
+a.product-card:hover,a.product-card:focus-visible{transform:translateY(-3px);box-shadow:0 12px 30px rgba(14,35,68,.16);border-color:var(--saffron);outline:none}
+a.product-card .ico{font-size:34px;margin-bottom:6px}
+a.product-card .name{font-size:17px;font-weight:900;color:var(--navy)}
+a.product-card .lede{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.55;flex:1}
+a.product-card .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+a.product-card .pills span{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:5px;background:rgba(232,106,23,.08);color:var(--saffron);border:1px solid rgba(232,106,23,.28)}
+a.product-card .pills span.live{background:rgba(34,197,94,.10);color:var(--green);border-color:rgba(34,197,94,.4)}
+a.product-card .pills span.special{background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));color:#7c2d12;border-color:rgba(232,106,23,.5)}
+a.product-card .open{margin-top:10px;color:var(--saffron);font-weight:800;font-size:12px}
+
+.contract{margin-top:24px;padding:16px;background:linear-gradient(135deg,rgba(232,106,23,.04),#fff);border:1px solid rgba(232,106,23,.35);border-radius:16px}
+.contract h3{margin:0 0 8px;font-size:14px;font-weight:900;color:var(--navy)}
+.contract ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--text)}
+.contract code{background:rgba(232,106,23,.08);color:var(--saffron);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono','Menlo',monospace;font-size:11px}
+
+.vision{margin-top:28px;padding:18px;background:#fff;border:1px solid var(--border);border-radius:18px}
+.vision h3{margin:0 0 6px;font-size:14px;font-weight:900;color:var(--saffron);text-transform:uppercase;letter-spacing:.05em}
+.vision .vs{font-size:12px;color:var(--muted);margin-bottom:10px}
+.vision-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vision-grid .v-card{background:#fbf8f1;border:1px dashed var(--border);border-radius:12px;padding:11px}
+.vision-grid .v-card h4{margin:0;font-size:13px;font-weight:800}
+.vision-grid .v-card small{font-size:11px;color:var(--muted)}
+
+footer{margin-top:30px;padding:18px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid var(--border);line-height:1.7}
+footer a{color:var(--saffron);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
-<div class='app'>
-<div class='top'>
-<div class='row'><div class='logo'>C</div><div><div style='font-size:12px;font-weight:700'>SAHAY AI</div><div style='font-size:28px;font-weight:900'>Chitti V4</div><div>Bharat SuperApp</div></div></div>
-<div class='pillbar' style='padding-left:0;margin-top:10px'><div class='pill'>English</div><div class='pill'>हिंदी</div><div class='pill'>বাংলা</div><div class='pill'>தமிழ்</div><div class='pill'>मराठी</div></div>
-<div class='hero'>Namaste Bryan ji 🙏<br>What shall we solve today?<button class='mic'>🎤 Talk to Chitti</button></div>
-</div>
-<div class='wrap'>
-<div class='grid'>
-<div class='card'>💰<h3>Money Help</h3><small>Bills, savings, loans</small></div>
-<div class='card'>📜<h3>Govt Schemes</h3><small>Find benefits</small></div>
-<div class='card'>🏥<h3>Health</h3><small>Reminders & help</small></div>
-<div class='card'>💼<h3>Jobs</h3><small>Nearby opportunities</small></div>
-<div class='card'>🛒<h3>Inventory</h3><small>Voice stock control</small></div>
-<div class='card'>📲<h3>WhatsApp Orders</h3><small>Sell instantly</small></div>
-</div>
-<div class='card' style='margin-top:14px'>
-<h3>🏪 Shopkeeper Dashboard</h3>
-<div class='grid'>
-<div class='card'>124 Items</div><div class='card'>18 Orders</div><div class='card'>₹8,420 Sales</div><div class='card'>7 Udhaar</div>
-</div>
-</div>
-<div class='card dark' style='margin-top:14px'>
-<h3>🔔 Smart Alerts</h3>
-<p>• Electricity bill due tomorrow</p>
-<p>• 2 customers pending payment</p>
-<p>• New subsidy available</p>
-<p>• Medicine reminder 8 PM</p>
-</div>
-<div class='card' style='margin-top:14px'>
-<h3>🌍 Chitti Bangla Ready</h3>
-<p>বাংলায় কথা বলুন • দোকান চালান • পরিবার সহায়তা</p>
-</div>
-</div>
-<div class='footer'><input placeholder='Type or speak...'><button class='send'>Send</button></div>
-</div>
+<div class="bharat-stripe"></div>
+
+<header role="banner">
+  <div class="brand-row">
+    <div class="bharat-logo" aria-hidden="true">C</div>
+    <div>
+      <div class="brand-name">Chitti</div>
+      <div class="brand-sub">Bharat Premium AI · sahayai.in</div>
+    </div>
+  </div>
+  <p class="tagline">
+    Four free products for every Indian family. Voice-in, voice-out, Hindi-first, no sign-up. Built for Tier-2/3 cities, elderly parents, vernacular-language readers, and anyone exhausted by paywalls.
+  </p>
+  <div class="lang-pills" aria-label="Languages supported across Chitti products">
+    <span>English</span><span>हिंदी</span><span>বাংলা</span><span>తెలుగు</span><span>தமிழ்</span><span>मराठी</span><span>ಕನ್ನಡ</span><span>ଓଡ଼ିଆ</span>
+  </div>
+</header>
+
+<main>
+  <h2 class="section-h">🚀 Live products <span class="badge">FREE · NO SIGN-UP</span></h2>
+  <div class="product-grid">
+    <a class="product-card" href="chitti_complete_technical.html" aria-label="Open Chitti Technical">
+      <div class="ico">📈</div>
+      <div class="name">Chitti Technical</div>
+      <div class="lede">Real Indian-market candles + 14+ indicators (RSI, MACD, Roshan, Force Index) on Daily/Weekly/Monthly/Intraday timeframes. Story Mode per signal.</div>
+      <div class="pills"><span class="live">LIVE</span><span>NSE/BSE</span><span>Indian</span></div>
+      <div class="open">Open Chitti Technical →</div>
+    </a>
+
+    <a class="product-card" href="chitti_fundamentals.html" aria-label="Open Chitti Fundamentals">
+      <div class="ico">📋</div>
+      <div class="name">Chitti Fundamentals</div>
+      <div class="lede">Buffett · Munger · Graham · Kedia · RKD · 25+ strategy filters across the Nifty 500. Plain-English fundamentals, P/E, ROE, debt — explained for first-time investors.</div>
+      <div class="pills"><span class="live">LIVE</span><span>Strategies</span><span>Plain EN</span></div>
+      <div class="open">Open Chitti Fundamentals →</div>
+    </a>
+
+    <a class="product-card" href="chitti_medupi.html" aria-label="Open Chitti MedUPI">
+      <div class="ico">💊</div>
+      <div class="name">Chitti MedUPI</div>
+      <div class="lede">UPI for medicine bills. Scan a strip → see Jan Aushadhi + same-composition equivalents → save 50–90%. QR scanner, Family Wallet, fact-checked NPPA prices.</div>
+      <div class="pills"><span class="live">LIVE</span><span>Jan Aushadhi</span><span class="special">Chitti Special</span></div>
+      <div class="open">Open Chitti MedUPI →</div>
+    </a>
+
+    <a class="product-card" href="chitti_news.html" aria-label="Open Chitti News">
+      <div class="ico">📰</div>
+      <div class="name">Chitti News</div>
+      <div class="lede">Your state. Your language. Your news. 26+ trusted Indian RSS sources, Anthropic-powered "Chitti's Take" 3-bullet AI summaries, fact-check verdicts, read-aloud in 8 Indian languages.</div>
+      <div class="pills"><span class="live">NEW</span><span>EN/HI/BN/TE/TA</span><span class="special">Chitti Special</span></div>
+      <div class="open">Open Chitti News →</div>
+    </a>
+  </div>
+
+  <div class="contract" role="region" aria-label="Four-user contract">
+    <h3>👥 The four-user contract — built into every Chitti page</h3>
+    <ul>
+      <li><strong>Blind</strong> — every action speaks. Tap <code>🔊 Read page</code> on any product for full audio narration.</li>
+      <li><strong>Deaf</strong> — captions on every result · symbols + word labels (✅/⚠️/❔), never colour alone.</li>
+      <li><strong>Mute</strong> — every input is a button or dropdown. Voice input is optional, never required.</li>
+      <li><strong>Illiterate</strong> — emoji glyphs, plain-English captions, Hindi UI toggle, voice-out for everything.</li>
+    </ul>
+  </div>
+
+  <div class="vision">
+    <h3>🌅 Vision · Coming soon</h3>
+    <div class="vs">The Chitti family is heading toward a Bharat SuperApp — voice-first money / health / govt-schemes / jobs / shop-keeper tools, all in your language. The 4 products above are the first wave.</div>
+    <div class="vision-grid">
+      <div class="v-card"><h4>💰 Money Help</h4><small>Bills · savings · loans · UDHAR ledger</small></div>
+      <div class="v-card"><h4>📜 Govt Schemes</h4><small>Find benefits you qualify for</small></div>
+      <div class="v-card"><h4>🏥 Health</h4><small>Reminders · doctor finder · ABDM-ready</small></div>
+      <div class="v-card"><h4>💼 Jobs</h4><small>Hyperlocal opportunities · skill match</small></div>
+      <div class="v-card"><h4>🛒 Inventory</h4><small>Voice stock control for shopkeepers</small></div>
+      <div class="v-card"><h4>📲 WhatsApp Orders</h4><small>Sell instantly via WhatsApp Business</small></div>
+    </div>
+  </div>
+
+  <footer role="contentinfo">
+    Chitti · Bharat Premium AI · Built for every Indian family · 100% free, no sign-up.<br>
+    Backends: <a href="https://chitti-shares-api.onrender.com/health">chitti-shares</a> ·
+    <a href="https://chitti-medupi-api.onrender.com/health">chitti-medupi</a> ·
+    <a href="https://chitti-news-api.onrender.com/health">chitti-news</a><br>
+    <small style="opacity:.7">Founded by Bryan Wilfred Pinto · Built on Anthropic Claude · GitHub Pages + Render free tier · Supabase · Neon</small>
+  </footer>
+</main>
 </body>
 </html>
