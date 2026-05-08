@@ -132,6 +132,76 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   .mic-big{width:108px;height:108px;font-size:48px}
   main{padding:12px 12px 100px}
 }
+
+/* ═══════════ PHASE 1.5 — Pro Actions, Trusted Circle, Audit ═══════════ */
+
+/* Pro action grid */
+.pro-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:10px}
+.pro-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;cursor:pointer;text-align:left;min-height:120px}
+.pro-card:hover{border-color:var(--saffron);background:rgba(232,106,23,.04)}
+.pro-card .ico{font-size:30px}
+.pro-card .lbl{font-size:14px;font-weight:800;color:var(--text)}
+.pro-card .sub{font-size:11px;color:var(--muted);line-height:1.5}
+.pro-card .pill{font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(22,163,74,.10);color:#15803d;border:1px solid #16a34a;border-radius:5px;padding:2px 7px;margin-top:auto;align-self:flex-start}
+.pro-card .pill.android{background:rgba(234,88,12,.10);color:#c2410c;border-color:#ea580c}
+.pro-card .pill.locked{background:rgba(220,38,38,.10);color:#b91c1c;border-color:#dc2626}
+
+/* Trusted circle */
+.tc-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.tc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fbf8f1;border:1px solid var(--border);border-radius:10px;flex-wrap:wrap}
+.tc-row .av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0}
+.tc-row .info{flex:1;min-width:140px}
+.tc-row .nm{font-size:14px;font-weight:800}
+.tc-row .meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono','Menlo',monospace;line-height:1.6}
+.tc-row .ctrls{display:flex;gap:4px;flex-wrap:wrap}
+.tc-row .ctrls button{background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;min-height:28px}
+.tc-row .ctrls button.del{color:var(--red);border-color:#fecaca}
+.tc-empty{text-align:center;padding:18px;color:var(--muted);font-size:12px;border:1px dashed var(--border);border-radius:10px}
+
+/* Modal (used for WA / UPI / Email / Add contact / Audit) */
+.vmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:8000;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.vmodal.shown{display:flex}
+.vmodal .panel{background:#fff;border:2px solid var(--gold);border-radius:14px;padding:18px;max-width:560px;width:100%;font-size:14px;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.vmodal h2{font-size:18px;margin:0 0 4px;color:var(--saffron);font-weight:900;display:flex;align-items:center;gap:8px}
+.vmodal .desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+.vmodal .field{margin-bottom:10px}
+.vmodal .field label{display:block;font-size:11px;font-weight:800;color:var(--navy);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.vmodal .field input,.vmodal .field select,.vmodal .field textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;font-family:inherit;min-height:44px}
+.vmodal .field textarea{min-height:80px;resize:vertical}
+.vmodal .field input:focus,.vmodal .field textarea:focus,.vmodal .field select:focus{outline:none;border-color:var(--saffron)}
+.vmodal .field-row{display:flex;gap:8px;flex-wrap:wrap}
+.vmodal .field-row .field{flex:1;min-width:140px;margin-bottom:0}
+.vmodal .row-mic{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.vmodal .row-mic button{background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(232,106,23,.10));border:1px solid #D4AF37;color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600;min-height:34px}
+.vmodal .row-mic button.listening{background:rgba(220,38,38,.18);border-color:var(--red);animation:micPulse 1.2s ease-in-out infinite}
+.vmodal .preview{margin-top:10px;padding:12px;background:#fff8e1;border:1px solid var(--gold);border-radius:10px;font-size:13px;line-height:1.5}
+.vmodal .preview b{color:var(--saffron)}
+.vmodal .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.vmodal .actions button.go{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:12px 18px;font-size:14px;cursor:pointer;flex:1;min-height:46px;min-width:120px}
+.vmodal .actions button.spk{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:10px;padding:12px 16px;font-size:13px;cursor:pointer;font-weight:700;min-height:46px}
+.vmodal .actions button.cancel{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:12px 16px;font-size:13px;cursor:pointer;min-height:46px}
+.vmodal .small-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;padding:8px 10px;background:#fbf8f1;border-radius:6px}
+
+/* Voice-grant capture inside consent (extra row added to consent panel) */
+.voice-grant{margin-top:12px;padding:12px 14px;background:linear-gradient(180deg,#fff8e1,#fbf8f1);border:2px dashed var(--gold);border-radius:12px}
+.voice-grant h4{margin:0 0 6px;font-size:14px;color:var(--saffron);font-weight:900}
+.voice-grant p{margin:0 0 8px;font-size:12px;line-height:1.5}
+.voice-grant button{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:44px;margin-right:6px}
+.voice-grant button.listening{background:linear-gradient(135deg,#dc2626,#ef4444);animation:micPulse 1.2s ease-in-out infinite}
+.voice-grant .heard{font-size:12px;color:var(--muted);margin-top:6px;font-family:'JetBrains Mono','Menlo',monospace}
+
+/* Audit log */
+.audit-list{max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;background:#fff}
+.audit-row{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.audit-row:last-child{border-bottom:none}
+.audit-row .when{font-size:11px;color:var(--muted);font-family:'JetBrains Mono','Menlo',monospace;min-width:90px;flex-shrink:0}
+.audit-row .what{flex:1;min-width:200px;font-size:12px;line-height:1.5}
+.audit-row .what b{color:var(--saffron)}
+.audit-row .undo-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--text);min-height:30px}
+.audit-row .undo-btn:hover{border-color:var(--saffron);color:var(--saffron)}
+
+/* "Phase 2 — Android" badge for capabilities the web can't do */
+.android-only{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;letter-spacing:.04em;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px}
 </style>
 </head>
 <body>
@@ -191,6 +261,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="tnc-section">
       <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" data-section="6" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud">🔊 Hear</button></h3>
       <p>Issue or complaint? Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by the IT Rules 2021.</p>
+    </div>
+
+    <div class="voice-grant" role="region" aria-label="Voice grant">
+      <h4>🎙️ Voice grant — for blind / mute / illiterate users</h4>
+      <p>Instead of reading and tapping, you can say <b>"haan"</b> (or "yes" / "main maan gaya" / "theek hai"). Chitti will mark your consent the same way as a tap. This is the default for users who cannot read.</p>
+      <button onclick="captureVoiceGrant(this)" aria-label="Speak haan to grant consent">🎙️ Speak "haan" to agree</button>
+      <button class="spk-all" style="background:transparent;border:1px solid var(--gold);color:var(--saffron);font-weight:700;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:44px" onclick="speakAllSections()">🔊 Read everything once more</button>
+      <div class="heard" id="voice-grant-heard">Tap the green button and say "haan".</div>
     </div>
 
     <div class="consent-actions">
@@ -322,13 +400,262 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="history" class="history"></div>
   </section>
 
+  <!-- ════════ PRO ACTIONS — Chitti acts on the user's behalf ════════ -->
+  <section class="section-card" aria-labelledby="pro-title">
+    <h2 class="section-title" id="pro-title"><span class="ico">🛡️</span> Chitti can act for you <span class="android-only">📱 some need Android Phase 2</span></h2>
+    <div class="section-sub">Tap a card. Speak in your language. Chitti drafts, reads it back, then acts only after you say <b>"haan"</b>. Every action is logged below — undo within 30 seconds.</div>
+    <div class="pro-grid">
+
+      <button class="pro-card" onclick="openWAModal()">
+        <span class="ico">📲</span><span class="lbl">Send WhatsApp</span>
+        <span class="sub">"Mom ko bolo main 7 baje aaunga" — Chitti drafts in Hinglish, reads back, opens WhatsApp ready to send.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openUPIModal()">
+        <span class="ico">💸</span><span class="lbl">Send UPI payment</span>
+        <span class="sub">"Ramesh ko ₹500 bhejo" — Chitti opens UPI app pre-filled with payee + amount. You enter PIN in UPI app (NPCI rule).</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openEmailModal()">
+        <span class="ico">📧</span><span class="lbl">Send email as Chitti AI</span>
+        <span class="sub">"Doctor ko likho main kal aa raha hun" — Chitti drafts, identifies as AI in signature, sends after voice "haan".</span>
+        <span class="pill android">Phase 1.6 — Gmail OAuth pending</span>
+      </button>
+
+      <button class="pro-card" onclick="speakDescriptive('Phone lock', 'Phone lock kewal Android app mein milega — Phase 2.')">
+        <span class="ico">🔒</span><span class="lbl">Lock my phone</span>
+        <span class="sub">"Chitti, phone lock" — locks instantly. Chitti will NEVER unlock by code or by command.</span>
+        <span class="pill android">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="speakDescriptive('Silent mode', 'Silent mode bhi Android app mein milega.')">
+        <span class="ico">🔕</span><span class="lbl">Silent mode</span>
+        <span class="sub">"Silent mode on" / "off" — switches phone ringer.</span>
+        <span class="pill android">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="speakDescriptive('Day call answer', 'Din mein call uthana Android app mein.')">
+        <span class="ico">📞</span><span class="lbl">Answer call (day)</span>
+        <span class="sub">"Chitti, answer" — Chitti picks up, identifies as AI, relays to you in Hindi/your language.</span>
+        <span class="pill android">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="speakDescriptive('Night auto-answer', 'Raat ko auto-answer + emergency wake — Android app mein.')">
+        <span class="ico">🌙</span><span class="lbl">Night auto-answer</span>
+        <span class="sub">10 PM – 6 AM, Chitti screens calls, asks "emergency?" — wakes you only if caller says emergency / ambulance / hospital.</span>
+        <span class="pill android">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="openLanguageModal()">
+        <span class="ico">🌐</span><span class="lbl">Teach Chitti your language</span>
+        <span class="sub">Federated learning. Speak Bangla / Tamil / Telugu / Marathi / Gujarati to Chitti. After 6–12 months your samples train Chitti's voice in that language.</span>
+        <span class="pill">Web ✓ collecting</span>
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ════════ TRUSTED CIRCLE — voice-built contact list ════════ -->
+  <section class="section-card" aria-labelledby="tc-title">
+    <h2 class="section-title" id="tc-title"><span class="ico">👨‍👩‍👧</span> Trusted Circle</h2>
+    <div class="section-sub">People Chitti can contact for you. Built by voice — speak the name, the relation, the number. Inside this circle Chitti acts after one voice "haan". Outside it, Chitti pauses and asks first.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-saffron" onclick="openAddContactModal()">➕ Add by voice</button>
+      <button class="btn-navy" onclick="speakTrustedCircle()">🔊 Read the circle aloud</button>
+      <button class="btn-ghost" onclick="clearTrustedCircle()">🗑️ Clear all</button>
+    </div>
+    <div id="tc-list" class="tc-list"></div>
+  </section>
+
+  <!-- ════════ AUDIT LOG — Chitti, kal kya kya kiya? ════════ -->
+  <section class="section-card" aria-labelledby="audit-title">
+    <h2 class="section-title" id="audit-title"><span class="ico">📜</span> What Chitti did for you</h2>
+    <div class="section-sub">Every action — email sent, WhatsApp drafted, UPI opened, voice sample saved — appears here. Tap 🔊 to hear the list. Each row has an UNDO option for 30 seconds.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-navy" onclick="speakAuditLog()">🔊 Read audit log aloud</button>
+      <button class="btn-ghost" onclick="clearAuditLog()">🗑️ Clear log</button>
+    </div>
+    <div id="audit-list" class="audit-list"></div>
+  </section>
+
   <footer>
     <small>
       <strong>Chitti Vaani</strong> · ek AI ki madad — Doctor / lawyer / banker se confirm zaroor karein.<br>
-      Emergency: 112 · Cyber fraud: 1930 · Consumer: 1800-11-4000 · Sahayai: sire@sahayai.in
+      Emergency: 112 · Cyber fraud: 1930 · Consumer: 1800-11-4000 · Sahayai: sire@sahayai.in<br>
+      <em>Chitti will NEVER unlock your phone, share your UPI PIN, or send money without your spoken consent.</em>
     </small>
   </footer>
 </main>
+
+<!-- ════════════ MODALS ════════════ -->
+
+<!-- WhatsApp send modal -->
+<div id="wa-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="wa-title">
+  <div class="panel">
+    <h2 id="wa-title">📲 Send WhatsApp</h2>
+    <div class="desc">Speak the recipient and the message. Chitti will read back, you say <b>"haan"</b>, WhatsApp opens with everything filled in.</div>
+    <div class="field">
+      <label>To (pick from your trusted circle)</label>
+      <select id="wa-to"></select>
+    </div>
+    <div class="field">
+      <label>Message — speak or type</label>
+      <textarea id="wa-msg" placeholder="Mom ko bolo main 7 baje aaunga"></textarea>
+      <div class="row-mic">
+        <button id="wa-mic" onclick="proMic('wa-msg', this)">🎙️ Speak</button>
+        <button onclick="speakField('wa-msg')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="wa-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmWASend()">📲 Open WhatsApp to send</button>
+      <button class="spk" onclick="confirmWAByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('wa-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Chitti drafts and opens WhatsApp pre-filled. You tap the green ➤ inside WhatsApp to actually send. (Phase 2 Android: Chitti taps for you.)</div>
+  </div>
+</div>
+
+<!-- UPI send modal -->
+<div id="upi-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="upi-title">
+  <div class="panel">
+    <h2 id="upi-title">💸 Send UPI payment</h2>
+    <div class="desc">Speak the recipient and the amount. Chitti opens your UPI app (PhonePe / GPay / Paytm) with everything pre-filled. You enter PIN inside the UPI app — <b>NPCI rule, no shortcut</b>.</div>
+    <div class="field">
+      <label>To (pick from your trusted circle)</label>
+      <select id="upi-to"></select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Amount (₹)</label>
+        <input type="number" id="upi-amt" min="1" step="1" placeholder="500">
+      </div>
+      <div class="field">
+        <label>Note (optional)</label>
+        <input type="text" id="upi-note" maxlength="50" placeholder="Sabzi">
+      </div>
+    </div>
+    <div class="row-mic">
+      <button id="upi-mic" onclick="proMicUPI(this)">🎙️ "Ramesh ko ₹500 bhejo"</button>
+      <button onclick="speakUPIPreview()">🔊 Read back</button>
+    </div>
+    <div class="preview" id="upi-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmUPISend()">💸 Open UPI app to pay</button>
+      <button class="spk" onclick="confirmUPIByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('upi-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Chitti will NEVER ask for or store your UPI PIN. PIN entry happens only inside the UPI app's secure keypad. Voice-biometric PIN is a v2 feature, requires bank partnership.</div>
+  </div>
+</div>
+
+<!-- Email send modal -->
+<div id="email-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="email-title">
+  <div class="panel">
+    <h2 id="email-title">📧 Send email as Chitti AI</h2>
+    <div class="desc">Phase 1.6 — Gmail OAuth wiring is the next commit. The flow below shows what'll happen. Until OAuth is live, Chitti opens your email app pre-filled (mailto:) so you can review and send.</div>
+    <div class="field">
+      <label>To (pick from your trusted circle)</label>
+      <select id="em-to"></select>
+    </div>
+    <div class="field">
+      <label>Subject</label>
+      <input type="text" id="em-subject" placeholder="Cardiology appointment confirmation">
+    </div>
+    <div class="field">
+      <label>Body — speak or type</label>
+      <textarea id="em-body" placeholder="Doctor saab, kal 10 baje milne aa raha hun…"></textarea>
+      <div class="row-mic">
+        <button id="em-mic" onclick="proMic('em-body', this)">🎙️ Speak</button>
+        <button onclick="speakField('em-body')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="em-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmEmailSend()">📧 Open email app pre-filled</button>
+      <button class="spk" onclick="confirmEmailByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('email-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Outgoing emails will carry a footer: "Sent via Chitti Vaani — an AI assistant for [user]. Replies do not pass through Chitti."</div>
+  </div>
+</div>
+
+<!-- Add to trusted circle modal -->
+<div id="addtc-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="addtc-title">
+  <div class="panel">
+    <h2 id="addtc-title">👨‍👩‍👧 Add a trusted person</h2>
+    <div class="desc">Speak: "Mom — Sushma Devi — phone 9876543210 — UPI sushma at oksbi". Chitti will fill the boxes. Or type each field.</div>
+    <div class="row-mic" style="margin-bottom:10px">
+      <button id="tc-mic" onclick="proMicAddContact(this)">🎙️ Speak the whole row</button>
+      <button onclick="speakAddContactHelp()">🔊 How to speak</button>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Name (e.g. Mom)</label>
+        <input type="text" id="tc-name" placeholder="Mom">
+      </div>
+      <div class="field">
+        <label>Real name</label>
+        <input type="text" id="tc-realname" placeholder="Sushma Devi">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Phone (with +91)</label>
+        <input type="tel" id="tc-phone" placeholder="+919876543210">
+      </div>
+      <div class="field">
+        <label>UPI ID (optional)</label>
+        <input type="text" id="tc-upi" placeholder="sushma@oksbi">
+      </div>
+    </div>
+    <div class="field">
+      <label>Email (optional)</label>
+      <input type="email" id="tc-email" placeholder="mom@gmail.com">
+    </div>
+    <div class="actions">
+      <button class="go" onclick="saveContact()">✓ Save to Trusted Circle</button>
+      <button class="cancel" onclick="closeModal('addtc-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Federated language samples modal -->
+<div id="lang-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="lang-title">
+  <div class="panel">
+    <h2 id="lang-title">🌐 Teach Chitti your language</h2>
+    <div class="desc">Speak in <b>Bangla / Tamil / Telugu / Marathi / Gujarati / Kannada / Malayalam / Punjabi / Odia</b>. Chitti records the sample on your phone (not on the server) and uses it later to train her voice in that language. <b>Federated learning — the audio never leaves your device unless you tap upload.</b></div>
+    <div class="field">
+      <label>Which language are you about to speak?</label>
+      <select id="fl-lang">
+        <option value="bn">বাংলা — Bangla</option>
+        <option value="ta">தமிழ் — Tamil</option>
+        <option value="te">తెలుగు — Telugu</option>
+        <option value="mr">मराठी — Marathi</option>
+        <option value="gu">ગુજરાતી — Gujarati</option>
+        <option value="kn">ಕನ್ನಡ — Kannada</option>
+        <option value="ml">മലയാളം — Malayalam</option>
+        <option value="pa">ਪੰਜਾਬੀ — Punjabi</option>
+        <option value="or">ଓଡ଼ିଆ — Odia</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>What did you say? (a short sentence works best)</label>
+      <textarea id="fl-text" placeholder="ami bhalo achhi" rows="2"></textarea>
+    </div>
+    <div class="row-mic">
+      <button id="fl-rec" onclick="recordLangSample(this)">🎙️ Record 5-second sample</button>
+      <button onclick="listLangSamples()">📋 My samples (<span id="fl-count">0</span>)</button>
+    </div>
+    <div class="actions">
+      <button class="go" onclick="closeModal('lang-modal')">✓ Done</button>
+      <button class="cancel" onclick="clearLangSamples()">🗑️ Clear my samples</button>
+    </div>
+    <div class="small-note">After 6–12 months of regular samples (1–2 sentences a week per language), Chitti will speak that language back. Today the samples sit in IndexedDB on your phone only.</div>
+  </div>
+</div>
 
 <!-- SOS FAB — always present -->
 <button class="sos-fab" onclick="sosTrigger()" aria-label="Emergency — open SOS dial">🚨 SOS</button>
@@ -620,6 +947,511 @@ function sosTrigger(){
   if (confirm('Open emergency dialer for 112?')) window.location.href = 'tel:112';
 }
 
+/* ═══════════════════════════════════════════════════════════
+   PHASE 1.5 — Pro Actions, Trusted Circle, Audit, Federated
+   ─────────────────────────────────────────────────────────── */
+
+const TC_KEY    = 'chitti_vaani_trusted_circle';
+const AUDIT_KEY = 'chitti_vaani_audit_log';
+const GRANT_KEY = 'chitti_vaani_voice_grant';
+let UNDO_TIMERS = {};   // entry_id -> setTimeout handle
+
+function loadTC(){ try{ return JSON.parse(localStorage.getItem(TC_KEY)||'[]'); }catch(e){ return []; } }
+function saveTC(arr){ localStorage.setItem(TC_KEY, JSON.stringify(arr)); }
+function loadAudit(){ try{ return JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]'); }catch(e){ return []; } }
+function saveAudit(arr){ localStorage.setItem(AUDIT_KEY, JSON.stringify(arr)); }
+
+function logAction(verb, detail, undoFn){
+  const id = 'a' + Date.now() + Math.random().toString(36).slice(2,5);
+  const arr = loadAudit();
+  arr.unshift({ id, verb, detail, ts: Date.now(), undoable: !!undoFn });
+  while (arr.length > 100) arr.pop();
+  saveAudit(arr);
+  if (undoFn) {
+    UNDO_TIMERS[id] = setTimeout(() => {
+      delete UNDO_TIMERS[id];
+      const a = loadAudit();
+      const i = a.findIndex(x => x.id === id);
+      if (i >= 0) { a[i].undoable = false; saveAudit(a); renderAudit(); }
+    }, 30000);
+    // Stash the undoFn on window so the inline button can call it (lives 30s)
+    window['_undo_' + id] = undoFn;
+  }
+  renderAudit();
+  return id;
+}
+
+/* ── Trusted Circle ── */
+function renderTC(){
+  const arr = loadTC();
+  const el = document.getElementById('tc-list');
+  if (!arr.length) { el.innerHTML = '<div class="tc-empty">Trusted circle is empty. Tap ➕ Add by voice to start.</div>'; return; }
+  el.innerHTML = arr.map((c, i) => `
+    <div class="tc-row">
+      <div class="av">${escapeHtml((c.realname||c.name||'?')[0].toUpperCase())}</div>
+      <div class="info">
+        <div class="nm">${escapeHtml(c.name||'(no name)')} <span style="font-size:11px;color:var(--muted);font-weight:400">— ${escapeHtml(c.realname||'')}</span></div>
+        <div class="meta">${escapeHtml(c.phone||'—')} · ${escapeHtml(c.upi||'—')} · ${escapeHtml(c.email||'—')}</div>
+      </div>
+      <div class="ctrls">
+        <button onclick="speakContact(${i})" aria-label="Hear contact">🔊</button>
+        <button onclick="prefillWA(${i})" aria-label="Send WhatsApp">📲</button>
+        <button onclick="prefillUPI(${i})" aria-label="Send UPI">💸</button>
+        <button class="del" onclick="deleteContact(${i})" aria-label="Delete">🗑️</button>
+      </div>
+    </div>`).join('');
+  // Refresh dropdowns in modals
+  ['wa-to','upi-to','em-to'].forEach(refreshTCDropdown);
+}
+function refreshTCDropdown(id){
+  const sel = document.getElementById(id); if (!sel) return;
+  const arr = loadTC();
+  sel.innerHTML = '<option value="">— pick a person —</option>' +
+    arr.map((c,i) => `<option value="${i}">${escapeHtml(c.name||'?')} (${escapeHtml(c.realname||c.phone||c.upi||'')})</option>`).join('');
+}
+function speakContact(i){
+  const c = loadTC()[i]; if (!c) return;
+  const t = (c.name||'') + ', ' + (c.realname||'') + '. Phone: ' + (c.phone||'unknown') + '. UPI: ' + (c.upi||'none');
+  speakText(t, CURRENT_LANG);
+}
+function deleteContact(i){
+  const arr = loadTC();
+  if (!confirm('Remove ' + (arr[i].name||'this person') + ' from trusted circle?')) return;
+  arr.splice(i,1); saveTC(arr); renderTC();
+  logAction('Removed from trusted circle', (arr[i] && arr[i].name) || 'a contact');
+}
+function clearTrustedCircle(){
+  if (!confirm('Clear all trusted contacts on this device?')) return;
+  saveTC([]); renderTC();
+}
+function speakTrustedCircle(){
+  const arr = loadTC();
+  if (!arr.length) { speakText(CURRENT_LANG==='en'?'Trusted circle is empty.':'विश्वसनीय सूची अभी खाली है।', CURRENT_LANG); return; }
+  const t = (CURRENT_LANG==='en'?'Trusted circle. ':'विश्वसनीय लोग। ') + arr.map(c => (c.name||'?') + ' ' + (c.relation? '('+c.relation+')':'')).join('. ');
+  speakText(t, CURRENT_LANG);
+}
+function openAddContactModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  ['tc-name','tc-realname','tc-phone','tc-upi','tc-email'].forEach(id => document.getElementById(id).value='');
+  openModal('addtc-modal');
+}
+function saveContact(){
+  const c = {
+    name: document.getElementById('tc-name').value.trim(),
+    realname: document.getElementById('tc-realname').value.trim(),
+    phone: document.getElementById('tc-phone').value.trim(),
+    upi: document.getElementById('tc-upi').value.trim(),
+    email: document.getElementById('tc-email').value.trim(),
+  };
+  if (!c.name && !c.realname) { alert('Please enter at least a name.'); return; }
+  // Normalise phone: keep digits + leading +, prefix +91 if missing
+  if (c.phone) {
+    let p = c.phone.replace(/[^\d+]/g, '');
+    if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+    c.phone = p;
+  }
+  const arr = loadTC(); arr.push(c); saveTC(arr); renderTC();
+  closeModal('addtc-modal');
+  logAction('Added to trusted circle', c.name + ' (' + (c.realname||c.phone) + ')');
+  speakText((CURRENT_LANG==='en'?'Saved. ':'सेव हो गया। ') + c.name, CURRENT_LANG);
+}
+function speakAddContactHelp(){
+  const en = "Speak the whole row in one go. Like: Mom — Sushma Devi — phone nine eight seven six five four three two one zero — UPI sushma at oksbi.";
+  const hi = "एक साथ पूरी पंक्ति बोलिए। जैसे: मम्मी — सुषमा देवी — फोन नौ आठ सात छह पाँच चार तीन दो एक शून्य — UPI सुषमा at oksbi.";
+  speakText(CURRENT_LANG==='en'?en:hi, CURRENT_LANG);
+}
+
+/* Lightweight voice-to-fields parser for "Mom — Sushma Devi — phone 98765 — UPI sushma@oksbi" */
+function proMicAddContact(btn){
+  const r = getProRecog((text) => {
+    // Try to break by em-dashes / hyphens / commas / 'phone' / 'upi' / 'email'
+    const phoneMatch = text.match(/(?:phone\s*)?([+\d][\d\s-]{6,})/i);
+    const upiMatch   = text.match(/upi\s*(?:is\s*)?([a-zA-Z0-9._-]+\s*(?:at|@)\s*[a-zA-Z0-9._-]+)/i);
+    const emailMatch = text.match(/email\s*(?:is\s*)?([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+)/i);
+    let firstNameSegment = text.split(/[—–\-,;]/)[0].trim();
+    let realname = (text.split(/[—–\-,;]/)[1]||'').trim();
+    if (firstNameSegment) document.getElementById('tc-name').value = firstNameSegment;
+    if (realname) document.getElementById('tc-realname').value = realname;
+    if (phoneMatch) document.getElementById('tc-phone').value = phoneMatch[1].replace(/\s/g,'');
+    if (upiMatch) document.getElementById('tc-upi').value = upiMatch[1].replace(/\s*(at|@)\s*/i, '@');
+    if (emailMatch) document.getElementById('tc-email').value = emailMatch[1];
+  }, btn);
+  if (!r) return;
+}
+
+/* ── Generic pro-mic helper: capture text into a field ── */
+function getProRecog(onFinal, btn){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Speech recognition not supported in this browser. Please type instead.'); return null; }
+  const r = new SR();
+  r.lang = bcp47(CURRENT_LANG);
+  r.interimResults = false; r.continuous = false;
+  r.onresult = (e) => {
+    const t = e.results[0][0].transcript || '';
+    if (t) onFinal(t);
+  };
+  r.onend = () => { if (btn) btn.classList.remove('listening'); };
+  r.onerror = () => { if (btn) btn.classList.remove('listening'); };
+  if (btn) btn.classList.add('listening');
+  try { r.start(); } catch(e){}
+  return r;
+}
+function proMic(targetId, btn){
+  getProRecog((text) => {
+    const el = document.getElementById(targetId);
+    el.value = text;
+    el.dispatchEvent(new Event('input'));
+  }, btn);
+}
+
+/* ── WhatsApp send ── */
+function openWAModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('wa-to');
+  document.getElementById('wa-msg').value = '';
+  document.getElementById('wa-preview').style.display = 'none';
+  openModal('wa-modal');
+}
+function prefillWA(i){
+  openWAModal();
+  document.getElementById('wa-to').value = String(i);
+}
+function buildWAPreview(){
+  const i = document.getElementById('wa-to').value;
+  const c = i !== '' ? loadTC()[Number(i)] : null;
+  const msg = document.getElementById('wa-msg').value.trim();
+  if (!c || !c.phone) return null;
+  if (!msg) return null;
+  return { contact: c, msg, preview: 'WhatsApp to <b>' + escapeHtml(c.name||'?') + '</b> (' + escapeHtml(c.phone) + '): ' + escapeHtml(msg) };
+}
+function speakField(id){ const t = (document.getElementById(id).value||'').trim(); if (t) speakText(t, CURRENT_LANG); }
+function showWAPreview(){
+  const p = buildWAPreview();
+  const el = document.getElementById('wa-preview');
+  if (!p) { el.style.display='none'; return; }
+  el.innerHTML = p.preview; el.style.display='block';
+  speakText((CURRENT_LANG==='en'?'I will send: ':'मैं भेज रही हूँ: ') + p.msg + '. ' + (CURRENT_LANG==='en'?'Say haan to send.':'भेजने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmWAByVoice(){
+  showWAPreview();
+  setTimeout(() => listenForYes(() => confirmWASend()), 1500);
+}
+function confirmWASend(){
+  const p = buildWAPreview();
+  if (!p) { alert('Pick a contact and write a message first.'); return; }
+  const url = 'https://wa.me/' + p.contact.phone.replace(/^\+/, '') + '?text=' + encodeURIComponent(p.msg);
+  window.open(url, '_blank', 'noopener');
+  closeModal('wa-modal');
+  logAction('WhatsApp opened to send', p.contact.name + ': ' + p.msg.slice(0,80), () => {
+    speakText(CURRENT_LANG==='en'?'WhatsApp send was undone.':'WhatsApp भेजना रोक दिया।', CURRENT_LANG);
+  });
+  speakText(CURRENT_LANG==='en'?'WhatsApp opened. Tap the green arrow inside WhatsApp to send.':'WhatsApp खुल गया। हरे तीर को दबा कर भेजिए।', CURRENT_LANG);
+}
+
+/* ── UPI send ── */
+function openUPIModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('upi-to');
+  document.getElementById('upi-amt').value = '';
+  document.getElementById('upi-note').value = '';
+  document.getElementById('upi-preview').style.display = 'none';
+  openModal('upi-modal');
+}
+function prefillUPI(i){
+  openUPIModal();
+  document.getElementById('upi-to').value = String(i);
+}
+function proMicUPI(btn){
+  getProRecog((text) => {
+    // Parse "Ramesh ko ₹500 bhejo" / "send 500 to Ramesh"
+    const amt = text.match(/(?:₹|rs\.?|rupees?)\s*(\d+(?:\.\d+)?)|(\d{2,6})\s*(?:rupees?|₹|rs)/i)
+              || text.match(/\b(\d{2,6})\b/);
+    const amount = amt ? (amt[1] || amt[2]) : null;
+    if (amount) document.getElementById('upi-amt').value = amount;
+    // Find a name from the text — match against trusted circle
+    const arr = loadTC();
+    const idx = arr.findIndex(c => {
+      const n = (c.name||'').toLowerCase();
+      return n && new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b','i').test(text);
+    });
+    if (idx >= 0) document.getElementById('upi-to').value = String(idx);
+  }, btn);
+}
+function buildUPIPreview(){
+  const i = document.getElementById('upi-to').value;
+  const c = i !== '' ? loadTC()[Number(i)] : null;
+  const amt = document.getElementById('upi-amt').value;
+  const note = document.getElementById('upi-note').value.trim();
+  if (!c || !c.upi) return null;
+  if (!amt || Number(amt) <= 0) return null;
+  return {
+    contact: c, amt: Number(amt), note,
+    preview: '₹' + amt + ' to <b>' + escapeHtml(c.name||'?') + '</b> at <code>' + escapeHtml(c.upi) + '</code>' + (note? ' — note: ' + escapeHtml(note) : ''),
+  };
+}
+function speakUPIPreview(){
+  const p = buildUPIPreview();
+  const el = document.getElementById('upi-preview');
+  if (!p) { el.style.display='none'; return; }
+  el.innerHTML = p.preview; el.style.display='block';
+  speakText((CURRENT_LANG==='en'?'Sending ':'भेज रही हूँ ') + '₹' + p.amt + ' ' + (CURRENT_LANG==='en'?'to ':'को ') + (p.contact.name||'') + '. ' + (CURRENT_LANG==='en'?'Say haan to open UPI app.':'UPI खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmUPIByVoice(){
+  speakUPIPreview();
+  setTimeout(() => listenForYes(() => confirmUPISend()), 1500);
+}
+function confirmUPISend(){
+  const p = buildUPIPreview();
+  if (!p) { alert('Pick a contact with a UPI ID and enter an amount.'); return; }
+  const userToken = encodeURIComponent('Chitti'); // payer name shown to UPI app
+  const url = 'upi://pay?pa=' + encodeURIComponent(p.contact.upi)
+            + '&pn=' + encodeURIComponent(p.contact.realname || p.contact.name || '')
+            + '&am=' + encodeURIComponent(p.amt.toFixed(2))
+            + '&cu=INR'
+            + (p.note ? '&tn=' + encodeURIComponent(p.note) : '');
+  // Open the UPI app. On desktop browsers the protocol won't open anything — we show a fallback notice.
+  window.location.href = url;
+  closeModal('upi-modal');
+  logAction('UPI app opened pre-filled', p.contact.name + ' ₹' + p.amt + (p.note ? ' (' + p.note + ')' : ''), () => {
+    speakText(CURRENT_LANG==='en'?'UPI flow undone.':'UPI रोक दिया।', CURRENT_LANG);
+  });
+  setTimeout(() => {
+    speakText(CURRENT_LANG==='en'?'UPI app should open now. Enter your PIN there. Chitti will never see your PIN.':'UPI ऐप खुल जाएगा। वहीं अपना PIN डालिए। चिट्टी कभी आपका PIN नहीं देखती।', CURRENT_LANG);
+  }, 600);
+}
+
+/* ── Email (deep-link mailto: today, Gmail OAuth in Phase 1.6) ── */
+function openEmailModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('em-to');
+  document.getElementById('em-subject').value = '';
+  document.getElementById('em-body').value = '';
+  document.getElementById('em-preview').style.display = 'none';
+  openModal('email-modal');
+}
+function buildEmailPreview(){
+  const i = document.getElementById('em-to').value;
+  const c = i !== '' ? loadTC()[Number(i)] : null;
+  const subj = document.getElementById('em-subject').value.trim();
+  const body = document.getElementById('em-body').value.trim();
+  if (!c || !c.email) return null;
+  if (!body) return null;
+  const footer = "\n\n— Sent via Chitti Vaani, an AI assistant for " + (c.realname || 'the user') + ". Replies do not pass through Chitti.";
+  return { contact: c, subj, body: body + footer, preview: 'Email to <b>' + escapeHtml(c.email) + '</b> · subject: ' + escapeHtml(subj||'(no subject)') + '<br><br>' + escapeHtml(body).slice(0,300) + (body.length>300?'…':'') };
+}
+function confirmEmailByVoice(){
+  const p = buildEmailPreview();
+  if (!p) { alert('Pick a contact with an email and write a body.'); return; }
+  document.getElementById('em-preview').innerHTML = p.preview;
+  document.getElementById('em-preview').style.display='block';
+  speakText((CURRENT_LANG==='en'?'I will email ':'मैं ईमेल भेज रही हूँ ') + (p.contact.realname||p.contact.email) + '. ' + (CURRENT_LANG==='en'?'Say haan to open email app.':'भेजने के लिए हाँ बोलिए।'), CURRENT_LANG);
+  setTimeout(() => listenForYes(() => confirmEmailSend()), 1500);
+}
+function confirmEmailSend(){
+  const p = buildEmailPreview();
+  if (!p) { alert('Pick a contact with an email and write a body.'); return; }
+  const url = 'mailto:' + encodeURIComponent(p.contact.email)
+            + (p.subj ? '?subject=' + encodeURIComponent(p.subj) : '?subject=')
+            + '&body=' + encodeURIComponent(p.body);
+  window.location.href = url;
+  closeModal('email-modal');
+  logAction('Email app opened pre-filled', p.contact.email + ' · ' + (p.subj || '(no subject)'), () => {});
+  speakText(CURRENT_LANG==='en'?'Email app opened. Review the draft and tap send.':'ईमेल ऐप खुल गया। ड्राफ़्ट देख कर भेजिए।', CURRENT_LANG);
+}
+
+/* ── Phase-2 cards: descriptive read-aloud (Android-only features) ── */
+function speakDescriptive(en, hi){
+  speakText(CURRENT_LANG==='en' ? (en + '. Phase 2 Android app — coming soon.') : (hi + ' Phase 2 के Android ऐप में।'), CURRENT_LANG);
+}
+
+/* ── Listen-for-yes (voice "haan" / "yes" capture for confirmations) ── */
+function listenForYes(onYes){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { onYes(); return; }
+  const r = new SR();
+  r.lang = bcp47(CURRENT_LANG);
+  r.interimResults = false; r.continuous = false;
+  r.onresult = (e) => {
+    const t = (e.results[0][0].transcript || '').toLowerCase();
+    if (/(^|\b)(haan|haa|han|yes|yeah|ok|okay|theek|sahi|bhej|send)(\b|$)/i.test(t)) onYes();
+    else speakText(CURRENT_LANG==='en'?'Cancelled. Nothing was sent.':'रद्द कर दिया। कुछ नहीं भेजा।', CURRENT_LANG);
+  };
+  r.onerror = () => { /* fallback: do nothing */ };
+  try { r.start(); } catch(e){}
+}
+
+/* ── Audit log ── */
+function renderAudit(){
+  const arr = loadAudit();
+  const el = document.getElementById('audit-list');
+  if (!el) return;
+  if (!arr.length) { el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px">No actions yet.</div>'; return; }
+  el.innerHTML = arr.slice(0,50).map(a => {
+    const t = new Date(a.ts);
+    const when = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+    const undoBtn = (a.undoable && window['_undo_' + a.id])
+      ? `<button class="undo-btn" onclick="undoAction('${a.id}')">↩ Undo</button>`
+      : '';
+    return `<div class="audit-row">
+      <div class="when">${when}</div>
+      <div class="what"><b>${escapeHtml(a.verb)}</b> · ${escapeHtml(a.detail||'')}</div>
+      ${undoBtn}
+    </div>`;
+  }).join('');
+}
+function undoAction(id){
+  const fn = window['_undo_' + id]; if (!fn) return;
+  fn();
+  delete window['_undo_' + id];
+  if (UNDO_TIMERS[id]) { clearTimeout(UNDO_TIMERS[id]); delete UNDO_TIMERS[id]; }
+  const arr = loadAudit(); const i = arr.findIndex(x => x.id === id);
+  if (i >= 0) { arr[i].undoable = false; arr[i].verb = '↩ Undone: ' + arr[i].verb; saveAudit(arr); renderAudit(); }
+}
+function speakAuditLog(){
+  const arr = loadAudit();
+  if (!arr.length) { speakText(CURRENT_LANG==='en'?'Chitti has not done anything yet.':'चिट्टी ने अभी तक कुछ नहीं किया।', CURRENT_LANG); return; }
+  const intro = CURRENT_LANG==='en' ? 'Today Chitti did the following. ' : 'आज चिट्टी ने यह किया। ';
+  const lines = arr.slice(0,8).map(a => a.verb + ': ' + (a.detail||'')).join('. ');
+  speakText(intro + lines, CURRENT_LANG);
+}
+function clearAuditLog(){
+  if (!confirm('Clear all audit log entries on this device?')) return;
+  saveAudit([]); renderAudit();
+}
+
+/* ── Federated language samples (IndexedDB) ── */
+const IDB_NAME = 'chittiVaaniLangSamples';
+function idbOpen(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('samples'))
+        db.createObjectStore('samples', { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+async function idbAdd(sample){
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('samples','readwrite');
+    tx.objectStore('samples').add(sample);
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbCount(){
+  const db = await idbOpen();
+  return new Promise((resolve) => {
+    const tx = db.transaction('samples','readonly');
+    const req = tx.objectStore('samples').count();
+    req.onsuccess = () => resolve(req.result); req.onerror = () => resolve(0);
+  });
+}
+async function idbList(){
+  const db = await idbOpen();
+  return new Promise((resolve) => {
+    const tx = db.transaction('samples','readonly');
+    const req = tx.objectStore('samples').getAll();
+    req.onsuccess = () => resolve(req.result || []); req.onerror = () => resolve([]);
+  });
+}
+async function idbClear(){
+  const db = await idbOpen();
+  return new Promise((resolve) => {
+    const tx = db.transaction('samples','readwrite');
+    tx.objectStore('samples').clear();
+    tx.oncomplete = () => resolve();
+  });
+}
+function openLanguageModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  openModal('lang-modal');
+  refreshLangCount();
+}
+async function refreshLangCount(){
+  const c = await idbCount().catch(() => 0);
+  const el = document.getElementById('fl-count'); if (el) el.textContent = c;
+}
+async function recordLangSample(btn){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Audio capture not supported in this browser.');
+    return;
+  }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch(e) { alert('Microphone permission denied.'); return; }
+  btn.classList.add('listening');
+  btn.textContent = '🔴 Recording 5 seconds…';
+  const rec = new MediaRecorder(stream);
+  const chunks = [];
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    btn.classList.remove('listening');
+    btn.textContent = '🎙️ Record 5-second sample';
+    const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+    const lang = document.getElementById('fl-lang').value;
+    const text = document.getElementById('fl-text').value.trim();
+    try {
+      await idbAdd({ lang, text, mime: blob.type, blob, ts: Date.now() });
+      logAction('Saved voice sample for federated learning', lang + ' · ' + (text||'(no text)'));
+      speakText(CURRENT_LANG==='en'?'Sample saved on this device only.':'सैंपल सिर्फ़ इस डिवाइस पर सेव हो गया।', CURRENT_LANG);
+      refreshLangCount();
+    } catch(e) {
+      alert('Could not save sample: ' + e.message);
+    }
+  };
+  rec.start();
+  setTimeout(() => { try { rec.stop(); } catch(e){} }, 5000);
+}
+async function listLangSamples(){
+  const arr = await idbList();
+  if (!arr.length) { alert('No samples yet.'); return; }
+  const summary = arr.map(s => new Date(s.ts).toLocaleString() + ' · ' + s.lang + ' · ' + (s.text||'(no text)')).join('\n');
+  alert('Your federated voice samples (on this device only):\n\n' + summary);
+}
+async function clearLangSamples(){
+  if (!confirm('Erase all locally-stored voice samples?')) return;
+  await idbClear(); refreshLangCount();
+  logAction('Cleared all federated voice samples', '');
+}
+
+/* ── Modal helpers ── */
+function openModal(id){ document.getElementById(id).classList.add('shown'); }
+function closeModal(id){ document.getElementById(id).classList.remove('shown'); }
+
+/* ── Voice grant capture (added to consent step) ── */
+function captureVoiceGrant(btn){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('Voice grant not supported in this browser. Please tap I AGREE instead.');
+    return;
+  }
+  const r = new SR();
+  r.lang = bcp47(CONSENT_LANG);
+  r.interimResults = false; r.continuous = false;
+  if (btn) btn.classList.add('listening');
+  const heardEl = document.getElementById('voice-grant-heard');
+  if (heardEl) heardEl.textContent = '… listening for "haan" / "yes" / "main maan gaya" …';
+  r.onresult = (e) => {
+    const t = (e.results[0][0].transcript || '').toLowerCase();
+    if (heardEl) heardEl.textContent = 'Heard: ' + t;
+    if (/(haan|haa|han|yes|yeah|i agree|agree|main maan gaya|theek hai|sahi|haanji)/i.test(t)) {
+      localStorage.setItem(GRANT_KEY, JSON.stringify({ at: Date.now(), heard: t, lang: CONSENT_LANG }));
+      acceptConsent();
+      logAction('Voice grant captured', 'Heard: "' + t + '"');
+      setTimeout(() => speakText(CONSENT_LANG==='en'?'Thank you. Chitti is yours now. Add your trusted circle when ready.':'धन्यवाद। चिट्टी अब आपकी सेविका है। तैयार होने पर अपने कारीबी जोड़िए।', CONSENT_LANG), 200);
+    } else {
+      if (heardEl) heardEl.textContent = 'Did not hear "haan". Heard: "' + t + '". Try again or tap I AGREE.';
+    }
+  };
+  r.onend = () => { if (btn) btn.classList.remove('listening'); };
+  r.onerror = () => { if (btn) btn.classList.remove('listening'); };
+  try { r.start(); } catch(e){}
+}
+
 /* ── BOOT ── */
 window.addEventListener('DOMContentLoaded', () => {
   // Pre-select stored language
@@ -629,6 +1461,9 @@ window.addEventListener('DOMContentLoaded', () => {
   // Show / hide consent overlay
   if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
   renderHistory();
+  renderTC();
+  renderAudit();
+  refreshLangCount();
   // Pull a hand-off (e.g. from Scanner / UPI Guard) if present
   try {
     const h = sessionStorage.getItem('chitti_handoff_text');
