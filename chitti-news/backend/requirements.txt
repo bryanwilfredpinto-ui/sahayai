@@ -1,0 +1,26 @@
+# Chitti News - Flask backend dependencies
+# Pinned for Render free tier (Python 3.11). Pure Python or manylinux
+# wheels — NO Rust toolchain required. Mirrors chitti-medupi pattern.
+
+flask==3.0.3
+flask-cors==4.0.0
+gunicorn==21.2.0
+
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.10              # binary distro — never compiles libpq
+
+requests==2.31.0
+python-dotenv==1.0.0
+
+# RSS / Atom parsing — pure Python, handles every common dialect
+feedparser==6.0.11
+
+# Anthropic SDK — used by news_summary.py for "Chitti's Take" + factcheck.
+anthropic==0.39.0
+
+# Fuzzy title matching for cross-source fact-checking + dedupe
+rapidfuzz==3.6.1
+
+# In-process scheduler — drives hourly RSS poll + breaking-news watcher.
+apscheduler==3.10.4
+tzdata==2024.2

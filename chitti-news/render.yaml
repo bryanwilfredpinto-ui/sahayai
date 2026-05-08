@@ -1,0 +1,31 @@
+# Render Blueprint for Chitti News
+# Reuses the shared Supabase Postgres (free-tier limits one DB) and
+# isolates every News table under the `news` schema. See
+# backend/models/_schema.py.
+
+services:
+  - type: web
+    name: chitti-news-api
+    runtime: python
+    plan: free
+    rootDir: chitti-news/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false        # paste Supabase URL in dashboard
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-6
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: BACKEND_URL
+        value: https://chitti-news-api.onrender.com
+      - key: SCHEDULER_ENABLED
+        value: "true"
+      - key: RSS_POLL_MINUTES
+        value: "30"
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false
