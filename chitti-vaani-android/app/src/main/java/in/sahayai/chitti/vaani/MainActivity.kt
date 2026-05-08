@@ -214,6 +214,59 @@ class ChittiNativeBridge(private val ctx: Context) {
         return "settings_opened"
     }
 
+    /**
+     * Make an outbound call.
+     *
+     * Default behaviour: if CALL_PHONE is granted, use ACTION_CALL to
+     * dial directly (Chitti speaks "Dialing Mom" first). Otherwise we
+     * fall back to ACTION_DIAL (opens the dialer pre-filled — the user
+     * still has to tap the green button).
+     *
+     * Always-on protections:
+     *   - SafetyChecks.refuseIfPinLike(phone) — defensive: a 4 / 6-digit
+     *     value would not be a phone number and might leak a PIN.
+     *   - AuditLog records every attempt.
+     *
+     * Phase 2.3.1 (mute-user English-Partner): once the call is up, a
+     * separate toggle activates speakerphone + plays Chitti's TTS so
+     * the other party hears Chitti speaking on the user's behalf. That
+     * piece lives in VaaniInCallService.kt, not here.
+     */
+    @JavascriptInterface
+    fun makeCall(phoneE164: String): String {
+        SafetyChecks.requireNotUnlock("makeCall")
+        // Defensive — phone numbers in India have 10 digits + country code.
+        // A 4/6-digit-only input would suggest a PIN slip.
+        if (phoneE164.replace(Regex("[^\\d]"), "").length in 4..6) {
+            SafetyChecks.refuseIfPinLike(phoneE164)
+        }
+        val canDirectCall = ContextCompat.checkSelfPermission(ctx, Manifest.permission.CALL_PHONE) ==
+                            PackageManager.PERMISSION_GRANTED
+        val cleaned = phoneE164.trim()
+        val uri = Uri.parse("tel:" + cleaned)
+        return if (canDirectCall) {
+            val intent = Intent(Intent.ACTION_CALL, uri).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+            ctx.startActivity(intent)
+            AuditLog.append(ctx, "makeCall direct", cleaned)
+            "dialing"
+        } else {
+            // Fallback — opens the OS dialer pre-filled, user taps green button.
+            val intent = Intent(Intent.ACTION_DIAL, uri).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+            ctx.startActivity(intent)
+            AuditLog.append(ctx, "makeCall dialer-prefilled (no permission)", cleaned)
+            "needs_permission"
+        }
+    }
+
+    @JavascriptInterface
+    fun requestCallPhonePermission(): String {
+        // We can only request permissions from an Activity. The bridge holds an
+        // Activity context (MainActivity), so we can cast safely.
+        val act = ctx as? android.app.Activity ?: return "no_activity_context"
+        ActivityCompat.requestPermissions(act, arrayOf(Manifest.permission.CALL_PHONE), 1002)
+        return "prompt_shown"
+    }
+
     @JavascriptInterface
     fun openWhatsApp(phoneE164: String, message: String): String {
         // Defence: still prefer wa.me deep-link — the AccessibilityService

@@ -118,7 +118,8 @@ Same pattern as Phase 1.5 web onboarding (already shipping in this commit):
 | 1 | Lock phone | ❌ | ✅ DEVICE_ADMIN |
 | 2 | Never unlock | — | ✅ no API surface, hard-coded refusal |
 | 3 | Silent mode | ❌ | ✅ AudioManager |
-| 4 | Day call answer | ⚠️ Twilio bridge optional | ✅ on user's SIM |
+| 4 | Day call answer (incoming) | ⚠️ Twilio bridge optional | ✅ on user's SIM |
+| 4b | **Make outbound call** | ✅ `tel:` deep-link opens dialer pre-filled | ✅ direct-dial via `ACTION_CALL` with `CALL_PHONE` permission; `ACTION_DIAL` fallback. Mute-user "Chitti speaks for me" toggles speakerphone + TTS through VaaniInCallService (Phase 2.3.1). |
 | 5 | Night auto-answer + emergency wake | ❌ | ✅ |
 | 6 | Email read/send as Chitti | ⚠️ Phase 1.6 (Gmail OAuth scaffold present, button stubbed) | ✅ |
 | 7 | Digital voice (Hindi/English) | ✅ already shipped | ✅ |

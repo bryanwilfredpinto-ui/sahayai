@@ -406,6 +406,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-sub">Tap a card. Speak in your language. Chitti drafts, reads it back, then acts only after you say <b>"haan"</b>. Every action is logged below — undo within 30 seconds.</div>
     <div class="pro-grid">
 
+      <button class="pro-card" onclick="openCallModal()">
+        <span class="ico">📞</span><span class="lbl">Make a call</span>
+        <span class="sub">"Chitti, Mom ko call karo" — Chitti reads back the name, you say "haan", phone dials. Inside the Android app, Chitti can dial directly.</span>
+        <span class="pill" id="pill-make-call">Web ✓ (dialer pre-filled)</span>
+      </button>
+
       <button class="pro-card" onclick="openWAModal()">
         <span class="ico">📲</span><span class="lbl">Send WhatsApp</span>
         <span class="sub">"Mom ko bolo main 7 baje aaunga" — Chitti drafts in Hinglish, reads back, opens WhatsApp ready to send.</span>
@@ -490,6 +496,30 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 </main>
 
 <!-- ════════════ MODALS ════════════ -->
+
+<!-- Make a call modal -->
+<div id="call-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="call-title">
+  <div class="panel">
+    <h2 id="call-title">📞 Make a call</h2>
+    <div class="desc">Pick a person from your trusted circle, or speak the name. Chitti reads it back, you say <b>"haan"</b>, the phone dials. Inside the Android app, Chitti can dial directly without a tap.</div>
+    <div class="field">
+      <label>Who to call?</label>
+      <select id="call-to"></select>
+      <input type="tel" id="call-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+    </div>
+    <div class="row-mic">
+      <button id="call-mic" onclick="proMicCall(this)">🎙️ "Mom ko call karo"</button>
+      <button onclick="speakCallPreview()">🔊 Read back</button>
+    </div>
+    <div class="preview" id="call-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmCall()">📞 Dial now</button>
+      <button class="spk" onclick="confirmCallByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('call-modal')">Cancel</button>
+    </div>
+    <div class="small-note">On the web, Chitti opens your dialer pre-filled — you tap call. On the Android app (Phase 2), Chitti dials directly with the CALL_PHONE permission. <b>Chitti always announces "I am Chitti AI calling on behalf of [user]" if it speaks during the call.</b></div>
+  </div>
+</div>
 
 <!-- WhatsApp send modal -->
 <div id="wa-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="wa-title">
@@ -1132,6 +1162,91 @@ function proMic(targetId, btn){
   }, btn);
 }
 
+/* ── Make a call ── */
+function openCallModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('call-to');
+  document.getElementById('call-to-free').value = '';
+  document.getElementById('call-preview').style.display = 'none';
+  openModal('call-modal');
+}
+function _getCallTarget(){
+  const i = document.getElementById('call-to').value;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.phone) return { phone: c.phone, name: c.name || c.realname || '' };
+  }
+  const free = document.getElementById('call-to-free').value.trim();
+  if (free) {
+    let p = free.replace(/[^\d+]/g, '');
+    if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+    return { phone: p, name: '' };
+  }
+  return null;
+}
+function buildCallPreview(){
+  const t = _getCallTarget();
+  if (!t) return null;
+  return { ...t, preview: 'Calling <b>' + escapeHtml(t.name||t.phone) + '</b> at ' + escapeHtml(t.phone) };
+}
+function speakCallPreview(){
+  const p = buildCallPreview();
+  const el = document.getElementById('call-preview');
+  if (!p) { el.style.display='none'; return; }
+  el.innerHTML = p.preview; el.style.display='block';
+  speakText((CURRENT_LANG==='en'?'Calling ':'कॉल कर रही हूँ ') + (p.name||p.phone) + '. ' + (CURRENT_LANG==='en'?'Say haan to dial.':'डायल करने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmCallByVoice(){
+  speakCallPreview();
+  setTimeout(() => listenForYes(() => confirmCall()), 1500);
+}
+function confirmCall(){
+  const p = buildCallPreview();
+  if (!p) { alert('Pick a contact or type a number first.'); return; }
+  // Native path: direct dial via Android bridge (with CALL_PHONE permission).
+  if (hasNativeBridge() && window.ChittiNative.makeCall) {
+    try {
+      const res = window.ChittiNative.makeCall(p.phone);
+      if (res === 'needs_permission') {
+        speakText(CURRENT_LANG==='en'?'I need call permission. Please grant it.':'पहले Call की अनुमति चाहिए।', CURRENT_LANG);
+        window.ChittiNative.requestCallPhonePermission && window.ChittiNative.requestCallPhonePermission();
+      } else if (res === 'dialing') {
+        speakText(CURRENT_LANG==='en'?('Dialing ' + (p.name||p.phone)):('डायल कर रही हूँ ' + (p.name||p.phone)), CURRENT_LANG);
+        logAction('Direct-dialed (native)', (p.name||'') + ' ' + p.phone, () => {});
+      } else {
+        speakText(CURRENT_LANG==='en'?'Opened dialer.':'डायलर खुल गया।', CURRENT_LANG);
+        logAction('Opened dialer (native)', (p.name||'') + ' ' + p.phone);
+      }
+    } catch(e) {
+      speakText(CURRENT_LANG==='en'?('Refused: ' + e.message):('रुक गया: ' + e.message), CURRENT_LANG);
+    }
+    closeModal('call-modal');
+    return;
+  }
+  // Web fallback: tel: deep-link opens the OS dialer pre-filled.
+  window.location.href = 'tel:' + p.phone.replace(/\s/g,'');
+  closeModal('call-modal');
+  logAction('Opened phone dialer', (p.name||'') + ' ' + p.phone, () => {});
+  speakText(CURRENT_LANG==='en'?'Dialer opened. Tap the green button to call.':'डायलर खुल गया। हरा बटन दबा कर कॉल कीजिए।', CURRENT_LANG);
+}
+function proMicCall(btn){
+  getProRecog((text) => {
+    // Match "<name> ko call karo" / "call <name>"
+    const arr = loadTC();
+    const idx = arr.findIndex(c => {
+      const n = (c.name||'').toLowerCase().trim();
+      const r = (c.realname||'').toLowerCase().trim();
+      const tl = text.toLowerCase();
+      return (n && tl.includes(n)) || (r && tl.includes(r));
+    });
+    if (idx >= 0) {
+      document.getElementById('call-to').value = String(idx);
+      document.getElementById('call-to-free').value = '';
+    }
+    speakCallPreview();
+  }, btn);
+}
+
 /* ── WhatsApp send ── */
 function openWAModal(){
   if (!consentGiven()) { reopenConsent(); return; }
@@ -1457,7 +1572,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
