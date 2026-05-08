@@ -31,13 +31,27 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from services import technical
+from services import angel_client
 
 log = logging.getLogger("returns")
 IST = ZoneInfo("Asia/Kolkata")
 
 NIFTY_SYMBOL = "NSE:NIFTY 50"
 FD_RATE = 0.07  # 7% p.a. — current Indian PSU bank FD reference
+
+# Angel ONE_DAY caps at 2000 days (~5.5 years). 10y windows therefore fall
+# back to the longest available history with `partial=True`. We bypass
+# services.technical.fetch_candles here because it pins days_back=365,
+# which would silently flatten every 1Y+ window to "1 year ago".
+_DAYS_BACK = 2000
+
+
+def _daily(symbol: str) -> pd.DataFrame:
+    try:
+        return angel_client.get_candles(symbol, interval="ONE_DAY", days_back=_DAYS_BACK)
+    except Exception as e:  # noqa: BLE001
+        log.warning("returns: %s daily fetch failed: %s", symbol, e)
+        return pd.DataFrame()
 
 WINDOWS_DAYS = {
     "1M":  21,
@@ -80,16 +94,8 @@ def performance_vs_nifty(symbol: str) -> dict:
         }
       }
     """
-    try:
-        df_s = technical.fetch_candles(symbol, "Daily")
-    except Exception as e:  # noqa: BLE001
-        log.warning("fetch %s daily failed: %s", symbol, e)
-        df_s = pd.DataFrame()
-    try:
-        df_n = technical.fetch_candles(NIFTY_SYMBOL, "Daily")
-    except Exception as e:  # noqa: BLE001
-        log.warning("fetch nifty daily failed: %s", e)
-        df_n = pd.DataFrame()
+    df_s = _daily(symbol)
+    df_n = _daily(NIFTY_SYMBOL)
 
     end_s = float(df_s["close"].iloc[-1]) if (df_s is not None and not df_s.empty) else None
     end_n = float(df_n["close"].iloc[-1]) if (df_n is not None and not df_n.empty) else None
@@ -129,8 +135,8 @@ def _fd_sip(monthly: float, months: int) -> float:
 
 def returns_lumpsum(symbol: str, amount_inr: float, years: float) -> dict:
     days = int(years * 252)
-    df_s = technical.fetch_candles(symbol, "Daily")
-    df_n = technical.fetch_candles(NIFTY_SYMBOL, "Daily")
+    df_s = _daily(symbol)
+    df_n = _daily(NIFTY_SYMBOL)
 
     s_start, s_partial = _close_at_offset(df_s, days)
     n_start, n_partial = _close_at_offset(df_n, days)
@@ -165,8 +171,8 @@ def returns_sip(symbol: str, monthly_inr: float, years: float) -> dict:
     the same monthly cadence into NIFTY 50 and a 7% FD.
     """
     months = int(round(years * 12))
-    df_s = technical.fetch_candles(symbol, "Daily")
-    df_n = technical.fetch_candles(NIFTY_SYMBOL, "Daily")
+    df_s = _daily(symbol)
+    df_n = _daily(NIFTY_SYMBOL)
 
     def _sip_value(df: pd.DataFrame) -> tuple[float | None, bool]:
         if df is None or df.empty:
