@@ -425,18 +425,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-card">
       <div class="section-head">
         <div>
-          <div class="section-title">👨‍👩‍👧 Family Wallet — preview cards <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
-          <div class="section-sub">Chronic Care Mode + insurance match cards wire next session on top of the live wallet above.</div>
+          <div class="section-title">👨‍👩‍👧 Family Wallet — preview <span class="live-badge">LIVE</span></div>
+          <div class="section-sub">Per-member spend + savings + chronic meds. Refreshes from /api/medupi/family/wallet.</div>
         </div>
+        <button class="metric-spk" onclick="refreshFamilyWalletPreview(true)" aria-label="Refresh family wallet preview" title="Refresh">🔁</button>
       </div>
-      <div class="metric-grid">
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Profiles</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Add self, mom, dad, kids — separate wallets per person.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>This month spend</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">Total medicine spend across the family this month.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>This month saved</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">How much you saved by choosing same-composition equivalents.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Annual projection</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">₹—</div><div class="metric-card-pe">Estimated yearly savings if you maintain current pattern.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Chronic Care Mode</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Diabetes / BP / thyroid — tracks long-term cost trajectory.</div></div>
-        <div class="metric-card coming-soon-card"><div class="metric-card-lbl"><span>Insurance match</span><span class="coming-soon">Soon</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Which medicines are covered by Ayushman / CGHS / your private plan.</div></div>
-      </div>
+      <div id="fam-wallet-totals" class="metric-grid" aria-live="polite" aria-atomic="true"></div>
+      <div id="fam-wallet-members" style="margin-top:14px" aria-live="polite" aria-atomic="true"></div>
+      <div id="fam-wallet-skeleton-note" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
     </div>
 
     <div class="section-card">
@@ -984,15 +980,18 @@ function _renderScanResult(data){
   if (alts.length) {
     html += '<div style="margin-bottom:10px"><strong>' + (lang === 'hi' ? 'समान-संरचना विकल्प' : 'Same-composition options') + ':</strong></div>';
     html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
-    html += '<thead><tr style="background:rgba(232,106,23,.08)"><th style="text-align:left;padding:8px">' + (lang === 'hi' ? 'ब्रांड' : 'Brand') + '</th><th style="text-align:right;padding:8px">MRP</th><th style="text-align:right;padding:8px">NPPA max</th><th style="text-align:right;padding:8px">Jan Aushadhi</th><th style="text-align:right;padding:8px">' + (lang === 'hi' ? 'बचत' : 'Savings') + '</th></tr></thead><tbody>';
+    html += '<thead><tr style="background:rgba(232,106,23,.08)"><th style="text-align:left;padding:8px">' + (lang === 'hi' ? 'ब्रांड' : 'Brand') + '</th><th style="text-align:right;padding:8px">MRP</th><th style="text-align:right;padding:8px">NPPA max</th><th style="text-align:right;padding:8px">Jan Aushadhi</th><th style="text-align:right;padding:8px">' + (lang === 'hi' ? 'बचत' : 'Savings') + '</th><th style="text-align:left;padding:8px">' + (lang === 'hi' ? 'बीमा' : 'Insurance') + '</th></tr></thead><tbody>';
     alts.forEach(function(a, i){
       const isCheapest = (i === 0);
+      const altMolecule = (primary && primary.salt_composition) || a.salt_composition || a.molecule || '';
+      const insuranceCellId = 'ins-chip-' + i;
       html += '<tr style="border-bottom:1px solid var(--border);' + (isCheapest ? 'background:rgba(34,197,94,.08)' : '') + '">';
       html += '<td style="padding:8px">' + _esc(a.brand_name) + (isCheapest ? ' <span class="risk-low">CHEAPEST</span>' : '') + '</td>';
       html += '<td style="padding:8px;text-align:right;font-family:monospace">' + _money(a.mrp) + _freshnessPill(a.freshness_mrp) + '</td>';
       html += '<td style="padding:8px;text-align:right;font-family:monospace;color:var(--navy)">' + _money(a.nppa_ceiling_price) + _freshnessPill(a.freshness_nppa) + '</td>';
       html += '<td style="padding:8px;text-align:right;font-family:monospace;color:var(--med-green);font-weight:800">' + _money(a.jan_aushadhi_price) + _freshnessPill(a.freshness_jan_aushadhi) + '</td>';
       html += '<td style="padding:8px;text-align:right;font-family:monospace">' + (a.savings_pct != null ? a.savings_pct + '%' : '—') + (a.above_nppa_ceiling ? ' <span class="risk-high" title="Above NPPA ceiling — illegal">!</span>' : '') + '</td>';
+      html += '<td style="padding:8px"><button id="' + insuranceCellId + '" onclick="checkInsuranceChip(this,' + JSON.stringify(altMolecule).replace(/"/g,'&quot;') + ')" aria-label="Check Ayushman coverage" style="background:transparent;border:1px solid var(--navy);color:var(--navy);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700">🛡️ ' + (lang === 'hi' ? 'आयुष्मान?' : 'Ayushman?') + '</button></td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
@@ -1292,6 +1291,46 @@ async function findJanAushadhiByState(){
 // ═══════════════════════════════════════════════════════════
 // INSURANCE — coverage check
 // ═══════════════════════════════════════════════════════════
+// Inline chip — used inside alternative rows. Hits the new
+// /api/medupi/insurance-match endpoint (Ayushman by default) and
+// rewrites the chip in-place with a covered/not-covered + ceiling tooltip.
+async function checkInsuranceChip(btn, molecule){
+  if (!btn || !molecule) return;
+  const scheme = 'ayushman';
+  const lang = _chittiLang;
+  btn.disabled = true;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳';
+  try {
+    const data = await apiGet('/api/medupi/insurance-match?molecule=' + encodeURIComponent(String(molecule).trim()) + '&scheme=' + scheme);
+    const covered = !!(data && data.covered);
+    const ceiling = data && (data.ceiling_per_year_inr != null ? data.ceiling_per_year_inr : null);
+    const notes   = (data && data.notes) || '';
+    const labelEn = covered ? 'Covered · Ayushman' : 'Not in Ayushman list';
+    const labelHi = covered ? 'आयुष्मान में शामिल' : 'आयुष्मान सूची में नहीं';
+    const sym = covered ? '✅' : '❌';
+    const wordTag = covered ? (lang === 'hi' ? 'COVERED' : 'COVERED') : (lang === 'hi' ? 'NOT COVERED' : 'NOT COVERED');
+    const colorBg = covered ? 'rgba(34,197,94,.12)' : 'rgba(220,38,38,.10)';
+    const border  = covered ? 'var(--med-green)'    : 'var(--med-red)';
+    const tooltipParts = [];
+    if (ceiling != null) tooltipParts.push((lang === 'hi' ? 'सीमा/वर्ष: ₹' : 'Ceiling/yr: ₹') + ceiling);
+    if (notes) tooltipParts.push(notes);
+    if (data && data.status === 'skeleton') tooltipParts.push(lang === 'hi' ? '(कंकाल — सत्यापित करें)' : '(skeleton — verify)');
+    btn.title = tooltipParts.join(' · ');
+    btn.style.background = colorBg;
+    btn.style.borderColor = border;
+    btn.style.color = covered ? 'var(--med-green)' : 'var(--med-red)';
+    btn.innerHTML = sym + ' ' + _esc(lang === 'hi' ? labelHi : labelEn) + ' <span style="font-size:9px;font-weight:900;letter-spacing:.5px">· ' + wordTag + '</span>';
+    btn.disabled = false;
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    btn.title = (lang === 'hi' ? 'त्रुटि: ' : 'Error: ') + (e.message || String(e));
+    btn.style.borderColor = 'var(--med-red)';
+    btn.style.color = 'var(--med-red)';
+  }
+}
+
 async function checkInsuranceCoverage(){
   const mol = (document.getElementById('ins-molecule') || {}).value || '';
   const scheme = (document.getElementById('ins-scheme') || {}).value || 'ayushman';
@@ -1559,6 +1598,78 @@ function cartVoice(targetId, kind){
 }
 
 // ═══════════════════════════════════════════════════════════
+// FAMILY WALLET PREVIEW — Section B
+// Renders member cards + totals from GET /api/medupi/family/wallet
+// (skeleton endpoint — surfaces placeholder data + clear "skeleton" badge).
+// ═══════════════════════════════════════════════════════════
+async function refreshFamilyWalletPreview(speakIt){
+  const totalsEl  = document.getElementById('fam-wallet-totals');
+  const membersEl = document.getElementById('fam-wallet-members');
+  const noteEl    = document.getElementById('fam-wallet-skeleton-note');
+  if (!totalsEl && !membersEl) return;
+  // Set a loading state
+  if (totalsEl)  totalsEl.innerHTML  = '<div style="font-size:12px;color:var(--saffron);font-weight:700;padding:10px">⏳ ' + (_chittiLang === 'hi' ? 'परिवार वॉलेट लोड हो रहा है…' : 'Loading family wallet…') + '</div>';
+  if (membersEl) membersEl.innerHTML = '';
+  if (noteEl)    noteEl.textContent  = '';
+  try {
+    const data = await apiGet('/api/medupi/family/wallet');
+    const members = (data && data.members) || [];
+    const totals  = (data && data.totals)  || {};
+
+    // Totals strip — only render cards for keys actually present
+    let th = '';
+    th += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'सदस्य' : 'Profiles') + '</span></div><div class="metric-card-val">' + (members.length || 0) + '</div><div class="metric-card-pe">' + _esc(_chittiLang === 'hi' ? 'अलग-अलग वॉलेट प्रति व्यक्ति।' : 'Separate wallets per person.') + '</div></div>';
+    th += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'इस माह खर्च' : 'This month spend') + '</span></div><div class="metric-card-val">' + _money(totals.monthly_spend != null ? totals.monthly_spend : totals.this_month_spend) + '</div><div class="metric-card-pe">' + _esc(_chittiLang === 'hi' ? 'पूरे परिवार की दवाओं पर मासिक खर्च।' : 'Total family medicine spend this month.') + '</div></div>';
+    th += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'इस माह बचत' : 'This month saved') + '</span><span class="risk-low">SAVINGS</span></div><div class="metric-card-val" style="color:var(--med-green)">' + _money(totals.monthly_savings != null ? totals.monthly_savings : totals.this_month_saved) + '</div><div class="metric-card-pe">' + _esc(_chittiLang === 'hi' ? 'समान-संरचना विकल्प चुनने से बचत।' : 'Saved by choosing same-composition options.') + '</div></div>';
+    if (totals.annual_projection != null || totals.annual_savings != null) {
+      th += '<div class="metric-card"><div class="metric-card-lbl"><span>' + (_chittiLang === 'hi' ? 'वार्षिक अनुमान' : 'Annual projection') + '</span><span class="risk-low">★</span></div><div class="metric-card-val" style="color:var(--med-green)">' + _money(totals.annual_projection != null ? totals.annual_projection : totals.annual_savings) + '</div><div class="metric-card-pe">' + _esc(_chittiLang === 'hi' ? 'इस गति पर 12 महीनों की अनुमानित बचत।' : 'Estimated yearly savings at this pace.') + '</div></div>';
+    }
+    if (totalsEl) totalsEl.innerHTML = th;
+
+    // Member cards
+    if (membersEl) {
+      if (!members.length) {
+        membersEl.innerHTML = '<div style="padding:10px;background:#fbf8f1;border:1px dashed var(--border);border-radius:10px;font-size:12px;color:var(--muted)">' + _esc(_chittiLang === 'hi' ? 'अभी कोई सदस्य नहीं। ऊपर एक प्रोफ़ाइल जोड़ें।' : 'No members yet — add a profile above.') + '</div>';
+      } else {
+        let mh = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">';
+        members.forEach(function(m){
+          const chronics = Array.isArray(m.chronic_meds) ? m.chronic_meds : [];
+          const spend  = (m.monthly_spend  != null ? m.monthly_spend  : m.spend_month);
+          const saved  = (m.monthly_savings != null ? m.monthly_savings : m.saved_month);
+          mh += '<div class="metric-card">';
+          mh += '<div class="metric-card-lbl"><span>👤 ' + _esc(m.label || m.name || ('#' + (m.id != null ? m.id : '?'))) + '</span>' + (chronics.length ? '<span class="risk-medium">CHRONIC</span>' : '') + '</div>';
+          mh += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span style="color:var(--muted)">' + (_chittiLang === 'hi' ? 'खर्च' : 'Spend') + '</span><span style="font-family:monospace;font-weight:700">' + _money(spend) + '</span></div>';
+          mh += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px"><span style="color:var(--muted)">' + (_chittiLang === 'hi' ? 'बचत' : 'Saved') + '</span><span style="font-family:monospace;font-weight:800;color:var(--med-green)">' + _money(saved) + '</span></div>';
+          if (chronics.length) {
+            mh += '<div style="margin-top:8px;font-size:11px;color:var(--muted)">' + _esc(_chittiLang === 'hi' ? 'पुरानी दवाएँ' : 'Chronic meds') + '</div>';
+            mh += '<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">' + chronics.map(function(c){ return '<span style="display:inline-block;padding:2px 8px;background:rgba(212,175,55,.15);border:1px solid var(--gold);border-radius:999px;font-size:11px">' + _esc(c) + '</span>'; }).join('') + '</div>';
+          } else {
+            mh += '<div style="margin-top:8px;font-size:11px;color:var(--muted)">' + _esc(_chittiLang === 'hi' ? 'कोई पुरानी दवा दर्ज नहीं' : 'No chronic meds logged') + '</div>';
+          }
+          mh += '</div>';
+        });
+        mh += '</div>';
+        membersEl.innerHTML = mh;
+      }
+    }
+
+    // Skeleton note + as-of timestamp
+    const parts = [];
+    if (data && data.status) parts.push((_chittiLang === 'hi' ? 'स्थिति: ' : 'Status: ') + data.status);
+    if (data && data.as_of)  parts.push((_chittiLang === 'hi' ? 'अद्यतन: ' : 'As of: ') + String(data.as_of).replace('T',' ').slice(0,16));
+    if (noteEl) noteEl.textContent = parts.join(' · ');
+
+    if (speakIt) {
+      const monthlySaved = Math.round(((totals.monthly_savings != null ? totals.monthly_savings : totals.this_month_saved) || 0));
+      sp(_chittiLang === 'hi' ? ('परिवार वॉलेट तैयार। इस माह की कुल बचत ' + monthlySaved + ' रुपये।') : ('Family wallet ready. This month total savings rupees ' + monthlySaved + '.'));
+    }
+  } catch (e) {
+    if (totalsEl) totalsEl.innerHTML = '<div style="color:var(--med-red);padding:10px;font-size:12px">⚠️ ' + _esc(e.message || String(e)) + '</div>';
+    if (membersEl) membersEl.innerHTML = '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // REMINDERS
 // ═══════════════════════════════════════════════════════════
 async function refreshReminders(){
@@ -1610,15 +1721,15 @@ function _bootLiveTabs(){
   document.querySelectorAll('nav.tabs .tab').forEach(function(b){
     b.addEventListener('click', function(){
       const t = b.getAttribute('data-tab');
-      if (t === 'wallet')    refreshFamilyProfiles();
+      if (t === 'wallet')    { refreshFamilyProfiles(); refreshFamilyWalletPreview(false); }
       if (t === 'reminders') { refreshFamilyProfiles(); refreshReminders(); }
       if (t === 'settings')  renderShareQr();
       if (t === 'compare')   _renderCartLines();
     });
   });
-  // Render initial cart-lines empty state + boot family wallet preview
+  // Render initial cart-lines empty state + boot family wallet preview on page load
   _renderCartLines();
-  if (typeof refreshFamilyWalletPreview === 'function') refreshFamilyWalletPreview();
+  if (typeof refreshFamilyWalletPreview === 'function') refreshFamilyWalletPreview(false);
 }
 
 // ═══════════════════════════════════════════════════════════
