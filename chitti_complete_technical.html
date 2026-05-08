@@ -1279,7 +1279,10 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
     <div class="section-card" style="padding:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
         <div style="font-size:14px;font-weight:800" data-i18n="strength.title">📊 Signal Strength &amp; Confluence</div>
-        <div id="ss-verdict-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eee;color:#444">—</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="sp-btn" onclick="speakSignalStrength()" aria-label="Hear signal strength and confluence" style="padding:4px 8px;font-size:12px">🔊</button>
+          <div id="ss-verdict-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eee;color:#444">—</div>
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
         <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="strength.score">Signal Strength</span></div><div class="metric-card-val" id="ss-strength">— / 10</div><div class="metric-card-pe" data-i18n="strength.score.pe">Composite from all 43 indicators on the Daily timeframe.</div></div>
@@ -1290,7 +1293,10 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
     </div>
 
     <div class="section-card" style="padding:14px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:8px" data-i18n="rating.title">📋 Multi-Timeframe Technical Rating</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:800" data-i18n="rating.title">📋 Multi-Timeframe Technical Rating</div>
+        <button class="sp-btn" onclick="speakRatingTable()" aria-label="Hear timeframe-by-timeframe verdicts" style="padding:4px 8px;font-size:12px">🔊</button>
+      </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px" data-i18n="rating.sub">TradingView-style: composite verdict per timeframe. ▲ = bullish, ▼ = bearish, ▬ = neutral.</div>
       <div style="overflow-x:auto"><table class="fund-q-tbl" aria-label="Multi-timeframe signal table" id="rating-table-tbl">
         <thead><tr><th data-i18n="rating.col.tf">Timeframe</th><th data-i18n="rating.col.verdict">Verdict</th><th data-i18n="rating.col.score">Score (0-10)</th><th data-i18n="rating.col.confluence">Confluence</th></tr></thead>
@@ -1319,7 +1325,8 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
     <div class="section-card" style="padding:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
         <div style="font-size:14px;font-weight:800" data-i18n="watch.title">⭐ My Watchlist</div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="sp-btn" onclick="speakWatchlist()" aria-label="Hear all watchlist prices" style="padding:4px 8px;font-size:12px">🔊</button>
           <input id="wl-input" placeholder="NSE:RELIANCE" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;width:160px" aria-label="Add a symbol to watchlist"/>
           <button class="chip" onclick="watchlistAdd()" aria-label="Add to watchlist">＋ Add</button>
           <button class="chip" onclick="watchlistRefresh()" aria-label="Refresh watchlist quotes">↻</button>
@@ -3328,6 +3335,8 @@ function _verdictChip(v) {
   const c = VERDICT_COLOR[v] || VERDICT_COLOR['NEUTRAL'];
   return `<span style="background:${c.bg};color:${c.fg};padding:3px 8px;border-radius:999px;font-weight:700;font-size:11px" aria-label="${v}">${c.sym} ${v}</span>`;
 }
+let _lastStrength = null;
+let _lastRating = null;
 async function loadStrengthAndRating(sym) {
   if (!sym) return;
   const ssTbody = document.getElementById('rating-table-body');
@@ -3346,6 +3355,8 @@ async function loadStrengthAndRating(sym) {
     ]);
     const str = await strRes.json();
     const rt  = await rtRes.json();
+    _lastStrength = str;
+    _lastRating = rt;
     // Headline strength (Daily)
     if (ssV)   ssV.textContent = `${(str.strength_0_10 ?? 5).toFixed(1)} / 10`;
     if (ssC)   ssC.textContent = `${str.buys ?? 0} of ${str.total ?? 43} agree`;
@@ -3441,6 +3452,117 @@ function watchlistStartPolling() {
   }, 15000);
 }
 document.addEventListener('DOMContentLoaded', () => { watchlistRefresh(); watchlistStartPolling(); });
+
+// ──────────────────────────────────────────────────────────────────
+// Section narrators (Phase 7 P1) — speaker buttons on Strength /
+// Rating Table / Watchlist read the cached fetch data aloud.
+// ──────────────────────────────────────────────────────────────────
+function speakSignalStrength() {
+  if (!_lastStrength) { sp('Signal strength not loaded yet. Pick a stock first.'); return; }
+  const s = _lastStrength;
+  const sym = (currentSymbol || s.symbol || 'this stock').split(':').pop();
+  sp(sym + '. Daily signal strength ' + (s.strength_0_10 != null ? s.strength_0_10.toFixed(1) : 'no data') +
+     ' out of 10. Verdict ' + (s.verdict || 'NEUTRAL') + '. ' +
+     (s.buys || 0) + ' of ' + (s.total || 43) + ' indicators agree. ' +
+     'Not SEBI registered. Educational only.');
+}
+function speakRatingTable() {
+  if (!_lastRating || !_lastRating.rows) { sp('Rating table not loaded yet.'); return; }
+  const sym = (currentSymbol || _lastRating.symbol || 'this stock').split(':').pop();
+  const parts = [sym + '. Multi-timeframe rating.'];
+  _lastRating.rows.forEach(function(r){
+    parts.push(r.timeframe + ': ' + (r.verdict || 'NEUTRAL') + ', score ' + (r.strength_0_10 != null ? r.strength_0_10.toFixed(1) : '—') + '.');
+  });
+  sp(parts.join(' '));
+}
+function speakWatchlist() {
+  const arr = watchlistGet();
+  if (!arr.length) { sp('Watchlist is empty. Add a stock first.'); return; }
+  const tbody = document.getElementById('wl-body');
+  if (!tbody) return;
+  // Read DOM rows so the speaker reflects the latest poll.
+  const out = ['Watchlist.'];
+  tbody.querySelectorAll('tr').forEach(function(tr){
+    const tds = tr.querySelectorAll('td');
+    if (tds.length < 5) return;
+    const name = tds[1].textContent.trim();
+    const ltp = tds[2].textContent.trim();
+    const pct = tds[4].textContent.trim();
+    out.push(name + ', last ' + ltp + ', day ' + pct + '.');
+  });
+  sp(out.join(' '));
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Talk to Chitti — Technical agent. POSTs to /api/agent/technical/ask.
+// ──────────────────────────────────────────────────────────────────
+function chittiAskOpen() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'block';
+  const log = document.getElementById('chitti-ask-log');
+  if (log && !log.children.length) {
+    log.innerHTML = '<div style="background:rgba(232,106,23,.10);padding:10px;border-radius:10px;font-size:13px;line-height:1.5">' +
+      'Hi, I am Chitti Technical. Ask: <em>"Is RELIANCE a buy on Daily?"</em>, <em>"Show Roshan setups in midcap"</em>, <em>"Support and resistance for TCS."</em>' +
+      '</div>';
+  }
+  setTimeout(function(){ const i = document.getElementById('chitti-ask-input'); if (i) i.focus(); }, 50);
+}
+function chittiAskClose() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'none';
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+function _chittiAskAppend(role, text) {
+  const log = document.getElementById('chitti-ask-log');
+  if (!log) return;
+  const isMe = role === 'me';
+  const div = document.createElement('div');
+  div.style.cssText = 'margin-top:8px;padding:8px 10px;border-radius:10px;font-size:13px;line-height:1.5;' +
+    (isMe ? 'background:#f6f0e6;color:#0E2344;text-align:right' : 'background:rgba(14,35,68,.06);color:#0E2344');
+  div.textContent = (isMe ? '🧑 ' : '🤖 ') + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function chittiAskMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { sp('Voice input not available in this browser.'); return; }
+  const r = new SR();
+  r.lang = (typeof _chittiLang !== 'undefined' && _chittiLang === 'hi') ? 'hi-IN' : 'en-IN';
+  r.interimResults = false; r.maxAlternatives = 1;
+  const btn = document.getElementById('chitti-ask-mic');
+  if (btn) { btn.textContent = '🔴'; btn.disabled = true; }
+  r.onresult = function(ev){
+    const txt = ((ev.results[0] && ev.results[0][0]) || {}).transcript || '';
+    const i = document.getElementById('chitti-ask-input'); if (i) i.value = txt;
+    chittiAskSend();
+  };
+  r.onend   = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  r.onerror = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  try { r.start(); } catch(e) { if (btn){ btn.textContent = '🎤'; btn.disabled = false; } }
+}
+async function chittiAskSend() {
+  const i = document.getElementById('chitti-ask-input');
+  const q = (i && i.value || '').trim();
+  if (!q) return;
+  if (i) i.value = '';
+  _chittiAskAppend('me', q);
+  _chittiAskAppend('chitti', '… thinking');
+  try {
+    const r = await fetch(API + '/api/agent/technical/ask', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ question: q, max_steps: 6 }),
+    });
+    const d = await r.json().catch(function(){ return null; });
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    let answer = (d && d.answer) ? d.answer : 'No answer.';
+    if (d && d.error) answer += ' (Agent temporarily unavailable — top up DeepSeek to re-enable.)';
+    _chittiAskAppend('chitti', answer);
+    sp(answer);
+  } catch (e) {
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    _chittiAskAppend('chitti', 'Network error — try again.');
+  }
+}
 
 function selTF(btn) {
   document.querySelectorAll('.tf-btn').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.borderColor=''; b.style.color=''; });
@@ -5196,6 +5318,23 @@ if (_chatTechInput) {
     </div>
 
   </div>
+</div>
+
+<!-- ═══════════════════════ Floating "Talk to Chitti" widget (Technical) ═══════════════════════ -->
+<button id="chitti-fab" type="button" onclick="chittiAskOpen()" aria-label="Talk to Chitti — ask any technical analysis question by voice"
+  style="position:fixed;right:18px;bottom:18px;z-index:90;background:#E86A17;color:#fff;border:0;border-radius:999px;width:56px;height:56px;font-size:24px;box-shadow:0 6px 18px rgba(232,106,23,.45);cursor:pointer">🎤</button>
+<div id="chitti-ask-panel" role="dialog" aria-label="Ask Chitti — voice or text" aria-modal="true"
+  style="display:none;position:fixed;right:14px;bottom:84px;z-index:91;width:min(360px,calc(100vw - 28px));background:#fff;border:1px solid #e6dfd2;border-radius:14px;box-shadow:0 12px 28px rgba(14,35,68,.18);overflow:hidden">
+  <div style="padding:12px 14px;background:#0E2344;color:#fff;display:flex;align-items:center;justify-content:space-between">
+    <div><strong>🎙️ Talk to Chitti</strong><div style="font-size:11px;opacity:.85">Technical — voice or text</div></div>
+    <button onclick="chittiAskClose()" aria-label="Close" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer">✕</button>
+  </div>
+  <div style="padding:12px 14px;max-height:42vh;overflow:auto" id="chitti-ask-log"></div>
+  <form onsubmit="event.preventDefault(); chittiAskSend()" style="display:flex;gap:6px;padding:10px;border-top:1px solid #eee">
+    <input id="chitti-ask-input" type="text" placeholder="Ask in English or Hindi…" autocomplete="off" aria-label="Your question to Chitti" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px"/>
+    <button type="button" id="chitti-ask-mic" onclick="chittiAskMic()" aria-label="Speak your question" style="background:#E86A17;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">🎤</button>
+    <button type="submit" aria-label="Send" style="background:#0E2344;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">→</button>
+  </form>
 </div>
 
 </body>

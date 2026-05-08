@@ -2186,7 +2186,100 @@ document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && _dem
 applyChittiLang(_chittiLang);
 _bootLiveTabs();
 
+// ──────────────────────────────────────────────────────────────────
+// Talk to Chitti — MedUPI agent (POSTs /api/agent/medupi/ask).
+// ──────────────────────────────────────────────────────────────────
+function chittiAskOpen() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'block';
+  const log = document.getElementById('chitti-ask-log');
+  if (log && !log.children.length) {
+    log.innerHTML = '<div style="background:rgba(232,106,23,.10);padding:10px;border-radius:10px;font-size:13px;line-height:1.5">' +
+      (typeof _chittiLang !== 'undefined' && _chittiLang === 'hi'
+        ? 'नमस्ते! मैं Chitti MedUPI हूँ। पूछें: <em>“Crocin का सस्ता विकल्प क्या है?”</em> या <em>“Telmisartan 40mg गोली में बदलाव सुरक्षित है?”</em>'
+        : 'Hi, I am Chitti MedUPI. Ask: <em>"What is the cheapest equivalent for Crocin 650mg?"</em> or <em>"Is it safe to switch Telmisartan 40mg tablet?"</em>') +
+      '</div>';
+  }
+  setTimeout(function(){ const i = document.getElementById('chitti-ask-input'); if (i) i.focus(); }, 50);
+}
+function chittiAskClose() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'none';
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+function _chittiAskAppend(role, text) {
+  const log = document.getElementById('chitti-ask-log');
+  if (!log) return;
+  const isMe = role === 'me';
+  const div = document.createElement('div');
+  div.style.cssText = 'margin-top:8px;padding:8px 10px;border-radius:10px;font-size:13px;line-height:1.5;' +
+    (isMe ? 'background:#f6f0e6;color:#0E2344;text-align:right' : 'background:rgba(14,35,68,.06);color:#0E2344');
+  div.textContent = (isMe ? '🧑 ' : '🤖 ') + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function chittiAskMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { sp(_chittiLang === 'hi' ? 'इस ब्राउज़र में वॉइस इनपुट उपलब्ध नहीं है।' : 'Voice input not available.'); return; }
+  const r = new SR();
+  r.lang = (typeof _chittiLang !== 'undefined' && _chittiLang === 'hi') ? 'hi-IN' : 'en-IN';
+  r.interimResults = false; r.maxAlternatives = 1;
+  const btn = document.getElementById('chitti-ask-mic');
+  if (btn) { btn.textContent = '🔴'; btn.disabled = true; }
+  r.onresult = function(ev){
+    const txt = ((ev.results[0] && ev.results[0][0]) || {}).transcript || '';
+    const i = document.getElementById('chitti-ask-input'); if (i) i.value = txt;
+    chittiAskSend();
+  };
+  r.onend   = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  r.onerror = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  try { r.start(); } catch(e) { if (btn){ btn.textContent = '🎤'; btn.disabled = false; } }
+}
+async function chittiAskSend() {
+  const i = document.getElementById('chitti-ask-input');
+  const q = (i && i.value || '').trim();
+  if (!q) return;
+  if (i) i.value = '';
+  _chittiAskAppend('me', q);
+  _chittiAskAppend('chitti', _chittiLang === 'hi' ? '… सोच रहा हूँ' : '… thinking');
+  try {
+    const r = await fetch((typeof API !== 'undefined' ? API : 'https://chitti-shares-api.onrender.com') + '/api/agent/medupi/ask', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ question: q, max_steps: 6 }),
+    });
+    const d = await r.json().catch(function(){ return null; });
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    let answer = (d && d.answer) ? d.answer : (_chittiLang === 'hi' ? 'जवाब नहीं मिला।' : 'No answer.');
+    if (d && d.error) {
+      answer += ' ' + (_chittiLang === 'hi' ? '(एजेंट अस्थायी रूप से अनुपलब्ध — DeepSeek बैलेंस जोड़ने पर वापस चालू।)' : '(Agent temporarily unavailable — top up DeepSeek to re-enable.)');
+    }
+    _chittiAskAppend('chitti', answer);
+    sp(answer);
+  } catch (e) {
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    _chittiAskAppend('chitti', _chittiLang === 'hi' ? 'नेटवर्क त्रुटि।' : 'Network error — try again.');
+  }
+}
+
 }
 </script>
+
+<!-- ═══════════════════════ Floating "Talk to Chitti" widget (MedUPI) ═══════════════════════ -->
+<button id="chitti-fab" type="button" onclick="chittiAskOpen()" aria-label="Talk to Chitti — ask any medicine question by voice"
+  style="position:fixed;right:18px;bottom:18px;z-index:90;background:#E86A17;color:#fff;border:0;border-radius:999px;width:56px;height:56px;font-size:24px;box-shadow:0 6px 18px rgba(232,106,23,.45);cursor:pointer">🎤</button>
+<div id="chitti-ask-panel" role="dialog" aria-label="Ask Chitti — voice or text" aria-modal="true"
+  style="display:none;position:fixed;right:14px;bottom:84px;z-index:91;width:min(360px,calc(100vw - 28px));background:#fff;border:1px solid #e6dfd2;border-radius:14px;box-shadow:0 12px 28px rgba(14,35,68,.18);overflow:hidden">
+  <div style="padding:12px 14px;background:#0E2344;color:#fff;display:flex;align-items:center;justify-content:space-between">
+    <div><strong>🎙️ Talk to Chitti</strong><div style="font-size:11px;opacity:.85">MedUPI — voice or text</div></div>
+    <button onclick="chittiAskClose()" aria-label="Close" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer">✕</button>
+  </div>
+  <div style="padding:12px 14px;max-height:42vh;overflow:auto" id="chitti-ask-log"></div>
+  <form onsubmit="event.preventDefault(); chittiAskSend()" style="display:flex;gap:6px;padding:10px;border-top:1px solid #eee">
+    <input id="chitti-ask-input" type="text" placeholder="Ask in English or Hindi…" autocomplete="off" aria-label="Your question to Chitti" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px"/>
+    <button type="button" id="chitti-ask-mic" onclick="chittiAskMic()" aria-label="Speak your question" style="background:#E86A17;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">🎤</button>
+    <button type="submit" aria-label="Send" style="background:#0E2344;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">→</button>
+  </form>
+</div>
+
 </body>
 </html>

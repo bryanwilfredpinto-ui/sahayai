@@ -633,6 +633,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           <div class="section-title">📈 Performance vs NIFTY 50 <span id="perf-badge" class="live-badge">LIVE</span></div>
           <div class="section-sub">How this stock returned vs the index over each timeframe. Beating the index is the alpha.</div>
         </div>
+        <button class="metric-spk" onclick="speakPerformance()" aria-label="Hear performance versus NIFTY 50">🔊</button>
       </div>
       <table class="fund-q-tbl" aria-label="Performance vs NIFTY">
         <thead><tr><th>Period</th><th>Stock Return</th><th>NIFTY Return</th><th>Alpha</th></tr></thead>
@@ -649,6 +650,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           <div class="section-title">🧮 Returns Calculator <span id="rc-badge" class="live-badge">LIVE</span></div>
           <div class="section-sub">"If you had invested ₹X in this stock Y years ago, you'd have ₹Z today" — vs NIFTY 50 vs 7% Bank FD.</div>
         </div>
+        <button class="metric-spk" onclick="speakReturns()" aria-label="Hear returns calculator result">🔊</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:10px">
         <label style="display:flex;flex-direction:column;font-size:11px;color:var(--muted);min-width:120px">
@@ -686,7 +688,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
       </div>
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-card-lbl"><span>🎤 Story Mode</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">60-second audio briefing — Chitti narrates the company story like a friend explaining it over chai. Coming next session.</div></div>
-        <div class="metric-card" id="card-riskfit"><div class="metric-card-lbl"><span>🎯 Risk-Fit Dial</span><span class="live-badge">LIVE</span></div><div class="metric-card-val" id="rf-verdict">—</div><div class="metric-card-pe" id="rf-pe">Conservative / Moderate / Aggressive — pick your persona below; Chitti judges fit on this stock.</div>
+        <div class="metric-card" id="card-riskfit"><div class="metric-card-lbl"><span>🎯 Risk-Fit Dial</span><span class="live-badge">LIVE</span><button class="metric-spk" onclick="speakRiskFit()" aria-label="Hear risk-fit verdict and rule breakdown" style="margin-left:auto">🔊</button></div><div class="metric-card-val" id="rf-verdict">—</div><div class="metric-card-pe" id="rf-pe">Conservative / Moderate / Aggressive — pick your persona below; Chitti judges fit on this stock.</div>
           <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
             <button class="chip rf-chip" data-persona="conservative" onclick="rfPick('conservative')" aria-label="Conservative persona">🛡️ Conservative</button>
             <button class="chip rf-chip" data-persona="moderate" onclick="rfPick('moderate')" aria-label="Moderate persona">⚖️ Moderate</button>
@@ -694,7 +696,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           </div>
           <div id="rf-checks" style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5"></div>
         </div>
-        <div class="metric-card" id="card-confidence"><div class="metric-card-lbl"><span>📊 Confidence Dial</span><span class="live-badge">LIVE</span></div><div class="metric-card-val" id="cd-score">— / 10</div><div class="metric-card-pe" id="cd-pe">How confident is Chitti in this verdict? Composite from data completeness, history depth, and growth consistency.</div>
+        <div class="metric-card" id="card-confidence"><div class="metric-card-lbl"><span>📊 Confidence Dial</span><span class="live-badge">LIVE</span><button class="metric-spk" onclick="speakConfidence()" aria-label="Hear Chitti's confidence score and reasons" style="margin-left:auto">🔊</button></div><div class="metric-card-val" id="cd-score">— / 10</div><div class="metric-card-pe" id="cd-pe">How confident is Chitti in this verdict? Composite from data completeness, history depth, and growth consistency.</div>
           <div id="cd-reasons" style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5"></div>
         </div>
         <div class="metric-card"><div class="metric-card-lbl"><span>💰 Affordability</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Type your budget — Chitti tells you how many shares you can buy after brokerage and STT.</div></div>
@@ -702,7 +704,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         <div class="metric-card"><div class="metric-card-lbl"><span>🌐 Multi-Indian-Language</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Hindi, Tamil, Bengali, Telugu, Marathi, Gujarati, Kannada audio — not just text translation, full speech.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>👨‍👩‍👧 Family Share</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share Chitti's verdict on WhatsApp with the SEBI disclaimer pre-attached. One tap.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>⚖️ Plain-English Compare</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">"Reliance is 5× bigger than ITC, but ITC pays 7× more dividend." Compare any two stocks in plain words.</div></div>
-        <div class="metric-card" id="card-snowflake"><div class="metric-card-lbl"><span>❄️ 5D Snowflake</span><span class="live-badge">LIVE</span></div>
+        <div class="metric-card" id="card-snowflake"><div class="metric-card-lbl"><span>❄️ 5D Snowflake</span><span class="live-badge">LIVE</span><button class="metric-spk" onclick="speakSnowflake()" aria-label="Hear the 5 axis scores" style="margin-left:auto">🔊</button></div>
           <div class="snowflake-wrap" style="margin-top:6px;background:transparent;padding:6px"><svg id="sf-svg" viewBox="-110 -110 220 220" aria-label="5D snowflake radar"></svg></div>
           <div class="metric-card-pe" id="sf-overall">Average across Value / Growth / Quality / Health / Income.</div>
         </div>
@@ -1281,6 +1283,23 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
       </form>
     </div>
   </section>
+
+  <!-- ═══════════════════════ Floating "Talk to Chitti" widget ═══════════════════════ -->
+  <button id="chitti-fab" type="button" onclick="chittiAskOpen()" aria-label="Talk to Chitti — ask any fundamentals question by voice"
+    style="position:fixed;right:18px;bottom:18px;z-index:90;background:var(--saffron);color:#fff;border:0;border-radius:999px;width:56px;height:56px;font-size:24px;box-shadow:0 6px 18px rgba(232,106,23,.45);cursor:pointer">🎤</button>
+  <div id="chitti-ask-panel" role="dialog" aria-label="Ask Chitti — voice or text" aria-modal="true"
+    style="display:none;position:fixed;right:14px;bottom:84px;z-index:91;width:min(360px,calc(100vw - 28px));background:var(--card,#fff);border:1px solid var(--border,#e6dfd2);border-radius:14px;box-shadow:0 12px 28px rgba(14,35,68,.18);overflow:hidden">
+    <div style="padding:12px 14px;background:var(--navy,#0E2344);color:#fff;display:flex;align-items:center;justify-content:space-between">
+      <div><strong>🎙️ Talk to Chitti</strong><div style="font-size:11px;opacity:.85" data-i18n="ask.sub">Fundamentals — voice or text</div></div>
+      <button onclick="chittiAskClose()" aria-label="Close" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:12px 14px;max-height:42vh;overflow:auto" id="chitti-ask-log"></div>
+    <form onsubmit="event.preventDefault(); chittiAskSend()" style="display:flex;gap:6px;padding:10px;border-top:1px solid var(--border,#eee)">
+      <input id="chitti-ask-input" type="text" placeholder="Ask in English or Hindi…" autocomplete="off" aria-label="Your question to Chitti" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px"/>
+      <button type="button" id="chitti-ask-mic" onclick="chittiAskMic()" aria-label="Speak your question" style="background:var(--saffron);color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">🎤</button>
+      <button type="submit" aria-label="Send" style="background:var(--navy);color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer">→</button>
+    </form>
+  </div>
 
   <footer role="contentinfo">
     <small id="disclaimer-text">Not SEBI Registered. This is an educational tool only, not investment advice. Chitti shows direction, not a guarantee. Never invest money you cannot afford to lose.</small>
@@ -2835,6 +2854,147 @@ loadPortfolioNews();
 })();
 
 // ──────────────────────────────────────────────────────────────────
+// Talk to Chitti — global voice agent widget. Calls the backend
+// /api/agent/fundamental/ask tool-calling loop and reads the answer
+// aloud. Falls back gracefully when DeepSeek is rate-limited (402).
+// ──────────────────────────────────────────────────────────────────
+function chittiAskOpen() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'block';
+  const log = document.getElementById('chitti-ask-log');
+  if (log && !log.children.length) {
+    log.innerHTML = '<div style="background:rgba(232,106,23,.10);padding:10px;border-radius:10px;font-size:13px;line-height:1.5">' +
+      (_chittiLang === 'hi'
+        ? 'नमस्ते! मैं Chitti हूँ। पूछें: <em>“Reliance का P/E बताइए”</em> या <em>“Buffett lens से ITC कैसा है?”</em>'
+        : 'Hi, I am Chitti. Ask: <em>“Is Reliance a Buffett-quality stock?”</em> or <em>“Compare ITC and Reliance on dividend yield.”</em>') +
+      '</div>';
+  }
+  setTimeout(function(){ const i = document.getElementById('chitti-ask-input'); if (i) i.focus(); }, 50);
+}
+function chittiAskClose() {
+  const p = document.getElementById('chitti-ask-panel'); if (p) p.style.display = 'none';
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+function _chittiAskAppend(role, text) {
+  const log = document.getElementById('chitti-ask-log');
+  if (!log) return;
+  const isMe = role === 'me';
+  const div = document.createElement('div');
+  div.style.cssText = 'margin-top:8px;padding:8px 10px;border-radius:10px;font-size:13px;line-height:1.5;' +
+    (isMe ? 'background:#f6f0e6;color:#0E2344;text-align:right' : 'background:rgba(14,35,68,.06);color:#0E2344');
+  div.textContent = (isMe ? '🧑 ' : '🤖 ') + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function chittiAskMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { sp(_chittiLang === 'hi' ? 'इस ब्राउज़र में वॉइस इनपुट उपलब्ध नहीं है।' : 'Voice input not available in this browser.'); return; }
+  const r = new SR();
+  r.lang = _chittiLang === 'hi' ? 'hi-IN' : 'en-IN';
+  r.interimResults = false; r.maxAlternatives = 1;
+  const btn = document.getElementById('chitti-ask-mic');
+  if (btn) { btn.textContent = '🔴'; btn.disabled = true; }
+  r.onresult = function(ev){
+    const txt = ((ev.results[0] && ev.results[0][0]) || {}).transcript || '';
+    const i = document.getElementById('chitti-ask-input'); if (i) i.value = txt;
+    chittiAskSend();
+  };
+  r.onend   = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  r.onerror = function(){ if (btn){ btn.textContent = '🎤'; btn.disabled = false; } };
+  try { r.start(); } catch(e) { if (btn){ btn.textContent = '🎤'; btn.disabled = false; } }
+}
+async function chittiAskSend() {
+  const i = document.getElementById('chitti-ask-input');
+  const q = (i && i.value || '').trim();
+  if (!q) return;
+  if (i) i.value = '';
+  _chittiAskAppend('me', q);
+  _chittiAskAppend('chitti', _chittiLang === 'hi' ? '… सोच रहा हूँ' : '… thinking');
+  const lens = (typeof _selectedLens !== 'undefined' && _selectedLens) ? _selectedLens : 'buffett';
+  try {
+    const r = await fetch(API + '/api/agent/fundamental/ask', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ question: q, lens: lens, max_steps: 6 }),
+    });
+    const d = await r.json().catch(function(){ return null; });
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    let answer = (d && d.answer) ? d.answer : (_chittiLang === 'hi' ? 'जवाब नहीं मिला।' : 'No answer.');
+    if (d && d.error) {
+      answer += ' ' + (_chittiLang === 'hi' ? '(एजेंट अस्थायी रूप से अनुपलब्ध — DeepSeek बैलेंस जोड़ने पर वापस चालू।)' : '(Agent temporarily unavailable — top up DeepSeek to re-enable.)');
+    }
+    _chittiAskAppend('chitti', answer);
+    sp(answer);
+  } catch (e) {
+    const log = document.getElementById('chitti-ask-log');
+    if (log && log.lastChild) log.removeChild(log.lastChild);
+    _chittiAskAppend('chitti', _chittiLang === 'hi' ? 'नेटवर्क त्रुटि।' : 'Network error — try again.');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
+// State for the per-section speakers (Phase 7C/7D narrators).
+// Each loader caches its last response so the 🔊 button can read it
+// back without re-fetching.
+// ──────────────────────────────────────────────────────────────────
+let _lastSnowflake = null;
+let _lastConfidence = null;
+let _lastRiskFit = null;
+let _lastPerformance = null;
+let _lastReturns = null;
+
+function _spName() {
+  return (_fundData && _fundData.name) ? _fundData.name : (_fundLoadingFor || 'this stock');
+}
+function speakSnowflake() {
+  if (!_lastSnowflake) { sp(_chittiLang === 'hi' ? 'स्नोफ्लेक अभी लोड नहीं हुआ है।' : 'Snowflake not loaded yet.'); return; }
+  const d = _lastSnowflake.axes || {};
+  const parts = [_spName() + '. Snowflake.'];
+  ['value','growth','quality','health','income'].forEach(function(ax){
+    const a = d[ax]; const sc = (a && a.score != null) ? a.score.toFixed(1) : 'no data';
+    parts.push(ax.charAt(0).toUpperCase() + ax.slice(1) + ' ' + sc + '.');
+  });
+  if (_lastSnowflake.overall != null) parts.push('Overall ' + _lastSnowflake.overall.toFixed(1) + ' out of 10.');
+  parts.push('Not SEBI registered. Educational only.');
+  sp(parts.join(' '));
+}
+function speakConfidence() {
+  if (!_lastConfidence) { sp(_chittiLang === 'hi' ? 'कॉन्फिडेंस डायल अभी लोड नहीं हुआ है।' : 'Confidence not loaded yet.'); return; }
+  const d = _lastConfidence;
+  const reasons = (d.reasons || []).join(' ');
+  sp(_spName() + '. Confidence ' + (d.score_0_10 != null ? d.score_0_10.toFixed(1) : 'no data') + ' out of 10. ' + reasons);
+}
+function speakRiskFit() {
+  if (!_lastRiskFit) { sp(_chittiLang === 'hi' ? 'रिस्क-फिट अभी लोड नहीं हुआ है।' : 'Risk-fit not loaded yet.'); return; }
+  const d = _lastRiskFit;
+  const checks = (d.checks || []).map(function(c){ return (c.pass ? 'pass' : 'fail') + ' ' + c.rule; }).join('. ');
+  sp(_spName() + '. ' + d.persona + ' persona. ' + d.verdict + '. ' + d.passed + ' of ' + d.total + ' rules passed. ' + checks + '.');
+}
+function speakPerformance() {
+  if (!_lastPerformance) { sp(_chittiLang === 'hi' ? 'परफॉर्मेंस अभी लोड नहीं हुआ है।' : 'Performance not loaded yet.'); return; }
+  const w = _lastPerformance.windows || {};
+  const labels = { '1M':'1 month', '6M':'6 months', '1Y':'1 year', '3Y':'3 years', '5Y':'5 years', '10Y':'10 years' };
+  const parts = [_spName() + '. Performance versus NIFTY.'];
+  ['1M','6M','1Y','3Y','5Y','10Y'].forEach(function(k){
+    const r = w[k]; if (!r) return;
+    if (r.symbol_pct == null) return;
+    parts.push(labels[k] + ': stock ' + r.symbol_pct.toFixed(1) + '%, NIFTY ' + (r.nifty_pct == null ? 'no data' : r.nifty_pct.toFixed(1) + '%') + ', alpha ' + (r.alpha_pct == null ? 'no data' : r.alpha_pct.toFixed(1) + '%') + (r.partial ? ' (partial)' : '') + '.');
+  });
+  sp(parts.join(' '));
+}
+function speakReturns() {
+  if (!_lastReturns) { sp(_chittiLang === 'hi' ? 'रिटर्न्स अभी लोड नहीं हुए हैं।' : 'Returns not calculated yet. Click Calculate first.'); return; }
+  const d = _lastReturns;
+  const fmt = function(v){ return v == null ? 'no data' : Math.round(v).toLocaleString('en-IN') + ' rupees'; };
+  if (d.mode === 'sip') {
+    sp(_spName() + '. SIP of ' + Math.round(d.monthly_inr) + ' rupees monthly over ' + d.months + ' months. ' +
+       'Stock final ' + fmt(d.stock_final_inr) + '. NIFTY ' + fmt(d.nifty_final_inr) + '. Bank FD ' + fmt(d.fd_final_inr) + '.');
+  } else {
+    sp(_spName() + '. Lumpsum of ' + Math.round(d.amount_inr) + ' rupees over ' + d.years + ' years. ' +
+       'Stock final ' + fmt(d.stock_final_inr) + '. NIFTY ' + fmt(d.nifty_final_inr) + '. Bank FD ' + fmt(d.fd_final_inr) + '.');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
 // Phase 7C — Chitti Special: 5D Snowflake / Confidence Dial / Risk-Fit
 // All three are pure-compute (services/snowflake.py); they keep working
 // when the LLM is rate-limited.
@@ -2895,6 +3055,7 @@ async function loadSnowflake(sym) {
     const r = await fetch(API + '/api/snowflake/' + encodeURIComponent(sym));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    _lastSnowflake = d;
     _drawSnowflake(d.axes || {});
     if (overall) {
       const ov = (d.overall != null) ? d.overall.toFixed(1) : '—';
@@ -2915,6 +3076,7 @@ async function loadConfidence(sym) {
     const r = await fetch(API + '/api/confidence/' + encodeURIComponent(sym));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    _lastConfidence = d;
     if (score) score.textContent = (d.score_0_10 != null ? d.score_0_10.toFixed(1) : '—') + ' / 10';
     if (reasons && Array.isArray(d.reasons)) {
       reasons.innerHTML = d.reasons.map(function(x){ return '• ' + _esc(x); }).join('<br/>');
@@ -2961,6 +3123,7 @@ async function loadPerformance(sym) {
     const r = await fetch(API + '/api/performance/' + encodeURIComponent(sym));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    _lastPerformance = d;
     const w = d.windows || {};
     const labels = { '1M':'1 Month', '6M':'6 Months', '1Y':'1 Year', '3Y':'3 Years', '5Y':'5 Years', '10Y':'10 Years' };
     const order = ['1M','6M','1Y','3Y','5Y','10Y'];
@@ -3031,6 +3194,7 @@ async function rcRun() {
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    _lastReturns = d;
     const fmt = function(v){ return v == null ? '—' : '₹' + Math.round(v).toLocaleString('en-IN'); };
     const pct = function(v){ return v == null ? '' : ' (' + (v>0?'+':'') + v.toFixed(1) + '%)'; };
     if (stock) stock.textContent = fmt(d.stock_final_inr);
@@ -3058,6 +3222,7 @@ async function rfRefresh(sym) {
     const r = await fetch(API + '/api/risk-fit/' + encodeURIComponent(sym) + '?persona=' + encodeURIComponent(_rfPersona));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    _lastRiskFit = d;
     if (verdict) {
       const sym2 = d.verdict === 'FITS' ? '✅' : (d.verdict === 'PARTIAL FIT' ? '⚖️' : '❌');
       verdict.textContent = sym2 + ' ' + d.verdict + ' (' + d.passed + '/' + d.total + ')';
