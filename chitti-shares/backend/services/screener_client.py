@@ -161,7 +161,8 @@ def _table_row_values(section: str, row_label_regex: str) -> list[float | None]:
         td_text = re.sub(r"<[^>]+>", "", first_td.group(1)).strip()
         if label_pat.search(td_text):
             rest = tr[len(first_td.group(0)):]
-            cells = re.findall(r"<td[^>]*>\s*(" + _NUM + r")\s*</td>", rest)
+            # Allow optional trailing "%" so we capture OPM % / margin rows.
+            cells = re.findall(r"<td[^>]*>\s*(" + _NUM + r")\s*%?\s*</td>", rest)
             return [_to_float(c) for c in cells]
     return []
 
