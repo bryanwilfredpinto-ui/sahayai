@@ -533,6 +533,75 @@ function _articleCardHtml(a) {
 
 const _ARTICLE_CACHE = {};   // id → article
 
+// Fallback stories used when the backend is unreachable (e.g. before
+// chitti-news-api.onrender.com is deployed, or while a free Render dyno
+// is cold-starting). Negative IDs so they never clash with real DB rows.
+const _FALLBACK_ARTICLES = {
+  national: [
+    { id:-1, title:"Welcome to Chitti News — your state, your language, your news",
+      summary:"Chitti News aggregates 26+ trusted Indian RSS sources by state and language. Tap any article for a 3-bullet AI summary in your chosen language. Read aloud · Save · Fact-check · Share via WhatsApp.",
+      source_name:"Chitti News", source_slug:"chitti", category:"national", language:"en", state:"india",
+      link:"https://sahayai.in/chitti_news.html", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+    { id:-2, title:"How fact-checking works in Chitti News",
+      summary:"When 3+ trusted sources agree on a story, Chitti tags it ✅ Verified. When 2 agree but details differ, 🟡 Partial. When 1 source diverges, ⚠️ Disputed. When no other source has it yet, ❔ Unverified.",
+      source_name:"Chitti News", source_slug:"chitti", category:"national", language:"en", state:"india",
+      link:"https://sahayai.in/chitti_news.html#factcheck", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  business: [
+    { id:-3, title:"Sample · Indian markets close higher amid IT rally",
+      summary:"Sensex and Nifty closed in the green for the third straight session, led by IT stocks. (Sample article — your real feed appears once the backend is live.)",
+      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"business", language:"en", state:"india",
+      link:"https://sahayai.in/chitti_news.html#sample-business", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  sports: [
+    { id:-4, title:"Sample · Cricket — Indian team announces squad for upcoming tour",
+      summary:"BCCI announced the 18-member squad for the upcoming overseas series. (Sample article — your real feed appears once the backend is live.)",
+      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"sports", language:"en", state:"india",
+      link:"https://sahayai.in/chitti_news.html#sample-sports", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  tech: [
+    { id:-5, title:"Sample · Indian startup ecosystem highlights AI launches this quarter",
+      summary:"A round-up of AI model launches and funding rounds across the Indian startup landscape. (Sample article — your real feed appears once the backend is live.)",
+      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"tech", language:"en", state:"india",
+      link:"https://sahayai.in/chitti_news.html#sample-tech", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  state: [],
+  entertainment: [],
+};
+
+const _FALLBACK_ARTICLES_HI = {
+  national: [
+    { id:-101, title:"चिट्टी न्यूज़ में आपका स्वागत है — आपका राज्य, आपकी भाषा, आपकी खबरें",
+      summary:"चिट्टी न्यूज़ 26+ भरोसेमंद भारतीय RSS स्रोतों से राज्य और भाषा के अनुसार खबरें इकट्ठा करता है। किसी भी लेख पर टैप करें और 3 लाइन का AI सारांश आपकी पसंदीदा भाषा में पाएं।",
+      source_name:"चिट्टी न्यूज़", source_slug:"chitti", category:"national", language:"hi", state:"india",
+      link:"https://sahayai.in/chitti_news.html", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  business: [
+    { id:-103, title:"नमूना · सेंसेक्स में तेज़ी, IT शेयरों की लीड",
+      summary:"सेंसेक्स और निफ्टी लगातार तीसरे सत्र हरे निशान में बंद हुए, IT शेयरों की अगुआई। (नमूना लेख — असली फ़ीड बैकएंड लाइव होने पर आएगी।)",
+      source_name:"चिट्टी न्यूज़ (नमूना)", source_slug:"chitti", category:"business", language:"hi", state:"india",
+      link:"https://sahayai.in/chitti_news.html#sample-business-hi", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
+  ],
+  sports: [], tech: [], state: [], entertainment: [],
+};
+
+function _renderFallbackFeed(category) {
+  const lang = _chittiLang;
+  const pool = (lang === 'hi') ? _FALLBACK_ARTICLES_HI : _FALLBACK_ARTICLES;
+  const status = document.getElementById('feed-status');
+  const feed = document.getElementById('feed');
+  // Always show "national" welcome cards first, then category-specific samples
+  const items = (pool.national || []).concat(pool[category] || []);
+  items.forEach(a => { _ARTICLE_CACHE[a.id] = a; });
+  if (status) {
+    status.innerHTML = (lang === 'hi'
+      ? '⏳ <strong>बैकएंड गरम हो रहा है</strong> — पहली बार खुलने में 30–60 सेकंड लगते हैं (Render free dyno)। नीचे नमूना दिखा रहा हूँ।'
+      : '⏳ <strong>Backend warming up</strong> — first request takes 30–60 s on Render free dyno. Showing sample stories below.');
+    status.style.display = 'block';
+  }
+  feed.innerHTML = items.map(_articleCardHtml).join('');
+}
+
 async function loadFeed(announce) {
   const status = document.getElementById('feed-status');
   const feed = document.getElementById('feed');
@@ -546,16 +615,17 @@ async function loadFeed(announce) {
     const items = data.items || [];
     items.forEach(a => { _ARTICLE_CACHE[a.id] = a; });
     if (!items.length) {
-      status.textContent = _chittiLang === 'hi'
-        ? '📭 इस श्रेणी में अभी कोई खबर नहीं। एक मिनट में फ़ीड अद्यतन होगा।'
-        : '📭 No stories in this category yet. The feed refreshes every 30 min.';
+      // API responded but empty — show fallback content rather than a bare empty state
+      _renderFallbackFeed(cat);
       return;
     }
     status.style.display = 'none';
     feed.innerHTML = items.map(_articleCardHtml).join('');
     if (announce && data.speak_en) sp(_chittiLang === 'hi' ? data.speak_hi : data.speak_en);
   } catch (e) {
-    status.textContent = '⚠️ ' + (e.message || e);
+    // API unreachable (404 / dyno asleep / network) — graceful fallback so users
+    // see real-looking content instead of a bare error.
+    _renderFallbackFeed(cat);
   }
 }
 
@@ -604,7 +674,9 @@ async function loadFolder(folder) {
       return _articleCardHtml(a);
     }).join('');
   } catch (e) {
-    status.textContent = '⚠️ ' + (e.message || e);
+    status.innerHTML = (_chittiLang === 'hi'
+      ? '⏳ <strong>बैकएंड गरम हो रहा है</strong> — लाइव होते ही आपकी सहेजी हुई / हटाई गई खबरें यहाँ दिखेंगी।'
+      : '⏳ <strong>Backend warming up</strong> — your saved / cancelled stories will appear here once the backend is live.');
   }
 }
 
@@ -615,6 +687,21 @@ async function loadTake(id) {
   const host = document.getElementById('take-' + id);
   if (!host) return;
   host.innerHTML = '<div class="art-take"><div class="take-h">✨ ' + (_chittiLang === 'hi' ? 'चिट्टी की टेक' : "Chitti's Take") + '</div>⏳ ' + (_chittiLang === 'hi' ? 'सारांश बना रहा हूँ…' : 'Summarising…') + '</div>';
+  // Fallback articles have negative IDs and aren't in the DB
+  if (id < 0) {
+    const a = _ARTICLE_CACHE[id];
+    const lang = _chittiLang;
+    const fallbackBullets = lang === 'hi'
+      ? ['यह एक नमूना लेख है — असली फ़ीड बैकएंड के लाइव होते ही आएगी।',
+         'चिट्टी की टेक एंथ्रोपिक AI से बनती है, हर लेख का 3 लाइन का सारांश।',
+         'अगला कदम: Render पर chitti-news-api डिप्लॉय करें (5 मिनट का काम)।']
+      : ["This is a sample article — your real feed appears once the backend is live.",
+         "Chitti's Take is generated by Anthropic AI: 3 bullets per article in your chosen language.",
+         "Next step: deploy chitti-news-api on Render (~5 min in the dashboard)."];
+    host.innerHTML = '<div class="art-take"><div class="take-h">✨ ' + (lang === 'hi' ? 'चिट्टी की टेक (नमूना)' : "Chitti's Take (sample)") + '</div><ul>' + fallbackBullets.map(b => '<li>' + _esc(b) + '</li>').join('') + '</ul></div>';
+    sp(fallbackBullets.join('. '));
+    return;
+  }
   try {
     const data = await apiGet('/api/news/article/' + id + '/take?language=' + _chittiLang);
     const bullets = (data.bullets || []).map(b => '<li>' + _esc(b) + '</li>').join('');
@@ -632,6 +719,15 @@ async function loadFactcheck(id) {
   const host = document.getElementById('fact-' + id);
   if (!host) return;
   host.innerHTML = '<div class="art-fact">🛡️ ' + (_chittiLang === 'hi' ? 'क्रॉस-स्रोत जाँच…' : 'Cross-checking sources…') + '</div>';
+  if (id < 0) {
+    const lang = _chittiLang;
+    const rationale = lang === 'hi'
+      ? 'नमूना लेख — असली बैकएंड लाइव होने पर 2+ स्रोतों के बीच क्रॉस-वेरिफिकेशन चलेगा।'
+      : 'Sample article — real cross-source verification runs once the backend is live.';
+    host.innerHTML = '<div class="art-fact"><div><span class="fact-unverified">❔ ' + (lang === 'hi' ? 'अपुष्ट (नमूना)' : 'Unverified (sample)') + '</span></div><div style="margin-top:4px">' + _esc(rationale) + '</div></div>';
+    sp(rationale);
+    return;
+  }
   try {
     const data = await apiGet('/api/news/article/' + id + '/factcheck');
     const cls = 'fact-' + (data.verdict || 'unverified');
@@ -654,6 +750,10 @@ async function loadFactcheck(id) {
 }
 
 async function saveArticle(id, folder) {
+  if (id < 0) {
+    sp(_chittiLang === 'hi' ? 'नमूना लेख — असली खबरें सहेज सकेंगे जब बैकएंड लाइव होगा।' : "Sample article — you'll be able to save real stories once the backend is live.");
+    return;
+  }
   try {
     await apiPostJson('/api/news/save', { article_id: id, folder: folder });
     sp(folder === 'saved'
