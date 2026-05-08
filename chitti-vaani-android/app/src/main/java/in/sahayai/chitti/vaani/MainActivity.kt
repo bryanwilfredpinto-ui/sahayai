@@ -316,4 +316,74 @@ class ChittiNativeBridge(private val ctx: Context) {
         SafetyChecks.refuseUnlock("bypassLock called from web")
         return "REFUSED"
     }
+
+    /**
+     * triggerEmergencyAlarm — fires a loud alarm tone via STREAM_ALARM,
+     * which bypasses the device's silent / DND ringer setting. Same
+     * stream alarm clocks use.
+     *
+     * On Android, the alarm tone plays even if the user has the phone
+     * on Vibrate, on Silent, or in DND mode (with limited exceptions
+     * the user has explicitly configured).
+     *
+     * Bryan's rule: this is the wake-master mechanism, not a cop call.
+     * NEVER auto-dial 112 / 100 / 102 from this code path.
+     */
+    @JavascriptInterface
+    fun triggerEmergencyAlarm(reason: String?): String {
+        try {
+            val am = ctx.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            // Force alarm volume to max — STREAM_ALARM bypasses ringer state.
+            val maxVol = am.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM)
+            am.setStreamVolume(android.media.AudioManager.STREAM_ALARM, maxVol, 0)
+
+            // Default alarm tone — guaranteed available on every Android device.
+            val alarmUri = android.media.RingtoneManager.getDefaultUri(
+                android.media.RingtoneManager.TYPE_ALARM
+            ) ?: android.media.RingtoneManager.getDefaultUri(
+                android.media.RingtoneManager.TYPE_NOTIFICATION
+            )
+            val rt = android.media.RingtoneManager.getRingtone(ctx, alarmUri)
+            // Route through STREAM_ALARM so it really bypasses silent.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                rt.audioAttributes = android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            } else {
+                @Suppress("DEPRECATION")
+                rt.streamType = android.media.AudioManager.STREAM_ALARM
+            }
+            rt.play()
+
+            // Long-pulse vibration as a secondary signal.
+            val vib = ctx.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vib.vibrate(android.os.VibrationEffect.createWaveform(
+                    longArrayOf(0, 1000, 500, 1000, 500, 1000, 500, 1000), -1))
+            } else {
+                @Suppress("DEPRECATION")
+                vib.vibrate(longArrayOf(0, 1000, 500, 1000, 500, 1000, 500, 1000), -1)
+            }
+
+            AuditLog.append(ctx, "EMERGENCY alarm fired",
+                "STREAM_ALARM bypassing silent · reason=" + (reason ?: "unspecified"))
+            return "alarm_fired"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "EMERGENCY alarm failed", e.message ?: "?")
+            return "alarm_error:${e.message}"
+        }
+    }
+
+    /**
+     * Hard-refusal helpers for cop dialing — even if the web tier is
+     * compromised, these block any attempt to auto-dial 112/100/etc.
+     * Family-only. This is Bryan's product rule, encoded.
+     */
+    @JavascriptInterface
+    fun refuseAutoDialCops(): String {
+        AuditLog.append(ctx, "REFUSED-cop-autodial",
+            "Chitti will not auto-dial 112/100/102/108/1098/1930/139.")
+        return "REFUSED — Chitti never auto-dials cops or government emergency lines."
+    }
 }

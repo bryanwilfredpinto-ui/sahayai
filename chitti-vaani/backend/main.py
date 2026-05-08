@@ -20,6 +20,7 @@ from flask_cors import CORS
 from config import settings
 from routes.vaani import bp as vaani_bp
 from routes.email import bp as email_bp
+from routes.emergency import bp as emergency_bp
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,6 +64,7 @@ def _create_app() -> Flask:
 
     app.register_blueprint(vaani_bp)
     app.register_blueprint(email_bp)
+    app.register_blueprint(emergency_bp)
     return app
 
 

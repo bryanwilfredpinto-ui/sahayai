@@ -202,6 +202,32 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 /* "Phase 2 — Android" badge for capabilities the web can't do */
 .android-only{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;letter-spacing:.04em;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px}
+
+/* ════════ EMERGENCY OVERLAY — full-screen, max-attention ════════ */
+.eov{display:none;position:fixed;inset:0;z-index:99000;background:rgba(220,38,38,.92);color:#fff;align-items:center;justify-content:center;padding:24px;flex-direction:column;text-align:center;animation:eovPulse 1s ease-in-out infinite}
+.eov.shown{display:flex}
+@keyframes eovPulse{0%,100%{background:rgba(220,38,38,.92)}50%{background:rgba(127,29,29,.95)}}
+.eov h1{font-size:36px;margin:0 0 6px;font-weight:900;letter-spacing:.04em;line-height:1.1}
+.eov h2{font-size:18px;margin:0 0 16px;font-weight:600;opacity:.95}
+.eov .countdown{font-size:96px;font-weight:900;font-family:'JetBrains Mono','Menlo',monospace;line-height:1;text-shadow:0 4px 12px rgba(0,0,0,.4);margin:18px 0}
+.eov .why{font-size:14px;opacity:.9;max-width:520px;margin:0 0 18px;line-height:1.5;background:rgba(0,0,0,.20);padding:10px 14px;border-radius:10px}
+.eov button{background:#fff;color:#b91c1c;border:none;border-radius:14px;padding:18px 28px;font-size:18px;font-weight:900;cursor:pointer;min-height:64px;min-width:200px;margin:6px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.eov button:hover{filter:brightness(1.05)}
+.eov button.escalate{background:#fef2f2;color:#7f1d1d;border:2px solid #fff}
+.eov .hint{font-size:13px;opacity:.85;margin-top:10px;max-width:480px;line-height:1.5}
+.eov .stage{font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.75;margin-bottom:6px}
+
+/* Pair-code modal extras */
+.pair-code{font-family:'JetBrains Mono','Menlo',monospace;font-size:42px;font-weight:900;letter-spacing:.2em;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;padding:18px 22px;border-radius:14px;text-align:center;margin:8px 0;box-shadow:0 8px 24px rgba(232,106,23,.30)}
+.pair-row{display:flex;align-items:center;gap:10px;padding:10px;background:#fff8e1;border:1px solid var(--gold);border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+.pair-row .av{width:32px;height:32px;border-radius:50%;background:var(--saffron);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0}
+.pair-row .info{flex:1;min-width:140px;font-size:13px}
+.pair-row button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+
+/* Emergency-monitor toggle button */
+.em-toggle{position:fixed;left:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border:none;border-radius:999px;padding:12px 18px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(14,35,68,.45);display:flex;align-items:center;gap:8px;min-height:46px}
+.em-toggle.on{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.em-toggle.on::before{content:'';width:8px;height:8px;border-radius:50%;background:#fff;animation:micPulse 1.2s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -475,6 +501,18 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="tc-list" class="tc-list"></div>
   </section>
 
+  <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
+  <section class="section-card" aria-labelledby="pair-title">
+    <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
+    <div class="section-sub">Pair this device with your spouse / children / caregivers' Chittis. When emergency keywords fire here, their Chitti rings — even on silent. <b>Family-only relay. Chitti will never auto-call cops.</b></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-saffron" onclick="openPairIssueModal()">📤 Show my pair code</button>
+      <button class="btn-navy" onclick="openPairAcceptModal()">📥 Enter partner's code</button>
+      <button class="btn-ghost" onclick="refreshPartners()">↻ Refresh list</button>
+    </div>
+    <div id="partners-list" style="display:flex;flex-direction:column;gap:6px"></div>
+  </section>
+
   <!-- ════════ AUDIT LOG — Chitti, kal kya kya kiya? ════════ -->
   <section class="section-card" aria-labelledby="audit-title">
     <h2 class="section-title" id="audit-title"><span class="ico">📜</span> What Chitti did for you</h2>
@@ -701,7 +739,62 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 </div>
 
 <!-- SOS FAB — always present -->
-<button class="sos-fab" onclick="sosTrigger()" aria-label="Emergency — open SOS dial">🚨 SOS</button>
+<button class="sos-fab" onclick="emergencyManualTrigger()" aria-label="Emergency — wake the cascade">🚨 EMERGENCY</button>
+
+<!-- Emergency-monitor always-on toggle (small, bottom-left) -->
+<button id="em-toggle" class="em-toggle" onclick="toggleEmergencyMonitor()" aria-label="Toggle 24/7 emergency keyword listener">🛡️ 24/7 monitor</button>
+
+<!-- ════════ EMERGENCY OVERLAY — full-screen stages ════════ -->
+<div id="emergency-overlay" class="eov" role="alertdialog" aria-modal="true" aria-labelledby="eov-title">
+  <div class="stage" id="eov-stage">STAGE 1 / 3 — CONFIRM WITH MASTER</div>
+  <h1 id="eov-title">🚨 EMERGENCY DETECTED</h1>
+  <h2 id="eov-sub">Master, are you OK? Say "theek hun" or tap I'M OK.</h2>
+  <div class="countdown" id="eov-countdown">10</div>
+  <div class="why" id="eov-why"></div>
+  <div>
+    <button onclick="emergencyImOK()">✓ I'M OK / theek hun</button>
+    <button class="escalate" onclick="emergencyEscalateNow()">🚨 ESCALATE NOW</button>
+  </div>
+  <div class="hint" id="eov-hint">If no response in 10 seconds, Chitti will ring the alarm and call your spouse. Chitti will never call the police automatically.</div>
+</div>
+
+<!-- Pair issue modal -->
+<div id="pair-issue-modal" class="vmodal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>📤 Your pair code</h2>
+    <div class="desc">Read this 6-digit code aloud to your spouse / family member. They enter it in their Chitti. Code expires in 5 minutes.</div>
+    <div class="pair-code" id="pair-code-value">— — — — — —</div>
+    <div class="row-mic">
+      <button onclick="speakPairCode()">🔊 Speak code aloud</button>
+      <button onclick="issuePairCode()">↻ New code</button>
+    </div>
+    <div class="actions">
+      <button class="cancel" onclick="closeModal('pair-issue-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pair accept modal -->
+<div id="pair-accept-modal" class="vmodal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>📥 Enter partner's code</h2>
+    <div class="desc">Type the 6-digit code your partner read out, then a label so you know which Chitti this is (e.g. "Mom", "Spouse").</div>
+    <div class="field-row">
+      <div class="field">
+        <label>6-digit code</label>
+        <input id="pair-code-input" type="tel" maxlength="6" pattern="\d{6}" placeholder="000000" style="font-family:'JetBrains Mono','Menlo',monospace;font-size:24px;letter-spacing:.2em;text-align:center">
+      </div>
+      <div class="field">
+        <label>Label this partner</label>
+        <input id="pair-label" type="text" placeholder="Spouse / Mom / Beta">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="go" onclick="acceptPairCode()">✓ Pair</button>
+      <button class="cancel" onclick="closeModal('pair-accept-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ═══════════════════════════════════════════════════════════
@@ -1736,6 +1829,398 @@ async function clearLangSamples(){
 function openModal(id){ document.getElementById(id).classList.add('shown'); }
 function closeModal(id){ document.getElementById(id).classList.remove('shown'); }
 
+/* ═══════════════════════════════════════════════════════════
+   24/7 EMERGENCY CASCADE — family only, never cops
+   ─────────────────────────────────────────────────────────── */
+
+const EM_KEY = 'chitti_vaani_emergency_armed';
+const EM_KEYWORDS_RX = /\b(emergency|ambulance|hospital|accident|heart\s*attack|stroke|choking|seizure|fire|help|bleeding|unconscious|fainted|bachao|madad|dard|dil\s*ka\s*dauraa?|saans|khoon|behosh|girne|atak|aag|udavi|valippadu|sahaayam|gunde|shahajjo|hridrog)\b/i;
+
+let EM_ARMED = false;
+let EM_RECOG = null;
+let EM_RESTART_TIMER = null;
+let EM_COUNTDOWN_INT = null;
+let EM_COUNTDOWN_LEFT = 0;
+let EM_STAGE = 0;             // 0 idle · 1 confirm-master · 2 wake · 3 family-call
+let EM_REASON = '';
+let EM_AUDIO_CTX = null;
+let EM_ALARM_OSC = null;
+let EM_ALARM_GAIN = null;
+let EM_ALARM_INT  = null;
+
+/* ── Always-on keyword listener ── */
+function isEmergencyArmed(){ return localStorage.getItem(EM_KEY) === '1'; }
+function setEmergencyArmed(on){
+  localStorage.setItem(EM_KEY, on ? '1' : '0');
+  EM_ARMED = on;
+  const btn = document.getElementById('em-toggle');
+  if (btn) {
+    btn.classList.toggle('on', on);
+    btn.innerHTML = on ? '🛡️ 24/7 monitor ON' : '🛡️ 24/7 monitor';
+  }
+  if (on) startEmergencyListener(); else stopEmergencyListener();
+}
+function toggleEmergencyMonitor(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  if (isEmergencyArmed()) {
+    setEmergencyArmed(false);
+    speakText(CURRENT_LANG==='en' ? '24-7 monitor off.' : '24 घंटे का मॉनिटर बंद।', CURRENT_LANG);
+  } else {
+    setEmergencyArmed(true);
+    speakText(CURRENT_LANG==='en'
+      ? 'Twenty-four-seven emergency monitor is on. Chitti will listen for emergency words and wake you if needed. Chitti will never call the police.'
+      : 'चौबीस घंटे का इमरजेंसी मॉनिटर चालू है। Chitti आपातकाल के शब्दों पर ध्यान देगी। Chitti पुलिस को कभी नहीं बुलाएगी।',
+      CURRENT_LANG);
+  }
+}
+function startEmergencyListener(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('This browser cannot run continuous voice listening. The Android app handles this with on-device Vosk.');
+    setEmergencyArmed(false);
+    return;
+  }
+  if (EM_RECOG) return;
+  const r = new SR();
+  r.lang = bcp47(CURRENT_LANG);
+  r.interimResults = true;
+  r.continuous     = true;
+  r.maxAlternatives = 1;
+  r.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = (e.results[i][0].transcript || '');
+      if (EM_KEYWORDS_RX.test(t)) {
+        // Don't double-fire while a cascade is already in progress
+        if (EM_STAGE === 0) emergencyDetected('Heard: ' + t.trim().slice(0,160), 'monitor');
+        return;
+      }
+    }
+  };
+  r.onend = () => {
+    EM_RECOG = null;
+    // Auto-restart after 1s while armed (Web Speech often ends after silence)
+    if (isEmergencyArmed()) {
+      EM_RESTART_TIMER = setTimeout(startEmergencyListener, 1000);
+    }
+  };
+  r.onerror = () => { EM_RECOG = null; };
+  EM_RECOG = r;
+  try { r.start(); } catch(e){ /* already started */ }
+}
+function stopEmergencyListener(){
+  if (EM_RESTART_TIMER) { clearTimeout(EM_RESTART_TIMER); EM_RESTART_TIMER = null; }
+  if (EM_RECOG) { try{ EM_RECOG.stop(); }catch(e){} EM_RECOG = null; }
+}
+
+/* ── Manual trigger (the 🚨 EMERGENCY FAB) ── */
+function emergencyManualTrigger(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  emergencyDetected('Master tapped EMERGENCY button', 'manual');
+}
+
+/* ── Cascade stages ── */
+function emergencyDetected(reason, source){
+  if (EM_STAGE !== 0) return;
+  EM_STAGE = 1;
+  EM_REASON = reason;
+  // Inform paired Chittis IMMEDIATELY (in parallel with the local cascade)
+  postEmergencyTrigger(reason, source);
+  showEmergencyOverlay(1);
+  speakText(CURRENT_LANG==='en'
+    ? 'Master, emergency detected. Are you OK? Say theek hun or tap I am OK.'
+    : 'Master, आपातकाल हो सकता है। क्या आप ठीक हैं? बोलिए ठीक हूँ, या I am OK दबाइए।',
+    CURRENT_LANG);
+  // Listen for "theek hun" / "I'm OK" voice
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    const r = new SR(); r.lang = bcp47(CURRENT_LANG); r.interimResults = false; r.continuous = false;
+    r.onresult = (e) => {
+      const t = (e.results[0][0].transcript || '').toLowerCase();
+      if (/(theek\s*hun|theek|main\s*theek|i\s*am\s*ok|i\s*am\s*fine|i\'m\s*ok|all\s*ok|ok|achha|bilkul)/i.test(t)) {
+        emergencyImOK(t);
+      }
+    };
+    try { r.start(); } catch(e){}
+  }
+  startCountdown(10, () => goToStage2());
+}
+function showEmergencyOverlay(stage){
+  document.getElementById('emergency-overlay').classList.add('shown');
+  document.getElementById('eov-stage').textContent =
+    stage === 1 ? 'STAGE 1 / 3 — CONFIRM WITH MASTER' :
+    stage === 2 ? 'STAGE 2 / 3 — RINGING ALARM (silent override)' :
+                  'STAGE 3 / 3 — CALLING FAMILY';
+  document.getElementById('eov-sub').textContent =
+    stage === 1 ? (CURRENT_LANG==='en'? 'Master, are you OK? Say "theek hun" or tap I\'M OK.' : 'Master, क्या आप ठीक हैं? "ठीक हूँ" बोलिए या I AM OK दबाइए।') :
+    stage === 2 ? (CURRENT_LANG==='en'? 'Master not responding. Ringing alarm. Speak now.'   : 'Master जवाब नहीं दे रहे। अलार्म बज रहा है। बोलिए।') :
+                  (CURRENT_LANG==='en'? 'Calling family member. Stay still — help is coming.'  : 'परिवार वाले को कॉल कर रही हूँ। हिम्मत रखिए।');
+  document.getElementById('eov-why').textContent = EM_REASON || '';
+}
+function startCountdown(seconds, onZero){
+  if (EM_COUNTDOWN_INT) clearInterval(EM_COUNTDOWN_INT);
+  EM_COUNTDOWN_LEFT = seconds;
+  document.getElementById('eov-countdown').textContent = seconds;
+  EM_COUNTDOWN_INT = setInterval(() => {
+    EM_COUNTDOWN_LEFT--;
+    document.getElementById('eov-countdown').textContent = Math.max(0, EM_COUNTDOWN_LEFT);
+    if (EM_COUNTDOWN_LEFT <= 0) {
+      clearInterval(EM_COUNTDOWN_INT); EM_COUNTDOWN_INT = null;
+      onZero && onZero();
+    }
+  }, 1000);
+}
+function emergencyImOK(said){
+  if (EM_STAGE === 0) return;
+  if (EM_COUNTDOWN_INT) { clearInterval(EM_COUNTDOWN_INT); EM_COUNTDOWN_INT = null; }
+  stopAlarm();
+  document.getElementById('emergency-overlay').classList.remove('shown');
+  EM_STAGE = 0;
+  speakText(CURRENT_LANG==='en' ? 'Glad you are OK. Stand-down complete.' : 'अच्छा हुआ। सब ठीक है।', CURRENT_LANG);
+  postEmergencyCheckIn(said || 'tapped I AM OK');
+  logAction('Emergency check-in (master OK)', EM_REASON || '(manual)');
+}
+function emergencyEscalateNow(){
+  if (EM_COUNTDOWN_INT) { clearInterval(EM_COUNTDOWN_INT); EM_COUNTDOWN_INT = null; }
+  goToStage2(/*skipWait=*/true);
+}
+function goToStage2(){
+  EM_STAGE = 2;
+  showEmergencyOverlay(2);
+  startAlarm();        // Web Audio max-volume alarm — bypasses silent on Android via WebView/native bridge
+  speakText(CURRENT_LANG==='en'
+    ? 'Master is not responding. Ringing alarm. Speak now or tap I AM OK.'
+    : 'Master जवाब नहीं दे रहे। अलार्म बज रहा है। बोलिए या I AM OK दबाइए।',
+    CURRENT_LANG);
+  // Give native bridge a chance to bypass-silent on Android
+  if (hasNativeBridge() && window.ChittiNative.triggerEmergencyAlarm) {
+    try { window.ChittiNative.triggerEmergencyAlarm(EM_REASON); } catch(e){}
+  }
+  startCountdown(10, () => goToStage3());
+}
+function goToStage3(){
+  EM_STAGE = 3;
+  showEmergencyOverlay(3);
+  // Find a spouse/family entry from trusted circle
+  const circle = loadTC();
+  // Prefer entries whose 'name' or 'realname' includes 'spouse', 'wife', 'husband', 'patni', 'pati', 'mom', 'dad', 'beta', 'beti', 'son', 'daughter'
+  const familyRx = /(spouse|wife|husband|patni|pati|biwi|mom|maa|mummy|dad|papa|pita|beta|beti|son|daughter|bhai|behen|sister|brother)/i;
+  const candidates = circle.filter(c => c.phone && familyRx.test((c.name||'') + ' ' + (c.realname||'')));
+  const pick = candidates[0] || circle.find(c => c.phone) || null;
+  if (!pick) {
+    speakText(CURRENT_LANG==='en'
+      ? 'No family contact in your trusted circle. Please add one. Cannot escalate further.'
+      : 'विश्वसनीय सूची में परिवार वाला नहीं है। एक जोड़िए। आगे नहीं जा सकते।',
+      CURRENT_LANG);
+    logAction('Emergency Stage 3 — no family contact found', '');
+    return;
+  }
+  // Hard refusal — never auto-dial cops
+  const digits = (pick.phone || '').replace(/[^\d]/g, '');
+  const COP = new Set(['112','100','101','102','108','1098','1930','139']);
+  if (COP.has(digits)) {
+    speakText(CURRENT_LANG==='en'
+      ? 'Refusing to auto-dial a government emergency line. Please call cops manually if needed.'
+      : 'सरकारी इमरजेंसी नंबर अपने आप नहीं डायल करूंगी। ज़रूरत हो तो आप करें।',
+      CURRENT_LANG);
+    logAction('Emergency REFUSED auto-dial cop number', pick.phone);
+    return;
+  }
+  speakText(CURRENT_LANG==='en'
+    ? ('Calling ' + (pick.name || pick.realname || 'family') + ' now.')
+    : ('अभी ' + (pick.name || pick.realname || 'परिवार वाले') + ' को कॉल कर रही हूँ।'),
+    CURRENT_LANG);
+  // Native: direct dial via ChittiNative; web: tel: deep-link
+  if (hasNativeBridge() && window.ChittiNative.makeCall) {
+    try { window.ChittiNative.makeCall(pick.phone); } catch(e){}
+  } else {
+    window.location.href = 'tel:' + pick.phone.replace(/\s/g,'');
+  }
+  logAction('Emergency escalated to family', (pick.name || '') + ' ' + pick.phone);
+  // Leave the overlay up; user can tap I AM OK at any point.
+}
+function postEmergencyTrigger(reason, source){
+  const ut = getUserToken();
+  fetch(API_BASE + '/api/vaani/emergency/trigger', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user_token: ut, reason, source, transcript: '' }),
+  }).then(r => r.json()).then(d => {
+    logAction('Emergency relay fired', 'partners=' + (d.partners_notified||0) + ' · ' + reason);
+  }).catch(() => {});
+}
+function postEmergencyCheckIn(said){
+  const ut = getUserToken();
+  fetch(API_BASE + '/api/vaani/emergency/check-in', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user_token: ut, said }),
+  }).catch(() => {});
+}
+
+/* ── Web Audio alarm — loud, bypasses-silent-best-effort on web ── */
+function startAlarm(){
+  try {
+    if (!EM_AUDIO_CTX) EM_AUDIO_CTX = new (window.AudioContext || window.webkitAudioContext)();
+    if (EM_AUDIO_CTX.state === 'suspended') EM_AUDIO_CTX.resume();
+    const osc  = EM_AUDIO_CTX.createOscillator();
+    const gain = EM_AUDIO_CTX.createGain();
+    osc.type = 'square'; osc.frequency.value = 880;
+    gain.gain.value = 0.7;
+    osc.connect(gain); gain.connect(EM_AUDIO_CTX.destination);
+    osc.start();
+    EM_ALARM_OSC = osc; EM_ALARM_GAIN = gain;
+    let tick = 0;
+    EM_ALARM_INT = setInterval(() => {
+      tick++;
+      if (EM_ALARM_OSC) EM_ALARM_OSC.frequency.value = (tick % 2) ? 880 : 1320;
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 600]);
+    }, 600);
+  } catch(e) { /* audio context blocked — ignore */ }
+}
+function stopAlarm(){
+  if (EM_ALARM_INT) { clearInterval(EM_ALARM_INT); EM_ALARM_INT = null; }
+  if (EM_ALARM_OSC) { try{ EM_ALARM_OSC.stop(); }catch(e){} EM_ALARM_OSC = null; }
+  if (EM_ALARM_GAIN) { try{ EM_ALARM_GAIN.disconnect(); }catch(e){} EM_ALARM_GAIN = null; }
+  if (navigator.vibrate) navigator.vibrate(0);
+}
+
+/* ─── Inbound emergency from a paired Chitti — long-poll ─── */
+let EM_POLL_INT = null;
+function startEmergencyPoll(){
+  if (EM_POLL_INT) return;
+  const tick = async () => {
+    if (!consentGiven()) return;
+    const ut = getUserToken();
+    try {
+      const r = await fetch(API_BASE + '/api/vaani/emergency/poll?user_token=' + encodeURIComponent(ut));
+      const d = await r.json();
+      if (d.ok && Array.isArray(d.events)) {
+        for (const ev of d.events) {
+          if (ev.kind === 'emergency') {
+            handleInboundEmergency(ev);
+          } else if (ev.kind === 'emergency_check_in') {
+            speakText(CURRENT_LANG==='en'
+              ? 'Your partner says they are OK. Stand down.'
+              : 'आपके साथी ने कहा वे ठीक हैं। चिंता मत करें।',
+              CURRENT_LANG);
+            logAction('Inbound emergency check-in', 'partner=' + (ev.from||'?'));
+          }
+        }
+      }
+    } catch(e) { /* offline — ok */ }
+  };
+  EM_POLL_INT = setInterval(tick, 5000);
+  tick();
+}
+function handleInboundEmergency(ev){
+  // We're the spouse / family member receiving a partner's emergency relay.
+  // Ring an alarm even if our own phone is on silent — same Web Audio path.
+  EM_REASON = (CURRENT_LANG==='en'
+    ? 'Partner emergency: ' : 'साथी आपातकाल: ') + (ev.payload && ev.payload.reason || '(no detail)');
+  EM_STAGE = 2;     // skip stage 1 (we are not the master here — we are help)
+  showEmergencyOverlay(2);
+  startAlarm();
+  speakText(CURRENT_LANG==='en'
+    ? 'Partner emergency relay! Wake up. Their Chitti detected something.'
+    : 'साथी की Chitti ने आपातकाल भेजा है। उठिए। मदद चाहिए।',
+    CURRENT_LANG);
+  if (hasNativeBridge() && window.ChittiNative.triggerEmergencyAlarm) {
+    try { window.ChittiNative.triggerEmergencyAlarm('partner_relay'); } catch(e){}
+  }
+  logAction('Inbound emergency relay', 'partner=' + (ev.from||'?'));
+}
+
+/* ─── Pairing ─── */
+async function openPairIssueModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  openModal('pair-issue-modal');
+  await issuePairCode();
+}
+async function issuePairCode(){
+  const ut = getUserToken();
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/emergency/pair/issue', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: ut, label: '' }),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      const code = d.code || '------';
+      document.getElementById('pair-code-value').textContent =
+        code.split('').join(' ');
+      speakPairCode();
+    }
+  } catch(e) { alert('Could not issue code: ' + e.message); }
+}
+function speakPairCode(){
+  const code = (document.getElementById('pair-code-value').textContent || '').replace(/\s/g,'');
+  if (!code || code.includes('-')) return;
+  // Read each digit individually for clarity
+  const spelled = code.split('').join(' ... ');
+  speakText((CURRENT_LANG==='en'? 'Pair code: ' : 'पेयर कोड: ') + spelled, CURRENT_LANG);
+}
+function openPairAcceptModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('pair-code-input').value = '';
+  document.getElementById('pair-label').value = '';
+  openModal('pair-accept-modal');
+}
+async function acceptPairCode(){
+  const code  = (document.getElementById('pair-code-input').value || '').trim();
+  const label = (document.getElementById('pair-label').value || '').trim();
+  if (!/^\d{6}$/.test(code)) { alert('6-digit code required.'); return; }
+  const ut = getUserToken();
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/emergency/pair/accept', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: ut, code, label }),
+    });
+    const d = await r.json();
+    if (!d.ok) { alert('Pairing failed: ' + (d.error || 'unknown')); return; }
+    closeModal('pair-accept-modal');
+    speakText(CURRENT_LANG==='en' ? 'Paired. Emergency relay is active.' : 'जुड़ गए। इमरजेंसी रिले चालू है।', CURRENT_LANG);
+    logAction('Chitti-to-Chitti pair accepted', label || '(unnamed partner)');
+    refreshPartners();
+  } catch(e) { alert('Network: ' + e.message); }
+}
+async function refreshPartners(){
+  const el = document.getElementById('partners-list');
+  if (!el) return;
+  const ut = getUserToken();
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/emergency/pair/list?user_token=' + encodeURIComponent(ut));
+    const d = await r.json();
+    if (!d.ok) { el.innerHTML = '<div class="tc-empty">Could not load partners.</div>'; return; }
+    const ps = d.partners || [];
+    if (!ps.length) {
+      el.innerHTML = '<div class="tc-empty">No partners yet. Tap "Show my pair code" — read the code to your spouse / kid — they enter it on their Chitti.</div>';
+      return;
+    }
+    el.innerHTML = ps.map((p,i) => `
+      <div class="pair-row">
+        <div class="av">${escapeHtml((p.partner_label||'?')[0].toUpperCase())}</div>
+        <div class="info"><b>${escapeHtml(p.partner_label||'(unnamed)')}</b><div style="color:var(--muted);font-size:11px;font-family:'JetBrains Mono','Menlo',monospace">${escapeHtml((p.partner_token||'').slice(0,12))}…</div></div>
+        <button onclick="unpairPartner('${escapeJs(p.partner_token)}')">🗑️ Unpair</button>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="tc-empty">Could not reach backend.</div>';
+  }
+}
+async function unpairPartner(token){
+  if (!confirm('Unpair this Chitti? Emergency relay will stop between you two.')) return;
+  const ut = getUserToken();
+  try {
+    await fetch(API_BASE + '/api/vaani/emergency/pair/unpair', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: ut, partner_token: token }),
+    });
+    refreshPartners();
+  } catch(e){}
+}
+
 /* ── Voice grant capture (added to consent step) ── */
 function captureVoiceGrant(btn){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1780,6 +2265,11 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAudit();
   refreshLangCount();
   tagNativeBridgeIfPresent();   // re-label Android-only pills if running inside the WebView
+  // Restore the 24/7 emergency monitor if user previously armed it
+  if (isEmergencyArmed()) setEmergencyArmed(true);
+  else { const btn = document.getElementById('em-toggle'); if (btn) btn.innerHTML = '🛡️ 24/7 monitor'; }
+  refreshPartners();
+  startEmergencyPoll();
   // Pull a hand-off (e.g. from Scanner / UPI Guard) if present
   try {
     const h = sessionStorage.getItem('chitti_handoff_text');
