@@ -310,11 +310,16 @@ function _userToken(){
 // ═══════════════════════════════════════════════════════════
 // State + Language picker
 // ═══════════════════════════════════════════════════════════
+// 2-letter codes match backend `state` column values in chitti-news/backend/data/sources.json.
+// `telangana` kept as a full-word alias (2-letter "ts" would collide with Telugu lang code).
 const STATES = [
-  ['india','India (National)'], ['mp','Madhya Pradesh'], ['mh','Maharashtra'], ['ka','Karnataka'],
-  ['tn','Tamil Nadu'], ['ap','Andhra Pradesh'], ['telangana','Telangana'], ['kl','Kerala'],
-  ['gj','Gujarat'], ['rj','Rajasthan'], ['up','Uttar Pradesh'], ['br','Bihar'], ['wb','West Bengal'],
-  ['or','Odisha'], ['as','Assam'], ['pb','Punjab'], ['hr','Haryana'], ['dl','Delhi'],
+  ['india','India (National)'],
+  // ── Top-priority states with verified RSS feeds ──
+  ['up','Uttar Pradesh'], ['mh','Maharashtra'], ['br','Bihar'], ['wb','West Bengal'],
+  ['mp','Madhya Pradesh'], ['rj','Rajasthan'], ['tn','Tamil Nadu'], ['gj','Gujarat'],
+  ['ka','Karnataka'], ['kl','Kerala'], ['ap','Andhra Pradesh'], ['telangana','Telangana'],
+  // ── Other states (limited or no verified feeds yet) ──
+  ['pb','Punjab'], ['hr','Haryana'], ['dl','Delhi'], ['or','Odisha'], ['as','Assam'],
   ['jh','Jharkhand'], ['cg','Chhattisgarh'], ['uk','Uttarakhand'], ['hp','Himachal Pradesh'],
   ['jk','Jammu & Kashmir'], ['goa','Goa'], ['mn','Manipur'], ['ml','Meghalaya'], ['ng','Nagaland'],
   ['mz','Mizoram'], ['ar','Arunachal Pradesh'], ['sk','Sikkim'], ['tr','Tripura'],
