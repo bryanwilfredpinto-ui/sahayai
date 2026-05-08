@@ -713,6 +713,57 @@ def api_medupi_jan_aushadhi_stock(store_id: str, molecule: str, strength: str = 
     }
 
 
+# =====================================================================
+# PHASE 7B — AGENTIC /ask ENDPOINTS (true tool-calling loop)
+# DeepSeek tools API; agent_runtime.run_agent orchestrates the
+# LLM-pick-tool / execute / loop / synthesise cycle. One endpoint per
+# product, each scoped to its own tool set so personalities stay clean.
+# =====================================================================
+
+@app.post("/api/agent/technical/ask")
+async def api_agent_technical_ask(payload: dict = None):  # type: ignore[assignment]
+    from services import agent_runtime, agent_tools
+    q = ((payload or {}).get("question") or "").strip()
+    if not q:
+        from fastapi import HTTPException as _HE
+        raise _HE(status_code=400, detail="question is required")
+    return await agent_runtime.run_agent(
+        agent_tools.TECHNICAL_SYSTEM, q,
+        agent_tools.TECHNICAL_TOOLS, agent_tools.TECHNICAL_EXECUTORS,
+        max_steps=int((payload or {}).get("max_steps") or 6),
+    )
+
+
+@app.post("/api/agent/fundamental/ask")
+async def api_agent_fundamental_ask(payload: dict = None):  # type: ignore[assignment]
+    from services import agent_runtime, agent_tools
+    q = ((payload or {}).get("question") or "").strip()
+    if not q:
+        from fastapi import HTTPException as _HE
+        raise _HE(status_code=400, detail="question is required")
+    lens = ((payload or {}).get("lens") or "buffett").lower().strip()
+    user = f"[Investor lens: {lens}] {q}"
+    return await agent_runtime.run_agent(
+        agent_tools.FUNDAMENTAL_SYSTEM, user,
+        agent_tools.FUNDAMENTAL_TOOLS, agent_tools.FUNDAMENTAL_EXECUTORS,
+        max_steps=int((payload or {}).get("max_steps") or 6),
+    )
+
+
+@app.post("/api/agent/medupi/ask")
+async def api_agent_medupi_ask(payload: dict = None):  # type: ignore[assignment]
+    from services import agent_runtime, agent_tools
+    q = ((payload or {}).get("question") or "").strip()
+    if not q:
+        from fastapi import HTTPException as _HE
+        raise _HE(status_code=400, detail="question is required")
+    return await agent_runtime.run_agent(
+        agent_tools.MEDUPI_SYSTEM, q,
+        agent_tools.MEDUPI_TOOLS, agent_tools.MEDUPI_EXECUTORS,
+        max_steps=int((payload or {}).get("max_steps") or 6),
+    )
+
+
 # ---- Global exception handler for budget cap ----
 
 @app.exception_handler(CapExceeded)

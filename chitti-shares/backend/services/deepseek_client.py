@@ -90,5 +90,61 @@ async def chat(system: str, user: str, *, max_tokens: int = 200,
     return res["text"] if isinstance(res, dict) else res
 
 
+@tracked(provider="deepseek", operation="chat_tools")
+async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
+                          *, max_tokens: int = 800,
+                          temperature: float = 0.3,
+                          tool_choice: str = "auto") -> dict:
+    """
+    OpenAI-style messages + tools call. Returns the FULL assistant message
+    (so the caller can inspect tool_calls) plus token meta.
+
+    messages: full chat history (system + user + assistant + tool turns).
+    tools:    optional list of {type:"function", function:{name, description,
+              parameters: <jsonschema>}}.
+    Returns:  {"message": <openai-style message dict>,
+               "_meta": {"input_tokens": N, "output_tokens": M}}.
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        raise DeepSeekError("DEEPSEEK_API_KEY not configured")
+
+    headers = {
+        "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    body: dict = {
+        "model": MODEL,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    if tools:
+        body["tools"] = tools
+        body["tool_choice"] = tool_choice
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.post(DEEPSEEK_URL, headers=headers, json=body)
+            r.raise_for_status()
+            data = r.json()
+    except httpx.HTTPStatusError as e:
+        log.error("DeepSeek tools HTTP %s: %s", e.response.status_code, e.response.text[:200])
+        raise DeepSeekError(f"DeepSeek HTTP {e.response.status_code}: {e.response.text[:200]}")
+    except (httpx.RequestError, KeyError, ValueError) as e:
+        log.error("DeepSeek tools error: %s", e)
+        raise DeepSeekError(str(e))
+
+    msg = data["choices"][0]["message"]
+    usage = data.get("usage") or {}
+    return {
+        "message": msg,
+        "_meta": {
+            "input_tokens": usage.get("prompt_tokens"),
+            "output_tokens": usage.get("completion_tokens"),
+        },
+    }
+
+
 # Re-export so callers can catch CapExceeded
-__all__ = ["chat", "chat_with_tokens", "DeepSeekError", "CapExceeded"]
+__all__ = ["chat", "chat_with_tokens", "chat_with_tools",
+           "DeepSeekError", "CapExceeded"]
