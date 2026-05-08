@@ -672,14 +672,26 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
       </div>
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-card-lbl"><span>🎤 Story Mode</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">60-second audio briefing — Chitti narrates the company story like a friend explaining it over chai. Coming next session.</div></div>
-        <div class="metric-card"><div class="metric-card-lbl"><span>🎯 Risk-Fit Dial</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Conservative / Moderate / Aggressive — does this stock fit your risk persona? Tap to set your persona once.</div></div>
-        <div class="metric-card"><div class="metric-card-lbl"><span>📊 Confidence Dial</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">How confident is Chitti in its verdict? Out of 10. With reasons for any uncertainty so you can judge.</div></div>
+        <div class="metric-card" id="card-riskfit"><div class="metric-card-lbl"><span>🎯 Risk-Fit Dial</span><span class="live-badge">LIVE</span></div><div class="metric-card-val" id="rf-verdict">—</div><div class="metric-card-pe" id="rf-pe">Conservative / Moderate / Aggressive — pick your persona below; Chitti judges fit on this stock.</div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="chip rf-chip" data-persona="conservative" onclick="rfPick('conservative')" aria-label="Conservative persona">🛡️ Conservative</button>
+            <button class="chip rf-chip" data-persona="moderate" onclick="rfPick('moderate')" aria-label="Moderate persona">⚖️ Moderate</button>
+            <button class="chip rf-chip" data-persona="aggressive" onclick="rfPick('aggressive')" aria-label="Aggressive persona">🚀 Aggressive</button>
+          </div>
+          <div id="rf-checks" style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5"></div>
+        </div>
+        <div class="metric-card" id="card-confidence"><div class="metric-card-lbl"><span>📊 Confidence Dial</span><span class="live-badge">LIVE</span></div><div class="metric-card-val" id="cd-score">— / 10</div><div class="metric-card-pe" id="cd-pe">How confident is Chitti in this verdict? Composite from data completeness, history depth, and growth consistency.</div>
+          <div id="cd-reasons" style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5"></div>
+        </div>
         <div class="metric-card"><div class="metric-card-lbl"><span>💰 Affordability</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Type your budget — Chitti tells you how many shares you can buy after brokerage and STT.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>📴 Pension / SIP Fit</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Suitable for a 10-year SIP? For a retiree's portfolio? Chitti judges fit, not just rating.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>🌐 Multi-Indian-Language</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Hindi, Tamil, Bengali, Telugu, Marathi, Gujarati, Kannada audio — not just text translation, full speech.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>👨‍👩‍👧 Family Share</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Share Chitti's verdict on WhatsApp with the SEBI disclaimer pre-attached. One tap.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span>⚖️ Plain-English Compare</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">"Reliance is 5× bigger than ITC, but ITC pays 7× more dividend." Compare any two stocks in plain words.</div></div>
-        <div class="metric-card"><div class="metric-card-lbl"><span>❄️ 5D Snowflake</span><span class="chitti-special">Chitti Special</span></div><div class="metric-card-val dim">—</div><div class="metric-card-pe">Simply-Wall-St-style 5-axis radar: Value / Growth / Quality / Health / Income. One picture.</div></div>
+        <div class="metric-card" id="card-snowflake"><div class="metric-card-lbl"><span>❄️ 5D Snowflake</span><span class="live-badge">LIVE</span></div>
+          <div class="snowflake-wrap" style="margin-top:6px;background:transparent;padding:6px"><svg id="sf-svg" viewBox="-110 -110 220 220" aria-label="5D snowflake radar"></svg></div>
+          <div class="metric-card-pe" id="sf-overall">Average across Value / Growth / Quality / Health / Income.</div>
+        </div>
       </div>
     </div>
   </section>
@@ -1843,6 +1855,9 @@ async function loadFundamentals(sym) {
     loadFinancials(sym);
     loadCagr(sym);
     loadShareholding(sym);
+    loadSnowflake(sym);
+    loadConfidence(sym);
+    rfRefresh(sym);
   } catch (e) {
     if (_fundLoadingFor !== sym) return;
     const vc = document.getElementById('verdict-card');
@@ -2800,6 +2815,139 @@ loadPortfolioNews();
     if (sym) { document.getElementById('stock-input').value = sym; loadFundamentals(_normaliseSymbol(sym)); }
   } catch (e) {}
 })();
+
+// ──────────────────────────────────────────────────────────────────
+// Phase 7C — Chitti Special: 5D Snowflake / Confidence Dial / Risk-Fit
+// All three are pure-compute (services/snowflake.py); they keep working
+// when the LLM is rate-limited.
+// ──────────────────────────────────────────────────────────────────
+const SF_AXES = ['value', 'growth', 'quality', 'health', 'income'];
+const SF_LABELS = { value:'Value', growth:'Growth', quality:'Quality', health:'Health', income:'Income' };
+
+function _polar(i, n, r) {
+  // Top of circle is axis 0; clockwise.
+  const a = -Math.PI / 2 + (2 * Math.PI * i) / n;
+  return [Math.cos(a) * r, Math.sin(a) * r];
+}
+
+function _drawSnowflake(axes) {
+  const svg = document.getElementById('sf-svg');
+  if (!svg) return;
+  const R = 90;
+  const n = SF_AXES.length;
+  let html = '';
+  // Background rings (2,5,8)
+  [2, 5, 8, 10].forEach(level => {
+    const r = (R * level) / 10;
+    let pts = '';
+    for (let i = 0; i < n; i++) {
+      const [x, y] = _polar(i, n, r);
+      pts += x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    }
+    html += '<polygon points="' + pts.trim() + '" fill="none" stroke="#dcd6cb" stroke-width="0.6"/>';
+  });
+  // Axis spokes + labels
+  for (let i = 0; i < n; i++) {
+    const [x, y] = _polar(i, n, R);
+    html += '<line x1="0" y1="0" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="#cfc8bc" stroke-width="0.6"/>';
+    const [lx, ly] = _polar(i, n, R + 14);
+    const ax = SF_AXES[i];
+    const sc = (axes && axes[ax] && axes[ax].score != null) ? axes[ax].score.toFixed(1) : '—';
+    html += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="middle" font-size="9" font-family="system-ui,sans-serif" fill="#0E2344" font-weight="700">' + SF_LABELS[ax] + '</text>';
+    html += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 10).toFixed(1) + '" text-anchor="middle" font-size="8" font-family="system-ui,sans-serif" fill="#666">' + sc + '</text>';
+  }
+  // Data polygon
+  let dpts = '';
+  for (let i = 0; i < n; i++) {
+    const ax = SF_AXES[i];
+    const v = (axes && axes[ax] && axes[ax].score != null) ? axes[ax].score : 0;
+    const [x, y] = _polar(i, n, (R * v) / 10);
+    dpts += x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  }
+  html += '<polygon points="' + dpts.trim() + '" fill="rgba(232,106,23,0.30)" stroke="#E86A17" stroke-width="1.5"/>';
+  svg.innerHTML = html;
+}
+
+async function loadSnowflake(sym) {
+  if (!sym) return;
+  const overall = document.getElementById('sf-overall');
+  if (overall) overall.textContent = 'Loading…';
+  _drawSnowflake(null);
+  try {
+    const r = await fetch(API + '/api/snowflake/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    _drawSnowflake(d.axes || {});
+    if (overall) {
+      const ov = (d.overall != null) ? d.overall.toFixed(1) : '—';
+      overall.textContent = 'Overall ' + ov + ' / 10 — average across the 5 axes.';
+    }
+  } catch (e) {
+    if (overall) overall.textContent = 'Snowflake unavailable for this symbol.';
+  }
+}
+
+async function loadConfidence(sym) {
+  if (!sym) return;
+  const score = document.getElementById('cd-score');
+  const reasons = document.getElementById('cd-reasons');
+  if (score) score.textContent = '… / 10';
+  if (reasons) reasons.innerHTML = '';
+  try {
+    const r = await fetch(API + '/api/confidence/' + encodeURIComponent(sym));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (score) score.textContent = (d.score_0_10 != null ? d.score_0_10.toFixed(1) : '—') + ' / 10';
+    if (reasons && Array.isArray(d.reasons)) {
+      reasons.innerHTML = d.reasons.map(function(x){ return '• ' + _esc(x); }).join('<br/>');
+    }
+  } catch (e) {
+    if (reasons) reasons.textContent = 'Confidence unavailable.';
+  }
+}
+
+let _rfPersona = (localStorage.getItem('_chittiPersona') || 'moderate');
+function _rfHighlight() {
+  document.querySelectorAll('.rf-chip').forEach(function(b){
+    const on = b.dataset.persona === _rfPersona;
+    b.style.background   = on ? 'var(--saffron)' : '';
+    b.style.color        = on ? '#fff'           : '';
+    b.style.borderColor  = on ? 'var(--saffron)' : '';
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function rfPick(p) {
+  _rfPersona = p;
+  localStorage.setItem('_chittiPersona', p);
+  _rfHighlight();
+  if (typeof currentSymbol !== 'undefined' && currentSymbol) rfRefresh(currentSymbol);
+  else if (typeof _fundLoadingFor !== 'undefined' && _fundLoadingFor) rfRefresh(_fundLoadingFor);
+}
+async function rfRefresh(sym) {
+  _rfHighlight();
+  if (!sym) return;
+  const verdict = document.getElementById('rf-verdict');
+  const checks  = document.getElementById('rf-checks');
+  if (verdict) verdict.textContent = '…';
+  if (checks)  checks.innerHTML = '';
+  try {
+    const r = await fetch(API + '/api/risk-fit/' + encodeURIComponent(sym) + '?persona=' + encodeURIComponent(_rfPersona));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    if (verdict) {
+      const sym2 = d.verdict === 'FITS' ? '✅' : (d.verdict === 'PARTIAL FIT' ? '⚖️' : '❌');
+      verdict.textContent = sym2 + ' ' + d.verdict + ' (' + d.passed + '/' + d.total + ')';
+    }
+    if (checks && Array.isArray(d.checks)) {
+      checks.innerHTML = d.checks.map(function(c){
+        return (c.pass ? '✅' : '❌') + ' ' + _esc(c.rule);
+      }).join('<br/>');
+    }
+  } catch (e) {
+    if (verdict) verdict.textContent = '—';
+    if (checks)  checks.textContent = 'Risk-fit unavailable.';
+  }
+}
 
 }
 </script>

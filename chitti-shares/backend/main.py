@@ -714,6 +714,46 @@ def api_medupi_jan_aushadhi_stock(store_id: str, molecule: str, strength: str = 
 
 
 # =====================================================================
+# PHASE 7C — CHITTI SPECIAL DIFFERENTIATORS (compute-only, no LLM)
+# 5D Snowflake radar / Confidence Dial / Risk-Fit Dial. All derived
+# from existing screener_client + fundamentals_extras output — never
+# round-trip the LLM, so they keep working when DeepSeek is rate-limited.
+# =====================================================================
+
+@app.get("/api/snowflake/{symbol:path}")
+def api_snowflake(symbol: str):
+    from urllib.parse import unquote
+    from services import snowflake
+    from fastapi import HTTPException as _HE
+    try:
+        return snowflake.snowflake_5d(unquote(symbol))
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"snowflake compute failed: {e}")
+
+
+@app.get("/api/confidence/{symbol:path}")
+def api_confidence(symbol: str):
+    from urllib.parse import unquote
+    from services import snowflake
+    from fastapi import HTTPException as _HE
+    try:
+        return snowflake.confidence_dial(unquote(symbol))
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"confidence compute failed: {e}")
+
+
+@app.get("/api/risk-fit/{symbol:path}")
+def api_risk_fit(symbol: str, persona: str = "moderate"):
+    from urllib.parse import unquote
+    from services import snowflake
+    from fastapi import HTTPException as _HE
+    try:
+        return snowflake.risk_fit(unquote(symbol), persona=persona)
+    except Exception as e:  # noqa: BLE001
+        raise _HE(status_code=502, detail=f"risk-fit compute failed: {e}")
+
+
+# =====================================================================
 # PHASE 7B — AGENTIC /ask ENDPOINTS (true tool-calling loop)
 # DeepSeek tools API; agent_runtime.run_agent orchestrates the
 # LLM-pick-tool / execute / loop / synthesise cycle. One endpoint per
