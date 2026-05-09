@@ -357,8 +357,9 @@
         <p class="small">Chitti uses these answers ONLY to compute scheme eligibility on the fly. Nothing is sent to any server. <a href="#" id="reset-all">Reset everything</a>.</p>
         <div class="grid2">
           <div>
-            <label for="p-age">Age</label>
-            <input type="number" id="p-age" min="0" max="120" />
+            <label for="p-dob">Date of birth (dd/mm/yyyy)</label>
+            <input type="date" id="p-dob" />
+            <small class="small" id="p-age-derived"></small>
           </div>
           <div>
             <label for="p-gender">Gender</label>
@@ -529,7 +530,7 @@
         <h2>👤 Quick profile (optional · stored on this device only)</h2>
         <p class="small">Used <strong>only</strong> to compute scheme eligibility. Skip and Chitti will simply ask one question at a time later.</p>
         <div class="grid2">
-          <div><label for="ob-age">Age</label><input type="number" id="ob-age" min="0" max="120" /></div>
+          <div><label for="ob-dob">Date of birth (dd/mm/yyyy)</label><input type="date" id="ob-dob" /></div>
           <div><label for="ob-gender">Gender</label><select id="ob-gender"><option value="">—</option><option value="f">Female</option><option value="m">Male</option><option value="other">Other</option></select></div>
           <div><label for="ob-state">State</label><select id="ob-state"></select></div>
           <div><label for="ob-rural">Residence</label><select id="ob-rural"><option value="">—</option><option value="rural">Rural</option><option value="urban">Urban</option></select></div>
@@ -607,6 +608,23 @@ function el(tag, attrs={}, ...kids){
 }
 function ls_get(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){return def;} }
 function ls_set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+/* DOB helpers — store + transmit dd/mm/yyyy (Indian format), use HTML5
+   <input type="date"> for the picker (yyyy-mm-dd is its native value). */
+function isoToDDMMYYYY(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return (d&&m&&y)?`${d}/${m}/${y}`:""; }
+function ddmmyyyyToISO(s){ if(!s) return ""; const m=s.match(/^(\d{2})[\/\-.](\d{2})[\/\-.](\d{4})$/); return m?`${m[3]}-${m[2]}-${m[1]}`:""; }
+function dobToAge(ddmmyyyy){
+  if (!ddmmyyyy) return null;
+  const m = ddmmyyyy.match(/^(\d{2})[\/\-.](\d{2})[\/\-.](\d{4})$/);
+  if (!m) return null;
+  const [_, dd, mm, yyyy] = m;
+  const d = new Date(+yyyy, +mm-1, +dd);
+  if (isNaN(d.getTime()) || d.getDate()!=+dd || d.getMonth()!=+mm-1) return null;
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  if (today.getMonth() < d.getMonth() || (today.getMonth()===d.getMonth() && today.getDate() < d.getDate())) age--;
+  return (age >= 0 && age <= 150) ? age : null;
+}
 
 /* Plugins state */
 const PLUGINS = ls_get(LS.PLUGINS, {readaloud:true, captions:true, voicein:true, icons:true, signlang:true, callsupport:true});
@@ -711,7 +729,14 @@ $("ob-accept").addEventListener("click", () => {
   ls_set(LS.PLUGINS, PLUGINS); applyPlugins();
   // Save profile if filled
   const prof = ls_get(LS.PROFILE, {});
-  if ($("ob-age").value) prof.age = parseInt($("ob-age").value,10);
+  if ($("ob-dob").value) {
+    const dob = isoToDDMMYYYY($("ob-dob").value);
+    if (dob) {
+      prof.dob_ddmmyyyy = dob;
+      const a = dobToAge(dob);
+      if (a != null) prof.age = a;
+    }
+  }
   if ($("ob-gender").value) prof.gender = $("ob-gender").value;
   if ($("ob-state").value) prof.state_code = $("ob-state").value;
   if ($("ob-rural").value) prof.rural_urban = $("ob-rural").value;
@@ -728,10 +753,23 @@ $("ob-accept").addEventListener("click", () => {
 if (!ls_get(LS.ONBOARDED, false)) showOnboarding();
 
 /* ── Profile ── */
-function getProfile(){ return ls_get(LS.PROFILE, {}); }
+/* The canonical profile shape sent to the backend is:
+     { dob_ddmmyyyy:"15/06/1965", age:60, gender, income_annual_inr, ... }
+   The backend re-derives age from dob_ddmmyyyy (so a stored profile never
+   goes stale), but we send the derived age too for backwards compat. */
+function getProfile(){
+  const p = ls_get(LS.PROFILE, {});
+  if (p.dob_ddmmyyyy && p.age == null) p.age = dobToAge(p.dob_ddmmyyyy);
+  return p;
+}
+function showDerivedAge(){
+  const dob = isoToDDMMYYYY($("p-dob").value);
+  const age = dobToAge(dob);
+  $("p-age-derived").textContent = age != null ? `→ ${age} years` : (dob ? "→ check the date" : "");
+}
 function loadProfileIntoForm(){
   const p = getProfile();
-  if (p.age) $("p-age").value = p.age;
+  if (p.dob_ddmmyyyy) $("p-dob").value = ddmmyyyyToISO(p.dob_ddmmyyyy);
   if (p.gender) $("p-gender").value = p.gender;
   if (p.income_annual_inr) $("p-income").value = p.income_annual_inr;
   if (p.state_code) $("p-state").value = p.state_code;
@@ -742,12 +780,19 @@ function loadProfileIntoForm(){
   if (p.bpl != null) $("p-bpl").value = p.bpl?"true":"false";
   if (p.secc_deprived != null) $("p-secc").value = p.secc_deprived?"true":"false";
   if (p.disability != null) $("p-disability").value = p.disability?"true":"false";
+  showDerivedAge();
 }
 loadProfileIntoForm();
+$("p-dob").addEventListener("change", showDerivedAge);
 $("profile-save").addEventListener("click", () => {
   const p = {};
   const v = id => $(id).value.trim();
-  if (v("p-age")) p.age = parseInt(v("p-age"),10);
+  const dob = isoToDDMMYYYY(v("p-dob"));
+  if (dob) {
+    p.dob_ddmmyyyy = dob;
+    const a = dobToAge(dob);
+    if (a != null) p.age = a;
+  }
   if (v("p-gender")) p.gender = v("p-gender");
   if (v("p-income")) p.income_annual_inr = parseInt(v("p-income"),10);
   if (v("p-state")) p.state_code = v("p-state");
@@ -990,7 +1035,7 @@ function buildAndAskNext(){
   // Field plan
   const plan = [
     {key:"name", q:"What is your full name as on Aadhaar?"},
-    {key:"age", q:"What is your age?", from:"age"},
+    {key:"dob_ddmmyyyy", q:"What is your date of birth? Please say day, month and year — for example fifteen six nineteen sixty five.", from:"dob_ddmmyyyy"},
     {key:"gender", q:"What is your gender? Female, male, or other?", from:"gender"},
     {key:"state", q:"Which state do you live in?", from:"state_code"},
     {key:"rural_urban", q:"Do you live in a rural area or urban area?", from:"rural_urban"},

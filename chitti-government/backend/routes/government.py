@@ -37,7 +37,7 @@ Route map (all prefixed /api/government):
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from functools import wraps
 
 from flask import Blueprint, abort, jsonify, request
@@ -88,6 +88,44 @@ def _float_arg(name: str, default=None) -> float | None:
         return float(raw)
     except ValueError:
         abort(400, description=f"{name} must be a number")
+
+
+def _dob_to_age(dob_str: str | None) -> int | None:
+    """Parse a dd/mm/yyyy (or ddmmyyyy) string and return integer age in years.
+    Returns None on any parse failure — the rule engine treats `age=None`
+    as 'unknown', which is the right behaviour for malformed input.
+    """
+    if not dob_str:
+        return None
+    s = dob_str.strip()
+    # Accept dd/mm/yyyy, dd-mm-yyyy, dd.mm.yyyy, ddmmyyyy (8 digits)
+    digits = "".join(ch for ch in s if ch.isdigit())
+    if len(digits) != 8:
+        return None
+    try:
+        dd = int(digits[0:2])
+        mm = int(digits[2:4])
+        yyyy = int(digits[4:8])
+        dob = date(yyyy, mm, dd)
+    except (ValueError, TypeError):
+        return None
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    if age < 0 or age > 150:
+        return None
+    return age
+
+
+def _normalise_profile(profile: dict) -> dict:
+    """Derive `age` from `dob_ddmmyyyy` when the caller sends DOB only.
+    Mutates a shallow copy so callers can rely on `age` being set.
+    """
+    p = dict(profile or {})
+    if p.get("age") is None:
+        derived = _dob_to_age(p.get("dob_ddmmyyyy"))
+        if derived is not None:
+            p["age"] = derived
+    return p
 
 
 def _int_arg(name: str, default=None, min_val=None, max_val=None) -> int | None:
@@ -216,6 +254,7 @@ def eligibility_check(db):
     sch = government_database.get_by_slug(db, slug)
     if sch is None:
         abort(404, description=f"scheme not found: {slug}")
+    profile = _normalise_profile(profile)
     verdict = government_eligibility.evaluate(sch, profile)
     voice = government_deepseek.explain(verdict, language=language)
     return jsonify({
@@ -232,6 +271,7 @@ def eligibility_scan(db):
     profile = body.get("profile") or {}
     if not isinstance(profile, dict):
         abort(400, description="profile must be an object")
+    profile = _normalise_profile(profile)
     state = (profile.get("state_code") or "").strip().upper() or None
     rows = government_database.list_schemes(db, state_code=state, limit=500)
     results = government_eligibility.evaluate_many(rows, profile)
