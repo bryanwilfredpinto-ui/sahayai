@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="hi" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chitti Hindi · हिन्दी</title>
+  <meta name="description" content="Chitti in Hindi. Voice in, voice out. Multi-language. Honest about what works." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🪔%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0f172a; --card: #111827; --ink: #e5e7eb; --ink-soft: #94a3b8;
+      --saffron: #f59e0b; --green: #16a34a; --amber: #eab308; --red: #ef4444;
+      --line: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+           font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Bengali", "Noto Sans Devanagari", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Malayalam", "Noto Sans Gujarati", "Noto Sans Oriya", "Noto Sans Gurmukhi", "Noto Sans Meetei Mayek", "Noto Sans Ol Chiki", sans-serif;
+           line-height: 1.55; }
+    header { padding: 18px 20px; background: linear-gradient(180deg,#1f2937 0,#0f172a 100%); border-bottom: 1px solid var(--line); }
+    header h1 { margin: 0; font-size: 22px; }
+    header .sub { margin-top: 4px; color: var(--ink-soft); font-size: 14px; }
+    main { max-width: 720px; margin: 0 auto; padding: 18px 20px 60px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 14px 0; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; }
+    .pill.ok { background: #14532d; color: #bbf7d0; }
+    .pill.warn { background: #78350f; color: #fde68a; }
+    .pill.bad { background: #7f1d1d; color: #fecaca; }
+    .pill.dim { background: #1f2937; color: #94a3b8; }
+    textarea { width: 100%; min-height: 96px; padding: 10px; background: #0b1220; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font-size: 16px; }
+    button { font-size: 16px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line); background: #1e293b; color: var(--ink); cursor: pointer; margin: 6px 6px 0 0; }
+    button.primary { background: var(--saffron); color: #1f2937; font-weight: 700; border-color: var(--saffron); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .four-user { display: flex; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--ink-soft); }
+    .four-user span { background: #0b1220; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .muted { color: var(--ink-soft); font-size: 13px; }
+    .donor { background: #422006; border: 1px solid #92400e; padding: 12px; border-radius: 8px; }
+    .footer { color: var(--ink-soft); font-size: 12px; margin-top: 24px; }
+    a { color: #93c5fd; }
+    [lang="ur"], [lang="ks"], [lang="sd"] { direction: rtl; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🪔 Chitti Hindi · <span lang="hi">हिन्दी</span></h1>
+    <div class="sub" lang="hi">आपकी मातृभाषा, आपको लौटाई गई।</div>
+  </header>
+
+  <main>
+    <!-- Honest status banner — populated from /api/voice/status/<lang>. Never hardcoded. -->
+    <div class="card" id="banner">
+      <div class="row">
+        <span class="pill dim" id="status-pill">स्थिति जाँची जा रही है…</span>
+        <span class="muted" id="status-msg">checking honest status…</span>
+      </div>
+    </div>
+
+    <!-- Four-user accessibility row (per CLAUDE.md memory) -->
+    <div class="card four-user" aria-label="Built for blind, deaf, mute, illiterate users">
+      <span>👁️‍🗨️ blind</span>
+      <span>🦻 deaf</span>
+      <span>🤫 mute</span>
+      <span>📖 illiterate</span>
+    </div>
+
+    
+
+    
+    <div class="card">
+      <label for="speak-text" lang="hi">जो कहना है वो लिखिए</label>
+      <textarea id="speak-text" placeholder="जो कहना है वो लिखिए"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="speak-btn" class="primary" aria-label="Speak in Hindi">🔊 <span lang="hi">सुनिए</span></button>
+        <span class="muted">Tier A · Bhashini + AI4Bharat support this language.</span>
+      </div>
+    </div>
+
+
+    <div class="card">
+      <button id="donate-btn" aria-label="Donate your voice for Hindi">🎙️ अपनी आवाज़ दान करें</button>
+      <button id="download-btn" aria-label="Download Hindi voice model" disabled title="Phase 10 — on-device model packaging">⬇️ आवाज़ मॉडल डाउनलोड करें</button>
+      <div class="muted" style="margin-top:8px">
+        Other Chitti products in हिन्दी:
+        <a href="chitti_vaani.html?lang=hi">Vaani</a> ·
+        <a href="chitti_news.html?lang=hi">News</a> ·
+        <a href="chitti_medupi.html?lang=hi">MedUPI</a> ·
+        <a href="chitti_complete_technical.html?lang=hi">Shares</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      Spec: <a href="CHITTI_VOICE_FACTORY_MASTER_SPEC.md">CHITTI_VOICE_FACTORY_MASTER_SPEC.md</a> ·
+      Public ledger: <a href="chitti_voice_factory.html">chitti_voice_factory.html</a> ·
+      Tier: <strong>A</strong>
+    </div>
+  </main>
+
+  <script src="chitti_disclaimer.js"></script>
+  <script>
+    (function () {
+      const LANG = "hi";
+      const VOICE_LANG = "hi-IN";
+      const TIER = "A";
+      const API = (window.CHITTI_VOICE_FACTORY_API || "https://chitti-voice-factory.onrender.com");
+
+      const $pill = document.getElementById("status-pill");
+      const $msg  = document.getElementById("status-msg");
+
+      function setPill(verdict, text) {
+        $pill.className = "pill " + (verdict === "ok" ? "ok"
+                                  : verdict === "warn" ? "warn"
+                                  : verdict === "bad" ? "bad" : "dim");
+        $pill.textContent = text;
+      }
+
+      async function refreshBanner() {
+        try {
+          const r = await fetch(API + "/api/voice/honest-banner/" + LANG);
+          const j = await r.json();
+          if (j.verdict === "ok")            { setPill("ok", "live · " + (j.supplier || "")); $msg.textContent = j.english || ""; }
+          else if (j.verdict === "donor_required") { setPill("warn", "donor required"); $msg.textContent = j.english || j.native || ""; }
+          else                                { setPill("dim", "जाँच में है"); $msg.textContent = j.english || "Tap Speak to test."; }
+        } catch (e) {
+          setPill("bad", "offline");
+          $msg.textContent = "Voice Factory backend unreachable. Falling back to your device's built-in voice.";
+        }
+      }
+      refreshBanner();
+      setInterval(refreshBanner, 60000);
+
+      const $speak = document.getElementById("speak-btn");
+      const $text  = document.getElementById("speak-text");
+      if ($speak && $text) {
+        $speak.addEventListener("click", async () => {
+          const text = ($text.value || "").trim();
+          if (!text) return;
+          $speak.disabled = true;
+          try {
+            const r = await fetch(API + "/api/voice/speak", {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({ text, language: LANG }),
+            });
+            const j = await r.json();
+            if (j.ok && j.client_directive === "speech_synthesis") {
+              const u = new SpeechSynthesisUtterance(j.text);
+              u.lang = j.voice_lang_code || VOICE_LANG;
+              window.speechSynthesis.speak(u);
+              $msg.textContent = j.disclaimer || "";
+              refreshBanner();
+            } else if (j.ok && j.audio_url) {
+              new Audio(j.audio_url).play();
+              $msg.textContent = j.disclaimer || "";
+              refreshBanner();
+            } else {
+              $msg.textContent = (j.human_message_en || j.error_message || "Voice unavailable for this language.");
+            }
+          } catch (e) {
+            // Last-resort client-side fallback (Web Speech API, zero cost)
+            try {
+              const u = new SpeechSynthesisUtterance(text);
+              u.lang = VOICE_LANG;
+              window.speechSynthesis.speak(u);
+              $msg.textContent = "Voice via your device (backend unreachable). Not a real person.";
+            } catch (_) {
+              $msg.textContent = "Voice unavailable. Sorry.";
+            }
+          } finally {
+            $speak.disabled = false;
+          }
+        });
+      }
+
+      const $donate = document.getElementById("donate-btn");
+      if ($donate) {
+        $donate.addEventListener("click", () => {
+          window.location.href = "voice_donor.html?lang=" + LANG;
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

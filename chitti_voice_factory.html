@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chitti Voice Factory · Honest Status</title>
+  <meta name="description" content="Public honest-status ledger for Chitti voice — 24 Indian languages, 4 suppliers. No fake data." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🪔%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --ink:#e5e7eb; --soft:#94a3b8; --line:#1f2937; --saffron:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", sans-serif; line-height: 1.5; }
+    header { padding: 18px 20px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#1f2937 0,#0f172a 100%); }
+    header h1 { margin: 0; font-size: 22px; }
+    header .sub { color: var(--soft); margin-top: 4px; font-size: 14px; }
+    main { max-width: 980px; margin: 0 auto; padding: 16px 20px 60px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: var(--soft); font-weight: 600; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+    .pill.ok { background: #14532d; color: #bbf7d0; }
+    .pill.bad { background: #7f1d1d; color: #fecaca; }
+    .pill.warn { background: #78350f; color: #fde68a; }
+    .pill.dim { background: #1f2937; color: #94a3b8; }
+    .tier { padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; letter-spacing: .04em; }
+    .tier.A { background: #064e3b; color: #6ee7b7; }
+    .tier.B { background: #1e3a8a; color: #bfdbfe; }
+    .tier.C { background: #4c1d95; color: #ddd6fe; }
+    a { color: #93c5fd; }
+    .muted { color: var(--soft); font-size: 13px; }
+    .summary { display: flex; gap: 16px; flex-wrap: wrap; }
+    .summary div { background: #0b1220; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); min-width: 130px; }
+    .summary strong { display: block; font-size: 22px; }
+    code { background: #0b1220; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🪔 Chitti Voice Factory · Honest Status</h1>
+    <div class="sub">Live ledger from <span id="api-base">checking…</span> · No fake data — every "available" claim is backed by a real synthesis row in the last 24 h.</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="summary">
+        <div><span class="muted">Languages</span><strong id="count-total">–</strong></div>
+        <div><span class="muted">Available now</span><strong id="count-ok">–</strong></div>
+        <div><span class="muted">Tier A primaries</span><strong id="count-tier-a">–</strong></div>
+        <div><span class="muted">Tier B cousins</span><strong id="count-tier-b">–</strong></div>
+        <div><span class="muted">Tier C (donor needed)</span><strong id="count-tier-c">–</strong></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Suppliers (cascade order)</strong>
+      <div class="muted" style="margin-top:6px">First enabled supplier that supports a language wins. Mock supplier is named <code>mock_bhashini</code> — never silently labelled <code>bhashini</code>.</div>
+      <div id="suppliers" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Language</th>
+            <th>Status</th>
+            <th>Supplier (last)</th>
+            <th>Avg latency 24 h</th>
+            <th>Calls / OKs 24 h</th>
+            <th>Page</th>
+          </tr>
+        </thead>
+        <tbody id="lang-rows"><tr><td colspan="7" class="muted">loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <strong>Recent ledger rows (anonymised — sha256 of text only)</strong>
+      <div class="muted" style="margin-top:6px">Spec §5: text is hashed before logging. We never store user-typed strings.</div>
+      <table style="margin-top:10px">
+        <thead>
+          <tr><th>id</th><th>lang</th><th>supplier</th><th>chars</th><th>bytes_out</th><th>latency_ms</th><th>ok</th><th>err</th><th>at</th></tr>
+        </thead>
+        <tbody id="ledger-rows"><tr><td colspan="9" class="muted">loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <p class="muted">Spec: <a href="CHITTI_VOICE_FACTORY_MASTER_SPEC.md">CHITTI_VOICE_FACTORY_MASTER_SPEC.md</a> · Suppliers: on_device → bhashini → mock_bhashini → ai4bharat → sarvam.</p>
+  </main>
+
+  <script>
+    const API = window.CHITTI_VOICE_FACTORY_API || "https://chitti-voice-factory.onrender.com";
+    document.getElementById("api-base").textContent = API;
+
+    function pillFor(row) {
+      if (row.tier === "C") return '<span class="pill warn">donor required</span>';
+      if (row.available)    return '<span class="pill ok">available</span>';
+      return '<span class="pill dim">unverified</span>';
+    }
+
+    async function loadStatus() {
+      try {
+        const r = await fetch(API + "/api/voice/status");
+        const j = await r.json();
+        document.getElementById("count-total").textContent = j.count;
+        let oks = 0, a = 0, b = 0, c = 0;
+        const tbody = document.getElementById("lang-rows");
+        tbody.innerHTML = "";
+        const codes = Object.keys(j.languages);
+        codes.sort((x, y) => {
+          const tx = j.languages[x].tier, ty = j.languages[y].tier;
+          if (tx !== ty) return tx.localeCompare(ty);
+          return j.languages[x].name_en.localeCompare(j.languages[y].name_en);
+        });
+        for (const code of codes) {
+          const row = j.languages[code];
+          if (row.available) oks++;
+          if (row.tier === "A") a++; else if (row.tier === "B") b++; else if (row.tier === "C") c++;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><span class="tier ${row.tier}">${row.tier}</span></td>
+            <td>${row.name_en} <span class="muted">· ${row.name_native}</span></td>
+            <td>${pillFor(row)}</td>
+            <td>${row.supplier ? '<code>' + row.supplier + '</code>' : '<span class="muted">—</span>'}</td>
+            <td>${row.avg_latency_ms_24h !== null ? row.avg_latency_ms_24h + ' ms' : '<span class="muted">—</span>'}</td>
+            <td>${row.calls_24h} / ${row.ok_24h}</td>
+            <td><a href="chitti_${code}.html">chitti_${code}.html</a></td>
+          `;
+          tbody.appendChild(tr);
+        }
+        document.getElementById("count-ok").textContent = oks;
+        document.getElementById("count-tier-a").textContent = a;
+        document.getElementById("count-tier-b").textContent = b;
+        document.getElementById("count-tier-c").textContent = c;
+
+        const sup = document.getElementById("suppliers");
+        sup.innerHTML = j.suppliers.map(s =>
+          `<span class="pill ${s.enabled ? 'ok' : 'dim'}" style="margin-right:6px"><code>${s.name}</code> ${s.enabled ? 'enabled' : 'disabled'}</span>`
+        ).join("");
+      } catch (e) {
+        document.getElementById("lang-rows").innerHTML = `<tr><td colspan="7" class="muted">Backend offline at ${API}</td></tr>`;
+      }
+    }
+
+    async function loadLedger() {
+      try {
+        const r = await fetch(API + "/api/voice/ledger?limit=50");
+        const j = await r.json();
+        const tbody = document.getElementById("ledger-rows");
+        if (!j.rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="muted">no calls yet</td></tr>'; return; }
+        tbody.innerHTML = j.rows.map(r => `
+          <tr>
+            <td>${r.id}</td>
+            <td>${r.language_code}</td>
+            <td><code>${r.supplier}</code></td>
+            <td>${r.text_chars}</td>
+            <td>${r.bytes_out ?? '—'}</td>
+            <td>${r.latency_ms ?? '—'}</td>
+            <td>${r.ok ? '✓' : '✗'}</td>
+            <td>${r.error_code || ''}</td>
+            <td class="muted">${r.created_at}</td>
+          </tr>
+        `).join("");
+      } catch (e) {
+        document.getElementById("ledger-rows").innerHTML = '<tr><td colspan="9" class="muted">backend offline</td></tr>';
+      }
+    }
+
+    loadStatus(); loadLedger();
+    setInterval(loadStatus, 30000);
+    setInterval(loadLedger, 30000);
+  </script>
+</body>
+</html>
