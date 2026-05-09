@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Chitti Voice Factory — Admin Dashboard</title>
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#fff; --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.45}
+
+.container{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+.sidebar{background:var(--navy);color:#fff;padding:24px 18px;overflow:auto;position:sticky;top:0;height:100vh}
+.sidebar h2{font-size:16px;font-weight:900;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar a{display:block;padding:8px 12px;margin-bottom:4px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px;transition:background .15s}
+.sidebar a:hover{background:rgba(232,106,23,.2)}
+.sidebar a.active{background:var(--saffron);color:var(--navy);font-weight:700}
+
+main{padding:24px}
+h1{font-size:24px;font-weight:900;margin:0 0 12px}
+.subtitle{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+.table-container{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f8f4ee;padding:12px;text-align:left;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+td{padding:12px;border-bottom:1px solid var(--border);font-size:13px}
+tr:hover{background:rgba(232,106,23,.02)}
+
+.btn{display:inline-block;padding:8px 14px;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--saffron);color:#fff}
+.btn-primary:hover{background:#d94f0a;box-shadow:0 4px 12px rgba(232,106,23,.3)}
+.btn-small{padding:4px 8px;font-size:11px}
+
+.status-badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase}
+.status-pending{background:rgba(212,175,55,.15);color:#7c2d12;border:1px solid rgba(212,175,55,.3)}
+.status-winner{background:rgba(22,163,74,.15);color:#15803d;border:1px solid rgba(22,163,74,.3)}
+
+.section{margin-bottom:32px}
+.tab-nav{display:flex;gap:8px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-button{padding:12px 16px;border:none;background:none;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab-button.active{color:var(--saffron);border-bottom-color:var(--saffron)}
+
+#empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+#empty-state-icon{font-size:48px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="sidebar">
+    <h2>Admin</h2>
+    <a href="#" data-tab="submissions" class="tab-button active">📨 Submissions</a>
+    <a href="#" data-tab="winners" class="tab-button">🏆 Hall of Fame</a>
+    <a href="#" data-tab="synthesis-map" class="tab-button">🗺️ Voice Map</a>
+    <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,.1)">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px">Logged in:</div>
+      <div id="user-name" style="font-size:13px;font-weight:700">Loading...</div>
+      <button onclick="logout()" class="btn btn-small" style="margin-top:12px;background:rgba(232,106,23,.2);color:#fff;width:100%">Logout</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- Submissions Tab -->
+    <div id="submissions-tab" class="section" style="display:none">
+      <h1>Voice Submissions</h1>
+      <p class="subtitle">Pending submissions waiting for admin confirmation</p>
+      <div class="table-container">
+        <table id="submissions-table">
+          <thead>
+            <tr>
+              <th>Donor</th>
+              <th>Language</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-body">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Winners Tab -->
+    <div id="winners-tab" class="section" style="display:none">
+      <h1>Hall of Fame Winners</h1>
+      <p class="subtitle">Permanent winners (immutable, can_delete=false)</p>
+      <div class="table-container">
+        <table id="winners-table">
+          <thead>
+            <tr>
+              <th>Donor Name</th>
+              <th>Language</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Confirmed</th>
+            </tr>
+          </thead>
+          <tbody id="winners-body">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Synthesis Map Tab -->
+    <div id="synthesis-map-tab" class="section" style="display:none">
+      <h1>Voice Synthesis Map</h1>
+      <p class="subtitle">Current language → supplier mappings</p>
+      <div class="table-container">
+        <table id="synthesis-map-table">
+          <thead>
+            <tr>
+              <th>Language</th>
+              <th>Supplier Type</th>
+              <th>Winner ID</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="synthesis-map-body">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="empty-state" style="display:none">
+      <div id="empty-state-icon">📭</div>
+      <p>No data available</p>
+    </div>
+  </main>
+</div>
+
+<script>
+let currentTab = 'submissions';
+
+function showTab(tab) {
+  currentTab = tab;
+  document.getElementById('submissions-tab').style.display = tab === 'submissions' ? 'block' : 'none';
+  document.getElementById('winners-tab').style.display = tab === 'winners' ? 'block' : 'none';
+  document.getElementById('synthesis-map-tab').style.display = tab === 'synthesis-map' ? 'block' : 'none';
+
+  document.querySelectorAll('.tab-button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  if (tab === 'submissions') loadSubmissions();
+  if (tab === 'winners') loadWinners();
+  if (tab === 'synthesis-map') loadSynthesisMap();
+}
+
+document.querySelectorAll('.tab-button').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    showTab(btn.dataset.tab);
+  });
+});
+
+async function loadSubmissions() {
+  try {
+    const res = await fetch('/admin/submissions');
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById('submissions-body').innerHTML = '<tr><td colspan="6" style="color:var(--red)">Failed to load submissions</td></tr>';
+      return;
+    }
+
+    document.getElementById('submissions-body').innerHTML = data.submissions.map(s => `
+      <tr>
+        <td>${s.donor_name}</td>
+        <td><strong>${s.language_code.toUpperCase()}</strong></td>
+        <td>${s.donor_email}</td>
+        <td><span class="status-badge ${s.is_winner ? 'status-winner' : 'status-pending'}">${s.is_winner ? 'Winner' : 'Pending'}</span></td>
+        <td>${new Date(s.created_at).toLocaleDateString()}</td>
+        <td>${s.is_winner ? '✓' : `<button class="btn btn-primary btn-small" onclick="confirmWinner('${s.submission_id}')">Confirm</button>`}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load submissions:', e);
+  }
+}
+
+async function loadWinners() {
+  try {
+    const res = await fetch('/admin/winners');
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById('winners-body').innerHTML = '<tr><td colspan="5" style="color:var(--red)">Failed to load winners</td></tr>';
+      return;
+    }
+
+    document.getElementById('winners-body').innerHTML = data.winners.map(w => `
+      <tr>
+        <td>${w.donor_name}</td>
+        <td><strong>${w.language_code.toUpperCase()}</strong></td>
+        <td>${w.donor_email}</td>
+        <td><span class="status-badge status-winner">✓ Permanent</span></td>
+        <td>${new Date(w.created_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load winners:', e);
+  }
+}
+
+async function loadSynthesisMap() {
+  try {
+    const res = await fetch('/admin/voice-synthesis-map');
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById('synthesis-map-body').innerHTML = '<tr><td colspan="4" style="color:var(--red)">Failed to load synthesis map</td></tr>';
+      return;
+    }
+
+    const map = data.synthesis_map;
+    document.getElementById('synthesis-map-body').innerHTML = Object.entries(map).map(([lang, m]) => `
+      <tr>
+        <td><strong>${lang.toUpperCase()}</strong></td>
+        <td>${m.supplier_type}</td>
+        <td><code>${m.winner_id ? m.winner_id.substring(0, 8) + '...' : 'N/A'}</code></td>
+        <td>${new Date(m.updated_at).toLocaleDateString()}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load synthesis map:', e);
+  }
+}
+
+async function confirmWinner(submissionId) {
+  if (!confirm('Confirm this voice as the permanent Hall of Fame winner? (This cannot be undone)')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/admin/submissions/${submissionId}/confirm-winner`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ donor_photo_url: null }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      alert('Winner confirmed! ✓');
+      loadSubmissions();
+    } else {
+      alert('Failed to confirm winner: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function logout() {
+  if (confirm('Log out?')) {
+    sessionStorage.clear();
+    window.location.href = '/';
+  }
+}
+
+// Load user info
+document.getElementById('user-name').textContent = sessionStorage.getItem('user_name') || 'Admin';
+
+// Initial load
+showTab('submissions');
+</script>
+</body>
+</html>

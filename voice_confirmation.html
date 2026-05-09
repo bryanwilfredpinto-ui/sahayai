@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submission Confirmed · Chitti Voice</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #111827; --ink: #e5e7eb; --ink-soft: #94a3b8;
+      --saffron: #f59e0b; --green: #16a34a; --red: #ef4444; --line: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+           font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { padding: 24px 20px; background: linear-gradient(180deg,#1f2937 0,#0f172a 100%);
+             border-bottom: 1px solid var(--line); text-align: center; }
+    header h1 { margin: 0; font-size: 32px; }
+    main { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 24px; margin: 20px 0; text-align: center; }
+    .status-icon { font-size: 64px; margin-bottom: 16px; }
+    .card h2 { margin-top: 0; font-size: 24px; }
+    .card p { margin: 12px 0; line-height: 1.6; }
+    .submission-id { background: #0b1220; padding: 12px; border-radius: 6px;
+                     font-family: monospace; color: var(--saffron); margin: 16px 0; }
+    .timeline { margin: 24px 0; }
+    .timeline-item { display: flex; gap: 16px; margin: 20px 0; text-align: left; }
+    .timeline-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--saffron);
+                    display: flex; align-items: center; justify-content: center; color: #1f2937;
+                    font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .timeline-dot.pending { background: var(--ink-soft); }
+    .timeline-content h3 { margin: 0; font-size: 14px; }
+    .timeline-content p { margin: 4px 0; color: var(--ink-soft); font-size: 13px; }
+    button { padding: 12px 24px; font-size: 15px; border-radius: 6px; border: none;
+             background: var(--saffron); color: #1f2937; font-weight: 700; cursor: pointer;
+             margin: 10px 0; }
+    button:hover { background: #f4a900; }
+    .muted { color: var(--ink-soft); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>✓ Thank You!</h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="status-icon">🎙️</div>
+      <h2>Your Voice Has Been Recorded</h2>
+      <p>Thank you for contributing to Chitti's diversity of voices across Indian languages.</p>
+
+      <div class="submission-id" id="submission-display">Loading submission ID...</div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot">✓</div>
+          <div class="timeline-content">
+            <h3>Stage 1: Consent Recorded</h3>
+            <p>Your voice has been received and stored securely.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot pending">⏳</div>
+          <div class="timeline-content">
+            <h3>Stage 2: Admin Review</h3>
+            <p>Our team will review your submission within 48 hours.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot pending">⏳</div>
+          <div class="timeline-content">
+            <h3>Stage 3: Winner Confirmation</h3>
+            <p>If selected, you'll receive an email asking for final irreversible confirmation.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot pending">🏆</div>
+          <div class="timeline-content">
+            <h3>Hall of Fame (If Selected)</h3>
+            <p>Your voice becomes the permanent voice of your language. Can never be deleted.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="muted">Check the <a href="chitti_voice_hall_of_fame.html" style="color: var(--saffron);">Hall of Fame</a> to see all community voices.</p>
+
+      <button onclick="window.location.href='/'">← Back to Chitti Home</button>
+    </div>
+  </main>
+
+  <script>
+    const submissionId = new URLSearchParams(window.location.search).get('submission_id');
+    if (submissionId) {
+      document.getElementById('submission-display').textContent = `Submission ID: ${submissionId}`;
+    }
+  </script>
+</body>
+</html>

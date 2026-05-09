@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Chitti Voice Hall of Fame — Community Voices</title>
+<meta name='description' content='Hall of Fame — the voices of Chitti, selected from our community of donors across all Indian languages.'>
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#fff; --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:24px 18px}
+.brand-row{display:flex;align-items:center;gap:14px}
+.bharat-logo{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px}
+.brand-name{font-weight:900;font-size:24px}
+.brand-sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:2px}
+.tagline{margin-top:12px;font-size:13px;color:rgba(255,255,255,.92);line-height:1.55;max-width:640px}
+
+main{padding:18px;max-width:1200px;margin:0 auto}
+h1{font-size:28px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.subtitle{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:32px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-number{font-size:32px;font-weight:900;color:var(--saffron);margin-bottom:4px}
+.stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+
+.winners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.winner-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.winner-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(14,35,68,.16);border-color:var(--saffron)}
+
+.winner-photo{width:100%;aspect-ratio:1;background:linear-gradient(135deg,#E86A17,#D4AF37);display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff;font-weight:900;overflow:hidden}
+.winner-photo img{width:100%;height:100%;object-fit:cover}
+
+.winner-info{padding:14px}
+.winner-name{font-size:15px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.winner-lang{font-size:12px;color:var(--muted);margin-bottom:8px}
+.winner-badge{display:inline-block;padding:2px 8px;background:rgba(22,163,74,.10);color:var(--green);border:1px solid rgba(22,163,74,.4);border-radius:4px;font-size:10px;font-weight:700}
+
+.empty-state{text-align:center;padding:40px 20px;background:#fff;border-radius:12px;border:1px dashed var(--border)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-text{font-size:14px;color:var(--muted);line-height:1.6}
+
+footer{margin-top:30px;padding:18px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid var(--border);line-height:1.7}
+footer a{color:var(--saffron);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="bharat-stripe"></div>
+
+<header role="banner">
+  <div class="brand-row">
+    <div class="bharat-logo" aria-hidden="true">🎙️</div>
+    <div>
+      <div class="brand-name">Voice Hall of Fame</div>
+      <div class="brand-sub">Chitti Community Voices</div>
+    </div>
+  </div>
+  <p class="tagline">
+    Every voice matters. Meet the donors whose voices bring Chitti to life across India's languages.
+  </p>
+</header>
+
+<main>
+  <h1>🏆 Hall of Fame</h1>
+  <p class="subtitle">
+    These community volunteers have been selected as the official voice of their language in Chitti.
+    Their recordings are permanent, attributed, and celebrate the diversity of India's mother tongues.
+  </p>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number" id="total-winners">0</div>
+      <div class="stat-label">Total Winners</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="languages-count">0</div>
+      <div class="stat-label">Languages</div>
+    </div>
+  </div>
+
+  <div class="winners-grid" id="winners-container">
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p class="empty-text">Loading Hall of Fame...</p>
+    </div>
+  </div>
+</main>
+
+<footer role="contentinfo">
+  Chitti Voice Hall of Fame · Every voice deserves to be heard · Built with ❤️ for India<br>
+  <a href="/">Back to Chitti home</a>
+</footer>
+
+<script>
+async function loadHallOfFame() {
+  try {
+    const res = await fetch('/api/voice/hall-of-fame');
+    const data = await res.json();
+
+    if (!data.ok || !data.all_winners || data.all_winners.length === 0) {
+      document.getElementById('winners-container').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎙️</div>
+          <p class="empty-text">Hall of Fame is empty. Be the first voice donor!</p>
+        </div>
+      `;
+      return;
+    }
+
+    document.getElementById('total-winners').textContent = data.total_winners;
+    document.getElementById('languages-count').textContent = data.languages_represented;
+
+    const winners = data.all_winners;
+    document.getElementById('winners-container').innerHTML = winners.map(w => `
+      <div class="winner-card">
+        <div class="winner-photo">
+          ${w.donor_photo_url ? `<img src="${w.donor_photo_url}" alt="${w.donor_name}">` : w.donor_name.charAt(0)}
+        </div>
+        <div class="winner-info">
+          <div class="winner-name">${w.donor_name}</div>
+          <div class="winner-lang">${w.language_code.toUpperCase()}</div>
+          <div class="winner-badge">🏆 Hall of Fame</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load Hall of Fame:', e);
+    document.getElementById('winners-container').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <p class="empty-text">Failed to load Hall of Fame. Please try again.</p>
+      </div>
+    `;
+  }
+}
+
+loadHallOfFame();
+setInterval(loadHallOfFame, 30000); // Refresh every 30s
+</script>
+</body>
+</html>

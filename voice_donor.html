@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Record Your Voice · Chitti Voice</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #111827; --ink: #e5e7eb; --ink-soft: #94a3b8;
+      --saffron: #f59e0b; --green: #16a34a; --amber: #eab308; --red: #ef4444;
+      --line: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+           font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+           line-height: 1.55; }
+    header { padding: 18px 20px; background: linear-gradient(180deg,#1f2937 0,#0f172a 100%); border-bottom: 1px solid var(--line); }
+    header h1 { margin: 0; font-size: 22px; }
+    main { max-width: 600px; margin: 0 auto; padding: 24px 20px 60px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 20px 0; }
+    .card h2 { margin-top: 0; }
+    input[type="text"], input[type="email"], input[type="tel"], textarea {
+      width: 100%; padding: 12px; margin: 10px 0; background: #0b1220; color: var(--ink);
+      border: 1px solid var(--line); border-radius: 6px; font-size: 14px;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--saffron); }
+    button { padding: 12px 20px; font-size: 15px; border-radius: 6px; border: none; cursor: pointer; margin: 10px 0; }
+    .btn-primary { background: var(--saffron); color: #1f2937; font-weight: 700; }
+    .btn-primary:hover { background: #f4a900; }
+    .btn-secondary { background: #1e293b; color: var(--ink); border: 1px solid var(--line); }
+    .btn-secondary:hover { background: #2d3748; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .checkbox-group { margin: 16px 0; }
+    .checkbox-item { display: flex; align-items: start; gap: 10px; margin: 12px 0; }
+    .checkbox-item input { margin-top: 4px; }
+    .checkbox-item label { cursor: pointer; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 1000;
+             flex-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+                     padding: 24px; max-width: 500px; max-height: 80vh; overflow: auto; }
+    .muted { color: var(--ink-soft); font-size: 13px; }
+    .status { padding: 12px; margin: 10px 0; border-radius: 6px; }
+    .status.info { background: #1e3a8a; color: #bfdbfe; }
+    .status.success { background: #14532d; color: #bbf7d0; }
+    .status.error { background: #7f1d1d; color: #fecaca; }
+    .stage { display: none; }
+    .stage.active { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎙️ Record Your Voice</h1>
+    <div class="muted">Help Chitti speak in your language</div>
+  </header>
+
+  <main>
+    <!-- Stage 1: Consent Form -->
+    <div class="stage active" id="stage-1">
+      <div class="card">
+        <h2>Before You Record</h2>
+        <p>Your voice will become the permanent Hall of Fame voice for your language if selected. This is a honor and a commitment.</p>
+
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="consent-1" />
+            <label for="consent-1">I consent to my voice being permanently attributed in the Chitti Hall of Fame if I win</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="consent-2" />
+            <label for="consent-2">I understand my recording will never be deleted (can_delete=false)</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="consent-3" />
+            <label for="consent-3">I have permission to record and share this voice</label>
+          </div>
+        </div>
+
+        <div class="status info">
+          ℹ️ Your email will be used only for winner confirmation notifications. Never shared.
+        </div>
+
+        <input type="text" id="donor-name" placeholder="Your name" />
+        <input type="email" id="donor-email" placeholder="Your email" />
+        <input type="tel" id="donor-phone" placeholder="Your phone (optional)" />
+
+        <button class="btn-primary" id="proceed-btn" onclick="proceedToRecording()" disabled>Proceed to Recording →</button>
+
+        <div class="muted" style="margin-top: 16px;">
+          <strong>Questions?</strong> All donor data is encrypted and stored securely per Indian data protection standards.
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 2: Recording -->
+    <div class="stage" id="stage-2">
+      <div class="card">
+        <h2>Ready? Press Record</h2>
+        <p>Speak clearly in your language for 15–30 seconds. We recommend testing your mic first.</p>
+
+        <button class="btn-secondary" id="record-btn" onclick="toggleRecording()">🔴 Start Recording</button>
+        <button class="btn-secondary" id="playback-btn" onclick="playRecording()" disabled>▶️ Play</button>
+        <button class="btn-primary" id="submit-btn" onclick="submitRecording()" disabled>✓ Submit Recording</button>
+
+        <div id="recording-time" class="muted" style="margin-top: 12px; display: none;">Recording: <span id="time-display">0:00</span></div>
+        <div id="waveform" style="margin: 20px 0; height: 100px; background: #0b1220; border-radius: 6px; position: relative;"></div>
+
+        <div class="muted">
+          💾 Your audio is stored in-browser only until you submit.
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 3: Confirmation -->
+    <div class="stage" id="stage-3">
+      <div class="card">
+        <h2>⚠️ Irreversible Confirmation</h2>
+        <p>If selected as the winner, your voice becomes <strong>permanently part of the Chitti Hall of Fame</strong>. You cannot delete or modify it later.</p>
+
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="final-consent" />
+            <label for="final-consent">I understand and accept this is permanent and cannot be undone</label>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="final-submit-btn" onclick="finalSubmit()" disabled>✓ Confirm & Submit</button>
+        <button class="btn-secondary" onclick="goBackToRecording()">← Go Back</button>
+
+        <div id="submission-status" class="muted" style="margin-top: 16px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const lang = new URLSearchParams(window.location.search).get('lang') || 'en';
+    const API = (window.CHITTI_VOICE_FACTORY_API || "https://chitti-voice-factory.onrender.com");
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordingStartTime;
+    let timerInterval;
+
+    // Consent form validation
+    document.querySelectorAll('#stage-1 input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const allConsents = document.querySelectorAll('#stage-1 .checkbox-item input[type="checkbox"]');
+        const name = document.getElementById('donor-name').value.trim();
+        const email = document.getElementById('donor-email').value.trim();
+        const allChecked = Array.from(allConsents).every(c => c.checked);
+        document.getElementById('proceed-btn').disabled = !(allChecked && name && email);
+      });
+    });
+    document.getElementById('donor-name').addEventListener('input', () => {
+      const cb = document.querySelectorAll('#stage-1 .checkbox-item input[type="checkbox"]');
+      const name = document.getElementById('donor-name').value.trim();
+      const email = document.getElementById('donor-email').value.trim();
+      const allChecked = Array.from(cb).every(c => c.checked);
+      document.getElementById('proceed-btn').disabled = !(allChecked && name && email);
+    });
+    document.getElementById('donor-email').addEventListener('input', () => {
+      const cb = document.querySelectorAll('#stage-1 .checkbox-item input[type="checkbox"]');
+      const name = document.getElementById('donor-name').value.trim();
+      const email = document.getElementById('donor-email').value.trim();
+      const allChecked = Array.from(cb).every(c => c.checked);
+      document.getElementById('proceed-btn').disabled = !(allChecked && name && email);
+    });
+
+    async function proceedToRecording() {
+      document.getElementById('stage-1').classList.remove('active');
+      document.getElementById('stage-2').classList.add('active');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+      } catch (e) {
+        alert('Microphone access denied. Please enable microphone permissions.');
+        window.location.reload();
+      }
+    }
+
+    function toggleRecording() {
+      if (mediaRecorder.state === 'idle') {
+        audioChunks = [];
+        recordingStartTime = Date.now();
+        mediaRecorder.start();
+        document.getElementById('record-btn').textContent = '⏹️ Stop Recording';
+        document.getElementById('recording-time').style.display = 'block';
+        updateTimer();
+        timerInterval = setInterval(updateTimer, 100);
+      } else {
+        mediaRecorder.stop();
+        clearInterval(timerInterval);
+        document.getElementById('record-btn').textContent = '🔴 Start Recording';
+        document.getElementById('playback-btn').disabled = false;
+        document.getElementById('submit-btn').disabled = false;
+      }
+    }
+
+    function updateTimer() {
+      const elapsed = (Date.now() - recordingStartTime) / 1000;
+      const mins = Math.floor(elapsed / 60);
+      const secs = Math.floor(elapsed % 60);
+      document.getElementById('time-display').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function playRecording() {
+      if (audioChunks.length === 0) return;
+      const blob = new Blob(audioChunks, { type: 'audio/wav' });
+      new Audio(URL.createObjectURL(blob)).play();
+    }
+
+    function submitRecording() {
+      document.getElementById('stage-2').classList.remove('active');
+      document.getElementById('stage-3').classList.add('active');
+      document.getElementById('final-consent').addEventListener('change', () => {
+        document.getElementById('final-submit-btn').disabled = !document.getElementById('final-consent').checked;
+      });
+    }
+
+    function goBackToRecording() {
+      document.getElementById('stage-3').classList.remove('active');
+      document.getElementById('stage-2').classList.add('active');
+    }
+
+    async function finalSubmit() {
+      if (audioChunks.length === 0) {
+        alert('No audio recorded!');
+        return;
+      }
+
+      document.getElementById('final-submit-btn').disabled = true;
+      const statusDiv = document.getElementById('submission-status');
+
+      try {
+        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const audioBase64 = reader.result.split(',')[1];
+          const res = await fetch(API + '/api/voice/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              language_code: lang,
+              donor_name: document.getElementById('donor-name').value,
+              donor_email: document.getElementById('donor-email').value,
+              donor_phone: document.getElementById('donor-phone').value,
+              audio_base64: audioBase64,
+              consent_stage1: true,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.ok) {
+            statusDiv.innerHTML = `<div class="status success">✓ Voice submitted! Submission ID: ${data.submission_id.substring(0, 8)}...</div>`;
+            setTimeout(() => {
+              window.location.href = `/voice_confirmation.html?submission_id=${data.submission_id}`;
+            }, 2000);
+          } else {
+            statusDiv.innerHTML = `<div class="status error">✗ Error: ${data.error}</div>`;
+          }
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        statusDiv.innerHTML = `<div class="status error">✗ Error: ${e.message}</div>`;
+        document.getElementById('final-submit-btn').disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

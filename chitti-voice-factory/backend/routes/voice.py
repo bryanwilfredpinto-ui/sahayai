@@ -178,3 +178,125 @@ def donate():
 @bp.get("/donations")
 def donations():
     return jsonify({"count": 0, "donors": []})
+
+
+@bp.post("/submit")
+def submit_voice():
+    """Stage 1: Submit voice recording with consent.
+
+    Body: {
+      language_code: "hi",
+      donor_name: "Priya",
+      donor_email: "priya@example.com",
+      donor_phone: "+91-...",
+      audio_base64: "...",
+      consent_stage1: true
+    }
+
+    Returns: {
+      ok: true,
+      submission_id: "...",
+      message: "Voice recorded. Thank you!"
+    }
+    """
+    import base64
+    import uuid
+
+    body = request.get_json(silent=True) or {}
+    lang = (body.get("language_code") or "").strip()
+    name = (body.get("donor_name") or "").strip()
+    email = (body.get("donor_email") or "").strip()
+    phone = (body.get("donor_phone") or "").strip()
+    audio_b64 = (body.get("audio_base64") or "").strip()
+    consent = body.get("consent_stage1", False)
+
+    if not all([lang, name, email, audio_b64, consent]):
+        return jsonify({
+            "ok": False,
+            "error": "missing_required_fields",
+        }), 400
+
+    if lang not in languages.BY_CODE:
+        return jsonify({
+            "ok": False,
+            "error": "unknown_language",
+        }), 400
+
+    try:
+        audio_bytes = base64.b64decode(audio_b64)
+    except Exception:
+        return jsonify({
+            "ok": False,
+            "error": "invalid_audio_encoding",
+        }), 400
+
+    if len(audio_bytes) > 50 * 1024 * 1024:  # 50 MB max
+        return jsonify({
+            "ok": False,
+            "error": "audio_too_large",
+            "max_bytes": 50 * 1024 * 1024,
+        }), 413
+
+    import hashlib
+    audio_sha256 = hashlib.sha256(audio_bytes).hexdigest()
+    submission_id = str(uuid.uuid4())
+
+    # TODO: Upload to TeraBox/MEGA
+    audio_storage_url = f"https://chitti-internal/submissions/{submission_id}"
+
+    if not ledger.create_submission(
+        submission_id=submission_id,
+        language_code=lang,
+        donor_name=name,
+        donor_email=email,
+        donor_phone=phone,
+        audio_sha256=audio_sha256,
+        audio_duration_s=len(audio_bytes) / 48000.0,  # rough estimate
+        audio_storage_url=audio_storage_url,
+    ):
+        return jsonify({
+            "ok": False,
+            "error": "submission_failed",
+        }), 500
+
+    return jsonify({
+        "ok": True,
+        "submission_id": submission_id,
+        "message": f"Thank you, {name}! Your voice has been recorded.",
+        "next_step": f"/voice_confirmation.html?submission_id={submission_id}",
+    }), 201
+
+
+@bp.get("/hall-of-fame")
+def hall_of_fame():
+    """Public Hall of Fame — all winners across all languages."""
+    winners = ledger.get_winners()
+    by_lang = {}
+    for w in winners:
+        lang = w["language_code"]
+        if lang not in by_lang:
+            by_lang[lang] = []
+        by_lang[lang].append({
+            "winner_id": w["winner_id"],
+            "donor_name": w["donor_name"],
+            "donor_photo_url": w["donor_photo_url"],
+            "language_code": w["language_code"],
+            "created_at": w["created_at"],
+        })
+
+    return jsonify({
+        "ok": True,
+        "total_winners": len(winners),
+        "languages_represented": len(by_lang),
+        "winners_by_language": by_lang,
+        "all_winners": [
+            {
+                "winner_id": w["winner_id"],
+                "donor_name": w["donor_name"],
+                "donor_photo_url": w["donor_photo_url"],
+                "language_code": w["language_code"],
+                "created_at": w["created_at"],
+            }
+            for w in winners
+        ],
+    })

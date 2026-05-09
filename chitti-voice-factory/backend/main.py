@@ -10,6 +10,7 @@ from flask_cors import CORS
 
 import ledger
 from routes.voice import bp as voice_bp
+from routes.admin import bp as admin_bp
 
 
 def _allowed_origins() -> list[str]:
@@ -22,18 +23,23 @@ def _allowed_origins() -> list[str]:
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key")
     CORS(app, resources={r"/*": {"origins": _allowed_origins()}})
     ledger.init_db()
     app.register_blueprint(voice_bp)
+    app.register_blueprint(admin_bp)
 
     @app.get("/")
     def root():
         return jsonify({
             "name": "chitti-voice-factory",
-            "version": "1.0",
+            "version": "2.0",
             "spec": "CHITTI_VOICE_FACTORY_MASTER_SPEC.md",
             "ledger_endpoint": "/api/voice/ledger",
             "status_endpoint": "/api/voice/status",
+            "hall_of_fame": "/api/voice/hall-of-fame",
+            "submit_voice": "/api/voice/submit",
+            "admin_dashboard": "/admin/dashboard.html",
             "use_mock_bhashini": os.environ.get("VOICE_FACTORY_USE_MOCK_BHASHINI", "1") == "1",
         })
 
