@@ -1,0 +1,26 @@
+# Chitti Government — Flask backend dependencies.
+# Pinned for Render free tier (Python 3.11). Pure Python or manylinux
+# wheels — no Rust toolchain required.
+
+flask==3.0.3
+flask-cors==4.0.1
+gunicorn==22.0.0
+
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.10
+
+requests==2.31.0
+httpx==0.27.2
+python-dotenv==1.0.0
+
+# PIB RSS parsing — pure Python, no native deps.
+feedparser==6.0.11
+
+# In-process scheduler — drives PIB poll (every 6 h) + nightly MyScheme
+# refresh + daily document-expiry sweep.
+apscheduler==3.10.4
+tzdata==2024.2
+
+# Fuzzy matching for scheme name lookups ("am I eligible for pradhan
+# mantri kisan" → PM-Kisan).
+rapidfuzz==3.6.1

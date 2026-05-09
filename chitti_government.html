@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chitti Government · Voice-first guide to Indian government schemes</title>
+  <meta name="description" content="Chitti Government — voice-first AI guide to PM-Kisan, Ayushman, PMAY, Ujjwala, MGNREGA and 30+ schemes. Built for blind, deaf, mute, illiterate, elderly. No data stored." />
+  <meta name="theme-color" content="#0E2344" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🏛️%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root{
+      --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+      --bg:#f8f4ee; --card:#fff; --card2:#fbf8f1;
+      --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+      --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
+      --pass:#15803d; --fail:#b91c1c; --warn:#a16207;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.55}
+    body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+    body > *{position:relative;z-index:1}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    .bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+    /* Disclaimer bar (sticky) */
+    .gov-bar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(232,106,23,.14),rgba(212,175,55,.10));border-bottom:2px solid #D4AF37;padding:9px 14px;font-size:12.5px;line-height:1.45;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .gov-bar .ico{font-size:14px;flex-shrink:0}
+    .gov-bar .short{flex:1;min-width:160px;color:var(--text)}
+    .gov-bar .short strong{color:var(--navy)}
+    .gov-bar a.read-more{color:var(--saffron);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-size:12.5px;font-weight:700}
+    .gov-bar button.spk{background:transparent;border:1px solid rgba(212,175,55,.55);color:var(--text);border-radius:6px;padding:4px 10px;font-size:11.5px;cursor:pointer;min-height:30px;font-weight:700}
+
+    /* Accessibility plugins bar (every page) */
+    .plug-bar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:#fff;border-bottom:1px solid var(--border);padding:8px;position:sticky;top:38px;z-index:45;box-shadow:0 2px 8px rgba(14,35,68,.04)}
+    .plug-bar button{background:#fbf8f1;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;gap:6px;align-items:center;min-height:34px}
+    .plug-bar button.on{background:linear-gradient(135deg,rgba(232,106,23,.15),rgba(212,175,55,.15));border-color:var(--saffron);color:var(--saffron)}
+    .plug-bar button:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+
+    header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 22px 22px;padding:22px 18px}
+    .brand-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .brand-logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:26px;box-shadow:0 6px 18px rgba(232,106,23,.35)}
+    .brand-name{font-weight:900;font-size:24px;line-height:1.05}
+    .brand-sub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:2px}
+    .tagline{margin-top:10px;font-size:13px;color:rgba(255,255,255,.92);max-width:680px}
+    .four-user{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:#fff;margin:10px 0 0}
+    .four-user span{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);padding:4px 10px;border-radius:6px}
+
+    /* Tabs */
+    nav.tabs{display:flex;gap:0;background:#fff;border-bottom:2px solid var(--gold);overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04);position:sticky;top:80px;z-index:40}
+    nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;min-height:46px;display:inline-flex;align-items:center;gap:6px}
+    nav.tabs .tab:hover{color:var(--text)}
+    nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
+
+    main{padding:18px;max-width:920px;margin:0 auto}
+    section.panel{display:none;animation:fadeIn .2s}
+    section.panel.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 4px 14px rgba(14,35,68,.05)}
+    h2{font-size:17px;font-weight:900;margin:0 0 10px;color:var(--navy)}
+    h3{font-size:14px;font-weight:800;margin:14px 0 6px;color:var(--saffron)}
+    label{display:block;font-size:13.5px;font-weight:600;margin:8px 0 5px}
+    select,textarea,input[type="text"],input[type="number"],input[type="email"]{width:100%;padding:10px;font-size:15px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:inherit;line-height:1.5}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    button{font-size:14.5px;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:700;min-height:42px}
+    button.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+    button.primary:hover{filter:brightness(1.06)}
+    button.ghost{background:transparent}
+    button.danger{background:var(--red);color:#fff;border-color:var(--red)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .pill{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:rgba(232,106,23,.10);color:var(--saffron);border:1px solid rgba(232,106,23,.35);margin-right:4px}
+    .pill.live{background:rgba(34,197,94,.10);color:var(--green);border-color:rgba(34,197,94,.4)}
+    .pill.muted{background:#f1f5f9;color:var(--muted);border-color:var(--border)}
+
+    /* Onboarding modal */
+    .modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);padding:18px;overflow-y:auto;align-items:flex-start;justify-content:center}
+    .modal.shown{display:flex}
+    .modal .panel{background:#fff;border:1px solid rgba(212,175,55,.6);border-radius:14px;padding:22px;max-width:780px;width:100%;font-size:14px;line-height:1.6;color:var(--text)}
+    .modal .panel h2{font-size:19px;margin:0 0 8px}
+    .modal .panel small{color:var(--muted);font-size:12px}
+    .modal .step{display:none}
+    .modal .step.active{display:block}
+    .modal .stepbar{display:flex;gap:6px;margin-bottom:12px}
+    .modal .stepbar div{flex:1;height:4px;background:#eee;border-radius:2px}
+    .modal .stepbar div.done{background:var(--saffron)}
+    .modal .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:flex-end}
+
+    .pledge-list{margin:0;padding:0;list-style:none}
+    .pledge-list li{padding:8px 0;border-bottom:1px dashed var(--border);font-size:13.5px}
+    .pledge-list li:last-child{border-bottom:none}
+    .pledge-list li b{color:var(--green)}
+    .check-row{display:flex;gap:8px;align-items:center;padding:10px;background:#fbf8f1;border:1px solid var(--border);border-radius:8px;margin:6px 0}
+    .check-row input[type="checkbox"]{width:18px;height:18px;cursor:pointer}
+    .plug-pick{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin:5px 0;background:#fbf8f1}
+    .plug-pick label{margin:0;font-weight:700;font-size:13.5px;flex:1;cursor:pointer}
+    .plug-pick .ico{font-size:18px;margin-right:8px}
+    .plug-pick input[type="checkbox"]{width:18px;height:18px;cursor:pointer}
+    .plug-pick small{display:block;color:var(--muted);font-weight:500;font-size:11.5px}
+
+    /* Eligibility result */
+    .verdict-card{padding:14px;border-radius:10px;border:2px solid;margin:10px 0}
+    .verdict-card.eligible{border-color:var(--green);background:rgba(34,197,94,.06)}
+    .verdict-card.partial{border-color:var(--amber);background:rgba(212,175,55,.10)}
+    .verdict-card.ineligible{border-color:var(--red);background:rgba(220,38,38,.06)}
+    .verdict-card.unknown{border-color:var(--muted);background:#fbf8f1}
+    .verdict-head{display:flex;gap:10px;align-items:center;font-size:16px;font-weight:900;margin-bottom:8px}
+    .verdict-rules{margin:0;padding:0;list-style:none}
+    .verdict-rules li{padding:6px 0;border-bottom:1px dashed var(--border);font-size:13.5px;display:flex;align-items:center;gap:8px}
+    .verdict-rules li:last-child{border-bottom:none}
+    .rule-pass{color:var(--pass)}
+    .rule-fail{color:var(--fail)}
+    .rule-unknown{color:var(--warn)}
+
+    /* Scheme list */
+    .scheme-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .scheme-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--card2);display:flex;flex-direction:column;gap:6px}
+    .scheme-card h4{margin:0;font-size:14.5px;color:var(--navy);font-weight:900}
+    .scheme-card p{margin:0;font-size:12.5px;color:var(--muted);flex:1}
+    .scheme-card .chips{display:flex;flex-wrap:wrap;gap:5px}
+    .scheme-card .chips span{font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(232,106,23,.10);color:var(--saffron);border:1px solid rgba(232,106,23,.28)}
+
+    /* Alerts */
+    .alert-card{padding:12px;border:1px solid var(--border);border-radius:10px;margin:8px 0;background:var(--card2)}
+    .alert-card .meta{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+    .alert-card a{color:var(--saffron);font-weight:700;font-size:13.5px;text-decoration:none}
+
+    /* Privacy footer */
+    .privacy{margin:24px 0 0;padding:14px 16px;background:linear-gradient(135deg,rgba(34,197,94,.05),#fff);border:1px solid rgba(34,197,94,.35);border-radius:14px;font-size:12.5px;line-height:1.7}
+    .privacy h4{margin:0 0 6px;font-size:13px;color:var(--green);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+    .privacy ul{margin:0;padding-left:18px}
+    .privacy ul li{padding:1px 0}
+
+    /* Reply card */
+    .reply{white-space:pre-wrap;background:#fff;border:1px dashed var(--border);border-radius:10px;padding:12px;font-size:14.5px;line-height:1.7;min-height:60px}
+    .meta-line{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+    .nav-other{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;margin-top:18px}
+    .nav-other a{color:var(--saffron);text-decoration:none;font-weight:700;padding:5px 11px;border:1px solid var(--border);border-radius:999px;background:#fff}
+
+    footer.site{margin:28px 0 0;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.7}
+    footer.site a{color:var(--saffron);text-decoration:none;font-weight:600}
+
+    .empty{padding:24px;text-align:center;color:var(--muted);font-size:13.5px;background:#fbf8f1;border:1px dashed var(--border);border-radius:10px}
+    .small{font-size:12px;color:var(--muted)}
+    .hr{height:1px;background:var(--border);margin:14px 0}
+    .err{padding:10px 12px;border:1px solid var(--red);background:rgba(220,38,38,.06);border-radius:8px;color:var(--red);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="bharat-stripe"></div>
+
+  <!-- Sticky disclaimer bar (always visible) -->
+  <div class="gov-bar" role="region" aria-label="Government AI disclaimer">
+    <span class="ico" aria-hidden="true">🏛️</span>
+    <span class="short">
+      <strong>यह government AI है।</strong> Official source se confirm karo. Chitti Government scheme guide hai, sarkari seva nahi.
+    </span>
+    <button class="spk" type="button" id="hear-disclaimer" aria-label="Hear disclaimer">🔊 Hear</button>
+  </div>
+
+  <!-- Accessibility plugins bar (always visible) -->
+  <div class="plug-bar" role="toolbar" aria-label="Accessibility plugins">
+    <button type="button" data-plug="readaloud" aria-pressed="true" title="Read every result aloud (for blind users)">🔊 Read Aloud</button>
+    <button type="button" data-plug="captions" aria-pressed="true" title="Show captions on every result (for deaf users)">📝 Captions</button>
+    <button type="button" data-plug="voicein" aria-pressed="true" title="Speak instead of typing (for mute / illiterate users)">🎙️ Voice In</button>
+    <button type="button" data-plug="icons" aria-pressed="true" title="Visual icons for every action (for illiterate users)">🖼️ Icons</button>
+    <button type="button" data-plug="signlang" aria-pressed="true" title="Sign-language video links where available (for deaf users)">🖐️ Sign</button>
+    <button type="button" data-plug="callsupport" aria-pressed="true" title="Show official helpline numbers (for elderly users)">📞 Call</button>
+    <button type="button" id="lang-toggle" aria-label="Switch language">⚙️ Language: <span id="lang-name">हिंदी</span></button>
+  </div>
+
+  <header role="banner">
+    <div class="brand-row">
+      <div class="brand-logo" aria-hidden="true">🏛️</div>
+      <div>
+        <div class="brand-name">Chitti Government</div>
+        <div class="brand-sub">सरकारी योजनाओं का साथी · sahayai.in</div>
+      </div>
+    </div>
+    <p class="tagline">Voice-first guide to PM-Kisan, Ayushman Bharat, PMAY, Ujjwala, MGNREGA and 30+ central + state schemes. Built for blind, deaf, mute, illiterate, and elderly Indian users. No data stored on Chitti's servers.</p>
+    <div class="four-user" aria-label="Four-user contract">
+      <span>👁️‍🗨️ blind</span><span>🦻 deaf</span><span>🤫 mute</span><span>📖 illiterate</span><span>👵 elderly</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Chitti Government features">
+    <button class="tab active" data-panel="checker" role="tab">🎯 Eligibility</button>
+    <button class="tab" data-panel="catalog" role="tab">📚 Schemes</button>
+    <button class="tab" data-panel="checklist" role="tab">📑 Checklist</button>
+    <button class="tab" data-panel="form" role="tab">📝 Form Helper</button>
+    <button class="tab" data-panel="alerts" role="tab">🔔 Alerts</button>
+    <button class="tab" data-panel="status" role="tab">🔍 Track Status</button>
+    <button class="tab" data-panel="locator" role="tab">📍 Nearby Office</button>
+    <button class="tab" data-panel="docs" role="tab">📂 Documents</button>
+    <button class="tab" data-panel="profile" role="tab">👤 Profile</button>
+  </nav>
+
+  <main>
+    <!-- ════════════ Eligibility checker ════════════ -->
+    <section class="panel active" id="panel-checker" role="tabpanel">
+      <div class="card">
+        <h2>🎯 Am I eligible for a scheme?</h2>
+        <p class="small">Speak or type the scheme name (e.g. "PM Kisan", "Ujjwala", "Ayushman"). Chitti checks your saved profile against the scheme rules and tells you yes / no / partial — out loud and on screen.</p>
+        <label for="scheme-pick">Scheme</label>
+        <select id="scheme-pick"><option value="">Loading 30+ schemes…</option></select>
+        <div class="row" style="margin-top:10px">
+          <button id="mic-scheme" class="ghost" aria-label="Speak the scheme name">🎙️ Speak the scheme name</button>
+          <button id="check-elig" class="primary" aria-label="Check my eligibility">✅ Check my eligibility</button>
+          <button id="scan-all" class="ghost" aria-label="Show every scheme I qualify for">🔁 Scan ALL schemes for me</button>
+          <span class="meta-line" id="elig-status">ready</span>
+        </div>
+        <div id="elig-result"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Catalog ════════════ -->
+    <section class="panel" id="panel-catalog" role="tabpanel">
+      <div class="card">
+        <h2>📚 Browse 30+ government schemes</h2>
+        <div class="row">
+          <input type="text" id="cat-search" placeholder="Search by name, ministry, short code (e.g. PM-Kisan)" aria-label="Search schemes" />
+          <select id="cat-category" aria-label="Filter by category">
+            <option value="">All categories</option>
+            <option value="agriculture">Agriculture</option>
+            <option value="health">Health</option>
+            <option value="housing">Housing</option>
+            <option value="education">Education / Scholarship</option>
+            <option value="pension">Pension</option>
+            <option value="women">Women</option>
+            <option value="loan">Loan / MSME</option>
+            <option value="insurance">Insurance</option>
+            <option value="disability">Disability</option>
+            <option value="employment">Employment</option>
+            <option value="energy">Energy / LPG</option>
+            <option value="food">Food / Ration</option>
+            <option value="livelihood">Livelihood</option>
+          </select>
+        </div>
+        <div id="cat-list" class="scheme-list" style="margin-top:14px"><div class="empty">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Checklist ════════════ -->
+    <section class="panel" id="panel-checklist" role="tabpanel">
+      <div class="card">
+        <h2>📑 What documents do I need?</h2>
+        <p class="small">Pick a scheme and Chitti will tell you exactly which papers to keep ready before you visit the office.</p>
+        <select id="checklist-scheme"><option value="">Pick a scheme…</option></select>
+        <div id="checklist-out" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Form helper ════════════ -->
+    <section class="panel" id="panel-form" role="tabpanel">
+      <div class="card">
+        <h2>📝 Voice-guided form helper</h2>
+        <p class="small">Chitti reads each field aloud, you speak the answer, Chitti fills it from your saved profile where possible. At the end you get a printable summary to take to the CSC office.</p>
+        <select id="form-scheme"><option value="">Pick a scheme…</option></select>
+        <div class="row" style="margin-top:10px">
+          <button id="form-start" class="primary">▶️ Start voice form</button>
+          <button id="form-stop" class="ghost" disabled>⏹️ Stop</button>
+          <span class="meta-line" id="form-status">ready</span>
+        </div>
+        <div class="hr"></div>
+        <div id="form-out"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Alerts ════════════ -->
+    <section class="panel" id="panel-alerts" role="tabpanel">
+      <div class="card">
+        <h2>🔔 New scheme announcements (PIB)</h2>
+        <p class="small">Live feed from the Press Information Bureau. Refreshed every 6 hours; only scheme-relevant items are kept. Chitti can read each one aloud.</p>
+        <div class="row">
+          <button id="alerts-refresh" class="primary">↻ Refresh</button>
+          <button id="alerts-notify" class="ghost" title="Get a 🔔 desktop notification when new schemes drop">🔔 Enable notifications</button>
+          <span class="meta-line" id="alerts-status">ready</span>
+        </div>
+        <div id="alerts-list" style="margin-top:14px"><div class="empty">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Status tracker ════════════ -->
+    <section class="panel" id="panel-status" role="tabpanel">
+      <div class="card">
+        <h2>🔍 Track an application</h2>
+        <p class="small"><strong>Honest note:</strong> the Indian government does not offer a public API to check application status across schemes. Chitti hands you off to the official scheme portal, where you sign in with the credentials you used while applying.</p>
+        <select id="status-scheme"><option value="">Pick a scheme…</option></select>
+        <div id="status-out" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Locator ════════════ -->
+    <section class="panel" id="panel-locator" role="tabpanel">
+      <div class="card">
+        <h2>📍 Nearest government office</h2>
+        <p class="small">Find the nearest CSC, post office, Aadhaar Seva Kendra, Jan Aushadhi, ration shop, panchayat, bank or police station. Powered by OpenStreetMap (no key required).</p>
+        <div class="grid2">
+          <div>
+            <label for="loc-kind">Office kind</label>
+            <select id="loc-kind"><option value="">Loading…</option></select>
+          </div>
+          <div>
+            <label for="loc-radius">Search radius (km)</label>
+            <input type="number" id="loc-radius" value="10" min="1" max="50" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="loc-here" class="primary">📍 Use my location</button>
+          <button id="loc-gmaps" class="ghost">🗺️ Open Google Maps instead</button>
+          <span class="meta-line" id="loc-status">ready</span>
+        </div>
+        <div id="loc-out" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Documents (DigiLocker upload + scan) ════════════ -->
+    <section class="panel" id="panel-docs" role="tabpanel">
+      <div class="card">
+        <h2>📂 My documents</h2>
+        <p class="small">DigiLocker partner-API access requires a government-licensed partner registration that Chitti has not yet received. Until then we use the honest, fully-working flow below: <strong>fetch the document yourself from DigiLocker (one tap), then attach it here</strong>. Files stay on YOUR device — Chitti's server never sees them.</p>
+        <p>
+          <a href="https://www.digilocker.gov.in/" target="_blank" rel="noopener" class="pill">🚪 Open DigiLocker.gov.in</a>
+        </p>
+        <label>Attach document (PDF, image, XML — kept on your device)</label>
+        <input type="file" id="doc-pick" accept="application/pdf,image/*,application/xml,text/xml" multiple />
+        <div id="doc-list" style="margin-top:10px"></div>
+        <div class="hr"></div>
+        <h3>Document expiry tracker</h3>
+        <p class="small">Add a date for any document and Chitti will remind you 90 / 30 / 7 days before it expires (notifications use your device — never our server).</p>
+        <div class="row">
+          <select id="exp-doc">
+            <option>Aadhaar (no expiry)</option>
+            <option>PAN (no expiry)</option>
+            <option>Driving Licence</option>
+            <option>Passport</option>
+            <option>Vehicle RC</option>
+            <option>Voter ID (no expiry)</option>
+            <option>Insurance policy</option>
+            <option>Income certificate</option>
+            <option>Caste certificate</option>
+          </select>
+          <input type="date" id="exp-date" />
+          <button id="exp-add" class="primary">＋ Add</button>
+        </div>
+        <ul id="exp-list" style="margin-top:8px;padding-left:18px"></ul>
+      </div>
+    </section>
+
+    <!-- ════════════ Profile ════════════ -->
+    <section class="panel" id="panel-profile" role="tabpanel">
+      <div class="card">
+        <h2>👤 My profile (stored on this device only)</h2>
+        <p class="small">Chitti uses these answers ONLY to compute scheme eligibility on the fly. Nothing is sent to any server. <a href="#" id="reset-all">Reset everything</a>.</p>
+        <div class="grid2">
+          <div>
+            <label for="p-age">Age</label>
+            <input type="number" id="p-age" min="0" max="120" />
+          </div>
+          <div>
+            <label for="p-gender">Gender</label>
+            <select id="p-gender"><option value="">—</option><option value="f">Female</option><option value="m">Male</option><option value="other">Other</option></select>
+          </div>
+          <div>
+            <label for="p-income">Annual family income (₹)</label>
+            <input type="number" id="p-income" min="0" />
+          </div>
+          <div>
+            <label for="p-state">State</label>
+            <select id="p-state"></select>
+          </div>
+          <div>
+            <label for="p-rural">Residence</label>
+            <select id="p-rural"><option value="">—</option><option value="rural">Rural</option><option value="urban">Urban</option></select>
+          </div>
+          <div>
+            <label for="p-occupation">Occupation</label>
+            <select id="p-occupation">
+              <option value="">—</option>
+              <option>farmer</option><option>labourer</option><option>street-vendor</option>
+              <option>weaver</option><option>carpenter</option><option>blacksmith</option>
+              <option>goldsmith</option><option>potter</option><option>barber</option>
+              <option>tailor</option><option>cobbler</option><option>mason</option>
+              <option>boat-maker</option><option>student</option><option>homemaker</option>
+              <option>private-job</option><option>self-employed</option><option>retired</option>
+            </select>
+          </div>
+          <div>
+            <label for="p-caste">Caste</label>
+            <select id="p-caste"><option value="">—</option><option>SC</option><option>ST</option><option>OBC</option><option>GEN</option></select>
+          </div>
+          <div>
+            <label for="p-land">Landholding (hectare)</label>
+            <input type="number" id="p-land" step="0.01" min="0" />
+          </div>
+          <div>
+            <label for="p-bpl">BPL household?</label>
+            <select id="p-bpl"><option value="">—</option><option value="true">Yes</option><option value="false">No</option></select>
+          </div>
+          <div>
+            <label for="p-secc">In SECC-2011 deprivation list?</label>
+            <select id="p-secc"><option value="">—</option><option value="true">Yes</option><option value="false">No</option><option value="">Don't know</option></select>
+          </div>
+          <div>
+            <label for="p-disability">Person with Disability?</label>
+            <select id="p-disability"><option value="">—</option><option value="true">Yes</option><option value="false">No</option></select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button id="profile-save" class="primary">💾 Save profile (on this device)</button>
+          <span class="meta-line" id="profile-status">unsaved</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy pledge — visible at the bottom of every tab -->
+    <div class="privacy" role="region" aria-label="Privacy pledge">
+      <h4>🔒 Chitti Government Privacy Promise</h4>
+      <ul>
+        <li>✅ <b>No data stored on servers.</b> Profile, documents, expiry dates → all stay in your browser.</li>
+        <li>✅ <b>Conversations stay on YOUR device.</b> Voice transcripts are not uploaded.</li>
+        <li>✅ <b>Documents fetched with YOUR consent only.</b> Chitti has no DigiLocker partner access.</li>
+        <li>✅ <b>Never sold. Never shared. Never mined.</b> Anonymous up/down feedback only.</li>
+        <li>✅ <b>You are in control. Reset anytime</b> from the Profile tab.</li>
+        <li>✅ Verified at <a href="https://chitti-government-api.onrender.com/health">/health</a> · <a href="https://chitti-government-api.onrender.com/api/government/freshness">/freshness</a></li>
+      </ul>
+    </div>
+
+    <div class="card" id="feedback-card">
+      <h2>👍👎 Was this helpful?</h2>
+      <p class="small">Anonymous. We use it only to fix what's broken. No profile or device info attached.</p>
+      <div class="row">
+        <button id="fb-up" class="primary">👍 Helpful</button>
+        <button id="fb-down" class="ghost">👎 Not helpful</button>
+        <input type="text" id="fb-note" placeholder="Optional one-line note" maxlength="240" style="flex:1;min-width:200px" />
+        <span class="meta-line" id="fb-status"></span>
+      </div>
+    </div>
+
+    <div class="nav-other" aria-label="Other Chitti products">
+      <a href="index.html">← All Chitti products</a>
+      <a href="chitti_medupi.html">Chitti MedUPI</a>
+      <a href="chitti_news.html">Chitti News</a>
+      <a href="chitti_legal.html">Chitti Legal</a>
+      <a href="chitti_ca.html">Chitti CA</a>
+      <a href="chitti_vaani.html">Chitti Vaani</a>
+    </div>
+
+    <footer class="site">
+      Powered by Chitti Government · Sahay AI · सरकारी योजनाओं का साथी<br>
+      Backend: <a href="https://chitti-government-api.onrender.com/health">chitti-government-api</a> ·
+      Schemes data freshness: <a href="https://chitti-government-api.onrender.com/api/government/freshness">/freshness</a><br>
+      <small style="opacity:.7">Founded by Bryan Wilfred Pinto · Built on DeepSeek · GitHub Pages + Render free tier · Schemes catalog seeded from public PIB / MyScheme data</small>
+    </footer>
+  </main>
+
+  <!-- ════════════ Onboarding modal (one-time) ════════════ -->
+  <div class="modal" id="onboard" role="dialog" aria-modal="true" aria-labelledby="ob-title">
+    <div class="panel">
+      <div class="stepbar"><div></div><div></div><div></div><div></div><div></div></div>
+
+      <div class="step active" data-step="1">
+        <h2 id="ob-title">🏛️ Welcome to Chitti Government</h2>
+        <p>Voice-first AI guide to <strong>PM-Kisan, Ayushman Bharat, PMAY, Ujjwala, MGNREGA</strong> and 30+ Indian government schemes. Built specifically for blind, deaf, mute, illiterate, and elderly users.</p>
+        <p>Before we start, a 60-second setup. Press <strong>🔊 Hear</strong> any time to listen instead of read.</p>
+        <button class="ghost" type="button" id="ob-hear-1">🔊 Hear this</button>
+        <div class="actions">
+          <button class="primary" type="button" data-go="2">Continue →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="2">
+        <h2>🛠️ Accessibility plugins</h2>
+        <p>All six are <strong>ON</strong> by default — turn off any you don't need. You can change this any time from the toolbar at the top.</p>
+        <div class="plug-pick"><span class="ico">🔊</span><label for="ob-readaloud">Read Aloud<small>For blind users — every result spoken</small></label><input type="checkbox" id="ob-readaloud" data-plug="readaloud" checked /></div>
+        <div class="plug-pick"><span class="ico">📝</span><label for="ob-captions">Text Captions<small>For deaf users — captions on every voice output</small></label><input type="checkbox" id="ob-captions" data-plug="captions" checked /></div>
+        <div class="plug-pick"><span class="ico">🎙️</span><label for="ob-voicein">Voice Input<small>For mute / illiterate users — speak instead of typing</small></label><input type="checkbox" id="ob-voicein" data-plug="voicein" checked /></div>
+        <div class="plug-pick"><span class="ico">🖼️</span><label for="ob-icons">Visual Icons<small>For illiterate users — symbols on every action</small></label><input type="checkbox" id="ob-icons" data-plug="icons" checked /></div>
+        <div class="plug-pick"><span class="ico">🖐️</span><label for="ob-signlang">Sign Language<small>For deaf users — sign-language video links where available</small></label><input type="checkbox" id="ob-signlang" data-plug="signlang" checked /></div>
+        <div class="plug-pick"><span class="ico">📞</span><label for="ob-callsupport">Call Support<small>For elderly users — official helpline always shown</small></label><input type="checkbox" id="ob-callsupport" data-plug="callsupport" checked /></div>
+        <div class="actions">
+          <button class="ghost" type="button" data-go="1">← Back</button>
+          <button class="primary" type="button" data-go="3">Continue →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="3">
+        <h2>📜 Terms &amp; Disclaimers (one-time)</h2>
+        <p>Single combined agreement for ALL Chitti products.</p>
+        <ul class="pledge-list">
+          <li><b>General Terms</b> — Chitti is an AI assistant. Not a government authority.</li>
+          <li><b>Privacy</b> — No personal data stored on Chitti servers.</li>
+          <li><b>Medical Disclaimer (MedUPI)</b> — never replaces a doctor's prescription.</li>
+          <li><b>Financial Disclaimer (UPI Fraud)</b> — Chitti grades risk, you decide.</li>
+          <li><b>Government Disclaimer</b> — Chitti guides; only the official portal can decide eligibility.</li>
+          <li><b>Legal Disclaimer</b> — explanations only; never drafts a binding document.</li>
+          <li><b>Accessibility Statement</b> — every feature must work for blind / deaf / mute / illiterate / elderly users.</li>
+          <li><b>DigiLocker Consent</b> — when partner access is granted, Chitti will fetch only with your one-tap consent.</li>
+          <li><b>SMS / Notification Consent</b> — for scheme alerts on your device only (browser Notification API).</li>
+        </ul>
+        <button class="ghost" type="button" id="ob-hear-3">🔊 Hear all of this</button>
+        <div class="actions">
+          <button class="ghost" type="button" data-go="2">← Back</button>
+          <button class="primary" type="button" data-go="4">I have read these →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="4">
+        <h2>🔒 Chitti's data privacy pledge</h2>
+        <ul class="pledge-list">
+          <li>✅ Chitti does <b>NOT</b> store your personal data on any server.</li>
+          <li>✅ Your conversations stay on <b>YOUR</b> device.</li>
+          <li>✅ DigiLocker documents fetched with <b>YOUR</b> consent only.</li>
+          <li>✅ Scheme eligibility is checked in real-time — never saved.</li>
+          <li>✅ Voice samples stay locally — never sent to cloud without permission.</li>
+          <li>✅ No data is sold. No data is shared. No data is mined.</li>
+        </ul>
+        <button class="ghost" type="button" id="ob-hear-4">🔊 Hear the pledge</button>
+        <div class="actions">
+          <button class="ghost" type="button" data-go="3">← Back</button>
+          <button class="primary" type="button" data-go="5">I accept the pledge →</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="5">
+        <h2>👤 Quick profile (optional · stored on this device only)</h2>
+        <p class="small">Used <strong>only</strong> to compute scheme eligibility. Skip and Chitti will simply ask one question at a time later.</p>
+        <div class="grid2">
+          <div><label for="ob-age">Age</label><input type="number" id="ob-age" min="0" max="120" /></div>
+          <div><label for="ob-gender">Gender</label><select id="ob-gender"><option value="">—</option><option value="f">Female</option><option value="m">Male</option><option value="other">Other</option></select></div>
+          <div><label for="ob-state">State</label><select id="ob-state"></select></div>
+          <div><label for="ob-rural">Residence</label><select id="ob-rural"><option value="">—</option><option value="rural">Rural</option><option value="urban">Urban</option></select></div>
+          <div><label for="ob-income">Annual income (₹)</label><input type="number" id="ob-income" min="0" /></div>
+          <div><label for="ob-bpl">BPL?</label><select id="ob-bpl"><option value="">—</option><option value="true">Yes</option><option value="false">No</option></select></div>
+        </div>
+        <div class="hr"></div>
+        <h3>Final consent</h3>
+        <div class="check-row"><input type="checkbox" id="c1" checked /><label for="c1">I have read and accepted the Terms &amp; Conditions.</label></div>
+        <div class="check-row"><input type="checkbox" id="c2" checked /><label for="c2">I understand Chitti is an AI assistant, not a government authority.</label></div>
+        <div class="check-row"><input type="checkbox" id="c3" checked /><label for="c3">I consent to DigiLocker access (when partner approval lands).</label></div>
+        <div class="check-row"><input type="checkbox" id="c4" checked /><label for="c4">I consent to local browser notifications for scheme updates.</label></div>
+        <div class="check-row"><input type="checkbox" id="c5" checked /><label for="c5">I understand my data stays on my device.</label></div>
+        <div class="actions">
+          <button class="ghost" type="button" data-go="4">← Back</button>
+          <button class="ghost" type="button" id="ob-decline">DECLINE</button>
+          <button class="primary" type="button" id="ob-accept">✅ ACCEPT ALL · Start Chitti</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decline page -->
+  <div class="modal" id="declined" role="dialog" aria-modal="true">
+    <div class="panel">
+      <h2>You declined the Chitti Government terms.</h2>
+      <p>That's perfectly OK. The app will not load. To revisit the consent flow, refresh this page or visit the official scheme portals directly:</p>
+      <ul>
+        <li><a href="https://www.myscheme.gov.in/" target="_blank" rel="noopener">myscheme.gov.in</a> — official central + state scheme directory</li>
+        <li><a href="https://www.india.gov.in/" target="_blank" rel="noopener">india.gov.in</a> — government services portal</li>
+        <li><a href="https://www.digilocker.gov.in/" target="_blank" rel="noopener">digilocker.gov.in</a> — official document wallet</li>
+      </ul>
+      <div class="actions"><button class="primary" type="button" onclick="location.reload()">Try again</button></div>
+    </div>
+  </div>
+
+<script>
+/* ───────────────────────────────────────────────────
+   ChittiGovernment v1.0
+   --------------------------------------------------- */
+const API = window.CHITTI_GOVERNMENT_API || "https://chitti-government-api.onrender.com";
+const LS = {
+  ONBOARDED: "chitti.gov.onboarded",
+  PLUGINS:   "chitti.gov.plugins",
+  PROFILE:   "chitti.gov.profile",
+  LANG:      "chitti.gov.lang",
+  EXPIRY:    "chitti.gov.expiry",
+  DOCS:      "chitti.gov.docs",
+};
+
+const STATES = [
+  ["AN","Andaman & Nicobar"],["AP","Andhra Pradesh"],["AR","Arunachal Pradesh"],["AS","Assam"],
+  ["BR","Bihar"],["CH","Chandigarh"],["CT","Chhattisgarh"],["DN","Dadra & Nagar Haveli"],
+  ["DD","Daman & Diu"],["DL","Delhi"],["GA","Goa"],["GJ","Gujarat"],["HR","Haryana"],
+  ["HP","Himachal Pradesh"],["JK","Jammu & Kashmir"],["JH","Jharkhand"],["KA","Karnataka"],
+  ["KL","Kerala"],["LA","Ladakh"],["LD","Lakshadweep"],["MP","Madhya Pradesh"],
+  ["MH","Maharashtra"],["MN","Manipur"],["ML","Meghalaya"],["MZ","Mizoram"],["NL","Nagaland"],
+  ["OR","Odisha"],["PY","Puducherry"],["PB","Punjab"],["RJ","Rajasthan"],["SK","Sikkim"],
+  ["TN","Tamil Nadu"],["TG","Telangana"],["TR","Tripura"],["UP","Uttar Pradesh"],
+  ["UT","Uttarakhand"],["WB","West Bengal"],
+];
+
+/* state → utility */
+function $(id){return document.getElementById(id);}
+function el(tag, attrs={}, ...kids){
+  const e = document.createElement(tag);
+  for (const k in attrs){
+    if (k === "class") e.className = attrs[k];
+    else if (k === "html") e.innerHTML = attrs[k];
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids){ if (c==null) continue; e.append(c.nodeType?c:document.createTextNode(c)); }
+  return e;
+}
+function ls_get(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){return def;} }
+function ls_set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+/* Plugins state */
+const PLUGINS = ls_get(LS.PLUGINS, {readaloud:true, captions:true, voicein:true, icons:true, signlang:true, callsupport:true});
+function applyPlugins(){
+  document.querySelectorAll(".plug-bar button[data-plug]").forEach(b => {
+    const k = b.dataset.plug;
+    b.classList.toggle("on", !!PLUGINS[k]);
+    b.setAttribute("aria-pressed", PLUGINS[k]?"true":"false");
+  });
+}
+applyPlugins();
+document.querySelectorAll(".plug-bar button[data-plug]").forEach(b => {
+  b.addEventListener("click", () => {
+    const k = b.dataset.plug;
+    PLUGINS[k] = !PLUGINS[k];
+    ls_set(LS.PLUGINS, PLUGINS);
+    applyPlugins();
+  });
+});
+
+/* Language */
+let LANG = ls_get(LS.LANG, "hi");
+function setLang(l){ LANG = l; ls_set(LS.LANG, l); $("lang-name").textContent = l==="hi"?"हिंदी":"English"; }
+setLang(LANG);
+$("lang-toggle").addEventListener("click", () => setLang(LANG==="hi"?"en":"hi"));
+
+/* Speech */
+function speak(text){
+  if (!PLUGINS.readaloud || !window.speechSynthesis || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = (LANG==="hi"?"hi-IN":"en-IN"); u.rate = 0.92; u.pitch = 1.04;
+  speechSynthesis.speak(u);
+}
+$("hear-disclaimer").addEventListener("click", () =>
+  speak("यह government AI है। Official source se confirm karo. Chitti government scheme guide hai, sarkari seva nahi.")
+);
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function listen(targetInput, onResult){
+  if (!PLUGINS.voicein || !SR) { alert("Voice input unavailable in this browser."); return; }
+  const rec = new SR(); rec.continuous = false; rec.interimResults = false;
+  rec.lang = (LANG==="hi"?"hi-IN":"en-IN");
+  rec.onresult = e => onResult(e.results[0][0].transcript);
+  rec.onerror = ()=>{};
+  try { rec.start(); } catch(e){}
+}
+
+/* ── Tabs ── */
+document.querySelectorAll("nav.tabs .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("nav.tabs .tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const id = "panel-"+t.dataset.panel;
+    document.querySelectorAll("section.panel").forEach(p=>p.classList.toggle("active", p.id===id));
+  });
+});
+
+/* ── State pickers (profile + onboarding) ── */
+function fillStateDropdown(sel){
+  sel.innerHTML = '<option value="">—</option>' + STATES.map(([c,n])=>`<option value="${c}">${n}</option>`).join("");
+}
+fillStateDropdown($("p-state"));
+fillStateDropdown($("ob-state"));
+
+/* ── Onboarding modal ── */
+function showOnboarding(){
+  const m = $("onboard"); m.classList.add("shown");
+  m.querySelectorAll(".step").forEach((s,i)=>s.classList.toggle("active", i===0));
+  updateStepbar(1);
+}
+function updateStepbar(n){
+  const bar = document.querySelectorAll("#onboard .stepbar div");
+  bar.forEach((d,i)=>d.classList.toggle("done", i<n));
+}
+document.querySelectorAll('#onboard [data-go]').forEach(b=>{
+  b.addEventListener("click", () => {
+    const n = parseInt(b.dataset.go,10);
+    document.querySelectorAll("#onboard .step").forEach(s=>s.classList.toggle("active", parseInt(s.dataset.step,10)===n));
+    updateStepbar(n);
+  });
+});
+$("ob-hear-1").addEventListener("click", () => speak(
+  LANG==="hi"?"नमस्ते। यह चिट्टी सरकार है। तीस से अधिक भारतीय सरकारी योजनाओं के लिए वॉयस-फर्स्ट गाइड।":
+  "Welcome to Chitti Government. Voice-first guide to over thirty Indian government schemes."
+));
+$("ob-hear-3").addEventListener("click", () => speak(
+  "Chitti is an AI assistant, not a government authority. Always confirm with the official scheme portal."
+));
+$("ob-hear-4").addEventListener("click", () => speak(
+  "No data stored on servers. Conversations stay on your device. DigiLocker documents fetched with your consent only. Never sold, never shared, never mined."
+));
+$("ob-decline").addEventListener("click", () => {
+  $("onboard").classList.remove("shown");
+  $("declined").classList.add("shown");
+});
+$("ob-accept").addEventListener("click", () => {
+  // Save plugins from onboarding
+  document.querySelectorAll('#onboard input[data-plug]').forEach(c=>{
+    PLUGINS[c.dataset.plug] = c.checked;
+  });
+  ls_set(LS.PLUGINS, PLUGINS); applyPlugins();
+  // Save profile if filled
+  const prof = ls_get(LS.PROFILE, {});
+  if ($("ob-age").value) prof.age = parseInt($("ob-age").value,10);
+  if ($("ob-gender").value) prof.gender = $("ob-gender").value;
+  if ($("ob-state").value) prof.state_code = $("ob-state").value;
+  if ($("ob-rural").value) prof.rural_urban = $("ob-rural").value;
+  if ($("ob-income").value) prof.income_annual_inr = parseInt($("ob-income").value,10);
+  if ($("ob-bpl").value) prof.bpl = $("ob-bpl").value === "true";
+  ls_set(LS.PROFILE, prof);
+  loadProfileIntoForm();
+  ls_set(LS.ONBOARDED, true);
+  $("onboard").classList.remove("shown");
+  speak(LANG==="hi"?"धन्यवाद। चलिए शुरू करते हैं।":"Thank you. Let's begin.");
+});
+
+/* Show onboarding on first visit */
+if (!ls_get(LS.ONBOARDED, false)) showOnboarding();
+
+/* ── Profile ── */
+function getProfile(){ return ls_get(LS.PROFILE, {}); }
+function loadProfileIntoForm(){
+  const p = getProfile();
+  if (p.age) $("p-age").value = p.age;
+  if (p.gender) $("p-gender").value = p.gender;
+  if (p.income_annual_inr) $("p-income").value = p.income_annual_inr;
+  if (p.state_code) $("p-state").value = p.state_code;
+  if (p.rural_urban) $("p-rural").value = p.rural_urban;
+  if (p.occupation) $("p-occupation").value = p.occupation;
+  if (p.caste) $("p-caste").value = p.caste;
+  if (p.landholding_ha != null) $("p-land").value = p.landholding_ha;
+  if (p.bpl != null) $("p-bpl").value = p.bpl?"true":"false";
+  if (p.secc_deprived != null) $("p-secc").value = p.secc_deprived?"true":"false";
+  if (p.disability != null) $("p-disability").value = p.disability?"true":"false";
+}
+loadProfileIntoForm();
+$("profile-save").addEventListener("click", () => {
+  const p = {};
+  const v = id => $(id).value.trim();
+  if (v("p-age")) p.age = parseInt(v("p-age"),10);
+  if (v("p-gender")) p.gender = v("p-gender");
+  if (v("p-income")) p.income_annual_inr = parseInt(v("p-income"),10);
+  if (v("p-state")) p.state_code = v("p-state");
+  if (v("p-rural")) p.rural_urban = v("p-rural");
+  if (v("p-occupation")) p.occupation = v("p-occupation");
+  if (v("p-caste")) p.caste = v("p-caste");
+  if (v("p-land")) p.landholding_ha = parseFloat(v("p-land"));
+  if (v("p-bpl")) p.bpl = v("p-bpl")==="true";
+  if (v("p-secc")) p.secc_deprived = v("p-secc")==="true";
+  if (v("p-disability")) p.disability = v("p-disability")==="true";
+  ls_set(LS.PROFILE, p);
+  $("profile-status").textContent = "saved on this device · " + new Date().toLocaleTimeString();
+  speak(LANG==="hi"?"प्रोफाइल सुरक्षित।":"Profile saved on this device.");
+});
+$("reset-all").addEventListener("click", e => {
+  e.preventDefault();
+  if (!confirm("Erase profile, plugins, expiry list and onboarding? This action cannot be undone.")) return;
+  Object.values(LS).forEach(k => localStorage.removeItem(k));
+  location.reload();
+});
+
+/* ── Catalog (loaded from backend) ── */
+let CATALOG = [];
+async function loadCatalog(){
+  try {
+    const r = await fetch(API + "/api/government/schemes?limit=500");
+    const j = await r.json();
+    CATALOG = (j.schemes || []);
+    renderCatalog();
+    fillSchemePickers();
+  } catch(e) {
+    $("cat-list").innerHTML = '<div class="err">Backend unreachable. Try again in a few seconds — Render free tier sleeps after 15 min idle.</div>';
+  }
+}
+function fillSchemePickers(){
+  const opts = '<option value="">— pick a scheme —</option>' +
+    CATALOG.map(s=>`<option value="${s.slug}">${s.name_en}${s.short_code?" · "+s.short_code:""}${s.state_code?" ("+s.state_code+")":""}</option>`).join("");
+  ["scheme-pick","checklist-scheme","form-scheme","status-scheme"].forEach(id=>{ if($(id)) $(id).innerHTML = opts; });
+}
+function renderCatalog(){
+  const q = ($("cat-search").value || "").trim().toLowerCase();
+  const cat = $("cat-category").value;
+  const filtered = CATALOG.filter(s => {
+    if (cat && !(s.category||[]).includes(cat)) return false;
+    if (q) {
+      const hay = (s.name_en+" "+s.name_hi+" "+s.short_code+" "+s.ministry+" "+s.slug).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const out = $("cat-list"); out.innerHTML = "";
+  if (!filtered.length){ out.innerHTML = '<div class="empty">No schemes match.</div>'; return; }
+  for (const s of filtered) {
+    const card = el("div", {class:"scheme-card"},
+      el("h4", {}, s.name_en + (s.short_code?` · ${s.short_code}`:"")),
+      s.name_hi ? el("p", {style:"font-weight:600;color:var(--navy)"}, s.name_hi) : null,
+      el("p", {}, s.benefit_summary_en || s.benefit_summary_hi || s.ministry || ""),
+      el("div", {class:"chips"},
+        ...(s.category||[]).slice(0,3).map(c=>el("span", {}, c)),
+        s.state_code ? el("span", {}, s.state_code) : null,
+        s.benefit_amount_inr ? el("span", {}, "₹"+s.benefit_amount_inr.toLocaleString("en-IN")) : null,
+      ),
+      el("div", {class:"row", style:"gap:6px;margin-top:8px"},
+        el("button", {class:"primary", onclick:()=>{$("scheme-pick").value=s.slug; document.querySelector('[data-panel="checker"]').click(); checkEligibility();}}, "Check eligibility"),
+        s.application_url ? el("a", {href:s.application_url, target:"_blank", rel:"noopener", class:"pill"}, "Apply ↗") : null,
+        s.helpline ? el("a", {href:"tel:"+(s.helpline.split("/")[0].trim()), class:"pill"}, "📞 "+s.helpline.split("/")[0].trim()) : null,
+      ),
+    );
+    out.appendChild(card);
+  }
+}
+$("cat-search").addEventListener("input", renderCatalog);
+$("cat-category").addEventListener("change", renderCatalog);
+loadCatalog();
+
+/* ── Eligibility checker ── */
+$("mic-scheme").addEventListener("click", () => {
+  listen($("scheme-pick"), tx => {
+    const t = tx.toLowerCase();
+    const found = CATALOG.find(s =>
+      (s.short_code||"").toLowerCase().includes(t) ||
+      (s.name_en||"").toLowerCase().includes(t) ||
+      (s.slug||"").toLowerCase().includes(t)
+    );
+    if (found){ $("scheme-pick").value = found.slug; speak("Selected "+found.name_en); }
+    else { speak("Could not find that scheme. Please pick from the list."); }
+  });
+});
+
+async function checkEligibility(){
+  const slug = $("scheme-pick").value;
+  if (!slug) { $("elig-status").textContent = "pick a scheme first"; return; }
+  $("elig-status").textContent = "checking…";
+  $("check-elig").disabled = true;
+  try {
+    const r = await fetch(API + "/api/government/eligibility/check", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ scheme_slug: slug, profile: getProfile(), language: LANG }),
+    });
+    const j = await r.json();
+    if (j.ok) renderVerdict(j); else $("elig-status").textContent = "error: " + (j.detail||j.error);
+  } catch(e) {
+    $("elig-status").textContent = "offline";
+    $("elig-result").innerHTML = '<div class="err">Backend unreachable. Try again in a few seconds.</div>';
+  } finally {
+    $("check-elig").disabled = false;
+  }
+}
+$("check-elig").addEventListener("click", checkEligibility);
+
+function renderVerdict(j) {
+  const v = j.verdict; const voice = j.voice;
+  const klass = v.verdict;
+  const head = {
+    eligible:   "✅ You appear to qualify.",
+    partial:    "⚠️ Likely yes — one or two details still unknown.",
+    ineligible: "❌ Not eligible based on your profile.",
+    unknown:    "ℹ️ This scheme has no auto-checkable rules — please read the notes.",
+  }[v.verdict] || v.verdict;
+  const icon = {eligible:"🟢", partial:"🟡", ineligible:"🔴", unknown:"⚪"}[v.verdict] || "ℹ️";
+  const out = el("div", {class:"verdict-card "+klass},
+    el("div", {class:"verdict-head"}, icon + " " + head),
+    el("div", {style:"font-weight:700"}, v.scheme_name),
+    v.benefit_summary_en ? el("p", {class:"small"}, v.benefit_summary_en) : null,
+    v.rules.length ? el("ul", {class:"verdict-rules"},
+      ...v.rules.map(r => {
+        const sym = {pass:"✅", fail:"❌", unknown:"❔"}[r.verdict] || "•";
+        return el("li", {class:"rule-"+r.verdict}, sym + " " + r.label + (r.verdict==="unknown"?" (please add to profile)":""));
+      })
+    ) : null,
+    v.exclusions && v.exclusions.length ? el("div", {style:"margin-top:8px"},
+      el("strong", {}, "You will be EXCLUDED if:"),
+      el("ul", {style:"margin:4px 0 0;padding-left:18px;font-size:13px"},
+        ...v.exclusions.map(x => el("li", {}, x)))
+    ) : null,
+    el("div", {style:"margin-top:10px;padding:10px;background:#fff;border:1px dashed var(--border);border-radius:8px"},
+      el("div", {style:"font-size:13px;line-height:1.6"}, voice.reply || ""),
+      el("div", {class:"meta-line"}, "source: "+voice.source+" · model: "+(voice.model||"rule-engine")),
+    ),
+    el("div", {class:"row", style:"margin-top:10px"},
+      v.application_url ? el("a", {href:v.application_url, target:"_blank", rel:"noopener", class:"pill"}, "📝 Apply on official portal ↗") : null,
+      v.helpline && PLUGINS.callsupport ? el("a", {href:"tel:"+v.helpline.split("/")[0].trim(), class:"pill"}, "📞 "+v.helpline) : null,
+      el("button", {class:"ghost", onclick:()=>speak(voice.reply)}, "🔊 Read aloud again"),
+    ),
+  );
+  $("elig-result").innerHTML = ""; $("elig-result").appendChild(out);
+  speak(voice.reply);
+  $("elig-status").textContent = "done";
+}
+
+$("scan-all").addEventListener("click", async () => {
+  $("elig-status").textContent = "scanning all schemes…";
+  $("scan-all").disabled = true;
+  try {
+    const r = await fetch(API + "/api/government/eligibility/scan?eligible_only=true", {
+      method: "POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ profile: getProfile() }),
+    });
+    const j = await r.json();
+    if (!j.ok) { $("elig-status").textContent = "error"; return; }
+    const out = $("elig-result"); out.innerHTML = "";
+    const head = el("h3", {}, `🟢 You may qualify for ${j.results.length} schemes:`);
+    out.appendChild(head);
+    if (!j.results.length){
+      out.appendChild(el("div", {class:"empty"}, "Add more details to your profile and try again — the rule engine cannot decide on what it doesn't know."));
+    } else {
+      const list = el("div", {class:"scheme-list"});
+      for (const r of j.results) {
+        list.appendChild(el("div", {class:"scheme-card"},
+          el("h4", {}, r.scheme_name),
+          el("p", {}, r.benefit_summary_en || r.ministry || ""),
+          el("div", {class:"row", style:"margin-top:6px"},
+            el("button", {class:"primary", onclick:()=>{$("scheme-pick").value=r.scheme_slug; checkEligibility();}}, "Open"),
+            r.application_url ? el("a", {href:r.application_url, target:"_blank", rel:"noopener", class:"pill"}, "Apply ↗") : null,
+          ),
+        ));
+      }
+      out.appendChild(list);
+      speak(LANG==="hi"
+        ? `आप ${j.results.length} योजनाओं के लिए पात्र हो सकते हैं।`
+        : `You may qualify for ${j.results.length} schemes.`);
+    }
+    $("elig-status").textContent = "done";
+  } catch(e) {
+    $("elig-status").textContent = "offline";
+  } finally {
+    $("scan-all").disabled = false;
+  }
+});
+
+/* ── Checklist ── */
+$("checklist-scheme").addEventListener("change", async () => {
+  const slug = $("checklist-scheme").value; if (!slug) return;
+  const r = await fetch(API + `/api/government/schemes/${slug}/checklist`);
+  const j = await r.json();
+  if (!j.ok) return;
+  const have = ls_get("chitti.gov.checklist."+slug, {});
+  const out = $("checklist-out"); out.innerHTML = "";
+  out.appendChild(el("h3", {}, j.scheme_name));
+  const ul = el("div", {});
+  for (const item of j.items) {
+    const checked = !!have[item.name];
+    const row = el("div", {class:"check-row"});
+    const cb = el("input", {type:"checkbox"}); cb.checked = checked;
+    cb.addEventListener("change", () => {
+      have[item.name] = cb.checked;
+      ls_set("chitti.gov.checklist."+slug, have);
+    });
+    row.appendChild(cb);
+    row.appendChild(el("label", {}, item.name));
+    ul.appendChild(row);
+  }
+  out.appendChild(ul);
+  if (j.application_url) out.appendChild(el("p", {style:"margin-top:8px"},
+    el("a", {href:j.application_url, target:"_blank", rel:"noopener", class:"pill"}, "📝 Apply on official portal ↗")));
+  if (j.helpline) out.appendChild(el("p", {class:"small"}, "Helpline: " + j.helpline));
+  speak(LANG==="hi"
+    ? `${j.scheme_name} के लिए ${j.items.length} दस्तावेज़ चाहिए।`
+    : `For ${j.scheme_name}, you need ${j.items.length} documents.`);
+});
+
+/* ── Form helper ── */
+let FORM_STATE = null;
+$("form-start").addEventListener("click", async () => {
+  const slug = $("form-scheme").value; if (!slug) { alert("Pick a scheme."); return; }
+  const r = await fetch(API + `/api/government/schemes/${slug}`);
+  const j = await r.json();
+  if (!j.ok) return;
+  const s = j.scheme;
+  FORM_STATE = { scheme: s, idx: 0, answers: {} };
+  $("form-start").disabled = true; $("form-stop").disabled = false;
+  buildAndAskNext();
+});
+$("form-stop").addEventListener("click", () => { FORM_STATE=null; $("form-start").disabled=false; $("form-stop").disabled=true; $("form-status").textContent="stopped"; });
+
+function buildAndAskNext(){
+  if (!FORM_STATE) return;
+  const profile = getProfile();
+  const s = FORM_STATE.scheme;
+  // Field plan
+  const plan = [
+    {key:"name", q:"What is your full name as on Aadhaar?"},
+    {key:"age", q:"What is your age?", from:"age"},
+    {key:"gender", q:"What is your gender? Female, male, or other?", from:"gender"},
+    {key:"state", q:"Which state do you live in?", from:"state_code"},
+    {key:"rural_urban", q:"Do you live in a rural area or urban area?", from:"rural_urban"},
+    {key:"income", q:"What is your annual family income in rupees?", from:"income_annual_inr"},
+    {key:"occupation", q:"What is your main occupation?", from:"occupation"},
+    {key:"phone", q:"What is your mobile number linked to Aadhaar?"},
+    {key:"bank", q:"Which bank holds your Aadhaar-linked account?"},
+  ];
+  if ((s.documents_required||[]).length){
+    plan.push({key:"docs_ack", q:`You will need these documents: ${s.documents_required.join(", ")}. Please confirm — do you have them ready? Yes or no.`});
+  }
+  FORM_STATE.plan = plan;
+  if (FORM_STATE.idx >= plan.length){ renderFormSummary(); return; }
+  const f = plan[FORM_STATE.idx];
+  if (f.from && profile[f.from] != null) {
+    FORM_STATE.answers[f.key] = profile[f.from];
+    FORM_STATE.idx++; setTimeout(buildAndAskNext, 50); return;
+  }
+  $("form-status").textContent = `Q${FORM_STATE.idx+1} / ${plan.length}: ${f.q}`;
+  speak(f.q);
+  // Render manual input row
+  const out = $("form-out"); out.innerHTML = "";
+  out.appendChild(el("div", {class:"card"},
+    el("p", {style:"font-weight:700"}, f.q),
+    el("input", {type:"text", id:"form-ans", placeholder:"Type or speak the answer", style:"margin-bottom:8px"}),
+    el("div", {class:"row"},
+      el("button", {class:"ghost", onclick:()=>listen(null, tx=>{$("form-ans").value=tx;})}, "🎙️ Speak"),
+      el("button", {class:"primary", onclick:()=>{
+        const v = $("form-ans").value.trim(); if(!v) return;
+        FORM_STATE.answers[f.key] = v; FORM_STATE.idx++; buildAndAskNext();
+      }}, "Next →"),
+      el("button", {class:"ghost", onclick:()=>{ FORM_STATE.idx++; buildAndAskNext(); }}, "Skip"),
+    ),
+  ));
+}
+function renderFormSummary(){
+  const s = FORM_STATE.scheme; const ans = FORM_STATE.answers;
+  $("form-status").textContent = "summary ready";
+  $("form-stop").disabled = true; $("form-start").disabled = false;
+  const out = $("form-out"); out.innerHTML = "";
+  const lines = Object.entries(ans).map(([k,v]) => `${k}: ${v}`);
+  out.appendChild(el("div", {class:"card"},
+    el("h3", {}, "Printable summary for the CSC officer · " + s.name_en),
+    el("pre", {style:"white-space:pre-wrap;font-size:13px"}, lines.join("\n")),
+    el("div", {class:"row"},
+      el("button", {class:"primary", onclick:()=>window.print()}, "🖨️ Print"),
+      s.application_url ? el("a", {href:s.application_url, target:"_blank", rel:"noopener", class:"pill"}, "📝 Apply ↗") : null,
+    ),
+  ));
+  speak(LANG==="hi"?"फॉर्म तैयार है। प्रिंट करें या ऑफिस ले जाएं।":"Form summary ready. Print it or take it to the office.");
+}
+
+/* ── Alerts (PIB feed) ── */
+async function loadAlerts(){
+  $("alerts-status").textContent = "loading…";
+  try {
+    const r = await fetch(API + "/api/government/alerts?limit=30");
+    const j = await r.json();
+    const list = $("alerts-list"); list.innerHTML = "";
+    if (!j.ok || !j.items.length) {
+      list.innerHTML = '<div class="empty">No PIB alerts ingested yet — the poller runs every 6 hours. Tap Refresh again in a moment, or click the button below to force a poll.</div>';
+      list.appendChild(el("button", {class:"primary", onclick:async()=>{
+        $("alerts-status").textContent="polling PIB live…";
+        await fetch(API+"/api/government/alerts/poll", {method:"POST"}); loadAlerts();
+      }}, "▶️ Force-poll PIB now"));
+      return;
+    }
+    for (const item of j.items) {
+      const card = el("div", {class:"alert-card"},
+        el("div", {class:"meta"}, (item.ministry||"") + " · " + (item.published_at||"").slice(0,10) + (item.matched_scheme_slug?` · matched: ${item.matched_scheme_slug}`:"")),
+        el("div", {style:"font-weight:700"}, item.title || item.title_hi || ""),
+        item.summary ? el("p", {class:"small"}, item.summary.slice(0,260) + (item.summary.length>260?"…":"")) : null,
+        el("div", {class:"row"},
+          el("a", {href:item.link, target:"_blank", rel:"noopener", class:"pill"}, "Open PIB ↗"),
+          el("button", {class:"ghost", onclick:()=>speak((item.title||"")+". "+(item.summary||""))}, "🔊"),
+          item.matched_scheme_slug ? el("button", {class:"primary", onclick:()=>{$("scheme-pick").value=item.matched_scheme_slug; document.querySelector('[data-panel="checker"]').click(); checkEligibility();}}, "Check eligibility") : null,
+        ),
+      );
+      list.appendChild(card);
+    }
+    $("alerts-status").textContent = `${j.count} alerts`;
+  } catch(e) {
+    $("alerts-list").innerHTML = '<div class="err">Backend unreachable.</div>';
+    $("alerts-status").textContent = "offline";
+  }
+}
+$("alerts-refresh").addEventListener("click", loadAlerts);
+$("alerts-notify").addEventListener("click", async () => {
+  if (!("Notification" in window)) { alert("Notifications not supported in this browser."); return; }
+  const p = await Notification.requestPermission();
+  if (p === "granted"){
+    new Notification("Chitti Government", { body: "Notifications enabled. Open the Alerts tab whenever the bell rings." });
+    speak(LANG==="hi"?"नोटिफिकेशन चालू हो गए।":"Notifications enabled.");
+  }
+});
+loadAlerts();
+
+/* ── Status tracker ── */
+$("status-scheme").addEventListener("change", async () => {
+  const slug = $("status-scheme").value; if (!slug) return;
+  const r = await fetch(API + `/api/government/schemes/${slug}/status_link`);
+  const j = await r.json();
+  const out = $("status-out"); out.innerHTML = "";
+  if (!j.ok) return;
+  const handoff = LANG==="hi" ? j.voice_handoff_hi : j.voice_handoff_en;
+  out.appendChild(el("div", {class:"card"},
+    el("h3", {}, j.scheme_name),
+    el("p", {}, handoff),
+    el("div", {class:"row"},
+      j.official_url ? el("a", {href:j.official_url, target:"_blank", rel:"noopener", class:"pill"}, "🔗 Open official portal ↗") : null,
+      j.helpline ? el("a", {href:"tel:"+j.helpline.split("/")[0].trim(), class:"pill"}, "📞 "+j.helpline) : null,
+      el("button", {class:"ghost", onclick:()=>speak(handoff)}, "🔊 Read aloud"),
+    ),
+  ));
+  speak(handoff);
+});
+
+/* ── Locator ── */
+async function loadLocatorKinds(){
+  const r = await fetch(API + "/api/government/locator/kinds");
+  const j = await r.json();
+  if (!j.ok) return;
+  $("loc-kind").innerHTML = j.kinds.map(k=>`<option value="${k.kind}">${k.label}</option>`).join("");
+}
+loadLocatorKinds();
+
+$("loc-here").addEventListener("click", () => {
+  if (!navigator.geolocation) { alert("Geolocation unavailable."); return; }
+  $("loc-status").textContent = "getting location…";
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const {latitude, longitude} = pos.coords;
+    const kind = $("loc-kind").value || "csc";
+    const radius = parseFloat($("loc-radius").value || "10");
+    $("loc-status").textContent = "searching…";
+    const r = await fetch(`${API}/api/government/locator?kind=${kind}&lat=${latitude}&lng=${longitude}&radius_km=${radius}`);
+    const j = await r.json();
+    renderLocator(j, latitude, longitude);
+  }, () => { $("loc-status").textContent = "location denied"; });
+});
+$("loc-gmaps").addEventListener("click", () => {
+  const kind = $("loc-kind").value;
+  if (!kind) return;
+  const k = ($("loc-kind").options[$("loc-kind").selectedIndex] || {}).text || kind;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(k)}&center=${pos.coords.latitude},${pos.coords.longitude}`;
+      window.open(url, "_blank", "noopener");
+    }, () => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(k)}+India`, "_blank", "noopener"));
+  } else {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(k)}+India`, "_blank", "noopener");
+  }
+});
+function renderLocator(j, lat, lng){
+  const out = $("loc-out"); out.innerHTML = "";
+  if (!j.ok){ out.innerHTML = `<div class="err">${j.error||"error"}</div>`; return; }
+  out.appendChild(el("p", {class:"small"}, `${j.label} · ${j.results.length} hits within radius`));
+  if (j.results.length === 0) {
+    out.appendChild(el("div", {class:"empty"}, "No results from OpenStreetMap nearby. Try the Google Maps button — it searches the same area with a different index."));
+  }
+  const list = el("div", {});
+  for (const h of j.results) {
+    const gmap = `https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}`;
+    list.appendChild(el("div", {class:"alert-card"},
+      el("div", {style:"font-weight:700"}, h.name.split(",").slice(0,3).join(",")),
+      el("div", {class:"small"}, [h.city,h.district,h.state,h.postcode].filter(Boolean).join(" · ")),
+      el("div", {class:"row"},
+        el("a", {href:gmap, target:"_blank", rel:"noopener", class:"pill"}, "🧭 Directions"),
+      ),
+    ));
+  }
+  out.appendChild(list);
+  if (j.official_locator_url) out.appendChild(el("p", {class:"small"},
+    el("a", {href:j.official_locator_url, target:"_blank", rel:"noopener"}, "Official " + j.label + " locator ↗")));
+  out.appendChild(el("p", {class:"small"}, j.attribution || ""));
+  $("loc-status").textContent = "done";
+  speak(LANG==="hi"?`${j.results.length} ${j.label} mile.`:`${j.results.length} ${j.label} found nearby.`);
+}
+
+/* ── Documents (local upload) ── */
+function renderDocs(){
+  const docs = ls_get(LS.DOCS, []);
+  const out = $("doc-list"); out.innerHTML = "";
+  if (!docs.length) { out.appendChild(el("div", {class:"empty"}, "No documents added yet.")); return; }
+  for (let i=0; i<docs.length; i++) {
+    const d = docs[i];
+    out.appendChild(el("div", {class:"check-row"},
+      el("span", {style:"flex:1"}, "📎 " + d.name + " · " + Math.round(d.size/1024) + " KB · added " + d.added.slice(0,10)),
+      el("button", {class:"ghost", onclick:()=>{ docs.splice(i,1); ls_set(LS.DOCS, docs); renderDocs(); }}, "🗑️ Remove"),
+    ));
+  }
+}
+$("doc-pick").addEventListener("change", e => {
+  const docs = ls_get(LS.DOCS, []);
+  for (const f of e.target.files) {
+    docs.push({ name: f.name, size: f.size, type: f.type, added: new Date().toISOString() });
+  }
+  ls_set(LS.DOCS, docs); renderDocs();
+});
+renderDocs();
+
+function renderExpiry(){
+  const items = ls_get(LS.EXPIRY, []);
+  const ul = $("exp-list"); ul.innerHTML = "";
+  const today = new Date();
+  for (let i=0; i<items.length; i++) {
+    const it = items[i];
+    const d = new Date(it.date);
+    const days = Math.round((d - today) / (1000*60*60*24));
+    let mark = "";
+    if (days < 0) mark = "❌ EXPIRED";
+    else if (days <= 7) mark = "🚨 expires in "+days+" days";
+    else if (days <= 30) mark = "⚠️ expires in "+days+" days";
+    else if (days <= 90) mark = "🔔 expires in "+days+" days";
+    else mark = "✅ "+days+" days left";
+    const li = el("li", {}, `${it.doc} · ${it.date} — ${mark} `,
+      el("button", {class:"ghost", style:"padding:2px 8px;font-size:11px;min-height:24px", onclick:()=>{ items.splice(i,1); ls_set(LS.EXPIRY, items); renderExpiry();}}, "remove"));
+    ul.appendChild(li);
+  }
+}
+$("exp-add").addEventListener("click", () => {
+  const doc = $("exp-doc").value; const date = $("exp-date").value;
+  if (!date) { alert("Pick a date."); return; }
+  const items = ls_get(LS.EXPIRY, []);
+  items.push({doc, date}); ls_set(LS.EXPIRY, items); renderExpiry();
+  speak(LANG==="hi"?"रिमाइंडर जोड़ा गया।":"Reminder added.");
+});
+renderExpiry();
+
+/* ── Anonymous feedback ── */
+async function sendFeedback(verdict){
+  const activeTab = document.querySelector("nav.tabs .tab.active").dataset.panel;
+  const featureMap = {
+    checker: "eligibility_checker", catalog: "general", checklist: "checklist",
+    form: "form_filler", alerts: "alerts", status: "status_tracker",
+    locator: "locator", docs: "digilocker_upload", profile: "general",
+  };
+  try {
+    const r = await fetch(API + "/api/government/feedback", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        feature: featureMap[activeTab] || "general",
+        scheme_slug: $("scheme-pick").value || null,
+        verdict, note: $("fb-note").value.trim() || null,
+      }),
+    });
+    const j = await r.json();
+    $("fb-status").textContent = j.ok ? "thanks!" : "error";
+    if (j.ok) speak(LANG==="hi"?"धन्यवाद।":"Thank you for the feedback.");
+  } catch(e) { $("fb-status").textContent = "offline"; }
+}
+$("fb-up").addEventListener("click", ()=>sendFeedback("up"));
+$("fb-down").addEventListener("click", ()=>sendFeedback("down"));
+
+</script>
+</body>
+</html>
