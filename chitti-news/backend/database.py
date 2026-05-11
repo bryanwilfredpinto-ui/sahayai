@@ -3,14 +3,26 @@ database.py
 -----------
 SQLAlchemy engine + session + ensure_schema().
 
-Supports three URL shapes:
+URL shapes supported:
   - libsql://<host>?authToken=<token>     (Turso libSQL — production)
   - sqlite:///path/to/file.db             (local dev)
-  - postgresql://... or postgres://...    (legacy — pre-Turso migration; will be
-                                           removed once every Chitti is on Turso)
+  - postgresql://... or postgres://...    (legacy — pre-Turso migration)
 
-`models/_schema.py` returns SCHEMA=None for anything that isn't `postgresql`,
-so libSQL/SQLite both get unprefixed table names automatically.
+Turso compatibility note
+------------------------
+SQLAlchemy's stock `pysqlite` dialect assumes the DBAPI Connection is the
+stdlib `sqlite3.Connection` — a mutable `.isolation_level` attribute and
+support for `PRAGMA read_uncommitted` to detect default isolation level.
+
+libsql-experimental's Connection is a Rust binding over Hrana HTTP:
+  - It doesn't expose `isolation_level` as a writable attribute.
+  - Hrana returns HTTP 405 on PRAGMA queries.
+
+So we patch the pysqlite dialect class — JUST for the methods Turso can't
+satisfy — to short-circuit isolation-level probes. Turso's transactional
+model is fixed by Hrana, so "SERIALIZABLE" is the truthful constant answer.
+The patch is gated by URL shape, so a local sqlite:/// file in dev still
+gets the real pysqlite behaviour.
 """
 from __future__ import annotations
 
@@ -21,15 +33,6 @@ from config import settings
 
 
 def _resolve_url(raw: str) -> str:
-    """
-    Normalise the DATABASE_URL into a form SQLAlchemy can use directly.
-
-    - libsql://... becomes sqlite+libsql://... so SQLAlchemy picks up the
-      libSQL dialect from the `sqlalchemy-libsql` package.
-    - postgres:// (Heroku-style) becomes postgresql:// so psycopg2-style
-      drivers attach. Kept only for the migration window; remove after
-      every Chitti is on Turso.
-    """
     if raw.startswith("libsql://"):
         return "sqlite+" + raw
     if raw.startswith("postgres://"):
@@ -38,19 +41,33 @@ def _resolve_url(raw: str) -> str:
 
 
 db_url = _resolve_url(settings.DATABASE_URL)
+_is_libsql = db_url.startswith("sqlite+libsql")
+
+
+def _patch_pysqlite_for_libsql() -> None:
+    """Make pysqlite dialect tolerant of libsql-experimental's Connection."""
+    from sqlalchemy.dialects.sqlite.pysqlite import SQLiteDialect_pysqlite
+
+    def _fixed_isolation(self, dbapi_conn):
+        return "SERIALIZABLE"
+
+    def _noop_set(self, dbapi_conn, level):
+        return  # libsql Connection has no writable isolation_level attr
+
+    SQLiteDialect_pysqlite.get_isolation_level = _fixed_isolation          # type: ignore[assignment]
+    SQLiteDialect_pysqlite.get_default_isolation_level = _fixed_isolation  # type: ignore[assignment]
+    SQLiteDialect_pysqlite.set_isolation_level = _noop_set                 # type: ignore[assignment]
+
+
+if _is_libsql:
+    _patch_pysqlite_for_libsql()
 
 connect_args: dict = {}
-if db_url.startswith("sqlite") and not db_url.startswith("sqlite+libsql"):
-    # Local file SQLite: allow multi-thread access via Flask.
-    # (Turso libSQL is HTTP-based, no thread restriction.)
+if db_url.startswith("sqlite") and not _is_libsql:
     connect_args = {"check_same_thread": False}
 
-# Turso libSQL note: SQLAlchemy's sqlite dialect auto-detects isolation
-# level on first connect via `PRAGMA read_uncommitted`. The Hrana HTTP
-# protocol rejects PRAGMAs with HTTP 405. Pin the level explicitly so
-# the dialect skips the probe.
-engine_kwargs = {"connect_args": connect_args, "pool_pre_ping": True}
-if db_url.startswith("sqlite+libsql"):
+engine_kwargs: dict = {"connect_args": connect_args, "pool_pre_ping": True}
+if _is_libsql:
     engine_kwargs["isolation_level"] = "SERIALIZABLE"
 
 engine = create_engine(db_url, **engine_kwargs)
@@ -67,10 +84,7 @@ def get_db():
 
 
 def ensure_schema() -> None:
-    """
-    CREATE SCHEMA IF NOT EXISTS news — only on Postgres.
-    SQLite and libSQL have no schemas; this is a no-op there.
-    """
+    """CREATE SCHEMA IF NOT EXISTS news — only on Postgres. No-op elsewhere."""
     from models._schema import SCHEMA
     if not SCHEMA:
         return
