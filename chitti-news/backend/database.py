@@ -45,7 +45,15 @@ if db_url.startswith("sqlite") and not db_url.startswith("sqlite+libsql"):
     # (Turso libSQL is HTTP-based, no thread restriction.)
     connect_args = {"check_same_thread": False}
 
-engine = create_engine(db_url, connect_args=connect_args, pool_pre_ping=True)
+# Turso libSQL note: SQLAlchemy's sqlite dialect auto-detects isolation
+# level on first connect via `PRAGMA read_uncommitted`. The Hrana HTTP
+# protocol rejects PRAGMAs with HTTP 405. Pin the level explicitly so
+# the dialect skips the probe.
+engine_kwargs = {"connect_args": connect_args, "pool_pre_ping": True}
+if db_url.startswith("sqlite+libsql"):
+    engine_kwargs["isolation_level"] = "SERIALIZABLE"
+
+engine = create_engine(db_url, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
