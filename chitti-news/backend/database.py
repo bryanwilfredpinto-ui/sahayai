@@ -3,99 +3,108 @@ database.py
 -----------
 SQLAlchemy engine + session + ensure_schema().
 
-URL shapes supported:
-  - libsql://<host>?authToken=<token>     (Turso libSQL — production)
-  - sqlite:///path/to/file.db             (local dev)
-  - postgresql://... or postgres://...    (legacy — pre-Turso migration)
+Turso integration via **embedded replica** mode (not direct Hrana).
+Rationale: sqlalchemy-libsql 0.2.0 inherits the stock pysqlite dialect,
+which assumes a stdlib sqlite3.Connection (PRAGMA support + mutable
+isolation_level). Turso's remote Hrana protocol satisfies neither. We
+sidestep the whole class of problems by:
 
-Turso compatibility note
-------------------------
-SQLAlchemy's stock `pysqlite` dialect assumes the DBAPI Connection is the
-stdlib `sqlite3.Connection` — a mutable `.isolation_level` attribute and
-support for `PRAGMA read_uncommitted` to detect default isolation level.
+  1. Asking libsql-experimental to maintain a **local SQLite file** that
+     syncs (read AND write) with the Turso DB in the background. The
+     local file is a real SQLite database — full PRAGMA support, real
+     stdlib sqlite3.Connection semantics — so SQLAlchemy is happy.
+  2. Letting SQLAlchemy talk to the local file via plain
+     `sqlite:////tmp/<name>.db`. The library `libsql_experimental` does
+     the Turso syncing on the side.
 
-libsql-experimental's Connection is a Rust binding over Hrana HTTP:
-  - It doesn't expose `isolation_level` as a writable attribute.
-  - Hrana returns HTTP 405 on PRAGMA queries.
+Render free tier wipes /tmp on every deploy, so we re-sync from Turso
+at boot. Background sync runs every 60s after that. Writes hit the
+local file first and are pushed up on the next sync tick.
 
-So we patch the pysqlite dialect class — JUST for the methods Turso can't
-satisfy — to short-circuit isolation-level probes. Turso's transactional
-model is fixed by Hrana, so "SERIALIZABLE" is the truthful constant answer.
-The patch is gated by URL shape, so a local sqlite:/// file in dev still
-gets the real pysqlite behaviour.
+URL shapes:
+  - libsql://<host>?authToken=<token>   (Turso — production; uses embedded replica)
+  - sqlite:///path/to/file.db           (local dev)
+  - postgresql://... or postgres://...  (legacy; remove after migration)
 """
 from __future__ import annotations
+
+import logging
+import os
+import threading
+import time
+import urllib.parse
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from config import settings
 
+log = logging.getLogger("database")
+
+
+def _parse_libsql_url(raw: str) -> tuple[str, str]:
+    """Pull (sync_url, auth_token) out of a libsql://host?authToken=... string."""
+    parsed = urllib.parse.urlparse(raw)
+    qs = urllib.parse.parse_qs(parsed.query)
+    token = (qs.get("authToken") or [""])[0]
+    # libsql-experimental wants the sync_url with scheme libsql:// stripped of query.
+    # Format that works in practice: libsql://<host> (no path, no query).
+    sync_url = f"{parsed.scheme}://{parsed.netloc}"
+    return sync_url, token
+
+
+_REPLICA_PATH: str | None = None
+_REPLICA_SYNCER = None  # libsql_experimental connection used purely for sync()
+
+
+def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
+    """Pull the Turso DB into a local SQLite file and start background sync."""
+    global _REPLICA_SYNCER
+    import libsql_experimental as libsql
+
+    sync_url, token = _parse_libsql_url(libsql_url)
+    log.info("Opening embedded replica at %s (sync_url=%s)", local_path, sync_url)
+    # Note: libsql.connect with sync_url creates the local file if missing.
+    _REPLICA_SYNCER = libsql.connect(local_path, sync_url=sync_url, auth_token=token)
+    try:
+        _REPLICA_SYNCER.sync()
+        log.info("Initial sync from Turso complete")
+    except Exception as e:  # noqa: BLE001
+        log.warning("Initial Turso sync failed (will retry in background): %s", e)
+
+    def _loop():
+        while True:
+            time.sleep(60)
+            try:
+                _REPLICA_SYNCER.sync()
+            except Exception as e:  # noqa: BLE001
+                log.warning("Background Turso sync failed: %s", e)
+
+    threading.Thread(target=_loop, name="turso-sync", daemon=True).start()
+
 
 def _resolve_url(raw: str) -> str:
+    global _REPLICA_PATH
+
     if raw.startswith("libsql://"):
-        return "sqlite+" + raw
+        # Pick a stable local file path. Render's /tmp is writable + wiped per deploy.
+        local = os.environ.get("LIBSQL_REPLICA_PATH", "/tmp/chitti_news.db")
+        _REPLICA_PATH = local
+        _bootstrap_replica(raw, local)
+        return f"sqlite:///{local}"
+
     if raw.startswith("postgres://"):
         return raw.replace("postgres://", "postgresql://", 1)
     return raw
 
 
 db_url = _resolve_url(settings.DATABASE_URL)
-_is_libsql = db_url.startswith("sqlite+libsql")
-
-
-def _patch_pysqlite_for_libsql() -> None:
-    """Make pysqlite dialect tolerant of libsql-experimental's Connection.
-
-    Two overrides:
-
-    1. **Isolation-level methods** — stock pysqlite reads `dbapi_conn.isolation_level`
-       and assigns to it. libsql's Rust Connection has neither operation.
-       We answer the constant "SERIALIZABLE" (truthful for Turso's Hrana model)
-       and no-op the setter.
-
-    2. **`has_table()` and the dialect's `_get_table_pragma` helper** — stock
-       pysqlite uses `PRAGMA table_info(...)` to introspect. Hrana returns
-       HTTP 405 on PRAGMA queries. We replace `has_table` with a query against
-       `sqlite_master`, which is a plain SELECT and works over Hrana.
-       `create_all(checkfirst=True)` only needs `has_table` to gate CREATE TABLE
-       emission; the CREATE statements themselves use no PRAGMAs.
-    """
-    from sqlalchemy.dialects.sqlite.pysqlite import SQLiteDialect_pysqlite
-
-    def _fixed_isolation(self, dbapi_conn):
-        return "SERIALIZABLE"
-
-    def _noop_set(self, dbapi_conn, level):
-        return
-
-    def _has_table_via_master(self, connection, table_name, schema=None, **kw):
-        if schema:  # libsql/Turso single-DB, no schemas
-            return False
-        cur = connection.exec_driver_sql(
-            "SELECT 1 FROM sqlite_master WHERE type IN ('table','view') AND name = ?",
-            (table_name,),
-        )
-        return cur.first() is not None
-
-    SQLiteDialect_pysqlite.get_isolation_level = _fixed_isolation          # type: ignore[assignment]
-    SQLiteDialect_pysqlite.get_default_isolation_level = _fixed_isolation  # type: ignore[assignment]
-    SQLiteDialect_pysqlite.set_isolation_level = _noop_set                 # type: ignore[assignment]
-    SQLiteDialect_pysqlite.has_table = _has_table_via_master               # type: ignore[assignment]
-
-
-if _is_libsql:
-    _patch_pysqlite_for_libsql()
 
 connect_args: dict = {}
-if db_url.startswith("sqlite") and not _is_libsql:
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-engine_kwargs: dict = {"connect_args": connect_args, "pool_pre_ping": True}
-if _is_libsql:
-    engine_kwargs["isolation_level"] = "SERIALIZABLE"
-
-engine = create_engine(db_url, **engine_kwargs)
+engine = create_engine(db_url, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -115,3 +124,12 @@ def ensure_schema() -> None:
         return
     with engine.begin() as conn:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}"))
+
+
+def sync_now() -> None:
+    """Force an immediate sync to Turso. Call this after batch writes if needed."""
+    if _REPLICA_SYNCER is not None:
+        try:
+            _REPLICA_SYNCER.sync()
+        except Exception as e:  # noqa: BLE001
+            log.warning("Forced Turso sync failed: %s", e)
