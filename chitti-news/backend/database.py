@@ -45,18 +45,43 @@ _is_libsql = db_url.startswith("sqlite+libsql")
 
 
 def _patch_pysqlite_for_libsql() -> None:
-    """Make pysqlite dialect tolerant of libsql-experimental's Connection."""
+    """Make pysqlite dialect tolerant of libsql-experimental's Connection.
+
+    Two overrides:
+
+    1. **Isolation-level methods** — stock pysqlite reads `dbapi_conn.isolation_level`
+       and assigns to it. libsql's Rust Connection has neither operation.
+       We answer the constant "SERIALIZABLE" (truthful for Turso's Hrana model)
+       and no-op the setter.
+
+    2. **`has_table()` and the dialect's `_get_table_pragma` helper** — stock
+       pysqlite uses `PRAGMA table_info(...)` to introspect. Hrana returns
+       HTTP 405 on PRAGMA queries. We replace `has_table` with a query against
+       `sqlite_master`, which is a plain SELECT and works over Hrana.
+       `create_all(checkfirst=True)` only needs `has_table` to gate CREATE TABLE
+       emission; the CREATE statements themselves use no PRAGMAs.
+    """
     from sqlalchemy.dialects.sqlite.pysqlite import SQLiteDialect_pysqlite
 
     def _fixed_isolation(self, dbapi_conn):
         return "SERIALIZABLE"
 
     def _noop_set(self, dbapi_conn, level):
-        return  # libsql Connection has no writable isolation_level attr
+        return
+
+    def _has_table_via_master(self, connection, table_name, schema=None, **kw):
+        if schema:  # libsql/Turso single-DB, no schemas
+            return False
+        cur = connection.exec_driver_sql(
+            "SELECT 1 FROM sqlite_master WHERE type IN ('table','view') AND name = ?",
+            (table_name,),
+        )
+        return cur.first() is not None
 
     SQLiteDialect_pysqlite.get_isolation_level = _fixed_isolation          # type: ignore[assignment]
     SQLiteDialect_pysqlite.get_default_isolation_level = _fixed_isolation  # type: ignore[assignment]
     SQLiteDialect_pysqlite.set_isolation_level = _noop_set                 # type: ignore[assignment]
+    SQLiteDialect_pysqlite.has_table = _has_table_via_master               # type: ignore[assignment]
 
 
 if _is_libsql:
