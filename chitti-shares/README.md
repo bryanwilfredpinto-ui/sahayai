@@ -1,107 +1,109 @@
-# Chitti Shares — Phases 1–6 Complete
+# Chitti Shares
 
-Premium AI trading intelligence for Indian retail traders.
+Indian equities backend that powers **two** Chitti front-ends from a single FastAPI service:
 
-| Phase | What it ships |
-|---|---|
-| **1** | Mobile-OTP auth, JWT refresh, device management, dashboard shell |
-| **2** | Live Nifty/Sensex via Kite, Chitti Market View (DeepSeek 2-sentence summary) |
-| **3** | Stock fundamentals scorecard (A+/F grading), quarterly results with star rating |
-| **4** | Technical analysis (RSI, MACD, Williams %R, Force Index, Elder Ray) + custom rule DSL + call reports |
-| **5** | Watchlist, alerts (price/RSI), Portfolio Doctor, Chitti AI Chat, Hindi UI, voice playback |
-| **6** | **Quota tracking · 10 stock specialists · ATR trade plans · multi-TF consensus · saved rules · CSV upload · AI portfolio insights · 5-star rating · Render Cron · Telegram Kite reminder · drag-to-reorder watchlist · cold-start wake-up screen** |
+| Frontend (repo root) | Live URL | Persona |
+|---|---|---|
+| [`chitti_fundamentals.html`](../chitti_fundamentals.html) | https://sahayai.in/chitti_fundamentals.html | Patient teacher (Buffett / Lynch / Graham / Greenblatt lenses) |
+| [`chitti_complete_technical.html`](../chitti_complete_technical.html) | https://sahayai.in/chitti_complete_technical.html | Fast technical trader (Roshan Indicator + 43 indicators) |
 
-**Status: 62 routes, 153 stock universe seeded, frontend builds 149 KB gzipped.**
+Backend service: `https://chitti-shares-api.onrender.com`
+
+## Data sources (locked)
+
+Yahoo Finance is **BLOCKED** from Render IPs. The active sources are:
+
+| Need | Source | File |
+|---|---|---|
+| Fundamentals, financials, shareholding, CAGR inputs | **screener.in** scrape | [`backend/services/screener_client.py`](backend/services/screener_client.py) |
+| Live quotes, intraday candles (15m / 5m / 1m), historical OHLC | **Angel SmartAPI** | [`backend/services/angel_client.py`](backend/services/angel_client.py), [`backend/services/intraday_candles.py`](backend/services/intraday_candles.py) |
+| News (per stock + market) | **Moneycontrol + LiveMint + BSE + NSE RSS** | [`backend/services/news_client.py`](backend/services/news_client.py) |
+| AI synthesis (Chitti's View, Story Mode, Ask Chitti, agentic loops) | **DeepSeek** chat completions (migrating off Anthropic) | [`backend/services/deepseek_client.py`](backend/services/deepseek_client.py) |
+| Index quotes (Nifty / Sensex when NSE/Yahoo blocked) | Laptop pusher → `POST /debug/ingest-indices` | [`backend/main.py`](backend/main.py) |
+| Yahoo Finance | LOCAL-DEV FALLBACK ONLY | [`backend/services/yahoo_client.py`](backend/services/yahoo_client.py) |
+
+## What ships today
+
+- 60+ HTTP routes split across `routes/` and the agentic `main.py` entry endpoints
+- Mobile-OTP auth + JWT refresh + 2-device-per-user enforcement (Phase 1)
+- Live Nifty/Sensex + Chitti Market View (Phase 2)
+- Fundamentals scorecard (A+ to F) + 8-quarter results + star rating (Phase 3)
+- Roshan Indicator + 43 technical indicators + custom rule DSL + call reports (Phase 4)
+- Watchlist + alerts + Portfolio Doctor + Chitti AI Chat + Hindi UI (Phase 5)
+- 10 per-stock specialists + ATR trade plans + multi-TF consensus + saved rules + quota tracking + AI portfolio insights (Phase 6)
+- Phase 7 agentic surface: `/api/agent/technical/ask`, `/api/agent/fundamental/ask`, `/api/agent/medupi/ask` (true DeepSeek tool-calling loop)
+- Phase 7 compute-only differentiators: 5D Snowflake radar, Confidence Dial, Risk-Fit Dial, Performance vs NIFTY, Returns calculator
+- Universe scanner (Roshan + 43 indicators) across 5 universes (NIFTY 50 / Largecap / Midcap / Smallcap / Microcap)
+- Strategy screener with 30+ investor-lens slugs (Buffett / Lynch / Graham / Greenblatt / Munger / Pabrai / Marks / RJ / Kedia / RKD / RMD / NS / HDFC / Mirae / Motilal / etc.)
+- Per-call DeepSeek quota tracking (soft cap ₹50 / day, hard cap ₹100 / day, IST reset)
+- In-process APScheduler (replaced paid Render cron jobs)
+- MedUPI endpoints co-hosted in this service (sibling product, separate Neon DB)
+
+## Layout
 
 ```
 chitti-shares/
-├── backend/                FastAPI + SQLAlchemy + JWT + Fast2SMS + Yahoo + DeepSeek + Telegram
-│   ├── config/             nifty_universe.json (seed) + stock_specialists.json
-│   ├── routes/             auth, user, market, stocks, technical, portfolio,
-│   │                        chat, quota, specialists, cron     (13 routers)
-│   └── services/           data_source, indicators, rule_engine, scorecard,
-│                            usage_tracker, stock_universe, specialist
-├── frontend/               React 18 + Vite + Tailwind + i18n (en/hi) + DnD + voice I/O
-│   ├── components/         WakeUpOverlay, QuotaWidget, StockSearch, VoiceButton, ...
-│   └── pages/              Dashboard, Markets, Portfolio, Alerts, Calls,
-│                            Specialists, SpecialistChat, ChittiChat, ...
-├── render.yaml             Blueprint for backend + web + DB + 3 cron jobs
-├── README.md               ← you are here
-├── DEPLOY_FULL.md          ★ Single canonical deploy guide (read this first)
-├── DEPLOY_PHASE1.md        Reference: Phase 1 only
-├── DEPLOY_PHASE2.md        Reference: Phase 2 only
-└── DEPLOY_PHASE3-5.md      Reference: Phases 3–5
++- backend/                 FastAPI + SQLAlchemy + JWT + Angel + screener + DeepSeek
+|  +- config/               nifty_universe.json + stock_specialists.json
+|  +- routes/               auth, user, market, stocks, technical, portfolio,
+|  |                        chat, quota, specialists, cron     (10 routers)
+|  +- services/             angel_client, screener_client, news_client,
+|  |                        technical, indicators, scanner, strength,
+|  |                        snowflake, returns, fundamentals_extras,
+|  |                        fundamental_scanner, scorecard, rule_engine,
+|  |                        specialist, deepseek_client, usage_tracker,
+|  |                        cache, deps, auth_helpers, otp_sender,
+|  |                        symbol_resolver, stock_universe, levels,
+|  |                        intraday_candles, scheduler,
+|  |                        agent_runtime, agent_tools,
+|  |                        medupi_* (sibling)
+|  +- models/               user, device, kite_token, stock, quota,
+|  |                        stock_universe, index_quote, _schema
+|  +- main.py               app entry; public + Phase 7 endpoints live here
+|  +- database.py           engine + Base + ensure_schema('shares')
+|  +- config.py             pydantic Settings (env vars)
+|  +- requirements.txt
+|  L- runtime.txt
++- frontend/                React 18 + Vite + Tailwind (legacy; replaced by single-file HTML)
++- render.yaml              Blueprint: backend (web) + frontend (static)
++- README.md                <- you are here
++- CONTEXT.md               Why this product exists + accessibility contract
++- ARCHITECTURE.md          Engine map, schema isolation, scheduler design
++- API.md                   Every route grouped fundamentals / technical / shared
++- DATABASE.md              Tables, columns, indexes, schema isolation
++- CHANGELOG.md             git-log driven history
++- TODO.md                  Outstanding spec items + code TODOs
++- PROMPTS.md               Every LLM prompt template in the codebase
++- DEPLOY_FULL.md           Canonical Render walkthrough
++- DEPLOY_PHASE1..3-5.md    Historical phase guides
 ```
 
-## Active data source
+## Production deploy
 
-**Yahoo Finance is the active source.** Free, no daily token expiry, no monthly fee. Kite Connect is plumbed as a provision — flip `DATA_SOURCE=kite` after purchasing the API to get:
+Render Blueprint (`render.yaml`) provisions:
 
-- Real-time data (no 15-min delay)
-- Level-2 / market depth
-- Same broker for live trading hooks
+1. `chitti-shares-api` — FastAPI web service on the Render free tier (cold-start friendly; `/health` is the wake-up ping).
+2. `chitti-shares-web` — legacy React static site (the single-file HTMLs now serve from GitHub Pages root).
 
-When `DATA_SOURCE=yahoo`, the daily Kite OAuth dance is **not** needed. The Telegram re-auth cron auto-skips on Yahoo mode.
+Manual env vars to set in the Render dashboard:
 
-## Phase 6 highlights
+```
+DATABASE_URL          (Supabase / Neon Postgres "Direct" string)
+FAST2SMS_API_KEY      (OTP delivery)
+DEEPSEEK_API_KEY      (AI synthesis)
+ADMIN_MOBILE          (10-digit, no +91 — gates Kite OAuth endpoints)
+CRON_SECRET           (long random; same value used by ingest + cron URLs)
+ANGEL_API_KEY / ANGEL_CLIENT_CODE / ANGEL_PIN / ANGEL_TOTP_SECRET   (price feed)
+KITE_API_KEY / KITE_API_SECRET                                       (optional)
+TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID                                 (optional)
+```
 
-### Cold-start wake-up UX
-Render's free dyno sleeps after 15 min idle. The frontend pings `/health` on app mount; if any subsequent API call hangs >8s, a friendly **"Backend is waking up — refresh the page"** overlay appears with a live timer. No more confused users staring at a blank screen.
+`DATA_SOURCE=yahoo` is the default but is effectively bypassed by `screener_client` + `angel_client` paths because Yahoo is IP-blocked from Render.
 
-### Budget caps
-Every external API call (DeepSeek, Fast2SMS, Yahoo) is auto-logged with token counts and INR cost. **Soft cap (₹50/day)** logs a warning. **Hard cap (₹100/day)** returns 503 on metered routes. Yahoo (free) is never blocked. Daily reset at 00:00 IST. Visible on the dashboard top-right at all times.
+## Standing rules
 
-### 10 Stock Specialists
-Per-stock Chittis with focused context. Each pulls live fundamentals + last quarterly + today's technical signal for that one stock and builds a system prompt that pins the specialty + language. Configured via `config/stock_specialists.json` — adding an 11th stock requires no code change.
-
-### ATR-based trade plans
-Every Technical analysis now returns an Entry zone, Target, Stop Loss, and Risk:Reward ratio derived from ATR(14). Auto-fills the "Log Call" form so you don't have to do mental math.
-
-### Multi-timeframe consensus
-Strict-filter signal: checks day, week, month timeframes. Returns BUY only if all bullish, SELL only if all bearish, else WAIT with reason. Surfaces the "higher TF disagrees" warning before you log a bad call.
-
-### Saved custom rules
-Up to 5 saved rules per user. Save a custom rule once, run it against any stock with one click. Examples: "Oversold bounce", "Strong uptrend", "Breakout above Bollinger".
-
-### Portfolio improvements
-- **CSV upload** in Zerodha holdings.csv format (`Instrument, Qty., Avg. cost`)
-- **AI Insights** button hits DeepSeek for 3 specific recommendations
-- **5-star rating** based on diversification, concentration, P&L
-- **Cached** insights (1hr TTL) so refreshing the page doesn't burn budget
-
-### Drag-to-reorder watchlist
-Uses `@hello-pangea/dnd` (modern fork of react-beautiful-dnd, React 18 compatible). Each row inline shows scorecard grade + technical signal when cached. New items go to the bottom; user reordering persists in DB.
-
-### Render Cron Jobs
-Three secret-protected endpoints:
-- `/api/cron/alerts` (every 5 min, market hours) — checks alerts, fires events
-- `/api/cron/track-calls` (every 5 min, market hours) — refreshes open calls, marks target/SL hits
-- `/api/cron/kite-reauth` (5:55 AM IST daily) — sends Telegram reminder if Kite token stale (skipped if `DATA_SOURCE=yahoo`)
-
-## Quick deploy
-
-See **`DEPLOY_FULL.md`** for the complete walkthrough. TL;DR:
-
-1. Push the repo to GitHub.
-2. Render → New → Blueprint → point at the repo. `render.yaml` provisions backend + frontend + DB + 3 crons.
-3. Set manual env vars: `FAST2SMS_API_KEY`, `DEEPSEEK_API_KEY`, `ADMIN_MOBILE`, `CRON_SECRET`. (Kite + Telegram optional.)
-4. Add CNAME `shares.sahayai.in → <render-static-site>.onrender.com`.
-5. Open `https://shares.sahayai.in` and log in.
-
-First request after a deploy / cold start may take 30s — the wake-up overlay handles this gracefully.
-
-## Tech stack
-
-| Layer | Tools |
-|---|---|
-| Backend | FastAPI 0.115, SQLAlchemy 2.0, Uvicorn, httpx, yfinance, kiteconnect, bcrypt, PyJWT |
-| Frontend | React 18.3, Vite 5.4, Tailwind 3.4, react-router 6, axios, react-hot-toast, @hello-pangea/dnd, FingerprintJS |
-| Data | Yahoo Finance (default, free) / Kite Connect (optional, paid) |
-| AI | DeepSeek chat completions (~₹50/M input tokens) |
-| Auth | Mobile OTP via Fast2SMS, JWT access + refresh, per-device tracking |
-| Hosting | Render (free tier supported with cold starts) |
-| Database | SQLite on persistent disk, or Postgres if `DATABASE_URL` is set |
-| i18n | English + Hindi (Devanagari), persisted in DB + localStorage |
-| Voice | Web Speech API (browser-native TTS + STT, no cloud bill) |
-
-No external state, no microservices, no Kubernetes. Single web service + single static site + 3 crons.
+- **NOT SEBI Registered** sticky banner + full-legal modal — never moved to footer (see [`project_legal_disclaimer.md`](../memory)).
+- **Four-user contract**: Blind, Deaf, Mute, Illiterate — voice IN + voice OUT + symbols + plain English, never colour-only.
+- **Investor lens always declared** on every fundamentals verdict.
+- **iloc[-2] only** for the last *closed* candle in the Roshan rule; never `[-1]` (in-progress).
+- **Free-tier sources only** — no Bloomberg / Refinitiv / Tickertape API.

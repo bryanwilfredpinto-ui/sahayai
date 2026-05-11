@@ -2,52 +2,103 @@
 
 > "UPI for your medicine bills — Scan. Compare. Save."
 
-Third Chitti product. Sister to **Chitti Shares (Technical + Fundamentals)**.
+**Medicine Cost Intelligence** for Indian families. The third Chitti product (sister to Chitti Technical + Chitti Fundamentals + Chitti News). A neutral price-and-composition intelligence layer that turns the chaos of branded vs generic pricing into one scan, one number, one saved rupee.
+
+---
+
+## What it does (the one-sentence pitch per feature)
+
+| Pillar | What it does |
+|---|---|
+| **Strict same-composition matching** | Returns alternatives ONLY where *same molecule + same strength + same dosage form*. No therapeutic substitutions. EVER. |
+| **Jan Aushadhi pricing** | Official `jan_aushadhi_price` surfaced on every match — typically 50–90% off branded MRP. Nearest store via haversine geo + by-state fallback. |
+| **Cart simulator** | Drop a monthly med list, get the cheapest same-composition equivalent cart + monthly + annual savings + per-line risk badge. |
+| **Family wallet** | Multi-profile (self / spouse / child / parent) wallet entries → this-month spend + savings + 12-month total + annual projection. |
+| **Insurance match** | Therapeutic-class coverage check across Ayushman Bharat · CGHS · ESI · private — with `covered` boolean + EN/HI reason text. |
+| **Live pharmacy snippets** | Brave Search-powered snippet-only price discovery for 1mg / PharmEasy / NetMeds / Apollo / MedPlus / TrueMeds. Never visits the URL. |
+| **Community prices** | User-reported "I bought X for ₹Y at <pharmacy> in <city>" with median + IQR + by-city aggregation. |
+| **Risk classification** | Every molecule is H / M / L. HIGH-risk categories (antibiotics, cardiac, diabetes, psych meds) get a red banner + stop-and-think warning before any alternative shows. |
+| **Refill / expiry reminders** | CRUD per family profile. Browser-push wiring + Twilio voice + WhatsApp planned. |
+| **QR scanner** | Decodes CDSCO traceability QR + GS1 Datamatrix on Indian medicine packs (since 2023). |
+| **Demo mode** | 8-step guided walk-through honouring the four-user contract (Blind reads aloud · Deaf reads banner · Mute uses Next · Illiterate sees real UI moves). |
+
+---
+
+## Live deployment
+
+| Surface | URL | Status |
+|---|---|---|
+| Frontend | https://sahayai.in/chitti_medupi.html | Live |
+| Backend API | https://chitti-medupi-api.onrender.com | Live (Flask + gunicorn on Render free tier) |
+| Database | Neon Postgres — `neondb` on `ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech` | Live, **211,207 rows in `medupi.medicines`** from Apollo Pharmacy dataset |
+| Schema isolation | All tables under `medupi.*` schema | Shared host with Chitti Shares (which lives under `shares.*`) |
+
+---
 
 ## Layout
 
 ```
 chitti-medupi/
-├── frontend/          Single-file HTML SPA (mirror of workspace-root chitti_medupi.html)
-└── backend/           FastAPI service — drug DB · OCR · alternatives · Jan Aushadhi · Family Wallet · Reminders · Insurance
+├── frontend/            Single-file HTML SPA (mirror of workspace-root chitti_medupi.html)
+├── backend/
+│   ├── main.py          Flask app factory + bootstrap (ensure_schema → create_all → migrate → seed → scheduler)
+│   ├── config.py        Env-driven settings (no pydantic)
+│   ├── database.py      SQLAlchemy engine + SessionLocal + Base
+│   ├── models/          9 tables: medicine, jan_aushadhi, family, wallet, reminder,
+│   │                              price_cache, community_price, search_log, loader_run
+│   ├── services/        Strict matcher, risk engine, Jan Aushadhi geo,
+│   │                    Anthropic vision, family wallet, reminders, insurance,
+│   │                    Brave Search, community prices, search-frequency log,
+│   │                    price freshness, scheduler, migrations
+│   ├── routes/
+│   │   └── medupi.py    20+ endpoints under /api/medupi/*
+│   ├── scripts/         Real-data loaders (Jan Aushadhi · NPPA · CDSCO · Kaggle · RxNorm · OpenFDA · Apollo one-shot)
+│   ├── data/            seed JSON (51 meds + 25 stores + insurance coverage)
+│   ├── requirements.txt Flask · SQLAlchemy · APScheduler · Anthropic · rapidfuzz
+│   └── runtime.txt      python-3.11
+└── render.yaml          Blueprint
 ```
 
-Same shape as `chitti-shares/` (sibling folder).
+---
 
-## Live URL
-- Frontend: https://sahayai.in/chitti_medupi.html (workspace-root file is what's deployed)
-- Backend (planned): https://chitti-medupi-api.onrender.com — currently shares `chitti-shares-api.onrender.com` until scale demands a split.
-
-## Master spec
-See [CHITTI_MEDUPI_MASTER_SPEC.md](../CHITTI_MEDUPI_MASTER_SPEC.md) at workspace root — every Claude session must read it first.
-
-## Quick start (backend, local)
+## Quick start (local)
 
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env       # set ANTHROPIC_API_KEY for image scan
-uvicorn main:app --reload  # http://localhost:8001
+cp .env.example .env       # set DATABASE_URL (Neon) + ANTHROPIC_API_KEY for image scan
+python main.py             # http://localhost:8001
 ```
 
-Then: `curl 'http://localhost:8001/api/medupi/medicine/Crocin%20650'`
+Verify:
+```bash
+curl 'http://localhost:8001/api/medupi/medicine/Crocin%20650'
+curl 'http://localhost:8001/api/medupi/jan_aushadhi?lat=23.26&lng=77.41'
+curl 'http://localhost:8001/api/medupi/risk/Metformin'
+```
 
-## Endpoints
+---
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET  | `/health` | Lightweight check |
-| POST | `/api/medupi/scan` | Image / PDF upload → recognised medicine + composition + risk |
-| GET  | `/api/medupi/medicine/{name}` | Lookup by name → composition + alternatives |
-| GET  | `/api/medupi/alternatives` | `?molecule=&strength=&dosage_form=` strict same-composition list |
-| GET  | `/api/medupi/jan_aushadhi` | `?lat=&lng=&radius_km=5` nearest stores |
-| GET  | `/api/medupi/risk/{molecule}` | HIGH / MEDIUM / LOW classification |
-| GET  | `/api/medupi/insurance/{molecule}` | `?scheme=ayushman` whether covered |
-| POST | `/api/medupi/family/profile` | Add a family member profile |
-| GET  | `/api/medupi/family/wallet` | Monthly spend + savings |
-| POST | `/api/medupi/family/wallet` | Add a wallet entry |
-| POST | `/api/medupi/reminder` | Schedule refill / expiry reminder |
-| GET  | `/api/medupi/reminder` | List reminders for a profile |
+## The non-negotiables
 
-## Build rules
-Read CHITTI_MEDUPI_MASTER_SPEC.md §14 — non-negotiable.
+1. **STRICT matching only** — `services/medupi_alternatives.py` returns same-molecule + same-strength + same-dosage-form matches. The rule is repeated three times in [CHITTI_MEDUPI_MASTER_SPEC.md](../CHITTI_MEDUPI_MASTER_SPEC.md) §5, §12, §14.
+2. **Medical disclaimer always visible** — sticky amber banner at the top of every page + full Gold Standard modal text. Hindi version auto-rendered when `_chittiLang === 'hi'`.
+3. **Risk classification BEFORE alternatives** — every response carries `risk: {class, symbol, label_en, label_hi, warning_en, warning_hi}`. Frontend gates the UI: red banner for HIGH, amber for MEDIUM, green for LOW.
+4. **Four-user contract** — every control has aria-label · 🔊 speak · plain-English caption · 🎤 voice input. Blind/Deaf/Mute/Illiterate all usable.
+5. **Zero scraping of pharmacy sites** — Brave Search snippets only. We never visit 1mg/PharmEasy/NetMeds/Apollo URLs programmatically.
+
+---
+
+## Documentation set
+
+| File | What it covers |
+|---|---|
+| [README.md](README.md) | This file — overview, deployment, quick start |
+| [CONTEXT.md](CONTEXT.md) | Why MedUPI exists, four-user contract, strict-match guardrail |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Backend stack, boot order, schema isolation, scheduler |
+| [API.md](API.md) | Every HTTP endpoint with request/response |
+| [DATABASE.md](DATABASE.md) | All 9 tables under `medupi.*` — columns, indexes, the unique constraint |
+| [CHANGELOG.md](CHANGELOG.md) | Phase-grouped git history |
+| [TODO.md](TODO.md) | Outstanding work + the Anthropic → DeepSeek vision migration |
+| [PROMPTS.md](PROMPTS.md) | The verbatim vision-extraction prompt |
+| [../CHITTI_MEDUPI_MASTER_SPEC.md](../CHITTI_MEDUPI_MASTER_SPEC.md) | Living spec — read first every session |

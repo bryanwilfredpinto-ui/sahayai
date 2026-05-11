@@ -1,33 +1,60 @@
-# Chitti Vaani — Android (Phase 2 skeleton)
+# Chitti Vaani — Android (Phase 2)
 
-Native Android wrapper around the deployed Chitti Vaani web UI (`https://sahayai.in/chitti_vaani.html`). Adds the OS-level capabilities the browser cannot reach: phone lock, silent mode, day-mode call answer, night-mode auto-answer with emergency-keyword wake, autonomous WhatsApp send.
+Native Android client for **Chitti Vaani**, Sahay AI's voice-first assistant for blind, deaf, mute, and illiterate users. This is the Phase 2 native implementation of the spec at [`CHITTI_VAANI_PHASE2_ANDROID_SPEC.md`](../CHITTI_VAANI_PHASE2_ANDROID_SPEC.md) (repo root). The Phase 1 web app lives at [`../chitti-vaani/`](../chitti-vaani/) and is deployed at `https://sahayai.in/chitti_vaani.html`.
 
-**Hard rules — enforced in code, not just policy:**
+> **Why a native client?** The Phase 1 web app does everything voice-first inside the browser, but the browser cannot lock the phone, cannot intercept incoming calls, cannot keep a microphone open after the screen is locked, and cannot tap-send autonomously inside another app. Phase 2 wraps the existing web UI in a native shell that adds **exactly** those OS-level capabilities — nothing more.
 
-- ❌ Chitti will **never** unlock the phone. There is no `unlockPhone()` method anywhere — Android does not expose one to 3rd-party apps. `SafetyChecks.refuseUnlock()` traps any inbound JS bridge call whose name even *resembles* unlock.
-- ❌ Chitti will **never** ask for or pass a UPI PIN. `SafetyChecks.refuseIfPinLike()` rejects any 4 / 6-digit string in payment-related call paths.
-- ❌ The WhatsApp accessibility tap is scoped strictly to the `com.whatsapp` package and the send-button node — it requires a one-shot 2-second arm window after voice "haan" (`VaaniAccessibilityService.armWhatsAppSend()`).
+---
 
-## Layout
+## Product surface — what this app does
+
+| # | Capability | OS surface used | Status |
+|---|---|---|---|
+| 1 | Lock the phone on voice command | `DevicePolicyManager.lockNow()` + Device Admin | Live (skeleton) |
+| 2 | **Refuse all unlock commands by code** | Hard-coded `SafetyChecks.refuseUnlock()`; no API surface | Live, enforced |
+| 3 | Toggle silent / ring mode | `AudioManager.setRingerMode()` + NotificationPolicyAccess | Live |
+| 4 | Day-mode auto-answer ("Chitti, uthao") | `InCallService` + `ROLE_DIALER` | Phase 2.3 (stub) |
+| 5 | Night-mode auto-answer + emergency-keyword wake | `CallScreeningService` + Vosk on-device | Phase 2.4 (stub) |
+| 5b | 24/7 emergency cascade — **family only, never cops** | `STREAM_ALARM` bypass + `/api/vaani/emergency/*` relay | Live (alarm + manifest); relay pending |
+| 6 | Email read/send as Chitti | WebView → Phase 1.6 `/api/vaani/email/*` | Live (web tier) |
+| 7 | WhatsApp autonomous send after voice "haan" | `AccessibilityService` scoped to `com.whatsapp` send button | Live (skeleton; not wired to voice arm yet) |
+| 8 | UPI deep-link payment | `upi://pay?…` intent | Live |
+| 9 | Outbound call | `ACTION_CALL` (direct-dial) or `ACTION_DIAL` (fallback) | Live |
+| 10 | Federated voice-sample upload | WorkManager (TBD) → backend | Phase 2.5 (not started) |
+
+The conversational layer (DeepSeek reply, voice IN/OUT, language selector, emergency-keyword monitor, paired-Chitti relay UI) is rendered by the existing web UI, embedded in a `WebView` inside [`MainActivity.kt`](app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt). The native shell exposes a JavaScript bridge (`window.ChittiNative`) that the web tier feature-detects with `if (window.ChittiNative)`.
+
+---
+
+## Hard rules — enforced in code, not just policy
+
+1. **No unlock.** There is no `unlockPhone()` method anywhere — the OS does not expose one to 3rd-party apps. [`SafetyChecks.refuseUnlock()`](app/src/main/java/in/sahayai/chitti/vaani/util/SafetyChecks.kt) traps any inbound JS bridge call whose name resembles `unlock | kholo | khol do | bypassLock`.
+2. **No UPI PIN handling.** [`SafetyChecks.refuseIfPinLike()`](app/src/main/java/in/sahayai/chitti/vaani/util/SafetyChecks.kt) rejects any 4 / 6-digit string in payment-related call paths.
+3. **No cop dialing.** [`ChittiNativeBridge.refuseAutoDialCops()`](app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt) refuses any auto-dial to 112 / 100 / 102 / 108 / 1098 / 1930 / 139. Cascade is **family only** — see [Vaani emergency protocol](../CHITTI_VAANI_PHASE2_ANDROID_SPEC.md#5b).
+4. **WhatsApp accessibility tap is scoped to one node.** Only fires on the WhatsApp send-button node, inside a 2-second arm window after voice "haan" ([`VaaniAccessibilityService.armWhatsAppSend()`](app/src/main/java/in/sahayai/chitti/vaani/services/VaaniAccessibilityService.kt)). Refuses if any sibling node text looks PIN-shaped.
+
+---
+
+## Repository layout
 
 ```
 chitti-vaani-android/
-├── settings.gradle.kts
-├── build.gradle.kts
-├── gradle.properties
+├── settings.gradle.kts             — Gradle multi-project root (single :app module today)
+├── build.gradle.kts                — Top-level Gradle config; AGP 8.5.2 + Kotlin 1.9.24
+├── gradle.properties               — JVM args + AndroidX flags
 └── app/
-    ├── build.gradle.kts
-    ├── proguard-rules.pro
+    ├── build.gradle.kts            — namespace, minSdk 26, targetSdk 34, deps
+    ├── proguard-rules.pro          — keep @JavascriptInterface methods
     └── src/main/
-        ├── AndroidManifest.xml
+        ├── AndroidManifest.xml     — permissions (Tier A/B/C), receivers, services
         ├── java/in/sahayai/chitti/vaani/
         │   ├── MainActivity.kt                 — WebView host + ChittiNative JS bridge
         │   ├── services/
-        │   │   ├── VaaniDeviceAdminReceiver.kt — for lockNow() (no unlock)
+        │   │   ├── VaaniDeviceAdminReceiver.kt — BIND_DEVICE_ADMIN; lockNow() only
         │   │   ├── VaaniCallScreeningService.kt— pre-ring screening (night mode)
-        │   │   ├── VaaniInCallService.kt       — answer call as Chitti AI
+        │   │   ├── VaaniInCallService.kt       — day-mode answer-call flow
         │   │   ├── VaaniAccessibilityService.kt— scoped autonomous WA send
-        │   │   └── NightModeReceiver.kt        — 22:00 IST / 06:00 IST boundary
+        │   │   └── NightModeReceiver.kt        — 22:00 / 06:00 IST boundary
         │   └── util/
         │       ├── SafetyChecks.kt             — refuseUnlock / refuseIfPinLike
         │       └── AuditLog.kt                 — append-only DPDP audit log
@@ -36,13 +63,23 @@ chitti-vaani-android/
             └── values/{strings, colors, themes}.xml
 ```
 
-## Build (developer machine)
+For module mapping, foreground services, audio pipeline, and ViewModel placement see [ARCHITECTURE.md](ARCHITECTURE.md).
+For permissions taxonomy and accessibility user contract see [CONTEXT.md](CONTEXT.md).
+For backend endpoints called see [API.md](API.md).
+For Room/SQLite plan see [DATABASE.md](DATABASE.md).
+For outstanding milestones see [TODO.md](TODO.md).
+For commit history see [CHANGELOG.md](CHANGELOG.md).
 
-You need **Android Studio Iguana (2024.1.2) or newer** with **JDK 17**.
+---
 
-```
+## Build
+
+Requires **Android Studio Iguana (2024.1.2) or newer** with **JDK 17**.
+
+```bash
 cd chitti-vaani-android
-# First-time only: generate the gradle wrapper
+
+# First-time only: generate the gradle wrapper (intentionally not committed)
 gradle wrapper --gradle-version=8.7
 
 # Build a debug APK
@@ -52,37 +89,26 @@ gradle wrapper --gradle-version=8.7
 # Or open the folder in Android Studio: File → Open → chitti-vaani-android
 ```
 
-Note the wrapper jar is intentionally NOT committed to keep the repo binary-free; `gradle wrapper` regenerates it locally.
+The gradle wrapper jar is intentionally **not** committed to keep the repo binary-free; `gradle wrapper` regenerates it locally.
+
+---
 
 ## What this skeleton does today
 
-- ✅ Compiles + installs as `Chitti Vaani`
-- ✅ Loads `https://sahayai.in/chitti_vaani.html` in a WebView
-- ✅ Forwards mic permission requests from the WebView to native runtime mic permission
-- ✅ Exposes `ChittiNative.lockPhone()` / `setSilentMode()` / `requestCallScreening()` / `requestDialerRole()` / `requestAccessibility()` / `openWhatsApp()` / `openUpiPay()` to the WebView's JavaScript
-- ✅ Refuses any inbound `unlockPhone()` / `bypassLock()` call with a clear `SecurityException`
-- ✅ Boot-time alarm for night-mode 22:00 IST / 06:00 IST boundary
-- ✅ Manifest declares all Tier A / B / C permissions Phase 2 needs
+- Compiles and installs as **Chitti Vaani**.
+- Loads `https://sahayai.in/chitti_vaani.html` in a WebView (cleartext blocked by [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml)).
+- Forwards mic permission from WebView to runtime `RECORD_AUDIO`.
+- Exposes `ChittiNative.lockPhone()` / `setSilentMode()` / `requestCallScreening()` / `requestDialerRole()` / `requestAccessibility()` / `openWhatsApp()` / `openUpiPay()` / `makeCall()` / `triggerEmergencyAlarm()` / `refuseAutoDialCops()` to JavaScript.
+- Refuses any inbound `unlockPhone()` / `bypassLock()` call with `SecurityException`.
+- Boot-time alarm for the night-mode boundary at 22:00 IST and 06:00 IST.
+- Manifest declares all Tier A / B / C permissions Phase 2 needs.
 
-## What this skeleton does NOT do yet (next milestones)
+For what is **not** done yet, see [TODO.md](TODO.md).
 
-| Milestone | Scope | Files to flesh out |
-|---|---|---|
-| **2.2** | Wire web UI to call `ChittiNative.lockPhone()` and the role-prompt entry points | `chitti_vaani.html` JS bridge detection (already added: `getUserToken()`; will add `if (window.ChittiNative)`-guards next) |
-| **2.3** | Day-mode "Chitti, answer call" — voice-armed `call.answer()` | `VaaniInCallService.kt` + a foreground voice service (`VaaniBootService.kt`, not yet present) |
-| **2.4** | Night-mode emergency-keyword spotter | Vosk integration in `VaaniCallScreeningService.kt`. Drop the `vosk-android-0.3.47.aar` into `app/libs/` and uncomment the dependency line in `app/build.gradle.kts`. Bundle the small Hindi + English models (~50 MB each) into `app/src/main/assets/vosk/`. |
-| **2.5** | Federated learning upload pipeline | New `services/FedLearningSyncWorker.kt` (WorkManager) batching the IndexedDB voice samples to `/api/vaani/voice/sample` (backend endpoint TBD) |
-| **2.6** | Play Store submission cycle | `app/src/main/play/` listing assets, screenshots, video walkthrough, permissions justification text |
+---
 
-## Compliance notes for Play Store
+## Play Store compliance
 
-The `RECEIVE_SMS` / `READ_SMS` / `SEND_SMS` / `READ_CALL_LOG` permissions are on Google Play's [Restricted Permissions list](https://support.google.com/googleplay/android-developer/answer/9047303). Justification template (paste verbatim into the Permissions Declaration form):
+The `RECEIVE_SMS` / `READ_SMS` / `SEND_SMS` / `READ_CALL_LOG` permissions are on Google Play's [Restricted Permissions](https://support.google.com/googleplay/android-developer/answer/9047303) list. The accessibility service will additionally face a manual policy review. Justification template lives at [`CHITTI_VAANI_PHASE2_ANDROID_SPEC.md`](../CHITTI_VAANI_PHASE2_ANDROID_SPEC.md#compliance-lines-that-must-show-on-the-android-apps-play-store-listing).
 
-> *"Chitti Vaani is an accessibility AI assistant for blind, deaf, mute, and illiterate users. The SMS permissions are used to read incoming SMS aloud (RECEIVE/READ) and to send SMS on the user's spoken command (SEND), in every case identifying as 'Chitti AI on behalf of [user]' in the message body. The READ_CALL_LOG permission lets Chitti tell a blind user who called recently. No SMS or call-log content is sent to any server; processing is on-device only."*
-
-Privacy policy URL (must be live before submission):
-- Suggested: `https://sahayai.in/privacy/chitti-vaani`
-
-## Test users (during Google verification window)
-
-While `gmail.send` is in OAuth Testing mode, only emails listed under **OAuth consent screen → Test users** in Google Cloud Console can use Phase 1.6 email send. Add Bryan + early users (max 100). Production traffic needs the CASA security audit.
+Privacy policy URL (must be live before submission): `https://sahayai.in/privacy/chitti-vaani`.
