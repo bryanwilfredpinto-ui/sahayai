@@ -1,21 +1,7 @@
 """
-database.py
------------
-SQLAlchemy engine + session factory for the Chitti Government backend.
+database.py — Turso embedded-replica SQLite ledger + session management.
 
-Turso integration via **embedded replica** mode (not direct Hrana).
-See project memory project_turso_embedded_replica_pattern for rationale —
-sqlalchemy-libsql 0.2.0 can't speak direct Hrana cleanly to Turso (PRAGMA
-+ isolation_level + has_table all rejected). We sidestep by:
-
-  1. Asking libsql-experimental to maintain a local SQLite file synced
-     with Turso in the background.
-  2. Pointing SQLAlchemy at the local file via plain sqlite:///.
-
-URL shapes:
-  - libsql://<host>?authToken=<token>   (Turso, production)
-  - sqlite:///path/to/file.db           (local dev)
-  - postgresql://... or postgres://...  (legacy; remove after migration)
+See project memory project_turso_embedded_replica_pattern for rationale.
 """
 from __future__ import annotations
 
@@ -25,7 +11,7 @@ import threading
 import time
 import urllib.parse
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from config import settings
@@ -70,7 +56,7 @@ def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
 
 def _resolve_url(raw: str) -> str:
     if raw.startswith("libsql://"):
-        local = os.environ.get("LIBSQL_REPLICA_PATH", "/tmp/chitti_government.db")
+        local = os.environ.get("LIBSQL_REPLICA_PATH", "/tmp/chitti_voice_factory.db")
         _bootstrap_replica(raw, local)
         return f"sqlite:///{local}"
     if raw.startswith("postgres://"):
@@ -80,7 +66,7 @@ def _resolve_url(raw: str) -> str:
 
 db_url = _resolve_url(settings.DATABASE_URL)
 
-connect_args: dict = {}
+connect_args = {}
 if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
@@ -95,6 +81,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def ensure_schema() -> None:
+    """Create tables if they don't exist."""
+    Base.metadata.create_all(bind=engine)
 
 
 def sync_now() -> None:
