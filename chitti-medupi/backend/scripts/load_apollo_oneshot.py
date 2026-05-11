@@ -45,9 +45,9 @@ def _load_dotenv(path: Path) -> None:
 
     .env OVERRIDES existing env vars — opposite of typical dotenv defaults.
     Reason: this loader is run for a specific deployment target encoded in
-    the .env, and stale Windows User-level env vars (left over from Supabase
-    debugging rounds) were silently winning over the explicit .env value.
-    For a one-shot load script, the file on disk is the source of truth.
+    the .env, and stale Windows User-level env vars were silently winning
+    over the explicit .env value. For a one-shot load script, the file on
+    disk is the source of truth.
 
     Values are read RAW — no shell interpolation, no URL-encoding.
     A password like `Sah@y/2026+!` survives intact, no escaping required.
@@ -267,25 +267,23 @@ def ensure_unique_index(cur):
 
 def _connect():
     """
-    Connect to Postgres. Supports two .env / env-var styles:
-
-      A) DATABASE_URL=postgresql://user:pw@host:port/db
-         (use only if the password has NO special chars — @ / : ? # & % +)
-
-      B) DB_HOST=...  DB_PORT=...  DB_USER=...  DB_PASSWORD=...  DB_NAME=...
-         (raw fields — works with any password, no URL-encoding required)
-
-    If both are set, A wins. Returns (connection, log_string_with_pw_redacted).
+    Connect to Postgres via DATABASE_URL (Neon connection string).
+    URL-encode any special chars in the password (@, /, :, ?, #, &, %, +).
+    Returns (connection, log_string_with_pw_redacted).
     """
     db_url = os.environ.get("DATABASE_URL", "").strip()
-    if db_url:
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
-        # Skip if it's still the placeholder from .env template
-        if "PASTE_PASSWORD_HERE" in db_url:
-            db_url = ""
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    # Skip if it's still the placeholder from .env template
+    if "PASTE_PASSWORD_HERE" in db_url:
+        db_url = ""
+    if not db_url:
+        raise RuntimeError(
+            "DATABASE_URL not set. Paste your Neon connection string "
+            "into chitti-medupi/backend/.env (or export it in the shell)."
+        )
 
-    # TCP keepalives prevent Neon/Supabase pooler from killing idle sockets
+    # TCP keepalives prevent the Neon pooler from killing idle sockets
     # mid-batch. Without these the load drops after ~5 min on slow rows.
     keepalive_kwargs = dict(
         keepalives=1,
@@ -296,27 +294,7 @@ def _connect():
         application_name="chitti-medupi/load_apollo_oneshot",
     )
 
-    if db_url:
-        return psycopg2.connect(db_url, **keepalive_kwargs), _redact(db_url)
-
-    host = os.environ.get("DB_HOST", "").strip()
-    user = os.environ.get("DB_USER", "").strip()
-    pw   = os.environ.get("DB_PASSWORD", "")
-    if host and user and pw:
-        port = int(os.environ.get("DB_PORT", "5432"))
-        dbname = os.environ.get("DB_NAME", "postgres").strip() or "postgres"
-        conn = psycopg2.connect(
-            host=host, port=port, user=user, password=pw, dbname=dbname,
-            sslmode=os.environ.get("DB_SSLMODE", "require"),
-            **keepalive_kwargs,
-        )
-        return conn, f"postgresql://{user}:***@{host}:{port}/{dbname}"
-
-    raise RuntimeError(
-        "No DB credentials found. Either set DATABASE_URL "
-        "or the DB_HOST/DB_USER/DB_PASSWORD/DB_NAME quartet "
-        "(in env vars or chitti-medupi/backend/.env)."
-    )
+    return psycopg2.connect(db_url, **keepalive_kwargs), _redact(db_url)
 
 
 def main(csv_path: str) -> int:

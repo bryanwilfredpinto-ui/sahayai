@@ -1,6 +1,6 @@
-"""Throwaway diagnostic — verifies which connect path works against Supabase.
-Prints URL structure (no password), then tries (1) URL connect, (2) kwargs connect.
-Safe to delete after debugging."""
+"""Throwaway diagnostic — verifies which connect path works against the
+configured Postgres (Neon). Prints URL structure (no password), then tries
+(1) URL connect, (2) kwargs connect. Safe to delete after debugging."""
 import os
 import urllib.parse
 import psycopg2

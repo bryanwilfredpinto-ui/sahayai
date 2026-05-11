@@ -1,14 +1,8 @@
 # Render Blueprint for Chitti MedUPI
 # ------------------------------------------------------------------
-# We REUSE the existing chitti-shares Postgres database (Render free
-# tier permits only one free DB per workspace) and isolate every
-# MedUPI table under a dedicated `medupi` schema. See
-# backend/models/_schema.py for the implementation.
-#
-# Net effect:
-#   - chitti-shares tables live in `public.*`         (default schema)
-#   - chitti-medupi tables live in `medupi.*`         (this Blueprint)
-#   - Zero risk of name collision; tables share storage but not names.
+# Postgres is hosted on Neon. All MedUPI tables live under the
+# `medupi` schema (see backend/models/_schema.py); chitti-shares
+# uses a separate Neon DB.
 
 services:
   - type: web
@@ -20,11 +14,8 @@ services:
     startCommand: gunicorn main:app --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
-      # Now points at Supabase (free tier permits more than Render's one-DB
-      # cap). All our tables live under the `medupi` schema — see
-      # backend/models/_schema.py. Paste the Supabase "Direct" connection
-      # string into the Render dashboard env var. Sibling chitti-shares
-      # service uses the same Supabase URL, isolated under `shares.*`.
+      # Neon Postgres connection string — paste into the Render
+      # dashboard. Format: postgresql://USER:PW@HOST/DB?sslmode=require
       - key: DATABASE_URL
         sync: false
 
@@ -66,7 +57,7 @@ services:
       - key: TWILIO_FROM_NUMBER
         sync: false
 
-# No `databases:` block — we reuse chitti-shares-db. The startup hook in
+# No `databases:` block — Postgres lives on Neon. The startup hook in
 # main.py runs `CREATE SCHEMA IF NOT EXISTS medupi` before any
-# Base.metadata.create_all() call, so the schema appears the first time
-# the service boots.
+# Base.metadata.create_all() call, so the schema appears the first
+# time the service boots.
