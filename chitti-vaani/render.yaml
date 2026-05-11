@@ -31,3 +31,47 @@ services:
         value: /tmp/chitti_vaani_tokens.sqlite
       - key: VAANI_RELAY_DB
         value: /tmp/chitti_vaani_relay.sqlite
+      # ── Sahay AI Admin Dashboard (/admin/products) ──
+      # Required: shared secret for /api/admin/* (everything except OAuth callback).
+      - key: ADMIN_SECRET
+        sync: false
+      # Required for production persistence — set to the Supabase Postgres URL.
+      # If unset, admin tables fall back to SQLite at ADMIN_TOKEN_DB (ephemeral).
+      - key: ADMIN_DATABASE_URL
+        sync: false
+      - key: ADMIN_TOKEN_DB
+        value: /tmp/chitti_admin.sqlite
+      # Recipient of monthly keep-alive emails — defaults to sire@gmail.com.
+      - key: ADMIN_NOTIFY_EMAIL
+        value: sire@gmail.com
+      # Add this URL to your Google Cloud Console OAuth client's
+      # "Authorized redirect URIs" list before authorizing any product.
+      - key: ADMIN_OAUTH_REDIRECT_URI
+        value: https://chitti-vaani-api.onrender.com/api/admin/products/oauth/callback
+      # Cron schedule (1st of month, 06:00 IST). Override per env if needed.
+      - key: ADMIN_KEEPALIVE_DAY
+        value: "1"
+      - key: ADMIN_KEEPALIVE_HOUR
+        value: "6"
+      - key: ADMIN_KEEPALIVE_MINUTE
+        value: "0"
+      - key: ADMIN_SCHEDULER_ENABLED
+        value: "true"
+      - key: ADMIN_SEED_DEFAULTS
+        value: "true"
+      # ── Cross-product feedback widget (/api/feedback/*, /admin/feedback) ──
+      # Reuses ADMIN_SECRET above for admin endpoints. Storage falls back to
+      # ADMIN_DATABASE_URL → DATABASE_URL → SQLite at FEEDBACK_DB_PATH.
+      - key: FEEDBACK_DB_PATH
+        value: /tmp/chitti_feedback.sqlite
+      - key: FEEDBACK_REPORT_HOUR
+        value: "6"
+      - key: FEEDBACK_REPORT_MINUTE
+        value: "0"
+      - key: FEEDBACK_SCHEDULER_ENABLED
+        value: "true"
+      # Salt used to hash IPs before storage. Keep this stable across deploys
+      # so abuse patterns from one IP keep the same hash; rotating it resets
+      # the rate-limit history.
+      - key: FEEDBACK_IP_SALT
+        sync: false

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sahay AI — Product Gmail Admin</title>
+<meta name="description" content="Internal admin dashboard for managing Sahay AI / Chitti product Gmail accounts: OAuth, monthly keep-alive, action logs.">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37; --blue:#2563eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body{min-height:100vh}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+.admin-banner{background:linear-gradient(90deg,#0E2344,#1d3b6f);color:#fff;padding:7px 14px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid var(--gold)}
+.admin-banner .red{color:#ffb3b3}
+
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;padding:18px 16px}
+.brand-row{display:flex;align-items:center;gap:14px;max-width:1080px;margin:0 auto;flex-wrap:wrap}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);flex-shrink:0}
+.brand{font-weight:900;font-size:20px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+
+.secret-gate{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid var(--gold);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:1080px;margin:0 auto}
+.secret-gate label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.secret-gate input{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;min-height:38px;font-weight:600;flex:1;min-width:180px;font-family:'Courier New',monospace}
+.secret-gate input:focus{outline:none;border-color:var(--saffron)}
+.secret-gate .btn{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:9px 14px;font-size:13px;cursor:pointer;min-height:38px}
+
+main{padding:14px 16px 60px;max-width:1080px;margin:0 auto}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;box-shadow:0 4px 14px rgba(14,35,68,.05)}
+.kpi-card .lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.kpi-card .val{font-size:20px;font-weight:900;color:var(--navy);margin-top:4px;line-height:1.1}
+.kpi-card .sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.section-title{font-size:14px;font-weight:800;color:var(--navy)}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+
+.product-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.product-row{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:10px;transition:box-shadow .2s}
+.product-row:hover{box-shadow:0 6px 16px rgba(14,35,68,.08)}
+.product-row .meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.product-row .name{font-size:15px;font-weight:800;color:var(--navy);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.product-row .email{font-size:13px;color:var(--text);font-family:'Courier New',monospace;word-break:break-all}
+.product-row .stats{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:4px}
+.product-row .stats span b{color:var(--text);font-weight:700}
+.product-row .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start}
+
+.btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;min-height:34px;font-weight:700;display:inline-flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap}
+.btn:hover{background:rgba(232,106,23,.06);border-color:var(--saffron);color:var(--saffron)}
+.btn.primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800}
+.btn.primary:hover{filter:brightness(1.05);color:#fff}
+.btn.danger{border-color:rgba(220,38,38,.4);color:var(--red)}
+.btn.danger:hover{background:rgba(220,38,38,.06);border-color:var(--red);color:var(--red)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.badge.connected{color:#fff;background:var(--green)}
+.badge.needs_auth{color:#7c2d12;background:#fff1d6;border:1px solid rgba(212,175,55,.55)}
+.badge.expired{color:#fff;background:var(--red)}
+.badge.revoked{color:#fff;background:var(--muted)}
+.badge.not_added{color:var(--muted);background:#f3f4f6;border:1px solid var(--border)}
+
+.add-form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end}
+.add-form label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px}
+.add-form input,.add-form select{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;min-height:38px;font-weight:600;font-family:inherit;color:var(--text)}
+.add-form input:focus,.add-form select:focus{outline:none;border-color:var(--saffron)}
+.add-form .span2{grid-column:span 2}
+.add-form .span-all{grid-column:1/-1}
+@media (max-width:720px){.add-form{grid-template-columns:1fr 1fr}.add-form .span2{grid-column:1/-1}}
+
+.domain-chip{display:inline-flex;gap:5px;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(232,106,23,.10);color:var(--navy);border:1px solid rgba(232,106,23,.30);white-space:nowrap}
+.feature-chip{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700;background:#f3f4f6;color:var(--text);border:1px solid var(--border);margin:2px 4px 0 0}
+.feature-row{margin-top:4px;line-height:1.7}
+
+.toast-area{position:fixed;left:14px;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;z-index:200;pointer-events:none;max-width:520px;margin:0 auto}
+.toast{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;box-shadow:0 6px 20px rgba(14,35,68,.15);font-size:13px;font-weight:600;pointer-events:auto;display:flex;gap:10px;align-items:flex-start}
+.toast.ok{border-left:4px solid var(--green)}
+.toast.fail{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--blue)}
+.toast .x{margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+
+.modal-bg{position:fixed;inset:0;background:rgba(14,35,68,.55);display:none;align-items:center;justify-content:center;z-index:300;padding:14px}
+.modal-bg.shown{display:flex}
+.modal{background:#fff;border-radius:18px;max-width:640px;width:100%;max-height:80vh;overflow:auto;box-shadow:0 18px 60px rgba(14,35,68,.40)}
+.modal header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;color:var(--navy)}
+.modal header h2{margin:0;font-size:16px;color:var(--navy)}
+.modal .body{padding:14px 18px}
+.log-entry{padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.log-entry:last-child{border-bottom:none}
+.log-entry .ts{color:var(--muted);font-family:'Courier New',monospace;font-size:11px;white-space:nowrap}
+.log-entry .body{color:var(--text);word-break:break-word}
+.log-entry .body .act{font-weight:800}
+.log-entry.ok .act{color:var(--green)}
+.log-entry.fail .act{color:var(--red)}
+
+.empty{padding:32px 14px;text-align:center;color:var(--muted);font-size:13px}
+
+.help-card{background:linear-gradient(135deg,rgba(212,175,55,.10),rgba(232,106,23,.06));border:1px dashed var(--gold);border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.6;color:var(--text)}
+.help-card b{color:var(--navy)}
+.help-card code{background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:11px;font-family:'Courier New',monospace}
+
+footer{padding:24px 16px;text-align:center;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:24px}
+</style>
+</head>
+<body>
+
+<div class="bharat-stripe"></div>
+<div class="admin-banner">⚠ Internal admin only — <span class="red">do NOT share this URL</span></div>
+
+<header role="banner">
+  <div class="brand-row">
+    <div class="bharat-logo">⚙</div>
+    <div>
+      <div class="brand">Sahay AI — Product Admin</div>
+      <div class="tagline">Manage Gmail accounts for every Chitti product · OAuth · monthly keep-alive · action logs</div>
+    </div>
+  </div>
+</header>
+
+<div class="secret-gate">
+  <label for="admin-secret">Admin secret:</label>
+  <input id="admin-secret" type="password" autocomplete="current-password" placeholder="paste ADMIN_SECRET here" spellcheck="false">
+  <button id="save-secret" class="btn">Use</button>
+  <button id="reload" class="btn primary">↻ Reload</button>
+</div>
+
+<main>
+
+  <div id="toasts" class="toast-area" aria-live="polite"></div>
+
+  <section class="kpi-row">
+    <div class="kpi-card"><div class="lbl">Products</div><div class="val" id="kpi-count">—</div><div class="sub" id="kpi-count-sub">accounts in registry</div></div>
+    <div class="kpi-card"><div class="lbl">Connected</div><div class="val" id="kpi-connected" style="color:var(--green)">—</div><div class="sub">OAuth healthy</div></div>
+    <div class="kpi-card"><div class="lbl">Need auth</div><div class="val" id="kpi-needs" style="color:#92400e">—</div><div class="sub">refresh / first-time</div></div>
+    <div class="kpi-card"><div class="lbl">Next keep-alive</div><div class="val" id="kpi-next" style="font-size:13px">—</div><div class="sub" id="kpi-tz">timezone</div></div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Product accounts</div>
+        <div class="section-sub" id="oauth-config-line">Loading…</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button id="run-all" class="btn">▶ Run keep-alive (all)</button>
+      </div>
+    </div>
+
+    <div id="product-grid" class="product-grid">
+      <div class="empty">Enter the admin secret above to load accounts.</div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Add a new product account</div>
+        <div class="section-sub">Creates the row in <code>needs_auth</code>. Click <b>Authorize</b> on the new row to start the OAuth flow.</div>
+      </div>
+    </div>
+    <form id="add-form" class="add-form" autocomplete="off">
+      <div>
+        <label for="f-key">Product key</label>
+        <input id="f-key" required pattern="^[a-z][a-z0-9_]{1,62}$" placeholder="chittipharmacy" title="lowercase a-z, 0-9, _, start with a letter">
+      </div>
+      <div>
+        <label for="f-name">Product name</label>
+        <input id="f-name" required maxlength="128" placeholder="Chitti Pharmacy">
+      </div>
+      <div>
+        <label for="f-email">Gmail address</label>
+        <input id="f-email" required type="email" placeholder="chittipharmacy@gmail.com">
+      </div>
+      <div>
+        <label for="f-domain">Domain template</label>
+        <select id="f-domain">
+          <option value="">— none —</option>
+          <option value="shop_management">🏪 Shop Management (Kirana, Grocery)</option>
+          <option value="healthcare">💊 Healthcare (Pharmacy, Medical Store)</option>
+          <option value="food_business">🍔 Food Business (Restaurant, Café, Delivery)</option>
+          <option value="appointment_management">💇 Appointments (Salon, Spa, Clinic)</option>
+          <option value="perishable_goods">🥛 Perishable Goods (Dairy, Bakery, Produce)</option>
+          <option value="inventory_management">📚 Inventory (Stationery, Books, Office)</option>
+          <option value="b2b_inventory">🔧 B2B Inventory (Hardware, Tools, Industrial)</option>
+          <option value="retail_fashion">👕 Retail Fashion (Clothing, Footwear)</option>
+          <option value="electronics_retail">📱 Electronics (Gadgets, Mobiles, Repair)</option>
+          <option value="large_item_retail">🛋️ Large Item Retail (Furniture, Appliances)</option>
+        </select>
+      </div>
+      <div class="span2">
+        <label for="f-features">Features <span style="text-transform:none;color:var(--muted);font-weight:600">(comma-separated)</span></label>
+        <input id="f-features" maxlength="1024" placeholder="inventory, billing, orders, customers">
+      </div>
+      <div class="span-all">
+        <button class="btn primary" type="submit">+ Add product</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="help-card">
+    <b>Setup checklist</b><br>
+    1. Set <code>ADMIN_SECRET</code> in Render env (any random 32-char string).<br>
+    2. For persistent storage, set <code>ADMIN_DATABASE_URL</code> to your Supabase Postgres URL — otherwise tokens live in <code>/tmp</code> and vanish on restart.<br>
+    3. In Google Cloud Console → OAuth client → <i>Authorized redirect URIs</i>, add: <code id="redirect-uri-hint">/api/admin/products/oauth/callback</code><br>
+    4. Click <b>Authorize</b> on each product row and sign in to Google as that mailbox. The dashboard warns if you sign in as the wrong account.<br>
+    5. Monthly keep-alive runs at <code>day=1, 06:00 IST</code> — change via <code>ADMIN_KEEPALIVE_*</code> env vars. Recipient: <code id="notify-email-hint">sire@gmail.com</code>.
+  </section>
+
+</main>
+
+<!-- Logs modal -->
+<div id="logs-modal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="logs-title">
+  <div class="modal">
+    <header>
+      <h2 id="logs-title">Action log</h2>
+      <button class="btn ghost" onclick="closeLogs()" aria-label="Close">✕</button>
+    </header>
+    <div class="body" id="logs-body"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<footer>
+  Sahay AI · Internal admin · Bharat Tech
+</footer>
+
+<script>
+(function(){
+  const SS_KEY = "sahay_admin_secret";
+  const STATE  = {secret: sessionStorage.getItem(SS_KEY) || "", base: ""};
+
+  // Auto-detect API base. If hosted at the same origin as Vaani API, "" works.
+  // Otherwise, allow override by setting window.ADMIN_API_BASE before this script.
+  STATE.base = (window.ADMIN_API_BASE || "https://chitti-vaani-api.onrender.com").replace(/\/$/,"");
+
+  // ── DOM helpers ──
+  const $ = (q) => document.querySelector(q);
+  const grid = $("#product-grid");
+  const toastArea = $("#toasts");
+
+  function toast(kind, text, ms){
+    const el = document.createElement("div");
+    el.className = "toast " + (kind||"info");
+    el.innerHTML = '<span></span><button class="x" aria-label="Dismiss">×</button>';
+    el.firstChild.textContent = text;
+    el.lastChild.onclick = () => el.remove();
+    toastArea.appendChild(el);
+    setTimeout(() => el.remove(), ms || 4500);
+  }
+
+  function fmtDate(iso){
+    if(!iso) return "—";
+    try { return new Date(iso).toLocaleString("en-IN", {dateStyle:"medium", timeStyle:"short", timeZone:"Asia/Kolkata"}); }
+    catch(_){ return iso; }
+  }
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ── auth + fetch ──
+  async function api(path, opts){
+    const headers = Object.assign({"Content-Type":"application/json"}, (opts||{}).headers||{});
+    if(STATE.secret) headers["X-Admin-Secret"] = STATE.secret;
+    const url = STATE.base + path + (path.indexOf("?")>=0 ? "&" : "?") + "secret=" + encodeURIComponent(STATE.secret||"");
+    const res = await fetch(url, Object.assign({}, opts||{}, {headers}));
+    let payload = null;
+    try { payload = await res.json(); } catch(_) { payload = {ok:false, error:"non_json", status:res.status}; }
+    if(!res.ok) payload = Object.assign({ok:false, status:res.status}, payload||{});
+    return payload;
+  }
+
+  // ── render ──
+  function statusBadge(s){
+    const map = {connected:"Connected", needs_auth:"Needs auth", expired:"Expired", revoked:"Revoked", not_added:"Not added"};
+    return '<span class="badge '+s+'">'+(map[s]||s)+'</span>';
+  }
+
+  // Domain emoji + short label. Mirrors backend DOMAIN_TEMPLATES.
+  const DOMAIN_LABELS = {
+    shop_management:        ["🏪","Shop Management"],
+    healthcare:             ["💊","Healthcare"],
+    food_business:          ["🍔","Food Business"],
+    appointment_management: ["💇","Appointments"],
+    perishable_goods:       ["🥛","Perishable Goods"],
+    inventory_management:   ["📚","Inventory"],
+    b2b_inventory:          ["🔧","B2B Inventory"],
+    retail_fashion:         ["👕","Retail Fashion"],
+    electronics_retail:     ["📱","Electronics"],
+    large_item_retail:      ["🛋️","Large Item Retail"],
+  };
+  function domainChip(d){
+    if(!d) return "";
+    const [emoji, label] = DOMAIN_LABELS[d] || ["🏷️", d];
+    return `<span class="domain-chip" title="${escapeHtml(d)}">${emoji} ${escapeHtml(label)}</span>`;
+  }
+
+  function rowHtml(it){
+    const id = it.id;
+    const expired = it.token_expires_in === 0;
+    const features = Array.isArray(it.features) ? it.features : [];
+    return `
+    <article class="product-row" data-id="${id}">
+      <div class="meta">
+        <div class="name">${escapeHtml(it.product_name)} ${statusBadge(it.oauth_status)} ${domainChip(it.domain_template)}</div>
+        <div class="email">${escapeHtml(it.gmail_address)}${
+          it.connected_email && it.connected_email !== it.gmail_address
+            ? ` <span style="color:var(--red);font-weight:800"> ⚠ connected as ${escapeHtml(it.connected_email)}</span>` : ""
+        }</div>
+        <div class="stats">
+          <span>📧 last keep-alive: <b>${
+            it.last_keep_alive_at
+              ? fmtDate(it.last_keep_alive_at) + (it.last_keep_alive_ok ? " ✓" : " ✗")
+              : "never"
+          }</b></span>
+          <span>🔑 token: <b>${
+            it.token_expires_in==null ? "—" :
+            (it.token_expires_in>0 ? Math.round(it.token_expires_in/60)+" min left" : "expired")
+          }</b></span>
+          <span>🆔 <b>${escapeHtml(it.product_key)}</b></span>
+        </div>
+        ${features.length ? `<div class="feature-row">${features.map(f => `<span class="feature-chip">${escapeHtml(f)}</span>`).join("")}</div>` : ""}
+        ${it.last_keep_alive_msg ? `<div class="stats"><span style="font-family:'Courier New',monospace;color:${it.last_keep_alive_ok?'var(--muted)':'var(--red)'}">${escapeHtml(it.last_keep_alive_msg)}</span></div>` : ""}
+      </div>
+      <div class="actions">
+        <button class="btn primary" data-act="authorize" data-id="${id}">🔓 Authorize</button>
+        <button class="btn"         data-act="keepalive" data-id="${id}" ${it.oauth_status!=="connected"?"disabled":""}>▶ Test keep-alive</button>
+        <button class="btn"         data-act="logs"      data-id="${id}">📜 Logs</button>
+        <button class="btn danger"  data-act="delete"    data-id="${id}">🗑 Remove</button>
+      </div>
+    </article>`;
+  }
+
+  function renderList(payload){
+    const items = payload.items || [];
+    $("#kpi-count").textContent = items.length;
+    $("#kpi-connected").textContent = items.filter(x => x.oauth_status==="connected").length;
+    $("#kpi-needs").textContent     = items.filter(x => x.oauth_status==="needs_auth" || x.oauth_status==="expired").length;
+
+    const sched = payload.scheduler || {};
+    const job   = (sched.jobs||[])[0];
+    $("#kpi-next").textContent = job && job.next_run ? fmtDate(job.next_run) : (sched.running ? "—" : "scheduler off");
+    $("#kpi-tz").textContent   = sched.tz || "";
+
+    $("#oauth-config-line").innerHTML = payload.oauth_configured
+      ? `OAuth configured ✓ · keep-alives sent to <b>${escapeHtml(payload.notify_email||"")}</b>`
+      : `<span style="color:var(--red);font-weight:800">⚠ GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set in env — Authorize will fail.</span>`;
+
+    grid.innerHTML = items.length
+      ? items.map(rowHtml).join("")
+      : '<div class="empty">No products yet. Add one below.</div>';
+  }
+
+  async function reload(){
+    if(!STATE.secret){
+      grid.innerHTML = '<div class="empty">Enter the admin secret above to load accounts.</div>';
+      return;
+    }
+    grid.innerHTML = '<div class="empty">Loading…</div>';
+    const r = await api("/api/admin/products");
+    if(!r.ok){
+      grid.innerHTML = '<div class="empty" style="color:var(--red)">Failed: '+escapeHtml(r.detail||r.error||("HTTP "+r.status))+'</div>';
+      if(r.status===401) toast("fail","Admin secret rejected. Try again.");
+      return;
+    }
+    renderList(r);
+  }
+
+  // ── actions ──
+  async function authorize(pid){
+    const cur = window.location.href.split("#")[0];
+    const r = await api("/api/admin/products/"+pid+"/authorize", {
+      method:"POST",
+      body: JSON.stringify({redirect: cur}),
+    });
+    if(r.ok && r.url){
+      toast("info","Redirecting to Google…", 2000);
+      window.location.href = r.url;
+    } else {
+      toast("fail", r.error || "Could not start OAuth");
+    }
+  }
+
+  async function keepAlive(pid){
+    toast("info","Sending keep-alive…", 2000);
+    const r = await api("/api/admin/products/"+pid+"/keepalive", {method:"POST"});
+    if(r.ok) toast("ok", "Sent. Message ID: "+(r.message_id||"?"));
+    else     toast("fail", "Failed: "+(r.error||"unknown"));
+    reload();
+  }
+
+  async function runAll(){
+    if(!confirm("Run keep-alive for ALL products now? Already-sent-this-month accounts are skipped.")) return;
+    toast("info","Running…", 3000);
+    const r = await api("/api/admin/products/keepalive-all", {method:"POST", body: JSON.stringify({})});
+    toast(r.ok>0||r.fail===0 ? "ok" : "fail",
+          "Done — ok:"+(r.ok||0)+" fail:"+(r.fail||0)+" skipped:"+(r.skipped||0));
+    reload();
+  }
+
+  async function deleteRow(pid){
+    if(!confirm("Remove this product from the registry? Tokens will be revoked first.")) return;
+    const r = await api("/api/admin/products/"+pid, {method:"DELETE"});
+    if(r.ok) { toast("ok", "Removed"); reload(); }
+    else      toast("fail", r.error || "delete failed");
+  }
+
+  async function showLogs(pid){
+    $("#logs-modal").classList.add("shown");
+    $("#logs-body").innerHTML = '<div class="empty">Loading…</div>';
+    const r = await api("/api/admin/products/"+pid+"/logs?limit=30");
+    if(!r.ok){
+      $("#logs-body").innerHTML = '<div class="empty" style="color:var(--red)">Failed</div>';
+      return;
+    }
+    if(!r.items.length){
+      $("#logs-body").innerHTML = '<div class="empty">No log entries yet.</div>';
+      return;
+    }
+    $("#logs-body").innerHTML = r.items.map(it =>
+      `<div class="log-entry ${it.status}">
+         <div class="ts">${fmtDate(it.created_at)}</div>
+         <div class="body">
+           <span class="act">${escapeHtml(it.action)}</span> · ${escapeHtml(it.status)}
+           ${it.detail ? '<div style="color:var(--muted);margin-top:2px;font-family:Courier New,monospace;font-size:11px">'+escapeHtml(it.detail)+'</div>' : ""}
+         </div>
+       </div>`).join("");
+  }
+  window.closeLogs = function(){ $("#logs-modal").classList.remove("shown"); };
+
+  // ── add form ──
+  $("#add-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const body = {
+      product_key:     $("#f-key").value.trim().toLowerCase(),
+      product_name:    $("#f-name").value.trim(),
+      gmail_address:   $("#f-email").value.trim().toLowerCase(),
+      domain_template: $("#f-domain").value || null,
+      features:        $("#f-features").value.trim(),
+    };
+    const r = await api("/api/admin/products", {method:"POST", body: JSON.stringify(body)});
+    if(r.ok){
+      toast("ok", "Added — click Authorize on the new row to OAuth as "+body.gmail_address);
+      $("#add-form").reset();
+      reload();
+    } else {
+      toast("fail", r.error || r.detail || "add failed");
+    }
+  });
+
+  // ── secret gate ──
+  $("#admin-secret").value = STATE.secret;
+  $("#save-secret").addEventListener("click", () => {
+    STATE.secret = $("#admin-secret").value.trim();
+    sessionStorage.setItem(SS_KEY, STATE.secret);
+    reload();
+  });
+  $("#admin-secret").addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); $("#save-secret").click(); }
+  });
+  $("#reload").addEventListener("click", reload);
+
+  // ── grid action delegation ──
+  grid.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button[data-act]");
+    if(!btn) return;
+    const id = parseInt(btn.dataset.id, 10);
+    const act = btn.dataset.act;
+    if(act === "authorize") authorize(id);
+    else if(act === "keepalive") keepAlive(id);
+    else if(act === "logs") showLogs(id);
+    else if(act === "delete") deleteRow(id);
+  });
+  $("#run-all").addEventListener("click", runAll);
+
+  // ── after OAuth redirect: if URL has admin_authorized=1, toast and clean it ──
+  (function consumeReturnHash(){
+    const u = new URL(window.location.href);
+    const ok = u.searchParams.get("admin_authorized");
+    if(!ok) return;
+    const email = u.searchParams.get("email") || "";
+    const mismatch = u.searchParams.get("mismatch") === "1";
+    toast(mismatch ? "fail" : "ok",
+          mismatch ? ("Connected — but as the WRONG account ("+email+"). Reconnect with the matching mailbox.")
+                   : ("Connected ✓ "+email));
+    ["admin_authorized","email","mismatch"].forEach(k => u.searchParams.delete(k));
+    window.history.replaceState({}, "", u.toString());
+  })();
+
+  // ── show the canonical redirect URI in the help card ──
+  $("#redirect-uri-hint").textContent = STATE.base + "/api/admin/products/oauth/callback";
+
+  if(STATE.secret) reload();
+})();
+</script>
+</body>
+</html>

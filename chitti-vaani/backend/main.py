@@ -21,6 +21,10 @@ from config import settings
 from routes.vaani import bp as vaani_bp
 from routes.email import bp as email_bp
 from routes.emergency import bp as emergency_bp
+from routes.admin import bp as admin_bp
+from routes.feedback import bp as feedback_bp
+from services import admin_scheduler, feedback_scheduler
+from scripts import admin_seed
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,6 +69,33 @@ def _create_app() -> Flask:
     app.register_blueprint(vaani_bp)
     app.register_blueprint(email_bp)
     app.register_blueprint(emergency_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(feedback_bp)
+
+    # Admin: schema, seed, scheduler. Each step is wrapped — a misconfigured
+    # ADMIN_DATABASE_URL must not take down the rest of Vaani.
+    try:
+        from services import admin_db
+        admin_db.init_db()
+        admin_seed.seed_defaults_if_empty()
+    except Exception as e:  # noqa: BLE001
+        log.warning("admin DB init/seed skipped: %s", e)
+    try:
+        admin_scheduler.start()
+    except Exception as e:  # noqa: BLE001
+        log.warning("admin_scheduler not started: %s", e)
+
+    # Cross-product feedback: schema + daily 6 AM IST report scheduler.
+    try:
+        from services import feedback_db
+        feedback_db.init_db()
+    except Exception as e:  # noqa: BLE001
+        log.warning("feedback DB init skipped: %s", e)
+    try:
+        feedback_scheduler.start()
+    except Exception as e:  # noqa: BLE001
+        log.warning("feedback_scheduler not started: %s", e)
+
     return app
 
 

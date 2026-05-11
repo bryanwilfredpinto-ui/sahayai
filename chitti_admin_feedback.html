@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sahay AI — Feedback Dashboard</title>
+<style>
+  :root { --ink:#0E2344; --bg:#f8f4ee; --card:#fff; --line:#e5e7eb; --muted:#475569;
+          --good:#16a34a; --bad:#b91c1c; --warn:#d97706; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.5}
+  header{background:var(--ink);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  header h1{margin:0;font-size:18px;font-weight:700}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .controls input{padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#fff;color:var(--ink);font-size:13px;min-width:200px}
+  .controls button{padding:8px 14px;border-radius:8px;border:0;background:#fde68a;color:#78350f;font-weight:700;cursor:pointer}
+  .controls button.primary{background:#fff;color:var(--ink)}
+  main{max-width:1200px;margin:0 auto;padding:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h2{margin:0 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .stat{font-size:28px;font-weight:700;color:var(--ink)}
+  .stat.good{color:var(--good)} .stat.bad{color:var(--bad)} .stat.warn{color:var(--warn)}
+  .top3 .item{padding:12px 0;border-bottom:1px solid var(--line)}
+  .top3 .item:last-child{border-bottom:0}
+  .top3 .rank{display:inline-block;background:var(--ink);color:#fff;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;font-size:12px;font-weight:700;margin-right:8px}
+  .meta{font-size:12px;color:var(--muted);margin-top:4px}
+  .meta .pill{display:inline-block;background:#f1f5f9;border-radius:999px;padding:2px 8px;margin-right:6px;font-weight:600}
+  .meta .pill.score{background:#dcfce7;color:#14532d}
+  .meta .pill.freq{background:#fef3c7;color:#78350f}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+  .bar-row .label{flex:0 0 180px;font-weight:600}
+  .bar-row .bar{flex:1;background:#f1f5f9;border-radius:4px;height:14px;overflow:hidden;position:relative}
+  .bar-row .bar .up{background:#86efac;height:100%;float:left}
+  .bar-row .bar .down{background:#fca5a5;height:100%;float:left}
+  .bar-row .nums{flex:0 0 110px;text-align:right;font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f8fafc;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  tr.junk{opacity:.5}
+  .pill-type{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700}
+  .pill-type.thumbs_up{background:#dcfce7;color:#14532d}
+  .pill-type.thumbs_down{background:#fee2e2;color:#7f1d1d}
+  .pill-type.suggestion{background:#fff8e1;color:#92400e}
+  .junk-btn{background:#f1f5f9;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--muted)}
+  .junk-btn.undo{color:var(--good)}
+  .empty{padding:24px;text-align:center;color:var(--muted);font-style:italic}
+  .err{padding:14px;background:#fee2e2;color:#7f1d1d;border-radius:8px;margin-bottom:12px}
+  details{margin-top:8px}
+  details summary{cursor:pointer;font-size:12px;color:var(--muted)}
+  .checkbox-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Chitti Feedback Dashboard</h1>
+  <div class="controls">
+    <input id="api" type="text" placeholder="API base (e.g. https://chitti-vaani-api.onrender.com)" />
+    <input id="secret" type="password" placeholder="Admin secret" />
+    <button class="primary" id="load">Load</button>
+    <button id="run-now">Run report now</button>
+  </div>
+</header>
+
+<main>
+  <div id="err" class="err" style="display:none"></div>
+
+  <div class="grid">
+    <div class="card"><h2>Total feedback (all-time)</h2><div class="stat" id="stat-total">—</div></div>
+    <div class="card"><h2>👍 in window</h2><div class="stat good" id="stat-up">—</div></div>
+    <div class="card"><h2>👎 in window</h2><div class="stat bad" id="stat-down">—</div></div>
+    <div class="card"><h2>Suggestions kept (after filter)</h2><div class="stat" id="stat-keep">—</div></div>
+    <div class="card"><h2>Junk filtered</h2><div class="stat warn" id="stat-junk">—</div>
+      <div class="meta"><span class="pill" id="stat-junk-1">—</span><span class="pill" id="stat-junk-2">—</span><span class="pill" id="stat-junk-3">—</span></div>
+    </div>
+    <div class="card"><h2>Last report run</h2><div class="stat" id="stat-when" style="font-size:14px">—</div>
+      <div class="meta" id="stat-next">Next: —</div></div>
+  </div>
+
+  <div class="card top3" style="margin-bottom:18px">
+    <h2>🏆 Top 3 suggestions (highest score)</h2>
+    <div id="top3"><div class="empty">Load a report to see suggestions.</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <h2>👍 / 👎 by page (window)</h2>
+    <div id="bars"><div class="empty">Load a report to see thumbs counts.</div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="display:flex;justify-content:space-between;align-items:center">
+      <span>Raw feedback (most recent first)</span>
+      <span class="checkbox-row"><input type="checkbox" id="show-junk" /> <label for="show-junk">show junk</label></span>
+    </h2>
+    <div id="rows-wrap"><div class="empty">Load to see the raw stream.</div></div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function getApi() {
+  let a = ($('api').value || localStorage.getItem('chitti_fb_api') || '').trim();
+  if (!a) a = 'https://chitti-vaani-api.onrender.com';
+  $('api').value = a;
+  localStorage.setItem('chitti_fb_api', a);
+  return a.replace(/\/+$/, '');
+}
+function getSecret() {
+  let s = ($('secret').value || sessionStorage.getItem('chitti_fb_secret') || '').trim();
+  $('secret').value = s;
+  sessionStorage.setItem('chitti_fb_secret', s);
+  return s;
+}
+function showErr(msg) {
+  $('err').style.display = msg ? 'block' : 'none';
+  $('err').textContent = msg || '';
+}
+
+async function api(path, opts={}) {
+  const url = getApi() + path + (path.includes('?') ? '&' : '?') + 'secret=' + encodeURIComponent(getSecret());
+  const r = await fetch(url, Object.assign({ headers: {'Content-Type':'application/json'} }, opts));
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error('HTTP ' + r.status + ': ' + t.slice(0, 200));
+  }
+  return r.json();
+}
+
+function fmtPage(p) { return (p || 'unknown').replace(/^chitti_/, ''); }
+
+function renderTop3(report) {
+  const top = report.top_suggestions || [];
+  if (!top.length) { $('top3').innerHTML = '<div class="empty">No suggestions in this window yet.</div>'; return; }
+  $('top3').innerHTML = top.map((s, i) => `
+    <div class="item">
+      <div><span class="rank">${i+1}</span> <b>${fmtPage(s.page)}</b> · ${escapeHtml(s.text)}</div>
+      <div class="meta">
+        <span class="pill score">score ${s.score}</span>
+        <span class="pill freq">×${s.frequency}</span>
+        <span class="pill">${s.user_segment}</span>
+        ${s.emails && s.emails.length ? `<span class="pill">reply: ${s.emails.map(escapeHtml).join(', ')}</span>` : ''}
+      </div>
+      <details><summary>score components</summary>
+        <div class="meta">impact=${s.score_components.impact} · frequency=${s.score_components.frequency} · urgency=${s.score_components.urgency} · effort=${s.score_components.effort}</div>
+      </details>
+    </div>
+  `).join('');
+}
+
+function renderBars(report) {
+  const w = report.thumbs_counts_window || [];
+  if (!w.length) { $('bars').innerHTML = '<div class="empty">No 👍/👎 in this window yet.</div>'; return; }
+  const max = Math.max(1, ...w.map(r => r.thumbs_up + r.thumbs_down));
+  $('bars').innerHTML = w.map(r => {
+    const total = r.thumbs_up + r.thumbs_down;
+    const upPct   = total ? (r.thumbs_up   / max * 100) : 0;
+    const downPct = total ? (r.thumbs_down / max * 100) : 0;
+    return `
+      <div class="bar-row">
+        <div class="label">${fmtPage(r.page)}</div>
+        <div class="bar"><div class="up" style="width:${upPct}%"></div><div class="down" style="width:${downPct}%"></div></div>
+        <div class="nums">👍 ${r.thumbs_up} · 👎 ${r.thumbs_down}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderStats(report, schedulerStatus) {
+  $('stat-total').textContent = report.total_feedback_collected_all_time || 0;
+  const up   = (report.thumbs_counts_window || []).reduce((a,r)=>a+r.thumbs_up,0);
+  const down = (report.thumbs_counts_window || []).reduce((a,r)=>a+r.thumbs_down,0);
+  $('stat-up').textContent = up;
+  $('stat-down').textContent = down;
+  $('stat-keep').textContent = (report.all_suggestions || []).length;
+  const junkTotal = (report.removed_one_word||0) + (report.removed_impossible||0) + (report.removed_duplicate||0);
+  $('stat-junk').textContent = junkTotal;
+  $('stat-junk-1').textContent = `${report.removed_one_word||0} one-word`;
+  $('stat-junk-2').textContent = `${report.removed_impossible||0} impossible`;
+  $('stat-junk-3').textContent = `${report.removed_duplicate||0} duplicate`;
+  $('stat-when').textContent = report.generated_at ? new Date(report.generated_at).toLocaleString() : '—';
+  const next = (schedulerStatus && schedulerStatus.jobs && schedulerStatus.jobs[0] && schedulerStatus.jobs[0].next_run) || null;
+  $('stat-next').textContent = next ? 'Next: ' + new Date(next).toLocaleString() : 'Scheduler idle';
+}
+
+async function renderRows() {
+  const showJunk = $('show-junk').checked;
+  try {
+    const data = await api('/api/feedback/list?limit=200&show_junk=' + (showJunk ? '1' : '0'));
+    const items = data.items || [];
+    if (!items.length) { $('rows-wrap').innerHTML = '<div class="empty">No rows yet.</div>'; return; }
+    $('rows-wrap').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>When</th><th>Page</th><th>Type</th><th>Text</th><th>Segment</th><th>Email</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${items.map(r => `
+            <tr class="${r.is_junk ? 'junk':''}">
+              <td>${r.created_at ? new Date(r.created_at).toLocaleString() : '—'}</td>
+              <td>${fmtPage(r.page)}</td>
+              <td><span class="pill-type ${r.type}">${r.type.replace('thumbs_','').replace('suggestion','💡')}</span></td>
+              <td>${r.text ? escapeHtml(r.text) : '<span style="color:#94a3b8">—</span>'}</td>
+              <td>${r.user_segment || '—'}</td>
+              <td>${r.email ? escapeHtml(r.email) : '—'}</td>
+              <td><button class="junk-btn ${r.is_junk?'undo':''}" data-id="${r.id}" data-undo="${r.is_junk?1:0}">${r.is_junk ? 'unmark' : 'mark junk'}</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+    document.querySelectorAll('.junk-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const undo = btn.dataset.undo === '1';
+        try {
+          await api('/api/feedback/' + id + '/junk', { method:'POST', body: JSON.stringify({ undo }) });
+          renderRows();
+        } catch (e) { showErr(e.message); }
+      });
+    });
+  } catch (e) { showErr(e.message); }
+}
+
+async function load() {
+  showErr('');
+  try {
+    const [report, health] = await Promise.all([
+      api('/api/feedback/report'),
+      api('/api/feedback/health'),
+    ]);
+    renderStats(report, health.scheduler);
+    renderTop3(report);
+    renderBars(report);
+    renderRows();
+  } catch (e) { showErr(e.message); }
+}
+
+async function runNow() {
+  showErr('');
+  try {
+    await api('/api/feedback/run-now', { method:'POST', body: JSON.stringify({ lookback_hours: 24 }) });
+    load();
+  } catch (e) { showErr(e.message); }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+$('load').addEventListener('click', load);
+$('run-now').addEventListener('click', runNow);
+$('show-junk').addEventListener('change', renderRows);
+
+// Pre-fill from storage
+$('api').value = localStorage.getItem('chitti_fb_api') || 'https://chitti-vaani-api.onrender.com';
+$('secret').value = sessionStorage.getItem('chitti_fb_secret') || '';
+if ($('secret').value) load();
+</script>
+</body>
+</html>
