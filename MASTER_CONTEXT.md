@@ -4,6 +4,12 @@ Last updated 2026-05-12.
 
 This is the single highest-level document for the Sahay AI repository. Read this first. Per-product detail lives in each `chitti-*/` folder's own [CONTEXT.md](#per-product-context). Per-session decisions and policy live in [auto-memory](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md).
 
+Sibling cross-cutting files at this level:
+
+- [GLOBAL_BEST_PRACTICES.md](GLOBAL_BEST_PRACTICES.md) — China / Dubai / Singapore patterns we adopt, and the ones we deliberately refuse.
+- [BRAILLE.md](BRAILLE.md) — refreshable-braille-display contract for every Chitti page.
+- [chitti_a11y.js](chitti_a11y.js) — shared substrate: language selector, Voice Required marker, Braille mode toggle, aria-live region, provider-agnostic voice helper.
+
 ---
 
 ## 1. What Sahay AI is
@@ -51,7 +57,7 @@ The full live-vs-pending audit is in [auto-memory project_render_deploy_status_2
 
 Each Chitti is a separate process, separately deployed. They share **nothing in code** except:
 
-- **Voice Factory** — the TTS/STT layer at [chitti-voice-factory/](chitti-voice-factory/). Every voice-IN / voice-OUT goes through it. 4-supplier cascade prevents lock-in; Tier C (low-availability languages) never silently falls back.
+- **Voice Factory** — the TTS/STT layer at [chitti-voice-factory/](chitti-voice-factory/). Every voice-IN / voice-OUT goes through it. 4-supplier cascade prevents lock-in; Tier C (low-availability languages) never silently falls back. **Voice is mandatory** for every Chitti — pages where voice IN/OUT is part of the user-facing contract carry a prominent "🎤 Voice Required" marker injected by `Chitti.a11y.init({ voiceRequired: true })`. Bhashini is the current provider; the architecture is **provider-swappable at one URL** (`Chitti.a11y.VOICE_FACTORY_URL`) — see [chitti_a11y.js](chitti_a11y.js) and [chitti-voice-factory/README.md](chitti-voice-factory/README.md).
 - **DeepSeek** — the sole LLM provider for all Chittis (decided 2026-05-11). OpenAI-compatible API at `https://api.deepseek.com`. Old Anthropic call sites are tracked for migration in each Chitti's TODO.md.
 - **Sahay AI homepage** — the static landing at [index.html](index.html) and per-product HTML pages at repo root.
 
@@ -67,6 +73,23 @@ Stack patterns (variations are tracked in each Chitti's [ARCHITECTURE.md](chitti
 ## 4. Database strategy
 
 **Decision (2026-05-12):** Migrate every Chitti from Postgres (Neon/Supabase) to **Turso libSQL** with one database per product. Rationale: cost, simplicity, and Turso's per-product isolation matches the existing per-product backend boundary cleanly.
+
+### Provisioned Turso databases (2026-05-12)
+
+All 8 databases live in **`aws-ap-south-1` (Mumbai)** — Turso does not offer `ap-southeast-1` (Singapore); Mumbai is both their default and physically closer to Indian users. Org: `bryanwilfredpinto`.
+
+| Chitti | libSQL URL |
+|---|---|
+| chitti-ca | `libsql://chitti-ca-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-government | `libsql://chitti-government-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-legal | `libsql://chitti-legal-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-medupi | `libsql://chitti-medupi-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-news | `libsql://chitti-news-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-shares | `libsql://chitti-shares-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-vaani | `libsql://chitti-vaani-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+| chitti-voice-factory | `libsql://chitti-voice-factory-bryanwilfredpinto.aws-ap-south-1.turso.io` |
+
+Provisioning is idempotent — re-runnable via [scripts/turso_create_dbs.sh](scripts/turso_create_dbs.sh) (WSL Ubuntu).
 
 Migration cost per backend:
 
@@ -99,6 +122,10 @@ Anthropic call sites still exist in code (`services/medupi_recognition.py`, `chi
 |---|---|---|
 | **Accessibility before AI** | Every CONTEXT.md "Accessibility Requirements (Non-Negotiable)" section | The four user types must be able to use the product before any LLM is layered on. |
 | **Voice IN and voice OUT** | [chitti-voice-factory/](chitti-voice-factory/) substrate | Blind and illiterate users cannot read; deaf and mute users still need a path. |
+| **Voice is mandatory; provider is swappable** | [chitti_a11y.js](chitti_a11y.js) `VOICE_FACTORY_URL` + 4-supplier cascade in [chitti-voice-factory/backend/services/](chitti-voice-factory/backend/services/) | Every voice page must show the **🎤 Voice Required** marker; every voice call hits one URL; Bhashini today, swap to any provider without frontend changes. |
+| **Multi-language UI via Bhashini** | [chitti_a11y.js](chitti_a11y.js) 26-language registry + page-injected language selector | Every page renders the selector at the top; `chitti:lang` event fires on change so pages can re-render translatable text. |
+| **Braille-display ready** | [BRAILLE.md](BRAILLE.md) per-page audit + ⠿ Braille mode toggle in [chitti_a11y.js](chitti_a11y.js) | Every dynamic update goes through `Chitti.a11y.announce(text)`; refreshable braille displays (BrailleBack / NVDA / VoiceOver braille) mirror the aria-live region. |
+| **Global best practices honoured + refused** | Each CONTEXT.md "Global Best Practices" section sources [GLOBAL_BEST_PRACTICES.md](GLOBAL_BEST_PRACTICES.md) | We borrow China's elder mode, Dubai's happiness meter and Singapore's inclusive-design mark; we refuse super-app monoculture, mandatory national-ID linking, and centralised identity. |
 | **SEBI: NOT REGISTERED banner is permanent** | All chitti-shares and chitti-medupi pages | We do not give SEBI-regulated advice. The sticky banner stays at top of every page; never the footer. |
 | **Family cascade, never cops** | [chitti-vaani](chitti-vaani/) + [chitti-vaani-android](chitti-vaani-android/) emergency protocol | Auto-dialling 112/100/102/108/1098/1930/139 endangers users (e.g. domestic-abuse case). Family-cascade only. |
 | **MedUPI strict-match** | [chitti-medupi/services/medupi_alternatives.py](chitti-medupi/backend/services/medupi_alternatives.py) | Never recommend a different salt/strength/form. The whole product depends on this guarantee. |
