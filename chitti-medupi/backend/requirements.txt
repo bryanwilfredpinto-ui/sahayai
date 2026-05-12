@@ -7,7 +7,9 @@ flask-cors==4.0.0
 gunicorn==21.2.0
 
 sqlalchemy==2.0.35
-psycopg2-binary==2.9.10             # binary distro — never compiles libpq
+sqlalchemy-libsql==0.2.0             # Turso dialect (we use embedded replica, not direct Hrana)
+libsql-experimental==0.0.55          # cp311 manylinux wheel; owns the Turso sync protocol
+psycopg2-binary==2.9.10             # kept temporarily for data-export tooling; will remove after cutover verified
 
 requests==2.31.0
 python-dotenv==1.0.0
