@@ -217,5 +217,25 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
     <small style="opacity:.7">Founded by Bryan Wilfred Pinto · Built on Anthropic Claude · GitHub Pages + Render free tier · Supabase · Neon</small>
   </footer>
 </main>
+
+<!-- Chitti Quality v2 substrate · 2026-05-13 -->
+<script>
+  window.CHITTI_LAST_AUDIT = '2026-05-13';
+  window.CHITTI_CO2_G = 0.2;
+</script>
+<script src="chitti_a11y.js"></script>
+<script>
+  // P0: actually initialise the substrate so the language selector + speaker
+  // bar appear at the top of the homepage. Loading the script alone does not
+  // mount the bar — init() does.
+  if (window.Chitti && window.Chitti.a11y) {
+    window.Chitti.a11y.init({ voiceRequired: false });
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.Chitti && window.Chitti.a11y) window.Chitti.a11y.init({ voiceRequired: false });
+    });
+  }
+</script>
+<script src="feedback-widget.js" data-page="chitti_home"></script>
 </body>
 </html>

@@ -217,6 +217,16 @@
         background:#E86A17; color:#fff; border-radius:6px;
         padding:3px 10px; font-weight:700; letter-spacing:.3px;
       }
+      /* Chitti brand badge — sits next to every speaker / voice button.
+         Bryan: "Chitti icon next to every speaker button." 2026-05-13. */
+      .chitti-mini-logo {
+        display:inline-flex; align-items:center; justify-content:center;
+        width:18px; height:18px; border-radius:5px; margin-right:6px;
+        background:linear-gradient(135deg,#E86A17,#D4AF37);
+        color:#fff; font-weight:900; font-size:11px; line-height:1;
+        box-shadow:0 1px 3px rgba(232,106,23,.45);
+        flex-shrink:0; vertical-align:middle;
+      }
       .chitti-voice-required[aria-disabled="true"] {
         background:#6b7280;
       }
@@ -269,8 +279,9 @@
         ⠿ Braille mode${state.braille ? ': ON' : ''}
       </button>
       <button id="chitti-speak-page" type="button"
-        title="Read the main heading aloud">
-        🔊 Read page
+        title="Read the main heading aloud"
+        aria-label="Chitti — read this page aloud">
+        <span class="chitti-mini-logo" aria-hidden="true">C</span>🔊 Read page
       </button>
       <span style="margin-left:auto;opacity:.75;font-size:11px">
         Powered by <a href="https://bhashini.gov.in/" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Bhashini</a> · provider-swappable
