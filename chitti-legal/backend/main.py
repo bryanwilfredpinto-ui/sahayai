@@ -1,12 +1,34 @@
 """Chitti Legal — Flask app entry point."""
 
+import logging
 import os
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from sqlalchemy import create_engine
 
 from config import settings
 from routes.legal import bp as legal_bp
+
+# Sahay AI shared quality framework — installed across every Chitti.
+# See lib/__init__.py for the architecture overview.
+from lib.feedback import feedback_bp, ensure_feedback_table
+from lib.hooks import HookRegistry
+from lib.observability import Observability, make_metrics_blueprint
+from lib.quadrails import build_default_quadrails
+
+
+CHITTI_SLUG = "chitti-legal"
+
+log = logging.getLogger("main")
+
+# chitti-legal is a stateless Flask backend (no app DB). The quality
+# framework still needs a SQLAlchemy engine for its audit/feedback tables,
+# so we spin up a tiny SQLite engine under /tmp.
+_quality_engine = create_engine(
+    "sqlite:////tmp/chitti_legal_quality.db",
+    connect_args={"check_same_thread": False},
+)
 
 
 def _origins() -> list[str]:
@@ -30,6 +52,29 @@ def create_app() -> Flask:
     @app.get("/health")
     def health():
         return jsonify({"ok": True})
+
+    # Quality framework: ensure tables, register feedback + metrics blueprints,
+    # build the hook registry that service code wraps DeepSeek calls with.
+    try:
+        ensure_feedback_table(_quality_engine, CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality framework table init skipped: %s", e)
+
+    app.register_blueprint(feedback_bp)
+    mbp = make_metrics_blueprint()
+    if mbp is not None:
+        app.register_blueprint(mbp)
+
+    try:
+        obs = Observability(chitti=CHITTI_SLUG, engine=_quality_engine)
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti=CHITTI_SLUG,
+            quadrails=build_default_quadrails(CHITTI_SLUG),
+            observability=obs,
+        )
+        log.info("quality hooks installed for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality hooks install skipped: %s", e)
 
     return app
 

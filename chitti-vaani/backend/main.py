@@ -16,6 +16,7 @@ import logging
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from sqlalchemy import create_engine
 
 from config import settings
 from routes.vaani import bp as vaani_bp
@@ -25,6 +26,26 @@ from routes.admin import bp as admin_bp
 from routes.feedback import bp as feedback_bp
 from services import admin_scheduler, feedback_scheduler
 from scripts import admin_seed
+
+# Sahay AI shared quality framework — installed across every Chitti.
+# See lib/__init__.py for the architecture overview.
+from lib.feedback import feedback_bp as quality_feedback_bp, ensure_feedback_table
+from lib.founder_report import schedule_daily_report
+from lib.hooks import HookRegistry
+from lib.observability import Observability, make_metrics_blueprint
+from lib.quadrails import build_default_quadrails
+
+
+CHITTI_SLUG = "chitti-vaani"
+
+# Chitti Vaani persists admin + feedback data via SQLite at /tmp paths and does
+# not expose a single shared SQLAlchemy engine. Give the quality framework its
+# own dedicated engine so quality_audit / quality_feedback tables live in their
+# own DB file, away from existing admin / feedback subsystems.
+_quality_engine = create_engine(
+    "sqlite:////tmp/chitti_vaani_quality.db",
+    connect_args={"check_same_thread": False},
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -95,6 +116,39 @@ def _create_app() -> Flask:
         feedback_scheduler.start()
     except Exception as e:  # noqa: BLE001
         log.warning("feedback_scheduler not started: %s", e)
+
+    # Quality framework: create tables, register /api/feedback + /metrics,
+    # build the hook registry that service code wraps DeepSeek calls with.
+    try:
+        ensure_feedback_table(_quality_engine, CHITTI_SLUG)
+        log.info("quality framework tables ensured for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality framework table init skipped: %s", e)
+
+    app.register_blueprint(quality_feedback_bp)
+    mbp = make_metrics_blueprint()
+    if mbp is not None:
+        app.register_blueprint(mbp)
+
+    try:
+        obs = Observability(chitti=CHITTI_SLUG, engine=_quality_engine)
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti=CHITTI_SLUG,
+            quadrails=build_default_quadrails(CHITTI_SLUG),
+            observability=obs,
+        )
+        log.info("quality hooks installed for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality hooks install skipped: %s", e)
+
+    # Daily founder report at 07:00 IST — piggyback on admin_scheduler's
+    # APScheduler instance (exposed as `_scheduler`).
+    try:
+        sched = getattr(admin_scheduler, "_scheduler", None) or getattr(admin_scheduler, "scheduler", None)
+        if sched is not None:
+            schedule_daily_report(sched, _quality_engine, CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("founder cron schedule skipped: %s", e)
 
     return app
 

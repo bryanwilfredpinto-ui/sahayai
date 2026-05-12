@@ -35,6 +35,17 @@ from services import (
     medupi_scheduler,
 )
 
+# Sahay AI shared quality framework — installed across every Chitti.
+# See lib/__init__.py for the architecture overview.
+from lib.feedback import feedback_bp, ensure_feedback_table
+from lib.founder_report import schedule_daily_report
+from lib.hooks import HookRegistry
+from lib.observability import Observability, make_metrics_blueprint
+from lib.quadrails import build_default_quadrails
+
+
+CHITTI_SLUG = "chitti-medupi"
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -67,10 +78,24 @@ def _bootstrap() -> None:
             log.info("Jan Aushadhi seed loaded: %d stores", n)
     except Exception as e:  # noqa: BLE001
         log.warning("Jan Aushadhi seed skipped: %s", e)
+    # Create quality framework tables (quality_audit, quality_feedback).
+    try:
+        ensure_feedback_table(engine, CHITTI_SLUG)
+        log.info("quality framework tables ensured for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality framework table init skipped: %s", e)
     try:
         medupi_scheduler.start()
     except Exception as e:  # noqa: BLE001
         log.warning("scheduler failed to start: %s", e)
+    # Daily founder report at 07:00 IST. Each Chitti contributes its own
+    # slice; chitti-founder aggregates and emails.
+    try:
+        sched = getattr(medupi_scheduler, "_scheduler", None) or getattr(medupi_scheduler, "scheduler", None)
+        if sched is not None:
+            schedule_daily_report(sched, engine, CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("founder cron schedule skipped: %s", e)
 
 
 # ───── Flask app factory ─────
@@ -122,6 +147,27 @@ def _create_app() -> Flask:
         return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     app.register_blueprint(medupi_bp)
+
+    # Quality framework: /api/feedback (thumbs up/down) + optional /metrics.
+    app.register_blueprint(feedback_bp)
+    mbp = make_metrics_blueprint()
+    if mbp is not None:
+        app.register_blueprint(mbp)
+
+    # Build and stash the hook registry. Service code reaches for it via
+    # `current_app.config["CHITTI_HOOKS"]` and wraps every DeepSeek call with
+    # hooks.before_model / hooks.after_model.
+    try:
+        obs = Observability(chitti=CHITTI_SLUG, engine=engine)
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti=CHITTI_SLUG,
+            quadrails=build_default_quadrails(CHITTI_SLUG),
+            observability=obs,
+        )
+        log.info("quality hooks installed for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality hooks install skipped: %s", e)
+
     return app
 
 
