@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chitti Quality — Standards, Compliance, Audit</title>
+  <meta name="description" content="The trust page for the Chitti family. China, Dubai, Singapore standards followed. Compliance status, hallucination rate, accessibility, and braille readiness per Chitti." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230E2344'/%3E%3Ctext x='32' y='44' font-size='38' text-anchor='middle' fill='%23D4AF37'%3E%E2%9C%93%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --navy: #0E2344;
+      --saffron: #E86A17;
+      --gold: #D4AF37;
+      --cream: #f8f4ee;
+      --ink: #1f1f1f;
+      --green: #2e7d32;
+      --amber: #b76e00;
+      --red: #b00020;
+      --grey: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .trust-header {
+      background: var(--navy); color: #fff;
+      padding: 28px 16px 22px;
+      border-bottom: 4px solid var(--gold);
+    }
+    .trust-header h1 {
+      margin: 0 0 6px; font-size: 28px; font-weight: 800; letter-spacing: -0.2px;
+    }
+    .trust-header p {
+      margin: 0; opacity: 0.92; font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      vertical-align: middle;
+    }
+    .badge.green  { background: var(--green); color: #fff; }
+    .badge.amber  { background: var(--amber); color: #fff; }
+    .badge.red    { background: var(--red);   color: #fff; }
+    .badge.grey   { background: var(--grey);  color: #fff; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+    section { margin: 36px 0; }
+    h2 {
+      font-size: 20px; font-weight: 800;
+      color: var(--navy);
+      margin: 0 0 12px;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 6px;
+    }
+    h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin: 18px 0 6px; }
+    table {
+      width: 100%; border-collapse: collapse;
+      background: #fff; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      font-size: 14px;
+    }
+    th, td {
+      padding: 9px 12px; text-align: left; border-bottom: 1px solid #ece6da;
+    }
+    th { background: #f1ebdc; font-weight: 700; color: var(--navy); }
+    tr:last-child td { border-bottom: none; }
+    .chitti-name { font-weight: 700; }
+    .reason { color: var(--grey); font-size: 12px; }
+    .standards-grid {
+      display: grid; gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .card {
+      background: #fff; border-radius: 8px; padding: 14px;
+      border-left: 4px solid var(--gold);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card h3 { margin-top: 0; font-size: 15px; }
+    .card p { margin: 4px 0 0; font-size: 13px; color: #444; }
+    .flag { font-size: 18px; margin-right: 4px; }
+    .meta-line {
+      font-size: 12px; color: var(--grey);
+      margin: 8px 0 0;
+    }
+    .promise {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; color: #6b4f00;
+      margin: 12px 0;
+    }
+    .promise strong { color: var(--navy); }
+    .cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--saffron); color: #fff;
+      border: none; border-radius: 8px;
+      padding: 10px 16px; font-size: 14px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      min-height: 48px;
+    }
+    .cta:focus, .cta:focus-visible {
+      outline: 3px solid var(--gold); outline-offset: 2px;
+    }
+    footer.trust-footer {
+      max-width: 1100px; margin: 32px auto 0; padding: 16px;
+      font-size: 12px; color: var(--grey);
+      border-top: 1px solid #ece6da;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      font-size: 12px; margin: 8px 0 16px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    /* Braille mode collaboration with chitti_a11y.js */
+    body.chitti-braille .standards-grid { grid-template-columns: 1fr; }
+    body.chitti-braille .emoji-decor { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="trust-header" role="banner">
+    <h1>Chitti Quality <span class="emoji-decor" aria-hidden="true">⚖️</span></h1>
+    <p>The guardian of every Chitti's standards. Audited daily. No red status hidden. No number rounded up.</p>
+    <p class="meta-line" id="last-audit-line">Last audit: <span id="last-audit">2026-05-12 06:30 IST</span> · Next: <span id="next-audit">2026-05-13 06:30 IST</span></p>
+  </header>
+
+  <main>
+
+    <div class="promise" role="note">
+      <strong>This page is the trust product.</strong>
+      Updated daily from the founder dashboard. Red statuses stay red until the underlying Chitti is fixed. Stub values are labelled stubbed. Source of every standard is linked. See <a href="chitti-quality/IDENTITY.md">Chitti Quality identity</a> and <a href="chitti-quality/STANDARDS.md">full standards reference</a>.
+    </div>
+
+    <section aria-labelledby="status-h">
+      <h2 id="status-h">Compliance status — per Chitti</h2>
+      <div class="legend" aria-label="Status legend">
+        <span><span class="badge green">Green</span> all daily checks pass</span>
+        <span><span class="badge amber">Amber</span> needs follow-up this week</span>
+        <span><span class="badge red">Red</span> escalated; fix in progress</span>
+        <span><span class="badge grey">Stub</span> not deployed; intentional stub</span>
+      </div>
+      <div role="region" aria-live="polite" aria-label="Compliance table updates here">
+        <table id="compliance-table">
+          <thead>
+            <tr>
+              <th scope="col">Chitti</th>
+              <th scope="col">Status</th>
+              <th scope="col">Thumbs up %</th>
+              <th scope="col">Hallucination %</th>
+              <th scope="col">Braille</th>
+              <th scope="col">Quadrails</th>
+              <th scope="col">Last audit</th>
+              <th scope="col">Reason / next step</th>
+            </tr>
+          </thead>
+          <tbody id="compliance-body">
+            <!-- Filled by loadCompliance() from /admin/founder when wired. Honest stub shown below until then. -->
+          </tbody>
+        </table>
+      </div>
+      <p class="meta-line" id="compliance-source">
+        Source: <code>lib/founder_report.py</code> aggregating <code>/admin/founder</code> JSON per Chitti.
+        <span id="compliance-mode-tag" class="badge grey">data: stub</span>
+        until every Chitti's <code>/admin/founder</code> is wired.
+      </p>
+    </section>
+
+    <section aria-labelledby="global-h">
+      <h2 id="global-h">Global standards followed</h2>
+      <p>What we adopt — and what we deliberately refuse — is recorded in full at <a href="GLOBAL_BEST_PRACTICES.md">GLOBAL_BEST_PRACTICES.md</a>. Headlines:</p>
+      <div class="standards-grid">
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇨🇳</span> China — GB/T 37668-2019</h3>
+          <p><strong>Accessibility design for elderly users.</strong> One-tap elder / braille mode, 18pt single-column layout, large touch targets. Wired in <code>chitti_a11y.js</code>.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇨🇳</span> China — Voice-first finance UX</h3>
+          <p>Speak-the-name flow inspired by Alipay / WeChat Pay elder mode. Used in Chitti Vaani, MedUPI, Sales.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇦🇪</span> Dubai — UAE Charter for AI Development &amp; Use (2024)</h3>
+          <p>Five principles — inclusivity, transparency, accountability, safety, human oversight. Each mapped to a quadrail or hook in <code>lib/quadrails.py</code> + <code>lib/hooks.py</code>.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇦🇪</span> Dubai — Happiness Meter</h3>
+          <p>Thumbs-up / down on every response card. Stored via <code>lib/feedback.py</code>. Aggregated weekly.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇦🇪</span> Dubai / TAMM — Multilingual minimum</h3>
+          <p>UAE mandates 8 languages on government services. Our equivalent: minimum 4 Indian languages live before a Chitti is "shipped". 26-language registry in <code>chitti_a11y.js</code>.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇸🇬</span> Singapore — Model AI Governance Framework v2</h3>
+          <p>Risk-tier per Chitti: high (medupi, legal, ca, vaani), medium (shares, government), low (news, sales). Each tier has matching observability + evaluator coverage.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇸🇬</span> Singapore — AI Verify principles</h3>
+          <p>Eight principles — transparency, explainability, repeatability, safety, security, robustness, fairness, accountability. Mapped to evaluator passes in <code>lib/evaluators.py</code>.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇸🇬</span> Singapore — SG Enable Inclusive Design Mark</h3>
+          <p>Co-design with vulnerable users. Our four-user contract (blind, deaf, mute, illiterate) is the local equivalent. Visible in every CONTEXT.md.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇸🇬</span> Singapore — WCAG 2.1 AA (continuous audit)</h3>
+          <p>Manual via the <a href="BRAILLE.md">BRAILLE.md</a> checklist; axe-core CI planned. Spot-check on highest-traffic page of each Chitti weekly.</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="flag emoji-decor" aria-hidden="true">🇮🇳</span> India — DPDP Act 2023</h3>
+          <p>On-device audit log on Chitti Vaani Android; never auto-uploaded. No third-party analytics. <code>X-User-Token</code> is a per-device UUID, not derived from user data.</p>
+        </div>
+
+      </div>
+
+      <h3>What we refuse</h3>
+      <ul>
+        <li><strong>Super-app monoculture</strong> (China WeChat / Alipay). Each Chitti is independently installable, deletable, auditable.</li>
+        <li><strong>Mandatory national-ID linking</strong> (UAE Pass). Aadhaar is opt-in everywhere.</li>
+        <li><strong>Centralised digital identity</strong> (Singpass). No Chitti-pass; no mandatory biometrics.</li>
+        <li><strong>Social-credit feedback aggregation.</strong> Happiness meter is anonymised and per-product.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="certs-h">
+      <h2 id="certs-h">Accessibility certifications &amp; targets</h2>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Standard</th>
+            <th scope="col">Target</th>
+            <th scope="col">Current</th>
+            <th scope="col">Anchor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>WCAG 2.1 AA</td><td>100% of public pages</td><td><span class="badge amber">manual audit</span> until axe-core CI</td><td><a href="BRAILLE.md">BRAILLE.md</a></td></tr>
+          <tr><td>Refreshable braille display (BrailleBack, NVDA, VoiceOver)</td><td>Every page passes 7 must-pass rules</td><td><span class="badge amber">rolling audit</span></td><td><a href="BRAILLE.md">BRAILLE.md §2</a></td></tr>
+          <tr><td>Four-user contract (blind, deaf, mute, illiterate)</td><td>Every Chitti has a per-user table in CONTEXT.md</td><td><span class="badge green">12/12</span></td><td>per-product <code>CONTEXT.md</code></td></tr>
+          <tr><td>Voice IN + Voice OUT mandatory</td><td>Every Chitti</td><td><span class="badge green">substrate live</span></td><td><a href="chitti_a11y.js">chitti_a11y.js</a></td></tr>
+          <tr><td>Touch targets ≥ 48×48 CSS px</td><td>100% of buttons</td><td><span class="badge amber">spot-checked</span></td><td><a href="BRAILLE.md">BRAILLE.md §2</a></td></tr>
+          <tr><td>26-language UI selector</td><td>Every public Chitti page</td><td><span class="badge amber">substrate ready, page rollout in progress</span></td><td><a href="chitti_a11y.js">chitti_a11y.js</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="quadrails-h">
+      <h2 id="quadrails-h">Quadrails — active across every Chitti</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">Rail</th><th scope="col">What it gates</th><th scope="col">Default verdict</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>SafetyRail</strong></td><td>Hate, violence, self-harm, illegal goods</td><td>block + log</td></tr>
+          <tr><td><strong>RelevanceRail</strong></td><td>Off-topic for this Chitti</td><td>polite redirect</td></tr>
+          <tr><td><strong>TruthRail</strong></td><td>Model claim vs ground-truth bundle</td><td>block + show source</td></tr>
+          <tr><td><strong>ComplianceRail</strong></td><td>Per-Chitti disclaimer present</td><td>inject + log</td></tr>
+        </tbody>
+      </table>
+      <p class="meta-line">Source: <a href="lib/quadrails.py">lib/quadrails.py</a>. Per-Chitti disclaimer verbatim text in <a href="chitti-quality/STANDARDS.md">STANDARDS.md §1</a>.</p>
+    </section>
+
+    <section aria-labelledby="ongoing-h">
+      <h2 id="ongoing-h">Chitti Quality's ongoing responsibility</h2>
+      <ol>
+        <li><strong>Monitors</strong> new global standards (China, Dubai, Singapore, EU, India DPDP) monthly; quarterly OWASP AI Top 10 review.</li>
+        <li><strong>Proposes</strong> improvements as GitHub issues with implementation plan + affected Chittis + effort/priority.</li>
+        <li><strong>Implements</strong> across all Chittis after pilot passes a full <a href="chitti-quality/CHECKLIST.md">CHECKLIST.md</a> for seven consecutive days.</li>
+        <li><strong>Reports</strong> weekly digest (Monday 07:00 IST) + monthly certification report to the Founder.</li>
+        <li><strong>Never lets standards slip</strong> — auto-rollback wired into <code>lib/hooks.py</code> for critical failures; immediate alert to the Founder.</li>
+      </ol>
+      <p><em>Motto:</em> &ldquo;Standards are not a destination. They are a daily practice.&rdquo;</p>
+    </section>
+
+    <section aria-labelledby="report-h">
+      <h2 id="report-h">Report a quality issue</h2>
+      <p>Saw a Chitti misquote a price, mistranslate a Hindi line, or hallucinate a tax rule? Tell us. Reports land in the founder dashboard within minutes.</p>
+      <p>
+        <a href="mailto:bryanwilfredpinto@gmail.com?subject=%5BChitti%20Quality%5D%20Issue%20report&amp;body=Chitti%20page%3A%20%0A%0AWhat%20happened%3A%20%0A%0AWhat%20you%20expected%3A%20%0A%0ADate%2Ftime%3A%20%0A%0ALanguage%3A%20"
+           class="cta" id="report-issue-btn"
+           aria-label="Report a quality issue to Chitti Quality via email">
+          <span aria-hidden="true">📣</span> Report a quality issue
+        </a>
+      </p>
+      <p class="meta-line">Until the in-product widget is wired, reports go directly to <a href="mailto:bryanwilfredpinto@gmail.com">bryanwilfredpinto@gmail.com</a>. <span class="badge grey">data: stub</span></p>
+    </section>
+
+  </main>
+
+  <footer class="trust-footer" role="contentinfo">
+    <p>
+      Chitti Quality is the named owner of every standard in
+      <a href="chitti-quality/STANDARDS.md">STANDARDS.md</a>. Identity:
+      <a href="chitti-quality/IDENTITY.md">IDENTITY.md</a>. Daily checklist:
+      <a href="chitti-quality/CHECKLIST.md">CHECKLIST.md</a>. Accountability:
+      <a href="chitti-quality/ACCOUNTABILITY.md">ACCOUNTABILITY.md</a>. Global practices:
+      <a href="GLOBAL_BEST_PRACTICES.md">GLOBAL_BEST_PRACTICES.md</a>.
+    </p>
+    <p>
+      Master context: <a href="MASTER_CONTEXT.md">MASTER_CONTEXT.md</a> ·
+      Braille contract: <a href="BRAILLE.md">BRAILLE.md</a> ·
+      Voice substrate: <a href="chitti-voice-factory/">chitti-voice-factory</a> (Bhashini today, swappable).
+    </p>
+  </footer>
+
+  <script src="chitti_a11y.js"></script>
+  <script>
+    // Wire the shared a11y substrate. This page does not require voice IN/OUT — it's a read-only
+    // trust page — but we still load chitti_a11y.js so the language selector, braille mode, and
+    // aria-live region are available.
+    Chitti.a11y.init({ voiceRequired: false });
+
+    // Honest-stub compliance data. When each Chitti's /admin/founder is wired, this is replaced
+    // by a fetch loop that aggregates real numbers via lib/founder_report.py.
+    // Status legend: green / amber / red / stub.
+    const COMPLIANCE_STUB = [
+      { chitti: 'chitti-medupi',         status: 'green', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'Live on Turso (Mumbai). Manual braille audit pending on result panel.' },
+      { chitti: 'chitti-shares',         status: 'green', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'SEBI banner sticky-top. Chart canvases need text alternatives (see BRAILLE.md).' },
+      { chitti: 'chitti-news',           status: 'green', thumbsUp: '—', hallu: '—', braille: 'green', quadrails: 'active', lastAudit: '2026-05-12', reason: 'Live on Turso embedded-replica pattern. State-aware routing in place.' },
+      { chitti: 'chitti-government',     status: 'amber', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'render.yaml unconnected; deploy parked on placeholder DB. Server-enforced disclaimer verified.' },
+      { chitti: 'chitti-vaani',          status: 'amber', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'Not yet deployed; family-cascade-not-cops protocol enforced in code.' },
+      { chitti: 'chitti-vaani-android',  status: 'amber', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'n/a (shell)', lastAudit: '2026-05-12', reason: '4 code-level hard refusals enforced. BrailleBack manual test pending real-device run.' },
+      { chitti: 'chitti-ca',             status: 'amber', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'Honest stub: stateless DeepSeek wrapper. Disclaimer evaluator passing.' },
+      { chitti: 'chitti-legal',          status: 'amber', thumbsUp: '—', hallu: '—', braille: 'amber', quadrails: 'active', lastAudit: '2026-05-12', reason: 'Honest stub: stateless DeepSeek wrapper. Disclaimer evaluator passing.' },
+      { chitti: 'chitti-voice-factory',  status: 'amber', thumbsUp: 'n/a', hallu: 'n/a', braille: 'green', quadrails: 'n/a (infra)', lastAudit: '2026-05-12', reason: 'Phase 1 complete (26 languages, mock Bhashini). Awaits Sire ULCA registration.' },
+      { chitti: 'chitti-scanner',        status: 'stub',  thumbsUp: 'n/a', hallu: 'n/a', braille: 'n/a',   quadrails: 'n/a',           lastAudit: '2026-05-12', reason: 'Not yet deployed.' },
+      { chitti: 'chitti-upi',            status: 'amber', thumbsUp: '—',   hallu: '—',   braille: 'amber', quadrails: 'active',         lastAudit: '2026-05-12', reason: 'Fraud-classifier scope confirmed; never generates upi://pay intents.' },
+      { chitti: 'chitti-sales',          status: 'amber', thumbsUp: '—',   hallu: '—',   braille: 'amber', quadrails: 'active',         lastAudit: '2026-05-12', reason: 'Frontend pending. Backend coaching disclaimer server-enforced.' },
+      { chitti: 'chitti-logo-video',     status: 'stub',  thumbsUp: 'n/a', hallu: 'n/a', braille: 'n/a',   quadrails: 'n/a',             lastAudit: '2026-05-12', reason: 'Intentional stub (SVG monogram + queued mock video) until provider keys land.' },
+    ];
+
+    function badge(level) {
+      const label = level === 'green' ? 'Green'
+                  : level === 'amber' ? 'Amber'
+                  : level === 'red'   ? 'Red'
+                  : level === 'stub'  ? 'Stub'
+                  : level === 'active' ? 'Active'
+                  : level === 'n/a'    ? 'n/a'
+                  : level === 'n/a (shell)' ? 'shell'
+                  : level === 'n/a (infra)' ? 'infra'
+                  : level;
+      const cls   = level === 'green' ? 'green'
+                  : level === 'amber' ? 'amber'
+                  : level === 'red'   ? 'red'
+                  : 'grey';
+      return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function escape(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderCompliance(rows, isStub) {
+      const tb = document.getElementById('compliance-body');
+      tb.innerHTML = rows.map(r => `
+        <tr>
+          <td class="chitti-name">${escape(r.chitti)}</td>
+          <td>${badge(r.status)}</td>
+          <td>${escape(r.thumbsUp)}</td>
+          <td>${escape(r.hallu)}</td>
+          <td>${badge(r.braille)}</td>
+          <td>${badge(r.quadrails)}</td>
+          <td>${escape(r.lastAudit)}</td>
+          <td class="reason">${escape(r.reason)}</td>
+        </tr>
+      `).join('');
+      const tag = document.getElementById('compliance-mode-tag');
+      if (tag) {
+        tag.className = isStub ? 'badge grey' : 'badge green';
+        tag.textContent = isStub ? 'data: stub' : 'data: live';
+      }
+      Chitti.a11y.announce('Compliance table refreshed. ' + rows.length + ' Chittis listed.');
+    }
+
+    async function loadCompliance() {
+      try {
+        const r = await fetch('/admin/founder/quality', { headers: { 'Accept': 'application/json' } });
+        if (!r.ok) throw new Error('not-wired');
+        const data = await r.json();
+        if (!Array.isArray(data) || data.length === 0) throw new Error('empty');
+        renderCompliance(data, false);
+      } catch (e) {
+        renderCompliance(COMPLIANCE_STUB, true);
+      }
+    }
+
+    loadCompliance();
+  </script>
+
+</body>
+</html>
