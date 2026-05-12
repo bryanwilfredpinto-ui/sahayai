@@ -1,140 +1,224 @@
 # Chitti Voice Factory
 
-> "Your mother tongue, spoken back to you — legally, consensually, at zero marginal cost where we can."
+**The shared voice layer for every Chitti product in 26 Indian languages.**
 
-The **shared voice substrate** for every Chitti product. Every voice-IN and voice-OUT
-moment in Chitti Shares, MedUPI, News, Vaani, CA, Legal, Government, etc. routes
-through this service. It is not a standalone consumer product — it is the foundation
-that the four-user accessibility contract (Blind / Deaf / Mute / Illiterate) is built
-on across **26 Indian languages**.
-
-Spec: [`../CHITTI_VOICE_FACTORY_MASTER_SPEC.md`](../CHITTI_VOICE_FACTORY_MASTER_SPEC.md)
+- Frontend: 26 generated HTML pages (`chitti_<lang>.html`)
+- Backend: Flask on Render (`chitti-voice-factory.onrender.com`)
+- Spec: [CHITTI_VOICE_FACTORY_MASTER_SPEC.md](../CHITTI_VOICE_FACTORY_MASTER_SPEC.md)
 
 ---
 
-## 1. What this product is — and is not
+## Setup
 
-- **IS** a router over **legal, consented voice sources** (Bhashini, AI4Bharat, Sarvam, opt-in community donors).
-- **IS** the language-routing substrate every other Chitti product calls.
-- **IS** an honest ledger — every "available" claim is backed by a real synthesis row in the last 24 h.
-- **IS NOT** a voice-cloning product. We do not clone anchors. We do not scrape Doordarshan / AIR / YouTube.
-- **IS NOT** a deepfake platform. The "Chitti Male" personality voice comes from consenting community donors.
-
----
-
-## 2. 26 Languages
-
-```
-Primary 12 (Tier A)   Hindi · Bangla · Telugu · Tamil · Kannada · Malayalam ·
-                      Marathi · Gujarati · Odia · Assamese · Punjabi · Urdu
-
-Cousin 11 (Tier B)    Bhojpuri · Chhattisgarhi · Maithili · Konkani · Dogri ·
-                      Sindhi · Kashmiri · Manipuri · Bodo · Santhali · Sanskrit
-
-Cousin 3 (Tier C)     Tulu · Kodava · Oraon (Kurukh)
-                      (no production model — donor program required, NO silent fallback)
-```
-
-Each language has a generated `chitti_<lang>.html` front door at the repo root
-(e.g. [`../chitti_hi.html`](../chitti_hi.html), [`../chitti_sa.html`](../chitti_sa.html)).
-
----
-
-## 3. Four-supplier cascade
-
-The router walks suppliers in this priority order. First supplier that returns
-`ok=True` for the requested language wins. Every attempt (success or failure)
-is logged to SQLite.
-
-| # | Supplier | Source | Cost | Status today |
-|---|---|---|---|---|
-| 1 | `on_device` | quantised ONNX in-browser via `onnxruntime-web` | zero after download | placeholder — returns `unavailable` until models packaged (Phase 10) |
-| 2 | `bhashini` | Govt of India NLTM (ULCA) | zero (citizen use) | **wired, disabled** until ULCA credentials issued |
-| 3 | `mock_bhashini` | client-side Web Speech directive — honestly labelled | zero | **active** stub until real Bhashini comes online |
-| 4 | `ai4bharat` | IIT Madras IndicTTS / IndicParler-TTS | zero (self-hosted) | stub — Phase 7 |
-| 5 | `sarvam` | paid commercial TTS | metered ₹/char | disabled in v1 |
-
-Tier C languages never silently fall back. They return HTTP 503 with a
-`donor_url` pointing at [`../voice_donor.html`](../voice_donor.html).
-
----
-
-## 4. Phase 2 — Community Voice Contest + Hall of Fame
-
-The newest evolution: instead of paying suppliers or scraping, real Indians
-**donate their voice** for the language they speak natively. The strongest
-submissions become permanent Hall of Fame voices.
-
-- [`../voice_donor.html`](../voice_donor.html) — 3-stage consent + recording flow
-- [`../voice_confirmation.html`](../voice_confirmation.html) — submission receipt
-- [`../chitti_voice_hall_of_fame.html`](../chitti_voice_hall_of_fame.html) — public winners gallery
-- [`admin/dashboard.html`](admin/dashboard.html) — OAuth-gated admin (GitHub/Google) for picking winners
-- Permanent voice locking: winners are stored with `can_delete=0` — never overwritten.
-
-Two-stage consent:
-
-1. **Stage 1** (submitter) — three explicit consents + name + email + recording.
-2. **Stage 2** (admin confirms winner) — flips `is_winner=1`, allocates a `winner_id`, updates `voice_synthesis_map[language]`.
-
----
-
-## 5. Run locally
+### Local Development
 
 ```bash
 cd backend
-python -m venv .venv && .venv\Scripts\activate    # Windows
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
-python main.py                                     # http://localhost:8000
+export ALLOWED_ORIGINS="http://localhost:8000,http://localhost:3000"
+python main.py
 ```
 
-Environment variables (all optional in dev):
+Test: `curl http://localhost:8004/health`
 
-| Var | Default | Meaning |
-|---|---|---|
-| `VOICE_FACTORY_DB` | `./chitti_voice_factory.sqlite` | SQLite path |
-| `VOICE_FACTORY_USE_MOCK_BHASHINI` | `1` | Use mock until real ULCA creds arrive |
-| `BHASHINI_USER_ID` / `BHASHINI_API_KEY` / `BHASHINI_INFERENCE_KEY` | none | ULCA citizen creds (Phase 6) |
-| `AI4BHARAT_ENDPOINT` | none | Self-hosted or HF inference URL (Phase 7) |
-| `SARVAM_ENABLED` + `SARVAM_API_KEY` | none | Paid fallback (Phase 8) |
-| `ALLOWED_ORIGINS` | `https://sahayai.in,https://www.sahayai.in,http://localhost:5500` | CORS allowlist |
-| `ADMIN_OAUTH_PROVIDER` | `github` | `github` or `google` |
-| `ADMIN_OAUTH_ID` / `ADMIN_OAUTH_SECRET` | none | OAuth app credentials |
-| `ADMIN_EMAILS` | empty | comma-separated allowlist for `/admin/*` |
-| `STORAGE_PROVIDER` | `terabox` | `terabox` or `mega` |
-| `TERABOX_API_KEY` / `MEGA_EMAIL` / `MEGA_PASSWORD` | none | audio storage creds |
+### Render Deployment
+
+1. Ensure `render.yaml` exists in the repo root.
+2. Link this repo to Render (`sahayai.in` or `sahayai-v2`).
+3. Create a new web service pointing to this directory tree.
+4. Add environment variables in Render dashboard:
+   - `BHASHINI_USER_ID` (once ULCA account is active)
+   - `BHASHINI_API_KEY`
+   - `BHASHINI_INFERENCE_KEY`
+   - `SARVAM_API_KEY` (for later phases)
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+   - `ALLOWED_ORIGINS` (production URLs)
+
+Deploy will automatically run:
+
+```
+pip install -r backend/requirements.txt
+gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+```
 
 ---
 
-## 6. Quick verify
+## API Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | Service banner + docs link |
+| `GET` | `/health` | Liveness check |
+| `GET` | `/api/voice/languages` | 26-language registry |
+| `GET` | `/api/voice/status` | All languages honest status |
+| `GET` | `/api/voice/status/<lang>` | One language status |
+| `POST` | `/api/voice/speak` | Synthesise text (cascade) |
+| `GET` | `/api/voice/honest-banner` | Disclaimer text for all Chitti products |
+| `GET` | `/api/voice/ledger` | Anonymized synthesis ledger |
+| `GET` | `/api/voice/donations` | Public donor list (v1: empty) |
+| `POST` | `/api/voice/donate` | Volunteer voice donation (v1: stub) |
+
+### Example: Synthesise Hindi
 
 ```bash
-curl http://localhost:8000/health
-curl http://localhost:8000/api/voice/languages
-curl http://localhost:8000/api/voice/status                            # all 26 → available:false initially
-curl -X POST http://localhost:8000/api/voice/speak \
-     -H "Content-Type: application/json" \
-     -d '{"text":"Namaste, main Chitti hoon","language":"hi"}'
-curl http://localhost:8000/api/voice/status/hi                         # now available:true
-curl http://localhost:8000/api/voice/hall-of-fame                      # winners (empty until Phase 2 picks first)
+curl -X POST https://chitti-voice-factory.onrender.com/api/voice/speak \
+  -H "Content-Type: application/json" \
+  -d '{"text": "नमस्ते", "language": "hi"}'
 ```
 
+Response (v1, using mock Bhashini):
+
+```json
+{
+  "ok": true,
+  "language_code": "hi",
+  "supplier": "mock_bhashini",
+  "directive": "use_web_speech_api",
+  "disclaimer": "Yeh AI ki madad hai. Chitti Voice Factory se synthesise kiya gaya hai."
+}
+```
+
+Frontend then calls browser's `SpeechSynthesisUtterance` API with `lang="hi"`.
+
 ---
 
-## 7. Deploy (Render)
+## Phases
 
-[`render.yaml`](render.yaml) lives at the folder root. Push to `main`; Render picks it up.
+### Phase 1 (Current ✅)
 
-Production: `https://chitti-voice-factory.onrender.com`
+- [x] Master spec written.
+- [x] Flask backend with ledger (SQLite).
+- [x] Mock Bhashini (returns `directive: use_web_speech_api`).
+- [x] 26 language HTML pages.
+- [x] Honest status endpoints (all return `available: false` until first real synthesis).
+- [x] render.yaml wired.
+
+**Status**: Ready for Render deployment. Uses browser Web Speech API for v1.
+
+### Phase 2 (Real Bhashini)
+
+- [ ] Bhashini ULCA credentials issued to `sire@sahayai.in`.
+- [ ] `bhashini_client.py` updated to call real API.
+- [ ] First successful synthesis recorded; Hindi flips to `available: true`.
+- [ ] `ledger` endpoint shows real latency + supplier proof.
+
+### Phase 3 (On-device + Donors)
+
+- [ ] ONNX voice models packaged (50–100 MB per language).
+- [ ] Uploaded to Supabase Storage under `chitti-voices/` bucket.
+- [ ] Frontend downloads + caches in IndexedDB.
+- [ ] `/api/voice/donate` accepts audio + CC-BY-4.0 consent.
+- [ ] Donor names + counts published in `/api/voice/donations`.
+
+### Phase 4 (Sarvam Fallback)
+
+- [ ] Sarvam API credentials configured.
+- [ ] Cascade: on_device → mock_bhashini → ai4bharat → sarvam.
+- [ ] Rate-limited to 100 chars/request.
+- [ ] Paid supplier usage monitored.
 
 ---
 
-## 8. Non-negotiables
+## Bhashini ULCA Registration (Draft for Sire)
 
-1. **No fake data.** A language is `available:true` only after a real (or honestly-labelled mock) synthesis row exists.
-2. **No scraping.** Doordarshan / AIR / YouTube are forbidden corpora.
-3. **Mock supplier is named `mock_bhashini`**, never silently labelled `bhashini`.
-4. **Tier C never silently falls back.** Tulu / Kodava / Oraon users see the donor banner, not a Kannada voice with their text.
-5. **Every audio response carries a disclaimer** naming the supplier — spoken first, written second.
-6. **Donor recordings are permanent once a winner is confirmed** (`can_delete=0`). Stage-1 submissions can still be discarded by the admin.
+**What:** Bhashini is India's government NLTM (National Language Technology Mission). We register as a citizen use case.
 
-See [`CONTEXT.md`](CONTEXT.md) for why these rules exist and what they protect.
+**Who signs:** Sire (Bryan's father) — co-citizen, registered email `sire@sahayai.in`.
+
+**When:** Once Sire is ready. This unblocks Phase 2.
+
+---
+
+### Draft Application Form (Sire to fill + sign)
+
+**Form Name:** ULCA Anuvaad Tools — Citizen Registration
+
+**Section 1: Applicant**
+
+- **Full Name:** [Sire's name]
+- **Email:** sire@sahayai.in
+- **Organisation:** Sahayai.in
+- **Role:** Co-Founder
+
+**Section 2: Use Case**
+
+- **Project Name:** Chitti Voice Factory
+- **Category:** Accessibility Infrastructure
+- **Use:** Multi-language text-to-speech for blind, illiterate, and rural Indian users.
+- **Languages:** 26 Indian languages (constitutional + cousins).
+- **Target Users:** Blind, deaf, mute, illiterate users; rural Bharat.
+- **Cost to Users:** ₹0 (fully free).
+
+**Section 3: Data & IP**
+
+- **Data Source:** User text input only (never stored; SHA256-hashed for ledger).
+- **Voice Corpus:** Bhashini TTS API; no anchor cloning; no YouTube/Doordarshan scraping.
+- **Output License:** CC-BY-4.0 (with Bhashini attribution in every audio response).
+- **Commercial Redistribution:** None. Sahayai.in is non-profit; revenue model TBD.
+
+**Section 4: Consent**
+
+- [ ] I confirm all outputs will include attribution to Bhashini + ULCA.
+- [ ] I will not resell, clone, or redistribute voice models.
+- [ ] Usage is for accessibility only; no commercial TTS product.
+
+**Signature:** _________________________ **Date:** __________
+
+---
+
+### How to Register
+
+1. **Sire:** Go to https://ulca.ai4bharat.org/ → Sign up.
+2. **Fill out the form above** (copy into their portal).
+3. **Attach:** This README (explaining Chitti's use case).
+4. **Attach:** `CHITTI_VOICE_FACTORY_MASTER_SPEC.md` (full product spec).
+5. **Submit** for approval.
+6. **Approval turnaround:** Usually 3–5 business days.
+7. **Once approved:** Bhashini issues API credentials:
+   - `BHASHINI_USER_ID`
+   - `BHASHINI_API_KEY`
+   - `BHASHINI_INFERENCE_KEY`
+8. **Paste these into Render dashboard** → redeploy.
+
+---
+
+## Testing Voice Factory
+
+Once deployed to Render:
+
+```bash
+# Check all languages
+curl https://chitti-voice-factory.onrender.com/api/voice/status | jq .
+
+# Check one language
+curl https://chitti-voice-factory.onrender.com/api/voice/status/hi | jq .
+
+# Synthesise (v1: uses Web Speech API)
+curl -X POST https://chitti-voice-factory.onrender.com/api/voice/speak \
+  -H "Content-Type: application/json" \
+  -d '{"text": "नमस्ते मित्र", "language": "hi"}'
+```
+
+Frontend pages (e.g., `chitti_hindi.html`) can be tested locally or uploaded to GitHub Pages.
+
+---
+
+## License
+
+- **Code (backend):** MIT (Sahayai.in)
+- **Voice outputs:** CC-BY-4.0 (via Bhashini ULCA terms)
+- **Donor recordings:** CC-BY-4.0 + voluntary
+
+---
+
+## Contact
+
+- **Chitti Voice Factory issues:** GitHub Issues
+- **Bhashini questions:** https://bhashini.ai4bharat.org/
+- **Donor inquiries:** chitti@sahayai.in
+
+---
+
+**Built with ❤️ for every Indian's mother tongue.**

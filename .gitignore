@@ -30,3 +30,12 @@ Thumbs.db
 chitti-medupi/backend/scripts/data_cache/*
 !chitti-medupi/backend/scripts/data_cache/.gitkeep
 .turso_dbs.json
+
+# ── Voice Factory fluency: heavy regenerable artefacts ──
+# We commit honest_status.json (audit trail), scripts, and the langlinks cache.
+# chunks.jsonl, embeddings.npy, FAISS index, and raw PDFs are regenerated on
+# Render at deploy time via `python -m scripts.ingest_textbooks && python -m scripts.embed_all`.
+chitti-voice-factory/backend/data/fluency/**/_pdfs/
+chitti-voice-factory/backend/data/fluency/**/chunks.jsonl
+chitti-voice-factory/backend/data/fluency/**/embeddings.npy
+chitti-voice-factory/backend/data/fluency/**/index.faiss

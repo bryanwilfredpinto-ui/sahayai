@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chitti Voice Factory</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; background: #f9f9f9; color: #333; }
+        header { background: #1a1a1a; color: white; padding: 2rem; text-align: center; }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.8; }
+        main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        section { background: white; padding: 2rem; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card { padding: 1.5rem; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.3s; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .card .native { font-weight: bold; color: #0066cc; }
+        .card .tier { font-size: 0.85rem; background: #f0f0f0; padding: 0.25rem 0.75rem; border-radius: 12px; display: inline-block; margin-top: 0.5rem; }
+        .card.tier-a .tier { background: #d4edda; color: #155724; }
+        .card.tier-b .tier { background: #fff3cd; color: #856404; }
+        .card.tier-c .tier { background: #f8d7da; color: #721c24; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        footer { text-align: center; padding: 2rem; opacity: 0.7; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎤 Chitti Voice Factory</h1>
+        <p>Your mother tongue, spoken back to you.</p>
+    </header>
+    <main>
+        <section>
+            <h2>All 26 Languages</h2>
+            <div class="grid" id="languages"></div>
+        </section>
+    </main>
+    <footer>
+        <p><a href="https://github.com/sahayai/sahayai/blob/main/CHITTI_VOICE_FACTORY_MASTER_SPEC.md">📖 Full Specification</a> | <a href="https://sahayai.in">← Back to Chitti</a></p>
+    </footer>
+    <script>
+        const API_BASE = "https://chitti-voice-factory.onrender.com";
+        const languages = [
+            {code:"hi",name:"Hindi",native:"हिन्दी",tier:"A"},
+            {code:"bn",name:"Bengali",native:"বাংলা",tier:"A"},
+            {code:"te",name:"Telugu",native:"తెలుగు",tier:"A"},
+            {code:"ta",name:"Tamil",native:"தமிழ்",tier:"A"},
+            {code:"kn",name:"Kannada",native:"ಕನ್ನಡ",tier:"A"},
+            {code:"ml",name:"Malayalam",native:"മലയാളം",tier:"A"},
+            {code:"mr",name:"Marathi",native:"मराठी",tier:"A"},
+            {code:"gu",name:"Gujarati",native:"ગુજરાતી",tier:"A"},
+            {code:"or",name:"Odia",native:"ଓଡ଼ିଆ",tier:"A"},
+            {code:"as",name:"Assamese",native:"অসমীয়া",tier:"A"},
+            {code:"pa",name:"Punjabi",native:"ਪੰਜਾਬੀ",tier:"A"},
+            {code:"ur",name:"Urdu",native:"اردو",tier:"A"},
+            {code:"bho",name:"Bhojpuri",native:"भोजपुरी",tier:"B"},
+            {code:"hne",name:"Chhattisgarhi",native:"छत्तीसगढ़ी",tier:"B"},
+            {code:"mai",name:"Maithili",native:"मैथिली",tier:"B"},
+            {code:"kok",name:"Konkani",native:"कोंकणी",tier:"B"},
+            {code:"doi",name:"Dogri",native:"डोगरी",tier:"B"},
+            {code:"sd",name:"Sindhi",native:"سِندھی",tier:"B"},
+            {code:"ks",name:"Kashmiri",native:"کأشُر",tier:"B"},
+            {code:"mni",name:"Manipuri",native:"মণিপুরী",tier:"B"},
+            {code:"brx",name:"Bodo",native:"बड़ो",tier:"B"},
+            {code:"sat",name:"Santhali",native:"ᱥᱟᱱᱛᱟᱞᱤ",tier:"B"},
+            {code:"sa",name:"Sanskrit",native:"संस्कृतम्",tier:"B"},
+            {code:"tcy",name:"Tulu",native:"ತುಳು",tier:"C"},
+            {code:"kfa",name:"Kodava",native:"ಕೋಡವ",tier:"C"},
+            {code:"kru",name:"Oraon (Kurukh)",native:"कुड़ुख़",tier:"C"},
+        ];
+        const grid = document.getElementById("languages");
+        languages.forEach(lang => {
+            const card = document.createElement("div");
+            card.className = `card tier-${lang.tier.toLowerCase()}`;
+            card.innerHTML = `
+                <h3>${lang.name}</h3>
+                <div class="native">${lang.native}</div>
+                <span class="tier">Tier ${lang.tier}</span>
+            `;
+            card.onclick = () => window.location.href = `chitti_${lang.code}.html`;
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>

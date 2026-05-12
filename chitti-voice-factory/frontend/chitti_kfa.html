@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="kfa">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chitti Voice</title>
+    <style>body { font-family: system-ui; margin: 0; padding: 0; background: #f9f9f9; } header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; } h1 { font-size: 2.5rem; margin-bottom: 0.5rem; } main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; } section { background: white; padding: 2rem; margin-bottom: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } textarea { width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #667eea; border-radius: 4px; font-size: 1rem; } button { padding: 1rem; margin: 0.5rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; } .btn-speak { background: #667eea; color: white; } .btn-donate { background: #6c757d; color: white; } .btn-download { background: #28a745; color: white; } .status { display: inline-block; padding: 0.75rem 1.5rem; border-radius: 20px; font-weight: bold; } .status-available { background: #d4edda; color: #155724; } .status-unavailable { background: #f8d7da; color: #721c24; }</style>
+</head>
+<body>
+    <header>
+        <h1>🎤 Chitti</h1>
+    </header>
+    <main>
+        <section>
+            <div style="display: flex; justify-content: space-around;">
+                <div style="text-align: center;"><div style="font-size: 2rem;">👨‍🦯</div>Blind</div>
+                <div style="text-align: center;"><div style="font-size: 2rem;">👂</div>Deaf</div>
+                <div style="text-align: center;"><div style="font-size: 2rem;">🤐</div>Mute</div>
+                <div style="text-align: center;"><div style="font-size: 2rem;">📚</div>Illiterate</div>
+            </div>
+        </section>
+        <section>
+            <h2>Status</h2>
+            <div class="status status-unavailable" id="status">🔄 Loading...</div>
+        </section>
+        <section>
+            <h2>Speak</h2>
+            <textarea id="text-input" placeholder="Type to speak..."></textarea>
+            <button class="btn-speak" onclick="speak()">🔊 Speak</button>
+            <button class="btn-download" onclick="download()">⬇️ Download</button>
+        </section>
+        <section>
+            <h2>Donate</h2>
+            <button class="btn-donate" onclick="donate()">🎤 Donate Your Voice</button>
+        </section>
+    </main>
+    <script>
+        const API = "https://chitti-voice-factory.onrender.com";
+        const LANG = "kfa";
+        async function updateStatus() {
+            try {
+                const r = await fetch(API + "/api/voice/status/" + LANG);
+                const d = await r.json();
+                const s = document.getElementById("status");
+                if (d.available) { s.textContent = "✅ Available"; s.className = "status status-available"; }
+                else { s.textContent = "❌ BETA"; s.className = "status status-unavailable"; }
+            } catch (e) { console.error(e); }
+        }
+        async function speak() {
+            const text = document.getElementById("text-input").value.trim();
+            if (!text) return;
+            try {
+                const r = await fetch(API + "/api/voice/speak", {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({text, language: LANG})
+                });
+                const d = await r.json();
+                if (d.directive === "use_web_speech_api") {
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = LANG;
+                    speechSynthesis.speak(u);
+                }
+            } catch (e) { console.error(e); }
+        }
+        function download() { alert("Coming soon!"); }
+        function donate() { alert("Contact: chitti@sahayai.in"); }
+        updateStatus();
+    </script>
+</body>
+</html>

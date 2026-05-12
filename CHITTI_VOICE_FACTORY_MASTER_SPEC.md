@@ -355,3 +355,143 @@ sahayai/
 │           ├── ai4bharat.py                        ← stub for Phase 7
 │           └── sarvam.py                           ← stub for Phase 8
 ```
+
+---
+
+## 13. Fluency Pipeline (added 2026-05-12)
+
+> **Fluency ≠ Pronunciation.** Voice Factory ships *two independent* substrates:
+>
+> | Substrate | What it owns | Owner module |
+> |---|---|---|
+> | **Pronunciation** | How a sentence sounds (Bhashini cascade, donor voices, on-device TTS) | `services/voice_factory.py` + `suppliers/*` |
+> | **Fluency** | Grammar, vocabulary, sentence patterns in each language | `services/fluency_*` + `data/fluency/<lang>/` |
+>
+> A Chitti language page draws on both. The pipelines run independently — Bhashini ULCA registration does **not** block fluency ingestion.
+
+### 13.1 Sources (in order of preference) — **textbook_source field**
+
+Every chunk carries a `textbook_source` field with one of three values:
+
+| Value | Meaning | Where it comes from |
+|---|---|---|
+| `curriculum` | Real curriculum content from a textbook | NCERT direct PDFs OR archive.org mirrors of state-board books |
+| `community` | Real in-language text from open community sources | Wikipedia REST API (60 curated topics, native titles via langlinks) |
+| `cousin` | Borrowed chunk from a related language | Cousin mapping (hne/doi/kru→hi, brx→as, kfa→kn) |
+
+**No chunk is faked**. Every entry has a real `source` URL on disk.
+
+#### Discovery scripts
+- `scripts/discover_ncert_urls.py` — HEAD-checks ~1,380 NCERT URL candidates per known suffix pattern. Records survivors to `data/ncert_urls_discovered.json`.
+- `scripts/discover_archive_org.py` — searches archive.org for state-board / NCERT-translation mirrors across 10 regional languages. Records to `data/archive_urls_discovered.json`.
+- `scripts/merge_discovered.py` — merges both into `data/discovered_textbook_urls.json`. `services/textbook_sources.py` reads this at import time (utf-8-sig to handle PowerShell-written BOMs).
+
+#### Ingester channels
+1. **NCERT direct** (`fluency_ingester.fetch_ncert_pdfs`) — uses Python `requests`, capped at 30 PDFs/lang, 15s timeout.
+2. **archive.org mirrors** (`fluency_ingester.fetch_archive_pdfs`) — capped at 10 PDFs/lang, 25s timeout, 2s polite delay between successful downloads. Archive.org has flaky CDN servers; we accept the failures and move on (logged in `honest_status.errors`).
+3. **Wikipedia REST API** (`fluency_ingester.fetch_wikipedia`) — native title resolution via `services/wiki_langlinks.py`. The English title is a fallback when no native title is cached.
+4. **Cousin mapping** (`fluency_ingester.copy_from_cousin`) — only fires when channels 1-3 produced zero chunks (Tier C languages without their own Wikipedia).
+
+### 13.2 Pipeline stages
+
+```
+download → extract → chunk → embed → FAISS index → honest_status.json
+  ↑           ↑         ↑       ↑          ↑              ↑
+  HTTP +     PyMuPDF   400-600 paraph-MM   IndexFlatIP   per-language ledger
+  Wikipedia  (fitz)    char     L12-v2     (numpy        chunks/sources/
+  REST                 sliding  CPU        cosine        errors/ready
+                       window              fallback)
+```
+
+Embeddings use `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` — one model covers 50+ languages including every Chitti language. FAISS is preferred; when `faiss-cpu` is missing we fall back to numpy cosine over `embeddings.npy`.
+
+### 13.3 Layout
+
+```
+chitti-voice-factory/backend/
+├── services/
+│   ├── fluency_corpus.py      ← per-language store + search; degrades when ST/faiss missing
+│   ├── fluency_ingester.py    ← NCERT + Wikipedia + cousin channels
+│   ├── textbook_sources.py    ← 26-language source registry, WIKI_TOPICS, NCERT_URLS
+│   └── wiki_langlinks.py      ← English-title → native-title resolver (cached)
+├── routes/
+│   └── fluency.py             ← /api/voice/fluency/{status,status/<lang>,search/<lang>,chunks/<lang>}
+├── scripts/
+│   ├── build_langlinks.py     ← one-shot: warm langlinks cache for 60 topics
+│   ├── ingest_textbooks.py    ← orchestrator, parallel workers, two waves (Wikipedia then cousin)
+│   ├── embed_all.py           ← embed + FAISS pass after deps install on target host
+│   └── report_summary.py      ← per-language ingestion summary
+└── data/fluency/
+    ├── _report.json
+    ├── wiki_langlinks_cache.json   (60 topics × ~150 langs each)
+    └── <lang>/
+        ├── _pdfs/                  raw downloaded PDFs (NCERT)
+        ├── chunks.jsonl            real text chunks with provenance
+        ├── embeddings.npy          float32 matrix (created on Render after pip install)
+        ├── index.faiss             FAISS IndexFlatIP (created alongside embeddings)
+        └── honest_status.json      what worked / what failed / fluency_ready bool
+```
+
+### 13.4 Second-run result (2026-05-12, post-discovery) — 79,414 chunks, 55 curriculum PDFs
+
+29.2-minute parallel run, 8 workers, with NCERT + archive.org discovery merged. Per-language breakdown:
+
+| Lang | Chunks | Curriculum PDFs | textbook sources |
+|---|---:|---:|---|
+| bn  | 6,966 | 0 | Wikipedia |
+| ta  | 5,466 | 0 | Wikipedia (Tamil archive.org URLs all 401/403) |
+| **hi**  | **5,310** | **22 NCERT** | NCERT + Wikipedia |
+| hne | 5,310 | (cousin) | Cousin from hi |
+| kru | 5,310 | (cousin) | Cousin from hi |
+| doi | 5,310 | (cousin) | Cousin from hi |
+| **kn**  | **5,203** | **2 archive.org** | archive.org + Wikipedia |
+| kfa | 5,203 | (cousin) | Cousin from kn |
+| **ml**  | **3,830** | **2 archive.org** | archive.org + Wikipedia |
+| **mr**  | **3,678** | **3 archive.org** | archive.org + Wikipedia |
+| **te**  | **3,562** | **1 archive.org** | archive.org + Wikipedia |
+| **ur**  | **3,386** | **8 NCERT** | NCERT + Wikipedia |
+| gu  | 3,287 | 0 | Wikipedia |
+| sd  | 2,528 | 0 | Wikipedia |
+| as  | 2,506 | 0 | Wikipedia |
+| brx | 2,506 | (cousin) | Cousin from as |
+| **pa**  | **2,286** | **2 archive.org** | archive.org + Wikipedia |
+| **sa**  | **1,972** | **25 NCERT** | NCERT (Ruchira Class 7/8/10) + Wikipedia |
+| or  | 1,893 | 0 | Wikipedia |
+| bho | 1,510 | 0 | Wikipedia |
+| sat |   735 | 0 | Wikipedia |
+| kok |   537 | 0 | Wikipedia |
+| tcy |   406 | 0 | Wikipedia |
+| mai |   315 | 0 | Wikipedia |
+| ks  |   253 | 0 | Wikipedia |
+| mni |   146 | 0 | Wikipedia |
+
+**TOTAL: 79,414 real chunks across all 26 languages. 55 curriculum PDFs ingested. 0 languages failed.**
+
+| `textbook_source` distribution | Lang count |
+|---|---:|
+| `curriculum` (NCERT/state-board)  | 8 languages: hi, ur, sa, kn, ml, mr, te, pa |
+| `community` (Wikipedia)           | 13 languages: bn, ta, gu, or, as, sd, bho, mai, kok, ks, mni, sat, tcy |
+| `cousin` (borrowed from related)  | 5 languages: hne, doi, kru, brx, kfa |
+
+`fluency_ready` is `false` for all 26 until the embedding pass runs (deferred to Render py3.11 because local py3.14 lacks stable torch wheels). Run `python -m scripts.embed_all` on the deploy host to lift to ready.
+
+#### Known gaps
+
+- **Tier A languages with Wikipedia-only corpus** (bn, ta, gu, or, as): their archive.org searches found mostly unrelated items (CIA reading room, legislative proceedings) or items requiring auth (BDRC). Pursuing state-board direct partnerships (WBBSE, TN Board, GSEB, BSE Odisha, SEBA) is the next step.
+- **NCERT Urdu**: pattern guessing found 22 URLs (jujp/judp = Class 10 Jaan Pahechan / Door Pas) but earlier classes use different codes. NCERT publishes ~50 Urdu books; we currently capture ~16%.
+- **Archive.org reliability**: ~70% of discovered archive.org PDFs failed mid-download (CDN servers ia601400, dn710101 frequently timing out from this network). A retry pass from a different network may recover many of these.
+
+### 13.5 API surface (added)
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/voice/fluency/status` | All 26 languages' honest fluency status |
+| GET | `/api/voice/fluency/status/<lang>` | One language: chunks, sources, fluency_ready, source plan |
+| GET | `/api/voice/fluency/search/<lang>?q=...&k=5` | Top-k similarity search over the language's chunks |
+| GET | `/api/voice/fluency/chunks/<lang>?offset=&limit=` | Paginated chunk inspection |
+
+### 13.6 Honesty contract (additions to §11)
+
+9. **No stub PDFs, no fake text.** Every chunk has a real `source` (NCERT URL or Wikipedia page or `cousin:<lang>:<orig-source>`). The previous `ingest/ingest_master.py` that wrote `"STUB: Hindi Class 1 textbook"` into placeholder PDFs is **deprecated** — the production pipeline lives under `chitti-voice-factory/backend/scripts/`.
+10. **`fluency_ready` requires embeddings on disk.** A language flips to `true` only when `chunks ≥ 50` AND `embeddings.npy` exists. Cousin-mapped languages can be ready but the UI must surface the cousin banner.
+11. **404 = recorded.** NCERT URL changes and Wikipedia coverage gaps are logged to `honest_status.errors`. We do not invent content for missing sources.
