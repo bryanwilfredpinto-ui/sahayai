@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: chitti-founder-api
+    runtime: python
+    plan: free
+    rootDir: chitti-founder/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --timeout 60
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: FOUNDER_EMAIL
+        value: bryanwilfredpinto@gmail.com
+      - key: FOUNDER_REPORT_HOUR_IST
+        value: "7"
+      - key: FOUNDER_REPORT_MINUTE_IST
+        value: "0"
+      # Required: shared secret each Chitti's /admin/founder/slice endpoint checks.
+      - key: FOUNDER_PULL_SECRET
+        sync: false
+      # Required: gate the /admin/founder/* dashboard endpoints.
+      - key: ADMIN_SECRET
+        sync: false
+      # Required for the email send. Gmail SMTP works with an app-password.
+      - key: FOUNDER_SMTP_HOST
+        value: smtp.gmail.com
+      - key: FOUNDER_SMTP_PORT
+        value: "587"
+      - key: FOUNDER_SMTP_USER
+        sync: false
+      - key: FOUNDER_SMTP_PASS
+        sync: false
+      - key: FOUNDER_FROM
+        value: chitti@sahayai.in
+      # DeepSeek key for LLM-as-judge evaluators when slices include sampled rows.
+      - key: DEEPSEEK_API_KEY
+        sync: false

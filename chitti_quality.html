@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Frontend for chitti-quality/ -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -115,8 +116,26 @@
       font-size: 12px; margin: 8px 0 16px;
     }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .risk-pill { display:inline-block; padding:2px 9px; border-radius:999px;
+      font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+    .risk-high   { background:#fee2e2; color:#7f1d1d; border:1px solid #fca5a5; }
+    .risk-medium { background:#fef3c7; color:#7c2d12; border:1px solid #fbbf24; }
+    .risk-low    { background:#dcfce7; color:#14532d; border:1px solid #86efac; }
+    .trust-strip { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0; font-size:13px; }
+    .trust-strip .chip { display:inline-flex; align-items:center; gap:5px;
+      padding:5px 10px; border-radius:999px; background:#0E2344; color:#fff; }
+    .quality-grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .quality-grid .card { padding:12px 14px; }
+    .quality-grid .card .num { font-size:24px; font-weight:800; color:var(--navy); display:block; }
+    .quality-grid .card .lbl { font-size:12px; color:var(--grey); display:block; }
+    details.panel { background:#fff; border-radius:8px; padding:10px 14px; margin:8px 0; border:1px solid #ece6da; }
+    details.panel summary { cursor:pointer; font-weight:700; color:var(--navy); }
+    .agentic { width:100%; }
+    .agentic td:nth-child(3) { text-align:center; }
+    .agentic td:nth-child(4) { font-size:12px; color:var(--grey); }
     /* Braille mode collaboration with chitti_a11y.js */
     body.chitti-braille .standards-grid { grid-template-columns: 1fr; }
+    body.chitti-braille .quality-grid { grid-template-columns: 1fr; }
     body.chitti-braille .emoji-decor { display: none !important; }
   </style>
 </head>
@@ -125,7 +144,14 @@
   <header class="trust-header" role="banner">
     <h1>Chitti Quality <span class="emoji-decor" aria-hidden="true">⚖️</span></h1>
     <p>The guardian of every Chitti's standards. Audited daily. No red status hidden. No number rounded up.</p>
-    <p class="meta-line" id="last-audit-line">Last audit: <span id="last-audit">2026-05-12 06:30 IST</span> · Next: <span id="next-audit">2026-05-13 06:30 IST</span></p>
+    <p class="meta-line" id="last-audit-line">Last audit: <span id="last-audit">2026-05-13 07:00 IST</span> · Next: <span id="next-audit">2026-05-14 07:00 IST</span></p>
+    <div class="trust-strip" aria-label="Trust signals at a glance">
+      <span class="chip" title="Risk-tier policy for every Chitti">🛡️ <span id="ts-products">16</span> products · 3 risk tiers</span>
+      <span class="chip" title="Average grams of CO₂ per response across the family">🌿 <span id="ts-co2">~0.2g</span> CO₂ avg / reply</span>
+      <span class="chip" title="Indians helped today across all live Chittis">🇮🇳 <span id="ts-helped">—</span> helped today</span>
+      <span class="chip" title="Daily quality email sent at 07:00 IST">📧 Daily report 07:00 IST</span>
+      <span class="chip" title="Weekly trend email sent every Sunday at 08:00 IST">📈 Weekly trend Sun 08:00 IST</span>
+    </div>
   </header>
 
   <main>
@@ -167,6 +193,101 @@
         <span id="compliance-mode-tag" class="badge grey">data: stub</span>
         until every Chitti's <code>/admin/founder</code> is wired.
       </p>
+    </section>
+
+    <section aria-labelledby="risk-h">
+      <h2 id="risk-h">Risk tier — per Chitti</h2>
+      <p>Every Chitti carries a risk badge visible on its page footer. HIGH-risk Chittis (money / health / legal) require a server-enforced disclaimer and pre-action confirmation for agentic operations. Single source of truth: <code>RISK_LEVELS</code> in <a href="lib/chitti_quality.py">lib/chitti_quality.py</a>.</p>
+      <div class="standards-grid">
+        <div class="card" style="border-left-color:#b00020">
+          <h3><span class="risk-pill risk-high">High risk</span></h3>
+          <p>chitti-medupi · chitti-upi · chitti-legal · chitti-ca · chitti-government</p>
+          <p class="meta-line">Money, health, legal, government. Server-enforced disclaimer + confirm-on-action.</p>
+        </div>
+        <div class="card" style="border-left-color:#b76e00">
+          <h3><span class="risk-pill risk-medium">Medium risk</span></h3>
+          <p>chitti-vaani · chitti-kirana · chitti-pharmacy · chitti-saloon · chitti-shares · chitti-technicals · chitti-fundamentals</p>
+          <p class="meta-line">Daily commerce + accessibility-critical. Disclaimer + voice readback.</p>
+        </div>
+        <div class="card" style="border-left-color:#2e7d32">
+          <h3><span class="risk-pill risk-low">Low risk</span></h3>
+          <p>chitti-news · chitti-scanner · chitti-voice-factory · chitti-tourism</p>
+          <p class="meta-line">Information / dashboards / infrastructure. No agentic side effects.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="agentic-h">
+      <h2 id="agentic-h">Agentic rules — what Chitti may do without asking</h2>
+      <p>Defined in <a href="lib/chitti_quality.py">lib/chitti_quality.py</a>. The helper <code>may_do(action, chitti)</code> is called from every Chitti's backend before a side-effect action runs.</p>
+      <table class="agentic">
+        <thead><tr><th>Action</th><th>Description</th><th>Confirm?</th><th>Tier where confirm kicks in</th></tr></thead>
+        <tbody>
+          <tr><td>speak_aloud</td><td>Read visible page text aloud</td><td>—</td><td>Never</td></tr>
+          <tr><td>translate_ui</td><td>Switch UI language at user request</td><td>—</td><td>Never</td></tr>
+          <tr><td>explain_simply</td><td>Re-explain in plain Hindi / English class-5 level</td><td>—</td><td>Never</td></tr>
+          <tr><td>answer_question</td><td>Answer within this Chitti's domain</td><td>—</td><td>Never</td></tr>
+          <tr><td>send_email_summary</td><td>Email a summary of today's session</td><td>Yes</td><td>HIGH only</td></tr>
+          <tr><td>export_pdf</td><td>Generate and download a PDF</td><td>Yes</td><td>HIGH only</td></tr>
+          <tr><td>save_to_drive</td><td>Save to user's Google Drive</td><td>Yes</td><td>MEDIUM+</td></tr>
+          <tr><td>place_order</td><td>Place an order with any vendor</td><td>Yes</td><td>Always</td></tr>
+          <tr><td>send_money</td><td>Initiate a UPI payment</td><td>Yes</td><td>Always (also blocked outright for minors / elderly / accessibility-flagged users)</td></tr>
+          <tr><td>file_government</td><td>Submit a government form</td><td>Yes</td><td>Always</td></tr>
+          <tr><td>contact_doctor</td><td>Book or call a doctor on user's behalf</td><td>Yes</td><td>Always</td></tr>
+          <tr><td>emergency_contact</td><td>Trigger Vaani family cascade (NEVER cops)</td><td>Yes</td><td>Always</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="safeguards-h">
+      <h2 id="safeguards-h">Safeguards — money + distress</h2>
+      <div class="standards-grid">
+        <div class="card">
+          <h3>💳 UPI gating</h3>
+          <p><b>Block</b> under-18. <b>Family co-sign</b> for 75+. <b>Per-session unlock</b> for blind / illiterate users. Implemented in <code>block_upi_for_vulnerable(age, segment)</code>.</p>
+        </div>
+        <div class="card">
+          <h3>🆘 Distress spotting</h3>
+          <p>18+ keywords in English + 10 Indian languages. ≥2 hits → Vaani <b>family cascade</b>, NEVER 112 / 100 / 102. See the locked emergency-protocol decision in <a href="SAHAYAI_MASTER.md">SAHAYAI_MASTER.md §2</a>.</p>
+        </div>
+        <div class="card">
+          <h3>🌿 Carbon budget</h3>
+          <p>Soft cap <b>0.5g CO₂ per response</b>. Exceedance auto-files a GitHub issue tagged <code>carbon,perf</code> for DeepSeek prompt optimisation. Per-reply badge surfaced on every page.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="reports-h">
+      <h2 id="reports-h">Daily &amp; weekly reports — what Sire receives</h2>
+
+      <details class="panel" open>
+        <summary>📧 Daily Quality Report · every day 07:00 IST</summary>
+        <p>One email per day. Horizontal table — one row per Chitti — with status (🟢 &gt;90% · 🟡 80–90% · 🔴 &lt;80%) and trend arrow (▲ ▼ ▬ vs yesterday).</p>
+        <p><b>Bottom panels:</b> Critical / Warning / Healthy lists, plus a numbered <b>YOUR TASKS TODAY</b> action list.</p>
+        <p><b>Defect rate sub-table:</b> defect type / count / % / affected products / root cause / fix effort. Status by share: 🔴 ≥10% · 🟡 5–10% · 🟢 &lt;5%. Top 3 clusters listed with fix ETA (S = 1 day · M = 1 week · L = 1 sprint).</p>
+        <p class="meta-line">Renderer: <code>lib/founder_report.render_email_html</code>. Cron: <code>chitti-founder/backend/main.run_daily_report</code>.</p>
+      </details>
+
+      <details class="panel">
+        <summary>📈 Weekly Trend Report · every Sunday 08:00 IST</summary>
+        <p>Per-Chitti rolling 7-day average. Δ vs previous week with ▲ / ▼ / ▬. Top language, top user segment (blind / deaf / mute / illiterate / general / elderly), peak hour IST. Auto-headlines for <i>most-improved</i> and <i>needs urgent attention</i>.</p>
+        <p class="meta-line">Renderer: <code>lib/chitti_quality.render_weekly_html</code>. Cron: <code>chitti-founder/backend/main.run_weekly_report</code>.</p>
+      </details>
+
+      <details class="panel">
+        <summary>🚨 Escalation rules · hourly :15 IST</summary>
+        <ul>
+          <li><b>3-day repeating defect</b> → opens a GitHub issue tagged <code>chitti-quality,auto,&lt;defect&gt;</code>.</li>
+          <li><b>Thumbs-up &lt; 70%</b> → SMS Sire (not just email). Critical bar.</li>
+          <li><b>CO₂ &gt; 0.5g / response</b> → opens a GitHub issue tagged <code>carbon,perf</code>.</li>
+        </ul>
+        <p class="meta-line">Helpers: <code>escalate_repeating_defect</code>, <code>escalate_low_thumbs</code>, <code>escalate_carbon</code> in <a href="lib/chitti_quality.py">lib/chitti_quality.py</a>.</p>
+      </details>
+
+      <details class="panel">
+        <summary>🧠 Monthly learning · last day of month</summary>
+        <p>Chitti Quality reads every 👎 comment of the last 30 days, aggregates into typed clusters, picks the top 3 patterns, and proposes fixes as a new section appended to <a href="SAHAYAI_MASTER.md">SAHAYAI_MASTER.md</a>. Sire approves → into next sprint.</p>
+      </details>
     </section>
 
     <section aria-labelledby="global-h">

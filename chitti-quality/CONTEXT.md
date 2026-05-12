@@ -87,6 +87,207 @@ Chitti Quality is never done. It continuously:
 
 > **"Standards are not a destination. They are a daily practice."**
 
+---
+
+## Chitti Quality v2 — operating contract (2026-05-13)
+
+What follows is the full operating contract — eight parts the whole framework runs from. Every section here maps to live code in this repo so it can't drift away from reality.
+
+### Part 1 — Framework extensions
+
+#### 1.1 Agentic rules (what Chitti may do without asking)
+
+Defined in [../lib/chitti_quality.py](../lib/chitti_quality.py) `AGENTIC_RULES`. The helper `may_do(action, chitti)` returns True / False per request. Three tiers:
+
+| Tier | Examples | Behaviour |
+|---|---|---|
+| **Always do** | `speak_aloud`, `translate_ui`, `explain_simply`, `answer_question`, `save_local_history` | Do without asking, regardless of risk. |
+| **Ask for HIGH** | `send_email_summary`, `export_pdf`, `share_link`, `save_to_drive` | Auto-allowed on LOW; asks on HIGH-risk Chittis. |
+| **Always ask** | `place_order`, `send_money`, `file_government`, `contact_doctor`, `share_health_data`, `emergency_contact` | Pre-action confirm regardless of risk. |
+
+This list lives in code, not policy — so a new Chitti can't accidentally bypass it.
+
+#### 1.2 Incident reporting
+
+Every page carries a `📣 Report a problem` button (built into [../feedback-widget.js](../feedback-widget.js)). The handler calls `lib.chitti_quality.report_incident(...)` which:
+
+1. Logs structured JSON to stdout (always works).
+2. Best-effort emails [bryanwilfredpinto@gmail.com](mailto:bryanwilfredpinto@gmail.com) within ~1h via the same SMTP transport the daily report uses.
+3. Adds an entry to chitti-founder's in-process feedback ring (`/admin/founder/json`).
+
+If SMTP env vars aren't set, the helper still returns a stable response — Sire enables transport later without redeploying anything else.
+
+#### 1.3 Carbon tracking
+
+`lib.chitti_quality.co2_for_response(input_tokens, output_tokens)` returns grams of CO₂ per response. The feedback widget surfaces it as `🌿 ~0.2g CO2 for this reply`. Each Chitti's backend should set `window.CHITTI_CO2_G` on the page just before the widget loads so the badge reflects the actual response, not the default.
+
+Budget: **0.5g per response**. Anything above triggers escalation (PART 6).
+
+#### 1.4 Risk levels (16 products)
+
+Single source of truth in [../lib/chitti_quality.py](../lib/chitti_quality.py) `RISK_LEVELS`:
+
+| Tier | Products |
+|---|---|
+| 🔴 **HIGH**   | chitti-medupi, chitti-upi, chitti-legal, chitti-ca, chitti-government |
+| 🟡 **MEDIUM** | chitti-vaani, chitti-kirana, chitti-pharmacy, chitti-saloon, chitti-shares, chitti-technicals, chitti-fundamentals |
+| 🟢 **LOW**    | chitti-news, chitti-scanner, chitti-voice-factory, chitti-tourism |
+
+The badge is displayed on the page via the feedback widget's trust strip — `🛡️ HIGH / MEDIUM / LOW RISK`.
+
+#### 1.5 Safeguards (UPI gating + distress)
+
+`block_upi_for_vulnerable(age, segment)`:
+
+- Under-18 → **block**.
+- 75+ → **warn + require family co-sign**.
+- Self-declared `blind` or `illiterate` → **warn + require per-session unlock** (env override `CHITTI_UPI_UNLOCK_SEGMENTS` for dev).
+
+`scan_distress(text)`:
+
+- Scans for 18+ distress keywords across English + 10 Indian languages.
+- ≥2 hits → routes to the **Vaani family cascade**. **Never** to 112 / 100 / 102 — see `project_chitti_vaani_emergency_protocol`.
+
+---
+
+### Part 2 — Daily Quality Report (07:00 IST)
+
+Sent by [../chitti-founder/backend/main.py](../chitti-founder/backend/main.py) cron, rendered by [../lib/founder_report.py](../lib/founder_report.py) `render_email_html`.
+
+Horizontal table (one row per Chitti):
+
+```
+PRODUCT | RESPONSES | 👍 RATE | 👎 RATE | TOP ISSUE | TREND | STATUS | ACTION
+```
+
+- **Status** symbols: 🟢 >90% · 🟡 80–90% · 🔴 <80%
+- **Trend** vs yesterday: ▲ (improved >1pp) · ▼ (declined >1pp) · ▬ (flat)
+- **Action** column is auto-generated:
+  - 🟢 → "Keep shipping"
+  - 🟡 → "Read top complaints; ship patch this week"
+  - 🔴 → "URGENT: triage today; SMS escalation if <70%"
+
+Bottom panels in 3 columns:
+- 🔴 **Critical** (<80%) — list of Chitti slugs
+- 🟡 **Warning** (80–90%) — list of Chitti slugs
+- 🟢 **Healthy** (>90%) — list of Chitti slugs
+
+Plus a **YOUR TASKS TODAY** numbered list, hand-picked from today's signals (critical Chitti, hallucination >5%, top defect cluster).
+
+---
+
+### Part 3 — Defect Rate Report (in the same daily email)
+
+Sub-table immediately below Part 2:
+
+```
+DEFECT TYPE | COUNT | % | AFFECTED PRODUCTS | ROOT CAUSE | FIX EFFORT
+```
+
+- Status by share: 🔴 ≥10% · 🟡 5–10% · 🟢 <5%
+- Effort: **S** (1 day) · **M** (1 week) · **L** (1 sprint)
+- **Top 3 defect clusters** rendered as a numbered list with fix ETAs.
+
+The classifier `lib.chitti_quality.classify_defect(text)` recognises eight types: `translation`, `hallucination`, `voice`, `accessibility`, `ux`, `performance`, `price`, `emergency` (red-flag — should never fire), plus `other`.
+
+---
+
+### Part 4 — Feedback widget on every response
+
+Lives in [../feedback-widget.js](../feedback-widget.js). On every Chitti page:
+
+```
+🔊 Speaker    🎙️ Chitti    👍 Helpful    👎 Not OK
+```
+
+**👎 flow (voice-first; PWD-user contract):**
+
+1. Chitti speaks in the user's selected language:
+   > "I'm sorry. What was wrong? Please tell me in your language."
+2. Mic opens automatically (`webkitSpeechRecognition`).
+3. User speaks. Transcript saved to the backend along with the down-vote.
+4. Chitti speaks:
+   > "Thank you. I will learn from this."
+
+If `SpeechRecognition` is unavailable, a single-line text box is shown so the user is never trapped. The down-vote itself is recorded immediately so the rate metric is honest even when the comment is empty.
+
+The trust strip below the icons shows: `🛡️ RISK · 🌿 CO₂ · 📅 Last audit · 🇮🇳 Helped today` (PART 7).
+
+---
+
+### Part 5 — Weekly Trend Report (Sunday 08:00 IST)
+
+`run_weekly_report()` in [../chitti-founder/backend/main.py](../chitti-founder/backend/main.py), rendered by `render_weekly_html` in [../lib/chitti_quality.py](../lib/chitti_quality.py). Pulls from a 14-day in-process ring buffer of thumbs-up % per Chitti.
+
+Columns:
+
+```
+CHITTI | RESPONSES (7d) | 👍 AVG | Δ vs prev week | TOP LANG | TOP SEGMENT | PEAK HR | HEADLINE
+```
+
+Headlines auto-attach:
+- *Most-improved candidate* — biggest positive Δ
+- *Urgent — investigate this week* — biggest negative Δ
+- *Below 70% bar* — when an absolute floor is breached
+
+`top_lang`, `top_segment`, `peak_hour_ist` come from each Chitti's `/admin/founder/slice` payload (renders "—" until that field is added to a Chitti's slice).
+
+---
+
+### Part 6 — Escalation
+
+`run_escalator()` runs **hourly at :15 IST**. Three rules:
+
+1. **Repeat defect** — same `DEFECT_TYPE` seen 3 days in a row → opens a GitHub issue tagged `chitti-quality,auto,<type>`. Streak counter resets when the type misses a day.
+2. **Critical thumbs-up** — any Chitti with `thumbs_up_pct < 70` → **SMS Sire** via `CHITTI_SMS_URL` / `CHITTI_SMS_KEY` / `CHITTI_SIRE_PHONE` env vars. Not just email — SMS, because <70% is "fix today".
+3. **Carbon over budget** — `co2_g_per_response > 0.5g` → GitHub issue tagged `chitti-quality,auto,carbon,perf`. Encourages DeepSeek prompt optimisation.
+
+All three helpers in `lib.chitti_quality` log what they WOULD have done when env vars are missing, so the cron stays green even on first deploy.
+
+---
+
+### Part 7 — User trust signals on every page
+
+The feedback widget renders four chips below the icons:
+
+| Chip | Source |
+|---|---|
+| `🛡️ HIGH/MEDIUM/LOW RISK` | `RISK_LEVELS` in lib/chitti_quality.py |
+| `🌿 ~Xg CO₂ for this reply` | `window.CHITTI_CO2_G` (per response) or default 0.2g |
+| `📅 Last audit: YYYY-MM-DD` | `window.CHITTI_LAST_AUDIT` (per page) |
+| `🇮🇳 N helped today` | `window.CHITTI_HELPED_TODAY` (per page) |
+
+Each Chitti's page sets these globals just before loading the widget. The widget never invents a number — if the global is missing, the chip shows `—`.
+
+---
+
+### Part 8 — Chitti Quality learns (monthly)
+
+End of each month:
+
+1. Chitti Quality reads every 👎 comment from the last 30 days (`quality_feedback.thumbs == 'down'`).
+2. Aggregates via `aggregate_defects` into typed clusters.
+3. Picks the **top 3 patterns**.
+4. **Proposes fixes** as a draft section appended to [../SAHAYAI_MASTER.md](../SAHAYAI_MASTER.md) under a new "Chitti Quality findings — <month>" subsection.
+5. **Sire approves** → fixes go into the next sprint.
+
+Currently triggered manually (`POST /admin/founder/escalate?secret=…` runs the daily-style pass; the monthly pattern-extract is a planned cron once 90 days of data exist). Until then, the weekly trend headlines surface the same signals at a higher cadence.
+
+---
+
+## Where this lives in the code
+
+| Concern | File |
+|---|---|
+| Risk levels, agentic rules, safeguards, carbon, incident, defects, weekly, escalator | [../lib/chitti_quality.py](../lib/chitti_quality.py) |
+| Daily email renderer | [../lib/founder_report.py](../lib/founder_report.py) `render_email_html` |
+| Daily + weekly + escalator crons | [../chitti-founder/backend/main.py](../chitti-founder/backend/main.py) |
+| 4-icon feedback widget + trust strip | [../feedback-widget.js](../feedback-widget.js) |
+| Public trust page | [../chitti_quality.html](../chitti_quality.html) |
+| Thumbs storage + blueprint per Chitti | [../lib/feedback.py](../lib/feedback.py) |
+
+Every change to the framework starts here. If a Chitti's backend forgets to register the feedback blueprint, the public widget still records via the chitti-founder shim — but the per-Chitti `quality_feedback` table will be empty, which the daily email surfaces as "no slice data".
+
 ## Accountability summary
 
 Chitti Quality reports **directly to the Founder** ([bryanwilfredpinto@gmail.com](mailto:bryanwilfredpinto@gmail.com)). No Chitti ships without Chitti Quality approval — meaning: a new Chitti page is not added to [`../index.html`](../index.html), and a new Chitti is not added to [`../MASTER_CONTEXT.md §2`](../MASTER_CONTEXT.md), until Chitti Quality has run a full [CHECKLIST.md](CHECKLIST.md) pass and recorded green or amber (never red) status.

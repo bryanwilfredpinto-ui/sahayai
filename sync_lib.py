@@ -39,6 +39,7 @@ BACKENDS = [
     "chitti-upi",
     "chitti-logo-video",
     "chitti-sales",
+    "chitti-founder",
 ]
 
 LIB_FILES = [
@@ -49,6 +50,7 @@ LIB_FILES = [
     "evaluators.py",
     "feedback.py",
     "founder_report.py",
+    "chitti_quality.py",  # added 2026-05-13 (Chitti Quality v2)
 ]
 
 
