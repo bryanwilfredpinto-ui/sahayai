@@ -489,9 +489,38 @@ chitti-voice-factory/backend/
 | GET | `/api/voice/fluency/status/<lang>` | One language: chunks, sources, fluency_ready, source plan |
 | GET | `/api/voice/fluency/search/<lang>?q=...&k=5` | Top-k similarity search over the language's chunks |
 | GET | `/api/voice/fluency/chunks/<lang>?offset=&limit=` | Paginated chunk inspection |
+| GET | `/api/voice/fluency/<lang>/videos` | List user-added YouTube videos for this language |
+| POST | `/api/voice/fluency/<lang>/videos` | Queue a YouTube URL (rate-limited to 10/lang) |
+| DELETE | `/api/voice/fluency/<lang>/videos/<video_id>` | Remove a queued/processed video record |
+| POST | `/api/voice/fluency/<lang>/videos/process?embed=1` | Fetch transcripts, append chunks to corpus, optionally re-embed |
 
-### 13.6 Honesty contract (additions to §11)
+### 13.6 YouTube video learning (added 2026-05-12)
 
-9. **No stub PDFs, no fake text.** Every chunk has a real `source` (NCERT URL or Wikipedia page or `cousin:<lang>:<orig-source>`). The previous `ingest/ingest_master.py` that wrote `"STUB: Hindi Class 1 textbook"` into placeholder PDFs is **deprecated** — the production pipeline lives under `chitti-voice-factory/backend/scripts/`.
+Each language page exposes a **"📺 Teach Chitti with YouTube Videos"** section that lets any user feed a YouTube URL into the corpus.
+
+- Storage: `data/fluency/<lang>/videos.json` (auditable; per-language)
+- Rate limit: `MAX_VIDEOS_PER_LANG = 10` (in `services/youtube_learner.py`)
+- Transcript fetch (`youtube-transcript-api`): prefers a human-authored transcript in the target language, falls back to auto-generated, finally falls back to *translated*. The video record stores `auto_generated` so the UI can flag lower-quality contributions.
+- Chunks land with `textbook_source = "community"` and `source = "youtube:<video_id>"`. Audit-trail-equivalent to Wikipedia chunks.
+- Embedding rebuild is opt-in (`?embed=1` on `/process`) since it is the slow step. Without `embed=1` the chunks are queryable via the keyword fallback search; FAISS index updates on the next embed pass.
+- HTML injection: `scripts/inject_youtube_ui.py` adds the section to all 26 `chitti_<lang>.html` pages idempotently (`data-chitti-section="youtube"` marker prevents double-injection).
+
+#### Error codes returned by `/videos` endpoints
+
+| Code | Meaning |
+|---|---|
+| `invalid_youtube_url` | URL didn't match any of the 5 known YouTube URL shapes |
+| `duplicate` | Video already in queue for this language |
+| `rate_limit_exceeded` | 10-videos-per-language cap reached |
+| `video_unavailable` | YouTube returned video-unavailable |
+| `transcripts_disabled` | The video has captions disabled |
+| `no_transcript_for_language` | No transcript available; couldn't translate |
+| `transcript_too_short` | Fetched transcript under `MIN_TRANSCRIPT_CHARS` (200) |
+| `library_not_installed` | `youtube-transcript-api` missing on the host |
+
+### 13.7 Honesty contract (additions to §11)
+
+9. **No stub PDFs, no fake text.** Every chunk has a real `source` (NCERT URL, Wikipedia page, `cousin:<lang>:<orig-source>`, or `youtube:<video_id>`). The previous `ingest/ingest_master.py` that wrote `"STUB: Hindi Class 1 textbook"` into placeholder PDFs is **deprecated** — the production pipeline lives under `chitti-voice-factory/backend/scripts/`.
 10. **`fluency_ready` requires embeddings on disk.** A language flips to `true` only when `chunks ≥ 50` AND `embeddings.npy` exists. Cousin-mapped languages can be ready but the UI must surface the cousin banner.
-11. **404 = recorded.** NCERT URL changes and Wikipedia coverage gaps are logged to `honest_status.errors`. We do not invent content for missing sources.
+11. **404 = recorded.** NCERT URL changes, Wikipedia coverage gaps, and YouTube errors are logged to `honest_status.errors` / `videos.json[].error`. We do not invent content for missing sources.
+12. **Auto-generated YouTube transcripts are flagged**, not silently mixed with human-authored ones (`video.auto_generated = true`). The UI surfaces this badge.

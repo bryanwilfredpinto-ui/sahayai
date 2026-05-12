@@ -140,6 +140,32 @@ def status_path(lang: str) -> Path:
     return lang_dir(lang) / "honest_status.json"
 
 
+def _serialise_chunk(c: Chunk) -> str:
+    return json.dumps({
+        "id": c.id,
+        "text": c.text,
+        "textbook_source": c.textbook_source,
+        "source": c.source,
+        "language": c.language,
+        "grade": c.grade,
+        "subject": c.subject,
+        "char_count": c.char_count or len(c.text),
+    }, ensure_ascii=False)
+
+
+def append_chunks(lang: str, chunks: Iterable[Chunk]) -> int:
+    """Append chunks to chunks.jsonl without rewriting existing rows.
+    Returns count appended. Used by the YouTube learner so user-added videos
+    don't trigger a full corpus rewrite."""
+    p = chunks_path(lang)
+    n = 0
+    with p.open("a", encoding="utf-8") as f:
+        for c in chunks:
+            f.write(_serialise_chunk(c) + "\n")
+            n += 1
+    return n
+
+
 def write_chunks(lang: str, chunks: Iterable[Chunk]) -> int:
     """Overwrite chunks.jsonl. Returns count written."""
     p = chunks_path(lang)

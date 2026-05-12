@@ -1,38 +1,24 @@
-<!DOCTYPE html>
-<html lang="bho">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chitti Voice</title>
-    <style>body { font-family: system-ui; margin: 0; padding: 0; background: #f9f9f9; } header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; } h1 { font-size: 2.5rem; margin-bottom: 0.5rem; } main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; } section { background: white; padding: 2rem; margin-bottom: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } textarea { width: 100%; min-height: 100px; padding: 1rem; border: 2px solid #667eea; border-radius: 4px; font-size: 1rem; } button { padding: 1rem; margin: 0.5rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; } .btn-speak { background: #667eea; color: white; } .btn-donate { background: #6c757d; color: white; } .btn-download { background: #28a745; color: white; } .status { display: inline-block; padding: 0.75rem 1.5rem; border-radius: 20px; font-weight: bold; } .status-available { background: #d4edda; color: #155724; } .status-unavailable { background: #f8d7da; color: #721c24; }</style>
-</head>
-<body>
-    <header>
-        <h1>🎤 Chitti</h1>
-    </header>
-    <main>
-        <section>
-            <div style="display: flex; justify-content: space-around;">
-                <div style="text-align: center;"><div style="font-size: 2rem;">👨‍🦯</div>Blind</div>
-                <div style="text-align: center;"><div style="font-size: 2rem;">👂</div>Deaf</div>
-                <div style="text-align: center;"><div style="font-size: 2rem;">🤐</div>Mute</div>
-                <div style="text-align: center;"><div style="font-size: 2rem;">📚</div>Illiterate</div>
-            </div>
-        </section>
-        <section>
-            <h2>Status</h2>
-            <div class="status status-unavailable" id="status">🔄 Loading...</div>
-        </section>
-        <section>
-            <h2>Speak</h2>
-            <textarea id="text-input" placeholder="Type to speak..."></textarea>
-            <button class="btn-speak" onclick="speak()">🔊 Speak</button>
-            <button class="btn-download" onclick="download()">⬇️ Download</button>
-        </section>
-        <section>
-            <h2>Donate</h2>
-            <button class="btn-donate" onclick="donate()">🎤 Donate Your Voice</button>
-        </section>
-    
+#!/usr/bin/env python3
+"""
+scripts/inject_youtube_ui.py — Add the "📺 Teach Chitti with YouTube Videos"
+section to every chitti_<lang>.html in chitti-voice-factory/frontend/.
+
+Idempotent: if the marker `data-chitti-section="youtube"` is already present,
+the file is left untouched.
+"""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+FRONTEND = REPO_ROOT / "chitti-voice-factory" / "frontend"
+
+SECTION_MARKER = 'data-chitti-section="youtube"'
+
+# The HTML/JS block we inject. Inserted just before `</main>`.
+SECTION_HTML = """
         <section data-chitti-section="youtube">
             <h2>📺 Teach Chitti with YouTube Videos</h2>
             <p style="color:#555;font-size:0.95rem;margin-top:-0.5rem;">
@@ -144,38 +130,36 @@
                 refresh();
             })();
         </script>
-    </main>
-    <script>
-        const API = "https://chitti-voice-factory.onrender.com";
-        const LANG = "bho";
-        async function updateStatus() {
-            try {
-                const r = await fetch(API + "/api/voice/status/" + LANG);
-                const d = await r.json();
-                const s = document.getElementById("status");
-                if (d.available) { s.textContent = "✅ Available"; s.className = "status status-available"; }
-                else { s.textContent = "❌ BETA"; s.className = "status status-unavailable"; }
-            } catch (e) { console.error(e); }
-        }
-        async function speak() {
-            const text = document.getElementById("text-input").value.trim();
-            if (!text) return;
-            try {
-                const r = await fetch(API + "/api/voice/speak", {
-                    method: "POST", headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({text, language: LANG})
-                });
-                const d = await r.json();
-                if (d.directive === "use_web_speech_api") {
-                    const u = new SpeechSynthesisUtterance(text);
-                    u.lang = LANG;
-                    speechSynthesis.speak(u);
-                }
-            } catch (e) { console.error(e); }
-        }
-        function download() { alert("Coming soon!"); }
-        function donate() { alert("Contact: chitti@sahayai.in"); }
-        updateStatus();
-    </script>
-</body>
-</html>
+"""
+
+
+def inject_into(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    if SECTION_MARKER in text:
+        return "already-injected"
+    # Insert before the FIRST closing </main>
+    if "</main>" not in text:
+        return "no-main-tag"
+    new_text = text.replace("</main>", SECTION_HTML + "    </main>", 1)
+    path.write_text(new_text, encoding="utf-8")
+    return "injected"
+
+
+def main() -> int:
+    files = sorted(FRONTEND.glob("chitti_*.html"))
+    if not files:
+        print("ERROR: no chitti_*.html files found under", FRONTEND)
+        return 1
+    counts = {"injected": 0, "already-injected": 0, "no-main-tag": 0}
+    for f in files:
+        outcome = inject_into(f)
+        counts[outcome] = counts.get(outcome, 0) + 1
+        print(f"  {f.name}: {outcome}")
+    print("-" * 40)
+    for k, v in counts.items():
+        print(f"  {k}: {v}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
