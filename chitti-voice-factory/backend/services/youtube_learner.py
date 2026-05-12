@@ -37,6 +37,8 @@ from typing import Optional
 log = logging.getLogger("youtube_learner")
 
 # Optional import — endpoints downgrade gracefully when the lib isn't installed.
+# Targets youtube-transcript-api >= 1.0 (post-API-rewrite). The 0.6.x line is
+# broken against current YouTube responses; do not pin below 1.0.
 try:
     from youtube_transcript_api import (  # type: ignore
         NoTranscriptFound,
@@ -163,16 +165,23 @@ def remove_video(lang_dir: Path, video_id: str) -> list[VideoRecord]:
 
 def fetch_transcript(video_id: str, *, preferred_lang: str) -> tuple[str, bool]:
     """
-    Fetch a video's transcript.
+    Fetch a video's transcript using youtube-transcript-api ≥ 1.0.
 
     Returns (text, auto_generated).
     Raises YouTubeProcessingError on any failure with a machine-readable code.
+
+    Priority order:
+      1. Human-authored transcript in preferred_lang.
+      2. Auto-generated transcript in preferred_lang.
+      3. Any track translated into preferred_lang (auto_generated=True).
     """
     if not HAS_YT:
         raise YouTubeProcessingError("library_not_installed",
-                                     "pip install youtube-transcript-api")
+                                     "pip install youtube-transcript-api>=1.0")
+
+    api = YouTubeTranscriptApi()
     try:
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        transcript_list = api.list(video_id)
     except VideoUnavailable as e:
         raise YouTubeProcessingError("video_unavailable", str(e)[:120]) from e
     except TranscriptsDisabled as e:
@@ -180,48 +189,55 @@ def fetch_transcript(video_id: str, *, preferred_lang: str) -> tuple[str, bool]:
     except Exception as e:  # noqa: BLE001
         raise YouTubeProcessingError("list_transcripts_failed", str(e)[:120]) from e
 
-    # 1. Prefer human-authored transcript in the target language.
-    # 2. Else any auto-generated track in the target language.
-    # 3. Else the first translatable track translated into the target language.
     target_codes = [preferred_lang, preferred_lang.split("-")[0]]
     auto_generated = False
     chosen = None
 
     try:
         chosen = transcript_list.find_manually_created_transcript(target_codes)
-    except Exception:  # noqa: BLE001
+    except (NoTranscriptFound, Exception):  # noqa: BLE001
         try:
             chosen = transcript_list.find_generated_transcript(target_codes)
             auto_generated = True
-        except Exception:  # noqa: BLE001
+        except (NoTranscriptFound, Exception):  # noqa: BLE001
+            # No transcript in target language — find any translatable one.
+            translatable = None
+            for t in transcript_list:
+                if getattr(t, "is_translatable", False):
+                    translatable = t
+                    break
+            if translatable is None:
+                raise YouTubeProcessingError(
+                    "no_transcript_for_language",
+                    f"{video_id}: no track translatable into {preferred_lang}",
+                )
             try:
-                # Take any available transcript and translate
-                any_trans = next(iter(transcript_list))
-                if any_trans.is_translatable:
-                    chosen = any_trans.translate(target_codes[0])
-                    auto_generated = True
-                else:
-                    chosen = any_trans
-                    auto_generated = getattr(any_trans, "is_generated", True)
+                chosen = translatable.translate(target_codes[0])
+                auto_generated = True
             except Exception as e:  # noqa: BLE001
-                raise YouTubeProcessingError("no_transcript_for_language",
-                                             f"{video_id}: {e}") from e
+                raise YouTubeProcessingError(
+                    "no_transcript_for_language", str(e)[:120]
+                ) from e
 
     try:
-        entries = chosen.fetch()
+        fetched = chosen.fetch()
     except Exception as e:  # noqa: BLE001
         raise YouTubeProcessingError("transcript_fetch_failed", str(e)[:120]) from e
 
+    # FetchedTranscript exposes .snippets (≥1.0); older returns a plain list.
+    snippets = getattr(fetched, "snippets", fetched)
     parts: list[str] = []
-    for entry in entries:
-        # youtube-transcript-api ≥0.6 returns objects with .text; older returns dicts.
-        text = getattr(entry, "text", None) or (entry.get("text") if isinstance(entry, dict) else "")
+    for snip in snippets:
+        text = getattr(snip, "text", None) or (
+            snip.get("text") if isinstance(snip, dict) else ""
+        )
         if text:
             parts.append(text.strip())
     full = "\n".join(parts).strip()
 
     if len(full) < MIN_TRANSCRIPT_CHARS:
-        raise YouTubeProcessingError("transcript_too_short",
-                                     f"{len(full)} chars < {MIN_TRANSCRIPT_CHARS}")
+        raise YouTubeProcessingError(
+            "transcript_too_short", f"{len(full)} chars < {MIN_TRANSCRIPT_CHARS}"
+        )
 
     return full, auto_generated
