@@ -35,6 +35,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Voice strategy | **Bhashini is TEMPORARY.** Users donate their voice to Chitti; community voices replace Bhashini over time. Hall of Fame for voice contributors. Architecture must support **swapping voice provider at any time**. | `project_voice_strategy_locked` |
 | New products process | **Before building ANY new Chitti product:** (1) research top 3 apps in that category, (2) copy their full feature surface as skeleton, (3) mark unbuilt features as `COMING SOON`, (4) power with DeepSeek + community voices, (5) define capabilities in `skills/*.md`. | `project_new_products_process_locked` |
 | ISL support | **Indian Sign Language is a first-class accessibility surface — not ASL.** Phase 1: ISL dictionary + animation next to every Chitti response + tap-word-to-sign. Phase 2: camera-based ISL detection (COMING SOON). Phase 3: community-contributed ISL videos + Hall of Fame (COMING SOON). For 6 crore deaf Indians ignored by every app. | `project_chitti_isl_spec` |
+| Per-response widget | **Every response box on every page carries 4 icons: 🔊 speaker · 🤖 Chitti (explain further) · 👍 / 👎 thumbs · per-box feedback window** (voice or type, tagged to box ID, into Founder dashboard daily). Implementation: [feedback-widget.js](feedback-widget.js). **No page ships without this.** See §7. | `project_per_response_widget_locked` |
 
 ---
 
@@ -295,11 +296,21 @@ Cross-cutting quality rules (unchanged):
 3. **Braille-friendly mode toggle** — strips emojis from spoken text, single column, raised font, aria-live=polite for refreshable braille displays (BrailleBack on Android).
 4. **Speak helper** — defers to `chitti.speak` if present, else SpeechSynthesis in selected language.
 
-### Feedback widget — `feedback-widget.js` must load on every page
+### Per-response widget — MANDATORY on every page (LOCKED 2026-05-13)
 
-- **👍 / 👎** footer for every Chitti response.
-- **👎 triggers free-text suggestion modal.** Asks `user_segment` once (sticky per-device via localStorage).
-- POSTs to `/api/feedback/collect` (override base via `window.CHITTI_FEEDBACK_API`).
+**Every response box / section on every Chitti page must have these 4 elements.** No page ships without this. Ever. Implementation lives in [feedback-widget.js](feedback-widget.js); it applies to ALL pages automatically by attaching to any element marked `data-chitti-response` (or `.chitti-response`) via MutationObserver. Page authors do not hand-roll this.
+
+1. **🔊 Speaker icon** — reads *that specific box* aloud in the page's selected language. Uses `chitti_a11y.speak()` if loaded, else `SpeechSynthesis`.
+2. **🤖 Chitti icon** — opens Chitti scoped to *that specific box*. User can say or type *"explain further"*, *"give me an example"*, etc. The box's text + ID is passed as context.
+3. **👍 / 👎 thumbs** — on **every response box**, not just in the page footer. Each vote carries the box ID so dashboards can pinpoint which box is failing.
+4. **Per-box feedback window** — clicking **👎** opens a popup for **THAT box only**:
+   - Header reads: **"Feedback for: [section name]"** (derived from the box's heading or `data-chitti-section` attribute).
+   - User can **🎙️ record voice feedback** or **⌨️ type feedback**.
+   - Chitti speaks (in the user's language): *"What was wrong with this?"*
+   - Feedback is tagged to that **box ID**, saved to the feedback database, and sent to the **Founder dashboard daily** (see [Chitti Quality v2](#6-quality-standards) — DAILY 07:00 IST email).
+   - POSTs to `/api/feedback/collect` (legacy) and `/api/feedback` (canonical, `lib/feedback.py`). Override base via `window.CHITTI_FEEDBACK_API`.
+
+**Hard rule:** if a Chitti page has a response box without the 4-icon row attached, it is **broken** and must be fixed before merge — same merge-blocker status as missing the [Sticky NOT SEBI REGISTERED bar](#legal-disclaimer--every-chitti-page).
 
 ### Vaani-specific — always-on, voice-mediated
 
