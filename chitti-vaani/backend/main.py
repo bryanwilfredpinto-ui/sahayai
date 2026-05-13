@@ -26,7 +26,8 @@ from routes.local import bp as local_bp
 from routes.admin import bp as admin_bp
 from routes.feedback import bp as feedback_bp
 from routes.checkin import bp as checkin_bp
-from services import admin_scheduler, checkin_service, feedback_scheduler
+from routes.missed_call import bp as missed_call_bp
+from services import admin_scheduler, checkin_service, feedback_scheduler, missed_call_service
 from scripts import admin_seed
 
 # Sahay AI shared quality framework — installed across every Chitti.
@@ -96,6 +97,7 @@ def _create_app() -> Flask:
     app.register_blueprint(admin_bp)
     app.register_blueprint(feedback_bp)
     app.register_blueprint(checkin_bp)
+    app.register_blueprint(missed_call_bp)
 
     # Daily check-in (P0 — elderly users). Idempotent table create, and
     # scheduler integration happens after admin_scheduler.start() so we
@@ -104,6 +106,10 @@ def _create_app() -> Flask:
         checkin_service.init_db()
     except Exception as e:  # noqa: BLE001
         log.warning("checkin DB init skipped: %s", e)
+    try:
+        missed_call_service.init_db()
+    except Exception as e:  # noqa: BLE001
+        log.warning("missed_call DB init skipped: %s", e)
 
     # Admin: schema, seed, scheduler. Each step is wrapped — a misconfigured
     # ADMIN_DATABASE_URL must not take down the rest of Vaani.
@@ -187,6 +193,30 @@ def _create_app() -> Flask:
             log.info("daily_checkin job scheduled (every 5 min)")
     except Exception as e:  # noqa: BLE001
         log.warning("daily_checkin schedule skipped: %s", e)
+
+    # Missed-call dispatch — every minute. Honest stub today (provider
+    # client wires later), but the queue is real so a webhook today
+    # already produces a row + an audit trail.
+    try:
+        from apscheduler.triggers.interval import IntervalTrigger
+        sched = getattr(admin_scheduler, "_scheduler", None) or getattr(admin_scheduler, "scheduler", None)
+        if sched is not None:
+            def _missed_call_job():
+                try:
+                    res = missed_call_service.run_dispatch_queue()
+                    log.info("[scheduler] missed_call_dispatch OK %s", res)
+                except Exception as e:  # noqa: BLE001
+                    log.exception("[scheduler] missed_call_dispatch FAILED: %s", e)
+            sched.add_job(
+                _missed_call_job,
+                IntervalTrigger(minutes=1),
+                id="missed_call_dispatch",
+                replace_existing=True,
+                misfire_grace_time=120,
+            )
+            log.info("missed_call_dispatch job scheduled (every 1 min)")
+    except Exception as e:  # noqa: BLE001
+        log.warning("missed_call_dispatch schedule skipped: %s", e)
 
     return app
 
