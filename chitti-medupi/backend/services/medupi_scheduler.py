@@ -10,6 +10,7 @@ Jobs:
   2. weekly_nppa            — Mondays, 04:00 IST
   3. daily_top100_brave     — every day, 02:00 IST
   4. cache_evict            — every day, 02:55 IST (cleans expired Brave cache)
+  5. daily_expiry_scan      — every day, 08:00 IST (P0 medicine-expiry safety)
 
 Each job:
   - Logs start + end + outcome
@@ -139,6 +140,20 @@ def _job_cache_evict() -> dict:
         db.close()
 
 
+def _job_daily_expiry_scan() -> dict:
+    """
+    P0 medicine-expiry safety — daily 08:00 IST scan of every active
+    expiry reminder, bucketed by urgency. Notification fan-out plugs in
+    when the channels (browser push / WhatsApp / Twilio) land.
+    """
+    from services import medupi_reminders
+    db = SessionLocal()
+    try:
+        return medupi_reminders.run_daily_expiry_scan(db)
+    finally:
+        db.close()
+
+
 # ───── Public API ─────
 
 def start() -> None:
@@ -180,6 +195,13 @@ def start() -> None:
         id="cache_evict",
         replace_existing=True,
         misfire_grace_time=600,
+    )
+    sch.add_job(
+        _wrap("daily_expiry_scan", _job_daily_expiry_scan),
+        CronTrigger(hour=8, minute=0, timezone=IST),
+        id="daily_expiry_scan",
+        replace_existing=True,
+        misfire_grace_time=3600,
     )
 
     sch.start()

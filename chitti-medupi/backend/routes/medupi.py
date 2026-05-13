@@ -35,6 +35,8 @@ Route map (all prefix /api/medupi):
     POST   /reminder                → schedule a refill / expiry / dose / appointment
     PATCH  /reminder/<id>           → update status (done / dismissed)
     DELETE /reminder/<id>           → delete a reminder
+    GET    /expiry/summary          → P0: bucketed expiry summary
+                                       (?profile_id=&window_days=30)
 
   Real-time pharmacy prices (Brave Search · snippet-only)
     GET   /price/live/<name>        → 24h-cached snippet prices
@@ -414,6 +416,28 @@ def reminder_delete(db, rid):
     if not medupi_reminders.delete_reminder(db, token, rid):
         abort(404, description="reminder not found")
     return jsonify({"ok": True})
+
+
+@bp.get("/expiry/summary")
+@with_db
+def expiry_summary(db):
+    """
+    P0 safety — bucket active expiry reminders by urgency.
+
+    Query params:
+      - profile_id (int, optional): restrict to one family member
+      - window_days (int, default 30): cap on EXPIRING bucket
+
+    Frontend renders symbol + word label (never colour alone). Voice
+    handoff: every item carries `spoken_en` / `spoken_hi`; the rollup
+    is `spoken_summary_en` / `spoken_summary_hi`.
+    """
+    token = _user_token_or_400()
+    profile_id = _int_arg("profile_id", default=None)
+    window_days = _int_arg("window_days", default=30, min_val=1, max_val=365)
+    return jsonify(medupi_reminders.expiry_summary(
+        db, token, profile_id=profile_id, window_days=window_days,
+    ))
 
 
 # ─────────────────────────────────────────────────────
