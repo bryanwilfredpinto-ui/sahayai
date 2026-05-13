@@ -463,24 +463,29 @@
     return String(name).trim().replace(/\s+/g, ' ').slice(0, 80);
   }
   function boxText(box) {
-    var clone = box.cloneNode(true);
-    // Strip our own per-box bar so it isn't read back.
-    var bar = clone.querySelector(':scope > .chitti-fb-box-bar');
-    if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
-    var text = (clone.innerText || clone.textContent || '').replace(/\s+/g, ' ').trim();
-    return text.slice(0, 4000);
+    // Bar lives as a sibling AFTER the box, so innerText is clean.
+    return (box.innerText || box.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 4000);
   }
   function attachBoxWidget(box, page) {
-    if (!box || box.__chittiBoxAttached) return;
-    if (box.querySelector(':scope > .chitti-fb-box-bar')) {
-      box.__chittiBoxAttached = true; return;
-    }
-    box.__chittiBoxAttached = true;
-    box.classList.add('chitti-fb-box');
+    if (!box || !box.parentNode) return;
     var boxId = boxIdFor(box);
+    // DOM-based idempotency: did we already insert a bar bound to THIS box
+    // right after it? (We do NOT use a JS flag — page re-renders that wipe
+    // the bar must be allowed to re-attach.)
+    var nextSib = box.nextElementSibling;
+    if (nextSib && nextSib.classList && nextSib.classList.contains('chitti-fb-box-bar')
+        && nextSib.getAttribute('data-for-box') === boxId) {
+      return;
+    }
+    // Clean up any stale bar pointing at a different / removed box.
+    if (nextSib && nextSib.classList && nextSib.classList.contains('chitti-fb-box-bar')
+        && nextSib.getAttribute('data-for-box') !== boxId) {
+      nextSib.parentNode.removeChild(nextSib);
+    }
     var section = sectionNameFor(box);
     var bar = document.createElement('div');
     bar.className = 'chitti-fb-box-bar';
+    bar.setAttribute('data-for-box', boxId);
     bar.setAttribute('role', 'group');
     bar.setAttribute('aria-label', 'Feedback for ' + section);
     bar.innerHTML =
@@ -489,7 +494,9 @@
       '<button type="button" class="chitti-fb-bbtn ask"   data-act="ask"   aria-label="Ask Chitti to explain ' + escAttr(section) + ' further">🤖</button>' +
       '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
       '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>';
-    box.appendChild(bar);
+    // Insert as a SIBLING after the box, not inside, so page re-renders
+    // that set box.innerHTML don't wipe the bar.
+    box.parentNode.insertBefore(bar, box.nextSibling);
 
     bar.querySelector('[data-act="speak"]').addEventListener('click', function () {
       var btn = this; btn.classList.add('live');

@@ -278,7 +278,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <button id="med-mic" class="mic-btn" type="button" onclick="startVoiceSearch()" aria-label="Speak the medicine name">🎤</button>
         <button class="cta-saffron" onclick="searchMedicine()" data-i18n="scan.search.btn">Search</button>
       </div>
-      <div id="med-results" class="section-empty" aria-live="polite" aria-atomic="true">Type a medicine name above, scan a strip with the camera, or upload an image. Chitti will read the result aloud.</div>
+      <div id="med-results" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Medicine scan + price comparison">Type a medicine name above, scan a strip with the camera, or upload an image. Chitti will read the result aloud.</div>
     </div>
 
     <div class="section-card">
@@ -371,7 +371,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </div>
 
       <!-- Result block (filled by runCartSim) -->
-      <div id="cart-result" class="section-empty" aria-live="polite" aria-atomic="true" style="margin-top:14px">Add at least one line above and tap Calculate to see your monthly + annual savings.</div>
+      <div id="cart-result" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Monthly savings calculator" style="margin-top:14px">Add at least one line above and tap Calculate to see your monthly + annual savings.</div>
     </div>
   </section>
 
@@ -424,7 +424,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         </div>
         <button class="metric-spk" onclick="refreshWallet(true)" aria-label="Refresh wallet">🔁</button>
       </div>
-      <div id="wallet-report" class="section-empty" aria-live="polite" aria-atomic="true">Add a profile + a purchase to see your savings.</div>
+      <div id="wallet-report" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Personal savings report">Add a profile + a purchase to see your savings.</div>
     </div>
 
     <div class="section-card">
@@ -435,8 +435,8 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         </div>
         <button class="metric-spk" onclick="refreshFamilyWalletPreview(true)" aria-label="Refresh family wallet preview" title="Refresh">🔁</button>
       </div>
-      <div id="fam-wallet-totals" class="metric-grid" aria-live="polite" aria-atomic="true"></div>
-      <div id="fam-wallet-members" style="margin-top:14px" aria-live="polite" aria-atomic="true"></div>
+      <div id="fam-wallet-totals" class="metric-grid" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Family wallet — totals"></div>
+      <div id="fam-wallet-members" style="margin-top:14px" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Family wallet — per-member"></div>
       <div id="fam-wallet-skeleton-note" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
     </div>
 
@@ -483,7 +483,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         </div>
         <button class="metric-spk" onclick="speakExpirySummary()" aria-label="Hear my medicine cabinet expiry summary">🔊</button>
       </div>
-      <div id="expiry-cabinet-summary" role="status" aria-live="polite" style="font-size:14px;margin-bottom:10px;color:var(--ink-2,#555)">Loading…</div>
+      <div id="expiry-cabinet-summary" role="status" aria-live="polite" data-chitti-response data-chitti-section="Medicine cabinet — expiry summary" style="font-size:14px;margin-bottom:10px;color:var(--ink-2,#555)">Loading…</div>
       <div id="expiry-cabinet-list" style="font-size:13px"></div>
       <div style="margin-top:8px"><button class="cta-navy" onclick="refreshExpirySummary()">↻ Refresh</button></div>
     </div>
@@ -521,7 +521,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <input id="ja-state" placeholder="…or type your state (e.g. MP, Maharashtra)" autocomplete="off" onkeydown="if(event.key==='Enter') findJanAushadhiByState()">
         <button class="cta-navy" onclick="findJanAushadhiByState()">By state</button>
       </div>
-      <div id="ja-results" class="section-empty" aria-live="polite" aria-atomic="true">Tap "Find near me" to use your phone's location, or type your state. Chitti reads the nearest stores aloud.</div>
+      <div id="ja-results" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Nearest Jan Aushadhi stores">Tap "Find near me" to use your phone's location, or type your state. Chitti reads the nearest stores aloud.</div>
     </div>
 
     <div class="section-card">
@@ -572,7 +572,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         </select>
         <button class="cta-saffron" onclick="checkInsuranceCoverage()">Check coverage</button>
       </div>
-      <div id="ins-results" class="section-empty" aria-live="polite" aria-atomic="true">Type a medicine name to check coverage.</div>
+      <div id="ins-results" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Insurance / Ayushman coverage">Type a medicine name to check coverage.</div>
     </div>
 
     <div class="section-card">
