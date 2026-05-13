@@ -140,6 +140,40 @@ def _build_rationale(article, matched_sources: set[str], matched: list[dict],
     return "No cross-source corroboration yet. Single-source story — may be hyperlocal or just-breaking."
 
 
+def sweep_unchecked(db: Session, *, limit: int = 50, lookback_hours: int = 24) -> dict:
+    """
+    P0 (2026-05-13): score every article. Walk recent articles that have
+    no FactCheck row yet (or a stale one) and compute verdicts so the
+    feed card can render a badge without waiting for the user to open
+    the factcheck panel.
+
+    Returns the usual scheduler audit shape.
+    """
+    cutoff = datetime.utcnow() - timedelta(hours=lookback_hours)
+    unchecked = (
+        db.query(Article)
+        .outerjoin(FactCheck, FactCheck.article_id == Article.id)
+        .filter(Article.fetched_at >= cutoff, FactCheck.id.is_(None))
+        .order_by(desc(Article.fetched_at))
+        .limit(max(1, min(limit, 500)))
+        .all()
+    )
+    scored, errors = 0, 0
+    for a in unchecked:
+        try:
+            factcheck(db, a.id, force=False)
+            scored += 1
+        except Exception as e:  # noqa: BLE001
+            log.warning("factcheck sweep failed for article=%s: %s", a.id, e)
+            errors += 1
+    return {
+        "upserted": scored,
+        "skipped": 0,
+        "errors": errors,
+        "note": f"sweep scored {scored} unchecked articles (lookback={lookback_hours}h)",
+    }
+
+
 def _to_dict(article, fc: FactCheck) -> dict:
     try:
         sources = json.loads(fc.matched_sources or "[]")

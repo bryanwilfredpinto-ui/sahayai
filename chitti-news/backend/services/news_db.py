@@ -19,12 +19,40 @@ from sqlalchemy.orm import Session
 
 from models.article import Article
 from models.breaking_alert import BreakingAlert
+from models.fact_check import FactCheck
 from models.source import Source
 
 log = logging.getLogger("news_db")
 
 
-def _row_to_dict(a: Article) -> dict:
+# Verdict badge map — same shape as news_factcheck._to_dict so the
+# frontend never has to special-case "feed view" vs "factcheck panel".
+# `unchecked` is a distinct visible state (P0 2026-05-13): every card
+# carries a badge, never colour alone, symbol + word label.
+_VERDICT_BADGE = {
+    "verified":   {"symbol": "✅", "word": "VERIFIED",   "hi": "सत्यापित"},
+    "partial":    {"symbol": "🟡", "word": "PARTIAL",    "hi": "आंशिक"},
+    "disputed":   {"symbol": "⚠️", "word": "DISPUTED",   "hi": "विवादित"},
+    "unverified": {"symbol": "❔", "word": "UNVERIFIED", "hi": "पुष्टि नहीं"},
+    "unchecked":  {"symbol": "⏳", "word": "CHECKING",   "hi": "जाँच हो रही"},
+}
+
+
+def _factcheck_payload(fc: FactCheck | None) -> dict:
+    """Return a card-ready badge payload — present on EVERY article card."""
+    verdict = (fc.verdict if fc else None) or "unchecked"
+    badge = _VERDICT_BADGE.get(verdict, _VERDICT_BADGE["unchecked"])
+    return {
+        "verdict": verdict,
+        "symbol": badge["symbol"],
+        "word": badge["word"],
+        "word_hi": badge["hi"],
+        "confidence": (fc.confidence if fc else None),
+        "checked_at": (fc.checked_at.isoformat() if fc and fc.checked_at else None),
+    }
+
+
+def _row_to_dict(a: Article, fc: FactCheck | None = None) -> dict:
     return {
         "id": a.id,
         "title": a.title,
@@ -40,6 +68,7 @@ def _row_to_dict(a: Article) -> dict:
         "importance": a.importance,
         "published_at": a.published_at.isoformat() if a.published_at else None,
         "fetched_at": a.fetched_at.isoformat() if a.fetched_at else None,
+        "factcheck": _factcheck_payload(fc),
     }
 
 
@@ -56,9 +85,16 @@ def feed(
       { items, count, state, language, category,
         speak_en, speak_hi, caption_en, caption_hi, disclaimer_en/hi }
     """
-    q = db.query(Article).filter(
-        Article.state.in_([state, "india"]),  # state-specific OR national fallback
-        Article.language == language,
+    # Outer-join FactCheck so every card carries its verdict badge — P0
+    # contract from 2026-05-13: fake-news score visible on every article,
+    # not just on factcheck modal open.
+    q = (
+        db.query(Article, FactCheck)
+        .outerjoin(FactCheck, FactCheck.article_id == Article.id)
+        .filter(
+            Article.state.in_([state, "india"]),  # state-specific OR national fallback
+            Article.language == language,
+        )
     )
     if category and category != "all":
         q = q.filter(Article.category == category)
@@ -70,7 +106,7 @@ def feed(
         desc(Article.fetched_at),
     ).limit(max(1, min(limit, 100))).all()
 
-    items = [_row_to_dict(r) for r in rows]
+    items = [_row_to_dict(a, fc) for (a, fc) in rows]
 
     return {
         "items": items,
@@ -126,8 +162,16 @@ def list_breaking(db: Session, *, state: str = "india", language: str = "en", li
 
 
 def get_article(db: Session, article_id: int) -> Optional[dict]:
-    a = db.query(Article).filter(Article.id == article_id).first()
-    return _row_to_dict(a) if a else None
+    row = (
+        db.query(Article, FactCheck)
+        .outerjoin(FactCheck, FactCheck.article_id == Article.id)
+        .filter(Article.id == article_id)
+        .first()
+    )
+    if not row:
+        return None
+    a, fc = row
+    return _row_to_dict(a, fc)
 
 
 def list_sources(

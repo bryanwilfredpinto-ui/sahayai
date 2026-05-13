@@ -8,6 +8,9 @@ Jobs (Asia/Kolkata):
   daily_breaking     — every day, 06:00 IST → recompute breaking-news ribbon
   daily_prune        — every day, 03:00 IST → drop articles older than 90 days
                         (already done inside fetch_all, but a safety net)
+  factcheck_sweep    — every 15 min → score un-factchecked recent articles
+                        so the feed card always carries a verdict badge
+                        (P0 2026-05-13)
 """
 from __future__ import annotations
 
@@ -30,6 +33,21 @@ _scheduler: Optional[BackgroundScheduler] = None
 def _job_rss_poll() -> dict:
     from services import news_ingest
     return news_ingest.fetch_all()
+
+
+def _job_factcheck_sweep() -> dict:
+    """
+    P0 2026-05-13 — guarantee every visible article has a verdict badge.
+    Walks recent articles missing a FactCheck row and computes one.
+    Cheap (in-DB title similarity, no LLM, no network).
+    """
+    from database import SessionLocal
+    from services import news_factcheck
+    db = SessionLocal()
+    try:
+        return news_factcheck.sweep_unchecked(db, limit=80, lookback_hours=24)
+    finally:
+        db.close()
 
 
 def _job_breaking() -> dict:
@@ -132,6 +150,13 @@ def start() -> None:
         id="daily_breaking",
         replace_existing=True,
         misfire_grace_time=1800,
+    )
+    sch.add_job(
+        _wrap("factcheck_sweep", _job_factcheck_sweep),
+        IntervalTrigger(minutes=15),
+        id="factcheck_sweep",
+        replace_existing=True,
+        misfire_grace_time=600,
     )
     sch.start()
     _scheduler = sch

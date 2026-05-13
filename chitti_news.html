@@ -78,6 +78,7 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 .fact-partial{color:#92400e;font-weight:800}
 .fact-disputed{color:var(--red);font-weight:800}
 .fact-unverified{color:var(--muted);font-weight:700}
+.fact-unchecked{color:var(--muted);font-weight:700;font-style:italic}
 
 /* Article cards */
 .feed{display:grid;grid-template-columns:1fr;gap:12px}
@@ -592,8 +593,22 @@ function _timeAgo(iso) {
 // ═══════════════════════════════════════════════════════════
 function _articleCardHtml(a) {
   const lang = _chittiLang;
+  // Fact-check verdict badge — P0 2026-05-13: every card carries one.
+  // Symbol + word label (never colour alone). Falls back to "CHECKING"
+  // for any article still in the sweep queue.
+  const fc = a.factcheck || { verdict: 'unchecked', symbol: '⏳', word: 'CHECKING', word_hi: 'जाँच हो रही' };
+  const fcWord = (lang === 'hi' && fc.word_hi) ? fc.word_hi : (fc.word || (fc.verdict || '').toUpperCase());
+  const fcCls = 'fact-' + (fc.verdict || 'unchecked');
+  const fcConf = (fc.confidence != null) ? (' (' + fc.confidence + '%)') : '';
+  const fcTitle = (lang === 'hi'
+    ? 'चिट्टी की तथ्य जाँच — ' + fcWord
+    : "Chitti's fact check — " + fcWord) + fcConf;
+  const fcBadge = '<span class="' + fcCls + '" title="' + _esc(fcTitle) + '" aria-label="' + _esc(fcTitle) + '">'
+                  + (fc.symbol || '❔') + ' ' + _esc(fcWord) + '</span>';
+
   const meta = []
     .concat(a.is_breaking ? ['<span class="brk-pill">' + (lang==='hi'?'ब्रेकिंग':'BREAKING') + '</span>'] : [])
+    .concat([fcBadge])
     .concat([_esc(a.source_name || a.source_slug || '')])
     .concat([_timeAgo(a.published_at || a.fetched_at)])
     .filter(Boolean).join(' · ');
