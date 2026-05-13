@@ -373,7 +373,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </div>
     </div>
 
-    <div id="answer-box" class="answer-box" role="status" aria-live="polite">
+    <div id="answer-box" class="answer-box" role="status" aria-live="polite" data-chitti-response data-chitti-section="Chitti's answer">
       <div class="answer-head">
         <span class="who">🪔 Chitti says</span>
         <div class="ctrls">
@@ -424,7 +424,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   <section class="section-card" aria-labelledby="hist-title">
     <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent</h2>
     <div class="section-sub">Stays only on this device. Not synced. Tap 🔊 to hear an old answer.</div>
-    <div id="history" class="history"></div>
+    <div id="history" class="history" data-chitti-response data-chitti-section="Past Chitti answers"></div>
   </section>
 
   <!-- ════════ PRO ACTIONS — Chitti acts on the user's behalf ════════ -->
@@ -553,7 +553,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="btn-navy" onclick="speakTrustedCircle()">🔊 Read the circle aloud</button>
       <button class="btn-ghost" onclick="clearTrustedCircle()">🗑️ Clear all</button>
     </div>
-    <div id="tc-list" class="tc-list"></div>
+    <div id="tc-list" class="tc-list" data-chitti-response data-chitti-section="Trusted circle"></div>
   </section>
 
   <!-- ════════ DAILY CHECK-IN (P0 — elderly safety) ════════ -->
@@ -573,7 +573,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="btn-saffron" onclick="onCheckinSave()" aria-label="Save daily check-in">💾 Save</button>
       <button class="btn-ghost" onclick="onCheckinDisable()" aria-label="Disable daily check-in">🚫 Disable</button>
     </div>
-    <div id="checkin-status" role="status" aria-live="polite" style="font-size:13px;color:#555"></div>
+    <div id="checkin-status" role="status" aria-live="polite" data-chitti-response data-chitti-section="Daily check-in for elderly (emergency cascade)" style="font-size:13px;color:#555"></div>
   </section>
 
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
@@ -596,7 +596,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="btn-navy" onclick="speakAuditLog()">🔊 Read audit log aloud</button>
       <button class="btn-ghost" onclick="clearAuditLog()">🗑️ Clear log</button>
     </div>
-    <div id="audit-list" class="audit-list"></div>
+    <div id="audit-list" class="audit-list" data-chitti-response data-chitti-section="What Chitti did for you (audit log)"></div>
   </section>
 
   <footer>
@@ -624,7 +624,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button id="call-mic" onclick="proMicCall(this)">🎙️ "Mom ko call karo"</button>
       <button onclick="speakCallPreview()">🔊 Read back</button>
     </div>
-    <div class="preview" id="call-preview" style="display:none"></div>
+    <div class="preview" id="call-preview" data-chitti-response data-chitti-section="Call preview" style="display:none"></div>
     <div class="actions">
       <button class="go" onclick="confirmCall()">📞 Dial now</button>
       <button class="spk" onclick="confirmCallByVoice()">🎙️ Confirm by voice (haan)</button>
@@ -651,7 +651,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <button onclick="speakField('wa-msg')">🔊 Read back</button>
       </div>
     </div>
-    <div class="preview" id="wa-preview" style="display:none"></div>
+    <div class="preview" id="wa-preview" data-chitti-response data-chitti-section="WhatsApp message preview" style="display:none"></div>
     <div class="actions">
       <button class="go" onclick="confirmWASend()">📲 Open WhatsApp to send</button>
       <button class="spk" onclick="confirmWAByVoice()">🎙️ Confirm by voice (haan)</button>
@@ -684,7 +684,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button id="upi-mic" onclick="proMicUPI(this)">🎙️ "Ramesh ko ₹500 bhejo"</button>
       <button onclick="speakUPIPreview()">🔊 Read back</button>
     </div>
-    <div class="preview" id="upi-preview" style="display:none"></div>
+    <div class="preview" id="upi-preview" data-chitti-response data-chitti-section="UPI payment preview" style="display:none"></div>
     <div class="actions">
       <button class="go" onclick="confirmUPISend()">💸 Open UPI app to pay</button>
       <button class="spk" onclick="confirmUPIByVoice()">🎙️ Confirm by voice (haan)</button>
@@ -728,7 +728,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <button onclick="speakField('em-body')">🔊 Read back</button>
       </div>
     </div>
-    <div class="preview" id="em-preview" style="display:none"></div>
+    <div class="preview" id="em-preview" data-chitti-response data-chitti-section="Email preview" style="display:none"></div>
     <div class="actions">
       <button class="go" onclick="confirmEmailSend()" id="em-send-btn">📧 Send via Gmail</button>
       <button class="spk" onclick="confirmEmailByVoice()">🎙️ Confirm by voice (haan)</button>
@@ -836,7 +836,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <div style="font-weight:800;color:var(--navy);font-size:13px;margin:8px 0 6px">
         🇮🇳 Chitti business directory
       </div>
-      <div id="local-chitti-list" style="display:flex;flex-direction:column;gap:6px">
+      <div id="local-chitti-list" data-chitti-response data-chitti-section="Order & book — Chitti businesses (local-first)" style="display:flex;flex-direction:column;gap:6px">
         <div class="tc-empty">Loading the Chitti directory…</div>
       </div>
     </div>
@@ -847,7 +847,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         🌐 Fallback — external apps
         <span style="font-weight:500;font-size:11px">(opens the app pre-filled; Chitti does not auto-book)</span>
       </div>
-      <div id="local-external-list" style="display:flex;flex-wrap:wrap;gap:6px">
+      <div id="local-external-list" data-chitti-response data-chitti-section="Order & book — external apps (fallback)" style="display:flex;flex-wrap:wrap;gap:6px">
         <!-- buttons injected by renderLocalExternal() -->
       </div>
     </div>
