@@ -38,34 +38,61 @@
   let ISL_DICT_LOADING = null;
 
   // 26 languages — must match Chitti Voice Factory registry.
-  // Code, English label, native label.
+  // Each entry: [code, English label, native label, flag icon].
+  // "Flag" = a country-flag emoji where natural, otherwise a 1–2 char
+  // native-script emblem rendered in a colored badge. The emblem is
+  // visually distinct per language even for illiterate users — they
+  // recognise the SHAPE of their own script. Bryan locked 2026-05-13:
+  // flag icons only, no dropdowns, no text labels.
   const LANGUAGES = [
-    ['en',  'English',    'English'],
-    ['hi',  'Hindi',      'हिन्दी'],
-    ['bn',  'Bengali',    'বাংলা'],
-    ['te',  'Telugu',     'తెలుగు'],
-    ['mr',  'Marathi',    'मराठी'],
-    ['ta',  'Tamil',      'தமிழ்'],
-    ['gu',  'Gujarati',   'ગુજરાતી'],
-    ['kn',  'Kannada',    'ಕನ್ನಡ'],
-    ['ml',  'Malayalam',  'മലയാളം'],
-    ['or',  'Odia',       'ଓଡ଼ିଆ'],
-    ['pa',  'Punjabi',    'ਪੰਜਾਬੀ'],
-    ['ur',  'Urdu',       'اردو'],
-    ['as',  'Assamese',   'অসমীয়া'],
-    ['sa',  'Sanskrit',   'संस्कृतम्'],
-    ['ne',  'Nepali',     'नेपाली'],
-    ['ks',  'Kashmiri',   'كٲشُر'],
-    ['sd',  'Sindhi',     'سنڌي'],
-    ['mai', 'Maithili',   'मैथिली'],
-    ['mni', 'Manipuri',   'ꯃꯩꯇꯩ'],
-    ['kok', 'Konkani',    'कोंकणी'],
-    ['doi', 'Dogri',      'डोगरी'],
-    ['brx', 'Bodo',       'बड़ो'],
-    ['sat', 'Santhali',   'ᱥᱟᱱᱛᱟᱲᱤ'],
-    ['bho', 'Bhojpuri',   'भोजपुरी'],
-    ['hne', 'Chhattisgarhi','छत्तीसगढ़ी'],
-    ['tcy', 'Tulu',       'ತುಳು'],
+    ['en',  'English',      'English',       'A'],
+    ['hi',  'Hindi',        'हिन्दी',         '🇮🇳'],
+    ['bn',  'Bengali',      'বাংলা',         'বা'],
+    ['te',  'Telugu',       'తెలుగు',        'తె'],
+    ['mr',  'Marathi',      'मराठी',         'म'],
+    ['ta',  'Tamil',        'தமிழ்',         'த'],
+    ['gu',  'Gujarati',     'ગુજરાતી',       'ગુ'],
+    ['kn',  'Kannada',      'ಕನ್ನಡ',          'ಕ'],
+    ['ml',  'Malayalam',    'മലയാളം',         'മ'],
+    ['or',  'Odia',         'ଓଡ଼ିଆ',          'ଓ'],
+    ['pa',  'Punjabi',      'ਪੰਜਾਬੀ',         'ਪ'],
+    ['ur',  'Urdu',         'اردو',          'ا'],
+    ['as',  'Assamese',     'অসমীয়া',        'অ'],
+    ['sa',  'Sanskrit',     'संस्कृतम्',      'सं'],
+    ['ne',  'Nepali',       'नेपाली',         '🇳🇵'],
+    ['ks',  'Kashmiri',     'كٲشُر',          'كٲ'],
+    ['sd',  'Sindhi',       'سنڌي',          'سن'],
+    ['mai', 'Maithili',     'मैथिली',         'मै'],
+    ['mni', 'Manipuri',     'ꯃꯩꯇꯩ',         'ꯃ'],
+    ['kok', 'Konkani',      'कोंकणी',         'को'],
+    ['doi', 'Dogri',        'डोगरी',          'डो'],
+    ['brx', 'Bodo',         'बड़ो',           'बो'],
+    ['sat', 'Santhali',     'ᱥᱟᱱᱛᱟᱲᱤ',       'ᱥ'],
+    ['bho', 'Bhojpuri',     'भोजपुरी',        'भो'],
+    ['hne', 'Chhattisgarhi','छत्तीसगढ़ी',     'छ'],
+    ['tcy', 'Tulu',         'ತುಳು',          'ತು'],
+    ['kfa', 'Kodava',       'ಕೊಡವ',          'ಕೊ'],
+    ['kru', 'Oraon',        'कुड़ुख़',         'कु'],
+  ];
+
+  // Unicode-script → default language map. Auto-detect runs against
+  // typed text and speech transcripts. Devanagari, Bengali, and Arabic
+  // are ambiguous (multiple languages share the script); default to the
+  // most-spoken option in each block. User can flag-pick to override.
+  const SCRIPT_RANGES = [
+    [/[ऀ-ॿ]/, 'hi'], // Devanagari → Hindi (also Marathi, Sanskrit, Nepali, etc.)
+    [/[ঀ-৿]/, 'bn'], // Bengali → Bengali (also Assamese)
+    [/[਀-੿]/, 'pa'], // Gurmukhi → Punjabi
+    [/[઀-૿]/, 'gu'], // Gujarati
+    [/[଀-୿]/, 'or'], // Odia
+    [/[஀-௿]/, 'ta'], // Tamil
+    [/[ఀ-౿]/, 'te'], // Telugu
+    [/[ಀ-೿]/, 'kn'], // Kannada
+    [/[ഀ-ൿ]/, 'ml'], // Malayalam
+    [/[؀-ۿݐ-ݿﭐ-﷿]/, 'ur'], // Arabic script → Urdu
+    [/[ꯀ-꯿]/, 'mni'], // Meetei Mayek → Manipuri
+    [/[᱐-᱿]/, 'sat'], // Ol Chiki → Santhali
+    [/[A-Za-z]/, 'en'],
   ];
 
   function loadState() {
@@ -75,6 +102,77 @@
 
   function saveState(s) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+  }
+
+  // ── LANGUAGE AUTO-DETECT ─────────────────────────────────────
+  // Three sources, priority order (later overrides earlier IF the user
+  // has NOT manually picked via the dropdown — manual is sticky):
+  //   1. Browser locale          → detectFromBrowser()
+  //   2. Typed text in any input → text observer (script ranges)
+  //   3. Spoken-text transcript  → observeSpeechTranscript(text)
+  //
+  // Manual dropdown selection sets state.lang_manual=true and freezes
+  // auto-detect. Bryan: "Auto-detect is default. Dropdown overrides."
+  const SUPPORTED_CODES = new Set(LANGUAGES.map((l) => l[0]));
+
+  function detectFromBrowser() {
+    const candidates = [];
+    if (navigator.language) candidates.push(navigator.language);
+    if (Array.isArray(navigator.languages)) candidates.push(...navigator.languages);
+    for (const raw of candidates) {
+      if (!raw) continue;
+      const lower = String(raw).toLowerCase();
+      const base = lower.split('-')[0];
+      if (SUPPORTED_CODES.has(base)) return base;
+      // Some browsers expose 3-letter ISO 639-3 codes (e.g. "bho").
+      if (SUPPORTED_CODES.has(lower)) return lower;
+    }
+    return 'en';
+  }
+
+  function detectFromText(text) {
+    const s = String(text || '');
+    if (!s.trim()) return null;
+    for (const [re, code] of SCRIPT_RANGES) {
+      if (re.test(s) && SUPPORTED_CODES.has(code)) return code;
+    }
+    return null;
+  }
+
+  // Public hook for page-side voice handlers — call with the recognised
+  // transcript so we can route the language through the same observer.
+  function observeSpeechTranscript(text) {
+    const detected = detectFromText(text);
+    if (detected) maybeAutoSetLanguage(detected, 'speech');
+  }
+
+  function maybeAutoSetLanguage(code, source) {
+    if (!code || !SUPPORTED_CODES.has(code)) return;
+    const state = loadState();
+    if (state.lang_manual) return; // manual wins
+    if (state.lang === code) return;
+    setLanguage(code, { manual: false, source: source || 'auto' });
+  }
+
+  // Debounced typed-text observer on every input/textarea (and any
+  // [contenteditable]) — global, lives for the lifetime of the page.
+  let TEXT_DEBOUNCE = null;
+  function attachTextDetector() {
+    const handler = (e) => {
+      const t = e.target;
+      if (!t) return;
+      const tag = (t.tagName || '').toUpperCase();
+      const editable = t.isContentEditable;
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !editable) return;
+      const val = editable ? t.textContent : t.value;
+      if (!val || val.length < 2) return;
+      clearTimeout(TEXT_DEBOUNCE);
+      TEXT_DEBOUNCE = setTimeout(() => {
+        const detected = detectFromText(val);
+        if (detected) maybeAutoSetLanguage(detected, 'text');
+      }, 700);
+    };
+    document.addEventListener('input', handler, true);
   }
 
   // ── ARIA-LIVE REGION FOR BRAILLE DISPLAYS ────────────────────
@@ -436,15 +534,31 @@
   }
 
   // ── LANGUAGE PICKER ──────────────────────────────────────────
-  function setLanguage(code) {
+  // setLanguage(code, opts) — opts.manual:
+  //   true  → user picked from dropdown; freezes auto-detect.
+  //   false → auto-detect (browser/text/speech); does not freeze.
+  // Pages listen on 'chitti:lang' to re-render translatable text.
+  function setLanguage(code, opts) {
+    opts = opts || {};
     const state = loadState();
     state.lang = code;
+    if (opts.manual === true) state.lang_manual = true;
+    if (opts.manual === false && state.lang_manual === undefined) {
+      state.lang_manual = false;
+    }
     saveState(state);
     document.documentElement.setAttribute('lang', code);
     document.documentElement.setAttribute('data-chitti-lang', code);
-    // Pages listen to this event to re-render any translatable text.
-    document.dispatchEvent(new CustomEvent('chitti:lang', { detail: { code } }));
-    announce('Language changed to ' + (LANGUAGES.find(l => l[0] === code) || [code, code])[1]);
+    document.dispatchEvent(new CustomEvent('chitti:lang', {
+      detail: { code, manual: !!opts.manual, source: opts.source || (opts.manual ? 'manual' : 'auto') },
+    }));
+    // Sync the dropdown if it already exists in the DOM.
+    const sel = document.getElementById('chitti-lang');
+    if (sel && sel.value !== code) sel.value = code;
+    const lang = LANGUAGES.find((l) => l[0] === code) || [code, code, code, ''];
+    announce(
+      (opts.manual ? 'Language changed to ' : 'Language auto-detected: ') + lang[1]
+    );
   }
 
   // ── INIT: INJECT BAR INTO PAGE ───────────────────────────────
@@ -453,13 +567,27 @@
   function init(opts) {
     opts = opts || {};
     const state = loadState();
-    if (state.lang) setLanguage(state.lang); // restore
-    if (state.braille) setBrailleMode(true);
 
     ensureLiveRegion();
-    injectBar(opts);
     injectBaseStyles();
-    // Restore ISL after bar exists so the toggle reflects state.
+    injectBar(opts);
+
+    // Language priority on init:
+    //   1. Restore saved lang (manual or last auto)
+    //   2. Otherwise auto-detect from browser locale
+    if (state.lang) {
+      setLanguage(state.lang, { manual: !!state.lang_manual, source: 'restore' });
+    } else {
+      const detected = detectFromBrowser();
+      setLanguage(detected, { manual: false, source: 'browser' });
+    }
+
+    // Listen for typed text in any input/textarea; auto-switch unless
+    // user has manually picked from the dropdown.
+    attachTextDetector();
+
+    // Restore other a11y modes after bar exists so toggles reflect state.
+    if (state.braille) setBrailleMode(true);
     if (state.isl) setIslMode(true);
   }
 
@@ -650,8 +778,11 @@
     bar.className = 'chitti-a11y-bar';
     bar.setAttribute('aria-label', 'Accessibility and language controls');
 
-    const opts_html = LANGUAGES.map(([c, en, native]) =>
-      `<option value="${c}"${c === (state.lang || 'en') ? ' selected' : ''}>${native} (${en})</option>`
+    // Each option shows the language emblem (flag emoji or native-script
+    // letter) alongside the native + English names so even illiterate
+    // users can spot their language by its script shape.
+    const opts_html = LANGUAGES.map(([c, en, native, flag]) =>
+      `<option value="${c}"${c === (state.lang || 'en') ? ' selected' : ''}>${flag || ''} ${native} (${en})</option>`
     ).join('');
 
     const voiceTag = opts.voiceRequired
@@ -687,7 +818,8 @@
     document.body.insertBefore(bar, document.body.firstChild);
 
     bar.querySelector('#chitti-lang').addEventListener('change', (e) => {
-      setLanguage(e.target.value);
+      // Manual dropdown selection — freezes auto-detect from here on.
+      setLanguage(e.target.value, { manual: true, source: 'dropdown' });
     });
     bar.querySelector('#chitti-braille-toggle').addEventListener('click', (e) => {
       const next = !document.body.classList.contains('chitti-braille');
@@ -726,6 +858,9 @@
     islRenderWord,
     islOpenModal,
     loadIslDictionary,
+    detectFromBrowser,
+    detectFromText,
+    observeSpeechTranscript,
     getState: loadState,
     LANGUAGES,
     VOICE_FACTORY_URL,

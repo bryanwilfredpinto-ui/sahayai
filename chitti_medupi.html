@@ -475,6 +475,19 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <div id="rem-list" style="font-size:13px;margin-top:10px"></div>
     </div>
 
+    <div class="section-card" id="expiry-cabinet-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">💊 Medicine Cabinet — Expiry Reminder <span class="live-badge">P0</span></div>
+          <div class="section-sub">Every active <em>expiry</em> reminder, bucketed by urgency. ❌ EXPIRED / ⚠️ EXPIRING SOON (≤7d) / ⏰ EXPIRING (≤30d) / ✅ OK. Symbol + word label, never colour alone. Voice handoff via Chitti's read-aloud — daily scan runs 08:00 IST on the backend.</div>
+        </div>
+        <button class="metric-spk" onclick="speakExpirySummary()" aria-label="Hear my medicine cabinet expiry summary">🔊</button>
+      </div>
+      <div id="expiry-cabinet-summary" role="status" aria-live="polite" style="font-size:14px;margin-bottom:10px;color:var(--ink-2,#555)">Loading…</div>
+      <div id="expiry-cabinet-list" style="font-size:13px"></div>
+      <div style="margin-top:8px"><button class="cta-navy" onclick="refreshExpirySummary()">↻ Refresh</button></div>
+    </div>
+
     <div class="section-card">
       <div class="section-head">
         <div>
@@ -1716,7 +1729,66 @@ async function dismissReminder(id){
   try {
     await apiPatch('/api/medupi/reminder/' + id, { status: 'done' });
     refreshReminders();
+    refreshExpirySummary();
   } catch (e) { alert(e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPIRY SUMMARY (P0 — medicine cabinet safety)
+// ═══════════════════════════════════════════════════════════
+let _expirySummaryCache = null;
+
+async function refreshExpirySummary(){
+  const sumEl = document.getElementById('expiry-cabinet-summary');
+  const listEl = document.getElementById('expiry-cabinet-list');
+  if (!sumEl || !listEl) return;
+  try {
+    const data = await apiGet('/api/medupi/expiry/summary?window_days=30');
+    _expirySummaryCache = data;
+    const counts = data.counts || {};
+    const summary = (_chittiLang === 'hi') ? (data.spoken_summary_hi || '') : (data.spoken_summary_en || '');
+    sumEl.textContent = summary;
+    const items = data.items || [];
+    if (!items.length){
+      listEl.innerHTML = '<div class="section-empty" style="padding:10px;font-size:13px">' + (_chittiLang === 'hi' ? 'कोई एक्सपायर रिमाइंडर नहीं — कैबिनेट साफ है।' : 'No expiry reminders — your cabinet is clear.') + '</div>';
+      return;
+    }
+    const order = { EXPIRED:0, EXPIRING_SOON:1, EXPIRING:2, OK:3 };
+    items.sort(function(a,b){
+      const da = order[a.bucket] || 9, db = order[b.bucket] || 9;
+      if (da !== db) return da - db;
+      return (a.days_remaining||0) - (b.days_remaining||0);
+    });
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:rgba(232,106,23,.06)"><th style="text-align:left;padding:6px">Status</th><th style="text-align:left;padding:6px">Medicine</th><th style="text-align:left;padding:6px">When</th><th></th></tr></thead><tbody>';
+    items.forEach(function(it){
+      const badge = it.badge || {};
+      const sym = badge.symbol || '•';
+      const word = (_chittiLang === 'hi' && badge.hi) ? badge.hi : (badge.word || it.bucket);
+      const when = (it.next_due || '').replace('T',' ').slice(0,16);
+      const spoken = _chittiLang === 'hi' ? (it.spoken_hi || '') : (it.spoken_en || '');
+      const safeSpoken = (spoken || '').replace(/"/g,'&quot;');
+      html += '<tr style="border-bottom:1px solid var(--border)">' +
+              '<td style="padding:6px;white-space:nowrap"><span aria-hidden="true">' + sym + '</span> <strong>' + _esc(word) + '</strong></td>' +
+              '<td style="padding:6px">' + _esc(it.medicine_name) + '</td>' +
+              '<td style="padding:6px">' + _esc(when) + '</td>' +
+              '<td style="padding:6px;text-align:right;white-space:nowrap">' +
+                '<button class="metric-spk" onclick="sp(&quot;' + safeSpoken + '&quot;)" aria-label="Read this expiry aloud">🔊</button> ' +
+                '<button onclick="dismissReminder(' + it.id + ')" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px">✓ done</button>' +
+              '</td>' +
+              '</tr>';
+    });
+    html += '</tbody></table>';
+    listEl.innerHTML = html;
+  } catch (e) {
+    sumEl.textContent = '';
+    listEl.innerHTML = '<div class="section-empty" style="color:var(--med-red);padding:10px;font-size:12px">⚠️ ' + _esc(e.message || String(e)) + '</div>';
+  }
+}
+
+function speakExpirySummary(){
+  if (!_expirySummaryCache) { refreshExpirySummary(); return; }
+  const phrase = (_chittiLang === 'hi') ? _expirySummaryCache.spoken_summary_hi : _expirySummaryCache.spoken_summary_en;
+  if (phrase) sp(phrase);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1728,7 +1800,7 @@ function _bootLiveTabs(){
     b.addEventListener('click', function(){
       const t = b.getAttribute('data-tab');
       if (t === 'wallet')    { refreshFamilyProfiles(); refreshFamilyWalletPreview(false); }
-      if (t === 'reminders') { refreshFamilyProfiles(); refreshReminders(); }
+      if (t === 'reminders') { refreshFamilyProfiles(); refreshReminders(); refreshExpirySummary(); }
       if (t === 'settings')  renderShareQr();
       if (t === 'compare')   _renderCartLines();
     });
@@ -2348,5 +2420,9 @@ async function chittiAskSend() {
 <!-- Chitti Quality v2 trust signals · 2026-05-13 -->
 <script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.3;</script>
 <script src="feedback-widget.js" data-page="chitti_medupi"></script>
+
+<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
+<script src="chitti_a11y.js"></script>
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 </body>
 </html>
