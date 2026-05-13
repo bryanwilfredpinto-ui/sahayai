@@ -213,7 +213,7 @@
           <button id="scan-all" class="ghost" aria-label="Show every scheme I qualify for">🔁 Scan ALL schemes for me</button>
           <span class="meta-line" id="elig-status">ready</span>
         </div>
-        <div id="elig-result"></div>
+        <div id="elig-result" role="region" aria-live="polite" aria-atomic="true"></div>
       </div>
     </section>
 
@@ -904,6 +904,25 @@ async function checkEligibility(){
 }
 $("check-elig").addEventListener("click", checkEligibility);
 
+function _verdictSpoken(v, voice){
+  // Compose a single read-aloud phrase: head + scheme + each rule + voice reply.
+  // P0 four-user contract — symbol + word, never colour alone. The screen
+  // reader path is aria-live on #elig-result; this is the explicit speak
+  // button + post-render auto-readback for blind users.
+  const head = {
+    eligible:   "You appear to qualify for " + (v.scheme_name || "this scheme") + ".",
+    partial:    "Likely yes for " + (v.scheme_name || "this scheme") + ", but one or two details are unknown.",
+    ineligible: "Not eligible for " + (v.scheme_name || "this scheme") + " based on your profile.",
+    unknown:    (v.scheme_name || "This scheme") + " has no auto-checkable rules — please read the notes.",
+  }[v.verdict] || (v.verdict || "");
+  const rulePhrases = (v.rules || []).map(function(r){
+    const word = ({pass:"matches", fail:"does not match", unknown:"unknown"})[r.verdict] || r.verdict;
+    return word + ": " + r.label;
+  });
+  const reply = (voice && voice.reply) ? voice.reply : "";
+  return [head].concat(rulePhrases).concat([reply]).filter(Boolean).join(". ");
+}
+
 function renderVerdict(j) {
   const v = j.verdict; const voice = j.voice;
   const klass = v.verdict;
@@ -914,8 +933,17 @@ function renderVerdict(j) {
     unknown:    "ℹ️ This scheme has no auto-checkable rules — please read the notes.",
   }[v.verdict] || v.verdict;
   const icon = {eligible:"🟢", partial:"🟡", ineligible:"🔴", unknown:"⚪"}[v.verdict] || "ℹ️";
+  // P0: explicit read-aloud button for blind / illiterate / elderly users.
+  // Stored on window so aria-live re-render does not lose the handler.
+  const speakPhrase = _verdictSpoken(v, voice);
+  window._lastVerdictSpoken = speakPhrase;
   const out = el("div", {class:"verdict-card "+klass},
-    el("div", {class:"verdict-head"}, icon + " " + head),
+    el("div", {class:"verdict-head"}, icon + " " + head,
+      el("button", {class:"ghost", style:"margin-left:8px;font-size:14px;padding:4px 10px",
+                    "aria-label":"Read my eligibility verdict aloud",
+                    onclick:function(){ speak(window._lastVerdictSpoken || speakPhrase); }},
+        "🔊 Read aloud")
+    ),
     el("div", {style:"font-weight:700"}, v.scheme_name),
     v.benefit_summary_en ? el("p", {class:"small"}, v.benefit_summary_en) : null,
     v.rules.length ? el("ul", {class:"verdict-rules"},
@@ -940,7 +968,10 @@ function renderVerdict(j) {
     ),
   );
   $("elig-result").innerHTML = ""; $("elig-result").appendChild(out);
-  speak(voice.reply);
+  // P0 four-user contract: speak the complete verdict (head + rules) for
+  // blind users, not only DeepSeek's reply paragraph. aria-live above
+  // handles screen readers; this is the SpeechSynthesis path.
+  speak(speakPhrase);
   $("elig-status").textContent = "done";
 }
 
