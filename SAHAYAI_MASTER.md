@@ -388,6 +388,28 @@ This extends the [Four-user accessibility contract](#the-four-user-contract--eve
 - Dictionary entries declare a sequence of emoji-hand frames + duration; replaced by community video URLs in Phase 3 without any frontend change.
 - New-products process applies: see [`chitti-isl/skills/FEATURES.md`](chitti-isl/skills/FEATURES.md) for the full feature surface and COMING SOON markers.
 
+### Chitti ISL — Plugin (LOCKED)
+
+**Chitti ISL is a DEFAULT plugin on ALL Chitti pages. No exceptions.**
+
+#### How it works
+
+- **`chitti_isl_dictionary.json` is the single source of truth.** All ISL words live in this one JSON at repo root.
+- **`chitti_a11y.js` loads ISL automatically on every page.** No `<script>` tag per page beyond the standard a11y substrate include.
+- **New words added to the JSON = instantly live on ALL pages.** Zero page-by-page updates ever needed — the MutationObserver picks them up on next response.
+- **No page-by-page updates ever needed.** Dictionary is the contract; pages never know about ISL specifics.
+
+#### Plugin activation
+
+- **Automatic** for users who selected ☑ "I use sign language (ISL)" in the [User Disability Profile](#user-disability-profile--locked).
+- **Manual** via the 🤟 ISL button (in the accessibility bar, next to Braille mode) for anyone else who wants it.
+
+#### Default-on contract for every future Chitti page
+
+Any new Chitti page built in future **inherits the ISL plugin automatically** — no developer needs to remember to add it. The contract is enforced by the [`chitti_a11y.js` substrate](#shared-substrate--chitti_a11yjs-must-load-on-every-page): if a11y is loaded, ISL is loaded. There is no opt-out at the page level.
+
+> The dictionary is the contract. The substrate is the loader. Pages just write content.
+
 ---
 
 ## 8. Agent priority order — what to work on next
