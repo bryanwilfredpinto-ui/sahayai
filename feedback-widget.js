@@ -1,32 +1,39 @@
 // feedback-widget.js  ·  Chitti Quality v2 — 2026-05-13
 // =====================================================================
-// 4-icon feedback footer on every Chitti response.
-//   🔊 Speaker   — reads the page / last response aloud
-//   🎙️ Chitti   — opens voice input to Chitti
-//   👍           — quick thumbs up
-//   👎           — "I'm sorry — what was wrong?" voice flow
+// PER-BOX 4-icon widget + page-footer summary. Locked SAHAYAI_MASTER §7.
+//
+// Page footer (always rendered):
+//   🔊 Speaker · 🎙️ Chitti · 👍 · 👎  — applies to the whole page.
+//
+// Per-response box (auto-attached to every [data-chitti-response] /
+// .chitti-response on the page, plus any added later via MutationObserver):
+//   🔊 reads THAT box · 🤖 asks Chitti to "explain further" about THAT box
+//   · 👍 / 👎 votes tagged with the box ID and section name.
+//   👎 opens a per-box modal titled "Feedback for: [section name]" with
+//   both 🎙️ voice and ⌨️ text input — feedback is sent to /api/feedback,
+//   tagged with box_id, and surfaces on the Founder daily report.
 //
 // PWD-user contract:
-//   - The four icons are big, labelled, and self-explanatory.
-//   - 👎 NEVER opens a textbox first. Chitti speaks an apology in the user's
-//     language, listens for the user's spoken feedback, then says
-//     "Thank you. I will learn from this." Save to backend, end of flow.
+//   - All icons are big, labelled, and self-explanatory.
+//   - The footer 👎 NEVER opens a textbox first — Chitti speaks an apology
+//     in the user's language and listens. Text is the fallback.
+//   - The per-box 👎 opens an explicit modal with both voice and text
+//     because the user is already in a focused, scoped context.
 //   - Voice OUT uses chitti_a11y.speak() if loaded, else SpeechSynthesis.
-//   - Voice IN uses webkitSpeechRecognition. If unavailable, falls back to
-//     a one-line textbox so the user is never trapped.
-//   - Carbon footprint badge "🌿 ~0.2g CO2 for this reply" shown next to
-//     the icons so trust signals stay visible.
+//   - Voice IN uses webkitSpeechRecognition. If unavailable, the modal
+//     accepts text so the user is never trapped.
 //
 // Include with:
 //   <script src="feedback-widget.js" data-page="chitti_government"></script>
 //
+// Page authors opt-in per-box widgets by marking response containers:
+//   <section data-chitti-response data-chitti-section="Verdict">…</section>
+//   <div class="chitti-response" data-chitti-section="Returns calculator">…</div>
+//
 // Backend:  POST {API}/api/feedback/collect    (legacy — for older Chittis)
 //           POST {API}/api/feedback           (canonical — lib/feedback.py)
 // Override base URL with  window.CHITTI_FEEDBACK_API  before this loads.
-//
-// The widget detects 16 product pages from filename → risk level and
-// shows the matching HIGH / MEDIUM / LOW badge. See lib/chitti_quality.py
-// for the canonical risk map.
+// Per-box events carry: { type: 'box_thumbs_down', box_id, section, text }.
 // =====================================================================
 
 (function () {
@@ -203,7 +210,24 @@
       + '.chitti-fb-submit{background:#0E2344;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;}'
       + '.chitti-fb-submit:disabled{opacity:.6;cursor:not-allowed;}'
       + '.chitti-fb-report{margin-left:auto;font-size:12px;color:#7f1d1d;text-decoration:underline;background:none;border:none;cursor:pointer;}'
-      + '@media (max-width:520px){.chitti-fb-btn{flex:1;min-width:0;}.chitti-fb-row{gap:8px;}}';
+      + '@media (max-width:520px){.chitti-fb-btn{flex:1;min-width:0;}.chitti-fb-row{gap:8px;}}'
+      // ── per-box widget ────────────────────────────────────────────────
+      + '.chitti-fb-box{position:relative;}'
+      + '.chitti-fb-box-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;margin:14px 0 0;padding-top:10px;border-top:1px dashed #e5e7eb;}'
+      + '.chitti-fb-bbtn-label{margin-right:auto;font-size:12px;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:6px;}'
+      + '.chitti-fb-bbtn{appearance:none;border:1px solid #e5e7eb;background:#fff;color:#0E2344;padding:8px 12px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .08s ease,background .12s ease;}'
+      + '.chitti-fb-bbtn:hover{background:#f1f5f9;}'
+      + '.chitti-fb-bbtn:active{transform:scale(.96);}'
+      + '.chitti-fb-bbtn:focus-visible{outline:3px solid #D4AF37;outline-offset:2px;}'
+      + '.chitti-fb-bbtn.up.active{background:#dcfce7;border-color:#86efac;color:#14532d;}'
+      + '.chitti-fb-bbtn.down.active{background:#fee2e2;border-color:#fca5a5;color:#7f1d1d;}'
+      + '.chitti-fb-bbtn.speak.live{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a;}'
+      + '.chitti-fb-bbtn.ask.live{background:#fde68a;border-color:#fbbf24;color:#7c2d12;animation:chitti-pulse 1.2s ease-in-out infinite;}'
+      + '.chitti-fb-box-mic{background:#fde68a;color:#7c2d12;border:1px solid #fbbf24;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;}'
+      + '.chitti-fb-box-mic:hover{background:#fcd34d;}'
+      + '.chitti-fb-box-mic:disabled{opacity:.6;cursor:not-allowed;}'
+      + '.chitti-fb-box-mic.live{animation:chitti-pulse 1.2s ease-in-out infinite;}'
+      + '.chitti-fb-box-section{color:#E86A17;font-weight:700;}';
     var s = document.createElement('style');
     s.id = 'chitti-feedback-widget-styles';
     s.appendChild(document.createTextNode(css));
@@ -408,6 +432,218 @@
     toast('Incident report sent to Sire.');
   }
 
+  // ── per-box widget ───────────────────────────────────────────────────
+  // Locked SAHAYAI_MASTER §7: every response box on every Chitti page
+  // carries its own 🔊 / 🤖 / 👍 / 👎 row + scoped feedback modal.
+  var BOX_SELECTOR = '[data-chitti-response], .chitti-response';
+
+  function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function boxIdFor(box) {
+    if (box.id) return box.id;
+    var existing = box.getAttribute('data-chitti-box-id');
+    if (existing) return existing;
+    var gen = 'chitti-box-' + Math.random().toString(36).slice(2, 9);
+    box.setAttribute('data-chitti-box-id', gen);
+    return gen;
+  }
+  function sectionNameFor(box) {
+    var name = box.getAttribute('data-chitti-section');
+    if (!name) {
+      var h = box.querySelector('h1,h2,h3,h4,h5,h6,[role="heading"]');
+      if (h && h.textContent) name = h.textContent;
+    }
+    if (!name) {
+      var prev = box.previousElementSibling;
+      if (prev && /^H[1-6]$/.test(prev.tagName)) name = prev.textContent;
+    }
+    if (!name) name = box.getAttribute('aria-label') || 'this section';
+    return String(name).trim().replace(/\s+/g, ' ').slice(0, 80);
+  }
+  function boxText(box) {
+    var clone = box.cloneNode(true);
+    // Strip our own per-box bar so it isn't read back.
+    var bar = clone.querySelector(':scope > .chitti-fb-box-bar');
+    if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+    var text = (clone.innerText || clone.textContent || '').replace(/\s+/g, ' ').trim();
+    return text.slice(0, 4000);
+  }
+  function attachBoxWidget(box, page) {
+    if (!box || box.__chittiBoxAttached) return;
+    if (box.querySelector(':scope > .chitti-fb-box-bar')) {
+      box.__chittiBoxAttached = true; return;
+    }
+    box.__chittiBoxAttached = true;
+    box.classList.add('chitti-fb-box');
+    var boxId = boxIdFor(box);
+    var section = sectionNameFor(box);
+    var bar = document.createElement('div');
+    bar.className = 'chitti-fb-box-bar';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Feedback for ' + section);
+    bar.innerHTML =
+      '<span class="chitti-fb-bbtn-label" title="Per-response feedback"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span>💬 Feedback for: <span class="chitti-fb-box-section">' + escAttr(section) + '</span></span>' +
+      '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud">🔊</button>' +
+      '<button type="button" class="chitti-fb-bbtn ask"   data-act="ask"   aria-label="Ask Chitti to explain ' + escAttr(section) + ' further">🤖</button>' +
+      '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
+      '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>';
+    box.appendChild(bar);
+
+    bar.querySelector('[data-act="speak"]').addEventListener('click', function () {
+      var btn = this; btn.classList.add('live');
+      setTimeout(function () { btn.classList.remove('live'); }, 1200);
+      var text = boxText(box);
+      if (!text) text = section;
+      speak(text, getLang());
+      send({ page: page, type: 'box_listen', box_id: boxId, section: section }).catch(function () {});
+    });
+
+    bar.querySelector('[data-act="ask"]').addEventListener('click', function () {
+      var btn = this; btn.classList.add('live');
+      setTimeout(function () { btn.classList.remove('live'); }, 1500);
+      var lang = getLang();
+      var ctx = boxText(box);
+      speak("How can I explain further?", lang);
+      setTimeout(function () {
+        listenOnce(lang,
+          function (q) {
+            if (!q) return;
+            if (typeof window.CHITTI_ON_BOX_QUERY === 'function') {
+              try { window.CHITTI_ON_BOX_QUERY({ box_id: boxId, section: section, query: q, box_text: ctx, box: box }); } catch (e) {}
+            } else {
+              toast('Heard: "' + q.slice(0, 80) + '" — this page has no custom handler yet.');
+            }
+            send({ page: page, type: 'box_ask', box_id: boxId, section: section, text: q }).catch(function () {});
+          },
+          function (err) {
+            if (err === 'unsupported') toast('Voice not available — tap 👎 to type instead.');
+            else toast('Could not hear you — please try again.');
+          }
+        );
+      }, 900);
+    });
+
+    bar.querySelector('[data-act="up"]').addEventListener('click', function () {
+      bar.querySelectorAll('.chitti-fb-bbtn.up, .chitti-fb-bbtn.down').forEach(function (x) { x.classList.remove('active'); });
+      this.classList.add('active');
+      send({ page: page, type: 'box_thumbs_up', box_id: boxId, section: section })
+        .then(function () { toast('Thanks!'); })
+        .catch(function () { toast("Saved offline — we'll send when you're back online."); });
+    });
+
+    bar.querySelector('[data-act="down"]').addEventListener('click', function () {
+      bar.querySelectorAll('.chitti-fb-bbtn.up, .chitti-fb-bbtn.down').forEach(function (x) { x.classList.remove('active'); });
+      this.classList.add('active');
+      openBoxFeedbackModal(page, boxId, section);
+    });
+  }
+
+  function ensureBoxModal() {
+    if (document.getElementById('chitti-fb-box-modal-bg')) return;
+    var bg = document.createElement('div');
+    bg.id = 'chitti-fb-box-modal-bg';
+    bg.className = 'chitti-fb-modal-bg';
+    bg.innerHTML =
+      '<div class="chitti-fb-modal" role="dialog" aria-modal="true" aria-labelledby="chitti-fb-box-title">' +
+      '  <h3 id="chitti-fb-box-title">📣 Feedback for: <span class="chitti-fb-box-section-target">…</span></h3>' +
+      '  <p class="chitti-fb-box-prompt">What was wrong with this?</p>' +
+      '  <label for="chitti-fb-box-text">Type or record:</label>' +
+      '  <textarea id="chitti-fb-box-text" placeholder="Tell Chitti — in any language — what was wrong with this box..."></textarea>' +
+      '  <div class="chitti-fb-modal-actions">' +
+      '    <button type="button" class="chitti-fb-cancel">Cancel</button>' +
+      '    <button type="button" class="chitti-fb-box-mic" aria-label="Record voice feedback">🎙️ Record voice</button>' +
+      '    <button type="button" class="chitti-fb-submit chitti-fb-box-submit">Submit</button>' +
+      '  </div>' +
+      '</div>';
+    document.body.appendChild(bg);
+  }
+
+  function openBoxFeedbackModal(page, boxId, section) {
+    ensureBoxModal();
+    var modalBg = document.getElementById('chitti-fb-box-modal-bg');
+    var lang = getLang();
+    modalBg.querySelector('.chitti-fb-box-section-target').textContent = section;
+    modalBg.querySelector('.chitti-fb-box-prompt').textContent = tr(APOLOGY, lang);
+    var textEl = modalBg.querySelector('#chitti-fb-box-text');
+    var mic    = modalBg.querySelector('.chitti-fb-box-mic');
+    var submit = modalBg.querySelector('.chitti-fb-box-submit');
+    var cancel = modalBg.querySelector('.chitti-fb-cancel');
+    textEl.value = '';
+    mic.disabled = false;
+    mic.classList.remove('live');
+    mic.textContent = '🎙️ Record voice';
+    submit.disabled = false;
+
+    // Speak the apology so blind users know the modal is open and ready.
+    speak(tr(APOLOGY, lang), lang);
+    modalBg.classList.add('show');
+    setTimeout(function () { textEl.focus(); }, 60);
+
+    function close() {
+      modalBg.classList.remove('show');
+      mic.onclick = null; submit.onclick = null; cancel.onclick = null;
+      modalBg.onclick = null;
+    }
+    function onMic() {
+      mic.disabled = true;
+      mic.classList.add('live');
+      mic.textContent = '🎙️ Listening…';
+      listenOnce(lang,
+        function (text) {
+          if (text) textEl.value = (textEl.value ? textEl.value + ' ' : '') + text;
+          mic.disabled = false; mic.classList.remove('live');
+          mic.textContent = '🎙️ Record voice';
+        },
+        function (err) {
+          mic.disabled = false; mic.classList.remove('live');
+          mic.textContent = '🎙️ Record voice';
+          if (err === 'unsupported') toast('Voice not available — please type instead.');
+          else toast('Could not hear you. Please type instead.');
+        }
+      );
+    }
+    function onSubmit() {
+      var t = (textEl.value || '').trim();
+      if (t.length < 3) { toast('Please tell us a few words.'); return; }
+      submit.disabled = true;
+      send({ page: page, type: 'box_thumbs_down', box_id: boxId, section: section, text: t, voice: false })
+        .then(function () { close(); speak(tr(THANKS, lang), lang); toast('Thank you. Chitti will learn from this.'); })
+        .catch(function () { close(); toast("Saved offline — we'll learn from this when you're back online."); })
+        .finally(function () { submit.disabled = false; });
+    }
+    mic.onclick = onMic;
+    submit.onclick = onSubmit;
+    cancel.onclick = close;
+    modalBg.onclick = function (ev) { if (ev.target === modalBg) close(); };
+    document.addEventListener('keydown', function esc(ev) {
+      if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+    });
+  }
+
+  function scanAndAttachBoxes(page) {
+    document.querySelectorAll(BOX_SELECTOR).forEach(function (b) { attachBoxWidget(b, page); });
+  }
+  function startBoxObserver(page) {
+    if (!window.MutationObserver) return;
+    var obs = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (!m.addedNodes) continue;
+        for (var j = 0; j < m.addedNodes.length; j++) {
+          var n = m.addedNodes[j];
+          if (!n || n.nodeType !== 1) continue;
+          if (n.matches && n.matches(BOX_SELECTOR)) { attachBoxWidget(n, page); }
+          if (n.querySelectorAll) {
+            n.querySelectorAll(BOX_SELECTOR).forEach(function (b) { attachBoxWidget(b, page); });
+          }
+        }
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+
   // ── wire up ──────────────────────────────────────────────────────────
   function init() {
     injectStyles();
@@ -453,6 +689,12 @@
     if (DEFAULT_CO2_G > 0 && window.CHITTI_CO2_G != null && window.CHITTI_CO2_G > CO2_FLAG_THRESHOLD_G) {
       send({ page: page, type: 'carbon_flag', co2_g: window.CHITTI_CO2_G }).catch(function () {});
     }
+
+    // Per-box widget — attach 🔊 / 🤖 / 👍 / 👎 to every [data-chitti-response]
+    // / .chitti-response on the page, and to any added later.
+    ensureBoxModal();
+    scanAndAttachBoxes(page);
+    startBoxObserver(page);
   }
 
   if (document.readyState === 'loading') {
