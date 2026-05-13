@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-isl/ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti ISL — Indian Sign Language for 6 crore deaf Indians</title>
+<meta name="description" content="Indian Sign Language (ISL) on every Chitti response. Dictionary, tap-word-to-sign, camera-based recognition (coming soon), community contributions (coming soon).">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#fff; --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#d97706;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+.legal-bar{
+  background:#7f1d1d;color:#fff;font-weight:700;font-size:12px;
+  text-align:center;padding:6px 12px;position:sticky;top:0;z-index:9999;
+  cursor:pointer;
+}
+.legal-bar:hover{background:#991b1b}
+
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:24px 18px}
+.brand-row{display:flex;align-items:center;gap:14px}
+.bharat-logo{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px}
+.brand-name{font-weight:900;font-size:24px}
+.brand-sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:2px}
+.tagline{margin-top:12px;font-size:13px;color:rgba(255,255,255,.92);line-height:1.55;max-width:640px}
+
+main{padding:18px;max-width:1200px;margin:0 auto}
+h1{font-size:26px;font-weight:900;color:var(--navy);margin:0 0 6px}
+h2{font-size:20px;font-weight:800;color:var(--navy);margin:24px 0 10px}
+.subtitle{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{
+  background:transparent;border:0;border-bottom:3px solid transparent;
+  padding:8px 12px;font:inherit;font-weight:700;color:var(--muted);
+  cursor:pointer;
+}
+.tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--saffron)}
+.tab:focus{outline:2px solid var(--gold);outline-offset:2px}
+
+.section{display:none}
+.section[data-active="true"]{display:block}
+
+.try-card{
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:14px;
+}
+.try-card h3{margin:0 0 8px;font-size:15px;color:var(--navy)}
+.try-card p{margin:6px 0;color:var(--text)}
+.try-input{
+  width:100%;padding:8px 10px;border:1px solid var(--border);
+  border-radius:6px;font:inherit;
+}
+.try-button{
+  background:var(--saffron);color:#fff;border:0;border-radius:6px;
+  padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;
+}
+.try-button:hover{background:#c8580f}
+
+.dict-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:10px;
+}
+.dict-card{
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  text-align:center;
+}
+.dict-card .label-en{font-weight:800;color:var(--navy);font-size:13px}
+.dict-card .label-hi{font-size:12px;color:var(--saffron)}
+.dict-search{
+  width:100%;padding:10px 12px;border:1px solid var(--border);
+  border-radius:8px;font:inherit;margin-bottom:14px;
+}
+
+.coming-soon{
+  background:linear-gradient(135deg,#fff7e8,#fff);
+  border:1px dashed var(--amber);border-radius:12px;
+  padding:18px;margin-bottom:14px;
+}
+.coming-soon .pill{
+  display:inline-block;background:var(--amber);color:#fff;
+  padding:2px 10px;border-radius:999px;font-size:11px;font-weight:800;
+  letter-spacing:.05em;margin-bottom:8px;
+}
+.coming-soon h3{margin:0 0 6px;color:var(--navy)}
+.coming-soon p{margin:6px 0;color:var(--text)}
+
+.empty-state{
+  background:#fff;border:1px dashed var(--border);border-radius:12px;
+  padding:30px;text-align:center;color:var(--muted);
+}
+.empty-state .icon{font-size:42px;display:block;margin-bottom:10px}
+
+.legal-modal{
+  position:fixed;inset:0;background:rgba(14,35,68,.78);
+  display:none;align-items:center;justify-content:center;
+  z-index:10000;padding:18px;
+}
+.legal-modal[data-open="true"]{display:flex}
+.legal-modal-card{
+  background:#fff;border-radius:12px;max-width:520px;width:100%;
+  padding:18px;max-height:80vh;overflow:auto;
+}
+.legal-modal-card h3{margin:0 0 8px;color:var(--navy)}
+.legal-modal-close{
+  background:var(--navy);color:#fff;border:0;border-radius:6px;
+  padding:8px 14px;cursor:pointer;font:inherit;margin-top:10px;
+}
+
+footer{margin-top:30px;padding:18px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid var(--border);line-height:1.7}
+footer a{color:var(--saffron);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- Sticky legal bar — locked: never demote to footer. -->
+<div class="legal-bar" id="legal-bar" role="button" tabindex="0"
+     aria-label="Open legal disclaimer">
+  ⚠️ NOT SEBI REGISTERED · Chitti is an AI assistant, not a registered advisor · Tap for details
+</div>
+
+<div class="bharat-stripe"></div>
+
+<header role="banner">
+  <div class="brand-row">
+    <div class="bharat-logo" aria-hidden="true">🤟</div>
+    <div>
+      <div class="brand-name">Chitti ISL</div>
+      <div class="brand-sub">Indian Sign Language · for 6 crore deaf Indians</div>
+    </div>
+  </div>
+  <p class="tagline">
+    Every Chitti response shows an Indian Sign Language animation alongside the text.
+    Tap any word to see its sign. Placeholder animations today — community videos coming soon.
+  </p>
+</header>
+
+<main>
+
+  <h1>Indian Sign Language — not ASL</h1>
+  <p class="subtitle">
+    ISL ships in three phases. Phase 1 is live across every Chitti product via
+    the shared <code>chitti_a11y.js</code> substrate. Phases 2 and 3 are
+    marked <strong>COMING SOON</strong>.
+  </p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-section="try">Try it</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="dict">Dictionary</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="camera">Camera ISL</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="contribute">Contribute</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="hof">Hall of Fame</button>
+  </div>
+
+  <!-- TRY IT -->
+  <section class="section" data-section="try" data-active="true" role="tabpanel" aria-label="Try ISL mode">
+    <div class="try-card">
+      <h3>1. Turn ISL on</h3>
+      <p>Use the <strong>🤟 ISL</strong> button in the accessibility bar at the top of the page. Once on, every Chitti response across every product page automatically gets an ISL animation panel.</p>
+    </div>
+    <div class="try-card">
+      <h3>2. Try a Chitti response</h3>
+      <p>Below is a sample Chitti response. Toggle ISL on and watch the panel appear underneath. Tap any word for the enlarged sign.</p>
+      <div class="chitti-response" id="demo-response" data-chitti-response>
+        Namaste! Haan, doctor ke paas jao. Madad chahiye to Chitti se kahna.
+      </div>
+    </div>
+    <div class="try-card">
+      <h3>3. Render any text on demand</h3>
+      <p>Or render a custom sentence here:</p>
+      <input class="try-input" id="custom-text" type="text"
+             placeholder="Type Hindi or English words…"
+             value="Pani dawa madad">
+      <button class="try-button" id="custom-render">Show ISL</button>
+      <div id="custom-out" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- DICTIONARY -->
+  <section class="section" data-section="dict" role="tabpanel" aria-label="ISL Dictionary">
+    <input class="dict-search" id="dict-search" type="search"
+           placeholder="🔍 Search words (Hindi or English)…"
+           aria-label="Search dictionary">
+    <div class="dict-grid" id="dict-grid"></div>
+    <p class="subtitle" style="margin-top:14px">
+      <strong>Placeholder animations.</strong> Every sign above is a stub until the
+      deaf community contributes real ISL video. See
+      <a href="#contribute" data-jump="contribute">Contribute</a>.
+    </p>
+  </section>
+
+  <!-- CAMERA -->
+  <section class="section" data-section="camera" role="tabpanel" aria-label="Camera-based ISL">
+    <div class="coming-soon">
+      <span class="pill">COMING SOON · Phase 2</span>
+      <h3>Camera detects your ISL gestures</h3>
+      <p>Point your camera, sign in ISL, and Chitti will interpret and respond — speaking aloud for anyone in the room without an ISL background.</p>
+      <p><strong>Status:</strong> not built. A frame-stream classifier supplier is being evaluated; DeepSeek will handle the language layer.</p>
+      <p><strong>Why:</strong> the same deaf user should be able to talk to Chitti AND have hearing family in the room understand the conversation.</p>
+    </div>
+  </section>
+
+  <!-- CONTRIBUTE -->
+  <section class="section" data-section="contribute" role="tabpanel" aria-label="Contribute ISL videos">
+    <div class="coming-soon" id="contribute">
+      <span class="pill">COMING SOON · Phase 3</span>
+      <h3>Replace a placeholder with a real ISL video</h3>
+      <p>The same model as voice donations: deaf-community volunteers record short ISL videos for words that today are only emoji-hand placeholders. Each accepted contribution earns a spot in the <a href="#hof" data-jump="hof">ISL Hall of Fame</a>.</p>
+      <p><strong>Status:</strong> contribution endpoint not yet live. The architecture is provider-agnostic — <code>chitti_isl_dictionary.json</code> entries swap <code>frames[]</code> for <code>video[]</code> without any frontend change.</p>
+      <button class="try-button" disabled aria-disabled="true">Notify me when contributions open</button>
+    </div>
+  </section>
+
+  <!-- HALL OF FAME -->
+  <section class="section" data-section="hof" role="tabpanel" aria-label="ISL Hall of Fame">
+    <div id="hof" class="empty-state">
+      <span class="icon" aria-hidden="true">🏆</span>
+      <p><strong>ISL Hall of Fame is empty.</strong></p>
+      <p>Be the first deaf-community contributor when Phase 3 opens.</p>
+      <p style="margin-top:14px;font-size:12px"><a href="chitti_voice_hall_of_fame.html">See the Voice Hall of Fame →</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer role="contentinfo">
+  Chitti ISL · Built for the 6 crore deaf Indians ignored by every app ·
+  <a href="/">Back to Chitti home</a>
+</footer>
+
+<!-- Legal modal -->
+<div class="legal-modal" id="legal-modal" role="dialog" aria-modal="true" aria-label="Legal disclaimer">
+  <div class="legal-modal-card">
+    <h3>⚠️ Not a registered advisor</h3>
+    <p>Chitti is an AI assistant for accessibility and information. It is <strong>NOT SEBI registered</strong>, <strong>NOT a medical practitioner</strong>, <strong>NOT a legal counsel</strong>, and <strong>NOT a certified ISL interpreter</strong>.</p>
+    <p>ISL animations on this site are <strong>placeholders</strong> intended as an honest stub until community-contributed videos replace them. They are not certified ISL signs and must not be used as the sole source for medical, legal, or financial sign interpretation.</p>
+    <p>For certified ISL interpretation contact <a href="https://islrtc.nic.in/" target="_blank" rel="noopener">ISLRTC</a>.</p>
+    <button class="legal-modal-close" id="legal-close" type="button">I understand</button>
+  </div>
+</div>
+
+<script src="chitti_a11y.js"></script>
+<script src="feedback-widget.js" defer></script>
+<script>
+(async function(){
+  // Boot a11y bar — voice is not required for the ISL page itself.
+  if (window.Chitti && Chitti.a11y) {
+    Chitti.a11y.init({ voiceRequired: false });
+    // Default-on ISL mode here so the demo works without an extra click.
+    await Chitti.a11y.setIslMode(true);
+  }
+
+  // Tabs
+  const tabs = document.querySelectorAll('.tab');
+  const sections = document.querySelectorAll('.section');
+  function selectTab(name){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.section===name ? 'true':'false'));
+    sections.forEach(s=>s.setAttribute('data-active', s.dataset.section===name ? 'true':'false'));
+    if (name === 'dict') renderDictionary();
+  }
+  tabs.forEach(t=>t.addEventListener('click', ()=>selectTab(t.dataset.section)));
+  document.querySelectorAll('[data-jump]').forEach(a=>{
+    a.addEventListener('click', (e)=>{ e.preventDefault(); selectTab(a.getAttribute('data-jump')); });
+  });
+
+  // Custom render
+  document.getElementById('custom-render').addEventListener('click', async ()=>{
+    const text = document.getElementById('custom-text').value || '';
+    const out = document.getElementById('custom-out');
+    out.innerHTML = '';
+    if (!window.Chitti || !Chitti.a11y) return;
+    await Chitti.a11y.loadIslDictionary();
+    out.appendChild(Chitti.a11y.islRenderPanel(text));
+  });
+
+  // Dictionary render — lazy
+  let dictRendered = false;
+  async function renderDictionary(){
+    if (dictRendered) return;
+    if (!window.Chitti || !Chitti.a11y) return;
+    const dict = await Chitti.a11y.loadIslDictionary();
+    const grid = document.getElementById('dict-grid');
+    grid.innerHTML = '';
+    const entries = Object.entries(dict.entries || {});
+    entries.forEach(([key, entry])=>{
+      const card = document.createElement('div');
+      card.className = 'dict-card';
+      card.setAttribute('data-search', (key + ' ' + (entry.label_en||'') + ' ' + (entry.label_hi||'')).toLowerCase());
+      const sign = Chitti.a11y.islRenderWord(key);
+      card.appendChild(sign);
+      const en = document.createElement('div');
+      en.className = 'label-en';
+      en.textContent = entry.label_en || key;
+      card.appendChild(en);
+      if (entry.label_hi) {
+        const hi = document.createElement('div');
+        hi.className = 'label-hi';
+        hi.lang = 'hi';
+        hi.textContent = entry.label_hi;
+        card.appendChild(hi);
+      }
+      grid.appendChild(card);
+    });
+    dictRendered = true;
+
+    document.getElementById('dict-search').addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase().trim();
+      grid.querySelectorAll('.dict-card').forEach(c=>{
+        c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Legal modal
+  const legalBar = document.getElementById('legal-bar');
+  const legalModal = document.getElementById('legal-modal');
+  const legalClose = document.getElementById('legal-close');
+  function openLegal(){ legalModal.setAttribute('data-open','true'); }
+  function closeLegal(){ legalModal.setAttribute('data-open','false'); }
+  legalBar.addEventListener('click', openLegal);
+  legalBar.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') openLegal(); });
+  legalClose.addEventListener('click', closeLegal);
+  legalModal.addEventListener('click', (e)=>{ if(e.target===legalModal) closeLegal(); });
+})();
+</script>
+</body>
+</html>

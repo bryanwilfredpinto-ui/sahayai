@@ -164,6 +164,29 @@ location-aware:
 
 ---
 
+## 4. Planned — queued 2026-05-13
+
+Founder wave (Bryan, 2026-05-13). All three are voice-first and tie to
+the four-user contract.
+
+| # | Feature | Priority | Why | Surface needed |
+|---|---|---|---|---|
+| V1 | **"Remember my preferences"** — Chitti learns regular orders (food, groceries, medicines) | **P1** | Cuts the number of voice turns per order; raises completion for illiterate + elderly users. | New `user_preferences` table keyed by (user_id, service). Hooks into the order/book modal so "the usual at Sharma's" pre-fills the existing card. Onboarding-grant (`feedback_design_from_pwd_user_perspective`), not per-order modal. |
+| V2 | **Voice shortcuts** — say "usual" and Chitti knows | **P2** | Companion to V1; "usual" / "wahi wala" / "always" become alias intents. | DeepSeek intent layer picks `usual` → reads back the matched preference → "haan" to confirm. **Always reads back before acting** (commando, but never silent). |
+| V3 | **Daily check-in for elderly users** | **P0** | Safety contract. If the elderly user doesn't respond within window, this is the same path as `emergency/trigger` — family cascade, never cops (`project_chitti_vaani_emergency_protocol`). | New `daily_checkin` table + cron at user-chosen IST time → Vaani speaks "Aap theek hain?" → user says "haan" → silence after 3 prompts triggers `/emergency/trigger`. Opt-in by paired family member during onboarding. |
+
+**How to apply:**
+- V3 reuses the emergency cascade — **do not invent a parallel
+  family-notification path**. Confirm-with-master → ring alarm bypass →
+  spouse → family → Chitti-to-Chitti relay. Same denylist on 112 / 100
+  / 102.
+- V1 + V2 are preference state, not financial state. They never store
+  UPI PINs, bank details, or anything subject to RBI (`project_chitti_product_scope_clarifications`).
+- All three are voice-only on the surface. Web cards exist for
+  inspection / undo, but the primary affordance is spoken.
+
+---
+
 ## Cross-product hooks (already wired)
 
 - **UPI Fraud Guard ↔ Vaani** — when fraud is detected on
@@ -180,6 +203,8 @@ location-aware:
 ---
 
 ## How to keep this file honest
+
+Sections renumbered after the 2026-05-13 planned wave: §1 Built · §2 Phase 2 (Android) · §3 Future · §4 Planned (new wave) · Cross-product hooks.
 
 Update rules:
 1. Move an item from "Phase 2" → "Built" **only after** you have

@@ -100,8 +100,20 @@ Examples already queued under this contract:
 | 10 | Chitti Logo & Video | `chitti_logo_video.html` | stub | **BETA** — SVG monogram + mock video queue (intentional honest stub) |
 | 11 | Chitti Government | `chitti_government.html` | `chitti-government-api` | LIVE — 30 schemes, PIB poll 6h, DigiLocker partner-only |
 | 12 | Chitti Voice Factory | `chitti_voice_factory.html` | `chitti-voice-factory` | LIVE — 26 langs, honest ledger, YouTube fluency pipeline |
+| 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
 
 **Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
+
+### Founder master product docs — single source of truth
+
+Two founder-authored product specs supersede any earlier short-form Chitti PA / Chitti Business notes. Every future Claude session reads these BEFORE building anything for these products.
+
+| Doc | Scope |
+|---|---|
+| [CHITTI_PA_MASTER.md](CHITTI_PA_MASTER.md) | Personal Assistant — full B2C spec. Soul/DNA, 5 emotional superpowers, address terms (yaara / [name] ji / Master), Postman Principle, Product Truth Engine, Health Guardian, Safety Guardian, Phase 1 WhatsApp → Phase 2 App+Camera+Health → Phase 3 Hardware, 6-phase roadmap (PA → Voluntary Support → B2C → B2B → 29 Hats → Network), support tiers (Dost / Saathi / Parivar / Champion), 12 Commandments. |
+| [CHITTI_BUSINESS_MASTER.md](CHITTI_BUSINESS_MASTER.md) | Business product — full B2B spec. 5 roles (CFO / Ops / Customer Service / Growth / Supplier), Proactive Learning Engine, complete inventory + expiry cascade, GST-compliant billing, customer chatbot, Collective Intelligence Network (privacy-safe), per-shop-type roadmap, **Chitti Kirana** as the flagship first instantiation. |
+
+These two docs are the **single source of truth** for their respective products. If anything in the rest of this file disagrees with them, the master docs win — update this file rather than the master.
 
 ---
 
@@ -221,16 +233,16 @@ Chitti inherits them automatically.
 | **ILLITERATE** | Everything in voice — no reading required | **P0** |
 | **ILLITERATE** | Voice confirmation ("Say HAAN to confirm") | **P0** |
 | **ILLITERATE** | Pictures with every option — visual menus | **P0** |
-| **RURAL** (locale-derived, not a profile checkbox today) | 2G mode — works on slow internet | P1 |
-| **RURAL** | Missed-call feature — user gives missed call, Chitti calls back | P1 |
-| **RURAL** | SMS fallback — if no internet, Chitti sends SMS | **P0** |
+| **RURAL / LOW CONNECTIVITY** | 2G mode — works on slow internet | P1 |
+| **RURAL / LOW CONNECTIVITY** | Missed-call feature — user gives missed call, Chitti calls back | P1 |
+| **RURAL / LOW CONNECTIVITY** | SMS fallback — if no internet, Chitti sends SMS | **P0** |
 
-The Rural triggers above don't have a dedicated profile checkbox in §7's
-**User Disability Profile** today. Two options when implementing — pick
-one explicitly with Sire, don't quietly invent a path:
-- Add **"I am on a slow / patchy connection"** as a new profile row, OR
-- Derive the rural signal from network heuristics (effectiveType ≤ 2g,
-  RTT > 1500 ms) + IP-geo and never store it.
+The Rural triggers above attach to the **"I am in a rural area / low
+connectivity"** checkbox added to §7's User Disability Profile on
+2026-05-13 (Sire's decision). `chitti_a11y.js` can additionally
+*suggest* the profile based on network heuristics (`effectiveType ≤ 2g`
+or `RTT > 1500 ms`), but the checkbox is the authoritative trigger —
+heuristics propose, the user disposes.
 
 ---
 
@@ -313,6 +325,7 @@ On **first visit to ANY Chitti page**, show a simple one-time setup:
 > - ☐ I am elderly (65+)
 > - ☐ I have limited mobility
 > - ☐ I have cognitive disability
+> - ☐ I am in a rural area / low connectivity
 > - ☐ None of the above
 
 - User can **select multiple**.
@@ -331,6 +344,7 @@ On **first visit to ANY Chitti page**, show a simple one-time setup:
 | **ELDERLY** | Large text, slow speech, simple language, **repeat button**. |
 | **LIMITED MOBILITY** | Large touch targets, voice navigation only. |
 | **COGNITIVE** | Simple language, one step at a time, no overwhelming information. |
+| **RURAL / LOW CONNECTIVITY** | 2G mode (small payloads, deferred images), offline mode (service-worker cache + replay queue), SMS fallback, simple UI, missed-call callback. |
 
 #### Important rules
 

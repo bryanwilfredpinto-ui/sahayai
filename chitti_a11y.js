@@ -31,6 +31,11 @@
 
   const STORAGE_KEY = 'chitti_a11y_v1';
   const VOICE_FACTORY_URL = 'https://chitti-voice-factory.onrender.com';
+  const ISL_DICTIONARY_URL = 'chitti_isl_dictionary.json';
+  // In-memory ISL dictionary — populated on first need. Honest placeholder
+  // (emoji-hand keyframe sequences) until Phase 3 community videos land.
+  let ISL_DICT = null;
+  let ISL_DICT_LOADING = null;
 
   // 26 languages — must match Chitti Voice Factory registry.
   // Code, English label, native label.
@@ -151,6 +156,270 @@
     }
   }
 
+  // ── ISL (INDIAN SIGN LANGUAGE) ───────────────────────────────
+  // Phase 1: dictionary + per-response animation panel + tap-word modal.
+  // Phase 2 (camera) + Phase 3 (community videos) are COMING SOON;
+  // Phase 3 will replace frames[] with video[] without frontend change.
+  // Animations below are HONEST PLACEHOLDERS — never claim accuracy.
+  async function loadIslDictionary() {
+    if (ISL_DICT) return ISL_DICT;
+    if (ISL_DICT_LOADING) return ISL_DICT_LOADING;
+    ISL_DICT_LOADING = (async () => {
+      try {
+        const r = await fetch(ISL_DICTIONARY_URL, { cache: 'force-cache' });
+        if (!r.ok) throw new Error('isl-dict-' + r.status);
+        ISL_DICT = await r.json();
+      } catch (e) {
+        // Minimal in-memory fallback so ISL never silently disappears.
+        ISL_DICT = {
+          schema: 'chitti-isl-dictionary/v1-fallback',
+          frame_duration_ms_default: 500,
+          entries: {
+            chitti: { label_en: 'Chitti', frames: ['🤖', '🤝', '🤖'] },
+            namaste: { label_en: 'Hello', frames: ['🙏', '🤝', '🙏'] },
+            haan: { label_en: 'Yes', frames: ['👍', '✊', '👍'] },
+            nahin: { label_en: 'No', frames: ['👎', '✋', '👎'] },
+          },
+          fingerspell_alphabet: {
+            a: '✊', b: '🖐️', c: '👌', d: '☝️', e: '✋',
+            f: '👌', g: '👉', h: '✌️', i: '🤙', j: '🤙',
+            k: '✌️', l: '👆', m: '🤘', n: '✌️', o: '👌',
+            p: '👇', q: '👌', r: '🤞', s: '✊', t: '👍',
+            u: '✌️', v: '✌️', w: '🖖', x: '☝️', y: '🤙', z: '☝️',
+          },
+        };
+      }
+      return ISL_DICT;
+    })();
+    return ISL_DICT_LOADING;
+  }
+
+  function islNormalize(word) {
+    return String(word || '')
+      .toLowerCase()
+      .replace(/[^a-zÀ-ɏऀ-ॿঀ-৿਀-૿଀-௿ఀ-೿ഀ-෿]/g, '');
+  }
+
+  function islLookup(word) {
+    if (!ISL_DICT || !ISL_DICT.entries) return null;
+    const norm = islNormalize(word);
+    if (!norm) return null;
+    if (ISL_DICT.entries[norm]) return { kind: 'word', key: norm, entry: ISL_DICT.entries[norm] };
+    // Try Hindi label match — useful when DeepSeek replies in Hindi text.
+    for (const [k, v] of Object.entries(ISL_DICT.entries)) {
+      if (v.label_hi && islNormalize(v.label_hi) === norm) return { kind: 'word', key: k, entry: v };
+    }
+    return null;
+  }
+
+  function islFingerspellFrames(word) {
+    const alpha = (ISL_DICT && ISL_DICT.fingerspell_alphabet) || {};
+    const out = [];
+    for (const ch of String(word || '').toLowerCase()) {
+      if (alpha[ch]) out.push(alpha[ch]);
+    }
+    return out.length ? out : ['🤚'];
+  }
+
+  // Build a small inline animation node for a single word.
+  // frames[] is rendered as a CSS step-animation cycling glyphs every
+  // frame_duration_ms ms. Tap opens an enlarged modal.
+  function islRenderWord(word, opts) {
+    opts = opts || {};
+    const lookup = islLookup(word);
+    const frames = lookup ? lookup.entry.frames : islFingerspellFrames(word);
+    const label = lookup
+      ? (lookup.entry.label_en || word)
+      : word + ' (fingerspell)';
+    const duration =
+      (ISL_DICT && ISL_DICT.frame_duration_ms_default) || 500;
+
+    const span = document.createElement('button');
+    span.type = 'button';
+    span.className = 'chitti-isl-sign';
+    span.setAttribute('data-isl-word', word);
+    span.setAttribute('data-isl-known', lookup ? 'true' : 'false');
+    span.setAttribute(
+      'aria-label',
+      'ISL sign for ' + label + ' — tap for larger view'
+    );
+    span.title = 'ISL: ' + label + ' (placeholder — tap for larger view)';
+
+    const glyphs = frames
+      .map((g, i) => `<span class="chitti-isl-frame" style="animation-delay:${i * duration}ms;animation-duration:${frames.length * duration}ms">${g}</span>`)
+      .join('');
+    span.innerHTML = `<span class="chitti-isl-frames" aria-hidden="true">${glyphs}</span><span class="chitti-isl-word-label">${label}</span>`;
+
+    span.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      islOpenModal(word);
+    });
+    return span;
+  }
+
+  // Auto-build a panel that renders the ISL sequence for an entire
+  // response text. Splits on whitespace, renders one sign per word.
+  function islRenderPanel(text) {
+    const wrap = document.createElement('div');
+    wrap.className = 'chitti-isl-panel';
+    wrap.setAttribute('role', 'group');
+    wrap.setAttribute('aria-label', 'Indian Sign Language — placeholder animation');
+
+    const header = document.createElement('div');
+    header.className = 'chitti-isl-panel-header';
+    header.innerHTML =
+      '<span class="chitti-mini-logo" aria-hidden="true">C</span>' +
+      '<span>ISL · placeholder · tap any word</span>';
+    wrap.appendChild(header);
+
+    const row = document.createElement('div');
+    row.className = 'chitti-isl-row';
+    const words = String(text || '').split(/\s+/).filter(Boolean).slice(0, 24);
+    if (!words.length) {
+      row.innerHTML = '<span class="chitti-isl-empty">No text to sign yet.</span>';
+    } else {
+      words.forEach((w) => row.appendChild(islRenderWord(w)));
+    }
+    wrap.appendChild(row);
+
+    const foot = document.createElement('div');
+    foot.className = 'chitti-isl-panel-foot';
+    foot.innerHTML =
+      'Real ISL videos coming soon — <a href="chitti_isl.html#contribute">contribute</a>';
+    wrap.appendChild(foot);
+
+    return wrap;
+  }
+
+  // Attach (or replace) an ISL panel as a sibling of `el`. Idempotent —
+  // multiple calls on the same element keep only the latest panel.
+  function attachSign(el) {
+    if (!el || !el.parentNode) return;
+    // Find or create the sibling panel.
+    let panel = el.nextElementSibling;
+    if (!panel || !panel.classList || !panel.classList.contains('chitti-isl-attached')) {
+      panel = document.createElement('div');
+      panel.className = 'chitti-isl-attached';
+      el.parentNode.insertBefore(panel, el.nextSibling);
+    }
+    panel.innerHTML = '';
+    panel.appendChild(islRenderPanel(el.textContent || ''));
+  }
+
+  // MutationObserver: any element marked [data-chitti-response] or
+  // .chitti-response gets a panel automatically once ISL mode is on.
+  let ISL_OBSERVER = null;
+  function islStartObserver() {
+    if (ISL_OBSERVER) return;
+    const sweep = (root) => {
+      const targets = root.querySelectorAll
+        ? root.querySelectorAll('[data-chitti-response], .chitti-response')
+        : [];
+      targets.forEach((t) => attachSign(t));
+    };
+    sweep(document);
+    ISL_OBSERVER = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        m.addedNodes.forEach((n) => {
+          if (n.nodeType !== 1) return;
+          if (
+            n.matches &&
+            (n.matches('[data-chitti-response]') ||
+              n.matches('.chitti-response'))
+          ) {
+            attachSign(n);
+          } else {
+            sweep(n);
+          }
+        });
+        if (m.type === 'characterData' && m.target.parentElement) {
+          const p = m.target.parentElement.closest('[data-chitti-response], .chitti-response');
+          if (p) attachSign(p);
+        }
+      }
+    });
+    ISL_OBSERVER.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+
+  function islStopObserver() {
+    if (ISL_OBSERVER) {
+      ISL_OBSERVER.disconnect();
+      ISL_OBSERVER = null;
+    }
+    document
+      .querySelectorAll('.chitti-isl-attached')
+      .forEach((n) => n.remove());
+  }
+
+  async function setIslMode(on) {
+    document.body.classList.toggle('chitti-isl-on', !!on);
+    const state = loadState();
+    state.isl = !!on;
+    saveState(state);
+    if (on) {
+      await loadIslDictionary();
+      islStartObserver();
+      announce('Sign language mode on. Indian Sign Language placeholders are showing next to every Chitti response.');
+    } else {
+      islStopObserver();
+      announce('Sign language mode off.');
+    }
+  }
+
+  // Tap-a-word modal — enlarged sign view + Hindi/English labels.
+  function islOpenModal(word) {
+    const lookup = islLookup(word);
+    const frames = lookup ? lookup.entry.frames : islFingerspellFrames(word);
+    const labelEn = lookup ? (lookup.entry.label_en || word) : word;
+    const labelHi = lookup ? (lookup.entry.label_hi || '') : '';
+    const duration =
+      (ISL_DICT && ISL_DICT.frame_duration_ms_default) || 500;
+
+    const old = document.getElementById('chitti-isl-modal');
+    if (old) old.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'chitti-isl-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Indian Sign Language for ' + labelEn);
+    modal.innerHTML = `
+      <div class="chitti-isl-modal-card">
+        <button class="chitti-isl-modal-close" type="button" aria-label="Close">✕</button>
+        <div class="chitti-isl-modal-big" aria-hidden="true">
+          ${frames.map((g, i) => `<span class="chitti-isl-frame chitti-isl-frame-big" style="animation-delay:${i * duration}ms;animation-duration:${frames.length * duration}ms">${g}</span>`).join('')}
+        </div>
+        <div class="chitti-isl-modal-labels">
+          <div class="chitti-isl-modal-en">${labelEn}</div>
+          ${labelHi ? `<div class="chitti-isl-modal-hi" lang="hi">${labelHi}</div>` : ''}
+          <div class="chitti-isl-modal-meta">${lookup ? 'Known word — placeholder animation' : 'Fingerspelled (word not in dictionary)'}</div>
+        </div>
+        <div class="chitti-isl-modal-foot">
+          <strong>Placeholder ISL.</strong>
+          <a href="chitti_isl.html#contribute">Contribute a real video</a>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.classList.contains('chitti-isl-modal-close')) {
+        modal.remove();
+      }
+    });
+    document.addEventListener('keydown', function escHandler(e) {
+      if (e.key === 'Escape') {
+        const m = document.getElementById('chitti-isl-modal');
+        if (m) m.remove();
+        document.removeEventListener('keydown', escHandler);
+      }
+    });
+    speak(labelEn, loadState().lang || 'en');
+  }
+
   // ── BRAILLE MODE ─────────────────────────────────────────────
   // Adds a body class. Pages declare braille-aware CSS that:
   //   - collapses multi-column layouts to one column
@@ -190,6 +459,8 @@
     ensureLiveRegion();
     injectBar(opts);
     injectBaseStyles();
+    // Restore ISL after bar exists so the toggle reflects state.
+    if (state.isl) setIslMode(true);
   }
 
   function injectBaseStyles() {
@@ -247,6 +518,126 @@
       body.chitti-braille [style*="grid-template-columns"] {
         display:block !important;
       }
+
+      /* ── ISL (Indian Sign Language) ───────────────────────── */
+      .chitti-isl-attached {
+        margin:8px 0 12px 0;
+      }
+      .chitti-isl-panel {
+        background:#FFF7E8;
+        border:1px solid #E86A17;
+        border-left:4px solid #E86A17;
+        border-radius:8px;
+        padding:8px 10px;
+        font:13px/1.4 system-ui,-apple-system,sans-serif;
+        color:#0E2344;
+      }
+      .chitti-isl-panel-header {
+        display:flex; align-items:center; gap:4px;
+        font-weight:700; font-size:12px;
+        color:#0E2344; margin-bottom:6px;
+      }
+      .chitti-isl-row {
+        display:flex; flex-wrap:wrap; gap:6px;
+        align-items:flex-end;
+      }
+      .chitti-isl-empty { color:#6b7280; font-style:italic; }
+      .chitti-isl-sign {
+        background:#fff;
+        border:1px solid #d4b274;
+        border-radius:6px;
+        padding:4px 6px 2px;
+        min-width:48px;
+        display:inline-flex; flex-direction:column;
+        align-items:center; gap:2px;
+        cursor:pointer; font:inherit;
+      }
+      .chitti-isl-sign:hover, .chitti-isl-sign:focus {
+        outline:2px solid #E86A17; outline-offset:1px;
+      }
+      .chitti-isl-sign[data-isl-known="false"] {
+        border-style:dashed; opacity:.85;
+      }
+      .chitti-isl-frames {
+        position:relative;
+        width:28px; height:28px;
+        font-size:22px; line-height:28px;
+      }
+      .chitti-isl-frame {
+        position:absolute; left:0; top:0;
+        width:100%; text-align:center;
+        opacity:0;
+        animation-name: chittiIslFrame;
+        animation-iteration-count: infinite;
+        animation-timing-function: steps(1,end);
+      }
+      .chitti-isl-word-label {
+        font-size:10px; color:#0E2344; max-width:90px;
+        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      }
+      @keyframes chittiIslFrame {
+        0%, 33% { opacity:1; }
+        34%, 100% { opacity:0; }
+      }
+      .chitti-isl-panel-foot {
+        margin-top:6px; font-size:11px; color:#6b7280;
+      }
+      .chitti-isl-panel-foot a {
+        color:#E86A17; text-decoration:underline;
+      }
+
+      /* Hide ISL panels when ISL mode is OFF (defensive — observer also
+         removes them on toggle, but this catches any race). */
+      body:not(.chitti-isl-on) .chitti-isl-attached { display:none; }
+
+      /* ── ISL Modal ───────────────────────────────────────── */
+      #chitti-isl-modal {
+        position:fixed; inset:0; z-index:10001;
+        background:rgba(14,35,68,.78);
+        display:flex; align-items:center; justify-content:center;
+        padding:16px;
+      }
+      .chitti-isl-modal-card {
+        background:#fff; color:#0E2344;
+        border-radius:14px; max-width:420px; width:100%;
+        padding:18px 18px 14px;
+        box-shadow:0 12px 40px rgba(0,0,0,.35);
+        position:relative;
+        font:14px/1.5 system-ui,-apple-system,sans-serif;
+      }
+      .chitti-isl-modal-close {
+        position:absolute; right:8px; top:8px;
+        background:transparent; border:0; font-size:18px;
+        cursor:pointer; color:#0E2344;
+      }
+      .chitti-isl-modal-big {
+        position:relative;
+        height:140px;
+        margin:8px auto 12px;
+      }
+      .chitti-isl-frame-big {
+        font-size:110px; line-height:140px;
+      }
+      .chitti-isl-modal-labels {
+        text-align:center;
+      }
+      .chitti-isl-modal-en {
+        font-size:22px; font-weight:800; color:#0E2344;
+      }
+      .chitti-isl-modal-hi {
+        font-size:18px; color:#E86A17; margin-top:2px;
+      }
+      .chitti-isl-modal-meta {
+        font-size:11px; color:#6b7280; margin-top:4px;
+      }
+      .chitti-isl-modal-foot {
+        margin-top:12px; text-align:center;
+        font-size:12px; color:#6b7280;
+        border-top:1px solid #eee; padding-top:10px;
+      }
+      .chitti-isl-modal-foot a {
+        color:#E86A17; text-decoration:underline; margin-left:6px;
+      }
     `;
     document.head.appendChild(css);
   }
@@ -278,6 +669,11 @@
         title="Toggle Braille-friendly mode">
         ⠿ Braille mode${state.braille ? ': ON' : ''}
       </button>
+      <button id="chitti-isl-toggle" type="button"
+        aria-pressed="${!!state.isl}"
+        title="Toggle Indian Sign Language mode — placeholder animations next to every Chitti response">
+        🤟 ISL${state.isl ? ': ON' : ''}
+      </button>
       <button id="chitti-speak-page" type="button"
         title="Read the main heading aloud"
         aria-label="Chitti — read this page aloud">
@@ -299,6 +695,16 @@
       e.currentTarget.setAttribute('aria-pressed', String(next));
       e.currentTarget.textContent = '⠿ Braille mode' + (next ? ': ON' : '');
     });
+    bar.querySelector('#chitti-isl-toggle').addEventListener('click', async (e) => {
+      const next = !document.body.classList.contains('chitti-isl-on');
+      e.currentTarget.disabled = true;
+      try { await setIslMode(next); }
+      finally {
+        e.currentTarget.disabled = false;
+        e.currentTarget.setAttribute('aria-pressed', String(next));
+        e.currentTarget.textContent = '🤟 ISL' + (next ? ': ON' : '');
+      }
+    });
     bar.querySelector('#chitti-speak-page').addEventListener('click', () => {
       const h1 = document.querySelector('h1, [role=heading]');
       const text = (h1 && h1.textContent) || document.title || 'Chitti';
@@ -314,6 +720,12 @@
     announce,
     setLanguage,
     setBrailleMode,
+    setIslMode,
+    attachSign,
+    islRenderPanel,
+    islRenderWord,
+    islOpenModal,
+    loadIslDictionary,
     getState: loadState,
     LANGUAGES,
     VOICE_FACTORY_URL,
