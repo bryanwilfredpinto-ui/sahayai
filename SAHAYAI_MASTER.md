@@ -247,7 +247,7 @@ Full detail + surface needed live in each Chitti's
 | **Vaani** | "Remember my preferences" — Chitti learns regular orders | P1 | [features](chitti-vaani/skills/FEATURES.md) |
 | **Vaani** | Voice shortcuts — say "usual" / "wahi wala" | P2 | [features](chitti-vaani/skills/FEATURES.md) |
 | **Vaani** | Daily check-in for elderly users (reuses emergency cascade) | **P0** (safety) | [features](chitti-vaani/skills/FEATURES.md) |
-| **Vaani** | **Geo / lat-lng on local-business lookup** — `/api/vaani/local/nearby` returns directory-wide today, so a Mumbai user sees Chennai kiranas. Add GPS or pincode capture, X-km radius filter, sort by distance nearest-first, render "ABC Kirana — 0.5 km away" on every card. | **P0** (correctness — current behavior is misleading) | [features §3.2](chitti-vaani/skills/FEATURES.md) |
+| **Vaani** | ~~Geo / lat-lng on local-business lookup~~ — GPS + pincode capture, Haversine radius filter (5 km metro / 25 km tier-2/3), distance pill on every card, nearest spoken aloud, 5 → 25 km honest auto-expansion. | ✅ **Shipped** 2026-05-13 | [features §3.2](chitti-vaani/skills/FEATURES.md) |
 | **Government** | "Am I eligible?" checker for every scheme | **P0** | [features](chitti-government/skills/FEATURES.md) |
 | **Government** | Application status tracker | P1 | [features](chitti-government/skills/FEATURES.md) |
 | **Government** | Document checklist per scheme (scanner deep-link) | **P0** | [features](chitti-government/skills/FEATURES.md) |
@@ -488,17 +488,40 @@ Any new Chitti page built in future **inherits the ISL plugin automatically** �
 3. **Build the "Explain simply" button.** No substrate exists yet — needs a new helper that re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud. Required on every product card AND every Chitti response.
 4. **Audit the other 12 product pages** for the same four gaps. The substrate scripts are loaded on 13 pages already, but verify the language selector actually shifts UI on each, and `Explain simply` is added uniformly.
 
-### P0 — Geo on the local-business lookup (2026-05-13 audit)
+### ✅ Geo on the local-business lookup — SHIPPED 2026-05-13
 
-Vaani's new `/api/vaani/local/nearby` endpoint is directory-wide today — a Mumbai user sees Chennai kiranas. Until geo lands, "local Chitti business first" is misleading; the user can't act on the list. Treat as a correctness bug, not a future enhancement.
+Was P0 (correctness bug — a Mumbai user used to see Chennai kiranas).
+All five sub-steps live on `main` across commits `650eec0` (frontend
+location helper), `e89fc0d` (schema migration), `4e607dc` (Haversine +
+radius + auto-expansion), `6067e14` (distance rendering + speech), and
+this commit (docs).
 
-5. **Capture user location.** GPS (`navigator.geolocation.getCurrentPosition`) as primary, **pincode fallback** for low-permission / desktop users. Store on the per-device user_token row (no new login required). Re-prompt only if the user moves cities.
-6. **Add `lat`, `lng`, `pincode`, `service_radius_km` to `product_gmail_accounts`.** Hand-written `ALTER TABLE` migration in [`admin_db.py`](chitti-vaani/backend/services/admin_db.py) — same idempotent pattern as the existing `domain_template` / `features` migration. Backfill via the admin dashboard (new field group).
-7. **Radius filter + distance sort in `local_chitti_service.nearby()`.** Haversine in Python (no PostGIS dependency — Turso doesn't have it). Default radius 5 km in metros, 25 km in tier-2/3 (read from a `chitti-pincode-tier.json` lookup, not user-set). Sort ascending by computed distance. Return `distance_km` per row.
-8. **Render distance on every card.** Frontend [`chitti_vaani.html`](chitti_vaani.html) `renderLocalChitti()` shows "ABC Kirana — 0.5 km away" / "MNO Pharmacy — 2.3 km away". Speak the nearest match aloud ("Sabse paas wali Chitti Kirana, 0.5 km duur") for blind users.
-9. **Honest empty state.** When no Chitti business is in radius, say so ("No registered Chitti business within 5 km. Expanding to 25 km…" then external-app fallback). Never lie that the directory is empty when it just isn't local.
+5. ✅ **Capture user location.** `window.Chitti.location.get()` in
+   [chitti_a11y.js](chitti_a11y.js) — GPS primary, pincode fallback,
+   cached 6 h. Every product page inherits it without re-implementing.
+6. ✅ **`lat / lng / pincode / service_radius_km` on `product_gmail_accounts`.**
+   Idempotent `ALTER TABLE` in
+   [`admin_db.py`](chitti-vaani/backend/services/admin_db.py). Backfill
+   endpoint at `PATCH /api/admin/products/<id>/geo`.
+7. ✅ **Haversine + radius filter in `local_chitti_service.nearby()`.**
+   Default radius 5 km when the user's pincode prefixes a known metro
+   (`400/110/560/600/700/500/411/380/201/122`), 25 km otherwise. Honest
+   v1 of the `chitti-pincode-tier.json` plan — swap the prefix set for
+   a real gazetteer when one ships.
+8. ✅ **"X km away" + speak nearest.** `renderLocalChitti()` in
+   [chitti_vaani.html](chitti_vaani.html) — three distance states
+   (haversine / pincode_exact / unknown). Nearest confirmed match
+   spoken aloud for blind users.
+9. ✅ **Honest empty state + 5 → 25 km expansion.** Server retries
+   internally at 25 km when default was metro and zero confirmed hits;
+   `expanded_to_km` flag on the response makes the frontend say
+   *"No Chitti business within 5 km — expanded search to 25 km."*
+   Empty state explicit and spoken — never silent.
 
-Owner: same person who built `local_chitti_service.py` (2026-05-13 commit `7e19102`). Update [chitti-vaani/skills/FEATURES.md §3.2](chitti-vaani/skills/FEATURES.md) when each sub-step lands.
+End-to-end verified on a seeded SQLite DB: Mumbai user sees the Mumbai
+shop at 0.806 km, Bangalore filtered out, auto-expand fires when the
+user has only out-of-radius confirmed matches. Full spec lives in
+[chitti-vaani/skills/FEATURES.md §3.2](chitti-vaani/skills/FEATURES.md).
 
 ### P1 — Unblock Voice Factory Phase 2
 

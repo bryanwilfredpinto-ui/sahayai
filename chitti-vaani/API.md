@@ -202,11 +202,14 @@ Long-poll-equivalent. Returns and marks-delivered any queued events.
 
 The "Order & book" Pro Action cards consult this endpoint before opening any external app (Zomato / Swiggy / Ola / Uber / Rapido / BookMyShow / IRCTC / BigBasket / Blinkit). A registered Chitti shop in the matching service category is always preferred; external links are pure fallback. Directory data is the existing `product_gmail_accounts` table seeded by [`admin_seed.py`](backend/scripts/admin_seed.py).
 
-### `GET /api/vaani/local/nearby?service=<category>`
-Look up Chitti shops registered for a service category, plus the external-app keys that the frontend may use as fallback.
+### `GET /api/vaani/local/nearby?service=<category>[&lat=&lng=&pincode=&radius_km=]`
+Look up Chitti shops registered for a service category — **filtered by distance from the user** when a location is supplied — plus the external-app keys that the frontend may use as fallback.
 
 **Query**
 - `service` — required. One of: `food`, `restaurant`, `groceries`, `grocery`, `kirana`, `dairy`, `pharmacy`, `medicine`, `medical`, `salon`, `haircut`, `stationery`, `books`, `hardware`, `clothing`, `clothes`, `electronics`, `furniture`, `cab`, `ride`, `auto`, `movies`, `movie`, `tickets`, `train`, `trains`.
+- `lat` + `lng` — optional. Decimal degrees. Must be supplied together. When present, the server computes Haversine distance from the user to every shop with `lat`/`lng` and filters by `radius_km`.
+- `pincode` — optional. India 6-digit (`^[1-9]\d{5}$`). Used as a fallback when GPS is unavailable, and to pick the default radius (5 km when the pincode prefixes a known metro: `400 / 110 / 560 / 600 / 700 / 500 / 411 / 380 / 201 / 122`; 25 km otherwise). Shops with the same pincode get `distance_km: 0.0` and `geo_match: "pincode_exact"`.
+- `radius_km` — optional. Caller override in `(0.1, 200]`. Disables the 5 km → 25 km auto-expansion (see below).
 
 **Response**
 ```json
@@ -214,14 +217,24 @@ Look up Chitti shops registered for a service category, plus the external-app ke
   "ok": true,
   "service": "food",
   "display": "food delivery",
+  "geo_applied": true,
+  "radius_km": 5.0,
+  "expanded_to_km": null,
+  "user_loc": {"lat": 19.0825, "lng": 72.8811, "pincode": "400002"},
   "local": [
     {
-      "product_key":     "chittirestaurant",
-      "product_name":    "Chitti Restaurant",
-      "gmail_address":   "chittirestaurant@gmail.com",
-      "domain_template": "food_business",
-      "features":        ["menu management", "online orders", "table booking", "delivery tracking"],
-      "oauth_status":    "connected"
+      "product_key":       "chittirestaurant_mumbai",
+      "product_name":      "Chitti Restaurant Mumbai",
+      "gmail_address":     "chittirestaurant.mum@gmail.com",
+      "domain_template":   "food_business",
+      "features":          ["menu management", "online orders"],
+      "oauth_status":      "connected",
+      "lat":               19.0760,
+      "lng":               72.8777,
+      "pincode":           "400001",
+      "service_radius_km": null,
+      "distance_km":       0.806,
+      "geo_match":         "haversine"
     }
   ],
   "local_chitti_keys": ["chittirestaurant"],
@@ -230,13 +243,19 @@ Look up Chitti shops registered for a service category, plus the external-app ke
 }
 ```
 
-Connected shops are ordered first; not-yet-onboarded shops appear after them so the frontend can show a "Being onboarded" pill instead of pretending the directory is empty.
+Per-row fields added by the geo layer:
+- `distance_km` — float, `null` for shops without lat/lng when the user supplied lat/lng (genuinely unknown).
+- `geo_match` ∈ `haversine` (Haversine on both pairs) · `pincode_exact` (same 6-digit PIN, `distance_km = 0.0`) · `pincode_different` (known not-local — these are **dropped** from `local`) · `unknown` (one side missing geo — kept in `local` so half-onboarded admins are not hidden, but does NOT count toward "we found something").
+
+Sort order: distance ascending (None last), then connected mailboxes first within the same bucket.
+
+**5 km → 25 km auto-expansion.** When the caller did not supply `radius_km`, the chosen default was 5 km (metro pincode), AND zero shops had `geo_match ∈ {haversine, pincode_exact}` within 5 km, the server retries internally at 25 km and sets `expanded_to_km` on the response. The frontend uses this to render *"No Chitti business within 5 km — expanded search to 25 km."* — never silently widens.
+
+**No location supplied.** When neither `lat/lng` nor `pincode` is sent, the endpoint falls back to the pre-geo "directory-wide" mode: `geo_applied: false`, no `distance_km`, no filtering. The frontend banner explicitly tells the user *"No location set — Chitti is showing the full directory"* with a "Set location" link so silent country-wide results never look like an answer.
 
 Categories with no Chitti shop yet (`cab`, `movies`, `train`, …) return `local: []` and a non-empty `external_keys`. The frontend treats that as a signal to skip the directory block and go straight to the external fallback.
 
-Errors: `400 bad_request` if `service` missing or unknown.
-
-**Caveat — "nearby" is directory-wide.** `product_gmail_accounts` does not have `lat`/`lng`/`pincode` columns today, so this endpoint is honest about that: every registered Chitti shop matching the category is returned, with no radius filter. Geo-aware filtering is a future addition (see [`skills/FEATURES.md`](skills/FEATURES.md) §3.2).
+Errors: `400 bad_request` if `service` missing or unknown, if `lat` is set without `lng` (or vice-versa), or if any of `lat / lng / pincode / radius_km` fails range / format validation.
 
 ### `GET /api/vaani/local/categories`
 Diagnostic. Lists every supported service category, the shop-Chitti product keys it maps to, and the external-app keys.
@@ -308,6 +327,23 @@ Validation:
 ### `DELETE /api/admin/products/<id>`
 Best-effort token revoke, then row delete.
 **Response**: `{ "ok": true, "deleted_id": 1 }`
+
+### `PATCH /api/admin/products/<id>/geo`
+Backfill / update the four geo columns (`lat`, `lng`, `pincode`, `service_radius_km`) on an existing product row. Required so the 17 seeded rows can be given coordinates after the migration — `admin_seed.py` leaves all four columns null.
+
+**Request body** — every field independently optional. To **clear** a field send the empty string for it.
+| Field | Type | Notes |
+|---|---|---|
+| `lat` | float | `[-90, 90]` |
+| `lng` | float | `[-180, 180]` |
+| `pincode` | string | `^[1-9]\d{5}$` |
+| `service_radius_km` | float | `(0, 200]` |
+
+At least one of the four must be supplied or cleared — otherwise `400`.
+
+**Response**: `{ "ok": true, "item": { …full product row… } }`. Action-log entry: `geo_set` with the supplied values.
+
+**Why a separate endpoint instead of `PATCH /products/<id>`:** geo is the only product field admins need to mutate post-OAuth; everything else (key/name/email/domain/features) goes through delete + re-create.
 
 ### `POST /api/admin/products/<id>/authorize`
 Build the Google consent URL.

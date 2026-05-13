@@ -144,40 +144,36 @@ There is currently no Chitti shop product for these categories. To make
 Until then, cab / movies / trains honestly route straight to the
 external fallback — and the modal says so.
 
-### 3.2 Geo-aware "actually nearby" — **P0 (queued 2026-05-13)**
+### 3.2 Geo-aware "actually nearby" — ✅ **SHIPPED 2026-05-13**
 
-**Priority bumped from Future → P0** because directory-wide results are
-misleading: a Mumbai user sees Chennai kiranas, "local Chitti first" has
-no meaning until distance is computed. Tracked in
-[`../../SAHAYAI_MASTER.md` §5a + §8](../../SAHAYAI_MASTER.md).
+**Was P0 (correctness bug). All 5 substeps live on `main`** —
+commits `650eec0` · `e89fc0d` · `4e607dc` · `6067e14` · (this commit).
+The "Mumbai user sees Chennai kiranas" failure mode is now closed.
 
-Implementation outline (each sub-step is its own commit):
+| # | Substep | Where it landed |
+|---|---|---|
+| 1 | **GPS / pincode capture, cached** | `window.Chitti.location.get()` in [chitti_a11y.js](../../chitti_a11y.js) — every product page inherits it. |
+| 2 | **`lat / lng / pincode / service_radius_km` columns** | Hand-written `ALTER TABLE` in [`admin_db.py`](../backend/services/admin_db.py) `_migrate_added_columns()`. Backfill endpoint at `PATCH /api/admin/products/<id>/geo`. |
+| 3 | **Haversine + radius filter** | [`local_chitti_service.nearby()`](../backend/services/local_chitti_service.py) — `_haversine_km`, `_default_radius_for_pincode` (5 km metro prefixes, 25 km tier-2/3), `_annotate_distance`, `_filter_and_sort`. |
+| 4 | **"X km away" on each card + speak nearest** | `renderLocalChitti()` in [chitti_vaani.html](../../chitti_vaani.html). Three distance states: haversine / pincode_exact / unknown. Nearest confirmed match spoken aloud. |
+| 5 | **5 km → 25 km auto-expansion + honest empty state** | Server-side in `nearby()` (only fires when caller did not override `radius_km`, default was metro 5 km, and zero confirmed-in-radius hits). Frontend banner explicitly says *"No Chitti business within 5 km — expanded search to 25 km."* Empty state spoken aloud. Never silent. |
 
-1. **Capture user location** — `navigator.geolocation.getCurrentPosition`
-   primary, **pincode input fallback** for users who decline GPS / are
-   on desktop. Cached against the per-device `user_token` in
-   localStorage; re-prompted only on city change.
-2. **Add `lat`, `lng`, `pincode`, `service_radius_km` columns** to
-   `product_gmail_accounts` via the hand-written `ALTER TABLE` migration
-   in [`admin_db.py`](../backend/services/admin_db.py) — same idempotent
-   pattern as the existing `domain_template` / `features` migration.
-   Backfill via the admin dashboard (new field group).
-3. **Radius filter + distance sort in `local_chitti_service.nearby()`** —
-   Haversine in Python (Turso has no PostGIS). Default radius 5 km in
-   metros / 25 km in tier-2/3 (lookup via a `chitti-pincode-tier.json`).
-   Return `distance_km` per row; sort ascending.
-4. **Render distance on every card** —
-   [`chitti_vaani.html`](../../chitti_vaani.html) `renderLocalChitti()`
-   shows "ABC Kirana — 0.5 km away". Speak the nearest match aloud for
-   blind users ("Sabse paas wali Chitti Kirana, 0.5 km duur").
-5. **Honest empty state** — when no Chitti business is in radius, say so
-   ("No registered Chitti business within 5 km. Expanding to 25 km…"
-   then fall back to the external-app block). Never silently empty.
+Honesty knobs preserved:
+- **No-geo shops** stay in the list when the user supplied location
+  (admins who haven't backfilled yet aren't punished) but carry a
+  *"Distance unknown"* pill and do NOT count toward the expansion check
+  — that's the precise bug we fixed.
+- **No location supplied** falls back to directory-wide mode with
+  `geo_applied: false` and a frontend banner reading *"No location set
+  — Chitti is showing the full directory"* + a **Set location** link.
+- **Pincode tier table.** The current metro-prefix set
+  (`400/110/560/600/700/500/411/380/201/122`) is the honest v1 of the
+  `chitti-pincode-tier.json` plan. Swap the prefix set for a real
+  gazetteer when one ships; no other code changes needed.
 
-Until this lands, the local-first modal in
-[`chitti_vaani.html`](../../chitti_vaani.html) honestly says "Chitti
-directory" (not "nearby") and the API.md note on
-[`/api/vaani/local/nearby`](../API.md) flags the limitation.
+End-to-end verified on a seeded SQLite test DB — Mumbai user sees the
+Mumbai shop at 0.806 km; Bangalore shop is filtered; auto-expansion
+fires when the user has only out-of-radius matches.
 
 ### 3.3 Merchant-side actions (still future, even after directory geo)
 | Capability | Partner / regulator needed |
