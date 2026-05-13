@@ -39,6 +39,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Camera intelligence | **Every Chitti with camera access captures: what was scanned · location (pincode/district) · date/time · result · user type · user satisfaction.** Fake-product detections feed community alerts, an annual report to FSSAI/government, and real-time warnings to nearby users. All camera data is **user-owned, never sold, anonymised before analysis, "Chitti forget" deletes all**. See §2b. | `project_camera_intelligence_locked` |
 | Knowledge corpora locked (2026-05-13) | **CA / Legal / Psychology** ship at expert grade. [chitti-ca/skills/CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md) = **CA Final + PhD** (IT Act, GST, Companies Act, AS/Ind AS, Budget 2025, portal navigation, tax jurisprudence, treaty interpretation). [chitti-legal/skills/LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md) = **LL.M + PhD** (full Constitution, BNS/BNSS/BSA 2023, civil + criminal, family law all religions, RERA, CPA 2019, DPDP 2023, state-specific, POSH/DV, landmark SC). [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) = **basics → PhD** (Freud/Jung/Maslow/Rogers/Bandura/Skinner/Pavlov/Beck/Ellis, Goleman/Ekman/Gottman/Seligman, Patanjali/Ayurveda/Gita/Buddhist/joint-family, MI/trauma/crisis/financial-stress/rural/women/elder, Kahneman/Thaler/Ariely, neuropsych/cross-cultural/community/health). All three: confidence scoring, devil's-advocate, server-enforced disclaimer (CA + Legal), strict therapist-boundary (Vaani with helpline cascade incl. Tele-MANAS 14416 + iCall + Vandrevala + NIMHANS). | — |
 | **New-session rule** | **Every Claude Code session MUST begin with `READ SAHAYAI_MASTER.md`.** Non-negotiable. Without it: no code changes, no new features, no deployments. Auto-enforced via repo-root [`CLAUDE.md`](CLAUDE.md) + [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — both files auto-load on session start; no human instruction needed. See §2c. | `project_new_session_rule_locked` |
+| **Feature Discovery Box** | **Every Chitti page carries a `💡 What can Chitti do for you?` button** — floating CTA + a11y-bar mirror. Reads each Chitti's `skills/FEATURES.md` live (nothing hardcoded), groups by LIVE / PLANNED / FUTURE / ANDROID, speaks features aloud in the user's selected language, taps to activate/expand, and **auto-reads on first visit for blind users**. Substrate: [`chitti_features.js`](chitti_features.js); auto-loaded from [`chitti_a11y.js`](chitti_a11y.js) — every product inherits without per-page edits. See §2d. | `project_feature_discovery_box_locked` |
 
 ---
 
@@ -163,6 +164,42 @@ Both files carry the same instruction:
 Without the master file loaded, every session re-litigates already-locked decisions (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades). That wastes Bryan's time and risks accidentally rolling back hard-won locks. The new-session rule short-circuits that failure mode — Claude reads the locked decisions before touching any code.
 
 See [[project_new_session_rule_locked]].
+
+---
+
+## 2d. Feature Discovery Box — LOCKED (2026-05-14)
+
+Every Chitti page must carry a **`💡 What can Chitti do for you?`** button. The button opens a modal that reads each Chitti's `skills/FEATURES.md` **live** and speaks every feature aloud in the user's selected language. **Nothing is hardcoded in JavaScript** — the FEATURES.md is the contract.
+
+### Substrate
+
+| File | Role |
+|---|---|
+| [chitti_features.js](chitti_features.js) | Parser + modal + voice + auto-read; self-contained IIFE under `window.Chitti.features`. |
+| [chitti_a11y.js](chitti_a11y.js) | Auto-loads `chitti_features.js` on init — every Chitti page inherits without per-page HTML edits, same default-on contract as the [ISL plugin](#chitti-isl--plugin-locked). |
+
+### Behaviour
+
+1. **Floating CTA** bottom-right + **mirror button in the a11y bar** (next to language / braille / ISL / read-page). Either entry point opens the same modal.
+2. **Source: `<folder>/skills/FEATURES.md`** — resolved via the §4a frontend ↔ folder map (`chitti_medupi.html` → `chitti-medupi/skills/FEATURES.md`, etc.). Pages with no auto-map can opt in with `<meta name="chitti-features" content="path/to/FEATURES.md">`.
+3. **Parser** handles all three FEATURES.md shapes used today: H2 sections + H3 features (Vaani-style), H2 sections + markdown tables (MedUPI / Government), and H2 sections + top-level bullets. Housekeeping sections (`How to keep this file honest`, `Cross-product hooks`, `Updating this …`) are skipped automatically.
+4. **Status badges** inferred from section title — LIVE 🟢 / PLANNED 🟡 / FUTURE 🔵 / ANDROID 📱.
+5. **Tap any feature** → expand its body + speak the status + name + first body line aloud, in the user's selected language, via `Chitti.a11y.speak()` (Voice Factory cascade).
+6. **`🔊 Read all features aloud`** button at the top of the modal walks through every feature.
+7. **Auto-read on first visit for BLIND users** — when the User Disability Profile (§7) has `blind: true`, opening the modal once auto-fires the read-all flow. Tracked in `localStorage.chitti_features_v1.auto_read_done` so it only happens once per device.
+8. **Honest empty state** — if the page has no FEATURES.md mapped (e.g. `chitti_complete_technical.html` while [chitti-shares/](chitti-shares/) hasn't shipped its FEATURES.md yet), the modal says so explicitly. **No fake feature list ever.** Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
+
+### Why this is locked
+
+The new-products process (§2a) requires every Chitti to publish a `skills/FEATURES.md`. Without a discovery surface, that file is invisible to the user — defeating the purpose. This substrate makes the spec visible *to the people the spec is for*, in their language, by voice. For the four-user contract (§7), it is the **primary onboarding affordance for blind / illiterate / elderly users** who cannot read the homepage.
+
+### Hard rules
+
+- **Nothing hardcoded.** If a feature exists in the JS but not in FEATURES.md → bug. If a feature exists in FEATURES.md but not in the modal → parser bug, fix the parser, never the data.
+- **Auto-load contract.** Any new Chitti page that loads `chitti_a11y.js` inherits Feature Discovery automatically. There is no opt-out at the page level — same as the ISL substrate.
+- **Voice-first.** The modal is usable end-to-end without reading any text. Read-all + per-feature speak buttons cover the read-aloud surface; the floating CTA is `aria-label`-ed for screen readers.
+
+See [[project_feature_discovery_box_locked]].
 
 ---
 

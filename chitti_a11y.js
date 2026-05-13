@@ -589,6 +589,47 @@
     // Restore other a11y modes after bar exists so toggles reflect state.
     if (state.braille) setBrailleMode(true);
     if (state.isl) setIslMode(true);
+
+    // Feature Discovery — LOCKED 2026-05-14, SAHAYAI_MASTER §2 / §2d.
+    // "What can Chitti do for you?" loads on every Chitti page by piggy-
+    // backing on the a11y substrate (same contract as the ISL plugin —
+    // the dictionary is the contract, the substrate is the loader).
+    // Idempotent: re-init is a no-op once the script is in the DOM.
+    ensureFeaturesSubstrate();
+  }
+
+  function ensureFeaturesSubstrate() {
+    if (global.Chitti && global.Chitti.features) return;
+    if (document.getElementById('chitti-features-script')) return;
+    const s = document.createElement('script');
+    s.id = 'chitti-features-script';
+    s.src = featuresScriptUrl();
+    s.async = true;
+    s.defer = true;
+    s.onerror = () => {
+      // Honest stub — never silently disappear. Surface a one-line note
+      // in the aria-live region so blind users hear that the feature
+      // list could not load (e.g. when offline).
+      announce(
+        'Feature list could not load. Speak to Chitti to ask what it can do.'
+      );
+    };
+    document.head.appendChild(s);
+  }
+
+  function featuresScriptUrl() {
+    // Resolve relative to whichever path chitti_a11y.js itself was
+    // loaded from. Works whether the page is at repo root (sahayai.in
+    // GitHub Pages) or inside a product subfolder (when previewing
+    // chitti-voice-factory/frontend/*.html locally).
+    const tags = document.getElementsByTagName('script');
+    for (const t of tags) {
+      const src = t.src || '';
+      if (/chitti_a11y\.js(\?|$)/.test(src)) {
+        return src.replace(/chitti_a11y\.js(\?[^#]*)?$/, 'chitti_features.js');
+      }
+    }
+    return 'chitti_features.js';
   }
 
   function injectBaseStyles() {
