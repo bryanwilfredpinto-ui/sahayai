@@ -75,6 +75,43 @@
     ['kru', 'Oraon',        'कुड़ुख़',         'कु'],
   ];
 
+  // Four-user disability pill labels per language. The substrate finds
+  // any `.four-user span` on the page and rewrites the trailing word
+  // while preserving the emoji prefix (👁️‍🗨️ blind, 🦻 deaf, 🤫 mute,
+  // 📖 illiterate). Bryan locked 2026-05-14: pills must show in the
+  // page's language, not English. Smaller languages without a native
+  // term fall back to their closest cousin script — better than English.
+  const DISABILITY_LABELS = {
+    en:  { blind: 'blind',         deaf: 'deaf',           mute: 'mute',         illiterate: 'illiterate' },
+    hi:  { blind: 'अंधा',           deaf: 'बहरा',           mute: 'गूंगा',         illiterate: 'अनपढ़' },
+    bn:  { blind: 'অন্ধ',           deaf: 'বধির',           mute: 'বোবা',         illiterate: 'নিরক্ষর' },
+    te:  { blind: 'గుడ్డి',          deaf: 'చెవిటి',          mute: 'మూగ',          illiterate: 'నిరక్షరాస్యుడు' },
+    mr:  { blind: 'अंध',            deaf: 'बहिरा',          mute: 'मुका',          illiterate: 'निरक्षर' },
+    ta:  { blind: 'குருடு',          deaf: 'காது கேளாதவர்', mute: 'ஊமை',         illiterate: 'படிக்க தெரியாதவர்' },
+    gu:  { blind: 'અંધ',            deaf: 'બહેરા',          mute: 'મૂંગા',         illiterate: 'નિરક્ષર' },
+    kn:  { blind: 'ಕುರುಡು',         deaf: 'ಕಿವುಡು',         mute: 'ಮೂಗ',          illiterate: 'ಅನಕ್ಷರಸ್ಥ' },
+    ml:  { blind: 'അന്ധൻ',          deaf: 'ബധിരൻ',          mute: 'മൂകൻ',         illiterate: 'നിരക്ഷരൻ' },
+    or:  { blind: 'ଅନ୍ଧ',            deaf: 'ବଧିର',           mute: 'ବୋବା',         illiterate: 'ନିରକ୍ଷର' },
+    pa:  { blind: 'ਅੰਨ੍ਹਾ',           deaf: 'ਬੋਲਾ',           mute: 'ਗੂੰਗਾ',         illiterate: 'ਅਨਪੜ੍ਹ' },
+    ur:  { blind: 'اندھا',          deaf: 'بہرا',           mute: 'گونگا',        illiterate: 'ناخواندہ' },
+    as:  { blind: 'অন্ধ',           deaf: 'বধিৰ',           mute: 'মূক',          illiterate: 'নিৰক্ষৰ' },
+    sa:  { blind: 'अन्धः',           deaf: 'बधिरः',          mute: 'मूकः',          illiterate: 'निरक्षरः' },
+    ne:  { blind: 'अन्धो',           deaf: 'बहिरो',          mute: 'लाटो',          illiterate: 'निरक्षर' },
+    ks:  { blind: 'انٛدھ',           deaf: 'بَہرٕ',           mute: 'گونٛگ',         illiterate: 'ناخٔندٕ' },
+    sd:  { blind: 'انڌو',            deaf: 'ٻوڙو',           mute: 'گونگو',        illiterate: 'اڻپڙهيل' },
+    mai: { blind: 'अन्हर',           deaf: 'बहिर',           mute: 'गूँग',          illiterate: 'निरक्षर' },
+    mni: { blind: 'ꯃꯤꯇ ꯇꯥꯡꯕ',     deaf: 'ꯅꯥ ꯇꯥꯗꯕ',      mute: 'ꯋꯥꯔꯣꯏ',       illiterate: 'ꯂꯥꯢꯔꯤꯛ ꯈꯪꯗꯕ' },
+    kok: { blind: 'आंदळो',           deaf: 'बहिरो',          mute: 'मुको',          illiterate: 'निरक्षर' },
+    doi: { blind: 'अन्ना',            deaf: 'बैह्रा',          mute: 'गूंगा',         illiterate: 'अनपढ़' },
+    brx: { blind: 'मेगन गावनै',       deaf: 'खानानानै',       mute: 'गाबनानै',       illiterate: 'पठाय मोनै' },
+    sat: { blind: 'ᱢᱮᱫ ᱵᱟᱝ ᱧᱮᱞ',     deaf: 'ᱞᱩᱛᱩᱨ ᱵᱟᱝ ᱟᱸᱡᱚᱢ', mute: 'ᱠᱟᱛᱷᱟ ᱵᱟᱝ ᱚᱲᱟᱜ', illiterate: 'ᱟᱨᱟᱪ ᱵᱟᱝ ᱢᱚᱱᱮᱭ' },
+    bho: { blind: 'अन्हर',            deaf: 'बहिर',           mute: 'गूँग',          illiterate: 'अनपढ़' },
+    hne: { blind: 'अंधा',             deaf: 'बहरा',           mute: 'गूंगा',         illiterate: 'अनपढ़' },
+    tcy: { blind: 'ಕುರುಡು',          deaf: 'ಕೆಪ್ಪ',          mute: 'ಬುಲೆ',         illiterate: 'ಅಕ್ಷರ ಗೊತ್ತಿಲ್ಲ' },
+    kfa: { blind: 'ಕುರುಡು',          deaf: 'ಕಿವುಡು',         mute: 'ಮೂಗ',          illiterate: 'ಅನಕ್ಷರಸ್ಥ' },
+    kru: { blind: 'अन्धा',            deaf: 'बहिर',           mute: 'गूँगा',         illiterate: 'अनपढ़' },
+  };
+
   // Unicode-script → default language map. Auto-detect runs against
   // typed text and speech transcripts. Devanagari, Bengali, and Arabic
   // are ambiguous (multiple languages share the script); default to the
@@ -137,6 +174,37 @@
       if (re.test(s) && SUPPORTED_CODES.has(code)) return code;
     }
     return null;
+  }
+
+  // ── DISABILITY PILLS — LOCALIZER ─────────────────────────────
+  // Rewrites the four-user accessibility pills (👁️‍🗨️ blind, 🦻 deaf,
+  // 🤫 mute, 📖 illiterate) so they show in the current language.
+  // Detects which pill by emoji prefix (stable across pages); preserves
+  // the emoji and overwrites only the trailing word. Falls back to
+  // English when the current language has no entry.
+  function localizeDisabilityPills(code) {
+    const labels = DISABILITY_LABELS[code] || DISABILITY_LABELS.en;
+    const pills = document.querySelectorAll('.four-user span, [data-chitti-disability-pill] span, [data-chitti-disability-pill]');
+    pills.forEach((el) => {
+      const original = (el.textContent || '').trim();
+      if (!original) return;
+      // Match by emoji prefix — robust whether the rest is English,
+      // Hindi, or already localised to another language.
+      let key = null;
+      if (/^👁️?‍?🗨?️?|^👁/.test(original) || /^👀/.test(original)) key = 'blind';
+      else if (/^🦻|^👂/.test(original)) key = 'deaf';
+      else if (/^🤫|^🤐|^🙊/.test(original)) key = 'mute';
+      else if (/^📖|^📚|^✏️|^✏/.test(original)) key = 'illiterate';
+      if (!key) return;
+      // Extract leading emoji cluster (everything up to first ASCII /
+      // Latin / Indic letter) and rewrite the rest as the localised
+      // word. This survives en→ta→hi→en cycles without drift.
+      const m = original.match(/^([\s\S]*?)([A-Za-zÀ-ɏऀ-෿฀-࿿က-៿ᬀ-᭿ᰀ-᱿ꠀ-꯿].*)$/);
+      const emoji = m ? m[1].trim() : original.split(' ')[0];
+      el.textContent = (emoji ? emoji + ' ' : '') + labels[key];
+      el.setAttribute('data-chitti-disability-pill', key);
+      el.setAttribute('lang', code);
+    });
   }
 
   // Public hook for page-side voice handlers — call with the recognised
@@ -555,6 +623,8 @@
     // Sync the dropdown if it already exists in the DOM.
     const sel = document.getElementById('chitti-lang');
     if (sel && sel.value !== code) sel.value = code;
+    // Re-localise the four-user disability pills in the new language.
+    try { localizeDisabilityPills(code); } catch (e) { /* defensive — page may not have pills */ }
     const lang = LANGUAGES.find((l) => l[0] === code) || [code, code, code, ''];
     announce(
       (opts.manual ? 'Language changed to ' : 'Language auto-detected: ') + lang[1]
@@ -1004,6 +1074,8 @@
     detectFromBrowser,
     detectFromText,
     observeSpeechTranscript,
+    localizeDisabilityPills,
+    DISABILITY_LABELS,
     explainSimply,
     runDemo,
     getState: loadState,
