@@ -256,5 +256,9 @@ $('api').value = localStorage.getItem('chitti_fb_api') || 'https://chitti-vaani-
 $('secret').value = sessionStorage.getItem('chitti_fb_secret') || '';
 if ($('secret').value) load();
 </script>
+
+<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
+<script src="chitti_a11y.js"></script>
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 </body>
 </html>
