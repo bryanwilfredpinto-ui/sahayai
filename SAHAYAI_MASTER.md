@@ -36,6 +36,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | New products process | **Before building ANY new Chitti product:** (1) research top 3 apps in that category, (2) copy their full feature surface as skeleton, (3) mark unbuilt features as `COMING SOON`, (4) power with DeepSeek + community voices, (5) define capabilities in `skills/*.md`. | `project_new_products_process_locked` |
 | ISL support | **Indian Sign Language is a first-class accessibility surface — not ASL.** Phase 1: ISL dictionary + animation next to every Chitti response + tap-word-to-sign. Phase 2: camera-based ISL detection (COMING SOON). Phase 3: community-contributed ISL videos + Hall of Fame (COMING SOON). For 6 crore deaf Indians ignored by every app. | `project_chitti_isl_spec` |
 | Per-response widget | **Every response box on every page carries 4 icons: 🔊 speaker · 🤖 Chitti (explain further) · 👍 / 👎 thumbs · per-box feedback window** (voice or type, tagged to box ID, into Founder dashboard daily). Implementation: [feedback-widget.js](feedback-widget.js). **No page ships without this.** See §7. | `project_per_response_widget_locked` |
+| Camera intelligence | **Every Chitti with camera access captures: what was scanned · location (pincode/district) · date/time · result · user type · user satisfaction.** Fake-product detections feed community alerts, an annual report to FSSAI/government, and real-time warnings to nearby users. All camera data is **user-owned, never sold, anonymised before analysis, "Chitti forget" deletes all**. See §2b. | `project_camera_intelligence_locked` |
 
 ---
 
@@ -71,6 +72,58 @@ Examples already queued under this contract:
 - **Chitti Mechanic** — OBD2 diagnostics; reference apps to copy: Torque Pro, Car Scanner, FIXD.
 - **Chitti News AI** — deeper AI-augmented news on top of `chitti-news`; reference: Inshorts, Ground News, Artifact (RIP).
 - Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
+
+---
+
+## 2b. Camera Intelligence Across All Chittis — LOCKED (2026-05-13)
+
+Every Chitti that has camera access **must capture and store** for every scan:
+
+- **What** was scanned
+- **Location** (pincode / district)
+- **Date and time**
+- **Result** (fake / genuine / expired / safe)
+- **User type** (per disability profile + role — e.g. consumer / shopkeeper / elderly)
+- **User satisfaction** (the per-response 👍 / 👎 from `feedback-widget.js`)
+
+### Fake-product detection feeds three flywheels
+
+1. **Community alert system** — *"3 users near you found fake products this week."* Surfaced on the relevant product page, in the user's language, with the spotted brand/molecule blurred where defamation risk applies.
+2. **Annual fake-product report to FSSAI / government** — anonymised, aggregated by district + category. One report per calendar year, published openly on `sahayai.in/reports/` and emailed to relevant regulators (FSSAI for food/meds, BIS for goods, NPPA for medicine pricing).
+3. **Real-time warnings to nearby users** — when a fake is confirmed at pincode X, every Chitti user inside the active radius (§8 P0 #5–#9 geo work) gets a voice + text alert next time they open a relevant Chitti page.
+
+### Camera use per Chitti
+
+| Chitti | Camera captures |
+|---|---|
+| **MedUPI** | Medicine strips, prescriptions |
+| **Scanner** | Packaged food, barcodes |
+| **Kirana** | Invoices, stock, supplier bills |
+| **Legal** | Documents, notices, contracts |
+| **CA** | Bills, receipts, Form 16 |
+| **Government** | Official documents, forms |
+| **Vaani** | Text reading for blind users; ISL Phase 2 (camera-based ISL detection) |
+
+Any new Chitti that adds a camera surface inherits this contract automatically — no exceptions, no opt-out.
+
+### User-ownership contract
+
+All camera data is:
+
+- **Owned by the user** — stored against the per-device `user_token`, exportable on request.
+- **Never sold** — no third-party access, no ad targeting, no monetisation surface.
+- **Used to protect other users** — community alerts + annual report are the only outward flows, both anonymised.
+- **Anonymised before analysis** — face crops blurred, user ID dropped, GPS rounded to pincode centroid before any cross-user aggregate.
+- **`"Chitti forget"` deletes all** — voice or button command wipes every capture for that user_token, including the anonymised aggregate row (replaced with a tombstone so counts stay honest). Matches the existing forget-me semantics in Vaani.
+
+### Implementation contract
+
+- Single capture path lives in a shared substrate (`chitti_camera.js`, to be added at repo root alongside `chitti_a11y.js`) — pages never hand-roll camera capture or storage.
+- Captures POST to `/api/camera/capture` (one endpoint, all Chittis); routing by `product` field. Camera DB is per-Chitti (Turso, matches §2 one-DB-per-Chitti rule) with a thin cross-product index for the community-alert query.
+- Honest empty state: if the model isn't confident enough to flag fake/genuine, the result field is `unclear` — never silently coerced to `safe`. Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
+- New-products process applies: see each Chitti's `skills/FEATURES.md` for camera scope; surface unbuilt camera flows as `COMING SOON`, not silently omitted.
+
+See [[project_camera_intelligence_locked]].
 
 ---
 
