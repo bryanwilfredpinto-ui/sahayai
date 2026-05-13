@@ -34,6 +34,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Agent vision | **Chitti is a full device control agent.** Copy architecture from Google Assistant, Microsoft Copilot, Apple Siri. Skeleton-first with `COMING SOON` markers; Chitti fills in via `skills/*.md`. **No reinvention — copy the best.** | `project_agent_vision_locked` |
 | Voice strategy | **Bhashini is TEMPORARY.** Users donate their voice to Chitti; community voices replace Bhashini over time. Hall of Fame for voice contributors. Architecture must support **swapping voice provider at any time**. | `project_voice_strategy_locked` |
 | New products process | **Before building ANY new Chitti product:** (1) research top 3 apps in that category, (2) copy their full feature surface as skeleton, (3) mark unbuilt features as `COMING SOON`, (4) power with DeepSeek + community voices, (5) define capabilities in `skills/*.md`. | `project_new_products_process_locked` |
+| ISL support | **Indian Sign Language is a first-class accessibility surface — not ASL.** Phase 1: ISL dictionary + animation next to every Chitti response + tap-word-to-sign. Phase 2: camera-based ISL detection (COMING SOON). Phase 3: community-contributed ISL videos + Hall of Fame (COMING SOON). For 6 crore deaf Indians ignored by every app. | `project_chitti_isl_spec` |
 
 ---
 
@@ -126,6 +127,7 @@ Examples already queued under this contract:
 | `chitti_fundamentals.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
 | `chitti_complete_technical.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
 | `chitti_voice_hall_of_fame.html` | `chitti-voice-factory/` |
+| `chitti_isl.html` | `chitti-isl/` |
 
 ### Voice Factory language pages → `chitti-voice-factory/frontend/`
 
@@ -162,6 +164,73 @@ From the homepage Vision card:
 **Stubs that don't exist yet** (per `project_render_deploy_status_2026_05_10`): Kirana, Pharmacy, Salon, LangHub.
 
 **Voice Factory Phase 2** (blocked on Sire's Bhashini ULCA registration): swap `mock_bhashini` for real Bhashini supplier across 26 langs.
+
+### 5a. Per-Chitti planned wave (queued 2026-05-13)
+
+Full detail + surface needed live in each Chitti's
+`<product>/skills/FEATURES.md`. Summary below for routing.
+
+| Product | Item | Priority | Spec link |
+|---|---|---|---|
+| **MedUPI** | Price alert ("Tell me when Crocin drops below ₹20") | P1 | [features](chitti-medupi/skills/FEATURES.md) |
+| **MedUPI** | Expiry reminder for medicines at home | **P0** (safety) | [features](chitti-medupi/skills/FEATURES.md) |
+| **MedUPI** | Family medicine cabinet tracker | P1 | [features](chitti-medupi/skills/FEATURES.md) |
+| **News** | Morning briefing — 5 headlines read aloud at 07:00 IST | P1 | [features](chitti-news/skills/FEATURES.md) |
+| **News** | "Explain this news in simple Hindi" button on every article | **P0** | [features](chitti-news/skills/FEATURES.md) |
+| **News** | Fake-news score visible on every article (not just on open) | **P0** | [features](chitti-news/skills/FEATURES.md) |
+| **Vaani** | "Remember my preferences" — Chitti learns regular orders | P1 | [features](chitti-vaani/skills/FEATURES.md) |
+| **Vaani** | Voice shortcuts — say "usual" / "wahi wala" | P2 | [features](chitti-vaani/skills/FEATURES.md) |
+| **Vaani** | Daily check-in for elderly users (reuses emergency cascade) | **P0** (safety) | [features](chitti-vaani/skills/FEATURES.md) |
+| **Government** | "Am I eligible?" checker for every scheme | **P0** | [features](chitti-government/skills/FEATURES.md) |
+| **Government** | Application status tracker | P1 | [features](chitti-government/skills/FEATURES.md) |
+| **Government** | Document checklist per scheme (scanner deep-link) | **P0** | [features](chitti-government/skills/FEATURES.md) |
+| **Legal** | Plain-language explainer for any legal notice | **P0** | [features](chitti-legal/skills/FEATURES.md) |
+| **Legal** | "Is this contract fair?" clause checker | P1 | [features](chitti-legal/skills/FEATURES.md) |
+| **Legal** | Tenant rights by state | P2 | [features](chitti-legal/skills/FEATURES.md) |
+| **CA** | Tax-saving reminder before March 31 | P1 | [features](chitti-ca/skills/FEATURES.md) |
+| **CA** | GST filing deadline alerts | P1 | [features](chitti-ca/skills/FEATURES.md) |
+| **CA** | "How much tax will I save if I invest X?" calculator | P2 | [features](chitti-ca/skills/FEATURES.md) |
+
+### 5b. Cross-cutting — applies to ALL Chittis (queued 2026-05-13)
+
+These ship as shared substrate (`chitti_a11y.js` + a new
+`chitti_offline.js` + WhatsApp gateway), not per-product.
+
+| Item | Priority | Notes |
+|---|---|---|
+| **Offline mode for low-connectivity areas** | P1 | Service-worker cache of last-N responses + an "offline" badge per page. Honest stub when the cache is empty. |
+| **WhatsApp integration — use Chitti without internet app** | **P0** | Biggest rural unlock. Bot endpoint per Chitti via WhatsApp Business API. Same DeepSeek + voice substrate. Reuses existing voice-first identity. |
+| **Village mode — extra large text, simple language** | **P0** | `chitti_a11y.js` toggle. Class-5 plain-Hindi system prompt across all DeepSeek calls. Companion to the existing Braille mode toggle. |
+
+### 5c. Accessibility adaptation wave (queued 2026-05-13)
+
+Concrete behaviors that activate per **User Disability Profile** (see
+[§7](#user-disability-profile--locked) — the profile is the signal, these are
+the adaptations). All implementations land in `chitti_a11y.js` so every
+Chitti inherits them automatically.
+
+| Triggered by profile | Behavior | Priority |
+|---|---|---|
+| **BLIND** | Every page auto-announces on open ("You are on Chitti MedUPI. Tap anywhere to start.") | **P0** |
+| **BLIND** | Gesture navigation — swipe left/right between sections | P1 |
+| **BLIND** | No visual-only errors — every error must be spoken | **P0** (enforce — already in contract) |
+| **ELDERLY** | Font-size memory per device | P1 |
+| **ELDERLY** | Slow speech mode | **P0** |
+| **ELDERLY** | Repeat button ("Say that again Chitti") | **P0** |
+| **ELDERLY** | Simple mode — hides advanced features | P1 |
+| **ILLITERATE** | Everything in voice — no reading required | **P0** |
+| **ILLITERATE** | Voice confirmation ("Say HAAN to confirm") | **P0** |
+| **ILLITERATE** | Pictures with every option — visual menus | **P0** |
+| **RURAL** (locale-derived, not a profile checkbox today) | 2G mode — works on slow internet | P1 |
+| **RURAL** | Missed-call feature — user gives missed call, Chitti calls back | P1 |
+| **RURAL** | SMS fallback — if no internet, Chitti sends SMS | **P0** |
+
+The Rural triggers above don't have a dedicated profile checkbox in §7's
+**User Disability Profile** today. Two options when implementing — pick
+one explicitly with Sire, don't quietly invent a path:
+- Add **"I am on a slow / patchy connection"** as a new profile row, OR
+- Derive the rural signal from network heuristics (effectiveType ≤ 2g,
+  RTT > 1500 ms) + IP-geo and never store it.
 
 ---
 
@@ -229,6 +298,81 @@ Cross-cutting quality rules (unchanged):
 
 - **Sticky `NOT SEBI REGISTERED` bar** at top + **full legal modal** behind it.
 - Never demoted to footer.
+
+### User Disability Profile — LOCKED
+
+On **first visit to ANY Chitti page**, show a simple one-time setup:
+
+> **"How can Chitti help you better?"**
+>
+> - ☐ I am blind or have low vision
+> - ☐ I am deaf or hard of hearing
+> - ☐ I am mute or have speech difficulty
+> - ☐ I use sign language (ISL)
+> - ☐ I have difficulty reading
+> - ☐ I am elderly (65+)
+> - ☐ I have limited mobility
+> - ☐ I have cognitive disability
+> - ☐ None of the above
+
+- User can **select multiple**.
+- **Saved locally** — never asked again.
+- **Synced across all Chittis** on the same device (shared `localStorage` key via `chitti_a11y.js`).
+
+#### How Chitti adapts per profile
+
+| Profile | Adaptation |
+|---|---|
+| **BLIND** | Everything spoken. No visual-only content. |
+| **DEAF** | Everything in text + **ISL animations**. No audio-only content. |
+| **MUTE** | All input via tap/type. Voice input optional, **never required**. |
+| **ISL** | **ISL animations on every response.** |
+| **ILLITERATE** | Picture menus, voice everything. |
+| **ELDERLY** | Large text, slow speech, simple language, **repeat button**. |
+| **LIMITED MOBILITY** | Large touch targets, voice navigation only. |
+| **COGNITIVE** | Simple language, one step at a time, no overwhelming information. |
+
+#### Important rules
+
+- Profile setup is **VOICE GUIDED for blind users**.
+- Profile setup has **ISL demo for deaf users**.
+- **Never force** — always skippable.
+- **Always changeable in settings.**
+- Chitti says: *"I will remember how to help you best."*
+
+This extends the [Four-user accessibility contract](#the-four-user-contract--every-chitti-page) — the four-user contract is the floor; the disability profile is how Chitti personalises beyond the floor. Implementation lives in `chitti_a11y.js` so every Chitti product inherits it.
+
+### Indian Sign Language (ISL) — LOCKED
+
+**Indian Sign Language — not ASL.** For the 6 crore deaf Indians ignored by every app. ISL ships in three phases, all inheriting from `chitti_a11y.js`.
+
+#### Phase 1 — Build now (skeleton on commit #1)
+
+- **ISL dictionary** of common Indian-life words as animated hand gestures. Lives in `chitti_isl_dictionary.json` at repo root, loaded by `chitti_a11y.js`.
+- **Every Chitti response shows an ISL animation panel alongside the text.** Auto-attached by `chitti_a11y.js` to any element marked `data-chitti-response` (or `.chitti-response`) via MutationObserver.
+- **Tap any word to see its ISL sign** in an enlarged modal. Unknown words fall back to fingerspelling.
+- **ISL mode toggle** in the accessibility bar (next to Braille mode). Auto-on when the user's disability profile has ☑ "I use sign language (ISL)".
+- **Honest placeholders.** Animations are emoji-hand CSS keyframe sequences clearly labeled "Placeholder ISL — community video coming soon." Never claim a placeholder is the real sign. Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
+
+#### Phase 2 — Camera-based ISL (COMING SOON)
+
+- Camera detects user's ISL gestures.
+- Chitti interprets and responds (DeepSeek + a frame-stream classifier — supplier TBD).
+- Deaf user communicates via ISL; Chitti speaks the response aloud for others in the room.
+- Surfaces as a `COMING SOON` card on `chitti_isl.html`; never silently fails.
+
+#### Phase 3 — Community-built ISL (COMING SOON)
+
+- Deaf community contributes ISL videos for words missing from the dictionary.
+- **Hall of Fame for ISL contributors** — same social-reward model as the voice donation strategy. Lives on `chitti_voice_hall_of_fame.html` as a dedicated ISL section, mirrored on `chitti_isl.html`.
+- Architecture is the **same swappable substrate** as voice donations — provider-agnostic at one URL.
+
+#### Implementation contract
+
+- All ISL behavior lives in `chitti_a11y.js` + `chitti_isl_dictionary.json`. Per-product pages never hand-roll ISL.
+- ISL panel renders **next to**, not in place of, the text. Deaf-plus-low-vision users keep large text.
+- Dictionary entries declare a sequence of emoji-hand frames + duration; replaced by community video URLs in Phase 3 without any frontend change.
+- New-products process applies: see [`chitti-isl/skills/FEATURES.md`](chitti-isl/skills/FEATURES.md) for the full feature surface and COMING SOON markers.
 
 ---
 
