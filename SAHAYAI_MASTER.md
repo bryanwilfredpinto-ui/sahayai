@@ -40,6 +40,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Knowledge corpora locked (2026-05-13) | **CA / Legal / Psychology** ship at expert grade. [chitti-ca/skills/CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md) = **CA Final + PhD** (IT Act, GST, Companies Act, AS/Ind AS, Budget 2025, portal navigation, tax jurisprudence, treaty interpretation). [chitti-legal/skills/LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md) = **LL.M + PhD** (full Constitution, BNS/BNSS/BSA 2023, civil + criminal, family law all religions, RERA, CPA 2019, DPDP 2023, state-specific, POSH/DV, landmark SC). [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) = **basics → PhD** (Freud/Jung/Maslow/Rogers/Bandura/Skinner/Pavlov/Beck/Ellis, Goleman/Ekman/Gottman/Seligman, Patanjali/Ayurveda/Gita/Buddhist/joint-family, MI/trauma/crisis/financial-stress/rural/women/elder, Kahneman/Thaler/Ariely, neuropsych/cross-cultural/community/health). All three: confidence scoring, devil's-advocate, server-enforced disclaimer (CA + Legal), strict therapist-boundary (Vaani with helpline cascade incl. Tele-MANAS 14416 + iCall + Vandrevala + NIMHANS). | — |
 | **New-session rule** | **Every Claude Code session MUST begin with `READ SAHAYAI_MASTER.md`.** Non-negotiable. Without it: no code changes, no new features, no deployments. Auto-enforced via repo-root [`CLAUDE.md`](CLAUDE.md) + [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — both files auto-load on session start; no human instruction needed. See §2c. | `project_new_session_rule_locked` |
 | **Feature Discovery Box** | **Every Chitti page carries a `💡 What can Chitti do for you?` button** — floating CTA + a11y-bar mirror. Reads each Chitti's `skills/FEATURES.md` live (nothing hardcoded), groups by LIVE / PLANNED / FUTURE / ANDROID, speaks features aloud in the user's selected language, taps to activate/expand, and **auto-reads on first visit for blind users**. Substrate: [`chitti_features.js`](chitti_features.js); auto-loaded from [`chitti_a11y.js`](chitti_a11y.js) — every product inherits without per-page edits. See §2d. | `project_feature_discovery_box_locked` |
+| **Business Continuity Plan** | **5-layer self-healing — platform self-runs 72 hours without human intervention.** Layer 1 self-ping every 4 min (chitti-founder hits every Chitti `/health`, emails Sire on non-200, logs to Turso). Layer 2 health checks all backends. Layer 3 quality score on every response (per-response widget §7). Layer 4 daily/weekly/hourly feedback monitoring (§6). Layer 5 LLM fallback chain **DeepSeek → Claude → Gemini**. See §2e. | `project_business_continuity_plan_locked` |
 
 ---
 
@@ -200,6 +201,40 @@ The new-products process (§2a) requires every Chitti to publish a `skills/FEATU
 - **Voice-first.** The modal is usable end-to-end without reading any text. Read-all + per-feature speak buttons cover the read-aloud surface; the floating CTA is `aria-label`-ed for screen readers.
 
 See [[project_feature_discovery_box_locked]].
+
+---
+
+## 2e. Business Continuity Plan — LOCKED (2026-05-14)
+
+Five layers of self-healing run continuously so the platform survives **72 hours without human intervention**. Operationalised in [chitti-founder/backend/main.py](chitti-founder/backend/main.py); reuses the existing APScheduler, the [`feedback-widget.js`](feedback-widget.js) per-response signals, and the §6 daily/weekly cron crystallisation.
+
+### The five layers
+
+| Layer | What | Where |
+|---|---|---|
+| **1** | **Self-ping every 4 minutes.** chitti-founder hits every Chitti `/health` endpoint. Non-200 → email Sire (debounced 1 h per Chitti). Every result logged to Turso `chitti-founder` DB. | [chitti-founder/backend/main.py](chitti-founder/backend/main.py) → `run_self_ping()` cron, interval 4 min |
+| **2** | **Health checks all backends.** Same self-ping loop; ground truth of which Chitti is up *right now*. Surfaces on the Founder dashboard alongside the daily slice. | same job |
+| **3** | **Quality scoring every response.** Per-response widget (§7) captures 👍 / 👎 + voice/text feedback on every box, tagged to the box ID. | [feedback-widget.js](feedback-widget.js) |
+| **4** | **Feedback monitoring daily.** 07:00 IST quality email + Sunday 08:00 IST weekly trend + hourly :15 escalator (low thumbs → SMS, repeat defect → GH issue, CO₂ > 0.5 g → carbon issue). | §6 — [chitti-founder/backend/main.py](chitti-founder/backend/main.py) |
+| **5** | **AI fallback chain — DeepSeek → Claude → Gemini.** DeepSeek is the sole production LLM (§2). Claude + Gemini are configured as fallback shims, triggered only if DeepSeek returns 5xx three times in a row. Honest failure surface if all three fail — never silently degrade. | per-product LLM client |
+
+### Failure scenarios → responses
+
+| Scenario | Response |
+|---|---|
+| **Single backend down** | Render auto-restarts the service. Layer-1 self-ping logs the gap and emails Sire on the first non-200 (debounced). |
+| **Database fails** | Standby takes over within **30 s** — Turso embedded-replica pattern (§2) keeps a local SQLite file; writes continue against the local copy and sync resumes once Turso is reachable. |
+| **DeepSeek fails** | Auto-fallback Claude → Gemini in the LLM client. Honest failure if all three are down. |
+| **GitHub Pages down** | Cloudflare mirror — **P2**, not yet wired; queued in §8. |
+| **Mass outage** | Redeploy from GitHub `main`. Every Chitti backend has a `render.yaml` so the platform is reconstitutable from source. |
+
+### Hard rules
+
+- **72-hour autonomous target.** Every layer above must run unattended for ≥ 72 hours. Anything that needs human intervention sooner is a defect.
+- **No silent fallbacks** (Voice Factory rule, §3 #5, applied to the LLM chain too). Layer-5 surfaces *"falling back to Claude because DeepSeek 5xx-d 3× in a row"*, never silent.
+- **Honest stubs allowed** for unset env vars (SMTP, SMS, GitHub token, Turso URL, Claude / Gemini keys) — the helper logs what it WOULD have done and returns False so the cron stays green. Matches the §3 *Honest stubs over fake demos* rule.
+
+See [[project_business_continuity_plan_locked]].
 
 ---
 
