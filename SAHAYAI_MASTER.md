@@ -38,6 +38,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Per-response widget | **Every response box on every page carries 4 icons: 🔊 speaker · 🤖 Chitti (explain further) · 👍 / 👎 thumbs · per-box feedback window** (voice or type, tagged to box ID, into Founder dashboard daily). Implementation: [feedback-widget.js](feedback-widget.js). **No page ships without this.** See §7. | `project_per_response_widget_locked` |
 | Camera intelligence | **Every Chitti with camera access captures: what was scanned · location (pincode/district) · date/time · result · user type · user satisfaction.** Fake-product detections feed community alerts, an annual report to FSSAI/government, and real-time warnings to nearby users. All camera data is **user-owned, never sold, anonymised before analysis, "Chitti forget" deletes all**. See §2b. | `project_camera_intelligence_locked` |
 | Knowledge corpora locked (2026-05-13) | **CA / Legal / Psychology** ship at expert grade. [chitti-ca/skills/CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md) = **CA Final + PhD** (IT Act, GST, Companies Act, AS/Ind AS, Budget 2025, portal navigation, tax jurisprudence, treaty interpretation). [chitti-legal/skills/LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md) = **LL.M + PhD** (full Constitution, BNS/BNSS/BSA 2023, civil + criminal, family law all religions, RERA, CPA 2019, DPDP 2023, state-specific, POSH/DV, landmark SC). [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) = **basics → PhD** (Freud/Jung/Maslow/Rogers/Bandura/Skinner/Pavlov/Beck/Ellis, Goleman/Ekman/Gottman/Seligman, Patanjali/Ayurveda/Gita/Buddhist/joint-family, MI/trauma/crisis/financial-stress/rural/women/elder, Kahneman/Thaler/Ariely, neuropsych/cross-cultural/community/health). All three: confidence scoring, devil's-advocate, server-enforced disclaimer (CA + Legal), strict therapist-boundary (Vaani with helpline cascade incl. Tele-MANAS 14416 + iCall + Vandrevala + NIMHANS). | — |
+| **New-session rule** | **Every Claude Code session MUST begin with `READ SAHAYAI_MASTER.md`.** Non-negotiable. Without it: no code changes, no new features, no deployments. Auto-enforced via repo-root [`CLAUDE.md`](CLAUDE.md) + [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — both files auto-load on session start; no human instruction needed. See §2c. | `project_new_session_rule_locked` |
 
 ---
 
@@ -125,6 +126,43 @@ All camera data is:
 - New-products process applies: see each Chitti's `skills/FEATURES.md` for camera scope; surface unbuilt camera flows as `COMING SOON`, not silently omitted.
 
 See [[project_camera_intelligence_locked]].
+
+---
+
+## 2c. New Session Rule — MANDATORY (2026-05-13)
+
+**Every Claude Code session must begin with:**
+
+> **`Read SAHAYAI_MASTER.md first`**
+
+**This is non-negotiable.** Without reading `SAHAYAI_MASTER.md` first:
+
+- ❌ **No code changes allowed.**
+- ❌ **No new features allowed.**
+- ❌ **No deployments allowed.**
+
+The first command in every session is:
+
+> **`READ SAHAYAI_MASTER.md`**
+
+### Auto-enforcement
+
+Two files at the repo root auto-load on every Claude Code session start, so no human instruction is needed:
+
+| File | Auto-load mechanism |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Claude Code's standard project-memory location — loaded into the system prompt of every session in this repo. |
+| [`.claude/CLAUDE.md`](.claude/CLAUDE.md) | Secondary copy alongside `.claude/settings.json` — mirrors the contract so it survives any tooling that reads the `.claude/` directory first. |
+
+Both files carry the same instruction:
+
+> **STOP. Read `SAHAYAI_MASTER.md` before doing ANYTHING.**
+
+### Why this is locked
+
+Without the master file loaded, every session re-litigates already-locked decisions (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades). That wastes Bryan's time and risks accidentally rolling back hard-won locks. The new-session rule short-circuits that failure mode — Claude reads the locked decisions before touching any code.
+
+See [[project_new_session_rule_locked]].
 
 ---
 
