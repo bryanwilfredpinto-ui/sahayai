@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Iterator, Optional
 
 from sqlalchemy import (
-    BigInteger, Column, DateTime, Index, Integer, String, Text,
+    BigInteger, Column, DateTime, Float, Index, Integer, String, Text,
     create_engine, func, inspect, text,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -89,6 +89,20 @@ class ProductGmailAccount(Base):
     domain_template = Column(String(64))
     features        = Column(Text)
 
+    # Geo for the local-Chitti directory lookup
+    # (/api/vaani/local/nearby). All four columns are optional and
+    # nullable so existing rows stay valid until an admin backfills them.
+    # `service_radius_km` is the shop's own delivery / service zone;
+    # the server uses it as an OR-fence (deliver if either the user is
+    # within the global default radius OR within the shop's declared
+    # service radius). Pincode is a coarse fallback for shops whose
+    # owner hasn't supplied lat/lng yet — the server maps pincode to
+    # an approximate lat/lng via chitti-pincode-tier.json (added in C3).
+    lat                = Column(Float)
+    lng                = Column(Float)
+    pincode            = Column(String(8))
+    service_radius_km  = Column(Float)
+
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -102,6 +116,10 @@ class ProductGmailAccount(Base):
             "connected_email": self.connected_email,
             "domain_template": self.domain_template,
             "features": [f.strip() for f in (self.features or "").split(",") if f.strip()],
+            "lat":                self.lat,
+            "lng":                self.lng,
+            "pincode":            self.pincode,
+            "service_radius_km":  self.service_radius_km,
             "token_expires_in": (
                 max(0, int(self.token_expiry) - int(datetime.now(tz=timezone.utc).timestamp()))
                 if self.token_expiry else None
@@ -174,6 +192,17 @@ def _migrate_added_columns() -> None:
             adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN domain_template VARCHAR(64)")
         if "features" not in cols:
             adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN features TEXT")
+        # Geo columns for /api/vaani/local/nearby. SQLite uses REAL,
+        # Postgres uses DOUBLE PRECISION; both accept the standard
+        # FLOAT keyword we emit here.
+        if "lat" not in cols:
+            adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN lat FLOAT")
+        if "lng" not in cols:
+            adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN lng FLOAT")
+        if "pincode" not in cols:
+            adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN pincode VARCHAR(8)")
+        if "service_radius_km" not in cols:
+            adds.append("ALTER TABLE product_gmail_accounts ADD COLUMN service_radius_km FLOAT")
         if not adds:
             return
         with _engine.begin() as conn:

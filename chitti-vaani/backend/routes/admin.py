@@ -78,7 +78,58 @@ DOMAIN_TEMPLATES = (
 )
 
 
-def _validate_payload(body: dict) -> tuple[str, str, str, Optional[str], Optional[str]]:
+_PINCODE_RE = re.compile(r"^[1-9]\d{5}$")
+
+
+def _parse_geo(body: dict) -> dict:
+    """Pull lat / lng / pincode / service_radius_km out of `body`.
+
+    Each field is optional. Invalid values raise 400 — silently
+    dropping bad geo would leave shops with a half-set row, which the
+    radius filter in services/local_chitti_service.nearby() would
+    then misinterpret.
+    """
+    out: dict = {}
+    raw_lat = body.get("lat")
+    raw_lng = body.get("lng")
+    if raw_lat is not None and raw_lat != "":
+        try:
+            v = float(raw_lat)
+        except (TypeError, ValueError):
+            abort(400, description="lat must be a number in [-90, 90]")
+        if not -90.0 <= v <= 90.0:
+            abort(400, description="lat must be in [-90, 90]")
+        out["lat"] = v
+    if raw_lng is not None and raw_lng != "":
+        try:
+            v = float(raw_lng)
+        except (TypeError, ValueError):
+            abort(400, description="lng must be a number in [-180, 180]")
+        if not -180.0 <= v <= 180.0:
+            abort(400, description="lng must be in [-180, 180]")
+        out["lng"] = v
+
+    raw_pin = body.get("pincode")
+    if raw_pin is not None and str(raw_pin).strip() != "":
+        p = str(raw_pin).strip()
+        if not _PINCODE_RE.match(p):
+            abort(400, description="pincode must be a 6-digit India PIN (no leading zero)")
+        out["pincode"] = p
+
+    raw_radius = body.get("service_radius_km")
+    if raw_radius is not None and raw_radius != "":
+        try:
+            r = float(raw_radius)
+        except (TypeError, ValueError):
+            abort(400, description="service_radius_km must be a number in (0, 200]")
+        if not 0.0 < r <= 200.0:
+            abort(400, description="service_radius_km must be in (0, 200]")
+        out["service_radius_km"] = r
+
+    return out
+
+
+def _validate_payload(body: dict) -> tuple[str, str, str, Optional[str], Optional[str], dict]:
     key   = (body.get("product_key") or "").strip().lower()
     name  = (body.get("product_name") or "").strip()
     email = (body.get("gmail_address") or "").strip().lower()
@@ -100,7 +151,8 @@ def _validate_payload(body: dict) -> tuple[str, str, str, Optional[str], Optiona
         feats = (raw_features or "").strip()
     feats = feats[:1024] or None
 
-    return key, name, email, domain, feats
+    geo = _parse_geo(body)
+    return key, name, email, domain, feats, geo
 
 
 # ───── routes ─────
@@ -126,7 +178,7 @@ def list_products():
 def add_product():
     _require_admin()
     body = request.get_json(silent=True) or {}
-    key, name, email, domain, feats = _validate_payload(body)
+    key, name, email, domain, feats, geo = _validate_payload(body)
     with session() as s:
         existing = s.query(ProductGmailAccount).filter_by(product_key=key).first()
         if existing:
@@ -138,6 +190,7 @@ def add_product():
             oauth_status="needs_auth",
             domain_template=domain,
             features=feats,
+            **geo,
         )
         s.add(row)
         s.flush()
@@ -146,8 +199,50 @@ def add_product():
     detail = f"key={key} email={email}"
     if domain:
         detail += f" domain={domain}"
+    if geo:
+        detail += " geo=" + ",".join(f"{k}={v}" for k, v in geo.items())
     log_action(new_id, "added", "ok", detail)
     return jsonify({"ok": True, "item": out}), 201
+
+
+@bp.patch("/products/<int:pid>/geo")
+def set_geo(pid: int):
+    """Backfill / update geo on an existing product row.
+
+    Required so admins can give the 17 seeded rows a lat/lng/pincode/radius
+    after the migration — the seeder leaves all four columns null.
+    Body fields are independently optional: send only what you want to
+    change. To clear a field, send an empty string for it.
+    """
+    _require_admin()
+    body = request.get_json(silent=True) or {}
+
+    # Parse + validate the fields the caller actually supplied. We
+    # intentionally distinguish "not present" (leave alone) from
+    # "empty string" (clear). _parse_geo handles validation when present;
+    # we handle the explicit-clear case here.
+    geo = _parse_geo(body)
+    clears: list[str] = []
+    for f in ("lat", "lng", "pincode", "service_radius_km"):
+        if f in body and (body[f] is None or str(body[f]).strip() == "") and f not in geo:
+            clears.append(f)
+
+    if not geo and not clears:
+        abort(400, description="provide at least one of lat / lng / pincode / service_radius_km (or empty-string to clear)")
+
+    with session() as s:
+        row = s.get(ProductGmailAccount, pid)
+        if not row:
+            abort(404, description="product not found")
+        for k, v in geo.items():
+            setattr(row, k, v)
+        for f in clears:
+            setattr(row, f, None)
+        s.flush()
+        out = row.to_dict()
+    log_action(pid, "geo_set", "ok",
+               ", ".join([f"{k}={v}" for k, v in geo.items()] + [f"{f}=null" for f in clears]))
+    return jsonify({"ok": True, "item": out})
 
 
 @bp.delete("/products/<int:pid>")
