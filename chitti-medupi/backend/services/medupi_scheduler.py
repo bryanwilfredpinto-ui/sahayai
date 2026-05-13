@@ -11,6 +11,7 @@ Jobs:
   3. daily_top100_brave     — every day, 02:00 IST
   4. cache_evict            — every day, 02:55 IST (cleans expired Brave cache)
   5. daily_expiry_scan      — every day, 08:00 IST (P0 medicine-expiry safety)
+  6. daily_price_alert_scan — every day, 09:00 IST (P1 price drop alerts)
 
 Each job:
   - Logs start + end + outcome
@@ -154,6 +155,20 @@ def _job_daily_expiry_scan() -> dict:
         db.close()
 
 
+def _job_daily_price_alert_scan() -> dict:
+    """
+    P1 price-alert scan — daily 09:00 IST. Walks every active alert,
+    evaluates against NPPA ceiling > Jan Aushadhi MRP > ≥2 community
+    reports, marks fired and stubs the notification channels.
+    """
+    from services import medupi_price_alerts
+    db = SessionLocal()
+    try:
+        return medupi_price_alerts.run_daily_scan(db)
+    finally:
+        db.close()
+
+
 # ───── Public API ─────
 
 def start() -> None:
@@ -200,6 +215,13 @@ def start() -> None:
         _wrap("daily_expiry_scan", _job_daily_expiry_scan),
         CronTrigger(hour=8, minute=0, timezone=IST),
         id="daily_expiry_scan",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    sch.add_job(
+        _wrap("daily_price_alert_scan", _job_daily_price_alert_scan),
+        CronTrigger(hour=9, minute=0, timezone=IST),
+        id="daily_price_alert_scan",
         replace_existing=True,
         misfire_grace_time=3600,
     )

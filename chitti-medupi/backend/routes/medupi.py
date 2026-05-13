@@ -38,6 +38,11 @@ Route map (all prefix /api/medupi):
     GET    /expiry/summary          → P0: bucketed expiry summary
                                        (?profile_id=&window_days=30)
 
+  Price alerts (X-User-Token)
+    GET    /price-alerts            → ?status=active list
+    POST   /price-alerts            → {medicine_name, threshold_inr, pincode?, service_radius_km?}
+    DELETE /price-alerts/<id>       → cancel an alert
+
   Real-time pharmacy prices (Brave Search · snippet-only)
     GET   /price/live/<name>        → 24h-cached snippet prices
 
@@ -66,6 +71,7 @@ from services import (
     medupi_family,
     medupi_insurance,
     medupi_jan_aushadhi,
+    medupi_price_alerts,
     medupi_recognition,
     medupi_reminders,
     medupi_risk,
@@ -415,6 +421,47 @@ def reminder_delete(db, rid):
     token = _user_token_or_400()
     if not medupi_reminders.delete_reminder(db, token, rid):
         abort(404, description="reminder not found")
+    return jsonify({"ok": True})
+
+
+@bp.get("/price-alerts")
+@with_db
+def price_alerts_list(db):
+    token = _user_token_or_400()
+    status = (request.args.get("status") or "active").strip()
+    return jsonify({"items": medupi_price_alerts.list_alerts(db, token, status=status)})
+
+
+@bp.post("/price-alerts")
+@with_db
+def price_alerts_add(db):
+    token = _user_token_or_400()
+    body = _json_body()
+    medicine_name = str(body.get("medicine_name") or "").strip()
+    threshold = body.get("threshold_inr")
+    if not medicine_name:
+        abort(400, description="medicine_name is required")
+    pincode = (body.get("pincode") or "").strip() or None
+    radius = body.get("service_radius_km")
+    try:
+        radius_f = float(radius) if radius not in (None, "") else None
+    except (TypeError, ValueError):
+        abort(400, description="service_radius_km must be a number")
+    try:
+        return jsonify(medupi_price_alerts.add_alert(
+            db, token, medicine_name, threshold,
+            pincode=pincode, service_radius_km=radius_f,
+        ))
+    except ValueError as e:
+        abort(400, description=str(e))
+
+
+@bp.delete("/price-alerts/<int:aid>")
+@with_db
+def price_alerts_delete(db, aid):
+    token = _user_token_or_400()
+    if not medupi_price_alerts.delete_alert(db, token, aid):
+        abort(404, description="alert not found")
     return jsonify({"ok": True})
 
 

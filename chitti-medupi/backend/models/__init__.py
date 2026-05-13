@@ -7,5 +7,6 @@ from models.wallet import WalletEntry  # noqa: F401
 from models.reminder import Reminder  # noqa: F401
 from models.price_cache import PriceCache  # noqa: F401
 from models.community_price import CommunityPrice  # noqa: F401
+from models.price_alert import PriceAlert  # noqa: F401
 from models.search_log import SearchLog  # noqa: F401
 from models.loader_run import LoaderRun  # noqa: F401
