@@ -556,6 +556,26 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="tc-list" class="tc-list"></div>
   </section>
 
+  <!-- ════════ DAILY CHECK-IN (P0 — elderly safety) ════════ -->
+  <section class="section-card" aria-labelledby="checkin-title" id="section-checkin">
+    <h2 class="section-title" id="checkin-title"><span class="ico">🌅</span> Daily check-in for elderly</h2>
+    <div class="section-sub">Chitti asks "Aap theek hain?" at the time you choose, every day. If you stay silent after the configured number of prompts, <b>Chitti fires the family emergency cascade</b> — same denylist on 112/100/102, never cops. (project_chitti_vaani_emergency_protocol)</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+      <label style="font-size:13px">🕗 Time (IST):
+        <input id="checkin-time" type="time" value="08:00" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px">
+      </label>
+      <label style="font-size:13px">👵 Label:
+        <input id="checkin-label" type="text" placeholder="Dadi / Naana / Self" maxlength="80" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;min-width:160px">
+      </label>
+      <label style="font-size:13px">🔁 Max silent prompts before escalation:
+        <input id="checkin-max" type="number" min="1" max="10" value="3" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;width:64px">
+      </label>
+      <button class="btn-saffron" onclick="onCheckinSave()" aria-label="Save daily check-in">💾 Save</button>
+      <button class="btn-ghost" onclick="onCheckinDisable()" aria-label="Disable daily check-in">🚫 Disable</button>
+    </div>
+    <div id="checkin-status" role="status" aria-live="polite" style="font-size:13px;color:#555"></div>
+  </section>
+
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
   <section class="section-card" aria-labelledby="pair-title">
     <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
@@ -2207,6 +2227,8 @@ function startEmergencyPoll(){
               : 'आपके साथी ने कहा वे ठीक हैं। चिंता मत करें।',
               CURRENT_LANG);
             logAction('Inbound emergency check-in', 'partner=' + (ev.from||'?'));
+          } else if (ev.kind === 'checkin_prompt') {
+            handleDailyCheckinPrompt(ev);
           }
         }
       }
@@ -2231,6 +2253,120 @@ function handleInboundEmergency(ev){
     try { window.ChittiNative.triggerEmergencyAlarm('partner_relay'); } catch(e){}
   }
   logAction('Inbound emergency relay', 'partner=' + (ev.from||'?'));
+}
+
+/* ─── Daily check-in (P0 — elderly users) ─── */
+/* Reuses the existing emergency cascade for silence escalation —
+   confirm-with-master → ring alarm → spouse → family → relay. NEVER
+   auto-dials cops. (project_chitti_vaani_emergency_protocol) */
+function handleDailyCheckinPrompt(ev){
+  const lang = CURRENT_LANG || 'en';
+  const label = (ev.payload && ev.payload.elderly_label) || '';
+  const prompt = lang === 'en'
+    ? (label ? ('Daily check-in for ' + label + '. ') : '') + 'Are you OK? Say HAAN or tap I am OK.'
+    : (label ? ('दैनिक चेक-इन — ' + label + '। ') : '') + 'क्या आप ठीक हैं? "हाँ" कहिए या "I am OK" दबाइए।';
+  // Repurpose the existing emergency overlay — same affordances, no new
+  // UI surface to maintain. Set stage to 0 so the I'M OK button is the
+  // primary action. If the user stays silent and the backend hits
+  // max_prompts, the scheduler fires emergency_service.trigger() which
+  // produces a real `kind=emergency` relay to paired family.
+  EM_REASON = lang === 'en' ? 'Daily check-in' : 'दैनिक चेक-इन';
+  EM_STAGE = 0;
+  showEmergencyOverlay(0);
+  speakText(prompt, lang);
+  logAction('Daily check-in prompt received', 'index=' + (ev.payload && ev.payload.prompt_index));
+  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    try {
+      const rec = new R();
+      rec.lang = lang === 'en' ? 'en-IN' : 'hi-IN';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      rec.onresult = (e) => {
+        const said = ((e.results[0] && e.results[0][0] && e.results[0][0].transcript) || '').toLowerCase();
+        if (/\b(haan|haa|ji|theek|ok|okay|i ?am ?ok|ठीक|हाँ|हां|जी)\b/.test(said)){
+          dailyCheckinAck(said);
+        }
+      };
+      rec.onerror = ()=>{};
+      rec.start();
+    } catch(_) {}
+  }
+}
+
+async function dailyCheckinAck(said){
+  document.getElementById('emergency-overlay').classList.remove('shown');
+  EM_STAGE = -1;
+  try {
+    await fetch(API_BASE + '/api/vaani/checkin/ack', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: getUserToken(), said: said || '' })
+    });
+    speakText(CURRENT_LANG === 'en' ? 'Thank you. See you tomorrow.' : 'धन्यवाद। कल फिर मिलेंगे।', CURRENT_LANG);
+    logAction('Daily check-in ack', said || '(tap)');
+  } catch (e) {
+    logAction('Daily check-in ack failed', e && e.message || 'network');
+  }
+}
+
+async function dailyCheckinSchedule(hour_ist, minute_ist, language, elderly_label, max_prompts){
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/checkin/schedule', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_token: getUserToken(),
+        hour_ist: hour_ist | 0, minute_ist: minute_ist | 0,
+        language: language || (CURRENT_LANG || 'hi'),
+        elderly_label: elderly_label || '',
+        max_prompts: max_prompts || 3,
+        enabled: true
+      })
+    });
+    return await r.json();
+  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
+}
+
+async function dailyCheckinDisable(){
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/checkin/disable', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: getUserToken() })
+    });
+    return await r.json();
+  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
+}
+
+async function onCheckinSave(){
+  const tm = (document.getElementById('checkin-time') || {}).value || '08:00';
+  const [hh, mm] = tm.split(':').map(x => parseInt(x, 10) || 0);
+  const label = ((document.getElementById('checkin-label') || {}).value || '').trim();
+  const maxp = parseInt((document.getElementById('checkin-max') || {}).value || '3', 10) || 3;
+  const status = document.getElementById('checkin-status');
+  if (status) status.textContent = 'Saving…';
+  const res = await dailyCheckinSchedule(hh, mm, CURRENT_LANG || 'hi', label, maxp);
+  if (res && res.ok && res.checkin) {
+    const c = res.checkin;
+    const phrase = (CURRENT_LANG === 'en'
+      ? ('Saved. Chitti will check in every day at ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST. After ' + c.max_prompts + ' silent prompts, family will be alerted.')
+      : ('सेव हो गया। चिट्टी रोज़ ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST पर पूछेगी। ' + c.max_prompts + ' बार चुप रहने पर परिवार को सूचना जाएगी।'));
+    if (status) status.textContent = phrase;
+    speakText(phrase, CURRENT_LANG || 'hi');
+    logAction('Daily check-in saved', String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST · max ' + c.max_prompts);
+  } else {
+    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'save failed');
+  }
+}
+
+async function onCheckinDisable(){
+  const status = document.getElementById('checkin-status');
+  if (status) status.textContent = 'Disabling…';
+  const res = await dailyCheckinDisable();
+  if (res && res.ok) {
+    if (status) status.textContent = (CURRENT_LANG === 'en') ? 'Disabled.' : 'बंद कर दिया।';
+    logAction('Daily check-in disabled', '');
+  } else {
+    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'disable failed');
+  }
 }
 
 /* ─── Pairing ─── */

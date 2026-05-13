@@ -25,7 +25,8 @@ from routes.emergency import bp as emergency_bp
 from routes.local import bp as local_bp
 from routes.admin import bp as admin_bp
 from routes.feedback import bp as feedback_bp
-from services import admin_scheduler, feedback_scheduler
+from routes.checkin import bp as checkin_bp
+from services import admin_scheduler, checkin_service, feedback_scheduler
 from scripts import admin_seed
 
 # Sahay AI shared quality framework — installed across every Chitti.
@@ -94,6 +95,15 @@ def _create_app() -> Flask:
     app.register_blueprint(local_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(feedback_bp)
+    app.register_blueprint(checkin_bp)
+
+    # Daily check-in (P0 — elderly users). Idempotent table create, and
+    # scheduler integration happens after admin_scheduler.start() so we
+    # piggy-back on its APScheduler instance.
+    try:
+        checkin_service.init_db()
+    except Exception as e:  # noqa: BLE001
+        log.warning("checkin DB init skipped: %s", e)
 
     # Admin: schema, seed, scheduler. Each step is wrapped — a misconfigured
     # ADMIN_DATABASE_URL must not take down the rest of Vaani.
@@ -151,6 +161,32 @@ def _create_app() -> Flask:
             schedule_daily_report(sched, _quality_engine, CHITTI_SLUG)
     except Exception as e:  # noqa: BLE001
         log.warning("founder cron schedule skipped: %s", e)
+
+    # Daily check-in scan — every 5 min, reuses admin_scheduler's APScheduler.
+    # The job itself is gated per-row (only fires inside the user's IST
+    # window) so polling every 5 minutes is cheap. Silence beyond the
+    # per-user max_prompts triggers emergency_service.trigger() — same
+    # family cascade, same 112/100/102 denylist, never cops.
+    try:
+        from apscheduler.triggers.interval import IntervalTrigger
+        sched = getattr(admin_scheduler, "_scheduler", None) or getattr(admin_scheduler, "scheduler", None)
+        if sched is not None:
+            def _checkin_job():
+                try:
+                    res = checkin_service.run_scan()
+                    log.info("[scheduler] daily_checkin OK %s", res)
+                except Exception as e:  # noqa: BLE001
+                    log.exception("[scheduler] daily_checkin FAILED: %s", e)
+            sched.add_job(
+                _checkin_job,
+                IntervalTrigger(minutes=5),
+                id="daily_checkin",
+                replace_existing=True,
+                misfire_grace_time=600,
+            )
+            log.info("daily_checkin job scheduled (every 5 min)")
+    except Exception as e:  # noqa: BLE001
+        log.warning("daily_checkin schedule skipped: %s", e)
 
     return app
 
