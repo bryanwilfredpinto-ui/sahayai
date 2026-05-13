@@ -5,3 +5,4 @@ from models.scheme import Scheme  # noqa: F401
 from models.pib_announcement import PIBAnnouncement  # noqa: F401
 from models.feedback import Feedback  # noqa: F401
 from models.ingest_log import IngestLog  # noqa: F401
+from models.application import Application  # noqa: F401

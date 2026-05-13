@@ -18,6 +18,14 @@ Route map (all prefixed /api/government):
                                            → verdict + DeepSeek voice reply
     POST /eligibility/scan              → body {profile} → top 10 matches across catalog
 
+  Applications (P1 — X-User-Token header)
+    GET    /applications                → ?status=  user's applications + scheme metadata
+    POST   /applications                → {scheme_slug, status?, application_id?, ...}
+                                           upsert per (user_token, scheme_slug)
+    GET    /applications/<id>           → single row
+    PATCH  /applications/<id>           → patch status / note / reminder_days
+    DELETE /applications/<id>           → drop
+
   Alerts (PIB feed)
     GET  /alerts                        → ?limit=30  recent scheme announcements
     POST /alerts/poll                   → force-run a PIB poll (idempotent)
@@ -47,6 +55,7 @@ from models.feedback import Feedback
 from models.ingest_log import IngestLog
 from models.scheme import Scheme
 from services import (
+    government_applications,
     government_database,
     government_deepseek,
     government_eligibility,
@@ -262,6 +271,89 @@ def eligibility_check(db):
         "verdict": verdict,
         "voice": voice,
     })
+
+
+# ───────────── applications (P1 status tracker) ─────────────
+
+def _user_token_or_400() -> str:
+    token = (request.headers.get("X-User-Token") or "").strip()
+    if not token or len(token) < 8:
+        abort(400, description="Missing X-User-Token header (frontend should generate a UUID per device).")
+    return token
+
+
+@bp.get("/applications")
+@with_db
+def applications_list(db):
+    token = _user_token_or_400()
+    status = (request.args.get("status") or "").strip() or None
+    limit = _int_arg("limit", default=100, min_val=1, max_val=300)
+    return jsonify({
+        "ok": True,
+        "items": government_applications.list_for_user(db, token, status=status, limit=limit),
+    })
+
+
+@bp.post("/applications")
+@with_db
+def applications_add(db):
+    token = _user_token_or_400()
+    body = _json_body()
+    try:
+        return jsonify(government_applications.add(
+            db, token,
+            scheme_slug=str(body.get("scheme_slug") or "").strip(),
+            status=str(body.get("status") or "draft"),
+            application_id=(body.get("application_id") or None),
+            portal_url=(body.get("portal_url") or None),
+            state_code=(body.get("state_code") or None),
+            note=(body.get("note") or None),
+            reminder_days=body.get("reminder_days"),
+        ))
+    except ValueError as e:
+        abort(400, description=str(e))
+
+
+@bp.get("/applications/<int:app_id>")
+@with_db
+def applications_get(db, app_id: int):
+    token = _user_token_or_400()
+    row = government_applications.get(db, token, app_id)
+    if row is None:
+        abort(404, description="application not found")
+    return jsonify({"ok": True, "application": row})
+
+
+@bp.patch("/applications/<int:app_id>")
+@with_db
+def applications_patch(db, app_id: int):
+    token = _user_token_or_400()
+    body = _json_body()
+    try:
+        row = government_applications.patch(
+            db, token, app_id,
+            status=body.get("status"),
+            application_id=body.get("application_id"),
+            portal_url=body.get("portal_url"),
+            note=body.get("note"),
+            reminder_days=body.get("reminder_days"),
+            state_code=body.get("state_code"),
+            record_check=bool(body.get("record_check")),
+        )
+    except ValueError as e:
+        abort(400, description=str(e))
+    if row is None:
+        abort(404, description="application not found")
+    return jsonify({"ok": True, "application": row})
+
+
+@bp.delete("/applications/<int:app_id>")
+@with_db
+def applications_delete(db, app_id: int):
+    token = _user_token_or_400()
+    if not government_applications.delete(db, token, app_id):
+        abort(404, description="application not found")
+    return jsonify({"ok": True})
 
 
 @bp.post("/eligibility/scan")
