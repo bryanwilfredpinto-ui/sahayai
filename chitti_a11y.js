@@ -674,6 +674,203 @@
     // POST surface is `/api/camera/capture`, configured via
     // `window.CHITTI_CAMERA_API` and consumed by the per-Chitti router.
     ensureCameraSubstrate();
+
+    // Blind-user gesture navigation — P1 from SAHAYAI_MASTER §5c.
+    // Activates on every page; only does anything when the User
+    // Disability Profile has `blind: true`. Swipe left/right between
+    // sections, two-finger tap to read current section, both honoured
+    // by `Chitti.a11y.navigate(direction)` so callers can wire to any
+    // gesture/key/voice command.
+    attachBlindGestureNav();
+  }
+
+  // ── BLIND GESTURE NAVIGATION ─────────────────────────────────
+  // SAHAYAI_MASTER §5c: "swipe left/right to move between sections" for
+  // BLIND users. Idempotent — re-init is a no-op (a `_navAttached` flag
+  // on document.body guards the listeners). The actual navigation API
+  // is exposed on `Chitti.a11y.navigate(dir)` so the same logic works
+  // for swipes, keyboard shortcuts, and voice commands.
+  //
+  // Honest defaults — if the page doesn't structure itself into sections
+  // (no <section>, no [role=region], no .section-card / .card.panel /
+  // .panel), the helper speaks an honest empty: "No sections to navigate
+  // on this page. Tap or speak to interact." rather than silently
+  // failing.
+
+  const NAV_SELECTOR =
+    'main section, main [role="region"], main .section-card, main .panel, ' +
+    'main .card[role="tabpanel"], main .art-card';
+
+  function _profile() { return (loadState() || {}).profile || {}; }
+  function _isBlind() { return !!_profile().blind; }
+  function _isEnabledForNav() {
+    // Also honour an explicit override + the existing braille mode
+    // (braille users are typically blind-equivalent for gesture purposes).
+    const s = loadState();
+    return _isBlind() || !!s.braille || !!s.nav_force_on;
+  }
+
+  function _navTargets() {
+    const list = Array.from(document.querySelectorAll(NAV_SELECTOR));
+    // Filter out hidden / 0-height nodes so we don't focus invisible panels.
+    return list.filter((el) => {
+      const cs = el.getBoundingClientRect();
+      const hidden = el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true';
+      return !hidden && cs.height > 4 && cs.width > 4;
+    });
+  }
+
+  function _currentNavIndex(targets) {
+    // Active = the section whose top is nearest the viewport top but ≤ 1/3 down.
+    const cutoff = window.innerHeight / 3;
+    let best = 0;
+    let bestDist = Number.POSITIVE_INFINITY;
+    targets.forEach((el, i) => {
+      const top = el.getBoundingClientRect().top;
+      const dist = top < cutoff ? cutoff - top : top - cutoff;
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+
+  function _focusAndAnnounce(el) {
+    if (!el) return;
+    // Make it focusable transiently for keyboard / screen-reader users.
+    const hadTabindex = el.hasAttribute('tabindex');
+    if (!hadTabindex) el.setAttribute('tabindex', '-1');
+    try { el.focus({ preventScroll: false }); } catch (_) {}
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!hadTabindex) {
+      setTimeout(() => {
+        try { el.removeAttribute('tabindex'); } catch (_) {}
+      }, 1500);
+    }
+    // Speak the heading + a short body preview. aria-label > aria-labelledby
+    // > first heading > truncated text content.
+    let label = el.getAttribute('aria-label') || '';
+    if (!label) {
+      const labelledBy = el.getAttribute('aria-labelledby');
+      if (labelledBy) {
+        const ref = document.getElementById(labelledBy);
+        if (ref) label = (ref.textContent || '').trim();
+      }
+    }
+    if (!label) {
+      const heading = el.querySelector('h1, h2, h3, h4, [role="heading"]');
+      if (heading) label = (heading.textContent || '').trim();
+    }
+    if (!label) label = (el.textContent || '').trim().slice(0, 80);
+    if (label) {
+      speak(label, loadState().lang || 'en');
+      announce('Section: ' + label);
+    } else {
+      announce('Section (no heading).');
+    }
+  }
+
+  function navigate(direction) {
+    const targets = _navTargets();
+    if (!targets.length) {
+      speak('No sections to navigate on this page. Tap or speak to interact.', loadState().lang || 'en');
+      return null;
+    }
+    const cur = _currentNavIndex(targets);
+    let next = cur;
+    if (direction === 'next' || direction === 'right' || direction === 'down' || direction === 1) {
+      next = Math.min(cur + 1, targets.length - 1);
+    } else if (direction === 'prev' || direction === 'previous' || direction === 'left' || direction === 'up' || direction === -1) {
+      next = Math.max(cur - 1, 0);
+    } else if (direction === 'first') {
+      next = 0;
+    } else if (direction === 'last') {
+      next = targets.length - 1;
+    } else if (direction === 'read') {
+      // Re-announce the current section without moving.
+      _focusAndAnnounce(targets[cur]);
+      return cur;
+    }
+    if (next === cur && (direction === 'next' || direction === 'right')) {
+      speak('End of page.', loadState().lang || 'en');
+    } else if (next === cur && (direction === 'prev' || direction === 'left')) {
+      speak('Start of page.', loadState().lang || 'en');
+    }
+    _focusAndAnnounce(targets[next]);
+    return next;
+  }
+
+  function attachBlindGestureNav() {
+    if (document.body.dataset.chittiNavAttached === '1') return;
+    document.body.dataset.chittiNavAttached = '1';
+
+    // Touch swipe handlers. Threshold tuned for thumb swipes — 50 px is
+    // the standard mobile touch slop minimum.
+    const SWIPE_THRESHOLD_PX = 50;
+    const SWIPE_MAX_DURATION_MS = 700;
+    let sx = 0, sy = 0, st = 0, tracking = false;
+
+    document.addEventListener('touchstart', (e) => {
+      if (!_isEnabledForNav()) return;
+      if (!e.touches || e.touches.length !== 1) { tracking = false; return; }
+      const t = e.touches[0];
+      sx = t.clientX; sy = t.clientY; st = Date.now();
+      tracking = true;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (!tracking || !_isEnabledForNav()) { tracking = false; return; }
+      tracking = false;
+      const t = (e.changedTouches && e.changedTouches[0]) || null;
+      if (!t) return;
+      const dx = t.clientX - sx;
+      const dy = t.clientY - sy;
+      const dt = Date.now() - st;
+      if (dt > SWIPE_MAX_DURATION_MS) return;
+      if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
+      if (Math.abs(dy) > Math.abs(dx) * 0.8) return;       // mostly horizontal
+      // Avoid hijacking native UI: ignore swipes that started on an
+      // input / textarea / select / scrollable element with horizontal
+      // overflow.
+      const target = e.target;
+      if (target && target.closest && target.closest('input, textarea, select, [contenteditable], [data-no-nav-swipe]')) return;
+      navigate(dx < 0 ? 'next' : 'prev');
+    }, { passive: true });
+
+    // Two-finger tap → read current section. Quick and universal.
+    document.addEventListener('touchstart', (e) => {
+      if (!_isEnabledForNav()) return;
+      if (e.touches && e.touches.length === 2) {
+        navigate('read');
+      }
+    }, { passive: true });
+
+    // Keyboard shortcuts (useful for braille-display users too).
+    //   Alt + ArrowRight / ArrowDown   → next section
+    //   Alt + ArrowLeft  / ArrowUp     → prev section
+    //   Alt + Home / End               → first / last
+    //   Alt + Enter / Alt + Space      → re-read current
+    document.addEventListener('keydown', (e) => {
+      if (!_isEnabledForNav()) return;
+      if (!e.altKey) return;
+      const key = e.key;
+      if (key === 'ArrowRight' || key === 'ArrowDown') { e.preventDefault(); navigate('next'); }
+      else if (key === 'ArrowLeft' || key === 'ArrowUp') { e.preventDefault(); navigate('prev'); }
+      else if (key === 'Home') { e.preventDefault(); navigate('first'); }
+      else if (key === 'End') { e.preventDefault(); navigate('last'); }
+      else if (key === 'Enter' || key === ' ') { e.preventDefault(); navigate('read'); }
+    });
+
+    // Announce availability the first time the profile turns blind on
+    // this device, so blind users know the gestures exist.
+    const seenKey = 'chitti_a11y_nav_announced';
+    if (_isEnabledForNav() && !sessionStorage.getItem(seenKey)) {
+      try { sessionStorage.setItem(seenKey, '1'); } catch (_) {}
+      setTimeout(() => {
+        speak(
+          'Gesture navigation is on. Swipe left or right between sections. Two-finger tap reads the current section.',
+          loadState().lang || 'en',
+        );
+      }, 1200);
+    }
   }
 
   function ensureFeaturesSubstrate() {
@@ -1103,6 +1300,7 @@
     DISABILITY_LABELS,
     explainSimply,
     runDemo,
+    navigate,
     getState: loadState,
     LANGUAGES,
     VOICE_FACTORY_URL,
