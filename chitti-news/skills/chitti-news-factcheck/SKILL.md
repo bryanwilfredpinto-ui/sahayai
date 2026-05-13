@@ -28,8 +28,11 @@ description: Fact Checker Agent — cross-references a news article against ≥2
 5. **Count** distinct `source_slug` values among matches (excluding the original).
 6. **Cache** result in `news.fact_checks` for 6 hours; re-running returns the cache.
 
-The Anthropic-powered rationale (one-line EN + one-line HI explanation
-of the verdict) is generated alongside the verdict and stored too.
+The rationale (one-line EN + one-line HI explanation of the verdict)
+is template-rendered in v1 and stored alongside the verdict. A v2
+upgrade to DeepSeek-generated rationale is planned for ambiguous
+match scores only — see [TODO.md](../../TODO.md) and
+[PROMPTS.md §2](../../PROMPTS.md).
 
 ## Trust assumption
 Every source we ingest from `data/sources.json` is treated as "trusted"
@@ -46,7 +49,7 @@ source is correct — Chitti News does not editorialise.
 - Title-similarity matching can yield false negatives when two outlets
   use very different wordings for the same event (e.g. "RBI cuts repo
   rate" vs "Central bank lowers benchmark"). v2 plans: switch to entity
-  + verb extraction via Anthropic.
+  + verb extraction via DeepSeek.
 - "verified" is **not** a truth claim — it's a "many outlets are saying
   this" claim. Always render with the disclaimer "verify on the original
   source link before sharing".

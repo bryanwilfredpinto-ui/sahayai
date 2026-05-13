@@ -182,30 +182,30 @@ One article by primary key.
 |---|---|---|
 | `language` | string | `en` |
 
-**Response 200 (Anthropic path)**
+**Response 200 (DeepSeek path)**
 ```json
 {
   "ok": true,
-  "source": "anthropic",
+  "source": "deepseek",
   "bullets": [
     "What happened: ...",
     "Why it matters: ...",
     "What's next: ..."
   ],
   "language": "en",
-  "model": "claude-sonnet-4-6"
+  "model": "deepseek-chat"
 }
 ```
 
-**Response 200 (fallback path — `ANTHROPIC_API_KEY` unset or call failed)**
+**Response 200 (fallback path — `DEEPSEEK_API_KEY` unset or call failed)**
 ```json
 {
   "ok": true,
   "source": "fallback",
   "bullets": ["RSS summary sentence 1", "RSS summary sentence 2", "..."],
   "language": "en",
-  "note_en": "Chitti's Take is unavailable (Anthropic key not configured) — showing the source's own summary instead.",
-  "note_hi": "चिट्टी की टेक उपलब्ध नहीं (Anthropic कुंजी सेट नहीं) — मूल स्रोत का सारांश दिखा रहा हूँ।"
+  "note_en": "Chitti's Take is unavailable (no DEEPSEEK_API_KEY configured) — showing the source's own summary instead.",
+  "note_hi": "चिट्टी की टेक उपलब्ध नहीं (DEEPSEEK कुंजी सेट नहीं) — मूल स्रोत का सारांश दिखा रहा हूँ।"
 }
 ```
 

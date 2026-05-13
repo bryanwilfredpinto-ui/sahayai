@@ -30,6 +30,6 @@ Yes. The 3-bullet structure ([PROMPTS.md §1](../PROMPTS.md)) ships a prompt-lev
 
 Sometimes. The politics agent ([chitti-news-politics/SKILL.md](chitti-news-politics/SKILL.md)) summarises what each named party said, in equal length. If only one party has spoken, only that party gets covered — we don't manufacture quotes for balance. That's the only form of "balance" Chitti News supports.
 
-## 8. "Anthropic / DeepSeek cost will dominate as feed volume grows."
+## 8. "DeepSeek cost will dominate as feed volume grows."
 
-True. The Take is generated **on demand** (per article tap), not at ingest, and the fact-check rationale is template-rendered v1 to avoid 5x LLM cost ([PROMPTS.md §5](../PROMPTS.md)). The DeepSeek migration ([MEMORY.md](../../MEMORY.md)) targets cost reduction. Caching on `news.fact_checks` at 6h further dampens spend.
+Mitigated by design. The Take is generated **on demand** (per article tap), not at ingest, and the fact-check rationale is template-rendered in v1 to avoid multiplying the LLM cost ([PROMPTS.md §5](../PROMPTS.md)). DeepSeek's pricing — locked as the sole provider ([MEMORY.md](../../MEMORY.md)) — is the cost-anchor; caching on `news.fact_checks` at 6h further dampens spend.

@@ -17,7 +17,7 @@ location.reload();
 ## Endpoints called
 - `GET  /api/news/{state}/{language}/{category}` — main feed
 - `GET  /api/news/breaking?state=&language=` — ribbon
-- `GET  /api/news/article/{id}/take?language=` — Chitti's Take (Anthropic)
+- `GET  /api/news/article/{id}/take?language=` — Chitti's Take (DeepSeek)
 - `GET  /api/news/article/{id}/factcheck` — cross-source verdict
 - `GET/POST/DELETE /api/news/save` — Read Later / Cancelled folders
 

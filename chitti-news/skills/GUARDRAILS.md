@@ -24,7 +24,7 @@ One of: `national`, `state`, `business`, `tech`, `sports`, `entertainment`. Set 
 
 ## Article summary
 
-The `summary` rendered on the card is **only** what the RSS feed provided, clamped to 1500 chars before any LLM call ([PROMPTS.md §1](../PROMPTS.md)). The Anthropic-generated "Chitti's Take" is rendered as a **separate panel** below the original summary so the reader can compare. If Anthropic fails or is unconfigured, the Take panel surfaces the verbatim fallback string ([news_summary.py:_fallback](../backend/services/news_summary.py)) — never silently substituted.
+The `summary` rendered on the card is **only** what the RSS feed provided, clamped to 1500 chars before any LLM call ([PROMPTS.md §1](../PROMPTS.md)). The DeepSeek-generated "Chitti's Take" is rendered as a **separate panel** below the original summary so the reader can compare. If DeepSeek fails or is unconfigured, the Take panel surfaces the verbatim fallback string ([news_summary.py:_fallback](../backend/services/news_summary.py)) — never silently substituted.
 
 ## Fact-check verdict
 

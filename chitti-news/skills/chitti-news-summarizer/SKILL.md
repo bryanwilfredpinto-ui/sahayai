@@ -29,9 +29,9 @@ description: Summarizer Agent — produces a 3-bullet "Chitti's Take" of any new
 
 ## Implementation
 - `backend/services/news_summary.py` → `chittis_take(db, article_id, language)`
-- Calls Anthropic Claude with the prompt above
-- Falls back to a trimmed RSS summary if `ANTHROPIC_API_KEY` is unset
-- Returns `{ok, source: 'anthropic'|'fallback', bullets: [...], language, model?}`
+- Calls DeepSeek (`deepseek-chat` by default) over the OpenAI-compatible REST endpoint at `api.deepseek.com/chat/completions`
+- Falls back to a trimmed RSS summary if `DEEPSEEK_API_KEY` is unset or the call fails
+- Returns `{ok, source: 'deepseek'|'fallback', bullets: [...], language, model?}`
 
 ## Caveats
 - Some RSS summaries are very short (one sentence). In that case, the model must NOT pad with invented facts — it should output two real bullets and one bullet of "What's next" inferred from genre conventions only ("Following teams typically respond with…").

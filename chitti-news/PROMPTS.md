@@ -15,11 +15,11 @@ The per-category sub-agents (politics / sports / business / tech / entertainment
 
 ### Caller
 
-[`services/news_summary.py:_build_prompt(article, language)`](backend/services/news_summary.py).
+[`services/news_summary.py:chittis_take(db, article_id, language)`](backend/services/news_summary.py) — prompt is built inline (system prompt + user message), no `_build_prompt` helper.
 
 ### Model
 
-`claude-sonnet-4-6` (configurable via `ANTHROPIC_MODEL` env var). Max tokens: `400`.
+`deepseek-chat` (configurable via `DEEPSEEK_MODEL` env var). Max tokens: `400`. Temperature: `0.3`. Called over the OpenAI-compatible REST endpoint `https://api.deepseek.com/chat/completions` (override via `DEEPSEEK_URL`).
 
 ### Language-name lookup
 
@@ -39,42 +39,51 @@ The `{lang_name}` placeholder is resolved from the user's picked `language` code
 
 ### Verbatim template
 
+System prompt (`SYSTEM_PROMPT` in [news_summary.py](backend/services/news_summary.py)):
+
 ```text
-You are Chitti — a friendly Indian news assistant. Read this article and produce a 3-bullet summary in {lang_name}, exactly:
-  1. What happened (one factual sentence, no opinion)
-  2. Why it matters (one impact sentence, neutral)
-  3. What's next (one forward-looking sentence)
+You are Chitti — a neutral Indian news assistant. Produce exactly 3 bullets summarising an article.
 
-Rules:
- - No commentary, no editorialising, no political tilt.
- - Plain words. A 12-year-old should understand.
- - Do NOT make up facts not present in the source.
- - Output ONLY the 3 bullets — no preamble, no closing line.
- - Each bullet should start with '• ' (U+2022 + space) and be on its own line.
+Format (each bullet on its own line, starting with "• " — U+2022 + space):
+  • What happened (one factual sentence, no opinion)
+  • Why it matters (one impact sentence, neutral)
+  • What's next (one forward-looking sentence — only if the article itself says so)
 
-Article:
-  Title: {article.title}
-  Source: {article.source_name or article.source_slug}
-  Summary: {(article.summary or '')[:1500]}
+RULES (HARD):
+- No commentary, no editorialising, no political tilt, no labels for parties / religions / people.
+- Plain words. A 12-year-old should understand.
+- Do NOT make up facts not present in the source.
+- Output ONLY the 3 bullets — no preamble, no closing line, no markdown headings.
+```
+
+User message:
+
+```text
+Summarise this article in {lang_name}.
+
+Title: {article.title}
+Source: {article.source_name or article.source_slug}
+Summary: {(article.summary or '')[:1500]}
 ```
 
 ### Parsing
 
 ```python
-text = "".join(part.text for part in msg.content if getattr(part, "type", None) == "text")
+data = r.json()
+text = (data["choices"][0]["message"]["content"] or "").strip()
 bullets = [b.lstrip("•").strip() for b in text.splitlines() if b.strip().startswith("•")]
 if not bullets:
     bullets = [s.strip() for s in text.split("\n") if s.strip()][:3]
-return {..., "bullets": bullets[:3], "model": settings.ANTHROPIC_MODEL}
+return {..., "bullets": bullets[:3], "model": DEEPSEEK_MODEL}
 ```
 
 The parser:
-1. Concatenates all `text` parts from the multi-part response.
+1. Reads the OpenAI-compatible `choices[0].message.content` field.
 2. Selects only lines that start with `•`.
 3. Falls back to splitting on newlines if zero bullets parsed.
 4. Clamps to 3 bullets max.
 
-### Fallback (when Anthropic is unconfigured or fails)
+### Fallback (when DeepSeek is unconfigured or fails)
 
 ```python
 def _fallback(article, language):
@@ -85,12 +94,12 @@ def _fallback(article, language):
         "source": "fallback",
         "bullets": bullets or [summary[:200]],
         "language": language,
-        "note_en": "Chitti's Take is unavailable (Anthropic key not configured) — showing the source's own summary instead.",
-        "note_hi": "चिट्टी की टेक उपलब्ध नहीं (Anthropic कुंजी सेट नहीं) — मूल स्रोत का सारांश दिखा रहा हूँ।",
+        "note_en": "Chitti's Take is unavailable (no DEEPSEEK_API_KEY configured) — showing the source's own summary instead.",
+        "note_hi": "चिट्टी की टेक उपलब्ध नहीं (DEEPSEEK कुंजी सेट नहीं) — मूल स्रोत का सारांश दिखा रहा हूँ।",
     }
 ```
 
-The fallback is reached in three cases: `ANTHROPIC_API_KEY` empty, `from anthropic import Anthropic` raises `ImportError`, or `client.messages.create()` raises any exception.
+The fallback is reached in three cases: `DEEPSEEK_API_KEY` empty, the HTTP request raises (`httpx.RequestError` / non-2xx via `HTTPStatusError`), or the JSON body is missing `choices[0].message.content`.
 
 ---
 
@@ -100,7 +109,7 @@ The fallback is reached in three cases: `ANTHROPIC_API_KEY` empty, `from anthrop
 
 [`services/news_factcheck.py:_build_rationale(article, matched_sources, matched, verdict, lang)`](backend/services/news_factcheck.py).
 
-Despite the [`chitti-news-factcheck/SKILL.md`](skills/chitti-news-factcheck/SKILL.md) referencing Anthropic for rationale, v1's implementation uses **hard-coded fixed templates** in two languages. The Anthropic upgrade is on the v2 roadmap (see [TODO.md](TODO.md) P3).
+v1's implementation uses **hard-coded fixed templates** in two languages — the matching step is deterministic so a templated rationale stays explainable. The DeepSeek upgrade for ambiguous-score rationale is on the v2 roadmap (see [TODO.md](TODO.md) P3).
 
 ### Verbatim templates
 
@@ -234,7 +243,7 @@ Hard rules: tasteful celebration of artistic achievement; no paparazzi framing; 
 ### 4.8 Product-level — [`skills/chitti-news/SKILL.md`](skills/chitti-news/SKILL.md)
 
 Frontmatter:
-> Chitti News — state-aware multi-language Indian news aggregator. Aggregates 25+ RSS feeds across English and Hindi (regional languages stubbed for v1.1), serves articles by state × language × category, renders Anthropic-powered "Chitti's Take" 3-bullet summaries, runs a fact-checker that cross-references ≥2 sources, and offers Read Later / Cancelled folders per device.
+> Chitti News — state-aware multi-language Indian news aggregator. Aggregates 25+ RSS feeds across English and Hindi (regional languages stubbed for v1.1), serves articles by state × language × category, renders DeepSeek-powered "Chitti's Take" 3-bullet summaries, runs a fact-checker that cross-references ≥2 sources, and offers Read Later / Cancelled folders per device.
 
 This is the top-level skill that loads first when any Chitti News query lands.
 
@@ -261,5 +270,5 @@ This is the top-level skill that loads first when any Chitti News query lands.
 ### Why fact-check rationale is template-only in v1
 
 - The matching step (`rapidfuzz.fuzz.token_set_ratio`) is deterministic and explainable. The rationale is just a count + a fixed phrase.
-- Generating the rationale via Anthropic on every call would 5x the API cost without adding accuracy.
+- Generating the rationale via DeepSeek on every call would multiply the API cost without adding accuracy.
 - v2 plan: only invoke LLM for the rationale when the matching is ambiguous (e.g. score in 65–75 range).

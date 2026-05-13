@@ -14,7 +14,7 @@ Fourth Chitti product. Sister to **Chitti Shares (Technical + Fundamentals)** an
 
 A **read-only news aggregator** that pulls headlines from 25+ Indian RSS feeds, sorts them by `state × language × category`, and surfaces each article with three AI-assisted overlays:
 
-1. **Chitti's Take** — 3-bullet plain-language summary in the user's chosen Indian language (Anthropic-powered, falls back to the RSS summary when the API key is unset).
+1. **Chitti's Take** — 3-bullet plain-language summary in the user's chosen Indian language (DeepSeek-powered, falls back to the RSS summary when `DEEPSEEK_API_KEY` is unset).
 2. **Fact Check verdict** — 4-tier cross-source check (`verified` / `partial` / `disputed` / `unverified`) computed by fuzzy-matching the headline against every other article in the database from the last 48 hours.
 3. **Read aloud** — browser-native TTS in the picked language so blind / illiterate users can listen instead of read.
 
@@ -53,9 +53,9 @@ Maps to the [four-user accessibility contract](../CHITTI_NEWS_MASTER_SPEC.md) �
 
 ### "Chitti's Take" LLM summary
 - 3-bullet structure (What happened · Why it matters · What's next) — inspired by CNA Singapore's FAST button.
-- Anthropic Claude (`claude-sonnet-4-6` by default).
+- DeepSeek (`deepseek-chat` by default) over the OpenAI-compatible REST endpoint.
 - Plain-language target: a 12-year-old should understand each bullet.
-- Falls back gracefully to the RSS summary if `ANTHROPIC_API_KEY` is missing.
+- Falls back gracefully to the RSS summary if `DEEPSEEK_API_KEY` is missing.
 - See [services/news_summary.py](backend/services/news_summary.py).
 
 ### Fact Checker
@@ -141,7 +141,7 @@ chitti-news/
 ```bash
 cd chitti-news/backend
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-...
+export DEEPSEEK_API_KEY=sk-...
 export DATABASE_URL=sqlite:///./chitti_news.db   # or your Supabase URL
 python -m flask --app main run --port 8002
 ```

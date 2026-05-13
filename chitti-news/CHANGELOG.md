@@ -84,7 +84,7 @@ Format: chronological, oldest first, grouped by feature theme. Pulled from `git 
 
 See [TODO.md](TODO.md) for the full open-issue list. Highest priority:
 
-1. **Deploy backend to Render** — `render.yaml` is ready. Paste `DATABASE_URL` (same Supabase URL the siblings use) + `ANTHROPIC_API_KEY`. First poll fires within 30 min.
+1. **Deploy backend to Render** — `render.yaml` is ready. Paste `DATABASE_URL` (same Supabase URL the siblings use) + `DEEPSEEK_API_KEY`. First poll fires within 30 min.
 2. **Live verification** — once deployed, curl `/health`, `/api/news/india/en/national`, `/api/news/article/1/take`, `/api/news/article/1/factcheck`.
 3. **Frontend cache update** — verify `API_BASE` points to `chitti-news-api.onrender.com`.
 4. **Regional language RSS** — Bangla / Telugu / Tamil / Odia outlets often don't publish public RSS. Plan: HTML scraping or app-API integration.

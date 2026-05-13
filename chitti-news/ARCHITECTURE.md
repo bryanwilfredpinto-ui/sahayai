@@ -38,7 +38,7 @@ End-to-end architecture for the Chitti News product. Mirrors the chitti-medupi +
 │  services/                                                        │
 │    news_db        — feed / list_breaking / get_article / sources  │
 │    news_ingest    — feedparser RSS poller, idempotent on link     │
-│    news_summary   — Chitti's Take via Anthropic, RSS fallback     │
+│    news_summary   — Chitti's Take via DeepSeek, RSS fallback      │
 │    news_factcheck — rapidfuzz cross-source verdict, 6h cache      │
 │    news_scheduler — APScheduler wrapper                           │
 │    news_seed      — first-boot JSON seed loaders                  │
@@ -58,8 +58,8 @@ End-to-end architecture for the Chitti News product. Mirrors the chitti-medupi +
                             │
                             ▲   (external)
 ┌──────────────────────────────────────────────────────────────────┐
-│  Anthropic API   — Chitti's Take + fact-check rationale          │
-│  RSS feeds (×26+) — Times of India, Hindu, Moneycontrol, Bhaskar │
+│  DeepSeek API    — Chitti's Take + Explain Simply (OpenAI-compat) │
+│  RSS feeds (×26+) — Times of India, Hindu, Moneycontrol, Bhaskar  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -174,9 +174,9 @@ A single bad feed (HTTP 5xx, malformed XML, slow response) stores `last_error` o
 ### Chitti's Take ([news_summary.py](backend/services/news_summary.py))
 
 - Pulls the article, builds a strict 3-bullet prompt (see [PROMPTS.md](PROMPTS.md)).
-- Calls Anthropic `claude-sonnet-4-6` (configurable via `ANTHROPIC_MODEL`).
+- Calls DeepSeek `deepseek-chat` (configurable via `DEEPSEEK_MODEL`) over the OpenAI-compatible REST endpoint at `api.deepseek.com/chat/completions`.
 - Parses lines starting with `•` into a bullets list; if zero parsed, falls back to splitting on newlines.
-- If `ANTHROPIC_API_KEY` is unset OR the SDK import fails OR the call throws → returns `_fallback(article, language)` which surfaces the trimmed RSS summary with a "Chitti's Take is unavailable" note.
+- If `DEEPSEEK_API_KEY` is unset OR the HTTP call throws → returns `_fallback(article, language)` which surfaces the trimmed RSS summary with a "Chitti's Take is unavailable" note.
 
 ### Fact Checker ([news_factcheck.py](backend/services/news_factcheck.py))
 
@@ -233,8 +233,9 @@ Sibling products use the same pattern with `medupi.*` and `shares.*` — three p
 | Env var | Default | Purpose |
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///./chitti_news.db` | SQLAlchemy connection string |
-| `ANTHROPIC_API_KEY` | empty | Chitti's Take only — fact-check rationale uses templates |
-| `ANTHROPIC_MODEL` | `claude-sonnet-4-6` | Model passed to `client.messages.create()` |
+| `DEEPSEEK_API_KEY` | empty | Chitti's Take + Explain Simply — fact-check rationale uses templates |
+| `DEEPSEEK_MODEL` | `deepseek-chat` | Model passed in the chat-completions body |
+| `DEEPSEEK_URL` | `https://api.deepseek.com/chat/completions` | OpenAI-compatible endpoint |
 | `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:8002,https://sahayai.in,https://www.sahayai.in` | CORS allowlist |
 | `BACKEND_URL` | `http://localhost:8002` | Self-URL used in logs |
 | `SCHEDULER_ENABLED` | `true` | Toggle for tests |
@@ -261,8 +262,9 @@ services:
     healthCheckPath: /health
     envVars:
       - DATABASE_URL          (sync: false — paste in dashboard)
-      - ANTHROPIC_API_KEY     (sync: false)
-      - ANTHROPIC_MODEL       (claude-sonnet-4-6)
+      - DEEPSEEK_API_KEY      (sync: false)
+      - DEEPSEEK_MODEL        (deepseek-chat)
+      - DEEPSEEK_URL          (https://api.deepseek.com/chat/completions)
       - ALLOWED_ORIGINS       (https://sahayai.in,https://www.sahayai.in)
       - BACKEND_URL           (https://chitti-news-api.onrender.com)
       - SCHEDULER_ENABLED     (true)
@@ -276,7 +278,7 @@ Pinned via `runtime.txt` + `.python-version` to ensure psycopg2-binary wheels re
 
 ### Dependencies (pinned)
 
-See [`requirements.txt`](backend/requirements.txt) — `flask 3.0.3`, `flask-cors 4.0.0`, `gunicorn 21.2.0`, `sqlalchemy 2.0.35`, `psycopg2-binary 2.9.10`, `requests 2.31.0`, `python-dotenv 1.0.0`, `feedparser 6.0.11`, `anthropic 0.39.0`, `rapidfuzz 3.6.1`, `apscheduler 3.10.4`, `tzdata 2024.2`.
+See [`requirements.txt`](backend/requirements.txt) — `flask 3.0.3`, `flask-cors 4.0.0`, `gunicorn 21.2.0`, `sqlalchemy 2.0.35`, `psycopg2-binary 2.9.10`, `requests 2.31.0`, `python-dotenv 1.0.0`, `feedparser 6.0.11`, `httpx 0.27.2` (DeepSeek REST client), `rapidfuzz 3.6.1`, `apscheduler 3.10.4`, `tzdata 2024.2`.
 
 ---
 

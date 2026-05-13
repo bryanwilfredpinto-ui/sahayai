@@ -1,6 +1,6 @@
 ---
 name: chitti-news
-description: Chitti News — state-aware multi-language Indian news aggregator. Aggregates 25+ RSS feeds across English and Hindi (regional languages stubbed for v1.1), serves articles by state × language × category, renders Anthropic-powered "Chitti's Take" 3-bullet summaries, runs a fact-checker that cross-references ≥2 sources, and offers Read Later / Cancelled folders per device.
+description: Chitti News — state-aware multi-language Indian news aggregator. Aggregates 25+ RSS feeds across English and Hindi (regional languages stubbed for v1.1), serves articles by state × language × category, renders DeepSeek-powered "Chitti's Take" 3-bullet summaries, runs a fact-checker that cross-references ≥2 sources, and offers Read Later / Cancelled folders per device.
 ---
 
 # Chitti News — top-level skill
@@ -16,9 +16,9 @@ chitti-news/
 ├── frontend/index.html         mirror of workspace-root chitti_news.html
 └── backend/
     ├── main.py                 Flask app · CORS · startup hooks
-    ├── config.py               settings (DATABASE_URL · ANTHROPIC_API_KEY · CORS · scheduler)
+    ├── config.py               settings (DATABASE_URL · DEEPSEEK_API_KEY · CORS · scheduler)
     ├── database.py             SQLAlchemy engine + ensure_schema('news')
-    ├── requirements.txt        flask · feedparser · sqlalchemy · anthropic · rapidfuzz · apscheduler
+    ├── requirements.txt        flask · feedparser · sqlalchemy · httpx (DeepSeek REST) · rapidfuzz · apscheduler
     ├── runtime.txt + .python-version  → Python 3.11
     ├── render.yaml             Render Blueprint
     ├── data/
@@ -29,7 +29,7 @@ chitti-news/
     │   ├── news_seed.py        loads JSON seeds on first boot (idempotent)
     │   ├── news_db.py          read paths: feed(), list_breaking(), get_article()
     │   ├── news_ingest.py      feedparser-based RSS poller (per-source, idempotent on link)
-    │   ├── news_summary.py     Chitti's Take — Anthropic 3-bullet, falls back to RSS summary
+    │   ├── news_summary.py     Chitti's Take — DeepSeek 3-bullet, falls back to RSS summary
     │   ├── news_factcheck.py   cross-source fact-check (rapidfuzz title-similarity, cached 6h)
     │   └── news_scheduler.py   APScheduler: rss_poll every 30 min · daily_breaking 06:00 IST
     └── routes/
@@ -44,7 +44,7 @@ chitti-news/
 | GET | `/<state>/<language>/<category>` | Pretty alias (e.g. `/india/hi/business`) |
 | GET | `/breaking` | Active breaking-news alerts (≥3 sources agree) |
 | GET | `/article/<id>` | Single article |
-| GET | `/article/<id>/take?language=` | Chitti's Take (3 bullets via Anthropic) |
+| GET | `/article/<id>/take?language=` | Chitti's Take (3 bullets via DeepSeek) |
 | GET/POST | `/article/<id>/factcheck` | Cross-source verdict (cached 6h) |
 | GET | `/sources?state=&language=` | Source registry slice |
 | POST | `/save` | Add to `saved` or `cancelled` folder (X-User-Token header) |

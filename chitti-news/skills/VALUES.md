@@ -24,9 +24,9 @@ National-fallback prevents an empty feed; state-specificity prevents a flattened
 
 The [four-user contract](../CONTEXT.md) — blind / deaf / mute / illiterate — is the floor every Chitti product builds from. AI features (Take, fact-check) layer on top of an interface that already works for someone who can't see, hear, speak, or read. Per the Sahay AI rule: accessibility is confirmed first; only then does AI light up.
 
-## 5. DeepSeek for all (when keys land)
+## 5. DeepSeek-only (LOCKED)
 
-Per [project_ai_provider_switch_to_deepseek.md](../../MEMORY.md), the LLM provider migrates Anthropic → DeepSeek across the Chitti family when the key ships. Until then, Anthropic powers the Take with a clean fallback to the raw RSS summary ([news_summary.py](../backend/services/news_summary.py)).
+Per [project_ai_provider_switch_to_deepseek.md](../../MEMORY.md), the LLM provider is **DeepSeek only** across the Chitti family. Anthropic has been removed from every chitti-news backend path; `news_summary.py` and `news_explain.py` both call `api.deepseek.com/chat/completions` directly and fall back cleanly to the raw RSS summary when `DEEPSEEK_API_KEY` is unset ([news_summary.py](../backend/services/news_summary.py)).
 
 ## 6. Voice-first
 

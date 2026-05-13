@@ -31,7 +31,7 @@ class FactCheck(Base):
     verdict = Column(String(16), nullable=False, default="unverified")
     confidence = Column(Integer, nullable=False, default=50)         # 0–100
     matched_sources = Column(Text, nullable=True)                    # JSON list of source slugs
-    rationale = Column(Text, nullable=True)                          # Anthropic-generated explanation
+    rationale = Column(Text, nullable=True)                          # template-rendered explanation; v2 may swap to DeepSeek
     rationale_hi = Column(Text, nullable=True)
 
     checked_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)

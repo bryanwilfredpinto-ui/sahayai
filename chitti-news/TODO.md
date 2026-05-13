@@ -14,7 +14,7 @@ A note on `TODO` markers: a grep of [`chitti-news/`](.) for `TODO|FIXME|XXX` ret
 ### Deploy backend to Render
 
 - [ ] Paste `DATABASE_URL` (the shared Supabase URL the medupi + shares services already use) into the Render dashboard.
-- [ ] Paste `ANTHROPIC_API_KEY` (same key as siblings).
+- [ ] Paste `DEEPSEEK_API_KEY` (same key as siblings — locked LLM provider).
 - [ ] Click "Apply" on the [render.yaml](render.yaml) blueprint.
 - [ ] Wait for the first `rss_poll` to fire (within `RSS_POLL_MINUTES`, default 30).
 - [ ] Verify the live curl invocations below return real data.
@@ -88,8 +88,8 @@ Currently `india`, `mp`, `mh`, `ka`, `tn`, `wb`, `up`, `dl`, `gj`, `pb`, `as`, `
 
 The v1 fact-checker uses title-similarity (`rapidfuzz.fuzz.token_set_ratio` ≥ 70). It misses paraphrased headlines like "RBI cuts repo rate" vs "Central bank lowers benchmark".
 
-- [ ] **Entity + verb extraction** via Anthropic — extract the actor, action, object from each title; compare on those, not raw tokens.
-- [ ] **Sentence-embedding similarity** as a second signal (sentence-transformers or Anthropic embeddings when available).
+- [ ] **Entity + verb extraction** via DeepSeek — extract the actor, action, object from each title; compare on those, not raw tokens.
+- [ ] **Sentence-embedding similarity** as a second signal (sentence-transformers; DeepSeek does not currently ship a hosted embeddings endpoint, so this stays local).
 - [ ] Promote the rationale generation from template to LLM-generated once the matching improves.
 
 ---

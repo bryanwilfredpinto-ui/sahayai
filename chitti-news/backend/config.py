@@ -33,8 +33,13 @@ def _env_int(key: str, default: int) -> int:
 class Settings:
     DATABASE_URL: str = _env("DATABASE_URL", "sqlite:///./chitti_news.db")
 
-    ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY", "")
-    ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+    # DeepSeek-only LLM (project_ai_provider_switch_to_deepseek).
+    # news_summary.py and news_explain.py also read these straight off
+    # os.environ so tests / tooling can override without rebuilding
+    # config; this class is for tooling that wants typed access.
+    DEEPSEEK_API_KEY: str = _env("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_MODEL: str = _env("DEEPSEEK_MODEL", "deepseek-chat")
+    DEEPSEEK_URL: str = _env("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
 
     ALLOWED_ORIGINS: str = _env(
         "ALLOWED_ORIGINS",

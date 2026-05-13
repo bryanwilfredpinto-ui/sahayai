@@ -165,7 +165,7 @@ These show up as `system`-prompt seeds for the per-category sub-agent (the Claud
 - Paywalled or login-walled content.
 - Comments / community discussion on articles.
 - Live video or TV streaming.
-- A general-purpose chatbot — every Anthropic call is narrowly prompted (summary or fact-check rationale) with strict output schema.
+- A general-purpose chatbot — every DeepSeek call is narrowly prompted (summary or "Explain Simply") with strict output schema.
 
 ---
 
