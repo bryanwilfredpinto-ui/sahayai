@@ -630,23 +630,34 @@
   }
 
   function scanAndAttachBoxes(page) {
-    document.querySelectorAll(BOX_SELECTOR).forEach(function (b) { attachBoxWidget(b, page); });
+    document.querySelectorAll(BOX_SELECTOR).forEach(function (b) {
+      // Skip empty hosts (e.g. <div class="art-take-host"></div> before the
+      // user clicks "Chitti's Take"). The observer will pick them up once
+      // content lands.
+      var text = (b.innerText || b.textContent || '').trim();
+      if (!text) return;
+      attachBoxWidget(b, page);
+    });
   }
+  var _boxRescanPending = false;
   function startBoxObserver(page) {
     if (!window.MutationObserver) return;
     var obs = new MutationObserver(function (mutations) {
+      // Cheap throttle: at most one rescan per animation frame. The page
+      // may flip many small DOM changes (article cards rendering, takes
+      // loading, ISL animation panels) — one rescan covers them all.
+      if (_boxRescanPending) return;
+      var anyAdded = false;
       for (var i = 0; i < mutations.length; i++) {
         var m = mutations[i];
-        if (!m.addedNodes) continue;
-        for (var j = 0; j < m.addedNodes.length; j++) {
-          var n = m.addedNodes[j];
-          if (!n || n.nodeType !== 1) continue;
-          if (n.matches && n.matches(BOX_SELECTOR)) { attachBoxWidget(n, page); }
-          if (n.querySelectorAll) {
-            n.querySelectorAll(BOX_SELECTOR).forEach(function (b) { attachBoxWidget(b, page); });
-          }
-        }
+        if (m.addedNodes && m.addedNodes.length) { anyAdded = true; break; }
       }
+      if (!anyAdded) return;
+      _boxRescanPending = true;
+      (window.requestAnimationFrame || function (fn) { setTimeout(fn, 16); })(function () {
+        _boxRescanPending = false;
+        scanAndAttachBoxes(page);
+      });
     });
     obs.observe(document.body, { childList: true, subtree: true });
   }
