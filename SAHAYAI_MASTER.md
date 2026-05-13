@@ -31,6 +31,44 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | Legal disclaimer | **Sticky `NOT SEBI REGISTERED` bar + full legal modal** on every Chitti page. **Never move to footer.** | `project_legal_disclaimer` |
 | Accessibility contract | **Four users — Blind / Deaf / Mute / Illiterate.** Voice IN + Voice OUT + symbols + plain English. **Never colour-only.** | `project_four_user_contract` |
 | Shared a11y substrate | **`chitti_a11y.js` at repo root.** Injects language selector, Voice Required marker, Braille mode toggle, aria-live region. Bhashini swappable at one URL (`window.Chitti.a11y.VOICE_FACTORY_URL`). | `project_chitti_a11y_substrate` |
+| Agent vision | **Chitti is a full device control agent.** Copy architecture from Google Assistant, Microsoft Copilot, Apple Siri. Skeleton-first with `COMING SOON` markers; Chitti fills in via `skills/*.md`. **No reinvention — copy the best.** | `project_agent_vision_locked` |
+| Voice strategy | **Bhashini is TEMPORARY.** Users donate their voice to Chitti; community voices replace Bhashini over time. Hall of Fame for voice contributors. Architecture must support **swapping voice provider at any time**. | `project_voice_strategy_locked` |
+| New products process | **Before building ANY new Chitti product:** (1) research top 3 apps in that category, (2) copy their full feature surface as skeleton, (3) mark unbuilt features as `COMING SOON`, (4) power with DeepSeek + community voices, (5) define capabilities in `skills/*.md`. | `project_new_products_process_locked` |
+
+---
+
+## 2a. Locked decisions — agent vision, voice strategy, new-product process (2026-05-13)
+
+### Agent vision — LOCKED, NEVER REVISIT
+
+Chitti is a **full device control agent**, not a chatbot. Architecture is copied from the proven incumbents — **Google Assistant, Microsoft Copilot, Apple Siri** — not invented from scratch.
+
+- **Skeleton-first with `COMING SOON` markers.** Every product page ships the *full feature surface* of its category on day one. Unbuilt features carry a visible `COMING SOON` badge; they are not hidden.
+- **Chitti fills in via `skills/*.md`.** Capabilities are declared as skill files, not hardcoded UI. Adding a capability is a markdown commit, not a frontend rewrite.
+- **No reinvention.** If Google/Microsoft/Apple already solved a UX problem (wake word, permission grant, undo window, voice-first onboarding), copy it. See [[feedback_skeleton_first_pass]] — skeletons must be exhaustive on commit #1.
+
+### Voice strategy — LOCKED
+
+Bhashini is the **temporary** voice substrate. The long-term substrate is **community-donated voices**.
+
+- **Users donate their voice to Chitti.** Read-aloud passages on every language page; donated samples train per-language community voices.
+- **Hall of Fame for voice contributors.** Surface contributor names on `chitti_voice_hall_of_fame.html` so donating is socially rewarded, not extracted.
+- **Architecture must support swapping the voice provider at any time.** Voice Factory's 4-supplier cascade and the single `window.Chitti.a11y.VOICE_FACTORY_URL` hook are the contract. No code path may hard-code Bhashini. See [[project_voice_factory_complete]], [[project_chitti_voice_factory_spec]].
+
+### New-products process — LOCKED
+
+Before building **any** new Chitti product:
+
+1. **Research top 3 apps** in that category (Indian-market and global).
+2. **Copy their full feature surface as skeleton** — every tab, every card, every CTA from day one.
+3. **Mark unbuilt features as `COMING SOON`** — visible to the user, not silently omitted.
+4. **Power with DeepSeek + community voices** — never another LLM, never Bhashini-as-permanent.
+5. **Define capabilities in `skills/*.md`** — capability surface lives in markdown, not in code.
+
+Examples already queued under this contract:
+- **Chitti Mechanic** — OBD2 diagnostics; reference apps to copy: Torque Pro, Car Scanner, FIXD.
+- **Chitti News AI** — deeper AI-augmented news on top of `chitti-news`; reference: Inshorts, Ground News, Artifact (RIP).
+- Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
 
 ---
 
