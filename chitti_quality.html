@@ -438,10 +438,13 @@
   </footer>
 
   <script src="chitti_a11y.js"></script>
+  <script src="feedback-widget.js"></script>
   <script>
     // Wire the shared a11y substrate. This page does not require voice IN/OUT — it's a read-only
     // trust page — but we still load chitti_a11y.js so the language selector, braille mode, and
-    // aria-live region are available.
+    // aria-live region are available. feedback-widget.js attaches the per-response 4-icon row
+    // (🔊 / 🤖 / 👍 / 👎) to anything with .chitti-response or data-chitti-response — required by
+    // SAHAYAI_MASTER.md §7. No page ships without it.
     Chitti.a11y.init({ voiceRequired: false });
 
     // Honest-stub compliance data. When each Chitti's /admin/founder is wired, this is replaced

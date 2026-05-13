@@ -28,12 +28,20 @@ STACK:
 """
 
 import json
+import os
 import requests
 from datetime import datetime
 
 # ── CONFIGURATION ──────────────────────────────────────────
-DEEPSEEK_KEY = 'sk-372a74292a8c407abaaf673aab58c3f1'
-DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
+# Secret MUST come from env. Never commit a real key. The previously-committed
+# value (sk-372a74292…) has been rotated and is dead. Regenerate at
+# https://platform.deepseek.com and export DEEPSEEK_API_KEY before running.
+DEEPSEEK_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+DEEPSEEK_URL = os.environ.get('DEEPSEEK_URL', 'https://api.deepseek.com/chat/completions')
+if not DEEPSEEK_KEY:
+    raise RuntimeError(
+        "DEEPSEEK_API_KEY env var is required. Set it before running this script."
+    )
 
 
 def call_deepseek(system_prompt, user_message, max_tokens=300):

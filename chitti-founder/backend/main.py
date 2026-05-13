@@ -12,25 +12,29 @@ Crons (timezone Asia/Kolkata):
   • HOURLY · :15    ─ Escalator pass (low thumbs → SMS, defect repeat → GH issue,
                       carbon > 0.5g → GH issue)
 
-Endpoints:
+Endpoints (all /admin/founder/* require header auth — never URL):
   • GET  /health
-  • GET  /admin/founder/json?secret=…       — full daily slice JSON
-  • GET  /admin/founder/html?secret=…       — render the daily email in browser
-  • GET  /admin/founder/weekly?secret=…     — render the weekly email in browser
-  • GET  /admin/founder/uptime?secret=…     — last N self-ping results
-  • POST /admin/founder/send?secret=…       — manual trigger: daily report
-  • POST /admin/founder/send-weekly?secret=…— manual trigger: weekly report
-  • POST /admin/founder/escalate?secret=…   — manual trigger: escalator pass
-  • POST /admin/founder/self-ping?secret=…  — manual trigger: BCP self-ping
-  • POST /api/feedback/collect              — pubic shim that forwards to
-                                              the originating Chitti's
-                                              /api/feedback (so the widget
-                                              only needs to know ONE host).
+  • GET  /admin/founder/json        — full daily slice JSON
+  • GET  /admin/founder/html        — render the daily email in browser
+  • GET  /admin/founder/weekly      — render the weekly email in browser
+  • GET  /admin/founder/uptime      — last N self-ping results + per-Chitti %
+  • POST /admin/founder/send        — manual trigger: daily report
+  • POST /admin/founder/send-weekly — manual trigger: weekly report
+  • POST /admin/founder/escalate    — manual trigger: escalator pass
+  • POST /admin/founder/self-ping   — manual trigger: BCP self-ping
+  • POST /api/feedback/collect      — pubic shim that forwards to the
+                                       originating Chitti's /api/feedback
+                                       (so the widget only needs ONE host).
 
 Auth
 ----
 - Slice-pull from each Chitti uses bearer `FOUNDER_PULL_SECRET`.
-- /admin/founder/* requires `?secret=<ADMIN_SECRET>`.
+- /admin/founder/* requires ADMIN_SECRET in a HEADER — never the URL:
+    Authorization: Bearer <ADMIN_SECRET>     (canonical)
+    X-Admin-Secret: <ADMIN_SECRET>           (legacy header form)
+  Query strings leak via access logs, browser history, proxies, Referer.
+  `?secret=…` in the URL is rejected with a 400 telling the caller to
+  switch to the header. No silent fallback.
 - /api/feedback/collect is intentionally public — it's the public-facing
   router for the widget. It rate-limits at ~30/min/IP via httpx defaults.
 
@@ -175,16 +179,49 @@ def _build_defects_from_slices(slices: list[ChittiDailySlice]) -> list[DefectClu
     return aggregate_defects(rows)
 
 
+def _uptime_window_summary(window_hours: int = 24) -> dict[str, Any]:
+    """Roll up the last `window_hours` of `_HEALTH_RING` into the same shape
+    used by /admin/founder/uptime. Returned dict is what render_email_html
+    consumes — keep these two contracts aligned."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
+    by_chitti: dict[str, dict[str, Any]] = {}
+    for r in _HEALTH_RING:
+        try:
+            ts = datetime.fromisoformat(r["ts"].replace("Z", "+00:00"))
+        except Exception:  # noqa: BLE001
+            continue
+        if ts < cutoff:
+            continue
+        slot = by_chitti.setdefault(
+            r["chitti"], {"checks": 0, "ok": 0, "fails": 0}
+        )
+        slot["checks"] += 1
+        slot["ok"] += 1 if r.get("ok") else 0
+        slot["fails"] += 0 if r.get("ok") else 1
+    for slot in by_chitti.values():
+        slot["uptime_pct"] = (
+            round(100.0 * slot["ok"] / slot["checks"], 2) if slot["checks"] else None
+        )
+    return {
+        "window_hours": window_hours,
+        "interval_min": SELF_PING_INTERVAL_MIN,
+        "by_chitti": by_chitti,
+    }
+
+
 # ---------- Email jobs ----------------------------------------------------
 
 
 def run_daily_report() -> dict:
-    """07:00 IST cron — Chitti Quality Daily Report."""
+    """07:00 IST cron — Chitti Quality Daily Report (+ BCP Layer 1 uptime block)."""
     global _YESTERDAY_SLICES
     log.info("[daily] pulling %d slices", len(CHITTI_ENDPOINTS))
     slices = pull_all_slices()
     defects = _build_defects_from_slices(slices)
-    subject, html = render_email_html(slices, prev_slices=_YESTERDAY_SLICES, defects=defects)
+    uptime = _uptime_window_summary(24)
+    subject, html = render_email_html(
+        slices, prev_slices=_YESTERDAY_SLICES, defects=defects, uptime=uptime,
+    )
     ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
 
     _record_history(slices)
@@ -195,6 +232,7 @@ def run_daily_report() -> dict:
         "subject": subject,
         "slices": [s.to_dict() for s in slices],
         "defects": [d.to_dict() for d in defects],
+        "uptime": uptime,
         "recipient": FOUNDER_EMAIL,
     }
     log.info("[daily] ok=%s  recipient=%s  %d slices  %d defects",
@@ -485,9 +523,32 @@ _FEEDBACK_RING: deque[dict] = deque(maxlen=2000)
 
 
 def _require_admin():
+    """Admin auth — **header only**, never query string.
+
+    Accepts either:
+      • Authorization: Bearer <ADMIN_SECRET>   (canonical)
+      • X-Admin-Secret: <ADMIN_SECRET>         (legacy header form)
+
+    Rejects `?secret=…` in the URL: query strings get logged by Render,
+    proxies, browsers, and leak via Referer. The hard 401 is intentional —
+    a silent fallback would defeat the lockdown.
+    """
     if not ADMIN_SECRET:
         return jsonify({"error": "admin_secret_not_configured"}), 503
-    presented = request.args.get("secret") or request.headers.get("X-Admin-Secret", "")
+    presented = ""
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        presented = auth_header[7:].strip()
+    if not presented:
+        presented = request.headers.get("X-Admin-Secret", "").strip()
+    # Hard fail if anyone is still passing the secret in the URL. We
+    # explicitly do NOT read it — but if it's present, return a 400 so
+    # the caller updates their client rather than thinking auth is broken.
+    if not presented and request.args.get("secret"):
+        return jsonify({
+            "error": "secret_in_url_not_allowed",
+            "fix": "Send Authorization: Bearer <secret> or X-Admin-Secret: <secret>",
+        }), 400
     if presented != ADMIN_SECRET:
         return jsonify({"error": "unauthorized"}), 401
     return None
@@ -540,6 +601,7 @@ def _create_app() -> Flask:
             "endpoints": CHITTI_ENDPOINTS,
             "slices": [s.to_dict() for s in slices],
             "defects": [d.to_dict() for d in defects],
+            "uptime_24h": _uptime_window_summary(24),
             "feedback_ring_size": len(_FEEDBACK_RING),
             "defect_streaks": dict(_DEFECT_STREAK),
         })
@@ -550,7 +612,10 @@ def _create_app() -> Flask:
         if auth: return auth
         slices = pull_all_slices()
         defects = _build_defects_from_slices(slices)
-        _, html = render_email_html(slices, prev_slices=_YESTERDAY_SLICES, defects=defects)
+        uptime = _uptime_window_summary(24)
+        _, html = render_email_html(
+            slices, prev_slices=_YESTERDAY_SLICES, defects=defects, uptime=uptime,
+        )
         return Response(html, mimetype="text/html")
 
     @app.get("/admin/founder/weekly")

@@ -271,7 +271,7 @@ End of each month:
 4. **Proposes fixes** as a draft section appended to [../SAHAYAI_MASTER.md](../SAHAYAI_MASTER.md) under a new "Chitti Quality findings — <month>" subsection.
 5. **Sire approves** → fixes go into the next sprint.
 
-Currently triggered manually (`POST /admin/founder/escalate?secret=…` runs the daily-style pass; the monthly pattern-extract is a planned cron once 90 days of data exist). Until then, the weekly trend headlines surface the same signals at a higher cadence.
+Currently triggered manually (`POST /admin/founder/escalate` with `Authorization: Bearer <ADMIN_SECRET>` runs the daily-style pass — header only, never `?secret=` in the URL; the monthly pattern-extract is a planned cron once 90 days of data exist). Until then, the weekly trend headlines surface the same signals at a higher cadence.
 
 ---
 
