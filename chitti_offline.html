@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- Frontend offline fallback served by chitti_offline_sw.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chitti — Offline · sahayai.in</title>
+  <meta name="description" content="You are offline. Chitti can still read its cached responses to you. Reconnect to send new requests.">
+  <meta name="theme-color" content="#0E2344">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E📴%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37; --bg:#f8f4ee; --ink:#17202a; --muted:#6b7280; --border:#e5e7eb; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--ink);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14.5px;line-height:1.6}
+    .stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+    main{max-width:640px;margin:0 auto;padding:28px 18px 80px}
+    header{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 20px 20px;padding:18px;margin-bottom:18px}
+    h1{font-size:22px;font-weight:900;margin:0 0 6px}
+    .sub{font-size:13px;color:rgba(255,255,255,.85)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 4px 12px rgba(14,35,68,.05)}
+    .card h2{font-size:15px;margin:0 0 8px;color:var(--navy);font-weight:800}
+    button{font:700 14px/1 inherit;padding:10px 16px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--ink);cursor:pointer;min-height:44px}
+    button.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fca5a5;color:#7f1d1d;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+    footer{color:var(--muted);font-size:11.5px;text-align:center;line-height:1.7;margin-top:18px}
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+
+  <header role="banner">
+    <h1>📴 You are offline</h1>
+    <div class="sub">Chitti can still read its cached responses to you. Reconnect to send new requests.</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>What still works offline</h2>
+      <ul>
+        <li>🔊 Cached pages and Chitti's last replies — Chitti reads them aloud.</li>
+        <li>🤟 Indian Sign Language dictionary — cached in the browser.</li>
+        <li>💡 The "What can Chitti do for you?" feature list — cached.</li>
+      </ul>
+      <p>
+        <span class="pill">📴 Live data is paused</span>
+        — new questions need a connection. Chitti will not pretend to answer offline.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Try again</h2>
+      <div class="row">
+        <button class="primary" id="retry" type="button">↻ Retry</button>
+        <button id="reset-cache" type="button">🧹 Clear cached pages</button>
+        <button id="home" type="button">🏠 Open homepage</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>For rural / 2G users</h2>
+      <p>Chitti's 2G mode keeps payloads small and reuses cached responses. Tap the floating badge to toggle it manually.</p>
+    </div>
+
+    <footer>
+      sahayai.in · Offline fallback served by chitti_offline_sw.js · No live data was loaded.
+    </footer>
+  </main>
+
+  <script src="chitti_a11y.js"></script>
+  <script>
+    document.getElementById('retry').addEventListener('click', function () { history.length > 1 ? history.back() : location.reload(); });
+    document.getElementById('home').addEventListener('click', function () { location.href = '/'; });
+    document.getElementById('reset-cache').addEventListener('click', async function () {
+      if (window.Chitti && window.Chitti.offline) {
+        const r = await window.Chitti.offline.reset();
+        alert(r && r.ok ? 'Cached pages cleared.' : 'Could not reset cache yet.');
+      }
+    });
+  </script>
+</body>
+</html>

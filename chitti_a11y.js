@@ -675,6 +675,12 @@
     // `window.CHITTI_CAMERA_API` and consumed by the per-Chitti router.
     ensureCameraSubstrate();
 
+    // Offline / 2G mode — P1 from SAHAYAI_MASTER §5b + §5c. Registers
+    // the service worker (chitti_offline_sw.js) and surfaces a
+    // connectivity badge. Honest contract: /api/* is never served from
+    // cache, cached responses are visibly tagged.
+    ensureOfflineSubstrate();
+
     // Blind-user gesture navigation — P1 from SAHAYAI_MASTER §5c.
     // Activates on every page; only does anything when the User
     // Disability Profile has `blind: true`. Swipe left/right between
@@ -903,6 +909,21 @@
     // No `onerror` announce — pages without camera flows would hear an
     // unnecessary message. The substrate is best-effort; the per-Chitti
     // camera flow checks `window.Chitti.camera` before using it.
+    document.head.appendChild(s);
+  }
+
+  function ensureOfflineSubstrate() {
+    if (global.Chitti && global.Chitti.offline) return;
+    if (document.getElementById('chitti-offline-script')) return;
+    // Service workers require https / localhost. Skip silently on file://
+    // or http:// previews so the substrate doesn't error.
+    const proto = (location && location.protocol) || '';
+    if (proto !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+    const s = document.createElement('script');
+    s.id = 'chitti-offline-script';
+    s.src = sibScriptUrl('chitti_offline.js');
+    s.async = true;
+    s.defer = true;
     document.head.appendChild(s);
   }
 
