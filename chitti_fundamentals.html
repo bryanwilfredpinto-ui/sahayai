@@ -573,7 +573,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="sp-btn" onclick="speakSection('overview')" aria-label="Hear Overview summary">🔊 Hear overview</button>
       </div>
-      <div id="overview-grid" class="metric-grid">
+      <div id="overview-grid" class="metric-grid" data-chitti-response data-chitti-section="Company overview">
         <div class="section-empty" style="grid-column:1/-1">Search a stock above to load its overview.</div>
       </div>
     </div>
@@ -677,7 +677,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </label>
         <button class="chip" onclick="rcRun()" aria-label="Calculate returns" style="padding:7px 14px">Calculate</button>
       </div>
-      <div class="metric-grid" id="rc-result">
+      <div class="metric-grid" id="rc-result" data-chitti-response data-chitti-section="Returns calculator result">
         <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="rc.this">This stock</span></div><div class="metric-card-val" id="rc-stock">—</div><div class="metric-card-pe" id="rc-stock-pe">Pick mode + amount + years; click Calculate.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="rc.nifty">NIFTY 50</span></div><div class="metric-card-val" id="rc-nifty">—</div><div class="metric-card-pe" id="rc-nifty-pe">What the same money would do in the index.</div></div>
         <div class="metric-card"><div class="metric-card-lbl"><span data-i18n="rc.fd">Bank FD (7% p.a.)</span></div><div class="metric-card-val" id="rc-fd">—</div><div class="metric-card-pe" id="rc-fd-pe">Risk-free baseline — bank fixed deposit.</div></div>
@@ -761,7 +761,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           <div class="section-sub">Net Profit Margin, Operating Margin, latest YoY growth.</div>
         </div>
       </div>
-      <div id="margins-grid" class="metric-grid">
+      <div id="margins-grid" class="metric-grid" data-chitti-response data-chitti-section="Operating margins">
         <div class="section-empty" style="grid-column:1/-1">Search a stock to load margins.</div>
       </div>
     </div>
@@ -774,7 +774,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="metric-spk" onclick="speakSection('cagr')" aria-label="Hear CAGR summary">🔊</button>
       </div>
-      <div id="cagr-grid" class="metric-grid">
+      <div id="cagr-grid" class="metric-grid" data-chitti-response data-chitti-section="Revenue & profit CAGR">
         <div class="section-empty" style="grid-column:1/-1">Search a stock to load CAGR.</div>
       </div>
     </div>
@@ -915,7 +915,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="sp-btn" onclick="speakSection('ratios-prof')" aria-label="Hear profitability ratios">🔊 Hear all</button>
       </div>
-      <div id="ratios-prof" class="metric-grid"><div class="section-empty" style="grid-column:1/-1">Search a stock to load ratios.</div></div>
+      <div id="ratios-prof" class="metric-grid" data-chitti-response data-chitti-section="Profitability ratios"><div class="section-empty" style="grid-column:1/-1">Search a stock to load ratios.</div></div>
     </div>
 
     <div class="section-card">
@@ -926,7 +926,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="sp-btn" onclick="speakSection('ratios-lev')" aria-label="Hear leverage ratios">🔊 Hear all</button>
       </div>
-      <div id="ratios-lev" class="metric-grid"><div class="section-empty" style="grid-column:1/-1">Search a stock to load ratios.</div></div>
+      <div id="ratios-lev" class="metric-grid" data-chitti-response data-chitti-section="Leverage & liquidity ratios"><div class="section-empty" style="grid-column:1/-1">Search a stock to load ratios.</div></div>
     </div>
 
     <div class="section-card">
@@ -936,7 +936,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           <div class="section-sub">How quickly the business converts inputs into cash. Needs detailed balance-sheet wiring.</div>
         </div>
       </div>
-      <div id="ratios-eff" class="metric-grid"></div>
+      <div id="ratios-eff" class="metric-grid" data-chitti-response data-chitti-section="Efficiency ratios"></div>
     </div>
   </section>
 
@@ -950,7 +950,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="sp-btn" onclick="speakSection('owners')" aria-label="Hear shareholding pattern">🔊 Hear all</button>
       </div>
-      <div id="owners-grid" class="metric-grid"></div>
+      <div id="owners-grid" class="metric-grid" data-chitti-response data-chitti-section="Shareholding pattern"></div>
     </div>
 
     <div class="section-card">
@@ -1109,7 +1109,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
         </div>
         <button class="sp-btn" onclick="speakSection('valuation')" aria-label="Hear valuation summary">🔊 Hear all</button>
       </div>
-      <div id="val-grid" class="metric-grid">
+      <div id="val-grid" class="metric-grid" data-chitti-response data-chitti-section="Valuation snapshot">
         <div class="section-empty" style="grid-column:1/-1">Search a stock to compute valuation.</div>
       </div>
     </div>
@@ -1131,7 +1131,7 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
           <div class="section-sub">Is this stock cheap or expensive versus its sector? Needs sector-aggregate service.</div>
         </div>
       </div>
-      <div id="industry-pe" class="metric-grid">
+      <div id="industry-pe" class="metric-grid" data-chitti-response data-chitti-section="P/E vs industry average">
         <div class="metric-card coming-soon-card">
           <div class="metric-card-lbl"><span>Stock P/E</span><span class="coming-soon">Soon</span></div>
           <div class="metric-card-val dim">—</div>
