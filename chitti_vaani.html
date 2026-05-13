@@ -2686,20 +2686,40 @@ async function openLocalFirstModal(service){
 
   // Reset directory + external sections to loading state
   document.getElementById('local-chitti-list').innerHTML =
-    '<div class="tc-empty">Checking Chitti business directory…</div>';
+    '<div class="tc-empty">Checking Chitti business directory near you…</div>';
   document.getElementById('local-external-list').innerHTML = '';
 
   openModal('local-modal');
   speakText(CURRENT_LANG === 'en'
-    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' directory first.')
-    : ('पहले Chitti डायरेक्टरी देख रही हूँ।'),
+    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' near you first.')
+    : ('आपके पास वाली Chitti डायरेक्टरी देख रही हूँ।'),
     CURRENT_LANG);
+
+  // Geo capture (P0 — geo-aware local lookup). Try the cached location
+  // first so we don't re-prompt the user on every modal open. Then
+  // attempt a fresh GPS fix (silent — no UI). If still no location, we
+  // do NOT prompt for pincode here — the directory call will fall back
+  // to directory-wide mode and the response will carry geo_applied=false
+  // so we can show an honest "no location set" banner.
+  let loc = null;
+  if (window.Chitti && window.Chitti.location) {
+    try {
+      loc = await window.Chitti.location.get({ prompt: false, timeout_ms: 6000 });
+    } catch (_) { loc = null; }
+  }
+
+  const qs = new URLSearchParams({ service });
+  if (loc && loc.lat != null && loc.lng != null) {
+    qs.set('lat', String(loc.lat));
+    qs.set('lng', String(loc.lng));
+  }
+  if (loc && loc.pincode) qs.set('pincode', loc.pincode);
 
   // Lookup. If the backend is unreachable, we still render the external
   // fallback so the user is never stuck.
   let dirResp = null;
   try {
-    const r = await fetch(API_BASE + '/api/vaani/local/nearby?service=' + encodeURIComponent(service));
+    const r = await fetch(API_BASE + '/api/vaani/local/nearby?' + qs.toString());
     dirResp = await r.json();
   } catch(e) {
     dirResp = { ok: false, error: 'backend_unreachable', local: [], external_keys: cfg.externals };
@@ -2708,19 +2728,99 @@ async function openLocalFirstModal(service){
   renderLocalExternal(dirResp && dirResp.ok ? (dirResp.external_keys || []) : cfg.externals);
 }
 
+/** Prompt the user for their pincode and persist it. Called from the
+ *  "Set location" link inside the local-first modal when geo_applied
+ *  is False (no GPS, no cached pincode). */
+async function setLocationFromPrompt(){
+  if (!window.Chitti || !window.Chitti.location) return;
+  const loc = await window.Chitti.location.get({
+    prompt: true,
+    allow_stale_ms: 0,  // force a fresh capture
+    prompt_message: (CURRENT_LANG === 'en'
+      ? 'Enter your 6-digit pincode so Chitti shows nearby businesses:'
+      : 'अपना 6 अंकों का पिनकोड डालिए — Chitti आसपास की दुकानें दिखाएगी:'),
+    timeout_ms: 6000,
+  });
+  if (!loc) {
+    speakText(CURRENT_LANG === 'en'
+      ? 'Location skipped. Showing Chitti directory without a distance filter.'
+      : 'लोकेशन छोड़ दी। बिना दूरी के Chitti डायरेक्टरी दिखा रही हूँ।',
+      CURRENT_LANG);
+    return;
+  }
+  // Re-run the lookup with the new location.
+  if (LOCAL_CURRENT_SERVICE) openLocalFirstModal(LOCAL_CURRENT_SERVICE);
+}
+
+function _distanceLabel(km){
+  // Compact human-friendly distance. km<1 → metres (round to 50).
+  if (km == null) return null;
+  if (km < 1) {
+    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
+    return m + ' m away';
+  }
+  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km away';
+}
+
+function _distanceLabelHi(km){
+  if (km == null) return null;
+  if (km < 1) {
+    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
+    return m + ' मीटर दूर';
+  }
+  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' किमी दूर';
+}
+
 function renderLocalChitti(resp){
   const el = document.getElementById('local-chitti-list');
   if (!resp || !resp.ok) {
     el.innerHTML = '<div class="tc-empty">Chitti directory unreachable. External fallback below.</div>';
     return;
   }
+
+  // Honest banner — show the user what the server actually did with
+  // their location. Three states: no location, default radius, expanded.
+  const banner = (() => {
+    if (!resp.geo_applied) {
+      return '<div style="font-size:12px;color:#c2410c;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+        '📍 No location set — Chitti is showing the full directory (Mumbai user, Chennai shops, all mixed). ' +
+        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Set location</a> to see only nearby shops.' +
+        '</div>';
+    }
+    const r = resp.radius_km;
+    if (resp.expanded_to_km) {
+      return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+        '📍 No Chitti business within 5 km — expanded search to <b>' + r + ' km</b>. ' +
+        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
+        '</div>';
+    }
+    return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+      '📍 Showing Chitti business within <b>' + r + ' km</b>. ' +
+      '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
+      '</div>';
+  })();
+
   const rows = Array.isArray(resp.local) ? resp.local : [];
   if (!rows.length) {
-    el.innerHTML = '<div class="tc-empty">No registered Chitti business for <b>' +
-      escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.</div>';
+    // Honest empty-state — explicitly mention the expanded radius if
+    // the server tried widening the search before giving up.
+    const radius = resp.expanded_to_km || resp.radius_km;
+    const explain = resp.geo_applied
+      ? (radius
+          ? ('No registered Chitti business within <b>' + radius + ' km</b> for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.')
+          : ('No registered Chitti business near you for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.'))
+      : ('No registered Chitti business for <b>' + escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.');
+    el.innerHTML = banner +
+      '<div class="tc-empty">' + explain + '</div>';
+    // Speak the empty-state aloud for blind / illiterate users.
+    speakText(CURRENT_LANG === 'en'
+      ? ('No Chitti ' + (resp.display || resp.service) + ' near you. Showing the external app instead.')
+      : ('आपके पास Chitti ' + (resp.display || resp.service) + ' नहीं है। External app दिखा रही हूँ।'),
+      CURRENT_LANG);
     return;
   }
-  el.innerHTML = rows.map(r => {
+
+  el.innerHTML = banner + rows.map(r => {
     const isConnected = (r.oauth_status === 'connected');
     const featsHtml = (r.features && r.features.length)
       ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
@@ -2730,12 +2830,27 @@ function renderLocalChitti(resp){
     const statusPill = isConnected
       ? '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(22,163,74,.10);color:#15803d;border:1px solid #16a34a;border-radius:5px;padding:2px 7px">CONNECTED</span>'
       : '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px">BEING ONBOARDED</span>';
+    // Distance pill — honest about three states:
+    //   haversine / pincode_exact  → "0.5 km away" / "same pincode"
+    //   unknown                    → "📍 distance unknown — admin: add location"
+    //   no geo_applied at all      → no distance pill (banner already explains)
+    let distPill = '';
+    if (resp.geo_applied) {
+      const dLabel = _distanceLabel(r.distance_km);
+      if (r.geo_match === 'haversine' && dLabel) {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 ' + escapeHtml(dLabel) + '</span>';
+      } else if (r.geo_match === 'pincode_exact') {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 Same pincode</span>';
+      } else {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:700;background:rgba(107,114,128,.10);color:#4b5563;border:1px solid #9ca3af;border-radius:5px;padding:2px 7px;margin-left:4px" title="This shop has not registered its location yet — admin can add it via /api/admin/products/<id>/geo">📍 Distance unknown</span>';
+      }
+    }
     return '<div class="pair-row" style="background:#fff8e1">' +
       '<div class="av" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a)">' +
         escapeHtml((r.product_name||'?').replace(/^Chitti /, '')[0]||'?') +
       '</div>' +
       '<div class="info" style="flex:1;min-width:200px">' +
-        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill +
+        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill + distPill +
         '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',\'Menlo\',monospace">' +
           escapeHtml(r.gmail_address||'') +
         '</div>' + featsHtml +
@@ -2743,6 +2858,23 @@ function renderLocalChitti(resp){
       '<button onclick="contactLocalChitti(' + JSON.stringify(r.product_key) + ',' + JSON.stringify(r.gmail_address||'') + ')">📧 Contact via email</button>' +
     '</div>';
   }).join('');
+
+  // Speak the NEAREST confirmed-distance match aloud — critical for
+  // blind users who cannot see the cards. Skip if no confirmed match
+  // (e.g. all shops have unknown distance) — saying "Chitti Kirana,
+  // distance unknown" is more confusing than silence.
+  const nearest = rows.find(r => r.distance_km != null
+                                  && (r.geo_match === 'haversine' || r.geo_match === 'pincode_exact'));
+  if (nearest && resp.geo_applied) {
+    const name = (nearest.product_name || nearest.product_key || 'Chitti shop');
+    if (CURRENT_LANG === 'en') {
+      const lbl = _distanceLabel(nearest.distance_km);
+      speakText('Nearest is ' + name + ', ' + lbl + '.', 'en');
+    } else {
+      const lbl = _distanceLabelHi(nearest.distance_km);
+      speakText('आपके सबसे पास ' + name + ', ' + lbl + '।', CURRENT_LANG);
+    }
+  }
 }
 
 /** Open the existing Vaani email modal pre-filled with the Chitti shop's mailbox.

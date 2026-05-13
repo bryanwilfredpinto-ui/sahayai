@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Frontend for chitti-vaani/ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -553,6 +554,26 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="btn-ghost" onclick="clearTrustedCircle()">🗑️ Clear all</button>
     </div>
     <div id="tc-list" class="tc-list"></div>
+  </section>
+
+  <!-- ════════ DAILY CHECK-IN (P0 — elderly safety) ════════ -->
+  <section class="section-card" aria-labelledby="checkin-title" id="section-checkin">
+    <h2 class="section-title" id="checkin-title"><span class="ico">🌅</span> Daily check-in for elderly</h2>
+    <div class="section-sub">Chitti asks "Aap theek hain?" at the time you choose, every day. If you stay silent after the configured number of prompts, <b>Chitti fires the family emergency cascade</b> — same denylist on 112/100/102, never cops. (project_chitti_vaani_emergency_protocol)</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+      <label style="font-size:13px">🕗 Time (IST):
+        <input id="checkin-time" type="time" value="08:00" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px">
+      </label>
+      <label style="font-size:13px">👵 Label:
+        <input id="checkin-label" type="text" placeholder="Dadi / Naana / Self" maxlength="80" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;min-width:160px">
+      </label>
+      <label style="font-size:13px">🔁 Max silent prompts before escalation:
+        <input id="checkin-max" type="number" min="1" max="10" value="3" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;width:64px">
+      </label>
+      <button class="btn-saffron" onclick="onCheckinSave()" aria-label="Save daily check-in">💾 Save</button>
+      <button class="btn-ghost" onclick="onCheckinDisable()" aria-label="Disable daily check-in">🚫 Disable</button>
+    </div>
+    <div id="checkin-status" role="status" aria-live="polite" style="font-size:13px;color:#555"></div>
   </section>
 
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
@@ -2206,6 +2227,8 @@ function startEmergencyPoll(){
               : 'आपके साथी ने कहा वे ठीक हैं। चिंता मत करें।',
               CURRENT_LANG);
             logAction('Inbound emergency check-in', 'partner=' + (ev.from||'?'));
+          } else if (ev.kind === 'checkin_prompt') {
+            handleDailyCheckinPrompt(ev);
           }
         }
       }
@@ -2230,6 +2253,120 @@ function handleInboundEmergency(ev){
     try { window.ChittiNative.triggerEmergencyAlarm('partner_relay'); } catch(e){}
   }
   logAction('Inbound emergency relay', 'partner=' + (ev.from||'?'));
+}
+
+/* ─── Daily check-in (P0 — elderly users) ─── */
+/* Reuses the existing emergency cascade for silence escalation —
+   confirm-with-master → ring alarm → spouse → family → relay. NEVER
+   auto-dials cops. (project_chitti_vaani_emergency_protocol) */
+function handleDailyCheckinPrompt(ev){
+  const lang = CURRENT_LANG || 'en';
+  const label = (ev.payload && ev.payload.elderly_label) || '';
+  const prompt = lang === 'en'
+    ? (label ? ('Daily check-in for ' + label + '. ') : '') + 'Are you OK? Say HAAN or tap I am OK.'
+    : (label ? ('दैनिक चेक-इन — ' + label + '। ') : '') + 'क्या आप ठीक हैं? "हाँ" कहिए या "I am OK" दबाइए।';
+  // Repurpose the existing emergency overlay — same affordances, no new
+  // UI surface to maintain. Set stage to 0 so the I'M OK button is the
+  // primary action. If the user stays silent and the backend hits
+  // max_prompts, the scheduler fires emergency_service.trigger() which
+  // produces a real `kind=emergency` relay to paired family.
+  EM_REASON = lang === 'en' ? 'Daily check-in' : 'दैनिक चेक-इन';
+  EM_STAGE = 0;
+  showEmergencyOverlay(0);
+  speakText(prompt, lang);
+  logAction('Daily check-in prompt received', 'index=' + (ev.payload && ev.payload.prompt_index));
+  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    try {
+      const rec = new R();
+      rec.lang = lang === 'en' ? 'en-IN' : 'hi-IN';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      rec.onresult = (e) => {
+        const said = ((e.results[0] && e.results[0][0] && e.results[0][0].transcript) || '').toLowerCase();
+        if (/\b(haan|haa|ji|theek|ok|okay|i ?am ?ok|ठीक|हाँ|हां|जी)\b/.test(said)){
+          dailyCheckinAck(said);
+        }
+      };
+      rec.onerror = ()=>{};
+      rec.start();
+    } catch(_) {}
+  }
+}
+
+async function dailyCheckinAck(said){
+  document.getElementById('emergency-overlay').classList.remove('shown');
+  EM_STAGE = -1;
+  try {
+    await fetch(API_BASE + '/api/vaani/checkin/ack', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: getUserToken(), said: said || '' })
+    });
+    speakText(CURRENT_LANG === 'en' ? 'Thank you. See you tomorrow.' : 'धन्यवाद। कल फिर मिलेंगे।', CURRENT_LANG);
+    logAction('Daily check-in ack', said || '(tap)');
+  } catch (e) {
+    logAction('Daily check-in ack failed', e && e.message || 'network');
+  }
+}
+
+async function dailyCheckinSchedule(hour_ist, minute_ist, language, elderly_label, max_prompts){
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/checkin/schedule', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_token: getUserToken(),
+        hour_ist: hour_ist | 0, minute_ist: minute_ist | 0,
+        language: language || (CURRENT_LANG || 'hi'),
+        elderly_label: elderly_label || '',
+        max_prompts: max_prompts || 3,
+        enabled: true
+      })
+    });
+    return await r.json();
+  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
+}
+
+async function dailyCheckinDisable(){
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/checkin/disable', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ user_token: getUserToken() })
+    });
+    return await r.json();
+  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
+}
+
+async function onCheckinSave(){
+  const tm = (document.getElementById('checkin-time') || {}).value || '08:00';
+  const [hh, mm] = tm.split(':').map(x => parseInt(x, 10) || 0);
+  const label = ((document.getElementById('checkin-label') || {}).value || '').trim();
+  const maxp = parseInt((document.getElementById('checkin-max') || {}).value || '3', 10) || 3;
+  const status = document.getElementById('checkin-status');
+  if (status) status.textContent = 'Saving…';
+  const res = await dailyCheckinSchedule(hh, mm, CURRENT_LANG || 'hi', label, maxp);
+  if (res && res.ok && res.checkin) {
+    const c = res.checkin;
+    const phrase = (CURRENT_LANG === 'en'
+      ? ('Saved. Chitti will check in every day at ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST. After ' + c.max_prompts + ' silent prompts, family will be alerted.')
+      : ('सेव हो गया। चिट्टी रोज़ ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST पर पूछेगी। ' + c.max_prompts + ' बार चुप रहने पर परिवार को सूचना जाएगी।'));
+    if (status) status.textContent = phrase;
+    speakText(phrase, CURRENT_LANG || 'hi');
+    logAction('Daily check-in saved', String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST · max ' + c.max_prompts);
+  } else {
+    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'save failed');
+  }
+}
+
+async function onCheckinDisable(){
+  const status = document.getElementById('checkin-status');
+  if (status) status.textContent = 'Disabling…';
+  const res = await dailyCheckinDisable();
+  if (res && res.ok) {
+    if (status) status.textContent = (CURRENT_LANG === 'en') ? 'Disabled.' : 'बंद कर दिया।';
+    logAction('Daily check-in disabled', '');
+  } else {
+    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'disable failed');
+  }
 }
 
 /* ─── Pairing ─── */
@@ -2549,20 +2686,40 @@ async function openLocalFirstModal(service){
 
   // Reset directory + external sections to loading state
   document.getElementById('local-chitti-list').innerHTML =
-    '<div class="tc-empty">Checking Chitti business directory…</div>';
+    '<div class="tc-empty">Checking Chitti business directory near you…</div>';
   document.getElementById('local-external-list').innerHTML = '';
 
   openModal('local-modal');
   speakText(CURRENT_LANG === 'en'
-    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' directory first.')
-    : ('पहले Chitti डायरेक्टरी देख रही हूँ।'),
+    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' near you first.')
+    : ('आपके पास वाली Chitti डायरेक्टरी देख रही हूँ।'),
     CURRENT_LANG);
+
+  // Geo capture (P0 — geo-aware local lookup). Try the cached location
+  // first so we don't re-prompt the user on every modal open. Then
+  // attempt a fresh GPS fix (silent — no UI). If still no location, we
+  // do NOT prompt for pincode here — the directory call will fall back
+  // to directory-wide mode and the response will carry geo_applied=false
+  // so we can show an honest "no location set" banner.
+  let loc = null;
+  if (window.Chitti && window.Chitti.location) {
+    try {
+      loc = await window.Chitti.location.get({ prompt: false, timeout_ms: 6000 });
+    } catch (_) { loc = null; }
+  }
+
+  const qs = new URLSearchParams({ service });
+  if (loc && loc.lat != null && loc.lng != null) {
+    qs.set('lat', String(loc.lat));
+    qs.set('lng', String(loc.lng));
+  }
+  if (loc && loc.pincode) qs.set('pincode', loc.pincode);
 
   // Lookup. If the backend is unreachable, we still render the external
   // fallback so the user is never stuck.
   let dirResp = null;
   try {
-    const r = await fetch(API_BASE + '/api/vaani/local/nearby?service=' + encodeURIComponent(service));
+    const r = await fetch(API_BASE + '/api/vaani/local/nearby?' + qs.toString());
     dirResp = await r.json();
   } catch(e) {
     dirResp = { ok: false, error: 'backend_unreachable', local: [], external_keys: cfg.externals };
@@ -2571,19 +2728,99 @@ async function openLocalFirstModal(service){
   renderLocalExternal(dirResp && dirResp.ok ? (dirResp.external_keys || []) : cfg.externals);
 }
 
+/** Prompt the user for their pincode and persist it. Called from the
+ *  "Set location" link inside the local-first modal when geo_applied
+ *  is False (no GPS, no cached pincode). */
+async function setLocationFromPrompt(){
+  if (!window.Chitti || !window.Chitti.location) return;
+  const loc = await window.Chitti.location.get({
+    prompt: true,
+    allow_stale_ms: 0,  // force a fresh capture
+    prompt_message: (CURRENT_LANG === 'en'
+      ? 'Enter your 6-digit pincode so Chitti shows nearby businesses:'
+      : 'अपना 6 अंकों का पिनकोड डालिए — Chitti आसपास की दुकानें दिखाएगी:'),
+    timeout_ms: 6000,
+  });
+  if (!loc) {
+    speakText(CURRENT_LANG === 'en'
+      ? 'Location skipped. Showing Chitti directory without a distance filter.'
+      : 'लोकेशन छोड़ दी। बिना दूरी के Chitti डायरेक्टरी दिखा रही हूँ।',
+      CURRENT_LANG);
+    return;
+  }
+  // Re-run the lookup with the new location.
+  if (LOCAL_CURRENT_SERVICE) openLocalFirstModal(LOCAL_CURRENT_SERVICE);
+}
+
+function _distanceLabel(km){
+  // Compact human-friendly distance. km<1 → metres (round to 50).
+  if (km == null) return null;
+  if (km < 1) {
+    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
+    return m + ' m away';
+  }
+  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km away';
+}
+
+function _distanceLabelHi(km){
+  if (km == null) return null;
+  if (km < 1) {
+    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
+    return m + ' मीटर दूर';
+  }
+  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' किमी दूर';
+}
+
 function renderLocalChitti(resp){
   const el = document.getElementById('local-chitti-list');
   if (!resp || !resp.ok) {
     el.innerHTML = '<div class="tc-empty">Chitti directory unreachable. External fallback below.</div>';
     return;
   }
+
+  // Honest banner — show the user what the server actually did with
+  // their location. Three states: no location, default radius, expanded.
+  const banner = (() => {
+    if (!resp.geo_applied) {
+      return '<div style="font-size:12px;color:#c2410c;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+        '📍 No location set — Chitti is showing the full directory (Mumbai user, Chennai shops, all mixed). ' +
+        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Set location</a> to see only nearby shops.' +
+        '</div>';
+    }
+    const r = resp.radius_km;
+    if (resp.expanded_to_km) {
+      return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+        '📍 No Chitti business within 5 km — expanded search to <b>' + r + ' km</b>. ' +
+        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
+        '</div>';
+    }
+    return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
+      '📍 Showing Chitti business within <b>' + r + ' km</b>. ' +
+      '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
+      '</div>';
+  })();
+
   const rows = Array.isArray(resp.local) ? resp.local : [];
   if (!rows.length) {
-    el.innerHTML = '<div class="tc-empty">No registered Chitti business for <b>' +
-      escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.</div>';
+    // Honest empty-state — explicitly mention the expanded radius if
+    // the server tried widening the search before giving up.
+    const radius = resp.expanded_to_km || resp.radius_km;
+    const explain = resp.geo_applied
+      ? (radius
+          ? ('No registered Chitti business within <b>' + radius + ' km</b> for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.')
+          : ('No registered Chitti business near you for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.'))
+      : ('No registered Chitti business for <b>' + escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.');
+    el.innerHTML = banner +
+      '<div class="tc-empty">' + explain + '</div>';
+    // Speak the empty-state aloud for blind / illiterate users.
+    speakText(CURRENT_LANG === 'en'
+      ? ('No Chitti ' + (resp.display || resp.service) + ' near you. Showing the external app instead.')
+      : ('आपके पास Chitti ' + (resp.display || resp.service) + ' नहीं है। External app दिखा रही हूँ।'),
+      CURRENT_LANG);
     return;
   }
-  el.innerHTML = rows.map(r => {
+
+  el.innerHTML = banner + rows.map(r => {
     const isConnected = (r.oauth_status === 'connected');
     const featsHtml = (r.features && r.features.length)
       ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
@@ -2593,12 +2830,27 @@ function renderLocalChitti(resp){
     const statusPill = isConnected
       ? '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(22,163,74,.10);color:#15803d;border:1px solid #16a34a;border-radius:5px;padding:2px 7px">CONNECTED</span>'
       : '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px">BEING ONBOARDED</span>';
+    // Distance pill — honest about three states:
+    //   haversine / pincode_exact  → "0.5 km away" / "same pincode"
+    //   unknown                    → "📍 distance unknown — admin: add location"
+    //   no geo_applied at all      → no distance pill (banner already explains)
+    let distPill = '';
+    if (resp.geo_applied) {
+      const dLabel = _distanceLabel(r.distance_km);
+      if (r.geo_match === 'haversine' && dLabel) {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 ' + escapeHtml(dLabel) + '</span>';
+      } else if (r.geo_match === 'pincode_exact') {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 Same pincode</span>';
+      } else {
+        distPill = '<span class="pill" style="font-size:10px;font-weight:700;background:rgba(107,114,128,.10);color:#4b5563;border:1px solid #9ca3af;border-radius:5px;padding:2px 7px;margin-left:4px" title="This shop has not registered its location yet — admin can add it via /api/admin/products/<id>/geo">📍 Distance unknown</span>';
+      }
+    }
     return '<div class="pair-row" style="background:#fff8e1">' +
       '<div class="av" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a)">' +
         escapeHtml((r.product_name||'?').replace(/^Chitti /, '')[0]||'?') +
       '</div>' +
       '<div class="info" style="flex:1;min-width:200px">' +
-        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill +
+        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill + distPill +
         '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',\'Menlo\',monospace">' +
           escapeHtml(r.gmail_address||'') +
         '</div>' + featsHtml +
@@ -2606,6 +2858,23 @@ function renderLocalChitti(resp){
       '<button onclick="contactLocalChitti(' + JSON.stringify(r.product_key) + ',' + JSON.stringify(r.gmail_address||'') + ')">📧 Contact via email</button>' +
     '</div>';
   }).join('');
+
+  // Speak the NEAREST confirmed-distance match aloud — critical for
+  // blind users who cannot see the cards. Skip if no confirmed match
+  // (e.g. all shops have unknown distance) — saying "Chitti Kirana,
+  // distance unknown" is more confusing than silence.
+  const nearest = rows.find(r => r.distance_km != null
+                                  && (r.geo_match === 'haversine' || r.geo_match === 'pincode_exact'));
+  if (nearest && resp.geo_applied) {
+    const name = (nearest.product_name || nearest.product_key || 'Chitti shop');
+    if (CURRENT_LANG === 'en') {
+      const lbl = _distanceLabel(nearest.distance_km);
+      speakText('Nearest is ' + name + ', ' + lbl + '.', 'en');
+    } else {
+      const lbl = _distanceLabelHi(nearest.distance_km);
+      speakText('आपके सबसे पास ' + name + ', ' + lbl + '।', CURRENT_LANG);
+    }
+  }
 }
 
 /** Open the existing Vaani email modal pre-filled with the Chitti shop's mailbox.
@@ -2721,6 +2990,12 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script src="chitti_disclaimer.js"></script>
+<!-- Chitti Quality v2 trust signals · 2026-05-13 -->
+<script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.4;</script>
 <script src="feedback-widget.js" data-page="chitti_vaani"></script>
+
+<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
+<script src="chitti_a11y.js"></script>
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 </body>
 </html>
