@@ -193,6 +193,7 @@ Full detail + surface needed live in each Chitti's
 | **Vaani** | "Remember my preferences" — Chitti learns regular orders | P1 | [features](chitti-vaani/skills/FEATURES.md) |
 | **Vaani** | Voice shortcuts — say "usual" / "wahi wala" | P2 | [features](chitti-vaani/skills/FEATURES.md) |
 | **Vaani** | Daily check-in for elderly users (reuses emergency cascade) | **P0** (safety) | [features](chitti-vaani/skills/FEATURES.md) |
+| **Vaani** | **Geo / lat-lng on local-business lookup** — `/api/vaani/local/nearby` returns directory-wide today, so a Mumbai user sees Chennai kiranas. Add GPS or pincode capture, X-km radius filter, sort by distance nearest-first, render "ABC Kirana — 0.5 km away" on every card. | **P0** (correctness — current behavior is misleading) | [features §3.2](chitti-vaani/skills/FEATURES.md) |
 | **Government** | "Am I eligible?" checker for every scheme | **P0** | [features](chitti-government/skills/FEATURES.md) |
 | **Government** | Application status tracker | P1 | [features](chitti-government/skills/FEATURES.md) |
 | **Government** | Document checklist per scheme (scanner deep-link) | **P0** | [features](chitti-government/skills/FEATURES.md) |
@@ -423,19 +424,31 @@ Any new Chitti page built in future **inherits the ISL plugin automatically** �
 3. **Build the "Explain simply" button.** No substrate exists yet — needs a new helper that re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud. Required on every product card AND every Chitti response.
 4. **Audit the other 12 product pages** for the same four gaps. The substrate scripts are loaded on 13 pages already, but verify the language selector actually shifts UI on each, and `Explain simply` is added uniformly.
 
+### P0 — Geo on the local-business lookup (2026-05-13 audit)
+
+Vaani's new `/api/vaani/local/nearby` endpoint is directory-wide today — a Mumbai user sees Chennai kiranas. Until geo lands, "local Chitti business first" is misleading; the user can't act on the list. Treat as a correctness bug, not a future enhancement.
+
+5. **Capture user location.** GPS (`navigator.geolocation.getCurrentPosition`) as primary, **pincode fallback** for low-permission / desktop users. Store on the per-device user_token row (no new login required). Re-prompt only if the user moves cities.
+6. **Add `lat`, `lng`, `pincode`, `service_radius_km` to `product_gmail_accounts`.** Hand-written `ALTER TABLE` migration in [`admin_db.py`](chitti-vaani/backend/services/admin_db.py) — same idempotent pattern as the existing `domain_template` / `features` migration. Backfill via the admin dashboard (new field group).
+7. **Radius filter + distance sort in `local_chitti_service.nearby()`.** Haversine in Python (no PostGIS dependency — Turso doesn't have it). Default radius 5 km in metros, 25 km in tier-2/3 (read from a `chitti-pincode-tier.json` lookup, not user-set). Sort ascending by computed distance. Return `distance_km` per row.
+8. **Render distance on every card.** Frontend [`chitti_vaani.html`](chitti_vaani.html) `renderLocalChitti()` shows "ABC Kirana — 0.5 km away" / "MNO Pharmacy — 2.3 km away". Speak the nearest match aloud ("Sabse paas wali Chitti Kirana, 0.5 km duur") for blind users.
+9. **Honest empty state.** When no Chitti business is in radius, say so ("No registered Chitti business within 5 km. Expanding to 25 km…" then external-app fallback). Never lie that the directory is empty when it just isn't local.
+
+Owner: same person who built `local_chitti_service.py` (2026-05-13 commit `7e19102`). Update [chitti-vaani/skills/FEATURES.md §3.2](chitti-vaani/skills/FEATURES.md) when each sub-step lands.
+
 ### P1 — Unblock Voice Factory Phase 2
 
-5. **Embed-pass on Voice Factory fluency pipeline** — needs Render py3.11 to finish the 79,414-chunk corpus across 26 langs (`project_voice_factory_fluency_pipeline`).
-6. **Bhashini ULCA registration** by Sire — unblocks swap from `mock_bhashini` to real supplier.
+10. **Embed-pass on Voice Factory fluency pipeline** — needs Render py3.11 to finish the 79,414-chunk corpus across 26 langs (`project_voice_factory_fluency_pipeline`).
+11. **Bhashini ULCA registration** by Sire — unblocks swap from `mock_bhashini` to real supplier.
 
 ### P2 — Infrastructure cleanup
 
-7. **Per-product Turso cutover verification.** Neon/Supabase stay live until each per-Chitti cutover is verified end-to-end.
-8. **Wire the 8 backends that have `render.yaml` but aren't connected** (`project_render_deploy_status_2026_05_10`).
+12. **Per-product Turso cutover verification.** Neon/Supabase stay live until each per-Chitti cutover is verified end-to-end.
+13. **Wire the 8 backends that have `render.yaml` but aren't connected** (`project_render_deploy_status_2026_05_10`).
 
 ### P3 — Next-wave products
 
-9. Money Help → Health → Jobs → Inventory → WhatsApp Orders (in that order — Money Help most-requested per current backlog).
+14. Money Help → Health → Jobs → Inventory → WhatsApp Orders (in that order — Money Help most-requested per current backlog).
 
 ### Sub-agent routing inside Chitti News
 
