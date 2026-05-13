@@ -666,6 +666,14 @@
     // the dictionary is the contract, the substrate is the loader).
     // Idempotent: re-init is a no-op once the script is in the DOM.
     ensureFeaturesSubstrate();
+
+    // Camera intelligence — LOCKED 2026-05-13, SAHAYAI_MASTER §2b.
+    // Single capture path for every Chitti that has camera access. The
+    // substrate is loaded on every page (even on Chittis with no camera
+    // yet) so an honest local queue is always available; the actual
+    // POST surface is `/api/camera/capture`, configured via
+    // `window.CHITTI_CAMERA_API` and consumed by the per-Chitti router.
+    ensureCameraSubstrate();
   }
 
   function ensureFeaturesSubstrate() {
@@ -673,7 +681,7 @@
     if (document.getElementById('chitti-features-script')) return;
     const s = document.createElement('script');
     s.id = 'chitti-features-script';
-    s.src = featuresScriptUrl();
+    s.src = sibScriptUrl('chitti_features.js');
     s.async = true;
     s.defer = true;
     s.onerror = () => {
@@ -687,7 +695,21 @@
     document.head.appendChild(s);
   }
 
-  function featuresScriptUrl() {
+  function ensureCameraSubstrate() {
+    if (global.Chitti && global.Chitti.camera) return;
+    if (document.getElementById('chitti-camera-script')) return;
+    const s = document.createElement('script');
+    s.id = 'chitti-camera-script';
+    s.src = sibScriptUrl('chitti_camera.js');
+    s.async = true;
+    s.defer = true;
+    // No `onerror` announce — pages without camera flows would hear an
+    // unnecessary message. The substrate is best-effort; the per-Chitti
+    // camera flow checks `window.Chitti.camera` before using it.
+    document.head.appendChild(s);
+  }
+
+  function sibScriptUrl(name) {
     // Resolve relative to whichever path chitti_a11y.js itself was
     // loaded from. Works whether the page is at repo root (sahayai.in
     // GitHub Pages) or inside a product subfolder (when previewing
@@ -696,11 +718,14 @@
     for (const t of tags) {
       const src = t.src || '';
       if (/chitti_a11y\.js(\?|$)/.test(src)) {
-        return src.replace(/chitti_a11y\.js(\?[^#]*)?$/, 'chitti_features.js');
+        return src.replace(/chitti_a11y\.js(\?[^#]*)?$/, name);
       }
     }
-    return 'chitti_features.js';
+    return name;
   }
+
+  // Back-compat alias — the original name was used by callers in tests.
+  function featuresScriptUrl() { return sibScriptUrl('chitti_features.js'); }
 
   function injectBaseStyles() {
     if (document.getElementById('chitti-a11y-css')) return;
