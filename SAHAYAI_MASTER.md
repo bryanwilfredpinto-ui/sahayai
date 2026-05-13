@@ -189,6 +189,7 @@ Every Chitti page must carry a **`💡 What can Chitti do for you?`** button. Th
 6. **`🔊 Read all features aloud`** button at the top of the modal walks through every feature.
 7. **Auto-read on first visit for BLIND users** — when the User Disability Profile (§7) has `blind: true`, opening the modal once auto-fires the read-all flow. Tracked in `localStorage.chitti_features_v1.auto_read_done` so it only happens once per device.
 8. **Honest empty state** — if the page has no FEATURES.md mapped (e.g. `chitti_complete_technical.html` while [chitti-shares/](chitti-shares/) hasn't shipped its FEATURES.md yet), the modal says so explicitly. **No fake feature list ever.** Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
+9. **Homepage variant — "all 12 Chittis"** (added 2026-05-14). On `index.html`, `chitti_complete.html`, `chitti_claude_complete.html` the same CTA renames itself to **"Chitti se poochho — main kya kar sakta hoon?"** and opens a different modal: one row per Chitti from `ALL_CHITTIS` (§4 order), each filled with the **top 3 features** parsed live from `<folder>/skills/FEATURES.md`. The list itself is still 100% sourced from each Chitti's FEATURES.md — `ALL_CHITTIS` is the routing manifest only (slug, folder, label, emoji), the per-Chitti rows are filled in parallel `fetch` + parse just like the single-Chitti view. Auto-read fires once for blind users on first visit (`auto_read_home_done`). Exposed as `Chitti.features.openAll()`.
 
 ### Why this is locked
 

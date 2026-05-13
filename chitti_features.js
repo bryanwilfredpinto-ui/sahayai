@@ -31,6 +31,28 @@
   const A11Y_KEY = 'chitti_a11y_v1';
   const FEATURES_CACHE = new Map();
 
+  // The 12-product "Chitti family" surfaced on the homepage — order
+  // matches SAHAYAI_MASTER §4 "What's built — 12 live products". This
+  // list is the contract for the homepage all-Chittis discovery view;
+  // adding a product means updating SAHAYAI_MASTER §4 + this list (the
+  // list is intentionally NOT auto-derived from PAGE_TO_FOLDER because
+  // a few entries in PAGE_TO_FOLDER are substrates / internal pages
+  // — chitti-isl, chitti-quality, chitti-kirana — not user products).
+  const ALL_CHITTIS = [
+    { slug: 'chitti_complete_technical', folder: 'chitti-fundamentals',         emoji: '📈', label: 'Chitti Technical' },
+    { slug: 'chitti_fundamentals',       folder: 'chitti-fundamentals',         emoji: '📊', label: 'Chitti Fundamentals' },
+    { slug: 'chitti_medupi',             folder: 'chitti-medupi',               emoji: '💊', label: 'Chitti MedUPI' },
+    { slug: 'chitti_news',               folder: 'chitti-news',                 emoji: '📰', label: 'Chitti News' },
+    { slug: 'chitti_vaani',              folder: 'chitti-vaani',                emoji: '🗣️', label: 'Chitti Vaani' },
+    { slug: 'chitti_upi',                folder: 'chitti-upi',                  emoji: '🛡️', label: 'Chitti UPI Fraud Guard' },
+    { slug: 'chitti_scanner',            folder: 'chitti-scanner',              emoji: '📷', label: 'Chitti Product Scanner' },
+    { slug: 'chitti_ca',                 folder: 'chitti-ca',                   emoji: '🧾', label: 'Chitti CA' },
+    { slug: 'chitti_legal',              folder: 'chitti-legal',                emoji: '⚖️', label: 'Chitti Legal' },
+    { slug: 'chitti_logo_video',         folder: 'chitti-logo-video',           emoji: '🎬', label: 'Chitti Logo & Video' },
+    { slug: 'chitti_government',         folder: 'chitti-government',           emoji: '🏛️', label: 'Chitti Government' },
+    { slug: 'chitti_voice_factory',      folder: 'chitti-voice-factory',        emoji: '🎙️', label: 'Chitti Voice Factory' },
+  ];
+
   // Page slug → product folder. Pulled from SAHAYAI_MASTER §4a frontend
   // ↔ folder map. Pages not listed here use no auto-mapping; they MUST
   // declare <meta name="chitti-features" content="..."> to opt in, or
@@ -430,10 +452,19 @@
     btn.className = 'chitti-features-cta';
     btn.type = 'button';
     btn.setAttribute('aria-haspopup', 'dialog');
-    btn.setAttribute('aria-label', 'What can Chitti do for you? Open feature list');
+    // Match the founder spec wording on the homepage; product pages keep
+    // the shorter prompt. The dispatcher in openModal() decides which
+    // view to render — single-Chitti vs all-12-Chittis — so the button
+    // label is the only homepage-specific bit.
+    const home = isHomepage();
+    const label = home
+      ? 'Chitti se poochho — main kya kar sakta hoon?'
+      : 'What can Chitti do for you? Open feature list';
+    btn.setAttribute('aria-label', label);
     btn.innerHTML =
       '<span class="chitti-mini-logo" aria-hidden="true">C</span>' +
-      '💡 What can Chitti do for you?';
+      (home ? '💡 Chitti se poochho — main kya kar sakta hoon?'
+            : '💡 What can Chitti do for you?');
     btn.addEventListener('click', () => openModal());
     document.body.appendChild(btn);
   }
@@ -449,16 +480,210 @@
     btn.type = 'button';
     btn.title = 'What can Chitti do for you?';
     btn.setAttribute('aria-label', 'What can Chitti do for you? Open feature list');
-    btn.innerHTML = '💡 What can Chitti do?';
+    btn.innerHTML = isHomepage()
+      ? '💡 Chitti se poochho — main kya kar sakta hoon?'
+      : '💡 What can Chitti do?';
     btn.addEventListener('click', () => openModal());
     if (speakBtn) bar.insertBefore(btn, speakBtn);
     else bar.appendChild(btn);
+  }
+
+  // ── HOMEPAGE / "ALL CHITTIS" DISCOVERY ───────────────────────
+  // The homepage (index.html, chitti_complete.html, chitti_claude_complete.html)
+  // shows the full family of 12 Chittis with their top 3 features each —
+  // per the founder spec "sahayai.in main page: Chitti se poochho — main
+  // kya kar sakta hoon? Reads all 12 Chittis and their top 3 features each."
+  // The list still comes from each Chitti's skills/FEATURES.md — nothing
+  // hardcoded — but ALL_CHITTIS is the routing manifest.
+
+  const HOMEPAGE_SLUGS = new Set([
+    '', 'index', 'chitti_complete', 'chitti_claude_complete',
+  ]);
+
+  function isHomepage() {
+    return HOMEPAGE_SLUGS.has(pageSlug());
+  }
+
+  // Pick the first N features across sections, preferring Built > Planned > Future.
+  function topNFeatures(sections, n) {
+    if (!sections || !sections.length) return [];
+    const order = { LIVE: 0, OTHER: 1, ANDROID: 2, PLANNED: 3, FUTURE: 4 };
+    const sorted = sections.slice().sort(
+      (a, b) => (order[a.status] || 9) - (order[b.status] || 9)
+    );
+    const out = [];
+    for (const sec of sorted) {
+      for (const f of (sec.features || [])) {
+        out.push({ name: f.name, body: f.body, section: sec });
+        if (out.length >= n) return out;
+      }
+    }
+    return out;
+  }
+
+  async function openAllChittisModal() {
+    LAST_FOCUS = document.activeElement;
+    const a11yState = loadA11yState();
+    const lang = (a11yState.lang || 'en');
+
+    const old = document.getElementById('chitti-features-modal');
+    if (old) old.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'chitti-features-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'chitti-features-h2');
+    document.body.appendChild(modal);
+
+    const card = document.createElement('div');
+    card.className = 'chitti-features-card';
+    modal.appendChild(card);
+
+    const head = document.createElement('div');
+    head.className = 'chitti-features-head';
+    head.innerHTML =
+      '<span class="chitti-mini-logo" aria-hidden="true">C</span>' +
+      '<h2 id="chitti-features-h2">Chitti se poochho — main kya kar sakta hoon?' +
+      '<small>All 12 Chittis · top 3 features each · live from each <code>skills/FEATURES.md</code></small>' +
+      '</h2>';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'chitti-features-close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', closeModal);
+    head.appendChild(closeBtn);
+    card.appendChild(head);
+
+    const actions = document.createElement('div');
+    actions.className = 'chitti-features-actions';
+    const readAllBtn = document.createElement('button');
+    readAllBtn.type = 'button';
+    readAllBtn.setAttribute('aria-label', 'Read every Chitti and top features aloud');
+    readAllBtn.innerHTML = '🔊 Read all 12 Chittis aloud';
+    actions.appendChild(readAllBtn);
+    card.appendChild(actions);
+
+    // Render a placeholder section per Chitti, then fill from each
+    // FEATURES.md as the fetches resolve. Each Chitti is its own section,
+    // so a slow fetch never blocks the others.
+    const sectionMap = new Map();
+    ALL_CHITTIS.forEach((c) => {
+      const sec = document.createElement('section');
+      sec.className = 'chitti-features-section';
+      sec.dataset.slug = c.slug;
+      sec.innerHTML =
+        '<div class="chitti-features-section-title">' +
+          '<span class="chitti-features-status" style="background:#0E2344">' +
+            escapeHtml(c.emoji) + ' ' + escapeHtml(c.label) +
+          '</span>' +
+          '<a href="' + escapeHtml(c.slug) + '.html" ' +
+             'style="margin-left:auto;font-size:11px;font-weight:700;color:#E86A17;text-decoration:underline">' +
+             'Open this Chitti →</a>' +
+        '</div>' +
+        '<ul class="chitti-features-list">' +
+          '<li class="chitti-features-item" aria-busy="true">' +
+            '<div class="chitti-features-item-head">' +
+              '<span class="chitti-features-item-name">Loading top features…</span>' +
+            '</div>' +
+          '</li>' +
+        '</ul>';
+      sectionMap.set(c.slug, sec);
+      card.appendChild(sec);
+    });
+
+    const foot = document.createElement('div');
+    foot.className = 'chitti-features-foot';
+    foot.innerHTML =
+      'Each row is parsed live from <code>&lt;chitti&gt;/skills/FEATURES.md</code>. ' +
+      'Per SAHAYAI_MASTER §2d, the list is rebuilt automatically when any FEATURES.md changes — ' +
+      'nothing here is hardcoded in JavaScript.';
+    card.appendChild(foot);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', escHandler);
+    setTimeout(() => closeBtn.focus(), 30);
+
+    // Fetch each Chitti's FEATURES.md in parallel and fill the cards as
+    // they resolve. Collect for the Read-aloud rollup.
+    const collected = [];
+    await Promise.all(ALL_CHITTIS.map(async (c) => {
+      const url = c.folder + '/skills/FEATURES.md';
+      const sections = await fetchFeatures(url);
+      const top = topNFeatures(sections, 3);
+      collected.push({ chitti: c, top, sections });
+      const sec = sectionMap.get(c.slug);
+      if (!sec) return;
+      const list = sec.querySelector('ul');
+      list.innerHTML = '';
+      if (!top.length) {
+        const li = document.createElement('li');
+        li.className = 'chitti-features-item';
+        li.innerHTML =
+          '<div class="chitti-features-item-head">' +
+            '<span class="chitti-features-item-name">' +
+              '(Chitti is still mapping its features — visit ' +
+              escapeHtml(c.label) + ' to ask directly.)' +
+            '</span>' +
+          '</div>';
+        list.appendChild(li);
+        return;
+      }
+      top.forEach((f) => {
+        list.appendChild(renderFeature(f, f.section || { status: 'OTHER' }, lang));
+      });
+    }));
+
+    readAllBtn.addEventListener('click', () => {
+      // Order by ALL_CHITTIS so the rollup matches the visual order.
+      const ordered = ALL_CHITTIS.map((c) =>
+        collected.find((x) => x.chitti.slug === c.slug)).filter(Boolean);
+      readAllChittis(ordered, lang);
+    });
+
+    // Auto-read for blind users on first visit.
+    const persisted = loadState();
+    const profile = a11yState.profile || {};
+    if (profile.blind && !persisted.auto_read_home_done) {
+      persisted.auto_read_home_done = true;
+      saveState(persisted);
+      setTimeout(() => {
+        const ordered = ALL_CHITTIS.map((c) =>
+          collected.find((x) => x.chitti.slug === c.slug)).filter(Boolean);
+        readAllChittis(ordered, lang);
+      }, 400);
+    }
+  }
+
+  function readAllChittis(collected, lang) {
+    cancelSpeech();
+    if (!collected || !collected.length) {
+      speakText('Chitti family is still loading. Please try again in a moment.', lang);
+      return;
+    }
+    const parts = [];
+    parts.push('Chitti se poochho. Main kya kar sakta hoon. Reading all twelve Chittis.');
+    collected.forEach((c, i) => {
+      parts.push((i + 1) + '. ' + c.chitti.label + '.');
+      if (!c.top.length) {
+        parts.push('Features still being mapped.');
+        return;
+      }
+      c.top.forEach((f) => parts.push(f.name + '.'));
+    });
+    parts.push('End of list. Tap any Chitti to open it.');
+    speakText(parts.join(' '), lang);
   }
 
   // ── MODAL ────────────────────────────────────────────────────
   let LAST_FOCUS = null;
 
   async function openModal() {
+    // Homepage / landing pages → all-Chittis variant.
+    if (isHomepage()) return openAllChittisModal();
     LAST_FOCUS = document.activeElement;
     const url = featuresUrl();
     const a11yState = loadA11yState();
@@ -739,11 +964,14 @@
   global.Chitti.features = {
     init,
     open: openModal,
+    openAll: openAllChittisModal,
     close: closeModal,
     fetch: fetchFeatures,
     parse: parseFeatures,
     featuresUrl,
     PAGE_TO_FOLDER,
+    ALL_CHITTIS,
+    isHomepage,
   };
 
   if (document.readyState === 'loading') {
