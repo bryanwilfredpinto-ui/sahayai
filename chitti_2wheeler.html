@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-2wheeler/ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti 2-Wheeler — Bharat's voice-first bike companion · Predict · Restart · Save</title>
+<meta name="description" content="Voice-first agent for motorcycle & scooter owners. Predicts breakdowns, decodes DTCs in Hinglish, tracks documents, raises family-cascade SOS, prevents theft. 26 languages. Free.">
+<meta name="chitti-features" content="chitti-2wheeler/skills/FEATURES.md">
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
+  --med-red:#b91c1c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+body{min-height:100vh;position:relative}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body > *{position:relative;z-index:1}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+
+/* Sticky disclaimer bar — mirror of MedUPI's med-bar */
+.disc-bar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(232,106,23,.12),rgba(21,128,61,.08));border-bottom:2px solid #D4AF37;padding:8px 14px;font-size:12px;line-height:1.5;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.disc-bar .ico{font-size:14px;flex-shrink:0}
+.disc-bar .short{flex:1;min-width:140px;color:var(--text)}
+.disc-bar .short strong{color:var(--med-red);letter-spacing:.04em}
+.disc-bar a.read-more{color:var(--saffron);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-size:12px}
+.disc-bar button.spk{background:transparent;border:1px solid rgba(212,175,55,.5);color:var(--text);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;min-height:28px;font-weight:600}
+
+.disc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.disc-modal.shown{display:flex}
+.disc-modal .panel{background:#fff;border:1px solid rgba(212,175,55,.55);border-radius:14px;padding:22px;max-width:720px;width:100%;font-size:13px;line-height:1.6;color:var(--text)}
+.disc-modal .panel h2{font-size:17px;margin:0 0 12px;color:var(--med-red)}
+.disc-modal .panel h3{font-size:13px;margin:14px 0 6px;color:var(--saffron);text-transform:uppercase;letter-spacing:.04em}
+.disc-modal .panel button.ok{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;padding:10px 18px;font-size:13px;font-weight:800;border-radius:8px;cursor:pointer;min-height:40px}
+
+/* Header */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.switch-btn-bharat:hover{filter:brightness(1.1)}
+.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
+.header-controls button:hover{background:rgba(255,255,255,.22)}
+
+/* Tabs */
+nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:0;z-index:5;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:14px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:46px}
+nav.tabs .tab:hover{color:var(--text)}
+nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
+
+/* Layout */
+main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.section-title{font-size:14px;font-weight:800}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.section-empty{text-align:center;padding:18px;color:var(--muted);font-size:12px}
+
+/* Badges */
+.coming-soon{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle;margin-left:6px}
+.coming-soon-card{border-style:dashed!important}
+.live-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);vertical-align:middle;margin-left:6px}
+.future-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#1e3a8a;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.5);vertical-align:middle;margin-left:6px}
+.p0-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;color:#fff;background:var(--red);border:1px solid var(--red);margin-left:6px}
+.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7c2d12;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));border:1px solid rgba(232,106,23,.5);vertical-align:middle;margin-left:6px}
+
+/* Feature grid */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px}
+.feat-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:all .15s;min-height:140px}
+.feat-card:hover{border-color:var(--saffron);box-shadow:0 6px 18px rgba(232,106,23,.10);transform:translateY(-2px)}
+.feat-card.cs{border-style:dashed;background:repeating-linear-gradient(45deg,#fff,#fff 14px,#fdfaf0 14px,#fdfaf0 28px)}
+.feat-card .ico{font-size:30px;line-height:1}
+.feat-card h4{margin:0;font-size:14px;font-weight:800;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.feat-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.5}
+.feat-card .cta{margin-top:auto;font-size:11px;color:var(--saffron);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+
+/* CTAs */
+.cta-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.cta-saffron:hover{filter:brightness(1.05)}
+.cta-navy{background:linear-gradient(135deg,var(--navy),#16376a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(14,35,68,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+
+/* Profile / status */
+.status-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px}
+.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;text-align:center}
+.status-card .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.status-card .val{font-size:18px;font-weight:800;margin-top:4px;font-family:'JetBrains Mono','Menlo',monospace}
+.status-card .sub{font-size:11px;color:var(--muted);margin-top:2px}
+.status-good{color:var(--green)}.status-warn{color:#f59e0b}.status-bad{color:var(--red)}
+
+input,select,textarea{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:14px;min-height:46px;font-family:inherit;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--saffron)}
+
+/* Footer */
+footer{margin-top:30px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+footer small{font-size:11px;color:var(--muted);line-height:1.6}
+
+@media (max-width:640px){
+  .brand{font-size:18px}
+  main{padding:12px 12px 32px}
+  nav.tabs .tab{font-size:12px;padding:12px 10px}
+}
+</style>
+</head>
+<body>
+
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<!-- ── Sticky NOT-A-MECHANIC disclaimer bar (mirror of MedUPI med-bar) ── -->
+<div class="disc-bar" role="region" aria-label="Disclaimer">
+  <span class="ico" aria-hidden="true">⚠️</span>
+  <span class="short"><strong>NOT A MECHANIC.</strong> Guide ke liye hai. Major problems ke liye trained mechanic se milein. Emergency mein <strong>family ko</strong> call hoga, <strong>cops ko nahi</strong> (Vaani protocol).</span>
+  <button class="spk" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud">🔊</button>
+  <button class="spk" onclick="document.getElementById('disc-modal').classList.add('shown')" aria-label="Read full legal text">Full text</button>
+</div>
+
+<div class="disc-modal" id="disc-modal" role="dialog" aria-label="Full disclaimer" aria-modal="true">
+  <div class="panel">
+    <h2>Disclaimer — Chitti 2-Wheeler</h2>
+    <p><strong>Chitti 2-Wheeler is not a mechanic.</strong> Every answer is a guide. For any major problem (engine seize, brake failure, electrical fire, accident), see a trained mechanic <em>in person</em>.</p>
+    <h3>Emergency protocol — family cascade only</h3>
+    <p>If you say <em>"accident ho gaya"</em> or trigger SOS, Chitti rings your <strong>family</strong> through the Vaani cascade — confirm-with-Master → alarm → spouse → family → Chitti-to-Chitti relay. <strong>Chitti never auto-dials 100 / 108 / 112.</strong> You can override and dial yourself — but the cascade is the default.</p>
+    <h3>Price quotes are bands, not finals</h3>
+    <p>Anti-overcharge guard returns a <strong>fair-price band</strong>, not a single number. Always confirm with the mechanic on the floor.</p>
+    <h3>OBD2 mode honesty</h3>
+    <p>If the Bluetooth adapter is not paired, Chitti will not invent sensor readings — it will say so. <em>Honest stubs over fake demos</em> is a platform rule.</p>
+    <h3>Camera scans are user-owned</h3>
+    <p>Every photo (spare part, document, fake-product check) belongs to you. Never sold, anonymised before aggregate analysis, <em>"Chitti forget"</em> deletes everything.</p>
+    <p style="margin-top:14px"><button class="ok" onclick="document.getElementById('disc-modal').classList.remove('shown')">Theek hai</button></p>
+  </div>
+</div>
+
+<!-- ── Header ── -->
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <span class="bharat-logo" aria-hidden="true">🏍️</span>
+      <div>
+        <div class="brand">Chitti 2-Wheeler</div>
+        <div class="tagline">Bharat's voice-first bike companion · predict · restart · save</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_4wheeler.html">🚗 4-Wheeler →</a>
+      <a class="switch-btn-bharat" href="chitti_complete.html">🏠 Home</a>
+    </div>
+  </div>
+  <div class="header-controls" aria-label="Page actions">
+    <button onclick="document.querySelector('[data-tab=ask]').click()">🎙️ Ask Chitti</button>
+    <button onclick="if(window.Chitti&&Chitti.features)Chitti.features.open()">💡 What can Chitti do?</button>
+    <button onclick="document.querySelector('[data-tab=profile]').click()">🛠️ My Bike</button>
+    <button onclick="document.querySelector('[data-tab=sos]').click()" style="background:rgba(220,38,38,.25);border-color:rgba(220,38,38,.6)">🆘 SOS</button>
+  </div>
+</header>
+
+<!-- ── Tabs ── -->
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab active" data-tab="home" role="tab" aria-selected="true">🏠 Home</button>
+  <button class="tab" data-tab="profile" role="tab">🛠️ My Bike</button>
+  <button class="tab" data-tab="health" role="tab">❤️ Health</button>
+  <button class="tab" data-tab="maintenance" role="tab">🔧 Maintenance</button>
+  <button class="tab" data-tab="breakdown" role="tab">🛣️ Breakdown</button>
+  <button class="tab" data-tab="sos" role="tab">🆘 SOS / Theft</button>
+  <button class="tab" data-tab="docs" role="tab">📄 Documents</button>
+  <button class="tab" data-tab="fuel" role="tab">⛽ Fuel</button>
+  <button class="tab" data-tab="mechanic" role="tab">🧰 Mechanic</button>
+  <button class="tab" data-tab="parts" role="tab">⚙️ Parts</button>
+  <button class="tab" data-tab="community" role="tab">👥 Community</button>
+  <button class="tab" data-tab="resale" role="tab">💰 Resale</button>
+  <button class="tab" data-tab="ask" role="tab">🎙️ Ask Chitti</button>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════ HOME ═══════════════════════ -->
+<section class="page active" id="page-home" role="tabpanel">
+
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Aapki bike ka haal <span class="live-badge">Live</span></div>
+        <div class="section-sub">Add your bike on the <button onclick="document.querySelector('[data-tab=profile]').click()" style="background:none;border:0;color:var(--saffron);cursor:pointer;text-decoration:underline;font-size:11px">My Bike</button> tab to unlock the dashboard.</div>
+      </div>
+      <button class="spk" onclick="speakBox('home-status')" aria-label="Read aloud">🔊</button>
+    </div>
+    <div id="home-status" class="status-row" data-chitti-response data-chitti-section="Home — bike status">
+      <div class="status-card"><div class="lbl">Bike</div><div class="val" id="hs-bike">—</div><div class="sub">Add brand + model</div></div>
+      <div class="status-card"><div class="lbl">Odometer</div><div class="val" id="hs-odo">—</div><div class="sub">km</div></div>
+      <div class="status-card"><div class="lbl">Next service</div><div class="val" id="hs-next">—</div><div class="sub">km away</div></div>
+      <div class="status-card"><div class="lbl">Docs expiring</div><div class="val" id="hs-docs">0</div><div class="sub">in 30 days</div></div>
+      <div class="status-card"><div class="lbl">Open alerts</div><div class="val" id="hs-alerts">0</div><div class="sub">action needed</div></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">What Chitti 2-Wheeler does for you</div>
+        <div class="section-sub">Audit-grade copy of the top 5 apps (Drivvo · GoMechanic Bike · Hero / RE / Honda Connect · mParivahan · Torque Pro / Carista) — plus 18 features they don't have.</div>
+      </div>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card" onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🔧</div><h4>Maintenance Schedule <span class="live-badge">Live</span></h4><p>Oil, air filter, chain lube, spark plugs, tyres — by brand. Odometer-only mode for 90% of bikes.</p><div class="cta">Open →</div></div>
+      <div class="feat-card" onclick="document.querySelector('[data-tab=breakdown]').click()"><div class="ico">🛣️</div><h4>Breakdown Coach <span class="live-badge">Live</span> <span class="p0-badge">P0</span></h4><p>Step-by-step Hinglish when bike refuses to start. Brand RSA numbers included.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=docs]').click()"><div class="ico">📄</div><h4>Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>RC · Insurance · PUC · Licence · Loan EMI. Auto-reminders 30 / 7 / 1 days before expiry.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">📡</div><h4>OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></h4><p>Pair ELM327 (₹500-1500). Real-time RPM, coolant, battery, misfire detect via Bluetooth.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">🔬</div><h4>Predictive Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Oil quality %, coolant trend, battery drop, misfire — warns 30 days before failure.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">🔍</div><h4>DTC Plain-Hinglish Library <span class="coming-soon">Coming Soon</span></h4><p>Every P0xxx code in simple Hindi + repair cost band. No mechanic information asymmetry.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">💰</div><h4>Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>"Mechanic ne ₹1 800 maanga oil change ke liye, theek hai?" — fair band + nearby alternates.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=sos]').click()"><div class="ico">🚨</div><h4>Theft Guard — Community Ping <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>Bike chori? Pincode-radius alert to every Chitti 2W user nearby. Sightings reach the owner.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=sos]').click()"><div class="ico">🆘</div><h4>Roadside SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>Accident ho gaya → family ko call → never cops. Vaani protocol locked.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">🧰</div><h4>Mechanic Finder + Honesty Score <span class="coming-soon">Coming Soon</span></h4><p>Geo-aware list. Fair-price + on-time + genuine-parts rating by Chitti riders.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=parts]').click()"><div class="ico">⚙️</div><h4>Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>Camera scan → community alerts when fakes are spotted nearby. Annual report to BIS.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">👂</div><h4>AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>10 s phone-mic clip → misfire / bearing whine / chain rattle / tappet noise classifier.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🌧️</div><h4>Weather-Aware Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Monsoon → chain lube every 300 km not 500. Dust storms → air filter 2× more often.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">💬</div><h4>WhatsApp Booking <span class="coming-soon">Coming Soon</span></h4><p>Book service from WhatsApp without the app. Rural unlock.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=community]').click()"><div class="ico">🛣️</div><h4>Group Ride Planner <span class="coming-soon">Coming Soon</span></h4><p>Trip plan + live location share + auto-fire SOS if a rider stops moving 10 min.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=community]').click()"><div class="ico">🕳️</div><h4>Pothole Reporter <span class="coming-soon">Coming Soon</span></h4><p>Tap when you hit one. Pincode aggregate. Escalates to MCD / PWD via Chitti Government.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">⛓️</div><h4>Chain & Sprocket Tracker <span class="coming-soon">Coming Soon</span></h4><p>Voice log "chain lube kiya" → cron projects km left to replacement.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🛞</div><h4>Tyre Pressure Calculator <span class="coming-soon">Coming Soon</span></h4><p>By load + temperature + tyre type. Monthly reminder.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=fuel]').click()"><div class="ico">🌱</div><h4>Carbon Per Trip <span class="coming-soon">Coming Soon</span></h4><p>CO₂ from odo delta × engine cc fuel-burn rate. Per-trip + monthly total.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=profile]').click()"><div class="ico">🏠</div><h4>Family Fleet View <span class="coming-soon">Coming Soon</span></h4><p>Bikes + cars in one dashboard. Cross-product with Chitti 4-Wheeler.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">🪖</div><h4>Helmet Reminder <span class="coming-soon">Coming Soon</span></h4><p>Phone-sensor heuristic — nudges before you cross 30 km/h without picking up helmet.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=fuel]').click()"><div class="ico">🎯</div><h4>Fuel Saver Score <span class="coming-soon">Coming Soon</span></h4><p>Gamified — soft throttle + soft braking → score up. Beat your last week.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🪔</div><h4>Festival / Trip Checklist <span class="coming-soon">Coming Soon</span></h4><p>Pre-Diwali road trip · pre-monsoon prep · pre-long-ride. Voice walk-through.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" onclick="document.querySelector('[data-tab=resale]').click()"><div class="ico">💰</div><h4>Resale Advisor <span class="coming-soon">Coming Soon</span></h4><p>Depreciation curve vs maintenance cost trajectory. Sell-or-hold nudge.</p><div class="cta">Open →</div></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Reference apps audited (top 5)</div>
+        <div class="section-sub">Per <a href="SAHAYAI_MASTER.md" style="color:var(--saffron)">SAHAYAI_MASTER §2a new-products process</a> — copy the full feature surface, then add Chitti scope.</div>
+      </div>
+    </div>
+    <ol style="margin:0;padding-left:20px;line-height:1.8;font-size:13px">
+      <li><strong>Drivvo</strong> — fuel + expense + maintenance log. <em>Copied:</em> log structure, km/l rolling, expense per category.</li>
+      <li><strong>GoMechanic Bike</strong> — service booking + parts + ratings. <em>Copied:</em> doorstep service, parts catalogue, mechanic ratings.</li>
+      <li><strong>Hero / Royal Enfield / Honda / TVS / Bajaj Connect</strong> apps — telematics, ride tracking, group rides. <em>Copied:</em> ride log, group ride planner, service reminders.</li>
+      <li><strong>mParivahan / Park+</strong> — RC / insurance / PUC / challan. <em>Copied:</em> document vault, expiry reminders, traffic challan lookup.</li>
+      <li><strong>Torque Pro / Carista / FIXD</strong> — Bluetooth OBD2 diagnostics. <em>Copied:</em> ELM327 pairing, sensor stream, DTC library.</li>
+    </ol>
+    <p style="margin-top:14px;font-size:13px;line-height:1.6"><strong>Chitti scope-add</strong> (beyond the top 5): voice-first Hinglish · four-user a11y · ISL panel · DeepSeek plain-Eng diagnostics · camera-based fake-spare-parts community alerts · Vaani family-cascade SOS · anti-overcharge guard · mechanic honesty score · stolen-bike community ping · AI engine listening · weather-aware maintenance · WhatsApp booking · carbon per trip · pothole reporter · helmet reminder · festival checklist · family fleet view · resale advisor.</p>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════ PROFILE ═══════════════════════ -->
+<section class="page" id="page-profile" role="tabpanel">
+  <div class="section-card">
+    <div class="section-head"><div><div class="section-title">My Bike <span class="live-badge">Live</span></div><div class="section-sub">Saved on this device only. Voice "Chitti, meri bike Splendor hai, 25 000 km" also works in the Ask Chitti tab.</div></div></div>
+    <div data-chitti-response data-chitti-section="My Bike — onboarding">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+        <label>Brand <select id="b-brand"><option value="">— select —</option><option>Hero</option><option>Honda</option><option>Bajaj</option><option>TVS</option><option>Royal Enfield</option><option>Yamaha</option><option>Suzuki</option><option>KTM</option><option>Other</option></select></label>
+        <label>Model <input id="b-model" placeholder="Splendor / Activa / Pulsar 150"></label>
+        <label>Year <input id="b-year" type="number" min="1990" max="2030" placeholder="2020"></label>
+        <label>Fuel <select id="b-fuel"><option>Petrol</option><option>Electric</option></select></label>
+        <label>Odometer (km) <input id="b-odo" type="number" placeholder="25000"></label>
+        <label>Registration plate (optional) <input id="b-reg" placeholder="KA01 AB 1234"></label>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="cta-saffron" onclick="saveBikeProfile()">💾 Save</button>
+        <button class="cta-navy" onclick="loadBikeProfile()">📥 Load</button>
+      </div>
+      <p id="b-status" class="section-sub" style="margin-top:10px"></p>
+    </div>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Family Fleet <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Multiple bikes + cars in one household — single dashboard across <a href="chitti_4wheeler.html" style="color:var(--saffron)">Chitti 4-Wheeler</a> and this page.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HEALTH ═══════════════════════ -->
+<section class="page" id="page-health" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Web-Bluetooth pair flow for ELM327 adapter (₹500-1500). Plug in, ignition ON (don't start), tap pair.</div></div></div>
+    <button class="cta-navy" disabled>📡 Pair OBD2 (coming soon)</button>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Predictive Maintenance <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Oil quality % · coolant trend · battery drop · misfire detect. Warns 30 days before failure.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">DTC Plain-Hinglish Library <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Every P0xxx + manufacturer-specific code in simple Hindi + repair cost band. ~600 codes seeded in commit P1.</div></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><input placeholder="P0301" style="max-width:160px" disabled><button class="cta-saffron" disabled>Look up</button></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">10 s phone-mic recording → DeepSeek + audio classifier → ranked candidate faults.</div></div></div>
+    <button class="cta-saffron" disabled>🎤 Record 10 s (coming soon)</button>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Helmet Reminder <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Phone-accelerometer heuristic — nudges before you cross 30 km/h without picking up the helmet.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ MAINTENANCE ═══════════════════════ -->
+<section class="page" id="page-maintenance" role="tabpanel">
+  <div class="section-card">
+    <div class="section-head"><div><div class="section-title">Maintenance Schedule <span class="live-badge">Live</span></div><div class="section-sub">Brand-specific schedule. Add your bike on My Bike tab to personalise.</div></div></div>
+    <div id="maint-table" data-chitti-response data-chitti-section="Maintenance — schedule">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#fdfaf0"><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Component</th><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Interval</th><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Status</th></tr></thead>
+        <tbody id="maint-tbody">
+          <tr><td colspan="3" style="padding:14px;text-align:center;color:var(--muted)">Add your bike on the My Bike tab to populate this table.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Chain & Sprocket Tracker <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Voice "chain lube kiya" → cron projects km to replacement.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Tyre Pressure Calculator <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Load + temperature + tyre type → recommended PSI.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Weather-Aware Maintenance <span class="coming-soon">Coming Soon</span></div><div class="section-sub">IMD feed adapts intervals: monsoon = chain lube every 300 km; dust storm = air filter 2× more often.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Festival / Road-Trip Checklist <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Pre-Diwali long drive · pre-monsoon prep · pre-Ladakh expedition. Voice walk-through.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ BREAKDOWN ═══════════════════════ -->
+<section class="page" id="page-breakdown" role="tabpanel">
+  <div class="section-card">
+    <div class="section-head"><div><div class="section-title">Breakdown Coach <span class="live-badge">Live</span> <span class="p0-badge">P0</span></div><div class="section-sub">Step-by-step Hinglish when bike refuses to start.</div></div></div>
+    <div data-chitti-response data-chitti-section="Breakdown — coach">
+      <ol style="line-height:1.8;font-size:13px">
+        <li><strong>Safety first.</strong> Hazard lights ON. Side mein bike lagao. Helmet pehna rakho — traffic visibility ke liye.</li>
+        <li><strong>Fuel check.</strong> Reserve switch ON karo (agar hai).</li>
+        <li><strong>Check engine light.</strong> ON hai? Pair karo OBD2 adapter (Coming Soon) ya screenshot bhej do mechanic ko.</li>
+        <li><strong>Battery.</strong> Horn bajti hai? Indicators light hain? Nahi → battery low.</li>
+        <li><strong>Side-stand safety switch.</strong> BS-VI Activa / Splendor — agar side stand down hai, start nahi hogi.</li>
+        <li><strong>5 minute aaram.</strong> Phir kick / self try karo.</li>
+        <li><strong>Agar start ho gayi</strong> — seedha mechanic ke paas jao. 40 km/h se upar mat jao. Hazards on.</li>
+        <li><strong>Agar nahi</strong> → SOS tab open karo. Family cascade fire hogi. RSA numbers neeche.</li>
+      </ol>
+      <div style="margin-top:14px;padding:12px;background:#fdfaf0;border-radius:10px">
+        <div style="font-weight:700;margin-bottom:6px">Roadside assistance (brand-wise)</div>
+        <div style="font-size:12px;line-height:1.7">
+          Hero <strong>1800-258-4747</strong> · Honda <strong>1800-103-1234</strong> · Bajaj <strong>1800-233-2453</strong> · TVS <strong>1800-258-8888</strong> · Royal Enfield <strong>1800-210-0007</strong> · Yamaha <strong>1800-420-1600</strong> · Suzuki <strong>1800-103-3402</strong> · KTM <strong>1800-419-1090</strong> · Generic <strong>1033</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SOS ═══════════════════════ -->
+<section class="page" id="page-sos" role="tabpanel">
+  <div class="section-card" style="border-color:var(--red);border-width:2px">
+    <div class="section-head"><div><div class="section-title" style="color:var(--red)">🆘 SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">Per <a href="SAHAYAI_MASTER.md" style="color:var(--saffron)">Vaani locked emergency protocol</a> — confirm-with-Master → alarm → spouse → family → Chitti-to-Chitti relay. <strong>Never auto-dials 100 / 108 / 112.</strong></div></div></div>
+    <button class="cta-saffron" style="background:linear-gradient(135deg,var(--red),#ef4444)!important;width:100%;font-size:18px;padding:18px" disabled>🆘 Trigger SOS (coming soon)</button>
+    <p class="section-sub" style="margin-top:12px">When live, this button pushes GPS + bike registration to Chitti Vaani's emergency endpoint. Family hears the alarm; cops are not contacted unless you override.</p>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Theft Guard — Community Ping <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Report your bike stolen → pincode-radius alert fires to every Chitti 2W user. Sightings come back to you.</div></div></div>
+    <button class="cta-navy" disabled>🚨 Report theft (coming soon)</button>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Unauthorised Movement Alert <span class="coming-soon">Coming Soon</span></div><div class="section-sub">If the bike moves without ignition (detected via paired OBD2 + phone GPS), Chitti asks "kya aap chala rahe ho?" — if "nahi", fires theft flow.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ DOCS ═══════════════════════ -->
+<section class="page" id="page-docs" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">RC · Insurance · PUC · Driving Licence · Loan EMI. Auto-reminders 30 / 7 / 1 days before expiry. Encrypted on Turso, user-owned, <em>"Chitti forget"</em> deletes everything.</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+      <button class="cta-navy" disabled>📸 Scan RC</button>
+      <button class="cta-navy" disabled>📸 Scan Insurance</button>
+      <button class="cta-navy" disabled>📸 Scan PUC</button>
+      <button class="cta-navy" disabled>📸 Scan Licence</button>
+      <button class="cta-navy" disabled>💳 Add Loan EMI</button>
+    </div>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">DigiLocker Pull <span class="future-badge">Future</span></div><div class="section-sub">Partner-only OAuth — same blocker as <a href="chitti_government.html" style="color:var(--saffron)">Chitti Government</a>. Pulls RC + DL + Insurance + PUC in one tap when partnership lands.</div></div></div>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">VAHAN / PARIVAHAN Verify <span class="future-badge">Future</span></div><div class="section-sub">Live RC / DL / PUC verification. Needs MoRTH / setu.co / signzy / karza API key.</div></div></div>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Traffic Challan Feed <span class="future-badge">Future</span></div><div class="section-sub">mParivahan / state-RTO API integration.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FUEL ═══════════════════════ -->
+<section class="page" id="page-fuel" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Fuel Log + km/l Calculator <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Voice "Chitti, ₹200 ka petrol bhara, 4.5 litre, odo 25 100" → row + rolling km/l + monthly expense.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Fuel Saver Score <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Gamified soft-throttle + soft-braking score. Beat your last week. Privacy: score syncs, raw GPS doesn't.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Carbon Per Trip <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Per Chitti Quality v2 §6 carbon tracker. CO₂ from odo delta × engine cc fuel-burn rate.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ MECHANIC ═══════════════════════ -->
+<section class="page" id="page-mechanic" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">"Mechanic ne ₹X maanga" → fair-price band by city + DeepSeek opinion + alternate nearby mechanics.</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+      <label>Service item <input placeholder="Oil change" disabled></label>
+      <label>Quoted price (₹) <input type="number" placeholder="1800" disabled></label>
+    </div>
+    <button class="cta-saffron" style="margin-top:10px" disabled>🛡️ Check (coming soon)</button>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Mechanic Finder + Honesty Score <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Geo-aware Haversine list. Fair-price + on-time + genuine-parts rating from Chitti riders.</div></div></div>
+  </div>
+
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">WhatsApp Booking <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Per SAHAYAI_MASTER §5b — WhatsApp Business API + service-centre directory. Rural unlock.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PARTS ═══════════════════════ -->
+<section class="page" id="page-parts" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Per <a href="SAHAYAI_MASTER.md" style="color:var(--saffron)">Camera Intelligence LOCKED §2b</a>. Scan brake pads / spark plug / chain → community alerts when fakes are spotted nearby. Annual report to BIS / MoRTH.</div></div></div>
+    <button class="cta-saffron" disabled>📸 Scan part (coming soon)</button>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Spare-part Price Compare <span class="coming-soon">Coming Soon</span></div><div class="section-sub">OEM vs aftermarket vs BoodMo vs partsbig — best-price match by part number.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ COMMUNITY ═══════════════════════ -->
+<section class="page" id="page-community" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Group Ride Planner <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Trip plan + live location share + auto-fire Vaani SOS if a rider stops moving 10 min.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Pothole Reporter <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Tap when you hit one. Pincode aggregate map. Escalates to MCD / PWD via Chitti Government.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Stolen Bikes Nearby <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Real-time pincode feed of reported-stolen bikes. Tap to report a sighting.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Hall of Fame — Voice Donors <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Donate your voice for low-resource Indian languages on <a href="chitti_voice_hall_of_fame.html" style="color:var(--saffron)">chitti_voice_hall_of_fame.html</a>. Lifelong credit.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ RESALE ═══════════════════════ -->
+<section class="page" id="page-resale" role="tabpanel">
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Resale Advisor <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Depreciation curve vs rising maintenance cost. Sell-or-hold nudge by month.</div></div></div>
+  </div>
+  <div class="section-card coming-soon-card">
+    <div class="section-head"><div><div class="section-title">Live Valuation <span class="coming-soon">Coming Soon</span></div><div class="section-sub">CredR / Bikedekho / OLX scrape. Honest band by city + km + condition.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ ASK CHITTI ═══════════════════════ -->
+<section class="page" id="page-ask" role="tabpanel">
+  <div class="section-card">
+    <div class="section-head"><div><div class="section-title">🎙️ Ask Chitti <span class="live-badge">Live</span></div><div class="section-sub">Any bike question. DeepSeek-powered. Plain Hinglish. Server-enforced disclaimer attached.</div></div></div>
+    <div id="ask-log" data-chitti-response data-chitti-section="Ask Chitti — chat" style="min-height:140px;background:#fdfaf0;border:1px solid #eee;border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6">
+      <em>Pucho kuch bhi — "Oil change kab karu?" · "Code P0301 kya hai?" · "₹1 800 oil change ke liye, theek hai?"</em>
+    </div>
+    <form onsubmit="event.preventDefault();askChitti()" style="display:flex;gap:6px;flex-wrap:wrap">
+      <input id="ask-input" placeholder="Type your question…" style="flex:1;min-width:200px">
+      <button type="button" onclick="askMic()" class="cta-saffron" aria-label="Voice input">🎤</button>
+      <button type="submit" class="cta-navy">→</button>
+    </form>
+    <p class="section-sub" style="margin-top:8px">⚠️ Main mechanic nahi hoon. Major problems ke liye trained mechanic se milein.</p>
+  </div>
+</section>
+
+<footer>
+  <small>
+    Chitti 2-Wheeler — part of <a href="chitti_complete.html" style="color:var(--saffron)">Sahay AI</a> ·
+    spec at <a href="chitti-2wheeler/skills/FEATURES.md" style="color:var(--saffron)">FEATURES.md</a> ·
+    <a href="https://github.com/" style="color:var(--saffron)">GitHub</a> ·
+    Founder: Bryan Wilfred Pinto
+  </small>
+</footer>
+
+</main>
+
+<script>
+// ── Tabs ──
+document.querySelectorAll('nav.tabs .tab').forEach(t => t.addEventListener('click', e => {
+  document.querySelectorAll('nav.tabs .tab').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected','false') });
+  document.querySelectorAll('main .page').forEach(p => p.classList.remove('active'));
+  t.classList.add('active'); t.setAttribute('aria-selected','true');
+  const id = 'page-' + t.dataset.tab;
+  const pg = document.getElementById(id);
+  if (pg) pg.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+// ── Bike profile (per-device localStorage) ──
+const PROFILE_KEY = 'chitti2w_profile_v1';
+function saveBikeProfile() {
+  const p = {
+    brand: document.getElementById('b-brand').value,
+    model: document.getElementById('b-model').value,
+    year: document.getElementById('b-year').value,
+    fuel: document.getElementById('b-fuel').value,
+    odo: parseInt(document.getElementById('b-odo').value || '0', 10),
+    reg: document.getElementById('b-reg').value
+  };
+  if (!p.brand || !p.model) { document.getElementById('b-status').textContent = 'Brand + model zaroori hai.'; return; }
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  document.getElementById('b-status').textContent = '✅ Saved. Maintenance schedule on the next tab.';
+  populateHome(p); populateMaintenance(p);
+}
+function loadBikeProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (!raw) { document.getElementById('b-status').textContent = 'Kuch saved nahi hai.'; return; }
+    const p = JSON.parse(raw);
+    document.getElementById('b-brand').value = p.brand || '';
+    document.getElementById('b-model').value = p.model || '';
+    document.getElementById('b-year').value = p.year || '';
+    document.getElementById('b-fuel').value = p.fuel || 'Petrol';
+    document.getElementById('b-odo').value = p.odo || '';
+    document.getElementById('b-reg').value = p.reg || '';
+    document.getElementById('b-status').textContent = '✅ Loaded.';
+    populateHome(p); populateMaintenance(p);
+  } catch(e) { document.getElementById('b-status').textContent = 'Load failed.' }
+}
+function populateHome(p) {
+  document.getElementById('hs-bike').textContent = (p.brand || '') + ' ' + (p.model || '');
+  document.getElementById('hs-odo').textContent = (p.odo || 0).toLocaleString('en-IN');
+  // crude next-service estimate
+  const oilStep = 5000;
+  const next = oilStep - ((p.odo || 0) % oilStep);
+  document.getElementById('hs-next').textContent = next.toLocaleString('en-IN');
+}
+function populateMaintenance(p) {
+  const odo = p.odo || 0;
+  const rows = [
+    ['Engine oil', '3 000-5 000 km', odo % 5000 < 500 ? 'Due soon' : 'OK'],
+    ['Oil filter', 'every oil change', 'OK'],
+    ['Air filter', '5 000-10 000 km', odo % 10000 < 1000 ? 'Due soon' : 'OK'],
+    ['Spark plug', '10 000-20 000 km', odo % 20000 < 2000 ? 'Due soon' : 'OK'],
+    ['Chain lubrication', 'every 500 km', 'Due (voice-log resets)'],
+    ['Brake pads', '10 000-20 000 km', 'OK'],
+    ['Tyre pressure', 'every ride', 'Check today'],
+    ['Battery inspection', 'every 6 months', 'OK']
+  ];
+  const tb = document.getElementById('maint-tbody');
+  tb.innerHTML = rows.map(r => '<tr><td style="padding:8px;border-bottom:1px solid #f5f0e3">' + r[0] + '</td><td style="padding:8px;border-bottom:1px solid #f5f0e3">' + r[1] + '</td><td style="padding:8px;border-bottom:1px solid #f5f0e3"><strong>' + r[2] + '</strong></td></tr>').join('');
+}
+
+// ── Disclaimer speak ──
+function speakDisclaimer() {
+  const t = 'Main mechanic nahi hoon. Yeh information guide ke liye hai. Major problems ke liye trained mechanic se milein. Emergency mein family ko call kiya jayega, cops ko nahi.';
+  if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) Chitti.a11y.speak(t);
+  else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'hi-IN'; speechSynthesis.speak(u); }
+}
+function speakBox(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const txt = el.innerText.replace(/\s+/g,' ').trim();
+  if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) Chitti.a11y.speak(txt);
+  else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(txt); speechSynthesis.speak(u); }
+}
+
+// ── Ask Chitti ──
+const BACKEND = (window.CHITTI_2W_API || 'https://chitti-2wheeler-api.onrender.com');
+function appendChat(who, text) {
+  const log = document.getElementById('ask-log');
+  if (log.querySelector('em')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.style.cssText = 'margin:8px 0;padding:10px 12px;border-radius:10px;' + (who==='you' ? 'background:rgba(232,106,23,.08);border:1px solid rgba(232,106,23,.25)' : 'background:#fff;border:1px solid #eee');
+  div.innerHTML = '<strong>' + (who==='you'?'You':'🤖 Chitti') + ':</strong> ' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+async function askChitti() {
+  const inp = document.getElementById('ask-input');
+  const q = inp.value.trim(); if (!q) return;
+  appendChat('you', q); inp.value = '';
+  appendChat('chitti', '<em>Soch raha hoon…</em>');
+  try {
+    const profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    const r = await fetch(BACKEND + '/api/2w/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ question: q, profile }) });
+    const d = await r.json();
+    const log = document.getElementById('ask-log');
+    if (log.lastChild) log.removeChild(log.lastChild);
+    let answer = (d && d.answer) ? d.answer : 'Jawab nahi mila.';
+    if (d && d.error) answer += ' (Agent temporarily unavailable — DeepSeek balance ya backend issue.)';
+    appendChat('chitti', answer);
+    if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) Chitti.a11y.speak(answer);
+  } catch(e) {
+    const log = document.getElementById('ask-log');
+    if (log.lastChild) log.removeChild(log.lastChild);
+    appendChat('chitti', 'Network error — try again. (Backend at ' + BACKEND + ' might still be deploying.)');
+  }
+}
+function askMic() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { alert('Voice not supported on this browser.'); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = (window.Chitti && Chitti.a11y && Chitti.a11y.getLang && Chitti.a11y.getLang()) || 'hi-IN';
+  rec.onresult = e => { document.getElementById('ask-input').value = e.results[0][0].transcript; askChitti(); };
+  rec.start();
+}
+
+// Load profile if it exists
+window.addEventListener('DOMContentLoaded', () => { try { loadBikeProfile(); } catch(e){} });
+</script>
+
+<!-- Chitti Quality v2 trust signals -->
+<script>window.CHITTI_LAST_AUDIT='2026-05-14';window.CHITTI_CO2_G=0.2;</script>
+<script src="feedback-widget.js" data-page="chitti_2wheeler"></script>
+
+<!-- Chitti accessibility substrate — auto-loads ISL + Feature Discovery + camera. -->
+<script src="chitti_a11y.js"></script>
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
+</body>
+</html>

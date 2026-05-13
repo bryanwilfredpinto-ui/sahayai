@@ -1,0 +1,35 @@
+# Render Blueprint for Chitti 4-Wheeler
+# -----------------------------------------------------------------
+# Skeleton service — stateless today (in-memory profile store). Turso
+# row migration lands in P1 alongside the document vault
+# (FEATURES.md row C3).
+
+services:
+  - type: web
+    name: chitti-4wheeler-api
+    runtime: python
+    plan: free
+    rootDir: chitti-4wheeler/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+
+      # DeepSeek — sole LLM provider (SAHAYAI_MASTER §2 row 1)
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: DEEPSEEK_URL
+        value: https://api.deepseek.com/chat/completions
+      - key: DEEPSEEK_MAX_TOKENS
+        value: "700"
+      - key: DEEPSEEK_TEMPERATURE
+        value: "0.2"
+
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: BACKEND_URL
+        value: https://chitti-4wheeler-api.onrender.com

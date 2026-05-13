@@ -1,0 +1,39 @@
+# Render Blueprint for Chitti 2-Wheeler
+# -----------------------------------------------------------------
+# Skeleton service — stateless today (in-memory profile store). No DB
+# block. Turso row migration lands in P1 alongside the document vault
+# (FEATURES.md row W3).
+#
+# Per SAHAYAI_MASTER §2 row 1, DeepSeek is the sole LLM. The
+# DEEPSEEK_API_KEY env var is set in the Render dashboard, not in source.
+
+services:
+  - type: web
+    name: chitti-2wheeler-api
+    runtime: python
+    plan: free
+    rootDir: chitti-2wheeler/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+
+      # DeepSeek — sole LLM provider (SAHAYAI_MASTER §2 row 1)
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: DEEPSEEK_URL
+        value: https://api.deepseek.com/chat/completions
+      - key: DEEPSEEK_MAX_TOKENS
+        value: "700"
+      - key: DEEPSEEK_TEMPERATURE
+        value: "0.2"
+
+      # CORS / self-URL
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: BACKEND_URL
+        value: https://chitti-2wheeler-api.onrender.com
