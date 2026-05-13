@@ -1,22 +1,27 @@
 """
-chitti-founder backend — Chitti Quality v2 (2026-05-13)
-========================================================
-Central consolidator + escalator for the Sahay AI quality framework.
+chitti-founder backend — Chitti Quality v2 (2026-05-13) + BCP Layer 1 (2026-05-14)
+=================================================================================
+Central consolidator + escalator for the Sahay AI quality framework, and
+**Layer 1 of the Business Continuity Plan** (SAHAYAI_MASTER.md §2e):
+self-ping every 4 minutes, email Sire on non-200, log to Turso.
 
 Crons (timezone Asia/Kolkata):
-  • DAILY   · 07:00 IST  ─ Chitti Quality Daily Report email
-  • WEEKLY  · Sunday 08:00 IST ─ Weekly Trend Report email
-  • HOURLY  · :15 ─ Escalator pass (low thumbs → SMS, defect repeat → GH issue,
-                    carbon > 0.5g → GH issue)
+  • EVERY 4 MIN     ─ Self-ping every Chitti /health (BCP Layer 1)
+  • DAILY · 07:00   ─ Chitti Quality Daily Report email
+  • WEEKLY · Sun 08:00 ─ Weekly Trend Report email
+  • HOURLY · :15    ─ Escalator pass (low thumbs → SMS, defect repeat → GH issue,
+                      carbon > 0.5g → GH issue)
 
 Endpoints:
   • GET  /health
   • GET  /admin/founder/json?secret=…       — full daily slice JSON
   • GET  /admin/founder/html?secret=…       — render the daily email in browser
   • GET  /admin/founder/weekly?secret=…     — render the weekly email in browser
+  • GET  /admin/founder/uptime?secret=…     — last N self-ping results
   • POST /admin/founder/send?secret=…       — manual trigger: daily report
   • POST /admin/founder/send-weekly?secret=…— manual trigger: weekly report
   • POST /admin/founder/escalate?secret=…   — manual trigger: escalator pass
+  • POST /admin/founder/self-ping?secret=…  — manual trigger: BCP self-ping
   • POST /api/feedback/collect              — pubic shim that forwards to
                                               the originating Chitti's
                                               /api/feedback (so the widget
@@ -41,6 +46,7 @@ import json
 import logging
 import os
 import re
+import time
 from collections import deque
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -82,6 +88,13 @@ PULL_TIMEOUT_S = float(os.environ.get("FOUNDER_PULL_TIMEOUT_S", "10"))
 
 WEEKLY_HOUR_IST = int(os.environ.get("WEEKLY_REPORT_HOUR_IST", "8"))
 WEEKLY_MINUTE_IST = int(os.environ.get("WEEKLY_REPORT_MINUTE_IST", "0"))
+
+# BCP Layer 1 — self-ping cadence + alert debounce.
+SELF_PING_INTERVAL_MIN = int(os.environ.get("SELF_PING_INTERVAL_MIN", "4"))
+SELF_PING_TIMEOUT_S = float(os.environ.get("SELF_PING_TIMEOUT_S", "6"))
+HEALTH_ALERT_COOLDOWN_S = int(os.environ.get("HEALTH_ALERT_COOLDOWN_S", "3600"))
+TURSO_URL = os.environ.get("CHITTI_FOUNDER_LIBSQL_URL", "")
+TURSO_LOCAL_PATH = os.environ.get("CHITTI_FOUNDER_LIBSQL_LOCAL", "/tmp/chitti_founder.db")
 
 # Production endpoint list. Each Chitti is expected to expose
 # GET /admin/founder/slice (Authorization: Bearer <PULL_SECRET>).
@@ -266,6 +279,171 @@ def run_escalator() -> dict:
     return {"ok": True, "actions": actions, "streaks": dict(_DEFECT_STREAK)}
 
 
+# ---------- BCP Layer 1 — self-ping + Turso logger -------------------------
+
+
+# In-memory ring of recent ping results. Surfaced on /admin/founder/uptime.
+_HEALTH_RING: deque[dict] = deque(maxlen=4000)
+# Per-Chitti debounce: most recent alert email time, so we don't spam Sire
+# while a backend is bouncing. Default cooldown = HEALTH_ALERT_COOLDOWN_S.
+_HEALTH_LAST_ALERT: dict[str, datetime] = {}
+# Lazily-opened libsql_experimental connection (embedded replica pattern).
+_TURSO_CONN = None
+_TURSO_INITED = False
+
+
+def _turso_init() -> None:
+    """Open the embedded replica + ensure schema. Best-effort; never raises."""
+    global _TURSO_CONN, _TURSO_INITED
+    if _TURSO_INITED:
+        return
+    _TURSO_INITED = True
+    if not TURSO_URL:
+        log.info("[bcp] Turso not configured (CHITTI_FOUNDER_LIBSQL_URL unset) — health rows kept in-memory only")
+        return
+    try:
+        import libsql_experimental as libsql  # type: ignore[import-not-found]
+        import urllib.parse as _urlparse
+        parsed = _urlparse.urlparse(TURSO_URL)
+        qs = _urlparse.parse_qs(parsed.query)
+        token = (qs.get("authToken") or [""])[0]
+        sync_url = f"{parsed.scheme}://{parsed.netloc}"
+        _TURSO_CONN = libsql.connect(TURSO_LOCAL_PATH, sync_url=sync_url, auth_token=token)
+        try:
+            _TURSO_CONN.sync()
+        except Exception as e:  # noqa: BLE001
+            log.warning("[bcp] initial Turso sync failed (will retry on next write): %s", e)
+        _TURSO_CONN.execute(
+            "CREATE TABLE IF NOT EXISTS health_pings ("
+            "  ts TEXT NOT NULL,"
+            "  chitti TEXT NOT NULL,"
+            "  url TEXT NOT NULL,"
+            "  status INTEGER NOT NULL,"
+            "  ok INTEGER NOT NULL,"
+            "  latency_ms INTEGER,"
+            "  error TEXT"
+            ")"
+        )
+        _TURSO_CONN.commit()
+        log.info("[bcp] Turso embedded replica ready at %s", TURSO_LOCAL_PATH)
+    except Exception as e:  # noqa: BLE001
+        log.warning("[bcp] Turso init failed (continuing in-memory only): %s", e)
+        _TURSO_CONN = None
+
+
+def _turso_log_pings(rows: list[dict]) -> int:
+    """Write ping rows to Turso. Returns count written. Never raises."""
+    _turso_init()
+    if _TURSO_CONN is None:
+        return 0
+    written = 0
+    try:
+        for r in rows:
+            _TURSO_CONN.execute(
+                "INSERT INTO health_pings (ts, chitti, url, status, ok, latency_ms, error) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (r["ts"], r["chitti"], r["url"], int(r["status"]),
+                 1 if r["ok"] else 0, r.get("latency_ms"), r.get("error")),
+            )
+            written += 1
+        _TURSO_CONN.commit()
+        try:
+            _TURSO_CONN.sync()
+        except Exception as e:  # noqa: BLE001
+            log.info("[bcp] Turso bg sync deferred: %s", e)
+    except Exception as e:  # noqa: BLE001
+        log.warning("[bcp] Turso write failed for %d rows: %s", len(rows), e)
+    return written
+
+
+def _alert_failures(failures: list[dict]) -> list[dict]:
+    """Email Sire about non-200 backends. Debounced per-chitti."""
+    now = datetime.now(timezone.utc)
+    actions: list[dict] = []
+    to_alert = []
+    for f in failures:
+        last = _HEALTH_LAST_ALERT.get(f["chitti"])
+        if last and (now - last).total_seconds() < HEALTH_ALERT_COOLDOWN_S:
+            continue
+        to_alert.append(f)
+        _HEALTH_LAST_ALERT[f["chitti"]] = now
+    if not to_alert:
+        return actions
+    rows_html = "".join(
+        f"<tr><td style='padding:6px;border:1px solid #ddd'>{f['chitti']}</td>"
+        f"<td style='padding:6px;border:1px solid #ddd'>{f['url']}</td>"
+        f"<td style='padding:6px;border:1px solid #ddd'>{f['status']}</td>"
+        f"<td style='padding:6px;border:1px solid #ddd'>"
+        f"{(f.get('error') or '')[:120]}</td></tr>"
+        for f in to_alert
+    )
+    subject = f"[Chitti BCP] {len(to_alert)} backend(s) returned non-200"
+    html = (
+        "<h2 style='font-family:sans-serif'>BCP Layer 1 — backend down</h2>"
+        "<p style='font-family:sans-serif'>The 4-minute self-ping caught these:</p>"
+        "<table style='border-collapse:collapse;font-family:sans-serif'>"
+        "<tr><th style='padding:6px;border:1px solid #ddd;text-align:left'>Chitti</th>"
+        "<th style='padding:6px;border:1px solid #ddd;text-align:left'>URL</th>"
+        "<th style='padding:6px;border:1px solid #ddd;text-align:left'>Status</th>"
+        "<th style='padding:6px;border:1px solid #ddd;text-align:left'>Error</th></tr>"
+        f"{rows_html}</table>"
+        f"<p style='font-family:sans-serif;color:#666'>Debounced — next alert per Chitti "
+        f"in ≥{HEALTH_ALERT_COOLDOWN_S//60} min.</p>"
+    )
+    ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
+    for f in to_alert:
+        actions.append({"action": "alert_sire", "chitti": f["chitti"], "ok": ok})
+    log.warning("[bcp] alert email ok=%s · %d backend(s) down", ok, len(to_alert))
+    return actions
+
+
+def run_self_ping() -> dict:
+    """Every 4 min — BCP Layer 1. Ping every Chitti /health, log to Turso, alert Sire."""
+    results: list[dict] = []
+    failures: list[dict] = []
+    for url in CHITTI_ENDPOINTS:
+        ts = datetime.now(timezone.utc)
+        chitti = _slug(url)
+        t0 = time.monotonic()
+        status = 0
+        ok = False
+        error: str | None = None
+        try:
+            with httpx.Client(timeout=SELF_PING_TIMEOUT_S) as c:
+                r = c.get(f"{url}/health")
+            status = r.status_code
+            ok = status == 200
+            if not ok:
+                error = f"HTTP {status}"
+        except Exception as e:  # noqa: BLE001
+            error = str(e)[:200]
+        latency_ms = int((time.monotonic() - t0) * 1000)
+
+        record = {
+            "ts": ts.isoformat(), "chitti": chitti, "url": url,
+            "status": status, "ok": ok,
+            "latency_ms": latency_ms, "error": error,
+        }
+        _HEALTH_RING.append(record)
+        results.append(record)
+        if not ok:
+            failures.append(record)
+
+    written = _turso_log_pings(results)
+    alert_actions = _alert_failures(failures) if failures else []
+
+    log.info("[bcp] self-ping · checked=%d failed=%d turso_written=%d alerts=%d",
+             len(results), len(failures), written, len(alert_actions))
+    return {
+        "ok": True,
+        "checked": len(results),
+        "failed": len(failures),
+        "turso_written": written,
+        "alerts": alert_actions,
+        "results": results,
+    }
+
+
 # ---------- Public feedback router (used by feedback-widget.js) -----------
 
 
@@ -334,6 +512,13 @@ def _create_app() -> Flask:
                 "daily": f"{REPORT_HOUR_IST:02d}:{REPORT_MINUTE_IST:02d} IST",
                 "weekly": f"Sun {WEEKLY_HOUR_IST:02d}:{WEEKLY_MINUTE_IST:02d} IST",
                 "escalator": "hourly :15",
+                "bcp_self_ping": f"every {SELF_PING_INTERVAL_MIN} min",
+            },
+            "bcp": {
+                "layer_1_self_ping_min": SELF_PING_INTERVAL_MIN,
+                "alert_cooldown_s": HEALTH_ALERT_COOLDOWN_S,
+                "turso_configured": bool(TURSO_URL),
+                "endpoints_watched": len(CHITTI_ENDPOINTS),
             },
             "products_tracked": ALL_PRODUCTS,
         })
@@ -393,6 +578,40 @@ def _create_app() -> Flask:
         auth = _require_admin()
         if auth: return auth
         return jsonify(run_escalator())
+
+    @app.post("/admin/founder/self-ping")
+    def admin_self_ping():
+        auth = _require_admin()
+        if auth: return auth
+        return jsonify(run_self_ping())
+
+    @app.get("/admin/founder/uptime")
+    def admin_uptime():
+        auth = _require_admin()
+        if auth: return auth
+        try:
+            limit = max(1, min(int(request.args.get("limit", 200)), 4000))
+        except ValueError:
+            limit = 200
+        rows = list(_HEALTH_RING)[-limit:]
+        by_chitti: dict[str, dict[str, Any]] = {}
+        for r in rows:
+            slot = by_chitti.setdefault(r["chitti"], {"checks": 0, "ok": 0, "fails": 0})
+            slot["checks"] += 1
+            slot["ok"] += 1 if r["ok"] else 0
+            slot["fails"] += 0 if r["ok"] else 1
+        for slot in by_chitti.values():
+            slot["uptime_pct"] = (
+                round(100.0 * slot["ok"] / slot["checks"], 2) if slot["checks"] else None
+            )
+        return jsonify({
+            "ok": True,
+            "interval_min": SELF_PING_INTERVAL_MIN,
+            "alert_cooldown_s": HEALTH_ALERT_COOLDOWN_S,
+            "turso_configured": bool(TURSO_URL),
+            "by_chitti": by_chitti,
+            "recent": rows,
+        })
 
     # Public router used by feedback-widget.js. We accept the payload,
     # tag it with classifier output, mirror it to the originating
@@ -468,9 +687,19 @@ def _start_scheduler() -> None:
         minute=15, timezone=_IST,
         id="hourly_escalator", replace_existing=True,
     )
+    _sched.add_job(
+        run_self_ping, "interval",
+        minutes=SELF_PING_INTERVAL_MIN, timezone=_IST,
+        id="bcp_self_ping", replace_existing=True,
+        next_run_time=datetime.now(_IST) + timedelta(seconds=30),
+    )
     _sched.start()
-    log.info("scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · escalator :15",
-             REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST)
+    log.info(
+        "scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · "
+        "escalator :15 · bcp self-ping every %d min",
+        REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST,
+        SELF_PING_INTERVAL_MIN,
+    )
 
 
 try:
