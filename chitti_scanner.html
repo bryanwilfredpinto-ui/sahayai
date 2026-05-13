@@ -650,6 +650,33 @@ function applyResult(d){
   }).filter(Boolean).join('');
   document.getElementById('r-links').innerHTML = links;
 
+  // P0 (2026-05-13) — for legal documents / notices, deep-link to
+  // chitti_legal.html with the OCR text pre-loaded. The legal page
+  // automatically switches to structured "Notice received" mode and
+  // reads aloud. localStorage is the primary handoff (same origin);
+  // base64 URL hash is the fallback if storage is blocked.
+  if (d.type === 'legal_doc' || /\b(notice|summons|eviction|138|demand)\b/i.test(d.summary || '')) {
+    const rawText = (d.raw_text || d.extracted_text || d.summary || '').trim();
+    if (rawText) {
+      const linksEl = document.getElementById('r-links');
+      const btn = document.createElement('button');
+      btn.style.background = '#1d4ed8';
+      btn.style.color = '#fff';
+      btn.style.fontWeight = '700';
+      btn.setAttribute('aria-label', 'Open in Chitti Legal — plain-language notice explainer');
+      btn.textContent = CURRENT_LANG === 'en'
+        ? '⚖️ Explain this notice in Chitti Legal'
+        : '⚖️ इस नोटिस को आसान भाषा में समझाओ';
+      btn.onclick = function(){
+        try { localStorage.setItem('chitti_legal_prefill', rawText.slice(0, 7000)); } catch(_) {}
+        let hashTail = '';
+        try { hashTail = '#legal=' + btoa(encodeURIComponent(rawText.slice(0, 4000))); } catch(_) {}
+        window.location.href = 'chitti_legal.html' + hashTail;
+      };
+      linksEl.appendChild(btn);
+    }
+  }
+
   // AUTO-SPEAK the result + legal line
   const t = (CURRENT_LANG === 'en' ? d.speak_en : d.speak_hi) || d.summary || '';
   speakText(t + '. ' + (d.legal_disclaimer || ''), CURRENT_LANG);

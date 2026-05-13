@@ -868,4 +868,145 @@
 
   global.Chitti = global.Chitti || {};
   global.Chitti.a11y = api;
+
+  // ──────────────────────────────────────────────────────────────
+  // Chitti.location — shared GPS / pincode capture
+  // ──────────────────────────────────────────────────────────────
+  // Powers the local-Chitti-first directory in every product page.
+  // Single source of truth so future Chittis (Mechanic / Salon /
+  // Kirana) inherit the same capture flow without re-implementing.
+  //
+  // Public API (window.Chitti.location):
+  //   get({ prompt, allow_stale_ms })  → Promise<{lat,lng,pincode,source,age_s}>
+  //   set({ lat?, lng?, pincode? })    → persist manually (e.g. settings)
+  //   clear()                          → forget cached location
+  //
+  // Storage: per-device localStorage key `chitti_location_v1`. Never
+  // sent to a server by this helper — the consuming page decides when
+  // to attach it to a request. (Privacy-first: location stays local
+  // unless the user explicitly invokes a feature that needs it.)
+  //
+  // GPS path: navigator.geolocation.getCurrentPosition with a soft
+  // 8 s timeout. If the user denies the permission once, we DO NOT
+  // re-prompt on every call — we fall through to pincode input.
+  //
+  // Pincode path: prompt() with a 6-digit validator. No reverse-geocode
+  // round-trip — the server can map pincode → lat/lng via its own
+  // chitti-pincode-tier.json lookup table (server-side, not client).
+  // Honest: we don't currently bundle a client-side pincode→latlng
+  // table; we just store the pincode and let the server interpret.
+  // ──────────────────────────────────────────────────────────────
+
+  const LOC_KEY = 'chitti_location_v1';
+
+  function _loadLoc() {
+    try {
+      const raw = localStorage.getItem(LOC_KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o || (o.lat == null && !o.pincode)) return null;
+      return o;
+    } catch (_) { return null; }
+  }
+
+  function _saveLoc(obj) {
+    try { localStorage.setItem(LOC_KEY, JSON.stringify(obj)); } catch (_) {}
+  }
+
+  function _now() { return Math.floor(Date.now() / 1000); }
+
+  function _validPincode(s) {
+    return /^[1-9]\d{5}$/.test(String(s || '').trim());
+  }
+
+  async function _tryGPS(timeoutMs) {
+    return new Promise((resolve) => {
+      if (!navigator || !navigator.geolocation) return resolve(null);
+      const opts = { enableHighAccuracy: false, timeout: timeoutMs || 8000, maximumAge: 60000 };
+      let settled = false;
+      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const c = pos && pos.coords;
+            if (!c) return done(null);
+            done({ lat: c.latitude, lng: c.longitude, accuracy_m: c.accuracy, source: 'gps' });
+          },
+          (_err) => done(null),
+          opts,
+        );
+      } catch (_) { done(null); }
+      // Hard fallback so we never hang the caller if the browser
+      // silently swallows both callbacks.
+      setTimeout(() => done(null), (timeoutMs || 8000) + 500);
+    });
+  }
+
+  function _promptPincode(message) {
+    const m = message || 'Enter your 6-digit pincode (so Chitti can show businesses near you):';
+    let p = '';
+    try { p = window.prompt(m, '') || ''; } catch (_) { return null; }
+    p = p.trim();
+    if (!_validPincode(p)) return null;
+    return p;
+  }
+
+  /**
+   * Get the user's location. Returns the cached value if `allow_stale_ms`
+   * permits (default: 6 hours). Otherwise attempts GPS, then pincode prompt.
+   *
+   * Never throws — resolves with `null` if the user declines everything.
+   * Callers should treat `null` as "fall back to directory-wide search".
+   */
+  async function locGet(opts) {
+    opts = opts || {};
+    const allowStale = opts.allow_stale_ms != null ? opts.allow_stale_ms : 6 * 3600 * 1000;
+    const cached = _loadLoc();
+    if (cached && cached.captured_at && (Date.now() - cached.captured_at * 1000) < allowStale) {
+      return Object.assign({}, cached, { age_s: _now() - cached.captured_at });
+    }
+
+    // GPS first.
+    const gps = await _tryGPS(opts.timeout_ms);
+    if (gps) {
+      const out = Object.assign({}, gps, { captured_at: _now() });
+      _saveLoc(out);
+      return out;
+    }
+
+    // GPS denied / unavailable — pincode fallback. Only prompt when the
+    // caller said it's OK to interrupt the user.
+    if (opts.prompt) {
+      const pin = _promptPincode(opts.prompt_message);
+      if (pin) {
+        const out = { pincode: pin, source: 'pincode', captured_at: _now() };
+        _saveLoc(out);
+        return out;
+      }
+    }
+
+    return null;
+  }
+
+  function locSet(obj) {
+    const cur = _loadLoc() || {};
+    const next = Object.assign({}, cur, obj || {}, { captured_at: _now() });
+    if (next.pincode && !_validPincode(next.pincode)) {
+      throw new Error('invalid pincode');
+    }
+    _saveLoc(next);
+    return next;
+  }
+
+  function locClear() {
+    try { localStorage.removeItem(LOC_KEY); } catch (_) {}
+  }
+
+  global.Chitti.location = {
+    get: locGet,
+    set: locSet,
+    clear: locClear,
+    cached: _loadLoc,
+    isValidPincode: _validPincode,
+  };
 })(window);

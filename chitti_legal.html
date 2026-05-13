@@ -173,20 +173,91 @@
       $mic.disabled = true; $mic.title = "Speech recognition not supported in this browser";
     }
 
+    // P0 (2026-05-13): When the user picks "Notice received", switch to
+    // the structured /explain-notice path and render symbol + word
+    // labels per the four-user contract. Read aloud by default.
+    function _isNoticeMode() {
+      return /notice|summons|eviction|138/i.test(docType || "");
+    }
+
+    function _esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function _renderNoticeStructured(j) {
+      const s = j.structured || {};
+      const urgentPill = s.urgent
+        ? '<span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fee2e2;color:#991b1b;font-weight:800;font-size:12px">⚠️ URGENT — TIME-SENSITIVE</span>'
+        : '';
+      const deadlineRow = s.deadline_phrase
+        ? '<div style="margin:8px 0;font-weight:700">📅 ' + _esc(s.deadline_phrase)
+          + (s.response_days != null ? ' <span style="color:#555;font-weight:500">(' + s.response_days + ' days)</span>' : '')
+          + '</div>'
+        : '';
+      const actRow = s.act_section
+        ? '<div style="margin:4px 0;font-size:13px;color:#555">📜 Cited: ' + _esc(s.act_section) + '</div>'
+        : '';
+      const steps = Array.isArray(s.what_to_do_next) ? s.what_to_do_next : [];
+      const stepsHtml = steps.length
+        ? '<ol style="margin:8px 0 0;padding-left:18px">' +
+            steps.map(function(st){
+              return '<li style="margin:4px 0"><span aria-hidden="true">' + _esc(st.symbol || '•') + '</span> '
+                + '<strong>' + _esc(st.word || '') + '</strong> — ' + _esc(st.detail || '') + '</li>';
+            }).join('') +
+          '</ol>'
+        : '';
+      const lawyerCta = s.lawyer_cta
+        ? '<div style="margin-top:10px;padding:10px;background:#fff;border:1px dashed #ccc;border-radius:8px;font-size:13px"><strong>👨‍⚖️ Lawyer:</strong> ' + _esc(s.lawyer_cta) + '</div>'
+        : '';
+      const summary = s.summary || j.reply || '(no summary)';
+      return urgentPill + '<div style="font-weight:700;font-size:16px;margin-top:6px">' + _esc(summary) + '</div>'
+             + deadlineRow + actRow
+             + (stepsHtml ? '<div style="margin-top:8px;font-weight:600">What to do next:</div>' + stepsHtml : '')
+             + lawyerCta;
+    }
+
+    async function _explain(text) {
+      const useNotice = _isNoticeMode();
+      const url = API + (useNotice ? "/api/legal/explain-notice" : "/api/legal/explain");
+      const payload = useNotice
+        ? { text, language: $lang.value }
+        : { text, language: $lang.value, doc_type: docType };
+      const r = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json();
+      return { j, useNotice };
+    }
+
     $ask.addEventListener("click", async () => {
       const text = ($q.value || "").trim();
       if (!text) return;
       $ask.disabled = true; $status.textContent = "asking Chitti Legal…";
       try {
-        const r = await fetch(API + "/api/legal/explain", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ text, language: $lang.value, doc_type: docType }),
-        });
-        const j = await r.json();
+        const { j, useNotice } = await _explain(text);
         if (j.ok) {
-          $reply.textContent = j.reply || "(no reply)";
-          $meta.textContent = `source: ${j.source} · model: ${j.model || "—"} · lang: ${j.language}`;
+          if (useNotice) {
+            $reply.innerHTML = _renderNoticeStructured(j);
+            // Voice handoff: read the spoken_summary by default
+            // (blind/illiterate users — never wait for a click).
+            const spoken = (j.structured && j.structured.spoken_summary)
+              || (j.structured && j.structured.summary)
+              || j.reply || '';
+            if (spoken) {
+              const u = new SpeechSynthesisUtterance(spoken);
+              u.lang = ($lang.value || 'hi') + '-IN';
+              window.speechSynthesis.speak(u);
+            }
+            // The disclaimer is server-enforced — show it explicitly too.
+            $meta.textContent = `source: ${j.source} · model: ${j.model || '—'} · lang: ${j.language} · structured notice mode`;
+          } else {
+            $reply.textContent = j.reply || "(no reply)";
+            $meta.textContent = `source: ${j.source} · model: ${j.model || "—"} · lang: ${j.language}`;
+          }
           $card.hidden = false;
           $speak.disabled = false;
           $status.textContent = "done";
@@ -205,12 +276,35 @@
     });
 
     $speak.addEventListener("click", () => {
-      const text = $reply.textContent;
+      const text = $reply.innerText || $reply.textContent;
       if (!text) return;
       const u = new SpeechSynthesisUtterance(text);
       u.lang = ($lang.value || "hi") + "-IN";
       window.speechSynthesis.speak(u);
     });
+
+    // Scanner deep-link — chitti_scanner.html can drop OCR text into
+    // localStorage.chitti_legal_prefill before redirecting here. We
+    // also accept ?legal=<base64> in the URL hash for cross-origin
+    // / iframe scenarios. Either way, we pre-pick the "Notice received"
+    // chip so the structured flow runs and auto-explain.
+    (function _consumePrefill(){
+      let prefill = "";
+      try {
+        prefill = localStorage.getItem("chitti_legal_prefill") || "";
+        if (prefill) localStorage.removeItem("chitti_legal_prefill");
+      } catch(_) {}
+      if (!prefill && location.hash && location.hash.indexOf("#legal=") === 0) {
+        try { prefill = decodeURIComponent(atob(location.hash.slice(7))); } catch(_) {}
+      }
+      if (prefill && $q && !$q.value) {
+        $q.value = prefill;
+        const noticeChip = document.querySelector('.doc-chip[data-doc="legal notice received"]');
+        if (noticeChip) noticeChip.click();
+        $status.textContent = "Got the scan — explaining…";
+        setTimeout(function(){ $ask.click(); }, 50);
+      }
+    })();
   </script>
 <!-- Chitti Quality v2 trust signals · 2026-05-13 -->
 <script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.35;</script>

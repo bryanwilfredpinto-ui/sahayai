@@ -132,3 +132,197 @@ def health() -> dict:
         "model": settings.DEEPSEEK_MODEL,
         "disclaimer": LEGAL_DISCLAIMER,
     }
+
+
+# ─── P0 (2026-05-13): Plain-language explainer for a NOTICE ──────────
+# Structured shape so the frontend can render:
+#   - what this notice means in one sentence
+#   - the urgency (deadline_phrase, urgent flag)
+#   - the response window in days when extractable
+#   - "what to do next" as labelled symbol+word steps (never colour alone)
+#   - the Act / Section it cites
+#   - a spoken_summary for blind / illiterate / elderly users
+# DeepSeek is asked for STRICT JSON. We always wrap the answer with the
+# server-enforced disclaimer (project_chitti_ca_legal_logo_video). The
+# `text` reply field carries a human-readable composite for the existing
+# /explain renderer too, so legacy callers don't break.
+
+NOTICE_SYSTEM_PROMPT = """You are Chitti Legal — explaining a legal NOTICE to an Indian user (eviction, IT Section 138, motor accident claim, demand notice, consumer complaint, court summons, FIR follow-up, etc.).
+
+Goal: tell the user plainly (a) what this notice is saying, (b) how many days they have to respond, (c) the 2 to 4 most important things to do RIGHT NOW, (d) the Act / Section cited (only if explicitly present in the notice). Match the user's chosen language.
+
+Output STRICT JSON only. No markdown. No preamble. Schema:
+
+{
+  "summary": string,                       // one-sentence plain-language summary
+  "spoken_summary": string,                // 2 to 3 short sentences for read-aloud
+  "deadline_phrase": string,               // e.g. "Reply within 15 days" — "" if none stated
+  "response_days": int | null,             // integer days extracted from the notice, or null
+  "urgent": boolean,                       // true if response_days <= 7 OR notice is time-sensitive (eviction / court summons / 138)
+  "act_section": string,                   // e.g. "Negotiable Instruments Act, 1881 Section 138" — "" if not cited
+  "what_to_do_next": [                     // 2 to 4 ordered steps
+    { "symbol": string, "word": string,    // symbol e.g. "📅" + word label e.g. "MEET A LAWYER"
+      "detail": string }                   // one short sentence
+  ],
+  "lawyer_cta": string                     // one calm sentence pushing the user to a licensed lawyer
+}
+
+Rules:
+- Never give a yes/no verdict on liability.
+- Never tell the user to ignore the notice or miss a deadline.
+- Never invent statute numbers or section numbers. If unsure, leave act_section empty.
+- Symbols in what_to_do_next MUST appear with a word label — never symbol alone (four-user contract).
+- response_days must be an integer extracted from the notice itself, otherwise null.
+- If the input is NOT a notice (just a clause / contract / question), set summary = "This does not look like a legal notice — using free-form explanation.", set urgent=false, response_days=null, deadline_phrase="", act_section="", what_to_do_next=[], lawyer_cta="Consult a lawyer if you have to act on this document.", and put a 2-3 sentence plain-language explanation in spoken_summary.
+"""
+
+
+def _structured_fallback(text_in: str, language: str, err: str = "") -> dict:
+    """No DeepSeek configured — return an honest stub in the structured shape."""
+    note_en = "Chitti Legal is offline right now (no DEEPSEEK_API_KEY). I cannot parse this notice yet — please consult a licensed lawyer."
+    note_hi = "अभी सरल भाषा सुविधा ऑफ़लाइन है (DEEPSEEK कुंजी नहीं)। कृपया किसी licensed वकील से संपर्क करें।"
+    spoken = note_hi if language == "hi" else note_en
+    payload = {
+        "summary": spoken,
+        "spoken_summary": spoken,
+        "deadline_phrase": "",
+        "response_days": None,
+        "urgent": False,
+        "act_section": "",
+        "what_to_do_next": [
+            {"symbol": "👨‍⚖️", "word": "MEET A LAWYER",
+             "detail": "Take this notice to a licensed advocate today."},
+        ],
+        "lawyer_cta": "Consult a licensed lawyer before replying or signing anything.",
+    }
+    return {
+        "ok": True,
+        "source": "fallback",
+        "language": language,
+        "structured": payload,
+        "reply": _enforce_disclaimer(spoken),
+        "model": None,
+        "error": err or None,
+    }
+
+
+def _coerce_step(item) -> dict | None:
+    if not isinstance(item, dict):
+        return None
+    symbol = str(item.get("symbol") or "•").strip()[:6]
+    word = str(item.get("word") or "").strip()[:48]
+    detail = str(item.get("detail") or "").strip()[:300]
+    if not word:
+        return None
+    return {"symbol": symbol, "word": word, "detail": detail}
+
+
+def _coerce_structured(data, language: str) -> dict:
+    """Defensive: the LLM is told to emit strict JSON, but never trust it."""
+    if not isinstance(data, dict):
+        return {}
+    steps_raw = data.get("what_to_do_next") or []
+    steps = [s for s in (_coerce_step(x) for x in steps_raw) if s][:4]
+    response_days = data.get("response_days")
+    if response_days is not None:
+        try:
+            response_days = int(response_days)
+            if response_days < 0 or response_days > 365:
+                response_days = None
+        except (TypeError, ValueError):
+            response_days = None
+    return {
+        "summary": str(data.get("summary") or "")[:600],
+        "spoken_summary": str(data.get("spoken_summary") or "")[:1200],
+        "deadline_phrase": str(data.get("deadline_phrase") or "")[:120],
+        "response_days": response_days,
+        "urgent": bool(data.get("urgent")),
+        "act_section": str(data.get("act_section") or "")[:200],
+        "what_to_do_next": steps,
+        "lawyer_cta": str(data.get("lawyer_cta") or "")[:240]
+                       or "Consult a licensed lawyer before signing or replying.",
+    }
+
+
+def explain_notice(text: str, language: str = "en") -> dict:
+    """
+    P0 — structured plain-language explanation of a legal notice.
+
+    Returns:
+      {
+        ok, source: "deepseek" | "fallback",
+        language, model,
+        structured: { ...see NOTICE_SYSTEM_PROMPT schema... },
+        reply: human-readable composite (also disclaimer-wrapped),
+        disclaimer: LEGAL_DISCLAIMER
+      }
+    """
+    text = (text or "").strip()
+    if not text:
+        return {"ok": False, "error": "text is required"}
+
+    if not settings.DEEPSEEK_API_KEY:
+        return _structured_fallback(text, language)
+
+    lang_name = _LANG_NAMES.get(language, language or "English")
+    user_msg = (
+        f"(Reply in {lang_name}. Output STRICT JSON only — no markdown fences.)\n"
+        f"Notice text:\n{text}"
+    )
+    body = {
+        "model": settings.DEEPSEEK_MODEL,
+        "messages": [
+            {"role": "system", "content": NOTICE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_msg},
+        ],
+        "max_tokens": min(800, settings.MAX_TOKENS),
+        "temperature": 0.2,
+        "response_format": {"type": "json_object"},
+    }
+    headers = {
+        "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
+            r.raise_for_status()
+            data = r.json()
+        raw = data["choices"][0]["message"]["content"] or ""
+        import json
+        try:
+            parsed = json.loads(raw)
+        except (TypeError, ValueError):
+            return _structured_fallback(text, language, err="deepseek_returned_non_json")
+        structured = _coerce_structured(parsed, language)
+        composite_lines = [structured["summary"]]
+        if structured["deadline_phrase"]:
+            composite_lines.append(structured["deadline_phrase"])
+        if structured["act_section"]:
+            composite_lines.append("Cited: " + structured["act_section"])
+        for step in structured["what_to_do_next"]:
+            composite_lines.append(step["symbol"] + " " + step["word"] + " — " + step["detail"])
+        if structured["lawyer_cta"]:
+            composite_lines.append(structured["lawyer_cta"])
+        composite = "\n".join(line for line in composite_lines if line)
+        usage = data.get("usage") or {}
+        return {
+            "ok": True,
+            "source": "deepseek",
+            "language": language,
+            "model": settings.DEEPSEEK_MODEL,
+            "structured": structured,
+            "reply": _enforce_disclaimer(composite),
+            "disclaimer": LEGAL_DISCLAIMER,
+            "tokens": {
+                "input": usage.get("prompt_tokens"),
+                "output": usage.get("completion_tokens"),
+            },
+        }
+    except httpx.HTTPStatusError as e:
+        log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
+        return _structured_fallback(text, language, err=f"deepseek_http_{e.response.status_code}")
+    except (httpx.RequestError, KeyError, ValueError) as e:
+        log.exception("DeepSeek explain_notice failed: %s", e)
+        return _structured_fallback(text, language, err=str(e)[:200])
