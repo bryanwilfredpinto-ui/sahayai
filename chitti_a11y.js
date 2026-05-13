@@ -851,6 +851,16 @@
         aria-label="Chitti — read this page aloud">
         <span class="chitti-mini-logo" aria-hidden="true">C</span>🔊 Read page
       </button>
+      <button id="chitti-explain-simply" type="button"
+        title="Re-render the page in plain English — short sentences, no jargon"
+        aria-label="Explain this page simply">
+        💡 Explain simply
+      </button>
+      <button id="chitti-demo-btn" type="button"
+        title="Load a sample request so you can see Chitti respond"
+        aria-label="Try a demo request">
+        🎬 Demo
+      </button>
       <span style="margin-left:auto;opacity:.75;font-size:11px">
         Powered by <a href="https://bhashini.gov.in/" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline">Bhashini</a> · provider-swappable
       </span>
@@ -883,6 +893,98 @@
       const text = (h1 && h1.textContent) || document.title || 'Chitti';
       speak(text, loadState().lang || 'en');
     });
+    bar.querySelector('#chitti-explain-simply').addEventListener('click', () => {
+      explainSimply();
+    });
+    bar.querySelector('#chitti-demo-btn').addEventListener('click', () => {
+      runDemo();
+    });
+  }
+
+  // ── DEMO ─────────────────────────────────────────────────────
+  // Pages opt in via <meta name="chitti-demo-sample" content="text…">.
+  // If meta is absent, fall back to first visible input/textarea + the
+  // page's title as a sample query — honest, never silently fake.
+  function runDemo() {
+    const meta = document.querySelector('meta[name="chitti-demo-sample"]');
+    const sample = (meta && meta.content) ||
+      'Show me how Chitti ' + (document.title || 'works').replace(/·.*$/, '').trim();
+    const target =
+      document.querySelector('[data-chitti-demo-target]') ||
+      document.querySelector('main textarea, main input[type="text"], main input[type="search"]') ||
+      document.querySelector('textarea, input[type="text"], input[type="search"]');
+    if (target) {
+      target.value = sample;
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+      target.focus();
+      announce('Demo loaded. Press the submit button or speak to Chitti.');
+    } else {
+      announce('Demo: this page has no input. Use the speaker button to hear the live data aloud.');
+    }
+    document.body.classList.add('chitti-demo-on');
+  }
+
+  // ── EXPLAIN SIMPLY ───────────────────────────────────────────
+  // Re-renders the page's main content in short, plain English sentences.
+  // Splits long sentences (> 14 words) and strips parenthetical asides.
+  // Idempotent — clicking again restores the original DOM.
+  function explainSimply() {
+    if (document.body.classList.contains('chitti-explain-on')) {
+      restoreOriginalText();
+      document.body.classList.remove('chitti-explain-on');
+      announce('Restored full page.');
+      return;
+    }
+    const targets = document.querySelectorAll(
+      'main p, main li, article p, article li, ' +
+      'section p, section li, .card p, .card li, ' +
+      '.explanation, .narr, .plain-english'
+    );
+    let touched = 0;
+    targets.forEach((el) => {
+      if (el.dataset.chittiOriginal != null) return;
+      const orig = el.innerHTML;
+      const simple = simplifyText(el.textContent || '');
+      if (!simple) return;
+      el.dataset.chittiOriginal = orig;
+      el.textContent = simple;
+      touched++;
+    });
+    document.body.classList.add('chitti-explain-on');
+    announce(
+      touched > 0
+        ? 'Page rewritten in plain English. Tap the button again to restore.'
+        : 'Nothing to simplify on this page yet.'
+    );
+  }
+
+  function restoreOriginalText() {
+    document.querySelectorAll('[data-chitti-original]').forEach((el) => {
+      el.innerHTML = el.dataset.chittiOriginal;
+      delete el.dataset.chittiOriginal;
+    });
+  }
+
+  function simplifyText(s) {
+    if (!s) return '';
+    let t = String(s);
+    // Strip parentheticals.
+    t = t.replace(/\([^)]{0,120}\)/g, '');
+    t = t.replace(/\s{2,}/g, ' ').trim();
+    // Split into sentences; break any over 14 words by clauses.
+    const out = [];
+    t.split(/(?<=[.!?])\s+/).forEach((sentence) => {
+      const words = sentence.trim().split(/\s+/);
+      if (words.length <= 14) { out.push(sentence.trim()); return; }
+      // Break by commas / semicolons / 'and' / 'but'.
+      sentence
+        .split(/[,;]\s*|\s+(?:and|but|because|so that|which)\s+/i)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .forEach((p) => out.push(p.endsWith('.') ? p : p + '.'));
+    });
+    return out.join(' ');
   }
 
   // ── PUBLIC API ───────────────────────────────────────────────
@@ -902,6 +1004,8 @@
     detectFromBrowser,
     detectFromText,
     observeSpeechTranscript,
+    explainSimply,
+    runDemo,
     getState: loadState,
     LANGUAGES,
     VOICE_FACTORY_URL,

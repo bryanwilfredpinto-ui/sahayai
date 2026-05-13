@@ -47,8 +47,13 @@
     'chitti_logo_video': 'chitti-logo-video',
     'chitti_voice_factory': 'chitti-voice-factory',
     'chitti_quality': 'chitti-quality',
-    'chitti_fundamentals': 'chitti-shares',
-    'chitti_complete_technical': 'chitti-shares',
+    // chitti_fundamentals.html and chitti_complete_technical.html share
+    // the chitti-shares backend, but they expose different feature
+    // surfaces to the user. Each frontend now has its own FEATURES.md
+    // so Discovery shows the right list per page. (SAHAYAI_MASTER §4a
+    // still maps both pages to chitti-shares for backend purposes.)
+    'chitti_fundamentals': 'chitti-fundamentals',
+    'chitti_complete_technical': 'chitti-complete-technical',
     'chitti_isl': 'chitti-isl',
     'chitti_kirana': 'chitti-kirana',
   };
