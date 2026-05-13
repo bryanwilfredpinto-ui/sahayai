@@ -22,6 +22,7 @@ from config import settings
 from routes.vaani import bp as vaani_bp
 from routes.email import bp as email_bp
 from routes.emergency import bp as emergency_bp
+from routes.local import bp as local_bp
 from routes.admin import bp as admin_bp
 from routes.feedback import bp as feedback_bp
 from services import admin_scheduler, feedback_scheduler
@@ -90,6 +91,7 @@ def _create_app() -> Flask:
     app.register_blueprint(vaani_bp)
     app.register_blueprint(email_bp)
     app.register_blueprint(emergency_bp)
+    app.register_blueprint(local_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(feedback_bp)
 

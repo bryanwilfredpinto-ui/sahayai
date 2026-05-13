@@ -198,6 +198,63 @@ Long-poll-equivalent. Returns and marks-delivered any queued events.
 
 ---
 
+## `/api/vaani/local/*` — Local-Chitti-first lookup ([local.py](backend/routes/local.py))
+
+The "Order & book" Pro Action cards consult this endpoint before opening any external app (Zomato / Swiggy / Ola / Uber / Rapido / BookMyShow / IRCTC / BigBasket / Blinkit). A registered Chitti shop in the matching service category is always preferred; external links are pure fallback. Directory data is the existing `product_gmail_accounts` table seeded by [`admin_seed.py`](backend/scripts/admin_seed.py).
+
+### `GET /api/vaani/local/nearby?service=<category>`
+Look up Chitti shops registered for a service category, plus the external-app keys that the frontend may use as fallback.
+
+**Query**
+- `service` — required. One of: `food`, `restaurant`, `groceries`, `grocery`, `kirana`, `dairy`, `pharmacy`, `medicine`, `medical`, `salon`, `haircut`, `stationery`, `books`, `hardware`, `clothing`, `clothes`, `electronics`, `furniture`, `cab`, `ride`, `auto`, `movies`, `movie`, `tickets`, `train`, `trains`.
+
+**Response**
+```json
+{
+  "ok": true,
+  "service": "food",
+  "display": "food delivery",
+  "local": [
+    {
+      "product_key":     "chittirestaurant",
+      "product_name":    "Chitti Restaurant",
+      "gmail_address":   "chittirestaurant@gmail.com",
+      "domain_template": "food_business",
+      "features":        ["menu management", "online orders", "table booking", "delivery tracking"],
+      "oauth_status":    "connected"
+    }
+  ],
+  "local_chitti_keys": ["chittirestaurant"],
+  "external_keys":     ["zomato", "swiggy"],
+  "note": "Local Chitti business comes first. External apps are a fallback the user can pick if the local Chitti is unreachable."
+}
+```
+
+Connected shops are ordered first; not-yet-onboarded shops appear after them so the frontend can show a "Being onboarded" pill instead of pretending the directory is empty.
+
+Categories with no Chitti shop yet (`cab`, `movies`, `train`, …) return `local: []` and a non-empty `external_keys`. The frontend treats that as a signal to skip the directory block and go straight to the external fallback.
+
+Errors: `400 bad_request` if `service` missing or unknown.
+
+**Caveat — "nearby" is directory-wide.** `product_gmail_accounts` does not have `lat`/`lng`/`pincode` columns today, so this endpoint is honest about that: every registered Chitti shop matching the category is returned, with no radius filter. Geo-aware filtering is a future addition (see [`skills/FEATURES.md`](skills/FEATURES.md) §3.2).
+
+### `GET /api/vaani/local/categories`
+Diagnostic. Lists every supported service category, the shop-Chitti product keys it maps to, and the external-app keys.
+
+**Response**
+```json
+{
+  "ok": true,
+  "items": [
+    {"service": "food", "local_chitti_keys": ["chittirestaurant"], "external_keys": ["zomato", "swiggy"], "display": "food delivery"},
+    {"service": "cab",  "local_chitti_keys": [], "external_keys": ["ola", "uber", "rapido"], "display": "cab"},
+    ...
+  ]
+}
+```
+
+---
+
 ## `/api/admin/*` — Sahay AI Admin Dashboard ([admin.py](backend/routes/admin.py))
 
 **Auth**: every endpoint except the OAuth callback requires `?secret=<ADMIN_SECRET>` or `X-Admin-Secret: <secret>` header. Missing `ADMIN_SECRET` env var → all admin routes return **503 fail-closed**.

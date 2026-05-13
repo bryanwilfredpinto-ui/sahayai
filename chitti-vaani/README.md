@@ -11,6 +11,7 @@ Voice-first conversational guide for Bharat — built around the **four-user acc
 | "Send email as Chitti" — Gmail OAuth + send-as-user with the Chitti AI signature | Live | [email.py](backend/routes/email.py) + [email_service.py](backend/services/email_service.py) + [email_db.py](backend/services/email_db.py) |
 | 24/7 emergency cascade — family only, never cops; Chitti-to-Chitti relay across paired devices | Live | [emergency.py](backend/routes/emergency.py) + [emergency_service.py](backend/services/emergency_service.py) + [relay_db.py](backend/services/relay_db.py) |
 | WhatsApp / UPI / `tel:` deep-link pro actions | Frontend | `chitti_vaani.html` |
+| Order & book — Chitti business directory first (Zomato / Swiggy / Ola / Uber / Rapido / BookMyShow / IRCTC / BigBasket / Blinkit fallback) | Live | [local.py](backend/routes/local.py) + [local_chitti_service.py](backend/services/local_chitti_service.py) + `chitti_vaani.html` |
 | Federated voice-sample collection (opt-in IndexedDB) | Frontend | `chitti_vaani.html` |
 | Cross-product feedback widget (`/api/feedback/collect`) | Live | [feedback.py](backend/routes/feedback.py) + [feedback_db.py](backend/services/feedback_db.py) |
 | Sahay AI Admin Dashboard (product Gmail OAuth + monthly keep-alive) | Live (WIP) | [admin.py](backend/routes/admin.py) + [admin_db.py](backend/services/admin_db.py) + [admin_oauth.py](backend/services/admin_oauth.py) + [admin_scheduler.py](backend/services/admin_scheduler.py) |
@@ -43,6 +44,7 @@ Open `../frontend/index.html?api=http://127.0.0.1:8003` (or any of the `chitti_v
 - `GET  /api/vaani/languages`
 - `/api/vaani/email/*` — Gmail OAuth + send-as-user (status / auth/start / auth/callback / send / disconnect)
 - `/api/vaani/emergency/*` — trigger / check-in / pair/issue / pair/accept / pair/unpair / pair/list / poll
+- `/api/vaani/local/*` — Chitti business directory lookup (`nearby?service=` + `categories`) — the "Order & book" cards consult this before opening any external app
 - `/api/admin/products/*` — product Gmail dashboard backend (gated by `ADMIN_SECRET`)
 - `/api/feedback/*` — cross-product feedback collect + admin report
 

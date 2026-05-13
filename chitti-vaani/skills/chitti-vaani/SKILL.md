@@ -34,6 +34,8 @@ chitti-vaani/
 | POST | `/ask`        | Body `{text, language?, mode?}` → DeepSeek reply with mandatory legal line appended |
 | GET  | `/health`     | DeepSeek key configured? |
 | GET  | `/languages`  | 9 supported language codes for the frontend selector |
+| GET  | `/local/nearby?service=<x>` | Chitti shop directory lookup — preferred over external apps for Order/Book cards |
+| GET  | `/local/categories` | Diagnostic: every supported service category + the Chitti shop keys + external-app keys it maps to |
 
 `mode` ∈ `ask` (default), `call` (summarise call notes), `read`
 (repeat back clearly), `translate` (translate to user's language).

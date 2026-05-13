@@ -489,6 +489,60 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
+  <!-- ════════ ORDER / BOOK — Chitti business first, external app second ════════ -->
+  <section class="section-card" aria-labelledby="book-title">
+    <h2 class="section-title" id="book-title"><span class="ico">🛍️</span> Order &amp; book — Chitti business first</h2>
+    <div class="section-sub">
+      Chitti always checks for a <b>registered Chitti business</b> first (Chitti Kirana / Restaurant / Pharmacy / Salon …). External apps (Zomato / Swiggy / Ola / Uber / BookMyShow / IRCTC / BigBasket / Blinkit) only open if no Chitti shop is reachable — and only when you say <b>"haan"</b>.
+      <br><b>Honest:</b> each card opens the app pre-filled. Chitti does not auto-book — final tap is yours.
+    </div>
+    <div class="pro-grid">
+
+      <button class="pro-card" onclick="openLocalFirstModal('food')">
+        <span class="ico">🍱</span><span class="lbl">Order food</span>
+        <span class="sub">Chitti Restaurant first. Fallback: Zomato / Swiggy search opened pre-filled.</span>
+        <span class="pill">Web ✓ deep-link</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('groceries')">
+        <span class="ico">🥬</span><span class="lbl">Order groceries</span>
+        <span class="sub">Chitti Kirana / Grocery / Dairy first. Fallback: Blinkit / BigBasket.</span>
+        <span class="pill">Web ✓ deep-link</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('pharmacy')">
+        <span class="ico">💊</span><span class="lbl">Order medicine</span>
+        <span class="sub">Chitti Pharmacy / Medical Store. No external pharmacy fallback yet — use Chitti MedUPI for price check.</span>
+        <span class="pill">Web ✓ directory</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('salon')">
+        <span class="ico">💇</span><span class="lbl">Book salon</span>
+        <span class="sub">Chitti Salon directory. No external app fallback — salon bookings stay local.</span>
+        <span class="pill">Web ✓ directory</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('cab')">
+        <span class="ico">🚖</span><span class="lbl">Book a cab</span>
+        <span class="sub">No local Chitti substrate yet. Opens Ola / Uber / Rapido pre-filled — you tap Book in their app.</span>
+        <span class="pill">Web ✓ deep-link</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('movies')">
+        <span class="ico">🎬</span><span class="lbl">Book movie tickets</span>
+        <span class="sub">No local Chitti for movies. Opens BookMyShow city listing — you pick the show and seat.</span>
+        <span class="pill">Web ✓ deep-link</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocalFirstModal('train')">
+        <span class="ico">🚆</span><span class="lbl">Book train ticket</span>
+        <span class="sub">No local Chitti for IRCTC. Opens IRCTC search — you complete the booking + captcha.</span>
+        <span class="pill">Web ✓ deep-link</span>
+      </button>
+
+    </div>
+  </section>
+
   <!-- ════════ TRUSTED CIRCLE — voice-built contact list ════════ -->
   <section class="section-card" aria-labelledby="tc-title">
     <h2 class="section-title" id="tc-title"><span class="ico">👨‍👩‍👧</span> Trusted Circle</h2>
@@ -735,6 +789,54 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="cancel" onclick="clearLangSamples()">🗑️ Clear my samples</button>
     </div>
     <div class="small-note">After 6–12 months of regular samples (1–2 sentences a week per language), Chitti will speak that language back. Today the samples sit in IndexedDB on your phone only.</div>
+  </div>
+</div>
+
+<!-- Local-first order / book modal — shared by food / groceries / pharmacy / salon / cab / movies / train -->
+<div id="local-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="local-title">
+  <div class="panel">
+    <h2 id="local-title">🛍️ <span id="local-title-text">Order &amp; book</span></h2>
+    <div class="desc">
+      Chitti is checking the <b>local Chitti business directory</b> first. If a registered Chitti shop exists for this service, it shows below. External apps appear underneath as a fallback only.
+    </div>
+
+    <!-- Optional query field (used by Zomato/Swiggy/BigBasket/Blinkit search and IRCTC station, etc.) -->
+    <div class="field" id="local-query-field" style="display:none">
+      <label id="local-query-label">What are you looking for?</label>
+      <input type="text" id="local-query" placeholder="biryani / paracetamol / Bengaluru to Delhi">
+      <div class="row-mic">
+        <button id="local-mic" onclick="proMic('local-query', this)">🎙️ Speak</button>
+        <button onclick="speakField('local-query')">🔊 Read back</button>
+      </div>
+    </div>
+
+    <!-- Chitti business directory section — populated by openLocalFirstModal() -->
+    <div id="local-chitti-block">
+      <div style="font-weight:800;color:var(--navy);font-size:13px;margin:8px 0 6px">
+        🇮🇳 Chitti business directory
+      </div>
+      <div id="local-chitti-list" style="display:flex;flex-direction:column;gap:6px">
+        <div class="tc-empty">Loading the Chitti directory…</div>
+      </div>
+    </div>
+
+    <!-- External-app fallback section — only renders deep-link buttons relevant to the chosen service -->
+    <div id="local-external-block" style="margin-top:14px">
+      <div style="font-weight:800;color:var(--muted);font-size:13px;margin-bottom:6px">
+        🌐 Fallback — external apps
+        <span style="font-weight:500;font-size:11px">(opens the app pre-filled; Chitti does not auto-book)</span>
+      </div>
+      <div id="local-external-list" style="display:flex;flex-wrap:wrap;gap:6px">
+        <!-- buttons injected by renderLocalExternal() -->
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="cancel" onclick="closeModal('local-modal')">Close</button>
+    </div>
+    <div class="small-note">
+      Local Chitti shops carry the Chitti name. External apps belong to their owners — Chitti Vaani only opens them; it does not place an order, dial a driver, or book a seat. Per NPCI / RBI rules, payment PIN stays inside the merchant app.
+    </div>
   </div>
 </div>
 
@@ -2251,6 +2353,324 @@ function captureVoiceGrant(btn){
   try { r.start(); } catch(e){}
 }
 
+/* ═══════════════════════════════════════════════════════════
+   LOCAL-FIRST DEEP LINKS — Chitti business before external app
+   ─────────────────────────────────────────────────────────── */
+
+/**
+ * Service catalogue. Each entry describes a Pro Action card from the
+ * "Order & book" section: the user-facing title, whether a free-text
+ * query box is needed (and its placeholder), and which external app
+ * deep-link templates are valid fallbacks.
+ *
+ * External deep links are intentionally simple — they open the app /
+ * mobile site search page pre-filled. Chitti never auto-completes the
+ * booking; the user always taps the final button inside the merchant.
+ * This mirrors the WhatsApp / UPI pattern Vaani already uses.
+ */
+const LOCAL_SERVICES = {
+  food: {
+    title: 'Order food',
+    queryLabel: 'What would you like to eat?',
+    queryPlaceholder: 'biryani / dosa / paneer butter masala',
+    needsQuery: true,
+    externals: ['zomato', 'swiggy'],
+  },
+  groceries: {
+    title: 'Order groceries',
+    queryLabel: 'What groceries do you need?',
+    queryPlaceholder: 'atta / sabzi / milk / sugar',
+    needsQuery: true,
+    externals: ['blinkit', 'bigbasket'],
+  },
+  pharmacy: {
+    title: 'Order medicine',
+    queryLabel: '',
+    queryPlaceholder: '',
+    needsQuery: false,
+    externals: [],   // no external pharmacy fallback — Chitti MedUPI handles price; refills stay local
+  },
+  salon: {
+    title: 'Book salon',
+    queryLabel: '',
+    queryPlaceholder: '',
+    needsQuery: false,
+    externals: [],
+  },
+  cab: {
+    title: 'Book a cab',
+    queryLabel: 'Where are you going?',
+    queryPlaceholder: 'MG Road / Indiranagar / Airport',
+    needsQuery: true,
+    externals: ['ola', 'uber', 'rapido'],
+  },
+  movies: {
+    title: 'Book movie tickets',
+    queryLabel: 'Which city?',
+    queryPlaceholder: 'bengaluru / mumbai / delhi',
+    needsQuery: true,
+    externals: ['bookmyshow'],
+  },
+  train: {
+    title: 'Book train ticket',
+    queryLabel: 'From → To (optional, you can also fill it on IRCTC)',
+    queryPlaceholder: 'Bengaluru to New Delhi',
+    needsQuery: true,
+    externals: ['irctc'],
+  },
+};
+
+/**
+ * External-app deep-link templates. Each template returns a single URL
+ * string. Where the merchant supports a structured `?q=` / search slug,
+ * we use it; otherwise we open the app homepage and let the user finish
+ * (Rapido and IRCTC are honest about this in `requiresUserFinish`).
+ *
+ * IMPORTANT — keep these honest:
+ *  - Do NOT add a template that claims to "place an order".
+ *  - Do NOT chain a payment URL — the merchant collects payment, not us.
+ *  - If a merchant changes its URL schema, update here only (single source).
+ */
+const EXTERNAL_LINKS = {
+  zomato: {
+    label: 'Zomato',
+    icon:  '🍱',
+    build: (q) => 'https://www.zomato.com/search?q=' + encodeURIComponent(q || ''),
+    note:  'opens Zomato search — pick a restaurant, place order in their app',
+  },
+  swiggy: {
+    label: 'Swiggy',
+    icon:  '🛵',
+    build: (q) => 'https://www.swiggy.com/search?query=' + encodeURIComponent(q || ''),
+    note:  'opens Swiggy search — pick a restaurant, place order in their app',
+  },
+  blinkit: {
+    label: 'Blinkit',
+    icon:  '⚡',
+    build: (q) => 'https://blinkit.com/s/?q=' + encodeURIComponent(q || ''),
+    note:  'opens Blinkit search — add to cart and pay in their app',
+  },
+  bigbasket: {
+    label: 'BigBasket',
+    icon:  '🧺',
+    build: (q) => 'https://www.bigbasket.com/ps/?q=' + encodeURIComponent(q || ''),
+    note:  'opens BigBasket search — add to cart and pay in their app',
+  },
+  ola: {
+    label: 'Ola',
+    icon:  '🚖',
+    // Ola's documented universal link. Drop is optional; without lat/lng we
+    // can only pass a free-text drop name, which the app handles.
+    build: (q) => {
+      const drop = (q || '').trim();
+      const base = 'https://book.olacabs.com/';
+      return drop ? base + '?drop_name=' + encodeURIComponent(drop) : base;
+    },
+    note: 'opens Ola — confirm pickup & drop, then book in their app',
+  },
+  uber: {
+    label: 'Uber',
+    icon:  '🚕',
+    // m.uber.com/ul universal link. Action setPickup with no coords falls
+    // through to the app's normal "where to?" flow.
+    build: (q) => {
+      const drop = (q || '').trim();
+      const base = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location';
+      return drop ? base + '&dropoff[formatted_address]=' + encodeURIComponent(drop) : base;
+    },
+    note: 'opens Uber — confirm pickup & drop, then book in their app',
+  },
+  rapido: {
+    label: 'Rapido',
+    icon:  '🏍️',
+    // Rapido does not document a stable web deep-link param schema —
+    // be honest and open the homepage / app store entry.
+    build: (_q) => 'https://onelink.to/rapido',
+    note:  'opens Rapido — set pickup & drop and book in their app',
+    requiresUserFinish: true,
+  },
+  bookmyshow: {
+    label: 'BookMyShow',
+    icon:  '🎬',
+    build: (city) => {
+      const c = (city || '').trim().toLowerCase().replace(/\s+/g, '-');
+      return c
+        ? 'https://in.bookmyshow.com/explore/movies-' + encodeURIComponent(c)
+        : 'https://in.bookmyshow.com/';
+    },
+    note: 'opens BookMyShow movies for your city — pick show, seat, pay there',
+  },
+  irctc: {
+    label: 'IRCTC',
+    icon:  '🚆',
+    // IRCTC has no public param-based deep-link — captcha is by design.
+    build: (_q) => 'https://www.irctc.co.in/nget/train-search',
+    note:  'opens IRCTC train search — captcha + booking happen on IRCTC',
+    requiresUserFinish: true,
+  },
+};
+
+
+let LOCAL_CURRENT_SERVICE = null;
+
+
+/**
+ * Open the local-first modal for a given service. Always:
+ *   1) shows the directory section in "loading" state
+ *   2) fires GET /api/vaani/local/nearby?service=<svc>
+ *   3) renders matching Chitti shops (preferred) + the external fallback buttons
+ *
+ * Per the Chitti rule: NEVER skip the directory lookup and jump straight
+ * to an external app, even for cab/movies/train where the directory is
+ * empty today. The user sees an honest "no Chitti business yet —
+ * external fallback below" message instead.
+ */
+async function openLocalFirstModal(service){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const cfg = LOCAL_SERVICES[service];
+  if (!cfg) { alert('Unknown service: ' + service); return; }
+  LOCAL_CURRENT_SERVICE = service;
+
+  document.getElementById('local-title-text').textContent = cfg.title;
+
+  // Query field setup
+  const qField = document.getElementById('local-query-field');
+  const qLabel = document.getElementById('local-query-label');
+  const qInput = document.getElementById('local-query');
+  if (cfg.needsQuery) {
+    qField.style.display = 'block';
+    qLabel.textContent = cfg.queryLabel;
+    qInput.placeholder = cfg.queryPlaceholder;
+    qInput.value = '';
+  } else {
+    qField.style.display = 'none';
+    qInput.value = '';
+  }
+
+  // Reset directory + external sections to loading state
+  document.getElementById('local-chitti-list').innerHTML =
+    '<div class="tc-empty">Checking Chitti business directory…</div>';
+  document.getElementById('local-external-list').innerHTML = '';
+
+  openModal('local-modal');
+  speakText(CURRENT_LANG === 'en'
+    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' directory first.')
+    : ('पहले Chitti डायरेक्टरी देख रही हूँ।'),
+    CURRENT_LANG);
+
+  // Lookup. If the backend is unreachable, we still render the external
+  // fallback so the user is never stuck.
+  let dirResp = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/local/nearby?service=' + encodeURIComponent(service));
+    dirResp = await r.json();
+  } catch(e) {
+    dirResp = { ok: false, error: 'backend_unreachable', local: [], external_keys: cfg.externals };
+  }
+  renderLocalChitti(dirResp);
+  renderLocalExternal(dirResp && dirResp.ok ? (dirResp.external_keys || []) : cfg.externals);
+}
+
+function renderLocalChitti(resp){
+  const el = document.getElementById('local-chitti-list');
+  if (!resp || !resp.ok) {
+    el.innerHTML = '<div class="tc-empty">Chitti directory unreachable. External fallback below.</div>';
+    return;
+  }
+  const rows = Array.isArray(resp.local) ? resp.local : [];
+  if (!rows.length) {
+    el.innerHTML = '<div class="tc-empty">No registered Chitti business for <b>' +
+      escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.</div>';
+    return;
+  }
+  el.innerHTML = rows.map(r => {
+    const isConnected = (r.oauth_status === 'connected');
+    const featsHtml = (r.features && r.features.length)
+      ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
+          r.features.slice(0, 5).map(f => '<span style="background:#fbf8f1;border:1px solid var(--border);border-radius:4px;padding:2px 6px;margin-right:4px;display:inline-block">' + escapeHtml(f) + '</span>').join('') +
+        '</div>'
+      : '';
+    const statusPill = isConnected
+      ? '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(22,163,74,.10);color:#15803d;border:1px solid #16a34a;border-radius:5px;padding:2px 7px">CONNECTED</span>'
+      : '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px">BEING ONBOARDED</span>';
+    return '<div class="pair-row" style="background:#fff8e1">' +
+      '<div class="av" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a)">' +
+        escapeHtml((r.product_name||'?').replace(/^Chitti /, '')[0]||'?') +
+      '</div>' +
+      '<div class="info" style="flex:1;min-width:200px">' +
+        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill +
+        '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',\'Menlo\',monospace">' +
+          escapeHtml(r.gmail_address||'') +
+        '</div>' + featsHtml +
+      '</div>' +
+      '<button onclick="contactLocalChitti(' + JSON.stringify(r.product_key) + ',' + JSON.stringify(r.gmail_address||'') + ')">📧 Contact via email</button>' +
+    '</div>';
+  }).join('');
+}
+
+/** Open the existing Vaani email modal pre-filled with the Chitti shop's mailbox.
+ *  We deliberately do NOT auto-send — user always types the body + says haan. */
+function contactLocalChitti(productKey, gmailAddress){
+  if (!gmailAddress) {
+    speakText(CURRENT_LANG==='en'
+      ? 'No email on file for this Chitti shop yet.'
+      : 'इस Chitti shop का email रजिस्टर नहीं है।', CURRENT_LANG);
+    return;
+  }
+  closeModal('local-modal');
+  openEmailModal();
+  // Drop the recipient + a subject into the email modal
+  const freeEl = document.getElementById('em-to-free');
+  const subjEl = document.getElementById('em-subject');
+  if (freeEl) freeEl.value = gmailAddress;
+  if (subjEl && !subjEl.value) {
+    subjEl.value = 'Order via Chitti Vaani — ' + (LOCAL_CURRENT_SERVICE || 'service');
+  }
+  logAction('Opened email to local Chitti', productKey + ' / ' + gmailAddress);
+  speakText(CURRENT_LANG==='en'
+    ? ('Opening email to ' + productKey + '. Speak the body, then say haan to send.')
+    : ('Email खुल रहा है ' + productKey + ' को। संदेश बोलिए, फिर "haan" बोलें।'),
+    CURRENT_LANG);
+}
+
+function renderLocalExternal(externalKeys){
+  const el = document.getElementById('local-external-list');
+  if (!externalKeys || !externalKeys.length) {
+    el.innerHTML = '<div class="tc-empty" style="margin:0">No external app fallback for this service. Chitti business directory above is the only path today.</div>';
+    return;
+  }
+  const q = (document.getElementById('local-query').value || '').trim();
+  el.innerHTML = externalKeys.map(k => {
+    const ext = EXTERNAL_LINKS[k];
+    if (!ext) return '';
+    return '<button onclick="openExternalLink(' + JSON.stringify(k) + ')" ' +
+      'style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer;min-width:140px;text-align:left">' +
+      '<span style="font-size:20px">' + ext.icon + '</span>' +
+      '<span style="font-weight:800">' + escapeHtml(ext.label) + '</span>' +
+      '<span style="font-size:10px;color:var(--muted);line-height:1.4">' + escapeHtml(ext.note) + '</span>' +
+    '</button>';
+  }).join('');
+}
+
+/** Open one external-app deep-link (with the current query value, if any).
+ *  Logs the action to the audit log with a 30 s undo (browser-side only —
+ *  we cannot "un-open" a tab in the merchant app once it has been opened). */
+function openExternalLink(key){
+  const ext = EXTERNAL_LINKS[key];
+  if (!ext) return;
+  const q = (document.getElementById('local-query').value || '').trim();
+  const url = ext.build(q);
+  if (!url) return;
+  // Use a new tab so we don't navigate away from Chitti.
+  window.open(url, '_blank', 'noopener');
+  closeModal('local-modal');
+  logAction('Opened external app: ' + ext.label, (LOCAL_CURRENT_SERVICE || '?') + (q ? ' / "' + q + '"' : ''));
+  speakText(CURRENT_LANG==='en'
+    ? (ext.label + ' opened in a new tab. Complete the booking in their app.')
+    : (ext.label + ' खुल गया। उसकी ऐप में आगे बढ़िए।'),
+    CURRENT_LANG);
+}
+
 /* ── BOOT ── */
 window.addEventListener('DOMContentLoaded', () => {
   getUserToken();   // ensure per-device UUID exists
@@ -2301,5 +2721,6 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script src="chitti_disclaimer.js"></script>
+<script src="feedback-widget.js" data-page="chitti_vaani"></script>
 </body>
 </html>
