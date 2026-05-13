@@ -441,6 +441,7 @@ const I18N = {
   // Article actions
   'art.read_aloud':  { en:'🔊 Read aloud', hi:'🔊 पढ़कर सुनाओ' },
   'art.take':        { en:"✨ Chitti's Take", hi:'✨ चिट्टी की टेक' },
+  'art.explain':     { en:'🧒 Explain Simply', hi:'🧒 आसान भाषा में' },
   'art.factcheck':   { en:'🛡️ Fact Check', hi:'🛡️ तथ्य जाँच' },
   'art.save':        { en:'⭐ Save', hi:'⭐ सेव' },
   'art.cancel':      { en:'🗑️ Cancel', hi:'🗑️ हटाएँ' },
@@ -623,6 +624,7 @@ function _articleCardHtml(a) {
         '<div class="art-summary">' + _esc((a.summary || '').slice(0,260)) + (a.summary && a.summary.length > 260 ? '…' : '') + '</div>' +
         '<div class="art-actions">' +
           '<button class="primary" onclick="loadTake(' + a.id + ')">' + t('art.take') + '</button>' +
+          '<button onclick="loadExplainSimply(' + a.id + ')">' + t('art.explain') + '</button>' +
           '<button onclick="loadFactcheck(' + a.id + ')">' + t('art.factcheck') + '</button>' +
           '<button onclick="readArticleAloud(' + a.id + ')">' + t('art.read_aloud') + '</button>' +
           '<button onclick="saveArticle(' + a.id + ', \'saved\')">' + t('art.save') + '</button>' +
@@ -631,6 +633,7 @@ function _articleCardHtml(a) {
           '<button onclick="window.open(\'' + _esc(a.link) + '\', \'_blank\', \'noopener\')">' + t('art.open') + '</button>' +
         '</div>' +
         '<div class="art-take-host" id="take-' + a.id + '"></div>' +
+        '<div class="art-explain-host" id="explain-' + a.id + '"></div>' +
         '<div class="art-fact-host" id="fact-' + a.id + '"></div>' +
       '</div>' +
       thumb +
@@ -819,6 +822,38 @@ async function loadTake(id) {
     sp((data.bullets || []).join('. '));
   } catch (e) {
     host.innerHTML = '<div class="art-take" style="border-color:var(--red);color:var(--red)">⚠️ ' + _esc(e.message) + '</div>';
+  }
+}
+
+async function loadExplainSimply(id){
+  const host = document.getElementById('explain-' + id);
+  if (!host) return;
+  const lang = _chittiLang || 'en';
+  host.innerHTML = '<div class="art-take">🧒 ' + (lang === 'hi' ? 'आसान भाषा में समझा रहा हूँ…' : 'Explaining in simple words…') + '</div>';
+  if (id < 0) {
+    const cached = _ARTICLE_CACHE[id] || {};
+    const sample = lang === 'hi'
+      ? 'यह एक नमूना लेख है। असली बैकएंड लाइव होने पर चिट्टी इसे 3–5 आसान वाक्यों में समझा देगा।'
+      : 'This is a sample article. When the backend is live, Chitti will explain it in 3–5 short, simple sentences.';
+    host.innerHTML = '<div class="art-take"><div class="take-h">🧒 ' + (lang === 'hi' ? 'चिट्टी की आसान भाषा' : 'Chitti — explained simply') + '</div><div style="margin-top:4px">' + _esc(sample) + '</div></div>';
+    sp(sample);
+    return;
+  }
+  try {
+    const data = await apiGet('/api/news/article/' + id + '/explain?language=' + encodeURIComponent(lang));
+    if (!data || data.ok === false) throw new Error((data && data.error) || 'explain failed');
+    const text = data.explanation || data.spoken || '';
+    const note = data.source === 'fallback'
+      ? '<div style="color:var(--muted);font-size:12px;margin-top:6px">' + _esc(lang === 'hi' ? (data.note_hi || '') : (data.note_en || '')) + '</div>'
+      : '';
+    host.innerHTML = '<div class="art-take">' +
+      '<div class="take-h">🧒 ' + (lang === 'hi' ? 'चिट्टी की आसान भाषा' : 'Chitti — explained simply') + '</div>' +
+      '<div style="margin-top:4px">' + _esc(text) + '</div>' +
+      note +
+      '</div>';
+    if (text) sp(text);
+  } catch (e) {
+    host.innerHTML = '<div class="art-take" style="border-color:var(--red);color:var(--red)">⚠️ ' + _esc(e.message || String(e)) + '</div>';
   }
 }
 

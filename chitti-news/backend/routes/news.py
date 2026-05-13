@@ -8,6 +8,7 @@ Flask Blueprint covering /api/news/*.
   GET   /api/news/breaking                          ?state=&language=
   GET   /api/news/article/<id>                      single article
   GET   /api/news/article/<id>/take                 ?language=  Chitti's Take
+  GET   /api/news/article/<id>/explain              ?language=  Explain Simply (P0)
   POST  /api/news/article/<id>/factcheck            forces recompute (force=1)
   GET   /api/news/sources                           ?state=&language=
 
@@ -34,6 +35,7 @@ from models.article import Article
 from models.read_later import ReadLater
 from services import (
     news_db,
+    news_explain,
     news_factcheck,
     news_scheduler,
     news_summary,
@@ -130,6 +132,17 @@ def article(db, article_id):
 def article_take(db, article_id):
     language = _str_arg("language", "en").lower()
     return jsonify(news_summary.chittis_take(db, article_id, language))
+
+
+@bp.get("/article/<int:article_id>/explain")
+@with_db
+def article_explain(db, article_id):
+    """
+    P0 'Explain Simply' (2026-05-13) — class-5 plain-language version
+    of the article in the user's chosen language. Voice-first.
+    """
+    language = _str_arg("language", "en").lower()
+    return jsonify(news_explain.explain_simply(db, article_id, language))
 
 
 @bp.post("/article/<int:article_id>/factcheck")
