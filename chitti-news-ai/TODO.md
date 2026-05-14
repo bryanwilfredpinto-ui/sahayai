@@ -2,11 +2,14 @@
 
 ## P0 — Next session
 
+- [x] **Wire `rss_fetcher.poll_all()` against the 17 seeded RSS sources** — shipped 2026-05-14 (0.2.0). 15 active + 2 honestly-inactive (vendor RSS retired). 322-article first-poll, 0 errors, dedupe verified.
+- [ ] Scrape adapter for `anthropic.com/news` + `ai.meta.com/blog/` — flip both back to `active=true` once it lands. Honest stub `active=false` until then.
 - [ ] Wire DeepSeek client in `services/topic_extractor.py` (no hardcoded profession list — see RANKING_FORMULA worked example).
 - [ ] Implement Layer 1 of `trust_scorer.py` — domain age (WHOIS) + author presence + About Us + ad density + language quality + correction policy.
 - [ ] Implement Layer 4 — weekly 0–100 trust score recompute.
-- [ ] Wire `rss_fetcher.poll_all()` against the 17 seeded RSS sources, honour `robots.txt` blocks.
 - [ ] Hook `POST /api/news-ai/tools-for-me` end-to-end (DeepSeek → ranker → render in user's language).
+- [ ] DeepSeek importance scorer (0–100) — replaces the 0.0 honest stub. Cross-source corroboration via §2e Layer 2 monitoring.
+- [ ] `robots.txt` precheck in `rss_fetcher._poll_rss` — set `ai_crawl_blocked=True` automatically when a vendor disallows our UA.
 - [ ] Connect Turso libSQL embedded-replica adapter (replace local SQLite fallback in `database.py`).
 
 ## P1 — After P0 ships

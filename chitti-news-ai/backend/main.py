@@ -55,7 +55,7 @@ def _seed_sources_if_empty() -> int:
                 kind=r.get("kind", "rss"),
                 category=r.get("category", "press"),
                 language=r.get("language", "en"),
-                active=True,
+                active=bool(r.get("active_seed", True)),
                 trust_score=r.get("trust_score_seed", 0.0),
                 trust_band=r.get("trust_band_seed", "pending"),
                 reason_for_inclusion=r.get("reason_for_inclusion"),
