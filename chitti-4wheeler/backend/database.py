@@ -44,13 +44,19 @@ def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
     sync_url, token = _parse_libsql_url(libsql_url)
     log.info("Opening embedded replica at %s (sync_url=%s)", local_path, sync_url)
     _REPLICA_SYNCER = libsql.connect(local_path, sync_url=sync_url, auth_token=token)
-    try:
-        _REPLICA_SYNCER.sync()
-        log.info("Initial sync from Turso complete")
-    except Exception as e:  # noqa: BLE001
-        log.warning("Initial Turso sync failed (will retry in background): %s", e)
 
     def _loop():
+        # Immediate first sync in the background — never blocks /health.
+        # libsql.connect() above is foreground (local SQLite open, no
+        # network); the first .sync() hits Turso over the wire and can
+        # take seconds on a cold boot. Pushing it here keeps the gunicorn
+        # worker free to bind /health well under Render's 30 s probe.
+        try:
+            _REPLICA_SYNCER.sync()
+            log.info("Initial sync from Turso complete")
+        except Exception as e:  # noqa: BLE001
+            log.warning("Initial Turso sync failed (will retry in background): %s", e)
+        # Steady-state 60 s refresh.
         while True:
             time.sleep(60)
             try:
