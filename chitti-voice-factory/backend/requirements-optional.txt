@@ -1,0 +1,29 @@
+# requirements-optional.txt — heavy fluency-pipeline deps
+#
+# NOT installed on Render free-tier web dynos. The runtime API
+# (suppliers/*, routes/voice.py, ledger, /health) has zero dependency on
+# anything below. Installing these on a 512 MB build dyno will OOM
+# during pip install (PyTorch alone is ~500 MB), which is exactly the
+# failure mode that prompted moving them out of requirements.txt.
+#
+# Install on the box that runs scripts/embed_all.py:
+#
+#     pip install -r requirements-optional.txt
+#
+# Routes affected when these are missing:
+#   • /api/voice/fluency/build_embeddings, /search       → returns 503
+#     "fluency_pipeline_not_installed" (sentence-transformers / faiss / numpy)
+#   • /api/voice/fluency/<lang>/videos*                  → returns 503
+#     "youtube_transcript_api_not_installed"
+#   • scripts/ingest_textbooks.py PDF parsing            → skips PDF rows,
+#     keeps Wikipedia + community corpus (pymupdf)
+#
+# Everything else (TTS / STT / ledger / voice cascade / quality stack)
+# stays online. This split is the §3 honest-stubs contract applied to
+# infrastructure: a feature you cannot run today never crashes the box.
+
+numpy>=1.26,<2.0                     # required by sentence-transformers + faiss
+pymupdf==1.24.10                     # PDF text extraction (best Indic-script support)
+sentence-transformers==3.0.1         # paraphrase-multilingual-MiniLM-L12-v2 (50+ langs)
+faiss-cpu==1.8.0                     # IndexFlatIP for per-language fluency search
+youtube-transcript-api>=1.2.4,<2.0   # user-submitted YouTube videos → fluency corpus

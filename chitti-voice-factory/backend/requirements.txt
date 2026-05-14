@@ -7,14 +7,19 @@ sqlalchemy==2.0.23
 sqlalchemy-libsql==0.2.0             # Turso dialect (we use embedded replica, not direct Hrana)
 libsql-experimental==0.0.55          # cp311 manylinux wheel; owns the Turso sync protocol
 
-# ── Fluency pipeline (textbook + Wikipedia ingestion → multilingual embeddings) ──
-numpy>=1.26,<2.0                     # required by sentence-transformers + faiss
-pymupdf==1.24.10                     # PDF text extraction (best Indic-script support)
-sentence-transformers==3.0.1         # paraphrase-multilingual-MiniLM-L12-v2 (50+ langs)
-faiss-cpu==1.8.0                     # IndexFlatIP for per-language fluency search
-youtube-transcript-api>=1.2.4,<2.0   # user-submitted YouTube videos → fluency corpus (1.x API; 0.6.x is broken against current YouTube)
-
 # Sahay AI quality framework deps (used by lib/*.py)
 prometheus-client==0.20.0    # /metrics endpoint; lazy-imported in observability
 apscheduler==3.10.4          # hosts the daily founder-report cron
 tzdata==2024.2               # IST timezone for apscheduler
+
+# ── Heavy fluency-pipeline deps moved to requirements-optional.txt ──
+# sentence-transformers + torch + faiss-cpu + pymupdf + numpy + youtube-transcript-api
+# OOM Render free tier (512 MB) during pip install. Install them only on
+# the box where you actually run scripts/embed_all.py:
+#
+#     pip install -r requirements-optional.txt
+#
+# Runtime services (suppliers/*, routes/voice.py, ledger) DO NOT depend on
+# any of them. Fluency endpoints (routes/fluency.py + youtube_learner) lazy-
+# import inside the call site and return 503 ("fluency_pipeline_not_installed")
+# when the dep is missing, per the §3 honest-stubs contract.

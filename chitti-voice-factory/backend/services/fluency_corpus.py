@@ -25,24 +25,58 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
-import numpy as np
-
 log = logging.getLogger("fluency_corpus")
 
-# ── Optional backends ──
-try:
-    import faiss  # type: ignore
-    HAS_FAISS = True
-except Exception:  # noqa: BLE001
-    HAS_FAISS = False
-    log.warning("faiss not available — falling back to numpy cosine search")
+# ── Optional backends (LAZY) ──
+# numpy / faiss / sentence-transformers all live in requirements-optional.txt
+# and are imported on first use, not at module-load. This keeps Render
+# free-tier cold-start fast (no PyTorch import on /health) and means a
+# missing dep returns an honest 503 instead of crashing gunicorn.
+HAS_NUMPY: Optional[bool] = None       # tri-state: None = not probed yet
+HAS_FAISS: Optional[bool] = None
+HAS_ST: Optional[bool] = None
+_np = None                             # populated by _load_numpy()
+_faiss = None                          # populated by _load_faiss()
+_SentenceTransformerCls = None         # populated by _load_st()
 
-try:
-    from sentence_transformers import SentenceTransformer  # type: ignore
-    HAS_ST = True
-except Exception:  # noqa: BLE001
-    HAS_ST = False
-    log.warning("sentence-transformers not available — embeddings disabled")
+
+def _load_numpy():
+    global HAS_NUMPY, _np
+    if HAS_NUMPY is None:
+        try:
+            import numpy as _imported_np
+            _np = _imported_np
+            HAS_NUMPY = True
+        except ImportError:
+            HAS_NUMPY = False
+            log.warning("numpy not available — fluency search/embeddings disabled")
+    return _np if HAS_NUMPY else None
+
+
+def _load_faiss():
+    global HAS_FAISS, _faiss
+    if HAS_FAISS is None:
+        try:
+            import faiss as _imported_faiss  # type: ignore
+            _faiss = _imported_faiss
+            HAS_FAISS = True
+        except ImportError:
+            HAS_FAISS = False
+            log.warning("faiss not available — falling back to numpy cosine search")
+    return _faiss if HAS_FAISS else None
+
+
+def _load_st():
+    global HAS_ST, _SentenceTransformerCls
+    if HAS_ST is None:
+        try:
+            from sentence_transformers import SentenceTransformer as _ST  # type: ignore
+            _SentenceTransformerCls = _ST
+            HAS_ST = True
+        except ImportError:
+            HAS_ST = False
+            log.warning("sentence-transformers not available — embeddings disabled")
+    return _SentenceTransformerCls if HAS_ST else None
 
 
 # ── Paths ──
@@ -59,16 +93,23 @@ _MODEL: Optional["SentenceTransformer"] = None
 _MODEL_LOCK = threading.Lock()
 
 
-def get_embedder() -> Optional["SentenceTransformer"]:
-    """Lazy-load the multilingual sentence-transformer (single global instance)."""
+def get_embedder():
+    """Lazy-load the multilingual sentence-transformer (single global instance).
+
+    Returns None if sentence-transformers isn't installed — callers must
+    handle this honestly (return 503, fall back to chunk slice, etc.).
+    The dep + ~500 MB PyTorch download only land when this function is
+    actually called, so /health stays fast on cold start.
+    """
     global _MODEL
-    if not HAS_ST:
+    ST = _load_st()
+    if ST is None:
         return None
     if _MODEL is None:
         with _MODEL_LOCK:
             if _MODEL is None:
                 log.info("Loading multilingual embedding model: %s", EMBEDDING_MODEL_NAME)
-                _MODEL = SentenceTransformer(EMBEDDING_MODEL_NAME)
+                _MODEL = ST(EMBEDDING_MODEL_NAME)
     return _MODEL
 
 
@@ -213,11 +254,13 @@ def read_chunks(lang: str) -> list[Chunk]:
 def build_embeddings(lang: str, batch_size: int = 64) -> tuple[int, bool]:
     """
     Read chunks.jsonl, generate embeddings, save embeddings.npy.
-    Returns (num_embedded, ok).
+    Returns (num_embedded, ok). Returns (0, False) honestly when
+    sentence-transformers / numpy aren't installed.
     """
     embedder = get_embedder()
-    if embedder is None:
-        log.warning("[%s] no embedder available — skipping embedding step", lang)
+    np_mod = _load_numpy()
+    if embedder is None or np_mod is None:
+        log.warning("[%s] no embedder/numpy available — skipping embedding step", lang)
         return 0, False
     chunks = read_chunks(lang)
     if not chunks:
@@ -231,25 +274,30 @@ def build_embeddings(lang: str, batch_size: int = 64) -> tuple[int, bool]:
         convert_to_numpy=True,
         normalize_embeddings=True,  # cosine via inner-product
     ).astype("float32")
-    np.save(embeddings_path(lang), vecs)
+    np_mod.save(embeddings_path(lang), vecs)
     log.info("[%s] wrote embeddings: shape=%s", lang, vecs.shape)
     return len(chunks), True
 
 
 def build_faiss_index(lang: str) -> bool:
-    """Build a FAISS IndexFlatIP from embeddings.npy. Returns True if written."""
-    if not HAS_FAISS:
+    """Build a FAISS IndexFlatIP from embeddings.npy. Returns True if written.
+
+    Honest no-op when faiss or numpy aren't installed.
+    """
+    faiss_mod = _load_faiss()
+    np_mod = _load_numpy()
+    if faiss_mod is None or np_mod is None:
         return False
     ep = embeddings_path(lang)
     if not ep.exists():
         return False
-    vecs = np.load(ep)
+    vecs = np_mod.load(ep)
     if vecs.size == 0:
         return False
     dim = vecs.shape[1]
-    index = faiss.IndexFlatIP(dim)
+    index = faiss_mod.IndexFlatIP(dim)
     index.add(vecs)
-    faiss.write_index(index, str(faiss_path(lang)))
+    faiss_mod.write_index(index, str(faiss_path(lang)))
     log.info("[%s] wrote FAISS index: %d vectors, dim=%d", lang, vecs.shape[0], dim)
     return True
 
@@ -273,12 +321,19 @@ def search(lang: str, query: str, k: int = 5) -> list[dict]:
     Top-k similarity search over the language's corpus.
     Uses FAISS when available, else numpy cosine.
     Returns list of {chunk_id, text, score, source, grade, subject}.
+
+    When sentence-transformers / numpy aren't installed (e.g. on the
+    free-tier dyno that ships without `requirements-optional.txt`), this
+    honestly returns the first `k` chunks with `score=None` so the
+    endpoint stays useful (the language page can still surface excerpt
+    text). Hard failure is reserved for the explicit embed-pass.
     """
     chunks = read_chunks(lang)
     if not chunks:
         return []
     embedder = get_embedder()
-    if embedder is None:
+    np_mod = _load_numpy()
+    if embedder is None or np_mod is None:
         return [
             {"chunk_id": c.id, "text": c.text, "score": None, "source": c.source,
              "grade": c.grade, "subject": c.subject}
@@ -287,8 +342,9 @@ def search(lang: str, query: str, k: int = 5) -> list[dict]:
 
     q_vec = embedder.encode([query], normalize_embeddings=True, convert_to_numpy=True).astype("float32")
 
-    if HAS_FAISS and faiss_path(lang).exists():
-        index = faiss.read_index(str(faiss_path(lang)))
+    faiss_mod = _load_faiss()
+    if faiss_mod is not None and faiss_path(lang).exists():
+        index = faiss_mod.read_index(str(faiss_path(lang)))
         scores, ids = index.search(q_vec, k)
         ids = ids[0].tolist()
         scores = scores[0].tolist()
@@ -296,9 +352,9 @@ def search(lang: str, query: str, k: int = 5) -> list[dict]:
         ep = embeddings_path(lang)
         if not ep.exists():
             return []
-        vecs = np.load(ep)
+        vecs = np_mod.load(ep)
         sims = (vecs @ q_vec.T).ravel()
-        ids = np.argsort(-sims)[:k].tolist()
+        ids = np_mod.argsort(-sims)[:k].tolist()
         scores = [float(sims[i]) for i in ids]
 
     out = []
