@@ -1,0 +1,50 @@
+# Render blueprint for Chitti News AI
+# 14th Chitti — dedicated AI tool & model discovery, separate from chitti-news.
+# Free tier. Turso libSQL embedded-replica pattern (locked decision §2).
+# Self-pinged by chitti-founder every 4 min per §2e Layer 1.
+
+services:
+  - type: web
+    name: chitti-news-ai-api
+    runtime: python
+    plan: free
+    rootDir: chitti-news-ai/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false        # libsql://chitti-news-ai-<org>.aws-ap-south-1.turso.io
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      - key: DEEPSEEK_URL
+        value: https://api.deepseek.com/chat/completions
+      - key: ALLOWED_ORIGINS
+        value: "https://sahayai.in,https://www.sahayai.in"
+      - key: BACKEND_URL
+        value: https://chitti-news-ai-api.onrender.com
+      - key: SCHEDULER_ENABLED
+        value: "true"
+      - key: RSS_POLL_MINUTES
+        value: "360"        # 6-hour cadence per CONTEXT.md §6
+      - key: TRUST_RECOMPUTE_DAY
+        value: "sun"
+      - key: TRUST_RECOMPUTE_HOUR_IST
+        value: "4"
+      - key: DAILY_BRIEFING_HOUR_IST
+        value: "7"
+      - key: SOURCE_DISCOVERY_DAY
+        value: "sun"
+      - key: SOURCE_DISCOVERY_HOUR_IST
+        value: "3"
+      - key: METRICS_TOKEN
+        sync: false
+      # Layer 5 LLM fallback chain — DeepSeek → Claude → Gemini (§2e)
+      - key: CLAUDE_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

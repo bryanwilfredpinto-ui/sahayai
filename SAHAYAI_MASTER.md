@@ -78,7 +78,7 @@ Before building **any** new Chitti product:
 
 Examples already queued under this contract:
 - **Chitti Mechanic** — OBD2 diagnostics; reference apps to copy: Torque Pro, Car Scanner, FIXD.
-- **Chitti News AI** — deeper AI-augmented news on top of `chitti-news`; reference: Inshorts, Ground News, Artifact (RIP).
+- ✅ **Chitti News AI** — SKELETON shipped 2026-05-14. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers + Inshorts, Ground News, Artifact). 14 skill files, 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), frontend at [`chitti_news_ai.html`](chitti_news_ai.html). Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md).
 - Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
 
 ---
@@ -271,8 +271,9 @@ See [[project_business_continuity_plan_locked]].
 | 11 | Chitti Government | `chitti_government.html` | `chitti-government-api` | LIVE — 30 schemes, PIB poll 6h, DigiLocker partner-only |
 | 12 | Chitti Voice Factory | `chitti_voice_factory.html` | `chitti-voice-factory` | LIVE — 26 langs, honest ledger, YouTube fluency pipeline |
 | 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
+| 14 | Chitti News AI | `chitti_news_ai.html` | `chitti-news-ai-api` | SKELETON 2026-05-14 — AI-only tool & model discovery. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers, Inshorts, Ground News, Artifact). 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), 14 skill files. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md). |
 
-**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
+**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_NEWS_AI_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
 
 ### Founder master product docs — single source of truth
 
@@ -296,6 +297,7 @@ These two docs are the **single source of truth** for their respective products.
 | Root HTML | Folder it drives |
 |---|---|
 | `chitti_news.html` | `chitti-news/` |
+| `chitti_news_ai.html` | `chitti-news-ai/` |
 | `chitti_medupi.html` | `chitti-medupi/` |
 | `chitti_vaani.html` | `chitti-vaani/` |
 | `chitti_government.html` | `chitti-government/` |

@@ -1,0 +1,6 @@
+"""Registers all SQLAlchemy models with Base.metadata on import."""
+from . import sources  # noqa: F401
+from . import articles  # noqa: F401
+from . import tools  # noqa: F401
+from . import ai_models  # noqa: F401
+from . import trust_scores  # noqa: F401
