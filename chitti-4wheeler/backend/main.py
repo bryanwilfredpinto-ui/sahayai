@@ -2,20 +2,12 @@
 chitti-4wheeler / backend / main.py
 -----------------------------------
 Flask entrypoint for Chitti 4-Wheeler API. Same shape as
-chitti-2wheeler / chitti-government — Flask + gunicorn, pure-Python
-deps so Render's slim image builds without the Rust toolchain.
+chitti-2wheeler — Flask + gunicorn + Turso embedded replica.
 
-Endpoints (P0 — skeleton):
-  GET  /health                  — liveness for Render + chitti-founder
-  POST /api/4w/ask              — DeepSeek-powered Hinglish Q&A grounded in
-                                  MECHANIC_KNOWLEDGE.md
-  GET  /api/4w/dtc/<code>       — DTC plain-Hinglish lookup
-  POST /api/4w/breakdown        — breakdown decision tree
-  GET  /api/4w/maintenance/next — next-service estimate from brand schedule
-  POST /api/4w/profile          — persist car profile (in-memory today)
-
-Everything else → 501 "coming_soon" per the
-[Honest stubs over fake demos] platform rule.
+Boot order:
+  1. ensure_schema()             — no-op on Turso/SQLite
+  2. Base.metadata.create_all()  — creates car_profiles (+ future models)
+  3. Register routes blueprint
 
 Boot: gunicorn main:app --bind 0.0.0.0:$PORT
 """
@@ -28,23 +20,40 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 from config import settings
+from database import Base, engine, ensure_schema
+import models  # noqa: F401 — registers models with Base.metadata
 from routes.wheels import bp as wheels_bp
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger("main")
 
 
+def _bootstrap() -> None:
+    try:
+        ensure_schema()
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_schema skipped: %s", e)
+    try:
+        Base.metadata.create_all(bind=engine)
+        log.info("Base.metadata.create_all OK — car_profiles ready")
+    except Exception as e:  # noqa: BLE001
+        log.warning("create_all skipped: %s", e)
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     CORS(app, resources={r"/api/*": {"origins": settings.allowed_origins_list}})
+
+    _bootstrap()
 
     @app.get("/health")
     def health():
         return jsonify({
             "ok": True,
             "chitti": "chitti-4wheeler",
-            "version": "0.1-skeleton",
+            "version": "0.2-turso",
             "deepseek_configured": bool(settings.DEEPSEEK_API_KEY),
+            "db_kind": "turso-replica" if settings.DATABASE_URL.startswith("libsql://") else "sqlite-local",
         })
 
     app.register_blueprint(wheels_bp, url_prefix="/api/4w")
@@ -58,7 +67,7 @@ def create_app() -> Flask:
         log.exception("internal error")
         return jsonify({"error": "internal", "hint": "Backend hiccup. Retry."}), 500
 
-    log.info("chitti-4wheeler boot OK · deepseek=%s", bool(settings.DEEPSEEK_API_KEY))
+    log.info("chitti-4wheeler boot OK · deepseek=%s · db=%s", bool(settings.DEEPSEEK_API_KEY), settings.DATABASE_URL.split("?", 1)[0])
     return app
 
 

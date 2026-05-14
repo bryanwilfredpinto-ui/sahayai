@@ -6,11 +6,15 @@ P0 surface today:
   GET  /api/2w/dtc/<code>        — DTC plain-Hinglish stub
   POST /api/2w/breakdown         — deterministic decision tree
   GET  /api/2w/maintenance/next  — next-service estimate
-  POST /api/2w/profile           — persist bike profile (process-mem)
+  POST /api/2w/profile           — persist bike profile (Turso)
+  GET  /api/2w/profile           — read bike profile
 
-Everything else from chitti-2wheeler/skills/FEATURES.md returns 501
-with an honest "coming soon" body. Per the
+Everything else → 501 "coming_soon" per
 [Honest stubs over fake demos] platform rule.
+
+Profile persistence: Turso embedded-replica (database.py). Per
+[SAHAYAI_MASTER §2 row 2 — one DB per Chitti]. Profile keyed by
+`X-Chitti-Device` header (or client IP fallback).
 """
 from __future__ import annotations
 
@@ -18,17 +22,13 @@ import logging
 
 from flask import Blueprint, jsonify, request
 
+from database import SessionLocal, sync_now
+from models import BikeProfile
 from services import deepseek_client
 
 log = logging.getLogger("routes.wheels")
 
 bp = Blueprint("wheels_2w", __name__)
-
-
-# Tiny in-memory store keyed by device-token in the header. NOT persistent;
-# the production Turso row lands in P1 (the actual data flow is captured
-# in FEATURES.md row W1).
-_PROFILES: dict[str, dict] = {}
 
 
 # ── Plain-Hinglish DTC stub (~12 most common codes today; ~600 in P1) ──
@@ -48,7 +48,7 @@ _DTC: dict[str, dict] = {
 }
 
 
-# ── Brand-specific maintenance schedule (commuter defaults; refined per-model later) ──
+# ── Brand-specific maintenance schedule (commuter defaults; refined per-model in P1) ──
 _BRAND_SCHEDULE = {
     "Hero":          {"oil_km": 5000,  "air_km": 8000,  "plug_km": 12000, "chain_km": 500},
     "Honda":         {"oil_km": 5000,  "air_km": 10000, "plug_km": 12000, "chain_km": 500},
@@ -61,7 +61,6 @@ _BRAND_SCHEDULE = {
 }
 
 
-# ── Brand RSA numbers ──
 _RSA = {
     "Hero": "1800-258-4747",
     "Honda": "1800-103-1234",
@@ -76,7 +75,18 @@ _RSA = {
 
 
 def _device_token() -> str:
-    return (request.headers.get("X-Chitti-Device") or request.remote_addr or "anon").strip()
+    return (request.headers.get("X-Chitti-Device") or request.remote_addr or "anon").strip()[:128]
+
+
+def _load_profile(device: str) -> dict | None:
+    db = SessionLocal()
+    try:
+        row = db.query(BikeProfile).filter(BikeProfile.device_token == device).first()
+        if not row:
+            return None
+        return {"brand": row.brand, "model": row.model, "year": row.year, "fuel": row.fuel, "odo": row.odo, "reg": row.reg}
+    finally:
+        db.close()
 
 
 @bp.post("/ask")
@@ -85,7 +95,7 @@ def ask():
     q = (body.get("question") or "").strip()
     if not q:
         return jsonify({"error": "missing_question", "hint": "POST {question: '...', profile?: {...}}"}), 400
-    profile = body.get("profile") or _PROFILES.get(_device_token())
+    profile = body.get("profile") or _load_profile(_device_token())
     out = deepseek_client.ask(q, profile=profile)
     return jsonify(out)
 
@@ -106,7 +116,7 @@ def dtc(code: str):
 @bp.post("/breakdown")
 def breakdown():
     body = request.get_json(silent=True) or {}
-    profile = body.get("profile") or _PROFILES.get(_device_token()) or {}
+    profile = body.get("profile") or _load_profile(_device_token()) or {}
     brand = (profile.get("brand") or "").strip()
     rsa = _RSA.get(brand) or _RSA["*"]
     return jsonify({
@@ -128,7 +138,7 @@ def breakdown():
 
 @bp.get("/maintenance/next")
 def maintenance_next():
-    profile = _PROFILES.get(_device_token()) or {}
+    profile = _load_profile(_device_token()) or {}
     brand = profile.get("brand") or ""
     odo = int(profile.get("odo") or 0)
     schedule = _BRAND_SCHEDULE.get(brand) or _BRAND_SCHEDULE["Hero"]
@@ -143,12 +153,35 @@ def maintenance_next():
 @bp.post("/profile")
 def save_profile():
     body = request.get_json(silent=True) or {}
-    tok = _device_token()
-    _PROFILES[tok] = {k: body.get(k) for k in ("brand", "model", "year", "fuel", "odo", "reg")}
-    return jsonify({"ok": True, "saved": _PROFILES[tok], "scope": "in-memory; Turso row lands in P1"})
+    device = _device_token()
+    db = SessionLocal()
+    try:
+        row = db.query(BikeProfile).filter(BikeProfile.device_token == device).first()
+        if row is None:
+            row = BikeProfile(device_token=device)
+            db.add(row)
+        for k in ("brand", "model", "year", "fuel", "odo", "reg"):
+            if k in body:
+                setattr(row, k, body.get(k))
+        db.commit()
+        sync_now()  # push to Turso eagerly
+        return jsonify({"ok": True, "saved": {"brand": row.brand, "model": row.model, "year": row.year, "fuel": row.fuel, "odo": row.odo, "reg": row.reg}})
+    except Exception as e:  # noqa: BLE001
+        db.rollback()
+        log.exception("save_profile failed: %s", e)
+        return jsonify({"ok": False, "error": "save_failed"}), 500
+    finally:
+        db.close()
 
 
-# ── Honest 501 stubs for the rest of FEATURES.md so the page never silently 404s ──
+@bp.get("/profile")
+def get_profile():
+    p = _load_profile(_device_token())
+    if p is None:
+        return jsonify({"ok": False, "error": "no_profile"}), 404
+    return jsonify({"ok": True, "profile": p})
+
+
 @bp.route("/<path:rest>", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 def coming_soon(rest: str):
     return jsonify({

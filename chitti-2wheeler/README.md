@@ -13,7 +13,9 @@ cops.
 - **Frontend**: [`chitti_2wheeler.html`](../chitti_2wheeler.html) at
   repo root (Bharat theme, mirror of MedUPI)
 - **Backend**: Flask + gunicorn (chitti-medupi pattern)
-- **DB**: in-memory today; Turso row in P1 (per FEATURES.md row W3)
+- **DB**: Turso libSQL (one DB per Chitti — SAHAYAI_MASTER §2 row 2).
+  Embedded-replica pattern: local SQLite file at `/tmp/chitti_2wheeler.db`
+  + 60-s bg sync. **NOT direct Hrana** — see [[project_turso_embedded_replica_pattern]].
 - **Hosting**: Render free tier; `render.yaml` co-located
 
 ## Folder map
@@ -24,9 +26,13 @@ chitti-2wheeler/
 ├── render.yaml                     — Render blueprint
 ├── backend/
 │   ├── main.py                     — Flask entrypoint
-│   ├── config.py                   — env-var settings
+│   ├── config.py                   — env-var settings (DATABASE_URL + DeepSeek)
+│   ├── database.py                 — Turso embedded-replica engine + sync loop
 │   ├── requirements.txt
 │   ├── runtime.txt                 — pinned Python
+│   ├── models/
+│   │   ├── __init__.py             — registers SQLAlchemy models
+│   │   └── vehicle.py              — BikeProfile row
 │   ├── routes/wheels.py            — ask · dtc · breakdown · maintenance · profile
 │   └── services/deepseek_client.py — single DeepSeek call helper + disclaimer
 └── skills/
@@ -58,13 +64,46 @@ Everything marked PLANNED / FUTURE in
 
 ## Deploy
 
+### Step 1 — Create the Turso DB (one-time)
+
+```bash
+turso db create chitti-2wheeler --group default
+turso db show chitti-2wheeler --url        # → libsql://chitti-2wheeler-<org>.turso.io
+turso db tokens create chitti-2wheeler     # → eyJ…
+```
+
+Compose: `libsql://chitti-2wheeler-<org>.turso.io?authToken=<token>`.
+
+Per [[project_turso_db_inventory]] — DB lives in `aws-ap-south-1`
+(Mumbai) under the `bryanwilfredpinto` Turso org, same as the other 8
+Chitti DBs.
+
+### Step 2 — Deploy to Render
+
 1. Push to `main`.
-2. In Render dashboard → New + → Blueprint → pick repo and select
-   `chitti-2wheeler/render.yaml`.
-3. Set `DEEPSEEK_API_KEY` in the dashboard env vars.
+2. Render dashboard → `New +` → `Blueprint` → pick the `sahayai` repo
+   → select `chitti-2wheeler/render.yaml` → `Apply`.
+3. In the new service → `Environment`, paste:
+   - `DATABASE_URL` = `libsql://…?authToken=…` from Step 1
+   - `DEEPSEEK_API_KEY` = your DeepSeek key
 4. Service comes up at `https://chitti-2wheeler-api.onrender.com`.
 5. `chitti-founder/backend/main.py::run_self_ping` picks it up
    automatically (Layer 1 of the Business Continuity Plan, §2e).
+
+### Step 3 — Smoke test
+
+```bash
+curl https://chitti-2wheeler-api.onrender.com/health
+# → {"ok":true,"chitti":"chitti-2wheeler","db_kind":"turso-replica",...}
+
+curl -X POST https://chitti-2wheeler-api.onrender.com/api/2w/profile \
+  -H 'Content-Type: application/json' -H 'X-Chitti-Device: smoke-test' \
+  -d '{"brand":"Hero","model":"Splendor","odo":25000}'
+
+curl https://chitti-2wheeler-api.onrender.com/api/2w/profile \
+  -H 'X-Chitti-Device: smoke-test'
+# → confirms row round-tripped through Turso
+```
 
 ## See also
 

@@ -3,13 +3,15 @@ chitti-4wheeler / backend / routes / wheels.py
 ----------------------------------------------
 P0 surface today:
   POST /api/4w/ask               — DeepSeek Hinglish Q&A
-  GET  /api/4w/dtc/<code>        — DTC plain-Hinglish stub (~12 codes today)
+  GET  /api/4w/dtc/<code>        — DTC plain-Hinglish stub (~16 codes today)
   POST /api/4w/breakdown         — deterministic decision tree
   GET  /api/4w/maintenance/next  — next-service estimate
-  POST /api/4w/profile           — persist car profile (process-mem)
+  POST /api/4w/profile           — persist car profile (Turso)
+  GET  /api/4w/profile           — read car profile
 
-Everything else → 501 "coming_soon" per
-[Honest stubs over fake demos] platform rule.
+Profile persistence: Turso embedded-replica. Per
+[SAHAYAI_MASTER §2 row 2 — one DB per Chitti]. Profile keyed by
+`X-Chitti-Device` header (or client IP fallback).
 """
 from __future__ import annotations
 
@@ -17,13 +19,13 @@ import logging
 
 from flask import Blueprint, jsonify, request
 
+from database import SessionLocal, sync_now
+from models import CarProfile
 from services import deepseek_client
 
 log = logging.getLogger("routes.wheels")
 
 bp = Blueprint("wheels_4w", __name__)
-
-_PROFILES: dict[str, dict] = {}
 
 
 _DTC: dict[str, dict] = {
@@ -46,7 +48,6 @@ _DTC: dict[str, dict] = {
 }
 
 
-# Crude default schedule; refined per-brand model in P1.
 _BRAND_SCHEDULE = {
     "Maruti Suzuki": {"oil_km": 10000, "air_km": 30000, "plug_km": 60000, "brake_km": 40000, "coolant_km": 40000, "ac_km": 20000},
     "Hyundai":       {"oil_km": 10000, "air_km": 30000, "plug_km": 60000, "brake_km": 40000, "coolant_km": 40000, "ac_km": 20000},
@@ -77,7 +78,18 @@ _RSA = {
 
 
 def _device_token() -> str:
-    return (request.headers.get("X-Chitti-Device") or request.remote_addr or "anon").strip()
+    return (request.headers.get("X-Chitti-Device") or request.remote_addr or "anon").strip()[:128]
+
+
+def _load_profile(device: str) -> dict | None:
+    db = SessionLocal()
+    try:
+        row = db.query(CarProfile).filter(CarProfile.device_token == device).first()
+        if not row:
+            return None
+        return {"brand": row.brand, "model": row.model, "year": row.year, "fuel": row.fuel, "tx": row.tx, "odo": row.odo, "reg": row.reg}
+    finally:
+        db.close()
 
 
 @bp.post("/ask")
@@ -86,7 +98,7 @@ def ask():
     q = (body.get("question") or "").strip()
     if not q:
         return jsonify({"error": "missing_question", "hint": "POST {question: '...', profile?: {...}}"}), 400
-    profile = body.get("profile") or _PROFILES.get(_device_token())
+    profile = body.get("profile") or _load_profile(_device_token())
     out = deepseek_client.ask(q, profile=profile)
     return jsonify(out)
 
@@ -107,7 +119,7 @@ def dtc(code: str):
 @bp.post("/breakdown")
 def breakdown():
     body = request.get_json(silent=True) or {}
-    profile = body.get("profile") or _PROFILES.get(_device_token()) or {}
+    profile = body.get("profile") or _load_profile(_device_token()) or {}
     brand = (profile.get("brand") or "").strip()
     rsa = _RSA.get(brand) or _RSA["*"]
     return jsonify({
@@ -130,7 +142,7 @@ def breakdown():
 
 @bp.get("/maintenance/next")
 def maintenance_next():
-    profile = _PROFILES.get(_device_token()) or {}
+    profile = _load_profile(_device_token()) or {}
     brand = profile.get("brand") or ""
     odo = int(profile.get("odo") or 0)
     schedule = _BRAND_SCHEDULE.get(brand) or _BRAND_SCHEDULE["Maruti Suzuki"]
@@ -152,9 +164,33 @@ def maintenance_next():
 @bp.post("/profile")
 def save_profile():
     body = request.get_json(silent=True) or {}
-    tok = _device_token()
-    _PROFILES[tok] = {k: body.get(k) for k in ("brand", "model", "year", "fuel", "tx", "odo", "reg")}
-    return jsonify({"ok": True, "saved": _PROFILES[tok], "scope": "in-memory; Turso row lands in P1"})
+    device = _device_token()
+    db = SessionLocal()
+    try:
+        row = db.query(CarProfile).filter(CarProfile.device_token == device).first()
+        if row is None:
+            row = CarProfile(device_token=device)
+            db.add(row)
+        for k in ("brand", "model", "year", "fuel", "tx", "odo", "reg"):
+            if k in body:
+                setattr(row, k, body.get(k))
+        db.commit()
+        sync_now()
+        return jsonify({"ok": True, "saved": {"brand": row.brand, "model": row.model, "year": row.year, "fuel": row.fuel, "tx": row.tx, "odo": row.odo, "reg": row.reg}})
+    except Exception as e:  # noqa: BLE001
+        db.rollback()
+        log.exception("save_profile failed: %s", e)
+        return jsonify({"ok": False, "error": "save_failed"}), 500
+    finally:
+        db.close()
+
+
+@bp.get("/profile")
+def get_profile():
+    p = _load_profile(_device_token())
+    if p is None:
+        return jsonify({"ok": False, "error": "no_profile"}), 404
+    return jsonify({"ok": True, "profile": p})
 
 
 @bp.route("/<path:rest>", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])

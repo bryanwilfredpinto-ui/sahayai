@@ -1,8 +1,16 @@
 # Render Blueprint for Chitti 4-Wheeler
 # -----------------------------------------------------------------
-# Skeleton service — stateless today (in-memory profile store). Turso
-# row migration lands in P1 alongside the document vault
-# (FEATURES.md row C3).
+# Turso embedded-replica pattern (SAHAYAI_MASTER §2 row 2 — one DB per
+# Chitti). Local SQLite file at /tmp/chitti_4wheeler.db; bg sync loop
+# every 60 s. Render free tier wipes /tmp on each deploy — we re-sync
+# from Turso on boot.
+#
+# Before first deploy:
+#   1. turso db create chitti-4wheeler --group default
+#   2. turso db show chitti-4wheeler --url
+#   3. turso db tokens create chitti-4wheeler
+#   4. Compose: libsql://<host>?authToken=<token>
+#   5. Paste into DATABASE_URL in the Render dashboard.
 
 services:
   - type: web
@@ -17,7 +25,13 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.10
 
-      # DeepSeek — sole LLM provider (SAHAYAI_MASTER §2 row 1)
+      # ── Turso (one DB per Chitti) ──
+      - key: DATABASE_URL
+        sync: false
+      - key: LIBSQL_REPLICA_PATH
+        value: /tmp/chitti_4wheeler.db
+
+      # ── DeepSeek ── sole LLM provider
       - key: DEEPSEEK_API_KEY
         sync: false
       - key: DEEPSEEK_MODEL
@@ -29,6 +43,7 @@ services:
       - key: DEEPSEEK_TEMPERATURE
         value: "0.2"
 
+      # ── CORS / self-URL ──
       - key: ALLOWED_ORIGINS
         value: "https://sahayai.in,https://www.sahayai.in"
       - key: BACKEND_URL

@@ -1,11 +1,20 @@
 # Render Blueprint for Chitti 2-Wheeler
 # -----------------------------------------------------------------
-# Skeleton service — stateless today (in-memory profile store). No DB
-# block. Turso row migration lands in P1 alongside the document vault
-# (FEATURES.md row W3).
+# Turso embedded-replica pattern (SAHAYAI_MASTER §2 row 2 — one DB per
+# Chitti). Local SQLite file lives at /tmp/chitti_2wheeler.db; bg sync
+# loop pushes / pulls every 60 s. Render free tier wipes /tmp on each
+# deploy, so we re-sync from Turso on boot — no data loss.
 #
-# Per SAHAYAI_MASTER §2 row 1, DeepSeek is the sole LLM. The
-# DEEPSEEK_API_KEY env var is set in the Render dashboard, not in source.
+# Before first deploy:
+#   1. Create Turso DB:  turso db create chitti-2wheeler --group default
+#      (aws-ap-south-1 / Mumbai, under bryanwilfredpinto org — matches
+#       [[project_turso_db_inventory]])
+#   2. Get URL:          turso db show chitti-2wheeler --url
+#      Gives:            libsql://chitti-2wheeler-<org>.turso.io
+#   3. Get token:        turso db tokens create chitti-2wheeler
+#   4. Compose final:    libsql://<host>?authToken=<token>
+#   5. Paste into the DATABASE_URL env var in the Render dashboard
+#      (sync:false means Render won't try to read it from this file).
 
 services:
   - type: web
@@ -20,7 +29,15 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.10
 
-      # DeepSeek — sole LLM provider (SAHAYAI_MASTER §2 row 1)
+      # ── Turso (SAHAYAI_MASTER §2 row 2 — one DB per Chitti) ──
+      # Compose: libsql://<host>?authToken=<token>
+      - key: DATABASE_URL
+        sync: false
+      # Optional: pin the local replica path. Default /tmp/chitti_2wheeler.db.
+      - key: LIBSQL_REPLICA_PATH
+        value: /tmp/chitti_2wheeler.db
+
+      # ── DeepSeek ── sole LLM provider (§2 row 1)
       - key: DEEPSEEK_API_KEY
         sync: false
       - key: DEEPSEEK_MODEL
@@ -32,7 +49,7 @@ services:
       - key: DEEPSEEK_TEMPERATURE
         value: "0.2"
 
-      # CORS / self-URL
+      # ── CORS / self-URL ──
       - key: ALLOWED_ORIGINS
         value: "https://sahayai.in,https://www.sahayai.in"
       - key: BACKEND_URL
