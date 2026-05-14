@@ -64,6 +64,27 @@ RULES (HARD):
 """
 
 
+def _raw_explain_deepseek(safe_text: str) -> tuple[str, dict]:
+    body = {
+        "model": DEEPSEEK_MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": safe_text},
+        ],
+        "max_tokens": 350,
+        "temperature": 0.3,
+    }
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_KEY}",
+        "Content-Type": "application/json",
+    }
+    with httpx.Client(timeout=HTTP_TIMEOUT) as client:
+        r = client.post(DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return (data["choices"][0]["message"]["content"] or "").strip(), (data.get("usage") or {})
+
+
 def explain_simply(db: Session, article_id: int, language: str = "en") -> dict:
     """
     Return a 3–5-sentence plain-language explanation of the article.
@@ -87,26 +108,60 @@ def explain_simply(db: Session, article_id: int, language: str = "en") -> dict:
         f"Source: {article.source_name or article.source_slug}\n"
         f"Summary: {(article.summary or '')[:1500]}"
     )
-    body = {
-        "model": DEEPSEEK_MODEL,
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-        ],
-        "max_tokens": 350,
-        "temperature": 0.3,
-    }
-    headers = {
-        "Authorization": f"Bearer {DEEPSEEK_KEY}",
-        "Content-Type": "application/json",
-    }
+
+    def _call(safe_text: str) -> str:
+        reply, _usage = _raw_explain_deepseek(safe_text)
+        return reply
 
     try:
-        with httpx.Client(timeout=HTTP_TIMEOUT) as client:
-            r = client.post(DEEPSEEK_URL, headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-        text = (data["choices"][0]["message"]["content"] or "").strip()
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_call, user_text=user_msg, ctx={})
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s on explain_simply: %s",
+                      e.response.status_code, e.response.text[:200])
+            return {**_fallback(article, language), "error": f"deepseek_http_{e.response.status_code}"}
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek explain_simply failed: %s", e)
+            return {**_fallback(article, language), "error": str(e)[:200]}
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "article_id": article.id,
+                "explanation": wrapped["reply"],
+                "spoken": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+                "disclaimer_en": _DISCLAIMER_EN,
+                "disclaimer_hi": _DISCLAIMER_HI,
+            }
+        text = wrapped.get("reply") or ""
+        if not text:
+            return _fallback(article, language)
+        return {
+            "ok": True,
+            "source": "deepseek",
+            "language": language,
+            "model": DEEPSEEK_MODEL,
+            "article_id": article.id,
+            "explanation": text,
+            "spoken": text,
+            "request_id": wrapped.get("request_id"),
+            "latency_ms": wrapped.get("latency_ms"),
+            "disclaimer_en": _DISCLAIMER_EN,
+            "disclaimer_hi": _DISCLAIMER_HI,
+        }
+
+    try:
+        text, _usage = _raw_explain_deepseek(user_msg)
         if not text:
             return _fallback(article, language)
         return {

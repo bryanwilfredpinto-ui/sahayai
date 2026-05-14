@@ -312,31 +312,47 @@ def explain_notice(text: str, language: str = "en") -> dict:
         return _structured_fallback(text, language)
 
     lang_name = _LANG_NAMES.get(language, language or "English")
-    user_msg = (
-        f"(Reply in {lang_name}. Output STRICT JSON only — no markdown fences.)\n"
-        f"Notice text:\n{text}"
-    )
-    body = {
-        "model": settings.DEEPSEEK_MODEL,
-        "messages": [
-            {"role": "system", "content": NOTICE_SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-        ],
-        "max_tokens": min(800, settings.MAX_TOKENS),
-        "temperature": 0.2,
-        "response_format": {"type": "json_object"},
-    }
-    headers = {
-        "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json",
-    }
 
-    try:
+    def _raw_notice_deepseek(safe_text: str) -> tuple[str, dict]:
+        user_msg = (
+            f"(Reply in {lang_name}. Output STRICT JSON only — no markdown fences.)\n"
+            f"Notice text:\n{safe_text}"
+        )
+        body = {
+            "model": settings.DEEPSEEK_MODEL,
+            "messages": [
+                {"role": "system", "content": NOTICE_SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            "max_tokens": min(800, settings.MAX_TOKENS),
+            "temperature": 0.2,
+            "response_format": {"type": "json_object"},
+        }
+        headers = {
+            "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+            "Content-Type": "application/json",
+        }
         with httpx.Client(timeout=30.0) as client:
             r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
             r.raise_for_status()
             data = r.json()
-        raw = data["choices"][0]["message"]["content"] or ""
+        return data["choices"][0]["message"]["content"] or "", (data.get("usage") or {})
+
+    usage_capture: dict = {}
+
+    def _call(safe_text: str) -> str:
+        raw, usage = _raw_notice_deepseek(safe_text)
+        usage_capture.update(usage)
+        return raw
+
+    try:
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    def _build_response_from_raw(raw: str, request_id: str | None = None,
+                                 latency_ms: int | None = None) -> dict:
         import json
         try:
             parsed = json.loads(raw)
@@ -353,8 +369,7 @@ def explain_notice(text: str, language: str = "en") -> dict:
         if structured["lawyer_cta"]:
             composite_lines.append(structured["lawyer_cta"])
         composite = "\n".join(line for line in composite_lines if line)
-        usage = data.get("usage") or {}
-        return {
+        out = {
             "ok": True,
             "source": "deepseek",
             "language": language,
@@ -363,10 +378,51 @@ def explain_notice(text: str, language: str = "en") -> dict:
             "reply": _enforce_disclaimer(composite),
             "disclaimer": LEGAL_DISCLAIMER,
             "tokens": {
-                "input": usage.get("prompt_tokens"),
-                "output": usage.get("completion_tokens"),
+                "input": usage_capture.get("prompt_tokens"),
+                "output": usage_capture.get("completion_tokens"),
             },
         }
+        if request_id is not None:
+            out["request_id"] = request_id
+        if latency_ms is not None:
+            out["latency_ms"] = latency_ms
+        return out
+
+    if hooks is not None:
+        try:
+            # JSON output — Compliance rail records the inject decision in the
+            # audit log but does NOT append the disclaimer string into the
+            # model's JSON (which would corrupt parsing). We surface the
+            # disclaimer outside the JSON, in the composite `reply` and the
+            # explicit `disclaimer` field.
+            wrapped = hooks.wrap_llm(_call, user_text=text, ctx={},
+                                     compliance_inject=False)
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
+            return _structured_fallback(text, language, err=f"deepseek_http_{e.response.status_code}")
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek explain_notice failed: %s", e)
+            return _structured_fallback(text, language, err=str(e)[:200])
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "reply": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+            }
+        return _build_response_from_raw(
+            wrapped.get("reply") or "",
+            request_id=wrapped.get("request_id"),
+            latency_ms=wrapped.get("latency_ms"),
+        )
+
+    try:
+        raw, usage = _raw_notice_deepseek(text)
+        usage_capture.update(usage)
+        return _build_response_from_raw(raw)
     except httpx.HTTPStatusError as e:
         log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
         return _structured_fallback(text, language, err=f"deepseek_http_{e.response.status_code}")

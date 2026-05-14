@@ -164,20 +164,11 @@ def _fallback(text_in: str, language: str, *, error: Optional[str] = None) -> di
     return out
 
 
-def check(text: str, language: str = "hi") -> dict:
-    """Classify the supplied text into HIGH / MEDIUM / LOW risk."""
-    text = (text or "").strip()
-    if not text:
-        return {"ok": False, "error": "text is required"}
-
-    if not settings.DEEPSEEK_API_KEY:
-        return _fallback(text, language)
-
-    lang_name = _LANG_NAMES.get(language, "Hindi")
+def _raw_upi_deepseek(lang_name: str, safe_text: str) -> tuple[str, dict]:
     user_msg = (
         f"User language: {lang_name}. Classify the fraud risk of this "
         f"payment / message / call description, and write the warning "
-        f"in {lang_name}-flavoured Hinglish.\n\nINPUT:\n{text}"
+        f"in {lang_name}-flavoured Hinglish.\n\nINPUT:\n{safe_text}"
     )
     body = {
         "model": settings.DEEPSEEK_MODEL,
@@ -193,16 +184,46 @@ def check(text: str, language: str = "hi") -> dict:
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
     }
+    with httpx.Client(timeout=30.0) as client:
+        r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return data["choices"][0]["message"]["content"], (data.get("usage") or {})
+
+
+def check(text: str, language: str = "hi") -> dict:
+    """Classify the supplied text into HIGH / MEDIUM / LOW risk.
+
+    Goes through HookRegistry.wrap_llm when running inside a Flask app
+    context (production path) so every call is gated by the four rails
+    and audit-logged. Uses `compliance_inject=False` because the model is
+    asked for a strict JSON object — appending a disclaimer would
+    corrupt the JSON. The disclaimer rides in `legal_lines` instead.
+    """
+    text = (text or "").strip()
+    if not text:
+        return {"ok": False, "error": "text is required"}
+
+    if not settings.DEEPSEEK_API_KEY:
+        return _fallback(text, language)
+
+    lang_name = _LANG_NAMES.get(language, "Hindi")
+    usage_capture: dict = {}
+
+    def _call(safe_text: str) -> str:
+        raw, usage = _raw_upi_deepseek(lang_name, safe_text)
+        usage_capture.update(usage)
+        return raw
 
     try:
-        with httpx.Client(timeout=30.0) as client:
-            r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-        raw = data["choices"][0]["message"]["content"]
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    def _build_from_raw(raw: str, request_id=None, latency_ms=None) -> dict:
         parsed = _safe_parse(raw)
         out = _normalise(parsed, text)
-        usage = data.get("usage") or {}
         out.update({
             "ok": True,
             "source": "deepseek",
@@ -210,11 +231,47 @@ def check(text: str, language: str = "hi") -> dict:
             "model": settings.DEEPSEEK_MODEL,
             "legal_lines": LEGAL_LINES,
             "tokens": {
-                "input":  usage.get("prompt_tokens"),
-                "output": usage.get("completion_tokens"),
+                "input":  usage_capture.get("prompt_tokens"),
+                "output": usage_capture.get("completion_tokens"),
             },
         })
+        if request_id is not None:
+            out["request_id"] = request_id
+        if latency_ms is not None:
+            out["latency_ms"] = latency_ms
         return out
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_call, user_text=text, ctx={},
+                                     compliance_inject=False)
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
+            return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek call failed: %s", e)
+            return _fallback(text, language, error=str(e))
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "warning": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+                "legal_lines": LEGAL_LINES,
+            }
+        return _build_from_raw(
+            wrapped.get("reply") or "",
+            request_id=wrapped.get("request_id"),
+            latency_ms=wrapped.get("latency_ms"),
+        )
+
+    try:
+        raw, usage = _raw_upi_deepseek(lang_name, text)
+        usage_capture.update(usage)
+        return _build_from_raw(raw)
     except httpx.HTTPStatusError as e:
         log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
         return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")

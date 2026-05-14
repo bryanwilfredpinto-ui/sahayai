@@ -92,11 +92,19 @@ def create_app() -> Flask:
     try:
         from database import engine as _engine
         from lib.observability import Observability, install_request_timing
+        from lib.hooks import HookRegistry
+        from lib.quadrails import build_default_quadrails
         obs = Observability(chitti=CHITTI_SLUG, engine=_engine)
         app.config["CHITTI_OBSERVABILITY"] = obs
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti=CHITTI_SLUG,
+            quadrails=build_default_quadrails(CHITTI_SLUG),
+            observability=obs,
+        )
         install_request_timing(app, CHITTI_SLUG, observability=obs)
+        log.info("quality hooks + request timing installed for %s", CHITTI_SLUG)
     except Exception as e:  # noqa: BLE001
-        log.warning("request timing install skipped: %s", e)
+        log.warning("quality framework install skipped: %s", e)
 
     @app.get("/health")
     def health():

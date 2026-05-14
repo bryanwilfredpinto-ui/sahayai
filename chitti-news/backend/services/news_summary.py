@@ -94,19 +94,16 @@ def _user_msg(article: Article, language: str) -> str:
     )
 
 
-def chittis_take(db: Session, article_id: int, language: str = "en") -> dict:
-    article = db.query(Article).filter(Article.id == article_id).first()
-    if not article:
-        return {"ok": False, "error": "article not found"}
-
-    if not DEEPSEEK_KEY:
-        return _fallback(article, language)
-
+def _raw_summary_deepseek(article: Article, language: str, safe_text: str) -> tuple[str, dict]:
+    """Pure DeepSeek HTTP call. `safe_text` is the (rail-gated) user
+    message — we ignore it for the body and use the article fields
+    directly, but pass the verbatim rail-gated text into the model so
+    the audit log records what actually fed the model."""
     body = {
         "model": DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": _user_msg(article, language)},
+            {"role": "user", "content": safe_text},
         ],
         "max_tokens": 400,
         "temperature": 0.3,
@@ -115,21 +112,79 @@ def chittis_take(db: Session, article_id: int, language: str = "en") -> dict:
         "Authorization": f"Bearer {DEEPSEEK_KEY}",
         "Content-Type": "application/json",
     }
+    with httpx.Client(timeout=HTTP_TIMEOUT) as client:
+        r = client.post(DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return (data["choices"][0]["message"]["content"] or "").strip(), (data.get("usage") or {})
+
+
+def _parse_bullets(text: str) -> list[str]:
+    bullets = [b.lstrip("•").strip() for b in text.splitlines() if b.strip().startswith("•")]
+    if not bullets:
+        bullets = [s.strip() for s in text.split("\n") if s.strip()][:3]
+    return bullets[:3]
+
+
+def chittis_take(db: Session, article_id: int, language: str = "en") -> dict:
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        return {"ok": False, "error": "article not found"}
+
+    if not DEEPSEEK_KEY:
+        return _fallback(article, language)
+
+    user_msg = _user_msg(article, language)
+    usage_capture: dict = {}
+
+    def _call(safe_text: str) -> str:
+        reply, usage = _raw_summary_deepseek(article, language, safe_text)
+        usage_capture.update(usage)
+        return reply
 
     try:
-        with httpx.Client(timeout=HTTP_TIMEOUT) as client:
-            r = client.post(DEEPSEEK_URL, headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-        text = (data["choices"][0]["message"]["content"] or "").strip()
-        bullets = [b.lstrip("•").strip() for b in text.splitlines() if b.strip().startswith("•")]
-        if not bullets:
-            # Fallback: split on newline / period
-            bullets = [s.strip() for s in text.split("\n") if s.strip()][:3]
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_call, user_text=user_msg, ctx={})
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s on chittis_take: %s",
+                      e.response.status_code, e.response.text[:200])
+            return {**_fallback(article, language), "error": f"deepseek_http_{e.response.status_code}"}
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek chittis_take failed: %s", e)
+            return {**_fallback(article, language), "error": str(e)[:200]}
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "bullets": [],
+                "language": language,
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "reply": wrapped["reply"],
+                "request_id": wrapped.get("request_id"),
+            }
         return {
             "ok": True,
             "source": "deepseek",
-            "bullets": bullets[:3],
+            "bullets": _parse_bullets(wrapped["reply"]),
+            "language": language,
+            "model": DEEPSEEK_MODEL,
+            "request_id": wrapped.get("request_id"),
+            "latency_ms": wrapped.get("latency_ms"),
+        }
+
+    try:
+        text, _usage = _raw_summary_deepseek(article, language, user_msg)
+        return {
+            "ok": True,
+            "source": "deepseek",
+            "bullets": _parse_bullets(text),
             "language": language,
             "model": DEEPSEEK_MODEL,
         }

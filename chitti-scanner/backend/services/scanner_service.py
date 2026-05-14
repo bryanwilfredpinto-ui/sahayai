@@ -214,20 +214,12 @@ def _fallback(text_in: str, language: str, *, error: Optional[str] = None) -> di
     return out
 
 
-def analyze_text(text: str, language: str = "hi") -> dict:
-    """Primary v1 path — caller has OCR'd or typed the label."""
-    text = (text or "").strip()
-    if not text:
-        return {"ok": False, "error": "text is required"}
-
-    if not settings.DEEPSEEK_API_KEY:
-        return _fallback(text, language)
-
+def _raw_scanner_text_deepseek(language: str, safe_text: str) -> tuple[str, dict]:
     body = {
         "model": settings.DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": CHITTI_SCANNER_PROMPT},
-            {"role": "user",   "content": f"User language: {language}. Label / bill / document text:\n{text}"},
+            {"role": "user",   "content": f"User language: {language}. Label / bill / document text:\n{safe_text}"},
         ],
         "max_tokens": settings.MAX_TOKENS,
         "temperature": settings.TEMPERATURE,
@@ -237,27 +229,89 @@ def analyze_text(text: str, language: str = "hi") -> dict:
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
     }
+    with httpx.Client(timeout=30.0) as client:
+        r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return data["choices"][0]["message"]["content"], (data.get("usage") or {})
+
+
+def analyze_text(text: str, language: str = "hi") -> dict:
+    """Primary v1 path — caller has OCR'd or typed the label.
+
+    Goes through HookRegistry.wrap_llm when running inside a Flask app
+    context. `compliance_inject=False` because the model is asked for
+    strict JSON — disclaimer rides in `legal_disclaimer` field.
+    """
+    text = (text or "").strip()
+    if not text:
+        return {"ok": False, "error": "text is required"}
+
+    if not settings.DEEPSEEK_API_KEY:
+        return _fallback(text, language)
+
+    usage_capture: dict = {}
+
+    def _call(safe_text: str) -> str:
+        raw, usage = _raw_scanner_text_deepseek(language, safe_text)
+        usage_capture.update(usage)
+        return raw
 
     try:
-        with httpx.Client(timeout=30.0) as client:
-            r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-        raw = data["choices"][0]["message"]["content"]
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    def _build_from_raw(raw: str, request_id=None, latency_ms=None) -> dict:
         parsed = _safe_parse(raw)
         out = _normalise(parsed)
-        usage = data.get("usage") or {}
         out.update({
             "ok": True,
             "source": "deepseek",
             "language": language,
             "model": settings.DEEPSEEK_MODEL,
             "tokens": {
-                "input":  usage.get("prompt_tokens"),
-                "output": usage.get("completion_tokens"),
+                "input":  usage_capture.get("prompt_tokens"),
+                "output": usage_capture.get("completion_tokens"),
             },
         })
+        if request_id is not None:
+            out["request_id"] = request_id
+        if latency_ms is not None:
+            out["latency_ms"] = latency_ms
         return out
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_call, user_text=text, ctx={},
+                                     compliance_inject=False)
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
+            return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek call failed: %s", e)
+            return _fallback(text, language, error=str(e))
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "summary": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+            }
+        return _build_from_raw(
+            wrapped.get("reply") or "",
+            request_id=wrapped.get("request_id"),
+            latency_ms=wrapped.get("latency_ms"),
+        )
+
+    try:
+        raw, usage = _raw_scanner_text_deepseek(language, text)
+        usage_capture.update(usage)
+        return _build_from_raw(raw)
     except httpx.HTTPStatusError as e:
         log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
         return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")
@@ -296,42 +350,89 @@ def analyze_image(image_bytes: bytes, content_type: str, language: str = "hi") -
 
     b64 = base64.b64encode(image_bytes).decode("ascii")
     mime = content_type or "image/jpeg"
-    body = {
-        "model": settings.DEEPSEEK_VISION_MODEL,
-        "messages": [
-            {"role": "system", "content": CHITTI_SCANNER_PROMPT},
-            {"role": "user", "content": [
-                {"type": "text", "text": f"User language: {language}. Read this product label / bill / document image and respond with the strict JSON described."},
-                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-            ]},
-        ],
-        "max_tokens": settings.MAX_TOKENS,
-        "temperature": settings.TEMPERATURE,
-    }
-    headers = {
-        "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    try:
+
+    def _raw_vision(_safe_text: str) -> str:
+        body = {
+            "model": settings.DEEPSEEK_VISION_MODEL,
+            "messages": [
+                {"role": "system", "content": CHITTI_SCANNER_PROMPT},
+                {"role": "user", "content": [
+                    {"type": "text", "text": f"User language: {language}. Read this product label / bill / document image and respond with the strict JSON described."},
+                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                ]},
+            ],
+            "max_tokens": settings.MAX_TOKENS,
+            "temperature": settings.TEMPERATURE,
+        }
+        headers = {
+            "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+            "Content-Type": "application/json",
+        }
         with httpx.Client(timeout=60.0) as client:
             r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
             r.raise_for_status()
             data = r.json()
-        raw = data["choices"][0]["message"]["content"]
+        usage_capture.update(data.get("usage") or {})
+        return data["choices"][0]["message"]["content"]
+
+    usage_capture: dict = {}
+
+    try:
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    def _build_vision_from_raw(raw: str, request_id=None, latency_ms=None) -> dict:
         parsed = _safe_parse(raw)
         out = _normalise(parsed)
-        usage = data.get("usage") or {}
         out.update({
             "ok": True,
             "source": "deepseek_vision",
             "language": language,
             "model": settings.DEEPSEEK_VISION_MODEL,
             "tokens": {
-                "input":  usage.get("prompt_tokens"),
-                "output": usage.get("completion_tokens"),
+                "input":  usage_capture.get("prompt_tokens"),
+                "output": usage_capture.get("completion_tokens"),
             },
         })
+        if request_id is not None:
+            out["request_id"] = request_id
+        if latency_ms is not None:
+            out["latency_ms"] = latency_ms
         return out
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_raw_vision,
+                                     user_text="[scanner vision input]",
+                                     ctx={"vision": True},
+                                     compliance_inject=False)
+        except httpx.HTTPStatusError as e:
+            log.error("Vision HTTP %s: %s", e.response.status_code, e.response.text[:200])
+            return _fallback("[image input]", language, error=f"vision_http_{e.response.status_code}")
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("Vision call failed: %s", e)
+            return _fallback("[image input]", language, error=str(e))
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "summary": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+            }
+        return _build_vision_from_raw(
+            wrapped.get("reply") or "",
+            request_id=wrapped.get("request_id"),
+            latency_ms=wrapped.get("latency_ms"),
+        )
+
+    try:
+        raw = _raw_vision("[scanner vision input]")
+        return _build_vision_from_raw(raw)
     except httpx.HTTPStatusError as e:
         log.error("Vision HTTP %s: %s", e.response.status_code, e.response.text[:200])
         return _fallback("[image input]", language, error=f"vision_http_{e.response.status_code}")

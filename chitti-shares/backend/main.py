@@ -73,6 +73,29 @@ import time as _time
 import uuid as _uuid
 
 
+# Quality framework — Observability + HookRegistry on app.state so async
+# call sites (services/deepseek_client.py:chat_with_tokens) can pull them
+# without depending on a Flask request context. Same Safety / Relevance /
+# Truth / Compliance rails as every other Chitti, just plumbed through
+# FastAPI app state instead of Flask app.config.
+try:
+    from lib.hooks import HookRegistry
+    from lib.observability import Observability
+    from lib.quadrails import build_default_quadrails
+    _obs = Observability(chitti="chitti-shares", engine=engine)
+    app.state.chitti_obs = _obs
+    app.state.chitti_hooks = HookRegistry(
+        chitti="chitti-shares",
+        quadrails=build_default_quadrails("chitti-shares"),
+        observability=_obs,
+    )
+    log.info("chitti-shares quality framework installed (obs + hooks)")
+except Exception as e:  # noqa: BLE001
+    log.warning("chitti-shares quality framework install skipped: %s", e)
+    app.state.chitti_obs = None
+    app.state.chitti_hooks = None
+
+
 @app.middleware("http")
 async def _chitti_timing_mw(request: Request, call_next):
     t0 = _time.perf_counter()
@@ -87,6 +110,26 @@ async def _chitti_timing_mw(request: Request, call_next):
     elapsed_ms = int((_time.perf_counter() - t0) * 1000)
     response.headers["X-Chitti-Response-Time-Ms"] = str(elapsed_ms)
     response.headers["X-Chitti-Request-Id"] = request_id
+    # Per-request audit row, mirrors install_request_timing's Flask path
+    # (lib/observability.py:_record). Best-effort: never fails the request.
+    obs = getattr(app.state, "chitti_obs", None)
+    if obs is not None:
+        try:
+            obs._write(
+                request_id=request_id,
+                chitti="chitti-shares",
+                kind="http",
+                phase="response",
+                reason=request.url.path,
+                payload={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status": response.status_code,
+                    "elapsed_ms": elapsed_ms,
+                },
+            )
+        except Exception:  # noqa: BLE001
+            pass
     return response
 
 

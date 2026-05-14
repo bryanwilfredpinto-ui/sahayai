@@ -117,45 +117,95 @@ def _strip_json_fences(s: str) -> str:
     return s.strip()
 
 
+def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str) -> str:
+    """Pure provider call — no quadrails wrapping here. Returns the raw
+    model text (the JSON-fenced string the prompt asks for)."""
+    if not settings.ANTHROPIC_API_KEY:
+        raise RuntimeError("ANTHROPIC_API_KEY not set on server")
+    try:
+        from anthropic import Anthropic
+    except ImportError as e:
+        raise RuntimeError("anthropic SDK not installed") from e
+
+    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    b64 = base64.standard_b64encode(image_bytes).decode("ascii")
+    msg = client.messages.create(
+        model=settings.ANTHROPIC_MODEL or "claude-sonnet-4-6",
+        max_tokens=600,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": mime or "image/jpeg",
+                            "data": b64,
+                        },
+                    },
+                    {"type": "text", "text": safe_prompt},
+                ],
+            }
+        ],
+    )
+    return "".join(
+        part.text for part in msg.content if getattr(part, "type", None) == "text"
+    )
+
+
+# Synthetic user_text used by the quadrails so safety/relevance/truth see
+# something meaningful. Image content itself does not flow through the
+# text rails (they only see this string + the model's JSON output).
+_VISION_USER_TEXT = "Identify this Indian medicine from the uploaded image."
+
+
 def _vision_extract(image_bytes: bytes, mime: str) -> dict:
     """
-    Send the image to Anthropic Claude and parse the JSON. Returns a dict
+    Send the image to the vision model and parse the JSON. Returns a dict
     with the fields above + a `_raw` key with the model output for
     debugging. Returns {"_error": ...} on any failure.
+
+    JSON output — quadrails wrap with `compliance_inject=False` so the
+    Compliance rail still RECORDS the inject decision in the audit log,
+    but does not corrupt the JSON envelope by appending the disclaimer
+    string. The caller (`recognise_image`) is responsible for surfacing
+    the MedUPI disclaimer outside the JSON (via `speak_*` fields).
     """
     if not settings.ANTHROPIC_API_KEY:
         return {"_error": "ANTHROPIC_API_KEY not set on server"}
-    try:
-        from anthropic import Anthropic
-    except ImportError:
-        return {"_error": "anthropic SDK not installed"}
 
     try:
-        client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        b64 = base64.standard_b64encode(image_bytes).decode("ascii")
-        msg = client.messages.create(
-            model=settings.ANTHROPIC_MODEL or "claude-sonnet-4-6",
-            max_tokens=600,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": mime or "image/jpeg",
-                                "data": b64,
-                            },
-                        },
-                        {"type": "text", "text": _VISION_PROMPT},
-                    ],
-                }
-            ],
-        )
-        text = "".join(
-            part.text for part in msg.content if getattr(part, "type", None) == "text"
-        )
+        # Pull the per-app HookRegistry. Outside a Flask request (CLI /
+        # tests / FastAPI shares-side caller) current_app raises — we
+        # degrade to the un-wrapped call so the prior behavior is
+        # preserved.
+        try:
+            from flask import current_app
+            hooks = current_app.config.get("CHITTI_HOOKS")
+        except Exception:  # noqa: BLE001
+            hooks = None
+
+        def _call(safe_prompt: str) -> str:
+            return _raw_vision_call(image_bytes, mime, safe_prompt or _VISION_PROMPT)
+
+        if hooks is not None:
+            wrapped = hooks.wrap_llm(
+                # We pass the prompt as the rail-gated text since that's
+                # what actually flows to the model alongside the image.
+                # The synthetic user_text is what safety/relevance see.
+                lambda _gated: _call(_VISION_PROMPT),
+                user_text=_VISION_USER_TEXT,
+                ctx={},
+                compliance_inject=False,
+            )
+            if wrapped.get("blocked"):
+                return {"_error": f"blocked:{wrapped.get('rail')}:{wrapped.get('reason')}",
+                        "_blocked_message": wrapped.get("reply", "")}
+            text = wrapped.get("reply") or ""
+        else:
+            text = _call(_VISION_PROMPT)
+
         cleaned = _strip_json_fences(text)
         try:
             data = json.loads(cleaned)

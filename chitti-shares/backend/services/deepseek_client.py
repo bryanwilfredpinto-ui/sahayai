@@ -31,6 +31,20 @@ class DeepSeekError(Exception):
     pass
 
 
+def _get_hooks():
+    """Pull the chitti-shares HookRegistry from app.state.
+
+    The FastAPI app instance is created in main.py before any service
+    is imported; we use a late binding so the import order doesn't matter.
+    Returns None if hooks aren't installed (CLI / tests).
+    """
+    try:
+        from main import app  # type: ignore  # noqa: PLC0415
+        return getattr(app.state, "chitti_hooks", None)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 @tracked(provider="deepseek", operation="chat")
 async def chat_with_tokens(system: str, user: str, *,
                            max_tokens: int = 200,
@@ -38,9 +52,35 @@ async def chat_with_tokens(system: str, user: str, *,
     """
     Returns {"text": "<reply>", "_meta": {"input_tokens": N, "output_tokens": M}}.
     The _meta key is consumed by the @tracked decorator; caller sees it stripped.
+
+    Goes through HookRegistry.before_model + after_model when the FastAPI
+    app is up (production path) so every call is gated by the four rails
+    and audit-logged. wrap_llm itself is sync; we call its constituent
+    methods manually around the async httpx call.
     """
     if not settings.DEEPSEEK_API_KEY:
         raise DeepSeekError("DEEPSEEK_API_KEY not configured")
+
+    hooks = _get_hooks()
+    ctx: dict = {}
+
+    if hooks is not None:
+        gated = hooks.before_model(user, ctx)
+        # A RefusalResponse means a rail said BLOCK — return its message
+        # as the "text" so the caller surface stays JSON-shaped.
+        from lib.hooks import RefusalResponse  # noqa: PLC0415
+        if isinstance(gated, RefusalResponse):
+            return {
+                "text": gated.user_facing,
+                "blocked": True,
+                "rail": gated.rail,
+                "reason": gated.reason,
+                "request_id": gated.request_id,
+                "_meta": {"input_tokens": 0, "output_tokens": 0},
+            }
+        user_safe = gated
+    else:
+        user_safe = user
 
     headers = {
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
@@ -50,7 +90,7 @@ async def chat_with_tokens(system: str, user: str, *,
         "model": MODEL,
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user", "content": user},
+            {"role": "user", "content": user_safe},
         ],
         "max_tokens": max_tokens,
         "temperature": temperature,
@@ -69,8 +109,13 @@ async def chat_with_tokens(system: str, user: str, *,
 
     text = data["choices"][0]["message"]["content"].strip()
     usage = data.get("usage") or {}
+
+    if hooks is not None:
+        text = hooks.after_model(user_safe, text, ctx)
+
     return {
         "text": text,
+        "request_id": ctx.get("request_id"),
         "_meta": {
             "input_tokens": usage.get("prompt_tokens"),
             "output_tokens": usage.get("completion_tokens"),

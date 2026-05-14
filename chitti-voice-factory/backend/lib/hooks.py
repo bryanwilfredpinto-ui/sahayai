@@ -150,11 +150,17 @@ class HookRegistry:
         ctx = ctx or {}
         request_id = ctx.get("request_id", uuid.uuid4().hex[:12])
         modified = model_output
+        # JSON-output callers set ctx["_skip_compliance_inject"]=True so the
+        # Compliance rail still RECORDS the inject decision in the audit
+        # log, but doesn't append the disclaimer string (which would corrupt
+        # the JSON). The caller is then responsible for surfacing the
+        # disclaimer outside the JSON envelope.
+        skip_inject = bool(ctx.get("_skip_compliance_inject"))
 
         for rail in self.quadrails:
             result = rail.check_output(user_text, modified, ctx)
             self._record_rail_result(result, request_id, phase="after_model")
-            if result.action == Action.INJECT and rail.name == "compliance":
+            if result.action == Action.INJECT and rail.name == "compliance" and not skip_inject:
                 disclaimer = (result.payload or {}).get("text", "")
                 if disclaimer and disclaimer not in modified:
                     modified = modified.rstrip() + "\n\n" + disclaimer
@@ -177,6 +183,8 @@ class HookRegistry:
         call_fn: Callable[[str], str],
         user_text: str,
         ctx: dict | None = None,
+        *,
+        compliance_inject: bool = True,
     ) -> dict:
         """Wrap a DeepSeek (or any LLM) call with before_model + after_model.
 
@@ -190,8 +198,16 @@ class HookRegistry:
 
         Returns a dict; never raises (rail BLOCK is communicated via
         `blocked=True`, not an exception).
+
+        `compliance_inject=False` keeps the Compliance rail RECORDING in the
+        audit log but skips appending the disclaimer to the raw model
+        output. Required for JSON-output callers
+        (e.g. legal_service.explain_notice, medupi_recognition._vision_extract)
+        where the caller surfaces the disclaimer outside the JSON envelope.
         """
         ctx = ctx or {}
+        if not compliance_inject:
+            ctx["_skip_compliance_inject"] = True
         gated = self.before_model(user_text, ctx)
         if isinstance(gated, RefusalResponse):
             return {

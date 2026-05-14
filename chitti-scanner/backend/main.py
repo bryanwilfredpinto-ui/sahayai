@@ -16,9 +16,25 @@ import logging
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from sqlalchemy import create_engine
 
 from config import settings
 from routes.scanner import bp as scanner_bp
+
+# Sahay AI shared quality framework — installed across every Chitti.
+from lib.hooks import HookRegistry
+from lib.observability import Observability, install_request_timing
+from lib.quadrails import build_default_quadrails
+
+CHITTI_SLUG = "chitti-scanner"
+
+# chitti-scanner is stateless (vision + text-fallback). Give the quality
+# framework its own dedicated engine so quality_audit / quality_feedback
+# tables have somewhere to land.
+_quality_engine = create_engine(
+    "sqlite:////tmp/chitti_scanner_quality.db",
+    connect_args={"check_same_thread": False},
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,11 +79,21 @@ def _create_app() -> Flask:
 
     app.register_blueprint(scanner_bp)
 
+    # Quality framework: Observability + HookRegistry + SLA timing.
+    # Every DeepSeek call in services/scanner_service.py (analyze_text +
+    # analyze_image) is wrapped via the registry.
     try:
-        from lib.observability import install_request_timing
-        install_request_timing(app, "chitti-scanner", observability=None)
-    except Exception:  # noqa: BLE001
-        pass
+        obs = Observability(chitti=CHITTI_SLUG, engine=_quality_engine)
+        app.config["CHITTI_OBSERVABILITY"] = obs
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti=CHITTI_SLUG,
+            quadrails=build_default_quadrails(CHITTI_SLUG),
+            observability=obs,
+        )
+        install_request_timing(app, CHITTI_SLUG, observability=obs)
+        log.info("quality hooks + request timing installed for %s", CHITTI_SLUG)
+    except Exception as e:  # noqa: BLE001
+        log.warning("quality framework install skipped: %s", e)
 
     return app
 

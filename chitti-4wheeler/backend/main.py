@@ -60,11 +60,19 @@ def create_app() -> Flask:
 
     try:
         from lib.observability import Observability, install_request_timing
+        from lib.hooks import HookRegistry
+        from lib.quadrails import build_default_quadrails
         obs = Observability(chitti="chitti-4wheeler", engine=engine)
         app.config["CHITTI_OBSERVABILITY"] = obs
+        app.config["CHITTI_HOOKS"] = HookRegistry(
+            chitti="chitti-4wheeler",
+            quadrails=build_default_quadrails("chitti-4wheeler"),
+            observability=obs,
+        )
         install_request_timing(app, "chitti-4wheeler", observability=obs)
+        log.info("quality hooks + request timing installed for chitti-4wheeler")
     except Exception as e:  # noqa: BLE001
-        log.warning("request timing install skipped: %s", e)
+        log.warning("quality framework install skipped: %s", e)
 
     @app.errorhandler(404)
     def _404(e):
