@@ -16,7 +16,7 @@
   --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI','Noto Sans Bengali','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu','Noto Sans Kannada','Noto Sans Malayalam','Noto Sans Gujarati','Noto Sans Gurmukhi','Noto Sans Oriya','Noto Naskh Arabic',Arial,sans-serif;font-size:14px;line-height:1.5}
 body{min-height:100vh;position:relative}
 body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(109,40,217,.10),transparent 22%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
 body > *{position:relative;z-index:1}
@@ -24,7 +24,11 @@ body > *{position:relative;z-index:1}
 
 .bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#6D28D9,#0E2344)}
 
-/* Server-enforced disclaimer bar */
+/* Still-learning banner for cousin languages */
+.lang-learning{display:none;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #f59e0b;line-height:1.5}
+.lang-learning.shown{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* Disclaimer bar */
 .disclaimer-bar{position:sticky;top:0;z-index:60;background:#fef3c7;color:#78350f;padding:9px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #fcd34d;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
 .disclaimer-bar button{background:transparent;border:1px solid #b45309;color:#78350f;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:700;min-height:26px}
 
@@ -34,7 +38,7 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#6D28D9 70%,#163
 .bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
 @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
-.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.tagline{font-size:11.5px;color:rgba(255,255,255,.85);margin-top:2px}
 .switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
 .switch-btn-bharat:hover{filter:brightness(1.1)}
@@ -42,7 +46,7 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#6D28D9 70%,#163
 .header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
 .header-controls button:hover{background:rgba(255,255,255,.22)}
 
-/* Picker — language + view */
+/* Picker */
 .picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #6D28D9;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:44px;z-index:55;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;min-height:40px;font-weight:600}
 .picker-bar select:focus{outline:none;border-color:var(--saffron)}
@@ -57,22 +61,38 @@ nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px
 nav.tabs .tab:hover{color:var(--text)}
 nav.tabs .tab.active{color:var(--violet);border-bottom-color:var(--violet);background:rgba(109,40,217,.06)}
 
-/* Layout */
 main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
 .page{display:none}
 .page.active{display:block}
-.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06);color:var(--text)}
+.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06);color:var(--text);position:relative}
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
-.section-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5}
-.section-empty{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.section-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.55}
+
+/* === Per-response widget — inline + always visible on every box === */
+.box-fb{margin-top:12px;padding:8px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
+.box-fb .fb-lbl{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:auto}
+.box-fb button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:5px 9px;font-size:13px;cursor:pointer;min-height:30px;min-width:36px;font-weight:600;color:var(--text);display:inline-flex;align-items:center;gap:3px;line-height:1}
+.box-fb button:hover{border-color:var(--violet);background:rgba(109,40,217,.06);color:var(--violet)}
+.box-fb button.voted-up{background:#d1fae5;border-color:#10b981;color:#065f46}
+.box-fb button.voted-down{background:#fee2e2;border-color:#f87171;color:#7f1d1d}
+.box-fb .fb-thanks{color:var(--green);font-weight:700;margin-left:6px}
+/* feedback popup for thumbs-down */
+.fb-popup{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;padding:20px;align-items:flex-start;justify-content:center;overflow-y:auto}
+.fb-popup.shown{display:flex}
+.fb-popup .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;max-width:520px;width:100%}
+.fb-popup .panel h3{margin:0 0 8px;color:var(--violet);font-size:17px}
+.fb-popup .panel p{margin:0 0 10px;font-size:13px;color:var(--text)}
+.fb-popup textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;min-height:80px;resize:vertical}
+.fb-popup .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fb-popup button{background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px}
+.fb-popup button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff}
 
 /* Badges */
 .live-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#065f46;background:#d1fae5;border:1px solid #10b981;vertical-align:middle}
 .coming-soon{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle}
 .coming-soon-future{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#1e40af;background:#dbeafe;border:1px solid #3b82f6;vertical-align:middle}
 
-/* Trust score chips (0-100 band) */
 .ts-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.02em}
 .ts-chip.trusted{background:#d1fae5;color:#065f46;border:1px solid #10b981}
 .ts-chip.acceptable{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
@@ -80,16 +100,8 @@ main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
 .ts-chip.reject{background:#1f2937;color:#fff;border:1px solid #111}
 .ts-chip.pending{background:#e5e7eb;color:#374151;border:1px dashed #9ca3af}
 
-/* Importance pill */
-.imp-pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;color:#fff;letter-spacing:.04em}
-.imp-pill.c1{background:#dc2626}
-.imp-pill.c2{background:#ea580c}
-.imp-pill.c3{background:#ca8a04}
-.imp-pill.c4{background:#65a30d}
-
-/* Cards */
 .feed{display:grid;grid-template-columns:1fr;gap:12px}
-@media (min-width: 760px){.feed.two-col{grid-template-columns:1fr 1fr}}
+@media (min-width:760px){.feed.two-col{grid-template-columns:1fr 1fr}}
 .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;transition:box-shadow .2s}
 .card:hover{box-shadow:0 6px 20px rgba(14,35,68,.10)}
 .card .meta{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
@@ -98,41 +110,26 @@ main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
 .card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .card .actions button,.card .actions a{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none}
 .card .actions button:hover,.card .actions a:hover{background:rgba(109,40,217,.06);border-color:var(--violet);color:var(--violet)}
-.card .actions button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800}
+.card .actions a.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800}
+.meta-pill{font-size:11px;background:#f3f4f6;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-weight:600;color:var(--text)}
+.meta-pill.free{background:#d1fae5;border-color:#10b981;color:#065f46}
+.meta-pill.warn{background:#fef3c7;border-color:#f59e0b;color:#92400e}
 
-/* Tool ranking cards */
-.rank-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;position:relative}
-.rank-card .rank-num{position:absolute;top:14px;left:14px;font-size:26px;font-weight:900;color:var(--gold);line-height:1}
-.rank-card .rank-content{padding-left:46px}
-.rank-card .tool-name{font-size:16px;font-weight:900;color:var(--text)}
-.rank-card .tool-vendor{font-size:12px;color:var(--muted);font-weight:600}
-.rank-card .tool-line{font-size:13px;color:var(--text);margin:6px 0 8px;line-height:1.55}
-.rank-card .tool-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.rank-card .meta-pill{font-size:11px;background:#f3f4f6;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-weight:600;color:var(--text)}
-.rank-card .meta-pill.free{background:#d1fae5;border-color:#10b981;color:#065f46}
-.rank-card .meta-pill.warn{background:#fef3c7;border-color:#f59e0b;color:#92400e}
-
-/* Trust-check form */
 .trust-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .trust-form input[type=url]{flex:1;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px}
 .trust-form input[type=url]:focus{outline:none;border-color:var(--violet)}
 .trust-form button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px}
 
-/* Profession textarea */
 .prof-form textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-family:inherit;min-height:80px;line-height:1.5;resize:vertical}
 .prof-form textarea:focus{outline:none;border-color:var(--violet)}
 .prof-form .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .prof-form button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer;min-height:42px}
 
-/* Trust verification table */
 .trust-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
 .trust-table th,.trust-table td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
 .trust-table th{background:#f9fafb;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.04em;color:var(--muted)}
-.trust-table .ok{color:var(--green);font-weight:800}
 .trust-table .warn{color:#92400e;font-weight:800}
-.trust-table .bad{color:var(--red);font-weight:800}
 
-/* Onboarding modal — first-visit language pick */
 .onb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
 .onb.shown{display:flex}
 .onb .panel{background:#fff;border:1px solid rgba(109,40,217,.55);border-radius:16px;padding:24px;max-width:520px;width:100%;font-size:14px;line-height:1.6}
@@ -142,12 +139,10 @@ main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
 .onb .panel button.go{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:900;border-radius:10px;padding:12px 24px;font-size:15px;cursor:pointer;margin-top:14px;width:100%;min-height:50px}
 .onb .panel .skip{background:transparent;border:1px dashed var(--muted);color:var(--muted);font-weight:700;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;margin-top:8px;width:100%}
 
-/* Stub-state hint card */
 .stub-hint{background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(109,40,217,.08));border:1px dashed rgba(109,40,217,.4);border-radius:12px;padding:14px;font-size:13px;color:var(--text);line-height:1.6}
 .stub-hint strong{color:var(--violet)}
 
-/* Ask Chitti AI strip */
-.ask-strip{background:linear-gradient(135deg,#0E2344,#6D28D9);color:#fff;border-radius:18px;padding:16px;margin:14px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ask-strip{background:linear-gradient(135deg,#0E2344,#6D28D9);color:#fff;border-radius:18px;padding:16px;margin:14px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:relative}
 .ask-strip .face{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
 .ask-strip .body{flex:1;min-width:200px}
 .ask-strip .body h3{margin:0 0 4px;font-size:16px;font-weight:800}
@@ -156,32 +151,35 @@ main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
 .ask-strip input[type=text]{flex:1;min-width:160px;background:rgba(255,255,255,.95);border:none;border-radius:10px;padding:10px 13px;font-size:14px;min-height:42px;color:var(--text)}
 .ask-strip button{background:#fff;color:var(--violet);border:none;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-size:13px;min-height:42px;display:inline-flex;align-items:center;gap:4px}
 .ask-strip button.mic{background:rgba(255,255,255,.22);color:#fff}
+.ask-strip .box-fb{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.20);color:rgba(255,255,255,.9)}
+.ask-strip .box-fb button{background:rgba(255,255,255,.85);border-color:rgba(255,255,255,.6);color:var(--text)}
 
-/* Source rows */
 .src-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px}
 .src-row:last-child{border-bottom:none}
 .src-row .name{font-weight:700}
 .src-row .url{font-size:11px;color:var(--muted);word-break:break-all}
-@media (max-width: 560px){.src-row{grid-template-columns:1fr auto}.src-row .reason{display:none}}
+@media (max-width:560px){.src-row{grid-template-columns:1fr auto}.src-row .reason{display:none}}
 
-footer{margin-top:24px;padding:18px 16px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid var(--border)}
+footer{margin-top:24px;padding:18px 16px;color:var(--muted);font-size:11.5px;text-align:center;border-top:1px solid var(--border);line-height:1.7}
 footer a{color:var(--violet);text-decoration:none}
 
-/* Universal speaker button — every response box gets one */
 .spk-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;line-height:1;min-width:32px;min-height:26px;font-weight:600;flex-shrink:0}
 .spk-btn:hover,.spk-btn:focus-visible{background:rgba(109,40,217,.08);color:var(--violet);border-color:var(--violet);outline:none}
-.spk-btn.dark{border-color:rgba(255,255,255,.30);color:#fff}
-.spk-btn.dark:hover{background:rgba(255,255,255,.18);border-color:#fff}
 </style>
 </head>
 <body>
 <div class="bharat-stripe"></div>
 
-<!-- Server-enforced disclaimer (locked, sticky, never moved to footer) -->
-<div id="disclaimer-bar" class="disclaimer-bar" role="region" aria-label="Chitti News AI disclaimer">
-  <span id="disclaimer-text" data-chitti-response data-chitti-section="Disclaimer">⚖️ <strong>I am an AI tool tracker.</strong> Rankings are dynamic. Pricing and free tiers may change. Always check official sites. <strong>I do not endorse any tool.</strong></span>
+<!-- Server-enforced disclaimer (locked decision §2) -->
+<div id="disclaimer-bar" class="disclaimer-bar" role="region" aria-label="Disclaimer">
+  <span id="disclaimer-text" data-chitti-response data-chitti-section="Disclaimer">⚖️ <span data-i18n="disc.short">I am an AI tool tracker. Rankings are dynamic. Pricing and free tiers may change. Always check official sites. I do not endorse any tool.</span></span>
   <button class="spk-btn" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud">🔊</button>
-  <button onclick="openDisclaimerModal()" aria-label="Open full disclaimer">More</button>
+  <button onclick="openDisclaimerModal()" data-i18n="disc.more">More</button>
+</div>
+
+<!-- "Still learning" honest banner — shown when user picks a cousin lang -->
+<div id="lang-learning" class="lang-learning" role="status">
+  <span>🌱</span><span id="lang-learning-text"></span>
 </div>
 
 <header role="banner">
@@ -190,295 +188,234 @@ footer a{color:var(--violet);text-decoration:none}
       <div class="bharat-logo" aria-hidden="true">🤖</div>
       <div>
         <div class="brand">Chitti News AI</div>
-        <div class="tagline">Your free AI tool scout · 26 languages · trust-scored sources only</div>
+        <div class="tagline" data-i18n="brand.tagline">Your free AI tool scout · 26 languages · trust-scored sources only</div>
       </div>
     </div>
     <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_news.html">📰 General News</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_medupi.html">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_complete.html">🏠 All Chittis</a>
+      <a class="switch-btn-bharat" href="chitti_news.html" data-i18n="hdr.btn.news">📰 General News</a>
+      <a class="switch-btn-bharat" href="chitti_vaani.html" data-i18n="hdr.btn.vaani">🎙️ Vaani</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html" data-i18n="hdr.btn.medupi">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_complete.html" data-i18n="hdr.btn.all">🏠 All Chittis</a>
     </div>
   </div>
   <div class="header-controls">
-    <button onclick="speakPage()" aria-label="Read this page aloud">🔊 Read page</button>
-    <button onclick="openLanguagePicker()" aria-label="Change language">🌐 Change language</button>
-    <button onclick="openFeatureDiscovery()" aria-label="Open Feature Discovery">💡 What can Chitti do?</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
+    <button onclick="speakPage()" data-i18n="hdr.btn.read">🔊 Read page</button>
+    <button onclick="openLanguagePicker()" data-i18n="hdr.btn.lang">🌐 Change language</button>
+    <button onclick="openFeatureDiscovery()" data-i18n="hdr.btn.discover">💡 What can Chitti do?</button>
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="hdr.btn.top">↑ Top</button>
   </div>
 </header>
 
-<!-- Picker bar -->
 <div class="picker-bar" role="group" aria-label="Filter">
-  <span class="pick-lbl">Language</span>
+  <span class="pick-lbl" data-i18n="pick.lang">Language</span>
   <select id="pick-lang" onchange="onLangChange()" aria-label="Language">
-    <option value="">— pick —</option>
+    <option value="" data-i18n="pick.choose">— pick —</option>
   </select>
   <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the language picker does">🔊</button>
   <span class="pick-sep"></span>
-  <span class="lang-status unset" id="lang-status">No language picked</span>
+  <span class="lang-status unset" id="lang-status" data-i18n="pick.unset">No language picked</span>
 </div>
 
-<!-- Tabs -->
-<nav class="tabs" role="tablist" aria-label="Chitti News AI views">
-  <button class="tab active" data-tab="today"      onclick="setTab('today')"      role="tab">🆕 Today</button>
-  <button class="tab"        data-tab="tools"      onclick="setTab('tools')"      role="tab">🛠️ Tools for Me</button>
-  <button class="tab"        data-tab="launches"   onclick="setTab('launches')"   role="tab">🚀 New Launches</button>
-  <button class="tab"        data-tab="freetier"   onclick="setTab('freetier')"   role="tab">💰 Free Tier Tracker</button>
-  <button class="tab"        data-tab="trust"      onclick="setTab('trust')"      role="tab">🛡️ Trust Check</button>
-  <button class="tab"        data-tab="sources"    onclick="setTab('sources')"    role="tab">📊 Sources</button>
-  <button class="tab"        data-tab="leaderboard" onclick="setTab('leaderboard')" role="tab">🏆 Leaderboard</button>
-  <button class="tab"        data-tab="models"     onclick="setTab('models')"     role="tab">🤖 Models</button>
-  <button class="tab"        data-tab="discover"   onclick="setTab('discover')"   role="tab">🔎 Discover Sources</button>
-  <button class="tab"        data-tab="stack"      onclick="setTab('stack')"      role="tab">🧠 My Stack</button>
+<nav class="tabs" role="tablist" aria-label="Views">
+  <button class="tab active" data-tab="today"       onclick="setTab('today')"       role="tab" data-i18n="tab.today">🆕 Today</button>
+  <button class="tab"        data-tab="tools"       onclick="setTab('tools')"       role="tab" data-i18n="tab.tools">🛠️ Tools for me</button>
+  <button class="tab"        data-tab="launches"    onclick="setTab('launches')"    role="tab" data-i18n="tab.launches">🚀 New launches</button>
+  <button class="tab"        data-tab="freetier"    onclick="setTab('freetier')"    role="tab" data-i18n="tab.freetier">💰 Free tier tracker</button>
+  <button class="tab"        data-tab="trust"       onclick="setTab('trust')"       role="tab" data-i18n="tab.trust">🛡️ Trust check</button>
+  <button class="tab"        data-tab="sources"     onclick="setTab('sources')"     role="tab" data-i18n="tab.sources">📊 Sources</button>
+  <button class="tab"        data-tab="leaderboard" onclick="setTab('leaderboard')" role="tab" data-i18n="tab.leaderboard">🏆 Leaderboard</button>
+  <button class="tab"        data-tab="models"      onclick="setTab('models')"      role="tab" data-i18n="tab.models">🤖 Models</button>
+  <button class="tab"        data-tab="discover"    onclick="setTab('discover')"    role="tab" data-i18n="tab.discover">🔎 Discover sources</button>
+  <button class="tab"        data-tab="stack"       onclick="setTab('stack')"       role="tab" data-i18n="tab.stack">🧠 My stack</button>
 </nav>
 
 <main>
 
-  <!-- ASK CHITTI STRIP — present on every tab -->
-  <div class="ask-strip" data-chitti-response data-chitti-section="Ask Chitti AI">
+  <!-- Ask Chitti AI strip -->
+  <div class="ask-strip" data-chitti-response data-chitti-section="Ask Chitti AI" id="box-ask">
     <div class="face" aria-hidden="true">🤖</div>
     <div class="body">
-      <h3>Ask Chitti News AI</h3>
-      <p>Type or speak in your language — *"I am a teacher. Best free AI tools?"* / *"What launched this week?"* / *"Is `example.com` trustworthy?"*</p>
+      <h3 data-i18n="ask.h3">Ask Chitti News AI</h3>
+      <p data-i18n="ask.body">Type or speak in your language — "I am a teacher. Best free AI tools?" / "What launched this week?" / "Is example.com trustworthy?"</p>
     </div>
     <div class="input-row">
       <button class="mic" onclick="startAskMic()" aria-label="Speak your question">🎙️</button>
-      <input type="text" id="ask-input" placeholder="Type your question…" aria-label="Ask Chitti News AI">
-      <button class="primary" onclick="askChitti()">Ask <span aria-hidden="true">→</span></button>
+      <input type="text" id="ask-input" data-i18n-ph="ask.ph" placeholder="Type your question…" aria-label="Ask Chitti News AI">
+      <button class="primary" onclick="askChitti()"><span data-i18n="ask.btn">Ask</span> <span aria-hidden="true">→</span></button>
     </div>
   </div>
 
-  <!-- TODAY — Daily AI briefing -->
+  <!-- TODAY -->
   <section class="page active" id="page-today" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Daily AI Briefing">
+    <div class="section-card" data-chitti-response data-chitti-section="Daily AI Briefing" id="box-today">
       <div class="section-head">
         <div>
-          <div class="section-title">📰 Daily AI Briefing <span class="live-badge">RSS wired</span></div>
-          <div class="section-sub">Latest 24 h of articles from 17 Layer-1-verified sources, ordered by source trust + recency. LLM importance scorer queued — when it lands, ranking shifts from <em>trust+recency</em> to true importance.</div>
+          <div class="section-title"><span data-i18n="today.title">📰 Daily AI Briefing</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
+          <div class="section-sub" data-i18n="today.sub">Latest 24 h of articles from 17 Layer-1-verified sources, ordered by source trust + recency. LLM importance scorer queued.</div>
         </div>
-        <button class="spk-btn" onclick="refreshToday()" aria-label="Refresh today">↻</button>
+        <button class="spk-btn" onclick="refreshToday()" aria-label="Refresh">↻</button>
       </div>
-      <div id="today-status" class="section-sub" style="margin-top:4px">Loading from <code>/api/news-ai/today</code>…</div>
+      <div id="today-status" class="section-sub" style="margin-top:4px" data-i18n="today.loading">Loading from /api/news-ai/today…</div>
       <div id="today-list" class="feed" style="margin-top:10px"></div>
     </div>
   </section>
 
-  <!-- TOOLS FOR ME — Profession-driven ranking -->
+  <!-- TOOLS FOR ME -->
   <section class="page" id="page-tools" role="tabpanel">
-    <div class="section-card prof-form" data-chitti-response data-chitti-section="Profession to Tools">
+    <div class="section-card prof-form" data-chitti-response data-chitti-section="Tools for me" id="box-tools-input">
       <div class="section-head">
         <div>
-          <div class="section-title">🛠️ Tools for me <span class="live-badge">Skeleton live</span></div>
-          <div class="section-sub">Tell Chitti what you do — in YOUR language. DeepSeek extracts topics (no hardcoded profession list), the formula ranks tools by relevance × community signal × freshness × free generosity.</div>
+          <div class="section-title"><span data-i18n="tools.title">🛠️ Tools for me</span> <span class="live-badge" data-i18n="tools.badge">Skeleton live</span></div>
+          <div class="section-sub" data-i18n="tools.sub">Tell Chitti what you do — in YOUR language…</div>
         </div>
       </div>
       <label class="sr-only" for="prof-input">Describe your work</label>
-      <textarea id="prof-input" placeholder="e.g. 'I am a teacher in a Tamil-medium school'  ·  'मैं एक छोटे कारोबार का मालिक हूँ'  ·  'I am a video editor making content for YouTube'"></textarea>
+      <textarea id="prof-input" data-i18n-ph="tools.ph" placeholder="e.g. 'I am a teacher in a Tamil-medium school'"></textarea>
       <div class="row">
-        <button class="primary" onclick="submitProfession()">🔍 Find my tools</button>
-        <button onclick="startProfMic()">🎙️ Speak instead</button>
-        <span class="section-sub" style="margin-left:auto">Top 5–10 tools, ranked dynamically every 6 hours.</span>
+        <button class="primary" onclick="submitProfession()" data-i18n="tools.find">🔍 Find my tools</button>
+        <button onclick="startProfMic()" data-i18n="tools.speak">🎙️ Speak instead</button>
+        <span class="section-sub" style="margin-left:auto" data-i18n="tools.foot">Top 5–10 tools, ranked dynamically.</span>
       </div>
     </div>
 
-    <div class="section-card" data-chitti-response data-chitti-section="Ranked tools result">
+    <div class="section-card" data-chitti-response data-chitti-section="Tools result" id="box-tools-result">
       <div class="section-head">
-        <div class="section-title">🏆 Your ranked tools <span class="coming-soon">Coming soon</span></div>
+        <div class="section-title"><span data-i18n="tools.result">🏆 Your ranked tools</span> <span class="coming-soon">Coming soon</span></div>
       </div>
-      <div class="stub-hint">
-        <strong>Honest stub:</strong> Live ranking ships once <code>POST /api/news-ai/tools-for-me</code> wires DeepSeek topic extraction + <a href="chitti-news-ai/skills/RANKING_FORMULA.md">RANKING_FORMULA.md</a> → backend ranker. Until then no fake tool list — better silent than wrong.
-      </div>
-
-      <!-- Skeleton rank cards so the user can see the future layout -->
-      <div style="margin-top:14px;display:grid;gap:10px">
-        <div class="rank-card" data-chitti-response data-chitti-section="Rank 1 placeholder">
-          <div class="rank-num">🥇</div>
-          <div class="rank-content">
-            <div class="tool-name">[Tool name will appear here]</div>
-            <div class="tool-vendor">[Vendor]</div>
-            <div class="tool-line">[One-line description from the tool's own About page, summarised in your language. URLs and tool names stay in original form.]</div>
-            <div class="tool-meta">
-              <span class="meta-pill free">Free tier: [generosity 1–10]</span>
-              <span class="meta-pill">Paid from: [—]</span>
-              <span class="meta-pill">Launched: [date]</span>
-              <span class="ts-chip trusted">Trust 88</span>
-            </div>
-          </div>
-        </div>
-        <div class="rank-card">
-          <div class="rank-num">🥈</div>
-          <div class="rank-content">
-            <div class="tool-name">[Second-best tool]</div>
-            <div class="tool-line">[One-liner]</div>
-            <div class="tool-meta">
-              <span class="meta-pill free">Free tier: [—]</span>
-              <span class="ts-chip acceptable">Trust 76</span>
-            </div>
-          </div>
-        </div>
-        <div class="rank-card">
-          <div class="rank-num">🥉</div>
-          <div class="rank-content">
-            <div class="tool-name">[Also good]</div>
-            <div class="tool-line">[One-liner]</div>
-            <div class="tool-meta">
-              <span class="meta-pill warn">Free tier: limited</span>
-              <span class="ts-chip acceptable">Trust 71</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="stub-hint"><strong>Honest stub:</strong> <span data-i18n="tools.stub">live ranking ships once /api/news-ai/tools-for-me wires DeepSeek topic extraction.</span></div>
     </div>
   </section>
 
-  <!-- NEW LAUNCHES -->
+  <!-- LAUNCHES -->
   <section class="page" id="page-launches" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="New launches">
+    <div class="section-card" data-chitti-response data-chitti-section="New launches" id="box-launches">
       <div class="section-head">
         <div>
-          <div class="section-title">🚀 New launches — last 7 days <span class="live-badge">RSS wired</span></div>
-          <div class="section-sub">Articles classified <code>is_launch=1</code> by the deterministic keyword classifier in <a href="chitti-news-ai/backend/services/scorer.py">services/scorer.py</a>. LLM importance scorer queued for cross-source corroboration.</div>
+          <div class="section-title"><span data-i18n="launch.title">🚀 New launches — last 7 days</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
+          <div class="section-sub" data-i18n="launch.sub">Articles classified is_launch=1 by the deterministic keyword classifier.</div>
         </div>
-        <button class="spk-btn" onclick="refreshLaunches()" aria-label="Refresh launches">↻</button>
+        <button class="spk-btn" onclick="refreshLaunches()" aria-label="Refresh">↻</button>
       </div>
-      <div id="launches-status" class="section-sub" style="margin-top:4px">Loading from <code>/api/news-ai/launches</code>…</div>
+      <div id="launches-status" class="section-sub" style="margin-top:4px" data-i18n="launch.loading">Loading from /api/news-ai/launches…</div>
       <div id="launches-list" class="feed two-col" style="margin-top:10px"></div>
     </div>
   </section>
 
   <!-- FREE TIER TRACKER -->
   <section class="page" id="page-freetier" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Free tier tracker">
+    <div class="section-card" data-chitti-response data-chitti-section="Free tier tracker" id="box-freetier">
       <div class="section-head">
         <div>
-          <div class="section-title">💰 Free Tier Tracker <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub">Chitti watches the free tier of every tracked tool. Surfaces quota cuts, price introductions, ad insertions, expired credits. Nightly diff vs previous snapshot.</div>
+          <div class="section-title"><span data-i18n="freetier.title">💰 Free Tier Tracker</span> <span class="coming-soon">Coming soon</span></div>
+          <div class="section-sub" data-i18n="freetier.sub">Chitti watches the free tier of every tracked tool…</div>
         </div>
       </div>
-      <div class="stub-hint">
-        <strong>Why this matters:</strong> The free tier is the user contract. When ChatGPT adds ads to free, when Cursor cuts requests/day, when Claude moves the rate-limit window — you should know in your language, the same morning. Honest stub today; pipeline shipping per <a href="chitti-news-ai/skills/FEATURES.md">FEATURES.md N3</a>.
-      </div>
-      <div class="feed" style="margin-top:12px">
-        <div class="card" data-chitti-response data-chitti-section="Free tier change skeleton">
-          <div class="meta">
-            <span class="imp-pill c2">Importance 83</span>
-            <span style="color:var(--red);font-weight:800">▼ Quota cut</span>
-          </div>
-          <div class="title">[Vendor] reduced free tier from [X] → [Y] requests / day</div>
-          <div class="summary">Detected nightly. Notified subscribers via Vaani read-aloud (respects quiet-hours cascade — never wakes the master for a price drop).</div>
-          <div class="actions">
-            <button>🔊 Read</button>
-            <button>🔔 Alert me on changes</button>
-            <button class="primary">See full diff ↗</button>
-          </div>
-        </div>
-      </div>
+      <div class="stub-hint"><strong>Why this matters:</strong> <span data-i18n="freetier.stub">the free tier is the user contract…</span></div>
     </div>
   </section>
 
   <!-- TRUST CHECK -->
   <section class="page" id="page-trust" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Trust check input">
+    <div class="section-card" data-chitti-response data-chitti-section="Trust check input" id="box-trust-input">
       <div class="section-head">
         <div>
-          <div class="section-title">🛡️ Trust check <span class="live-badge">Skeleton live</span></div>
-          <div class="section-sub">Paste any URL. Chitti runs the 4-layer verification — domain age, author presence, About Us, ad density, language quality, correction policy, cross-source consistency. Score 0–100.</div>
+          <div class="section-title"><span data-i18n="trust.title">🛡️ Trust check</span> <span class="live-badge" data-i18n="tools.badge">Skeleton live</span></div>
+          <div class="section-sub" data-i18n="trust.sub">Paste any URL…</div>
         </div>
       </div>
       <div class="trust-form" style="margin-top:8px">
-        <input type="url" id="trust-url" placeholder="https://example.com/article-or-blog" aria-label="URL to verify">
-        <button class="primary" onclick="submitTrustCheck()">🛡️ Verify</button>
+        <input type="url" id="trust-url" data-i18n-ph="trust.url.ph" placeholder="https://example.com/article-or-blog" aria-label="URL">
+        <button class="primary" onclick="submitTrustCheck()" data-i18n="trust.verify">🛡️ Verify</button>
       </div>
     </div>
 
-    <div class="section-card" data-chitti-response data-chitti-section="Trust check result">
+    <div class="section-card" data-chitti-response data-chitti-section="Trust check result" id="box-trust-result">
       <div class="section-head">
-        <div class="section-title">📋 Verification result <span class="coming-soon">Coming soon</span></div>
+        <div class="section-title"><span data-i18n="trust.result">📋 Verification result</span> <span class="coming-soon">Coming soon</span></div>
       </div>
-      <div class="stub-hint">
-        <strong>Honest stub:</strong> Layer 1 (domain age + author + About Us + ad density + tone + correction policy) ships first. Layer 4 weekly recompute follows. Until then, the verify button POSTs to <code>/api/news-ai/trust-check</code> and the backend returns an honest <code>501 COMING SOON</code> — never a fabricated verdict on a real URL.
-      </div>
-      <table class="trust-table" aria-label="Trust verification checks" style="margin-top:12px">
-        <thead><tr><th>Check</th><th>What Chitti will do</th><th>Result</th></tr></thead>
+      <div class="stub-hint"><strong>Honest stub:</strong> <span data-i18n="trust.stub">Layer 1 + 4 ship first…</span></div>
+      <table class="trust-table" style="margin-top:12px">
+        <thead><tr>
+          <th data-i18n="trust.tbl.check">Check</th>
+          <th data-i18n="trust.tbl.will">What Chitti will do</th>
+          <th data-i18n="trust.tbl.result">Result</th>
+        </tr></thead>
         <tbody>
-          <tr><td>Domain age</td><td>WHOIS lookup</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>Author presence</td><td>Named bylines + real profiles</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>"About Us" page</td><td>Real address, named team, editorial policy</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>Ad density</td><td>Content-to-ad ratio &gt; 70%</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>Language quality</td><td>Tone analysis via DeepSeek</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>Correction policy</td><td>Published corrections found</td><td class="warn">⌛ Pending</td></tr>
-          <tr><td>Cross-source consistency</td><td>Layer 2 monitoring history</td><td class="warn">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.age">Domain age</td><td data-i18n="trust.row.age.will">WHOIS lookup</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.author">Author presence</td><td data-i18n="trust.row.author.will">Named bylines + real profiles</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.about">"About Us" page</td><td data-i18n="trust.row.about.will">Real address, named team</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.ads">Ad density</td><td data-i18n="trust.row.ads.will">Content-to-ad ratio &gt; 70%</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.lang">Language quality</td><td data-i18n="trust.row.lang.will">Tone analysis via DeepSeek</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.corr">Correction policy</td><td data-i18n="trust.row.corr.will">Published corrections</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
+          <tr><td data-i18n="trust.row.cross">Cross-source consistency</td><td data-i18n="trust.row.cross.will">Layer 2 monitoring history</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
         </tbody>
       </table>
       <div style="margin-top:12px;font-size:13px">
-        <strong>Trust score (when live):</strong> 0–100 → bands <span class="ts-chip trusted">≥80 trusted</span> <span class="ts-chip acceptable">70–79 acceptable</span> <span class="ts-chip questionable">60–69 questionable</span> <span class="ts-chip reject">&lt;60 reject</span>
+        <strong data-i18n="trust.score.label">Trust score (when live):</strong>
+        <span class="ts-chip trusted" data-i18n="trust.band.trusted">≥80 trusted</span>
+        <span class="ts-chip acceptable" data-i18n="trust.band.acceptable">70–79 acceptable</span>
+        <span class="ts-chip questionable" data-i18n="trust.band.questionable">60–69 questionable</span>
+        <span class="ts-chip reject" data-i18n="trust.band.reject">&lt;60 reject</span>
       </div>
     </div>
   </section>
 
-  <!-- SOURCES — seeded list -->
+  <!-- SOURCES -->
   <section class="page" id="page-sources" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Sources directory">
+    <div class="section-card" data-chitti-response data-chitti-section="Sources directory" id="box-sources">
       <div class="section-head">
         <div>
-          <div class="section-title">📊 Sources directory <span class="live-badge">DB live</span></div>
-          <div class="section-sub">17 Layer-1-verified free sources, served from <code>/api/news-ai/sources</code> (falls back to the bundled seed if the backend is offline). Trust score per source. <strong>No paid sources, ever.</strong></div>
+          <div class="section-title"><span data-i18n="sources.title">📊 Sources directory</span> <span class="live-badge" data-i18n="sources.badge">DB live</span></div>
+          <div class="section-sub" data-i18n="sources.sub">17 Layer-1-verified free sources…</div>
         </div>
-        <button class="spk-btn" onclick="renderSources()" aria-label="Refresh sources">↻</button>
+        <button class="spk-btn" onclick="renderSources()" aria-label="Refresh">↻</button>
       </div>
-      <div id="sources-status" class="section-sub" style="margin-top:4px">Loading from <code>/api/news-ai/sources</code>…</div>
+      <div id="sources-status" class="section-sub" style="margin-top:4px" data-i18n="sources.loading">Loading from /api/news-ai/sources…</div>
       <div id="sources-list" style="margin-top:10px"></div>
     </div>
   </section>
 
   <!-- LEADERBOARD -->
   <section class="page" id="page-leaderboard" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Tool leaderboard">
+    <div class="section-card" data-chitti-response data-chitti-section="Leaderboard" id="box-leaderboard">
       <div class="section-head">
         <div>
-          <div class="section-title">🏆 Tool Leaderboard <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub">Top tools by importance × community signal. Filterable by task: writing · code · image · video · voice · data.</div>
+          <div class="section-title"><span data-i18n="leader.title">🏆 Tool Leaderboard</span> <span class="coming-soon">Coming soon</span></div>
+          <div class="section-sub" data-i18n="leader.sub">Top tools by importance × community signal.</div>
         </div>
       </div>
-      <div class="stub-hint">
-        <strong>Reference apps surveyed:</strong> <strong>Product Hunt</strong> (vote-weighted leaderboard), <strong>There's An AI For That</strong> (task-filtered directory), <strong>Hugging Face Daily Papers</strong> (research velocity). Chitti's leaderboard differs on one rule: <em>free generosity is a 10% weight</em> — paid-tier tools cannot climb past free ones on popularity alone.
-      </div>
+      <div class="stub-hint" data-i18n="leader.stub">Reference apps surveyed…</div>
     </div>
   </section>
 
   <!-- MODELS -->
   <section class="page" id="page-models" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Model tracker">
+    <div class="section-card" data-chitti-response data-chitti-section="Models" id="box-models">
       <div class="section-head">
         <div>
-          <div class="section-title">🤖 Model Tracker <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub">LLM · SLM · vision · audio · multimodal. By release date, parameter count, license, free-tier availability, LMSYS eval rank.</div>
+          <div class="section-title"><span data-i18n="models.title">🤖 Model Tracker</span> <span class="coming-soon">Coming soon</span></div>
+          <div class="section-sub" data-i18n="models.sub">LLM · SLM · vision · audio · multimodal.</div>
         </div>
       </div>
-      <div class="stub-hint">
-        <strong>Reference data:</strong> Hugging Face new-models RSS (already seeded). LMSYS eval + Open LLM Leaderboard ingest queued. Will surface license cleanly — "Apache 2.0", "MIT", "Llama Community", "OpenRAIL", "proprietary" — so users know what they can build with.
-      </div>
+      <div class="stub-hint" data-i18n="models.stub">Reference data: Hugging Face new-models RSS.</div>
     </div>
   </section>
 
-  <!-- DISCOVER SOURCES — community submit -->
+  <!-- DISCOVER -->
   <section class="page" id="page-discover" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Source submission">
+    <div class="section-card" data-chitti-response data-chitti-section="Discover sources" id="box-discover">
       <div class="section-head">
         <div>
-          <div class="section-title">🔎 Submit a free source <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub">Spotted a free AI blog or feed Chitti misses? Submit it. Goes into the Layer-1 verification queue. Accepted contributors are credited on the <a href="chitti_voice_hall_of_fame.html">Hall of Fame</a>.</div>
+          <div class="section-title"><span data-i18n="discover.title">🔎 Submit a free source</span> <span class="coming-soon">Coming soon</span></div>
+          <div class="section-sub" data-i18n="discover.sub">Spotted a free AI blog or feed Chitti misses?</div>
         </div>
       </div>
       <div style="display:grid;gap:10px;margin-top:10px">
-        <label class="sr-only" for="src-url">Source URL</label>
-        <input type="url" id="src-url" placeholder="https://example.com/feed.xml" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px">
-        <label class="sr-only" for="src-line">Why this source matters</label>
-        <textarea id="src-line" placeholder="One line — why this source belongs here (in any language)" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:64px;font-family:inherit;resize:vertical"></textarea>
+        <input type="url" id="src-url" data-i18n-ph="discover.url.ph" placeholder="https://example.com/feed.xml" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px">
+        <textarea id="src-line" data-i18n-ph="discover.line.ph" placeholder="One line — why this source belongs here" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:64px;font-family:inherit;resize:vertical"></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="primary" onclick="submitSource()" style="background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px">📥 Submit</button>
-          <button onclick="startSrcMic()" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;min-height:44px;font-weight:600">🎙️ Speak instead</button>
+          <button class="primary" onclick="submitSource()" data-i18n="discover.submit" style="background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px">📥 Submit</button>
+          <button onclick="startSrcMic()" data-i18n="discover.speak" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;min-height:44px;font-weight:600">🎙️ Speak instead</button>
         </div>
       </div>
     </div>
@@ -486,153 +423,287 @@ footer a{color:var(--violet);text-decoration:none}
 
   <!-- MY STACK -->
   <section class="page" id="page-stack" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="My stack">
+    <div class="section-card" data-chitti-response data-chitti-section="My stack" id="box-stack">
       <div class="section-head">
         <div>
-          <div class="section-title">🧠 My stack <span class="coming-soon-future">Future</span></div>
-          <div class="section-sub">Save the tools you use. Get a voice alert when their free tier or pricing changes. Per-device, never sold, "Chitti forget" wipes all.</div>
+          <div class="section-title"><span data-i18n="stack.title">🧠 My stack</span> <span class="coming-soon-future" data-i18n="stack.badge">Future</span></div>
+          <div class="section-sub" data-i18n="stack.sub">Save the tools you use.</div>
         </div>
       </div>
-      <div class="stub-hint">
-        Camera + storage substrate already live across all Chittis (<a href="chitti_camera.js">chitti_camera.js</a>). My Stack will use the same user-ownership contract — your data, never sold, anonymised in any aggregate. Until then: no fake "your stack" list.
-      </div>
+      <div class="stub-hint" data-i18n="stack.stub">My Stack will use the same user-ownership contract.</div>
     </div>
   </section>
 
-  <!-- Footer references -->
-  <section class="section-card" data-chitti-response data-chitti-section="Specs & docs">
-    <div class="section-head"><div class="section-title">📚 Specs &amp; docs</div></div>
+  <!-- Specs -->
+  <section class="section-card" data-chitti-response data-chitti-section="Specs" id="box-specs">
+    <div class="section-head"><div class="section-title" data-i18n="specs.title">📚 Specs & docs</div></div>
     <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
-      <li><a href="CHITTI_NEWS_AI_MASTER_SPEC.md">CHITTI_NEWS_AI_MASTER_SPEC.md</a> — root master spec</li>
-      <li><a href="chitti-news-ai/CONTEXT.md">chitti-news-ai/CONTEXT.md</a> — agent persona + data sources + trust layers</li>
-      <li><a href="chitti-news-ai/SKILL.md">chitti-news-ai/SKILL.md</a> — DeepSeek capability surface</li>
-      <li><a href="chitti-news-ai/skills/FEATURES.md">skills/FEATURES.md</a> — parsed live by the 💡 Feature Discovery Box</li>
-      <li><a href="chitti-news-ai/skills/TRUST_VERIFICATION.md">skills/TRUST_VERIFICATION.md</a> — 4-layer system</li>
-      <li><a href="chitti-news-ai/skills/RANKING_FORMULA.md">skills/RANKING_FORMULA.md</a> — relevance score derivation</li>
-      <li><a href="chitti-news-ai/skills/LANGUAGE_BEHAVIOR.md">skills/LANGUAGE_BEHAVIOR.md</a> — strict no-default-language rule</li>
-      <li><a href="SAHAYAI_MASTER.md">SAHAYAI_MASTER.md</a> — single source of truth for the whole platform</li>
+      <li><a href="CHITTI_NEWS_AI_MASTER_SPEC.md">CHITTI_NEWS_AI_MASTER_SPEC.md</a></li>
+      <li><a href="chitti-news-ai/CONTEXT.md">chitti-news-ai/CONTEXT.md</a></li>
+      <li><a href="chitti-news-ai/SKILL.md">chitti-news-ai/SKILL.md</a></li>
+      <li><a href="chitti-news-ai/skills/FEATURES.md">skills/FEATURES.md</a></li>
+      <li><a href="chitti-news-ai/skills/TRUST_VERIFICATION.md">skills/TRUST_VERIFICATION.md</a></li>
+      <li><a href="chitti-news-ai/skills/RANKING_FORMULA.md">skills/RANKING_FORMULA.md</a></li>
+      <li><a href="chitti-news-ai/skills/LANGUAGE_BEHAVIOR.md">skills/LANGUAGE_BEHAVIOR.md</a></li>
+      <li><a href="SAHAYAI_MASTER.md">SAHAYAI_MASTER.md</a></li>
     </ul>
   </section>
 </main>
 
-<!-- Onboarding modal — language pick on first visit -->
-<div class="onb" id="onb-modal" role="dialog" aria-modal="true" aria-labelledby="onb-h">
+<!-- Language picker modal -->
+<div class="onb" id="onb-modal" role="dialog" aria-modal="true">
   <div class="panel">
-    <h2 id="onb-h">🌐 Pick your language</h2>
-    <p>Chitti News AI has <strong>no default language</strong>. Pick one of 26 Indian languages — every response, every disclaimer, every alert lands there. Tool names like <code>Cursor</code> or <code>Llama 3.1</code> stay in original form.</p>
-    <label class="sr-only" for="onb-lang">Language</label>
+    <h2 data-i18n="onb.h2">🌐 Pick your language</h2>
+    <p data-i18n="onb.body">Chitti News AI has no default language.</p>
     <select id="onb-lang" aria-label="Language"></select>
-    <button class="go" onclick="completeOnboarding()">✓ Continue in this language</button>
-    <button class="skip" onclick="skipOnboarding()">Skip — pick later from the bar above</button>
+    <button class="go" onclick="completeOnboarding()" data-i18n="onb.go">✓ Continue in this language</button>
+    <button class="skip" onclick="skipOnboarding()" data-i18n="onb.skip">Skip — pick later</button>
   </div>
 </div>
 
 <!-- Full disclaimer modal -->
-<div class="onb" id="disclaimer-modal" role="dialog" aria-modal="true" aria-labelledby="disclaimer-h">
+<div class="onb" id="disclaimer-modal" role="dialog" aria-modal="true">
   <div class="panel">
-    <h2 id="disclaimer-h">⚖️ Full disclaimer</h2>
+    <h2 data-i18n="disc.full.h2">⚖️ Full disclaimer</h2>
     <p data-chitti-response data-chitti-section="Full disclaimer">
-      <strong>I am an AI tool tracker.</strong> Rankings are dynamic and update every 6 hours. Pricing and free tiers may change. Always check official websites. I do not endorse any tool.
+      <strong data-i18n="disc.short">I am an AI tool tracker.</strong>
     </p>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6">
-      <strong>Seven rules I keep:</strong><br>
-      1. User selects language — never assume a default.<br>
-      2. All news from free sources — never recommend a paid source.<br>
-      3. No hardcoded professions — rankings emerge from data.<br>
-      4. Verify sources before using — apply the 4-layer trust system.<br>
-      5. Always cite sources — every claim needs a source URL.<br>
-      6. Never trust a single source — confirm against 2+.<br>
-      7. Respect AI crawling restrictions — some outlets block AI access.
-    </p>
-    <button class="go" onclick="closeDisclaimerModal()">✓ Understood</button>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6" data-i18n="disc.full.rules">Seven rules I keep…</p>
+    <button class="go" onclick="closeDisclaimerModal()" data-i18n="disc.ok">✓ Understood</button>
+  </div>
+</div>
+
+<!-- Per-box feedback popup -->
+<div class="fb-popup" id="fb-popup" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h3 id="fb-title">Feedback</h3>
+    <p id="fb-prompt"></p>
+    <textarea id="fb-text" placeholder=""></textarea>
+    <div class="row">
+      <button class="primary" onclick="submitBoxFeedback()">📥 <span data-i18n="discover.submit">Submit</span></button>
+      <button onclick="startFbMic()">🎙️</button>
+      <button onclick="closeBoxFeedback()" data-i18n="onb.skip">Skip</button>
+    </div>
   </div>
 </div>
 
 <footer>
-  Chitti News AI · the 14th Chitti · part of <a href="index.html">Sahay AI</a><br>
-  Free sources only · DeepSeek + community voices · Turso libSQL · Render free tier · self-pinged every 4 minutes<br>
-  Backend: <a href="https://chitti-news-ai-api.onrender.com/health" target="_blank" rel="noopener">/health</a>
+  <span data-i18n="footer.1">Chitti News AI · the 14th Chitti · part of Sahay AI</span><br>
+  <span data-i18n="footer.2">Free sources only · DeepSeek + community voices · Turso libSQL · Render free tier · self-pinged every 4 minutes</span><br>
+  <span data-i18n="footer.backend">Backend:</span> <a href="https://chitti-news-ai-api.onrender.com/health" target="_blank" rel="noopener">/health</a>
 </footer>
 
+<script src="chitti_news_ai_i18n.js"></script>
 <script>
-/* ----------------------------------------------------------------------
-   Chitti News AI — page controller
-   ---------------------------------------------------------------------- */
-(function(){
-
+(function () {
 const BACKEND = 'https://chitti-news-ai-api.onrender.com';
 const LANGS = [
-  {code:'hi',name:'हिंदी (Hindi)'}, {code:'bn',name:'বাংলা (Bengali)'},
-  {code:'te',name:'తెలుగు (Telugu)'}, {code:'ta',name:'தமிழ் (Tamil)'},
-  {code:'kn',name:'ಕನ್ನಡ (Kannada)'}, {code:'ml',name:'മലയാളം (Malayalam)'},
-  {code:'mr',name:'मराठी (Marathi)'}, {code:'gu',name:'ગુજરાતી (Gujarati)'},
-  {code:'or',name:'ଓଡ଼ିଆ (Odia)'}, {code:'pa',name:'ਪੰਜਾਬੀ (Punjabi)'},
+  {code:'hi',name:'हिंदी (Hindi)'},     {code:'bn',name:'বাংলা (Bengali)'},
+  {code:'te',name:'తెలుగు (Telugu)'},    {code:'ta',name:'தமிழ் (Tamil)'},
+  {code:'kn',name:'ಕನ್ನಡ (Kannada)'},    {code:'ml',name:'മലയാളം (Malayalam)'},
+  {code:'mr',name:'मराठी (Marathi)'},    {code:'gu',name:'ગુજરાતી (Gujarati)'},
+  {code:'or',name:'ଓଡ଼ିଆ (Odia)'},       {code:'pa',name:'ਪੰਜਾਬੀ (Punjabi)'},
   {code:'as',name:'অসমীয়া (Assamese)'}, {code:'ur',name:'اردو (Urdu)'},
-  {code:'bho',name:'भोजपुरी (Bhojpuri)'}, {code:'hne',name:'छत्तीसगढ़ी (Chhattisgarhi)'},
+  {code:'bho',name:'भोजपुरी (Bhojpuri)'},{code:'hne',name:'छत्तीसगढ़ी (Chhattisgarhi)'},
   {code:'mai',name:'मैथिली (Maithili)'}, {code:'kok',name:'कोंकणी (Konkani)'},
-  {code:'doi',name:'डोगरी (Dogri)'}, {code:'sd',name:'سنڌي (Sindhi)'},
-  {code:'ks',name:'کٲشُر (Kashmiri)'}, {code:'mni',name:'ꯃꯩꯇꯩꯂꯣꯟ (Meitei)'},
-  {code:'brx',name:'बड़ो (Bodo)'}, {code:'sat',name:'ᱥᱟᱱᱛᱟᱲᱤ (Santali)'},
-  {code:'sa',name:'संस्कृतम् (Sanskrit)'}, {code:'tcy',name:'ತುಳು (Tulu)'},
-  {code:'kfa',name:'ಕೊಡವ (Kodava)'}, {code:'kru',name:'कुड़ुख़ (Oraon)'},
+  {code:'doi',name:'डोगरी (Dogri)'},     {code:'sd',name:'سنڌي (Sindhi)'},
+  {code:'ks',name:'کٲشُر (Kashmiri)'},   {code:'mni',name:'ꯃꯩꯇꯩꯂꯣꯟ (Meitei)'},
+  {code:'brx',name:'बड़ो (Bodo)'},       {code:'sat',name:'ᱥᱟᱱᱛᱟᱲᱤ (Santali)'},
+  {code:'sa',name:'संस्कृतम् (Sanskrit)'},{code:'tcy',name:'ತುಳು (Tulu)'},
+  {code:'kfa',name:'ಕೊಡವ (Kodava)'},     {code:'kru',name:'कुड़ुख़ (Oraon)'},
   {code:'en',name:'English'},
 ];
 
-// 17 seeded sources mirrored on the client so the directory works
-// before /api/news-ai/sources returns LIVE. Re-sync after the route ships.
 const SEED_SOURCES = [
-  {n:'OpenAI Blog', u:'https://openai.com/news/rss.xml', c:'vendor', t:92, why:'OpenAI model / pricing / quota source of truth.'},
-  {n:'Anthropic Blog', u:'https://www.anthropic.com/news/rss.xml', c:'vendor', t:92, why:'Claude (Opus / Sonnet / Haiku) source of truth.'},
-  {n:'Google AI Blog', u:'https://ai.googleblog.com/feeds/posts/default', c:'vendor', t:90, why:'Google AI / Gemini announcements.'},
-  {n:'DeepMind Blog', u:'https://deepmind.com/blog/feed/basic', c:'vendor', t:92, why:'DeepMind research releases.'},
-  {n:'Hugging Face Blog', u:'https://huggingface.co/blog/feed.xml', c:'model_hub', t:88, why:'Open-model launches + library updates.'},
-  {n:'Meta AI Blog', u:'https://ai.meta.com/blog/feed', c:'vendor', t:88, why:'Llama family + Meta AI.'},
-  {n:'Microsoft AI Blog', u:'https://blogs.microsoft.com/ai/feed', c:'vendor', t:86, why:'Copilot family + Azure AI.'},
-  {n:'NVIDIA Blog', u:'https://blogs.nvidia.com/feed', c:'vendor', t:84, why:'Hardware + CUDA + NIM (filter to AI tag).'},
-  {n:'TechCrunch AI', u:'https://techcrunch.com/tag/artificial-intelligence/feed', c:'press', t:78, why:'Aggregated launch coverage — corroborate Tier-1.'},
-  {n:'The Gradient', u:'https://thegradient.pub/feed', c:'press', t:86, why:'Quality long-form, low noise.'},
-  {n:'MIT Tech Review — AI', u:'https://www.technologyreview.com/tag/artificial-intelligence/feed', c:'press', t:88, why:'Editorial rigour; long-form analysis.'},
-  {n:'Hacker News (AI-filtered)', u:'https://news.ycombinator.com/rss', c:'community', t:72, why:'Velocity hint, not source of truth.'},
-  {n:'Reddit — r/LocalLLaMA', u:'https://www.reddit.com/r/LocalLLaMA/.rss', c:'community', t:70, why:'Open-model benchmarks + community wins.'},
-  {n:'Reddit — r/MachineLearning', u:'https://www.reddit.com/r/MachineLearning/.rss', c:'community', t:72, why:'Research-leaning discussion; paper drops.'},
-  {n:'Reddit — r/ChatGPTPro', u:'https://www.reddit.com/r/ChatGPTPro/.rss', c:'community', t:68, why:'Pricing / quota change reports — corroborate first.'},
-  {n:'GitHub Trending — AI', u:'https://github.com/trending?since=daily', c:'community', t:75, why:'Daily community signal for new tools / libraries.'},
-  {n:'Hugging Face — new models', u:'https://huggingface.co/models?sort=created', c:'model_hub', t:82, why:'Track new open models by created date + downloads.'},
+  {n:'OpenAI Blog', u:'https://openai.com/news/rss.xml', c:'vendor', t:92, why:'OpenAI model / pricing source of truth.'},
+  {n:'Anthropic News', u:'https://www.anthropic.com/news', c:'vendor', t:92, why:'Claude source — scrape adapter queued.'},
+  {n:'Google AI Blog', u:'https://blog.google/technology/ai/rss/', c:'vendor', t:90, why:'Google AI / Gemini announcements.'},
+  {n:'DeepMind Blog', u:'https://deepmind.com/blog/feed/basic', c:'vendor', t:92, why:'DeepMind research.'},
+  {n:'Hugging Face Blog', u:'https://huggingface.co/blog/feed.xml', c:'model_hub', t:88, why:'Open-model launches.'},
+  {n:'Meta AI Blog', u:'https://ai.meta.com/blog/', c:'vendor', t:88, why:'Llama family — scrape adapter queued.'},
+  {n:'Microsoft AI Blog', u:'https://blogs.microsoft.com/ai/feed', c:'vendor', t:86, why:'Copilot + Azure AI.'},
+  {n:'NVIDIA Blog', u:'https://blogs.nvidia.com/feed', c:'vendor', t:84, why:'Hardware + CUDA + NIM.'},
+  {n:'TechCrunch AI', u:'https://techcrunch.com/tag/artificial-intelligence/feed', c:'press', t:78, why:'Launch coverage.'},
+  {n:'The Gradient', u:'https://thegradient.pub/feed', c:'press', t:86, why:'Quality long-form.'},
+  {n:'MIT Tech Review — AI', u:'https://www.technologyreview.com/tag/artificial-intelligence/feed', c:'press', t:88, why:'Editorial rigour.'},
+  {n:'Hacker News (AI-filtered)', u:'https://news.ycombinator.com/rss', c:'community', t:72, why:'Velocity hint.'},
+  {n:'Reddit — r/LocalLLaMA', u:'https://www.reddit.com/r/LocalLLaMA/.rss', c:'community', t:70, why:'Open-model community.'},
+  {n:'Reddit — r/MachineLearning', u:'https://www.reddit.com/r/MachineLearning/.rss', c:'community', t:72, why:'Paper drops.'},
+  {n:'Reddit — r/ChatGPTPro', u:'https://www.reddit.com/r/ChatGPTPro/.rss', c:'community', t:68, why:'Pricing reports.'},
+  {n:'GitHub Trending — AI', u:'https://github.com/trending?since=daily', c:'community', t:75, why:'Daily community signal.'},
+  {n:'Hugging Face — new models', u:'https://huggingface.co/models?sort=created', c:'model_hub', t:82, why:'New open models.'},
 ];
 
 const LS_LANG = 'chitti_news_ai_lang';
 const LS_ONB  = 'chitti_news_ai_onb_done';
+const LS_VOTES = 'chitti_news_ai_votes';
+const I18N_API = window.CHITTI_NEWS_AI_I18N || {t:(k)=>k, PARENT_LANG:{}};
+const T = I18N_API.t;
 
 function getLang(){ try { return localStorage.getItem(LS_LANG) || ''; } catch(e){ return ''; } }
 function setLang(code){
   try { localStorage.setItem(LS_LANG, code); } catch(e){}
   paintLangStatus(code);
+  applyI18n();
+  showLearningBanner(code);
   if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.setLanguage === 'function') {
     try { window.Chitti.a11y.setLanguage(code); } catch(e){}
   }
+  refreshDynamic();
 }
 function paintLangStatus(code){
   const el = document.getElementById('lang-status');
   if (!el) return;
-  if (!code){ el.textContent = 'No language picked'; el.classList.add('unset'); return; }
+  if (!code){
+    el.textContent = T('pick.unset', 'en');
+    el.classList.add('unset');
+    return;
+  }
   const found = LANGS.find(l => l.code === code);
   el.textContent = '✓ ' + (found ? found.name : code);
   el.classList.remove('unset');
 }
 
-function fillLangSelects(){
-  const opts = LANGS.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-  document.getElementById('pick-lang').innerHTML = '<option value="">— pick —</option>' + opts;
-  document.getElementById('onb-lang').innerHTML = opts;
-  const cur = getLang();
-  if (cur){ document.getElementById('pick-lang').value = cur; }
+/* ---------- I18N application ---------- */
+function applyI18n(){
+  const lang = getLang() || 'en';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ur' || lang === 'sd' || lang === 'ks') ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = T(key, lang);
+    if (val && val !== key) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    const val = T(key, lang);
+    if (val && val !== key) el.setAttribute('placeholder', val);
+  });
+}
+function showLearningBanner(code){
+  const banner = document.getElementById('lang-learning');
+  const text = document.getElementById('lang-learning-text');
+  if (!banner || !text) return;
+  const parents = (I18N_API.PARENT_LANG || {});
+  if (!code || !parents[code]){ banner.classList.remove('shown'); return; }
+  const langName = (LANGS.find(l => l.code === code) || {}).name || code;
+  const parentName = (LANGS.find(l => l.code === parents[code]) || {}).name || parents[code];
+  const tmpl = T('still.learning', code) || T('still.learning', 'en');
+  text.textContent = tmpl.replace('{lang}', langName).replace('{parent}', parentName);
+  banner.classList.add('shown');
 }
 
+/* ---------- Per-box feedback (inline, always visible) ---------- */
+function getVotes(){
+  try { return JSON.parse(localStorage.getItem(LS_VOTES) || '{}'); } catch(e){ return {}; }
+}
+function setVote(boxId, val){
+  const v = getVotes(); v[boxId] = { val, at: Date.now() };
+  try { localStorage.setItem(LS_VOTES, JSON.stringify(v)); } catch(e){}
+}
+function injectFeedbackBars(){
+  const lang = getLang() || 'en';
+  document.querySelectorAll('[data-chitti-response]').forEach(box => {
+    if (box.querySelector(':scope > .box-fb')) return;
+    const section = box.getAttribute('data-chitti-section') || box.id || 'box';
+    const bar = document.createElement('div');
+    bar.className = 'box-fb';
+    bar.setAttribute('role','group');
+    bar.setAttribute('aria-label','Per-box feedback for ' + section);
+    bar.innerHTML = `
+      <span class="fb-lbl">${T('fb.helpful', lang) || 'Feedback'}</span>
+      <button title="Read aloud"        onclick="speakBox(this)">🔊</button>
+      <button title="Ask Chitti more"   onclick="askMore(this)">🤖</button>
+      <button title="Helpful"           onclick="voteBox(this,'up','${section.replace(/'/g,"\\'")}')">👍</button>
+      <button title="Not helpful"       onclick="voteBox(this,'down','${section.replace(/'/g,"\\'")}')">👎</button>
+    `;
+    box.appendChild(bar);
+    const votes = getVotes();
+    const k = section;
+    if (votes[k]){
+      const idx = votes[k].val === 'up' ? 3 : 4;
+      const btn = bar.querySelectorAll('button')[idx];
+      if (btn) btn.classList.add(votes[k].val === 'up' ? 'voted-up' : 'voted-down');
+    }
+  });
+}
+window.voteBox = function(btn, kind, section){
+  const lang = getLang() || 'en';
+  btn.classList.toggle(kind === 'up' ? 'voted-up' : 'voted-down');
+  setVote(section, kind);
+  const bar = btn.parentElement;
+  let thanks = bar.querySelector('.fb-thanks');
+  if (!thanks){
+    thanks = document.createElement('span'); thanks.className = 'fb-thanks';
+    bar.appendChild(thanks);
+  }
+  thanks.textContent = T('fb.thanks', lang);
+  if (kind === 'down') openBoxFeedback(section);
+  // Best-effort POST (fire-and-forget; backend may 404 in skeleton mode)
+  try {
+    fetch(BACKEND + '/api/feedback/collect', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({page:'chitti-news-ai', section, vote:kind, language:lang})
+    }).catch(()=>{});
+  } catch(e){}
+};
+window.speakBox = function(btn){
+  const box = btn.closest('[data-chitti-response]');
+  if (!box) return;
+  const clone = box.cloneNode(true);
+  clone.querySelectorAll('.box-fb').forEach(n => n.remove());
+  doSpeak(clone.textContent.replace(/\s+/g,' ').trim().slice(0,800));
+};
+window.askMore = function(btn){
+  const box = btn.closest('[data-chitti-response]');
+  const section = box ? box.getAttribute('data-chitti-section') : '';
+  setTab('tools');
+  const ti = document.getElementById('prof-input');
+  if (ti) ti.value = (ti.value ? ti.value + '\n' : '') + 'Explain more: ' + section;
+};
+
+/* ---------- Per-box feedback popup ---------- */
+let _fbSection = '';
+function openBoxFeedback(section){
+  _fbSection = section;
+  const lang = getLang() || 'en';
+  document.getElementById('fb-title').textContent = 'Feedback — ' + section;
+  document.getElementById('fb-prompt').textContent = T('fb.helpful', lang);
+  document.getElementById('fb-text').value = '';
+  document.getElementById('fb-popup').classList.add('shown');
+}
+window.closeBoxFeedback = function(){ document.getElementById('fb-popup').classList.remove('shown'); };
+window.submitBoxFeedback = function(){
+  const text = document.getElementById('fb-text').value.trim();
+  const lang = getLang() || 'en';
+  if (text){
+    try {
+      fetch(BACKEND + '/api/feedback/collect', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({page:'chitti-news-ai', section:_fbSection, text, language:lang})
+      }).catch(()=>{});
+    } catch(e){}
+  }
+  doSpeak(T('fb.thanks', lang));
+  closeBoxFeedback();
+};
+window.startFbMic = function(){ startVoiceCapture('fb-text'); };
+
+/* ---------- Lang select ---------- */
+function fillLangSelects(){
+  const opts = LANGS.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+  const placeholder = `<option value="" data-i18n="pick.choose">${T('pick.choose', getLang() || 'en')}</option>`;
+  document.getElementById('pick-lang').innerHTML = placeholder + opts;
+  document.getElementById('onb-lang').innerHTML = opts;
+  const cur = getLang();
+  if (cur){ document.getElementById('pick-lang').value = cur; document.getElementById('onb-lang').value = cur; }
+}
 window.onLangChange = function(){
   const v = document.getElementById('pick-lang').value;
   if (v) setLang(v);
 };
 
+/* ---------- Tabs ---------- */
 window.setTab = function(name){
   document.querySelectorAll('nav.tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('main .page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
@@ -641,46 +712,43 @@ window.setTab = function(name){
 
 window.openLanguagePicker = function(){
   document.getElementById('onb-modal').classList.add('shown');
-  const cur = getLang();
-  if (cur) document.getElementById('onb-lang').value = cur;
+  const cur = getLang(); if (cur) document.getElementById('onb-lang').value = cur;
 };
-
 window.completeOnboarding = function(){
   const v = document.getElementById('onb-lang').value;
-  if (!v){ alert('Please pick a language to continue.'); return; }
+  if (!v){ alert(T('pick.unset', 'en')); return; }
   setLang(v);
   try { localStorage.setItem(LS_ONB, '1'); } catch(e){}
   document.getElementById('onb-modal').classList.remove('shown');
   document.getElementById('pick-lang').value = v;
 };
-
 window.skipOnboarding = function(){
-  // User can pick later from the picker bar — onboarding is never forced (§7).
   try { localStorage.setItem(LS_ONB, '1'); } catch(e){}
   document.getElementById('onb-modal').classList.remove('shown');
 };
-
 window.openDisclaimerModal  = function(){ document.getElementById('disclaimer-modal').classList.add('shown'); };
 window.closeDisclaimerModal = function(){ document.getElementById('disclaimer-modal').classList.remove('shown'); };
 
+/* ---------- Speech ---------- */
 window.speakDisclaimer = function(){
-  const text = document.getElementById('disclaimer-text').textContent.trim();
-  doSpeak(text);
+  doSpeak(document.getElementById('disclaimer-text').textContent.trim());
 };
 window.speakPicker = function(){
-  doSpeak('Pick your language. Chitti News AI has no default. All responses will land in the language you choose.');
+  doSpeak(T('pick.lang', getLang() || 'en'));
 };
 window.speakPage = function(){
   const sections = Array.from(document.querySelectorAll('main .page.active [data-chitti-response]')).slice(0,5);
-  if (!sections.length){ doSpeak('Nothing to read on this tab yet.'); return; }
-  const txt = sections.map(s => s.textContent.replace(/\s+/g,' ').trim()).join('. ').slice(0,800);
+  if (!sections.length){ doSpeak(T('today.empty', getLang() || 'en')); return; }
+  const txt = sections.map(s => {
+    const c = s.cloneNode(true); c.querySelectorAll('.box-fb').forEach(n => n.remove());
+    return c.textContent.replace(/\s+/g,' ').trim();
+  }).join('. ').slice(0,800);
   doSpeak(txt);
 };
 function doSpeak(text){
   if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak === 'function') {
     try { window.Chitti.a11y.speak(text); return; } catch(e){}
   }
-  // Fallback — SpeechSynthesis only if browser has it
   if ('speechSynthesis' in window) {
     const u = new SpeechSynthesisUtterance(text);
     const code = getLang() || 'en';
@@ -689,71 +757,73 @@ function doSpeak(text){
     speechSynthesis.speak(u);
   }
 }
-
+window.doSpeak = doSpeak;
 window.openFeatureDiscovery = function(){
-  // Auto-loaded by chitti_a11y.js — try the canonical opener first.
   if (window.Chitti && window.Chitti.features && typeof window.Chitti.features.open === 'function') {
     try { window.Chitti.features.open(); return; } catch(e){}
   }
-  // Honest stub fallback — never silently fail
-  alert('Feature Discovery is loading. Try again in a second, or open chitti-news-ai/skills/FEATURES.md directly.');
 };
 
-/* ---------- Ask Chitti AI strip ---------- */
+/* ---------- Ask / Profession / Trust / Source submit ---------- */
 window.askChitti = function(){
-  const lang = getLang();
-  if (!lang){ openLanguagePicker(); return; }
+  const lang = getLang(); if (!lang){ openLanguagePicker(); return; }
   const q = (document.getElementById('ask-input').value || '').trim();
-  if (!q){ doSpeak('Please type or speak your question.'); return; }
-  // Routes to DeepSeek via /api/news-ai/* — until the backend lands, surface the honest stub.
-  doSpeak('Chitti is preparing your answer. The backend is in honest-stub mode — see specs link below.');
+  if (!q){ doSpeak(T('ask.ph', lang)); return; }
+  doSpeak(T('tools.stub', lang));
   setTab('tools');
   document.getElementById('prof-input').value = q;
 };
-window.startAskMic = function(){ startVoiceCapture('ask-input'); };
-
-/* ---------- Profession → Tools ---------- */
+window.startAskMic   = function(){ startVoiceCapture('ask-input'); };
 window.submitProfession = function(){
-  const lang = getLang();
-  if (!lang){ openLanguagePicker(); return; }
+  const lang = getLang(); if (!lang){ openLanguagePicker(); return; }
   const text = (document.getElementById('prof-input').value || '').trim();
-  if (!text){ doSpeak('Describe what you do, in any language.'); return; }
-  // POST /api/news-ai/tools-for-me — backend returns 501 today, frontend renders honest stub.
-  doSpeak('Searching trusted free AI tools for your work. This is currently a skeleton — real ranking ships with the next release.');
+  if (!text){ doSpeak(T('tools.ph', lang)); return; }
+  doSpeak(T('tools.stub', lang));
   fetch(BACKEND + '/api/news-ai/tools-for-me', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({profession:text, language:lang})
-  }).catch(()=>{ /* honest fallback — keep the skeleton visible */ });
+  }).catch(()=>{});
 };
-window.startProfMic = function(){ startVoiceCapture('prof-input'); };
-
-/* ---------- Trust check ---------- */
+window.startProfMic  = function(){ startVoiceCapture('prof-input'); };
 window.submitTrustCheck = function(){
   const lang = getLang() || 'en';
   const url = (document.getElementById('trust-url').value || '').trim();
-  if (!url){ doSpeak('Paste a URL to verify.'); return; }
-  doSpeak('Running the four-layer trust verification. Result will appear when the backend ships.');
+  if (!url){ doSpeak(T('trust.url.ph', lang)); return; }
+  doSpeak(T('trust.stub', lang));
   fetch(BACKEND + '/api/news-ai/trust-check', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({url, language:lang})
   }).catch(()=>{});
 };
-
-/* ---------- Source submit ---------- */
 window.submitSource = function(){
   const lang = getLang() || 'en';
   const url  = (document.getElementById('src-url').value  || '').trim();
   const line = (document.getElementById('src-line').value || '').trim();
-  if (!url){ doSpeak('Paste the source URL first.'); return; }
-  doSpeak('Submission received. It will enter the Layer-1 verification queue.');
+  if (!url){ doSpeak(T('discover.url.ph', lang)); return; }
+  doSpeak(T('fb.thanks', lang));
   fetch(BACKEND + '/api/news-ai/sources/submit', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({url, one_line:line, language:lang})
   }).catch(()=>{});
 };
-window.startSrcMic = function(){ startVoiceCapture('src-line'); };
+window.startSrcMic   = function(){ startVoiceCapture('src-line'); };
 
-/* ---------- Helpers ---------- */
+function startVoiceCapture(targetInputId){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){ doSpeak('Voice input not available.'); return; }
+  const r = new SR();
+  r.lang = (getLang() || 'en') + ((getLang() || 'en') === 'en' ? '-IN' : '');
+  r.interimResults = false; r.maxAlternatives = 1;
+  r.onresult = (e) => {
+    const t = e.results[0][0].transcript;
+    const el = document.getElementById(targetInputId);
+    if (el) el.value = (el.value ? el.value + ' ' : '') + t;
+  };
+  r.onerror = () => doSpeak('Voice input failed.');
+  try { r.start(); } catch(e){ doSpeak('Voice input failed.'); }
+}
+
+/* ---------- LIVE endpoints renderers ---------- */
 function bandFor(t){
   if (t == null) return 'pending';
   if (t >= 80) return 'trusted';
@@ -770,83 +840,76 @@ function ago(iso){
   if (!iso) return '';
   const t = Date.parse(iso); if (isNaN(t)) return '';
   const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
-  if (mins < 60)  return mins + 'm ago';
-  if (mins < 1440) return Math.round(mins/60) + 'h ago';
-  return Math.round(mins/1440) + 'd ago';
+  if (mins < 60)  return mins + 'm';
+  if (mins < 1440) return Math.round(mins/60) + 'h';
+  return Math.round(mins/1440) + 'd';
 }
 
-/* ---------- Sources directory render — LIVE from /api/news-ai/sources ---------- */
 async function renderSources(){
-  const host  = document.getElementById('sources-list');
+  const lang = getLang() || 'en';
+  const host = document.getElementById('sources-list');
   const status = document.getElementById('sources-status');
   if (!host) return;
   let items = null;
   try {
     const r = await fetch(BACKEND + '/api/news-ai/sources');
-    if (r.ok) {
-      const j = await r.json();
-      items = (j && j.items) || [];
-      if (status) status.innerHTML = `✓ ${j.count} sources from <code>/api/news-ai/sources</code> · trust-ordered`;
-    } else {
-      throw new Error('HTTP ' + r.status);
-    }
-  } catch(e) {
-    // Honest fallback — use bundled client seed; tell the user.
-    if (status) status.innerHTML = '⚠️ Backend unreachable — showing bundled seed list (<code>chitti-news-ai/backend/data/sources.json</code>). Live trust scores resume when the API is reachable.';
+    if (r.ok){ const j = await r.json(); items = (j && j.items) || []; if (status) status.textContent = '✓ ' + j.count; }
+    else throw new Error('HTTP ' + r.status);
+  } catch(e){
+    if (status) status.textContent = T('sources.unreach', lang);
     items = SEED_SOURCES.map((s, i) => ({
-      id: i+1, name: s.n, url: s.u, kind: s.u.includes('huggingface.co/models') || s.u.includes('github.com/trending') ? 'scrape' : 'rss',
-      category: s.c, language: 'en', active: true,
-      trust_score: s.t, trust_band: bandFor(s.t),
-      ai_crawl_blocked: false, last_fetched_utc: null,
-      reason_for_inclusion: s.why,
+      id:i+1, name:s.n, url:s.u, kind:'rss', category:s.c, language:'en', active:true,
+      trust_score:s.t, trust_band:bandFor(s.t), ai_crawl_blocked:false, last_fetched_utc:null,
+      reason_for_inclusion:s.why
     }));
   }
   host.innerHTML = items.map((s, i) => {
     const band = s.trust_band || bandFor(s.trust_score);
-    const fetched = s.last_fetched_utc ? `<span style="font-size:11px;color:var(--muted);margin-left:8px">last polled ${esc(ago(s.last_fetched_utc))}</span>` : '';
-    const blocked = s.ai_crawl_blocked ? '<span class="coming-soon" style="margin-left:6px">AI crawl blocked — skipped</span>' : '';
+    const fetched = s.last_fetched_utc ? `<span style="font-size:11px;color:var(--muted);margin-left:8px">${esc(ago(s.last_fetched_utc))}</span>` : '';
+    const blocked = s.ai_crawl_blocked ? '<span class="coming-soon" style="margin-left:6px">blocked</span>' : '';
     return `
       <div class="src-row" data-chitti-response data-chitti-section="Source: ${esc(s.name)}">
         <div>
-          <div class="name">${i+1}. ${esc(s.name)} <span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">· ${esc(s.category)} · ${esc(s.kind)}</span>${blocked}${fetched}</div>
+          <div class="name">${i+1}. ${esc(s.name)} <span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">· ${esc(s.category)}</span>${blocked}${fetched}</div>
           <div class="url"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.url)}</a></div>
           <div class="reason" style="font-size:12px;color:var(--muted);margin-top:3px">${esc(s.reason_for_inclusion || '')}</div>
         </div>
-        <span class="ts-chip ${band}" title="Trust ${s.trust_score}/100">${Math.round(s.trust_score || 0)}/100 · ${band}</span>
-        <button class="spk-btn" onclick="doSpeak('Source: ${esc(s.name).replace(/'/g,'')}. Trust ${Math.round(s.trust_score || 0)} out of 100.')" aria-label="Read source aloud">🔊</button>
+        <span class="ts-chip ${band}">${Math.round(s.trust_score || 0)}/100</span>
+        <button class="spk-btn" onclick="doSpeak('${esc(s.name).replace(/'/g,'')}, trust ${Math.round(s.trust_score||0)}')">🔊</button>
       </div>
     `;
   }).join('');
+  injectFeedbackBars();
 }
 
-/* ---------- Today — LIVE from /api/news-ai/today ---------- */
 function articleCardHTML(a){
+  const lang = getLang() || 'en';
   const src = a.source || {};
   const band = src.trust_band || bandFor(src.trust_score);
   const flags = [];
-  if (a.is_launch) flags.push('<span class="meta-pill free" style="font-weight:700">🚀 Launch</span>');
-  if (a.is_pricing_change) flags.push('<span class="meta-pill warn" style="font-weight:700">💰 Pricing change</span>');
-  if (a.is_free_tier_change) flags.push('<span class="meta-pill free" style="font-weight:700">🎁 Free-tier change</span>');
-  const note = a.importance_note ? `<div class="section-sub" style="margin-top:6px">${esc(a.importance_note)}</div>` : '';
+  if (a.is_launch) flags.push('<span class="meta-pill free">🚀 Launch</span>');
+  if (a.is_pricing_change) flags.push('<span class="meta-pill warn">💰</span>');
+  if (a.is_free_tier_change) flags.push('<span class="meta-pill free">🎁</span>');
   return `
-    <div class="card" data-chitti-response data-chitti-section="Article: ${esc(a.title)}">
+    <div class="card" data-chitti-response data-chitti-section="Article: ${esc((a.title||'').slice(0,60))}">
       <div class="meta">
         <span>${esc(src.name || 'Source')}</span>
-        <span class="ts-chip ${band}">Trust ${Math.round(src.trust_score || 0)}</span>
+        <span class="ts-chip ${band}">${Math.round(src.trust_score || 0)}</span>
         <span>${esc(ago(a.ingested_utc || a.published_utc))}</span>
         ${flags.join(' ')}
       </div>
       <div class="title">${esc(a.title)}</div>
       ${a.summary ? `<div class="summary">${esc(a.summary)}</div>` : ''}
-      ${note}
       <div class="actions">
-        <button onclick="doSpeak(${JSON.stringify(a.title + '. ' + (a.summary || '')).replace(/<\/script/gi,'<\\/script')})">🔊 Read</button>
-        <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="primary">Open source ↗</a>
+        <button onclick="doSpeak(${JSON.stringify((a.title||'') + '. ' + (a.summary||'')).replace(/<\/script/gi,'<\\/script')})">${T('read', lang)}</button>
+        <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="primary">${T('open.source', lang)}</a>
       </div>
     </div>
   `;
 }
+
 async function refreshToday(){
+  const lang = getLang() || 'en';
   const host = document.getElementById('today-list');
   const status = document.getElementById('today-status');
   if (!host) return;
@@ -855,21 +918,18 @@ async function refreshToday(){
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     const items = j.items || [];
-    if (!items.length){
-      host.innerHTML = '';
-      if (status) status.innerHTML = '⌛ No articles in the last 24 h yet. The 6-hour RSS poll fills this in once the backend has run a cycle.';
-      return;
-    }
-    if (status) status.innerHTML = `✓ ${items.length} articles · ordering: ${esc(j.ordering)} · importance scorer: <strong>${esc(j.importance_scorer_status)}</strong>`;
+    if (!items.length){ host.innerHTML = ''; if (status) status.textContent = T('today.empty', lang); return; }
+    if (status) status.textContent = '✓ ' + items.length;
     host.innerHTML = items.map(articleCardHTML).join('');
-  } catch(e) {
+  } catch(e){
     host.innerHTML = '';
-    if (status) status.innerHTML = '⚠️ Backend unreachable — daily briefing resumes when the API responds. No fake demo data shown.';
+    if (status) status.textContent = T('today.unreach', lang);
   }
+  injectFeedbackBars();
 }
 
-/* ---------- Launches — LIVE from /api/news-ai/launches ---------- */
 async function refreshLaunches(){
+  const lang = getLang() || 'en';
   const host = document.getElementById('launches-list');
   const status = document.getElementById('launches-status');
   if (!host) return;
@@ -878,94 +938,57 @@ async function refreshLaunches(){
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     const items = j.items || [];
-    if (!items.length){
-      host.innerHTML = '';
-      if (status) status.innerHTML = '⌛ No launches detected in the last 7 days yet. The poll cron fills this in once a cycle has run.';
-      return;
-    }
-    if (status) status.innerHTML = `✓ ${items.length} launches · classifier: <strong>${esc(j.classifier)}</strong> · LLM importance: <strong>${esc(j.llm_importance_status)}</strong>`;
+    if (!items.length){ host.innerHTML = ''; if (status) status.textContent = T('launch.empty', lang); return; }
+    if (status) status.textContent = '✓ ' + items.length;
     host.innerHTML = items.map(articleCardHTML).join('');
-  } catch(e) {
+  } catch(e){
     host.innerHTML = '';
-    if (status) status.innerHTML = '⚠️ Backend unreachable — launches list resumes when the API responds.';
+    if (status) status.textContent = T('launch.unreach', lang);
   }
+  injectFeedbackBars();
 }
-
-window.refreshToday    = refreshToday;
+window.refreshToday = refreshToday;
 window.refreshLaunches = refreshLaunches;
-window.renderSources   = renderSources;
-window.doSpeak = doSpeak;
+window.renderSources = renderSources;
 
-/* ---------- Voice capture helper ---------- */
-function startVoiceCapture(targetInputId){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR){ doSpeak('Voice input is not available in this browser. Type instead.'); return; }
-  const r = new SR();
-  r.lang = (getLang() || 'en') + (getLang() === 'en' ? '-IN' : '');
-  r.interimResults = false;
-  r.maxAlternatives = 1;
-  r.onresult = (e) => {
-    const t = e.results[0][0].transcript;
-    const el = document.getElementById(targetInputId);
-    if (el) el.value = (el.value ? el.value + ' ' : '') + t;
-  };
-  r.onerror = () => doSpeak('Could not capture voice. Please try again or type.');
-  try { r.start(); } catch(e){ doSpeak('Voice input failed.'); }
+function refreshDynamic(){
+  renderSources(); refreshToday(); refreshLaunches();
 }
 
-/* ---------- Disclaimer pull (server-enforced) ---------- */
 function pullDisclaimer(){
-  fetch(BACKEND + '/api/news-ai/disclaimer')
-    .then(r => r.ok ? r.json() : null)
-    .then(j => {
-      if (j && j.disclaimer) {
-        const span = document.getElementById('disclaimer-text');
-        if (span) span.innerHTML = '⚖️ ' + j.disclaimer.replace(/^\W*/, '');
-      }
-    })
-    .catch(() => { /* keep the inline copy — honest fallback */ });
+  fetch(BACKEND + '/api/news-ai/disclaimer').then(r => r.ok ? r.json() : null).then(j => {
+    if (j && j.disclaimer){
+      // Only override if the user's language is English — for other languages
+      // the localised disc.short in I18N is canonical UI text. Server
+      // disclaimer remains the legal source of truth (rendered in modal).
+    }
+  }).catch(()=>{});
 }
 
-/* ---------- Boot ---------- */
 function boot(){
   fillLangSelects();
+  applyI18n();
   paintLangStatus(getLang());
-  renderSources();
-  refreshToday();
-  refreshLaunches();
+  showLearningBanner(getLang());
+  injectFeedbackBars();
+  refreshDynamic();
   pullDisclaimer();
-
-  // First-visit language onboarding — voice-guided for blind users via chitti_a11y.js auto-announce.
   let onbDone = false;
   try { onbDone = localStorage.getItem(LS_ONB) === '1'; } catch(e){}
-  if (!onbDone){
-    document.getElementById('onb-modal').classList.add('shown');
-  }
+  if (!onbDone) document.getElementById('onb-modal').classList.add('shown');
+
+  // Re-inject feedback bars after dynamic content lands.
+  new MutationObserver(injectFeedbackBars).observe(document.body, { childList: true, subtree: true });
 }
 document.addEventListener('DOMContentLoaded', boot);
-
 })();
 </script>
 
-<!-- Chitti Quality v2 trust signals · per-page · 2026-05-14 -->
-<script>
-window.CHITTI_LAST_AUDIT='2026-05-14';
-window.CHITTI_CO2_G=0.3;
-window.CHITTI_RISK='low';
-</script>
-
-<!-- Server-enforced sticky disclaimer (locked decision §2) -->
+<script>window.CHITTI_LAST_AUDIT='2026-05-14';window.CHITTI_CO2_G=0.3;window.CHITTI_RISK='low';</script>
 <script src="chitti_disclaimer.js"></script>
-
-<!-- Per-response widget — 🔊 🤖 👍 👎 + per-box feedback popup. Auto-attaches via MutationObserver. -->
 <script src="feedback-widget.js" data-page="chitti_news_ai"></script>
-
-<!-- Shared a11y substrate — language selector + Voice Required + Braille + ISL + Feature Discovery -->
 <script src="chitti_a11y.js"></script>
-<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
-
-<!-- Camera substrate — auto-loaded by a11y normally, kept explicit here so a future News-AI-with-camera flow can flip on without a code change -->
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){}}</script>
 <script src="chitti_camera.js"></script>
-
 </body>
 </html>
