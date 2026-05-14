@@ -86,13 +86,32 @@ class ChittiDailySlice:
 
 
 def compute_slice(chitti: str, engine, *, window_hours: int = 24,
-                  eval_sample_rate: float | None = None) -> ChittiDailySlice:
+                  eval_sample_rate: float | None = None,
+                  observability=None) -> ChittiDailySlice:
     """Pull last `window_hours` of quality_audit + quality_feedback rows for
-    this Chitti and roll them up. Runs LLM-as-judge on a random sample."""
+    this Chitti and roll them up. Runs LLM-as-judge on a random sample.
+
+    If `observability` is provided, every LLM-as-judge call writes a
+    `kind="judge"` audit row (one before, one after, with latency and
+    scores). Pass `Observability(chitti=..., engine=engine)` from the
+    caller — typically the daily founder cron — so judge turns join the
+    same audit fan-in as production turns.
+    """
     sample_rate = eval_sample_rate if eval_sample_rate is not None else EVAL_SAMPLE_RATE
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     since = datetime.now(timezone.utc) - timedelta(hours=window_hours)
     out = ChittiDailySlice(chitti=chitti, window_hours=window_hours)
+
+    # If no Observability was passed, build a transient one from `engine`
+    # so judge turns still land in `quality_audit` alongside production
+    # turns. Best-effort: failure to import is just a missed audit row,
+    # never a failed slice.
+    if observability is None:
+        try:
+            from .observability import Observability  # noqa: PLC0415
+            observability = Observability(chitti=chitti, engine=engine)
+        except Exception:  # noqa: BLE001
+            observability = None
 
     with Session() as sess:
         # total responses
@@ -183,6 +202,7 @@ def compute_slice(chitti: str, engine, *, window_hours: int = 24,
                     user_input=p.get("user_text", ""),
                     model_output=p.get("model_output", ""),
                     sources=p.get("sources") or [],
+                    observability=observability,
                 )
                 if not scores:
                     continue
@@ -206,8 +226,7 @@ def compute_slice(chitti: str, engine, *, window_hours: int = 24,
 
 def render_email_html(slices: list[ChittiDailySlice],
                       prev_slices: list[ChittiDailySlice] | None = None,
-                      defects: list | None = None,
-                      uptime: dict | None = None) -> tuple[str, str]:
+                      defects: list | None = None) -> tuple[str, str]:
     """Return (subject, html_body) for the consolidated daily Chitti Quality
     email — 07:00 IST. Includes the Part 2 horizontal quality table, the
     Part 3 defect-rate table, the Critical/Warning/Healthy panels, and the
@@ -320,63 +339,6 @@ def render_email_html(slices: list[ChittiDailySlice],
     grand_pct = (round(100.0 * grand_thumbs_up / grand_total_thumbs, 1)
                  if grand_total_thumbs else None)
 
-    # ── BCP Layer 1 — uptime block ────────────────────────────────────
-    # Renders the 24h /health-ping table from chitti-founder's self-ping
-    # ring. If `uptime` is None or empty, the section is omitted entirely
-    # (honest empty state — never a fake "100%" filler).
-    uptime_html = ""
-    if uptime and uptime.get("by_chitti"):
-        by_chitti: dict = uptime["by_chitti"]
-        interval_min = uptime.get("interval_min", 4)
-        watched = len(by_chitti)
-        # Overall numbers
-        checks_total = sum(v.get("checks", 0) for v in by_chitti.values())
-        ok_total = sum(v.get("ok", 0) for v in by_chitti.values())
-        overall_pct = round(100.0 * ok_total / checks_total, 2) if checks_total else None
-        # Sort worst-first so failing Chittis are at the top.
-        ordered = sorted(
-            by_chitti.items(),
-            key=lambda kv: (kv[1].get("uptime_pct") if kv[1].get("uptime_pct") is not None else 101.0),
-        )
-
-        def _uptime_status(pct: float | None) -> tuple[str, str]:
-            if pct is None: return ("⚪", "—")
-            if pct >= 99: return ("🟢", "Up")
-            if pct >= 95: return ("🟡", "Flaky")
-            return ("🔴", "Down")
-
-        up_rows = []
-        for chitti, v in ordered:
-            pct = v.get("uptime_pct")
-            symbol, label = _uptime_status(pct)
-            pct_str = "—" if pct is None else f"{pct}%"
-            up_rows.append(
-                f"<tr>"
-                f"<td><b>{_html(chitti)}</b></td>"
-                f"<td style='text-align:right'>{v.get('checks', 0)}</td>"
-                f"<td style='text-align:right'>{v.get('fails', 0)}</td>"
-                f"<td style='text-align:right'>{pct_str}</td>"
-                f"<td style='text-align:center'>{symbol} {label}</td>"
-                f"</tr>"
-            )
-        overall_pct_str = "—" if overall_pct is None else f"{overall_pct}%"
-        uptime_html = f"""
-      <h3 style="margin-top:18px">BCP Layer 1 · Backend uptime (last 24h)</h3>
-      <p style="margin:0 0 6px;color:#666">
-        Self-ping every <b>{interval_min}</b> min · <b>{watched}</b> backend(s) watched ·
-        overall <b>{overall_pct_str}</b> · <b>{checks_total:,}</b> checks ·
-        <b>{checks_total - ok_total}</b> failure(s)
-      </p>
-      <table border="1" cellpadding="6" style="border-collapse:collapse;font-size:13px;width:100%">
-        <thead style="background:#f0f0f0">
-          <tr>
-            <th>Backend</th><th>Checks</th><th>Fails</th><th>Uptime</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody>{''.join(up_rows)}</tbody>
-      </table>
-        """.rstrip()
-
     html = f"""
     <html><body style="font-family:-apple-system,sans-serif;color:#0E2344">
       <h2 style="margin:0 0 4px">Sahay AI — Daily Quality Report</h2>
@@ -418,7 +380,6 @@ def render_email_html(slices: list[ChittiDailySlice],
 
       <h3 style="margin-top:18px">YOUR TASKS TODAY</h3>
       {tasks_html}
-      {uptime_html}
 
       <h3 style="margin-top:24px">Part 3 · Defect rate (last 24h)</h3>
       <table border="1" cellpadding="6" style="border-collapse:collapse;font-size:13px;width:100%">

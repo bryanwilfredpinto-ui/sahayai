@@ -149,9 +149,63 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
               parameters: <jsonschema>}}.
     Returns:  {"message": <openai-style message dict>,
                "_meta": {"input_tokens": N, "output_tokens": M}}.
+
+    Quality wiring:
+      - Rails gate the LAST user-role message only (multi-turn tool loops
+        can't be re-gated on every reply or the rails would block valid
+        intermediate `tool` role turns).
+      - Each tool turn in `messages` gets a `record_tool_call` audit row.
+      - The assistant's final natural-language reply (when present) gets
+        `record_response` so latency + content land in the audit fan-in.
     """
     if not settings.DEEPSEEK_API_KEY:
         raise DeepSeekError("DEEPSEEK_API_KEY not configured")
+
+    hooks = _get_hooks()
+    ctx: dict = {}
+    last_user = next((m for m in reversed(messages) if m.get("role") == "user"), None)
+    last_user_text = (last_user or {}).get("content") or ""
+
+    if hooks is not None and last_user_text:
+        gated = hooks.before_model(last_user_text, ctx)
+        from lib.hooks import RefusalResponse  # noqa: PLC0415
+        if isinstance(gated, RefusalResponse):
+            # Build an OpenAI-shaped refusal message so callers don't need
+            # to special-case the shape.
+            return {
+                "message": {
+                    "role": "assistant",
+                    "content": gated.user_facing,
+                    "tool_calls": [],
+                },
+                "blocked": True,
+                "rail": gated.rail,
+                "reason": gated.reason,
+                "request_id": gated.request_id,
+                "tokens_used": {"input": 0, "output": 0},
+                "_meta": {"input_tokens": 0, "output_tokens": 0},
+            }
+        # Replace the last user message with the (possibly-rail-rewritten) text.
+        if gated != last_user_text:
+            for m in reversed(messages):
+                if m.get("role") == "user":
+                    m["content"] = gated
+                    break
+
+        # Audit every tool turn that arrives in the existing history. The
+        # agent loop sends history back each iteration — record_tool_call
+        # is idempotent against rerun (same request_id, different turn).
+        for i, m in enumerate(messages):
+            if m.get("role") == "tool":
+                try:
+                    hooks.observability.record_tool_call(
+                        hooks.chitti, ctx.get("request_id", ""),
+                        tool_name=m.get("name", "tool"),
+                        args={"history_index": i, "content_preview": (m.get("content") or "")[:200]},
+                        phase="after",
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
 
     headers = {
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
@@ -181,6 +235,17 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
 
     msg = data["choices"][0]["message"]
     usage = data.get("usage") or {}
+
+    # If the assistant produced a natural-language reply (no further tool
+    # calls), gate it through after_model so the rails (Compliance INJECT
+    # etc.) can adjust the content + record the response turn.
+    if hooks is not None and msg.get("content") and not msg.get("tool_calls"):
+        try:
+            final_text = hooks.after_model(last_user_text, msg["content"], ctx)
+            msg["content"] = final_text
+        except Exception as e:  # noqa: BLE001 — observability/rails never break the loop
+            log.debug("after_model on chat_with_tools skipped: %s", e)
+
     return {
         "message": msg,
         # Visible to the caller (the @tracked decorator only strips _meta).
@@ -190,6 +255,7 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
             "input":  usage.get("prompt_tokens"),
             "output": usage.get("completion_tokens"),
         },
+        "request_id": ctx.get("request_id"),
         "_meta": {
             "input_tokens": usage.get("prompt_tokens"),
             "output_tokens": usage.get("completion_tokens"),

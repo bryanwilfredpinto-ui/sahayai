@@ -34,6 +34,8 @@ import json
 import logging
 import os
 import re
+import time
+import uuid
 from dataclasses import dataclass, asdict
 from typing import Any
 
@@ -122,8 +124,17 @@ def evaluate_response(
     model_output: str,
     sources: list[str] | None = None,
     timeout: float = 30.0,
+    observability: Any = None,
 ) -> EvalScores | None:
-    """Call DeepSeek-as-judge. Returns None on configuration / API errors."""
+    """Call DeepSeek-as-judge. Returns None on configuration / API errors.
+
+    Quadrails do NOT apply to the judge prompt — we want the judge to see
+    the raw response verbatim, including any rail-flagged language. We
+    still want observability though, so judge turns show up in the audit
+    log alongside production turns. Pass `observability=<Observability>`
+    from founder_report.py and we'll write one `kind="judge"` row per
+    evaluation (best-effort; never blocks the judge).
+    """
     if not DEEPSEEK_KEY:
         log.info("EVAL skipped: no DEEPSEEK_API_KEY")
         return None
@@ -136,6 +147,24 @@ def evaluate_response(
         model_output=_clip(model_output, 3000),
         sources=_clip(sources_block, 2000),
     )
+
+    request_id = uuid.uuid4().hex[:12]
+    t0 = time.time()
+    if observability is not None:
+        try:
+            observability._write(
+                request_id=request_id,
+                chitti=chitti,
+                kind="judge",
+                phase="before_judge",
+                payload={
+                    "user_input": _clip(user_input, 1500),
+                    "model_output": _clip(model_output, 1500),
+                    "sources_n": len(sources or []),
+                },
+            )
+        except Exception:  # noqa: BLE001 — observability must never fail the judge
+            pass
 
     body = {
         "model": DEEPSEEK_MODEL,
@@ -154,11 +183,43 @@ def evaluate_response(
             r = client.post(DEEPSEEK_URL, headers=headers, json=body)
         if r.status_code != 200:
             log.warning("EVAL DeepSeek non-200: %s  %s", r.status_code, r.text[:200])
+            if observability is not None:
+                try:
+                    observability._write(
+                        request_id=request_id, chitti=chitti, kind="judge",
+                        phase="after_judge", reason=f"http_{r.status_code}",
+                        payload={"latency_ms": int((time.time() - t0) * 1000)},
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
             return None
         content = r.json()["choices"][0]["message"]["content"]
-        return _parse_judge_json(content)
+        scores = _parse_judge_json(content)
+        if observability is not None:
+            try:
+                observability._write(
+                    request_id=request_id, chitti=chitti, kind="judge",
+                    phase="after_judge",
+                    payload={
+                        "latency_ms": int((time.time() - t0) * 1000),
+                        "scores": scores.to_dict() if scores else None,
+                    },
+                )
+            except Exception:  # noqa: BLE001
+                pass
+        return scores
     except Exception as e:  # noqa: BLE001
         log.warning("EVAL DeepSeek call failed: %s", e)
+        if observability is not None:
+            try:
+                observability._write(
+                    request_id=request_id, chitti=chitti, kind="judge",
+                    phase="after_judge", reason="error",
+                    payload={"latency_ms": int((time.time() - t0) * 1000),
+                             "error": str(e)[:200]},
+                )
+            except Exception:  # noqa: BLE001
+                pass
         return None
 
 

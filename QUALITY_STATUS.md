@@ -1,6 +1,6 @@
-# QUALITY_STATUS.md — Enterprise Quality Audit
+# QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-05-15 · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-05-15 (commits #1 + #2) · **Auditor:** Claude Opus 4.7 (1M context) ·
 **Trigger:** "DEFINITIVE ENTERPRISE BASELINE — all Chittis GREEN" from Sire.
 
 ## Legend
@@ -36,20 +36,20 @@ wired into every previously-raw DeepSeek service across the 15 backends).
 | chitti-voice-factory | 🟢 main.py:124 | 🟢 main.py:126 | ⚪ no DeepSeek service path in v1 (STT/TTS only) | 🟢 main.py:131 | 🟢 | ⚪ | **GREEN** |
 | chitti-upi           | 🟢 main.py (post-PR, dedicated `/tmp/chitti_upi_quality.db` engine) | 🟢 main.py | 🟢 upi_service.py:check (`compliance_inject=False` for JSON object) | 🟢 main.py | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-scanner       | 🟢 main.py (post-PR, dedicated `/tmp/chitti_scanner_quality.db` engine) | 🟢 main.py | 🟢 scanner_service.py:analyze_text + scanner_service.py:analyze_image vision path (both `compliance_inject=False`) | 🟢 main.py | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-shares        | 🟢 main.py FastAPI `app.state.chitti_obs` + per-request audit row in `_chitti_timing_mw` | 🟢 main.py FastAPI `app.state.chitti_hooks` | 🟢 deepseek_client.py:chat_with_tokens (async — calls `before_model` + `after_model` directly because `wrap_llm` is sync). chat_with_tools still raw — see §4 #1. | 🟢 Starlette mw | 🟢 lib | 🟡 `chat_with_tools` (agent-tool loop, see §4) | **YELLOW** |
+| chitti-shares        | 🟢 main.py FastAPI `app.state.chitti_obs` + per-request audit row in `_chitti_timing_mw` | 🟢 main.py FastAPI `app.state.chitti_hooks` | 🟢 deepseek_client.py:chat_with_tokens (async — calls `before_model` + `after_model` directly because `wrap_llm` is sync). chat_with_tools wrapped in commit #2: rails gate the last user message, every tool turn writes `record_tool_call`, the final assistant reply goes through `after_model`. | 🟢 Starlette mw | 🟢 lib | ⚪ wrapped | **GREEN** |
 | chitti-logo-video    | 🔴 obs=None (intentional honest stub product) | ⚪ stub | ⚪ stub | 🟢 main.py:23 | 🟢 lib | ⚪ stub | **YELLOW (by design)** |
 | chitti-founder       | 🔴 obs=None (uses libsql directly, no SQLAlchemy engine) | ⚪ no LLM | ⚪ no LLM | 🟢 main.py:672 | 🟢 cron L921 (Sun 09:00 IST) | ⚪ no LLM | **YELLOW (by design)** |
 | chitti-2wheeler      | 🟢 main.py:74 | 🟢 main.py (HookRegistry registered, post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-4wheeler      | 🟢 main.py:63 | 🟢 main.py (post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:65 | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 | 🟢 | ⚪ | **GREEN (skeleton parity)** |
 
-### Pre-commit-#1 vs. post-commit-#1
+### Pre-commit-#1 → post-commit-#1 → post-commit-#2
 
-| Bucket | Pre | Post |
-|---|---|---|
-| 🟢 GREEN | 4 (vaani, ca, legal, voice-factory) | **12** |
-| 🟡 YELLOW | 4 (medupi, logo-video, founder, news-ai) | **3** (shares, logo-video, founder — last two are honest stubs / non-LLM by design) |
-| 🔴 RED | 7 (government, news, upi, scanner, shares, 2wheeler, 4wheeler) | **0** |
+| Bucket | Pre | Post #1 | Post #2 (final) |
+|---|---|---|---|
+| 🟢 GREEN | 4 (vaani, ca, legal, voice-factory) | 12 | **13** (chitti-shares moved up after `chat_with_tools` wrapping) |
+| 🟡 YELLOW | 4 (medupi, logo-video, founder, news-ai) | 3 (shares, logo-video, founder) | **2** (logo-video, founder — both honest YELLOW-by-design) |
+| 🔴 RED | 7 (government, news, upi, scanner, shares, 2wheeler, 4wheeler) | 0 | **0** |
 
 ---
 
@@ -98,13 +98,13 @@ in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `run_swarm_p
 
 ---
 
-## 4. Remaining YELLOW items (commit #2 scope)
+## 4. What commit #2 fixed (the remaining YELLOW)
 
-1. **chitti-shares/backend/services/deepseek_client.py `chat_with_tools` async** — used by the agent loop (`agent_runtime.py`). The wrap_llm contract (single user_text → single reply string) doesn't fit tool-calling shape (multi-turn messages with `tool_calls` blocks). Plan: wire `before_model` on the first user message + `after_model` only on the final natural-language reply; `record_tool_call` for every intermediate tool turn. **Status:** scheduled in commit #2.
-2. **chitti-medupi/backend/lib/evaluators.py** — async LLM-as-judge run by founder nightly. Not in `services/`, so it sits outside the wrap_llm contract; wraps would also pollute the judge prompts. **Plan:** keep raw, but route through `record_request` + `record_response` so the audit log carries the judgement turns. **Status:** scheduled in commit #2.
-3. **chitti-logo-video** — intentional honest stub product (SVG monogram + queued mock video). Observability=None is correct until a real engine is wired. **Status:** YELLOW by design; flip to 🟢 only when the product graduates from stub.
-4. **chitti-founder** — uses libsql directly, no SQLAlchemy `Observability` engine. **Plan:** in commit #2, add a thin libsql-backed `_write` adapter that mirrors the schema so founder's own HTTP rows show up in the audit fan-in. **Status:** YELLOW by design until adapter lands.
-5. **Production verification** — no backend earns a *curl-verified* 🟢 until the next Render deploy. Run §5 protocol then.
+1. **chitti-shares `chat_with_tools` async — FIXED.** [chitti-shares/backend/services/deepseek_client.py](chitti-shares/backend/services/deepseek_client.py) now: rails gate the last user-role message via `hooks.before_model`; every tool-role turn in the history writes a `record_tool_call(phase="after")` row; the final assistant natural-language reply goes through `hooks.after_model` so the Compliance INJECT rail fires + the latency lands in `quality_audit`. Rail BLOCK short-circuits with an OpenAI-shaped refusal message so `agent_runtime.py` doesn't need a special case.
+2. **`evaluators.py` LLM-as-judge — FIXED.** [lib/evaluators.py](lib/evaluators.py) `evaluate_response` now accepts an optional `observability` parameter and writes one `kind="judge"` row before the judge call (carrying user_input + model_output preview + sources_n) and one after (carrying latency_ms + the four scores or the error reason). Quadrails *do not* gate the judge — we want the judge to see the response verbatim — but every judgement turn now lands in the audit fan-in. [lib/founder_report.py](lib/founder_report.py) `compute_slice` auto-constructs an `Observability(chitti=..., engine=engine)` if none is passed, so existing call-sites benefit without code changes. Mirrored to all 12 chitti backends that carry `lib/evaluators.py`.
+3. **chitti-logo-video — YELLOW BY DESIGN, kept.** Intentional honest stub product (SVG monogram + queued mock video) per `project_chitti_ca_legal_logo_video`. Observability=None is correct until a real video provider is wired. Flip to 🟢 only when the product graduates from stub.
+4. **chitti-founder — YELLOW BY DESIGN, kept.** Uses libsql directly per `project_turso_embedded_replica_pattern`; no SQLAlchemy `Observability` engine. Founder is the *aggregator*, not a per-chitti producer — its own HTTP rows showing up in `quality_audit` would be circular. The libsql-backed self-ping logs already cover founder's own observability surface. Will graduate to 🟢 only if/when founder gains a user-facing LLM endpoint.
+5. **Production verification** — no backend earns a *curl-verified* 🟢 until the next Render deploy. Run §5 protocol then; flip the 🟢 marks to bold once each curl check passes.
 
 ---
 

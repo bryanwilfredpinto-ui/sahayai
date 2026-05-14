@@ -86,13 +86,32 @@ class ChittiDailySlice:
 
 
 def compute_slice(chitti: str, engine, *, window_hours: int = 24,
-                  eval_sample_rate: float | None = None) -> ChittiDailySlice:
+                  eval_sample_rate: float | None = None,
+                  observability=None) -> ChittiDailySlice:
     """Pull last `window_hours` of quality_audit + quality_feedback rows for
-    this Chitti and roll them up. Runs LLM-as-judge on a random sample."""
+    this Chitti and roll them up. Runs LLM-as-judge on a random sample.
+
+    If `observability` is provided, every LLM-as-judge call writes a
+    `kind="judge"` audit row (one before, one after, with latency and
+    scores). Pass `Observability(chitti=..., engine=engine)` from the
+    caller — typically the daily founder cron — so judge turns join the
+    same audit fan-in as production turns.
+    """
     sample_rate = eval_sample_rate if eval_sample_rate is not None else EVAL_SAMPLE_RATE
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     since = datetime.now(timezone.utc) - timedelta(hours=window_hours)
     out = ChittiDailySlice(chitti=chitti, window_hours=window_hours)
+
+    # If no Observability was passed, build a transient one from `engine`
+    # so judge turns still land in `quality_audit` alongside production
+    # turns. Best-effort: failure to import is just a missed audit row,
+    # never a failed slice.
+    if observability is None:
+        try:
+            from .observability import Observability  # noqa: PLC0415
+            observability = Observability(chitti=chitti, engine=engine)
+        except Exception:  # noqa: BLE001
+            observability = None
 
     with Session() as sess:
         # total responses
@@ -183,6 +202,7 @@ def compute_slice(chitti: str, engine, *, window_hours: int = 24,
                     user_input=p.get("user_text", ""),
                     model_output=p.get("model_output", ""),
                     sources=p.get("sources") or [],
+                    observability=observability,
                 )
                 if not scores:
                     continue
