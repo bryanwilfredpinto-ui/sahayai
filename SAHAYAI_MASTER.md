@@ -45,6 +45,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | **Uptime mechanism** | **Self-ping from `chitti-founder` every 4 minutes — NOT UptimeRobot or any external monitor.** Self-ping doubles as a free Render keep-alive (which idles dynos after 15 min), logs to Turso, and emails Sire on non-200 (debounced 1 h per Chitti). External uptime services are explicitly out of scope: they would add a billed subscription, a third-party point of failure, and a data-egress surface for free. See §2e Layer 1. | `project_business_continuity_plan_locked` |
 | **Per-product knowledge corpora** | **Every Chitti must publish a [`skills/FEATURES.md`](chitti-medupi/skills/FEATURES.md) (capability surface, parsed live by [chitti_features.js](chitti_features.js)).** Domain-expert Chittis additionally publish a `skills/<DOMAIN>_KNOWLEDGE.md` at the grade locked in row 12 above — currently [CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md), [LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md), [PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md). Missing knowledge corpus = missing product on launch, same merge-blocker status as a missing FEATURES.md. | — |
 | **Camera substrate** | **[`chitti_camera.js`](chitti_camera.js) at repo root, auto-loaded by [`chitti_a11y.js`](chitti_a11y.js).** Single capture path for every Chitti with camera access; honest queue when `/api/camera/capture` is unreachable; `Chitti.camera.forget()` writes the tombstone. Pages never hand-roll camera capture or storage. See §2b. | `project_camera_intelligence_locked` |
+| **Swarm Intelligence** | **Every Chitti of the same type learns from every other Chitti of the same type.** Anonymised interactions → pattern detection (high 👍, problems solved, strategies that worked) → ≥100 confirmations → human review for HIGH-risk Chittis (Legal, CA, Medical) → push to `skills/*.md` for that Chitti type → all instances benefit. Cycle: daily collect · weekly validate · monthly push to skills · quarterly full review. Always anonymised; user owns their data; "Chitti forget" removes from swarm too. See §2f. | `project_swarm_intelligence_locked` |
 
 ---
 
@@ -240,6 +241,57 @@ Five layers of self-healing run continuously so the platform survives **72 hours
 - **Honest stubs allowed** for unset env vars (SMTP, SMS, GitHub token, Turso URL, Claude / Gemini keys) — the helper logs what it WOULD have done and returns False so the cron stays green. Matches the §3 *Honest stubs over fake demos* rule.
 
 See [[project_business_continuity_plan_locked]].
+
+---
+
+## 2f. Swarm Intelligence — LOCKED (2026-05-14)
+
+**Every Chitti of the same type learns from every other Chitti of the same type.** This is how Chitti gets smarter every single day — not from one user, but from ALL users together.
+
+### How it works
+
+1. **Every interaction is anonymised and stored.** User-token stripped, GPS rounded to pincode centroid, free-text scrubbed of PII before any cross-instance aggregate (matches the [Camera Intelligence](#2b-camera-intelligence-across-all-chittis--locked-2026-05-13) user-ownership contract).
+2. **Successful patterns detected** from three signals:
+   - High 👍 responses (from the [per-response widget §7](#per-response-widget--mandatory-on-every-page-locked-2026-05-13)).
+   - Problems that got solved (👎 → follow-up turn → 👍 reversal).
+   - Strategies that worked (multi-turn flows ending in success).
+3. **Best practices extracted automatically** by the swarm job — patterns must clear the validation gate (below) before they become best practice.
+4. **Pushed to `skills/*.md`** for that Chitti type — capability surface lives in markdown (matches the [new-products process §2a](#new-products-process--locked)), so a swarm update is a markdown commit, not a frontend rewrite.
+5. **ALL instances of that Chitti benefit** — next deploy of any Chitti Kirana / Chitti Legal / Chitti MedUPI ships with the new skill file.
+
+### Examples
+
+| Local learning | Becomes global best practice |
+|---|---|
+| **Chitti Kirana TN** learns udhaar (credit-book) collection patterns that actually get paid back | All Chitti Kiranas in India learn it |
+| **Chitti Legal Kerala** wins a consumer-protection case argument | All Chitti Legals know that judgment |
+| **Chitti MedUPI** finds a fake medicine batch in Bhopal | All Chitti MedUPIs alert users nationally (feeds the §2b community-alert + annual-FSSAI flywheels) |
+
+### Intelligence sharing rules
+
+- **Always anonymised.** Never personal data. Same anonymisation contract as Camera Intelligence (§2b).
+- **User owns their data always.** Per-device `user_token`, exportable on request, never sold.
+- **"Chitti forget" removes from swarm too.** Voice or button command wipes the user's contribution from the anonymised aggregate (replaced with a tombstone so confirmation counts stay honest).
+- **Minimum 100 confirmations** before a pattern becomes best practice. Below the threshold = candidate only; never pushed to `skills/*.md`.
+- **Human review for HIGH-risk Chittis** — Legal, CA, Medical. Sire approves the patch before it lands in `skills/*.md`. Matches the [quality framework §6](#6-quality-standards) HIGH/MEDIUM/LOW risk levels in [lib/chitti_quality.py](lib/chitti_quality.py).
+
+### Swarm learning cycle
+
+| Cadence | Step |
+|---|---|
+| **Daily** | Collect patterns from the previous 24 h — per-response 👍 / 👎 + follow-up reversals + multi-turn success traces. Lives alongside the [§6 daily quality cron](#6-quality-standards) (07:00 IST). |
+| **Weekly** | Validate patterns — minimum 100 confirmations check + cross-region sanity check (a "Kerala-only" pattern must not be pushed as national). Sunday 08:00 IST, same cron family as the weekly trend digest. |
+| **Monthly** | Push validated patterns to `skills/*.md` for that Chitti type. PR opened by `chitti-founder`; HIGH-risk Chittis (Legal / CA / Medical) require Sire's approval before merge. |
+| **Quarterly** | Full knowledge review — audit every `skills/*.md` for drift, stale patterns, conflicts with locked decisions. |
+
+### Hard rules
+
+- **Never silently push to HIGH-risk Chittis.** Legal / CA / Medical patches always wait on human review. Matches the §3 *Honest stubs over fake demos* rule and the [server-enforced disclaimer](#6-quality-standards) contract for CA + Legal.
+- **No PII in the swarm.** If anonymisation can't be guaranteed for a particular signal, that signal does not enter the swarm. Better to lose a learning opportunity than to leak data.
+- **Honest provenance.** Every line a swarm job adds to `skills/*.md` carries a `<!-- swarm: 2026-MM-DD, N confirmations -->` comment so future readers (Claude included) can see what came from the swarm vs. what came from Sire.
+- **Locked decisions are not learnable.** The swarm can propose new capabilities but can never override a §2 locked decision (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades).
+
+See [[project_swarm_intelligence_locked]].
 
 ---
 
