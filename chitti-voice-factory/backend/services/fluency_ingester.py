@@ -48,22 +48,53 @@ from services import wiki_langlinks
 
 log = logging.getLogger("fluency_ingester")
 
-# ── PDF backends (graceful degradation) ──
-_PDF_BACKEND: Optional[str] = None
-try:
-    import fitz  # PyMuPDF
-    _PDF_BACKEND = "fitz"
-except Exception:  # noqa: BLE001
+# ── PDF backends (LAZY) ──
+# pymupdf / pdfplumber / pypdf live in requirements-optional.txt and are
+# imported on first NCERT-PDF parse, not at module-load. Keeps Render
+# free-tier cold-start fast (no PyMuPDF binary load on /health). A None
+# return from `_resolve_pdf_backend()` means none are installed and
+# NCERT PDFs are honestly skipped — the rest of the corpus (Wikipedia +
+# community) still ingests.
+_PDF_BACKEND: Optional[str] = None      # cached after first probe
+_PDF_PROBED: bool = False
+_pdf_fitz = None
+_pdf_pdfplumber = None
+_pdf_pypdf = None
+
+
+def _resolve_pdf_backend() -> Optional[str]:
+    """Probe-once, then return the cached backend name (or None).
+
+    Tries fitz → pdfplumber → pypdf, in that order. Imports happen here
+    so the runtime cold-start never pays for them.
+    """
+    global _PDF_BACKEND, _PDF_PROBED, _pdf_fitz, _pdf_pdfplumber, _pdf_pypdf
+    if _PDF_PROBED:
+        return _PDF_BACKEND
+    _PDF_PROBED = True
     try:
-        import pdfplumber  # type: ignore
-        _PDF_BACKEND = "pdfplumber"
+        import fitz as _imported_fitz  # PyMuPDF
+        _pdf_fitz = _imported_fitz
+        _PDF_BACKEND = "fitz"
+        return _PDF_BACKEND
     except Exception:  # noqa: BLE001
-        try:
-            import pypdf  # type: ignore
-            _PDF_BACKEND = "pypdf"
-        except Exception:  # noqa: BLE001
-            _PDF_BACKEND = None
-            log.warning("No PDF backend available — NCERT PDFs will be skipped")
+        pass
+    try:
+        import pdfplumber as _imported_pdfplumber  # type: ignore
+        _pdf_pdfplumber = _imported_pdfplumber
+        _PDF_BACKEND = "pdfplumber"
+        return _PDF_BACKEND
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        import pypdf as _imported_pypdf  # type: ignore
+        _pdf_pypdf = _imported_pypdf
+        _PDF_BACKEND = "pypdf"
+        return _PDF_BACKEND
+    except Exception:  # noqa: BLE001
+        log.warning("No PDF backend available — NCERT PDFs will be skipped")
+        _PDF_BACKEND = None
+        return None
 
 
 HTTP_TIMEOUT = 15           # per request; we'd rather miss a slow source than hang
@@ -142,10 +173,13 @@ def chunk_text(text: str, *, target: int = CHUNK_TARGET, overlap: int = CHUNK_OV
 # ── PDF extraction ──
 
 def extract_pdf_text(pdf_path: Path) -> Optional[str]:
-    """Extract plain text from a PDF using the best available backend."""
-    if _PDF_BACKEND == "fitz":
+    """Extract plain text from a PDF using the best available backend.
+    Lazy-resolves the backend on first call.
+    """
+    backend = _resolve_pdf_backend()
+    if backend == "fitz":
         try:
-            doc = fitz.open(str(pdf_path))
+            doc = _pdf_fitz.open(str(pdf_path))
             parts = []
             for page in doc:
                 parts.append(page.get_text("text"))
@@ -154,17 +188,17 @@ def extract_pdf_text(pdf_path: Path) -> Optional[str]:
         except Exception as e:  # noqa: BLE001
             log.warning("fitz failed on %s: %s", pdf_path.name, e)
             return None
-    if _PDF_BACKEND == "pdfplumber":
+    if backend == "pdfplumber":
         try:
-            with pdfplumber.open(str(pdf_path)) as doc:
+            with _pdf_pdfplumber.open(str(pdf_path)) as doc:
                 parts = [page.extract_text() or "" for page in doc.pages]
             return "\n\n".join(parts).strip() or None
         except Exception as e:  # noqa: BLE001
             log.warning("pdfplumber failed on %s: %s", pdf_path.name, e)
             return None
-    if _PDF_BACKEND == "pypdf":
+    if backend == "pypdf":
         try:
-            reader = pypdf.PdfReader(str(pdf_path))
+            reader = _pdf_pypdf.PdfReader(str(pdf_path))
             parts = [(p.extract_text() or "") for p in reader.pages]
             return "\n\n".join(parts).strip() or None
         except Exception as e:  # noqa: BLE001
@@ -180,7 +214,7 @@ def fetch_ncert_pdfs(src: LangSources, status: CorpusStatus,
     """Download up to max_pdfs NCERT URLs, extract text, return chunks."""
     if not src.ncert_pdfs:
         return []
-    if _PDF_BACKEND is None:
+    if _resolve_pdf_backend() is None:
         status.errors.append("no_pdf_backend_installed")
         return []
 
@@ -237,7 +271,7 @@ def fetch_archive_pdfs(src: LangSources, status: CorpusStatus,
     """
     if not src.archive_pdfs:
         return []
-    if _PDF_BACKEND is None:
+    if _resolve_pdf_backend() is None:
         return []
 
     chunks: list[Chunk] = []

@@ -31,19 +31,30 @@ _REPLICA_SYNCER = None
 
 
 def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
+    """Open the embedded replica, then push the first sync to a background
+    thread so Render's /health probe isn't blocked by a slow cold start.
+
+    `libsql.connect` is the only foreground call here — it opens the
+    local SQLite file (fast) and registers the upstream URL (no network
+    in this constructor). The first `.sync()` is what actually hits
+    Turso over the wire and can take several seconds on cold boot; it
+    runs in `_loop()` instead, alongside the existing 60-second refresh.
+    """
     global _REPLICA_SYNCER
     import libsql_experimental as libsql
 
     sync_url, token = _parse_libsql_url(libsql_url)
     log.info("Opening embedded replica at %s (sync_url=%s)", local_path, sync_url)
     _REPLICA_SYNCER = libsql.connect(local_path, sync_url=sync_url, auth_token=token)
-    try:
-        _REPLICA_SYNCER.sync()
-        log.info("Initial sync from Turso complete")
-    except Exception as e:  # noqa: BLE001
-        log.warning("Initial Turso sync failed (will retry in background): %s", e)
 
     def _loop():
+        # Immediate first sync in the background — never blocks /health.
+        try:
+            _REPLICA_SYNCER.sync()
+            log.info("Initial sync from Turso complete")
+        except Exception as e:  # noqa: BLE001
+            log.warning("Initial Turso sync failed (will retry in background): %s", e)
+        # Steady-state 60s loop.
         while True:
             time.sleep(60)
             try:

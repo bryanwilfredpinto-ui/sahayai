@@ -36,20 +36,39 @@ from typing import Optional
 
 log = logging.getLogger("youtube_learner")
 
-# Optional import — endpoints downgrade gracefully when the lib isn't installed.
+# Optional import — LAZY. youtube-transcript-api lives in
+# requirements-optional.txt; we don't pay the import cost on /health.
+# /videos endpoints surface 503 (library_not_installed) when missing.
 # Targets youtube-transcript-api >= 1.0 (post-API-rewrite). The 0.6.x line is
 # broken against current YouTube responses; do not pin below 1.0.
-try:
-    from youtube_transcript_api import (  # type: ignore
-        NoTranscriptFound,
-        TranscriptsDisabled,
-        VideoUnavailable,
-        YouTubeTranscriptApi,
-    )
-    HAS_YT = True
-except Exception:  # noqa: BLE001
-    HAS_YT = False
-    log.warning("youtube-transcript-api not installed — /videos endpoints will return 503")
+HAS_YT: Optional[bool] = None          # tri-state: None = not probed yet
+_YT_API_CLS = None
+_YT_EXC_NoTranscriptFound = None
+_YT_EXC_TranscriptsDisabled = None
+_YT_EXC_VideoUnavailable = None
+
+
+def _load_yt():
+    """Probe youtube-transcript-api on first call. Cache the result."""
+    global HAS_YT, _YT_API_CLS
+    global _YT_EXC_NoTranscriptFound, _YT_EXC_TranscriptsDisabled, _YT_EXC_VideoUnavailable
+    if HAS_YT is None:
+        try:
+            from youtube_transcript_api import (  # type: ignore
+                NoTranscriptFound,
+                TranscriptsDisabled,
+                VideoUnavailable,
+                YouTubeTranscriptApi,
+            )
+            _YT_API_CLS = YouTubeTranscriptApi
+            _YT_EXC_NoTranscriptFound = NoTranscriptFound
+            _YT_EXC_TranscriptsDisabled = TranscriptsDisabled
+            _YT_EXC_VideoUnavailable = VideoUnavailable
+            HAS_YT = True
+        except Exception:  # noqa: BLE001
+            HAS_YT = False
+            log.warning("youtube-transcript-api not installed — /videos endpoints will return 503")
+    return HAS_YT
 
 
 MAX_VIDEOS_PER_LANG = 10
@@ -175,16 +194,16 @@ def fetch_transcript(video_id: str, *, preferred_lang: str) -> tuple[str, bool]:
       2. Auto-generated transcript in preferred_lang.
       3. Any track translated into preferred_lang (auto_generated=True).
     """
-    if not HAS_YT:
+    if not _load_yt():
         raise YouTubeProcessingError("library_not_installed",
                                      "pip install youtube-transcript-api>=1.0")
 
-    api = YouTubeTranscriptApi()
+    api = _YT_API_CLS()
     try:
         transcript_list = api.list(video_id)
-    except VideoUnavailable as e:
+    except _YT_EXC_VideoUnavailable as e:
         raise YouTubeProcessingError("video_unavailable", str(e)[:120]) from e
-    except TranscriptsDisabled as e:
+    except _YT_EXC_TranscriptsDisabled as e:
         raise YouTubeProcessingError("transcripts_disabled", str(e)[:120]) from e
     except Exception as e:  # noqa: BLE001
         raise YouTubeProcessingError("list_transcripts_failed", str(e)[:120]) from e
@@ -195,11 +214,11 @@ def fetch_transcript(video_id: str, *, preferred_lang: str) -> tuple[str, bool]:
 
     try:
         chosen = transcript_list.find_manually_created_transcript(target_codes)
-    except (NoTranscriptFound, Exception):  # noqa: BLE001
+    except (_YT_EXC_NoTranscriptFound, Exception):  # noqa: BLE001
         try:
             chosen = transcript_list.find_generated_transcript(target_codes)
             auto_generated = True
-        except (NoTranscriptFound, Exception):  # noqa: BLE001
+        except (_YT_EXC_NoTranscriptFound, Exception):  # noqa: BLE001
             # No transcript in target language — find any translatable one.
             translatable = None
             for t in transcript_list:
