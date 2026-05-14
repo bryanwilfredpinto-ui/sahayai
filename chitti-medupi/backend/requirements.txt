@@ -12,11 +12,14 @@ libsql-experimental==0.0.55          # cp311 manylinux wheel; owns the Turso syn
 psycopg2-binary==2.9.10             # kept temporarily for data-export tooling; will remove after cutover verified
 
 requests==2.31.0
+httpx>=0.27,<1.0                # DeepSeek vision call (OpenAI-compatible chat completions)
 python-dotenv==1.0.0
 
-# Anthropic SDK — image scan via Claude vision (pure Python wheel).
-# Vision-capable models read the medicine strip directly. No Tesseract.
-anthropic==0.39.0
+# DeepSeek vision via OpenAI-compatible /chat/completions endpoint —
+# replaces Anthropic per the LOCKED §2 decision (DeepSeek is the sole LLM
+# provider across every Chitti backend). No SDK needed; we use httpx
+# directly with the same image_url data-URL pattern as chitti-scanner.
+# project_ai_provider_switch_to_deepseek
 
 # Fuzzy brand-name matching for the /medicine search.
 # 3.6.1 ships pre-built manylinux wheels for Python 3.11.

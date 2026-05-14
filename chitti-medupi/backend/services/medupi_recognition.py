@@ -10,17 +10,23 @@ Two paths into the matcher:
        same-composition alternatives.
   2. Image path — `recognise_image(image_bytes, mime)`
        Used by the camera + image-upload buttons. Sends the image to
-       Anthropic Claude (vision-capable) which returns strict JSON:
+       DeepSeek vision (OpenAI-compatible, model = deepseek-vl-7b-chat or
+       env-override) which returns strict JSON:
          {brand_name, salt_composition, strength, dosage_form, pack_size,
           expiry_date, confidence}
        Then we look the result up in the master DB and return the same
        structured response shape as the text path.
 
-Why Anthropic vision instead of Tesseract?
-  - No OS-binary install pain on Render free tier
-  - Handles strip / bottle / blister / handwritten prescription uniformly
-  - Returns strict JSON, no post-OCR LLM extraction step needed
-  - Falls back gracefully when ANTHROPIC_API_KEY is unset (text-only mode)
+Why DeepSeek vision?
+  - LOCKED §2 decision (project_ai_provider_switch_to_deepseek): DeepSeek
+    is the sole LLM provider across every Chitti backend. Anthropic was
+    removed in this commit.
+  - OpenAI-compatible client → same httpx + image_url data-URL pattern
+    that chitti-scanner already uses for analyze_image.
+  - No OS-binary install pain on Render free tier (no Tesseract).
+  - Handles strip / bottle / blister / handwritten prescription uniformly.
+  - Returns strict JSON via response_format=json_object.
+  - Honest fallback when DEEPSEEK_API_KEY is unset → text-only mode.
 """
 from __future__ import annotations
 
@@ -29,6 +35,7 @@ import json
 import logging
 import re
 
+import httpx
 from sqlalchemy.orm import Session
 
 from config import settings
@@ -119,39 +126,44 @@ def _strip_json_fences(s: str) -> str:
 
 def _raw_vision_call(image_bytes: bytes, mime: str, safe_prompt: str) -> str:
     """Pure provider call — no quadrails wrapping here. Returns the raw
-    model text (the JSON-fenced string the prompt asks for)."""
-    if not settings.ANTHROPIC_API_KEY:
-        raise RuntimeError("ANTHROPIC_API_KEY not set on server")
-    try:
-        from anthropic import Anthropic
-    except ImportError as e:
-        raise RuntimeError("anthropic SDK not installed") from e
+    model text (the JSON-fenced string the prompt asks for).
 
-    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    Uses DeepSeek's OpenAI-compatible vision endpoint with an inline
+    data-URL image. Same shape as chitti-scanner/services/scanner_service.py
+    `analyze_image`. Anthropic was removed per the LOCKED §2 decision —
+    DeepSeek is the sole LLM provider.
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        raise RuntimeError("DEEPSEEK_API_KEY not set on server")
+
     b64 = base64.standard_b64encode(image_bytes).decode("ascii")
-    msg = client.messages.create(
-        model=settings.ANTHROPIC_MODEL or "claude-sonnet-4-6",
-        max_tokens=600,
-        messages=[
+    data_url = f"data:{mime or 'image/jpeg'};base64,{b64}"
+
+    body = {
+        "model": settings.DEEPSEEK_VISION_MODEL,
+        "messages": [
             {
                 "role": "user",
                 "content": [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": mime or "image/jpeg",
-                            "data": b64,
-                        },
-                    },
                     {"type": "text", "text": safe_prompt},
+                    {"type": "image_url", "image_url": {"url": data_url}},
                 ],
             }
         ],
-    )
-    return "".join(
-        part.text for part in msg.content if getattr(part, "type", None) == "text"
-    )
+        "max_tokens": 600,
+        "temperature": 0.1,
+        "response_format": {"type": "json_object"},
+    }
+    headers = {
+        "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    with httpx.Client(timeout=60.0) as client:
+        r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return data["choices"][0]["message"]["content"] or ""
 
 
 # Synthetic user_text used by the quadrails so safety/relevance/truth see
@@ -172,8 +184,8 @@ def _vision_extract(image_bytes: bytes, mime: str) -> dict:
     string. The caller (`recognise_image`) is responsible for surfacing
     the MedUPI disclaimer outside the JSON (via `speak_*` fields).
     """
-    if not settings.ANTHROPIC_API_KEY:
-        return {"_error": "ANTHROPIC_API_KEY not set on server"}
+    if not settings.DEEPSEEK_API_KEY:
+        return {"_error": "DEEPSEEK_API_KEY not set on server"}
 
     try:
         # Pull the per-app HookRegistry. Outside a Flask request (CLI /
@@ -220,7 +232,7 @@ def _vision_extract(image_bytes: bytes, mime: str) -> dict:
 
 def recognise_image(db: Session, image_bytes: bytes, mime: str = "image/jpeg") -> dict:
     """
-    Run the image through Anthropic vision, then look the result up in the
+    Run the image through DeepSeek vision, then look the result up in the
     master DB and return the same structured response shape as the text
     path.
     """

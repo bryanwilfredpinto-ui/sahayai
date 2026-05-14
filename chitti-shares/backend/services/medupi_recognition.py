@@ -1,19 +1,18 @@
 """
 services/medupi_recognition.py
 ------------------------------
-OCR + composition extraction for Chitti MedUPI.
+Stale stub. The canonical MedUPI recognition pipeline lives in the
+dedicated chitti-medupi backend at
+[chitti-medupi/backend/services/medupi_recognition.py] and ships via the
+`chitti-medupi-api` service on Render. This stub remains so the legacy
+`/api/medupi/*` endpoints on chitti-shares-api don't 500 — they return
+an honest Coming-Soon and point the user at the real backend.
 
-Pipeline:
-  1. Image / PDF in (multipart upload via /api/medupi/scan)
-  2. OCR via Tesseract (offline, free) or cloud OCR (Google Vision / AWS Textract for premium)
-  3. LLM (Anthropic claude-sonnet-4) extracts: brand_name, salt_composition, strength, dosage_form, pack_size
-  4. Returns structured response that `medupi_alternatives.find()` can consume
-
-NEXT SESSION — wires:
-  - Tesseract: pip install pytesseract; install tesseract-ocr binary on Render
-  - Or: cloud-OCR fallback when Tesseract confidence is low
-  - LLM extraction prompt that returns strict JSON
-  - Fuzzy match against medupi_database for the salt + strength
+If you reach this file looking to wire OCR, edit
+[chitti-medupi/backend/services/medupi_recognition.py] instead. It uses
+DeepSeek vision (OpenAI-compatible /chat/completions with image_url
+data-URL) per the LOCKED §2 decision — Anthropic was removed across
+every Chitti backend. See project_ai_provider_switch_to_deepseek.
 """
 from __future__ import annotations
 
@@ -31,7 +30,7 @@ def recognise_image(image_bytes: bytes, mime: str = "image/jpeg") -> dict:
     return {
         "ok": False,
         "stub": True,
-        "message": "Recognition pipeline not yet wired. Tesseract OCR + Anthropic composition extractor wires next session.",
+        "message": "Use chitti-medupi-api for medicine recognition. The DeepSeek vision pipeline lives there per the §2 lock.",
         "extracted": {
             "brand_name": None,
             "salt_composition": None,

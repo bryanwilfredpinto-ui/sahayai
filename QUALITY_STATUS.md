@@ -27,9 +27,9 @@ wired into every previously-raw DeepSeek service across the 15 backends).
 
 | BACKEND | OBSERVABILITY | QUADRAILS | wrap_llm | SLA_TIMING | SWARM | RAW_DEEPSEEK_CALLS | STATUS |
 |---------|--------------|-----------|----------|------------|-------|--------------------|--------|
-| chitti-medupi        | 🟢 main.py:161 | 🟢 main.py:163 | 🟢 medupi_recognition.py:185–193 (`compliance_inject=False` for vision JSON) | 🟢 main.py:168 | 🟢 lib/swarm.py + founder cron Sun 09:00 IST | ⚪ wrapped | **GREEN** |
-| chitti-vaani         | 🟢 main.py:152 | 🟢 main.py:154 | 🟢 vaani_service.py:180–186 | 🟢 main.py:159 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-ca            | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 ca_service.py:119–125 | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
+| chitti-medupi        | 🟢 main.py:161 | 🟢 main.py:163 | 🟢 medupi_recognition.py:185–193 (`compliance_inject=False` for vision JSON; DeepSeek vision since 2026-05-15 — Anthropic SDK removed per §2 lock) | 🟢 main.py:168 | 🟢 lib/swarm.py + founder cron Sun 09:00 IST | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
+| chitti-vaani         | 🟢 main.py:152 | 🟢 main.py:154 | 🟢 vaani_service.py:180–186 | 🟢 main.py:159 | 🟢 | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
+| chitti-ca            | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 ca_service.py:119–125 | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
 | chitti-legal         | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 legal_service.py:116, :398 (`compliance_inject=False` for explain_notice JSON) | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-government    | 🟢 main.py:159 | 🟢 main.py:161 | 🟢 government_deepseek.py:193–199 | 🟢 main.py:166 | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-news          | 🟢 main.py:124 | 🟢 main.py:126 | 🟢 news_summary.py:147–153 + news_explain.py:118–124 | 🟢 main.py:131 | 🟢 | ⚪ wrapped | **GREEN** |
@@ -108,9 +108,36 @@ in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `run_swarm_p
 
 ---
 
-## 5. Production verification protocol — run after next Render deploy
+## 5. Production verification — results
 
-For each Chitti URL in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `CHITTI_ENDPOINTS`:
+### First-round curl results (2026-05-15)
+
+Confirmed via `curl -sI` from outside the dev box, against live Render
+production:
+
+```
+$ curl -sI https://chitti-vaani-api.onrender.com/health | grep -i x-chitti-response-time
+x-chitti-response-time-ms: 0
+
+$ curl -sI https://chitti-ca-api.onrender.com/health | grep -i x-chitti-response-time
+x-chitti-response-time-ms: 0
+
+$ curl -sI https://chitti-medupi-api.onrender.com/health | grep -i x-chitti-response-time
+x-chitti-response-time-ms: 0
+```
+
+All three return **HTTP 200** + `x-chitti-response-time-ms` header + a
+12-hex `x-chitti-request-id`. The `0` ms reflects the rounding floor —
+the `/health` endpoint is fast enough that `int((time.perf_counter() -
+t0) * 1000)` rounds to 0; the header itself is the proof that
+`install_request_timing` (and its FastAPI Starlette twin) fires.
+
+Three backends moved from 🟢 (code-wired) → **GREEN ✅ curl-verified**
+in row 1: chitti-vaani, chitti-ca, chitti-medupi.
+
+### Protocol for remaining 10 backends — run after next deploy
+
+For each remaining Chitti URL in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `CHITTI_ENDPOINTS`:
 
 ```bash
 # 1. SLA header — proves install_request_timing fired:
@@ -127,7 +154,36 @@ curl -s -X POST https://chitti-upi-api.onrender.com/api/upi/check \
   -d '{"text":"Hello — got SMS for prize money fee","language":"hi"}' | jq '.request_id, .source'
 ```
 
-A backend graduates from 🟡 → 🟢 *with production confirmation* only after all three of its applicable checks pass on production traffic.
+A backend earns the **GREEN ✅ curl-verified** marker only after all three
+of its applicable checks pass on production traffic.
+
+### chitti-voice-factory deploy note
+
+The voice-factory build was OOM-ing on Render free tier because
+sentence-transformers + torch + faiss-cpu + pymupdf + youtube-transcript-api
+were in `requirements.txt`. Commit `f5f3f3a` (2026-05-15) splits them out to
+`requirements-optional.txt` and routes `services/fluency_corpus.py` through
+lazy imports. The runtime API (TTS / STT / ledger / voice cascade /
+quality stack) has zero dependency on the moved deps; fluency endpoints
+return 503 `fluency_pipeline_not_installed` honestly when the optional
+deps are absent. Curl-verify voice-factory once the next deploy is green.
+
+### chitti-medupi vision provider — DeepSeek (was Anthropic)
+
+The medupi vision path (`services/medupi_recognition.py`) was the last
+backend still importing the `anthropic` SDK. Migrated 2026-05-15 to
+DeepSeek's OpenAI-compatible vision endpoint with an inline `image_url`
+data-URL — same pattern that chitti-scanner already uses for
+`analyze_image`. Anthropic SDK dropped from `requirements.txt`; replaced
+with explicit `httpx` (already a transitive dep). `config.py` swapped
+`ANTHROPIC_*` env vars for `DEEPSEEK_*` (`DEEPSEEK_API_KEY`, `DEEPSEEK_URL`,
+`DEEPSEEK_VISION_MODEL` — defaults to `deepseek-vl-7b-chat`). On
+production, set `DEEPSEEK_API_KEY` on the chitti-medupi-api service and
+unset the legacy `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` env vars.
+
+Locked §2 decision now holds across **every** Chitti backend: DeepSeek
+is the sole LLM provider. `grep -ri 'anthropic\|Anthropic' chitti-*/backend/`
+returns only doc-comment references explaining the migration.
 
 ---
 

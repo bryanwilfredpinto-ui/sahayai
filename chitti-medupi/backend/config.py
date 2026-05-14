@@ -31,9 +31,13 @@ def _env_bool(key: str, default: bool = False) -> bool:
 class Settings:
     DATABASE_URL: str = _env("DATABASE_URL", "sqlite:///./chitti_medupi.db")
 
-    # Anthropic vision (image scan)
-    ANTHROPIC_API_KEY: str = _env("ANTHROPIC_API_KEY", "")
-    ANTHROPIC_MODEL: str = _env("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+    # DeepSeek (image scan via vision-capable chat completions)
+    # Locked §2 decision: DeepSeek is the sole LLM provider; Anthropic
+    # was removed across every Chitti backend. See
+    # project_ai_provider_switch_to_deepseek.
+    DEEPSEEK_API_KEY: str = _env("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_URL: str = _env("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
+    DEEPSEEK_VISION_MODEL: str = _env("DEEPSEEK_VISION_MODEL", "deepseek-vl-7b-chat")
 
     ALLOWED_ORIGINS: str = _env(
         "ALLOWED_ORIGINS",
