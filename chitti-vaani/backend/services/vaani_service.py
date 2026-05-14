@@ -109,30 +109,13 @@ def _fallback(text_in: str, language: str) -> dict:
     }
 
 
-def ask(text: str, language: str = "hi", mode: str = "ask") -> dict:
-    """One-shot synchronous DeepSeek call.
+def _raw_deepseek(framing: str, lang_name: str, safe_text: str) -> tuple[str, dict]:
+    """Pure DeepSeek HTTP call — returns (reply, usage_dict). Raises on error.
 
-    Returns:
-        {
-          "ok": True,
-          "source": "deepseek" | "fallback",
-          "language": "hi",
-          "reply": "<text — frontend MUST read this aloud>",
-          "model": "deepseek-chat" | None,
-          "tokens": {"input": int, "output": int} | None,
-        }
+    Kept private so `ask()` (the wrapped variant) and any future async/batch
+    caller share one source of truth for the request body + auth header.
     """
-    text = (text or "").strip()
-    if not text:
-        return {"ok": False, "error": "text is required"}
-
-    if not settings.DEEPSEEK_API_KEY:
-        return _fallback(text, language)
-
-    framing = MODE_FRAMING.get(mode, MODE_FRAMING["ask"])
-    lang_name = _LANG_NAMES.get(language, language or "Hindi")
-    user_msg = f"(Reply in {lang_name})\n{framing}{text}"
-
+    user_msg = f"(Reply in {lang_name})\n{framing}{safe_text}"
     body = {
         "model": settings.DEEPSEEK_MODEL,
         "messages": [
@@ -146,14 +129,94 @@ def ask(text: str, language: str = "hi", mode: str = "ask") -> dict:
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
     }
+    with httpx.Client(timeout=30.0) as client:
+        r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
+        r.raise_for_status()
+        data = r.json()
+    return data["choices"][0]["message"]["content"], (data.get("usage") or {})
 
+
+def ask(text: str, language: str = "hi", mode: str = "ask") -> dict:
+    """One-shot synchronous DeepSeek call, wrapped by HookRegistry.
+
+    Goes through `hooks.wrap_llm` when running inside a Flask app context
+    (the production path) so every call is gated by the four rails and
+    audit-logged. Falls back to the raw call when called outside a Flask
+    request (CLI, tests).
+
+    Returns:
+        {
+          "ok": True | False,
+          "source": "deepseek" | "fallback" | "blocked",
+          "language": "hi",
+          "reply": "<text — frontend MUST read this aloud>",
+          "model": "deepseek-chat" | None,
+          "request_id": "<12-hex>" (when ok via deepseek),
+          "latency_ms": int (when ok via deepseek),
+          "rail" / "reason": present iff blocked,
+          "tokens": {"input": int, "output": int} | None,
+        }
+    """
+    text = (text or "").strip()
+    if not text:
+        return {"ok": False, "error": "text is required"}
+
+    if not settings.DEEPSEEK_API_KEY:
+        return _fallback(text, language)
+
+    framing = MODE_FRAMING.get(mode, MODE_FRAMING["ask"])
+    lang_name = _LANG_NAMES.get(language, language or "Hindi")
+    usage_capture: dict = {}
+
+    def _call(safe_text: str) -> str:
+        reply, usage = _raw_deepseek(framing, lang_name, safe_text)
+        usage_capture.update(usage)
+        return reply
+
+    # Pull the per-app HookRegistry. Outside a Flask request (CLI / tests)
+    # current_app raises — we degrade to the raw call so unit tests stay simple.
     try:
-        with httpx.Client(timeout=30.0) as client:
-            r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-        reply = data["choices"][0]["message"]["content"]
-        usage = data.get("usage") or {}
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    if hooks is not None:
+        try:
+            wrapped = hooks.wrap_llm(_call, user_text=text, ctx={})
+        except httpx.HTTPStatusError as e:
+            log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
+            return {**_fallback(text, language), "error": f"deepseek_http_{e.response.status_code}"}
+        except (httpx.RequestError, KeyError, ValueError) as e:
+            log.exception("DeepSeek call failed: %s", e)
+            return {**_fallback(text, language), "error": str(e)[:200]}
+        if wrapped.get("blocked"):
+            return {
+                "ok": False,
+                "source": "blocked",
+                "language": language,
+                "reply": wrapped["reply"],
+                "rail": wrapped.get("rail"),
+                "reason": wrapped.get("reason"),
+                "request_id": wrapped.get("request_id"),
+            }
+        return {
+            "ok": True,
+            "source": "deepseek",
+            "language": language,
+            "reply": _enforce_disclaimer(wrapped["reply"]),
+            "model": settings.DEEPSEEK_MODEL,
+            "request_id": wrapped.get("request_id"),
+            "latency_ms": wrapped.get("latency_ms"),
+            "tokens": {
+                "input":  usage_capture.get("prompt_tokens"),
+                "output": usage_capture.get("completion_tokens"),
+            },
+        }
+
+    # Fallback path (no Flask context) — preserves prior behavior.
+    try:
+        reply, usage = _raw_deepseek(framing, lang_name, text)
         return {
             "ok": True,
             "source": "deepseek",
@@ -167,10 +230,7 @@ def ask(text: str, language: str = "hi", mode: str = "ask") -> dict:
         }
     except httpx.HTTPStatusError as e:
         log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
-        return {
-            **_fallback(text, language),
-            "error": f"deepseek_http_{e.response.status_code}",
-        }
+        return {**_fallback(text, language), "error": f"deepseek_http_{e.response.status_code}"}
     except (httpx.RequestError, KeyError, ValueError) as e:
         log.exception("DeepSeek call failed: %s", e)
         return {**_fallback(text, language), "error": str(e)[:200]}

@@ -14,7 +14,7 @@ from routes.legal import bp as legal_bp
 # See lib/__init__.py for the architecture overview.
 from lib.feedback import feedback_bp, ensure_feedback_table
 from lib.hooks import HookRegistry
-from lib.observability import Observability, make_metrics_blueprint
+from lib.observability import Observability, install_request_timing, make_metrics_blueprint
 from lib.quadrails import build_default_quadrails
 
 
@@ -67,12 +67,14 @@ def create_app() -> Flask:
 
     try:
         obs = Observability(chitti=CHITTI_SLUG, engine=_quality_engine)
+        app.config["CHITTI_OBSERVABILITY"] = obs
         app.config["CHITTI_HOOKS"] = HookRegistry(
             chitti=CHITTI_SLUG,
             quadrails=build_default_quadrails(CHITTI_SLUG),
             observability=obs,
         )
-        log.info("quality hooks installed for %s", CHITTI_SLUG)
+        install_request_timing(app, CHITTI_SLUG, observability=obs)
+        log.info("quality hooks + request timing installed for %s", CHITTI_SLUG)
     except Exception as e:  # noqa: BLE001
         log.warning("quality hooks install skipped: %s", e)
 

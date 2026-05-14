@@ -18,6 +18,12 @@ def create_app() -> Flask:
     CORS(app, resources={r"/*": {"origins": _origins()}})
     app.register_blueprint(lv_bp)
 
+    try:
+        from lib.observability import install_request_timing
+        install_request_timing(app, "chitti-logo-video", observability=None)
+    except Exception:  # noqa: BLE001
+        pass
+
     @app.get("/")
     def root():
         return jsonify({

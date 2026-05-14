@@ -66,6 +66,30 @@ app.add_middleware(
 )
 
 
+# SLA timing middleware — every endpoint emits X-Chitti-Response-Time-Ms +
+# X-Chitti-Request-Id. Honest FastAPI equivalent of lib.observability.install_request_timing
+# (which is Flask-only); chitti-shares is the only FastAPI Chitti.
+import time as _time
+import uuid as _uuid
+
+
+@app.middleware("http")
+async def _chitti_timing_mw(request: Request, call_next):
+    t0 = _time.perf_counter()
+    request_id = request.headers.get("X-Request-Id") or _uuid.uuid4().hex[:12]
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = int((_time.perf_counter() - t0) * 1000)
+        log.exception("unhandled request error (chitti-shares) request_id=%s elapsed_ms=%s",
+                      request_id, elapsed_ms)
+        raise
+    elapsed_ms = int((_time.perf_counter() - t0) * 1000)
+    response.headers["X-Chitti-Response-Time-Ms"] = str(elapsed_ms)
+    response.headers["X-Chitti-Request-Id"] = request_id
+    return response
+
+
 # ---- Public NSE healthcheck (no auth needed; for debugging cloud IP blocks) ----
 
 @app.get("/debug/nse")

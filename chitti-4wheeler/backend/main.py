@@ -58,6 +58,14 @@ def create_app() -> Flask:
 
     app.register_blueprint(wheels_bp, url_prefix="/api/4w")
 
+    try:
+        from lib.observability import Observability, install_request_timing
+        obs = Observability(chitti="chitti-4wheeler", engine=engine)
+        app.config["CHITTI_OBSERVABILITY"] = obs
+        install_request_timing(app, "chitti-4wheeler", observability=obs)
+    except Exception as e:  # noqa: BLE001
+        log.warning("request timing install skipped: %s", e)
+
     @app.errorhandler(404)
     def _404(e):
         return jsonify({"error": "not_found", "hint": "See /api/4w/ routes; FEATURES.md lists what's live vs coming soon."}), 404

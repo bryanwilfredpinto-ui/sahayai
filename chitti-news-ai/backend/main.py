@@ -89,6 +89,15 @@ def create_app() -> Flask:
 
     app.register_blueprint(news_ai_bp)
 
+    try:
+        from database import engine as _engine
+        from lib.observability import Observability, install_request_timing
+        obs = Observability(chitti=CHITTI_SLUG, engine=_engine)
+        app.config["CHITTI_OBSERVABILITY"] = obs
+        install_request_timing(app, CHITTI_SLUG, observability=obs)
+    except Exception as e:  # noqa: BLE001
+        log.warning("request timing install skipped: %s", e)
+
     @app.get("/health")
     def health():
         with SessionLocal() as s:

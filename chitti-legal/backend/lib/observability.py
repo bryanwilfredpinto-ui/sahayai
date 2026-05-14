@@ -39,6 +39,7 @@ import logging
 import os
 import threading
 import time
+import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -263,6 +264,92 @@ def _shallow_clean(d: Any) -> Any:
         else:
             out[k] = _truncate(str(v), 200) if not isinstance(v, (dict, list, int, float, bool, type(None))) else v
     return out
+
+
+# ---------- Per-request timing middleware ---------------------------------
+
+
+def install_request_timing(app, chitti_slug: str, observability: "Observability | None" = None) -> None:
+    """Wire Flask before_request + after_request to time every endpoint.
+
+    Adds:
+      - `X-Chitti-Response-Time-Ms` response header on every response.
+      - One `quality_audit` row per request (`kind="http"`) with method,
+        path, status, elapsed_ms — best-effort, never breaks the request.
+      - Prometheus histogram `chitti_http_latency_ms` if prometheus_client
+        is installed (auto-no-op otherwise).
+
+    One-line wire from each Chitti's main.py:
+
+        install_request_timing(app, CHITTI_SLUG, observability=obs)
+
+    Idempotent: safe to call multiple times — handlers are tagged so a
+    second call replaces the previous registration cleanly.
+    """
+    try:
+        from flask import g, request  # type: ignore
+    except ImportError:
+        log.info("install_request_timing skipped: Flask not available")
+        return
+
+    if _PROM_OK:
+        _metric(
+            "http_latency_ms",
+            lambda: Histogram(
+                "chitti_http_latency_ms",
+                "HTTP request latency per Chitti",
+                ["chitti", "method", "endpoint", "status"],
+                buckets=(10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000),
+            ),
+        )
+
+    def _start_timer():
+        g._chitti_t0 = time.perf_counter()
+        g._chitti_request_id = request.headers.get("X-Request-Id") or uuid.uuid4().hex[:12]
+
+    def _record(response):
+        t0 = getattr(g, "_chitti_t0", None)
+        if t0 is None:
+            return response
+        elapsed_ms = int((time.perf_counter() - t0) * 1000)
+        response.headers["X-Chitti-Response-Time-Ms"] = str(elapsed_ms)
+        request_id = getattr(g, "_chitti_request_id", uuid.uuid4().hex[:12])
+        response.headers["X-Chitti-Request-Id"] = request_id
+
+        status_str = str(response.status_code)
+        endpoint = request.endpoint or "unknown"
+        if _PROM_OK and "http_latency_ms" in _METRICS:
+            try:
+                _METRICS["http_latency_ms"].labels(
+                    chitti=chitti_slug,
+                    method=request.method,
+                    endpoint=endpoint,
+                    status=status_str,
+                ).observe(elapsed_ms)
+            except Exception:  # noqa: BLE001
+                pass
+
+        if observability is not None:
+            try:
+                observability._write(
+                    request_id=request_id,
+                    chitti=chitti_slug,
+                    kind="http",
+                    phase="response",
+                    reason=endpoint,
+                    payload={
+                        "method": request.method,
+                        "path": request.path,
+                        "status": response.status_code,
+                        "elapsed_ms": elapsed_ms,
+                    },
+                )
+            except Exception as e:  # noqa: BLE001
+                log.debug("request-timing audit write skipped: %s", e)
+        return response
+
+    app.before_request(_start_timer)
+    app.after_request(_record)
 
 
 # ---------- Optional Prometheus Flask blueprint ---------------------------

@@ -1,12 +1,19 @@
 # STOP. Read `SAHAYAI_MASTER.md` before doing ANYTHING.
 
-This is the **new-session rule — MANDATORY (LOCKED 2026-05-13)**.
+This is the **new-session rule — MANDATORY (LOCKED 2026-05-13, EXTENDED 2026-05-14)**.
 
-Every Claude Code session in this repo must begin with:
+## MANDATORY FIRST STEP — every new Claude Code session
 
-> **`READ SAHAYAI_MASTER.md`**
+> 1. **Read [`SAHAYAI_MASTER.md`](SAHAYAI_MASTER.md)**
+> 2. **Read [`QUALITY_STATUS.md`](QUALITY_STATUS.md)**
+> 3. **Report to Bryan, before anything else:**
+>    - **What is RED** (substrate missing or never invoked)
+>    - **What is YELLOW** (wired but unverified in production)
+>    - **What needs fixing TODAY** (the next concrete call-site or deploy)
+>
+> Only after this report may you take any other action.
 
-Until you have read [`SAHAYAI_MASTER.md`](SAHAYAI_MASTER.md):
+Until both files are read and the report is delivered:
 
 - ❌ **No code changes allowed.**
 - ❌ **No new features allowed.**

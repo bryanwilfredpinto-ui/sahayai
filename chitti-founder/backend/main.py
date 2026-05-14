@@ -53,6 +53,7 @@ import re
 import time
 from collections import deque
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -92,6 +93,12 @@ PULL_TIMEOUT_S = float(os.environ.get("FOUNDER_PULL_TIMEOUT_S", "10"))
 
 WEEKLY_HOUR_IST = int(os.environ.get("WEEKLY_REPORT_HOUR_IST", "8"))
 WEEKLY_MINUTE_IST = int(os.environ.get("WEEKLY_REPORT_MINUTE_IST", "0"))
+
+# Swarm Intelligence (SAHAYAI_MASTER.md §2f) — weekly pattern extraction.
+# Runs Sunday at SWARM_HOUR_IST:SWARM_MINUTE_IST IST (after the 08:00 weekly
+# digest so any human-eyes-on patterns from the digest land in the same window).
+SWARM_HOUR_IST = int(os.environ.get("SWARM_HOUR_IST", "9"))
+SWARM_MINUTE_IST = int(os.environ.get("SWARM_MINUTE_IST", "0"))
 
 # BCP Layer 1 — self-ping cadence + alert debounce.
 SELF_PING_INTERVAL_MIN = int(os.environ.get("SELF_PING_INTERVAL_MIN", "4"))
@@ -278,6 +285,104 @@ def run_weekly_report() -> dict:
     ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
     log.info("[weekly] ok=%s  rows=%d", ok, len(rows))
     return {"ok": ok, "subject": subject, "rows": [r.to_dict() for r in rows]}
+
+
+def _swarm_engines() -> list[tuple[str, Any]]:
+    """Build (chitti_slug, engine) pairs for every Chitti whose Turso libSQL
+    URL is set in env. Skips silently when an env var is missing — first-deploy
+    honesty: no DB yet means no patterns to extract, not a crash.
+
+    Convention: each Chitti exposes `<SLUG_UPPER_DASH_AS_UNDERSCORE>_LIBSQL_URL`.
+    e.g. chitti-medupi → CHITTI_MEDUPI_LIBSQL_URL.
+    """
+    from sqlalchemy import create_engine  # local import — avoid hard dep at module top
+    chittis = [
+        "chitti-medupi", "chitti-vaani", "chitti-news", "chitti-government",
+        "chitti-ca", "chitti-legal", "chitti-voice-factory",
+        "chitti-upi", "chitti-scanner", "chitti-shares", "chitti-logo-video",
+        "chitti-news-ai", "chitti-2wheeler", "chitti-4wheeler",
+    ]
+    pairs: list[tuple[str, Any]] = []
+    for slug in chittis:
+        env_key = slug.upper().replace("-", "_") + "_LIBSQL_URL"
+        url = os.environ.get(env_key, "")
+        if not url:
+            continue
+        try:
+            engine = create_engine(url, future=True)
+            pairs.append((slug, engine))
+        except Exception as e:  # noqa: BLE001
+            log.info("swarm: could not build engine for %s — %s", slug, e)
+    return pairs
+
+
+def run_swarm_pass() -> dict:
+    """Sunday 09:00 IST — Swarm Intelligence weekly pattern extraction.
+
+    Walks every Chitti's audit DB, extracts ≥100-confirmation / ≥70%-thumbs-up
+    patterns, writes them to `<chitti>/skills/SWARM_LEARNED.md` (or
+    `SWARM_PROPOSED.md` for HIGH-risk Chittis), and emails the report.
+
+    Best-effort — never aborts the scheduler thread. Returns the SwarmReport
+    as a dict so /admin/founder/swarm can render the same result on demand.
+    """
+    try:
+        from lib.swarm import weekly_swarm_pass
+    except Exception as e:  # noqa: BLE001
+        log.warning("swarm import failed: %s", e)
+        return {"ok": False, "error": "import_failed"}
+
+    pairs = _swarm_engines()
+    if not pairs:
+        log.info("[swarm] no Chitti libSQL URLs configured — nothing to do")
+        return {"ok": True, "pairs": 0, "report": None}
+
+    # Repo root: chitti-founder/backend/main.py → ../.. → repo root.
+    repo_root = Path(__file__).resolve().parents[2]
+
+    report = weekly_swarm_pass(pairs, repo_root=repo_root)
+    n_pushed = sum(v.get("patterns_appended", 0) for v in report.per_chitti.values())
+    log.info(
+        "[swarm] pass complete · chittis=%d · patterns_appended=%d · errors=%d",
+        len(report.per_chitti), n_pushed, len(report.errors),
+    )
+
+    subject = f"[Chitti Founder] Swarm Intelligence — {n_pushed} pattern(s) learned"
+    rows_html = []
+    for chitti, info in sorted(report.per_chitti.items()):
+        rows_html.append(
+            f"<tr><td>{chitti}</td>"
+            f"<td>{info.get('risk', 'normal')}</td>"
+            f"<td>{info.get('patterns_found', 0)}</td>"
+            f"<td>{info.get('patterns_appended', 0)}</td>"
+            f"<td><code>{info.get('file') or '—'}</code></td></tr>"
+        )
+    err_html = ""
+    if report.errors:
+        err_html = "<h3>Errors</h3><pre>" + "\n".join(report.errors) + "</pre>"
+    html = f"""<html><body>
+<h2>Swarm Intelligence — weekly pass</h2>
+<p>Window: {report.started_at} → {report.finished_at}</p>
+<p>Thresholds: ≥100 confirmations, ≥70% thumbs-up (locked in SAHAYAI_MASTER.md §2f).</p>
+<table border='1' cellpadding='6' cellspacing='0'>
+<tr><th>Chitti</th><th>Risk</th><th>Patterns found</th><th>Appended</th><th>File</th></tr>
+{''.join(rows_html) or '<tr><td colspan=5>No Chittis with audit data yet.</td></tr>'}
+</table>
+{err_html}
+<p style='color:#666;font-size:12px'>HIGH-risk Chittis (legal · ca · medupi · vaani) write to <code>SWARM_PROPOSED.md</code> — pending Sire's review before promotion to <code>SWARM_LEARNED.md</code>.</p>
+</body></html>"""
+
+    ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
+    log.info("[swarm] email ok=%s", ok)
+    return {
+        "ok": ok,
+        "pairs": len(pairs),
+        "patterns_appended": n_pushed,
+        "errors": report.errors,
+        "per_chitti": report.per_chitti,
+        "pushed_files": report.pushed_files,
+        "proposed_files": report.proposed_files,
+    }
 
 
 def run_escalator() -> dict:
@@ -558,6 +663,17 @@ def _create_app() -> Flask:
     app = Flask(__name__)
     app.config["JSON_SORT_KEYS"] = False
 
+    # SLA timing: every endpoint gets X-Chitti-Response-Time-Ms header +
+    # prometheus histogram. observability=None because chitti-founder
+    # talks to Turso libsql directly (no SQLAlchemy engine) — timing
+    # still flows through headers + /metrics.
+    try:
+        from lib.observability import install_request_timing
+        install_request_timing(app, "chitti-founder", observability=None)
+        log.info("request timing installed for chitti-founder")
+    except Exception as e:  # noqa: BLE001
+        log.warning("request timing install skipped: %s", e)
+
     allowed = os.environ.get(
         "ALLOWED_ORIGINS",
         "https://sahayai.in,https://www.sahayai.in,http://localhost:8000,http://127.0.0.1:8000",
@@ -631,6 +747,49 @@ def _create_app() -> Flask:
         auth = _require_admin()
         if auth: return auth
         return jsonify(run_daily_report())
+
+    @app.post("/admin/founder/swarm")
+    def admin_swarm_now():
+        """On-demand Swarm Intelligence pass — same code path as the Sunday cron.
+        Useful for ad-hoc verification: `curl -XPOST -H 'Authorization: Bearer …'`.
+        """
+        auth = _require_admin()
+        if auth: return auth
+        return jsonify(run_swarm_pass())
+
+    @app.post("/admin/founder/send-quality-status")
+    def admin_send_quality_status():
+        """Email the repo-root QUALITY_STATUS.md to FOUNDER_EMAIL.
+
+        Reads the file off disk every call so post-deploy re-runs always
+        send the current audit, not a snapshot. Honest stub when SMTP env
+        vars are unset (logs intent + returns ok=false, never crashes).
+        """
+        auth = _require_admin()
+        if auth: return auth
+        repo_root = Path(__file__).resolve().parents[2]
+        md_path = repo_root / "QUALITY_STATUS.md"
+        if not md_path.exists():
+            return jsonify({"ok": False, "error": "QUALITY_STATUS.md missing"}), 404
+        md = md_path.read_text(encoding="utf-8")
+        # Inline-escape the markdown into a <pre> block — same approach as
+        # tools/email_quality_status.py so on-deploy + local paths agree.
+        body = (md.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+        html = (
+            "<html><body style=\"font-family:-apple-system,Segoe UI,sans-serif;"
+            "max-width:980px;margin:24px auto;padding:0 16px;\">"
+            "<h2>Chitti — Enterprise Quality Audit</h2>"
+            "<p style=\"color:#555\">Triggered via "
+            "<code>POST /admin/founder/send-quality-status</code>.</p>"
+            "<hr/><pre style=\"white-space:pre-wrap;font-family:ui-monospace,monospace;"
+            f"font-size:13px;line-height:1.5\">{body}</pre>"
+            "</body></html>"
+        )
+        ok = send_report_email(
+            "[Chitti] Enterprise Quality Audit — 2026-05-14",
+            html, recipient=FOUNDER_EMAIL,
+        )
+        return jsonify({"ok": ok, "recipient": FOUNDER_EMAIL, "bytes": len(md)})
 
     @app.post("/admin/founder/send-weekly")
     def admin_send_weekly():
@@ -758,12 +917,17 @@ def _start_scheduler() -> None:
         id="bcp_self_ping", replace_existing=True,
         next_run_time=datetime.now(_IST) + timedelta(seconds=30),
     )
+    _sched.add_job(
+        run_swarm_pass, "cron",
+        day_of_week="sun", hour=SWARM_HOUR_IST, minute=SWARM_MINUTE_IST,
+        timezone=_IST, id="swarm_weekly_pass", replace_existing=True,
+    )
     _sched.start()
     log.info(
         "scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · "
-        "escalator :15 · bcp self-ping every %d min",
+        "escalator :15 · bcp self-ping every %d min · swarm Sun %02d:%02d IST",
         REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST,
-        SELF_PING_INTERVAL_MIN,
+        SELF_PING_INTERVAL_MIN, SWARM_HOUR_IST, SWARM_MINUTE_IST,
     )
 
 

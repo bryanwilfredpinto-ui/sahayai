@@ -170,6 +170,51 @@ class HookRegistry:
         )
         return modified
 
+    # ---- one-shot LLM wrap ----
+
+    def wrap_llm(
+        self,
+        call_fn: Callable[[str], str],
+        user_text: str,
+        ctx: dict | None = None,
+    ) -> dict:
+        """Wrap a DeepSeek (or any LLM) call with before_model + after_model.
+
+        Service code that already returns a string from `call_fn(safe_text)`
+        becomes one line:
+
+            wrapped = hooks.wrap_llm(lambda s: _raw_deepseek(s), user_text, ctx)
+            if wrapped["blocked"]:
+                return {"ok": False, "reply": wrapped["reply"], ...}
+            return {"ok": True, "reply": wrapped["reply"], ...}
+
+        Returns a dict; never raises (rail BLOCK is communicated via
+        `blocked=True`, not an exception).
+        """
+        ctx = ctx or {}
+        gated = self.before_model(user_text, ctx)
+        if isinstance(gated, RefusalResponse):
+            return {
+                "ok": False,
+                "blocked": True,
+                "rail": gated.rail,
+                "reason": gated.reason,
+                "reply": gated.user_facing,
+                "request_id": gated.request_id,
+                "latency_ms": 0,
+            }
+
+        raw_output = call_fn(gated)
+        final = self.after_model(gated, raw_output or "", ctx)
+        latency_ms = int((time.time() - ctx.get("ts_start", time.time())) * 1000)
+        return {
+            "ok": True,
+            "blocked": False,
+            "reply": final,
+            "request_id": ctx.get("request_id"),
+            "latency_ms": latency_ms,
+        }
+
     # ---- tool gates ----
 
     def before_tool(self, tool_name: str, args: dict, ctx: dict | None = None) -> dict | RefusalResponse:

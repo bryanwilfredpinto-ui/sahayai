@@ -61,6 +61,13 @@ def _create_app() -> Flask:
         return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     app.register_blueprint(upi_bp)
+
+    try:
+        from lib.observability import install_request_timing
+        install_request_timing(app, "chitti-upi", observability=None)
+    except Exception:  # noqa: BLE001
+        pass
+
     return app
 
 
