@@ -252,3 +252,79 @@ Listed because users / Bryan / Sire have asked. No code today.
    future supplier wire-up must preserve the single
    `window.Chitti.a11y.VOICE_FACTORY_URL` hook
    ([[project_voice_strategy_locked]]).
+---
+
+## 2a. Quality & Scope improvements — queued 2026-05-15
+
+Per the *Quality & Scope Improvement directive* dated 2026-05-15. Items
+land here first as a capability surface that the [Feature Discovery
+Box](../../chitti_features.js) reads live; COMING SOON badges show until
+the backend/UI work is wired per the [new-products process
+(§2a)](../../SAHAYAI_MASTER.md). Locked decisions in §2 are never
+relitigated by this section — the swarm + Sire may *propose* new
+capabilities; locks (LLM provider, voice substrate, emergency protocol,
+four-user contract, ISL, per-response widget, camera intelligence,
+knowledge-corpus expert grades, Vaani sole interface) never move.
+
+### Quality
+
+| # | Item | How to apply |
+|---|---|---|
+| Q1 | **Hall of Fame** shows voice-donor count **per language** — motivates more donations ("Hindi has 142 voices · Bhojpuri has 4 — your voice unlocks a milestone"). | Aggregate over the donations table (per-language COUNT); render on `chitti_voice_hall_of_fame.html`. |
+| Q2 | Quality threshold per donor visible — *"Your voice needs 5 more recordings to qualify for the public cascade"*. | Per-donor progress bar + remaining count; gates promotion from local copy to cascade. |
+| Q3 | Tier C honest failure **names the language** — *"Tulu is not yet supported. Try Kannada?"* — never silent fallback (already locked). | Already in the cascade contract; verify the error message is in user's language. |
+| Q4 | Fluency score per language shown publicly — builds trust (*"Hindi: 92/100 · Bhojpuri: 28/100 — early-stage"*). | Reads from the fluency-pipeline aggregate; renders on the language picker + Hall of Fame. |
+
+
+### Scope
+
+| # | Item | Priority | Surface needed |
+|---|---|---|---|
+| S1 | Voice cloning opt-in — user donates their voice, Chitti uses it for **that user only**. | P1 | Strict consent flow (voice-grant pattern from Vaani T&C). Per-device-only synthesis until the user explicitly approves community use. Honest *"Your voice will never be used to impersonate you to anyone else"* contract. |
+| S2 | Children's voice mode — slower, simpler words for elderly + first-time users. | **P0** | Modulates speech rate (× 0.85) + vocabulary substitution (curated *simple word list* per language). Auto-on when Disability Profile has `elderly: true` or `illiterate: true`. |
+| S3 | Dialect support — Mumbai Hindi vs Delhi Hindi vs Bhojpuri variants. | P2 | Per-dialect TTS model when available; honest fallback to the parent language otherwise — *"Speaking in standard Hindi; Bhojpuri TTS is in training"*. |
+| S4 | Hall of Fame badge for donors — surface on every Chitti page footer when the donor's recordings are in use. | P2 | Per-device badge; never tied to identity beyond the donor's chosen handle. |
+
+### Cross-Chitti improvements (substrate — every page inherits)
+
+The 2026-05-15 directive's cross-cutting items #1–#10 ship as
+substrate features in [`chitti_a11y.js`](../../chitti_a11y.js) so every
+Chitti page inherits them without per-page edits:
+
+| # | Cross-Chitti item | Where it lives | Status |
+|---|---|---|---|
+| 1 | Offline mode for basic queries | `chitti_offline.js` (service-worker cache + connectivity badge) | wired since 2026-05-14 |
+| 2 | WhatsApp share on every response | `Chitti.a11y.share(text, opts)` | shipped 2026-05-15 |
+| 3 | Save as PDF / print scoped to a node | `Chitti.a11y.print(el, opts)` | shipped 2026-05-15 |
+| 4 | Voice input everywhere | Voice Factory cascade via `Chitti.a11y.speak` / Web Speech API on every page | wired since 2026-05-12 |
+| 5 | Low-data / 2G mode | `chitti_offline.js` + `effectiveType <= 2g` heuristic; user-overridable via Disability Profile "rural / low connectivity" | wired since 2026-05-14 |
+| 6 | Battery saver auto-dark below 20% | `Chitti.a11y.setBatterySaver()` + `html[data-chitti-batt="save"]` CSS | shipped 2026-05-15 |
+| 7 | Font size large / medium / small | `Chitti.a11y.setFontSize('lg'\|'md'\|'sm')` | shipped 2026-05-15 |
+| 8 | "Chitti forget" — one-tap local wipe | `Chitti.a11y.forget(scope)` + tombstone preserved for honest counts | shipped 2026-05-15 |
+| 9 | Session history (last 5 questions) | `Chitti.a11y.history.{push,list,clear,mount}` per-Chitti scope | shipped 2026-05-15 |
+| 10 | Rating after 3 uses | **REJECTED** — see "Rejected items" below | — |
+
+### Confidence-score chip — shared primitive
+
+The 2026-05-15 directive asks several Chittis to show a confidence
+score on every answer (MedUPI strip scan, CA tax answer, Scanner FSSAI
+flag, etc.). Rather than each backend hand-rolling a different chip,
+the rendering primitive lives in `Chitti.a11y.renderConfidence(target,
+pct, opts)` — the backend emits a number, the substrate renders the
+coloured pill (green ≥ 80%, amber 50–79%, red < 50%). Below 70% the
+chip carries a `Please verify` line; if `opts.verifyWith` is set, the
+chip's `title` says where to verify (e.g. "FSSAI portal" / "your CA").
+
+### Rejected items — directive-level reroute (2026-05-15)
+
+The following two items conflict with [`feedback_design_from_pwd_user_perspective`](../../SAHAYAI_MASTER.md):
+
+| Item | Why rejected | What we do instead |
+|---|---|---|
+| *"Did Chitti understand you? YES/NO after every routed response"* | Pre-action / pre-feedback modals **break blind / mute / illiterate users** — the four-user contract floor. We already collect per-response 👍 / 👎 + voice-or-text feedback on every box via the [per-response widget §7](../../feedback-widget.js). Adding a second YES/NO confirmation is redundant + creates a forced choice every turn. | The existing 4-icon row (🔊 · 🤖 · 👍 · 👎) covers the same intent; a 👎 click opens the per-box feedback window scoped to that response. No second prompt. |
+| *"Rating after 3 uses — ask user to rate Chitti 1–5"* | Same anti-pattern as above. Generic SaaS rating prompts assume a literate, tap-fluent user. Forcing a 1–5 modal pesters elderly / illiterate / blind users and lowers honest feedback quality (rate-to-dismiss bias). | The per-response widget already produces a far richer signal — every box's 👍 / 👎 rolls into the Founder's daily 07:00 IST quality slice + the Sunday digest. Per-response signals beat point-in-time rating modals on every dimension. |
+
+Both rejections are documented here, not silently dropped, so any
+future revisit knows the reasoning. If Sire wants either of these
+shipped anyway, the override lives in `Chitti.a11y` and either can be
+wired in a future patch.

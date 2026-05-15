@@ -133,3 +133,80 @@ where blind / illiterate users are the primary audience.
 
 Server-enforced — every DeepSeek answer carries this footer, never
 client-controlled. Matches [SAHAYAI_MASTER §6 — DeepSeek answers carry server-enforced disclaimers](../../SAHAYAI_MASTER.md#6-quality-standards).
+---
+
+## 2a. Quality & Scope improvements — queued 2026-05-15
+
+Per the *Quality & Scope Improvement directive* dated 2026-05-15. Items
+land here first as a capability surface that the [Feature Discovery
+Box](../../chitti_features.js) reads live; COMING SOON badges show until
+the backend/UI work is wired per the [new-products process
+(§2a)](../../SAHAYAI_MASTER.md). Locked decisions in §2 are never
+relitigated by this section — the swarm + Sire may *propose* new
+capabilities; locks (LLM provider, voice substrate, emergency protocol,
+four-user contract, ISL, per-response widget, camera intelligence,
+knowledge-corpus expert grades, Vaani sole interface) never move.
+
+### Quality
+
+| # | Item | How to apply |
+|---|---|---|
+| Q1 | Service interval **specific to make / model / year** — never generic. Ask bike details first. | Onboarding wizard (make + model + year + odometer); decision tree maps to OEM service-book intervals. |
+| Q2 | DIY vs Mechanic shows **cost difference** — *"DIY saves ₹800 vs the mechanic's quoted ₹2,000"*. | Per-task cost-band table (parts only vs parts + labour) sourced from a curated `2wheeler_costs.json`. |
+| Q3 | Recall notices shown **prominently** if the user's bike model has an active recall (per ARAI / OEM feeds). | Periodic poll of ARAI recall list + per-OEM announcements; banner on every page when the user's bike model matches. |
+
+
+### Scope
+
+| # | Item | Priority | Surface needed |
+|---|---|---|---|
+| S1 | Fuel efficiency tracker — user logs fuel fills, Chitti tracks mileage. | P1 | Local-only log; cross-references against the OEM-claimed mileage; alerts if user's mileage drops > 15% (possible service due). |
+| S2 | Insurance renewal reminder — before expiry. | **P0** (legal compliance) | Per-policy reminder set at user-entered expiry date; voice + Notification API. |
+| S3 | Pollution certificate (PUC) reminder. | **P0** | Same pattern as S2; PUC validity varies by state — state-aware reminder. |
+| S4 | Nearest authorised service centre locator. | P1 | Per-OEM service-centre database (publicly available); uses `Chitti.location` for ranking. |
+| S5 | Spare-part price comparison — 3 sources shown. | P1 | OEM-MRP + Amazon / Flipkart prices + local-mechanic estimate; honest *"local mechanic price is approximate"* footer. |
+| S6 | *"Is this garage overcharging me?"* — user describes the repair, Chitti gives a fair price range. | P1 | Reuses the cost-band table from Q2; surfaces median + 25/75 percentile. |
+
+### Cross-Chitti improvements (substrate — every page inherits)
+
+The 2026-05-15 directive's cross-cutting items #1–#10 ship as
+substrate features in [`chitti_a11y.js`](../../chitti_a11y.js) so every
+Chitti page inherits them without per-page edits:
+
+| # | Cross-Chitti item | Where it lives | Status |
+|---|---|---|---|
+| 1 | Offline mode for basic queries | `chitti_offline.js` (service-worker cache + connectivity badge) | wired since 2026-05-14 |
+| 2 | WhatsApp share on every response | `Chitti.a11y.share(text, opts)` | shipped 2026-05-15 |
+| 3 | Save as PDF / print scoped to a node | `Chitti.a11y.print(el, opts)` | shipped 2026-05-15 |
+| 4 | Voice input everywhere | Voice Factory cascade via `Chitti.a11y.speak` / Web Speech API on every page | wired since 2026-05-12 |
+| 5 | Low-data / 2G mode | `chitti_offline.js` + `effectiveType <= 2g` heuristic; user-overridable via Disability Profile "rural / low connectivity" | wired since 2026-05-14 |
+| 6 | Battery saver auto-dark below 20% | `Chitti.a11y.setBatterySaver()` + `html[data-chitti-batt="save"]` CSS | shipped 2026-05-15 |
+| 7 | Font size large / medium / small | `Chitti.a11y.setFontSize('lg'\|'md'\|'sm')` | shipped 2026-05-15 |
+| 8 | "Chitti forget" — one-tap local wipe | `Chitti.a11y.forget(scope)` + tombstone preserved for honest counts | shipped 2026-05-15 |
+| 9 | Session history (last 5 questions) | `Chitti.a11y.history.{push,list,clear,mount}` per-Chitti scope | shipped 2026-05-15 |
+| 10 | Rating after 3 uses | **REJECTED** — see "Rejected items" below | — |
+
+### Confidence-score chip — shared primitive
+
+The 2026-05-15 directive asks several Chittis to show a confidence
+score on every answer (MedUPI strip scan, CA tax answer, Scanner FSSAI
+flag, etc.). Rather than each backend hand-rolling a different chip,
+the rendering primitive lives in `Chitti.a11y.renderConfidence(target,
+pct, opts)` — the backend emits a number, the substrate renders the
+coloured pill (green ≥ 80%, amber 50–79%, red < 50%). Below 70% the
+chip carries a `Please verify` line; if `opts.verifyWith` is set, the
+chip's `title` says where to verify (e.g. "FSSAI portal" / "your CA").
+
+### Rejected items — directive-level reroute (2026-05-15)
+
+The following two items conflict with [`feedback_design_from_pwd_user_perspective`](../../SAHAYAI_MASTER.md):
+
+| Item | Why rejected | What we do instead |
+|---|---|---|
+| *"Did Chitti understand you? YES/NO after every routed response"* | Pre-action / pre-feedback modals **break blind / mute / illiterate users** — the four-user contract floor. We already collect per-response 👍 / 👎 + voice-or-text feedback on every box via the [per-response widget §7](../../feedback-widget.js). Adding a second YES/NO confirmation is redundant + creates a forced choice every turn. | The existing 4-icon row (🔊 · 🤖 · 👍 · 👎) covers the same intent; a 👎 click opens the per-box feedback window scoped to that response. No second prompt. |
+| *"Rating after 3 uses — ask user to rate Chitti 1–5"* | Same anti-pattern as above. Generic SaaS rating prompts assume a literate, tap-fluent user. Forcing a 1–5 modal pesters elderly / illiterate / blind users and lowers honest feedback quality (rate-to-dismiss bias). | The per-response widget already produces a far richer signal — every box's 👍 / 👎 rolls into the Founder's daily 07:00 IST quality slice + the Sunday digest. Per-response signals beat point-in-time rating modals on every dimension. |
+
+Both rejections are documented here, not silently dropped, so any
+future revisit knows the reasoning. If Sire wants either of these
+shipped anyway, the override lives in `Chitti.a11y` and either can be
+wired in a future patch.

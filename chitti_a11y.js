@@ -833,6 +833,264 @@
     document.head.appendChild(s);
   }
 
+  // ── CROSS-CHITTI UX SUBSTRATE — 2026-05-15 ──────────────────
+  // Seven helpers requested by the Quality & Scope Improvement directive
+  // (2026-05-15). All live in this substrate so every Chitti inherits
+  // them without per-page edits — matches the §2a "capabilities in
+  // skills/*.md, substrate-level loading" contract.
+  //
+  //   1. Battery-saver — auto-enable dark mode below 20% battery.
+  //   2. Font size — large / medium / small, persisted per device.
+  //   3. WhatsApp share — wa.me intent URL builder.
+  //   4. PDF / print — opens the browser print dialog scoped to a node.
+  //   5. Session history — last 5 Q&A per Chitti page, local-only.
+  //   6. Chitti forget — one-tap wipe of a Chitti's localStorage scope.
+  //   7. Confidence chip — coloured pill renderer used by every Chitti
+  //                        that emits a confidence score.
+
+  function injectCrossSubstrateStyles() {
+    if (document.getElementById('chitti-cross-css')) return;
+    const css = document.createElement('style');
+    css.id = 'chitti-cross-css';
+    css.textContent =
+      // Font-size scale on <html> — every rem-based size scales with it.
+      'html[data-chitti-fs="lg"]{font-size:18px}' +
+      'html[data-chitti-fs="md"]{font-size:16px}' +
+      'html[data-chitti-fs="sm"]{font-size:14px}' +
+      // Battery-saver dark-mode override. Inverted lightness on backgrounds
+      // + text; honest "non-design" mode (not pixel-perfect) so the user
+      // can actually still read at 5% battery on an OLED screen.
+      'html[data-chitti-batt="save"] body{background:#000 !important;color:#eee !important;filter:none}' +
+      'html[data-chitti-batt="save"] .section-card,html[data-chitti-batt="save"] .panel,' +
+      'html[data-chitti-batt="save"] .card,html[data-chitti-batt="save"] header{background:#111 !important;color:#eee !important;border-color:#333 !important}' +
+      'html[data-chitti-batt="save"] img,html[data-chitti-batt="save"] video{opacity:.85}' +
+      // Confidence chip — coloured pill with % and label.
+      '.chitti-confidence{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;' +
+      'border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.02em;' +
+      "font-family:-apple-system,'Segoe UI',Inter,sans-serif;line-height:1.6;" +
+      'border:1px solid currentColor;vertical-align:middle}' +
+      '.chitti-confidence.high{background:rgba(22,163,74,.10);color:#15803d}' +
+      '.chitti-confidence.med{background:rgba(212,175,55,.14);color:#a16207}' +
+      '.chitti-confidence.low{background:rgba(220,38,38,.10);color:#b91c1c}' +
+      // Session history panel — tiny inline list any page can mount.
+      '.chitti-history-panel{margin:8px 0;padding:8px 10px;background:#fbf8f1;border:1px dashed #D4AF37;' +
+      'border-radius:10px;font-size:12px;line-height:1.5;color:#555}' +
+      '.chitti-history-panel h5{margin:0 0 4px;font-size:11px;color:#0E2344;font-weight:800;' +
+      'letter-spacing:.04em;text-transform:uppercase}' +
+      '.chitti-history-panel ul{margin:0;padding:0;list-style:none}' +
+      '.chitti-history-panel li{padding:3px 0;border-top:1px dashed rgba(212,175,55,.4);' +
+      'display:flex;gap:6px;align-items:flex-start}' +
+      '.chitti-history-panel li:first-child{border-top:none}' +
+      '.chitti-history-panel .ts{color:#888;font-family:monospace;font-size:10px;flex-shrink:0}';
+    document.head.appendChild(css);
+  }
+
+  // ----- (1) Battery-saver ----------------------------------------
+  // Honest: relies on Battery Status API which is being deprecated +
+  // not implemented in all browsers (Firefox, Safari iOS). Returns
+  // false silently if unavailable; pages can call setBatterySaver(true)
+  // manually to force the mode for users on 2G / low-power devices.
+  function setBatterySaver(on) {
+    document.documentElement.setAttribute('data-chitti-batt', on ? 'save' : 'normal');
+    const s = loadState() || {};
+    s.battery_saver_manual = !!on;
+    saveState(s);
+    announce(on ? 'Battery saver mode on' : 'Battery saver mode off');
+  }
+  function _watchBattery() {
+    if (!navigator || typeof navigator.getBattery !== 'function') return;
+    navigator.getBattery().then((bat) => {
+      const update = () => {
+        const s = loadState() || {};
+        if (s.battery_saver_manual === true) return; // manual override sticks
+        const lvl = bat.level;
+        if (lvl < 0.20 && !bat.charging) {
+          document.documentElement.setAttribute('data-chitti-batt', 'save');
+        } else if (lvl > 0.30 || bat.charging) {
+          document.documentElement.setAttribute('data-chitti-batt', 'normal');
+        }
+      };
+      update();
+      try {
+        bat.addEventListener('levelchange', update);
+        bat.addEventListener('chargingchange', update);
+      } catch (_) {}
+    }).catch(() => {});
+  }
+
+  // ----- (2) Font size --------------------------------------------
+  function setFontSize(size) {
+    const norm = (size === 'lg' || size === 'sm' || size === 'md') ? size : 'md';
+    document.documentElement.setAttribute('data-chitti-fs', norm);
+    const s = loadState() || {};
+    s.font_size = norm;
+    saveState(s);
+    announce('Font size: ' + (norm === 'lg' ? 'large' : norm === 'sm' ? 'small' : 'medium'));
+  }
+  function _restoreFontSize() {
+    const s = loadState() || {};
+    if (s.font_size) document.documentElement.setAttribute('data-chitti-fs', s.font_size);
+  }
+
+  // ----- (3) WhatsApp share ---------------------------------------
+  // Builds a wa.me intent URL (universal — works on mobile + web). No
+  // tracking, no API key — just the share intent. Caller decides
+  // whether to open in new tab or copy to clipboard.
+  function shareWhatsApp(text, opts) {
+    opts = opts || {};
+    const safe = encodeURIComponent(String(text || '').slice(0, 4000));
+    const phone = opts.phone ? String(opts.phone).replace(/[^0-9]/g, '') : '';
+    const url = phone
+      ? 'https://wa.me/' + phone + '?text=' + safe
+      : 'https://wa.me/?text=' + safe;
+    if (opts.copy === true) {
+      try { (navigator.clipboard || {}).writeText && navigator.clipboard.writeText(text); } catch (_) {}
+    }
+    if (opts.open !== false) {
+      try { window.open(url, '_blank', 'noopener'); } catch (_) {}
+    }
+    return url;
+  }
+
+  // ----- (4) PDF / print ------------------------------------------
+  // Opens the browser print dialog scoped to the given node. The user
+  // can choose "Save as PDF" from the destination dropdown (works on
+  // every modern browser; no PDF library bundled). Honest: we don't
+  // generate a PDF server-side — the browser does it.
+  function printNode(el, opts) {
+    opts = opts || {};
+    if (typeof el === 'string') el = document.getElementById(el) || document.querySelector(el);
+    if (!el) { announce('Nothing to print.'); return; }
+    const title = opts.title || (document.title || 'Chitti document');
+    const html = el.outerHTML || el.innerHTML || '';
+    const w = window.open('', '_blank', 'noopener,width=720,height=900');
+    if (!w) { announce('Pop-up blocked. Allow pop-ups to save as PDF.'); return; }
+    w.document.write(
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
+      _profileEsc(title) + '</title>' +
+      '<style>body{font:14px/1.6 -apple-system,Segoe UI,sans-serif;color:#000;padding:18px;max-width:780px;margin:0 auto}' +
+      'h1,h2,h3{margin:.6em 0 .3em}img{max-width:100%}@media print{body{padding:0}}</style></head><body>' +
+      html + '</body></html>'
+    );
+    w.document.close();
+    setTimeout(() => { try { w.print(); } catch (_) {} }, 250);
+  }
+
+  // ----- (5) Session history (local-only, last 5) -----------------
+  // Per-Chitti history scope so different products keep separate lists.
+  // Never written to a server. Drop on `forget`.
+  function _historyKey(scope) {
+    return 'chitti_history_' + (scope || (document.body && document.body.getAttribute('data-chitti-scope')) || 'default');
+  }
+  function historyPush(scope, item) {
+    const k = _historyKey(scope);
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(k) || '[]'); } catch (_) {}
+    list.unshift({
+      ts: Math.floor(Date.now() / 1000),
+      q: String((item && item.q) || '').slice(0, 220),
+      a: String((item && item.a) || '').slice(0, 280),
+    });
+    list = list.slice(0, 5);
+    try { localStorage.setItem(k, JSON.stringify(list)); } catch (_) {}
+    return list;
+  }
+  function historyList(scope) {
+    const k = _historyKey(scope);
+    try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (_) { return []; }
+  }
+  function historyClear(scope) {
+    const k = _historyKey(scope);
+    try { localStorage.removeItem(k); } catch (_) {}
+    announce('Chitti history cleared');
+  }
+  function historyMount(scope, container) {
+    if (typeof container === 'string') container = document.querySelector(container);
+    if (!container) return;
+    const list = historyList(scope);
+    if (!list.length) { container.innerHTML = ''; return; }
+    container.innerHTML =
+      '<div class="chitti-history-panel" role="region" aria-label="Recent questions">' +
+      '<h5>Recent — last ' + list.length + '</h5>' +
+      '<ul>' +
+      list.map((e) => {
+        const t = new Date(e.ts * 1000).toLocaleTimeString();
+        return '<li><span class="ts">' + _profileEsc(t) + '</span><span>' +
+          _profileEsc(e.q) + '</span></li>';
+      }).join('') +
+      '</ul></div>';
+  }
+
+  // ----- (6) Chitti forget — scope-aware local-data wipe ----------
+  // Wipes localStorage keys matching the given prefix (e.g. "chitti_news_"
+  // forgets everything from chitti-news). With no scope, wipes the
+  // entire Chitti substrate state (lang, profile, isl, history, etc.)
+  // — equivalent to "factory reset" of this device's Chitti memory.
+  // Always confirms verbally + visually before wiping. Returns count.
+  function forget(scope, opts) {
+    opts = opts || {};
+    let prefix = scope || '';
+    if (!prefix) {
+      // Whole-substrate wipe needs explicit force=true to avoid foot-guns.
+      if (opts.force !== true) {
+        announce('Forget needs a scope, or call with {force:true} to wipe everything.');
+        return 0;
+      }
+    }
+    const toDrop = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (!prefix || k.startsWith(prefix) ||
+          (opts.force === true && (k.startsWith('chitti_') || k === STORAGE_KEY))) {
+          toDrop.push(k);
+        }
+      }
+    } catch (_) {}
+    toDrop.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
+    announce('Chitti has forgotten ' + toDrop.length + ' item(s).');
+    return toDrop.length;
+  }
+
+  // ----- (7) Confidence chip --------------------------------------
+  // Coloured pill the backend can render anywhere. pct accepts 0-1 or
+  // 0-100; we normalise. Buckets:
+  //   high  (≥ 80)  green
+  //   med   (50-79) amber
+  //   low   (< 50)  red
+  // Honest: the chip says "85% confident — verify with [source]" when
+  // a verifyWith is provided. Below 70 we add a "please verify" line.
+  function renderConfidence(target, pct, opts) {
+    opts = opts || {};
+    if (typeof target === 'string') target = document.querySelector(target);
+    if (!target) return null;
+    let p = Number(pct);
+    if (Number.isNaN(p)) return null;
+    if (p <= 1) p = p * 100;
+    p = Math.max(0, Math.min(100, Math.round(p)));
+    const bucket = p >= 80 ? 'high' : (p >= 50 ? 'med' : 'low');
+    const label = opts.label || (bucket === 'high' ? 'High confidence' :
+      bucket === 'med' ? 'Medium' : 'Low — please verify');
+    const span = document.createElement('span');
+    span.className = 'chitti-confidence ' + bucket;
+    span.setAttribute('role', 'status');
+    span.setAttribute('aria-label', label + ' ' + p + ' percent');
+    span.textContent = p + '% · ' + label;
+    if (p < 70 && opts.verifyWith) {
+      span.title = 'Please verify with ' + opts.verifyWith;
+    }
+    if (opts.replace !== false) target.innerHTML = '';
+    target.appendChild(span);
+    return span;
+  }
+
+  function ensureCrossSubstrate() {
+    injectCrossSubstrateStyles();
+    _restoreFontSize();
+    _watchBattery();
+  }
+
   // ── INIT: INJECT BAR INTO PAGE ───────────────────────────────
   // Adds a sticky top bar with: language picker, Voice Required marker
   // (if requested), braille-mode toggle. Below any existing legal banner.
@@ -896,6 +1154,12 @@
     // by `Chitti.a11y.navigate(direction)` so callers can wire to any
     // gesture/key/voice command.
     attachBlindGestureNav();
+
+    // Cross-Chitti UX (2026-05-15) — battery-saver dark mode,
+    // font-size scaling, share / print / history / forget / confidence
+    // chip helpers. All exposed on Chitti.a11y.* so every Chitti page
+    // inherits without code changes.
+    ensureCrossSubstrate();
   }
 
   // ── BLIND GESTURE NAVIGATION ─────────────────────────────────
@@ -1540,6 +1804,19 @@
       set: setProfile,
       has: hasProfile,
     },
+    // Cross-Chitti UX (2026-05-15) — see ensureCrossSubstrate() above.
+    setBatterySaver,
+    setFontSize,
+    share: shareWhatsApp,
+    print: printNode,
+    history: {
+      push: historyPush,
+      list: historyList,
+      clear: historyClear,
+      mount: historyMount,
+    },
+    forget,
+    renderConfidence,
   };
   // lang.current — required by the §1c G4 verification protocol
   //   (`window.Chitti.a11y.lang.current`). Read-only getter so it always

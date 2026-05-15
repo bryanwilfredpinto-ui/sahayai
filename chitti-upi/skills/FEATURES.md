@@ -178,3 +178,81 @@ This is a policy lock, not a TODO.
 4. SEBI sticky banner is required on the page even though Chitti UPI
    is not an investment product — repo-wide merge-blocker
    ([[project_legal_disclaimer]]).
+---
+
+## 2a. Quality & Scope improvements — queued 2026-05-15
+
+Per the *Quality & Scope Improvement directive* dated 2026-05-15. Items
+land here first as a capability surface that the [Feature Discovery
+Box](../../chitti_features.js) reads live; COMING SOON badges show until
+the backend/UI work is wired per the [new-products process
+(§2a)](../../SAHAYAI_MASTER.md). Locked decisions in §2 are never
+relitigated by this section — the swarm + Sire may *propose* new
+capabilities; locks (LLM provider, voice substrate, emergency protocol,
+four-user contract, ISL, per-response widget, camera intelligence,
+knowledge-corpus expert grades, Vaani sole interface) never move.
+
+### Quality
+
+| # | Item | How to apply |
+|---|---|---|
+| Q1 | Verdict cites **exact RBI rule number** — *"RBI Master Direction on Digital Payment Security Controls, 2021 §6.3"* — not just *"RBI says"*. | Already in the 2026 RBI rule cards seed; output-schema rail flags any HIGH verdict without a rule citation. |
+| Q2 | **HIGH risk** verdict names the **exact fraud pattern** matched — *"Prize money scam pattern (sender claims lottery winnings, asks for processing fee)"*. | Pattern catalog in `upi_fraud_patterns.json` with named entries; classifier returns `pattern_matched: 'prize_scam'` and frontend renders the full description. |
+| Q3 | *"Report this number"* — sends the user to the RBI SACHET portal pre-filled with the suspect number. | Deep-link `https://sachet.rbi.org.in/Complaints/Add?mobile=<NUMBER>` (verify exact param shape on the portal). Voice-narrated for blind users. |
+| Q4 | Recent similar scam reports from community (anonymised, aggregated) — *"3 users in your district reported this exact pattern this week"*. | Reads the Swarm Intelligence pattern store; matches by stemmed text + pincode bucket. Pure aggregate — no per-user data. |
+| Q5 | Response time **under 3 seconds** — fraud decisions cannot be slow. Already measured in [QUALITY_STATUS.md §5](../../QUALITY_STATUS.md) via SLA header; add a SLO breach alert in `chitti-founder` escalator. | Add `chitti-upi p95_latency_ms > 3000` to the hourly :15 escalator pass. SMS Sire on breach. |
+
+
+### Scope
+
+| # | Item | Priority | Surface needed |
+|---|---|---|---|
+| S1 | QR code scanner — scan before paying; Chitti checks if the merchant is registered. | **P0** | Camera capture via [`chitti_camera.js`](../../chitti_camera.js) + UPI deeplink parser (`upi://pay?pa=...`); check against the NPCI merchant registry (when API access lands — **COMING SOON** for live merchant lookup). |
+| S2 | UPI ID validator — *"Is this UPI ID legitimate?"* | P1 | Pattern check (must match `handle@psp` format with known PSP list) + history check (has any user paid this VPA without flagging fraud). |
+| S3 | Bank SMS decoder — paste any bank SMS, Chitti explains what happened. | P1 | Pattern library of all major-bank SMS templates (HDFC / SBI / ICICI / Axis / Kotak / etc.); explains debit / credit / OTP / failed-transaction in plain language. |
+| S4 | *"Safe payment checklist"* — 5 questions before any large UPI payment. | **P0** | Voice-walkthrough: *"Do you know this person? · Did you initiate this? · Is the amount correct? · Did anyone pressure you? · Can you call them to confirm?"* Locked from the curated UPI fraud-pattern data. |
+| S5 | Cybercrime helpline **1930** — always shown on HIGH risk verdict, spoken aloud, one-tap call. | **P0** | `<a href="tel:1930">` button rendered on every HIGH verdict + spoken in user's language via Voice Factory. |
+
+### Cross-Chitti improvements (substrate — every page inherits)
+
+The 2026-05-15 directive's cross-cutting items #1–#10 ship as
+substrate features in [`chitti_a11y.js`](../../chitti_a11y.js) so every
+Chitti page inherits them without per-page edits:
+
+| # | Cross-Chitti item | Where it lives | Status |
+|---|---|---|---|
+| 1 | Offline mode for basic queries | `chitti_offline.js` (service-worker cache + connectivity badge) | wired since 2026-05-14 |
+| 2 | WhatsApp share on every response | `Chitti.a11y.share(text, opts)` | shipped 2026-05-15 |
+| 3 | Save as PDF / print scoped to a node | `Chitti.a11y.print(el, opts)` | shipped 2026-05-15 |
+| 4 | Voice input everywhere | Voice Factory cascade via `Chitti.a11y.speak` / Web Speech API on every page | wired since 2026-05-12 |
+| 5 | Low-data / 2G mode | `chitti_offline.js` + `effectiveType <= 2g` heuristic; user-overridable via Disability Profile "rural / low connectivity" | wired since 2026-05-14 |
+| 6 | Battery saver auto-dark below 20% | `Chitti.a11y.setBatterySaver()` + `html[data-chitti-batt="save"]` CSS | shipped 2026-05-15 |
+| 7 | Font size large / medium / small | `Chitti.a11y.setFontSize('lg'\|'md'\|'sm')` | shipped 2026-05-15 |
+| 8 | "Chitti forget" — one-tap local wipe | `Chitti.a11y.forget(scope)` + tombstone preserved for honest counts | shipped 2026-05-15 |
+| 9 | Session history (last 5 questions) | `Chitti.a11y.history.{push,list,clear,mount}` per-Chitti scope | shipped 2026-05-15 |
+| 10 | Rating after 3 uses | **REJECTED** — see "Rejected items" below | — |
+
+### Confidence-score chip — shared primitive
+
+The 2026-05-15 directive asks several Chittis to show a confidence
+score on every answer (MedUPI strip scan, CA tax answer, Scanner FSSAI
+flag, etc.). Rather than each backend hand-rolling a different chip,
+the rendering primitive lives in `Chitti.a11y.renderConfidence(target,
+pct, opts)` — the backend emits a number, the substrate renders the
+coloured pill (green ≥ 80%, amber 50–79%, red < 50%). Below 70% the
+chip carries a `Please verify` line; if `opts.verifyWith` is set, the
+chip's `title` says where to verify (e.g. "FSSAI portal" / "your CA").
+
+### Rejected items — directive-level reroute (2026-05-15)
+
+The following two items conflict with [`feedback_design_from_pwd_user_perspective`](../../SAHAYAI_MASTER.md):
+
+| Item | Why rejected | What we do instead |
+|---|---|---|
+| *"Did Chitti understand you? YES/NO after every routed response"* | Pre-action / pre-feedback modals **break blind / mute / illiterate users** — the four-user contract floor. We already collect per-response 👍 / 👎 + voice-or-text feedback on every box via the [per-response widget §7](../../feedback-widget.js). Adding a second YES/NO confirmation is redundant + creates a forced choice every turn. | The existing 4-icon row (🔊 · 🤖 · 👍 · 👎) covers the same intent; a 👎 click opens the per-box feedback window scoped to that response. No second prompt. |
+| *"Rating after 3 uses — ask user to rate Chitti 1–5"* | Same anti-pattern as above. Generic SaaS rating prompts assume a literate, tap-fluent user. Forcing a 1–5 modal pesters elderly / illiterate / blind users and lowers honest feedback quality (rate-to-dismiss bias). | The per-response widget already produces a far richer signal — every box's 👍 / 👎 rolls into the Founder's daily 07:00 IST quality slice + the Sunday digest. Per-response signals beat point-in-time rating modals on every dimension. |
+
+Both rejections are documented here, not silently dropped, so any
+future revisit knows the reasoning. If Sire wants either of these
+shipped anyway, the override lives in `Chitti.a11y` and either can be
+wired in a future patch.
