@@ -197,6 +197,7 @@ the four-user contract.
 | V1 | **"Remember my preferences"** — Chitti learns regular orders (food, groceries, medicines) | **P1** | Cuts the number of voice turns per order; raises completion for illiterate + elderly users. | New `user_preferences` table keyed by (user_id, service). Hooks into the order/book modal so "the usual at Sharma's" pre-fills the existing card. Onboarding-grant (`feedback_design_from_pwd_user_perspective`), not per-order modal. |
 | V2 | **Voice shortcuts** — say "usual" and Chitti knows | **P2** | Companion to V1; "usual" / "wahi wala" / "always" become alias intents. | DeepSeek intent layer picks `usual` → reads back the matched preference → "haan" to confirm. **Always reads back before acting** (commando, but never silent). |
 | V3 | **Daily check-in for elderly users** | **P0** | Safety contract. If the elderly user doesn't respond within window, this is the same path as `emergency/trigger` — family cascade, never cops (`project_chitti_vaani_emergency_protocol`). | New `daily_checkin` table + cron at user-chosen IST time → Vaani speaks "Aap theek hain?" → user says "haan" → silence after 3 prompts triggers `/emergency/trigger`. Opt-in by paired family member during onboarding. |
+| V4 | **Morning brief — 07:00 IST, including AI Daily Tip from `chitti-news-ai`** (LOCKED 2026-05-15) | **P0** | Existing PA contract ([CHITTI_PA_MASTER §5.6](../../CHITTI_PA_MASTER.md)) — weather + mandi rates + top 3 reminders + bills + health tip + news headline + **AI tip**. AI tip rides this one brief, never a separate notification. | New 07:00 IST APScheduler job in `chitti-vaani/backend/main.py`. Internal HTTPS GET to `chitti-news-ai-api`: `/api/daily-tip?profession=<user>&lang=<user>` (15 s timeout — honest fallback line if upstream 503: *"Aaj ka AI tip Chitti dhoondh nahi paya — kal subah dobara"*). Voice-first delivery via Voice Factory cascade using the upstream `audio_url` (never re-TTS). Multi-turn follow-up *"AI tip ke baare mein aur batao"* proxies back to chitti-news-ai for deeper explanation. Full contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](../../CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15). |
 
 **How to apply:**
 - V3 reuses the emergency cascade — **do not invent a parallel
@@ -205,7 +206,12 @@ the four-user contract.
   / 102.
 - V1 + V2 are preference state, not financial state. They never store
   UPI PINs, bank details, or anything subject to RBI (`project_chitti_product_scope_clarifications`).
-- All three are voice-only on the surface. Web cards exist for
+- V4 must never spawn a second notification — the AI tip is **one line
+  inside the existing 07:00 IST brief**, not its own push. If
+  `chitti-news-ai` returns 503, the brief still ships; the tip line
+  honestly says it could not be fetched. No silent fallback to a stale
+  cached tip — matches the §3 *Honest stubs over fake demos* rule.
+- All four are voice-only on the surface. Web cards exist for
   inspection / undo, but the primary affordance is spoken.
 
 ---

@@ -52,6 +52,7 @@ Every section that has no data yet renders `COMING SOON` with a description — 
 | N9 | **My Stack** — saved tools per device; price + free-tier change alerts pushed via voice. | **P2** | `localStorage` + push channel via Vaani |
 | N10 | **Pricing diff alerts** — *"Cursor dropped its free tier to 50 requests/day"* — voice-pushed to subscribers. | **P2** | nightly price scrape diff |
 | N11 | **WhatsApp briefing** — same daily briefing pushed via WhatsApp Business API for low-connectivity users. | **P2** | cross-cutting WhatsApp gateway (§5b) |
+| N12 | **AI Daily Tip — feeds Chitti PA morning brief** (LOCKED 2026-05-15). Profession-aware tip generated at 06:45 IST; pulled by Chitti PA at 07:00 IST as one line in the existing brief — never a separate notification. Source article must have trust score ≥ 70 (or honest 503). Cross-product owner split: this Chitti generates the tip, Chitti PA delivers it. Full contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](../../CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15). | **P0** | `GET /api/daily-tip?profession=<str>&lang=<26-locale>&date=<YYYY-MM-DD>` — returns `{tip_text, audio_url, source_article, trust_score, generated_at}` or 503 `no_high_trust_article_today`. DeepSeek prompt + ranker in `services/daily_tip.py`; APScheduler cron 06:45 IST IST. Audio rendered by Voice Factory cascade (never re-TTSed downstream). |
 
 How to apply when implementing:
 - Every Planned item must arrive with a route in `backend/routes/`, a UI affordance in `chitti_news_ai.html`, and a Voice Required marker if blind/illiterate users are the primary audience.
@@ -83,5 +84,5 @@ How to apply when implementing:
 ## Cross-product hooks
 
 - **Chitti News** ([../../chitti-news/skills/FEATURES.md](../../chitti-news/skills/FEATURES.md)) — general state-aware Indian news. AI-tagged stories from there can boost into the News AI briefing by topic.
-- **Chitti Vaani** — `tools-for-me` answers pipe through Vaani's voice cascade for hands-free use.
+- **Chitti Vaani (PA)** — `tools-for-me` answers pipe through Vaani's voice cascade for hands-free use. **AI Daily Tip (N12) feeds Vaani's 07:00 IST morning brief** via `GET /api/daily-tip` — single endpoint, no shared state. Owner split: this Chitti generates; Vaani delivers. Full contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](../../CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15).
 - **Chitti Founder** — daily briefing email at 07:00 IST contains the News AI top-3 alongside the platform health digest.

@@ -109,7 +109,31 @@ Profile-based folders on **user's phone only**. Missing-doc check.
 Medicines · Bills · Licence renewals · Appointments · Exam dates / GST due dates / ITR · Family events.
 
 ### 5.6 Morning brief
-"Good morning Ram bhai! Aaj ka din sirf aapka hai. [Weather] [Mandi rates] [3 top reminders] [Any bill due] [One health tip] [One news headline]. Aap chai pio. Chitti sambhal rahi hai."
+"Good morning Ram bhai! Aaj ka din sirf aapka hai. [Weather] [Mandi rates] [3 top reminders] [Any bill due] [One health tip] [One news headline] [One AI tip for your work]. Aap chai pio. Chitti sambhal rahi hai."
+
+#### 5.6a AI Daily Tip — from Chitti News AI (LOCKED 2026-05-15)
+
+The morning brief includes **one AI tip per day** — profession-aware, in the master's language. **Not a separate notification.** It rides the existing 07:00 IST brief Chitti PA already speaks. Source product: [Chitti News AI](CHITTI_NEWS_AI_MASTER_SPEC.md).
+
+> *"Aaj ka AI tip for [profession]: [one actionable line in their language]"*
+
+**Pipeline:**
+
+1. **06:45 IST** — `chitti-news-ai` generates the tip (15 min before the brief).
+2. **07:00 IST** — Chitti PA morning brief pulls it via internal API call:
+   `GET /api/daily-tip?profession=<master_profession>&lang=<master_lang>` on `chitti-news-ai-api`.
+3. **Spoken** as part of the existing brief — never a second message, never a second push.
+4. **Follow-up** — master says *"AI tip ke baare mein aur batao"* → Chitti PA routes to Chitti News AI for the deeper explanation.
+
+**Ownership:**
+
+| Concern | Owner |
+|---|---|
+| Tip generation | `chitti-news-ai` |
+| Delivery (07:00 IST cron, voice, language, follow-up route) | `chitti-vaani` (Chitti PA) |
+| Connecting endpoint | `GET /api/daily-tip` |
+
+**Hard rules:** profession is DeepSeek-extracted (never a fixed list — matches the *Profession → Tools* contract); source article trust score ≥ 70 or honest 503; voice-first delivery via Voice Factory cascade; **no separate notification — one ritual, the morning brief.** Full endpoint contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15).
 
 ### 5.7 Information assistant
 Any question, any topic, any language, instantly. FSSAI validity from vault. Live mandi rates. Ingredient safety. Contract analysis. Bill audit. School-fee comparison.
