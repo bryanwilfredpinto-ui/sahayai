@@ -20,28 +20,102 @@ all three curl checks.
 
 ---
 
-## 1. Per-backend matrix — six audit axes
+## 1. Per-backend matrix — seven audit axes (six backend + one frontend)
 
 Run on the post-commit-#1 tree (HookRegistry registered + `wrap_llm`
 wired into every previously-raw DeepSeek service across the 15 backends).
+**FRONTEND_QUALITY column added 2026-05-15** — every Chitti page must pass the five-gate audit in §1a before the column flips to 🟢. All pages **🔴 RED until verified** per [SAHAYAI_MASTER.md §7](SAHAYAI_MASTER.md) accessibility contract.
 
-| BACKEND | OBSERVABILITY | QUADRAILS | wrap_llm | SLA_TIMING | SWARM | RAW_DEEPSEEK_CALLS | STATUS |
-|---------|--------------|-----------|----------|------------|-------|--------------------|--------|
-| chitti-medupi        | 🟢 main.py:161 | 🟢 main.py:163 | 🟢 medupi_recognition.py:185–193 (`compliance_inject=False` for vision JSON; DeepSeek vision since 2026-05-15 — Anthropic SDK removed per §2 lock) | 🟢 main.py:168 | 🟢 lib/swarm.py + founder cron Sun 09:00 IST | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
-| chitti-vaani         | 🟢 main.py:152 | 🟢 main.py:154 | 🟢 vaani_service.py:180–186 | 🟢 main.py:159 | 🟢 | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
-| chitti-ca            | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 ca_service.py:119–125 | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN ✅ curl-verified 2026-05-15** |
-| chitti-legal         | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 legal_service.py:116, :398 (`compliance_inject=False` for explain_notice JSON) | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-government    | 🟢 main.py:159 | 🟢 main.py:161 | 🟢 government_deepseek.py:193–199 | 🟢 main.py:166 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-news          | 🟢 main.py:124 | 🟢 main.py:126 | 🟢 news_summary.py:147–153 + news_explain.py:118–124 | 🟢 main.py:131 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-voice-factory | 🟢 main.py:124 | 🟢 main.py:126 | ⚪ no DeepSeek service path in v1 (STT/TTS only) | 🟢 main.py:131 | 🟢 | ⚪ | **GREEN** |
-| chitti-upi           | 🟢 main.py (post-PR, dedicated `/tmp/chitti_upi_quality.db` engine) | 🟢 main.py | 🟢 upi_service.py:check (`compliance_inject=False` for JSON object) | 🟢 main.py | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-scanner       | 🟢 main.py (post-PR, dedicated `/tmp/chitti_scanner_quality.db` engine) | 🟢 main.py | 🟢 scanner_service.py:analyze_text + scanner_service.py:analyze_image vision path (both `compliance_inject=False`) | 🟢 main.py | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-shares        | 🟢 main.py FastAPI `app.state.chitti_obs` + per-request audit row in `_chitti_timing_mw` | 🟢 main.py FastAPI `app.state.chitti_hooks` | 🟢 deepseek_client.py:chat_with_tokens (async — calls `before_model` + `after_model` directly because `wrap_llm` is sync). chat_with_tools wrapped in commit #2: rails gate the last user message, every tool turn writes `record_tool_call`, the final assistant reply goes through `after_model`. | 🟢 Starlette mw | 🟢 lib | ⚪ wrapped | **GREEN** |
-| chitti-logo-video    | 🔴 obs=None (intentional honest stub product) | ⚪ stub | ⚪ stub | 🟢 main.py:23 | 🟢 lib | ⚪ stub | **YELLOW (by design)** |
-| chitti-founder       | 🔴 obs=None (uses libsql directly, no SQLAlchemy engine) | ⚪ no LLM | ⚪ no LLM | 🟢 main.py:672 | 🟢 cron L921 (Sun 09:00 IST) | ⚪ no LLM | **YELLOW (by design)** |
-| chitti-2wheeler      | 🟢 main.py:74 | 🟢 main.py (HookRegistry registered, post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-4wheeler      | 🟢 main.py:63 | 🟢 main.py (post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:65 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 — **SLA curl-verified 2026-05-15 PM** (`x-chitti-response-time-ms: 1`) | 🟢 | ⚪ | **GREEN (quality framework) · Turso sync UNVERIFIED — see §5 round 2** |
+| BACKEND | OBSERVABILITY | QUADRAILS | wrap_llm | SLA_TIMING | SWARM | RAW_DEEPSEEK_CALLS | FRONTEND_QUALITY (see §1a) | STATUS |
+|---------|--------------|-----------|----------|------------|-------|--------------------|----------------------------|--------|
+| chitti-medupi        | 🟢 main.py:161 | 🟢 main.py:163 | 🟢 medupi_recognition.py:185–193 (`compliance_inject=False` for vision JSON; DeepSeek vision since 2026-05-15 — Anthropic SDK removed per §2 lock) | 🟢 main.py:168 | 🟢 lib/swarm.py + founder cron Sun 09:00 IST | ⚪ wrapped | 🔴 `chitti_medupi.html` — 5-gate audit pending | **GREEN ✅ curl-verified 2026-05-15** |
+| chitti-vaani         | 🟢 main.py:152 | 🟢 main.py:154 | 🟢 vaani_service.py:180–186 | 🟢 main.py:159 | 🟢 | ⚪ wrapped | 🔴 `chitti_vaani.html` — 5-gate audit pending (USER-CANONICAL per §2 row 1) | **GREEN ✅ curl-verified 2026-05-15** |
+| chitti-ca            | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 ca_service.py:119–125 | 🟢 main.py:76 | 🟢 | ⚪ wrapped | 🔴 `chitti_ca.html` — 5-gate audit pending | **GREEN ✅ curl-verified 2026-05-15** |
+| chitti-legal         | 🟢 main.py:69  | 🟢 main.py:71  | 🟢 legal_service.py:116, :398 (`compliance_inject=False` for explain_notice JSON) | 🟢 main.py:76 | 🟢 | ⚪ wrapped | 🔴 `chitti_legal.html` — 5-gate audit pending | **GREEN** |
+| chitti-government    | 🟢 main.py:159 | 🟢 main.py:161 | 🟢 government_deepseek.py:193–199 | 🟢 main.py:166 | 🟢 | ⚪ wrapped | 🔴 `chitti_government.html` — 5-gate audit pending | **GREEN** |
+| chitti-news          | 🟢 main.py:124 | 🟢 main.py:126 | 🟢 news_summary.py:147–153 + news_explain.py:118–124 | 🟢 main.py:131 | 🟢 | ⚪ wrapped | 🔴 `chitti_news.html` — 5-gate audit pending | **GREEN** |
+| chitti-voice-factory | 🟢 main.py:124 | 🟢 main.py:126 | ⚪ no DeepSeek service path in v1 (STT/TTS only) | 🟢 main.py:131 | 🟢 | ⚪ | 🔴 `chitti_voice_factory.html` + 26 lang pages + `chitti_voice_hall_of_fame.html` — 5-gate audit pending | **GREEN** |
+| chitti-upi           | 🟢 main.py (post-PR, dedicated `/tmp/chitti_upi_quality.db` engine) | 🟢 main.py | 🟢 upi_service.py:check (`compliance_inject=False` for JSON object) | 🟢 main.py | 🟢 | ⚪ wrapped | 🔴 `chitti_upi.html` — 5-gate audit pending | **GREEN** |
+| chitti-scanner       | 🟢 main.py (post-PR, dedicated `/tmp/chitti_scanner_quality.db` engine) | 🟢 main.py | 🟢 scanner_service.py:analyze_text + scanner_service.py:analyze_image vision path (both `compliance_inject=False`) | 🟢 main.py | 🟢 | ⚪ wrapped | 🔴 `chitti_scanner.html` — 5-gate audit pending | **GREEN** |
+| chitti-shares        | 🟢 main.py FastAPI `app.state.chitti_obs` + per-request audit row in `_chitti_timing_mw` | 🟢 main.py FastAPI `app.state.chitti_hooks` | 🟢 deepseek_client.py:chat_with_tokens (async — calls `before_model` + `after_model` directly because `wrap_llm` is sync). chat_with_tools wrapped in commit #2: rails gate the last user message, every tool turn writes `record_tool_call`, the final assistant reply goes through `after_model`. | 🟢 Starlette mw | 🟢 lib | ⚪ wrapped | 🔴 `chitti_fundamentals.html` + `chitti_complete_technical.html` — 5-gate audit pending | **GREEN** |
+| chitti-logo-video    | 🔴 obs=None (intentional honest stub product) | ⚪ stub | ⚪ stub | 🟢 main.py:23 | 🟢 lib | ⚪ stub | 🔴 `chitti_logo_video.html` — 5-gate audit pending | **YELLOW (by design)** |
+| chitti-founder       | 🔴 obs=None (uses libsql directly, no SQLAlchemy engine) | ⚪ no LLM | ⚪ no LLM | 🟢 main.py:672 | 🟢 cron L921 (Sun 09:00 IST) | ⚪ no LLM | ⚪ N/A — aggregator, no user-facing page | **YELLOW (by design)** |
+| chitti-2wheeler      | 🟢 main.py:74 | 🟢 main.py (HookRegistry registered, post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:76 | 🟢 | ⚪ wrapped | 🔴 page TBD — 5-gate audit pending (also verify HTML exists at repo root) | **GREEN** |
+| chitti-4wheeler      | 🟢 main.py:63 | 🟢 main.py (post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:65 | 🟢 | ⚪ wrapped | 🔴 page TBD — 5-gate audit pending (also verify HTML exists at repo root) | **GREEN** |
+| chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 — **SLA curl-verified 2026-05-15 PM** (`x-chitti-response-time-ms: 1`) | 🟢 | ⚪ | 🔴 `chitti_news_ai.html` — 5-gate audit pending | **GREEN (quality framework) · Turso sync UNVERIFIED — see §5 round 2** |
+
+### 1a. Frontend quality gates — five audits per page (LOCKED 2026-05-15)
+
+Per [SAHAYAI_MASTER.md §7](SAHAYAI_MASTER.md) accessibility contract + the [per-response widget](https://github.com/bryanwilfredpinto-ui/sahayai) / [a11y substrate](https://github.com/bryanwilfredpinto-ui/sahayai) / [User Disability Profile](https://github.com/bryanwilfredpinto-ui/sahayai) / [ISL Phase 1](https://github.com/bryanwilfredpinto-ui/sahayai) locks in §2.
+
+**No page ships without all five.** Every page is **🔴 RED** until each gate has been individually verified on production.
+
+The five gates:
+
+| # | Gate | What to verify |
+|---|---|---|
+| G1 | **feedback-widget.js loaded + every response box has `data-chitti-response`** | `<script src="feedback-widget.js"></script>` in HTML; every response container carries `data-chitti-response="<box-id>"` so the widget can attach 4 icons (🔊 / 🤖 / 👍 / 👎) + per-box feedback window. |
+| G2 | **`chitti_a11y.js` loaded** | `<script src="chitti_a11y.js"></script>` in HTML. Substrate auto-loads language selector, Voice Required marker, Braille mode, Read-page button, `window.Chitti.a11y.*` API. |
+| G3 | **User Disability Profile prompt on first visit** | On first load (no `disability_profile` key in `localStorage`), the multi-select modal fires (blind / deaf / mute / ISL / illiterate / elderly / limited-mobility / cognitive). Saved locally, never re-asked, synced across all Chittis on the device. |
+| G4 | **Language auto-detection** | On load, `window.Chitti.a11y.lang.current` is set from the disability profile OR from `navigator.language`; `<html lang="…">` reflects detected/profile language so screen readers + Voice Factory pick the right voice. |
+| G5 | **ISL plugin active** | `chitti_isl.js` (or ISL injected by `chitti_a11y.js`) loaded; `window.Chitti.isl` defined; ISL animation panel renders next to every response; tap-word-to-sign modal works. |
+
+### 1b. Frontend audit matrix — all pages 🔴 until verified
+
+| PAGE | G1 | G2 | G3 | G4 | G5 | OVERALL | Note |
+|---|---|---|---|---|---|---|---|
+| `index.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | Per §8 P0 #2, becomes Vaani entry surface — gates MUST pass before relaunch |
+| `chitti_vaani.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | **USER-CANONICAL** per §2 row 1 — highest-priority audit |
+| `chitti_medupi.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_ca.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_legal.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_government.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_news.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_news_ai.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_upi.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_scanner.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_fundamentals.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_complete_technical.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_logo_video.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_voice_factory.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_voice_hall_of_fame.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| `chitti_isl.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | G5 self-referential — verify ISL plugin works on its own demo page |
+| `chitti_quality.html` | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | |
+| 26 Voice Factory language pages (`chitti_hi.html` … `chitti_kru.html`) | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | Audit each at least via `chitti-voice-factory/frontend/` canonical (root pages are mirrors) |
+| 2wheeler / 4wheeler / kirana pages (if HTML exists) | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | First check if root HTML exists; create if missing per §2 row 1 routing requirement |
+
+### 1c. Verification protocol — how to flip a gate from 🔴 to 🟢
+
+For each page on production, run from any shell:
+
+```bash
+PAGE="https://sahayai.in/chitti_vaani.html"
+
+# G1 — feedback widget script loaded:
+curl -s "$PAGE" | grep -c 'feedback-widget\.js'
+# expect >= 1
+
+# G1b — every response box has data-chitti-response attribute:
+curl -s "$PAGE" | grep -c 'data-chitti-response='
+# expect >= 1 for pages with any response boxes; 0 is RED unless page has no response boxes
+
+# G2 — a11y substrate script loaded:
+curl -s "$PAGE" | grep -c 'chitti_a11y\.js'
+# expect >= 1
+
+# G5 — ISL script loaded (or injected by a11y substrate):
+curl -s "$PAGE" | grep -c 'chitti_isl\.js'
+# expect >= 1 OR confirm chitti_a11y.js injects it at runtime
+
+# G3 + G4 — runtime, not source:
+# Open page in fresh browser tab (DevTools → Application → Clear Storage first).
+# G3: multi-select disability profile modal MUST appear on first paint.
+# G4: in DevTools console, window.Chitti.a11y.lang.current must equal
+#     localStorage.disability_profile.lang OR navigator.language.split('-')[0].
+#     <html lang> attribute must reflect that.
+```
+
+A page earns 🟢 GREEN for a gate only after the corresponding check passes on production. Page earns OVERALL 🟢 only after all five gates pass.
 
 ### Pre-commit-#1 → post-commit-#1 → post-commit-#2
 

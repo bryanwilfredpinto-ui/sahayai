@@ -5,11 +5,11 @@ This is the **new-session rule — MANDATORY (LOCKED 2026-05-13, EXTENDED 2026-0
 ## MANDATORY FIRST STEP — every new Claude Code session
 
 > 1. **Read [`SAHAYAI_MASTER.md`](SAHAYAI_MASTER.md)**
-> 2. **Read [`QUALITY_STATUS.md`](QUALITY_STATUS.md)**
+> 2. **Read [`QUALITY_STATUS.md`](QUALITY_STATUS.md)** — covers BOTH the backend matrix (§1, six axes) AND the frontend quality gates (§1a — feedback-widget.js + `data-chitti-response`, chitti_a11y.js, User Disability Profile prompt, language auto-detect, ISL plugin). Per SAHAYAI_MASTER.md §7, no page ships without all five frontend gates.
 > 3. **Report to Bryan, before anything else:**
->    - **What is RED** (substrate missing or never invoked)
+>    - **What is RED** — both BACKEND (substrate missing or never invoked) AND FRONTEND (any of the five §1a gates failing or unverified on any Chitti page)
 >    - **What is YELLOW** (wired but unverified in production)
->    - **What needs fixing TODAY** (the next concrete call-site or deploy)
+>    - **What needs fixing TODAY** (the next concrete call-site, deploy, or frontend page audit)
 >
 > Only after this report may you take any other action.
 
