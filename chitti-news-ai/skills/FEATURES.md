@@ -35,6 +35,19 @@ The button you opened to read this file. Lists every feature below, speaks them 
 ### 🆘 Honest empty states
 Every section that has no data yet renders `COMING SOON` with a description — never a fake-data demo. Matches the [Honest stubs over fake demos](../../SAHAYAI_MASTER.md#3-process--build-rules) rule.
 
+### 🌅 AI Daily Tip — feeds Chitti PA morning brief (LOCKED 2026-05-15)
+`GET /api/daily-tip?profession=<free_text>&lang=<26-locale>&date=<YYYY-MM-DD>` — SKELETON LIVE.
+
+- **Profession is free-form** — DeepSeek topic-extracts; no fixed profession list (same contract as the *Profession → Tools* feature).
+- DeepSeek scans articles ingested in the last 24 h whose source carries **trust score ≥ 70** (Acceptable ⚠️ tier or higher per [`TRUST_VERIFICATION.md`](TRUST_VERIFICATION.md)) and writes **one class-5-simplicity actionable tip IN the master's language** — no translate-from-English.
+- **Cache** keyed by `(profession_norm, lang, date_ist)` so repeated calls (Chitti PA + masters with the same profession) hit cache, not DeepSeek.
+- **Pre-warm cron at 06:45 IST** seeds Hindi tips for common professions (teacher, student, shopkeeper, farmer, homemaker, driver, small business owner) so Chitti PA's 07:00 IST brief almost always hits cache.
+- **Voice** rendered via Voice Factory `/api/voice/speak` cascade — response carries `audio_url` + `audio_speak_payload` (Voice Factory is POST-only in v1; honest contract collapses to a single GET URL when v2 ships pre-rendered cache).
+- **Honest 503 reasons** (never a fake tip): `no_high_trust_article_today` / `deepseek_not_configured` / `no_relevant_article` / `upstream_error` / `upstream_http_<code>` / `malformed_response` / `empty_response`.
+- **Admin trigger** for manual pre-warm: `POST /api/news-ai/admin/daily-tip/prewarm-now` (METRICS_TOKEN-gated).
+
+Full contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](../../CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15). Backend in [`services/daily_tip.py`](../backend/services/daily_tip.py) + [`models/daily_tips.py`](../backend/models/daily_tips.py).
+
 ---
 
 ## 2. Planned — queued 2026-05-14
@@ -52,7 +65,8 @@ Every section that has no data yet renders `COMING SOON` with a description — 
 | N9 | **My Stack** — saved tools per device; price + free-tier change alerts pushed via voice. | **P2** | `localStorage` + push channel via Vaani |
 | N10 | **Pricing diff alerts** — *"Cursor dropped its free tier to 50 requests/day"* — voice-pushed to subscribers. | **P2** | nightly price scrape diff |
 | N11 | **WhatsApp briefing** — same daily briefing pushed via WhatsApp Business API for low-connectivity users. | **P2** | cross-cutting WhatsApp gateway (§5b) |
-| N12 | **AI Daily Tip — feeds Chitti PA morning brief** (LOCKED 2026-05-15). Profession-aware tip generated at 06:45 IST; pulled by Chitti PA at 07:00 IST as one line in the existing brief — never a separate notification. Source article must have trust score ≥ 70 (or honest 503). Cross-product owner split: this Chitti generates the tip, Chitti PA delivers it. Full contract: [`CHITTI_NEWS_AI_MASTER_SPEC.md §10a`](../../CHITTI_NEWS_AI_MASTER_SPEC.md#10a-ai-daily-tip--part-of-chitti-pa-morning-brief-locked-2026-05-15). | **P0** | `GET /api/daily-tip?profession=<str>&lang=<26-locale>&date=<YYYY-MM-DD>` — returns `{tip_text, audio_url, source_article, trust_score, generated_at}` or 503 `no_high_trust_article_today`. DeepSeek prompt + ranker in `services/daily_tip.py`; APScheduler cron 06:45 IST IST. Audio rendered by Voice Factory cascade (never re-TTSed downstream). |
+
+> ~~N12 — AI Daily Tip~~ moved to **§1 Built** on 2026-05-15 (skeleton live). See *AI Daily Tip — feeds Chitti PA morning brief* in §1.
 
 How to apply when implementing:
 - Every Planned item must arrive with a route in `backend/routes/`, a UI affordance in `chitti_news_ai.html`, and a Voice Required marker if blind/illiterate users are the primary audience.

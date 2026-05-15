@@ -48,6 +48,12 @@ class Settings:
     source_discovery_day: str = os.getenv("SOURCE_DISCOVERY_DAY", "sun")
     source_discovery_hour_ist: int = int(os.getenv("SOURCE_DISCOVERY_HOUR_IST", "3"))
 
+    # AI Daily Tip pre-warmer — 15 min before Chitti PA's 07:00 IST brief
+    # (CHITTI_NEWS_AI_MASTER_SPEC.md §10a LOCKED 2026-05-15).
+    daily_tip_hour_ist: int = int(os.getenv("DAILY_TIP_HOUR_IST", "6"))
+    daily_tip_minute_ist: int = int(os.getenv("DAILY_TIP_MINUTE_IST", "45"))
+    daily_tip_prewarm_lang: str = os.getenv("DAILY_TIP_PREWARM_LANG", "hi")
+
     metrics_token: str | None = os.getenv("METRICS_TOKEN")
 
 

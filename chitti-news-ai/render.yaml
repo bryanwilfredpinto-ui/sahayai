@@ -41,6 +41,16 @@ services:
         value: "sun"
       - key: SOURCE_DISCOVERY_HOUR_IST
         value: "3"
+      # AI Daily Tip pre-warmer — 15 min before Chitti PA 07:00 IST brief
+      # (CHITTI_NEWS_AI_MASTER_SPEC.md §10a LOCKED 2026-05-15)
+      - key: DAILY_TIP_HOUR_IST
+        value: "6"
+      - key: DAILY_TIP_MINUTE_IST
+        value: "45"
+      - key: DAILY_TIP_PREWARM_LANG
+        value: "hi"
+      - key: VOICE_FACTORY_URL
+        value: https://chitti-voice-factory-api.onrender.com/api/voice/speak
       - key: METRICS_TOKEN
         sync: false
       # Layer 5 LLM fallback chain — DeepSeek → Claude → Gemini (§2e)

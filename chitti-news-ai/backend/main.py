@@ -26,6 +26,7 @@ from database import SessionLocal, ensure_schema
 import models  # noqa: F401 — registers models with Base.metadata
 from models.sources import Source
 from routes.news_ai import bp as news_ai_bp
+from routes.news_ai import daily_tip_bp
 from services import news_scheduler
 
 
@@ -88,6 +89,7 @@ def create_app() -> Flask:
     _bootstrap()
 
     app.register_blueprint(news_ai_bp)
+    app.register_blueprint(daily_tip_bp)
 
     try:
         from database import engine as _engine

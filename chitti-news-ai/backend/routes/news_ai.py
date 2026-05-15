@@ -10,7 +10,9 @@ LIVE endpoints in this revision:
   GET  /api/news-ai/sources         — reads from DB (17 seeded + any community)
   GET  /api/news-ai/today           — articles ingested last 24 h, trust-ordered
   GET  /api/news-ai/launches        — articles classified is_launch=1 in last 7 days
+  GET  /api/daily-tip               — AI Daily Tip for Chitti PA morning brief (§10a)
   POST /api/news-ai/admin/rss/poll-now — token-gated manual RSS trigger
+  POST /api/news-ai/admin/daily-tip/prewarm-now — token-gated manual pre-warm trigger
 """
 from __future__ import annotations
 
@@ -23,15 +25,48 @@ from config import settings
 from database import SessionLocal
 from models.articles import Article
 from models.sources import Source
+from services import daily_tip as daily_tip_service
 from services import rss_fetcher
 
 bp = Blueprint("news_ai", __name__, url_prefix="/api/news-ai")
+
+# AI Daily Tip endpoint lives at /api/daily-tip per spec §10a (intentionally
+# OUTSIDE the /api/news-ai/ prefix so Chitti PA's morning-brief cron can hit
+# a flat, contract-stable path that survives any future route restructure).
+daily_tip_bp = Blueprint("daily_tip", __name__, url_prefix="/api")
 
 DISCLAIMER = (
     "I am an AI tool tracker. Rankings are dynamic and update every 6 hours. "
     "Pricing and free tiers may change. Always check official websites. "
     "I do not endorse any tool."
 )
+
+_DAILY_TIP_REASON_MESSAGES = {
+    "no_high_trust_article_today": (
+        "No Acceptable-tier-or-higher (trust >= 70) article ingested in the last 24 h. "
+        "The 06:45 IST pre-warm cron will retry. Honest stub — never a fake tip on a "
+        "low-trust source."
+    ),
+    "deepseek_not_configured": (
+        "DEEPSEEK_API_KEY is not set on this backend. Configure it in Render env vars "
+        "to enable the AI Daily Tip generator."
+    ),
+    "upstream_error": "DeepSeek network error — caller should retry after 5 min.",
+    "no_relevant_article": (
+        "DeepSeek determined no article in the trusted 24-h window is relevant to this "
+        "profession today. Honest skip — never invent a tip."
+    ),
+    "malformed_response": "DeepSeek response did not parse — caller should retry after 5 min.",
+    "empty_response": "DeepSeek returned an empty reply — caller should retry after 5 min.",
+}
+
+
+def _daily_tip_reason_message(reason: str) -> str:
+    if reason in _DAILY_TIP_REASON_MESSAGES:
+        return _DAILY_TIP_REASON_MESSAGES[reason]
+    if reason.startswith("upstream_http_"):
+        return f"DeepSeek returned {reason} — caller should retry after 5 min."
+    return reason
 
 
 def _coming_soon(feature: str, eta: str | None = None, why: str | None = None):
@@ -234,6 +269,24 @@ def admin_rss_poll_now():
     return jsonify({"ok": True, **stats})
 
 
+@bp.post("/admin/daily-tip/prewarm-now")
+def admin_daily_tip_prewarm_now():
+    """Manually trigger the AI Daily Tip pre-warm. Token-gated via METRICS_TOKEN.
+    Same stats object the 06:45 IST cron logs."""
+    if not settings.metrics_token:
+        return jsonify({
+            "ok": False,
+            "error": "metrics_token_unset",
+            "message": "Set METRICS_TOKEN on the service to enable manual admin triggers.",
+        }), 403
+    supplied = request.headers.get("X-Admin-Token") or request.args.get("token") or ""
+    if supplied != settings.metrics_token:
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    lang = (request.args.get("lang") or settings.daily_tip_prewarm_lang).strip() or "hi"
+    stats = daily_tip_service.prewarm_common(lang=lang)
+    return jsonify({"ok": True, **stats})
+
+
 # ----------------------------------------------------- COMING SOON ----
 
 @bp.post("/tools-for-me")
@@ -311,3 +364,69 @@ def models():
         eta="P1",
         why="Hugging Face RSS seed + LMSYS eval ingest. Honest stub until both wired.",
     )
+
+
+# ------------------------------- AI Daily Tip — LOCKED 2026-05-15 (§10a) ----
+
+@daily_tip_bp.get("/daily-tip")
+def daily_tip_endpoint():
+    """AI Daily Tip — feeds Chitti PA's 07:00 IST morning brief.
+
+    Spec: CHITTI_NEWS_AI_MASTER_SPEC.md §10a (LOCKED 2026-05-15).
+
+    Query params:
+      profession  REQUIRED — free-form string. DeepSeek topic-extracts; no fixed list.
+      lang        REQUIRED — one of the 26 Voice Factory locales. No default.
+      date        OPTIONAL — YYYY-MM-DD; defaults to today IST (Asia/Kolkata).
+
+    Honest 503 reasons (never a fake tip):
+      no_high_trust_article_today / deepseek_not_configured / no_relevant_article /
+      upstream_error / upstream_http_<code> / malformed_response / empty_response.
+    """
+    profession = (request.args.get("profession") or "").strip()
+    lang = (request.args.get("lang") or "").strip()
+    date_str = (request.args.get("date") or "").strip()
+
+    if not profession:
+        return jsonify({
+            "ok": False,
+            "error": "profession_required",
+            "message": (
+                "AI Daily Tip needs a `profession` query param (free-form). DeepSeek "
+                "extracts topics — there is no fixed profession list."
+            ),
+        }), 400
+    if not lang:
+        return jsonify({
+            "ok": False,
+            "error": "lang_required",
+            "message": (
+                "Chitti News AI has no default language. Pass `lang` "
+                "(e.g. 'hi', 'ta', 'en') with every request."
+            ),
+        }), 400
+
+    on_date = None
+    if date_str:
+        try:
+            on_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except Exception:  # noqa: BLE001
+            return jsonify({
+                "ok": False,
+                "error": "bad_date",
+                "message": "Use ISO 8601 date format YYYY-MM-DD.",
+            }), 400
+
+    result = daily_tip_service.get_or_generate(profession, lang, on_date)
+    if result.get("ok"):
+        result["disclaimer"] = DISCLAIMER
+        return jsonify(result)
+
+    reason = result.get("reason") or "unknown_error"
+    return jsonify({
+        "ok": False,
+        "reason": reason,
+        "message": _daily_tip_reason_message(reason),
+        "disclaimer": DISCLAIMER,
+        "now_utc": datetime.utcnow().isoformat() + "Z",
+    }), 503
