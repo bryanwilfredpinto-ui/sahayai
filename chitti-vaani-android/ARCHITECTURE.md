@@ -241,6 +241,26 @@ interface VaaniApi {
 }
 ```
 
+### 5.2 Off-network P2P transfer (Phase 2.7 — `:feature:transfer`)
+
+Locked 2026-05-15. Spec: [`../CHITTI_OFFLINE_TRANSFER_SPEC.md`](../CHITTI_OFFLINE_TRANSFER_SPEC.md). Skill file: [`skills/FILE_TRANSFER.md`](skills/FILE_TRANSFER.md).
+
+The transfer module is the **only path in this app that does not require internet**. It uses **Google Nearby Connections** (`com.google.android.gms:play-services-nearby:19.x`) — same primitive Google Quick Share is built on. Two tracks share the module:
+
+1. **Emergency-relay offline tier** — `VaaniBootService` (Phase 2.4) advertises in parallel with the FCM POST in §5.1 when the on-device keyword spotter fires. Auth-code step skipped because the `cascadeJSON` payload is signed with the sender's paired-Chitti private key.
+2. **General share** — substrate `chitti_share.js` at the repo root surfaces Share / Receive on every Chitti page.
+
+| Layer | Choice | Why |
+|---|---|---|
+| Discovery + transport | **Google Nearby Connections** (`play-services-nearby:19.x`) | Picks BT / BLE / Wi-Fi Direct internally based on payload size + range; one-tap auto-discovery by service-id; same primitive Quick Share uses. |
+| Foreground hold | **`FOREGROUND_SERVICE_DATA_SYNC` foreground service** | Keeps the transfer alive when the WebView pauses or the user backgrounds the app. |
+| Auth (general) | **Nearby's 4-digit OOB code**, spoken aloud + voice "haan" | A11y-first; works for blind / illiterate users without device pickers. |
+| Auth (emergency) | **Ed25519 signature** with paired-Chitti private key | Receiver verifies before firing alarm; auth-code skipped. |
+| Honest stub | Return `"transfer_unsupported_no_play_services"` on AOSP / GMS-less devices | Same pattern as `triggerEmergencyAlarm`'s error path. |
+| Bridge surface | 7 new `ChittiNative.*` methods (see [§4](#4-javascript-bridge-surface-windowchittinative)) | Same `SafetyChecks` → action → `AuditLog` discipline. |
+
+Permission delta is documented in [`../CHITTI_OFFLINE_TRANSFER_SPEC.md §6`](../CHITTI_OFFLINE_TRANSFER_SPEC.md) — critically, `neverForLocation` flags on `BLUETOOTH_SCAN` and `NEARBY_WIFI_DEVICES` mean we **do not** add `ACCESS_FINE_LOCATION`. Ships as a separate Play Store submission after Phase 2.6 lands ([`TODO.md` Phase 2.7](TODO.md)).
+
 ---
 
 ## 6. Permission model — install-time, runtime, and special roles

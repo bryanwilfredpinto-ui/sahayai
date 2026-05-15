@@ -115,6 +115,36 @@ Spec: expect 2–3 rejections on `READ_CALL_LOG` / `SEND_SMS` justifications.
 
 ---
 
+## Phase 2.7 — Offline P2P transfer (post-2.6 release, separate Play Store submission)
+
+Locked 2026-05-15. Spec: [`../CHITTI_OFFLINE_TRANSFER_SPEC.md`](../CHITTI_OFFLINE_TRANSFER_SPEC.md). Skill file: [`skills/FILE_TRANSFER.md`](skills/FILE_TRANSFER.md). Memory: [`project_chitti_offline_p2p_transfer_locked`](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/project_chitti_offline_p2p_transfer_locked.md).
+
+**Hard precondition:** Phase 2.6 (current SMS / CallLog / Accessibility submission) must be approved and on the Play Store before any 2.7 work touches the release branch. Permission diffs cannot be bundled — compound review risk.
+
+| Item | Status | Notes |
+|---|---|---|
+| **Permissions in `AndroidManifest.xml`** | **Pending** | `BLUETOOTH_SCAN` / `BLUETOOTH_ADVERTISE` / `BLUETOOTH_CONNECT` (API 31+, `neverForLocation`), `NEARBY_WIFI_DEVICES` (API 33+, `neverForLocation`), `ACCESS_WIFI_STATE`, `CHANGE_WIFI_STATE`, `FOREGROUND_SERVICE_DATA_SYNC`, plus legacy `BLUETOOTH` / `BLUETOOTH_ADMIN` / `ACCESS_COARSE_LOCATION` for API ≤ 30 via `maxSdkVersion`. No `ACCESS_FINE_LOCATION`. |
+| **Dependency** | **Pending** | `com.google.android.gms:play-services-nearby:19.x` in [`app/build.gradle.kts`](app/build.gradle.kts). ~250 KB APK delta. |
+| **New Gradle module `:feature:transfer`** | **Pending** | Kotlin package `in.sahayai.chitti.vaani.transfer`. Isolated so unit tests don't pull WebView. |
+| **`TransferManager.kt`** | **Pending** | Wraps `ConnectionsClient`. State machine: idle → advertising → connecting → authenticating → transferring → done / error. |
+| **`FileTransferService.kt`** | **Pending** | `FOREGROUND_SERVICE_DATA_SYNC` foreground service holds the transfer open across WebView pauses. Persistent notification "Chitti is sharing a file…". |
+| **`TransferAuth.kt`** | **Pending** | OOB 4-digit code verification (Nearby Connections' built-in token), spoken aloud for blind users, accepted via voice "haan". Emergency-relay tier skips this — payload is signed. |
+| **Extend `SafetyChecks.kt`** | **Pending** | Add `requireTransferGranted()`. Honest refusal `"transfer_unsupported_no_play_services"` on AOSP / GMS-less devices. |
+| **Extend `AuditLog.kt`** | **Pending** | New kinds: `TRANSFER_ADVERTISE`, `TRANSFER_DISCOVER`, `TRANSFER_AUTHENTICATED`, `TRANSFER_COMPLETED`, `TRANSFER_REFUSED_NO_PLAY_SERVICES`. |
+| **7 new JS bridge methods on `ChittiNativeBridge`** | **Pending** | `advertiseForTransfer`, `discoverNearby`, `connectTo`, `acceptIncoming`, `sendFile`, `cancelTransfer`, `transferState`. Each follows `SafetyChecks → action → AuditLog` pattern. Document in [`ARCHITECTURE.md §4`](ARCHITECTURE.md). |
+| **`chitti_share.js` substrate at repo root** | **Pending** | Auto-loaded by [`../chitti_a11y.js`](../chitti_a11y.js). Mirrors [`../chitti_camera.js`](../chitti_camera.js) / [`../chitti_features.js`](../chitti_features.js) pattern. |
+| **Quick-Share-style modal flow** | **Pending** | Sender + receiver flows in the substrate — voice readouts at every step, 4-digit auth code spoken aloud, "haan" to accept. |
+| **Surface on every Chitti page** | **Pending** | Substrate auto-loads everywhere — no per-page edits. Same "no page ships without" precedent as the per-response widget. |
+| **QR escape hatch (web-only, zero native)** | **Pending** | `qrcode.min.js` + `BarcodeDetector` probe in `chitti_share.js`. Payloads ≤ 2.9 KB render as QR; iPhones read via Camera app. |
+| **Emergency cascade integration** | **Pending** | `VaaniBootService` (Phase 2.4 listener) fires `TransferManager.advertiseForRelay(cascadeJSON)` in parallel with FCM. Signed payload via paired-Chitti private key — auth-code step skipped. See [`project_chitti_vaani_emergency_protocol`](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/project_chitti_vaani_emergency_protocol.md). |
+| **Unit tests for `TransferManager` state machine** | **Pending** | Pure Kotlin, no Android Framework dep. Mocks `ConnectionsClient`. |
+| **Instrumented two-emulator test** | **Pending** | Verify 20 MB transfer end-to-end in under 15 s, audit rows present on both sides, manifest honours `neverForLocation`. |
+| **Play Store Data Safety form delta** | **Pending** | New row "File and document data — local-only, never leaves device, never collected by us." |
+| **Privacy policy update** | **Pending** | `sahayai.in/privacy/chitti-vaani` — add Nearby-Connections section explaining phone-to-phone, never-our-servers. |
+| **Release tagging** | **Pending** | After 2.6 store approval: tag `v1.0.0-store` on `main`, branch `phase-2.7-offline-transfer`, ship as isolated permission-diff submission. |
+
+---
+
 ## Cross-cutting / housekeeping
 
 | Item | Status | Notes |
