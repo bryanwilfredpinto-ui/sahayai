@@ -41,7 +41,7 @@ wired into every previously-raw DeepSeek service across the 15 backends).
 | chitti-founder       | 🔴 obs=None (uses libsql directly, no SQLAlchemy engine) | ⚪ no LLM | ⚪ no LLM | 🟢 main.py:672 | 🟢 cron L921 (Sun 09:00 IST) | ⚪ no LLM | **YELLOW (by design)** |
 | chitti-2wheeler      | 🟢 main.py:74 | 🟢 main.py (HookRegistry registered, post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:76 | 🟢 | ⚪ wrapped | **GREEN** |
 | chitti-4wheeler      | 🟢 main.py:63 | 🟢 main.py (post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:65 | 🟢 | ⚪ wrapped | **GREEN** |
-| chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 | 🟢 | ⚪ | **GREEN (skeleton parity)** |
+| chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 — **SLA curl-verified 2026-05-15 PM** (`x-chitti-response-time-ms: 1`) | 🟢 | ⚪ | **GREEN (quality framework) · Turso sync UNVERIFIED — see §5 round 2** |
 
 ### Pre-commit-#1 → post-commit-#1 → post-commit-#2
 
@@ -135,6 +135,58 @@ t0) * 1000)` rounds to 0; the header itself is the proof that
 Three backends moved from 🟢 (code-wired) → **GREEN ✅ curl-verified**
 in row 1: chitti-vaani, chitti-ca, chitti-medupi.
 
+### Second-round results (2026-05-15 PM)
+
+After provisioning Turso DBs for the 3 remaining backends and porting the
+embedded-replica pattern from chitti-news → chitti-news-ai (commits
+`65c58f8` + `283b5b0`):
+
+| Probe | Result |
+|---|---|
+| `curl -sI https://chitti-news-ai-api.onrender.com/health` | ✅ `HTTP 200` + `x-chitti-response-time-ms: 1` + `x-chitti-request-id: ea8024da3a67` |
+| `curl -s -X POST .../api/news-ai/admin/rss/poll-now?token=$METRICS_TOKEN` | ✅ `{new_articles: 318, sources_polled: 15, errors: [], sources_failed: 0}` |
+| `wsl turso db shell chitti-news-ai "SELECT COUNT(*) FROM articles;"` | ❌ `no such table: articles` — Turso DB is empty |
+
+**chitti-news-ai earns the SLA-timing curl-verified mark but NOT
+full GREEN ✅** — the third check exposed that the embedded-replica
+sync isn't actually writing to Turso despite the code being wired.
+
+### Fleet-wide Turso configuration gap (discovered 2026-05-15 PM)
+
+The same `SELECT` probe against the **chitti-news** Turso DB — the
+reference pattern news-ai was ported from — also returns zero tables.
+Reading [chitti-news/render.yaml:17](chitti-news/render.yaml#L17):
+
+```yaml
+- key: DATABASE_URL
+  sync: false        # paste Supabase URL in dashboard
+```
+
+chitti-news on Render is still pointed at **Supabase Postgres**, not
+Turso. The `libsql_experimental` embedded-replica code in
+[chitti-news/backend/database.py](chitti-news/backend/database.py) only
+fires when `DATABASE_URL` starts with `libsql://` — if the env var is a
+`postgres://` URL, `_resolve_url` returns it as-is and the bg sync
+thread never starts. The Turso DB has been provisioned but unused since
+2026-05-12.
+
+The same misconfiguration is the most likely root cause of the
+chitti-news-ai empty-Turso result. To resolve:
+
+1. On Render dashboard → each Chitti service → Environment, confirm
+   `DATABASE_URL` is set to the exact `libsql://<db>-<org>.<region>.turso.io`
+   form (no quotes, no whitespace, no trailing `?authToken=` for the
+   split-pattern Chittis like news-ai).
+2. Render logs → grep for `Opening embedded replica at` or
+   `Initial Turso sync failed`. Absence of both means the libsql:// branch
+   never executed.
+3. Trigger an RSS poll, wait 60 s, re-run the `SELECT COUNT(*)` against
+   Turso. Only then does the backend earn the curl-verified GREEN mark.
+
+The memory note `project_turso_embedded_replica_pattern` was inaccurate
+on this point — it claimed chitti-news went live on Turso 2026-05-12,
+but it went *code-live*, not *env-live*. Updated.
+
 ### Protocol for remaining 10 backends — run after next deploy
 
 For each remaining Chitti URL in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `CHITTI_ENDPOINTS`:
@@ -143,8 +195,10 @@ For each remaining Chitti URL in [chitti-founder/backend/main.py](chitti-founder
 # 1. SLA header — proves install_request_timing fired:
 curl -sI https://<chitti>.onrender.com/health | grep -i x-chitti-response-time
 
-# 2. Audit row — proves observability is recording:
-curl -s https://<chitti>.onrender.com/admin/founder/slice \
+# 2. Audit row — proves observability is recording.
+# CORRECTED 2026-05-15 PM: /admin/founder/slice exists only on chitti-founder,
+# not on each Chitti. Pull each Chitti's slice through chitti-founder:
+curl -s https://chitti-founder-api.onrender.com/admin/founder/slice/<chitti> \
   -H "Authorization: Bearer $FOUNDER_PULL_SECRET" \
   | jq '.audit_count_24h'
 
