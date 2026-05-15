@@ -231,7 +231,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 .em-toggle.on::before{content:'';width:8px;height:8px;border-radius:50%;background:#fff;animation:micPulse 1.2s ease-in-out infinite}
 </style>
 </head>
-<body>
+<body data-chitti-skip-profile-prompt>
+
+<!-- ───── §7 Disability Profile (chitti_a11y.js substrate) ─────
+     This page has its own T&C consent gate that opens first, so we
+     opt out of the substrate's auto-prompt via the body attribute
+     above. The disability profile is prompted explicitly from
+     acceptConsent() once the user accepts the T&C — that way the
+     two modals never stack. -->
 
 <!-- Bharat stripe -->
 <div class="bharat-stripe" aria-hidden="true"></div>
@@ -1021,6 +1028,14 @@ function acceptConsent(){
     ? 'Welcome. Chitti is ready. Tap the green microphone to speak.'
     : 'नमस्ते। चिट्टी तैयार है। हरे माइक्रोफ़ोन को दबा कर बोलिए।';
   setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
+  // §7 Disability Profile — deferred until after T&C consent so the two
+  // modals never stack. First-visit only; re-prompt is opt-in via
+  // Chitti.a11y.profile.prompt({force:true}) from a future Settings UI.
+  setTimeout(() => {
+    if (window.Chitti && Chitti.a11y && Chitti.a11y.profile && !Chitti.a11y.profile.has()) {
+      Chitti.a11y.profile.prompt();
+    }
+  }, 1500);
 }
 function declineConsent(){
   alert('No problem. You can come back anytime. Chitti will not work until you accept.');
@@ -2948,7 +2963,16 @@ window.addEventListener('DOMContentLoaded', () => {
   if (sel) sel.value = CURRENT_LANG;
   setConsentLang(CURRENT_LANG);
   // Show / hide consent overlay
-  if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
+  if (consentGiven()) {
+    document.getElementById('consent-overlay').classList.add('hidden');
+    // Returning user who already accepted T&C but never set the
+    // Disability Profile — fire it now that no consent modal blocks.
+    setTimeout(() => {
+      if (window.Chitti && Chitti.a11y && Chitti.a11y.profile && !Chitti.a11y.profile.has()) {
+        Chitti.a11y.profile.prompt();
+      }
+    }, 1200);
+  }
   renderHistory();
   renderTC();
   renderAudit();

@@ -631,6 +631,208 @@
     );
   }
 
+  // ── DISABILITY PROFILE — LOCKED 2026-05-13 (SAHAYAI_MASTER §7) ──
+  // One-time multi-select on first visit to ANY Chitti page. Saved
+  // locally; never re-asked. Drives every per-profile adaptation in
+  // §5c (blind auto-announce, elderly slow speech, illiterate picture
+  // menus, ISL panel, rural 2G mode). Implemented here so every page
+  // that loads chitti_a11y.js inherits the prompt automatically — the
+  // §7 contract is "no page ships without this".
+  //
+  // Pages with their own opening modal (e.g. chitti_vaani.html's T&C
+  // consent gate) opt out of the auto-prompt by setting
+  // `data-chitti-skip-profile-prompt` on <body>; they call
+  // Chitti.a11y.profile.prompt() explicitly once their consent flow
+  // resolves.
+  //
+  // Storage shape: state.profile = { blind:true, deaf:true, ... } —
+  // empty `{}` after a Skip click counts as "asked & answered" so we
+  // don't re-prompt forever.
+  const DISABILITY_OPTIONS = [
+    { key: 'blind',      icon: '👁️‍🗨️', en: 'I am blind or have low vision',           hi: 'मैं अंधा हूँ या कम दिखाई देता है' },
+    { key: 'deaf',       icon: '🦻',     en: 'I am deaf or hard of hearing',            hi: 'मैं बहरा हूँ या ऊँचा सुनता हूँ' },
+    { key: 'mute',       icon: '🤫',     en: 'I am mute or have speech difficulty',     hi: 'मैं बोल नहीं सकता / बोलने में कठिनाई है' },
+    { key: 'isl',        icon: '🤟',     en: 'I use sign language (ISL)',               hi: 'मैं संकेत भाषा (ISL) इस्तेमाल करता हूँ' },
+    { key: 'illiterate', icon: '📖',     en: 'I have difficulty reading',               hi: 'मुझे पढ़ने में कठिनाई होती है' },
+    { key: 'elderly',    icon: '👴',     en: 'I am elderly (65+)',                      hi: 'मैं वरिष्ठ नागरिक हूँ (65+)' },
+    { key: 'mobility',   icon: '🦽',     en: 'I have limited mobility',                 hi: 'मेरी गतिशीलता सीमित है' },
+    { key: 'cognitive',  icon: '🧠',     en: 'I have cognitive disability',             hi: 'मुझे संज्ञानात्मक कठिनाई है' },
+    { key: 'rural',      icon: '📡',     en: 'I am in a rural area / low connectivity', hi: 'मैं ग्रामीण क्षेत्र में हूँ / नेट धीमा है' },
+    { key: 'none',       icon: '✓',      en: 'None of the above',                       hi: 'इनमें से कोई नहीं' },
+  ];
+  const PROFILE_HEADING = {
+    en: 'How can Chitti help you better?',
+    hi: 'चिट्टी आपकी बेहतर सहायता कैसे करे?',
+    ta: 'சிட்டி உங்களுக்கு எப்படி நன்றாக உதவ முடியும்?',
+    te: 'చిట్టి మిమ్మల్ని ఎలా బాగా సహాయం చేయగలదు?',
+    bn: 'চিট্টি কীভাবে আপনাকে আরও ভালো সাহায্য করতে পারে?',
+    mr: 'चिट्टी तुमची चांगली मदत कशी करू शकते?',
+    gu: 'ચિટ્ટી તમને કેવી રીતે વધુ સારી મદદ કરી શકે?',
+    kn: 'ಚಿಟ್ಟಿ ನಿಮಗೆ ಹೇಗೆ ಉತ್ತಮವಾಗಿ ಸಹಾಯ ಮಾಡಬಲ್ಲದು?',
+    ml: 'ചിട്ടി നിങ്ങളെ എങ്ങനെ മികച്ച രീതിയിൽ സഹായിക്കും?',
+  };
+  const PROFILE_HINT = {
+    en: 'Pick all that apply. You can change this anytime in Settings.',
+    hi: 'जो भी लागू हो, चुनें। आप इसे कभी भी सेटिंग्स में बदल सकते हैं।',
+  };
+  const PROFILE_SAVE = { en: 'Save', hi: 'सहेजें' };
+  const PROFILE_SKIP = { en: 'Skip for now', hi: 'अभी रहने दें' };
+
+  function getProfile() {
+    const s = loadState() || {};
+    return s.profile || null;
+  }
+  function setProfile(p) {
+    const s = loadState() || {};
+    s.profile = p || {};
+    s.profile_set_at = Math.floor(Date.now() / 1000);
+    saveState(s);
+    document.dispatchEvent(new CustomEvent('chitti:profile', { detail: { profile: s.profile } }));
+  }
+  function hasProfile() {
+    const p = getProfile();
+    return !!p; // {} after a Skip click counts as set; only null/undefined is "never asked"
+  }
+  function _profileEsc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+
+  let _profileModalEl = null;
+  function showProfilePrompt(opts) {
+    opts = opts || {};
+    if (_profileModalEl) return; // already showing
+    injectProfileStyles();
+    const lang = (loadState() || {}).lang || 'en';
+    const heading = PROFILE_HEADING[lang] || PROFILE_HEADING.en;
+    const hint = PROFILE_HINT[lang] || PROFILE_HINT.en;
+    const saveLabel = PROFILE_SAVE[lang] || PROFILE_SAVE.en;
+    const skipLabel = PROFILE_SKIP[lang] || PROFILE_SKIP.en;
+    const existing = getProfile() || {};
+
+    const overlay = document.createElement('div');
+    overlay.className = 'chitti-profile-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'chitti-profile-heading');
+    overlay.innerHTML =
+      '<div class="chitti-profile-panel">' +
+        '<h2 id="chitti-profile-heading">' + _profileEsc(heading) + '</h2>' +
+        '<p class="chitti-profile-hint">' + _profileEsc(hint) + '</p>' +
+        '<ul class="chitti-profile-opts" role="group" aria-label="' + _profileEsc(heading) + '">' +
+          DISABILITY_OPTIONS.map((o) => {
+            const checked = !!existing[o.key];
+            const label = o[lang] || o.en;
+            return '<li><label>' +
+              '<input type="checkbox" data-key="' + o.key + '"' + (checked ? ' checked' : '') + '>' +
+              '<span class="ico" aria-hidden="true">' + o.icon + '</span>' +
+              '<span class="lbl">' + _profileEsc(label) + '</span>' +
+            '</label></li>';
+          }).join('') +
+        '</ul>' +
+        '<div class="chitti-profile-actions">' +
+          '<button type="button" class="chitti-profile-save">' + _profileEsc(saveLabel) + '</button>' +
+          '<button type="button" class="chitti-profile-skip">' + _profileEsc(skipLabel) + '</button>' +
+        '</div>' +
+        '<p class="chitti-profile-note">SAHAYAI_MASTER §7 · Disability Profile</p>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+    _profileModalEl = overlay;
+
+    function _close() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      _profileModalEl = null;
+    }
+
+    overlay.querySelector('.chitti-profile-save').addEventListener('click', () => {
+      const profile = {};
+      overlay.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        if (cb.checked) profile[cb.getAttribute('data-key')] = true;
+      });
+      setProfile(profile);
+      // If ISL is selected, turn ISL mode on so the user sees it immediately.
+      if (profile.isl) { try { setIslMode(true); } catch (_) {} }
+      if (typeof opts.onSave === 'function') opts.onSave(profile);
+      _close();
+      announce('Profile saved');
+    });
+
+    overlay.querySelector('.chitti-profile-skip').addEventListener('click', () => {
+      setProfile({}); // empty {} marks "asked, no selections" so we don't re-ask
+      if (typeof opts.onSkip === 'function') opts.onSkip();
+      _close();
+    });
+
+    // Voice-guide: read the heading + hint aloud on open. The profile
+    // doesn't yet exist, so we always speak — first-time blind users
+    // would otherwise see nothing. opts.silent suppresses for tests.
+    if (opts.silent !== true) {
+      try { speak(heading + '. ' + hint, lang); } catch (_) {}
+    }
+    // Set initial focus to the first checkbox for keyboard / SR users.
+    setTimeout(() => {
+      const cb = overlay.querySelector('input[type="checkbox"]');
+      if (cb) try { cb.focus(); } catch (_) {}
+    }, 50);
+  }
+
+  function _maybeAutoPromptProfile() {
+    if (hasProfile()) return;
+    if (document.body && document.body.hasAttribute('data-chitti-skip-profile-prompt')) return;
+    // Defer slightly so any page-level overlay (T&C, consent) renders first.
+    // If one is detected as visible, we silently bow out — the page is
+    // expected to call Chitti.a11y.profile.prompt() once its own modal closes.
+    setTimeout(() => {
+      if (hasProfile()) return;
+      if (document.body.hasAttribute('data-chitti-skip-profile-prompt')) return;
+      const otherModal = document.querySelector(
+        '[role="dialog"][aria-modal="true"]:not(.chitti-profile-overlay), .consent-overlay:not(.hidden)'
+      );
+      if (otherModal) {
+        // Visible? bow out. Hidden via .hidden / display:none? proceed.
+        const cs = otherModal.classList && otherModal.classList.contains('hidden');
+        const styleHidden = otherModal.style && otherModal.style.display === 'none';
+        if (!cs && !styleHidden) return;
+      }
+      showProfilePrompt({});
+    }, 800);
+  }
+
+  function injectProfileStyles() {
+    if (document.getElementById('chitti-profile-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'chitti-profile-styles';
+    s.textContent =
+      '.chitti-profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9500;' +
+      'display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;' +
+      "font-family:-apple-system,'Segoe UI',Inter,sans-serif}" +
+      '.chitti-profile-panel{background:#fff;border:2px solid #D4AF37;border-radius:14px;' +
+      'padding:20px;max-width:540px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}' +
+      '.chitti-profile-panel h2{margin:0 0 6px;color:#E86A17;font-size:20px;font-weight:900}' +
+      '.chitti-profile-hint{margin:0 0 14px;color:#555;font-size:13px;line-height:1.5}' +
+      '.chitti-profile-opts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}' +
+      '.chitti-profile-opts li{background:#fbf8f1;border:1px solid #e5e7eb;border-radius:10px}' +
+      '.chitti-profile-opts label{display:flex;align-items:center;gap:10px;padding:10px 12px;' +
+      'cursor:pointer;min-height:44px;font-size:14px;color:#17202a;line-height:1.4}' +
+      '.chitti-profile-opts input[type="checkbox"]{width:20px;height:20px;flex-shrink:0;cursor:pointer}' +
+      '.chitti-profile-opts .ico{font-size:20px;flex-shrink:0;width:24px;text-align:center}' +
+      '.chitti-profile-opts .lbl{flex:1}' +
+      '.chitti-profile-opts label:focus-within{outline:2px solid #D4AF37;outline-offset:2px}' +
+      '.chitti-profile-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;' +
+      'border-top:1px solid #e5e7eb;flex-wrap:wrap}' +
+      '.chitti-profile-actions button{border:none;border-radius:10px;padding:12px 18px;' +
+      'font-size:14px;font-weight:800;cursor:pointer;min-height:46px;flex:1;min-width:140px;font-family:inherit}' +
+      '.chitti-profile-save{background:linear-gradient(135deg,#E86A17,#ff9b4a);color:#fff;' +
+      'box-shadow:0 6px 18px rgba(232,106,23,.3)}' +
+      '.chitti-profile-save:hover{filter:brightness(1.05)}' +
+      '.chitti-profile-skip{background:transparent;color:#6b7280;border:1px solid #e5e7eb !important}' +
+      '.chitti-profile-note{margin:10px 0 0;font-size:10px;color:#888;text-align:right;' +
+      "font-family:'JetBrains Mono','Menlo',monospace}";
+    document.head.appendChild(s);
+  }
+
   // ── INIT: INJECT BAR INTO PAGE ───────────────────────────────
   // Adds a sticky top bar with: language picker, Voice Required marker
   // (if requested), braille-mode toggle. Below any existing legal banner.
@@ -659,6 +861,12 @@
     // Restore other a11y modes after bar exists so toggles reflect state.
     if (state.braille) setBrailleMode(true);
     if (state.isl) setIslMode(true);
+
+    // Disability Profile prompt on first visit (SAHAYAI_MASTER §7).
+    // Pages with their own opening modal opt out via
+    // <body data-chitti-skip-profile-prompt> and call
+    // Chitti.a11y.profile.prompt() once their flow resolves.
+    _maybeAutoPromptProfile();
 
     // Feature Discovery — LOCKED 2026-05-14, SAHAYAI_MASTER §2 / §2d.
     // "What can Chitti do for you?" loads on every Chitti page by piggy-
@@ -1325,7 +1533,23 @@
     getState: loadState,
     LANGUAGES,
     VOICE_FACTORY_URL,
+    // Disability Profile (§7) — prompted once on first visit, never re-asked.
+    profile: {
+      prompt: (opts) => showProfilePrompt(opts || {}),
+      get: getProfile,
+      set: setProfile,
+      has: hasProfile,
+    },
   };
+  // lang.current — required by the §1c G4 verification protocol
+  //   (`window.Chitti.a11y.lang.current`). Read-only getter so it always
+  //   reflects whatever setLanguage() most recently wrote.
+  const langApi = { set: setLanguage, detectFromBrowser, detectFromText };
+  Object.defineProperty(langApi, 'current', {
+    get: () => (loadState() || {}).lang || 'en',
+    enumerable: true,
+  });
+  api.lang = langApi;
 
   global.Chitti = global.Chitti || {};
   global.Chitti.a11y = api;
