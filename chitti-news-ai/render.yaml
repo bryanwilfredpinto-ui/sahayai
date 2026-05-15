@@ -13,6 +13,8 @@ services:
     startCommand: gunicorn main:app --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10          # cp311 wheel for libsql-experimental ships manylinux only
       - key: DATABASE_URL
         sync: false        # libsql://chitti-news-ai-<org>.aws-ap-south-1.turso.io
       - key: TURSO_AUTH_TOKEN
