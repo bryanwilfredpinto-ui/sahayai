@@ -89,7 +89,7 @@ GPS never leaves the device — only the pincode (rounded). Matches the [§2b ca
 
 ### 4.2 Track B — General share
 
-Substrate adds a `📤 Share` button to every Chitti page. Available across **all 14 Chittis** — matches the [per-response widget locked decision](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/project_per_response_widget_locked.md) "no page ships without it" precedent.
+Substrate adds a `📤 Share` button to every Chitti page. The **user-canonical Share surface lives inside Vaani** per the 2026-05-15 [`project_chitti_vaani_sole_interface_locked`](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/project_chitti_vaani_sole_interface_locked.md) §2 lock — a user invokes "share this" through their conversation with Vaani, and Vaani's router opens the substrate's flow inline. The `chitti_share.js` substrate remains auto-loaded on all 14 standalone Chitti pages for development continuity and substrate-parity testing (same precedent as the per-response widget's "no page ships without it" rule), but those pages are dev / debug surface, not the canonical user path.
 
 Canonical flow:
 

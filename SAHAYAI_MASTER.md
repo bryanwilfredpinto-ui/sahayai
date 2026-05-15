@@ -310,6 +310,8 @@ See [[project_swarm_intelligence_locked]].
 
 ## 4. What's built — 12 live products
 
+> Per the 2026-05-15 [§2 "Vaani is the only user interface" lock](#2-locked-decisions--do-not-relitigate), every product in this table is a **routable Chitti service** reached through Vaani, not a standalone user surface. The `Frontend` column lists each Chitti's HTML page — those pages persist as **internal services + developer / debug surface**, kept live for parity testing and substrate development, but the user-canonical entry point for every capability below is **Vaani**. Memory: `project_chitti_vaani_sole_interface_locked`.
+
 | # | Product | Frontend | Backend | Status |
 |---|---|---|---|---|
 | 1 | Chitti Technical | `chitti_complete_technical.html` | `chitti-shares-api` | LIVE — NSE/BSE candles + 43 indicators, Roshan composite, Story Mode |
@@ -653,12 +655,14 @@ Any new Chitti page built in future **inherits the ISL plugin automatically** �
 
 **Anchored to the 2026-05-12 homepage audit:** sahayai.in's `index.html` loads **zero scripts**. The four-user contract is broken at the front door.
 
-### P0 — Fix the homepage (this session's audit findings)
+### P0 — Vaani-first user journey (2026-05-15 sole-interface lock)
 
-1. **Wire `chitti_a11y.js` into `index.html`.** Restores the working language selector (Kannada actually shifts UI), Voice Required marker, Braille mode, and the `🔊 Read page` button on every section.
-2. **Wire `feedback-widget.js` into `index.html`.** Restores 👍/👎 plus the 👎 → suggestion modal.
-3. **Build the "Explain simply" button.** No substrate exists yet — needs a new helper that re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud. Required on every product card AND every Chitti response.
-4. **Audit the other 12 product pages** for the same four gaps. The substrate scripts are loaded on 13 pages already, but verify the language selector actually shifts UI on each, and `Explain simply` is added uniformly.
+Per the new §2 row "Vaani is the only user interface" (`project_chitti_vaani_sole_interface_locked`), the four-user contract is enforced **by routing every user through Vaani**, not by trying to make 14 standalone pages each independently meet the contract. P0 work concentrates on making the lock real on the live site:
+
+1. **Vaani intent router covers every Chitti service.** Today Vaani's DeepSeek-classified router covers a subset. Extend it so a single voice / typed query from inside Vaani can reach every one of the 14 Chittis (technical, fundamentals, medupi, news, news-ai, upi, scanner, ca, legal, government, logo-video, voice-factory, kirana, vaani-own) — and every future Chitti — by reading each Chitti's `skills/FEATURES.md` capability surface. The router is the **only** code path that the user touches; the routed-to Chitti's UI is never presented.
+2. **Homepage `index.html` becomes a Vaani entry, not a Chitti menu.** sahayai.in currently lists product cards as parallel entry points; replace with a Vaani-first landing — one prominent CTA into `chitti_vaani.html` + the 14 Chittis surfaced only as "Vaani can also help with…" cards that themselves open Vaani with the relevant intent pre-filled, not the standalone HTML. `chitti_a11y.js` + `feedback-widget.js` still need wiring into the new index.
+3. **Standalone Chitti pages add a "Talk to Vaani instead" banner.** Users who land on `chitti_medupi.html` / `chitti_technical.html` / `chitti_fundamentals.html` / etc. via search engines or old links should see a sticky top banner — "Your dost Vaani can do this for you — tap to open Vaani." Pages stay as dev / debug surface; they are no longer marketed as the user entry. Substrates (`chitti_a11y.js`, `feedback-widget.js`, `chitti_camera.js`, `chitti_features.js`, `chitti_share.js`) keep loading on these pages for parity testing.
+4. **"Explain simply" button inside Vaani.** Required on every Vaani response (the canonical surface), via the per-response widget. The substrate persists on standalone pages for testing parity but its user-canonical role is inside Vaani — re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud.
 
 ### ✅ Geo on the local-business lookup — SHIPPED 2026-05-13
 
