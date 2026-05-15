@@ -1,0 +1,347 @@
+/* ─────────────────────────────────────────────────────────────────
+ * chitti_theme.css — UNIFIED theme across all 15 Chitti pages
+ * Locked 2026-05-15: Saffron #FF9933 · Deep Navy #003366 · White #FFFFFF.
+ * Mobile-first (375 px). Every page <link>s this AFTER its own <style>
+ * so cascade wins for shared selectors; inline page styles using
+ * existing var(--saffron) / var(--navy) automatically pick up the new
+ * values because we redefine those variables at :root.
+ *
+ * Honest: pages with hard-coded hex (e.g. .btn{background:#E86A17})
+ * are overridden via the high-specificity patterns at the bottom of
+ * this file. Pages that use the variable-based pattern (the majority)
+ * get the new colours for free.
+ * ───────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Locked palette */
+  --chitti-saffron: #FF9933;       /* Indian flag saffron */
+  --chitti-navy:    #003366;       /* Deep navy */
+  --chitti-white:   #FFFFFF;
+  --chitti-saffron-deep: #E07B1D;  /* Hover / pressed state */
+  --chitti-navy-deep:    #001a33;  /* Pressed state */
+  --chitti-cream:   #FFF7EC;       /* Soft background tint */
+
+  /* Semantic tokens (consumed by buttons / banners / chips) */
+  --chitti-bg:        #FFFFFF;
+  --chitti-bg-soft:   #FFF7EC;
+  --chitti-text:      #17202a;
+  --chitti-muted:     #6b7280;
+  --chitti-border:    #e5e7eb;
+  --chitti-success:   #15803d;
+  --chitti-warning:   #c2410c;
+  --chitti-danger:    #b91c1c;
+
+  /* Override the pre-existing per-page variable names so pages that
+     already use var(--saffron) / var(--navy) / var(--gold) pick up
+     the unified palette without each page being rewritten. */
+  --saffron: #FF9933;
+  --saffron-deep: #E07B1D;
+  --navy:    #003366;
+  --gold:    #FF9933;   /* Pages used --gold as an accent — point at saffron */
+  --bg:      #FFFFFF;
+  --card:    #FFFFFF;
+  --card2:   #FFF7EC;
+
+  /* Typography + scale */
+  --chitti-font: 'Noto Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, sans-serif;
+  --chitti-font-mono: 'JetBrains Mono', 'Menlo', monospace;
+  --chitti-radius:   12px;
+  --chitti-radius-lg: 18px;
+  --chitti-shadow:   0 4px 12px rgba(0, 51, 102, 0.08);
+  --chitti-shadow-md: 0 8px 24px rgba(0, 51, 102, 0.14);
+  --chitti-tap:      44px;        /* WCAG 2.5.5 minimum touch target */
+
+  /* Spacing scale (4-pt grid) */
+  --chitti-sp-1: 4px;
+  --chitti-sp-2: 8px;
+  --chitti-sp-3: 12px;
+  --chitti-sp-4: 16px;
+  --chitti-sp-5: 24px;
+  --chitti-sp-6: 32px;
+}
+
+/* RTL bidi for ur/ks/sd — chitti_a11y.js sets <html dir="rtl"> on switch. */
+html[dir="rtl"] body { direction: rtl; text-align: right; }
+html[dir="rtl"] .chitti-a11y-bar { flex-direction: row-reverse; }
+
+/* ── Base reset (mobile-first 375 px) ────────────────────────── */
+html, body {
+  font-family: var(--chitti-font);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--chitti-text);
+  background: var(--chitti-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+* { box-sizing: border-box; }
+
+/* Touch targets — never smaller than 44 px on mobile. */
+button,
+a.chitti-btn,
+input[type="button"],
+input[type="submit"],
+.chitti-tap {
+  min-height: var(--chitti-tap);
+  min-width: var(--chitti-tap);
+}
+
+/* ── Indian-flag stripe (decorative, every page can opt-in) ──── */
+.chitti-bharat-stripe {
+  height: 4px;
+  background: linear-gradient(90deg, var(--chitti-saffron) 0%, var(--chitti-white) 50%, var(--chitti-navy) 100%);
+}
+
+/* ── Buttons — unified style ─────────────────────────────────── */
+.chitti-btn,
+button.chitti-primary,
+.btn-saffron {
+  background: linear-gradient(135deg, var(--chitti-saffron), var(--chitti-saffron-deep)) !important;
+  color: var(--chitti-white) !important;
+  border: none;
+  border-radius: var(--chitti-radius);
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--chitti-shadow);
+  transition: filter .15s, transform .1s;
+}
+.chitti-btn:hover,
+button.chitti-primary:hover,
+.btn-saffron:hover { filter: brightness(1.06); }
+.chitti-btn:active,
+button.chitti-primary:active,
+.btn-saffron:active { transform: translateY(1px); }
+
+button.chitti-navy,
+.btn-navy {
+  background: linear-gradient(135deg, var(--chitti-navy), var(--chitti-navy-deep)) !important;
+  color: var(--chitti-white) !important;
+  border: none;
+  border-radius: var(--chitti-radius);
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.chitti-ghost,
+.btn-ghost {
+  background: transparent;
+  color: var(--chitti-text);
+  border: 1px solid var(--chitti-border);
+  border-radius: var(--chitti-radius);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Header (consistent across all pages) ────────────────────── */
+header[role="banner"],
+.chitti-header {
+  background: linear-gradient(135deg, var(--chitti-navy), #16376a);
+  color: var(--chitti-white);
+  border-radius: 0 0 var(--chitti-radius-lg) var(--chitti-radius-lg);
+  padding: var(--chitti-sp-4);
+}
+
+header[role="banner"] .brand,
+.chitti-header .brand {
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--chitti-white);
+}
+
+/* ── Section cards (unified) ─────────────────────────────────── */
+.section-card,
+.card,
+.panel {
+  background: var(--chitti-white);
+  border: 1px solid var(--chitti-border);
+  border-radius: var(--chitti-radius-lg);
+  padding: var(--chitti-sp-4);
+  box-shadow: var(--chitti-shadow);
+  margin: 0 0 var(--chitti-sp-3);
+}
+
+/* ── Response box — the per-response widget anchor ───────────── */
+[data-chitti-response] {
+  position: relative;
+}
+
+/* ── Chip / pill styles (legacy classes get the saffron accent) ── */
+.chip,
+.pill,
+.badge {
+  background: var(--chitti-cream);
+  color: var(--chitti-text);
+  border: 1px solid var(--chitti-saffron);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Sticky disclaimer bars (e.g. NOT SEBI REGISTERED) ───────── */
+.sebi-bar,
+.legal-bar,
+[data-chitti-legal-bar] {
+  background: var(--chitti-danger) !important;
+  color: var(--chitti-white) !important;
+  font-weight: 800;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 12px;
+  letter-spacing: .03em;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ── Override the most common hardcoded hex codes from the
+ *    pre-unified theme (--saffron was #E86A17, --gold was #D4AF37).
+ *    We can't rewrite every inline style, but the bulk of pages
+ *    used these patterns inline. ───────────────────────────────── */
+[style*="#E86A17"]      { background-color: var(--chitti-saffron) !important; }
+[style*="background:#E86A17"]  { background: var(--chitti-saffron) !important; }
+[style*="color:#E86A17"] { color: var(--chitti-saffron) !important; }
+
+/* ── Forms ───────────────────────────────────────────────────── */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+  background: var(--chitti-white);
+  border: 1px solid var(--chitti-border);
+  border-radius: var(--chitti-radius);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--chitti-text);
+  min-height: var(--chitti-tap);
+  width: 100%;
+  max-width: 100%;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--chitti-saffron);
+  box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.25);
+}
+
+/* ── Language switcher (top-right corner — chitti_a11y.js renders) ─ */
+.chitti-langbar {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 8500;
+  background: rgba(0, 51, 102, 0.92);
+  color: var(--chitti-white);
+  border-radius: var(--chitti-radius);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  box-shadow: var(--chitti-shadow);
+}
+.chitti-langbar select {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--chitti-white);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  min-height: 32px;
+  min-width: 110px;
+  font-family: inherit;
+}
+.chitti-langbar select option { background: var(--chitti-navy); color: var(--chitti-white); }
+html[dir="rtl"] .chitti-langbar { right: auto; left: 8px; }
+
+/* ── Per-response widget — 4-icon row (rendered by feedback-widget.js) ── */
+.chitti-fwidget,
+.chitti-feedback-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--chitti-sp-2);
+  flex-wrap: wrap;
+}
+.chitti-fwidget button,
+.chitti-feedback-row button {
+  background: var(--chitti-white);
+  border: 1px solid var(--chitti-border);
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--chitti-text);
+  transition: transform .1s, border-color .15s;
+}
+.chitti-fwidget button:hover,
+.chitti-feedback-row button:hover {
+  border-color: var(--chitti-saffron);
+}
+.chitti-fwidget button[data-action="up"]:hover { color: var(--chitti-success); }
+.chitti-fwidget button[data-action="down"]:hover { color: var(--chitti-danger); }
+.chitti-fwidget button.active { background: var(--chitti-cream); border-color: var(--chitti-saffron); }
+
+/* ── ISL panel — chitti_isl.js renders next to response boxes ── */
+.chitti-isl-panel {
+  display: inline-block;
+  margin: 4px 6px;
+  padding: 4px 8px;
+  background: var(--chitti-cream);
+  border: 1px dashed var(--chitti-saffron);
+  border-radius: var(--chitti-radius);
+  font-size: 12px;
+  color: var(--chitti-text);
+  font-family: inherit;
+}
+
+/* ── Mobile-first responsive scale ───────────────────────────── */
+@media (min-width: 640px) {
+  html, body { font-size: 16px; }
+  .chitti-header { padding: var(--chitti-sp-5); }
+}
+@media (min-width: 1024px) {
+  .section-card, .card, .panel { padding: var(--chitti-sp-5); }
+}
+
+/* ── Reduced-motion respect ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ── Print / PDF mode ────────────────────────────────────────── */
+@media print {
+  .chitti-langbar,
+  .chitti-fwidget,
+  .chitti-feedback-row,
+  .chitti-a11y-bar,
+  button { display: none !important; }
+  body { color: #000; background: #fff; }
+}

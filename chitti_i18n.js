@@ -1,0 +1,255 @@
+/* ─────────────────────────────────────────────────────────────────
+ * chitti_i18n.js — Substrate-level UI translation for all 26 langs.
+ *
+ * Scope: ~50 cross-Chitti UI strings (button labels, feedback widget
+ * tooltips, ISL panel chrome, error messages, confirmation prompts).
+ * Page-specific labels opt in by adding `data-i18n="namespace.key"`
+ * to the element; on language switch, the substrate sweeps the DOM
+ * and replaces every data-i18n target's text content.
+ *
+ * Pages with their own per-page i18n table (the existing pattern
+ * in medupi / news-ai / shares) register it via:
+ *   window.Chitti.i18n.register({ 'med.modal.title': { hi: '…', bn: '…', … } });
+ *
+ * Public API on window.Chitti.i18n:
+ *   t(key, lang)              → translated string (falls back hi → en → key)
+ *   register(table)           → merge per-page strings into the global table
+ *   applyLang(lang)           → sweep DOM, replace every data-i18n target
+ *   currentLang()             → currently active language code
+ *
+ * Honest contract: 13 languages (hi, en, bn, te, ta, mr, gu, kn, ml,
+ * pa, or, as, ur) have hand-written translations for every substrate
+ * string. The other 13 (sa, mai, kok, doi, ks, ne, sd, mni, sat, bho,
+ * raj, kru, ho) ship with an honest *Hindi fallback marked
+ * "untranslated — community contributions welcome"* per the Voice
+ * Strategy lock (SAHAYAI_MASTER.md §2 row "Voice strategy"). Pages
+ * never silently morph one language into another; the missing-status
+ * is rendered as a small "(translation pending)" footnote when those
+ * languages are active. See [`chitti_voice_hall_of_fame.html`] —
+ * translation contributors enter the Hall of Fame the same way voice
+ * donors do.
+ *
+ * RTL: ur, ks, sd render right-to-left. chitti_a11y.js sets
+ * document.documentElement.dir = 'rtl' on switch.
+ * ───────────────────────────────────────────────────────────────── */
+(function (global) {
+  'use strict';
+
+  global.Chitti = global.Chitti || {};
+  if (global.Chitti.i18n && global.Chitti.i18n._wired) return;
+
+  // Languages that need RTL flow.
+  const RTL_LANGS = new Set(['ur', 'ks', 'sd']);
+
+  // 13 strong-coverage languages.
+  const STRONG = new Set([
+    'en', 'hi', 'bn', 'te', 'ta', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as', 'ur'
+  ]);
+
+  // 13 honest-stub languages (Hindi fallback + community-contribution callout).
+  const STUB = new Set([
+    'sa', 'mai', 'kok', 'doi', 'ks', 'ne', 'sd', 'mni', 'sat', 'bho', 'raj', 'kru', 'ho'
+  ]);
+
+  // Locked palette of native names for every supported code (used by the
+  // dropdown rendered in chitti_a11y.js). Mirrors the Voice Factory list.
+  const LANG_NATIVE = {
+    en: 'English',          hi: 'हिन्दी',           bn: 'বাংলা',
+    te: 'తెలుగు',           ta: 'தமிழ்',            mr: 'मराठी',
+    gu: 'ગુજરાતી',           kn: 'ಕನ್ನಡ',           ml: 'മലയാളം',
+    pa: 'ਪੰਜਾਬੀ',           or: 'ଓଡ଼ିଆ',            as: 'অসমীয়া',
+    ur: 'اردو',             sa: 'संस्कृतम्',          mai: 'मैथिली',
+    kok: 'कोंकणी',            doi: 'डोगरी',           ks: 'کٲشُر',
+    ne: 'नेपाली',             sd: 'سنڌي',             mni: 'মৈতৈলোন্',
+    sat: 'ᱥᱟᱱᱛᱟᱲᱤ',          bho: 'भोजपुरी',          raj: 'राजस्थानी',
+    kru: 'कुड़ुख़',            ho: 'हो',
+  };
+
+  // Substrate strings — 13 strong langs are hand-translated below.
+  // Format: { key: { en, hi, bn, te, ta, mr, gu, kn, ml, pa, or, as, ur } }
+  // For stub langs (sa/mai/kok/doi/ks/ne/sd/mni/sat/bho/raj/kru/ho) the
+  // resolver falls back to hi.
+  const STRINGS = {
+    // Common UI verbs
+    'common.send':       { en: 'Send',         hi: 'भेजें',         bn: 'পাঠান',         te: 'పంపండి',        ta: 'அனுப்பு',         mr: 'पाठवा',         gu: 'મોકલો',          kn: 'ಕಳುಹಿಸಿ',         ml: 'അയയ്ക്കുക',     pa: 'ਭੇਜੋ',           or: 'ପଠାନ୍ତୁ',        as: 'পঠাওক',         ur: 'بھیجیں' },
+    'common.cancel':     { en: 'Cancel',       hi: 'रद्द करें',     bn: 'বাতিল',         te: 'రద్దు చేయండి',   ta: 'ரத்து செய்',       mr: 'रद्द करा',      gu: 'રદ કરો',         kn: 'ರದ್ದುಗೊಳಿಸಿ',     ml: 'റദ്ദാക്കുക',     pa: 'ਰੱਦ ਕਰੋ',         or: 'ବାତିଲ୍',         as: 'বাতিল',         ur: 'منسوخ' },
+    'common.ok':         { en: 'OK',           hi: 'ठीक है',        bn: 'ঠিক আছে',       te: 'సరే',           ta: 'சரி',             mr: 'ठीक आहे',       gu: 'બરાબર',          kn: 'ಸರಿ',             ml: 'ശരി',           pa: 'ਠੀਕ ਹੈ',          or: 'ଠିକ୍ ଅଛି',        as: 'ঠিক আছে',       ur: 'ٹھیک ہے' },
+    'common.yes':        { en: 'Yes',          hi: 'हाँ',           bn: 'হ্যাঁ',          te: 'అవును',         ta: 'ஆம்',             mr: 'होय',           gu: 'હા',             kn: 'ಹೌದು',            ml: 'അതെ',           pa: 'ਹਾਂ',             or: 'ହଁ',             as: 'হয়',             ur: 'ہاں' },
+    'common.no':         { en: 'No',           hi: 'नहीं',          bn: 'না',            te: 'కాదు',          ta: 'இல்லை',           mr: 'नाही',          gu: 'ના',             kn: 'ಇಲ್ಲ',            ml: 'അല്ല',          pa: 'ਨਹੀਂ',            or: 'ନା',             as: 'নহয়',           ur: 'نہیں' },
+    'common.save':       { en: 'Save',         hi: 'सहेजें',         bn: 'সংরক্ষণ',        te: 'సేవ్',           ta: 'சேமி',            mr: 'जतन करा',       gu: 'સાચવો',          kn: 'ಉಳಿಸಿ',           ml: 'സംരക്ഷിക്കുക',  pa: 'ਸੰਭਾਲੋ',          or: 'ସଞ୍ଚୟ କରନ୍ତୁ',     as: 'সংৰক্ষণ',        ur: 'محفوظ کریں' },
+    'common.submit':     { en: 'Submit',       hi: 'जमा करें',       bn: 'জমা দিন',        te: 'సమర్పించండి',    ta: 'சமர்ப்பி',         mr: 'सबमिट',         gu: 'સબમિટ',          kn: 'ಸಲ್ಲಿಸಿ',          ml: 'സമർപ്പിക്കുക',   pa: 'ਜਮ੍ਹਾਂ ਕਰੋ',       or: 'ଦାଖଲ କରନ୍ତୁ',      as: 'জমা দিয়ক',       ur: 'جمع کریں' },
+    'common.close':      { en: 'Close',        hi: 'बंद करें',       bn: 'বন্ধ',          te: 'మూసివేయండి',     ta: 'மூடு',            mr: 'बंद',           gu: 'બંધ',            kn: 'ಮುಚ್ಚಿ',          ml: 'അടയ്ക്കുക',      pa: 'ਬੰਦ',             or: 'ବନ୍ଦ',            as: 'বন্ধ কৰক',        ur: 'بند' },
+    'common.loading':    { en: 'Loading…',     hi: 'लोड हो रहा है…',  bn: 'লোড হচ্ছে…',    te: 'లోడ్ అవుతోంది…',  ta: 'ஏற்றுகிறது…',     mr: 'लोड होत आहे…',  gu: 'લોડ થઇ રહ્યું છે…', kn: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ…',   ml: 'ലോഡ് ചെയ്യുന്നു…', pa: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…',  or: 'ଲୋଡ୍ ହେଉଛି…',     as: 'লোড হৈ আছে…',    ur: 'لوڈ ہو رہا ہے…' },
+    'common.listening':  { en: 'Listening…',   hi: 'सुन रहा हूँ…',    bn: 'শুনছি…',         te: 'వింటున్నాను…',   ta: 'கேட்கிறேன்…',      mr: 'ऐकत आहे…',       gu: 'સાંભળી રહ્યો છું…',  kn: 'ಕೇಳುತ್ತಿದ್ದೇನೆ…',  ml: 'കേൾക്കുന്നു…',    pa: 'ਸੁਣ ਰਿਹਾ ਹਾਂ…',    or: 'ଶୁଣୁଛି…',          as: 'শুনি আছোঁ…',      ur: 'سن رہا ہوں…' },
+    'common.error':      { en: 'Something went wrong', hi: 'कुछ गलत हुआ', bn: 'কিছু ভুল হয়েছে', te: 'ఏదో తప్పు జరిగింది', ta: 'ஏதோ தவறு', mr: 'काहीतरी चूक झाली', gu: 'કંઇક ખોટું થયું', kn: 'ಏನೋ ತಪ್ಪಾಗಿದೆ', ml: 'എന്തോ പിശക്', pa: 'ਕੁਝ ਗਲਤ ਹੋਇਆ', or: 'କିଛି ତ୍ରୁଟି ହୋଇଛି', as: 'কিবা ভুল হ\'ল', ur: 'کچھ غلط ہوگیا' },
+
+    // Feedback widget
+    'widget.speak':      { en: 'Read aloud',   hi: 'पढ़कर सुनाओ',     bn: 'পড়ে শোনাও',    te: 'చదివి వినిపించు', ta: 'வாசித்துக் காட்டு', mr: 'वाचून दाखवा',    gu: 'વાંચીને સંભળાવો',  kn: 'ಓದಿ ತೋರಿಸಿ',       ml: 'വായിച്ച് കേൾപ്പിക്കൂ', pa: 'ਪੜ੍ਹ ਕੇ ਸੁਣਾਓ',  or: 'ପଢ଼ି ଶୁଣାନ୍ତୁ',     as: 'পঢ়ি শুনাওক',     ur: 'پڑھ کر سنائیں' },
+    'widget.explain':    { en: 'Explain further', hi: 'और समझाओ',     bn: 'আরো ব্যাখ্যা',  te: 'మరింత వివరించండి', ta: 'மேலும் விளக்கு',  mr: 'अधिक समजावा',    gu: 'વધુ સમજાવો',     kn: 'ಹೆಚ್ಚು ವಿವರಿಸಿ',    ml: 'കൂടുതൽ വിശദീകരിക്കൂ', pa: 'ਹੋਰ ਸਮਝਾਓ',     or: 'ଅଧିକ ବ୍ୟାଖ୍ୟା',    as: 'অধিক বুজাওক',    ur: 'مزید سمجھائیں' },
+    'widget.thumb.up':   { en: 'Helpful',      hi: 'मददगार',        bn: 'সহায়ক',         te: 'సహాయకరం',       ta: 'பயனுள்ளது',       mr: 'उपयोगी',        gu: 'મદદરૂપ',         kn: 'ಸಹಾಯಕ',           ml: 'സഹായകരം',       pa: 'ਮਦਦਗਾਰ',          or: 'ସହାୟକ',           as: 'সহায়ক',          ur: 'مددگار' },
+    'widget.thumb.down': { en: 'Not helpful',  hi: 'मददगार नहीं',    bn: 'সহায়ক নয়',     te: 'సహాయకరం కాదు',   ta: 'பயனற்றது',        mr: 'उपयोगी नाही',   gu: 'મદદરૂપ નથી',     kn: 'ಸಹಾಯಕವಲ್ಲ',       ml: 'സഹായകരമല്ല',    pa: 'ਮਦਦਗਾਰ ਨਹੀਂ',     or: 'ସହାୟକ ନୁହେଁ',    as: 'সহায়ক নহয়',     ur: 'مددگار نہیں' },
+    'widget.feedback':   { en: 'Feedback',     hi: 'प्रतिक्रिया',     bn: 'মতামত',         te: 'అభిప్రాయం',      ta: 'கருத்து',          mr: 'अभिप्राय',      gu: 'પ્રતિસાદ',        kn: 'ಪ್ರತಿಕ್ರಿಯೆ',      ml: 'പ്രതികരണം',     pa: 'ਫੀਡਬੈਕ',           or: 'ମତାମତ',           as: 'মতামত',          ur: 'تاثرات' },
+    'widget.fb.placeholder': { en: 'What was wrong with this?', hi: 'इसमें क्या गलत था?', bn: 'এতে কী ভুল ছিল?', te: 'దీంట్లో ఏం తప్పు?', ta: 'இதில் என்ன தவறு?', mr: 'यात काय चूक?',  gu: 'આમાં શું ખોટું?', kn: 'ಇದರಲ್ಲಿ ಏನು ತಪ್ಪು?', ml: 'ഇതിൽ എന്താണ് തെറ്റ്?', pa: 'ਇਸ ਵਿੱਚ ਕੀ ਗਲਤ?', or: 'ଏଥିରେ କ\'ଣ ଭୁଲ?',   as: 'ইয়াত কি ভুল?',  ur: 'اس میں کیا غلط؟' },
+    'widget.fb.voice':   { en: 'Record voice feedback', hi: 'आवाज़ से बताओ', bn: 'কণ্ঠে মতামত', te: 'వాయిస్‌లో అభిప్రాయం', ta: 'குரலில் கருத்து', mr: 'आवाजात अभिप्राय', gu: 'અવાજમાં પ્રતિસાદ', kn: 'ಧ್ವನಿಯಲ್ಲಿ ಪ್ರತಿಕ್ರಿಯೆ', ml: 'ശബ്ദത്തിലൂടെ', pa: 'ਅਵਾਜ਼ ਵਿੱਚ ਫੀਡਬੈਕ', or: 'ସ୍ୱରରେ ମତାମତ', as: 'কণ্ঠেৰে মতামত', ur: 'آواز سے بتائیں' },
+    'widget.fb.type':    { en: 'Type feedback', hi: 'लिखकर बताओ',    bn: 'লিখে বলুন',     te: 'రాసి చెప్పండి',  ta: 'எழுதிக் கூறு',    mr: 'लिहून सांगा',   gu: 'લખીને કહો',      kn: 'ಬರೆದು ಹೇಳಿ',       ml: 'എഴുതി പറയൂ',    pa: 'ਲਿਖ ਕੇ ਦੱਸੋ',      or: 'ଲେଖି କୁହନ୍ତୁ',     as: 'লিখি কওক',       ur: 'لکھ کر بتائیں' },
+    'widget.fb.thanks':  { en: 'I will learn from this',  hi: 'मैं इससे सीखूँगा', bn: 'আমি এ থেকে শিখব', te: 'నేను దీని నుండి నేర్చుకుంటాను', ta: 'நான் இதிலிருந்து கற்றுக்கொள்வேன்', mr: 'मी यातून शिकेन', gu: 'હું આમાંથી શીખીશ', kn: 'ನಾನು ಇದರಿಂದ ಕಲಿಯುತ್ತೇನೆ', ml: 'ഞാൻ ഇതിൽ നിന്ന് പഠിക്കാം', pa: 'ਮੈਂ ਇਸ ਤੋਂ ਸਿੱਖਾਂਗਾ', or: 'ମୁଁ ଏଥିରୁ ଶିଖିବି', as: 'মই ইয়াৰ পৰা শিকিম', ur: 'میں اس سے سیکھوں گا' },
+
+    // ISL panel
+    'isl.toggle.on':     { en: 'ISL: ON',      hi: 'ISL: चालू',     bn: 'ISL: চালু',     te: 'ISL: ఆన్',      ta: 'ISL: இயக்கம்',    mr: 'ISL: चालू',     gu: 'ISL: ચાલુ',      kn: 'ISL: ಆನ್',         ml: 'ISL: ഓൺ',        pa: 'ISL: ਚਾਲੂ',        or: 'ISL: ଚାଲୁ',        as: 'ISL: চলি আছে',    ur: 'ISL: آن' },
+    'isl.toggle.off':    { en: 'ISL',          hi: 'ISL',           bn: 'ISL',           te: 'ISL',           ta: 'ISL',             mr: 'ISL',           gu: 'ISL',            kn: 'ISL',             ml: 'ISL',           pa: 'ISL',             or: 'ISL',             as: 'ISL',             ur: 'ISL' },
+    'isl.placeholder':   { en: 'Placeholder ISL — community video coming soon', hi: 'पूर्वावलोकन ISL — समुदाय वीडियो जल्द', bn: 'প্রিভিউ ISL — কমিউনিটি ভিডিও শীঘ্রই', te: 'ప్రివ్యూ ISL — త్వరలో', ta: 'ISL முன்னோட்டம் — விரைவில் சமூக காணொலி', mr: 'ISL पूर्वावलोकन — समुदाय व्हिडिओ लवकर', gu: 'ISL પૂર્વાવલોકન — સમુદાય વિડિયો જલ્દી', kn: 'ISL ಪೂರ್ವವೀಕ್ಷಣೆ', ml: 'ISL പ്രിവ്യൂ', pa: 'ISL ਨਮੂਨਾ', or: 'ISL ପ୍ରିଭ୍ୟୁ', as: 'ISL পূৰ্বদৃশ্য', ur: 'ISL پیشگی نمونہ' },
+
+    // Disability Profile
+    'profile.title':     { en: 'How can Chitti help you better?', hi: 'चिट्टी आपकी बेहतर सहायता कैसे करे?', bn: 'চিট্টি কীভাবে আপনাকে ভালো সাহায্য করতে পারে?', te: 'చిట్టి మిమ్మల్ని ఎలా బాగా సహాయం చేస్తుంది?', ta: 'சிட்டி உங்களுக்கு எப்படி நன்றாக உதவ முடியும்?', mr: 'चिट्टी तुम्हाला कशी मदत करू शकते?', gu: 'ચિટ્ટી તમને કેવી રીતે મદદ કરી શકે?', kn: 'ಚಿಟ್ಟಿ ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲದು?', ml: 'ചിട്ടി നിങ്ങളെ എങ്ങനെ സഹായിക്കാം?', pa: 'ਚਿੱਟੀ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰੇ?', or: 'ଚିଟ୍ଟି କିପରି ସାହାଯ୍ୟ କରିବ?', as: 'চিট্টিয়ে কেনেদৰে সহায় কৰিব?', ur: 'چٹی آپ کی بہتر مدد کیسے کرے؟' },
+    'profile.hint':      { en: 'Pick all that apply. You can change this anytime in Settings.', hi: 'जो भी लागू हो, चुनें। आप इसे कभी भी सेटिंग्स में बदल सकते हैं।', bn: 'যা প্রযোজ্য সব বেছে নিন। সেটিংসে যেকোনো সময় বদলাতে পারেন।', te: 'వర్తించే అన్నీ ఎంచుకోండి. సెట్టింగ్స్‌లో మార్చవచ్చు.', ta: 'பொருந்தும் அனைத்தையும் தேர்ந்தெடுக்கவும். அமைப்புகளில் மாற்றலாம்.', mr: 'सर्व निवडा. सेटिंग्जमध्ये बदलू शकता.', gu: 'જે પણ લાગુ પડે તે પસંદ કરો. સેટિંગ્સમાં બદલી શકો છો.', kn: 'ಎಲ್ಲವನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು.', ml: 'ബാധകമായതെല്ലാം തിരഞ്ഞെടുക്കുക. ക്രമീകരണങ്ങളിൽ മാറ്റാം.', pa: 'ਜੋ ਵੀ ਲਾਗੂ ਹੋਵੇ ਚੁਣੋ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਬਦਲ ਸਕਦੇ ਹੋ।', or: 'ସମସ୍ତ ପ୍ରଯୁଜ୍ୟ ବାଛନ୍ତୁ। ସେଟିଂରେ ବଦଳାନ୍ତୁ।', as: 'প্ৰযোজ্য সকলো বাছনি কৰক।', ur: 'تمام لاگو منتخب کریں۔ ترتیبات میں تبدیل کر سکتے ہیں۔' },
+    'profile.skip':      { en: 'Skip for now',  hi: 'अभी रहने दें',   bn: 'এখন বাদ দিন',    te: 'ఇప్పుడు దాటవేయి',  ta: 'இப்போது விட்டுவிடு', mr: 'सध्या वगळा',     gu: 'હાલમાં છોડો',     kn: 'ಇದೀಗ ಬಿಡಿ',         ml: 'ഇപ്പോൾ ഒഴിവാക്കുക', pa: 'ਹੁਣੇ ਛੱਡੋ',          or: 'ବର୍ତ୍ତମାନ ଛାଡ଼ନ୍ତୁ',  as: 'এতিয়া এৰি দিয়ক',  ur: 'ابھی چھوڑ دیں' },
+
+    // Disability options
+    'profile.opt.blind':       { en: 'I am blind or have low vision', hi: 'मैं अंधा हूँ या कम दिखता है', bn: 'আমি অন্ধ বা কম দেখি', te: 'నేను అంధుడిని', ta: 'நான் பார்வை குறைபாடு', mr: 'मी अंध आहे', gu: 'હું અંધ છું', kn: 'ನಾನು ಅಂಧ', ml: 'ഞാൻ അന്ധനാണ്', pa: 'ਮੈਂ ਅੰਨ੍ਹਾ ਹਾਂ', or: 'ମୁଁ ଅନ୍ଧ', as: 'মই অন্ধ', ur: 'میں نابینا ہوں' },
+    'profile.opt.deaf':        { en: 'I am deaf or hard of hearing', hi: 'मैं बहरा हूँ', bn: 'আমি বধির', te: 'నేను చెవిటి', ta: 'காது கேளாதவன்', mr: 'मी बहिरा आहे', gu: 'હું બહેરો છું', kn: 'ನಾನು ಕಿವುಡ', ml: 'ഞാൻ ബധിരൻ', pa: 'ਮੈਂ ਬੋਲ਼ਾ ਹਾਂ', or: 'ମୁଁ ବଧିର', as: 'মই কলা', ur: 'میں بہرا ہوں' },
+    'profile.opt.mute':        { en: 'I am mute or have speech difficulty', hi: 'मैं बोल नहीं सकता', bn: 'আমি বোবা', te: 'మూగవాడిని', ta: 'பேச முடியாதவன்', mr: 'मी मुका आहे', gu: 'હું મૂંગો છું', kn: 'ನಾನು ಮೂಕ', ml: 'ഞാൻ മൂകൻ', pa: 'ਮੈਂ ਗੂੰਗਾ', or: 'ମୁଁ ମୂକ', as: 'মই বোবা', ur: 'میں گونگا ہوں' },
+    'profile.opt.isl':         { en: 'I use sign language (ISL)', hi: 'मैं संकेत भाषा (ISL) उपयोग करता हूँ', bn: 'আমি সংকেত ভাষা (ISL) ব্যবহার করি', te: 'నేను సంజ్ఞ భాష (ISL) వాడతాను', ta: 'நான் ISL பயன்படுத்துகிறேன்', mr: 'मी ISL वापरतो', gu: 'હું ISL વાપરું છું', kn: 'ನಾನು ISL ಬಳಸುತ್ತೇನೆ', ml: 'ഞാൻ ISL ഉപയോഗിക്കുന്നു', pa: 'ਮੈਂ ISL ਵਰਤਦਾ ਹਾਂ', or: 'ମୁଁ ISL ବ୍ୟବହାର', as: 'মই ISL ব্যৱহাৰ', ur: 'میں ISL استعمال کرتا ہوں' },
+    'profile.opt.illiterate':  { en: 'I have difficulty reading', hi: 'मुझे पढ़ने में कठिनाई है', bn: 'আমার পড়তে কষ্ট', te: 'చదవడం కష్టం', ta: 'படிப்பதில் சிரமம்', mr: 'मला वाचणे कठीण', gu: 'મને વાંચવામાં મુશ્કેલી', kn: 'ಓದಲು ಕಷ್ಟ', ml: 'വായിക്കാൻ ബുദ്ധിമുട്ട്', pa: 'ਪੜ੍ਹਨ ਵਿੱਚ ਮੁਸ਼ਕਲ', or: 'ପଢ଼ିବାରେ ଅସୁବିଧା', as: 'পঢ়াত অসুবিধা', ur: 'پڑھنے میں دشواری' },
+    'profile.opt.elderly':     { en: 'I am elderly (65+)', hi: 'मैं वरिष्ठ नागरिक हूँ', bn: 'আমি বয়স্ক (৬৫+)', te: 'నేను వృద్ధుడిని', ta: 'நான் முதியவன்', mr: 'मी वृद्ध आहे', gu: 'હું વૃદ્ધ છું', kn: 'ನಾನು ಹಿರಿಯ', ml: 'ഞാൻ പ്രായമായവനാണ്', pa: 'ਮੈਂ ਬਜ਼ੁਰਗ', or: 'ମୁଁ ବୟସ୍କ', as: 'মই বয়স্ক', ur: 'میں بزرگ ہوں' },
+    'profile.opt.mobility':    { en: 'I have limited mobility', hi: 'मेरी गतिशीलता सीमित है', bn: 'আমার চলাচল সীমিত', te: 'నా చలనం పరిమితం', ta: 'நகர்வது சிரமம்', mr: 'गतिशीलता मर्यादित', gu: 'મારી હલનચલન મર્યાદિત', kn: 'ಚಲನೆ ಸೀಮಿತ', ml: 'ചലനം പരിമിതം', pa: 'ਚਲਣਾ ਸੀਮਤ', or: 'ଗତି ସୀମିତ', as: 'চলাচল সীমিত', ur: 'حرکت محدود' },
+    'profile.opt.cognitive':   { en: 'I have cognitive disability', hi: 'मुझे संज्ञानात्मक कठिनाई है', bn: 'আমার বোধগম্য কষ্ট', te: 'జ్ఞాన లోపం', ta: 'புரிதல் சிரமம்', mr: 'आकलनात्मक अडचण', gu: 'સંજ્ઞાનાત્મક મુશ્કેલી', kn: 'ಗ್ರಹಣ ತೊಂದರೆ', ml: 'വൈജ്ഞാനിക ബുദ്ധിമുട്ട്', pa: 'ਸੋਚਣ ਵਿੱਚ ਮੁਸ਼ਕਲ', or: 'ବୋଧଶକ୍ତି ସମସ୍ୟା', as: 'বোধশক্তি সমস্যা', ur: 'ادراکی معذوری' },
+    'profile.opt.rural':       { en: 'I am in a rural area / low connectivity', hi: 'मैं ग्रामीण क्षेत्र में हूँ', bn: 'আমি গ্রামাঞ্চলে', te: 'గ్రామీణ ప్రాంతం', ta: 'கிராமப்புறம்', mr: 'ग्रामीण भागात', gu: 'ગ્રામીણ વિસ્તાર', kn: 'ಗ್ರಾಮೀಣ ಪ್ರದೇಶ', ml: 'ഗ്രാമപ്രദേശം', pa: 'ਪੇਂਡੂ ਖੇਤਰ', or: 'ଗ୍ରାମାଞ୍ଚଳ', as: 'গ্ৰাম্য অঞ্চল', ur: 'دیہی علاقہ' },
+    'profile.opt.none':        { en: 'None of the above', hi: 'इनमें से कोई नहीं', bn: 'কোনোটিই নয়', te: 'ఏదీ కాదు', ta: 'எதுவுமில்லை', mr: 'यापैकी काही नाही', gu: 'આમાંથી કોઈ નહીં', kn: 'ಯಾವುದೂ ಅಲ್ಲ', ml: 'ഒന്നുമല്ല', pa: 'ਕੋਈ ਨਹੀਂ', or: 'କିଛି ନୁହେଁ', as: 'একোৱেই নহয়', ur: 'کوئی نہیں' },
+
+    // Language switcher
+    'lang.label':       { en: 'Language',     hi: 'भाषा',          bn: 'ভাষা',          te: 'భాష',           ta: 'மொழி',            mr: 'भाषा',          gu: 'ભાષા',           kn: 'ಭಾಷೆ',            ml: 'ഭാഷ',           pa: 'ਭਾਸ਼ਾ',           or: 'ଭାଷା',            as: 'ভাষা',            ur: 'زبان' },
+
+    // Voice / mic
+    'mic.tap':          { en: 'Tap to speak', hi: 'बोलने के लिए दबाएँ', bn: 'বলতে চাপুন', te: 'మాట్లాడటానికి నొక్కండి', ta: 'பேச அழுத்தவும்', mr: 'बोलण्यासाठी दाबा', gu: 'બોલવા માટે દબાવો', kn: 'ಮಾತನಾಡಲು ಒತ್ತಿ', ml: 'സംസാരിക്കാൻ അമർത്തുക', pa: 'ਬੋਲਣ ਲਈ ਦਬਾਓ', or: 'କୁହିବାକୁ ଦବାନ୍ତୁ', as: 'কবলৈ টিপক', ur: 'بولنے کے لیے دبائیں' },
+
+    // Generic safety / verify
+    'safety.verify':    { en: 'Please verify',  hi: 'कृपया जाँचें',   bn: 'অনুগ্রহ করে যাচাই করুন', te: 'దయచేసి ధృవీకరించండి', ta: 'தயவு செய்து சரிபார்', mr: 'कृपया तपासा', gu: 'કૃપા કરી ચકાસો', kn: 'ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ', ml: 'ദയവായി പരിശോധിക്കുക', pa: 'ਕਿਰਪਾ ਕਰਕੇ ਜਾਂਚੋ', or: 'ଦୟାକରି ଯାଞ୍ଚ କରନ୍ତୁ', as: 'অনুগ্ৰহ কৰি পৰীক্ষা', ur: 'براہ کرم تصدیق کریں' },
+
+    // Honest "translation pending" footer for stub languages
+    'i18n.pending':     { en: 'Translation pending — community contributions welcome', hi: 'अनुवाद अभी पूरा नहीं — समुदाय से योगदान चाहिए' },
+  };
+
+  // ── Public API ────────────────────────────────────────────────
+  function t(key, lang) {
+    const entry = STRINGS[key];
+    if (!entry) return key;
+    if (lang && entry[lang]) return entry[lang];
+    // Stub-lang fallback chain: lang → hi → en → key
+    if (entry.hi) return entry.hi;
+    if (entry.en) return entry.en;
+    return key;
+  }
+
+  function register(table) {
+    if (!table || typeof table !== 'object') return;
+    for (const k of Object.keys(table)) {
+      // Merge — keep existing keys, add new ones, page-supplied trans
+      // for an existing key OVERWRITE only that lang field.
+      const existing = STRINGS[k] || {};
+      STRINGS[k] = Object.assign({}, existing, table[k]);
+    }
+  }
+
+  function _currentLang() {
+    const a = (global.Chitti && global.Chitti.a11y) || null;
+    if (a && a.lang && a.lang.current) return a.lang.current;
+    try { return (JSON.parse(localStorage.getItem('chitti_a11y_v1') || '{}') || {}).lang || 'en'; }
+    catch (_) { return 'en'; }
+  }
+
+  function applyLang(lang) {
+    const code = lang || _currentLang() || 'en';
+    // 1. Sweep every [data-i18n] element and replace text content.
+    const nodes = document.querySelectorAll('[data-i18n]');
+    nodes.forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (!key) return;
+      const val = t(key, code);
+      if (val === key) return; // no translation found — leave existing text
+      // Preserve nested HTML when the element only contains a single text node.
+      if (el.children.length === 0) {
+        el.textContent = val;
+      } else {
+        // For elements with child nodes, replace ONLY the textContent of
+        // direct text-node children, not inner elements. This is a soft
+        // approach — pages that need richer markup should use
+        // data-i18n-html="key" instead.
+        for (const child of Array.from(el.childNodes)) {
+          if (child.nodeType === 3) { child.textContent = val; return; }
+        }
+        el.textContent = val;
+      }
+    });
+    // 2. Same sweep for [data-i18n-placeholder] (input placeholders).
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      const val = t(key, code);
+      if (val !== key) el.setAttribute('placeholder', val);
+    });
+    // 3. Same sweep for [data-i18n-aria] (aria-label updates).
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-aria');
+      const val = t(key, code);
+      if (val !== key) el.setAttribute('aria-label', val);
+    });
+    // 4. Set <html lang> + dir.
+    document.documentElement.setAttribute('lang', code);
+    document.documentElement.setAttribute('dir', RTL_LANGS.has(code) ? 'rtl' : 'ltr');
+    // 5. Honest stub-language footer (small, sticky bottom on stub langs).
+    _ensurePendingFooter(code);
+    // 6. Fire event so pages can listen + re-render dynamic content.
+    document.dispatchEvent(new CustomEvent('chitti:i18n:applied', { detail: { lang: code } }));
+  }
+
+  let _pendingFooterEl = null;
+  function _ensurePendingFooter(code) {
+    if (STRONG.has(code)) {
+      if (_pendingFooterEl && _pendingFooterEl.parentNode) _pendingFooterEl.parentNode.removeChild(_pendingFooterEl);
+      _pendingFooterEl = null;
+      return;
+    }
+    if (!STUB.has(code)) return;
+    // Stub language — show the honest "translation pending" line.
+    if (_pendingFooterEl) return;
+    _pendingFooterEl = document.createElement('div');
+    _pendingFooterEl.setAttribute('role', 'status');
+    _pendingFooterEl.style.cssText =
+      'position:fixed;bottom:8px;left:50%;transform:translateX(-50%);' +
+      'background:#FFF7EC;color:#003366;border:1px solid #FF9933;' +
+      'border-radius:999px;padding:4px 12px;font-size:11px;' +
+      'font-family:-apple-system,Segoe UI,sans-serif;z-index:9000;' +
+      'box-shadow:0 4px 12px rgba(0,0,0,.15);max-width:90vw;';
+    _pendingFooterEl.textContent = t('i18n.pending', 'hi');
+    document.body.appendChild(_pendingFooterEl);
+  }
+
+  // ── Hook into language changes from chitti_a11y.js ────────────
+  document.addEventListener('chitti:lang', (e) => {
+    const code = (e.detail && e.detail.code) || _currentLang();
+    applyLang(code);
+  });
+
+  // Run an initial sweep once the DOM is ready, in case the page loaded
+  // with a saved language preference.
+  function _init() {
+    try { applyLang(_currentLang()); } catch (_) {}
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _init);
+  } else {
+    _init();
+  }
+
+  // ── Expose ──────────────────────────────────────────────────
+  global.Chitti.i18n = {
+    _wired: true,
+    t,
+    register,
+    applyLang,
+    currentLang: _currentLang,
+    LANG_NATIVE,
+    RTL_LANGS,
+    STRONG,
+    STUB,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
