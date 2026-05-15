@@ -394,7 +394,153 @@ class WeeklyTrendRow:
         return asdict(self)
 
 
-def render_weekly_html(rows: list[WeeklyTrendRow]) -> tuple[str, str]:
+def _esc(s: Any) -> str:
+    """Minimal HTML escape — used by the swarm sections so user-text snippets
+    can't smuggle markup into the email."""
+    return (str(s)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;"))
+
+
+def render_swarm_section_html(swarm_report: Any) -> str:
+    """Render the three Swarm Intelligence sections appended to the weekly
+    Sunday digest per SAHAYAI_MASTER.md §2f:
+
+      1. What Swarm learned this week per Chitti
+      2. Which SWARM_LEARNED.md / SWARM_PROPOSED.md files were updated
+      3. What intelligence was shared Chitti-to-Chitti (pattern snippets)
+
+    `swarm_report` is `lib.swarm.SwarmReport`. Accepted as `Any` to keep the
+    cross-module import surface narrow (chitti_quality.py does not import
+    swarm.py). Returns "" when the report is None or carries zero data —
+    honest empty state, never a fake "0 patterns" banner.
+    """
+    if swarm_report is None:
+        return ""
+
+    per_chitti = getattr(swarm_report, "per_chitti", {}) or {}
+    pushed = list(getattr(swarm_report, "pushed_files", []) or [])
+    proposed = list(getattr(swarm_report, "proposed_files", []) or [])
+    samples = getattr(swarm_report, "sample_patterns_per_chitti", {}) or {}
+    errors = list(getattr(swarm_report, "errors", []) or [])
+
+    total_found = sum(int(v.get("patterns_found", 0) or 0) for v in per_chitti.values())
+    total_appended = sum(int(v.get("patterns_appended", 0) or 0) for v in per_chitti.values())
+
+    if not per_chitti and not pushed and not proposed and not errors:
+        return (
+            "<hr/><h3>Swarm Intelligence — weekly pass</h3>"
+            "<p style='color:#666'>No Chittis with audit data yet — "
+            "swarm thresholds (≥100 confirmations, ≥70% thumbs-up) not "
+            "evaluable. SAHAYAI_MASTER.md §2f.</p>"
+        )
+
+    # ---------- Section 1: per-Chitti learning summary ----------
+    per_rows = []
+    for chitti in sorted(per_chitti.keys()):
+        info = per_chitti[chitti]
+        per_rows.append(
+            "<tr>"
+            f"<td><b>{_esc(chitti)}</b></td>"
+            f"<td>{_esc(info.get('risk', 'normal'))}</td>"
+            f"<td style='text-align:right'>{int(info.get('patterns_found', 0) or 0)}</td>"
+            f"<td style='text-align:right'>{int(info.get('patterns_appended', 0) or 0)}</td>"
+            f"<td><code>{_esc(info.get('file') or '—')}</code></td>"
+            "</tr>"
+        )
+    section1 = (
+        "<h3>Swarm Intelligence — what Chitti learned this week</h3>"
+        f"<p>Total patterns extracted: <b>{total_found}</b> · "
+        f"appended to skills files: <b>{total_appended}</b>. "
+        "Thresholds locked at ≥100 confirmations + ≥70% thumbs-up "
+        "(SAHAYAI_MASTER.md §2f).</p>"
+        "<table border='1' cellpadding='6' style='border-collapse:collapse;font-size:13px'>"
+        "<thead style='background:#f0f0f0'>"
+        "<tr><th>Chitti</th><th>Risk</th><th>Patterns found</th>"
+        "<th>Appended</th><th>Skills file</th></tr></thead>"
+        f"<tbody>{''.join(per_rows) or '<tr><td colspan=5>—</td></tr>'}</tbody>"
+        "</table>"
+    )
+
+    # ---------- Section 2: files updated ----------
+    pushed_html = (
+        "".join(f"<li><code>{_esc(p)}</code></li>" for p in pushed)
+        or "<li style='color:#888'>None this week.</li>"
+    )
+    proposed_html = (
+        "".join(f"<li><code>{_esc(p)}</code></li>" for p in proposed)
+        or "<li style='color:#888'>None this week.</li>"
+    )
+    section2 = (
+        "<h3>Files updated this week</h3>"
+        "<p><b>SWARM_LEARNED.md</b> (auto-pushed — normal-risk Chittis):</p>"
+        f"<ul>{pushed_html}</ul>"
+        "<p><b>SWARM_PROPOSED.md</b> (pending Sire's review — HIGH-risk Chittis: "
+        "legal · ca · medupi · vaani):</p>"
+        f"<ul>{proposed_html}</ul>"
+    )
+
+    # ---------- Section 3: intelligence shared Chitti-to-Chitti ----------
+    if samples:
+        sample_blocks = []
+        for chitti in sorted(samples.keys()):
+            entries = samples[chitti] or []
+            if not entries:
+                continue
+            items = "".join(
+                "<li>"
+                f"<code>{_esc(e.get('stem', ''))}</code> · "
+                f"<b>{int(e.get('confirmations', 0) or 0)}</b> confirmations · "
+                f"<b>{int(e.get('thumbs_up_pct', 0) or 0)}%</b> 👍"
+                + (
+                    f"<br/><span style='color:#555'>sample: "
+                    f"\"{_esc(e.get('sample_user_text', ''))}\"</span>"
+                    if e.get('sample_user_text') else ""
+                )
+                + "</li>"
+                for e in entries
+            )
+            sample_blocks.append(
+                f"<h4 style='margin-bottom:4px'>{_esc(chitti)}</h4>"
+                f"<ul style='margin-top:0'>{items}</ul>"
+            )
+        section3_body = (
+            "".join(sample_blocks)
+            if sample_blocks
+            else "<p style='color:#888'>No qualifying patterns shared this week.</p>"
+        )
+    else:
+        section3_body = "<p style='color:#888'>No qualifying patterns shared this week.</p>"
+    section3 = (
+        "<h3>Intelligence shared Chitti-to-Chitti</h3>"
+        "<p>Top patterns (per Chitti) that cleared the swarm gate and are "
+        "now visible to every other instance of that Chitti type:</p>"
+        f"{section3_body}"
+    )
+
+    err_block = ""
+    if errors:
+        err_block = (
+            "<h4>Errors (best-effort cron — never aborts)</h4>"
+            f"<pre style='color:#a00;white-space:pre-wrap'>{_esc(chr(10).join(errors))}</pre>"
+        )
+
+    return (
+        "<hr style='margin-top:24px;margin-bottom:18px'/>"
+        + section1 + section2 + section3 + err_block
+        + "<p style='color:#666;font-size:12px;margin-top:14px'>"
+        "HIGH-risk Chittis (legal · ca · medupi · vaani) auto-write to "
+        "<code>SWARM_PROPOSED.md</code> — promotion to <code>SWARM_LEARNED.md</code> "
+        "requires Sire's approval per §2f. Locked decisions in §2 are never learnable."
+        "</p>"
+    )
+
+
+def render_weekly_html(
+    rows: list[WeeklyTrendRow],
+    swarm_report: Any = None,
+) -> tuple[str, str]:
     today = datetime.now(_IST).strftime("%Y-%m-%d")
     subject = f"Sahay AI — Weekly Quality Trend · week ending {today}"
 
@@ -419,6 +565,8 @@ def render_weekly_html(rows: list[WeeklyTrendRow]) -> tuple[str, str]:
                 f"<td>{r.peak_hour_ist}</td>"
                 f"<td>{r.headline}</td></tr>")
 
+    swarm_html = render_swarm_section_html(swarm_report)
+
     html = f"""
     <html><body style="font-family:-apple-system,sans-serif">
       <h2>Sahay AI — Weekly Quality Trend</h2>
@@ -439,6 +587,7 @@ def render_weekly_html(rows: list[WeeklyTrendRow]) -> tuple[str, str]:
         </thead>
         <tbody>{''.join(_row_html(r) for r in rows)}</tbody>
       </table>
+      {swarm_html}
       <p style="color:#888;font-size:11px;margin-top:18px">
         Live trust page: <a href="https://sahayai.in/chitti_quality.html">sahayai.in/chitti_quality.html</a>.
         Generated by lib/chitti_quality.render_weekly_html.
@@ -562,7 +711,7 @@ __all__ = [
     "DEFECT_TYPES", "DefectCluster",
     "classify_defect", "aggregate_defects", "defect_status",
     # 7
-    "WeeklyTrendRow", "render_weekly_html",
+    "WeeklyTrendRow", "render_weekly_html", "render_swarm_section_html",
     # 8
     "open_github_issue", "send_sms_to_sire",
     "escalate_repeating_defect", "escalate_low_thumbs", "escalate_carbon",

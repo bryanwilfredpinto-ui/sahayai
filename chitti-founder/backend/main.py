@@ -8,7 +8,10 @@ self-ping every 4 minutes, email Sire on non-200, log to Turso.
 Crons (timezone Asia/Kolkata):
   • EVERY 4 MIN     ─ Self-ping every Chitti /health (BCP Layer 1)
   • DAILY · 07:00   ─ Chitti Quality Daily Report email
-  • WEEKLY · Sun 08:00 ─ Weekly Trend Report email
+  • WEEKLY · Sun 08:00 ─ Weekly Trend Report email (now also embeds the
+                          Swarm Intelligence weekly pass — per-Chitti
+                          learning · files updated · intelligence shared
+                          Chitti-to-Chitti — per SAHAYAI_MASTER.md §2f).
   • HOURLY · :15    ─ Escalator pass (low thumbs → SMS, defect repeat → GH issue,
                       carbon > 0.5g → GH issue)
 
@@ -95,10 +98,9 @@ WEEKLY_HOUR_IST = int(os.environ.get("WEEKLY_REPORT_HOUR_IST", "8"))
 WEEKLY_MINUTE_IST = int(os.environ.get("WEEKLY_REPORT_MINUTE_IST", "0"))
 
 # Swarm Intelligence (SAHAYAI_MASTER.md §2f) — weekly pattern extraction.
-# Runs Sunday at SWARM_HOUR_IST:SWARM_MINUTE_IST IST (after the 08:00 weekly
-# digest so any human-eyes-on patterns from the digest land in the same window).
-SWARM_HOUR_IST = int(os.environ.get("SWARM_HOUR_IST", "9"))
-SWARM_MINUTE_IST = int(os.environ.get("SWARM_MINUTE_IST", "0"))
+# Runs INLINE inside run_weekly_report (Sunday 08:00 IST) since 2026-05-15.
+# The standalone Sunday 09:00 cron was retired to consolidate Sire's Sunday
+# email. On-demand verification: POST /admin/founder/swarm → run_swarm_pass().
 
 # BCP Layer 1 — self-ping cadence + alert debounce.
 SELF_PING_INTERVAL_MIN = int(os.environ.get("SELF_PING_INTERVAL_MIN", "4"))
@@ -248,7 +250,15 @@ def run_daily_report() -> dict:
 
 
 def run_weekly_report() -> dict:
-    """Sunday 08:00 IST — Weekly Quality Trend Report."""
+    """Sunday 08:00 IST — Weekly Quality Trend Report.
+
+    Now also embeds the Swarm Intelligence weekly pass (SAHAYAI_MASTER.md §2f)
+    into the same email so Sire receives ONE consolidated Sunday digest:
+      • per-Chitti trend table (existing)
+      • what Swarm learned this week per Chitti          (new)
+      • which SWARM_LEARNED.md files were updated         (new)
+      • what intelligence was shared Chitti-to-Chitti     (new — pattern snippets)
+    """
     slices = pull_all_slices()
     rows: list[WeeklyTrendRow] = []
     for s in slices:
@@ -281,10 +291,38 @@ def run_weekly_report() -> dict:
             peak_hour_ist=getattr(s, "peak_hour_ist", "—") or "—",
             headline=headline,
         ))
-    subject, html = render_weekly_html(rows)
+
+    # Gather swarm data INLINE — same code path as the on-demand endpoint,
+    # but no separate email. Sunday 08:00 is now the single consolidated
+    # email; the standalone Sunday 09:00 swarm cron was retired to avoid
+    # double-sending. /admin/founder/swarm endpoint still calls
+    # run_swarm_pass for on-demand verification.
+    swarm_report = _gather_swarm_report()
+
+    subject, html = render_weekly_html(rows, swarm_report=swarm_report)
     ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
-    log.info("[weekly] ok=%s  rows=%d", ok, len(rows))
-    return {"ok": ok, "subject": subject, "rows": [r.to_dict() for r in rows]}
+
+    swarm_summary = {}
+    if swarm_report is not None:
+        swarm_summary = {
+            "patterns_appended": sum(
+                int(v.get("patterns_appended", 0) or 0)
+                for v in swarm_report.per_chitti.values()
+            ),
+            "pushed_files": list(swarm_report.pushed_files),
+            "proposed_files": list(swarm_report.proposed_files),
+            "errors": list(swarm_report.errors),
+        }
+    log.info(
+        "[weekly] ok=%s  rows=%d  swarm_appended=%d",
+        ok, len(rows), swarm_summary.get("patterns_appended", 0),
+    )
+    return {
+        "ok": ok,
+        "subject": subject,
+        "rows": [r.to_dict() for r in rows],
+        "swarm": swarm_summary,
+    }
 
 
 def _swarm_engines() -> list[tuple[str, Any]]:
@@ -316,72 +354,73 @@ def _swarm_engines() -> list[tuple[str, Any]]:
     return pairs
 
 
-def run_swarm_pass() -> dict:
-    """Sunday 09:00 IST — Swarm Intelligence weekly pattern extraction.
+def _gather_swarm_report():
+    """Run a Swarm Intelligence pass and return the raw SwarmReport.
 
-    Walks every Chitti's audit DB, extracts ≥100-confirmation / ≥70%-thumbs-up
-    patterns, writes them to `<chitti>/skills/SWARM_LEARNED.md` (or
-    `SWARM_PROPOSED.md` for HIGH-risk Chittis), and emails the report.
-
-    Best-effort — never aborts the scheduler thread. Returns the SwarmReport
-    as a dict so /admin/founder/swarm can render the same result on demand.
+    Shared between the consolidated Sunday 08:00 weekly digest (inline,
+    no email) and the on-demand `/admin/founder/swarm` endpoint (emails
+    separately via run_swarm_pass). Returns None when no Chitti libSQL
+    URLs are configured or when the swarm module fails to import — both
+    cases are honest empty-state, not crashes.
     """
     try:
         from lib.swarm import weekly_swarm_pass
     except Exception as e:  # noqa: BLE001
         log.warning("swarm import failed: %s", e)
-        return {"ok": False, "error": "import_failed"}
+        return None
 
     pairs = _swarm_engines()
     if not pairs:
         log.info("[swarm] no Chitti libSQL URLs configured — nothing to do")
-        return {"ok": True, "pairs": 0, "report": None}
+        return None
 
     # Repo root: chitti-founder/backend/main.py → ../.. → repo root.
     repo_root = Path(__file__).resolve().parents[2]
-
     report = weekly_swarm_pass(pairs, repo_root=repo_root)
     n_pushed = sum(v.get("patterns_appended", 0) for v in report.per_chitti.values())
     log.info(
         "[swarm] pass complete · chittis=%d · patterns_appended=%d · errors=%d",
         len(report.per_chitti), n_pushed, len(report.errors),
     )
+    return report
 
+
+def run_swarm_pass() -> dict:
+    """On-demand Swarm Intelligence pass (kept for `/admin/founder/swarm`).
+
+    The standalone Sunday 09:00 IST cron was retired 2026-05-15 — the
+    consolidated Sunday 08:00 weekly digest now embeds the three swarm
+    sections (per-Chitti learning, files updated, intelligence shared)
+    inline. This function is preserved so on-demand verification still
+    works: it runs the pass AND emails the standalone swarm view.
+    """
+    report = _gather_swarm_report()
+    if report is None:
+        return {"ok": True, "pairs": 0, "report": None}
+
+    n_pushed = sum(v.get("patterns_appended", 0) for v in report.per_chitti.values())
     subject = f"[Chitti Founder] Swarm Intelligence — {n_pushed} pattern(s) learned"
-    rows_html = []
-    for chitti, info in sorted(report.per_chitti.items()):
-        rows_html.append(
-            f"<tr><td>{chitti}</td>"
-            f"<td>{info.get('risk', 'normal')}</td>"
-            f"<td>{info.get('patterns_found', 0)}</td>"
-            f"<td>{info.get('patterns_appended', 0)}</td>"
-            f"<td><code>{info.get('file') or '—'}</code></td></tr>"
-        )
-    err_html = ""
-    if report.errors:
-        err_html = "<h3>Errors</h3><pre>" + "\n".join(report.errors) + "</pre>"
-    html = f"""<html><body>
-<h2>Swarm Intelligence — weekly pass</h2>
-<p>Window: {report.started_at} → {report.finished_at}</p>
-<p>Thresholds: ≥100 confirmations, ≥70% thumbs-up (locked in SAHAYAI_MASTER.md §2f).</p>
-<table border='1' cellpadding='6' cellspacing='0'>
-<tr><th>Chitti</th><th>Risk</th><th>Patterns found</th><th>Appended</th><th>File</th></tr>
-{''.join(rows_html) or '<tr><td colspan=5>No Chittis with audit data yet.</td></tr>'}
-</table>
-{err_html}
-<p style='color:#666;font-size:12px'>HIGH-risk Chittis (legal · ca · medupi · vaani) write to <code>SWARM_PROPOSED.md</code> — pending Sire's review before promotion to <code>SWARM_LEARNED.md</code>.</p>
-</body></html>"""
-
+    # Reuse the same renderer the weekly digest uses so the on-demand email
+    # matches the Sunday digest layout byte-for-byte.
+    from lib.chitti_quality import render_swarm_section_html
+    html = (
+        "<html><body style='font-family:-apple-system,sans-serif'>"
+        "<h2>Swarm Intelligence — on-demand pass</h2>"
+        f"<p>Window: {report.started_at} → {report.finished_at}</p>"
+        f"{render_swarm_section_html(report)}"
+        "</body></html>"
+    )
     ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
-    log.info("[swarm] email ok=%s", ok)
+    log.info("[swarm] on-demand email ok=%s", ok)
     return {
         "ok": ok,
-        "pairs": len(pairs),
+        "pairs": len(report.per_chitti),
         "patterns_appended": n_pushed,
         "errors": report.errors,
         "per_chitti": report.per_chitti,
         "pushed_files": report.pushed_files,
         "proposed_files": report.proposed_files,
+        "sample_patterns_per_chitti": report.sample_patterns_per_chitti,
     }
 
 
@@ -917,17 +956,16 @@ def _start_scheduler() -> None:
         id="bcp_self_ping", replace_existing=True,
         next_run_time=datetime.now(_IST) + timedelta(seconds=30),
     )
-    _sched.add_job(
-        run_swarm_pass, "cron",
-        day_of_week="sun", hour=SWARM_HOUR_IST, minute=SWARM_MINUTE_IST,
-        timezone=_IST, id="swarm_weekly_pass", replace_existing=True,
-    )
+    # The Sunday 09:00 IST standalone swarm cron was retired 2026-05-15.
+    # Swarm pass now runs inline inside run_weekly_report (08:00 IST) so
+    # Sire receives ONE consolidated Sunday email. On-demand verification
+    # still works via POST /admin/founder/swarm → run_swarm_pass().
     _sched.start()
     log.info(
         "scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · "
-        "escalator :15 · bcp self-ping every %d min · swarm Sun %02d:%02d IST",
+        "escalator :15 · bcp self-ping every %d min · swarm inline in weekly",
         REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST,
-        SELF_PING_INTERVAL_MIN, SWARM_HOUR_IST, SWARM_MINUTE_IST,
+        SELF_PING_INTERVAL_MIN,
     )
 
 

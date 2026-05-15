@@ -92,6 +92,13 @@ class SwarmReport:
     pushed_files: list[str] = field(default_factory=list)
     proposed_files: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    # Top patterns per Chitti — surface a handful in the weekly email so Sire
+    # can see *what intelligence was shared Chitti-to-Chitti* this week, not
+    # just the count. Capped at SAMPLE_PATTERNS_PER_CHITTI per Chitti.
+    sample_patterns_per_chitti: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+
+
+SAMPLE_PATTERNS_PER_CHITTI = int(os.environ.get("SWARM_SAMPLE_PATTERNS_PER_CHITTI", "3"))
 
 
 # ---------- Pattern extraction --------------------------------------------
@@ -275,6 +282,18 @@ def weekly_swarm_pass(chittis: list[tuple[str, Any]],
                 "file": str(target) if target else None,
                 "risk": "high" if chitti in HIGH_RISK_CHITTIS else "normal",
             }
+            # Capture top-N pattern snippets so the weekly Founder email can
+            # name *what* was shared Chitti-to-Chitti, not just *how many*.
+            if patterns:
+                report.sample_patterns_per_chitti[chitti] = [
+                    {
+                        "stem": p.stem,
+                        "confirmations": p.confirmations,
+                        "thumbs_up_pct": int(p.ratio * 100),
+                        "sample_user_text": (p.sample_user_text or "").strip()[:160],
+                    }
+                    for p in patterns[:SAMPLE_PATTERNS_PER_CHITTI]
+                ]
             if target:
                 if chitti in HIGH_RISK_CHITTIS:
                     report.proposed_files.append(str(target))
