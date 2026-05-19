@@ -33,11 +33,11 @@
     "chitti_complete":           "https://chitti-shares-api.up.railway.app",
     "chitti_scanner":            "https://chitti-vaani-api.up.railway.app",
     "chitti_upi":                "https://chitti-vaani-api.up.railway.app",
-    "chitti_voice_factory":      "https://chitti-voice-factory-api.onrender.com",
-    "chitti_news_ai":            "https://chitti-news-ai-api.onrender.com",
-    "chitti_2wheeler":           "https://chitti-2wheeler-api.onrender.com",
-    "chitti_4wheeler":           "https://chitti-4wheeler-api.onrender.com",
-    "chitti_logo_video":         "https://chitti-logo-video-api.onrender.com",
+    "chitti_voice_factory":      "https://chitti-voice-factory-api-production.up.railway.app",
+    "chitti_news_ai":            "https://chitti-news-ai-api-production.up.railway.app",
+    "chitti_2wheeler":           "https://chitti-2wheeler-api-production.up.railway.app",
+    "chitti_4wheeler":           "https://chitti-4wheeler-api-production.up.railway.app",
+    "chitti_logo_video":         "https://chitti-logo-video-api-production.up.railway.app",
     "index":                     "https://chitti-vaani-api.up.railway.app"
   };
 

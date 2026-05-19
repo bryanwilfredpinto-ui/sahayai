@@ -30,7 +30,7 @@
   'use strict';
 
   const STORAGE_KEY = 'chitti_a11y_v1';
-  const VOICE_FACTORY_URL = 'https://chitti-voice-factory.onrender.com';
+  const VOICE_FACTORY_URL = 'https://chitti-voice-factory-api-production.up.railway.app';
   const ISL_DICTIONARY_URL = 'chitti_isl_dictionary.json';
   // In-memory ISL dictionary — populated on first need. Honest placeholder
   // (emoji-hand keyframe sequences) until Phase 3 community videos land.

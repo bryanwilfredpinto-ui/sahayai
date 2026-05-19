@@ -171,7 +171,17 @@ deploy_service() {
   log "  staging $root into a clean temp dir ..."
   local tmp
   tmp="$(mktemp -d -t "railway-${svc}-XXXXXX")"
-  cp -a "$root"/. "$tmp/"
+  # cp everything except heavyweight runtime data (e.g. chitti-voice-factory's
+  # 213 MB fluency corpus under data/). The corpus is rebuilt at runtime or
+  # synced from Turso/Supabase; it must never bloat the deploy snapshot.
+  ( cd "$root" && \
+    for item in * .[!.]*; do
+      [ -e "$item" ] || continue
+      case "$item" in
+        data|__pycache__|.git|node_modules|.venv|venv|.pytest_cache) continue ;;
+      esac
+      cp -a "$item" "$tmp/"
+    done )
 
   log "  deploying $svc from $tmp ..."
   (
