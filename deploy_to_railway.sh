@@ -154,9 +154,26 @@ deploy_service() {
   local root="$2"
   [ -d "$root" ] || die "missing backend directory: $root"
 
-  log "  deploying $svc from $root ..."
-  ( cd "$root" && railway up --service "$svc" --detach >/dev/null )
-  log "    deploy triggered (check Railway dashboard for build progress)."
+  # CRITICAL: `railway up` walks UP from cwd to find .git and uploads the
+  # whole repo from there. That makes Railpack detect repo-root entrypoints
+  # (server.js / Procfile / index.html) instead of the per-Chitti backend's
+  # main.py + Procfile. Workaround: stage just the backend in a temp dir
+  # outside any git tree and upload from there with --project. The snapshot
+  # then contains ONLY this backend's files, so Railpack auto-detects the
+  # correct language + start command.
+  log "  staging $root into a clean temp dir ..."
+  local tmp
+  tmp="$(mktemp -d -t "railway-${svc}-XXXXXX")"
+  cp -a "$root"/. "$tmp/"
+
+  log "  deploying $svc from $tmp ..."
+  (
+    cd "$tmp" \
+      && railway link --project "$PROJECT_NAME" --environment production --service "$svc" >/dev/null 2>&1 \
+      && railway up --service "$svc" --detach >/dev/null
+  )
+  rm -rf "$tmp"
+  log "    deploy triggered (snapshot scoped to $root only)."
 }
 
 # ---------- per-service driver ---------------------------------------------
