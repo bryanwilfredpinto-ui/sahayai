@@ -46,18 +46,20 @@ ALLOWED_SEGMENTS = (
 
 
 def _resolve_url() -> str:
-    url = (
+    raw = (
         os.environ.get("FEEDBACK_DATABASE_URL")
         or os.environ.get("ADMIN_DATABASE_URL")
         or os.environ.get("DATABASE_URL")
         or ""
     )
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
-    if not url:
+    if not raw:
         path = os.environ.get("FEEDBACK_DB_PATH", "/tmp/chitti_feedback.sqlite")
-        url = f"sqlite:///{path}"
-    return url
+        return f"sqlite:///{path}"
+    # libsql:// → embedded replica (idempotent per host — admin_db + feedback_db
+    # pointing at the same Turso DB share one local file + one sync thread).
+    # Per SAHAYAI_MASTER.md §2 row 3 — never pass libsql:// straight to create_engine.
+    from database import resolve_db_url
+    return resolve_db_url(raw)
 
 
 _DB_URL = _resolve_url()

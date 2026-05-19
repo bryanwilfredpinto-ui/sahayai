@@ -37,14 +37,14 @@ Base = declarative_base()
 
 
 def _resolve_url() -> str:
-    url = os.environ.get("ADMIN_DATABASE_URL") or os.environ.get("DATABASE_URL") or ""
-    if url.startswith("postgres://"):
-        # SQLAlchemy 2.x requires the +psycopg2 / psycopg dialect prefix
-        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
-    if not url:
+    raw = os.environ.get("ADMIN_DATABASE_URL") or os.environ.get("DATABASE_URL") or ""
+    if not raw:
         path = os.environ.get("ADMIN_TOKEN_DB", "/tmp/chitti_admin.sqlite")
-        url = f"sqlite:///{path}"
-    return url
+        return f"sqlite:///{path}"
+    # libsql:// → embedded replica; postgres:// → +psycopg2 prefix; sqlite passthrough.
+    # Per SAHAYAI_MASTER.md §2 row 3 — never pass libsql:// straight to create_engine.
+    from database import resolve_db_url
+    return resolve_db_url(raw)
 
 
 _DB_URL = _resolve_url()

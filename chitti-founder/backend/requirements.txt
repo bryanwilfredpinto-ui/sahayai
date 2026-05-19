@@ -13,3 +13,5 @@ tzdata==2024.2
 # Quality framework reuses lib/founder_report which pulls in sqlalchemy
 # for ChittiDailySlice dataclass + eval helpers.
 sqlalchemy==2.0.35
+sqlalchemy-libsql==0.2.0             # Turso dialect (we use embedded replica, not direct Hrana) — see [[project_turso_embedded_replica_pattern]]
+libsql-experimental==0.0.55          # cp311 manylinux wheel; owns the Turso sync protocol — used by main.py:_turso_init for self-ping log
