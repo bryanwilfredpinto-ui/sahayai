@@ -142,7 +142,14 @@ upload_vars() {
 
   # --skip-deploys: bulk-apply WITHOUT triggering N deploys. We deploy
   # explicitly in the next step.
-  railway variables \
+  #
+  # MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL=* disable Git Bash's POSIX→Windows
+  # path translation when passing the values to railway.exe. Without this,
+  # any value starting with / (e.g. `/tmp/chitti.db`, `/health`) gets
+  # silently rewritten to `C:/Users/DELL/AppData/Local/Temp/chitti.db`
+  # before reaching Railway — which then crashes the Linux container with
+  # "Unable to open connection to local database C:/Users/DELL/…".
+  MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' railway variables \
     --service "$svc" \
     --skip-deploys \
     "${set_args[@]}" >/dev/null
