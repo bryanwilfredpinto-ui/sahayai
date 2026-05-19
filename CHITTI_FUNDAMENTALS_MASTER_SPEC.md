@@ -116,7 +116,7 @@ Same as Technical / MedUPI:
 2. If diverged → `git branch backup-$(date +%F)` → `git reset --hard origin/main` → `git cherry-pick`
 3. `git -c user.email=... -c user.name=... commit`
 4. `git push origin main`
-5. Verify live: `curl -sS "https://chitti-shares-api.onrender.com/api/financials/NSE:RELIANCE" | head -c 400`
+5. Verify live: `curl -sS "https://chitti-shares-api.up.railway.app/api/financials/NSE:RELIANCE" | head -c 400`
 
 ## 9. Communication
 

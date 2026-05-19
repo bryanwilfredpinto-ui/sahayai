@@ -15,7 +15,7 @@ Mirrors the user-facing Vaani flow (services/email_service.py), but:
 Reuses GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET that are already set
 for Vaani in Render. Adds a NEW redirect URI:
    ADMIN_OAUTH_REDIRECT_URI
-   default: https://chitti-vaani-api.onrender.com/api/admin/products/oauth/callback
+   default: https://chitti-vaani-api.up.railway.app/api/admin/products/oauth/callback
 This redirect URI MUST be added to the Google Cloud Console OAuth client
 (Authorized redirect URIs) before the flow will work.
 """
@@ -56,7 +56,7 @@ def _client_secret() -> str: return os.environ.get("GOOGLE_CLIENT_SECRET", "")
 def _redirect_uri() -> str:
     return os.environ.get(
         "ADMIN_OAUTH_REDIRECT_URI",
-        "https://chitti-vaani-api.onrender.com/api/admin/products/oauth/callback",
+        "https://chitti-vaani-api.up.railway.app/api/admin/products/oauth/callback",
     )
 
 

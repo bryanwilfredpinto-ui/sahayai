@@ -61,7 +61,7 @@ The endpoint returns **HTTP 200 even on degraded** — `ok: false` only when the
 ## 3. UptimeRobot monitoring
 
 - **Cadence:** Every 5 minutes.
-- **Target:** `GET https://chitti-medupi-api.onrender.com/api/medupi/health`.
+- **Target:** `GET https://chitti-medupi-api.up.railway.app/api/medupi/health`.
 - **Alert condition:** HTTP 5xx, timeout > 30s, OR (HTTP 200 with `ok: false`).
 - **Notification:** Email to Bryan + optional WhatsApp via the Chitti Vaani cascade pattern when wired.
 - **Render free-tier note:** First request after idle takes ~30 seconds (cold start). UptimeRobot's 5-min cadence keeps the container warm during business hours; expect cold starts overnight.
@@ -75,10 +75,10 @@ The endpoint returns **HTTP 200 even on degraded** — `ok: false` only when the
 - **Post-deploy verification (per memory `feedback_verify_before_handover.md`):** Bryan or the developer must `curl` the production endpoint and confirm a real medicine lookup returns a real row — never assume "the build succeeded" equals "the product works."
 - **Smoke tests:**
   ```bash
-  curl 'https://chitti-medupi-api.onrender.com/api/medupi/medicine/Crocin%20650'
-  curl 'https://chitti-medupi-api.onrender.com/api/medupi/jan_aushadhi?lat=23.26&lng=77.41'
-  curl 'https://chitti-medupi-api.onrender.com/api/medupi/risk/Metformin'
-  curl 'https://chitti-medupi-api.onrender.com/api/medupi/health'
+  curl 'https://chitti-medupi-api.up.railway.app/api/medupi/medicine/Crocin%20650'
+  curl 'https://chitti-medupi-api.up.railway.app/api/medupi/jan_aushadhi?lat=23.26&lng=77.41'
+  curl 'https://chitti-medupi-api.up.railway.app/api/medupi/risk/Metformin'
+  curl 'https://chitti-medupi-api.up.railway.app/api/medupi/health'
   ```
 
 ---

@@ -190,13 +190,13 @@ Confirmed via `curl -sI` from outside the dev box, against live Render
 production:
 
 ```
-$ curl -sI https://chitti-vaani-api.onrender.com/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-vaani-api.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 
-$ curl -sI https://chitti-ca-api.onrender.com/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-ca-api.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 
-$ curl -sI https://chitti-medupi-api.onrender.com/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-medupi-api.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 ```
 
@@ -272,7 +272,7 @@ curl -sI https://<chitti>.onrender.com/health | grep -i x-chitti-response-time
 # 2. Audit row — proves observability is recording.
 # CORRECTED 2026-05-15 PM: /admin/founder/slice exists only on chitti-founder,
 # not on each Chitti. Pull each Chitti's slice through chitti-founder:
-curl -s https://chitti-founder-api.onrender.com/admin/founder/slice/<chitti> \
+curl -s https://chitti-founder-api.up.railway.app/admin/founder/slice/<chitti> \
   -H "Authorization: Bearer $FOUNDER_PULL_SECRET" \
   | jq '.audit_count_24h'
 

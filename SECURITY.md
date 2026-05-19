@@ -41,12 +41,12 @@ Everything else audited clean:
 
 Wrong:
 ```
-curl https://chitti-founder-api.onrender.com/admin/founder/json?secret=SahayAI2026
+curl https://chitti-founder-api.up.railway.app/admin/founder/json?secret=SahayAI2026
 ```
 Right:
 ```
 curl -H "Authorization: Bearer SahayAI2026" \
-     https://chitti-founder-api.onrender.com/admin/founder/json
+     https://chitti-founder-api.up.railway.app/admin/founder/json
 ```
 (Legacy `X-Admin-Secret: SahayAI2026` header also accepted during migration.)
 
@@ -69,7 +69,7 @@ password for SMTP — you need an **app password**.
 7. Test the SMTP path **before the cron fires for real**:
    ```
    curl -X POST -H "Authorization: Bearer SahayAI2026" \
-        https://chitti-founder-api.onrender.com/admin/founder/send
+        https://chitti-founder-api.up.railway.app/admin/founder/send
    ```
    You should get `{"ok":true}` and an email in your inbox within ~30s.
 

@@ -17,7 +17,7 @@ users, the scope works while the OAuth project is in "Testing" mode.
 Environment variables (set in Render dashboard, NOT in repo):
   GOOGLE_CLIENT_ID
   GOOGLE_CLIENT_SECRET
-  GOOGLE_REDIRECT_URI   (default: https://chitti-vaani-api.onrender.com/api/vaani/email/auth/callback)
+  GOOGLE_REDIRECT_URI   (default: https://chitti-vaani-api.up.railway.app/api/vaani/email/auth/callback)
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def _client_secret(): return os.environ.get("GOOGLE_CLIENT_SECRET", "")
 def _redirect_uri():
     return os.environ.get(
         "GOOGLE_REDIRECT_URI",
-        "https://chitti-vaani-api.onrender.com/api/vaani/email/auth/callback",
+        "https://chitti-vaani-api.up.railway.app/api/vaani/email/auth/callback",
     )
 
 

@@ -1,6 +1,6 @@
 # API — Chitti Vaani
 
-All endpoints are Flask Blueprints registered in [main.py](backend/main.py). The base service runs on port `8003` locally and at `https://chitti-vaani-api.onrender.com` in production.
+All endpoints are Flask Blueprints registered in [main.py](backend/main.py). The base service runs on port `8003` locally and at `https://chitti-vaani-api.up.railway.app` in production.
 
 ## App-level
 

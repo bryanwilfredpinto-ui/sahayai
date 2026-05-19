@@ -101,7 +101,7 @@ login — `localStorage.getItem('chitti_access_token')` — or via the curl flow
 
 ```bash
 # Get an access token (with DEV_MODE_FAKE_OTP=true)
-API=https://chitti-shares-api.onrender.com
+API=https://chitti-shares-api.up.railway.app
 MOBILE=9999999999
 
 curl -s -X POST $API/auth/send-otp \
@@ -230,7 +230,7 @@ To make alerts actually monitor in the background, add a Render Cron Job:
 4. **Command**:
    ```bash
    curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
-     https://chitti-shares-api.onrender.com/api/alerts/check-all
+     https://chitti-shares-api.up.railway.app/api/alerts/check-all
    ```
    You'll need to bake an admin access token. Easier alternative: add a long-lived
    "service" token mechanism (out of scope for this phase). For now, run it manually

@@ -21,15 +21,15 @@ A note on `TODO` markers: a grep of [`chitti-news/`](.) for `TODO|FIXME|XXX` ret
 
 ### Live verification (per memory `feedback_verify_before_handover.md`)
 
-- [ ] `curl https://chitti-news-api.onrender.com/health` → `{"ok": true}`.
-- [ ] `curl https://chitti-news-api.onrender.com/api/news/india/en/national` → `count >= 10` after first poll.
-- [ ] `curl -X POST https://chitti-news-api.onrender.com/api/news/article/1/factcheck` → returns a verdict with rationale.
-- [ ] `curl 'https://chitti-news-api.onrender.com/api/news/article/1/take?language=hi'` → returns 3 Hindi bullets.
+- [ ] `curl https://chitti-news-api.up.railway.app/health` → `{"ok": true}`.
+- [ ] `curl https://chitti-news-api.up.railway.app/api/news/india/en/national` → `count >= 10` after first poll.
+- [ ] `curl -X POST https://chitti-news-api.up.railway.app/api/news/article/1/factcheck` → returns a verdict with rationale.
+- [ ] `curl 'https://chitti-news-api.up.railway.app/api/news/article/1/take?language=hi'` → returns 3 Hindi bullets.
 - [ ] Open `https://sahayai.in/chitti_news.html` end-to-end: picker → category nav → Take → Fact → Save → Share.
 
 ### Frontend API_BASE pointer
 
-- [ ] Confirm the inline JS `API_BASE` constant in `chitti_news.html` resolves to `https://chitti-news-api.onrender.com` in production. The default in the HTML targets that hostname.
+- [ ] Confirm the inline JS `API_BASE` constant in `chitti_news.html` resolves to `https://chitti-news-api.up.railway.app` in production. The default in the HTML targets that hostname.
 
 ---
 

@@ -36,7 +36,7 @@ contract. Same `news.*` schema isolation alongside `medupi.*` and `shares.*`.
 | **Mission** | Deliver the news every Indian needs, in the language they think in, with the context to trust it. |
 | **Target users** | Tier-2/3 city families, vernacular-language readers, elderly + low-literacy users (audio-first), professionals tracking business + tech, anyone exhausted by paywall-loaded English news. |
 | **Live URL** | `https://sahayai.in/chitti_news.html` |
-| **Backend** | `https://chitti-news-api.onrender.com` (planned — `render.yaml` ready) |
+| **Backend** | `https://chitti-news-api.up.railway.app` (planned — `render.yaml` ready) |
 
 **Positioning:**
 - ✅ IS an aggregator + AI summariser + cross-source fact-checker.

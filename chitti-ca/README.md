@@ -40,7 +40,7 @@ If `DEEPSEEK_API_KEY` is unset the service still answers — it returns a `sourc
 
 [render.yaml](render.yaml) is ready. Set `DEEPSEEK_API_KEY` in Render env vars; everything else has defaults.
 
-Live URL: https://chitti-ca-api.onrender.com
+Live URL: https://chitti-ca-api.up.railway.app
 
 ## Frontend
 

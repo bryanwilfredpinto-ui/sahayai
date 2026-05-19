@@ -148,7 +148,7 @@ def _job_kite_reauth():
         msg = (
             f"🔔 Chitti Shares: Kite re-auth needed.\n"
             f"Reason: {reason}\n"
-            f"Visit https://chitti-shares-api.onrender.com/api/market/auth-url"
+            f"Visit https://chitti-shares-api.up.railway.app/api/market/auth-url"
         )
         with httpx.Client(timeout=10.0) as c:
             c.post(url, json={"chat_id": settings.TELEGRAM_CHAT_ID, "text": msg})

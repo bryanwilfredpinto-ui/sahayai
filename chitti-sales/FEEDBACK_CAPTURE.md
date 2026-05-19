@@ -26,7 +26,7 @@ The widget is [../feedback-widget.js](../feedback-widget.js) at the repo root. I
 - **Thumbs-down** (`type: "thumbs_down"`) — per-page, anonymous.
 - **Suggestion** (`type: "suggestion"`) — free text, with optional email, with sticky `user_segment` (general / msme-owner / partner / other).
 
-**Where it posts.** `POST {API}/api/feedback/collect` — the existing Chitti Vaani feedback endpoint (`https://chitti-vaani-api.onrender.com` by default; override with `window.CHITTI_FEEDBACK_API` before the script loads).
+**Where it posts.** `POST {API}/api/feedback/collect` — the existing Chitti Vaani feedback endpoint (`https://chitti-vaani-api.up.railway.app` by default; override with `window.CHITTI_FEEDBACK_API` before the script loads).
 
 **Why we reuse the Vaani endpoint.** The shared endpoint already has admin tooling, scheduler, and a dedupe layer. We do not need to build a Sales-specific intake — every Chitti shares this same feedback backbone.
 

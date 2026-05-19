@@ -13,7 +13,7 @@ illiterate / elderly users. Tenth product in the Chitti family.
 | --- | --- |
 | Product slug | `chitti-government` |
 | Frontend | [`chitti_government.html`](chitti_government.html) → `https://sahayai.in/chitti_government.html` |
-| Backend | `chitti-government/backend/` → `https://chitti-government-api.onrender.com` |
+| Backend | `chitti-government/backend/` → `https://chitti-government-api.up.railway.app` |
 | Database | Shared Supabase Postgres, isolated under `government.*` schema |
 | LLM | DeepSeek (`deepseek-chat`) — falls back to deterministic rule-engine reply when key missing |
 | External data | PIB RSS (10 feeds, every 6 h) · Nominatim (locator) · MyScheme (deep-link only) |
@@ -161,8 +161,8 @@ one-tap fetch without any UI rework.
 4. Add the row to [`index.html`](index.html) (already done in this
    commit) so users find it from the home page.
 
-Health: <https://chitti-government-api.onrender.com/health>
-Freshness: <https://chitti-government-api.onrender.com/api/government/freshness>
+Health: <https://chitti-government-api.up.railway.app/health>
+Freshness: <https://chitti-government-api.up.railway.app/api/government/freshness>
 
 ---
 

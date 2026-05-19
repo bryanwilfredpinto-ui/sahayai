@@ -229,7 +229,7 @@ DeepSeek + vision diagnostic. Used by the founder dashboard.
   "deepseek_configured": true,
   "model": "deepseek-chat",
   "vision_model": "off",
-  "medupi_api_base": "https://chitti-medupi-api.onrender.com"
+  "medupi_api_base": "https://chitti-medupi-api.up.railway.app"
 }
 ```
 

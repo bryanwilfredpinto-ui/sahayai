@@ -10,7 +10,7 @@ Endpoints for Render Cron Jobs to call. Each is gated by ?secret=<CRON_SECRET>.
 Set the CRON_SECRET env var to a long random string. Use the same value
 in the Render Cron Job command:
 
-  curl -X POST 'https://chitti-shares-api.onrender.com/api/cron/alerts?secret=YOUR_SECRET'
+  curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/alerts?secret=YOUR_SECRET'
 
 Why this pattern (not Bearer auth)?
   - Cron Jobs execute curl, no JWT machinery
@@ -133,7 +133,7 @@ def cron_kite_reauth(_: bool = Depends(_verify_secret),
     msg = (
         f"🔔 Chitti Shares: Kite token re-auth needed.\n"
         f"Reason: {reason}\n"
-        f"Visit https://chitti-shares-api.onrender.com/api/market/auth-url "
+        f"Visit https://chitti-shares-api.up.railway.app/api/market/auth-url "
         f"(logged in as ADMIN_MOBILE) to re-authorise."
     )
     sent = _send_telegram(msg)

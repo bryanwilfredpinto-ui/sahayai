@@ -71,7 +71,7 @@ Frozen `@dataclass` reading from environment:
 | `ALLOWED_ORIGINS` | `""` | CSV of CORS origins |
 | `SCANNER_MAX_TOKENS` | `700` | DeepSeek `max_tokens` |
 | `SCANNER_TEMPERATURE` | `0.2` | DeepSeek `temperature` (kept low for strict JSON) |
-| `MEDUPI_API_BASE` | `https://chitti-medupi-api.onrender.com` | Used by the frontend only; the backend echoes it in `/health` |
+| `MEDUPI_API_BASE` | `https://chitti-medupi-api.up.railway.app` | Used by the frontend only; the backend echoes it in `/health` |
 
 ### 3. Routes — `backend/routes/scanner.py`
 
@@ -172,7 +172,7 @@ services:
       - ALLOWED_ORIGINS=https://sahayai.in,https://www.sahayai.in
       - SCANNER_MAX_TOKENS=700
       - SCANNER_TEMPERATURE=0.2
-      - MEDUPI_API_BASE=https://chitti-medupi-api.onrender.com
+      - MEDUPI_API_BASE=https://chitti-medupi-api.up.railway.app
 ```
 
 ## Dependencies

@@ -36,7 +36,7 @@ Without `DEEPSEEK_API_KEY` set, the service still runs and returns a fallback pa
 
 ## Production
 
-Deployed on Render as `chitti-legal-api` per [render.yaml](render.yaml). Frontend [chitti_legal.html](../chitti_legal.html) hits `https://chitti-legal-api.onrender.com/api/legal/explain`.
+Deployed on Render as `chitti-legal-api` per [render.yaml](render.yaml). Frontend [chitti_legal.html](../chitti_legal.html) hits `https://chitti-legal-api.up.railway.app/api/legal/explain`.
 
 ## Project shape
 

@@ -34,9 +34,9 @@ One billing action — no code change required.
 
 ### 3. Live verification on production
 Per the **"Verify on live before handover"** rule (memory `feedback_verify_before_handover.md`):
-- [ ] `curl 'https://chitti-medupi-api.onrender.com/api/medupi/medicine/Crocin%20650'`
-- [ ] `curl 'https://chitti-medupi-api.onrender.com/api/medupi/jan_aushadhi?lat=23.26&lng=77.41'`
-- [ ] `curl 'https://chitti-medupi-api.onrender.com/api/medupi/insurance/Telmisartan?scheme=ayushman'`
+- [ ] `curl 'https://chitti-medupi-api.up.railway.app/api/medupi/medicine/Crocin%20650'`
+- [ ] `curl 'https://chitti-medupi-api.up.railway.app/api/medupi/jan_aushadhi?lat=23.26&lng=77.41'`
+- [ ] `curl 'https://chitti-medupi-api.up.railway.app/api/medupi/insurance/Telmisartan?scheme=ayushman'`
 - [ ] Open `https://sahayai.in/chitti_medupi.html` on a phone, verify the sticky medical disclaimer is at top, voice IN works, voice OUT plays, Hindi toggle covers every visible string.
 
 ---

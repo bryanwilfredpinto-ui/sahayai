@@ -43,7 +43,7 @@
   // ── config ───────────────────────────────────────────────────────────
   var API_BASE =
     (typeof window !== 'undefined' && window.CHITTI_FEEDBACK_API) ||
-    'https://chitti-vaani-api.onrender.com';
+    'https://chitti-vaani-api.up.railway.app';
 
   // Risk level per product page. HIGH = money/health/legal. MEDIUM = daily
   // commerce + accessibility-critical. LOW = info / dashboards.

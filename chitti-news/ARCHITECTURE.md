@@ -266,7 +266,7 @@ services:
       - DEEPSEEK_MODEL        (deepseek-chat)
       - DEEPSEEK_URL          (https://api.deepseek.com/chat/completions)
       - ALLOWED_ORIGINS       (https://sahayai.in,https://www.sahayai.in)
-      - BACKEND_URL           (https://chitti-news-api.onrender.com)
+      - BACKEND_URL           (https://chitti-news-api.up.railway.app)
       - SCHEDULER_ENABLED     (true)
       - RSS_POLL_MINUTES      (30)
       - BRAVE_SEARCH_API_KEY  (sync: false)

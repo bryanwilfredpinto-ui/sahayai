@@ -48,7 +48,7 @@ bc3673b feat(chitti): ship Vaani + UPI Fraud Guard + Scanner — full skeleton
    - `chitti-vaani/render.yaml` → set `DEEPSEEK_API_KEY` + `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
    - `chitti-upi/render.yaml` → set `DEEPSEEK_API_KEY`
    - `chitti-scanner/render.yaml` → set `DEEPSEEK_API_KEY`
-2. **Google Cloud Console** — OAuth client ID for Gmail send. Redirect URI: `https://chitti-vaani-api.onrender.com/api/vaani/email/auth/callback`. Add Bryan + early users to OAuth consent screen → Test users (max 100).
+2. **Google Cloud Console** — OAuth client ID for Gmail send. Redirect URI: `https://chitti-vaani-api.up.railway.app/api/vaani/email/auth/callback`. Add Bryan + early users to OAuth consent screen → Test users (max 100).
 3. **Android Studio** — `gradle wrapper --gradle-version=8.7` once, then `./gradlew assembleDebug` for the APK. Sideload to test the OS-level capabilities.
 
 ## What's blocked by external dependencies — flag honestly, do NOT try to work around
@@ -78,7 +78,7 @@ bc3673b feat(chitti): ship Vaani + UPI Fraud Guard + Scanner — full skeleton
 | "Add Z to Vaani" | Read `CHITTI_VAANI_PHASE2_ANDROID_SPEC.md` first. Decide whether Z is web-tier (`chitti_vaani.html` + `chitti-vaani` backend) or Android-tier (`MainActivity.kt` JS bridge + new service class). Don't bridge between tiers if the web alone can do it. |
 | "Wire [Y] for Android" | `MainActivity.kt:ChittiNativeBridge` is the bridge surface. Add a new `@JavascriptInterface fun y(...)`. Call from JS via `window.ChittiNative.y(...)` guarded by `hasNativeBridge()`. |
 | "Build product N+1 (e.g. Chitti Bahi-khata)" | Mirror the Vaani / UPI / Scanner pattern: separate `chitti-X/` folder + Flask backend + `render.yaml` + SKILL.md + root `chitti_X.html` + nav links from existing pages + product card on `index.html`. |
-| "Verify on live" | Only after Render is registered. `curl https://chitti-vaani-api.onrender.com/health` then `curl /api/vaani/health`. |
+| "Verify on live" | Only after Render is registered. `curl https://chitti-vaani-api.up.railway.app/health` then `curl /api/vaani/health`. |
 | "I told u, my users are special" | He's correcting you — you've slipped into SaaS-lawyer mode. Re-read `feedback_design_from_pwd_user_perspective.md`. Apologise briefly. Rewrite from blind/mute/illiterate user perspective. |
 
 ## Style notes about Bryan

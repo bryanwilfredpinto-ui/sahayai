@@ -314,7 +314,7 @@ Scanner fix shipped same week: full-universe scan (cap removed) + `iloc[-2]` cor
 
 - [ ] `node --check` passes for the main JS block of `chitti_complete_technical.html`
 - [ ] `git fetch origin` + verify `git rev-list --count main...origin/main` is `0 0` (or use cherry-pick recovery)
-- [ ] Test the live URL: `curl -sS https://chitti-shares-api.onrender.com/api/technical/NSE:RELIANCE` returns 200 with non-empty body
+- [ ] Test the live URL: `curl -sS https://chitti-shares-api.up.railway.app/api/technical/NSE:RELIANCE` returns 200 with non-empty body
 - [ ] Open `https://sahayai.in/chitti_complete_technical.html` in Chrome on desktop, click Demo Mode, walk through 8 steps without cut-off
 - [ ] Three-user lens audit: aria-label on every new control, 🔊 button on every signal, ▲▼/word labels on every change, plain-English caption on every metric
 - [ ] SEBI banner still visible at the top

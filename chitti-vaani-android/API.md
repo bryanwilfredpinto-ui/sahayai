@@ -13,7 +13,7 @@ Phase 2.4 and beyond will add **native** OkHttp/Retrofit calls from [`VaaniBootS
 | Environment | URL |
 |---|---|
 | Local dev | `http://localhost:8003` (allowed only when running from `adb` over USB; not whitelisted by [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml) — debug overrides needed) |
-| Production | `https://chitti-vaani-api.onrender.com` |
+| Production | `https://chitti-vaani-api.up.railway.app` |
 
 Network security: `cleartextTrafficPermitted="false"` (see [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml)). All production traffic is HTTPS.
 

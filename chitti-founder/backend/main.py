@@ -112,14 +112,14 @@ TURSO_LOCAL_PATH = os.environ.get("CHITTI_FOUNDER_LIBSQL_LOCAL", "/tmp/chitti_fo
 # Production endpoint list. Each Chitti is expected to expose
 # GET /admin/founder/slice (Authorization: Bearer <PULL_SECRET>).
 _DEFAULT_ENDPOINTS = ",".join([
-    "https://chitti-news-api.onrender.com",
-    "https://chitti-government-api.onrender.com",
-    "https://chitti-vaani-api.onrender.com",
+    "https://chitti-news-api.up.railway.app",
+    "https://chitti-government-api.up.railway.app",
+    "https://chitti-vaani-api.up.railway.app",
     "https://chitti-voice-factory-api.onrender.com",
-    "https://chitti-medupi-api.onrender.com",
-    "https://chitti-shares-api.onrender.com",
-    "https://chitti-ca-api.onrender.com",
-    "https://chitti-legal-api.onrender.com",
+    "https://chitti-medupi-api.up.railway.app",
+    "https://chitti-shares-api.up.railway.app",
+    "https://chitti-ca-api.up.railway.app",
+    "https://chitti-legal-api.up.railway.app",
 ])
 CHITTI_ENDPOINTS = [
     u.strip().rstrip("/")
@@ -630,23 +630,23 @@ def run_self_ping() -> dict:
 
 
 _FEEDBACK_API_PER_PAGE = {
-    "chitti_news":          "https://chitti-news-api.onrender.com",
-    "chitti_government":    "https://chitti-government-api.onrender.com",
-    "chitti_vaani":         "https://chitti-vaani-api.onrender.com",
+    "chitti_news":          "https://chitti-news-api.up.railway.app",
+    "chitti_government":    "https://chitti-government-api.up.railway.app",
+    "chitti_vaani":         "https://chitti-vaani-api.up.railway.app",
     "chitti_voice_factory": "https://chitti-voice-factory-api.onrender.com",
-    "chitti_medupi":        "https://chitti-medupi-api.onrender.com",
-    "chitti_complete":      "https://chitti-shares-api.onrender.com",
-    "chitti_complete_technical": "https://chitti-shares-api.onrender.com",
-    "chitti_fundamentals":  "https://chitti-shares-api.onrender.com",
-    "chitti_ca":            "https://chitti-ca-api.onrender.com",
-    "chitti_legal":         "https://chitti-legal-api.onrender.com",
+    "chitti_medupi":        "https://chitti-medupi-api.up.railway.app",
+    "chitti_complete":      "https://chitti-shares-api.up.railway.app",
+    "chitti_complete_technical": "https://chitti-shares-api.up.railway.app",
+    "chitti_fundamentals":  "https://chitti-shares-api.up.railway.app",
+    "chitti_ca":            "https://chitti-ca-api.up.railway.app",
+    "chitti_legal":         "https://chitti-legal-api.up.railway.app",
     # Stub-only pages route everything to vaani-api (which has the table).
-    "chitti_upi":           "https://chitti-vaani-api.onrender.com",
-    "chitti_scanner":       "https://chitti-vaani-api.onrender.com",
-    "chitti_kirana":        "https://chitti-vaani-api.onrender.com",
-    "chitti_pharmacy":      "https://chitti-vaani-api.onrender.com",
-    "chitti_saloon":        "https://chitti-vaani-api.onrender.com",
-    "chitti_tourism":       "https://chitti-vaani-api.onrender.com",
+    "chitti_upi":           "https://chitti-vaani-api.up.railway.app",
+    "chitti_scanner":       "https://chitti-vaani-api.up.railway.app",
+    "chitti_kirana":        "https://chitti-vaani-api.up.railway.app",
+    "chitti_pharmacy":      "https://chitti-vaani-api.up.railway.app",
+    "chitti_saloon":        "https://chitti-vaani-api.up.railway.app",
+    "chitti_tourism":       "https://chitti-vaani-api.up.railway.app",
 }
 _PAGE_KEY_RE = re.compile(r"[^a-z0-9_-]+")
 

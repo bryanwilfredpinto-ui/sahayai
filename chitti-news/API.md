@@ -2,7 +2,7 @@
 
 Every HTTP endpoint served by the Chitti News backend. Implemented as a Flask Blueprint in [`routes/news.py`](backend/routes/news.py) (prefix `/api/news`) plus two top-level routes (`/`, `/health`) registered in [`main.py`](backend/main.py).
 
-- **Base URL (planned production):** `https://chitti-news-api.onrender.com`
+- **Base URL (planned production):** `https://chitti-news-api.up.railway.app`
 - **Base URL (local dev):** `http://localhost:8002`
 - **Authentication:** none for read paths. Per-device `X-User-Token` header (UUID kept in `localStorage`) for Read Later / Cancelled folder routes.
 - **CORS:** allowlist read from `ALLOWED_ORIGINS` (defaults include `sahayai.in` + localhost).

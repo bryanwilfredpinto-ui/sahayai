@@ -696,12 +696,12 @@ window._chittiMedUpiLoaded = true;
 // ═══════════════════════════════════════════════════════════
 // API base — defaults to chitti-shares-api (where the medupi
 // stub endpoints currently live). Override per-device by setting
-// localStorage.chitti_medupi_api_base to e.g. https://chitti-medupi-api.onrender.com
+// localStorage.chitti_medupi_api_base to e.g. https://chitti-medupi-api.up.railway.app
 // once the new chitti-medupi/backend service is deployed.
 // ═══════════════════════════════════════════════════════════
 const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-shares-api.onrender.com'; }
-  catch(e){ return 'https://chitti-shares-api.onrender.com'; }
+  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-shares-api.up.railway.app'; }
+  catch(e){ return 'https://chitti-shares-api.up.railway.app'; }
 })();
 function _userToken(){
   try {
