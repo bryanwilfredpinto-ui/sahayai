@@ -103,6 +103,17 @@ WEEKLY_MINUTE_IST = int(os.environ.get("WEEKLY_REPORT_MINUTE_IST", "0"))
 # email. On-demand verification: POST /admin/founder/swarm → run_swarm_pass().
 
 # BCP Layer 1 — self-ping cadence + alert debounce.
+# SELF_PING_ENABLED: master kill-switch for the every-4-min self-ping cron.
+# Default OFF during testing (2026-05-19) — flip to "true" only when Sire says
+# GO LIVE. On-demand POST /admin/founder/self-ping still works regardless.
+def _env_bool(key: str, default: bool) -> bool:
+    raw = os.environ.get(key)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+SELF_PING_ENABLED = _env_bool("SELF_PING_ENABLED", False)
 SELF_PING_INTERVAL_MIN = int(os.environ.get("SELF_PING_INTERVAL_MIN", "4"))
 SELF_PING_TIMEOUT_S = float(os.environ.get("SELF_PING_TIMEOUT_S", "6"))
 HEALTH_ALERT_COOLDOWN_S = int(os.environ.get("HEALTH_ALERT_COOLDOWN_S", "3600"))
@@ -728,9 +739,13 @@ def _create_app() -> Flask:
                 "daily": f"{REPORT_HOUR_IST:02d}:{REPORT_MINUTE_IST:02d} IST",
                 "weekly": f"Sun {WEEKLY_HOUR_IST:02d}:{WEEKLY_MINUTE_IST:02d} IST",
                 "escalator": "hourly :15",
-                "bcp_self_ping": f"every {SELF_PING_INTERVAL_MIN} min",
+                "bcp_self_ping": (
+                    f"every {SELF_PING_INTERVAL_MIN} min" if SELF_PING_ENABLED
+                    else "DISABLED (SELF_PING_ENABLED=false)"
+                ),
             },
             "bcp": {
+                "layer_1_self_ping_enabled": SELF_PING_ENABLED,
                 "layer_1_self_ping_min": SELF_PING_INTERVAL_MIN,
                 "alert_cooldown_s": HEALTH_ALERT_COOLDOWN_S,
                 "turso_configured": bool(TURSO_URL),
@@ -950,12 +965,19 @@ def _start_scheduler() -> None:
         minute=15, timezone=_IST,
         id="hourly_escalator", replace_existing=True,
     )
-    _sched.add_job(
-        run_self_ping, "interval",
-        minutes=SELF_PING_INTERVAL_MIN, timezone=_IST,
-        id="bcp_self_ping", replace_existing=True,
-        next_run_time=datetime.now(_IST) + timedelta(seconds=30),
-    )
+    if SELF_PING_ENABLED:
+        _sched.add_job(
+            run_self_ping, "interval",
+            minutes=SELF_PING_INTERVAL_MIN, timezone=_IST,
+            id="bcp_self_ping", replace_existing=True,
+            next_run_time=datetime.now(_IST) + timedelta(seconds=30),
+        )
+    else:
+        log.info(
+            "[bcp] self-ping cron DISABLED (SELF_PING_ENABLED=%s) — flip to 'true' when Sire says GO LIVE. "
+            "On-demand POST /admin/founder/self-ping still works.",
+            os.environ.get("SELF_PING_ENABLED", "<unset>"),
+        )
     # The Sunday 09:00 IST standalone swarm cron was retired 2026-05-15.
     # Swarm pass now runs inline inside run_weekly_report (08:00 IST) so
     # Sire receives ONE consolidated Sunday email. On-demand verification
@@ -963,9 +985,9 @@ def _start_scheduler() -> None:
     _sched.start()
     log.info(
         "scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · "
-        "escalator :15 · bcp self-ping every %d min · swarm inline in weekly",
+        "escalator :15 · bcp self-ping %s · swarm inline in weekly",
         REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST,
-        SELF_PING_INTERVAL_MIN,
+        f"every {SELF_PING_INTERVAL_MIN} min" if SELF_PING_ENABLED else "DISABLED (SELF_PING_ENABLED=false)",
     )
 
 
