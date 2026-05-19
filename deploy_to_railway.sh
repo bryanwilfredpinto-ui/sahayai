@@ -71,16 +71,16 @@ ensure_project_linked() {
 
 # List all current service names in the linked project, one per line.
 list_services() {
-  # `railway status --json` returns { "services": [ { "name": "..." } ... ] }
-  # Fall back to text parse if jq is missing.
+  # v4 CLI: `railway service list --json` returns a flat array of objects,
+  # each with a top-level `.name`. (`railway status --json` returns a
+  # different shape and does NOT carry service names at the top level.)
   if command -v jq >/dev/null 2>&1; then
-    railway status --json 2>/dev/null \
-      | jq -r '.services[]?.name // empty'
+    railway service list --json 2>/dev/null \
+      | jq -r '.[]?.name // empty'
   else
-    # Best-effort parse of plaintext status output.
+    # Best-effort fallback: parse `railway status` plaintext.
     railway status 2>/dev/null \
-      | awk -F': *' '/^[Ss]ervices?/{flag=1;next} flag && /^  /{print $1}' \
-      | tr -d ' '
+      | awk '/^[[:space:]]*-[[:space:]]/ {sub(/^[[:space:]]*-[[:space:]]/,""); sub(/:.*$/,""); print}'
   fi
 }
 
@@ -88,19 +88,15 @@ ensure_service_exists() {
   local svc="$1"
   if list_services | grep -Fxq "$svc"; then
     log "  service '$svc' already exists — reusing."
-  else
-    log "  creating service '$svc' ..."
-    # CLI evolution: try v3 first, fall back to older syntax.
-    if railway service create "$svc" >/dev/null 2>&1; then
-      :
-    elif railway add --service "$svc" >/dev/null 2>&1; then
-      :
-    else
-      # Last resort: `railway add` interactive — not autonomous, so die.
-      die "service create failed for '$svc'. CLI version may not support non-interactive create. Run: railway add --service $svc"
-    fi
-    log "    created."
+    return 0
   fi
+  log "  creating service '$svc' ..."
+  # v4 CLI: `railway add --service <name>` is the non-interactive create.
+  # There is no `railway service create` subcommand in v4.59.
+  if ! railway add --service "$svc" >/dev/null 2>&1; then
+    die "service create failed for '$svc'. Try: railway add --service $svc"
+  fi
+  log "    created."
 }
 
 upload_vars() {
@@ -112,7 +108,11 @@ upload_vars() {
 
   # Build a --set arg per non-comment, non-blank line. The .env files in
   # railway-env/ are KEY=VALUE (no surrounding quotes, no shell-export).
+  # Empty-value lines (KEY=) are skipped — Railway CLI rejects them with
+  # "Invalid variable format". An intentional empty string should be
+  # quoted (KEY="") in the .env file, which we honor here.
   local set_args=()
+  local skipped=0
   while IFS= read -r line; do
     # strip CR (Windows line endings) + trim leading whitespace
     line="${line%$'\r'}"
@@ -122,9 +122,17 @@ upload_vars() {
     esac
     # Must contain '=' to be a KEY=VALUE pair.
     case "$line" in
-      *'='*) set_args+=( --set "$line" ) ;;
+      *'='*) : ;;
       *)     continue ;;
     esac
+    # Reject KEY= (empty RHS) — Railway CLI errors out on these.
+    local rhs="${line#*=}"
+    if [ -z "$rhs" ]; then
+      skipped=$((skipped + 1))
+      log "    skipped empty-value: ${line%%=*}"
+      continue
+    fi
+    set_args+=( --set "$line" )
   done < "$envfile"
 
   if [ "${#set_args[@]}" -eq 0 ]; then
