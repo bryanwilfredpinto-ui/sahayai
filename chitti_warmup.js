@@ -22,23 +22,23 @@
 
   // -- Page → backend mapping (mirror of chitti-founder _FEEDBACK_API_PER_PAGE)
   var BACKEND_BY_PAGE = {
-    "chitti_vaani":              "https://chitti-vaani-api.up.railway.app",
-    "chitti_medupi":             "https://chitti-medupi-api.up.railway.app",
-    "chitti_legal":              "https://chitti-legal-api.up.railway.app",
-    "chitti_ca":                 "https://chitti-ca-api.up.railway.app",
-    "chitti_government":         "https://chitti-government-api.up.railway.app",
-    "chitti_news":               "https://chitti-news-api.up.railway.app",
-    "chitti_complete_technical": "https://chitti-shares-api.up.railway.app",
-    "chitti_fundamentals":       "https://chitti-shares-api.up.railway.app",
-    "chitti_complete":           "https://chitti-shares-api.up.railway.app",
-    "chitti_scanner":            "https://chitti-vaani-api.up.railway.app",
-    "chitti_upi":                "https://chitti-vaani-api.up.railway.app",
+    "chitti_vaani":              "https://chitti-vaani-api-production.up.railway.app",
+    "chitti_medupi":             "https://chitti-medupi-api-production.up.railway.app",
+    "chitti_legal":              "https://chitti-legal-api-production.up.railway.app",
+    "chitti_ca":                 "https://chitti-ca-api-production.up.railway.app",
+    "chitti_government":         "https://chitti-government-api-production.up.railway.app",
+    "chitti_news":               "https://chitti-news-api-production.up.railway.app",
+    "chitti_complete_technical": "https://chitti-shares-api-production.up.railway.app",
+    "chitti_fundamentals":       "https://chitti-shares-api-production.up.railway.app",
+    "chitti_complete":           "https://chitti-shares-api-production.up.railway.app",
+    "chitti_scanner":            "https://chitti-vaani-api-production.up.railway.app",
+    "chitti_upi":                "https://chitti-vaani-api-production.up.railway.app",
     "chitti_voice_factory":      "https://chitti-voice-factory-api-production.up.railway.app",
     "chitti_news_ai":            "https://chitti-news-ai-api-production.up.railway.app",
     "chitti_2wheeler":           "https://chitti-2wheeler-api-production.up.railway.app",
     "chitti_4wheeler":           "https://chitti-4wheeler-api-production.up.railway.app",
     "chitti_logo_video":         "https://chitti-logo-video-api-production.up.railway.app",
-    "index":                     "https://chitti-vaani-api.up.railway.app"
+    "index":                     "https://chitti-vaani-api-production.up.railway.app"
   };
 
   // -- Translations. EN + HI explicit (per spec). Other Indian langs included

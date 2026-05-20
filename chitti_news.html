@@ -313,8 +313,8 @@ window._chittiNewsLoaded = true;
 // API base
 // ═══════════════════════════════════════════════════════════
 const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_news_api_base') || 'https://chitti-news-api.up.railway.app'; }
-  catch(e){ return 'https://chitti-news-api.up.railway.app'; }
+  try { return localStorage.getItem('chitti_news_api_base') || 'https://chitti-news-api-production.up.railway.app'; }
+  catch(e){ return 'https://chitti-news-api-production.up.railway.app'; }
 })();
 function _userToken(){
   try {
@@ -375,9 +375,39 @@ function onPickerChange() {
   const lang  = document.getElementById('pick-lang').value;
   _setPrefs(state, lang);
   applyChittiLang(lang);
+  // Sync the global a11y bar so all 26 langs (not just en/hi) re-render UI.
+  // Guarded by _langSyncBusy to break the chitti:lang→onPickerChange loop.
+  if (!window._langSyncBusy && window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
+    window._langSyncBusy = true;
+    try { Chitti.a11y.setLanguage(lang, { manual: true, source: 'news-picker' }); }
+    finally { window._langSyncBusy = false; }
+  }
   loadFeed(true);
   loadBreaking();
 }
+
+// When the user picks a language in the global a11y bar (the OTHER dropdown
+// at the very top of the page), sync the news picker dropdown + re-fetch.
+// Bryan's 2026-05-20 bug report: "If I select the 2nd dropdown the language
+// doesn't get selected" — root cause was the page-local I18N table only
+// covers en+hi, so picking Tamil/Telugu/etc fell back to English silently.
+document.addEventListener('chitti:lang', function(e){
+  if (window._langSyncBusy) return;
+  const lang = e && e.detail && (e.detail.code || e.detail.lang);
+  if (!lang) return;
+  const ps = document.getElementById('pick-lang');
+  if (ps && ps.value !== lang) {
+    window._langSyncBusy = true;
+    try {
+      ps.value = lang;
+      const state = document.getElementById('pick-state').value;
+      _setPrefs(state, lang);
+      applyChittiLang(lang);
+      loadFeed(true);
+      loadBreaking();
+    } finally { window._langSyncBusy = false; }
+  }
+});
 
 function showCategory(cat) {
   _currentCategory = cat;

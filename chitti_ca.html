@@ -129,13 +129,13 @@
     </div>
 
     <footer>
-      Chitti CA · Bharat Premium AI · Backend: <a href="https://chitti-ca-api.up.railway.app/health">chitti-ca-api</a><br>
+      Chitti CA · Bharat Premium AI · Backend: <a href="https://chitti-ca-api-production.up.railway.app/health">chitti-ca-api</a><br>
       <small style="opacity:.7">Founded by Bryan Wilfred Pinto · Built on DeepSeek · GitHub Pages + Render free tier</small>
     </footer>
   </main>
 
   <script>
-    const API = window.CHITTI_CA_API || "https://chitti-ca-api.up.railway.app";
+    const API = window.CHITTI_CA_API || "https://chitti-ca-api-production.up.railway.app";
     const $q = document.getElementById("q");
     const $lang = document.getElementById("lang");
     const $ask = document.getElementById("ask");
@@ -226,5 +226,26 @@
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
+<script>
+// Bryan 2026-05-20: keep page-level lang dropdowns in lockstep with the
+// global a11y-bar dropdown. Pushes to a11y are already wired in each
+// page; this is the missing reverse path.
+(function(){
+  function syncFromA11y(code){
+    if (!code) return;
+    document.querySelectorAll("#pick-lang, #hdr-lang, #onb-lang, #lang").forEach(function(sel){
+      if (sel && sel.tagName==="SELECT" && sel.value !== code) {
+        sel.value = code;
+        // dispatch change so any onchange handler re-renders too
+        try { sel.dispatchEvent(new Event("change", { bubbles:true })); } catch(e){}
+      }
+    });
+  }
+  document.addEventListener("chitti:lang", function(e){
+    var code = e && e.detail && (e.detail.code || e.detail.lang);
+    syncFromA11y(code);
+  });
+})();
+</script>
 </body>
 </html>

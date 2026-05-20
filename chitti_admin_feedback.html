@@ -56,7 +56,7 @@
 <header>
   <h1>📊 Chitti Feedback Dashboard</h1>
   <div class="controls">
-    <input id="api" type="text" placeholder="API base (e.g. https://chitti-vaani-api.up.railway.app)" />
+    <input id="api" type="text" placeholder="API base (e.g. https://chitti-vaani-api-production.up.railway.app)" />
     <input id="secret" type="password" placeholder="Admin secret" />
     <button class="primary" id="load">Load</button>
     <button id="run-now">Run report now</button>
@@ -102,7 +102,7 @@ const $ = (id) => document.getElementById(id);
 
 function getApi() {
   let a = ($('api').value || localStorage.getItem('chitti_fb_api') || '').trim();
-  if (!a) a = 'https://chitti-vaani-api.up.railway.app';
+  if (!a) a = 'https://chitti-vaani-api-production.up.railway.app';
   $('api').value = a;
   localStorage.setItem('chitti_fb_api', a);
   return a.replace(/\/+$/, '');
@@ -252,7 +252,7 @@ $('run-now').addEventListener('click', runNow);
 $('show-junk').addEventListener('change', renderRows);
 
 // Pre-fill from storage
-$('api').value = localStorage.getItem('chitti_fb_api') || 'https://chitti-vaani-api.up.railway.app';
+$('api').value = localStorage.getItem('chitti_fb_api') || 'https://chitti-vaani-api-production.up.railway.app';
 $('secret').value = sessionStorage.getItem('chitti_fb_secret') || '';
 if ($('secret').value) load();
 </script>
