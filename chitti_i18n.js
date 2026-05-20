@@ -221,8 +221,15 @@
   // Not helpful / Read aloud / Explain further / etc.).
   //
   // Skip elements: <script>, <style>, <code>, <pre>, <textarea>, <input>,
-  // <noscript>, [data-i18n-skip], anything inside [data-i18n] (already
-  // handled), anything inside [contenteditable].
+  // <noscript>, [data-i18n-skip], anything inside [contenteditable], OR
+  // anything already translated this pass ([data-chitti-i18n-done]).
+  //
+  // NOTE 2026-05-21: We deliberately do NOT skip [data-i18n] here, even
+  // though earlier versions did. Bryan's directive: data-i18n is a HINT
+  // ("please translate this element"), not an exclusion. The static
+  // STRINGS table tries first; when no entry exists, the MyMemory MT
+  // fallback picks the element up — which is what makes the bulk-tagged
+  // chitti_vaani / chitti_medupi / chitti_upi pages actually flip.
   const _AUTO_SKIP_TAGS = new Set([
     'SCRIPT','STYLE','NOSCRIPT','CODE','PRE','TEXTAREA','INPUT','SELECT',
     'OPTION','SVG','CANVAS','VIDEO','AUDIO','IFRAME'
@@ -230,7 +237,7 @@
   function _shouldSkipNode(parentEl) {
     if (!parentEl) return true;
     if (_AUTO_SKIP_TAGS.has(parentEl.tagName)) return true;
-    if (parentEl.closest('[data-i18n]')) return true;
+    if (parentEl.closest('[data-chitti-i18n-done]')) return true;
     if (parentEl.closest('[data-i18n-skip]')) return true;
     if (parentEl.isContentEditable) return true;
     return false;
@@ -383,18 +390,50 @@
       // Static walker already handled — don't double-translate.
       if (tableStrings[orig]) continue;
       if (n.parentElement && n.parentElement.getAttribute('data-chitti-i18n-done')) continue;
-      items.push({ node: n, orig, raw: n.nodeValue });
+      items.push({ kind: 'text', node: n, orig, raw: n.nodeValue });
+    }
+
+    // Attribute translation pass — placeholders + aria-labels + titles
+    // marked with the standard data-i18n-{placeholder,aria,title}
+    // attributes. Added 2026-05-21 alongside Bryan's bulk-tagging of
+    // chitti_vaani / chitti_medupi / chitti_upi. Pages get full UI flip
+    // including form fields when the user switches language.
+    const _ATTR_TARGETS = [
+      ['[data-i18n-placeholder]',  'placeholder'],
+      ['[data-i18n-aria]',         'aria-label'],
+      ['[data-i18n-title]',        'title'],
+    ];
+    for (const [sel, attr] of _ATTR_TARGETS) {
+      document.querySelectorAll(sel).forEach((el) => {
+        const cur = el.getAttribute(attr);
+        if (!cur || !_isTranslatable(cur.trim())) return;
+        // Remember the canonical English source on the element so re-
+        // switching to a different lang sources from English, not from
+        // the last-lang translation.
+        let orig = el.getAttribute('data-chitti-orig-' + attr);
+        if (!orig) {
+          orig = cur.trim();
+          el.setAttribute('data-chitti-orig-' + attr, orig);
+        }
+        if (tableStrings[orig]) return;  // static-table sweep handles
+        items.push({ kind: 'attr', el, attr, orig });
+      });
     }
 
     // Fast path: apply cached translations immediately. Reject any cached
     // entry that's actually a MyMemory quota-warning string accidentally
-    // saved during the 2026-05-20 partial-detection window.
+    // saved during the 2026-05-20 partial-detection window. Both text-node
+    // and attribute items share the same cache key (target::orig).
     const uncached = [];
     for (const it of items) {
       const c = cache[cacheKey(it.orig)];
       if (c && !_XLAT_QUOTA_RE.test(c)) {
-        const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
-        it.node.nodeValue = L + c + T;
+        if (it.kind === 'attr') {
+          it.el.setAttribute(it.attr, c);
+        } else {
+          const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
+          it.node.nodeValue = L + c + T;
+        }
       } else {
         if (c) delete cache[cacheKey(it.orig)];  // purge poison
         uncached.push(it);
@@ -425,8 +464,12 @@
         }
         if (typeof trans === 'string') {
           cache[cacheKey(it.orig)] = trans;
-          const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
-          it.node.nodeValue = L + trans + T;
+          if (it.kind === 'attr') {
+            it.el.setAttribute(it.attr, trans);
+          } else {
+            const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
+            it.node.nodeValue = L + trans + T;
+          }
         }
       }
     }
