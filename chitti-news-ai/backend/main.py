@@ -84,7 +84,20 @@ def _bootstrap() -> None:
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    CORS(app, origins=list(settings.allowed_origins), supports_credentials=False)
+    CORS(
+        app,
+        origins=list(settings.allowed_origins) or "*",
+        supports_credentials=False,
+        allow_headers=[
+            "Content-Type", "Authorization", "Accept",
+            "X-User-Token", "X-Admin-Secret",
+            "X-Requested-With", "X-Chitti-Request-Id",
+        ],
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        expose_headers=[
+            "X-Chitti-Request-Id", "X-Chitti-Response-Time-Ms",
+        ],
+    )
 
     _bootstrap()
 

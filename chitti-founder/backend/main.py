@@ -729,7 +729,20 @@ def _create_app() -> Flask:
         "https://sahayai.in,https://www.sahayai.in,http://localhost:8000,http://127.0.0.1:8000",
     )
     origins = [o.strip() for o in allowed.split(",") if o.strip()]
-    CORS(app, origins=origins or "*", supports_credentials=False)
+    CORS(
+        app,
+        origins=origins or "*",
+        supports_credentials=False,
+        allow_headers=[
+            "Content-Type", "Authorization", "Accept",
+            "X-User-Token", "X-Admin-Secret",
+            "X-Requested-With", "X-Chitti-Request-Id",
+        ],
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        expose_headers=[
+            "X-Chitti-Request-Id", "X-Chitti-Response-Time-Ms",
+        ],
+    )
 
     @app.get("/")
     def root():

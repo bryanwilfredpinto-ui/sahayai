@@ -110,8 +110,15 @@ def _create_app() -> Flask:
         app,
         origins=allowed or "*",
         supports_credentials=False,
-        allow_headers="*",
-        methods="*",
+        allow_headers=[
+            "Content-Type", "Authorization", "Accept",
+            "X-User-Token", "X-Admin-Secret",
+            "X-Requested-With", "X-Chitti-Request-Id",
+        ],
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        expose_headers=[
+            "X-Chitti-Request-Id", "X-Chitti-Response-Time-Ms",
+        ],
     )
 
     @app.get("/")
