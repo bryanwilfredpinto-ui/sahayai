@@ -127,6 +127,38 @@
 
     // Honest "translation pending" footer for stub languages
     'i18n.pending':     { en: 'Translation pending — community contributions welcome', hi: 'अनुवाद अभी पूरा नहीं — समुदाय से योगदान चाहिए' },
+
+    // ── Auto-translate corpus — strings the feedback-widget and a11y
+    //    substrate render literally on every Chitti page. Added 2026-05-20
+    //    so the auto-translate walker flips them when the language changes.
+    'widget.label.speaker':   { en: 'Speaker',     hi: 'स्पीकर',         bn: 'স্পিকার',        te: 'స్పీకర్',        ta: 'ஸ்பீக்கர்',       mr: 'स्पीकर',        gu: 'સ્પીકર',         kn: 'ಸ್ಪೀಕರ್',         ml: 'സ്പീക്കർ',       pa: 'ਸਪੀਕਰ',          or: 'ସ୍ପିକର',         as: 'স্পীকাৰ',         ur: 'اسپیکر' },
+    'widget.label.chitti':    { en: 'Chitti',      hi: 'चिट्टी',          bn: 'চিট্টি',         te: 'చిట్టి',         ta: 'சிட்டி',          mr: 'चिट्टी',         gu: 'ચિટ્ટી',          kn: 'ಚಿಟ್ಟಿ',           ml: 'ചിട്ടി',         pa: 'ਚਿੱਟੀ',           or: 'ଚିଟ୍ଟି',           as: 'চিট্টি',          ur: 'چٹی' },
+    'widget.label.not_ok':    { en: 'Not OK',      hi: 'ठीक नहीं',       bn: 'ঠিক নয়',        te: 'సరికాదు',        ta: 'சரியில்லை',       mr: 'ठीक नाही',       gu: 'બરાબર નથી',       kn: 'ಸರಿ ಇಲ್ಲ',         ml: 'ശരിയല്ല',         pa: 'ਠੀਕ ਨਹੀਂ',         or: 'ଠିକ୍ ନୁହେଁ',        as: 'ঠিক নহয়',         ur: 'ٹھیک نہیں' },
+    'widget.was_helpful':     { en: 'Was this helpful?', hi: 'क्या यह मददगार था?', bn: 'এটি কি সহায়ক ছিল?', te: 'ఇది సహాయపడిందా?', ta: 'இது உதவியதா?', mr: 'हे उपयुक्त होते?', gu: 'આ મદદરૂપ હતું?', kn: 'ಇದು ಸಹಾಯಕವಾಗಿತ್ತೆ?', ml: 'ഇത് സഹായകരമായിരുന്നോ?', pa: 'ਕੀ ਇਹ ਮਦਦਗਾਰ ਸੀ?', or: 'ଏହା ସହାୟକ ଥିଲା କି?', as: 'এইটো সহায়ক আছিল নেকি?', ur: 'کیا یہ مددگار تھا؟' },
+    'widget.report':          { en: 'Report a problem', hi: 'समस्या बताएँ', bn: 'সমস্যা জানান', te: 'సమస్యను నివేదించండి', ta: 'பிரச்சினை தெரிவி', mr: 'समस्या सांगा', gu: 'સમસ્યા જણાવો', kn: 'ಸಮಸ್ಯೆ ತಿಳಿಸಿ', ml: 'പ്രശ്നം റിപ്പോർട്ട്', pa: 'ਸਮੱਸਿਆ ਦੱਸੋ', or: 'ସମସ୍ୟା ଜଣାନ୍ତୁ', as: 'সমস্যা জনাওক', ur: 'مسئلہ بتائیں' },
+    'widget.thanks':          { en: 'Thanks!',     hi: 'धन्यवाद!',         bn: 'ধন্যবাদ!',         te: 'ధన్యవాదాలు!',     ta: 'நன்றி!',           mr: 'धन्यवाद!',         gu: 'આભાર!',           kn: 'ಧನ್ಯವಾದಗಳು!',       ml: 'നന്ദി!',           pa: 'ਧੰਨਵਾਦ!',           or: 'ଧନ୍ୟବାଦ!',           as: 'ধন্যবাদ!',          ur: 'شکریہ!' },
+    'a11y.braille':           { en: 'Braille mode', hi: 'ब्रेल मोड',        bn: 'ব্রেইল মোড',      te: 'బ్రెయిలీ మోడ్',    ta: 'பிரெய்லி பயன்முறை', mr: 'ब्रेल मोड',        gu: 'બ્રેઇલ મોડ',        kn: 'ಬ್ರೈಲ್ ಮೋಡ್',         ml: 'ബ്രെയിലി മോഡ്',    pa: 'ਬ੍ਰੇਲ ਮੋਡ',          or: 'ବ୍ରେଲ୍ ମୋଡ୍',         as: 'ব্ৰেইল মোড',        ur: 'بریل موڈ' },
+    'a11y.read_page':         { en: 'Read page',   hi: 'पन्ना पढ़ें',       bn: 'পৃষ্ঠা পড়ুন',     te: 'పేజీ చదవండి',    ta: 'பக்கம் படி',        mr: 'पान वाचा',         gu: 'પેજ વાંચો',        kn: 'ಪುಟ ಓದಿ',           ml: 'പേജ് വായിക്കുക',   pa: 'ਪੰਨਾ ਪੜ੍ਹੋ',          or: 'ପୃଷ୍ଠା ପଢ଼ନ୍ତୁ',       as: 'পৃষ্ঠা পঢ়ক',        ur: 'صفحہ پڑھیں' },
+    'a11y.explain_simply':    { en: 'Explain simply', hi: 'सरल भाषा में बताएँ', bn: 'সহজ ভাষায় বলুন', te: 'సరళంగా చెప్పండి', ta: 'எளிமையாக விளக்கு', mr: 'सोप्या भाषेत सांगा', gu: 'સરળ ભાષામાં કહો', kn: 'ಸರಳವಾಗಿ ವಿವರಿಸಿ', ml: 'ലളിതമായി വിശദീകരിക്കുക', pa: 'ਸੌਖੀ ਭਾਸ਼ਾ ਵਿੱਚ ਦੱਸੋ', or: 'ସରଳ ଭାଷାରେ କୁହନ୍ତୁ', as: 'সহজ ভাষাত কওক', ur: 'سادہ زبان میں سمجھائیں' },
+    'a11y.demo':              { en: 'Demo',        hi: 'डेमो',             bn: 'ডেমো',            te: 'డెమో',            ta: 'டெமோ',             mr: 'डेमो',             gu: 'ડેમો',             kn: 'ಡೆಮೋ',              ml: 'ഡെമോ',            pa: 'ਡੈਮੋ',              or: 'ଡେମୋ',              as: 'ডেমো',             ur: 'ڈیمو' },
+    'common.search':          { en: 'Search',      hi: 'खोजें',            bn: 'খুঁজুন',           te: 'వెతకండి',         ta: 'தேடு',              mr: 'शोधा',             gu: 'શોધો',              kn: 'ಹುಡುಕಿ',             ml: 'തിരയുക',           pa: 'ਖੋਜੋ',               or: 'ଖୋଜନ୍ତୁ',             as: 'বিচাৰক',            ur: 'تلاش' },
+    'common.home':            { en: 'Home',        hi: 'होम',              bn: 'হোম',             te: 'హోమ్',             ta: 'முகப்பு',            mr: 'होम',              gu: 'હોમ',              kn: 'ಮುಖಪುಟ',             ml: 'ഹോം',              pa: 'ਘਰ',                or: 'ହୋମ୍',                as: 'মূল পৃষ্ঠা',         ur: 'ہوم' },
+    'common.help':            { en: 'Help',        hi: 'सहायता',           bn: 'সাহায্য',         te: 'సహాయం',           ta: 'உதவி',              mr: 'मदत',              gu: 'મદદ',              kn: 'ಸಹಾಯ',                ml: 'സഹായം',            pa: 'ਮਦਦ',               or: 'ସାହାଯ୍ୟ',             as: 'সহায়',             ur: 'مدد' },
+    'common.settings':        { en: 'Settings',    hi: 'सेटिंग्स',          bn: 'সেটিংস',          te: 'సెట్టింగ్స్',       ta: 'அமைப்புகள்',         mr: 'सेटिंग्ज',          gu: 'સેટિંગ્સ',           kn: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',         ml: 'ക്രമീകരണങ്ങൾ',     pa: 'ਸੈਟਿੰਗਾਂ',           or: 'ସେଟିଂସ୍',             as: 'ছেটিংছ',           ur: 'ترتیبات' },
+    'common.back':            { en: 'Back',        hi: 'वापस',             bn: 'পিছনে',           te: 'వెనుకకు',          ta: 'பின்',              mr: 'मागे',              gu: 'પાછા',              kn: 'ಹಿಂದೆ',              ml: 'പിന്നോട്ട്',         pa: 'ਵਾਪਸ',               or: 'ପଛକୁ',                as: 'পিছলৈ',            ur: 'واپس' },
+    'common.next':            { en: 'Next',        hi: 'अगला',             bn: 'পরবর্তী',          te: 'తదుపరి',           ta: 'அடுத்து',            mr: 'पुढे',              gu: 'આગળ',              kn: 'ಮುಂದೆ',              ml: 'അടുത്തത്',          pa: 'ਅੱਗੇ',               or: 'ପରବର୍ତ୍ତୀ',           as: 'পৰৱৰ্তী',           ur: 'اگلا' },
+    'common.continue':        { en: 'Continue',    hi: 'जारी रखें',         bn: 'চালিয়ে যান',     te: 'కొనసాగండి',       ta: 'தொடரவும்',           mr: 'सुरू ठेवा',         gu: 'ચાલુ રાખો',         kn: 'ಮುಂದುವರಿಸಿ',         ml: 'തുടരുക',            pa: 'ਜਾਰੀ ਰੱਖੋ',          or: 'ଜାରି ରଖନ୍ତୁ',          as: 'অব্যাহত ৰাখক',     ur: 'جاری رکھیں' },
+    'common.try_again':       { en: 'Try again',   hi: 'फिर कोशिश करें',     bn: 'আবার চেষ্টা',     te: 'మళ్ళీ ప్రయత్నించండి', ta: 'மீண்டும் முயற்சி',   mr: 'पुन्हा प्रयत्न',     gu: 'ફરી પ્રયત્ન',       kn: 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',    ml: 'വീണ്ടും ശ്രമിക്കുക',  pa: 'ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ',     or: 'ପୁନଃ ଚେଷ୍ଟା',          as: 'পুনৰ চেষ্টা',       ur: 'دوبارہ کوشش' },
+    'common.send_message':    { en: 'Send message', hi: 'संदेश भेजें',     bn: 'বার্তা পাঠান',     te: 'సందేశం పంపండి',    ta: 'செய்தி அனுப்பு',    mr: 'संदेश पाठवा',       gu: 'સંદેશ મોકલો',       kn: 'ಸಂದೇಶ ಕಳುಹಿಸಿ',       ml: 'സന്ദേശം അയക്കുക',   pa: 'ਸੁਨੇਹਾ ਭੇਜੋ',         or: 'ବାର୍ତ୍ତା ପଠାନ୍ତୁ',     as: 'বাৰ্তা পঠাওক',      ur: 'پیغام بھیجیں' },
+    'common.ask':             { en: 'Ask',         hi: 'पूछें',             bn: 'জিজ্ঞাসা করুন',    te: 'అడగండి',           ta: 'கேள்',               mr: 'विचारा',           gu: 'પૂછો',              kn: 'ಕೇಳಿ',                ml: 'ചോദിക്കുക',         pa: 'ਪੁੱਛੋ',                or: 'ପଚାରନ୍ତୁ',             as: 'সোধক',              ur: 'پوچھیں' },
+    'common.share':           { en: 'Share',       hi: 'साझा करें',         bn: 'শেয়ার করুন',     te: 'భాగస్వామ్యం',      ta: 'பகிர்',              mr: 'शेअर करा',          gu: 'શેર કરો',           kn: 'ಹಂಚಿಕೊಳ್ಳಿ',          ml: 'പങ്കിടുക',          pa: 'ਸਾਂਝਾ ਕਰੋ',           or: 'ସେୟାର କରନ୍ତୁ',         as: 'শ্বেয়াৰ',           ur: 'شیئر' },
+    'common.print':           { en: 'Print',       hi: 'प्रिंट',             bn: 'প্রিন্ট',          te: 'ప్రింట్',           ta: 'அச்சிடு',            mr: 'प्रिंट',             gu: 'પ્રિન્ટ',             kn: 'ಮುದ್ರಿಸಿ',             ml: 'പ്രിന്റ്',           pa: 'ਪ੍ਰਿੰਟ',                or: 'ପ୍ରିଣ୍ଟ',               as: 'প্ৰিন্ট',            ur: 'پرنٹ' },
+    'common.download':        { en: 'Download',    hi: 'डाउनलोड',           bn: 'ডাউনলোড',         te: 'డౌన్‌లోడ్',         ta: 'பதிவிறக்கு',         mr: 'डाउनलोड',           gu: 'ડાઉનલોડ',           kn: 'ಡೌನ್‌ಲೋಡ್',           ml: 'ഡൗൺലോഡ്',           pa: 'ਡਾਊਨਲੋਡ',             or: 'ଡାଉନଲୋଡ୍',             as: 'ডাউনলোড',           ur: 'ڈاؤن لوڈ' },
+    'common.scan':            { en: 'Scan',        hi: 'स्कैन',             bn: 'স্ক্যান',         te: 'స్కాన్',           ta: 'ஸ்கேன்',             mr: 'स्कॅन',             gu: 'સ્કેન',             kn: 'ಸ್ಕ್ಯಾನ್',             ml: 'സ്കാൻ',             pa: 'ਸਕੈਨ',                or: 'ସ୍କାନ୍',               as: 'স্কেন',              ur: 'سکین' },
+    'common.upload':          { en: 'Upload',      hi: 'अपलोड',             bn: 'আপলোড',           te: 'అప్‌లోడ్',           ta: 'பதிவேற்று',          mr: 'अपलोड',             gu: 'અપલોડ',             kn: 'ಅಪ್‌ಲೋಡ್',             ml: 'അപ്‌ലോഡ്',           pa: 'ਅੱਪਲੋਡ',              or: 'ଅପଲୋଡ୍',               as: 'আপলোড',             ur: 'اپ لوڈ' },
+    'common.copy':            { en: 'Copy',        hi: 'कॉपी',              bn: 'কপি',             te: 'కాపీ',             ta: 'நகலெடு',             mr: 'कॉपी',              gu: 'કૉપિ',               kn: 'ನಕಲಿಸಿ',               ml: 'കോപ്പി',             pa: 'ਕਾਪੀ',                or: 'କପି',                  as: 'কপি',                ur: 'کاپی' },
+    'common.delete':          { en: 'Delete',      hi: 'हटाएँ',              bn: 'মুছুন',           te: 'తొలగించండి',         ta: 'அழி',                mr: 'हटवा',              gu: 'કાઢી નાખો',          kn: 'ಅಳಿಸಿ',                ml: 'ഇല്ലാതാക്കുക',         pa: 'ਮਿਟਾਓ',                or: 'ବାହାର କରନ୍ତୁ',           as: 'মচক',                ur: 'حذف' },
+    'common.edit':            { en: 'Edit',        hi: 'संपादित करें',        bn: 'সম্পাদনা',        te: 'సవరించండి',          ta: 'திருத்து',           mr: 'संपादित',           gu: 'સંપાદિત',            kn: 'ಸಂಪಾದಿಸಿ',             ml: 'എഡിറ്റ്',             pa: 'ਸੰਪਾਦਿਤ',              or: 'ସମ୍ପାଦନ',                as: 'সম্পাদনা',           ur: 'ترمیم' },
   };
 
   // ── Public API ────────────────────────────────────────────────
@@ -155,6 +187,86 @@
     if (a && a.lang && a.lang.current) return a.lang.current;
     try { return (JSON.parse(localStorage.getItem('chitti_a11y_v1') || '{}') || {}).lang || 'en'; }
     catch (_) { return 'en'; }
+  }
+
+  // Build a reverse-lookup map: trimmed text in ANY language → STRINGS key.
+  // Cached after first build; rebuilt only if STRINGS expands via register().
+  let _reverseMap = null;
+  let _reverseMapSize = 0;
+  function _buildReverseMap() {
+    const keys = Object.keys(STRINGS);
+    if (_reverseMap && keys.length === _reverseMapSize) return _reverseMap;
+    _reverseMap = Object.create(null);
+    for (const key of keys) {
+      const entry = STRINGS[key];
+      for (const lang in entry) {
+        const txt = entry[lang];
+        if (typeof txt !== 'string') continue;
+        const norm = txt.trim();
+        if (norm.length < 3) continue;
+        // First-key-wins on collisions — the table's intent is that each
+        // key represents a unique semantic string.
+        if (!_reverseMap[norm]) _reverseMap[norm] = key;
+      }
+    }
+    _reverseMapSize = keys.length;
+    return _reverseMap;
+  }
+
+  // Walk text nodes and translate exact matches of any known English (or
+  // other-language) UI string into the target language. Added 2026-05-20
+  // per Bryan's directive: "Once a language is selected say Bangla, the
+  // entire UI must change in Bangla." Pages with no data-i18n attributes
+  // still get coverage for substrate strings (Send / Cancel / Helpful /
+  // Not helpful / Read aloud / Explain further / etc.).
+  //
+  // Skip elements: <script>, <style>, <code>, <pre>, <textarea>, <input>,
+  // <noscript>, [data-i18n-skip], anything inside [data-i18n] (already
+  // handled), anything inside [contenteditable].
+  const _AUTO_SKIP_TAGS = new Set([
+    'SCRIPT','STYLE','NOSCRIPT','CODE','PRE','TEXTAREA','INPUT','SELECT',
+    'OPTION','SVG','CANVAS','VIDEO','AUDIO','IFRAME'
+  ]);
+  function _shouldSkipNode(parentEl) {
+    if (!parentEl) return true;
+    if (_AUTO_SKIP_TAGS.has(parentEl.tagName)) return true;
+    if (parentEl.closest('[data-i18n]')) return true;
+    if (parentEl.closest('[data-i18n-skip]')) return true;
+    if (parentEl.isContentEditable) return true;
+    return false;
+  }
+  function _applyAutoTranslate(code) {
+    const rev = _buildReverseMap();
+    const walker = document.createTreeWalker(
+      document.body || document.documentElement,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function (node) {
+          const txt = (node.nodeValue || '').trim();
+          if (txt.length < 3) return NodeFilter.FILTER_REJECT;
+          if (_shouldSkipNode(node.parentElement)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+    const hits = [];
+    let n;
+    while ((n = walker.nextNode())) {
+      const raw = n.nodeValue || '';
+      const norm = raw.trim();
+      const key = rev[norm];
+      if (!key) continue;
+      const val = t(key, code);
+      if (!val || val === norm) continue;
+      hits.push([n, raw, val]);
+    }
+    // Apply outside the walker so DOM mutations don't disturb iteration.
+    for (const [node, raw, val] of hits) {
+      const leading = raw.match(/^\s*/)[0];
+      const trailing = raw.match(/\s*$/)[0];
+      node.nodeValue = leading + val + trailing;
+    }
+    return hits.length;
   }
 
   function applyLang(lang) {
@@ -192,12 +304,17 @@
       const val = t(key, code);
       if (val !== key) el.setAttribute('aria-label', val);
     });
-    // 4. Set <html lang> + dir.
+    // 4. Auto-translate text nodes whose content matches a known table
+    //    entry in ANY language. Pages without data-i18n still get
+    //    substrate-string coverage (illiterate-user contract — full UI
+    //    flip on language change).
+    try { _applyAutoTranslate(code); } catch (_) {}
+    // 5. Set <html lang> + dir.
     document.documentElement.setAttribute('lang', code);
     document.documentElement.setAttribute('dir', RTL_LANGS.has(code) ? 'rtl' : 'ltr');
-    // 5. Honest stub-language footer (small, sticky bottom on stub langs).
+    // 6. Honest stub-language footer (small, sticky bottom on stub langs).
     _ensurePendingFooter(code);
-    // 6. Fire event so pages can listen + re-render dynamic content.
+    // 7. Fire event so pages can listen + re-render dynamic content.
     document.dispatchEvent(new CustomEvent('chitti:i18n:applied', { detail: { lang: code } }));
   }
 
