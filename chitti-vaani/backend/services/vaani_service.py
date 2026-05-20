@@ -96,10 +96,29 @@ def _enforce_disclaimer(text: str) -> str:
     return text
 
 
-def _fallback(text_in: str, language: str) -> dict:
-    """When DeepSeek is unconfigured / unreachable, never break the UI."""
-    note = ("Chitti is offline right now (no DEEPSEEK_API_KEY set). "
-            "What you said: ") + (text_in or "").strip()[:200]
+def _fallback(text_in: str, language: str, error_hint: str | None = None) -> dict:
+    """When DeepSeek is unconfigured / unreachable, never break the UI.
+
+    Honest diagnostic surface: each known DeepSeek failure mode gets its
+    own user-facing line so we never blame "missing key" when the key is
+    set but rejected. (2026-05-20: Bryan caught a 402 being reported as
+    "no DEEPSEEK_API_KEY set".)
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        reason = "Chitti is offline — no DEEPSEEK_API_KEY configured on the server."
+    elif error_hint == "deepseek_http_401":
+        reason = "Chitti is offline — DeepSeek rejected our key (401 Unauthorized). Server admin must rotate DEEPSEEK_API_KEY."
+    elif error_hint == "deepseek_http_402":
+        reason = "Chitti is offline — DeepSeek account has insufficient balance (402). Server admin must top up DeepSeek credit."
+    elif error_hint == "deepseek_http_429":
+        reason = "Chitti is busy — DeepSeek rate-limited us (429). Please try again in a moment."
+    elif error_hint and error_hint.startswith("deepseek_http_5"):
+        reason = f"Chitti is offline — DeepSeek service error ({error_hint}). Already retrying in the background."
+    elif error_hint:
+        reason = f"Chitti hit a network issue ({error_hint}). Please try again."
+    else:
+        reason = "Chitti is offline — unable to reach DeepSeek right now."
+    note = reason + " What you said: " + (text_in or "").strip()[:200]
     return {
         "ok": True,
         "source": "fallback",
@@ -186,10 +205,11 @@ def ask(text: str, language: str = "hi", mode: str = "ask") -> dict:
             wrapped = hooks.wrap_llm(_call, user_text=text, ctx={})
         except httpx.HTTPStatusError as e:
             log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
-            return {**_fallback(text, language), "error": f"deepseek_http_{e.response.status_code}"}
+            err = f"deepseek_http_{e.response.status_code}"
+            return {**_fallback(text, language, err), "error": err}
         except (httpx.RequestError, KeyError, ValueError) as e:
             log.exception("DeepSeek call failed: %s", e)
-            return {**_fallback(text, language), "error": str(e)[:200]}
+            return {**_fallback(text, language, "deepseek_network"), "error": str(e)[:200]}
         if wrapped.get("blocked"):
             return {
                 "ok": False,
