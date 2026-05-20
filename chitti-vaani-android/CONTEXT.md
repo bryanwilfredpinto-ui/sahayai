@@ -72,7 +72,7 @@ This Android client encodes the rule from the user's pinned memory: **never auto
 1. **Master-confirm** — 10s "Are you OK?" via TTS. Web tier already handles this loop.
 2. **Alarm bypass-silent** — [`ChittiNativeBridge.triggerEmergencyAlarm()`](app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt) fires `RingtoneManager` through `STREAM_ALARM` with `USAGE_ALARM` so DND is bypassed.
 3. **Spouse / family call** — `ChittiNative.makeCall(<spouse number>)` directly dials via `ACTION_CALL`, or falls back to `ACTION_DIAL` if `CALL_PHONE` was not granted.
-4. **Chitti-to-Chitti relay** — handled by the web tier hitting `POST /api/vaani/emergency/trigger` on `chitti-vaani-api.onrender.com`. The Android shell only handles the OS-bypass parts.
+4. **Chitti-to-Chitti relay** — handled by the web tier hitting `POST /api/vaani/emergency/trigger` on `chitti-vaani-api-production.up.railway.app`. The Android shell only handles the OS-bypass parts.
 
 At every step, `ChittiNativeBridge.refuseAutoDialCops()` is the structural fence: if any code path is ever modified to call 112/100/102/108/1098/1930/139, this method short-circuits and writes a `REFUSED-cop-autodial` line to [`AuditLog`](app/src/main/java/in/sahayai/chitti/vaani/util/AuditLog.kt).
 

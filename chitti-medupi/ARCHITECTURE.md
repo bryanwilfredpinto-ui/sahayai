@@ -161,7 +161,7 @@ The text path bumps `search_log.count` for the normalized query (drives the dail
 ## 7. The two-database story (live state as of 2026-05-11)
 
 - The **standalone Apollo Pharmacy loader** ([`scripts/load_apollo_oneshot.py`](backend/scripts/load_apollo_oneshot.py)) loaded **211,207 rows** into Neon's `medupi.medicines` table.
-- The live API at `chitti-medupi-api.onrender.com` reads from the same Neon Postgres. (Earlier render.yaml briefly pointed to Supabase; switched back to Neon in commit `313bb2e`.)
+- The live API at `chitti-medupi-api-production.up.railway.app` reads from the same Neon Postgres. (Earlier render.yaml briefly pointed to Supabase; switched back to Neon in commit `313bb2e`.)
 - Schema isolation under `medupi.*` lets Chitti Shares share the same host without collision.
 - The 51-row seed in [`data/medicines_seed.json`](backend/data/medicines_seed.json) only loads when the table is empty — production is well past that.
 

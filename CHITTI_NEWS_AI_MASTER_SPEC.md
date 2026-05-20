@@ -257,7 +257,7 @@ The new-products process (§2a) and the Feature Discovery Box (§2d) require eve
 | Endpoint | [`chitti-news-ai/backend/routes/news_ai.py`](chitti-news-ai/backend/routes/news_ai.py) `daily_tip_endpoint` | `daily_tip_bp` blueprint at `/api/daily-tip` — intentionally outside `/api/news-ai/` so the contract path is stable for Chitti PA. |
 | Cron | [`chitti-news-ai/backend/services/news_scheduler.py`](chitti-news-ai/backend/services/news_scheduler.py) `_prewarm_daily_tips` | APScheduler cron `06:45 IST` (env: `DAILY_TIP_HOUR_IST` / `DAILY_TIP_MINUTE_IST` / `DAILY_TIP_PREWARM_LANG`). |
 | Admin trigger | `POST /api/news-ai/admin/daily-tip/prewarm-now` | `METRICS_TOKEN`-gated. Same stats shape the cron logs. |
-| Voice substrate | env `VOICE_FACTORY_URL` | Defaults to `https://chitti-voice-factory-api.onrender.com/api/voice/speak`. Swappable at one URL per LOCKED §2 voice strategy. |
+| Voice substrate | env `VOICE_FACTORY_URL` | Defaults to `https://chitti-voice-factory-api-production.up.railway.app/api/voice/speak`. Swappable at one URL per LOCKED §2 voice strategy. |
 
 The endpoint is verified end-to-end against an in-memory SQLite test
 harness: missing-profession / missing-lang / bad-date → 400 with the

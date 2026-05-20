@@ -7,7 +7,7 @@ category feed + Demo Mode + Read Later/Cancelled folders.
 
 ## What's wired
 The frontend talks to the Chitti News backend via `API_BASE`, defaulting
-to `https://chitti-news-api.up.railway.app`. To override per-device:
+to `https://chitti-news-api-production.up.railway.app`. To override per-device:
 
 ```js
 localStorage.setItem('chitti_news_api_base', 'http://localhost:8002');

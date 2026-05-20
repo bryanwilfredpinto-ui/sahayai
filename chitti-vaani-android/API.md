@@ -1,6 +1,6 @@
 # API — Chitti Vaani Android client
 
-This document lists every backend endpoint the Android client calls (today or per the Phase 2 spec) on `chitti-vaani-api.onrender.com`. The full backend spec lives at [`../chitti-vaani/API.md`](../chitti-vaani/API.md) — this file is the **Android-side index** that names the Kotlin call site (or planned call site) for each endpoint.
+This document lists every backend endpoint the Android client calls (today or per the Phase 2 spec) on `chitti-vaani-api-production.up.railway.app`. The full backend spec lives at [`../chitti-vaani/API.md`](../chitti-vaani/API.md) — this file is the **Android-side index** that names the Kotlin call site (or planned call site) for each endpoint.
 
 Today, **all HTTP traffic flows through the WebView** loaded in [`MainActivity.kt`](app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt). The web tier inside the WebView uses standard `fetch()` to talk to the API. There is no native networking layer yet.
 
@@ -13,7 +13,7 @@ Phase 2.4 and beyond will add **native** OkHttp/Retrofit calls from [`VaaniBootS
 | Environment | URL |
 |---|---|
 | Local dev | `http://localhost:8003` (allowed only when running from `adb` over USB; not whitelisted by [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml) — debug overrides needed) |
-| Production | `https://chitti-vaani-api.up.railway.app` |
+| Production | `https://chitti-vaani-api-production.up.railway.app` |
 
 Network security: `cleartextTrafficPermitted="false"` (see [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml)). All production traffic is HTTPS.
 

@@ -18,7 +18,7 @@ Ten pains an Indian news reader lives with today, each paired with the specific 
 ## Channels
 
 - Frontend live: [sahayai.in/chitti_news.html](https://sahayai.in/chitti_news.html)
-- Backend planned: `chitti-news-api.onrender.com` — [render.yaml](../render.yaml) wired, deploy pending per [TODO.md §P0](../TODO.md).
+- Backend planned: `chitti-news-api-production.up.railway.app` — [render.yaml](../render.yaml) wired, deploy pending per [TODO.md §P0](../TODO.md).
 
 ## Positioning sentence
 

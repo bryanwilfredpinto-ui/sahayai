@@ -110,9 +110,9 @@ service `chitti-government-api`. Required dashboard envs:
 | `DATABASE_URL` | Shared Supabase Postgres — same instance used by chitti-shares + chitti-medupi. Schema isolation in [`backend/models/_schema.py`](backend/models/_schema.py) keeps tables under `government.*`. |
 | `DEEPSEEK_API_KEY` | Optional. Rule-engine fallback ships when missing. |
 
-Health:    <https://chitti-government-api.up.railway.app/health>
-Endpoints: <https://chitti-government-api.up.railway.app/>
-Freshness: <https://chitti-government-api.up.railway.app/api/government/freshness>
+Health:    <https://chitti-government-api-production.up.railway.app/health>
+Endpoints: <https://chitti-government-api-production.up.railway.app/>
+Freshness: <https://chitti-government-api-production.up.railway.app/api/government/freshness>
 
 ## Companion docs
 

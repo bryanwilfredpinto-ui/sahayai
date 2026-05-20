@@ -682,7 +682,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
   <footer role="contentinfo">
     <small>
-      Chitti MedUPI v1.4 · Bharat Premium AI · Backend: <code>chitti-shares-api.onrender.com</code><br>
+      Chitti MedUPI v1.4 · Bharat Premium AI · Backend: <code>chitti-shares-api-production.up.railway.app</code><br>
       Spec: <a href="CHITTI_MEDUPI_MASTER_SPEC.md">CHITTI_MEDUPI_MASTER_SPEC.md</a> · Sister products: <a href="chitti_complete_technical.html">📈 Technical</a> · <a href="chitti_fundamentals.html">📋 Fundamentals</a><br>
       Chitti MedUPI provides informational insights only · Not medical advice · Always consult your doctor or pharmacist.
     </small>
@@ -696,12 +696,12 @@ window._chittiMedUpiLoaded = true;
 // ═══════════════════════════════════════════════════════════
 // API base — defaults to chitti-shares-api (where the medupi
 // stub endpoints currently live). Override per-device by setting
-// localStorage.chitti_medupi_api_base to e.g. https://chitti-medupi-api.up.railway.app
+// localStorage.chitti_medupi_api_base to e.g. https://chitti-medupi-api-production.up.railway.app
 // once the new chitti-medupi/backend service is deployed.
 // ═══════════════════════════════════════════════════════════
 const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-shares-api.up.railway.app'; }
-  catch(e){ return 'https://chitti-shares-api.up.railway.app'; }
+  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-shares-api-production.up.railway.app'; }
+  catch(e){ return 'https://chitti-shares-api-production.up.railway.app'; }
 })();
 function _userToken(){
   try {

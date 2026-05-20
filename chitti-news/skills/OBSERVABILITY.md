@@ -40,7 +40,7 @@ A sudden swing — e.g. `verified` collapsing to < 10% — flags a likely matchi
 
 ## Uptime
 
-UptimeRobot pings `https://chitti-news-api.up.railway.app/health` every **5 minutes**. A `200 {"ok": true}` is required; anything else pages Bryan. Same SLO as the Shares / MedUPI backends.
+UptimeRobot pings `https://chitti-news-api-production.up.railway.app/health` every **5 minutes**. A `200 {"ok": true}` is required; anything else pages Bryan. Same SLO as the Shares / MedUPI backends.
 
 ## What is NOT instrumented (by design)
 

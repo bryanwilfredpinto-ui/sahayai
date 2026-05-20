@@ -1,6 +1,6 @@
 # Chitti Government — HTTP API
 
-Base URL (prod): `https://chitti-government-api.up.railway.app`
+Base URL (prod): `https://chitti-government-api-production.up.railway.app`
 Local dev:       `http://localhost:8003`
 
 All product endpoints live under the `/api/government` prefix and are
@@ -490,7 +490,7 @@ Aggregated counts per feature (operator view).
 ## Quick `curl` smoke-test recipe
 
 ```bash
-BASE=https://chitti-government-api.up.railway.app
+BASE=https://chitti-government-api-production.up.railway.app
 
 curl -s "$BASE/health"
 curl -s "$BASE/api/government/health"

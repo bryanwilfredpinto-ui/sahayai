@@ -43,7 +43,7 @@ const CALL_PAIRS = {
 
 // Backend URL — configurable via env var; falls back to known prod URL
 const API_BASE =
-  import.meta.env?.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
+  import.meta.env?.VITE_API_BASE || "https://chitti-shares-api-production.up.railway.app";
 
 function signalColor(sig) {
   if (sig === "BUY") return { background: "#0f5132", color: "#d1e7dd" };

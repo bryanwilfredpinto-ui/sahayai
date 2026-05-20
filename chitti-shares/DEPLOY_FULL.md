@@ -9,7 +9,7 @@ This is the single canonical guide for deploying Chitti Shares end-to-end. It su
 A web app for Indian retail traders. AI-powered stock research with live indices, fundamentals, quarterly results, technical analysis, custom rule engine, watchlist, alerts, portfolio doctor, AI chat, and 10 stock-specific specialist Chittis.
 
 **Production URL** (after deploy): https://shares.sahayai.in
-**Backend API**: https://chitti-shares-api.up.railway.app
+**Backend API**: https://chitti-shares-api-production.up.railway.app
 **Database**: SQLite on Render persistent disk
 
 ---
@@ -21,7 +21,7 @@ React SPA (Vite, Tailwind)               FastAPI (uvicorn)
 ─────────────────────                    ─────────────────
 chitti-shares-web                ←──→    chitti-shares-api
   Render Static Site                       Render Web Service
-  shares.sahayai.in                        chitti-shares-api.onrender.com
+  shares.sahayai.in                        chitti-shares-api-production.up.railway.app
                                               │
                                               ├── SQLite (./data/chitti_shares.db)
                                               ├── Yahoo Finance (free, default)
@@ -84,11 +84,11 @@ FAST2SMS_API_KEY=               # From fast2sms.com → DevAPI → API key
 ```
 KITE_API_KEY=                   # From developers.kite.trade. Empty if Kite unused.
 KITE_API_SECRET=
-KITE_REDIRECT_URL=https://chitti-shares-api.up.railway.app/api/market/auth-callback
+KITE_REDIRECT_URL=https://chitti-shares-api-production.up.railway.app/api/market/auth-callback
 DATA_SOURCE=yahoo               # 'yahoo' (free) or 'kite' (paid). Switch later by changing this.
 DEEPSEEK_API_KEY=               # From platform.deepseek.com
 FRONTEND_URL=https://shares.sahayai.in
-BACKEND_URL=https://chitti-shares-api.up.railway.app
+BACKEND_URL=https://chitti-shares-api-production.up.railway.app
 ```
 
 ### Phase 5: Watchlist + Alerts
@@ -134,7 +134,7 @@ This assumes you already have a Render account and the GitHub Actions workflow c
     INFO stock_universe: Seeded 153 stocks into universe
     ```
 
-Note the URL Render gives you, e.g. `chitti-shares-api.onrender.com`.
+Note the URL Render gives you, e.g. `chitti-shares-api-production.up.railway.app`.
 
 ### 2. Create the Static Site (frontend)
 
@@ -143,7 +143,7 @@ Note the URL Render gives you, e.g. `chitti-shares-api.onrender.com`.
 3. **Root directory**: `chitti-shares/frontend`
 4. **Build command**: `npm install && npm run build`
 5. **Publish directory**: `dist`
-6. **Environment**: add `VITE_API_URL=https://chitti-shares-api.up.railway.app` (no trailing slash).
+6. **Environment**: add `VITE_API_URL=https://chitti-shares-api-production.up.railway.app` (no trailing slash).
 7. Deploy.
 
 ### 3. Custom domain
@@ -161,9 +161,9 @@ Three cron jobs total. Render Dashboard → **New** → **Cron Job**.
 
 | Cron name | Schedule (UTC) | Schedule (IST) | Command |
 |---|---|---|---|
-| chitti-alerts | `*/5 3-10 * * 1-5` | every 5 min, Mon–Fri 8:30–16:00 IST (covers full market) | `curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/alerts?secret=$CRON_SECRET'` |
-| chitti-track-calls | `*/5 3-10 * * 1-5` | same as above | `curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/track-calls?secret=$CRON_SECRET'` |
-| chitti-kite-reauth | `25 0 * * *` | 5:55 AM IST daily | `curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/kite-reauth?secret=$CRON_SECRET'` |
+| chitti-alerts | `*/5 3-10 * * 1-5` | every 5 min, Mon–Fri 8:30–16:00 IST (covers full market) | `curl -X POST 'https://chitti-shares-api-production.up.railway.app/api/cron/alerts?secret=$CRON_SECRET'` |
+| chitti-track-calls | `*/5 3-10 * * 1-5` | same as above | `curl -X POST 'https://chitti-shares-api-production.up.railway.app/api/cron/track-calls?secret=$CRON_SECRET'` |
+| chitti-kite-reauth | `25 0 * * *` | 5:55 AM IST daily | `curl -X POST 'https://chitti-shares-api-production.up.railway.app/api/cron/kite-reauth?secret=$CRON_SECRET'` |
 
 For each cron job:
 - **Runtime**: Docker
@@ -179,20 +179,20 @@ The endpoints are secret-protected. A wrong/missing secret returns 401.
 
 ```bash
 # Backend health
-curl https://chitti-shares-api.up.railway.app/health
+curl https://chitti-shares-api-production.up.railway.app/health
 # → {"ok":true}
 
 # OTP flow (replace MOBILE)
-curl -X POST https://chitti-shares-api.up.railway.app/auth/send-otp \
+curl -X POST https://chitti-shares-api-production.up.railway.app/auth/send-otp \
      -H "Content-Type: application/json" \
      -d '{"mobile":"9876543210"}'
 # → {"ok":true}  (real SMS arrives if FAST2SMS_API_KEY is set)
 
 # Cron secret check
-curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/alerts?secret=wrong'
+curl -X POST 'https://chitti-shares-api-production.up.railway.app/api/cron/alerts?secret=wrong'
 # → 401
 
-curl -X POST 'https://chitti-shares-api.up.railway.app/api/cron/alerts?secret=YOUR_SECRET'
+curl -X POST 'https://chitti-shares-api-production.up.railway.app/api/cron/alerts?secret=YOUR_SECRET'
 # → {"checked":N,"fired":M}  during market hours, or {"skipped":true,"reason":"outside market hours"}
 ```
 
@@ -318,7 +318,7 @@ Open `https://shares.sahayai.in`, log in with your mobile + OTP, you're on the d
 After deploy, run this from any shell. Replace `BASE`, `MOBILE`, `CRON_SECRET`.
 
 ```bash
-BASE=https://chitti-shares-api.up.railway.app
+BASE=https://chitti-shares-api-production.up.railway.app
 MOBILE=9876543210
 SECRET=YOUR_CRON_SECRET
 
@@ -390,7 +390,7 @@ You've hit the daily ₹100 hard cap (or whatever `HARD_CAP_INR` is set to). Yah
 Yahoo Finance occasionally rate-limits or geo-blocks. yfinance retries automatically. If it persists, set `DATA_SOURCE=kite` (after Kite setup) — Kite is more reliable but paid.
 
 ### Kite re-auth needed every morning
-This is by design. Zerodha invalidates all access tokens daily ~06:00 IST. The Telegram cron at 5:55 IST sends a reminder. To re-auth: visit `https://chitti-shares-api.up.railway.app/api/market/auth-url` while logged in as `ADMIN_MOBILE`.
+This is by design. Zerodha invalidates all access tokens daily ~06:00 IST. The Telegram cron at 5:55 IST sends a reminder. To re-auth: visit `https://chitti-shares-api-production.up.railway.app/api/market/auth-url` while logged in as `ADMIN_MOBILE`.
 
 ### Cron job never runs
 - Verify the `secret` query param matches `CRON_SECRET` exactly (case-sensitive)

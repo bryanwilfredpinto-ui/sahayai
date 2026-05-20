@@ -21,7 +21,7 @@ End-to-end architecture for the Chitti News product. Mirrors the chitti-medupi +
                             │   HTTPS (CORS)
                             ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│  Flask Backend (chitti-news-api.onrender.com)                     │
+│  Flask Backend (chitti-news-api-production.up.railway.app)                     │
 │  ────────────────────────────────────────                         │
 │  main.py  →  _bootstrap()  →  _create_app()                       │
 │    ├── ensure_schema('news')                                      │
@@ -266,7 +266,7 @@ services:
       - DEEPSEEK_MODEL        (deepseek-chat)
       - DEEPSEEK_URL          (https://api.deepseek.com/chat/completions)
       - ALLOWED_ORIGINS       (https://sahayai.in,https://www.sahayai.in)
-      - BACKEND_URL           (https://chitti-news-api.up.railway.app)
+      - BACKEND_URL           (https://chitti-news-api-production.up.railway.app)
       - SCHEDULER_ENABLED     (true)
       - RSS_POLL_MINUTES      (30)
       - BRAVE_SEARCH_API_KEY  (sync: false)

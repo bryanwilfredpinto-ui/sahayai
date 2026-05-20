@@ -36,7 +36,7 @@ If you already have a Kite Connect app at developers.kite.trade, **skip to Step 
 2. **Create a new app** → choose type **Connect**.
 3. Fill in:
    - **App name**: `Chitti Shares`
-   - **Redirect URL**: `https://chitti-shares-api.up.railway.app/api/market/auth-callback` *(must match exactly — copy-paste this)*
+   - **Redirect URL**: `https://chitti-shares-api-production.up.railway.app/api/market/auth-callback` *(must match exactly — copy-paste this)*
    - **Postback URL**: leave blank
    - **Description**: anything (e.g. "AI trading dashboard")
 4. Pay the subscription:
@@ -86,7 +86,7 @@ Add these one at a time:
 |---|---|
 | `KITE_API_KEY` | *(paste the API key from Step 0)* |
 | `KITE_API_SECRET` | *(paste the API secret from Step 0)* |
-| `KITE_REDIRECT_URL` | `https://chitti-shares-api.up.railway.app/api/market/auth-callback` |
+| `KITE_REDIRECT_URL` | `https://chitti-shares-api-production.up.railway.app/api/market/auth-callback` |
 | `DEEPSEEK_API_KEY` | *(your existing DeepSeek key — confirm it's already there)* |
 | `ADMIN_MOBILE` | *(your 10-digit mobile, no +91, no spaces — same one you log in with)* |
 
@@ -110,18 +110,18 @@ Open a terminal:
 ```bash
 # Replace YOUR_MOBILE and YOUR_OTP with your actual values
 # Step 1: send yourself an OTP
-curl -X POST https://chitti-shares-api.up.railway.app/auth/send-otp \
+curl -X POST https://chitti-shares-api-production.up.railway.app/auth/send-otp \
   -H "Content-Type: application/json" \
   -d '{"mobile":"9876543210"}'
 
 # Step 2: verify and capture the access_token
-curl -X POST https://chitti-shares-api.up.railway.app/auth/verify-otp \
+curl -X POST https://chitti-shares-api-production.up.railway.app/auth/verify-otp \
   -H "Content-Type: application/json" \
   -d '{"mobile":"9876543210","otp":"123456","device_id":"admin-cli","device_type":"desktop","user_agent":"curl"}'
 # Copy the "access_token" from the response.
 
 # Step 3: get the Kite login URL
-curl https://chitti-shares-api.up.railway.app/api/market/auth-url \
+curl https://chitti-shares-api-production.up.railway.app/api/market/auth-url \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN_HERE"
 ```
 
@@ -142,7 +142,7 @@ You'll see something like:
 ### 3c. Verify it stuck
 
 ```bash
-curl https://chitti-shares-api.up.railway.app/api/market/auth-status \
+curl https://chitti-shares-api-production.up.railway.app/api/market/auth-status \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN_HERE"
 ```
 
@@ -162,7 +162,7 @@ when you re-run Step 3.
 ### Test 1: Real Nifty value matches NSE
 
 ```bash
-curl https://chitti-shares-api.up.railway.app/api/market/indices \
+curl https://chitti-shares-api-production.up.railway.app/api/market/indices \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -181,7 +181,7 @@ Hit the endpoint twice in a row — second call should be near-instant (cached).
 ### Test 3: Real DeepSeek summary
 
 ```bash
-curl https://chitti-shares-api.up.railway.app/api/market/view \
+curl https://chitti-shares-api-production.up.railway.app/api/market/view \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -207,7 +207,7 @@ If it's identical word-for-word, the cache TTL didn't expire yet — wait longer
 ### Test 5: Unauthenticated 401
 
 ```bash
-curl -i https://chitti-shares-api.up.railway.app/api/market/indices
+curl -i https://chitti-shares-api-production.up.railway.app/api/market/indices
 # expect: HTTP/2 401
 ```
 
@@ -281,8 +281,8 @@ state. Upgrade to Render's $7/month Starter plan to eliminate this.
 | Resource | URL |
 |---|---|
 | Production app | https://shares.sahayai.in |
-| Backend API | https://chitti-shares-api.up.railway.app |
-| API docs | https://chitti-shares-api.up.railway.app/docs |
+| Backend API | https://chitti-shares-api-production.up.railway.app |
+| API docs | https://chitti-shares-api-production.up.railway.app/docs |
 | Kite developer console | https://developers.kite.trade |
 | DeepSeek console | https://platform.deepseek.com |
 

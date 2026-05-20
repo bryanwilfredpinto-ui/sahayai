@@ -11,7 +11,7 @@ import { useParams, Link } from "react-router-dom";
 import { createChart, CrosshairMode, LineStyle } from "lightweight-charts";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
+  import.meta.env.VITE_API_BASE || "https://chitti-shares-api-production.up.railway.app";
 
 const TIMEFRAMES = ["Monthly", "Weekly", "Daily", "4H", "1H", "15min", "5min", "1min"];
 

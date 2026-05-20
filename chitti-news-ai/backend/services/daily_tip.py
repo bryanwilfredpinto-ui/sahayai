@@ -67,7 +67,7 @@ log = logging.getLogger("chitti-news-ai.daily_tip")
 # will exit through unchanged).
 VOICE_FACTORY_URL = os.getenv(
     "VOICE_FACTORY_URL",
-    "https://chitti-voice-factory-api.onrender.com/api/voice/speak",
+    "https://chitti-voice-factory-api-production.up.railway.app/api/voice/speak",
 )
 
 # Pre-warmed by the 06:45 IST cron so Chitti PA's 07:00 IST brief almost

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "https://chitti-shares-api.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || "https://chitti-shares-api-production.up.railway.app";
 
 const NEW_IND = new Set([
   "TTM Squeeze","Awesome Oscillator","Vortex Indicator",

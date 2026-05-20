@@ -2,7 +2,7 @@
 
 All endpoints implemented in [`backend/routes/medupi.py`](backend/routes/medupi.py) as a Flask Blueprint mounted at `/api/medupi`. Light auth on family-wallet / reminder / scheduler-trigger routes via the `X-User-Token` header (≥8 chars). Frontend generates a UUID per device and stores it in `localStorage`.
 
-Base URL (live): `https://chitti-medupi-api.up.railway.app`
+Base URL (live): `https://chitti-medupi-api-production.up.railway.app`
 
 ---
 

@@ -29,7 +29,7 @@
 | Surface | URL | Status |
 |---|---|---|
 | Frontend | https://sahayai.in/chitti_medupi.html | Live |
-| Backend API | https://chitti-medupi-api.up.railway.app | Live (Flask + gunicorn on Render free tier) |
+| Backend API | https://chitti-medupi-api-production.up.railway.app | Live (Flask + gunicorn on Render free tier) |
 | Database | Neon Postgres — `neondb` on `ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech` | Live, **211,207 rows in `medupi.medicines`** from Apollo Pharmacy dataset |
 | Schema isolation | All tables under `medupi.*` schema | Shared host with Chitti Shares (which lives under `shares.*`) |
 

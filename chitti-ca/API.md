@@ -1,6 +1,6 @@
 # Chitti CA — HTTP API
 
-Base URL (production): `https://chitti-ca-api.up.railway.app`
+Base URL (production): `https://chitti-ca-api-production.up.railway.app`
 Base URL (local): `http://localhost:8001`
 
 All endpoints return JSON. CORS is enabled for the origins listed in the `ALLOWED_ORIGINS` env var (defaults include `https://sahayai.in`, `https://www.sahayai.in`, and `localhost:5500`).
@@ -128,13 +128,13 @@ The `error` key is only present when the fallback was triggered by an upstream f
 
 ```bash
 # Banner
-curl https://chitti-ca-api.up.railway.app/
+curl https://chitti-ca-api-production.up.railway.app/
 
 # Health
-curl https://chitti-ca-api.up.railway.app/api/ca/health
+curl https://chitti-ca-api-production.up.railway.app/api/ca/health
 
 # Ask (Hindi)
-curl -X POST https://chitti-ca-api.up.railway.app/api/ca/ask \
+curl -X POST https://chitti-ca-api-production.up.railway.app/api/ca/ask \
   -H "Content-Type: application/json" \
   -d '{"text":"मैं फ्रीलांसर हूँ — मेरी आय 8 लाख है — कौन सा ITR भरूँ?","language":"hi","topic":"ITR filing"}'
 ```

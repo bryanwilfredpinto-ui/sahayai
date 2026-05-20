@@ -6,7 +6,7 @@
 2. **Family only, never cops.** The 24/7 emergency cascade rings the master → alarm → spouse → paired Chitti. It does **not** auto-dial 112 / 100 / 102 / 108 / 1098 / 1930 / 139. Enforced structurally — see [BOUNDARIES.md](BOUNDARIES.md).
 3. **SEBI disclaimer is permanent** wherever financial content surfaces (carries over to the WebView).
 4. **Voice-first, accessibility before AI.** AI is plumbed in only **after** the four-user contract is satisfied.
-5. **DeepSeek is the only LLM.** All LLM calls happen on the backend ([`chitti-vaani-api.onrender.com`](../API.md)) — never in the Android client. The shell does zero AI inference.
+5. **DeepSeek is the only LLM.** All LLM calls happen on the backend ([`chitti-vaani-api-production.up.railway.app`](../API.md)) — never in the Android client. The shell does zero AI inference.
 
 ## Native-shell-specific values
 

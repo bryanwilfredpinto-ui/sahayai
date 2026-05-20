@@ -9,7 +9,7 @@
                                     | https / CORS
                                     v
                 +---------------------------------------+
-                |  chitti-shares-api.onrender.com       |
+                |  chitti-shares-api-production.up.railway.app       |
                 |  FastAPI + Uvicorn (free tier dyno)   |
                 |                                       |
                 |   routes/         main.py             |

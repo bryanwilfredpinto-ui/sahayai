@@ -56,7 +56,7 @@ reads that section aloud in the user's language:
 
 ## Live URLs
 - Frontend: https://sahayai.in/chitti_vaani.html
-- Backend:  https://chitti-vaani-api.up.railway.app (planned — `render.yaml` ready)
+- Backend:  https://chitti-vaani-api-production.up.railway.app (planned — `render.yaml` ready)
 
 ## Cross-product hooks
 - UPI Fraud Guard ↔ Vaani: when fraud detected, frontend can deep-link

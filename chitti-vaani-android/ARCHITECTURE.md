@@ -1,6 +1,6 @@
 # ARCHITECTURE — Chitti Vaani Android
 
-This document covers the build system (Gradle modules + dependencies), the Activity/Service tree, ViewModel placement (planned), the always-on listening foreground service (planned), the audio capture pipeline, the JS bridge surface between the WebView and the native shell, and the networking layer that talks to `chitti-vaani-api.onrender.com`.
+This document covers the build system (Gradle modules + dependencies), the Activity/Service tree, ViewModel placement (planned), the always-on listening foreground service (planned), the audio capture pipeline, the JS bridge surface between the WebView and the native shell, and the networking layer that talks to `chitti-vaani-api-production.up.railway.app`.
 
 ---
 
@@ -213,7 +213,7 @@ Every method calls `SafetyChecks.requireNotUnlock(name)` first where applicable,
 
 ## 5. Networking layer
 
-Today there is **no native networking** — all HTTP traffic flows from the WebView to `chitti-vaani-api.onrender.com` and `sahayai.in`. The web tier uses standard `fetch()` and benefits from the OS HTTP stack.
+Today there is **no native networking** — all HTTP traffic flows from the WebView to `chitti-vaani-api-production.up.railway.app` and `sahayai.in`. The web tier uses standard `fetch()` and benefits from the OS HTTP stack.
 
 Outbound endpoints called from the WebView are documented in [API.md](API.md).
 
@@ -227,7 +227,7 @@ When the foreground service needs to POST `/api/vaani/emergency/trigger` **while
 | Serialization | **kotlinx.serialization** | Lightweight, no reflection at runtime |
 | Service interface | **Retrofit 2.x** | Type-safe Kotlin DSL; isolates URL strings in one place |
 | Background work | **WorkManager 2.9+** | Guaranteed delivery across boot for `FedLearningSyncWorker` |
-| Network security | [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml) — `cleartextTrafficPermitted="false"` | All traffic to `sahayai.in` and `chitti-vaani-api.onrender.com` is HTTPS only |
+| Network security | [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml) — `cleartextTrafficPermitted="false"` | All traffic to `sahayai.in` and `chitti-vaani-api-production.up.railway.app` is HTTPS only |
 
 Retrofit interface sketch (lives in `:feature:emergency` once introduced):
 

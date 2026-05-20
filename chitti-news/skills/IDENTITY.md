@@ -14,7 +14,7 @@ Chitti News is a **state-aware, multi-language Indian news aggregator** — the 
 
 - Product family: Chitti at [sahayai.in](https://sahayai.in).
 - Frontend: [chitti_news.html](../../chitti_news.html) (mirrored at [frontend/index.html](../frontend/index.html)).
-- Backend: planned at `chitti-news-api.onrender.com` — [render.yaml](../render.yaml) wired, deploy pending per [TODO.md](../TODO.md).
+- Backend: planned at `chitti-news-api-production.up.railway.app` — [render.yaml](../render.yaml) wired, deploy pending per [TODO.md](../TODO.md).
 - Origin story + non-negotiables: [CONTEXT.md](../CONTEXT.md).
 
 ## Who it serves

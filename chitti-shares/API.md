@@ -3,7 +3,7 @@
 Every HTTP route currently exposed by the Chitti Shares backend. Base URL on production:
 
 ```
-https://chitti-shares-api.up.railway.app
+https://chitti-shares-api-production.up.railway.app
 ```
 
 Grouped by surface: **Public / Shared**, **Fundamentals frontend**, **Technical frontend**, **Authenticated**, **Agentic (DeepSeek tool-calling)**, **Sibling MedUPI**, **Diagnostic / Cron / Health**.

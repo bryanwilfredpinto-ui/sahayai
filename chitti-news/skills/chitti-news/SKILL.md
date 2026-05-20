@@ -77,4 +77,4 @@ sub-agent over the generic chitti-news skill.
 
 ## Live URLs
 - Frontend: https://sahayai.in/chitti_news.html
-- Backend: https://chitti-news-api.up.railway.app (planned — `render.yaml` ready)
+- Backend: https://chitti-news-api-production.up.railway.app (planned — `render.yaml` ready)

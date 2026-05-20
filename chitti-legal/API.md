@@ -1,6 +1,6 @@
 # API — Chitti Legal
 
-Base URL (prod): `https://chitti-legal-api.up.railway.app`
+Base URL (prod): `https://chitti-legal-api-production.up.railway.app`
 Base URL (local): `http://localhost:8002`
 
 All routes live in [main.py](backend/main.py) (`/`, `/health`) and [routes/legal.py](backend/routes/legal.py) (`/api/legal/*`).

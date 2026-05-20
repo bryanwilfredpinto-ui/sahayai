@@ -13,9 +13,9 @@ What Chitti Vaani Android relies on to answer "is this true / can we do this?". 
 | Database plan | [`../DATABASE.md`](../DATABASE.md) | Room schema for queued voice samples (Phase 2.5) |
 | Auto-memory: emergency protocol | [`project_chitti_vaani_emergency_protocol`](../CONTEXT.md#3-the-vaani-emergency-protocol-family-only-never-cops) | Family-only cascade, never cops |
 
-## Backend — `chitti-vaani-api.onrender.com`
+## Backend — `chitti-vaani-api-production.up.railway.app`
 
-Hosted at `chitti-vaani-api.onrender.com`. The Android client today calls every endpoint **via the WebView**; native OkHttp/Retrofit calls land in Phase 2.4 (emergency) and Phase 2.5 (federated voice upload).
+Hosted at `chitti-vaani-api-production.up.railway.app`. The Android client today calls every endpoint **via the WebView**; native OkHttp/Retrofit calls land in Phase 2.4 (emergency) and Phase 2.5 (federated voice upload).
 
 - Endpoint index (Android-side call sites): [`../API.md`](../API.md)
 - Full request/response contracts: [`../../chitti-vaani/API.md`](../../chitti-vaani/API.md)

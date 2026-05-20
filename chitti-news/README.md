@@ -5,7 +5,7 @@
 Fourth Chitti product. Sister to **Chitti Shares (Technical + Fundamentals)** and **Chitti MedUPI**. State-aware multi-language Indian news aggregator.
 
 - **Frontend (live):** https://sahayai.in/chitti_news.html
-- **Backend (planned):** https://chitti-news-api.up.railway.app (`render.yaml` ready; deploy pending)
+- **Backend (planned):** https://chitti-news-api-production.up.railway.app (`render.yaml` ready; deploy pending)
 - **Master spec:** [CHITTI_NEWS_MASTER_SPEC.md](../CHITTI_NEWS_MASTER_SPEC.md) at workspace root
 
 ---

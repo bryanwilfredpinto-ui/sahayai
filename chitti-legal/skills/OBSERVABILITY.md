@@ -31,6 +31,6 @@ This is the safety-critical metric. Every reply must end with the canonical `LEG
 What we want next:
 
 - A startup self-test that calls each of `_fallback(...)` and a mocked DeepSeek-200 / DeepSeek-500, and asserts the disclaimer substring is present.
-- An integration smoke test on the live `chitti-legal-api.onrender.com` endpoint that POSTs a known clause and asserts the disclaimer line is in the response body.
+- An integration smoke test on the live `chitti-legal-api-production.up.railway.app` endpoint that POSTs a known clause and asserts the disclaimer line is in the response body.
 - A daily synthetic check feeding into the founder dashboard at `sahayai.in/founder` per the accountability contract in [../CONTEXT.md](../CONTEXT.md).
 

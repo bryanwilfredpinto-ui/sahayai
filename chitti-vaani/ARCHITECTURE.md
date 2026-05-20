@@ -58,7 +58,7 @@
 
 ## Phase 1 (deployed) vs Phase 2 (Android, spec only)
 
-Web Vaani — what is live on `chitti-vaani-api.onrender.com`:
+Web Vaani — what is live on `chitti-vaani-api-production.up.railway.app`:
 
 - Voice in / voice out, 9-language conversational replies
 - Gmail OAuth + "send email as Chitti AI" with the Chitti signature
@@ -119,13 +119,13 @@ Auth model:
 | `ALLOWED_ORIGINS` | CORS allowlist, comma-separated | unset → `*` |
 | `VAANI_MAX_TOKENS` / `VAANI_TEMPERATURE` | DeepSeek tuning | 600 / 0.4 |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Gmail OAuth | unset |
-| `GOOGLE_REDIRECT_URI` | end-user Gmail callback | `https://chitti-vaani-api.up.railway.app/api/vaani/email/auth/callback` |
+| `GOOGLE_REDIRECT_URI` | end-user Gmail callback | `https://chitti-vaani-api-production.up.railway.app/api/vaani/email/auth/callback` |
 | `VAANI_TOKEN_DB` / `VAANI_RELAY_DB` | SQLite paths (ephemeral on Render free tier) | `/tmp/chitti_vaani_tokens.sqlite` / `/tmp/chitti_vaani_relay.sqlite` |
 | `ADMIN_SECRET` | shared secret for `/api/admin/*` + `/api/feedback/*` admin endpoints. Missing = 503. | unset |
 | `ADMIN_DATABASE_URL` / `DATABASE_URL` | Postgres for admin + feedback tables; rewrites `postgres://` to `postgresql+psycopg2://` | unset → SQLite |
 | `ADMIN_TOKEN_DB` / `FEEDBACK_DB_PATH` | SQLite fallback paths | `/tmp/chitti_admin.sqlite` / `/tmp/chitti_feedback.sqlite` |
 | `ADMIN_NOTIFY_EMAIL` | recipient of keep-alive + daily feedback report | `sire@gmail.com` |
-| `ADMIN_OAUTH_REDIRECT_URI` | per-product Gmail callback | `https://chitti-vaani-api.up.railway.app/api/admin/products/oauth/callback` |
+| `ADMIN_OAUTH_REDIRECT_URI` | per-product Gmail callback | `https://chitti-vaani-api-production.up.railway.app/api/admin/products/oauth/callback` |
 | `ADMIN_KEEPALIVE_DAY/HOUR/MINUTE` | monthly cron in IST | 1 / 6 / 0 |
 | `ADMIN_SCHEDULER_ENABLED` / `ADMIN_SEED_DEFAULTS` | kill-switches | `true` / `true` |
 | `FEEDBACK_REPORT_HOUR/MINUTE` | daily cron in IST | 6 / 0 |

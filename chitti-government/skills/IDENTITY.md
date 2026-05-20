@@ -16,4 +16,4 @@ Not a sarkari seva. Not a status fetcher. Not an Aadhaar collector. Not an LLM t
 
 ## Frontend / Backend
 
-[`../../chitti_government.html`](../../chitti_government.html) plus `chitti-government-api.onrender.com`. Full spec in [`../../CHITTI_GOVERNMENT_MASTER_SPEC.md`](../../CHITTI_GOVERNMENT_MASTER_SPEC.md).
+[`../../chitti_government.html`](../../chitti_government.html) plus `chitti-government-api-production.up.railway.app`. Full spec in [`../../CHITTI_GOVERNMENT_MASTER_SPEC.md`](../../CHITTI_GOVERNMENT_MASTER_SPEC.md).

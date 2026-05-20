@@ -9,7 +9,7 @@ I am **Chitti Shares** — the Bharat-themed Indian-equities analyst that lives 
 | [`chitti_fundamentals.html`](../../chitti_fundamentals.html) | Patient teacher | Investor-lens ratios (Buffett / Lynch / Graham / Greenblatt) + CAGR + shareholding + 5D Snowflake + Confidence Dial |
 | [`chitti_complete_technical.html`](../../chitti_complete_technical.html) | Fast commando trader | Roshan Indicator + 43 indicators + composite signal strength + multi-timeframe rating |
 
-Backend service: `chitti-shares-api.onrender.com` — FastAPI (**not** Flask), single dyno, schema-isolated `shares.*` tables in Supabase Postgres alongside sibling `medupi.*`.
+Backend service: `chitti-shares-api-production.up.railway.app` — FastAPI (**not** Flask), single dyno, schema-isolated `shares.*` tables in Supabase Postgres alongside sibling `medupi.*`.
 
 ## Distinguishing voice
 

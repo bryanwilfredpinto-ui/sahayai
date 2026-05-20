@@ -34,7 +34,7 @@ Sibling product file at the workspace root. Same Bharat Premium theme. Same back
 | **Mission** | Make healthcare affordable, transparent, and stress-free for every Indian family — especially the common man. |
 | **Target users** | Tier-2/3 city families (Bhopal, Indore, Pune, Lucknow), middle / lower-middle class, chronic patients (diabetes / BP / thyroid), elderly parents, daily-wage earners. |
 | **Live URL** | `https://sahayai.in/chitti_medupi.html` |
-| **Backend** | `chitti-shares-api.onrender.com` (shared with Shares for now; carve to own service if scale demands) |
+| **Backend** | `chitti-shares-api-production.up.railway.app` (shared with Shares for now; carve to own service if scale demands) |
 
 **Why the name works:** "MedUPI" reads instantly as *Medical UPI* — the same instant, simple, transparent intelligence UPI brought to payments, applied to medicine costs. "Chitti" adds a friendly, trustworthy Indian personality (helpful robot + "small/affordable helper").
 
@@ -518,7 +518,7 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 - **Cross-product nav** (this commit) — Chitti News added to all sister pages' headers. MedUPI now has 📈 Technical · 📋 Fundamentals · 📰 News switch buttons. Same pattern across Technical, Fundamentals, News.
 
 ### ⚠️ OPEN — production-vs-local DB gap
-- **Apollo's 211k rows are in Neon (`ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech/neondb`). The live `chitti-medupi-api.onrender.com` queries Supabase (`medupi.*` schema, 51-row seed only).** Two paths to close:
+- **Apollo's 211k rows are in Neon (`ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech/neondb`). The live `chitti-medupi-api-production.up.railway.app` queries Supabase (`medupi.*` schema, 51-row seed only).** Two paths to close:
   - (A) Update Render's `chitti-medupi-api` env var `DATABASE_URL` to the Neon URL → live API instantly serves 211k rows.
   - (B) Re-run the Apollo loader against Supabase → both DBs match.
 - Neither path has been chosen yet; live API still serves the original 51-row seed.
@@ -526,7 +526,7 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 ### ⏳ PENDING (next session priority order)
 1. **Top up DeepSeek balance** — unblocks `/api/agent/medupi/ask`, `/api/agent/technical/ask`, `/api/agent/fundamental/ask`, `/api/chitti-view/`. One billing action; no code change.
 2. **Run the loader on real downloads** — Bryan downloads the four government CSV/XLSX files (BPPI products, Jan Aushadhi stores, NPPA ceiling prices, CDSCO approved formulations), then runs `python scripts/load_real_data.py --source <each> --file <path>` four times. Expected DB after: ~2,000 medicines · ~11,000 stores. Then `python scripts/load_real_data.py --source kaggle --file kaggle.csv` (~250k branded rows · ~5 min batch-committed) + `--source rxnorm` (~7 min) + `--source openfda` (~10 min) for enrichment.
-2. **Deploy `chitti-medupi/backend`** to Render as `chitti-medupi-api.onrender.com` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
+2. **Deploy `chitti-medupi/backend`** to Render as `chitti-medupi-api-production.up.railway.app` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
 3. **Until that ships**, port the upgraded service logic into `chitti-shares/backend/services/medupi_*.py` so the existing `chitti-shares-api` deploy serves the same responses (move the seed JSONs over + add `rapidfuzz` + `anthropic` + `pandas` + `openpyxl` to chitti-shares requirements).
 4. **Live verification** — once deployed, curl `/api/medupi/medicine/Crocin%20650`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`, `/api/medupi/insurance/Telmisartan?scheme=ayushman` from production. Bryan verifies on phone before handover (per the verify-on-live memory).
 5. **Browser push reminders** — service worker + Notification API on top of the live `/api/medupi/reminder` CRUD.

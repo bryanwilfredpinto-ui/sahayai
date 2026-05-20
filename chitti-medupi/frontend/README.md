@@ -11,12 +11,12 @@ file Bryan edits + serves is the workspace-root one.
 
 ## What's wired
 Frontend talks to the live backend via `API_BASE`, defaulting to
-`https://chitti-shares-api.up.railway.app` (current production). To swap
+`https://chitti-shares-api-production.up.railway.app` (current production). To swap
 to the new `chitti-medupi/backend` once deployed, run this in the
 browser console on the live page:
 
 ```js
-localStorage.setItem('chitti_medupi_api_base', 'https://chitti-medupi-api.up.railway.app');
+localStorage.setItem('chitti_medupi_api_base', 'https://chitti-medupi-api-production.up.railway.app');
 location.reload();
 ```
 

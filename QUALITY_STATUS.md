@@ -190,13 +190,13 @@ Confirmed via `curl -sI` from outside the dev box, against live Render
 production:
 
 ```
-$ curl -sI https://chitti-vaani-api.up.railway.app/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-vaani-api-production.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 
-$ curl -sI https://chitti-ca-api.up.railway.app/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-ca-api-production.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 
-$ curl -sI https://chitti-medupi-api.up.railway.app/health | grep -i x-chitti-response-time
+$ curl -sI https://chitti-medupi-api-production.up.railway.app/health | grep -i x-chitti-response-time
 x-chitti-response-time-ms: 0
 ```
 

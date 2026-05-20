@@ -18,7 +18,7 @@ class Settings:
     TEMPERATURE: float = float(os.environ.get("SCANNER_TEMPERATURE", "0.2"))
     # Cross-product link to the MedUPI backend (for Jan-Aushadhi lookups when
     # a medicine is detected). The frontend may call MedUPI directly too.
-    MEDUPI_API_BASE: str = os.environ.get("MEDUPI_API_BASE", "https://chitti-medupi-api.up.railway.app")
+    MEDUPI_API_BASE: str = os.environ.get("MEDUPI_API_BASE", "https://chitti-medupi-api-production.up.railway.app")
 
 
 settings = Settings()

@@ -102,7 +102,7 @@ a **Personal Access Token** instead of your password:
 | `OTP_LENGTH` | `6` |
 | `OTP_EXPIRY_MINUTES` | `5` |
 | `FRONTEND_URL` | `https://shares.sahayai.in` |
-| `BACKEND_URL` | `https://chitti-shares-api.up.railway.app` |
+| `BACKEND_URL` | `https://chitti-shares-api-production.up.railway.app` |
 | `DEV_MODE_FAKE_OTP` | `false` |
 
 5. Set **Health Check Path** to `/health`.
@@ -112,7 +112,7 @@ a **Personal Access Token** instead of your password:
    Application startup complete.
    Uvicorn running on http://0.0.0.0:10000
    ```
-8. Once green, open `https://chitti-shares-api.up.railway.app/health` in a browser.
+8. Once green, open `https://chitti-shares-api-production.up.railway.app/health` in a browser.
    You should see: `{"ok":true}` ✅
 
 > **First-deploy gotcha**: Free Render web services sleep after 15 min of no traffic.
@@ -134,7 +134,7 @@ a **Personal Access Token** instead of your password:
 
 | Key | Value |
 |---|---|
-| `VITE_API_URL` | `https://chitti-shares-api.up.railway.app` |
+| `VITE_API_URL` | `https://chitti-shares-api-production.up.railway.app` |
 
 5. Click **Create Static Site**.
 6. While it builds, click **Redirects/Rewrites** in the left side panel and add:
@@ -257,9 +257,9 @@ Open browser DevTools → Network tab → look for the `/user/me` call.
 | Resource | URL |
 |---|---|
 | Production app | https://shares.sahayai.in |
-| Backend API | https://chitti-shares-api.up.railway.app |
-| API docs (Swagger) | https://chitti-shares-api.up.railway.app/docs |
-| Health check | https://chitti-shares-api.up.railway.app/health |
+| Backend API | https://chitti-shares-api-production.up.railway.app |
+| API docs (Swagger) | https://chitti-shares-api-production.up.railway.app/docs |
+| Health check | https://chitti-shares-api-production.up.railway.app/health |
 | Render dashboard | https://dashboard.render.com |
 | Repo | https://github.com/bryanwilfredpinto-ui/sahayai |
 | Fast2SMS dashboard | https://www.fast2sms.com/dashboard |

@@ -7,7 +7,7 @@ Indian equities backend that powers **two** Chitti front-ends from a single Fast
 | [`chitti_fundamentals.html`](../chitti_fundamentals.html) | https://sahayai.in/chitti_fundamentals.html | Patient teacher (Buffett / Lynch / Graham / Greenblatt lenses) |
 | [`chitti_complete_technical.html`](../chitti_complete_technical.html) | https://sahayai.in/chitti_complete_technical.html | Fast technical trader (Roshan Indicator + 43 indicators) |
 
-Backend service: `https://chitti-shares-api.up.railway.app`
+Backend service: `https://chitti-shares-api-production.up.railway.app`
 
 ## Data sources (locked)
 
