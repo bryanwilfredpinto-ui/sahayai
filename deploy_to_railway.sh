@@ -171,15 +171,24 @@ deploy_service() {
   log "  staging $root into a clean temp dir ..."
   local tmp
   tmp="$(mktemp -d -t "railway-${svc}-XXXXXX")"
-  # cp everything except heavyweight runtime data (e.g. chitti-voice-factory's
-  # 213 MB fluency corpus under data/). The corpus is rebuilt at runtime or
-  # synced from Turso/Supabase; it must never bloat the deploy snapshot.
+  # cp everything except runtime caches (__pycache__, .venv, etc.). The
+  # data/ folder is preserved for every Chitti EXCEPT chitti-voice-factory,
+  # whose 213 MB fluency corpus is rebuilt at runtime or synced from Turso.
+  # For chitti-news-ai and chitti-medupi, data/ holds seed JSON (sources,
+  # Jan Aushadhi, medicines) that the bootstrap loader needs at first boot.
+  local skip_data=0
+  case "$svc" in
+    chitti-voice-factory-api) skip_data=1 ;;
+  esac
   ( cd "$root" && \
     for item in * .[!.]*; do
       [ -e "$item" ] || continue
       case "$item" in
-        data|__pycache__|.git|node_modules|.venv|venv|.pytest_cache) continue ;;
+        __pycache__|.git|node_modules|.venv|venv|.pytest_cache) continue ;;
       esac
+      if [ "$item" = "data" ] && [ "$skip_data" -eq 1 ]; then
+        continue
+      fi
       cp -a "$item" "$tmp/"
     done )
 

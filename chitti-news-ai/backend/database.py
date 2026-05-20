@@ -109,7 +109,16 @@ def _resolve_url(raw: str) -> str:
         _bootstrap_replica(raw, local, settings.turso_auth_token)
         return f"sqlite:///{local}"
 
-    return raw
+    if raw.startswith(("sqlite:", "postgresql:", "postgres:", "mysql:", "mariadb:")):
+        if raw.startswith("postgres://"):
+            return raw.replace("postgres://", "postgresql://", 1)
+        return raw
+
+    # Unrecognised value (placeholder like PASTE_LIBSQL_URL_HERE, or empty).
+    # Fall back to local SQLite so the gunicorn worker still boots and /health
+    # responds — DB-backed routes will return empty rows until a real value lands.
+    log.warning("Unrecognised DATABASE_URL=%r — falling back to local SQLite for boot", raw)
+    return "sqlite:////tmp/chitti_news_ai_fallback.db"
 
 
 db_url = _resolve_url(settings.database_url)

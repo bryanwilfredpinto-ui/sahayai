@@ -78,7 +78,15 @@ def _resolve_url(raw: str) -> str:
 
     if raw.startswith("postgres://"):
         return raw.replace("postgres://", "postgresql://", 1)
-    return raw
+
+    if raw.startswith(("sqlite:", "postgresql:", "mysql:", "mariadb:")):
+        return raw
+
+    # Unrecognised value (placeholder like PASTE_LIBSQL_URL_HERE, or empty).
+    # Fall back to local SQLite so the gunicorn worker still boots and /health
+    # responds — DB-backed routes will return empty rows until a real value lands.
+    log.warning("Unrecognised DATABASE_URL=%r — falling back to local SQLite for boot", raw)
+    return "sqlite:////tmp/chitti_4wheeler_fallback.db"
 
 
 db_url = _resolve_url(settings.DATABASE_URL)
