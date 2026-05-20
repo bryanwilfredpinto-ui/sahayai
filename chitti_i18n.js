@@ -330,15 +330,24 @@
     return true;
   }
 
+  // MyMemory returns quota / rate-limit info via `responseStatus` (429/403)
+  // AND ALSO writes warning text directly into `translatedText` ("MYMEMORY
+  // WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY..."). Catch
+  // both shapes so the warning string never gets cached or written into the
+  // page. A {quotaHit:true} sentinel tells the orchestrator to stop sending.
+  const _XLAT_QUOTA_RE = /MYMEMORY WARNING|ALL AVAILABLE FREE TRANSLATIONS|QUOTA EXCEEDED/i;
   async function _myMemoryFetch(text, target) {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${target}`;
     try {
       const r = await fetch(url, { method: 'GET' });
       if (!r.ok) return null;
       const d = await r.json();
+      const status = d && d.responseStatus;
+      if (status === 429 || status === 403) return { quotaHit: true };
       const t = d && d.responseData && d.responseData.translatedText;
       const m = d && d.responseData && d.responseData.match;
       if (!t) return null;
+      if (_XLAT_QUOTA_RE.test(t)) return { quotaHit: true };
       // No data for this lang pair — MyMemory returns source verbatim.
       if ((m || 0) < 0.3 && t.trim().toLowerCase() === text.trim().toLowerCase()) return null;
       return t;
@@ -377,14 +386,17 @@
       items.push({ node: n, orig, raw: n.nodeValue });
     }
 
-    // Fast path: apply cached translations immediately.
+    // Fast path: apply cached translations immediately. Reject any cached
+    // entry that's actually a MyMemory quota-warning string accidentally
+    // saved during the 2026-05-20 partial-detection window.
     const uncached = [];
     for (const it of items) {
       const c = cache[cacheKey(it.orig)];
-      if (c) {
+      if (c && !_XLAT_QUOTA_RE.test(c)) {
         const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
         it.node.nodeValue = L + c + T;
       } else {
+        if (c) delete cache[cacheKey(it.orig)];  // purge poison
         uncached.push(it);
       }
     }
@@ -394,13 +406,24 @@
       return;
     }
 
-    // Slow path — fan out N concurrent fetches, batched.
+    // Slow path — fan out N concurrent fetches, batched. The first worker
+    // that hits a quota signal flips `quotaHit` and every other worker
+    // exits its loop. Nothing is written to the page or the cache from a
+    // quota response — that's how we used to silently cache the MyMemory
+    // "WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS" string into
+    // node.nodeValue (the localStorage poisoning Bryan caught after his
+    // 4-language screenshot run on 2026-05-20).
     let cursor = 0;
+    let quotaHit = false;
     async function worker() {
-      while (cursor < uncached.length) {
+      while (cursor < uncached.length && !quotaHit) {
         const it = uncached[cursor++];
         const trans = await _myMemoryFetch(it.orig, target);
-        if (trans) {
+        if (trans && typeof trans === 'object' && trans.quotaHit) {
+          quotaHit = true;
+          break;
+        }
+        if (typeof trans === 'string') {
           cache[cacheKey(it.orig)] = trans;
           const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
           it.node.nodeValue = L + trans + T;
@@ -412,7 +435,12 @@
     await Promise.all(ws);
 
     _saveXlatCache(cache);
-    document.dispatchEvent(new CustomEvent('chitti:i18n:mt-done', { detail: { lang: target, source: 'mymemory', count: items.length } }));
+    document.dispatchEvent(new CustomEvent('chitti:i18n:mt-done', {
+      detail: { lang: target, source: quotaHit ? 'mymemory-quota-hit' : 'mymemory', count: items.length, quotaHit }
+    }));
+    // Surface honest quota notice — illiterate/blind users need to know
+    // when translation is degraded so they don't think the app broke.
+    if (quotaHit) _ensurePendingFooter(target, true);
   }
 
   function applyLang(lang) {
@@ -471,13 +499,17 @@
   }
 
   let _pendingFooterEl = null;
-  function _ensurePendingFooter(code) {
-    if (STRONG.has(code)) {
-      if (_pendingFooterEl && _pendingFooterEl.parentNode) _pendingFooterEl.parentNode.removeChild(_pendingFooterEl);
-      _pendingFooterEl = null;
-      return;
+  function _ensurePendingFooter(code, quotaHit) {
+    // Quota-hit overrides the stub-lang check: show the honest notice on
+    // ANY language when MyMemory said "no more translations today".
+    if (!quotaHit) {
+      if (STRONG.has(code)) {
+        if (_pendingFooterEl && _pendingFooterEl.parentNode) _pendingFooterEl.parentNode.removeChild(_pendingFooterEl);
+        _pendingFooterEl = null;
+        return;
+      }
+      if (!STUB.has(code)) return;
     }
-    if (!STUB.has(code)) return;
     // Stub language — show the honest "translation pending" line.
     if (_pendingFooterEl) return;
     _pendingFooterEl = document.createElement('div');
