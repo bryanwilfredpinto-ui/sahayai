@@ -1276,8 +1276,12 @@
     const css = document.createElement('style');
     css.id = 'chitti-status-dot-css';
     css.textContent = `
+      /* Top-right, sitting directly below the #chitti-langbar so the
+         language pill + status pill cluster as one visual unit. The
+         original top-left position collided with page-authored buttons
+         (Demo Mode, ISL, What-can-Chitti-do) on several Chitti pages. */
       .chitti-status-host {
-        position:fixed; top:14px; left:14px; z-index:9999;
+        position:fixed; top:54px; right:12px; z-index:9998;
         display:inline-flex; align-items:center; gap:6px;
         background:rgba(14,35,68,.92); color:#fff;
         padding:5px 11px 5px 8px; border-radius:999px;
@@ -1295,14 +1299,18 @@
       .chitti-status-dot.grey   { background:#94a3b8; }
       .chitti-status-dot.green  { background:#16a34a; }
       .chitti-status-dot.orange { background:#f59e0b; animation:chitti-status-pulse 1.2s ease-in-out infinite; }
-      .chitti-status-dot.red    { background:#dc2626; }
+      .chitti-status-dot.red    { background:#dc2626; animation:chitti-status-pulse-red 1.8s ease-in-out infinite; }
       @keyframes chitti-status-pulse {
         0%,100% { transform:scale(1);    opacity:1;  box-shadow:0 0 0 0  rgba(245,158,11,.7); }
         50%     { transform:scale(1.18); opacity:.7; box-shadow:0 0 0 7px rgba(245,158,11,0); }
       }
+      @keyframes chitti-status-pulse-red {
+        0%,100% { box-shadow:0 0 0 0  rgba(220,38,38,.6); }
+        50%     { box-shadow:0 0 0 6px rgba(220,38,38,0); }
+      }
       .chitti-status-lbl { font-weight:700; }
       @media (max-width:520px) {
-        .chitti-status-host { top:40px; left:8px; padding:3px 9px 3px 7px; font-size:10px; gap:5px; }
+        .chitti-status-host { top:46px; right:6px; padding:3px 9px 3px 7px; font-size:10px; gap:5px; }
         .chitti-status-dot  { width:9px; height:9px; }
       }
       @media print { .chitti-status-host { display:none !important; } }
