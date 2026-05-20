@@ -265,8 +265,154 @@
       const leading = raw.match(/^\s*/)[0];
       const trailing = raw.match(/\s*$/)[0];
       node.nodeValue = leading + val + trailing;
+      // Mark the parent so the live-MT pass below can skip it.
+      if (node.parentElement) node.parentElement.setAttribute('data-chitti-i18n-done', '1');
     }
     return hits.length;
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Live machine-translation pass — for languages NOT covered by the
+  // STRINGS hand-translation table (most page text — headings, body
+  // copy, button labels page authors didn't mark with data-i18n).
+  //
+  // Engine: MyMemory (https://mymemory.translated.net/doc/spec.php) —
+  // free, CORS-enabled, no auth, decent coverage for the 13 STRONG
+  // Indian languages. For STUB langs (sat, brx, mni, mai, ks, sd, doi,
+  // kok, hne, raj, kru, ho, tcy, kfa, sa, bho, ne) MyMemory may return
+  // the source verbatim — we detect this and skip.
+  //
+  // Cache: localStorage keyed by `${lang}::${origText}`. First switch
+  // is async (text flips as fetches return); every later switch and
+  // every later page load is instant.
+  //
+  // Long-term: swap to Bhashini per SAHAYAI_MASTER §2 voice strategy
+  // LOCK ("Bhashini is TEMPORARY... swappable at any time"). Change
+  // _XLAT_FETCH below to point at the Bhashini endpoint when ULCA
+  // registration lands; everything else stays.
+  //
+  // Day-1 contract per Bryan 2026-05-20: "If user selects Bangla the
+  // entire UI must change in Bangla. Users are blind / deaf / mute /
+  // illiterate." This pass makes that contract live.
+  // ────────────────────────────────────────────────────────────────
+  const _XLAT_CACHE_KEY = 'chitti_xlat_v1';
+  const _XLAT_MAX_TEXT_LEN = 400;
+  const _XLAT_CONCURRENCY = 5;
+  const _origTextMap = new WeakMap();
+
+  function _getXlatCache() {
+    try { return JSON.parse(localStorage.getItem(_XLAT_CACHE_KEY) || '{}'); }
+    catch (_) { return {}; }
+  }
+  function _saveXlatCache(cache) {
+    try { localStorage.setItem(_XLAT_CACHE_KEY, JSON.stringify(cache)); }
+    catch (_) { /* localStorage may be full / disabled — best-effort */ }
+  }
+  function _origFor(node) {
+    if (_origTextMap.has(node)) return _origTextMap.get(node);
+    const t = (node.nodeValue || '').trim();
+    if (t.length < 2) return null;
+    _origTextMap.set(node, t);
+    return t;
+  }
+
+  // Sources we never send to MyMemory — obvious noise that wastes quota.
+  function _isTranslatable(text) {
+    if (text.length < 2 || text.length > _XLAT_MAX_TEXT_LEN) return false;
+    if (/^\s*$/.test(text)) return false;
+    // Numbers / currency / pure punctuation / urls / emails
+    if (/^[\d.,₹$%+\-/\s()]+$/.test(text)) return false;
+    if (/^https?:\/\//i.test(text)) return false;
+    if (/^[\w.+-]+@[\w.-]+\.\w+$/.test(text)) return false;
+    // Mostly emoji
+    const letters = (text.match(/[a-zA-Z]/g) || []).length;
+    if (letters === 0) return false;
+    return true;
+  }
+
+  async function _myMemoryFetch(text, target) {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${target}`;
+    try {
+      const r = await fetch(url, { method: 'GET' });
+      if (!r.ok) return null;
+      const d = await r.json();
+      const t = d && d.responseData && d.responseData.translatedText;
+      const m = d && d.responseData && d.responseData.match;
+      if (!t) return null;
+      // No data for this lang pair — MyMemory returns source verbatim.
+      if ((m || 0) < 0.3 && t.trim().toLowerCase() === text.trim().toLowerCase()) return null;
+      return t;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function _translatePageNow(target) {
+    if (!target || target === 'en') return;
+    const tableStrings = _buildReverseMap();
+    const cache = _getXlatCache();
+    const cacheKey = (orig) => `${target}::${orig}`;
+
+    const walker = document.createTreeWalker(
+      document.body || document.documentElement,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function (n) {
+          if (_shouldSkipNode(n.parentElement)) return NodeFilter.FILTER_REJECT;
+          const t = (n.nodeValue || '').trim();
+          if (!_isTranslatable(t)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    const items = [];
+    let n;
+    while ((n = walker.nextNode())) {
+      const orig = _origFor(n);
+      if (!orig) continue;
+      // Static walker already handled — don't double-translate.
+      if (tableStrings[orig]) continue;
+      if (n.parentElement && n.parentElement.getAttribute('data-chitti-i18n-done')) continue;
+      items.push({ node: n, orig, raw: n.nodeValue });
+    }
+
+    // Fast path: apply cached translations immediately.
+    const uncached = [];
+    for (const it of items) {
+      const c = cache[cacheKey(it.orig)];
+      if (c) {
+        const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
+        it.node.nodeValue = L + c + T;
+      } else {
+        uncached.push(it);
+      }
+    }
+
+    if (!uncached.length) {
+      document.dispatchEvent(new CustomEvent('chitti:i18n:mt-done', { detail: { lang: target, source: 'cache', count: items.length } }));
+      return;
+    }
+
+    // Slow path — fan out N concurrent fetches, batched.
+    let cursor = 0;
+    async function worker() {
+      while (cursor < uncached.length) {
+        const it = uncached[cursor++];
+        const trans = await _myMemoryFetch(it.orig, target);
+        if (trans) {
+          cache[cacheKey(it.orig)] = trans;
+          const L = it.raw.match(/^\s*/)[0], T = it.raw.match(/\s*$/)[0];
+          it.node.nodeValue = L + trans + T;
+        }
+      }
+    }
+    const ws = [];
+    for (let i = 0; i < _XLAT_CONCURRENCY; i++) ws.push(worker());
+    await Promise.all(ws);
+
+    _saveXlatCache(cache);
+    document.dispatchEvent(new CustomEvent('chitti:i18n:mt-done', { detail: { lang: target, source: 'mymemory', count: items.length } }));
   }
 
   function applyLang(lang) {
@@ -309,12 +455,18 @@
     //    substrate-string coverage (illiterate-user contract — full UI
     //    flip on language change).
     try { _applyAutoTranslate(code); } catch (_) {}
-    // 5. Set <html lang> + dir.
+    // 5. Live MT pass via MyMemory — translates every visible text node
+    //    that the static table didn't cover. Async; text flips in as
+    //    fetches return. Cached aggressively so subsequent switches and
+    //    re-visits are instant. Day-1 contract per Bryan: "If user
+    //    selects Bangla the entire UI must change in Bangla."
+    try { _translatePageNow(code); } catch (_) {}
+    // 6. Set <html lang> + dir.
     document.documentElement.setAttribute('lang', code);
     document.documentElement.setAttribute('dir', RTL_LANGS.has(code) ? 'rtl' : 'ltr');
-    // 6. Honest stub-language footer (small, sticky bottom on stub langs).
+    // 7. Honest stub-language footer (small, sticky bottom on stub langs).
     _ensurePendingFooter(code);
-    // 7. Fire event so pages can listen + re-render dynamic content.
+    // 8. Fire event so pages can listen + re-render dynamic content.
     document.dispatchEvent(new CustomEvent('chitti:i18n:applied', { detail: { lang: code } }));
   }
 
