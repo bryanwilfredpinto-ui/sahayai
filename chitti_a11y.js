@@ -1191,6 +1191,222 @@
     // chip helpers. All exposed on Chitti.a11y.* so every Chitti page
     // inherits without code changes.
     ensureCrossSubstrate();
+
+    // Backend status dot (LOCKED 2026-05-20). Per-Chitti `/health` ping
+    // every 30 s, dot rendered next to the Chitti logo / langbar. Lets
+    // users see in 1 glance whether the backend is live / warming up /
+    // down — important for blind users who otherwise hear "loading…"
+    // forever and can't tell whether to wait or retry.
+    try { injectStatusDot(); } catch (e) { /* never block init on a network probe */ }
+  }
+
+  // ── BACKEND STATUS DOT — LOCKED 2026-05-20 (Bryan's directive) ───
+  // Per-Chitti URL map. Pages can override with
+  // <meta name="chitti-backend" content="https://..."> or
+  // <body data-chitti-backend="https://...">. Pages with no backend (the
+  // landing page, the offline shell, the quality dashboard) get no dot.
+  const CHITTI_BACKEND_MAP = {
+    'chitti_vaani.html':              'https://chitti-vaani-api-production.up.railway.app',
+    'chitti_medupi.html':             'https://chitti-medupi-api-production.up.railway.app',
+    'chitti_ca.html':                 'https://chitti-ca-api-production.up.railway.app',
+    'chitti_legal.html':              'https://chitti-legal-api-production.up.railway.app',
+    'chitti_government.html':         'https://chitti-government-api-production.up.railway.app',
+    'chitti_news.html':               'https://chitti-news-api-production.up.railway.app',
+    'chitti_news_ai.html':            'https://chitti-news-ai-api-production.up.railway.app',
+    'chitti_upi.html':                'https://chitti-upi-api-production.up.railway.app',
+    'chitti_scanner.html':            'https://chitti-scanner-api-production.up.railway.app',
+    'chitti_fundamentals.html':       'https://chitti-shares-api-production.up.railway.app',
+    'chitti_complete_technical.html': 'https://chitti-shares-api-production.up.railway.app',
+    'chitti_2wheeler.html':           'https://chitti-2wheeler-api-production.up.railway.app',
+    'chitti_4wheeler.html':           'https://chitti-4wheeler-api-production.up.railway.app',
+    'chitti_voice_factory.html':      'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_voice_hall_of_fame.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_isl.html':                'https://chitti-vaani-api-production.up.railway.app',
+    'chitti_logo_video.html':         null,  // stub product, no backend yet
+    'chitti_quality.html':            'https://chitti-founder-api.up.railway.app',
+    // Voice Factory donor pages — all 26 lang variants ping voice-factory.
+    'chitti_hi.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_bn.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_te.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_ta.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_mr.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_gu.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_kn.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_ml.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_pa.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_or.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_ur.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_as.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_sa.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_bho.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_hne.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_mai.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_kok.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_doi.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_sd.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_ks.html':  'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_mni.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_brx.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_sat.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_tcy.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_kfa.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+    'chitti_kru.html': 'https://chitti-voice-factory-api-production.up.railway.app',
+  };
+
+  const STATUS_PING_INTERVAL_MS = 30000;  // every 30 s per Bryan's spec
+  const STATUS_SLOW_THRESHOLD_MS = 3000;  // >3s = ORANGE (cold start)
+  const STATUS_HARD_TIMEOUT_MS   = 20000; // abort after this — RED
+  let _statusTimer = null;
+  let _statusPinging = false;
+
+  function _resolveBackendUrl() {
+    // Explicit override via <meta> or <body data-> wins.
+    const meta = document.querySelector('meta[name="chitti-backend"]');
+    if (meta && meta.content) return meta.content;
+    const bodyAttr = document.body && document.body.getAttribute('data-chitti-backend');
+    if (bodyAttr) return bodyAttr;
+    // Otherwise look up by filename.
+    const fn = (location.pathname.split('/').pop() || '').toLowerCase();
+    if (CHITTI_BACKEND_MAP.hasOwnProperty(fn)) return CHITTI_BACKEND_MAP[fn];
+    return null;
+  }
+
+  function _injectStatusDotStyles() {
+    if (document.getElementById('chitti-status-dot-css')) return;
+    const css = document.createElement('style');
+    css.id = 'chitti-status-dot-css';
+    css.textContent = `
+      .chitti-status-host {
+        position:fixed; top:14px; left:14px; z-index:9999;
+        display:inline-flex; align-items:center; gap:6px;
+        background:rgba(14,35,68,.92); color:#fff;
+        padding:5px 11px 5px 8px; border-radius:999px;
+        font:600 11px/1 system-ui,-apple-system,sans-serif;
+        letter-spacing:.4px; box-shadow:0 4px 14px rgba(0,0,0,.22);
+        cursor:help;
+      }
+      .chitti-status-host:hover { background:#0E2344; }
+      .chitti-status-dot {
+        display:inline-block; width:10px; height:10px; border-radius:50%;
+        border:2px solid rgba(255,255,255,.4);
+        box-shadow:0 0 0 1px rgba(0,0,0,.18);
+        transition:background .3s ease;
+      }
+      .chitti-status-dot.grey   { background:#94a3b8; }
+      .chitti-status-dot.green  { background:#16a34a; }
+      .chitti-status-dot.orange { background:#f59e0b; animation:chitti-status-pulse 1.2s ease-in-out infinite; }
+      .chitti-status-dot.red    { background:#dc2626; }
+      @keyframes chitti-status-pulse {
+        0%,100% { transform:scale(1);    opacity:1;  box-shadow:0 0 0 0  rgba(245,158,11,.7); }
+        50%     { transform:scale(1.18); opacity:.7; box-shadow:0 0 0 7px rgba(245,158,11,0); }
+      }
+      .chitti-status-lbl { font-weight:700; }
+      @media (max-width:520px) {
+        .chitti-status-host { top:40px; left:8px; padding:3px 9px 3px 7px; font-size:10px; gap:5px; }
+        .chitti-status-dot  { width:9px; height:9px; }
+      }
+      @media print { .chitti-status-host { display:none !important; } }
+      /* Inline mode — when a page hosts the dot inside its own logo banner. */
+      [data-chitti-status] .chitti-status-host {
+        position:static; background:transparent; box-shadow:none;
+        color:inherit; padding:0;
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  const _STATUS_LABEL = {
+    grey:   'CHECKING',
+    green:  'LIVE',
+    orange: 'WARMING',
+    red:    'DOWN',
+  };
+  function _renderStatusDot(state, meta) {
+    const host = document.getElementById('chitti-status-host');
+    if (!host) return;
+    const dot = host.querySelector('.chitti-status-dot');
+    const lbl = host.querySelector('.chitti-status-lbl');
+    ['grey','green','orange','red'].forEach((c) => dot.classList.remove(c));
+    dot.classList.add(state);
+    lbl.textContent = _STATUS_LABEL[state] || state.toUpperCase();
+    const ts = new Date().toLocaleTimeString();
+    const detail = `Chitti backend: ${_STATUS_LABEL[state]}`
+                 + (meta && meta.url ? `\n${meta.url}` : '')
+                 + (meta && meta.latency_ms != null ? `\nlatency: ${meta.latency_ms} ms` : '')
+                 + `\nlast check: ${ts}`;
+    host.setAttribute('title', detail);
+    // Screen-reader announce on state CHANGE only (not on every poll).
+    if (state !== host._lastState) {
+      host.setAttribute('aria-label', _STATUS_LABEL[state]);
+      host._lastState = state;
+    }
+  }
+
+  async function _pingBackend(url) {
+    if (_statusPinging) return;
+    _statusPinging = true;
+    const t0 = (performance && performance.now) ? performance.now() : Date.now();
+    let timer = null;
+    try {
+      const ctrl = new AbortController();
+      timer = setTimeout(() => ctrl.abort(), STATUS_HARD_TIMEOUT_MS);
+      const r = await fetch(url + '/health', { signal: ctrl.signal, cache: 'no-store', mode: 'cors' });
+      clearTimeout(timer);
+      const latency = Math.round(((performance && performance.now) ? performance.now() : Date.now()) - t0);
+      if (r.ok) {
+        _renderStatusDot(latency > STATUS_SLOW_THRESHOLD_MS ? 'orange' : 'green',
+                         { url, latency_ms: latency });
+      } else if (r.status >= 500) {
+        _renderStatusDot('red', { url, latency_ms: latency });
+      } else {
+        // 4xx — host is reachable but /health may be auth-gated. Treat as warming.
+        _renderStatusDot('orange', { url, latency_ms: latency });
+      }
+    } catch (e) {
+      clearTimeout(timer);
+      const latency = Math.round(((performance && performance.now) ? performance.now() : Date.now()) - t0);
+      _renderStatusDot('red', { url, latency_ms: latency });
+    } finally {
+      _statusPinging = false;
+    }
+  }
+
+  function injectStatusDot() {
+    if (document.getElementById('chitti-status-host')) return;  // idempotent
+    const url = _resolveBackendUrl();
+    if (!url) return;  // pages with no backend — no dot
+    _injectStatusDotStyles();
+    let host;
+    const explicitHost = document.querySelector('[data-chitti-status]');
+    if (explicitHost) {
+      host = document.createElement('span');
+      host.id = 'chitti-status-host';
+      host.className = 'chitti-status-host';
+      explicitHost.appendChild(host);
+    } else {
+      host = document.createElement('div');
+      host.id = 'chitti-status-host';
+      host.className = 'chitti-status-host';
+      document.body.appendChild(host);
+    }
+    host.innerHTML = '<span class="chitti-status-dot grey" role="status"></span><span class="chitti-status-lbl">CHECKING</span>';
+    host.setAttribute('title', 'Pinging Chitti backend…\n' + url);
+    // Click forces an immediate re-ping (no need to wait 30s).
+    host.addEventListener('click', () => _pingBackend(url));
+    _pingBackend(url);
+    if (_statusTimer) clearInterval(_statusTimer);
+    _statusTimer = setInterval(() => _pingBackend(url), STATUS_PING_INTERVAL_MS);
+    // Pause polling when the tab is hidden (battery + Railway-quota saver).
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (_statusTimer) { clearInterval(_statusTimer); _statusTimer = null; }
+      } else {
+        if (!_statusTimer) {
+          _pingBackend(url);
+          _statusTimer = setInterval(() => _pingBackend(url), STATUS_PING_INTERVAL_MS);
+        }
+      }
+    });
   }
 
   // ── BLIND GESTURE NAVIGATION ─────────────────────────────────
