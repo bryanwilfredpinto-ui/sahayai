@@ -435,7 +435,24 @@
   // ── per-box widget ───────────────────────────────────────────────────
   // Locked SAHAYAI_MASTER §7: every response box on every Chitti page
   // carries its own 🔊 / 🤖 / 👍 / 👎 row + scoped feedback modal.
-  var BOX_SELECTOR = '[data-chitti-response], .chitti-response';
+  //
+  // Selector ladder:
+  //   1. Explicit opt-in:  [data-chitti-response] / .chitti-response
+  //   2. Heuristic IDs:    #reply, #response, #answer, #result, #output,
+  //                        and their -card / -box / -container variants.
+  //      Added 2026-05-20 (Bryan's "every box must have 4 icons — NO
+  //      EXCEPTIONS" directive). Page authors should still prefer the
+  //      explicit attribute — the heuristic is a safety net so a page
+  //      that ships without the marker still gets the widget instead of
+  //      silently dropping it.
+  var BOX_SELECTOR = [
+    '[data-chitti-response]',
+    '.chitti-response',
+    '#reply', '#response', '#answer', '#result', '#output',
+    '#reply-card', '#response-card', '#answer-card', '#result-card', '#output-card',
+    '#reply-box',  '#response-box',  '#answer-box',  '#result-box',  '#output-box',
+    '[id$="-reply"]', '[id$="-response"]', '[id$="-answer"]', '[id$="-result"]', '[id$="-output"]',
+  ].join(', ');
 
   function escAttr(s) {
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')

@@ -1426,7 +1426,12 @@
     // Distinct from #chitti-a11y-bar (which carries braille / ISL /
     // read-page / demo). This bar is dedicated to language and lives
     // in the top-right corner per the directive's literal wording.
+    // Duplicate-injection guard (LOCKED 2026-05-20 per Bryan's bug report).
+    // Skip if our top-right langbar is already present by ID OR class, OR
+    // if any page-level lang selector was hand-coded earlier in the page.
+    // Only ONE language dropdown ships per page — by contract.
     if (document.getElementById('chitti-langbar')) return;
+    if (document.querySelector('.chitti-langbar')) return;
     const state = loadState();
     const langCode = state.lang || 'en';
     const wrap = document.createElement('div');
@@ -1717,22 +1722,16 @@
     bar.className = 'chitti-a11y-bar';
     bar.setAttribute('aria-label', 'Accessibility and language controls');
 
-    // Each option shows the language emblem (flag emoji or native-script
-    // letter) alongside the native + English names so even illiterate
-    // users can spot their language by its script shape.
-    const opts_html = LANGUAGES.map(([c, en, native, flag]) =>
-      `<option value="${c}"${c === (state.lang || 'en') ? ' selected' : ''}>${flag || ''} ${native} (${en})</option>`
-    ).join('');
+    // Language dropdown lives in the dedicated top-right #chitti-langbar
+    // (see injectLangBar) — keeping a second one here caused the duplicate
+    // dropdown Bryan reported on 2026-05-20. The a11y bar now carries only
+    // braille / ISL / read-page / explain / demo controls.
 
     const voiceTag = opts.voiceRequired
       ? `<span class="chitti-voice-required" role="note" aria-label="Voice IN and voice OUT are required on this page">🎤 Voice Required</span>`
       : '';
 
     bar.innerHTML = `
-      <label for="chitti-lang" style="font-weight:600">🌐 Language:</label>
-      <select id="chitti-lang" aria-label="Choose your language (voice and text)">
-        ${opts_html}
-      </select>
       ${voiceTag}
       <button id="chitti-braille-toggle" type="button"
         aria-pressed="${!!state.braille}"
@@ -1766,10 +1765,6 @@
 
     document.body.insertBefore(bar, document.body.firstChild);
 
-    bar.querySelector('#chitti-lang').addEventListener('change', (e) => {
-      // Manual dropdown selection — freezes auto-detect from here on.
-      setLanguage(e.target.value, { manual: true, source: 'dropdown' });
-    });
     bar.querySelector('#chitti-braille-toggle').addEventListener('click', (e) => {
       const next = !document.body.classList.contains('chitti-braille');
       setBrailleMode(next);
