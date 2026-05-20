@@ -84,7 +84,23 @@ def _create_app() -> Flask:
     app.config["JSON_SORT_KEYS"] = False
 
     allowed = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
-    CORS(app, origins=allowed or "*", supports_credentials=False, allow_headers="*", methods="*")
+    # Explicit header + method lists — Flask-CORS 4.x doesn't reliably echo a
+    # wildcard `allow_headers="*"` into the preflight response on Railway,
+    # which made the browser block every chitti_news.html /api call that
+    # carried X-User-Token (Bryan's 2026-05-21 "no real news" bug).
+    CORS(
+        app,
+        origins=allowed or "*",
+        supports_credentials=False,
+        allow_headers=[
+            "Content-Type", "Authorization", "Accept",
+            "X-User-Token", "X-Requested-With", "X-Chitti-Request-Id",
+        ],
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        expose_headers=[
+            "X-Chitti-Request-Id", "X-Chitti-Response-Time-Ms",
+        ],
+    )
 
     @app.get("/")
     def root():
