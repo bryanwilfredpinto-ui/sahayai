@@ -1516,6 +1516,41 @@
       .chitti-a11y-bar button:focus-visible {
         outline:3px solid #D4AF37; outline-offset:2px;
       }
+      /* Top-right floating language picker (LOCKED 2026-05-15).
+         Distinct from .chitti-a11y-bar — this one is dedicated to
+         language and is the canonical lang selector per SAHAYAI_MASTER
+         §2 row "Shared a11y substrate". Without these rules the div
+         created by injectLangBar() rendered invisible at the bottom
+         of <body> (Bryan's 2026-05-20 bug report: "no language dropdowns"). */
+      .chitti-langbar {
+        position:fixed; top:10px; right:12px; z-index:9999;
+        display:inline-flex; align-items:center; gap:6px;
+        background:#0E2344; color:#fff;
+        border:1px solid #D4AF37; border-radius:8px;
+        padding:6px 10px;
+        font:13px/1.2 system-ui,-apple-system,sans-serif;
+        box-shadow:0 4px 14px rgba(14,35,68,.18);
+        max-width:calc(100vw - 24px);
+      }
+      .chitti-langbar select {
+        background:rgba(255,255,255,.12); color:#fff;
+        border:1px solid rgba(255,255,255,.30);
+        border-radius:6px; padding:4px 10px;
+        font:inherit; cursor:pointer;
+        min-width:170px; max-width:260px;
+      }
+      .chitti-langbar select option {
+        background:#0E2344; color:#fff;
+      }
+      .chitti-langbar select:focus,
+      .chitti-langbar select:focus-visible {
+        outline:3px solid #D4AF37; outline-offset:2px;
+      }
+      @media (max-width:520px) {
+        .chitti-langbar { top:6px; right:6px; padding:4px 8px; }
+        .chitti-langbar select { min-width:130px; font-size:12px; }
+      }
+      @media print { .chitti-langbar { display:none !important; } }
       .chitti-voice-required {
         background:#E86A17; color:#fff; border-radius:6px;
         padding:3px 10px; font-weight:700; letter-spacing:.3px;
