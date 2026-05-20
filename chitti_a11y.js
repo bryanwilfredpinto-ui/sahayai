@@ -634,6 +634,12 @@
     if (sel && sel.value !== code) sel.value = code;
     const sel2 = document.getElementById('chitti-langbar-select');
     if (sel2 && sel2.value !== code) sel2.value = code;
+    // Sync any legacy page-authored language <select> (pre-2026-05-15
+    // langbar standard) so its existing onChange handler still fires —
+    // page logic continues to work even though the visible control has
+    // moved to the top-right langbar. Hidden via the `.chitti-langbar-
+    // active` CSS rule below; the element stays in the DOM as a thunk.
+    syncLegacyLangSelects(code);
     // Trigger the i18n sweep — chitti_i18n.js listens for `chitti:lang`,
     // but we also fall through to a direct call in case the substrate
     // loaded after this point.
@@ -1448,9 +1454,65 @@
         ${opts_html}
       </select>`;
     document.body.appendChild(wrap);
+    // Mark body so the legacy-select hide rule (in injectBaseStyles) kicks in.
+    document.body.classList.add('chitti-langbar-active');
     wrap.querySelector('#chitti-langbar-select').addEventListener('change', (e) => {
       setLanguage(e.target.value, { manual: true, source: 'langbar' });
     });
+  }
+
+  // Pages built before the 2026-05-15 langbar standard shipped their own
+  // language <select>. Once the langbar is mounted, those legacy selects
+  // become visual duplicates — we hide them via CSS (in injectBaseStyles)
+  // and sync them in code so their existing change-listeners keep firing.
+  // Match by ID for the known cases + class for the .lang-toggle-bharat
+  // Bharat-themed dropdown shipped on Vaani / UPI / Scanner.
+  //
+  // Tag list (kept short — drop new IDs here as they're discovered, NOT
+  // a free-form scan, to keep blast radius bounded):
+  //   #lang-select  (vaani / upi / scanner)
+  //   #fl-lang      (vaani — onboarding)
+  //   #pick-lang    (news / news-ai)
+  //   #onb-lang     (news / news-ai — onboarding modal)
+  //   #hdr-lang     (2wheeler / 4wheeler header)
+  //   #lang         (ca / legal)
+  //   .lang-toggle-bharat  (class on vaani / upi / scanner selects)
+  // Pages keep using their existing IDs; the langbar is the single visible
+  // control, the legacy <select> stays in the DOM as an invisible thunk.
+  const _LEGACY_LANG_IDS = ['lang-select', 'fl-lang', 'pick-lang', 'onb-lang', 'hdr-lang', 'lang'];
+
+  function syncLegacyLangSelects(code) {
+    const candidates = new Set();
+    for (const id of _LEGACY_LANG_IDS) {
+      const el = document.getElementById(id);
+      if (el && el.tagName === 'SELECT') candidates.add(el);
+    }
+    document.querySelectorAll('select.lang-toggle-bharat').forEach((el) => candidates.add(el));
+    if (!candidates.size) return;
+    const codeLower = String(code || '').toLowerCase();
+    for (const sel of candidates) {
+      // Find a matching option: exact value, then case-insensitive value,
+      // then prefix (e.g. 'hi' matches 'hi-IN'), then native-name contains.
+      let matched = null;
+      for (const opt of sel.options) {
+        if (opt.value === code) { matched = opt; break; }
+      }
+      if (!matched) {
+        for (const opt of sel.options) {
+          if (opt.value && opt.value.toLowerCase() === codeLower) { matched = opt; break; }
+        }
+      }
+      if (!matched) {
+        for (const opt of sel.options) {
+          if (opt.value && opt.value.toLowerCase().startsWith(codeLower + '-')) { matched = opt; break; }
+        }
+      }
+      if (!matched) continue;  // Leave the select alone if no option fits
+      if (sel.value !== matched.value) {
+        sel.value = matched.value;
+        try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+      }
+    }
   }
 
   function ensureCameraSubstrate() {
@@ -1555,6 +1617,23 @@
         .chitti-langbar { top:6px; right:6px; padding:4px 8px; }
         .chitti-langbar select { min-width:130px; font-size:12px; }
       }
+      /* Hide legacy page-authored language dropdowns once the langbar
+         is mounted. Locked 2026-05-20 (Bryan's directive: "Only ONE
+         language dropdown — remove duplicates"). The <select> stays
+         in the DOM so existing page logic still triggers its change
+         handlers when setLanguage() syncs the value programmatically;
+         it just isn't visible. To opt out, page author can add
+         class="chitti-keep-visible" on the legacy select. */
+      .chitti-langbar-active select#lang-select,
+      .chitti-langbar-active select#fl-lang,
+      .chitti-langbar-active select#pick-lang,
+      .chitti-langbar-active select#onb-lang,
+      .chitti-langbar-active select#hdr-lang,
+      .chitti-langbar-active select#lang,
+      .chitti-langbar-active select.lang-toggle-bharat {
+        display: none !important;
+      }
+      .chitti-langbar-active select.chitti-keep-visible { display: revert !important; }
       @media print { .chitti-langbar { display:none !important; } }
       .chitti-voice-required {
         background:#E86A17; color:#fff; border-radius:6px;
@@ -1938,6 +2017,27 @@
 
   global.Chitti = global.Chitti || {};
   global.Chitti.a11y = api;
+
+  // Auto-init on DOM ready. Most pages call Chitti.a11y.init({}) inline
+  // immediately after the script tag; that call wins synchronously
+  // because every guard inside init() (chitti-a11y-bar / chitti-langbar /
+  // chitti-i18n-script / chitti-isl-shim-script / chitti-features-script /
+  // chitti-camera-script / chitti-offline-script) is idempotent — our
+  // deferred call is a no-op. Pages that forgot the inline call (Bryan
+  // 2026-05-20: chitti_logo_video / chitti_voice_hall_of_fame / chitti_complete
+  // shipped without the langbar because of this) now inherit the substrate
+  // automatically. Opt-out for any future page: <body data-chitti-skip-a11y-init>.
+  function _autoInit() {
+    if (document.body && document.body.hasAttribute('data-chitti-skip-a11y-init')) return;
+    try { init({}); } catch (e) { /* page may call init() explicitly */ }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _autoInit);
+  } else {
+    // Document already parsed — defer to next microtask so any inline
+    // <script> immediately after us has a chance to call init({...}) first.
+    Promise.resolve().then(_autoInit);
+  }
 
   // ──────────────────────────────────────────────────────────────
   // Chitti.location — shared GPS / pincode capture
