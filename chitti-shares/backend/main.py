@@ -61,8 +61,17 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "X-User-Token",
+        "X-Admin-Secret",
+        "X-Requested-With",
+        "X-Chitti-Request-Id",
+    ],
+    expose_headers=["X-Chitti-Request-Id", "X-Chitti-Response-Time-Ms"],
 )
 
 
