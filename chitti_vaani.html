@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Frontend for chitti-vaani/ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -230,16 +229,8 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 .em-toggle.on{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .em-toggle.on::before{content:'';width:8px;height:8px;border-radius:50%;background:#fff;animation:micPulse 1.2s ease-in-out infinite}
 </style>
-<link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
-<body data-chitti-skip-profile-prompt>
-
-<!-- ───── §7 Disability Profile (chitti_a11y.js substrate) ─────
-     This page has its own T&C consent gate that opens first, so we
-     opt out of the substrate's auto-prompt via the body attribute
-     above. The disability profile is prompted explicitly from
-     acceptConsent() once the user accepts the T&C — that way the
-     two modals never stack. -->
+<body>
 
 <!-- Bharat stripe -->
 <div class="bharat-stripe" aria-hidden="true"></div>
@@ -247,13 +238,13 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
-    <h1 id="consent-title" data-i18n="chitti-vaani-terms-amp-conditions">Chitti Vaani — Terms &amp; Conditions</h1>
+    <h1 id="consent-title">Chitti Vaani — Terms &amp; Conditions</h1>
     <div class="sub">First time using Chitti Vaani? Please read each section. Tap 🔊 to hear it spoken in your language. Then tap <strong>I AGREE</strong> to start.</div>
 
-    <div class="lang-pick" role="group" aria-label="Choose language" data-i18n-aria="choose-language">
+    <div class="lang-pick" role="group" aria-label="Choose language">
       <span style="font-size:12px;font-weight:700;color:var(--muted);align-self:center">Read aloud in:</span>
       <button data-lang="hi" class="active" onclick="setConsentLang('hi')">हिन्दी</button>
-      <button data-lang="en" onclick="setConsentLang('en')" data-i18n="english">English</button>
+      <button data-lang="en" onclick="setConsentLang('en')">English</button>
       <button data-lang="ta" onclick="setConsentLang('ta')">தமிழ்</button>
       <button data-lang="te" onclick="setConsentLang('te')">తెలుగు</button>
       <button data-lang="bn" onclick="setConsentLang('bn')">বাংলা</button>
@@ -264,17 +255,17 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">1</span><span class="title-txt">What Chitti Vaani is (and is not)</span><button class="spk" data-section="1" onclick="speakSection(1, this)" aria-label="Hear section 1 aloud" data-i18n="hear" data-i18n-aria="hear-section-1-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">1</span><span class="title-txt">What Chitti Vaani is (and is not)</span><button class="spk" data-section="1" onclick="speakSection(1, this)" aria-label="Hear section 1 aloud">🔊 Hear</button></h3>
       <p>Chitti Vaani is a voice-first AI helper. You speak, Chitti listens, Chitti speaks back. Chitti is <strong>not</strong> a doctor, lawyer, banker, or government officer. Chitti gives general information only.</p>
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" data-section="2" onclick="speakSection(2, this)" aria-label="Hear section 2 aloud" data-i18n="hear" data-i18n-aria="hear-section-2-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" data-section="2" onclick="speakSection(2, this)" aria-label="Hear section 2 aloud">🔊 Hear</button></h3>
       <p>Chitti Vaani complies with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>, TRAI rules on call recording, and the IT Rules 2021. Your voice never leaves your device unless you tap "Send to Chitti". Recordings are not stored on our servers.</p>
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" data-section="3" onclick="speakSection(3, this)" aria-label="Hear section 3 aloud" data-i18n="hear" data-i18n-aria="hear-section-3-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" data-section="3" onclick="speakSection(3, this)" aria-label="Hear section 3 aloud">🔊 Hear</button></h3>
       <ul>
         <li><strong>Microphone</strong> — to listen when you tap the green mic.</li>
         <li><strong>Read call logs</strong> (Phase 2 mobile app only) — to summarise calls you ask about.</li>
@@ -284,32 +275,32 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" data-section="4" onclick="speakSection(4, this)" aria-label="Hear section 4 aloud" data-i18n="hear" data-i18n-aria="hear-section-4-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" data-section="4" onclick="speakSection(4, this)" aria-label="Hear section 4 aloud">🔊 Hear</button></h3>
       <p>Chitti does <strong>not</strong> sell your data. Chitti does <strong>not</strong> share your voice or text with advertisers. Your conversation history lives in your browser (localStorage) — clear it any time from Settings.</p>
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" data-section="5" onclick="speakSection(5, this)" aria-label="Hear section 5 aloud" data-i18n="hear" data-i18n-aria="hear-section-5-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" data-section="5" onclick="speakSection(5, this)" aria-label="Hear section 5 aloud">🔊 Hear</button></h3>
       <p>If this is a medical, fire, or police emergency — call <strong>112</strong> right now. For cyber-fraud call <strong>1930</strong>. Chitti cannot guarantee any medical, legal, or financial outcome. Final decisions are always yours, ideally with a qualified professional.</p>
     </div>
 
     <div class="tnc-section">
-      <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" data-section="6" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud" data-i18n="hear" data-i18n-aria="hear-section-6-aloud">🔊 Hear</button></h3>
+      <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" data-section="6" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud">🔊 Hear</button></h3>
       <p>Issue or complaint? Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by the IT Rules 2021.</p>
     </div>
 
-    <div class="voice-grant" role="region" aria-label="Voice grant" data-i18n-aria="voice_grant">
-      <h4 data-i18n="voice-grant-for-blind-mute-illiterate-users">🎙️ Voice grant — for blind / mute / illiterate users</h4>
+    <div class="voice-grant" role="region" aria-label="Voice grant">
+      <h4>🎙️ Voice grant — for blind / mute / illiterate users</h4>
       <p>Instead of reading and tapping, you can say <b>"haan"</b> (or "yes" / "main maan gaya" / "theek hai"). Chitti will mark your consent the same way as a tap. This is the default for users who cannot read.</p>
-      <button onclick="captureVoiceGrant(this)" aria-label="Speak haan to grant consent" data-i18n="speak-haan-to-agree" data-i18n-aria="speak-haan-to-grant-consent">🎙️ Speak "haan" to agree</button>
-      <button class="spk-all" style="background:transparent;border:1px solid var(--gold);color:var(--saffron);font-weight:700;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:44px" onclick="speakAllSections()" data-i18n="read-everything-once-more">🔊 Read everything once more</button>
+      <button onclick="captureVoiceGrant(this)" aria-label="Speak haan to grant consent">🎙️ Speak "haan" to agree</button>
+      <button class="spk-all" style="background:transparent;border:1px solid var(--gold);color:var(--saffron);font-weight:700;border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;min-height:44px" onclick="speakAllSections()">🔊 Read everything once more</button>
       <div class="heard" id="voice-grant-heard">Tap the green button and say "haan".</div>
     </div>
 
     <div class="consent-actions">
-      <button class="agree" onclick="acceptConsent()" data-i18n="i-agree-start-chitti-vaani">✓ I AGREE — start Chitti Vaani</button>
-      <button class="spk-all" onclick="speakAllSections()" data-i18n="read-all-sections-aloud">🔊 Read all sections aloud</button>
-      <button class="decline" onclick="declineConsent()" data-i18n="not_now">Not now</button>
+      <button class="agree" onclick="acceptConsent()">✓ I AGREE — start Chitti Vaani</button>
+      <button class="spk-all" onclick="speakAllSections()">🔊 Read all sections aloud</button>
+      <button class="decline" onclick="declineConsent()">Not now</button>
     </div>
   </div>
 </div>
@@ -325,13 +316,13 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </div>
     </div>
     <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical" data-i18n-aria="switch-to-chitti-technical">📈 Technical</a>
-      <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals" data-i18n-aria="switch-to-chitti-fundamentals">📋 Fundamentals</a>
-      <a class="switch-btn-bharat" href="chitti_news.html" aria-label="Switch to Chitti News" data-i18n-aria="switch-to-chitti-news">📰 News</a>
-      <a class="switch-btn-bharat" href="chitti_medupi.html" aria-label="Switch to Chitti MedUPI" data-i18n-aria="switch-to-chitti-medupi">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard">🛡️ UPI Guard</a>
-      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner">📷 Scanner</a>
-      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" onchange="changeLanguage(this.value)" data-i18n-aria="change_lang">
+      <a class="switch-btn-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals">📋 Fundamentals</a>
+      <a class="switch-btn-bharat" href="chitti_news.html" aria-label="Switch to Chitti News">📰 News</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html" aria-label="Switch to Chitti MedUPI">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard">🛡️ UPI Guard</a>
+      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner">📷 Scanner</a>
+      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" onchange="changeLanguage(this.value)">
         <option value="hi">हिन्दी</option>
         <option value="en">English</option>
         <option value="ta">தமிழ்</option>
@@ -345,9 +336,9 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </div>
   <div class="header-controls">
-    <button onclick="speakIntro()" aria-label="Hear how to use this page" data-i18n="nav_how_to" data-i18n-aria="hear-how-to-use-this-page">🔊 How to use</button>
-    <button onclick="clearHistory()" aria-label="Clear conversation history" data-i18n="nav_clear_history" data-i18n-aria="clear-conversation-history">🗑️ Clear history</button>
-    <button onclick="reopenConsent()" aria-label="Re-read terms and conditions" data-i18n="nav_disclaimer_read" data-i18n-aria="re-read-terms-and-conditions">📜 Re-read T&amp;C</button>
+    <button onclick="speakIntro()" aria-label="Hear how to use this page">🔊 How to use</button>
+    <button onclick="clearHistory()" aria-label="Clear conversation history">🗑️ Clear history</button>
+    <button onclick="reopenConsent()" aria-label="Re-read terms and conditions">📜 Re-read T&amp;C</button>
   </div>
 </header>
 
@@ -362,33 +353,33 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-sub">Tap the green mic. Speak in your language. Chitti listens, thinks, and reads the answer aloud.</div>
 
     <div class="mic-stage">
-      <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening" data-i18n-aria="tap-to-start-or-stop-listening">🎙️</button>
+      <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening">🎙️</button>
       <div class="mic-hint" id="mic-hint"><strong>Tap to speak.</strong> Chitti will reply in your language and read the answer aloud.</div>
-      <div class="mode-row" role="tablist" aria-label="Conversation mode" data-i18n-aria="conversation-mode">
-        <button class="active" data-mode="ask" onclick="setMode('ask',this)" data-i18n="mode_ask">💬 Ask anything</button>
-        <button data-mode="call" onclick="setMode('call',this)" data-i18n="mode_summarise">📞 Summarise call</button>
-        <button data-mode="read" onclick="setMode('read',this)" data-i18n="mode_read">📖 Read aloud</button>
-        <button data-mode="translate" onclick="setMode('translate',this)" data-i18n="translate">🌐 Translate</button>
+      <div class="mode-row" role="tablist" aria-label="Conversation mode">
+        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 Ask anything</button>
+        <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
+        <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
+        <button data-mode="translate" onclick="setMode('translate',this)">🌐 Translate</button>
       </div>
     </div>
 
     <div class="input-row">
-      <textarea id="user-text" placeholder="Or type / paste here — call notes, a question, a paragraph to read aloud…" aria-label="Type your message" data-i18n-placeholder="or-type-paste-here-call-notes-a-question-a-paragraph-to-read" data-i18n-aria="type-your-message"></textarea>
+      <textarea id="user-text" placeholder="Or type / paste here — call notes, a question, a paragraph to read aloud…" aria-label="Type your message"></textarea>
       <div class="btn-row" style="flex-direction:column">
-        <button class="btn-saffron" onclick="sendToChitti()" data-i18n="send_to_chitti">Send to Chitti ➜</button>
-        <button class="btn-navy" onclick="speakUserText()" data-i18n="read_my_text">🔊 Read my text</button>
-        <button class="btn-ghost" onclick="clearInput()" data-i18n="clear">Clear</button>
+        <button class="btn-saffron" onclick="sendToChitti()">Send to Chitti ➜</button>
+        <button class="btn-navy" onclick="speakUserText()">🔊 Read my text</button>
+        <button class="btn-ghost" onclick="clearInput()">Clear</button>
       </div>
     </div>
 
-    <div id="answer-box" class="answer-box" role="status" aria-live="polite" data-chitti-response data-chitti-section="Chitti's answer">
+    <div id="answer-box" class="answer-box" role="status" aria-live="polite">
       <div class="answer-head">
         <span class="who">🪔 Chitti says</span>
         <div class="ctrls">
-          <button onclick="speakAnswer()" data-i18n="hear-again">🔊 Hear again</button>
-          <button onclick="stopSpeaking()" data-i18n="stop">⏹ Stop</button>
-          <button onclick="copyAnswer()" data-i18n="copy">📋 Copy</button>
-          <button onclick="sendToScanner()" title="Send to Scanner so it can read it aloud / share" data-i18n="share" data-i18n-title="send-to-scanner-so-it-can-read-it-aloud-share">📤 Share</button>
+          <button onclick="speakAnswer()">🔊 Hear again</button>
+          <button onclick="stopSpeaking()">⏹ Stop</button>
+          <button onclick="copyAnswer()">📋 Copy</button>
+          <button onclick="sendToScanner()" title="Send to Scanner so it can read it aloud / share">📤 Share</button>
         </div>
       </div>
       <div id="answer-text" class="answer-text"></div>
@@ -432,7 +423,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   <section class="section-card" aria-labelledby="hist-title">
     <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent</h2>
     <div class="section-sub">Stays only on this device. Not synced. Tap 🔊 to hear an old answer.</div>
-    <div id="history" class="history" data-chitti-response data-chitti-section="Past Chitti answers"></div>
+    <div id="history" class="history"></div>
   </section>
 
   <!-- ════════ PRO ACTIONS — Chitti acts on the user's behalf ════════ -->
@@ -498,90 +489,16 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
-  <!-- ════════ ORDER / BOOK — Chitti business first, external app second ════════ -->
-  <section class="section-card" aria-labelledby="book-title">
-    <h2 class="section-title" id="book-title"><span class="ico">🛍️</span> Order &amp; book — Chitti business first</h2>
-    <div class="section-sub">
-      Chitti always checks for a <b>registered Chitti business</b> first (Chitti Kirana / Restaurant / Pharmacy / Salon …). External apps (Zomato / Swiggy / Ola / Uber / BookMyShow / IRCTC / BigBasket / Blinkit) only open if no Chitti shop is reachable — and only when you say <b>"haan"</b>.
-      <br><b>Honest:</b> each card opens the app pre-filled. Chitti does not auto-book — final tap is yours.
-    </div>
-    <div class="pro-grid">
-
-      <button class="pro-card" onclick="openLocalFirstModal('food')">
-        <span class="ico">🍱</span><span class="lbl">Order food</span>
-        <span class="sub">Chitti Restaurant first. Fallback: Zomato / Swiggy search opened pre-filled.</span>
-        <span class="pill">Web ✓ deep-link</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('groceries')">
-        <span class="ico">🥬</span><span class="lbl">Order groceries</span>
-        <span class="sub">Chitti Kirana / Grocery / Dairy first. Fallback: Blinkit / BigBasket.</span>
-        <span class="pill">Web ✓ deep-link</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('pharmacy')">
-        <span class="ico">💊</span><span class="lbl">Order medicine</span>
-        <span class="sub">Chitti Pharmacy / Medical Store. No external pharmacy fallback yet — use Chitti MedUPI for price check.</span>
-        <span class="pill">Web ✓ directory</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('salon')">
-        <span class="ico">💇</span><span class="lbl">Book salon</span>
-        <span class="sub">Chitti Salon directory. No external app fallback — salon bookings stay local.</span>
-        <span class="pill">Web ✓ directory</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('cab')">
-        <span class="ico">🚖</span><span class="lbl">Book a cab</span>
-        <span class="sub">No local Chitti substrate yet. Opens Ola / Uber / Rapido pre-filled — you tap Book in their app.</span>
-        <span class="pill">Web ✓ deep-link</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('movies')">
-        <span class="ico">🎬</span><span class="lbl">Book movie tickets</span>
-        <span class="sub">No local Chitti for movies. Opens BookMyShow city listing — you pick the show and seat.</span>
-        <span class="pill">Web ✓ deep-link</span>
-      </button>
-
-      <button class="pro-card" onclick="openLocalFirstModal('train')">
-        <span class="ico">🚆</span><span class="lbl">Book train ticket</span>
-        <span class="sub">No local Chitti for IRCTC. Opens IRCTC search — you complete the booking + captcha.</span>
-        <span class="pill">Web ✓ deep-link</span>
-      </button>
-
-    </div>
-  </section>
-
   <!-- ════════ TRUSTED CIRCLE — voice-built contact list ════════ -->
   <section class="section-card" aria-labelledby="tc-title">
     <h2 class="section-title" id="tc-title"><span class="ico">👨‍👩‍👧</span> Trusted Circle</h2>
     <div class="section-sub">People Chitti can contact for you. Built by voice — speak the name, the relation, the number. Inside this circle Chitti acts after one voice "haan". Outside it, Chitti pauses and asks first.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="btn-saffron" onclick="openAddContactModal()" data-i18n="add-by-voice">➕ Add by voice</button>
-      <button class="btn-navy" onclick="speakTrustedCircle()" data-i18n="read-the-circle-aloud">🔊 Read the circle aloud</button>
-      <button class="btn-ghost" onclick="clearTrustedCircle()" data-i18n="clear-all">🗑️ Clear all</button>
+      <button class="btn-saffron" onclick="openAddContactModal()">➕ Add by voice</button>
+      <button class="btn-navy" onclick="speakTrustedCircle()">🔊 Read the circle aloud</button>
+      <button class="btn-ghost" onclick="clearTrustedCircle()">🗑️ Clear all</button>
     </div>
-    <div id="tc-list" class="tc-list" data-chitti-response data-chitti-section="Trusted circle"></div>
-  </section>
-
-  <!-- ════════ DAILY CHECK-IN (P0 — elderly safety) ════════ -->
-  <section class="section-card" aria-labelledby="checkin-title" id="section-checkin">
-    <h2 class="section-title" id="checkin-title"><span class="ico">🌅</span> Daily check-in for elderly</h2>
-    <div class="section-sub">Chitti asks "Aap theek hain?" at the time you choose, every day. If you stay silent after the configured number of prompts, <b>Chitti fires the family emergency cascade</b> — same denylist on 112/100/102, never cops. (project_chitti_vaani_emergency_protocol)</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-      <label style="font-size:13px">🕗 Time (IST):
-        <input id="checkin-time" type="time" value="08:00" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px">
-      </label>
-      <label style="font-size:13px">👵 Label:
-        <input id="checkin-label" type="text" placeholder="Dadi / Naana / Self" maxlength="80" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;min-width:160px" data-i18n-placeholder="dadi-naana-self">
-      </label>
-      <label style="font-size:13px">🔁 Max silent prompts before escalation:
-        <input id="checkin-max" type="number" min="1" max="10" value="3" style="padding:6px 8px;border:1px solid #ccc;border-radius:6px;font-size:14px;width:64px">
-      </label>
-      <button class="btn-saffron" onclick="onCheckinSave()" aria-label="Save daily check-in" data-i18n="save" data-i18n-aria="save-daily-check-in">💾 Save</button>
-      <button class="btn-ghost" onclick="onCheckinDisable()" aria-label="Disable daily check-in" data-i18n="disable" data-i18n-aria="disable-daily-check-in">🚫 Disable</button>
-    </div>
-    <div id="checkin-status" role="status" aria-live="polite" data-chitti-response data-chitti-section="Daily check-in for elderly (emergency cascade)" style="font-size:13px;color:#555"></div>
+    <div id="tc-list" class="tc-list"></div>
   </section>
 
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
@@ -589,9 +506,9 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
     <div class="section-sub">Pair this device with your spouse / children / caregivers' Chittis. When emergency keywords fire here, their Chitti rings — even on silent. <b>Family-only relay. Chitti will never auto-call cops.</b></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="btn-saffron" onclick="openPairIssueModal()" data-i18n="show-my-pair-code">📤 Show my pair code</button>
-      <button class="btn-navy" onclick="openPairAcceptModal()" data-i18n="enter-partner-s-code">📥 Enter partner's code</button>
-      <button class="btn-ghost" onclick="refreshPartners()" data-i18n="refresh-list">↻ Refresh list</button>
+      <button class="btn-saffron" onclick="openPairIssueModal()">📤 Show my pair code</button>
+      <button class="btn-navy" onclick="openPairAcceptModal()">📥 Enter partner's code</button>
+      <button class="btn-ghost" onclick="refreshPartners()">↻ Refresh list</button>
     </div>
     <div id="partners-list" style="display:flex;flex-direction:column;gap:6px"></div>
   </section>
@@ -601,10 +518,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 class="section-title" id="audit-title"><span class="ico">📜</span> What Chitti did for you</h2>
     <div class="section-sub">Every action — email sent, WhatsApp drafted, UPI opened, voice sample saved — appears here. Tap 🔊 to hear the list. Each row has an UNDO option for 30 seconds.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="btn-navy" onclick="speakAuditLog()" data-i18n="read-audit-log-aloud">🔊 Read audit log aloud</button>
-      <button class="btn-ghost" onclick="clearAuditLog()" data-i18n="clear-log">🗑️ Clear log</button>
+      <button class="btn-navy" onclick="speakAuditLog()">🔊 Read audit log aloud</button>
+      <button class="btn-ghost" onclick="clearAuditLog()">🗑️ Clear log</button>
     </div>
-    <div id="audit-list" class="audit-list" data-chitti-response data-chitti-section="What Chitti did for you (audit log)"></div>
+    <div id="audit-list" class="audit-list"></div>
   </section>
 
   <footer>
@@ -621,22 +538,22 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Make a call modal -->
 <div id="call-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="call-title">
   <div class="panel">
-    <h2 id="call-title" data-i18n="make-a-call">📞 Make a call</h2>
+    <h2 id="call-title">📞 Make a call</h2>
     <div class="desc">Pick a person from your trusted circle, or speak the name. Chitti reads it back, you say <b>"haan"</b>, the phone dials. Inside the Android app, Chitti can dial directly without a tap.</div>
     <div class="field">
-      <label data-i18n="who-to-call">Who to call?</label>
+      <label>Who to call?</label>
       <select id="call-to"></select>
-      <input type="tel" id="call-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit" data-i18n-placeholder="or-type-a-number-like-919876543210">
+      <input type="tel" id="call-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
     </div>
     <div class="row-mic">
-      <button id="call-mic" onclick="proMicCall(this)" data-i18n="mom-ko-call-karo">🎙️ "Mom ko call karo"</button>
-      <button onclick="speakCallPreview()" data-i18n="read-back">🔊 Read back</button>
+      <button id="call-mic" onclick="proMicCall(this)">🎙️ "Mom ko call karo"</button>
+      <button onclick="speakCallPreview()">🔊 Read back</button>
     </div>
-    <div class="preview" id="call-preview" data-chitti-response data-chitti-section="Call preview" style="display:none"></div>
+    <div class="preview" id="call-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmCall()" data-i18n="dial-now">📞 Dial now</button>
-      <button class="spk" onclick="confirmCallByVoice()" data-i18n="confirm-by-voice-haan">🎙️ Confirm by voice (haan)</button>
-      <button class="cancel" onclick="closeModal('call-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="confirmCall()">📞 Dial now</button>
+      <button class="spk" onclick="confirmCallByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('call-modal')">Cancel</button>
     </div>
     <div class="small-note">On the web, Chitti opens your dialer pre-filled — you tap call. On the Android app (Phase 2), Chitti dials directly with the CALL_PHONE permission. <b>Chitti always announces "I am Chitti AI calling on behalf of [user]" if it speaks during the call.</b></div>
   </div>
@@ -645,25 +562,25 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- WhatsApp send modal -->
 <div id="wa-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="wa-title">
   <div class="panel">
-    <h2 id="wa-title" data-i18n="send-whatsapp">📲 Send WhatsApp</h2>
+    <h2 id="wa-title">📲 Send WhatsApp</h2>
     <div class="desc">Speak the recipient and the message. Chitti will read back, you say <b>"haan"</b>, WhatsApp opens with everything filled in.</div>
     <div class="field">
-      <label data-i18n="to-pick-from-your-trusted-circle">To (pick from your trusted circle)</label>
+      <label>To (pick from your trusted circle)</label>
       <select id="wa-to"></select>
     </div>
     <div class="field">
-      <label data-i18n="message-speak-or-type">Message — speak or type</label>
-      <textarea id="wa-msg" placeholder="Mom ko bolo main 7 baje aaunga" data-i18n-placeholder="mom-ko-bolo-main-7-baje-aaunga"></textarea>
+      <label>Message — speak or type</label>
+      <textarea id="wa-msg" placeholder="Mom ko bolo main 7 baje aaunga"></textarea>
       <div class="row-mic">
-        <button id="wa-mic" onclick="proMic('wa-msg', this)" data-i18n="speak">🎙️ Speak</button>
-        <button onclick="speakField('wa-msg')" data-i18n="read-back">🔊 Read back</button>
+        <button id="wa-mic" onclick="proMic('wa-msg', this)">🎙️ Speak</button>
+        <button onclick="speakField('wa-msg')">🔊 Read back</button>
       </div>
     </div>
-    <div class="preview" id="wa-preview" data-chitti-response data-chitti-section="WhatsApp message preview" style="display:none"></div>
+    <div class="preview" id="wa-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmWASend()" data-i18n="open-whatsapp-to-send">📲 Open WhatsApp to send</button>
-      <button class="spk" onclick="confirmWAByVoice()" data-i18n="confirm-by-voice-haan">🎙️ Confirm by voice (haan)</button>
-      <button class="cancel" onclick="closeModal('wa-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="confirmWASend()">📲 Open WhatsApp to send</button>
+      <button class="spk" onclick="confirmWAByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('wa-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti drafts and opens WhatsApp pre-filled. You tap the green ➤ inside WhatsApp to actually send. (Phase 2 Android: Chitti taps for you.)</div>
   </div>
@@ -672,31 +589,31 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- UPI send modal -->
 <div id="upi-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="upi-title">
   <div class="panel">
-    <h2 id="upi-title" data-i18n="send-upi-payment">💸 Send UPI payment</h2>
+    <h2 id="upi-title">💸 Send UPI payment</h2>
     <div class="desc">Speak the recipient and the amount. Chitti opens your UPI app (PhonePe / GPay / Paytm) with everything pre-filled. You enter PIN inside the UPI app — <b>NPCI rule, no shortcut</b>.</div>
     <div class="field">
-      <label data-i18n="to-pick-from-your-trusted-circle">To (pick from your trusted circle)</label>
+      <label>To (pick from your trusted circle)</label>
       <select id="upi-to"></select>
     </div>
     <div class="field-row">
       <div class="field">
-        <label data-i18n="amount">Amount (₹)</label>
+        <label>Amount (₹)</label>
         <input type="number" id="upi-amt" min="1" step="1" placeholder="500">
       </div>
       <div class="field">
-        <label data-i18n="note-optional">Note (optional)</label>
-        <input type="text" id="upi-note" maxlength="50" placeholder="Sabzi" data-i18n-placeholder="sabzi">
+        <label>Note (optional)</label>
+        <input type="text" id="upi-note" maxlength="50" placeholder="Sabzi">
       </div>
     </div>
     <div class="row-mic">
-      <button id="upi-mic" onclick="proMicUPI(this)" data-i18n="ramesh-ko-500-bhejo">🎙️ "Ramesh ko ₹500 bhejo"</button>
-      <button onclick="speakUPIPreview()" data-i18n="read-back">🔊 Read back</button>
+      <button id="upi-mic" onclick="proMicUPI(this)">🎙️ "Ramesh ko ₹500 bhejo"</button>
+      <button onclick="speakUPIPreview()">🔊 Read back</button>
     </div>
-    <div class="preview" id="upi-preview" data-chitti-response data-chitti-section="UPI payment preview" style="display:none"></div>
+    <div class="preview" id="upi-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmUPISend()" data-i18n="open-upi-app-to-pay">💸 Open UPI app to pay</button>
-      <button class="spk" onclick="confirmUPIByVoice()" data-i18n="confirm-by-voice-haan">🎙️ Confirm by voice (haan)</button>
-      <button class="cancel" onclick="closeModal('upi-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="confirmUPISend()">💸 Open UPI app to pay</button>
+      <button class="spk" onclick="confirmUPIByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('upi-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti will NEVER ask for or store your UPI PIN. PIN entry happens only inside the UPI app's secure keypad. Voice-biometric PIN is a v2 feature, requires bank partnership.</div>
   </div>
@@ -705,42 +622,42 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Email send modal -->
 <div id="email-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="email-title">
   <div class="panel">
-    <h2 id="email-title" data-i18n="send-email-as-chitti-ai">📧 Send email as Chitti AI</h2>
+    <h2 id="email-title">📧 Send email as Chitti AI</h2>
     <div class="desc">Chitti will send from your real Gmail account, on your behalf. Every email carries a footer identifying it as AI-assisted. <b>Connect Gmail once, then voice-command works forever.</b></div>
 
     <div id="em-status" style="padding:10px 12px;border-radius:10px;margin-bottom:10px;background:#fef2f2;border:1px solid #fecaca;font-size:13px">
       <span id="em-status-text">⏳ Checking Gmail connection…</span>
     </div>
     <div id="em-connect-row" style="margin-bottom:10px;display:none">
-      <button class="btn-saffron" onclick="connectGmail()" data-i18n="connect-gmail">🔗 Connect Gmail</button>
-      <button class="btn-ghost" onclick="checkEmailStatus()" data-i18n="refresh-status">↻ Refresh status</button>
+      <button class="btn-saffron" onclick="connectGmail()">🔗 Connect Gmail</button>
+      <button class="btn-ghost" onclick="checkEmailStatus()">↻ Refresh status</button>
     </div>
     <div id="em-disconnect-row" style="margin-bottom:10px;display:none">
-      <button class="btn-ghost" onclick="disconnectGmail()" data-i18n="disconnect-gmail">🔌 Disconnect Gmail</button>
+      <button class="btn-ghost" onclick="disconnectGmail()">🔌 Disconnect Gmail</button>
     </div>
 
     <div class="field">
-      <label data-i18n="to-pick-from-your-trusted-circle-or-type-any-email">To (pick from your trusted circle, or type any email)</label>
+      <label>To (pick from your trusted circle, or type any email)</label>
       <select id="em-to"></select>
-      <input type="email" id="em-to-free" placeholder="or type any email address" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit" data-i18n-placeholder="or-type-any-email-address">
+      <input type="email" id="em-to-free" placeholder="or type any email address" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
     </div>
     <div class="field">
-      <label data-i18n="subject">Subject</label>
-      <input type="text" id="em-subject" placeholder="Cardiology appointment confirmation" data-i18n-placeholder="cardiology-appointment-confirmation">
+      <label>Subject</label>
+      <input type="text" id="em-subject" placeholder="Cardiology appointment confirmation">
     </div>
     <div class="field">
-      <label data-i18n="body-speak-or-type">Body — speak or type</label>
-      <textarea id="em-body" placeholder="Doctor saab, kal 10 baje milne aa raha hun…" data-i18n-placeholder="doctor-saab-kal-10-baje-milne-aa-raha-hun"></textarea>
+      <label>Body — speak or type</label>
+      <textarea id="em-body" placeholder="Doctor saab, kal 10 baje milne aa raha hun…"></textarea>
       <div class="row-mic">
-        <button id="em-mic" onclick="proMic('em-body', this)" data-i18n="speak">🎙️ Speak</button>
-        <button onclick="speakField('em-body')" data-i18n="read-back">🔊 Read back</button>
+        <button id="em-mic" onclick="proMic('em-body', this)">🎙️ Speak</button>
+        <button onclick="speakField('em-body')">🔊 Read back</button>
       </div>
     </div>
-    <div class="preview" id="em-preview" data-chitti-response data-chitti-section="Email preview" style="display:none"></div>
+    <div class="preview" id="em-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmEmailSend()" id="em-send-btn" data-i18n="send-via-gmail">📧 Send via Gmail</button>
-      <button class="spk" onclick="confirmEmailByVoice()" data-i18n="confirm-by-voice-haan">🎙️ Confirm by voice (haan)</button>
-      <button class="cancel" onclick="closeModal('email-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="confirmEmailSend()" id="em-send-btn">📧 Send via Gmail</button>
+      <button class="spk" onclick="confirmEmailByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('email-modal')">Cancel</button>
     </div>
     <div class="small-note">Footer auto-appended: <em>"Sent via Chitti Vaani — an AI assistant for [your name]. Replies do not pass through Chitti."</em></div>
   </div>
@@ -749,39 +666,39 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Add to trusted circle modal -->
 <div id="addtc-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="addtc-title">
   <div class="panel">
-    <h2 id="addtc-title" data-i18n="add-a-trusted-person">👨‍👩‍👧 Add a trusted person</h2>
+    <h2 id="addtc-title">👨‍👩‍👧 Add a trusted person</h2>
     <div class="desc">Speak: "Mom — Sushma Devi — phone 9876543210 — UPI sushma at oksbi". Chitti will fill the boxes. Or type each field.</div>
     <div class="row-mic" style="margin-bottom:10px">
-      <button id="tc-mic" onclick="proMicAddContact(this)" data-i18n="speak-the-whole-row">🎙️ Speak the whole row</button>
-      <button onclick="speakAddContactHelp()" data-i18n="how-to-speak">🔊 How to speak</button>
+      <button id="tc-mic" onclick="proMicAddContact(this)">🎙️ Speak the whole row</button>
+      <button onclick="speakAddContactHelp()">🔊 How to speak</button>
     </div>
     <div class="field-row">
       <div class="field">
-        <label data-i18n="name-e-g-mom">Name (e.g. Mom)</label>
-        <input type="text" id="tc-name" placeholder="Mom" data-i18n-placeholder="mom">
+        <label>Name (e.g. Mom)</label>
+        <input type="text" id="tc-name" placeholder="Mom">
       </div>
       <div class="field">
-        <label data-i18n="real-name">Real name</label>
-        <input type="text" id="tc-realname" placeholder="Sushma Devi" data-i18n-placeholder="sushma-devi">
+        <label>Real name</label>
+        <input type="text" id="tc-realname" placeholder="Sushma Devi">
       </div>
     </div>
     <div class="field-row">
       <div class="field">
-        <label data-i18n="phone-with-91">Phone (with +91)</label>
+        <label>Phone (with +91)</label>
         <input type="tel" id="tc-phone" placeholder="+919876543210">
       </div>
       <div class="field">
-        <label data-i18n="upi-id-optional">UPI ID (optional)</label>
-        <input type="text" id="tc-upi" placeholder="sushma@oksbi" data-i18n-placeholder="sushma-oksbi">
+        <label>UPI ID (optional)</label>
+        <input type="text" id="tc-upi" placeholder="sushma@oksbi">
       </div>
     </div>
     <div class="field">
-      <label data-i18n="email-optional">Email (optional)</label>
-      <input type="email" id="tc-email" placeholder="mom@gmail.com" data-i18n-placeholder="mom-gmail-com">
+      <label>Email (optional)</label>
+      <input type="email" id="tc-email" placeholder="mom@gmail.com">
     </div>
     <div class="actions">
-      <button class="go" onclick="saveContact()" data-i18n="save-to-trusted-circle">✓ Save to Trusted Circle</button>
-      <button class="cancel" onclick="closeModal('addtc-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="saveContact()">✓ Save to Trusted Circle</button>
+      <button class="cancel" onclick="closeModal('addtc-modal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -789,10 +706,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Federated language samples modal -->
 <div id="lang-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="lang-title">
   <div class="panel">
-    <h2 id="lang-title" data-i18n="teach-chitti-your-language">🌐 Teach Chitti your language</h2>
+    <h2 id="lang-title">🌐 Teach Chitti your language</h2>
     <div class="desc">Speak in <b>Bangla / Tamil / Telugu / Marathi / Gujarati / Kannada / Malayalam / Punjabi / Odia</b>. Chitti records the sample on your phone (not on the server) and uses it later to train her voice in that language. <b>Federated learning — the audio never leaves your device unless you tap upload.</b></div>
     <div class="field">
-      <label data-i18n="which-language-are-you-about-to-speak">Which language are you about to speak?</label>
+      <label>Which language are you about to speak?</label>
       <select id="fl-lang">
         <option value="bn">বাংলা — Bangla</option>
         <option value="ta">தமிழ் — Tamil</option>
@@ -806,85 +723,37 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </select>
     </div>
     <div class="field">
-      <label data-i18n="what-did-you-say-a-short-sentence-works-best">What did you say? (a short sentence works best)</label>
-      <textarea id="fl-text" placeholder="ami bhalo achhi" rows="2" data-i18n-placeholder="ami-bhalo-achhi"></textarea>
+      <label>What did you say? (a short sentence works best)</label>
+      <textarea id="fl-text" placeholder="ami bhalo achhi" rows="2"></textarea>
     </div>
     <div class="row-mic">
-      <button id="fl-rec" onclick="recordLangSample(this)" data-i18n="record-5-second-sample">🎙️ Record 5-second sample</button>
+      <button id="fl-rec" onclick="recordLangSample(this)">🎙️ Record 5-second sample</button>
       <button onclick="listLangSamples()">📋 My samples (<span id="fl-count">0</span>)</button>
     </div>
     <div class="actions">
-      <button class="go" onclick="closeModal('lang-modal')" data-i18n="done">✓ Done</button>
-      <button class="cancel" onclick="clearLangSamples()" data-i18n="clear-my-samples">🗑️ Clear my samples</button>
+      <button class="go" onclick="closeModal('lang-modal')">✓ Done</button>
+      <button class="cancel" onclick="clearLangSamples()">🗑️ Clear my samples</button>
     </div>
     <div class="small-note">After 6–12 months of regular samples (1–2 sentences a week per language), Chitti will speak that language back. Today the samples sit in IndexedDB on your phone only.</div>
   </div>
 </div>
 
-<!-- Local-first order / book modal — shared by food / groceries / pharmacy / salon / cab / movies / train -->
-<div id="local-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="local-title">
-  <div class="panel">
-    <h2 id="local-title">🛍️ <span id="local-title-text">Order &amp; book</span></h2>
-    <div class="desc">
-      Chitti is checking the <b>local Chitti business directory</b> first. If a registered Chitti shop exists for this service, it shows below. External apps appear underneath as a fallback only.
-    </div>
-
-    <!-- Optional query field (used by Zomato/Swiggy/BigBasket/Blinkit search and IRCTC station, etc.) -->
-    <div class="field" id="local-query-field" style="display:none">
-      <label id="local-query-label" data-i18n="what-are-you-looking-for">What are you looking for?</label>
-      <input type="text" id="local-query" placeholder="biryani / paracetamol / Bengaluru to Delhi" data-i18n-placeholder="biryani-paracetamol-bengaluru-to-delhi">
-      <div class="row-mic">
-        <button id="local-mic" onclick="proMic('local-query', this)" data-i18n="speak">🎙️ Speak</button>
-        <button onclick="speakField('local-query')" data-i18n="read-back">🔊 Read back</button>
-      </div>
-    </div>
-
-    <!-- Chitti business directory section — populated by openLocalFirstModal() -->
-    <div id="local-chitti-block">
-      <div style="font-weight:800;color:var(--navy);font-size:13px;margin:8px 0 6px">
-        🇮🇳 Chitti business directory
-      </div>
-      <div id="local-chitti-list" data-chitti-response data-chitti-section="Order & book — Chitti businesses (local-first)" style="display:flex;flex-direction:column;gap:6px">
-        <div class="tc-empty">Loading the Chitti directory…</div>
-      </div>
-    </div>
-
-    <!-- External-app fallback section — only renders deep-link buttons relevant to the chosen service -->
-    <div id="local-external-block" style="margin-top:14px">
-      <div style="font-weight:800;color:var(--muted);font-size:13px;margin-bottom:6px">
-        🌐 Fallback — external apps
-        <span style="font-weight:500;font-size:11px">(opens the app pre-filled; Chitti does not auto-book)</span>
-      </div>
-      <div id="local-external-list" data-chitti-response data-chitti-section="Order & book — external apps (fallback)" style="display:flex;flex-wrap:wrap;gap:6px">
-        <!-- buttons injected by renderLocalExternal() -->
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="cancel" onclick="closeModal('local-modal')" data-i18n="close">Close</button>
-    </div>
-    <div class="small-note">
-      Local Chitti shops carry the Chitti name. External apps belong to their owners — Chitti Vaani only opens them; it does not place an order, dial a driver, or book a seat. Per NPCI / RBI rules, payment PIN stays inside the merchant app.
-    </div>
-  </div>
-</div>
-
 <!-- SOS FAB — always present -->
-<button class="sos-fab" onclick="emergencyManualTrigger()" aria-label="Emergency — wake the cascade" data-i18n="emergency" data-i18n-aria="emergency-wake-the-cascade">🚨 EMERGENCY</button>
+<button class="sos-fab" onclick="emergencyManualTrigger()" aria-label="Emergency — wake the cascade">🚨 EMERGENCY</button>
 
 <!-- Emergency-monitor always-on toggle (small, bottom-left) -->
-<button id="em-toggle" class="em-toggle" onclick="toggleEmergencyMonitor()" aria-label="Toggle 24/7 emergency keyword listener" data-i18n="24-7-monitor" data-i18n-aria="toggle-24-7-emergency-keyword-listener">🛡️ 24/7 monitor</button>
+<button id="em-toggle" class="em-toggle" onclick="toggleEmergencyMonitor()" aria-label="Toggle 24/7 emergency keyword listener">🛡️ 24/7 monitor</button>
 
 <!-- ════════ EMERGENCY OVERLAY — full-screen stages ════════ -->
 <div id="emergency-overlay" class="eov" role="alertdialog" aria-modal="true" aria-labelledby="eov-title">
   <div class="stage" id="eov-stage">STAGE 1 / 3 — CONFIRM WITH MASTER</div>
-  <h1 id="eov-title" data-i18n="emergency-detected">🚨 EMERGENCY DETECTED</h1>
-  <h2 id="eov-sub" data-i18n="master-are-you-ok-say-theek-hun-or-tap-i-m-ok">Master, are you OK? Say "theek hun" or tap I'M OK.</h2>
+  <h1 id="eov-title">🚨 EMERGENCY DETECTED</h1>
+  <h2 id="eov-sub">Master, are you OK? Say "theek hun" or tap I'M OK.</h2>
   <div class="countdown" id="eov-countdown">10</div>
   <div class="why" id="eov-why"></div>
   <div>
-    <button onclick="emergencyImOK()" data-i18n="i-m-ok-theek-hun">✓ I'M OK / theek hun</button>
-    <button class="escalate" onclick="emergencyEscalateNow()" data-i18n="escalate-now">🚨 ESCALATE NOW</button>
+    <button onclick="emergencyImOK()">✓ I'M OK / theek hun</button>
+    <button class="escalate" onclick="emergencyEscalateNow()">🚨 ESCALATE NOW</button>
   </div>
   <div class="hint" id="eov-hint">If no response in 10 seconds, Chitti will ring the alarm and call your spouse. Chitti will never call the police automatically.</div>
 </div>
@@ -892,15 +761,15 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Pair issue modal -->
 <div id="pair-issue-modal" class="vmodal" role="dialog" aria-modal="true">
   <div class="panel">
-    <h2 data-i18n="your-pair-code">📤 Your pair code</h2>
+    <h2>📤 Your pair code</h2>
     <div class="desc">Read this 6-digit code aloud to your spouse / family member. They enter it in their Chitti. Code expires in 5 minutes.</div>
     <div class="pair-code" id="pair-code-value">— — — — — —</div>
     <div class="row-mic">
-      <button onclick="speakPairCode()" data-i18n="speak-code-aloud">🔊 Speak code aloud</button>
-      <button onclick="issuePairCode()" data-i18n="new-code">↻ New code</button>
+      <button onclick="speakPairCode()">🔊 Speak code aloud</button>
+      <button onclick="issuePairCode()">↻ New code</button>
     </div>
     <div class="actions">
-      <button class="cancel" onclick="closeModal('pair-issue-modal')" data-i18n="done">Done</button>
+      <button class="cancel" onclick="closeModal('pair-issue-modal')">Done</button>
     </div>
   </div>
 </div>
@@ -908,21 +777,21 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <!-- Pair accept modal -->
 <div id="pair-accept-modal" class="vmodal" role="dialog" aria-modal="true">
   <div class="panel">
-    <h2 data-i18n="enter-partner-s-code">📥 Enter partner's code</h2>
+    <h2>📥 Enter partner's code</h2>
     <div class="desc">Type the 6-digit code your partner read out, then a label so you know which Chitti this is (e.g. "Mom", "Spouse").</div>
     <div class="field-row">
       <div class="field">
-        <label data-i18n="6-digit-code">6-digit code</label>
+        <label>6-digit code</label>
         <input id="pair-code-input" type="tel" maxlength="6" pattern="\d{6}" placeholder="000000" style="font-family:'JetBrains Mono','Menlo',monospace;font-size:24px;letter-spacing:.2em;text-align:center">
       </div>
       <div class="field">
-        <label data-i18n="label-this-partner">Label this partner</label>
-        <input id="pair-label" type="text" placeholder="Spouse / Mom / Beta" data-i18n-placeholder="spouse-mom-beta">
+        <label>Label this partner</label>
+        <input id="pair-label" type="text" placeholder="Spouse / Mom / Beta">
       </div>
     </div>
     <div class="actions">
-      <button class="go" onclick="acceptPairCode()" data-i18n="pair">✓ Pair</button>
-      <button class="cancel" onclick="closeModal('pair-accept-modal')" data-i18n="cancel">Cancel</button>
+      <button class="go" onclick="acceptPairCode()">✓ Pair</button>
+      <button class="cancel" onclick="closeModal('pair-accept-modal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -957,7 +826,7 @@ const API_BASE = (function(){
     const u = new URL(window.location.href);
     if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
   } catch(e){}
-  return 'https://chitti-vaani-api-production.up.railway.app';
+  return 'https://chitti-vaani-api.onrender.com';
 })();
 
 let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
@@ -1029,14 +898,6 @@ function acceptConsent(){
     ? 'Welcome. Chitti is ready. Tap the green microphone to speak.'
     : 'नमस्ते। चिट्टी तैयार है। हरे माइक्रोफ़ोन को दबा कर बोलिए।';
   setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
-  // §7 Disability Profile — deferred until after T&C consent so the two
-  // modals never stack. First-visit only; re-prompt is opt-in via
-  // Chitti.a11y.profile.prompt({force:true}) from a future Settings UI.
-  setTimeout(() => {
-    if (window.Chitti && Chitti.a11y && Chitti.a11y.profile && !Chitti.a11y.profile.has()) {
-      Chitti.a11y.profile.prompt();
-    }
-  }, 1500);
 }
 function declineConsent(){
   alert('No problem. You can come back anytime. Chitti will not work until you accept.');
@@ -1215,7 +1076,7 @@ function renderHistory(){
     <div class="history-row">
       <div class="q"><strong>You:</strong> ${escapeHtml((e.q||'').slice(0,160))}</div>
       <div class="a"><strong>Chitti:</strong> ${escapeHtml((e.a||'').slice(0,160))}…</div>
-      <button onclick="replayHistory(${i})" data-i18n="replay">🔊 Replay</button>
+      <button onclick="replayHistory(${i})">🔊 Replay</button>
     </div>
   `).join('');
 }
@@ -1284,10 +1145,10 @@ function renderTC(){
         <div class="meta">${escapeHtml(c.phone||'—')} · ${escapeHtml(c.upi||'—')} · ${escapeHtml(c.email||'—')}</div>
       </div>
       <div class="ctrls">
-        <button onclick="speakContact(${i})" aria-label="Hear contact" data-i18n-aria="hear-contact">🔊</button>
-        <button onclick="prefillWA(${i})" aria-label="Send WhatsApp" data-i18n-aria="send-whatsapp">📲</button>
-        <button onclick="prefillUPI(${i})" aria-label="Send UPI" data-i18n-aria="send-upi">💸</button>
-        <button class="del" onclick="deleteContact(${i})" aria-label="Delete" data-i18n-aria="delete">🗑️</button>
+        <button onclick="speakContact(${i})" aria-label="Hear contact">🔊</button>
+        <button onclick="prefillWA(${i})" aria-label="Send WhatsApp">📲</button>
+        <button onclick="prefillUPI(${i})" aria-label="Send UPI">💸</button>
+        <button class="del" onclick="deleteContact(${i})" aria-label="Delete">🗑️</button>
       </div>
     </div>`).join('');
   // Refresh dropdowns in modals
@@ -1836,7 +1697,7 @@ function renderAudit(){
     const t = new Date(a.ts);
     const when = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
     const undoBtn = (a.undoable && window['_undo_' + a.id])
-      ? `<button class="undo-btn" onclick="undoAction('${a.id}')" data-i18n="undo">↩ Undo</button>`
+      ? `<button class="undo-btn" onclick="undoAction('${a.id}')">↩ Undo</button>`
       : '';
     return `<div class="audit-row">
       <div class="when">${when}</div>
@@ -2243,8 +2104,6 @@ function startEmergencyPoll(){
               : 'आपके साथी ने कहा वे ठीक हैं। चिंता मत करें।',
               CURRENT_LANG);
             logAction('Inbound emergency check-in', 'partner=' + (ev.from||'?'));
-          } else if (ev.kind === 'checkin_prompt') {
-            handleDailyCheckinPrompt(ev);
           }
         }
       }
@@ -2269,120 +2128,6 @@ function handleInboundEmergency(ev){
     try { window.ChittiNative.triggerEmergencyAlarm('partner_relay'); } catch(e){}
   }
   logAction('Inbound emergency relay', 'partner=' + (ev.from||'?'));
-}
-
-/* ─── Daily check-in (P0 — elderly users) ─── */
-/* Reuses the existing emergency cascade for silence escalation —
-   confirm-with-master → ring alarm → spouse → family → relay. NEVER
-   auto-dials cops. (project_chitti_vaani_emergency_protocol) */
-function handleDailyCheckinPrompt(ev){
-  const lang = CURRENT_LANG || 'en';
-  const label = (ev.payload && ev.payload.elderly_label) || '';
-  const prompt = lang === 'en'
-    ? (label ? ('Daily check-in for ' + label + '. ') : '') + 'Are you OK? Say HAAN or tap I am OK.'
-    : (label ? ('दैनिक चेक-इन — ' + label + '। ') : '') + 'क्या आप ठीक हैं? "हाँ" कहिए या "I am OK" दबाइए।';
-  // Repurpose the existing emergency overlay — same affordances, no new
-  // UI surface to maintain. Set stage to 0 so the I'M OK button is the
-  // primary action. If the user stays silent and the backend hits
-  // max_prompts, the scheduler fires emergency_service.trigger() which
-  // produces a real `kind=emergency` relay to paired family.
-  EM_REASON = lang === 'en' ? 'Daily check-in' : 'दैनिक चेक-इन';
-  EM_STAGE = 0;
-  showEmergencyOverlay(0);
-  speakText(prompt, lang);
-  logAction('Daily check-in prompt received', 'index=' + (ev.payload && ev.payload.prompt_index));
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-    try {
-      const rec = new R();
-      rec.lang = lang === 'en' ? 'en-IN' : 'hi-IN';
-      rec.interimResults = false;
-      rec.maxAlternatives = 1;
-      rec.onresult = (e) => {
-        const said = ((e.results[0] && e.results[0][0] && e.results[0][0].transcript) || '').toLowerCase();
-        if (/\b(haan|haa|ji|theek|ok|okay|i ?am ?ok|ठीक|हाँ|हां|जी)\b/.test(said)){
-          dailyCheckinAck(said);
-        }
-      };
-      rec.onerror = ()=>{};
-      rec.start();
-    } catch(_) {}
-  }
-}
-
-async function dailyCheckinAck(said){
-  document.getElementById('emergency-overlay').classList.remove('shown');
-  EM_STAGE = -1;
-  try {
-    await fetch(API_BASE + '/api/vaani/checkin/ack', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ user_token: getUserToken(), said: said || '' })
-    });
-    speakText(CURRENT_LANG === 'en' ? 'Thank you. See you tomorrow.' : 'धन्यवाद। कल फिर मिलेंगे।', CURRENT_LANG);
-    logAction('Daily check-in ack', said || '(tap)');
-  } catch (e) {
-    logAction('Daily check-in ack failed', e && e.message || 'network');
-  }
-}
-
-async function dailyCheckinSchedule(hour_ist, minute_ist, language, elderly_label, max_prompts){
-  try {
-    const r = await fetch(API_BASE + '/api/vaani/checkin/schedule', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        user_token: getUserToken(),
-        hour_ist: hour_ist | 0, minute_ist: minute_ist | 0,
-        language: language || (CURRENT_LANG || 'hi'),
-        elderly_label: elderly_label || '',
-        max_prompts: max_prompts || 3,
-        enabled: true
-      })
-    });
-    return await r.json();
-  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
-}
-
-async function dailyCheckinDisable(){
-  try {
-    const r = await fetch(API_BASE + '/api/vaani/checkin/disable', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ user_token: getUserToken() })
-    });
-    return await r.json();
-  } catch (e) { return { ok:false, error:String(e && e.message || e) }; }
-}
-
-async function onCheckinSave(){
-  const tm = (document.getElementById('checkin-time') || {}).value || '08:00';
-  const [hh, mm] = tm.split(':').map(x => parseInt(x, 10) || 0);
-  const label = ((document.getElementById('checkin-label') || {}).value || '').trim();
-  const maxp = parseInt((document.getElementById('checkin-max') || {}).value || '3', 10) || 3;
-  const status = document.getElementById('checkin-status');
-  if (status) status.textContent = 'Saving…';
-  const res = await dailyCheckinSchedule(hh, mm, CURRENT_LANG || 'hi', label, maxp);
-  if (res && res.ok && res.checkin) {
-    const c = res.checkin;
-    const phrase = (CURRENT_LANG === 'en'
-      ? ('Saved. Chitti will check in every day at ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST. After ' + c.max_prompts + ' silent prompts, family will be alerted.')
-      : ('सेव हो गया। चिट्टी रोज़ ' + String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST पर पूछेगी। ' + c.max_prompts + ' बार चुप रहने पर परिवार को सूचना जाएगी।'));
-    if (status) status.textContent = phrase;
-    speakText(phrase, CURRENT_LANG || 'hi');
-    logAction('Daily check-in saved', String(c.hour_ist).padStart(2,'0') + ':' + String(c.minute_ist).padStart(2,'0') + ' IST · max ' + c.max_prompts);
-  } else {
-    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'save failed');
-  }
-}
-
-async function onCheckinDisable(){
-  const status = document.getElementById('checkin-status');
-  if (status) status.textContent = 'Disabling…';
-  const res = await dailyCheckinDisable();
-  if (res && res.ok) {
-    if (status) status.textContent = (CURRENT_LANG === 'en') ? 'Disabled.' : 'बंद कर दिया।';
-    logAction('Daily check-in disabled', '');
-  } else {
-    if (status) status.textContent = '⚠️ ' + ((res && res.error) || 'disable failed');
-  }
 }
 
 /* ─── Pairing ─── */
@@ -2457,7 +2202,7 @@ async function refreshPartners(){
       <div class="pair-row">
         <div class="av">${escapeHtml((p.partner_label||'?')[0].toUpperCase())}</div>
         <div class="info"><b>${escapeHtml(p.partner_label||'(unnamed)')}</b><div style="color:var(--muted);font-size:11px;font-family:'JetBrains Mono','Menlo',monospace">${escapeHtml((p.partner_token||'').slice(0,12))}…</div></div>
-        <button onclick="unpairPartner('${escapeJs(p.partner_token)}')" data-i18n="unpair">🗑️ Unpair</button>
+        <button onclick="unpairPartner('${escapeJs(p.partner_token)}')">🗑️ Unpair</button>
       </div>`).join('');
   } catch(e) {
     el.innerHTML = '<div class="tc-empty">Could not reach backend.</div>';
@@ -2506,456 +2251,6 @@ function captureVoiceGrant(btn){
   try { r.start(); } catch(e){}
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LOCAL-FIRST DEEP LINKS — Chitti business before external app
-   ─────────────────────────────────────────────────────────── */
-
-/**
- * Service catalogue. Each entry describes a Pro Action card from the
- * "Order & book" section: the user-facing title, whether a free-text
- * query box is needed (and its placeholder), and which external app
- * deep-link templates are valid fallbacks.
- *
- * External deep links are intentionally simple — they open the app /
- * mobile site search page pre-filled. Chitti never auto-completes the
- * booking; the user always taps the final button inside the merchant.
- * This mirrors the WhatsApp / UPI pattern Vaani already uses.
- */
-const LOCAL_SERVICES = {
-  food: {
-    title: 'Order food',
-    queryLabel: 'What would you like to eat?',
-    queryPlaceholder: 'biryani / dosa / paneer butter masala',
-    needsQuery: true,
-    externals: ['zomato', 'swiggy'],
-  },
-  groceries: {
-    title: 'Order groceries',
-    queryLabel: 'What groceries do you need?',
-    queryPlaceholder: 'atta / sabzi / milk / sugar',
-    needsQuery: true,
-    externals: ['blinkit', 'bigbasket'],
-  },
-  pharmacy: {
-    title: 'Order medicine',
-    queryLabel: '',
-    queryPlaceholder: '',
-    needsQuery: false,
-    externals: [],   // no external pharmacy fallback — Chitti MedUPI handles price; refills stay local
-  },
-  salon: {
-    title: 'Book salon',
-    queryLabel: '',
-    queryPlaceholder: '',
-    needsQuery: false,
-    externals: [],
-  },
-  cab: {
-    title: 'Book a cab',
-    queryLabel: 'Where are you going?',
-    queryPlaceholder: 'MG Road / Indiranagar / Airport',
-    needsQuery: true,
-    externals: ['ola', 'uber', 'rapido'],
-  },
-  movies: {
-    title: 'Book movie tickets',
-    queryLabel: 'Which city?',
-    queryPlaceholder: 'bengaluru / mumbai / delhi',
-    needsQuery: true,
-    externals: ['bookmyshow'],
-  },
-  train: {
-    title: 'Book train ticket',
-    queryLabel: 'From → To (optional, you can also fill it on IRCTC)',
-    queryPlaceholder: 'Bengaluru to New Delhi',
-    needsQuery: true,
-    externals: ['irctc'],
-  },
-};
-
-/**
- * External-app deep-link templates. Each template returns a single URL
- * string. Where the merchant supports a structured `?q=` / search slug,
- * we use it; otherwise we open the app homepage and let the user finish
- * (Rapido and IRCTC are honest about this in `requiresUserFinish`).
- *
- * IMPORTANT — keep these honest:
- *  - Do NOT add a template that claims to "place an order".
- *  - Do NOT chain a payment URL — the merchant collects payment, not us.
- *  - If a merchant changes its URL schema, update here only (single source).
- */
-const EXTERNAL_LINKS = {
-  zomato: {
-    label: 'Zomato',
-    icon:  '🍱',
-    build: (q) => 'https://www.zomato.com/search?q=' + encodeURIComponent(q || ''),
-    note:  'opens Zomato search — pick a restaurant, place order in their app',
-  },
-  swiggy: {
-    label: 'Swiggy',
-    icon:  '🛵',
-    build: (q) => 'https://www.swiggy.com/search?query=' + encodeURIComponent(q || ''),
-    note:  'opens Swiggy search — pick a restaurant, place order in their app',
-  },
-  blinkit: {
-    label: 'Blinkit',
-    icon:  '⚡',
-    build: (q) => 'https://blinkit.com/s/?q=' + encodeURIComponent(q || ''),
-    note:  'opens Blinkit search — add to cart and pay in their app',
-  },
-  bigbasket: {
-    label: 'BigBasket',
-    icon:  '🧺',
-    build: (q) => 'https://www.bigbasket.com/ps/?q=' + encodeURIComponent(q || ''),
-    note:  'opens BigBasket search — add to cart and pay in their app',
-  },
-  ola: {
-    label: 'Ola',
-    icon:  '🚖',
-    // Ola's documented universal link. Drop is optional; without lat/lng we
-    // can only pass a free-text drop name, which the app handles.
-    build: (q) => {
-      const drop = (q || '').trim();
-      const base = 'https://book.olacabs.com/';
-      return drop ? base + '?drop_name=' + encodeURIComponent(drop) : base;
-    },
-    note: 'opens Ola — confirm pickup & drop, then book in their app',
-  },
-  uber: {
-    label: 'Uber',
-    icon:  '🚕',
-    // m.uber.com/ul universal link. Action setPickup with no coords falls
-    // through to the app's normal "where to?" flow.
-    build: (q) => {
-      const drop = (q || '').trim();
-      const base = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location';
-      return drop ? base + '&dropoff[formatted_address]=' + encodeURIComponent(drop) : base;
-    },
-    note: 'opens Uber — confirm pickup & drop, then book in their app',
-  },
-  rapido: {
-    label: 'Rapido',
-    icon:  '🏍️',
-    // Rapido does not document a stable web deep-link param schema —
-    // be honest and open the homepage / app store entry.
-    build: (_q) => 'https://onelink.to/rapido',
-    note:  'opens Rapido — set pickup & drop and book in their app',
-    requiresUserFinish: true,
-  },
-  bookmyshow: {
-    label: 'BookMyShow',
-    icon:  '🎬',
-    build: (city) => {
-      const c = (city || '').trim().toLowerCase().replace(/\s+/g, '-');
-      return c
-        ? 'https://in.bookmyshow.com/explore/movies-' + encodeURIComponent(c)
-        : 'https://in.bookmyshow.com/';
-    },
-    note: 'opens BookMyShow movies for your city — pick show, seat, pay there',
-  },
-  irctc: {
-    label: 'IRCTC',
-    icon:  '🚆',
-    // IRCTC has no public param-based deep-link — captcha is by design.
-    build: (_q) => 'https://www.irctc.co.in/nget/train-search',
-    note:  'opens IRCTC train search — captcha + booking happen on IRCTC',
-    requiresUserFinish: true,
-  },
-};
-
-
-let LOCAL_CURRENT_SERVICE = null;
-
-
-/**
- * Open the local-first modal for a given service. Always:
- *   1) shows the directory section in "loading" state
- *   2) fires GET /api/vaani/local/nearby?service=<svc>
- *   3) renders matching Chitti shops (preferred) + the external fallback buttons
- *
- * Per the Chitti rule: NEVER skip the directory lookup and jump straight
- * to an external app, even for cab/movies/train where the directory is
- * empty today. The user sees an honest "no Chitti business yet —
- * external fallback below" message instead.
- */
-async function openLocalFirstModal(service){
-  if (!consentGiven()) { reopenConsent(); return; }
-  const cfg = LOCAL_SERVICES[service];
-  if (!cfg) { alert('Unknown service: ' + service); return; }
-  LOCAL_CURRENT_SERVICE = service;
-
-  document.getElementById('local-title-text').textContent = cfg.title;
-
-  // Query field setup
-  const qField = document.getElementById('local-query-field');
-  const qLabel = document.getElementById('local-query-label');
-  const qInput = document.getElementById('local-query');
-  if (cfg.needsQuery) {
-    qField.style.display = 'block';
-    qLabel.textContent = cfg.queryLabel;
-    qInput.placeholder = cfg.queryPlaceholder;
-    qInput.value = '';
-  } else {
-    qField.style.display = 'none';
-    qInput.value = '';
-  }
-
-  // Reset directory + external sections to loading state
-  document.getElementById('local-chitti-list').innerHTML =
-    '<div class="tc-empty">Checking Chitti business directory near you…</div>';
-  document.getElementById('local-external-list').innerHTML = '';
-
-  openModal('local-modal');
-  speakText(CURRENT_LANG === 'en'
-    ? ('Checking Chitti ' + cfg.title.toLowerCase() + ' near you first.')
-    : ('आपके पास वाली Chitti डायरेक्टरी देख रही हूँ।'),
-    CURRENT_LANG);
-
-  // Geo capture (P0 — geo-aware local lookup). Try the cached location
-  // first so we don't re-prompt the user on every modal open. Then
-  // attempt a fresh GPS fix (silent — no UI). If still no location, we
-  // do NOT prompt for pincode here — the directory call will fall back
-  // to directory-wide mode and the response will carry geo_applied=false
-  // so we can show an honest "no location set" banner.
-  let loc = null;
-  if (window.Chitti && window.Chitti.location) {
-    try {
-      loc = await window.Chitti.location.get({ prompt: false, timeout_ms: 6000 });
-    } catch (_) { loc = null; }
-  }
-
-  const qs = new URLSearchParams({ service });
-  if (loc && loc.lat != null && loc.lng != null) {
-    qs.set('lat', String(loc.lat));
-    qs.set('lng', String(loc.lng));
-  }
-  if (loc && loc.pincode) qs.set('pincode', loc.pincode);
-
-  // Lookup. If the backend is unreachable, we still render the external
-  // fallback so the user is never stuck.
-  let dirResp = null;
-  try {
-    const r = await fetch(API_BASE + '/api/vaani/local/nearby?' + qs.toString());
-    dirResp = await r.json();
-  } catch(e) {
-    dirResp = { ok: false, error: 'backend_unreachable', local: [], external_keys: cfg.externals };
-  }
-  renderLocalChitti(dirResp);
-  renderLocalExternal(dirResp && dirResp.ok ? (dirResp.external_keys || []) : cfg.externals);
-}
-
-/** Prompt the user for their pincode and persist it. Called from the
- *  "Set location" link inside the local-first modal when geo_applied
- *  is False (no GPS, no cached pincode). */
-async function setLocationFromPrompt(){
-  if (!window.Chitti || !window.Chitti.location) return;
-  const loc = await window.Chitti.location.get({
-    prompt: true,
-    allow_stale_ms: 0,  // force a fresh capture
-    prompt_message: (CURRENT_LANG === 'en'
-      ? 'Enter your 6-digit pincode so Chitti shows nearby businesses:'
-      : 'अपना 6 अंकों का पिनकोड डालिए — Chitti आसपास की दुकानें दिखाएगी:'),
-    timeout_ms: 6000,
-  });
-  if (!loc) {
-    speakText(CURRENT_LANG === 'en'
-      ? 'Location skipped. Showing Chitti directory without a distance filter.'
-      : 'लोकेशन छोड़ दी। बिना दूरी के Chitti डायरेक्टरी दिखा रही हूँ।',
-      CURRENT_LANG);
-    return;
-  }
-  // Re-run the lookup with the new location.
-  if (LOCAL_CURRENT_SERVICE) openLocalFirstModal(LOCAL_CURRENT_SERVICE);
-}
-
-function _distanceLabel(km){
-  // Compact human-friendly distance. km<1 → metres (round to 50).
-  if (km == null) return null;
-  if (km < 1) {
-    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
-    return m + ' m away';
-  }
-  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km away';
-}
-
-function _distanceLabelHi(km){
-  if (km == null) return null;
-  if (km < 1) {
-    const m = Math.max(50, Math.round((km * 1000) / 50) * 50);
-    return m + ' मीटर दूर';
-  }
-  return (km < 10 ? km.toFixed(1) : Math.round(km)) + ' किमी दूर';
-}
-
-function renderLocalChitti(resp){
-  const el = document.getElementById('local-chitti-list');
-  if (!resp || !resp.ok) {
-    el.innerHTML = '<div class="tc-empty">Chitti directory unreachable. External fallback below.</div>';
-    return;
-  }
-
-  // Honest banner — show the user what the server actually did with
-  // their location. Three states: no location, default radius, expanded.
-  const banner = (() => {
-    if (!resp.geo_applied) {
-      return '<div style="font-size:12px;color:#c2410c;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
-        '📍 No location set — Chitti is showing the full directory (Mumbai user, Chennai shops, all mixed). ' +
-        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Set location</a> to see only nearby shops.' +
-        '</div>';
-    }
-    const r = resp.radius_km;
-    if (resp.expanded_to_km) {
-      return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
-        '📍 No Chitti business within 5 km — expanded search to <b>' + r + ' km</b>. ' +
-        '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
-        '</div>';
-    }
-    return '<div style="font-size:12px;color:#15803d;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5">' +
-      '📍 Showing Chitti business within <b>' + r + ' km</b>. ' +
-      '<a href="#" onclick="event.preventDefault();setLocationFromPrompt()" style="color:var(--saffron);font-weight:800;text-decoration:underline">Change location</a>' +
-      '</div>';
-  })();
-
-  const rows = Array.isArray(resp.local) ? resp.local : [];
-  if (!rows.length) {
-    // Honest empty-state — explicitly mention the expanded radius if
-    // the server tried widening the search before giving up.
-    const radius = resp.expanded_to_km || resp.radius_km;
-    const explain = resp.geo_applied
-      ? (radius
-          ? ('No registered Chitti business within <b>' + radius + ' km</b> for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.')
-          : ('No registered Chitti business near you for <b>' + escapeHtml(resp.display || resp.service || '') + '</b>. Falling back to external app below.'))
-      : ('No registered Chitti business for <b>' + escapeHtml(resp.display || resp.service || '') + '</b> yet. Falling back to external app below.');
-    el.innerHTML = banner +
-      '<div class="tc-empty">' + explain + '</div>';
-    // Speak the empty-state aloud for blind / illiterate users.
-    speakText(CURRENT_LANG === 'en'
-      ? ('No Chitti ' + (resp.display || resp.service) + ' near you. Showing the external app instead.')
-      : ('आपके पास Chitti ' + (resp.display || resp.service) + ' नहीं है। External app दिखा रही हूँ।'),
-      CURRENT_LANG);
-    return;
-  }
-
-  el.innerHTML = banner + rows.map(r => {
-    const isConnected = (r.oauth_status === 'connected');
-    const featsHtml = (r.features && r.features.length)
-      ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
-          r.features.slice(0, 5).map(f => '<span style="background:#fbf8f1;border:1px solid var(--border);border-radius:4px;padding:2px 6px;margin-right:4px;display:inline-block">' + escapeHtml(f) + '</span>').join('') +
-        '</div>'
-      : '';
-    const statusPill = isConnected
-      ? '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(22,163,74,.10);color:#15803d;border:1px solid #16a34a;border-radius:5px;padding:2px 7px">CONNECTED</span>'
-      : '<span class="pill" style="font-size:9px;font-weight:800;background:rgba(234,88,12,.10);color:#c2410c;border:1px solid #ea580c;border-radius:5px;padding:2px 7px">BEING ONBOARDED</span>';
-    // Distance pill — honest about three states:
-    //   haversine / pincode_exact  → "0.5 km away" / "same pincode"
-    //   unknown                    → "📍 distance unknown — admin: add location"
-    //   no geo_applied at all      → no distance pill (banner already explains)
-    let distPill = '';
-    if (resp.geo_applied) {
-      const dLabel = _distanceLabel(r.distance_km);
-      if (r.geo_match === 'haversine' && dLabel) {
-        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 ' + escapeHtml(dLabel) + '</span>';
-      } else if (r.geo_match === 'pincode_exact') {
-        distPill = '<span class="pill" style="font-size:10px;font-weight:800;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #D4AF37;border-radius:5px;padding:2px 7px;margin-left:4px">📍 Same pincode</span>';
-      } else {
-        distPill = '<span class="pill" style="font-size:10px;font-weight:700;background:rgba(107,114,128,.10);color:#4b5563;border:1px solid #9ca3af;border-radius:5px;padding:2px 7px;margin-left:4px" title="This shop has not registered its location yet — admin can add it via /api/admin/products/<id>/geo" data-i18n-title="this-shop-has-not-registered-its-location-yet-admin-can-add-">📍 Distance unknown</span>';
-      }
-    }
-    return '<div class="pair-row" style="background:#fff8e1">' +
-      '<div class="av" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a)">' +
-        escapeHtml((r.product_name||'?').replace(/^Chitti /, '')[0]||'?') +
-      '</div>' +
-      '<div class="info" style="flex:1;min-width:200px">' +
-        '<b>' + escapeHtml(r.product_name||'?') + '</b> ' + statusPill + distPill +
-        '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',\'Menlo\',monospace">' +
-          escapeHtml(r.gmail_address||'') +
-        '</div>' + featsHtml +
-      '</div>' +
-      '<button onclick="contactLocalChitti(' + JSON.stringify(r.product_key) + ',' + JSON.stringify(r.gmail_address||'') + ')" data-i18n="contact-via-email">📧 Contact via email</button>' +
-    '</div>';
-  }).join('');
-
-  // Speak the NEAREST confirmed-distance match aloud — critical for
-  // blind users who cannot see the cards. Skip if no confirmed match
-  // (e.g. all shops have unknown distance) — saying "Chitti Kirana,
-  // distance unknown" is more confusing than silence.
-  const nearest = rows.find(r => r.distance_km != null
-                                  && (r.geo_match === 'haversine' || r.geo_match === 'pincode_exact'));
-  if (nearest && resp.geo_applied) {
-    const name = (nearest.product_name || nearest.product_key || 'Chitti shop');
-    if (CURRENT_LANG === 'en') {
-      const lbl = _distanceLabel(nearest.distance_km);
-      speakText('Nearest is ' + name + ', ' + lbl + '.', 'en');
-    } else {
-      const lbl = _distanceLabelHi(nearest.distance_km);
-      speakText('आपके सबसे पास ' + name + ', ' + lbl + '।', CURRENT_LANG);
-    }
-  }
-}
-
-/** Open the existing Vaani email modal pre-filled with the Chitti shop's mailbox.
- *  We deliberately do NOT auto-send — user always types the body + says haan. */
-function contactLocalChitti(productKey, gmailAddress){
-  if (!gmailAddress) {
-    speakText(CURRENT_LANG==='en'
-      ? 'No email on file for this Chitti shop yet.'
-      : 'इस Chitti shop का email रजिस्टर नहीं है।', CURRENT_LANG);
-    return;
-  }
-  closeModal('local-modal');
-  openEmailModal();
-  // Drop the recipient + a subject into the email modal
-  const freeEl = document.getElementById('em-to-free');
-  const subjEl = document.getElementById('em-subject');
-  if (freeEl) freeEl.value = gmailAddress;
-  if (subjEl && !subjEl.value) {
-    subjEl.value = 'Order via Chitti Vaani — ' + (LOCAL_CURRENT_SERVICE || 'service');
-  }
-  logAction('Opened email to local Chitti', productKey + ' / ' + gmailAddress);
-  speakText(CURRENT_LANG==='en'
-    ? ('Opening email to ' + productKey + '. Speak the body, then say haan to send.')
-    : ('Email खुल रहा है ' + productKey + ' को। संदेश बोलिए, फिर "haan" बोलें।'),
-    CURRENT_LANG);
-}
-
-function renderLocalExternal(externalKeys){
-  const el = document.getElementById('local-external-list');
-  if (!externalKeys || !externalKeys.length) {
-    el.innerHTML = '<div class="tc-empty" style="margin:0">No external app fallback for this service. Chitti business directory above is the only path today.</div>';
-    return;
-  }
-  const q = (document.getElementById('local-query').value || '').trim();
-  el.innerHTML = externalKeys.map(k => {
-    const ext = EXTERNAL_LINKS[k];
-    if (!ext) return '';
-    return '<button onclick="openExternalLink(' + JSON.stringify(k) + ')" ' +
-      'style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer;min-width:140px;text-align:left">' +
-      '<span style="font-size:20px">' + ext.icon + '</span>' +
-      '<span style="font-weight:800">' + escapeHtml(ext.label) + '</span>' +
-      '<span style="font-size:10px;color:var(--muted);line-height:1.4">' + escapeHtml(ext.note) + '</span>' +
-    '</button>';
-  }).join('');
-}
-
-/** Open one external-app deep-link (with the current query value, if any).
- *  Logs the action to the audit log with a 30 s undo (browser-side only —
- *  we cannot "un-open" a tab in the merchant app once it has been opened). */
-function openExternalLink(key){
-  const ext = EXTERNAL_LINKS[key];
-  if (!ext) return;
-  const q = (document.getElementById('local-query').value || '').trim();
-  const url = ext.build(q);
-  if (!url) return;
-  // Use a new tab so we don't navigate away from Chitti.
-  window.open(url, '_blank', 'noopener');
-  closeModal('local-modal');
-  logAction('Opened external app: ' + ext.label, (LOCAL_CURRENT_SERVICE || '?') + (q ? ' / "' + q + '"' : ''));
-  speakText(CURRENT_LANG==='en'
-    ? (ext.label + ' opened in a new tab. Complete the booking in their app.')
-    : (ext.label + ' खुल गया। उसकी ऐप में आगे बढ़िए।'),
-    CURRENT_LANG);
-}
-
 /* ── BOOT ── */
 window.addEventListener('DOMContentLoaded', () => {
   getUserToken();   // ensure per-device UUID exists
@@ -2964,16 +2259,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (sel) sel.value = CURRENT_LANG;
   setConsentLang(CURRENT_LANG);
   // Show / hide consent overlay
-  if (consentGiven()) {
-    document.getElementById('consent-overlay').classList.add('hidden');
-    // Returning user who already accepted T&C but never set the
-    // Disability Profile — fire it now that no consent modal blocks.
-    setTimeout(() => {
-      if (window.Chitti && Chitti.a11y && Chitti.a11y.profile && !Chitti.a11y.profile.has()) {
-        Chitti.a11y.profile.prompt();
-      }
-    }, 1200);
-  }
+  if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
   renderHistory();
   renderTC();
   renderAudit();
@@ -3015,15 +2301,6 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script src="chitti_disclaimer.js"></script>
-<!-- Chitti Quality v2 trust signals · 2026-05-13 -->
-<script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.4;</script>
-<script src="feedback-widget.js" data-page="chitti_vaani"></script>
-
-<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
-<script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js"></script>
-<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
-<script src="chitti_isl.js"></script>
-<script src="chitti_i18n.js"></script>
+<script src="chitti_lang.js"></script>
 </body>
 </html>
