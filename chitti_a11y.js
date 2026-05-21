@@ -143,7 +143,9 @@
     if (mtCache[ck]) { cb(mtCache[ck]); return; }
     if (mtInFlight[ck]) return;
     mtInFlight[ck] = true;
-    const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(trimmed) + "&langpair=en%7C" + encodeURIComponent(lang);
+    // de= raises MyMemory anonymous quota from 5k → 50k words/day per IP.
+    // sire@sahayai.in is the founder's address per CLAUDE.md / project ownership.
+    const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(trimmed) + "&langpair=en%7C" + encodeURIComponent(lang) + "&de=sire%40sahayai.in";
     mtQueue.push({ url, ck, cb });
     mtPump();
   }
