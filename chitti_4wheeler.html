@@ -108,24 +108,24 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <div class="bharat-stripe" aria-hidden="true"></div>
 
-<div class="disc-bar" role="region" aria-label="Disclaimer">
+<div class="disc-bar" role="region" aria-label="Disclaimer" data-i18n-aria="disclaimer">
   <span class="ico" aria-hidden="true">⚠️</span>
   <span class="short"><strong data-i18n="disc.notmech">NOT A MECHANIC.</strong> <span data-i18n="disc.body">Guide ke liye hai. Major problems ke liye trained mechanic se milein. Emergency mein family ko call hoga, cops ko nahi (Vaani protocol).</span></span>
-  <button class="spk" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud">🔊</button>
-  <button class="spk" onclick="document.getElementById('disc-modal').classList.add('shown')" aria-label="Read full legal text" data-i18n="disc.full">Full text</button>
+  <button class="spk" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud" data-i18n-aria="read-disclaimer-aloud" data-i18n="tag">🔊</button>
+  <button class="spk" onclick="document.getElementById('disc-modal').classList.add('shown')" aria-label="Read full legal text" data-i18n-aria="read-full-legal-text" data-i18n="disc.full">Full text</button>
 </div>
 
-<div class="disc-modal" id="disc-modal" role="dialog" aria-label="Full disclaimer" aria-modal="true">
+<div class="disc-modal" id="disc-modal" role="dialog" aria-label="Full disclaimer" data-i18n-aria="full-disclaimer" aria-modal="true">
   <div class="panel">
-    <h2>Disclaimer — Chitti 4-Wheeler</h2>
+    <h2 data-i18n="disclaimer-chitti-4-wheeler">Disclaimer — Chitti 4-Wheeler</h2>
     <p><strong>Chitti 4-Wheeler is not a mechanic.</strong> Every answer is a guide. For any major problem (engine seize, brake failure, electrical fire, accident), see a trained mechanic <em>in person</em>.</p>
-    <h3>Emergency protocol — family cascade only</h3>
+    <h3 data-i18n="emergency-protocol-family-cascade-only">Emergency protocol — family cascade only</h3>
     <p>If you say <em>"accident ho gaya"</em> or trigger SOS, Chitti rings your <strong>family</strong> through the Vaani cascade — confirm-with-Master → alarm → spouse → family → Chitti-to-Chitti relay. <strong>Chitti never auto-dials 100 / 108 / 112.</strong> You can override and dial yourself.</p>
-    <h3>Price quotes are bands, not finals</h3>
+    <h3 data-i18n="price-quotes-are-bands-not-finals">Price quotes are bands, not finals</h3>
     <p>Anti-overcharge guard returns a <strong>fair-price band</strong>, not a single number. Always confirm with the mechanic.</p>
-    <h3>OBD2 mode honesty</h3>
+    <h3 data-i18n="obd2-mode-honesty">OBD2 mode honesty</h3>
     <p>If the Bluetooth adapter is not paired, Chitti will not invent sensor readings — it says so. <em>Honest stubs over fake demos</em> is a platform rule.</p>
-    <h3>Camera scans are user-owned</h3>
+    <h3 data-i18n="camera-scans-are-user-owned">Camera scans are user-owned</h3>
     <p>Every photo (spare part, document, fake-product check) belongs to you. Never sold, anonymised before aggregate analysis, <em>"Chitti forget"</em> deletes everything.</p>
     <p style="margin-top:14px"><button class="ok" onclick="document.getElementById('disc-modal').classList.remove('shown')" data-i18n="btn.ok">Theek hai</button></p>
   </div>
@@ -145,10 +145,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <a class="switch-btn-bharat" href="chitti_complete.html">🏠 Home</a>
     </div>
   </div>
-  <div class="header-controls" aria-label="Page actions">
+  <div class="header-controls" aria-label="Page actions" data-i18n-aria="page-actions">
     <label style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;min-height:34px">
       🌐
-      <select id="hdr-lang" aria-label="Language" onchange="if(window.Chitti&&Chitti.a11y){Chitti.a11y.setLanguage(this.value,{manual:true,source:'header'});}" style="background:transparent;border:0;color:#fff;font-size:12px;font-weight:700;cursor:pointer;min-width:140px">
+      <select id="hdr-lang" aria-label="Language" data-i18n-aria="language" onchange="if(window.Chitti&&Chitti.a11y){Chitti.a11y.setLanguage(this.value,{manual:true,source:'header'});}" style="background:transparent;border:0;color:#fff;font-size:12px;font-weight:700;cursor:pointer;min-width:140px">
         <option value="en">🇬🇧 English</option>
         <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
         <option value="bn">বা বাংলা (Bengali)</option>
@@ -177,7 +177,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   </div>
 </header>
 
-<nav class="tabs" role="tablist" aria-label="Sections">
+<nav class="tabs" role="tablist" aria-label="Sections" data-i18n-aria="sections">
   <button class="tab active" data-tab="home" role="tab" aria-selected="true" data-i18n="tab.home">🏠 Home</button>
   <button class="tab" data-tab="profile" role="tab" data-i18n="tab.profile.car">🛠️ My Car</button>
   <button class="tab" data-tab="health" role="tab" data-i18n="tab.health">❤️ Health / DTC</button>
@@ -202,9 +202,9 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-head">
       <div>
         <div class="section-title"><span data-i18n="home.title.car">Aapki car ka haal</span> <span class="live-badge" data-i18n="badge.live">Live</span></div>
-        <div class="section-sub">Add your car on the <button onclick="document.querySelector('[data-tab=profile]').click()" style="background:none;border:0;color:var(--saffron);cursor:pointer;text-decoration:underline;font-size:11px">My Car</button> tab to unlock the dashboard.</div>
+        <div class="section-sub">Add your car on the <button onclick="document.querySelector('[data-tab=profile]').click()" style="background:none;border:0;color:var(--saffron);cursor:pointer;text-decoration:underline;font-size:11px" data-i18n="my-car">My Car</button> tab to unlock the dashboard.</div>
       </div>
-      <button class="spk" onclick="speakBox('home-status')" aria-label="Read aloud">🔊</button>
+      <button class="spk" onclick="speakBox('home-status')" aria-label="Read aloud" data-i18n-aria="read-aloud" data-i18n="tag">🔊</button>
     </div>
     <div id="home-status" class="status-row" data-chitti-response data-chitti-section="Home — car status">
       <div class="status-card"><div class="lbl" data-i18n="home.lbl.car">Car</div><div class="val" id="hs-car">—</div><div class="sub">Add brand + model</div></div>
@@ -270,12 +270,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div data-chitti-response data-chitti-section="My Car — onboarding">
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
         <label>Brand <select id="c-brand"><option value="">— select —</option><option>Maruti Suzuki</option><option>Hyundai</option><option>Tata</option><option>Mahindra</option><option>Honda</option><option>Toyota</option><option>Kia</option><option>MG</option><option>Skoda</option><option>VW</option><option>Renault</option><option>Nissan</option><option>Ford</option><option>Other</option></select></label>
-        <label>Model <input id="c-model" placeholder="Swift / i20 / Nexon / Creta"></label>
-        <label>Year <input id="c-year" type="number" min="1990" max="2030" placeholder="2018"></label>
+        <label>Model <input id="c-model" placeholder="Swift / i20 / Nexon / Creta" data-i18n-placeholder="swift-i20-nexon-creta"></label>
+        <label>Year <input id="c-year" type="number" min="1990" max="2030" placeholder="2018" data-i18n-placeholder="2018"></label>
         <label>Fuel <select id="c-fuel"><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Electric</option><option>Hybrid</option></select></label>
         <label>Transmission <select id="c-tx"><option>Manual</option><option>Automatic</option><option>AMT</option><option>CVT</option><option>DCT</option></select></label>
-        <label>Odometer (km) <input id="c-odo" type="number" placeholder="45000"></label>
-        <label>Registration plate (optional) <input id="c-reg" placeholder="KA01 AB 1234"></label>
+        <label>Odometer (km) <input id="c-odo" type="number" placeholder="45000" data-i18n-placeholder="45000"></label>
+        <label>Registration plate (optional) <input id="c-reg" placeholder="KA01 AB 1234" data-i18n-placeholder="ka01-ab-1234"></label>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="cta-saffron" onclick="saveCarProfile()" data-i18n="btn.save">💾 Save</button>
@@ -293,12 +293,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <section class="page" id="page-health" role="tabpanel">
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Web-Bluetooth pair flow for ELM327 adapter (₹500-1500). Plug into the OBD2 port (under-steering-wheel left), ignition ON (don't start), tap pair.</div></div></div>
-    <button class="cta-navy" disabled>📡 Pair OBD2 (coming soon)</button>
+    <button class="cta-navy" disabled data-i18n="pair-obd2-coming-soon">📡 Pair OBD2 (coming soon)</button>
   </div>
   <div class="section-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">DTC Plain-Hinglish Library <span class="live-badge">Live (lookup stub)</span></div><div class="section-sub">Enter a P0xxx code. Today: deterministic library covers ~50 common codes. P1: ~2 000 codes + manufacturer-specific.</div></div></div>
     <div data-chitti-response data-chitti-section="DTC lookup">
-      <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="dtc-code" placeholder="P0301" style="max-width:160px"><button class="cta-saffron" onclick="lookupDtc()">Look up</button></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="dtc-code" placeholder="P0301" data-i18n-placeholder="p0301" style="max-width:160px"><button class="cta-saffron" onclick="lookupDtc()" data-i18n="look-up">Look up</button></div>
       <div id="dtc-result" style="margin-top:12px;font-size:13px;line-height:1.6"></div>
     </div>
   </div>
@@ -307,7 +307,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">10 s phone-mic recording → knock / pinging / belt squeal / wheel-bearing / brake-squeal classifier.</div></div></div>
-    <button class="cta-saffron" disabled>🎤 Record 10 s (coming soon)</button>
+    <button class="cta-saffron" disabled data-i18n="record-10-s-coming-soon">🎤 Record 10 s (coming soon)</button>
   </div>
 </section>
 
@@ -362,14 +362,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <section class="page" id="page-sos" role="tabpanel">
   <div class="section-card" data-chitti-response style="border-color:var(--red);border-width:2px">
     <div class="section-head"><div><div class="section-title" style="color:var(--red)">🆘 SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">Per Vaani locked emergency protocol — confirm-with-Master → alarm → spouse → family → Chitti-to-Chitti relay. <strong>Never auto-dials 100 / 108 / 112.</strong></div></div></div>
-    <button class="cta-saffron" style="background:linear-gradient(135deg,var(--red),#ef4444)!important;width:100%;font-size:18px;padding:18px" disabled>🆘 Trigger SOS (coming soon)</button>
+    <button class="cta-saffron" style="background:linear-gradient(135deg,var(--red),#ef4444)!important;width:100%;font-size:18px;padding:18px" disabled data-i18n="trigger-sos-coming-soon">🆘 Trigger SOS (coming soon)</button>
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Crash Detection (g-force) <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Phone accelerometer threshold → confirm-with-Master → if no response in 30 s, fire family cascade.</div></div></div>
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Theft / Unauthorised Movement Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Pincode-radius community alert. Sightings come back to owner. India sees 200k+ car thefts / year.</div></div></div>
-    <button class="cta-navy" disabled>🚨 Report theft (coming soon)</button>
+    <button class="cta-navy" disabled data-i18n="report-theft-coming-soon">🚨 Report theft (coming soon)</button>
   </div>
 </section>
 
@@ -378,13 +378,13 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">RC · Insurance · PUC · Driving Licence · Loan EMI · Road Tax · FASTag. Auto-reminders 30 / 7 / 1 days before expiry. Encrypted on Turso, user-owned.</div></div></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
-      <button class="cta-navy" disabled>📸 Scan RC</button>
-      <button class="cta-navy" disabled>📸 Scan Insurance</button>
-      <button class="cta-navy" disabled>📸 Scan PUC</button>
-      <button class="cta-navy" disabled>📸 Scan Licence</button>
-      <button class="cta-navy" disabled>📸 Scan Road Tax</button>
-      <button class="cta-navy" disabled>💳 Add Loan EMI</button>
-      <button class="cta-navy" disabled>🛣️ FASTag</button>
+      <button class="cta-navy" disabled data-i18n="scan-rc">📸 Scan RC</button>
+      <button class="cta-navy" disabled data-i18n="scan-insurance">📸 Scan Insurance</button>
+      <button class="cta-navy" disabled data-i18n="scan-puc">📸 Scan PUC</button>
+      <button class="cta-navy" disabled data-i18n="scan-licence">📸 Scan Licence</button>
+      <button class="cta-navy" disabled data-i18n="scan-road-tax">📸 Scan Road Tax</button>
+      <button class="cta-navy" disabled data-i18n="add-loan-emi">💳 Add Loan EMI</button>
+      <button class="cta-navy" disabled data-i18n="fastag">🛣️ FASTag</button>
     </div>
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
@@ -416,10 +416,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">"Service centre ne ₹X maanga" → fair-price band + DeepSeek opinion + nearby alternates.</div></div></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
-      <label>Service item <input placeholder="40k service" disabled></label>
-      <label>Quoted price (₹) <input type="number" placeholder="18000" disabled></label>
+      <label>Service item <input placeholder="40k service" data-i18n-placeholder="40k-service" disabled></label>
+      <label>Quoted price (₹) <input type="number" placeholder="18000" data-i18n-placeholder="18000" disabled></label>
     </div>
-    <button class="cta-saffron" style="margin-top:10px" disabled>🛡️ Check (coming soon)</button>
+    <button class="cta-saffron" style="margin-top:10px" disabled data-i18n="check-coming-soon">🛡️ Check (coming soon)</button>
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Mechanic + Service-Centre Honesty Score <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Authorised + independent both rated. Geo-aware Haversine list.</div></div></div>
@@ -433,7 +433,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <section class="page" id="page-parts" role="tabpanel">
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Per Camera Intelligence LOCKED §2b. Scan brake pads / oil filter / spark plugs → community alerts + annual report to MoRTH / BIS.</div></div></div>
-    <button class="cta-saffron" disabled>📸 Scan part (coming soon)</button>
+    <button class="cta-saffron" disabled data-i18n="scan-part-coming-soon">📸 Scan part (coming soon)</button>
   </div>
   <div class="section-card coming-soon-card" data-chitti-response>
     <div class="section-head"><div><div class="section-title">Spare-part Price Compare <span class="coming-soon">Coming Soon</span></div><div class="section-sub">OEM vs aftermarket vs BoodMo vs partsbig — best-price match by part number.</div></div></div>
@@ -479,8 +479,8 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
     <form onsubmit="event.preventDefault();askChitti()" style="display:flex;gap:6px;flex-wrap:wrap">
       <input id="ask-input" placeholder="Type your question…" data-i18n-placeholder="ask.placeholder" style="flex:1;min-width:200px">
-      <button type="button" onclick="askMic()" class="cta-saffron">🎤</button>
-      <button type="submit" class="cta-navy">→</button>
+      <button type="button" onclick="askMic()" class="cta-saffron" data-i18n="tag">🎤</button>
+      <button type="submit" class="cta-navy" data-i18n="tag">→</button>
     </form>
     <p class="section-sub" style="margin-top:8px">⚠️ Main mechanic nahi hoon. Major problems ke liye trained mechanic se milein.</p>
   </div>

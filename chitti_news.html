@@ -145,8 +145,8 @@ footer a{color:var(--saffron)}
 <div id="brk-bar" class="brk-bar" role="status" aria-live="polite">
   <span class="pulse"></span>
   <span class="text" id="brk-text">Loading breaking news…</span>
-  <button class="spk-btn" onclick="speakBreaking()" aria-label="Read the breaking-news headline aloud">🔊</button>
-  <button class="dismiss" onclick="dismissBreaking()" aria-label="Dismiss breaking news">✕</button>
+  <button class="spk-btn" onclick="speakBreaking()" aria-label="Read the breaking-news headline aloud" data-i18n-aria="read-the-breaking-news-headline-aloud" data-i18n="tag">🔊</button>
+  <button class="dismiss" onclick="dismissBreaking()" aria-label="Dismiss breaking news" data-i18n-aria="dismiss-breaking-news" data-i18n="tag">✕</button>
 </div>
 
 <!-- Demo ribbon -->
@@ -165,12 +165,12 @@ footer a{color:var(--saffron)}
       <a class="switch-btn-bharat" href="chitti_complete_technical.html" data-i18n="switch.tech">📈 Technical</a>
       <a class="switch-btn-bharat" href="chitti_fundamentals.html" data-i18n="switch.fund">📋 Fundamentals</a>
       <a class="switch-btn-bharat" href="chitti_medupi.html" data-i18n="switch.medupi">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n="switch.vaani">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n="switch.upi">🛡️ UPI Guard</a>
-      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n="switch.scanner">📷 Scanner</a>
-      <div class="lang-toggle-bharat" role="group" aria-label="Language toggle">
-        <button data-lang="en" class="active" data-active="true" onclick="setChittiLang('en')">EN</button>
-        <button data-lang="hi" onclick="setChittiLang('hi')">हिं</button>
+      <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n-aria="switch-to-chitti-vaani" data-i18n="switch.vaani">🎙️ Vaani</a>
+      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard" data-i18n="switch.upi">🛡️ UPI Guard</a>
+      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner" data-i18n="switch.scanner">📷 Scanner</a>
+      <div class="lang-toggle-bharat" role="group" aria-label="Language toggle" data-i18n-aria="language-toggle">
+        <button data-lang="en" class="active" data-active="true" onclick="setChittiLang('en')" data-i18n="en">EN</button>
+        <button data-lang="hi" onclick="setChittiLang('hi')" data-i18n="tag">हिं</button>
       </div>
     </div>
   </div>
@@ -178,23 +178,23 @@ footer a{color:var(--saffron)}
     <button onclick="startDemoMode()" data-i18n="hdr.demo">🎬 Demo Mode</button>
     <button onclick="speakPage()" data-i18n="hdr.read">🔊 Read page</button>
     <button onclick="openOnboarding()" data-i18n="hdr.change">🌐 Change state / language</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="top">↑ Top</button>
   </div>
 </header>
 
 <!-- Chitti News disclaimer (sticky) — every share carries a verify-with-source line -->
-<div class="news-disclaimer" role="region" aria-label="Chitti News disclaimer"
+<div class="news-disclaimer" role="region" aria-label="Chitti News disclaimer" data-i18n-aria="chitti-news-disclaimer"
      style="position:sticky;top:0;z-index:55;background:#fef3c7;color:#78350f;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #fcd34d;line-height:1.45">
   📰 <strong>Chitti News aggregates RSS sources</strong> — verdicts cross-reference ≥2 sources. Always verify with the original source before sharing.
 </div>
 
 <!-- State + Language + Category picker (sticky) -->
-<div class="picker-bar" role="group" aria-label="Filter news by state, language and category">
+<div class="picker-bar" role="group" aria-label="Filter news by state, language and category" data-i18n-aria="filter-news-by-state-language-and-category">
   <span class="pick-lbl" data-i18n="pick.state">State</span>
-  <select id="pick-state" onchange="onPickerChange()" aria-label="State"></select>
-  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the state and language pickers do">🔊</button>
+  <select id="pick-state" onchange="onPickerChange()" aria-label="State" data-i18n-aria="state"></select>
+  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the state and language pickers do" data-i18n-aria="hear-what-the-state-and-language-pickers-do" data-i18n="tag">🔊</button>
   <span class="pick-lbl" data-i18n="pick.lang">Lang</span>
-  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language">
+  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language" data-i18n-aria="language">
     <option value="en">English</option>
     <option value="hi">हिंदी</option>
     <option value="bn">বাংলা</option>
@@ -212,7 +212,7 @@ footer a{color:var(--saffron)}
   <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
 </div>
 
-<nav class="tabs" role="tablist" aria-label="News categories">
+<nav class="tabs" role="tablist" aria-label="News categories" data-i18n-aria="news-categories">
   <button class="tab active" data-tab="national"      onclick="showCategory('national')"      role="tab" aria-selected="true"  data-i18n="cat.national">🇮🇳 National</button>
   <button class="tab"        data-tab="state"         onclick="showCategory('state')"         role="tab" aria-selected="false" data-i18n="cat.state">📍 State</button>
   <button class="tab"        data-tab="business"      onclick="showCategory('business')"      role="tab" aria-selected="false" data-i18n="cat.business">💼 Business</button>
@@ -225,17 +225,17 @@ footer a{color:var(--saffron)}
 
 <main>
   <section id="page-feed" class="page active" role="tabpanel">
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakFeedStatus()" aria-label="Hear the current feed status">🔊 Feed status</button></div>
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakFeedStatus()" aria-label="Hear the current feed status" data-i18n-aria="hear-the-current-feed-status" data-i18n="feed-status">🔊 Feed status</button></div>
     <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true" data-i18n="feed.loading">⏳ Loading the latest news…</div>
     <div id="feed" class="feed"></div>
   </section>
   <section id="page-saved" class="page" role="tabpanel">
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('saved')" aria-label="Hear what's in your Read Later folder">🔊 Read Later</button></div>
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('saved')" aria-label="Hear what's in your Read Later folder" data-i18n-aria="hear-what-s-in-your-read-later-folder" data-i18n="read-later">🔊 Read Later</button></div>
     <div id="saved-status" class="section-empty">⭐</div>
     <div id="saved-feed" class="feed"></div>
   </section>
   <section id="page-cancelled" class="page" role="tabpanel">
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('cancelled')" aria-label="Hear what's in your Cancelled folder">🔊 Cancelled</button></div>
+    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('cancelled')" aria-label="Hear what's in your Cancelled folder" data-i18n-aria="hear-what-s-in-your-cancelled-folder" data-i18n="cancelled">🔊 Cancelled</button></div>
     <div id="cancelled-status" class="section-empty">🗑️</div>
     <div id="cancelled-feed" class="feed"></div>
   </section>
@@ -246,16 +246,16 @@ footer a{color:var(--saffron)}
         <div class="section-title" data-i18n="special.title">✨ Chitti News Special — what no other aggregator does</div>
         <div class="section-sub" data-i18n="special.sub">Dailyhunt, Way2News, Bhaskar, Moneycontrol, NewsBreak, SmartNews, CNA — Chitti combines their best edges + Bharat-first AI.</div>
       </div>
-      <button class="spk-btn" onclick="speakSpecialAll()" aria-label="Hear all Chitti News Special features read aloud">🔊</button>
+      <button class="spk-btn" onclick="speakSpecialAll()" aria-label="Hear all Chitti News Special features read aloud" data-i18n-aria="hear-all-chitti-news-special-features-read-aloud" data-i18n="tag">🔊</button>
     </div>
     <ul id="special-list" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
-      <li><span><strong>Chitti's Take</strong> — 3-bullet AI summary in your chosen language (CNA's FAST button + Bhasha translation).</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>Fact Checker Agent</strong> — verdict comes from cross-referencing 2+ trusted RSS sources, not opinion.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>State + Language picker</strong> on first launch — vernacular-first like Dailyhunt, persistent across visits.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>Read Aloud</strong> in any of the 8 supported Indian languages — for the four-user contract.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>Cancelled folder</strong> — explicit "I don't want this" signal, separate from saved.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>One-tap WhatsApp share</strong> — includes a verify-with-source disclaimer.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
-      <li><span><strong>Sub-agents per category</strong> — Politics · Sports · Business · Tech · Entertainment, each with its own context + tone.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud">🔊</button></li>
+      <li><span><strong>Chitti's Take</strong> — 3-bullet AI summary in your chosen language (CNA's FAST button + Bhasha translation).</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>Fact Checker Agent</strong> — verdict comes from cross-referencing 2+ trusted RSS sources, not opinion.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>State + Language picker</strong> on first launch — vernacular-first like Dailyhunt, persistent across visits.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>Read Aloud</strong> in any of the 8 supported Indian languages — for the four-user contract.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>Cancelled folder</strong> — explicit "I don't want this" signal, separate from saved.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>One-tap WhatsApp share</strong> — includes a verify-with-source disclaimer.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
+      <li><span><strong>Sub-agents per category</strong> — Politics · Sports · Business · Tech · Entertainment, each with its own context + tone.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
     </ul>
   </div>
 
@@ -266,11 +266,11 @@ footer a{color:var(--saffron)}
   </footer>
 
   <!-- Demo banner -->
-  <div id="demo-banner" class="demo-banner" role="dialog" aria-live="polite" aria-label="Demo Mode guided walk-through">
+  <div id="demo-banner" class="demo-banner" role="dialog" aria-live="polite" aria-label="Demo Mode guided walk-through" data-i18n-aria="demo-mode-guided-walk-through">
     <div class="step" id="demo-step-counter">Step 1 of 6</div>
     <div class="narr" id="demo-narr">Welcome.</div>
-    <button onclick="_demoNext()">Next ▶</button>
-    <button class="skip" onclick="stopDemoMode()">Skip ✕</button>
+    <button onclick="_demoNext()" data-i18n="next">Next ▶</button>
+    <button class="skip" onclick="stopDemoMode()" data-i18n="skip">Skip ✕</button>
   </div>
 </main>
 
@@ -282,7 +282,7 @@ footer a{color:var(--saffron)}
         <h2 id="onb-title" data-i18n="onb.title">👋 Welcome — pick your state and language</h2>
         <p data-i18n="onb.sub">Chitti News will only show articles relevant to your state, in your chosen language. You can change this anytime from the header.</p>
       </div>
-      <button class="spk-btn" onclick="speakOnboarding()" aria-label="Hear the welcome message read aloud">🔊</button>
+      <button class="spk-btn" onclick="speakOnboarding()" aria-label="Hear the welcome message read aloud" data-i18n-aria="hear-the-welcome-message-read-aloud" data-i18n="tag">🔊</button>
     </div>
     <label style="font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="onb.state_lbl">Your state</label>
     <select id="onb-state"></select>
@@ -641,7 +641,7 @@ function _articleCardHtml(a) {
   const fcTitle = (lang === 'hi'
     ? 'चिट्टी की तथ्य जाँच — ' + fcWord
     : "Chitti's fact check — " + fcWord) + fcConf;
-  const fcBadge = '<span class="' + fcCls + '" title="' + _esc(fcTitle) + '" aria-label="' + _esc(fcTitle) + '">'
+  const fcBadge = '<span class="' + fcCls + '" title="' + _esc(fcTitle) + '" data-i18n-title="esc-fctitle" aria-label="' + _esc(fcTitle) + '" data-i18n-aria="esc-fctitle">'
                   + (fc.symbol || '❔') + ' ' + _esc(fcWord) + '</span>';
 
   const meta = []
@@ -660,14 +660,14 @@ function _articleCardHtml(a) {
         '<div class="art-title">' + _esc(a.title || '') + '</div>' +
         '<div class="art-summary">' + _esc((a.summary || '').slice(0,260)) + (a.summary && a.summary.length > 260 ? '…' : '') + '</div>' +
         '<div class="art-actions">' +
-          '<button class="primary" onclick="loadTake(' + a.id + ')">' + t('art.take') + '</button>' +
-          '<button onclick="loadExplainSimply(' + a.id + ')">' + t('art.explain') + '</button>' +
-          '<button onclick="loadFactcheck(' + a.id + ')">' + t('art.factcheck') + '</button>' +
-          '<button onclick="readArticleAloud(' + a.id + ')">' + t('art.read_aloud') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'saved\')">' + t('art.save') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'cancelled\')">' + t('art.cancel') + '</button>' +
-          '<button onclick="shareArticle(' + a.id + ')">' + t('art.share') + '</button>' +
-          '<button onclick="window.open(\'' + _esc(a.link) + '\', \'_blank\', \'noopener\')">' + t('art.open') + '</button>' +
+          '<button class="primary" onclick="loadTake(' + a.id + ')" data-i18n="t-art-take">' + t('art.take') + '</button>' +
+          '<button onclick="loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
+          '<button onclick="loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
+          '<button onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud">' + t('art.read_aloud') + '</button>' +
+          '<button onclick="saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">' + t('art.save') + '</button>' +
+          '<button onclick="saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-cancel">' + t('art.cancel') + '</button>' +
+          '<button onclick="shareArticle(' + a.id + ')" data-i18n="t-art-share">' + t('art.share') + '</button>' +
+          '<button onclick="window.open(\'' + _esc(a.link) + '\', \'_blank\', \'noopener\')" data-i18n="t-art-open">' + t('art.open') + '</button>' +
         '</div>' +
         '<div class="art-take-host" id="take-' + a.id + '" data-chitti-response data-chitti-section="Chitti\'s Take · ' + _esc(a.title || 'News article') + '"></div>' +
         '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Explain simply · ' + _esc(a.title || 'News article') + '"></div>' +

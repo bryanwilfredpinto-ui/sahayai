@@ -124,7 +124,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
 
 <!-- Sticky legal bar — locked: never demote to footer. -->
 <div class="legal-bar" id="legal-bar" role="button" tabindex="0"
-     aria-label="Open legal disclaimer">
+     aria-label="Open legal disclaimer" data-i18n-aria="open-legal-disclaimer">
   ⚠️ NOT SEBI REGISTERED · Chitti is an AI assistant, not a registered advisor · Tap for details
 </div>
 
@@ -146,7 +146,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
 
 <main>
 
-  <h1>Indian Sign Language — not ASL</h1>
+  <h1 data-i18n="indian-sign-language-not-asl">Indian Sign Language — not ASL</h1>
   <p class="subtitle">
     ISL ships in three phases. Phase 1 is live across every Chitti product via
     the shared <code>chitti_a11y.js</code> substrate. Phases 2 and 3 are
@@ -154,42 +154,42 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
   </p>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" aria-selected="true"  data-section="try">Try it</button>
-    <button class="tab" role="tab" aria-selected="false" data-section="dict">Dictionary</button>
-    <button class="tab" role="tab" aria-selected="false" data-section="camera">Camera ISL</button>
-    <button class="tab" role="tab" aria-selected="false" data-section="contribute">Contribute</button>
-    <button class="tab" role="tab" aria-selected="false" data-section="hof">Hall of Fame</button>
+    <button class="tab" role="tab" aria-selected="true"  data-section="try" data-i18n="try-it">Try it</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="dict" data-i18n="dictionary">Dictionary</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="camera" data-i18n="camera-isl">Camera ISL</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="contribute" data-i18n="contribute">Contribute</button>
+    <button class="tab" role="tab" aria-selected="false" data-section="hof" data-i18n="hall-of-fame">Hall of Fame</button>
   </div>
 
   <!-- TRY IT -->
-  <section class="section" data-section="try" data-active="true" role="tabpanel" aria-label="Try ISL mode">
+  <section class="section" data-section="try" data-active="true" role="tabpanel" aria-label="Try ISL mode" data-i18n-aria="try-isl-mode">
     <div class="try-card">
-      <h3>1. Turn ISL on</h3>
+      <h3 data-i18n="1-turn-isl-on">1. Turn ISL on</h3>
       <p>Use the <strong>🤟 ISL</strong> button in the accessibility bar at the top of the page. Once on, every Chitti response across every product page automatically gets an ISL animation panel.</p>
     </div>
     <div class="try-card">
-      <h3>2. Try a Chitti response</h3>
+      <h3 data-i18n="2-try-a-chitti-response">2. Try a Chitti response</h3>
       <p>Below is a sample Chitti response. Toggle ISL on and watch the panel appear underneath. Tap any word for the enlarged sign.</p>
       <div class="chitti-response" id="demo-response" data-chitti-response>
         Namaste! Haan, doctor ke paas jao. Madad chahiye to Chitti se kahna.
       </div>
     </div>
     <div class="try-card">
-      <h3>3. Render any text on demand</h3>
+      <h3 data-i18n="3-render-any-text-on-demand">3. Render any text on demand</h3>
       <p>Or render a custom sentence here:</p>
       <input class="try-input" id="custom-text" type="text"
-             placeholder="Type Hindi or English words…"
+             placeholder="Type Hindi or English words…" data-i18n-placeholder="type-hindi-or-english-words"
              value="Pani dawa madad">
-      <button class="try-button" id="custom-render">Show ISL</button>
+      <button class="try-button" id="custom-render" data-i18n="show-isl">Show ISL</button>
       <div id="custom-out" style="margin-top:10px"></div>
     </div>
   </section>
 
   <!-- DICTIONARY -->
-  <section class="section" data-section="dict" role="tabpanel" aria-label="ISL Dictionary">
+  <section class="section" data-section="dict" role="tabpanel" aria-label="ISL Dictionary" data-i18n-aria="isl-dictionary">
     <input class="dict-search" id="dict-search" type="search"
-           placeholder="🔍 Search words (Hindi or English)…"
-           aria-label="Search dictionary">
+           placeholder="🔍 Search words (Hindi or English)…" data-i18n-placeholder="search-words-hindi-or-english"
+           aria-label="Search dictionary" data-i18n-aria="search-dictionary">
     <div class="dict-grid" id="dict-grid"></div>
     <p class="subtitle" style="margin-top:14px">
       <strong>Placeholder animations.</strong> Every sign above is a stub until the
@@ -199,10 +199,10 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
   </section>
 
   <!-- CAMERA -->
-  <section class="section" data-section="camera" role="tabpanel" aria-label="Camera-based ISL">
+  <section class="section" data-section="camera" role="tabpanel" aria-label="Camera-based ISL" data-i18n-aria="camera-based-isl">
     <div class="coming-soon">
       <span class="pill">COMING SOON · Phase 2</span>
-      <h3>Camera detects your ISL gestures</h3>
+      <h3 data-i18n="camera-detects-your-isl-gestures">Camera detects your ISL gestures</h3>
       <p>Point your camera, sign in ISL, and Chitti will interpret and respond — speaking aloud for anyone in the room without an ISL background.</p>
       <p><strong>Status:</strong> not built. A frame-stream classifier supplier is being evaluated; DeepSeek will handle the language layer.</p>
       <p><strong>Why:</strong> the same deaf user should be able to talk to Chitti AND have hearing family in the room understand the conversation.</p>
@@ -210,18 +210,18 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
   </section>
 
   <!-- CONTRIBUTE -->
-  <section class="section" data-section="contribute" role="tabpanel" aria-label="Contribute ISL videos">
+  <section class="section" data-section="contribute" role="tabpanel" aria-label="Contribute ISL videos" data-i18n-aria="contribute-isl-videos">
     <div class="coming-soon" id="contribute">
       <span class="pill">COMING SOON · Phase 3</span>
-      <h3>Replace a placeholder with a real ISL video</h3>
+      <h3 data-i18n="replace-a-placeholder-with-a-real-isl-video">Replace a placeholder with a real ISL video</h3>
       <p>The same model as voice donations: deaf-community volunteers record short ISL videos for words that today are only emoji-hand placeholders. Each accepted contribution earns a spot in the <a href="#hof" data-jump="hof">ISL Hall of Fame</a>.</p>
       <p><strong>Status:</strong> contribution endpoint not yet live. The architecture is provider-agnostic — <code>chitti_isl_dictionary.json</code> entries swap <code>frames[]</code> for <code>video[]</code> without any frontend change.</p>
-      <button class="try-button" disabled aria-disabled="true">Notify me when contributions open</button>
+      <button class="try-button" disabled aria-disabled="true" data-i18n="notify-me-when-contributions-open">Notify me when contributions open</button>
     </div>
   </section>
 
   <!-- HALL OF FAME -->
-  <section class="section" data-section="hof" role="tabpanel" aria-label="ISL Hall of Fame">
+  <section class="section" data-section="hof" role="tabpanel" aria-label="ISL Hall of Fame" data-i18n-aria="isl-hall-of-fame">
     <div id="hof" class="empty-state">
       <span class="icon" aria-hidden="true">🏆</span>
       <p><strong>ISL Hall of Fame is empty.</strong></p>
@@ -238,13 +238,13 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:600}
 </footer>
 
 <!-- Legal modal -->
-<div class="legal-modal" id="legal-modal" role="dialog" aria-modal="true" aria-label="Legal disclaimer">
+<div class="legal-modal" id="legal-modal" role="dialog" aria-modal="true" aria-label="Legal disclaimer" data-i18n-aria="legal-disclaimer">
   <div class="legal-modal-card">
-    <h3>⚠️ Not a registered advisor</h3>
+    <h3 data-i18n="not-a-registered-advisor">⚠️ Not a registered advisor</h3>
     <p>Chitti is an AI assistant for accessibility and information. It is <strong>NOT SEBI registered</strong>, <strong>NOT a medical practitioner</strong>, <strong>NOT a legal counsel</strong>, and <strong>NOT a certified ISL interpreter</strong>.</p>
     <p>ISL animations on this site are <strong>placeholders</strong> intended as an honest stub until community-contributed videos replace them. They are not certified ISL signs and must not be used as the sole source for medical, legal, or financial sign interpretation.</p>
     <p>For certified ISL interpretation contact <a href="https://islrtc.nic.in/" target="_blank" rel="noopener">ISLRTC</a>.</p>
-    <button class="legal-modal-close" id="legal-close" type="button">I understand</button>
+    <button class="legal-modal-close" id="legal-close" type="button" data-i18n="i-understand">I understand</button>
   </div>
 </div>
 

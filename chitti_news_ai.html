@@ -172,9 +172,9 @@ footer a{color:var(--violet);text-decoration:none}
 <div class="bharat-stripe"></div>
 
 <!-- Server-enforced disclaimer (locked decision §2) -->
-<div id="disclaimer-bar" class="disclaimer-bar" role="region" aria-label="Disclaimer">
+<div id="disclaimer-bar" class="disclaimer-bar" role="region" aria-label="Disclaimer" data-i18n-aria="disclaimer">
   <span id="disclaimer-text" data-chitti-response data-chitti-section="Disclaimer">⚖️ <span data-i18n="disc.short">I am an AI tool tracker. Rankings are dynamic. Pricing and free tiers may change. Always check official sites. I do not endorse any tool.</span></span>
-  <button class="spk-btn" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud">🔊</button>
+  <button class="spk-btn" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud" data-i18n-aria="read-disclaimer-aloud" data-i18n="tag">🔊</button>
   <button onclick="openDisclaimerModal()" data-i18n="disc.more">More</button>
 </div>
 
@@ -207,17 +207,17 @@ footer a{color:var(--violet);text-decoration:none}
   </div>
 </header>
 
-<div class="picker-bar" role="group" aria-label="Filter">
+<div class="picker-bar" role="group" aria-label="Filter" data-i18n-aria="filter">
   <span class="pick-lbl" data-i18n="pick.lang">Language</span>
-  <select id="pick-lang" onchange="onLangChange()" aria-label="Language">
+  <select id="pick-lang" onchange="onLangChange()" aria-label="Language" data-i18n-aria="language">
     <option value="" data-i18n="pick.choose">— pick —</option>
   </select>
-  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the language picker does">🔊</button>
+  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the language picker does" data-i18n-aria="hear-what-the-language-picker-does" data-i18n="tag">🔊</button>
   <span class="pick-sep"></span>
   <span class="lang-status unset" id="lang-status" data-i18n="pick.unset">No language picked</span>
 </div>
 
-<nav class="tabs" role="tablist" aria-label="Views">
+<nav class="tabs" role="tablist" aria-label="Views" data-i18n-aria="views">
   <button class="tab active" data-tab="today"       onclick="setTab('today')"       role="tab" data-i18n="tab.today">🆕 Today</button>
   <button class="tab"        data-tab="tools"       onclick="setTab('tools')"       role="tab" data-i18n="tab.tools">🛠️ Tools for me</button>
   <button class="tab"        data-tab="launches"    onclick="setTab('launches')"    role="tab" data-i18n="tab.launches">🚀 New launches</button>
@@ -240,8 +240,8 @@ footer a{color:var(--violet);text-decoration:none}
       <p data-i18n="ask.body">Type or speak in your language — "I am a teacher. Best free AI tools?" / "What launched this week?" / "Is example.com trustworthy?"</p>
     </div>
     <div class="input-row">
-      <button class="mic" onclick="startAskMic()" aria-label="Speak your question">🎙️</button>
-      <input type="text" id="ask-input" data-i18n-ph="ask.ph" placeholder="Type your question…" aria-label="Ask Chitti News AI">
+      <button class="mic" onclick="startAskMic()" aria-label="Speak your question" data-i18n-aria="speak-your-question" data-i18n="tag">🎙️</button>
+      <input type="text" id="ask-input" data-i18n-ph="ask.ph" placeholder="Type your question…" data-i18n-placeholder="type-your-question" aria-label="Ask Chitti News AI" data-i18n-aria="ask-chitti-news-ai">
       <button class="primary" onclick="askChitti()"><span data-i18n="ask.btn">Ask</span> <span aria-hidden="true">→</span></button>
     </div>
   </div>
@@ -254,7 +254,7 @@ footer a{color:var(--violet);text-decoration:none}
           <div class="section-title"><span data-i18n="today.title">📰 Daily AI Briefing</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
           <div class="section-sub" data-i18n="today.sub">Latest 24 h of articles from 17 Layer-1-verified sources, ordered by source trust + recency. LLM importance scorer queued.</div>
         </div>
-        <button class="spk-btn" onclick="refreshToday()" aria-label="Refresh">↻</button>
+        <button class="spk-btn" onclick="refreshToday()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
       </div>
       <div id="today-status" class="section-sub" style="margin-top:4px" data-i18n="today.loading">Loading from /api/news-ai/today…</div>
       <div id="today-list" class="feed" style="margin-top:10px"></div>
@@ -270,8 +270,8 @@ footer a{color:var(--violet);text-decoration:none}
           <div class="section-sub" data-i18n="tools.sub">Tell Chitti what you do — in YOUR language…</div>
         </div>
       </div>
-      <label class="sr-only" for="prof-input">Describe your work</label>
-      <textarea id="prof-input" data-i18n-ph="tools.ph" placeholder="e.g. 'I am a teacher in a Tamil-medium school'"></textarea>
+      <label class="sr-only" for="prof-input" data-i18n="describe-your-work">Describe your work</label>
+      <textarea id="prof-input" data-i18n-ph="tools.ph" placeholder="e.g. 'I am a teacher in a Tamil-medium school'" data-i18n-placeholder="e-g-i-am-a-teacher-in-a-tamil-medium-school"></textarea>
       <div class="row">
         <button class="primary" onclick="submitProfession()" data-i18n="tools.find">🔍 Find my tools</button>
         <button onclick="startProfMic()" data-i18n="tools.speak">🎙️ Speak instead</button>
@@ -295,7 +295,7 @@ footer a{color:var(--violet);text-decoration:none}
           <div class="section-title"><span data-i18n="launch.title">🚀 New launches — last 7 days</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
           <div class="section-sub" data-i18n="launch.sub">Articles classified is_launch=1 by the deterministic keyword classifier.</div>
         </div>
-        <button class="spk-btn" onclick="refreshLaunches()" aria-label="Refresh">↻</button>
+        <button class="spk-btn" onclick="refreshLaunches()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
       </div>
       <div id="launches-status" class="section-sub" style="margin-top:4px" data-i18n="launch.loading">Loading from /api/news-ai/launches…</div>
       <div id="launches-list" class="feed two-col" style="margin-top:10px"></div>
@@ -325,7 +325,7 @@ footer a{color:var(--violet);text-decoration:none}
         </div>
       </div>
       <div class="trust-form" style="margin-top:8px">
-        <input type="url" id="trust-url" data-i18n-ph="trust.url.ph" placeholder="https://example.com/article-or-blog" aria-label="URL">
+        <input type="url" id="trust-url" data-i18n-ph="trust.url.ph" placeholder="https://example.com/article-or-blog" data-i18n-placeholder="https-example-com-article-or-blog" aria-label="URL" data-i18n-aria="url">
         <button class="primary" onclick="submitTrustCheck()" data-i18n="trust.verify">🛡️ Verify</button>
       </div>
     </div>
@@ -369,7 +369,7 @@ footer a{color:var(--violet);text-decoration:none}
           <div class="section-title"><span data-i18n="sources.title">📊 Sources directory</span> <span class="live-badge" data-i18n="sources.badge">DB live</span></div>
           <div class="section-sub" data-i18n="sources.sub">17 Layer-1-verified free sources…</div>
         </div>
-        <button class="spk-btn" onclick="renderSources()" aria-label="Refresh">↻</button>
+        <button class="spk-btn" onclick="renderSources()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
       </div>
       <div id="sources-status" class="section-sub" style="margin-top:4px" data-i18n="sources.loading">Loading from /api/news-ai/sources…</div>
       <div id="sources-list" style="margin-top:10px"></div>
@@ -412,8 +412,8 @@ footer a{color:var(--violet);text-decoration:none}
         </div>
       </div>
       <div style="display:grid;gap:10px;margin-top:10px">
-        <input type="url" id="src-url" data-i18n-ph="discover.url.ph" placeholder="https://example.com/feed.xml" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px">
-        <textarea id="src-line" data-i18n-ph="discover.line.ph" placeholder="One line — why this source belongs here" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:64px;font-family:inherit;resize:vertical"></textarea>
+        <input type="url" id="src-url" data-i18n-ph="discover.url.ph" placeholder="https://example.com/feed.xml" data-i18n-placeholder="https-example-com-feed-xml" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px">
+        <textarea id="src-line" data-i18n-ph="discover.line.ph" placeholder="One line — why this source belongs here" data-i18n-placeholder="one-line-why-this-source-belongs-here" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:64px;font-family:inherit;resize:vertical"></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="primary" onclick="submitSource()" data-i18n="discover.submit" style="background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px">📥 Submit</button>
           <button onclick="startSrcMic()" data-i18n="discover.speak" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;min-height:44px;font-weight:600">🎙️ Speak instead</button>
@@ -456,7 +456,7 @@ footer a{color:var(--violet);text-decoration:none}
   <div class="panel">
     <h2 data-i18n="onb.h2">🌐 Pick your language</h2>
     <p data-i18n="onb.body">Chitti News AI has no default language.</p>
-    <select id="onb-lang" aria-label="Language"></select>
+    <select id="onb-lang" aria-label="Language" data-i18n-aria="language"></select>
     <button class="go" onclick="completeOnboarding()" data-i18n="onb.go">✓ Continue in this language</button>
     <button class="skip" onclick="skipOnboarding()" data-i18n="onb.skip">Skip — pick later</button>
   </div>
@@ -477,12 +477,12 @@ footer a{color:var(--violet);text-decoration:none}
 <!-- Per-box feedback popup -->
 <div class="fb-popup" id="fb-popup" role="dialog" aria-modal="true">
   <div class="panel">
-    <h3 id="fb-title">Feedback</h3>
+    <h3 id="fb-title" data-i18n="feedback">Feedback</h3>
     <p id="fb-prompt"></p>
     <textarea id="fb-text" placeholder=""></textarea>
     <div class="row">
       <button class="primary" onclick="submitBoxFeedback()">📥 <span data-i18n="discover.submit">Submit</span></button>
-      <button onclick="startFbMic()">🎙️</button>
+      <button onclick="startFbMic()" data-i18n="tag">🎙️</button>
       <button onclick="closeBoxFeedback()" data-i18n="onb.skip">Skip</button>
     </div>
   </div>
@@ -613,10 +613,10 @@ function injectFeedbackBars(){
     bar.setAttribute('aria-label','Per-box feedback for ' + section);
     bar.innerHTML = `
       <span class="fb-lbl">${T('fb.helpful', lang) || 'Feedback'}</span>
-      <button title="Read aloud"        onclick="speakBox(this)">🔊</button>
-      <button title="Ask Chitti more"   onclick="askMore(this)">🤖</button>
-      <button title="Helpful"           onclick="voteBox(this,'up','${section.replace(/'/g,"\\'")}')">👍</button>
-      <button title="Not helpful"       onclick="voteBox(this,'down','${section.replace(/'/g,"\\'")}')">👎</button>
+      <button title="Read aloud" data-i18n-title="read-aloud"        onclick="speakBox(this)" data-i18n="tag">🔊</button>
+      <button title="Ask Chitti more" data-i18n-title="ask-chitti-more"   onclick="askMore(this)" data-i18n="tag">🤖</button>
+      <button title="Helpful" data-i18n-title="helpful"           onclick="voteBox(this,'up','${section.replace(/'/g,"\\'")}')" data-i18n="tag">👍</button>
+      <button title="Not helpful" data-i18n-title="not-helpful"       onclick="voteBox(this,'down','${section.replace(/'/g,"\\'")}')" data-i18n="tag">👎</button>
     `;
     box.appendChild(bar);
     const votes = getVotes();
@@ -876,7 +876,7 @@ async function renderSources(){
           <div class="reason" style="font-size:12px;color:var(--muted);margin-top:3px">${esc(s.reason_for_inclusion || '')}</div>
         </div>
         <span class="ts-chip ${band}">${Math.round(s.trust_score || 0)}/100</span>
-        <button class="spk-btn" onclick="doSpeak('${esc(s.name).replace(/'/g,'')}, trust ${Math.round(s.trust_score||0)}')">🔊</button>
+        <button class="spk-btn" onclick="doSpeak('${esc(s.name).replace(/'/g,'')}, trust ${Math.round(s.trust_score||0)}')" data-i18n="tag">🔊</button>
       </div>
     `;
   }).join('');
@@ -902,7 +902,7 @@ function articleCardHTML(a){
       <div class="title">${esc(a.title)}</div>
       ${a.summary ? `<div class="summary">${esc(a.summary)}</div>` : ''}
       <div class="actions">
-        <button onclick="doSpeak(${JSON.stringify((a.title||'') + '. ' + (a.summary||'')).replace(/<\/script/gi,'<\\/script')})">${T('read', lang)}</button>
+        <button onclick="doSpeak(${JSON.stringify((a.title||'') + '. ' + (a.summary||'')).replace(/<\/script/gi,'<\\/script')})" data-i18n="t-read-lang">${T('read', lang)}</button>
         <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="primary">${T('open.source', lang)}</a>
       </div>
     </div>

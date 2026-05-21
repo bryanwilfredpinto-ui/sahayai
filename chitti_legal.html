@@ -49,7 +49,7 @@
 <body>
   <div class="bharat-stripe"></div>
 
-  <div class="disclaimer-bar" role="region" aria-label="Legal disclaimer">
+  <div class="disclaimer-bar" role="region" aria-label="Legal disclaimer" data-i18n-aria="legal-disclaimer">
     ⚖️ <strong>AI explanation only.</strong> Not a substitute for a licensed lawyer. Consult a lawyer before signing or replying.
   </div>
 
@@ -62,17 +62,17 @@
       </div>
     </div>
     <p class="tagline">Paste any rent agreement, notice, NDA, employment contract clause, FIR copy, or affidavit. Chitti reads it back in plain Hindi or English, flags what to watch out for, and tells you what to ask a lawyer. Voice-in, voice-out. Never drafts binding documents.</p>
-    <div class="four-user" aria-label="Four-user contract">
+    <div class="four-user" aria-label="Four-user contract" data-i18n-aria="four-user-contract">
       <span>👁️‍🗨️ blind</span><span>🦻 deaf</span><span>🤫 mute</span><span>📖 illiterate</span>
     </div>
   </header>
 
   <main>
     <div class="card">
-      <h2>Paste a clause / notice / contract</h2>
+      <h2 data-i18n="paste-a-clause-notice-contract">Paste a clause / notice / contract</h2>
       <div class="row" style="margin-bottom:10px">
         <div style="flex:1 1 200px">
-          <label for="lang">Reply in</label>
+          <label for="lang" data-i18n="reply-in">Reply in</label>
           <select id="lang">
             <option value="en">English</option>
             <option value="hi" selected>हिन्दी</option>
@@ -90,26 +90,26 @@
         </div>
       </div>
 
-      <label>Document type (optional)</label>
-      <div class="doc-types" id="doc-types" role="group" aria-label="Document type shortcuts">
-        <button type="button" class="doc-chip" data-doc="">— none —</button>
-        <button type="button" class="doc-chip" data-doc="rent agreement">Rent agreement</button>
-        <button type="button" class="doc-chip" data-doc="employment contract">Employment contract</button>
-        <button type="button" class="doc-chip" data-doc="NDA">NDA</button>
-        <button type="button" class="doc-chip" data-doc="sale deed">Sale deed</button>
-        <button type="button" class="doc-chip" data-doc="affidavit">Affidavit</button>
-        <button type="button" class="doc-chip" data-doc="legal notice received">Notice received</button>
-        <button type="button" class="doc-chip" data-doc="FIR copy">FIR copy</button>
-        <button type="button" class="doc-chip" data-doc="consumer complaint">Consumer complaint</button>
+      <label data-i18n="document-type-optional">Document type (optional)</label>
+      <div class="doc-types" id="doc-types" role="group" aria-label="Document type shortcuts" data-i18n-aria="document-type-shortcuts">
+        <button type="button" class="doc-chip" data-doc="" data-i18n="none">— none —</button>
+        <button type="button" class="doc-chip" data-doc="rent agreement" data-i18n="rent-agreement">Rent agreement</button>
+        <button type="button" class="doc-chip" data-doc="employment contract" data-i18n="employment-contract">Employment contract</button>
+        <button type="button" class="doc-chip" data-doc="NDA" data-i18n="nda">NDA</button>
+        <button type="button" class="doc-chip" data-doc="sale deed" data-i18n="sale-deed">Sale deed</button>
+        <button type="button" class="doc-chip" data-doc="affidavit" data-i18n="affidavit">Affidavit</button>
+        <button type="button" class="doc-chip" data-doc="legal notice received" data-i18n="notice-received">Notice received</button>
+        <button type="button" class="doc-chip" data-doc="FIR copy" data-i18n="fir-copy">FIR copy</button>
+        <button type="button" class="doc-chip" data-doc="consumer complaint" data-i18n="consumer-complaint">Consumer complaint</button>
       </div>
 
-      <label for="q" style="margin-top:14px">Paste here</label>
-      <textarea id="q" placeholder="Paste the clause, the whole notice, or the part you don't understand. Don't paste your Aadhaar / PAN — Chitti doesn't need it."></textarea>
+      <label for="q" style="margin-top:14px" data-i18n="paste-here">Paste here</label>
+      <textarea id="q" placeholder="Paste the clause, the whole notice, or the part you don't understand. Don't paste your Aadhaar / PAN — Chitti doesn't need it." data-i18n-placeholder="paste-the-clause-the-whole-notice-or-the-part-you-don-t-understand-don-t-paste-y"></textarea>
 
       <div class="row" style="margin-top:10px">
-        <button id="mic" class="ghost" aria-label="Speak instead of typing">🎙️ Speak</button>
-        <button id="ask" class="primary" aria-label="Ask Chitti Legal to explain">📤 Explain</button>
-        <button id="speak" class="ghost" aria-label="Read the explanation aloud" disabled>🔊 Read aloud</button>
+        <button id="mic" class="ghost" aria-label="Speak instead of typing" data-i18n-aria="speak-instead-of-typing" data-i18n="speak">🎙️ Speak</button>
+        <button id="ask" class="primary" aria-label="Ask Chitti Legal to explain" data-i18n-aria="ask-chitti-legal-to-explain" data-i18n="explain">📤 Explain</button>
+        <button id="speak" class="ghost" aria-label="Read the explanation aloud" data-i18n-aria="read-the-explanation-aloud" disabled data-i18n="read-aloud">🔊 Read aloud</button>
         <span class="meta" id="status">ready</span>
       </div>
 
@@ -120,12 +120,12 @@
 
     <div class="card" id="reply-card" hidden
          data-chitti-response data-chitti-section="Chitti Legal answer">
-      <h2>Chitti Legal explains</h2>
+      <h2 data-i18n="chitti-legal-explains">Chitti Legal explains</h2>
       <div class="reply" id="reply"></div>
       <div class="meta" id="reply-meta"></div>
     </div>
 
-    <div class="nav" aria-label="Other Chitti products">
+    <div class="nav" aria-label="Other Chitti products" data-i18n-aria="other-chitti-products">
       <a href="index.html">← All Chitti products</a>
       <a href="chitti_ca.html">Chitti CA</a>
       <a href="chitti_vaani.html">Chitti Vaani</a>
