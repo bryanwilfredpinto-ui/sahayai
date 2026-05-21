@@ -165,7 +165,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- ════════════ CONSENT GATE ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
-  <div class="consent-panel">
+  <div class="consent-panel chitti-response" data-chitti-section="Chitti Product Scanner — Terms &amp;amp; Conditions">
     <h1 id="consent-title" data-i18n="chitti-product-scanner-terms-conditions">Chitti Product Scanner — Terms &amp; Conditions</h1>
     <div class="sub">Read each section. Tap 🔊 to hear it aloud. Tap <strong>I AGREE</strong> to start.</div>
 
@@ -182,32 +182,32 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button data-lang="ml" onclick="setConsentLang('ml')" data-i18n="tag">മലയാളം</button>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="1What Chitti Scanner is (and is not)🔊 Hear">
       <h3><span class="num">1</span><span class="title-txt">What Chitti Scanner is (and is not)</span><button class="spk" onclick="speakSection(1, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p>Chitti reads a label, bill, medicine strip, or document you show it and explains what it sees. Chitti does <strong>not</strong> diagnose, prescribe, or give legal verdicts.</p>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="2Legal compliance🔊 Hear">
       <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" onclick="speakSection(2, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p>Chitti follows <strong>FSSAI</strong> labelling guidelines, the <strong>Consumer Protection Act 2019</strong>, the <strong>DPDP Act 2023</strong>, and <strong>IT Rules 2021</strong>. For medicine labels Chitti restates what is on the strip — it never adds dosage instructions of its own.</p>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="3Permissions required🔊 Hear">
       <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" onclick="speakSection(3, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p><strong>Camera access</strong> — only when you tap the camera button. The camera shuts off as soon as you take the photo or close the preview. You can also upload a photo from gallery, or just type out what the label says.</p>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="4Data privacy🔊 Hear">
       <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" onclick="speakSection(4, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p>Images and text you submit are processed in-memory and are <strong>not stored</strong> on our servers. Your scan history lives only in your browser (localStorage) and can be cleared any time.</p>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="5Emergency &amp;amp; liability🔊 Hear">
       <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" onclick="speakSection(5, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p>For overcharging or counterfeit complaints, the consumer helpline is <strong>1800-11-4000</strong>. For medicine concerns, please consult a doctor or licensed pharmacist. Chitti makes no guarantee of medical, legal, or financial outcomes.</p>
     </div>
 
-    <div class="tnc-section">
+    <div class="tnc-section chitti-response" data-chitti-section="6Grievance redressal🔊 Hear">
       <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" onclick="speakSection(6, this)" data-i18n="hear">🔊 Hear</button></h3>
       <p>Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by IT Rules 2021.</p>
     </div>
@@ -262,7 +262,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <main>
 
   <!-- ════════ CAPTURE ════════ -->
-  <section class="section-card" aria-labelledby="cap-title">
+  <section class="section-card chitti-response" aria-labelledby="cap-title" data-chitti-section="📷 Capture or upload">
     <h2 class="section-title" id="cap-title"><span class="ico">📷</span> Capture or upload</h2>
     <div class="section-sub">Camera / gallery / type the label — whichever works best for you.</div>
 
@@ -329,7 +329,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
           <button onclick="sendToVaani()" data-i18n="send-to-vaani">🎙️ Send to Vaani</button>
         </div>
       </div>
-      <div class="summary" id="r-summary"></div>
+      <div class="summary chitti-response" id="r-summary" data-chitti-section="Key facts"></div>
       <h3 data-i18n="key-facts">Key facts</h3>
       <div class="facts" id="r-facts"></div>
       <h3 data-i18n="key-findings">Key findings</h3>
@@ -356,7 +356,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   </section>
 
   <!-- ════════ HISTORY ════════ -->
-  <section class="section-card" aria-labelledby="hist-title">
+  <section class="section-card chitti-response" aria-labelledby="hist-title" data-chitti-section="🕘 Recent scans">
     <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent scans</h2>
     <div class="section-sub">Stays only on this device.</div>
     <div id="history" data-chitti-response data-chitti-section="Recent scans"></div>
@@ -785,5 +785,15 @@ window.addEventListener('beforeunload', () => { if (CAM_STREAM) CAM_STREAM.getTr
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
+<!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
+<div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEWElEQVR4nO2dQXIdIQwF7ZT3XCJXyalzlVyCE/xs5y8oo5LEjKu7t5nA97wSbwAhPl+v14cw+HX3D5BzKDYIxQah2CAUG4Rig1BsEF+rfxi//5R3Nv/9/bavzDOr53d+z7ip/ZPv2cgGodggFBvE0rOv7HjYiqgnrZ6v8vIZ9NFVm1Hfjf62KDu/wcgGodggFBvElmdfqfKnjF/u9BX11LF4Jvp7qqh6z1eMbBCKDUKxQYQ9+2nszMs7fH0m2jzp/VeMbBCKDUKxQdzm2R2+VbUP3e3rd2Fkg1BsEIoNIuzZT1sf3vm/qzn3COaFdeeOrfqqwsgGodggFBvElmd3+FNmnTnjnSO4j161Hh7Nje/AyAah2CAUG8TnE2qqZPw4sx4+g7noVfNv97OlHYdxEIoNIrWfnfGwnRyxnTYz+8cjkSN2Mtesqn0jG4Rig1BsEMt5dscacsZ7ququjEQOWrSdqveTafOKkQ1CsUEoNogtz46SmYN2rJN3zIPHw/LUdvzbyAah2CAUG0RLHbSqOXfVvDOTIzZuypXrwMgGodggFBtEOAetu7Zohqq+RlGNtuh3SSbfzbVxecNhHIRigwivjXfc85Hxwo5zU7M5d2ynr6p3dcXIBqHYIBQbRNk8O0NVffInzGXHwb3zFe5ni8M4CT0bRPguzo456BNytcbG+bHoubXo3xh9t9H9ciMbhGKDUGwQqZoqVbW7u+e+d507H4m/MfPbVhjZIBQbhGKDaLkjpOoe6ysnn5lFNVV2OPktYmSDUGwQig2i7Hx2x3nrTL9RRsPadVWNtqqaNkY2CMUGodgg2j0702am/aq6Lj+lbswORjYIxQah2CBSZ7065srd9dcydHw3rNrvqAVrZINQbBCKDSK8n92RV7Wio/35A+fr3hEiYRzGQSg2iK/uOevJ+yurznHNhlqkHXeFOc+WJQ7jIBQbREsdtNXzJ/37ZE3TK3ftF3jWS95wGAeh2CBa7uKM0l27e4fRfGb6ZE6f+9niME5CzwaxtZ/dcRfWTjtROu4pGQ3791Vr8tYblyUO4yAUG0Q4B61jnzja74qT69Kzuf5aR26akQ1CsUEoNojw2nj0mR1O1jafB9s8+R1jTRV5w2EchGKDSJ31ij5z1/2bd90bNhNz5Z2+ou/QyAah2CAUG0TqjpAMmf3aDv8ezTXIMt8oO+jZ8obDOAjFBlFWu3SHp+1nzwb/Pnn+27VxWeIwDkKxQWytjZ/cq87kW1X56F31Sru/e4xsEIoNQrFBtOxnd5/vyvjuSORmV82Pq9YDov0a2SAUG4Rig2i5PzvKyfNUKzrqu0Xb7zibfsXIBqHYIBQbxG2enVnjzeR4z6Kz1x1e3lEv9oqRDUKxQSg2iFRNlSqqzjLttDmL/Dta72yH7hrmRjYIxQah2CBStUu76c67Hg11UXb6unLyrJqRDUKxQSg2iNvOZ8t5jGwQig1CsUEoNgjFBqHYIBT7g8N/pEnX3l24LesAAAAASUVORK5CYII=" alt="QR code — opens Scanner on your phone at https://sahayai.in/chitti_scanner.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
+  <div style="flex:1;min-width:0">
+    <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
+    <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open Scanner on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
+    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_scanner.html</code>
+  </div>
+</div>
+
 </body>
 </html>

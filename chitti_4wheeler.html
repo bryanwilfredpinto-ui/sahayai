@@ -116,7 +116,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 </div>
 
 <div class="disc-modal" id="disc-modal" role="dialog" aria-label="Full disclaimer" data-i18n-aria="full-disclaimer" aria-modal="true">
-  <div class="panel">
+  <div class="panel chitti-response" data-chitti-section="Disclaimer — Chitti 4-Wheeler">
     <h2 data-i18n="disclaimer-chitti-4-wheeler">Disclaimer — Chitti 4-Wheeler</h2>
     <p><strong>Chitti 4-Wheeler is not a mechanic.</strong> Every answer is a guide. For any major problem (engine seize, brake failure, electrical fire, accident), see a trained mechanic <em>in person</em>.</p>
     <h3 data-i18n="emergency-protocol-family-cascade-only">Emergency protocol — family cascade only</h3>
@@ -198,7 +198,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- HOME -->
 <section class="page active" id="page-home" role="tabpanel">
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Maintenance Schedule Live">
     <div class="section-head">
       <div>
         <div class="section-title"><span data-i18n="home.title.car">Aapki car ka haal</span> <span class="live-badge" data-i18n="badge.live">Live</span></div>
@@ -207,15 +207,15 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="spk" onclick="speakBox('home-status')" aria-label="Read aloud" data-i18n-aria="read-aloud" data-i18n="tag">🔊</button>
     </div>
     <div id="home-status" class="status-row" data-chitti-response data-chitti-section="Home — car status">
-      <div class="status-card"><div class="lbl" data-i18n="home.lbl.car">Car</div><div class="val" id="hs-car">—</div><div class="sub">Add brand + model</div></div>
-      <div class="status-card"><div class="lbl" data-i18n="home.lbl.odo">Odometer</div><div class="val" id="hs-odo">—</div><div class="sub">km</div></div>
-      <div class="status-card"><div class="lbl" data-i18n="home.lbl.next">Next service</div><div class="val" id="hs-next">—</div><div class="sub">km away</div></div>
-      <div class="status-card"><div class="lbl" data-i18n="home.lbl.docs">Docs expiring</div><div class="val" id="hs-docs">0</div><div class="sub">in 30 days</div></div>
-      <div class="status-card"><div class="lbl" data-i18n="home.lbl.alerts">Open alerts</div><div class="val" id="hs-alerts">0</div><div class="sub">action needed</div></div>
+      <div class="status-card chitti-response" data-chitti-section="Maintenance Schedule Live"><div class="lbl" data-i18n="home.lbl.car">Car</div><div class="val" id="hs-car">—</div><div class="sub">Add brand + model</div></div>
+      <div class="status-card chitti-response" data-chitti-section="Maintenance Schedule Live"><div class="lbl" data-i18n="home.lbl.odo">Odometer</div><div class="val" id="hs-odo">—</div><div class="sub">km</div></div>
+      <div class="status-card chitti-response" data-chitti-section="Maintenance Schedule Live"><div class="lbl" data-i18n="home.lbl.next">Next service</div><div class="val" id="hs-next">—</div><div class="sub">km away</div></div>
+      <div class="status-card chitti-response" data-chitti-section="Maintenance Schedule Live"><div class="lbl" data-i18n="home.lbl.docs">Docs expiring</div><div class="val" id="hs-docs">0</div><div class="sub">in 30 days</div></div>
+      <div class="status-card chitti-response" data-chitti-section="Maintenance Schedule Live"><div class="lbl" data-i18n="home.lbl.alerts">Open alerts</div><div class="val" id="hs-alerts">0</div><div class="sub">action needed</div></div>
     </div>
   </div>
 
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Maintenance Schedule Live">
     <div class="section-head">
       <div>
         <div class="section-title">What Chitti 4-Wheeler does for you</div>
@@ -223,34 +223,34 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </div>
     </div>
     <div class="feat-grid">
-      <div class="feat-card" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🔧</div><h4>Maintenance Schedule <span class="live-badge">Live</span></h4><p>Oil, coolant, brakes, plugs, timing belt, transmission — by brand (Maruti / Hyundai / Tata / Mahindra / Honda / Toyota / Kia / MG).</p><div class="cta">Open →</div></div>
-      <div class="feat-card" data-chitti-response onclick="document.querySelector('[data-tab=breakdown]').click()"><div class="ico">🛣️</div><h4>Breakdown Coach <span class="live-badge">Live</span> <span class="p0-badge">P0</span></h4><p>Step-by-step Hinglish when car refuses to start. Brand RSA numbers included.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=docs]').click()"><div class="ico">📄</div><h4>Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>RC · Insurance · PUC · Licence · Loan EMI · Road Tax · FASTag. Auto-reminders 30 / 7 / 1 days before.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">📡</div><h4>OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></h4><p>Pair ELM327 (₹500-1500). Real-time RPM, coolant, MAF, fuel pressure, battery, MIL run-time.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">🔍</div><h4>DTC Plain-Hinglish Library <span class="coming-soon">Coming Soon</span></h4><p>~2 000 P0xxx codes + manufacturer codes in simple Hindi + repair cost band. FIXD's killer feature, but Bharat-grade.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">🔬</div><h4>Predictive Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Oil quality %, coolant degradation, battery drop, brake-pad wear. Warns 30 days before failure.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">💰</div><h4>Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>"Service centre ne ₹18 000 maanga 40k ke liye, theek hai?" — fair band + nearby alternates.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=sos]').click()"><div class="ico">🚨</div><h4>Theft Guard — Community Ping <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>Pincode-radius alert to every Chitti 4W user nearby. Sightings reach you faster than police.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=sos]').click()"><div class="ico">🆘</div><h4>Roadside SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>Accident ho gaya → family ko call → never cops. Vaani protocol locked. Adds crash-g-force signal.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">🧰</div><h4>Mechanic Finder + Honesty Score <span class="coming-soon">Coming Soon</span></h4><p>Geo-aware Haversine list. Authorised + independent both rated.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=parts]').click()"><div class="ico">⚙️</div><h4>Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>Camera scan → community alerts. Fake brake pads / oil filters kill drivers. Annual report to MoRTH / BIS.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()"><div class="ico">👂</div><h4>AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>10 s phone-mic clip → knock / pinging / belt squeal / wheel bearing classifier.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🌧️</div><h4>Weather-Aware Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Pre-monsoon → wipers / brakes / tyre tread. Pre-summer → AC gas / coolant. Pre-winter → battery / coolant.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">💬</div><h4>WhatsApp Booking <span class="coming-soon">Coming Soon</span></h4><p>Book service from WhatsApp without app. Rural unlock.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()"><div class="ico">💸</div><h4>Cheapest Fuel Nearby <span class="coming-soon">Coming Soon</span></h4><p>Live IOC / BPCL / HPCL / Reliance / Nayara price by pincode. Saves ₹3-5 / litre.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()"><div class="ico">⛽</div><h4>Fuel Log + km/l Calculator <span class="coming-soon">Coming Soon</span></h4><p>Voice "Diesel bhara ₹3 000, 30 litre, odo 45 200" → rolling km/l + clog detection.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()"><div class="ico">🌱</div><h4>Carbon Per Trip <span class="coming-soon">Coming Soon</span></h4><p>Per Chitti Quality v2 §6. CO₂ from odo delta × engine cc fuel-burn rate.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=drive]').click()"><div class="ico">🎯</div><h4>Drive Score (Privacy-First) <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>Soft-accel / soft-brake / cornering / phone-use score, computed <strong>on device</strong>. Raw GPS never leaves your phone.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=resale]').click()"><div class="ico">💰</div><h4>Resale Advisor <span class="coming-soon">Coming Soon</span></h4><p>Depreciation curve vs rising maintenance cost. Spinny / Cars24 / OLX honest band.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=insurance]').click()"><div class="ico">🛡️</div><h4>Insurance Comparison <span class="coming-soon">Coming Soon</span></h4><p>Acko / Digit / ICICI Lombard / Bajaj Allianz / HDFC Ergo quotes at renewal. Saves ₹3 000 / yr.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=insurance]').click()"><div class="ico">💳</div><h4>Loan EMI Tracker <span class="coming-soon">Coming Soon</span></h4><p>For financed cars. Reminds before EMI; flags over-budget months.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=profile]').click()"><div class="ico">🏠</div><h4>Family Fleet View <span class="coming-soon">Coming Soon</span></h4><p>Cars + bikes in one dashboard. Cross-product with Chitti 2-Wheeler.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()"><div class="ico">🪔</div><h4>Festival / Road-Trip Checklist <span class="coming-soon">Coming Soon</span></h4><p>Pre-Diwali long drive · pre-Goa run · pre-Manali winter · pre-monsoon prep.</p><div class="cta">Open →</div></div>
-      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()"><div class="ico">⭐</div><h4>Service-Centre Honesty Score <span class="coming-soon">Coming Soon</span></h4><p>Authorised dealers + independents rated by Chitti owners for upselling vs honest billing.</p><div class="cta">Open →</div></div>
+      <div class="feat-card" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()" data-chitti-section="Maintenance Schedule Live"><div class="ico">🔧</div><h4>Maintenance Schedule <span class="live-badge">Live</span></h4><p>Oil, coolant, brakes, plugs, timing belt, transmission — by brand (Maruti / Hyundai / Tata / Mahindra / Honda / Toyota / Kia / MG).</p><div class="cta">Open →</div></div>
+      <div class="feat-card" data-chitti-response onclick="document.querySelector('[data-tab=breakdown]').click()" data-chitti-section="Breakdown Coach Live P0"><div class="ico">🛣️</div><h4>Breakdown Coach <span class="live-badge">Live</span> <span class="p0-badge">P0</span></h4><p>Step-by-step Hinglish when car refuses to start. Brand RSA numbers included.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=docs]').click()" data-chitti-section="Document Vault Coming Soon P0"><div class="ico">📄</div><h4>Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>RC · Insurance · PUC · Licence · Loan EMI · Road Tax · FASTag. Auto-reminders 30 / 7 / 1 days before.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()" data-chitti-section="OBD2 Connected Mode Coming Soon"><div class="ico">📡</div><h4>OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></h4><p>Pair ELM327 (₹500-1500). Real-time RPM, coolant, MAF, fuel pressure, battery, MIL run-time.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()" data-chitti-section="DTC Plain-Hinglish Library Coming Soon"><div class="ico">🔍</div><h4>DTC Plain-Hinglish Library <span class="coming-soon">Coming Soon</span></h4><p>~2 000 P0xxx codes + manufacturer codes in simple Hindi + repair cost band. FIXD's killer feature, but Bharat-grade.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()" data-chitti-section="Predictive Maintenance Coming Soon"><div class="ico">🔬</div><h4>Predictive Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Oil quality %, coolant degradation, battery drop, brake-pad wear. Warns 30 days before failure.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()" data-chitti-section="Anti-Overcharge Guard Coming Soon P0 Chitti Special"><div class="ico">💰</div><h4>Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>"Service centre ne ₹18 000 maanga 40k ke liye, theek hai?" — fair band + nearby alternates.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=sos]').click()" data-chitti-section="Theft Guard — Community Ping Coming Soon P0 Chitti Special"><div class="ico">🚨</div><h4>Theft Guard — Community Ping <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></h4><p>Pincode-radius alert to every Chitti 4W user nearby. Sightings reach you faster than police.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=sos]').click()" data-chitti-section="Roadside SOS — Family Cascade Coming Soon P0"><div class="ico">🆘</div><h4>Roadside SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></h4><p>Accident ho gaya → family ko call → never cops. Vaani protocol locked. Adds crash-g-force signal.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()" data-chitti-section="Mechanic Finder + Honesty Score Coming Soon"><div class="ico">🧰</div><h4>Mechanic Finder + Honesty Score <span class="coming-soon">Coming Soon</span></h4><p>Geo-aware Haversine list. Authorised + independent both rated.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=parts]').click()" data-chitti-section="Genuine vs Fake Spare Parts Coming Soon Chitti Special"><div class="ico">⚙️</div><h4>Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>Camera scan → community alerts. Fake brake pads / oil filters kill drivers. Annual report to MoRTH / BIS.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=health]').click()" data-chitti-section="AI Engine Listening Coming Soon Chitti Special"><div class="ico">👂</div><h4>AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>10 s phone-mic clip → knock / pinging / belt squeal / wheel bearing classifier.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()" data-chitti-section="Weather-Aware Maintenance Coming Soon"><div class="ico">🌧️</div><h4>Weather-Aware Maintenance <span class="coming-soon">Coming Soon</span></h4><p>Pre-monsoon → wipers / brakes / tyre tread. Pre-summer → AC gas / coolant. Pre-winter → battery / coolant.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()" data-chitti-section="WhatsApp Booking Coming Soon"><div class="ico">💬</div><h4>WhatsApp Booking <span class="coming-soon">Coming Soon</span></h4><p>Book service from WhatsApp without app. Rural unlock.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()" data-chitti-section="Cheapest Fuel Nearby Coming Soon"><div class="ico">💸</div><h4>Cheapest Fuel Nearby <span class="coming-soon">Coming Soon</span></h4><p>Live IOC / BPCL / HPCL / Reliance / Nayara price by pincode. Saves ₹3-5 / litre.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()" data-chitti-section="Fuel Log + km/l Calculator Coming Soon"><div class="ico">⛽</div><h4>Fuel Log + km/l Calculator <span class="coming-soon">Coming Soon</span></h4><p>Voice "Diesel bhara ₹3 000, 30 litre, odo 45 200" → rolling km/l + clog detection.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=fuel]').click()" data-chitti-section="Carbon Per Trip Coming Soon"><div class="ico">🌱</div><h4>Carbon Per Trip <span class="coming-soon">Coming Soon</span></h4><p>Per Chitti Quality v2 §6. CO₂ from odo delta × engine cc fuel-burn rate.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=drive]').click()" data-chitti-section="Drive Score (Privacy-First) Coming Soon Chitti Special"><div class="ico">🎯</div><h4>Drive Score (Privacy-First) <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></h4><p>Soft-accel / soft-brake / cornering / phone-use score, computed <strong>on device</strong>. Raw GPS never leaves your phone.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=resale]').click()" data-chitti-section="Resale Advisor Coming Soon"><div class="ico">💰</div><h4>Resale Advisor <span class="coming-soon">Coming Soon</span></h4><p>Depreciation curve vs rising maintenance cost. Spinny / Cars24 / OLX honest band.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=insurance]').click()" data-chitti-section="Insurance Comparison Coming Soon"><div class="ico">🛡️</div><h4>Insurance Comparison <span class="coming-soon">Coming Soon</span></h4><p>Acko / Digit / ICICI Lombard / Bajaj Allianz / HDFC Ergo quotes at renewal. Saves ₹3 000 / yr.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=insurance]').click()" data-chitti-section="Loan EMI Tracker Coming Soon"><div class="ico">💳</div><h4>Loan EMI Tracker <span class="coming-soon">Coming Soon</span></h4><p>For financed cars. Reminds before EMI; flags over-budget months.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=profile]').click()" data-chitti-section="Family Fleet View Coming Soon"><div class="ico">🏠</div><h4>Family Fleet View <span class="coming-soon">Coming Soon</span></h4><p>Cars + bikes in one dashboard. Cross-product with Chitti 2-Wheeler.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=maintenance]').click()" data-chitti-section="Festival / Road-Trip Checklist Coming Soon"><div class="ico">🪔</div><h4>Festival / Road-Trip Checklist <span class="coming-soon">Coming Soon</span></h4><p>Pre-Diwali long drive · pre-Goa run · pre-Manali winter · pre-monsoon prep.</p><div class="cta">Open →</div></div>
+      <div class="feat-card cs" data-chitti-response onclick="document.querySelector('[data-tab=mechanic]').click()" data-chitti-section="Service-Centre Honesty Score Coming Soon"><div class="ico">⭐</div><h4>Service-Centre Honesty Score <span class="coming-soon">Coming Soon</span></h4><p>Authorised dealers + independents rated by Chitti owners for upselling vs honest billing.</p><div class="cta">Open →</div></div>
     </div>
   </div>
 
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Torque Pro / Car Scanner / FIXD">
     <div class="section-head"><div><div class="section-title">Reference apps audited (top 5)</div><div class="section-sub">Per SAHAYAI_MASTER §2a new-products process.</div></div></div>
     <ol style="margin:0;padding-left:20px;line-height:1.8;font-size:13px">
       <li><strong>Torque Pro / Car Scanner / FIXD</strong> — Bluetooth OBD2 diagnostics + DTC library. <em>Copied:</em> ELM327 pairing, sensor stream, DTC plain-English explainer.</li>
@@ -265,7 +265,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- PROFILE -->
 <section class="page" id="page-profile" role="tabpanel">
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">My Car <span class="live-badge">Live</span></div><div class="section-sub">Saved on this device only. Voice "Chitti, meri car Hyundai i20 hai, 45 000 km" also works in the Ask tab.</div></div></div>
     <div data-chitti-response data-chitti-section="My Car — onboarding">
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
@@ -284,28 +284,28 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <p id="c-status" class="section-sub" style="margin-top:10px"></p>
     </div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Family Fleet <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Cars + bikes in one household — single dashboard across <a href="chitti_2wheeler.html" style="color:var(--saffron)">Chitti 2-Wheeler</a> and this page.</div></div></div>
   </div>
 </section>
 
 <!-- HEALTH -->
 <section class="page" id="page-health" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">OBD2 Connected Mode <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Web-Bluetooth pair flow for ELM327 adapter (₹500-1500). Plug into the OBD2 port (under-steering-wheel left), ignition ON (don't start), tap pair.</div></div></div>
     <button class="cta-navy" disabled data-i18n="pair-obd2-coming-soon">📡 Pair OBD2 (coming soon)</button>
   </div>
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">DTC Plain-Hinglish Library <span class="live-badge">Live (lookup stub)</span></div><div class="section-sub">Enter a P0xxx code. Today: deterministic library covers ~50 common codes. P1: ~2 000 codes + manufacturer-specific.</div></div></div>
     <div data-chitti-response data-chitti-section="DTC lookup">
       <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="dtc-code" placeholder="P0301" data-i18n-placeholder="p0301" style="max-width:160px"><button class="cta-saffron" onclick="lookupDtc()" data-i18n="look-up">Look up</button></div>
       <div id="dtc-result" style="margin-top:12px;font-size:13px;line-height:1.6"></div>
     </div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Predictive Maintenance <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Oil quality % · coolant degradation · battery drop · brake-pad wear · spark-plug life via misfire freq.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">AI Engine Listening <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">10 s phone-mic recording → knock / pinging / belt squeal / wheel-bearing / brake-squeal classifier.</div></div></div>
     <button class="cta-saffron" disabled data-i18n="record-10-s-coming-soon">🎤 Record 10 s (coming soon)</button>
   </div>
@@ -313,7 +313,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- MAINTENANCE -->
 <section class="page" id="page-maintenance" role="tabpanel">
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Maintenance Schedule <span class="live-badge">Live</span></div><div class="section-sub">Brand-specific. Add your car on My Car tab to personalise.</div></div></div>
     <div id="maint-table" data-chitti-response data-chitti-section="Maintenance — schedule">
       <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -322,20 +322,20 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       </table>
     </div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Weather-Aware Maintenance <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Pre-monsoon → wipers / brake pads / tyre tread. Pre-summer → AC gas / coolant top-up. Pre-winter → battery / coolant.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Tyre Pressure Calculator <span class="coming-soon">Coming Soon</span></div><div class="section-sub">By load + temperature + tyre type. Monthly cron reminder.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Festival / Road-Trip Checklist <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Pre-Diwali long drive · pre-Goa run · pre-Manali winter · pre-monsoon prep.</div></div></div>
   </div>
 </section>
 
 <!-- BREAKDOWN -->
 <section class="page" id="page-breakdown" role="tabpanel">
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Safety first.">
     <div class="section-head"><div><div class="section-title">Breakdown Coach <span class="live-badge">Live</span> <span class="p0-badge">P0</span></div><div class="section-sub">Step-by-step Hinglish when car refuses to start.</div></div></div>
     <div data-chitti-response data-chitti-section="Breakdown — coach">
       <ol style="line-height:1.8;font-size:13px">
@@ -360,14 +360,14 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- SOS -->
 <section class="page" id="page-sos" role="tabpanel">
-  <div class="section-card" data-chitti-response style="border-color:var(--red);border-width:2px">
+  <div class="section-card" data-chitti-response style="border-color:var(--red);border-width:2px" data-chitti-section="Never auto-dials 100 / 108 / 112.">
     <div class="section-head"><div><div class="section-title" style="color:var(--red)">🆘 SOS — Family Cascade <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">Per Vaani locked emergency protocol — confirm-with-Master → alarm → spouse → family → Chitti-to-Chitti relay. <strong>Never auto-dials 100 / 108 / 112.</strong></div></div></div>
     <button class="cta-saffron" style="background:linear-gradient(135deg,var(--red),#ef4444)!important;width:100%;font-size:18px;padding:18px" disabled data-i18n="trigger-sos-coming-soon">🆘 Trigger SOS (coming soon)</button>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Crash Detection (g-force) <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Phone accelerometer threshold → confirm-with-Master → if no response in 30 s, fire family cascade.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Theft / Unauthorised Movement Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Pincode-radius community alert. Sightings come back to owner. India sees 200k+ car thefts / year.</div></div></div>
     <button class="cta-navy" disabled data-i18n="report-theft-coming-soon">🚨 Report theft (coming soon)</button>
   </div>
@@ -375,7 +375,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- DOCS -->
 <section class="page" id="page-docs" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Document Vault <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span></div><div class="section-sub">RC · Insurance · PUC · Driving Licence · Loan EMI · Road Tax · FASTag. Auto-reminders 30 / 7 / 1 days before expiry. Encrypted on Turso, user-owned.</div></div></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
       <button class="cta-navy" disabled data-i18n="scan-rc">📸 Scan RC</button>
@@ -387,33 +387,33 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="cta-navy" disabled data-i18n="fastag">🛣️ FASTag</button>
     </div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">DigiLocker Pull <span class="future-badge">Future</span></div><div class="section-sub">Partner-only OAuth. Pulls RC + DL + Insurance + PUC in one tap when partnership lands.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">VAHAN / PARIVAHAN Verify <span class="future-badge">Future</span></div><div class="section-sub">Live RC / DL / PUC verification. Needs MoRTH / setu.co / signzy / karza API key.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Traffic Challan Feed <span class="future-badge">Future</span></div><div class="section-sub">mParivahan / state-RTO API integration.</div></div></div>
   </div>
 </section>
 
 <!-- FUEL -->
 <section class="page" id="page-fuel" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Fuel Log + km/l Calculator <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Voice "Chitti, ₹3 000 diesel, 30 litre, odo 45 200" → row + rolling km/l + clog detection.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Cheapest Fuel Nearby <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Live IOC / BPCL / HPCL / Reliance / Nayara price by pincode. Daily scrape → Haversine pick.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Carbon Per Trip <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Per Chitti Quality v2 §6. CO₂ from odo delta × engine cc fuel-burn rate.</div></div></div>
   </div>
 </section>
 
 <!-- MECHANIC -->
 <section class="page" id="page-mechanic" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Anti-Overcharge Guard <span class="coming-soon">Coming Soon</span> <span class="p0-badge">P0</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">"Service centre ne ₹X maanga" → fair-price band + DeepSeek opinion + nearby alternates.</div></div></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
       <label>Service item <input placeholder="40k service" data-i18n-placeholder="40k-service" disabled></label>
@@ -421,58 +421,58 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
     <button class="cta-saffron" style="margin-top:10px" disabled data-i18n="check-coming-soon">🛡️ Check (coming soon)</button>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Mechanic + Service-Centre Honesty Score <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Authorised + independent both rated. Geo-aware Haversine list.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">WhatsApp Booking <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Per SAHAYAI_MASTER §5b — WhatsApp Business API + service-centre directory.</div></div></div>
   </div>
 </section>
 
 <!-- PARTS -->
 <section class="page" id="page-parts" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Genuine vs Fake Spare Parts <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Per Camera Intelligence LOCKED §2b. Scan brake pads / oil filter / spark plugs → community alerts + annual report to MoRTH / BIS.</div></div></div>
     <button class="cta-saffron" disabled data-i18n="scan-part-coming-soon">📸 Scan part (coming soon)</button>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Spare-part Price Compare <span class="coming-soon">Coming Soon</span></div><div class="section-sub">OEM vs aftermarket vs BoodMo vs partsbig — best-price match by part number.</div></div></div>
   </div>
 </section>
 
 <!-- INSURANCE / LOAN -->
 <section class="page" id="page-insurance" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Insurance Comparison <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Acko / Digit / ICICI Lombard / Bajaj Allianz / HDFC Ergo quote compare at renewal.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Loan EMI Tracker <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Reminds before EMI; flags over-budget months. Eventual Account Aggregator pull.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Road Tax + Re-registration Reminders <span class="coming-soon">Coming Soon</span></div><div class="section-sub">15-year registration expiry warning; inter-state re-registration support.</div></div></div>
   </div>
 </section>
 
 <!-- DRIVE SCORE -->
 <section class="page" id="page-drive" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="on device">
     <div class="section-head"><div><div class="section-title">Drive Score — Privacy-First <span class="coming-soon">Coming Soon</span> <span class="chitti-special">Chitti Special</span></div><div class="section-sub">Soft-acceleration / soft-braking / cornering / phone-use, computed <strong>on device</strong>. Only the score (0–100) syncs — raw GPS / accelerometer never leaves your phone. Acko Drive does it; Chitti does it without selling telemetry.</div></div></div>
   </div>
 </section>
 
 <!-- RESALE -->
 <section class="page" id="page-resale" role="tabpanel">
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Resale Advisor <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Depreciation curve vs rising maintenance cost. Sell-or-hold by month.</div></div></div>
   </div>
-  <div class="section-card coming-soon-card" data-chitti-response>
+  <div class="section-card coming-soon-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title">Live Valuation <span class="coming-soon">Coming Soon</span></div><div class="section-sub">Spinny / Cars24 / OLX honest band by city + km + condition.</div></div></div>
   </div>
 </section>
 
 <!-- ASK -->
 <section class="page" id="page-ask" role="tabpanel">
-  <div class="section-card" data-chitti-response>
+  <div class="section-card" data-chitti-response data-chitti-section="Section card">
     <div class="section-head"><div><div class="section-title" data-i18n="ask.title">🎙️ Ask Chitti</div><div class="section-sub" data-i18n="ask.sub">Any car question. DeepSeek-powered. Plain Hinglish. Server-enforced disclaimer attached.</div></div></div>
     <div id="ask-log" data-chitti-response data-chitti-section="Ask Chitti — chat" style="min-height:140px;background:#fdfaf0;border:1px solid #eee;border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6">
       <em>Pucho kuch bhi — "Oil change kab karu?" · "Code P0420 kya hai?" · "₹18 000 40k service ke liye, theek hai?"</em>
@@ -677,5 +677,15 @@ document.addEventListener('chitti:lang', (e) => {
   });
 })();
 </script>
+<!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
+<div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEc0lEQVR4nO2dwY3dMAwFd4N/dxNpJVVvK2lCFWyuDhABJEjKP5iZY+IvCftA0xQp6vP7+/tDGPx4egFyDsUGodggFBuEYoNQbBCKDeK1+4/r56/2ydbvr3+OH/n33dp2v52et0JkzV3j39GyQSg2CMUGsfXZER8QIeJHK+NM+8srOW/2O2D32yyRdWrZIBQbhGKDCPnsrG+o+OOsb8t+E1zJ55/6tpj4O2vZIBQbhGKDSPvsLnY+qbI3HmEFnu9aQyVunkDLBqHYIBQbxGM+u5Jjzvr7Lh98Jb8VuvICXWjZIBQbhGKDSPvsk/6mK7/bVfO1CvVulbm60LJBKDYIxQYR8tkTtc2V2LoSi9+pxO6Rcabr3bJo2SAUG4Rig3g9FU9XcsATsfIq1Hu/Wzy9Q8sGodggFBvEZ7YP2nRc21VzXqm7vgprq5wNi4xZybVr2SAUG4RigxjPZ2fj6Ym+KF115ldhnB0TY+7QskEoNgjFBlHKZ3fVTk/nerv89I6uvmyRMXfPRNCyQSg2CMUGUdobf4c89FNruFPxzV174xG0bBCKDUKxQWx9dsVPdPXwqvQ4m64tX03jR+jaM9eyQSg2CMUGEYqzJ+LIp2LlO117ztO59q66Ni0bhGKDUGwQbX3Qdn6oy5dn552oHVsDfUxP9mnRskEoNgjFBtF2r9f0XnqErhh9FXzkye+G7JhaNgjFBqHYIEr3et39RNc91pG5IrXWkXm74uDIODsqfwfv9ZItvsZBKDaI13T9V2TM7Dhd/nXH9B719H2d5rPF1zgJfTaIdN14l2+u1F1P3Lu1BmrlsvNO5wi0bBCKDUKxQaT7jZ/0bRO9SNfB9ex+O93DdYeWDUKxQSg2iLZ89p2sT5o4Mxb57RroFRqpnz/ZU/2Olg1CsUEoNojSWa+K/56+U6Sr3jtC1zfBdP5eywah2CAUG0SoBm0id1v5bdf575WM9Sdy/F018xG0bBCKDUKxQaT7jd/p6vlVqR2781Rf0jV8H1cXWjYIxQah2CBKZ70qtd8Te9cT3wSraY8hy0RdvZYNQrFBKDaItjj7zsQ5q4k7OVZTLnza12bXps8WX+Mk9Nkg3uJ8dpaTufbroP+ezpFr2SAUG4Rig0jf6zW9VzzdU+Vq+p6Y8OXZ9dhvXLb4Ggeh2CDerm68qxdYZMx1MLbuGn83VwQtG4Rig1BsEKV8doXps0/TtdzXf9hXVcsGodggFBtEum68QvZOqso56emzXjume7l4PltC+BoHodgg0jVoWSbON3flxXfPV+aNrOHkebM7WjYIxQah2CBK/cZ3TPvgylx3Jvq3PBWLR57RskEoNgjFBlHqN16h4nsq+d0rud9eOf89cb7cvXEJ4WschGKDeMxnT+yNT9R/dcX60/UB3hEif+FrHIRig0j77K7c6kSfluzz10DcHGGiJ1rkeS0bhGKDUGwQoRq0Lk7Go13752tgH37i7q/I81o2CMUGodggHjufLefRskEoNgjFBqHYIBQbhGKDUOwPDn8Adv26sGQ1Lq8AAAAASUVORK5CYII=" alt="QR code — opens 4Wheeler on your phone at https://sahayai.in/chitti_4wheeler.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
+  <div style="flex:1;min-width:0">
+    <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
+    <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open 4Wheeler on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
+    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_4wheeler.html</code>
+  </div>
+</div>
+
 </body>
 </html>

@@ -39,6 +39,49 @@
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
 <body>
+<!-- Chitti language selector (single dropdown, locked 2026-05-21) -->
+<div id="chitti-lang-bar" style="display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:8px 16px;background:#0E2344;color:#fff;font-family:Inter,system-ui,sans-serif;font-size:13px">
+  <label for="lang-select" style="font-weight:600">🌐 Language:</label>
+  <select id="lang-select" data-chitti-lang style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:5px 9px;font-weight:600;font-size:13px;cursor:pointer">
+    <option value="en">English</option>
+    <option value="hi">हिन्दी</option>
+    <option value="bn">বাংলা</option>
+    <option value="ta">தமிழ்</option>
+    <option value="te">తెలుగు</option>
+    <option value="kn">ಕನ್ನಡ</option>
+    <option value="ml">മലയാളം</option>
+    <option value="mr">मराठी</option>
+    <option value="gu">ગુજરાતી</option>
+    <option value="pa">ਪੰਜਾਬੀ</option>
+    <option value="or">ଓଡ଼ିଆ</option>
+    <option value="as">অসমীয়া</option>
+    <option value="ur">اردو</option>
+    <option value="sa">संस्कृतम्</option>
+  </select>
+</div>
+<script>
+  (function () {
+    try {
+      var sel = document.getElementById('lang-select');
+      if (!sel) return;
+      var saved = localStorage.getItem('chitti_lang') || (navigator.language || 'en').split('-')[0];
+      if ([].slice.call(sel.options).some(function (o) { return o.value === saved; })) sel.value = saved;
+      document.documentElement.setAttribute('lang', saved);
+      sel.addEventListener('change', function () {
+        var v = sel.value;
+        try { localStorage.setItem('chitti_lang', v); } catch (e) {}
+        document.documentElement.setAttribute('lang', v);
+        if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.setLang === 'function') {
+          try { window.Chitti.a11y.setLang(v); } catch (e) {}
+        }
+        // The Voice Factory ledger is language-agnostic at v1; flip the
+        // <html lang> attribute so screen-readers + Voice Factory pick the
+        // right voice on the existing read-page flow.
+      });
+    } catch (e) {}
+  })();
+</script>
+
   <div class="vf-disclaimer" role="region" aria-label="Voice Factory disclaimer" data-i18n-aria="voice-factory-disclaimer"
        style="position:sticky;top:0;z-index:60;background:#78350f;color:#fde68a;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #4c1d95">
     🪔 <strong>Honest ledger</strong> · Tier C languages are donor-required — never silently fall back. Mock supplier is labelled <code style="color:#fde68a;background:transparent;border:1px solid #fde68a">mock_bhashini</code>, not <code style="color:#fde68a;background:transparent;border:1px solid #fde68a">bhashini</code>.
@@ -49,8 +92,8 @@
   </header>
 
   <main>
-    <div class="card">
-      <div class="summary">
+    <div class="card chitti-response" data-chitti-section="–">
+      <div class="summary chitti-response" data-chitti-section="Summary">
         <div><span class="muted">Languages</span><strong id="count-total">–</strong></div>
         <div><span class="muted">Available now</span><strong id="count-ok">–</strong></div>
         <div><span class="muted">Tier A primaries</span><strong id="count-tier-a">–</strong></div>
@@ -59,14 +102,14 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card chitti-response" data-chitti-section="Suppliers (cascade order)">
       <strong>Suppliers (cascade order)</strong>
       <div class="muted" style="margin-top:6px">First enabled supplier that supports a language wins. Mock supplier is named <code>mock_bhashini</code> — never silently labelled <code>bhashini</code>.</div>
       <div id="suppliers" style="margin-top:10px"
            data-chitti-response data-chitti-section="Voice supplier cascade"></div>
     </div>
 
-    <div class="card">
+    <div class="card chitti-response" data-chitti-section="Recent ledger rows (anonymised — sha256 of text only)">
       <table>
         <thead>
           <tr>
@@ -83,7 +126,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card chitti-response" data-chitti-section="Recent ledger rows (anonymised — sha256 of text only)">
       <strong>Recent ledger rows (anonymised — sha256 of text only)</strong>
       <div class="muted" style="margin-top:6px">Spec §5: text is hashed before logging. We never store user-typed strings.</div>
       <table style="margin-top:10px">
@@ -189,5 +232,15 @@
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
+<!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
+<div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEcUlEQVR4nO2dwW0cMQxF7cB3NZFWUnVaSRNTgXOdHISQIKkZ4L13XGu14/2guKJI6vP7+/tDGPx4+gHkHIoNQrFBKDYIxQah2CAUG8TX7g/r56/2D7v+/P7vmPvn3sdnX4/MP0HkGZ76nrVsEIoNQrFBbH12xQ9lfdJuTPb1yJhrwN9X5tzNkyXynWjZIBQbhGKDCPnsrG+o+KqKX6z4y5X8v+7jI78tpp8ngpYNQrFBKDaItM+eIOKDKz61y9+vZBy7sm+eQMsGodggFBvEYz47G/eO7MUrfj1C1pdX9tkTaNkgFBuEYoNI++wu31PZy2b9btY3r8JefPr7qaBlg1BsEIoN4uup3Oas/+sav172+smcdi0bhGKDUGwQn0/1VInEwCPjI++NPMM1kDe+46k4uZYNQrFBKDaItrzxib1j1kdW/OUK7I+7mK4Z26Flg1BsEIoNopSDFvEl2bhxxXee3Ct3zTkdb7+jZYNQbBCKDWI8b7zL11bOhiv5Ylehd9tunq69u/XZssVlHIRigwidZ2fj4dl5snNO13SdrBPbMTG/lg1CsUEoNoi2ffaEj9ntXyfqxK6B8/jpejb32bLFZRyEYoMYj413xZa7+niv5Dxd582RObt6w3lHiLiMk9Bng9jGxit+KDLP22rA1kBPtK7fK7vxkee5o2WDUGwQig2i1FNlek9cGR/JRT95Ft7Vi63ynWvZIBQbhGKDOHoXZ9cZ7dt6ja2BGq2J3w1aNgjFBqHYILY+u3Jeu5snMv/JfPWr0F+lKzdtoifrDi0bhGKDUGwQW5/d1Ydrop/XRB+xNRw/73rmyv5bywah2CAUG0SpPns6Pzwy/3QP8NXUg2xHV865OWjyDy7jIBQbROk8uxIrnr5Lo+JTV9N7I0zEHsxBE5dxEvpsEOlary5O3tNV8aNrOLY//Vl3tGwQig1CsUGka7266qSn87q77uTYMeFfvddL2nAZB6HYINKx8a6z4cj4k/liq5BHNnEmPXG2rWWDUGwQig0inYPWVQ/9VM/wq6l+evq3y0R9nZYNQrFBKDaIkM8+Wfc8nZsdodJr7GTvVfuNyxaXcRCKDaK0z46Mv1PZL3b5+/VQ/leE6WfWskEoNgjFBpHuqTJdoxXpJZKlkte2hn+vZM/jK3Nq2SAUG4RigyjFxiO8YV978q6ta6BPeBZ9triMk9Bng3jF/dlP5Xbdmag96+qlmp1/h5YNQrFBKDaIUGz8Kf+dvZ8jMv4aiPOfjL3bb1xCuIyDUGwQR+/i3M1ZqW/efVZlTITperAI2fdq2SAUG4Rig0jHxif80PR9XBN72euhezwraNkgFBuEYoMYP8/e0eW3unK+VqEfWfZ5KjGGSpxAywah2CAUG8RjPjtLxP9VeoZn6arX2s0Zmcf6bNniMg5CsUGM3+t1ss6qK759ZyJ/bWK/HkHLBqHYIBQbRPperzdTiUtn9+4ne5HusHepbHEZB6HYIMZ7qsh70LJBKDYIxQah2CAUG4Rig1DsDw5/AR8xrPR5FgBeAAAAAElFTkSuQmCC" alt="QR code — opens Voice Factory on your phone at https://sahayai.in/chitti_voice_factory.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
+  <div style="flex:1;min-width:0">
+    <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
+    <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open Voice Factory on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
+    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_voice_factory.html</code>
+  </div>
+</div>
+
 </body>
 </html>
