@@ -541,6 +541,23 @@
     current: function () { return currentLang; },
     list: LANGS.slice(),
     theme: THEME,
+    // Single-string lookup against the baked T-table. Exposed so that
+    // chitti_a11y.js (the widget+QR supplement) can translate the
+    // dynamic section names that get embedded inside its pattern
+    // templates. Returns null if the trimmed text isn't a key here.
+    lookupText: function (text, lang) { return lookup(text, lang || currentLang); },
+    // Merge additional entries into the T-table at runtime. chitti_a11y.js
+    // calls this with widget bar + QR strings so they ride the same
+    // translateAll pass — no race between the two scripts. The merged
+    // entries persist across language switches; re-calling extend with
+    // the same key overwrites.
+    extend: function (entries) {
+      if (!entries) return;
+      Object.keys(entries).forEach(function (k) { T[k] = entries[k]; });
+      // Re-run a translation pass so newly-merged entries take effect
+      // on the current page paint (idempotent, cheap).
+      try { translateAll(currentLang); } catch (e) {}
+    },
   };
 
   if (document.readyState === 'loading') {

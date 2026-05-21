@@ -237,7 +237,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
-  <div class="consent-panel chitti-response" data-chitti-section="Chitti Vaani — Terms &amp;amp; Conditions">
+  <div class="consent-panel">
     <h1 id="consent-title">Chitti Vaani — Terms &amp; Conditions</h1>
     <div class="sub">First time using Chitti Vaani? Please read each section. Tap 🔊 to hear it spoken in your language. Then tap <strong>I AGREE</strong> to start.</div>
 
@@ -254,17 +254,17 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button data-lang="ml" onclick="setConsentLang('ml')">മലയാളം</button>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="1What Chitti Vaani is (and is not)🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">1</span><span class="title-txt">What Chitti Vaani is (and is not)</span><button class="spk" data-section="1" onclick="speakSection(1, this)" aria-label="Hear section 1 aloud">🔊 Hear</button></h3>
       <p>Chitti Vaani is a voice-first AI helper. You speak, Chitti listens, Chitti speaks back. Chitti is <strong>not</strong> a doctor, lawyer, banker, or government officer. Chitti gives general information only.</p>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="2Legal compliance🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">2</span><span class="title-txt">Legal compliance</span><button class="spk" data-section="2" onclick="speakSection(2, this)" aria-label="Hear section 2 aloud">🔊 Hear</button></h3>
       <p>Chitti Vaani complies with the <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>, TRAI rules on call recording, and the IT Rules 2021. Your voice never leaves your device unless you tap "Send to Chitti". Recordings are not stored on our servers.</p>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="3Permissions required🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">3</span><span class="title-txt">Permissions required</span><button class="spk" data-section="3" onclick="speakSection(3, this)" aria-label="Hear section 3 aloud">🔊 Hear</button></h3>
       <ul>
         <li><strong>Microphone</strong> — to listen when you tap the green mic.</li>
@@ -274,17 +274,17 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <p>The web version (this page) only uses the microphone, and only while you hold the mic button.</p>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="4Data privacy🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">4</span><span class="title-txt">Data privacy</span><button class="spk" data-section="4" onclick="speakSection(4, this)" aria-label="Hear section 4 aloud">🔊 Hear</button></h3>
       <p>Chitti does <strong>not</strong> sell your data. Chitti does <strong>not</strong> share your voice or text with advertisers. Your conversation history lives in your browser (localStorage) — clear it any time from Settings.</p>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="5Emergency &amp;amp; liability🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">5</span><span class="title-txt">Emergency &amp; liability</span><button class="spk" data-section="5" onclick="speakSection(5, this)" aria-label="Hear section 5 aloud">🔊 Hear</button></h3>
       <p>If this is a medical, fire, or police emergency — call <strong>112</strong> right now. For cyber-fraud call <strong>1930</strong>. Chitti cannot guarantee any medical, legal, or financial outcome. Final decisions are always yours, ideally with a qualified professional.</p>
     </div>
 
-    <div class="tnc-section chitti-response" data-chitti-section="6Grievance redressal🔊 Hear">
+    <div class="tnc-section">
       <h3><span class="num">6</span><span class="title-txt">Grievance redressal</span><button class="spk" data-section="6" onclick="speakSection(6, this)" aria-label="Hear section 6 aloud">🔊 Hear</button></h3>
       <p>Issue or complaint? Email <strong>sire@sahayai.in</strong>. We respond within 7 working days as required by the IT Rules 2021.</p>
     </div>
@@ -2304,6 +2304,8 @@ window.addEventListener('DOMContentLoaded', () => {
 <script src="chitti_lang.js"></script>
 <!-- Chitti feedback widget (locked SAHAYAI §7) -->
 <script src="feedback-widget.js" data-page="chitti_vaani"></script>
+<!-- chitti_a11y.js — rebuilt 2026-05-21, vaani-only widget+QR+residue translator. Loads AFTER feedback-widget.js so the per-box bars exist when our MutationObserver attaches; loads AFTER chitti_lang.js so we can hook its chitti:langchange event. -->
+<script src="chitti_a11y.js"></script>
 
 <!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
 <div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
