@@ -375,6 +375,15 @@ nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!importa
 </head>
 <body>
 
+<!-- Chitti language selector (auto-injected) — chitti_lang.js wires this. 2026-05-22 -->
+<div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
+  <label for="lang-select" style="font-weight:600">🌐</label>
+  <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
+    <option value="en">English</option>
+  </select>
+</div>
+
+
 <!-- ════════════════════ SEBI DISCLAIMER (legal) ════════════════════ -->
 <div class="sebi-bar" role="alert" aria-label="Important disclaimer" data-i18n-aria="important-disclaimer">
   <span class="ico" aria-hidden="true">⚠️</span>
@@ -1375,22 +1384,17 @@ function t(key) {
 function applyChittiLang(lang) {
   _chittiLang = lang;
   try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
-  document.querySelectorAll('[data-i18n]').forEach(function(el){
-    const k = el.getAttribute('data-i18n');
-    const v = t(k);
-    if (v) el.textContent = v;
-  });
-  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
-    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
-  });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
-    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
-  });
+  document.documentElement.lang = lang || 'en';
   document.querySelectorAll('.lang-toggle-bharat button').forEach(function(b){
-    b.style.background = b.getAttribute('data-lang') === lang ? 'rgba(255,255,255,.30)' : 'rgba(255,255,255,.05)';
+    var active = b.getAttribute('data-lang') === lang;
+    b.classList.toggle('active', active);
+    b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  document.documentElement.lang = (lang === 'hi') ? 'hi' : 'en';
-}
+  // Delegate full-body translation to chitti_lang.js (single source of truth).
+  if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
+    try { window.Chitti.lang.set(lang); } catch (e) {}
+  }
+} // neutered 2026-05-22 — chitti_lang.js owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -3334,6 +3338,11 @@ async function rfRefresh(sym) {
     <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_fundamentals.html</code>
   </div>
 </div>
+
+
+<!-- Chitti i18n substrate — chitti_lang.js baked T-table + chitti_a11y.js widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
 
 </body>
 </html>
