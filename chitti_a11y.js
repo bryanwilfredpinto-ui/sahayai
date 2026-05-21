@@ -1137,66 +1137,158 @@
     document.dispatchEvent(new CustomEvent("chitti:langchange", { detail: { lang, t: T[lang] || T["en"] } }));
   }
 
-  // ── INJECT LANGUAGE BAR ───────────────────────────────────────────────────
-  function injectLangBar() {
-    // Remove any existing lang bar
-    const existing = document.getElementById("chitti-langbar");
-    if (existing) existing.remove();
-
-    const bar = document.createElement("div");
-    bar.id = "chitti-langbar";
-    bar.setAttribute("role", "navigation");
-    bar.setAttribute("aria-label", "Language selector");
-    bar.style.cssText = `
-      position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
-      background: #1a1a2e; color: #fff;
-      display: flex; align-items: center; flex-wrap: wrap;
-      padding: 4px 8px; gap: 4px;
-      font-family: system-ui, sans-serif; font-size: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    `;
-
-    // Language buttons
-    LANGS.forEach(lng => {
-      const btn = document.createElement("button");
-      btn.className = "chitti-lang-btn";
-      btn.dataset.lang = lng.code;
-      btn.textContent = lng.native;
-      btn.title = lng.label;
-      btn.setAttribute("aria-label", `Switch to ${lng.label}`);
-      btn.style.cssText = `
-        background: transparent; border: 1px solid rgba(255,255,255,0.2);
-        color: #fff; padding: 2px 8px; border-radius: 12px;
-        cursor: pointer; font-size: 11px; white-space: nowrap;
-        transition: all 0.2s;
-      `;
-      btn.addEventListener("mouseenter", () => { btn.style.background = "rgba(255,165,0,0.3)"; });
-      btn.addEventListener("mouseleave", () => { btn.style.background = btn.dataset.lang === currentLang ? "#FF6B00" : "transparent"; });
-      btn.addEventListener("click", () => translatePage(lng.code));
-      bar.appendChild(btn);
+  // ── WIRE LANGUAGE SELECTORS ──────────────────────────────────────────────
+  // Old behaviour (auto-inject a 26-button bar at the top of every page) is
+  // gone — it conflicted with each page's own language picker. New contract:
+  //   1. Find every existing <select> that looks like a language picker.
+  //   2. Populate it with all 26 langs if it doesn't already cover them.
+  //   3. Wire onchange → translatePage(value). Reflect chitti:langchange
+  //      back into all wired selects so picking lang in one widget syncs
+  //      the others (e.g. main pick-lang + onboarding onb-lang on news).
+  //   4. If the page genuinely has no <select> for language, inject one
+  //      compact floating <select> in the top-right — single, minimal,
+  //      out of the way. Never two.
+  //
+  // Detection heuristics (in priority order):
+  //   - explicit opt-in: [data-chitti-lang-select]
+  //   - id contains 'lang' AND <select> tag
+  //   - <select> with aria-label matching /lang/i
+  //   - <select> with name="lang" or name="language"
+  // We DO NOT touch <select id="vlang"> (video-language on logo-video) or
+  // anything that ends in '-lang' but isn't a UI language picker — the
+  // shouldSkipSelect filter is conservative.
+  const LANG_SELECT_SELECTORS = [
+    "select[data-chitti-lang-select]",
+    "select#lang-select", "select#lang", "select#hdr-lang",
+    "select#pick-lang", "select#onb-lang", "select#langSelect",
+    "select[name='lang']", "select[name='language']",
+    "select[aria-label='Language']", "select[aria-label='Choose language']",
+    "select[aria-label='Change language']", "select.lang-toggle",
+    "select.lang-toggle-bharat",
+  ].join(", ");
+  function shouldSkipSelect(el) {
+    if (!el || el.tagName !== "SELECT") return true;
+    if (el.dataset.chittiLangSkip === "1") return true;
+    // Honor explicit data-chitti-lang-select even if id doesn't match
+    if (el.hasAttribute("data-chitti-lang-select")) return false;
+    return false;
+  }
+  function populateLangSelect(el) {
+    // Preserve user's existing options as long as they cover at least
+    // 18 of our 26 langs (heuristic — page-authored dropdowns vary).
+    // Otherwise replace the option list with our canonical 26.
+    const existingValues = new Set(Array.from(el.options).map(o => o.value));
+    let covered = 0;
+    LANGS.forEach(l => { if (existingValues.has(l.code)) covered++; });
+    if (covered >= 18) return; // page already has full list
+    el.innerHTML = "";
+    LANGS.forEach(l => {
+      const opt = document.createElement("option");
+      opt.value = l.code;
+      opt.textContent = l.native + " (" + l.label + ")";
+      el.appendChild(opt);
     });
-
-    // Read page button
-    const readBtn = document.createElement("button");
-    readBtn.id = "chitti-read-page";
-    readBtn.textContent = "🔊";
-    readBtn.title = "Read page aloud";
-    readBtn.style.cssText = `
-      margin-left: auto; background: #FF6B00; border: none;
-      color: #fff; padding: 2px 10px; border-radius: 12px;
-      cursor: pointer; font-size: 13px;
-    `;
-    readBtn.addEventListener("click", readPageAloud);
-    bar.appendChild(readBtn);
-
-    document.body.insertBefore(bar, document.body.firstChild);
-
-    // Add top padding to body so bar doesn't overlap content
-    document.body.style.paddingTop = (parseInt(document.body.style.paddingTop) || 0) + 36 + "px";
-
-    // Apply current language
+  }
+  function wireExistingSelect(el) {
+    if (shouldSkipSelect(el)) return false;
+    if (el.dataset.chittiLangWired === "1") return true;
+    populateLangSelect(el);
+    el.value = currentLang;
+    el.dataset.chittiLangWired = "1";
+    el.addEventListener("change", () => translatePage(el.value));
+    return true;
+  }
+  function injectCompactDropdown() {
+    if (document.getElementById("chitti-lang-dd")) return;
+    const sel = document.createElement("select");
+    sel.id = "chitti-lang-dd";
+    sel.setAttribute("aria-label", "Choose language");
+    sel.style.cssText =
+      "position:fixed;top:8px;right:8px;z-index:99999;" +
+      "padding:6px 10px;background:#0E2344;color:#fff;" +
+      "border:1px solid #D4AF37;border-radius:6px;" +
+      "font-family:system-ui,sans-serif;font-size:13px;cursor:pointer;" +
+      "box-shadow:0 2px 6px rgba(0,0,0,0.25);min-width:160px;";
+    populateLangSelect(sel);
+    sel.value = currentLang;
+    sel.dataset.chittiLangWired = "1";
+    sel.addEventListener("change", () => translatePage(sel.value));
+    document.body.appendChild(sel);
+  }
+  function syncLangSelects(lang) {
+    document.querySelectorAll("select[data-chitti-lang-wired='1']").forEach(el => {
+      if (el.value !== lang) el.value = lang;
+    });
+  }
+  function wireLanguageSelectors() {
+    const found = document.querySelectorAll(LANG_SELECT_SELECTORS);
+    let wired = 0;
+    found.forEach(el => { if (wireExistingSelect(el)) wired++; });
+    if (wired === 0) injectCompactDropdown();
+    // Keep all wired selects in sync on every change
+    document.addEventListener("chitti:langchange", e => syncLangSelects(e.detail.lang));
+    // Apply current language to the page
     translatePage(currentLang);
   }
+
+  // ── VOICE LANGUAGE COMMAND ────────────────────────────────────────────────
+  // "Telugu mein baat karo" / "Hindi me baat karo" / "Bangla bolo" — the
+  // speech recogniser listens for any LANGS[].label or LANGS[].native
+  // followed by "mein baat karo" / "me baat karo" / "bolo" / "speak" /
+  // "switch to <lang>". Browser mic permission required; we expose
+  // window.Chitti.listenForLangCommand() so a page-authored mic button can
+  // start the recogniser on a user gesture. No autostart — browsers reject
+  // continuous mic without one.
+  const LANG_NAME_INDEX = (function () {
+    const map = {};
+    LANGS.forEach(l => {
+      map[l.label.toLowerCase()] = l.code;
+      map[l.native.toLowerCase()] = l.code;
+    });
+    // Common transliterations + nicknames
+    Object.assign(map, {
+      bangla: "bn", bengali: "bn", hindi: "hi", tamil: "ta", telugu: "te",
+      marathi: "mr", gujarati: "gu", kannada: "kn", malayalam: "ml",
+      punjabi: "pa", odia: "or", oriya: "or", assamese: "as", urdu: "ur",
+      sanskrit: "sa", maithili: "mai", konkani: "kok", dogri: "doi",
+      kashmiri: "ks", nepali: "ne", sindhi: "sd", manipuri: "mni",
+      meitei: "mni", santali: "sat", bhojpuri: "bho", rajasthani: "raj",
+      kurukh: "kru", ho: "hoc", english: "en",
+    });
+    return map;
+  })();
+  const LANG_COMMAND_RX = /\b([a-zA-Z-￿]+)\s+(?:mein|me|may|m[eè])?\s*(?:baat\s+karo|bol[oa]|speak|talk|switch)\b/i;
+  const SWITCH_TO_RX = /\bswitch\s+to\s+([a-zA-Z-￿]+)\b/i;
+  function processVoiceTranscript(transcript) {
+    if (!transcript) return false;
+    const text = transcript.toLowerCase();
+    let m = text.match(LANG_COMMAND_RX) || text.match(SWITCH_TO_RX);
+    if (!m) return false;
+    const code = LANG_NAME_INDEX[m[1]];
+    if (!code) return false;
+    if (code !== currentLang) translatePage(code);
+    return true;
+  }
+  let _recog = null;
+  function listenForLangCommand() {
+    const Recog = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recog) { return { ok: false, reason: "no-speech-api" }; }
+    if (_recog) { try { _recog.stop(); } catch (e) {} }
+    _recog = new Recog();
+    _recog.continuous = false;
+    _recog.interimResults = false;
+    _recog.lang = currentLang === "en" ? "en-IN" : "hi-IN";
+    _recog.onresult = e => {
+      const txt = Array.from(e.results).map(r => r[0].transcript).join(" ");
+      processVoiceTranscript(txt);
+    };
+    _recog.onerror = () => {};
+    try { _recog.start(); return { ok: true }; }
+    catch (e) { return { ok: false, reason: String(e) }; }
+  }
+  window.Chitti = window.Chitti || {};
+  window.Chitti.listenForLangCommand = listenForLangCommand;
+  window.Chitti.processVoiceTranscript = processVoiceTranscript;
 
   // ── READ PAGE ALOUD ───────────────────────────────────────────────────────
   function readPageAloud() {
@@ -1345,17 +1437,23 @@
 
   // ── INIT ──────────────────────────────────────────────────────────────────
   function init() {
-    injectLangBar();
+    wireLanguageSelectors();
     scanForBoxes();
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Add CSS for active lang button
+    // Defensively remove any stray langbar from a cached older substrate
+    const stale = document.getElementById("chitti-langbar");
+    if (stale) stale.remove();
+
+    // Style hooks for compact dropdown + retain focus ring for any page-
+    // authored .chitti-lang-btn (kept for backwards-compat with pages that
+    // still render the old class).
     const style = document.createElement("style");
-    style.textContent = `
-      .chitti-lang-btn.active { background: #FF6B00 !important; border-color: #FF6B00 !important; font-weight: bold; }
-      .chitti-lang-btn:focus { outline: 2px solid #FF6B00; }
-      @media (max-width: 600px) { #chitti-langbar { font-size: 10px; } .chitti-lang-btn { padding: 2px 5px; font-size: 10px; } }
-    `;
+    style.textContent =
+      "select[data-chitti-lang-wired='1']{cursor:pointer}" +
+      "#chitti-lang-dd:focus{outline:2px solid #D4AF37;outline-offset:1px}" +
+      ".chitti-lang-btn.active{background:#FF6B00 !important;border-color:#FF6B00 !important;font-weight:bold}" +
+      ".chitti-lang-btn:focus{outline:2px solid #FF6B00}";
     document.head.appendChild(style);
   }
 
