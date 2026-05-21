@@ -71,32 +71,130 @@
   // ── STATE ─────────────────────────────────────────────────────────────────
   let currentLang = localStorage.getItem("chitti_lang") || "en";
 
+  // ── KEY-VARIANT LOOKUP ───────────────────────────────────────────────────
+  // Many pages carry data-i18n slugs that don't directly match T (e.g.
+  // `a11y.howto`, `med.read_aloud`, `re-read-t-c`). Try a small set of
+  // canonical-form transforms before giving up so existing tags translate
+  // without a per-page edit.
+  function lookupT(t, key) {
+    if (!key) return null;
+    if (t[key]) return t[key];
+    const snake = key.replace(/[-.]/g, "_");
+    if (snake !== key && t[snake]) return t[snake];
+    if (key.indexOf(".") >= 0) {
+      const tail = key.split(".").pop();
+      if (tail && t[tail]) return t[tail];
+      const tailSnake = tail && tail.replace(/[-]/g, "_");
+      if (tailSnake && tailSnake !== tail && t[tailSnake]) return t[tailSnake];
+    }
+    const noSep = key.replace(/[-_.]/g, "");
+    if (noSep && noSep !== key && t[noSep]) return t[noSep];
+    return null;
+  }
+
+  // ── MyMemory MT FALLBACK ─────────────────────────────────────────────────
+  // For elements whose key resolves to nothing in T (the ~570 bulk-tagged
+  // page-specific labels), translate the element's original English text
+  // via MyMemory's free tier. Results cached in localStorage so the second
+  // visit is instant. Quota guard so a 429 doesn't poison the cache.
+  const MT_CACHE_KEY = "chitti_mt_cache_v1";
+  let mtCache = {};
+  try { mtCache = JSON.parse(localStorage.getItem(MT_CACHE_KEY) || "{}"); } catch (e) { mtCache = {}; }
+  let mtCacheDirty = false;
+  let mtCacheFlushScheduled = false;
+  function flushMtCacheSoon() {
+    if (mtCacheFlushScheduled) return;
+    mtCacheFlushScheduled = true;
+    setTimeout(() => {
+      mtCacheFlushScheduled = false;
+      if (!mtCacheDirty) return;
+      try { localStorage.setItem(MT_CACHE_KEY, JSON.stringify(mtCache)); mtCacheDirty = false; } catch (e) {}
+    }, 800);
+  }
+  let mtQuotaExhausted = false;
+  const mtInFlight = {};      // url → Promise (dedupe identical lookups)
+  const mtQueue = [];
+  let mtActive = 0;
+  const MT_MAX_CONCURRENT = 4;
+  function mtPump() {
+    while (mtActive < MT_MAX_CONCURRENT && mtQueue.length) {
+      const job = mtQueue.shift();
+      mtActive++;
+      fetch(job.url).then(r => r.json()).then(j => {
+        const raw = j && j.responseData && j.responseData.translatedText;
+        if (!raw) return;
+        if (/MYMEMORY WARNING|YOU USED|QUERY LENGTH LIMIT/i.test(raw)) { mtQuotaExhausted = true; return; }
+        mtCache[job.ck] = raw;
+        mtCacheDirty = true;
+        flushMtCacheSoon();
+        job.cb(raw);
+      }).catch(() => {}).finally(() => {
+        mtActive--;
+        delete mtInFlight[job.ck];
+        if (mtQueue.length) mtPump();
+      });
+    }
+  }
+  function mtTranslate(text, lang, cb) {
+    if (!text || lang === "en" || mtQuotaExhausted) return;
+    const trimmed = text.trim();
+    if (!trimmed || trimmed.length > 500) return;
+    const ck = lang + "|" + trimmed;
+    if (mtCache[ck]) { cb(mtCache[ck]); return; }
+    if (mtInFlight[ck]) return;
+    mtInFlight[ck] = true;
+    const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(trimmed) + "&langpair=en%7C" + encodeURIComponent(lang);
+    mtQueue.push({ url, ck, cb });
+    mtPump();
+  }
+
   // ── TRANSLATE ENTIRE PAGE ─────────────────────────────────────────────────
   function translatePage(lang) {
     const t = T[lang] || T["en"];
     currentLang = lang;
     localStorage.setItem("chitti_lang", lang);
 
-    // Set HTML lang attribute for screen readers
+    // Set HTML lang attribute for screen readers + RTL flow for Urdu/Kashmiri/Sindhi
     document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === "ur" || lang === "ks" || lang === "sd") ? "rtl" : "ltr";
 
-    // Translate every element with data-i18n attribute
-    document.querySelectorAll("[data-i18n]").forEach(el => {
+    // Snapshot original English on first touch so switching back to en restores cleanly.
+    function rememberOrig(el, attr, origAttr) {
+      if (!el.hasAttribute(origAttr)) {
+        const cur = (attr === "__text") ? (el.textContent || "") : (el.getAttribute(attr) || "");
+        el.setAttribute(origAttr, cur);
+      }
+      return el.getAttribute(origAttr);
+    }
+
+    function applyText(el) {
+      // Only translate single-text-run elements — never wipe HTML children.
+      if (el.children && el.children.length > 0) return;
       const key = el.getAttribute("data-i18n");
-      if (t[key]) el.textContent = t[key];
-    });
+      const original = rememberOrig(el, "__text", "data-i18n-orig");
+      if (lang === "en") { el.textContent = original; return; }
+      const v = lookupT(t, key);
+      if (v) { el.textContent = v; return; }
+      mtTranslate(original, lang, tr => {
+        if (currentLang === lang && el.getAttribute("data-i18n") === key) el.textContent = tr;
+      });
+    }
 
-    // Translate placeholders
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-      const key = el.getAttribute("data-i18n-placeholder");
-      if (t[key]) el.placeholder = t[key];
-    });
+    function applyAttr(el, attrName, dataAttr, origAttr) {
+      const key = el.getAttribute(dataAttr);
+      const original = rememberOrig(el, attrName, origAttr);
+      if (lang === "en") { el.setAttribute(attrName, original); return; }
+      const v = lookupT(t, key);
+      if (v) { el.setAttribute(attrName, v); return; }
+      mtTranslate(original, lang, tr => {
+        if (currentLang === lang) el.setAttribute(attrName, tr);
+      });
+    }
 
-    // Translate aria-labels
-    document.querySelectorAll("[data-i18n-aria]").forEach(el => {
-      const key = el.getAttribute("data-i18n-aria");
-      if (t[key]) el.setAttribute("aria-label", t[key]);
-    });
+    document.querySelectorAll("[data-i18n]").forEach(applyText);
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => applyAttr(el, "placeholder", "data-i18n-placeholder", "data-i18n-placeholder-orig"));
+    document.querySelectorAll("[data-i18n-aria]").forEach(el => applyAttr(el, "aria-label", "data-i18n-aria", "data-i18n-aria-orig"));
+    document.querySelectorAll("[data-i18n-title]").forEach(el => applyAttr(el, "title", "data-i18n-title", "data-i18n-title-orig"));
 
     // Update language bar active state
     document.querySelectorAll(".chitti-lang-btn").forEach(btn => {
