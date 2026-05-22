@@ -177,6 +177,65 @@
 </div>
 
 <div class="sds-tab-panel" id="mc-tab-ask">
+  <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
+  <div class="mc-soon-card" role="region" aria-label="Launching Soon">
+    <div class="mc-soon-head"><span class="mc-soon-flag">🔜 Launching Soon</span> <span class="mc-soon-tag">Chitti Special</span></div>
+    <div class="mc-soon-grid">
+      <div class="mc-soon-item">
+        <div class="mc-soon-title">🔌 OBD2 Live Diagnosis <span class="mc-soon-phase">Phase 2</span></div>
+        <div class="mc-soon-sub">Bluetooth device se seedha engine error code padhega Chitti. Plain Hindi mein samjhayegi — kahaan kya gadbad hai, kitna kharcha hoga.</div>
+        <div class="mc-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('obd2_live', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mc-soon-nope" onclick="mcSoonVote('obd2_live', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mc-soon-item">
+        <div class="mc-soon-title">💰 Fair Price Guarantee</div>
+        <div class="mc-soon-sub">Aapke shehar mein sahi daam — Chitti aapke pin code ke 100+ workshops ke real prices se compare karegi. Mechanic dhoka nahi de sakta.</div>
+        <div class="mc-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('fair_price', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mc-soon-nope" onclick="mcSoonVote('fair_price', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mc-soon-item">
+        <div class="mc-soon-title">✅ Confirmed Fix Reports</div>
+        <div class="mc-soon-sub">1000+ mechanics ne yeh fix confirm kiya hai. BlueDriver-style social proof — aapko pata rahega kya kaam real mein chala.</div>
+        <div class="mc-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('confirmed_fix', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mc-soon-nope" onclick="mcSoonVote('confirmed_fix', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mc-soon-item">
+        <div class="mc-soon-title">📊 Drive Score</div>
+        <div class="mc-soon-sub">Aapki driving se fuel kitna waste ho raha hai — daily, weekly, monthly. CARFAX Car Care jaisa logbook + India ke road conditions par tuned.</div>
+        <div class="mc-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('drive_score', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mc-soon-nope" onclick="mcSoonVote('drive_score', -1, this)">👎</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .mc-soon-card{margin-bottom:14px;background:linear-gradient(180deg,#fff7ec,#fff);border:1.5px dashed var(--sds-saffron);border-radius:16px;padding:14px}
+    .mc-soon-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+    .mc-soon-flag{background:var(--sds-saffron);color:#fff;font-weight:900;padding:4px 10px;border-radius:999px;letter-spacing:.04em;font-size:12px}
+    .mc-soon-tag{color:var(--sds-saffron);font-weight:800;font-size:13px}
+    .mc-soon-grid{display:flex;flex-direction:column;gap:10px}
+    .mc-soon-item{background:#fff;border:1.5px solid var(--sds-line);border-radius:12px;padding:12px}
+    .mc-soon-title{font-size:16px;font-weight:800;color:var(--sds-navy);margin-bottom:4px}
+    .mc-soon-phase{font-size:11px;background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:6px;font-weight:700;margin-left:6px;vertical-align:middle}
+    .mc-soon-sub{font-size:14px;color:#444;line-height:1.5;margin-bottom:10px}
+    .mc-soon-bar{display:flex;gap:8px;flex-wrap:wrap}
+    .mc-soon-bar button{background:#fff;border:1px solid var(--sds-line);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;gap:4px}
+    .mc-soon-bar .mc-soon-want.voted{background:#dcfce7;border-color:#86efac;color:#14532d}
+    .mc-soon-bar .mc-soon-nope.voted{background:#fee2e2;border-color:#fca5a5}
+  </style>
+
   <div class="sds-mic-hero">
     <button id="mc-mic" class="sds-mic-btn" onclick="mcToggleMic()" aria-label="बोलें — गाड़ी की समस्या">🎙️</button>
     <div class="sds-mic-hint" data-vai-i18n="mb.ask.hint">Chitti को बताइए क्या तकलीफ़ है — engine light, AC ठंडी नहीं, brake awaaz, mileage कम, कुछ भी</div>
@@ -586,6 +645,20 @@ async function sendFb(card, textareaId, panelId){
   speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
+
+// Sire 2026-05-23 — Launching Soon vote handler.
+async function mcSoonVote(featureId, v, btn){
+  const card = btn.parentNode;
+  card.querySelectorAll('.mc-soon-want, .mc-soon-nope').forEach(b => b.classList.remove('voted'));
+  btn.classList.add('voted');
+  try {
+    await fetch(API_BASE + '/api/feedback', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chitti:'chitti_mechanic_car', card:'soon_' + featureId, kind: v > 0 ? 'soon_want' : 'soon_nope', message: featureId, page:'chitti_4wheeler' }),
+    });
+  } catch(e){}
+  speakText(v > 0 ? 'Vote noted — Chitti is khabar pahuncha rahi hai.' : 'Theek hai — yeh nahi banayenge.', CURRENT_LANG);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;

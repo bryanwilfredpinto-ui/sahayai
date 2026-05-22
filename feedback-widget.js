@@ -581,7 +581,11 @@
       send({ page: page, type: 'box_listen', box_id: boxId, section: section }).catch(function () {});
     });
 
-    bar.querySelector('[data-act="ask"]').addEventListener('click', function () {
+    // Sire 2026-05-23: the "ask" (🤖) button was removed when the toolbar
+    // went icon-only ([🔊 Suno][▶ Demo][👍][👎]). Guard the lookup so the
+    // page never throws on a missing selector.
+    var askBtn = bar.querySelector('[data-act="ask"]');
+    if (askBtn) askBtn.addEventListener('click', function () {
       var btn = this; btn.classList.add('live');
       setTimeout(function () { btn.classList.remove('live'); }, 1500);
       var lang = getLang();

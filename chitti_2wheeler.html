@@ -177,6 +177,65 @@
 </div>
 
 <div class="sds-tab-panel" id="mb-tab-ask">
+  <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
+  <div class="mb-soon-card" role="region" aria-label="Launching Soon">
+    <div class="mb-soon-head"><span class="mb-soon-flag">🔜 Launching Soon</span> <span class="mb-soon-tag">Chitti Special</span></div>
+    <div class="mb-soon-grid">
+      <div class="mb-soon-item">
+        <div class="mb-soon-title">🔧 OBD2 for Bikes <span class="mb-soon-phase">Phase 2</span></div>
+        <div class="mb-soon-sub">Bluetooth device se seedha engine error code padhega Chitti. Aap se sirf "haan" kaha to mechanic ke paas le jaane se pehle hi diagnosis ho jayega.</div>
+        <div class="mb-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mb-soon-want" onclick="mbSoonVote('obd2_bike', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mb-soon-nope" onclick="mbSoonVote('obd2_bike', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mb-soon-item">
+        <div class="mb-soon-title">📐 Chain Tension Meter</div>
+        <div class="mb-soon-sub">Camera se chain ka tension check — koi guess work nahi. Slack zyada ya kam — Chitti exact bata degi.</div>
+        <div class="mb-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mb-soon-want" onclick="mbSoonVote('chain_meter', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mb-soon-nope" onclick="mbSoonVote('chain_meter', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mb-soon-item">
+        <div class="mb-soon-title">🛞 Tyre Pressure AI</div>
+        <div class="mb-soon-sub">Tyre ki photo se wear pattern detect karega Chitti. Front-back balance, alignment, pressure — sab ek photo se.</div>
+        <div class="mb-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mb-soon-want" onclick="mbSoonVote('tyre_ai', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mb-soon-nope" onclick="mbSoonVote('tyre_ai', -1, this)">👎</button>
+        </div>
+      </div>
+      <div class="mb-soon-item">
+        <div class="mb-soon-title">🤝 Community Mechanic Reviews</div>
+        <div class="mb-soon-sub">Aapke area ke trusted mechanics — 100+ riders ne unka kaam confirm kiya hai. Dhokha mat khao.</div>
+        <div class="mb-soon-bar">
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
+          <button class="mb-soon-want" onclick="mbSoonVote('mech_reviews', 1, this)">👍 <span>Chahiye</span></button>
+          <button class="mb-soon-nope" onclick="mbSoonVote('mech_reviews', -1, this)">👎</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .mb-soon-card{margin-bottom:14px;background:linear-gradient(180deg,#fff7ec,#fff);border:1.5px dashed var(--sds-saffron);border-radius:16px;padding:14px}
+    .mb-soon-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+    .mb-soon-flag{background:var(--sds-saffron);color:#fff;font-weight:900;padding:4px 10px;border-radius:999px;letter-spacing:.04em;font-size:12px}
+    .mb-soon-tag{color:var(--sds-saffron);font-weight:800;font-size:13px}
+    .mb-soon-grid{display:flex;flex-direction:column;gap:10px}
+    .mb-soon-item{background:#fff;border:1.5px solid var(--sds-line);border-radius:12px;padding:12px}
+    .mb-soon-title{font-size:16px;font-weight:800;color:var(--sds-navy);margin-bottom:4px}
+    .mb-soon-phase{font-size:11px;background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:6px;font-weight:700;margin-left:6px;vertical-align:middle}
+    .mb-soon-sub{font-size:14px;color:#444;line-height:1.5;margin-bottom:10px}
+    .mb-soon-bar{display:flex;gap:8px;flex-wrap:wrap}
+    .mb-soon-bar button{background:#fff;border:1px solid var(--sds-line);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;gap:4px}
+    .mb-soon-bar .mb-soon-want.voted{background:#dcfce7;border-color:#86efac;color:#14532d}
+    .mb-soon-bar .mb-soon-nope.voted{background:#fee2e2;border-color:#fca5a5}
+  </style>
+
   <div class="sds-mic-hero">
     <button id="mb-mic" class="sds-mic-btn" onclick="mbToggleMic()" aria-label="बोलें — बाइक की समस्या">🎙️</button>
     <div class="sds-mic-hint" data-vai-i18n="mb.ask.hint">Chitti को बताइए क्या तकलीफ़ है — चेन की आवाज़, माइलेज कम, स्टार्ट नहीं ले रही — कुछ भी</div>
@@ -622,6 +681,22 @@ async function sendFb(card, textareaId, panelId){
   speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
+
+// Sire 2026-05-23 — Launching Soon vote handler.
+// Sends the vote to /api/feedback so the founder dashboard can rank
+// which Phase-2 feature has the strongest pull.
+async function mbSoonVote(featureId, v, btn){
+  const card = btn.parentNode;
+  card.querySelectorAll('.mb-soon-want, .mb-soon-nope').forEach(b => b.classList.remove('voted'));
+  btn.classList.add('voted');
+  try {
+    await fetch(API_BASE + '/api/feedback', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chitti:'chitti_mechanic_bike', card:'soon_' + featureId, kind: v > 0 ? 'soon_want' : 'soon_nope', message: featureId, page:'chitti_2wheeler' }),
+    });
+  } catch(e){}
+  speakText(v > 0 ? 'Vote noted — Chitti is khabar pahuncha rahi hai.' : 'Theek hai — yeh nahi banayenge.', CURRENT_LANG);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
