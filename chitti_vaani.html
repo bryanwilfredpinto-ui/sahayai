@@ -541,9 +541,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 id="call-title">📞 Make a call</h2>
     <div class="desc">Pick a person from your trusted circle, or speak the name. Chitti reads it back, you say <b>"haan"</b>, the phone dials. Inside the Android app, Chitti can dial directly without a tap.</div>
     <div class="field">
-      <label>Who to call?</label>
+      <label>Who to call? — pick from your trusted circle, or type a number</label>
       <select id="call-to"></select>
       <input type="tel" id="call-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+      <div id="call-empty-hint" class="empty-hint" style="display:none;margin-top:6px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:12.5px;color:#78350f;line-height:1.45">📭 Your trusted circle is empty. Type a number above, <b>or</b> <a href="#" onclick="event.preventDefault(); closeModal('call-modal'); openAddContactModal();" style="color:#0E2344;font-weight:600;text-decoration:underline">👨‍👩‍👧 add a trusted person</a> first.</div>
     </div>
     <div class="row-mic">
       <button id="call-mic" onclick="proMicCall(this)">🎙️ "Mom ko call karo"</button>
@@ -565,8 +566,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 id="wa-title">📲 Send WhatsApp</h2>
     <div class="desc">Speak the recipient and the message. Chitti will read back, you say <b>"haan"</b>, WhatsApp opens with everything filled in.</div>
     <div class="field">
-      <label>To (pick from your trusted circle)</label>
+      <label>To — pick from your trusted circle, or type a number</label>
       <select id="wa-to"></select>
+      <input type="tel" id="wa-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+      <div id="wa-empty-hint" class="empty-hint" style="display:none;margin-top:6px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:12.5px;color:#78350f;line-height:1.45">📭 Your trusted circle is empty. Type a number above, <b>or</b> <a href="#" onclick="event.preventDefault(); closeModal('wa-modal'); openAddContactModal();" style="color:#0E2344;font-weight:600;text-decoration:underline">👨‍👩‍👧 add a trusted person</a> first.</div>
     </div>
     <div class="field">
       <label>Message — speak or type</label>
@@ -592,8 +595,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 id="upi-title">💸 Send UPI payment</h2>
     <div class="desc">Speak the recipient and the amount. Chitti opens your UPI app (PhonePe / GPay / Paytm) with everything pre-filled. You enter PIN inside the UPI app — <b>NPCI rule, no shortcut</b>.</div>
     <div class="field">
-      <label>To (pick from your trusted circle)</label>
+      <label>To — pick from your trusted circle, or type a UPI ID</label>
       <select id="upi-to"></select>
+      <input type="text" id="upi-to-free" placeholder="or type a UPI ID, like ramesh@oksbi" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+      <div id="upi-empty-hint" class="empty-hint" style="display:none;margin-top:6px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:12.5px;color:#78350f;line-height:1.45">📭 Your trusted circle is empty. Type a UPI ID above, <b>or</b> <a href="#" onclick="event.preventDefault(); closeModal('upi-modal'); openAddContactModal();" style="color:#0E2344;font-weight:600;text-decoration:underline">👨‍👩‍👧 add a trusted person</a> first.</div>
     </div>
     <div class="field-row">
       <div class="field">
@@ -1157,8 +1162,18 @@ function renderTC(){
 function refreshTCDropdown(id){
   const sel = document.getElementById(id); if (!sel) return;
   const arr = loadTC();
-  sel.innerHTML = '<option value="">— pick a person —</option>' +
+  const empty = arr.length === 0;
+  sel.innerHTML =
+    (empty
+      ? '<option value="">— trusted circle is empty — type below —</option>'
+      : '<option value="">— pick a person —</option>') +
     arr.map((c,i) => `<option value="${i}">${escapeHtml(c.name||'?')} (${escapeHtml(c.realname||c.phone||c.upi||'')})</option>`).join('');
+  // Show / hide the "Trusted circle is empty — type a number, or add a
+  // trusted person" hint right under the dropdown. Mapped by select id —
+  // wa-to → wa-empty-hint, upi-to → upi-empty-hint, call-to → call-empty-hint.
+  const hintId = id.replace(/-to$/, '-empty-hint');
+  const hint = document.getElementById(hintId);
+  if (hint) hint.style.display = empty ? 'block' : 'none';
 }
 function speakContact(i){
   const c = loadTC()[i]; if (!c) return;
@@ -1335,6 +1350,15 @@ function proMicCall(btn){
     if (idx >= 0) {
       document.getElementById('call-to').value = String(idx);
       document.getElementById('call-to-free').value = '';
+    } else {
+      // No trusted-circle match — try to extract a spoken phone number.
+      // Speech recognition gives us digits as space-separated words; collapse
+      // them into a contiguous string.
+      const numHit = text.replace(/[^\d+]/g, '');
+      if (numHit && numHit.length >= 6) {
+        document.getElementById('call-to').value = '';
+        document.getElementById('call-to-free').value = numHit;
+      }
     }
     speakCallPreview();
   }, btn);
@@ -1344,6 +1368,7 @@ function proMicCall(btn){
 function openWAModal(){
   if (!consentGiven()) { reopenConsent(); return; }
   refreshTCDropdown('wa-to');
+  document.getElementById('wa-to-free').value = '';
   document.getElementById('wa-msg').value = '';
   document.getElementById('wa-preview').style.display = 'none';
   openModal('wa-modal');
@@ -1354,11 +1379,28 @@ function prefillWA(i){
 }
 function buildWAPreview(){
   const i = document.getElementById('wa-to').value;
-  const c = i !== '' ? loadTC()[Number(i)] : null;
+  let target = null;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.phone) target = { name: c.name || c.realname || '', phone: c.phone };
+  }
+  // Fall back to free-text number if no trusted-circle pick.
+  if (!target) {
+    const free = (document.getElementById('wa-to-free').value || '').trim();
+    if (free) {
+      let p = free.replace(/[^\d+]/g, '');
+      if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+      target = { name: '', phone: p };
+    }
+  }
   const msg = document.getElementById('wa-msg').value.trim();
-  if (!c || !c.phone) return null;
+  if (!target || !target.phone) return null;
   if (!msg) return null;
-  return { contact: c, msg, preview: 'WhatsApp to <b>' + escapeHtml(c.name||'?') + '</b> (' + escapeHtml(c.phone) + '): ' + escapeHtml(msg) };
+  return {
+    contact: target,
+    msg,
+    preview: 'WhatsApp to <b>' + escapeHtml(target.name || target.phone) + '</b> (' + escapeHtml(target.phone) + '): ' + escapeHtml(msg),
+  };
 }
 function speakField(id){ const t = (document.getElementById(id).value||'').trim(); if (t) speakText(t, CURRENT_LANG); }
 function showWAPreview(){
@@ -1374,7 +1416,7 @@ function confirmWAByVoice(){
 }
 function confirmWASend(){
   const p = buildWAPreview();
-  if (!p) { alert('Pick a contact and write a message first.'); return; }
+  if (!p) { alert('Pick a contact OR type a number, and write a message first.'); return; }
   const url = 'https://wa.me/' + p.contact.phone.replace(/^\+/, '') + '?text=' + encodeURIComponent(p.msg);
   window.open(url, '_blank', 'noopener');
   closeModal('wa-modal');
@@ -1388,6 +1430,7 @@ function confirmWASend(){
 function openUPIModal(){
   if (!consentGiven()) { reopenConsent(); return; }
   refreshTCDropdown('upi-to');
+  document.getElementById('upi-to-free').value = '';
   document.getElementById('upi-amt').value = '';
   document.getElementById('upi-note').value = '';
   document.getElementById('upi-preview').style.display = 'none';
@@ -1404,25 +1447,49 @@ function proMicUPI(btn){
               || text.match(/\b(\d{2,6})\b/);
     const amount = amt ? (amt[1] || amt[2]) : null;
     if (amount) document.getElementById('upi-amt').value = amount;
-    // Find a name from the text — match against trusted circle
+    // Find a name from the text — match against trusted circle.
     const arr = loadTC();
     const idx = arr.findIndex(c => {
       const n = (c.name||'').toLowerCase();
       return n && new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b','i').test(text);
     });
-    if (idx >= 0) document.getElementById('upi-to').value = String(idx);
+    if (idx >= 0) {
+      document.getElementById('upi-to').value = String(idx);
+      document.getElementById('upi-to-free').value = '';
+    } else {
+      // No trusted-circle match — try to extract a spoken UPI ID
+      // (speech recognition sometimes turns "@" into " at ", so we
+      // accept both forms before normalising).
+      const upiHit = text.match(/\b([a-zA-Z0-9._-]+)\s*(?:@|\bat\b)\s*([a-zA-Z]+)\b/i);
+      if (upiHit) {
+        document.getElementById('upi-to').value = '';
+        document.getElementById('upi-to-free').value = upiHit[1] + '@' + upiHit[2];
+      }
+    }
   }, btn);
 }
 function buildUPIPreview(){
   const i = document.getElementById('upi-to').value;
-  const c = i !== '' ? loadTC()[Number(i)] : null;
+  let target = null;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.upi) target = { name: c.name || c.realname || '', upi: c.upi, realname: c.realname || c.name || '' };
+  }
+  // Fall back to free-text UPI ID if no trusted-circle pick.
+  if (!target) {
+    const free = (document.getElementById('upi-to-free').value || '').trim();
+    // Cheap UPI handle sanity check — must be of the form `<id>@<bank>`.
+    if (free && /^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+$/.test(free)) {
+      target = { name: free, upi: free, realname: '' };
+    }
+  }
   const amt = document.getElementById('upi-amt').value;
   const note = document.getElementById('upi-note').value.trim();
-  if (!c || !c.upi) return null;
+  if (!target || !target.upi) return null;
   if (!amt || Number(amt) <= 0) return null;
   return {
-    contact: c, amt: Number(amt), note,
-    preview: '₹' + amt + ' to <b>' + escapeHtml(c.name||'?') + '</b> at <code>' + escapeHtml(c.upi) + '</code>' + (note? ' — note: ' + escapeHtml(note) : ''),
+    contact: target, amt: Number(amt), note,
+    preview: '₹' + amt + ' to <b>' + escapeHtml(target.name || '?') + '</b> at <code>' + escapeHtml(target.upi) + '</code>' + (note? ' — note: ' + escapeHtml(note) : ''),
   };
 }
 function speakUPIPreview(){
@@ -1438,7 +1505,7 @@ function confirmUPIByVoice(){
 }
 function confirmUPISend(){
   const p = buildUPIPreview();
-  if (!p) { alert('Pick a contact with a UPI ID and enter an amount.'); return; }
+  if (!p) { alert('Pick a contact OR type a UPI ID (like ramesh@oksbi), and enter an amount.'); return; }
   const userToken = encodeURIComponent('Chitti'); // payer name shown to UPI app
   const url = 'upi://pay?pa=' + encodeURIComponent(p.contact.upi)
             + '&pn=' + encodeURIComponent(p.contact.realname || p.contact.name || '')
