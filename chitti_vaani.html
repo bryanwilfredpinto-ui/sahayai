@@ -228,6 +228,147 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 .em-toggle{position:fixed;left:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border:none;border-radius:999px;padding:12px 18px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(14,35,68,.45);display:flex;align-items:center;gap:8px;min-height:46px}
 .em-toggle.on{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .em-toggle.on::before{content:'';width:8px;height:8px;border-radius:50%;background:#fff;animation:micPulse 1.2s ease-in-out infinite}
+
+/* ════════════════════════════════════════════════════════════
+   5-TAB MOBILE-FIRST REDESIGN — Bryan 2026-05-22
+   Palette: Green #1B5E20 · Gold #F57F17 · White · Dark #212121
+   Rules: 18px min font · 60px min button · rounded corners · Google Pay aesthetic
+   ════════════════════════════════════════════════════════════ */
+:root{
+  --vai-green:#1B5E20; --vai-green-d:#0a3c0e; --vai-gold:#F57F17;
+  --vai-white:#ffffff; --vai-dark:#212121;
+  --vai-grey:#f5f5f5; --vai-line:#e0e0e0; --vai-line2:#bdbdbd;
+  --vai-red:#c62828;
+}
+body{font-size:16px;background:var(--vai-white);color:var(--vai-dark)}
+body:before{display:none}
+
+/* Existing header stays slim on top */
+header[role="banner"]{padding:10px 14px;border-radius:0 0 18px 18px}
+header .brand{font-size:18px} .tagline{display:none}
+.switch-row{gap:6px} .switch-btn-bharat{font-size:11px;padding:5px 10px;min-height:30px}
+.header-controls{margin-top:6px} .header-controls button{font-size:11px;padding:5px 10px;min-height:30px}
+
+/* Hide old footer + sub-headlines inside the tab layout */
+main > footer{display:none}
+
+/* Main becomes a one-screen-at-a-time container */
+main{padding:10px 14px 110px;max-width:560px;margin:0 auto}
+
+/* Tab panels — only the active one renders */
+.vai-tab-panel{display:none}
+.vai-tab-panel.active{display:block;animation:vaiFade .2s ease-out}
+@keyframes vaiFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Override section card style inside the new layout */
+main .section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid var(--vai-line);border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+main .section-title{font-size:20px;color:var(--vai-dark);font-weight:800;margin:0 0 6px}
+main .section-title .ico{font-size:24px}
+main .section-sub{font-size:15px;color:#555;line-height:1.55;margin-bottom:12px}
+
+/* TALK tab — hero mic */
+main .mic-stage{background:linear-gradient(180deg,#fff,#f0f8f0);border:none;border-radius:22px;padding:24px 14px;gap:14px}
+main .mic-big{width:160px;height:160px;font-size:72px;background:var(--vai-green);box-shadow:0 14px 40px rgba(27,94,32,.40)}
+main .mic-big:focus-visible{outline:3px solid var(--vai-gold);outline-offset:4px}
+main .mic-big.listening{background:var(--vai-red);box-shadow:0 14px 40px rgba(198,40,40,.45)}
+main .mic-hint{font-size:16px;color:var(--vai-dark);line-height:1.5;max-width:420px}
+main .mic-hint strong{color:var(--vai-green);font-weight:800}
+main .mode-row button{font-size:14px;min-height:44px;padding:8px 14px;border:1px solid var(--vai-line)}
+main .mode-row button.active{background:var(--vai-green);color:#fff;border-color:var(--vai-green)}
+
+/* TALK input row */
+main .input-row textarea{font-size:16px;padding:14px;border:1px solid var(--vai-line);border-radius:14px;min-height:90px}
+main .input-row textarea:focus{outline:none;border-color:var(--vai-green)}
+main .btn-saffron,main .btn-navy,main .btn-ghost{font-size:16px;min-height:54px;border-radius:14px}
+main .btn-saffron{background:var(--vai-green)}
+main .btn-saffron:hover{filter:brightness(1.08)}
+main .btn-navy{background:var(--vai-dark)}
+main .btn-ghost{border:1px solid var(--vai-line)}
+
+/* TALK answer */
+main .answer-box{background:linear-gradient(180deg,#f0f8f0,#fff);border:2px solid var(--vai-green);border-radius:16px;padding:16px;margin-top:14px}
+main .answer-head .who{color:var(--vai-green);font-size:16px}
+main .answer-text{font-size:20px;line-height:1.6;color:var(--vai-dark)}
+main .answer-head .ctrls button{min-height:42px;font-size:14px}
+
+/* Recent / history rows */
+main .history-row{font-size:15px;padding:12px}
+main .history-row .q strong,main .history-row .a strong{color:var(--vai-green)}
+main .history-row button{min-height:42px;font-size:14px}
+
+/* ACT tab — 2-col tile grid */
+main .pro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+main .pro-card{background:#fff;border:1.5px solid var(--vai-line);border-radius:18px;padding:16px 12px;min-height:140px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;gap:6px}
+main .pro-card:active,main .pro-card:hover{background:#f0f8f0;border-color:var(--vai-green);transform:translateY(-2px)}
+main .pro-card .ico{font-size:40px;line-height:1;color:var(--vai-green)}
+main .pro-card .lbl{font-size:16px;font-weight:800;color:var(--vai-dark);margin-top:4px}
+main .pro-card .sub{font-size:12px;color:#666;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+main .pro-card .pill,main .pro-card .pill.android{display:none}
+
+/* QUICK ACTIONS inside Talk tab — single column scrolling chip list */
+main .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+main .quick-card{background:#fff;border:1.5px solid var(--vai-line);border-radius:14px;padding:12px;min-height:90px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+main .quick-card .ico{font-size:28px;color:var(--vai-gold)}
+main .quick-card .lbl{font-size:14px;font-weight:700;color:var(--vai-dark)}
+main .quick-card .sub{display:none}
+main .quick-card:active{background:#fffbe6;border-color:var(--vai-gold)}
+
+/* VAULT tab — clean list */
+main .tc-list .tc-row,main .tc-list > div{font-size:16px}
+
+/* CIRCLE tab */
+main .ch-row{padding:14px}
+main .ch-row > div > div:first-child{font-size:17px;font-weight:800;color:var(--vai-dark)}
+main .ch-row input{font-size:16px;min-height:50px;border-radius:12px}
+main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
+
+/* SOS tab — full red screen */
+.vai-sos-screen{background:linear-gradient(180deg,#c62828,#7a1010);border-radius:22px;color:#fff;padding:28px 18px;text-align:center;min-height:calc(100vh - 220px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.vai-sos-screen h2{color:#fff;font-size:32px;margin:0;font-weight:900}
+.vai-sos-screen .sos-tag{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.30);border-radius:12px;padding:10px 14px;font-size:16px;line-height:1.5}
+.vai-sos-screen .sos-big{width:220px;height:220px;border-radius:50%;background:#fff;color:var(--vai-red);border:none;font-size:64px;font-weight:900;cursor:pointer;box-shadow:0 16px 40px rgba(0,0,0,.30);display:flex;align-items:center;justify-content:center;line-height:1}
+.vai-sos-screen .sos-big:active{transform:scale(.95)}
+.vai-sos-screen .sos-lines{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px}
+.vai-sos-screen .sos-line-btn{background:#fff;color:var(--vai-red);border:none;border-radius:14px;font-weight:800;padding:14px;font-size:18px;min-height:60px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.vai-sos-screen .sos-line-btn .num{font-family:'JetBrains Mono',monospace;font-size:22px}
+
+/* Bottom tab nav — fixed, mobile-first */
+.vai-bnav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--vai-line);display:flex;height:78px;z-index:600;box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+.vai-bnav button{flex:1;background:transparent;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:#666;font-size:11px;font-weight:700;padding:6px 2px;min-height:78px;min-width:62px;-webkit-tap-highlight-color:transparent}
+.vai-bnav button .ico{font-size:24px;line-height:1;transition:transform .15s}
+.vai-bnav button.active{color:var(--vai-green)}
+.vai-bnav button.active .ico{transform:scale(1.18)}
+.vai-bnav button.sos{color:var(--vai-red)}
+.vai-bnav button.sos.active{color:var(--vai-red)}
+.vai-bnav .dot{position:absolute;top:8px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--vai-red);display:none}
+
+/* 3-step onboarding overlay */
+.vai-onb{position:fixed;inset:0;background:#fff;z-index:8800;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:18px;text-align:center}
+.vai-onb.hidden{display:none}
+.vai-onb .logo{width:96px;height:96px;border-radius:24px;background:linear-gradient(135deg,var(--vai-green),#2e7d32);color:#fff;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 16px 40px rgba(27,94,32,.30)}
+.vai-onb h1{font-size:26px;color:var(--vai-green);margin:0;font-weight:900}
+.vai-onb p{font-size:18px;color:var(--vai-dark);margin:0;line-height:1.55;max-width:360px}
+.vai-onb .opts{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;max-height:60vh;overflow-y:auto}
+.vai-onb .opts button{min-height:60px;border-radius:14px;background:var(--vai-green);color:#fff;border:none;font-size:18px;font-weight:700;cursor:pointer;padding:0 16px}
+.vai-onb .opts button.alt{background:#fff;color:var(--vai-green);border:2px solid var(--vai-green)}
+.vai-onb .opts input{min-height:60px;border-radius:14px;border:2px solid var(--vai-line);padding:0 18px;font-size:18px;text-align:center;font-family:inherit;color:var(--vai-dark)}
+.vai-onb .skip{background:transparent;color:#666;border:none;font-size:14px;cursor:pointer;text-decoration:underline;margin-top:8px}
+
+/* Friendly error banner */
+.vai-err{position:fixed;left:14px;right:14px;bottom:90px;max-width:540px;margin:0 auto;background:#fff8e1;border:2px solid var(--vai-gold);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;z-index:700;font-size:16px;color:var(--vai-dark);box-shadow:0 14px 36px rgba(0,0,0,.18);animation:vaiFade .2s ease-out}
+.vai-err.hidden{display:none}
+.vai-err .em{font-size:24px;line-height:1}
+.vai-err .msg{flex:1;line-height:1.4}
+.vai-err button{min-height:46px;border:none;background:var(--vai-green);color:#fff;border-radius:10px;padding:0 16px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+
+/* Very small phones */
+@media (max-width:380px){
+  main .pro-card,main .quick-card{padding:10px 8px}
+  main .pro-card .lbl{font-size:14px}
+  main .mic-big{width:140px;height:140px;font-size:60px}
+  .vai-bnav button{font-size:10px}
+  .vai-bnav button .ico{font-size:22px}
+}
 </style>
 </head>
 <body>
@@ -347,6 +488,9 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <main>
 
+  <!-- ══════════════ TAB 1 · TALK ══════════════ -->
+  <div class="vai-tab-panel active" data-tab="talk" id="vai-panel-talk">
+
   <!-- ════════ HERO MIC ════════ -->
   <section class="section-card chitti-response" aria-labelledby="mic-title" data-chitti-section="🎙️ Talk to Chitti">
     <h2 class="section-title" id="mic-title"><span class="ico">🎙️</span> Talk to Chitti</h2>
@@ -425,6 +569,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-sub">Stays only on this device. Not synced. Tap 🔊 to hear an old answer.</div>
     <div id="history" class="history"></div>
   </section>
+
+  </div><!-- /TAB 1 TALK -->
+
+  <!-- ══════════════ TAB 2 · ACT ══════════════ -->
+  <div class="vai-tab-panel" data-tab="act" id="vai-panel-act">
 
   <!-- ════════ PRO ACTIONS — Chitti acts on the user's behalf ════════ -->
   <section class="section-card chitti-response" aria-labelledby="pro-title" data-chitti-section="🛡️ Chitti can act for you 📱 some need Android Phase 2">
@@ -549,6 +698,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
+  </div><!-- /TAB 2 ACT -->
+
+  <!-- ══════════════ TAB 4 · CIRCLE ══════════════ -->
+  <div class="vai-tab-panel" data-tab="circle" id="vai-panel-circle">
+
   <!-- ════════ TRUSTED CIRCLE — voice-built contact list ════════ -->
   <section class="section-card chitti-response" aria-labelledby="tc-title" data-chitti-section="👨‍👩‍👧 Trusted Circle">
     <h2 class="section-title" id="tc-title"><span class="ico">👨‍👩‍👧</span> Trusted Circle</h2>
@@ -637,6 +791,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
+  </div><!-- /TAB 4 CIRCLE part 1 -->
+
+  <!-- ══════════════ TAB 3 · VAULT ══════════════ -->
+  <div class="vai-tab-panel" data-tab="vault" id="vai-panel-vault">
+
   <!-- ════════ CHITTI DOCUMENT VAULT — Phase 1 (encrypted-at-rest, per-use share confirmation) ════════ -->
   <section class="section-card chitti-response" aria-labelledby="vault-title" data-chitti-section="📁 Chitti Document Vault">
     <h2 class="section-title" id="vault-title"><span class="ico">📁</span> Chitti Document Vault</h2>
@@ -651,6 +810,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="vault-empty" style="text-align:center;padding:18px;color:var(--muted);font-size:13px;display:none">📭 No documents yet. Tap <b>📤 Upload document</b> to start. Speak the document's name and category — Chitti will tag and store it encrypted.</div>
   </section>
 
+  </div><!-- /TAB 3 VAULT -->
+
+  <!-- ══════════════ TAB 4 · CIRCLE (part 2) ══════════════ -->
+  <div class="vai-tab-panel" data-tab="circle-2" id="vai-panel-circle-2">
+
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
   <section class="section-card chitti-response" aria-labelledby="pair-title" data-chitti-section="🔗 Chitti-to-Chitti emergency pairs">
     <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
@@ -663,6 +827,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="partners-list" style="display:flex;flex-direction:column;gap:6px"></div>
   </section>
 
+  </div><!-- /TAB 4 CIRCLE part 2 -->
+
+  <!-- ══════════════ TAB 1 · TALK (continued — audit log lives with talk) ══════════════ -->
+  <div class="vai-tab-panel" data-tab="talk-2" id="vai-panel-talk-2">
+
   <!-- ════════ AUDIT LOG — Chitti, kal kya kya kiya? ════════ -->
   <section class="section-card chitti-response" aria-labelledby="audit-title" data-chitti-section="📜 What Chitti did for you">
     <h2 class="section-title" id="audit-title"><span class="ico">📜</span> What Chitti did for you</h2>
@@ -674,7 +843,26 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="audit-list" class="audit-list"></div>
   </section>
 
-  <footer>
+  </div><!-- /TAB 1 TALK part 2 (audit) -->
+
+  <!-- ══════════════ TAB 5 · SOS ══════════════ -->
+  <div class="vai-tab-panel" data-tab="sos" id="vai-panel-sos">
+    <div class="vai-sos-screen">
+      <div class="sos-tag" id="vai-sos-headline">🚨 Aapatkaal · Emergency</div>
+      <button class="sos-big" id="vai-sos-big" onclick="vaiSosTrigger()" aria-label="Tap to trigger emergency">SOS</button>
+      <div class="sos-tag" id="vai-sos-help">Tap karein — Chitti aapke parivaar ko ring karega. Phone silent par ho toh bhi.</div>
+      <div class="sos-lines">
+        <button class="sos-line-btn" onclick="vaiCallNumber('112')"><span>🚨</span><span class="num">112</span><span>Emergency</span></button>
+        <button class="sos-line-btn" onclick="vaiCallNumber('108')"><span>🚑</span><span class="num">108</span><span>Ambulance</span></button>
+        <button class="sos-line-btn" onclick="vaiCallNumber('1930')"><span>💳</span><span class="num">1930</span><span>Cyber Fraud</span></button>
+      </div>
+      <div class="sos-tag" style="font-size:13px;background:rgba(0,0,0,.2);color:#fff;border-color:rgba(255,255,255,.15)">
+        Chitti family-cascade pehle. Cops ka button hai — par Chitti khud kabhi cops ko nahi karegi.
+      </div>
+    </div>
+  </div><!-- /TAB 5 SOS -->
+
+  <footer style="display:none">
     <small>
       <strong>Chitti Vaani</strong> · ek AI ki madad — Doctor / lawyer / banker se confirm zaroor karein.<br>
       Emergency: 112 · Cyber fraud: 1930 · Consumer: 1800-11-4000 · Sahayai: sire@sahayai.in<br>
@@ -682,6 +870,41 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </small>
   </footer>
 </main>
+
+<!-- ══════════════ BOTTOM TAB NAV (mobile-first) ══════════════ -->
+<nav class="vai-bnav" role="tablist" aria-label="Chitti Vaani sections" id="vai-bnav">
+  <button type="button" data-tab-target="talk" class="active" onclick="vaiSwitchTab('talk')">
+    <span class="ico">🎙️</span><span data-vai-i18n="tab.talk">Talk</span>
+  </button>
+  <button type="button" data-tab-target="act" onclick="vaiSwitchTab('act')">
+    <span class="ico">⚡</span><span data-vai-i18n="tab.act">Act</span>
+  </button>
+  <button type="button" data-tab-target="vault" onclick="vaiSwitchTab('vault')">
+    <span class="ico">📁</span><span data-vai-i18n="tab.vault">Vault</span>
+  </button>
+  <button type="button" data-tab-target="circle" onclick="vaiSwitchTab('circle')">
+    <span class="ico">👨‍👩‍👧</span><span data-vai-i18n="tab.circle">Circle</span>
+  </button>
+  <button type="button" data-tab-target="sos" class="sos" onclick="vaiSwitchTab('sos')">
+    <span class="ico">🚨</span><span data-vai-i18n="tab.sos">SOS</span>
+  </button>
+</nav>
+
+<!-- ══════════════ 3-STEP ONBOARDING OVERLAY ══════════════ -->
+<div class="vai-onb hidden" id="vai-onb" role="dialog" aria-modal="true" aria-labelledby="vai-onb-title">
+  <div class="logo" aria-hidden="true">🪔</div>
+  <h1 id="vai-onb-title">Chitti se milye</h1>
+  <p id="vai-onb-body">Aapki bhasha chunein</p>
+  <div class="opts" id="vai-onb-opts"></div>
+  <button class="skip" id="vai-onb-skip" onclick="vaiOnbSkip()">Skip · सीधे Chitti se baat karein →</button>
+</div>
+
+<!-- ══════════════ FRIENDLY ERROR BANNER ══════════════ -->
+<div class="vai-err hidden" id="vai-err" role="alert" aria-live="assertive">
+  <span class="em">🎙️</span>
+  <span class="msg" id="vai-err-msg">Chitti sun nahi payi — dobara bolein</span>
+  <button onclick="vaiErrRetry()" id="vai-err-btn">Phir bolo</button>
+</div>
 
 <!-- ════════════ MODALS ════════════ -->
 
@@ -1245,14 +1468,264 @@ function getUserToken(){
   return t;
 }
 
-// Resolve the backend URL: ?api=… overrides; otherwise default to onrender host.
+// Resolve the backend URL: ?api=… overrides; otherwise default to Railway prod.
+// (Render endpoint is retired — Railway is the live home as of 2026-05-19.)
 const API_BASE = (function(){
   try {
     const u = new URL(window.location.href);
     if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
   } catch(e){}
-  return 'https://chitti-vaani-api.onrender.com';
+  return 'https://chitti-vaani-api-production.up.railway.app';
 })();
+
+/* ════════ VAI — 5-TAB MOBILE REDESIGN (2026-05-22) ════════
+   Tabs, onboarding, friendly errors, multi-lang strings for
+   the new shell. Built on top of all existing JS so every
+   modal / voice intent / vault / channels logic keeps working. */
+const VAI_ONB_KEY = 'chitti_vaani_onb_done';
+const VAI_NAME_KEY = 'chitti_vaani_user_name';
+
+const VAI_I18N = {
+  en: { 'tab.talk':'Talk','tab.act':'Act','tab.vault':'Vault','tab.circle':'Circle','tab.sos':'SOS',
+        'err.network':'Chitti could not hear. Try once more.',
+        'err.retry':'Try again',
+        'onb.welcome':'Welcome to Chitti', 'onb.pick':'Pick your language',
+        'onb.name':'What should Chitti call you?', 'onb.name.ph':'Your name (optional)',
+        'onb.try':'Say "Hello Chitti" 🎙️', 'onb.skip':'Skip — open Chitti',
+        'onb.next':'Next →', 'onb.start':'Start ✓' },
+  hi: { 'tab.talk':'बात करो','tab.act':'काम','tab.vault':'तिजोरी','tab.circle':'अपने','tab.sos':'मदद',
+        'err.network':'Chitti sun nahi payi — dobara bolein',
+        'err.retry':'Phir bolo',
+        'onb.welcome':'Chitti mein swagat hai', 'onb.pick':'Apni bhasha chunein',
+        'onb.name':'Chitti aapko kya bulaaye?', 'onb.name.ph':'Aapka naam (optional)',
+        'onb.try':'"Hello Chitti" boliye 🎙️', 'onb.skip':'Skip — Chitti khol do',
+        'onb.next':'Aage →', 'onb.start':'Shuru karein ✓' },
+  bn: { 'tab.talk':'কথা', 'tab.act':'কাজ', 'tab.vault':'ভল্ট', 'tab.circle':'পরিজন', 'tab.sos':'সাহায্য',
+        'err.network':'Chitti shunte parlo na — abar bolun',
+        'err.retry':'Abar bolun',
+        'onb.welcome':'Chitti-te swagatam', 'onb.pick':'Apnar bhasha bachun',
+        'onb.name':'Chitti apnake ki dakbe?', 'onb.name.ph':'Apnar nam',
+        'onb.try':'"Hello Chitti" bolun 🎙️', 'onb.skip':'Skip — Chitti kholo',
+        'onb.next':'Egiye →', 'onb.start':'Shuru korun ✓' },
+  ta: { 'tab.talk':'பேசு', 'tab.act':'செயல்', 'tab.vault':'பெட்டகம்', 'tab.circle':'குடும்பம்', 'tab.sos':'உதவி',
+        'err.network':'Chitti kekka mudiyala — meendum sollunga',
+        'err.retry':'Meendum sollunga',
+        'onb.welcome':'Chitti-ku varaverpu', 'onb.pick':'Ungal mozhi tervu seyungal',
+        'onb.name':'Chitti ungalai eppadi kooppida?', 'onb.name.ph':'Ungal peyar',
+        'onb.try':'"Hello Chitti" sollungal 🎙️', 'onb.skip':'Skip — Chitti thirakka',
+        'onb.next':'Mun →', 'onb.start':'Thodanga ✓' },
+  te: { 'tab.talk':'మాట్లాడు', 'tab.act':'పని', 'tab.vault':'ఖజానా', 'tab.circle':'కుటుంబం', 'tab.sos':'సహాయం',
+        'err.network':'Chitti vinipinchaledu — malli cheppandi',
+        'err.retry':'Malli cheppandi',
+        'onb.welcome':'Chitti ki swagatham', 'onb.pick':'Mee bhasha enchukondi',
+        'onb.name':'Chitti meeku enti piluvali?', 'onb.name.ph':'Mee peru',
+        'onb.try':'"Hello Chitti" anandi 🎙️', 'onb.skip':'Skip — Chitti teradam',
+        'onb.next':'Mundu →', 'onb.start':'Modalu ✓' },
+  mr: { 'tab.talk':'बोल', 'tab.act':'काम', 'tab.vault':'तिजोरी', 'tab.circle':'आपले', 'tab.sos':'मदत',
+        'err.network':'Chitti aikalech naahi — punha bola',
+        'err.retry':'Punha bola',
+        'onb.welcome':'Chitti madhe swagat aahe', 'onb.pick':'Tumchi bhasha nivada',
+        'onb.name':'Chitti tumhala kay bolayche?', 'onb.name.ph':'Tumcha naav',
+        'onb.try':'"Hello Chitti" bola 🎙️', 'onb.skip':'Skip — Chitti ughda',
+        'onb.next':'Pudhe →', 'onb.start':'Suru karaa ✓' },
+  gu: { 'tab.talk':'વાત', 'tab.act':'કામ', 'tab.vault':'તિજોરી', 'tab.circle':'સગાંવ્હાલા', 'tab.sos':'મદદ',
+        'err.network':'Chitti sambhali nathi — pacho bolo',
+        'err.retry':'Pacho bolo',
+        'onb.welcome':'Chitti maa swagat che', 'onb.pick':'Tamari bhasha pasand karo',
+        'onb.name':'Chitti tamne shu bolave?', 'onb.name.ph':'Tamarun naam',
+        'onb.try':'"Hello Chitti" bolo 🎙️', 'onb.skip':'Skip — Chitti kholo',
+        'onb.next':'Aagal →', 'onb.start':'Shuru karo ✓' },
+  kn: { 'tab.talk':'ಮಾತು', 'tab.act':'ಕೆಲಸ', 'tab.vault':'ಕೋಶ', 'tab.circle':'ಬಂಧು', 'tab.sos':'ಸಹಾಯ',
+        'err.network':'Chitti keelilla — matte heli',
+        'err.retry':'Matte heli',
+        'onb.welcome':'Chitti-ge swagatha', 'onb.pick':'Nimma bhashe aaru',
+        'onb.name':'Chitti nimmage enu karee?', 'onb.name.ph':'Nimma hesaru',
+        'onb.try':'"Hello Chitti" heli 🎙️', 'onb.skip':'Skip — Chitti tegi',
+        'onb.next':'Mundhe →', 'onb.start':'Aarambisi ✓' },
+  ml: { 'tab.talk':'സംസാരം', 'tab.act':'പ്രവൃത്തി', 'tab.vault':'പെട്ടി', 'tab.circle':'കുടുംബം', 'tab.sos':'സഹായം',
+        'err.network':'Chitti ketilla — onnoode parayuu',
+        'err.retry':'Onnoode parayuu',
+        'onb.welcome':'Chitti-yilekku swagatham', 'onb.pick':'Ningalude bhasha thirinjedukku',
+        'onb.name':'Chitti ningale enthonnu vilikkanam?', 'onb.name.ph':'Ningalude peru',
+        'onb.try':'"Hello Chitti" parayuu 🎙️', 'onb.skip':'Skip — Chitti thurakku',
+        'onb.next':'Mun →', 'onb.start':'Thudanguu ✓' },
+  pa: { 'tab.talk':'ਗੱਲ', 'tab.act':'ਕੰਮ', 'tab.vault':'ਤਜੋਰੀ', 'tab.circle':'ਆਪਣੇ', 'tab.sos':'ਮਦਦ',
+        'err.network':'Chitti sun ni saki — phir bolo',
+        'err.retry':'Phir bolo',
+        'onb.welcome':'Chitti vich swagat hai', 'onb.pick':'Aapni bhasha chuno',
+        'onb.name':'Chitti tuhanu ki bulaye?', 'onb.name.ph':'Tuhada naam',
+        'onb.try':'"Hello Chitti" bolo 🎙️', 'onb.skip':'Skip — Chitti kholo',
+        'onb.next':'Aage →', 'onb.start':'Shuru karo ✓' },
+  ur: { 'tab.talk':'بات', 'tab.act':'کام', 'tab.vault':'تجوری', 'tab.circle':'اپنے', 'tab.sos':'مدد',
+        'err.network':'Chitti sun na saki — phir boliye',
+        'err.retry':'Phir boliye',
+        'onb.welcome':'Chitti mein khush amdeed', 'onb.pick':'Apni zubaan chunein',
+        'onb.name':'Chitti aap ko kya bulaaye?', 'onb.name.ph':'Aap ka naam',
+        'onb.try':'"Hello Chitti" boliye 🎙️', 'onb.skip':'Skip — Chitti kholiye',
+        'onb.next':'Aage →', 'onb.start':'Shuru karein ✓' },
+};
+
+const VAI_LANGS_OFFERED = [
+  ['hi','हिंदी · Hindi'], ['en','English'], ['bn','বাংলা · Bangla'],
+  ['ta','தமிழ் · Tamil'], ['te','తెలుగు · Telugu'], ['mr','मराठी · Marathi'],
+  ['gu','ગુજરાતી · Gujarati'], ['kn','ಕನ್ನಡ · Kannada'], ['ml','മലയാളം · Malayalam'],
+  ['pa','ਪੰਜਾਬੀ · Punjabi'], ['ur','اردو · Urdu'],
+];
+
+function vaiT(key){
+  const lang = (localStorage.getItem(LANG_KEY) || 'hi');
+  const bag = VAI_I18N[lang] || VAI_I18N.hi;
+  return bag[key] || (VAI_I18N.en[key] || key);
+}
+
+/* ── Tab switching ── */
+function vaiSwitchTab(tab){
+  // Both "talk" and "talk-2" panels light up for the talk tab; same for circle.
+  const map = {talk:['talk','talk-2'], act:['act'], vault:['vault'], circle:['circle','circle-2'], sos:['sos']};
+  const targets = map[tab] || [tab];
+  document.querySelectorAll('.vai-tab-panel').forEach(p => {
+    p.classList.toggle('active', targets.includes(p.dataset.tab));
+  });
+  document.querySelectorAll('.vai-bnav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tabTarget === tab);
+  });
+  try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+}
+
+/* ── Friendly error banner — replaces "Network error" ── */
+let _vaiErrLast = null;
+function vaiShowError(retryFn, customMsg){
+  const el = document.getElementById('vai-err');
+  if (!el) return;
+  document.getElementById('vai-err-msg').textContent = customMsg || vaiT('err.network');
+  document.getElementById('vai-err-btn').textContent = vaiT('err.retry');
+  el.classList.remove('hidden');
+  _vaiErrLast = retryFn || null;
+}
+function vaiHideError(){
+  const el = document.getElementById('vai-err');
+  if (el) el.classList.add('hidden');
+  _vaiErrLast = null;
+}
+function vaiErrRetry(){
+  const f = _vaiErrLast;
+  vaiHideError();
+  if (typeof f === 'function') f();
+}
+
+/* ── 3-step onboarding ──
+   Step 1: language picker. Step 2: name (optional). Step 3: "Say Hello Chitti".
+   Each step writes localStorage + updates state, then advances. */
+let _vaiOnbStep = 1;
+function vaiOnbDone(){ return localStorage.getItem(VAI_ONB_KEY) === '1'; }
+function vaiOnbMaybeOpen(){
+  if (vaiOnbDone()) return;
+  // Only show after consent is accepted — otherwise consent gate covers it
+  if (!consentGiven()) return;
+  _vaiOnbStep = 1;
+  vaiOnbRender();
+  document.getElementById('vai-onb').classList.remove('hidden');
+}
+function vaiOnbRender(){
+  const title = document.getElementById('vai-onb-title');
+  const body  = document.getElementById('vai-onb-body');
+  const opts  = document.getElementById('vai-onb-opts');
+  opts.innerHTML = '';
+  if (_vaiOnbStep === 1){
+    title.textContent = vaiT('onb.welcome');
+    body.textContent  = vaiT('onb.pick');
+    VAI_LANGS_OFFERED.forEach(([code, label]) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.onclick = () => vaiOnbPickLang(code);
+      opts.appendChild(b);
+    });
+  } else if (_vaiOnbStep === 2){
+    title.textContent = vaiT('onb.welcome');
+    body.textContent  = vaiT('onb.name');
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.placeholder = vaiT('onb.name.ph'); inp.id = 'vai-onb-name';
+    inp.autocomplete = 'name';
+    const btn = document.createElement('button');
+    btn.textContent = vaiT('onb.next');
+    btn.onclick = () => {
+      const name = (inp.value || '').trim();
+      if (name) localStorage.setItem(VAI_NAME_KEY, name);
+      _vaiOnbStep = 3; vaiOnbRender();
+    };
+    opts.appendChild(inp);
+    opts.appendChild(btn);
+    setTimeout(()=>inp.focus(), 60);
+  } else {
+    title.textContent = vaiT('onb.welcome');
+    body.textContent  = vaiT('onb.try');
+    const btnMic = document.createElement('button');
+    btnMic.textContent = '🎙️ ' + (vaiT('onb.try'));
+    btnMic.onclick = () => {
+      vaiOnbFinish();
+      try { vaiSwitchTab('talk'); toggleMic(); } catch(e){}
+    };
+    const btnDone = document.createElement('button');
+    btnDone.textContent = vaiT('onb.start');
+    btnDone.className = 'alt';
+    btnDone.onclick = () => { vaiOnbFinish(); };
+    opts.appendChild(btnMic);
+    opts.appendChild(btnDone);
+  }
+}
+function vaiOnbPickLang(code){
+  // Flip the whole app language
+  CURRENT_LANG = code;
+  localStorage.setItem(LANG_KEY, code);
+  const sel = document.getElementById('lang-select');
+  if (sel) { sel.value = code; sel.dispatchEvent(new Event('change')); }
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
+  vaiApplyI18n();
+  _vaiOnbStep = 2; vaiOnbRender();
+}
+function vaiOnbSkip(){ vaiOnbFinish(); }
+function vaiOnbFinish(){
+  localStorage.setItem(VAI_ONB_KEY, '1');
+  document.getElementById('vai-onb').classList.add('hidden');
+  vaiApplyI18n();
+}
+
+/* ── Apply i18n to the new shell (tabs, SOS, error banner) ── */
+function vaiApplyI18n(){
+  document.querySelectorAll('[data-vai-i18n]').forEach(el => {
+    const k = el.getAttribute('data-vai-i18n');
+    const v = vaiT(k);
+    if (v) el.textContent = v;
+  });
+  const errMsg = document.getElementById('vai-err-msg');
+  if (errMsg && !errMsg.dataset.custom) errMsg.textContent = vaiT('err.network');
+  const errBtn = document.getElementById('vai-err-btn');
+  if (errBtn) errBtn.textContent = vaiT('err.retry');
+}
+
+/* ── SOS helpers ── */
+function vaiSosTrigger(){
+  // Reuse the existing family-cascade emergency flow.
+  // SAHAYAI §2 locked: never auto-dial cops; trigger family relay first.
+  try { if (typeof sosTrigger === 'function') return sosTrigger(); } catch(e){}
+}
+function vaiCallNumber(num){
+  // Open dialer pre-filled — user still has to press call on Android.
+  // For 112 / 108 / 1930 etc. Chitti only OPENS the dialer; never auto-dials.
+  if (!num) return;
+  try { window.location.href = 'tel:' + num; } catch(e){}
+}
+
+/* ── Init: switch lang, hook chitti:langchange, open onboarding ── */
+window.addEventListener('DOMContentLoaded', () => {
+  vaiApplyI18n();
+  // Re-apply on language change
+  window.addEventListener('chitti:langchange', () => vaiApplyI18n());
+  // Open onboarding once consent is accepted
+  setTimeout(vaiOnbMaybeOpen, 250);
+});
+// If consent acceptance flips the gate later, also open onboarding then.
+const _vaiOrigAccept = (typeof acceptConsent === 'function') ? acceptConsent : null;
 
 let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
 let CONSENT_LANG = CURRENT_LANG;
@@ -1323,6 +1796,8 @@ function acceptConsent(){
     ? 'Welcome. Chitti is ready. Tap the green microphone to speak.'
     : 'नमस्ते। चिट्टी तैयार है। हरे माइक्रोफ़ोन को दबा कर बोलिए।';
   setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
+  // 3-step onboarding immediately after consent — only if not done yet.
+  setTimeout(() => { try { vaiOnbMaybeOpen(); } catch(e){} }, 300);
 }
 function declineConsent(){
   alert('No problem. You can come back anytime. Chitti will not work until you accept.');
@@ -1446,13 +1921,21 @@ async function sendToChitti(){
     });
     data = await r.json();
   } catch (e) {
-    data = { ok: false, error: 'Network error: ' + e.message };
+    data = { ok: false, error: 'network', _detail: (e && e.message) || '' };
   }
 
   if (!data || !data.ok) {
-    ans.textContent = '⚠️ Chitti could not reply right now. ' + (data && data.error ? data.error : '');
+    // Friendly multi-lang banner — never show "Network error" to Sire.
+    ans.textContent = '';
+    document.getElementById('answer-box').classList.remove('shown');
+    if (typeof vaiShowError === 'function') {
+      vaiShowError(() => sendToChitti(), undefined);
+    } else {
+      ans.textContent = (data && data.error ? data.error : 'Chitti sun nahi payi — dobara bolein.');
+    }
     return;
   }
+  if (typeof vaiHideError === 'function') vaiHideError();
   LAST_REPLY      = data.reply;
   LAST_REPLY_LANG = data.language || CURRENT_LANG;
   ans.textContent = data.reply;
