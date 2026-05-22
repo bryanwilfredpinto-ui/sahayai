@@ -6,6 +6,9 @@
 <title>Chitti Fashion AI — Young India का personal stylist</title>
 <meta name="description" content="Voice-first personal stylist for every young Indian. Build your wardrobe, get outfit suggestions from what you own, body-positive shopping ratings. Photos stay on your device. Privacy-first.">
 <link rel="stylesheet" href="sahayai_design_system.css">
+<!-- strings.js MUST load before any i18n key paints. defer lets the HTML
+     parse but guarantees the bag is ready before DOMContentLoaded fires. -->
+<script src="strings.js" defer></script>
 <style>
 /* Fashion — bolder type, larger images, saffron accents */
 body{font-size:18px}
@@ -401,7 +404,6 @@ body{font-size:18px}
   <button data-tab="coach" onclick="faTab('coach')"><span class="ico">🎓</span><span data-vai-i18n="fa.tab.coach">Coach</span></button>
 </nav>
 
-<script src="strings.js"></script>
 <script src="chitti_a11y.js"></script>
 <script src="feedback-widget.js" data-page="chitti_fashion"></script>
 <script>

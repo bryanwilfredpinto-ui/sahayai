@@ -6,6 +6,9 @@
 <title>Chitti Vaani — Bharat's voice-first assistant · Speak, listen, summarise calls</title>
 <meta name="description" content="Voice-first AI for every Indian. Tap the mic, speak in 9 languages, hear Chitti reply aloud. Summarise calls. Read any text aloud. Built for blind, deaf, mute, and low-literacy users.">
 <meta name="chitti-page-desc" content="Chitti Vaani — voice assistant. Tap the green mic to speak. Tap a card to choose Ask, Call summary, or Read aloud.">
+<!-- strings.js MUST load before any i18n key paints. defer guarantees the
+     bag is ready before DOMContentLoaded fires (Sire 2026-05-23 fix). -->
+<script src="strings.js" defer></script>
 <style>
 :root{
   --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
@@ -653,14 +656,14 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 
   <!-- ════════ HERO MIC ════════ -->
   <section class="section-card chitti-response" aria-labelledby="mic-title" data-chitti-section="🎙️ Talk to Chitti">
-    <h2 class="section-title" id="mic-title"><span class="ico">🎙️</span> Talk to Chitti</h2>
-    <div class="section-sub">Tap the green mic. Speak in your language. Chitti listens, thinks, and reads the answer aloud.</div>
+    <h2 class="section-title" id="mic-title"><span class="ico">🎙️</span> <span data-vai-i18n="vai.hero.title">Chitti से बात करें</span></h2>
+    <div class="section-sub"><span data-vai-i18n="vai-hero-sub">हरे माइक को टैप करें। अपनी भाषा में बोलें। Chitti सुनती है, सोचती है, और उत्तर ज़ोर से पढ़ती है।</span></div>
 
     <div class="mic-stage">
       <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening">🎙️</button>
-      <div class="mic-hint" id="mic-hint"><strong>Tap to speak.</strong> Chitti will reply in your language and read the answer aloud.</div>
+      <div class="mic-hint" id="mic-hint"><strong data-vai-i18n="vai.hero.cta">Bolne ke liye tap karein.</strong> <span data-vai-i18n="vai.hero.hint">Chitti aapki bhasha mein jawaab degi aur padh ke sunayegi.</span></div>
       <div class="mode-row" role="tablist" aria-label="Conversation mode">
-        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 Ask anything</button>
+        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 <span data-vai-i18n="vai.mode.ask">कुछ भी पूछो</span></button>
         <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
         <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
         <button data-mode="translate" onclick="setMode('translate',this)">🌐 Translate</button>
@@ -4954,7 +4957,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<script src="strings.js"></script>
 <script src="chitti_disclaimer.js"></script>
 <script src="chitti_lang.js"></script>
 <!-- Chitti feedback widget (locked SAHAYAI §7) -->
