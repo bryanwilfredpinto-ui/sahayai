@@ -43,6 +43,12 @@ EXTRA_JS = [
     REPO / "chitti_isl.js",
     REPO / "chitti_warmup.js",
     REPO / "feedback-widget.js",
+    # Per-product i18n tables — extract the English values so chitti_lang.js
+    # can translate them via its baked T-table (otherwise the page's own
+    # applyI18n locks the text into one of the 13 langs its dict covers).
+    REPO / "chitti_news_ai_i18n.js",
+    REPO / "chitti_wheels_i18n.js",
+    REPO / "chitti_i18n.js",
 ]
 
 OUT = REPO / "scripts" / "all_pages_corpus.json"
@@ -109,10 +115,19 @@ def extract_js_strings(html_src, strings, is_pure_js=False):
     lit_rx = re.compile(r"(['\"])((?:\\.|(?!\1).)+?)\1")
     tpl_rx = re.compile(r"`(\s*<[^`]{0,4000}?)`", re.DOTALL)
     UI_LIKE = re.compile(r"[A-Za-z]{2,}.*?[A-Za-z]{2,}", re.DOTALL)
+    # BLACKLIST drops things that look like code identifiers / urls / hex
+    # / event names — NOT user-visible text. The previous `[A-Z_]+` (no $
+    # anchor) was too greedy: `re.match` returns a match the moment the
+    # FIRST character is uppercase, so every TitleCase JS literal like
+    # 'Market Closed', 'Hear this card', 'Demo', 'Failed to fetch' was
+    # silently dropped — that's the bug that left the share pages with
+    # ~2-3k untranslated runs each. Anchor each alternative with $ so it
+    # only matches when the WHOLE token looks like an identifier.
     BLACKLIST = re.compile(
         r"^(?:[a-z][a-z0-9_-]*|/[\w/.-]+|#[a-zA-Z0-9_-]+|"
-        r"[A-Z_]+|true|false|null|undefined|\d+px|rgba?\(|"
-        r"https?://|data:|application/|text/|image/|chitti_)"
+        r"[A-Z][A-Z0-9_]*|"                       # SCREAMING_SNAKE / ALLCAPS only (≥1 cap)
+        r"true|false|null|undefined|\d+px|rgba?\(|"
+        r"https?://|data:|application/|text/|image/|chitti_)$"
     )
     bodies = [html_src] if is_pure_js else body_rx.findall(html_src)
     for body in bodies:

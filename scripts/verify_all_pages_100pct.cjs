@@ -59,6 +59,21 @@ const ALLOWED_LATIN_PATTERNS = [
   /\bConnect\b/g, /\bdaily briefing resumes when the API responds\b/g,  // chitti-news-ai banners
   /\bBackend unreachable\b/gi, /\bNo fake demo data shown\b/gi,
   /\bsire@sahayai\.in\b/gi, /\bcybercrime\.gov\.in\b/gi, /\bexample\.com\b/gi,
+  // AI tool / model / source names — kept English (brand identity)
+  /\bOpenAI(?:\s+(?:Blog|News|API))?\b/gi,
+  /\bAnthropic(?:\s+(?:News|Blog|API))?\b/gi,
+  /\bGoogle\s+AI(?:\s+Blog)?\b/gi,
+  /\bMistral(?:\s+AI)?\b/gi, /\bMeta\s+AI\b/gi, /\bDeepMind\b/g,
+  /\bStability\s+AI\b/gi, /\bAdept\b/g, /\bCohere\b/g, /\bxAI\b/g,
+  /\bPerplexity\b/gi, /\bClaude\b/g, /\bGemini\b/g, /\bGPT-?\d?\b/g,
+  /\bChatGPT\b/gi, /\bCopilot\b/gi, /\bMidJourney\b/gi, /\bSora\b/g,
+  /\bRunway\b/g, /\bElevenLabs\b/gi, /\bSuno\b/g, /\bUdio\b/g,
+  /\bHugging\s+Face(?:\s+Daily\s+Papers)?\b/gi, /\bProduct\s+Hunt\b/gi,
+  /\bThere'?s\s+An\s+AI\s+For\s+That\b/gi, /\bInshorts\b/gi,
+  /\bGround\s+News\b/gi, /\bArtifact\b/g, /\bAppleNews\b/g,
+  /\bMoneycontrol\b/g, /\bDailyhunt\b/g, /\bWay2News\b/g, /\bBhaskar\b/g,
+  /\bNewsBreak\b/g, /\bSmartNews\b/g, /\bCNA\b/g,
+  /\bSahay\s+AI\b/gi, /\bChitti\s+News\s+Ai\b/gi, /\bNews\s+Ai\b/gi,
   // 26 Indian language names — kept in English in language pickers as a
   // recognition hint alongside the native-script label.
   /\b(Hindi|Bangla|Bengali|Telugu|Tamil|Marathi|Gujarati|Kannada|Malayalam|Punjabi|Odia|Oriya|Assamese|Urdu|Sanskrit|Maithili|Konkani|Dogri|Kashmiri|Nepali|Sindhi|Manipuri|Meitei|Santali|Bhojpuri|Rajasthani|Kurukh|Bodo|Khasi|Ho|English)\b/g,

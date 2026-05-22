@@ -687,6 +687,22 @@
   // template so e.g. "📅 Last audit: 2026-05-13" becomes
   // "📅 अंतिम ऑडिट: 2026-05-13" in Hindi.
   var PATTERNS = [
+    // chitti_news_ai uses its own per-box aria-label format.
+    {
+      re: /^Per-box feedback for (.+)$/,
+      tmpl: {
+        en:'Per-box feedback for $1', hi:'$1 के लिए प्रति-बॉक्स प्रतिक्रिया',
+        bn:'$1 এর জন্য প্রতি-বাক্স মতামত', te:'$1 కోసం ప్రతి-బాక్స్ అభిప్రాయం',
+        ta:'$1 க்கான ஒவ்வொரு-பெட்டிக்கான கருத்து',
+        mr:'$1 साठी प्रति-बॉक्स अभिप्राय',
+        gu:'$1 માટે પ્રતિ-બોક્સ પ્રતિસાદ',
+        kn:'$1 ಗಾಗಿ ಪ್ರತಿ-ಬಾಕ್ಸ್ ಪ್ರತಿಕ್ರಿಯೆ',
+        ml:'$1 നുള്ള ഓരോ-ബോക്സ് പ്രതികരണം',
+        pa:'$1 ਲਈ ਪ੍ਰਤੀ-ਬਾਕਸ ਫੀਡਬੈਕ', or:'$1 ପାଇଁ ପ୍ରତି-ବାକ୍ସ ମତାମତ',
+        as:'$1 ৰ বাবে প্ৰতি-বাকচ মতামত', ur:'$1 کے لیے ہر باکس پر رائے',
+        sa:'$1 कृते प्रति-पेटिका-प्रतिक्रिया',
+      },
+    },
     // Aria-label patterns from feedback-widget.js per-box bar.
     {
       re: /^Read (.+) aloud$/,
@@ -968,6 +984,17 @@
     var v = null;
     var entry = W[trim];
     if (entry) v = resolve(entry, lang);
+    // Try chitti_lang.js's baked T-table BEFORE falling back to pattern
+    // substitution — exact-match wins over template substitution so we
+    // don't clobber properly-translated aria-labels like
+    // "Read the answer aloud" with a $1-substituted version where
+    // "the answer" stays English inside the wrapper template.
+    if (!v && window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.lookupText === 'function') {
+      try {
+        var v2 = window.Chitti.lang.lookupText(orig, lang);
+        if (v2 != null) v = v2;
+      } catch (e) {}
+    }
     if (!v) v = matchPattern(trim, lang);
     if (!v) return;
     el.setAttribute(a, v);
@@ -998,6 +1025,12 @@
         translateAttrs(root, lang);
       });
     });
+    // Aria-label / placeholder / title sweep across the WHOLE body —
+    // chitti_news_ai's box-fb wrappers (and any future page-specific
+    // feedback containers) aren't in WALK_ROOTS but their aria-labels
+    // still need to localise via the W table or PATTERNS (e.g.
+    // "Per-box feedback for Daily AI Briefing").
+    translateAttrs(document.body, lang);
   }
 
   // Register every W entry that has a simple language map into
