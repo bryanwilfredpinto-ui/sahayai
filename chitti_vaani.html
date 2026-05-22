@@ -480,6 +480,54 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <span class="pill android" id="pill-night">Android only</span>
       </button>
 
+      <button class="pro-card" onclick="openYouTubeModal()">
+        <span class="ico">🎬</span><span class="lbl">Play on YouTube</span>
+        <span class="sub">"Chitti, AR Rahman Vande Mataram play karo" — Chitti reads back the query, you say "haan", YouTube opens with the search.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openMusicModal()">
+        <span class="ico">🎵</span><span class="lbl">Play music</span>
+        <span class="sub">"Chitti, Kishore Kumar ke gaane chalao" — opens YouTube Music with your query, on Android opens the music app directly.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openVideoModal()">
+        <span class="ico">📺</span><span class="lbl">Play a video</span>
+        <span class="sub">"Bhagavad Gita Chapter 2 explained in Hindi" — Chitti finds and plays a video. Same flow as YouTube but tuned for long-form content.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openMapsModal()">
+        <span class="ico">🗺️</span><span class="lbl">Directions / Maps</span>
+        <span class="sub">"Chitti, AIIMS Delhi le chalo" — opens Google Maps with the destination filled in. Android: opens Maps app directly.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openSearchModal()">
+        <span class="ico">🔎</span><span class="lbl">Search the web</span>
+        <span class="sub">"Chitti, monsoon kab aayega Delhi mein" — opens Google with the query. Use for anything Chitti can't answer offline.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="nativeAction('openCamera')">
+        <span class="ico">📷</span><span class="lbl">Open camera</span>
+        <span class="sub">"Chitti, camera kholo" — opens the camera app. Android only — web browsers don't allow direct camera-app launch.</span>
+        <span class="pill android" id="pill-camera">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="nativeAction('toggleFlashlight')">
+        <span class="ico">🔦</span><span class="lbl">Flashlight</span>
+        <span class="sub">"Chitti, torch on" / "torch off" — toggles the phone torch. Android only — no web API for the LED.</span>
+        <span class="pill android" id="pill-flashlight">Android only</span>
+      </button>
+
+      <button class="pro-card" onclick="openAlarmModal()">
+        <span class="ico">⏰</span><span class="lbl">Set alarm</span>
+        <span class="sub">"Subah 6 baje uthao" — opens your clock app with the alarm pre-filled. Web fallback shows a step-by-step.</span>
+        <span class="pill android" id="pill-alarm">Android ✓ · Web shows steps</span>
+      </button>
+
       <button class="pro-card" onclick="openLanguageModal()">
         <span class="ico">🌐</span><span class="lbl">Teach Chitti your language</span>
         <span class="sub">Federated learning. Speak Bangla / Tamil / Telugu / Marathi / Gujarati to Chitti. After 6–12 months your samples train Chitti's voice in that language.</span>
@@ -665,6 +713,161 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="cancel" onclick="closeModal('email-modal')">Cancel</button>
     </div>
     <div class="small-note">Footer auto-appended: <em>"Sent via Chitti Vaani — an AI assistant for [your name]. Replies do not pass through Chitti."</em></div>
+  </div>
+</div>
+
+<!-- ════════ MEDIA / SEARCH / ALARM MODALS (added 2026-05-22) ════════ -->
+
+<!-- Play on YouTube modal -->
+<div id="yt-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="yt-title">
+  <div class="panel chitti-response" data-chitti-section="🎬 Play on YouTube">
+    <h2 id="yt-title">🎬 Play on YouTube</h2>
+    <div class="desc">Speak the song / artist / topic. Chitti reads it back, you say <b>"haan"</b>, YouTube opens with the search results. (Phase 2 Android: Chitti taps the first result.)</div>
+    <div class="field">
+      <label>What to play?</label>
+      <input type="text" id="yt-q" placeholder="e.g. AR Rahman Vande Mataram">
+      <div class="row-mic">
+        <button id="yt-mic" onclick="proMic('yt-q', this)">🎙️ Speak</button>
+        <button onclick="speakField('yt-q')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="yt-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmYouTube()">🎬 Open YouTube</button>
+      <button class="spk" onclick="confirmYouTubeByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('yt-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web → opens <code>youtube.com/results?search_query=…</code>. Android (Phase 2) → opens the YouTube app via Intent.</div>
+  </div>
+</div>
+
+<!-- Play music modal -->
+<div id="music-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="music-title">
+  <div class="panel chitti-response" data-chitti-section="🎵 Play music">
+    <h2 id="music-title">🎵 Play music</h2>
+    <div class="desc">Speak the song or artist. Chitti opens YouTube Music with the search filled in. Inside the Android app, Chitti can hand off to the system music app.</div>
+    <div class="field">
+      <label>What music?</label>
+      <input type="text" id="music-q" placeholder="e.g. Kishore Kumar Mere Sapno Ki Rani">
+      <div class="row-mic">
+        <button id="music-mic" onclick="proMic('music-q', this)">🎙️ Speak</button>
+        <button onclick="speakField('music-q')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="music-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmMusic()">🎵 Open YouTube Music</button>
+      <button class="spk" onclick="confirmMusicByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('music-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web → opens <code>music.youtube.com/search?q=…</code>. Native bridge — if Chitti is hosted by an Android app with <code>openMusic(query)</code>, that wins.</div>
+  </div>
+</div>
+
+<!-- Play video modal (long-form) -->
+<div id="video-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="video-title">
+  <div class="panel chitti-response" data-chitti-section="📺 Play a video">
+    <h2 id="video-title">📺 Play a video</h2>
+    <div class="desc">Speak what you want to watch. Same as YouTube but tuned for long-form content — Chitti appends <em>"full video"</em> to the query so you get a real video, not a Shorts clip.</div>
+    <div class="field">
+      <label>What to watch?</label>
+      <input type="text" id="video-q" placeholder="e.g. Bhagavad Gita Chapter 2 explained in Hindi">
+      <div class="row-mic">
+        <button id="video-mic" onclick="proMic('video-q', this)">🎙️ Speak</button>
+        <button onclick="speakField('video-q')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="video-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmVideo()">📺 Open video</button>
+      <button class="spk" onclick="confirmVideoByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('video-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web → opens <code>youtube.com/results?search_query=…+full+video</code>. Android (Phase 2) → opens the first result automatically.</div>
+  </div>
+</div>
+
+<!-- Maps modal -->
+<div id="maps-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="maps-title">
+  <div class="panel chitti-response" data-chitti-section="🗺️ Directions / Maps">
+    <h2 id="maps-title">🗺️ Directions / Maps</h2>
+    <div class="desc">Speak the place — clinic, station, ATM, school, anywhere. Chitti opens Google Maps with the destination filled in.</div>
+    <div class="field">
+      <label>Where to go?</label>
+      <input type="text" id="maps-q" placeholder="e.g. AIIMS Delhi · Connaught Place · nearest petrol pump">
+      <div class="row-mic">
+        <button id="maps-mic" onclick="proMic('maps-q', this)">🎙️ Speak</button>
+        <button onclick="speakField('maps-q')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="field" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label style="margin:0">Mode:</label>
+      <select id="maps-mode" style="width:auto;min-width:120px">
+        <option value="driving" selected>🚗 Driving</option>
+        <option value="walking">🚶 Walking</option>
+        <option value="transit">🚌 Public transit</option>
+        <option value="two-wheeler">🏍️ Two-wheeler</option>
+      </select>
+    </div>
+    <div class="preview" id="maps-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmMaps()">🗺️ Open Maps</button>
+      <button class="spk" onclick="confirmMapsByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('maps-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web → opens <code>google.com/maps/dir/?destination=…</code>. Android → opens the Maps app via <code>geo:</code> intent.</div>
+  </div>
+</div>
+
+<!-- Search the web modal -->
+<div id="search-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="search-title">
+  <div class="panel chitti-response" data-chitti-section="🔎 Search the web">
+    <h2 id="search-title">🔎 Search the web</h2>
+    <div class="desc">For anything Chitti can't answer offline. Speak your question — Chitti opens Google with the query.</div>
+    <div class="field">
+      <label>What to look up?</label>
+      <input type="text" id="search-q" placeholder="e.g. monsoon kab aayega Delhi mein">
+      <div class="row-mic">
+        <button id="search-mic" onclick="proMic('search-q', this)">🎙️ Speak</button>
+        <button onclick="speakField('search-q')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="search-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmSearch()">🔎 Open Google</button>
+      <button class="spk" onclick="confirmSearchByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('search-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web → <code>google.com/search?q=…</code>. Honest: Chitti can't read the result page for you (yet) — that's Phase 2 Android (screen-reader bridge).</div>
+  </div>
+</div>
+
+<!-- Set alarm modal -->
+<div id="alarm-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="alarm-title">
+  <div class="panel chitti-response" data-chitti-section="⏰ Set alarm">
+    <h2 id="alarm-title">⏰ Set alarm</h2>
+    <div class="desc">Pick a time and a label. On Android (Phase 2), Chitti opens the clock app via Intent with the alarm pre-filled. On the web, Chitti walks you through the steps.</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Time</label>
+        <input type="time" id="alarm-time" value="06:00">
+      </div>
+      <div class="field">
+        <label>Label (optional)</label>
+        <input type="text" id="alarm-label" placeholder="e.g. Yoga · Medicine · Office">
+      </div>
+    </div>
+    <div class="row-mic">
+      <button id="alarm-mic" onclick="proMicAlarm(this)">🎙️ "Subah 6 baje uthao"</button>
+      <button onclick="speakAlarmPreview()">🔊 Read back</button>
+    </div>
+    <div class="preview" id="alarm-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmAlarm()">⏰ Set alarm</button>
+      <button class="spk" onclick="confirmAlarmByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('alarm-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Android intent — <code>android.intent.action.SET_ALARM</code> — opens the clock app with the time + label pre-filled. Web fallback shows step-by-step.</div>
   </div>
 </div>
 
@@ -1688,13 +1891,16 @@ function nativeAction(name){
   if (!hasNativeBridge()) {
     // Web-only fallback — speak the deferral
     const msgs = {
-      lockPhone:    ['Phone lock works in the Android app — Phase 2.', 'Phone lock Android ऐप में मिलेगा — Phase 2.'],
-      toggleSilent: ['Silent mode works in the Android app.',          'Silent mode Android ऐप में।'],
-      dialerRole:   ['Answer-call works in the Android app.',          'Call uthana Android ऐप में।'],
-      callScreening:['Night auto-answer works in the Android app.',    'Raat ka auto-answer Android ऐप में।'],
+      lockPhone:        ['Phone lock works in the Android app — Phase 2.', 'Phone lock Android ऐप में मिलेगा — Phase 2.'],
+      toggleSilent:     ['Silent mode works in the Android app.',          'Silent mode Android ऐप में।'],
+      dialerRole:       ['Answer-call works in the Android app.',          'Call uthana Android ऐप में।'],
+      callScreening:    ['Night auto-answer works in the Android app.',    'Raat ka auto-answer Android ऐप में।'],
+      openCamera:       ['Camera launch works in the Android app — web browsers cannot open the system camera directly.', 'Camera Android ऐप में खुलेगा — browser से camera ऐप नहीं खुल सकती।'],
+      toggleFlashlight: ['Flashlight works in the Android app — web has no torch API.',                                   'Torch Android ऐप में चलेगी — browser में torch नहीं है।'],
     };
     const m = msgs[name] || ['This feature needs the Android app.', 'Yeh feature Android ऐप में milega.'];
     speakText(CURRENT_LANG==='en' ? m[0] : m[1], CURRENT_LANG);
+    logAction('Native deferred (web fallback)', name);
     return;
   }
   // We're inside the Android WebView — call the native method.
@@ -1724,6 +1930,29 @@ function nativeAction(name){
       window.ChittiNative.requestNightMode();
       speakText(CURRENT_LANG==='en' ? 'Night-mode armed. Please grant call screening role.' : 'रात का मोड चालू। Call screening अनुमति दीजिए।', CURRENT_LANG);
       logAction('Requested call screening + night mode', res);
+    } else if (name === 'openCamera') {
+      // Android bridge contract: opens the system camera (IMAGE_CAPTURE intent).
+      if (window.ChittiNative.openCamera) {
+        res = window.ChittiNative.openCamera();
+        speakText(CURRENT_LANG==='en' ? 'Camera opened.' : 'Camera खुल गया।', CURRENT_LANG);
+        logAction('Camera opened (native)', res);
+      } else {
+        speakText(CURRENT_LANG==='en' ? 'This Android build does not expose openCamera yet.' : 'इस Android build में openCamera अभी नहीं है।', CURRENT_LANG);
+        logAction('openCamera missing on bridge', '');
+      }
+    } else if (name === 'toggleFlashlight') {
+      // Android bridge contract: returns 'on' / 'off' / 'unavailable'.
+      if (window.ChittiNative.toggleFlashlight) {
+        res = window.ChittiNative.toggleFlashlight();
+        const onOff = res === 'on' ? (CURRENT_LANG==='en' ? 'Flashlight on.' : 'Torch on हो गई।')
+                    : res === 'off' ? (CURRENT_LANG==='en' ? 'Flashlight off.' : 'Torch off हो गई।')
+                    : (CURRENT_LANG==='en' ? 'Flashlight not available on this device.' : 'इस device में torch नहीं है।');
+        speakText(onOff, CURRENT_LANG);
+        logAction('Flashlight toggle (native)', res);
+      } else {
+        speakText(CURRENT_LANG==='en' ? 'This Android build does not expose toggleFlashlight yet.' : 'इस Android build में torch अभी नहीं है।', CURRENT_LANG);
+        logAction('toggleFlashlight missing on bridge', '');
+      }
     }
   } catch(e) {
     speakText(CURRENT_LANG==='en' ? 'Action refused: ' + e.message : 'Action रोक दिया: ' + e.message, CURRENT_LANG);
@@ -1732,7 +1961,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
@@ -1839,6 +2068,226 @@ async function idbClear(){
     tx.oncomplete = () => resolve();
   });
 }
+/* ────────────────────────────────────────────────────────────────────
+   Media / Search / Alarm handlers — added 2026-05-22
+   Bryan: "in chitti vaani, theres no youtube or play songs or video
+   option, android feature is not there." Adds the obvious assistant
+   capabilities: YouTube / Music / Video / Maps / Search / Alarm —
+   plus Camera + Flashlight via the native bridge.
+   ──────────────────────────────────────────────────────────────────── */
+
+// ── helpers ──────────────────────────────────────────────────────────
+function _openExternal(url) {
+  // The query-string is already URI-encoded by encodeURIComponent at
+  // the call-site. Open in a new tab to keep Chitti running.
+  try { window.open(url, '_blank', 'noopener'); }
+  catch (e) { window.location.href = url; }
+}
+function _mediaPreviewText(prefix, q) {
+  return prefix + ' <b>' + escapeHtml(q) + '</b>';
+}
+
+// ── YouTube ──────────────────────────────────────────────────────────
+function openYouTubeModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('yt-q').value = '';
+  document.getElementById('yt-preview').style.display = 'none';
+  openModal('yt-modal');
+}
+function speakYTPreview(){
+  const q = (document.getElementById('yt-q').value || '').trim();
+  const el = document.getElementById('yt-preview');
+  if (!q) { el.style.display = 'none'; return; }
+  el.innerHTML = _mediaPreviewText('🎬 YouTube search:', q); el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'YouTube search for ' : 'YouTube पर ढूँढ रही हूँ ') + q + '. ' + (CURRENT_LANG==='en' ? 'Say haan to open.' : 'खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmYouTubeByVoice(){ speakYTPreview(); setTimeout(() => listenForYes(() => confirmYouTube()), 1500); }
+function confirmYouTube(){
+  const q = (document.getElementById('yt-q').value || '').trim();
+  if (!q) { alert('Speak or type what you want to watch.'); return; }
+  // Native Android bridge first — opens the YouTube app directly.
+  if (hasNativeBridge() && window.ChittiNative.openYouTube) {
+    try { window.ChittiNative.openYouTube(q); closeModal('yt-modal'); logAction('YouTube opened (native)', q); return; } catch (e) {}
+  }
+  _openExternal('https://www.youtube.com/results?search_query=' + encodeURIComponent(q));
+  closeModal('yt-modal');
+  logAction('YouTube opened', q);
+}
+
+// ── YouTube Music ────────────────────────────────────────────────────
+function openMusicModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('music-q').value = '';
+  document.getElementById('music-preview').style.display = 'none';
+  openModal('music-modal');
+}
+function speakMusicPreview(){
+  const q = (document.getElementById('music-q').value || '').trim();
+  const el = document.getElementById('music-preview');
+  if (!q) { el.style.display = 'none'; return; }
+  el.innerHTML = _mediaPreviewText('🎵 Music search:', q); el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'Playing music: ' : 'गाने ढूँढ रही हूँ: ') + q + '. ' + (CURRENT_LANG==='en' ? 'Say haan to open.' : 'खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmMusicByVoice(){ speakMusicPreview(); setTimeout(() => listenForYes(() => confirmMusic()), 1500); }
+function confirmMusic(){
+  const q = (document.getElementById('music-q').value || '').trim();
+  if (!q) { alert('Speak or type a song or artist.'); return; }
+  if (hasNativeBridge() && window.ChittiNative.openMusic) {
+    try { window.ChittiNative.openMusic(q); closeModal('music-modal'); logAction('Music opened (native)', q); return; } catch (e) {}
+  }
+  _openExternal('https://music.youtube.com/search?q=' + encodeURIComponent(q));
+  closeModal('music-modal');
+  logAction('Music opened', q);
+}
+
+// ── Video (long-form) ────────────────────────────────────────────────
+function openVideoModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('video-q').value = '';
+  document.getElementById('video-preview').style.display = 'none';
+  openModal('video-modal');
+}
+function speakVideoPreview(){
+  const q = (document.getElementById('video-q').value || '').trim();
+  const el = document.getElementById('video-preview');
+  if (!q) { el.style.display = 'none'; return; }
+  el.innerHTML = _mediaPreviewText('📺 Video search:', q); el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'Looking up video for ' : 'वीडियो ढूँढ रही हूँ: ') + q + '. ' + (CURRENT_LANG==='en' ? 'Say haan to open.' : 'खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmVideoByVoice(){ speakVideoPreview(); setTimeout(() => listenForYes(() => confirmVideo()), 1500); }
+function confirmVideo(){
+  const q = (document.getElementById('video-q').value || '').trim();
+  if (!q) { alert('Speak or type what you want to watch.'); return; }
+  // Append "full video" so Shorts don't win the result page.
+  const tunedQ = q + ' full video';
+  if (hasNativeBridge() && window.ChittiNative.openYouTube) {
+    try { window.ChittiNative.openYouTube(tunedQ); closeModal('video-modal'); logAction('Video opened (native)', q); return; } catch (e) {}
+  }
+  _openExternal('https://www.youtube.com/results?search_query=' + encodeURIComponent(tunedQ));
+  closeModal('video-modal');
+  logAction('Video opened', q);
+}
+
+// ── Google Maps ──────────────────────────────────────────────────────
+function openMapsModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('maps-q').value = '';
+  document.getElementById('maps-preview').style.display = 'none';
+  openModal('maps-modal');
+}
+function speakMapsPreview(){
+  const q = (document.getElementById('maps-q').value || '').trim();
+  const el = document.getElementById('maps-preview');
+  if (!q) { el.style.display = 'none'; return; }
+  el.innerHTML = _mediaPreviewText('🗺️ Directions to:', q); el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'Directions to ' : 'रास्ता दिखा रही हूँ: ') + q + '. ' + (CURRENT_LANG==='en' ? 'Say haan to open Maps.' : 'Maps खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmMapsByVoice(){ speakMapsPreview(); setTimeout(() => listenForYes(() => confirmMaps()), 1500); }
+function confirmMaps(){
+  const q = (document.getElementById('maps-q').value || '').trim();
+  if (!q) { alert('Speak or type a destination.'); return; }
+  const mode = document.getElementById('maps-mode').value || 'driving';
+  if (hasNativeBridge() && window.ChittiNative.openMaps) {
+    try { window.ChittiNative.openMaps(q, mode); closeModal('maps-modal'); logAction('Maps opened (native)', q + ' · ' + mode); return; } catch (e) {}
+  }
+  // Google Maps universal-link — works on web AND opens the Maps app on
+  // Android if it's installed (via Android's intent fallback).
+  _openExternal('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q) + '&travelmode=' + encodeURIComponent(mode));
+  closeModal('maps-modal');
+  logAction('Maps opened', q + ' · ' + mode);
+}
+
+// ── Web search ───────────────────────────────────────────────────────
+function openSearchModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('search-q').value = '';
+  document.getElementById('search-preview').style.display = 'none';
+  openModal('search-modal');
+}
+function speakSearchPreview(){
+  const q = (document.getElementById('search-q').value || '').trim();
+  const el = document.getElementById('search-preview');
+  if (!q) { el.style.display = 'none'; return; }
+  el.innerHTML = _mediaPreviewText('🔎 Google search:', q); el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'Searching the web for ' : 'वेब पर ढूँढ रही हूँ: ') + q + '. ' + (CURRENT_LANG==='en' ? 'Say haan to open Google.' : 'Google खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmSearchByVoice(){ speakSearchPreview(); setTimeout(() => listenForYes(() => confirmSearch()), 1500); }
+function confirmSearch(){
+  const q = (document.getElementById('search-q').value || '').trim();
+  if (!q) { alert('Speak or type a question.'); return; }
+  _openExternal('https://www.google.com/search?q=' + encodeURIComponent(q));
+  closeModal('search-modal');
+  logAction('Web search opened', q);
+}
+
+// ── Alarm (Android intent + web step-by-step fallback) ──────────────
+function openAlarmModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('alarm-time').value = '06:00';
+  document.getElementById('alarm-label').value = '';
+  document.getElementById('alarm-preview').style.display = 'none';
+  openModal('alarm-modal');
+}
+function _alarmFields(){
+  const t = (document.getElementById('alarm-time').value || '').trim();
+  const lbl = (document.getElementById('alarm-label').value || '').trim();
+  if (!t || !/^\d{2}:\d{2}$/.test(t)) return null;
+  const [hh, mm] = t.split(':').map(Number);
+  return { hh, mm, lbl, hhmm: t };
+}
+function speakAlarmPreview(){
+  const a = _alarmFields();
+  const el = document.getElementById('alarm-preview');
+  if (!a) { el.style.display = 'none'; return; }
+  const lblPart = a.lbl ? (' — ' + escapeHtml(a.lbl)) : '';
+  el.innerHTML = '⏰ Alarm at <b>' + a.hhmm + '</b>' + lblPart; el.style.display = 'block';
+  speakText((CURRENT_LANG==='en' ? 'Setting alarm for ' : 'अलार्म लगा रही हूँ ') + a.hhmm + (a.lbl ? ' — ' + a.lbl : '') + '. ' + (CURRENT_LANG==='en' ? 'Say haan to set.' : 'सेट करने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function proMicAlarm(btn){
+  getProRecog((text) => {
+    // Match patterns: "6 baje", "6:30 baje", "subah 6 baje", "wake me at 6 30"
+    let h = null, m = 0, label = '';
+    const m24 = text.match(/\b(\d{1,2}):(\d{2})\b/);
+    const mHour = text.match(/\b(\d{1,2})\b/);
+    if (m24) { h = Number(m24[1]); m = Number(m24[2]); }
+    else if (mHour) { h = Number(mHour[1]); }
+    if (h !== null) {
+      const pm = /\b(pm|evening|raat|shaam|sundhya|night)\b/i.test(text);
+      const am = /\b(am|morning|subah|savere|prabhat)\b/i.test(text);
+      if (pm && h < 12) h += 12;
+      if (am && h === 12) h = 0;
+      const labelM = text.match(/(?:for|ke liye|wala|wale)\s+(.+)$/i);
+      if (labelM) label = labelM[1].trim();
+      document.getElementById('alarm-time').value = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      if (label) document.getElementById('alarm-label').value = label;
+    }
+    speakAlarmPreview();
+  }, btn);
+}
+function confirmAlarmByVoice(){ speakAlarmPreview(); setTimeout(() => listenForYes(() => confirmAlarm()), 1500); }
+function confirmAlarm(){
+  const a = _alarmFields();
+  if (!a) { alert('Pick a valid time first.'); return; }
+  // Native Android: SET_ALARM intent — opens clock app with hour/minute/message pre-filled.
+  if (hasNativeBridge() && window.ChittiNative.setAlarm) {
+    try {
+      window.ChittiNative.setAlarm(a.hh, a.mm, a.lbl || '');
+      closeModal('alarm-modal');
+      logAction('Alarm set (native)', a.hhmm + (a.lbl ? ' — ' + a.lbl : ''));
+      speakText((CURRENT_LANG==='en' ? 'Alarm set for ' : 'अलार्म सेट हो गया ') + a.hhmm + (a.lbl ? ' — ' + a.lbl : ''), CURRENT_LANG);
+      return;
+    } catch (e) {}
+  }
+  // Web fallback — honest step-by-step (no web API for system alarm).
+  closeModal('alarm-modal');
+  logAction('Alarm steps shown (web fallback)', a.hhmm + (a.lbl ? ' — ' + a.lbl : ''));
+  const steps = (CURRENT_LANG === 'en'
+    ? 'I cannot set the alarm from a web browser. Please open your Clock app, tap the plus icon, set the time to ' + a.hhmm + (a.lbl ? ', label it ' + a.lbl : '') + ', and save. In the Android app, I will do this for you.'
+    : 'मैं browser से अलार्म नहीं लगा सकती। कृपया Clock app खोलो, plus icon दबाओ, समय ' + a.hhmm + ' करो' + (a.lbl ? ', label "' + a.lbl + '" लगाओ' : '') + ', और save करो। Android app में मैं ये खुद कर दूँगी।');
+  speakText(steps, CURRENT_LANG);
+  alert(steps);
+}
+
 function openLanguageModal(){
   if (!consentGiven()) { reopenConsent(); return; }
   openModal('lang-modal');
