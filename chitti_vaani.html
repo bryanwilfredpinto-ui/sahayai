@@ -431,17 +431,103 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
 .vai-qr-modal .url{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--vai-saffron);font-weight:700;word-break:break-all}
 .vai-qr-modal .close{margin-top:16px;background:var(--vai-green);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px}
 
-/* ── Settings tab (6th tab) ── */
-.vai-settings-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-.vai-settings-row{background:#fff;border:1px solid var(--vai-line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px}
-.vai-settings-row .ico{font-size:32px;line-height:1}
-.vai-settings-row .info{flex:1;min-width:0}
-.vai-settings-row .name{font-size:16px;font-weight:800;color:var(--vai-navy)}
-.vai-settings-row .desc{font-size:13px;color:#555;line-height:1.45;margin-top:2px}
-.vai-settings-row .actions{display:flex;flex-direction:column;gap:4px}
-.vai-settings-row .actions button{background:transparent;border:1px solid var(--vai-line);border-radius:8px;width:38px;height:38px;font-size:16px;cursor:pointer}
-.vai-settings-row .actions button:active{background:#f0f8f0}
-.vai-settings-row a.open{color:var(--vai-saffron);font-weight:700;font-size:13px;text-decoration:none}
+/* ── Settings panel — Sire spec 2026-05-23 ── */
+.vai-settings-stripe{height:6px;border-radius:3px;
+  background:linear-gradient(90deg,var(--vai-saffron) 0 33.3%,#fff 33.3% 66.6%,var(--vai-green) 66.6% 100%);
+  border:1px solid var(--vai-line);margin:4px 0 12px}
+.vai-settings-card{position:relative}
+.vai-settings-card .section-title{margin-bottom:8px}
+.vai-settings-card .vai-settings-h,.vai-settings-h{font-size:18px;font-weight:900;color:var(--vai-navy) !important;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.vai-settings-h .ico{font-size:22px}
+.vai-settings-back{position:absolute;top:16px;right:16px;background:transparent;border:1px solid var(--vai-line);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;color:var(--vai-navy);min-height:38px}
+.vai-settings-note{font-size:13px;color:#555;line-height:1.5;margin-top:8px}
+
+/* Battery */
+.vai-battery{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.vai-battery-bar{flex:1;height:24px;background:#eee;border-radius:12px;overflow:hidden;border:1px solid var(--vai-line)}
+.vai-battery-fill{height:100%;background:linear-gradient(90deg,var(--vai-green),#22c55e);transition:width .35s ease}
+.vai-battery-fill.warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.vai-battery-fill.crit{background:linear-gradient(90deg,#dc2626,#ef4444)}
+.vai-battery-pct{font-size:28px;font-weight:900;color:var(--vai-navy);min-width:80px;text-align:right}
+.vai-battery-meta{font-size:14px;color:#555;margin-bottom:14px}
+.vai-battery-topups{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+.vai-battery-topups .topup{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;border:2px solid var(--vai-line);background:#fff;border-radius:14px;cursor:pointer;min-height:70px}
+.vai-battery-topups .topup .amt{font-size:18px;font-weight:900;color:var(--vai-navy)}
+.vai-battery-topups .topup .q{font-size:12px;color:#555;margin-top:2px}
+.vai-battery-topups .topup.star{border-color:var(--vai-saffron);background:linear-gradient(180deg,#fff,#fff8e1)}
+.vai-battery-topups .topup.star .amt{color:var(--vai-saffron)}
+.vai-battery-topups .topup:active{transform:scale(.97)}
+
+/* Share */
+.vai-settings-qr{width:200px;height:200px;display:block;margin:0 auto 14px;border:2px solid var(--vai-line);border-radius:14px;padding:8px;background:#fff}
+.vai-share-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vai-share-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#fff;border:1px solid var(--vai-line);border-radius:12px;padding:12px 8px;font-size:13px;font-weight:700;color:var(--vai-navy);cursor:pointer;min-height:64px}
+.vai-share-btn span:first-child{font-size:22px}
+.vai-share-btn:active{background:#f0f8f0;border-color:var(--vai-green)}
+
+/* Privacy */
+.vai-dpdp-row{display:flex;align-items:center;justify-content:space-between;width:100%;background:linear-gradient(180deg,#fff,#fffaf0);border:1px solid var(--vai-saffron);border-radius:12px;padding:14px;font-size:15px;cursor:pointer;color:var(--vai-navy);margin-bottom:12px;min-height:56px}
+.vai-dpdp-row strong{display:block;font-weight:800}
+.vai-dpdp-row small{display:block;font-size:12px;color:#666;margin-top:2px;font-weight:500}
+.vai-dpdp-row > span:last-child{font-size:22px;color:var(--vai-green);font-weight:900}
+.vai-perms{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.vai-perm{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--vai-line);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;color:var(--vai-dark);min-height:46px}
+.vai-perm .mark{font-size:18px}
+
+/* Products — expandable cards */
+.vai-products-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.vai-product{background:#fff;border:1.5px solid var(--vai-line);border-radius:14px;overflow:hidden}
+.vai-product-head{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;min-height:64px}
+.vai-product-head:hover{background:#fafafa}
+.vai-product-head .pico{font-size:30px;line-height:1}
+.vai-product-head .pinfo{flex:1;min-width:0}
+.vai-product-head .pname{font-size:16px;font-weight:800;color:var(--vai-navy)}
+.vai-product-head .pbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.vai-product-head .pbadge.live{background:var(--vai-saffron);color:#fff}
+.vai-product-head .pbadge.beta{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.vai-product-head .pbadge.p3{background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe}
+.vai-product-head .parrow{font-size:22px;color:var(--vai-green);font-weight:900;transition:transform .2s}
+.vai-product.open .vai-product-head .parrow{transform:rotate(90deg)}
+.vai-product-body{display:none;padding:0 14px 14px;border-top:1px solid var(--vai-line);background:#fafafa}
+.vai-product.open .vai-product-body{display:block}
+.vai-product-desc{font-size:14px;color:#444;line-height:1.55;margin:10px 0 8px}
+.vai-product-cmds{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.vai-product-cmd{background:#fff;border:1px dashed var(--vai-saffron);border-radius:10px;padding:9px 12px;font-size:14px;color:var(--vai-dark);cursor:pointer;text-align:left}
+.vai-product-cmd:active{background:#fffbe6}
+.vai-product-cmd::before{content:'"'}
+.vai-product-cmd::after{content:'"'}
+.vai-product-actions{display:flex;gap:6px;flex-wrap:wrap}
+.vai-product-actions button{background:#fff;border:1px solid var(--vai-line);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;gap:4px}
+.vai-product-actions button:hover{border-color:var(--vai-green)}
+.vai-product-actions .open-link{background:var(--vai-green);color:#fff;border-color:var(--vai-green)}
+.vai-product-fb{display:none;margin-top:10px;padding:10px;background:#fff8e1;border:1px solid var(--vai-saffron);border-radius:10px}
+.vai-product.fb-open .vai-product-fb{display:block}
+.vai-product-fb textarea{width:100%;min-height:60px;border:1px solid var(--vai-line);border-radius:8px;padding:8px;font-family:inherit;font-size:14px;resize:vertical}
+.vai-product-fb .vai-fb-actions{display:flex;gap:6px;margin-top:6px}
+.vai-product-fb .vai-fb-actions button{flex:1;background:var(--vai-green);color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;min-height:42px}
+.vai-product-fb .vai-fb-actions button.cancel{background:#fff;color:var(--vai-dark);border:1px solid var(--vai-line)}
+
+/* General */
+.vai-general-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--vai-line)}
+.vai-general-row label{font-size:15px;font-weight:700;color:var(--vai-navy)}
+.vai-general-row select{font-size:15px;padding:10px 12px;border:1px solid var(--vai-line);border-radius:10px;background:#fff;min-height:46px}
+.vai-general-btn{display:block;width:100%;margin-top:10px;background:#fff;border:1px solid var(--vai-line);border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;color:var(--vai-navy);min-height:54px}
+.vai-version{font-size:12px;color:#888;text-align:center;margin-top:10px;font-family:'JetBrains Mono',monospace}
+
+/* Font-size scale via body class */
+body.vai-fs-115{font-size:18.4px}
+body.vai-fs-115 main .pro-card .lbl,body.vai-fs-115 main .pro-card .sub{font-size:16px}
+body.vai-fs-130{font-size:20.8px}
+body.vai-fs-130 main .pro-card .lbl{font-size:18px}
+
+/* Compact Talk tab — quick actions + recent collapse into expanders so the
+   user sees the mic first (Sire 2026-05-23 GAP 1). */
+#vai-panel-talk details{margin-top:14px;border:1px solid var(--vai-line);border-radius:14px;background:#fff;overflow:hidden}
+#vai-panel-talk details > summary{padding:14px;list-style:none;cursor:pointer;font-weight:800;color:var(--vai-navy);display:flex;align-items:center;justify-content:space-between;font-size:16px}
+#vai-panel-talk details > summary::-webkit-details-marker{display:none}
+#vai-panel-talk details > summary::after{content:'›';font-size:22px;color:var(--vai-green);transform:rotate(90deg);transition:transform .2s}
+#vai-panel-talk details[open] > summary::after{transform:rotate(-90deg)}
+#vai-panel-talk details > summary span.summary-sub{font-size:12px;color:#666;font-weight:500;margin-left:8px}
 
 </style>
 </head>
@@ -551,11 +637,9 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
     </div>
   </div>
   <div class="header-controls">
-    <button onclick="speakIntro()" aria-label="Hear how to use this page">🔊 How to use</button>
-    <button class="vai-gp-toggle" id="vai-gp-pill" onclick="vaiGrandparentToggle()" aria-label="Grandparent mode — 3 big buttons, large font">👵 Grandparent</button>
-    <button onclick="vaiOpenQR()" aria-label="Show QR code to open this page on phone">📱 QR share</button>
-    <button onclick="clearHistory()" aria-label="Clear conversation history">🗑️ Clear history</button>
-    <button onclick="reopenConsent()" aria-label="Re-read terms and conditions">📜 Re-read T&amp;C</button>
+    <button onclick="speakIntro()" aria-label="Hear how to use this page"><span>🔊 </span><span data-vai-i18n="hdr.howto">कैसे उपयोग करें</span></button>
+    <button class="vai-gp-toggle" id="vai-gp-pill" onclick="vaiGrandparentToggle()" aria-label="Grandparent mode — 3 big buttons, large font"><span>👵 </span><span data-vai-i18n="hdr.gp">बुज़ुर्ग मोड</span></button>
+    <button onclick="vaiSwitchTab('settings')" aria-label="Open Settings — battery, share, privacy, all products" style="background:var(--vai-saffron);border-color:var(--vai-saffron);font-weight:800"><span>⚙️ </span><span data-vai-i18n="hdr.settings">सेटिंग्स</span></button>
   </div>
 </header>
 
@@ -607,6 +691,8 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
     </div>
   </section>
 
+  <details>
+    <summary>⚡ <span data-vai-i18n="talk.quick">Quick actions</span><span class="summary-sub" data-vai-i18n="talk.quick.sub">tap to expand</span></summary>
   <!-- ════════ QUICK ACTIONS ════════ -->
   <section class="section-card chitti-response" aria-labelledby="quick-title" data-chitti-section="⚡ Quick actions">
     <h2 class="section-title" id="quick-title"><span class="ico">⚡</span> Quick actions</h2>
@@ -639,6 +725,10 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
     </div>
   </section>
 
+  </details>
+
+  <details>
+    <summary>🕘 <span data-vai-i18n="talk.recent">Recent</span><span class="summary-sub" data-vai-i18n="talk.recent.sub">tap to expand</span></summary>
   <!-- ════════ HISTORY ════════ -->
   <section class="section-card chitti-response" aria-labelledby="hist-title" data-chitti-section="🕘 Recent">
     <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent</h2>
@@ -646,6 +736,7 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
     <div id="history" class="history"></div>
   </section>
 
+  </details>
   </div><!-- /TAB 1 TALK -->
 
   <!-- ══════════════ TAB 2 · ACT ══════════════ -->
@@ -921,17 +1012,104 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
 
   </div><!-- /TAB 1 TALK part 2 (audit) -->
 
-  <!-- ══════════════ TAB 6 · SETTINGS (all 15 Chitti products) ══════════════ -->
+  <!-- ══════════════ SETTINGS (Battery · Share · Privacy · Products · General) ══════════════ -->
   <div class="vai-tab-panel" data-tab="settings" id="vai-panel-settings">
-    <section class="section-card">
-      <h2 class="section-title" style="color:var(--vai-navy)"><span class="ico">⚙️</span> Settings &amp; all Chitti products</h2>
-      <div class="section-sub">Every Chitti — speaker icon reads the description aloud · 👍 / 👎 sends per-product feedback to the founder.</div>
-      <div id="vai-settings-products" class="vai-settings-list"></div>
+    <!-- Tricolour stripe at top of settings -->
+    <div class="vai-settings-stripe" aria-hidden="true"></div>
+    <section class="section-card vai-settings-card">
+      <h2 class="section-title vai-settings-h"><span class="ico">⚙️</span> <span data-vai-i18n="set.title">सेटिंग्स</span></h2>
+      <button class="vai-settings-back" onclick="vaiSwitchTab('talk')" aria-label="Back to Talk"><span data-vai-i18n="set.back">← वापस</span></button>
     </section>
-    <section class="section-card">
-      <h2 class="section-title" style="color:var(--vai-navy);font-size:18px"><span class="ico">🛡️</span> DPDP &amp; data</h2>
-      <div class="section-sub" id="vai-dpdp-summary">Chitti complies with the Digital Personal Data Protection Act 2023. Your voice never leaves your device unless you tap Send.</div>
-      <button class="vai-btn ghost" onclick="reopenConsent()" style="border:1px solid var(--vai-line);background:#fff;padding:14px;border-radius:12px;font-weight:700;cursor:pointer">📜 Re-read full consent</button>
+
+    <!-- ── CHITTI BATTERY ── -->
+    <section class="section-card vai-settings-card">
+      <h3 class="vai-settings-h"><span class="ico">🔋</span> <span data-vai-i18n="set.battery.title">Chitti Battery</span></h3>
+      <div class="vai-battery">
+        <div class="vai-battery-bar"><div class="vai-battery-fill" id="vai-battery-fill"></div></div>
+        <div class="vai-battery-pct" id="vai-battery-pct">100%</div>
+      </div>
+      <div class="vai-battery-meta">
+        <span id="vai-battery-queries">~500 queries left</span> ·
+        <span id="vai-battery-days">Est. 30 days</span>
+      </div>
+      <div class="vai-battery-topups">
+        <button class="topup" data-amt="100"   onclick="vaiTopUp(100)"><span class="amt">₹100</span><span class="q">+ 100 q</span></button>
+        <button class="topup" data-amt="250"   onclick="vaiTopUp(250)"><span class="amt">₹250</span><span class="q">+ 280 q</span></button>
+        <button class="topup star" data-amt="500" onclick="vaiTopUp(500)"><span class="amt">₹500 ⭐</span><span class="q">+ 600 q</span></button>
+        <button class="topup" data-amt="1000"  onclick="vaiTopUp(1000)"><span class="amt">₹1000</span><span class="q">+ 1300 q</span></button>
+      </div>
+      <div class="vai-settings-note" data-vai-i18n="set.battery.note">हर सवाल के टोकन Chitti के server पर खर्च होते हैं — Top-up से aage और सवाल पूछ सकते हैं।</div>
+    </section>
+
+    <!-- ── SHARE CHITTI ── -->
+    <section class="section-card vai-settings-card">
+      <h3 class="vai-settings-h"><span class="ico">📤</span> <span data-vai-i18n="set.share">Chitti Share करें</span></h3>
+      <img class="vai-settings-qr" id="vai-settings-qr" src="" alt="QR code" />
+      <div class="vai-share-row">
+        <button class="vai-share-btn" onclick="vaiShareWA()"><span>💬</span><span data-vai-i18n="set.share.wa">WhatsApp</span></button>
+        <button class="vai-share-btn" onclick="vaiShareCopy()"><span>📋</span><span data-vai-i18n="set.share.copy">Copy link</span></button>
+        <button class="vai-share-btn" onclick="vaiShareNative()"><span>📱</span><span data-vai-i18n="set.share.share">Share</span></button>
+      </div>
+    </section>
+
+    <!-- ── PRIVACY ── -->
+    <section class="section-card vai-settings-card">
+      <h3 class="vai-settings-h"><span class="ico">🛡️</span> <span data-vai-i18n="set.privacy">Privacy &amp; डेटा</span></h3>
+      <button class="vai-dpdp-row" onclick="reopenConsent()">
+        <span><strong data-vai-i18n="set.dpdp.title">DPDP Act 2023</strong>
+        <small data-vai-i18n="set.dpdp.sub">पूरी consent पढ़ें</small></span>
+        <span>→</span>
+      </button>
+      <div class="vai-perms">
+        <div class="vai-perm"><span class="mark on">✅</span><span data-vai-i18n="set.perm.mic">Microphone</span></div>
+        <div class="vai-perm"><span class="mark on">✅</span><span data-vai-i18n="set.perm.contacts">Contacts</span></div>
+        <div class="vai-perm"><span class="mark on">✅</span><span data-vai-i18n="set.perm.storage">Storage</span></div>
+        <div class="vai-perm"><span class="mark off">⚪</span><span data-vai-i18n="set.perm.location">Location</span></div>
+      </div>
+    </section>
+
+    <!-- ── ALL PRODUCTS ── -->
+    <section class="section-card vai-settings-card">
+      <h3 class="vai-settings-h"><span class="ico">🪔</span> <span data-vai-i18n="set.products">सभी Chitti products</span></h3>
+      <div class="vai-settings-note" data-vai-i18n="set.products.sub">Card tap करें → expand · 🔊 = सुनें · ▶ Demo · 👍 = pasand · 👎 = इस card को feedback दें</div>
+      <div id="vai-settings-products" class="vai-products-list"></div>
+    </section>
+
+    <!-- ── GENERAL ── -->
+    <section class="section-card vai-settings-card">
+      <h3 class="vai-settings-h"><span class="ico">🔧</span> <span data-vai-i18n="set.general">General</span></h3>
+      <div class="vai-general-row">
+        <label data-vai-i18n="set.font">Font size</label>
+        <select id="vai-font-size" onchange="vaiSetFontSize(this.value)">
+          <option value="100">100% (Normal)</option>
+          <option value="115">115% (Large)</option>
+          <option value="130">130% (Extra large)</option>
+        </select>
+      </div>
+      <div class="vai-general-row">
+        <label data-vai-i18n="set.voicespeed">Voice speed</label>
+        <select id="vai-voice-speed" onchange="vaiSetVoiceSpeed(this.value)">
+          <option value="0.85">Slow</option>
+          <option value="1.0" selected>Normal</option>
+          <option value="1.15">Fast</option>
+        </select>
+      </div>
+      <div class="vai-general-row">
+        <label data-vai-i18n="set.lang">Language</label>
+        <select id="vai-lang-select-2" onchange="vaiLangSelectChange(this.value)">
+          <option value="hi">हिंदी · Hindi</option>
+          <option value="en">English</option>
+          <option value="bn">বাংলা · Bangla</option>
+          <option value="ta">தமிழ் · Tamil</option>
+          <option value="te">తెలుగు · Telugu</option>
+          <option value="mr">मराठी · Marathi</option>
+          <option value="gu">ગુજરાતી · Gujarati</option>
+          <option value="kn">ಕನ್ನಡ · Kannada</option>
+          <option value="ml">മലയാളം · Malayalam</option>
+        </select>
+      </div>
+      <button class="vai-general-btn" onclick="vaiOpenCaregiver()" data-vai-i18n="set.caregiver">👨‍👩‍👧 Caregiver panel</button>
+      <div class="vai-version" id="vai-version">Chitti Vaani · v1.4 · 2026-05-23</div>
     </section>
   </div>
 
@@ -973,10 +1151,7 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
     <span class="ico">📁</span><span data-vai-i18n="tab.vault">Vault</span>
   </button>
   <button type="button" data-tab-target="circle" onclick="vaiSwitchTab('circle')">
-    <span class="ico">👨‍👩‍👧</span><span data-vai-i18n="tab.circle">Circle</span>
-  </button>
-  <button type="button" data-tab-target="settings" onclick="vaiSwitchTab('settings')">
-    <span class="ico">⚙️</span><span data-vai-i18n="tab.settings">More</span>
+    <span class="ico">👨‍👩‍👧</span><span data-vai-i18n="tab.circle">अपने</span>
   </button>
   <button type="button" data-tab-target="sos" class="sos" onclick="vaiSwitchTab('sos')">
     <span class="ico">🚨</span><span data-vai-i18n="tab.sos">SOS</span>
@@ -1604,7 +1779,7 @@ const VAI_I18N = {
         'onb.name':'What should Chitti call you?', 'onb.name.ph':'Your name (optional)',
         'onb.try':'Say "Hello Chitti" 🎙️', 'onb.skip':'Skip — open Chitti',
         'onb.next':'Next →', 'onb.start':'Start ✓' },
-  hi: { 'tab.talk':'बात करो','tab.act':'काम','tab.vault':'तिजोरी','tab.circle':'अपने','tab.settings':'और','tab.sos':'मदद',
+  hi: { 'tab.talk':'बोलें','tab.act':'करें','tab.vault':'दस्तावेज़','tab.circle':'अपने','tab.settings':'सेटिंग्स','tab.sos':'SOS',
         'err.network':'Chitti sun nahi payi — dobara bolein',
         'err.retry':'Phir bolo',
         'onb.welcome':'Chitti mein swagat hai', 'onb.pick':'Apni bhasha chunein',
@@ -1700,7 +1875,25 @@ function vaiSwitchTab(tab){
   document.querySelectorAll('.vai-bnav button').forEach(b => {
     b.classList.toggle('active', b.dataset.tabTarget === tab);
   });
-  if (tab === 'settings') vaiRenderSettings();
+  if (tab === 'settings') {
+    vaiRenderSettings();
+    // Walk every new data-vai-i18n node in the freshly-rendered cards
+    if (typeof window.updateAllStrings === 'function') {
+      window.updateAllStrings(localStorage.getItem(LANG_KEY) || 'hi');
+    }
+    vaiBatteryRender();
+    // QR
+    const qrImg = document.getElementById('vai-settings-qr');
+    if (qrImg && !qrImg.src) {
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent('https://sahayai.in/chitti_vaani.html');
+    }
+    // Sync the secondary lang selector
+    const ls2 = document.getElementById('vai-lang-select-2');
+    if (ls2) ls2.value = (localStorage.getItem(LANG_KEY) || 'hi');
+    // Sync font-size selector
+    const fs = document.getElementById('vai-font-size');
+    try { if (fs) fs.value = localStorage.getItem('chitti_vaani_font_size') || '100'; } catch(e){}
+  }
   try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
 }
 
@@ -1730,41 +1923,214 @@ function vaiOpenQR(){
 }
 function vaiCloseQR(){ document.getElementById('vai-qr-modal').classList.remove('shown'); }
 
-/* ── Settings tab: list every Chitti product ── */
+/* ── Settings: products data + expandable cards (Sire spec 2026-05-23) ── */
 const VAI_PRODUCTS = [
-  { slug:'chitti_vaani',              icon:'🎙️', name:'Chitti Vaani',          desc:'Voice-first assistant — speak, listen, summarise calls.' },
-  { slug:'chitti_complete_technical', icon:'📈', name:'Chitti Technical',       desc:'Indian-market candles + 14+ indicators (RSI, MACD, Roshan).' },
-  { slug:'chitti_fundamentals',       icon:'📋', name:'Chitti Fundamentals',    desc:'Buffett · Munger · Graham · Kedia · 25+ strategy filters.' },
-  { slug:'chitti_medupi',             icon:'💊', name:'Chitti MedUPI',          desc:'UPI for medicine bills. Scan strip → Jan Aushadhi equivalents.' },
-  { slug:'chitti_news',               icon:'📰', name:'Chitti News',            desc:'Your state, your language. 26+ trusted Indian RSS sources.' },
-  { slug:'chitti_news_ai',            icon:'🤖', name:'Chitti News AI',         desc:'AI-only news — 17 sources, voice-summarised, fact-checked.' },
-  { slug:'chitti_upi',                icon:'🛡️', name:'Chitti UPI Guard',       desc:'Paste it before you pay it. RBI 2026 rule cards built in.' },
-  { slug:'chitti_scanner',            icon:'📷', name:'Chitti Scanner',         desc:'Snap a label — food / medicine / bill — flags warnings.' },
-  { slug:'chitti_ca',                 icon:'🧾', name:'Chitti CA',              desc:'AI tax help — ITR · GST · TDS · 80C / 80D. Consult a CA before filing.' },
-  { slug:'chitti_legal',              icon:'⚖️', name:'Chitti Legal',           desc:'Explains rent / NDA / sale deed / FIR / notice in plain words.' },
-  { slug:'chitti_government',         icon:'🏛️', name:'Chitti Government',      desc:'PM-Kisan, Ayushman, PMAY + 30+ schemes. Eligibility check.' },
-  { slug:'chitti_logo_video',         icon:'🎨', name:'Chitti Logo & Video',    desc:'Free brand assets for kirana / freelancers / school projects.' },
-  { slug:'chitti_voice_factory',      icon:'🪔', name:'Chitti Voice Factory',   desc:'26-language voice ledger. Bhashini · AI4Bharat · mock cascade.' },
-  { slug:'chitti_2wheeler',           icon:'🏍️', name:'Chitti 2-Wheeler',       desc:'Service + fuel-economy + RC/insurance for every Indian rider.' },
-  { slug:'chitti_4wheeler',           icon:'🚗', name:'Chitti 4-Wheeler',       desc:'Car service + FASTag + PUC + family-car maintenance log.' },
+  { slug:'chitti_vaani',              icon:'🎙️', name:'Chitti Vaani',          status:'live', desc:'Voice-first assistant — bolen, sune, kaam karen. Mic dabaiye aur boliye.',
+    cmds:['Hello Chitti','Mom ko WhatsApp bhejo','Subah 6 baje uthao'] },
+  { slug:'chitti_medupi',             icon:'💊', name:'Chitti MedUPI',          status:'live', desc:'Dawai bill par UPI — Jan Aushadhi equivalent dikhao, 50–90% bachao.',
+    cmds:['Yeh dawa ka generic dikhao','Crocin kitna sasta milega'] },
+  { slug:'chitti_upi',                icon:'🛡️', name:'Chitti UPI Guard',       status:'live', desc:'Paste karne se pehle paisa bhejne ka risk check karo — RBI 2026 rule.',
+    cmds:['Yeh SMS safe hai ya fraud?','UPI link paste karke check karo'] },
+  { slug:'chitti_news',               icon:'📰', name:'Chitti News',            status:'live', desc:'Aapka state, aapki bhasha, aapki khabar. 26+ trusted RSS sources.',
+    cmds:['Aaj ki badi khabar','Mere state ki news'] },
+  { slug:'chitti_news_ai',            icon:'🤖', name:'Chitti News AI',         status:'live', desc:'Khabar ko plain Hindi mein samjhao — aur yeh aapko kaise affect karti hai.',
+    cmds:['Khabar ko plain Hindi mein samjhao','Yeh news mujhe kaise affect karti hai'],
+    link:'chitti_news.html' },
+  { slug:'chitti_scanner',            icon:'📷', name:'Chitti Scanner',         status:'live', desc:'Khaane / dawai / bill / contract scan karo — warning + savings dikhega.',
+    cmds:['Food label scan karo','Yeh contract padh ke samjhao'] },
+  { slug:'chitti_4wheeler',           icon:'🚗', name:'Chitti 4 Wheeler',       status:'beta', desc:'Gaadi ke liye companion — service date, FASTag, PUC, insurance reminder, family-car maintenance log.',
+    cmds:['Meri gaadi ka insurance kab hai','Nearest service center'],
+    link:'chitti_4wheeler.html' },
+  { slug:'chitti_2wheeler',           icon:'🏍️', name:'Chitti 2 Wheeler',       status:'beta', desc:'Bike ke liye companion — service, fuel-economy, RC, monsoon checklist, daily commuters ke liye.',
+    cmds:['Meri bike ka insurance kab hai','Nearest puncture shop'],
+    link:'chitti_2wheeler.html' },
+  { slug:'chitti_ca',                 icon:'📊', name:'Chitti CA',              status:'beta', desc:'ITR · GST · TDS · 80C / 80D — pehli baar filing waalon ke liye. Final filing CA se confirm karein.',
+    cmds:['ITR-1 kaise bharna hai','TDS notice ka matlab kya hai'] },
+  { slug:'chitti_legal',              icon:'⚖️', name:'Chitti Legal',           status:'beta', desc:'Rent agreement, NDA, sale deed, FIR copy, notice — plain Hindi mein samjhao + kya pooche.',
+    cmds:['Yeh rent agreement padh ke samjhao','NDA mein dhyaan kya rakhu'] },
+  { slug:'chitti_government',         icon:'🏛️', name:'Chitti Government',      status:'beta', desc:'PM-Kisan, Ayushman, PMAY, MGNREGA + 30+ schemes — eligibility + document checklist.',
+    cmds:['Mujhe kaun si yojana milegi','Aadhaar link kaise karu'] },
+  { slug:'chitti_complete_technical', icon:'📈', name:'Chitti Shares',          status:'beta', desc:'Indian-market candles + 14+ indicators (RSI, MACD, Roshan, Force Index).',
+    cmds:['HDFC ka technical chart','RSI kya bata raha hai'] },
+  { slug:'__grandparent',             icon:'👴', name:'Grandparent Mode',       status:'live', desc:'3 buttons only · 28 px font · giant mic. Senior citizens ke liye sabse asaan flow.',
+    cmds:['Bolo Chitti','Mujhe call karo'],
+    action:'grandparent' },
+  { slug:'__vault',                   icon:'🔒', name:'Document Vault',         status:'live', desc:'Aadhaar, PAN, passport, insurance, property — encrypted, har share par "haan/nahi" confirmation.',
+    cmds:['Apna PAN dikhao','Aadhaar Mom ko bhejo'],
+    action:'vault' },
+  { slug:'chitti_voice_factory',      icon:'🎤', name:'Voice Factory',          status:'p3',   desc:'26-language voice ledger — Bhashini · AI4Bharat · honest cascade. Phase 3.',
+    cmds:['Tulu mein bolo','Sanskrit mein samjhao'] },
 ];
+
 function vaiRenderSettings(){
   const root = document.getElementById('vai-settings-products');
   if (!root) return;
   if (root.dataset.rendered === '1') return;
-  root.innerHTML = VAI_PRODUCTS.map(p => `
-    <div class="vai-settings-row chitti-response" data-chitti-section="${p.icon} ${p.name}">
-      <div class="ico">${p.icon}</div>
-      <div class="info">
-        <div class="name">${p.name}</div>
-        <div class="desc">${p.desc}</div>
-        <a class="open" href="${p.slug}.html">Open →</a>
+  const badgeText = { live:'Live ✓', beta:'Beta', p3:'Phase 3' };
+  root.innerHTML = VAI_PRODUCTS.map((p, i) => {
+    const link = p.link || (p.slug.startsWith('__') ? '#' : (p.slug + '.html'));
+    const linkBtn = p.slug.startsWith('__')
+      ? (p.action === 'grandparent'
+          ? `<button class="open-link" onclick="vaiGrandparentToggle()">👴 Grandparent ON</button>`
+          : `<button class="open-link" onclick="vaiSwitchTab('vault')">🔒 Vault खोलें</button>`)
+      : `<a class="open-link vai-product-actions" href="${link}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><button class="open-link" type="button">पूरा page → </button></a>`;
+    return `
+    <div class="vai-product" data-idx="${i}" data-slug="${p.slug}">
+      <div class="vai-product-head" onclick="vaiToggleProduct(${i})">
+        <span class="pico">${p.icon}</span>
+        <span class="pinfo"><span class="pname">${p.name}</span><span class="pbadge ${p.status}">${badgeText[p.status]}</span></span>
+        <span class="parrow">›</span>
       </div>
-      <div class="actions">
-        <button onclick="speakText('${p.name}. ${p.desc.replace(/'/g, "\\'")}', CURRENT_LANG)" aria-label="Read ${p.name} aloud">🔊</button>
+      <div class="vai-product-body">
+        <div class="vai-product-desc">${p.desc}</div>
+        <div class="vai-product-cmds">
+          ${p.cmds.map(c => `<button class="vai-product-cmd" onclick="vaiTryCommand('${c.replace(/'/g, "\\'")}')">${c}</button>`).join('')}
+        </div>
+        <div class="vai-product-actions">
+          <button onclick="speakText('${p.name}. ${p.desc.replace(/'/g, "\\'")}', CURRENT_LANG)" aria-label="${p.name} सुनें">🔊</button>
+          <button onclick="vaiDemoProduct(${i})"><span>▶ </span><span data-vai-i18n="set.demo">Demo</span></button>
+          <button onclick="vaiVoteProduct(${i}, 1)">👍</button>
+          <button onclick="vaiVoteProduct(${i}, -1)">👎</button>
+          ${linkBtn}
+        </div>
+        <div class="vai-product-fb">
+          <textarea id="vai-product-fb-${i}" placeholder="Aapka feedback (sirf ${p.name} ke liye) — kya theek nahi hai?"></textarea>
+          <div class="vai-fb-actions">
+            <button class="cancel" onclick="vaiCloseFb(${i})">Cancel</button>
+            <button onclick="vaiSubmitFb(${i})">Bhejo</button>
+          </div>
+        </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   root.dataset.rendered = '1';
+}
+function vaiToggleProduct(i){
+  const card = document.querySelector(`.vai-product[data-idx="${i}"]`);
+  if (!card) return;
+  const wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.vai-product.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) card.classList.add('open');
+}
+function vaiTryCommand(cmd){
+  // Switch to Talk tab and route the command through the existing intent
+  // router so the user sees the modal / response immediately.
+  vaiSwitchTab('talk');
+  setTimeout(() => {
+    const ta = document.getElementById('user-text'); if (ta) ta.value = cmd;
+    if (typeof routeVoiceIntent === 'function' && routeVoiceIntent(cmd)) return;
+    if (typeof sendToChitti === 'function') sendToChitti();
+  }, 220);
+}
+function vaiDemoProduct(i){
+  const p = VAI_PRODUCTS[i]; if (!p) return;
+  speakText((p.cmds[0] || 'Demo') + '. ' + p.desc, CURRENT_LANG);
+}
+function vaiVoteProduct(i, v){
+  const p = VAI_PRODUCTS[i]; if (!p) return;
+  try { logAction(v > 0 ? 'Product 👍' : 'Product 👎', p.name); } catch(e){}
+  if (v < 0) {
+    const card = document.querySelector(`.vai-product[data-idx="${i}"]`);
+    if (card) card.classList.add('fb-open');
+  }
+}
+function vaiCloseFb(i){
+  const card = document.querySelector(`.vai-product[data-idx="${i}"]`);
+  if (card) card.classList.remove('fb-open');
+}
+async function vaiSubmitFb(i){
+  const p = VAI_PRODUCTS[i]; if (!p) return;
+  const txt = (document.getElementById('vai-product-fb-' + i).value || '').trim();
+  if (!txt) { vaiCloseFb(i); return; }
+  try {
+    await fetch(API_BASE + '/api/feedback', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chitti: p.slug, kind: 'thumbs_down', message: txt, page: 'chitti_vaani:settings' }),
+    });
+  } catch(e){}
+  try { logAction('Product feedback sent', p.name); } catch(e){}
+  vaiCloseFb(i);
+  speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
+}
+
+/* ── Chitti Battery (token budget visualisation) ── */
+const VAI_BATTERY_KEY = 'chitti_vaani_battery_q'; // remaining queries
+function vaiBatteryGet(){
+  try { const n = parseInt(localStorage.getItem(VAI_BATTERY_KEY) || '500', 10); return Number.isFinite(n) ? n : 500; }
+  catch(e){ return 500; }
+}
+function vaiBatterySet(n){ try { localStorage.setItem(VAI_BATTERY_KEY, String(Math.max(0, n|0))); } catch(e){} }
+function vaiBatteryRender(){
+  const q = vaiBatteryGet();
+  const max = 500;
+  const pct = Math.max(0, Math.min(100, Math.round((q/max)*100)));
+  const fill = document.getElementById('vai-battery-fill');
+  if (fill) {
+    fill.style.width = pct + '%';
+    fill.classList.toggle('warn', pct <= 40 && pct > 15);
+    fill.classList.toggle('crit', pct <= 15);
+  }
+  const pctEl = document.getElementById('vai-battery-pct'); if (pctEl) pctEl.textContent = pct + '%';
+  // Translated dynamic strings — pull from the live language bag.
+  const lang = (localStorage.getItem(LANG_KEY) || 'hi');
+  const bag = (window.VAI_STRINGS && window.VAI_STRINGS[lang]) || (window.VAI_STRINGS && window.VAI_STRINGS.en) || {};
+  const qEl = document.getElementById('vai-battery-queries');
+  if (qEl) qEl.textContent = '~' + q + ' ' + (bag['set.battery.queries'] || 'queries left');
+  const days = Math.max(1, Math.round(q / 16));
+  const tmpl = bag['set.battery.days'] || 'Est. {{n}} days';
+  const dEl = document.getElementById('vai-battery-days');
+  if (dEl) dEl.textContent = tmpl.replace('{{n}}', String(days));
+}
+function vaiTopUp(amt){
+  const add = { 100: 100, 250: 280, 500: 600, 1000: 1300 }[amt] || 100;
+  const cur = vaiBatteryGet();
+  vaiBatterySet(cur + add);
+  vaiBatteryRender();
+  speakText('Battery top up: ₹' + amt + ' add kar diya. ' + add + ' aur queries milengi.', CURRENT_LANG);
+  try { logAction('Battery top-up', '₹' + amt + ' · +' + add + ' q'); } catch(e){}
+}
+
+/* ── Share Chitti ── */
+function vaiShareWA(){
+  const url = 'https://sahayai.in/chitti_vaani.html';
+  const msg = 'Try Chitti — voice-first AI dost for every Indian. Free, no sign-up. ' + url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+}
+function vaiShareCopy(){
+  const url = 'https://sahayai.in/chitti_vaani.html';
+  try { navigator.clipboard.writeText(url); speakText('Link copy ho gaya.', CURRENT_LANG); } catch(e){}
+}
+async function vaiShareNative(){
+  const url = 'https://sahayai.in/chitti_vaani.html';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Chitti', text: 'Voice-first AI dost', url: url }); return; } catch(e){}
+  }
+  vaiShareCopy();
+}
+
+/* ── Caregiver / General ── */
+function vaiOpenCaregiver(){
+  speakText('Caregiver panel — phase 2 mein aa raha hai. Abhi Settings ke andar trusted circle add kar sakte hain.', CURRENT_LANG);
+  vaiSwitchTab('circle');
+}
+function vaiSetFontSize(v){
+  document.body.classList.remove('vai-fs-100','vai-fs-115','vai-fs-130');
+  if (v !== '100') document.body.classList.add('vai-fs-' + v);
+  try { localStorage.setItem('chitti_vaani_font_size', v); } catch(e){}
+}
+function vaiSetVoiceSpeed(v){
+  try { localStorage.setItem('chitti_vaani_voice_speed', v); } catch(e){}
+  window.CHITTI_VOICE_RATE = parseFloat(v);
+}
+function vaiLangSelectChange(code){
+  const sel = document.getElementById('lang-select');
+  if (sel) { sel.value = code; sel.dispatchEvent(new Event('change')); }
+  if (typeof changeLanguage === 'function') changeLanguage(code);
+  try { localStorage.setItem(LANG_KEY, code); } catch(e){}
+  window.CURRENT_LANG = code;
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
+  if (typeof vaiApplyI18n === 'function') vaiApplyI18n();
+  if (typeof vaiApplyStrings === 'function') vaiApplyStrings(code);
 }
 
 /* ── Friendly error banner — replaces "Network error" ── */
@@ -1867,11 +2233,18 @@ function vaiOnbFinish(){
 
 /* ── Apply i18n to the new shell (tabs, SOS, error banner) ── */
 function vaiApplyI18n(){
-  document.querySelectorAll('[data-vai-i18n]').forEach(el => {
-    const k = el.getAttribute('data-vai-i18n');
-    const v = vaiT(k);
-    if (v) el.textContent = v;
-  });
+  // Prefer the global strings.js bag (richer + covers all 9 langs end-to-end).
+  // Fall back to the in-file VAI_I18N if strings.js hasn't loaded yet.
+  const lang = (localStorage.getItem(LANG_KEY) || 'hi');
+  if (typeof window.updateAllStrings === 'function') {
+    window.updateAllStrings(lang);
+  } else {
+    document.querySelectorAll('[data-vai-i18n]').forEach(el => {
+      const k = el.getAttribute('data-vai-i18n');
+      const v = vaiT(k);
+      if (v) el.textContent = v;
+    });
+  }
   const errMsg = document.getElementById('vai-err-msg');
   if (errMsg && !errMsg.dataset.custom) errMsg.textContent = vaiT('err.network');
   const errBtn = document.getElementById('vai-err-btn');
@@ -4581,6 +4954,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="strings.js"></script>
 <script src="chitti_disclaimer.js"></script>
 <script src="chitti_lang.js"></script>
 <!-- Chitti feedback widget (locked SAHAYAI §7) -->
