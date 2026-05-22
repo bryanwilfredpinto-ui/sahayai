@@ -666,16 +666,20 @@ function _articleCardHtml(a) {
       '<div>' +
         '<div class="art-meta">' + meta + '</div>' +
         '<div class="art-title">' + _esc(a.title || '') + '</div>' +
-        '<div class="art-summary chitti-response" data-chitti-section="Art summary">' + _esc((a.summary || '').slice(0,260)) + (a.summary && a.summary.length > 260 ? '…' : '') + '</div>' +
+        // Sire 2026-05-23: full summary visible IN-APP; no truncation.
+        // Primary action 🔊 reads the FULL summary (not just headline).
+        '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
         '<div class="art-actions">' +
-          '<button class="primary" onclick="loadTake(' + a.id + ')" data-i18n="t-art-take">' + t('art.take') + '</button>' +
+          '<button class="primary" onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud">🔊 ' + t('art.read_aloud') + '</button>' +
+          '<button onclick="loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
           '<button onclick="loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
           '<button onclick="loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
-          '<button onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud">' + t('art.read_aloud') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">' + t('art.save') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-cancel">' + t('art.cancel') + '</button>' +
-          '<button onclick="shareArticle(' + a.id + ')" data-i18n="t-art-share">' + t('art.share') + '</button>' +
-          '<button onclick="window.open(\'' + _esc(a.link) + '\', \'_blank\', \'noopener\')" data-i18n="t-art-open">' + t('art.open') + '</button>' +
+          '<button onclick="saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">👍 ' + t('art.save') + '</button>' +
+          '<button onclick="shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
+        '</div>' +
+        // Source link demoted — small, secondary, below the main actions.
+        '<div class="art-source-link" style="margin-top:8px;font-size:13px;color:var(--vai-muted,#666)">' +
+          '<a href="' + _esc(a.link) + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;font-weight:500">📖 ' + _esc((a.source_name || 'Source')) + ' मे मूल ख़बर पढ़ो →</a>' +
         '</div>' +
         '<div class="art-take-host" id="take-' + a.id + '" data-chitti-response data-chitti-section="Chitti\'s Take · ' + _esc(a.title || 'News article') + '"></div>' +
         '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Explain simply · ' + _esc(a.title || 'News article') + '"></div>' +

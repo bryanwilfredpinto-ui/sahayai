@@ -215,6 +215,7 @@
       + '.chitti-fb-box{position:relative;}'
       + '.chitti-fb-box-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;margin:14px 0 0;padding-top:10px;border-top:1px dashed #e5e7eb;}'
       + '.chitti-fb-bbtn-label{margin-right:auto;font-size:12px;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:6px;}'
+      + '.chitti-fb-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}'
       + '.chitti-fb-bbtn{appearance:none;border:1px solid #e5e7eb;background:#fff;color:#0E2344;padding:8px 12px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .08s ease,background .12s ease;}'
       + '.chitti-fb-bbtn:hover{background:#f1f5f9;}'
       + '.chitti-fb-bbtn:active{transform:scale(.96);}'
@@ -514,10 +515,13 @@
       // LEFT — voice demo ("guided tour for this box"). 2026-05-22:
       // Bryan asked for a Demo button on the left of every box, with
       // the existing 🔊 🤖 👍 👎 feedback row on the right.
-      '<button type="button" class="chitti-fb-bbtn demo" data-act="demo" aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">🎬</span> <span class="chitti-fb-bbtn-text">Demo</span></button>' +
-      '<span class="chitti-fb-bbtn-label" title="Per-response feedback"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span>💬 Feedback for: <span class="chitti-fb-box-section">' + escAttr(section) + '</span></span>' +
-      '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud">🔊</button>' +
-      '<button type="button" class="chitti-fb-bbtn ask"   data-act="ask"   aria-label="Ask Chitti to explain ' + escAttr(section) + ' further">🤖</button>' +
+      // Sire 2026-05-23 — remove the visible "Feedback for: …" label.
+      // The toolbar is icon-only now. The section name still lives in
+      // aria-label on every button + the bar itself for screen readers.
+      // Keep a sr-only span so an actual screen reader still announces context.
+      '<span class="chitti-fb-sr-only">' + escAttr(section) + '</span>' +
+      '<button type="button" class="chitti-fb-bbtn demo"  data-act="demo"  aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">▶</span> <span class="chitti-fb-bbtn-text">Chitti</span></button>' +
+      '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud"><span aria-hidden="true">🔊</span> <span class="chitti-fb-bbtn-text">Suno</span></button>' +
       '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
       '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>';
     // Insert as a SIBLING after the box, not inside, so page re-renders
@@ -613,7 +617,11 @@
     bar.querySelector('[data-act="down"]').addEventListener('click', function () {
       bar.querySelectorAll('.chitti-fb-bbtn.up, .chitti-fb-bbtn.down').forEach(function (x) { x.classList.remove('active'); });
       this.classList.add('active');
-      openBoxFeedbackModal(page, boxId, section);
+      // Sire 2026-05-23: open the shared accessible feedback PAGE (not a
+      // modal). Voice + DeepSeek transcribe + readback flow works for
+      // blind / mute / illiterate users.
+      var q = '?product=' + encodeURIComponent(page) + '&card=' + encodeURIComponent(boxId) + '&section=' + encodeURIComponent(section);
+      window.location.href = 'feedback.html' + q;
     });
   }
 
@@ -624,7 +632,7 @@
     bg.className = 'chitti-fb-modal-bg';
     bg.innerHTML =
       '<div class="chitti-fb-modal" role="dialog" aria-modal="true" aria-labelledby="chitti-fb-box-title">' +
-      '  <h3 id="chitti-fb-box-title">📣 Feedback for: <span class="chitti-fb-box-section-target">…</span></h3>' +
+      '  <h3 id="chitti-fb-box-title">📣 <span class="chitti-fb-box-section-target">…</span></h3>' +
       '  <p class="chitti-fb-box-prompt">What was wrong with this?</p>' +
       '  <label for="chitti-fb-box-text">Type or record:</label>' +
       '  <textarea id="chitti-fb-box-text" placeholder="Tell Chitti — in any language — what was wrong with this box..."></textarea>' +

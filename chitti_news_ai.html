@@ -94,15 +94,30 @@
 
 <!-- ══════════════ MODE 1 — AI SAMACHAR ══════════════ -->
 <div id="na-news-pane" style="display:none">
+  <!-- Sire 2026-05-23: 5-category pill bar (AI Khabar / Certification /
+       Coaching Topics / Tools / Bharat AI). Each loads a different feed. -->
+  <div class="na-catbar" style="display:flex;gap:6px;overflow-x:auto;padding:8px 0 12px;margin-bottom:8px;-webkit-overflow-scrolling:touch">
+    <button class="na-cat active" data-cat="khabar"      onclick="naSetCat('khabar', this)"><span>📰</span> <span data-vai-i18n="na.cat.khabar">AI Khabar</span></button>
+    <button class="na-cat"        data-cat="certs"       onclick="naSetCat('certs', this)"><span>🎓</span> <span data-vai-i18n="na.cat.certs">Certification</span></button>
+    <button class="na-cat"        data-cat="topics"      onclick="naSetCat('topics', this)"><span>💡</span> <span data-vai-i18n="na.cat.topics">Coaching Topics</span></button>
+    <button class="na-cat"        data-cat="tools"       onclick="naSetCat('tools', this)"><span>🔧</span> <span data-vai-i18n="na.cat.tools">Tools</span></button>
+    <button class="na-cat"        data-cat="bharat"      onclick="naSetCat('bharat', this)"><span>📊</span> <span data-vai-i18n="na.cat.bharat">Bharat AI</span></button>
+  </div>
   <div class="sds-card" style="margin-bottom:10px">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <strong style="color:var(--sds-navy)">📡 Live AI sources:</strong>
-      <span style="font-size:13px;color:var(--sds-muted)">Anthropic · OpenAI · DeepMind · Meta AI · ArXiv · TechCrunch AI · MIT TR · Analytics India · NASSCOM · YourStory</span>
+      <strong style="color:var(--sds-navy)" id="na-cat-headline">📰 AI Khabar — आज की AI ख़बरें</strong>
     </div>
+    <div style="font-size:13px;color:var(--sds-muted);margin-top:4px" id="na-cat-sub">Anthropic · OpenAI · DeepMind · Meta AI · ArXiv · TechCrunch AI · MIT TR · Analytics India · NASSCOM · YourStory</div>
   </div>
   <div id="na-stories"></div>
   <div style="text-align:center;padding:10px"><button class="sds-btn ghost" onclick="naLoadMoreStories()">और ख़बरें</button></div>
 </div>
+
+<style>
+.na-catbar button.na-cat{flex:0 0 auto;background:#fff;border:1.5px solid var(--sds-line);border-radius:999px;padding:10px 14px;font-size:14px;font-weight:800;color:var(--sds-navy);cursor:pointer;min-height:44px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.na-catbar button.na-cat.active{background:var(--sds-saffron);border-color:var(--sds-saffron);color:#fff}
+.na-catbar button.na-cat:active{transform:scale(.97)}
+</style>
 
 <!-- ══════════════ MODE 2 — AI COACH ══════════════ -->
 <div id="na-coach-pane" style="display:none">
@@ -324,6 +339,31 @@ function extractJSON(reply){
   try { return JSON.parse(m[0]); } catch(e){ return null; }
 }
 
+/* ── Sire's 5 News categories (Sire 2026-05-23) ── */
+let CURRENT_CAT = 'khabar';
+const CAT_META = {
+  khabar:  { ico:'📰', label:'AI Khabar',       sub:'Anthropic · OpenAI · DeepMind · Meta · ArXiv · TechCrunch · MIT TR · Analytics India · NASSCOM · YourStory',
+             prompt:'Generate 5 important real-feeling AI/technology news headlines from this week. Sources: Anthropic, OpenAI, DeepMind, Meta AI, ArXiv cs.AI, TechCrunch AI, MIT Tech Review.' },
+  certs:   { ico:'🎓', label:'Certification',   sub:'Real free certifications — Google · Microsoft · Coursera · NASSCOM · Skill India',
+             prompt:'Generate 5 stories about REAL free AI certifications/courses (Google AI Essentials, Microsoft AI-900 free study, Coursera AI for Everyone audit, NASSCOM FutureSkills, Skill India AI, Elements of AI, DeepLearning.AI audit, Fast.ai, Hugging Face course, IBM AI Foundations). Each story includes enrolment URL + free-or-paid status.' },
+  topics:  { ico:'💡', label:'Coaching Topics', sub:'Zero to hero — picked by Chitti for your profession',
+             prompt:'Generate 5 short AI-learning topic stories framed by profession. Each story explains one AI concept (neural network / prompt engineering / RAG / agent / evaluation / safety / etc.) with an example FROM the user profession.' },
+  tools:   { ico:'🔧', label:'Tools',           sub:'New AI tools launched this week',
+             prompt:'Generate 5 stories about new or recently-updated AI tools (Claude / ChatGPT / Gemini / Perplexity / Grok / Hugging Face / Llama / Sora / Runway / Midjourney / Copilot / Cursor). Each includes a one-line "why try it" hook.' },
+  bharat:  { ico:'📊', label:'Bharat AI',       sub:'India-specific — IndiaAI Mission · NASSCOM · IITs · sarvam.ai · krutrim',
+             prompt:'Generate 5 stories specifically about Indian AI: IndiaAI Mission, NASSCOM AI, IITs research, sarvam.ai, krutrim, IIIT-H, ISRO AI, govt initiatives, Indic LLMs, agritech AI, healthtech AI in India.' },
+};
+function naSetCat(cat, btn){
+  CURRENT_CAT = cat;
+  document.querySelectorAll('.na-catbar .na-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  const m = CAT_META[cat] || CAT_META.khabar;
+  document.getElementById('na-cat-headline').textContent = m.ico + ' ' + m.label;
+  document.getElementById('na-cat-sub').textContent = m.sub;
+  // Reset cache to force regenerate per category
+  try { localStorage.removeItem(STORIES_KEY); } catch(e){}
+  naLoadStories();
+}
+
 /* ── Mode 1: AI News with profiled samjhao ── */
 async function naLoadStories(){
   const wrap = document.getElementById('na-stories');
@@ -336,8 +376,13 @@ async function naLoadStories(){
   wrap.innerHTML = '<div class="na-loading">Chitti latest AI news la rahi hai…</div>';
   const lang = CURRENT_LANG;
   const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
-  const prompt = 'Generate 5 important real-feeling AI/technology news headlines from this week, sourced from Anthropic, OpenAI, DeepMind, Meta AI, ArXiv cs.AI, TechCrunch AI, MIT Tech Review, Analytics India Magazine, NASSCOM, YourStory AI. ' +
-    'Return ONLY JSON: {items:[{headline:"<' + langName + '>", source:"<source name>", when:"<e.g. 2h ago>", bullets:["<bullet 1 in ' + langName + '>","<bullet 2>","<bullet 3>"], category:"<general|medical|legal|finance|farming|education|creative>"}]}. ' +
+  const profile = loadProfile();
+  const profStr = profile ? (' Student profession for "Coaching Topics" context: "' + profile.profession + '".') : '';
+  const catSpec = (CAT_META[CURRENT_CAT] || CAT_META.khabar).prompt;
+  const prompt = catSpec + profStr +
+    ' Return ONLY JSON: {items:[{headline:"<' + langName + '>", source:"<source name>", when:"<e.g. 2h ago>", ' +
+    'bullets:["<bullet 1 in ' + langName + '>","<bullet 2>","<bullet 3>"], category:"<general|medical|legal|finance|farming|education|creative>", ' +
+    'source_url:"<official source URL if Certification/Tools category, else empty>"}]}. ' +
     'Bullets must be in ' + langName + '. Headlines must be in ' + langName + '. Keep each bullet under 18 words.';
   const reply = await ask(prompt, lang);
   const parsed = extractJSON(reply);
@@ -362,20 +407,46 @@ function renderStories(items){
       <div class="src">${escapeHtml(s.source || '')} · ${escapeHtml(s.when || '')}</div>
       <ul class="bullets">${(s.bullets || []).map(b => '<li>'+escapeHtml(b)+'</li>').join('')}</ul>
       <div class="sds-card-toolbar">
-        <button onclick="speakText(this.parentNode.parentNode.querySelector('.head').textContent + '. ' + Array.from(this.parentNode.parentNode.querySelectorAll('.bullets li')).map(li=>li.textContent).join('. '), CURRENT_LANG)">🔊</button>
-        <button class="demo" onclick="naSamjhao(${i})">💬 <span data-vai-i18n="na.story.explain">मुझे समझाओ</span></button>
-        <button onclick="naPin(${i}, this)">📌 <span data-vai-i18n="na.story.pin">पिन</span></button>
-        <span class="sep"></span>
+        <button onclick="naSpeakStory(${i})">🔊 <span data-vai-i18n="ui.suno">सुनो</span></button>
+        <button class="demo" onclick="naChittiPersonal(${i})">▶ <span>Chitti</span></button>
         <button class="fb-pos" onclick="logProductAction('na_story_${i}', 1)">👍</button>
-        <button class="fb-neg" onclick="sdsToggleFb('na-story-fb-${i}')">👎</button>
+        <button class="fb-neg" onclick="naOpenFeedback('na_story_${i}', ${i})">👎</button>
       </div>
+      <div style="margin-top:6px"><button class="sds-btn ghost" onclick="naSamjhao(${i})" style="padding:8px 12px;min-height:40px;font-size:14px">💬 <span data-vai-i18n="na.story.explain">मुझे समझाओ</span></button>
+        ${s.source_url ? '<a href="'+s.source_url+'" target="_blank" rel="noopener" style="margin-left:8px;font-size:13px;color:var(--sds-muted);text-decoration:underline">मूल ख़बर पढ़ो →</a>' : ''}</div>
       <div class="samjhao" id="na-samjhao-${i}"></div>
-      <div class="sds-fb-panel" id="na-story-fb-${i}">
-        <textarea id="na-story-fb-text-${i}" placeholder="Yeh story kaisi lagi?"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('na-story-fb-${i}')">रद्द</button><button onclick="sendFb('na_story_${i}','na-story-fb-text-${i}','na-story-fb-${i}')">भेजो</button></div>
-      </div>
     </article>`).join('');
 }
+// Sire 2026-05-23 — read FULL summary aloud (headline + all 3 bullets).
+function naSpeakStory(i){
+  const card = document.querySelector('.sds-story[data-idx="' + i + '"]');
+  if (!card) return;
+  const head = card.querySelector('.head')?.textContent || '';
+  const bullets = Array.from(card.querySelectorAll('.bullets li')).map(li => li.textContent.trim());
+  const full = head + '. ' + bullets.join('. ');
+  speakText(full, CURRENT_LANG);
+}
+// ▶ Chitti — DeepSeek frames a profiled sentence + speaks it for user approval.
+async function naChittiPersonal(i){
+  const card = document.querySelector('.sds-story[data-idx="' + i + '"]');
+  if (!card) return;
+  const profile = loadProfile();
+  const prof = profile ? profile.profession : 'general reader';
+  const head = card.querySelector('.head')?.textContent || '';
+  const lang = CURRENT_LANG;
+  const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
+  speakText('Chitti soch rahi hai…', CURRENT_LANG);
+  const prompt = 'Generate one short sentence in ' + langName + ' explaining why this AI news matters to a "' + prof + '". Story: "' + head + '". Reply ONLY the one sentence.';
+  const reply = await ask(prompt, lang);
+  const line = (reply || '').trim().replace(/^[\"“‘']+|[\"”’']+$/g, '');
+  speakText(line || head, CURRENT_LANG);
+}
+// 👎 → shared feedback page
+function naOpenFeedback(card, idx){
+  const section = document.querySelector('.sds-story[data-idx="' + idx + '"] .head')?.textContent?.slice(0, 80) || '';
+  window.location.href = 'feedback.html?product=chitti_news_ai&card=' + encodeURIComponent(card) + '&section=' + encodeURIComponent(section);
+}
+
 async function naSamjhao(i){
   const card = document.querySelector('.sds-story[data-idx="' + i + '"]');
   if (!card) return;

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti — Feedback</title>
+<meta name="description" content="Voice-first, accessible feedback page for every Chitti product. Works for blind, mute, deaf and illiterate users.">
+<link rel="stylesheet" href="sahayai_design_system.css">
+<script src="strings.js" defer></script>
+<style>
+.fb-page main{max-width:600px}
+.fb-context{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:14px;color:var(--sds-muted)}
+.fb-context b{color:var(--sds-navy)}
+.fb-q{font-size:24px;font-weight:900;color:var(--sds-navy);margin:8px 0 12px}
+.fb-text{font-size:28px;line-height:1.5;min-height:160px;width:100%;border:2px solid var(--sds-line);border-radius:14px;padding:16px;font-family:inherit;color:var(--sds-dark);background:#fff}
+.fb-text:focus{outline:none;border-color:var(--sds-green)}
+.fb-mic-wrap{display:flex;justify-content:center;margin:14px 0}
+.fb-mic{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--sds-saffron),var(--sds-green));color:#fff;border:none;font-size:60px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(4,106,56,.35)}
+.fb-mic.listening{background:var(--sds-red);animation:sdsPulse 1.2s ease-in-out infinite}
+.fb-mic-label{font-size:16px;font-weight:700;color:var(--sds-dark);text-align:center;margin-top:6px}
+.fb-readback{padding:14px;background:linear-gradient(180deg,#f0f8f0,#fff);border:1.5px solid var(--sds-green);border-radius:14px;font-size:18px;line-height:1.55;color:var(--sds-dark);margin:14px 0;display:none}
+.fb-readback.shown{display:block}
+.fb-readback .who{display:block;font-size:13px;font-weight:800;color:var(--sds-green);margin-bottom:4px}
+.fb-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.fb-actions .sds-btn{font-size:18px;min-height:56px}
+.fb-status{font-size:15px;color:var(--sds-muted);text-align:center;margin-top:14px;min-height:22px}
+.fb-thanks{text-align:center;padding:28px 14px;background:linear-gradient(180deg,#f0f8f0,#fff);border:2px solid var(--sds-green);border-radius:18px;display:none}
+.fb-thanks.shown{display:block}
+.fb-thanks .big{font-size:64px}
+.fb-thanks h2{font-size:24px;color:var(--sds-navy);margin:6px 0}
+.fb-thanks p{font-size:16px;color:var(--sds-muted);line-height:1.5}
+</style>
+</head>
+<body class="sds-page fb-page">
+
+<div class="sds-tricolour fixed"></div>
+
+<header class="sds-header" role="banner" style="margin-top:6px">
+  <div class="sds-brand-row">
+    <div class="sds-logo" aria-hidden="true">💬</div>
+    <div class="sds-brand">
+      <div class="sds-brand-name" data-vai-i18n="fb.title">Chitti — Feedback</div>
+      <div class="sds-tagline" data-vai-i18n="fb.tag">Aapka feedback hi Chitti ko behtar banata hai</div>
+    </div>
+  </div>
+  <div class="sds-header-actions">
+    <select id="lang-select" class="sds-select" aria-label="भाषा" onchange="changeLang(this.value)">
+      <option value="hi">हिन्दी</option><option value="en">English</option>
+      <option value="bn">বাংলা</option><option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option><option value="mr">मराठी</option>
+      <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+    </select>
+    <button onclick="history.back()">← <span data-vai-i18n="fb.back">वापस</span></button>
+  </div>
+</header>
+
+<main>
+  <div class="fb-context" id="fb-context">…</div>
+
+  <div id="fb-form-wrap">
+    <div class="fb-q" data-vai-i18n="fb.q">क्या हुआ? बताओ</div>
+
+    <div class="fb-mic-wrap">
+      <button class="fb-mic" id="fb-mic" onclick="fbToggleMic()" aria-label="बोलकर feedback दें">🎙️</button>
+    </div>
+    <div class="fb-mic-label" data-vai-i18n="fb.mic.label">🎙️ बोलकर बताओ या नीचे लिखो</div>
+
+    <textarea class="fb-text" id="fb-text" data-vai-i18n-attr="placeholder|fb.text.ph" placeholder="यहाँ लिखें — या ऊपर हरा माइक दबाकर बोलें। Chitti आपकी बात सुनकर भेज देगी।"></textarea>
+
+    <div class="fb-readback" id="fb-readback" role="status">
+      <span class="who" data-vai-i18n="fb.readback.who">Chitti puchti hai</span>
+      <div id="fb-readback-text">…</div>
+      <div class="fb-actions" style="margin-top:10px">
+        <button class="sds-btn ghost" onclick="fbReadbackNo()">↻ <span data-vai-i18n="fb.no">बदलो</span></button>
+        <button class="sds-btn primary" onclick="fbReadbackYes()">🔊 <span data-vai-i18n="fb.yes">हाँ — भेज दो</span></button>
+      </div>
+    </div>
+
+    <div class="fb-actions">
+      <button class="sds-btn ghost" onclick="fbReadAloud()">🔊 <span data-vai-i18n="fb.read">पढ़कर सुनाओ</span></button>
+      <button class="sds-btn primary" onclick="fbSubmit()">✓ <span data-vai-i18n="fb.submit">भेजो</span></button>
+    </div>
+    <div class="fb-status" id="fb-status"></div>
+  </div>
+
+  <div class="fb-thanks" id="fb-thanks">
+    <div class="big">🙏</div>
+    <h2 data-vai-i18n="fb.thanks">Dhanyavaad — feedback mil gaya</h2>
+    <p data-vai-i18n="fb.thanks.sub">Aapki baat Chitti ke founder tak pahunch gayi. Hum aapko behtar bnaate jayenge.</p>
+    <button class="sds-btn primary" style="margin-top:14px" onclick="history.back()">← <span data-vai-i18n="fb.back">वापस</span></button>
+  </div>
+</main>
+
+<script src="chitti_a11y.js"></script>
+<script>
+const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
+const LANG_KEY = 'chitti_vaani_lang';
+let CURRENT_LANG = (function(){ try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e){ return 'hi'; } })();
+let LISTENING = false, RECOG = null;
+
+function changeLang(code){
+  CURRENT_LANG = code;
+  try { localStorage.setItem(LANG_KEY, code); } catch(e){}
+  if (typeof updateAllStrings === 'function') updateAllStrings(code);
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail:{lang: code}})); } catch(e){}
+}
+function speakText(t, lang){ try { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = lang || CURRENT_LANG; window.speechSynthesis.speak(u); } catch(e){} }
+
+// ── Context (product + card + section) ──────────────────────────
+const params = new URLSearchParams(window.location.search);
+const PRODUCT = params.get('product') || 'chitti';
+const CARD    = params.get('card')    || 'unknown';
+const SECTION = params.get('section') || '';
+
+const PRODUCT_LABEL = {
+  'chitti_vaani':'Chitti Vaani', 'chitti_mechanic_bike':'Chitti Mechanic Bike',
+  'chitti_mechanic_car':'Chitti Mechanic Car', 'chitti_news':'Chitti News',
+  'chitti_news_ai':'Chitti News AI', 'chitti_fashion':'Chitti Fashion AI',
+  'chitti_medupi':'Chitti MedUPI', 'chitti_upi':'Chitti UPI Guard',
+  'chitti_scanner':'Chitti Scanner', 'chitti_ca':'Chitti CA',
+  'chitti_legal':'Chitti Legal', 'chitti_government':'Chitti Government',
+}[PRODUCT] || PRODUCT;
+
+document.getElementById('fb-context').innerHTML =
+  '📝 <b>' + PRODUCT_LABEL + '</b>' + (SECTION ? ' — ' + SECTION : '') +
+  '<br><small>Card ID: <code>' + CARD + '</code></small>';
+
+// ── Voice input ──
+function fbToggleMic(){
+  if (LISTENING) { try { RECOG.stop(); } catch(e){} return; }
+  try {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { speakText('Voice support nahi hai is browser mein. Type kar dijiye.', CURRENT_LANG); return; }
+    RECOG = new SR();
+    RECOG.lang = (CURRENT_LANG === 'en') ? 'en-IN' : (CURRENT_LANG === 'te' ? 'te-IN' : (CURRENT_LANG === 'ta' ? 'ta-IN' : (CURRENT_LANG === 'bn' ? 'bn-IN' : 'hi-IN')));
+    RECOG.continuous = false; RECOG.interimResults = false;
+    RECOG.onstart = () => { LISTENING = true; document.getElementById('fb-mic').classList.add('listening'); };
+    RECOG.onend   = () => { LISTENING = false; document.getElementById('fb-mic').classList.remove('listening'); };
+    RECOG.onresult = (e) => {
+      const txt = (e.results[0][0].transcript || '').trim();
+      if (!txt) return;
+      // DeepSeek polish + readback
+      fbDeepseekTranscribe(txt);
+    };
+    RECOG.onerror = () => { LISTENING = false; document.getElementById('fb-mic').classList.remove('listening'); };
+    RECOG.start();
+  } catch(e){}
+}
+
+async function fbDeepseekTranscribe(raw){
+  document.getElementById('fb-status').textContent = 'Chitti aapki baat samajh rahi hai…';
+  const langName = ({hi:'Hindi',bn:'Bangla',ta:'Tamil',te:'Telugu',mr:'Marathi',gu:'Gujarati',kn:'Kannada',ml:'Malayalam',en:'English'})[CURRENT_LANG] || 'Hindi';
+  const prompt =
+    'A user wants to send feedback about "' + PRODUCT_LABEL + (SECTION ? ' — ' + SECTION : '') + '". ' +
+    'They said (raw voice transcript, may be Hindi/Hinglish/English): "' + raw + '". ' +
+    'Polish this into a clear single feedback message in ' + langName + ' (keep it short, 1-3 sentences). ' +
+    'Do NOT add opinions. Just cleanly rephrase what the user said. Reply with ONLY the polished text.';
+  let polished = raw;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' })
+    });
+    const d = await r.json();
+    if (d && d.ok && d.reply) polished = (d.reply || '').trim().replace(/^[\"']|[\"']$/g, '');
+  } catch(e){}
+  document.getElementById('fb-text').value = polished;
+  document.getElementById('fb-status').textContent = '';
+  // Readback for approval
+  showReadback(polished);
+}
+function showReadback(text){
+  document.getElementById('fb-readback-text').textContent = '"' + text + '"';
+  document.getElementById('fb-readback').classList.add('shown');
+  const lang = CURRENT_LANG;
+  const ask = ({hi:'Aap yeh feedback de rahe hain — sahi hai?', en:'Are you sending this feedback — is it correct?',
+                te:'మీరు ఈ feedback పంపుతున్నారు — సరిగ్గా ఉందా?', bn:'আপনি কি এই feedback পাঠাচ্ছেন — ঠিক আছে?'})[lang] || 'Aap yeh feedback de rahe hain — sahi hai?';
+  speakText(ask + ' ' + text, CURRENT_LANG);
+}
+function fbReadbackYes(){
+  document.getElementById('fb-readback').classList.remove('shown');
+  fbSubmit();
+}
+function fbReadbackNo(){
+  document.getElementById('fb-readback').classList.remove('shown');
+  document.getElementById('fb-text').focus();
+  speakText('Theek hai, badaliye ya phir bolkar batayein.', CURRENT_LANG);
+}
+function fbReadAloud(){
+  const t = document.getElementById('fb-text').value.trim();
+  if (!t) { speakText('Pehle kuch likhiye ya bolkar bataiye.', CURRENT_LANG); return; }
+  speakText(t, CURRENT_LANG);
+}
+async function fbSubmit(){
+  const t = document.getElementById('fb-text').value.trim();
+  if (!t) { speakText('Pehle aapka feedback likhiye ya bolkar bataiye.', CURRENT_LANG); return; }
+  document.getElementById('fb-status').textContent = 'Bhej rahi hoon…';
+  try {
+    await fetch(API_BASE + '/api/feedback', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chitti: PRODUCT, card: CARD, section: SECTION, kind:'thumbs_down', message: t, page: PRODUCT, lang: CURRENT_LANG }),
+    });
+  } catch(e){}
+  document.getElementById('fb-form-wrap').style.display = 'none';
+  document.getElementById('fb-thanks').classList.add('shown');
+  speakText('Dhanyavaad. Aapka feedback Chitti ke founder ko pahunch gaya.', CURRENT_LANG);
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
+  setTimeout(() => speakText('Chitti aapki baat sunne ke liye taiyaar hai. Bolkar batao ya neeche likho.', CURRENT_LANG), 300);
+});
+window.addEventListener('chitti:langchange', () => {
+  document.querySelectorAll('[data-vai-i18n-attr]').forEach(el => {
+    const [attr, key] = el.getAttribute('data-vai-i18n-attr').split('|');
+    if (!attr || !key || !window.VAI_STRINGS) return;
+    const bag = window.VAI_STRINGS[CURRENT_LANG] || window.VAI_STRINGS.en;
+    if (bag[key]) el.setAttribute(attr, bag[key]);
+  });
+});
+</script>
+</body>
+</html>
