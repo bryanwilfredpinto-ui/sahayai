@@ -3660,6 +3660,22 @@ function routeVoiceIntent(raw){
     return true;
   }
 
+  // ── Maps / Directions ─────────────────────────────────────────────
+  // Bryan 2026-05-22: "AIIMS le chalo" must open Maps.
+  m = r.match(/^(.+?)\s+(?:le\s+chalo|le\s+chal|tak\s+(?:le\s+chalo|jaana)|ka\s+raasta(?:\s+dikha|\s+bata)?|directions(?:\s+to)?)$/i)
+   || r.match(/^(?:directions\s+to|open\s+maps?(?:\s+to)?|maps?\s+to|navigate(?:\s+to)?)\s+(.+)$/i)
+   || r.match(/^(?:take\s+me\s+to|go\s+to)\s+(.+)$/i);
+  if (m) {
+    const place = m[1].trim();
+    if (hasNativeBridge() && window.ChittiNative.openMaps) {
+      try { window.ChittiNative.openMaps(place, 'directions'); speakText((CURRENT_LANG === 'en' ? 'Opening directions to ' : 'Maps khol rahi hoon: ') + place + '.', CURRENT_LANG); return true; } catch (e) {}
+    }
+    openMapsModal();
+    const dest = document.getElementById('maps-dest');
+    if (dest) dest.value = place;
+    return true;
+  }
+
   // ── Open camera ────────────────────────────────────────────────────
   if (/^(?:open\s+camera|camera\s+kholo|take\s+a?\s*photo)$/i.test(r)) {
     nativeAction('openCamera');
