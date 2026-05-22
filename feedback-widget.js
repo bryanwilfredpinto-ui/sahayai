@@ -223,6 +223,11 @@
       + '.chitti-fb-bbtn.down.active{background:#fee2e2;border-color:#fca5a5;color:#7f1d1d;}'
       + '.chitti-fb-bbtn.speak.live{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a;}'
       + '.chitti-fb-bbtn.ask.live{background:#fde68a;border-color:#fbbf24;color:#7c2d12;animation:chitti-pulse 1.2s ease-in-out infinite;}'
+      // Demo button — saffron-tinted, lives on the LEFT of the box bar.
+      + '.chitti-fb-bbtn.demo{background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-color:rgba(232,106,23,.45);color:#7c2d12;font-weight:700;padding:8px 12px;font-size:13px;line-height:1;display:inline-flex;align-items:center;gap:5px;}'
+      + '.chitti-fb-bbtn.demo .chitti-fb-bbtn-text{font-size:12px;letter-spacing:.02em;}'
+      + '.chitti-fb-bbtn.demo:hover{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.15));border-color:#E86A17;}'
+      + '.chitti-fb-bbtn.demo.live{background:linear-gradient(135deg,rgba(232,106,23,.28),rgba(212,175,55,.22));border-color:#E86A17;color:#7c2d12;animation:chitti-pulse 1.2s ease-in-out infinite;}'
       + '.chitti-fb-box-mic{background:#fde68a;color:#7c2d12;border:1px solid #fbbf24;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;}'
       + '.chitti-fb-box-mic:hover{background:#fcd34d;}'
       + '.chitti-fb-box-mic:disabled{opacity:.6;cursor:not-allowed;}'
@@ -506,6 +511,10 @@
     bar.setAttribute('role', 'group');
     bar.setAttribute('aria-label', 'Feedback for ' + section);
     bar.innerHTML =
+      // LEFT — voice demo ("guided tour for this box"). 2026-05-22:
+      // Bryan asked for a Demo button on the left of every box, with
+      // the existing 🔊 🤖 👍 👎 feedback row on the right.
+      '<button type="button" class="chitti-fb-bbtn demo" data-act="demo" aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">🎬</span> <span class="chitti-fb-bbtn-text">Demo</span></button>' +
       '<span class="chitti-fb-bbtn-label" title="Per-response feedback"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span>💬 Feedback for: <span class="chitti-fb-box-section">' + escAttr(section) + '</span></span>' +
       '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud">🔊</button>' +
       '<button type="button" class="chitti-fb-bbtn ask"   data-act="ask"   aria-label="Ask Chitti to explain ' + escAttr(section) + ' further">🤖</button>' +
@@ -514,6 +523,50 @@
     // Insert as a SIBLING after the box, not inside, so page re-renders
     // that set box.innerHTML don't wipe the bar.
     box.parentNode.insertBefore(bar, box.nextSibling);
+
+    // ── Demo: short guided voice tour of this box ───────────────────
+    // Priority for the script text:
+    //   1. box's data-chitti-demo attribute (curated per box)
+    //   2. .section-sub inside the box (existing one-line description)
+    //   3. first paragraph of the box's visible text
+    // Always prefixed with the section name so the user knows which box
+    // they're hearing about; always suffixed with a one-line "tap … to
+    // start" cue when the box has a clear primary action.
+    bar.querySelector('[data-act="demo"]').addEventListener('click', function () {
+      var btn = this; btn.classList.add('live');
+      setTimeout(function () { btn.classList.remove('live'); }, 1500);
+      var lang = getLang();
+      // 1. Curated demo on the box.
+      var demo = (box.getAttribute && box.getAttribute('data-chitti-demo')) || '';
+      // 2. .section-sub (vaani / news / medupi pattern)
+      if (!demo) {
+        var sub = box.querySelector && box.querySelector('.section-sub, .sub, .desc');
+        if (sub && (sub.innerText || '').trim()) demo = (sub.innerText || '').trim();
+      }
+      // 3. First paragraph of the box text — cap at 240 chars so the
+      //    demo stays short.
+      if (!demo) {
+        var allText = (box.innerText || box.textContent || '').replace(/\s+/g, ' ').trim();
+        // Trim off the chitti-fb-box-bar's own injected text if it bled in.
+        allText = allText.replace(/💬\s*Feedback for:.*$/, '').trim();
+        var firstSentence = allText.split(/(?<=[.?!।])\s/)[0] || allText;
+        demo = firstSentence.slice(0, 240);
+      }
+      if (!demo) demo = section;
+      // Add the section name prefix so the demo is self-locating.
+      var prefix = section && demo.indexOf(section.slice(0, 20)) === -1
+        ? section + '. '
+        : '';
+      // Optional "tap to start" cue derived from the first <button>.
+      var primaryBtn = box.querySelector && (box.querySelector('button.go') || box.querySelector('button.quick-card, button.pro-card') || box.querySelector('button'));
+      var cue = '';
+      if (primaryBtn) {
+        var btnLbl = (primaryBtn.innerText || primaryBtn.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+        if (btnLbl) cue = ' Tap ' + btnLbl + ' to start.';
+      }
+      speak(prefix + demo + cue, lang);
+      send({ page: page, type: 'box_demo', box_id: boxId, section: section }).catch(function () {});
+    });
 
     bar.querySelector('[data-act="speak"]').addEventListener('click', function () {
       var btn = this; btn.classList.add('live');
