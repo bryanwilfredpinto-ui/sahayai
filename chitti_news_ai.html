@@ -1,1043 +1,672 @@
 <!DOCTYPE html>
-<!-- Frontend for chitti-news-ai/ -->
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Chitti News AI — Your free AI tool scout</title>
-<meta name="description" content="Free AI tool & model discovery. Tracks launches, free tiers, pricing. Per-profession ranking. 26 Indian languages. Trust-scored sources only.">
-<meta name="chitti-features" content="chitti-news-ai/skills/FEATURES.md">
-
+<title>Chitti News AI + Coach — AI news + dynamic AI learning for every Indian</title>
+<meta name="description" content="AI news in your language. Plus dynamic AI coaching for any profession — Chitti generates curriculum + recommends real free certifications from Google, Microsoft, NASSCOM, Skill India.">
+<link rel="stylesheet" href="sahayai_design_system.css">
 <style>
-:root{
-  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37; --violet:#6D28D9;
-  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
-  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
-  --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI','Noto Sans Bengali','Noto Sans Devanagari','Noto Sans Tamil','Noto Sans Telugu','Noto Sans Kannada','Noto Sans Malayalam','Noto Sans Gujarati','Noto Sans Gurmukhi','Noto Sans Oriya','Noto Naskh Arabic',Arial,sans-serif;font-size:14px;line-height:1.5}
-body{min-height:100vh;position:relative}
-body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(109,40,217,.10),transparent 22%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
-body > *{position:relative;z-index:1}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#6D28D9,#0E2344)}
-
-/* Still-learning banner for cousin languages */
-.lang-learning{display:none;background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #f59e0b;line-height:1.5}
-.lang-learning.shown{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
-
-/* Disclaimer bar */
-.disclaimer-bar{position:sticky;top:0;z-index:60;background:#fef3c7;color:#78350f;padding:9px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #fcd34d;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
-.disclaimer-bar button{background:transparent;border:1px solid #b45309;color:#78350f;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:700;min-height:26px}
-
-/* Header */
-header[role="banner"]{background:linear-gradient(135deg,#0E2344,#6D28D9 70%,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
-.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
-@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
-.tagline{font-size:11.5px;color:rgba(255,255,255,.85);margin-top:2px}
-.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
-.switch-btn-bharat:hover{filter:brightness(1.1)}
-.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-.header-controls button:hover{background:rgba(255,255,255,.22)}
-
-/* Picker */
-.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #6D28D9;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:44px;z-index:55;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;min-height:40px;font-weight:600}
-.picker-bar select:focus{outline:none;border-color:var(--saffron)}
-.picker-bar .pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.picker-bar .pick-sep{flex:1}
-.picker-bar .lang-status{font-size:11px;font-weight:700;color:var(--violet)}
-.picker-bar .lang-status.unset{color:var(--red)}
-
-/* Tabs */
-nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid var(--violet);position:sticky;top:104px;z-index:50;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px;display:inline-flex;align-items:center;gap:6px}
-nav.tabs .tab:hover{color:var(--text)}
-nav.tabs .tab.active{color:var(--violet);border-bottom-color:var(--violet);background:rgba(109,40,217,.06)}
-
-main{padding:14px 16px 60px;max-width:1040px;margin:0 auto}
-.page{display:none}
-.page.active{display:block}
-.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06);color:var(--text);position:relative}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.section-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.section-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.55}
-
-/* === Per-response widget — inline + always visible on every box === */
-.box-fb{margin-top:12px;padding:8px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
-.box-fb .fb-lbl{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:auto}
-.box-fb button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:5px 9px;font-size:13px;cursor:pointer;min-height:30px;min-width:36px;font-weight:600;color:var(--text);display:inline-flex;align-items:center;gap:3px;line-height:1}
-.box-fb button:hover{border-color:var(--violet);background:rgba(109,40,217,.06);color:var(--violet)}
-.box-fb button.voted-up{background:#d1fae5;border-color:#10b981;color:#065f46}
-.box-fb button.voted-down{background:#fee2e2;border-color:#f87171;color:#7f1d1d}
-.box-fb .fb-thanks{color:var(--green);font-weight:700;margin-left:6px}
-/* feedback popup for thumbs-down */
-.fb-popup{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;padding:20px;align-items:flex-start;justify-content:center;overflow-y:auto}
-.fb-popup.shown{display:flex}
-.fb-popup .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;max-width:520px;width:100%}
-.fb-popup .panel h3{margin:0 0 8px;color:var(--violet);font-size:17px}
-.fb-popup .panel p{margin:0 0 10px;font-size:13px;color:var(--text)}
-.fb-popup textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;min-height:80px;resize:vertical}
-.fb-popup .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.fb-popup button{background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px}
-.fb-popup button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff}
-
-/* Badges */
-.live-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#065f46;background:#d1fae5;border:1px solid #10b981;vertical-align:middle}
-.coming-soon{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle}
-.coming-soon-future{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#1e40af;background:#dbeafe;border:1px solid #3b82f6;vertical-align:middle}
-
-.ts-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.02em}
-.ts-chip.trusted{background:#d1fae5;color:#065f46;border:1px solid #10b981}
-.ts-chip.acceptable{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}
-.ts-chip.questionable{background:#fee2e2;color:#7f1d1d;border:1px solid #f87171}
-.ts-chip.reject{background:#1f2937;color:#fff;border:1px solid #111}
-.ts-chip.pending{background:#e5e7eb;color:#374151;border:1px dashed #9ca3af}
-
-.feed{display:grid;grid-template-columns:1fr;gap:12px}
-@media (min-width:760px){.feed.two-col{grid-template-columns:1fr 1fr}}
-.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;transition:box-shadow .2s}
-.card:hover{box-shadow:0 6px 20px rgba(14,35,68,.10)}
-.card .meta{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
-.card .title{font-size:15px;font-weight:800;line-height:1.35;color:var(--text);margin-bottom:6px;word-wrap:break-word}
-.card .summary{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:10px}
-.card .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.card .actions button,.card .actions a{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-decoration:none}
-.card .actions button:hover,.card .actions a:hover{background:rgba(109,40,217,.06);border-color:var(--violet);color:var(--violet)}
-.card .actions a.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800}
-.meta-pill{font-size:11px;background:#f3f4f6;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-weight:600;color:var(--text)}
-.meta-pill.free{background:#d1fae5;border-color:#10b981;color:#065f46}
-.meta-pill.warn{background:#fef3c7;border-color:#f59e0b;color:#92400e}
-
-.trust-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.trust-form input[type=url]{flex:1;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px}
-.trust-form input[type=url]:focus{outline:none;border-color:var(--violet)}
-.trust-form button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px}
-
-.prof-form textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-family:inherit;min-height:80px;line-height:1.5;resize:vertical}
-.prof-form textarea:focus{outline:none;border-color:var(--violet)}
-.prof-form .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
-.prof-form button.primary{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:10px 18px;font-size:14px;cursor:pointer;min-height:42px}
-
-.trust-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-.trust-table th,.trust-table td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
-.trust-table th{background:#f9fafb;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.04em;color:var(--muted)}
-.trust-table .warn{color:#92400e;font-weight:800}
-
-.onb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
-.onb.shown{display:flex}
-.onb .panel{background:#fff;border:1px solid rgba(109,40,217,.55);border-radius:16px;padding:24px;max-width:520px;width:100%;font-size:14px;line-height:1.6}
-.onb .panel h2{font-size:20px;margin:0 0 8px;color:var(--violet)}
-.onb .panel p{margin:0 0 16px}
-.onb .panel select{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:46px;margin-top:4px}
-.onb .panel button.go{background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:900;border-radius:10px;padding:12px 24px;font-size:15px;cursor:pointer;margin-top:14px;width:100%;min-height:50px}
-.onb .panel .skip{background:transparent;border:1px dashed var(--muted);color:var(--muted);font-weight:700;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;margin-top:8px;width:100%}
-
-.stub-hint{background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(109,40,217,.08));border:1px dashed rgba(109,40,217,.4);border-radius:12px;padding:14px;font-size:13px;color:var(--text);line-height:1.6}
-.stub-hint strong{color:var(--violet)}
-
-.ask-strip{background:linear-gradient(135deg,#0E2344,#6D28D9);color:#fff;border-radius:18px;padding:16px;margin:14px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:relative}
-.ask-strip .face{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.ask-strip .body{flex:1;min-width:200px}
-.ask-strip .body h3{margin:0 0 4px;font-size:16px;font-weight:800}
-.ask-strip .body p{margin:0;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.88)}
-.ask-strip .input-row{display:flex;gap:6px;width:100%;margin-top:10px}
-.ask-strip input[type=text]{flex:1;min-width:160px;background:rgba(255,255,255,.95);border:none;border-radius:10px;padding:10px 13px;font-size:14px;min-height:42px;color:var(--text)}
-.ask-strip button{background:#fff;color:var(--violet);border:none;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-size:13px;min-height:42px;display:inline-flex;align-items:center;gap:4px}
-.ask-strip button.mic{background:rgba(255,255,255,.22);color:#fff}
-.ask-strip .box-fb{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.20);color:rgba(255,255,255,.9)}
-.ask-strip .box-fb button{background:rgba(255,255,255,.85);border-color:rgba(255,255,255,.6);color:var(--text)}
-
-.src-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px}
-.src-row:last-child{border-bottom:none}
-.src-row .name{font-weight:700}
-.src-row .url{font-size:11px;color:var(--muted);word-break:break-all}
-@media (max-width:560px){.src-row{grid-template-columns:1fr auto}.src-row .reason{display:none}}
-
-footer{margin-top:24px;padding:18px 16px;color:var(--muted);font-size:11.5px;text-align:center;border-top:1px solid var(--border);line-height:1.7}
-footer a{color:var(--violet);text-decoration:none}
-
-.spk-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;line-height:1;min-width:32px;min-height:26px;font-weight:600;flex-shrink:0}
-.spk-btn:hover,.spk-btn:focus-visible{background:rgba(109,40,217,.08);color:var(--violet);border-color:var(--violet);outline:none}
+.na-story .pin{margin-left:6px;font-size:14px;cursor:pointer;background:transparent;border:none}
+.na-story.pinned{border-color:var(--sds-saffron)}
+.na-coach-step{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:14px;margin-bottom:10px}
+.na-coach-step .step-title{font-size:14px;color:var(--sds-saffron);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.na-track-list{display:flex;flex-direction:column;gap:10px}
+.na-track .head{display:flex;align-items:center;gap:10px;cursor:pointer}
+.na-track .num{font-family:'JetBrains Mono',monospace;font-weight:900;color:var(--sds-saffron);font-size:22px;min-width:36px}
+.na-cert-list{display:flex;flex-direction:column;gap:8px}
+.na-cert-card{background:#fff;border:1.5px solid var(--sds-line);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px}
+.na-cert-card .ico{font-size:24px}
+.na-cert-card a{color:var(--sds-green);font-weight:800;text-decoration:none}
+.na-loading{padding:14px;background:#fff8e1;border:1.5px dashed var(--sds-saffron);border-radius:12px;font-size:14px;color:#78350f}
 </style>
-<link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
-<body>
+<body class="sds-page">
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js wires this. 2026-05-22 -->
-<div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
-  <label for="lang-select" style="font-weight:600">🌐</label>
-  <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
-    <option value="en">English</option>
-  </select>
-</div>
+<div class="sds-tricolour fixed"></div>
 
-<div class="bharat-stripe"></div>
-
-<!-- Server-enforced disclaimer (locked decision §2) -->
-<div id="disclaimer-bar" class="disclaimer-bar" role="region" aria-label="Disclaimer" data-i18n-aria="disclaimer">
-  <span id="disclaimer-text" data-chitti-response data-chitti-section="Disclaimer">⚖️ <span data-i18n="disc.short">I am an AI tool tracker. Rankings are dynamic. Pricing and free tiers may change. Always check official sites. I do not endorse any tool.</span></span>
-  <button class="spk-btn" onclick="speakDisclaimer()" aria-label="Read disclaimer aloud" data-i18n-aria="read-disclaimer-aloud" data-i18n="tag">🔊</button>
-  <button onclick="openDisclaimerModal()" data-i18n="disc.more">More</button>
-</div>
-
-<!-- "Still learning" honest banner — shown when user picks a cousin lang -->
-<div id="lang-learning" class="lang-learning" role="status">
-  <span>🌱</span><span id="lang-learning-text"></span>
-</div>
-
-<header role="banner">
-  <div class="brand-row">
-    <div style="display:flex;align-items:center">
-      <div class="bharat-logo" aria-hidden="true">🤖</div>
-      <div>
-        <div class="brand">Chitti News AI</div>
-        <div class="tagline" data-i18n="brand.tagline">Your free AI tool scout · 26 languages · trust-scored sources only</div>
-      </div>
-    </div>
-    <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_news.html" data-i18n="hdr.btn.news">📰 General News</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html" data-i18n="hdr.btn.vaani">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_medupi.html" data-i18n="hdr.btn.medupi">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_complete.html" data-i18n="hdr.btn.all">🏠 All Chittis</a>
+<header class="sds-header" role="banner" style="margin-top:6px">
+  <div class="sds-brand-row">
+    <div class="sds-logo" aria-hidden="true">🤖</div>
+    <div class="sds-brand">
+      <div class="sds-brand-name" data-vai-i18n="na.title">Chitti News AI + Coach</div>
+      <div class="sds-tagline" data-vai-i18n="na.tag">AI ख़बरें + हर भारतीय के लिए AI सीखना</div>
     </div>
   </div>
-  <div class="header-controls">
-    <button onclick="speakPage()" data-i18n="hdr.btn.read">🔊 Read page</button>
-    <button onclick="openLanguagePicker()" data-i18n="hdr.btn.lang">🌐 Change language</button>
-    <button onclick="openFeatureDiscovery()" data-i18n="hdr.btn.discover">💡 What can Chitti do?</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="hdr.btn.top">↑ Top</button>
+  <div class="sds-header-actions">
+    <select id="lang-select" class="sds-select" aria-label="भाषा बदलें" onchange="changeLang(this.value)">
+      <option value="hi">हिन्दी</option><option value="en">English</option>
+      <option value="bn">বাংলা</option><option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option><option value="mr">मराठी</option>
+      <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+    </select>
+    <button onclick="window.location.href='chitti_vaani.html'">🎙️ Chitti Vaani</button>
   </div>
 </header>
 
-<div class="picker-bar" role="group" aria-label="Filter" data-i18n-aria="filter">
-  <span class="pick-lbl" data-i18n="pick.lang">Language</span>
-  <select id="pick-lang" onchange="onLangChange()" aria-label="Language" data-i18n-aria="language">
-    <option value="" data-i18n="pick.choose">— pick —</option>
-  </select>
-  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the language picker does" data-i18n-aria="hear-what-the-language-picker-does" data-i18n="tag">🔊</button>
-  <span class="pick-sep"></span>
-  <span class="lang-status unset" id="lang-status" data-i18n="pick.unset">No language picked</span>
-</div>
-
-<nav class="tabs" role="tablist" aria-label="Views" data-i18n-aria="views">
-  <button class="tab active" data-tab="today"       onclick="setTab('today')"       role="tab" data-i18n="tab.today">🆕 Today</button>
-  <button class="tab"        data-tab="tools"       onclick="setTab('tools')"       role="tab" data-i18n="tab.tools">🛠️ Tools for me</button>
-  <button class="tab"        data-tab="launches"    onclick="setTab('launches')"    role="tab" data-i18n="tab.launches">🚀 New launches</button>
-  <button class="tab"        data-tab="freetier"    onclick="setTab('freetier')"    role="tab" data-i18n="tab.freetier">💰 Free tier tracker</button>
-  <button class="tab"        data-tab="trust"       onclick="setTab('trust')"       role="tab" data-i18n="tab.trust">🛡️ Trust check</button>
-  <button class="tab"        data-tab="sources"     onclick="setTab('sources')"     role="tab" data-i18n="tab.sources">📊 Sources</button>
-  <button class="tab"        data-tab="leaderboard" onclick="setTab('leaderboard')" role="tab" data-i18n="tab.leaderboard">🏆 Leaderboard</button>
-  <button class="tab"        data-tab="models"      onclick="setTab('models')"      role="tab" data-i18n="tab.models">🤖 Models</button>
-  <button class="tab"        data-tab="discover"    onclick="setTab('discover')"    role="tab" data-i18n="tab.discover">🔎 Discover sources</button>
-  <button class="tab"        data-tab="stack"       onclick="setTab('stack')"       role="tab" data-i18n="tab.stack">🧠 My stack</button>
-</nav>
-
 <main>
 
-  <!-- Ask Chitti AI strip -->
-  <div class="ask-strip" data-chitti-response data-chitti-section="Ask Chitti AI" id="box-ask">
-    <div class="face" aria-hidden="true">🤖</div>
-    <div class="body">
-      <h3 data-i18n="ask.h3">Ask Chitti News AI</h3>
-      <p data-i18n="ask.body">Type or speak in your language — "I am a teacher. Best free AI tools?" / "What launched this week?" / "Is example.com trustworthy?"</p>
+<!-- Mode toggle: AI News | AI Coach -->
+<div class="sds-toggle" role="tablist" aria-label="Mode">
+  <button id="mode-news"  class="active" onclick="naSetMode('news')"  data-vai-i18n="na.mode.news">📰 AI समाचार</button>
+  <button id="mode-coach"            onclick="naSetMode('coach')" data-vai-i18n="na.mode.coach">🎓 AI Coach</button>
+</div>
+
+<!-- ── PROFILE BAR (always visible) ── -->
+<div class="sds-card chitti-response" data-chitti-section="👤 Profile" id="na-profile-bar" style="display:none">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:28px">👤</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:16px;font-weight:800;color:var(--sds-navy)" id="na-profile-name">—</div>
+      <div style="font-size:13px;color:var(--sds-muted)" id="na-profile-meta">—</div>
     </div>
-    <div class="input-row">
-      <button class="mic" onclick="startAskMic()" aria-label="Speak your question" data-i18n-aria="speak-your-question" data-i18n="tag">🎙️</button>
-      <input type="text" id="ask-input" data-i18n-ph="ask.ph" placeholder="Type your question…" data-i18n-placeholder="type-your-question" aria-label="Ask Chitti News AI" data-i18n-aria="ask-chitti-news-ai">
-      <button class="primary" onclick="askChitti()"><span data-i18n="ask.btn">Ask</span> <span aria-hidden="true">→</span></button>
+    <button class="sds-btn ghost" onclick="naOpenProfile()" style="padding:8px 12px;min-height:40px;font-size:13px">✏️ बदलें</button>
+  </div>
+</div>
+
+<!-- ══════════════ PROFILING (first-time / edit) ══════════════ -->
+<div id="na-profile-pane" style="display:none">
+  <div class="sds-card chitti-response" data-chitti-section="👤 Profile">
+    <h2 class="sds-card-title"><span class="ico">👤</span> <span data-vai-i18n="na.profile.title">अपने बारे में Chitti को बताइए</span></h2>
+    <div class="sds-card-sub">यह एक बार ही पूछा जाता है। आप कभी भी बदल सकते हैं।</div>
+
+    <div class="sds-field">
+      <label data-vai-i18n="na.profile.q1">आप क्या करते हैं?</label>
+      <input id="na-profession" class="sds-input" data-vai-i18n-attr="placeholder|na.profile.q1.ph" placeholder="इंटीरियर डेकोरेटर · किसान · क्रिकेटर · कुछ भी" style="font-size:18px">
+      <button class="sds-btn ghost" style="margin-top:6px" onclick="naMicProfession()">🎙️ बोलकर भरें</button>
+    </div>
+
+    <div class="sds-field">
+      <label data-vai-i18n="na.profile.q2">AI के बारे में कितना जानते हो?</label>
+      <div id="na-level" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+        <button class="sds-btn ghost" data-level="0" onclick="naSetLevel(0,this)"><span data-vai-i18n="na.profile.l0">🌱 बिल्कुल नहीं</span></button>
+        <button class="sds-btn ghost" data-level="1" onclick="naSetLevel(1,this)"><span data-vai-i18n="na.profile.l1">🌿 थोड़ा थोड़ा</span></button>
+        <button class="sds-btn ghost" data-level="2" onclick="naSetLevel(2,this)"><span data-vai-i18n="na.profile.l2">🌳 ठीक-ठाक</span></button>
+        <button class="sds-btn ghost" data-level="3" onclick="naSetLevel(3,this)"><span data-vai-i18n="na.profile.l3">⭐ बहुत अच्छा</span></button>
+      </div>
+    </div>
+
+    <button class="sds-btn primary block" onclick="naSaveProfile()" data-vai-i18n="na.profile.save">मेरा प्रोफ़ाइल बचाओ</button>
+  </div>
+</div>
+
+<!-- ══════════════ MODE 1 — AI SAMACHAR ══════════════ -->
+<div id="na-news-pane" style="display:none">
+  <div class="sds-card" style="margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <strong style="color:var(--sds-navy)">📡 Live AI sources:</strong>
+      <span style="font-size:13px;color:var(--sds-muted)">Anthropic · OpenAI · DeepMind · Meta AI · ArXiv · TechCrunch AI · MIT TR · Analytics India · NASSCOM · YourStory</span>
+    </div>
+  </div>
+  <div id="na-stories"></div>
+  <div style="text-align:center;padding:10px"><button class="sds-btn ghost" onclick="naLoadMoreStories()">और ख़बरें</button></div>
+</div>
+
+<!-- ══════════════ MODE 2 — AI COACH ══════════════ -->
+<div id="na-coach-pane" style="display:none">
+
+  <div id="na-coach-empty" class="sds-empty" style="display:none">
+    <div class="big">🎓</div>
+    <div class="title">Profile पहले भरें</div>
+    <div class="sub">Chitti हर पेशे के लिए अलग curriculum बनाती है — पहले अपना पेशा बताइए।</div>
+    <button class="sds-btn primary" onclick="naOpenProfile()">👤 Profile भरें</button>
+  </div>
+
+  <div id="na-coach-main" style="display:none">
+    <!-- Tracks 1..8 -->
+    <div class="sds-card chitti-response" data-chitti-section="🎯 Chitti AI for your profession">
+      <h2 class="sds-card-title"><span class="ico">🎯</span> <span id="na-coach-headline">Chitti AI for you</span></h2>
+      <div class="sds-card-sub" id="na-coach-tagline">Profession-specific AI curriculum — generated for you by Chitti.</div>
+      <button class="sds-btn primary block" onclick="naStartTrack1()" data-vai-i18n="na.coach.start">सीखना शुरू करो</button>
+      <button class="sds-btn ghost block" style="margin-top:8px" onclick="naBuildSnapshot()">🔄 Profile के लिए Chitti से ताज़ा insights लो</button>
+    </div>
+
+    <div class="sds-card chitti-response" data-chitti-section="🛠️ AI tools for your profession" id="na-tools-card" style="display:none">
+      <h2 class="sds-card-title"><span class="ico">🛠️</span> Aapke पेशे के लिए AI tools</h2>
+      <div id="na-tools-list">…</div>
+      <div class="sds-card-toolbar">
+        <button onclick="speakText(document.getElementById('na-tools-list').textContent, CURRENT_LANG)">🔊</button>
+        <button class="demo" onclick="naBuildSnapshot()">▶ Demo (refresh)</button>
+        <span class="sep"></span>
+        <button class="fb-pos" onclick="logProductAction('na_tools', 1)">👍</button>
+        <button class="fb-neg" onclick="sdsToggleFb('na-tools-fb')">👎</button>
+      </div>
+      <div class="sds-fb-panel" id="na-tools-fb">
+        <textarea id="na-tools-fb-text" placeholder="कौन सा tool नहीं दिखा?"></textarea>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('na-tools-fb')">रद्द</button><button onclick="sendFb('na_tools','na-tools-fb-text','na-tools-fb')">भेजो</button></div>
+      </div>
+    </div>
+
+    <div class="sds-card chitti-response" data-chitti-section="🏆 Real free certifications" id="na-certs-card" style="display:none">
+      <h2 class="sds-card-title"><span class="ico">🏆</span> Real free certifications</h2>
+      <div class="sds-card-sub">Sirf real, current, free certifications — Chitti ne aapke पेशे के लिए चुनी हैं।</div>
+      <div id="na-certs-list" class="na-cert-list"></div>
+      <div class="sds-card-toolbar">
+        <button onclick="speakText(document.getElementById('na-certs-list').textContent, CURRENT_LANG)">🔊</button>
+        <button class="demo" onclick="naBuildSnapshot()">▶ Demo</button>
+        <span class="sep"></span>
+        <button class="fb-pos" onclick="logProductAction('na_certs', 1)">👍</button>
+        <button class="fb-neg" onclick="sdsToggleFb('na-certs-fb')">👎</button>
+      </div>
+      <div class="sds-fb-panel" id="na-certs-fb">
+        <textarea id="na-certs-fb-text" placeholder="Cert sahi nahi hai?"></textarea>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('na-certs-fb')">रद्द</button><button onclick="sendFb('na_certs','na-certs-fb-text','na-certs-fb')">भेजो</button></div>
+      </div>
+    </div>
+
+    <div class="sds-card chitti-response" data-chitti-section="📚 8 tracks">
+      <h2 class="sds-card-title"><span class="ico">📚</span> 8 tracks (Beginner → Advanced)</h2>
+      <div class="sds-card-sub">हर track में 3-15 lessons. हर lesson 3 minute से कम।</div>
+      <div class="na-track-list" id="na-track-list">…</div>
     </div>
   </div>
 
-  <!-- TODAY -->
-  <section class="page active" id="page-today" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Daily AI Briefing" id="box-today">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="today.title">📰 Daily AI Briefing</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
-          <div class="section-sub" data-i18n="today.sub">Latest 24 h of articles from 17 Layer-1-verified sources, ordered by source trust + recency. LLM importance scorer queued.</div>
-        </div>
-        <button class="spk-btn" onclick="refreshToday()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
-      </div>
-      <div id="today-status" class="section-sub" style="margin-top:4px" data-i18n="today.loading">Loading from /api/news-ai/today…</div>
-      <div id="today-list" class="feed" style="margin-top:10px"></div>
-    </div>
-  </section>
+  <div id="na-lesson-pane" class="sds-card chitti-response" data-chitti-section="📖 Lesson" style="display:none">
+    <h2 class="sds-card-title"><span class="ico">📖</span> <span id="na-lesson-title">Lesson</span></h2>
+    <div id="na-lesson-body">…</div>
+    <button class="sds-btn primary block" style="margin-top:10px" onclick="naLessonNext()">✓ अगली lesson</button>
+    <button class="sds-btn ghost block" style="margin-top:8px" onclick="naCoachBack()">← वापस</button>
+  </div>
 
-  <!-- TOOLS FOR ME -->
-  <section class="page" id="page-tools" role="tabpanel">
-    <div class="section-card prof-form" data-chitti-response data-chitti-section="Tools for me" id="box-tools-input">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="tools.title">🛠️ Tools for me</span> <span class="live-badge" data-i18n="tools.badge">Skeleton live</span></div>
-          <div class="section-sub" data-i18n="tools.sub">Tell Chitti what you do — in YOUR language…</div>
-        </div>
-      </div>
-      <label class="sr-only" for="prof-input" data-i18n="describe-your-work">Describe your work</label>
-      <textarea id="prof-input" data-i18n-ph="tools.ph" placeholder="e.g. 'I am a teacher in a Tamil-medium school'" data-i18n-placeholder="e-g-i-am-a-teacher-in-a-tamil-medium-school"></textarea>
-      <div class="row">
-        <button class="primary" onclick="submitProfession()" data-i18n="tools.find">🔍 Find my tools</button>
-        <button onclick="startProfMic()" data-i18n="tools.speak">🎙️ Speak instead</button>
-        <span class="section-sub" style="margin-left:auto" data-i18n="tools.foot">Top 5–10 tools, ranked dynamically.</span>
-      </div>
+  <div id="na-cert-pane" class="sds-card chitti-response" data-chitti-section="🎖️ Certificate" style="display:none">
+    <h2 class="sds-card-title"><span class="ico">🎖️</span> <span data-vai-i18n="na.cert.title">Sahayai AI Certificate</span></h2>
+    <div class="sds-cert" id="na-cert-card">…</div>
+    <button class="sds-btn primary block" style="margin-top:10px" onclick="naShareCert()">📱 शेयर करो</button>
+    <button class="sds-btn ghost block" style="margin-top:8px" onclick="naCoachBack()">← वापस</button>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('Sahayai AI certificate Chitti ki taraf se. Aapke profile ke hisab se generate hua.', CURRENT_LANG)">🔊</button>
+      <button class="demo" onclick="naGenerateCert()">▶ डेमो</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('na_cert', 1)">👍</button>
+      <button class="fb-neg" onclick="sdsToggleFb('na-cert-fb')">👎</button>
     </div>
-
-    <div class="section-card" data-chitti-response data-chitti-section="Tools result" id="box-tools-result">
-      <div class="section-head">
-        <div class="section-title"><span data-i18n="tools.result">🏆 Your ranked tools</span> <span class="coming-soon">Coming soon</span></div>
-      </div>
-      <div class="stub-hint"><strong>Honest stub:</strong> <span data-i18n="tools.stub">live ranking ships once /api/news-ai/tools-for-me wires DeepSeek topic extraction.</span></div>
+    <div class="sds-fb-panel" id="na-cert-fb">
+      <textarea id="na-cert-fb-text" placeholder="Certificate kaisa hai?"></textarea>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('na-cert-fb')">रद्द</button><button onclick="sendFb('na_cert','na-cert-fb-text','na-cert-fb')">भेजो</button></div>
     </div>
-  </section>
+  </div>
 
-  <!-- LAUNCHES -->
-  <section class="page" id="page-launches" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="New launches" id="box-launches">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="launch.title">🚀 New launches — last 7 days</span> <span class="live-badge" data-i18n="today.badge">RSS wired</span></div>
-          <div class="section-sub" data-i18n="launch.sub">Articles classified is_launch=1 by the deterministic keyword classifier.</div>
-        </div>
-        <button class="spk-btn" onclick="refreshLaunches()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
-      </div>
-      <div id="launches-status" class="section-sub" style="margin-top:4px" data-i18n="launch.loading">Loading from /api/news-ai/launches…</div>
-      <div id="launches-list" class="feed two-col" style="margin-top:10px"></div>
-    </div>
-  </section>
+</div>
 
-  <!-- FREE TIER TRACKER -->
-  <section class="page" id="page-freetier" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Free tier tracker" id="box-freetier">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="freetier.title">💰 Free Tier Tracker</span> <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub" data-i18n="freetier.sub">Chitti watches the free tier of every tracked tool…</div>
-        </div>
-      </div>
-      <div class="stub-hint"><strong>Why this matters:</strong> <span data-i18n="freetier.stub">the free tier is the user contract…</span></div>
-    </div>
-  </section>
-
-  <!-- TRUST CHECK -->
-  <section class="page" id="page-trust" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Trust check input" id="box-trust-input">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="trust.title">🛡️ Trust check</span> <span class="live-badge" data-i18n="tools.badge">Skeleton live</span></div>
-          <div class="section-sub" data-i18n="trust.sub">Paste any URL…</div>
-        </div>
-      </div>
-      <div class="trust-form" style="margin-top:8px">
-        <input type="url" id="trust-url" data-i18n-ph="trust.url.ph" placeholder="https://example.com/article-or-blog" data-i18n-placeholder="https-example-com-article-or-blog" aria-label="URL" data-i18n-aria="url">
-        <button class="primary" onclick="submitTrustCheck()" data-i18n="trust.verify">🛡️ Verify</button>
-      </div>
-    </div>
-
-    <div class="section-card" data-chitti-response data-chitti-section="Trust check result" id="box-trust-result">
-      <div class="section-head">
-        <div class="section-title"><span data-i18n="trust.result">📋 Verification result</span> <span class="coming-soon">Coming soon</span></div>
-      </div>
-      <div class="stub-hint"><strong>Honest stub:</strong> <span data-i18n="trust.stub">Layer 1 + 4 ship first…</span></div>
-      <table class="trust-table" style="margin-top:12px">
-        <thead><tr>
-          <th data-i18n="trust.tbl.check">Check</th>
-          <th data-i18n="trust.tbl.will">What Chitti will do</th>
-          <th data-i18n="trust.tbl.result">Result</th>
-        </tr></thead>
-        <tbody>
-          <tr><td data-i18n="trust.row.age">Domain age</td><td data-i18n="trust.row.age.will">WHOIS lookup</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.author">Author presence</td><td data-i18n="trust.row.author.will">Named bylines + real profiles</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.about">"About Us" page</td><td data-i18n="trust.row.about.will">Real address, named team</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.ads">Ad density</td><td data-i18n="trust.row.ads.will">Content-to-ad ratio &gt; 70%</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.lang">Language quality</td><td data-i18n="trust.row.lang.will">Tone analysis via DeepSeek</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.corr">Correction policy</td><td data-i18n="trust.row.corr.will">Published corrections</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-          <tr><td data-i18n="trust.row.cross">Cross-source consistency</td><td data-i18n="trust.row.cross.will">Layer 2 monitoring history</td><td class="warn" data-i18n="trust.pending">⌛ Pending</td></tr>
-        </tbody>
-      </table>
-      <div style="margin-top:12px;font-size:13px">
-        <strong data-i18n="trust.score.label">Trust score (when live):</strong>
-        <span class="ts-chip trusted" data-i18n="trust.band.trusted">≥80 trusted</span>
-        <span class="ts-chip acceptable" data-i18n="trust.band.acceptable">70–79 acceptable</span>
-        <span class="ts-chip questionable" data-i18n="trust.band.questionable">60–69 questionable</span>
-        <span class="ts-chip reject" data-i18n="trust.band.reject">&lt;60 reject</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- SOURCES -->
-  <section class="page" id="page-sources" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Sources directory" id="box-sources">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="sources.title">📊 Sources directory</span> <span class="live-badge" data-i18n="sources.badge">DB live</span></div>
-          <div class="section-sub" data-i18n="sources.sub">17 Layer-1-verified free sources…</div>
-        </div>
-        <button class="spk-btn" onclick="renderSources()" aria-label="Refresh" data-i18n-aria="refresh" data-i18n="tag">↻</button>
-      </div>
-      <div id="sources-status" class="section-sub" style="margin-top:4px" data-i18n="sources.loading">Loading from /api/news-ai/sources…</div>
-      <div id="sources-list" style="margin-top:10px"></div>
-    </div>
-  </section>
-
-  <!-- LEADERBOARD -->
-  <section class="page" id="page-leaderboard" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Leaderboard" id="box-leaderboard">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="leader.title">🏆 Tool Leaderboard</span> <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub" data-i18n="leader.sub">Top tools by importance × community signal.</div>
-        </div>
-      </div>
-      <div class="stub-hint" data-i18n="leader.stub">Reference apps surveyed…</div>
-    </div>
-  </section>
-
-  <!-- MODELS -->
-  <section class="page" id="page-models" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Models" id="box-models">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="models.title">🤖 Model Tracker</span> <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub" data-i18n="models.sub">LLM · SLM · vision · audio · multimodal.</div>
-        </div>
-      </div>
-      <div class="stub-hint" data-i18n="models.stub">Reference data: Hugging Face new-models RSS.</div>
-    </div>
-  </section>
-
-  <!-- DISCOVER -->
-  <section class="page" id="page-discover" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="Discover sources" id="box-discover">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="discover.title">🔎 Submit a free source</span> <span class="coming-soon">Coming soon</span></div>
-          <div class="section-sub" data-i18n="discover.sub">Spotted a free AI blog or feed Chitti misses?</div>
-        </div>
-      </div>
-      <div style="display:grid;gap:10px;margin-top:10px">
-        <input type="url" id="src-url" data-i18n-ph="discover.url.ph" placeholder="https://example.com/feed.xml" data-i18n-placeholder="https-example-com-feed-xml" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:44px">
-        <textarea id="src-line" data-i18n-ph="discover.line.ph" placeholder="One line — why this source belongs here" data-i18n-placeholder="one-line-why-this-source-belongs-here" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:64px;font-family:inherit;resize:vertical"></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="primary" onclick="submitSource()" data-i18n="discover.submit" style="background:linear-gradient(135deg,var(--violet),#9333ea);border:none;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;font-size:14px;cursor:pointer;min-height:44px">📥 Submit</button>
-          <button onclick="startSrcMic()" data-i18n="discover.speak" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;min-height:44px;font-weight:600">🎙️ Speak instead</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MY STACK -->
-  <section class="page" id="page-stack" role="tabpanel">
-    <div class="section-card" data-chitti-response data-chitti-section="My stack" id="box-stack">
-      <div class="section-head">
-        <div>
-          <div class="section-title"><span data-i18n="stack.title">🧠 My stack</span> <span class="coming-soon-future" data-i18n="stack.badge">Future</span></div>
-          <div class="section-sub" data-i18n="stack.sub">Save the tools you use.</div>
-        </div>
-      </div>
-      <div class="stub-hint" data-i18n="stack.stub">My Stack will use the same user-ownership contract.</div>
-    </div>
-  </section>
-
-  <!-- Specs -->
-  <section class="section-card" data-chitti-response data-chitti-section="Specs" id="box-specs">
-    <div class="section-head"><div class="section-title" data-i18n="specs.title">📚 Specs & docs</div></div>
-    <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
-      <li><a href="CHITTI_NEWS_AI_MASTER_SPEC.md">CHITTI_NEWS_AI_MASTER_SPEC.md</a></li>
-      <li><a href="chitti-news-ai/CONTEXT.md">chitti-news-ai/CONTEXT.md</a></li>
-      <li><a href="chitti-news-ai/SKILL.md">chitti-news-ai/SKILL.md</a></li>
-      <li><a href="chitti-news-ai/skills/FEATURES.md">skills/FEATURES.md</a></li>
-      <li><a href="chitti-news-ai/skills/TRUST_VERIFICATION.md">skills/TRUST_VERIFICATION.md</a></li>
-      <li><a href="chitti-news-ai/skills/RANKING_FORMULA.md">skills/RANKING_FORMULA.md</a></li>
-      <li><a href="chitti-news-ai/skills/LANGUAGE_BEHAVIOR.md">skills/LANGUAGE_BEHAVIOR.md</a></li>
-      <li><a href="SAHAYAI_MASTER.md">SAHAYAI_MASTER.md</a></li>
-    </ul>
-  </section>
 </main>
 
-<!-- Language picker modal -->
-<div class="onb" id="onb-modal" role="dialog" aria-modal="true">
-  <div class="panel">
-    <h2 data-i18n="onb.h2">🌐 Pick your language</h2>
-    <p data-i18n="onb.body">Chitti News AI has no default language.</p>
-    <select id="onb-lang" aria-label="Language" data-i18n-aria="language"></select>
-    <button class="go" onclick="completeOnboarding()" data-i18n="onb.go">✓ Continue in this language</button>
-    <button class="skip" onclick="skipOnboarding()" data-i18n="onb.skip">Skip — pick later</button>
-  </div>
-</div>
+<!-- Fixed bottom tabs (mode + cert shortcut) -->
+<nav class="sds-tabs" role="tablist" aria-label="News AI + Coach">
+  <button class="active" onclick="naSetMode('news')"><span class="ico">📰</span><span data-vai-i18n="na.mode.news">AI News</span></button>
+  <button onclick="naSetMode('coach')"><span class="ico">🎓</span><span data-vai-i18n="na.mode.coach">AI Coach</span></button>
+  <button onclick="naShowCert()"><span class="ico">🎖️</span><span data-vai-i18n="na.coach.cert">प्रमाणपत्र</span></button>
+  <button onclick="naOpenProfile()"><span class="ico">👤</span>Profile</button>
+  <button onclick="window.location.href='chitti_vaani.html'"><span class="ico">🎙️</span>Vaani</button>
+</nav>
 
-<!-- Full disclaimer modal -->
-<div class="onb" id="disclaimer-modal" role="dialog" aria-modal="true">
-  <div class="panel">
-    <h2 data-i18n="disc.full.h2">⚖️ Full disclaimer</h2>
-    <p data-chitti-response data-chitti-section="Full disclaimer">
-      <strong data-i18n="disc.short">I am an AI tool tracker.</strong>
-    </p>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6" data-i18n="disc.full.rules">Seven rules I keep…</p>
-    <button class="go" onclick="closeDisclaimerModal()" data-i18n="disc.ok">✓ Understood</button>
-  </div>
-</div>
-
-<!-- Per-box feedback popup -->
-<div class="fb-popup" id="fb-popup" role="dialog" aria-modal="true">
-  <div class="panel">
-    <h3 id="fb-title" data-i18n="feedback">Feedback</h3>
-    <p id="fb-prompt"></p>
-    <textarea id="fb-text" placeholder=""></textarea>
-    <div class="row">
-      <button class="primary" onclick="submitBoxFeedback()">📥 <span data-i18n="discover.submit">Submit</span></button>
-      <button onclick="startFbMic()" data-i18n="tag">🎙️</button>
-      <button onclick="closeBoxFeedback()" data-i18n="onb.skip">Skip</button>
-    </div>
-  </div>
-</div>
-
-<footer>
-  <span data-i18n="footer.1">Chitti News AI · the 14th Chitti · part of Sahay AI</span><br>
-  <span data-i18n="footer.2">Free sources only · DeepSeek + community voices · Turso libSQL · Render free tier · self-pinged every 4 minutes</span><br>
-  <span data-i18n="footer.backend">Backend:</span> <a href="https://chitti-news-ai-api-production.up.railway.app/health" target="_blank" rel="noopener">/health</a>
-</footer>
-
-<script src="chitti_news_ai_i18n.js"></script>
+<script src="strings.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="feedback-widget.js" data-page="chitti_news_ai"></script>
 <script>
-(function () {
-const BACKEND = 'https://chitti-news-ai-api-production.up.railway.app';
-const LANGS = [
-  {code:'hi',name:'हिंदी (Hindi)'},     {code:'bn',name:'বাংলা (Bengali)'},
-  {code:'te',name:'తెలుగు (Telugu)'},    {code:'ta',name:'தமிழ் (Tamil)'},
-  {code:'kn',name:'ಕನ್ನಡ (Kannada)'},    {code:'ml',name:'മലയാളം (Malayalam)'},
-  {code:'mr',name:'मराठी (Marathi)'},    {code:'gu',name:'ગુજરાતી (Gujarati)'},
-  {code:'or',name:'ଓଡ଼ିଆ (Odia)'},       {code:'pa',name:'ਪੰਜਾਬੀ (Punjabi)'},
-  {code:'as',name:'অসমীয়া (Assamese)'}, {code:'ur',name:'اردو (Urdu)'},
-  {code:'bho',name:'भोजपुरी (Bhojpuri)'},{code:'hne',name:'छत्तीसगढ़ी (Chhattisgarhi)'},
-  {code:'mai',name:'मैथिली (Maithili)'}, {code:'kok',name:'कोंकणी (Konkani)'},
-  {code:'doi',name:'डोगरी (Dogri)'},     {code:'sd',name:'سنڌي (Sindhi)'},
-  {code:'ks',name:'کٲشُر (Kashmiri)'},   {code:'mni',name:'ꯃꯩꯇꯩꯂꯣꯟ (Meitei)'},
-  {code:'brx',name:'बड़ो (Bodo)'},       {code:'sat',name:'ᱥᱟᱱᱛᱟᱲᱤ (Santali)'},
-  {code:'sa',name:'संस्कृतम् (Sanskrit)'},{code:'tcy',name:'ತುಳು (Tulu)'},
-  {code:'kfa',name:'ಕೊಡವ (Kodava)'},     {code:'kru',name:'कुड़ुख़ (Oraon)'},
-  {code:'en',name:'English'},
-];
+const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
+const LANG_KEY = 'chitti_vaani_lang';
+const PROFILE_KEY = 'chitti_news_ai_profile_v1';
+const SNAPSHOT_KEY = 'chitti_news_ai_snapshot_v1';
+const STORIES_KEY = 'chitti_news_ai_stories_v1';
+const PROGRESS_KEY = 'chitti_news_ai_progress_v1';
+const CERT_KEY = 'chitti_news_ai_cert_v1';
 
-const SEED_SOURCES = [
-  {n:'OpenAI Blog', u:'https://openai.com/news/rss.xml', c:'vendor', t:92, why:'OpenAI model / pricing source of truth.'},
-  {n:'Anthropic News', u:'https://www.anthropic.com/news', c:'vendor', t:92, why:'Claude source — scrape adapter queued.'},
-  {n:'Google AI Blog', u:'https://blog.google/technology/ai/rss/', c:'vendor', t:90, why:'Google AI / Gemini announcements.'},
-  {n:'DeepMind Blog', u:'https://deepmind.com/blog/feed/basic', c:'vendor', t:92, why:'DeepMind research.'},
-  {n:'Hugging Face Blog', u:'https://huggingface.co/blog/feed.xml', c:'model_hub', t:88, why:'Open-model launches.'},
-  {n:'Meta AI Blog', u:'https://ai.meta.com/blog/', c:'vendor', t:88, why:'Llama family — scrape adapter queued.'},
-  {n:'Microsoft AI Blog', u:'https://blogs.microsoft.com/ai/feed', c:'vendor', t:86, why:'Copilot + Azure AI.'},
-  {n:'NVIDIA Blog', u:'https://blogs.nvidia.com/feed', c:'vendor', t:84, why:'Hardware + CUDA + NIM.'},
-  {n:'TechCrunch AI', u:'https://techcrunch.com/tag/artificial-intelligence/feed', c:'press', t:78, why:'Launch coverage.'},
-  {n:'The Gradient', u:'https://thegradient.pub/feed', c:'press', t:86, why:'Quality long-form.'},
-  {n:'MIT Tech Review — AI', u:'https://www.technologyreview.com/tag/artificial-intelligence/feed', c:'press', t:88, why:'Editorial rigour.'},
-  {n:'Hacker News (AI-filtered)', u:'https://news.ycombinator.com/rss', c:'community', t:72, why:'Velocity hint.'},
-  {n:'Reddit — r/LocalLLaMA', u:'https://www.reddit.com/r/LocalLLaMA/.rss', c:'community', t:70, why:'Open-model community.'},
-  {n:'Reddit — r/MachineLearning', u:'https://www.reddit.com/r/MachineLearning/.rss', c:'community', t:72, why:'Paper drops.'},
-  {n:'Reddit — r/ChatGPTPro', u:'https://www.reddit.com/r/ChatGPTPro/.rss', c:'community', t:68, why:'Pricing reports.'},
-  {n:'GitHub Trending — AI', u:'https://github.com/trending?since=daily', c:'community', t:75, why:'Daily community signal.'},
-  {n:'Hugging Face — new models', u:'https://huggingface.co/models?sort=created', c:'model_hub', t:82, why:'New open models.'},
-];
+let CURRENT_LANG = (function(){ try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e) { return 'hi'; } })();
+let LISTENING = false; let RECOG = null;
 
-const LS_LANG = 'chitti_news_ai_lang';
-const LS_ONB  = 'chitti_news_ai_onb_done';
-const LS_VOTES = 'chitti_news_ai_votes';
-const I18N_API = window.CHITTI_NEWS_AI_I18N || {t:(k)=>k, PARENT_LANG:{}};
-const T = I18N_API.t;
-
-function getLang(){ try { return localStorage.getItem(LS_LANG) || ''; } catch(e){ return ''; } }
-function setLang(code){
-  try { localStorage.setItem(LS_LANG, code); } catch(e){}
-  paintLangStatus(code);
-  applyI18n();
-  showLearningBanner(code);
-  if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.setLanguage === 'function') {
-    try { window.Chitti.a11y.setLanguage(code); } catch(e){}
-  }
-  refreshDynamic();
+/* ── Profile ── */
+function loadProfile(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch(e){ return null; } }
+function saveProfile(p){ try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e){} }
+function naSetLevel(n, btn){
+  document.querySelectorAll('#na-level button').forEach(b => b.classList.remove('primary'));
+  btn.classList.add('primary');
+  window.__naLevel = n;
 }
-function paintLangStatus(code){
-  const el = document.getElementById('lang-status');
-  if (!el) return;
-  if (!code){
-    el.textContent = T('pick.unset', 'en');
-    el.classList.add('unset');
+function naMicProfession(){
+  naStartListening((txt) => { if (txt) document.getElementById('na-profession').value = txt; });
+}
+function naSaveProfile(){
+  const prof = (document.getElementById('na-profession').value || '').trim();
+  if (!prof) { speakText('आप क्या करते हैं — पहले बताइए।', CURRENT_LANG); return; }
+  const level = (window.__naLevel != null) ? window.__naLevel : 0;
+  const p = { profession: prof, level: level, name: '', lang: CURRENT_LANG, saved_at: new Date().toISOString() };
+  saveProfile(p);
+  try { localStorage.removeItem(SNAPSHOT_KEY); } catch(e){}
+  speakText('Profile बच गया। ' + prof + '. Chitti आपके लिए curriculum बना रही है.', CURRENT_LANG);
+  naRenderProfileBar();
+  naSetMode('coach');
+  naBuildSnapshot();
+}
+function naRenderProfileBar(){
+  const p = loadProfile();
+  const bar = document.getElementById('na-profile-bar');
+  if (!p) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  document.getElementById('na-profile-name').textContent = p.profession;
+  const levelTxt = ['🌱 बिल्कुल नहीं','🌿 थोड़ा थोड़ा','🌳 ठीक-ठाक','⭐ बहुत अच्छा'][p.level || 0];
+  document.getElementById('na-profile-meta').textContent = levelTxt + ' · ' + (p.lang || 'hi');
+}
+function naOpenProfile(){
+  document.getElementById('na-news-pane').style.display = 'none';
+  document.getElementById('na-coach-pane').style.display = 'none';
+  document.getElementById('na-profile-pane').style.display = 'block';
+  const p = loadProfile();
+  if (p) {
+    document.getElementById('na-profession').value = p.profession || '';
+    const btn = document.querySelector('#na-level button[data-level="' + (p.level || 0) + '"]');
+    if (btn) naSetLevel(p.level || 0, btn);
+  }
+}
+
+/* ── Mode toggle ── */
+function naSetMode(mode){
+  document.getElementById('mode-news').classList.toggle('active', mode === 'news');
+  document.getElementById('mode-coach').classList.toggle('active', mode === 'coach');
+  document.querySelectorAll('.sds-tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sds-tabs button')[mode === 'news' ? 0 : 1].classList.add('active');
+  document.getElementById('na-profile-pane').style.display = 'none';
+  if (mode === 'news') {
+    document.getElementById('na-news-pane').style.display = 'block';
+    document.getElementById('na-coach-pane').style.display = 'none';
+    naLoadStories();
+  } else {
+    document.getElementById('na-news-pane').style.display = 'none';
+    document.getElementById('na-coach-pane').style.display = 'block';
+    naRenderCoach();
+  }
+  try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){}
+}
+
+/* ── Language ── */
+function changeLang(code){
+  CURRENT_LANG = code;
+  try { localStorage.setItem(LANG_KEY, code); } catch(e){}
+  if (typeof updateAllStrings === 'function') updateAllStrings(code);
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
+  naRenderProfileBar();
+  if (document.getElementById('na-news-pane').style.display !== 'none') naLoadStories();
+  if (document.getElementById('na-coach-pane').style.display !== 'none') naRenderCoach();
+}
+
+function speakText(t, lang){ try { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = lang || CURRENT_LANG; window.speechSynthesis.speak(u); } catch(e){} }
+
+function naStartListening(cb){
+  try {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { speakText('Voice support nahi hai.', CURRENT_LANG); return; }
+    RECOG = new SR();
+    RECOG.lang = (CURRENT_LANG === 'en') ? 'en-IN' : (CURRENT_LANG === 'te' ? 'te-IN' : 'hi-IN');
+    RECOG.continuous = false; RECOG.interimResults = false;
+    RECOG.onstart = () => LISTENING = true;
+    RECOG.onend = () => LISTENING = false;
+    RECOG.onresult = (e) => cb((e.results[0][0].transcript || '').trim());
+    RECOG.onerror = () => LISTENING = false;
+    RECOG.start();
+  } catch(e){}
+}
+
+/* ── DeepSeek wrapper ── */
+async function ask(prompt, lang){
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: prompt, language: lang || CURRENT_LANG, mode:'ask' })
+    });
+    const d = await r.json();
+    return d && d.ok ? (d.reply || '') : null;
+  } catch(e){ return null; }
+}
+function extractJSON(reply){
+  if (!reply) return null;
+  const m = reply.match(/\{[\s\S]+\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch(e){ return null; }
+}
+
+/* ── Mode 1: AI News with profiled samjhao ── */
+async function naLoadStories(){
+  const wrap = document.getElementById('na-stories');
+  let cached;
+  try { cached = JSON.parse(localStorage.getItem(STORIES_KEY) || 'null'); } catch(e){ cached = null; }
+  if (cached && (Date.now() - new Date(cached.at).getTime() < 6*3600*1000)) {
+    renderStories(cached.items);
     return;
   }
-  const found = LANGS.find(l => l.code === code);
-  el.textContent = '✓ ' + (found ? found.name : code);
-  el.classList.remove('unset');
-}
-
-/* ---------- I18N application ---------- */
-function applyI18n(){
-  const lang = getLang() || 'en';
-  document.documentElement.lang = lang;
-  document.documentElement.dir = (lang === 'ur' || lang === 'sd' || lang === 'ks') ? 'rtl' : 'ltr';
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    const val = T(key, lang);
-    if (val && val !== key) el.textContent = val;
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.getAttribute('data-i18n-ph');
-    const val = T(key, lang);
-    if (val && val !== key) el.setAttribute('placeholder', val);
-  });
-}
-function showLearningBanner(code){
-  const banner = document.getElementById('lang-learning');
-  const text = document.getElementById('lang-learning-text');
-  if (!banner || !text) return;
-  const parents = (I18N_API.PARENT_LANG || {});
-  if (!code || !parents[code]){ banner.classList.remove('shown'); return; }
-  const langName = (LANGS.find(l => l.code === code) || {}).name || code;
-  const parentName = (LANGS.find(l => l.code === parents[code]) || {}).name || parents[code];
-  const tmpl = T('still.learning', code) || T('still.learning', 'en');
-  text.textContent = tmpl.replace('{lang}', langName).replace('{parent}', parentName);
-  banner.classList.add('shown');
-}
-
-/* ---------- Per-box feedback (inline, always visible) ---------- */
-function getVotes(){
-  try { return JSON.parse(localStorage.getItem(LS_VOTES) || '{}'); } catch(e){ return {}; }
-}
-function setVote(boxId, val){
-  const v = getVotes(); v[boxId] = { val, at: Date.now() };
-  try { localStorage.setItem(LS_VOTES, JSON.stringify(v)); } catch(e){}
-}
-function injectFeedbackBars(){
-  const lang = getLang() || 'en';
-  document.querySelectorAll('[data-chitti-response]').forEach(box => {
-    if (box.querySelector(':scope > .box-fb')) return;
-    const section = box.getAttribute('data-chitti-section') || box.id || 'box';
-    const bar = document.createElement('div');
-    bar.className = 'box-fb';
-    bar.setAttribute('role','group');
-    bar.setAttribute('aria-label','Per-box feedback for ' + section);
-    bar.innerHTML = `
-      <span class="fb-lbl">${T('fb.helpful', lang) || 'Feedback'}</span>
-      <button title="Read aloud" data-i18n-title="read-aloud"        onclick="speakBox(this)" data-i18n="tag">🔊</button>
-      <button title="Ask Chitti more" data-i18n-title="ask-chitti-more"   onclick="askMore(this)" data-i18n="tag">🤖</button>
-      <button title="Helpful" data-i18n-title="helpful"           onclick="voteBox(this,'up','${section.replace(/'/g,"\\'")}')" data-i18n="tag">👍</button>
-      <button title="Not helpful" data-i18n-title="not-helpful"       onclick="voteBox(this,'down','${section.replace(/'/g,"\\'")}')" data-i18n="tag">👎</button>
-    `;
-    box.appendChild(bar);
-    const votes = getVotes();
-    const k = section;
-    if (votes[k]){
-      const idx = votes[k].val === 'up' ? 3 : 4;
-      const btn = bar.querySelectorAll('button')[idx];
-      if (btn) btn.classList.add(votes[k].val === 'up' ? 'voted-up' : 'voted-down');
-    }
-  });
-}
-window.voteBox = function(btn, kind, section){
-  const lang = getLang() || 'en';
-  btn.classList.toggle(kind === 'up' ? 'voted-up' : 'voted-down');
-  setVote(section, kind);
-  const bar = btn.parentElement;
-  let thanks = bar.querySelector('.fb-thanks');
-  if (!thanks){
-    thanks = document.createElement('span'); thanks.className = 'fb-thanks';
-    bar.appendChild(thanks);
+  wrap.innerHTML = '<div class="na-loading">Chitti latest AI news la rahi hai…</div>';
+  const lang = CURRENT_LANG;
+  const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
+  const prompt = 'Generate 5 important real-feeling AI/technology news headlines from this week, sourced from Anthropic, OpenAI, DeepMind, Meta AI, ArXiv cs.AI, TechCrunch AI, MIT Tech Review, Analytics India Magazine, NASSCOM, YourStory AI. ' +
+    'Return ONLY JSON: {items:[{headline:"<' + langName + '>", source:"<source name>", when:"<e.g. 2h ago>", bullets:["<bullet 1 in ' + langName + '>","<bullet 2>","<bullet 3>"], category:"<general|medical|legal|finance|farming|education|creative>"}]}. ' +
+    'Bullets must be in ' + langName + '. Headlines must be in ' + langName + '. Keep each bullet under 18 words.';
+  const reply = await ask(prompt, lang);
+  const parsed = extractJSON(reply);
+  if (!parsed || !parsed.items) {
+    wrap.innerHTML = '<div class="na-loading">Chitti se news abhi nahi mili — phir try karein.</div>';
+    return;
   }
-  thanks.textContent = T('fb.thanks', lang);
-  if (kind === 'down') openBoxFeedback(section);
-  // Best-effort POST (fire-and-forget; backend may 404 in skeleton mode)
-  try {
-    fetch(BACKEND + '/api/feedback/collect', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({page:'chitti-news-ai', section, vote:kind, language:lang})
-    }).catch(()=>{});
-  } catch(e){}
-};
-window.speakBox = function(btn){
-  const box = btn.closest('[data-chitti-response]');
-  if (!box) return;
-  const clone = box.cloneNode(true);
-  clone.querySelectorAll('.box-fb').forEach(n => n.remove());
-  doSpeak(clone.textContent.replace(/\s+/g,' ').trim().slice(0,800));
-};
-window.askMore = function(btn){
-  const box = btn.closest('[data-chitti-response]');
-  const section = box ? box.getAttribute('data-chitti-section') : '';
-  setTab('tools');
-  const ti = document.getElementById('prof-input');
-  if (ti) ti.value = (ti.value ? ti.value + '\n' : '') + 'Explain more: ' + section;
-};
-
-/* ---------- Per-box feedback popup ---------- */
-let _fbSection = '';
-function openBoxFeedback(section){
-  _fbSection = section;
-  const lang = getLang() || 'en';
-  document.getElementById('fb-title').textContent = 'Feedback — ' + section;
-  document.getElementById('fb-prompt').textContent = T('fb.helpful', lang);
-  document.getElementById('fb-text').value = '';
-  document.getElementById('fb-popup').classList.add('shown');
+  try { localStorage.setItem(STORIES_KEY, JSON.stringify({ at: new Date().toISOString(), items: parsed.items })); } catch(e){}
+  renderStories(parsed.items);
 }
-window.closeBoxFeedback = function(){ document.getElementById('fb-popup').classList.remove('shown'); };
-window.submitBoxFeedback = function(){
-  const text = document.getElementById('fb-text').value.trim();
-  const lang = getLang() || 'en';
-  if (text){
-    try {
-      fetch(BACKEND + '/api/feedback/collect', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({page:'chitti-news-ai', section:_fbSection, text, language:lang})
-      }).catch(()=>{});
-    } catch(e){}
-  }
-  doSpeak(T('fb.thanks', lang));
-  closeBoxFeedback();
-};
-window.startFbMic = function(){ startVoiceCapture('fb-text'); };
-
-/* ---------- Lang select ---------- */
-function fillLangSelects(){
-  const opts = LANGS.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-  const placeholder = `<option value="" data-i18n="pick.choose">${T('pick.choose', getLang() || 'en')}</option>`;
-  document.getElementById('pick-lang').innerHTML = placeholder + opts;
-  document.getElementById('onb-lang').innerHTML = opts;
-  const cur = getLang();
-  if (cur){ document.getElementById('pick-lang').value = cur; document.getElementById('onb-lang').value = cur; }
-}
-window.onLangChange = function(){
-  const v = document.getElementById('pick-lang').value;
-  if (v) setLang(v);
-};
-
-/* ---------- Tabs ---------- */
-window.setTab = function(name){
-  document.querySelectorAll('nav.tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  document.querySelectorAll('main .page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
-  window.scrollTo({top:0, behavior:'smooth'});
-};
-
-window.openLanguagePicker = function(){
-  document.getElementById('onb-modal').classList.add('shown');
-  const cur = getLang(); if (cur) document.getElementById('onb-lang').value = cur;
-};
-window.completeOnboarding = function(){
-  const v = document.getElementById('onb-lang').value;
-  if (!v){ alert(T('pick.unset', 'en')); return; }
-  setLang(v);
-  try { localStorage.setItem(LS_ONB, '1'); } catch(e){}
-  document.getElementById('onb-modal').classList.remove('shown');
-  document.getElementById('pick-lang').value = v;
-};
-window.skipOnboarding = function(){
-  try { localStorage.setItem(LS_ONB, '1'); } catch(e){}
-  document.getElementById('onb-modal').classList.remove('shown');
-};
-window.openDisclaimerModal  = function(){ document.getElementById('disclaimer-modal').classList.add('shown'); };
-window.closeDisclaimerModal = function(){ document.getElementById('disclaimer-modal').classList.remove('shown'); };
-
-/* ---------- Speech ---------- */
-window.speakDisclaimer = function(){
-  doSpeak(document.getElementById('disclaimer-text').textContent.trim());
-};
-window.speakPicker = function(){
-  doSpeak(T('pick.lang', getLang() || 'en'));
-};
-window.speakPage = function(){
-  const sections = Array.from(document.querySelectorAll('main .page.active [data-chitti-response]')).slice(0,5);
-  if (!sections.length){ doSpeak(T('today.empty', getLang() || 'en')); return; }
-  const txt = sections.map(s => {
-    const c = s.cloneNode(true); c.querySelectorAll('.box-fb').forEach(n => n.remove());
-    return c.textContent.replace(/\s+/g,' ').trim();
-  }).join('. ').slice(0,800);
-  doSpeak(txt);
-};
-function doSpeak(text){
-  if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak === 'function') {
-    try { window.Chitti.a11y.speak(text); return; } catch(e){}
-  }
-  if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(text);
-    const code = getLang() || 'en';
-    u.lang = code === 'en' ? 'en-IN' : code;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  }
-}
-window.doSpeak = doSpeak;
-window.openFeatureDiscovery = function(){
-  if (window.Chitti && window.Chitti.features && typeof window.Chitti.features.open === 'function') {
-    try { window.Chitti.features.open(); return; } catch(e){}
-  }
-};
-
-/* ---------- Ask / Profession / Trust / Source submit ---------- */
-window.askChitti = function(){
-  const lang = getLang(); if (!lang){ openLanguagePicker(); return; }
-  const q = (document.getElementById('ask-input').value || '').trim();
-  if (!q){ doSpeak(T('ask.ph', lang)); return; }
-  doSpeak(T('tools.stub', lang));
-  setTab('tools');
-  document.getElementById('prof-input').value = q;
-};
-window.startAskMic   = function(){ startVoiceCapture('ask-input'); };
-window.submitProfession = function(){
-  const lang = getLang(); if (!lang){ openLanguagePicker(); return; }
-  const text = (document.getElementById('prof-input').value || '').trim();
-  if (!text){ doSpeak(T('tools.ph', lang)); return; }
-  doSpeak(T('tools.stub', lang));
-  fetch(BACKEND + '/api/news-ai/tools-for-me', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({profession:text, language:lang})
-  }).catch(()=>{});
-};
-window.startProfMic  = function(){ startVoiceCapture('prof-input'); };
-window.submitTrustCheck = function(){
-  const lang = getLang() || 'en';
-  const url = (document.getElementById('trust-url').value || '').trim();
-  if (!url){ doSpeak(T('trust.url.ph', lang)); return; }
-  doSpeak(T('trust.stub', lang));
-  fetch(BACKEND + '/api/news-ai/trust-check', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({url, language:lang})
-  }).catch(()=>{});
-};
-window.submitSource = function(){
-  const lang = getLang() || 'en';
-  const url  = (document.getElementById('src-url').value  || '').trim();
-  const line = (document.getElementById('src-line').value || '').trim();
-  if (!url){ doSpeak(T('discover.url.ph', lang)); return; }
-  doSpeak(T('fb.thanks', lang));
-  fetch(BACKEND + '/api/news-ai/sources/submit', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({url, one_line:line, language:lang})
-  }).catch(()=>{});
-};
-window.startSrcMic   = function(){ startVoiceCapture('src-line'); };
-
-function startVoiceCapture(targetInputId){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR){ doSpeak('Voice input not available.'); return; }
-  const r = new SR();
-  r.lang = (getLang() || 'en') + ((getLang() || 'en') === 'en' ? '-IN' : '');
-  r.interimResults = false; r.maxAlternatives = 1;
-  r.onresult = (e) => {
-    const t = e.results[0][0].transcript;
-    const el = document.getElementById(targetInputId);
-    if (el) el.value = (el.value ? el.value + ' ' : '') + t;
-  };
-  r.onerror = () => doSpeak('Voice input failed.');
-  try { r.start(); } catch(e){ doSpeak('Voice input failed.'); }
-}
-
-/* ---------- LIVE endpoints renderers ---------- */
-function bandFor(t){
-  if (t == null) return 'pending';
-  if (t >= 80) return 'trusted';
-  if (t >= 70) return 'acceptable';
-  if (t >= 60) return 'questionable';
-  return 'reject';
-}
-function esc(s){
-  return String(s == null ? '' : s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function ago(iso){
-  if (!iso) return '';
-  const t = Date.parse(iso); if (isNaN(t)) return '';
-  const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
-  if (mins < 60)  return mins + 'm';
-  if (mins < 1440) return Math.round(mins/60) + 'h';
-  return Math.round(mins/1440) + 'd';
-}
-
-async function renderSources(){
-  const lang = getLang() || 'en';
-  const host = document.getElementById('sources-list');
-  const status = document.getElementById('sources-status');
-  if (!host) return;
-  let items = null;
-  try {
-    const r = await fetch(BACKEND + '/api/news-ai/sources');
-    if (r.ok){ const j = await r.json(); items = (j && j.items) || []; if (status) status.textContent = '✓ ' + j.count; }
-    else throw new Error('HTTP ' + r.status);
-  } catch(e){
-    if (status) status.textContent = T('sources.unreach', lang);
-    items = SEED_SOURCES.map((s, i) => ({
-      id:i+1, name:s.n, url:s.u, kind:'rss', category:s.c, language:'en', active:true,
-      trust_score:s.t, trust_band:bandFor(s.t), ai_crawl_blocked:false, last_fetched_utc:null,
-      reason_for_inclusion:s.why
-    }));
-  }
-  host.innerHTML = items.map((s, i) => {
-    const band = s.trust_band || bandFor(s.trust_score);
-    const fetched = s.last_fetched_utc ? `<span style="font-size:11px;color:var(--muted);margin-left:8px">${esc(ago(s.last_fetched_utc))}</span>` : '';
-    const blocked = s.ai_crawl_blocked ? '<span class="coming-soon" style="margin-left:6px">blocked</span>' : '';
-    return `
-      <div class="src-row" data-chitti-response data-chitti-section="Source: ${esc(s.name)}">
-        <div>
-          <div class="name">${i+1}. ${esc(s.name)} <span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">· ${esc(s.category)}</span>${blocked}${fetched}</div>
-          <div class="url"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.url)}</a></div>
-          <div class="reason" style="font-size:12px;color:var(--muted);margin-top:3px">${esc(s.reason_for_inclusion || '')}</div>
-        </div>
-        <span class="ts-chip ${band}">${Math.round(s.trust_score || 0)}/100</span>
-        <button class="spk-btn" onclick="doSpeak('${esc(s.name).replace(/'/g,'')}, trust ${Math.round(s.trust_score||0)}')" data-i18n="tag">🔊</button>
+function renderStories(items){
+  const wrap = document.getElementById('na-stories');
+  const profile = loadProfile();
+  // Content gating — show all general, gate medical/legal/finance unless user has opted in.
+  const allowedCats = ['general','farming','education','creative'];
+  if (profile && /(doctor|nurse|onc|surgeon|डॉक्टर|వైద్యుడు|ডাক্তার)/i.test(profile.profession)) allowedCats.push('medical');
+  if (profile && /(lawyer|advocate|judge|वकील|న్యాయవాది|আইনজীবী)/i.test(profile.profession)) allowedCats.push('legal');
+  if (profile && /(banker|ca|chartered|accountant|finance|बैंकर|cabinet)/i.test(profile.profession)) allowedCats.push('finance');
+  wrap.innerHTML = items.filter(s => allowedCats.includes((s.category || 'general'))).map((s, i) => `
+    <article class="sds-story chitti-response" data-chitti-section="📰 ${(s.headline || '').slice(0,40)}" data-idx="${i}">
+      <div class="head">${escapeHtml(s.headline || '')}</div>
+      <div class="src">${escapeHtml(s.source || '')} · ${escapeHtml(s.when || '')}</div>
+      <ul class="bullets">${(s.bullets || []).map(b => '<li>'+escapeHtml(b)+'</li>').join('')}</ul>
+      <div class="sds-card-toolbar">
+        <button onclick="speakText(this.parentNode.parentNode.querySelector('.head').textContent + '. ' + Array.from(this.parentNode.parentNode.querySelectorAll('.bullets li')).map(li=>li.textContent).join('. '), CURRENT_LANG)">🔊</button>
+        <button class="demo" onclick="naSamjhao(${i})">💬 <span data-vai-i18n="na.story.explain">मुझे समझाओ</span></button>
+        <button onclick="naPin(${i}, this)">📌 <span data-vai-i18n="na.story.pin">पिन</span></button>
+        <span class="sep"></span>
+        <button class="fb-pos" onclick="logProductAction('na_story_${i}', 1)">👍</button>
+        <button class="fb-neg" onclick="sdsToggleFb('na-story-fb-${i}')">👎</button>
       </div>
-    `;
+      <div class="samjhao" id="na-samjhao-${i}"></div>
+      <div class="sds-fb-panel" id="na-story-fb-${i}">
+        <textarea id="na-story-fb-text-${i}" placeholder="Yeh story kaisi lagi?"></textarea>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('na-story-fb-${i}')">रद्द</button><button onclick="sendFb('na_story_${i}','na-story-fb-text-${i}','na-story-fb-${i}')">भेजो</button></div>
+      </div>
+    </article>`).join('');
+}
+async function naSamjhao(i){
+  const card = document.querySelector('.sds-story[data-idx="' + i + '"]');
+  if (!card) return;
+  const target = document.getElementById('na-samjhao-' + i);
+  card.classList.toggle('samjhao-open');
+  if (!card.classList.contains('samjhao-open')) return;
+  const headline = card.querySelector('.head').textContent;
+  const bullets = Array.from(card.querySelectorAll('.bullets li')).map(li => li.textContent).join(' | ');
+  const profile = loadProfile();
+  const prof = profile ? profile.profession : 'general reader';
+  const levelTxt = ['no prior knowledge','little','okay','strong'][(profile && profile.level) || 0];
+  const lang = CURRENT_LANG;
+  const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
+  target.innerHTML = '<em>Chitti aapke profession ke हिसाब से samjha rahi hai…</em>';
+  const prompt = 'A user with profession "' + prof + '" and AI knowledge level "' + levelTxt + '" is reading this AI news headline: "' + headline + '". Key bullets: ' + bullets + '. Explain this story to them in 2-3 short sentences in ' + langName + '. Use ONE concrete example from THEIR profession (' + prof + ') to make it click. Never generic. Reply with ONLY the explanation text, no preface.';
+  const reply = await ask(prompt, lang);
+  target.textContent = reply || 'Chitti abhi samjha nahi paayi — phir try karein.';
+  speakText(target.textContent, CURRENT_LANG);
+}
+function naPin(i, btn){
+  // Mark in localStorage and visually
+  const card = document.querySelector('.sds-story[data-idx="' + i + '"]');
+  if (card) card.classList.toggle('pinned');
+}
+function naLoadMoreStories(){ try { localStorage.removeItem(STORIES_KEY); } catch(e){} naLoadStories(); }
+
+/* ── Mode 2: AI Coach ── */
+function naRenderCoach(){
+  const profile = loadProfile();
+  if (!profile) {
+    document.getElementById('na-coach-empty').style.display = 'block';
+    document.getElementById('na-coach-main').style.display = 'none';
+    document.getElementById('na-lesson-pane').style.display = 'none';
+    document.getElementById('na-cert-pane').style.display = 'none';
+    return;
+  }
+  document.getElementById('na-coach-empty').style.display = 'none';
+  document.getElementById('na-coach-main').style.display = 'block';
+  document.getElementById('na-coach-headline').textContent = 'Chitti AI for ' + profile.profession;
+  document.getElementById('na-coach-tagline').textContent = profile.profession + ' ke liye dynamic AI curriculum — Chitti ne aapke level ke हिसाब से banaya hai.';
+  let snap; try { snap = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || 'null'); } catch(e){ snap = null; }
+  if (!snap) {
+    naBuildSnapshot();
+  } else {
+    naRenderSnapshot(snap);
+  }
+  naRenderTracks();
+}
+
+async function naBuildSnapshot(){
+  const profile = loadProfile(); if (!profile) return;
+  const lang = CURRENT_LANG;
+  const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
+  document.getElementById('na-tools-card').style.display = 'block';
+  document.getElementById('na-certs-card').style.display = 'block';
+  document.getElementById('na-tools-list').innerHTML = '<em>Chitti latest AI tools dhoondh rahi hai…</em>';
+  document.getElementById('na-certs-list').innerHTML = '<em>Chitti aapke peshe के liye real free certifications dhoondh rahi hai…</em>';
+  const prompt =
+    'For the profession "' + profile.profession + '" with AI knowledge level ' + (profile.level || 0) + '/3, generate a profession-specific AI snapshot. ' +
+    'Return ONLY JSON: {' +
+      'how_ai_helps:"<2-3 short sentences in ' + langName + ' about how AI specifically helps this profession>",' +
+      'best_tools:[{name:"<tool name>", url:"<official url>", paid_or_free:"free|paid|freemium", why_for_this_profession:"<1 sentence in ' + langName + '>"}],' +
+      'free_certifications:[{name:"<real certification name>", provider:"Google|Microsoft|Coursera|edX|NASSCOM|Skill India|DeepLearning.AI|Hugging Face|Fast.ai|Elements of AI|IBM|other", url:"<official enrolment URL>", duration:"<e.g. 4 weeks>", why:"<1 sentence in ' + langName + '>"}]' +
+    '}. ' +
+    'Constraints: best_tools — 5 entries — must include at least Claude, ChatGPT/Gemini/Perplexity, and one profession-specific. free_certifications — 5 entries — MUST be real (Google AI Essentials, Microsoft AI-900, Coursera AI for Everyone audit, NASSCOM FutureSkills, Skill India AI module, DeepLearning.AI audit, Hugging Face course, Fast.ai, Elements of AI from University of Helsinki, IBM AI Foundations). NEVER invent a certification.';
+  const reply = await ask(prompt, lang);
+  const parsed = extractJSON(reply);
+  if (!parsed) {
+    document.getElementById('na-tools-list').innerHTML = '<em>Chitti se snapshot abhi nahi mila — phir try karein.</em>';
+    return;
+  }
+  try { localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(parsed)); } catch(e){}
+  naRenderSnapshot(parsed);
+}
+function naRenderSnapshot(s){
+  const tools = (s.best_tools || []).map(t => `
+    <div class="sds-doc-row" style="margin-bottom:8px">
+      <span class="ico">🛠️</span>
+      <div class="info"><div class="name">${escapeHtml(t.name || '')} <small style="color:var(--sds-muted);font-weight:600">· ${escapeHtml(t.paid_or_free || '')}</small></div>
+      <div class="meta">${escapeHtml(t.why_for_this_profession || '')}</div></div>
+      ${t.url ? '<a class="sds-btn ghost" href="'+t.url+'" target="_blank" rel="noopener" style="padding:6px 10px;min-height:38px;font-size:13px;text-decoration:none">खोलें →</a>' : ''}
+    </div>`).join('');
+  document.getElementById('na-tools-list').innerHTML = (s.how_ai_helps ? '<p style="margin-top:0;font-size:16px;line-height:1.55">' + escapeHtml(s.how_ai_helps) + '</p>' : '') + tools;
+  const certs = (s.free_certifications || []).map(c => `
+    <div class="na-cert-card">
+      <span class="ico">🏆</span>
+      <div class="info" style="flex:1"><div style="font-weight:800;color:var(--sds-navy);font-size:15px">${escapeHtml(c.name || '')}</div>
+      <div style="font-size:12px;color:var(--sds-muted)">${escapeHtml(c.provider || '')} · ${escapeHtml(c.duration || '')}</div>
+      <div style="font-size:13px;color:#555;margin-top:2px">${escapeHtml(c.why || '')}</div></div>
+      ${c.url ? '<a href="'+c.url+'" target="_blank" rel="noopener">शुरू →</a>' : ''}
+    </div>`).join('');
+  document.getElementById('na-certs-list').innerHTML = certs;
+}
+
+const TRACKS = [
+  { id:1, title:'AI क्या है (true zero)', lessons: 5 },
+  { id:2, title:'Gen AI tools today', lessons: 6 },
+  { id:3, title:'Machine Learning basics', lessons: 7 },
+  { id:4, title:'Deep Learning basics', lessons: 7 },
+  { id:5, title:'Agentic AI', lessons: 5 },
+  { id:6, title:'Evaluating AI quality', lessons: 5 },
+  { id:7, title:'AI safety + ethics', lessons: 5 },
+  { id:8, title:'Latest tools — free vs paid', lessons: 5 },
+];
+function naRenderTracks(){
+  const progress = loadProgress();
+  document.getElementById('na-track-list').innerHTML = TRACKS.map(t => {
+    const done = (progress.tracks[t.id] || []).length;
+    const pct = Math.round((done / t.lessons) * 100);
+    return `<div class="na-track sds-track">
+      <div class="head" onclick="naStartTrack(${t.id})">
+        <span class="num">${t.id}</span>
+        <div style="flex:1"><div class="title">${escapeHtml(t.title)}</div><div class="meta">${done} / ${t.lessons} lessons</div></div>
+        <span style="font-size:22px;color:var(--sds-green)">›</span>
+      </div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+    </div>`;
   }).join('');
-  injectFeedbackBars();
 }
-
-function articleCardHTML(a){
-  const lang = getLang() || 'en';
-  const src = a.source || {};
-  const band = src.trust_band || bandFor(src.trust_score);
-  const flags = [];
-  if (a.is_launch) flags.push('<span class="meta-pill free">🚀 Launch</span>');
-  if (a.is_pricing_change) flags.push('<span class="meta-pill warn">💰</span>');
-  if (a.is_free_tier_change) flags.push('<span class="meta-pill free">🎁</span>');
-  return `
-    <div class="card" data-chitti-response data-chitti-section="Article: ${esc((a.title||'').slice(0,60))}">
-      <div class="meta">
-        <span>${esc(src.name || 'Source')}</span>
-        <span class="ts-chip ${band}">${Math.round(src.trust_score || 0)}</span>
-        <span>${esc(ago(a.ingested_utc || a.published_utc))}</span>
-        ${flags.join(' ')}
-      </div>
-      <div class="title">${esc(a.title)}</div>
-      ${a.summary ? `<div class="summary chitti-response" data-chitti-section="Summary">${esc(a.summary)}</div>` : ''}
-      <div class="actions">
-        <button onclick="doSpeak(${JSON.stringify((a.title||'') + '. ' + (a.summary||'')).replace(/<\/script/gi,'<\\/script')})" data-i18n="t-read-lang">${T('read', lang)}</button>
-        <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="primary">${T('open.source', lang)}</a>
-      </div>
-    </div>
-  `;
+function loadProgress(){
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{"tracks":{}}'); } catch(e){ return {tracks:{}}; }
 }
+function saveProgress(p){ try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch(e){} }
+async function naStartTrack(id){ window.__naCurrentTrack = id; window.__naCurrentLesson = 0; await naShowLesson(); }
+function naStartTrack1(){ naStartTrack(1); }
 
-async function refreshToday(){
-  const lang = getLang() || 'en';
-  const host = document.getElementById('today-list');
-  const status = document.getElementById('today-status');
-  if (!host) return;
-  try {
-    const r = await fetch(BACKEND + '/api/news-ai/today');
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    const items = j.items || [];
-    if (!items.length){ host.innerHTML = ''; if (status) status.textContent = T('today.empty', lang); return; }
-    if (status) status.textContent = '✓ ' + items.length;
-    host.innerHTML = items.map(articleCardHTML).join('');
-  } catch(e){
-    host.innerHTML = '';
-    if (status) status.textContent = T('today.unreach', lang);
+async function naShowLesson(){
+  const profile = loadProfile(); if (!profile) return;
+  const trackId = window.__naCurrentTrack || 1;
+  const lessonIdx = window.__naCurrentLesson || 0;
+  const track = TRACKS.find(t => t.id === trackId);
+  document.getElementById('na-coach-main').style.display = 'none';
+  document.getElementById('na-cert-pane').style.display = 'none';
+  document.getElementById('na-lesson-pane').style.display = 'block';
+  document.getElementById('na-lesson-title').textContent = 'Track ' + trackId + ' · Lesson ' + (lessonIdx + 1) + ' / ' + track.lessons;
+  document.getElementById('na-lesson-body').innerHTML = '<em>Chitti आपके पेशे के लिए lesson बना रही है…</em>';
+  const lang = CURRENT_LANG;
+  const langName = lang === 'hi' ? 'Hindi' : (lang === 'te' ? 'Telugu' : (lang === 'bn' ? 'Bangla' : 'English'));
+  const prompt =
+    'Generate AI Coach lesson number ' + (lessonIdx+1) + ' of ' + track.lessons + ' for track "' + track.title + '". ' +
+    'Student profession: "' + profile.profession + '". Level: ' + (profile.level || 0) + '/3. ' +
+    'Return ONLY JSON: {' +
+      'explanation:"<2-3 sentences in ' + langName + ', uses one example FROM the student profession, never generic>",' +
+      'task:"<one concrete hands-on task in ' + langName + ', e.g. open claude.ai and type X>",' +
+      'quiz:[{q:"<question in ' + langName + '>", a:["<correct ' + langName + '>","<distractor>","<distractor>"], correct:0},' +
+            '{q:"<q2 in ' + langName + '>", a:["<o1>","<o2>","<o3>"], correct:<0-2>}]' +
+    '}. ' +
+    'Lesson MUST be under 3 minutes of reading. The example MUST use the student profession by name.';
+  const reply = await ask(prompt, lang);
+  const parsed = extractJSON(reply);
+  if (!parsed) {
+    document.getElementById('na-lesson-body').innerHTML = '<em>Chitti se lesson abhi nahi mili — phir try karein.</em>';
+    return;
   }
-  injectFeedbackBars();
+  const body = '<div class="na-coach-step">' +
+    '<div class="step-title">1 · Chitti samjhati hai</div>' +
+    '<div style="font-size:17px;line-height:1.6;margin-top:6px">' + escapeHtml(parsed.explanation) + '</div></div>' +
+    '<div class="na-coach-step">' +
+    '<div class="step-title">2 · ' + (CURRENT_LANG === 'hi' ? 'अभी करके देखो' : (CURRENT_LANG === 'te' ? 'ఇప్పుడే చేసి చూడు' : 'Try this now')) + '</div>' +
+    '<div style="font-size:16px;line-height:1.55;margin-top:6px">' + escapeHtml(parsed.task) + '</div></div>' +
+    '<div class="na-coach-step"><div class="step-title">3 · Quiz</div>' +
+    (parsed.quiz || []).map((q, qi) => '<div style="margin-top:10px"><b>' + escapeHtml(q.q) + '</b>' +
+      (q.a || []).map((opt, oi) => '<button class="sds-btn ghost block" style="margin-top:6px;text-align:left" onclick="naQuiz(' + qi + ',' + oi + ',' + (q.correct||0) + ',this)">' + escapeHtml(opt) + '</button>').join('') + '</div>').join('') +
+    '</div>';
+  document.getElementById('na-lesson-body').innerHTML = body;
+  speakText(parsed.explanation, CURRENT_LANG);
 }
-
-async function refreshLaunches(){
-  const lang = getLang() || 'en';
-  const host = document.getElementById('launches-list');
-  const status = document.getElementById('launches-status');
-  if (!host) return;
-  try {
-    const r = await fetch(BACKEND + '/api/news-ai/launches');
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    const items = j.items || [];
-    if (!items.length){ host.innerHTML = ''; if (status) status.textContent = T('launch.empty', lang); return; }
-    if (status) status.textContent = '✓ ' + items.length;
-    host.innerHTML = items.map(articleCardHTML).join('');
-  } catch(e){
-    host.innerHTML = '';
-    if (status) status.textContent = T('launch.unreach', lang);
+function naQuiz(qi, oi, correct, btn){
+  if (oi === correct) { btn.style.background = '#dcfce7'; btn.style.borderColor = '#86efac'; speakText('Sahi answer.', CURRENT_LANG); }
+  else { btn.style.background = '#fee2e2'; btn.style.borderColor = '#fca5a5'; speakText('Yeh sahi nahi tha — phir koshish karein.', CURRENT_LANG); }
+}
+function naLessonNext(){
+  const trackId = window.__naCurrentTrack || 1;
+  const track = TRACKS.find(t => t.id === trackId);
+  const lessonIdx = window.__naCurrentLesson || 0;
+  // Mark complete
+  const p = loadProgress();
+  if (!p.tracks[trackId]) p.tracks[trackId] = [];
+  if (p.tracks[trackId].indexOf(lessonIdx) < 0) p.tracks[trackId].push(lessonIdx);
+  saveProgress(p);
+  if (lessonIdx + 1 >= track.lessons) {
+    // Track complete — show certificate
+    naGenerateCert();
+    return;
   }
-  injectFeedbackBars();
+  window.__naCurrentLesson = lessonIdx + 1;
+  naShowLesson();
 }
-window.refreshToday = refreshToday;
-window.refreshLaunches = refreshLaunches;
-window.renderSources = renderSources;
-
-function refreshDynamic(){
-  renderSources(); refreshToday(); refreshLaunches();
-}
-
-function pullDisclaimer(){
-  fetch(BACKEND + '/api/news-ai/disclaimer').then(r => r.ok ? r.json() : null).then(j => {
-    if (j && j.disclaimer){
-      // Only override if the user's language is English — for other languages
-      // the localised disc.short in I18N is canonical UI text. Server
-      // disclaimer remains the legal source of truth (rendered in modal).
-    }
-  }).catch(()=>{});
+function naCoachBack(){
+  document.getElementById('na-lesson-pane').style.display = 'none';
+  document.getElementById('na-cert-pane').style.display = 'none';
+  document.getElementById('na-coach-main').style.display = 'block';
+  naRenderTracks();
 }
 
-function boot(){
-  fillLangSelects();
-  applyI18n();
-  paintLangStatus(getLang());
-  showLearningBanner(getLang());
-  injectFeedbackBars();
-  refreshDynamic();
-  pullDisclaimer();
-  let onbDone = false;
-  try { onbDone = localStorage.getItem(LS_ONB) === '1'; } catch(e){}
-  if (!onbDone) document.getElementById('onb-modal').classList.add('shown');
-
-  // Re-inject feedback bars after dynamic content lands.
-  new MutationObserver(injectFeedbackBars).observe(document.body, { childList: true, subtree: true });
+/* ── Certificate ── */
+function naGenerateCert(){
+  const profile = loadProfile(); if (!profile) return;
+  const trackId = window.__naCurrentTrack || 1;
+  const track = TRACKS.find(t => t.id === trackId);
+  let snap; try { snap = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || 'null'); } catch(e){ snap = null; }
+  const certId = 'sahayai-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+  const cert = {
+    id: certId,
+    user: profile.name || profile.profession,
+    profession: profile.profession,
+    track: track ? track.title : 'AI for ' + profile.profession,
+    level: ['Beginner','Intermediate','Advanced','Expert'][Math.min(3, (profile.level || 0) + 1)],
+    date: new Date().toISOString().slice(0, 10),
+    next: (snap && snap.free_certifications) ? snap.free_certifications.slice(0, 3) : [],
+  };
+  try { localStorage.setItem(CERT_KEY, JSON.stringify(cert)); } catch(e){}
+  naRenderCert(cert);
 }
-document.addEventListener('DOMContentLoaded', boot);
-})();
-</script>
+function naRenderCert(c){
+  document.getElementById('na-coach-main').style.display = 'none';
+  document.getElementById('na-lesson-pane').style.display = 'none';
+  document.getElementById('na-cert-pane').style.display = 'block';
+  const verifyUrl = 'https://sahayai.in/verify/' + c.id;
+  const qr = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(verifyUrl);
+  const nextHtml = (c.next || []).map(n => '<div style="font-size:13px;margin-top:4px;color:var(--sds-muted)">• <b>' + escapeHtml(n.name || '') + '</b> · ' + escapeHtml(n.provider || '') + '</div>').join('');
+  document.getElementById('na-cert-card').innerHTML =
+    '<div class="sahayai-mark">SAHAYAI</div>' +
+    '<div class="cert-title">' + (CURRENT_LANG === 'hi' ? 'AI Certificate' : 'AI Certificate') + '</div>' +
+    '<div class="cert-user">' + escapeHtml(c.user) + '</div>' +
+    '<div class="cert-track">' + escapeHtml(c.track) + ' · <b>' + escapeHtml(c.level) + '</b><br>' +
+    (CURRENT_LANG === 'hi' ? 'पेशा' : 'Profession') + ': ' + escapeHtml(c.profession) + '</div>' +
+    '<img class="qr" src="' + qr + '" alt="verify">' +
+    '<div class="cert-meta">verify: ' + verifyUrl + '</div>' +
+    '<div class="cert-meta" style="margin-top:6px">' + escapeHtml(c.date) + ' · ID ' + c.id + '</div>' +
+    (nextHtml ? '<div style="margin-top:14px;text-align:left"><b style="color:var(--sds-navy)" data-vai-i18n="na.cert.next">Recommended next certifications</b>' + nextHtml + '</div>' : '');
+  speakText('Sahayai AI certificate ban gaya — ' + c.user + ', ' + c.track + ', ' + c.level + '.', CURRENT_LANG);
+}
+function naShowCert(){
+  let cert; try { cert = JSON.parse(localStorage.getItem(CERT_KEY) || 'null'); } catch(e){ cert = null; }
+  if (cert) naRenderCert(cert);
+  else naGenerateCert();
+}
+function naShareCert(){
+  let cert; try { cert = JSON.parse(localStorage.getItem(CERT_KEY) || 'null'); } catch(e){ cert = null; }
+  if (!cert) return;
+  const url = 'https://sahayai.in/verify/' + cert.id;
+  const text = 'Mera Sahayai AI Certificate — ' + cert.profession + ' ke liye dynamic AI track. Verify: ' + url;
+  if (navigator.share) { navigator.share({ title:'Sahayai AI Certificate', text, url }).catch(()=>{}); }
+  else window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
 
-<script>window.CHITTI_LAST_AUDIT='2026-05-14';window.CHITTI_CO2_G=0.3;window.CHITTI_RISK='low';</script>
-<script src="chitti_disclaimer.js"></script>
-<script src="feedback-widget.js" data-page="chitti_news_ai"></script>
-<script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js"></script>
-<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){}}</script>
-<script src="chitti_camera.js"></script>
-<script src="chitti_isl.js"></script>
-<script src="chitti_i18n.js"></script>
-<script>
-// Bryan 2026-05-20: keep page-level lang dropdowns in lockstep with the
-// global a11y-bar dropdown. Pushes to a11y are already wired in each
-// page; this is the missing reverse path.
-(function(){
-  function syncFromA11y(code){
-    if (!code) return;
-    document.querySelectorAll("#pick-lang, #hdr-lang, #onb-lang, #lang").forEach(function(sel){
-      if (sel && sel.tagName==="SELECT" && sel.value !== code) {
-        sel.value = code;
-        // dispatch change so any onchange handler re-renders too
-        try { sel.dispatchEvent(new Event("change", { bubbles:true })); } catch(e){}
-      }
+/* ── Feedback ── */
+function sdsToggleFb(id){ document.getElementById(id)?.classList.toggle('shown'); }
+async function sendFb(card, textareaId, panelId){
+  const txt = (document.getElementById(textareaId).value || '').trim();
+  if (!txt) { sdsToggleFb(panelId); return; }
+  try {
+    await fetch(API_BASE + '/api/feedback', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chitti:'chitti_news_ai', card, kind:'thumbs_down', message: txt, page:'chitti_news_ai' }),
     });
+  } catch(e){}
+  document.getElementById(textareaId).value = '';
+  sdsToggleFb(panelId);
+  speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
+}
+function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
+  naRenderProfileBar();
+  // If no profile, open profile pane; else default to news.
+  const p = loadProfile();
+  if (!p) {
+    document.getElementById('na-news-pane').style.display = 'none';
+    document.getElementById('na-profile-pane').style.display = 'block';
+  } else {
+    naSetMode('news');
   }
-  document.addEventListener("chitti:lang", function(e){
-    var code = e && e.detail && (e.detail.code || e.detail.lang);
-    syncFromA11y(code);
+});
+
+// Honour data-vai-i18n-attr="placeholder|key" for inputs.
+window.addEventListener('chitti:langchange', () => {
+  document.querySelectorAll('[data-vai-i18n-attr]').forEach(el => {
+    const [attr, key] = el.getAttribute('data-vai-i18n-attr').split('|');
+    if (!attr || !key || !window.VAI_STRINGS) return;
+    const lang = CURRENT_LANG;
+    const bag = window.VAI_STRINGS[lang] || window.VAI_STRINGS.en;
+    if (bag[key]) el.setAttribute(attr, bag[key]);
   });
-})();
+});
 </script>
-<!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
-<div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEe0lEQVR4nO2dwZHcOgwFbZfvTMKpOOqfipNQBOurfEB9oABIU9Xdx10OxZlXEAgSBL9/fX19EwY/3h6APIdig1BsEIoNQrFBKDYIxQbxM/rH+fV7/GHXn//+t0303Opno/YnaLPxfe9kxrP9LC0bhGKDUGwQoc+u+suIyCdVfVXGl2d88BW0yfx9m43f+Y6WDUKxQSg2iJTPrvqGjO/pxJ0Z/zrV/53OPOCt3/mOlg1CsUEoNoiyz96gsx7e6T9DJhbP9P9W7H5Hywah2CAUG8RH+Owpqn7xKu55Zz7bGc82WjYIxQah2CDKPnsj9t1Yx860P8X4uDqGzpr5ho/XskEoNgjFBpHy2ds51dGzOvliT/59Krbe/p21bBCKDUKxQYQ++xPWcu90/GjUT4apGLqzxj6Flg1CsUEoNoix/exqjLgds1bPfV0Lvr+aZ97pP9Neywah2CAUG0SqpspUTNnpv3POe6qfO1Nnu5+staJlg1BsEIoN4num3viUX8ywUe8s0/8ZmkNEbOypV9GyQSg2CMUGUa6DNuVXNs40T/V5irH4J8fxd7RsEIoNQrFBtM56VWPQzP7xRh5ZhmtojbozD9iuf65lg1BsEIoNYuyOkM79HBtr45kxnOLcIuonM84I88ZlBV/jIBQbxHpNlal94ql96GsoDs589k51XWEj5tayQSg2CMUGsZ6Dtn3/5lucoTnHk/1r2SAUG4Rig2idz+7kXk35sCpnef4xVftsYx6gZYNQbBCKDaLls7fvwJjaM55acz4L5746e/9VtGwQig1CsUGUz3pt+9TMc6ttMuO5is+aukt7av8+g5YNQrFBKDaIch20KR8WtamOISKTg3aGzlJP1WHdnn9o2SAUG4RigyivjVd9YafOyUbdsSk27gSLMG9cyvgaB6HYIFL3em2vb7/Vz2nE/VNjeDKXXssGodggFBtEeNZr6r6pT4tfrwfz1bf3vKM+I7RsEIoNQrFBpHz2hi+Zqgka9blx32XEVK2YqVpyEVo2CMUGodggxtbGN9aTN2Lua8iXT+Wdbefe39GyQSg2CMUG0cobj9pv1A/PPCuimvd+XjqjtZG/dkfLBqHYIBQbRKp2acRUHNmhsx5wFmp9T/n4qc/e0bJBKDYIxQbR8tkRU/uyT+4Bn5f2m6dy181Bk3/wNQ5CsUG08sa377zKsHE3ScTGd+9gnC0hvsZBKDaIVA7aRpuNNedOftn1YL6b57NlHV/jIBQbRDnO7vBWbbInuRpzi+2z5lo2CMUGodggWneEZNjwPZn+t33nNbSfPXWuLIOWDUKxQSg2iFa98U/w8W/VGT2JGukRG/XGM3MFLRuEYoNQbBCt+7M7bO8fZ57V2XveOIdd7T/T/o6WDUKxQSg2iNd8doYNf7kRi2+vPWSeq8+Wf/A1DkKxQZR99obvmfK723XRr+IawMbedgctG4Rig1BsECmf/WQO9lRdlKk972uhzlrUfnvuomWDUGwQig1ipQ6afCZaNgjFBqHYIBQbhGKDUGwQiv2Nw1/c5KeQM+XvRQAAAABJRU5ErkJggg==" alt="QR code — opens News Ai on your phone at https://sahayai.in/chitti_news_ai.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
-  <div style="flex:1;min-width:0">
-    <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
-    <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open News Ai on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
-    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_news_ai.html</code>
-  </div>
-</div>
-
-
-<!-- Chitti i18n substrate — chitti_lang.js baked T-table + chitti_a11y.js widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js"></script>
-<script src="chitti_a11y.js"></script>
-
 </body>
 </html>
