@@ -138,7 +138,10 @@ def file_route():
 def expiries_route():
     user_token = _user_token_or_400(request.args.get("user_token") or "")
     try:
-        days = max(1, min(365, int(request.args.get("days") or "30")))
+        # 10-year horizon — passports + property + LIC policies expire well
+        # beyond a single year. The frontend defaults to 30 days; this cap
+        # only matters when a power-user / test asks for a longer window.
+        days = max(1, min(3650, int(request.args.get("days") or "30")))
     except ValueError:
         days = 30
     return jsonify({"items": vault_service.expiring_within(user_token, days=days), "horizon_days": days})
