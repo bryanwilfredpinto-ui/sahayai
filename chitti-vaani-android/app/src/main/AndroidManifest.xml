@@ -22,6 +22,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL"/>
+    <!-- Microphone foreground service — Phase 2.4 wake-word loop in
+         VaaniBootService. Without this flag the OS kills the recognizer
+         once the screen turns off on Android 14+. Bryan 2026-05-22:
+         "Background wake word — Hey Chitti always listening." -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- Tier B — runtime-prompted -->
@@ -187,6 +192,34 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="in.sahayai.chitti.vaani.NIGHT_MODE_TICK"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- VaaniBootService — Hey-Chitti wake-word foreground service.
+             Bryan 2026-05-22: "Background wake word — Hey Chitti always
+             listening." The service declares foregroundServiceType =
+             "microphone" so the OS allows mic capture while the screen
+             is off (Android 14+ rule). The user can stop the loop from
+             the persistent notification's "Stop listening" action OR
+             via ChittiNative.disableHeyChitti(). -->
+        <service
+            android:name=".services.VaaniBootService"
+            android:exported="false"
+            android:foregroundServiceType="microphone"/>
+
+        <!-- VaaniBootReceiver — restarts VaaniBootService on boot if
+             the user had Hey-Chitti enabled before the device shut down.
+             Reads chitti_vaani_prefs.hey_chitti_enabled — defaults to
+             false, so we don't surprise-listen for users who never
+             opted in. -->
+        <receiver
+            android:name=".services.VaaniBootReceiver"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
 

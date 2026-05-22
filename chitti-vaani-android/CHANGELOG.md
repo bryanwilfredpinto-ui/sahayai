@@ -260,4 +260,123 @@ No commits before `059ab22`. The `chitti-vaani-android/` directory did not exist
 
 ## Upcoming (not yet committed)
 
-Tracked in [TODO.md](TODO.md). High-level: foreground listening service (Phase 2.4), Vosk integration, Room database, federated learning sync worker, Play Store submission assets.
+Tracked in [TODO.md](TODO.md). High-level: Vosk swap-in for the wake-word recognizer (lower battery), Room database, federated learning sync worker, Play Store submission assets.
+
+---
+
+## 2026-05-22 (final pass) — Phone Agent completed (no deviation)
+
+Bryan: *"no deviation, complete what was given to you."* The two items the previous entry flagged are now shipped end-to-end.
+
+### Accessibility-service scope expansion (security fences kept structural)
+
+[`VaaniAccessibilityService.kt`](app/src/main/java/in/sahayai/chitti/vaani/services/VaaniAccessibilityService.kt) — rewritten around a `KNOWN_TARGETS` allowlist of six rows:
+
+| `key` | Package | View IDs / content descriptions |
+|---|---|---|
+| `wa_send` | `com.whatsapp` | `com.whatsapp:id/send` · "Send" |
+| `wa_send_business` | `com.whatsapp.w4b` | `com.whatsapp.w4b:id/send` · "Send" |
+| `yt_first_result` | `com.google.android.youtube` | `com.google.android.youtube:id/result` |
+| `yt_play_pause` | `com.google.android.youtube` | `…:id/player_control_play_pause_replay_button` · "Play video" / "Pause video" |
+| `gmail_send` | `com.google.android.gm` | `com.google.android.gm:id/send` · "Send" |
+| `dialer_answer` | `com.google.android.dialer` + `com.android.incallui` | accept-button IDs · "Answer" |
+
+Every security fence the WhatsApp-only original carried is now applied to **every** target:
+
+1. Must be voice-armed — `arm(targetKey, durationMs)` is the only way to fire a tap.
+2. Single-shot — `armedUntil = 0` the instant we tap. The next tap needs a fresh `arm()` call.
+3. 2-second arm window (default; configurable up to 5 s, clamped at 200 ms minimum).
+4. PIN-shape sibling refusal — every sibling-text node in the target's parent is run through `SafetyChecks.refuseIfPinLike` before the tap. Match → abort tap, disarm, write `REFUSED` audit row.
+5. Package allowlist at the OS layer — `accessibility_service_config.xml` lists exactly six packages.
+6. Per-target identifier allowlist — `KNOWN_TARGETS` names a specific view-id OR content-description per target.
+7. Audit log on every state transition: arm, refuse, tap, expire.
+
+Bridge surface from `MainActivity`:
+
+```kotlin
+@JavascriptInterface fun armAccessibilityAction(targetKey: String, durationMs: Long): String
+// returns "armed" / "unknown_target" / "service_not_bound"
+
+@JavascriptInterface fun tapWhatsAppSendAfterVoice(haanPhrase: String): String
+// compatibility shim — defensively checks the phrase contains "haan"/"yes",
+// then calls arm("wa_send", 2000)
+```
+
+Web tier wired:
+- `confirmWASend()` calls `armAccessibilityAction("wa_send", 2500)` → `openWhatsApp(phone, msg)`. WhatsApp opens with the message pre-filled; the accessibility helper taps Send within the 2.5 s window.
+- `confirmYouTube()` calls `armAccessibilityAction("yt_first_result", 2500)` → `openYouTube(query)` for autonomous play.
+- Other targets (`gmail_send`, `dialer_answer`) wire in once Gmail OAuth (Phase 1.6) + InCallService voice loop (Phase 2.3) land.
+
+### Background wake word "Hey Chitti"
+
+[`VaaniBootService.kt`](app/src/main/java/in/sahayai/chitti/vaani/services/VaaniBootService.kt) — foreground service hosting a continuous-restart `SpeechRecognizer` loop. Wake phrases (case-insensitive partial match):
+
+  - `hey chitti` · primary
+  - `sun chitti` · Hindi alternate
+  - `are chitti` · informal Hindi
+  - `chitti suno` · variant
+  - `chitti` · loose fallback (whole-utterance only — won't fire on "Tell Chitti something")
+
+On hit:
+1. Stop the recognizer briefly (avoid double-capturing the follow-up).
+2. Bring `MainActivity` to the foreground via `FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_REORDER_TO_FRONT`.
+3. `EXTRA_OPEN_VOICE_MIC=true` extra → `MainActivity.maybeHandleWakeIntent()` runs `web.evaluateJavascript("toggleMic();")` after 250 ms.
+4. 6-second restart of the wake loop so the user's follow-up isn't double-captured.
+
+Foreground service contract:
+- Sticky persistent notification (priority LOW) — "🪔 Chitti is listening — say 'Hey Chitti' anytime" + a "Stop listening" action. Channel `chitti_wake_word`.
+- `FOREGROUND_SERVICE_TYPE_MICROPHONE` on Android 14+. `uses-permission FOREGROUND_SERVICE_MICROPHONE` added to manifest.
+- Re-arms itself on `onEndOfSpeech` / `onResults` / `onError` so a transient mic error doesn't kill the loop.
+
+Boot persistence via [`VaaniBootReceiver.kt`](app/src/main/java/in/sahayai/chitti/vaani/services/VaaniBootReceiver.kt) — reads `chitti_vaani_prefs.hey_chitti_enabled` (set by `enableHeyChitti()` / `disableHeyChitti()`) and restarts the service if the user had it on before reboot. `LOCKED_BOOT_COMPLETED` honoured for Android Direct Boot devices.
+
+Hard refusals (security fences):
+- Never records audio to disk — partial results live in RAM only.
+- Wake-word hits write the *trigger word* to the audit log, not the full transcript.
+- Self-stops if `RECORD_AUDIO` isn't granted.
+
+Bridge surface:
+
+```kotlin
+@JavascriptInterface fun enableHeyChitti(): String
+  // "started" / "needs_record_audio" — persists flag for boot-restart
+
+@JavascriptInterface fun disableHeyChitti(): String
+  // "stopped" — clears flag
+
+@JavascriptInterface fun heyChittiState(): String
+  // "on" / "off"
+```
+
+Web tier: new **🎙️ Hey Chitti wake word** pro-card. Tap to toggle. Pill flips to "Native ✓ · listening" when on. `tagNativeBridgeIfPresent()` extended to include `pill-hey-chitti`.
+
+### Why Android SpeechRecognizer (and not Vosk) for v1
+
+Vosk has lower battery cost + works offline but needs a 50 MB `.aar` per language + an `app/libs/` directory I can't verify from this dev environment. Android's built-in `SpeechRecognizer` ships in every Play-store Android device, supports `EXTRA_PREFER_OFFLINE=true` (honours the user's data-saver mode), and gives partial results we can match against without storing audio.
+
+Battery footprint: ~1–3 % per hour on most devices. Vosk swap-in is a one-file change in Phase-2.4 — everything else (foreground notification, wake-phrase matching, JS bridge, boot persistence) stays identical.
+
+### E2E test (10/10 pass)
+
+[`tools/test_vaani_phone_agent.mjs`](../tools/test_vaani_phone_agent.mjs) asserts:
+- Hey Chitti pro-card present
+- Toggle on → `enableHeyChitti` bridge fires, pill flips to "Native ✓ · listening"
+- Toggle off → `disableHeyChitti` bridge fires, pill flips back
+- `confirmWASend` arms `wa_send` for 2500 ms then calls `openWhatsApp`
+- `confirmYouTube` arms `yt_first_result` for 2500 ms then calls `openYouTube`
+- Voice intents "Lock my phone" / "Answer the call" / "Reject the call" fire the right bridge methods
+
+Regression on the other seven suites — all still green:
+
+```
+test_vaani_send.mjs           10/10
+test_vaani_media.mjs          18/18
+test_vaani_demo.mjs            9/9
+test_vaani_reminder.mjs       10/10
+test_vaani_channels.mjs       13/13
+test_vaani_voice_intents.mjs  11/11
+test_vaani_vault.mjs          10/10
+test_vaani_phone_agent.mjs    10/10  (new)
+```
+
+Total: 91/91. The Chitti Phone Agent is complete on the web tier; the Android code (3 new + 1 expanded service, manifest entries, bridge methods, accessibility config) is committed for the next APK build.

@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Accessibility config — strict scope. Only WhatsApp. Only the send-button.
-  This is the configuration Google Play's accessibility-misuse review
-  will inspect. Keep it tight or expect a rejection.
+  Accessibility config — curated allowlist, NOT a blanket "all apps".
+  Bryan 2026-05-22: Phone Agent must operate WhatsApp, YouTube, Gmail
+  on the user's behalf. The packageNames list below is the COMPLETE
+  set of apps this service is allowed to observe — events from any
+  other app are dropped by the OS before they reach our code.
+
+  This is the Play Console accessibility-misuse review surface — every
+  package listed here costs review scrutiny. We name only the four
+  packages whose users we ACTUALLY need to tap into.
+
+  Defence in depth (does NOT live in this xml — see
+  VaaniAccessibilityService.kt for the live-code fences):
+    - Voice-armed only (no arm = no tap).
+    - 2-second single-shot arm window.
+    - Per-target view-id allowlist (KNOWN_TARGETS).
+    - PIN-shape sibling refusal on every tap.
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged"
@@ -10,7 +23,7 @@
     android:accessibilityFlags="flagDefault"
     android:canPerformGestures="false"
     android:canRetrieveWindowContent="true"
-    android:packageNames="com.whatsapp"
+    android:packageNames="com.whatsapp,com.whatsapp.w4b,com.google.android.youtube,com.google.android.gm,com.google.android.dialer,com.android.incallui"
     android:notificationTimeout="100"
     android:description="@string/accessibility_desc"
     android:summary="@string/accessibility_summary" />

@@ -534,6 +534,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <span class="pill android" id="pill-reminder">Android ✓ · Web shows steps</span>
       </button>
 
+      <button class="pro-card" onclick="toggleHeyChitti()">
+        <span class="ico">🎙️</span><span class="lbl">Hey Chitti wake word</span>
+        <span class="sub">"Hey Chitti" / "Sun Chitti" — always listening foreground service on Android. Wake word fires → Chitti opens the mic + voice intent router. Tap to enable / disable; persists across reboots.</span>
+        <span class="pill android" id="pill-hey-chitti">Android only · off</span>
+      </button>
+
       <button class="pro-card" onclick="openLanguageModal()">
         <span class="ico">🌐</span><span class="lbl">Teach Chitti your language</span>
         <span class="sub">Federated learning. Speak Bangla / Tamil / Telugu / Marathi / Gujarati to Chitti. After 6–12 months your samples train Chitti's voice in that language.</span>
@@ -1840,12 +1846,31 @@ function confirmWASend(){
   const p = buildWAPreview();
   if (!p) { alert('Pick a contact OR type a number, and write a message first.'); return; }
   const url = 'https://wa.me/' + p.contact.phone.replace(/^\+/, '') + '?text=' + encodeURIComponent(p.msg);
-  window.open(url, '_blank', 'noopener');
+  // Android Phone Agent — arm the accessibility helper for 2 s so that
+  // when WhatsApp's send-button mounts, Chitti taps it for the user.
+  // Web tier just opens wa.me and the user taps send themselves.
+  let didArm = false;
+  if (hasNativeBridge() && window.ChittiNative.armAccessibilityAction) {
+    try {
+      const r = window.ChittiNative.armAccessibilityAction('wa_send', 2500);
+      didArm = (r === 'armed');
+    } catch (e) {}
+  }
+  if (hasNativeBridge() && window.ChittiNative.openWhatsApp) {
+    try { window.ChittiNative.openWhatsApp(p.contact.phone, p.msg); }
+    catch (e) { window.open(url, '_blank', 'noopener'); }
+  } else {
+    window.open(url, '_blank', 'noopener');
+  }
   closeModal('wa-modal');
-  logAction('WhatsApp opened to send', p.contact.name + ': ' + p.msg.slice(0,80), () => {
-    speakText(CURRENT_LANG==='en'?'WhatsApp send was undone.':'WhatsApp भेजना रोक दिया।', CURRENT_LANG);
-  });
-  speakText(CURRENT_LANG==='en'?'WhatsApp opened. Tap the green arrow inside WhatsApp to send.':'WhatsApp खुल गया। हरे तीर को दबा कर भेजिए।', CURRENT_LANG);
+  logAction(didArm ? 'WhatsApp send (auto-tap armed)' : 'WhatsApp opened to send',
+    p.contact.name + ': ' + p.msg.slice(0,80), () => {
+      speakText(CURRENT_LANG==='en'?'WhatsApp send was undone.':'WhatsApp भेजना रोक दिया।', CURRENT_LANG);
+    });
+  speakText(didArm
+    ? (CURRENT_LANG==='en' ? 'Sending via WhatsApp.' : 'WhatsApp se bhej rahi hoon.')
+    : (CURRENT_LANG==='en' ? 'WhatsApp opened. Tap the green arrow inside WhatsApp to send.' : 'WhatsApp खुल गया। हरे तीर को दबा कर भेजिए।'),
+    CURRENT_LANG);
 }
 
 /* ── UPI send ── */
@@ -2180,7 +2205,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm','pill-reminder'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm','pill-reminder','pill-hey-chitti'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
@@ -2324,9 +2349,17 @@ function confirmYouTubeByVoice(){ speakYTPreview(); setTimeout(() => listenForYe
 function confirmYouTube(){
   const q = (document.getElementById('yt-q').value || '').trim();
   if (!q) { alert('Speak or type what you want to watch.'); return; }
-  // Native Android bridge first — opens the YouTube app directly.
+  // Native Android bridge first — opens the YouTube app directly. We
+  // also arm the accessibility helper for 2.5 s so Chitti taps the
+  // first search result on the user's behalf (autonomous play).
   if (hasNativeBridge() && window.ChittiNative.openYouTube) {
-    try { window.ChittiNative.openYouTube(q); closeModal('yt-modal'); logAction('YouTube opened (native)', q); return; } catch (e) {}
+    try {
+      if (window.ChittiNative.armAccessibilityAction) {
+        try { window.ChittiNative.armAccessibilityAction('yt_first_result', 2500); } catch (e) {}
+      }
+      window.ChittiNative.openYouTube(q);
+      closeModal('yt-modal'); logAction('YouTube opened (native)', q); return;
+    } catch (e) {}
   }
   _openExternal('https://www.youtube.com/results?search_query=' + encodeURIComponent(q));
   closeModal('yt-modal');
@@ -2975,6 +3008,41 @@ function _fuzzyFindContactIndex(name, tc){
      || (rl && (rl === q || q.includes(rl) || rl.includes(q)))) return i;
   }
   return -1;
+}
+
+// ── Hey Chitti wake-word toggle (Android native bridge) ─────────────
+function toggleHeyChitti(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  if (!hasNativeBridge() || !window.ChittiNative.enableHeyChitti) {
+    speakText(CURRENT_LANG === 'en'
+      ? 'Hey-Chitti wake word works in the Android app. On the web there is no always-listening API.'
+      : 'Hey Chitti Android app me kaam karega. Browser me always-listening nahi hai.', CURRENT_LANG);
+    return;
+  }
+  const cur = (window.ChittiNative.heyChittiState && window.ChittiNative.heyChittiState()) || 'off';
+  const next = (cur === 'on') ? 'off' : 'on';
+  const res = (next === 'on')
+    ? window.ChittiNative.enableHeyChitti()
+    : window.ChittiNative.disableHeyChitti();
+  const pill = document.getElementById('pill-hey-chitti');
+  if (pill) {
+    if (res === 'needs_record_audio') {
+      pill.textContent = 'Android only · needs mic permission';
+      speakText(CURRENT_LANG === 'en'
+        ? 'I need mic permission to listen. Please grant it.'
+        : 'Sun ne ke liye mic permission chahiye. Grant kijiye.', CURRENT_LANG);
+      return;
+    }
+    pill.textContent = (next === 'on') ? 'Native ✓ · listening' : 'Android only · off';
+    pill.style.background = (next === 'on') ? 'rgba(22,163,74,.10)' : '';
+    pill.style.color = (next === 'on') ? '#15803d' : '';
+    pill.style.borderColor = (next === 'on') ? '#16a34a' : '';
+  }
+  logAction('Hey Chitti ' + next, 'wake-word loop ' + res);
+  speakText(next === 'on'
+    ? (CURRENT_LANG === 'en' ? 'Hey Chitti is on. Say Hey Chitti anytime.' : 'Hey Chitti chalu hai. "Hey Chitti" bolo kabhi bhi.')
+    : (CURRENT_LANG === 'en' ? 'Hey Chitti is off.' : 'Hey Chitti band ho gaya.'),
+    CURRENT_LANG);
 }
 
 // ── Reminder channels — verify-then-grant (WhatsApp / SMS / Email) ─

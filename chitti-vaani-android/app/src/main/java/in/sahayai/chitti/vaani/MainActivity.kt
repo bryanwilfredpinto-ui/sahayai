@@ -92,6 +92,36 @@ class MainActivity : AppCompatActivity() {
         web.addJavascriptInterface(ChittiNativeBridge(this), "ChittiNative")
 
         web.loadUrl(intent?.data?.toString() ?: DEFAULT_URL)
+        maybeHandleWakeIntent(intent)
+    }
+
+    override fun onNewIntent(newIntent: Intent) {
+        super.onNewIntent(newIntent)
+        setIntent(newIntent)
+        maybeHandleWakeIntent(newIntent)
+    }
+
+    /**
+     * Honour `EXTRA_OPEN_VOICE_MIC=true` posted by VaaniBootService when
+     * the wake word fires. Defers ~250 ms so the WebView has time to
+     * initialise the recognizer hooked into toggleMic().
+     */
+    private fun maybeHandleWakeIntent(intent: Intent?) {
+        val open = intent?.getBooleanExtra(
+            `in`.sahayai.chitti.vaani.services.VaaniBootService.EXTRA_OPEN_VOICE_MIC,
+            false,
+        ) ?: false
+        if (!open) return
+        val phrase = intent?.getStringExtra(
+            `in`.sahayai.chitti.vaani.services.VaaniBootService.EXTRA_WAKE_PHRASE,
+        ) ?: "hey chitti"
+        `in`.sahayai.chitti.vaani.util.AuditLog.append(this, "MainActivity wake-launched", phrase)
+        web.postDelayed({
+            web.evaluateJavascript(
+                """try { if (typeof toggleMic === 'function') toggleMic(); } catch (e) {}""",
+                null,
+            )
+        }, 250L)
     }
 
     override fun onBackPressed() {
@@ -662,5 +692,111 @@ class ChittiNativeBridge(private val ctx: Context) {
     fun openCameraCapture(docId: String): String {
         AuditLog.append(ctx, "openCameraCapture", "doc_id=$docId · falling back to generic IMAGE_CAPTURE for v1")
         return openCamera()
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Accessibility-service arming (Phone Agent — autonomous send/play
+    // after voice "haan")
+    // ════════════════════════════════════════════════════════════════
+    //
+    // Bryan 2026-05-22: "Accessibility Service — operate WhatsApp,
+    // YouTube, Gmail, any installed app on user's behalf."
+    //
+    // The accessibility service taps only the curated targets in
+    // VaaniAccessibilityService.KNOWN_TARGETS (wa_send, wa_send_business,
+    // yt_first_result, yt_play_pause, gmail_send, dialer_answer).
+    // armAccessibilityAction(targetKey) is the ONLY way to fire a tap —
+    // and the web tier calls it ONLY after the user said "haan" within
+    // the voice-confirm window. Returns:
+    //   "armed"             — service running, target valid, 2s window
+    //                          open; helper will tap if/when it sees
+    //                          the target
+    //   "unknown_target"    — targetKey not in KNOWN_TARGETS
+    //   "service_not_bound" — user hasn't granted the accessibility
+    //                          role yet (call requestAccessibility() to
+    //                          open Settings)
+    //
+    // Hard refusal: PIN-shape arming. If the targetKey ever became
+    // user-controllable from voice, we'd still refuse arms whose key
+    // looks PIN-shaped — but the key is a constant string from the JS
+    // side, not user input, so this surface stays clean.
+    @JavascriptInterface
+    fun armAccessibilityAction(targetKey: String, durationMs: Long): String {
+        val ttl = if (durationMs in 200L..5000L) durationMs else 2000L
+        val res = `in`.sahayai.chitti.vaani.services.VaaniAccessibilityService.arm(targetKey, ttl)
+        AuditLog.append(ctx, "armAccessibilityAction", "$targetKey · ${ttl}ms · $res")
+        return res
+    }
+
+    // Compatibility shim — the web tier calls this exact name for the
+    // WhatsApp-send flow shipped before the multi-target expansion.
+    // Maps to the new arm("wa_send", durationMs).
+    @JavascriptInterface
+    fun tapWhatsAppSendAfterVoice(haanPhrase: String): String {
+        // Defensive — only act if the phrase actually contains "haan"
+        // (or its English equivalent). Mirrors the Phase-2.2 contract.
+        val ok = haanPhrase.lowercase().let { it.contains("haan") || it.contains("yes") || it.contains("haa") }
+        if (!ok) return "no_haan"
+        return armAccessibilityAction("wa_send", 2000L)
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Wake-word — "Hey Chitti" always-listening foreground service
+    // ════════════════════════════════════════════════════════════════
+    //
+    // Bryan 2026-05-22: "Background wake word — Hey Chitti always
+    // listening."
+    //
+    // enableHeyChitti() starts the foreground service VaaniBootService
+    // which holds a persistent notification + a continuous low-energy
+    // partial-results SpeechRecognizer loop. On wake-word hit:
+    //   1. Brings MainActivity to the foreground (FLAG_ACTIVITY_NEW_TASK).
+    //   2. Pings the WebView with evaluateJavaScript("toggleMic();")
+    //      so the existing main-mic flow + voice-intent router kicks in.
+    //
+    // Returns: "started" / "stopped" / "needs_record_audio".
+    @JavascriptInterface
+    fun enableHeyChitti(): String {
+        val granted = ContextCompat.checkSelfPermission(
+            ctx, Manifest.permission.RECORD_AUDIO,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            ActivityCompat.requestPermissions(
+                ctx as android.app.Activity,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                1010,
+            )
+            AuditLog.append(ctx, "enableHeyChitti — RECORD_AUDIO prompt", "")
+            return "needs_record_audio"
+        }
+        // Persist the user's choice so the wake-word loop restarts
+        // after reboot via VaaniBootReceiver.
+        ctx.getSharedPreferences("chitti_vaani_prefs", Context.MODE_PRIVATE)
+            .edit().putBoolean("hey_chitti_enabled", true).apply()
+        val i = Intent(ctx, `in`.sahayai.chitti.vaani.services.VaaniBootService::class.java)
+            .setAction(`in`.sahayai.chitti.vaani.services.VaaniBootService.ACTION_START_LISTENING)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ctx.startForegroundService(i)
+        } else {
+            ctx.startService(i)
+        }
+        AuditLog.append(ctx, "enableHeyChitti", "VaaniBootService start_listening dispatched")
+        return "started"
+    }
+
+    @JavascriptInterface
+    fun disableHeyChitti(): String {
+        ctx.getSharedPreferences("chitti_vaani_prefs", Context.MODE_PRIVATE)
+            .edit().putBoolean("hey_chitti_enabled", false).apply()
+        val i = Intent(ctx, `in`.sahayai.chitti.vaani.services.VaaniBootService::class.java)
+            .setAction(`in`.sahayai.chitti.vaani.services.VaaniBootService.ACTION_STOP_LISTENING)
+        ctx.startService(i)
+        AuditLog.append(ctx, "disableHeyChitti", "stop_listening dispatched")
+        return "stopped"
+    }
+
+    @JavascriptInterface
+    fun heyChittiState(): String {
+        return if (`in`.sahayai.chitti.vaani.services.VaaniBootService.isListening) "on" else "off"
     }
 }
