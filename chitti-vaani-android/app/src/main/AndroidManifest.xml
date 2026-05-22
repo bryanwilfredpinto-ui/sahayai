@@ -50,6 +50,25 @@
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN"
         tools:ignore="ProtectedPermissions"/>
 
+    <!-- Camera — used by openCamera() to launch the system camera app
+         (IMAGE_CAPTURE intent), AND by toggleFlashlight() to access the
+         torch unit via CameraManager. Bryan 2026-05-22: parity with the
+         new media / Android-feature cards on chitti_vaani.html. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT" tools:ignore="UnusedAttribute"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
+
+    <!-- Alarm scheduling — SET_ALARM is normal-protection; the
+         ACTION_SET_ALARM intent opens the system Clock app with the
+         alarm pre-filled. SCHEDULE_EXACT_ALARM is for WorkManager
+         reminder pings (Android 12+). USE_EXACT_ALARM is the
+         Android 13+ replacement that doesn't require user opt-in for
+         calendar/reminder use cases. -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+
     <queries>
         <!-- For "open WhatsApp" deep-links and intent resolution -->
         <package android:name="com.whatsapp"/>
@@ -59,9 +78,31 @@
         <package android:name="com.phonepe.app"/>
         <package android:name="com.google.android.apps.nbu.paisa.user"/>
         <package android:name="in.org.npci.upiapp"/>
+        <!-- YouTube / YouTube Music / Google Maps — for the new media
+             & navigation cards added 2026-05-22. Without these <queries>
+             entries, Android 11+ refuses to resolve the targeted Intent
+             package and the native open* methods silently fall back to
+             web — defeating the parity goal. -->
+        <package android:name="com.google.android.youtube"/>
+        <package android:name="com.google.android.apps.youtube.music"/>
+        <package android:name="com.google.android.apps.maps"/>
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="upi"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="vnd.youtube"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="google.navigation"/>
+        </intent>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM"/>
         </intent>
     </queries>
 

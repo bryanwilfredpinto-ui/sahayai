@@ -528,6 +528,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <span class="pill android" id="pill-alarm">Android ✓ · Web shows steps</span>
       </button>
 
+      <button class="pro-card" onclick="openReminderModal()">
+        <span class="ico">⏱️</span><span class="lbl">Remind me</span>
+        <span class="sub">"Insurance premium 25 December tak yaad dilao" — Chitti schedules a notification on your phone (Android), or shows a step-by-step on the web. Phase 2.7 adds SMS + WhatsApp channels.</span>
+        <span class="pill android" id="pill-reminder">Android ✓ · Web shows steps</span>
+      </button>
+
       <button class="pro-card" onclick="openLanguageModal()">
         <span class="ico">🌐</span><span class="lbl">Teach Chitti your language</span>
         <span class="sub">Federated learning. Speak Bangla / Tamil / Telugu / Marathi / Gujarati to Chitti. After 6–12 months your samples train Chitti's voice in that language.</span>
@@ -839,6 +845,48 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <button class="cancel" onclick="closeModal('search-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → <code>google.com/search?q=…</code>. Honest: Chitti can't read the result page for you (yet) — that's Phase 2 Android (screen-reader bridge).</div>
+  </div>
+</div>
+
+<!-- Set a future reminder modal -->
+<div id="reminder-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
+  <div class="panel chitti-response" data-chitti-section="⏱️ Remind me">
+    <h2 id="reminder-title">⏱️ Remind me</h2>
+    <div class="desc">Tell Chitti what to remind you about, and when. On the Android app, Chitti schedules a phone notification at that time. On the web, Chitti speaks the steps so you can save it yourself. <b>Phase 2.7</b> adds SMS + WhatsApp + email channels.</div>
+    <div class="field">
+      <label>What should I remind you of?</label>
+      <input type="text" id="rem-text" placeholder="e.g. LIC insurance premium · Mom's birthday · Take BP medicine">
+      <div class="row-mic">
+        <button id="rem-mic" onclick="proMic('rem-text', this)">🎙️ Speak</button>
+        <button onclick="speakField('rem-text')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="rem-date">
+      </div>
+      <div class="field">
+        <label>Time</label>
+        <input type="time" id="rem-time" value="09:00">
+      </div>
+    </div>
+    <div class="field">
+      <label>How should I tell you?</label>
+      <select id="rem-channel">
+        <option value="notification" selected>🔔 Phone notification (Android — works today)</option>
+        <option value="sms">💬 SMS (Phase 2.7 — needs SMS opt-in)</option>
+        <option value="whatsapp">📲 WhatsApp (Phase 2.7 — needs WhatsApp Business linkage)</option>
+        <option value="email">📧 Email (Phase 1.6 — needs Gmail OAuth)</option>
+      </select>
+    </div>
+    <div class="preview" id="rem-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmReminder()">⏱️ Schedule reminder</button>
+      <button class="spk" onclick="confirmReminderByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('reminder-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Android (today): WorkManager fires a high-priority notification on the lock screen at the scheduled time. Web (today): step-by-step alert + speech walks you through saving it in your calendar / clock app — browsers cannot fire cross-session notifications without persistent permissions you have to grant explicitly. Phase 2.7 brings the SMS / WhatsApp / email channels online once Gmail OAuth + the SMS opt-in flow land.</div>
   </div>
 </div>
 
@@ -1961,7 +2009,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm','pill-reminder'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
@@ -2286,6 +2334,108 @@ function confirmAlarm(){
     : 'मैं browser से अलार्म नहीं लगा सकती। कृपया Clock app खोलो, plus icon दबाओ, समय ' + a.hhmm + ' करो' + (a.lbl ? ', label "' + a.lbl + '" लगाओ' : '') + ', और save करो। Android app में मैं ये खुद कर दूँगी।');
   speakText(steps, CURRENT_LANG);
   alert(steps);
+}
+
+// ── Reminder (Android bridge + honest web fallback) ─────────────────
+function _todayISO(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+function openReminderModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('rem-text').value = '';
+  // Default to tomorrow at the same time — saves a tap for "remind me
+  // tomorrow morning" which is the most common phrasing.
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  const yyyy = d.getFullYear(); const mm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0');
+  document.getElementById('rem-date').value = yyyy + '-' + mm + '-' + dd;
+  document.getElementById('rem-time').value = '09:00';
+  document.getElementById('rem-channel').value = 'notification';
+  document.getElementById('rem-preview').style.display = 'none';
+  openModal('reminder-modal');
+}
+function _buildReminder(){
+  const text = (document.getElementById('rem-text').value || '').trim();
+  const date = document.getElementById('rem-date').value;
+  const time = document.getElementById('rem-time').value;
+  const channel = document.getElementById('rem-channel').value || 'notification';
+  if (!text) return { error: 'text' };
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: 'date' };
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) return { error: 'time' };
+  // Build a local-tz ISO string with the device's offset (matches what
+  // MainActivity.scheduleReminder parses via OffsetDateTime).
+  const offMins = -new Date().getTimezoneOffset();
+  const sign = offMins >= 0 ? '+' : '-';
+  const offH = String(Math.floor(Math.abs(offMins) / 60)).padStart(2, '0');
+  const offM = String(Math.abs(offMins) % 60).padStart(2, '0');
+  const iso = date + 'T' + time + ':00' + sign + offH + ':' + offM;
+  const triggerMs = new Date(iso).getTime();
+  if (isNaN(triggerMs)) return { error: 'date' };
+  if (triggerMs <= Date.now()) return { error: 'past' };
+  return { text, iso, channel, date, time };
+}
+function speakReminderPreview(){
+  const r = _buildReminder();
+  const el = document.getElementById('rem-preview');
+  if (r.error) { el.style.display = 'none'; return; }
+  const ch = r.channel === 'notification' ? 'phone notification'
+           : r.channel === 'sms'          ? 'SMS (Phase 2.7)'
+           : r.channel === 'whatsapp'     ? 'WhatsApp (Phase 2.7)'
+           :                                'email (Phase 1.6)';
+  el.innerHTML = '⏱️ Remind you about <b>' + escapeHtml(r.text) + '</b> on ' + escapeHtml(r.date) + ' at ' + escapeHtml(r.time) + ' via ' + escapeHtml(ch);
+  el.style.display = 'block';
+  speakText(
+    (CURRENT_LANG === 'en'
+      ? 'I will remind you about ' + r.text + ' on ' + r.date + ' at ' + r.time + ' via ' + ch + '. Say haan to schedule.'
+      : 'मैं आपको ' + r.text + ' की याद ' + r.date + ' को ' + r.time + ' बजे ' + ch + ' से दिलाऊँगी। schedule करने के लिए हाँ बोलिए।'),
+    CURRENT_LANG,
+  );
+}
+function confirmReminderByVoice(){ speakReminderPreview(); setTimeout(() => listenForYes(() => confirmReminder()), 1500); }
+function confirmReminder(){
+  const r = _buildReminder();
+  if (r.error === 'text') { alert('Speak or type what to remind you about.'); return; }
+  if (r.error === 'date') { alert('Pick a valid date.'); return; }
+  if (r.error === 'time') { alert('Pick a valid time.'); return; }
+  if (r.error === 'past') { alert('Pick a time in the future.'); return; }
+  // Native path: WorkManager via scheduleReminder().
+  if (hasNativeBridge() && window.ChittiNative.scheduleReminder) {
+    try {
+      const res = window.ChittiNative.scheduleReminder(r.text, r.iso, r.channel);
+      if (res === 'scheduled') {
+        closeModal('reminder-modal');
+        logAction('Reminder scheduled (native)', r.text + ' · ' + r.date + ' ' + r.time + ' · ' + r.channel);
+        speakText(CURRENT_LANG === 'en' ? 'Reminder set.' : 'Reminder लग गया।', CURRENT_LANG);
+        return;
+      }
+      if (res === 'needs_phase_2_7') {
+        speakText(CURRENT_LANG === 'en'
+          ? 'SMS and WhatsApp reminders are Phase 2.7 — coming after the WhatsApp Business linkage lands. For today, switch the channel to phone notification.'
+          : 'SMS aur WhatsApp reminders Phase 2.7 mein aayenge — WhatsApp Business linkage ke baad. Aaj ke liye Phone notification select kijiye.', CURRENT_LANG);
+        return;
+      }
+      if (res === 'bad_time' || res === 'past_time') {
+        alert('Reminder time is invalid. Pick a future time.');
+        return;
+      }
+    } catch (e) {}
+  }
+  // Web fallback — speak the step-by-step and offer to add to Calendar.
+  closeModal('reminder-modal');
+  logAction('Reminder steps shown (web fallback)', r.text + ' · ' + r.date + ' ' + r.time + ' · ' + r.channel);
+  const calUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent('🪔 Chitti reminder: ' + r.text)
+    + '&dates=' + r.date.replace(/-/g, '') + 'T' + r.time.replace(':', '') + '00/'
+                + r.date.replace(/-/g, '') + 'T' + r.time.replace(':', '') + '00'
+    + '&details=' + encodeURIComponent('Scheduled via Chitti Vaani.');
+  const steps = (CURRENT_LANG === 'en'
+    ? 'I cannot fire a notification on a web browser. I am opening Google Calendar — please tap Save to lock the reminder for ' + r.date + ' at ' + r.time + '. In the Android app, this works without leaving Chitti.'
+    : 'Browser से notification नहीं चला सकती। Google Calendar खोल रही हूँ — कृपया Save दबा कर ' + r.date + ' को ' + r.time + ' बजे का reminder lock कर दीजिए। Android app में ये अपने आप हो जाएगा।');
+  speakText(steps, CURRENT_LANG);
+  try { window.open(calUrl, '_blank', 'noopener'); } catch (e) {}
 }
 
 function openLanguageModal(){

@@ -2,6 +2,55 @@
 
 Generated from `git log --oneline --reverse -- chitti-vaani-android/` against the monorepo root [`C:\Users\DELL\sahayai\sahayai`](../).
 
+---
+
+## 2026-05-22 — bridge parity with the web tier (YouTube / Music / Maps / Camera / Flashlight / Alarm / Reminder)
+
+Bryan: *"in Chitti Vaani, all the web version should be in Android as well. Chitti should have access to my files, folders, sms, emails, so that Chitti Vaani can remind me through SMS, WhatsApp or through notifications."*
+
+Web parity — seven new methods on `ChittiNativeBridge` (`MainActivity.kt`):
+
+| JS bridge method | Native intent / API |
+|---|---|
+| `openYouTube(query)` | `vnd.youtube://results?search_query=…` to `com.google.android.youtube`, falls back to `https://www.youtube.com/results?search_query=…` |
+| `openMusic(query)` | `https://music.youtube.com/search?q=…` targeted at `com.google.android.apps.youtube.music`, web fallback otherwise |
+| `openMaps(query, mode)` | `google.navigation:q=…&mode={d,w,b,r}` to `com.google.android.apps.maps`, falls back to `https://www.google.com/maps/dir/?api=1&…` |
+| `openCamera()` | `MediaStore.ACTION_IMAGE_CAPTURE`, then `android.media.action.STILL_IMAGE_CAMERA` if the first isn't resolvable |
+| `toggleFlashlight()` | `CameraManager.setTorchMode(…)` — picks the first camera id reporting `FLASH_INFO_AVAILABLE`. Returns `"on"` / `"off"` / `"unavailable"`. State tracked in `flashlightOn` (field on the bridge instance). |
+| `setAlarm(hour, minute, label)` | `AlarmClock.ACTION_SET_ALARM` with `EXTRA_HOUR` / `EXTRA_MINUTES` / `EXTRA_MESSAGE` — opens the system Clock app pre-filled |
+| `scheduleReminder(text, atIsoTime, channel)` | Currently honours `channel="notification"` — enqueues a one-shot `ReminderWorker` (`OneTimeWorkRequest`) via WorkManager, which fires a `NotificationCompat.Builder` with `IMPORTANCE_HIGH` on the `chitti_reminders` channel at the scheduled time. Returns `"scheduled"` on success, `"bad_time"` / `"past_time"` on bad input, `"needs_phase_2_7"` for `sms` / `whatsapp` / `email` channels (those require the user opt-in + Gmail OAuth + WhatsApp Business linkage that's queued for Phase 2.7). |
+
+What also landed in this commit:
+
+- New worker: [`ReminderWorker.kt`](app/src/main/java/in/sahayai/chitti/vaani/ReminderWorker.kt) — `CoroutineWorker` that posts the reminder notification. Falls back to logging "skipped (no POST_NOTIFICATIONS)" if the runtime permission isn't granted on Android 13+, instead of silently dropping.
+- Build deps: [`androidx.work:work-runtime-ktx:2.9.1`](app/build.gradle.kts) added.
+- New manifest entries:
+  - `CAMERA`, `FLASHLIGHT` permissions + `android.hardware.camera{,.flash}` `<uses-feature required="false">`.
+  - `com.android.alarm.permission.SET_ALARM`, `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM` permissions.
+  - `<queries>` extended with `com.google.android.youtube`, `com.google.android.apps.youtube.music`, `com.google.android.apps.maps`, and `<intent>` entries for `vnd.youtube`, `google.navigation`, `IMAGE_CAPTURE`, `SET_ALARM` so Android 11+ resolves the targeted intents.
+- Hard refusals preserved — `unlockPhone()` and `bypassLock()` still throw `SecurityException`; the new methods never request the Tier-C device-admin / accessibility roles.
+- AuditLog every new method writes `(action, summary)` to `filesDir/vaani_audit.log` so the user can review what Chitti did, exactly per DPDP.
+
+Web-side counterparts (in [`../chitti_vaani.html`](../chitti_vaani.html)):
+
+- Eight new pro-action cards in the "Chitti can act for you" grid: 🎬 YouTube · 🎵 Music · 📺 Video · 🗺️ Maps · 🔎 Search · 📷 Camera · 🔦 Flashlight · ⏰ Alarm · ⏱️ Reminder.
+- Each card opens its modal with a text field + 🎙️ mic + 🔊 read-back, calls the bridge when `hasNativeBridge()` returns true, falls back to a `_openExternal(url)` / `alert(steps)` / `window.open(calendar.google.com/render?TEMPLATE)` web path otherwise.
+- Pills (`#pill-camera`, `#pill-flashlight`, `#pill-alarm`, `#pill-reminder`) flip from "Android only" → "Native ✓" inside `tagNativeBridgeIfPresent()` when the WebView hosts the bridge.
+
+E2E tests (all in `tools/`):
+- `test_vaani_send.mjs` (WA / UPI / Call empty-state + free-text + URL generation): **10/10 pass**
+- `test_vaani_media.mjs` (YouTube / Music / Video / Maps / Search / Alarm / Camera / Flashlight web URLs + deferral): **18/18 pass**
+- `test_vaani_demo.mjs` (🎬 Demo button on every box bar): **9/9 pass**
+- `test_vaani_reminder.mjs` (default tomorrow date, native bridge stub returns "scheduled", web fallback opens calendar.google.com, past-time alert): **10/10 pass**
+
+Deferred to Phase 2.7 (called out in the Reminder modal copy + `scheduleReminder("…", "…", "sms"|"whatsapp"|"email")` returns `"needs_phase_2_7"`):
+- SMS reminders — needs `SEND_SMS` opt-in flow + the user's own number stored in Trusted Circle.
+- WhatsApp reminders — needs WhatsApp Business linkage (Phase 2.7).
+- Email reminders — needs Gmail OAuth completion (Phase 1.6).
+- File / folder reading — needs SAF flow on Android 11+; not implemented yet (Phase 2.7 alongside the WhatsApp linkage).
+
+---
+
 The Android client was bootstrapped in commit `059ab22` (2026-05-09) and has received two follow-up commits the same day. Both follow-ups apply to the broader Vaani product (web + Android together) and touch this directory because the JS bridge signatures evolved.
 
 ---

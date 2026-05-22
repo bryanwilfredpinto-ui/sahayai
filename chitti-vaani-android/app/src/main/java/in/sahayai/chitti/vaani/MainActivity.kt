@@ -386,4 +386,220 @@ class ChittiNativeBridge(private val ctx: Context) {
             "Chitti will not auto-dial 112/100/102/108/1098/1930/139.")
         return "REFUSED — Chitti never auto-dials cops or government emergency lines."
     }
+
+    // ════════════════════════════════════════════════════════════════
+    // Media / Maps / Alarm / Reminder bridge (added 2026-05-22)
+    //
+    // Bryan: "in chitti vaani, theres no youtube or play songs or video
+    // option, android feature is not there." The web layer already
+    // routes these via universal URLs; these native methods hand off to
+    // the dedicated Android app so the user gets the full native UX
+    // (YouTube app, Maps app, system clock, etc.) instead of the
+    // WebView's in-app browser.
+    //
+    // Contract per method:
+    //   - All return a short status string ('opened' / 'unavailable' /
+    //     'needs_permission') so the web layer can speak an honest
+    //     response. Web-side falls back to a universal URL if the
+    //     bridge isn't present (chitti_vaani.html's confirmYouTube /
+    //     confirmMusic / confirmMaps / confirmAlarm functions already
+    //     branch on hasNativeBridge()).
+    //   - AuditLog every call so the user can replay what Chitti did.
+    // ════════════════════════════════════════════════════════════════
+
+    @JavascriptInterface
+    fun openYouTube(query: String): String {
+        // Prefer the YouTube app; if it isn't installed, fall back to
+        // a regular ACTION_VIEW that the system browser handles.
+        val q = Uri.encode(query)
+        val ytApp = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://results?search_query=$q")).apply {
+            setPackage("com.google.android.youtube")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return try {
+            ctx.startActivity(ytApp)
+            AuditLog.append(ctx, "openYouTube (native app)", query)
+            "opened"
+        } catch (e: Exception) {
+            val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=$q")).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            ctx.startActivity(web)
+            AuditLog.append(ctx, "openYouTube (web fallback)", query)
+            "opened_web"
+        }
+    }
+
+    @JavascriptInterface
+    fun openMusic(query: String): String {
+        // Prefer YouTube Music, then YouTube, then generic web fallback.
+        val q = Uri.encode(query)
+        val ytm = Intent(Intent.ACTION_VIEW, Uri.parse("https://music.youtube.com/search?q=$q")).apply {
+            setPackage("com.google.android.apps.youtube.music")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return try {
+            ctx.startActivity(ytm)
+            AuditLog.append(ctx, "openMusic (YouTube Music app)", query)
+            "opened"
+        } catch (e: Exception) {
+            val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://music.youtube.com/search?q=$q")).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            ctx.startActivity(web)
+            AuditLog.append(ctx, "openMusic (web fallback)", query)
+            "opened_web"
+        }
+    }
+
+    @JavascriptInterface
+    fun openMaps(query: String, mode: String?): String {
+        // geo: intent is the canonical Android Maps deep-link; it'll
+        // open the Maps app on every device that has one installed.
+        val safeMode = when (mode?.lowercase()) {
+            "walking", "transit", "two-wheeler" -> mode.lowercase()
+            else -> "driving"
+        }
+        val q = Uri.encode(query)
+        val mapsApp = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$q&mode=" + safeMode.first())).apply {
+            setPackage("com.google.android.apps.maps")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return try {
+            ctx.startActivity(mapsApp)
+            AuditLog.append(ctx, "openMaps (Maps app)", "$query · $safeMode")
+            "opened"
+        } catch (e: Exception) {
+            val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$q&travelmode=$safeMode")).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            ctx.startActivity(web)
+            AuditLog.append(ctx, "openMaps (web fallback)", "$query · $safeMode")
+            "opened_web"
+        }
+    }
+
+    @JavascriptInterface
+    fun openCamera(): String {
+        val intent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return try {
+            ctx.startActivity(intent)
+            AuditLog.append(ctx, "openCamera", "")
+            "opened"
+        } catch (e: Exception) {
+            // Fall back to the still-image camera intent if IMAGE_CAPTURE
+            // isn't resolvable (rare on Android 14+ without a system camera).
+            try {
+                val cam = Intent("android.media.action.STILL_IMAGE_CAMERA").apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                ctx.startActivity(cam)
+                AuditLog.append(ctx, "openCamera (still-image fallback)", "")
+                "opened"
+            } catch (ee: Exception) {
+                AuditLog.append(ctx, "openCamera failed", ee.message ?: "no camera app")
+                "unavailable"
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun toggleFlashlight(): String {
+        // Use CameraManager.setTorchMode — works on every device with a
+        // back-facing camera that exposes a torch unit. We toggle by
+        // stashing the current state on the activity instance.
+        val cm = ctx.getSystemService(Context.CAMERA_SERVICE) as? android.hardware.camera2.CameraManager
+            ?: return "unavailable"
+        val camId = try {
+            cm.cameraIdList.firstOrNull { id ->
+                val ch = cm.getCameraCharacteristics(id)
+                ch.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+            }
+        } catch (e: Exception) { null } ?: return "unavailable"
+        return try {
+            val next = !flashlightOn
+            cm.setTorchMode(camId, next)
+            flashlightOn = next
+            AuditLog.append(ctx, "toggleFlashlight", if (next) "on" else "off")
+            if (next) "on" else "off"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "toggleFlashlight refused", e.message ?: "")
+            "unavailable"
+        }
+    }
+
+    @JavascriptInterface
+    fun setAlarm(hour: Int, minute: Int, label: String?): String {
+        // SET_ALARM is a public Intent — no permission needed. Opens
+        // the system Clock app with the alarm pre-filled. The user
+        // confirms with one tap inside the Clock app (we never write
+        // alarms silently).
+        val intent = Intent(android.provider.AlarmClock.ACTION_SET_ALARM).apply {
+            putExtra(android.provider.AlarmClock.EXTRA_HOUR, hour.coerceIn(0, 23))
+            putExtra(android.provider.AlarmClock.EXTRA_MINUTES, minute.coerceIn(0, 59))
+            putExtra(android.provider.AlarmClock.EXTRA_MESSAGE, (label ?: "").take(60))
+            putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, false)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return try {
+            ctx.startActivity(intent)
+            AuditLog.append(ctx, "setAlarm", "$hour:$minute · ${label ?: ""}")
+            "opened"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "setAlarm refused", e.message ?: "no clock app")
+            "unavailable"
+        }
+    }
+
+    @JavascriptInterface
+    fun scheduleReminder(text: String, atIsoTime: String, channel: String?): String {
+        // Schedules a single one-shot reminder via WorkManager. Channel
+        // values: "notification" (default, always works), "sms" (needs
+        // SEND_SMS + the user's own number in the trusted circle),
+        // "whatsapp" (opens wa.me at fire time — Phase 2.7).
+        // For now we ship the "notification" path; sms/whatsapp routes
+        // return "needs_phase_2_7" honestly so the web layer can speak
+        // an "not yet" message instead of pretending it worked.
+        val ch = (channel ?: "notification").lowercase()
+        if (ch != "notification") {
+            AuditLog.append(ctx, "scheduleReminder deferred",
+                "$ch reminder requested — Phase 2.7 (SMS / WhatsApp routes need user opt-in + cost confirmation).")
+            return "needs_phase_2_7"
+        }
+        // Parse ISO-8601 (e.g. 2026-05-22T20:00:00+05:30). On failure,
+        // return early so the web layer can prompt for a clearer time.
+        val triggerMs = try {
+            java.time.OffsetDateTime.parse(atIsoTime).toInstant().toEpochMilli()
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "scheduleReminder bad time", atIsoTime)
+            return "bad_time"
+        }
+        val now = System.currentTimeMillis()
+        if (triggerMs <= now) {
+            AuditLog.append(ctx, "scheduleReminder past time", atIsoTime)
+            return "past_time"
+        }
+        val delay = triggerMs - now
+        try {
+            val data = androidx.work.Data.Builder()
+                .putString("title", "🪔 Chitti reminder")
+                .putString("body", text.take(220))
+                .build()
+            val req = androidx.work.OneTimeWorkRequestBuilder<ReminderWorker>()
+                .setInitialDelay(delay, java.util.concurrent.TimeUnit.MILLISECONDS)
+                .setInputData(data)
+                .build()
+            androidx.work.WorkManager.getInstance(ctx).enqueue(req)
+            AuditLog.append(ctx, "scheduleReminder enqueued",
+                "$text · fires at $atIsoTime · $ch")
+            return "scheduled"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "scheduleReminder failed", e.message ?: "")
+            return "failed"
+        }
+    }
+
+    private var flashlightOn: Boolean = false
 }
