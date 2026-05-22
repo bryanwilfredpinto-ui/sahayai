@@ -555,6 +555,82 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div id="tc-list" class="tc-list"></div>
   </section>
 
+  <!-- ════════ REMINDER CHANNELS — verify-then-grant for SMS / WhatsApp / Email ════════ -->
+  <section class="section-card chitti-response" aria-labelledby="ch-title" data-chitti-section="🔔 Reminder channels">
+    <h2 class="section-title" id="ch-title"><span class="ico">🔔</span> Reminder channels</h2>
+    <div class="section-sub">Verify the contact methods Chitti is allowed to use for reminders. <b>Verify-then-grant</b>: enter a number / email, Chitti sends a code to that number / inbox, you read the code back. Once verified, Chitti can send a reminder to that channel — and only that channel.</div>
+
+    <div id="ch-grid" style="display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px">
+
+      <!-- WhatsApp -->
+      <div class="ch-row" data-channel="whatsapp" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:start">
+        <div style="font-size:24px;line-height:1">📲</div>
+        <div>
+          <div style="font-weight:800;color:var(--text)">WhatsApp <span id="ch-whatsapp-badge" class="ch-badge" style="font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;margin-left:6px">Not verified</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5" id="ch-whatsapp-meta">Reads back a 6-digit code from WhatsApp — Chitti uses the same number for reminders.</div>
+          <div class="ch-form" id="ch-whatsapp-form" style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-whatsapp-input" type="tel" placeholder="+919876543210" style="flex:1;min-width:160px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
+              <button class="btn-saffron" onclick="startChannelVerify('whatsapp')" style="font-size:13px;padding:8px 12px">📨 Send code</button>
+            </div>
+            <div id="ch-whatsapp-otp-row" style="display:none;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-whatsapp-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code from WhatsApp" style="flex:1;min-width:160px;background:#fff;border:1px solid #16a34a;border-radius:8px;padding:8px 10px;font-size:14px;letter-spacing:.2em;font-weight:700;color:#15803d">
+              <button class="btn-navy" onclick="confirmChannelVerify('whatsapp')" style="font-size:13px;padding:8px 12px">✓ Verify</button>
+              <button class="btn-ghost" onclick="resetChannelVerify('whatsapp')" style="font-size:12px;padding:6px 10px">↩ Cancel</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ghost" id="ch-whatsapp-disconnect" onclick="disconnectChannel('whatsapp')" style="font-size:11px;padding:5px 8px;display:none">🗑️ Disconnect</button>
+      </div>
+
+      <!-- SMS -->
+      <div class="ch-row" data-channel="sms" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:start">
+        <div style="font-size:24px;line-height:1">💬</div>
+        <div>
+          <div style="font-weight:800;color:var(--text)">SMS <span id="ch-sms-badge" class="ch-badge" style="font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;margin-left:6px">Not verified</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5" id="ch-sms-meta">Reads back a 6-digit code from the SMS — Chitti uses the same number for reminder texts.</div>
+          <div class="ch-form" id="ch-sms-form" style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-sms-input" type="tel" placeholder="+919876543210" style="flex:1;min-width:160px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
+              <button class="btn-saffron" onclick="startChannelVerify('sms')" style="font-size:13px;padding:8px 12px">📨 Send code</button>
+            </div>
+            <div id="ch-sms-otp-row" style="display:none;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-sms-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code from SMS" style="flex:1;min-width:160px;background:#fff;border:1px solid #16a34a;border-radius:8px;padding:8px 10px;font-size:14px;letter-spacing:.2em;font-weight:700;color:#15803d">
+              <button class="btn-navy" onclick="confirmChannelVerify('sms')" style="font-size:13px;padding:8px 12px">✓ Verify</button>
+              <button class="btn-ghost" onclick="resetChannelVerify('sms')" style="font-size:12px;padding:6px 10px">↩ Cancel</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ghost" id="ch-sms-disconnect" onclick="disconnectChannel('sms')" style="font-size:11px;padding:5px 8px;display:none">🗑️ Disconnect</button>
+      </div>
+
+      <!-- Email -->
+      <div class="ch-row" data-channel="email" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:start">
+        <div style="font-size:24px;line-height:1">📧</div>
+        <div>
+          <div style="font-weight:800;color:var(--text)">Email <span id="ch-email-badge" class="ch-badge" style="font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;margin-left:6px">Not verified</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5" id="ch-email-meta">Reads back a 6-digit code from your inbox — Chitti uses this address for reminder emails.</div>
+          <div class="ch-form" id="ch-email-form" style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-email-input" type="email" placeholder="you@example.com" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:160px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
+              <button class="btn-saffron" onclick="startChannelVerify('email')" style="font-size:13px;padding:8px 12px">📨 Send code</button>
+            </div>
+            <div id="ch-email-otp-row" style="display:none;gap:6px;flex-wrap:wrap;align-items:center">
+              <input id="ch-email-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code from email" style="flex:1;min-width:160px;background:#fff;border:1px solid #16a34a;border-radius:8px;padding:8px 10px;font-size:14px;letter-spacing:.2em;font-weight:700;color:#15803d">
+              <button class="btn-navy" onclick="confirmChannelVerify('email')" style="font-size:13px;padding:8px 12px">✓ Verify</button>
+              <button class="btn-ghost" onclick="resetChannelVerify('email')" style="font-size:12px;padding:6px 10px">↩ Cancel</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ghost" id="ch-email-disconnect" onclick="disconnectChannel('email')" style="font-size:11px;padding:5px 8px;display:none">🗑️ Disconnect</button>
+      </div>
+    </div>
+
+    <div id="ch-demo-banner" style="margin-top:10px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:11.5px;color:#78350f;line-height:1.5">
+      ⚠️ <b>Verification is in honest demo mode</b> — the WhatsApp / SMS / email sender providers are not wired yet (Phase 2.7). Until then, every code Chitti "sends" is the same: <b><code>123456</code></b>. Enter that to complete the flow + see how it'll work once the SMS / WhatsApp Business / Gmail providers are connected. We do not pretend a real message went out.
+    </div>
+  </section>
+
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
   <section class="section-card chitti-response" aria-labelledby="pair-title" data-chitti-section="🔗 Chitti-to-Chitti emergency pairs">
     <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
@@ -875,10 +951,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
       <label>How should I tell you?</label>
       <select id="rem-channel">
         <option value="notification" selected>🔔 Phone notification (Android — works today)</option>
-        <option value="sms">💬 SMS (Phase 2.7 — needs SMS opt-in)</option>
-        <option value="whatsapp">📲 WhatsApp (Phase 2.7 — needs WhatsApp Business linkage)</option>
-        <option value="email">📧 Email (Phase 1.6 — needs Gmail OAuth)</option>
+        <option value="sms">💬 SMS</option>
+        <option value="whatsapp">📲 WhatsApp</option>
+        <option value="email">📧 Email</option>
       </select>
+      <div style="margin-top:6px;font-size:11.5px;color:#475569">SMS / WhatsApp / Email need to be verified in the <b>🔔 Reminder channels</b> section below first.</div>
     </div>
     <div class="preview" id="rem-preview" style="display:none"></div>
     <div class="actions">
@@ -2336,6 +2413,212 @@ function confirmAlarm(){
   alert(steps);
 }
 
+// ── Reminder channels — verify-then-grant (WhatsApp / SMS / Email) ─
+//
+// Bryan 2026-05-22: "For whats app linkage, use mobile number & send
+// read code from the message. Same goes with sms. For email, confirm
+// email addresses via code. Once u get all 3, u have the access."
+//
+// Implementation: classic OTP. The user enters a contact, presses
+// Send code, Chitti dispatches a 6-digit code to that channel, the
+// user reads it back, Chitti verifies. Verified channels unlock the
+// matching option in the Reminder modal.
+//
+// Honesty: real WhatsApp Business / SMS / SMTP providers aren't wired
+// (Phase 2.7). Until they are, the code is hard-coded to "123456"
+// AND the page banner says exactly that. We never fake a "we sent it".
+//
+// Storage: localStorage["chitti_vaani_channels_v1"] is the source of
+// truth for verified channels. Tries the backend (POST
+// /api/vaani/channel/verify/{start,confirm}) when reachable, falls
+// back to the client-side demo on file:// or when the network errors.
+
+const CH_KEY = 'chitti_vaani_channels_v1';
+const CH_DEMO_CODE = '123456';
+const CH_PENDING = {};  // in-memory per-channel pending verification state
+
+function _loadChannels(){
+  try { return JSON.parse(localStorage.getItem(CH_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function _saveChannels(obj){
+  try { localStorage.setItem(CH_KEY, JSON.stringify(obj)); } catch (e) {}
+}
+function _channelStatus(channel){ return _loadChannels()[channel] || null; }
+
+function renderChannelStatus(){
+  const map = _loadChannels();
+  ['whatsapp','sms','email'].forEach(ch => {
+    const v = map[ch] || null;
+    const badge = document.getElementById('ch-' + ch + '-badge');
+    const meta  = document.getElementById('ch-' + ch + '-meta');
+    const disc  = document.getElementById('ch-' + ch + '-disconnect');
+    const otpRow = document.getElementById('ch-' + ch + '-otp-row');
+    const input  = document.getElementById('ch-' + ch + '-input');
+    if (!badge) return;
+    if (v && v.verified_at) {
+      badge.textContent = '✓ Verified';
+      badge.style.background = '#dcfce7'; badge.style.color = '#14532d'; badge.style.borderColor = '#86efac';
+      meta.innerHTML = '✓ Verified <b>' + escapeHtml(v.contact) + '</b> on ' + escapeHtml((v.verified_at || '').slice(0,10)) + '. Chitti can send reminders here.';
+      disc.style.display = 'inline-block';
+      otpRow.style.display = 'none';
+      input.value = v.contact || '';
+      input.disabled = true;
+    } else {
+      badge.textContent = 'Not verified';
+      badge.style.background = '#fee2e2'; badge.style.color = '#7f1d1d'; badge.style.borderColor = '#fca5a5';
+      disc.style.display = 'none';
+      input.disabled = false;
+      if (!CH_PENDING[ch]) otpRow.style.display = 'none';
+    }
+  });
+  // Refresh the Reminder modal channel <select> if it's currently open
+  // so newly-verified channels become selectable immediately.
+  refreshReminderChannelSelect();
+}
+
+function _validateContact(channel, contact){
+  if (!contact) return false;
+  if (channel === 'email') return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(contact);
+  // WhatsApp + SMS: same E.164-ish check used by the Trusted Circle flow.
+  const digits = contact.replace(/[^\d+]/g, '');
+  return digits.length >= 8;
+}
+function _normalisePhone(contact){
+  let p = contact.replace(/[^\d+]/g, '');
+  if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+  return p;
+}
+
+async function startChannelVerify(channel){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const raw = (document.getElementById('ch-' + channel + '-input').value || '').trim();
+  if (!_validateContact(channel, raw)) {
+    alert(channel === 'email' ? 'Enter a valid email address.' : 'Enter a valid mobile number, like +919876543210.');
+    return;
+  }
+  const contact = channel === 'email' ? raw : _normalisePhone(raw);
+  // Try the backend first, fall back to the honest demo-mode stub.
+  let response = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/channel/verify/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_token: getUserToken(), channel, contact }),
+      keepalive: true,
+    });
+    if (r.ok) response = await r.json();
+  } catch (e) {}
+  if (!response || !response.ok) {
+    response = { ok: true, demo_mode: true, sent_to: contact, hint: 'Demo mode — the code is ' + CH_DEMO_CODE };
+  }
+  CH_PENDING[channel] = { contact, demo: !!response.demo_mode, started_at: Date.now() };
+  const otpRow = document.getElementById('ch-' + channel + '-otp-row');
+  otpRow.style.display = 'flex';
+  setTimeout(() => { try { document.getElementById('ch-' + channel + '-code').focus(); } catch (e) {} }, 60);
+  const meta = document.getElementById('ch-' + channel + '-meta');
+  const sentLine = (response.demo_mode
+    ? '🟡 <b>Demo mode</b> — pretending to send a code to <b>' + escapeHtml(contact) + '</b>. Enter <code>' + CH_DEMO_CODE + '</code> to complete the flow. Real send goes live in Phase 2.7.'
+    : '✉️ Code sent to <b>' + escapeHtml(contact) + '</b>. Read it back below.');
+  meta.innerHTML = sentLine;
+  speakText(
+    (CURRENT_LANG === 'en'
+      ? (response.demo_mode
+          ? 'Demo mode. The code is one two three four five six. Please enter it below.'
+          : 'I sent a six-digit code to ' + contact + '. Please read it from your ' + (channel === 'email' ? 'inbox' : channel) + '.')
+      : (response.demo_mode
+          ? 'Demo mode। code है एक दो तीन चार पाँच छह। नीचे डाल दीजिए।'
+          : 'मैंने ' + contact + ' पर छह अंक का code भेजा है। कृपया उसे पढ़ कर डाल दीजिए।')),
+    CURRENT_LANG,
+  );
+  logAction('Channel verify start', channel + ' · ' + contact + (response.demo_mode ? ' · demo' : ''));
+}
+
+async function confirmChannelVerify(channel){
+  const pending = CH_PENDING[channel];
+  if (!pending) { alert('Send a code first.'); return; }
+  const codeEl = document.getElementById('ch-' + channel + '-code');
+  const code = (codeEl.value || '').trim();
+  if (!/^\d{6}$/.test(code)) { alert('Enter the 6-digit code Chitti sent.'); return; }
+
+  let ok = false;
+  let serverVerifiedAt = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/channel/verify/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_token: getUserToken(), channel, code, contact: pending.contact }),
+      keepalive: true,
+    });
+    if (r.ok) {
+      const d = await r.json();
+      if (d && d.ok) { ok = true; serverVerifiedAt = d.verified_at; }
+    }
+  } catch (e) {}
+  // Demo-mode fallback — the only accepted code is CH_DEMO_CODE.
+  if (!ok && pending.demo && code === CH_DEMO_CODE) ok = true;
+
+  if (!ok) {
+    speakText(CURRENT_LANG === 'en'
+      ? 'That code is wrong. Try again — or tap Cancel.'
+      : 'ये code ग़लत है। फिर से try कीजिए — या Cancel दबा दीजिए।', CURRENT_LANG);
+    codeEl.style.borderColor = '#dc2626';
+    return;
+  }
+  const map = _loadChannels();
+  map[channel] = {
+    contact: pending.contact,
+    verified_at: serverVerifiedAt || new Date().toISOString(),
+    via: pending.demo ? 'demo' : 'server',
+  };
+  _saveChannels(map);
+  delete CH_PENDING[channel];
+  codeEl.value = '';
+  codeEl.style.borderColor = '#16a34a';
+  renderChannelStatus();
+  speakText(CURRENT_LANG === 'en'
+    ? 'Verified. Chitti can now send ' + channel + ' reminders.'
+    : channel + ' verify हो गया। अब Chitti reminders भेज सकती है।', CURRENT_LANG);
+  logAction('Channel verified', channel + ' · ' + pending.contact);
+}
+
+function resetChannelVerify(channel){
+  delete CH_PENDING[channel];
+  document.getElementById('ch-' + channel + '-otp-row').style.display = 'none';
+  document.getElementById('ch-' + channel + '-code').value = '';
+  document.getElementById('ch-' + channel + '-input').disabled = false;
+}
+function disconnectChannel(channel){
+  const map = _loadChannels();
+  if (!map[channel]) return;
+  if (!confirm('Disconnect ' + channel + '? Chitti will not send reminders here until you verify again.')) return;
+  const contact = map[channel].contact;
+  delete map[channel];
+  _saveChannels(map);
+  document.getElementById('ch-' + channel + '-input').value = '';
+  renderChannelStatus();
+  logAction('Channel disconnected', channel + ' · ' + contact);
+}
+
+// Refresh the <select id="rem-channel"> options based on verification
+// status, so SMS / WhatsApp / Email entries grey out when unverified.
+function refreshReminderChannelSelect(){
+  const sel = document.getElementById('rem-channel');
+  if (!sel) return;
+  const map = _loadChannels();
+  const opts = sel.querySelectorAll('option');
+  opts.forEach(o => {
+    const v = o.value;
+    if (v === 'notification') return;
+    const verified = !!(map[v] && map[v].verified_at);
+    // Append verified-status hint to the option label (idempotent).
+    const base = o.dataset.baseLabel || o.textContent.replace(/\s*[—-]\s*(verify .*|Phase .*|needs .*)$/, '').replace(/\s+— (✓|⚠️).*$/, '').trim();
+    o.dataset.baseLabel = base;
+    o.textContent = verified ? base + ' — ✓ verified' : base + ' — ⚠️ verify above';
+    o.disabled = !verified;
+  });
+}
+
 // ── Reminder (Android bridge + honest web fallback) ─────────────────
 function _todayISO(){
   const d = new Date();
@@ -2355,6 +2638,7 @@ function openReminderModal(){
   document.getElementById('rem-time').value = '09:00';
   document.getElementById('rem-channel').value = 'notification';
   document.getElementById('rem-preview').style.display = 'none';
+  refreshReminderChannelSelect();  // disable channels the user hasn't verified yet
   openModal('reminder-modal');
 }
 function _buildReminder(){
@@ -2928,6 +3212,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
   renderHistory();
   renderTC();
+  renderChannelStatus();
   renderAudit();
   refreshLangCount();
   tagNativeBridgeIfPresent();   // re-label Android-only pills if running inside the WebView

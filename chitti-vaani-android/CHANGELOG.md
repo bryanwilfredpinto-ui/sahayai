@@ -51,6 +51,40 @@ Deferred to Phase 2.7 (called out in the Reminder modal copy + `scheduleReminder
 
 ---
 
+## 2026-05-22 (later) — Channel verify-then-grant (WhatsApp / SMS / Email OTP)
+
+Bryan: *"For whats app linkage, use mobile number & send read code from the message. Same goes with sms. For email, confirm email addresses via code. Once u get all 3, u have the access."*
+
+Three-channel OTP verification — the user-consent layer that gates the SMS / WhatsApp / Email reminder paths. Lands on the web tier this round; the Android bridge picks up the verified contacts from `localStorage["chitti_vaani_channels_v1"]` when it implements the real sends.
+
+WEB SIDE — chitti_vaani.html:
+- New `🔔 Reminder channels` section under Trusted Circle — three rows (WhatsApp / SMS / Email). Each row: contact input → "📨 Send code" → 6-digit OTP input → "✓ Verify" → Disconnect.
+- `startChannelVerify(channel)` → POST `/api/vaani/channel/verify/start` (falls back to honest demo mode if backend unreachable).
+- `confirmChannelVerify(channel)` → POST `/api/vaani/channel/verify/confirm` (or local demo verification against `123456`).
+- Reminder modal's channel `<select>` now uses `refreshReminderChannelSelect()` — unverified options are disabled and labelled `⚠️ verify above`, verified options labelled `✓ verified`.
+- Honest demo-mode banner under the section: *"the WhatsApp / SMS / email sender providers are not wired yet (Phase 2.7). Until then, every code Chitti 'sends' is the same: 123456."*
+
+BACKEND — chitti-vaani/backend/routes/channel_verify.py (new Blueprint):
+
+| Endpoint | Body | Returns |
+|---|---|---|
+| `POST /api/vaani/channel/verify/start` | `{user_token, channel, contact}` | `{ok, sent_to, expires_at_iso, demo_mode, hint?}` |
+| `POST /api/vaani/channel/verify/confirm` | `{user_token, channel, code, contact}` | `{ok, channel, contact, verified_at}` |
+| `GET /api/vaani/channel/status?user_token=…` | — | `{whatsapp: …\|null, sms: …, email: …}` |
+| `POST /api/vaani/channel/disconnect` | `{user_token, channel}` | `{ok, channel}` |
+
+- Constant-time HMAC-SHA256 over `(user_token, channel, contact, code)` with a server pepper. We never store the raw code — only the hash + 10-minute TTL.
+- `_provider_configured(channel)` returns False until env vars land: `WHATSAPP_BUSINESS_TOKEN` + `WHATSAPP_BUSINESS_PHONE_ID` (WhatsApp), `MSG91_AUTH_KEY` or `TWILIO_AUTH_TOKEN` (SMS), `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (Email). When False, the code is `"123456"` and the response includes `hint`.
+- `_dispatch_code(channel, contact, code)` is the only path Phase 2.7 needs to swap in for real sends.
+
+E2E TEST — tools/test_vaani_channels.mjs in headless Chromium: **13/13 pass**.
+
+Regression check on the four earlier web suites — all green (send 10/10 · media 18/18 · demo 9/9 · reminder 10/10).
+
+When the Android bridge implements the SMS / WhatsApp / Email sends (Phase 2.7), it'll read `localStorage["chitti_vaani_channels_v1"]` (or call `/api/vaani/channel/status?user_token=…`) before deciding whether `scheduleReminder(..., channel="sms")` returns `"scheduled"` or `"needs_phase_2_7"`.
+
+---
+
 The Android client was bootstrapped in commit `059ab22` (2026-05-09) and has received two follow-up commits the same day. Both follow-ups apply to the broader Vaani product (web + Android together) and touch this directory because the JS bridge signatures evolved.
 
 ---
