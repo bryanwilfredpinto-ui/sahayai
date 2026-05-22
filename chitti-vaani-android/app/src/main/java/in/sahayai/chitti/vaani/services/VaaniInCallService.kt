@@ -30,15 +30,53 @@ class VaaniInCallService : InCallService() {
         super.onCallAdded(call)
         AuditLog.append(this, "InCallService onCallAdded",
             "state=${call.state} from=${call.details.handle?.schemeSpecificPart ?: "?"}")
+        // Track the current call so the JS bridge's answerCall() /
+        // rejectCall() voice intents (added 2026-05-22) can act on it
+        // without re-plumbing the InCallService binder.
+        currentCall = call
         // TODO Phase 2.3:
-        //   - Listen for the user's "answer" / "uthao" voice command via the
-        //     foreground voice service (VaaniBootService).
-        //   - On hit: call.answer(android.telecom.VideoProfile.STATE_AUDIO_ONLY).
-        //   - Start live transcription pipeline.
+        //   - Listen for "answer" / "uthao" via VaaniBootService.
+        //   - Start live transcription pipeline once accepted.
     }
 
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
         AuditLog.append(this, "InCallService onCallRemoved", "ended")
+        if (currentCall === call) currentCall = null
+    }
+
+    companion object {
+        // Active call cursor — set on every onCallAdded, cleared on
+        // onCallRemoved. Read by the JS bridge from MainActivity so
+        // voice intents "answer the call" / "reject the call" can
+        // operate without re-plumbing the InCallService binder.
+        @Volatile
+        private var currentCall: Call? = null
+
+        /** Answer the current call if any. Returns "ok" on success,
+         *  null if there's no active call.
+         */
+        fun tryAnswerCurrent(): String? {
+            val c = currentCall ?: return null
+            try {
+                c.answer(android.telecom.VideoProfile.STATE_AUDIO_ONLY)
+            } catch (e: Exception) {
+                return null
+            }
+            return "ok"
+        }
+
+        /** Reject the current call if any. Returns "ok" on success,
+         *  null if there's no active call.
+         */
+        fun tryRejectCurrent(): String? {
+            val c = currentCall ?: return null
+            try {
+                c.reject(false, null)
+            } catch (e: Exception) {
+                return null
+            }
+            return "ok"
+        }
     }
 }

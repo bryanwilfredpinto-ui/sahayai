@@ -138,14 +138,146 @@ def _provider_configured(channel: str) -> bool:
 
 
 def _dispatch_code(channel: str, contact: str, code: str) -> None:
-    """Real-provider dispatch. Stub for now — see the file docstring."""
-    log.info("channel_verify dispatch (stub) channel=%s contact=%s code=%s",
-             channel, contact, "***" + code[-2:])
-    # Phase 2.7 — wire the providers here:
-    #   if channel == "whatsapp": whatsapp_business.send_text(contact, msg)
-    #   if channel == "sms":      msg91.send_sms(contact, msg)
-    #   if channel == "email":    email_service.send_otp(contact, code)
-    return None
+    """Real-provider dispatch. Routes to whichever provider env vars
+    are set. Falls back to a structured log line if none configured —
+    /verify/start already flagged demo_mode in that case.
+
+    Env-var matrix (set in Railway / Render):
+      WhatsApp:
+        WHATSAPP_BUSINESS_TOKEN          (Cloud API)
+        WHATSAPP_BUSINESS_PHONE_ID       (sender phone id)
+        WHATSAPP_OTP_TEMPLATE_NAME       (approved Meta template, e.g. "chitti_otp_v1")
+      SMS — pick ONE provider:
+        MSG91_AUTH_KEY  + MSG91_SENDER_ID  + MSG91_OTP_TEMPLATE_ID
+        TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_FROM_NUMBER
+      Email:
+        GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET  (routes through the
+        existing services/email_service.py Gmail-as-Vaani sender)
+
+    Per provider: each helper raises on failure; the caller decides
+    whether to surface that to the user. We keep the helpers in this
+    file (rather than a separate providers/ module) until at least two
+    of them go live — premature abstraction would just hide what's
+    actually wired.
+    """
+    msg = f"Your Chitti Vaani verification code is {code}. It expires in 10 minutes."
+
+    if channel == "whatsapp" and _provider_configured("whatsapp"):
+        _send_whatsapp_business_otp(contact, code)
+        return
+    if channel == "sms" and _provider_configured("sms"):
+        if os.environ.get("MSG91_AUTH_KEY"):
+            _send_msg91_otp(contact, code)
+        elif os.environ.get("TWILIO_AUTH_TOKEN"):
+            _send_twilio_sms(contact, msg)
+        return
+    if channel == "email" and _provider_configured("email"):
+        _send_email_otp(contact, code)
+        return
+
+    # No provider configured — log honestly. /verify/start already
+    # surfaced demo_mode=True; the user knows.
+    log.info(
+        "channel_verify dispatch SKIPPED (no provider) channel=%s contact=%s code=%s",
+        channel, contact, "***" + code[-2:],
+    )
+
+
+def _send_whatsapp_business_otp(contact: str, code: str) -> None:
+    """WhatsApp Business Cloud API — sends an approved OTP template.
+    Template name comes from WHATSAPP_OTP_TEMPLATE_NAME (default
+    "chitti_otp_v1"). The template MUST be approved in Meta Business
+    Manager — Meta refuses arbitrary OTP text outside the approved
+    templates."""
+    import httpx
+    token = os.environ["WHATSAPP_BUSINESS_TOKEN"]
+    phone_id = os.environ["WHATSAPP_BUSINESS_PHONE_ID"]
+    template = os.environ.get("WHATSAPP_OTP_TEMPLATE_NAME", "chitti_otp_v1")
+    url = f"https://graph.facebook.com/v20.0/{phone_id}/messages"
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": contact.lstrip("+"),
+        "type": "template",
+        "template": {
+            "name": template,
+            "language": {"code": "en"},
+            "components": [{
+                "type": "body",
+                "parameters": [{"type": "text", "text": code}],
+            }],
+        },
+    }
+    r = httpx.post(
+        url,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        json=payload,
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    log.info("WhatsApp OTP sent contact=%s status=%s", contact, r.status_code)
+
+
+def _send_msg91_otp(contact: str, code: str) -> None:
+    """MSG91 — India-centric SMS provider with sub-paise pricing and
+    OTP template support. Uses the OTP API which auto-handles DLT
+    registration."""
+    import httpx
+    key = os.environ["MSG91_AUTH_KEY"]
+    template_id = os.environ.get("MSG91_OTP_TEMPLATE_ID", "")
+    sender = os.environ.get("MSG91_SENDER_ID", "CHITTI")
+    mobile = contact.lstrip("+")  # MSG91 wants country-coded but no '+'.
+    url = "https://control.msg91.com/api/v5/otp"
+    params = {
+        "template_id": template_id,
+        "mobile": mobile,
+        "authkey": key,
+        "otp": code,
+        "sender": sender,
+    }
+    r = httpx.post(url, params=params, timeout=15.0)
+    r.raise_for_status()
+    log.info("MSG91 OTP sent mobile=%s status=%s", mobile, r.status_code)
+
+
+def _send_twilio_sms(contact: str, body: str) -> None:
+    """Twilio — global fallback for SMS when MSG91 isn't suitable
+    (e.g. international numbers, sandbox testing)."""
+    import httpx
+    sid = os.environ["TWILIO_ACCOUNT_SID"]
+    token = os.environ["TWILIO_AUTH_TOKEN"]
+    sender = os.environ["TWILIO_FROM_NUMBER"]
+    url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json"
+    r = httpx.post(
+        url, auth=(sid, token),
+        data={"From": sender, "To": contact, "Body": body},
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    log.info("Twilio SMS sent to=%s status=%s", contact, r.status_code)
+
+
+def _send_email_otp(contact: str, code: str) -> None:
+    """Send the OTP through the existing Gmail-as-Vaani sender used by
+    /api/vaani/email/send. Reuses the Phase-1.6 OAuth account so we
+    don't duplicate auth state."""
+    from services import email_service
+    subject = "Your Chitti Vaani verification code"
+    body = (
+        f"Your Chitti Vaani verification code is {code}.\n"
+        "It expires in 10 minutes.\n\n"
+        "If you didn't request this, ignore this email. "
+        "Chitti will never ask for this code over WhatsApp or phone."
+    )
+    # email_service.send() accepts (user_token, to, subject, body, …).
+    # Use the system Vaani-owned account by passing a sentinel token.
+    email_service.send(
+        user_token="vaani-system",
+        to=contact,
+        subject=subject,
+        body=body,
+        user_real_name="Chitti Vaani",
+    )
+    log.info("Email OTP sent to=%s", contact)
 
 
 @bp.post("/verify/start")

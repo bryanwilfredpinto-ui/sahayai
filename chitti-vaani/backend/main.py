@@ -28,6 +28,7 @@ from routes.feedback import bp as feedback_bp
 from routes.checkin import bp as checkin_bp
 from routes.missed_call import bp as missed_call_bp
 from routes.channel_verify import bp as channel_verify_bp
+from routes.vault import bp as vault_bp
 from services import admin_scheduler, checkin_service, feedback_scheduler, missed_call_service
 from scripts import admin_seed
 
@@ -112,6 +113,7 @@ def _create_app() -> Flask:
     app.register_blueprint(checkin_bp)
     app.register_blueprint(missed_call_bp)
     app.register_blueprint(channel_verify_bp)
+    app.register_blueprint(vault_bp)
 
     # Daily check-in (P0 — elderly users). Idempotent table create, and
     # scheduler integration happens after admin_scheduler.start() so we

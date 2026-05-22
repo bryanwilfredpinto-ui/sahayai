@@ -602,4 +602,65 @@ class ChittiNativeBridge(private val ctx: Context) {
     }
 
     private var flashlightOn: Boolean = false
+
+    // ════════════════════════════════════════════════════════════════
+    // Voice-intent answer/reject + Document Vault camera capture
+    // (added 2026-05-22 for the Chitti Phone Agent voice intents)
+    //
+    // Bryan: "Voice intents to wire: … Answer the call / Reject the call".
+    //
+    // We delegate to VaaniInCallService, which is the only class that
+    // holds the active Call object. The JS bridge just signals intent;
+    // the service does the actual call.answer() / call.disconnect()
+    // when the user is already in the day-mode auto-answer arm window.
+    // ════════════════════════════════════════════════════════════════
+    @JavascriptInterface
+    fun answerCall(): String {
+        return try {
+            `in`.sahayai.chitti.vaani.services.VaaniInCallService.tryAnswerCurrent()
+                ?.let { AuditLog.append(ctx, "answerCall (native)", "intent dispatched"); "answering" }
+                ?: run { AuditLog.append(ctx, "answerCall — no active call", ""); "no_active_call" }
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "answerCall failed", e.message ?: "")
+            "failed"
+        }
+    }
+
+    @JavascriptInterface
+    fun rejectCall(): String {
+        return try {
+            `in`.sahayai.chitti.vaani.services.VaaniInCallService.tryRejectCurrent()
+                ?.let { AuditLog.append(ctx, "rejectCall (native)", "intent dispatched"); "rejecting" }
+                ?: run { AuditLog.append(ctx, "rejectCall — no active call", ""); "no_active_call" }
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "rejectCall failed", e.message ?: "")
+            "failed"
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Document Vault — camera capture (Phase 1)
+    //
+    // openCameraCapture(docId) launches the system camera to a JPEG
+    // file under the app's external-files dir, then POSTs the bytes
+    // to /api/vaani/vault/upload — keyed by the doc_id minted by the
+    // web tier. Web side uses this when the user says "scan my PAN"
+    // or taps the "📷 Snap" button inside the upload modal.
+    //
+    // Returns: "opened" if the camera intent fires; the bytes land
+    // when MainActivity.onActivityResult sees the JPEG and writes it
+    // to vault via the standard /upload endpoint.
+    //
+    // This is the same shape as openCamera() above, but with the
+    // explicit Vault-upload tail so the picture doesn't get lost.
+    // The full implementation lands in Phase-2.3.5 — for now the
+    // bridge accepts the call and falls back to the generic
+    // ACTION_IMAGE_CAPTURE so blind users can scan today (with the
+    // help of a sighted assistant or audio guidance).
+    // ════════════════════════════════════════════════════════════════
+    @JavascriptInterface
+    fun openCameraCapture(docId: String): String {
+        AuditLog.append(ctx, "openCameraCapture", "doc_id=$docId · falling back to generic IMAGE_CAPTURE for v1")
+        return openCamera()
+    }
 }

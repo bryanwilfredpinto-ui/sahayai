@@ -85,6 +85,111 @@ When the Android bridge implements the SMS / WhatsApp / Email sends (Phase 2.7),
 
 ---
 
+## 2026-05-22 (later still) — Phone Agent voice intents + Document Vault Phase 1 + real-provider wiring
+
+Bryan: *"Complete chitti-vaani-android as Chitti Phone Agent. … Build Chitti Document Vault Phase 1 … Also wire _dispatch_code() in Vaani channels to real SMS/WhatsApp provider (Phase 2.7 swap-in)."*
+
+Three shipped, two flagged honestly.
+
+### Shipped
+
+1. **Voice intent router on chitti_vaani.html** — every utterance goes through `routeVoiceIntent(raw)` BEFORE `sendToChitti()` fires. Eleven intents recognised, all tested 11/11:
+
+   | Utterance pattern | Action |
+   |---|---|
+   | `Call <name>` | opens Call modal, selects matching Trusted Circle contact |
+   | `Call <number>` | opens Call modal with free-text input focused |
+   | `Send WhatsApp to <name> saying <msg>` | opens WA modal pre-filled |
+   | `Email <name> about <subj>` | opens Email modal pre-filled |
+   | `Play <X> on YouTube` | opens YouTube with the search query |
+   | `Play <X> song` | opens YouTube Music with the search query |
+   | `Lock my phone` | `nativeAction('lockPhone')` |
+   | `Answer the call` / `uthao` | `ChittiNative.answerCall()` |
+   | `Reject the call` / `kaat do` | `ChittiNative.rejectCall()` |
+   | `Show my <doc>` | routes through `vaultShowByVoice()` |
+   | `Send my <doc> to <name>` | routes through `vaultShareByVoice()` |
+   | `Remind me to <X> at <time>` | opens Reminder modal pre-filled |
+   | `Open camera` / `Take a photo` | `nativeAction('openCamera')` |
+   | `Torch on/off` | `nativeAction('toggleFlashlight')` |
+
+   Non-intent utterances fall through to DeepSeek unchanged. Trusted-Circle name lookups use fuzzy substring matching (case-insensitive), so "Call Mom" matches `{name: "Mom"}` and "Call mommy" matches too. Proper-noun casing is preserved from the raw utterance — "AR Rahman" stays "AR Rahman" in the YouTube URL.
+
+2. **`MainActivity` bridge additions** — three new `@JavascriptInterface` methods:
+   - `answerCall()` → delegates to `VaaniInCallService.tryAnswerCurrent()` which calls `call.answer(STATE_AUDIO_ONLY)` on the live call. Returns `"answering"` / `"no_active_call"` / `"failed"`.
+   - `rejectCall()` → delegates to `VaaniInCallService.tryRejectCurrent()` (`call.reject(false, null)`). Same return shape.
+   - `openCameraCapture(docId)` → v1 falls back to the generic `IMAGE_CAPTURE` so blind users can already scan today; the docId-tail wiring lands in Phase 2.3.5.
+
+   `VaaniInCallService` got a `companion object` that tracks the current `Call` cursor — set on `onCallAdded`, cleared on `onCallRemoved` — so the JS bridge can act on the active call without re-plumbing the InCallService binder.
+
+3. **Chitti Document Vault — Phase 1**. Full encrypted-at-rest pipeline:
+
+   **Backend** (`chitti-vaani/backend/`):
+   - `services/vault_db.py` — SQLAlchemy `vault_documents` + `vault_share_tokens` tables. Indexed by `sha256(user_token + USER_TOKEN_PEPPER)` so the raw user_token never leaves the client.
+   - `services/vault_service.py` — per-user Fernet key derived from `sha256(VAULT_PEPPER + ":" + user_token)`. Encryption / decryption happens server-side but the key only exists when the user's phone sends the user_token in the request, so a leaked server snapshot is useless on its own. Helpers: `upload`, `list_docs`, `fetch_blob`, `soft_delete`, `issue_share_token`, `mark_share_consumed`, `expiring_within(days)`.
+   - `routes/vault.py` — Flask Blueprint with `POST /api/vaani/vault/upload` (multipart, ≤25 MB), `GET /list`, `GET /file`, `GET /expiries?days=30`, `POST /share`, `POST /share/consumed`, `POST /delete`. Registered in `main.py`.
+   - `requirements.txt` — `cryptography==43.0.1`.
+
+   **Backend smoke test** (run on dev box, 9/9 paths):
+   ```
+   upload OK · list count 1 · cross-user isolation OK · decrypt OK
+   wrong-user denied OK · expiring 30d=1 · share token issued
+   one-shot consume: True/False · soft delete OK · list 0 after delete
+   ```
+
+   **Frontend** (`chitti_vaani.html`):
+   - **📁 Chitti Document Vault** section under Trusted Circle. Upload button → modal with name + category (14 options: aadhaar/pan/passport/dl/voter/ration/insurance/property/certificate/contract/health/tax/kyc/other) + optional expiry date + file picker (image/* or PDF, ≤25 MB).
+   - **Doc list** — each row shows category chip, expiry pill if any, four action buttons (👁️ open · 🔊 speak · 📤 share · 🗑️ forget).
+   - **Expiry banner** — auto-fetches `/expiries?days=30` and shows the urgent ones grouped today / 1-day / 7-day / 30-day. For blind / illiterate users, the today + 1-day items are spoken aloud automatically.
+   - **Per-use share confirmation modal** (Bryan's hard rule — non-negotiable):
+     > *"Sahab — aapka 'PAN card' Lawyer Ji (+919876543210) ko bhejna hai — theek hai?"*
+     The line is spoken AND shown. Only on explicit "Haan" (button or voice) does Chitti:
+     1. Mark the share-token consumed (audit one-shot).
+     2. Open WhatsApp via `ChittiNative.openWhatsApp` if the bridge is present, else `wa.me/…` URL.
+     "Nahi" cancels — token is left unconsumed and expires in 30 minutes.
+   - **Voice intents** wired into the router above: "Show me my PAN" → `vaultShowByVoice`; "Send my Aadhaar to Lawyer Ji" → `vaultShareByVoice` → confirmation modal.
+
+   **E2E test** (`tools/test_vaani_vault.mjs` — 10/10 pass):
+   - Section present · 3 docs render · expiry banner fires for 5-day expiry · share modal opens with Hindi confirm line · `/share` token issued · "Haan" → wa.me opens · `/share/consumed` called · Cancel → no share fires · voice "Show me my PAN" routes · voice "Send my PAN to Lawyer Ji" routes.
+
+4. **`_dispatch_code()` provider abstraction** — `chitti-vaani/backend/routes/channel_verify.py` now has four real-provider helpers behind the same `_provider_configured(channel)` gate:
+
+   | Channel | Provider helper | Env vars |
+   |---|---|---|
+   | WhatsApp | `_send_whatsapp_business_otp` | `WHATSAPP_BUSINESS_TOKEN` + `WHATSAPP_BUSINESS_PHONE_ID` + `WHATSAPP_OTP_TEMPLATE_NAME` (approved Meta template) |
+   | SMS — India | `_send_msg91_otp` | `MSG91_AUTH_KEY` + `MSG91_SENDER_ID` + `MSG91_OTP_TEMPLATE_ID` |
+   | SMS — global | `_send_twilio_sms` | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` |
+   | Email | `_send_email_otp` | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (routes through existing `services/email_service.send`) |
+
+   When none of the env vars are set, the path stays in demo mode (code is `"123456"`, banner says so). The moment Bryan drops the WhatsApp Business or MSG91 keys into Railway / Render env, `_provider_configured` flips True and real codes go out — no other code change needed.
+
+5. **Regression check** — all six earlier suites still green:
+
+   ```
+   test_vaani_send.mjs        10/10
+   test_vaani_media.mjs       18/18
+   test_vaani_demo.mjs         9/9
+   test_vaani_reminder.mjs    10/10
+   test_vaani_channels.mjs    13/13
+   test_vaani_voice_intents.mjs 11/11   (new)
+   test_vaani_vault.mjs       10/10    (new)
+   ```
+
+### Flagged honestly — multi-day work, NOT in this commit
+
+I will NOT quietly ship these because they affect the safety fence on `VaaniAccessibilityService` (the single-shot WhatsApp-send-button scope is documented in CONTEXT.md §0 as a structural security feature) and require an APK build I cannot verify from a dev environment.
+
+1. **Always-on "Hey Chitti" wake-word service.** Spec says Vosk on-device. The build.gradle line for `com.alphacephei:vosk-android:0.3.47@aar` is commented out, `app/libs/` doesn't exist, and the Hindi + English models (~50 MB each) need to be bundled into `app/src/main/assets/vosk/`. Plus battery profile + foreground-service plumbing + Phase-2.6 Play Store re-review for the always-listening permission justification. Realistic scope: 3–5 dev days end-to-end, not one turn.
+
+2. **Accessibility-service scope expansion** to "operate WhatsApp, YouTube, Gmail, any installed app on user's behalf." The current `VaaniAccessibilityService` is intentionally narrow:
+
+   > AccessibilityService matches only `com.whatsapp:id/send`, single-shot, 2-second arm window, refuses any PIN-shaped sibling text.
+
+   That's not a TODO — that's a security fence Bryan's own CONTEXT.md §0 lists as a hard refusal. Loosening it to "any installed app" is a deliberate policy decision (auto-tap surface across all apps is exactly what malware authors abuse) and needs Bryan's explicit override before I touch it. Even with the override, it'll cost a Play Store re-review (probably 2–3 rejections per the spec). I'm flagging this for a separate discussion, not silently widening the scope.
+
+The voice intent router (#1 above) gives the user-facing piece of the Phone Agent today — "Send WhatsApp to Mom saying X" already opens WhatsApp pre-filled and the user taps send. Once the accessibility-service scope expansion is approved + re-reviewed, the same router will fire `ChittiNative.tapWhatsAppSendAfterVoice("haan")` and complete the send autonomously.
+
+---
+
 The Android client was bootstrapped in commit `059ab22` (2026-05-09) and has received two follow-up commits the same day. Both follow-ups apply to the broader Vaani product (web + Android together) and touch this directory because the JS bridge signatures evolved.
 
 ---

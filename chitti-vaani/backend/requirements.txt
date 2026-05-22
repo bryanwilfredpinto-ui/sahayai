@@ -12,3 +12,8 @@ tzdata==2024.2
 
 # Sahay AI quality framework deps (used by lib/*.py)
 prometheus-client==0.20.0    # /metrics endpoint; lazy-imported in observability
+
+# Chitti Document Vault (Phase 1) — per-user Fernet encryption at rest.
+# AES-128-CBC + HMAC-SHA256 via the cryptography lib; deterministic
+# per-user key derivation in services/vault_service.py.
+cryptography==43.0.1

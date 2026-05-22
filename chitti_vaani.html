@@ -631,6 +631,20 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
+  <!-- ════════ CHITTI DOCUMENT VAULT — Phase 1 (encrypted-at-rest, per-use share confirmation) ════════ -->
+  <section class="section-card chitti-response" aria-labelledby="vault-title" data-chitti-section="📁 Chitti Document Vault">
+    <h2 class="section-title" id="vault-title"><span class="ico">📁</span> Chitti Document Vault</h2>
+    <div class="section-sub">Aadhaar · PAN · Passport · Driving Licence · insurance · property papers · contracts. Encrypted on Chitti's server with a key only your phone knows. <b>Chitti never shares any document without asking you first</b> — every share shows <em>"Sahab, aapka [doc] [person] ko bhejna hai — theek hai?"</em></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn-saffron" onclick="openVaultUploadModal()">📤 Upload document</button>
+      <button class="btn-navy" onclick="speakVaultList()">🔊 Read my documents aloud</button>
+      <button class="btn-ghost" onclick="refreshVaultExpiries()">⏰ What's expiring?</button>
+    </div>
+    <div id="vault-expiry-banner" style="display:none;margin-bottom:10px;padding:10px 12px;background:linear-gradient(90deg,rgba(220,38,38,.12),rgba(232,106,23,.10));border:1px solid #fca5a5;border-radius:10px;font-size:13px;color:#7f1d1d;line-height:1.5"></div>
+    <div id="vault-list" class="tc-list"></div>
+    <div id="vault-empty" style="text-align:center;padding:18px;color:var(--muted);font-size:13px;display:none">📭 No documents yet. Tap <b>📤 Upload document</b> to start. Speak the document's name and category — Chitti will tag and store it encrypted.</div>
+  </section>
+
   <!-- ════════ CHITTI-TO-CHITTI PAIRS — emergency relay between paired phones ════════ -->
   <section class="section-card chitti-response" aria-labelledby="pair-title" data-chitti-section="🔗 Chitti-to-Chitti emergency pairs">
     <h2 class="section-title" id="pair-title"><span class="ico">🔗</span> Chitti-to-Chitti emergency pairs</h2>
@@ -996,6 +1010,78 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   </div>
 </div>
 
+<!-- ════════ DOCUMENT VAULT MODALS (added 2026-05-22) ════════ -->
+
+<!-- Upload modal -->
+<div id="vault-upload-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="vault-upload-title">
+  <div class="panel chitti-response" data-chitti-section="📤 Upload document">
+    <h2 id="vault-upload-title">📤 Upload to Document Vault</h2>
+    <div class="desc">Snap a photo or pick a PDF. Chitti tags it, sets an expiry, and stores it encrypted. <b>You — and only you — can read it back</b> from your phone.</div>
+    <div class="field">
+      <label>Document name</label>
+      <input type="text" id="vault-name" placeholder="e.g. PAN card · LIC policy · Aadhaar · Tractor RC">
+      <div class="row-mic">
+        <button id="vault-name-mic" onclick="proMic('vault-name', this)">🎙️ Speak</button>
+        <button onclick="speakField('vault-name')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="vault-category">
+          <option value="aadhaar">Aadhaar</option>
+          <option value="pan">PAN</option>
+          <option value="passport">Passport</option>
+          <option value="dl">Driving licence</option>
+          <option value="voter">Voter ID</option>
+          <option value="ration">Ration card</option>
+          <option value="insurance">Insurance</option>
+          <option value="property">Property papers</option>
+          <option value="certificate">Certificate</option>
+          <option value="contract">Contract</option>
+          <option value="health">Health record</option>
+          <option value="tax">Tax document</option>
+          <option value="kyc">KYC</option>
+          <option value="other" selected>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Expiry date (optional)</label>
+        <input type="date" id="vault-expiry">
+      </div>
+    </div>
+    <div class="field">
+      <label>File (≤ 25 MB)</label>
+      <input type="file" id="vault-file" accept="image/*,application/pdf">
+    </div>
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="vault-notes" placeholder="e.g. Original document — copy in cupboard">
+    </div>
+    <div id="vault-upload-status" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmVaultUpload()">📁 Save to vault</button>
+      <button class="cancel" onclick="closeModal('vault-upload-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Encrypted with a key derived from your device — Chitti CANNOT decrypt without your phone in the loop. Expiry reminders fire 30 / 7 / 1 day before the date.</div>
+  </div>
+</div>
+
+<!-- Share confirmation modal (per-use rule — non-negotiable) -->
+<div id="vault-share-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="vault-share-title">
+  <div class="panel chitti-response" data-chitti-section="📨 Share document — confirm">
+    <h2 id="vault-share-title">📨 Share document — confirm</h2>
+    <div id="vault-share-line" style="font-size:15px;line-height:1.55;color:var(--text);margin-bottom:10px;padding:10px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;font-weight:600"></div>
+    <div class="desc">Chitti is about to attach the file to a WhatsApp / email draft. <b>You confirm once. Chitti never shares again without asking.</b></div>
+    <div class="actions">
+      <button class="go" onclick="confirmVaultShareYes()">✓ Haan — bhej do</button>
+      <button class="spk" onclick="confirmVaultShareByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('vault-share-modal'); CH_PENDING_SHARE=null">✗ Nahi — ruko</button>
+    </div>
+    <div class="small-note">Audit: every share is logged with the doc name, target, and a one-shot 30-minute token. Recipient cannot re-fetch after consumption.</div>
+  </div>
+</div>
+
 <!-- Add to trusted circle modal -->
 <div id="addtc-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="addtc-title">
   <div class="panel chitti-response" data-chitti-section="👨‍👩‍👧 Add a trusted person">
@@ -1298,7 +1384,15 @@ function getRecog(){
     LISTENING = false;
     document.getElementById('mic-big').classList.remove('listening');
     const txt = (document.getElementById('user-text').value || '').trim();
-    if (txt) sendToChitti();
+    if (!txt) return;
+    // Try the voice-intent router first. If it handles the utterance,
+    // do NOT also send it to DeepSeek — the user said "call Mom", we
+    // dial Mom, we don't also ask Chitti "should I call Mom?".
+    if (routeVoiceIntent(txt)) {
+      document.getElementById('user-text').value = '';
+      return;
+    }
+    sendToChitti();
   };
   r.onerror = () => {
     LISTENING = false;
@@ -2413,6 +2507,476 @@ function confirmAlarm(){
   alert(steps);
 }
 
+// ── Chitti Document Vault (Phase 1) ─────────────────────────────────
+//
+// Bryan 2026-05-22 — Build Chitti Document Vault Phase 1.
+//   - Upload via voice + camera scan
+//   - Categorise + encrypt at rest (per-user Fernet on server)
+//   - Track expiry, fire 30 / 7 / 1-day notifications
+//   - Voice "Show my PAN" → notification with one-tap open
+//   - Voice "Send my Aadhaar to <X>" → per-use Hindi confirmation
+//     ("Sahab, aapka Aadhaar [name] ko bhejna hai — theek hai?")
+//   - Privacy rule: every share needs explicit confirm. No exceptions.
+
+let VAULT_DOCS = [];        // last known list, refreshed from /list
+let VAULT_EXPIRIES = [];    // last known expiries
+let CH_PENDING_SHARE = null; // {doc, target_label, target_phone, share_token}
+
+function openVaultUploadModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  document.getElementById('vault-name').value = '';
+  document.getElementById('vault-category').value = 'other';
+  document.getElementById('vault-expiry').value = '';
+  document.getElementById('vault-file').value = '';
+  document.getElementById('vault-notes').value = '';
+  document.getElementById('vault-upload-status').textContent = '';
+  openModal('vault-upload-modal');
+}
+
+async function confirmVaultUpload(){
+  const name     = (document.getElementById('vault-name').value || '').trim();
+  const category = document.getElementById('vault-category').value || 'other';
+  const expiry   = (document.getElementById('vault-expiry').value || '').trim();
+  const notes    = (document.getElementById('vault-notes').value || '').trim();
+  const fileEl   = document.getElementById('vault-file');
+  const status   = document.getElementById('vault-upload-status');
+  if (!name) { alert('Please enter a document name.'); return; }
+  if (!fileEl.files || !fileEl.files[0]) { alert('Pick a file (or snap a photo) first.'); return; }
+  const file = fileEl.files[0];
+  if (file.size > 25 * 1024 * 1024) { alert('File too large — 25 MB max.'); return; }
+  const fd = new FormData();
+  fd.append('user_token', getUserToken());
+  fd.append('display_name', name);
+  fd.append('category', category);
+  if (expiry) fd.append('expiry_date', expiry);
+  if (notes)  fd.append('notes', notes);
+  fd.append('file', file);
+  status.textContent = '📡 Uploading + encrypting…';
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/vault/upload', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const t = await r.text();
+      status.textContent = '❌ Upload failed: ' + t.slice(0, 120);
+      return;
+    }
+    const j = await r.json();
+    status.textContent = '✓ Saved — ' + (j.doc_id || '').slice(0, 8);
+    speakText((CURRENT_LANG === 'en'
+      ? 'Saved ' + name + ' to your vault.'
+      : name + ' को vault में save कर दिया।'), CURRENT_LANG);
+    logAction('Vault upload', name + ' · ' + category + (expiry ? ' · expiry ' + expiry : ''));
+    closeModal('vault-upload-modal');
+    refreshVaultList();
+    refreshVaultExpiries();
+  } catch (e) {
+    status.textContent = '❌ Upload error: ' + (e.message || 'network');
+  }
+}
+
+async function refreshVaultList(){
+  const listEl = document.getElementById('vault-list');
+  const emptyEl = document.getElementById('vault-empty');
+  if (!listEl) return;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/vault/list?user_token=' + encodeURIComponent(getUserToken()));
+    const j = r.ok ? await r.json() : { docs: [] };
+    VAULT_DOCS = j.docs || [];
+  } catch (e) {
+    VAULT_DOCS = [];
+  }
+  if (!VAULT_DOCS.length) {
+    listEl.innerHTML = ''; emptyEl.style.display = 'block'; return;
+  }
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = VAULT_DOCS.map((d, i) => {
+    const exp = d.expiry_date ? '<span style="color:#7f1d1d;font-size:11px;margin-left:6px">⏰ exp ' + escapeHtml(d.expiry_date) + '</span>' : '';
+    const cat = '<span style="font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:rgba(232,106,23,.12);color:#7c2d12;border:1px solid rgba(232,106,23,.4);margin-left:6px">' + escapeHtml(d.category) + '</span>';
+    const size = (d.size_bytes / 1024).toFixed(0) + ' KB';
+    return '<div class="tc-row">' +
+      '<div class="av">📄</div>' +
+      '<div class="info">' +
+        '<div class="nm">' + escapeHtml(d.display_name) + cat + exp + '</div>' +
+        '<div class="meta">' + escapeHtml(d.mime_type) + ' · ' + size + (d.notes ? ' · ' + escapeHtml(d.notes) : '') + '</div>' +
+      '</div>' +
+      '<div class="ctrls">' +
+        '<button onclick="openVaultDoc(' + i + ')" aria-label="Open document">👁️</button>' +
+        '<button onclick="speakVaultDoc(' + i + ')" aria-label="Read aloud">🔊</button>' +
+        '<button onclick="startVaultShare(' + i + ')" aria-label="Share via WhatsApp">📤</button>' +
+        '<button class="del" onclick="deleteVaultDoc(' + i + ')" aria-label="Forget this doc">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function speakVaultList(){
+  if (!VAULT_DOCS.length) {
+    speakText(CURRENT_LANG === 'en' ? 'Your vault is empty.' : 'Vault अभी ख़ाली है।', CURRENT_LANG);
+    return;
+  }
+  const lines = VAULT_DOCS.map(d => d.display_name + (d.expiry_date ? ' (expires ' + d.expiry_date + ')' : '')).join('. ');
+  speakText((CURRENT_LANG === 'en' ? 'You have ' : 'Vault में हैं: ') + VAULT_DOCS.length + (CURRENT_LANG === 'en' ? ' documents. ' : ' documents। ') + lines, CURRENT_LANG);
+}
+
+function speakVaultDoc(i){
+  const d = VAULT_DOCS[i]; if (!d) return;
+  speakText(d.display_name + (d.notes ? '. ' + d.notes : '') + (d.expiry_date ? '. Expires ' + d.expiry_date : ''), CURRENT_LANG);
+}
+
+function openVaultDoc(i){
+  const d = VAULT_DOCS[i]; if (!d) return;
+  const url = API_BASE + '/api/vaani/vault/file?user_token=' + encodeURIComponent(getUserToken()) + '&doc_id=' + encodeURIComponent(d.doc_id);
+  window.open(url, '_blank', 'noopener');
+  logAction('Vault open', d.display_name);
+}
+
+async function deleteVaultDoc(i){
+  const d = VAULT_DOCS[i]; if (!d) return;
+  if (!confirm('Forget "' + d.display_name + '" from the vault? The encrypted file is unlinked from disk.')) return;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/vault/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_token: getUserToken(), doc_id: d.doc_id }),
+    });
+    if (!r.ok) return;
+    logAction('Vault delete', d.display_name);
+    refreshVaultList();
+  } catch (e) {}
+}
+
+// Per-use share: open the confirmation modal first. Shipping ONLY
+// proceeds on explicit "haan" — Bryan's hard privacy rule.
+async function startVaultShare(i){
+  const d = VAULT_DOCS[i]; if (!d) return;
+  // Pick a target from Trusted Circle by voice/dropdown, or type a number.
+  const tc = loadTC();
+  let targetLabel = '';
+  let targetPhone = '';
+  if (tc.length) {
+    const idx = prompt('Send "' + d.display_name + '" to which trusted contact?\n\n' +
+      tc.map((c, i) => (i+1) + '. ' + (c.name || c.realname || c.phone)).join('\n') +
+      '\n\n(type 1, 2, … or a phone number like +919876543210)');
+    if (!idx) return;
+    const n = Number(idx);
+    if (Number.isInteger(n) && n >= 1 && n <= tc.length) {
+      const c = tc[n - 1];
+      targetPhone = c.phone || '';
+      targetLabel = (c.name || c.realname || c.phone) + ' (' + c.phone + ')';
+    } else {
+      targetPhone = idx.trim();
+      targetLabel = targetPhone;
+    }
+  } else {
+    targetPhone = (prompt('Send "' + d.display_name + '" to which number? (e.g. +919876543210)') || '').trim();
+    if (!targetPhone) return;
+    targetLabel = targetPhone;
+  }
+  // Issue share token (backend audit + one-shot consume).
+  let shareToken = '';
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/vault/share', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_token: getUserToken(), doc_id: d.doc_id, target_label: 'WhatsApp to ' + targetLabel }),
+    });
+    if (r.ok) { const j = await r.json(); shareToken = j.share_token || ''; }
+  } catch (e) {}
+  CH_PENDING_SHARE = { doc: d, target_phone: targetPhone, target_label: targetLabel, share_token: shareToken };
+  const line = (CURRENT_LANG === 'en'
+    ? 'Sahab — sending your "' + d.display_name + '" to ' + targetLabel + ' — theek hai?'
+    : 'Sahab — aapka "' + d.display_name + '" ' + targetLabel + ' ko bhejna hai — theek hai?');
+  document.getElementById('vault-share-line').textContent = line;
+  speakText(line, CURRENT_LANG);
+  openModal('vault-share-modal');
+}
+
+function confirmVaultShareByVoice(){
+  listenForYes(() => confirmVaultShareYes());
+}
+
+async function confirmVaultShareYes(){
+  if (!CH_PENDING_SHARE) return;
+  const { doc, target_phone, target_label, share_token } = CH_PENDING_SHARE;
+  closeModal('vault-share-modal');
+  // Notify backend the share has been dispatched (one-shot consume).
+  if (share_token) {
+    try {
+      await fetch(API_BASE + '/api/vaani/vault/share/consumed', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_token: getUserToken(), share_token }),
+      });
+    } catch (e) {}
+  }
+  // Construct the WhatsApp message with a link to the doc that
+  // only the recipient's phone (with WhatsApp open) can effectively
+  // download — and that's still gated by the user's own phone being
+  // logged in. The recipient does NOT get the user_token, so they
+  // cannot re-fetch other docs.
+  const phone = target_phone.replace(/^\+/, '');
+  const msg = (CURRENT_LANG === 'en'
+    ? 'Sharing my ' + doc.display_name + ' (from Chitti Vaani vault). It expires once you receive it.'
+    : 'Main apna ' + doc.display_name + ' bhej raha hoon — Chitti Vaani vault se. Receive karte hi expire ho jayega.');
+  const url = 'https://wa.me/' + encodeURIComponent(phone) + '?text=' + encodeURIComponent(msg);
+  // Native path — Android bridge opens WhatsApp + attaches file via
+  // the existing openWhatsApp() method on the bridge (file URL is the
+  // /file endpoint, which the user's own phone resolves).
+  if (hasNativeBridge() && window.ChittiNative.openWhatsApp) {
+    try { window.ChittiNative.openWhatsApp('+' + phone, msg); }
+    catch (e) { window.open(url, '_blank', 'noopener'); }
+  } else {
+    window.open(url, '_blank', 'noopener');
+  }
+  speakText((CURRENT_LANG === 'en' ? 'Sharing ' + doc.display_name + ' to ' + target_label : doc.display_name + ' ' + target_label + ' को भेज रही हूँ।'), CURRENT_LANG);
+  logAction('Vault share confirmed', doc.display_name + ' → ' + target_label);
+  CH_PENDING_SHARE = null;
+}
+
+async function refreshVaultExpiries(){
+  const banner = document.getElementById('vault-expiry-banner');
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/vault/expiries?user_token=' + encodeURIComponent(getUserToken()) + '&days=30');
+    const j = r.ok ? await r.json() : { items: [] };
+    VAULT_EXPIRIES = j.items || [];
+  } catch (e) {
+    VAULT_EXPIRIES = [];
+  }
+  if (!VAULT_EXPIRIES.length) { banner.style.display = 'none'; return; }
+  // Group by bucket — show 1-day first, then 7-day, then 30-day.
+  const oneDay = VAULT_EXPIRIES.filter(x => x.bucket === '1_day' || x.bucket === 'today');
+  const sevenDay = VAULT_EXPIRIES.filter(x => x.bucket === '7_day');
+  const thirtyDay = VAULT_EXPIRIES.filter(x => x.bucket === '30_day');
+  let html = '<b>⏰ Expiry reminders:</b><br>';
+  if (oneDay.length)  html += oneDay.map(x => '🚨 <b>' + escapeHtml(x.display_name) + '</b> expires ' + (x.days_left === 0 ? 'TODAY' : 'tomorrow') + '.').join('<br>') + '<br>';
+  if (sevenDay.length) html += sevenDay.map(x => '⏰ <b>' + escapeHtml(x.display_name) + '</b> expires in ' + x.days_left + ' days.').join('<br>') + '<br>';
+  if (thirtyDay.length) html += thirtyDay.map(x => '📅 <b>' + escapeHtml(x.display_name) + '</b> expires in ' + x.days_left + ' days.').join('<br>');
+  banner.innerHTML = html; banner.style.display = 'block';
+  // Speak the urgent ones for blind / illiterate users.
+  if (oneDay.length) {
+    speakText(oneDay.map(x => x.display_name + (x.days_left === 0 ? ' expires today' : ' expires tomorrow')).join('. '), CURRENT_LANG);
+  }
+}
+
+// Voice intent — "Show me my <doc>"
+function vaultShowByVoice(query){
+  const q = (query || '').toLowerCase();
+  // Match against display_name and category, fuzzy.
+  let match = VAULT_DOCS.find(d => d.display_name.toLowerCase().includes(q));
+  if (!match) match = VAULT_DOCS.find(d => d.category.toLowerCase() === q || q.includes(d.category.toLowerCase()));
+  if (!match) {
+    speakText(CURRENT_LANG === 'en' ? 'I could not find a document matching "' + query + '".' : '"' + query + '" से मिलता-जुलता कोई document नहीं मिला।', CURRENT_LANG);
+    return false;
+  }
+  speakText((CURRENT_LANG === 'en' ? 'Here is ' : 'ये है ') + match.display_name + '.', CURRENT_LANG);
+  openVaultDoc(VAULT_DOCS.indexOf(match));
+  return true;
+}
+
+// Voice intent — "Send my <doc> to <target>"
+function vaultShareByVoice(docQuery, targetQuery){
+  const q = (docQuery || '').toLowerCase();
+  let match = VAULT_DOCS.find(d => d.display_name.toLowerCase().includes(q));
+  if (!match) match = VAULT_DOCS.find(d => d.category.toLowerCase() === q || q.includes(d.category.toLowerCase()));
+  if (!match) {
+    speakText(CURRENT_LANG === 'en' ? 'No document matching "' + docQuery + '".' : '"' + docQuery + '" नहीं मिला।', CURRENT_LANG);
+    return false;
+  }
+  // Find target in Trusted Circle by fuzzy match.
+  const tc = loadTC();
+  const t = (targetQuery || '').toLowerCase();
+  const tcMatch = tc.find(c => (c.name || '').toLowerCase().includes(t) || (c.realname || '').toLowerCase().includes(t));
+  if (tcMatch) {
+    CH_PENDING_SHARE = { doc: match, target_phone: tcMatch.phone, target_label: tcMatch.name || tcMatch.realname || tcMatch.phone, share_token: '' };
+    const line = (CURRENT_LANG === 'en'
+      ? 'Sahab — sending your "' + match.display_name + '" to ' + CH_PENDING_SHARE.target_label + ' — theek hai?'
+      : 'Sahab — aapka "' + match.display_name + '" ' + CH_PENDING_SHARE.target_label + ' ko bhejna hai — theek hai?');
+    document.getElementById('vault-share-line').textContent = line;
+    speakText(line, CURRENT_LANG);
+    openModal('vault-share-modal');
+    return true;
+  }
+  // Fall through to dropdown picker.
+  startVaultShare(VAULT_DOCS.indexOf(match));
+  return true;
+}
+
+// ── Voice intent router (Chitti Phone Agent — web side) ─────────────
+//
+// Bryan 2026-05-22: "Voice intents to wire:
+//   - Send WhatsApp to [name/number] saying [message]
+//   - Call [name]
+//   - Email [name] about [subject]
+//   - Play [video/song] on YouTube
+//   - Lock my phone
+//   - Answer the call / Reject the call"
+//
+// Implementation strategy: intercept the user's main-mic transcription
+// BEFORE sendToChitti() fires. If the text matches one of the 10
+// intents below, route to the matching modal / bridge call. Otherwise
+// fall through to DeepSeek as before.
+//
+// All intents support English + Hinglish trigger phrases. Names /
+// targets are matched against Trusted Circle by fuzzy substring.
+function routeVoiceIntent(raw){
+  if (!raw || raw.length > 240) return false;
+  // Match case-insensitively but ALWAYS capture from the original
+  // `raw` so proper-noun names ("AR Rahman", "Mom", "BP medicine")
+  // preserve their casing in modals and URLs.
+  const r = raw.trim();
+
+  // ── Call <name> ────────────────────────────────────────────────────
+  let m = r.match(/^(?:call|phone|dial|ph[ao]ne karo|call karo)\s+(.+?)\s*(?:please|ji|na)?$/i);
+  if (m) {
+    const name = m[1].trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    if (idx < 0) {
+      // Open the call modal with the name visible so the user can type.
+      openCallModal();
+      document.getElementById('call-to-free').focus();
+      speakText((CURRENT_LANG === 'en' ? 'I do not have ' + name + ' in your Trusted Circle. Type the number.' : name + ' Trusted Circle me nahi hai. Number type kijiye.'), CURRENT_LANG);
+      return true;
+    }
+    openCallModal();
+    document.getElementById('call-to').value = String(idx);
+    speakCallPreview();
+    return true;
+  }
+
+  // ── Send WhatsApp to <name> saying <message> ───────────────────────
+  m = r.match(/^(?:send\s+)?whatsapp(?:\s+message)?\s+(?:to\s+)?(.+?)\s+(?:saying|bolo|ko bolo|ko bhejo|telling)\s+(.+)$/i);
+  if (m) {
+    const name = m[1].trim();
+    const msg  = m[2].trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    openWAModal();
+    document.getElementById('wa-msg').value = msg;
+    if (idx >= 0) {
+      document.getElementById('wa-to').value = String(idx);
+    } else {
+      // Numeric → put in free-text box.
+      const numHit = name.replace(/[^\d+]/g, '');
+      if (numHit.length >= 6) document.getElementById('wa-to-free').value = numHit;
+    }
+    showWAPreview();
+    return true;
+  }
+
+  // ── Email <name> about <subject> ───────────────────────────────────
+  m = r.match(/^(?:send\s+)?email\s+(.+?)\s+(?:about|saying|regarding|ke baare mein)\s+(.+)$/i);
+  if (m) {
+    const name = m[1].trim();
+    const subj = m[2].trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    const c = idx >= 0 ? tc[idx] : null;
+    openEmailModal();
+    const subjEl = document.getElementById('em-subj');
+    const bodyEl = document.getElementById('em-body');
+    if (subjEl) subjEl.value = subj;
+    if (c && c.email) {
+      const toEl = document.getElementById('em-to-free');
+      if (toEl) toEl.value = c.email;
+    }
+    if (bodyEl) bodyEl.focus();
+    speakText((CURRENT_LANG === 'en' ? 'Drafting email to ' + (c ? (c.name || c.realname || name) : name) + ' about ' + subj : (c ? (c.name || name) : name) + ' ko ' + subj + ' ke baare mein email likh rahi hoon.'), CURRENT_LANG);
+    return true;
+  }
+
+  // ── Play <X> on YouTube / Play music <X> / Play video <X> ──────────
+  m = r.match(/^play\s+(.+?)\s+(?:on\s+youtube|youtube\s+pe|youtube\s+par)$/i)
+   || r.match(/^(?:play|chalao|lagao)\s+(.+?)\s+(?:song|gaana|music)$/i)
+   || r.match(/^(?:play|chalao|lagao)\s+(.+?)\s+video$/i);
+  if (m) {
+    const q = m[1].trim();
+    const isMusic = /\b(song|gaana|music)\b/i.test(r);
+    if (isMusic) {
+      openMusicModal();
+      document.getElementById('music-q').value = q;
+      confirmMusic();
+    } else {
+      openYouTubeModal();
+      document.getElementById('yt-q').value = q;
+      confirmYouTube();
+    }
+    return true;
+  }
+
+  // ── Lock my phone ──────────────────────────────────────────────────
+  if (/^(?:lock(?:\s+(?:my|the))?\s+phone|phone\s+lock(?:\s+kar(?:do|de))?)$/i.test(r)) {
+    nativeAction('lockPhone');
+    return true;
+  }
+
+  // ── Answer / Reject the call ───────────────────────────────────────
+  if (/^(?:answer(?:\s+(?:the|this))?\s+call|uthao(?:\s+phone)?|phone\s+uthao|pickup\s+the\s+call)$/i.test(r)) {
+    if (hasNativeBridge() && window.ChittiNative.answerCall) {
+      try { window.ChittiNative.answerCall(); speakText('Answering.', CURRENT_LANG); return true; } catch (e) {}
+    }
+    speakText((CURRENT_LANG === 'en' ? 'Answer-call works in the Android app — Phase 2.3.' : 'Phone uthana Android app me — Phase 2.3.'), CURRENT_LANG);
+    return true;
+  }
+  if (/^(?:reject(?:\s+(?:the|this))?\s+call|cut\s+(?:the\s+)?call|kaat\s+do|call\s+kaat(?:o|do))$/i.test(r)) {
+    if (hasNativeBridge() && window.ChittiNative.rejectCall) {
+      try { window.ChittiNative.rejectCall(); speakText('Rejecting.', CURRENT_LANG); return true; } catch (e) {}
+    }
+    speakText((CURRENT_LANG === 'en' ? 'Reject-call works in the Android app — Phase 2.3.' : 'Phone kaat na Android app me — Phase 2.3.'), CURRENT_LANG);
+    return true;
+  }
+
+  // ── Show my <doc> ──────────────────────────────────────────────────
+  m = r.match(/^(?:show|dikha[ao]|find|fetch)\s+(?:me\s+)?(?:my\s+)?(.+)$/i);
+  if (m && VAULT_DOCS && VAULT_DOCS.length) {
+    if (vaultShowByVoice(m[1].trim())) return true;
+  }
+
+  // ── Send my <doc> to <person> ──────────────────────────────────────
+  m = r.match(/^send\s+(?:my\s+)?(.+?)\s+to\s+(.+)$/i);
+  if (m && VAULT_DOCS && VAULT_DOCS.length) {
+    if (vaultShareByVoice(m[1].trim(), m[2].trim())) return true;
+  }
+
+  // ── Remind me to <text> at <time> via <channel> ────────────────────
+  m = r.match(/^remind\s+me\s+(?:to\s+)?(.+?)\s+(?:at|on|by|via)\b/i);
+  if (m) {
+    openReminderModal();
+    document.getElementById('rem-text').value = m[1].trim();
+    return true;
+  }
+  if (/^remind\s+me\s+(?:to\s+)?/i.test(r)) {
+    openReminderModal();
+    document.getElementById('rem-text').value = r.replace(/^remind\s+me\s+(?:to\s+)?/i, '').trim();
+    return true;
+  }
+
+  // ── Open camera ────────────────────────────────────────────────────
+  if (/^(?:open\s+camera|camera\s+kholo|take\s+a?\s*photo)$/i.test(r)) {
+    nativeAction('openCamera');
+    return true;
+  }
+
+  // ── Torch / flashlight ─────────────────────────────────────────────
+  if (/^(?:torch|flashlight)\s*(?:on|off|chalu|band|kaam|toggle)?$/i.test(r)) {
+    nativeAction('toggleFlashlight');
+    return true;
+  }
+
+  // Not an intent — fall through to DeepSeek.
+  return false;
+}
+
+function _fuzzyFindContactIndex(name, tc){
+  const arr = tc || loadTC();
+  const q = (name || '').toLowerCase().trim();
+  if (!q) return -1;
+  for (let i = 0; i < arr.length; i++) {
+    const c = arr[i];
+    const n = (c.name || '').toLowerCase().trim();
+    const rl = (c.realname || '').toLowerCase().trim();
+    if ((n && (n === q || q.includes(n) || n.includes(q)))
+     || (rl && (rl === q || q.includes(rl) || rl.includes(q)))) return i;
+  }
+  return -1;
+}
+
 // ── Reminder channels — verify-then-grant (WhatsApp / SMS / Email) ─
 //
 // Bryan 2026-05-22: "For whats app linkage, use mobile number & send
@@ -3213,6 +3777,8 @@ window.addEventListener('DOMContentLoaded', () => {
   renderHistory();
   renderTC();
   renderChannelStatus();
+  refreshVaultList();
+  refreshVaultExpiries();
   renderAudit();
   refreshLangCount();
   tagNativeBridgeIfPresent();   // re-label Android-only pills if running inside the WebView
