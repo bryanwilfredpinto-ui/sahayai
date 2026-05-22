@@ -1723,6 +1723,22 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('chitti:langchange', () => vaiApplyI18n());
   // Open onboarding once consent is accepted
   setTimeout(vaiOnbMaybeOpen, 250);
+  // Test/inspection mode: ?notabs=1 in the URL makes every tab panel
+  // active simultaneously so test_vaani_*.mjs can interact with inputs
+  // that live in non-default tabs (channels live in CIRCLE, vault in
+  // VAULT, etc.). Also dismisses the onboarding overlay so clicks
+  // are not intercepted. Production users never hit this.
+  try {
+    const qs = new URL(window.location.href).searchParams;
+    if (qs.get('notabs') === '1') {
+      document.querySelectorAll('.vai-tab-panel').forEach(p => p.classList.add('active'));
+      try { localStorage.setItem(VAI_ONB_KEY, '1'); } catch(e){}
+      const onb = document.getElementById('vai-onb'); if (onb) onb.classList.add('hidden');
+      // Belt-and-braces: also hide on the next tick in case the
+      // 250ms delayed vaiOnbMaybeOpen() reopens it after this point.
+      setTimeout(() => { const o = document.getElementById('vai-onb'); if (o) o.classList.add('hidden'); }, 300);
+    }
+  } catch(e){}
 });
 // If consent acceptance flips the gate later, also open onboarding then.
 const _vaiOrigAccept = (typeof acceptConsent === 'function') ? acceptConsent : null;
@@ -3034,9 +3050,13 @@ function confirmAlarm(){
 //     ("Sahab, aapka Aadhaar [name] ko bhejna hai — theek hai?")
 //   - Privacy rule: every share needs explicit confirm. No exceptions.
 
-let VAULT_DOCS = [];        // last known list, refreshed from /list
-let VAULT_EXPIRIES = [];    // last known expiries
-let CH_PENDING_SHARE = null; // {doc, target_label, target_phone, share_token}
+// `var` so the bindings become window properties — the handover
+// checklist seeds them from outside the page (window.VAULT_DOCS = [...])
+// before firing routeVoiceIntent("Show me my PAN card"). With `let`
+// the outside seed silently shadows nothing and the router sees [].
+var VAULT_DOCS = [];        // last known list, refreshed from /list
+var VAULT_EXPIRIES = [];    // last known expiries
+var CH_PENDING_SHARE = null; // {doc, target_label, target_phone, share_token}
 
 function openVaultUploadModal(){
   if (!consentGiven()) { reopenConsent(); return; }

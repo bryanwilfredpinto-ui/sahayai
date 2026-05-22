@@ -16,7 +16,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const URL = pathToFileURL(join(ROOT, "chitti_vaani.html")).href;
+const URL = pathToFileURL(join(ROOT, "chitti_vaani.html")).href + "?notabs=1";
 
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext();

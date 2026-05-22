@@ -17,7 +17,10 @@ import { spawn } from "node:child_process";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const API = "https://chitti-vaani-api-production.up.railway.app";
-const PAGE_URL = pathToFileURL(join(ROOT, "chitti_vaani.html")).href;
+// `?notabs=1` flips every .vai-tab-panel active at load — needed for
+// test inputs that now live in non-default tabs after the 2026-05-22
+// 5-tab redesign (channels live in CIRCLE, vault in VAULT, etc.).
+const PAGE_URL = pathToFileURL(join(ROOT, "chitti_vaani.html")).href + "?notabs=1";
 
 const results = [];
 function record(category, item, status, detail) {
