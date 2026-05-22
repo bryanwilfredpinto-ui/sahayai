@@ -97,10 +97,10 @@ async function main(){
   await page.evaluate(() => { if (typeof vaiOnbFinish === 'function') vaiOnbFinish(); });
   await page.waitForTimeout(200);
 
-  // ── 4. Bottom nav: 5 buttons present
+  // ── 4. Bottom nav: 6 buttons (Talk · Act · Vault · Circle · Settings · SOS)
   const navBtns = await page.locator('.vai-bnav button').count();
-  if (navBtns === 5) pass('4. Bottom nav has 5 buttons');
-  else fail('4. Bottom nav', `expected 5 buttons, got ${navBtns}`);
+  if (navBtns === 6) pass('4. Bottom nav has 6 buttons (Talk/Act/Vault/Circle/Settings/SOS)');
+  else fail('4. Bottom nav', `expected 6 buttons, got ${navBtns}`);
 
   // ── 5. Initial tab is "talk"
   const talkActive = await page.locator('#vai-panel-talk.active').count();

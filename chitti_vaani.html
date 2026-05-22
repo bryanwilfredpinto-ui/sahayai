@@ -231,11 +231,12 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 /* ════════════════════════════════════════════════════════════
    5-TAB MOBILE-FIRST REDESIGN — Bryan 2026-05-22
-   Palette: Green #1B5E20 · Gold #F57F17 · White · Dark #212121
+   Palette: India tricolour — Saffron #FF6913 · White · Green #046A38 · Navy #002366
    Rules: 18px min font · 60px min button · rounded corners · Google Pay aesthetic
    ════════════════════════════════════════════════════════════ */
 :root{
-  --vai-green:#1B5E20; --vai-green-d:#0a3c0e; --vai-gold:#F57F17;
+  --vai-saffron:#FF6913; --vai-green:#046A38; --vai-navy:#002366;
+  --vai-gold:#F57F17; --vai-green-d:#013820;
   --vai-white:#ffffff; --vai-dark:#212121;
   --vai-grey:#f5f5f5; --vai-line:#e0e0e0; --vai-line2:#bdbdbd;
   --vai-red:#c62828;
@@ -369,6 +370,79 @@ main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
   .vai-bnav button{font-size:10px}
   .vai-bnav button .ico{font-size:22px}
 }
+
+/* ── India tricolour stripe — every page, always at the very top ── */
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:6px;
+  background:linear-gradient(90deg,var(--vai-saffron) 0 33.3%,#fff 33.3% 66.6%,var(--vai-green) 66.6% 100%);
+  z-index:9999;pointer-events:none}
+body::before{content:'';position:fixed;top:0;right:14px;width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle,var(--vai-navy) 0 4px,transparent 5px),
+             conic-gradient(from 0deg,var(--vai-navy) 0deg,transparent 15deg 360deg);
+  background-size:100% 100%;opacity:.0;z-index:9998;display:none}
+
+/* Tricolour accents on key buttons */
+main .mic-big{background:linear-gradient(135deg,var(--vai-saffron),var(--vai-green))}
+main .mic-big.listening{background:var(--vai-red);box-shadow:0 14px 40px rgba(198,40,40,.45)}
+header[role="banner"]{background:linear-gradient(135deg,var(--vai-navy),#16376a)}
+.vai-bnav button.active{color:var(--vai-saffron)}
+.vai-bnav button.active .ico{filter:drop-shadow(0 2px 4px rgba(255,105,19,.35))}
+
+/* ── Grandparent mode — 28px font, 3 buttons only, giant mic ── */
+body.vai-grandparent{font-size:18px}
+body.vai-grandparent .vai-tab-panel{display:none !important}
+body.vai-grandparent #vai-panel-talk{display:block !important}
+body.vai-grandparent .vai-bnav{display:none}
+body.vai-grandparent main{padding-bottom:20px;max-width:520px}
+body.vai-grandparent main .section-title{font-size:28px;font-weight:900}
+body.vai-grandparent main .section-sub{font-size:18px;line-height:1.6}
+body.vai-grandparent main .mic-stage{padding:32px 18px;gap:20px}
+body.vai-grandparent main .mic-big{width:220px;height:220px;font-size:96px}
+body.vai-grandparent main .mic-hint{font-size:22px;font-weight:600}
+body.vai-grandparent main .mode-row{display:none}
+body.vai-grandparent main .input-row{display:none}
+body.vai-grandparent main .quick-grid,body.vai-grandparent main .history,
+body.vai-grandparent main #history{display:none}
+body.vai-grandparent main #user-text-row{display:none}
+body.vai-grandparent main .answer-box{font-size:22px}
+body.vai-grandparent main .answer-text{font-size:24px;line-height:1.7;font-weight:600}
+body.vai-grandparent main .answer-head .ctrls button{min-height:58px;font-size:18px;padding:0 18px}
+body.vai-grandparent main .answer-head .ctrls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+body.vai-grandparent #vai-gp-bar{display:flex}
+body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){display:none}
+
+/* Grandparent control bar — visible only in grandparent mode */
+#vai-gp-bar{display:none;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--vai-line);padding:14px;gap:12px;justify-content:center;align-items:center;z-index:600;flex-wrap:wrap}
+#vai-gp-bar button{background:var(--vai-green);color:#fff;border:none;border-radius:14px;font-size:20px;font-weight:800;padding:18px 22px;min-height:68px;min-width:130px;cursor:pointer}
+#vai-gp-bar button.sos{background:var(--vai-red)}
+#vai-gp-bar button.exit{background:#fff;color:var(--vai-dark);border:2px solid var(--vai-line)}
+
+/* Grandparent toggle pill in the header */
+.vai-gp-toggle{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px;text-decoration:none}
+.vai-gp-toggle:hover{background:rgba(255,255,255,.28)}
+.vai-gp-toggle.on{background:var(--vai-saffron);border-color:var(--vai-saffron)}
+
+/* ── QR share modal ── */
+.vai-qr-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:8500;display:none;align-items:center;justify-content:center;padding:20px}
+.vai-qr-modal.shown{display:flex}
+.vai-qr-modal .panel{background:#fff;border-radius:20px;padding:24px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.40)}
+.vai-qr-modal h2{margin:0 0 6px;font-size:22px;color:var(--vai-navy)}
+.vai-qr-modal .desc{font-size:15px;color:#555;line-height:1.5;margin-bottom:14px}
+.vai-qr-modal .qr-img{width:240px;height:240px;border:2px solid var(--vai-line);border-radius:14px;padding:8px;background:#fff;margin:0 auto;display:block}
+.vai-qr-modal .url{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--vai-saffron);font-weight:700;word-break:break-all}
+.vai-qr-modal .close{margin-top:16px;background:var(--vai-green);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;min-height:54px}
+
+/* ── Settings tab (6th tab) ── */
+.vai-settings-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.vai-settings-row{background:#fff;border:1px solid var(--vai-line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px}
+.vai-settings-row .ico{font-size:32px;line-height:1}
+.vai-settings-row .info{flex:1;min-width:0}
+.vai-settings-row .name{font-size:16px;font-weight:800;color:var(--vai-navy)}
+.vai-settings-row .desc{font-size:13px;color:#555;line-height:1.45;margin-top:2px}
+.vai-settings-row .actions{display:flex;flex-direction:column;gap:4px}
+.vai-settings-row .actions button{background:transparent;border:1px solid var(--vai-line);border-radius:8px;width:38px;height:38px;font-size:16px;cursor:pointer}
+.vai-settings-row .actions button:active{background:#f0f8f0}
+.vai-settings-row a.open{color:var(--vai-saffron);font-weight:700;font-size:13px;text-decoration:none}
+
 </style>
 </head>
 <body>
@@ -478,6 +552,8 @@ main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
   </div>
   <div class="header-controls">
     <button onclick="speakIntro()" aria-label="Hear how to use this page">🔊 How to use</button>
+    <button class="vai-gp-toggle" id="vai-gp-pill" onclick="vaiGrandparentToggle()" aria-label="Grandparent mode — 3 big buttons, large font">👵 Grandparent</button>
+    <button onclick="vaiOpenQR()" aria-label="Show QR code to open this page on phone">📱 QR share</button>
     <button onclick="clearHistory()" aria-label="Clear conversation history">🗑️ Clear history</button>
     <button onclick="reopenConsent()" aria-label="Re-read terms and conditions">📜 Re-read T&amp;C</button>
   </div>
@@ -845,6 +921,20 @@ main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
 
   </div><!-- /TAB 1 TALK part 2 (audit) -->
 
+  <!-- ══════════════ TAB 6 · SETTINGS (all 15 Chitti products) ══════════════ -->
+  <div class="vai-tab-panel" data-tab="settings" id="vai-panel-settings">
+    <section class="section-card">
+      <h2 class="section-title" style="color:var(--vai-navy)"><span class="ico">⚙️</span> Settings &amp; all Chitti products</h2>
+      <div class="section-sub">Every Chitti — speaker icon reads the description aloud · 👍 / 👎 sends per-product feedback to the founder.</div>
+      <div id="vai-settings-products" class="vai-settings-list"></div>
+    </section>
+    <section class="section-card">
+      <h2 class="section-title" style="color:var(--vai-navy);font-size:18px"><span class="ico">🛡️</span> DPDP &amp; data</h2>
+      <div class="section-sub" id="vai-dpdp-summary">Chitti complies with the Digital Personal Data Protection Act 2023. Your voice never leaves your device unless you tap Send.</div>
+      <button class="vai-btn ghost" onclick="reopenConsent()" style="border:1px solid var(--vai-line);background:#fff;padding:14px;border-radius:12px;font-weight:700;cursor:pointer">📜 Re-read full consent</button>
+    </section>
+  </div>
+
   <!-- ══════════════ TAB 5 · SOS ══════════════ -->
   <div class="vai-tab-panel" data-tab="sos" id="vai-panel-sos">
     <div class="vai-sos-screen">
@@ -885,10 +975,31 @@ main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
   <button type="button" data-tab-target="circle" onclick="vaiSwitchTab('circle')">
     <span class="ico">👨‍👩‍👧</span><span data-vai-i18n="tab.circle">Circle</span>
   </button>
+  <button type="button" data-tab-target="settings" onclick="vaiSwitchTab('settings')">
+    <span class="ico">⚙️</span><span data-vai-i18n="tab.settings">More</span>
+  </button>
   <button type="button" data-tab-target="sos" class="sos" onclick="vaiSwitchTab('sos')">
     <span class="ico">🚨</span><span data-vai-i18n="tab.sos">SOS</span>
   </button>
 </nav>
+
+<!-- ══════════════ GRANDPARENT BAR — 3 buttons only ══════════════ -->
+<div id="vai-gp-bar" role="toolbar" aria-label="Grandparent mode controls">
+  <button onclick="toggleMic()" aria-label="Tap to speak">🎙️ बोलें</button>
+  <button class="sos" onclick="vaiSosTrigger()" aria-label="Emergency SOS">🚨 SOS</button>
+  <button class="exit" onclick="vaiGrandparentToggle()" aria-label="Exit grandparent mode">✕ Normal</button>
+</div>
+
+<!-- ══════════════ QR SHARE MODAL ══════════════ -->
+<div class="vai-qr-modal" id="vai-qr-modal" role="dialog" aria-modal="true" aria-labelledby="vai-qr-title">
+  <div class="panel">
+    <h2 id="vai-qr-title">📱 Open Chitti on phone</h2>
+    <div class="desc">Scan with any phone camera — Chitti opens in the browser. No app install needed.</div>
+    <img class="qr-img" id="vai-qr-img" alt="QR code to chitti vaani" src="">
+    <div class="url" id="vai-qr-url">https://sahayai.in/chitti_vaani.html</div>
+    <button class="close" onclick="vaiCloseQR()">✓ Done</button>
+  </div>
+</div>
 
 <!-- ══════════════ 3-STEP ONBOARDING OVERLAY ══════════════ -->
 <div class="vai-onb hidden" id="vai-onb" role="dialog" aria-modal="true" aria-labelledby="vai-onb-title">
@@ -1486,77 +1597,77 @@ const VAI_ONB_KEY = 'chitti_vaani_onb_done';
 const VAI_NAME_KEY = 'chitti_vaani_user_name';
 
 const VAI_I18N = {
-  en: { 'tab.talk':'Talk','tab.act':'Act','tab.vault':'Vault','tab.circle':'Circle','tab.sos':'SOS',
+  en: { 'tab.talk':'Talk','tab.act':'Act','tab.vault':'Vault','tab.circle':'Circle','tab.settings':'More','tab.sos':'SOS',
         'err.network':'Chitti could not hear. Try once more.',
         'err.retry':'Try again',
         'onb.welcome':'Welcome to Chitti', 'onb.pick':'Pick your language',
         'onb.name':'What should Chitti call you?', 'onb.name.ph':'Your name (optional)',
         'onb.try':'Say "Hello Chitti" 🎙️', 'onb.skip':'Skip — open Chitti',
         'onb.next':'Next →', 'onb.start':'Start ✓' },
-  hi: { 'tab.talk':'बात करो','tab.act':'काम','tab.vault':'तिजोरी','tab.circle':'अपने','tab.sos':'मदद',
+  hi: { 'tab.talk':'बात करो','tab.act':'काम','tab.vault':'तिजोरी','tab.circle':'अपने','tab.settings':'और','tab.sos':'मदद',
         'err.network':'Chitti sun nahi payi — dobara bolein',
         'err.retry':'Phir bolo',
         'onb.welcome':'Chitti mein swagat hai', 'onb.pick':'Apni bhasha chunein',
         'onb.name':'Chitti aapko kya bulaaye?', 'onb.name.ph':'Aapka naam (optional)',
         'onb.try':'"Hello Chitti" boliye 🎙️', 'onb.skip':'Skip — Chitti khol do',
         'onb.next':'Aage →', 'onb.start':'Shuru karein ✓' },
-  bn: { 'tab.talk':'কথা', 'tab.act':'কাজ', 'tab.vault':'ভল্ট', 'tab.circle':'পরিজন', 'tab.sos':'সাহায্য',
+  bn: { 'tab.talk':'কথা', 'tab.act':'কাজ', 'tab.vault':'ভল্ট', 'tab.circle':'পরিজন', 'tab.settings':'আরও', 'tab.sos':'সাহায্য',
         'err.network':'Chitti shunte parlo na — abar bolun',
         'err.retry':'Abar bolun',
         'onb.welcome':'Chitti-te swagatam', 'onb.pick':'Apnar bhasha bachun',
         'onb.name':'Chitti apnake ki dakbe?', 'onb.name.ph':'Apnar nam',
         'onb.try':'"Hello Chitti" bolun 🎙️', 'onb.skip':'Skip — Chitti kholo',
         'onb.next':'Egiye →', 'onb.start':'Shuru korun ✓' },
-  ta: { 'tab.talk':'பேசு', 'tab.act':'செயல்', 'tab.vault':'பெட்டகம்', 'tab.circle':'குடும்பம்', 'tab.sos':'உதவி',
+  ta: { 'tab.talk':'பேசு', 'tab.act':'செயல்', 'tab.vault':'பெட்டகம்', 'tab.circle':'குடும்பம்', 'tab.settings':'மேலும்', 'tab.sos':'உதவி',
         'err.network':'Chitti kekka mudiyala — meendum sollunga',
         'err.retry':'Meendum sollunga',
         'onb.welcome':'Chitti-ku varaverpu', 'onb.pick':'Ungal mozhi tervu seyungal',
         'onb.name':'Chitti ungalai eppadi kooppida?', 'onb.name.ph':'Ungal peyar',
         'onb.try':'"Hello Chitti" sollungal 🎙️', 'onb.skip':'Skip — Chitti thirakka',
         'onb.next':'Mun →', 'onb.start':'Thodanga ✓' },
-  te: { 'tab.talk':'మాట్లాడు', 'tab.act':'పని', 'tab.vault':'ఖజానా', 'tab.circle':'కుటుంబం', 'tab.sos':'సహాయం',
+  te: { 'tab.talk':'మాట్లాడు', 'tab.act':'పని', 'tab.vault':'ఖజానా', 'tab.circle':'కుటుంబం', 'tab.settings':'ఇంకా', 'tab.sos':'సహాయం',
         'err.network':'Chitti vinipinchaledu — malli cheppandi',
         'err.retry':'Malli cheppandi',
         'onb.welcome':'Chitti ki swagatham', 'onb.pick':'Mee bhasha enchukondi',
         'onb.name':'Chitti meeku enti piluvali?', 'onb.name.ph':'Mee peru',
         'onb.try':'"Hello Chitti" anandi 🎙️', 'onb.skip':'Skip — Chitti teradam',
         'onb.next':'Mundu →', 'onb.start':'Modalu ✓' },
-  mr: { 'tab.talk':'बोल', 'tab.act':'काम', 'tab.vault':'तिजोरी', 'tab.circle':'आपले', 'tab.sos':'मदत',
+  mr: { 'tab.talk':'बोल', 'tab.act':'काम', 'tab.vault':'तिजोरी', 'tab.circle':'आपले', 'tab.settings':'अधिक', 'tab.sos':'मदत',
         'err.network':'Chitti aikalech naahi — punha bola',
         'err.retry':'Punha bola',
         'onb.welcome':'Chitti madhe swagat aahe', 'onb.pick':'Tumchi bhasha nivada',
         'onb.name':'Chitti tumhala kay bolayche?', 'onb.name.ph':'Tumcha naav',
         'onb.try':'"Hello Chitti" bola 🎙️', 'onb.skip':'Skip — Chitti ughda',
         'onb.next':'Pudhe →', 'onb.start':'Suru karaa ✓' },
-  gu: { 'tab.talk':'વાત', 'tab.act':'કામ', 'tab.vault':'તિજોરી', 'tab.circle':'સગાંવ્હાલા', 'tab.sos':'મદદ',
+  gu: { 'tab.talk':'વાત', 'tab.act':'કામ', 'tab.vault':'તિજોરી', 'tab.circle':'સગાંવ્હાલા', 'tab.settings':'વધુ', 'tab.sos':'મદદ',
         'err.network':'Chitti sambhali nathi — pacho bolo',
         'err.retry':'Pacho bolo',
         'onb.welcome':'Chitti maa swagat che', 'onb.pick':'Tamari bhasha pasand karo',
         'onb.name':'Chitti tamne shu bolave?', 'onb.name.ph':'Tamarun naam',
         'onb.try':'"Hello Chitti" bolo 🎙️', 'onb.skip':'Skip — Chitti kholo',
         'onb.next':'Aagal →', 'onb.start':'Shuru karo ✓' },
-  kn: { 'tab.talk':'ಮಾತು', 'tab.act':'ಕೆಲಸ', 'tab.vault':'ಕೋಶ', 'tab.circle':'ಬಂಧು', 'tab.sos':'ಸಹಾಯ',
+  kn: { 'tab.talk':'ಮಾತು', 'tab.act':'ಕೆಲಸ', 'tab.vault':'ಕೋಶ', 'tab.circle':'ಬಂಧು', 'tab.settings':'ಇನ್ನಷ್ಟು', 'tab.sos':'ಸಹಾಯ',
         'err.network':'Chitti keelilla — matte heli',
         'err.retry':'Matte heli',
         'onb.welcome':'Chitti-ge swagatha', 'onb.pick':'Nimma bhashe aaru',
         'onb.name':'Chitti nimmage enu karee?', 'onb.name.ph':'Nimma hesaru',
         'onb.try':'"Hello Chitti" heli 🎙️', 'onb.skip':'Skip — Chitti tegi',
         'onb.next':'Mundhe →', 'onb.start':'Aarambisi ✓' },
-  ml: { 'tab.talk':'സംസാരം', 'tab.act':'പ്രവൃത്തി', 'tab.vault':'പെട്ടി', 'tab.circle':'കുടുംബം', 'tab.sos':'സഹായം',
+  ml: { 'tab.talk':'സംസാരം', 'tab.act':'പ്രവൃത്തി', 'tab.vault':'പെട്ടി', 'tab.circle':'കുടുംബം', 'tab.settings':'കൂടുതൽ', 'tab.sos':'സഹായം',
         'err.network':'Chitti ketilla — onnoode parayuu',
         'err.retry':'Onnoode parayuu',
         'onb.welcome':'Chitti-yilekku swagatham', 'onb.pick':'Ningalude bhasha thirinjedukku',
         'onb.name':'Chitti ningale enthonnu vilikkanam?', 'onb.name.ph':'Ningalude peru',
         'onb.try':'"Hello Chitti" parayuu 🎙️', 'onb.skip':'Skip — Chitti thurakku',
         'onb.next':'Mun →', 'onb.start':'Thudanguu ✓' },
-  pa: { 'tab.talk':'ਗੱਲ', 'tab.act':'ਕੰਮ', 'tab.vault':'ਤਜੋਰੀ', 'tab.circle':'ਆਪਣੇ', 'tab.sos':'ਮਦਦ',
+  pa: { 'tab.talk':'ਗੱਲ', 'tab.act':'ਕੰਮ', 'tab.vault':'ਤਜੋਰੀ', 'tab.circle':'ਆਪਣੇ', 'tab.settings':'ਹੋਰ', 'tab.sos':'ਮਦਦ',
         'err.network':'Chitti sun ni saki — phir bolo',
         'err.retry':'Phir bolo',
         'onb.welcome':'Chitti vich swagat hai', 'onb.pick':'Aapni bhasha chuno',
         'onb.name':'Chitti tuhanu ki bulaye?', 'onb.name.ph':'Tuhada naam',
         'onb.try':'"Hello Chitti" bolo 🎙️', 'onb.skip':'Skip — Chitti kholo',
         'onb.next':'Aage →', 'onb.start':'Shuru karo ✓' },
-  ur: { 'tab.talk':'بات', 'tab.act':'کام', 'tab.vault':'تجوری', 'tab.circle':'اپنے', 'tab.sos':'مدد',
+  ur: { 'tab.talk':'بات', 'tab.act':'کام', 'tab.vault':'تجوری', 'tab.circle':'اپنے', 'tab.settings':'مزید', 'tab.sos':'مدد',
         'err.network':'Chitti sun na saki — phir boliye',
         'err.retry':'Phir boliye',
         'onb.welcome':'Chitti mein khush amdeed', 'onb.pick':'Apni zubaan chunein',
@@ -1581,7 +1692,7 @@ function vaiT(key){
 /* ── Tab switching ── */
 function vaiSwitchTab(tab){
   // Both "talk" and "talk-2" panels light up for the talk tab; same for circle.
-  const map = {talk:['talk','talk-2'], act:['act'], vault:['vault'], circle:['circle','circle-2'], sos:['sos']};
+  const map = {talk:['talk','talk-2'], act:['act'], vault:['vault'], circle:['circle','circle-2'], settings:['settings'], sos:['sos']};
   const targets = map[tab] || [tab];
   document.querySelectorAll('.vai-tab-panel').forEach(p => {
     p.classList.toggle('active', targets.includes(p.dataset.tab));
@@ -1589,7 +1700,71 @@ function vaiSwitchTab(tab){
   document.querySelectorAll('.vai-bnav button').forEach(b => {
     b.classList.toggle('active', b.dataset.tabTarget === tab);
   });
+  if (tab === 'settings') vaiRenderSettings();
   try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+}
+
+/* ── Grandparent mode — 28px font, 3 buttons only, giant mic ── */
+const VAI_GP_KEY = 'chitti_vaani_grandparent_mode';
+function vaiGrandparentSet(on){
+  document.body.classList.toggle('vai-grandparent', on);
+  const pill = document.getElementById('vai-gp-pill');
+  if (pill) pill.classList.toggle('on', on);
+  try { localStorage.setItem(VAI_GP_KEY, on ? '1' : '0'); } catch(e){}
+  // Force Talk tab when grandparent mode flips on so the mic is visible.
+  if (on) vaiSwitchTab('talk');
+}
+function vaiGrandparentToggle(){
+  const isOn = document.body.classList.contains('vai-grandparent');
+  vaiGrandparentSet(!isOn);
+}
+
+/* ── QR share — open / close ── */
+function vaiOpenQR(){
+  const url = 'https://sahayai.in/chitti_vaani.html';
+  const img = document.getElementById('vai-qr-img');
+  // Google's free QR endpoint — no dependency, works offline-friendly via cached chrome.
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(url);
+  document.getElementById('vai-qr-url').textContent = url;
+  document.getElementById('vai-qr-modal').classList.add('shown');
+}
+function vaiCloseQR(){ document.getElementById('vai-qr-modal').classList.remove('shown'); }
+
+/* ── Settings tab: list every Chitti product ── */
+const VAI_PRODUCTS = [
+  { slug:'chitti_vaani',              icon:'🎙️', name:'Chitti Vaani',          desc:'Voice-first assistant — speak, listen, summarise calls.' },
+  { slug:'chitti_complete_technical', icon:'📈', name:'Chitti Technical',       desc:'Indian-market candles + 14+ indicators (RSI, MACD, Roshan).' },
+  { slug:'chitti_fundamentals',       icon:'📋', name:'Chitti Fundamentals',    desc:'Buffett · Munger · Graham · Kedia · 25+ strategy filters.' },
+  { slug:'chitti_medupi',             icon:'💊', name:'Chitti MedUPI',          desc:'UPI for medicine bills. Scan strip → Jan Aushadhi equivalents.' },
+  { slug:'chitti_news',               icon:'📰', name:'Chitti News',            desc:'Your state, your language. 26+ trusted Indian RSS sources.' },
+  { slug:'chitti_news_ai',            icon:'🤖', name:'Chitti News AI',         desc:'AI-only news — 17 sources, voice-summarised, fact-checked.' },
+  { slug:'chitti_upi',                icon:'🛡️', name:'Chitti UPI Guard',       desc:'Paste it before you pay it. RBI 2026 rule cards built in.' },
+  { slug:'chitti_scanner',            icon:'📷', name:'Chitti Scanner',         desc:'Snap a label — food / medicine / bill — flags warnings.' },
+  { slug:'chitti_ca',                 icon:'🧾', name:'Chitti CA',              desc:'AI tax help — ITR · GST · TDS · 80C / 80D. Consult a CA before filing.' },
+  { slug:'chitti_legal',              icon:'⚖️', name:'Chitti Legal',           desc:'Explains rent / NDA / sale deed / FIR / notice in plain words.' },
+  { slug:'chitti_government',         icon:'🏛️', name:'Chitti Government',      desc:'PM-Kisan, Ayushman, PMAY + 30+ schemes. Eligibility check.' },
+  { slug:'chitti_logo_video',         icon:'🎨', name:'Chitti Logo & Video',    desc:'Free brand assets for kirana / freelancers / school projects.' },
+  { slug:'chitti_voice_factory',      icon:'🪔', name:'Chitti Voice Factory',   desc:'26-language voice ledger. Bhashini · AI4Bharat · mock cascade.' },
+  { slug:'chitti_2wheeler',           icon:'🏍️', name:'Chitti 2-Wheeler',       desc:'Service + fuel-economy + RC/insurance for every Indian rider.' },
+  { slug:'chitti_4wheeler',           icon:'🚗', name:'Chitti 4-Wheeler',       desc:'Car service + FASTag + PUC + family-car maintenance log.' },
+];
+function vaiRenderSettings(){
+  const root = document.getElementById('vai-settings-products');
+  if (!root) return;
+  if (root.dataset.rendered === '1') return;
+  root.innerHTML = VAI_PRODUCTS.map(p => `
+    <div class="vai-settings-row chitti-response" data-chitti-section="${p.icon} ${p.name}">
+      <div class="ico">${p.icon}</div>
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="desc">${p.desc}</div>
+        <a class="open" href="${p.slug}.html">Open →</a>
+      </div>
+      <div class="actions">
+        <button onclick="speakText('${p.name}. ${p.desc.replace(/'/g, "\\'")}', CURRENT_LANG)" aria-label="Read ${p.name} aloud">🔊</button>
+      </div>
+    </div>`).join('');
+  root.dataset.rendered = '1';
 }
 
 /* ── Friendly error banner — replaces "Network error" ── */
@@ -1719,6 +1894,8 @@ function vaiCallNumber(num){
 /* ── Init: switch lang, hook chitti:langchange, open onboarding ── */
 window.addEventListener('DOMContentLoaded', () => {
   vaiApplyI18n();
+  // Restore Grandparent mode from previous session
+  try { if (localStorage.getItem(VAI_GP_KEY) === '1') vaiGrandparentSet(true); } catch(e){}
   // Re-apply on language change
   window.addEventListener('chitti:langchange', () => vaiApplyI18n());
   // Open onboarding once consent is accepted
