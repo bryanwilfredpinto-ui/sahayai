@@ -740,7 +740,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
   <footer role="contentinfo">
     <small>
-      Chitti MedUPI v1.4 · Bharat Premium AI · Backend: <code>chitti-shares-api-production.up.railway.app</code><br>
+      Chitti MedUPI v1.5 · Bharat Premium AI · Backend: <code>chitti-medupi-api-production.up.railway.app</code><br>
       Spec: <a href="CHITTI_MEDUPI_MASTER_SPEC.md">CHITTI_MEDUPI_MASTER_SPEC.md</a> · Sister products: <a href="chitti_complete_technical.html">📈 Technical</a> · <a href="chitti_fundamentals.html">📋 Fundamentals</a><br>
       Chitti MedUPI provides informational insights only · Not medical advice · Always consult your doctor or pharmacist.
     </small>
@@ -752,14 +752,31 @@ if(!window._chittiMedUpiLoaded){
 window._chittiMedUpiLoaded = true;
 
 // ═══════════════════════════════════════════════════════════
-// API base — defaults to chitti-shares-api (where the medupi
-// stub endpoints currently live). Override per-device by setting
-// localStorage.chitti_medupi_api_base to e.g. https://chitti-medupi-api-production.up.railway.app
-// once the new chitti-medupi/backend service is deployed.
+// API base — chitti-medupi-api on Railway (LOCKED 2026-05-24).
+// Previously defaulted to chitti-shares-api back when MedUPI was a
+// stub inside the shares backend. The full chitti-medupi/backend is
+// now deployed at chitti-medupi-api-production.up.railway.app —
+// every scan / search / wallet / reminder / health-file route lives
+// there. Old localStorage overrides still respected per-device for
+// dev rigs (?api=… also honored via the explicit query param).
 // ═══════════════════════════════════════════════════════════
 const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-shares-api-production.up.railway.app'; }
-  catch(e){ return 'https://chitti-shares-api-production.up.railway.app'; }
+  // 2026-05-24 migration — purge stale chitti-shares-api override that
+  // older devices may have cached when MedUPI was still a stub there.
+  // Without this, every scan on those devices would silently 404.
+  try {
+    const stale = localStorage.getItem('chitti_medupi_api_base');
+    if (stale && /chitti-shares-api/i.test(stale)) {
+      localStorage.removeItem('chitti_medupi_api_base');
+    }
+  } catch (e) {}
+  // Highest priority: ?api=... query string for one-shot dev overrides
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/, '');
+  } catch (e) {}
+  try { return localStorage.getItem('chitti_medupi_api_base') || 'https://chitti-medupi-api-production.up.railway.app'; }
+  catch(e){ return 'https://chitti-medupi-api-production.up.railway.app'; }
 })();
 function _userToken(){
   try {
@@ -1300,6 +1317,8 @@ async function searchMedicine(){
   const inp = document.getElementById('med-search');
   const q = (inp && inp.value || '').trim();
   if (!q) { sp(_chittiLang === 'hi' ? 'दवा का नाम लिखें' : 'Type a medicine name first'); return; }
+  // Ensure the user is on the scan tab so they see the result render.
+  try { if (typeof showTab === 'function') showTab('scan'); } catch (e) {}
   _showScanLoading(_chittiLang === 'hi' ? 'खोज रहा हूँ…' : 'Searching…');
   try {
     // POST /scan with JSON — same response shape as image path, now
@@ -1311,8 +1330,12 @@ async function searchMedicine(){
     if (loc) { body.lat = loc.lat; body.lng = loc.lng; }
     const data = await apiPostJson('/api/medupi/scan', body);
     _renderScanResult(data);
+    // Scroll the result into view so the user actually sees it.
+    const r = document.getElementById('med-results');
+    if (r) setTimeout(() => r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   } catch (e) {
     _renderScanError(e.message || String(e));
+    console.warn('[medupi.scan] text search failed:', e);
   }
 }
 
@@ -1349,17 +1372,31 @@ function openImagePicker(){
 }
 async function onScanFileChosen(ev){
   const f = ev.target.files && ev.target.files[0];
-  if (!f) return;
-  if (f.size > 8 * 1024 * 1024) { _renderScanError('Image too large (max 8 MB)'); return; }
+  if (!f) {
+    // Older Safari + some Android pickers fire change with empty files
+    // when user cancels. Silent no-op is correct, but warn in console.
+    console.info('[medupi.scan] no file selected (user cancelled?)');
+    return;
+  }
+  // Ensure scan tab is active before any feedback paints — Sire's "frontend
+  // takes photo but nothing happens" was triggered by user being on a
+  // different tab when result rendered.
+  try { if (typeof showTab === 'function') showTab('scan'); } catch (e) {}
+  if (f.size > 8 * 1024 * 1024) { _renderScanError('Image too large (max 8 MB)'); ev.target.value = ''; return; }
   _showScanLoading(_chittiLang === 'hi' ? 'इमेज पढ़ रहा हूँ…' : 'Reading image…');
+  // Scroll the result region into view immediately so the user sees the
+  // loading spinner. Without this they might miss the result render.
+  const r = document.getElementById('med-results');
+  if (r) try { r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
   try {
     const fd = new FormData();
-    fd.append('image', f, f.name);
+    fd.append('image', f, f.name || 'capture.jpg');
     const loc = await _scanLocationOrNull();
     if (loc) { fd.append('lat', String(loc.lat)); fd.append('lng', String(loc.lng)); }
     const data = await apiPostForm('/api/medupi/scan', fd);
     _renderScanResult(data);
   } catch (e) {
+    console.warn('[medupi.scan] image upload failed:', e);
     _renderScanError(e.message || String(e));
   } finally {
     ev.target.value = '';   // allow re-uploading the same file
