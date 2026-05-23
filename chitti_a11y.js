@@ -49,6 +49,32 @@
   if (window.__chittiA11yLoaded) return;
   window.__chittiA11yLoaded = true;
 
+  // ── Bottom-nav substrate auto-loader (Sire 2026-05-23 Priority-2) ──
+  // Every page that loads chitti_a11y.js also gets the unified Bharat
+  // bottom nav (Vaani · Karo · Vault · Parivaar · Settings). One script
+  // injection, zero per-page edits. Opt-out per page via:
+  //   <meta name="chitti-bottom-nav" content="off">
+  // Skip-self-check: if a page already has a <script src="chitti_bottom_nav.js">
+  // tag, don't double-inject.
+  (function injectBottomNav() {
+    try {
+      if (document.querySelector('script[src*="chitti_bottom_nav.js"]')) return;
+      // Resolve relative to this file's <script> src so it works whether
+      // the page lives at /, /chitti_X.html, or under a sub-path.
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_bottom_nav.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip — non-blocking */ }
+  })();
+
   // RTL languages — match chitti_lang.js convention.
   var RTL_LANGS = { ur: 1, ks: 1, sd: 1 };
 
