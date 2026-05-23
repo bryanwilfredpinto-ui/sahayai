@@ -1,14 +1,15 @@
 """
 main.py — Flask entrypoint for chitti-news-ai-api.
 
-Boot order (runs once per gunicorn worker on import):
-  1. ensure_schema()                — CREATE TABLE IF NOT EXISTS
-  2. seed_sources_if_empty()        — loads data/sources.json on first boot
-  3. scheduler.start()              — APScheduler (RSS poll, discovery, trust)
+Boot order:
+  1. ensure_schema() — CREATE TABLE IF NOT EXISTS (articles, sources)
+  2. upsert_sources() — sync sources.json → DB on every boot. Idempotent.
+     Adds new sources, updates url/tab/is_bharat/active for existing ones,
+     never deletes (so historical articles keep their source_id).
+  3. scheduler.start() — APScheduler RSS poll every RSS_POLL_MINUTES (default 120 = 2 h)
 
-Entrypoint: `gunicorn main:app --bind 0.0.0.0:$PORT`
-
-Self-pinged by chitti-founder every 4 minutes per SAHAYAI_MASTER.md §2e.
+Sire-locked architecture 2026-05-23: discard all prior trust/discovery/scoring/
+daily-tip machinery — chitti-news-ai is "real AI news + one-tap Chitti explains."
 """
 from __future__ import annotations
 
@@ -39,30 +40,48 @@ logging.basicConfig(
 log = logging.getLogger("main")
 
 
-def _seed_sources_if_empty() -> int:
+def _upsert_sources() -> dict:
+    """Sync data/sources.json into the Source table on every boot.
+    Adds new rows + updates url/tab/is_bharat/active/reason on existing rows
+    (matched by name). Never deletes — historical articles keep their FK."""
     seed_path = Path(__file__).parent / "data" / "sources.json"
     if not seed_path.exists():
         log.warning("sources seed file missing at %s", seed_path)
-        return 0
+        return {"inserted": 0, "updated": 0}
+    rows = json.loads(seed_path.read_text(encoding="utf-8"))
+    inserted = updated = 0
     with SessionLocal() as s:
-        existing = s.query(Source).count()
-        if existing > 0:
-            return 0
-        rows = json.loads(seed_path.read_text(encoding="utf-8"))
         for r in rows:
-            s.add(Source(
-                name=r["name"],
-                url=r["url"],
-                kind=r.get("kind", "rss"),
-                category=r.get("category", "press"),
-                language=r.get("language", "en"),
-                active=bool(r.get("active_seed", True)),
-                trust_score=r.get("trust_score_seed", 0.0),
-                trust_band=r.get("trust_band_seed", "pending"),
-                reason_for_inclusion=r.get("reason_for_inclusion"),
-            ))
+            existing = s.query(Source).filter(Source.name == r["name"]).first()
+            if existing:
+                existing.url = r["url"]
+                existing.kind = r.get("kind", existing.kind)
+                existing.category = r.get("category", existing.category)
+                existing.language = r.get("language", existing.language)
+                existing.tab = r.get("tab", existing.tab)
+                existing.is_bharat = bool(r.get("is_bharat", existing.is_bharat))
+                existing.active = bool(r.get("active_seed", True))
+                existing.trust_score = r.get("trust_score_seed", existing.trust_score)
+                existing.trust_band = r.get("trust_band_seed", existing.trust_band)
+                existing.reason_for_inclusion = r.get("reason_for_inclusion", existing.reason_for_inclusion)
+                updated += 1
+            else:
+                s.add(Source(
+                    name=r["name"],
+                    url=r["url"],
+                    kind=r.get("kind", "rss"),
+                    category=r.get("category", "press"),
+                    language=r.get("language", "en"),
+                    tab=r.get("tab", "ai-news"),
+                    is_bharat=bool(r.get("is_bharat", False)),
+                    active=bool(r.get("active_seed", True)),
+                    trust_score=r.get("trust_score_seed", 0.0),
+                    trust_band=r.get("trust_band_seed", "pending"),
+                    reason_for_inclusion=r.get("reason_for_inclusion"),
+                ))
+                inserted += 1
         s.commit()
-        return len(rows)
+    return {"inserted": inserted, "updated": updated}
 
 
 def _bootstrap() -> None:
@@ -71,11 +90,10 @@ def _bootstrap() -> None:
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_schema skipped: %s", e)
     try:
-        n = _seed_sources_if_empty()
-        if n:
-            log.info("seeded %d sources from data/sources.json", n)
+        stats = _upsert_sources()
+        log.info("sources upserted: %s", stats)
     except Exception as e:  # noqa: BLE001
-        log.warning("source seed skipped: %s", e)
+        log.warning("source upsert skipped: %s", e)
     try:
         news_scheduler.start()
     except Exception as e:  # noqa: BLE001
@@ -104,6 +122,7 @@ def create_app() -> Flask:
     app.register_blueprint(news_ai_bp)
     app.register_blueprint(daily_tip_bp)
 
+    # Sahay AI shared quality framework — installed across every Chitti.
     try:
         from database import engine as _engine
         from lib.observability import Observability, install_request_timing
@@ -126,18 +145,14 @@ def create_app() -> Flask:
         with SessionLocal() as s:
             try:
                 sources_active = s.query(Source).filter(Source.active == True).count()  # noqa: E712
-                sources_pending = s.query(Source).filter(Source.trust_band == "pending").count()
             except Exception:
                 sources_active = 0
-                sources_pending = 0
         return jsonify({
             "ok": True,
-            "service": settings.service_name,
-            "version": settings.version,
+            "service": "chitti-news-ai-api",
             "chitti_slug": CHITTI_SLUG,
             "now_utc": datetime.utcnow().isoformat() + "Z",
             "sources_active": sources_active,
-            "sources_pending_verification": sources_pending,
             "scheduler_enabled": settings.scheduler_enabled,
             "rss_poll_minutes": settings.rss_poll_minutes,
         })
@@ -146,11 +161,25 @@ def create_app() -> Flask:
     def root():
         return jsonify({
             "ok": True,
-            "service": settings.service_name,
-            "tagline": "I am a tool tracker. Rankings are dynamic. Always check official sites.",
+            "service": "chitti-news-ai-api",
+            "tagline": "Real AI news. Chitti explains in your language. No spice. Sire-locked 2026-05-23.",
             "frontend": "https://sahayai.in/chitti_news_ai.html",
-            "spec": "https://github.com/sahayai/sahayai/blob/main/CHITTI_NEWS_AI_MASTER_SPEC.md",
         })
+
+    def _err(status, code):
+        def handler(e):
+            return jsonify({"error": code, "detail": str(getattr(e, "description", e))}), status
+        handler.__name__ = f"err_{status}"
+        return handler
+
+    app.register_error_handler(400, _err(400, "bad_request"))
+    app.register_error_handler(404, _err(404, "not_found"))
+    app.register_error_handler(405, _err(405, "method_not_allowed"))
+
+    @app.errorhandler(500)
+    def server_error(e):
+        log.exception("500: %s", e)
+        return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     return app
 
@@ -159,5 +188,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "8080"))
+    port = int(os.getenv("PORT", "8011"))
     app.run(host="0.0.0.0", port=port)

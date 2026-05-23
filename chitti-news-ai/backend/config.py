@@ -41,7 +41,7 @@ class Settings:
     backend_url: str = os.getenv("BACKEND_URL", "http://localhost:8080")
 
     scheduler_enabled: bool = _bool(os.getenv("SCHEDULER_ENABLED"), True)
-    rss_poll_minutes: int = int(os.getenv("RSS_POLL_MINUTES", "360"))
+    rss_poll_minutes: int = int(os.getenv("RSS_POLL_MINUTES", "120"))  # 2 h per Sire spec 2026-05-23
     trust_recompute_day: str = os.getenv("TRUST_RECOMPUTE_DAY", "sun")
     trust_recompute_hour_ist: int = int(os.getenv("TRUST_RECOMPUTE_HOUR_IST", "4"))
     daily_briefing_hour_ist: int = int(os.getenv("DAILY_BRIEFING_HOUR_IST", "7"))

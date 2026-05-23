@@ -1,174 +1,106 @@
 [
   {
-    "name": "OpenAI Blog",
-    "url": "https://openai.com/news/rss.xml",
-    "kind": "rss",
-    "category": "vendor",
-    "language": "en",
-    "trust_score_seed": 92,
-    "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Source of truth for OpenAI model / pricing / quota changes."
-  },
-  {
     "name": "Anthropic News",
     "url": "https://www.anthropic.com/news",
     "kind": "scrape",
-    "category": "vendor",
+    "category": "press",
     "language": "en",
+    "tab": "tools",
+    "is_bharat": false,
+    "active_seed": false,
     "trust_score_seed": 92,
     "trust_band_seed": "trusted",
-    "active_seed": false,
-    "reason_for_inclusion": "Source of truth for Claude. Public RSS retired by vendor; scrape adapter queued (TODO). Active=false until adapter ships — honest stub, not a fake fetch."
+    "reason_for_inclusion": "Source of truth for Claude. blog.anthropic.com/rss in Sire's spec is dead (DNS NX); www.anthropic.com/news is an HTML page (no RSS feed published). active=false until a scrape adapter ships — honest stub per SAHAYAI_MASTER §3."
   },
   {
-    "name": "Google AI Blog",
-    "url": "https://blog.google/technology/ai/rss/",
+    "name": "OpenAI News",
+    "url": "https://openai.com/news/rss.xml",
     "kind": "rss",
-    "category": "vendor",
+    "category": "press",
     "language": "en",
+    "tab": "tools",
+    "is_bharat": false,
+    "active_seed": true,
+    "trust_score_seed": 92,
+    "trust_band_seed": "trusted",
+    "reason_for_inclusion": "OpenAI moved /blog/rss → /news/rss.xml; this is the live feed."
+  },
+  {
+    "name": "Google DeepMind",
+    "url": "https://blog.google/technology/google-deepmind/rss/",
+    "kind": "rss",
+    "category": "press",
+    "language": "en",
+    "tab": "tools",
+    "is_bharat": false,
+    "active_seed": true,
     "trust_score_seed": 90,
     "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Google AI / Gemini announcements."
+    "reason_for_inclusion": "deepmind.google/blog/rss in Sire's spec is 404; blog.google/technology/google-deepmind/rss is the live Google-hosted feed."
   },
   {
-    "name": "DeepMind Blog",
-    "url": "https://deepmind.com/blog/feed/basic",
-    "kind": "rss",
-    "category": "vendor",
-    "language": "en",
-    "trust_score_seed": 92,
-    "trust_band_seed": "trusted",
-    "reason_for_inclusion": "DeepMind research releases."
-  },
-  {
-    "name": "Hugging Face Blog",
-    "url": "https://huggingface.co/blog/feed.xml",
-    "kind": "rss",
-    "category": "model_hub",
-    "language": "en",
-    "trust_score_seed": 88,
-    "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Open-model launches and library updates."
-  },
-  {
-    "name": "Meta AI Blog",
-    "url": "https://ai.meta.com/blog/",
+    "name": "Meta AI Research",
+    "url": "https://ai.meta.com/blog/rss",
     "kind": "scrape",
-    "category": "vendor",
+    "category": "press",
     "language": "en",
+    "tab": "tools",
+    "is_bharat": false,
+    "active_seed": false,
     "trust_score_seed": 88,
     "trust_band_seed": "trusted",
-    "active_seed": false,
-    "reason_for_inclusion": "Llama family + Meta AI. Public RSS feed not available; scrape adapter queued (TODO). Active=false until adapter ships."
-  },
-  {
-    "name": "Microsoft AI Blog",
-    "url": "https://blogs.microsoft.com/ai/feed",
-    "kind": "rss",
-    "category": "vendor",
-    "language": "en",
-    "trust_score_seed": 86,
-    "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Copilot family, Azure AI announcements."
-  },
-  {
-    "name": "NVIDIA Blog",
-    "url": "https://blogs.nvidia.com/feed",
-    "kind": "rss",
-    "category": "vendor",
-    "language": "en",
-    "trust_score_seed": 84,
-    "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Hardware + CUDA + NIM announcements (filter to AI tag)."
+    "reason_for_inclusion": "Meta retired AI-blog RSS; ai.meta.com/blog/rss is 404. No public RSS exists. active=false — honest stub per SAHAYAI_MASTER §3."
   },
   {
     "name": "TechCrunch AI",
-    "url": "https://techcrunch.com/tag/artificial-intelligence/feed",
+    "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
     "kind": "rss",
     "category": "press",
     "language": "en",
-    "trust_score_seed": 78,
-    "trust_band_seed": "acceptable",
-    "reason_for_inclusion": "Aggregated launch coverage; corroborate Tier-1 vendor claims."
-  },
-  {
-    "name": "The Gradient",
-    "url": "https://thegradient.pub/feed",
-    "kind": "rss",
-    "category": "press",
-    "language": "en",
-    "trust_score_seed": 86,
+    "tab": "ai-news",
+    "is_bharat": false,
+    "active_seed": true,
+    "trust_score_seed": 80,
     "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Quality long-form, low noise."
+    "reason_for_inclusion": "Tech press, US-centric, high volume. Sire spec entry — live."
   },
   {
-    "name": "MIT Technology Review — AI",
-    "url": "https://www.technologyreview.com/tag/artificial-intelligence/feed",
+    "name": "Analytics India Magazine",
+    "url": "https://analyticsindiamag.com/feed/",
     "kind": "rss",
     "category": "press",
     "language": "en",
-    "trust_score_seed": 88,
+    "tab": "bharat-ai",
+    "is_bharat": true,
+    "active_seed": true,
+    "trust_score_seed": 85,
     "trust_band_seed": "trusted",
-    "reason_for_inclusion": "Editorial rigour; long-form analysis."
+    "reason_for_inclusion": "analyticsindiamagazine.com (Sire spec) DNS resolves to nothing; analyticsindiamag.com is the live domain."
   },
   {
-    "name": "Hacker News (AI-filtered)",
-    "url": "https://news.ycombinator.com/rss",
+    "name": "YourStory AI",
+    "url": "https://yourstory.com/tag/artificial-intelligence/feed",
     "kind": "rss",
-    "category": "community",
+    "category": "press",
     "language": "en",
-    "trust_score_seed": 72,
-    "trust_band_seed": "acceptable",
-    "reason_for_inclusion": "Community signal — used as a velocity hint, not a source of truth."
+    "tab": "bharat-ai",
+    "is_bharat": true,
+    "active_seed": true,
+    "trust_score_seed": 80,
+    "trust_band_seed": "trusted",
+    "reason_for_inclusion": "Indian startup AI coverage. Sire spec entry — live."
   },
   {
-    "name": "Reddit — r/LocalLLaMA",
-    "url": "https://www.reddit.com/r/LocalLLaMA/.rss",
-    "kind": "rss",
-    "category": "community",
-    "language": "en",
-    "trust_score_seed": 70,
-    "trust_band_seed": "acceptable",
-    "reason_for_inclusion": "Open-model benchmarks + community wins."
-  },
-  {
-    "name": "Reddit — r/MachineLearning",
-    "url": "https://www.reddit.com/r/MachineLearning/.rss",
-    "kind": "rss",
-    "category": "community",
-    "language": "en",
-    "trust_score_seed": 72,
-    "trust_band_seed": "acceptable",
-    "reason_for_inclusion": "Research-leaning discussion; paper drops."
-  },
-  {
-    "name": "Reddit — r/ChatGPTPro",
-    "url": "https://www.reddit.com/r/ChatGPTPro/.rss",
-    "kind": "rss",
-    "category": "community",
-    "language": "en",
-    "trust_score_seed": 68,
-    "trust_band_seed": "questionable",
-    "reason_for_inclusion": "Pricing / quota change reports — corroborate before surfacing."
-  },
-  {
-    "name": "GitHub Trending — AI",
-    "url": "https://github.com/trending?since=daily",
+    "name": "NASSCOM",
+    "url": "https://nasscom.in/rss",
     "kind": "scrape",
-    "category": "community",
+    "category": "press",
     "language": "en",
-    "trust_score_seed": 75,
-    "trust_band_seed": "acceptable",
-    "reason_for_inclusion": "Daily community signal for new AI tools / libraries."
-  },
-  {
-    "name": "Hugging Face — new models",
-    "url": "https://huggingface.co/models?sort=created",
-    "kind": "scrape",
-    "category": "model_hub",
-    "language": "en",
-    "trust_score_seed": 82,
+    "tab": "bharat-ai",
+    "is_bharat": true,
+    "active_seed": false,
+    "trust_score_seed": 90,
     "trust_band_seed": "trusted",
-    "reason_for_inclusion": "New open-model releases — track by created date + downloads."
+    "reason_for_inclusion": "NASSCOM has no public RSS as of 2026-05-23 (nasscom.in/rss, /feed, blogs/rss.xml all 404). active=false — honest stub per SAHAYAI_MASTER §3."
   }
 ]
