@@ -86,7 +86,27 @@ def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
 def _resolve_url(raw: str) -> str:
     if raw.startswith("libsql://"):
         local = os.environ.get("LIBSQL_REPLICA_PATH", "/tmp/chitti_medupi.db")
-        _bootstrap_replica(raw, local)
+        # 2026-05-23 — Even with --workers 1 and a 1-hour bg-sync interval,
+        # SQLAlchemy writes against the local SQLite file were not visible
+        # to subsequent SELECTs in the same worker process. The
+        # libsql-experimental embedded-replica connection appears to hold
+        # the file in a state that interferes with concurrent sqlite3
+        # writes from Python's stdlib driver.
+        #
+        # Tactical bypass (Sire-acked path): skip the libsql client
+        # entirely. SQLAlchemy talks to a vanilla local SQLite file. Data
+        # is ephemeral across container restarts but works correctly for
+        # every read-after-write within a container's lifetime. Set
+        # LIBSQL_REPLICA=1 env var to re-enable the bootstrap when the
+        # proper libsql-client write-path migration is ready.
+        if os.environ.get("LIBSQL_REPLICA", "").strip() == "1":
+            _bootstrap_replica(raw, local)
+        else:
+            log.warning(
+                "libsql:// DATABASE_URL detected but replica bypass is ON. "
+                "Using vanilla sqlite:///%s; Turso sync is OFF. "
+                "Set env LIBSQL_REPLICA=1 to re-enable.", local
+            )
         return f"sqlite:///{local}"
     if raw.startswith("postgres://"):
         return raw.replace("postgres://", "postgresql://", 1)

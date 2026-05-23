@@ -176,14 +176,39 @@ The text path bumps `search_log.count` for the normalized query (drives the dail
 
 ---
 
-## 9. Gunicorn worker count — single worker on Railway (2026-05-23)
+## 9. Turso write-visibility — investigation + tactical bypass (2026-05-23)
 
-The [`backend/Procfile`](backend/Procfile) pins `--workers 1` on the chitti-medupi-api Railway service.
+### Symptom
 
-**Why one worker?** The libsql-experimental embedded replica's writes are local to the worker that did the INSERT. The 60-s bg-sync thread only PULLs from Turso — SQLAlchemy writes never get pushed up, so a second worker reading `/profiles?user_token=X` immediately after a first worker created the row sees `[]` (its libsql replica has not seen the row). This was the root cause of the Phase B curl-verification gap discovered 2026-05-23 (commits `d563825` … `29fc987`).
+POST `/api/health-file/profiles` returns `{ok:true, profile:{id:N}}` and the autoincrement counter climbs request-over-request (1→2→3…), but GET `/api/health-file/profiles?user_token=X` immediately afterwards returns `{"items":[],"ok":true}` — even in the same worker process.
 
-**Single worker deployed 2026-05-23 pending proper libsql client migration. Revisit when daily active users exceed 100** — at that point either:
-- Route every write through the libsql client connection (drop SQLAlchemy on these tables) so writes land in Turso before another worker pulls, **or**
-- Move chitti-medupi-api off the embedded-replica pattern (direct Hrana / Neon Postgres) — this would conflict with the §2 LOCKED Turso decision so requires Sire's review first.
+### Iterative diagnosis (commits 2026-05-23)
 
-The 1-hour bg-sync interval bump in `29fc987` was the prior tactical step; this Procfile change is the seam that actually unblocks every cross-request write-then-read flow today.
+1. `d563825` — exposed `exception_class` + `exception_message` in the 500 handler.
+2. `40150cd` — fixed `InvalidRequestError` from `s.refresh(p)` (Turso race) → `s.flush()` + client-stamped `created_at`.
+3. `48a1874` — fixed `ObjectDeletedError` from `expire_on_commit` by snapshotting attrs into a plain dict before `s.commit()`.
+4. `670c53f` — fixed `'NoneType'.id` from `scalars().all()` by returning the comprehension INSIDE the session block + None-filter.
+5. `29fc987` — extended bg-sync interval 60 s → 3600 s.
+6. `586adbc` / `7735869` — pinned Gunicorn `--workers 1` (had to update `railway.json` `deploy.startCommand`; Procfile was being ignored by Nixpacks).
+
+After all seven the symptom persists. POST then GET still doesn't roundtrip even with a single confirmed-live worker (verified by `pid` counter resetting to 1 after redeploy then climbing 1→2→3 within the new container).
+
+### Root cause (refined)
+
+The bug is **not** multi-worker. `libsql-experimental.connect()` opens the local SQLite file in a state that interferes with concurrent writes from Python's stdlib `sqlite3` driver (which SQLAlchemy uses). SQLAlchemy commits appear to succeed (`s.flush()` returns the autoincrement id) but the data is not durable to a subsequent `SELECT` from the same SQLAlchemy engine.
+
+### Tactical fix (deployed)
+
+[`backend/database.py`](backend/database.py) `_resolve_url` now defaults to **bypassing** the libsql replica when `DATABASE_URL` starts with `libsql://`. SQLAlchemy talks to a vanilla local SQLite file (no libsql wrapper). Re-enable the original behaviour by setting env `LIBSQL_REPLICA=1` on the Railway service.
+
+**Consequences:**
+
+- Reads-after-writes work correctly within a container's lifetime.
+- Data is **ephemeral across Railway container restarts** (`/tmp` is wiped per restart). Acceptable for the current Phase B testing window.
+- Turso is **not** receiving writes today. This contradicts the §2 LOCKED Turso decision in spirit — the table schemas live in Turso but the production write traffic doesn't reach it.
+
+### Proper fix (deferred — tracked here)
+
+Route every write through the libsql client connection so writes land in Turso before they're queried back. The libsql-experimental embedded replica's `.sync()` is a one-way pull; persistent writes require using the libsql connection object (not SQLAlchemy/sqlite3) for INSERT/UPDATE DML against the family-profile / health-document / vital / reminder tables.
+
+**Revisit when daily active users exceed 100** OR when any production data needs to survive a Railway redeploy — whichever comes first. `--workers 1` is also retained until the proper write path is in place (no concurrency upside while the DB layer is single-threaded by file lock anyway).
