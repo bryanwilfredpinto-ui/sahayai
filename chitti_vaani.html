@@ -7805,6 +7805,30 @@ window.addEventListener('DOMContentLoaded', () => {
   else { const btn = document.getElementById('em-toggle'); if (btn) btn.innerHTML = '🛡️ 24/7 monitor'; }
   refreshPartners();
   startEmergencyPoll();
+  // ── Hash-deep-link routing (Sire 2026-05-24 Gap-3) ──
+  // chitti_vaani.html#settings → switch to settings tab.
+  // chitti_vaani.html#talk / #act / #vault / #circle / #sos → matching tab.
+  // Falls back to native scrollIntoView if no tab handler matches.
+  try {
+    const rawHash = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+    const known = { settings:1, talk:1, act:1, vault:1, circle:1, sos:1 };
+    if (rawHash && known[rawHash]) {
+      setTimeout(() => { try { vaiSwitchTab(rawHash); } catch(e){} }, 300);
+    } else if (rawHash) {
+      setTimeout(() => {
+        const el = document.getElementById(rawHash);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    }
+    window.addEventListener('hashchange', () => {
+      const h = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+      if (h && known[h]) { try { vaiSwitchTab(h); } catch(e){} }
+      else if (h) {
+        const el = document.getElementById(h);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  } catch(e) {}
   // Pull a hand-off (e.g. from Scanner / UPI Guard) if present
   try {
     const h = sessionStorage.getItem('chitti_handoff_text');

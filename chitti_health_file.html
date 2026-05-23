@@ -293,7 +293,7 @@ body.kv-embedded > div[style*="linear-gradient(90deg,#0E2344"] > div:nth-child(2
   </div>
 
   <!-- Profile picker -->
-  <div class="profile-bar">
+  <div class="profile-bar" id="profile" data-anchor="parivaar">
     <label for="profile-select">Profile:</label>
     <select id="profile-select" onchange="onProfileChange()">
       <option value="">— loading —</option>
@@ -2160,6 +2160,37 @@ function hfApplyStrings(){
   document.documentElement.lang = lang;
 }
 
+/* ── Hash-deep-link routing (Sire 2026-05-24 Gap-3) ──
+ * #profile  / #family / #parivaar  → scroll to profile-bar
+ * #upload / #timeline / #reminders / #vitals / #insurance / #translate /
+ *   #share / #search                → flip to that tab + scroll
+ * Any other hash with a matching DOM id  → smooth scrollIntoView.
+*/
+function _hfRouteHash() {
+  try {
+    const h = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+    if (!h) return;
+    const familyHashes = { profile: 1, family: 1, parivaar: 1 };
+    if (familyHashes[h]) {
+      const el = document.getElementById('profile');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Brief visual highlight so the user sees what was opened.
+        el.style.outline = '2px solid var(--saffron)';
+        setTimeout(() => { el.style.outline = ''; }, 1500);
+      }
+      return;
+    }
+    const tabs = { upload:1, timeline:1, reminders:1, vitals:1, insurance:1, translate:1, share:1, search:1 };
+    if (tabs[h]) {
+      try { showTab(h); } catch (e) {}
+      return;
+    }
+    const el = document.getElementById(h);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {}
+}
+
 /* ── Boot ───────────────────────────────── */
 window.addEventListener('DOMContentLoaded', async () => {
   // Embed-mode chrome trim — page is in MedUPI's iframe wrapper.
@@ -2178,6 +2209,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // path inside pollDispatch surfaces in the banner sub-text.
   pollDispatch(false);
   setInterval(() => pollDispatch(false), HF_DISPATCH_POLL_MS);
+  // Hash routing — run AFTER initial render so the target is in the DOM.
+  setTimeout(_hfRouteHash, 400);
+  window.addEventListener('hashchange', _hfRouteHash);
 });
 window.addEventListener('chitti:langchange', () => { try { hfApplyStrings(); } catch(e){} });
 </script>
