@@ -110,7 +110,10 @@ def list_profiles(user_token: str) -> list[dict]:
         rows = s.execute(
             select(FamilyProfile).where(FamilyProfile.user_token == user_token).order_by(FamilyProfile.id.asc())
         ).scalars().all()
-    return [_profile_dict(p) for p in rows]
+        # Build dicts INSIDE the session — Turso embedded replica + SQLAlchemy
+        # expire_on_commit means detached attribute access can return None.
+        # Filter Nones defensively in case the sync wiped the row mid-read.
+        return [_profile_dict(p) for p in rows if p is not None]
 
 
 def create_profile(user_token: str, name: str, relation: str, dob: Optional[str] = None) -> dict:
@@ -522,7 +525,7 @@ def list_documents(user_token: str, profile_id: Optional[int] = None,
             stmt = stmt.where(HealthDocument.doc_type == doc_type)
         stmt = stmt.order_by(HealthDocument.created_at.desc()).limit(max(1, min(limit, 500)))
         rows = s.execute(stmt).scalars().all()
-    return [_doc_meta_dict(r) for r in rows]
+        return [_doc_meta_dict(r) for r in rows if r is not None]
 
 
 def get_document_meta(user_token: str, doc_id: str) -> dict:
@@ -608,7 +611,7 @@ def list_facts(user_token: str, profile_id: Optional[int] = None,
             stmt = stmt.where(or_(HealthFact.label.ilike(like), HealthFact.value.ilike(like), HealthFact.notes.ilike(like)))
         stmt = stmt.order_by(HealthFact.fact_date.desc().nullslast(), HealthFact.created_at.desc()).limit(max(1, min(limit, 500)))
         rows = s.execute(stmt).scalars().all()
-    return [_fact_dict(r) for r in rows]
+        return [_fact_dict(r) for r in rows if r is not None]
 
 
 def _fact_dict(r: HealthFact) -> dict:
@@ -658,7 +661,7 @@ def list_vitals(user_token: str, profile_id: int, kind: Optional[str] = None,
             stmt = stmt.where(HealthVital.kind == kind)
         stmt = stmt.order_by(HealthVital.reading_at.desc()).limit(max(1, min(limit, 500)))
         rows = s.execute(stmt).scalars().all()
-    return [_vital_dict(r) for r in rows]
+        return [_vital_dict(r) for r in rows if r is not None]
 
 
 def _vital_dict(r: HealthVital) -> dict:
@@ -696,7 +699,7 @@ def list_reminders(user_token: str, profile_id: Optional[int] = None,
             stmt = stmt.where(HealthReminder.profile_id == profile_id)
         stmt = stmt.order_by(HealthReminder.next_fire_at.asc()).limit(max(1, min(limit, 500)))
         rows = s.execute(stmt).scalars().all()
-    return [_reminder_dict(r) for r in rows]
+        return [_reminder_dict(r) for r in rows if r is not None]
 
 
 def create_reminder(*, user_token: str, profile_id: int, kind: str, label: str,
@@ -767,7 +770,7 @@ def list_insurance(user_token: str, profile_id: Optional[int] = None) -> list[di
         if profile_id is not None:
             stmt = stmt.where(InsurancePolicy.profile_id == profile_id)
         rows = s.execute(stmt.order_by(InsurancePolicy.due_date.asc().nullslast())).scalars().all()
-    return [_ins_dict(r) for r in rows]
+        return [_ins_dict(r) for r in rows if r is not None]
 
 
 def create_insurance(*, user_token: str, profile_id: int,

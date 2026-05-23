@@ -47,7 +47,10 @@ def list_profiles(db: Session, user_token: str) -> list[dict]:
         .order_by(FamilyProfile.created_at.asc())
         .all()
     )
-    return [_profile_dict(r) for r in rows]
+    # Defensive: Turso embedded replica can hand back None entries when
+    # the sync thread races a read. See list_profiles in
+    # health_file_service.py for the parallel fix.
+    return [_profile_dict(r) for r in rows if r is not None]
 
 
 def add_profile(
