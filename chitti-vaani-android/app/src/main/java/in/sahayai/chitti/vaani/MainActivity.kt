@@ -627,6 +627,34 @@ class ChittiNativeBridge(private val ctx: Context) {
         return "prompt_shown"
     }
 
+    /**
+     * Toggle WindowManager.LayoutParams.FLAG_SECURE on the host Activity
+     * so the screen contents are absent from screenshots / screen records /
+     * the recent-apps thumbnail. Chitti Vaani's Keys Vault calls
+     * setSecureFlag(true) the moment the vault unlocks and
+     * setSecureFlag(false) on lock — protecting the bare-eye-readable
+     * secrets surface from casual capture.
+     *
+     * FLAG_SECURE is an Android security primitive, not a guarantee
+     * against a rooted device or a screen-streaming malware. Documented
+     * honestly in the vault's threat-model section on the web tier.
+     *
+     * Returns "secure_on" / "secure_off" / "no_activity_context".
+     */
+    @JavascriptInterface
+    fun setSecureFlag(on: Boolean): String {
+        val act = ctx as? android.app.Activity ?: return "no_activity_context"
+        act.runOnUiThread {
+            if (on) {
+                act.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+            } else {
+                act.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        }
+        AuditLog.append(ctx, "setSecureFlag", if (on) "ON (Keys Vault open)" else "OFF (Keys Vault closed)")
+        return if (on) "secure_on" else "secure_off"
+    }
+
     @JavascriptInterface
     fun openWhatsApp(phoneE164: String, message: String): String {
         // Defence: still prefer wa.me deep-link — the AccessibilityService

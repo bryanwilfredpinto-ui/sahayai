@@ -724,6 +724,196 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
   </div>
 </div>
 
+<!-- ════════════ KEYS VAULT — hidden admin section, PIN-gated, AES-256-GCM ════════════
+     Tap the 🎙️ header logo 5 times within 2 s to open. Locked 2026-05-23.
+     Threat model surfaced inside the vault itself — this is the "3rd backup"
+     after 1Password + Google Keep, NOT primary security.
+-->
+<style>
+.kv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9700;display:none;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;color:#fff}
+.kv-overlay.open{display:flex}
+.kv-panel{background:#0E2344;border:2px solid #D4AF37;border-radius:14px;padding:20px;max-width:760px;width:100%;color:#fff}
+.kv-panel h2{font-size:18px;margin:0 0 8px;color:#D4AF37;font-weight:800}
+.kv-panel .sub{color:#cbd5e1;font-size:13px;margin-bottom:14px}
+.kv-row{display:flex;gap:8px;align-items:center;padding:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-bottom:6px;flex-wrap:wrap}
+.kv-row .name{font-weight:700;color:#fbbf24;min-width:200px;flex:1}
+.kv-row .val{font-family:monospace;font-size:12.5px;color:#e2e8f0;flex:2;min-width:200px;word-break:break-all;background:rgba(0,0,0,.30);padding:6px 8px;border-radius:6px}
+.kv-row .actions{display:flex;gap:6px}
+.kv-btn{padding:7px 12px;border:0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.kv-btn.primary{background:#D4AF37;color:#0E2344}
+.kv-btn.green{background:#16a34a;color:#fff}
+.kv-btn.danger{background:#dc2626;color:#fff}
+.kv-btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.30)}
+.kv-btn.tiny{padding:5px 10px;font-size:12px}
+.kv-input{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,.20);border-radius:8px;background:rgba(0,0,0,.30);color:#fff;font-family:inherit;font-size:14px}
+.kv-input::placeholder{color:#94a3b8}
+.kv-field{margin:8px 0}
+.kv-field label{display:block;font-size:12.5px;color:#cbd5e1;margin-bottom:4px;font-weight:700}
+.kv-err{background:rgba(220,38,38,.20);border:1px solid #dc2626;color:#fecaca;padding:8px 10px;border-radius:8px;font-size:13px;margin:8px 0}
+.kv-ok{background:rgba(22,163,74,.18);border:1px solid #16a34a;color:#bbf7d0;padding:8px 10px;border-radius:8px;font-size:13px;margin:8px 0}
+.kv-warn{background:rgba(212,175,55,.16);border:1px solid #D4AF37;color:#fef3c7;padding:10px 12px;border-radius:8px;font-size:12.5px;margin:8px 0;line-height:1.5}
+.kv-tab-bar{display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,.10);margin:12px 0}
+.kv-tab-bar button{background:transparent;color:#cbd5e1;border:0;padding:8px 12px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border-bottom:2px solid transparent}
+.kv-tab-bar button.active{color:#D4AF37;border-bottom-color:#D4AF37}
+.kv-section{display:none}
+.kv-section.active{display:block}
+.kv-tm{background:rgba(0,0,0,.30);border:1px dashed rgba(255,255,255,.15);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55;color:#cbd5e1;margin-top:10px}
+.kv-tm b{color:#fbbf24}
+</style>
+<div id="kv-overlay" class="kv-overlay" role="dialog" aria-modal="true" aria-labelledby="kv-title">
+  <div class="kv-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <h2 id="kv-title">🔐 Keys Vault — 3rd backup</h2>
+      <div style="font-size:11px;color:#94a3b8">After 1Password + Google Keep · AES-256-GCM · localStorage only · never sent to any server</div>
+      <button class="kv-btn ghost" onclick="kvClose('manual')">✕ Close</button>
+    </div>
+
+    <!-- SECTION: First-time passphrase setup -->
+    <div id="kv-setup" class="kv-section">
+      <div class="sub">First time — set a master <b>passphrase</b> (≥8 characters; longer is better). You'll need this passphrase every time you open the vault. <b>It is not stored anywhere</b> — losing it = losing every key in the vault.</div>
+      <div class="kv-warn"><b>Pick a strong passphrase.</b> A 4-digit PIN is brute-forceable in hours even with AES-256. Use a sentence with mixed case, numbers, symbols — e.g. <code>Bharat-AI-2026-loves-chitti!</code></div>
+      <div class="kv-field">
+        <label>Master passphrase</label>
+        <input type="password" id="kv-pp1" class="kv-input" autocomplete="new-password" placeholder="At least 8 characters">
+      </div>
+      <div class="kv-field">
+        <label>Confirm passphrase</label>
+        <input type="password" id="kv-pp2" class="kv-input" autocomplete="new-password" placeholder="Type the same passphrase again">
+      </div>
+      <div id="kv-setup-msg"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="kv-btn primary" onclick="kvSetupSubmit()">🔐 Set passphrase + create vault</button>
+        <button class="kv-btn ghost" onclick="kvClose('cancel_setup')">Cancel</button>
+      </div>
+    </div>
+
+    <!-- SECTION: Unlock -->
+    <div id="kv-unlock" class="kv-section">
+      <div class="sub">Enter master passphrase to unlock. <span id="kv-attempts-left">3 attempts available.</span></div>
+      <div id="kv-lockout" class="kv-err" style="display:none"></div>
+      <div class="kv-field">
+        <label>Master passphrase</label>
+        <input type="password" id="kv-pp-unlock" class="kv-input" autocomplete="current-password" placeholder="Your passphrase" onkeydown="if(event.key==='Enter')kvUnlockSubmit()">
+      </div>
+      <div id="kv-unlock-msg"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="kv-btn primary" onclick="kvUnlockSubmit()">🔓 Unlock</button>
+        <button class="kv-btn ghost" onclick="kvClose('cancel_unlock')">Cancel</button>
+        <span style="flex:1"></span>
+        <button class="kv-btn danger tiny" onclick="kvNukeVault()" title="Wipe the encrypted vault from this device (irreversible)">🗑 Wipe vault</button>
+      </div>
+    </div>
+
+    <!-- SECTION: Vault unlocked -->
+    <div id="kv-unlocked" class="kv-section">
+      <div class="kv-tab-bar">
+        <button id="kv-tab-keys"  class="active" onclick="kvShowTab('keys')">🔑 Keys</button>
+        <button id="kv-tab-add"   onclick="kvShowTab('add')">➕ Add</button>
+        <button id="kv-tab-eximp" onclick="kvShowTab('eximp')">📤 Export / Import</button>
+        <button id="kv-tab-tm"    onclick="kvShowTab('tm')">⚠️ Threat model</button>
+        <span style="flex:1"></span>
+        <button class="kv-btn ghost tiny" onclick="kvLockNow()">🔒 Lock now</button>
+      </div>
+      <div id="kv-autolock-note" style="font-size:11px;color:#94a3b8;margin-bottom:6px"></div>
+
+      <!-- KEYS list -->
+      <div id="kv-tabpanel-keys" class="kv-section active">
+        <div id="kv-list"><div class="sub">No keys yet — switch to "➕ Add".</div></div>
+      </div>
+
+      <!-- ADD / EDIT -->
+      <div id="kv-tabpanel-add" class="kv-section">
+        <div class="kv-field">
+          <label>Key name</label>
+          <select id="kv-add-preset" class="kv-input" onchange="kvAddPresetChange()">
+            <option value="">— pick a preset or type a custom name —</option>
+            <option>HEALTH_FILE_PEPPER</option>
+            <option>HEALTH_FILE_USER_TOKEN_PEPPER</option>
+            <option>KEYSTORE_PASSWORD</option>
+            <option>KEY_PASSWORD</option>
+            <option>KEY_ALIAS</option>
+            <option>RAILWAY_EMAIL</option>
+            <option>RAILWAY_PASSWORD</option>
+            <option>GITHUB_EMAIL</option>
+            <option>GITHUB_PASSWORD</option>
+            <option>NEON_DB_CONNECTION_STRING</option>
+            <option>GOOGLE_CLIENT_ID</option>
+            <option>GOOGLE_CLIENT_SECRET</option>
+            <option>DEEPSEEK_API_KEY</option>
+            <option>VAULT_PEPPER</option>
+            <option>USER_TOKEN_PEPPER</option>
+            <option>CHITTI_VAANI_CHANNEL_PEPPER</option>
+            <option>MSG91_AUTH_KEY</option>
+            <option>TWILIO_ACCOUNT_SID</option>
+            <option>TWILIO_AUTH_TOKEN</option>
+            <option>WHATSAPP_BUSINESS_TOKEN</option>
+            <option>CUSTOM">— custom name —</option>
+          </select>
+          <input type="text" id="kv-add-name" class="kv-input" placeholder="or type a custom key name" style="margin-top:6px">
+        </div>
+        <div class="kv-field">
+          <label>Value (the secret)</label>
+          <textarea id="kv-add-value" class="kv-input" placeholder="Paste the secret here. Multi-line OK (Neon connection strings, certs)" rows="5"></textarea>
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">⚠️ The value is encrypted before it touches localStorage. The plaintext exists in this textarea only while you type it.</div>
+        </div>
+        <div class="kv-field">
+          <label>Note (optional)</label>
+          <input type="text" id="kv-add-note" class="kv-input" placeholder="e.g. set on Railway 2026-05-23 · rotate every 90 days">
+        </div>
+        <div id="kv-add-msg"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="kv-btn primary" onclick="kvAddSave()">💾 Save key (encrypted)</button>
+          <button class="kv-btn ghost" onclick="kvAddReset()">Reset</button>
+        </div>
+      </div>
+
+      <!-- EXPORT / IMPORT -->
+      <div id="kv-tabpanel-eximp" class="kv-section">
+        <div class="sub">Export packages the entire encrypted blob as a base64 string. <b>Same passphrase still required</b> to import on another device.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="kv-btn primary" onclick="kvExport()">📤 Export encrypted backup</button>
+          <button class="kv-btn ghost" onclick="kvCopyExport()">📋 Copy to clipboard</button>
+        </div>
+        <textarea id="kv-export-out" class="kv-input" rows="6" placeholder="Encrypted backup will appear here…" readonly></textarea>
+
+        <div style="margin-top:16px">
+          <div class="sub">Paste an exported backup below to restore. The passphrase you used to export must match.</div>
+          <textarea id="kv-import-in" class="kv-input" rows="6" placeholder="Paste the base64 backup string here…"></textarea>
+          <div id="kv-eximp-msg"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <button class="kv-btn green" onclick="kvImport()">📥 Restore from backup</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- THREAT MODEL -->
+      <div id="kv-tabpanel-tm" class="kv-section">
+        <h2 style="font-size:15px">⚠️ What this vault DOES and DOES NOT protect against</h2>
+        <div class="kv-tm">
+          <p><b>WHAT IT PROTECTS</b></p>
+          <ul style="margin:6px 0 10px 18px">
+            <li>Device-loss + casual snooping. Someone who picks up your unlocked phone cannot read the secrets without the passphrase.</li>
+            <li>localStorage dump via DevTools. The values are AES-256-GCM ciphertext + a random salt + a random IV. PBKDF2-SHA256 600 000 iterations stretches the passphrase before key derivation.</li>
+            <li>Cross-site scripts in OTHER tabs. localStorage is per-origin; only sahayai.in can read it.</li>
+          </ul>
+          <p><b>WHAT IT DOES NOT PROTECT</b></p>
+          <ul style="margin:6px 0 10px 18px">
+            <li><b>Weak passphrase.</b> A 4-digit numeric PIN ≈ 10 000 combinations → brute-forced in minutes locally. Use a passphrase with mixed case + numbers + symbols, ≥12 chars.</li>
+            <li><b>XSS in sahayai.in.</b> If any third-party JS is ever loaded on this origin, it can read localStorage. Today we host no third-party JS; future code must keep it that way.</li>
+            <li><b>Malicious browser extension.</b> Extensions with "read on all sites" can dump localStorage. Use a clean browser profile for vault access.</li>
+            <li><b>3-strikes lockout is client-side.</b> An attacker with DevTools can clear the lock-until flag from localStorage and retry. It deters casual snoopers, not motivated attackers.</li>
+            <li><b>Screenshot block (FLAG_SECURE)</b> only works inside the Chitti Vaani Android APK. On the browser, the OS may screenshot — recommend using the APK on shared devices.</li>
+            <li><b>Rooted device / malware.</b> Any code with debugger access can dump memory while the vault is unlocked.</li>
+          </ul>
+          <p><b>WHY YOU STILL WANT THIS</b></p>
+          <p>It is the <b>3rd backup</b> after 1Password and Google Keep — defense in depth. If 1Password locks you out and Google Keep is unreachable, this is the third door home. Never make it the only door.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
@@ -798,7 +988,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <header role="banner">
   <div class="brand-row">
     <div style="display:flex;align-items:center">
-      <div class="bharat-logo" aria-hidden="true">🎙️</div>
+      <div class="bharat-logo" id="chitti-logo-tap-target" aria-hidden="true" title="Tap me" style="cursor:pointer">🎙️</div>
       <div>
         <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Vaani</span></div>
         <div class="tagline">Voice-first assistant for Bharat · Speak, listen, summarise.</div>
@@ -4694,6 +4884,515 @@ function chittiConfirmAndDo(question, onYes, opts){
 }
 
 /* ════════════════════════════════════════════════════════════════
+   KEYS VAULT — 3rd backup, hidden admin section, AES-256-GCM
+   ════════════════════════════════════════════════════════════════
+   Access pattern: tap the 🎙️ header logo 5 times within 2 seconds.
+   Crypto: Web Crypto API → PBKDF2-SHA256 (600 000 iterations, OWASP
+   2023 baseline) → AES-256-GCM (12-byte IV, 16-byte auth tag).
+   Persistence: ONE encrypted blob in localStorage (so the SHAPE of
+   the data is also encrypted, not just values). Keys: only the user
+   knows the passphrase — never stored anywhere.
+   Threat model: surfaced inside the vault's "⚠️ Threat model" tab —
+   read it before trusting this with your only copy of a key.
+*/
+
+const KV_STORAGE_KEY      = 'chitti_keys_vault_v1';
+const KV_ATTEMPTS_KEY     = 'chitti_keys_vault_attempts_v1';
+const KV_LOCK_UNTIL_KEY   = 'chitti_keys_vault_lock_until_v1';
+const KV_LAST_REMIND_KEY  = 'chitti_keys_vault_last_remind_v1';
+const KV_KDF_ITERATIONS   = 600000;   // OWASP 2023 baseline for PBKDF2-SHA256
+const KV_AUTOLOCK_MS      = 2 * 60 * 1000;
+const KV_LOCKOUT_MS       = 60 * 60 * 1000;
+const KV_REMINDER_DAYS    = 90;
+const KV_MIN_PASSPHRASE   = 8;
+
+let _kvUnlockedKey = null;        // CryptoKey held only in memory while unlocked
+let _kvEntries     = [];          // plaintext working copy while unlocked
+let _kvAutoLockTimer = null;
+let _kvSecureFlagOn = false;
+let _kvTapCount = 0;
+let _kvTapTimer = null;
+
+/* ── Web Crypto helpers ─────────────────────────────── */
+
+function _kvBytesToB64(bytes){
+  let s = ''; const a = new Uint8Array(bytes);
+  for (let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]);
+  return btoa(s);
+}
+function _kvB64ToBytes(b64){
+  const s = atob(b64); const a = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+  return a;
+}
+function _kvRandom(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+
+async function _kvDeriveKey(passphrase, salt){
+  const baseKey = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(passphrase),
+    {name:'PBKDF2'}, false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt: salt, iterations: KV_KDF_ITERATIONS, hash:'SHA-256'},
+    baseKey,
+    {name:'AES-GCM', length: 256},
+    false,
+    ['encrypt','decrypt']
+  );
+}
+
+async function _kvEncryptBlob(passphrase, plaintextStr){
+  if (!window.crypto || !crypto.subtle) throw new Error('Web Crypto API unavailable in this browser.');
+  const salt = _kvRandom(16);
+  const iv   = _kvRandom(12);
+  const key  = await _kvDeriveKey(passphrase, salt);
+  const ct   = await crypto.subtle.encrypt(
+    {name:'AES-GCM', iv: iv},
+    key,
+    new TextEncoder().encode(plaintextStr),
+  );
+  return { v: 1, salt: _kvBytesToB64(salt), iv: _kvBytesToB64(iv), ct: _kvBytesToB64(ct) };
+}
+
+async function _kvDecryptBlob(passphrase, blob){
+  if (!blob || blob.v !== 1) throw new Error('Unrecognised vault format.');
+  const salt = _kvB64ToBytes(blob.salt);
+  const iv   = _kvB64ToBytes(blob.iv);
+  const ct   = _kvB64ToBytes(blob.ct);
+  const key  = await _kvDeriveKey(passphrase, salt);
+  let pt;
+  try {
+    pt = await crypto.subtle.decrypt({name:'AES-GCM', iv: iv}, key, ct);
+  } catch (e) {
+    throw new Error('wrong_passphrase_or_tampered');
+  }
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+/* ── Vault state on disk ──────────────────────────────── */
+
+function _kvVaultBlob(){
+  try { return JSON.parse(localStorage.getItem(KV_STORAGE_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function _kvVaultExists(){ return !!_kvVaultBlob(); }
+function _kvLockUntil(){
+  try { return parseInt(localStorage.getItem(KV_LOCK_UNTIL_KEY) || '0', 10) || 0; }
+  catch(e){ return 0; }
+}
+function _kvAttempts(){
+  try { return parseInt(localStorage.getItem(KV_ATTEMPTS_KEY) || '0', 10) || 0; }
+  catch(e){ return 0; }
+}
+function _kvSetAttempts(n){ try { localStorage.setItem(KV_ATTEMPTS_KEY, String(n)); } catch(e){} }
+function _kvSetLockUntil(ts){ try { localStorage.setItem(KV_LOCK_UNTIL_KEY, String(ts)); } catch(e){} }
+
+/* ── Open / close / sections ──────────────────────────── */
+
+function kvOpen(reason){
+  const lockUntil = _kvLockUntil();
+  const overlay = document.getElementById('kv-overlay');
+  overlay.classList.add('open');
+  _kvSetSecureFlag(true);
+  if (lockUntil > Date.now()) {
+    _kvShowSection('unlock');
+    const mins = Math.ceil((lockUntil - Date.now())/60000);
+    const div = document.getElementById('kv-lockout');
+    div.style.display = 'block';
+    div.textContent = '🔒 Vault is locked due to 3 wrong attempts. Try again in ~' + mins + ' min.';
+    document.getElementById('kv-pp-unlock').disabled = true;
+    return;
+  }
+  document.getElementById('kv-lockout').style.display = 'none';
+  document.getElementById('kv-pp-unlock').disabled = false;
+  if (!_kvVaultExists()) {
+    _kvShowSection('setup');
+    setTimeout(() => document.getElementById('kv-pp1').focus(), 100);
+  } else {
+    _kvShowSection('unlock');
+    const remaining = Math.max(0, 3 - _kvAttempts());
+    document.getElementById('kv-attempts-left').textContent = remaining + ' attempt(s) before lockout.';
+    setTimeout(() => document.getElementById('kv-pp-unlock').focus(), 100);
+  }
+}
+function kvClose(reason){
+  document.getElementById('kv-overlay').classList.remove('open');
+  _kvLockNow();
+  _kvSetSecureFlag(false);
+}
+function _kvShowSection(name){
+  ['setup','unlock','unlocked'].forEach(s => {
+    document.getElementById('kv-' + s).classList.toggle('active', s === name);
+  });
+}
+function kvShowTab(name){
+  ['keys','add','eximp','tm'].forEach(t => {
+    document.getElementById('kv-tab-' + t).classList.toggle('active', t === name);
+    document.getElementById('kv-tabpanel-' + t).classList.toggle('active', t === name);
+  });
+}
+function kvLockNow(){ _kvLockNow(); }
+function _kvLockNow(){
+  _kvUnlockedKey = null;
+  _kvEntries = [];
+  if (_kvAutoLockTimer) { clearTimeout(_kvAutoLockTimer); _kvAutoLockTimer = null; }
+  _kvShowSection(_kvVaultExists() ? 'unlock' : 'setup');
+  const inp = document.getElementById('kv-pp-unlock'); if (inp) inp.value = '';
+  document.getElementById('kv-unlock-msg').innerHTML = '';
+  document.getElementById('kv-list').innerHTML = '<div class="sub">Vault locked.</div>';
+}
+
+/* ── First-time passphrase setup ─────────────────────── */
+
+async function kvSetupSubmit(){
+  const a = document.getElementById('kv-pp1').value;
+  const b = document.getElementById('kv-pp2').value;
+  const msg = document.getElementById('kv-setup-msg');
+  msg.innerHTML = '';
+  if (a.length < KV_MIN_PASSPHRASE) {
+    msg.innerHTML = '<div class="kv-err">Passphrase must be at least ' + KV_MIN_PASSPHRASE + ' characters.</div>';
+    return;
+  }
+  if (a !== b) {
+    msg.innerHTML = '<div class="kv-err">Passphrases do not match.</div>';
+    return;
+  }
+  // Encrypt an empty initial vault.
+  try {
+    const blob = await _kvEncryptBlob(a, JSON.stringify({entries: [], created_at: new Date().toISOString()}));
+    localStorage.setItem(KV_STORAGE_KEY, JSON.stringify(blob));
+    msg.innerHTML = '<div class="kv-ok">✓ Vault created. Memorise your passphrase — it cannot be recovered.</div>';
+    document.getElementById('kv-pp1').value = ''; document.getElementById('kv-pp2').value = '';
+    // Move to unlock immediately so the user can verify by entering it.
+    setTimeout(() => { _kvShowSection('unlock'); document.getElementById('kv-pp-unlock').focus(); }, 1500);
+  } catch (e) {
+    msg.innerHTML = '<div class="kv-err">Could not create vault: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+/* ── Unlock flow ─────────────────────────────────────── */
+
+async function kvUnlockSubmit(){
+  const lockUntil = _kvLockUntil();
+  if (lockUntil > Date.now()) {
+    document.getElementById('kv-unlock-msg').innerHTML = '<div class="kv-err">Locked. Wait for lockout to expire.</div>';
+    return;
+  }
+  const pp = document.getElementById('kv-pp-unlock').value;
+  if (!pp) return;
+  const msg = document.getElementById('kv-unlock-msg');
+  msg.innerHTML = '<div class="sub">⏳ Deriving key + decrypting…</div>';
+  try {
+    const blob = _kvVaultBlob();
+    const data = await _kvDecryptBlob(pp, blob);
+    // Success — reset attempts, set in-memory state, switch to unlocked
+    _kvSetAttempts(0); _kvSetLockUntil(0);
+    _kvEntries = Array.isArray(data.entries) ? data.entries : [];
+    _kvUnlockedKey = pp;  // held only in memory until lock
+    document.getElementById('kv-pp-unlock').value = '';
+    msg.innerHTML = '';
+    // Mark backup as fresh — resets the 3-month re-check timer
+    try { localStorage.setItem(KV_LAST_REMIND_KEY, String(Date.now())); } catch(e){}
+    _kvShowSection('unlocked');
+    kvShowTab('keys');
+    _kvRenderList();
+    _kvBumpAutoLock();
+  } catch (e) {
+    if (e.message === 'wrong_passphrase_or_tampered') {
+      const att = _kvAttempts() + 1;
+      _kvSetAttempts(att);
+      if (att >= 3) {
+        _kvSetLockUntil(Date.now() + KV_LOCKOUT_MS);
+        document.getElementById('kv-lockout').style.display = 'block';
+        document.getElementById('kv-lockout').textContent = '🔒 Vault locked for 1 hour after 3 wrong attempts.';
+        msg.innerHTML = '';
+      } else {
+        msg.innerHTML = '<div class="kv-err">Wrong passphrase. ' + (3 - att) + ' attempt(s) before 1-hour lockout.</div>';
+      }
+    } else {
+      msg.innerHTML = '<div class="kv-err">Decrypt failed: ' + escapeHtml(e.message) + '</div>';
+    }
+  }
+}
+
+/* ── Auto-lock + activity tracking ───────────────────── */
+
+function _kvBumpAutoLock(){
+  if (_kvAutoLockTimer) clearTimeout(_kvAutoLockTimer);
+  document.getElementById('kv-autolock-note').textContent = '⏱ Auto-lock in 2 min of inactivity.';
+  _kvAutoLockTimer = setTimeout(() => {
+    _kvLockNow();
+    speakText(CURRENT_LANG==='en' ? 'Keys vault auto-locked after 2 minutes of inactivity.' : 'Keys vault 2 minute inactivity ke baad lock ho gaya.', CURRENT_LANG);
+  }, KV_AUTOLOCK_MS);
+}
+function _kvAttachActivity(){
+  ['click','keydown','input','touchstart'].forEach(ev => {
+    document.getElementById('kv-overlay').addEventListener(ev, () => {
+      if (_kvUnlockedKey) _kvBumpAutoLock();
+    });
+  });
+}
+
+/* ── List / Add / Edit / Delete ───────────────────────── */
+
+function _kvRenderList(){
+  const list = document.getElementById('kv-list');
+  if (!_kvEntries.length) {
+    list.innerHTML = '<div class="sub">No keys yet — switch to "➕ Add" tab.</div>';
+    return;
+  }
+  list.innerHTML = _kvEntries.map((e, i) => `
+    <div class="kv-row">
+      <div class="name">${escapeHtml(e.name)}</div>
+      <div class="val" id="kv-val-${i}">${escapeHtml(_kvMask(e.value))}</div>
+      <div class="actions">
+        <button class="kv-btn tiny ghost" onclick="kvRevealValue(${i})">👁 Reveal</button>
+        <button class="kv-btn tiny ghost" onclick="kvCopyValue(${i})">📋 Copy</button>
+        <button class="kv-btn tiny primary" onclick="kvEditEntry(${i})">✎ Edit</button>
+        <button class="kv-btn tiny danger" onclick="kvDeleteEntry(${i})">🗑 Delete</button>
+      </div>
+      ${e.note ? '<div style="flex-basis:100%;font-size:11.5px;color:#94a3b8;margin-top:2px">' + escapeHtml(e.note) + '</div>' : ''}
+    </div>
+  `).join('');
+}
+function _kvMask(v){
+  if (!v) return '(empty)';
+  if (v.length <= 8) return '••••' + v.slice(-2);
+  return '••••••••' + v.slice(-4);
+}
+function kvRevealValue(i){
+  const e = _kvEntries[i];
+  if (!e) return;
+  document.getElementById('kv-val-' + i).textContent = e.value;
+  _kvBumpAutoLock();
+}
+async function kvCopyValue(i){
+  const e = _kvEntries[i]; if (!e) return;
+  try { await navigator.clipboard.writeText(e.value); speakText(CURRENT_LANG==='en'?'Copied.':'Copy ho gaya.', CURRENT_LANG); }
+  catch (err) { alert('Copy failed: ' + err.message); }
+  _kvBumpAutoLock();
+}
+function kvEditEntry(i){
+  const e = _kvEntries[i]; if (!e) return;
+  kvShowTab('add');
+  document.getElementById('kv-add-name').value = e.name;
+  document.getElementById('kv-add-value').value = e.value;
+  document.getElementById('kv-add-note').value = e.note || '';
+  document.getElementById('kv-add-preset').value = '';
+  // Remember the index for save
+  document.getElementById('kv-add-msg').dataset.editIndex = String(i);
+  _kvBumpAutoLock();
+}
+function kvDeleteEntry(i){
+  const e = _kvEntries[i]; if (!e) return;
+  chittiConfirmAndDo(
+    (CURRENT_LANG==='en') ? ('Sire, shall I permanently delete the key "' + e.name + '" from the vault?')
+                          : ('Sire, kya main "' + e.name + '" key vault se hamesha ke liye delete karoon?'),
+    async () => {
+      _kvEntries.splice(i, 1);
+      await _kvPersist();
+      _kvRenderList();
+      speakText(CURRENT_LANG==='en'?'Key deleted.':'Key delete ho gayi.', CURRENT_LANG);
+    },
+  );
+  _kvBumpAutoLock();
+}
+function kvAddPresetChange(){
+  const sel = document.getElementById('kv-add-preset');
+  const v = sel.value;
+  if (v && v !== 'CUSTOM') {
+    document.getElementById('kv-add-name').value = v;
+  }
+  _kvBumpAutoLock();
+}
+function kvAddReset(){
+  document.getElementById('kv-add-name').value = '';
+  document.getElementById('kv-add-value').value = '';
+  document.getElementById('kv-add-note').value = '';
+  document.getElementById('kv-add-preset').value = '';
+  document.getElementById('kv-add-msg').innerHTML = '';
+  document.getElementById('kv-add-msg').dataset.editIndex = '';
+  _kvBumpAutoLock();
+}
+async function kvAddSave(){
+  const name  = (document.getElementById('kv-add-name').value||'').trim();
+  const value = document.getElementById('kv-add-value').value;
+  const note  = (document.getElementById('kv-add-note').value||'').trim();
+  const msgEl = document.getElementById('kv-add-msg');
+  msgEl.innerHTML = '';
+  if (!name)  { msgEl.innerHTML = '<div class="kv-err">Key name required.</div>'; return; }
+  if (!value) { msgEl.innerHTML = '<div class="kv-err">Value required.</div>'; return; }
+  const editIdx = parseInt(msgEl.dataset.editIndex || '-1', 10);
+  if (editIdx >= 0 && _kvEntries[editIdx]) {
+    _kvEntries[editIdx] = { name, value, note, updated_at: new Date().toISOString() };
+    msgEl.dataset.editIndex = '';
+  } else {
+    // De-dup by name — replace existing entry with same name
+    const existing = _kvEntries.findIndex(e => e.name === name);
+    if (existing >= 0) _kvEntries[existing] = { name, value, note, updated_at: new Date().toISOString() };
+    else _kvEntries.push({ name, value, note, created_at: new Date().toISOString() });
+  }
+  try {
+    await _kvPersist();
+    msgEl.innerHTML = '<div class="kv-ok">✓ Saved + encrypted to localStorage.</div>';
+    kvAddReset();
+    kvShowTab('keys');
+    _kvRenderList();
+  } catch (e) {
+    msgEl.innerHTML = '<div class="kv-err">Save failed: ' + escapeHtml(e.message) + '</div>';
+  }
+  _kvBumpAutoLock();
+}
+async function _kvPersist(){
+  if (!_kvUnlockedKey) throw new Error('vault_locked');
+  const blob = await _kvEncryptBlob(_kvUnlockedKey, JSON.stringify({
+    entries: _kvEntries, updated_at: new Date().toISOString(),
+  }));
+  localStorage.setItem(KV_STORAGE_KEY, JSON.stringify(blob));
+  try { localStorage.setItem(KV_LAST_REMIND_KEY, String(Date.now())); } catch(e){}
+}
+
+/* ── Export / Import ──────────────────────────────────── */
+
+function kvExport(){
+  const blob = _kvVaultBlob();
+  if (!blob) { document.getElementById('kv-eximp-msg').innerHTML = '<div class="kv-err">No vault to export yet.</div>'; return; }
+  // Wrap with a small envelope so we can version this format later.
+  const envelope = JSON.stringify({chitti_keys_vault: 1, exported_at: new Date().toISOString(), blob});
+  const b64 = btoa(unescape(encodeURIComponent(envelope)));
+  document.getElementById('kv-export-out').value = b64;
+  document.getElementById('kv-eximp-msg').innerHTML = '<div class="kv-ok">✓ Exported. Paste this into Google Keep / email to yourself. <b>Still requires your passphrase to decrypt.</b></div>';
+  _kvBumpAutoLock();
+}
+async function kvCopyExport(){
+  const t = document.getElementById('kv-export-out').value;
+  if (!t) { kvExport(); return; }
+  try { await navigator.clipboard.writeText(t); speakText(CURRENT_LANG==='en'?'Backup copied.':'Backup copy ho gaya.', CURRENT_LANG); }
+  catch (e) { alert('Copy failed: ' + e.message); }
+}
+async function kvImport(){
+  const raw = (document.getElementById('kv-import-in').value||'').trim();
+  const msg = document.getElementById('kv-eximp-msg');
+  msg.innerHTML = '';
+  if (!raw) { msg.innerHTML = '<div class="kv-err">Paste the backup string first.</div>'; return; }
+  let envelope;
+  try {
+    const decoded = decodeURIComponent(escape(atob(raw)));
+    envelope = JSON.parse(decoded);
+  } catch (e) {
+    msg.innerHTML = '<div class="kv-err">Backup string is not valid (could not decode).</div>'; return;
+  }
+  if (!envelope || envelope.chitti_keys_vault !== 1 || !envelope.blob) {
+    msg.innerHTML = '<div class="kv-err">Backup format unrecognised.</div>'; return;
+  }
+  // Confirm overwrite via Golden Rule
+  chittiConfirmAndDo(
+    (CURRENT_LANG==='en') ? 'Sire, shall I REPLACE the current vault with this imported backup? The current vault on this device will be overwritten.'
+                          : 'Sire, kya main current vault ko is backup se REPLACE karoon? Phone par jo abhi hai woh mit jaayega.',
+    async () => {
+      try {
+        // Try to decrypt with the current in-memory passphrase first.
+        await _kvDecryptBlob(_kvUnlockedKey, envelope.blob);
+        localStorage.setItem(KV_STORAGE_KEY, JSON.stringify(envelope.blob));
+        _kvSetAttempts(0); _kvSetLockUntil(0);
+        msg.innerHTML = '<div class="kv-ok">✓ Restored. Re-locking — unlock again to view.</div>';
+        setTimeout(() => _kvLockNow(), 1200);
+      } catch (e) {
+        msg.innerHTML = '<div class="kv-err">Could not decrypt backup with the current passphrase. If you used a different passphrase to export, lock the vault and import + decrypt fresh.</div>';
+      }
+    },
+  );
+}
+
+function kvNukeVault(){
+  chittiConfirmAndDo(
+    (CURRENT_LANG==='en') ? 'Sire, PERMANENTLY wipe the keys vault from this device? This cannot be undone unless you have an export backup.'
+                          : 'Sire, kya main keys vault ko is phone se hamesha ke liye mita doon? Backup nahi hai to wapas nahi aayega.',
+    () => {
+      try { localStorage.removeItem(KV_STORAGE_KEY); } catch(e){}
+      try { localStorage.removeItem(KV_ATTEMPTS_KEY); } catch(e){}
+      try { localStorage.removeItem(KV_LOCK_UNTIL_KEY); } catch(e){}
+      try { localStorage.removeItem(KV_LAST_REMIND_KEY); } catch(e){}
+      _kvLockNow();
+      kvClose('nuked');
+      speakText(CURRENT_LANG==='en'?'Vault wiped.':'Vault mita diya.', CURRENT_LANG);
+    },
+  );
+}
+
+/* ── Screenshot block (Android only) ──────────────────── */
+
+function _kvSetSecureFlag(on){
+  if (hasNativeBridge && hasNativeBridge() && window.ChittiNative && window.ChittiNative.setSecureFlag) {
+    try { window.ChittiNative.setSecureFlag(on); _kvSecureFlagOn = on; }
+    catch (e) {}
+  }
+}
+
+/* ── 5-tap-logo unlock pattern + voice intents ────────── */
+
+function _kvLogoTap(){
+  _kvTapCount += 1;
+  if (_kvTapTimer) clearTimeout(_kvTapTimer);
+  _kvTapTimer = setTimeout(() => { _kvTapCount = 0; }, 2000);
+  if (_kvTapCount >= 5) {
+    _kvTapCount = 0;
+    if (_kvTapTimer) { clearTimeout(_kvTapTimer); _kvTapTimer = null; }
+    kvOpen('5-tap');
+  }
+}
+
+/* ── 3-month re-check reminder ────────────────────────── */
+
+function _kvCheckBackupAgeReminder(){
+  if (!_kvVaultExists()) return;
+  let last = 0;
+  try { last = parseInt(localStorage.getItem(KV_LAST_REMIND_KEY) || '0', 10) || 0; } catch(e){}
+  const ageDays = (Date.now() - last) / (24*3600*1000);
+  if (ageDays > KV_REMINDER_DAYS) {
+    // Don't pop a modal — speak it once + update the timestamp so it
+    // doesn't nag every page load. Reset on next vault unlock anyway.
+    setTimeout(() => {
+      speakText(
+        (CURRENT_LANG === 'en')
+          ? "Sire, your system keys backup is more than 3 months old. Tap the microphone logo five times to open the Keys Vault and re-check."
+          : "Sire, aapke system keys ka backup 3 mahine purana ho gaya. Microphone logo ko 5 baar tap karke Keys Vault check kar lijiye.",
+        CURRENT_LANG,
+      );
+      try { localStorage.setItem(KV_LAST_REMIND_KEY, String(Date.now() - KV_REMINDER_DAYS*24*3600*1000 + 7*24*3600*1000)); } catch(e){}
+      // Bump by -83 days so it nags again in 7 days if still not opened.
+    }, 3500);
+  }
+}
+
+/* ── Voice intents (called by tryHandleVoiceIntent) ───── */
+
+function kvVoiceIntentOpen(){
+  chittiConfirmAndDo(
+    (CURRENT_LANG==='en') ? 'Sire, shall I open the Keys Vault? You will need your master passphrase.'
+                          : 'Sire, kya main Keys Vault kholun? Aapka master passphrase chahiye hoga.',
+    () => kvOpen('voice'),
+  );
+}
+function kvVoiceIntentExport(){
+  if (!_kvUnlockedKey) {
+    speakText(CURRENT_LANG==='en' ? 'Open the Keys Vault first by tapping the microphone logo five times.' : 'Pehle Keys Vault kholo — mic logo 5 baar tap karke.', CURRENT_LANG);
+    return;
+  }
+  kvShowTab('eximp');
+  kvExport();
+}
+
+/* ── Wire it up on DOM ready ──────────────────────────── */
+
+window.addEventListener('DOMContentLoaded', () => {
+  const logo = document.getElementById('chitti-logo-tap-target');
+  if (logo) logo.addEventListener('click', _kvLogoTap, { passive: true });
+  _kvAttachActivity();
+  _kvCheckBackupAgeReminder();
+});
+
+/* ════════════════════════════════════════════════════════════════
    GOLDEN RULE single-confirm router (course-correction 2026-05-23)
    ════════════════════════════════════════════════════════════════
    Replaces the prior two-step pattern (manual "Open"/"Send" button
@@ -5757,6 +6456,24 @@ function routeVoiceIntent(raw){
       (CURRENT_LANG==='en') ? 'Sire, shall I open the Health File upload screen?'
                             : 'Sire, kya main Health File upload screen kholun?',
       () => { window.location.href = 'chitti_health_file.html'; },
+    );
+    return true;
+  }
+
+  // ── Keys Vault — open / export / import (locked 2026-05-23) ───────
+  if (/^(?:keys\s+vault(?:\s+(?:kholo|open|show))?|open\s+keys\s+vault|keys?\s+ki\s+vault|secrets?\s+vault)$/i.test(r)) {
+    kvVoiceIntentOpen();
+    return true;
+  }
+  if (/^(?:keys?\s+export(?:\s+karo)?|export\s+keys?(?:\s+vault)?|backup\s+keys?)$/i.test(r)) {
+    kvVoiceIntentExport();
+    return true;
+  }
+  if (/^(?:keys?\s+import(?:\s+karo)?|import\s+keys?(?:\s+vault)?|restore\s+keys?)$/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG==='en') ? 'Sire, shall I open the Keys Vault import screen?'
+                            : 'Sire, kya main Keys Vault import screen kholun?',
+      () => { kvOpen('voice'); setTimeout(() => { if (_kvUnlockedKey) kvShowTab('eximp'); }, 200); },
     );
     return true;
   }
