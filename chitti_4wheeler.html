@@ -105,7 +105,6 @@
       </div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(mcSummary(), CURRENT_LANG)">🔊</button>
-        <button class="demo" onclick="mcDemoHome()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
         <span class="sep"></span>
         <button class="fb-pos" onclick="logProductAction('mc_home', 1)">👍</button>
         <button class="fb-neg" onclick="sdsToggleFb('mc-home-fb')">👎</button>
@@ -172,7 +171,6 @@
 
     <div class="sds-card-toolbar">
       <button onclick="speakText('Apni gaadi ka make, model, reg number aur saal Chitti ko bataiye', CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="mcDemoForm()">▶ डेमो भरो</button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_car_form', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-car-fb')">👎</button>
@@ -317,7 +315,6 @@
     </div>
     <div class="sds-card-toolbar">
       <button onclick="speakDocsAloud()">🔊 <span data-vai-i18n="ui.padho">पढ़ो</span></button>
-      <button class="demo" onclick="mcDemoDocs()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_docs', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-docs-fb')">👎</button>
@@ -345,7 +342,6 @@
     <div id="mc-log-list" style="margin-top:14px"></div>
     <div class="sds-card-toolbar">
       <button onclick="mcLogSpeak()">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="mcLogDemo()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_logbook', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-logbook-fb')">👎</button>
@@ -365,7 +361,6 @@
     <div class="sds-card-sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakAllAlerts()">🔊 <span data-vai-i18n="ui.sab_padho">सब पढ़ो</span></button>
-      <button class="demo" onclick="mcDemoAlerts()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_alerts', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-alerts-fb')">👎</button>
@@ -391,7 +386,6 @@
     <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakText('OBD2 scan. Error code likhiye, Chitti use plain Hindi mein samjhayegi.', CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="document.getElementById('mc-obd-code').value='P0420'; mcObdScan();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_obd', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-obd-fb')">👎</button>
@@ -467,7 +461,6 @@
     <div id="mc-fp-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor4W('fp.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="document.getElementById('mc-fp-what').value='Brake pad front replace'; document.getElementById('mc-fp-quote').value='3800'; mcFairPriceCheck();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_fairprice', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-fp-fb')">👎</button>
@@ -491,7 +484,6 @@
     <div id="mc-mech-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor4W('fm.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="document.getElementById('mc-pin').value='110001'; mcFindMechanic();">▶ डेमो Delhi</button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_mech_find', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-fm-fb')">👎</button>
@@ -587,6 +579,7 @@
 <script src="chitti_a11y.js"></script>
 <script src="chitti_mechanic_shared.js"></script>
 <script src="feedback-widget.js" data-page="chitti_mechanic_car"></script>
+<script src="chitti_features.js" defer></script>
 <script>
 const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
 const CAR_KEY = 'chitti_car_v1';

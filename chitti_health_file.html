@@ -40,6 +40,9 @@
 })();
 </script>
 <script src="strings.js" defer></script>
+<!-- Phase B-5 — Chart.js for vitals trend. Loaded from CDN; renderVitalsChart()
+     surfaces an honest empty when Chart is undefined (offline / blocked). -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 <style>
 :root{
   --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
@@ -224,9 +227,13 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
     <button onclick="showTab('reminders')" id="tab-reminders">⏰ Reminders</button>
     <button onclick="showTab('vitals')" id="tab-vitals">📈 Vitals</button>
     <button onclick="showTab('insurance')" id="tab-insurance">🛡️ Insurance</button>
+    <button onclick="showTab('translate')" id="tab-translate">🌐 Translate</button>
     <button onclick="showTab('share')" id="tab-share">📤 Share with doctor</button>
     <button onclick="showTab('search')" id="tab-search">🔎 Search</button>
   </div>
+
+  <!-- Phase B-6 quota banner — auto-populated by refreshQuotaBanner() -->
+  <div id="hf-quota-banner" style="display:none;margin:8px 0 12px;padding:10px 12px;border-radius:10px;border:1px dashed var(--gold);background:#fff8e1;font-size:13px;color:#78350f"></div>
 
   <!-- ── UPLOAD ── -->
   <div class="panel active" id="panel-upload">
@@ -236,17 +243,20 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
     <div class="field">
       <label for="up-type">What kind of document?</label>
       <select id="up-type" onchange="onUpTypeChange()">
-        <option value="prescription">💊 Prescription <!-- LIVE -->(auto-extract)</option>
+        <option value="prescription">💊 Prescription (auto-extract)</option>
         <option value="blood_report">🩸 Blood report (auto-extract)</option>
-        <option value="mri">🧠 MRI / CT / X-Ray scan (manual tag — Phase B)</option>
-        <option value="ultrasound">🔬 Ultrasound (manual tag — Phase B)</option>
-        <option value="ecg">❤️ ECG / Echo (manual tag — Phase B)</option>
-        <option value="discharge_summary">🏥 Discharge summary (manual tag — Phase B)</option>
-        <option value="insurance_health">🛡️ Health insurance policy (manual tag — Phase B)</option>
-        <option value="insurance_life">💞 Life insurance policy (manual tag — Phase B)</option>
-        <option value="vaccination">💉 Vaccination record (manual tag — Phase B)</option>
-        <option value="eye">👁️ Eye prescription (manual tag — Phase B)</option>
-        <option value="dental">🦷 Dental report (manual tag — Phase B)</option>
+        <option value="mri">🧠 MRI scan (auto-extract)</option>
+        <option value="ct_scan">🧠 CT scan (auto-extract)</option>
+        <option value="xray">🦴 X-Ray (auto-extract)</option>
+        <option value="ultrasound">🔬 Ultrasound (auto-extract)</option>
+        <option value="ecg">❤️ ECG (auto-extract)</option>
+        <option value="echo">💓 2D Echo / TMT (auto-extract)</option>
+        <option value="discharge_summary">🏥 Discharge summary (auto-extract)</option>
+        <option value="insurance_health">🛡️ Health insurance policy (auto-extract)</option>
+        <option value="insurance_life">💞 Life insurance policy (auto-extract)</option>
+        <option value="vaccination">💉 Vaccination record (auto-extract)</option>
+        <option value="eye">👁️ Eye / spectacle Rx (auto-extract)</option>
+        <option value="dental">🦷 Dental report (auto-extract)</option>
         <option value="other">📎 Other (manual tag)</option>
       </select>
     </div>
@@ -328,7 +338,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
   <!-- ── VITALS ── -->
   <div class="panel" id="panel-vitals">
     <h2>📈 Vitals log</h2>
-    <div class="desc">Voice-log BP / sugar / HbA1c / weight / SpO2 / pulse / temperature. Chitti flags out-of-range readings <b>RED</b>. Trend chart shows the last 30 / 90 / 365 days. Export a clean PDF for the next doctor visit (Phase B).</div>
+    <div class="desc">Voice-log BP / sugar / HbA1c / weight / SpO2 / pulse / temperature. Chitti flags out-of-range readings <b>RED</b>. Trend chart shows the last 30 / 90 / 365 days. Tap <b>📄 Doctor PDF</b> to download a clean A4 summary for the next appointment.</div>
 
     <div class="field-row">
       <div class="field">
@@ -382,8 +392,15 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
           <option value="pulse">Pulse</option>
         </select>
       </div>
-      <div class="vitals-chart"><canvas id="vitals-canvas"></canvas></div>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Simple inline chart. Chart.js + PDF export land in Phase B per spec.</div>
+      <div class="vitals-chart"><canvas id="vitals-canvas" height="260"></canvas></div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Chart.js-rendered trend with auto-range bands (BP 90–140 / sugar 70–126 / HbA1c 4–6.5 / weight free).</div>
+    </div>
+
+    <div style="margin-top:14px">
+      <h3 style="margin:6px 0">📄 Doctor's PDF — one-page A4 summary</h3>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Vitals · medicines · recent labs · diagnoses · follow-ups — formatted so the clinician can read it in 30 seconds at the door of the OPD. Chitti confirms before generating the PDF.</div>
+      <button class="btn primary" onclick="confirmDownloadDoctorPdf()">📄 Generate doctor PDF</button>
+      <span style="font-size:11.5px;color:var(--muted);margin-left:8px">A4 · Helvetica · no fonts to install on the doctor's phone.</span>
     </div>
 
     <div style="margin-top:14px">
@@ -395,14 +412,123 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
   <!-- ── INSURANCE ── -->
   <div class="panel" id="panel-insurance">
     <h2>🛡️ Insurance manager</h2>
-    <div class="desc">Health / life / vehicle policies in one place. Premium-due reminders auto-spawn at 30 / 7 / 1 day before due. Hospital-network check + "is X covered?" reasoning lands in <b>Phase B</b> (per spec — needs the per-policy LLM pass that Sire signed off as DeepSeek-only).</div>
+    <div class="desc">Health / life / vehicle policies in one place. Premium-due reminders auto-spawn at 30 / 7 / 1 day before due. <b>Ask Chitti</b> in your language — <i>"Kya wife ki surgery covered hai?"</i> — Chitti reads the policy and answers in plain language. Hospital-network check works on any policy with a parsed network list.</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
       <button class="btn primary" onclick="openInsuranceModal()">＋ Add policy</button>
       <button class="btn secondary" onclick="refreshInsurance()">🔄 Refresh</button>
     </div>
     <div id="insurance-list">
-      <div class="empty">No policies yet. Add your health / life / vehicle policies above so Chitti can remind you of premiums + answer "kya wife ki surgery covered hai" (Phase B).</div>
+      <div class="empty">No policies yet. Add your health / life / vehicle policies above so Chitti can remind you of premiums + answer "kya wife ki surgery covered hai".</div>
     </div>
+
+    <!-- Phase B-2 Ask Chitti panel -->
+    <div style="margin-top:14px;padding:14px;border:1px dashed var(--gold);border-radius:12px;background:#fff8e1">
+      <h3 style="margin:0 0 6px;color:var(--saffron)">🤖 Ask Chitti about your policy</h3>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Server-enforced disclaimer rides on every answer — Chitti is a reading helper, not your insurer's TPA.</div>
+      <div class="field">
+        <label for="ins-ask-policy">Which policy?</label>
+        <select id="ins-ask-policy"><option value="">— select policy —</option></select>
+      </div>
+      <div class="field">
+        <label for="ins-ask-q">Your question (Hindi / English / regional)</label>
+        <input type="text" id="ins-ask-q" placeholder="e.g. Kya wife ki gall-bladder surgery covered hai?">
+      </div>
+      <div class="field">
+        <label for="ins-ask-lang">Answer language</label>
+        <select id="ins-ask-lang">
+          <option value="hi" selected>हिन्दी</option>
+          <option value="en">English</option>
+          <option value="bn">বাংলা</option>
+          <option value="ta">தமிழ்</option>
+          <option value="te">తెలుగు</option>
+          <option value="mr">मराठी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="ml">മലയാളം</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="or">ଓଡ଼ିଆ</option>
+          <option value="as">অসমীয়া</option>
+          <option value="ur">اردو</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" onclick="confirmAskInsurance()">🤖 Ask Chitti</button>
+        <button class="btn secondary" onclick="voiceAskInsurance()">🎙️ Voice ask</button>
+      </div>
+      <div id="ins-ask-answer" class="chitti-response" data-chitti-response="insurance-ask" data-chitti-section="Insurance answer" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Phase B-3 Hospital network check -->
+    <div style="margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:12px">
+      <h3 style="margin:0 0 6px">🏥 Hospital network check</h3>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Honest <i>unknown</i> when the policy network list is empty — Chitti never coerces a yes/no.</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="ins-net-policy">Policy</label>
+          <select id="ins-net-policy"><option value="">— select —</option></select>
+        </div>
+        <div class="field">
+          <label for="ins-net-hosp">Hospital name</label>
+          <input type="text" id="ins-net-hosp" placeholder="e.g. Apollo Indiranagar Bangalore">
+        </div>
+      </div>
+      <button class="btn primary" onclick="confirmNetworkCheck()">🏥 Check network</button>
+      <div id="ins-net-answer" class="chitti-response" data-chitti-response="insurance-network" data-chitti-section="Network check answer" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- ── TRANSLATE ── -->
+  <div class="panel" id="panel-translate">
+    <h2>🌐 Translate</h2>
+    <div class="desc">Translate a health note, reminder, or prescription summary between Indian languages. Voice in via the green mic (uses Voice Factory STT in your language). Voice out via the 🔊 button on the answer card. <b>Numbers, doses, brand names stay verbatim — Chitti never localises ₹ or mg.</b></div>
+    <div class="field-row">
+      <div class="field">
+        <label for="tr-from">From language</label>
+        <select id="tr-from">
+          <option value="auto" selected>🔍 Auto-detect</option>
+          <option value="hi">हिन्दी</option>
+          <option value="en">English</option>
+          <option value="bn">বাংলা</option>
+          <option value="ta">தமிழ்</option>
+          <option value="te">తెలుగు</option>
+          <option value="mr">मराठी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="ml">മലയാളം</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="or">ଓଡ଼ିଆ</option>
+          <option value="as">অসমীয়া</option>
+          <option value="ur">اردو</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tr-to">To language</label>
+        <select id="tr-to">
+          <option value="hi">हिन्दी</option>
+          <option value="en" selected>English</option>
+          <option value="bn">বাংলা</option>
+          <option value="ta">தமிழ்</option>
+          <option value="te">తెలుగు</option>
+          <option value="mr">मराठी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="ml">മലയാളം</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="or">ଓଡ଼ିଆ</option>
+          <option value="as">অসমীয়া</option>
+          <option value="ur">اردو</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tr-text">Text to translate</label>
+      <textarea id="tr-text" rows="4" placeholder="Paste a reminder, prescription summary, or note. Up to 2000 characters."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" onclick="confirmTranslate()">🌐 Translate</button>
+      <button class="btn secondary" onclick="voiceTranslateInput()">🎙️ Voice in</button>
+    </div>
+    <div id="tr-answer" class="chitti-response" data-chitti-response="translate-answer" data-chitti-section="Translation" style="margin-top:12px"></div>
   </div>
 
   <!-- ── SHARE ── -->
@@ -726,7 +852,7 @@ function hfConfirmClose(why){
 }
 
 /* ── Tab navigation ───────────────────────────────── */
-const TABS = ['upload','timeline','reminders','vitals','insurance','share','search'];
+const TABS = ['upload','timeline','reminders','vitals','insurance','translate','share','search'];
 function showTab(name){
   TABS.forEach(t => {
     document.getElementById('panel-' + t).classList.toggle('active', t === name);
@@ -735,7 +861,8 @@ function showTab(name){
   if (name === 'timeline')  renderTimeline();
   if (name === 'reminders') refreshReminders();
   if (name === 'vitals')    { refreshVitals(); renderVitalsChart(); }
-  if (name === 'insurance') refreshInsurance();
+  if (name === 'insurance') { refreshInsurance(); _loadPolicyDropdowns(); }
+  if (name === 'translate') { /* nothing to load — fully client-driven UI */ }
   if (name === 'share')     refreshShareDocs();
   if (name === 'search')    renderSearch();
 }
@@ -764,6 +891,8 @@ async function loadProfiles(){
     CURRENT_PROFILE_ID = (stored && PROFILES.find(p => p.id === stored.id)) ? stored.id : PROFILES[0].id;
   }
   renderProfileDropdown();
+  // Phase B-6 — surface 500 MB quota usage whenever profiles refresh.
+  try { refreshQuotaBanner(); } catch(e) {}
 }
 function renderProfileDropdown(){
   const sel = document.getElementById('profile-select');
@@ -1090,6 +1219,18 @@ function voiceLogVital(){
   };
   r.start();
 }
+/* Phase B-5 — Chart.js trend renderer with healthy-range bands.
+   Falls back to a clean canvas message if Chart.js failed to load. */
+let _vitalsChartInst = null;
+const _RANGE_BANDS = {
+  bp:            { min: 90,  max: 140, label: 'BP (normal: 90/60 – 140/90)' },
+  sugar_fasting: { min: 70,  max: 126, label: 'Sugar fasting (70 – 126 mg/dL)' },
+  sugar_post:    { min: 70,  max: 200, label: 'Sugar post-meal (70 – 200 mg/dL)' },
+  hba1c:         { min: 4.0, max: 6.5, label: 'HbA1c (4 – 6.5 %)' },
+  weight:        { min: null,max: null,label: 'Weight (kg)' },
+  spo2:          { min: 95,  max: 100, label: 'SpO2 (95 – 100 %)' },
+  pulse:         { min: 50,  max: 100, label: 'Pulse (50 – 100 bpm)' },
+};
 async function renderVitalsChart(){
   if (!CURRENT_PROFILE_ID) return;
   const kind = document.getElementById('v-trend-kind').value;
@@ -1100,32 +1241,246 @@ async function renderVitalsChart(){
   let points = (j.items||[]).filter(v => v.kind === kind && (new Date(v.reading_at)).getTime() >= cutoff);
   points.sort((a,b) => (a.reading_at||'').localeCompare(b.reading_at||''));
   const canvas = document.getElementById('vitals-canvas');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width = canvas.offsetWidth; const H = canvas.height = canvas.offsetHeight;
-  ctx.clearRect(0,0,W,H);
-  if (points.length === 0) { ctx.fillStyle = '#9aa'; ctx.font='14px Inter,sans-serif'; ctx.fillText('No ' + kind + ' readings in last ' + days + ' days.', 10, H/2); return; }
-  // Find min/max
-  const ys = points.map(p => kind==='bp' ? Math.max(p.value, p.value2||0) : p.value);
-  const ys2= kind==='bp' ? points.map(p => p.value2||0) : null;
-  const ymin = Math.min(...ys, ...(ys2||[])) * 0.92;
-  const ymax = Math.max(...ys, ...(ys2||[])) * 1.08;
-  function plot(arr, color){
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
-    arr.forEach((y,i) => {
-      const x = 30 + i * ((W-40)/Math.max(arr.length-1,1));
-      const yy = H - 20 - ((y - ymin) / Math.max(ymax-ymin, 0.001)) * (H-40);
-      if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
-      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x,yy,3,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
-    });
-    ctx.stroke();
+  if (!canvas) return;
+
+  // Honest empty
+  if (points.length === 0) {
+    if (_vitalsChartInst) { _vitalsChartInst.destroy(); _vitalsChartInst = null; }
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth || 800; canvas.height = 260;
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    ctx.fillStyle = '#9ca3af'; ctx.font='14px Inter,sans-serif';
+    ctx.fillText('No ' + kind + ' readings in last ' + days + ' days.', 10, canvas.height/2);
+    return;
   }
-  // Axes labels
-  ctx.fillStyle = '#6b7280'; ctx.font='11px Inter,sans-serif';
-  ctx.fillText(ymax.toFixed(0), 4, 14);
-  ctx.fillText(ymin.toFixed(0), 4, H-6);
-  plot(ys, '#E86A17');
-  if (ys2) plot(ys2, '#0E2344');
+
+  // No Chart.js? Honest stub.
+  if (typeof Chart === 'undefined') {
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth || 800; canvas.height = 260;
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    ctx.fillStyle = '#dc2626'; ctx.font='13px Inter,sans-serif';
+    ctx.fillText('Chart.js failed to load — try refreshing this page.', 10, canvas.height/2);
+    return;
+  }
+
+  const labels = points.map(p => (p.reading_at||'').slice(0,10));
+  const band = _RANGE_BANDS[kind] || {min:null, max:null, label: kind};
+  const datasets = [];
+  if (kind === 'bp') {
+    datasets.push({
+      label: 'Systolic',
+      data: points.map(p => p.value),
+      borderColor: '#E86A17', backgroundColor: 'rgba(232,106,23,0.10)',
+      tension: 0.25, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2,
+    });
+    datasets.push({
+      label: 'Diastolic',
+      data: points.map(p => p.value2 || null),
+      borderColor: '#0E2344', backgroundColor: 'rgba(14,35,68,0.10)',
+      tension: 0.25, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2,
+    });
+  } else {
+    datasets.push({
+      label: kind,
+      data: points.map(p => p.value),
+      borderColor: '#E86A17', backgroundColor: 'rgba(232,106,23,0.18)',
+      fill: true, tension: 0.25, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2,
+    });
+  }
+
+  // Normal-range band via annotation-less approach: two horizontal lines.
+  // We draw them as dashed datasets so we don't need chartjs-plugin-annotation.
+  if (band.min != null) datasets.push({
+    label: 'Lower normal', data: labels.map(()=>band.min),
+    borderColor: 'rgba(22,163,74,0.45)', borderDash: [5,5], borderWidth: 1.5,
+    pointRadius: 0, fill: false, tension: 0,
+  });
+  if (band.max != null) datasets.push({
+    label: 'Upper normal', data: labels.map(()=>band.max),
+    borderColor: 'rgba(220,38,38,0.45)', borderDash: [5,5], borderWidth: 1.5,
+    pointRadius: 0, fill: false, tension: 0,
+  });
+
+  if (_vitalsChartInst) { _vitalsChartInst.destroy(); }
+  _vitalsChartInst = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { font: { size: 11 } } },
+        title:  { display: true, text: band.label, font: { size: 12, weight: '600' }, color: '#0E2344' },
+        tooltip: { mode: 'index', intersect: false },
+      },
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
+      scales: {
+        x: { ticks: { font: { size: 10 }, maxRotation: 50, minRotation: 30 } },
+        y: { beginAtZero: false, ticks: { font: { size: 10 } } },
+      },
+    },
+  });
+}
+
+/* Phase B-5 — Doctor PDF download with confirm-gate. */
+function confirmDownloadDoctorPdf(){
+  if (!CURRENT_PROFILE_ID) { alert('Pick a profile first.'); return; }
+  hfConfirmAndDo(
+    'Sire, kya Chitti is profile ka Doctor PDF banaaye aur download karwa de?',
+    () => {
+      const url = API_BASE + '/api/health-file/export/doctor-pdf?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID;
+      // Use a hidden link so the browser handles the download properly.
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      a.download = 'chitti-health-summary.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+  );
+}
+
+/* Phase B-2 — Insurance Ask Chitti */
+async function _loadPolicyDropdowns(){
+  if (!CURRENT_PROFILE_ID) return;
+  const r = await fetch(API_BASE + '/api/health-file/insurance?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID);
+  const j = await r.json();
+  const items = j.items || [];
+  const opts = '<option value="">— select policy —</option>' + items.map(p =>
+    `<option value="${p.id}">${escapeHtml(p.company)} ${escapeHtml(p.policy_kind)} — ${escapeHtml(p.policy_number||'')}</option>`
+  ).join('');
+  const a = document.getElementById('ins-ask-policy');
+  const b = document.getElementById('ins-net-policy');
+  if (a) a.innerHTML = opts;
+  if (b) b.innerHTML = opts;
+}
+function confirmAskInsurance(){
+  const pid = parseInt((document.getElementById('ins-ask-policy').value||'0'),10);
+  const q = (document.getElementById('ins-ask-q').value||'').trim();
+  const lang = document.getElementById('ins-ask-lang').value || 'hi';
+  if (!pid) { alert('Select a policy first.'); return; }
+  if (!q) { alert('Type or speak your question.'); return; }
+  hfConfirmAndDo(
+    'Sire, kya Chitti is policy par "' + q.slice(0,80) + '..." ka jawab nikaale?',
+    async () => {
+      const host = document.getElementById('ins-ask-answer');
+      host.innerHTML = '<div style="padding:10px;border:1px dashed var(--gold);border-radius:8px;background:#fff8e1">Chitti soch rahi hai…</div>';
+      try {
+        const r = await fetch(API_BASE + '/api/health-file/insurance/ask', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user_token: getUserToken(), policy_id: pid, question: q, lang}),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'unknown');
+        host.innerHTML =
+          '<div style="padding:12px;border:1px solid var(--saffron);border-radius:10px;background:#fff8e1;white-space:pre-wrap;font-size:14px;line-height:1.55">' + escapeHtml(j.answer) + '</div>' +
+          '<div style="margin-top:6px;padding:8px 10px;border-left:3px solid #d4af37;background:#fefce8;font-size:11.5px;color:#78350f">' + escapeHtml(j.disclaimer || '') + '</div>' +
+          '<div style="margin-top:6px"><button class="btn tiny secondary" onclick="(window.Chitti&&window.Chitti.a11y&&window.Chitti.a11y.speak)?window.Chitti.a11y.speak(' + JSON.stringify(j.answer).replace(/"/g,'&quot;') + ',&quot;' + lang + '&quot;):window.speechSynthesis.speak(new SpeechSynthesisUtterance(' + JSON.stringify(j.answer).replace(/"/g,'&quot;') + '))">🔊 ' + (lang==='hi'?'पढ़कर सुनाओ':'Read aloud') + '</button></div>';
+      } catch (e) {
+        host.innerHTML = '<div class="empty">Sorry, Chitti could not answer right now. Please try again.</div>';
+      }
+    }
+  );
+}
+function voiceAskInsurance(){
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Voice input not supported on this browser.'); return;
+  }
+  const Cls = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new Cls(); r.lang = 'hi-IN'; r.interimResults = false;
+  r.onresult = (ev) => {
+    const txt = (ev.results[0][0].transcript || '').trim();
+    document.getElementById('ins-ask-q').value = txt;
+  };
+  try { r.start(); } catch(e) {}
+}
+
+/* Phase B-3 — Hospital network check */
+function confirmNetworkCheck(){
+  const pid = parseInt((document.getElementById('ins-net-policy').value||'0'),10);
+  const h = (document.getElementById('ins-net-hosp').value||'').trim();
+  if (!pid || !h) { alert('Select a policy AND enter a hospital name.'); return; }
+  hfConfirmAndDo(
+    'Sire, kya Chitti ' + h + ' ko is policy ke network mein check kare?',
+    async () => {
+      const host = document.getElementById('ins-net-answer');
+      host.innerHTML = '<div style="padding:8px">Checking network list…</div>';
+      try {
+        const r = await fetch(API_BASE + '/api/health-file/insurance/network-check', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({user_token: getUserToken(), policy_id: pid, hospital_name: h}),
+        });
+        const j = await r.json();
+        const colour = j.in_network === true ? '#16a34a' : (j.in_network === false ? '#dc2626' : '#d4af37');
+        const ico = j.in_network === true ? '✅' : (j.in_network === false ? '❌' : '⚠️');
+        host.innerHTML = '<div style="padding:10px;border-left:4px solid ' + colour + ';background:#fff;border-radius:6px;font-size:14px">' + ico + ' ' + escapeHtml(j.message || '') + '</div>';
+      } catch (e) {
+        host.innerHTML = '<div class="empty">Chitti could not check right now. Please try again.</div>';
+      }
+    }
+  );
+}
+
+/* Translate */
+function confirmTranslate(){
+  const src = document.getElementById('tr-from').value || 'auto';
+  const tgt = document.getElementById('tr-to').value || 'hi';
+  const text = (document.getElementById('tr-text').value||'').trim();
+  if (!text) { alert('Type or speak something to translate.'); return; }
+  hfConfirmAndDo(
+    'Sire, kya Chitti is text ko ' + tgt + ' mein translate kare?',
+    async () => {
+      const host = document.getElementById('tr-answer');
+      host.innerHTML = '<div style="padding:8px">Translating…</div>';
+      try {
+        const r = await fetch(API_BASE + '/api/health-file/translate', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({user_token: getUserToken(), text, source_lang: src, target_lang: tgt}),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error('translate_failed');
+        host.innerHTML =
+          '<div style="padding:12px;border:1px solid var(--saffron);border-radius:10px;background:#fff8e1;white-space:pre-wrap;font-size:14px;line-height:1.55">' + escapeHtml(j.translated || '') + '</div>' +
+          '<div style="margin-top:6px"><button class="btn tiny secondary" onclick="(window.Chitti&&window.Chitti.a11y&&window.Chitti.a11y.speak)?window.Chitti.a11y.speak(' + JSON.stringify(j.translated).replace(/"/g,'&quot;') + ',&quot;' + tgt + '&quot;):window.speechSynthesis.speak(new SpeechSynthesisUtterance(' + JSON.stringify(j.translated).replace(/"/g,'&quot;') + '))">🔊 Read aloud</button></div>' +
+          (j._status !== 'ok' ? '<div style="margin-top:6px;font-size:11px;color:#dc2626">Status: ' + escapeHtml(j._status) + '</div>' : '');
+      } catch (e) {
+        host.innerHTML = '<div class="empty">Translation failed — please try again.</div>';
+      }
+    }
+  );
+}
+function voiceTranslateInput(){
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Voice input not supported on this browser.'); return;
+  }
+  const Cls = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new Cls();
+  const from = document.getElementById('tr-from').value || 'auto';
+  r.lang = (from === 'auto' ? 'hi-IN' : (from + '-IN'));
+  r.interimResults = false;
+  r.onresult = (ev) => {
+    const txt = (ev.results[0][0].transcript || '').trim();
+    document.getElementById('tr-text').value = txt;
+  };
+  try { r.start(); } catch(e) {}
+}
+
+/* Phase B-6 — Quota banner */
+async function refreshQuotaBanner(){
+  try {
+    const r = await fetch(API_BASE + '/api/health-file/quota?user_token=' + encodeURIComponent(getUserToken()));
+    const j = await r.json();
+    if (!j.ok) return;
+    const banner = document.getElementById('hf-quota-banner');
+    if (!banner) return;
+    const usedMb = (j.used_bytes / (1024*1024)).toFixed(1);
+    const quotaMb = (j.quota_bytes / (1024*1024)).toFixed(0);
+    const pct = j.used_pct || 0;
+    if (pct < 60) { banner.style.display = 'none'; return; }
+    const tone = pct >= 90 ? 'background:#fee2e2;color:#7f1d1d;border-color:#dc2626' : (pct >= 75 ? 'background:#fef3c7;color:#78350f' : '');
+    banner.setAttribute('style', 'display:block;margin:8px 0 12px;padding:10px 12px;border-radius:10px;border:1px dashed var(--gold);font-size:13px;' + tone);
+    banner.innerHTML = '📦 <b>' + usedMb + ' MB</b> used of ' + quotaMb + ' MB (' + pct.toFixed(0) + '%). ' +
+      (pct >= 90 ? '<b>Almost full</b> — delete old documents before uploading more.' :
+       (pct >= 75 ? 'Plenty of room, but consider deleting old documents.' : ''));
+  } catch (e) {}
 }
 
 /* ── Insurance ───────────────────────────────── */

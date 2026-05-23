@@ -401,4 +401,24 @@ def _savings_summary(primary: dict, alts: dict) -> dict:
             "speak_en": f"Save about {saved_pct} percent with same-composition alternative.",
             "speak_hi": f"Same composition wala alternative se taqreeban {saved_pct} percent bachat ho sakti hai.",
         }
-    return {"primary_price_inr": primary_price, "cheapest_inr": cheapest, "savings_percent": None}
+    # Honest stub — when MRP/cheapest is unavailable we don't synthesize a number.
+    # Per SAHAYAI_MASTER §3 #4 (honest stubs over fake demos), we surface
+    # `savings_status="price_data_updating"` so the frontend can render
+    # "Price data updating — savings unknown" instead of a blank "0%" or "null".
+    status = "price_data_updating" if not primary_price else "no_alternatives_found"
+    return {
+        "primary_price_inr": primary_price,
+        "cheapest_inr": cheapest,
+        "savings_percent": None,
+        "savings_status": status,
+        "speak_en": (
+            "Price data updating — savings unknown for now."
+            if status == "price_data_updating"
+            else "No same-composition alternative found yet."
+        ),
+        "speak_hi": (
+            "Price data abhi update ho raha hai — bachat ka anumaan baad mein."
+            if status == "price_data_updating"
+            else "Same-composition alternative abhi nahi mila."
+        ),
+    }

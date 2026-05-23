@@ -36,6 +36,71 @@ from services import health_file_extract as extractor
 log = logging.getLogger("health_file_service")
 
 
+# ── Phase B-6 quota constants ────────────────────────────────────
+#
+# 500 MB per device (per user_token) is the soft ceiling Sire locked
+# 2026-05-23. Documents are AES-encrypted but the ciphertext size is
+# ~= plaintext size (GCM is a stream cipher), so quota math is computed
+# against `blob_size` (the plaintext byte count we stamp at upload time).
+FAMILY_QUOTA_BYTES = 500 * 1024 * 1024  # 500 MB
+PER_DOC_QUOTA_BYTES = 15 * 1024 * 1024  # 15 MB — kept from Phase A
+
+
+class QuotaExceededError(ValueError):
+    """Raised by upload_document() when the family ceiling would be crossed.
+
+    Carries the bytes-used + incoming-size so the route can return an
+    HTTP 413 with enough context for the frontend to render a useful
+    'X used of Y · delete old docs to upload more' panel.
+    """
+    def __init__(self, used_bytes: int, incoming_bytes: int):
+        self.used_bytes = used_bytes
+        self.incoming_bytes = incoming_bytes
+        super().__init__(
+            f"family quota exceeded — {used_bytes} bytes used + {incoming_bytes} incoming "
+            f"would exceed {FAMILY_QUOTA_BYTES}"
+        )
+
+
+def family_quota_used_bytes(user_token: str) -> int:
+    """Sum of blob_size across all live (non-tombstoned) documents for this user."""
+    if not user_token:
+        return 0
+    u_hash = crypto.user_token_hash(user_token)
+    from sqlalchemy import func
+    with SessionLocal() as s:
+        row = s.execute(
+            select(func.coalesce(func.sum(HealthDocument.blob_size), 0))
+            .where(
+                and_(
+                    HealthDocument.user_token_hash == u_hash,
+                    HealthDocument.forget_at.is_(None),
+                )
+            )
+        ).scalar_one()
+    try:
+        return int(row or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def family_doc_count(user_token: str) -> int:
+    if not user_token:
+        return 0
+    u_hash = crypto.user_token_hash(user_token)
+    from sqlalchemy import func
+    with SessionLocal() as s:
+        row = s.execute(
+            select(func.count(HealthDocument.id)).where(
+                and_(
+                    HealthDocument.user_token_hash == u_hash,
+                    HealthDocument.forget_at.is_(None),
+                )
+            )
+        ).scalar_one()
+    return int(row or 0)
+
+
 # ── Family profile helpers ───────────────────────────────────────
 
 def list_profiles(user_token: str) -> list[dict]:
@@ -101,8 +166,14 @@ def upload_document(
         raise ValueError("user_token required")
     if not blob_bytes:
         raise ValueError("empty blob")
-    if len(blob_bytes) > 15 * 1024 * 1024:
-        raise ValueError("file_too_large (>15MB)")
+    if len(blob_bytes) > PER_DOC_QUOTA_BYTES:
+        raise ValueError(f"file_too_large (>{PER_DOC_QUOTA_BYTES // (1024*1024)}MB)")
+
+    # Phase B-6 — family quota check BEFORE encryption (saves a CPU-heavy
+    # GCM pass when the upload is going to be rejected anyway).
+    used = family_quota_used_bytes(user_token)
+    if used + len(blob_bytes) > FAMILY_QUOTA_BYTES:
+        raise QuotaExceededError(used_bytes=used, incoming_bytes=len(blob_bytes))
 
     u_hash = crypto.user_token_hash(user_token)
     with SessionLocal() as s:
@@ -213,16 +284,27 @@ def _summary_from_extracted(doc_type: str, extracted: dict) -> str:
 
 
 def _auto_create_reminders_from_extract(user_token: str, doc_id: str, extracted: dict) -> None:
-    """Phase A: medicine reminders default to 8am+8pm with the user able
-    to edit; follow-up reminders 9am on the followup_date. Both can be
-    deleted from the UI."""
+    """Phase A + B-1: auto-create reminders + InsurancePolicy rows from
+    every supported doc type. The user can disable/delete from the UI.
+
+    Doc-type → reminder mapping:
+      prescription / discharge_summary: medicines (RRULE DAILY) + followup
+      insurance_health / insurance_life: premium_due (advance 30/7/1)
+      mri / ct_scan / xray / ultrasound / ecg / echo: followup if recommended
+      vaccination: vaccine_booster for every `next_due` entry
+      eye / dental: followup_date / next_appointment
+    """
     u_hash = crypto.user_token_hash(user_token)
     with SessionLocal() as s:
         doc = s.execute(select(HealthDocument).where(HealthDocument.id == doc_id)).scalar_one_or_none()
         if not doc:
             return
-        # Medicine reminders
-        for med in (extracted.get("medicines") or []):
+
+        doc_type = (doc.doc_type or "other").lower()
+
+        # ── Medicines (prescription + discharge_summary) ────────────
+        med_list = list(extracted.get("medicines") or []) + list(extracted.get("discharge_medicines") or [])
+        for med in med_list:
             name = (med.get("name") or med.get("composition") or "").strip()
             if not name:
                 continue
@@ -239,7 +321,8 @@ def _auto_create_reminders_from_extract(user_token: str, doc_id: str, extracted:
                 next_fire_at=next_at,
                 channels="browser,whatsapp",
             ))
-        # Follow-up reminder
+
+        # ── Generic follow-up date (prescription + discharge_summary + eye) ──
         if extracted.get("followup_date"):
             try:
                 d = datetime.fromisoformat(extracted["followup_date"] + "T09:00:00")
@@ -254,7 +337,119 @@ def _auto_create_reminders_from_extract(user_token: str, doc_id: str, extracted:
                 ))
             except ValueError:
                 pass
+
+        # ── Insurance: auto-create InsurancePolicy + premium_due reminder ──
+        if doc_type in ("insurance_health", "insurance_life") and (
+            extracted.get("insurer_name") or extracted.get("policy_number")
+        ):
+            insurer = (extracted.get("insurer_name") or "Insurer")[:200]
+            policy_no = (extracted.get("policy_number") or "")[:80]
+            premium = _safe_float(extracted.get("premium_inr"))
+            due_iso = extracted.get("due_date") or None
+            existing = s.execute(select(InsurancePolicy).where(
+                and_(
+                    InsurancePolicy.user_token_hash == u_hash,
+                    InsurancePolicy.policy_number == policy_no,
+                    InsurancePolicy.forget_at.is_(None),
+                )
+            )).scalar_one_or_none() if policy_no else None
+            if existing is None:
+                pol = InsurancePolicy(
+                    user_token_hash=u_hash, profile_id=doc.profile_id,
+                    document_id=doc_id,
+                    policy_kind=("health" if doc_type == "insurance_health" else "life"),
+                    company=insurer, policy_number=policy_no,
+                    sum_assured=_safe_float(extracted.get("sum_assured_inr")),
+                    coverage_inr=_safe_float(extracted.get("coverage_inr")),
+                    premium_inr=premium,
+                    premium_mode=(extracted.get("premium_mode") or None),
+                    start_date=extracted.get("start_date") or None,
+                    due_date=due_iso,
+                    renewal_date=extracted.get("renewal_date") or None,
+                    maturity_date=extracted.get("maturity_date") or None,
+                    nominee=(extracted.get("nominee") or None),
+                    network_hospitals=json.dumps(extracted.get("network_hospitals") or []),
+                    exclusions=json.dumps(extracted.get("exclusions") or []),
+                    sub_limits=json.dumps(extracted.get("sub_limits") or {}),
+                    raw_summary=(extracted.get("raw_summary") or "")[:1000] or None,
+                )
+                s.add(pol)
+                if due_iso:
+                    try:
+                        d = datetime.fromisoformat(due_iso + "T09:00:00")
+                        s.add(HealthReminder(
+                            user_token_hash=u_hash, profile_id=doc.profile_id,
+                            kind="premium_due",
+                            label=f"{insurer} premium ₹{premium or '?'}"[:240],
+                            document_id=doc_id,
+                            rrule=None, next_fire_at=d,
+                            advance_alerts="30,7,1",
+                            channels="browser,whatsapp",
+                        ))
+                    except ValueError:
+                        pass
+
+        # ── Imaging / cardiac: follow-up if recommended ──────────────
+        if doc_type in ("mri", "ct_scan", "xray", "ultrasound", "ecg", "echo"):
+            recs = extracted.get("recommendations") or []
+            if recs:
+                # No date in radiology reports — 14-day default reminder so
+                # the family books the follow-up.
+                d = datetime.utcnow() + timedelta(days=14)
+                s.add(HealthReminder(
+                    user_token_hash=u_hash, profile_id=doc.profile_id,
+                    kind="followup",
+                    label=f"{doc_type.upper()} follow-up: {recs[0][:100]}"[:240],
+                    document_id=doc_id,
+                    rrule=None, next_fire_at=d,
+                    advance_alerts="7,1",
+                    channels="browser,whatsapp",
+                ))
+
+        # ── Vaccination: booster reminders for every next_due ────────
+        if doc_type == "vaccination":
+            for nd in (extracted.get("next_due") or []):
+                due = nd.get("due_date")
+                vac = (nd.get("vaccine") or "Next vaccine")[:200]
+                if not due: continue
+                try:
+                    d = datetime.fromisoformat(due + "T09:00:00")
+                    s.add(HealthReminder(
+                        user_token_hash=u_hash, profile_id=doc.profile_id,
+                        kind="vaccine_booster",
+                        label=f"Vaccine due: {vac}"[:240],
+                        document_id=doc_id,
+                        rrule=None, next_fire_at=d,
+                        advance_alerts="14,3,1",
+                        channels="browser,whatsapp",
+                    ))
+                except ValueError:
+                    pass
+
+        # ── Dental next_appointment ──────────────────────────────────
+        if doc_type == "dental" and extracted.get("next_appointment"):
+            try:
+                d = datetime.fromisoformat(extracted["next_appointment"] + "T10:00:00")
+                s.add(HealthReminder(
+                    user_token_hash=u_hash, profile_id=doc.profile_id,
+                    kind="dental_checkup",
+                    label="Dental appointment",
+                    document_id=doc_id,
+                    rrule=None, next_fire_at=d,
+                    advance_alerts="3,1",
+                    channels="browser,whatsapp",
+                ))
+            except ValueError:
+                pass
+
         s.commit()
+
+
+def _safe_float(v):
+    try:
+        return float(v) if v not in (None, "", "null") else None
+    except (TypeError, ValueError):
+        return None
 
 
 def _parse_freq_to_hours(freq: str) -> list[int] | None:

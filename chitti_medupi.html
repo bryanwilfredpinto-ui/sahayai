@@ -1068,6 +1068,9 @@ function _renderScanResult(data){
   const sv = data.savings_summary;
   if (sv && sv.savings_percent != null) {
     html += '<div class="chitti-response" data-chitti-response="medupi-savings" data-chitti-section="Estimated savings" style="margin-top:8px;padding:10px;border-radius:10px;background:rgba(232,106,23,.06);border:1px dashed var(--saffron);font-size:13px"><strong>💰 ' + (lang === 'hi' ? 'अनुमानित बचत' : 'Estimated savings') + ':</strong> ' + sv.savings_percent + '% — ' + _money(sv.primary_price_inr) + ' → ' + _money(sv.cheapest_inr) + '. ' + _esc(lang === 'hi' ? (sv.speak_hi || '') : (sv.speak_en || '')) + '</div>';
+  } else if (sv && sv.savings_status === 'price_data_updating') {
+    // Honest empty — no MRP available yet. Never render "null%" or "0%" silently.
+    html += '<div class="chitti-response" data-chitti-response="medupi-savings" data-chitti-section="Price data updating" style="margin-top:8px;padding:10px;border-radius:10px;background:#fef3c7;border:1px dashed #d4af37;font-size:13px;color:#78350f"><strong>⏳ ' + (lang === 'hi' ? 'कीमत अपडेट हो रही है' : 'Price data updating') + '</strong> — ' + _esc(lang === 'hi' ? (sv.speak_hi || 'बचत का अनुमान बाद में') : (sv.speak_en || 'Savings estimate will appear once price data lands.')) + '</div>';
   }
 
   // Disclaimer

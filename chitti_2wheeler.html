@@ -117,7 +117,6 @@
       </div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(mbSummary(), CURRENT_LANG)">🔊</button>
-        <button class="demo" onclick="mbDemoHome()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
         <span class="sep"></span>
         <button class="fb-pos" onclick="logProductAction('mb_home', 1)">👍</button>
         <button class="fb-neg" onclick="sdsToggleFb('mb-home-fb')">👎</button>
@@ -183,7 +182,6 @@
     <button class="sds-btn ghost block" style="margin-top:8px" onclick="mbAddByVoice()" data-vai-i18n="mb.form.voice">🎙️ बोलकर भरें</button>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor2W('mb.speak.form'), CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="mbDemoForm()">▶ डेमो भरो</button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_bike_form', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-bike-fb')">👎</button>
@@ -299,7 +297,6 @@
     </div>
     <div class="sds-card-toolbar">
       <button onclick="speakDocsAloud()">🔊 <span data-vai-i18n="ui.padho">पढ़ो</span></button>
-      <button class="demo" onclick="mbDemoDocs()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_docs', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-docs-fb')">👎</button>
@@ -327,7 +324,6 @@
     <div id="mb-log-list" style="margin-top:14px"></div>
     <div class="sds-card-toolbar">
       <button onclick="mbLogSpeak()">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="mbLogDemo()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_logbook', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-logbook-fb')">👎</button>
@@ -347,7 +343,6 @@
     <div class="sds-card-sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी — दिखाई न दे तब भी notification मिलेगी।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakAllAlerts()">🔊 <span data-vai-i18n="ui.sab_padho">सब पढ़ो</span></button>
-      <button class="demo" onclick="mbDemoAlerts()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_alerts', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-alerts-fb')">👎</button>
@@ -373,7 +368,6 @@
     <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor2W('mb.speak.obd'), CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="document.getElementById('mb-obd-code').value='P0420'; mbObdScan();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_obd', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-obd-fb')">👎</button>
@@ -449,7 +443,6 @@
     <div id="mb-fp-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor2W('fp.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="document.getElementById('mb-fp-what').value=strFor2W('fp.demo.what'); document.getElementById('mb-fp-quote').value='1800'; mbFairPriceCheck();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_fairprice', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-fp-fb')">👎</button>
@@ -473,7 +466,6 @@
     <div id="mb-mech-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
       <button onclick="speakText(strFor2W('fm.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
-      <button class="demo" onclick="document.getElementById('mb-pin').value='110001'; mbFindMechanic();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mb_mech_find', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mb-fm-fb')">👎</button>
@@ -608,6 +600,7 @@
 <script src="chitti_a11y.js"></script>
 <script src="chitti_mechanic_shared.js"></script>
 <script src="feedback-widget.js" data-page="chitti_mechanic_bike"></script>
+<script src="chitti_features.js" defer></script>
 <script>
 const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
 const BIKE_KEY = 'chitti_bike_v1';

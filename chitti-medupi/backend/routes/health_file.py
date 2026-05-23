@@ -31,6 +31,9 @@ from flask import Blueprint, abort, jsonify, request, send_file
 
 from services import health_file_service as svc
 from services import health_file_dispatch as dispatch_svc
+from services import health_file_insurance_reason as ins_reason
+from services import health_file_translate as translate_svc
+from services import health_file_doctor_pdf as doctor_pdf
 
 log = logging.getLogger("routes.health_file")
 
@@ -85,7 +88,11 @@ def docs_upload():
     """JSON body: { user_token, profile_id, doc_type, display_name,
         blob_b64, blob_mime, doc_date?, doctor_name?, hospital_name?,
         auto_extract? }
-    blob_b64 = base64-encoded bytes of the file (max 15MB decoded)."""
+    blob_b64 = base64-encoded bytes of the file (max 15MB decoded).
+
+    Phase B-6: family quota enforced before encryption — see
+    svc.upload_document → svc.check_family_quota.
+    """
     body = request.get_json(silent=True) or {}
     user_token = _user_token_or_400(body)
     blob_b64 = (body.get("blob_b64") or "").strip()
@@ -108,9 +115,33 @@ def docs_upload():
             hospital_name=(body.get("hospital_name") or None),
             auto_extract=bool(body.get("auto_extract", True)),
         )
+    except svc.QuotaExceededError as e:
+        # Honest 413 — surfaces the family quota state so the frontend
+        # can render "X MB used of 500 MB · delete old docs to upload more"
+        return jsonify({
+            "ok": False, "error": "quota_exceeded",
+            "message": str(e),
+            "quota_bytes": svc.FAMILY_QUOTA_BYTES,
+            "used_bytes": e.used_bytes,
+            "incoming_bytes": e.incoming_bytes,
+        }), 413
     except ValueError as e:
         abort(400, description=str(e))
     return jsonify({"ok": True, "doc": out})
+
+
+@bp.get("/quota")
+def quota_status():
+    """Phase B-6 — surface 'used / 500 MB' so the frontend can warn before upload."""
+    user_token = _user_token_or_400(request.args)
+    used = svc.family_quota_used_bytes(user_token)
+    return jsonify({
+        "ok": True,
+        "used_bytes": used,
+        "quota_bytes": svc.FAMILY_QUOTA_BYTES,
+        "used_pct": round(100.0 * used / svc.FAMILY_QUOTA_BYTES, 2),
+        "doc_count": svc.family_doc_count(user_token),
+    })
 
 
 @bp.get("/docs")
@@ -378,8 +409,140 @@ def dispatch_run_now():
     return jsonify({"ok": True, **dispatch_svc.run_dispatch()})
 
 
+# ── /insurance/ask — Phase B-2 reasoning over a policy ────────────
+
+@bp.post("/insurance/ask")
+def insurance_ask():
+    """Body: { user_token, policy_id, question, lang? }
+    Returns: { ok, answer, disclaimer, lang, _status }
+
+    LLM-driven reasoning over a parsed InsurancePolicy row. Server-enforced
+    disclaimer rides on every response — never client-controlled.
+    """
+    body = request.get_json(silent=True) or {}
+    user_token = _user_token_or_400(body)
+    policy_id = _int_or_none(body.get("policy_id"))
+    question = (body.get("question") or "").strip()
+    lang = (body.get("lang") or "hi").strip().lower()[:6]
+    if not policy_id:
+        abort(400, description="policy_id required")
+    if not question or len(question) > 500:
+        abort(400, description="question required (1-500 chars)")
+
+    policies = svc.list_insurance(user_token)
+    policy = next((p for p in policies if p.get("id") == policy_id), None)
+    if not policy:
+        abort(404, description="policy_not_found_or_not_yours")
+
+    out = ins_reason.reason_over_policy(policy, question, lang)
+    return jsonify({"ok": True, **out})
+
+
+@bp.post("/insurance/network-check")
+def insurance_network_check():
+    """Body: { user_token, policy_id, hospital_name }
+    Returns: { ok, in_network: bool|null, matched_name: str|null, message }
+
+    Honest 'unknown' (in_network=null) when the policy's network_hospitals
+    list is empty. Never coerces a yes/no.
+    """
+    body = request.get_json(silent=True) or {}
+    user_token = _user_token_or_400(body)
+    policy_id = _int_or_none(body.get("policy_id"))
+    hospital = (body.get("hospital_name") or "").strip()
+    if not policy_id or not hospital:
+        abort(400, description="policy_id + hospital_name required")
+
+    policies = svc.list_insurance(user_token)
+    policy = next((p for p in policies if p.get("id") == policy_id), None)
+    if not policy:
+        abort(404, description="policy_not_found")
+
+    network = policy.get("network_hospitals") or []
+    if not network:
+        return jsonify({
+            "ok": True, "in_network": None, "matched_name": None,
+            "message": (
+                f"Policy ke saath network hospital list nahi parse hui hai — "
+                f"insurer ki 1800 helpline se confirm karein for {hospital}."
+            ),
+        })
+
+    needle = hospital.lower()
+    matched = next((h for h in network if needle in (h or "").lower() or (h or "").lower() in needle), None)
+    if matched:
+        return jsonify({
+            "ok": True, "in_network": True, "matched_name": matched,
+            "message": f"{matched} aapki policy ke network mein hai. Cashless ke liye TPA card aur ID le jaayein.",
+        })
+    return jsonify({
+        "ok": True, "in_network": False, "matched_name": None,
+        "message": (
+            f"{hospital} parsed network list mein nahi mila. "
+            "Insurer ki 1800 helpline par confirm karein — list adhuri ho sakti hai."
+        ),
+    })
+
+
+# ── /export/doctor-pdf — Phase B-5 single-page A4 doctor summary ──
+
+@bp.get("/export/doctor-pdf")
+def export_doctor_pdf():
+    """Query: ?user_token=…&profile_id=N
+    Returns: application/pdf — doctor-facing single-document A4 summary.
+
+    Frontend wires this as a download link on the Vitals tab. The user has
+    already passed chittiConfirmAndDo() before tapping the link, per the
+    Golden Rule. Reportlab is loaded lazily so backends without it (e.g.
+    bare unit tests) still import cleanly.
+    """
+    user_token = _user_token_or_400(request.args)
+    pid = _int_or_none(request.args.get("profile_id"))
+    if pid is None:
+        abort(400, description="profile_id required")
+    try:
+        pdf_bytes = doctor_pdf.build_doctor_pdf(user_token, pid)
+    except ValueError as e:
+        abort(404, description=str(e))
+    except ImportError as e:
+        # reportlab not installed on this host — honest stub
+        abort(503, description=f"pdf_pipeline_not_installed: {e}")
+    fname = f"chitti-health-summary-{pid}-{request.args.get('user_token', '')[:6]}.pdf"
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=fname,
+    )
+
+
+# ── /translate — Phase B (cross-language voice in / voice out) ────
+
+@bp.post("/translate")
+def translate_text():
+    """Body: { user_token, text, source_lang?, target_lang }
+    Returns: { ok, translated, source_lang, target_lang, _status }
+
+    DeepSeek translation across the 13 Indian languages on the language
+    selector. user_token gate is the only auth — same as the rest of the
+    blueprint.
+    """
+    body = request.get_json(silent=True) or {}
+    _user_token_or_400(body)
+    text = (body.get("text") or "").strip()
+    src = (body.get("source_lang") or "auto").strip().lower()[:6]
+    tgt = (body.get("target_lang") or "").strip().lower()[:6]
+    if not text or len(text) > 2000:
+        abort(400, description="text required (1-2000 chars)")
+    if not tgt:
+        abort(400, description="target_lang required")
+
+    out = translate_svc.translate(text=text, source_lang=src, target_lang=tgt)
+    return jsonify({"ok": True, **out})
+
+
 # ── /health (smoke) ───────────────────────────────────────────────
 
 @bp.get("/health")
 def health():
-    return jsonify({"ok": True, "service": "chitti-health-file", "version": "v2-dispatch-2026-05-23"})
+    return jsonify({"ok": True, "service": "chitti-health-file", "version": "v3-phase-b2-2026-05-24"})
