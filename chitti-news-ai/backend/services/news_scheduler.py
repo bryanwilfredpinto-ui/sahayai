@@ -28,8 +28,21 @@ _scheduler: Optional[BackgroundScheduler] = None
 
 
 def _job_rss_poll() -> dict:
+    """Fetch all sources, then IMMEDIATELY force-sync to Turso so articles
+    survive Railway's per-deploy /tmp wipe. The default 60 s background
+    sync is not fast enough — if a git push hits Railway within that window,
+    every freshly-fetched article is lost (the local SQLite file goes
+    away and the next boot re-syncs an article-less Turso). Sire incident
+    2026-05-23: 3 consecutive deploys lost the feed; this is the fix."""
     from services import rss_fetcher
-    return rss_fetcher.fetch_all()
+    from database import sync_now
+    result = rss_fetcher.fetch_all()
+    try:
+        sync_now()
+        log.info("[scheduler] forced Turso sync after fetch_all")
+    except Exception as e:  # noqa: BLE001
+        log.warning("[scheduler] forced Turso sync failed: %s", e)
+    return result
 
 
 def _wrap(name, fn):

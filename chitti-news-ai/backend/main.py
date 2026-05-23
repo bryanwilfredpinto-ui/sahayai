@@ -92,12 +92,29 @@ def _bootstrap() -> None:
     try:
         stats = _upsert_sources()
         log.info("sources upserted: %s", stats)
+        # Force-sync so source rows reach Turso immediately. Without this,
+        # a Railway redeploy within 60 s wipes the local SQLite before the
+        # bg sync ticks — and the next boot has neither sources nor articles.
+        try:
+            from database import sync_now
+            sync_now()
+            log.info("forced Turso sync after source upsert")
+        except Exception as se:  # noqa: BLE001
+            log.warning("forced sync after source upsert failed: %s", se)
     except Exception as e:  # noqa: BLE001
         log.warning("source upsert skipped: %s", e)
     try:
         news_scheduler.start()
     except Exception as e:  # noqa: BLE001
         log.warning("scheduler failed to start: %s", e)
+    # Kick off an immediate RSS fetch on boot — don't wait the full interval
+    # (default 360 min). This means every redeploy gets fresh articles within
+    # ~30 s of boot, instead of being empty for hours.
+    try:
+        news_scheduler.trigger_now("rss_poll")
+        log.info("kicked off immediate rss_poll on boot")
+    except Exception as e:  # noqa: BLE001
+        log.warning("boot-time rss_poll kick failed: %s", e)
 
 
 def create_app() -> Flask:
