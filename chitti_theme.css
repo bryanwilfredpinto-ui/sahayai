@@ -1,6 +1,14 @@
 /* ─────────────────────────────────────────────────────────────────
- * chitti_theme.css — UNIFIED theme across all 15 Chitti pages
- * Locked 2026-05-15: Saffron #FF9933 · Deep Navy #003366 · White #FFFFFF.
+ * chitti_theme.css — UNIFIED Indian-flag theme across all Chitti pages
+ * Locked 2026-05-15, refreshed to flag-exact spec 2026-05-23.
+ *
+ * Locked palette (per Sire's Priority-1 spec):
+ *   --saffron: #FF9933   (India saffron — flag top stripe)
+ *   --white:   #FFFFFF
+ *   --green:   #138808   (India green — flag bottom stripe)
+ *   --navy:    #000080   (Ashoka wheel navy)
+ *   --bg:      #FAFAFA
+ *
  * Mobile-first (375 px). Every page <link>s this AFTER its own <style>
  * so cascade wins for shared selectors; inline page styles using
  * existing var(--saffron) / var(--navy) automatically pick up the new
@@ -13,43 +21,52 @@
  * ───────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Locked palette */
+  /* ── Indian flag palette (LOCKED 2026-05-23 per Sire Priority-1) ── */
   --chitti-saffron: #FF9933;       /* Indian flag saffron */
-  --chitti-navy:    #003366;       /* Deep navy */
-  --chitti-white:   #FFFFFF;
-  --chitti-saffron-deep: #E07B1D;  /* Hover / pressed state */
-  --chitti-navy-deep:    #001a33;  /* Pressed state */
+  --chitti-white:   #FFFFFF;       /* Indian flag white */
+  --chitti-green:   #138808;       /* Indian flag green */
+  --chitti-navy:    #000080;       /* Ashoka wheel navy */
+  --chitti-saffron-deep: #E07B1D;  /* Hover / pressed saffron */
+  --chitti-green-deep:   #0E6606;  /* Hover / pressed green */
+  --chitti-navy-deep:    #00004D;  /* Pressed navy */
   --chitti-cream:   #FFF7EC;       /* Soft background tint */
 
   /* Semantic tokens (consumed by buttons / banners / chips) */
-  --chitti-bg:        #FFFFFF;
+  --chitti-bg:        #FAFAFA;
   --chitti-bg-soft:   #FFF7EC;
-  --chitti-text:      #17202a;
-  --chitti-muted:     #6b7280;
+  --chitti-text:      #1a1a1a;
+  --chitti-muted:     #666666;
   --chitti-border:    #e5e7eb;
-  --chitti-success:   #15803d;
-  --chitti-warning:   #c2410c;
-  --chitti-danger:    #b91c1c;
+  --chitti-success:   #138808;     /* = --chitti-green per spec */
+  --chitti-warning:   #FF9933;     /* saffron at 80% opacity in usage */
+  --chitti-danger:    #CC0000;
 
   /* Override the pre-existing per-page variable names so pages that
-     already use var(--saffron) / var(--navy) / var(--gold) pick up
-     the unified palette without each page being rewritten. */
+     already use var(--saffron) / var(--navy) / var(--gold) / var(--green)
+     pick up the unified palette without each page being rewritten. */
   --saffron: #FF9933;
   --saffron-deep: #E07B1D;
-  --navy:    #003366;
+  --navy:    #000080;
   --gold:    #FF9933;   /* Pages used --gold as an accent — point at saffron */
-  --bg:      #FFFFFF;
+  --green:   #138808;
+  --red:     #CC0000;
+  --bg:      #FAFAFA;
   --card:    #FFFFFF;
   --card2:   #FFF7EC;
+  --text:    #1a1a1a;
+  --muted:   #666666;
+  --border:  #e5e7eb;
 
   /* Typography + scale */
   --chitti-font: 'Noto Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, sans-serif;
   --chitti-font-mono: 'JetBrains Mono', 'Menlo', monospace;
-  --chitti-radius:   12px;
+  --chitti-radius:   14px;        /* per Sire's Priority-1 spec */
   --chitti-radius-lg: 18px;
-  --chitti-shadow:   0 4px 12px rgba(0, 51, 102, 0.08);
-  --chitti-shadow-md: 0 8px 24px rgba(0, 51, 102, 0.14);
-  --chitti-tap:      44px;        /* WCAG 2.5.5 minimum touch target */
+  --chitti-shadow:   0 2px 12px rgba(0, 0, 80, 0.08);   /* per spec */
+  --chitti-shadow-md: 0 8px 24px rgba(0, 0, 80, 0.14);
+  --chitti-tap:      48px;        /* WCAG 2.5.5 — 48px per Sire spec */
+  --radius:          14px;
+  --card-shadow:     0 2px 12px rgba(0, 0, 80, 0.08);
 
   /* Spacing scale (4-pt grid) */
   --chitti-sp-1: 4px;
@@ -86,10 +103,21 @@ input[type="submit"],
   min-width: var(--chitti-tap);
 }
 
-/* ── Indian-flag stripe (decorative, every page can opt-in) ──── */
-.chitti-bharat-stripe {
-  height: 4px;
-  background: linear-gradient(90deg, var(--chitti-saffron) 0%, var(--chitti-white) 50%, var(--chitti-navy) 100%);
+/* ── Indian-flag stripe — 3 EQUAL bands (saffron / white / green) ─
+   Per Sire's Priority-1 spec, the top stripe on EVERY page is the
+   flag tricolour: saffron left third, white middle, green right third.
+   This selector overrides any per-page .bharat-stripe (which most
+   Chitti pages still ship with the legacy gradient saffron→gold→navy).
+*/
+.chitti-bharat-stripe,
+.bharat-stripe {
+  height: 3px !important;
+  background: linear-gradient(
+    90deg,
+    var(--chitti-saffron) 0%, var(--chitti-saffron) 33.33%,
+    var(--chitti-white)  33.33%, var(--chitti-white)  66.66%,
+    var(--chitti-green)  66.66%, var(--chitti-green)  100%
+  ) !important;
 }
 
 /* ── Buttons — unified style ─────────────────────────────────── */
@@ -345,3 +373,184 @@ html[dir="rtl"] .chitti-langbar { right: auto; left: 8px; }
   button { display: none !important; }
   body { color: #000; background: #fff; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FEEDBACK-WIDGET CARD INTEGRATION (universal — 2026-05-23)
+   feedback-widget.js inserts the 4-icon bar as a SIBLING after each
+   .chitti-response card (architectural — it survives innerHTML rerenders).
+   The CSS below makes that sibling bar visually JOIN the card above:
+   shared border, no top border, shared radius bottom. Result reads as
+   "icons inside the card" without modifying the platform widget.
+   Lifted from the Health File one-off into the platform substrate so
+   every page gets the fix.
+   ═══════════════════════════════════════════════════════════════ */
+
+.chitti-response {
+  background: var(--chitti-white) !important;
+  border-left: 4px solid var(--chitti-saffron) !important;
+  border-radius: var(--chitti-radius) var(--chitti-radius) 0 0 !important;
+  margin-bottom: 0 !important;
+  box-shadow: var(--card-shadow) !important;
+}
+.chitti-response + .chitti-fb-box-bar {
+  background: var(--chitti-white) !important;
+  border: 1px solid var(--chitti-border) !important;
+  border-left: 4px solid var(--chitti-saffron) !important;
+  border-top: 1px dashed var(--chitti-border) !important;
+  border-radius: 0 0 var(--chitti-radius) var(--chitti-radius) !important;
+  padding: 10px 16px !important;
+  margin: 0 0 14px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  box-shadow: var(--card-shadow) !important;
+}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid var(--chitti-border) !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-family: inherit !important;
+}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.demo {
+  background: rgba(255, 153, 51, 0.10) !important;   /* saffron tint */
+  color: var(--chitti-saffron-deep) !important;
+  border-color: rgba(255, 153, 51, 0.35) !important;
+}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.up:hover {
+  background: rgba(19, 136, 8, 0.12) !important;     /* green hover */
+  border-color: var(--chitti-green) !important;
+}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.down:hover {
+  background: rgba(204, 0, 0, 0.10) !important;      /* danger hover */
+  border-color: var(--chitti-danger) !important;
+}
+/* Push 👍/👎 to the right edge of the bar so 🤖/🔊 stay anchored left. */
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.up {
+  margin-left: auto !important;
+}
+.chitti-fb-sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BHARAT BOTTOM-NAV (opt-in per page)
+   Pages add: <nav class="chitti-bharat-bottom-nav" ...> with anchors.
+   Active anchor takes .active class. Inactive opacity 0.6.
+   ═══════════════════════════════════════════════════════════════ */
+.chitti-bharat-bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: 56px;
+  background: var(--chitti-navy);
+  color: var(--chitti-white);
+  display: flex; align-items: center; justify-content: space-around;
+  z-index: 60;
+  padding: 0 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 -2px 12px rgba(0, 0, 80, 0.18);
+}
+.chitti-bharat-bottom-nav a,
+.chitti-bharat-bottom-nav button {
+  color: rgba(255, 255, 255, 0.60);
+  text-decoration: none;
+  background: transparent; border: 0;
+  font-family: inherit; font-size: 11px; font-weight: 700;
+  min-height: 48px; min-width: 48px;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 4px 8px;
+  border-bottom: 3px solid transparent;
+}
+.chitti-bharat-bottom-nav a.active,
+.chitti-bharat-bottom-nav button.active {
+  color: var(--chitti-saffron);
+  border-bottom-color: var(--chitti-saffron);
+}
+.chitti-bharat-bottom-nav .ico { font-size: 20px; line-height: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   BHARAT HERO GRADIENT (opt-in per page)
+   .chitti-bharat-hero adds the flag gradient hero. Section titles
+   default to navy + bold.
+   ═══════════════════════════════════════════════════════════════ */
+.chitti-bharat-hero {
+  background: linear-gradient(135deg,
+    var(--chitti-saffron) 0%,
+    var(--chitti-white) 50%,
+    var(--chitti-green) 100%);
+  color: var(--chitti-navy);
+  padding: 20px;
+  border-radius: var(--radius);
+  margin: 12px;
+}
+.chitti-bharat-hero h1,
+.chitti-bharat-hero .title { color: var(--chitti-navy); font-weight: 800; }
+
+/* Success / confirm buttons in flag green */
+.btn-success,
+.chitti-success-btn,
+button.chitti-success {
+  background: linear-gradient(135deg, var(--chitti-green), var(--chitti-green-deep)) !important;
+  color: var(--chitti-white) !important;
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 48px;
+}
+.btn-success:hover { filter: brightness(1.06); }
+
+/* Links default to navy across all Chitti pages */
+a:not([class*="chitti-btn"]):not([class*="btn-"]):not(.cta-saffron) {
+  color: var(--chitti-navy);
+}
+a:not([class*="chitti-btn"]):not([class*="btn-"]):not(.cta-saffron):hover {
+  color: var(--chitti-saffron-deep);
+}
+
+/* Section headings default to navy + bold */
+.section-title,
+section h2,
+section h3 {
+  color: var(--chitti-navy);
+}
+
+/* Warning surface — saffron at 80% (effective tone for non-critical alerts) */
+.chitti-warning,
+.warn-banner {
+  background: rgba(255, 153, 51, 0.80);
+  color: var(--chitti-white);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+/* Danger / error */
+.chitti-danger,
+.error-banner,
+.btn-danger {
+  background: var(--chitti-danger);
+  color: var(--chitti-white);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+}
+
+/* When bottom-nav is present, add bottom-padding to body so content
+   doesn't hide behind the 56px bar. Opt-in: add class chitti-has-bottom-nav
+   to body. */
+body.chitti-has-bottom-nav { padding-bottom: 68px; }
