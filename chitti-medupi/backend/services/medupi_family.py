@@ -58,16 +58,20 @@ def add_profile(
     dob: str | None = None,
     conditions: list[str] | None = None,
 ) -> dict:
+    from datetime import datetime as _dt
     p = FamilyProfile(
         user_token=user_token,
         name=name.strip(),
         relation=relation.strip() or "self",
         dob=(dob or None),
         conditions=json.dumps(conditions or []),
+        # Stamp client-side so we don't need s.refresh() — Turso embedded
+        # replica fails the post-commit refresh with InvalidRequestError.
+        created_at=_dt.utcnow(),
     )
     db.add(p)
+    db.flush()      # populates p.id without firing refresh
     db.commit()
-    db.refresh(p)
     return _profile_dict(p)
 
 

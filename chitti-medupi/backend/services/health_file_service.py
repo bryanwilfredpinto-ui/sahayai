@@ -121,13 +121,17 @@ def create_profile(user_token: str, name: str, relation: str, dob: Optional[str]
         p = FamilyProfile(
             user_token=user_token, name=name.strip()[:120],
             relation=relation[:40], dob=(dob or None),
-            # Match the medupi_family.add_profile pattern — always populate
-            # `conditions` with an empty JSON array. Turso embedded replica
-            # NULLs were causing INSERT failures pre-Phase-B-2.
             conditions=json.dumps([]),
+            # Turso embedded replica can't satisfy `s.refresh(p)` post-commit
+            # because the SELECT-by-pk against the local SQLite races with the
+            # bg sync thread. Stamp created_at client-side so we never need
+            # to refresh just to read it back.
+            created_at=datetime.utcnow(),
         )
-        s.add(p); s.commit(); s.refresh(p)
-    return _profile_dict(p)
+        # `flush` populates `p.id` from the INSERT without firing the failing
+        # post-commit refresh (Turso InvalidRequestError surfaces on refresh).
+        s.add(p); s.flush(); s.commit()
+        return _profile_dict(p)
 
 
 def _require_profile(s, user_token: str, profile_id: int) -> FamilyProfile:
