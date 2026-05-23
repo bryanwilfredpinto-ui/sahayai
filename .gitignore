@@ -8,6 +8,20 @@
 # (commit e25c5ed). Once filled with real values, never re-track.
 railway-env/*.env
 
+# ── Android release-signing artefacts — NEVER commit ──
+# If any of these land in git history the Play Store signing key is
+# BURNT and the app can no longer ship updates. See BUILD_APK_RUNBOOK.md.
+*.jks
+*.keystore
+keystore.properties
+**/keystore.properties
+**/release.jks
+**/release.keystore
+chitti-vaani-android/app/release/
+# Generated APK / AAB artefacts — upload to GH Release, don't track.
+*.apk
+*.aab
+
 # ── Python ──
 __pycache__/
 *.pyc

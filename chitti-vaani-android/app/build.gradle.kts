@@ -15,10 +15,43 @@ android {
         versionName   = "1.0.0"
     }
 
+    // ── Release signing config ──
+    //
+    // Reads from env vars (preferred — set them on the build machine,
+    // never in this repo) OR from $rootProject/keystore.properties
+    // (also gitignored). If neither is present the release signingConfig
+    // is left unset and gradle falls back to the default debug key —
+    // useful for local "does it compile" checks, but the resulting APK
+    // is NOT shippable. See BUILD_APK_RUNBOOK.md at repo root.
+    //
+    // Required env vars on the build machine:
+    //   CHITTI_KEYSTORE_PATH  — absolute path to the .jks (kept OUTSIDE the repo)
+    //   CHITTI_KEYSTORE_PASS  — store password
+    //   CHITTI_KEY_ALIAS      — key alias (default "chitti")
+    //   CHITTI_KEY_PASS       — key password (often same as KEYSTORE_PASS)
+    val ksPath  = System.getenv("CHITTI_KEYSTORE_PATH") ?: ""
+    val ksPass  = System.getenv("CHITTI_KEYSTORE_PASS") ?: ""
+    val keyAls  = System.getenv("CHITTI_KEY_ALIAS") ?: "chitti"
+    val keyPass = System.getenv("CHITTI_KEY_PASS") ?: ksPass
+
+    if (ksPath.isNotEmpty() && ksPass.isNotEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile     = file(ksPath)
+                storePassword = ksPass
+                keyAlias      = keyAls
+                keyPassword   = keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (ksPath.isNotEmpty() && ksPass.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
