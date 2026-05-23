@@ -1417,8 +1417,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="call-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmCall()">📞 Dial now</button>
-      <button class="spk" onclick="confirmCallByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('call')">📞 Dial — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('call-modal')">Cancel</button>
     </div>
     <div class="small-note">On the web, Chitti opens your dialer pre-filled — you tap call. On the Android app (Phase 2), Chitti dials directly with the CALL_PHONE permission. <b>Chitti always announces "I am Chitti AI calling on behalf of [user]" if it speaks during the call.</b></div>
@@ -1446,8 +1445,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="wa-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmWASend()">📲 Open WhatsApp to send</button>
-      <button class="spk" onclick="confirmWAByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('wa')">📲 Send via WhatsApp — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('wa-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti drafts and opens WhatsApp pre-filled. You tap the green ➤ inside WhatsApp to actually send. (Phase 2 Android: Chitti taps for you.)</div>
@@ -1475,8 +1473,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="sms-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmSMSSend()">💬 Open SMS app to send</button>
-      <button class="spk" onclick="confirmSMSByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('sms')">💬 Send SMS — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('sms-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti opens your phone's SMS app pre-filled — you tap send. On the Android app (Phase 2), Chitti sends directly via the SIM with the <code>SEND_SMS</code> permission. The SMS goes <b>from your number</b>, not from a server, so no carrier costs to Chitti and no provider sign-up needed.</div>
@@ -1510,8 +1507,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="upi-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmUPISend()">💸 Open UPI app to pay</button>
-      <button class="spk" onclick="confirmUPIByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('upi')">💸 Pay via UPI — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('upi-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti will NEVER ask for or store your UPI PIN. PIN entry happens only inside the UPI app's secure keypad. Voice-biometric PIN is a v2 feature, requires bank partnership.</div>
@@ -1554,8 +1550,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="em-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmEmailSend()" id="em-send-btn">📧 Send via Gmail</button>
-      <button class="spk" onclick="confirmEmailByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('email')" id="em-send-btn">📧 Send via Gmail — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('email-modal')">Cancel</button>
     </div>
     <div class="small-note">Footer auto-appended: <em>"Sent via Chitti Vaani — an AI assistant for [your name]. Replies do not pass through Chitti."</em></div>
@@ -1579,8 +1574,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="yt-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmYouTube()">🎬 Open YouTube</button>
-      <button class="spk" onclick="confirmYouTubeByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('yt')">🎬 Play on YouTube — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('yt-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → opens <code>youtube.com/results?search_query=…</code>. Android (Phase 2) → opens the YouTube app via Intent.</div>
@@ -1602,8 +1596,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="music-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmMusic()">🎵 Open YouTube Music</button>
-      <button class="spk" onclick="confirmMusicByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('music')">🎵 Play music — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('music-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → opens <code>music.youtube.com/search?q=…</code>. Native bridge — if Chitti is hosted by an Android app with <code>openMusic(query)</code>, that wins.</div>
@@ -1625,8 +1618,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="video-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmVideo()">📺 Open video</button>
-      <button class="spk" onclick="confirmVideoByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('video')">📺 Play video — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('video-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → opens <code>youtube.com/results?search_query=…+full+video</code>. Android (Phase 2) → opens the first result automatically.</div>
@@ -1652,8 +1644,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="wa-call-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmWACall()">📞 Open WhatsApp call screen</button>
-      <button class="spk" onclick="confirmWACallByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('wa-call')">📞 WhatsApp call — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('wa-call-modal')">Cancel</button>
     </div>
     <div class="small-note">Web uses <code>wa.me/{number}?call=1</code> — opens WhatsApp on the contact, you tap the call icon to start. Phase-2 Android can auto-arm the call icon via the accessibility helper (same 2-second window as the WhatsApp-send card).</div>
@@ -1677,8 +1668,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="app-launcher-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmAppLauncher()">🧩 Open app</button>
-      <button class="spk" onclick="confirmAppLauncherByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('app-launch')">🧩 Open app — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('app-launcher-modal')">Cancel</button>
     </div>
     <div class="small-note">Native (Android app) calls <code>ChittiNative.openApp(packageName)</code> — if the app isn't installed, Chitti drops you into the Play Store entry so one tap installs it. Web fallback opens the canonical website (no install needed).</div>
@@ -1709,8 +1699,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="maps-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmMaps()">🗺️ Open Maps</button>
-      <button class="spk" onclick="confirmMapsByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('maps')">🗺️ Open Maps — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('maps-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → opens <code>google.com/maps/dir/?destination=…</code>. Android → opens the Maps app via <code>geo:</code> intent.</div>
@@ -1732,8 +1721,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="search-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmSearch()">🔎 Open Google</button>
-      <button class="spk" onclick="confirmSearchByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('search')">🔎 Search Google — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('search-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → <code>google.com/search?q=…</code>. Honest: Chitti can't read the result page for you (yet) — that's Phase 2 Android (screen-reader bridge).</div>
@@ -1775,8 +1763,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="rem-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmReminder()">⏱️ Schedule reminder</button>
-      <button class="spk" onclick="confirmReminderByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('reminder')">⏱️ Schedule reminder — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('reminder-modal')">Cancel</button>
     </div>
     <div class="small-note">Android (today): WorkManager fires a high-priority notification on the lock screen at the scheduled time. Web (today): step-by-step alert + speech walks you through saving it in your calendar / clock app — browsers cannot fire cross-session notifications without persistent permissions you have to grant explicitly. Phase 2.7 brings the SMS / WhatsApp / email channels online once Gmail OAuth + the SMS opt-in flow land.</div>
@@ -1804,8 +1791,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
     <div class="preview" id="alarm-preview" style="display:none"></div>
     <div class="actions">
-      <button class="go" onclick="confirmAlarm()">⏰ Set alarm</button>
-      <button class="spk" onclick="confirmAlarmByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('alarm')">⏰ Set alarm — Chitti will confirm first</button>
       <button class="cancel" onclick="closeModal('alarm-modal')">Cancel</button>
     </div>
     <div class="small-note">Android intent — <code>android.intent.action.SET_ALARM</code> — opens the clock app with the time + label pre-filled. Web fallback shows step-by-step.</div>
@@ -1876,8 +1862,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <div id="vault-share-line" style="font-size:15px;line-height:1.55;color:var(--text);margin-bottom:10px;padding:10px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;font-weight:600"></div>
     <div class="desc">Chitti is about to attach the file to a WhatsApp / email draft. <b>You confirm once. Chitti never shares again without asking.</b></div>
     <div class="actions">
-      <button class="go" onclick="confirmVaultShareYes()">✓ Haan — bhej do</button>
-      <button class="spk" onclick="confirmVaultShareByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="go" onclick="gatedConfirm('vault-share')">📤 Share document — Chitti will confirm first (per-use voice consent)</button>
       <button class="cancel" onclick="closeModal('vault-share-modal'); CH_PENDING_SHARE=null">✗ Nahi — ruko</button>
     </div>
     <div class="small-note">Audit: every share is logged with the doc name, target, and a one-shot 30-minute token. Recipient cannot re-fetch after consumption.</div>
@@ -4230,6 +4215,134 @@ function chittiConfirmAndDo(question, onYes, opts){
     };
     try { r.start(); _chittiConfirmRecog = r; }
     catch(e) { listen.textContent = '⚠️ Could not start microphone — please tap Haan or Nahi.'; }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   GOLDEN RULE single-confirm router (course-correction 2026-05-23)
+   ════════════════════════════════════════════════════════════════
+   Replaces the prior two-step pattern (manual "Open"/"Send" button
+   + sibling "🎙️ Confirm by voice (haan)" button) with ONE primary
+   action button per modal. Tapping that button now ALWAYS goes
+   through chittiConfirmAndDo — never bypasses the gate.
+
+   Per Sire 2026-05-23: "NO, WE NEED TO CHANGE THAT, THERE IS NO
+   NEED FOR 2 STEP CONSENT." The Golden Rule confirm IS the consent.
+
+   How it works: each `gatedConfirm(kind)` case builds the preview /
+   question text from the modal's current inputs, then hands the
+   action off to chittiConfirmAndDo. The original confirm* functions
+   stay as action-doers — they receive the explicit "Yes" from the
+   Golden Rule modal and execute the side effect (dial / send /
+   open / schedule / etc).
+*/
+function _grEnglish(){ return CURRENT_LANG === 'en'; }
+function gatedConfirm(kind){
+  const EN = _grEnglish();
+  const Q = (en, hi) => EN ? en : hi;
+  function pickWarn(){ alert(EN ? 'Pick a contact or fill the fields first.' : 'Pehle contact ya details bharo.'); }
+
+  switch(kind){
+    case 'call': {
+      const p = buildCallPreview();
+      if (!p) { pickWarn(); return; }
+      const who = p.name || p.phone;
+      chittiConfirmAndDo(Q(`Sire, shall I call ${who} now?`, `Sire, kya main ${who} ko abhi call karun?`), confirmCall);
+      return;
+    }
+    case 'wa': {
+      const p = buildWAPreview();
+      if (!p) { pickWarn(); return; }
+      const who = p.contact.name || p.contact.phone;
+      chittiConfirmAndDo(Q(`Sire, shall I send this WhatsApp to ${who}?`, `Sire, kya main yeh WhatsApp ${who} ko bhejun?`), confirmWASend);
+      return;
+    }
+    case 'sms': {
+      const p = buildSMSPreview();
+      if (!p) { pickWarn(); return; }
+      const who = p.contact.name || p.contact.phone;
+      chittiConfirmAndDo(Q(`Sire, shall I send this SMS to ${who}?`, `Sire, kya main yeh SMS ${who} ko bhejun?`), confirmSMSSend);
+      return;
+    }
+    case 'upi': {
+      const p = buildUPIPreview();
+      if (!p) { pickWarn(); return; }
+      const who = p.payeeName || p.payeeUpi;
+      chittiConfirmAndDo(Q(`Sire, shall I open the UPI app to pay ₹${p.amount} to ${who}? (You'll enter the PIN inside UPI app)`, `Sire, kya main UPI app kholun? ${who} ko ₹${p.amount} bhejna hai — PIN aap UPI app me dalenge.`), confirmUPISend);
+      return;
+    }
+    case 'email': {
+      const p = buildEmailPreview();
+      if (!p) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I send this email to ${p.to}?`, `Sire, kya main yeh email ${p.to} ko bhejun?`), confirmEmailSend);
+      return;
+    }
+    case 'wa-call': {
+      const p = buildWACallPreview();
+      if (!p) { pickWarn(); return; }
+      const who = p.contact.name || p.contact.phone;
+      const kindTxt = p.callType === 'video' ? (EN?'video':'video') : (EN?'voice':'voice');
+      chittiConfirmAndDo(Q(`Sire, shall I open the WhatsApp ${kindTxt} call screen for ${who}?`, `Sire, kya main ${who} ke liye WhatsApp ${kindTxt} call screen kholun?`), confirmWACall);
+      return;
+    }
+    case 'yt': {
+      const q = (document.getElementById('yt-q').value||'').trim();
+      if (!q) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I play "${q}" on YouTube?`, `Sire, kya main "${q}" YouTube par chalaaun?`), confirmYouTube);
+      return;
+    }
+    case 'music': {
+      const q = (document.getElementById('music-q').value||'').trim();
+      if (!q) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I play "${q}" in YouTube Music?`, `Sire, kya main "${q}" YouTube Music par chalaaun?`), confirmMusic);
+      return;
+    }
+    case 'video': {
+      const q = (document.getElementById('video-q').value||'').trim();
+      if (!q) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I open the video "${q}"?`, `Sire, kya main video "${q}" kholun?`), confirmVideo);
+      return;
+    }
+    case 'maps': {
+      const q = (document.getElementById('maps-q').value||'').trim();
+      if (!q) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I open directions to ${q}?`, `Sire, kya main ${q} ka raasta kholun?`), confirmMaps);
+      return;
+    }
+    case 'search': {
+      const q = (document.getElementById('search-q').value||'').trim();
+      if (!q) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I search Google for "${q}"?`, `Sire, kya main Google par "${q}" search karun?`), confirmSearch);
+      return;
+    }
+    case 'app-launch': {
+      const t = buildAppLauncherTarget();
+      if (!t) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I open ${t.name}?`, `Sire, kya main ${t.name} kholun?`), confirmAppLauncher);
+      return;
+    }
+    case 'reminder': {
+      const t = (document.getElementById('rem-text').value||'').trim();
+      if (!t) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I schedule this reminder: "${t}"?`, `Sire, kya main yeh reminder lagaaun: "${t}"?`), confirmReminder);
+      return;
+    }
+    case 'alarm': {
+      const hh = document.getElementById('alarm-hh') ? document.getElementById('alarm-hh').value : '';
+      const mm = document.getElementById('alarm-mm') ? document.getElementById('alarm-mm').value : '';
+      if (!hh) { pickWarn(); return; }
+      chittiConfirmAndDo(Q(`Sire, shall I set an alarm for ${hh}:${mm||'00'}?`, `Sire, kya main ${hh}:${mm||'00'} ka alarm lagaaun?`), confirmAlarm);
+      return;
+    }
+    case 'vault-share': {
+      // CRITICAL: per-use voice consent for every document share — spec §3 PRIVACY RULE.
+      const doc = (window.CH_PENDING_SHARE && window.CH_PENDING_SHARE.doc_label) || (EN?'this document':'yeh document');
+      const who = (window.CH_PENDING_SHARE && window.CH_PENDING_SHARE.to_label) || (EN?'this contact':'is contact');
+      chittiConfirmAndDo(Q(`Sire, shall I share your ${doc} with ${who}? This is a sensitive document.`, `Sire, kya main aapka ${doc} ${who} ko bhej dun? Yeh sensitive document hai.`), confirmVaultShareYes);
+      return;
+    }
+    default:
+      console.warn('gatedConfirm: unknown kind', kind);
   }
 }
 
