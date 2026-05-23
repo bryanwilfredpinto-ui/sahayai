@@ -90,6 +90,10 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 }
 
 /* Courses */
+.course-section{margin-bottom:24px}
+.course-section-head{margin:18px 0 10px;padding:12px 14px;background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border-left:4px solid var(--saffron);border-radius:0 12px 12px 0}
+.course-section-title{font-size:16px;font-weight:900;color:var(--navy);margin:0}
+.course-section-blurb{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px}
 .course-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
 .course-card .name{font-weight:900;font-size:15px;color:var(--navy);margin-bottom:4px}
 .course-card .meta{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
@@ -460,21 +464,47 @@ async function loadCourses(){
   list.innerHTML = '';
   try {
     const data = await apiGet('/api/news-ai/courses');
+    const sections = data.sections || [];
     const items = data.items || [];
     if (!items.length){
       status.textContent = _chittiLang === 'hi' ? 'अभी कोई कोर्स नहीं।' : 'No courses listed.';
       return;
     }
     status.style.display = 'none';
-    list.innerHTML = items.map(c => (
-      '<div class="course-card" data-chitti-response data-chitti-section="' + _esc(c.name) + '">' +
-        '<div class="name">' + _esc(c.name) + (c.free ? ' <span class="free-badge">FREE</span>' : '') + '</div>' +
-        '<div class="meta">' + _esc(c.provider) + ' · ' + _esc(c.duration) + ' · ' + _esc(c.level) + ' · ' + _esc(c.language) + '</div>' +
-        '<div class="desc"><strong>' + (_chittiLang === 'hi' ? 'किसके लिए' : 'For') + ':</strong> ' + _esc(c.for_whom || '') + '</div>' +
-        (c.free_note ? '<div class="desc" style="color:var(--muted);font-size:12px">' + _esc(c.free_note) + '</div>' : '') +
-        '<a class="go" href="' + _esc(c.url) + '" target="_blank" rel="noopener">' + (_chittiLang === 'hi' ? 'कोर्स खोलें →' : 'Open course →') + '</a>' +
-      '</div>'
-    )).join('');
+    // Group courses by section
+    const grouped = {};
+    items.forEach(c => {
+      const k = c.section || 'other';
+      (grouped[k] = grouped[k] || []).push(c);
+    });
+    // Render section order from sections[] (fallback to grouped keys for stragglers)
+    const order = sections.map(s => s.key);
+    Object.keys(grouped).forEach(k => { if (!order.includes(k)) order.push(k); });
+    const lang = _chittiLang;
+    list.innerHTML = order.map(key => {
+      const meta = sections.find(s => s.key === key) || { label_en: key, label_hi: key, blurb_en: '', blurb_hi: '' };
+      const label = lang === 'hi' ? (meta.label_hi || meta.label_en) : meta.label_en;
+      const blurb = lang === 'hi' ? (meta.blurb_hi || meta.blurb_en) : meta.blurb_en;
+      const sectionCourses = grouped[key] || [];
+      const cards = sectionCourses.map(c => (
+        '<div class="course-card" data-chitti-response data-chitti-section="' + _esc(c.name) + '">' +
+          '<div class="name">' + _esc(c.name) + (c.free ? ' <span class="free-badge">FREE</span>' : '') + '</div>' +
+          '<div class="meta">' + _esc(c.provider) + ' · ' + _esc(c.duration) + ' · ' + _esc(c.level) + ' · ' + _esc(c.language) + '</div>' +
+          '<div class="desc"><strong>' + (lang === 'hi' ? 'किसके लिए' : 'For') + ':</strong> ' + _esc(c.for_whom || '') + '</div>' +
+          (c.free_note ? '<div class="desc" style="color:var(--muted);font-size:12px">' + _esc(c.free_note) + '</div>' : '') +
+          '<a class="go" href="' + _esc(c.url) + '" target="_blank" rel="noopener">' + (lang === 'hi' ? 'कोर्स खोलें →' : 'Open course →') + '</a>' +
+        '</div>'
+      )).join('');
+      return (
+        '<div class="course-section">' +
+          '<div class="course-section-head">' +
+            '<div class="course-section-title">' + _esc(label) + '</div>' +
+            (blurb ? '<div class="course-section-blurb">' + _esc(blurb) + '</div>' : '') +
+          '</div>' +
+          cards +
+        '</div>'
+      );
+    }).join('');
   } catch (e) {
     status.innerHTML = '⚠️ ' + _esc(e.message || String(e));
   }
