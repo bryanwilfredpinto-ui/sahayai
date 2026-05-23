@@ -700,3 +700,100 @@ input, select, textarea, button {
 /* 10. Bottom-nav above sticky bottom UI — ensure the 56px nav doesn't
        hide content from sticky callouts. Already handled via body.chitti-
        has-bottom-nav { padding-bottom:68px }. */
+
+/* ═══════════════════════════════════════════════════════════════
+   GAP-1 (2026-05-24): per-page mobile-overflow patterns spotted in
+   the static scan that weren't covered by the earlier 10 guards.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 11. Fixed-bottom UI elements (FABs, toasts, demo-banners, sticky
+       footers, debug ribbons) must clear the 56px navy nav. Pages
+       opt in via body.chitti-has-bottom-nav; this rule bumps known
+       fixed-bottom patterns to bottom:68px so they sit ABOVE the nav.
+       Excludes the nav itself + the "you are here" badge (top-anchored). */
+body.chitti-has-bottom-nav .demo-banner,
+body.chitti-has-bottom-nav .toast,
+body.chitti-has-bottom-nav .chitti-toast,
+body.chitti-has-bottom-nav .sticky-bottom,
+body.chitti-has-bottom-nav .fab,
+body.chitti-has-bottom-nav .bottom-cta,
+body.chitti-has-bottom-nav .demo-ribbon-bottom {
+  bottom: 68px !important;
+}
+
+/* 12. Modal overlays that take the full viewport — make sure they
+       don't show the bottom-nav underneath bleeding through.
+       Z-index higher than the nav (60). */
+.modal, .vmodal, .vai-modal, .med-modal, .chitti-overlay,
+.consent-overlay, .device-overlay, .kv-overlay, [role="dialog"][aria-modal="true"] {
+  z-index: 9000 !important;
+}
+
+/* 13. Long-content text containers — anywhere user-pasted text or
+       fetched API content lands, force wrap. Catches the .answer /
+       .timeline pattern on multiple pages that the §3 word-break
+       rule already covers, plus a few more containers we found in
+       the deep scan. */
+.timeline-entry, .art-summary, .art-title, .kv-row .name,
+.answer-text, .response-text, .ai-reply, .deepseek-reply,
+[data-chitti-response] *:not(button):not(input):not(select):not(svg):not(.ico) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* 14. Common form rows that ship as flex with 3+ children — wrap
+       on phones so they never push horizontally. */
+@media (max-width: 480px) {
+  .field-row, .form-row, .actions-row,
+  .picker-bar, .upload-row, .insurance-row, .doc-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  /* Inputs in those rows take full width if the row wraps */
+  .field-row > .field, .form-row > .field, .upload-row > input,
+  .picker-bar select, .picker-bar input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* 15. SDS (2wheeler/4wheeler/fashion) pages — their .sds-page
+       wrapper sometimes has min-width that breaks 375px. Force fluid.
+       The class names come from sahayai_design_system.css; theme.css
+       overrides at higher specificity via .sds-page.sds-page. */
+.sds-page.sds-page,
+.sds-page.sds-page .sds-card,
+.sds-page.sds-page .sds-row,
+.sds-page.sds-page .sds-col {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 16. Vaani's vai-tabbar — pin to bottom AND coexist with its own
+       internals. Vaani opts out of the unified bottom-nav, so the
+       vai-tabbar is the only bottom-fixed element there — no conflict. */
+.vai-tabbar { z-index: 60 !important; }
+
+/* 17. Health File iframe inside MedUPI's #health-file tab — clamp
+       height so the iframe + tabs + bottom-nav all fit. */
+#hf-iframe {
+  max-width: 100% !important;
+  min-height: 700px;
+}
+@media (max-width: 480px) {
+  #hf-iframe { min-height: 560px; }
+}
+
+/* 18. Header brand-row on every page — never let "Chitti X" tag-line
+       wrap and break layout; if it must overflow, ellipsize. */
+@media (max-width: 480px) {
+  header[role="banner"] .brand,
+  .chitti-header .brand,
+  header[role="banner"] .tagline,
+  .chitti-header .tagline {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
