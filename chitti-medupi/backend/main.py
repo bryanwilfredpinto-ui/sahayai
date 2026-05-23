@@ -28,6 +28,7 @@ from config import settings
 from database import Base, engine
 import models  # noqa: F401 — registers all models with Base.metadata
 from routes.medupi import bp as medupi_bp
+from routes.health_file import bp as health_file_bp  # Chitti Health File, added 2026-05-23
 from services import (
     medupi_database,
     medupi_jan_aushadhi,
@@ -154,6 +155,7 @@ def _create_app() -> Flask:
         return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     app.register_blueprint(medupi_bp)
+    app.register_blueprint(health_file_bp)
 
     # Quality framework: /api/feedback (thumbs up/down) + optional /metrics.
     app.register_blueprint(feedback_bp)

@@ -38,3 +38,9 @@ openpyxl>=3.1.0
 
 # Sahay AI quality framework deps (used by lib/*.py)
 prometheus-client==0.20.0    # /metrics endpoint; lazy-imported in observability
+
+# ===== Chitti Health File (added 2026-05-23) =====
+# AES-256-GCM at rest for encrypted health documents — non-negotiable
+# privacy contract per CHITTI_HEALTH_FILE_MASTER_SPEC.md.
+# Pure-Python wheels available for cp311 manylinux; no Rust toolchain.
+cryptography>=42.0,<46.0
