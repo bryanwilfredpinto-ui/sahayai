@@ -47,19 +47,34 @@ def _bootstrap_replica(libsql_url: str, local_path: str) -> None:
     _REPLICA_SYNCER = libsql.connect(local_path, sync_url=sync_url, auth_token=token)
 
     def _loop():
-        # Immediate first sync in the background — never blocks /health.
-        # libsql.connect() above is foreground (local SQLite open, no
-        # network); the first .sync() hits Turso over the wire and can
-        # take seconds on a cold boot. Pushing it here keeps the gunicorn
-        # worker free to bind /health well under Render's 30 s probe.
+        # Initial sync — pulls schema + existing rows from Turso into the
+        # local SQLite once. Runs in the background so /health binds inside
+        # Render's 30 s probe window.
         try:
             _REPLICA_SYNCER.sync()
             log.info("Initial sync from Turso complete")
         except Exception as e:  # noqa: BLE001
             log.warning("Initial Turso sync failed (will retry in background): %s", e)
-        # Steady-state 60 s refresh.
+        # Steady-state refresh — runs every BG_SYNC_INTERVAL_SECS.
+        #
+        # CRITICAL TURSO ARCHITECTURE NOTE (2026-05-24):
+        # The libsql-experimental embedded replica's `.sync()` is a PULL
+        # operation that overwrites the local SQLite with Turso's state.
+        # SQLAlchemy writes against the local file are NOT pushed back to
+        # Turso by this thread — they live in the local SQLite ONLY until
+        # the next sync wipes them. Practically this means every health-
+        # file / family-profile insert is ephemeral until a proper
+        # bi-directional push path is wired.
+        #
+        # Tactical mitigation: interval extended to 1 hour (was 60 s) so
+        # writes stay reachable within a single container lifetime. Set
+        # via TURSO_SYNC_SECS env var if you need it sooner (read-heavy
+        # workloads benefit from fresher pulls). Architectural fix —
+        # routing all inserts through the libsql client connection — is
+        # tracked separately.
+        interval = max(60, int(os.environ.get("TURSO_SYNC_SECS", "3600") or "3600"))
         while True:
-            time.sleep(60)
+            time.sleep(interval)
             try:
                 _REPLICA_SYNCER.sync()
             except Exception as e:  # noqa: BLE001
