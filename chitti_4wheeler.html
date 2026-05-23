@@ -119,6 +119,7 @@
     <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
       <select id="mc-model" class="sds-select"><option value="">— Model —</option></select>
     </div>
+    <div class="sds-field"><label data-vai-i18n="mc.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(XZ+ / VXi / ZXi+ / SX(O) / standard)</span></label><input id="mc-variant" class="sds-input" placeholder="XZ+ / VXi / ZXi+ / SX(O) / standard"></div>
     <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL3CAB5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
     <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
       <div><label data-vai-i18n="mb.form.year">Year</label>
@@ -148,7 +149,101 @@
       <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-car-fb')">रद्द</button><button onclick="sendFb('mc_car_form','mc-car-fb-text','mc-car-fb')">भेजो</button></div>
     </div>
   </div>
+
+  <!-- ════════ KNOW YOUR CAR — dynamic, AI-driven for ANY saved car ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🧠 Know my Car" id="mc-kyv-card">
+    <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mc.kyv.title">Know my Car — Chitti ki gehri jaankari</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mc.kyv.sub">Aapki exact gaadi ke baare mein sab kuch — engine parts, oil + coolant + ATF brand recommendations (VFM ranked), tyres, cleaning DIY, dashboard warning lights, season-wise care, fair-price benchmark.</div>
+
+    <div id="mc-kyv-empty" class="kyv-empty">
+      <div class="big">🧠</div>
+      <div class="title" data-vai-i18n="mc.kyv.empty.title">Pehle apni gaadi save karein</div>
+      <div class="sub" data-vai-i18n="mc.kyv.empty.sub">Make + Model + Variant save hone ke baad Chitti aapki exact gaadi ka workshop manual + savvy-friend guide ek saath dega.</div>
+    </div>
+
+    <div id="mc-kyv-loading" class="kyv-loading" style="display:none">
+      <div class="spinner">⚙️</div>
+      <div data-vai-i18n="mc.kyv.loading.head">Chitti research kar rahi hai…</div>
+      <div class="kyv-load-name" id="mc-kyv-name">—</div>
+      <div class="kyv-load-sub" data-vai-i18n="mc.kyv.loading.sub">≈ 10 second — engine, coolant, oil, tyres, AC, brake, warnings, season-care.</div>
+    </div>
+
+    <div id="mc-kyv-content" style="display:none"></div>
+
+    <div id="mc-kyv-error" class="kyv-error" style="display:none">
+      <div data-vai-i18n="mc.kyv.error">😔 Chitti research nahi kar payi. Internet check karke phir try karein.</div>
+      <button onclick="mcKyvGenerate(true)" data-vai-i18n="mc.kyv.retry">🔄 Phir try karein</button>
+    </div>
+
+    <div class="sds-card-toolbar">
+      <button onclick="mcKyvSpeakAll()">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+      <button class="demo" onclick="mcKyvGenerate(true)">🔄 <span data-vai-i18n="mc.kyv.refresh">Refresh</span></button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mc_kyv', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_kyv'">👎</button>
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Know Your Vehicle — same visual language on the car page */
+  .kyv-empty{padding:30px 16px;text-align:center;color:#555}
+  .kyv-empty .big{font-size:48px;margin-bottom:8px}
+  .kyv-empty .title{font-size:18px;font-weight:800;color:var(--sds-navy);margin-bottom:6px}
+  .kyv-empty .sub{font-size:14px;line-height:1.5}
+  .kyv-loading{padding:24px 16px;text-align:center}
+  .kyv-loading .spinner{font-size:38px;margin-bottom:10px;animation:kyv-spin 1.6s linear infinite;display:inline-block}
+  .kyv-load-name{font-weight:800;color:var(--sds-navy);font-size:16px;margin:6px 0}
+  .kyv-load-sub{font-size:12px;color:#666}
+  @keyframes kyv-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .kyv-error{padding:20px;text-align:center;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;margin:14px 0;font-size:14px;color:#9a3412}
+  .kyv-error button{margin-top:10px;background:var(--sds-saffron);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer}
+  .kyv-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+  .kyv-stat{background:#f7f8fa;border-radius:8px;padding:8px 10px}
+  .kyv-stat .lbl{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em}
+  .kyv-stat .val{font-size:15px;font-weight:700;color:var(--sds-navy);margin-top:2px}
+  .kyv-row{padding:10px 0;border-bottom:1px solid #f0f0f0}
+  .kyv-row:last-child{border-bottom:none}
+  .kyv-row-head{margin-bottom:4px;font-size:15px}
+  .kyv-loc{font-size:12px;color:#888;font-weight:400}
+  .kyv-row-body{font-size:14px;color:#333;line-height:1.5}
+  .kyv-row-warn{font-size:13px;color:#b45309;margin-top:4px;background:#fffbeb;padding:4px 8px;border-radius:6px}
+  .kyv-consume{background:#fffbf3;border:1px solid #fce8c0;border-radius:10px;padding:10px;margin:8px 0}
+  .kyv-consume-head{font-size:15px;font-weight:700;margin-bottom:2px}
+  .kyv-spec{color:#666;font-weight:400;font-size:13px}
+  .kyv-consume-when{font-size:12px;color:#666;margin-bottom:6px}
+  .kyv-table{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px}
+  .kyv-table th,.kyv-table td{padding:6px 4px;text-align:left;border-bottom:1px solid #f0e6cc}
+  .kyv-table th{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .kyv-table tr.vfm{background:#dcfce7}
+  .kyv-table tr.vfm td{font-weight:600;color:#14532d}
+  .kyv-fake{background:#fee2e2;border-left:3px solid #dc2626;padding:6px 8px;margin-top:6px;font-size:13px;border-radius:0 4px 4px 0}
+  .kyv-diy{background:#dcfce7;border-left:3px solid #16a34a;padding:6px 8px;margin-top:6px;font-size:13px;border-radius:0 4px 4px 0}
+  .kyv-clean{padding:8px 0;border-bottom:1px dashed #eee}
+  .kyv-clean:last-child{border-bottom:none}
+  .kyv-clean-head{font-size:14px;font-weight:700;margin-bottom:4px}
+  .kyv-clean-store{font-size:13px;color:#333;margin:3px 0}
+  .kyv-clean-diy{font-size:13px;color:#15803d;margin:3px 0;background:#f0fdf4;padding:5px 8px;border-radius:6px;line-height:1.5}
+  .kyv-clean-warn{font-size:12px;color:#dc2626;margin:3px 0}
+  .kyv-kit{margin-bottom:10px;background:#f8f9fb;border-radius:8px;padding:8px 10px}
+  .kyv-kit-head{font-weight:700;font-size:14px;color:var(--sds-navy);margin-bottom:4px}
+  .kyv-kit ul{margin:0 0 0 18px;padding:0;font-size:13.5px;line-height:1.6}
+  .kyv-warn{padding:10px;margin-bottom:8px;border-radius:8px;background:#f7f8fa}
+  .kyv-warn.kyv-warn-high{background:#fee2e2;border-left:4px solid #dc2626}
+  .kyv-warn.kyv-warn-med{background:#fef3c7;border-left:4px solid #f59e0b}
+  .kyv-warn.kyv-warn-low{background:#dcfce7;border-left:4px solid #16a34a}
+  .kyv-warn-sig{font-size:14px;margin-bottom:3px}
+  .kyv-warn-cause{font-size:13px;color:#555;margin-bottom:2px}
+  .kyv-warn-act{font-size:13px;color:#15803d}
+  .kyv-warn.kyv-warn-high .kyv-warn-act{color:#b91c1c;font-weight:700}
+  .kyv-known li{margin-bottom:6px;font-size:14px;line-height:1.5}
+  .kyv-season>div{margin-bottom:6px;font-size:14px;line-height:1.5}
+  .kyv-cost{margin:10px 0;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:14px}
+  .kyv-svc{font-size:12px;color:#555;margin-top:4px}
+  .kyv-preride ol{margin:6px 0 0 20px;padding:0;font-size:14px;line-height:1.7}
+  .kyv-resale ul{margin:6px 0 0 18px;padding:0;font-size:14px;line-height:1.6}
+  .kyv-section-title{font-size:15px;font-weight:800;color:var(--sds-navy);margin:12px 0 6px}
+</style>
 
 <div class="sds-tab-panel" id="mc-tab-docs">
   <div id="mc-docs-list"></div>
@@ -399,9 +494,11 @@ function speakText(t, lang){
 function loadCar(){ try { return JSON.parse(localStorage.getItem(CAR_KEY) || 'null'); } catch(e){ return null; } }
 function saveCar(c){ try { localStorage.setItem(CAR_KEY, JSON.stringify(c)); } catch(e){} }
 function mcSaveCar(){
+  const variantEl = document.getElementById('mc-variant');
   const c = {
     make: (document.getElementById('mc-make').value || '').trim(),
     model: (document.getElementById('mc-model').value || '').trim(),
+    variant: variantEl ? (variantEl.value || '').trim() : '',
     reg: (document.getElementById('mc-reg').value || '').trim().toUpperCase(),
     year: (document.getElementById('mc-year').value || '').trim(),
     color: (document.getElementById('mc-color').value || '').trim(),
@@ -411,17 +508,19 @@ function mcSaveCar(){
   if (!c.make && !c.model && !c.reg) { speakText('कम से कम make, model और reg number डालिए।', CURRENT_LANG); return; }
   saveCar(c);
   speakText('गाड़ी सेव हो गई। ' + c.make + ' ' + c.model + ', ' + c.reg, CURRENT_LANG);
+  try { mcKyvLoad(); } catch(e){}
   mcTab('home');
 }
 function mcDemoForm(){
   document.getElementById('mc-make').value = 'Maruti Suzuki';
   mcOnMakeChange('Maruti Suzuki');
   document.getElementById('mc-model').value = 'Swift';
+  const vEl = document.getElementById('mc-variant'); if (vEl) vEl.value = 'VXi';
   document.getElementById('mc-reg').value = 'DL3CAB5678';
   document.getElementById('mc-year').value = '2020';
   document.getElementById('mc-color').value = 'सफ़ेद';
   document.getElementById('mc-odo').value = '52000';
-  speakText('Demo bharo: Maruti Swift DL3 CAB 5678, 2020, safed.', CURRENT_LANG);
+  speakText('Demo bharo: Maruti Swift VXi DL3 CAB 5678, 2020, safed.', CURRENT_LANG);
 }
 
 function mcAddByVoice(){
@@ -753,10 +852,219 @@ async function mcSoonVote(featureId, v, btn){
   speakText(v > 0 ? 'Vote noted — Chitti is khabar pahuncha rahi hai.' : 'Theek hai — yeh nahi banayenge.', CURRENT_LANG);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// KNOW YOUR CAR — dynamic, AI-driven for ANY saved 4-wheeler.
+// One DeepSeek call per (make, model, year, variant, language). Cached in
+// localStorage so user pays the ~10-sec wait exactly once per car.
+// ═══════════════════════════════════════════════════════════════════════
+const LANG_NAMES_MC = { en:'English', hi:'Hindi', bn:'Bangla', ta:'Tamil', te:'Telugu', mr:'Marathi', gu:'Gujarati', kn:'Kannada', ml:'Malayalam' };
+function kyvSlug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''); }
+function mcKyvKey(c){
+  return 'chitti_car_kyv_v1_' + (CURRENT_LANG||'en')
+       + '_' + kyvSlug(c.make) + '_' + kyvSlug(c.model)
+       + '_' + (c.year||'na') + '_' + kyvSlug(c.variant||'');
+}
+function mcKyvLoad(){
+  const c = loadCar();
+  const empty = document.getElementById('mc-kyv-empty');
+  const load = document.getElementById('mc-kyv-loading');
+  const cont = document.getElementById('mc-kyv-content');
+  const err = document.getElementById('mc-kyv-error');
+  if (!empty || !load || !cont || !err) return;
+  load.style.display = 'none'; err.style.display = 'none';
+  if (!c || !c.make || !c.model) {
+    empty.style.display = 'block'; cont.style.display = 'none'; cont.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  try {
+    const cached = localStorage.getItem(mcKyvKey(c));
+    if (cached) { mcKyvRender(JSON.parse(cached), c); return; }
+  } catch(e){}
+  mcKyvGenerate();
+}
+async function mcKyvGenerate(force){
+  const c = loadCar();
+  if (!c || !c.make || !c.model) { mcKyvLoad(); return; }
+  const key = mcKyvKey(c);
+  if (!force) {
+    try {
+      const cached = localStorage.getItem(key);
+      if (cached) { mcKyvRender(JSON.parse(cached), c); return; }
+    } catch(e){}
+  }
+  document.getElementById('mc-kyv-empty').style.display = 'none';
+  document.getElementById('mc-kyv-content').style.display = 'none';
+  document.getElementById('mc-kyv-error').style.display = 'none';
+  const loadEl = document.getElementById('mc-kyv-loading');
+  loadEl.style.display = 'block';
+  document.getElementById('mc-kyv-name').textContent = (c.make+' '+c.model+' '+(c.year||'')+(c.variant?' · '+c.variant:'')).trim();
+  const lang = LANG_NAMES_MC[CURRENT_LANG] || 'English';
+  const prompt = mcKyvPrompt(c, lang);
+  let json = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' })
+    });
+    const d = await r.json();
+    const text = d.reply || d.answer || d.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { try { json = JSON.parse(m[0]); } catch(e){} }
+  } catch(e){}
+  loadEl.style.display = 'none';
+  if (!json) { document.getElementById('mc-kyv-error').style.display = 'block'; return; }
+  try { localStorage.setItem(key, JSON.stringify(json)); } catch(e){}
+  mcKyvRender(json, c);
+}
+function mcKyvPrompt(c, lang){
+  return [
+    'You are an expert Indian car mechanic with 20+ years experience servicing every popular 4-wheeler sold in India.',
+    "User's car — Make: " + c.make + ' | Model: ' + c.model + ' | Year: ' + (c.year||'unknown') + ' | Variant: ' + (c.variant||'standard') + '.',
+    'Build a "Know Your Car" guide as STRICT JSON. Be SPECIFIC — real Indian brand names (Shell/Castrol/Mobil/Motul/Bosch/NGK/Apollo/MRF/Bridgestone/CEAT/Amaron/Exide/Wavex/3M/Meguiars), real 2026 INR prices, real Indian household-DIY recipes (toothpaste for headlight haze, baby shampoo for wash, white-vinegar+water for glass, olive-oil+vinegar for dashboard, Coca-Cola on battery terminals, banana peel for plastic scuff, coconut oil on leather, castor oil tyre shine).',
+    'No "consult dealer" — give actual answers. Where unsure mark "approx". Mention transmission fluid only if AT/CVT/AMT/DCT.',
+    'All HUMAN-READABLE text MUST be in ' + lang + '. Brand names, part numbers, chemical specs stay English/Latin. Numbers stay numbers.',
+    'Output ONLY this JSON (no preamble, no markdown fence):',
+    '{',
+    '  "engine_cc": int, "engine_type": "petrol / diesel / CNG / hybrid / electric / petrol+CNG", "bhp": number, "torque_nm": number, "fuel_tank_l": number, "rated_mileage": "string e.g. 18-22 kmpl city / 24 highway", "service_interval": "string e.g. 10,000 km / 12 months",',
+    '  "anatomy": [{"part":"engine oil filler cap / dipstick / coolant reservoir / brake fluid res / battery / air filter housing / wiper washer res / fuse box / cabin filter location / AC condenser / etc.", "location":"where under the hood / cabin", "function":"1-line role", "common_problem":"what typically goes wrong"}],',
+    '  "consumables": [{"item":"engine oil / coolant / brake fluid / transmission fluid (if AT/CVT) / power steering fluid (if hydraulic) / battery / air filter / cabin filter / spark plugs / wiper blades / tyres / washer fluid", "spec":"e.g. 0W-20 API SP / DOT 4 / 215/60 R16", "capacity":"e.g. 3.5 L / 5.5 L", "change_interval":"e.g. 10000 km", "options":[{"brand":"...","name":"...","price_inr":int,"verdict":"OEM SAFE / BEST VFM / PREMIUM / BUDGET"}], "fake_alert":"how to spot counterfeit + where to buy authentic", "diy_check":"how to check at home (dipstick reading, coolant level)"}],',
+    '  "cleaning_care": [{"surface":"paint / dashboard / glass interior / leather seats or fabric / plastic trim / tyre dressing / engine bay / headlight haze / battery terminals / wheel rims", "store_bought":[{"brand":"...","price":int}], "diy_recipe":"Indian household recipe", "warning":"optional do-not-do"}],',
+    '  "toolkit": {"starter":["item with price","..."], "mid":["..."], "pro":["..."]},',
+    '  "warnings": [{"signal":"dashboard light / sound / smell / steam / feel", "likely":"cause", "action":"what to do now", "urgency":"low|medium|high"}],',
+    '  "known_issues": ["model+variant specific quirk + DIY fix or warranty/recall info"],',
+    '  "seasonal": {"monsoon":"...","summer":"...","winter":"..."},',
+    '  "service_cost": {"local_inr":"3500-5500","authorised_inr":"7000-9500","what_is_done":"engine oil + filter + brake + AC vent + tyre rotation + diagnostic"},',
+    '  "pre_ride_check": ["item 1","item 2","..."],',
+    '  "resale_prep": ["fix 1","fix 2","..."]',
+    '}',
+    'Counts: anatomy 10-14, consumables 8-11 (each with 2-4 options), cleaning_care 8-10, warnings 10-14, known_issues 3-5, pre_ride_check 5-7, resale_prep 4-6.'
+  ].join('\n');
+}
+function kyvEsc(s){ if (s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+let mcKyvCurrent = null;
+function mcKyvSpeakAll(){
+  const j = mcKyvCurrent;
+  if (!j) { speakText('Pehle apni gaadi save karein. Chitti research nahi kar sakti.', CURRENT_LANG); return; }
+  const c = loadCar() || {};
+  const head = (c.make||'') + ' ' + (c.model||'') + (c.variant ? ' ' + c.variant : '') + ', ' + (j.engine_cc||'') + ' cc ' + (j.engine_type||'') + ', mileage ' + (j.rated_mileage||'');
+  const cons = (j.consumables||[]).slice(0,3).map(x => x.item + ' ' + (x.options && x.options[0] ? x.options[0].brand : '')).join(', ');
+  speakText(head + '. Top consumables: ' + cons + '.', CURRENT_LANG);
+}
+function mcKyvRender(j, c){
+  mcKyvCurrent = j;
+  const out = document.getElementById('mc-kyv-content');
+  document.getElementById('mc-kyv-empty').style.display = 'none';
+  document.getElementById('mc-kyv-loading').style.display = 'none';
+  document.getElementById('mc-kyv-error').style.display = 'none';
+  out.style.display = 'block';
+  let h = '';
+
+  h += '<div class="kyv-section-title">🧠 ' + kyvEsc(c.make + ' ' + c.model + ' ' + (c.year||'') + (c.variant ? ' · ' + c.variant : '')) + '</div>';
+  h += '<div class="kyv-stats">';
+  const stats = [
+    ['Engine', (j.engine_cc?j.engine_cc+' cc':'-')], ['Fuel', (j.engine_type||'-')],
+    ['BHP', (j.bhp||'-')], ['Torque', ((j.torque_nm||'-')+' Nm')],
+    ['Tank', ((j.fuel_tank_l||'-')+' L')], ['Mileage', j.rated_mileage||'-'],
+    ['Service', j.service_interval||'-']
+  ];
+  stats.forEach(s => h += '<div class="kyv-stat"><div class="lbl">'+kyvEsc(s[0])+'</div><div class="val">'+kyvEsc(s[1])+'</div></div>');
+  h += '</div>';
+
+  h += '<div class="kyv-section-title">🔧 Anatomy — har part ka role + kahaan</div>';
+  (j.anatomy||[]).forEach(a => {
+    h += '<div class="kyv-row"><div class="kyv-row-head"><b>'+kyvEsc(a.part||'')+'</b> <span class="kyv-loc">'+kyvEsc(a.location||'')+'</span></div>';
+    h += '<div class="kyv-row-body">'+kyvEsc(a.function||'')+'</div>';
+    if (a.common_problem) h += '<div class="kyv-row-warn">⚠️ '+kyvEsc(a.common_problem)+'</div>';
+    h += '</div>';
+  });
+
+  h += '<div class="kyv-section-title">🛢️ Consumables — kya, kab, kitne ka, kahaan se</div>';
+  (j.consumables||[]).forEach(con => {
+    h += '<div class="kyv-consume">';
+    h += '<div class="kyv-consume-head"><b>'+kyvEsc(con.item||'')+'</b>';
+    if (con.spec) h += ' · <span class="kyv-spec">'+kyvEsc(con.spec)+'</span>';
+    if (con.capacity) h += ' · '+kyvEsc(con.capacity);
+    h += '</div>';
+    if (con.change_interval) h += '<div class="kyv-consume-when">🕒 Change: '+kyvEsc(con.change_interval)+'</div>';
+    if (con.options && con.options.length) {
+      h += '<table class="kyv-table"><thead><tr><th>Brand · Product</th><th>Price</th><th>Verdict</th></tr></thead><tbody>';
+      con.options.forEach(o => {
+        const verdictCls = /vfm|best/i.test(o.verdict||'') ? 'vfm' : '';
+        h += '<tr class="'+verdictCls+'"><td>'+kyvEsc(o.brand||'')+' <em>'+kyvEsc(o.name||'')+'</em></td><td>₹'+(o.price_inr||'?')+'</td><td>'+kyvEsc(o.verdict||'')+'</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
+    if (con.fake_alert) h += '<div class="kyv-fake">⚠️ <b>Fake alert:</b> '+kyvEsc(con.fake_alert)+'</div>';
+    if (con.diy_check) h += '<div class="kyv-diy">🔍 <b>DIY check:</b> '+kyvEsc(con.diy_check)+'</div>';
+    h += '</div>';
+  });
+
+  h += '<div class="kyv-section-title">✨ Saaf-safai — store ya ghar par</div>';
+  (j.cleaning_care||[]).forEach(cl => {
+    h += '<div class="kyv-clean">';
+    h += '<div class="kyv-clean-head">'+kyvEsc(cl.surface||'')+'</div>';
+    if (cl.store_bought && cl.store_bought.length) h += '<div class="kyv-clean-store">🏪 '+cl.store_bought.map(s => kyvEsc(s.brand||'')+' ₹'+(s.price||'?')).join(' · ')+'</div>';
+    if (cl.diy_recipe) h += '<div class="kyv-clean-diy">🏠 <b>DIY:</b> '+kyvEsc(cl.diy_recipe)+'</div>';
+    if (cl.warning) h += '<div class="kyv-clean-warn">⛔ '+kyvEsc(cl.warning)+'</div>';
+    h += '</div>';
+  });
+
+  if (j.toolkit) {
+    h += '<div class="kyv-section-title">🧰 Toolkit — kya khud rakhna</div>';
+    [['starter','💰 Starter'],['mid','💰💰 Mid'],['pro','💰💰💰 Pro']].forEach(p => {
+      const arr = j.toolkit[p[0]];
+      if (arr && arr.length) {
+        h += '<div class="kyv-kit"><div class="kyv-kit-head">'+p[1]+'</div><ul>'+arr.map(x => '<li>'+kyvEsc(x)+'</li>').join('')+'</ul></div>';
+      }
+    });
+  }
+
+  h += '<div class="kyv-section-title">🚨 Dashboard light · awaaz · gandh — decoded</div>';
+  (j.warnings||[]).forEach(w => {
+    const ucls = w.urgency === 'high' ? 'kyv-warn-high' : (w.urgency === 'medium' ? 'kyv-warn-med' : 'kyv-warn-low');
+    h += '<div class="kyv-warn '+ucls+'">';
+    h += '<div class="kyv-warn-sig">📢 <b>'+kyvEsc(w.signal||'')+'</b></div>';
+    h += '<div class="kyv-warn-cause">→ '+kyvEsc(w.likely||'')+'</div>';
+    h += '<div class="kyv-warn-act">✅ '+kyvEsc(w.action||'')+'</div>';
+    h += '</div>';
+  });
+
+  if (j.known_issues && j.known_issues.length) {
+    h += '<div class="kyv-section-title">📌 '+kyvEsc(c.make+' '+c.model)+' '+kyvEsc(c.variant||'')+' ki khaas baatein</div>';
+    h += '<ul class="kyv-known">'+j.known_issues.map(i => '<li>'+kyvEsc(i)+'</li>').join('')+'</ul>';
+  }
+
+  h += '<div class="kyv-section-title">📅 Saal bhar ka care + paisa-bachao guide</div>';
+  if (j.seasonal) {
+    h += '<div class="kyv-season">';
+    if (j.seasonal.monsoon) h += '<div><b>🌧️ Monsoon:</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
+    if (j.seasonal.summer) h += '<div><b>☀️ Summer:</b> '+kyvEsc(j.seasonal.summer)+'</div>';
+    if (j.seasonal.winter) h += '<div><b>❄️ Winter:</b> '+kyvEsc(j.seasonal.winter)+'</div>';
+    h += '</div>';
+  }
+  if (j.service_cost) {
+    h += '<div class="kyv-cost"><b>💸 Service cost benchmark:</b><br>';
+    h += 'Local mechanic: ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · Authorised: ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
+    if (j.service_cost.what_is_done) h += '<div class="kyv-svc">'+kyvEsc(j.service_cost.what_is_done)+'</div>';
+    h += '</div>';
+  }
+  if (j.pre_ride_check && j.pre_ride_check.length) {
+    h += '<div class="kyv-preride"><b>🎙️ Pre-drive 30-sec check:</b><ol>'+j.pre_ride_check.map(p => '<li>'+kyvEsc(p)+'</li>').join('')+'</ol></div>';
+  }
+  if (j.resale_prep && j.resale_prep.length) {
+    h += '<div class="kyv-resale"><b>💰 Resale prep:</b><ul>'+j.resale_prep.map(r => '<li>'+kyvEsc(r)+'</li>').join('')+'</ul></div>';
+  }
+
+  out.innerHTML = h;
+  if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mcRefreshHome();
+  try { mcKyvLoad(); } catch(e){}
 });
 </script>
 </body>

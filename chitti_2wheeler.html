@@ -124,6 +124,7 @@
     <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
       <select id="mb-model" class="sds-select"><option value="">— Model —</option></select>
     </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(optional)</span></label><input id="mb-variant" class="sds-input" placeholder="Self-start / Drum / i3S / Disc / standard"></div>
     <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mb-reg" class="sds-input" placeholder="UP32AB1234" style="text-transform:uppercase;letter-spacing:.1em"></div>
     <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
       <div><label data-vai-i18n="mb.form.year">Year</label>
@@ -151,7 +152,101 @@
       <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-bike-fb')">रद्द</button><button onclick="sendFb('mb_bike_form','mb-bike-fb-text','mb-bike-fb')">भेजो</button></div>
     </div>
   </div>
+
+  <!-- ════════ KNOW YOUR BIKE — dynamic, AI-driven for ANY saved bike ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🧠 Know my Bike" id="mb-kyv-card">
+    <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mb.kyv.title">Know my Bike — Chitti ki gehri jaankari</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mb.kyv.sub">Apni exact bike ke baare mein sab kuch — parts, oil, chain, tyres, saaf-safai DIY, warning awaaz, season-wise care, fair-price benchmark.</div>
+
+    <div id="mb-kyv-empty" class="kyv-empty">
+      <div class="big">🧠</div>
+      <div class="title" data-vai-i18n="mb.kyv.empty.title">Pehle apni bike save karein</div>
+      <div class="sub" data-vai-i18n="mb.kyv.empty.sub">Make + Model save hone ke baad Chitti aapki exact bike ka workshop manual + savvy-friend guide ek saath dega.</div>
+    </div>
+
+    <div id="mb-kyv-loading" class="kyv-loading" style="display:none">
+      <div class="spinner">⚙️</div>
+      <div data-vai-i18n="mb.kyv.loading.head">Chitti research kar rahi hai…</div>
+      <div class="kyv-load-name" id="mb-kyv-name">—</div>
+      <div class="kyv-load-sub" data-vai-i18n="mb.kyv.loading.sub">≈ 10 second — anatomy, oil, chain, tyres, brake, warnings, season-care.</div>
+    </div>
+
+    <div id="mb-kyv-content" style="display:none"></div>
+
+    <div id="mb-kyv-error" class="kyv-error" style="display:none">
+      <div data-vai-i18n="mb.kyv.error">😔 Chitti research nahi kar payi. Internet check karke phir try karein.</div>
+      <button onclick="mbKyvGenerate(true)" data-vai-i18n="mb.kyv.retry">🔄 Phir try karein</button>
+    </div>
+
+    <div class="sds-card-toolbar">
+      <button onclick="mbKyvSpeakAll()">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+      <button class="demo" onclick="mbKyvGenerate(true)">🔄 <span data-vai-i18n="mb.kyv.refresh">Refresh</span></button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_kyv', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_kyv'">👎</button>
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Know Your Vehicle — shared visual language */
+  .kyv-empty{padding:30px 16px;text-align:center;color:#555}
+  .kyv-empty .big{font-size:48px;margin-bottom:8px}
+  .kyv-empty .title{font-size:18px;font-weight:800;color:var(--sds-navy);margin-bottom:6px}
+  .kyv-empty .sub{font-size:14px;line-height:1.5}
+  .kyv-loading{padding:24px 16px;text-align:center}
+  .kyv-loading .spinner{font-size:38px;margin-bottom:10px;animation:kyv-spin 1.6s linear infinite;display:inline-block}
+  .kyv-load-name{font-weight:800;color:var(--sds-navy);font-size:16px;margin:6px 0}
+  .kyv-load-sub{font-size:12px;color:#666}
+  @keyframes kyv-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .kyv-error{padding:20px;text-align:center;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;margin:14px 0;font-size:14px;color:#9a3412}
+  .kyv-error button{margin-top:10px;background:var(--sds-saffron);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer}
+  .kyv-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+  .kyv-stat{background:#f7f8fa;border-radius:8px;padding:8px 10px}
+  .kyv-stat .lbl{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em}
+  .kyv-stat .val{font-size:15px;font-weight:700;color:var(--sds-navy);margin-top:2px}
+  .kyv-row{padding:10px 0;border-bottom:1px solid #f0f0f0}
+  .kyv-row:last-child{border-bottom:none}
+  .kyv-row-head{margin-bottom:4px;font-size:15px}
+  .kyv-loc{font-size:12px;color:#888;font-weight:400}
+  .kyv-row-body{font-size:14px;color:#333;line-height:1.5}
+  .kyv-row-warn{font-size:13px;color:#b45309;margin-top:4px;background:#fffbeb;padding:4px 8px;border-radius:6px}
+  .kyv-consume{background:#fffbf3;border:1px solid #fce8c0;border-radius:10px;padding:10px;margin:8px 0}
+  .kyv-consume-head{font-size:15px;font-weight:700;margin-bottom:2px}
+  .kyv-spec{color:#666;font-weight:400;font-size:13px}
+  .kyv-consume-when{font-size:12px;color:#666;margin-bottom:6px}
+  .kyv-table{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px}
+  .kyv-table th,.kyv-table td{padding:6px 4px;text-align:left;border-bottom:1px solid #f0e6cc}
+  .kyv-table th{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .kyv-table tr.vfm{background:#dcfce7}
+  .kyv-table tr.vfm td{font-weight:600;color:#14532d}
+  .kyv-fake{background:#fee2e2;border-left:3px solid #dc2626;padding:6px 8px;margin-top:6px;font-size:13px;border-radius:0 4px 4px 0}
+  .kyv-diy{background:#dcfce7;border-left:3px solid #16a34a;padding:6px 8px;margin-top:6px;font-size:13px;border-radius:0 4px 4px 0}
+  .kyv-clean{padding:8px 0;border-bottom:1px dashed #eee}
+  .kyv-clean:last-child{border-bottom:none}
+  .kyv-clean-head{font-size:14px;font-weight:700;margin-bottom:4px}
+  .kyv-clean-store{font-size:13px;color:#333;margin:3px 0}
+  .kyv-clean-diy{font-size:13px;color:#15803d;margin:3px 0;background:#f0fdf4;padding:5px 8px;border-radius:6px;line-height:1.5}
+  .kyv-clean-warn{font-size:12px;color:#dc2626;margin:3px 0}
+  .kyv-kit{margin-bottom:10px;background:#f8f9fb;border-radius:8px;padding:8px 10px}
+  .kyv-kit-head{font-weight:700;font-size:14px;color:var(--sds-navy);margin-bottom:4px}
+  .kyv-kit ul{margin:0 0 0 18px;padding:0;font-size:13.5px;line-height:1.6}
+  .kyv-warn{padding:10px;margin-bottom:8px;border-radius:8px;background:#f7f8fa}
+  .kyv-warn.kyv-warn-high{background:#fee2e2;border-left:4px solid #dc2626}
+  .kyv-warn.kyv-warn-med{background:#fef3c7;border-left:4px solid #f59e0b}
+  .kyv-warn.kyv-warn-low{background:#dcfce7;border-left:4px solid #16a34a}
+  .kyv-warn-sig{font-size:14px;margin-bottom:3px}
+  .kyv-warn-cause{font-size:13px;color:#555;margin-bottom:2px}
+  .kyv-warn-act{font-size:13px;color:#15803d}
+  .kyv-warn.kyv-warn-high .kyv-warn-act{color:#b91c1c;font-weight:700}
+  .kyv-known li{margin-bottom:6px;font-size:14px;line-height:1.5}
+  .kyv-season>div{margin-bottom:6px;font-size:14px;line-height:1.5}
+  .kyv-cost{margin:10px 0;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:14px}
+  .kyv-svc{font-size:12px;color:#555;margin-top:4px}
+  .kyv-preride ol{margin:6px 0 0 20px;padding:0;font-size:14px;line-height:1.7}
+  .kyv-resale ul{margin:6px 0 0 18px;padding:0;font-size:14px;line-height:1.6}
+  .kyv-section-title{font-size:15px;font-weight:800;color:var(--sds-navy);margin:12px 0 6px}
+</style>
 
 <div class="sds-tab-panel" id="mb-tab-docs">
   <div id="mb-docs-list"></div>
@@ -409,9 +504,11 @@ function speakText(t, lang){
 function loadBike(){ try { return JSON.parse(localStorage.getItem(BIKE_KEY) || 'null'); } catch(e){ return null; } }
 function saveBike(b){ try { localStorage.setItem(BIKE_KEY, JSON.stringify(b)); } catch(e){} }
 function mbSaveBike(){
+  const variantEl = document.getElementById('mb-variant');
   const b = {
     make: (document.getElementById('mb-make').value || '').trim(),
     model: (document.getElementById('mb-model').value || '').trim(),
+    variant: variantEl ? (variantEl.value || '').trim() : '',
     reg: (document.getElementById('mb-reg').value || '').trim().toUpperCase(),
     year: (document.getElementById('mb-year').value || '').trim(),
     color: (document.getElementById('mb-color').value || '').trim(),
@@ -421,12 +518,14 @@ function mbSaveBike(){
   if (!b.make && !b.model && !b.reg) { speakText('कम से कम बनाने वाली कंपनी, मॉडल और reg number डालिए।', CURRENT_LANG); return; }
   saveBike(b);
   speakText('बाइक सेव हो गई। ' + b.make + ' ' + b.model + ', ' + b.reg, CURRENT_LANG);
+  try { mbKyvLoad(); } catch(e){}
   mbTab('home');
 }
 function mbDemoForm(){
   const mk = document.getElementById('mb-make'); mk.value = 'Hero';
   mbOnMakeChange('Hero');
   document.getElementById('mb-model').value = 'Splendor Plus';
+  const vEl = document.getElementById('mb-variant'); if (vEl) vEl.value = 'i3S Self Disc';
   document.getElementById('mb-reg').value = 'UP32AB1234';
   document.getElementById('mb-year').value = '2018';
   document.getElementById('mb-color').value = 'लाल';
@@ -796,10 +895,227 @@ async function mbSoonVote(featureId, v, btn){
   speakText(v > 0 ? 'Vote noted — Chitti is khabar pahuncha rahi hai.' : 'Theek hai — yeh nahi banayenge.', CURRENT_LANG);
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// KNOW YOUR BIKE — dynamic, AI-driven for ANY saved 2-wheeler.
+// One DeepSeek call per (make, model, year, variant, language). Cached in
+// localStorage so user pays the ~10-sec wait exactly once per bike.
+// ═══════════════════════════════════════════════════════════════════════
+const LANG_NAMES_MB = { en:'English', hi:'Hindi', bn:'Bangla', ta:'Tamil', te:'Telugu', mr:'Marathi', gu:'Gujarati', kn:'Kannada', ml:'Malayalam' };
+function kyvSlug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''); }
+function mbKyvKey(b){
+  return 'chitti_bike_kyv_v1_' + (CURRENT_LANG||'en')
+       + '_' + kyvSlug(b.make) + '_' + kyvSlug(b.model)
+       + '_' + (b.year||'na') + '_' + kyvSlug(b.variant||'');
+}
+function mbKyvLoad(){
+  const b = loadBike();
+  const empty = document.getElementById('mb-kyv-empty');
+  const load = document.getElementById('mb-kyv-loading');
+  const cont = document.getElementById('mb-kyv-content');
+  const err = document.getElementById('mb-kyv-error');
+  if (!empty || !load || !cont || !err) return;
+  load.style.display = 'none'; err.style.display = 'none';
+  if (!b || !b.make || !b.model) {
+    empty.style.display = 'block'; cont.style.display = 'none'; cont.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  try {
+    const cached = localStorage.getItem(mbKyvKey(b));
+    if (cached) { mbKyvRender(JSON.parse(cached), b); return; }
+  } catch(e){}
+  mbKyvGenerate();
+}
+async function mbKyvGenerate(force){
+  const b = loadBike();
+  if (!b || !b.make || !b.model) { mbKyvLoad(); return; }
+  const key = mbKyvKey(b);
+  if (!force) {
+    try {
+      const cached = localStorage.getItem(key);
+      if (cached) { mbKyvRender(JSON.parse(cached), b); return; }
+    } catch(e){}
+  }
+  document.getElementById('mb-kyv-empty').style.display = 'none';
+  document.getElementById('mb-kyv-content').style.display = 'none';
+  document.getElementById('mb-kyv-error').style.display = 'none';
+  const loadEl = document.getElementById('mb-kyv-loading');
+  loadEl.style.display = 'block';
+  document.getElementById('mb-kyv-name').textContent = (b.make+' '+b.model+' '+(b.year||'')+(b.variant?' · '+b.variant:'')).trim();
+  const lang = LANG_NAMES_MB[CURRENT_LANG] || 'English';
+  const prompt = mbKyvPrompt(b, lang);
+  let json = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' })
+    });
+    const d = await r.json();
+    const text = d.reply || d.answer || d.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { try { json = JSON.parse(m[0]); } catch(e){} }
+  } catch(e){}
+  loadEl.style.display = 'none';
+  if (!json) { document.getElementById('mb-kyv-error').style.display = 'block'; return; }
+  try { localStorage.setItem(key, JSON.stringify(json)); } catch(e){}
+  mbKyvRender(json, b);
+}
+function mbKyvPrompt(b, lang){
+  return [
+    'You are an expert Indian motorcycle/scooter mechanic with 20+ years experience servicing every popular 2-wheeler sold in India.',
+    "User's bike — Make: " + b.make + ' | Model: ' + b.model + ' | Year: ' + (b.year||'unknown') + ' | Variant: ' + (b.variant||'standard') + '.',
+    'Build a "Know Your Bike" guide as STRICT JSON. Be SPECIFIC — real Indian brand names (Hero/Castrol/Motul/Shell/Bosch/NGK/MRF/Apollo/CEAT/TVS/Amaron/Exide), real 2026 INR prices, real Indian household-DIY recipes (toothpaste on headlight haze, kerosene to clean chain, baby shampoo for wash, banana peel on small plastic scuff, Coca-Cola on battery terminals, coconut oil on seat vinyl, potato slice on visor anti-fog).',
+    'No "consult dealer" — give actual answers. Where unsure mark "approx". For air-cooled engines, OMIT coolant from consumables.',
+    'All HUMAN-READABLE text MUST be in ' + lang + '. Brand names, part numbers, and chemical specs stay English/Latin. Numbers stay numbers.',
+    'Output ONLY this JSON (no preamble, no markdown fence):',
+    '{',
+    '  "engine_cc": int, "engine_type": "air-cooled OR liquid-cooled OR electric", "bhp": number, "torque_nm": number, "fuel_tank_l": number, "rated_mileage": "string e.g. 65-75 kmpl", "service_interval": "string e.g. 3000 km / 6 months",',
+    '  "anatomy": [{"part":"...", "location":"where on the bike", "function":"1-line role", "common_problem":"what typically goes wrong"}],',
+    '  "consumables": [{"item":"engine oil / spark plug / air filter / chain + chain lube / tyre / battery / brake pad/shoe / coolant (if liquid-cooled)", "spec":"e.g. 10W-30 JASO MA2", "capacity":"e.g. 800 ml", "change_interval":"e.g. 3000 km", "options":[{"brand":"...","name":"...","price_inr":int,"verdict":"OEM SAFE / BEST VFM / PREMIUM / BUDGET"}], "fake_alert":"how to spot counterfeit + where to buy authentic", "diy_check":"how to check at home"}],',
+    '  "cleaning_care": [{"surface":"paint / chrome / plastic panels / chain / engine fins / headlight glass / seat / helmet visor", "store_bought":[{"brand":"...","price":int}], "diy_recipe":"Indian household recipe", "warning":"optional do-not-do"}],',
+    '  "toolkit": {"starter":["item with price","item with price"], "mid":["..."], "pro":["..."]},',
+    '  "warnings": [{"signal":"sound/smell/light/feel", "likely":"cause", "action":"what to do now", "urgency":"low|medium|high"}],',
+    '  "known_issues": ["model-specific quirk + DIY fix or warranty/recall info"],',
+    '  "seasonal": {"monsoon":"...","summer":"...","winter":"..."},',
+    '  "service_cost": {"local_inr":"500-900","authorised_inr":"1100-1400","what_is_done":"oil + chain + brake + filter check + tyre"},',
+    '  "pre_ride_check": ["item 1","item 2","..."],',
+    '  "resale_prep": ["fix 1","fix 2","..."]',
+    '}',
+    'Counts: anatomy 8-12, consumables 6-9 (each with 2-4 options), cleaning_care 7-9, warnings 8-12, known_issues 3-5, pre_ride_check 5-7, resale_prep 3-5.'
+  ].join('\n');
+}
+function kyvEsc(s){ if (s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mbKyvSpeakAll(){
+  const j = mbKyvCurrent;
+  if (!j) { speakText('Pehle apni bike save karein. Chitti research nahi kar sakti.', CURRENT_LANG); return; }
+  const b = loadBike() || {};
+  const head = (b.make||'') + ' ' + (b.model||'') + ', ' + (j.engine_cc||'') + ' cc ' + (j.engine_type||'') + ', mileage ' + (j.rated_mileage||'');
+  const cons = (j.consumables||[]).slice(0,3).map(c => c.item + ' ' + (c.options && c.options[0] ? c.options[0].brand : '')).join(', ');
+  speakText(head + '. Top consumables: ' + cons + '.', CURRENT_LANG);
+}
+let mbKyvCurrent = null;
+function mbKyvRender(j, b){
+  mbKyvCurrent = j;
+  const out = document.getElementById('mb-kyv-content');
+  document.getElementById('mb-kyv-empty').style.display = 'none';
+  document.getElementById('mb-kyv-loading').style.display = 'none';
+  document.getElementById('mb-kyv-error').style.display = 'none';
+  out.style.display = 'block';
+  let h = '';
+
+  // Summary stats
+  h += '<div class="kyv-section-title">🧠 ' + kyvEsc(b.make + ' ' + b.model + ' ' + (b.year||'') + (b.variant ? ' · ' + b.variant : '')) + '</div>';
+  h += '<div class="kyv-stats">';
+  const stats = [
+    ['Engine', (j.engine_cc?j.engine_cc+' cc':'-')], ['Type', (j.engine_type||'-')],
+    ['BHP', (j.bhp||'-')], ['Torque', ((j.torque_nm||'-')+' Nm')],
+    ['Tank', ((j.fuel_tank_l||'-')+' L')], ['Mileage', j.rated_mileage||'-'],
+    ['Service', j.service_interval||'-']
+  ];
+  stats.forEach(s => h += '<div class="kyv-stat"><div class="lbl">'+kyvEsc(s[0])+'</div><div class="val">'+kyvEsc(s[1])+'</div></div>');
+  h += '</div>';
+
+  // Anatomy
+  h += '<div class="kyv-section-title">🔧 Anatomy — har part ka role</div>';
+  (j.anatomy||[]).forEach(a => {
+    h += '<div class="kyv-row"><div class="kyv-row-head"><b>'+kyvEsc(a.part||'')+'</b> <span class="kyv-loc">'+kyvEsc(a.location||'')+'</span></div>';
+    h += '<div class="kyv-row-body">'+kyvEsc(a.function||'')+'</div>';
+    if (a.common_problem) h += '<div class="kyv-row-warn">⚠️ '+kyvEsc(a.common_problem)+'</div>';
+    h += '</div>';
+  });
+
+  // Consumables
+  h += '<div class="kyv-section-title">🛢️ Consumables — kya, kab, kitne ka, kahaan se</div>';
+  (j.consumables||[]).forEach(c => {
+    h += '<div class="kyv-consume">';
+    h += '<div class="kyv-consume-head"><b>'+kyvEsc(c.item||'')+'</b>';
+    if (c.spec) h += ' · <span class="kyv-spec">'+kyvEsc(c.spec)+'</span>';
+    if (c.capacity) h += ' · '+kyvEsc(c.capacity);
+    h += '</div>';
+    if (c.change_interval) h += '<div class="kyv-consume-when">🕒 Change: '+kyvEsc(c.change_interval)+'</div>';
+    if (c.options && c.options.length) {
+      h += '<table class="kyv-table"><thead><tr><th>Brand · Product</th><th>Price</th><th>Verdict</th></tr></thead><tbody>';
+      c.options.forEach(o => {
+        const verdictCls = /vfm|best/i.test(o.verdict||'') ? 'vfm' : '';
+        h += '<tr class="'+verdictCls+'"><td>'+kyvEsc(o.brand||'')+' <em>'+kyvEsc(o.name||'')+'</em></td><td>₹'+(o.price_inr||'?')+'</td><td>'+kyvEsc(o.verdict||'')+'</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
+    if (c.fake_alert) h += '<div class="kyv-fake">⚠️ <b>Fake alert:</b> '+kyvEsc(c.fake_alert)+'</div>';
+    if (c.diy_check) h += '<div class="kyv-diy">🔍 <b>DIY check:</b> '+kyvEsc(c.diy_check)+'</div>';
+    h += '</div>';
+  });
+
+  // Cleaning & care
+  h += '<div class="kyv-section-title">✨ Saaf-safai — store ya ghar par</div>';
+  (j.cleaning_care||[]).forEach(c => {
+    h += '<div class="kyv-clean">';
+    h += '<div class="kyv-clean-head">'+kyvEsc(c.surface||'')+'</div>';
+    if (c.store_bought && c.store_bought.length) h += '<div class="kyv-clean-store">🏪 '+c.store_bought.map(s => kyvEsc(s.brand||'')+' ₹'+(s.price||'?')).join(' · ')+'</div>';
+    if (c.diy_recipe) h += '<div class="kyv-clean-diy">🏠 <b>DIY:</b> '+kyvEsc(c.diy_recipe)+'</div>';
+    if (c.warning) h += '<div class="kyv-clean-warn">⛔ '+kyvEsc(c.warning)+'</div>';
+    h += '</div>';
+  });
+
+  // Toolkit
+  if (j.toolkit) {
+    h += '<div class="kyv-section-title">🧰 Toolkit — kya khud rakhna</div>';
+    [['starter','💰 Starter'],['mid','💰💰 Mid'],['pro','💰💰💰 Pro']].forEach(p => {
+      const arr = j.toolkit[p[0]];
+      if (arr && arr.length) {
+        h += '<div class="kyv-kit"><div class="kyv-kit-head">'+p[1]+'</div><ul>'+arr.map(x => '<li>'+kyvEsc(x)+'</li>').join('')+'</ul></div>';
+      }
+    });
+  }
+
+  // Warnings
+  h += '<div class="kyv-section-title">🚨 Awaaz · gandh · light — decoded</div>';
+  (j.warnings||[]).forEach(w => {
+    const ucls = w.urgency === 'high' ? 'kyv-warn-high' : (w.urgency === 'medium' ? 'kyv-warn-med' : 'kyv-warn-low');
+    h += '<div class="kyv-warn '+ucls+'">';
+    h += '<div class="kyv-warn-sig">📢 <b>'+kyvEsc(w.signal||'')+'</b></div>';
+    h += '<div class="kyv-warn-cause">→ '+kyvEsc(w.likely||'')+'</div>';
+    h += '<div class="kyv-warn-act">✅ '+kyvEsc(w.action||'')+'</div>';
+    h += '</div>';
+  });
+
+  // Known issues
+  if (j.known_issues && j.known_issues.length) {
+    h += '<div class="kyv-section-title">📌 '+kyvEsc(b.make+' '+b.model)+' ki khaas baatein</div>';
+    h += '<ul class="kyv-known">'+j.known_issues.map(i => '<li>'+kyvEsc(i)+'</li>').join('')+'</ul>';
+  }
+
+  // Care calendar + cost + pre-ride + resale
+  h += '<div class="kyv-section-title">📅 Saal bhar ka care + paisa-bachao guide</div>';
+  if (j.seasonal) {
+    h += '<div class="kyv-season">';
+    if (j.seasonal.monsoon) h += '<div><b>🌧️ Monsoon:</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
+    if (j.seasonal.summer) h += '<div><b>☀️ Summer:</b> '+kyvEsc(j.seasonal.summer)+'</div>';
+    if (j.seasonal.winter) h += '<div><b>❄️ Winter:</b> '+kyvEsc(j.seasonal.winter)+'</div>';
+    h += '</div>';
+  }
+  if (j.service_cost) {
+    h += '<div class="kyv-cost"><b>💸 Service cost benchmark:</b><br>';
+    h += 'Local mechanic: ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · Authorised: ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
+    if (j.service_cost.what_is_done) h += '<div class="kyv-svc">'+kyvEsc(j.service_cost.what_is_done)+'</div>';
+    h += '</div>';
+  }
+  if (j.pre_ride_check && j.pre_ride_check.length) {
+    h += '<div class="kyv-preride"><b>🎙️ Pre-ride 30-sec check:</b><ol>'+j.pre_ride_check.map(p => '<li>'+kyvEsc(p)+'</li>').join('')+'</ol></div>';
+  }
+  if (j.resale_prep && j.resale_prep.length) {
+    h += '<div class="kyv-resale"><b>💰 Resale prep:</b><ul>'+j.resale_prep.map(r => '<li>'+kyvEsc(r)+'</li>').join('')+'</ul></div>';
+  }
+
+  out.innerHTML = h;
+  if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mbRefreshHome();
+  try { mbKyvLoad(); } catch(e){}
 });
 </script>
 </body>
