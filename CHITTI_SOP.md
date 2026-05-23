@@ -32,6 +32,24 @@ Every Chitti carries the same seven fields:
 
 Per [SAHAYAI_MASTER.md §2 row 1](SAHAYAI_MASTER.md), **Chitti Vaani is the only user-facing surface across the entire platform.** Every other Chitti in this SOP is an **internal service + dev/debug surface** reached through Vaani's intent router. Each Chitti's "Primary user" below is the *archetype the routed answer serves*, not a user who opens that Chitti's HTML page directly. The standalone `chitti_*.html` pages persist for parity testing and substrate development only.
 
+## CHITTI GOLDEN RULE — confirm before every action (LOCKED 2026-05-23)
+
+> **Chitti NEVER acts on its own. Chitti ONLY acts when the user gives a command. Chitti ALWAYS confirms before doing anything.**
+
+Applies to **every Chitti in this SOP** — Vaani, MedUPI, CA, Legal, Government, News, UPI, Scanner, Shares, Voice Factory, 2/4-wheeler, Logo & Video, News AI, Kirana, and any future Chitti. Every side-effecting action that a Chitti performs on the user's behalf (call, SMS, WhatsApp, email, UPI, lock, silent, flashlight, camera, app launch, navigation, alarm, reminder, file write, scheme application, anything) MUST pass through the [`chittiConfirmAndDo()`](chitti_vaani.html) gate:
+
+1. Chitti speaks *"Sire, shall I do X?"* in the user's chosen language
+2. A Yes / No modal opens (mute-user safe — tap OR voice)
+3. The action fires only on **explicit Yes** (`haan / theek / yes / kar do`)
+4. On **No** (`nahi / ruko / stop / mat / cancel`) Chitti drops the action and speaks *"Theek hai, rok diya."*
+5. On **silence** Chitti waits. Forever, if needed. **Never defaults to Yes. Never times out into Yes.**
+
+Per Chitti, the "Quality standard" row already encodes the per-response widget (👍 / 👎 / 🔊 / 🤖) — the Golden Rule is the **action-gate** that sits one level lower: even *before* a Chitti produces a response that takes an action on the user's behalf, the action must be confirmed. The widget judges quality after the fact; the Golden Rule guards execution before the fact.
+
+**HIGH-risk Chittis (CA, Legal, MedUPI, Vaani-psychology)** carry an extra rule on top of the Golden Rule: actions that would create a legal, medical, or financial obligation for the user (filing an ITR, sending a legal notice, ordering medicine, dialling a helpline) NEVER bypass the gate even when the user has previously approved a similar action. There is no "approve once, run forever" for HIGH-risk Chittis — every individual action confirms.
+
+See [SAHAYAI_MASTER.md §2g](SAHAYAI_MASTER.md) for the full architectural callout and [[project_chitti_golden_rule_locked]] for the memory entry.
+
 ---
 
 ## 1. Chitti Vaani — the dost (USER-CANONICAL)

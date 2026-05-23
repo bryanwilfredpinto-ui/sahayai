@@ -48,6 +48,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | **Camera substrate** | **[`chitti_camera.js`](chitti_camera.js) at repo root, auto-loaded by [`chitti_a11y.js`](chitti_a11y.js).** Single capture path for every Chitti with camera access; honest queue when `/api/camera/capture` is unreachable; `Chitti.camera.forget()` writes the tombstone. Pages never hand-roll camera capture or storage. See §2b. | `project_camera_intelligence_locked` |
 | **Swarm Intelligence** | **Every Chitti of the same type learns from every other Chitti of the same type.** Anonymised interactions → pattern detection (high 👍, problems solved, strategies that worked) → ≥100 confirmations → human review for HIGH-risk Chittis (Legal, CA, Medical) → push to `skills/*.md` for that Chitti type → all instances benefit. Cycle: daily collect · weekly validate · monthly push to skills · quarterly full review. Always anonymised; user owns their data; "Chitti forget" removes from swarm too. See §2f. | `project_swarm_intelligence_locked` |
 | **Offline P2P transfer (Android)** | **Chitti-to-Chitti file / photo / document transfer via Google Nearby Connections** (full Android-only path; 20 MB ceiling). Two tracks share one substrate: **(a) emergency-relay offline tier** — `VaaniBootService` advertises in parallel with the existing FCM relay; whichever paired Chitti receives first wins; the 4-digit auth-code step is skipped because the cascadeJSON payload is signed with the sender's paired-Chitti private key. **(b) general share** — substrate `chitti_share.js` at repo root, auto-loaded by `chitti_a11y.js`, surfaces Share + Receive buttons on every Chitti page (consistent with the per-response-widget "no page ships without" precedent). Cross-platform interop via QR escape hatch (≤ 2.9 KB payloads). Honest stub `transfer_unsupported_no_play_services` on AOSP / GMS-less devices. **Ships post-Phase-2.6 as Phase 2.7** — never bundled into the current Play Store submission. See [`CHITTI_OFFLINE_TRANSFER_SPEC.md`](CHITTI_OFFLINE_TRANSFER_SPEC.md) + [`chitti-vaani-android/skills/FILE_TRANSFER.md`](chitti-vaani-android/skills/FILE_TRANSFER.md). | `project_chitti_offline_p2p_transfer_locked` |
+| **CHITTI GOLDEN RULE — confirm before every action** | **Chitti NEVER acts on its own. EVER.** Every side-effecting action (call · SMS · WhatsApp · email · UPI · lock · silent · flashlight · camera · app launch · navigation · alarm · reminder · anything that produces a side effect inside the app or on the device) MUST be gated by `chittiConfirmAndDo()` (defined in `chitti_vaani.html`) which speaks *"Sire, shall I do X?"* in the user's language, opens a Yes/No modal (mute-user safe), listens for haan/yes/theek or nahi/no/ruko, and fires the action ONLY on explicit Yes. **Never defaults. Never times out into Yes. If the user is silent, Chitti waits — forever.** This contract is locked at the architecture level: any new action card, voice intent, or native bridge method that side-effects MUST go through this gate. The Android `ChittiNative` bridge trusts the JS gate by design (same process), and adds defence-in-depth via `SafetyChecks.requireNotUnlock` / `refuseIfPinLike` / `is_cop_number()`. See §2g for the full callout. Locked 2026-05-23. | `project_chitti_golden_rule_locked` |
 
 ---
 
@@ -294,6 +295,60 @@ See [[project_business_continuity_plan_locked]].
 - **Locked decisions are not learnable.** The swarm can propose new capabilities but can never override a §2 locked decision (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades).
 
 See [[project_swarm_intelligence_locked]].
+
+---
+
+## 2g. CHITTI GOLDEN RULE — confirm before every action (LOCKED 2026-05-23)
+
+> **Chitti NEVER acts on its own. Ever.**
+> **Chitti ONLY acts when the user gives a command.**
+> **Chitti ALWAYS confirms before doing anything.**
+
+```
+"Sire, shall I call Maa now?"            → User says haan → Chitti calls.
+"Sire, shall I send this WhatsApp to Raj?" → User says haan → Chitti sends.
+"Sire, shall I lock your phone?"         → User says haan → Chitti locks.
+"Sire, shall I open the camera?"         → User says haan → Chitti opens.
+```
+
+If the user says **nahi / no / ruko / stop**, Chitti stops immediately.
+If the user says **nothing**, Chitti waits — **forever, if needed.** No default-to-yes. No timeout-to-yes.
+
+### Scope — applies to EVERY side-effecting action
+
+- **Communication** — calls · SMS · WhatsApp messages · WhatsApp calls · emails · UPI payments
+- **Device control** — lock · silent / vibrate / normal · flashlight · camera · alarm · reminders · dialer role · call screening · answer-call · reject-call · accessibility-service arming
+- **App opening** — YouTube · YouTube Music · Maps · any package via `ChittiNative.openApp`
+- **Future capabilities** — any new feature that produces a side effect on the device, the user's accounts, or the user's contacts goes through the same gate. No exceptions.
+
+### Where the gate lives
+
+| Layer | Where | Contract |
+|---|---|---|
+| **JS layer** | [`chitti_vaani.html`](chitti_vaani.html) → `chittiConfirmAndDo(question, onYes)` + `#chitti-confirm-overlay` modal | Speaks question · opens Yes/No modal (mute-user safe — tap OR voice) · listens for haan / theek / yes / nahi / no / ruko / stop · fires `onYes()` only on explicit Yes · never auto-confirms, never times out into Yes |
+| **One-tap device cards** | `confirmNativeAction(name)` wrapper above `nativeAction(name)` — Lock / Silent / Camera / Flashlight / Dialer / CallScreening cards now route through it | Per-action question text in EN + HI (e.g. *"Sire, kya main aapka phone abhi lock kar dun?"*) |
+| **Voice intent router** | `tryHandleVoiceIntent` paths for lock / camera / torch / maps / answer-call / reject-call | Even a spoken `"lock my phone"` opens the confirm modal — voice can mis-fire |
+| **Comms cards (Call / SMS / WA / WA-call / UPI / Email)** | Already compliant via their existing voice-readback + `listenForYes()` patterns (the original 30-second-undo + voice "haan" design from before this lock) | The lock formalises what was always already true for these — Chitti drafts, reads back, the user says "haan", then Chitti acts |
+| **Android bridge** | [`MainActivity.kt`](chitti-vaani-android/app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt) `ChittiNativeBridge` header comment block | Trusts the JS gate by architecture (same WebView process). Defence-in-depth via `SafetyChecks.requireNotUnlock` / `refuseIfPinLike` / cop-number denylist · every method writes an `AuditLog.append` row |
+| **Per-response widget** | [`feedback-widget.js`](feedback-widget.js) 👍 / 👎 / 🤖 / 🔊 buttons | Read-only — do NOT pass through the confirm gate (no side effect; the 👎 → feedback window is itself a user-driven action) |
+
+### Hard rules
+
+- **Never default to Yes.** Silence = wait. Ambiguous speech = re-ask.
+- **Never time out into Yes.** Timeouts are allowed only to surface *"please tap Haan or Nahi"* — the action still does not fire.
+- **Mute-user safe.** Every confirm modal exposes Yes / No buttons in addition to voice. The Disability Profile (§7) mute flag does NOT bypass the gate — it just makes the buttons the primary affordance.
+- **Locked decisions are absolute.** Chitti **never** asks "shall I auto-dial 112?" — the cop denylist refuses before the gate even fires. Same for `unlock` / `bypass`.
+- **Every new feature inherits this rule.** A new action card that does NOT route through `chittiConfirmAndDo()` is a defect, same merge-blocker status as a missing per-response widget or a missing FEATURES.md row.
+
+### Why this is locked
+
+Per [[feedback_design_from_pwd_user_perspective]] — generic SaaS confirm-modal patterns break blind / mute / illiterate users. The Golden Rule's confirm is voice-first AND tap-first by construction, so all four users in the §7 contract are served by the same gate. Voice-only users get readback + haan; mute users tap Yes; illiterate users hear the question; elderly users get unlimited time to answer.
+
+The lock also closes a quiet failure mode: voice mis-fires. A passing comment that sounds like "lock my phone" would, pre-lock, just lock the phone. Post-lock, it asks first.
+
+Chitti is a loyal assistant. Not an autonomous agent. He has access. He uses it only on command.
+
+See [[project_chitti_golden_rule_locked]].
 
 ---
 

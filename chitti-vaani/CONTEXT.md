@@ -42,6 +42,35 @@ This is the rule Bryan calls out in the master memory and Vaani enforces it at t
 
 The user can press a single button (visible / large / haptic) to trigger this manually. Mute users have a touch-and-hold gesture.
 
+## Chitti Golden Rule — confirm before every action (LOCKED 2026-05-23)
+
+**Chitti NEVER acts on its own. EVER.** Vaani is a loyal assistant, not an autonomous agent. He has access — phone, SMS, WhatsApp, email, UPI, device controls — and uses it only on the user's explicit command, **after a per-action confirm**:
+
+```
+"Sire, shall I call Maa now?"             → User says haan → Chitti calls.
+"Sire, shall I send this WhatsApp to Raj?" → User says haan → Chitti sends.
+"Sire, shall I lock your phone?"          → User says haan → Chitti locks.
+```
+
+If the user says **nahi / no / ruko / stop**, Chitti stops immediately. If the user says **nothing**, Chitti waits — **forever, if needed.** No default-to-yes. No timeout-to-yes.
+
+### Scope — applies to EVERY side-effecting action surfaced by Vaani
+
+Communication (calls / SMS / WhatsApp / email / UPI) · device control (lock / silent / flashlight / camera / dialer role / call screening / alarm / reminders) · app opening (`ChittiNative.openApp`, YouTube, Maps, Music) · accessibility-service arming · and every routed call into another Chitti that produces a side effect (e.g. "Chitti, MedUPI se yeh dawai mangwa do"). The same gate covers all of them.
+
+### Implementation
+
+Single helper in [chitti_vaani.html](../chitti_vaani.html) — `chittiConfirmAndDo(question, onYes)`:
+1. Speaks the question in the user's chosen language (Voice Factory cascade)
+2. Opens the `#chitti-confirm-overlay` modal — explicit Haan / Nahi buttons (mute-user safe)
+3. Starts a parallel SpeechRecognition pass listening for haan/theek/yes/kar do or nahi/ruko/stop/mat/cancel
+4. Fires `onYes()` only on explicit Yes
+5. Never defaults to Yes. Never times out into Yes.
+
+One-tap device-control Pro Cards now route through `confirmNativeAction(name)` which wraps `nativeAction(name)` with the gate. The Android `ChittiNative` bridge ([MainActivity.kt](../chitti-vaani-android/app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt)) trusts the JS gate by architecture (same WebView process) and adds defence-in-depth via `SafetyChecks.requireNotUnlock` / `refuseIfPinLike` / cop-number denylist.
+
+See [SAHAYAI_MASTER.md §2g](../SAHAYAI_MASTER.md) for the locked-decision callout.
+
 ## Why these patterns, not generic SaaS patterns
 
 Per Bryan's design rule recorded in memory (`feedback_design_from_pwd_user_perspective.md`):

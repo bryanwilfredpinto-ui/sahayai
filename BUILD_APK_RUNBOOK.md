@@ -170,6 +170,9 @@ After install, run through this checklist on the phone. Anything that fails goes
 | 8 | Open any app | Pro Card → pick "BookMyShow" → the actual BookMyShow app launches (or Play Store entry if not installed). |
 | 9 | Lock phone | Voice "Chitti, phone lock" → screen locks instantly. (Device Admin must have been granted once.) |
 | 10 | Emergency | Say "bachao" → confirm-with-master prompt fires → 10s alarm bypassing silent → spouse-tier call. Never auto-dials 112. |
+| 11 | **GOLDEN RULE — confirm before every action** | Tap **🔒 Lock my phone** → the `#chitti-confirm-overlay` modal MUST appear with *"Sire, kya main aapka phone abhi lock kar dun?"* spoken aloud. Tap **Nahi / No** → Chitti speaks *"Theek hai, rok diya"* and **does NOT lock**. Tap Lock again → say **haan** via voice → Chitti locks. Repeat for Silent, Flashlight, Camera, Dialer role, Call screening, Open-any-app. No card should ever act on first tap. (Comms cards Call/SMS/WA/UPI/Email already have their own readback+haan flow — those are also compliant.) |
+| 12 | **GOLDEN RULE — silence = wait** | Tap **🔒 Lock my phone** → modal appears → say **nothing**, do **nothing**. After 30 s the modal MUST still be open, action MUST NOT have fired. Tap **STOP — never mind** to dismiss. |
+| 13 | **GOLDEN RULE — voice-intent gate** | Speak *"lock my phone"* into the mic. Modal MUST appear asking *"Sire, shall I lock your phone now?"* — voice command alone is not consent. Same for *"camera kholo"*, *"torch on"*, *"AIIMS le chalo"*, *"answer call"*. |
 
 If any of these fail, capture the failure with `adb logcat | grep AuditLog` (the `AuditLog.append` calls written into every bridge method give you the exact failure reason).
 

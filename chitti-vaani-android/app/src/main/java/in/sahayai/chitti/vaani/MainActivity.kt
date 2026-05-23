@@ -152,6 +152,42 @@ class MainActivity : AppCompatActivity() {
  * unlock-flavoured method name (which does not exist on this class —
  * but defence-in-depth in case of future drift), SafetyChecks throws
  * and AuditLog records the refusal.
+ *
+ * ════════════════════════════════════════════════════════════════
+ * CHITTI GOLDEN RULE — LOCKED 2026-05-23
+ * ════════════════════════════════════════════════════════════════
+ *
+ * Chitti NEVER acts on its own. Every side-effecting bridge call
+ * (makeCall, sendSMS, openWhatsApp, lockPhone, setSilentMode,
+ * toggleFlashlight, openApp, openMaps, openYouTube, openMusic,
+ * scheduleReminder, setAlarm, openCamera, answerCall, rejectCall,
+ * sendEmail — anything) MUST be reached only after the JS layer has
+ * passed the user through `chittiConfirmAndDo()` (defined in
+ * chitti_vaani.html). The JS gate:
+ *
+ *   1. Speaks "Sire, shall I do X?" in the user's chosen language
+ *   2. Opens a Yes/No modal (mute-user safe — tap to confirm)
+ *   3. Listens for "haan / yes / theek" or "nahi / no / ruko"
+ *   4. Calls the bridge ONLY on explicit Yes
+ *   5. Never defaults to Yes. Never times out into Yes. If the user
+ *      stays silent, Chitti waits — forever, if needed.
+ *
+ * This bridge intentionally trusts the JS layer's confirm gate
+ * because both layers run in the same process (the WebView). The
+ * bridge adds defence-in-depth via:
+ *
+ *   - SafetyChecks.requireNotUnlock(method)  — unlock is never on
+ *   - SafetyChecks.refuseIfPinLike(value)    — PIN-shaped inputs refused
+ *   - is_cop_number()                        — 112/100/102/108/1098/1930/139 hard-denied
+ *   - AuditLog.append on every call          — replayable audit trail
+ *
+ * If you add a new @JavascriptInterface method that side-effects, the
+ * Golden Rule contract is: there MUST be a chittiConfirmAndDo() call
+ * on the JS side guarding it before this method is invoked. Document
+ * the question text inline so a future reviewer can verify the gate.
+ *
+ * See SAHAYAI_MASTER.md §2g (locked decisions row 51 + callout) and
+ * project_chitti_golden_rule_locked memory entry.
  */
 class ChittiNativeBridge(private val ctx: Context) {
 

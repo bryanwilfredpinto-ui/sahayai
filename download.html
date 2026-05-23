@@ -106,6 +106,14 @@ footer{margin-top:30px;padding:18px;color:var(--muted);font-size:12.5px;text-ali
     </ol>
   </div>
 
+  <!-- ─────── Chitti Golden Rule — user-facing promise ─────── -->
+  <div class="permissions" style="border:2px solid var(--saffron);background:#fffbf3">
+    <h3 style="color:var(--saffron)" data-i18n="golden.h3">🪔 Chitti's promise to you — the Golden Rule</h3>
+    <p style="margin:0 0 10px;font-weight:600;color:var(--navy)" data-i18n="golden.lede">Chitti NEVER acts on its own. Chitti ONLY acts when you give a command. Chitti ALWAYS confirms before doing anything.</p>
+    <p style="margin:0 0 10px" data-i18n="golden.examples"><i>"Sire, shall I call Maa now?"</i> → You say <b>haan</b> → Chitti calls. <i>"Sire, shall I send this WhatsApp to Raj?"</i> → You say <b>haan</b> → Chitti sends. <i>"Sire, shall I lock your phone?"</i> → You say <b>haan</b> → Chitti locks.</p>
+    <p style="margin:0;font-size:13px;color:var(--muted)" data-i18n="golden.silence">If you say <b>nahi / no / ruko / stop</b>, Chitti stops immediately. If you say nothing, Chitti waits. Forever, if needed. No default-to-yes. No timeout-to-yes. Chitti is a loyal assistant. Not an autonomous agent.</p>
+  </div>
+
   <!-- ─────── Permissions table ─────── -->
   <div class="permissions">
     <h3 data-i18n="perms.h3">What Chitti will ask for (and what for)</h3>
@@ -150,6 +158,10 @@ const I18N = {
     'perms.a11y':"Auto-tap the WhatsApp send button after your \"haan\". Scoped strictly to that one button.",
     'perms.refuse':'Chitti will NEVER auto-dial 112 / 100 / 102 / 108 / 1098 / 1930 / 139. Family-only emergency cascade. Encoded in <a href="chitti-vaani/backend/services/emergency_service.py">emergency_service.py</a>.',
     'foot.who':'Built by Bryan Wilfred Pinto · <a href="https://sahayai.in/">sahayai.in</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">source on GitHub</a>',
+    'golden.h3':"🪔 Chitti's promise to you — the Golden Rule",
+    'golden.lede':"Chitti NEVER acts on its own. Chitti ONLY acts when you give a command. Chitti ALWAYS confirms before doing anything.",
+    'golden.examples':'<i>"Sire, shall I call Maa now?"</i> → You say <b>haan</b> → Chitti calls. <i>"Sire, shall I send this WhatsApp to Raj?"</i> → You say <b>haan</b> → Chitti sends. <i>"Sire, shall I lock your phone?"</i> → You say <b>haan</b> → Chitti locks.',
+    'golden.silence':"If you say <b>nahi / no / ruko / stop</b>, Chitti stops immediately. If you say nothing, Chitti waits. Forever, if needed. No default-to-yes. No timeout-to-yes. Chitti is a loyal assistant. Not an autonomous agent.",
   },
   hi: {
     'tagline':"Bharat ka voice-first AI dost. Muft. Bina sign-up. Android 8.0+ par chalti hai.",
@@ -168,6 +180,10 @@ const I18N = {
     'perms.a11y':"\"Haan\" bolne ke baad WhatsApp ka send button auto-dabane ke liye. Sirf usi button par. Aur kuch nahi.",
     'perms.refuse':'Chitti kabhi bhi 112 / 100 / 102 / 108 / 1098 / 1930 / 139 par <b>auto-dial nahi karegi</b>. Sirf family ko cascade. Yeh code me likha hai — <a href="chitti-vaani/backend/services/emergency_service.py">emergency_service.py</a>.',
     'foot.who':'Banaya hai Bryan Wilfred Pinto ne · <a href="https://sahayai.in/">sahayai.in</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">source GitHub par</a>',
+    'golden.h3':"🪔 Chitti ka aapse vaada — Golden Rule",
+    'golden.lede':"Chitti kabhi apne aap kuch nahi karti. Chitti sirf tab kaam karti hai jab aap hukum dete hain. Aur har kaam se pehle Chitti aapse pakka karti hai.",
+    'golden.examples':'<i>"Sire, kya main Maa ko abhi call karun?"</i> → Aap <b>haan</b> bolo → Chitti call karegi. <i>"Sire, kya main Raj ko yeh WhatsApp bhejun?"</i> → Aap <b>haan</b> bolo → Chitti bhejti hai. <i>"Sire, kya main aapka phone lock kar dun?"</i> → Aap <b>haan</b> bolo → Chitti lock karti hai.',
+    'golden.silence':"Aap <b>nahi / no / ruko / stop</b> bolenge to Chitti turant ruk jaati hai. Aap chup rahenge to Chitti intezaar karti hai. Hamesha. No default-to-yes. No timeout-to-yes. Chitti ek wafaadar dost hai. Apne aap kuch karne wala agent nahi.",
   },
 };
 function applyLang(lang){

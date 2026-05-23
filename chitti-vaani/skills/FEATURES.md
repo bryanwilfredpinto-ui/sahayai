@@ -11,6 +11,8 @@ Last verified against the working tree on **2026-05-12**. When in doubt,
 re-grep `chitti-vaani/backend/routes/` for the endpoint and
 `chitti_vaani.html` for the handler before claiming "built".
 
+> **CHITTI GOLDEN RULE — applies to every feature below (LOCKED 2026-05-23).** Chitti NEVER acts on its own. Every feature in this file that performs a side-effecting action (call, SMS, WhatsApp, email, UPI, lock, silent, flashlight, camera, app launch, navigation, alarm, reminder, anything) routes through the `chittiConfirmAndDo()` gate in [chitti_vaani.html](../../chitti_vaani.html). Chitti asks *"Sire, shall I do X?"* in the user's language, waits for explicit haan/yes/theek (voice or tap), and fires the action ONLY on Yes. Silence = wait. Never defaults. Never times out into Yes. See [SAHAYAI_MASTER.md §2g](../../SAHAYAI_MASTER.md) and [CONTEXT.md](../CONTEXT.md).
+
 ---
 
 ## 1. Built and working on the web

@@ -688,6 +688,42 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
   </div>
 </div>
 
+<!-- ════════════ CHITTI GOLDEN RULE — confirm before every action ════════════
+     Locked 2026-05-23. Chitti NEVER acts on its own. Every side-effecting
+     action (call, SMS, WhatsApp, email, lock, silent, flashlight, camera,
+     app launch, navigation, alarm, anything) MUST pass through
+     chittiConfirmAndDo() — which speaks the question, opens this modal,
+     listens for "haan"/"nahi" voice, and ONLY fires the action on
+     explicit Yes. Never defaults. Never times out into action.
+     See SAHAYAI_MASTER.md §2g and project_chitti_golden_rule_locked.
+-->
+<style>
+.chitti-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px}
+.chitti-confirm-overlay.hidden{display:none}
+.chitti-confirm-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:520px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.chitti-confirm-panel .q{font-size:18px;color:var(--navy);font-weight:800;margin:8px 0 14px;line-height:1.5}
+.chitti-confirm-panel .hint{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.chitti-confirm-panel .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.chitti-confirm-panel button{padding:14px 28px;border:0;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;min-width:120px}
+.chitti-confirm-panel button.yes{background:var(--green);color:#fff}
+.chitti-confirm-panel button.no{background:#fff;color:var(--red);border:2px solid var(--red)}
+.chitti-confirm-panel button.stop{background:#fef2f2;color:var(--red);border:1px solid #fecaca;min-width:0;padding:8px 14px;font-size:13px;font-weight:700;margin-top:10px}
+.chitti-confirm-panel .mic-listening{font-size:12.5px;color:var(--saffron);margin-top:10px;font-weight:700}
+</style>
+<div id="chitti-confirm-overlay" class="chitti-confirm-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="chitti-confirm-q">
+  <div class="chitti-confirm-panel">
+    <div style="font-size:40px">🪔</div>
+    <div class="q" id="chitti-confirm-q">…</div>
+    <div class="hint" id="chitti-confirm-hint">Say <b>haan</b> / <b>yes</b> to confirm, or <b>nahi</b> / <b>no</b> to cancel.</div>
+    <div class="actions">
+      <button class="yes" id="chitti-confirm-yes">✓ Haan / Yes</button>
+      <button class="no" id="chitti-confirm-no">✗ Nahi / No</button>
+    </div>
+    <div class="mic-listening" id="chitti-confirm-listening" style="display:none">🎙️ Chitti is listening for your answer…</div>
+    <button class="stop" id="chitti-confirm-stop">🛑 STOP — never mind</button>
+  </div>
+</div>
+
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
@@ -936,27 +972,27 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <span class="pill" id="pill-sms">Web ✓ (SMS app pre-filled)</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('lockPhone')">
+      <button class="pro-card" onclick="confirmNativeAction('lockPhone')">
         <span class="ico">🔒</span><span class="lbl">Lock my phone</span>
-        <span class="sub">"Chitti, phone lock" — locks instantly. Chitti will NEVER unlock by code or by command.</span>
+        <span class="sub">"Chitti, phone lock" — Chitti asks "Shall I lock now?" and locks only after your "haan". NEVER unlocks (Android refuses by design).</span>
         <span class="pill android" id="pill-lock">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('toggleSilent')">
+      <button class="pro-card" onclick="confirmNativeAction('toggleSilent')">
         <span class="ico">🔕</span><span class="lbl">Silent mode</span>
-        <span class="sub">"Silent mode on" / "off" — switches phone ringer.</span>
+        <span class="sub">"Silent mode on" / "off" — Chitti asks first, then switches ringer.</span>
         <span class="pill android" id="pill-silent">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('dialerRole')">
+      <button class="pro-card" onclick="confirmNativeAction('dialerRole')">
         <span class="ico">📞</span><span class="lbl">Answer call (day)</span>
-        <span class="sub">"Chitti, answer" — Chitti picks up, identifies as AI, relays to you in Hindi/your language.</span>
+        <span class="sub">"Chitti, answer" — Chitti asks "Pick up the call?" first. Picks up only after your "haan".</span>
         <span class="pill android" id="pill-call">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('callScreening')">
+      <button class="pro-card" onclick="confirmNativeAction('callScreening')">
         <span class="ico">🌙</span><span class="lbl">Night auto-answer</span>
-        <span class="sub">10 PM – 6 AM, Chitti screens calls, asks "emergency?" — wakes you only if caller says emergency / ambulance / hospital.</span>
+        <span class="sub">10 PM – 6 AM, Chitti screens calls and asks "Wake the user?" — only escalates on user's "haan" after the caller says emergency / ambulance / hospital.</span>
         <span class="pill android" id="pill-night">Android only</span>
       </button>
 
@@ -996,15 +1032,15 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <span class="pill" id="pill-openapp">Web ✓ (opens website)</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('openCamera')">
+      <button class="pro-card" onclick="confirmNativeAction('openCamera')">
         <span class="ico">📷</span><span class="lbl">Open camera</span>
-        <span class="sub">"Chitti, camera kholo" — opens the camera app. Android only — web browsers don't allow direct camera-app launch.</span>
+        <span class="sub">"Chitti, camera kholo" — Chitti asks first, then opens the camera. Android only — web browsers don't allow direct camera-app launch.</span>
         <span class="pill android" id="pill-camera">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="nativeAction('toggleFlashlight')">
+      <button class="pro-card" onclick="confirmNativeAction('toggleFlashlight')">
         <span class="ico">🔦</span><span class="lbl">Flashlight</span>
-        <span class="sub">"Chitti, torch on" / "torch off" — toggles the phone torch. Android only — no web API for the LED.</span>
+        <span class="sub">"Chitti, torch on" / "torch off" — Chitti asks first, then toggles. Android only — no web API for the LED.</span>
         <span class="pill android" id="pill-flashlight">Android only</span>
       </button>
 
@@ -3955,6 +3991,36 @@ function speakDescriptive(en, hi){
 function hasNativeBridge(){
   return typeof window.ChittiNative !== 'undefined' && window.ChittiNative.canHostNative && window.ChittiNative.canHostNative();
 }
+/* CHITTI GOLDEN RULE confirm-gate for one-tap device actions.
+ *
+ * Every Pro Card that previously called nativeAction(name) directly now
+ * routes through this gate so the user is asked "Sire, shall I do X?"
+ * and the action fires only on explicit haan/yes (voice or tap). Per
+ * the Golden Rule (locked 2026-05-23, SAHAYAI_MASTER §2g) Chitti never
+ * acts on its own — tapping the card is the request, not the consent.
+ */
+function confirmNativeAction(name){
+  if (!consentGiven()) { reopenConsent(); return; }
+  // Hard refusal first — never even ask "shall I unlock?" because the
+  // answer must be no regardless of who is asking.
+  if (/(^|\b)(unlock|kholo|khol\s*do|bypass)/i.test(name)) {
+    speakText(CURRENT_LANG==='en' ? 'Chitti will never unlock the phone.' : 'चिट्टी फ़ोन नहीं खोलेगी। कभी नहीं।', CURRENT_LANG);
+    logAction('REFUSED unlock attempt', name);
+    return;
+  }
+  const Q = {
+    lockPhone:       { en: 'Sire, shall I lock your phone now?',         hi: 'Sire, kya main aapka phone abhi lock kar dun?' },
+    toggleSilent:    { en: 'Sire, shall I switch your phone to silent?', hi: 'Sire, kya main phone ko silent par kar dun?' },
+    dialerRole:      { en: 'Sire, shall I take the dialer role so I can answer your calls?', hi: 'Sire, kya main dialer role lun taa-ki aapke phone uthaaun?' },
+    callScreening:   { en: 'Sire, shall I enable night-mode call screening (10 PM to 6 AM)?', hi: 'Sire, kya main raat 10 se subah 6 tak calls screen karun?' },
+    openCamera:      { en: 'Sire, shall I open your camera?',            hi: 'Sire, kya main camera kholun?' },
+    toggleFlashlight:{ en: 'Sire, shall I toggle the flashlight?',       hi: 'Sire, kya main torch on/off karun?' },
+  };
+  const lang = (CURRENT_LANG === 'en') ? 'en' : 'hi';
+  const question = (Q[name] && Q[name][lang]) || (lang==='en' ? ('Sire, shall I run ' + name + '?') : ('Sire, kya main ' + name + ' chalaun?'));
+  chittiConfirmAndDo(question, () => nativeAction(name));
+}
+
 function nativeAction(name){
   if (!consentGiven()) { reopenConsent(); return; }
   // Hard refusal — front-of-house defence-in-depth (the bridge also refuses)
@@ -4040,6 +4106,131 @@ function tagNativeBridgeIfPresent(){
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CHITTI GOLDEN RULE — locked 2026-05-23
+   ════════════════════════════════════════════════════════════════
+   Chitti NEVER acts on its own. Every side-effecting action
+   (call, SMS, WhatsApp, email, lock, silent, flashlight, camera,
+   app launch, navigation, alarm — anything) MUST pass through
+   chittiConfirmAndDo(question, onYes). The helper:
+     1. Speaks the question in the user's selected language
+     2. Opens the #chitti-confirm-overlay modal with explicit
+        Haan / Nahi buttons (mute-user safe — tap to confirm)
+     3. Starts a SpeechRecognition pass in parallel listening for
+        "haan / yes / theek / kar do" → onYes
+        "nahi / no / ruko / stop / mat / cancel" → onNo
+     4. If neither is heard, MODAL STAYS OPEN — never defaults,
+        never times out into action. User can dismiss with the
+        STOP button or by saying nahi.
+     5. On Yes → close modal + speak short "Theek hai" + run onYes()
+     6. On No → close modal + speak "Theek hai, rok diya" + drop
+   This is locked at the architecture level: any new action card or
+   voice intent that side-effects MUST go through this gate. See
+   SAHAYAI_MASTER.md §2g + project_chitti_golden_rule_locked. */
+
+let _chittiConfirmInFlight = false;
+let _chittiConfirmRecog = null;
+
+function chittiConfirmAndDo(question, onYes, opts){
+  opts = opts || {};
+  if (_chittiConfirmInFlight) {
+    // Refuse to stack confirms — one at a time. Speak a short note
+    // and drop the second request. Per Golden Rule we never queue
+    // pending actions silently.
+    try { speakText(CURRENT_LANG==='en' ? 'One thing at a time — please answer the current question first.' : 'Pehle yeh wala jawab dijiye.', CURRENT_LANG); } catch(e){}
+    return;
+  }
+  _chittiConfirmInFlight = true;
+  const overlay = document.getElementById('chitti-confirm-overlay');
+  const qEl     = document.getElementById('chitti-confirm-q');
+  const listen  = document.getElementById('chitti-confirm-listening');
+  const yesBtn  = document.getElementById('chitti-confirm-yes');
+  const noBtn   = document.getElementById('chitti-confirm-no');
+  const stopBtn = document.getElementById('chitti-confirm-stop');
+
+  qEl.textContent = question;
+  listen.style.display = 'none';
+  overlay.classList.remove('hidden');
+
+  // Speak the question, THEN start listening (avoids the recogniser
+  // picking up Chitti's own voice as the answer).
+  try {
+    speakText(question, CURRENT_LANG, () => startListening());
+  } catch (e) { startListening(); }
+
+  function cleanup(){
+    _chittiConfirmInFlight = false;
+    overlay.classList.add('hidden');
+    yesBtn.onclick = noBtn.onclick = stopBtn.onclick = null;
+    if (_chittiConfirmRecog) {
+      try { _chittiConfirmRecog.abort(); } catch(e){}
+      _chittiConfirmRecog = null;
+    }
+  }
+  function doYes(){
+    cleanup();
+    try { speakText(CURRENT_LANG==='en' ? 'OK, doing it now.' : 'Theek hai, abhi karti hoon.', CURRENT_LANG); } catch(e){}
+    setTimeout(() => { try { onYes(); } catch(e){ console.warn('chittiConfirmAndDo onYes threw', e); } }, 80);
+  }
+  function doNo(reason){
+    cleanup();
+    try {
+      speakText(CURRENT_LANG==='en' ? 'OK, I stopped. Nothing was done.' : 'Theek hai, rok diya. Kuch nahi kiya.', CURRENT_LANG);
+    } catch(e){}
+    if (typeof opts.onNo === 'function') { try { opts.onNo(reason || 'no'); } catch(e){} }
+  }
+  yesBtn.onclick  = doYes;
+  noBtn.onclick   = () => doNo('tapped_no');
+  stopBtn.onclick = () => doNo('tapped_stop');
+
+  function startListening(){
+    listen.style.display = 'block';
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      // No SpeechRecognition — modal stays open, user must tap. Per
+      // Golden Rule we do NOT auto-confirm in any fallback.
+      listen.textContent = '⚠️ Voice recognition not available — please tap Haan or Nahi.';
+      return;
+    }
+    const r = new SR();
+    r.lang = bcp47(CURRENT_LANG);
+    r.interimResults = false;
+    r.continuous = false;
+    r.onresult = (e) => {
+      const t = (e.results[0][0].transcript || '').toLowerCase();
+      // YES patterns: haan, ji haan, theek, sahi, kar do, do it, yes, yeah, ok, okay, please, bilkul
+      // NO  patterns: nahi, mat, stop, ruk, ruko, cancel, no, mat karo, chodo
+      if (/(^|\b)(nahi|mat|stop|ruk(?:o)?|cancel|no|chodo|reh\s*ne\s*do)(\b|$)/i.test(t)) {
+        doNo('voice_no:' + t.slice(0,30));
+        return;
+      }
+      if (/(^|\b)(haan|haa|han|ji\s*haan|theek|sahi|kar\s*do|do\s*it|yes|yeah|ok|okay|please|bilkul|zaroor)(\b|$)/i.test(t)) {
+        doYes();
+        return;
+      }
+      // Ambiguous — re-listen once. Per Golden Rule we never accept
+      // silence or unclear speech as Yes.
+      try {
+        speakText(CURRENT_LANG==='en' ? "I didn't catch that. Please say haan or nahi clearly." : 'Saaf samajh nahi aaya. Haan ya nahi saaf bolo.', CURRENT_LANG, () => {
+          try { r.start(); } catch(e){}
+        });
+      } catch(e){ try { r.start(); } catch(_){} }
+    };
+    r.onerror = () => {
+      // Microphone unavailable or speech-recog crash. Do NOT default
+      // to Yes. Modal stays open; user can tap.
+      listen.textContent = '⚠️ Could not hear you — please tap Haan or Nahi.';
+    };
+    r.onend = () => {
+      // SpeechRecognition stops itself after silence. Don't auto-restart
+      // forever — surface the tap path so the user knows.
+      if (_chittiConfirmInFlight) listen.textContent = '🎙️ I stopped listening. Please tap Haan or Nahi.';
+    };
+    try { r.start(); _chittiConfirmRecog = r; }
+    catch(e) { listen.textContent = '⚠️ Could not start microphone — please tap Haan or Nahi.'; }
+  }
 }
 
 /* ── Listen-for-yes (voice "haan" / "yes" capture for confirmations) ── */
@@ -4769,24 +4960,39 @@ function routeVoiceIntent(raw){
   }
 
   // ── Lock my phone ──────────────────────────────────────────────────
+  // Golden Rule: even though the user just spoke "lock my phone", we
+  // still confirm — voice can mis-fire. confirmNativeAction asks
+  // "Sire, shall I lock your phone now?" and locks only on haan.
   if (/^(?:lock(?:\s+(?:my|the))?\s+phone|phone\s+lock(?:\s+kar(?:do|de))?)$/i.test(r)) {
-    nativeAction('lockPhone');
+    confirmNativeAction('lockPhone');
     return true;
   }
 
   // ── Answer / Reject the call ───────────────────────────────────────
+  // Golden Rule applies even to incoming-call handling — Chitti asks
+  // "Shall I answer this call?" before lifting the receiver.
   if (/^(?:answer(?:\s+(?:the|this))?\s+call|uthao(?:\s+phone)?|phone\s+uthao|pickup\s+the\s+call)$/i.test(r)) {
-    if (hasNativeBridge() && window.ChittiNative.answerCall) {
-      try { window.ChittiNative.answerCall(); speakText('Answering.', CURRENT_LANG); return true; } catch (e) {}
-    }
-    speakText((CURRENT_LANG === 'en' ? 'Answer-call works in the Android app — Phase 2.3.' : 'Phone uthana Android app me — Phase 2.3.'), CURRENT_LANG);
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? 'Sire, shall I answer this call?' : 'Sire, kya main yeh call uthaaun?',
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.answerCall) {
+          try { window.ChittiNative.answerCall(); speakText('Answering.', CURRENT_LANG); return; } catch (e) {}
+        }
+        speakText((CURRENT_LANG === 'en' ? 'Answer-call works in the Android app — Phase 2.3.' : 'Phone uthana Android app me — Phase 2.3.'), CURRENT_LANG);
+      },
+    );
     return true;
   }
   if (/^(?:reject(?:\s+(?:the|this))?\s+call|cut\s+(?:the\s+)?call|kaat\s+do|call\s+kaat(?:o|do))$/i.test(r)) {
-    if (hasNativeBridge() && window.ChittiNative.rejectCall) {
-      try { window.ChittiNative.rejectCall(); speakText('Rejecting.', CURRENT_LANG); return true; } catch (e) {}
-    }
-    speakText((CURRENT_LANG === 'en' ? 'Reject-call works in the Android app — Phase 2.3.' : 'Phone kaat na Android app me — Phase 2.3.'), CURRENT_LANG);
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? 'Sire, shall I reject this call?' : 'Sire, kya main yeh call kaat dun?',
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.rejectCall) {
+          try { window.ChittiNative.rejectCall(); speakText('Rejecting.', CURRENT_LANG); return; } catch (e) {}
+        }
+        speakText((CURRENT_LANG === 'en' ? 'Reject-call works in the Android app — Phase 2.3.' : 'Phone kaat na Android app me — Phase 2.3.'), CURRENT_LANG);
+      },
+    );
     return true;
   }
 
@@ -4816,30 +5022,38 @@ function routeVoiceIntent(raw){
   }
 
   // ── Maps / Directions ─────────────────────────────────────────────
-  // Bryan 2026-05-22: "AIIMS le chalo" must open Maps.
+  // Bryan 2026-05-22: "AIIMS le chalo" must open Maps. Golden Rule —
+  // we still ask "Shall I open directions to AIIMS?" before launching.
   m = r.match(/^(.+?)\s+(?:le\s+chalo|le\s+chal|tak\s+(?:le\s+chalo|jaana)|ka\s+raasta(?:\s+dikha|\s+bata)?|directions(?:\s+to)?)$/i)
    || r.match(/^(?:directions\s+to|open\s+maps?(?:\s+to)?|maps?\s+to|navigate(?:\s+to)?)\s+(.+)$/i)
    || r.match(/^(?:take\s+me\s+to|go\s+to)\s+(.+)$/i);
   if (m) {
     const place = m[1].trim();
-    if (hasNativeBridge() && window.ChittiNative.openMaps) {
-      try { window.ChittiNative.openMaps(place, 'directions'); speakText((CURRENT_LANG === 'en' ? 'Opening directions to ' : 'Maps khol rahi hoon: ') + place + '.', CURRENT_LANG); return true; } catch (e) {}
-    }
-    openMapsModal();
-    const dest = document.getElementById('maps-dest');
-    if (dest) dest.value = place;
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? ('Sire, shall I open directions to ' + place + '?') : ('Sire, kya main ' + place + ' ka raasta kholun?'),
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.openMaps) {
+          try { window.ChittiNative.openMaps(place, 'directions'); speakText((CURRENT_LANG === 'en' ? 'Opening directions to ' : 'Maps khol rahi hoon: ') + place + '.', CURRENT_LANG); return; } catch (e) {}
+        }
+        openMapsModal();
+        const dest = document.getElementById('maps-dest');
+        if (dest) dest.value = place;
+      },
+    );
     return true;
   }
 
   // ── Open camera ────────────────────────────────────────────────────
+  // Routes through confirmNativeAction (Golden Rule gate).
   if (/^(?:open\s+camera|camera\s+kholo|take\s+a?\s*photo)$/i.test(r)) {
-    nativeAction('openCamera');
+    confirmNativeAction('openCamera');
     return true;
   }
 
   // ── Torch / flashlight ─────────────────────────────────────────────
+  // Routes through confirmNativeAction (Golden Rule gate).
   if (/^(?:torch|flashlight)\s*(?:on|off|chalu|band|kaam|toggle)?$/i.test(r)) {
-    nativeAction('toggleFlashlight');
+    confirmNativeAction('toggleFlashlight');
     return true;
   }
 
