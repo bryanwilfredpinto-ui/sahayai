@@ -86,7 +86,25 @@
         <div class="label" id="mb-health-label" data-vai-i18n="mb.health.good">ठीक है</div>
         <div class="sub" id="mb-health-sub">सब कुछ ठीक है</div>
       </div>
+      <div class="mb-hscore" id="mb-hscore" aria-label="Vehicle Health Score">
+        <div class="mb-hscore-num" id="mb-hscore-num">100</div>
+        <div class="mb-hscore-lbl">Health</div>
+      </div>
     </div>
+
+    <!-- ════════ World-class additions on Home — SOS · Trip-readiness · Find Mechanic ════════ -->
+    <div class="mb-quick-row">
+      <button class="mb-quick mb-quick-sos" onclick="mbSOS()" aria-label="Emergency SOS — family cascade, never police">
+        <span class="ico">🆘</span><span class="lbl">SOS</span><span class="sub">Family cascade</span>
+      </button>
+      <button class="mb-quick mb-quick-trip" onclick="mbTripReady()" aria-label="Pre-trip readiness check">
+        <span class="ico">🧳</span><span class="lbl">Trip ready?</span><span class="sub">30-sec sweep</span>
+      </button>
+      <button class="mb-quick mb-quick-mech" onclick="mbTab('ask'); setTimeout(()=>document.getElementById('mb-pin')?.focus(),250)" aria-label="Find a trusted mechanic">
+        <span class="ico">🗺️</span><span class="lbl">Find mech</span><span class="sub">Community-rated</span>
+      </button>
+    </div>
+    <div id="mb-trip-result" style="margin-top:8px"></div>
 
     <div class="sds-card chitti-response" data-chitti-section="🏍️ बाइक का संक्षिप्त ब्यौरा">
       <h2 class="sds-card-title"><span class="ico">🏍️</span> <span id="mb-bike-name">— —</span></h2>
@@ -132,6 +150,8 @@
 </div>
 
 <div class="sds-tab-panel" id="mb-tab-bike">
+  <div id="mb-fleet-switcher"></div>
+
   <div class="sds-card chitti-response" data-chitti-section="🏍️ बाइक की जानकारी">
     <h2 class="sds-card-title"><span class="ico">🏍️</span> <span data-vai-i18n="mb.form.title">मेरी बाइक</span></h2>
     <div class="sds-card-sub" data-vai-i18n="mb.form.sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
@@ -289,6 +309,30 @@
       <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-docs-fb')">रद्द</button><button onclick="sendFb('mb_docs','mb-docs-fb-text','mb-docs-fb')">भेजो</button></div>
     </div>
   </div>
+
+  <!-- ════════ 📓 SERVICE LOGBOOK — CARFAX + MECH AI Digital Garage best practice ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="📓 Service Logbook">
+    <h2 class="sds-card-title"><span class="ico">📓</span> Service Logbook</h2>
+    <div class="sds-card-sub">Har repair / service yahaan log karein. Aapki bike ka medical history — resale time pe ₹5,000 zyada milte hain.</div>
+    <button class="sds-btn primary block" onclick="mbLogToggle()" id="mb-log-toggle-btn">➕ Add service entry</button>
+    <div id="mb-log-form" style="display:none;margin-top:10px">
+      <div class="sds-field"><label>Date</label><input id="mb-log-date" class="sds-input" type="date"></div>
+      <div class="sds-field"><label>Odometer (KM)</label><input id="mb-log-km" class="sds-input" type="number" inputmode="numeric" placeholder="38000"></div>
+      <div class="sds-field"><label>Kya kaam hua?</label><input id="mb-log-what" class="sds-input" placeholder="oil change + chain lube + tyre PSI"></div>
+      <div class="sds-field"><label>Total cost (₹)</label><input id="mb-log-cost" class="sds-input" type="number" inputmode="numeric" placeholder="650"></div>
+      <div class="sds-field"><label>Mechanic / shop name (optional)</label><input id="mb-log-mech" class="sds-input" placeholder="Hero ASS Phase 2"></div>
+      <button class="sds-btn primary block" onclick="mbLogAdd()">💾 Save entry</button>
+      <button class="sds-btn ghost block" style="margin-top:6px" onclick="mbLogToggle()">रद्द</button>
+    </div>
+    <div id="mb-log-list" style="margin-top:14px"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="mbLogSpeak()">🔊 Suno</button>
+      <button class="demo" onclick="mbLogDemo()">▶ डेमो</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_logbook', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_logbook'">👎</button>
+    </div>
+  </div>
 </div>
 
 <div class="sds-tab-panel" id="mb-tab-alerts">
@@ -332,6 +376,87 @@
     <div class="sds-fb-panel" id="mb-obd-fb">
       <textarea id="mb-obd-fb-text" placeholder="OBD2 scan kaisa raha?"></textarea>
       <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-obd-fb')">रद्द</button><button onclick="sendFb('mb_obd','mb-obd-fb-text','mb-obd-fb')">भेजो</button></div>
+    </div>
+  </div>
+
+  <!-- ════════ 📸 PHOTO DIAGNOSE — MECH AI + TrunkMonkey best practice ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="📸 Photo Diagnose">
+    <h2 class="sds-card-title"><span class="ico">📸</span> Photo Diagnose</h2>
+    <div class="sds-card-sub">Camera open karein. Engine ka koi part, dashboard light, leak, tyre ki photo lo — Chitti dekh kar batayegi kya problem hai.</div>
+    <input type="file" accept="image/*" capture="environment" id="mb-photo-input" style="display:none" onchange="mbPhotoSubmit(this)">
+    <button class="sds-btn primary block" onclick="document.getElementById('mb-photo-input').click()">📸 Photo lo / upload karo</button>
+    <img id="mb-photo-preview" style="display:none;max-width:100%;border-radius:10px;margin-top:10px">
+    <div id="mb-photo-result" style="margin-top:10px"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('Photo diagnose. Engine, leak, tyre ya dashboard light ki photo lo. Chitti dekh kar batayegi.', CURRENT_LANG)">🔊</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_photo', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_photo'">👎</button>
+    </div>
+  </div>
+
+  <!-- ════════ 🎙️ SOUND DIAGNOSE — AutoSonix + TrunkMonkey best practice ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🎙️ Sound Diagnose">
+    <h2 class="sds-card-title"><span class="ico">🎙️</span> Sound Diagnose</h2>
+    <div class="sds-card-sub">Engine chalu karke 10 second record karo. Phir 1-2 shabd mein bata do kaisi awaaz aa rahi hai (kat-kat, ghir-ghir, etc.) — Chitti pehchanegi.</div>
+    <div class="mb-sound-row">
+      <button id="mb-sound-rec-btn" class="sds-btn primary block" onclick="mbSoundStart()">🔴 Record 10 sec</button>
+      <div id="mb-sound-status" style="font-size:13px;color:#555;margin-top:6px"></div>
+      <audio id="mb-sound-player" controls style="display:none;width:100%;margin-top:6px"></audio>
+    </div>
+    <div id="mb-sound-describe" style="display:none;margin-top:10px">
+      <label style="font-size:13px;color:#666">Awaaz kaise lag rahi hai? (1-2 shabd)</label>
+      <input id="mb-sound-desc-text" class="sds-input" placeholder="chain kat-kat / engine khurr-khurr / silencer phat-phat" style="margin-top:4px">
+      <button class="sds-btn primary block" style="margin-top:8px" onclick="mbSoundSubmit()">Chitti se pucho ➜</button>
+    </div>
+    <div id="mb-sound-result" style="margin-top:10px"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('Sound diagnose. Engine chalu karke 10 second record karo phir Chitti se pucho.', CURRENT_LANG)">🔊</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_sound', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_sound'">👎</button>
+    </div>
+  </div>
+
+  <!-- ════════ 💰 FAIR PRICE GUARD — CARFAX + YourMechanic best practice ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="💰 Fair Price Guard">
+    <h2 class="sds-card-title"><span class="ico">💰</span> Fair Price Guard</h2>
+    <div class="sds-card-sub">Mechanic ne quote diya? Yahaan likho — Chitti batayegi sahi daam hai ya overcharge.</div>
+    <div class="sds-field">
+      <label>Kya kaam hai?</label>
+      <input id="mb-fp-what" class="sds-input" placeholder="chain replace, oil change, clutch plate, etc.">
+    </div>
+    <div class="sds-field">
+      <label>Mechanic ka quote (₹)</label>
+      <input id="mb-fp-quote" class="sds-input" type="number" inputmode="numeric" placeholder="1500">
+    </div>
+    <button class="sds-btn primary block" onclick="mbFairPriceCheck()">Chitti se check karo ➜</button>
+    <div id="mb-fp-result" style="margin-top:10px"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('Fair price guard. Mechanic ne kitne ka quote diya, Chitti se check karo.', CURRENT_LANG)">🔊</button>
+      <button class="demo" onclick="document.getElementById('mb-fp-what').value='Chain replace'; document.getElementById('mb-fp-quote').value='1800'; mbFairPriceCheck();">▶ डेमो</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_fairprice', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_fairprice'">👎</button>
+    </div>
+  </div>
+
+  <!-- ════════ 🗺️ FIND MECHANIC — GoMechanic + Pitstop best practice ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🗺️ Find Mechanic">
+    <h2 class="sds-card-title"><span class="ico">🗺️</span> Find a trusted mechanic</h2>
+    <div class="sds-card-sub">Pincode dijiye — Chitti aapke area ke trusted mechanics dhundhegi + Google Maps mein khol degi.</div>
+    <div class="sds-field">
+      <label>Pincode (optional)</label>
+      <input id="mb-pin" class="sds-input" type="text" inputmode="numeric" placeholder="110001 / 560001" maxlength="6">
+    </div>
+    <button class="sds-btn primary block" onclick="mbFindMechanic()">🗺️ Mechanic dhundo</button>
+    <div id="mb-mech-result" style="margin-top:10px"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('Find mechanic. Pincode bataiye, Chitti aapke area ke trusted mechanics dhundhegi.', CURRENT_LANG)">🔊</button>
+      <button class="demo" onclick="document.getElementById('mb-pin').value='110001'; mbFindMechanic();">▶ डेमो Delhi</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_mech_find', 1)">👍</button>
+      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_bike&card=mb_mech_find'">👎</button>
     </div>
   </div>
 
@@ -379,6 +504,38 @@
   </div>
 
   <style>
+    /* World-class additions — Home quick row + Vehicle Health Score */
+    .mb-hscore{margin-left:auto;text-align:center;background:#fff;border-radius:50%;width:56px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #16a34a}
+    .mb-hscore.warn{border-color:#f59e0b}
+    .mb-hscore.bad{border-color:#dc2626}
+    .mb-hscore-num{font-size:18px;font-weight:900;line-height:1;color:var(--sds-navy)}
+    .mb-hscore-lbl{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+    .mb-quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+    .mb-quick{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:90px;text-align:center}
+    .mb-quick .ico{font-size:26px;line-height:1}
+    .mb-quick .lbl{font-size:13px;font-weight:800;color:var(--sds-navy);margin-top:4px}
+    .mb-quick .sub{font-size:10px;color:#666;line-height:1.2}
+    .mb-quick-sos{background:linear-gradient(180deg,#fee2e2,#fff);border-color:#fca5a5}
+    .mb-quick-sos .lbl{color:#b91c1c}
+    .mb-quick-trip{background:linear-gradient(180deg,#dcfce7,#fff);border-color:#86efac}
+    .mb-quick-mech{background:linear-gradient(180deg,#fef3c7,#fff);border-color:var(--sds-saffron)}
+    .mb-quick:active{transform:scale(0.97)}
+    /* Multi-vehicle garage switcher */
+    .mb-fleet-row{display:flex;gap:6px;overflow-x:auto;padding:6px 0;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+    .mb-fleet-slot{background:#fff;border:1.5px solid var(--sds-line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;min-height:42px}
+    .mb-fleet-slot.active{background:var(--sds-navy);color:#fff;border-color:var(--sds-navy)}
+    .mb-fleet-add{background:#fff;border:1.5px dashed var(--sds-saffron);color:var(--sds-saffron);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;min-height:42px}
+    /* Service Logbook */
+    .mb-log-row{background:#fff;border:1px solid var(--sds-line);border-radius:10px;padding:10px;margin-bottom:8px}
+    .mb-log-head{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:4px}
+    .mb-log-what{font-weight:700;color:var(--sds-navy);font-size:14px}
+    .mb-log-meta{font-size:12px;color:#666;margin-top:4px}
+    .mb-log-empty{padding:20px;text-align:center;color:#888;background:#fafafa;border-radius:10px}
+    /* Sound diagnose specifics */
+    .mb-sound-row{margin:6px 0}
+    /* Photo preview corner round */
+    #mb-photo-preview{box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+
     .mb-soon-card{margin-bottom:14px;background:linear-gradient(180deg,#fff7ec,#fff);border:1.5px dashed var(--sds-saffron);border-radius:16px;padding:14px}
     .mb-soon-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
     .mb-soon-flag{background:var(--sds-saffron);color:#fff;font-weight:900;padding:4px 10px;border-radius:999px;letter-spacing:.04em;font-size:12px}
@@ -519,8 +676,9 @@ function mbTab(name){
   document.getElementById('mb-tab-' + name).classList.add('active');
   document.querySelectorAll('.sds-tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   if (name === 'home') mbRefreshHome();
-  if (name === 'docs') mbRenderDocs();
+  if (name === 'docs') { mbRenderDocs(); try { mbLogRenderList(); } catch(e){} }
   if (name === 'alerts') mbRenderAlerts();
+  if (name === 'bike') { try { renderFleetSwitcher(); } catch(e){} try { mbKyvLoad(); } catch(e){} }
   try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
 }
 
@@ -616,6 +774,8 @@ function mbRefreshHome(){
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   document.getElementById('mb-health-sub').textContent = sub;
   document.getElementById('mb-safety-tip-text').textContent = mbDailyTip();
+  mbRenderHealthScore();
+  try { if (typeof renderFleetSwitcher === 'function') renderFleetSwitcher(); } catch(e){}
 }
 function mbSummary(){
   const b = loadBike(); if (!b) return 'अभी कोई बाइक नहीं जोड़ी।';
@@ -931,6 +1091,398 @@ async function mbSoonVote(featureId, v, btn){
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// NEW (2026-05-23) — Multi-vehicle Garage · Vehicle Health Score · SOS ·
+// Trip Readiness · Service Logbook
+// ═══════════════════════════════════════════════════════════════════════
+const MB_FLEET_KEY = 'chitti_bike_fleet_v1';
+const MB_FLEET_ACTIVE_KEY = 'chitti_bike_fleet_active_v1';
+const MB_LOG_KEY = 'chitti_bike_logbook_v1';
+
+function mbLoadFleet(){ try { return JSON.parse(localStorage.getItem(MB_FLEET_KEY) || '[]') || []; } catch(e){ return []; } }
+function mbSaveFleet(arr){ try { localStorage.setItem(MB_FLEET_KEY, JSON.stringify(arr)); } catch(e){} }
+function mbGetActiveIdx(){ try { return Math.max(0, parseInt(localStorage.getItem(MB_FLEET_ACTIVE_KEY) || '0', 10)); } catch(e){ return 0; } }
+function mbSetActiveIdx(i){ try { localStorage.setItem(MB_FLEET_ACTIVE_KEY, String(i)); } catch(e){} }
+
+// Migrate legacy single-bike storage → fleet[0]
+(function migrateLegacyBike(){
+  try {
+    const fleet = mbLoadFleet();
+    if (fleet.length > 0) return;
+    const old = JSON.parse(localStorage.getItem(BIKE_KEY) || 'null');
+    if (old && old.make) { mbSaveFleet([old]); mbSetActiveIdx(0); }
+  } catch(e){}
+})();
+
+// Replace loadBike() to use fleet
+const __origLoadBike = loadBike;
+loadBike = function(){
+  const fleet = mbLoadFleet();
+  if (fleet.length === 0) {
+    const old = (typeof __origLoadBike === 'function') ? __origLoadBike() : null;
+    if (old && old.make) { mbSaveFleet([old]); mbSetActiveIdx(0); return old; }
+    return null;
+  }
+  const idx = Math.max(0, Math.min(fleet.length - 1, mbGetActiveIdx()));
+  return fleet[idx] || null;
+};
+// Replace saveBike() to write into the active fleet slot
+saveBike = function(b){
+  const fleet = mbLoadFleet();
+  const idx = mbGetActiveIdx();
+  if (idx >= fleet.length) fleet.push(b);
+  else fleet[idx] = b;
+  mbSaveFleet(fleet);
+  try { localStorage.setItem(BIKE_KEY, JSON.stringify(b)); } catch(e){} // back-compat
+};
+
+function mbFleetAdd(){
+  const fleet = mbLoadFleet();
+  fleet.push({});
+  mbSaveFleet(fleet);
+  mbSetActiveIdx(fleet.length - 1);
+  ['mb-make','mb-model','mb-variant','mb-reg','mb-year','mb-color','mb-odo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  renderFleetSwitcher();
+  speakText('Nayi bike slot. Form bhar ke save karein.', CURRENT_LANG);
+}
+function mbFleetSwitch(i){
+  mbSetActiveIdx(i);
+  const b = loadBike() || {};
+  // Populate form from active bike
+  if (b.make) { const el = document.getElementById('mb-make'); if (el) { el.value = b.make; if (typeof mbOnMakeChange === 'function') mbOnMakeChange(b.make); } }
+  setTimeout(() => {
+    if (b.model) { const el = document.getElementById('mb-model'); if (el) el.value = b.model; }
+    ['variant','reg','year','color','odo'].forEach(f => { const el = document.getElementById('mb-'+f); if (el) el.value = (b[f] != null) ? b[f] : ''; });
+  }, 80);
+  if (typeof mbRefreshHome === 'function') mbRefreshHome();
+  if (typeof mbKyvLoad === 'function') setTimeout(mbKyvLoad, 100);
+  renderFleetSwitcher();
+}
+function renderFleetSwitcher(){
+  const container = document.getElementById('mb-fleet-switcher');
+  if (!container) return;
+  const fleet = mbLoadFleet();
+  const idx = mbGetActiveIdx();
+  if (fleet.length <= 1) { container.innerHTML = '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ Add another bike</button>'; return; }
+  let h = '<div class="mb-fleet-row">';
+  fleet.forEach((v, i) => {
+    const label = v.make ? ((v.make + ' ' + (v.model || '')).slice(0, 18)) : 'Empty';
+    h += '<button class="mb-fleet-slot' + (i === idx ? ' active' : '') + '" onclick="mbFleetSwitch(' + i + ')">🏍️ ' + (label || 'Empty') + '</button>';
+  });
+  h += '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ Add</button>';
+  h += '</div>';
+  container.innerHTML = h;
+}
+
+// ── Service Logbook ──
+function mbLogLoad(){ try { return JSON.parse(localStorage.getItem(MB_LOG_KEY) || '[]') || []; } catch(e){ return []; } }
+function mbLogSave(arr){ try { localStorage.setItem(MB_LOG_KEY, JSON.stringify(arr)); } catch(e){} }
+function mbLogToggle(){
+  const form = document.getElementById('mb-log-form');
+  if (!form) return;
+  const showing = form.style.display !== 'none';
+  form.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    const today = new Date().toISOString().slice(0,10);
+    const b = loadBike() || {};
+    document.getElementById('mb-log-date').value = today;
+    document.getElementById('mb-log-km').value = b.odo || '';
+  }
+}
+function mbLogAdd(){
+  const entry = {
+    date: document.getElementById('mb-log-date').value,
+    km: parseInt(document.getElementById('mb-log-km').value || '0', 10),
+    what: (document.getElementById('mb-log-what').value || '').trim(),
+    cost: parseInt(document.getElementById('mb-log-cost').value || '0', 10),
+    mechanic: (document.getElementById('mb-log-mech').value || '').trim(),
+    bike_key: (function(){ const b = loadBike() || {}; return (b.make||'') + '_' + (b.model||'') + '_' + (b.reg||''); })(),
+    added_at: new Date().toISOString(),
+  };
+  if (!entry.what) { speakText('Kya kaam hua yeh likhiye.', CURRENT_LANG); return; }
+  const list = mbLogLoad();
+  list.unshift(entry); // newest first
+  mbLogSave(list);
+  mbLogRenderList();
+  mbLogToggle();
+  speakText('Service entry save ho gayi. Total ' + list.length + ' entries.', CURRENT_LANG);
+}
+function mbLogRenderList(){
+  const out = document.getElementById('mb-log-list');
+  if (!out) return;
+  const list = mbLogLoad();
+  if (list.length === 0) { out.innerHTML = '<div class="mb-log-empty">Abhi koi entry nahi. Pehli service log karein.</div>'; return; }
+  const total = list.reduce((s, e) => s + (e.cost || 0), 0);
+  let h = '<div style="font-size:12px;color:#666;margin-bottom:6px">Total ' + list.length + ' entries · ₹' + total + ' kharch</div>';
+  list.slice(0, 15).forEach(e => {
+    h += '<div class="mb-log-row">';
+    h += '<div class="mb-log-head"><span>📅 ' + escapeHtml(e.date || '') + '</span><span>' + (e.km ? '🛣️ ' + e.km + ' km' : '') + '</span></div>';
+    h += '<div class="mb-log-what">' + escapeHtml(e.what || '') + '</div>';
+    h += '<div class="mb-log-meta">' + (e.cost ? '💰 ₹' + e.cost : '') + (e.mechanic ? ' · 🔧 ' + escapeHtml(e.mechanic) : '') + '</div>';
+    h += '</div>';
+  });
+  out.innerHTML = h;
+}
+function mbLogSpeak(){
+  const list = mbLogLoad();
+  if (list.length === 0) { speakText('Abhi koi service entry nahi.', CURRENT_LANG); return; }
+  const total = list.reduce((s, e) => s + (e.cost || 0), 0);
+  speakText('Total ' + list.length + ' service entries. Kul ' + total + ' rupiye kharch.', CURRENT_LANG);
+}
+function mbLogDemo(){
+  const list = mbLogLoad();
+  list.unshift({ date: new Date().toISOString().slice(0,10), km: 38000, what:'Oil change + chain lube + brake check', cost: 650, mechanic: 'Local mechanic', added_at: new Date().toISOString() });
+  mbLogSave(list);
+  mbLogRenderList();
+  speakText('Demo entry add ho gayi.', CURRENT_LANG);
+}
+
+// ── Vehicle Health Score ──
+function mbComputeHealthScore(){
+  const b = loadBike();
+  if (!b || !b.make) return null;
+  let score = 100;
+  try {
+    const docs = (typeof loadDocs === 'function') ? loadDocs() : [];
+    const alerts = (typeof computeAlerts === 'function') ? computeAlerts(b, docs) : [];
+    const reds = alerts.filter(a => a.urgency === 'red').length;
+    const others = alerts.length - reds;
+    const expiring = docs.filter(d => d.expiry && (new Date(d.expiry) - new Date()) < 30*24*3600*1000).length;
+    score -= reds * 15;
+    score -= others * 6;
+    score -= expiring * 4;
+    if (b.odo) {
+      const overdue = Math.max(0, (b.odo % 3000) / 3000 - 0.8);
+      score -= overdue * 50;
+    }
+  } catch(e){}
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+function mbRenderHealthScore(){
+  const el = document.getElementById('mb-hscore');
+  const num = document.getElementById('mb-hscore-num');
+  if (!el || !num) return;
+  const s = mbComputeHealthScore();
+  if (s === null) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  num.textContent = String(s);
+  el.classList.remove('warn','bad');
+  if (s < 50) el.classList.add('bad');
+  else if (s < 80) el.classList.add('warn');
+}
+
+function mbSOS(){
+  speakText('Emergency. Chitti family ko call kar rahi hai. 112 ko NAHI.', CURRENT_LANG);
+  window.location.href = 'chitti_vaani.html#sos';
+}
+
+async function mbTripReady(){
+  const out = document.getElementById('mb-trip-result');
+  if (!out) return;
+  out.innerHTML = '<div class="sds-bubble chitti">Chitti pre-trip check kar rahi hai…</div>';
+  const b = loadBike() || {};
+  let items = [];
+  try {
+    const key = (typeof mbKyvKey === 'function') ? mbKyvKey(b) : null;
+    if (key) {
+      const cached = JSON.parse(localStorage.getItem(key) || 'null');
+      if (cached && Array.isArray(cached.pre_ride_check)) items = cached.pre_ride_check;
+    }
+  } catch(e){}
+  if (items.length === 0) {
+    items = [
+      'Tyre pressure check (front + rear)',
+      'Brake feel — press front + rear once',
+      'Headlight, tail-light, indicators, horn',
+      'Chain dry ya wet? Lube due?',
+      'Engine oil dipstick — golden hai?',
+      'Fuel + reserve range check',
+      'Helmet, gloves, raincoat (monsoon)'
+    ];
+  }
+  let html = '<div class="sds-card chitti-response" data-chitti-section="🧳 Pre-trip check"><h3 class="sds-card-title">🧳 Pre-trip 30-sec check</h3>';
+  html += '<ol style="margin:0 0 8px 18px;font-size:14px;line-height:1.8">';
+  items.forEach((it, i) => {
+    html += '<li id="mb-trip-' + i + '"><label style="cursor:pointer"><input type="checkbox" onchange="mbTripTick(' + i + ')" style="margin-right:6px">' + escapeHtml(it) + '</label></li>';
+  });
+  html += '</ol>';
+  html += '<div id="mb-trip-verdict" style="margin-top:6px;font-size:13px;color:#666">' + items.length + ' items — sab tick karne par GO ✅</div>';
+  html += '<div class="sds-card-toolbar"><button onclick="speakText(\'Pre trip check. Tyre, brake, lights, chain, oil, fuel, helmet.\', CURRENT_LANG)">🔊</button><span class="sep"></span><button class="fb-pos" onclick="logProductAction(\'mb_trip\', 1)">👍</button><button class="fb-neg" onclick="window.location.href=\'feedback.html?product=chitti_mechanic_bike&card=mb_trip\'">👎</button></div>';
+  html += '</div>';
+  out.innerHTML = html;
+  speakText('Pre-trip check shuru. Har item tick karein.', CURRENT_LANG);
+}
+function mbTripTick(i){
+  const checks = document.querySelectorAll('#mb-trip-result input[type=checkbox]');
+  const done = Array.from(checks).filter(c => c.checked).length;
+  const total = checks.length;
+  const verdict = document.getElementById('mb-trip-verdict');
+  if (verdict) {
+    if (done === total) { verdict.innerHTML = '✅ <b>GO — bike trip ke liye taiyaar hai.</b>'; speakText('Sab tick. Bike ready hai. Safe ride.', CURRENT_LANG); }
+    else verdict.textContent = done + ' / ' + total + ' done. Aur ' + (total - done) + ' baki.';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NEW (2026-05-23) — Photo · Sound · Fair-Price · Find-Mechanic
+// Sire: "MAKE IT THE WORLD CLASS APP" — added per MECH AI + FIXD + GoMechanic
+// best-practice audit. All four POST to /api/vaani/ask (DeepSeek) — backend
+// returns JSON which we parse + render with severity colour.
+// ═══════════════════════════════════════════════════════════════════════
+async function mbPhotoSubmit(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // Show preview immediately so user knows it's working
+  const previewUrl = URL.createObjectURL(file);
+  const img = document.getElementById('mb-photo-preview');
+  img.src = previewUrl; img.style.display = 'block';
+  const out = document.getElementById('mb-photo-result');
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti dekh rahi hai…</span></div>';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result || '';
+    const base64 = dataUrl.split(',')[1] || '';
+    const b = loadBike() || {};
+    const ctx = (b.make || 'bike') + ' ' + (b.model || '');
+    const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
+    const prompt = 'You are an Indian motorcycle mechanic. The user sent a photo of their ' + ctx + (b.year ? ' (' + b.year + ')' : '') + '. Look at the image and identify: what part/issue is shown, severity (minor/moderate/serious/critical), is it DIY-fixable or needs mechanic, 1-2 sentence what to do, safe to ride? All in ' + lang + '. Return ONLY JSON: {"what":"<what you see>","issue":"<what is wrong>","severity":"minor|moderate|serious|critical","verdict":"DIY|MECHANIC","action":"<1-2 sentences>","safe_to_ride":true|false,"fair_price_inr":"X-Y"}.';
+    let parsed = null;
+    try {
+      const r = await fetch(API_BASE + '/api/vaani/ask', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask', image_base64: base64, image_data_url: dataUrl })
+      });
+      const d = await r.json();
+      const text = d.reply || d.answer || d.text || '';
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) parsed = JSON.parse(m[0]);
+    } catch(e){}
+    if (!parsed) {
+      out.innerHTML = '<div class="sds-bubble warn">Chitti photo se nahi samajh paayi. Description likh kar Chitti se Ask karein.</div>';
+      return;
+    }
+    const sevMap = { minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical' };
+    const sev = sevMap[parsed.severity] || '⚪ ' + (parsed.severity || '');
+    const verdictCls = parsed.verdict === 'MECHANIC' ? 'safety' : 'chitti';
+    out.innerHTML =
+      '<div class="sds-bubble chitti"><span class="who">' + sev + '</span><b>' + escapeHtml(parsed.what || 'Photo dekhi') + '</b></div>' +
+      (parsed.issue ? '<div class="sds-bubble chitti">' + escapeHtml(parsed.issue) + '</div>' : '') +
+      '<div class="sds-bubble ' + verdictCls + '"><span class="who">' + (parsed.verdict === 'DIY' ? '🔧 DIY' : '🏪 Mechanic') + '</span>' + escapeHtml(parsed.action || '') + '</div>' +
+      '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '">' + (parsed.safe_to_ride ? '✅ Safe to ride to mechanic' : '❌ Do not ride — call for help') + '</div>' +
+      (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 Fair price: ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
+    speakText((parsed.issue || '') + ' ' + (parsed.action || ''), CURRENT_LANG);
+  };
+  reader.readAsDataURL(file);
+}
+
+let mbMediaRecorder = null;
+let mbAudioChunks = [];
+async function mbSoundStart(){
+  const status = document.getElementById('mb-sound-status');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mbAudioChunks = [];
+    mbMediaRecorder = new MediaRecorder(stream);
+    mbMediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) mbAudioChunks.push(e.data); };
+    mbMediaRecorder.onstop = () => {
+      try { (mbMediaRecorder.stream.getTracks() || []).forEach(t => t.stop()); } catch(e){}
+      const blob = new Blob(mbAudioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const player = document.getElementById('mb-sound-player');
+      player.src = url; player.style.display = 'block';
+      document.getElementById('mb-sound-describe').style.display = 'block';
+      status.textContent = '✅ Recorded — sound describe karein';
+      document.getElementById('mb-sound-rec-btn').textContent = '🔴 Phir record';
+    };
+    mbMediaRecorder.start();
+    status.textContent = '🔴 Recording… (10 sec)';
+    document.getElementById('mb-sound-rec-btn').textContent = '⏹ Stop';
+    setTimeout(() => { if (mbMediaRecorder && mbMediaRecorder.state === 'recording') mbMediaRecorder.stop(); }, 10000);
+  } catch(e) {
+    status.textContent = '❌ Mic access nahi mila. Browser permissions check karein.';
+  }
+}
+async function mbSoundSubmit(){
+  const desc = (document.getElementById('mb-sound-desc-text').value || '').trim();
+  const out = document.getElementById('mb-sound-result');
+  if (!desc) { speakText('Awaaz ka description likhiye.', CURRENT_LANG); return; }
+  const b = loadBike() || {};
+  const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
+  const prompt = 'Indian motorcycle mechanic. User describes a sound from their ' + (b.make||'bike') + ' ' + (b.model||'') + ': "' + desc + '". Identify the LIKELY mechanical cause from: chain slap, valve clearance noise, big-end knock, piston slap, exhaust leak, brake squeal, bearing whine, clutch rattle, normal. Reply in ' + lang + '. Return ONLY JSON: {"sound_id":"<one of the above>","likely_cause":"<what is wrong>","severity":"minor|moderate|serious|critical","action":"<what to do now>","safe_to_ride":true|false,"fair_price_inr":"X-Y"}.';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti sun rahi hai…</span></div>';
+  let parsed = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    const d = await r.json();
+    const text = d.reply || d.answer || d.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+  } catch(e){}
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi. Phir try karein.</div>'; return; }
+  const sev = ({minor:'🟢',moderate:'🟡',serious:'🟠',critical:'🔴'})[parsed.severity] || '⚪';
+  out.innerHTML =
+    '<div class="sds-bubble chitti"><span class="who">' + sev + ' ' + escapeHtml(parsed.sound_id || '') + '</span>' + escapeHtml(parsed.likely_cause || '') + '</div>' +
+    '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '">' + escapeHtml(parsed.action || '') + '</div>' +
+    (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 Fair price: ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
+  speakText((parsed.likely_cause || '') + '. ' + (parsed.action || ''), CURRENT_LANG);
+}
+
+async function mbFairPriceCheck(){
+  const what = (document.getElementById('mb-fp-what').value || '').trim();
+  const quote = parseInt(document.getElementById('mb-fp-quote').value || '0', 10) || 0;
+  const out = document.getElementById('mb-fp-result');
+  if (!what || !quote) { speakText('Kya kaam aur kitne ka quote bataiye.', CURRENT_LANG); return; }
+  const b = loadBike() || {};
+  const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
+  const prompt = 'Indian motorcycle fair-price expert. ' + (b.make||'') + ' ' + (b.model||'') + ' owner says mechanic quoted ₹' + quote + ' for: "' + what + '". Is this fair (2026 India)? Reply in ' + lang + '. Return ONLY JSON: {"verdict":"FAIR|OVERCHARGE|UNDERCHARGE","fair_min_inr":int,"fair_max_inr":int,"explanation":"<2 sentences>","bargain_to_inr":int}.';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  let parsed = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    const d = await r.json();
+    const text = d.reply || d.answer || d.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+  } catch(e){}
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi.</div>'; return; }
+  const emoji = parsed.verdict === 'FAIR' ? '✅' : (parsed.verdict === 'OVERCHARGE' ? '⚠️' : '🤔');
+  const cls = parsed.verdict === 'OVERCHARGE' ? 'safety' : 'chitti';
+  out.innerHTML =
+    '<div class="sds-bubble ' + cls + '"><span class="who">' + emoji + ' ' + escapeHtml(parsed.verdict || '') + '</span></div>' +
+    '<div class="mb-fairprice">💰 Fair range: ₹' + (parsed.fair_min_inr || '?') + ' – ₹' + (parsed.fair_max_inr || '?') + '</div>' +
+    '<div class="sds-bubble chitti">' + escapeHtml(parsed.explanation || '') + '</div>' +
+    (parsed.bargain_to_inr ? '<div class="sds-bubble chitti"><b>Bargain to ₹' + parsed.bargain_to_inr + '</b></div>' : '');
+  speakText(parsed.verdict + '. ' + parsed.explanation, CURRENT_LANG);
+}
+
+async function mbFindMechanic(){
+  const pincode = (document.getElementById('mb-pin').value || '').trim();
+  const b = loadBike() || {};
+  const out = document.getElementById('mb-mech-result');
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti dhund rahi hai…</span></div>';
+  const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
+  const mapQ = (b.make ? b.make + ' ' : '') + 'bike mechanic ' + (pincode || 'near me');
+  const mapUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(mapQ);
+  const prompt = 'Indian motorcycle mechanic finder. Owner has ' + (b.make||'a bike') + ' ' + (b.model||'') + ' in pincode "' + (pincode || 'unknown') + '". List 5 typical trusted-mechanic types/shops they should look for nearby (e.g. "Royal Enfield authorised service", "experienced local Hero mechanic at sabzi mandi chowk"). Reply in ' + lang + '. Return ONLY JSON: {"area":"<area or city for pincode>","shops":[{"name":"","landmark":"","specialty":"","est_cost":"500-1500"}]}.';
+  let parsed = null;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    const d = await r.json();
+    const text = d.reply || d.answer || d.text || '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+  } catch(e){}
+  let listHtml = '';
+  if (parsed) {
+    listHtml = '<div class="sds-bubble chitti"><span class="who">📍 ' + escapeHtml(parsed.area || pincode || 'aapke area') + '</span></div>';
+    (parsed.shops || []).forEach(s => {
+      listHtml += '<div class="sds-bubble chitti"><b>🔧 ' + escapeHtml(s.name || '') + '</b><br>' + escapeHtml(s.landmark || '') + ' · ' + escapeHtml(s.specialty || '') + (s.est_cost ? '<br>💰 ₹' + escapeHtml(s.est_cost) : '') + '</div>';
+    });
+  }
+  out.innerHTML = listHtml +
+    '<a class="sds-btn primary block" style="margin-top:10px;text-align:center;text-decoration:none" href="' + mapUrl + '" target="_blank" rel="noopener">🗺️ Google Maps mein khol</a>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // KNOW YOUR BIKE — dynamic, AI-driven for ANY saved 2-wheeler.
 // One DeepSeek call per (make, model, year, variant, language). Cached in
 // localStorage so user pays the ~10-sec wait exactly once per bike.
@@ -1151,6 +1703,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mbRefreshHome();
   try { mbKyvLoad(); } catch(e){}
+  try { renderFleetSwitcher(); } catch(e){}
+  try { mbLogRenderList(); } catch(e){}
 });
 </script>
 </body>
