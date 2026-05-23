@@ -188,13 +188,21 @@ def status() -> dict:
 
 
 def trigger_now(job_id: str) -> dict:
+    """Enqueue the job to fire ASAP on the APScheduler background thread.
+    Does NOT run inline in the request thread — gunicorn's 30 s default
+    timeout would otherwise SIGKILL a long-running job like rss_poll
+    (99 RSS sources × ~5 s = ~8 min). After this returns, poll
+    `/scheduler/status` for the updated next_run, or hit the feed
+    endpoint to see new articles appear.
+    """
+    from datetime import datetime
     if not _scheduler or not _scheduler.running:
         return {"ok": False, "error": "scheduler not running"}
     job = _scheduler.get_job(job_id)
     if not job:
         return {"ok": False, "error": f"unknown job: {job_id}"}
     try:
-        job.func()
-        return {"ok": True, "job_id": job_id}
+        job.modify(next_run_time=datetime.now(IST))
+        return {"ok": True, "job_id": job_id, "enqueued": True}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "job_id": job_id, "error": str(e)}
