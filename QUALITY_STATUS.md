@@ -1,7 +1,32 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-05-15 (commits #1 + #2) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-05-23 (Phase B commits #2 + #3) · **Auditor:** Claude Opus 4.7 (1M context) ·
 **Trigger:** "DEFINITIVE ENTERPRISE BASELINE — all Chittis GREEN" from Sire.
+
+## Phase B 2026-05-23 — curl-verified GREEN ✅
+
+**chitti-medupi-api Health File endpoints (all 8) now production-verified:**
+
+| Endpoint | HTTP | Result |
+|---|---|---|
+| `GET /api/health-file/health` | 200 | `v3-phase-b2-2026-05-24` |
+| `POST /api/health-file/profiles` | 200 | Returns row with id |
+| `GET /api/health-file/profiles?user_token=X` | 200 | Returns the just-created row (write-read roundtrip GREEN) |
+| `GET /api/health-file/quota` | 200 | 500 MB ceiling enforced |
+| `POST /api/health-file/vitals` | 200 | BP / sugar / weight logging works |
+| `GET /api/health-file/vitals` | 200 | Read-back GREEN |
+| `POST /api/health-file/translate` | 200 | Hindi → 13 Indian languages via DeepSeek |
+| `GET /api/health-file/export/doctor-pdf` | 200 | `application/pdf · 2882 bytes · %PDF-1.4` |
+
+**Theme:** Indian flag colors (`#FF9933` / `#138808` / `#000080`) live across all 4 redesigned Chitti pages via `chitti_theme.css` (now remaps `--sds-*` token namespace too). 0 purple residue.
+
+**5-element coverage:** Every output card on `chitti_2wheeler` / `chitti_4wheeler` / `chitti_fashion` / `chitti_news_ai` carries `.chitti-response` class or `[data-chitti-response]` attr — `feedback-widget.js` auto-attaches 🔊 / 🤖 / 👍 / 👎 + per-box feedback panel.
+
+**Deferred:** Turso production write traffic — see [chitti-medupi/ARCHITECTURE.md §9](chitti-medupi/ARCHITECTURE.md). Tactical libsql replica bypass deployed; data ephemeral across Railway redeploys; revisit when DAU > 100.
+
+End-state commit on `main`: `33b5372`.
+
+---
 
 ## Legend
 
