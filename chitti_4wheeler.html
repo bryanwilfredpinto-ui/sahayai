@@ -35,12 +35,33 @@
     </div>
   </div>
   <div class="sds-header-actions">
-    <select id="lang-select" class="sds-select" aria-label="भाषा बदलें" onchange="changeLang(this.value)">
-      <option value="hi">हिन्दी</option><option value="en">English</option>
-      <option value="bn">বাংলা</option><option value="ta">தமிழ்</option>
-      <option value="te">తెలుగు</option><option value="mr">मराठी</option>
-      <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
+    <select id="lang-select" class="sds-select" aria-label="Change language / भाषा बदलें" onchange="changeLang(this.value)">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="bn">বাংলা</option>
+      <option value="te">తెలుగు</option>
+      <option value="ta">தமிழ்</option>
+      <option value="mr">मराठी</option>
+      <option value="gu">ગુજરાતી</option>
+      <option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="as">অসমীয়া</option>
+      <option value="ur">اردو</option>
+      <option value="sa">संस्कृतम्</option>
+      <option value="mai">मैथिली</option>
+      <option value="kok">कोंकणी</option>
+      <option value="doi">डोगरी</option>
+      <option value="ks">کٲشُر</option>
+      <option value="ne">नेपाली</option>
+      <option value="sd">سنڌي</option>
+      <option value="mni">মৈতৈলোন্</option>
+      <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ</option>
+      <option value="bho">भोजपुरी</option>
+      <option value="raj">राजस्थानी</option>
+      <option value="kru">कुड़ुख़</option>
+      <option value="hoc">हो</option>
     </select>
     <button onclick="window.location.href='chitti_vaani.html'"><span data-vai-i18n="ui.open_vaani">🎙️ Chitti Vaani</span></button>
   </div>
@@ -403,7 +424,21 @@ const LANG_KEY = 'chitti_vaani_lang';
 const DOCS_KEY = 'chitti_car_docs_v1';
 const INBOX_KEY = 'chitti_inbox_v1';
 
-let CURRENT_LANG = (function(){ try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e) { return 'hi'; } })();
+let CURRENT_LANG = (function(){
+  // Priority: explicit user choice > browser preferred Indian/English lang > English.
+  // Sire 2026-05-23: don't force Hindi default — non-Hindi users were seeing Hindi.
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved) return saved;
+    const SUPPORTED = ['en','hi','bn','te','ta','mr','gu','kn','ml','pa','or','as','ur','sa','mai','kok','doi','ks','ne','sd','mni','sat','bho','raj','kru','hoc'];
+    const nav = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']);
+    for (const raw of nav) {
+      const code = String(raw||'').toLowerCase().split('-')[0];
+      if (SUPPORTED.indexOf(code) !== -1) return code;
+    }
+  } catch(e){}
+  return 'en';
+})();
 let LISTENING = false; let RECOG = null;
 
 const DAILY_TIPS = {
