@@ -70,10 +70,11 @@ status      = "RED - folder does not exist yet; railway.json not created. Create
 name        = "chitti-medupi-api"
 root        = "chitti-medupi/backend"
 runtime     = "python-3.11"
-start       = "gunicorn main:app --bind 0.0.0.0:$PORT"
+start       = "gunicorn main:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
 health      = "/health"
-scope       = "Medicine Cost Intelligence - Jan Aushadhi match, NPPA ceiling, DeepSeek vision strip scan, family wallet"
+scope       = "Medicine Cost Intelligence - Jan Aushadhi match, NPPA ceiling, DeepSeek vision strip scan, family wallet, Chitti Health File"
 config      = "chitti-medupi/backend/railway.json"
+note        = "--workers 1 pinned 2026-05-23 — libsql-experimental embedded replica writes are per-worker. See chitti-medupi/ARCHITECTURE.md §9. Revisit when DAU > 100."
 
 [[services]]
 name        = "chitti-legal-api"
