@@ -117,20 +117,18 @@ jobs:
           keytool -list -keystore "$RUNNER_TEMP/keystore/release.jks" -storepass "${{ secrets.KEYSTORE_PASSWORD }}" >/dev/null
           echo "Keystore parses OK."
 
-      - name: Generate Gradle wrapper (repo is intentionally binary-free per TODO.md Phase 2.1)
-        working-directory: chitti-vaani-android
-        run: |
-          gradle wrapper --gradle-version=8.7
-          ls -la gradlew gradle/wrapper/ || true
-
-      - name: Build signed release APK
+      - name: Build signed release APK (uses committed gradle wrapper 8.7)
         working-directory: chitti-vaani-android
         env:
           CHITTI_KEYSTORE_PATH: ${{ runner.temp }}/keystore/release.jks
           CHITTI_KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
           CHITTI_KEY_ALIAS:     ${{ secrets.KEY_ALIAS }}
           CHITTI_KEY_PASS:      ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
+        run: |
+          # gradlew is committed with eol=lf + mode=100755 via .gitattributes,
+          # so the shell on the Ubuntu runner can execute it directly.
+          ls -la gradlew gradle/wrapper/
+          ./gradlew clean assembleRelease --stacktrace --no-daemon
 
       - name: Verify signature (catches debug-key fallthrough)
         run: |

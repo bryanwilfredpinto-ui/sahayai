@@ -22,6 +22,21 @@ chitti-vaani-android/app/release/
 *.apk
 *.aab
 
+# ── Android per-machine config — NEVER commit ──
+# local.properties contains sdk.dir which is machine-specific. Committing
+# it breaks every other contributor (their SDK isn't at the same path)
+# AND breaks the CI runner (ubuntu-latest doesn't have a Windows SDK path).
+# Each dev creates their own local.properties on first checkout; the
+# Android Gradle Plugin generates it automatically when you open the
+# project in Android Studio. CI uses ANDROID_HOME from setup-android@v3
+# and does NOT read local.properties.
+local.properties
+**/local.properties
+
+# Android build outputs
+chitti-vaani-android/**/build/
+chitti-vaani-android/**/.gradle/
+
 # ── Python ──
 __pycache__/
 *.pyc

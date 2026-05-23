@@ -2,3 +2,14 @@
 requirements.txt text eol=lf
 *.sh text eol=lf
 Procfile text eol=lf
+
+# Gradle wrapper — gradlew is a bash script that the Linux CI runner
+# executes. CRLF line endings break bash with "/usr/bin/env: 'bash\r':
+# No such file or directory". Force LF on commit + checkout.
+gradlew text eol=lf
+*.gradle text eol=lf
+*.gradle.kts text eol=lf
+gradle-wrapper.properties text eol=lf
+
+# gradle-wrapper.jar is a binary — Git should NOT try to normalise it.
+*.jar binary
