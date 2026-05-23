@@ -21,6 +21,70 @@
 .mc-safety-tip .head{font-size:13px;font-weight:900;color:var(--sds-saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .mc-obd-stub{padding:14px;background:#e0e7ff;border:1.5px dashed #6366f1;border-radius:14px;font-size:14px;color:#3730a3;line-height:1.55;margin-top:10px}
 </style>
+
+<!-- ════════ COMMIT #3 — Purple/Green theme overlay (2026-05-24) ════════
+     4-wheeler personality: "family safety" — soft lavender = trust + calm,
+     mint green = "all clear / safe to drive". Larger rounded corners +
+     warmer card shadow for a hospitable, family-car feel. -->
+<style>
+:root{
+  --sds-saffron:#7c5cfc;
+  --sds-green:#00e5a0;
+  --sds-dark:#1b1340;
+  --brand-grad:linear-gradient(135deg,#7c5cfc,#00e5a0);
+}
+/* Header — calm lavender gradient (not the bike-night glow) */
+.sds-header{background:linear-gradient(135deg,#1b1340 0%,#4c2faa 55%,#7c5cfc 100%);color:#fff;border-radius:0 0 32px 32px;box-shadow:0 14px 38px rgba(124,92,252,.24)}
+.sds-header .sds-brand-name{color:#fff;font-weight:900;letter-spacing:-.01em}
+.sds-header .sds-tagline{color:rgba(255,255,255,.85)}
+.sds-header .sds-logo{background:var(--brand-grad);color:#fff;box-shadow:0 8px 26px rgba(124,92,252,.45);font-size:24px;border-radius:16px}
+.sds-header-actions .sds-select{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);color:#fff}
+.sds-header-actions button{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.30);font-weight:700}
+.sds-header-actions button.primary{background:var(--brand-grad);border-color:transparent;color:#fff}
+/* CTAs — calmer than bike, no neon glow */
+.sds-btn.primary{background:var(--brand-grad);color:#fff;border-color:transparent;font-weight:800;box-shadow:0 6px 20px rgba(124,92,252,.30);border-radius:14px}
+.sds-btn.primary:hover{filter:brightness(1.06);transform:translateY(-1px);transition:all .2s}
+.sds-btn.accent{background:#00e5a0;color:#0b3d2a;border-color:#00e5a0;border-radius:14px}
+/* Mic — softer family-car orb */
+.sds-mic-btn{background:radial-gradient(circle at 35% 30%,#a896ff,#7c5cfc 55%,#00e5a0 120%);box-shadow:0 18px 48px rgba(124,92,252,.40)}
+/* Cards — softer corners, warmer shadow */
+.sds-card{border:1.5px solid #ece8f8;border-radius:20px;background:#fff;transition:all .2s}
+.sds-card:hover{border-color:rgba(124,92,252,.40);box-shadow:0 14px 32px rgba(124,92,252,.12)}
+.sds-card-title{color:#1b1340}
+/* Health-card uses mint-electric green for "safe to drive" */
+.sds-health-card.green{background:linear-gradient(135deg,#00e5a0,#22c55e);color:#0b3d2a;border-radius:18px}
+.sds-health-card{border-radius:18px;border-left:6px solid #00e5a0;padding:16px}
+/* Tabs */
+.sds-tabs button.active{color:#7c5cfc;border-bottom:3px solid #7c5cfc}
+.sds-tabs button:hover{color:#5a30c2}
+/* Inputs */
+.sds-input:focus,.sds-textarea:focus,.sds-select:focus{outline:none;border-color:#7c5cfc;box-shadow:0 0 0 3px rgba(124,92,252,.16)}
+/* Feedback panel */
+.sds-fb-panel{background:linear-gradient(180deg,#faf7ff,#f4f0ff);border:1.5px solid #7c5cfc;border-radius:14px}
+.sds-fb-panel .actions button{background:var(--brand-grad);color:#fff;border-radius:10px}
+.sds-fb-panel .actions button.cancel{background:transparent;color:#7c5cfc;border:1px solid #7c5cfc}
+/* Quick-action row */
+.mc-quick-sos{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border-radius:14px}
+.mc-quick-mech{background:#fff;border:2px solid #7c5cfc;color:#1b1340;border-radius:14px}
+.mc-quick-mech:hover{background:rgba(124,92,252,.06)}
+/* Empty-state quote */
+.sds-empty .quote{border:1px dashed #7c5cfc;color:#1b1340;border-radius:14px}
+/* Chip — LIVE */
+.sds-chip.live{background:var(--brand-grad);color:#fff}
+/* Tricolour overlay */
+.sds-tricolour{background:linear-gradient(90deg,#7c5cfc 0 33.3%,#fff 33.3% 66.6%,#00e5a0 66.6% 100%);height:5px}
+/* Safety tip — family-trust gradient, not aggressive */
+.mc-safety-tip{background:linear-gradient(180deg,#faf7ff,#fff);border:1.5px solid #7c5cfc;border-radius:18px}
+.mc-safety-tip .head{color:#7c5cfc}
+/* Fair-price — green = "fair, no scam" */
+.mc-fairprice{background:linear-gradient(180deg,#f0fff9,#fff);border:1.5px solid #00e5a0;color:#0b3d2a;font-weight:700;border-radius:14px}
+.mc-fairprice b{color:#1b1340}
+/* OBD stub — purple = "future capability, not ready yet" */
+.mc-obd-stub{background:linear-gradient(180deg,#faf7ff,#fff);border:1.5px dashed #7c5cfc;color:#1b1340;border-radius:14px}
+/* Logo gentle float */
+@keyframes brandFloatCar{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.sds-header .sds-logo{animation:brandFloatCar 5s ease-in-out infinite}
+</style>
 </head>
 <body class="sds-page">
 

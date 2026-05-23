@@ -117,21 +117,32 @@ def create_profile(user_token: str, name: str, relation: str, dob: Optional[str]
     if not user_token or not name:
         raise ValueError("user_token + name required")
     relation = (relation or "self").strip().lower()
+    created_at = datetime.utcnow()
     with SessionLocal() as s:
         p = FamilyProfile(
             user_token=user_token, name=name.strip()[:120],
             relation=relation[:40], dob=(dob or None),
             conditions=json.dumps([]),
-            # Turso embedded replica can't satisfy `s.refresh(p)` post-commit
-            # because the SELECT-by-pk against the local SQLite races with the
-            # bg sync thread. Stamp created_at client-side so we never need
-            # to refresh just to read it back.
-            created_at=datetime.utcnow(),
+            created_at=created_at,
         )
-        # `flush` populates `p.id` from the INSERT without firing the failing
-        # post-commit refresh (Turso InvalidRequestError surfaces on refresh).
-        s.add(p); s.flush(); s.commit()
-        return _profile_dict(p)
+        s.add(p)
+        s.flush()  # populates p.id from INSERT
+        # Snapshot attrs BEFORE commit. SQLAlchemy's expire_on_commit=True
+        # default expires every attribute after commit(), and the Turso
+        # embedded replica's bg-sync thread can wipe the local SQLite row
+        # between commit and access — raising ObjectDeletedError on any
+        # attribute load. Reading the values into a plain dict here makes
+        # the response independent of the session/connection state.
+        out = {
+            "id": p.id,
+            "name": p.name,
+            "relation": p.relation,
+            "dob": p.dob,
+            "conditions": [],
+            "created_at": created_at.isoformat(),
+        }
+        s.commit()
+        return out
 
 
 def _require_profile(s, user_token: str, profile_id: int) -> FamilyProfile:

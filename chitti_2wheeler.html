@@ -21,6 +21,70 @@
 .mb-safety-tip{padding:14px;background:linear-gradient(180deg,#fff8e1,#fff);border:1.5px solid var(--sds-saffron);border-radius:14px;margin-bottom:14px;font-size:16px;line-height:1.55}
 .mb-safety-tip .head{font-size:13px;font-weight:900;color:var(--sds-saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 </style>
+
+<!-- ════════ COMMIT #3 — Purple/Green theme overlay (2026-05-24) ════════
+     2-wheeler personality: "freedom on two wheels" — purple = night-ride
+     glow, electric green = speedometer accent. Keeps every i18n + a11y
+     hook intact; overrides only the palette + the hero gradient. -->
+<style>
+:root{
+  --sds-saffron:#7c5cfc;      /* electric purple — primary */
+  --sds-green:#00e5a0;        /* mint-electric green — secondary */
+  --sds-dark:#1b1340;         /* deep purple-night */
+  --sds-navy:#1b1340;
+  --brand-grad:linear-gradient(135deg,#7c5cfc,#00e5a0);
+  --brand-grad-soft:linear-gradient(135deg,rgba(124,92,252,.08),rgba(0,229,160,.08));
+}
+/* Header — speedometer-style purple gradient */
+.sds-header{background:linear-gradient(135deg,#1b1340 0%,#3b1f8a 60%,#5a30c2 100%);color:#fff;border-radius:0 0 28px 28px;box-shadow:0 12px 36px rgba(124,92,252,.28)}
+.sds-header .sds-brand-name{color:#fff;font-weight:900}
+.sds-header .sds-tagline{color:rgba(255,255,255,.85)}
+.sds-header .sds-logo{background:var(--brand-grad);color:#fff;box-shadow:0 8px 24px rgba(124,92,252,.45),inset 0 -3px 8px rgba(0,229,160,.30);font-size:26px}
+.sds-header-actions .sds-select{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);color:#fff}
+.sds-header-actions button{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.30);font-weight:700}
+.sds-header-actions button.primary{background:var(--brand-grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(0,229,160,.35)}
+/* Primary CTA — purple→green gradient (the "go ride" button feel) */
+.sds-btn.primary,.mb-quick.mb-quick-trip{background:var(--brand-grad);color:#fff;border-color:transparent;font-weight:800;box-shadow:0 6px 18px rgba(124,92,252,.35)}
+.sds-btn.primary:hover{filter:brightness(1.08);transform:translateY(-1px);transition:all .2s}
+.sds-btn.accent{background:#00e5a0;color:#0b3d2a;border-color:#00e5a0}
+/* Mic button — purple/green orb, the bike's "engine on" feel */
+.sds-mic-btn{background:radial-gradient(circle at 30% 30%,#9d7dff,#7c5cfc 60%,#00e5a0 130%);box-shadow:0 16px 48px rgba(124,92,252,.45),inset 0 -8px 20px rgba(0,229,160,.25)}
+/* Cards — soft purple-tint border on focus, electric green corner accent on hover */
+.sds-card{border:1.5px solid #e5e1f5;border-radius:18px;transition:border-color .2s,box-shadow .2s}
+.sds-card:hover{border-color:rgba(124,92,252,.45);box-shadow:0 12px 28px rgba(124,92,252,.10)}
+.sds-card-title{color:#1b1340}
+/* Health-card green variant uses electric-green */
+.sds-health-card.green{background:linear-gradient(135deg,#00e5a0,#22c55e);color:#0b3d2a}
+.sds-health-card{border-radius:16px;border-left:6px solid #00e5a0}
+/* Tabs */
+.sds-tabs button.active{color:#7c5cfc;border-bottom:3px solid #7c5cfc}
+.sds-tabs button:hover{color:#5a30c2}
+/* Inputs */
+.sds-input:focus,.sds-textarea:focus,.sds-select:focus{outline:none;border-color:#7c5cfc;box-shadow:0 0 0 3px rgba(124,92,252,.18)}
+/* Feedback panel */
+.sds-fb-panel{background:linear-gradient(180deg,#faf7ff,#f4f0ff);border:1.5px solid #7c5cfc}
+.sds-fb-panel .actions button{background:var(--brand-grad);color:#fff}
+.sds-fb-panel .actions button.cancel{background:transparent;color:#7c5cfc;border:1px solid #7c5cfc}
+/* Quick-action row — emotional, large tap targets */
+.mb-quick-sos{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.mb-quick-mech{background:#fff;border:2px solid #7c5cfc;color:#1b1340}
+.mb-quick-mech:hover{background:rgba(124,92,252,.06)}
+/* Empty-state quote */
+.sds-empty .quote{border:1px dashed #7c5cfc;color:#1b1340}
+/* Chip — LIVE */
+.sds-chip.live{background:var(--brand-grad);color:#fff}
+/* Tricolour overlay — keep the Indian flag bands but soften with brand */
+.sds-tricolour{background:linear-gradient(90deg,#7c5cfc 0 33.3%,#fff 33.3% 66.6%,#00e5a0 66.6% 100%);height:5px}
+/* Safety tip block */
+.mb-safety-tip{background:linear-gradient(180deg,#faf7ff,#fff);border:1.5px solid #7c5cfc}
+.mb-safety-tip .head{color:#7c5cfc}
+/* Bike-fair-price warning card */
+.mb-fairprice{background:linear-gradient(180deg,#f0fff9,#fff);border:1.5px solid #00e5a0;color:#0b3d2a;font-weight:700}
+.mb-fairprice b{color:#1b1340}
+/* SOS pulse for the floating button — emotional urgency, the rider's safety net */
+@keyframes brandFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.sds-header .sds-logo{animation:brandFloat 4s ease-in-out infinite}
+</style>
 </head>
 <body class="sds-page">
 

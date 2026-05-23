@@ -59,20 +59,27 @@ def add_profile(
     conditions: list[str] | None = None,
 ) -> dict:
     from datetime import datetime as _dt
+    cond_list = list(conditions or [])
+    created_at = _dt.utcnow()
     p = FamilyProfile(
         user_token=user_token,
         name=name.strip(),
         relation=relation.strip() or "self",
         dob=(dob or None),
-        conditions=json.dumps(conditions or []),
-        # Stamp client-side so we don't need s.refresh() — Turso embedded
-        # replica fails the post-commit refresh with InvalidRequestError.
-        created_at=_dt.utcnow(),
+        conditions=json.dumps(cond_list),
+        created_at=created_at,
     )
     db.add(p)
-    db.flush()      # populates p.id without firing refresh
+    db.flush()
+    # Snapshot attrs BEFORE commit — Turso embedded-replica sync can
+    # invalidate the row between commit and attribute access.
+    out = {
+        "id": p.id, "name": p.name, "relation": p.relation,
+        "dob": p.dob, "conditions": cond_list,
+        "created_at": created_at.isoformat(),
+    }
     db.commit()
-    return _profile_dict(p)
+    return out
 
 
 def delete_profile(db: Session, user_token: str, profile_id: int) -> bool:
