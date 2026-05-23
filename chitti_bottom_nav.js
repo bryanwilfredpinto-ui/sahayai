@@ -201,4 +201,103 @@
       });
     },
   };
+
+  // ═════════════════════════════════════════════════════════════════
+  // "YOU ARE HERE" header badge (Sire 2026-05-24 Gap-4)
+  // Pages NOT in the 5-tab manifest (News, Government, Legal, Scanner,
+  // UPI, CA, Fashion, 2-wheeler, 4-wheeler, News-AI, Voice-Factory,
+  // Fundamentals, Technical) show NO active tab in the bottom nav by
+  // design — those aren't flagship destinations. To still tell the
+  // user "where they are", inject a small badge near the top of the
+  // page that names the current Chitti product.
+  // ═════════════════════════════════════════════════════════════════
+
+  var PAGE_BADGES = {
+    'chitti_news.html'              : { icon: '📰', en: 'News',          hi: 'समाचार' },
+    'chitti_news_ai.html'           : { icon: '🤖', en: 'News AI',       hi: 'AI समाचार' },
+    'chitti_government.html'        : { icon: '🏛️', en: 'Government',    hi: 'सरकार' },
+    'chitti_legal.html'             : { icon: '⚖️', en: 'Legal',         hi: 'कानून' },
+    'chitti_scanner.html'           : { icon: '📷', en: 'Scanner',       hi: 'स्कैनर' },
+    'chitti_upi.html'               : { icon: '🛡️', en: 'UPI Guard',     hi: 'UPI रक्षक' },
+    'chitti_ca.html'                : { icon: '🧾', en: 'CA',            hi: 'CA' },
+    'chitti_fashion.html'           : { icon: '👗', en: 'Fashion',       hi: 'फ़ैशन' },
+    'chitti_2wheeler.html'          : { icon: '🏍️', en: 'Mechanic Bike', hi: 'मैकेनिक बाइक' },
+    'chitti_4wheeler.html'          : { icon: '🚗', en: 'Mechanic Car',  hi: 'मैकेनिक कार' },
+    'chitti_voice_factory.html'     : { icon: '🎙️', en: 'Voice Factory', hi: 'Voice Factory' },
+    'chitti_fundamentals.html'      : { icon: '📋', en: 'Fundamentals',  hi: 'मौलिक' },
+    'chitti_complete_technical.html': { icon: '📈', en: 'Technical',     hi: 'तकनीकी' },
+    'chitti_isl.html'               : { icon: '🤟', en: 'ISL',           hi: 'ISL' },
+    'chitti_logo_video.html'        : { icon: '🎨', en: 'Logo & Video',  hi: 'लोगो + वीडियो' },
+    'chitti_quality.html'           : { icon: '📊', en: 'Quality',       hi: 'क्वालिटी' },
+  };
+
+  function pathBasename() {
+    var p = (location.pathname || '').toLowerCase();
+    var slash = p.lastIndexOf('/');
+    return p.substring(slash + 1) || 'index.html';
+  }
+
+  function badgeLabel(entry) {
+    var lang = getLang();
+    return entry[lang] || entry.hi || entry.en || '';
+  }
+
+  function renderYouAreHere() {
+    if (document.getElementById('chitti-here-badge')) return;  // idempotent
+    var page = pathBasename();
+    var entry = PAGE_BADGES[page];
+    if (!entry) return;  // 5 flagship pages + unknown pages — no badge
+    // Skip if opt-out meta is present (same flag as bottom-nav opt-out
+    // — pages that disable the unified nav may also have their own
+    // header context UI).
+    if (isOptedOut()) return;
+
+    var badge = document.createElement('div');
+    badge.id = 'chitti-here-badge';
+    badge.className = 'chitti-here-badge';
+    badge.setAttribute('role', 'status');
+    badge.setAttribute('aria-label', 'You are on ' + (entry.en || ''));
+    badge.style.cssText = [
+      'position:fixed', 'top:8px', 'right:8px', 'z-index:65',
+      'background:var(--chitti-navy, #000080)',
+      'color:var(--chitti-saffron, #FF9933)',
+      'border:1px solid var(--chitti-saffron, #FF9933)',
+      'border-radius:999px',
+      'padding:5px 11px', 'font-size:11px', 'font-weight:800',
+      'font-family:inherit',
+      'box-shadow:0 2px 8px rgba(0,0,80,0.25)',
+      'letter-spacing:.04em',
+      'display:inline-flex', 'align-items:center', 'gap:6px',
+      'pointer-events:none',
+    ].join(';');
+    badge.innerHTML =
+      '<span aria-hidden="true">' + (entry.icon || '📍') + '</span>' +
+      '<span class="chitti-here-label">' + badgeLabel(entry) + '</span>';
+    document.body.appendChild(badge);
+  }
+
+  function refreshYouAreHereLabel() {
+    var b = document.getElementById('chitti-here-badge');
+    if (!b) return;
+    var entry = PAGE_BADGES[pathBasename()];
+    if (!entry) return;
+    var lbl = b.querySelector('.chitti-here-label');
+    if (lbl) lbl.textContent = badgeLabel(entry);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderYouAreHere);
+  } else {
+    renderYouAreHere();
+  }
+  window.addEventListener('chitti:langchange', refreshYouAreHereLabel);
+  window.addEventListener('storage', function (e) {
+    if (e.key === STORAGE_KEY) refreshYouAreHereLabel();
+  });
+
+  // Expose for SPA pages that change document identity mid-session.
+  window.ChittiHereBadge = {
+    refresh: renderYouAreHere,
+    refreshLabel: refreshYouAreHereLabel,
+  };
 })();
