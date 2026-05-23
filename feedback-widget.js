@@ -454,6 +454,11 @@
   var BOX_SELECTOR = [
     '[data-chitti-response]',
     '.chitti-response',
+    // 2026-05-23 Step-1 audit: data-chitti-section alone is a strong
+    // intent signal — "this is an output box that should be feedback-able".
+    // Many existing pages already carry data-chitti-section on cards but
+    // were missing the data-chitti-response twin; this row picks them up.
+    '[data-chitti-section]',
     '#reply', '#response', '#answer', '#result', '#output',
     '#reply-card', '#response-card', '#answer-card', '#result-card', '#output-card',
     '#reply-box',  '#response-box',  '#answer-box',  '#result-box',  '#output-box',
