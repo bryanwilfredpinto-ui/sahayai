@@ -148,23 +148,105 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
   .hero h1{font-size:20px}
   .panel{padding:14px}
 }
+
+/* When loaded inside the MedUPI iframe wrapper (?embed=1), hide
+   duplicated chrome — the parent already shows the sticky disclaimer
+   + the "moving into MedUPI" announcement. Keep the language dropdown
+   so the user can still switch language from within the iframe.
+*/
+body.kv-embedded .bharat-stripe,
+body.kv-embedded .sebi-bar{display:none}
+body.kv-embedded > div[style*="linear-gradient(90deg,#0E2344"] > div:nth-child(2){display:none}
+
+/* ════════════ Feedback-widget bar visual fix (2026-05-23) ════════════
+   feedback-widget.js inserts the 4-icon bar as a SIBLING after each
+   .chitti-response card (architectural choice — survives innerHTML
+   re-renders). The CSS below makes that sibling bar visually JOIN the
+   card above it: shared rounded bottom, no top border, same shadow
+   continuation. Result reads as "icons inside the card" without
+   modifying the platform widget.
+*/
+.chitti-response{
+  border-radius:14px 14px 0 0 !important;
+  margin-bottom:0 !important;
+}
+.chitti-response + .chitti-fb-box-bar{
+  background:var(--card,#fff) !important;
+  border:1px solid var(--border,#e5e7eb) !important;
+  border-top:1px dashed var(--border,#e5e7eb) !important;
+  border-radius:0 0 14px 14px !important;
+  padding:10px 16px !important;
+  margin:0 0 14px 0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  flex-wrap:wrap !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.04) !important;
+}
+/* Float the 🤖 (data-act="demo") to the top-left intent and 🔊 (data-act="speak")
+   visually anchored left; 👍 👎 anchored right. The HTML order from
+   feedback-widget is: demo, speak, up, down — so we just need flex
+   spacing. */
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn{
+  background:rgba(0,0,0,.04) !important;
+  border:1px solid var(--border,#e5e7eb) !important;
+  border-radius:8px !important;
+  padding:6px 10px !important;
+  font-size:13px !important;
+  cursor:pointer !important;
+  min-height:36px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:4px !important;
+  font-family:inherit !important;
+}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.up:hover{background:rgba(22,163,74,.12) !important;border-color:#16a34a !important}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.down:hover{background:rgba(220,38,38,.10) !important;border-color:#dc2626 !important}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.demo{background:rgba(232,106,23,.08) !important;color:var(--saffron) !important;border-color:rgba(232,106,23,.30) !important}
+.chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.up{margin-left:auto !important}
+.chitti-fb-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
 <div class="bharat-stripe" aria-hidden="true"></div>
 
 <div class="sebi-bar">
-  ⚠️ <b>NOT a doctor.</b> Chitti Health File stores and explains your medical documents. <b>Never</b> substitutes for professional medical advice. <a onclick="openDisclaimer()">Read full disclaimer →</a>
+  ⚠️ <b data-hf-i18n="bar.not_doctor">NOT a doctor.</b> <span data-hf-i18n="bar.intro">Chitti Health File stores and explains your medical documents.</span> <b data-hf-i18n="bar.never_sub">Never</b> <span data-hf-i18n="bar.substitute">substitutes for professional medical advice.</span> <a onclick="openDisclaimer()" data-hf-i18n="bar.read_full">Read full disclaimer →</a>
+</div>
+
+<!-- ════════════ Language + Profile bar (LOCKED 2026-05-23) ════════════
+  Vaani-style 9-language picker. Stored in localStorage.chitti_vaani_lang
+  so it stays in sync with the rest of the Chitti family. -->
+<div style="background:linear-gradient(90deg,#0E2344,#16376a);color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.10)">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#D4AF37">🌐 <span data-hf-i18n="ui.language">Language</span></span>
+    <select id="hf-lang-select" aria-label="Change UI language" onchange="hfSetLanguage(this.value)" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;min-width:130px">
+      <option value="hi">हिन्दी</option>
+      <option value="en">English</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+      <option value="bn">বাংলা</option>
+      <option value="mr">मराठी</option>
+      <option value="gu">ગુજરાતી</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+    </select>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
+    <a href="chitti_medupi.html#health-file" style="color:#fbbf24;text-decoration:underline;font-weight:700" data-hf-i18n="ui.now_in_medupi">🩺 This page is moving into Chitti MedUPI →</a>
+  </div>
 </div>
 
 <div class="wrap">
 
   <!-- Hero -->
-  <div class="hero chitti-response" data-chitti-response="health-file-hero">
+  <div class="hero chitti-response" data-chitti-response="health-file-hero" data-chitti-section="Chitti Health File overview">
     <div class="ico">🩺</div>
     <div class="copy">
-      <h1>🪔 Chitti Health File</h1>
-      <div class="sub">Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets the right reminders, and lets you ask <i>"Wife ki diabetes ka history dikhao"</i> in your language. Per-family-member profiles. Encrypted at rest. Shared with a doctor only after your spoken "haan".</div>
+      <h1>🪔 <span data-hf-i18n="hero.title">Chitti Health File</span></h1>
+      <div class="sub" data-hf-i18n="hero.sub">Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets the right reminders, and lets you ask "Wife ki diabetes ka history dikhao" in your language. Per-family-member profiles. Encrypted at rest. Shared with a doctor only after your spoken "haan".</div>
       <div class="pills">
         <span class="live">LIVE</span>
         <span>AES-256-GCM</span>
@@ -214,22 +296,22 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
     <select id="profile-select" onchange="onProfileChange()">
       <option value="">— loading —</option>
     </select>
-    <button class="add" onclick="openProfileModal()">＋ Add family member</button>
+    <button class="add" onclick="openProfileModal()" data-hf-i18n="profile.add">＋ Add family member</button>
     <button class="voice" onclick="speakProfileName()" aria-label="Read current profile name aloud">🔊 Read</button>
     <span style="flex:1"></span>
-    <span style="font-size:12px;color:var(--muted)">Switch between Self · Wife · Mother · Father · Child anytime</span>
+    <span style="font-size:12px;color:var(--muted)" data-hf-i18n="profile.switch_hint">Switch between Self · Wife · Mother · Father · Child anytime</span>
   </div>
 
   <!-- Tabs -->
   <div class="tabs" role="tablist">
-    <button onclick="showTab('upload')" id="tab-upload" class="active">📤 Upload</button>
-    <button onclick="showTab('timeline')" id="tab-timeline">🕒 Timeline</button>
-    <button onclick="showTab('reminders')" id="tab-reminders">⏰ Reminders</button>
-    <button onclick="showTab('vitals')" id="tab-vitals">📈 Vitals</button>
-    <button onclick="showTab('insurance')" id="tab-insurance">🛡️ Insurance</button>
-    <button onclick="showTab('translate')" id="tab-translate">🌐 Translate</button>
-    <button onclick="showTab('share')" id="tab-share">📤 Share with doctor</button>
-    <button onclick="showTab('search')" id="tab-search">🔎 Search</button>
+    <button onclick="showTab('upload')" id="tab-upload" class="active" data-hf-i18n="tab.upload">📤 Upload</button>
+    <button onclick="showTab('timeline')" id="tab-timeline" data-hf-i18n="tab.timeline">🕒 Timeline</button>
+    <button onclick="showTab('reminders')" id="tab-reminders" data-hf-i18n="tab.reminders">⏰ Reminders</button>
+    <button onclick="showTab('vitals')" id="tab-vitals" data-hf-i18n="tab.vitals">📈 Vitals</button>
+    <button onclick="showTab('insurance')" id="tab-insurance" data-hf-i18n="tab.insurance">🛡️ Insurance</button>
+    <button onclick="showTab('translate')" id="tab-translate" data-hf-i18n="tab.translate">🌐 Translate</button>
+    <button onclick="showTab('share')" id="tab-share" data-hf-i18n="tab.share">📤 Share with doctor</button>
+    <button onclick="showTab('search')" id="tab-search" data-hf-i18n="tab.search">🔎 Search</button>
   </div>
 
   <!-- Phase B-6 quota banner — auto-populated by refreshQuotaBanner() -->
@@ -237,7 +319,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── UPLOAD ── -->
   <div class="panel active" id="panel-upload">
-    <h2>📤 Upload a medical document</h2>
+    <h2 data-hf-i18n="upload.title">📤 Upload a medical document</h2>
     <div class="desc">Pick the kind of document, then take a photo or upload a PDF. For <b>prescription</b> and <b>blood report</b>, Chitti reads it with DeepSeek vision and extracts every detail. For other types it stores the file encrypted and you can tag it manually (full extraction lands in Phase B per spec).</div>
 
     <div class="field">
@@ -297,7 +379,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── TIMELINE ── -->
   <div class="panel" id="panel-timeline">
-    <h2>🕒 Health timeline</h2>
+    <h2 data-hf-i18n="timeline.title">🕒 Health timeline</h2>
     <div class="desc">Every document, fact, and visit in chronological order. Filter by condition, doctor, or date. Tap a row to open the source document (decrypted only for you).</div>
     <div class="field-row">
       <div class="field">
@@ -324,7 +406,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── REMINDERS ── -->
   <div class="panel" id="panel-reminders">
-    <h2>⏰ Smart reminders</h2>
+    <h2 data-hf-i18n="reminders.title">⏰ Smart reminders</h2>
     <div class="desc">Auto-created from your prescriptions, follow-ups, and insurance premiums. Five kinds: <b>medicine</b> (daily), <b>follow-up</b> (one-shot), <b>premium due</b> (with 30/7/1 day advance alerts), <b>test due</b>, <b>prescription expiry</b>. Channels: browser push, WhatsApp, voice call (Twilio — env-gated).</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
       <button class="btn primary" onclick="openReminderModal()">＋ New reminder</button>
@@ -337,7 +419,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── VITALS ── -->
   <div class="panel" id="panel-vitals">
-    <h2>📈 Vitals log</h2>
+    <h2 data-hf-i18n="vitals.title">📈 Vitals log</h2>
     <div class="desc">Voice-log BP / sugar / HbA1c / weight / SpO2 / pulse / temperature. Chitti flags out-of-range readings <b>RED</b>. Trend chart shows the last 30 / 90 / 365 days. Tap <b>📄 Doctor PDF</b> to download a clean A4 summary for the next appointment.</div>
 
     <div class="field-row">
@@ -411,7 +493,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── INSURANCE ── -->
   <div class="panel" id="panel-insurance">
-    <h2>🛡️ Insurance manager</h2>
+    <h2 data-hf-i18n="insurance.title">🛡️ Insurance manager</h2>
     <div class="desc">Health / life / vehicle policies in one place. Premium-due reminders auto-spawn at 30 / 7 / 1 day before due. <b>Ask Chitti</b> in your language — <i>"Kya wife ki surgery covered hai?"</i> — Chitti reads the policy and answers in plain language. Hospital-network check works on any policy with a parsed network list.</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
       <button class="btn primary" onclick="openInsuranceModal()">＋ Add policy</button>
@@ -533,7 +615,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── SHARE ── -->
   <div class="panel" id="panel-share">
-    <h2>📤 Quick share with doctor</h2>
+    <h2 data-hf-i18n="share.title">📤 Quick share with doctor</h2>
     <div class="desc">Per-use voice consent — Chitti confirms <i>"Sire, X reports Dr Sharma ko bhejun? Haan / Nahi"</i> on every share. The link is one-shot and expires in 30 minutes. No raw bytes leave your device by default — the doctor's side is a tap on a WhatsApp link Chitti generates.</div>
 
     <div class="field">
@@ -559,7 +641,7 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
 
   <!-- ── SEARCH ── -->
   <div class="panel" id="panel-search">
-    <h2>🔎 Smart search across all health data</h2>
+    <h2 data-hf-i18n="search.title">🔎 Smart search across all health data</h2>
     <div class="desc">Ask Chitti in your language. <i>"Wife ki blood sugar last 6 mahine"</i> · <i>"kaunsi medicines chal rahi hain"</i> · <i>"Dr Sharma ki last visit kab thi"</i>. v1 = client-side substring match across extracted facts. Phase B = DeepSeek summarisation.</div>
     <div class="field">
       <label>Search query</label>
@@ -1759,8 +1841,333 @@ async function ackDispatch(id){
   pollDispatch(true);
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   i18n — Health File translations (LOCKED 2026-05-23)
+   ══════════════════════════════════════════════════════════════════
+   Five primary languages: Hindi (default fallback), English, Bengali,
+   Tamil, Telugu. The remaining four (Marathi, Gujarati, Kannada,
+   Malayalam, Punjabi) fall through to HINDI — never to English, per
+   Sire's contract: "never English as fallback for Hindi users".
+   Key shape: hf-i18n="namespace.key". Engine walks every [data-hf-i18n]
+   node and rewrites textContent. Stored under the SAME localStorage key
+   chitti_vaani_lang as Vaani so the choice is global. */
+
+const HF_LANG_KEY = 'chitti_vaani_lang';
+const HF_I18N = {
+  hi: {
+    'ui.language': 'भाषा',
+    'ui.now_in_medupi': '🩺 यह पेज अब Chitti MedUPI में मिल रहा है →',
+    'bar.not_doctor': 'डॉक्टर नहीं है।',
+    'bar.intro': 'Chitti Health File आपके medical documents को सुरक्षित रखती है और समझाती है।',
+    'bar.never_sub': 'कभी भी',
+    'bar.substitute': 'professional medical advice की जगह नहीं ले सकती।',
+    'bar.read_full': 'पूरा disclaimer पढ़िए →',
+    'hero.title': 'Chitti Health File',
+    'hero.sub': 'Prescriptions, blood reports, MRI scans, insurance policies upload कीजिए। Chitti हर detail पढ़ती है, निकालती है, सही reminders लगाती है, और आप पूछ सकते हैं "Wife ki diabetes ka history dikhao" — आपकी भाषा में। हर family member के लिए अलग profile। Encrypt हो कर रखी जाती है। Doctor को share तभी होगा जब आप "haan" बोलेंगे।',
+    'tab.upload': '📤 Upload',
+    'tab.timeline': '🕒 Timeline',
+    'tab.reminders': '⏰ Reminders',
+    'tab.vitals': '📈 Vitals',
+    'tab.insurance': '🛡️ Insurance',
+    'tab.share': '📤 Doctor को भेजो',
+    'tab.search': '🔎 Search',
+    'tab.translate': '🌐 Translate',
+    'profile.label': 'Profile:',
+    'profile.add': '＋ Family member जोड़िए',
+    'profile.read': '🔊 पढ़ो',
+    'profile.switch_hint': 'Self · Wife · Mother · Father · Child — कभी भी switch कीजिए',
+    'upload.title': '📤 Medical document upload करें',
+    'upload.desc': 'पहले document का प्रकार चुनिए, फिर photo लीजिए या PDF upload कीजिए। Prescription और blood report पर Chitti DeepSeek vision से हर detail निकाल लेती है। बाकी document types encrypt हो कर store होते हैं — manual tag से काम चलेगा (पूरा extraction Phase B में आ रहा है)।',
+    'upload.btn': '📤 Upload — पहले Chitti पुष्टि करेगी',
+    'upload.reset': 'Reset',
+    'upload.label.type': 'कौन सा document है?',
+    'upload.label.file': 'File (PDF या image · max 15MB)',
+    'upload.label.date': 'Visit / test की date',
+    'upload.label.doctor': 'Doctor (वैकल्पिक)',
+    'upload.label.hospital': 'Hospital / clinic (वैकल्पिक)',
+    'upload.label.shortname': 'Short नाम (बाद में ढूँढने के लिए)',
+    'timeline.title': '🕒 Health Timeline',
+    'timeline.desc': 'हर document, fact, और visit chronological order में। Condition, doctor, या date से filter कीजिए। किसी row पर tap करने से source document खुलेगा (सिर्फ आप ही decrypt कर सकते हैं)।',
+    'timeline.filter_kind': 'Kind से filter',
+    'timeline.search': 'Text search',
+    'reminders.title': '⏰ Smart Reminders',
+    'reminders.desc': 'आपकी prescriptions, follow-ups, और insurance premiums से अपने आप बन जाते हैं। पाँच तरह: medicine (daily), follow-up (एक बार), premium due (30/7/1 day advance alerts), test due, prescription expiry। Channels: browser push, WhatsApp, voice call (Twilio — env-gated)।',
+    'reminders.new': '＋ नया reminder',
+    'reminders.refresh': '🔄 Refresh',
+    'vitals.title': '📈 Vitals Log',
+    'vitals.desc': 'BP / sugar / HbA1c / weight / SpO2 / pulse / temperature — voice से log कीजिए। Chitti out-of-range readings को RED flag करती है। 30 / 90 / 365 दिन का trend chart भी।',
+    'vitals.btn_log': '📈 Log — पहले Chitti पुष्टि करेगी',
+    'vitals.btn_voice': '🎙️ Voice log',
+    'vitals.trend': 'Trend',
+    'vitals.window': 'Window:',
+    'vitals.kind': 'Vital:',
+    'vitals.recent': 'हाल की readings',
+    'insurance.title': '🛡️ Insurance Manager',
+    'insurance.desc': 'Health / life / vehicle policies एक जगह। Premium-due reminders अपने आप 30 / 7 / 1 दिन पहले लग जाते हैं।',
+    'insurance.add': '＋ Policy जोड़िए',
+    'share.title': '📤 Doctor को share कीजिए',
+    'share.desc': 'हर share पर voice consent — Chitti पूछती है "Sire, X reports Dr Sharma ko bhejun? Haan / Nahi"। Link एक बार ही चलता है, 30 minute में expire।',
+    'search.title': '🔎 Smart Search',
+    'search.desc': 'अपनी भाषा में पूछिए। "Wife ki blood sugar last 6 mahine" · "kaunsi medicines chal rahi hain" · "Dr Sharma ki last visit kab thi"।',
+  },
+  en: {
+    'ui.language': 'Language',
+    'ui.now_in_medupi': '🩺 This page is moving into Chitti MedUPI →',
+    'bar.not_doctor': 'NOT a doctor.',
+    'bar.intro': 'Chitti Health File stores and explains your medical documents.',
+    'bar.never_sub': 'Never',
+    'bar.substitute': 'substitutes for professional medical advice.',
+    'bar.read_full': 'Read full disclaimer →',
+    'hero.title': 'Chitti Health File',
+    'hero.sub': "Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets the right reminders, and lets you ask \"Wife ki diabetes ka history dikhao\" in your language. Per-family-member profiles. Encrypted at rest. Shared with a doctor only after your spoken \"haan\".",
+    'tab.upload': '📤 Upload',
+    'tab.timeline': '🕒 Timeline',
+    'tab.reminders': '⏰ Reminders',
+    'tab.vitals': '📈 Vitals',
+    'tab.insurance': '🛡️ Insurance',
+    'tab.share': '📤 Share with doctor',
+    'tab.search': '🔎 Search',
+    'tab.translate': '🌐 Translate',
+    'profile.label': 'Profile:',
+    'profile.add': '＋ Add family member',
+    'profile.read': '🔊 Read',
+    'profile.switch_hint': 'Switch between Self · Wife · Mother · Father · Child anytime',
+    'upload.title': '📤 Upload a medical document',
+    'upload.desc': 'Pick the kind of document, then take a photo or upload a PDF. For prescription and blood report, Chitti reads it with DeepSeek vision and extracts every detail. For other types it stores the file encrypted and you can tag it manually (full extraction lands in Phase B per spec).',
+    'upload.btn': '📤 Upload — Chitti will confirm first',
+    'upload.reset': 'Reset',
+    'upload.label.type': 'What kind of document?',
+    'upload.label.file': 'File (PDF or image · max 15MB)',
+    'upload.label.date': 'Date of visit / test',
+    'upload.label.doctor': 'Doctor (optional)',
+    'upload.label.hospital': 'Hospital / clinic (optional)',
+    'upload.label.shortname': 'Short name (so you find it later)',
+    'timeline.title': '🕒 Health timeline',
+    'timeline.desc': 'Every document, fact, and visit in chronological order. Filter by condition, doctor, or date. Tap a row to open the source document (decrypted only for you).',
+    'timeline.filter_kind': 'Filter by kind',
+    'timeline.search': 'Search text',
+    'reminders.title': '⏰ Smart reminders',
+    'reminders.desc': 'Auto-created from your prescriptions, follow-ups, and insurance premiums. Five kinds: medicine (daily), follow-up (one-shot), premium due (with 30/7/1 day advance alerts), test due, prescription expiry. Channels: browser push, WhatsApp, voice call (Twilio — env-gated).',
+    'reminders.new': '＋ New reminder',
+    'reminders.refresh': '🔄 Refresh',
+    'vitals.title': '📈 Vitals log',
+    'vitals.desc': 'Voice-log BP / sugar / HbA1c / weight / SpO2 / pulse / temperature. Chitti flags out-of-range readings RED. Trend chart shows the last 30 / 90 / 365 days.',
+    'vitals.btn_log': '📈 Log vital — Chitti will confirm first',
+    'vitals.btn_voice': '🎙️ Voice log',
+    'vitals.trend': 'Trend',
+    'vitals.window': 'Window:',
+    'vitals.kind': 'Vital:',
+    'vitals.recent': 'Recent readings',
+    'insurance.title': '🛡️ Insurance manager',
+    'insurance.desc': 'Health / life / vehicle policies in one place. Premium-due reminders auto-spawn at 30 / 7 / 1 day before due.',
+    'insurance.add': '＋ Add policy',
+    'share.title': '📤 Quick share with doctor',
+    'share.desc': "Per-use voice consent — Chitti confirms \"Sire, X reports Dr Sharma ko bhejun? Haan / Nahi\" on every share. The link is one-shot and expires in 30 minutes.",
+    'search.title': '🔎 Smart search across all health data',
+    'search.desc': 'Ask Chitti in your language. "Wife ki blood sugar last 6 mahine" · "kaunsi medicines chal rahi hain" · "Dr Sharma ki last visit kab thi".',
+  },
+  bn: {
+    'ui.language': 'ভাষা',
+    'ui.now_in_medupi': '🩺 এই পেজ এখন Chitti MedUPI-তে চলে যাচ্ছে →',
+    'bar.not_doctor': 'ডাক্তার নয়।',
+    'bar.intro': 'Chitti Health File আপনার medical documents সংরক্ষণ ও ব্যাখ্যা করে।',
+    'bar.never_sub': 'কখনোই',
+    'bar.substitute': 'professional medical advice-এর বিকল্প নয়।',
+    'bar.read_full': 'সম্পূর্ণ disclaimer পড়ুন →',
+    'hero.title': 'Chitti Health File',
+    'hero.sub': 'Prescriptions, blood reports, MRI scans, insurance policies upload করুন। Chitti প্রতিটি detail পড়ে নেয়, সঠিক reminders বসায়, এবং আপনার ভাষায় জিজ্ঞেস করতে পারেন "Wife-এর diabetes-এর history দেখাও"। পরিবারের প্রত্যেক সদস্যের জন্য আলাদা profile। Encrypted অবস্থায় রাখা হয়। Doctor-এর সাথে share শুধুমাত্র আপনার "haan" বলার পর।',
+    'tab.upload': '📤 Upload',
+    'tab.timeline': '🕒 Timeline',
+    'tab.reminders': '⏰ Reminders',
+    'tab.vitals': '📈 Vitals',
+    'tab.insurance': '🛡️ Insurance',
+    'tab.share': '📤 Doctor-কে পাঠাও',
+    'tab.search': '🔎 Search',
+    'tab.translate': '🌐 Translate',
+    'profile.label': 'Profile:',
+    'profile.add': '＋ পরিবারের সদস্য যোগ করুন',
+    'profile.read': '🔊 পড়ো',
+    'profile.switch_hint': 'Self · Wife · Mother · Father · Child — যে কোনো সময় switch করুন',
+    'upload.title': '📤 Medical document upload করুন',
+    'upload.desc': 'প্রথমে document-এর ধরন বাছুন, তারপর photo তুলুন বা PDF upload করুন। Prescription এবং blood report-এ Chitti DeepSeek vision দিয়ে প্রতিটি detail বের করে নেয়।',
+    'upload.btn': '📤 Upload — Chitti আগে নিশ্চিত করবে',
+    'upload.reset': 'Reset',
+    'upload.label.type': 'কোন ধরনের document?',
+    'upload.label.file': 'File (PDF বা image · সর্বোচ্চ 15MB)',
+    'upload.label.date': 'Visit / test-এর তারিখ',
+    'upload.label.doctor': 'Doctor (ঐচ্ছিক)',
+    'upload.label.hospital': 'Hospital / clinic (ঐচ্ছিক)',
+    'upload.label.shortname': 'Short নাম (পরে খুঁজে পেতে)',
+    'timeline.title': '🕒 Health Timeline',
+    'timeline.desc': 'প্রতিটি document, fact, এবং visit chronological order-এ। Condition, doctor, বা date দিয়ে filter করুন।',
+    'reminders.title': '⏰ Smart Reminders',
+    'reminders.desc': 'আপনার prescription, follow-up, এবং insurance premium থেকে আপনাআপনি তৈরি হয়।',
+    'reminders.new': '＋ নতুন reminder',
+    'reminders.refresh': '🔄 Refresh',
+    'vitals.title': '📈 Vitals Log',
+    'vitals.desc': 'BP / sugar / HbA1c / weight / SpO2 / pulse / temperature — voice দিয়ে log করুন।',
+    'vitals.btn_log': '📈 Log — Chitti আগে নিশ্চিত করবে',
+    'vitals.btn_voice': '🎙️ Voice log',
+    'vitals.trend': 'Trend',
+    'vitals.window': 'সময়:',
+    'vitals.kind': 'Vital:',
+    'vitals.recent': 'সাম্প্রতিক readings',
+    'insurance.title': '🛡️ Insurance Manager',
+    'insurance.desc': 'Health / life / vehicle policy এক জায়গায়।',
+    'insurance.add': '＋ Policy যোগ করুন',
+    'share.title': '📤 Doctor-কে দ্রুত share',
+    'share.desc': 'প্রতিবার voice consent — Chitti প্রতিটি share-এ নিশ্চিত করে।',
+    'search.title': '🔎 সকল health data-র উপর smart search',
+    'search.desc': 'আপনার ভাষায় Chitti-কে জিজ্ঞেস করুন।',
+  },
+  ta: {
+    'ui.language': 'மொழி',
+    'ui.now_in_medupi': '🩺 இந்த பக்கம் இப்போது Chitti MedUPI-க்கு மாறுகிறது →',
+    'bar.not_doctor': 'மருத்துவர் அல்ல.',
+    'bar.intro': 'Chitti Health File உங்கள் medical documents-ஐ பாதுகாக்கிறது மற்றும் விளக்குகிறது.',
+    'bar.never_sub': 'எப்போதும்',
+    'bar.substitute': 'professional medical advice-க்கு மாற்றாக இல்லை.',
+    'bar.read_full': 'முழு disclaimer படிக்க →',
+    'hero.title': 'Chitti Health File',
+    'hero.sub': 'Prescriptions, blood reports, MRI scans, insurance policies upload செய்யவும். Chitti ஒவ்வொரு detail-ஐயும் படிக்கிறது, சரியான reminders அமைக்கிறது. குடும்ப உறுப்பினருக்கு தனி profile. Encrypt செய்து சேமிக்கப்படுகிறது.',
+    'tab.upload': '📤 Upload',
+    'tab.timeline': '🕒 Timeline',
+    'tab.reminders': '⏰ Reminders',
+    'tab.vitals': '📈 Vitals',
+    'tab.insurance': '🛡️ Insurance',
+    'tab.share': '📤 Doctor-க்கு அனுப்பு',
+    'tab.search': '🔎 Search',
+    'tab.translate': '🌐 Translate',
+    'profile.label': 'Profile:',
+    'profile.add': '＋ குடும்ப உறுப்பினர் சேர்க்க',
+    'profile.read': '🔊 படி',
+    'profile.switch_hint': 'Self · Wife · Mother · Father · Child — எப்போது வேண்டுமானாலும் மாற்றலாம்',
+    'upload.title': '📤 Medical document upload',
+    'upload.desc': 'document வகையை தேர்வு செய்து, photo எடுக்கவும் அல்லது PDF upload செய்யவும். Prescription மற்றும் blood report-ல் Chitti DeepSeek vision மூலம் ஒவ்வொரு detail-ஐயும் வெளியெடுக்கிறது.',
+    'upload.btn': '📤 Upload — Chitti முதலில் உறுதிப்படுத்தும்',
+    'upload.reset': 'Reset',
+    'upload.label.type': 'எந்த வகை document?',
+    'upload.label.file': 'File (PDF அல்லது image · அதிகபட்சம் 15MB)',
+    'upload.label.date': 'Visit / test தேதி',
+    'upload.label.doctor': 'Doctor (விருப்பத்தேர்வு)',
+    'upload.label.hospital': 'Hospital / clinic (விருப்பத்தேர்வு)',
+    'upload.label.shortname': 'குறுகிய பெயர் (பின்னர் கண்டுபிடிக்க)',
+    'timeline.title': '🕒 Health Timeline',
+    'timeline.desc': 'ஒவ்வொரு document, fact, மற்றும் visit-ஐ chronological order-ல்.',
+    'reminders.title': '⏰ Smart Reminders',
+    'reminders.desc': 'உங்கள் prescriptions, follow-ups, மற்றும் insurance premiums-ல் இருந்து தானாகவே உருவாக்கப்படுகிறது.',
+    'reminders.new': '＋ புதிய reminder',
+    'reminders.refresh': '🔄 Refresh',
+    'vitals.title': '📈 Vitals Log',
+    'vitals.desc': 'BP / sugar / HbA1c / weight / SpO2 / pulse / temperature — voice மூலம் log செய்யவும்.',
+    'vitals.btn_log': '📈 Log — Chitti முதலில் உறுதிப்படுத்தும்',
+    'vitals.btn_voice': '🎙️ Voice log',
+    'vitals.trend': 'Trend',
+    'vitals.window': 'காலம்:',
+    'vitals.kind': 'Vital:',
+    'vitals.recent': 'சமீபத்திய readings',
+    'insurance.title': '🛡️ Insurance Manager',
+    'insurance.desc': 'Health / life / vehicle policies ஒரே இடத்தில்.',
+    'insurance.add': '＋ Policy சேர்க்க',
+    'share.title': '📤 Doctor-க்கு share',
+    'share.desc': 'ஒவ்வொரு share-க்கும் voice consent — Chitti ஒவ்வொரு முறையும் உறுதிப்படுத்துகிறது.',
+    'search.title': '🔎 அனைத்து health data-வையும் தேடல்',
+    'search.desc': 'உங்கள் மொழியில் Chitti-யிடம் கேளுங்கள்.',
+  },
+  te: {
+    'ui.language': 'భాష',
+    'ui.now_in_medupi': '🩺 ఈ పేజీ ఇప్పుడు Chitti MedUPI-కి తరలుతోంది →',
+    'bar.not_doctor': 'డాక్టర్ కాదు.',
+    'bar.intro': 'Chitti Health File మీ medical documents-ని భద్రపరుస్తుంది మరియు వివరిస్తుంది.',
+    'bar.never_sub': 'ఎప్పుడూ',
+    'bar.substitute': 'professional medical advice-కి ప్రత్యామ్నాయం కాదు.',
+    'bar.read_full': 'పూర్తి disclaimer చదవండి →',
+    'hero.title': 'Chitti Health File',
+    'hero.sub': 'Prescriptions, blood reports, MRI scans, insurance policies upload చేయండి. Chitti ప్రతి detail-ని చదువుతుంది, సరైన reminders సెట్ చేస్తుంది. ప్రతి family member-కి విడిగా profile. Encrypt చేసి భద్రపరచబడుతుంది.',
+    'tab.upload': '📤 Upload',
+    'tab.timeline': '🕒 Timeline',
+    'tab.reminders': '⏰ Reminders',
+    'tab.vitals': '📈 Vitals',
+    'tab.insurance': '🛡️ Insurance',
+    'tab.share': '📤 Doctor-కి పంపండి',
+    'tab.search': '🔎 Search',
+    'tab.translate': '🌐 Translate',
+    'profile.label': 'Profile:',
+    'profile.add': '＋ Family member జోడించండి',
+    'profile.read': '🔊 చదవండి',
+    'profile.switch_hint': 'Self · Wife · Mother · Father · Child — ఎప్పుడైనా మార్చండి',
+    'upload.title': '📤 Medical document upload',
+    'upload.desc': 'document రకాన్ని ఎంచుకుని, photo తీయండి లేదా PDF upload చేయండి. Prescription మరియు blood report లో Chitti DeepSeek vision తో ప్రతి detail-ని తీస్తుంది.',
+    'upload.btn': '📤 Upload — Chitti ముందుగా నిర్ధారిస్తుంది',
+    'upload.reset': 'Reset',
+    'upload.label.type': 'ఏ రకమైన document?',
+    'upload.label.file': 'File (PDF లేదా image · గరిష్టంగా 15MB)',
+    'upload.label.date': 'Visit / test తేదీ',
+    'upload.label.doctor': 'Doctor (ఐచ్చికం)',
+    'upload.label.hospital': 'Hospital / clinic (ఐచ్చికం)',
+    'upload.label.shortname': 'చిన్న పేరు (తర్వాత కనుగొనడానికి)',
+    'timeline.title': '🕒 Health Timeline',
+    'timeline.desc': 'ప్రతి document, fact, మరియు visit chronological order-లో.',
+    'reminders.title': '⏰ Smart Reminders',
+    'reminders.desc': 'మీ prescriptions, follow-ups, మరియు insurance premiums నుండి స్వయంగా సృష్టించబడుతుంది.',
+    'reminders.new': '＋ కొత్త reminder',
+    'reminders.refresh': '🔄 Refresh',
+    'vitals.title': '📈 Vitals Log',
+    'vitals.desc': 'BP / sugar / HbA1c / weight / SpO2 / pulse / temperature — voice ద్వారా log చేయండి.',
+    'vitals.btn_log': '📈 Log — Chitti ముందుగా నిర్ధారిస్తుంది',
+    'vitals.btn_voice': '🎙️ Voice log',
+    'vitals.trend': 'Trend',
+    'vitals.window': 'కాలం:',
+    'vitals.kind': 'Vital:',
+    'vitals.recent': 'ఇటీవలి readings',
+    'insurance.title': '🛡️ Insurance Manager',
+    'insurance.desc': 'Health / life / vehicle policies ఒకే చోట.',
+    'insurance.add': '＋ Policy జోడించండి',
+    'share.title': '📤 Doctor-కి share',
+    'share.desc': 'ప్రతి share-కి voice consent — Chitti ప్రతిసారీ నిర్ధారిస్తుంది.',
+    'search.title': '🔎 అన్ని health data-పై smart search',
+    'search.desc': 'మీ భాషలో Chitti-ని అడగండి.',
+  },
+};
+
+function hfGetLang(){
+  try { return localStorage.getItem(HF_LANG_KEY) || 'hi'; }
+  catch(e){ return 'hi'; }
+}
+function hfSetLanguage(lang){
+  try { localStorage.setItem(HF_LANG_KEY, lang); } catch(e){}
+  hfApplyStrings();
+  // Cross-page sync: notify any listeners (Vaani's substrate listens for this).
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang } })); } catch(e){}
+}
+function hfApplyStrings(){
+  const lang = hfGetLang();
+  const sel = document.getElementById('hf-lang-select');
+  if (sel && sel.value !== lang) sel.value = lang;
+  // Resolve key: try requested lang → fall back to Hindi → fall back to English.
+  // Per Sire: never English fallback for Hindi-default users. So the chain is
+  // lang → hi → en. (The five non-translated langs hit `hi` for free.)
+  const bag = HF_I18N[lang] || HF_I18N.hi;
+  const hi  = HF_I18N.hi;
+  const en  = HF_I18N.en;
+  document.querySelectorAll('[data-hf-i18n]').forEach(el => {
+    const k = el.getAttribute('data-hf-i18n');
+    const v = bag[k] || hi[k] || en[k];
+    if (v) el.textContent = v;
+  });
+  document.documentElement.lang = lang;
+}
+
 /* ── Boot ───────────────────────────────── */
 window.addEventListener('DOMContentLoaded', async () => {
+  // Embed-mode chrome trim — page is in MedUPI's iframe wrapper.
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('embed') === '1' || window.self !== window.top) {
+      document.body.classList.add('kv-embedded');
+    }
+  } catch (e) {}
+  hfApplyStrings();
   await loadProfiles();
   showTab('upload');
   onUpTypeChange();
@@ -1770,6 +2177,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   pollDispatch(false);
   setInterval(() => pollDispatch(false), HF_DISPATCH_POLL_MS);
 });
+window.addEventListener('chitti:langchange', () => { try { hfApplyStrings(); } catch(e){} });
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════

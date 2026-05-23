@@ -233,6 +233,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <nav class="tabs" role="tablist" aria-label="Sections" data-i18n-aria="sections">
   <button class="tab active" data-tab="scan"      onclick="showTab('scan')"      role="tab" aria-selected="true"  data-i18n="tab.scan">📷 Scan</button>
   <button class="tab"        data-tab="compare"   onclick="showTab('compare')"   role="tab" aria-selected="false" data-i18n="tab.compare">💊 Compare</button>
+  <button class="tab"        data-tab="health-file" onclick="showTab('health-file')" role="tab" aria-selected="false" data-i18n="tab.health_file">🩺 Health File</button>
   <button class="tab"        data-tab="wallet"    onclick="showTab('wallet')"    role="tab" aria-selected="false" data-i18n="tab.wallet">👨‍👩‍👧 Family Wallet</button>
   <button class="tab"        data-tab="reminders" onclick="showTab('reminders')" role="tab" aria-selected="false" data-i18n="tab.reminders">🔔 Reminders</button>
   <button class="tab"        data-tab="ja"        onclick="showTab('ja')"        role="tab" aria-selected="false" data-i18n="tab.ja">🏥 Jan Aushadhi</button>
@@ -382,6 +383,36 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
       <!-- Result block (filled by runCartSim) -->
       <div id="cart-result" class="section-empty" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Monthly savings calculator" style="margin-top:14px">Add at least one line above and tap Calculate to see your monthly + annual savings.</div>
+    </div>
+  </section>
+
+  <!-- ════════════════════ HEALTH FILE TAB (LOCKED 2026-05-23) ════════════════════
+       Merge target per Sire: Chitti MedUPI is becoming the ONE page for
+       medicine + health. The full Health File workspace is loaded as a
+       same-origin iframe so localStorage (user_token, lang, profile,
+       Golden-Rule overlay state) carries across without code duplication.
+       Phase B-merge: port panels inline into this section once the iframe
+       pattern is user-validated.
+  -->
+  <section id="tab-health-file" class="page" role="tabpanel">
+    <div class="section-card chitti-response" data-chitti-section="Health File workspace">
+      <div class="section-head">
+        <div>
+          <div class="section-title">🩺 Health File <span class="live-badge">LIVE</span></div>
+          <div class="section-sub">Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti reads them with DeepSeek vision, sets reminders, lets you ask "Wife ki diabetes ka history dikhao" in your language. AES-256-GCM encrypted at rest.</div>
+        </div>
+        <a class="cta-saffron" href="chitti_health_file.html" target="_blank" rel="noopener" aria-label="Open Health File in a new tab" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border-radius:8px;font-weight:800;font-size:13px">🔗 Full screen</a>
+      </div>
+      <div style="background:rgba(212,175,55,.14);border:1px solid #D4AF37;color:#7c2d12;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-bottom:10px">
+        🪔 <b>Merged into MedUPI 2026-05-23.</b> The Health File workspace below is the same one as <code>chitti_health_file.html</code> — same encrypted backend, same Golden Rule, same profile. Language + profile choice carries across via localStorage.
+      </div>
+      <iframe
+        id="hf-iframe"
+        src="chitti_health_file.html?embed=1"
+        title="Chitti Health File workspace"
+        loading="lazy"
+        style="width:100%;min-height:900px;border:1px solid var(--border);border-radius:10px;background:#fff;display:block"
+      ></iframe>
     </div>
   </section>
 
@@ -890,7 +921,27 @@ function showTab(name) {
   if (sec) sec.classList.add('active');
   const btn = document.querySelector('nav.tabs .tab[data-tab="' + name + '"]');
   if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected','true'); }
+  // Reflect deep-link in the URL hash so #health-file etc. survives reload.
+  try { if (history && history.replaceState) history.replaceState(null, '', '#' + name); } catch (e) {}
 }
+
+// Deep-link support — chitti_medupi.html#health-file opens that tab directly.
+// Fires after the rest of bootup so the existing default active tab can be
+// overridden cleanly.
+(function _initDeepLinkTab(){
+  function go(){
+    const h = (window.location.hash || '').replace(/^#/, '').trim();
+    if (!h) return;
+    const sec = document.getElementById('tab-' + h);
+    if (sec) showTab(h);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', go);
+  } else {
+    setTimeout(go, 0);
+  }
+  window.addEventListener('hashchange', go);
+})();
 
 function speakSection(key) {
   if (key === 'scan') sp(_chittiLang === 'hi' ? 'स्कैन टैब। दवा को कैमरे से, गैलरी से, या नाम बोलकर खोजें। चिट्टी ब्रांड और संरचना पढ़ता है।' : 'Scan tab. Find a medicine by camera, gallery, or by speaking the name. Chitti reads brand and composition.');
