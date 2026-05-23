@@ -226,6 +226,7 @@ def save_list(db):
             "note": rl.note,
             "article": {
                 "id": a.id, "title": a.title, "link": a.link, "summary": a.summary,
+                "content": a.content,
                 "source_name": a.source_name, "source_slug": a.source_slug,
                 "image_url": a.image_url, "category": a.category,
                 "language": a.language, "state": a.state,

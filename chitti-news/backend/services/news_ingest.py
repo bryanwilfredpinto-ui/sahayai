@@ -105,6 +105,16 @@ def fetch_source(db: Session, source: Source) -> dict:
                 continue
 
             summary_text = _strip_html(entry.get("summary") or entry.get("description"))
+            # content:encoded — RSS publishers like TOI, NDTV, Indian Express ship
+            # the FULL article body here. Storing it lets the speaker read the
+            # entire news (Sire 2026-05-23 contract), not just the headline blurb.
+            full_body_raw = ""
+            content_field = entry.get("content")
+            if isinstance(content_field, list) and content_field:
+                full_body_raw = content_field[0].get("value", "") or ""
+            elif isinstance(content_field, str):
+                full_body_raw = content_field
+            full_body = _strip_html(full_body_raw) if full_body_raw else ""
             published = _parse_published(entry)
 
             a = Article(
@@ -112,6 +122,7 @@ def fetch_source(db: Session, source: Source) -> dict:
                 title_hash=_title_hash(title),
                 link=link,
                 summary=(summary_text or "")[:2000],
+                content=(full_body or None),
                 source_slug=source.slug,
                 source_name=source.display_name,
                 source_url=source.homepage_url,

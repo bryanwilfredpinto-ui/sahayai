@@ -224,11 +224,13 @@ footer a{color:var(--saffron)}
 <nav class="tabs" role="tablist" aria-label="News categories" data-i18n-aria="news-categories">
   <button class="tab active" data-tab="national"      onclick="showCategory('national')"      role="tab" aria-selected="true"  data-i18n="cat.national">🇮🇳 National</button>
   <button class="tab"        data-tab="state"         onclick="showCategory('state')"         role="tab" aria-selected="false" data-i18n="cat.state">📍 State</button>
+  <button class="tab"        data-tab="politics"      onclick="showCategory('politics')"      role="tab" aria-selected="false" data-i18n="cat.politics">🏛️ Politics</button>
   <button class="tab"        data-tab="business"      onclick="showCategory('business')"      role="tab" aria-selected="false" data-i18n="cat.business">💼 Business</button>
   <button class="tab"        data-tab="tech"          onclick="showCategory('tech')"          role="tab" aria-selected="false" data-i18n="cat.tech">💡 Tech</button>
   <button class="tab"        data-tab="sports"        onclick="showCategory('sports')"        role="tab" aria-selected="false" data-i18n="cat.sports">🏏 Sports</button>
   <button class="tab"        data-tab="entertainment" onclick="showCategory('entertainment')" role="tab" aria-selected="false" data-i18n="cat.entertainment">🎬 Entertainment</button>
-  <button class="tab"        data-tab="saved"         onclick="showCategory('saved')"         role="tab" aria-selected="false" data-i18n="cat.saved">⭐ Read Later</button>
+  <button class="tab"        data-tab="foryou"        onclick="showCategory('foryou')"        role="tab" aria-selected="false" data-i18n="cat.foryou">⭐ For You</button>
+  <button class="tab"        data-tab="saved"         onclick="showCategory('saved')"         role="tab" aria-selected="false" data-i18n="cat.saved">📌 Read Later</button>
   <button class="tab"        data-tab="cancelled"     onclick="showCategory('cancelled')"     role="tab" aria-selected="false" data-i18n="cat.cancelled">🗑️ Cancelled</button>
 </nav>
 
@@ -257,8 +259,25 @@ footer a{color:var(--saffron)}
   </section>
   <section id="page-saved" class="page" role="tabpanel">
     <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('saved')" aria-label="Hear what's in your Read Later folder" data-i18n-aria="hear-what-s-in-your-read-later-folder" data-i18n="read-later">🔊 Read Later</button></div>
-    <div id="saved-status" class="section-empty">⭐</div>
+    <div id="saved-status" class="section-empty">📌</div>
     <div id="saved-feed" class="feed"></div>
+  </section>
+  <section id="page-foryou" class="page" role="tabpanel" aria-label="For You — personalised feed based on your likes and dislikes">
+    <div class="section-card" data-chitti-response data-chitti-section="For You — explainer" style="background:linear-gradient(135deg,rgba(232,106,23,.06),#fff);border:1px solid rgba(232,106,23,.45)">
+      <div class="section-head">
+        <div>
+          <div class="section-title" data-i18n="foryou.title">⭐ For You — Chitti chooses what you like</div>
+          <div class="section-sub" data-i18n="foryou.sub">Every 👍 lifts that category. Every 👎 lowers it. Don't like politics? Tap 👎 on a few — Chitti will show you more of what you DO like (movies, sports, business — your call). Resets anytime.</div>
+        </div>
+        <button class="spk-btn" onclick="speakForYouStatus()" aria-label="Hear how the For You feed works" data-i18n-aria="hear-how-the-for-you-feed-works" data-i18n="tag">🔊</button>
+      </div>
+      <div id="foryou-profile" style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.55"></div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="art-actions-btn" onclick="resetForYou()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600" data-i18n="foryou.reset">🔄 Reset my profile</button>
+      </div>
+    </div>
+    <div id="foryou-status" class="section-empty" aria-live="polite">⭐</div>
+    <div id="foryou-feed" class="feed"></div>
   </section>
   <section id="page-cancelled" class="page" role="tabpanel">
     <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('cancelled')" aria-label="Hear what's in your Cancelled folder" data-i18n-aria="hear-what-s-in-your-cancelled-folder" data-i18n="cancelled">🔊 Cancelled</button></div>
@@ -516,11 +535,15 @@ function showCategory(cat) {
     b.classList.toggle('active', isActive);
     b.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
-  document.getElementById('page-feed').classList.toggle('active', cat !== 'saved' && cat !== 'cancelled');
+  const isFeedTab = (cat !== 'saved' && cat !== 'cancelled' && cat !== 'foryou');
+  document.getElementById('page-feed').classList.toggle('active', isFeedTab);
   document.getElementById('page-saved').classList.toggle('active', cat === 'saved');
   document.getElementById('page-cancelled').classList.toggle('active', cat === 'cancelled');
+  const pgFor = document.getElementById('page-foryou');
+  if (pgFor) pgFor.classList.toggle('active', cat === 'foryou');
   if (cat === 'saved')          loadFolder('saved');
   else if (cat === 'cancelled') loadFolder('cancelled');
+  else if (cat === 'foryou')    loadForYou();
   else                          loadFeed(false);
 }
 
@@ -560,12 +583,19 @@ const I18N = {
   'pick.refresh':    { en:'🔄 Refresh', hi:'🔄 ताज़ा' },
   'cat.national':      { en:'🇮🇳 National',     hi:'🇮🇳 राष्ट्रीय' },
   'cat.state':         { en:'📍 State',        hi:'📍 राज्य' },
+  'cat.politics':      { en:'🏛️ Politics',     hi:'🏛️ राजनीति' },
   'cat.business':      { en:'💼 Business',     hi:'💼 बिज़नेस' },
   'cat.tech':          { en:'💡 Tech',         hi:'💡 तकनीक' },
   'cat.sports':        { en:'🏏 Sports',       hi:'🏏 खेल' },
   'cat.entertainment': { en:'🎬 Entertainment', hi:'🎬 मनोरंजन' },
-  'cat.saved':         { en:'⭐ Read Later',   hi:'⭐ बाद में पढ़ें' },
+  'cat.foryou':        { en:'⭐ For You',      hi:'⭐ आपके लिए' },
+  'cat.saved':         { en:'📌 Read Later',   hi:'📌 बाद में पढ़ें' },
   'cat.cancelled':     { en:'🗑️ Cancelled',     hi:'🗑️ हटाई गईं' },
+  'foryou.title':      { en:'⭐ For You — Chitti chooses what you like', hi:'⭐ आपके लिए — चिट्टी आपकी पसंद चुनता है' },
+  'foryou.sub':        { en:"Every 👍 lifts that category. Every 👎 lowers it. Don't like politics? Tap 👎 on a few — Chitti will show you more of what you DO like (movies, sports, business — your call). Resets anytime.", hi:'हर 👍 उस श्रेणी को ऊपर ले जाता है। हर 👎 नीचे। राजनीति पसंद नहीं? कुछ पर 👎 दबाएँ — चिट्टी आपकी पसंद की खबरें (फ़िल्म, खेल, व्यापार) दिखाएगा।' },
+  'foryou.reset':      { en:'🔄 Reset my profile', hi:'🔄 मेरी प्रोफ़ाइल रीसेट करें' },
+  'foryou.empty':      { en:"⭐ Tap 👍 or 👎 on any story — Chitti will start learning what you like.", hi:'⭐ किसी भी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीखना शुरू कर देगा।' },
+  'art.dislike':       { en:'👎 Not for me', hi:'👎 पसंद नहीं' },
   'feed.loading':    { en:'⏳ Loading the latest news…', hi:'⏳ ताज़ा खबरें लोड हो रही हैं…' },
   'special.title':   { en:'✨ Chitti News Special — what no other aggregator does', hi:'✨ चिट्टी न्यूज़ स्पेशल — जो कोई और नहीं करता' },
   'special.sub':     { en:'Dailyhunt, Way2News, Bhaskar, Moneycontrol, NewsBreak, SmartNews, CNA — Chitti combines their best edges + Bharat-first AI.', hi:'Dailyhunt, Way2News, भास्कर, Moneycontrol, NewsBreak, SmartNews, CNA — चिट्टी इन सबकी सबसे अच्छी बातें + Bharat-first AI।' },
@@ -761,11 +791,12 @@ function _articleCardHtml(a) {
         // Primary action 🔊 reads the FULL summary (not just headline).
         '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
         '<div class="art-actions">' +
-          '<button class="primary" onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud">🔊 ' + t('art.read_aloud') + '</button>' +
+          '<button class="primary" onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud" aria-label="Read full article aloud — title, summary and full body">🔊 ' + t('art.read_aloud') + '</button>' +
           '<button onclick="loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
           '<button onclick="loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
           '<button onclick="loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
           '<button onclick="saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">👍 ' + t('art.save') + '</button>' +
+          '<button onclick="saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-dislike">' + t('art.dislike') + '</button>' +
           '<button onclick="shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
         '</div>' +
         // Source link demoted — small, secondary, below the main actions.
@@ -1033,8 +1064,16 @@ async function loadFactcheck(id) {
 }
 
 async function saveArticle(id, folder) {
+  // Always update the local For-You preference profile — even for sample
+  // articles, so the user can see the page learn before the backend is live.
+  const cached = _ARTICLE_CACHE[id];
+  if (cached && cached.category) {
+    _foryouRecord(cached.category, folder === 'saved' ? +1 : -1);
+  }
   if (id < 0) {
-    sp(_chittiLang === 'hi' ? 'नमूना लेख — असली खबरें सहेज सकेंगे जब बैकएंड लाइव होगा।' : "Sample article — you'll be able to save real stories once the backend is live.");
+    sp(folder === 'saved'
+      ? (_chittiLang === 'hi' ? 'पसंद नोट की। चिट्टी सीख रहा है।' : 'Liked — Chitti is learning.')
+      : (_chittiLang === 'hi' ? 'नापसंद नोट की। चिट्टी सीख रहा है।' : 'Disliked — Chitti is learning.'));
     return;
   }
   try {
@@ -1043,6 +1082,49 @@ async function saveArticle(id, folder) {
       ? (_chittiLang === 'hi' ? 'सहेज लिया।' : 'Saved.')
       : (_chittiLang === 'hi' ? 'हटा दिया।' : 'Cancelled.'));
   } catch (e) { alert('Error: ' + e.message); }
+}
+
+// ⭐ For You — multi-category personalised feed
+async function loadForYou(){
+  const status = document.getElementById('foryou-status');
+  const feed = document.getElementById('foryou-feed');
+  if (!status || !feed) return;
+  _renderForYouProfileLine();
+  const tops = _foryouTopCategories(4);
+  feed.innerHTML = '';
+  if (!tops.length){
+    status.style.display = 'block';
+    status.textContent = _chittiLang === 'hi'
+      ? '⭐ किसी भी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीखना शुरू कर देगा।'
+      : '⭐ Tap 👍 or 👎 on any story — Chitti will start learning what you like.';
+    return;
+  }
+  status.style.display = 'block';
+  status.textContent = _chittiLang === 'hi' ? '⏳ आपकी पसंद की खबरें ला रहा हूँ…' : '⏳ Fetching stories you like…';
+  const p = _getPrefs();
+  let collected = [];
+  for (const cat of tops){
+    try {
+      const data = await apiGet('/api/news/' + encodeURIComponent(p.state) + '/' + encodeURIComponent(p.lang) + '/' + encodeURIComponent(cat) + '?limit=10');
+      (data.items || []).forEach(a => { _ARTICLE_CACHE[a.id] = a; collected.push(a); });
+    } catch(e){ /* skip silently — other categories still load */ }
+  }
+  if (!collected.length){
+    status.textContent = _chittiLang === 'hi'
+      ? '⏳ बैकएंड गरम हो रहा है — एक मिनट में आपकी पसंद की खबरें यहाँ आएँगी।'
+      : '⏳ Backend warming up — your personalised stories will appear here in a minute.';
+    return;
+  }
+  // de-dupe by id, sort by importance + recency
+  const seen = new Set();
+  collected = collected.filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; });
+  collected.sort((x,y) => {
+    const ix = (x.importance || 0), iy = (y.importance || 0);
+    if (iy !== ix) return iy - ix;
+    return new Date(y.published_at || y.fetched_at || 0) - new Date(x.published_at || x.fetched_at || 0);
+  });
+  status.style.display = 'none';
+  feed.innerHTML = collected.slice(0, 30).map(_articleCardHtml).join('');
 }
 
 function shareArticle(id) {
@@ -1061,8 +1143,90 @@ function shareArticle(id) {
 
 function readArticleAloud(id) {
   const a = _ARTICLE_CACHE[id]; if (!a) return;
-  const text = (a.title || '') + '. ' + (a.summary || '');
+  // Sire 2026-05-23: speaker reads the ENTIRE news, not just the headline.
+  // RSS publishers like TOI ship the full body in `content`; if absent, the
+  // RSS summary is the fullest we have. Strip any HTML the publisher embedded.
+  // Cap at 6 000 chars so browser SpeechSynthesis doesn't get truncated by
+  // the engine (Chrome stops cleanly at ~15 KB; we leave headroom for Hindi
+  // Devanagari which costs more bytes per glyph).
+  const body = a.content || a.summary || '';
+  const plain = String(body).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 6000);
+  const text = (a.title || '').trim() + '. ' + plain;
   sp(text);
+}
+
+// ═══════════════════════════════════════════════════════════
+// For You — preference profile driven by 👍 / 👎 per article
+// Sire 2026-05-23: tea-stall page. Each user gets the news they want.
+// ═══════════════════════════════════════════════════════════
+const FORYOU_KEY = 'chitti_news_foryou_v1';
+const FORYOU_CATEGORIES = ['national','state','politics','business','tech','sports','entertainment'];
+
+function _foryouProfile(){
+  try {
+    const raw = localStorage.getItem(FORYOU_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return { scores: {}, total_likes: 0, total_dislikes: 0, updated_at: null };
+}
+function _foryouSave(p){
+  try { localStorage.setItem(FORYOU_KEY, JSON.stringify(p)); } catch(e){}
+}
+function _foryouRecord(category, delta){
+  if (!category || !FORYOU_CATEGORIES.includes(category)) return;
+  const p = _foryouProfile();
+  p.scores[category] = (p.scores[category] || 0) + delta;
+  if (delta > 0) p.total_likes++; else p.total_dislikes++;
+  p.updated_at = new Date().toISOString();
+  _foryouSave(p);
+}
+function _foryouTopCategories(limit){
+  const p = _foryouProfile();
+  const entries = FORYOU_CATEGORIES
+    .map(c => [c, p.scores[c] || 0])
+    .filter(([c, s]) => s > 0)   // only categories the user actually likes
+    .sort((a,b) => b[1] - a[1]);
+  return entries.slice(0, limit || 4).map(e => e[0]);
+}
+function resetForYou(){
+  if (!confirm(_chittiLang === 'hi' ? 'पक्का? आपकी पसंद की प्रोफ़ाइल मिट जाएगी।' : 'Reset? Your likes/dislikes history will be cleared.')) return;
+  try { localStorage.removeItem(FORYOU_KEY); } catch(e){}
+  sp(_chittiLang === 'hi' ? 'प्रोफ़ाइल रीसेट हो गई।' : 'Profile reset.');
+  if (_currentCategory === 'foryou') loadForYou();
+}
+function speakForYouStatus(){
+  const p = _foryouProfile();
+  const tops = _foryouTopCategories(3);
+  if (!tops.length){
+    sp(_chittiLang === 'hi'
+      ? 'किसी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीख लेगा।'
+      : 'Tap 👍 or 👎 on any story — Chitti will learn your preferences.');
+    return;
+  }
+  const namesEn = { national:'national news', state:'state news', politics:'politics', business:'business', tech:'tech', sports:'sports', entertainment:'entertainment' };
+  const namesHi = { national:'राष्ट्रीय खबरें', state:'राज्य की खबरें', politics:'राजनीति', business:'व्यापार', tech:'तकनीक', sports:'खेल', entertainment:'मनोरंजन' };
+  const names = _chittiLang === 'hi' ? namesHi : namesEn;
+  const list = tops.map(c => names[c] || c).join(', ');
+  sp(_chittiLang === 'hi'
+    ? 'आपकी पसंद: ' + list + '। चिट्टी आपको इन्हीं की खबरें ज़्यादा दिखाएगा।'
+    : 'You like: ' + list + '. Chitti will show you more of these.');
+}
+function _renderForYouProfileLine(){
+  const el = document.getElementById('foryou-profile');
+  if (!el) return;
+  const p = _foryouProfile();
+  const tops = _foryouTopCategories(5);
+  const labelEn = { national:'🇮🇳 National', state:'📍 State', politics:'🏛️ Politics', business:'💼 Business', tech:'💡 Tech', sports:'🏏 Sports', entertainment:'🎬 Entertainment' };
+  const labelHi = { national:'🇮🇳 राष्ट्रीय', state:'📍 राज्य', politics:'🏛️ राजनीति', business:'💼 व्यापार', tech:'💡 तकनीक', sports:'🏏 खेल', entertainment:'🎬 मनोरंजन' };
+  const labels = _chittiLang === 'hi' ? labelHi : labelEn;
+  if (!tops.length){
+    el.textContent = _chittiLang === 'hi'
+      ? 'अभी कोई पसंद नहीं चुनी।'
+      : 'No preferences picked yet.';
+    return;
+  }
+  el.innerHTML = (_chittiLang === 'hi' ? 'आपकी पसंद: ' : 'You like: ') +
+    tops.map(c => '<strong>' + labels[c] + '</strong> (' + (p.scores[c] || 0) + ')').join(' · ');
 }
 
 // ═══════════════════════════════════════════════════════════

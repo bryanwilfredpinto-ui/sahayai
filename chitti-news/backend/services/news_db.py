@@ -58,6 +58,7 @@ def _row_to_dict(a: Article, fc: FactCheck | None = None) -> dict:
         "title": a.title,
         "link": a.link,
         "summary": a.summary,
+        "content": a.content,  # full RSS body when the publisher provides it; speaker reads this in full
         "source_slug": a.source_slug,
         "source_name": a.source_name,
         "image_url": a.image_url,
