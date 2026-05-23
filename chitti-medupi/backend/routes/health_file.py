@@ -490,12 +490,8 @@ def insurance_network_check():
 def export_doctor_pdf():
     """Query: ?user_token=…&profile_id=N
     Returns: application/pdf — doctor-facing single-document A4 summary.
-
-    Frontend wires this as a download link on the Vitals tab. The user has
-    already passed chittiConfirmAndDo() before tapping the link, per the
-    Golden Rule. Reportlab is loaded lazily so backends without it (e.g.
-    bare unit tests) still import cleanly.
     """
+    import traceback as _tb
     user_token = _user_token_or_400(request.args)
     pid = _int_or_none(request.args.get("profile_id"))
     if pid is None:
@@ -505,8 +501,17 @@ def export_doctor_pdf():
     except ValueError as e:
         abort(404, description=str(e))
     except ImportError as e:
-        # reportlab not installed on this host — honest stub
         abort(503, description=f"pdf_pipeline_not_installed: {e}")
+    except Exception as e:  # noqa: BLE001
+        log.exception("doctor_pdf build failed")
+        # Surface a short traceback so we can debug from outside Railway.
+        tb_short = "\n".join(_tb.format_exception(type(e), e, e.__traceback__))[-1200:]
+        return jsonify({
+            "ok": False, "error": "pdf_build_failed",
+            "exception_class": type(e).__name__,
+            "exception_message": str(e)[:300],
+            "traceback_tail": tb_short,
+        }), 500
     fname = f"chitti-health-summary-{pid}-{request.args.get('user_token', '')[:6]}.pdf"
     return send_file(
         BytesIO(pdf_bytes),
