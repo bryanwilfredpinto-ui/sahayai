@@ -173,3 +173,17 @@ The text path bumps `search_log.count` for the normalized query (drives the dail
 - Flask error handlers are registered for 400 / 404 / 405 / 413 / 415 / 500. All return JSON shape `{"error": "<code>", "detail": "..."}`.
 - Upload cap: **8 MB** on `/api/medupi/scan` (configured via `MAX_CONTENT_LENGTH`).
 - Light auth on family-wallet / reminder / scheduler-trigger routes via the `X-User-Token` request header (must be ≥8 chars). Frontend generates a UUID per device and stores in localStorage.
+
+---
+
+## 9. Gunicorn worker count — single worker on Railway (2026-05-23)
+
+The [`backend/Procfile`](backend/Procfile) pins `--workers 1` on the chitti-medupi-api Railway service.
+
+**Why one worker?** The libsql-experimental embedded replica's writes are local to the worker that did the INSERT. The 60-s bg-sync thread only PULLs from Turso — SQLAlchemy writes never get pushed up, so a second worker reading `/profiles?user_token=X` immediately after a first worker created the row sees `[]` (its libsql replica has not seen the row). This was the root cause of the Phase B curl-verification gap discovered 2026-05-23 (commits `d563825` … `29fc987`).
+
+**Single worker deployed 2026-05-23 pending proper libsql client migration. Revisit when daily active users exceed 100** — at that point either:
+- Route every write through the libsql client connection (drop SQLAlchemy on these tables) so writes land in Turso before another worker pulls, **or**
+- Move chitti-medupi-api off the embedded-replica pattern (direct Hrana / Neon Postgres) — this would conflict with the §2 LOCKED Turso decision so requires Sire's review first.
+
+The 1-hour bg-sync interval bump in `29fc987` was the prior tactical step; this Procfile change is the seam that actually unblocks every cross-request write-then-read flow today.
