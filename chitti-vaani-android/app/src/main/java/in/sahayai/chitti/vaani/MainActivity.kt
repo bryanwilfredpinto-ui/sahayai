@@ -127,6 +127,15 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (web.canGoBack()) web.goBack() else super.onBackPressed()
     }
+
+    /**
+     * Bridge helper used by ChittiNativeBridge.sendEmail to call back
+     * into the WebView's existing email-send flow. Marked internal so
+     * only classes in this module can invoke it.
+     */
+    internal fun evaluateJavascriptOnWeb(js: String) {
+        web.evaluateJavascript(js, null)
+    }
 }
 
 /**
@@ -295,6 +304,144 @@ class ChittiNativeBridge(private val ctx: Context) {
         val act = ctx as? android.app.Activity ?: return "no_activity_context"
         ActivityCompat.requestPermissions(act, arrayOf(Manifest.permission.CALL_PHONE), 1002)
         return "prompt_shown"
+    }
+
+    /**
+     * Send an SMS from the user's own SIM via SmsManager. Never via a
+     * server-side telephony provider (no carrier costs to Chitti, no
+     * provider sign-up, no DLT registration). The message goes from
+     * the user's phone number.
+     *
+     * Long messages (>160 GSM-7 chars) are auto-split via divideMessage
+     * and sent as a multipart SMS — same shape the system Messaging
+     * app uses. Returns one of: "sent" / "needs_permission" /
+     * "no_default_subscription" / "failed:<reason>".
+     */
+    @JavascriptInterface
+    fun sendSMS(phoneE164: String, body: String): String {
+        SafetyChecks.requireNotUnlock("sendSMS")
+        SafetyChecks.refuseIfPinLike(phoneE164)
+        val granted = ContextCompat.checkSelfPermission(ctx, Manifest.permission.SEND_SMS) ==
+                      PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            AuditLog.append(ctx, "sendSMS — SEND_SMS denied", phoneE164)
+            return "needs_permission"
+        }
+        val to = phoneE164.trim()
+        if (to.isEmpty()) return "failed:empty_recipient"
+        return try {
+            val sm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                ctx.getSystemService(android.telephony.SmsManager::class.java)
+            } else {
+                @Suppress("DEPRECATION") android.telephony.SmsManager.getDefault()
+            } ?: return "no_default_subscription"
+            val parts = sm.divideMessage(body)
+            if (parts.size <= 1) {
+                sm.sendTextMessage(to, null, body, null, null)
+            } else {
+                sm.sendMultipartTextMessage(to, null, parts, null, null)
+            }
+            AuditLog.append(ctx, "sendSMS sent", "$to · ${body.length}ch · ${parts.size}part")
+            "sent"
+        } catch (e: SecurityException) {
+            AuditLog.append(ctx, "sendSMS SecurityException", e.message ?: "")
+            "needs_permission"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "sendSMS failed", e.message ?: "")
+            "failed:${e.message}"
+        }
+    }
+
+    @JavascriptInterface
+    fun requestSendSMSPermission(): String {
+        val act = ctx as? android.app.Activity ?: return "no_activity_context"
+        ActivityCompat.requestPermissions(act, arrayOf(Manifest.permission.SEND_SMS), 1003)
+        return "prompt_shown"
+    }
+
+    /**
+     * Generic "open any app" by package name. Maps a user spoken-name
+     * (which the JS side already resolves to a package via the curated
+     * KNOWN_APPS dictionary in chitti_vaani.html) to the OS launcher
+     * intent. If the package is not installed, falls back to the Play
+     * Store search for that package — the user can install with one tap.
+     *
+     * Returns: "opened" / "opened_play_store" / "unavailable".
+     */
+    @JavascriptInterface
+    fun openApp(packageName: String): String {
+        val pkg = packageName.trim()
+        if (pkg.isEmpty() || !pkg.matches(Regex("^[a-zA-Z][\\w.]*$"))) {
+            AuditLog.append(ctx, "openApp refused", "bad_package_name=$pkg")
+            return "unavailable"
+        }
+        val pm = ctx.packageManager
+        val launch = pm.getLaunchIntentForPackage(pkg)
+        if (launch != null) {
+            launch.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            ctx.startActivity(launch)
+            AuditLog.append(ctx, "openApp", pkg)
+            return "opened"
+        }
+        // Not installed — drop the user into Play Store for that package.
+        return try {
+            val playApp = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg")).apply {
+                setPackage("com.android.vending")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            ctx.startActivity(playApp)
+            AuditLog.append(ctx, "openApp (Play Store)", pkg)
+            "opened_play_store"
+        } catch (e: Exception) {
+            val playWeb = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/apps/details?id=$pkg"),
+            ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+            ctx.startActivity(playWeb)
+            AuditLog.append(ctx, "openApp (Play Store web)", pkg)
+            "opened_play_store"
+        }
+    }
+
+    /**
+     * Send an email — server-side via the existing /api/vaani/email/send
+     * route, which uses the user's own OAuth-connected Gmail account.
+     *
+     * The actual HTTP call lives on the web tier (chitti_vaani.html
+     * confirmEmailSend()) because it owes the user_token + connected
+     * Gmail address; this bridge method exists so a native voice intent
+     * (Phase 2.5+) can trigger the same flow without going through the
+     * WebView's JS event loop.
+     *
+     * Today this method simply calls back into the WebView to execute
+     * the existing confirmEmailSend handler. That keeps the source of
+     * truth on the JS side and avoids duplicating the OAuth state
+     * machine in Kotlin.
+     */
+    @JavascriptInterface
+    fun sendEmail(to: String, subject: String, body: String): String {
+        SafetyChecks.refuseIfPinLike(to)
+        val act = ctx as? MainActivity ?: return "no_activity_context"
+        val js = """
+            try {
+              if (typeof window.chittiSendEmailFromNative === 'function') {
+                window.chittiSendEmailFromNative(${jsString(to)}, ${jsString(subject)}, ${jsString(body)});
+              } else if (typeof window.openEmailModal === 'function') {
+                window.openEmailModal();
+                if (document.getElementById('em-to'))      document.getElementById('em-to').value = ${jsString(to)};
+                if (document.getElementById('em-subject')) document.getElementById('em-subject').value = ${jsString(subject)};
+                if (document.getElementById('em-body'))    document.getElementById('em-body').value = ${jsString(body)};
+              }
+            } catch(e) {}
+        """.trimIndent()
+        act.runOnUiThread { act.evaluateJavascriptOnWeb(js) }
+        AuditLog.append(ctx, "sendEmail (delegated to webview)", to)
+        return "delegated_to_web"
+    }
+
+    private fun jsString(s: String): String {
+        val esc = s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n")
+        return "'$esc'"
     }
 
     @JavascriptInterface

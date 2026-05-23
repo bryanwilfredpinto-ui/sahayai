@@ -539,6 +539,155 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <!-- Bharat stripe -->
 <div class="bharat-stripe" aria-hidden="true"></div>
 
+<!-- ════════════ DEVICE REGISTRATION — first-ever-load only ════════════
+     Shown once per device after T&C consent and before the main app
+     activates. Stores: brand · model · Android version · name · phone
+     · gmail · permission opt-ins. Key: localStorage.chitti_vaani_device_v1
+     Per SAHAYAI_MASTER §3 honest-stub rule, OTP runs in demo mode unless
+     channel_verify reports configured=true; the page surfaces that.
+-->
+<style>
+.device-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:8500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.device-overlay.hidden{display:none}
+.device-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:680px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.device-panel h1{font-size:20px;margin:0 0 6px;color:var(--navy);font-weight:800;display:flex;align-items:center;gap:10px}
+.device-panel .sub{color:var(--muted);margin:0 0 14px}
+.device-stepper{display:flex;gap:6px;align-items:center;margin-bottom:14px}
+.device-stepper .dot{width:24px;height:24px;border-radius:50%;background:#eee;color:#9aa;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px}
+.device-stepper .dot.active{background:var(--saffron);color:#fff}
+.device-stepper .dot.done{background:var(--green);color:#fff}
+.device-stepper .bar{flex:1;height:2px;background:#eee}
+.device-stepper .bar.done{background:var(--green)}
+.device-screen{display:none}
+.device-screen.active{display:block}
+.device-field{margin:10px 0}
+.device-field label{display:block;font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px}
+.device-field select,.device-field input[type=tel],.device-field input[type=email],.device-field input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit}
+.device-perm-row{display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fbf8f1;border:1px solid var(--border);border-radius:10px;margin:6px 0}
+.device-perm-row input[type=checkbox]{margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:var(--saffron)}
+.device-perm-row .pname{font-weight:700;color:var(--navy);font-size:13.5px}
+.device-perm-row .pdesc{font-size:12.5px;color:var(--muted);line-height:1.4}
+.device-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.device-actions button{padding:10px 18px;border:0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.device-actions .back{background:#eee;color:var(--text)}
+.device-actions .next{background:var(--saffron);color:#fff}
+.device-actions .next:disabled{opacity:.5;cursor:not-allowed}
+.device-actions .activate{background:var(--green);color:#fff}
+.otp-row{display:flex;gap:6px;justify-content:center;margin:8px 0}
+.otp-row input{width:42px;height:48px;text-align:center;font-size:20px;font-weight:800;border:2px solid var(--border);border-radius:10px;font-family:inherit}
+.otp-row input:focus{border-color:var(--saffron);outline:none}
+.device-status{padding:8px 10px;border-radius:8px;font-size:12.5px;margin-top:6px}
+.device-status.ok{background:#dcfce7;border:1px solid #16a34a;color:#166534}
+.device-status.warn{background:#fef3c7;border:1px solid #f59e0b;color:#78350f}
+.device-status.err{background:#fee2e2;border:1px solid #dc2626;color:#7f1d1d}
+</style>
+<div id="device-overlay" class="device-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="device-title">
+  <div class="device-panel">
+    <h1 id="device-title">🪔 <span id="device-title-txt">Welcome to Chitti Vaani — let's set up your device</span></h1>
+    <div class="sub" id="device-subtxt">Three quick screens. After this Chitti will know your name, your device, and your trusted channels — and won't ask again on this phone.</div>
+
+    <div class="device-stepper" aria-label="Setup progress">
+      <div class="dot active" id="dev-dot-1">1</div>
+      <div class="bar" id="dev-bar-1"></div>
+      <div class="dot" id="dev-dot-2">2</div>
+      <div class="bar" id="dev-bar-2"></div>
+      <div class="dot" id="dev-dot-3">3</div>
+    </div>
+
+    <!-- Screen 1: Your device -->
+    <div class="device-screen active" id="dev-screen-1">
+      <h2 style="margin:0 0 8px;font-size:16px">📱 Your device</h2>
+      <p style="color:var(--muted);margin:0 0 6px">Helps Chitti tailor instructions for your phone (e.g. Samsung's One UI vs Xiaomi's MIUI handle Silent mode differently).</p>
+      <div class="device-field">
+        <label for="dev-brand">Brand</label>
+        <select id="dev-brand" onchange="onBrandChange()">
+          <option value="">— pick a brand —</option>
+        </select>
+      </div>
+      <div class="device-field">
+        <label for="dev-model">Model</label>
+        <select id="dev-model">
+          <option value="">— pick a model —</option>
+        </select>
+      </div>
+      <div class="device-field">
+        <label for="dev-android">Android version</label>
+        <select id="dev-android">
+          <option value="">— pick your Android version —</option>
+          <option value="15">Android 15</option>
+          <option value="14">Android 14</option>
+          <option value="13">Android 13</option>
+          <option value="12">Android 12</option>
+          <option value="11">Android 11</option>
+          <option value="10">Android 10</option>
+          <option value="older">Older than 10</option>
+        </select>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Don't know? Settings → About phone → Android version.</div>
+      </div>
+      <div class="device-actions">
+        <button class="next" onclick="devNext(1)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Verify you -->
+    <div class="device-screen" id="dev-screen-2">
+      <h2 style="margin:0 0 8px;font-size:16px">🔐 Verify you</h2>
+      <p style="color:var(--muted);margin:0 0 6px">Lets Chitti greet you by name and reach you via SMS / Gmail. Stored only on this device — never sent to a third party.</p>
+      <div class="device-field">
+        <label for="dev-name">Your name (or what Chitti should call you)</label>
+        <input type="text" id="dev-name" placeholder="e.g. Bryan, Amma, Doctor sahib" maxlength="60">
+      </div>
+      <div class="device-field">
+        <label for="dev-phone">Your phone number (for OTP)</label>
+        <input type="tel" id="dev-phone" placeholder="+91XXXXXXXXXX" maxlength="16">
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <button onclick="sendPhoneOTP()" style="padding:8px 14px;border:0;border-radius:8px;background:var(--saffron);color:#fff;font-weight:700;font-family:inherit;cursor:pointer">Send OTP</button>
+          <button onclick="skipPhoneOTP()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-weight:700;font-family:inherit;cursor:pointer">Skip for now</button>
+        </div>
+        <div class="otp-row" id="dev-otp-row" style="display:none">
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,0)"/>
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,1)"/>
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,2)"/>
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,3)"/>
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,4)"/>
+          <input maxlength="1" pattern="[0-9]" inputmode="numeric" onkeyup="otpHop(this,5)"/>
+        </div>
+        <div id="dev-otp-status" class="device-status" style="display:none"></div>
+      </div>
+      <div class="device-field">
+        <label for="dev-gmail">Gmail (so Chitti can send mail on your behalf)</label>
+        <input type="email" id="dev-gmail" placeholder="you@gmail.com">
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <button onclick="connectGmailFromDevice()" style="padding:8px 14px;border:0;border-radius:8px;background:#4285F4;color:#fff;font-weight:700;font-family:inherit;cursor:pointer">🔗 Connect Gmail</button>
+          <button onclick="skipGmail()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-weight:700;font-family:inherit;cursor:pointer">Skip for now</button>
+        </div>
+        <div id="dev-gmail-status" class="device-status" style="display:none"></div>
+      </div>
+      <div class="device-actions">
+        <button class="back" onclick="devBack(2)">← Back</button>
+        <button class="next" onclick="devNext(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Permissions -->
+    <div class="device-screen" id="dev-screen-3">
+      <h2 style="margin:0 0 8px;font-size:16px">🛡️ Permissions Chitti will ask for</h2>
+      <p style="color:var(--muted);margin:0 0 6px">You'll be asked in the Android app when each capability is first used. Untick anything you don't want — Chitti will simply not offer that feature. <b>Chitti never unlocks your phone</b> (Android does not allow it).</p>
+      <div class="device-perm-row"><input type="checkbox" id="perm-call" checked><div><div class="pname">📞 Calls</div><div class="pdesc">"Mom ko call karo" → Chitti dials directly via your SIM (web tier opens the dialer pre-filled).</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-sms" checked><div><div class="pname">💬 SMS</div><div class="pdesc">"Mom ko SMS karo" → Chitti sends SMS from your SIM. No server-side cost — your carrier rates apply.</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-whatsapp" checked><div><div class="pname">📲 WhatsApp</div><div class="pdesc">Open WhatsApp chats / calls pre-filled with the message or recipient. Send-tap happens inside WhatsApp.</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-gmail" checked><div><div class="pname">📧 Gmail</div><div class="pdesc">Send mail on your behalf via your own Gmail account — Chitti AI signature auto-appended.</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-media" checked><div><div class="pname">🎬 Media apps</div><div class="pdesc">"YouTube par bhajan chala" / "Spotify kholo" — Chitti launches the right media app.</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-deviceadmin"><div><div class="pname">🔒 Device Admin</div><div class="pdesc">Required ONLY to lock the phone on your voice command. Chitti can <b>never</b> unlock — Android refuses.</div></div></div>
+      <div class="device-perm-row"><input type="checkbox" id="perm-files"><div><div class="pname">📂 Files &amp; folders</div><div class="pdesc">Read documents you point Chitti at (e.g. "read this PDF aloud"). Uses Android's secure file picker — Chitti never browses on its own.</div></div></div>
+      <div class="device-actions">
+        <button class="back" onclick="devBack(3)">← Back</button>
+        <button class="activate" onclick="activateChitti()">✓ Activate Chitti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
@@ -763,6 +912,12 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <span class="pill">Web ✓</span>
       </button>
 
+      <button class="pro-card" onclick="openWACallModal()">
+        <span class="ico">📞</span><span class="lbl">WhatsApp call</span>
+        <span class="sub">"Mom ko WhatsApp call karo" — opens WhatsApp's call screen for that contact. Free over Wi-Fi, works internationally.</span>
+        <span class="pill">Web ✓</span>
+      </button>
+
       <button class="pro-card" onclick="openUPIModal()">
         <span class="ico">💸</span><span class="lbl">Send UPI payment</span>
         <span class="sub">"Ramesh ko ₹500 bhejo" — Chitti opens UPI app pre-filled with payee + amount. You enter PIN in UPI app (NPCI rule).</span>
@@ -833,6 +988,12 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <span class="ico">🔎</span><span class="lbl">Search the web</span>
         <span class="sub">"Chitti, monsoon kab aayega Delhi mein" — opens Google with the query. Use for anything Chitti can't answer offline.</span>
         <span class="pill">Web ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openAppLauncherModal()">
+        <span class="ico">🧩</span><span class="lbl">Open any app</span>
+        <span class="sub">"Chitti, BookMyShow kholo" / "MakeMyTrip" / "Zomato" / "Swiggy" / "Spotify" — Chitti launches the app directly on Android, opens the website otherwise.</span>
+        <span class="pill" id="pill-openapp">Web ✓ (opens website)</span>
       </button>
 
       <button class="pro-card" onclick="nativeAction('openCamera')">
@@ -1436,6 +1597,58 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
   </div>
 </div>
 
+<!-- WhatsApp call modal -->
+<div id="wa-call-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="wa-call-title">
+  <div class="panel chitti-response" data-chitti-section="📞 WhatsApp call">
+    <h2 id="wa-call-title">📞 WhatsApp call</h2>
+    <div class="desc">Speak the recipient. Chitti reads back, you say <b>"haan"</b>, WhatsApp opens its call screen with that contact. Voice calls work over Wi-Fi (free); video toggle is inside WhatsApp.</div>
+    <div class="field">
+      <label>Whom to call — pick from your trusted circle, or type a number</label>
+      <select id="wa-call-to"></select>
+      <input type="tel" id="wa-call-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+    </div>
+    <div class="field" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label style="margin:0">Call type:</label>
+      <select id="wa-call-type" style="width:auto;min-width:140px">
+        <option value="audio" selected>🔊 Voice call</option>
+        <option value="video">📹 Video call</option>
+      </select>
+    </div>
+    <div class="preview" id="wa-call-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmWACall()">📞 Open WhatsApp call screen</button>
+      <button class="spk" onclick="confirmWACallByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('wa-call-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web uses <code>wa.me/{number}?call=1</code> — opens WhatsApp on the contact, you tap the call icon to start. Phase-2 Android can auto-arm the call icon via the accessibility helper (same 2-second window as the WhatsApp-send card).</div>
+  </div>
+</div>
+
+<!-- Open any app modal -->
+<div id="app-launcher-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="app-launcher-title">
+  <div class="panel chitti-response" data-chitti-section="🧩 Open any app">
+    <h2 id="app-launcher-title">🧩 Open any app</h2>
+    <div class="desc">Say the app name — "BookMyShow", "Zomato", "Spotify", "Gaana", "JioSaavn", "MakeMyTrip" — Chitti launches the app on Android, or opens its website here.</div>
+    <div class="field">
+      <label>Pick an app, or speak / type its name</label>
+      <select id="app-launcher-pick" onchange="onAppLauncherPick()">
+        <option value="">— pick an app —</option>
+      </select>
+      <input type="text" id="app-launcher-free" placeholder="or type an app name, like 'Netflix' or 'Cred'" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+      <div class="row-mic">
+        <button id="app-launcher-mic" onclick="proMic('app-launcher-free', this)">🎙️ Speak the app name</button>
+      </div>
+    </div>
+    <div class="preview" id="app-launcher-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmAppLauncher()">🧩 Open app</button>
+      <button class="spk" onclick="confirmAppLauncherByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('app-launcher-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Native (Android app) calls <code>ChittiNative.openApp(packageName)</code> — if the app isn't installed, Chitti drops you into the Play Store entry so one tap installs it. Web fallback opens the canonical website (no install needed).</div>
+  </div>
+</div>
+
 <!-- Maps modal -->
 <div id="maps-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="maps-title">
   <div class="panel chitti-response" data-chitti-section="🗺️ Directions / Maps">
@@ -1808,6 +2021,251 @@ const API_BASE = (function(){
    modal / voice intent / vault / channels logic keeps working. */
 const VAI_ONB_KEY = 'chitti_vaani_onb_done';
 const VAI_NAME_KEY = 'chitti_vaani_user_name';
+
+/* ════════ DEVICE REGISTRATION (Part 1 — added 2026-05-23) ════════
+   Three-screen onboarding the very first time Chitti loads on a
+   device. Saves brand/model/Android-version + name + phone + gmail
+   + permission opt-ins to localStorage.chitti_vaani_device_v1.
+   After Activate, the main app is unlocked and Chitti greets the
+   user by name with their device context known in every response. */
+
+const DEVICE_KEY = 'chitti_vaani_device_v1';
+
+// Brand → top models. Sourced from Indian-market top-sellers (Counterpoint
+// Q1 2026 + Flipkart bestsellers). Edit per brand if a popular SKU is
+// missing — the "Other / not listed" row is always present as a safety
+// net so users with niche phones can still activate.
+const DEVICE_BRANDS = [
+  ['Samsung',       ['Galaxy A14','Galaxy A15','Galaxy A24','Galaxy A34','Galaxy A54','Galaxy M14','Galaxy M34','Galaxy F15','Galaxy S23','Galaxy S24','Other Samsung']],
+  ['OnePlus',       ['Nord CE 3','Nord CE 4','Nord 3','Nord 4','OnePlus 11R','OnePlus 12','OnePlus 12R','OnePlus 11','OnePlus Open','Other OnePlus']],
+  ['Xiaomi / Redmi',['Redmi 13C','Redmi Note 12','Redmi Note 13','Redmi Note 13 Pro','Redmi Note 14','Xiaomi 13','Xiaomi 14','Poco X6 (Xiaomi)','Other Xiaomi/Redmi']],
+  ['Realme',        ['Realme C53','Realme C55','Realme C67','Realme 11x','Realme 12','Realme 12 Pro','Realme Narzo 60','Realme Narzo 70','Realme GT 6','Other Realme']],
+  ['Vivo',          ['Vivo Y28','Vivo Y56','Vivo Y100','Vivo T2','Vivo T3','Vivo V29','Vivo V30','Vivo X100','Vivo iQOO Z9','Other Vivo']],
+  ['OPPO',          ['OPPO A38','OPPO A58','OPPO A78','OPPO A79','OPPO F25 Pro','OPPO Reno 11','OPPO Reno 12','OPPO Find X7','Other OPPO']],
+  ['Motorola',      ['Moto G14','Moto G34','Moto G54','Moto G64','Moto G84','Moto Edge 40','Moto Edge 50','Moto Razr 50','Other Motorola']],
+  ['Nokia',         ['Nokia G42','Nokia G310','Nokia C32','Nokia XR21','Nokia 5710','Nokia 2660 Flip','Other Nokia']],
+  ['iQOO',          ['iQOO Z7','iQOO Z9','iQOO Neo 7','iQOO Neo 9','iQOO 11','iQOO 12','Other iQOO']],
+  ['Poco',          ['Poco C61','Poco M6','Poco X5','Poco X6','Poco F5','Poco F6','Other Poco']],
+  ['Nothing Phone', ['Nothing Phone (1)','Nothing Phone (2)','Nothing Phone (2a)','Nothing Phone (3a)','Other Nothing']],
+  ['Google Pixel',  ['Pixel 6a','Pixel 7','Pixel 7a','Pixel 8','Pixel 8a','Pixel 8 Pro','Pixel 9','Other Pixel']],
+  ['Other Android', ['Lava','Micromax','Karbonn','Tecno','Infinix','itel','Other']],
+];
+
+function loadDevice(){
+  try { return JSON.parse(localStorage.getItem(DEVICE_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function saveDevice(d){ try { localStorage.setItem(DEVICE_KEY, JSON.stringify(d)); } catch(e){} }
+function deviceRegistered(){ return !!loadDevice(); }
+
+function populateBrandSelect(){
+  const sel = document.getElementById('dev-brand');
+  if (!sel || sel.options.length > 1) return;
+  DEVICE_BRANDS.forEach(([brand], i) => {
+    const o = document.createElement('option');
+    o.value = String(i); o.textContent = brand;
+    sel.appendChild(o);
+  });
+}
+function onBrandChange(){
+  const brandSel = document.getElementById('dev-brand');
+  const modelSel = document.getElementById('dev-model');
+  const i = brandSel.value;
+  modelSel.innerHTML = '<option value="">— pick a model —</option>';
+  if (i === '') return;
+  const models = (DEVICE_BRANDS[Number(i)] || [,[]])[1];
+  models.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    modelSel.appendChild(o);
+  });
+}
+
+function maybeShowDeviceRegistration(){
+  if (deviceRegistered()) return false;
+  // Only show after consent has been given (don't pile two overlays).
+  if (!consentGiven()) return false;
+  populateBrandSelect();
+  document.getElementById('device-overlay').classList.remove('hidden');
+  return true;
+}
+
+function devShowScreen(n){
+  for (let i = 1; i <= 3; i++) {
+    const s = document.getElementById('dev-screen-' + i);
+    if (s) s.classList.toggle('active', i === n);
+    const d = document.getElementById('dev-dot-' + i);
+    if (d) {
+      d.classList.toggle('active', i === n);
+      d.classList.toggle('done', i < n);
+      if (i < n) d.textContent = '✓'; else d.textContent = String(i);
+    }
+    if (i < 3) {
+      const b = document.getElementById('dev-bar-' + i);
+      if (b) b.classList.toggle('done', i < n);
+    }
+  }
+}
+
+function devNext(from){
+  if (from === 1) {
+    const brand = document.getElementById('dev-brand').value;
+    const model = document.getElementById('dev-model').value;
+    const av    = document.getElementById('dev-android').value;
+    if (brand === '' || !model || !av) {
+      alert('Please pick brand, model, and Android version.');
+      return;
+    }
+  }
+  devShowScreen(from + 1);
+}
+function devBack(from){ devShowScreen(from - 1); }
+
+/* ── Phone OTP ───────────────────────────────────────── */
+function sendPhoneOTP(){
+  const phone = (document.getElementById('dev-phone').value || '').trim();
+  if (!phone || phone.replace(/[^\d]/g,'').length < 10) {
+    alert('Please enter a valid mobile number.');
+    return;
+  }
+  const status = document.getElementById('dev-otp-status');
+  status.style.display = 'block';
+  status.className = 'device-status warn';
+  status.textContent = '📨 Sending OTP via /api/vaani/channel/verify/start …';
+  document.getElementById('dev-otp-row').style.display = 'flex';
+  let userToken = '';
+  try { userToken = getUserToken(); } catch(e) { userToken = 'dev-' + Date.now(); }
+  fetch(API_BASE + '/api/vaani/channel/verify/start', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user_token: userToken, channel: 'sms', contact: phone }),
+  })
+  .then(r => r.json())
+  .then(j => {
+    if (j.ok && j.demo_mode) {
+      status.className = 'device-status warn';
+      status.textContent = '⚠️ Demo mode — enter code 123456 (real SMS provider not configured on server yet).';
+    } else if (j.ok) {
+      status.className = 'device-status ok';
+      status.textContent = '✓ OTP sent to ' + (j.sent_to || phone) + '.';
+    } else {
+      status.className = 'device-status err';
+      status.textContent = '✗ ' + (j.error || 'Could not send OTP.');
+    }
+  })
+  .catch(e => {
+    status.className = 'device-status err';
+    status.textContent = '✗ Network error — check connection.';
+  });
+}
+function skipPhoneOTP(){
+  const status = document.getElementById('dev-otp-status');
+  status.style.display = 'block';
+  status.className = 'device-status warn';
+  status.textContent = 'Skipped — Chitti will work, but SMS-based emergency relay will be limited.';
+}
+function otpHop(input, idx){
+  if (input.value && idx < 5) {
+    const next = document.querySelectorAll('#dev-otp-row input')[idx + 1];
+    if (next) next.focus();
+  }
+  // Collect and verify when 6 digits entered.
+  const all = Array.from(document.querySelectorAll('#dev-otp-row input')).map(i => i.value).join('');
+  if (all.length === 6 && /^\d{6}$/.test(all)) verifyPhoneOTP(all);
+}
+function verifyPhoneOTP(code){
+  const phone = (document.getElementById('dev-phone').value || '').trim();
+  const status = document.getElementById('dev-otp-status');
+  let userToken = '';
+  try { userToken = getUserToken(); } catch(e) { userToken = 'dev-' + Date.now(); }
+  fetch(API_BASE + '/api/vaani/channel/verify/confirm', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ user_token: userToken, channel: 'sms', contact: phone, code }),
+  })
+  .then(r => r.json())
+  .then(j => {
+    if (j.ok) {
+      status.className = 'device-status ok';
+      status.textContent = '✓ Phone verified.';
+    } else {
+      status.className = 'device-status err';
+      status.textContent = '✗ ' + (j.detail || j.error || 'Wrong code.');
+    }
+  })
+  .catch(e => {
+    status.className = 'device-status err';
+    status.textContent = '✗ Network error verifying OTP.';
+  });
+}
+
+/* ── Gmail connect from device-registration screen ──── */
+function connectGmailFromDevice(){
+  // Defer to the existing connectGmail() that lives in the main app
+  // (defined further down in this file). If it's not yet available
+  // (e.g. user opens the page super fast), wait one tick.
+  const status = document.getElementById('dev-gmail-status');
+  status.style.display = 'block';
+  status.className = 'device-status warn';
+  status.textContent = '🔗 Opening Google consent screen…';
+  if (typeof window.connectGmail === 'function') {
+    try {
+      window.connectGmail();
+      status.className = 'device-status ok';
+      status.textContent = '✓ Google consent window opened. Come back here after granting.';
+    } catch (e) {
+      status.className = 'device-status err';
+      status.textContent = '✗ ' + (e.message || 'Could not start Gmail OAuth.');
+    }
+  } else {
+    setTimeout(connectGmailFromDevice, 500);
+  }
+}
+function skipGmail(){
+  const status = document.getElementById('dev-gmail-status');
+  status.style.display = 'block';
+  status.className = 'device-status warn';
+  status.textContent = 'Skipped — Send Email card will say "Connect Gmail" the first time you use it.';
+}
+
+/* ── Activate ── */
+function activateChitti(){
+  const brandIdx = document.getElementById('dev-brand').value;
+  const brand = brandIdx !== '' ? DEVICE_BRANDS[Number(brandIdx)][0] : '';
+  const model = document.getElementById('dev-model').value || '';
+  const av    = document.getElementById('dev-android').value || '';
+  const name  = (document.getElementById('dev-name').value || '').trim();
+  const phone = (document.getElementById('dev-phone').value || '').trim();
+  const gmail = (document.getElementById('dev-gmail').value || '').trim();
+  const perms = {
+    call:         document.getElementById('perm-call').checked,
+    sms:          document.getElementById('perm-sms').checked,
+    whatsapp:     document.getElementById('perm-whatsapp').checked,
+    gmail:        document.getElementById('perm-gmail').checked,
+    media:        document.getElementById('perm-media').checked,
+    device_admin: document.getElementById('perm-deviceadmin').checked,
+    files:        document.getElementById('perm-files').checked,
+  };
+  saveDevice({
+    brand, model, android_version: av,
+    name, phone, gmail,
+    perms,
+    activated_at: new Date().toISOString(),
+    v: 1,
+  });
+  // Mirror into existing keys so the rest of the app sees the name + phone.
+  if (name)  { try { localStorage.setItem(VAI_NAME_KEY, name); } catch(e){} }
+  try { localStorage.setItem(VAI_ONB_KEY, '1'); } catch(e){}
+  document.getElementById('device-overlay').classList.add('hidden');
+  // Greet the user by name + device.
+  setTimeout(() => {
+    const greeting = (CURRENT_LANG === 'en')
+      ? ('Hello ' + (name || 'friend') + '. Chitti is ready on your ' + (brand || 'phone') + ' ' + (model || '') + '.')
+      : ('Namaste ' + (name || 'dost') + '. Chitti aapke ' + (brand || 'phone') + ' ' + (model || '') + ' par taiyaar hai.');
+    try { speakText(greeting, CURRENT_LANG); } catch(e){}
+  }, 300);
+}
+/* End device-registration block */
 
 const VAI_I18N = {
   en: { 'tab.talk':'Talk','tab.act':'Act','tab.vault':'Vault','tab.circle':'Circle','tab.settings':'More','tab.sos':'SOS',
@@ -2400,8 +2858,14 @@ function acceptConsent(){
     ? 'Welcome. Chitti is ready. Tap the green microphone to speak.'
     : 'नमस्ते। चिट्टी तैयार है। हरे माइक्रोफ़ोन को दबा कर बोलिए।';
   setTimeout(() => speakText(welcome, CONSENT_LANG), 250);
-  // 3-step onboarding immediately after consent — only if not done yet.
-  setTimeout(() => { try { vaiOnbMaybeOpen(); } catch(e){} }, 300);
+  // Device registration goes FIRST on first-ever load (brand/model/
+  // Android-version + name + phone OTP + Gmail + permission opt-ins).
+  // If already registered, fall through to the legacy onboarding.
+  setTimeout(() => {
+    try {
+      if (!maybeShowDeviceRegistration()) vaiOnbMaybeOpen();
+    } catch(e) { try { vaiOnbMaybeOpen(); } catch(_){} }
+  }, 300);
 }
 function declineConsent(){
   alert('No problem. You can come back anytime. Chitti will not work until you accept.');
@@ -2672,7 +3136,7 @@ function renderTC(){
       </div>
     </div>`).join('');
   // Refresh dropdowns in modals
-  ['wa-to','sms-to','upi-to','em-to'].forEach(refreshTCDropdown);
+  ['wa-to','wa-call-to','sms-to','upi-to','em-to'].forEach(refreshTCDropdown);
 }
 function refreshTCDropdown(id){
   const sel = document.getElementById(id); if (!sel) return;
@@ -2958,6 +3422,200 @@ function confirmWASend(){
     ? (CURRENT_LANG==='en' ? 'Sending via WhatsApp.' : 'WhatsApp se bhej rahi hoon.')
     : (CURRENT_LANG==='en' ? 'WhatsApp opened. Tap the green arrow inside WhatsApp to send.' : 'WhatsApp खुल गया। हरे तीर को दबा कर भेजिए।'),
     CURRENT_LANG);
+}
+
+/* ── WhatsApp call (free over Wi-Fi, works internationally) ── */
+function openWACallModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('wa-call-to');
+  document.getElementById('wa-call-to-free').value = '';
+  document.getElementById('wa-call-preview').style.display = 'none';
+  openModal('wa-call-modal');
+}
+function buildWACallPreview(){
+  const i = document.getElementById('wa-call-to').value;
+  let target = null;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.phone) target = { name: c.name || c.realname || '', phone: c.phone };
+  }
+  if (!target) {
+    const free = (document.getElementById('wa-call-to-free').value || '').trim();
+    if (free) {
+      let p = free.replace(/[^\d+]/g, '');
+      if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+      target = { name: '', phone: p };
+    }
+  }
+  if (!target || !target.phone) return null;
+  const callType = document.getElementById('wa-call-type').value || 'audio';
+  return {
+    contact: target,
+    callType,
+    preview: 'WhatsApp ' + (callType==='video'?'video':'voice') + ' call to <b>' + escapeHtml(target.name || target.phone) + '</b> (' + escapeHtml(target.phone) + ')',
+  };
+}
+function confirmWACallByVoice(){
+  const p = buildWACallPreview();
+  const el = document.getElementById('wa-call-preview');
+  if (!p) { alert('Pick a contact or type a number first.'); return; }
+  el.innerHTML = p.preview; el.style.display='block';
+  speakText((CURRENT_LANG==='en'?'WhatsApp calling ':'WhatsApp call कर रही हूँ ') + (p.contact.name||p.contact.phone) + '. ' + (CURRENT_LANG==='en'?'Say haan to open.':'खोलने के लिए हाँ बोलिए।'), CURRENT_LANG);
+  setTimeout(() => listenForYes(() => confirmWACall()), 1500);
+}
+function confirmWACall(){
+  const p = buildWACallPreview();
+  if (!p) { alert('Pick a contact or type a number first.'); return; }
+  // wa.me supports ?call=1 → opens the contact's chat with the
+  // call icon highlighted. WhatsApp does NOT expose a "place
+  // call now" URL — NPCI-style PIN-free protection on the user's
+  // side. User taps the call icon once WhatsApp lands.
+  const phone = p.contact.phone.replace(/^\+/, '');
+  const url = 'https://wa.me/' + phone + '?call=1' + (p.callType === 'video' ? '&video=1' : '');
+  if (hasNativeBridge() && window.ChittiNative.openWhatsApp) {
+    try { window.ChittiNative.openWhatsApp(p.contact.phone, ''); }
+    catch (e) { window.open(url, '_blank', 'noopener'); }
+  } else {
+    window.open(url, '_blank', 'noopener');
+  }
+  closeModal('wa-call-modal');
+  logAction('WhatsApp call screen opened', (p.contact.name||'') + ' · ' + (p.callType==='video'?'video':'voice'), () => {});
+  speakText(CURRENT_LANG==='en'?'WhatsApp opened. Tap the call icon inside WhatsApp.':'WhatsApp खुल गया। अंदर call icon दबाइए।', CURRENT_LANG);
+}
+
+/* ── Open any app — generic launcher ── */
+// Curated package-name dictionary. The JS knows the spoken-name → package
+// mapping; the native bridge accepts the package and launches via
+// PackageManager.getLaunchIntentForPackage(). If the app isn't installed,
+// Chitti deep-links to Play Store. Web fallback opens the canonical
+// website — no install needed, works on Chrome today.
+const KNOWN_APPS = [
+  // Travel + tickets
+  { name: 'BookMyShow',  pkg: 'com.bt.bms',                                       web: 'https://in.bookmyshow.com/' },
+  { name: 'MakeMyTrip',  pkg: 'com.makemytrip',                                   web: 'https://www.makemytrip.com/' },
+  { name: 'IRCTC',       pkg: 'cris.org.in.prs.ima',                              web: 'https://www.irctc.co.in/nget/train-search' },
+  { name: 'Ola',         pkg: 'com.olacabs.customer',                             web: 'https://book.olacabs.com/' },
+  { name: 'Uber',        pkg: 'com.ubercab',                                      web: 'https://m.uber.com/' },
+  { name: 'Rapido',      pkg: 'com.rapido.passenger',                             web: 'https://www.rapido.bike/' },
+  // Food
+  { name: 'Zomato',      pkg: 'com.application.zomato',                           web: 'https://www.zomato.com/' },
+  { name: 'Swiggy',      pkg: 'in.swiggy.android',                                web: 'https://www.swiggy.com/' },
+  // Groceries / commerce
+  { name: 'Blinkit',     pkg: 'com.grofers.customerapp',                          web: 'https://blinkit.com/' },
+  { name: 'BigBasket',   pkg: 'com.bigbasket.mobileapp',                          web: 'https://www.bigbasket.com/' },
+  { name: 'Zepto',       pkg: 'com.zeptoconsumer.app',                            web: 'https://www.zepto.com/' },
+  { name: 'Amazon',      pkg: 'in.amazon.mShop.android.shopping',                 web: 'https://www.amazon.in/' },
+  { name: 'Flipkart',    pkg: 'com.flipkart.android',                             web: 'https://www.flipkart.com/' },
+  { name: 'Meesho',      pkg: 'com.meesho.supply',                                web: 'https://www.meesho.com/' },
+  // Music + media
+  { name: 'Spotify',     pkg: 'com.spotify.music',                                web: 'https://open.spotify.com/' },
+  { name: 'JioSaavn',    pkg: 'com.jio.media.jiobeats',                           web: 'https://www.jiosaavn.com/' },
+  { name: 'Gaana',       pkg: 'com.gaana',                                        web: 'https://gaana.com/' },
+  { name: 'Wynk Music',  pkg: 'com.bsbportal.music',                              web: 'https://wynk.in/music' },
+  { name: 'Netflix',     pkg: 'com.netflix.mediaclient',                          web: 'https://www.netflix.com/' },
+  { name: 'Prime Video', pkg: 'com.amazon.avod.thirdpartyclient',                 web: 'https://www.primevideo.com/' },
+  { name: 'Hotstar',     pkg: 'in.startv.hotstar',                                web: 'https://www.hotstar.com/' },
+  { name: 'JioCinema',   pkg: 'com.jio.media.ondemand',                           web: 'https://www.jiocinema.com/' },
+  // Money
+  { name: 'PhonePe',     pkg: 'com.phonepe.app',                                  web: 'https://www.phonepe.com/' },
+  { name: 'Paytm',       pkg: 'net.one97.paytm',                                  web: 'https://paytm.com/' },
+  { name: 'Google Pay',  pkg: 'com.google.android.apps.nbu.paisa.user',           web: 'https://pay.google.com/' },
+  { name: 'CRED',        pkg: 'com.dreamplug.androidapp',                         web: 'https://cred.club/' },
+  // Productivity
+  { name: 'Gmail',       pkg: 'com.google.android.gm',                            web: 'https://mail.google.com/' },
+  { name: 'WhatsApp',    pkg: 'com.whatsapp',                                     web: 'https://web.whatsapp.com/' },
+  { name: 'Telegram',    pkg: 'org.telegram.messenger',                           web: 'https://web.telegram.org/' },
+  { name: 'Google Maps', pkg: 'com.google.android.apps.maps',                     web: 'https://maps.google.com/' },
+  { name: 'YouTube',     pkg: 'com.google.android.youtube',                       web: 'https://www.youtube.com/' },
+  { name: 'YouTube Music', pkg: 'com.google.android.apps.youtube.music',          web: 'https://music.youtube.com/' },
+  { name: 'Settings',    pkg: 'com.android.settings',                             web: '' },
+];
+function populateAppLauncher(){
+  const sel = document.getElementById('app-launcher-pick');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— pick an app —</option>' +
+    KNOWN_APPS.map((a,i) => '<option value="' + i + '">' + escapeHtml(a.name) + '</option>').join('');
+}
+function openAppLauncherModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  populateAppLauncher();
+  document.getElementById('app-launcher-free').value = '';
+  document.getElementById('app-launcher-preview').style.display = 'none';
+  openModal('app-launcher-modal');
+}
+function onAppLauncherPick(){
+  const i = document.getElementById('app-launcher-pick').value;
+  if (i === '') return;
+  const a = KNOWN_APPS[Number(i)];
+  if (a) document.getElementById('app-launcher-free').value = a.name;
+  showAppLauncherPreview();
+}
+function resolveAppByName(name){
+  if (!name) return null;
+  const needle = name.trim().toLowerCase();
+  // Exact, then substring match.
+  return KNOWN_APPS.find(a => a.name.toLowerCase() === needle) ||
+         KNOWN_APPS.find(a => a.name.toLowerCase().includes(needle)) ||
+         KNOWN_APPS.find(a => needle.includes(a.name.toLowerCase()));
+}
+function buildAppLauncherTarget(){
+  const i = document.getElementById('app-launcher-pick').value;
+  if (i !== '') {
+    const a = KNOWN_APPS[Number(i)];
+    if (a) return a;
+  }
+  const free = (document.getElementById('app-launcher-free').value || '').trim();
+  if (free) {
+    const a = resolveAppByName(free);
+    if (a) return a;
+    // Unknown app — fall back to a generic web search so Chitti still
+    // does something useful instead of refusing.
+    return {
+      name: free,
+      pkg: null,
+      web: 'https://www.google.com/search?q=' + encodeURIComponent(free + ' app'),
+    };
+  }
+  return null;
+}
+function showAppLauncherPreview(){
+  const t = buildAppLauncherTarget();
+  const el = document.getElementById('app-launcher-preview');
+  if (!t) { el.style.display='none'; return; }
+  el.innerHTML = 'Open <b>' + escapeHtml(t.name) + '</b>' +
+    (hasNativeBridge() && t.pkg ? ' (Android app — direct launch)' : ' (' + escapeHtml(t.web) + ')');
+  el.style.display = 'block';
+  speakText((CURRENT_LANG==='en'?'Opening ':'खोल रही हूँ ') + t.name + '. ' + (CURRENT_LANG==='en'?'Say haan to confirm.':'पक्का करने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmAppLauncherByVoice(){
+  showAppLauncherPreview();
+  setTimeout(() => listenForYes(() => confirmAppLauncher()), 1500);
+}
+function confirmAppLauncher(){
+  const t = buildAppLauncherTarget();
+  if (!t) { alert('Pick an app or type a name first.'); return; }
+  let launched = false;
+  if (hasNativeBridge() && window.ChittiNative.openApp && t.pkg) {
+    try {
+      const r = window.ChittiNative.openApp(t.pkg);
+      launched = (r === 'opened' || r === 'opened_play_store');
+      if (r === 'opened_play_store') {
+        speakText(CURRENT_LANG==='en'?(t.name + ' is not installed. Opening Play Store.'):(t.name + ' install नहीं है। Play Store खोल रही हूँ।'), CURRENT_LANG);
+      }
+    } catch (e) {}
+  }
+  if (!launched) {
+    if (t.web) {
+      window.open(t.web, '_blank', 'noopener');
+    } else {
+      alert(t.name + ' has no web fallback — try the Android app.');
+      return;
+    }
+  }
+  closeModal('app-launcher-modal');
+  logAction(launched ? ('App opened (native): ' + t.name) : ('App opened (web): ' + t.name),
+    t.pkg || t.web || '', () => {});
+  speakText((CURRENT_LANG==='en'?'Opened ':'खोल दिया ') + t.name + '.', CURRENT_LANG);
 }
 
 /* ── SMS send (user's own phone SIM, never a server-side provider) ── */
@@ -3378,7 +4036,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-sms','pill-camera','pill-flashlight','pill-alarm','pill-reminder','pill-hey-chitti'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-sms','pill-openapp','pill-camera','pill-flashlight','pill-alarm','pill-reminder','pill-hey-chitti'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });
@@ -5035,6 +5693,12 @@ window.addEventListener('DOMContentLoaded', () => {
   setConsentLang(CURRENT_LANG);
   // Show / hide consent overlay
   if (consentGiven()) document.getElementById('consent-overlay').classList.add('hidden');
+  // If consent was given on a prior visit but device registration hasn't
+  // happened yet (e.g. user cleared device-key only, or upgraded from
+  // pre-v1 page), surface the device-registration overlay now.
+  if (consentGiven() && !deviceRegistered()) {
+    setTimeout(() => { try { maybeShowDeviceRegistration(); } catch(e){} }, 200);
+  }
   renderHistory();
   renderTC();
   renderChannelStatus();
