@@ -505,11 +505,11 @@
 
   <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
   <div class="mc-soon-card" role="region" aria-label="Launching Soon">
-    <div class="mc-soon-head"><span class="mc-soon-flag">🔜 Launching Soon</span> <span class="mc-soon-tag">Chitti Special</span></div>
+    <div class="mc-soon-head"><span class="mc-soon-flag" data-vai-i18n="ls.flag">🔜 Launching Soon</span> <span class="mc-soon-tag" data-vai-i18n="ls.tag">Chitti Special</span></div>
     <div class="mc-soon-grid">
       <div class="mc-soon-item">
-        <div class="mc-soon-title">🔌 OBD2 Live Diagnosis <span class="mc-soon-phase">Phase 2</span></div>
-        <div class="mc-soon-sub">Bluetooth device se seedha engine error code padhega Chitti. Plain Hindi mein samjhayegi — kahaan kya gadbad hai, kitna kharcha hoga.</div>
+        <div class="mc-soon-title" data-vai-i18n="ls.obd2_live.title">🔌 OBD2 Live Diagnosis</div><div style="display:inline-block"><span class="mc-soon-phase" data-vai-i18n="ls.phase2">Phase 2</span></div>
+        <div class="mc-soon-sub" data-vai-i18n="ls.obd2_live.sub">Bluetooth device se seedha engine error code padhega Chitti. Plain Hindi mein samjhayegi — kahaan kya gadbad hai, kitna kharcha hoga.</div>
         <div class="mc-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mc-soon-want" onclick="mcSoonVote('obd2_live', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -517,8 +517,8 @@
         </div>
       </div>
       <div class="mc-soon-item">
-        <div class="mc-soon-title">💰 Fair Price Guarantee</div>
-        <div class="mc-soon-sub">Aapke shehar mein sahi daam — Chitti aapke pin code ke 100+ workshops ke real prices se compare karegi. Mechanic dhoka nahi de sakta.</div>
+        <div class="mc-soon-title" data-vai-i18n="ls.fair_price.title">💰 Fair Price Guarantee</div>
+        <div class="mc-soon-sub" data-vai-i18n="ls.fair_price.sub">Aapke shehar mein sahi daam — Chitti aapke pin code ke 100+ workshops ke real prices se compare karegi. Mechanic dhoka nahi de sakta.</div>
         <div class="mc-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mc-soon-want" onclick="mcSoonVote('fair_price', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -526,8 +526,8 @@
         </div>
       </div>
       <div class="mc-soon-item">
-        <div class="mc-soon-title">✅ Confirmed Fix Reports</div>
-        <div class="mc-soon-sub">1000+ mechanics ne yeh fix confirm kiya hai. BlueDriver-style social proof — aapko pata rahega kya kaam real mein chala.</div>
+        <div class="mc-soon-title" data-vai-i18n="ls.confirmed_fix.title">✅ Confirmed Fix Reports</div>
+        <div class="mc-soon-sub" data-vai-i18n="ls.confirmed_fix.sub">1000+ mechanics ne yeh fix confirm kiya hai. BlueDriver-style social proof — aapko pata rahega kya kaam real mein chala.</div>
         <div class="mc-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mc-soon-want" onclick="mcSoonVote('confirmed_fix', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -535,8 +535,8 @@
         </div>
       </div>
       <div class="mc-soon-item">
-        <div class="mc-soon-title">📊 Drive Score</div>
-        <div class="mc-soon-sub">Aapki driving se fuel kitna waste ho raha hai — daily, weekly, monthly. CARFAX Car Care jaisa logbook + India ke road conditions par tuned.</div>
+        <div class="mc-soon-title" data-vai-i18n="ls.drive_score.title">📊 Drive Score</div>
+        <div class="mc-soon-sub" data-vai-i18n="ls.drive_score.sub">Aapki driving se fuel kitna waste ho raha hai — daily, weekly, monthly. CARFAX Car Care jaisa logbook + India ke road conditions par tuned.</div>
         <div class="mc-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mc-soon-want" onclick="mcSoonVote('drive_score', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -658,7 +658,13 @@ const DAILY_TIPS = {
 
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function mcDailyTip(){
-  const arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
+  const TIP_COUNT = 8;
+  let arr = [];
+  for (let i = 0; i < TIP_COUNT; i++) {
+    const v = (typeof strFor4W === 'function') ? strFor4W('mc.st.tip.' + i) : null;
+    if (v && v !== 'mc.st.tip.' + i) arr.push(v);
+  }
+  if (arr.length === 0) arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
   let idx;
   try {
     if (localStorage.getItem(TIP_DAY_KEY) === todayKey()) idx = parseInt(localStorage.getItem(TIP_IDX_KEY) || '0', 10);
@@ -692,7 +698,14 @@ function changeLang(code){
   try { localStorage.setItem(LANG_KEY, code); } catch(e){}
   if (typeof updateAllStrings === 'function') updateAllStrings(code);
   try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
-  mcRefreshHome();
+  // Re-render every dynamic UI that produces strings in user's language
+  try { mcRefreshHome(); } catch(e){}
+  try { mcRenderDocs(); } catch(e){}
+  try { mcRenderAlerts(); } catch(e){}
+  try { mcLogRenderList(); } catch(e){}
+  try { renderMcFleetSwitcher(); } catch(e){}
+  try { mcKyvLoad(); } catch(e){}
+  window.CURRENT_LANG = code; // expose to shared substrate
 }
 
 function speakText(t, lang){
@@ -713,9 +726,9 @@ function mcSaveCar(){
     odo: parseInt(document.getElementById('mc-odo').value || '0', 10) || 0,
     added_at: new Date().toISOString(),
   };
-  if (!c.make && !c.model && !c.reg) { speakText('कम से कम make, model और reg number डालिए।', CURRENT_LANG); return; }
+  if (!c.make && !c.model && !c.reg) { speakText(strFor4W('mc.speak.min_fields'), CURRENT_LANG); return; }
   saveCar(c);
-  speakText('गाड़ी सेव हो गई। ' + c.make + ' ' + c.model + ', ' + c.reg, CURRENT_LANG);
+  speakText(strFor4W('mc.speak.saved') + ' ' + c.make + ' ' + c.model + ', ' + c.reg, CURRENT_LANG);
   try { mcKyvLoad(); } catch(e){}
   mcTab('home');
 }
@@ -728,7 +741,7 @@ function mcDemoForm(){
   document.getElementById('mc-year').value = '2020';
   document.getElementById('mc-color').value = 'सफ़ेद';
   document.getElementById('mc-odo').value = '52000';
-  speakText('Demo bharo: Maruti Swift VXi DL3 CAB 5678, 2020, safed.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.demo'), CURRENT_LANG);
 }
 
 function mcAddByVoice(){
@@ -793,31 +806,48 @@ function ensureDefaultDocs(){
   let d = loadDocs();
   if (d.length === 0) {
     d = [
-      { id:'ins', icon:'🛡️', name:'Insurance', expiry:'', reminder:30 },
-      { id:'puc', icon:'🌫️', name:'PUC / Pollution', expiry:'', reminder:30 },
-      { id:'rc', icon:'📜', name:'RC (Vehicle Registration)', expiry:'', reminder:90 },
-      { id:'dl', icon:'🪪', name:'Driving Licence', expiry:'', reminder:60 },
-      { id:'fast', icon:'⛽', name:'FASTag balance', expiry:'', reminder:7 },
+      { id:'ins', icon:'🛡️', name_key:'doc.insurance', expiry:'', reminder:30 },
+      { id:'puc', icon:'🌫️', name_key:'doc.puc', expiry:'', reminder:30 },
+      { id:'rc',  icon:'📜', name_key:'doc.rc', expiry:'', reminder:90 },
+      { id:'dl',  icon:'🪪', name_key:'doc.dl', expiry:'', reminder:60 },
+      { id:'fast',icon:'⛽', name_key:'doc.fastag', expiry:'', reminder:7 },
     ];
     saveDocs(d);
   }
+  let changed = false;
+  for (const x of d) {
+    if (!x.name_key && x.name) {
+      const m = { 'Insurance':'doc.insurance','PUC / Pollution':'doc.puc','RC (Vehicle Registration)':'doc.rc','Driving Licence':'doc.dl','FASTag balance':'doc.fastag' };
+      x.name_key = m[x.name] || 'doc.unknown';
+      delete x.name;
+      changed = true;
+    }
+  }
+  if (changed) saveDocs(d);
   return d;
 }
+function docName(d) { return (typeof strFor4W === 'function') ? strFor4W(d.name_key || 'doc.unknown') : (d.name || ''); }
 function mcRenderDocs(){
   const docs = ensureDefaultDocs();
   const list = document.getElementById('mc-docs-list');
+  const expiredTxt  = strFor4W('doc.expired');
+  const addExpiry   = strFor4W('doc.add_expiry');
+  const daysLeft    = strFor4W('doc.days_left');
+  const expiryLabel = strFor4W('doc.expiry_label');
+  const renewLabel  = strFor4W('doc.renew');
   list.innerHTML = docs.map((d, i) => {
     const days = d.expiry ? Math.ceil((new Date(d.expiry) - new Date()) / (24*3600*1000)) : null;
     let chip;
-    if (days === null) chip = '<span class="sds-chip amber">expiry जोड़ो</span>';
-    else if (days <= 0) chip = '<span class="sds-chip red">expired</span>';
-    else if (days <= 30) chip = '<span class="sds-chip amber">' + days + ' दिन</span>';
-    else chip = '<span class="sds-chip green">' + days + ' दिन</span>';
-    return '<div class="sds-doc-row chitti-response" data-chitti-section="'+d.icon+' '+d.name+'">' +
+    if (days === null) chip = '<span class="sds-chip amber">'+addExpiry+'</span>';
+    else if (days <= 0) chip = '<span class="sds-chip red">'+expiredTxt+'</span>';
+    else if (days <= 30) chip = '<span class="sds-chip amber">' + days + ' ' + daysLeft + '</span>';
+    else chip = '<span class="sds-chip green">' + days + ' ' + daysLeft + '</span>';
+    const nm = docName(d);
+    return '<div class="sds-doc-row chitti-response" data-chitti-section="'+d.icon+' '+nm+'">' +
            '<span class="ico">'+d.icon+'</span>' +
-           '<div class="info"><div class="name">'+d.name+'</div>' +
-           '<div class="meta">Expiry: <input type="date" value="'+(d.expiry||'')+'" onchange="mcDocSetExpiry('+i+', this.value)" style="border:none;border-bottom:1px dashed #999;font-size:14px;padding:2px 0;width:140px"></div></div>' +
-           '<div class="right">'+chip+'<button class="sds-btn ghost" style="padding:6px 10px;min-height:38px;font-size:13px" onclick="mcDocRenew('+i+')">renew</button></div>' +
+           '<div class="info"><div class="name">'+nm+'</div>' +
+           '<div class="meta">'+expiryLabel+': <input type="date" value="'+(d.expiry||'')+'" onchange="mcDocSetExpiry('+i+', this.value)" style="border:none;border-bottom:1px dashed #999;font-size:14px;padding:2px 0;width:140px"></div></div>' +
+           '<div class="right">'+chip+'<button class="sds-btn ghost" style="padding:6px 10px;min-height:38px;font-size:13px" onclick="mcDocRenew('+i+')">'+renewLabel+'</button></div>' +
            '</div>';
   }).join('');
 }
@@ -828,13 +858,16 @@ function mcDocSetExpiry(i, val){
 }
 function mcDocRenew(i){
   const docs = loadDocs(); if (!docs[i]) return;
-  speakText(docs[i].name + ' renew करना है। PolicyBazaar या सरकारी portal pe online apply karein.', CURRENT_LANG);
+  speakText(docName(docs[i]) + '. ' + strFor4W('doc.renew.speak'), CURRENT_LANG);
 }
 function speakDocsAloud(){
   const docs = ensureDefaultDocs();
+  const noExpiryTxt = strFor4W('doc.no_expiry');
+  const expiredTxt = strFor4W('doc.expired');
+  const remainingTxt = strFor4W('doc.days_remaining');
   const lines = docs.map(d => {
     const days = d.expiry ? Math.ceil((new Date(d.expiry) - new Date()) / (24*3600*1000)) : null;
-    return d.name + ': ' + (days === null ? 'अभी expiry नहीं डाली' : (days <= 0 ? 'expired' : days + ' दिन बाकी'));
+    return docName(d) + ': ' + (days === null ? noExpiryTxt : (days <= 0 ? expiredTxt : days + ' ' + remainingTxt));
   });
   speakText(lines.join('. '), CURRENT_LANG);
 }
@@ -842,7 +875,7 @@ function mcDemoDocs(){
   const docs = ensureDefaultDocs();
   docs[0].expiry = new Date(Date.now() + 18*24*3600*1000).toISOString().slice(0,10);
   saveDocs(docs); mcRenderDocs();
-  speakText('Demo: Insurance 18 din mein expire ho rahi hai. Chitti reminder dega.', CURRENT_LANG);
+  speakText(strFor4W('doc.demo.speak'), CURRENT_LANG);
 }
 
 function inboxAdd(item){
@@ -897,7 +930,7 @@ function mcToggleMic(){
 function mcStartListening(cb){
   try {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { speakText('Voice support nahi hai. टाइप करें.', CURRENT_LANG); return; }
+    if (!SR) { speakText(strFor4W('mc.speak.no_voice'), CURRENT_LANG); return; }
     RECOG = new SR();
     RECOG.lang = (CURRENT_LANG === 'en') ? 'en-IN' : (CURRENT_LANG === 'te' ? 'te-IN' : 'hi-IN');
     RECOG.continuous = false; RECOG.interimResults = false;
@@ -906,12 +939,12 @@ function mcStartListening(cb){
     RECOG.onresult = (e) => { const txt = (e.results[0][0].transcript || '').trim(); cb(txt); };
     RECOG.onerror = () => { LISTENING = false; document.getElementById('mc-mic')?.classList.remove('listening'); };
     RECOG.start();
-  } catch(e){ speakText('Voice शुरू नहीं हो पायी। टाइप करें।', CURRENT_LANG); }
+  } catch(e){ speakText(strFor4W('mc.speak.voice_failed'), CURRENT_LANG); }
 }
 
 async function mcAsk(){
   const text = (document.getElementById('mc-ask-text').value || '').trim();
-  if (!text) { speakText('Chitti को बताइए क्या तकलीफ़ है।', CURRENT_LANG); return; }
+  if (!text) { speakText(strFor4W('mc.speak.tell_problem'), CURRENT_LANG); return; }
   appendBubble('user', text, 'आप:');
   document.getElementById('mc-ask-text').value = '';
 
@@ -991,7 +1024,7 @@ async function sendFb(card, textareaId, panelId){
   } catch(e){}
   document.getElementById(textareaId).value = '';
   sdsToggleFb(panelId);
-  speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.fb_sent'), CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
 
@@ -1021,9 +1054,9 @@ function mcOnMakeChange(make){
 // OBD2 scan — manual code entry; DeepSeek translates to plain Hindi.
 async function mcObdScan(){
   const code = (document.getElementById('mc-obd-code').value || '').trim().toUpperCase();
-  if (!code) { speakText('Pehle error code likhiye.', CURRENT_LANG); return; }
+  if (!code) { speakText(strFor4W('mc.speak.obd_need_code'), CURRENT_LANG); return; }
   const out = document.getElementById('mc-obd-result');
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor4W('mc.bubble.thinking') + '</span></div>';
   const c = loadCar();
   const ctx = c ? (c.make + ' ' + c.model + ' ' + c.year) : 'car (model unknown)';
   const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
@@ -1036,12 +1069,12 @@ async function mcObdScan(){
     const d = await r.json();
     const m = (d.reply || '').match(/\{[\s\S]+\}/); if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti se code abhi nahi mila — phir try karein.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor4W('mc.bubble.code_fail') + '</div>'; return; }
   const sev = ({minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical'})[parsed.severity] || '⚪ ' + (parsed.severity || '');
-  const safe = parsed.safe_to_drive ? '✅ Safe to drive to workshop' : '❌ Do not drive — tow it';
+  const safe = parsed.safe_to_drive ? strFor4W('mc.safe.drive_ok') : strFor4W('mc.safe.drive_no');
   out.innerHTML =
     '<div class="sds-bubble chitti"><span class="who">' + code + ' · ' + sev + '</span>' + escapeHtmlMc(parsed.meaning || '') + '</div>' +
-    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">क्या करें?</span>' + escapeHtmlMc(parsed.what_to_do) + '</div>' : '') +
+    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">' + strFor4W('mc.bubble.what_to_do') + '</span>' + escapeHtmlMc(parsed.what_to_do) + '</div>' : '') +
     '<div class="sds-bubble ' + (parsed.safe_to_drive ? 'chitti' : 'safety') + '"><span class="who">Driving</span>' + safe + '</div>' +
     (parsed.fair_price_min_inr ? '<div class="mc-fairprice">💰 <b>सही दाम</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
   speakText((parsed.meaning || '') + ' ' + (parsed.what_to_do || ''), CURRENT_LANG);
@@ -1113,7 +1146,7 @@ function mcFleetAdd(){
   mcSetActiveIdx(fleet.length - 1);
   ['mc-make','mc-model','mc-variant','mc-reg','mc-year','mc-color','mc-odo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   renderMcFleetSwitcher();
-  speakText('Nayi gaadi slot. Form bhar ke save karein.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.new_slot'), CURRENT_LANG);
 }
 function mcFleetSwitch(i){
   mcSetActiveIdx(i);
@@ -1166,13 +1199,13 @@ function mcLogAdd(){
     car_key: (function(){ const c = loadCar() || {}; return (c.make||'') + '_' + (c.model||'') + '_' + (c.reg||''); })(),
     added_at: new Date().toISOString(),
   };
-  if (!entry.what) { speakText('Kya kaam hua yeh likhiye.', CURRENT_LANG); return; }
+  if (!entry.what) { speakText(strFor4W('mc.speak.log_what'), CURRENT_LANG); return; }
   const list = mcLogLoad();
   list.unshift(entry);
   mcLogSave(list);
   mcLogRenderList();
   mcLogToggle();
-  speakText('Service entry save ho gayi. Total ' + list.length + ' entries.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.log_saved') + ' ' + list.length, CURRENT_LANG);
 }
 function mcLogRenderList(){
   const out = document.getElementById('mc-log-list');
@@ -1192,16 +1225,16 @@ function mcLogRenderList(){
 }
 function mcLogSpeak(){
   const list = mcLogLoad();
-  if (list.length === 0) { speakText('Abhi koi service entry nahi.', CURRENT_LANG); return; }
+  if (list.length === 0) { speakText(strFor4W('mc.speak.log_empty'), CURRENT_LANG); return; }
   const total = list.reduce((s, e) => s + (e.cost || 0), 0);
-  speakText('Total ' + list.length + ' service entries. Kul ' + total + ' rupiye kharch.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.log_total') + ' ' + list.length + '. ' + total + ' ' + strFor4W('mc.speak.rupiye_kharch'), CURRENT_LANG);
 }
 function mcLogDemo(){
   const list = mcLogLoad();
   list.unshift({ date: new Date().toISOString().slice(0,10), km: 52000, what:'Oil change + brake pad front + AC service', cost: 4200, mechanic: 'Authorised ASS', added_at: new Date().toISOString() });
   mcLogSave(list);
   mcLogRenderList();
-  speakText('Demo entry add ho gayi.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.demo_added'), CURRENT_LANG);
 }
 
 function mcComputeHealthScore(){
@@ -1236,14 +1269,14 @@ function mcRenderHealthScore(){
 }
 
 function mcSOS(){
-  speakText('Emergency. Chitti family ko call kar rahi hai. 112 ko NAHI.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.sos'), CURRENT_LANG);
   window.location.href = 'chitti_vaani.html#sos';
 }
 
 async function mcTripReady(){
   const out = document.getElementById('mc-trip-result');
   if (!out) return;
-  out.innerHTML = '<div class="sds-bubble chitti">Chitti pre-drive check kar rahi hai…</div>';
+  out.innerHTML = '<div class="sds-bubble chitti">' + strFor4W('mc.bubble.predrive') + '</div>';
   const c = loadCar() || {};
   let items = [];
   try {
@@ -1275,7 +1308,7 @@ async function mcTripReady(){
   html += '<div class="sds-card-toolbar"><button onclick="speakText(\'Pre drive check. Tyre, oil, coolant, brake, lights, fuel.\', CURRENT_LANG)">🔊</button><span class="sep"></span><button class="fb-pos" onclick="logProductAction(\'mc_trip\', 1)">👍</button><button class="fb-neg" onclick="window.location.href=\'feedback.html?product=chitti_mechanic_car&card=mc_trip\'">👎</button></div>';
   html += '</div>';
   out.innerHTML = html;
-  speakText('Pre-drive check shuru. Har item tick karein.', CURRENT_LANG);
+  speakText(strFor4W('mc.speak.trip_start'), CURRENT_LANG);
 }
 function mcTripTick(i){
   const checks = document.querySelectorAll('#mc-trip-result input[type=checkbox]');
@@ -1283,8 +1316,8 @@ function mcTripTick(i){
   const total = checks.length;
   const verdict = document.getElementById('mc-trip-verdict');
   if (verdict) {
-    if (done === total) { verdict.innerHTML = '✅ <b>GO — gaadi trip ke liye taiyaar hai.</b>'; speakText('Sab tick. Gaadi ready hai. Safe drive.', CURRENT_LANG); }
-    else verdict.textContent = done + ' / ' + total + ' done. Aur ' + (total - done) + ' baki.';
+    if (done === total) { verdict.innerHTML = ('✅ <b>' + strFor4W('mc.trip.go') + '</b>'); speakText(strFor4W('mc.speak.trip_done'), CURRENT_LANG); }
+    else verdict.textContent = done + ' / ' + total + ' ' + strFor4W('mc.trip.done_word') + '. ' + (total - done) + ' ' + strFor4W('mc.trip.baki') + '.';
   }
 }
 
@@ -1311,16 +1344,16 @@ async function mcPhotoSubmit(input){
       const text = d.reply || d.answer || d.text || '';
       const m = text.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]);
     } catch(e){}
-    if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti photo se nahi samajh paayi. Description likh kar Chitti se Ask karein.</div>'; return; }
+    if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor4W('mc.bubble.photo_fail') + '</div>'; return; }
     const sevMap = { minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical' };
     const sev = sevMap[parsed.severity] || '⚪ ' + (parsed.severity || '');
     const verdictCls = parsed.verdict === 'MECHANIC' ? 'safety' : 'chitti';
     out.innerHTML =
-      '<div class="sds-bubble chitti"><span class="who">' + sev + '</span><b>' + escapeHtmlMc(parsed.what || 'Photo dekhi') + '</b></div>' +
+      '<div class="sds-bubble chitti"><span class="who">' + sev + '</span><b>' + escapeHtmlMc(parsed.what || strFor4W('mc.photo.saw')) + '</b></div>' +
       (parsed.issue ? '<div class="sds-bubble chitti">' + escapeHtmlMc(parsed.issue) + '</div>' : '') +
       '<div class="sds-bubble ' + verdictCls + '"><span class="who">' + (parsed.verdict === 'DIY' ? '🔧 DIY' : '🏪 Mechanic') + '</span>' + escapeHtmlMc(parsed.action || '') + '</div>' +
-      '<div class="sds-bubble ' + (parsed.safe_to_drive ? 'chitti' : 'safety') + '">' + (parsed.safe_to_drive ? '✅ Safe to drive to workshop' : '❌ Do not drive — tow it') + '</div>' +
-      (parsed.fair_price_inr ? '<div class="mc-fairprice">💰 Fair price: ₹' + escapeHtmlMc(parsed.fair_price_inr) + '</div>' : '');
+      '<div class="sds-bubble ' + (parsed.safe_to_drive ? 'chitti' : 'safety') + '">' + (parsed.safe_to_drive ? strFor4W('mc.safe.drive_ok') : strFor4W('mc.safe.drive_no')) + '</div>' +
+      (parsed.fair_price_inr ? '<div class="mc-fairprice">💰 ' + strFor4W('mc.fp.fair_price') + ' ₹' + escapeHtmlMc(parsed.fair_price_inr) + '</div>' : '');
     speakText((parsed.issue || '') + ' ' + (parsed.action || ''), CURRENT_LANG);
   };
   reader.readAsDataURL(file);
@@ -1342,25 +1375,25 @@ async function mcSoundStart(){
       const player = document.getElementById('mc-sound-player');
       player.src = url; player.style.display = 'block';
       document.getElementById('mc-sound-describe').style.display = 'block';
-      status.textContent = '✅ Recorded — sound describe karein';
-      document.getElementById('mc-sound-rec-btn').textContent = '🔴 Phir record';
+      status.textContent = strFor4W('mc.sound.recorded');
+      document.getElementById('mc-sound-rec-btn').textContent = strFor4W('mc.sound.again');
     };
     mcMediaRecorder.start();
-    status.textContent = '🔴 Recording… (10 sec)';
-    document.getElementById('mc-sound-rec-btn').textContent = '⏹ Stop';
+    status.textContent = strFor4W('mc.sound.recording');
+    document.getElementById('mc-sound-rec-btn').textContent = strFor4W('mc.sound.stop');
     setTimeout(() => { if (mcMediaRecorder && mcMediaRecorder.state === 'recording') mcMediaRecorder.stop(); }, 10000);
   } catch(e) {
-    status.textContent = '❌ Mic access nahi mila.';
+    status.textContent = strFor4W('mc.sound.mic_denied');
   }
 }
 async function mcSoundSubmit(){
   const desc = (document.getElementById('mc-sound-desc-text').value || '').trim();
   const out = document.getElementById('mc-sound-result');
-  if (!desc) { speakText('Awaaz ka description likhiye.', CURRENT_LANG); return; }
+  if (!desc) { speakText(strFor4W('mc.speak.sound_need_desc'), CURRENT_LANG); return; }
   const c = loadCar() || {};
   const lang = (LANG_NAMES_MC && LANG_NAMES_MC[CURRENT_LANG]) || 'English';
   const prompt = 'Indian car mechanic. User describes a sound from their ' + (c.make||'car') + ' ' + (c.model||'') + ': "' + desc + '". Identify LIKELY mechanical cause from: brake squeal, suspension knock, AC compressor noise, engine pinging, exhaust leak, wheel bearing whine, drive belt squeal, tappet noise, normal. Reply in ' + lang + '. Return ONLY JSON: {"sound_id":"","likely_cause":"","severity":"minor|moderate|serious|critical","action":"","safe_to_drive":true|false,"fair_price_inr":"X-Y"}.';
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti sun rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor4W('mc.bubble.listening') + '</span></div>';
   let parsed = null;
   try {
     const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
@@ -1368,12 +1401,12 @@ async function mcSoundSubmit(){
     const text = d.reply || d.answer || d.text || '';
     const m = text.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor4W('mc.bubble.fp_fail') + '</div>'; return; }
   const sev = ({minor:'🟢',moderate:'🟡',serious:'🟠',critical:'🔴'})[parsed.severity] || '⚪';
   out.innerHTML =
     '<div class="sds-bubble chitti"><span class="who">' + sev + ' ' + escapeHtmlMc(parsed.sound_id || '') + '</span>' + escapeHtmlMc(parsed.likely_cause || '') + '</div>' +
     '<div class="sds-bubble ' + (parsed.safe_to_drive ? 'chitti' : 'safety') + '">' + escapeHtmlMc(parsed.action || '') + '</div>' +
-    (parsed.fair_price_inr ? '<div class="mc-fairprice">💰 Fair price: ₹' + escapeHtmlMc(parsed.fair_price_inr) + '</div>' : '');
+    (parsed.fair_price_inr ? '<div class="mc-fairprice">💰 ' + strFor4W('mc.fp.fair_price') + ' ₹' + escapeHtmlMc(parsed.fair_price_inr) + '</div>' : '');
   speakText((parsed.likely_cause || '') + '. ' + (parsed.action || ''), CURRENT_LANG);
 }
 
@@ -1381,11 +1414,11 @@ async function mcFairPriceCheck(){
   const what = (document.getElementById('mc-fp-what').value || '').trim();
   const quote = parseInt(document.getElementById('mc-fp-quote').value || '0', 10) || 0;
   const out = document.getElementById('mc-fp-result');
-  if (!what || !quote) { speakText('Kya kaam aur kitne ka quote bataiye.', CURRENT_LANG); return; }
+  if (!what || !quote) { speakText(strFor4W('mc.speak.fp_need_input'), CURRENT_LANG); return; }
   const c = loadCar() || {};
   const lang = (LANG_NAMES_MC && LANG_NAMES_MC[CURRENT_LANG]) || 'English';
   const prompt = 'Indian car fair-price expert. ' + (c.make||'') + ' ' + (c.model||'') + ' ' + (c.variant||'') + ' owner says mechanic quoted ₹' + quote + ' for: "' + what + '". Is this fair (2026 India)? Reply in ' + lang + '. Return ONLY JSON: {"verdict":"FAIR|OVERCHARGE|UNDERCHARGE","fair_min_inr":int,"fair_max_inr":int,"explanation":"<2 sentences>","bargain_to_inr":int}.';
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor4W('mc.bubble.thinking') + '</span></div>';
   let parsed = null;
   try {
     const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
@@ -1393,14 +1426,14 @@ async function mcFairPriceCheck(){
     const text = d.reply || d.answer || d.text || '';
     const m = text.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor4W('mc.bubble.fp_fail') + '</div>'; return; }
   const emoji = parsed.verdict === 'FAIR' ? '✅' : (parsed.verdict === 'OVERCHARGE' ? '⚠️' : '🤔');
   const cls = parsed.verdict === 'OVERCHARGE' ? 'safety' : 'chitti';
   out.innerHTML =
     '<div class="sds-bubble ' + cls + '"><span class="who">' + emoji + ' ' + escapeHtmlMc(parsed.verdict || '') + '</span></div>' +
-    '<div class="mc-fairprice">💰 Fair range: ₹' + (parsed.fair_min_inr || '?') + ' – ₹' + (parsed.fair_max_inr || '?') + '</div>' +
+    '<div class="mc-fairprice">💰 ' + strFor4W('mc.fp.fair_range') + ' ₹' + (parsed.fair_min_inr || '?') + ' – ₹' + (parsed.fair_max_inr || '?') + '</div>' +
     '<div class="sds-bubble chitti">' + escapeHtmlMc(parsed.explanation || '') + '</div>' +
-    (parsed.bargain_to_inr ? '<div class="sds-bubble chitti"><b>Bargain to ₹' + parsed.bargain_to_inr + '</b></div>' : '');
+    (parsed.bargain_to_inr ? '<div class="sds-bubble chitti"><b>' + strFor4W('mc.fp.bargain_to') + ' ₹' + parsed.bargain_to_inr + '</b></div>' : '');
   speakText(parsed.verdict + '. ' + parsed.explanation, CURRENT_LANG);
 }
 
@@ -1422,7 +1455,7 @@ async function mcFindMechanic(){
   } catch(e){}
   let listHtml = '';
   if (parsed) {
-    listHtml = '<div class="sds-bubble chitti"><span class="who">📍 ' + escapeHtmlMc(parsed.area || pincode || 'aapke area') + '</span></div>';
+    listHtml = '<div class="sds-bubble chitti"><span class="who">📍 ' + escapeHtmlMc(parsed.area || pincode || strFor4W('mc.fm.your_area')) + '</span></div>';
     (parsed.shops || []).forEach(s => {
       listHtml += '<div class="sds-bubble chitti"><b>🔧 ' + escapeHtmlMc(s.name || '') + '</b><br>' + escapeHtmlMc(s.landmark || '') + ' · ' + escapeHtmlMc(s.specialty || '') + (s.est_cost ? '<br>💰 ₹' + escapeHtmlMc(s.est_cost) : '') + '</div>';
     });
@@ -1523,7 +1556,7 @@ function kyvEsc(s){ if (s===null||s===undefined) return ''; return String(s).rep
 let mcKyvCurrent = null;
 function mcKyvSpeakAll(){
   const j = mcKyvCurrent;
-  if (!j) { speakText('Pehle apni gaadi save karein. Chitti research nahi kar sakti.', CURRENT_LANG); return; }
+  if (!j) { speakText(strFor4W('mc.speak.kyv_need_save'), CURRENT_LANG); return; }
   const c = loadCar() || {};
   const head = (c.make||'') + ' ' + (c.model||'') + (c.variant ? ' ' + c.variant : '') + ', ' + (j.engine_cc||'') + ' cc ' + (j.engine_type||'') + ', mileage ' + (j.rated_mileage||'');
   const cons = (j.consumables||[]).slice(0,3).map(x => x.item + ' ' + (x.options && x.options[0] ? x.options[0].brand : '')).join(', ');

@@ -487,11 +487,11 @@
 
   <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
   <div class="mb-soon-card" role="region" aria-label="Launching Soon">
-    <div class="mb-soon-head"><span class="mb-soon-flag">🔜 Launching Soon</span> <span class="mb-soon-tag">Chitti Special</span></div>
+    <div class="mb-soon-head"><span class="mb-soon-flag" data-vai-i18n="ls.flag">🔜 Launching Soon</span> <span class="mb-soon-tag" data-vai-i18n="ls.tag">Chitti Special</span></div>
     <div class="mb-soon-grid">
       <div class="mb-soon-item">
-        <div class="mb-soon-title">🔧 OBD2 for Bikes <span class="mb-soon-phase">Phase 2</span></div>
-        <div class="mb-soon-sub">Bluetooth device se seedha engine error code padhega Chitti. Aap se sirf "haan" kaha to mechanic ke paas le jaane se pehle hi diagnosis ho jayega.</div>
+        <div class="mb-soon-title" data-vai-i18n="ls.obd2_bike.title">🔧 OBD2 for Bikes</div><div style="display:inline-block"><span class="mb-soon-phase" data-vai-i18n="ls.phase2">Phase 2</span></div>
+        <div class="mb-soon-sub" data-vai-i18n="ls.obd2_bike.sub">Bluetooth device se seedha engine error code padhega Chitti. Aap se sirf "haan" kaha to mechanic ke paas le jaane se pehle hi diagnosis ho jayega.</div>
         <div class="mb-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mb-soon-want" onclick="mbSoonVote('obd2_bike', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -499,8 +499,8 @@
         </div>
       </div>
       <div class="mb-soon-item">
-        <div class="mb-soon-title">📐 Chain Tension Meter</div>
-        <div class="mb-soon-sub">Camera se chain ka tension check — koi guess work nahi. Slack zyada ya kam — Chitti exact bata degi.</div>
+        <div class="mb-soon-title" data-vai-i18n="ls.chain_meter.title">📐 Chain Tension Meter</div>
+        <div class="mb-soon-sub" data-vai-i18n="ls.chain_meter.sub">Camera se chain ka tension check — koi guess work nahi. Slack zyada ya kam — Chitti exact bata degi.</div>
         <div class="mb-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mb-soon-want" onclick="mbSoonVote('chain_meter', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -508,8 +508,8 @@
         </div>
       </div>
       <div class="mb-soon-item">
-        <div class="mb-soon-title">🛞 Tyre Pressure AI</div>
-        <div class="mb-soon-sub">Tyre ki photo se wear pattern detect karega Chitti. Front-back balance, alignment, pressure — sab ek photo se.</div>
+        <div class="mb-soon-title" data-vai-i18n="ls.tyre_ai.title">🛞 Tyre Pressure AI</div>
+        <div class="mb-soon-sub" data-vai-i18n="ls.tyre_ai.sub">Tyre ki photo se wear pattern detect karega Chitti. Front-back balance, alignment, pressure — sab ek photo se.</div>
         <div class="mb-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mb-soon-want" onclick="mbSoonVote('tyre_ai', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -517,8 +517,8 @@
         </div>
       </div>
       <div class="mb-soon-item">
-        <div class="mb-soon-title">🤝 Community Mechanic Reviews</div>
-        <div class="mb-soon-sub">Aapke area ke trusted mechanics — 100+ riders ne unka kaam confirm kiya hai. Dhokha mat khao.</div>
+        <div class="mb-soon-title" data-vai-i18n="ls.mech_reviews.title">🤝 Community Mechanic Reviews</div>
+        <div class="mb-soon-sub" data-vai-i18n="ls.mech_reviews.sub">Aapke area ke trusted mechanics — 100+ riders ne unka kaam confirm kiya hai. Dhokha mat khao.</div>
         <div class="mb-soon-bar">
           <button onclick="speakText(this.parentNode.parentNode.querySelector('.mb-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
           <button class="mb-soon-want" onclick="mbSoonVote('mech_reviews', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
@@ -679,7 +679,15 @@ const DAILY_TIPS = {
 
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function mbDailyTip(){
-  const arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
+  // Pull from strings.js i18n bag — st.tip.0 .. st.tip.7, in user's language.
+  // Falls back to the local DAILY_TIPS table only if strings.js is unavailable.
+  const TIP_COUNT = 8;
+  let arr = [];
+  for (let i = 0; i < TIP_COUNT; i++) {
+    const v = (typeof strFor2W === 'function') ? strFor2W('st.tip.' + i) : null;
+    if (v && v !== 'st.tip.' + i) arr.push(v);
+  }
+  if (arr.length === 0) arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
   let idx;
   try {
     if (localStorage.getItem(TIP_DAY_KEY) === todayKey()) { idx = parseInt(localStorage.getItem(TIP_IDX_KEY) || '0', 10); }
@@ -710,10 +718,18 @@ function mbTab(name){
 
 function changeLang(code){
   CURRENT_LANG = code;
+  window.CURRENT_LANG = code; // also expose globally for shared substrate
   try { localStorage.setItem(LANG_KEY, code); } catch(e){}
   if (typeof updateAllStrings === 'function') updateAllStrings(code);
   try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
-  mbRefreshHome();
+  // Re-render every dynamic UI that produces strings in user's language
+  try { mbRefreshHome(); } catch(e){}
+  try { mbRenderDocs(); } catch(e){}
+  try { mbRenderAlerts(); } catch(e){}
+  try { mbLogRenderList(); } catch(e){}
+  try { renderFleetSwitcher(); } catch(e){}
+  try { mbKyvLoad(); } catch(e){} // re-render from cache in new language (cache key includes lang)
+  return;
 }
 
 function speakText(t, lang){
@@ -734,9 +750,9 @@ function mbSaveBike(){
     odo: parseInt(document.getElementById('mb-odo').value || '0', 10) || 0,
     added_at: new Date().toISOString(),
   };
-  if (!b.make && !b.model && !b.reg) { speakText('कम से कम बनाने वाली कंपनी, मॉडल और reg number डालिए।', CURRENT_LANG); return; }
+  if (!b.make && !b.model && !b.reg) { speakText(strFor2W('mb.speak.min_fields'), CURRENT_LANG); return; }
   saveBike(b);
-  speakText('बाइक सेव हो गई। ' + b.make + ' ' + b.model + ', ' + b.reg, CURRENT_LANG);
+  speakText(strFor2W('mb.speak.saved') + ' ' + b.make + ' ' + b.model + ', ' + b.reg, CURRENT_LANG);
   try { mbKyvLoad(); } catch(e){}
   mbTab('home');
 }
@@ -749,7 +765,7 @@ function mbDemoForm(){
   document.getElementById('mb-year').value = '2018';
   document.getElementById('mb-color').value = 'लाल';
   document.getElementById('mb-odo').value = '38000';
-  speakText('Demo bharo: Hero Splendor UP32 AB 1234, 2018, laal.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.demo'), CURRENT_LANG);
 }
 
 function mbAddByVoice(){
@@ -815,31 +831,49 @@ function ensureDefaultDocs(){
   let d = loadDocs();
   if (d.length === 0) {
     d = [
-      { id:'ins', icon:'🛡️', name:'Insurance', expiry:'', reminder:30 },
-      { id:'puc', icon:'🌫️', name:'PUC / Pollution', expiry:'', reminder:30 },
-      { id:'rc', icon:'📜', name:'RC (Vehicle Registration)', expiry:'', reminder:90 },
-      { id:'dl', icon:'🪪', name:'Driving Licence', expiry:'', reminder:60 },
-      { id:'fast', icon:'⛽', name:'FASTag balance', expiry:'', reminder:7 },
+      { id:'ins', icon:'🛡️', name_key:'doc.insurance', expiry:'', reminder:30 },
+      { id:'puc', icon:'🌫️', name_key:'doc.puc', expiry:'', reminder:30 },
+      { id:'rc',  icon:'📜', name_key:'doc.rc', expiry:'', reminder:90 },
+      { id:'dl',  icon:'🪪', name_key:'doc.dl', expiry:'', reminder:60 },
+      { id:'fast',icon:'⛽', name_key:'doc.fastag', expiry:'', reminder:7 },
     ];
     saveDocs(d);
   }
+  // Back-compat: migrate old 'name' field to name_key + remove name
+  let changed = false;
+  for (const x of d) {
+    if (!x.name_key && x.name) {
+      const m = { 'Insurance':'doc.insurance','PUC / Pollution':'doc.puc','RC (Vehicle Registration)':'doc.rc','Driving Licence':'doc.dl','FASTag balance':'doc.fastag' };
+      x.name_key = m[x.name] || 'doc.unknown';
+      delete x.name;
+      changed = true;
+    }
+  }
+  if (changed) saveDocs(d);
   return d;
 }
+function docName(d) { return (typeof strFor2W === 'function') ? strFor2W(d.name_key || 'doc.unknown') : (d.name || ''); }
 function mbRenderDocs(){
   const docs = ensureDefaultDocs();
   const list = document.getElementById('mb-docs-list');
+  const expiredTxt  = strFor2W('doc.expired');
+  const addExpiry   = strFor2W('doc.add_expiry');
+  const daysLeft    = strFor2W('doc.days_left');
+  const expiryLabel = strFor2W('doc.expiry_label');
+  const renewLabel  = strFor2W('doc.renew');
   list.innerHTML = docs.map((d, i) => {
     const days = d.expiry ? Math.ceil((new Date(d.expiry) - new Date()) / (24*3600*1000)) : null;
     let chip;
-    if (days === null) chip = '<span class="sds-chip amber">expiry जोड़ो</span>';
-    else if (days <= 0) chip = '<span class="sds-chip red">expired</span>';
-    else if (days <= 30) chip = '<span class="sds-chip amber">' + days + ' दिन</span>';
-    else chip = '<span class="sds-chip green">' + days + ' दिन</span>';
-    return '<div class="sds-doc-row chitti-response" data-chitti-section="'+d.icon+' '+d.name+'">' +
+    if (days === null) chip = '<span class="sds-chip amber">'+addExpiry+'</span>';
+    else if (days <= 0) chip = '<span class="sds-chip red">'+expiredTxt+'</span>';
+    else if (days <= 30) chip = '<span class="sds-chip amber">' + days + ' ' + daysLeft + '</span>';
+    else chip = '<span class="sds-chip green">' + days + ' ' + daysLeft + '</span>';
+    const nm = docName(d);
+    return '<div class="sds-doc-row chitti-response" data-chitti-section="'+d.icon+' '+nm+'">' +
            '<span class="ico">'+d.icon+'</span>' +
-           '<div class="info"><div class="name">'+d.name+'</div>' +
-           '<div class="meta">Expiry: <input type="date" value="'+(d.expiry||'')+'" onchange="mbDocSetExpiry('+i+', this.value)" style="border:none;border-bottom:1px dashed #999;font-size:14px;padding:2px 0;width:140px"></div></div>' +
-           '<div class="right">'+chip+'<button class="sds-btn ghost" style="padding:6px 10px;min-height:38px;font-size:13px" onclick="mbDocRenew('+i+')">renew</button></div>' +
+           '<div class="info"><div class="name">'+nm+'</div>' +
+           '<div class="meta">'+expiryLabel+': <input type="date" value="'+(d.expiry||'')+'" onchange="mbDocSetExpiry('+i+', this.value)" style="border:none;border-bottom:1px dashed #999;font-size:14px;padding:2px 0;width:140px"></div></div>' +
+           '<div class="right">'+chip+'<button class="sds-btn ghost" style="padding:6px 10px;min-height:38px;font-size:13px" onclick="mbDocRenew('+i+')">'+renewLabel+'</button></div>' +
            '</div>';
   }).join('');
 }
@@ -850,13 +884,16 @@ function mbDocSetExpiry(i, val){
 }
 function mbDocRenew(i){
   const docs = loadDocs(); if (!docs[i]) return;
-  speakText(docs[i].name + ' renew करना है। PolicyBazaar या सरकारी portal pe online apply karein.', CURRENT_LANG);
+  speakText(docName(docs[i]) + '. ' + strFor2W('doc.renew.speak'), CURRENT_LANG);
 }
 function speakDocsAloud(){
   const docs = ensureDefaultDocs();
+  const noExpiryTxt = strFor2W('doc.no_expiry');
+  const expiredTxt = strFor2W('doc.expired');
+  const remainingTxt = strFor2W('doc.days_remaining');
   const lines = docs.map(d => {
     const days = d.expiry ? Math.ceil((new Date(d.expiry) - new Date()) / (24*3600*1000)) : null;
-    return d.name + ': ' + (days === null ? 'अभी expiry नहीं डाली' : (days <= 0 ? 'expired' : days + ' दिन बाकी'));
+    return docName(d) + ': ' + (days === null ? noExpiryTxt : (days <= 0 ? expiredTxt : days + ' ' + remainingTxt));
   });
   speakText(lines.join('. '), CURRENT_LANG);
 }
@@ -864,7 +901,7 @@ function mbDemoDocs(){
   const docs = ensureDefaultDocs();
   docs[0].expiry = new Date(Date.now() + 12*24*3600*1000).toISOString().slice(0,10);
   saveDocs(docs); mbRenderDocs();
-  speakText('Demo: Insurance 12 din mein expire ho rahi hai. Chitti reminder dega.', CURRENT_LANG);
+  speakText(strFor2W('doc.demo.speak'), CURRENT_LANG);
 }
 
 function inboxAdd(item){
@@ -924,7 +961,7 @@ function mbToggleMic(){
 function mbStartListening(cb){
   try {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { speakText('इस browser में voice support नहीं है। टाइप करके भेजें।', CURRENT_LANG); return; }
+    if (!SR) { speakText(strFor2W('mb.speak.no_voice'), CURRENT_LANG); return; }
     RECOG = new SR();
     RECOG.lang = (CURRENT_LANG === 'en') ? 'en-IN' : (CURRENT_LANG === 'te' ? 'te-IN' : 'hi-IN');
     RECOG.continuous = false; RECOG.interimResults = false;
@@ -933,12 +970,12 @@ function mbStartListening(cb){
     RECOG.onresult = (e) => { const txt = (e.results[0][0].transcript || '').trim(); cb(txt); };
     RECOG.onerror = () => { LISTENING = false; document.getElementById('mb-mic')?.classList.remove('listening'); };
     RECOG.start();
-  } catch(e){ speakText('Voice शुरू नहीं हो पायी। टाइप करके भेजें।', CURRENT_LANG); }
+  } catch(e){ speakText(strFor2W('mb.speak.voice_failed'), CURRENT_LANG); }
 }
 
 async function mbAsk(){
   const text = (document.getElementById('mb-ask-text').value || '').trim();
-  if (!text) { speakText('Chitti को बताइए क्या तकलीफ़ है।', CURRENT_LANG); return; }
+  if (!text) { speakText(strFor2W('mb.speak.tell_problem'), CURRENT_LANG); return; }
   appendBubble('user', text, 'आप:');
   document.getElementById('mb-ask-text').value = '';
 
@@ -1041,7 +1078,7 @@ async function sendFb(card, textareaId, panelId){
   } catch(e){}
   document.getElementById(textareaId).value = '';
   sdsToggleFb(panelId);
-  speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.fb_sent'), CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
 
@@ -1061,9 +1098,9 @@ const BIKE_MODELS = {
 };
 async function mbObdScan(){
   const code = (document.getElementById('mb-obd-code').value || '').trim().toUpperCase();
-  if (!code) { speakText('Pehle error code likhiye.', CURRENT_LANG); return; }
+  if (!code) { speakText(strFor2W('mb.speak.obd_need_code'), CURRENT_LANG); return; }
   const out = document.getElementById('mb-obd-result');
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor2W('mb.bubble.thinking') + '</span></div>';
   const b = loadBike();
   const ctx = b ? (b.make + ' ' + b.model + ' ' + b.year) : 'bike (model unknown)';
   const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
@@ -1076,12 +1113,12 @@ async function mbObdScan(){
     const d = await r.json();
     const m = (d.reply || '').match(/\{[\s\S]+\}/); if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti se code abhi nahi mila — phir try karein.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor2W('mb.bubble.code_fail') + '</div>'; return; }
   const sev = ({minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical'})[parsed.severity] || '⚪ ' + (parsed.severity || '');
-  const safe = parsed.safe_to_ride ? '✅ Safe to ride to nearest mechanic' : '❌ Do not ride — call for help';
+  const safe = parsed.safe_to_ride ? strFor2W('mb.safe.ride_ok') : strFor2W('mb.safe.ride_no');
   out.innerHTML =
     '<div class="sds-bubble chitti"><span class="who">' + code + ' · ' + sev + '</span>' + escapeHtml(parsed.meaning || '') + '</div>' +
-    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">क्या करें?</span>' + escapeHtml(parsed.what_to_do) + '</div>' : '') +
+    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">' + strFor2W('mb.bubble.what_to_do') + '</span>' + escapeHtml(parsed.what_to_do) + '</div>' : '') +
     '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '"><span class="who">Riding</span>' + safe + '</div>' +
     (parsed.fair_price_min_inr ? '<div class="mb-fairprice">💰 <b>सही दाम</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
   speakText((parsed.meaning || '') + ' ' + (parsed.what_to_do || ''), CURRENT_LANG);
@@ -1113,7 +1150,7 @@ async function mbSoonVote(featureId, v, btn){
       body: JSON.stringify({ chitti:'chitti_mechanic_bike', card:'soon_' + featureId, kind: v > 0 ? 'soon_want' : 'soon_nope', message: featureId, page:'chitti_2wheeler' }),
     });
   } catch(e){}
-  speakText(v > 0 ? 'Vote noted — Chitti is khabar pahuncha rahi hai.' : 'Theek hai — yeh nahi banayenge.', CURRENT_LANG);
+  speakText(v > 0 ? strFor2W('mb.soon.voted') : strFor2W('mb.soon.nope'), CURRENT_LANG);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1168,7 +1205,7 @@ function mbFleetAdd(){
   mbSetActiveIdx(fleet.length - 1);
   ['mb-make','mb-model','mb-variant','mb-reg','mb-year','mb-color','mb-odo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   renderFleetSwitcher();
-  speakText('Nayi bike slot. Form bhar ke save karein.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.new_slot'), CURRENT_LANG);
 }
 function mbFleetSwitch(i){
   mbSetActiveIdx(i);
@@ -1224,13 +1261,13 @@ function mbLogAdd(){
     bike_key: (function(){ const b = loadBike() || {}; return (b.make||'') + '_' + (b.model||'') + '_' + (b.reg||''); })(),
     added_at: new Date().toISOString(),
   };
-  if (!entry.what) { speakText('Kya kaam hua yeh likhiye.', CURRENT_LANG); return; }
+  if (!entry.what) { speakText(strFor2W('mb.speak.log_what'), CURRENT_LANG); return; }
   const list = mbLogLoad();
   list.unshift(entry); // newest first
   mbLogSave(list);
   mbLogRenderList();
   mbLogToggle();
-  speakText('Service entry save ho gayi. Total ' + list.length + ' entries.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.log_saved') + ' ' + list.length, CURRENT_LANG);
 }
 function mbLogRenderList(){
   const out = document.getElementById('mb-log-list');
@@ -1250,16 +1287,16 @@ function mbLogRenderList(){
 }
 function mbLogSpeak(){
   const list = mbLogLoad();
-  if (list.length === 0) { speakText('Abhi koi service entry nahi.', CURRENT_LANG); return; }
+  if (list.length === 0) { speakText(strFor2W('mb.speak.log_empty'), CURRENT_LANG); return; }
   const total = list.reduce((s, e) => s + (e.cost || 0), 0);
-  speakText('Total ' + list.length + ' service entries. Kul ' + total + ' rupiye kharch.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.log_total') + ' ' + list.length + '. ' + total + ' ' + strFor2W('mb.speak.rupiye_kharch'), CURRENT_LANG);
 }
 function mbLogDemo(){
   const list = mbLogLoad();
   list.unshift({ date: new Date().toISOString().slice(0,10), km: 38000, what:'Oil change + chain lube + brake check', cost: 650, mechanic: 'Local mechanic', added_at: new Date().toISOString() });
   mbLogSave(list);
   mbLogRenderList();
-  speakText('Demo entry add ho gayi.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.demo_added'), CURRENT_LANG);
 }
 
 // ── Vehicle Health Score ──
@@ -1297,14 +1334,14 @@ function mbRenderHealthScore(){
 }
 
 function mbSOS(){
-  speakText('Emergency. Chitti family ko call kar rahi hai. 112 ko NAHI.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.sos'), CURRENT_LANG);
   window.location.href = 'chitti_vaani.html#sos';
 }
 
 async function mbTripReady(){
   const out = document.getElementById('mb-trip-result');
   if (!out) return;
-  out.innerHTML = '<div class="sds-bubble chitti">Chitti pre-trip check kar rahi hai…</div>';
+  out.innerHTML = '<div class="sds-bubble chitti">' + strFor2W('mb.bubble.pretrip') + '</div>';
   const b = loadBike() || {};
   let items = [];
   try {
@@ -1335,7 +1372,7 @@ async function mbTripReady(){
   html += '<div class="sds-card-toolbar"><button onclick="speakText(\'Pre trip check. Tyre, brake, lights, chain, oil, fuel, helmet.\', CURRENT_LANG)">🔊</button><span class="sep"></span><button class="fb-pos" onclick="logProductAction(\'mb_trip\', 1)">👍</button><button class="fb-neg" onclick="window.location.href=\'feedback.html?product=chitti_mechanic_bike&card=mb_trip\'">👎</button></div>';
   html += '</div>';
   out.innerHTML = html;
-  speakText('Pre-trip check shuru. Har item tick karein.', CURRENT_LANG);
+  speakText(strFor2W('mb.speak.trip_start'), CURRENT_LANG);
 }
 function mbTripTick(i){
   const checks = document.querySelectorAll('#mb-trip-result input[type=checkbox]');
@@ -1343,8 +1380,8 @@ function mbTripTick(i){
   const total = checks.length;
   const verdict = document.getElementById('mb-trip-verdict');
   if (verdict) {
-    if (done === total) { verdict.innerHTML = '✅ <b>GO — bike trip ke liye taiyaar hai.</b>'; speakText('Sab tick. Bike ready hai. Safe ride.', CURRENT_LANG); }
-    else verdict.textContent = done + ' / ' + total + ' done. Aur ' + (total - done) + ' baki.';
+    if (done === total) { verdict.innerHTML = ('✅ <b>' + strFor2W('mb.trip.go') + '</b>'); speakText(strFor2W('mb.speak.trip_done'), CURRENT_LANG); }
+    else verdict.textContent = done + ' / ' + total + ' ' + strFor2W('mb.trip.done_word') + '. ' + (total - done) + ' ' + strFor2W('mb.trip.baki') + '.';
   }
 }
 
@@ -1383,18 +1420,18 @@ async function mbPhotoSubmit(input){
       if (m) parsed = JSON.parse(m[0]);
     } catch(e){}
     if (!parsed) {
-      out.innerHTML = '<div class="sds-bubble warn">Chitti photo se nahi samajh paayi. Description likh kar Chitti se Ask karein.</div>';
+      out.innerHTML = '<div class="sds-bubble warn">' + strFor2W('mb.bubble.photo_fail') + '</div>';
       return;
     }
     const sevMap = { minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical' };
     const sev = sevMap[parsed.severity] || '⚪ ' + (parsed.severity || '');
     const verdictCls = parsed.verdict === 'MECHANIC' ? 'safety' : 'chitti';
     out.innerHTML =
-      '<div class="sds-bubble chitti"><span class="who">' + sev + '</span><b>' + escapeHtml(parsed.what || 'Photo dekhi') + '</b></div>' +
+      '<div class="sds-bubble chitti"><span class="who">' + sev + '</span><b>' + escapeHtml(parsed.what || strFor2W('mb.photo.saw')) + '</b></div>' +
       (parsed.issue ? '<div class="sds-bubble chitti">' + escapeHtml(parsed.issue) + '</div>' : '') +
-      '<div class="sds-bubble ' + verdictCls + '"><span class="who">' + (parsed.verdict === 'DIY' ? '🔧 DIY' : '🏪 Mechanic') + '</span>' + escapeHtml(parsed.action || '') + '</div>' +
-      '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '">' + (parsed.safe_to_ride ? '✅ Safe to ride to mechanic' : '❌ Do not ride — call for help') + '</div>' +
-      (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 Fair price: ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
+      '<div class="sds-bubble ' + verdictCls + '"><span class="who">' + (parsed.verdict === 'DIY' ? strFor2W('mb.verdict.diy') : strFor2W('mb.verdict.mechanic')) + '</span>' + escapeHtml(parsed.action || '') + '</div>' +
+      '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '">' + (parsed.safe_to_ride ? strFor2W('mb.safe.ride_ok_short') : strFor2W('mb.safe.ride_no')) + '</div>' +
+      (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 ' + strFor2W('mb.fp.fair_price') + ' ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
     speakText((parsed.issue || '') + ' ' + (parsed.action || ''), CURRENT_LANG);
   };
   reader.readAsDataURL(file);
@@ -1416,25 +1453,25 @@ async function mbSoundStart(){
       const player = document.getElementById('mb-sound-player');
       player.src = url; player.style.display = 'block';
       document.getElementById('mb-sound-describe').style.display = 'block';
-      status.textContent = '✅ Recorded — sound describe karein';
-      document.getElementById('mb-sound-rec-btn').textContent = '🔴 Phir record';
+      status.textContent = strFor2W('mb.sound.recorded');
+      document.getElementById('mb-sound-rec-btn').textContent = strFor2W('mb.sound.again');
     };
     mbMediaRecorder.start();
-    status.textContent = '🔴 Recording… (10 sec)';
-    document.getElementById('mb-sound-rec-btn').textContent = '⏹ Stop';
+    status.textContent = strFor2W('mb.sound.recording');
+    document.getElementById('mb-sound-rec-btn').textContent = strFor2W('mb.sound.stop');
     setTimeout(() => { if (mbMediaRecorder && mbMediaRecorder.state === 'recording') mbMediaRecorder.stop(); }, 10000);
   } catch(e) {
-    status.textContent = '❌ Mic access nahi mila. Browser permissions check karein.';
+    status.textContent = strFor2W('mb.sound.mic_denied');
   }
 }
 async function mbSoundSubmit(){
   const desc = (document.getElementById('mb-sound-desc-text').value || '').trim();
   const out = document.getElementById('mb-sound-result');
-  if (!desc) { speakText('Awaaz ka description likhiye.', CURRENT_LANG); return; }
+  if (!desc) { speakText(strFor2W('mb.speak.sound_need_desc'), CURRENT_LANG); return; }
   const b = loadBike() || {};
   const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
   const prompt = 'Indian motorcycle mechanic. User describes a sound from their ' + (b.make||'bike') + ' ' + (b.model||'') + ': "' + desc + '". Identify the LIKELY mechanical cause from: chain slap, valve clearance noise, big-end knock, piston slap, exhaust leak, brake squeal, bearing whine, clutch rattle, normal. Reply in ' + lang + '. Return ONLY JSON: {"sound_id":"<one of the above>","likely_cause":"<what is wrong>","severity":"minor|moderate|serious|critical","action":"<what to do now>","safe_to_ride":true|false,"fair_price_inr":"X-Y"}.';
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti sun rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor2W('mb.bubble.listening') + '</span></div>';
   let parsed = null;
   try {
     const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
@@ -1443,12 +1480,12 @@ async function mbSoundSubmit(){
     const m = text.match(/\{[\s\S]*\}/);
     if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi. Phir try karein.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor2W('mb.bubble.sound_fail') + '</div>'; return; }
   const sev = ({minor:'🟢',moderate:'🟡',serious:'🟠',critical:'🔴'})[parsed.severity] || '⚪';
   out.innerHTML =
     '<div class="sds-bubble chitti"><span class="who">' + sev + ' ' + escapeHtml(parsed.sound_id || '') + '</span>' + escapeHtml(parsed.likely_cause || '') + '</div>' +
     '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '">' + escapeHtml(parsed.action || '') + '</div>' +
-    (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 Fair price: ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
+    (parsed.fair_price_inr ? '<div class="mb-fairprice">💰 ' + strFor2W('mb.fp.fair_price') + ' ₹' + escapeHtml(parsed.fair_price_inr) + '</div>' : '');
   speakText((parsed.likely_cause || '') + '. ' + (parsed.action || ''), CURRENT_LANG);
 }
 
@@ -1456,11 +1493,11 @@ async function mbFairPriceCheck(){
   const what = (document.getElementById('mb-fp-what').value || '').trim();
   const quote = parseInt(document.getElementById('mb-fp-quote').value || '0', 10) || 0;
   const out = document.getElementById('mb-fp-result');
-  if (!what || !quote) { speakText('Kya kaam aur kitne ka quote bataiye.', CURRENT_LANG); return; }
+  if (!what || !quote) { speakText(strFor2W('mb.speak.fp_need_input'), CURRENT_LANG); return; }
   const b = loadBike() || {};
   const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
   const prompt = 'Indian motorcycle fair-price expert. ' + (b.make||'') + ' ' + (b.model||'') + ' owner says mechanic quoted ₹' + quote + ' for: "' + what + '". Is this fair (2026 India)? Reply in ' + lang + '. Return ONLY JSON: {"verdict":"FAIR|OVERCHARGE|UNDERCHARGE","fair_min_inr":int,"fair_max_inr":int,"explanation":"<2 sentences>","bargain_to_inr":int}.';
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">' + strFor2W('mb.bubble.thinking') + '</span></div>';
   let parsed = null;
   try {
     const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
@@ -1469,14 +1506,14 @@ async function mbFairPriceCheck(){
     const m = text.match(/\{[\s\S]*\}/);
     if (m) parsed = JSON.parse(m[0]);
   } catch(e){}
-  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti samajh nahi paayi.</div>'; return; }
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">' + strFor2W('mb.bubble.fp_fail') + '</div>'; return; }
   const emoji = parsed.verdict === 'FAIR' ? '✅' : (parsed.verdict === 'OVERCHARGE' ? '⚠️' : '🤔');
   const cls = parsed.verdict === 'OVERCHARGE' ? 'safety' : 'chitti';
   out.innerHTML =
     '<div class="sds-bubble ' + cls + '"><span class="who">' + emoji + ' ' + escapeHtml(parsed.verdict || '') + '</span></div>' +
-    '<div class="mb-fairprice">💰 Fair range: ₹' + (parsed.fair_min_inr || '?') + ' – ₹' + (parsed.fair_max_inr || '?') + '</div>' +
+    '<div class="mb-fairprice">💰 ' + strFor2W('mb.fp.fair_range') + ' ₹' + (parsed.fair_min_inr || '?') + ' – ₹' + (parsed.fair_max_inr || '?') + '</div>' +
     '<div class="sds-bubble chitti">' + escapeHtml(parsed.explanation || '') + '</div>' +
-    (parsed.bargain_to_inr ? '<div class="sds-bubble chitti"><b>Bargain to ₹' + parsed.bargain_to_inr + '</b></div>' : '');
+    (parsed.bargain_to_inr ? '<div class="sds-bubble chitti"><b>' + strFor2W('mb.fp.bargain_to') + ' ₹' + parsed.bargain_to_inr + '</b></div>' : '');
   speakText(parsed.verdict + '. ' + parsed.explanation, CURRENT_LANG);
 }
 
@@ -1499,7 +1536,7 @@ async function mbFindMechanic(){
   } catch(e){}
   let listHtml = '';
   if (parsed) {
-    listHtml = '<div class="sds-bubble chitti"><span class="who">📍 ' + escapeHtml(parsed.area || pincode || 'aapke area') + '</span></div>';
+    listHtml = '<div class="sds-bubble chitti"><span class="who">📍 ' + escapeHtml(parsed.area || pincode || strFor2W('mb.fm.your_area')) + '</span></div>';
     (parsed.shops || []).forEach(s => {
       listHtml += '<div class="sds-bubble chitti"><b>🔧 ' + escapeHtml(s.name || '') + '</b><br>' + escapeHtml(s.landmark || '') + ' · ' + escapeHtml(s.specialty || '') + (s.est_cost ? '<br>💰 ₹' + escapeHtml(s.est_cost) : '') + '</div>';
     });
@@ -1600,7 +1637,7 @@ function mbKyvPrompt(b, lang){
 function kyvEsc(s){ if (s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function mbKyvSpeakAll(){
   const j = mbKyvCurrent;
-  if (!j) { speakText('Pehle apni bike save karein. Chitti research nahi kar sakti.', CURRENT_LANG); return; }
+  if (!j) { speakText(strFor2W('mb.speak.kyv_need_save'), CURRENT_LANG); return; }
   const b = loadBike() || {};
   const head = (b.make||'') + ' ' + (b.model||'') + ', ' + (j.engine_cc||'') + ' cc ' + (j.engine_type||'') + ', mileage ' + (j.rated_mileage||'');
   const cons = (j.consumables||[]).slice(0,3).map(c => c.item + ' ' + (c.options && c.options[0] ? c.options[0].brand : '')).join(', ');
