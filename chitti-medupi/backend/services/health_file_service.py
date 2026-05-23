@@ -121,6 +121,10 @@ def create_profile(user_token: str, name: str, relation: str, dob: Optional[str]
         p = FamilyProfile(
             user_token=user_token, name=name.strip()[:120],
             relation=relation[:40], dob=(dob or None),
+            # Match the medupi_family.add_profile pattern — always populate
+            # `conditions` with an empty JSON array. Turso embedded replica
+            # NULLs were causing INSERT failures pre-Phase-B-2.
+            conditions=json.dumps([]),
         )
         s.add(p); s.commit(); s.refresh(p)
     return _profile_dict(p)

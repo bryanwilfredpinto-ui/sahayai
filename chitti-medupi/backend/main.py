@@ -152,7 +152,18 @@ def _create_app() -> Flask:
     @app.errorhandler(500)
     def server_error(e):
         log.exception("500: %s", e)
-        return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
+        # Surface the actual exception class + message so curl-from-outside
+        # can debug write failures without Railway log access. The class name
+        # + first-line message are not secrets (no PII, no SQL parameters).
+        original = getattr(e, "original_exception", None) or e
+        ex_class = type(original).__name__
+        ex_msg = str(original).splitlines()[0][:300] if str(original) else ""
+        return jsonify({
+            "error": "internal_server_error",
+            "detail": "see server logs",
+            "exception_class": ex_class,
+            "exception_message": ex_msg,
+        }), 500
 
     app.register_blueprint(medupi_bp)
     app.register_blueprint(health_file_bp)
