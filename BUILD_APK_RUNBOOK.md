@@ -1,12 +1,159 @@
-# BUILD_APK_RUNBOOK — Chitti Vaani Android v1.0.0-test
+# BUILD_APK_RUNBOOK — Chitti Vaani Android
 
-**Audience:** anyone with Android Studio + JDK 17 on their laptop. Sire's everyday Windows box (the one Claude runs on) has none of those installed; this runbook moves the build off that machine.
+**TWO paths.** Pick one. Both produce the same signed APK at the same GH Releases URL.
 
-**Outcome of running this end-to-end:** a signed `chitti-vaani-v1.0.0-test.apk` uploaded to a GitHub Release at `https://github.com/bryanwilfredpinto-ui/sahayai/releases/tag/v1.0.0-test`, surfaced on `https://sahayai.in/download.html` (already shipped — that page picks up the latest release automatically).
+| Path | When to use | Time |
+|---|---|---|
+| **[A — GitHub Actions cloud build](#path-a--github-actions-cloud-build-recommended)** ⭐ | Default. You generate the keystore once, paste 4 secrets into GitHub, then every `git tag v… && git push --tags` builds + uploads automatically. | ~5 min one-time setup, then ~4 min per release |
+| **[B — local build](#path-b--local-build-fallback)** | Diagnosing a CI failure, or no network access on the build machine. | ~20 min per release |
 
-> **Read this before you start:** the release keystore generated in Step 2 is **the** signing key for every future update of this app on the Play Store. If it is committed to the repo (even once, even in a deleted file), the key is **burnt** — you cannot ship updates to existing installs ever again. The `.gitignore` already refuses `*.jks`, `*.keystore`, and `keystore.properties`, but always verify with `git status` before committing.
+**Outcome (either path):** a signed `chitti-vaani-<tag>.apk` uploaded to `https://github.com/bryanwilfredpinto-ui/sahayai/releases/tag/<tag>`. [`download.html`](download.html) auto-updates its QR + Download button to whatever the latest release is — no page edit needed when you ship a new version.
+
+> **Read this before you start (BOTH paths):** the release keystore generated in Step 2 is **the** signing key for every future update of this app on the Play Store. If it is committed to the repo (even once, even in a deleted file), the key is **burnt** — you cannot ship updates to existing installs ever again. The `.gitignore` already refuses `*.jks`, `*.keystore`, `keystore.properties`, `*.apk`, `*.aab`. Always verify with `git status` before committing.
 
 ---
+
+# Path A — GitHub Actions cloud build (recommended)
+
+The workflow at [`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml) runs on every tag push matching `v*`. It installs JDK 17 + Android SDK on a fresh Ubuntu runner, decodes the release keystore from the `KEYSTORE_BASE64` secret, builds + signs the APK, verifies the signature, and uploads to a GitHub Release named after the tag.
+
+## A1 — Generate the release keystore (one-time, KEEP SECRET FOREVER)
+
+Same as the local path. Do this on your Windows laptop (you said you have JDK 17 + Android Studio now).
+
+```powershell
+# Make a directory OUTSIDE the repo
+mkdir $env:USERPROFILE\.chitti-keystores -Force
+
+# Generate the keystore. keytool prompts for:
+#   - keystore password (pick a strong 16+ char string)
+#   - key password (hit Enter to reuse the keystore password)
+keytool -genkey -v `
+  -keystore $env:USERPROFILE\.chitti-keystores\chitti-vaani-release.jks `
+  -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias chitti `
+  -dname "CN=Chitti Vaani, OU=Sahay AI, O=Bryan Wilfred Pinto, L=Bangalore, S=KA, C=IN"
+```
+
+**Save the password in 1Password / Bitwarden right now.** Losing it = burning the Play Store key.
+
+## A2 — Base64-encode the keystore (PowerShell one-liner)
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("$env:USERPROFILE\.chitti-keystores\chitti-vaani-release.jks")
+$b64   = [Convert]::ToBase64String($bytes)
+# Single-line, no wraps — that's what GitHub secrets expects.
+$b64 | Out-File -FilePath "$env:USERPROFILE\.chitti-keystores\release.jks.base64.txt" -Encoding ascii -NoNewline
+Write-Host "Base64 length: $($b64.Length) chars · written to release.jks.base64.txt"
+```
+
+## A3 — Add the 4 secrets to GitHub
+
+### Via `gh` CLI (fastest — you said you have it installed)
+
+Run from the repo root:
+
+```powershell
+cd C:\Users\DELL\sahayai\sahayai
+gh auth status   # must say "Logged in to github.com"; if not: gh auth login
+
+gh secret set KEYSTORE_BASE64   < "$env:USERPROFILE\.chitti-keystores\release.jks.base64.txt"
+gh secret set KEYSTORE_PASSWORD --body "PASTE_YOUR_KEYSTORE_PASSWORD_HERE"
+gh secret set KEY_ALIAS         --body "chitti"
+gh secret set KEY_PASSWORD      --body "PASTE_YOUR_KEY_PASSWORD_HERE"
+
+# Verify all four are present (values are never shown, just the names):
+gh secret list
+```
+
+You should see:
+
+```
+KEY_ALIAS         Updated …
+KEY_PASSWORD      Updated …
+KEYSTORE_BASE64   Updated …
+KEYSTORE_PASSWORD Updated …
+```
+
+### Via the web UI (alternative)
+
+1. Open `https://github.com/bryanwilfredpinto-ui/sahayai/settings/secrets/actions`
+2. Click **New repository secret** for each of the four:
+   - `KEYSTORE_BASE64` → paste the **entire** contents of `release.jks.base64.txt` (one long line, no leading/trailing whitespace)
+   - `KEYSTORE_PASSWORD` → your keystore password
+   - `KEY_ALIAS` → `chitti`
+   - `KEY_PASSWORD` → your key password (often the same as keystore password)
+3. Click **Add secret** after each.
+
+## A4 — Push a tag to trigger the build
+
+```powershell
+cd C:\Users\DELL\sahayai\sahayai
+git tag v1.0.0-test
+git push origin v1.0.0-test
+```
+
+## A5 — Watch the build
+
+```powershell
+gh run watch              # blocks until the run finishes
+# OR list runs and follow a specific one:
+gh run list --workflow=build-apk.yml --limit 5
+gh run view <run-id> --log
+```
+
+You can also open `https://github.com/bryanwilfredpinto-ui/sahayai/actions` to see the run in the web UI.
+
+## A6 — Done
+
+After ~4 minutes the workflow finishes and you get:
+
+- **Release page**: `https://github.com/bryanwilfredpinto-ui/sahayai/releases/tag/v1.0.0-test`
+- **APK download**: `https://github.com/bryanwilfredpinto-ui/sahayai/releases/download/v1.0.0-test/chitti-vaani-v1.0.0-test.apk`
+- **QR code on `sahayai.in/download.html`** auto-points at this URL — refresh the page on your phone, scan, install.
+
+## A7 — Ship a new version later
+
+Same flow — change the tag, push, done.
+
+```powershell
+git tag v1.0.1-test
+git push origin v1.0.1-test
+```
+
+The download page picks up the new tag automatically (it fetches `/repos/.../releases?per_page=1` on load and updates the QR + button). Zero page edits.
+
+## A8 — Common failures and what they mean
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Workflow fails at "Validate required secrets" | One of the four secrets isn't set | Re-run A3 and check `gh secret list` shows all four |
+| Workflow fails at "Decode release keystore" with "Decoded keystore is empty" | `KEYSTORE_BASE64` value has line wraps or trailing newline | Re-paste the base64 as a single line (the PowerShell `-NoNewline` flag in A2 is what makes this work). Don't open the .txt in Notepad — it inserts CRLF |
+| Workflow fails at "keytool -list" | Wrong `KEYSTORE_PASSWORD` | Update the secret with the actual password you used in A1 |
+| Workflow fails at "Verify signature" with "CN=Android Debug" | gradle ran but didn't pick up the env vars — usually a path bug | Open the run log; the line `Decoded keystore size: …` should be > 2KB. If it's 0 the decode failed silently — see the row above |
+| Workflow fails at gradle build with "Could not find …" | `compileSdk` 34 packages missing | The action `android-actions/setup-android@v3` should install them; check the "Set up Android SDK" step log |
+| Tag pushed but no workflow ran | Tag doesn't match `v*` (e.g. `1.0.0-test` without the `v`) | `git tag -d <bad>` then re-tag with `v` prefix |
+
+## A9 — Triggering a manual build (no tag)
+
+Useful for debugging the workflow itself without polluting the release list.
+
+```powershell
+gh workflow run build-apk.yml --field tag_name=v0.0.0-debug-$(Get-Date -Format yyyyMMddHHmm)
+```
+
+The build runs and uploads to a pre-release with that tag name. Delete the test release afterwards:
+
+```powershell
+gh release delete v0.0.0-debug-… --yes
+git push origin :refs/tags/v0.0.0-debug-…
+```
+
+---
+
+# Path B — local build (fallback)
+
+Same toolchain, same outcome, but everything runs on your laptop. Use this only when CI is failing in a way you need to debug locally, or when you have no network access.
 
 ## Step 0 — Toolchain on the build machine (one-time)
 

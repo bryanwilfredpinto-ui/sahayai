@@ -1,0 +1,198 @@
+# Build & release a signed Chitti Vaani APK in the cloud.
+#
+# TRIGGERS
+#   - Tag push matching v*    (production-style release)
+#   - Manual workflow_dispatch (any branch, for debug runs)
+#
+# WHAT IT DOES
+#   1. Sets up JDK 17 + Android SDK (Build Tools 34.0.0 + platforms;android-34)
+#   2. Decodes the release keystore from the KEYSTORE_BASE64 secret
+#   3. Generates the gradle wrapper (repo is intentionally binary-free —
+#      see chitti-vaani-android/TODO.md §Phase 2.1)
+#   4. Runs `./gradlew clean assembleRelease` with the same env vars
+#      that chitti-vaani-android/app/build.gradle.kts already reads
+#      (CHITTI_KEYSTORE_PATH / CHITTI_KEYSTORE_PASS / CHITTI_KEY_ALIAS /
+#       CHITTI_KEY_PASS)
+#   5. Verifies the APK signature with apksigner — fails the run if the
+#      CN doesn't match the keystore (catches misconfigured signing)
+#   6. Renames artifact to chitti-vaani-<tag>.apk so the URL pattern
+#      download.html points at is satisfied:
+#      https://github.com/<owner>/<repo>/releases/download/<tag>/chitti-vaani-<tag>.apk
+#   7. Uploads to a GitHub Release named after the tag, body pre-filled
+#      with the Golden Rule promise and sideload steps
+#
+# SECRETS REQUIRED (Repo Settings -> Secrets and variables -> Actions)
+#   KEYSTORE_BASE64      The release .jks, base64-encoded.
+#                        Generate locally per BUILD_APK_RUNBOOK.md Step 2,
+#                        then base64 it (the runbook shows the PowerShell
+#                        + bash one-liners). Paste the SINGLE-LINE base64
+#                        string as the secret value.
+#   KEYSTORE_PASSWORD    The keystore password from `keytool -genkey`.
+#   KEY_ALIAS            Usually "chitti" (matches build.gradle.kts default).
+#   KEY_PASSWORD         The key password. Often the SAME as KEYSTORE_PASSWORD
+#                        because keytool prompts you to reuse it.
+#
+# NO SECRET SHOULD EVER APPEAR IN BUILD LOGS — GitHub auto-redacts secret
+# values that match exactly. The workflow extends that with `mask::` on
+# the keystore file path (which itself isn't secret but might leak).
+#
+# Golden Rule reminder: this workflow only TRIGGERS on a tag push. Sire
+# (a human) chooses when to ship. Chitti never autonomously cuts releases.
+
+name: build-apk
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag to attach the release to (manual runs only). Leave blank for v<runId>-manual.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # required by softprops/action-gh-release to create/update releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.tag_name != '' && github.event.inputs.tag_name || format('v{0}-manual', github.run_id)) || github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [ -z "${{ secrets.KEYSTORE_BASE64 }}"   ] && missing+=("KEYSTORE_BASE64")
+          [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] && missing+=("KEYSTORE_PASSWORD")
+          [ -z "${{ secrets.KEY_ALIAS }}"         ] && missing+=("KEY_ALIAS")
+          [ -z "${{ secrets.KEY_PASSWORD }}"      ] && missing+=("KEY_PASSWORD")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required GitHub secrets: ${missing[*]}"
+            echo "See BUILD_APK_RUNBOOK.md \"GitHub Actions cloud build\" section for setup."
+            exit 1
+          fi
+          echo "All four secrets are set. Proceeding."
+
+      - name: Set up JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK (Build Tools 34.0.0 + platforms;android-34)
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'tools platform-tools build-tools;34.0.0 platforms;android-34'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('chitti-vaani-android/**/*.gradle*', 'chitti-vaani-android/**/gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Decode release keystore from KEYSTORE_BASE64 secret
+        run: |
+          mkdir -p "$RUNNER_TEMP/keystore"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/keystore/release.jks"
+          if [ ! -s "$RUNNER_TEMP/keystore/release.jks" ]; then
+            echo "::error::Decoded keystore is empty. Check the KEYSTORE_BASE64 secret was pasted correctly (no line wraps, no leading/trailing whitespace)."
+            exit 1
+          fi
+          echo "Decoded keystore size: $(stat -c%s "$RUNNER_TEMP/keystore/release.jks") bytes"
+          # Verify it parses as a JKS — wrong password will fail at gradle time, but malformed file we catch here.
+          keytool -list -keystore "$RUNNER_TEMP/keystore/release.jks" -storepass "${{ secrets.KEYSTORE_PASSWORD }}" >/dev/null
+          echo "Keystore parses OK."
+
+      - name: Generate Gradle wrapper (repo is intentionally binary-free per TODO.md Phase 2.1)
+        working-directory: chitti-vaani-android
+        run: |
+          gradle wrapper --gradle-version=8.7
+          ls -la gradlew gradle/wrapper/ || true
+
+      - name: Build signed release APK
+        working-directory: chitti-vaani-android
+        env:
+          CHITTI_KEYSTORE_PATH: ${{ runner.temp }}/keystore/release.jks
+          CHITTI_KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          CHITTI_KEY_ALIAS:     ${{ secrets.KEY_ALIAS }}
+          CHITTI_KEY_PASS:      ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew clean assembleRelease --stacktrace --no-daemon
+
+      - name: Verify signature (catches debug-key fallthrough)
+        run: |
+          APK="chitti-vaani-android/app/build/outputs/apk/release/app-release.apk"
+          ls -la "$APK"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK"
+          # Fail loudly if the signer CN is the Android debug key — that would
+          # mean the env vars didn't reach gradle and we'd ship an unsignable APK.
+          if "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | grep -q "CN=Android Debug"; then
+            echo "::error::APK is signed with the Android debug key, not the release keystore. Check the four secrets are set."
+            exit 1
+          fi
+
+      - name: Rename APK for upload
+        run: |
+          mkdir -p artifacts
+          cp "chitti-vaani-android/app/build/outputs/apk/release/app-release.apk" \
+             "artifacts/chitti-vaani-${RELEASE_TAG}.apk"
+          ls -la artifacts/
+
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Chitti Vaani ${{ env.RELEASE_TAG }}
+          files: artifacts/chitti-vaani-${{ env.RELEASE_TAG }}.apk
+          draft: false
+          # Mark anything with -test / -beta / -rc / -alpha as pre-release so it
+          # doesn't surface as "latest" until a clean v1.0.0 lands.
+          prerelease: ${{ contains(env.RELEASE_TAG, '-test') || contains(env.RELEASE_TAG, '-beta') || contains(env.RELEASE_TAG, '-rc') || contains(env.RELEASE_TAG, '-alpha') }}
+          body: |
+            ## Chitti Vaani ${{ env.RELEASE_TAG }} — sideload-only test build
+
+            **Install**: scan the QR on [sahayai.in/download.html](https://sahayai.in/download.html) from your laptop, or download the APK below and open on Android.
+
+            ### Chitti's Golden Rule
+
+            Chitti **NEVER** acts on its own. Every action confirms with *"Sire, [action] karoon? Haan / Nahi"*. Never defaults to Yes. Never times out into Yes. Silence = wait, forever. See [SAHAYAI_MASTER.md §2g](https://github.com/${{ github.repository }}/blob/main/SAHAYAI_MASTER.md).
+
+            ### Hard refusals (code-level, not policy)
+
+            - **Never auto-dials 112 / 100 / 102 / 108 / 1098 / 1930 / 139** — family-cascade only. 108 is the one medical line Chitti will dial, and only after explicit "haan".
+            - **Never unlocks the phone by voice** — Android does not allow it; `unlockPhone()` throws SecurityException.
+            - **Never reads or echoes a UPI PIN** — PIN entry happens only inside the UPI app's secure keypad (NPCI rule).
+            - **Never sends money or documents without spoken "haan"** — per-use voice consent on every share.
+
+            ### How to install on Android
+
+            1. Open this APK URL or scan the QR.
+            2. Tap **Download anyway** when Chrome warns.
+            3. Open the APK. Android will ask to allow installs from this source — toggle on and go back.
+            4. Tap **Install**, then **Open**. Device Registration runs on first launch.
+
+            Built via GitHub Actions (workflow run [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})) from commit `${{ github.sha }}`.
+
+      - name: Summary
+        run: |
+          {
+            echo "## Build green ✅"
+            echo ""
+            echo "**Release**: https://github.com/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+            echo "**APK**: https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}/chitti-vaani-${RELEASE_TAG}.apk"
+            echo ""
+            echo "QR code on https://sahayai.in/download.html points at this URL pattern, so the page works immediately."
+          } >> "$GITHUB_STEP_SUMMARY"

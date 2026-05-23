@@ -135,12 +135,79 @@ footer{margin-top:30px;padding:18px;color:var(--muted);font-size:12.5px;text-ali
 
   <footer>
     <div data-i18n="foot.who">Built by Bryan Wilfred Pinto · <a href="https://sahayai.in/">sahayai.in</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">source on GitHub</a></div>
-    <div style="margin-top:6px">v1.0.0-test · sideload only · not yet on Play Store (Phase 2.6)</div>
+    <div style="margin-top:6px"><span id="version-label">v1.0.0-test</span> · sideload only · not yet on Play Store (Phase 2.6)</div>
   </footer>
 </div>
 
 <script>
-const I18N = {
+/* ── Live-update QR + Download button to the LATEST GitHub Release ──
+ * Static fallback (the hardcoded v1.0.0-test URL above) still works if
+ * GitHub's API is unreachable. When reachable, we replace the link +
+ * QR with whatever the most recent release on the repo is — so
+ * pushing a new tag automatically refreshes the user-facing surface
+ * with zero edits to this page.
+ *
+ * The GitHub Actions workflow (.github/workflows/build-apk.yml) names
+ * the APK chitti-vaani-<tag>.apk, so the asset URL is predictable.
+ * We don't bake the tag into the URL here — we pick whichever
+ * release the API returns, which means pre-releases (e.g. v1.0.0-test)
+ * surface immediately too as long as they're the most recent.
+ */
+(async function updateLatestRelease(){
+  const ENDPOINTS = [
+    // /releases/latest skips pre-releases. /releases (with limit 1) does NOT.
+    // For sideload-test builds we explicitly want the most recent regardless
+    // of pre-release flag.
+    'https://api.github.com/repos/bryanwilfredpinto-ui/sahayai/releases?per_page=1',
+  ];
+  try {
+    const r = await fetch(ENDPOINTS[0], { headers: { 'Accept': 'application/vnd.github+json' } });
+    if (!r.ok) return;
+    const data = await r.json();
+    const rel  = Array.isArray(data) ? data[0] : null;
+    if (!rel) return;
+    const apk = (rel.assets || []).find(a => /\.apk$/i.test(a.name));
+    if (!apk || !apk.browser_download_url) return;
+    const url = apk.browser_download_url;
+    const tag = rel.tag_name || 'latest';
+
+    const link = document.getElementById('dl-link');
+    if (link) {
+      link.href = url;
+      // Replace the v-tag inside the existing label text (works for both
+      // English and Hindi strings in I18N — they both carry "v1.0.0-test").
+      const cur = link.textContent;
+      const swapped = cur.replace(/v[\w.\-]+/i, tag);
+      // If nothing was swapped (i.e. label didn't carry a v-string), suffix it.
+      link.textContent = swapped !== cur ? swapped : (cur + ' (' + tag + ')');
+    }
+
+    const qr = document.getElementById('qr-img');
+    if (qr) {
+      qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(url);
+      qr.alt = 'QR code — scan to download Chitti Vaani ' + tag + ' on your Android phone';
+    }
+
+    const ver = document.getElementById('version-label');
+    if (ver) ver.textContent = tag;
+
+    // Mirror into the I18N labels so a language-switch tap doesn't snap
+    // the version text back to v1.0.0-test.
+    if (window.I18N) {
+      for (const lang of Object.keys(window.I18N)) {
+        if (window.I18N[lang] && window.I18N[lang]['hero.dl']) {
+          window.I18N[lang]['hero.dl'] = window.I18N[lang]['hero.dl'].replace(/v[\w.\-]+/i, tag);
+        }
+      }
+    }
+  } catch (e) {
+    // Static fallback prevails — already in the HTML above. No throw.
+  }
+})();
+</script>
+
+<script>
+window.I18N = {
   en: {
     'tagline':"Bharat's voice-first AI dost. Free. No sign-up. Works on Android 8.0+.",
     'hero.h2':"Scan to install on your phone",
@@ -187,7 +254,7 @@ const I18N = {
   },
 };
 function applyLang(lang){
-  const bag = I18N[lang] || I18N.en;
+  const bag = window.I18N[lang] || window.I18N.en;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (bag[key]) el.innerHTML = bag[key];
@@ -205,7 +272,7 @@ document.querySelectorAll('.lang-switch button').forEach(b => {
 (function(){
   const url = new URL(window.location.href);
   const q = url.searchParams.get('lang');
-  let pick = (q && I18N[q]) ? q : null;
+  let pick = (q && window.I18N[q]) ? q : null;
   if (!pick) { try { pick = localStorage.getItem('chitti_dl_lang'); } catch(e){} }
   if (!pick && /^hi/i.test(navigator.language || '')) pick = 'hi';
   applyLang(pick || 'en');
