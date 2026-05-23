@@ -39,17 +39,26 @@ import httpx
 from sqlalchemy.orm import Session
 
 from config import settings
-from services import medupi_alternatives, medupi_database, medupi_risk
+from services import medupi_alternatives, medupi_database, medupi_jan_aushadhi, medupi_risk
 
 log = logging.getLogger("medupi_recognition")
 
 
 # ───── Text path ─────
 
-def recognise_text(db: Session, query: str, lang: str = "en") -> dict:
+def recognise_text(
+    db: Session,
+    query: str,
+    lang: str = "en",
+    *,
+    lat: float | None = None,
+    lng: float | None = None,
+    radius_km: float = 5.0,
+) -> dict:
     """
     Fuzzy-matches the typed/spoken name against the brand DB. Returns the
-    top match + same-composition alternatives + risk + voice-ready text.
+    top match + same-composition alternatives + risk + voice-ready text +
+    (optional) the nearest Jan Aushadhi store when lat/lng provided.
     """
     q = (query or "").strip()
     if not q:
@@ -84,7 +93,7 @@ def recognise_text(db: Session, query: str, lang: str = "en") -> dict:
         current_brand=primary["brand_name"],
     )
 
-    return {
+    out = {
         "ok": True,
         "query": q,
         "primary": primary,
@@ -93,6 +102,9 @@ def recognise_text(db: Session, query: str, lang: str = "en") -> dict:
         "purpose_en": primary.get("purpose_en"),
         "purpose_hi": primary.get("purpose_hi"),
     }
+    out["nearest_jan_aushadhi"] = _nearest_kendra(db, lat, lng, radius_km)
+    out["savings_summary"] = _savings_summary(primary, alts)
+    return out
 
 
 # ───── Image path ─────
@@ -230,11 +242,20 @@ def _vision_extract(image_bytes: bytes, mime: str) -> dict:
         return {"_error": str(e)}
 
 
-def recognise_image(db: Session, image_bytes: bytes, mime: str = "image/jpeg") -> dict:
+def recognise_image(
+    db: Session,
+    image_bytes: bytes,
+    mime: str = "image/jpeg",
+    *,
+    lat: float | None = None,
+    lng: float | None = None,
+    radius_km: float = 5.0,
+) -> dict:
     """
     Run the image through DeepSeek vision, then look the result up in the
     master DB and return the same structured response shape as the text
-    path.
+    path. When lat/lng are supplied, the response also carries the
+    nearest Jan Aushadhi Kendra (Haversine within radius_km).
     """
     if not image_bytes:
         return {
@@ -292,6 +313,7 @@ def recognise_image(db: Session, image_bytes: bytes, mime: str = "image/jpeg") -
             },
             "matches": [],
             "risk": risk,
+            "nearest_jan_aushadhi": _nearest_kendra(db, lat, lng, radius_km),
             "message": (
                 f"Recognised '{brand or salt or 'this medicine'}' but it isn't in our seeded "
                 "drug DB yet. We'll add it on the next refresh."
@@ -313,7 +335,7 @@ def recognise_image(db: Session, image_bytes: bytes, mime: str = "image/jpeg") -
         dosage_form=primary["dosage_form"],
         current_brand=primary["brand_name"],
     )
-    return {
+    out = {
         "ok": True,
         "extracted": {
             "brand_name": brand or primary["brand_name"],
@@ -331,3 +353,52 @@ def recognise_image(db: Session, image_bytes: bytes, mime: str = "image/jpeg") -
         "purpose_en": primary.get("purpose_en"),
         "purpose_hi": primary.get("purpose_hi"),
     }
+    out["nearest_jan_aushadhi"] = _nearest_kendra(db, lat, lng, radius_km)
+    out["savings_summary"] = _savings_summary(primary, alts)
+    return out
+
+
+# ───── Helpers for nearest Jan Aushadhi + savings summary ─────
+
+def _nearest_kendra(db: Session, lat: float | None, lng: float | None, radius_km: float) -> dict | None:
+    """Return the single closest Jan Aushadhi store within radius_km.
+    None when no lat/lng OR no store in radius (honest empty)."""
+    if lat is None or lng is None:
+        return None
+    try:
+        # First try the user's chosen radius, then expand to 25 km so a
+        # Tier-2/3 user with sparse coverage still gets a nearest option
+        # (matches the Vaani local-business 5 → 25 km auto-expansion).
+        for r_km in (radius_km, 25.0):
+            stores = medupi_jan_aushadhi.find_nearby(db, lat, lng, r_km, limit=1)
+            if stores:
+                top = stores[0]
+                top["expanded_to_km"] = r_km if r_km != radius_km else None
+                return top
+    except Exception:  # noqa: BLE001
+        log.exception("nearest kendra lookup failed")
+    return None
+
+
+def _savings_summary(primary: dict, alts: dict) -> dict:
+    """
+    Compute a coarse savings summary from the alternatives payload.
+    Honest empty when no alternatives are listed.
+    """
+    items = alts.get("alternatives") or []
+    branded_prices = [a.get("mrp") for a in items if a.get("mrp") and a.get("type") != "jan_aushadhi"]
+    ja_prices = [a.get("mrp") for a in items if a.get("mrp") and a.get("type") == "jan_aushadhi"]
+    primary_price = primary.get("mrp") or (max(branded_prices) if branded_prices else None)
+    cheapest = (min(ja_prices) if ja_prices else (min(branded_prices) if branded_prices else None))
+    if primary_price and cheapest and primary_price > 0:
+        saved_pct = round(100.0 * (primary_price - cheapest) / primary_price)
+        if saved_pct < 0:
+            saved_pct = 0
+        return {
+            "primary_price_inr": primary_price,
+            "cheapest_inr": cheapest,
+            "savings_percent": saved_pct,
+            "speak_en": f"Save about {saved_pct} percent with same-composition alternative.",
+            "speak_hi": f"Same composition wala alternative se taqreeban {saved_pct} percent bachat ho sakti hai.",
+        }
+    return {"primary_price_inr": primary_price, "cheapest_inr": cheapest, "savings_percent": None}

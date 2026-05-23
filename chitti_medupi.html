@@ -294,11 +294,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-card chitti-response" data-chitti-section="Scanned:">
       <div class="section-head">
         <div>
-          <div class="section-title">📄 Prescription Decoder <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
-          <div class="section-sub" data-i18n="scan.rx.sub">Upload your full prescription. Chitti explains each medicine's purpose in plain Hindi/English (purpose only — never advice).</div>
+          <div class="section-title">📄 Prescription Decoder <span class="live-badge" data-i18n="badge.live">LIVE</span></div>
+          <div class="section-sub" data-i18n="scan.rx.sub">Upload your full prescription. Chitti reads it with DeepSeek vision, extracts every medicine + dose + frequency + follow-up date, and auto-creates the right reminders. Use the <a href="chitti_health_file.html">Chitti Health File</a> tab to upload prescriptions directly into a family member's profile.</div>
         </div>
       </div>
-      <div class="section-empty" data-i18n="scan.rx.empty">Coming soon — full prescription parser with per-medicine purpose explanation, dosage parsing, and equivalent options for each.</div>
+      <div class="section-empty" data-i18n="scan.rx.empty">Wired today: upload a prescription on Chitti Health File → DeepSeek vision extract → medicines + follow-up + dose reminders auto-spawned → Phase B-4 worker fires them on schedule.</div>
     </div>
   </section>
 
@@ -307,8 +307,8 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-card chitti-response" data-chitti-section="Scanned:">
       <div class="section-head">
         <div>
-          <div class="section-title">💊 Same-composition equivalents <span class="coming-soon" data-i18n="badge.soon">Coming Soon</span></div>
-          <div class="section-sub">Strict matching engine: same molecule + same strength + same dosage form ONLY. Never therapeutic alternatives.</div>
+          <div class="section-title">💊 Same-composition equivalents <span class="live-badge" data-i18n="badge.live">LIVE</span></div>
+          <div class="section-sub">Strict matching engine: same molecule + same strength + same dosage form ONLY. Never therapeutic alternatives. Wired via <code>/api/medupi/alternatives</code> on every scan + every name search.</div>
         </div>
       </div>
       <div style="background:#fbf8f1;border:1px dashed var(--border);border-radius:10px;padding:14px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;line-height:1.7">
@@ -744,7 +744,28 @@ function _userToken(){
 // ═══════════════════════════════════════════════════════════
 // I18N — Hindi UI toggle
 // ═══════════════════════════════════════════════════════════
-let _chittiLang = (function(){ try { return localStorage.getItem('chitti_lang') || 'en'; } catch(e){ return 'en'; } })();
+// Language resolution honours language_preference (registration-time pick) first,
+// then chitti_lang, then chitti_vaani_lang, then navigator.language. Default 'en'.
+// Fix for the 2026-05-23 bug where registering as English left the page in Hindi
+// because three different localStorage keys disagreed.
+let _chittiLang = (function(){
+  try {
+    var v = (localStorage.getItem('language_preference')
+          || localStorage.getItem('chitti_lang')
+          || localStorage.getItem('chitti_vaani_lang')
+          || (navigator.language || 'en').split('-')[0]
+          || 'en').trim();
+    // Map browser locales we don't fully support to en (the page only ships en + hi today).
+    if (v !== 'en' && v !== 'hi') v = 'en';
+    // Mirror so every surface sees the same value.
+    try {
+      localStorage.setItem('language_preference', v);
+      localStorage.setItem('chitti_lang', v);
+      localStorage.setItem('chitti_vaani_lang', v);
+    } catch(e){}
+    return v;
+  } catch(e) { return 'en'; }
+})();
 
 const I18N = {
   // Tabs
@@ -810,8 +831,15 @@ function t(key) {
 
 function applyChittiLang(lang) {
   _chittiLang = lang;
-  try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+  // Mirror to all three localStorage keys so every Chitti surface
+  // (registration / Vaani / a11y substrate) reads the same value.
+  try {
+    localStorage.setItem('chitti_lang', lang);
+    localStorage.setItem('language_preference', lang);
+    localStorage.setItem('chitti_vaani_lang', lang);
+  } catch (e) {}
   document.documentElement.lang = lang || 'en';
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', {detail:{lang: lang}})); } catch(e){}
   document.querySelectorAll('.lang-toggle-bharat button').forEach(function(b){
     var active = b.getAttribute('data-lang') === lang;
     b.classList.toggle('active', active);
@@ -1017,6 +1045,31 @@ function _renderScanResult(data){
     html += '</tbody></table></div>';
   }
 
+  // Nearest Jan Aushadhi (Phase B-MedUPI scan upgrade)
+  // Marked as a per-response box so feedback-widget.js attaches the
+  // 4-icon row + 📝 panel — the "5-element" accessibility contract.
+  const njk = data.nearest_jan_aushadhi;
+  if (njk) {
+    const dist = (njk.distance_km != null) ? (njk.distance_km + ' km') : '—';
+    const expanded = njk.expanded_to_km ? ' <span class="tag" style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:11px">expanded ' + njk.expanded_to_km + 'km</span>' : '';
+    html += '<div class="chitti-response" data-chitti-response="medupi-nearest-jan-aushadhi" data-chitti-section="Nearest Jan Aushadhi Kendra" style="margin-top:12px;padding:12px;border-radius:12px;background:rgba(34,197,94,.07);border:1px solid var(--med-green)">';
+    html += '<div style="font-weight:800;color:var(--med-green);font-size:14px;margin-bottom:4px">🏥 ' + (lang === 'hi' ? 'नज़दीकी जन औषधि केंद्र' : 'Nearest Jan Aushadhi Kendra') + ' — ' + _esc(dist) + expanded + '</div>';
+    html += '<div style="font-weight:700;font-size:13px">' + _esc(njk.name || '') + '</div>';
+    if (njk.address) html += '<div style="font-size:12px;color:var(--text);margin-top:2px">' + _esc(njk.address) + '</div>';
+    html += '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _esc((njk.district || '') + ' · ' + (njk.state || '')) + (njk.pincode ? ' · ' + _esc(njk.pincode) : '') + '</div>';
+    if (njk.hours) html += '<div style="font-size:12px;margin-top:4px">🕒 ' + _esc(njk.hours) + '</div>';
+    html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">';
+    if (njk.phone) html += '<a class="cta-navy" style="font-size:12px;padding:6px 10px" href="tel:' + _esc(njk.phone) + '">📞 ' + _esc(njk.phone) + '</a>';
+    if (njk.lat && njk.lng) html += '<a class="cta-saffron" style="font-size:12px;padding:6px 10px" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + njk.lat + ',' + njk.lng + '">🗺️ ' + (lang === 'hi' ? 'मानचित्र' : 'Map') + '</a>';
+    html += '</div></div>';
+  }
+
+  // Savings summary (computed server-side, honest when no alternatives)
+  const sv = data.savings_summary;
+  if (sv && sv.savings_percent != null) {
+    html += '<div class="chitti-response" data-chitti-response="medupi-savings" data-chitti-section="Estimated savings" style="margin-top:8px;padding:10px;border-radius:10px;background:rgba(232,106,23,.06);border:1px dashed var(--saffron);font-size:13px"><strong>💰 ' + (lang === 'hi' ? 'अनुमानित बचत' : 'Estimated savings') + ':</strong> ' + sv.savings_percent + '% — ' + _money(sv.primary_price_inr) + ' → ' + _money(sv.cheapest_inr) + '. ' + _esc(lang === 'hi' ? (sv.speak_hi || '') : (sv.speak_en || '')) + '</div>';
+  }
+
   // Disclaimer
   if (disclaimer) {
     html += '<div style="margin-top:12px;padding:10px;border-left:3px solid var(--saffron);background:rgba(232,106,23,.06);font-size:12px;line-height:1.55">' + _esc(disclaimer) + '</div>';
@@ -1195,11 +1248,41 @@ async function searchMedicine(){
   if (!q) { sp(_chittiLang === 'hi' ? 'दवा का नाम लिखें' : 'Type a medicine name first'); return; }
   _showScanLoading(_chittiLang === 'hi' ? 'खोज रहा हूँ…' : 'Searching…');
   try {
-    const data = await apiGet('/api/medupi/medicine/' + encodeURIComponent(q));
+    // POST /scan with JSON — same response shape as image path, now
+    // includes nearest_jan_aushadhi + savings_summary. We pass lat/lng
+    // from window.Chitti.location.get() when available so the nearest
+    // kendra block populates without a second round-trip.
+    const loc = await _scanLocationOrNull();
+    const body = { medicine_name: q };
+    if (loc) { body.lat = loc.lat; body.lng = loc.lng; }
+    const data = await apiPostJson('/api/medupi/scan', body);
     _renderScanResult(data);
   } catch (e) {
     _renderScanError(e.message || String(e));
   }
+}
+
+async function _scanLocationOrNull(){
+  // Use the shared a11y location helper when present (cached 6h per
+  // [§8 P0 Vaani geo work]); fall back to a one-shot navigator.geolocation
+  // with a 4-second timeout so the search stays snappy if the user
+  // hasn't granted permission yet.
+  try {
+    if (window.Chitti && window.Chitti.location && typeof window.Chitti.location.get === 'function') {
+      const r = await window.Chitti.location.get({timeoutMs: 4000});
+      if (r && typeof r.lat === 'number' && typeof r.lng === 'number') return r;
+    }
+  } catch(e){}
+  if (!navigator.geolocation) return null;
+  return new Promise(resolve => {
+    let done = false;
+    const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 4000);
+    navigator.geolocation.getCurrentPosition(
+      pos => { if (done) return; done = true; clearTimeout(t); resolve({lat: pos.coords.latitude, lng: pos.coords.longitude}); },
+      () => { if (done) return; done = true; clearTimeout(t); resolve(null); },
+      {enableHighAccuracy:false, timeout:3500, maximumAge:300000}
+    );
+  });
 }
 
 function openCameraCapture(){
@@ -1218,6 +1301,8 @@ async function onScanFileChosen(ev){
   try {
     const fd = new FormData();
     fd.append('image', f, f.name);
+    const loc = await _scanLocationOrNull();
+    if (loc) { fd.append('lat', String(loc.lat)); fd.append('lng', String(loc.lng)); }
     const data = await apiPostForm('/api/medupi/scan', fd);
     _renderScanResult(data);
   } catch (e) {

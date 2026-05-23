@@ -178,10 +178,38 @@ def _parse_iso_dt(s: str) -> datetime:
 @bp.post("/scan")
 @with_db
 def scan(db):
-    """Multipart image upload → vision extraction + DB lookup."""
+    """
+    Unified scan endpoint — accepts EITHER:
+      a) Multipart image upload (field name: 'image') + optional lat/lng
+         form fields → DeepSeek vision extract.
+      b) JSON body {medicine_name, lat?, lng?, radius_km?} → fuzzy name
+         match (same path as GET /medicine/<name> but POST so the user
+         token + geo can ride along without putting them in the URL).
+
+    Both paths return the same response shape:
+      { ok, primary, matches, risk, alternatives,
+        nearest_jan_aushadhi, savings_summary, speak_en, speak_hi, ... }
+    """
+    # Path B: JSON body with a medicine name.
+    body = request.get_json(silent=True)
+    if isinstance(body, dict) and (body.get("medicine_name") or body.get("query")):
+        name = str(body.get("medicine_name") or body.get("query") or "").strip()
+        if not name:
+            abort(400, description="medicine_name is required when posting JSON")
+        lat = _to_float_or_none(body.get("lat"))
+        lng = _to_float_or_none(body.get("lng"))
+        radius = float(body.get("radius_km") or 5.0)
+        return jsonify(medupi_recognition.recognise_text(
+            db, name, lat=lat, lng=lng, radius_km=radius,
+        ))
+
+    # Path A: multipart image upload.
     f = request.files.get("image")
     if f is None:
-        abort(400, description="image upload required (multipart field 'image')")
+        abort(400, description=(
+            "Either upload an image (multipart field 'image') OR POST JSON "
+            "{medicine_name, lat?, lng?}."
+        ))
     if f.content_type and not f.content_type.startswith("image/"):
         abort(415, description="Only image uploads are accepted (jpg/png/webp).")
     image_bytes = f.read()
@@ -189,8 +217,12 @@ def scan(db):
         abort(400, description="empty image upload")
     if len(image_bytes) > 8 * 1024 * 1024:
         abort(413, description="Image too large (max 8 MB).")
+    lat = _to_float_or_none(request.form.get("lat"))
+    lng = _to_float_or_none(request.form.get("lng"))
+    radius = float(request.form.get("radius_km") or 5.0)
     return jsonify(medupi_recognition.recognise_image(
-        db, image_bytes, f.content_type or "image/jpeg"
+        db, image_bytes, f.content_type or "image/jpeg",
+        lat=lat, lng=lng, radius_km=radius,
     ))
 
 

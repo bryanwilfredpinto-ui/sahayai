@@ -197,3 +197,50 @@ class InsurancePolicy(Base):
 
     created_at      = Column(DateTime, default=datetime.utcnow, nullable=False)
     forget_at       = Column(DateTime, nullable=True)
+
+
+class HealthDispatch(Base):
+    """One queued notification dispatched from a HealthReminder.
+
+    Phase B-4 — reminder dispatch worker. Every cron tick that finds a due
+    HealthReminder rows here. The frontend long-polls
+    /api/health-file/dispatch/pending and renders banners. WhatsApp + Twilio
+    + browser-push payloads are baked in at queue time so the frontend (or a
+    future native bridge) can fire them without re-deriving anything.
+
+    Honest stubs: `twilio_sid` is null until TWILIO_* env vars are set;
+    `browser_push_payload` is always populated so the page can fire a local
+    Notification immediately.
+    """
+    __tablename__ = "health_dispatch"
+    __table_args__ = (
+        Index("ix_health_dispatch_owner", "user_token_hash"),
+        Index("ix_health_dispatch_unack", "ack_at"),
+        TABLE_KW,
+    )
+
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    reminder_id     = Column(Integer, nullable=False)                  # FK -> health_reminders.id
+    user_token_hash = Column(String(80), nullable=False)
+    profile_id      = Column(Integer, nullable=False)
+
+    kind            = Column(String(40), nullable=False)               # mirror of reminder.kind
+    severity        = Column(String(20), nullable=False, default="info")
+    # info | advance_30d | advance_7d | advance_1d | overdue
+    label           = Column(String(240), nullable=False)
+    detail          = Column(Text, nullable=True)
+    spoken_en       = Column(Text, nullable=True)
+    spoken_hi       = Column(Text, nullable=True)
+
+    # Pre-baked payloads per channel — stored so the frontend just renders.
+    wa_deep_link    = Column(Text, nullable=True)                      # wa.me/<phone>?text=<urlencoded>
+    browser_push_payload = Column(Text, nullable=True)                 # JSON for Notification API
+    twilio_sid      = Column(String(80), nullable=True)                # set when voice call placed
+
+    channels_attempted = Column(String(80), nullable=False, default="")  # CSV
+    channels_delivered = Column(String(80), nullable=False, default="")  # CSV
+    last_error      = Column(Text, nullable=True)
+
+    fire_at         = Column(DateTime, nullable=False)                 # when reminder was due
+    queued_at       = Column(DateTime, default=datetime.utcnow, nullable=False)
+    ack_at          = Column(DateTime, nullable=True)                  # set by /ack from frontend

@@ -12,6 +12,9 @@ Jobs:
   4. cache_evict            — every day, 02:55 IST (cleans expired Brave cache)
   5. daily_expiry_scan      — every day, 08:00 IST (P0 medicine-expiry safety)
   6. daily_price_alert_scan — every day, 09:00 IST (P1 price drop alerts)
+  7. health_file_dispatch   — every 5 minutes (Phase B-4 — fires due
+                              HealthReminder rows into HealthDispatch
+                              queue + recomputes next_fire_at from RRULE)
 
 Each job:
   - Logs start + end + outcome
@@ -169,6 +172,17 @@ def _job_daily_price_alert_scan() -> dict:
         db.close()
 
 
+def _job_health_file_dispatch() -> dict:
+    """
+    Phase B-4 reminder dispatch — every 5 minutes. Walks every enabled
+    HealthReminder row whose next_fire_at <= now (plus any advance-alert
+    days for premium_due / renewal kinds), queues HealthDispatch payloads,
+    and reschedules each row from its RRULE.
+    """
+    from services import health_file_dispatch
+    return health_file_dispatch.run_dispatch()
+
+
 # ───── Public API ─────
 
 def start() -> None:
@@ -224,6 +238,15 @@ def start() -> None:
         id="daily_price_alert_scan",
         replace_existing=True,
         misfire_grace_time=3600,
+    )
+    sch.add_job(
+        _wrap("health_file_dispatch", _job_health_file_dispatch),
+        CronTrigger(minute="*/5", timezone=IST),  # every 5 minutes
+        id="health_file_dispatch",
+        replace_existing=True,
+        misfire_grace_time=600,
+        max_instances=1,
+        coalesce=True,
     )
 
     sch.start()

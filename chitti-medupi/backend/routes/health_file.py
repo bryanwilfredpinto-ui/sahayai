@@ -30,6 +30,7 @@ from io import BytesIO
 from flask import Blueprint, abort, jsonify, request, send_file
 
 from services import health_file_service as svc
+from services import health_file_dispatch as dispatch_svc
 
 log = logging.getLogger("routes.health_file")
 
@@ -339,8 +340,46 @@ def share_consume():
     )
 
 
+# ── /dispatch — Phase B-4 reminder dispatch worker ─────────────────
+
+@bp.get("/dispatch/pending")
+def dispatch_pending():
+    """Un-acknowledged reminders for this user, newest first.
+
+    Frontend long-polls this every 60s, fires a Notification per row,
+    speaks `spoken_hi` (or `spoken_en`) via Voice Factory, and surfaces
+    a wa.me deep link if WhatsApp channel was selected on the reminder.
+    """
+    user_token = _user_token_or_400(request.args)
+    limit = int(request.args.get("limit") or 50)
+    return jsonify({
+        "ok": True,
+        "items": dispatch_svc.list_pending(user_token, limit=limit),
+    })
+
+
+@bp.post("/dispatch/<int:dispatch_id>/ack")
+def dispatch_ack(dispatch_id: int):
+    body = request.get_json(silent=True) or {}
+    user_token = _user_token_or_400(body or request.args)
+    if not dispatch_svc.ack(user_token, dispatch_id):
+        abort(404)
+    return jsonify({"ok": True, "id": dispatch_id})
+
+
+@bp.post("/dispatch/run-now")
+def dispatch_run_now():
+    """Diagnostic — force a dispatch tick. Same auth as the rest of the
+    blueprint (user_token gate). Returns the queued / rescheduled counts.
+    Useful for end-to-end testing without waiting for the 5-minute cron.
+    """
+    body = request.get_json(silent=True) or {}
+    _user_token_or_400(body or request.args)
+    return jsonify({"ok": True, **dispatch_svc.run_dispatch()})
+
+
 # ── /health (smoke) ───────────────────────────────────────────────
 
 @bp.get("/health")
 def health():
-    return jsonify({"ok": True, "service": "chitti-health-file", "version": "v1-skeleton-2026-05-23"})
+    return jsonify({"ok": True, "service": "chitti-health-file", "version": "v2-dispatch-2026-05-23"})

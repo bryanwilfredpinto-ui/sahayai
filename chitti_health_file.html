@@ -8,6 +8,37 @@
 <meta name="description" content="Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets reminders, lets you ask 'Wife ki diabetes ka history dikhao' in your language.">
 <meta name="chitti-page-desc" content="Chitti Health File — upload medical reports, Chitti reads + extracts + reminds. Per-profile (self / wife / mother / father / child). Encrypted at rest. Share with doctor only after voice haan.">
 <meta name="chitti-features" content="chitti-health-file/skills/FEATURES.md">
+<!-- Language-key compatibility shim (added 2026-05-23 — Phase B-4 lang fix).
+     User-reported bug: picking English on registration didn't persist —
+     the page kept defaulting to Hindi. Root cause was three different
+     localStorage keys (language_preference / chitti_lang /
+     chitti_vaani_lang) used by different surfaces. This shim normalises
+     them: resolves precedence, mirrors to all three, fires a
+     chitti:langchange event so any listener picks up the change. -->
+<script>
+(function(){
+  try {
+    var KEYS = ['language_preference', 'chitti_lang', 'chitti_vaani_lang'];
+    var nav = (navigator.language || 'en').split('-')[0];
+    // Resolve: first non-empty value wins; otherwise nav locale falls
+    // back to 'en' or 'hi' (the only two Health File supports today).
+    var resolved = null;
+    for (var i = 0; i < KEYS.length; i++) {
+      var v = (localStorage.getItem(KEYS[i]) || '').trim();
+      if (v) { resolved = v; break; }
+    }
+    if (!resolved) resolved = (nav === 'hi' ? 'hi' : 'en');
+    // Mirror to all three so every surface reads the same answer.
+    KEYS.forEach(function(k){
+      try { localStorage.setItem(k, resolved); } catch(e){}
+    });
+    document.documentElement.lang = resolved;
+    window.CHITTI_LANG_RESOLVED = resolved;
+    // Notify listeners (chitti_a11y.js + chitti_lang.js wire on this).
+    try { window.dispatchEvent(new CustomEvent('chitti:langchange', {detail:{lang: resolved}})); } catch(e){}
+  } catch(e){}
+})();
+</script>
 <script src="strings.js" defer></script>
 <style>
 :root{
@@ -136,7 +167,8 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
         <span>AES-256-GCM</span>
         <span>Per-use voice consent</span>
         <span>DeepSeek vision</span>
-        <span class="coming">Phase B: MRI/discharge auto-extract</span>
+        <span class="live">Phase B-4: Reminder dispatch LIVE</span>
+        <span class="coming">Phase B-1: MRI/discharge auto-extract</span>
       </div>
     </div>
   </div>
@@ -144,6 +176,34 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);col
   <div class="privacy-bar"><b>🛡️ Privacy contract:</b> Documents encrypted at rest with AES-256-GCM. Only YOU (with your user_token) can decrypt. Doctor share requires per-use voice <b>"haan"</b> every single time. <b>No health data used for AI training</b> — DeepSeek API is opted out of input retention. <a href="#" onclick="openDisclaimer();return false">Full T&amp;C →</a></div>
 
   <div class="gold-rule-bar">🪔 <b>Chitti's Golden Rule:</b> every share / upload / reminder fires through <i>"Sire, [action] karoon? Haan / Nahi"</i>. Silence = wait. Never defaults to Yes. <a href="SAHAYAI_MASTER.md#2g-chitti-golden-rule--confirm-before-every-action-locked-2026-05-23" target="_blank">§2g →</a></div>
+
+  <!-- ════════════ Pending reminder dispatch banner (Phase B-4) ════════════ -->
+  <!-- Auto-polls /api/health-file/dispatch/pending every 60s. Each due
+       reminder gets a row with browser Notification + spoken voice + a
+       wa.me deep-link if WhatsApp channel was selected.
+       The feedback-widget.js substrate auto-attaches the 4 icons
+       (🔊 / 🤖 / 👍 / 👎 + 📝 panel on 👎) per the §7 contract. -->
+  <div id="hf-dispatch-wrap" style="display:none;background:#fff7ed;border:2px solid #fb923c;border-radius:12px;padding:12px;margin-bottom:14px"
+       class="chitti-response"
+       data-chitti-response="hf-dispatch-banner"
+       data-chitti-section="Pending health reminders"
+       role="region"
+       aria-label="Pending health reminders">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+      <div style="font-size:22px" aria-hidden="true">⏰</div>
+      <div style="flex:1;min-width:180px">
+        <div style="font-weight:800;color:var(--navy);font-size:15px"
+             id="hf-dispatch-title">Pending reminders</div>
+        <div style="font-size:12px;color:var(--muted)" id="hf-dispatch-sub">Chitti is checking your scheduled reminders.</div>
+      </div>
+      <button class="btn tiny secondary" onclick="speakAllDispatches()" aria-label="Read all reminders aloud">🔊 Read all</button>
+      <button class="btn tiny secondary" onclick="pollDispatch(true)" aria-label="Check now">🔄 Check now</button>
+    </div>
+    <div id="hf-dispatch-list" aria-live="polite"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">
+      Dispatch worker fires every 5 min · spoken aloud · WhatsApp link ready · Twilio voice when configured.
+    </div>
+  </div>
 
   <!-- Profile picker -->
   <div class="profile-bar">
@@ -587,7 +647,16 @@ function getUserToken(){
 }
 
 function currentLang(){
-  try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e){ return 'hi'; }
+  // Read from the shim's resolved value first (set in the head before
+  // anything else runs), then fall back to the original key. This honours
+  // the registration-time English pick across every page surface.
+  try {
+    if (window.CHITTI_LANG_RESOLVED) return window.CHITTI_LANG_RESOLVED;
+    return localStorage.getItem('language_preference')
+        || localStorage.getItem(LANG_KEY)
+        || localStorage.getItem('chitti_lang')
+        || 'en';
+  } catch(e){ return 'en'; }
 }
 function en(){ return currentLang() === 'en'; }
 
@@ -1169,13 +1238,201 @@ async function renderSearch(){
   `).join('');
 }
 
+/* ── Phase B-4 — Reminder dispatch polling ───────────────────────── */
+/* Polls /api/health-file/dispatch/pending every 60s. For every new
+   dispatch row: speaks the spoken_hi (or spoken_en) via Voice Factory,
+   fires a browser Notification (if permission granted), and renders a
+   row in the banner with 5-element a11y attributes. Each row also
+   surfaces the wa.me deep link Chitti pre-baked at queue time. */
+
+const HF_DISPATCH_POLL_MS = 60 * 1000;
+const HF_NOTIFIED_KEY    = 'chitti_hf_notified_ids_v1';
+
+function _notifiedIds(){
+  try { return new Set(JSON.parse(localStorage.getItem(HF_NOTIFIED_KEY) || '[]')); }
+  catch(e){ return new Set(); }
+}
+function _saveNotified(set){
+  try { localStorage.setItem(HF_NOTIFIED_KEY, JSON.stringify(Array.from(set).slice(-200))); } catch(e){}
+}
+
+async function pollDispatch(force){
+  try {
+    const r = await fetch(API_BASE + '/api/health-file/dispatch/pending?user_token=' + encodeURIComponent(getUserToken()));
+    if (!r.ok) return;
+    const j = await r.json();
+    const items = (j.items || []).sort((a,b) => (b.queued_at||'').localeCompare(a.queued_at||''));
+    const wrap = document.getElementById('hf-dispatch-wrap');
+    const list = document.getElementById('hf-dispatch-list');
+    if (items.length === 0) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+    document.getElementById('hf-dispatch-title').textContent = (en()
+      ? items.length + ' pending Chitti reminder' + (items.length === 1 ? '' : 's')
+      : items.length + ' pending Chitti reminder');
+    document.getElementById('hf-dispatch-sub').textContent = en()
+      ? 'Tap a row to read aloud or send via WhatsApp.'
+      : 'Padhne ya WhatsApp bhejne ke liye row tap karein.';
+    list.innerHTML = items.map(d => _renderDispatchRow(d)).join('');
+
+    // Fire browser notifications + speak for any NEW (not yet notified)
+    // rows. We track which IDs we've already alerted in localStorage so
+    // refresh doesn't re-spam.
+    const seen = _notifiedIds();
+    const fresh = items.filter(d => !seen.has(d.id));
+    if (fresh.length) {
+      await _ensureNotificationPermission();
+      fresh.forEach(d => _fireNotification(d));
+      // Speak only the most-urgent one (severity overdue > advance_1d > ...)
+      const ranked = fresh.slice().sort(_severityRank);
+      const top = ranked[0];
+      if (top) {
+        const txt = en() ? (top.spoken_en || top.label) : (top.spoken_hi || top.spoken_en || top.label);
+        speak(txt);
+      }
+      fresh.forEach(d => seen.add(d.id));
+      _saveNotified(seen);
+    }
+  } catch(e) {
+    // Honest failure — surface in the banner sub-text if explicitly forced.
+    if (force) {
+      const sub = document.getElementById('hf-dispatch-sub');
+      if (sub) sub.textContent = (en() ? 'Could not reach dispatch service: ' : 'Dispatch service tak nahi pahuncha: ') + e.message;
+    }
+  }
+}
+
+function _renderDispatchRow(d){
+  const txt = en() ? (d.spoken_en || d.label) : (d.spoken_hi || d.spoken_en || d.label);
+  const sevPill = ({
+    overdue:      '<span class="tag red">OVERDUE</span>',
+    advance_1d:   '<span class="tag" style="background:#fee2e2;color:#991b1b">DUE TOMORROW</span>',
+    advance_7d:   '<span class="tag" style="background:#fef3c7;color:#92400e">7 days</span>',
+    advance_30d:  '<span class="tag" style="background:#dbeafe;color:#1e40af">30 days</span>',
+    info:         '<span class="tag green">DUE NOW</span>',
+  })[d.severity] || '';
+  const channels = (d.channels_attempted || '').split(',').filter(Boolean).map(c => {
+    const ico = c === 'browser' ? '🔔' : c === 'whatsapp' ? '💬' : c === 'voice_call' ? '📞' : '•';
+    return '<span class="tag">' + ico + ' ' + escapeHtml(c) + '</span>';
+  }).join(' ');
+  // Per-row attributes for feedback-widget.js to attach the 4 icons +
+  // open the 📝 feedback panel on 👎. Section name is human-readable so
+  // the modal headline reads e.g. "Feedback for: Reminder · Take Crocin".
+  return `
+    <div class="row chitti-response"
+         data-chitti-response="hf-dispatch-${d.id}"
+         data-chitti-section="Reminder · ${escapeHtml(d.label)}">
+      <div class="meta">
+        <div class="name">${escapeHtml(d.label)} ${sevPill}</div>
+        <div class="small" style="margin:4px 0">${escapeHtml(txt)}</div>
+        <div class="small">${channels}</div>
+        ${d.last_error ? '<div class="small" style="color:#92400e">⚠️ ' + escapeHtml(d.last_error) + '</div>' : ''}
+      </div>
+      <div class="actions">
+        <button class="btn tiny secondary" onclick="speak(${JSON.stringify(txt)})">🔊 Read</button>
+        ${d.wa_deep_link ? '<a class="btn tiny green" href="' + escapeHtml(d.wa_deep_link) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : ''}
+        <button class="btn tiny" onclick="ackDispatch(${d.id})">✓ Done</button>
+      </div>
+    </div>`;
+}
+
+function _severityRank(a, b){
+  const order = {overdue:0, advance_1d:1, info:2, advance_7d:3, advance_30d:4};
+  return (order[a.severity] ?? 9) - (order[b.severity] ?? 9);
+}
+
+async function _ensureNotificationPermission(){
+  try {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  } catch(e){}
+}
+
+function _fireNotification(d){
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const payload = d.browser_push || {};
+    const title = payload.title || (en() ? 'Chitti reminder' : 'Chitti reminder');
+    const body  = (en() ? d.spoken_en : (d.spoken_hi || d.spoken_en)) || d.label;
+    const n = new Notification(title, {
+      body, tag: payload.tag || ('hf-reminder-' + d.id),
+      requireInteraction: d.severity === 'overdue' || d.severity === 'advance_1d',
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch(e){}
+}
+
+function speakAllDispatches(){
+  const wrap = document.getElementById('hf-dispatch-list');
+  if (!wrap) return;
+  // Re-pull from the rendered DOM since pollDispatch already has them.
+  const rows = wrap.querySelectorAll('.chitti-response .small');
+  // The 2nd .small in each row is the spoken text; flatten + join.
+  const texts = [];
+  wrap.querySelectorAll('[data-chitti-response]').forEach(r => {
+    const small = r.querySelectorAll('.small');
+    if (small.length >= 1) texts.push(small[0].textContent.trim());
+  });
+  if (texts.length === 0) {
+    speak(en() ? 'No reminders right now.' : 'Abhi koi reminder nahi.');
+    return;
+  }
+  speak((en() ? 'Reading ' : 'Padh rahi hoon ') + texts.length + (en() ? ' reminders.' : ' reminders.'));
+  // Best-effort sequential read.
+  let i = 0;
+  function next(){
+    if (i >= texts.length) return;
+    const u = new SpeechSynthesisUtterance(texts[i++]);
+    u.lang = en() ? 'en-IN' : 'hi-IN';
+    u.onend = next;
+    speechSynthesis.speak(u);
+  }
+  setTimeout(next, 1200);
+}
+
+async function ackDispatch(id){
+  try {
+    await fetch(API_BASE + '/api/health-file/dispatch/' + id + '/ack', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user_token: getUserToken()})
+    });
+  } catch(e){}
+  pollDispatch(true);
+}
+
 /* ── Boot ───────────────────────────────── */
 window.addEventListener('DOMContentLoaded', async () => {
   await loadProfiles();
   showTab('upload');
   onUpTypeChange();
   onVitalKindChange();
+  // Phase B-4 — kick the dispatch poller. Best-effort; honest failure
+  // path inside pollDispatch surfaces in the banner sub-text.
+  pollDispatch(false);
+  setInterval(() => pollDispatch(false), HF_DISPATCH_POLL_MS);
 });
 </script>
+
+<!-- ════════════════════════════════════════════════════════════════
+  Chitti shared accessibility substrate (LOCKED §1a — every Chitti
+  page must load these). Order matters:
+    1. feedback-widget.js  — auto-attaches the 4-icon row
+       (🔊 / 🤖 / 👍 / 👎) + per-box 📝 feedback panel on every element
+       marked data-chitti-response. The 📝 panel is the "5th element"
+       in the accessibility mandate — voice + text input, category
+       selector, sent to /api/feedback.
+    2. chitti_a11y.js      — language selector, Voice Required marker,
+       Braille mode, Disability Profile prompt, ISL plugin loader.
+    3. chitti_isl.js       — Indian Sign Language panel per response,
+       tap-word-to-sign modal. (Loaded by chitti_a11y.js as fallback;
+       direct include here keeps the contract explicit.)
+  ════════════════════════════════════════════════════════════════ -->
+<script src="feedback-widget.js" data-page="chitti_health_file"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_isl.js"></script>
 </body>
 </html>

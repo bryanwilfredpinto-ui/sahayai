@@ -18,4 +18,5 @@ from models.health_file import (  # noqa: F401
     HealthVital,
     HealthReminder,
     InsurancePolicy,
+    HealthDispatch,
 )
