@@ -571,3 +571,125 @@ section h3 {
    doesn't hide behind the 56px bar. Opt-in: add class chitti-has-bottom-nav
    to body. */
 body.chitti-has-bottom-nav { padding-bottom: 68px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   375px MOBILE GUARDS (LOCKED 2026-05-23 — Sire Step-3 directive)
+   Universal "no-horizontal-scroll-ever" + "48px tap target everywhere"
+   safety net. Applied to ALL 16 product pages via theme.css inclusion.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. PREVENT horizontal scroll at any width. Body width clamped to
+      the viewport; any overflow gets hidden (better than the page
+      offering a horizontal-scroll surface that users find by accident
+      on touch). Long content INSIDE specific containers can still
+      use overflow-x:auto explicitly — this guard only stops the
+      ROOT-LEVEL surprise. */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* 2. Media + embeds — always fit the column on mobile. */
+img, video, canvas, iframe, svg, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 3. Long unbroken strings (URLs, base64, hashes) — wrap, don't
+      stretch the parent. */
+pre, code, samp, kbd {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.kv-row .val, .answer, .timeline .entry, [data-chitti-response] {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* 4. Tables — wrap as small cards on phones (last-resort; pages
+      that need a real table should opt-in via .chitti-keep-table). */
+@media (max-width: 480px) {
+  table:not(.chitti-keep-table) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+}
+
+/* 5. Tap-target floor — 48×48 px on every interactive element that
+      looks like a primary action. Excludes elements explicitly opting
+      out via .chitti-tiny / .btn-tiny (small chrome icons / inline
+      affordances), and excludes the per-card feedback bar buttons
+      which already declare 36px because they nest 4 buttons in a
+      narrow row. */
+button:not(.chitti-tiny):not(.btn-tiny):not(.tiny):not(.chitti-fb-bbtn),
+a.btn:not(.tiny),
+a.cta-saffron:not(.tiny),
+a.btn-saffron:not(.tiny),
+a.btn-navy:not(.tiny),
+input[type="button"]:not(.tiny),
+input[type="submit"]:not(.tiny) {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* 6. Flex / grid rows that pack many children → always wrap on
+      narrow screens so nothing gets pushed off-screen. */
+@media (max-width: 480px) {
+  .switch-row,
+  .header-controls,
+  .brand-row,
+  .pills,
+  .row-mic,
+  .field-row,
+  .lang-pick,
+  .actions {
+    flex-wrap: wrap !important;
+  }
+  /* Bottom-nav: ensure 5 tabs squeeze without wrap (use smaller font
+     instead — the nav itself never wraps because it's `display:flex`
+     justify-content:space-around with 5 equal columns at 56px height). */
+  .chitti-bharat-bottom-nav .lbl {
+    font-size: 10px;
+  }
+  .chitti-bharat-bottom-nav .ico {
+    font-size: 18px;
+  }
+}
+
+/* 7. Form controls — no IE/Safari overflow on inputs. */
+input, select, textarea, button {
+  max-width: 100%;
+}
+
+/* 8. Sticky banners — never push horizontal layout. */
+.sebi-bar, .med-bar, .news-disclaimer, .picker-bar, .chitti-disclaimer-bar {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* 9. Bharat stripe — already 3 equal bands per spec, but on very
+      narrow phones (320 px) the 3-band gradient can look pixel-aligned
+      off. Force the gradient stops to integer percentages for crisp
+      rendering. (Already done above; this is a safety pin in case
+      the stop math changes in future.) */
+@media (max-width: 380px) {
+  .chitti-bharat-stripe,
+  .bharat-stripe {
+    height: 3px !important;
+    background: linear-gradient(
+      90deg,
+      var(--chitti-saffron) 0%,
+      var(--chitti-saffron) 33%,
+      var(--chitti-white)   33%,
+      var(--chitti-white)   67%,
+      var(--chitti-green)   67%,
+      var(--chitti-green)   100%
+    ) !important;
+  }
+}
+
+/* 10. Bottom-nav above sticky bottom UI — ensure the 56px nav doesn't
+       hide content from sticky callouts. Already handled via body.chitti-
+       has-bottom-nav { padding-bottom:68px }. */
