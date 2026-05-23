@@ -75,30 +75,22 @@
     <div class="title" data-vai-i18n="mc.empty.title">अपनी गाड़ी जोड़ें</div>
     <div class="sub" data-vai-i18n="mc.empty.sub">बोलें — "मेरी गाड़ी Maruti Swift DL3CAB5678 2020 सफ़ेद"</div>
     <div class="quote">🎙️ "मेरी गाड़ी Maruti Swift DL3CAB5678 2020 सफ़ेद"</div>
-    <br><button class="sds-btn primary" onclick="mcAddByVoice()">🎙️ बोलकर जोड़ें</button>
+    <br><button class="sds-btn primary" onclick="mcAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
   </div>
 
   <div id="mc-summary" style="display:none">
     <div class="sds-health-card green" id="mc-health">
       <span class="ico">🟢</span>
       <div><div class="label" id="mc-health-label">ठीक है</div><div class="sub" id="mc-health-sub">सब कुछ ठीक है</div></div>
-      <div class="mc-hscore" id="mc-hscore" aria-label="Vehicle Health Score">
-        <div class="mc-hscore-num" id="mc-hscore-num">100</div>
-        <div class="mc-hscore-lbl">Health</div>
+      <div class="mc-hscore" id="mc-hscore" data-vai-i18n-attr="aria-label|hs.aria" aria-label="Vehicle Health Score"><div class="mc-hscore-num" id="mc-hscore-num">100</div><div class="mc-hscore-lbl" data-vai-i18n="hs.lbl">Health</div>
       </div>
     </div>
 
     <!-- World-class additions on Home — SOS · Trip-readiness · Find Mechanic -->
     <div class="mc-quick-row">
-      <button class="mc-quick mc-quick-sos" onclick="mcSOS()" aria-label="Emergency SOS — family cascade, never police">
-        <span class="ico">🆘</span><span class="lbl">SOS</span><span class="sub">Family cascade</span>
-      </button>
-      <button class="mc-quick mc-quick-trip" onclick="mcTripReady()" aria-label="Pre-drive readiness check">
-        <span class="ico">🧳</span><span class="lbl">Trip ready?</span><span class="sub">30-sec sweep</span>
-      </button>
-      <button class="mc-quick mc-quick-mech" onclick="mcTab('ask'); setTimeout(()=>document.getElementById('mc-pin')?.focus(),250)" aria-label="Find a trusted mechanic">
-        <span class="ico">🗺️</span><span class="lbl">Find mech</span><span class="sub">Community-rated</span>
-      </button>
+      <button class="mc-quick mc-quick-sos" onclick="mcSOS()" data-vai-i18n-attr="aria-label|qa.sos.aria" aria-label="Emergency SOS"><span class="ico">🆘</span><span class="lbl" data-vai-i18n="qa.sos">SOS</span><span class="sub" data-vai-i18n="qa.sos.sub">Family cascade</span></button>
+      <button class="mc-quick mc-quick-trip" onclick="mcTripReady()" data-vai-i18n-attr="aria-label|qa.trip.aria" aria-label="Pre-drive readiness check"><span class="ico">🧳</span><span class="lbl" data-vai-i18n="qa.trip">Trip ready?</span><span class="sub" data-vai-i18n="qa.trip.sub">30-sec sweep</span></button>
+      <button class="mc-quick mc-quick-mech" onclick="mcTab('ask'); setTimeout(()=>document.getElementById('mc-pin')?.focus(),250)" data-vai-i18n-attr="aria-label|qa.mech.aria" aria-label="Find a trusted mechanic"><span class="ico">🗺️</span><span class="lbl" data-vai-i18n="qa.mech">Find mech</span><span class="sub" data-vai-i18n="qa.mech.sub">Community-rated</span></button>
     </div>
     <div id="mc-trip-result" style="margin-top:8px"></div>
 
@@ -113,14 +105,14 @@
       </div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(mcSummary(), CURRENT_LANG)">🔊</button>
-        <button class="demo" onclick="mcDemoHome()">▶ डेमो</button>
+        <button class="demo" onclick="mcDemoHome()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
         <span class="sep"></span>
         <button class="fb-pos" onclick="logProductAction('mc_home', 1)">👍</button>
         <button class="fb-neg" onclick="sdsToggleFb('mc-home-fb')">👎</button>
       </div>
       <div class="sds-fb-panel" id="mc-home-fb">
         <textarea id="mc-home-fb-text" placeholder="Home par kya kami hai?"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-home-fb')">रद्द</button><button onclick="sendFb('mc_home','mc-home-fb-text','mc-home-fb')">भेजो</button></div>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-home-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_home','mc-home-fb-text','mc-home-fb')" data-vai-i18n="ui.send">भेजो</button></div>
       </div>
     </div>
 
@@ -129,14 +121,14 @@
       <div id="mc-safety-tip-text">…</div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(document.getElementById('mc-safety-tip-text').textContent, CURRENT_LANG)">🔊</button>
-        <button class="demo" onclick="mcNextSafetyTip()">▶ अगली</button>
+        <button class="demo" onclick="mcNextSafetyTip()">▶ <span data-vai-i18n="ui.next">अगली</span></button>
         <span class="sep"></span>
         <button class="fb-pos" onclick="logProductAction('mc_safety_tip', 1)">👍</button>
         <button class="fb-neg" onclick="sdsToggleFb('mc-tip-fb')">👎</button>
       </div>
       <div class="sds-fb-panel" id="mc-tip-fb">
         <textarea id="mc-tip-fb-text" placeholder="यह tip कैसा लगा?"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-tip-fb')">रद्द</button><button onclick="sendFb('mc_safety_tip','mc-tip-fb-text','mc-tip-fb')">भेजो</button></div>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-tip-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_safety_tip','mc-tip-fb-text','mc-tip-fb')" data-vai-i18n="ui.send">भेजो</button></div>
       </div>
     </div>
   </div>
@@ -150,7 +142,7 @@
     <div class="sds-card-sub" data-vai-i18n="mb.form.sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
     <div class="sds-field"><label data-vai-i18n="mb.form.make">बनाने वाली कंपनी (Make)</label>
       <select id="mc-make" class="sds-select" onchange="mcOnMakeChange(this.value)">
-        <option value="">— Make —</option>
+        <option value="" data-vai-i18n="vh.make.dash">— Make —</option>
         <option>Maruti Suzuki</option><option>Hyundai</option><option>Tata</option><option>Mahindra</option>
         <option>Toyota</option><option>Honda</option><option>Kia</option><option>Nissan</option>
         <option>Renault</option><option>Volkswagen</option><option>Skoda</option><option>MG</option>
@@ -158,7 +150,7 @@
       </select>
     </div>
     <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
-      <select id="mc-model" class="sds-select"><option value="">— Model —</option></select>
+      <select id="mc-model" class="sds-select"><option value="" data-vai-i18n="vh.model.dash">— Model —</option></select>
     </div>
     <div class="sds-field"><label data-vai-i18n="mc.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(XZ+ / VXi / ZXi+ / SX(O) / standard)</span></label><input id="mc-variant" class="sds-input" placeholder="XZ+ / VXi / ZXi+ / SX(O) / standard"></div>
     <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL3CAB5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
@@ -187,7 +179,7 @@
     </div>
     <div class="sds-fb-panel" id="mc-car-fb">
       <textarea id="mc-car-fb-text" placeholder="Form mein kya improve karein?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-car-fb')">रद्द</button><button onclick="sendFb('mc_car_form','mc-car-fb-text','mc-car-fb')">भेजो</button></div>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-car-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_car_form','mc-car-fb-text','mc-car-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
@@ -318,45 +310,50 @@
 <div class="sds-tab-panel" id="mc-tab-docs">
   <div id="mc-docs-list"></div>
   <div class="sds-card chitti-response" data-chitti-section="📋 कागज़ात के बारे में">
-    <h2 class="sds-card-title"><span class="ico">📋</span> कागज़ात — सब एक जगह</h2>
+    <h2 class="sds-card-title"><span class="ico">📋</span> <span data-vai-i18n="dc.title">कागज़ात — सब एक जगह</span></h2>
     <div class="sds-card-sub">Insurance · PUC · RC · DL · FASTag — हर कागज़ की expiry track होती है। Chitti के अपने inbox में reminder आएगी।</div>
-    <div class="sds-field"><label>Reminder कब चाहिए?</label>
-      <select id="mc-rem-window" class="sds-select"><option value="30">30 दिन पहले</option><option value="7">7 दिन पहले</option><option value="1">1 दिन पहले</option></select>
+    <div class="sds-field"><label data-vai-i18n="dc.rem.label">Reminder कब चाहिए?</label>
+      <select id="mc-rem-window" class="sds-select"><option value="30" data-vai-i18n="dc.rem.30">30 दिन पहले</option><option value="7" data-vai-i18n="dc.rem.7">7 दिन पहले</option><option value="1" data-vai-i18n="dc.rem.1">1 दिन पहले</option></select>
     </div>
     <div class="sds-card-toolbar">
-      <button onclick="speakDocsAloud()">🔊 पढ़ो</button>
-      <button class="demo" onclick="mcDemoDocs()">▶ डेमो</button>
+      <button onclick="speakDocsAloud()">🔊 <span data-vai-i18n="ui.padho">पढ़ो</span></button>
+      <button class="demo" onclick="mcDemoDocs()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_docs', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-docs-fb')">👎</button>
     </div>
     <div class="sds-fb-panel" id="mc-docs-fb">
       <textarea id="mc-docs-fb-text" placeholder="कागज़ात page कैसा है?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-docs-fb')">रद्द</button><button onclick="sendFb('mc_docs','mc-docs-fb-text','mc-docs-fb')">भेजो</button></div>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-docs-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_docs','mc-docs-fb-text','mc-docs-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
   <!-- ════════ 📓 SERVICE LOGBOOK — CARFAX + MECH AI Digital Garage best practice ════════ -->
   <div class="sds-card chitti-response" data-chitti-section="📓 Service Logbook">
-    <h2 class="sds-card-title"><span class="ico">📓</span> Service Logbook</h2>
-    <div class="sds-card-sub">Har repair / service yahaan log karein. Aapki gaadi ka medical history — resale time pe ₹15,000+ zyada milte hain.</div>
-    <button class="sds-btn primary block" onclick="mcLogToggle()" id="mc-log-toggle-btn">➕ Add service entry</button>
+    <h2 class="sds-card-title"><span class="ico">📓</span> <span data-vai-i18n="lg.title">Service Logbook</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="lg.sub">Har repair / service yahaan log karein. Aapki gaadi ka medical history — resale time pe zyada paisa milta hai.</div>
+    <button class="sds-btn primary block" onclick="mcLogToggle()" id="mc-log-toggle-btn" data-vai-i18n="lg.add_cta">➕ Add service entry</button>
     <div id="mc-log-form" style="display:none;margin-top:10px">
-      <div class="sds-field"><label>Date</label><input id="mc-log-date" class="sds-input" type="date"></div>
-      <div class="sds-field"><label>Odometer (KM)</label><input id="mc-log-km" class="sds-input" type="number" inputmode="numeric" placeholder="52000"></div>
-      <div class="sds-field"><label>Kya kaam hua?</label><input id="mc-log-what" class="sds-input" placeholder="oil change + brake pad + AC service"></div>
-      <div class="sds-field"><label>Total cost (₹)</label><input id="mc-log-cost" class="sds-input" type="number" inputmode="numeric" placeholder="4500"></div>
-      <div class="sds-field"><label>Mechanic / shop name (optional)</label><input id="mc-log-mech" class="sds-input" placeholder="Maruti ASS Sector 18"></div>
-      <button class="sds-btn primary block" onclick="mcLogAdd()">💾 Save entry</button>
-      <button class="sds-btn ghost block" style="margin-top:6px" onclick="mcLogToggle()">रद्द</button>
+      <div class="sds-field"><label data-vai-i18n="lg.date">Date</label><input id="mc-log-date" class="sds-input" type="date"></div>
+      <div class="sds-field"><label data-vai-i18n="lg.km">Odometer (KM)</label><input id="mc-log-km" class="sds-input" type="number" inputmode="numeric" placeholder="52000"></div>
+      <div class="sds-field"><label data-vai-i18n="lg.what">Kya kaam hua?</label><input id="mc-log-what" class="sds-input" placeholder="oil change + brake pad + AC service"></div>
+      <div class="sds-field"><label data-vai-i18n="lg.cost">Total cost (₹)</label><input id="mc-log-cost" class="sds-input" type="number" inputmode="numeric" placeholder="4500"></div>
+      <div class="sds-field"><label data-vai-i18n="lg.mech">Mechanic / shop name (optional)</label><input id="mc-log-mech" class="sds-input" placeholder="Maruti ASS Sector 18"></div>
+      <button class="sds-btn primary block" onclick="mcLogAdd()" data-vai-i18n="lg.save">💾 Save entry</button>
+      <button class="sds-btn ghost block" style="margin-top:6px" onclick="mcLogToggle()" data-vai-i18n="ui.cancel">रद्द</button>
     </div>
     <div id="mc-log-list" style="margin-top:14px"></div>
     <div class="sds-card-toolbar">
-      <button onclick="mcLogSpeak()">🔊 Suno</button>
-      <button class="demo" onclick="mcLogDemo()">▶ डेमो</button>
+      <button onclick="mcLogSpeak()">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+      <button class="demo" onclick="mcLogDemo()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_logbook', 1)">👍</button>
-      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_logbook'">👎</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-logbook-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-logbook-fb">
+      <textarea id="mc-logbook-fb-text" data-vai-i18n-attr="placeholder|fb.ph" placeholder="Yeh feature kaisa raha?"></textarea>
+      <button class="fb-mic-btn" onclick="fbMicListen('mc-logbook-fb-text', this)" data-vai-i18n-attr="aria-label|fb.mic.aria" aria-label="Speak feedback">🎙️ <span data-vai-i18n="fb.mic">बोलो</span></button>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-logbook-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_logbook','mc-logbook-fb-text','mc-logbook-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 </div>
@@ -364,18 +361,18 @@
 <div class="sds-tab-panel" id="mc-tab-alerts">
   <div id="mc-alerts-list"></div>
   <div class="sds-card chitti-response" data-chitti-section="🚨 सक्रिय चेतावनी">
-    <h2 class="sds-card-title"><span class="ico">🚨</span> सक्रिय चेतावनी</h2>
+    <h2 class="sds-card-title"><span class="ico">🚨</span> <span data-vai-i18n="al.title">सक्रिय चेतावनी</span></h2>
     <div class="sds-card-sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी।</div>
     <div class="sds-card-toolbar">
-      <button onclick="speakAllAlerts()">🔊 सब पढ़ो</button>
-      <button class="demo" onclick="mcDemoAlerts()">▶ डेमो</button>
+      <button onclick="speakAllAlerts()">🔊 <span data-vai-i18n="ui.sab_padho">सब पढ़ो</span></button>
+      <button class="demo" onclick="mcDemoAlerts()">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_alerts', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-alerts-fb')">👎</button>
     </div>
     <div class="sds-fb-panel" id="mc-alerts-fb">
       <textarea id="mc-alerts-fb-text" placeholder="Alerts कैसा रहा?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-alerts-fb')">रद्द</button><button onclick="sendFb('mc_alerts','mc-alerts-fb-text','mc-alerts-fb')">भेजो</button></div>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-alerts-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_alerts','mc-alerts-fb-text','mc-alerts-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 </div>
@@ -394,95 +391,115 @@
     <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakText('OBD2 scan. Error code likhiye, Chitti use plain Hindi mein samjhayegi.', CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="document.getElementById('mc-obd-code').value='P0420'; mcObdScan();">▶ डेमो</button>
+      <button class="demo" onclick="document.getElementById('mc-obd-code').value='P0420'; mcObdScan();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_obd', 1)">👍</button>
       <button class="fb-neg" onclick="sdsToggleFb('mc-obd-fb')">👎</button>
     </div>
     <div class="sds-fb-panel" id="mc-obd-fb">
       <textarea id="mc-obd-fb-text" placeholder="OBD2 scan kaisa raha?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-obd-fb')">रद्द</button><button onclick="sendFb('mc_obd','mc-obd-fb-text','mc-obd-fb')">भेजो</button></div>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-obd-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_obd','mc-obd-fb-text','mc-obd-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
   <!-- ════════ 📸 PHOTO DIAGNOSE — MECH AI + TrunkMonkey best practice ════════ -->
   <div class="sds-card chitti-response" data-chitti-section="📸 Photo Diagnose">
-    <h2 class="sds-card-title"><span class="ico">📸</span> Photo Diagnose</h2>
-    <div class="sds-card-sub">Engine bay khol kar, dashboard light, fluid leak, tyre wear, ya kisi part ki photo lo — Chitti dekh kar batayegi.</div>
+    <h2 class="sds-card-title"><span class="ico">📸</span> <span data-vai-i18n="ph.title">Photo Diagnose</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="ph.sub">Engine bay khol kar, dashboard light, fluid leak, tyre wear, ya kisi part ki photo lo — Chitti dekh kar batayegi.</div>
     <input type="file" accept="image/*" capture="environment" id="mc-photo-input" style="display:none" onchange="mcPhotoSubmit(this)">
-    <button class="sds-btn primary block" onclick="document.getElementById('mc-photo-input').click()">📸 Photo lo / upload karo</button>
+    <button class="sds-btn primary block" onclick="document.getElementById('mc-photo-input').click()" data-vai-i18n="ph.cta">📸 Photo lo / upload karo</button>
     <img id="mc-photo-preview" style="display:none;max-width:100%;border-radius:10px;margin-top:10px">
     <div id="mc-photo-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
-      <button onclick="speakText('Photo diagnose. Engine, leak, tyre ya dashboard light ki photo lo. Chitti dekh kar batayegi.', CURRENT_LANG)">🔊</button>
+      <button onclick="speakText(strFor4W('ph.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_photo', 1)">👍</button>
-      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_photo'">👎</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-photo-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-photo-fb">
+      <textarea id="mc-photo-fb-text" data-vai-i18n-attr="placeholder|fb.ph" placeholder="Yeh feature kaisa raha?"></textarea>
+      <button class="fb-mic-btn" onclick="fbMicListen('mc-photo-fb-text', this)" data-vai-i18n-attr="aria-label|fb.mic.aria" aria-label="Speak feedback">🎙️ <span data-vai-i18n="fb.mic">बोलो</span></button>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-photo-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_photo','mc-photo-fb-text','mc-photo-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
   <!-- ════════ 🎙️ SOUND DIAGNOSE — AutoSonix + TrunkMonkey best practice ════════ -->
   <div class="sds-card chitti-response" data-chitti-section="🎙️ Sound Diagnose">
-    <h2 class="sds-card-title"><span class="ico">🎙️</span> Sound Diagnose</h2>
-    <div class="sds-card-sub">Engine chalu karke 10 second record karo. Phir 1-2 shabd mein bata do kaisi awaaz aa rahi hai — Chitti pehchanegi.</div>
+    <h2 class="sds-card-title"><span class="ico">🎙️</span> <span data-vai-i18n="sd.title">Sound Diagnose</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="sd.sub">Engine chalu karke 10 second record karo. Phir 1-2 shabd mein bata do kaisi awaaz aa rahi hai — Chitti pehchanegi.</div>
     <div class="mc-sound-row">
-      <button id="mc-sound-rec-btn" class="sds-btn primary block" onclick="mcSoundStart()">🔴 Record 10 sec</button>
+      <button id="mc-sound-rec-btn" class="sds-btn primary block" onclick="mcSoundStart()" data-vai-i18n="sd.rec">🔴 Record 10 sec</button>
       <div id="mc-sound-status" style="font-size:13px;color:#555;margin-top:6px"></div>
       <audio id="mc-sound-player" controls style="display:none;width:100%;margin-top:6px"></audio>
     </div>
     <div id="mc-sound-describe" style="display:none;margin-top:10px">
-      <label style="font-size:13px;color:#666">Awaaz kaise lag rahi hai? (1-2 shabd)</label>
-      <input id="mc-sound-desc-text" class="sds-input" placeholder="engine ghir-ghir / brake squeal / AC kat-kat" style="margin-top:4px">
-      <button class="sds-btn primary block" style="margin-top:8px" onclick="mcSoundSubmit()">Chitti se pucho ➜</button>
+      <label style="font-size:13px;color:#666" data-vai-i18n="sd.desc.label">Awaaz kaise lag rahi hai? (1-2 shabd)</label>
+      <input id="mc-sound-desc-text" class="sds-input" data-vai-i18n-attr="placeholder|sd.desc.ph" placeholder="engine ghir-ghir / brake squeal / AC kat-kat" style="margin-top:4px">
+      <button class="sds-btn primary block" style="margin-top:8px" onclick="mcSoundSubmit()" data-vai-i18n="sd.submit">Chitti se pucho ➜</button>
     </div>
     <div id="mc-sound-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
-      <button onclick="speakText('Sound diagnose. Engine chalu karke 10 second record karo phir Chitti se pucho.', CURRENT_LANG)">🔊</button>
+      <button onclick="speakText(strFor4W('sd.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_sound', 1)">👍</button>
-      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_sound'">👎</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-sound-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-sound-fb">
+      <textarea id="mc-sound-fb-text" data-vai-i18n-attr="placeholder|fb.ph" placeholder="Yeh feature kaisa raha?"></textarea>
+      <button class="fb-mic-btn" onclick="fbMicListen('mc-sound-fb-text', this)" data-vai-i18n-attr="aria-label|fb.mic.aria" aria-label="Speak feedback">🎙️ <span data-vai-i18n="fb.mic">बोलो</span></button>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-sound-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_sound','mc-sound-fb-text','mc-sound-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
   <!-- ════════ 💰 FAIR PRICE GUARD — CARFAX + YourMechanic best practice ════════ -->
   <div class="sds-card chitti-response" data-chitti-section="💰 Fair Price Guard">
-    <h2 class="sds-card-title"><span class="ico">💰</span> Fair Price Guard</h2>
-    <div class="sds-card-sub">Mechanic ne quote diya? Yahaan likho — Chitti batayegi sahi daam hai ya overcharge.</div>
+    <h2 class="sds-card-title"><span class="ico">💰</span> <span data-vai-i18n="fp.title">Fair Price Guard</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="fp.sub">Mechanic ne quote diya? Yahaan likho — Chitti batayegi sahi daam hai ya overcharge.</div>
     <div class="sds-field">
-      <label>Kya kaam hai?</label>
-      <input id="mc-fp-what" class="sds-input" placeholder="brake pad replace, AC gas top-up, clutch plate">
+      <label data-vai-i18n="fp.what.label">Kya kaam hai?</label>
+      <input id="mc-fp-what" class="sds-input" data-vai-i18n-attr="placeholder|fp.what.ph" placeholder="brake pad, AC gas top-up, clutch plate">
     </div>
     <div class="sds-field">
-      <label>Mechanic ka quote (₹)</label>
+      <label data-vai-i18n="fp.quote.label">Mechanic ka quote (₹)</label>
       <input id="mc-fp-quote" class="sds-input" type="number" inputmode="numeric" placeholder="3500">
     </div>
-    <button class="sds-btn primary block" onclick="mcFairPriceCheck()">Chitti se check karo ➜</button>
+    <button class="sds-btn primary block" onclick="mcFairPriceCheck()" data-vai-i18n="fp.cta">Chitti se check karo ➜</button>
     <div id="mc-fp-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
-      <button onclick="speakText('Fair price guard. Mechanic ne kitne ka quote diya, Chitti se check karo.', CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="document.getElementById('mc-fp-what').value='Brake pad front replace'; document.getElementById('mc-fp-quote').value='3800'; mcFairPriceCheck();">▶ डेमो</button>
+      <button onclick="speakText(strFor4W('fp.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+      <button class="demo" onclick="document.getElementById('mc-fp-what').value='Brake pad front replace'; document.getElementById('mc-fp-quote').value='3800'; mcFairPriceCheck();">▶ <span data-vai-i18n="ui.demo">डेमो</span></button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_fairprice', 1)">👍</button>
-      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_fairprice'">👎</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-fp-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-fp-fb">
+      <textarea id="mc-fp-fb-text" data-vai-i18n-attr="placeholder|fb.ph" placeholder="Yeh feature kaisa raha?"></textarea>
+      <button class="fb-mic-btn" onclick="fbMicListen('mc-fp-fb-text', this)" data-vai-i18n-attr="aria-label|fb.mic.aria" aria-label="Speak feedback">🎙️ <span data-vai-i18n="fb.mic">बोलो</span></button>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-fp-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_fairprice','mc-fp-fb-text','mc-fp-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
   <!-- ════════ 🗺️ FIND MECHANIC — GoMechanic + Pitstop best practice ════════ -->
   <div class="sds-card chitti-response" data-chitti-section="🗺️ Find Mechanic">
-    <h2 class="sds-card-title"><span class="ico">🗺️</span> Find a trusted mechanic</h2>
-    <div class="sds-card-sub">Pincode dijiye — Chitti aapke area ke trusted mechanics dhundhegi + Google Maps mein khol degi.</div>
+    <h2 class="sds-card-title"><span class="ico">🗺️</span> <span data-vai-i18n="fm.title">Find a trusted mechanic</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="fm.sub">Pincode dijiye — Chitti aapke area ke trusted mechanics dhundhegi + Google Maps mein khol degi.</div>
     <div class="sds-field">
-      <label>Pincode (optional)</label>
+      <label data-vai-i18n="fm.pin.label">Pincode (optional)</label>
       <input id="mc-pin" class="sds-input" type="text" inputmode="numeric" placeholder="110001 / 560001" maxlength="6">
     </div>
-    <button class="sds-btn primary block" onclick="mcFindMechanic()">🗺️ Mechanic dhundo</button>
+    <button class="sds-btn primary block" onclick="mcFindMechanic()" data-vai-i18n="fm.cta">🗺️ Mechanic dhundo</button>
     <div id="mc-mech-result" style="margin-top:10px"></div>
     <div class="sds-card-toolbar">
-      <button onclick="speakText('Find mechanic. Pincode bataiye, Chitti aapke area ke trusted mechanics dhundhegi.', CURRENT_LANG)">🔊</button>
+      <button onclick="speakText(strFor4W('fm.speak'), CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
       <button class="demo" onclick="document.getElementById('mc-pin').value='110001'; mcFindMechanic();">▶ डेमो Delhi</button>
       <span class="sep"></span>
       <button class="fb-pos" onclick="logProductAction('mc_mech_find', 1)">👍</button>
-      <button class="fb-neg" onclick="window.location.href='feedback.html?product=chitti_mechanic_car&card=mc_mech_find'">👎</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-fm-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-fm-fb">
+      <textarea id="mc-fm-fb-text" data-vai-i18n-attr="placeholder|fb.ph" placeholder="Yeh feature kaisa raha?"></textarea>
+      <button class="fb-mic-btn" onclick="fbMicListen('mc-fm-fb-text', this)" data-vai-i18n-attr="aria-label|fb.mic.aria" aria-label="Speak feedback">🎙️ <span data-vai-i18n="fb.mic">बोलो</span></button>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-fm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_mech_find','mc-fm-fb-text','mc-fm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
     </div>
   </div>
 
@@ -494,8 +511,8 @@
         <div class="mc-soon-title">🔌 OBD2 Live Diagnosis <span class="mc-soon-phase">Phase 2</span></div>
         <div class="mc-soon-sub">Bluetooth device se seedha engine error code padhega Chitti. Plain Hindi mein samjhayegi — kahaan kya gadbad hai, kitna kharcha hoga.</div>
         <div class="mc-soon-bar">
-          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
-          <button class="mc-soon-want" onclick="mcSoonVote('obd2_live', 1, this)">👍 <span>Chahiye</span></button>
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('obd2_live', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
           <button class="mc-soon-nope" onclick="mcSoonVote('obd2_live', -1, this)">👎</button>
         </div>
       </div>
@@ -503,8 +520,8 @@
         <div class="mc-soon-title">💰 Fair Price Guarantee</div>
         <div class="mc-soon-sub">Aapke shehar mein sahi daam — Chitti aapke pin code ke 100+ workshops ke real prices se compare karegi. Mechanic dhoka nahi de sakta.</div>
         <div class="mc-soon-bar">
-          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
-          <button class="mc-soon-want" onclick="mcSoonVote('fair_price', 1, this)">👍 <span>Chahiye</span></button>
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('fair_price', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
           <button class="mc-soon-nope" onclick="mcSoonVote('fair_price', -1, this)">👎</button>
         </div>
       </div>
@@ -512,8 +529,8 @@
         <div class="mc-soon-title">✅ Confirmed Fix Reports</div>
         <div class="mc-soon-sub">1000+ mechanics ne yeh fix confirm kiya hai. BlueDriver-style social proof — aapko pata rahega kya kaam real mein chala.</div>
         <div class="mc-soon-bar">
-          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
-          <button class="mc-soon-want" onclick="mcSoonVote('confirmed_fix', 1, this)">👍 <span>Chahiye</span></button>
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('confirmed_fix', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
           <button class="mc-soon-nope" onclick="mcSoonVote('confirmed_fix', -1, this)">👎</button>
         </div>
       </div>
@@ -521,8 +538,8 @@
         <div class="mc-soon-title">📊 Drive Score</div>
         <div class="mc-soon-sub">Aapki driving se fuel kitna waste ho raha hai — daily, weekly, monthly. CARFAX Car Care jaisa logbook + India ke road conditions par tuned.</div>
         <div class="mc-soon-bar">
-          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span>Suno</span></button>
-          <button class="mc-soon-want" onclick="mcSoonVote('drive_score', 1, this)">👍 <span>Chahiye</span></button>
+          <button onclick="speakText(this.parentNode.parentNode.querySelector('.mc-soon-sub').textContent, CURRENT_LANG)">🔊 <span data-vai-i18n="ui.suno">Suno</span></button>
+          <button class="mc-soon-want" onclick="mcSoonVote('drive_score', 1, this)">👍 <span data-vai-i18n="ui.want">Chahiye</span></button>
           <button class="mc-soon-nope" onclick="mcSoonVote('drive_score', -1, this)">👎</button>
         </div>
       </div>
@@ -568,6 +585,7 @@
 </nav>
 
 <script src="chitti_a11y.js"></script>
+<script src="chitti_mechanic_shared.js"></script>
 <script src="feedback-widget.js" data-page="chitti_mechanic_car"></script>
 <script>
 const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
@@ -996,7 +1014,7 @@ const CAR_MODELS = {
 };
 function mcOnMakeChange(make){
   const sel = document.getElementById('mc-model');
-  sel.innerHTML = '<option value="">— Model —</option>';
+  sel.innerHTML = '<option value="" data-vai-i18n="vh.model.dash">— Model —</option>';
   (CAR_MODELS[make] || []).forEach(m => { const o = document.createElement('option'); o.textContent = m; sel.appendChild(o); });
 }
 
@@ -1531,7 +1549,7 @@ function mcKyvRender(j, c){
   stats.forEach(s => h += '<div class="kyv-stat"><div class="lbl">'+kyvEsc(s[0])+'</div><div class="val">'+kyvEsc(s[1])+'</div></div>');
   h += '</div>';
 
-  h += '<div class="kyv-section-title">🔧 Anatomy — har part ka role + kahaan</div>';
+  h += '<div class="kyv-section-title">' + strFor('kyv.sec.anatomy') + '</div>';
   (j.anatomy||[]).forEach(a => {
     h += '<div class="kyv-row"><div class="kyv-row-head"><b>'+kyvEsc(a.part||'')+'</b> <span class="kyv-loc">'+kyvEsc(a.location||'')+'</span></div>';
     h += '<div class="kyv-row-body">'+kyvEsc(a.function||'')+'</div>';
@@ -1539,7 +1557,7 @@ function mcKyvRender(j, c){
     h += '</div>';
   });
 
-  h += '<div class="kyv-section-title">🛢️ Consumables — kya, kab, kitne ka, kahaan se</div>';
+  h += '<div class="kyv-section-title">' + strFor('kyv.sec.consumables') + '</div>';
   (j.consumables||[]).forEach(con => {
     h += '<div class="kyv-consume">';
     h += '<div class="kyv-consume-head"><b>'+kyvEsc(con.item||'')+'</b>';
@@ -1560,7 +1578,7 @@ function mcKyvRender(j, c){
     h += '</div>';
   });
 
-  h += '<div class="kyv-section-title">✨ Saaf-safai — store ya ghar par</div>';
+  h += '<div class="kyv-section-title">' + strFor('kyv.sec.cleaning') + '</div>';
   (j.cleaning_care||[]).forEach(cl => {
     h += '<div class="kyv-clean">';
     h += '<div class="kyv-clean-head">'+kyvEsc(cl.surface||'')+'</div>';
@@ -1571,7 +1589,7 @@ function mcKyvRender(j, c){
   });
 
   if (j.toolkit) {
-    h += '<div class="kyv-section-title">🧰 Toolkit — kya khud rakhna</div>';
+    h += '<div class="kyv-section-title">' + strFor('kyv.sec.toolkit') + '</div>';
     [['starter','💰 Starter'],['mid','💰💰 Mid'],['pro','💰💰💰 Pro']].forEach(p => {
       const arr = j.toolkit[p[0]];
       if (arr && arr.length) {
@@ -1580,7 +1598,7 @@ function mcKyvRender(j, c){
     });
   }
 
-  h += '<div class="kyv-section-title">🚨 Dashboard light · awaaz · gandh — decoded</div>';
+  h += '<div class="kyv-section-title">' + strFor('kyv.sec.warnings') + '</div>';
   (j.warnings||[]).forEach(w => {
     const ucls = w.urgency === 'high' ? 'kyv-warn-high' : (w.urgency === 'medium' ? 'kyv-warn-med' : 'kyv-warn-low');
     h += '<div class="kyv-warn '+ucls+'">';
@@ -1595,7 +1613,7 @@ function mcKyvRender(j, c){
     h += '<ul class="kyv-known">'+j.known_issues.map(i => '<li>'+kyvEsc(i)+'</li>').join('')+'</ul>';
   }
 
-  h += '<div class="kyv-section-title">📅 Saal bhar ka care + paisa-bachao guide</div>';
+  h += '<div class="kyv-section-title">' + strFor('kyv.sec.calendar') + '</div>';
   if (j.seasonal) {
     h += '<div class="kyv-season">';
     if (j.seasonal.monsoon) h += '<div><b>🌧️ Monsoon:</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
@@ -1605,7 +1623,7 @@ function mcKyvRender(j, c){
   }
   if (j.service_cost) {
     h += '<div class="kyv-cost"><b>💸 Service cost benchmark:</b><br>';
-    h += 'Local mechanic: ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · Authorised: ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
+    h += strFor('kyv.cost.local') + ' ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · ' + strFor('kyv.cost.auth') + ' ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
     if (j.service_cost.what_is_done) h += '<div class="kyv-svc">'+kyvEsc(j.service_cost.what_is_done)+'</div>';
     h += '</div>';
   }
