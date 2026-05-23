@@ -42,7 +42,7 @@
       <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
     </select>
-    <button onclick="window.location.href='chitti_vaani.html'">🎙️ Chitti Vaani</button>
+    <button onclick="window.location.href='chitti_vaani.html'"><span data-vai-i18n="ui.open_vaani">🎙️ Chitti Vaani</span></button>
   </div>
 </header>
 
@@ -67,10 +67,10 @@
       <h2 class="sds-card-title"><span class="ico">🚗</span> <span id="mc-car-name">— —</span></h2>
       <div class="sds-card-sub" id="mc-car-meta">— —</div>
       <div class="health-row">
-        <div class="health-cell"><span class="lbl">Last service</span><span class="val" id="mc-last">—</span></div>
-        <div class="health-cell"><span class="lbl">Next service</span><span class="val" id="mc-next">—</span></div>
-        <div class="health-cell"><span class="lbl">Docs expiring</span><span class="val" id="mc-docs">—</span></div>
-        <div class="health-cell"><span class="lbl">Open alerts</span><span class="val" id="mc-alerts">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.last_service">Last service</span><span class="val" id="mc-last">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.next_service">Next service</span><span class="val" id="mc-next">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.docs_expiring">Docs expiring</span><span class="val" id="mc-docs">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.open_alerts">Open alerts</span><span class="val" id="mc-alerts">—</span></div>
       </div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(mcSummary(), CURRENT_LANG)">🔊</button>
@@ -105,21 +105,36 @@
 
 <div class="sds-tab-panel" id="mc-tab-car">
   <div class="sds-card chitti-response" data-chitti-section="🚗 गाड़ी की जानकारी">
-    <h2 class="sds-card-title"><span class="ico">🚗</span> गाड़ी की जानकारी</h2>
-    <div class="sds-card-sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
-    <div class="sds-field"><label>बनाने वाली कंपनी (Make)</label><input id="mc-make" class="sds-input" placeholder="Maruti / Hyundai / Tata / Mahindra / Toyota / Honda"></div>
-    <div class="sds-field"><label>मॉडल (Model)</label><input id="mc-model" class="sds-input" placeholder="Swift / Creta / Nexon / XUV / Innova"></div>
-    <div class="sds-field"><label>रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL3CAB5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
-    <div class="sds-field"><label>साल · रंग</label><div style="display:flex;gap:8px"><input id="mc-year" class="sds-input" placeholder="2020" inputmode="numeric"><input id="mc-color" class="sds-input" placeholder="सफ़ेद / white"></div></div>
-    <div class="sds-field"><label>Odometer (KM)</label><input id="mc-odo" class="sds-input" placeholder="55000" inputmode="numeric"></div>
-    <button class="sds-btn primary block" onclick="mcSaveCar()">सेव करो</button>
-    <button class="sds-btn ghost block" style="margin-top:8px" onclick="mcAddByVoice()">🎙️ बोलकर भरें</button>
-
-    <div class="mc-obd-stub">
-      <b>🔌 OBD2 device connect (Phase 2)</b><br>
-      OBD2 device गाड़ी के port में लगाइए → Chitti error codes पढ़ेगी और plain Hindi mein samjhayegi.
-      <br><small style="opacity:.8">Coming soon · Phase 2 — abhi ke liye Tab 5 me bolkar pooch sakte hain.</small>
+    <h2 class="sds-card-title"><span class="ico">🚗</span> <span data-vai-i18n="mb.form.title">मेरी गाड़ी</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mb.form.sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.make">बनाने वाली कंपनी (Make)</label>
+      <select id="mc-make" class="sds-select" onchange="mcOnMakeChange(this.value)">
+        <option value="">— Make —</option>
+        <option>Maruti Suzuki</option><option>Hyundai</option><option>Tata</option><option>Mahindra</option>
+        <option>Toyota</option><option>Honda</option><option>Kia</option><option>Nissan</option>
+        <option>Renault</option><option>Volkswagen</option><option>Skoda</option><option>MG</option>
+        <option>Ford</option><option>Other</option>
+      </select>
     </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
+      <select id="mc-model" class="sds-select"><option value="">— Model —</option></select>
+    </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL3CAB5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
+    <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
+      <div><label data-vai-i18n="mb.form.year">Year</label>
+        <select id="mc-year" class="sds-select">
+          <option value="">—</option>
+          <option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+          <option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option>
+          <option>2015</option><option>2014</option><option>2013</option><option>2012</option><option>2011</option><option>2010</option>
+        </select>
+      </div>
+      <div><label data-vai-i18n="mb.form.color">Colour</label><input id="mc-color" class="sds-input" placeholder="सफ़ेद / white"></div>
+    </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.odo">Odometer (KM)</label><input id="mc-odo" class="sds-input" placeholder="55000" inputmode="numeric"></div>
+    <button class="sds-btn primary block" onclick="mcSaveCar()" data-vai-i18n="mb.form.save">सेव करो</button>
+    <button class="sds-btn ghost block" style="margin-top:8px" onclick="mcAddByVoice()" data-vai-i18n="mb.form.voice">🎙️ बोलकर भरें</button>
+
 
     <div class="sds-card-toolbar">
       <button onclick="speakText('Apni gaadi ka make, model, reg number aur saal Chitti ko bataiye', CURRENT_LANG)">🔊</button>
@@ -177,6 +192,30 @@
 </div>
 
 <div class="sds-tab-panel" id="mc-tab-ask">
+  <!-- ════════ OBD2 — working scan flow (manual code entry today, Bluetooth in Phase 2) ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🔌 OBD2 scan">
+    <h2 class="sds-card-title"><span class="ico">🔌</span> <span data-vai-i18n="obd.title">🔌 OBD2 कोड</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="obd.sub">क्या आपके पास error code है? यहाँ लिखें — Chitti plain Hindi में समझाएगी।</div>
+    <div class="sds-field">
+      <label data-vai-i18n="obd.code.label">Error code</label>
+      <input id="mc-obd-code" class="sds-input" data-vai-i18n-attr="placeholder|obd.code.ph" placeholder="P0420 / B0001 / C0561 / U0073" style="text-transform:uppercase;letter-spacing:.06em">
+    </div>
+    <button class="sds-btn primary block" onclick="mcObdScan()"><span data-vai-i18n="obd.scan">इस code का मतलब</span></button>
+    <div id="mc-obd-result" style="margin-top:10px"></div>
+    <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('OBD2 scan. Error code likhiye, Chitti use plain Hindi mein samjhayegi.', CURRENT_LANG)">🔊</button>
+      <button class="demo" onclick="document.getElementById('mc-obd-code').value='P0420'; mcObdScan();">▶ डेमो</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mc_obd', 1)">👍</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-obd-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-obd-fb">
+      <textarea id="mc-obd-fb-text" placeholder="OBD2 scan kaisa raha?"></textarea>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-obd-fb')">रद्द</button><button onclick="sendFb('mc_obd','mc-obd-fb-text','mc-obd-fb')">भेजो</button></div>
+    </div>
+  </div>
+
   <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
   <div class="mc-soon-card" role="region" aria-label="Launching Soon">
     <div class="mc-soon-head"><span class="mc-soon-flag">🔜 Launching Soon</span> <span class="mc-soon-tag">Chitti Special</span></div>
@@ -375,7 +414,8 @@ function mcSaveCar(){
   mcTab('home');
 }
 function mcDemoForm(){
-  document.getElementById('mc-make').value = 'Maruti';
+  document.getElementById('mc-make').value = 'Maruti Suzuki';
+  mcOnMakeChange('Maruti Suzuki');
   document.getElementById('mc-model').value = 'Swift';
   document.getElementById('mc-reg').value = 'DL3CAB5678';
   document.getElementById('mc-year').value = '2020';
@@ -397,7 +437,7 @@ function mcAddByVoice(){
       const m = (d.reply || '').match(/\{[^}]+\}/);
       if (m) {
         const o = JSON.parse(m[0]);
-        if (o.make) document.getElementById('mc-make').value = o.make;
+        if (o.make) { document.getElementById('mc-make').value = o.make; mcOnMakeChange(o.make); }
         if (o.model) document.getElementById('mc-model').value = o.model;
         if (o.reg) document.getElementById('mc-reg').value = String(o.reg).toUpperCase();
         if (o.year) document.getElementById('mc-year').value = o.year;
@@ -645,6 +685,59 @@ async function sendFb(card, textareaId, panelId){
   speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
+
+// Cascading car Make → Model dropdown (Indian market top sellers).
+const CAR_MODELS = {
+  'Maruti Suzuki': ['Swift','Baleno','WagonR','Alto K10','Brezza','Ertiga','Dzire','Eeco','Grand Vitara','Fronx','Jimny'],
+  'Hyundai': ['Creta','Venue','i20','Verna','Exter','Aura','Tucson','Alcazar'],
+  'Tata': ['Nexon','Punch','Tiago','Altroz','Harrier','Safari','Curvv','Tigor'],
+  'Mahindra': ['XUV700','XUV3XO','Scorpio-N','Scorpio Classic','Thar','Bolero','Marazzo','XUV400'],
+  'Toyota': ['Innova Crysta','Innova HyCross','Fortuner','Hilux','Glanza','Urban Cruiser','Vellfire'],
+  'Honda': ['City','Amaze','Elevate','WR-V'],
+  'Kia': ['Seltos','Sonet','Carens','EV6','Carnival'],
+  'Nissan': ['Magnite','Kicks'],
+  'Renault': ['Kiger','Triber','Kwid'],
+  'Volkswagen': ['Virtus','Taigun','Tiguan'],
+  'Skoda': ['Slavia','Kushaq','Kodiaq','Octavia'],
+  'MG': ['Hector','Astor','ZS EV','Gloster','Comet EV'],
+  'Ford': ['EcoSport','Endeavour','Figo','Aspire'],
+  'Other': ['Other / Type below'],
+};
+function mcOnMakeChange(make){
+  const sel = document.getElementById('mc-model');
+  sel.innerHTML = '<option value="">— Model —</option>';
+  (CAR_MODELS[make] || []).forEach(m => { const o = document.createElement('option'); o.textContent = m; sel.appendChild(o); });
+}
+
+// OBD2 scan — manual code entry; DeepSeek translates to plain Hindi.
+async function mcObdScan(){
+  const code = (document.getElementById('mc-obd-code').value || '').trim().toUpperCase();
+  if (!code) { speakText('Pehle error code likhiye.', CURRENT_LANG); return; }
+  const out = document.getElementById('mc-obd-result');
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  const c = loadCar();
+  const ctx = c ? (c.make + ' ' + c.model + ' ' + c.year) : 'car (model unknown)';
+  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
+  const prompt = 'Translate this OBD-II diagnostic code into plain ' + langName + ' for an Indian driver.\n' +
+    'Vehicle: ' + ctx + '. Code: ' + code + '.\n' +
+    'Return ONLY JSON: {meaning:"<2 sentences in ' + langName + '>", severity:"minor|moderate|serious|critical", what_to_do:"<1-2 sentences>", safe_to_drive:true|false, fair_price_min_inr:int, fair_price_max_inr:int}.';
+  let parsed;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    const d = await r.json();
+    const m = (d.reply || '').match(/\{[\s\S]+\}/); if (m) parsed = JSON.parse(m[0]);
+  } catch(e){}
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti se code abhi nahi mila — phir try karein.</div>'; return; }
+  const sev = ({minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical'})[parsed.severity] || '⚪ ' + (parsed.severity || '');
+  const safe = parsed.safe_to_drive ? '✅ Safe to drive to workshop' : '❌ Do not drive — tow it';
+  out.innerHTML =
+    '<div class="sds-bubble chitti"><span class="who">' + code + ' · ' + sev + '</span>' + escapeHtmlMc(parsed.meaning || '') + '</div>' +
+    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">क्या करें?</span>' + escapeHtmlMc(parsed.what_to_do) + '</div>' : '') +
+    '<div class="sds-bubble ' + (parsed.safe_to_drive ? 'chitti' : 'safety') + '"><span class="who">Driving</span>' + safe + '</div>' +
+    (parsed.fair_price_min_inr ? '<div class="mc-fairprice">💰 <b>सही दाम</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
+  speakText((parsed.meaning || '') + ' ' + (parsed.what_to_do || ''), CURRENT_LANG);
+}
+function escapeHtmlMc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // Sire 2026-05-23 — Launching Soon vote handler.
 async function mcSoonVote(featureId, v, btn){

@@ -42,7 +42,7 @@
       <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
     </select>
-    <button onclick="window.location.href='chitti_vaani.html'">🎙️ Chitti Vaani</button>
+    <button onclick="window.location.href='chitti_vaani.html'"><span data-vai-i18n="ui.open_vaani">🎙️ Chitti Vaani</span></button>
   </div>
 </header>
 
@@ -71,10 +71,10 @@
       <h2 class="sds-card-title"><span class="ico">🏍️</span> <span id="mb-bike-name">— —</span></h2>
       <div class="sds-card-sub" id="mb-bike-meta">— —</div>
       <div class="health-row">
-        <div class="health-cell"><span class="lbl">Last service</span><span class="val" id="mb-last">—</span></div>
-        <div class="health-cell"><span class="lbl">Next service</span><span class="val" id="mb-next">—</span></div>
-        <div class="health-cell"><span class="lbl">Docs expiring</span><span class="val" id="mb-docs">—</span></div>
-        <div class="health-cell"><span class="lbl">Open alerts</span><span class="val" id="mb-alerts">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.last_service">Last service</span><span class="val" id="mb-last">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.next_service">Next service</span><span class="val" id="mb-next">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.docs_expiring">Docs expiring</span><span class="val" id="mb-docs">—</span></div>
+        <div class="health-cell"><span class="lbl" data-vai-i18n="mb.open_alerts">Open alerts</span><span class="val" id="mb-alerts">—</span></div>
       </div>
       <div class="sds-card-toolbar">
         <button onclick="speakText(mbSummary(), CURRENT_LANG)">🔊</button>
@@ -112,15 +112,33 @@
 
 <div class="sds-tab-panel" id="mb-tab-bike">
   <div class="sds-card chitti-response" data-chitti-section="🏍️ बाइक की जानकारी">
-    <h2 class="sds-card-title"><span class="ico">🏍️</span> बाइक की जानकारी</h2>
-    <div class="sds-card-sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
-    <div class="sds-field"><label>बनाने वाली कंपनी (Make)</label><input id="mb-make" class="sds-input" placeholder="Hero / Bajaj / Honda / TVS / Yamaha / Royal Enfield"></div>
-    <div class="sds-field"><label>मॉडल (Model)</label><input id="mb-model" class="sds-input" placeholder="Splendor / Pulsar / Activa / Apache"></div>
-    <div class="sds-field"><label>रजिस्ट्रेशन नंबर</label><input id="mb-reg" class="sds-input" placeholder="UP32AB1234" style="text-transform:uppercase;letter-spacing:.1em"></div>
-    <div class="sds-field"><label>साल · रंग</label><div style="display:flex;gap:8px"><input id="mb-year" class="sds-input" placeholder="2018" inputmode="numeric"><input id="mb-color" class="sds-input" placeholder="लाल / red"></div></div>
-    <div class="sds-field"><label>Odometer (KM)</label><input id="mb-odo" class="sds-input" placeholder="35000" inputmode="numeric"></div>
-    <button class="sds-btn primary block" onclick="mbSaveBike()">सेव करो</button>
-    <button class="sds-btn ghost block" style="margin-top:8px" onclick="mbAddByVoice()">🎙️ बोलकर भरें</button>
+    <h2 class="sds-card-title"><span class="ico">🏍️</span> <span data-vai-i18n="mb.form.title">मेरी बाइक</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mb.form.sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.make">बनाने वाली कंपनी (Make)</label>
+      <select id="mb-make" class="sds-select" onchange="mbOnMakeChange(this.value)">
+        <option value="">— Make —</option>
+        <option>Hero</option><option>Honda</option><option>Bajaj</option><option>TVS</option><option>Yamaha</option>
+        <option>Royal Enfield</option><option>Suzuki</option><option>KTM</option><option>Ola Electric</option><option>Ather</option><option>Other</option>
+      </select>
+    </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
+      <select id="mb-model" class="sds-select"><option value="">— Model —</option></select>
+    </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mb-reg" class="sds-input" placeholder="UP32AB1234" style="text-transform:uppercase;letter-spacing:.1em"></div>
+    <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
+      <div><label data-vai-i18n="mb.form.year">Year</label>
+        <select id="mb-year" class="sds-select">
+          <option value="">—</option>
+          <option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+          <option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option>
+          <option>2015</option><option>2014</option><option>2013</option><option>2012</option><option>2011</option><option>2010</option>
+        </select>
+      </div>
+      <div><label data-vai-i18n="mb.form.color">Colour</label><input id="mb-color" class="sds-input" placeholder="लाल / red"></div>
+    </div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.odo">Odometer (KM)</label><input id="mb-odo" class="sds-input" placeholder="35000" inputmode="numeric"></div>
+    <button class="sds-btn primary block" onclick="mbSaveBike()" data-vai-i18n="mb.form.save">सेव करो</button>
+    <button class="sds-btn ghost block" style="margin-top:8px" onclick="mbAddByVoice()" data-vai-i18n="mb.form.voice">🎙️ बोलकर भरें</button>
     <div class="sds-card-toolbar">
       <button onclick="speakText('Apni bike ka make, model, reg number aur saal Chitti ko bataiye', CURRENT_LANG)">🔊</button>
       <button class="demo" onclick="mbDemoForm()">▶ डेमो भरो</button>
@@ -177,6 +195,30 @@
 </div>
 
 <div class="sds-tab-panel" id="mb-tab-ask">
+  <!-- ════════ OBD2 — working scan flow (manual code entry today, Bluetooth in Phase 2) ════════ -->
+  <div class="sds-card chitti-response" data-chitti-section="🔌 OBD2 scan">
+    <h2 class="sds-card-title"><span class="ico">🔌</span> <span data-vai-i18n="obd.title">🔌 OBD2 कोड</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="obd.sub">क्या आपके पास error code है? यहाँ लिखें — Chitti plain Hindi में समझाएगी।</div>
+    <div class="sds-field">
+      <label data-vai-i18n="obd.code.label">Error code</label>
+      <input id="mb-obd-code" class="sds-input" data-vai-i18n-attr="placeholder|obd.code.ph" placeholder="P0420 / B0001 / C0561 / U0073" style="text-transform:uppercase;letter-spacing:.06em">
+    </div>
+    <button class="sds-btn primary block" onclick="mbObdScan()"><span data-vai-i18n="obd.scan">इस code का मतलब</span></button>
+    <div id="mb-obd-result" style="margin-top:10px"></div>
+    <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
+    <div class="sds-card-toolbar">
+      <button onclick="speakText('OBD2 scan. Error code likhiye, Chitti use plain Hindi mein samjhayegi.', CURRENT_LANG)">🔊</button>
+      <button class="demo" onclick="document.getElementById('mb-obd-code').value='P0420'; mbObdScan();">▶ डेमो</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_obd', 1)">👍</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mb-obd-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mb-obd-fb">
+      <textarea id="mb-obd-fb-text" placeholder="OBD2 scan kaisa raha?"></textarea>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-obd-fb')">रद्द</button><button onclick="sendFb('mb_obd','mb-obd-fb-text','mb-obd-fb')">भेजो</button></div>
+    </div>
+  </div>
+
   <!-- ════════ LAUNCHING SOON · FIXD / BlueDriver / CARFAX-grade additions ════════ -->
   <div class="mb-soon-card" role="region" aria-label="Launching Soon">
     <div class="mb-soon-head"><span class="mb-soon-flag">🔜 Launching Soon</span> <span class="mb-soon-tag">Chitti Special</span></div>
@@ -382,8 +424,9 @@ function mbSaveBike(){
   mbTab('home');
 }
 function mbDemoForm(){
-  document.getElementById('mb-make').value = 'Hero';
-  document.getElementById('mb-model').value = 'Splendor';
+  const mk = document.getElementById('mb-make'); mk.value = 'Hero';
+  mbOnMakeChange('Hero');
+  document.getElementById('mb-model').value = 'Splendor Plus';
   document.getElementById('mb-reg').value = 'UP32AB1234';
   document.getElementById('mb-year').value = '2018';
   document.getElementById('mb-color').value = 'लाल';
@@ -404,7 +447,7 @@ function mbAddByVoice(){
       const m = (data.reply || '').match(/\{[^}]+\}/);
       if (m) {
         const o = JSON.parse(m[0]);
-        if (o.make) document.getElementById('mb-make').value = o.make;
+        if (o.make) { document.getElementById('mb-make').value = o.make; mbOnMakeChange(o.make); }
         if (o.model) document.getElementById('mb-model').value = o.model;
         if (o.reg) document.getElementById('mb-reg').value = String(o.reg).toUpperCase();
         if (o.year) document.getElementById('mb-year').value = o.year;
@@ -681,6 +724,61 @@ async function sendFb(card, textareaId, panelId){
   speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
 }
 function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
+
+// Cascading bike Make → Model dropdown (Indian market top sellers).
+const BIKE_MODELS = {
+  'Hero': ['Splendor Plus','HF Deluxe','Passion Pro','Glamour','Xtreme 160R','Xpulse 200','Destini 125'],
+  'Honda': ['Activa 6G','Shine','SP 125','Unicorn','Dio','CB350','Hornet 2.0','CBR 250R'],
+  'Bajaj': ['Pulsar 150','Pulsar 125','Pulsar NS200','Pulsar RS200','Platina','CT 110','Avenger','Dominar 400','Chetak'],
+  'TVS': ['Apache RTR 160','Apache RTR 200','Jupiter','Ntorq 125','Raider 125','Star City Plus','XL100','iQube'],
+  'Yamaha': ['MT-15','R15 V4','FZ-S','FZ-X','Aerox 155','Ray-ZR','RayZR Hybrid'],
+  'Royal Enfield': ['Classic 350','Hunter 350','Meteor 350','Bullet 350','Himalayan 450','Continental GT 650','Interceptor 650'],
+  'Suzuki': ['Access 125','Avenis','Burgman Street','Gixxer 250','Gixxer SF','V-Strom 250 SX','Hayabusa'],
+  'KTM': ['Duke 200','Duke 250','Duke 390','RC 200','RC 390','Adventure 390'],
+  'Ola Electric': ['S1 Air','S1 X','S1 Pro','S1 X+'],
+  'Ather': ['450X','450S','Rizta','Rizta Z'],
+  'Other': ['Other / Type below'],
+};
+async function mbObdScan(){
+  const code = (document.getElementById('mb-obd-code').value || '').trim().toUpperCase();
+  if (!code) { speakText('Pehle error code likhiye.', CURRENT_LANG); return; }
+  const out = document.getElementById('mb-obd-result');
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti soch rahi hai…</span></div>';
+  const b = loadBike();
+  const ctx = b ? (b.make + ' ' + b.model + ' ' + b.year) : 'bike (model unknown)';
+  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
+  const prompt = 'Translate this OBD-II / motorcycle ECU diagnostic code into plain ' + langName + ' for an Indian rider.\n' +
+    'Vehicle: ' + ctx + '. Code: ' + code + '.\n' +
+    'Return ONLY JSON: {meaning:"<2 sentences in ' + langName + '>", severity:"minor|moderate|serious|critical", what_to_do:"<1-2 sentences>", safe_to_ride:true|false, fair_price_min_inr:int, fair_price_max_inr:int}.';
+  let parsed;
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    const d = await r.json();
+    const m = (d.reply || '').match(/\{[\s\S]+\}/); if (m) parsed = JSON.parse(m[0]);
+  } catch(e){}
+  if (!parsed) { out.innerHTML = '<div class="sds-bubble warn">Chitti se code abhi nahi mila — phir try karein.</div>'; return; }
+  const sev = ({minor:'🟢 Minor', moderate:'🟡 Moderate', serious:'🟠 Serious', critical:'🔴 Critical'})[parsed.severity] || '⚪ ' + (parsed.severity || '');
+  const safe = parsed.safe_to_ride ? '✅ Safe to ride to nearest mechanic' : '❌ Do not ride — call for help';
+  out.innerHTML =
+    '<div class="sds-bubble chitti"><span class="who">' + code + ' · ' + sev + '</span>' + escapeHtml(parsed.meaning || '') + '</div>' +
+    (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">क्या करें?</span>' + escapeHtml(parsed.what_to_do) + '</div>' : '') +
+    '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '"><span class="who">Riding</span>' + safe + '</div>' +
+    (parsed.fair_price_min_inr ? '<div class="mb-fairprice">💰 <b>सही दाम</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
+  speakText((parsed.meaning || '') + ' ' + (parsed.what_to_do || ''), CURRENT_LANG);
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function mbOnMakeChange(make){
+  const sel = document.getElementById('mb-model');
+  sel.innerHTML = '<option value="">— Model —</option>';
+  (BIKE_MODELS[make] || []).forEach(m => { const o = document.createElement('option'); o.textContent = m; sel.appendChild(o); });
+  if (make && (BIKE_MODELS[make] || []).length === 0) {
+    // Other → free-text
+    const inp = document.createElement('input');
+    inp.id = 'mb-model'; inp.className = 'sds-input'; inp.placeholder = 'Type your model';
+    sel.parentNode.replaceChild(inp, sel);
+  }
+}
 
 // Sire 2026-05-23 — Launching Soon vote handler.
 // Sends the vote to /api/feedback so the founder dashboard can rank
