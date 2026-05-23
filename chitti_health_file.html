@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-health-file/ (backend extends chitti-medupi-api). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Health File — your family's medical history, understood</title>
+<meta name="description" content="Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets reminders, lets you ask 'Wife ki diabetes ka history dikhao' in your language.">
+<meta name="chitti-page-desc" content="Chitti Health File — upload medical reports, Chitti reads + extracts + reminds. Per-profile (self / wife / mother / father / child). Encrypted at rest. Share with doctor only after voice haan.">
+<meta name="chitti-features" content="chitti-health-file/skills/FEATURES.md">
+<script src="strings.js" defer></script>
+<style>
+:root{
+  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#fff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --green:#16a34a; --red:#dc2626; --amber:#D4AF37; --soft:#f3f4f6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+.wrap{max-width:1080px;margin:0 auto;padding:18px}
+
+/* SEBI banner consistent with other Chitti pages */
+.sebi-bar{position:sticky;top:0;z-index:8000;background:#1f2937;color:#fff;font-size:12.5px;padding:8px 12px;text-align:center}
+.sebi-bar a{color:#fbbf24;text-decoration:underline;cursor:pointer}
+
+/* Hero */
+.hero{display:flex;gap:18px;align-items:flex-start;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:14px;flex-wrap:wrap}
+.hero .ico{font-size:50px;flex:0 0 auto}
+.hero .copy{flex:1;min-width:260px}
+.hero h1{font-size:24px;margin:0 0 4px;color:var(--navy);font-weight:800}
+.hero .sub{color:var(--muted);font-size:13.5px;margin-bottom:6px}
+.hero .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.hero .pills span{font-size:11px;padding:3px 10px;border-radius:999px;background:rgba(232,106,23,.10);color:var(--saffron);font-weight:700}
+.hero .pills .live{background:rgba(22,163,74,.12);color:var(--green)}
+.hero .pills .coming{background:rgba(212,175,55,.16);color:#92580f}
+
+/* Profile picker */
+.profile-bar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:14px;flex-wrap:wrap}
+.profile-bar label{font-size:12.5px;color:var(--muted);font-weight:700;margin-right:4px}
+.profile-bar select{padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;min-width:180px}
+.profile-bar button{padding:8px 14px;border:0;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.profile-bar .add{background:var(--saffron);color:#fff}
+.profile-bar .voice{background:#fff;border:1px solid var(--border);color:var(--navy)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:2px solid var(--border);margin-bottom:14px;padding-bottom:0}
+.tabs button{padding:10px 16px;border:0;background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.active{color:var(--saffron);border-bottom-color:var(--saffron)}
+.tabs button .pill-coming{font-size:10px;padding:1px 6px;border-radius:999px;background:rgba(212,175,55,.20);color:#92580f;margin-left:4px;vertical-align:middle}
+
+.panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+.panel.active{display:block}
+.panel h2{font-size:16px;margin:0 0 8px;color:var(--navy)}
+.panel .desc{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+
+/* Action buttons */
+.btn{padding:10px 18px;border:0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn.primary{background:var(--saffron);color:#fff}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--navy)}
+.btn.green{background:var(--green);color:#fff}
+.btn.danger{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.btn.tiny{padding:5px 10px;font-size:12px}
+
+/* Cards / rows */
+.row{display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+.row .meta{flex:1;min-width:200px}
+.row .meta .name{font-weight:700;color:var(--navy)}
+.row .meta .small{font-size:12px;color:var(--muted)}
+.row .actions{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:#eef2f7;color:#475569;font-weight:600}
+.tag.live{background:rgba(22,163,74,.14);color:#15803d}
+.tag.running{background:rgba(232,106,23,.14);color:var(--saffron)}
+.tag.coming{background:rgba(212,175,55,.20);color:#92580f}
+.tag.failed{background:rgba(220,38,38,.14);color:var(--red)}
+.tag.red{background:rgba(220,38,38,.14);color:var(--red)}
+.tag.green{background:rgba(22,163,74,.14);color:#15803d}
+
+/* Field block */
+.field{margin:8px 0}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff}
+.field textarea{min-height:80px;resize:vertical}
+.field-row{display:flex;gap:8px;flex-wrap:wrap}
+.field-row .field{flex:1;min-width:140px}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal .panel{background:#fff;border:2px solid var(--gold);border-radius:14px;max-width:600px;width:100%;padding:22px;display:block}
+.modal h2{margin:0 0 8px;color:var(--navy)}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+
+/* Timeline */
+.timeline{position:relative;padding-left:20px;border-left:2px solid var(--border)}
+.timeline .entry{position:relative;padding:10px 0 10px 14px;border-bottom:1px dashed var(--border)}
+.timeline .entry:before{content:'';position:absolute;left:-25px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--saffron)}
+.timeline .entry .when{font-size:12px;color:var(--muted)}
+.timeline .entry .what{font-weight:700;color:var(--navy)}
+
+/* Vitals chart */
+.vitals-chart{height:180px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:10px}
+.vitals-chart canvas{width:100%;height:100%}
+
+.empty{padding:20px;text-align:center;color:var(--muted);font-style:italic}
+
+.privacy-bar{background:rgba(22,163,74,.08);border:1px solid #16a34a33;color:#166534;padding:10px 12px;border-radius:10px;font-size:12.5px;margin-bottom:14px}
+.privacy-bar b{color:#166534}
+
+.gold-rule-bar{background:rgba(232,106,23,.06);border:1px solid #E86A1733;color:#7c2d12;padding:10px 12px;border-radius:10px;font-size:12.5px;margin-bottom:14px}
+
+@media (max-width:680px){
+  .hero h1{font-size:20px}
+  .panel{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="bharat-stripe" aria-hidden="true"></div>
+
+<div class="sebi-bar">
+  ⚠️ <b>NOT a doctor.</b> Chitti Health File stores and explains your medical documents. <b>Never</b> substitutes for professional medical advice. <a onclick="openDisclaimer()">Read full disclaimer →</a>
+</div>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero chitti-response" data-chitti-response="health-file-hero">
+    <div class="ico">🩺</div>
+    <div class="copy">
+      <h1>🪔 Chitti Health File</h1>
+      <div class="sub">Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets the right reminders, and lets you ask <i>"Wife ki diabetes ka history dikhao"</i> in your language. Per-family-member profiles. Encrypted at rest. Shared with a doctor only after your spoken "haan".</div>
+      <div class="pills">
+        <span class="live">LIVE</span>
+        <span>AES-256-GCM</span>
+        <span>Per-use voice consent</span>
+        <span>DeepSeek vision</span>
+        <span class="coming">Phase B: MRI/discharge auto-extract</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="privacy-bar"><b>🛡️ Privacy contract:</b> Documents encrypted at rest with AES-256-GCM. Only YOU (with your user_token) can decrypt. Doctor share requires per-use voice <b>"haan"</b> every single time. <b>No health data used for AI training</b> — DeepSeek API is opted out of input retention. <a href="#" onclick="openDisclaimer();return false">Full T&amp;C →</a></div>
+
+  <div class="gold-rule-bar">🪔 <b>Chitti's Golden Rule:</b> every share / upload / reminder fires through <i>"Sire, [action] karoon? Haan / Nahi"</i>. Silence = wait. Never defaults to Yes. <a href="SAHAYAI_MASTER.md#2g-chitti-golden-rule--confirm-before-every-action-locked-2026-05-23" target="_blank">§2g →</a></div>
+
+  <!-- Profile picker -->
+  <div class="profile-bar">
+    <label for="profile-select">Profile:</label>
+    <select id="profile-select" onchange="onProfileChange()">
+      <option value="">— loading —</option>
+    </select>
+    <button class="add" onclick="openProfileModal()">＋ Add family member</button>
+    <button class="voice" onclick="speakProfileName()" aria-label="Read current profile name aloud">🔊 Read</button>
+    <span style="flex:1"></span>
+    <span style="font-size:12px;color:var(--muted)">Switch between Self · Wife · Mother · Father · Child anytime</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button onclick="showTab('upload')" id="tab-upload" class="active">📤 Upload</button>
+    <button onclick="showTab('timeline')" id="tab-timeline">🕒 Timeline</button>
+    <button onclick="showTab('reminders')" id="tab-reminders">⏰ Reminders</button>
+    <button onclick="showTab('vitals')" id="tab-vitals">📈 Vitals</button>
+    <button onclick="showTab('insurance')" id="tab-insurance">🛡️ Insurance</button>
+    <button onclick="showTab('share')" id="tab-share">📤 Share with doctor</button>
+    <button onclick="showTab('search')" id="tab-search">🔎 Search</button>
+  </div>
+
+  <!-- ── UPLOAD ── -->
+  <div class="panel active" id="panel-upload">
+    <h2>📤 Upload a medical document</h2>
+    <div class="desc">Pick the kind of document, then take a photo or upload a PDF. For <b>prescription</b> and <b>blood report</b>, Chitti reads it with DeepSeek vision and extracts every detail. For other types it stores the file encrypted and you can tag it manually (full extraction lands in Phase B per spec).</div>
+
+    <div class="field">
+      <label for="up-type">What kind of document?</label>
+      <select id="up-type" onchange="onUpTypeChange()">
+        <option value="prescription">💊 Prescription <!-- LIVE -->(auto-extract)</option>
+        <option value="blood_report">🩸 Blood report (auto-extract)</option>
+        <option value="mri">🧠 MRI / CT / X-Ray scan (manual tag — Phase B)</option>
+        <option value="ultrasound">🔬 Ultrasound (manual tag — Phase B)</option>
+        <option value="ecg">❤️ ECG / Echo (manual tag — Phase B)</option>
+        <option value="discharge_summary">🏥 Discharge summary (manual tag — Phase B)</option>
+        <option value="insurance_health">🛡️ Health insurance policy (manual tag — Phase B)</option>
+        <option value="insurance_life">💞 Life insurance policy (manual tag — Phase B)</option>
+        <option value="vaccination">💉 Vaccination record (manual tag — Phase B)</option>
+        <option value="eye">👁️ Eye prescription (manual tag — Phase B)</option>
+        <option value="dental">🦷 Dental report (manual tag — Phase B)</option>
+        <option value="other">📎 Other (manual tag)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="up-file">File (PDF or image · max 15MB)</label>
+      <input type="file" id="up-file" accept=".pdf,image/*">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="up-date">Date of visit / test</label>
+        <input type="date" id="up-date">
+      </div>
+      <div class="field">
+        <label for="up-doctor">Doctor (optional)</label>
+        <input type="text" id="up-doctor" placeholder="e.g. Dr Mehta">
+      </div>
+      <div class="field">
+        <label for="up-hospital">Hospital / clinic (optional)</label>
+        <input type="text" id="up-hospital" placeholder="e.g. Apollo Hospitals">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="up-name">Short name (so you find it later)</label>
+      <input type="text" id="up-name" placeholder="e.g. Wife BP medicine — 2026 Feb">
+    </div>
+
+    <div id="up-status" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;font-size:13px"></div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn primary" onclick="confirmUpload()">📤 Upload — Chitti will confirm first</button>
+      <button class="btn secondary" onclick="resetUpload()">Reset</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:10px">After upload, Chitti speaks the extracted summary aloud and any medicine / follow-up reminders are auto-created. You can edit or delete them on the Reminders tab.</div>
+  </div>
+
+  <!-- ── TIMELINE ── -->
+  <div class="panel" id="panel-timeline">
+    <h2>🕒 Health timeline</h2>
+    <div class="desc">Every document, fact, and visit in chronological order. Filter by condition, doctor, or date. Tap a row to open the source document (decrypted only for you).</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Filter by kind</label>
+        <select id="tl-kind" onchange="renderTimeline()">
+          <option value="">All</option>
+          <option value="document">Documents</option>
+          <option value="medicine">Medicines</option>
+          <option value="lab_value">Lab values</option>
+          <option value="followup">Follow-ups</option>
+          <option value="diagnosis">Diagnoses</option>
+          <option value="vital">Vitals</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Search text</label>
+        <input type="text" id="tl-q" placeholder="e.g. diabetes · Dr Sharma · metformin" oninput="renderTimeline()">
+      </div>
+    </div>
+    <div id="timeline-list" class="timeline">
+      <div class="empty">No history yet for this profile.</div>
+    </div>
+  </div>
+
+  <!-- ── REMINDERS ── -->
+  <div class="panel" id="panel-reminders">
+    <h2>⏰ Smart reminders</h2>
+    <div class="desc">Auto-created from your prescriptions, follow-ups, and insurance premiums. Five kinds: <b>medicine</b> (daily), <b>follow-up</b> (one-shot), <b>premium due</b> (with 30/7/1 day advance alerts), <b>test due</b>, <b>prescription expiry</b>. Channels: browser push, WhatsApp, voice call (Twilio — env-gated).</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn primary" onclick="openReminderModal()">＋ New reminder</button>
+      <button class="btn secondary" onclick="refreshReminders()">🔄 Refresh</button>
+    </div>
+    <div id="reminders-list">
+      <div class="empty">No reminders yet — upload a prescription and Chitti will auto-create the medicine + follow-up reminders.</div>
+    </div>
+  </div>
+
+  <!-- ── VITALS ── -->
+  <div class="panel" id="panel-vitals">
+    <h2>📈 Vitals log</h2>
+    <div class="desc">Voice-log BP / sugar / HbA1c / weight / SpO2 / pulse / temperature. Chitti flags out-of-range readings <b>RED</b>. Trend chart shows the last 30 / 90 / 365 days. Export a clean PDF for the next doctor visit (Phase B).</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>What did you measure?</label>
+        <select id="v-kind" onchange="onVitalKindChange()">
+          <option value="bp">🫀 BP (systolic / diastolic)</option>
+          <option value="sugar_fasting">🩸 Sugar — fasting</option>
+          <option value="sugar_post">🩸 Sugar — post-meal</option>
+          <option value="hba1c">🩸 HbA1c</option>
+          <option value="weight">⚖️ Weight (kg)</option>
+          <option value="spo2">🫁 SpO2 (%)</option>
+          <option value="pulse">💓 Pulse (bpm)</option>
+          <option value="temp">🌡️ Temperature (°C)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="v-label-value">Value</label>
+        <input type="number" id="v-value" step="0.1" placeholder="140">
+      </div>
+      <div class="field" id="v-value2-field">
+        <label id="v-label-value2">over</label>
+        <input type="number" id="v-value2" step="0.1" placeholder="90">
+      </div>
+    </div>
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="v-note" placeholder="e.g. after walk · before breakfast · feeling dizzy">
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" onclick="confirmLogVital()">📈 Log vital — Chitti will confirm first</button>
+      <button class="btn secondary" onclick="voiceLogVital()">🎙️ Voice log</button>
+    </div>
+
+    <div style="margin-top:14px">
+      <h3 style="margin:6px 0">Trend</h3>
+      <div class="field" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label style="margin:0">Window:</label>
+        <select id="v-window" onchange="renderVitalsChart()">
+          <option value="30">Last 30 days</option>
+          <option value="90" selected>Last 90 days</option>
+          <option value="365">Last year</option>
+        </select>
+        <label style="margin:0;margin-left:8px">Vital:</label>
+        <select id="v-trend-kind" onchange="renderVitalsChart()">
+          <option value="bp">BP</option>
+          <option value="sugar_fasting">Sugar (fasting)</option>
+          <option value="hba1c">HbA1c</option>
+          <option value="weight">Weight</option>
+          <option value="spo2">SpO2</option>
+          <option value="pulse">Pulse</option>
+        </select>
+      </div>
+      <div class="vitals-chart"><canvas id="vitals-canvas"></canvas></div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Simple inline chart. Chart.js + PDF export land in Phase B per spec.</div>
+    </div>
+
+    <div style="margin-top:14px">
+      <h3 style="margin:6px 0">Recent readings</h3>
+      <div id="vitals-list"><div class="empty">No vitals logged yet for this profile.</div></div>
+    </div>
+  </div>
+
+  <!-- ── INSURANCE ── -->
+  <div class="panel" id="panel-insurance">
+    <h2>🛡️ Insurance manager</h2>
+    <div class="desc">Health / life / vehicle policies in one place. Premium-due reminders auto-spawn at 30 / 7 / 1 day before due. Hospital-network check + "is X covered?" reasoning lands in <b>Phase B</b> (per spec — needs the per-policy LLM pass that Sire signed off as DeepSeek-only).</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn primary" onclick="openInsuranceModal()">＋ Add policy</button>
+      <button class="btn secondary" onclick="refreshInsurance()">🔄 Refresh</button>
+    </div>
+    <div id="insurance-list">
+      <div class="empty">No policies yet. Add your health / life / vehicle policies above so Chitti can remind you of premiums + answer "kya wife ki surgery covered hai" (Phase B).</div>
+    </div>
+  </div>
+
+  <!-- ── SHARE ── -->
+  <div class="panel" id="panel-share">
+    <h2>📤 Quick share with doctor</h2>
+    <div class="desc">Per-use voice consent — Chitti confirms <i>"Sire, X reports Dr Sharma ko bhejun? Haan / Nahi"</i> on every share. The link is one-shot and expires in 30 minutes. No raw bytes leave your device by default — the doctor's side is a tap on a WhatsApp link Chitti generates.</div>
+
+    <div class="field">
+      <label>Pick documents to share</label>
+      <div id="share-docs" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:8px"><div class="empty">Upload documents first.</div></div>
+    </div>
+
+    <div class="field">
+      <label>Send to (number, e.g. doctor's WhatsApp)</label>
+      <input type="tel" id="share-to" placeholder="+91XXXXXXXXXX">
+    </div>
+
+    <div class="field">
+      <label>Note for the doctor (optional)</label>
+      <input type="text" id="share-note" placeholder="e.g. Wife ki last 3 blood reports — please review before Tuesday's appointment">
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn green" onclick="confirmShareWithDoctor()">📤 Share — Chitti will confirm first</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Generates one one-shot link per document, 30-min TTL. WhatsApp opens pre-filled with the note + the links — you tap send.</div>
+  </div>
+
+  <!-- ── SEARCH ── -->
+  <div class="panel" id="panel-search">
+    <h2>🔎 Smart search across all health data</h2>
+    <div class="desc">Ask Chitti in your language. <i>"Wife ki blood sugar last 6 mahine"</i> · <i>"kaunsi medicines chal rahi hain"</i> · <i>"Dr Sharma ki last visit kab thi"</i>. v1 = client-side substring match across extracted facts. Phase B = DeepSeek summarisation.</div>
+    <div class="field">
+      <label>Search query</label>
+      <input type="text" id="search-q" placeholder="diabetes · metformin · BP · Dr Mehta · April 2026" oninput="renderSearch()">
+    </div>
+    <div id="search-results"><div class="empty">Type a query above.</div></div>
+  </div>
+
+</div><!-- /.wrap -->
+
+<!-- ════════════ Profile modal ════════════ -->
+<div id="profile-modal" class="modal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>＋ Add family member</h2>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="pm-name" placeholder="e.g. Priya">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Relation</label>
+        <select id="pm-relation">
+          <option value="self">Self</option>
+          <option value="spouse">Spouse / Wife / Husband</option>
+          <option value="mother">Mother</option>
+          <option value="father">Father</option>
+          <option value="child">Child</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date of birth (optional)</label>
+        <input type="date" id="pm-dob">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="confirmCreateProfile()">Save profile</button>
+      <button class="btn secondary" onclick="closeModal('profile-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ Reminder modal ════════════ -->
+<div id="reminder-modal" class="modal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>＋ New reminder</h2>
+    <div class="field-row">
+      <div class="field">
+        <label>Kind</label>
+        <select id="rm-kind">
+          <option value="medicine">💊 Medicine</option>
+          <option value="followup">👨‍⚕️ Doctor follow-up</option>
+          <option value="premium_due">🛡️ Premium due</option>
+          <option value="test_due">🩸 Test due</option>
+          <option value="vaccine_booster">💉 Vaccine booster</option>
+          <option value="dental_checkup">🦷 Dental checkup</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>First fire time</label>
+        <input type="datetime-local" id="rm-when">
+      </div>
+    </div>
+    <div class="field">
+      <label>Label</label>
+      <input type="text" id="rm-label" placeholder="e.g. Take Metformin 500mg">
+    </div>
+    <div class="field">
+      <label>Repeat (RRULE — leave empty for one-shot)</label>
+      <input type="text" id="rm-rrule" placeholder="e.g. FREQ=DAILY;BYHOUR=8,20">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Daily morning+evening: <code>FREQ=DAILY;BYHOUR=8,20</code> · Monthly: <code>FREQ=MONTHLY;BYMONTHDAY=15</code></div>
+    </div>
+    <div class="field">
+      <label>Channels (CSV)</label>
+      <input type="text" id="rm-channels" value="browser,whatsapp">
+    </div>
+    <div class="field">
+      <label>Advance alerts (days CSV — for premium/renewal kinds)</label>
+      <input type="text" id="rm-advance" placeholder="30,7,1">
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="confirmCreateReminder()">Save reminder</button>
+      <button class="btn secondary" onclick="closeModal('reminder-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ Insurance modal ════════════ -->
+<div id="insurance-modal" class="modal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>＋ Add insurance policy</h2>
+    <div class="field-row">
+      <div class="field">
+        <label>Kind</label>
+        <select id="im-kind">
+          <option value="health">🛡️ Health insurance</option>
+          <option value="life">💞 Life insurance</option>
+          <option value="term">📋 Term insurance</option>
+          <option value="vehicle">🚗 Vehicle insurance</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Company</label>
+        <input type="text" id="im-company" placeholder="e.g. Star Health">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Policy number</label>
+        <input type="text" id="im-policy-no">
+      </div>
+      <div class="field">
+        <label>Nominee</label>
+        <input type="text" id="im-nominee">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Coverage (₹)</label>
+        <input type="number" id="im-coverage" placeholder="500000">
+      </div>
+      <div class="field">
+        <label>Premium (₹)</label>
+        <input type="number" id="im-premium" placeholder="18500">
+      </div>
+      <div class="field">
+        <label>Premium mode</label>
+        <select id="im-mode">
+          <option value="annual">Annual</option>
+          <option value="half-yearly">Half-yearly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Next premium due</label>
+        <input type="date" id="im-due">
+      </div>
+      <div class="field">
+        <label>Renewal date</label>
+        <input type="date" id="im-renew">
+      </div>
+      <div class="field">
+        <label>Maturity (life)</label>
+        <input type="date" id="im-mature">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="confirmCreateInsurance()">Save policy</button>
+      <button class="btn secondary" onclick="closeModal('insurance-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ Golden Rule confirm modal ════════════ -->
+<div id="hf-confirm-overlay" class="modal" role="dialog" aria-modal="true">
+  <div class="panel" style="max-width:480px;text-align:center">
+    <div style="font-size:40px">🪔</div>
+    <div id="hf-confirm-q" style="font-size:17px;color:var(--navy);font-weight:800;margin:8px 0 14px;line-height:1.5">…</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn green" id="hf-yes">✓ Haan / Yes</button>
+      <button class="btn danger" id="hf-no">✗ Nahi / No</button>
+    </div>
+    <div id="hf-listening" style="margin-top:10px;font-size:12.5px;color:var(--saffron);font-weight:700;display:none">🎙️ Listening for "haan" or "nahi"…</div>
+    <button class="btn tiny secondary" onclick="hfConfirmClose('user_stop')" style="margin-top:10px">🛑 STOP — never mind</button>
+  </div>
+</div>
+
+<!-- Disclaimer modal -->
+<div id="disclaimer-modal" class="modal" role="dialog" aria-modal="true">
+  <div class="panel">
+    <h2>Chitti Health File — disclaimer</h2>
+    <p>Chitti Health File is a <b>document organiser</b> with extraction + reminder + share helpers. It is <b>not</b> a doctor, not a pharmacist, not a diagnostic system. Every extracted value should be confirmed against your original document. Out-of-range flags are heuristics, not diagnoses.</p>
+    <p><b>Privacy:</b> documents are AES-256-GCM encrypted with a per-user key derived from your <code>user_token</code> + a server-side pepper. Loss of either = total inability to decrypt; this is intentional. We never share with anyone without your spoken "haan" on each share.</p>
+    <p><b>DPDP Act 2023 compliance:</b> grievance officer sire@sahayai.in. Voice consent is treated as valid consent for the consent gate.</p>
+    <p><b>No AI training:</b> health images sent to DeepSeek for extraction are opted out of training input retention (per DeepSeek API ToS default).</p>
+    <div class="actions"><button class="btn primary" onclick="closeModal('disclaimer-modal')">OK</button></div>
+  </div>
+</div>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chitti Health File — frontend v1 (skeleton-first per §2a)
+   ────────────────────────────────────────────────────────────────
+   GOLDEN RULE: every side-effecting POST/DELETE on the backend goes
+   through hfConfirmAndDo() first. The user sees AND hears the
+   question. Never auto-confirms. Never times out into Yes.
+*/
+
+const API_BASE = (function(){
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('api')) return u.searchParams.get('api').replace(/\/$/,'');
+  } catch(e){}
+  return 'https://chitti-medupi-api-production.up.railway.app';
+})();
+
+const USER_TOKEN_KEY = 'chitti_user_token_v1';
+const PROFILE_KEY    = 'chitti_health_file_profile_v1';
+const LANG_KEY       = 'chitti_vaani_lang';
+
+function getUserToken(){
+  let t = localStorage.getItem(USER_TOKEN_KEY);
+  if (!t) {
+    t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('dev-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+    localStorage.setItem(USER_TOKEN_KEY, t);
+  }
+  return t;
+}
+
+function currentLang(){
+  try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e){ return 'hi'; }
+}
+function en(){ return currentLang() === 'en'; }
+
+function speak(text){
+  try {
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = en() ? 'en-IN' : 'hi-IN';
+    u.rate = 0.96;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+/* ── Golden Rule single-confirm ───────────────────────────── */
+let _hfConfirmInFlight = false;
+let _hfConfirmRecog = null;
+function hfConfirmAndDo(question, onYes, opts){
+  opts = opts || {};
+  if (_hfConfirmInFlight) {
+    speak(en() ? 'One thing at a time. Please answer the current question first.' : 'Pehle yeh wala jawab dijiye.');
+    return;
+  }
+  _hfConfirmInFlight = true;
+  const overlay = document.getElementById('hf-confirm-overlay');
+  document.getElementById('hf-confirm-q').textContent = question;
+  document.getElementById('hf-listening').style.display = 'none';
+  overlay.classList.add('open');
+  speak(question);
+
+  const yes = document.getElementById('hf-yes');
+  const no  = document.getElementById('hf-no');
+  function cleanup(){
+    _hfConfirmInFlight = false;
+    overlay.classList.remove('open');
+    yes.onclick = null; no.onclick = null;
+    if (_hfConfirmRecog) { try { _hfConfirmRecog.abort(); } catch(e){} _hfConfirmRecog = null; }
+  }
+  yes.onclick = () => { cleanup(); speak(en() ? 'OK, doing it now.' : 'Theek hai, abhi karti hoon.'); setTimeout(() => { try { onYes(); } catch(e){ console.warn(e); } }, 80); };
+  no.onclick  = () => { cleanup(); speak(en() ? 'OK, I stopped.' : 'Theek hai, rok diya.'); if (opts.onNo) try { opts.onNo(); } catch(e){} };
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  document.getElementById('hf-listening').style.display = 'block';
+  setTimeout(() => {  // wait until speak() finishes the question
+    const r = new SR();
+    r.lang = en() ? 'en-IN' : 'hi-IN';
+    r.continuous = false; r.interimResults = false;
+    r.onresult = (e) => {
+      const t = (e.results[0][0].transcript || '').toLowerCase();
+      if (/(^|\b)(nahi|nah[ií]|no|stop|ruko|mat|chodo)(\b|$)/i.test(t)) { no.click(); return; }
+      if (/(^|\b)(haan|haa|han|ji\s*haan|yes|yeah|ok|okay|kar\s*do|theek|sahi|bhej|do\s*it)(\b|$)/i.test(t)) { yes.click(); return; }
+      speak(en() ? "I didn't catch that. Please say haan or nahi." : "Haan ya nahi saaf bolo.");
+    };
+    r.onerror = () => { document.getElementById('hf-listening').textContent = 'Could not hear — please tap Haan or Nahi.'; };
+    r.onend = () => { if (_hfConfirmInFlight) document.getElementById('hf-listening').textContent = 'Tap Haan or Nahi to answer.'; };
+    try { r.start(); _hfConfirmRecog = r; } catch (e) {}
+  }, 1800);
+}
+function hfConfirmClose(why){
+  _hfConfirmInFlight = false;
+  document.getElementById('hf-confirm-overlay').classList.remove('open');
+  if (_hfConfirmRecog) { try { _hfConfirmRecog.abort(); } catch(e){} _hfConfirmRecog = null; }
+  speak(en() ? 'OK, stopped.' : 'Theek hai, ruk gayi.');
+}
+
+/* ── Tab navigation ───────────────────────────────── */
+const TABS = ['upload','timeline','reminders','vitals','insurance','share','search'];
+function showTab(name){
+  TABS.forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('active', t === name);
+    document.getElementById('tab-' + t).classList.toggle('active', t === name);
+  });
+  if (name === 'timeline')  renderTimeline();
+  if (name === 'reminders') refreshReminders();
+  if (name === 'vitals')    { refreshVitals(); renderVitalsChart(); }
+  if (name === 'insurance') refreshInsurance();
+  if (name === 'share')     refreshShareDocs();
+  if (name === 'search')    renderSearch();
+}
+
+/* ── Modal helpers ───────────────────────────────── */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function openDisclaimer(){ openModal('disclaimer-modal'); }
+
+/* ── Profiles ───────────────────────────────── */
+let PROFILES = [];
+let CURRENT_PROFILE_ID = null;
+async function loadProfiles(){
+  try {
+    const r = await fetch(API_BASE + '/api/health-file/profiles?user_token=' + encodeURIComponent(getUserToken()));
+    const j = await r.json();
+    PROFILES = (j.items || []);
+  } catch(e) { PROFILES = []; }
+  // If no profiles, prompt to create one
+  if (PROFILES.length === 0) {
+    setTimeout(() => openProfileModal(), 300);
+  } else {
+    // Restore last-used
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch(e){}
+    CURRENT_PROFILE_ID = (stored && PROFILES.find(p => p.id === stored.id)) ? stored.id : PROFILES[0].id;
+  }
+  renderProfileDropdown();
+}
+function renderProfileDropdown(){
+  const sel = document.getElementById('profile-select');
+  if (PROFILES.length === 0) {
+    sel.innerHTML = '<option value="">— add a family member to begin —</option>';
+    return;
+  }
+  sel.innerHTML = PROFILES.map(p => `<option value="${p.id}" ${p.id===CURRENT_PROFILE_ID?'selected':''}>${escapeHtml(p.name)} (${escapeHtml(p.relation)})</option>`).join('');
+}
+function onProfileChange(){
+  const sel = document.getElementById('profile-select');
+  CURRENT_PROFILE_ID = parseInt(sel.value, 10);
+  const p = PROFILES.find(x => x.id === CURRENT_PROFILE_ID);
+  if (p) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify({id: p.id, name: p.name, relation: p.relation}));
+    speak(en() ? ('Now showing ' + p.name + "'s health file.") : (p.name + ' ki health file khol di.'));
+  }
+  // Refresh active tab
+  TABS.forEach(t => {
+    if (document.getElementById('panel-' + t).classList.contains('active')) showTab(t);
+  });
+}
+function speakProfileName(){
+  const p = PROFILES.find(x => x.id === CURRENT_PROFILE_ID);
+  if (p) speak((en() ? "This is " : "Yeh hai ") + p.name + (en() ? "'s health file." : " ki health file."));
+}
+function openProfileModal(){
+  document.getElementById('pm-name').value = '';
+  document.getElementById('pm-relation').value = 'self';
+  document.getElementById('pm-dob').value = '';
+  openModal('profile-modal');
+}
+function confirmCreateProfile(){
+  const name = (document.getElementById('pm-name').value||'').trim();
+  if (!name) { alert('Name required.'); return; }
+  const relation = document.getElementById('pm-relation').value;
+  const dob = document.getElementById('pm-dob').value || null;
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I create a profile for ' + name + ' (' + relation + ')?') : ('Sire, kya main ' + name + ' (' + relation + ') ka profile banaaun?'),
+    async () => {
+      const r = await fetch(API_BASE + '/api/health-file/profiles', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({user_token: getUserToken(), name, relation, dob})
+      });
+      const j = await r.json();
+      if (j.ok) {
+        PROFILES.push(j.profile);
+        CURRENT_PROFILE_ID = j.profile.id;
+        localStorage.setItem(PROFILE_KEY, JSON.stringify({id: j.profile.id, name: j.profile.name, relation: j.profile.relation}));
+        renderProfileDropdown();
+        closeModal('profile-modal');
+        speak((en() ? 'Profile created: ' : 'Profile ban gaya: ') + j.profile.name);
+      } else {
+        alert('Could not create profile: ' + (j.detail||j.error||'unknown'));
+      }
+    }
+  );
+}
+
+/* ── Upload ───────────────────────────────── */
+function onUpTypeChange(){
+  // Hint in the name field based on doc type
+  const type = document.getElementById('up-type').value;
+  const map = {
+    prescription: 'e.g. Wife BP medicine — 2026 Feb',
+    blood_report: 'e.g. Wife HbA1c report — 2026 Feb',
+    mri: 'e.g. Wife knee MRI — 2026 Feb',
+    insurance_health: 'e.g. Star Health policy — 2026 renewal',
+  };
+  document.getElementById('up-name').placeholder = map[type] || 'short name';
+}
+function resetUpload(){
+  document.getElementById('up-file').value = '';
+  document.getElementById('up-date').value = '';
+  document.getElementById('up-doctor').value = '';
+  document.getElementById('up-hospital').value = '';
+  document.getElementById('up-name').value = '';
+  document.getElementById('up-status').style.display = 'none';
+}
+function confirmUpload(){
+  const fileInput = document.getElementById('up-file');
+  if (!fileInput.files || !fileInput.files[0]) { alert('Pick a PDF or image first.'); return; }
+  if (!CURRENT_PROFILE_ID) { alert('Pick a profile first.'); openProfileModal(); return; }
+  const f = fileInput.files[0];
+  if (f.size > 15 * 1024 * 1024) { alert('File too large (max 15MB).'); return; }
+  const docType = document.getElementById('up-type').value;
+  const displayName = (document.getElementById('up-name').value||'').trim() || f.name;
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I upload this ' + docType.replace('_',' ') + ' to the health file? Chitti will read it and extract the details.')
+         : ('Sire, kya main yeh ' + docType.replace('_',' ') + ' health file me upload karoon? Chitti padhke saara detail nikal degi.'),
+    () => _doUpload(f, docType, displayName)
+  );
+}
+async function _doUpload(file, docType, displayName){
+  const status = document.getElementById('up-status');
+  status.style.display = 'block';
+  status.style.background = 'rgba(232,106,23,.10)'; status.style.color = '#7c2d12';
+  status.textContent = en() ? '📤 Encrypting + uploading…' : '📤 Encrypt + upload ho raha…';
+  speak(en() ? 'Uploading. Chitti is reading the document.' : 'Upload ho raha. Chitti document padh rahi hai.');
+  try {
+    const b64 = await fileToBase64(file);
+    const r = await fetch(API_BASE + '/api/health-file/docs', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_token: getUserToken(),
+        profile_id: CURRENT_PROFILE_ID,
+        doc_type: docType,
+        display_name: displayName,
+        blob_b64: b64,
+        blob_mime: file.type || 'application/octet-stream',
+        doc_date:      document.getElementById('up-date').value || null,
+        doctor_name:   document.getElementById('up-doctor').value || null,
+        hospital_name: document.getElementById('up-hospital').value || null,
+        auto_extract: true,
+      }),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.detail || j.error || 'upload_failed');
+    status.style.background = 'rgba(22,163,74,.10)'; status.style.color = '#166534';
+    const sum = j.doc.extract_summary || 'Saved encrypted.';
+    status.textContent = '✓ ' + sum;
+    speak(sum);
+    resetUpload();
+    // Refresh dependent panels in background
+    setTimeout(() => { refreshReminders(); refreshShareDocs(); }, 100);
+  } catch (e) {
+    status.style.background = 'rgba(220,38,38,.10)'; status.style.color = '#7f1d1d';
+    status.textContent = '✗ ' + e.message;
+  }
+}
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => { const s = r.result || ''; const i = s.indexOf(','); resolve(i >= 0 ? s.slice(i+1) : s); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* ── Timeline (documents + facts + vitals merged, sorted) ───── */
+async function renderTimeline(){
+  if (!CURRENT_PROFILE_ID) return;
+  const list = document.getElementById('timeline-list');
+  list.innerHTML = '<div class="empty">Loading…</div>';
+  const kindFilter = document.getElementById('tl-kind').value;
+  const q = (document.getElementById('tl-q').value || '').toLowerCase();
+  try {
+    const [docs, facts, vitals] = await Promise.all([
+      fetch(API_BASE + '/api/health-file/docs?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID).then(r => r.json()),
+      fetch(API_BASE + '/api/health-file/facts?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID).then(r => r.json()),
+      fetch(API_BASE + '/api/health-file/vitals?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID).then(r => r.json()),
+    ]);
+    const entries = [];
+    (docs.items||[]).forEach(d => entries.push({kind:'document', when: d.doc_date || d.created_at, what: d.display_name, sub: d.doctor_name || d.hospital_name || '', extract: d.extract_summary, doc_id: d.id, status: d.extract_status}));
+    (facts.items||[]).forEach(f => entries.push({kind: f.kind, when: f.fact_date || f.created_at, what: f.label, sub: (f.value || '') + (f.unit ? (' ' + f.unit) : ''), note: f.notes, oor: f.out_of_range}));
+    (vitals.items||[]).forEach(v => entries.push({kind:'vital', when: v.reading_at, what: v.kind, sub: v.value + (v.value2 ? '/' + v.value2 : '') + (v.unit ? ' ' + v.unit : ''), oor: v.out_of_range}));
+    let filtered = entries.filter(e => !kindFilter || e.kind === kindFilter);
+    if (q) filtered = filtered.filter(e => (e.what||'').toLowerCase().includes(q) || (e.sub||'').toLowerCase().includes(q) || (e.note||'').toLowerCase().includes(q));
+    filtered.sort((a,b) => (b.when||'').localeCompare(a.when||''));
+    if (filtered.length === 0) { list.innerHTML = '<div class="empty">Nothing matches.</div>'; return; }
+    list.innerHTML = filtered.slice(0, 200).map(e => `
+      <div class="entry">
+        <div class="when">${escapeHtml(e.when||'')} · <span class="tag">${escapeHtml(e.kind)}</span> ${e.oor?'<span class="tag red">OUT OF RANGE</span>':''} ${e.status==='coming_soon'?'<span class="tag coming">COMING SOON extract</span>':''} ${e.status==='failed'?'<span class="tag failed">extract failed</span>':''}</div>
+        <div class="what">${escapeHtml(e.what)} ${e.sub?'<span style="font-weight:400;color:#6b7280"> — ' + escapeHtml(e.sub) + '</span>':''}</div>
+        ${e.extract?'<div class="small" style="margin-top:4px;color:#475569;font-size:12.5px">' + escapeHtml(e.extract) + '</div>':''}
+        ${e.note?'<div class="small" style="margin-top:4px;color:#6b7280;font-size:12px">' + escapeHtml(e.note) + '</div>':''}
+        ${e.doc_id?'<div style="margin-top:6px"><button class="btn tiny secondary" onclick="downloadDoc(\''+e.doc_id+'\')">📄 Open</button> <button class="btn tiny danger" onclick="confirmForgetDoc(\''+e.doc_id+'\',\''+escapeHtml(e.what).replace(/[\"\']/g,'')+'\')">🗑 Forget</button></div>':''}
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Could not load timeline: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+function downloadDoc(docId){
+  window.open(API_BASE + '/api/health-file/docs/' + encodeURIComponent(docId) + '/file?user_token=' + encodeURIComponent(getUserToken()), '_blank');
+}
+function confirmForgetDoc(docId, label){
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I PERMANENTLY forget "' + label + '"? The encrypted blob is destroyed and cannot be recovered.')
+         : ('Sire, kya main "' + label + '" hamesha ke liye delete karoon? Encrypt blob mit jaayega — wapas nahi aayega.'),
+    async () => {
+      await fetch(API_BASE + '/api/health-file/docs/' + encodeURIComponent(docId), {
+        method:'DELETE', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({user_token: getUserToken()})
+      });
+      speak(en() ? 'Document forgotten.' : 'Document mita diya.');
+      renderTimeline();
+      refreshShareDocs();
+    }
+  );
+}
+
+/* ── Reminders ───────────────────────────────── */
+async function refreshReminders(){
+  if (!CURRENT_PROFILE_ID) return;
+  const list = document.getElementById('reminders-list');
+  list.innerHTML = '<div class="empty">Loading…</div>';
+  const r = await fetch(API_BASE + '/api/health-file/reminders?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID);
+  const j = await r.json();
+  const items = j.items || [];
+  if (items.length === 0) { list.innerHTML = '<div class="empty">No reminders yet.</div>'; return; }
+  list.innerHTML = items.map(rm => `
+    <div class="row">
+      <div class="meta">
+        <div class="name">${escapeHtml(rm.label)} <span class="tag">${escapeHtml(rm.kind)}</span> ${rm.enabled?'<span class="tag green">ON</span>':'<span class="tag">OFF</span>'}</div>
+        <div class="small">Next: ${escapeHtml(rm.next_fire_at||'')} ${rm.rrule?'· repeats <code>'+escapeHtml(rm.rrule)+'</code>':''}</div>
+        ${rm.detail?'<div class="small">'+escapeHtml(rm.detail)+'</div>':''}
+        <div class="small">Channels: ${escapeHtml(rm.channels||'')}</div>
+      </div>
+      <div class="actions">
+        <button class="btn tiny secondary" onclick="toggleReminder(${rm.id}, ${!rm.enabled})">${rm.enabled?'Disable':'Enable'}</button>
+        <button class="btn tiny danger" onclick="confirmDeleteReminder(${rm.id}, '${escapeHtml(rm.label).replace(/[\"\']/g,'')}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+function openReminderModal(){
+  if (!CURRENT_PROFILE_ID) { alert('Pick a profile first.'); return; }
+  document.getElementById('rm-kind').value = 'medicine';
+  document.getElementById('rm-when').value = new Date(Date.now() + 60*60*1000).toISOString().slice(0,16);
+  document.getElementById('rm-label').value = '';
+  document.getElementById('rm-rrule').value = '';
+  document.getElementById('rm-channels').value = 'browser,whatsapp';
+  document.getElementById('rm-advance').value = '';
+  openModal('reminder-modal');
+}
+function confirmCreateReminder(){
+  const label = (document.getElementById('rm-label').value||'').trim();
+  if (!label) { alert('Label required.'); return; }
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I save this reminder: ' + label + '?') : ('Sire, kya main yeh reminder save karoon: ' + label + '?'),
+    async () => {
+      const body = {
+        user_token: getUserToken(), profile_id: CURRENT_PROFILE_ID,
+        kind: document.getElementById('rm-kind').value,
+        label,
+        next_fire_at: new Date(document.getElementById('rm-when').value).toISOString(),
+        rrule: document.getElementById('rm-rrule').value || null,
+        channels: document.getElementById('rm-channels').value || 'browser,whatsapp',
+        advance_alerts: document.getElementById('rm-advance').value || null,
+      };
+      const r = await fetch(API_BASE + '/api/health-file/reminders', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      const j = await r.json();
+      if (j.ok) { closeModal('reminder-modal'); refreshReminders(); speak(en() ? 'Reminder saved.' : 'Reminder save ho gaya.'); }
+      else alert('Could not save: ' + (j.detail||j.error));
+    }
+  );
+}
+async function toggleReminder(id, enable){
+  await fetch(API_BASE + '/api/health-file/reminders/' + id + '/toggle', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({user_token: getUserToken(), enabled: enable})
+  });
+  refreshReminders();
+}
+function confirmDeleteReminder(id, label){
+  hfConfirmAndDo(
+    en() ? ('Sire, delete reminder "' + label + '"?') : ('Sire, "' + label + '" reminder delete karoon?'),
+    async () => {
+      await fetch(API_BASE + '/api/health-file/reminders/' + id, {method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_token: getUserToken()})});
+      refreshReminders();
+    }
+  );
+}
+
+/* ── Vitals ───────────────────────────────── */
+function onVitalKindChange(){
+  const k = document.getElementById('v-kind').value;
+  const v2 = document.getElementById('v-value2-field');
+  if (k === 'bp') { v2.style.display=''; document.getElementById('v-label-value').textContent = 'Systolic'; document.getElementById('v-label-value2').textContent='Diastolic'; }
+  else { v2.style.display='none'; document.getElementById('v-label-value').textContent = 'Value'; }
+}
+function confirmLogVital(){
+  if (!CURRENT_PROFILE_ID) { alert('Pick a profile first.'); return; }
+  const kind = document.getElementById('v-kind').value;
+  const v1 = parseFloat(document.getElementById('v-value').value);
+  const v2 = parseFloat(document.getElementById('v-value2').value);
+  if (Number.isNaN(v1)) { alert('Value required.'); return; }
+  const shown = kind === 'bp' ? (v1 + '/' + (Number.isNaN(v2)?'?':v2)) : v1;
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I log ' + kind + ' = ' + shown + '?') : ('Sire, kya main ' + kind + ' = ' + shown + ' log karoon?'),
+    async () => {
+      const body = {user_token: getUserToken(), profile_id: CURRENT_PROFILE_ID, kind, value: v1, value2: Number.isNaN(v2)?null:v2, note: document.getElementById('v-note').value||null};
+      const r = await fetch(API_BASE + '/api/health-file/vitals', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      const j = await r.json();
+      if (j.ok) {
+        document.getElementById('v-value').value = ''; document.getElementById('v-value2').value=''; document.getElementById('v-note').value='';
+        if (j.vital.out_of_range) speak(en() ? 'Logged. This reading is outside the normal range — please consult a doctor.' : 'Log ho gaya. Yeh reading normal range ke bahar hai — doctor ko dikhao.');
+        else speak(en() ? 'Logged.' : 'Log ho gaya.');
+        refreshVitals(); renderVitalsChart();
+      } else alert('Could not log: ' + (j.detail||j.error));
+    }
+  );
+}
+async function refreshVitals(){
+  if (!CURRENT_PROFILE_ID) return;
+  const list = document.getElementById('vitals-list');
+  const r = await fetch(API_BASE + '/api/health-file/vitals?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID);
+  const j = await r.json();
+  const items = j.items || [];
+  if (items.length === 0) { list.innerHTML = '<div class="empty">No vitals logged yet.</div>'; return; }
+  list.innerHTML = items.slice(0,30).map(v => `
+    <div class="row">
+      <div class="meta">
+        <div class="name">${escapeHtml(v.kind)} = ${v.value}${v.value2?'/'+v.value2:''} ${v.unit?escapeHtml(v.unit):''} ${v.out_of_range?'<span class="tag red">OUT OF RANGE</span>':'<span class="tag green">OK</span>'}</div>
+        <div class="small">${escapeHtml(v.reading_at||'')} ${v.note?'· '+escapeHtml(v.note):''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function voiceLogVital(){
+  speak(en() ? 'Say something like: BP one forty over ninety.' : 'Bolo: BP 140 over 90.');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice not supported in this browser.'); return; }
+  const r = new SR(); r.lang = en()?'en-IN':'hi-IN'; r.continuous=false; r.interimResults=false;
+  r.onresult = (e) => {
+    const t = (e.results[0][0].transcript || '').toLowerCase();
+    // Parse "BP 140 over 90" / "BP 140 / 90"
+    const bp = t.match(/bp\s*(\d{2,3})\s*(?:over|by|\/|,|\s)\s*(\d{2,3})/i);
+    if (bp) { document.getElementById('v-kind').value='bp'; onVitalKindChange(); document.getElementById('v-value').value=bp[1]; document.getElementById('v-value2').value=bp[2]; confirmLogVital(); return; }
+    const sugar = t.match(/sugar\s*(\d{2,3})/i);
+    if (sugar) { document.getElementById('v-kind').value='sugar_fasting'; onVitalKindChange(); document.getElementById('v-value').value=sugar[1]; confirmLogVital(); return; }
+    speak(en() ? "I didn't catch that. Please type the value." : 'Saaf samajh nahi aaya. Type kar dijiye.');
+  };
+  r.start();
+}
+async function renderVitalsChart(){
+  if (!CURRENT_PROFILE_ID) return;
+  const kind = document.getElementById('v-trend-kind').value;
+  const days = parseInt(document.getElementById('v-window').value, 10);
+  const r = await fetch(API_BASE + '/api/health-file/vitals?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID + (kind==='bp'?'':('&kind=' + encodeURIComponent(kind))) + '&limit=500');
+  const j = await r.json();
+  const cutoff = Date.now() - days*24*3600*1000;
+  let points = (j.items||[]).filter(v => v.kind === kind && (new Date(v.reading_at)).getTime() >= cutoff);
+  points.sort((a,b) => (a.reading_at||'').localeCompare(b.reading_at||''));
+  const canvas = document.getElementById('vitals-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth; const H = canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0,0,W,H);
+  if (points.length === 0) { ctx.fillStyle = '#9aa'; ctx.font='14px Inter,sans-serif'; ctx.fillText('No ' + kind + ' readings in last ' + days + ' days.', 10, H/2); return; }
+  // Find min/max
+  const ys = points.map(p => kind==='bp' ? Math.max(p.value, p.value2||0) : p.value);
+  const ys2= kind==='bp' ? points.map(p => p.value2||0) : null;
+  const ymin = Math.min(...ys, ...(ys2||[])) * 0.92;
+  const ymax = Math.max(...ys, ...(ys2||[])) * 1.08;
+  function plot(arr, color){
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+    arr.forEach((y,i) => {
+      const x = 30 + i * ((W-40)/Math.max(arr.length-1,1));
+      const yy = H - 20 - ((y - ymin) / Math.max(ymax-ymin, 0.001)) * (H-40);
+      if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x,yy,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+    });
+    ctx.stroke();
+  }
+  // Axes labels
+  ctx.fillStyle = '#6b7280'; ctx.font='11px Inter,sans-serif';
+  ctx.fillText(ymax.toFixed(0), 4, 14);
+  ctx.fillText(ymin.toFixed(0), 4, H-6);
+  plot(ys, '#E86A17');
+  if (ys2) plot(ys2, '#0E2344');
+}
+
+/* ── Insurance ───────────────────────────────── */
+async function refreshInsurance(){
+  if (!CURRENT_PROFILE_ID) return;
+  const list = document.getElementById('insurance-list');
+  const r = await fetch(API_BASE + '/api/health-file/insurance?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID);
+  const j = await r.json();
+  const items = j.items || [];
+  if (items.length === 0) { list.innerHTML = '<div class="empty">No policies yet.</div>'; return; }
+  list.innerHTML = items.map(p => `
+    <div class="row">
+      <div class="meta">
+        <div class="name">${escapeHtml(p.company)} — <span class="tag">${escapeHtml(p.policy_kind)}</span></div>
+        <div class="small">Policy: ${escapeHtml(p.policy_number)} · Coverage: ₹${p.coverage_inr||p.sum_assured||'?'}</div>
+        <div class="small">Premium: ₹${p.premium_inr||'?'} ${p.premium_mode?'('+escapeHtml(p.premium_mode)+')':''} · Due: ${escapeHtml(p.due_date||'?')}</div>
+        ${p.raw_summary?'<div class="small" style="margin-top:4px">'+escapeHtml(p.raw_summary)+'</div>':''}
+      </div>
+    </div>
+  `).join('');
+}
+function openInsuranceModal(){ if (!CURRENT_PROFILE_ID) { alert('Pick a profile first.'); return; } openModal('insurance-modal'); }
+function confirmCreateInsurance(){
+  const company = (document.getElementById('im-company').value||'').trim();
+  if (!company) { alert('Company required.'); return; }
+  hfConfirmAndDo(
+    en() ? ('Sire, save ' + company + ' policy?') : ('Sire, ' + company + ' policy save karoon?'),
+    async () => {
+      const body = {
+        user_token: getUserToken(), profile_id: CURRENT_PROFILE_ID,
+        policy_kind: document.getElementById('im-kind').value,
+        company,
+        policy_number: (document.getElementById('im-policy-no').value||'').trim(),
+        nominee: document.getElementById('im-nominee').value||null,
+        coverage_inr: parseFloat(document.getElementById('im-coverage').value) || null,
+        premium_inr:  parseFloat(document.getElementById('im-premium').value)  || null,
+        premium_mode: document.getElementById('im-mode').value,
+        due_date:     document.getElementById('im-due').value || null,
+        renewal_date: document.getElementById('im-renew').value || null,
+        maturity_date:document.getElementById('im-mature').value || null,
+      };
+      const r = await fetch(API_BASE + '/api/health-file/insurance', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      const j = await r.json();
+      if (j.ok) { closeModal('insurance-modal'); refreshInsurance(); refreshReminders(); speak(en() ? 'Policy saved.' : 'Policy save ho gayi.'); }
+      else alert('Could not save: ' + (j.detail||j.error));
+    }
+  );
+}
+
+/* ── Share with doctor ───────────────────────────────── */
+let SHARE_DOCS_CACHE = [];
+async function refreshShareDocs(){
+  if (!CURRENT_PROFILE_ID) return;
+  const r = await fetch(API_BASE + '/api/health-file/docs?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID);
+  const j = await r.json();
+  SHARE_DOCS_CACHE = j.items || [];
+  const wrap = document.getElementById('share-docs');
+  if (SHARE_DOCS_CACHE.length === 0) { wrap.innerHTML = '<div class="empty">Upload documents first.</div>'; return; }
+  wrap.innerHTML = SHARE_DOCS_CACHE.map(d => `
+    <label style="display:flex;gap:8px;align-items:flex-start;padding:6px;border-bottom:1px solid var(--border);cursor:pointer">
+      <input type="checkbox" data-doc-id="${escapeHtml(d.id)}">
+      <div><div style="font-weight:700">${escapeHtml(d.display_name)}</div>
+      <div style="font-size:12px;color:var(--muted)">${escapeHtml(d.doc_type)} · ${escapeHtml(d.doc_date||d.created_at||'')}</div></div>
+    </label>
+  `).join('');
+}
+function confirmShareWithDoctor(){
+  const picked = Array.from(document.querySelectorAll('#share-docs input[type=checkbox]:checked')).map(c => c.getAttribute('data-doc-id'));
+  const to = (document.getElementById('share-to').value||'').trim();
+  if (picked.length === 0) { alert('Pick at least one document.'); return; }
+  if (!to || to.replace(/[^\d+]/g,'').length < 10) { alert('Enter a valid mobile number.'); return; }
+  hfConfirmAndDo(
+    en() ? ('Sire, shall I WhatsApp ' + picked.length + ' document(s) to ' + to + '?')
+         : ('Sire, kya main ' + picked.length + ' document ' + to + ' ko WhatsApp karoon?'),
+    () => _doShareWithDoctor(picked, to)
+  );
+}
+async function _doShareWithDoctor(docIds, to){
+  const links = [];
+  for (const id of docIds) {
+    const r = await fetch(API_BASE + '/api/health-file/share/token', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_token: getUserToken(), doc_id: id, ttl_minutes: 30})});
+    const j = await r.json();
+    if (j.ok) links.push(API_BASE + '/api/health-file/share/file?token=' + encodeURIComponent(j.token));
+  }
+  const note = (document.getElementById('share-note').value||'').trim();
+  const msg = (note ? note + '\n\n' : '') + 'From Chitti Health File — one-shot links (30-min TTL):\n' + links.join('\n');
+  const url = 'https://wa.me/' + to.replace(/^\+/,'') + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank', 'noopener');
+  speak(en() ? 'Opening WhatsApp. Tap send to deliver.' : 'WhatsApp khol diya. Send dabaiye bhejne ke liye.');
+}
+
+/* ── Search ───────────────────────────────── */
+async function renderSearch(){
+  if (!CURRENT_PROFILE_ID) return;
+  const q = (document.getElementById('search-q').value||'').trim();
+  const list = document.getElementById('search-results');
+  if (!q) { list.innerHTML = '<div class="empty">Type a query.</div>'; return; }
+  const r = await fetch(API_BASE + '/api/health-file/facts?user_token=' + encodeURIComponent(getUserToken()) + '&profile_id=' + CURRENT_PROFILE_ID + '&q=' + encodeURIComponent(q));
+  const j = await r.json();
+  const items = j.items || [];
+  if (items.length === 0) { list.innerHTML = '<div class="empty">No matches.</div>'; return; }
+  list.innerHTML = items.slice(0,100).map(f => `
+    <div class="row">
+      <div class="meta">
+        <div class="name">${escapeHtml(f.label)} <span class="tag">${escapeHtml(f.kind)}</span> ${f.out_of_range?'<span class="tag red">OOR</span>':''}</div>
+        <div class="small">${escapeHtml(f.value||'')} ${escapeHtml(f.unit||'')} ${f.fact_date?'· '+escapeHtml(f.fact_date):''}</div>
+        ${f.notes?'<div class="small" style="margin-top:4px">'+escapeHtml(f.notes)+'</div>':''}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── Boot ───────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadProfiles();
+  showTab('upload');
+  onUpTypeChange();
+  onVitalKindChange();
+});
+</script>
+</body>
+</html>

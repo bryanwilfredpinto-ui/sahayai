@@ -5691,6 +5691,76 @@ function routeVoiceIntent(raw){
     return true;
   }
 
+  // ── Chitti Health File — open page (per-profile) ───────────────────
+  // "Wife ki health file" / "Mother ki health file" / "Apni health file" / "Health file kholo"
+  m = r.match(/^(?:(.+?)\s+k[ie]\s+)?(?:health\s+file|medical\s+file|medical\s+history)(?:\s+kholo|\s+show|\s+open|\s+dikhao)?$/i);
+  if (m) {
+    const who = (m[1]||'').trim();
+    chittiConfirmAndDo(
+      (CURRENT_LANG==='en') ? ('Sire, shall I open the health file' + (who?' for ' + who:'') + '?')
+                            : ('Sire, kya main ' + (who?who + ' ki ':'') + 'health file kholun?'),
+      () => { try { window.location.href = 'chitti_health_file.html'; } catch(e){} },
+    );
+    return true;
+  }
+
+  // ── Log a vital by voice — "BP log karo 140 over 90" / "log BP 120/80" ────
+  m = r.match(/^(?:log\s+|.*\s+log\s+karo\s+)?(bp|sugar|hba1c|weight|spo2|pulse|temp)\s*(?:=\s*)?(\d{2,3})(?:\s*(?:over|by|\/|,|\s)\s*(\d{2,3}))?/i);
+  if (m) {
+    const kind = m[1].toLowerCase();
+    const v1 = m[2], v2 = m[3];
+    const summary = kind + ' = ' + v1 + (v2 ? '/' + v2 : '');
+    chittiConfirmAndDo(
+      (CURRENT_LANG==='en') ? ('Sire, shall I log ' + summary + ' to the Health File?')
+                            : ('Sire, kya main ' + summary + ' Health File me log karoon?'),
+      async () => {
+        try {
+          const userToken = (typeof getUserToken === 'function') ? getUserToken() : (localStorage.getItem('chitti_user_token_v1')||'');
+          // Use the last-used profile from the health-file page; if none, route to the page so the user picks one.
+          let profile = null;
+          try { profile = JSON.parse(localStorage.getItem('chitti_health_file_profile_v1') || 'null'); } catch(e){}
+          if (!profile || !profile.id) {
+            speakText((CURRENT_LANG==='en'?'Opening Health File so you can pick a profile first.':'Health File khol rahi hoon — profile chunne ke liye.'), CURRENT_LANG);
+            window.location.href = 'chitti_health_file.html';
+            return;
+          }
+          const apiBase = 'https://chitti-medupi-api-production.up.railway.app';
+          const body = { user_token: userToken, profile_id: profile.id, kind: (kind==='bp'?'bp':(kind==='sugar'?'sugar_fasting':kind)), value: parseFloat(v1), value2: v2?parseFloat(v2):null };
+          const resp = await fetch(apiBase + '/api/health-file/vitals', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+          const j = await resp.json();
+          if (j.ok && j.vital) {
+            speakText((CURRENT_LANG==='en'?'Logged ':'Log ho gaya ') + summary + (j.vital.out_of_range?(CURRENT_LANG==='en'?'. This reading is outside the safe range.':'. Yeh reading safe range ke bahar hai.'):''), CURRENT_LANG);
+          } else {
+            speakText((CURRENT_LANG==='en'?'Could not log: ':'Log nahi ho paya: ') + (j.detail||j.error||'unknown'), CURRENT_LANG);
+          }
+        } catch (e) {
+          speakText((CURRENT_LANG==='en'?'Network error logging the vital.':'Vital log karte waqt network issue.'), CURRENT_LANG);
+        }
+      },
+    );
+    return true;
+  }
+
+  // ── "Insurance reminder set karo" — route to the page's reminders tab ────
+  if (/^(?:insurance\s+reminder|premium\s+reminder|insurance\s+(?:lagao|set\s+karo))/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG==='en') ? 'Sire, shall I open the Health File reminders tab to add an insurance premium reminder?'
+                            : 'Sire, kya main Health File ke reminders tab par chalun, insurance premium reminder lagaane ke liye?',
+      () => { window.location.href = 'chitti_health_file.html#reminders'; },
+    );
+    return true;
+  }
+
+  // ── "Upload prescription" / "blood report upload karo" ────────────
+  if (/^(?:upload\s+(prescription|blood\s+report|medical\s+report|report)|(prescription|blood\s+report|report)\s+upload\s+karo)/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG==='en') ? 'Sire, shall I open the Health File upload screen?'
+                            : 'Sire, kya main Health File upload screen kholun?',
+      () => { window.location.href = 'chitti_health_file.html'; },
+    );
+    return true;
+  }
+
   // Not an intent — fall through to DeepSeek.
   return false;
 }
