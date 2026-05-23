@@ -480,6 +480,153 @@ class ChittiNativeBridge(private val ctx: Context) {
         return "'$esc'"
     }
 
+    /**
+     * Fake-incoming-call (spec §5.3) — simulates a ringing inbound call
+     * so the user has an excuse to leave an unsafe situation. The web
+     * tier already shows a fullscreen overlay; the Android tier uses a
+     * full-screen notification with the user's default ringtone via
+     * STREAM_RING. The user dismisses with either button. The JS layer
+     * has already passed through chittiConfirmAndDo() before invoking
+     * this — Golden Rule contract upheld.
+     */
+    @JavascriptInterface
+    fun triggerFakeIncomingCall(): String {
+        return try {
+            val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            val channelId = "chitti_fake_call"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val ch = android.app.NotificationChannel(channelId, "Chitti — fake incoming call", android.app.NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = "Used only when you ask Chitti to simulate an incoming call for safety. Never an actual call."
+                    enableVibration(true)
+                    setSound(
+                        android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE),
+                        android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build(),
+                    )
+                }
+                nm.createNotificationChannel(ch)
+            }
+            val notif = androidx.core.app.NotificationCompat.Builder(ctx, channelId)
+                .setSmallIcon(android.R.drawable.sym_call_incoming)
+                .setContentTitle("Maa 📞")
+                .setContentText("Incoming call (Chitti fake — for your safety)")
+                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_MAX)
+                .setCategory(androidx.core.app.NotificationCompat.CATEGORY_CALL)
+                .setOngoing(true)
+                .setAutoCancel(true)
+                .build()
+            nm.notify(9101, notif)
+            // Play the actual ringtone for ~30 s so it sounds like a real call.
+            val tone = android.media.RingtoneManager.getRingtone(
+                ctx,
+                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE),
+            )
+            tone.play()
+            ctx.mainExecutor.execute {
+                try { Thread.sleep(30000) } catch (e: InterruptedException) {}
+                try { tone.stop() } catch (e: Exception) {}
+                nm.cancel(9101)
+            }
+            AuditLog.append(ctx, "triggerFakeIncomingCall", "fired — spec §5.3 safety escape")
+            "ringing"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "triggerFakeIncomingCall failed", e.message ?: "")
+            "failed:${e.message}"
+        }
+    }
+
+    /**
+     * Store the user's Medical ID (blood group, allergies, conditions,
+     * doctor, next of kin) so the system Emergency-Info screen can
+     * surface it on the lock screen. v1 just persists to SharedPreferences;
+     * v1.1 (after Play Store approval for the system Emergency Info
+     * contract) will mirror to the OS Emergency Info provider.
+     *
+     * No Golden Rule confirm here — saving the user's own profile is not
+     * a side effect on the world. Reading it aloud / sending it to
+     * another person DOES go through chittiConfirmAndDo on the JS side.
+     */
+    @JavascriptInterface
+    fun setMedicalId(jsonBlob: String): String {
+        return try {
+            ctx.getSharedPreferences("chitti_vaani_prefs", Context.MODE_PRIVATE)
+                .edit().putString("medical_id_v1", jsonBlob).apply()
+            AuditLog.append(ctx, "setMedicalId saved", "${jsonBlob.length}ch")
+            "saved"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "setMedicalId failed", e.message ?: "")
+            "failed"
+        }
+    }
+
+    /**
+     * Share live location — spec §5.3. Reads the device's last-known
+     * fine location and hands it to WhatsApp / SMS as a Google Maps
+     * link. The web tier handles this with navigator.geolocation; the
+     * Android bridge is the parity path for when the WebView's
+     * geolocation API can't reach the OS (rare, but happens on some
+     * MIUI builds).
+     *
+     * The JS layer has already passed through chittiConfirmAndDo before
+     * invoking this method — Golden Rule contract upheld.
+     */
+    @JavascriptInterface
+    fun shareLocation(phoneE164: String, channel: String): String {
+        SafetyChecks.refuseIfPinLike(phoneE164)
+        val granted = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                      PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            AuditLog.append(ctx, "shareLocation — no FINE_LOCATION", phoneE164)
+            return "needs_permission"
+        }
+        return try {
+            val lm = ctx.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            val providers = lm.getProviders(true)
+            var bestLoc: android.location.Location? = null
+            for (p in providers) {
+                @Suppress("MissingPermission")
+                val l = lm.getLastKnownLocation(p) ?: continue
+                if (bestLoc == null || l.accuracy < bestLoc!!.accuracy) bestLoc = l
+            }
+            if (bestLoc == null) {
+                AuditLog.append(ctx, "shareLocation — no last-known fix", "")
+                return "no_fix"
+            }
+            val lat = String.format("%.6f", bestLoc!!.latitude)
+            val lng = String.format("%.6f", bestLoc!!.longitude)
+            val link = "https://maps.google.com/?q=$lat,$lng"
+            val msg = "My live location: $link"
+            val intent = if (channel.equals("sms", ignoreCase = true)) {
+                Intent(Intent.ACTION_VIEW, Uri.parse("sms:$phoneE164?body=" + Uri.encode(msg))).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            } else {
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://wa.me/${phoneE164.trimStart('+')}?text=" + Uri.encode(msg)),
+                ).apply {
+                    setPackage("com.whatsapp")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+            }
+            ctx.startActivity(intent)
+            AuditLog.append(ctx, "shareLocation", "$phoneE164 · $channel · $link")
+            "shared"
+        } catch (e: Exception) {
+            AuditLog.append(ctx, "shareLocation failed", e.message ?: "")
+            "failed:${e.message}"
+        }
+    }
+
+    @JavascriptInterface
+    fun requestFineLocationPermission(): String {
+        val act = ctx as? android.app.Activity ?: return "no_activity_context"
+        ActivityCompat.requestPermissions(act, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1004)
+        return "prompt_shown"
+    }
+
     @JavascriptInterface
     fun openWhatsApp(phoneE164: String, message: String): String {
         // Defence: still prefer wa.me deep-link — the AccessibilityService

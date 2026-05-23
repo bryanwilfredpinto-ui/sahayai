@@ -74,6 +74,21 @@ The user still types the body and says **"haan"** to send.
   publishes a stable param-based deep-link schema. The modal labels
   these "opens — set pickup & drop / captcha + booking happen there".
 
+### 1.3a Safety surface (spec §5.3 — landed 2026-05-23)
+
+Six new Pro Cards added per [CHITTI_FULL_ACCESS_AGENT_v1.docx](../../CHITTI_FULL_ACCESS_AGENT_v1.docx) §5.3 Safety + §5.1 Health. All route through the [Golden Rule single-confirm](../../SAHAYAI_MASTER.md#2g-chitti-golden-rule--confirm-before-every-action-locked-2026-05-23) gate.
+
+| Card | What | Web behaviour | Android-only delta |
+|---|---|---|---|
+| 🚶‍♀️ **SafeWalk mode** | Check-in timer that alerts Trusted Circle if user goes silent past the deadline. Reuses the family-cascade, NEVER auto-dials 112. | `setTimeout` + `chittiConfirmAndDo` re-prompt 30 s before deadline · `navigator.geolocation` on escalation · `wa.me?text=` fan-out to picked Trusted Circle members. State persists across reloads via `localStorage.chitti_vaani_safewalk_v1`. | Phase-2 Vosk wake-word path lets SafeWalk fire even when the screen is off. |
+| 📵 **Fake incoming call** | Simulates a ringing call in 2 minutes so the user can leave an unsafe situation. | Fullscreen overlay + WebAudio oscillator beat. | `ChittiNative.triggerFakeIncomingCall()` → real ringtone via `RingtoneManager.TYPE_RINGTONE` + full-screen notification (`CATEGORY_CALL`, `PRIORITY_MAX`). |
+| 📍 **Share my live location** | One-shot location share to a Trusted Circle pick over WhatsApp or SMS. | `navigator.geolocation` → `https://maps.google.com/?q=lat,lng` → `wa.me?text=` or `sms:?body=`. | `ChittiNative.shareLocation(phone, channel)` uses `LocationManager.getLastKnownLocation` if the WebView's geolocation API is blocked (MIUI quirk). |
+| 🏥 **Medical ID** | Local store for blood group / allergies / conditions / doctor / emergency contact. Spoken on demand. | `localStorage.chitti_vaani_medical_id_v1`; `readMedicalIdAloud()` uses Voice Factory cascade. | `ChittiNative.setMedicalId(json)` mirrors into SharedPreferences for the (Phase-2) system Emergency-Info lock-screen surface. |
+| 🚑 **Ambulance 108** | Direct shortcut to 108 (medical line). **Separate from the cop denylist** — 112/100/102/108 are not all the same; 108 is the one Chitti CAN dial. | `tel:108` (after Golden Rule confirm). | `ChittiNative.makeCall("108")` direct dial when CALL_PHONE granted. |
+| 🏪 **Nearest hospital / chemist** | Maps category search scoped to user's location. Optional "open now" toggle adds "24 hours" qualifier. | `https://www.google.com/maps/search/?api=1&query=<kind>+near+me`. | `ChittiNative.openMaps(query)` opens the Maps app directly. |
+
+Voice-intent shortcuts wired in the same commit: `"safewalk … min"` / `"main akeli ja rahi hun"` · `"fake call"` / `"2 minute mein call dikha"` · `"meri location bhejo"` / `"share my location"` · `"ambulance"` / `"108"` · `"nearest chemist"` / `"aaspaas ka hospital"` · `"medical id"` / `"emergency info"`.
+
 ### 1.4 24/7 emergency cascade (family-only, never cops)
 Real backend, real fan-out. Refuses to dial 112/100/101/102/108/1098/1930/139
 by code-level denylist — see [`emergency_service.py`](../backend/services/emergency_service.py).

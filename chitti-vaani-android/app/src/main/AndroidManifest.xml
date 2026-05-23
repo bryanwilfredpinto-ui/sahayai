@@ -74,6 +74,15 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
+    <!-- Location — used for spec §5.3 live location share + nearby
+         hospital/chemist Maps category search. We declare both FINE
+         and COARSE; runtime asks the user when ChittiNative.shareLocation
+         or the Maps category search first fires. Per spec, location is
+         NEVER stored — it's read once, packaged as a maps.google.com
+         link, and handed to WhatsApp/SMS at the user's spoken "haan". -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <queries>
         <!-- For "open WhatsApp" deep-links and intent resolution -->
         <package android:name="com.whatsapp"/>

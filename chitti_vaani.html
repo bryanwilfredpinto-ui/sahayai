@@ -1056,6 +1056,42 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <span class="pill android" id="pill-reminder">Android ✓ · Web shows steps</span>
       </button>
 
+      <button class="pro-card" onclick="openSafeWalkModal()">
+        <span class="ico">🚶‍♀️</span><span class="lbl">SafeWalk mode</span>
+        <span class="sub">"Chitti, main akele ja rahi hun, 20 min mein check karna" — Chitti sets a check-in timer. If you don't say "main theek hun" in time, your Trusted Circle gets your live location + an alert. NEVER auto-dials cops.</span>
+        <span class="pill" id="pill-safewalk">Web ✓ · Android ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="confirmFakeIncomingCall()">
+        <span class="ico">📵</span><span class="lbl">Fake incoming call</span>
+        <span class="sub">"Chitti, 2 minute mein call aane ka dikha" — simulates a ringing incoming call so you have an excuse to leave an unsafe situation. Web shows a fullscreen ring overlay; Android plays the real ringtone via the InCallService.</span>
+        <span class="pill" id="pill-fake-call">Web ✓ · Android ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openLocationShareModal()">
+        <span class="ico">📍</span><span class="lbl">Share my live location</span>
+        <span class="sub">"Mom ko meri location bhejo" — Chitti reads your GPS, packages it as a Google Maps link, and WhatsApps it to whoever you pick from the Trusted Circle. Only with your "haan".</span>
+        <span class="pill" id="pill-location">Web ✓ · Android ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openMedicalIdModal()">
+        <span class="ico">🏥</span><span class="lbl">Medical ID</span>
+        <span class="sub">Blood group · allergies · chronic conditions · primary doctor · emergency contact. Chitti reads it aloud on command + (Android) surfaces it on the lock screen so first responders can see it without unlocking.</span>
+        <span class="pill" id="pill-medical-id">Web ✓ · Android lock-screen ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="confirmAmbulance108()">
+        <span class="ico">🚑</span><span class="lbl">Ambulance 108</span>
+        <span class="sub">"Ambulance bulao" — direct shortcut to 108 (medical emergency line). Chitti confirms "Sire, ambulance call karoon?" first. <b>This is the ONLY health-emergency number Chitti dials — never 112, never auto.</b></span>
+        <span class="pill" id="pill-amb108">Web ✓ · Android ✓</span>
+      </button>
+
+      <button class="pro-card" onclick="openNearbyHealthModal()">
+        <span class="ico">🏪</span><span class="lbl">Nearest hospital / chemist</span>
+        <span class="sub">"Aaspaas ka chemist khula hai?" / "Sabse paas hospital" — Chitti opens Maps with a category search for hospital / pharmacy / clinic / chemist, scoped to your location.</span>
+        <span class="pill" id="pill-nearby-health">Web ✓ · Android ✓</span>
+      </button>
+
       <button class="pro-card" onclick="toggleHeyChitti()">
         <span class="ico">🎙️</span><span class="lbl">Hey Chitti wake word</span>
         <span class="sub">"Hey Chitti" / "Sun Chitti" — always listening foreground service on Android. Wake word fires → Chitti opens the mic + voice intent router. Tap to enable / disable; persists across reboots.</span>
@@ -1725,6 +1761,134 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <button class="cancel" onclick="closeModal('search-modal')">Cancel</button>
     </div>
     <div class="small-note">Web → <code>google.com/search?q=…</code>. Honest: Chitti can't read the result page for you (yet) — that's Phase 2 Android (screen-reader bridge).</div>
+  </div>
+</div>
+
+<!-- ════════════ SAFETY + HEALTH modals (spec §5.1 + §5.3) ════════════ -->
+
+<!-- SafeWalk mode modal -->
+<div id="safewalk-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="safewalk-title">
+  <div class="panel chitti-response" data-chitti-section="🚶‍♀️ SafeWalk mode">
+    <h2 id="safewalk-title">🚶‍♀️ SafeWalk mode</h2>
+    <div class="desc">Set a check-in timer. Chitti will ask <b>"Aap theek hain?"</b> on a schedule. If you don't say "haan" within the window, Chitti shares your live location with your Trusted Circle and rings their phone. <b>Never auto-dials cops.</b></div>
+    <div class="field">
+      <label>Check on me after how many minutes?</label>
+      <select id="safewalk-mins">
+        <option value="5">5 minutes</option>
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="20" selected>20 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="45">45 minutes</option>
+        <option value="60">1 hour</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>If I don't respond, alert which Trusted Circle members?</label>
+      <select id="safewalk-circle" multiple size="4" style="height:auto"></select>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Hold Ctrl / Cmd to pick more than one. Empty = all of Trusted Circle.</div>
+    </div>
+    <div id="safewalk-active" style="display:none;background:#dcfce7;border:1px solid #16a34a;padding:10px;border-radius:10px;margin:10px 0;font-weight:700;color:#166534"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmSafeWalkStart()">🚶‍♀️ Start SafeWalk — Chitti will confirm first</button>
+      <button class="cancel" onclick="cancelSafeWalk()" id="safewalk-cancel" style="display:none">🛑 Cancel SafeWalk</button>
+      <button class="cancel" onclick="closeModal('safewalk-modal')">Close</button>
+    </div>
+    <div class="small-note">Spec §5.3: SafeWalk + Fake call are women's-safety / night-walk tools. Cascade reuses the existing emergency family-fan-out — Chitti NEVER auto-dials 112 / 100 / 102. Stop by saying "main theek hun" or tapping Cancel.</div>
+  </div>
+</div>
+
+<!-- Live-location share modal -->
+<div id="location-share-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="location-share-title">
+  <div class="panel chitti-response" data-chitti-section="📍 Share my live location">
+    <h2 id="location-share-title">📍 Share my live location</h2>
+    <div class="desc">Chitti reads your GPS, packages it as a Google Maps link, and sends it to whoever you pick. <b>Voice consent every time.</b></div>
+    <div class="field">
+      <label>Send to (pick from Trusted Circle)</label>
+      <select id="loc-share-to"></select>
+      <input type="tel" id="loc-share-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+    </div>
+    <div class="field" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label style="margin:0">Channel:</label>
+      <select id="loc-share-ch" style="width:auto;min-width:140px">
+        <option value="whatsapp" selected>📲 WhatsApp</option>
+        <option value="sms">💬 SMS</option>
+      </select>
+    </div>
+    <div id="loc-share-status" class="small-note" style="margin:8px 0;display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmLocationShare()">📍 Share location — Chitti will confirm first</button>
+      <button class="cancel" onclick="closeModal('location-share-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Web uses <code>navigator.geolocation</code> — your browser will ask for location permission once. Chitti packages the lat/lng as <code>maps.google.com/?q=&lt;lat&gt;,&lt;lng&gt;</code> and hands it to WhatsApp / SMS app pre-filled. <b>Chitti never stores your location.</b></div>
+  </div>
+</div>
+
+<!-- Medical ID modal -->
+<div id="medical-id-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="medical-id-title">
+  <div class="panel chitti-response" data-chitti-section="🏥 Medical ID">
+    <h2 id="medical-id-title">🏥 Medical ID</h2>
+    <div class="desc">First-responder-facing info. Stored only on this device. Chitti reads it aloud on command + (Android app) surfaces it on the lock screen via the system Emergency Info contract.</div>
+    <div class="field">
+      <label>Blood group</label>
+      <select id="med-blood">
+        <option value="">—</option>
+        <option value="A+">A+</option><option value="A-">A−</option>
+        <option value="B+">B+</option><option value="B-">B−</option>
+        <option value="O+">O+</option><option value="O-">O−</option>
+        <option value="AB+">AB+</option><option value="AB-">AB−</option>
+        <option value="unknown">Don't know</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Allergies (drug / food / environmental)</label>
+      <textarea id="med-allergies" placeholder="e.g. Penicillin, Sulfa drugs, peanuts" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <label>Chronic conditions / current medications</label>
+      <textarea id="med-conditions" placeholder="e.g. Type 2 Diabetes — Metformin 500mg twice daily; Hypertension — Telmisartan 40mg morning" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label>Primary doctor + phone</label>
+      <input type="text" id="med-doctor" placeholder="e.g. Dr Sharma — +919876543210">
+    </div>
+    <div class="field">
+      <label>Emergency contact (next of kin)</label>
+      <input type="text" id="med-nok" placeholder="e.g. Spouse — +919876543210">
+    </div>
+    <div class="actions">
+      <button class="go" onclick="saveMedicalId()">💾 Save Medical ID</button>
+      <button class="spk" onclick="readMedicalIdAloud()">🔊 Read aloud</button>
+      <button class="cancel" onclick="closeModal('medical-id-modal')">Close</button>
+    </div>
+    <div class="small-note">Saving is a local-only action — no Golden Rule confirm needed (you're editing your own data, not acting on the world). Reading aloud + sending to another person DO go through Chitti's confirm.</div>
+  </div>
+</div>
+
+<!-- Nearby health modal -->
+<div id="nearby-health-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="nearby-health-title">
+  <div class="panel chitti-response" data-chitti-section="🏪 Nearest hospital / chemist">
+    <h2 id="nearby-health-title">🏪 Nearest hospital / chemist</h2>
+    <div class="desc">Chitti opens Maps with a category search, scoped to your location.</div>
+    <div class="field" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label style="margin:0">What kind of place?</label>
+      <select id="nearby-health-kind" style="width:auto;min-width:160px">
+        <option value="hospital" selected>🏥 Hospital</option>
+        <option value="chemist">💊 Chemist / Pharmacy</option>
+        <option value="clinic">🩺 Clinic</option>
+        <option value="diagnostic">🧪 Diagnostic centre</option>
+        <option value="ambulance">🚑 Ambulance stand</option>
+        <option value="blood bank">🩸 Blood bank</option>
+      </select>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="nearby-open-now" checked> Open now only (24/7 priority for chemists at night)</label>
+    </div>
+    <div class="actions">
+      <button class="go" onclick="confirmNearbyHealth()">🏪 Open Maps — Chitti will confirm first</button>
+      <button class="cancel" onclick="closeModal('nearby-health-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Search format: <code>{kind} near me</code> in Google Maps. Add "24 hours" suffix when "open now" is on.</div>
   </div>
 </div>
 
@@ -3157,7 +3321,7 @@ function renderTC(){
       </div>
     </div>`).join('');
   // Refresh dropdowns in modals
-  ['wa-to','wa-call-to','sms-to','upi-to','em-to'].forEach(refreshTCDropdown);
+  ['wa-to','wa-call-to','sms-to','upi-to','em-to','loc-share-to'].forEach(refreshTCDropdown);
 }
 function refreshTCDropdown(id){
   const sel = document.getElementById(id); if (!sel) return;
@@ -3637,6 +3801,317 @@ function confirmAppLauncher(){
   logAction(launched ? ('App opened (native): ' + t.name) : ('App opened (web): ' + t.name),
     t.pkg || t.web || '', () => {});
   speakText((CURRENT_LANG==='en'?'Opened ':'खोल दिया ') + t.name + '.', CURRENT_LANG);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SAFETY + HEALTH handlers (spec §5.1 + §5.3 of CHITTI_FULL_ACCESS_AGENT_v1)
+   ════════════════════════════════════════════════════════════════
+   Every side-effecting path here routes through chittiConfirmAndDo
+   (Golden Rule). Logged via logAction with 30-second undo where the
+   action is reversible.
+*/
+
+// ── SafeWalk ──────────────────────────────────────────
+const SAFEWALK_KEY = 'chitti_vaani_safewalk_v1';
+let _safeWalkTimer = null;
+let _safeWalkPromptTimer = null;
+function _safeWalkState(){ try { return JSON.parse(localStorage.getItem(SAFEWALK_KEY) || 'null'); } catch(e){ return null; } }
+function _safeWalkSave(s){ try { localStorage.setItem(SAFEWALK_KEY, JSON.stringify(s)); } catch(e){} }
+function _safeWalkClear(){ try { localStorage.removeItem(SAFEWALK_KEY); } catch(e){} }
+function openSafeWalkModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  // Populate Trusted Circle multiselect
+  const sel = document.getElementById('safewalk-circle');
+  if (sel) {
+    sel.innerHTML = loadTC().map((c,i) => `<option value="${i}">${escapeHtml(c.name||c.realname||c.phone||'?')}</option>`).join('');
+  }
+  // Reflect current state
+  const s = _safeWalkState();
+  const active = document.getElementById('safewalk-active');
+  const cancelBtn = document.getElementById('safewalk-cancel');
+  if (s && s.active && Date.now() < s.deadline) {
+    const minsLeft = Math.max(1, Math.ceil((s.deadline - Date.now())/60000));
+    active.textContent = '🚶‍♀️ SafeWalk is ON — check-in in ' + minsLeft + ' min.';
+    active.style.display = 'block';
+    cancelBtn.style.display = 'inline-block';
+  } else {
+    active.style.display = 'none';
+    cancelBtn.style.display = 'none';
+  }
+  openModal('safewalk-modal');
+}
+function confirmSafeWalkStart(){
+  const mins = parseInt(document.getElementById('safewalk-mins').value, 10) || 20;
+  const sel = document.getElementById('safewalk-circle');
+  const picked = sel ? Array.from(sel.selectedOptions).map(o => Number(o.value)) : [];
+  const EN = _grEnglish();
+  chittiConfirmAndDo(
+    EN ? ('Sire, shall I start SafeWalk? I will check on you in ' + mins + ' minutes. If you do not answer, I will share your live location with your Trusted Circle.')
+       : ('Sire, kya main SafeWalk shuru karoon? ' + mins + ' min baad aapse poochungi. Aap jawab nahi denge to aapki location Trusted Circle ko bhej dungi.'),
+    () => _safeWalkStart(mins, picked),
+  );
+}
+function _safeWalkStart(mins, contactIdxs){
+  const deadline = Date.now() + mins*60*1000;
+  const tc = loadTC();
+  const contacts = contactIdxs.length ? contactIdxs.map(i => tc[i]).filter(Boolean) : tc;
+  _safeWalkSave({ active: true, deadline, mins, contact_idxs: contactIdxs, started_at: Date.now() });
+  // Prompt ~30 seconds before deadline; final check at deadline.
+  if (_safeWalkPromptTimer) clearTimeout(_safeWalkPromptTimer);
+  if (_safeWalkTimer)        clearTimeout(_safeWalkTimer);
+  const promptIn = Math.max(5000, (mins*60*1000) - 30000);
+  _safeWalkPromptTimer = setTimeout(() => _safeWalkPrompt(), promptIn);
+  _safeWalkTimer       = setTimeout(() => _safeWalkEscalate(contacts), mins*60*1000 + 1000);
+  logAction('SafeWalk started', mins + ' min · ' + contacts.length + ' contacts', () => _safeWalkCancel());
+  speakText(_grEnglish() ? ('SafeWalk on. I will check on you in ' + mins + ' minutes.') : ('SafeWalk chalu. ' + mins + ' min baad aapse poochungi.'), CURRENT_LANG);
+  const active = document.getElementById('safewalk-active');
+  if (active) { active.textContent = '🚶‍♀️ SafeWalk is ON — check-in in ' + mins + ' min.'; active.style.display = 'block'; }
+  const cb = document.getElementById('safewalk-cancel'); if (cb) cb.style.display = 'inline-block';
+}
+function _safeWalkPrompt(){
+  // 30 s warning prompt — user can say "main theek hun" to extend.
+  chittiConfirmAndDo(
+    _grEnglish() ? "Are you OK? Say haan if you are safe. If you don't reply in 30 seconds I will alert your Trusted Circle."
+                 : "Aap theek hain? Haan boliye agar safe hain. 30 second mein jawab nahi diya to Trusted Circle ko alert kar dungi.",
+    () => { logAction('SafeWalk OK check-in', 'user confirmed safe'); cancelSafeWalk(); },
+    { onNo: () => { /* deliberate NO → user wants the alert. Escalate now. */ const s = _safeWalkState() || {}; const tc = loadTC(); const contacts = (s.contact_idxs||[]).length ? (s.contact_idxs.map(i=>tc[i]).filter(Boolean)) : tc; _safeWalkEscalate(contacts); } },
+  );
+}
+function _safeWalkEscalate(contacts){
+  // Get live location, build Maps link, WhatsApp to each contact.
+  if (!navigator.geolocation) {
+    speakText(_grEnglish() ? "SafeWalk window expired. Browser cannot share location." : "SafeWalk ka time khatam. Browser location nahi de raha.", CURRENT_LANG);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    const link = 'https://maps.google.com/?q=' + lat + ',' + lng;
+    const msg = (_grEnglish()
+      ? "SafeWalk alert: I did not check in. My last known location: " + link
+      : "SafeWalk alert: maine check-in nahi kiya. Meri last known location: " + link);
+    contacts.forEach(c => {
+      if (!c || !c.phone) return;
+      const url = 'https://wa.me/' + c.phone.replace(/^\+/, '') + '?text=' + encodeURIComponent(msg);
+      window.open(url, '_blank', 'noopener');
+    });
+    logAction('SafeWalk ESCALATED', contacts.map(c => c.name||c.phone).join(', '));
+    speakText(_grEnglish() ? "Alert sent to your Trusted Circle." : "Trusted Circle ko alert bhej diya.", CURRENT_LANG);
+  }, (err) => {
+    speakText(_grEnglish() ? "SafeWalk could not read location: " + err.message : "Location nahi mil rahi: " + err.message, CURRENT_LANG);
+  }, { timeout: 15000, maximumAge: 30000 });
+  _safeWalkClear();
+  if (_safeWalkPromptTimer) clearTimeout(_safeWalkPromptTimer);
+  if (_safeWalkTimer)        clearTimeout(_safeWalkTimer);
+}
+function cancelSafeWalk(){ _safeWalkCancel(); }
+function _safeWalkCancel(){
+  _safeWalkClear();
+  if (_safeWalkPromptTimer) clearTimeout(_safeWalkPromptTimer);
+  if (_safeWalkTimer)        clearTimeout(_safeWalkTimer);
+  const active = document.getElementById('safewalk-active'); if (active) active.style.display = 'none';
+  const cb = document.getElementById('safewalk-cancel'); if (cb) cb.style.display = 'none';
+  speakText(_grEnglish() ? "SafeWalk off." : "SafeWalk band.", CURRENT_LANG);
+}
+
+// ── Fake incoming call ────────────────────────────────
+function confirmFakeIncomingCall(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const EN = _grEnglish();
+  chittiConfirmAndDo(
+    EN ? "Sire, shall I show a fake incoming call in 2 minutes so you can leave?"
+       : "Sire, 2 minute mein fake incoming call dikhaaun taa-ki aap nikal sako?",
+    () => {
+      logAction('Fake call scheduled', 'in 120 s', () => clearTimeout(window._fakeCallTimer));
+      speakText(EN ? "OK, fake call in 2 minutes." : "Theek hai, 2 minute mein fake call.", CURRENT_LANG);
+      window._fakeCallTimer = setTimeout(showFakeIncomingCall, 120000);
+    },
+  );
+}
+function showFakeIncomingCall(){
+  // On Android with the InCallService bridge, prefer the native incoming-call screen.
+  if (hasNativeBridge() && window.ChittiNative.triggerFakeIncomingCall) {
+    try { window.ChittiNative.triggerFakeIncomingCall(); return; } catch(e) {}
+  }
+  // Web fallback — fullscreen overlay + ringtone-like audio loop
+  if (document.getElementById('fake-call-overlay')) return;
+  const ov = document.createElement('div');
+  ov.id = 'fake-call-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:#0E2344;color:#fff;z-index:9700;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;text-align:center;padding:24px';
+  ov.innerHTML = `
+    <div style="font-size:14px;opacity:.7;margin-bottom:6px">Incoming call</div>
+    <div style="font-size:34px;font-weight:800;margin-bottom:6px">Maa 📞</div>
+    <div style="font-size:13px;opacity:.7;margin-bottom:30px">+91 ▒▒▒▒▒▒▒▒▒▒</div>
+    <div style="display:flex;gap:40px;align-items:center;justify-content:center;width:100%;max-width:380px">
+      <button id="fake-call-decline" style="width:72px;height:72px;border-radius:50%;border:0;background:#dc2626;color:#fff;font-size:30px;cursor:pointer">✕</button>
+      <button id="fake-call-accept"  style="width:72px;height:72px;border-radius:50%;border:0;background:#16a34a;color:#fff;font-size:30px;cursor:pointer">📞</button>
+    </div>
+    <div style="margin-top:24px;font-size:12px;opacity:.6">Chitti fake call — tap either button to dismiss</div>`;
+  document.body.appendChild(ov);
+  // Simple ringtone: oscillator beat
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.frequency.value = 440; g.gain.value = 0.18;
+    o.connect(g); g.connect(ctx.destination); o.start();
+    window._fakeCallAudio = { ctx, o, g };
+    let on = true;
+    window._fakeCallBeat = setInterval(() => { on = !on; g.gain.value = on ? 0.18 : 0; }, 600);
+  } catch(e){}
+  const stop = () => {
+    if (window._fakeCallBeat) clearInterval(window._fakeCallBeat);
+    if (window._fakeCallAudio) { try { window._fakeCallAudio.o.stop(); window._fakeCallAudio.ctx.close(); } catch(e){} }
+    ov.remove();
+  };
+  document.getElementById('fake-call-decline').onclick = stop;
+  document.getElementById('fake-call-accept').onclick  = stop;
+}
+
+// ── Live location share ───────────────────────────────
+function openLocationShareModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('loc-share-to');
+  document.getElementById('loc-share-to-free').value = '';
+  document.getElementById('loc-share-status').style.display = 'none';
+  openModal('location-share-modal');
+}
+function buildLocShareTarget(){
+  const i = document.getElementById('loc-share-to').value;
+  if (i !== '') { const c = loadTC()[Number(i)]; if (c && c.phone) return { name: c.name||c.realname||'', phone: c.phone }; }
+  const free = (document.getElementById('loc-share-to-free').value||'').trim();
+  if (free) { let p = free.replace(/[^\d+]/g,''); if (!p.startsWith('+')) p = '+91' + p.replace(/^0/,''); return { name:'', phone: p }; }
+  return null;
+}
+function confirmLocationShare(){
+  const t = buildLocShareTarget();
+  if (!t) { alert('Pick a contact or type a number.'); return; }
+  const ch = document.getElementById('loc-share-ch').value || 'whatsapp';
+  const EN = _grEnglish();
+  const who = t.name || t.phone;
+  chittiConfirmAndDo(
+    EN ? ('Sire, shall I share my live location with ' + who + ' via ' + ch + '?')
+       : ('Sire, kya main apni live location ' + who + ' ko ' + ch + ' se bhejun?'),
+    () => _doLocationShare(t, ch),
+  );
+}
+function _doLocationShare(target, channel){
+  const status = document.getElementById('loc-share-status');
+  status.style.display = 'block';
+  status.textContent = (_grEnglish() ? '📍 Reading your GPS…' : '📍 GPS padh rahi hoon…');
+  if (!navigator.geolocation) {
+    status.textContent = '✗ Browser cannot read location. Try in the Android app.';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    const link = 'https://maps.google.com/?q=' + lat + ',' + lng;
+    const msg = (_grEnglish() ? 'My live location: ' : 'Meri location: ') + link;
+    if (channel === 'sms') {
+      window.location.href = 'sms:' + target.phone.replace(/\s/g,'') + '?body=' + encodeURIComponent(msg);
+    } else {
+      const url = 'https://wa.me/' + target.phone.replace(/^\+/,'') + '?text=' + encodeURIComponent(msg);
+      window.open(url, '_blank', 'noopener');
+    }
+    status.textContent = '✓ ' + (_grEnglish() ? 'Location handed off — tap send inside the app.' : 'Location bhej di — app me send dabaiye.');
+    logAction('Live location shared', (target.name||target.phone) + ' · ' + channel + ' · ' + link, () => {});
+    speakText(_grEnglish() ? 'Location handed to ' + channel + '.' : channel + ' me location bhej di.', CURRENT_LANG);
+  }, (err) => {
+    status.textContent = '✗ ' + (_grEnglish() ? 'Could not read location: ' : 'Location nahi mili: ') + err.message;
+  }, { timeout: 15000, maximumAge: 30000, enableHighAccuracy: true });
+}
+
+// ── Medical ID ────────────────────────────────────────
+const MEDID_KEY = 'chitti_vaani_medical_id_v1';
+function _medIdLoad(){ try { return JSON.parse(localStorage.getItem(MEDID_KEY)||'null') || {}; } catch(e){ return {}; } }
+function openMedicalIdModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const m = _medIdLoad();
+  ['blood','allergies','conditions','doctor','nok'].forEach(k => {
+    const el = document.getElementById('med-' + k);
+    if (el) el.value = m[k] || '';
+  });
+  openModal('medical-id-modal');
+}
+function saveMedicalId(){
+  const m = {
+    blood:      (document.getElementById('med-blood').value||'').trim(),
+    allergies:  (document.getElementById('med-allergies').value||'').trim(),
+    conditions: (document.getElementById('med-conditions').value||'').trim(),
+    doctor:     (document.getElementById('med-doctor').value||'').trim(),
+    nok:        (document.getElementById('med-nok').value||'').trim(),
+    saved_at:   new Date().toISOString(),
+  };
+  try { localStorage.setItem(MEDID_KEY, JSON.stringify(m)); } catch(e){}
+  // If Android bridge supports it, push to system Emergency-Info on the lock screen.
+  if (hasNativeBridge() && window.ChittiNative.setMedicalId) {
+    try { window.ChittiNative.setMedicalId(JSON.stringify(m)); } catch(e){}
+  }
+  speakText(_grEnglish() ? 'Medical ID saved.' : 'Medical ID save ho gaya.', CURRENT_LANG);
+  closeModal('medical-id-modal');
+}
+function readMedicalIdAloud(){
+  const m = _medIdLoad();
+  if (!m.blood && !m.allergies && !m.conditions && !m.doctor && !m.nok) {
+    speakText(_grEnglish() ? 'Medical ID is empty. Please fill it first.' : 'Medical ID khaali hai. Pehle bharo.', CURRENT_LANG);
+    return;
+  }
+  const EN = _grEnglish();
+  const parts = [];
+  if (m.blood) parts.push((EN?'Blood group: ':'Blood group: ') + m.blood);
+  if (m.allergies) parts.push((EN?'Allergies: ':'Allergies: ') + m.allergies);
+  if (m.conditions) parts.push((EN?'Conditions: ':'Conditions: ') + m.conditions);
+  if (m.doctor) parts.push((EN?'Doctor: ':'Doctor: ') + m.doctor);
+  if (m.nok) parts.push((EN?'Next of kin: ':'Emergency contact: ') + m.nok);
+  speakText(parts.join('. '), CURRENT_LANG);
+}
+
+// ── Ambulance 108 — separate path from cop denylist ───
+function confirmAmbulance108(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  const EN = _grEnglish();
+  // 108 is India's medical-emergency line — SEPARATE from cops (112/100).
+  // The cop denylist in emergency_service.py specifically EXCLUDES 108 from
+  // the auto-call refusal because medical-emergency MUST be reachable. We
+  // still require explicit haan per Golden Rule.
+  chittiConfirmAndDo(
+    EN ? "Sire, shall I dial 108 (medical emergency / ambulance) now?"
+       : "Sire, kya main 108 (medical emergency / ambulance) dial karoon?",
+    () => {
+      if (hasNativeBridge() && window.ChittiNative.makeCall) {
+        try { window.ChittiNative.makeCall('108'); } catch(e){ window.location.href='tel:108'; }
+      } else {
+        window.location.href = 'tel:108';
+      }
+      logAction('Ambulance 108 dialed', 'medical emergency', () => {});
+      speakText(EN ? 'Dialing 108. Stay calm — help is on the way.' : '108 dial kar rahi hoon. Shaant rahiye — madad aa rahi hai.', CURRENT_LANG);
+    },
+  );
+}
+
+// ── Nearest hospital / chemist / clinic ──────────────
+function openNearbyHealthModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  openModal('nearby-health-modal');
+}
+function confirmNearbyHealth(){
+  const kind = document.getElementById('nearby-health-kind').value;
+  const openNow = document.getElementById('nearby-open-now').checked;
+  const EN = _grEnglish();
+  chittiConfirmAndDo(
+    EN ? ('Sire, shall I open Maps to find the nearest ' + kind + (openNow ? ' open now?' : '?'))
+       : ('Sire, kya main aaspaas ka ' + kind + (openNow ? ' (jo abhi khula ho)' : '') + ' Maps me kholun?'),
+    () => {
+      const q = encodeURIComponent(kind + ' near me' + (openNow ? ' 24 hours' : ''));
+      if (hasNativeBridge() && window.ChittiNative.openMaps) {
+        try { window.ChittiNative.openMaps(decodeURIComponent(q), 'driving'); } catch(e){}
+      } else {
+        window.open('https://www.google.com/maps/search/?api=1&query=' + q, '_blank', 'noopener');
+      }
+      logAction('Nearby ' + kind + ' search', openNow ? 'open now' : 'any', () => {});
+      speakText(EN ? ('Opening Maps for nearest ' + kind + '.') : ('Aaspaas ka ' + kind + ' Maps me khol rahi hoon.'), CURRENT_LANG);
+    },
+  );
 }
 
 /* ── SMS send (user's own phone SIM, never a server-side provider) ── */
@@ -5167,6 +5642,52 @@ function routeVoiceIntent(raw){
   // Routes through confirmNativeAction (Golden Rule gate).
   if (/^(?:torch|flashlight)\s*(?:on|off|chalu|band|kaam|toggle)?$/i.test(r)) {
     confirmNativeAction('toggleFlashlight');
+    return true;
+  }
+
+  // ── SafeWalk mode ──────────────────────────────────────────────────
+  // Spec §5.3 — "Chitti, main akele ja rahi hun, 20 min mein check karna".
+  m = r.match(/^(?:safewalk|safe\s+walk|main\s+akel[ai]\s+ja\s+rah[ai]\s+hun|akel[ai]\s+jaa\s+rah[ai]\s+hun).*?(\d+)?\s*(?:min|minute|minit)?$/i);
+  if (m) {
+    openSafeWalkModal();
+    if (m[1]) {
+      const sel = document.getElementById('safewalk-mins');
+      if (sel) sel.value = String(Math.min(60, Math.max(5, parseInt(m[1],10))));
+    }
+    return true;
+  }
+
+  // ── Fake call ──────────────────────────────────────────────────────
+  // Spec §5.3 — "Chitti, 2 minute mein call aane ka dikha".
+  if (/^(?:fake\s+(?:incoming\s+)?call|2\s+minute\s+mein\s+call\s+(?:aane|aaane)\s+ka\s+dikha)/i.test(r)) {
+    confirmFakeIncomingCall();
+    return true;
+  }
+
+  // ── Live location share ────────────────────────────────────────────
+  // Spec §5.3 — "Mom ko meri location bhejo".
+  m = r.match(/^(?:share\s+(?:my\s+)?location\s+(?:with\s+)?|meri\s+location\s+|.+?\s+ko\s+meri\s+location\s+bhejo)(.+)?$/i);
+  if (m) {
+    openLocationShareModal();
+    return true;
+  }
+
+  // ── Ambulance 108 ──────────────────────────────────────────────────
+  // Spec §5.1 — separate from cops; 108 = medical only.
+  if (/^(?:ambulance|108|call\s+108|medical\s+emergency)$/i.test(r)) {
+    confirmAmbulance108();
+    return true;
+  }
+
+  // ── Nearest hospital / chemist / clinic ────────────────────────────
+  if (/^(?:nearest\s+(hospital|chemist|pharmacy|clinic|chemist\s+(open\s+now)?)|aaspaas\s+(?:ka\s+)?(?:chemist|hospital|clinic|pharmacy))(?:\s+open\s+now)?$/i.test(r)) {
+    openNearbyHealthModal();
+    return true;
+  }
+
+  // ── Medical ID ─────────────────────────────────────────────────────
+  if (/^(?:medical\s+id|meri\s+medical\s+id|emergency\s+info)$/i.test(r)) {
+    readMedicalIdAloud();
     return true;
   }
 
