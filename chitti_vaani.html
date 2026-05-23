@@ -791,6 +791,12 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <div id="kv-unlock" class="kv-section">
       <div class="sub">Enter master passphrase to unlock. <span id="kv-attempts-left">3 attempts available.</span></div>
       <div id="kv-lockout" class="kv-err" style="display:none"></div>
+
+      <div id="kv-biometric-row" style="display:none;background:rgba(22,163,74,.10);border:1px solid rgba(22,163,74,.40);border-radius:10px;padding:10px;margin-bottom:10px">
+        <button class="kv-btn green" onclick="kvBiometricUnlock()" style="width:100%">🔐 Unlock with biometric (fingerprint / face)</button>
+        <div id="kv-biometric-msg" style="font-size:11.5px;color:#bbf7d0;margin-top:6px"></div>
+      </div>
+
       <div class="kv-field">
         <label>Master passphrase</label>
         <input type="password" id="kv-pp-unlock" class="kv-input" autocomplete="current-password" placeholder="Your passphrase" onkeydown="if(event.key==='Enter')kvUnlockSubmit()">
@@ -810,11 +816,15 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         <button id="kv-tab-keys"  class="active" onclick="kvShowTab('keys')">🔑 Keys</button>
         <button id="kv-tab-add"   onclick="kvShowTab('add')">➕ Add</button>
         <button id="kv-tab-eximp" onclick="kvShowTab('eximp')">📤 Export / Import</button>
+        <button id="kv-tab-biometric" onclick="kvShowTab('biometric')">🔐 Biometric</button>
         <button id="kv-tab-tm"    onclick="kvShowTab('tm')">⚠️ Threat model</button>
         <span style="flex:1"></span>
         <button class="kv-btn ghost tiny" onclick="kvLockNow()">🔒 Lock now</button>
       </div>
       <div id="kv-autolock-note" style="font-size:11px;color:#94a3b8;margin-bottom:6px"></div>
+
+      <!-- Auto-export reminder (>30 days since last export) -->
+      <div id="kv-export-reminder" style="display:none;background:rgba(212,175,55,.18);border:1px solid #D4AF37;color:#fef3c7;padding:10px 12px;border-radius:10px;margin-bottom:10px;font-size:13px"></div>
 
       <!-- KEYS list -->
       <div id="kv-tabpanel-keys" class="kv-section active">
@@ -824,6 +834,17 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <!-- ADD / EDIT -->
       <div id="kv-tabpanel-add" class="kv-section">
         <div class="kv-field">
+          <label>Entry kind</label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+            <label style="display:flex;gap:6px;align-items:center;font-weight:400;color:#e2e8f0">
+              <input type="radio" name="kv-add-kind" value="string" checked onchange="kvAddKindChange()"> 🔤 String value (passwords, API keys, secrets)
+            </label>
+            <label style="display:flex;gap:6px;align-items:center;font-weight:400;color:#e2e8f0">
+              <input type="radio" name="kv-add-kind" value="file" onchange="kvAddKindChange()"> 📎 File backup (e.g. release.jks — max 256 KB)
+            </label>
+          </div>
+        </div>
+        <div class="kv-field">
           <label>Key name</label>
           <select id="kv-add-preset" class="kv-input" onchange="kvAddPresetChange()">
             <option value="">— pick a preset or type a custom name —</option>
@@ -832,6 +853,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
             <option>KEYSTORE_PASSWORD</option>
             <option>KEY_PASSWORD</option>
             <option>KEY_ALIAS</option>
+            <option>KEYSTORE_FILE_release.jks</option>
             <option>RAILWAY_EMAIL</option>
             <option>RAILWAY_PASSWORD</option>
             <option>GITHUB_EMAIL</option>
@@ -851,10 +873,16 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
           </select>
           <input type="text" id="kv-add-name" class="kv-input" placeholder="or type a custom key name" style="margin-top:6px">
         </div>
-        <div class="kv-field">
+        <div class="kv-field" id="kv-add-value-field">
           <label>Value (the secret)</label>
           <textarea id="kv-add-value" class="kv-input" placeholder="Paste the secret here. Multi-line OK (Neon connection strings, certs)" rows="5"></textarea>
           <div style="font-size:11px;color:#94a3b8;margin-top:4px">⚠️ The value is encrypted before it touches localStorage. The plaintext exists in this textarea only while you type it.</div>
+        </div>
+        <div class="kv-field" id="kv-add-file-field" style="display:none">
+          <label>File (max 256 KB)</label>
+          <input type="file" id="kv-add-file" class="kv-input" onchange="kvAddFileChange()">
+          <div id="kv-add-file-meta" style="font-size:12px;color:#94a3b8;margin-top:4px">No file selected.</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">📎 The file bytes are base64-encoded then AES-256-GCM encrypted before storage. Ideal for the release keystore (release.jks, ~3 KB). Do <b>not</b> use this for large documents — Health File is the right tool for those.</div>
         </div>
         <div class="kv-field">
           <label>Note (optional)</label>
@@ -886,6 +914,27 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
         </div>
       </div>
 
+      <!-- BIOMETRIC -->
+      <div id="kv-tabpanel-biometric" class="kv-section">
+        <h2 style="font-size:15px">🔐 Biometric unlock</h2>
+        <div class="sub">Wrap your master passphrase under the device's biometric authenticator. After enrolment, you can unlock with fingerprint / face instead of typing the passphrase — but the passphrase is still always the fallback.</div>
+        <div id="kv-biometric-status" class="kv-warn">Checking biometric availability…</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button class="kv-btn primary" id="kv-biometric-enroll-btn" onclick="kvBiometricEnroll()" style="display:none">🔐 Enable biometric unlock</button>
+          <button class="kv-btn danger" id="kv-biometric-forget-btn" onclick="kvBiometricForgetConfirm()" style="display:none">🗑 Disable biometric unlock</button>
+        </div>
+        <div class="kv-tm" style="margin-top:14px">
+          <p><b>How it works</b></p>
+          <ul style="margin:6px 0 10px 18px">
+            <li><b>Android APK (chitti-vaani-android):</b> a 256-bit AES key is generated inside the Android Keystore (TEE-backed) with <code>setUserAuthenticationRequired(true)</code> + <code>setInvalidatedByBiometricEnrollment(true)</code>. The Keystore wraps your passphrase. Every unlock triggers <code>BiometricPrompt</code> → fingerprint touch → unwrap. <b>Enrolling a new fingerprint on the device invalidates the wrap key</b> — you'll be prompted to re-enrol.</li>
+            <li><b>Web (Chrome / Edge):</b> uses the WebAuthn PRF extension. The platform authenticator (Touch ID, Windows Hello, Android-Chrome platform key) deterministically returns 32 bytes per (credential, salt) — those 32 bytes become the AES-256 key that wraps your passphrase. Available where browser + OS support PRF; honest skip-with-message otherwise.</li>
+            <li><b>iOS Safari:</b> WebAuthn PRF support is partial / new — the page falls back to passphrase-only.</li>
+          </ul>
+          <p><b>What it costs you</b></p>
+          <p>If you lose the device AND have not exported the vault to Google Keep / 1Password, biometric unlock is gone with it. The encrypted blob may survive in browser sync if you're signed into Chrome — but without the wrap-key (held in the device's TEE) you'll fall back to passphrase. <b>So: keep the export current.</b></p>
+        </div>
+      </div>
+
       <!-- THREAT MODEL -->
       <div id="kv-tabpanel-tm" class="kv-section">
         <h2 style="font-size:15px">⚠️ What this vault DOES and DOES NOT protect against</h2>
@@ -907,6 +956,15 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
           </ul>
           <p><b>WHY YOU STILL WANT THIS</b></p>
           <p>It is the <b>3rd backup</b> after 1Password and Google Keep — defense in depth. If 1Password locks you out and Google Keep is unreachable, this is the third door home. Never make it the only door.</p>
+          <p><b>BIOMETRIC UNLOCK ADDED 2026-05-23</b></p>
+          <ul style="margin:6px 0 10px 18px">
+            <li><b>Android APK path is gold-standard.</b> AES-256-GCM wrapping key lives in Android Keystore inside the secure enclave with <code>setUserAuthenticationRequired(true)</code>. Every unwrap requires a fresh fingerprint / face touch via <code>BiometricPrompt</code>. <code>setInvalidatedByBiometricEnrollment(true)</code> means enrolling a new fingerprint on the device wipes the wrap key — preventing an attacker who jailbreaks the device + adds their fingerprint from unlocking the vault.</li>
+            <li><b>Web path uses WebAuthn PRF extension.</b> Deterministic 32-byte output per (credential, salt) from the platform authenticator (Touch ID / Windows Hello / Android-Chrome). The wrap key never leaves the authenticator. Available where browser + OS support PRF; honestly refused otherwise (no weaker fallback).</li>
+            <li><b>Passphrase is always the fallback.</b> Biometric unlock NEVER bypasses passphrase capability — the passphrase still works on any device, even one without a fingerprint reader.</li>
+            <li><b>Loss model:</b> if you lose the device AND have no export backup, biometric unlock is gone with it. The encrypted blob may sync via Chrome account sync — but without the wrap key (held in the device's TEE), you'll need the passphrase. Keep the export current.</li>
+          </ul>
+          <p><b>KEYSTORE FILE BACKUP ADDED 2026-05-23</b></p>
+          <p>Same AES-256-GCM pipeline encrypts file bytes (max 256 KB per file). Ideal for the ~3 KB Android release keystore. The exported backup string includes the file blob, so a fresh laptop + your passphrase = full keystore recovery. Don't use this for arbitrary documents — Health File is the right product for those.</p>
         </div>
       </div>
     </div>
@@ -4900,11 +4958,15 @@ const KV_STORAGE_KEY      = 'chitti_keys_vault_v1';
 const KV_ATTEMPTS_KEY     = 'chitti_keys_vault_attempts_v1';
 const KV_LOCK_UNTIL_KEY   = 'chitti_keys_vault_lock_until_v1';
 const KV_LAST_REMIND_KEY  = 'chitti_keys_vault_last_remind_v1';
+const KV_LAST_EXPORT_KEY  = 'chitti_keys_vault_last_export_v1';      // for the 30-day re-export banner
+const KV_BIOMETRIC_KEY    = 'chitti_keys_vault_biometric_v1';        // wrapped-passphrase blob (web path) or {platform:'android'} flag
 const KV_KDF_ITERATIONS   = 600000;   // OWASP 2023 baseline for PBKDF2-SHA256
 const KV_AUTOLOCK_MS      = 2 * 60 * 1000;
 const KV_LOCKOUT_MS       = 60 * 60 * 1000;
 const KV_REMINDER_DAYS    = 90;
+const KV_EXPORT_REMINDER_DAYS = 30;   // auto-export reminder threshold
 const KV_MIN_PASSPHRASE   = 8;
+const KV_FILE_MAX_BYTES   = 256 * 1024;
 
 let _kvUnlockedKey = null;        // CryptoKey held only in memory while unlocked
 let _kvEntries     = [];          // plaintext working copy while unlocked
@@ -5012,6 +5074,8 @@ function kvOpen(reason){
     _kvShowSection('unlock');
     const remaining = Math.max(0, 3 - _kvAttempts());
     document.getElementById('kv-attempts-left').textContent = remaining + ' attempt(s) before lockout.';
+    const bmsg = document.getElementById('kv-biometric-msg'); if (bmsg) bmsg.textContent = '';
+    _kvBiometricRefreshUI();
     setTimeout(() => document.getElementById('kv-pp-unlock').focus(), 100);
   }
 }
@@ -5026,10 +5090,13 @@ function _kvShowSection(name){
   });
 }
 function kvShowTab(name){
-  ['keys','add','eximp','tm'].forEach(t => {
-    document.getElementById('kv-tab-' + t).classList.toggle('active', t === name);
-    document.getElementById('kv-tabpanel-' + t).classList.toggle('active', t === name);
+  ['keys','add','eximp','biometric','tm'].forEach(t => {
+    const btn = document.getElementById('kv-tab-' + t);
+    const panel = document.getElementById('kv-tabpanel-' + t);
+    if (btn)   btn.classList.toggle('active', t === name);
+    if (panel) panel.classList.toggle('active', t === name);
   });
+  if (name === 'biometric') _kvBiometricRefreshUI();
 }
 function kvLockNow(){ _kvLockNow(); }
 function _kvLockNow(){
@@ -5096,6 +5163,8 @@ async function kvUnlockSubmit(){
     _kvShowSection('unlocked');
     kvShowTab('keys');
     _kvRenderList();
+    _kvShowExportReminderIfStale();
+    _kvBiometricRefreshUI();
     _kvBumpAutoLock();
   } catch (e) {
     if (e.message === 'wrong_passphrase_or_tampered') {
@@ -5141,19 +5210,34 @@ function _kvRenderList(){
     list.innerHTML = '<div class="sub">No keys yet — switch to "➕ Add" tab.</div>';
     return;
   }
-  list.innerHTML = _kvEntries.map((e, i) => `
-    <div class="kv-row">
-      <div class="name">${escapeHtml(e.name)}</div>
-      <div class="val" id="kv-val-${i}">${escapeHtml(_kvMask(e.value))}</div>
-      <div class="actions">
-        <button class="kv-btn tiny ghost" onclick="kvRevealValue(${i})">👁 Reveal</button>
-        <button class="kv-btn tiny ghost" onclick="kvCopyValue(${i})">📋 Copy</button>
-        <button class="kv-btn tiny primary" onclick="kvEditEntry(${i})">✎ Edit</button>
-        <button class="kv-btn tiny danger" onclick="kvDeleteEntry(${i})">🗑 Delete</button>
-      </div>
-      ${e.note ? '<div style="flex-basis:100%;font-size:11.5px;color:#94a3b8;margin-top:2px">' + escapeHtml(e.note) + '</div>' : ''}
-    </div>
-  `).join('');
+  list.innerHTML = _kvEntries.map((e, i) => {
+    if (e.kind === 'file') {
+      const meta = '📎 ' + (e.file_name || 'file') + ' · ' + (e.file_size || 0) + ' bytes · ' + (e.mime || 'application/octet-stream');
+      return `
+        <div class="kv-row">
+          <div class="name">${escapeHtml(e.name)} <span style="font-size:10px;color:#94a3b8;font-weight:400">FILE</span></div>
+          <div class="val">${escapeHtml(meta)}</div>
+          <div class="actions">
+            <button class="kv-btn tiny green" onclick="kvDownloadFileEntry(${i})">⬇ Download</button>
+            <button class="kv-btn tiny primary" onclick="kvEditEntry(${i})">✎ Edit</button>
+            <button class="kv-btn tiny danger" onclick="kvDeleteEntry(${i})">🗑 Delete</button>
+          </div>
+          ${e.note ? '<div style="flex-basis:100%;font-size:11.5px;color:#94a3b8;margin-top:2px">' + escapeHtml(e.note) + '</div>' : ''}
+        </div>`;
+    }
+    return `
+      <div class="kv-row">
+        <div class="name">${escapeHtml(e.name)}</div>
+        <div class="val" id="kv-val-${i}">${escapeHtml(_kvMask(e.value))}</div>
+        <div class="actions">
+          <button class="kv-btn tiny ghost" onclick="kvRevealValue(${i})">👁 Reveal</button>
+          <button class="kv-btn tiny ghost" onclick="kvCopyValue(${i})">📋 Copy</button>
+          <button class="kv-btn tiny primary" onclick="kvEditEntry(${i})">✎ Edit</button>
+          <button class="kv-btn tiny danger" onclick="kvDeleteEntry(${i})">🗑 Delete</button>
+        </div>
+        ${e.note ? '<div style="flex-basis:100%;font-size:11.5px;color:#94a3b8;margin-top:2px">' + escapeHtml(e.note) + '</div>' : ''}
+      </div>`;
+  }).join('');
 }
 function _kvMask(v){
   if (!v) return '(empty)';
@@ -5216,21 +5300,42 @@ function kvAddReset(){
 }
 async function kvAddSave(){
   const name  = (document.getElementById('kv-add-name').value||'').trim();
-  const value = document.getElementById('kv-add-value').value;
   const note  = (document.getElementById('kv-add-note').value||'').trim();
   const msgEl = document.getElementById('kv-add-msg');
   msgEl.innerHTML = '';
   if (!name)  { msgEl.innerHTML = '<div class="kv-err">Key name required.</div>'; return; }
-  if (!value) { msgEl.innerHTML = '<div class="kv-err">Value required.</div>'; return; }
+  const isFile = (document.querySelector('input[name="kv-add-kind"]:checked') || {}).value === 'file';
+  let newEntry;
+  if (isFile) {
+    const f = document.getElementById('kv-add-file').files && document.getElementById('kv-add-file').files[0];
+    if (!f) { msgEl.innerHTML = '<div class="kv-err">Pick a file (≤256 KB) first.</div>'; return; }
+    if (f.size > KV_FILE_MAX_BYTES) { msgEl.innerHTML = '<div class="kv-err">File is over 256 KB — not allowed in vault.</div>'; return; }
+    let b64;
+    try { b64 = await _kvReadFileB64(f); }
+    catch (e) { msgEl.innerHTML = '<div class="kv-err">Could not read file: ' + escapeHtml(e.message) + '</div>'; return; }
+    newEntry = {
+      name, kind: 'file', note,
+      value_b64: b64,
+      file_name: f.name,
+      mime: f.type || 'application/octet-stream',
+      file_size: f.size || 0,
+      created_at: new Date().toISOString(),
+    };
+  } else {
+    const value = document.getElementById('kv-add-value').value;
+    if (!value) { msgEl.innerHTML = '<div class="kv-err">Value required.</div>'; return; }
+    newEntry = { name, kind: 'string', value, note, created_at: new Date().toISOString() };
+  }
   const editIdx = parseInt(msgEl.dataset.editIndex || '-1', 10);
   if (editIdx >= 0 && _kvEntries[editIdx]) {
-    _kvEntries[editIdx] = { name, value, note, updated_at: new Date().toISOString() };
+    newEntry.updated_at = new Date().toISOString();
+    delete newEntry.created_at;
+    _kvEntries[editIdx] = Object.assign({}, _kvEntries[editIdx], newEntry);
     msgEl.dataset.editIndex = '';
   } else {
-    // De-dup by name — replace existing entry with same name
     const existing = _kvEntries.findIndex(e => e.name === name);
-    if (existing >= 0) _kvEntries[existing] = { name, value, note, updated_at: new Date().toISOString() };
-    else _kvEntries.push({ name, value, note, created_at: new Date().toISOString() });
+    if (existing >= 0) { newEntry.updated_at = new Date().toISOString(); delete newEntry.created_at; _kvEntries[existing] = newEntry; }
+    else _kvEntries.push(newEntry);
   }
   try {
     await _kvPersist();
@@ -5252,16 +5357,363 @@ async function _kvPersist(){
   try { localStorage.setItem(KV_LAST_REMIND_KEY, String(Date.now())); } catch(e){}
 }
 
+/* ── File-entry support (keystore backup, max 256 KB) ────── */
+
+function kvAddKindChange(){
+  const isFile = (document.querySelector('input[name="kv-add-kind"]:checked') || {}).value === 'file';
+  document.getElementById('kv-add-value-field').style.display = isFile ? 'none' : '';
+  document.getElementById('kv-add-file-field').style.display  = isFile ? '' : 'none';
+}
+function kvAddFileChange(){
+  const f = document.getElementById('kv-add-file').files && document.getElementById('kv-add-file').files[0];
+  const meta = document.getElementById('kv-add-file-meta');
+  if (!f) { meta.textContent = 'No file selected.'; return; }
+  if (f.size > KV_FILE_MAX_BYTES) {
+    meta.innerHTML = '⚠️ <span style="color:#fecaca">File is ' + Math.round(f.size/1024) + ' KB — over the 256 KB limit. Pick a smaller file (release.jks is ~3 KB).</span>';
+    document.getElementById('kv-add-file').value = '';
+    return;
+  }
+  meta.textContent = '✓ ' + f.name + ' · ' + (f.size||0) + ' bytes · ' + (f.type || 'application/octet-stream');
+  // Auto-fill the name if empty
+  if (!document.getElementById('kv-add-name').value) {
+    document.getElementById('kv-add-name').value = 'KEYSTORE_FILE_' + f.name;
+  }
+}
+function _kvReadFileB64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => { const s = r.result || ''; const i = (typeof s === 'string') ? s.indexOf(',') : -1; resolve(i >= 0 ? s.slice(i+1) : ''); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function kvDownloadFileEntry(i){
+  const e = _kvEntries[i];
+  if (!e || e.kind !== 'file' || !e.value_b64) { alert('Not a file entry.'); return; }
+  try {
+    const bin = atob(e.value_b64);
+    const arr = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+    const blob = new Blob([arr], { type: e.mime || 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = (e.file_name || e.name || 'chitti-vault-file');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    speakText(CURRENT_LANG==='en'?'File downloaded.':'File download ho gayi.', CURRENT_LANG);
+  } catch (err) {
+    alert('Download failed: ' + err.message);
+  }
+  _kvBumpAutoLock();
+}
+
+/* ── 30-day auto-export reminder ───────────────────────── */
+
+function _kvLastExportTs(){
+  try { return parseInt(localStorage.getItem(KV_LAST_EXPORT_KEY) || '0', 10) || 0; }
+  catch(e){ return 0; }
+}
+function _kvNoteExportNow(){
+  try { localStorage.setItem(KV_LAST_EXPORT_KEY, String(Date.now())); } catch(e){}
+}
+function _kvShowExportReminderIfStale(){
+  const banner = document.getElementById('kv-export-reminder');
+  if (!banner) return;
+  const last = _kvLastExportTs();
+  if (last === 0) {
+    banner.style.display = 'block';
+    banner.innerHTML = (CURRENT_LANG === 'en')
+      ? '📤 <b>You have never exported this vault.</b> Go to <b>Export / Import</b> tab and copy the encrypted backup to Google Keep + email so you can restore it on another device.'
+      : '📤 <b>Aap ne abhi tak vault export nahi kiya.</b> <b>Export / Import</b> tab par jaayein aur encrypted backup ko Google Keep + email me copy kar lijiye — dusre device par restore karne ke liye.';
+    return;
+  }
+  const ageDays = (Date.now() - last) / (24*3600*1000);
+  if (ageDays > KV_EXPORT_REMINDER_DAYS) {
+    banner.style.display = 'block';
+    banner.innerHTML = (CURRENT_LANG === 'en')
+      ? ('📤 <b>' + Math.floor(ageDays) + ' days since last export.</b> Refresh your backup in Google Keep — tap the Export / Import tab.')
+      : ('📤 <b>' + Math.floor(ageDays) + ' din ho gaye export ko.</b> Google Keep mein backup refresh kar lijiye — Export / Import tab kholiye.');
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+/* ── Biometric — feature detect + setup + unlock ──────── */
+
+function _kvAndroidBiometricBridge(){
+  return (typeof window.ChittiKvBiometric !== 'undefined') ? window.ChittiKvBiometric : null;
+}
+function _kvWebAuthnPrfAvailable(){
+  // Feature detection — actual support tested by trying a probe in
+  // kvBiometricEnroll. We just need WebAuthn to exist on this page.
+  return !!(window.PublicKeyCredential && window.crypto && window.crypto.subtle &&
+            window.location && window.location.protocol === 'https:');
+}
+
+function _kvLoadBiometricBlob(){
+  try { return JSON.parse(localStorage.getItem(KV_BIOMETRIC_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function _kvSaveBiometricBlob(blob){
+  try { localStorage.setItem(KV_BIOMETRIC_KEY, JSON.stringify(blob)); } catch(e){}
+}
+function _kvForgetBiometricBlob(){
+  try { localStorage.removeItem(KV_BIOMETRIC_KEY); } catch(e){}
+}
+
+function _kvBiometricEnrolledLocal(){
+  const b = _kvLoadBiometricBlob();
+  return !!(b && (b.platform === 'android' || b.platform === 'webauthn-prf'));
+}
+
+async function _kvBiometricRefreshUI(){
+  const status = document.getElementById('kv-biometric-status');
+  const enrollBtn = document.getElementById('kv-biometric-enroll-btn');
+  const forgetBtn = document.getElementById('kv-biometric-forget-btn');
+  const unlockRow = document.getElementById('kv-biometric-row');
+  if (!status) return;
+
+  const bridge = _kvAndroidBiometricBridge();
+  let availability = null;
+  let platform = null;
+  if (bridge && bridge.kvBiometricAvailable) {
+    try { availability = bridge.kvBiometricAvailable(); platform = 'android'; } catch (e) {}
+  } else if (_kvWebAuthnPrfAvailable()) {
+    availability = 'available'; platform = 'webauthn-prf';
+  } else {
+    availability = 'no_hardware'; platform = 'web-no-prf';
+  }
+
+  const enrolled = _kvBiometricEnrolledLocal();
+  // Show the "Unlock with biometric" button on the UNLOCK screen if we have an enrollment.
+  if (unlockRow) unlockRow.style.display = (enrolled && availability === 'available') ? 'block' : 'none';
+
+  if (!enrollBtn || !forgetBtn) return;
+  if (availability !== 'available') {
+    enrollBtn.style.display = 'none';
+    forgetBtn.style.display = 'none';
+    const map = {
+      'not_enrolled': 'Biometric hardware found but no fingerprint / face is enrolled on this device. Set one up in your OS settings first.',
+      'no_hardware':  'No biometric hardware on this device — passphrase-only.',
+      'hw_unavailable': 'Biometric hardware is currently unavailable (maybe disabled in OS settings).',
+      'vendor_security_update_required': 'OS security update needed to use biometric here.',
+      'status_unknown': 'Could not determine biometric availability.',
+      'web-no-prf':     'This browser does not expose the WebAuthn PRF extension required for biometric encryption. Install the Chitti Vaani Android app for the gold-standard TEE-backed path, or use the passphrase.',
+    };
+    status.textContent = map[availability] || ('Biometric not available (' + availability + ').');
+    return;
+  }
+  if (enrolled) {
+    enrollBtn.style.display = 'none';
+    forgetBtn.style.display = 'inline-block';
+    status.textContent = (platform === 'android')
+      ? '✓ Biometric enrolled — Android TEE-backed key in Android Keystore. Disable below to remove.'
+      : '✓ Biometric enrolled — WebAuthn PRF credential. Disable below to remove.';
+  } else {
+    enrollBtn.style.display = 'inline-block';
+    forgetBtn.style.display = 'none';
+    status.textContent = (platform === 'android')
+      ? 'Biometric available — Android TEE-backed. Tap "Enable biometric unlock" and confirm with fingerprint / face.'
+      : 'Biometric available — WebAuthn PRF on this browser. Tap "Enable biometric unlock" and confirm with the OS prompt.';
+  }
+}
+
+/* ── Biometric enrol: wrap the current passphrase ─────── */
+
+window._kvAndroidEnrollCb = function(resJson){ /* set per-call below */ };
+window._kvAndroidUnlockCb = function(resJson){ /* set per-call below */ };
+
+async function kvBiometricEnroll(){
+  if (!_kvUnlockedKey) {
+    alert('Unlock the vault first — biometric wraps the current passphrase.');
+    return;
+  }
+  const bridge = _kvAndroidBiometricBridge();
+  if (bridge && bridge.kvBiometricEnroll) {
+    return new Promise((resolve) => {
+      window._kvAndroidEnrollCb = function(res){
+        if (res && res.ok) {
+          _kvSaveBiometricBlob({ platform: 'android', enrolled_at: new Date().toISOString() });
+          speakText(CURRENT_LANG==='en'?'Biometric enabled.':'Biometric chalu ho gaya.', CURRENT_LANG);
+          _kvBiometricRefreshUI();
+        } else {
+          alert('Biometric enrol failed: ' + (res && (res.error || res.reason) || 'unknown'));
+        }
+        resolve();
+      };
+      try { bridge.kvBiometricEnroll(_kvUnlockedKey, '_kvAndroidEnrollCb'); }
+      catch (e) { alert('Biometric enrol prompt could not start: ' + e.message); resolve(); }
+    });
+  }
+  // Web path — WebAuthn PRF
+  if (!_kvWebAuthnPrfAvailable()) {
+    alert('Biometric is not available in this browser.');
+    return;
+  }
+  try {
+    const userId = new TextEncoder().encode('chitti-keys-vault-' + (getUserToken ? getUserToken() : 'web')).slice(0, 32);
+    const challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        challenge: challenge,
+        rp:   { name: 'Chitti Keys Vault' },
+        user: { id: userId, name: 'chitti-vault-user', displayName: 'Chitti Vault User' },
+        pubKeyCredParams: [
+          { type: 'public-key', alg: -7  },   // ES256
+          { type: 'public-key', alg: -257 },  // RS256
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred',
+        },
+        timeout: 60000,
+        extensions: { prf: {} },
+      },
+    });
+    if (!cred) throw new Error('credential_create_returned_null');
+    const extResults = (cred.getClientExtensionResults && cred.getClientExtensionResults()) || {};
+    if (!extResults.prf || !extResults.prf.enabled) {
+      // The credential was created but PRF isn't supported on this platform.
+      // We cannot honestly wrap a key under it. Refuse to ship a weaker fallback.
+      alert('Biometric enrol could not use the WebAuthn PRF extension on this browser/OS — biometric setup aborted. Use passphrase for now, or install the Chitti Vaani Android app for TEE-backed biometric.');
+      return;
+    }
+    // Now do an assertion with PRF eval to derive the wrap key.
+    const salt = new Uint8Array(32); crypto.getRandomValues(salt);
+    const rawId = new Uint8Array(cred.rawId);
+    const assert = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ type: 'public-key', id: rawId }],
+        userVerification: 'required',
+        timeout: 60000,
+        extensions: { prf: { eval: { first: salt } } },
+      },
+    });
+    const ext2 = (assert.getClientExtensionResults && assert.getClientExtensionResults()) || {};
+    const prfBytes = ext2.prf && ext2.prf.results && ext2.prf.results.first;
+    if (!prfBytes) throw new Error('webauthn_prf_no_output');
+    // Use PRF bytes as AES-256-GCM key
+    const wrapKey = await crypto.subtle.importKey('raw', new Uint8Array(prfBytes), {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv: iv}, wrapKey, new TextEncoder().encode(_kvUnlockedKey));
+    _kvSaveBiometricBlob({
+      platform: 'webauthn-prf',
+      credential_id_b64: _kvBytesToB64(rawId),
+      salt_b64: _kvBytesToB64(salt),
+      iv_b64: _kvBytesToB64(iv),
+      ct_b64: _kvBytesToB64(new Uint8Array(ct)),
+      enrolled_at: new Date().toISOString(),
+    });
+    speakText(CURRENT_LANG==='en'?'Biometric enabled.':'Biometric chalu ho gaya.', CURRENT_LANG);
+    _kvBiometricRefreshUI();
+  } catch (e) {
+    console.warn('WebAuthn enrol failed', e);
+    alert('Biometric enrol failed: ' + (e.message || e.name));
+  }
+}
+
+/* ── Biometric unlock — auto from the unlock screen ───── */
+
+async function kvBiometricUnlock(){
+  const blob = _kvLoadBiometricBlob();
+  if (!blob) { alert('Biometric not enrolled yet.'); return; }
+  const msg = document.getElementById('kv-biometric-msg');
+  if (msg) msg.textContent = '⏳ Waiting for biometric…';
+
+  // Android path
+  if (blob.platform === 'android') {
+    const bridge = _kvAndroidBiometricBridge();
+    if (!bridge || !bridge.kvBiometricUnlock) { alert('Android biometric bridge missing — open the Chitti Vaani Android app.'); return; }
+    return new Promise((resolve) => {
+      window._kvAndroidUnlockCb = async function(res){
+        if (res && res.ok && res.passphrase) {
+          document.getElementById('kv-pp-unlock').value = res.passphrase;
+          await kvUnlockSubmit();
+        } else {
+          const why = (res && (res.error || res.reason)) || 'unknown';
+          if (why === 'user_chose_passphrase' || why === 'user_canceled') {
+            if (msg) msg.textContent = '';
+          } else if (why === 'key_invalidated_reenroll_required') {
+            _kvForgetBiometricBlob();
+            _kvBiometricRefreshUI();
+            if (msg) msg.textContent = 'Biometric was invalidated (fingerprint enrolment changed). Re-enrol from the Biometric tab.';
+          } else {
+            if (msg) msg.textContent = 'Biometric unlock failed: ' + why;
+          }
+        }
+        resolve();
+      };
+      try { bridge.kvBiometricUnlock('_kvAndroidUnlockCb'); }
+      catch (e) { alert('Biometric prompt could not start: ' + e.message); resolve(); }
+    });
+  }
+
+  // Web path — WebAuthn PRF
+  if (blob.platform === 'webauthn-prf') {
+    if (!_kvWebAuthnPrfAvailable()) { alert('WebAuthn not available in this browser.'); return; }
+    try {
+      const credId = _kvB64ToBytes(blob.credential_id_b64);
+      const salt   = _kvB64ToBytes(blob.salt_b64);
+      const iv     = _kvB64ToBytes(blob.iv_b64);
+      const ct     = _kvB64ToBytes(blob.ct_b64);
+      const assert = await navigator.credentials.get({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials: [{ type: 'public-key', id: credId }],
+          userVerification: 'required',
+          timeout: 60000,
+          extensions: { prf: { eval: { first: salt } } },
+        },
+      });
+      const ext = (assert.getClientExtensionResults && assert.getClientExtensionResults()) || {};
+      const prfBytes = ext.prf && ext.prf.results && ext.prf.results.first;
+      if (!prfBytes) throw new Error('prf_no_output');
+      const wrapKey = await crypto.subtle.importKey('raw', new Uint8Array(prfBytes), {name:'AES-GCM', length:256}, false, ['decrypt']);
+      const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv: iv}, wrapKey, ct);
+      const passphrase = new TextDecoder().decode(pt);
+      document.getElementById('kv-pp-unlock').value = passphrase;
+      await kvUnlockSubmit();
+    } catch (e) {
+      const m = (e && (e.name || e.message)) || 'unknown';
+      if (msg) msg.textContent = 'Biometric unlock failed: ' + m + ' — use passphrase.';
+    }
+  }
+}
+
+/* ── Biometric disable ─────────────────────────────── */
+
+function kvBiometricForgetConfirm(){
+  chittiConfirmAndDo(
+    CURRENT_LANG === 'en'
+      ? 'Sire, disable biometric unlock for the Keys Vault? You can re-enrol from the same tab.'
+      : 'Sire, kya main Keys Vault ka biometric unlock band karoon? Wapas usi tab se enable kar sakte hain.',
+    async () => {
+      const blob = _kvLoadBiometricBlob();
+      if (blob && blob.platform === 'android') {
+        const bridge = _kvAndroidBiometricBridge();
+        if (bridge && bridge.kvBiometricForget) { try { bridge.kvBiometricForget(); } catch(e){} }
+      }
+      _kvForgetBiometricBlob();
+      _kvBiometricRefreshUI();
+      speakText(CURRENT_LANG==='en'?'Biometric disabled.':'Biometric band ho gaya.', CURRENT_LANG);
+    },
+  );
+}
+
 /* ── Export / Import ──────────────────────────────────── */
 
 function kvExport(){
   const blob = _kvVaultBlob();
   if (!blob) { document.getElementById('kv-eximp-msg').innerHTML = '<div class="kv-err">No vault to export yet.</div>'; return; }
-  // Wrap with a small envelope so we can version this format later.
   const envelope = JSON.stringify({chitti_keys_vault: 1, exported_at: new Date().toISOString(), blob});
   const b64 = btoa(unescape(encodeURIComponent(envelope)));
   document.getElementById('kv-export-out').value = b64;
   document.getElementById('kv-eximp-msg').innerHTML = '<div class="kv-ok">✓ Exported. Paste this into Google Keep / email to yourself. <b>Still requires your passphrase to decrypt.</b></div>';
+  _kvNoteExportNow();
+  _kvShowExportReminderIfStale();
   _kvBumpAutoLock();
 }
 async function kvCopyExport(){

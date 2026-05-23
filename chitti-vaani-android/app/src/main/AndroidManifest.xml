@@ -83,6 +83,14 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
+    <!-- Biometric authentication — gates the Keys Vault unlock when the
+         user has enrolled a fingerprint / face on the device. The key is
+         held in the Android Keystore (TEE-backed) with
+         setUserAuthenticationRequired(true) — every unlock requires a
+         fresh biometric tap. Normal-protection permission, no runtime
+         prompt. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+
     <queries>
         <!-- For "open WhatsApp" deep-links and intent resolution -->
         <package android:name="com.whatsapp"/>

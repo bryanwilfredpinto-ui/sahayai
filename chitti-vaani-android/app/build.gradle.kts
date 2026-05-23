@@ -81,6 +81,11 @@ dependencies {
     // MainActivity.scheduleReminder("…", atIsoTime, "notification")
     // at the requested time. (Added 2026-05-22.)
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    // BiometricPrompt + Android Keystore — Keys Vault biometric unlock
+    // path uses a TEE-backed AES-256-GCM key with
+    // setUserAuthenticationRequired(true) +
+    // setInvalidatedByBiometricEnrollment(true). Added 2026-05-23.
+    implementation("androidx.biometric:biometric:1.1.0")
     // On-device speech recognition for emergency keyword spotting
     // (Vosk wraps Kaldi; small offline models per language)
     // Drop the .aar into app/libs/ when wiring Vosk; the dependency is

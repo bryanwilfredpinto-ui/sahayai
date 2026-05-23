@@ -90,6 +90,14 @@ class MainActivity : AppCompatActivity() {
 
         // JS bridge for OS-level capabilities the web tier cannot reach.
         web.addJavascriptInterface(ChittiNativeBridge(this), "ChittiNative")
+        // Keys Vault biometric bridge — TEE-backed AES-256-GCM wrap of
+        // the vault passphrase. Exposed as `window.ChittiKvBiometric.*`
+        // so the JS feature-detects this surface separately from the
+        // general ChittiNative bridge.
+        web.addJavascriptInterface(
+            `in`.sahayai.chitti.vaani.services.KvBiometricBridge(this),
+            "ChittiKvBiometric",
+        )
 
         web.loadUrl(intent?.data?.toString() ?: DEFAULT_URL)
         maybeHandleWakeIntent(intent)
