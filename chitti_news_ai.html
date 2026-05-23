@@ -97,17 +97,6 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 .course-card a.go{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;text-decoration:none;display:inline-block;font-size:13px}
 .course-card .free-badge{display:inline-block;background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.5);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-left:6px}
 
-/* Profession picker modal */
-.prof-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9800;align-items:center;justify-content:center;padding:18px}
-.prof-modal.shown{display:flex}
-.prof-modal .panel{background:#fff;border-radius:16px;padding:20px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
-.prof-modal h2{font-size:18px;margin:0 0 6px;color:var(--navy)}
-.prof-modal p{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.55}
-.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.prof-grid button{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;font-size:13px;font-weight:700;cursor:pointer;min-height:64px;text-align:center;color:var(--text)}
-.prof-grid button:hover{border-color:var(--saffron);background:rgba(232,106,23,.05)}
-.prof-grid button.active{border-color:var(--saffron);background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.10));color:var(--saffron)}
-
 footer{font-size:11px;color:var(--muted);text-align:center;padding:20px;line-height:1.55}
 footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 </style>
@@ -132,7 +121,6 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   </div>
   <div class="header-controls">
     <button onclick="speakPage()" data-i18n="hdr.read">🔊 Read page</button>
-    <button onclick="openProfessionPicker()" data-i18n="hdr.prof">👤 My profession</button>
     <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="top">↑ Top</button>
   </div>
 </header>
@@ -142,7 +130,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 </div>
 
 <!-- Picker bar -->
-<div class="picker-bar" role="group" aria-label="Filter by language and profession">
+<div class="picker-bar" role="group" aria-label="Filter by language">
   <span class="pick-lbl" data-i18n="pick.lang">Lang</span>
   <select id="pick-lang" onchange="onPickerChange()" aria-label="Language">
     <option value="en">English</option>
@@ -172,18 +160,6 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
     <option value="tcy">ತುಳು (Tulu)</option>
     <option value="kfa">ಕೊಡವ (Kodava)</option>
     <option value="kru">ओराओं (Kurukh)</option>
-  </select>
-  <span class="pick-lbl" data-i18n="pick.prof">Profession</span>
-  <select id="pick-prof" onchange="onProfChange()" aria-label="Profession">
-    <option value="other">Other</option>
-    <option value="doctor">Doctor 🩺</option>
-    <option value="farmer">Farmer 🌾</option>
-    <option value="teacher">Teacher 📚</option>
-    <option value="student">Student 🎓</option>
-    <option value="shopkeeper">Shopkeeper 🏪</option>
-    <option value="driver">Driver 🚗</option>
-    <option value="homemaker">Homemaker 🏠</option>
-    <option value="engineer">Engineer 💻</option>
   </select>
   <span class="pick-sep"></span>
   <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
@@ -221,25 +197,6 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   </footer>
 </main>
 
-<!-- Profession-picker modal — fired on first visit -->
-<div id="prof-modal" class="prof-modal" role="dialog" aria-modal="true" aria-labelledby="prof-title">
-  <div class="panel" data-chitti-response data-chitti-section="Profession picker">
-    <h2 id="prof-title" data-i18n="prof.title">👤 Who are you? (Chitti uses this to translate AI jargon into your world)</h2>
-    <p data-i18n="prof.sub">Chitti will explain AI articles using analogies from your daily life. You can change this anytime.</p>
-    <div class="prof-grid" id="prof-grid">
-      <button data-prof="doctor"     onclick="pickProf('doctor')">🩺 Doctor</button>
-      <button data-prof="farmer"     onclick="pickProf('farmer')">🌾 Farmer</button>
-      <button data-prof="teacher"    onclick="pickProf('teacher')">📚 Teacher</button>
-      <button data-prof="student"    onclick="pickProf('student')">🎓 Student</button>
-      <button data-prof="shopkeeper" onclick="pickProf('shopkeeper')">🏪 Shopkeeper</button>
-      <button data-prof="driver"     onclick="pickProf('driver')">🚗 Driver</button>
-      <button data-prof="homemaker"  onclick="pickProf('homemaker')">🏠 Homemaker</button>
-      <button data-prof="engineer"   onclick="pickProf('engineer')">💻 Engineer / IT</button>
-      <button data-prof="other"      onclick="pickProf('other')">🙋 Other / Skip</button>
-    </div>
-  </div>
-</div>
-
 <script>
 if(!window._chittiNewsAILoaded){
 window._chittiNewsAILoaded = true;
@@ -264,12 +221,10 @@ function _userToken(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// Prefs (language + profession)
+// Prefs (language only — no profiling per Sire 2026-05-23)
 // ═══════════════════════════════════════════════════════════
 function _getLang(){ try { return localStorage.getItem('chitti_news_ai_lang') || 'en'; } catch(e){ return 'en'; } }
-function _getProf(){ try { return localStorage.getItem('chitti_news_ai_prof') || ''; } catch(e){ return ''; } }
 function _setLang(l){ try { if (l) localStorage.setItem('chitti_news_ai_lang', l); } catch(e){} }
-function _setProf(p){ try { if (p) localStorage.setItem('chitti_news_ai_prof', p); } catch(e){} }
 
 let _chittiLang = _getLang();
 let _currentCategory = 'ai-news';
@@ -284,9 +239,7 @@ const I18N = {
   'switch.vaani':    { en:'🎙️ Vaani', hi:'🎙️ वाणी' },
   'switch.medupi':   { en:'💊 MedUPI', hi:'💊 मेडUPI' },
   'hdr.read':        { en:'🔊 Read page', hi:'🔊 पेज पढ़ें' },
-  'hdr.prof':        { en:'👤 My profession', hi:'👤 मेरा पेशा' },
   'pick.lang':       { en:'Lang', hi:'भाषा' },
-  'pick.prof':       { en:'Profession', hi:'पेशा' },
   'pick.refresh':    { en:'🔄 Refresh', hi:'🔄 ताज़ा' },
   'cat.ai_news':     { en:'📰 AI Aaj',  hi:'📰 AI आज' },
   'cat.tools':       { en:'🔧 Tools',   hi:'🔧 टूल्स' },
@@ -294,8 +247,6 @@ const I18N = {
   'cat.prash':       { en:'🎓 Prashikshan', hi:'🎓 प्रशिक्षण' },
   'prash.title':     { en:'🎓 Prashikshan — Real free AI courses', hi:'🎓 प्रशिक्षण — असली मुफ़्त AI कोर्स' },
   'prash.sub':       { en:'Curated free certifications from Google, Microsoft, NASSCOM, Andrew Ng, fast.ai. Real links. No generated courses.', hi:'Google, Microsoft, NASSCOM, Andrew Ng, fast.ai से चुनिंदा मुफ़्त सर्टिफिकेशन। असली लिंक। कोई बनाई हुई कोर्स नहीं।' },
-  'prof.title':      { en:'👤 Who are you? (Chitti uses this to translate AI jargon into your world)', hi:'👤 आप कौन हैं? (चिट्टी इसी से तकनीकी शब्दों को आपकी दुनिया की भाषा में बदलेगा)' },
-  'prof.sub':        { en:'Chitti will explain AI articles using analogies from your daily life. You can change this anytime.', hi:'चिट्टी हर AI लेख को आपकी रोज़मर्रा की ज़िन्दगी से जोड़कर समझाएगा। आप कभी भी बदल सकते हैं।' },
   'feed.loading':    { en:'⏳ Loading the latest AI news…', hi:'⏳ ताज़ा AI ख़बरें लोड हो रही हैं…' },
   'feed.empty':      { en:'No stories yet — RSS poll has not run. Try Refresh in a minute.', hi:'अभी कोई ख़बर नहीं — RSS फ़ेच नहीं हुआ। एक मिनट में ताज़ा करें।' },
   'art.read_aloud':  { en:'🔊 Read aloud', hi:'🔊 पढ़कर सुनाओ' },
@@ -447,12 +398,11 @@ async function _lazyTranslateHeadline(id){
 async function loadExplain(id){
   const host = document.getElementById('explain-' + id);
   if (!host) return;
-  const prof = _getProf() || 'other';
   host.innerHTML = '<div class="art-explain-box"><div class="art-explain-h">🤖 ' + (_chittiLang === 'hi' ? 'चिट्टी समझा रहा है…' : 'Chitti explaining…') + '</div>' + (_chittiLang === 'hi' ? 'आपकी भाषा में, सिर्फ़ इस लेख की बातें।' : 'In your language, only what this article says.') + '</div>';
   try {
-    const data = await apiPostJson('/api/news-ai/article/' + id + '/explain', { language: _chittiLang, profession: prof });
+    const data = await apiPostJson('/api/news-ai/article/' + id + '/explain', { language: _chittiLang });
     if (data && data.ok && data.text) {
-      host.innerHTML = '<div class="art-explain-box"><div class="art-explain-h">🤖 ' + (_chittiLang === 'hi' ? 'चिट्टी' : 'Chitti') + ' · ' + _esc(prof) + ' · ' + _esc(_chittiLang) + '</div>' + _esc(data.text) + '</div>';
+      host.innerHTML = '<div class="art-explain-box"><div class="art-explain-h">🤖 ' + (_chittiLang === 'hi' ? 'चिट्टी' : 'Chitti') + '</div>' + _esc(data.text) + '</div>';
       sp(data.text);
     } else {
       const err = (data && data.error) || 'no explanation returned';
@@ -557,14 +507,6 @@ function onPickerChange(){
   else loadFeed(true);
 }
 
-function onProfChange(){
-  const p = document.getElementById('pick-prof').value;
-  _setProf(p);
-  sp(_chittiLang === 'hi'
-    ? 'चिट्टी अब आपको ' + p + ' की भाषा में समझाएगा।'
-    : 'Chitti will now explain in ' + p + ' terms.');
-}
-
 document.addEventListener('chitti:lang', function(e){
   const lang = e && e.detail && (e.detail.code || e.detail.lang);
   if (!lang) return;
@@ -579,43 +521,10 @@ document.addEventListener('chitti:lang', function(e){
 });
 
 // ═══════════════════════════════════════════════════════════
-// Profession-picker modal
-// ═══════════════════════════════════════════════════════════
-function openProfessionPicker(){
-  document.getElementById('prof-modal').classList.add('shown');
-  // Highlight current
-  const cur = _getProf();
-  document.querySelectorAll('#prof-grid button').forEach(b => {
-    b.classList.toggle('active', b.getAttribute('data-prof') === cur);
-  });
-}
-function pickProf(p){
-  _setProf(p);
-  document.getElementById('pick-prof').value = p;
-  document.getElementById('prof-modal').classList.remove('shown');
-  sp(_chittiLang === 'hi'
-    ? 'चिट्टी अब आपको ' + p + ' की भाषा में समझाएगा।'
-    : 'Chitti will now explain in ' + p + ' terms.');
-}
-
-// ═══════════════════════════════════════════════════════════
-// Boot
+// Boot — no profiling, no prompts. Real AI news + Chitti explains. That is all.
 // ═══════════════════════════════════════════════════════════
 applyChittiLang(_chittiLang);
 document.getElementById('pick-lang').value = _chittiLang;
-document.getElementById('pick-prof').value = _getProf() || 'other';
-
-// First-visit profession prompt
-let _firstVisit = false;
-try { _firstVisit = !localStorage.getItem('chitti_news_ai_onb_done'); } catch(e){}
-if (_firstVisit) {
-  openProfessionPicker();
-  const oldPick = window.pickProf;
-  window.pickProf = function(p){
-    oldPick(p);
-    try { localStorage.setItem('chitti_news_ai_onb_done', '1'); } catch(e){}
-  };
-}
 
 loadFeed(false);
 

@@ -130,9 +130,11 @@ def feed():
 # ─────────────────────────────────────────────────────────────────────
 @bp.post("/article/<int:article_id>/explain")
 def explain_article(article_id: int):
+    """Chitti explains ONLY this article, in the requested language, in
+    simple words. No profiling — everyone gets the same explanation per
+    Sire 2026-05-23."""
     body = request.get_json(silent=True) or {}
     language = (body.get("language") or _str_arg("language", "en")).lower()
-    profession = (body.get("profession") or _str_arg("profession", "other")).lower()
 
     with SessionLocal() as db:
         a = db.query(Article).filter(Article.id == article_id).first()
@@ -146,7 +148,7 @@ def explain_article(article_id: int):
             "url": a.url,
             "language": a.language,
         }
-    result = news_explain.explain(article_dict, language=language, profession=profession)
+    result = news_explain.explain(article_dict, language=language)
     status = 200 if result.get("ok") else 502
     result["article_id"] = article_id
     result["article_url"] = article_dict["url"]

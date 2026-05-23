@@ -3,17 +3,20 @@ services/news_explain.py
 ------------------------
 Single contract: take ONE article (title + summary + content) and explain
 ONLY what's in that article, in the user's chosen language, in simple
-words. Profession is used ONLY to translate jargon (e.g. "extended context
-window") into a term from the user's world. Nothing else added.
+words. Nothing else added.
 
-LOCKED 2026-05-23 per Sire's spec:
+LOCKED 2026-05-23 per Sire's spec (revised end-of-day):
+  - NO profiling. No profession lens. Everyone sees the same explanation.
   - NO opinions
   - NO speculation
   - NO "this means X for you" framing
   - NO information not in the article
   - End every explanation with the sentence "Bas itna hi is khabar mein
     likha hai." (Hindi) / "That's all the article says." (English) — to
-    reinforce honest boundary to the user.
+    reinforce the honest boundary to the user.
+
+The `profession` argument is kept on the function signature for backward
+compatibility with older callers but is IGNORED.
 """
 from __future__ import annotations
 
@@ -47,24 +50,8 @@ CLOSING_LINE = {
     # of the response body — the SYSTEM prompt instructs it explicitly.
 }
 
-# Profession lens — drives jargon translation only. NEVER expands the
-# scope of the explanation beyond the article.
-PROFESSION_LENS = {
-    "doctor": "The user is a doctor. If the article contains technical AI terms (context window, RAG, multimodal, fine-tuning, embeddings, agents), translate them into a familiar medical-world analogue using ONE short clause. E.g. 'extended context window' → 'can read a long medical report in one go'. Do not invent medical applications that the article does not mention.",
-    "farmer": "The user is a farmer. If the article contains technical AI terms, translate them into a familiar farming-world analogue using ONE short clause. E.g. 'extended context window' → 'can answer many questions in one chat'. Do not invent agriculture applications that the article does not mention.",
-    "teacher": "The user is a school/college teacher. Translate AI jargon into classroom analogues using ONE short clause. E.g. 'fine-tuning' → 'teaching the AI from a specific textbook'. Do not invent classroom applications that the article does not mention.",
-    "student": "The user is a student. Translate AI jargon into study analogues using ONE short clause. E.g. 'extended context window' → 'can read a long chapter at once'. Do not invent study applications that the article does not mention.",
-    "shopkeeper": "The user is a kirana / small-shop owner. Translate AI jargon into shopkeeping analogues using ONE short clause. E.g. 'agents' → 'AI that can place an order or check stock for you'. Do not invent shop applications that the article does not mention.",
-    "driver": "The user is an auto / cab driver. Translate AI jargon into driving analogues using ONE short clause. E.g. 'multimodal' → 'AI that can also see, like the camera on a dashcam'. Do not invent driving applications that the article does not mention.",
-    "homemaker": "The user is a homemaker. Translate AI jargon into household analogues using ONE short clause. E.g. 'agents' → 'AI that can also book your bills or order vegetables'. Do not invent household applications that the article does not mention.",
-    "engineer": "The user is a software engineer / IT professional. Keep technical terms intact; do not over-simplify. Translate only the truly obscure ones.",
-    "other": "Translate AI jargon into the simplest possible everyday Indian-English analogue using ONE short clause. Use household examples (cooking, bus, train, kirana). Do not invent applications.",
-}
-
-
-def _system_prompt(language_code: str, profession: Optional[str]) -> str:
+def _system_prompt(language_code: str) -> str:
     lang_name = LANG_NAMES.get(language_code, "English")
-    lens = PROFESSION_LENS.get((profession or "other").lower(), PROFESSION_LENS["other"])
     closing = CLOSING_LINE.get(language_code) or f"(End the explanation with: 'That's all the article says.' translated into {lang_name}.)"
     return (
         "You are Chitti, explaining ONE specific AI-news article to the user. "
@@ -75,10 +62,9 @@ def _system_prompt(language_code: str, profession: Optional[str]) -> str:
         "3. NO predictions about the future.\n"
         "4. NO suggestions about what the user should do.\n"
         "5. NO comparisons to other products unless the article itself compares them.\n"
-        "6. Write 3-5 short sentences. Plain words. No jargon. No marketing words.\n"
+        "6. Write 3-5 short sentences. Plain words. No jargon. No marketing words. If a technical term is in the article (context window, fine-tuning, RAG, multimodal, agents, embeddings), give the simplest one-clause everyday analogy so anyone can follow — without inventing applications.\n"
         f"7. Write in {lang_name} ({language_code}). The ENTIRE response must be in {lang_name}. Zero English unless the language is English.\n"
-        f"8. Profession lens: {lens}\n"
-        f"9. End your response with this exact closing sentence (in {lang_name}): \"{closing}\"\n"
+        f"8. End your response with this exact closing sentence (in {lang_name}): \"{closing}\"\n"
         "If the article body is empty or only a headline, say so honestly in one sentence and then add the closing line."
     )
 
@@ -102,7 +88,9 @@ def _user_prompt(article: dict) -> str:
 
 
 def explain(article: dict, language: str = "en", profession: Optional[str] = None) -> dict:
-    """Return {ok, text, language, profession, model, source}."""
+    """Return {ok, text, language, model, source}.
+    `profession` is accepted for backward compatibility with older callers
+    but is IGNORED (Sire 2026-05-23 — no profiling)."""
     if not DEEPSEEK_API_KEY:
         return {
             "ok": False,
@@ -111,7 +99,7 @@ def explain(article: dict, language: str = "en", profession: Optional[str] = Non
             "language": language,
         }
     lang = (language or "en").lower()
-    sys_prompt = _system_prompt(lang, profession)
+    sys_prompt = _system_prompt(lang)
     usr_prompt = _user_prompt(article)
     payload = {
         "model": DEEPSEEK_MODEL,
@@ -119,7 +107,7 @@ def explain(article: dict, language: str = "en", profession: Optional[str] = Non
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": usr_prompt},
         ],
-        "temperature": 0.2,   # tight — we want zero spice
+        "temperature": 0.2,   # tight — zero spice
         "max_tokens": 600,
     }
     headers = {
@@ -136,7 +124,6 @@ def explain(article: dict, language: str = "en", profession: Optional[str] = Non
             "ok": True,
             "text": text,
             "language": lang,
-            "profession": (profession or "other").lower(),
             "model": data.get("model") or DEEPSEEK_MODEL,
             "source": "deepseek",
         }
@@ -147,7 +134,6 @@ def explain(article: dict, language: str = "en", profession: Optional[str] = Non
             "error": str(e)[:300],
             "text": "",
             "language": lang,
-            "profession": (profession or "other").lower(),
             "source": "deepseek_error",
         }
 
