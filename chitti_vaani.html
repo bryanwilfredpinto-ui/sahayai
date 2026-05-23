@@ -772,7 +772,13 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <button class="pro-card" onclick="openEmailModal()">
         <span class="ico">📧</span><span class="lbl">Send email as Chitti AI</span>
         <span class="sub">"Doctor ko likho main kal aa raha hun" — Chitti drafts, identifies as AI in signature, sends after voice "haan".</span>
-        <span class="pill android">Phase 1.6 — Gmail OAuth pending</span>
+        <span class="pill" id="pill-email">Web ✓ (after Gmail connect)</span>
+      </button>
+
+      <button class="pro-card" onclick="openSMSModal()">
+        <span class="ico">💬</span><span class="lbl">Send SMS</span>
+        <span class="sub">"Mom ko SMS karo main 7 baje aaunga" — Chitti drafts, reads back, opens your phone's SMS app pre-filled with the message. Inside the Android app, Chitti sends directly.</span>
+        <span class="pill" id="pill-sms">Web ✓ (SMS app pre-filled)</span>
       </button>
 
       <button class="pro-card" onclick="nativeAction('lockPhone')">
@@ -1248,6 +1254,35 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <button class="cancel" onclick="closeModal('wa-modal')">Cancel</button>
     </div>
     <div class="small-note">Chitti drafts and opens WhatsApp pre-filled. You tap the green ➤ inside WhatsApp to actually send. (Phase 2 Android: Chitti taps for you.)</div>
+  </div>
+</div>
+
+<!-- SMS send modal -->
+<div id="sms-modal" class="vmodal" role="dialog" aria-modal="true" aria-labelledby="sms-title">
+  <div class="panel chitti-response" data-chitti-section="💬 Send SMS">
+    <h2 id="sms-title">💬 Send SMS</h2>
+    <div class="desc">Speak the recipient and the message. Chitti reads back, you say <b>"haan"</b>, your phone's SMS app opens pre-filled. On Android (Phase 2), Chitti sends directly via the phone's SIM.</div>
+    <div class="field">
+      <label>To — pick from your trusted circle, or type a number</label>
+      <select id="sms-to"></select>
+      <input type="tel" id="sms-to-free" placeholder="or type a number, like +919876543210" style="margin-top:6px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit">
+      <div id="sms-empty-hint" class="empty-hint" style="display:none;margin-top:6px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:12.5px;color:#78350f;line-height:1.45">📭 Your trusted circle is empty. Type a number above, <b>or</b> <a href="#" onclick="event.preventDefault(); closeModal('sms-modal'); openAddContactModal();" style="color:#0E2344;font-weight:600;text-decoration:underline">👨‍👩‍👧 add a trusted person</a> first.</div>
+    </div>
+    <div class="field">
+      <label>Message — speak or type</label>
+      <textarea id="sms-msg" placeholder="Mom ko bolo main 7 baje aaunga"></textarea>
+      <div class="row-mic">
+        <button id="sms-mic" onclick="proMic('sms-msg', this)">🎙️ Speak</button>
+        <button onclick="speakField('sms-msg')">🔊 Read back</button>
+      </div>
+    </div>
+    <div class="preview" id="sms-preview" style="display:none"></div>
+    <div class="actions">
+      <button class="go" onclick="confirmSMSSend()">💬 Open SMS app to send</button>
+      <button class="spk" onclick="confirmSMSByVoice()">🎙️ Confirm by voice (haan)</button>
+      <button class="cancel" onclick="closeModal('sms-modal')">Cancel</button>
+    </div>
+    <div class="small-note">Chitti opens your phone's SMS app pre-filled — you tap send. On the Android app (Phase 2), Chitti sends directly via the SIM with the <code>SEND_SMS</code> permission. The SMS goes <b>from your number</b>, not from a server, so no carrier costs to Chitti and no provider sign-up needed.</div>
   </div>
 </div>
 
@@ -2637,7 +2672,7 @@ function renderTC(){
       </div>
     </div>`).join('');
   // Refresh dropdowns in modals
-  ['wa-to','upi-to','em-to'].forEach(refreshTCDropdown);
+  ['wa-to','sms-to','upi-to','em-to'].forEach(refreshTCDropdown);
 }
 function refreshTCDropdown(id){
   const sel = document.getElementById(id); if (!sel) return;
@@ -2922,6 +2957,92 @@ function confirmWASend(){
   speakText(didArm
     ? (CURRENT_LANG==='en' ? 'Sending via WhatsApp.' : 'WhatsApp se bhej rahi hoon.')
     : (CURRENT_LANG==='en' ? 'WhatsApp opened. Tap the green arrow inside WhatsApp to send.' : 'WhatsApp खुल गया। हरे तीर को दबा कर भेजिए।'),
+    CURRENT_LANG);
+}
+
+/* ── SMS send (user's own phone SIM, never a server-side provider) ── */
+function openSMSModal(){
+  if (!consentGiven()) { reopenConsent(); return; }
+  refreshTCDropdown('sms-to');
+  document.getElementById('sms-to-free').value = '';
+  document.getElementById('sms-msg').value = '';
+  document.getElementById('sms-preview').style.display = 'none';
+  openModal('sms-modal');
+}
+function prefillSMS(i){
+  openSMSModal();
+  document.getElementById('sms-to').value = String(i);
+}
+function buildSMSPreview(){
+  const i = document.getElementById('sms-to').value;
+  let target = null;
+  if (i !== '') {
+    const c = loadTC()[Number(i)];
+    if (c && c.phone) target = { name: c.name || c.realname || '', phone: c.phone };
+  }
+  // Free-text fallback — same shape as WhatsApp.
+  if (!target) {
+    const free = (document.getElementById('sms-to-free').value || '').trim();
+    if (free) {
+      let p = free.replace(/[^\d+]/g, '');
+      if (!p.startsWith('+')) p = '+91' + p.replace(/^0/, '');
+      target = { name: '', phone: p };
+    }
+  }
+  const msg = document.getElementById('sms-msg').value.trim();
+  if (!target || !target.phone) return null;
+  if (!msg) return null;
+  return {
+    contact: target,
+    msg,
+    preview: 'SMS to <b>' + escapeHtml(target.name || target.phone) + '</b> (' + escapeHtml(target.phone) + '): ' + escapeHtml(msg),
+  };
+}
+function showSMSPreview(){
+  const p = buildSMSPreview();
+  const el = document.getElementById('sms-preview');
+  if (!p) { el.style.display='none'; return; }
+  el.innerHTML = p.preview; el.style.display='block';
+  speakText((CURRENT_LANG==='en'?'I will send by SMS: ':'SMS से भेज रही हूँ: ') + p.msg + '. ' + (CURRENT_LANG==='en'?'Say haan to send.':'भेजने के लिए हाँ बोलिए।'), CURRENT_LANG);
+}
+function confirmSMSByVoice(){
+  showSMSPreview();
+  setTimeout(() => listenForYes(() => confirmSMSSend()), 1500);
+}
+function confirmSMSSend(){
+  const p = buildSMSPreview();
+  if (!p) { alert('Pick a contact OR type a number, and write a message first.'); return; }
+  // Native path: ChittiNative.sendSMS sends directly via SmsManager
+  // when the Phase-2 Android app is hosting + SEND_SMS is granted.
+  // Web fallback: sms: deep-link opens the user's SMS app pre-filled;
+  // user taps send. Same honest pattern as tel:, wa.me, upi://.
+  let sentNative = false;
+  if (hasNativeBridge() && window.ChittiNative.sendSMS) {
+    try {
+      const r = window.ChittiNative.sendSMS(p.contact.phone, p.msg);
+      sentNative = (r === 'sent' || r === 'ok');
+      if (r === 'needs_permission' && window.ChittiNative.requestSendSMSPermission) {
+        speakText(CURRENT_LANG==='en'?'I need SMS permission. Please grant it.':'पहले SMS की अनुमति चाहिए।', CURRENT_LANG);
+        window.ChittiNative.requestSendSMSPermission();
+      }
+    } catch (e) {}
+  }
+  if (!sentNative) {
+    // sms: spec accepts ?body= on iOS/Android; some Android dialers also
+    // accept ;body=. We use the cross-platform ?body= form per RFC 5724.
+    const url = 'sms:' + p.contact.phone.replace(/\s/g,'') + '?body=' + encodeURIComponent(p.msg);
+    // Use location.href (not window.open) so Android picks up the
+    // intent reliably — same trick as the tel: card.
+    try { window.location.href = url; } catch (e) {}
+  }
+  closeModal('sms-modal');
+  logAction(sentNative ? 'SMS sent (native SIM)' : 'SMS app opened to send',
+    (p.contact.name||'') + ' ' + p.contact.phone + ': ' + p.msg.slice(0,80), () => {
+      speakText(CURRENT_LANG==='en'?'SMS send was undone.':'SMS भेजना रोक दिया।', CURRENT_LANG);
+    });
+  speakText(sentNative
+    ? (CURRENT_LANG === 'en' ? 'SMS sent.' : 'SMS bhej diya.')
+    : (CURRENT_LANG === 'en' ? 'SMS app opened. Tap send to deliver.' : 'SMS ऐप खुल गया। भेजने के लिए send दबाइए।'),
     CURRENT_LANG);
 }
 
@@ -3257,7 +3378,7 @@ function nativeAction(name){
 }
 function tagNativeBridgeIfPresent(){
   if (!hasNativeBridge()) return;
-  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-camera','pill-flashlight','pill-alarm','pill-reminder','pill-hey-chitti'].forEach(id => {
+  ['pill-lock','pill-silent','pill-call','pill-night','pill-make-call','pill-sms','pill-camera','pill-flashlight','pill-alarm','pill-reminder','pill-hey-chitti'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.textContent = 'Native ✓'; el.classList.remove('android'); el.classList.add('locked'); el.style.background='rgba(22,163,74,.10)'; el.style.color='#15803d'; el.style.borderColor='#16a34a'; }
   });

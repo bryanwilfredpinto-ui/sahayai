@@ -32,8 +32,9 @@ that produces a visible, externally-observable effect.
 |---|---|---|
 | **Make a call** | `tel:` deep-link opens the OS dialer pre-filled. Native `ChittiNative.makeCall` path is wired in JS but the Android bridge is Phase 2 — on web it always falls through to the dialer. | Web ✓ (dialer pre-filled) |
 | **Send WhatsApp** | `https://wa.me/<phone>?text=<msg>` opens WhatsApp with recipient + message; user taps the green arrow to send. | Web ✓ |
+| **Send SMS** | `sms:<phone>?body=<msg>` (RFC 5724) opens the user's own SMS app pre-filled — the SMS goes from the user's own SIM, no server-side telephony provider needed. Phase-2 Android bridge `ChittiNative.sendSMS(phone, body)` sends directly via `SmsManager` after `SEND_SMS` permission is granted. Trusted-circle + free-text fallback + voice readback + "haan" confirmation + 30-second undo — same shape as the WhatsApp card. | Web ✓ (SMS app pre-filled) |
 | **Send UPI payment** | `upi://pay?pa=…&am=…&pn=…` opens the user's UPI app pre-filled; user enters PIN in the UPI app (Chitti never sees the PIN — NPCI rule). | Web ✓ |
-| **Send email as Chitti AI** | Full Gmail OAuth (`gmail.send` restricted scope) + server-side send via Gmail API. Chitti AI footer auto-appended. **The only Pro Action that performs the network action server-side** rather than handing off to an app. | Web ✓ (after Gmail OAuth connect) |
+| **Send email as Chitti AI** | Full Gmail OAuth (`gmail.send` restricted scope) + server-side send via Gmail API. Chitti AI footer auto-appended. **The only Pro Action that performs the network action server-side** rather than handing off to an app. Requires Railway env `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (+ Google Cloud OAuth consent screen verified for `gmail.send` Restricted Scope) AND each user must complete the Connect-Gmail flow once per device. `GET /api/vaani/channels/health` shows which env vars are missing. | Web ✓ (after Gmail OAuth connect) |
 | **Trusted Circle** | localStorage contact list, voice-buildable, read-aloud, used to populate the Call / WhatsApp / UPI / Email modals. | Web ✓ |
 | **Audit log + 30-second undo** | Every action a user takes from a Pro card writes an entry; `undo()` is a closure on each entry, valid for 30 s. | Web ✓ |
 | **Federated voice-sample collection** | Opt-in. Samples in 9+ Indian languages stored in IndexedDB on the device. **Training pipeline does not exist yet** — see "Planned". | Web ✓ collecting only |
@@ -80,6 +81,24 @@ by code-level denylist — see [`emergency_service.py`](../backend/services/emer
   · `GET /pair/list` — Chitti-to-Chitti pairing via 6-digit codes.
 - `GET|POST /api/vaani/emergency/poll` — partner devices long-poll for
   queued emergency events.
+
+### 1.4a Channels health — single curl, honest answer
+
+`GET /api/vaani/channels/health` returns the real-time configured-state
+of every outbound channel (Gmail send · MSG91 SMS · Twilio SMS · combined
+sms_any · WhatsApp Business · outbound telephony). For each path it
+returns `{configured, missing_env, note}` so a sysadmin can curl one
+endpoint and see exactly which env vars are missing on Railway. No
+secrets are leaked — only the names of the missing keys.
+
+Wired in [`backend/routes/channel_verify.py`](../backend/routes/channel_verify.py)
+`_health_bp`; registered in [`main.py`](../backend/main.py). The Pro
+Card pills on `chitti_vaani.html` flip from "Awaiting provider" to
+"Web ✓" automatically once the channel reports `configured: true` —
+**no hard-coded demo-mode flag any more** (the previous
+`DEMO_MODE_DEFAULT = True` block has been removed; demo is now driven
+purely by `_provider_configured(channel)`, with `CHITTI_CHANNEL_FORCE_DEMO=1`
+as the only admin override).
 
 ### 1.5 Cross-product feedback + Admin dashboard
 - `POST /api/feedback/collect` (open, rate-limited 1/s + 60/h per IP)

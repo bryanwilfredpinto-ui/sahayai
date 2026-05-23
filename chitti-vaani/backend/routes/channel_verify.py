@@ -77,12 +77,17 @@ CHANNELS = {"whatsapp", "sms", "email"}
 CODE_TTL_S = 10 * 60  # codes expire after 10 minutes
 PEPPER = os.environ.get("CHITTI_VAANI_CHANNEL_PEPPER", "chitti-vaani-channel-pepper-v1")
 
-# Demo-mode toggles — flip these env vars to False (or wire the
-# provider env vars below) when the real WhatsApp Business / SMS /
-# Email senders are configured. Until then, every code that goes "out"
-# is the literal string "123456" and the API tells the client so.
-DEMO_MODE_DEFAULT = True
+# Demo mode is now driven by `_provider_configured(channel)` (see
+# /verify/start). If a provider's env vars are set we send a real,
+# random 6-digit code via that provider; otherwise we fall back to the
+# honest demo code below and surface `demo_mode: true` on the response
+# so the page banner stays truthful (no silent fallback per
+# SAHAYAI_MASTER.md §3 rule #5).
+#
+# To FORCE demo even when env vars are configured (debug only), set
+# CHITTI_CHANNEL_FORCE_DEMO=1 in the Railway env.
 DEMO_CODE = "123456"
+_FORCE_DEMO = (os.environ.get("CHITTI_CHANNEL_FORCE_DEMO") or "").strip() == "1"
 
 
 def _user_token_or_400(body: dict) -> str:
@@ -268,15 +273,15 @@ def _send_email_otp(contact: str, code: str) -> None:
         "If you didn't request this, ignore this email. "
         "Chitti will never ask for this code over WhatsApp or phone."
     )
-    # email_service.send() accepts (user_token, to, subject, body, …).
-    # Use the system Vaani-owned account by passing a sentinel token.
-    email_service.send(
-        user_token="vaani-system",
-        to=contact,
-        subject=subject,
-        body=body,
+    res = email_service.send_as_user(
+        "vaani-system",
+        contact,
+        subject,
+        body,
         user_real_name="Chitti Vaani",
     )
+    if not res.get("ok"):
+        raise RuntimeError(f"email_otp_send_failed: {res.get('error')}")
     log.info("Email OTP sent to=%s", contact)
 
 
@@ -287,7 +292,7 @@ def verify_start_route():
     channel = _channel_or_400(body)
     contact = _contact_or_400(channel, body)
 
-    demo = DEMO_MODE_DEFAULT or not _provider_configured(channel)
+    demo = _FORCE_DEMO or not _provider_configured(channel)
     code = DEMO_CODE if demo else f"{secrets.randbelow(1000000):06d}"
     expires_at = int(time.time()) + CODE_TTL_S
 
@@ -311,7 +316,14 @@ def verify_start_route():
         "demo_mode": demo,
     }
     if demo:
-        resp["hint"] = f"Demo mode — code is {DEMO_CODE}. Real provider lands in Phase 2.7."
+        if _FORCE_DEMO:
+            resp["hint"] = f"Demo mode forced by CHITTI_CHANNEL_FORCE_DEMO=1 — code is {DEMO_CODE}."
+        else:
+            resp["hint"] = (
+                f"Demo mode — code is {DEMO_CODE}. "
+                f"Set the {channel} provider env vars on Railway to send a real code "
+                "(see /api/vaani/channels/health for what's missing)."
+            )
     return jsonify(resp)
 
 
@@ -356,6 +368,92 @@ def status_route():
         v = _verified.get((user_token, ch))
         out[ch] = v if v else None
     return jsonify(out)
+
+
+# ── /api/vaani/channels/health ──────────────────────────────────
+# Mounted at /api/vaani/channels/health (note plural) so any sysadmin
+# can curl one endpoint and see exactly which outbound paths are wired
+# vs. waiting on env vars. No secrets are leaked — only the names of
+# the env vars that are missing.
+#
+# Honest contract (matches SAHAYAI_MASTER.md §3 rule #4):
+#   - `configured: true`   ⇒ provider can send real OTPs / messages now
+#   - `configured: false`  ⇒ honest demo + the list of missing env vars
+#   - `force_demo: true`   ⇒ admin pinned demo via CHITTI_CHANNEL_FORCE_DEMO
+#
+# This is the single source of truth for "is Chitti actually able to
+# send X right now". The Pro Card pills on chitti_vaani.html read from
+# here on page load so the user sees the same truth.
+_health_bp = Blueprint("vaani_channels_health", __name__, url_prefix="/api/vaani/channels")
+
+
+def _missing_env(*keys: str) -> list[str]:
+    return [k for k in keys if not (os.environ.get(k) or "").strip()]
+
+
+@_health_bp.get("/health")
+def channels_health_route():
+    gmail_missing = _missing_env("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET")
+    msg91_missing = _missing_env("MSG91_AUTH_KEY", "MSG91_OTP_TEMPLATE_ID")
+    twilio_missing = _missing_env("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER")
+    whatsapp_missing = _missing_env("WHATSAPP_BUSINESS_TOKEN", "WHATSAPP_BUSINESS_PHONE_ID")
+    telephony_missing = _missing_env("CHITTI_TELEPHONY_PROVIDER")
+
+    sms_msg91_ok = not msg91_missing
+    sms_twilio_ok = not twilio_missing
+
+    return jsonify({
+        "ok": True,
+        "force_demo": _FORCE_DEMO,
+        "channels": {
+            "gmail_send": {
+                "configured": not gmail_missing,
+                "missing_env": gmail_missing,
+                "note": (
+                    "Server-side Gmail send via the user's own OAuth-connected "
+                    "Gmail account. After env vars land, each user must complete "
+                    "the Connect-Gmail flow once per device."
+                ),
+                "endpoints": ["/api/vaani/email/auth/start", "/api/vaani/email/send"],
+            },
+            "sms_msg91": {
+                "configured": sms_msg91_ok,
+                "missing_env": msg91_missing,
+                "note": "India-first SMS via MSG91 OTP API (DLT-registered, sub-paise).",
+            },
+            "sms_twilio": {
+                "configured": sms_twilio_ok,
+                "missing_env": twilio_missing,
+                "note": "Global SMS fallback via Twilio.",
+            },
+            "sms_any": {
+                "configured": sms_msg91_ok or sms_twilio_ok,
+                "note": (
+                    "True if EITHER MSG91 or Twilio is configured. /verify/start "
+                    "for channel=sms will use MSG91 first, else Twilio."
+                ),
+            },
+            "whatsapp_business": {
+                "configured": not whatsapp_missing,
+                "missing_env": whatsapp_missing,
+                "note": (
+                    "WhatsApp Business Cloud API for OTPs (template must be "
+                    "approved in Meta Business Manager). User-facing "
+                    "wa.me deep-link does NOT need this env."
+                ),
+            },
+            "outbound_telephony": {
+                "configured": not telephony_missing,
+                "missing_env": telephony_missing,
+                "note": (
+                    "Server-initiated outbound calls (Exotel / Twilio Voice). "
+                    "Honest stub today — provider client not wired even when env "
+                    "var is set. Phase 2 work."
+                ),
+            },
+        },
+        "demo_code_when_unconfigured": DEMO_CODE,
+    })
 
 
 @bp.post("/disconnect")
