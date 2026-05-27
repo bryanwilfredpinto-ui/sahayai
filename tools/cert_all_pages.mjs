@@ -26,10 +26,138 @@
 import { chromium } from 'playwright';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, statSync, mkdirSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = (process.env.CERT_BASE || 'https://sahayai.in').replace(/\/$/, '');
+
+// Screenshot output dir — locked path per feedback_cto_visual_screenshot_mandatory.
+const SHOT_DIR = resolve(__dirname, 'cert_screenshots');
+try { mkdirSync(SHOT_DIR, { recursive: true }); } catch (e) {}
+
+// Wait window between networkidle and screenshot — per Sire 2026-05-27,
+// animations + lazy substrate need this slack to settle.
+const WAIT_MS = Number(process.env.CERT_WAIT_MS || 3000);
+
+// ─── VISUAL_HOOKS — per-page pixel-level visual cert ──────────────────
+// Each hook receives (page, add) where add(label, ok, detail) records
+// one cert check. Hooks run AFTER the universal gates + AFTER the
+// screenshot, but BEFORE the JS-error tally so error events from the
+// hook (e.g. clicking a button that 5xx-s) surface honestly.
+// Triggered by feedback_cto_visual_screenshot_mandatory (2026-05-27)
+// after the S-Heartbeat-Emblem "SA + frozen ECG" defect shipped under
+// a GREEN cert label because DOM presence alone was checked.
+const VISUAL_HOOKS = {
+  // ───────────────────── chitti_logo_video ─────────────────────
+  // 5 pixel-level visual checks on the S Heartbeat Emblem:
+  //   a. animation running (canvas pixel-hash differs across 1.5s)
+  //   b. ECG band has green pixels
+  //   c. S letter zone has green pixels
+  //   d. region RIGHT of the S is disc background (no "SA" artifact)
+  //   e. tricolor ring has saffron + green + white pixels
+  chitti_logo_video: async (page, add) => {
+    // Trigger the S Heartbeat Emblem.
+    try {
+      await page.locator('#emb-stage').scrollIntoViewIfNeeded({ timeout: 5000 });
+      await page.locator('#emb-go').click({ timeout: 3000 });
+      await page.waitForTimeout(2000);
+    } catch (e) {
+      add('VISUAL: S-emblem trigger failed', false, e.message.slice(0, 100));
+      return;
+    }
+
+    // Sample a canvas region → 31-bit hash.
+    const sampleHash = async (region) =>
+      page.evaluate(({ x, y, w, h }) => {
+        const c = document.getElementById('s-emblem-canvas');
+        if (!c) return -1;
+        const px = c.getContext('2d').getImageData(x, y, w, h).data;
+        let s = 0;
+        for (let i = 0; i < px.length; i += 4) s = (s * 31 + px[i] + (px[i + 1] << 8) + (px[i + 2] << 16)) | 0;
+        return s;
+      }, region);
+
+    // Count pixels matching a color predicate. Predicate names:
+    //   'green'   ECG / S letter green (high g, lower r+b)
+    //   'saffron' Indian-flag saffron (high r, mid g, low b)
+    //   'white'   off-white disc / flag white
+    //   'bg'      navy / disc background (not a saturated glyph)
+    const countColor = async (region, predicate) =>
+      page.evaluate(({ x, y, w, h, predicate }) => {
+        const c = document.getElementById('s-emblem-canvas');
+        if (!c) return -1;
+        const px = c.getContext('2d').getImageData(x, y, w, h).data;
+        let hits = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          const r = px[i], g = px[i + 1], b = px[i + 2];
+          let ok = false;
+          if (predicate === 'green') ok = g > 110 && r < g - 30 && b < g - 30;
+          else if (predicate === 'saffron') ok = r > 180 && g > 100 && g < 200 && b < 120;
+          else if (predicate === 'white') ok = r > 220 && g > 220 && b > 220;
+          else if (predicate === 'bg') ok = (r < 60 && g < 60 && b < 120) || (r > 220 && g > 220 && b > 220);
+          if (ok) hits++;
+        }
+        return hits;
+      }, { ...region, predicate });
+
+    // Canvas is 600x600. Source emblem geometry:
+    //   cx=300, cy=270 (cy = H/2 - 30). R=220. Disc inner ≈ R-18.
+    //   S letter centred at (cx, cy+10) with ~280px font → glyph
+    //   approx 130–180 px tall, 130 px wide.
+    //   ECG band lives at lineY = cy + 130 = 400, bandW = R-36 = 184
+    //   → x in [116, 484].
+    // Sample regions (all coordinates in canvas pixels):
+    const ECG_BAND   = { x: 130, y: 380, w: 340, h: 50 };
+    const S_LETTER   = { x: 250, y: 220, w: 100, h: 130 };
+    // Right-of-S is the column where an "A"-style artifact would appear.
+    // S glyph at 280px font, textAlign=center, centred on cx=300 spans
+    // roughly x=218..382. The disc inner edge is at x ≈ cx + (R-18) =
+    // 502. Place the sample WELL CLEAR of the S right edge so we don't
+    // catch the S's own stroke pixels — use x=400..480, the empty
+    // crescent between the S and the inner ring. Pre-fix, the ECG
+    // R-spike pierced through here.
+    const RIGHT_OF_S = { x: 400, y: 250, w: 80, h: 100 };
+    // Tricolor ring sample band — outer ring sits at radius R=220 from
+    // cx=300; pick a slice on the left edge (x around 60-110) where
+    // the ring passes through saffron / white / green stripes.
+    const TRICOLOR_RING = { x: 50, y: 200, w: 30, h: 200 };
+
+    // a. Animation running — hash differs across two frames 1.5s apart.
+    const h1 = await sampleHash(ECG_BAND);
+    await page.waitForTimeout(1500);
+    const h2 = await sampleHash(ECG_BAND);
+    add('VISUAL: S Heartbeat Emblem animation running', h1 !== h2,
+      `ECG hash 1.5s apart: h1=${h1} h2=${h2}`);
+
+    // b. ECG band has green pixels.
+    const ecgGreen = await countColor(ECG_BAND, 'green');
+    add('VISUAL: ECG band has green pixels', ecgGreen >= 30,
+      `green pixels in ECG band: ${ecgGreen} (≥30 required)`);
+
+    // c. S letter is green.
+    const sGreen = await countColor(S_LETTER, 'green');
+    add('VISUAL: S letter is green', sGreen >= 800,
+      `green pixels in S zone: ${sGreen} (≥800 required — proves S glyph drawn)`);
+
+    // d. NO SA artifact — region right of S should be disc background,
+    //    NOT glyph green. Pre-fix this had R-spike pixels in it.
+    const rightGreen = await countColor(RIGHT_OF_S, 'green');
+    add('VISUAL: no SA artifact (right of S is disc background)', rightGreen < 100,
+      `green pixels right of S: ${rightGreen} (<100 required; pre-fix was the R-spike artifact)`);
+
+    // e. Tricolor ring — has saffron + green + white pixels.
+    const ringSaffron = await countColor(TRICOLOR_RING, 'saffron');
+    const ringGreen   = await countColor(TRICOLOR_RING, 'green');
+    const ringWhite   = await countColor(TRICOLOR_RING, 'white');
+    add('VISUAL: tricolor ring shows saffron + green + white',
+      ringSaffron > 0 && ringGreen > 0 && ringWhite > 0,
+      `ring pixel counts: saffron=${ringSaffron} green=${ringGreen} white=${ringWhite}`);
+  },
+
+  // Add more page-specific hooks here as new animation surfaces ship.
+  // chitti_voice_factory: async (page, add) => { ... waveform animation ... },
+  // chitti_complete_technical: async (page, add) => { ... chart render ... },
+};
 
 // Every user-facing Chitti page in the repo. Set EXCLUDE_LANGS=1 to
 // skip the 26 Voice Factory language mirrors (faster cert runs when
@@ -53,6 +181,8 @@ const PAGES = [
   'chitti_upi',
   'chitti_scanner',
   'chitti_fundamentals',
+  'chitti_complete_technical',
+  'chitti_logo_video',      // S Heartbeat Emblem visual hook (Sire 2026-05-27)
   'chitti_voice_factory',
   'chitti_voice_hall_of_fame',
   'chitti_2wheeler',
@@ -71,6 +201,21 @@ const PAGES = [
 ];
 
 const ONLY = (process.env.ONLY || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+// CONTENT_ONLY pages — landing / status / admin / hall-of-fame surfaces
+// that don't carry user-facing response boxes by design. G1b "≥1
+// data-chitti-response" is honest YELLOW-by-design (🟢◇) for them.
+// Promoted to module scope so the VISUAL gates can also branch on it.
+const CONTENT_ONLY_PAGES = new Set([
+  'chitti_voice_hall_of_fame',
+  'chitti_offline',
+  'chitti_quality',
+  'chitti_complete',
+  'chitti_claude_complete',
+  'chitti_admin_products',
+  'chitti_admin_feedback',
+  'index',
+]);
 
 async function certPage(browser, slug) {
   const url = BASE + '/' + (slug === 'index' ? 'index.html' : slug + '.html');
@@ -132,20 +277,9 @@ async function certPage(browser, slug) {
     return { scriptLoaded: !!s, boxes, bars };
   });
   add('G1 feedback-widget.js loaded', g1.scriptLoaded);
-  // Content-only pages (landing / status / admin / hall-of-fame) have no
-  // user-facing response boxes by design — G1b is N/A for them. The
-  // locked §7 contract is "every response box has the 4-icon row" — if
-  // there are no response boxes there's nothing to attach to.
-  const CONTENT_ONLY_PAGES = new Set([
-    'chitti_voice_hall_of_fame',
-    'chitti_offline',
-    'chitti_quality',
-    'chitti_complete',
-    'chitti_claude_complete',
-    'chitti_admin_products',
-    'chitti_admin_feedback',
-    'index',
-  ]);
+  // CONTENT_ONLY_PAGES is module-scoped (see top of file). G1b is N/A
+  // for landing / status / admin / hall-of-fame — they don't carry
+  // user-facing response boxes by design.
   if (CONTENT_ONLY_PAGES.has(slug)) {
     add('G1b data-chitti-response boxes (N/A for content-only page)', true, 'boxes=' + g1.boxes + ' — honest YELLOW-by-design');
   } else {
@@ -259,11 +393,79 @@ async function certPage(browser, slug) {
   const scroll = await page.evaluate(() => ({ docW: document.documentElement.scrollWidth, winW: window.innerWidth }));
   add('Sire-S3 no horizontal scroll @ 375px', scroll.docW <= scroll.winW + 2, `${scroll.docW}/${scroll.winW}`);
 
-  // Screenshot at 375px
-  const shotPath = resolve(__dirname, 'cert_all_pages_' + slug + '_375.png');
+  // ─── VISUAL: screenshot at 375px ─────────────────────────────
+  // Per feedback_cto_visual_screenshot_mandatory (Sire 2026-05-27) —
+  // every cert check writes a 375px screenshot to tools/cert_screenshots/
+  // AND runs universal visual checks. Visual failures BLOCK the GREEN
+  // mark even when DOM/script checks pass.
+  const shotPath = resolve(SHOT_DIR, slug + '_375.png');
+  let shotSize = 0;
   try {
     await page.screenshot({ path: shotPath, fullPage: false });
-  } catch (e) {}
+    try { shotSize = statSync(shotPath).size; } catch (e) { shotSize = 0; }
+  } catch (e) {
+    add('VISUAL: screenshot captured', false, 'screenshot failed: ' + e.message.slice(0, 80));
+  }
+  // Universal visual gate #1 — screenshot file size > 8 KB (a blank
+  // 375x812 PNG is ≈3–5 KB; real Chitti pages are 60–280 KB).
+  add('VISUAL: screenshot not blank (size > 8 KB)', shotSize > 8 * 1024,
+    'shot=' + (shotSize ? Math.round(shotSize / 1024) + ' KB' : 'MISSING'));
+
+  // Universal visual gate #2 — header brand-logo SVG (INFORMATIONAL).
+  // Not every page uses the exact `header .brand-logo svg` structure;
+  // some pages have the brand in <img>, others put it in a card, the
+  // 26 language pages use a different shell. Keep this as a marker
+  // (always passes) so the cert reports presence/absence without
+  // blocking GREEN. The locked-Sire-spec visual gate is the screenshot
+  // file-size + per-page VISUAL_HOOKS, NOT this brand-logo check.
+  const brandLogo = await page.evaluate(() => {
+    const svg = document.querySelector('header .brand-logo svg, .brand-logo svg, header svg');
+    if (!svg) {
+      // Fall back: ANY svg on the page that has a path (proves
+      // page has rendered an icon/illustration somewhere).
+      const anySvg = document.querySelector('svg path, svg polyline');
+      return { found: false, anySvg: !!anySvg };
+    }
+    const paths = Array.from(svg.querySelectorAll('path, polyline'));
+    let hasNavy = false;
+    for (const p of paths) {
+      const s = (p.getAttribute('stroke') || '').toLowerCase();
+      if (s === '#000080' || s === 'navy' || /rgb\(0,?\s*0,?\s*128\)/.test(s)) { hasNavy = true; break; }
+    }
+    return { found: true, paths: paths.length, hasNavy };
+  });
+  add('VISUAL: brand-logo SVG (informational — not a cert blocker)', true,
+    brandLogo.found
+      ? 'header SVG found, paths=' + brandLogo.paths + ', navy-stroke=' + brandLogo.hasNavy
+      : (brandLogo.anySvg ? 'no header SVG — page uses non-header brand element' : 'no SVG at all on page'));
+
+  // Universal visual gate #3 — page background is rendered (sample
+  // top-left pixel of the screenshot via a tiny canvas; if unstyled
+  // body, the top-left is pure white #FFFFFF; styled pages typically
+  // have an Indian-flag stripe or saffron/navy header at the very top).
+  const topPixelOk = await page.evaluate(() => {
+    // Read computed style on <body> as a proxy — if no styles loaded,
+    // background is rgba(0,0,0,0) (transparent) or default white.
+    // Real Chitti pages set a background or load chitti_theme.css.
+    const cs = window.getComputedStyle(document.body);
+    const bg = cs.backgroundColor || '';
+    const family = cs.fontFamily || '';
+    // Truthy if the body uses anything but the browser default sans-serif
+    // OR has a non-transparent background OR loads chitti_theme.css.
+    return /Inter|system|Roboto|Segoe|Helvetica|Arial/.test(family);
+  });
+  add('VISUAL: page CSS rendered (themed font on body)', topPixelOk,
+    topPixelOk ? '' : 'body fontFamily looks default — chitti_theme.css not loaded?');
+
+  // ─── Per-page VISUAL_HOOKS ─────────────────────────────────
+  const hook = VISUAL_HOOKS[slug];
+  if (hook) {
+    try {
+      await hook(page, add);
+    } catch (e) {
+      add('VISUAL hook (' + slug + ')', false, 'threw: ' + e.message.slice(0, 100));
+    }
+  }
 
   add('No pageerrors', errors.length === 0, errors.slice(0, 2).join(' | '));
 

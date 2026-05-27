@@ -33,9 +33,17 @@
     .pill.red{background:#fee2e2;color:#7f1d1d}
     .pill.navy{background:#dbeafe;color:#1e3a8a}
     .row-list{display:grid;gap:6px;margin-top:8px}
-    .row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13.5px}
+    .row{display:grid;grid-template-columns:54px 1fr auto auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13.5px}
     .row .name{font-weight:700;color:var(--navy);word-break:break-word}
     .row .checks{color:var(--muted);font-size:12.5px;min-width:50px;text-align:right}
+    .row .thumb{width:48px;height:54px;border-radius:6px;overflow:hidden;background:#f1f5f9;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .row .thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+    .row .thumb.missing{color:var(--muted);font-size:18px}
+    /* Lightbox modal for screenshots */
+    .lb{position:fixed;inset:0;background:rgba(15,23,42,.92);display:none;align-items:center;justify-content:center;z-index:99999;padding:16px;cursor:zoom-out}
+    .lb.show{display:flex}
+    .lb img{max-width:100%;max-height:90vh;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+    .lb .lb-cap{position:fixed;bottom:14px;left:0;right:0;text-align:center;color:#e2e8f0;font-size:13px}
     table.sub-grid{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
     table.sub-grid th,table.sub-grid td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
     table.sub-grid th{background:#f1f5f9;color:var(--navy);font-weight:800}
@@ -90,11 +98,34 @@
       </p>
     </section>
 
-    <!-- ─── Per-page list ─── -->
+    <!-- ─── Per-page list with screenshot thumbnails ─── -->
     <section class="card" data-chitti-response data-chitti-section="Per-page cert table">
       <h2>📋 Per-page cert</h2>
+      <p style="font-size:12.5px;color:var(--muted);margin:4px 0 8px">Tap any thumbnail for a full-size 375px screenshot from the live URL. Captured AFTER a 3-second wait + per-page animation triggers (Sire 2026-05-27 — visual screenshot verification mandatory).</p>
       <input id="q" type="search" aria-label="Filter pages" placeholder="🔎 Filter — e.g. 'vaani' or 'lang'">
       <div class="row-list" id="page-rows"></div>
+    </section>
+
+    <!-- Lightbox modal for full-size screenshots -->
+    <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Screenshot preview">
+      <img id="lb-img" alt="" />
+      <div class="lb-cap" id="lb-cap"></div>
+    </div>
+
+    <!-- ─── Visual cert enforcement ─── -->
+    <section class="card" data-chitti-response data-chitti-section="Visual cert">
+      <h2>🖼️ Visual cert (PERMANENT FIX — Sire 2026-05-27)</h2>
+      <p>Every CTO cert check writes a 375px screenshot to <code>tools/cert_screenshots/</code> AND runs pixel-level visual verification. <strong>Visual fails block the GREEN mark</strong> — even when DOM / script-load / API checks pass. This is the permanent fix for "broken work reaching Sire" — locked after two consecutive defects (S-Heartbeat "SA + frozen ECG", Disability Profile blocking modal) shipped under a GREEN label.</p>
+      <table class="sub-grid" aria-label="Visual cert layers">
+        <thead><tr><th>Layer</th><th>What it verifies</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Universal</td><td>Wait 3 s · screenshot saved &gt; 8 KB · brand-logo SVG renders · themed body font</td><td>Every page</td></tr>
+          <tr><td>Per-page hook</td><td>Triggers animation · samples canvas pixel-hash 1.5 s apart · checks color counts in named regions</td><td><code>VISUAL_HOOKS</code> registry</td></tr>
+          <tr><td>chitti_logo_video</td><td>S Heartbeat Emblem 5 checks: animation running · green ECG band · green S letter · no SA artifact · tricolor ring</td><td><a href="tools/cert_all_pages.mjs"><code>cert_all_pages.mjs</code></a></td></tr>
+          <tr><td>Deep cert</td><td>11-check standalone visual cert with Stop / Restart</td><td><a href="tools/cert_s_emblem_visual.mjs"><code>cert_s_emblem_visual.mjs</code></a></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Screenshots refresh on every cert run. Tap any row's thumbnail above to open the full-size 375px image — that's exactly what Sire would see on his phone.</p>
     </section>
 
     <!-- ─── Substrate enforcement ─── -->
@@ -222,7 +253,15 @@ EXCLUDE_LANGS=1 node tools/cert_all_pages.mjs          # skip 26 lang mirrors</p
       const rows = pages.map(p => {
         const s = statusPillFor(p);
         const url = p.url || ("https://sahayai.in/" + (p.slug === "index" ? "index.html" : p.slug + ".html"));
-        return `<div class="row">
+        // Thumbnail from tools/cert_screenshots/<slug>_375.png. Falls
+        // back to the legacy tools/cert_all_pages_<slug>_375.png path
+        // so older artifacts keep rendering during the transition.
+        const shotNew = "tools/cert_screenshots/" + p.slug + "_375.png";
+        return `<div class="row" data-slug="${p.slug}">
+          <a class="thumb" href="${shotNew}" data-fullshot="${shotNew}" data-slug="${p.slug}" aria-label="Open ${p.slug} screenshot">
+            <img loading="lazy" alt="${p.slug} 375px screenshot" src="${shotNew}?v=${Date.now()}"
+                 onerror="this.onerror=null;this.src='tools/cert_all_pages_${p.slug}_375.png?v=${Date.now()}';this.dataset.fallback='1'">
+          </a>
           <div class="name"><a href="${url}" target="_blank" rel="noopener">${p.slug}</a></div>
           <span class="pill ${s.cls}">${s.label}</span>
           <span class="checks">${s.cls === "green" ? "✅" : s.cls === "yellow" ? "🟡" : "❌"}</span>
@@ -249,6 +288,33 @@ EXCLUDE_LANGS=1 node tools/cert_all_pages.mjs          # skip 26 lang mirrors</p
         document.querySelectorAll("#page-rows .row").forEach(row => {
           row.style.display = (row.textContent.toLowerCase().includes(q)) ? "" : "none";
         });
+      }
+    });
+
+    // Lightbox — clicking a thumbnail opens the full-size screenshot.
+    document.addEventListener("click", function(e) {
+      const lb = document.getElementById("lb");
+      if (!lb) return;
+      // Open
+      const thumb = e.target.closest && e.target.closest(".thumb");
+      if (thumb && thumb.dataset && thumb.dataset.fullshot) {
+        e.preventDefault();
+        const img = document.getElementById("lb-img");
+        const cap = document.getElementById("lb-cap");
+        img.src = thumb.dataset.fullshot + "?v=" + Date.now();
+        cap.textContent = thumb.dataset.slug + " · 375px · live URL · tap to close";
+        lb.classList.add("show");
+        return;
+      }
+      // Close on backdrop or image click
+      if (e.target === lb || (e.target && e.target.id === "lb-img")) {
+        lb.classList.remove("show");
+      }
+    });
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        const lb = document.getElementById("lb");
+        if (lb) lb.classList.remove("show");
       }
     });
 

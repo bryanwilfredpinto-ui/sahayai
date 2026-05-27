@@ -44,6 +44,22 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### Visual screenshot verification LOCKED — every cert writes proof to `tools/cert_screenshots/`
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Trigger** | Sire 2026-05-27: *"Add visual screenshot verification to every cert check. … This is the permanent fix for broken work reaching Sire."* |
+| **Locked spec** | (1) Load each page at 375×812. (2) Wait 3 s for animations to settle. (3) Take screenshot → `tools/cert_screenshots/<slug>_375.png`. (4) Per-page visual checks (single letter rendered, color counts, animation hash differs over 1.5 s window). (5) If any check fails → fix first. (6) Only mark GREEN after visual pass. |
+| **Where enforced** | [tools/cert_all_pages.mjs](tools/cert_all_pages.mjs) — new module-scope `VISUAL_HOOKS` registry runs per-page pixel-level checks after the universal gates. `WAIT_MS = 3000` (override via `CERT_WAIT_MS` env). |
+| **Universal checks** | (a) screenshot file size > 8 KB (proves not blank), (b) themed body font loaded (proves CSS rendered), (c) brand-logo SVG informational marker. |
+| **chitti_logo_video VISUAL_HOOK** | Triggers `#emb-go` (S Heartbeat Emblem Generate button), waits, then runs 5 pixel-level checks: (a) animation running — ECG band canvas pixel-hash differs across 1.5 s, (b) ECG band has green pixels, (c) S letter zone is green, (d) NO "SA" artifact (region right-of-S is disc background, NOT glyph green), (e) tricolor ring shows saffron + green + white. |
+| **Memory locked** | [`feedback_cto_visual_screenshot_mandatory.md`](C:/Users/DELL/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/feedback_cto_visual_screenshot_mandatory.md) — visual fails BLOCK GREEN even when DOM checks pass. Every future CTO session inherits this rule. |
+| **CTO Inbox** | [`chitti_cto_inbox.html`](chitti_cto_inbox.html) now renders a thumbnail of every certified page from `tools/cert_screenshots/<slug>_375.png` with a lightbox for full-size view. Sire sees exactly what shipped. |
+| **Process** | Sire requirement → CTO assigns to Code → Code builds → **CTO certifies on live URL (visual + functional)** → CTO reports to Sire's inbox → Sire tests only certified features. |
+
+---
+
 ### S Heartbeat Emblem visual fix — clean S + animated scrolling ECG — GREEN ✅
 
 | Field | Value |
