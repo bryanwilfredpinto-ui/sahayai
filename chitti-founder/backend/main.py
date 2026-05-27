@@ -77,6 +77,13 @@ from lib.chitti_quality import (
     THUMBS_DOWN_CRITICAL_PCT, CO2_FLAG_THRESHOLD_G,
     risk_level,
 )
+from lib.cto_verifier import (
+    FRONTEND_PAGES_TO_WATCH, RAILWAY_HEALTH_URLS,
+    verify_url, verify_deployment,
+    run_cto_daily, render_cto_daily_html,
+    render_cto_weekly_html,
+    whatsapp_send,
+)
 
 
 logging.basicConfig(
@@ -96,6 +103,14 @@ PULL_TIMEOUT_S = float(os.environ.get("FOUNDER_PULL_TIMEOUT_S", "10"))
 
 WEEKLY_HOUR_IST = int(os.environ.get("WEEKLY_REPORT_HOUR_IST", "8"))
 WEEKLY_MINUTE_IST = int(os.environ.get("WEEKLY_REPORT_MINUTE_IST", "0"))
+
+# CTO crons (SAHAYAI_MASTER §6 + 2026-05-27 CTO directive)
+# Daily 08:00 IST  — live URL health pass (frontend + backend), one fix/day.
+# Weekly Sun 09:00 IST — CTO weekly: built / verified / fixed / costs / risks / 3 priorities.
+CTO_DAILY_HOUR_IST = int(os.environ.get("CTO_DAILY_HOUR_IST", "8"))
+CTO_DAILY_MINUTE_IST = int(os.environ.get("CTO_DAILY_MINUTE_IST", "0"))
+CTO_WEEKLY_HOUR_IST = int(os.environ.get("CTO_WEEKLY_HOUR_IST", "9"))
+CTO_WEEKLY_MINUTE_IST = int(os.environ.get("CTO_WEEKLY_MINUTE_IST", "0"))
 
 # Swarm Intelligence (SAHAYAI_MASTER.md §2f) — weekly pattern extraction.
 # Runs INLINE inside run_weekly_report (Sunday 08:00 IST) since 2026-05-15.
@@ -432,6 +447,110 @@ def run_swarm_pass() -> dict:
         "pushed_files": report.pushed_files,
         "proposed_files": report.proposed_files,
         "sample_patterns_per_chitti": report.sample_patterns_per_chitti,
+    }
+
+
+# ---------- CTO crons (2026-05-27 directive) -----------------------------
+
+
+# Rolling 7-day ring of daily CTO reports. Used by the Sunday weekly digest
+# to roll up pages-with-issues + average red counts. In-memory only — same
+# posture as _PCT_HISTORY / _HEALTH_RING above; on Render restart we lose
+# the buffer, which is fine: the next 7 daily passes refill it.
+_CTO_DAILY_RING: deque = deque(maxlen=7)
+
+
+def run_cto_daily_job() -> dict:
+    """08:00 IST cron — fetch every sahayai.in page + Railway /health,
+    run the 10-gate check, email the WhatsApp-shaped report to Sire.
+
+    Also pushed to WhatsApp via whatsapp_send() when WHATSAPP_BUSINESS_TOKEN
+    is configured (honest stub until then; email rails carry the report)."""
+    rep = run_cto_daily()
+    _CTO_DAILY_RING.append(rep)
+
+    subject, html = render_cto_daily_html(rep)
+    email_ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
+
+    # WhatsApp parallel send (honest stub today).
+    wa_text = (
+        f"Good morning Sire. 8am health check:\n"
+        f"✅ {rep.green} pages live and working\n"
+        f"⚠️ {rep.yellow} pages need attention\n"
+        f"🔴 {rep.red} pages down\n"
+        f"💰 {rep.api_costs_note}\n"
+        f"🔧 Recommended fix today: {rep.recommended_fix_today}"
+    )
+    wa_result = whatsapp_send(wa_text)
+
+    log.info(
+        "[cto-daily] email_ok=%s wa_ok=%s · ✅%d ⚠️%d 🔴%d",
+        email_ok, wa_result.get("ok"), rep.green, rep.yellow, rep.red,
+    )
+    return {
+        "ok": email_ok,
+        "subject": subject,
+        "email_recipient": FOUNDER_EMAIL,
+        "whatsapp": wa_result,
+        "report": rep.to_dict(),
+    }
+
+
+def run_cto_weekly_job() -> dict:
+    """Sunday 09:00 IST cron — week summary email to Sire.
+
+    Built / verified / fixed lists are pulled from `git log --since='7 days
+    ago'` when run inside a git checkout; on Render (read-only image) we
+    surface the honest empty-state instead of inventing entries."""
+    # Try to harvest from git log if we're inside a working tree.
+    built: list[str] = []
+    verified: list[str] = []
+    fixed: list[str] = []
+    try:
+        import subprocess
+        repo_root = Path(__file__).resolve().parents[2]
+        if (repo_root / ".git").exists():
+            out = subprocess.run(
+                ["git", "log", "--since=7 days ago", "--pretty=format:%s"],
+                cwd=repo_root, capture_output=True, text=True, timeout=15,
+            )
+            for line in (out.stdout or "").splitlines():
+                line = line.strip()
+                if not line: continue
+                if line.startswith("feat"):  built.append(line)
+                elif line.startswith("fix"):  fixed.append(line)
+                elif line.startswith("test") or line.startswith("verify"): verified.append(line)
+    except Exception as e:  # noqa: BLE001
+        log.info("[cto-weekly] git log harvest skipped: %s", e)
+
+    risks: list[str] = []
+    if not built and not fixed:
+        risks.append("No git log accessible from Render image — CTO can't auto-summarise week's diffs.")
+    # Add common standing risks Sire should always see:
+    risks.append("DeepSeek + Gemini balance APIs not yet wired — cost monitoring is manual.")
+    risks.append("WhatsApp Business token unset — daily message uses email rails today.")
+
+    next_priorities: list[str] = [
+        "Verify §5a P0 items (Govt 'Am I eligible?' · News fake-news score · Vaani daily-check-in).",
+        "Wire WhatsApp Business token so Sire gets the 8am check on phone, not just email.",
+        "Pick one ⚠️ page from this week's dailies and clear it to ✅.",
+    ]
+
+    subject, html = render_cto_weekly_html(
+        week_dailies=list(_CTO_DAILY_RING),
+        built_this_week=built[:10],
+        verified_this_week=verified[:10],
+        fixed_this_week=fixed[:10],
+        risks=risks,
+        next_priorities=next_priorities,
+    )
+    ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
+    log.info("[cto-weekly] email_ok=%s · built=%d fixed=%d", ok, len(built), len(fixed))
+    return {
+        "ok": ok, "subject": subject,
+        "built": built, "fixed": fixed, "verified": verified,
+        "risks": risks, "next_priorities": next_priorities,
+        "daily_window_size": len(_CTO_DAILY_RING),
     }
 
 
@@ -904,6 +1023,67 @@ def _create_app() -> Flask:
             "recent": rows,
         })
 
+    # CTO endpoints (2026-05-27 directive) -----------------------------------
+
+    @app.post("/admin/founder/cto-verify")
+    def admin_cto_verify():
+        """Run the 10-gate quality check against an arbitrary URL.
+
+        Body: {"url": "https://sahayai.in/chitti_logo_video.html"}
+        Returns the full URLVerifyResult. Read-only; never mutates.
+        """
+        auth = _require_admin()
+        if auth: return auth
+        payload = request.get_json(silent=True) or {}
+        url = (payload.get("url") or request.args.get("url") or "").strip()
+        if not url:
+            return jsonify({"ok": False, "error": "url required (JSON body or ?url=)"}), 400
+        result = verify_url(url)
+        return jsonify({"ok": True, "result": result.to_dict()})
+
+    @app.post("/admin/founder/cto-daily")
+    def admin_cto_daily():
+        """Manual trigger for the 08:00 IST CTO daily health check."""
+        auth = _require_admin()
+        if auth: return auth
+        return jsonify(run_cto_daily_job())
+
+    @app.post("/admin/founder/cto-weekly")
+    def admin_cto_weekly():
+        """Manual trigger for the Sunday 09:00 IST CTO weekly report."""
+        auth = _require_admin()
+        if auth: return auth
+        return jsonify(run_cto_weekly_job())
+
+    @app.get("/admin/founder/cto-daily")
+    def admin_cto_daily_html():
+        """Render the CTO daily report in-browser for visual review.
+        GET form runs the pass synchronously — useful for ad-hoc checks."""
+        auth = _require_admin()
+        if auth: return auth
+        rep = run_cto_daily()
+        _CTO_DAILY_RING.append(rep)
+        _, html = render_cto_daily_html(rep)
+        return Response(html, mimetype="text/html")
+
+    @app.post("/admin/founder/cto-verify-deployment")
+    def admin_cto_verify_deployment():
+        """Post-push verifier. Body: {"url": "...", "wait_s": 180}
+
+        Waits the requested seconds, then runs the 10-gate check. Cron
+        timeouts on Render default to 30s, so callers using this from
+        the gh action / webhook should set wait_s ≤ 30 there and call
+        twice if needed."""
+        auth = _require_admin()
+        if auth: return auth
+        payload = request.get_json(silent=True) or {}
+        url = (payload.get("url") or "").strip()
+        wait_s = int(payload.get("wait_s") or 30)
+        if not url:
+            return jsonify({"ok": False, "error": "url required"}), 400
+        result = verify_deployment(url, wait_s=min(max(0, wait_s), 30))
+        return jsonify({"ok": True, "waited_s": wait_s, "result": result.to_dict()})
+
     # Public router used by feedback-widget.js. We accept the payload,
     # tag it with classifier output, mirror it to the originating
     # Chitti's /api/feedback when possible, and keep a copy in our ring.
@@ -977,6 +1157,17 @@ def _start_scheduler() -> None:
         run_escalator, "cron",
         minute=15, timezone=_IST,
         id="hourly_escalator", replace_existing=True,
+    )
+    # CTO crons (2026-05-27): 08:00 IST daily, Sun 09:00 IST weekly.
+    _sched.add_job(
+        run_cto_daily_job, "cron",
+        hour=CTO_DAILY_HOUR_IST, minute=CTO_DAILY_MINUTE_IST,
+        timezone=_IST, id="cto_daily_health", replace_existing=True,
+    )
+    _sched.add_job(
+        run_cto_weekly_job, "cron",
+        day_of_week="sun", hour=CTO_WEEKLY_HOUR_IST, minute=CTO_WEEKLY_MINUTE_IST,
+        timezone=_IST, id="cto_weekly_report", replace_existing=True,
     )
     if SELF_PING_ENABLED:
         _sched.add_job(
