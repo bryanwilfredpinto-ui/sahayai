@@ -135,6 +135,260 @@ body{font-size:18px}
   </div>
 </div>
 
+<!-- ══════════════ 10-second outfit video rating (Sire 2026-05-27 TASK 5) ══════════════
+     Records a 10s clip of the user's outfit, samples 5 keyframes (one every 2s)
+     and POSTs them to /api/camera/analyze with mode=fashion_video. Backend
+     uses the Gemini-OpenAI-compat multimodal endpoint to reason across the
+     frames — fit-in-motion / colour / occasion / accessories.
+     Honest stub: works only when chitti-vaani-api has the Gemini env vars set
+     (the same env-var hijack as every other LLM call site). When unconfigured
+     the result box surfaces the bilingual "server unreachable" message.
+-->
+<style>
+  .fa-video-cta{margin:0 0 14px;padding:18px 16px;background:linear-gradient(135deg,#FFF7EC,#fff,#FFEDE0);border:1.5px solid #FFD9B0;border-radius:18px;box-shadow:0 6px 18px rgba(255,153,51,.12)}
+  .fa-video-cta h2{font-size:18px;font-weight:900;color:#000080;margin:0 0 6px;display:flex;align-items:center;gap:8px}
+  .fa-video-cta .sub{font-size:14px;color:#1a1a1a;line-height:1.55;margin:0 0 12px}
+  .fa-video-cta .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#FF9933,#E07B1D);color:#fff;border:none;border-radius:14px;padding:14px 22px;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;min-height:48px;box-shadow:0 8px 22px rgba(255,153,51,.35);transition:transform .15s}
+  .fa-video-cta .btn:hover,.fa-video-cta .btn:focus-visible{transform:translateY(-2px);outline:none;box-shadow:0 12px 28px rgba(255,153,51,.45)}
+  .fa-video-cta .btn:disabled{filter:grayscale(.4) brightness(.95);cursor:wait}
+
+  .fa-video-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9700;align-items:flex-start;justify-content:center;padding:14px;flex-direction:column}
+  .fa-video-overlay.shown{display:flex}
+  .fa-video-overlay .fa-video-head{color:#fff;font-weight:900;font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;width:100%;max-width:620px;margin-left:auto;margin-right:auto}
+  .fa-video-overlay .fa-video-head .close{margin-left:auto;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);color:#fff;border-radius:10px;width:44px;height:44px;font-size:18px;cursor:pointer}
+  .fa-video-overlay video{flex:1;width:100%;max-width:620px;background:#000;border-radius:14px;object-fit:cover;margin:0 auto}
+  .fa-video-overlay .fa-video-ctl{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;max-width:620px;margin:14px auto 0;color:#fff}
+  .fa-video-overlay .fa-video-shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:4px solid #FF9933;cursor:pointer;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(255,153,51,.5)}
+  .fa-video-overlay .fa-video-shutter[disabled]{background:#ddd;border-color:#aaa;color:#666;cursor:not-allowed}
+  .fa-video-overlay .fa-video-shutter.recording{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;animation:fa-pulse 1s infinite}
+  @keyframes fa-pulse{50%{box-shadow:0 0 0 12px rgba(220,38,38,.18)}}
+  .fa-video-overlay .countdown{font-size:20px;font-weight:900;min-width:60px;text-align:center;background:rgba(255,255,255,.10);border-radius:10px;padding:6px 10px}
+  .fa-video-overlay .fa-video-flip{min-width:48px;min-height:48px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);color:#fff;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer}
+
+  .fa-video-result{margin:14px 0;background:#fff;border:1.5px solid #FF9933;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(255,153,51,.18)}
+  .fa-video-result h3{margin:0 0 8px;font-size:16px;color:#FF9933;display:flex;align-items:center;gap:6px;font-weight:900}
+  .fa-video-result .body{font-size:15px;line-height:1.65;white-space:pre-wrap;color:#1a1a1a}
+  .fa-video-result .frames{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .fa-video-result .frames img{width:64px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb}
+  .fa-video-result .spinner{display:inline-block;width:16px;height:16px;border:2px solid #FF9933;border-top-color:transparent;border-radius:50%;animation:fa-spin .9s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes fa-spin{to{transform:rotate(360deg)}}
+</style>
+<div class="fa-video-cta" role="region" aria-label="10-second outfit video rating">
+  <h2>🎬 <span>10-second outfit rating</span></h2>
+  <p class="sub">पूरा outfit 10 second तक record कीजिए — Chitti fit, रंग, occasion और movement rate करेगी, और एक accessory भी suggest करेगी (₹1,500 के अंदर).</p>
+  <button id="fa-vid-start" class="btn" type="button" aria-label="Start 10-second outfit rating recording">
+    <span aria-hidden="true">🎬</span> Start 10-second rating
+  </button>
+</div>
+<div id="fa-vid-result-host"></div>
+<div id="fa-vid-overlay" class="fa-video-overlay" role="dialog" aria-modal="true" aria-labelledby="fa-vid-title" aria-hidden="true">
+  <div class="fa-video-head">
+    <span id="fa-vid-title">🎬 Outfit rating — 10 seconds</span>
+    <button class="close" type="button" id="fa-vid-close" aria-label="Cancel recording">✕</button>
+  </div>
+  <video id="fa-vid-video" autoplay playsinline muted></video>
+  <div class="fa-video-ctl">
+    <button class="fa-video-flip" type="button" id="fa-vid-flip" aria-label="Flip camera">⟳ Flip</button>
+    <button class="fa-video-shutter" type="button" id="fa-vid-shutter" aria-label="Start / stop recording">●</button>
+    <div class="countdown" id="fa-vid-count" aria-live="polite">10s</div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var VAANI_API = window.CHITTI_VAANI_API || window.CHITTI_CAMERA_ANALYZE_API ||
+                  'https://chitti-vaani-api-production.up.railway.app';
+  var FRAMES_PER_CLIP = 5;
+  var CLIP_DURATION_MS = 10000;
+  var stream = null, frameTimer = null, stopTimer = null, frames = [];
+  var facing = 'user';   // selfie default — outfit shots are usually self-recorded
+
+  function $(id){ return document.getElementById(id); }
+  function langNow(){
+    try {
+      if (window.Chitti && Chitti.a11y && Chitti.a11y.lang && Chitti.a11y.lang.current)
+        return Chitti.a11y.lang.current;
+    } catch(e){}
+    var k = (localStorage.getItem('chitti_lang') || localStorage.getItem('language_preference') || '').trim();
+    if (k) return k;
+    var n = (navigator.language || 'hi').split('-')[0];
+    return ['hi','en','bn','te','ta','mr','gu','kn','ml','pa'].indexOf(n) >= 0 ? n : 'hi';
+  }
+  function speak(text){
+    try {
+      if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.speak === 'function') {
+        Chitti.a11y.speak(text, langNow());
+        return;
+      }
+      if (window.speechSynthesis) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = (langNow() === 'en' ? 'en-IN' : (langNow() + '-IN'));
+        speechSynthesis.speak(u);
+      }
+    } catch(e){}
+  }
+  function userToken(){
+    try {
+      var t = localStorage.getItem('chitti_user_token_v1');
+      if (t && t.length >= 8) return t;
+      t = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : 'fv-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+      localStorage.setItem('chitti_user_token_v1', t);
+      return t;
+    } catch(e){ return 'fv-anon-' + Date.now().toString(36); }
+  }
+
+  async function openCam(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Camera इस device पर open नहीं हो सका. Vaani से चलाएं या नयी डिवाइस आज़माएं.');
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      $('fa-vid-video').srcObject = stream;
+      $('fa-vid-overlay').classList.add('shown');
+      $('fa-vid-overlay').setAttribute('aria-hidden', 'false');
+      $('fa-vid-shutter').disabled = false;
+      $('fa-vid-shutter').classList.remove('recording');
+      $('fa-vid-shutter').textContent = '●';
+      $('fa-vid-count').textContent = '10s';
+    } catch(e){
+      console.warn('[fa-video] getUserMedia failed:', e);
+      alert('Camera permission नहीं मिली. Browser settings में जाकर allow करें.');
+    }
+  }
+  function closeCam(){
+    if (stopTimer)  { clearTimeout(stopTimer);  stopTimer = null; }
+    if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+    $('fa-vid-overlay').classList.remove('shown');
+    $('fa-vid-overlay').setAttribute('aria-hidden', 'true');
+  }
+  function startRecording(){
+    if (!stream) return;
+    frames = [];
+    $('fa-vid-shutter').classList.add('recording');
+    $('fa-vid-shutter').textContent = '■';
+    $('fa-vid-shutter').disabled = true;
+    speak(langNow() === 'hi' ? 'Outfit दिखाइए, 10 second' : 'Show the outfit for 10 seconds');
+
+    var startedAt = Date.now();
+    var video = $('fa-vid-video');
+    var canvas = document.createElement('canvas');
+    // 1280×720 → scaled down to ~720 long-side to keep payload modest
+    var sourceW = video.videoWidth || 1280, sourceH = video.videoHeight || 720;
+    var scale = Math.min(720 / Math.max(sourceW, sourceH), 1);
+    canvas.width  = Math.floor(sourceW * scale);
+    canvas.height = Math.floor(sourceH * scale);
+    var ctx = canvas.getContext('2d');
+
+    function snap(){
+      try {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        frames.push(canvas.toDataURL('image/jpeg', 0.78));
+        var remain = Math.max(0, Math.ceil((CLIP_DURATION_MS - (Date.now() - startedAt)) / 1000));
+        $('fa-vid-count').textContent = remain + 's';
+      } catch(e){
+        console.warn('[fa-video] snap failed:', e);
+      }
+    }
+    snap(); // t=0
+    var step = CLIP_DURATION_MS / FRAMES_PER_CLIP;
+    frameTimer = setInterval(snap, step);
+    stopTimer = setTimeout(function(){
+      if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+      // Cap frames at FRAMES_PER_CLIP — extra ticks can sneak in due to drift.
+      var picked = frames.slice(0, FRAMES_PER_CLIP);
+      closeCam();
+      analyzeFrames(picked);
+    }, CLIP_DURATION_MS);
+  }
+  async function analyzeFrames(framesArr){
+    var host = $('fa-vid-result-host');
+    var box = document.createElement('div');
+    box.className = 'fa-video-result chitti-response';
+    var boxId = 'fa-vid-' + Date.now().toString(36);
+    box.id = boxId;
+    box.setAttribute('data-chitti-response', boxId);
+    box.setAttribute('data-chitti-section', 'Chitti Fashion — 10s outfit rating');
+    box.setAttribute('role', 'region');
+    box.setAttribute('aria-live', 'polite');
+    box.innerHTML = '<h3><span class="spinner" aria-hidden="true"></span> Chitti rating ' + framesArr.length + ' frames…</h3>';
+    host.insertBefore(box, host.firstChild);
+    try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+    speak(langNow() === 'hi' ? 'चित्ती देख रही है' : 'Chitti is looking');
+
+    try {
+      var r = await fetch(VAANI_API.replace(/\/$/, '') + '/api/camera/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'fashion_video',
+          lang: langNow(),
+          user_token: userToken(),
+          page: 'chitti_fashion',
+          image_b64_frames: framesArr,
+        }),
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok || !j.ok) throw new Error(j.error || ('http ' + r.status));
+      renderResult(box, j.text || '', framesArr);
+    } catch(e){
+      console.warn('[fa-video] analyze failed:', e);
+      var msg = (langNow() === 'hi')
+        ? 'चित्ती को server से जवाब नहीं मिला. थोड़ी देर में दोबारा try करें.'
+        : "Chitti could not reach the server. Try again in a moment.";
+      renderResult(box, msg, framesArr);
+    }
+  }
+  function escapeHTML(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function renderResult(box, text, framesArr){
+    var thumbs = '';
+    framesArr.forEach(function(b, i){ thumbs += '<img alt="frame ' + (i+1) + '" src="' + b + '">'; });
+    box.innerHTML =
+      '<h3>👗 Chitti Fashion — 10s outfit rating</h3>' +
+      '<div class="body">' + escapeHTML(text) + '</div>' +
+      '<div class="frames" aria-label="captured frames">' + thumbs + '</div>';
+    try { speak(text); } catch(e){}
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  }
+
+  // Wire UI.
+  function init(){
+    var btn = $('fa-vid-start');
+    if (!btn) return;
+    btn.addEventListener('click', openCam);
+    $('fa-vid-close').addEventListener('click', closeCam);
+    $('fa-vid-shutter').addEventListener('click', startRecording);
+    $('fa-vid-flip').addEventListener('click', async function(){
+      facing = (facing === 'user') ? 'environment' : 'user';
+      if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        $('fa-vid-video').srcObject = stream;
+      } catch(e){ console.warn('[fa-video] flip failed:', e); }
+    });
+    // ESC closes the overlay.
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && $('fa-vid-overlay').classList.contains('shown')) closeCam();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 <!-- ══════════════ TAB 1 · ALMARI ══════════════ -->
 <div class="sds-tab-panel active" id="fa-tab-almari">
   <div id="fa-almari-empty" class="sds-empty" style="display:none">

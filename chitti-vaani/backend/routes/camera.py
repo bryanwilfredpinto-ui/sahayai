@@ -34,17 +34,19 @@ bp = Blueprint("camera", __name__, url_prefix="/api/camera")
 def analyze_route():
     body = request.get_json(silent=True) or {}
     image_b64 = (body.get("image_b64") or "").strip()
+    image_b64_frames = body.get("image_b64_frames") or None
     mode = (body.get("mode") or "").strip().lower()
     lang = (body.get("lang") or "hi").strip().lower()
     user_token = (body.get("user_token") or "").strip()
     page = (body.get("page") or "").strip()[:120]
-    if not image_b64:
-        abort(400, description="image_b64 is required")
+    if not image_b64 and not image_b64_frames:
+        abort(400, description="image_b64 or image_b64_frames is required")
     if not mode:
         abort(400, description="mode is required")
 
     out = camera_vision.analyze(
         image_b64=image_b64,
+        image_b64_frames=image_b64_frames if isinstance(image_b64_frames, list) else None,
         mode=mode,
         lang=lang,
         user_token=user_token,
@@ -65,6 +67,7 @@ def health_route():
             "medicine", "food_label", "fashion_outfit", "document_read",
             "bill_check", "legal_notice", "crop_plant", "prescription",
             "qr_payment", "product_authentic",
+            "fashion_video",  # multi-frame (2-6 keyframes from 10s clip)
         ],
         "langs": ["hi", "en", "bn", "te", "ta", "mr", "gu", "kn", "ml", "pa"],
     })

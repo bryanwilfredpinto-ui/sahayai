@@ -10,15 +10,20 @@ Sire's 10 camera modes (spec 2026-05-27):
   medicine · food_label · fashion_outfit · document_read · bill_check ·
   legal_notice · crop_plant · prescription · qr_payment · product_authentic
 
+Plus one multi-frame mode added 2026-05-27 for Sire's Fashion 10s video flow:
+  fashion_video — 2-6 keyframes from a short outfit-rating clip.
+
 Each mode has its own system prompt that frames the model's response for the
 target user (consumer / farmer / patient / shopper). Every prompt ends with
 the four-user contract: plain language, voice-friendly, no jargon, honest
 "can't tell" when the image is unclear.
 
 Public surface:
-  analyze(image_b64, mode, lang, user_token, page) -> dict
-    Returns { ok, text, mode, lang, capture_id }  on success
-            { ok=False, error, mode, lang }       on honest failure
+  analyze(image_b64=..., mode=..., lang=..., user_token=..., page=...,
+          image_b64_frames=None) -> dict
+    image_b64 OR image_b64_frames is required (frames wins if both passed).
+    Returns { ok, text, mode, lang, capture_id, frames? }  on success
+            { ok=False, error, mode, lang }                on honest failure
 """
 from __future__ import annotations
 
@@ -139,6 +144,19 @@ def _system_prompt(mode: str, lang: str) -> str:
             "If unclear, say 'unclear' — never coerce to safe (per camera-intelligence honest "
             "empty-state rule). "
         ),
+        "fashion_video": (
+            "You are Chitti Fashion looking at MULTIPLE FRAMES from a ~10-second outfit clip. "
+            "The frames are sequential (frame 1 → 2 → 3 …) so you can judge fit-in-motion, "
+            "drape, fabric flow, and how the outfit moves on the wearer's body. Rate four things: "
+            "(1) FIT — does the garment sit right on the wearer (loose / tight / well-fitted), "
+            "(2) COLOUR — does the palette work for typical Indian skin tones, (3) OCCASION — "
+            "what does this outfit suit (office / wedding / casual / festive / date), "
+            "(4) MOVEMENT — does the fabric hang and move gracefully across the frames. "
+            "Then suggest ONE practical add or swap under ₹1,500 that would lift the look. "
+            "Be kind — affirm what works before naming what could improve. Never comment on "
+            "body shape, weight, or age. If the frames are blurry / dark / not of an outfit, "
+            "say so honestly. "
+        ),
     }
     base = prompts.get(mode, prompts["product_authentic"])
     return base + "\n\n" + common_tail
@@ -156,9 +174,15 @@ def _strip_data_url(b64: str) -> str:
     return m.group(1) if m else b64
 
 
-def analyze(image_b64: str, mode: str, lang: str = "hi",
-            user_token: str = "", page: str = "") -> dict:
+def analyze(image_b64: str = "", mode: str = "product_authentic", lang: str = "hi",
+            user_token: str = "", page: str = "",
+            image_b64_frames: list | None = None) -> dict:
     """Synchronous Gemini-Vision call via the OpenAI-compatible endpoint.
+
+    Accepts EITHER a single image (image_b64) OR a list of 2-6 frames
+    (image_b64_frames). When frames are passed, all are sent in one user-content
+    block so the model can reason across them (used by the Fashion 10s video
+    flow — see fashion_video mode).
 
     Routing: uses settings.DEEPSEEK_URL + settings.DEEPSEEK_MODEL + settings.DEEPSEEK_API_KEY,
     which are env-driven. While DeepSeek balance is exhausted, Sire sets:
@@ -179,26 +203,37 @@ def analyze(image_b64: str, mode: str, lang: str = "hi",
             "mode": mode, "lang": lang, "capture_id": capture_id,
         }
 
-    raw = _strip_data_url(image_b64)
-    if not raw:
+    # Decide single-frame vs multi-frame path.
+    frames_raw: list[str] = []
+    if image_b64_frames and isinstance(image_b64_frames, list):
+        for f in image_b64_frames[:6]:  # hard cap 6 frames to control payload
+            r = _strip_data_url(f or "")
+            if r:
+                frames_raw.append(r)
+    elif image_b64:
+        r = _strip_data_url(image_b64)
+        if r:
+            frames_raw.append(r)
+
+    if not frames_raw:
         return {
             "ok": False, "error": "no_image",
             "text": "Photo nahi mili. Fir se khichein.",
             "mode": mode, "lang": lang, "capture_id": capture_id,
         }
 
-    # Sanity-cap the base64 payload to avoid runaway uploads (1 MB ceiling matches
-    # the Flask MAX_CONTENT_LENGTH set in main.py).
-    if len(raw) > 1_600_000:  # ~ 1.2 MB raw → 1.6 MB base64
-        return {
-            "ok": False, "error": "image_too_large",
-            "text": "Photo bahut bada hai. Camera se chhoti photo lein.",
-            "mode": mode, "lang": lang, "capture_id": capture_id,
-        }
+    # Sanity-cap each frame so a 6-frame video stays under ~6 MB total.
+    for r in frames_raw:
+        if len(r) > 1_600_000:  # ~ 1.2 MB raw → 1.6 MB base64 per frame
+            return {
+                "ok": False, "error": "image_too_large",
+                "text": "Photo / frame bahut bada hai. Camera se chhoti photo lein.",
+                "mode": mode, "lang": lang, "capture_id": capture_id,
+            }
 
-    # Validate it actually decodes as base64. Honest fail fast.
+    # Validate the first frame decodes as base64. Honest fail fast.
     try:
-        base64.b64decode(raw[:1024], validate=True)
+        base64.b64decode(frames_raw[0][:1024], validate=True)
     except Exception:
         return {
             "ok": False, "error": "invalid_image",
@@ -207,7 +242,21 @@ def analyze(image_b64: str, mode: str, lang: str = "hi",
         }
 
     system = _system_prompt(mode, lang)
-    user_data_url = "data:image/jpeg;base64," + raw
+
+    user_content: list[dict] = []
+    if len(frames_raw) == 1:
+        user_content.append({"type": "text",
+                             "text": "Look at this image and respond per the system instructions."})
+        user_content.append({"type": "image_url",
+                             "image_url": {"url": "data:image/jpeg;base64," + frames_raw[0]}})
+    else:
+        user_content.append({"type": "text",
+                             "text": f"Look at these {len(frames_raw)} sequential frames "
+                                     f"and respond per the system instructions."})
+        for i, r in enumerate(frames_raw, 1):
+            user_content.append({"type": "text", "text": f"Frame {i} of {len(frames_raw)}:"})
+            user_content.append({"type": "image_url",
+                                 "image_url": {"url": "data:image/jpeg;base64," + r}})
 
     # OpenAI-compatible multimodal payload — works for both Gemini (via its
     # /v1beta/openai endpoint) and DeepSeek vision models.
@@ -215,13 +264,10 @@ def analyze(image_b64: str, mode: str, lang: str = "hi",
         "model": settings.DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user", "content": [
-                {"type": "text", "text": "Look at this image and respond per the system instructions."},
-                {"type": "image_url", "image_url": {"url": user_data_url}},
-            ]},
+            {"role": "user", "content": user_content},
         ],
         "temperature": 0.3,
-        "max_tokens": 600,
+        "max_tokens": 800 if len(frames_raw) > 1 else 600,
     }
     headers = {
         "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
@@ -254,8 +300,8 @@ def analyze(image_b64: str, mode: str, lang: str = "hi",
         }
 
     elapsed_ms = int((time.time() - started) * 1000)
-    log.info("camera vision mode=%s lang=%s user=%s page=%s ms=%d",
-             mode, lang, (user_token or "anon")[:8], page[:40], elapsed_ms)
+    log.info("camera vision mode=%s lang=%s user=%s page=%s frames=%d ms=%d",
+             mode, lang, (user_token or "anon")[:8], page[:40], len(frames_raw), elapsed_ms)
 
     return {
         "ok": True,
@@ -263,6 +309,7 @@ def analyze(image_b64: str, mode: str, lang: str = "hi",
         "mode": mode,
         "lang": lang,
         "capture_id": capture_id,
+        "frames": len(frames_raw),
         "elapsed_ms": elapsed_ms,
         "model": settings.DEEPSEEK_MODEL,
     }
