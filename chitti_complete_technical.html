@@ -496,8 +496,8 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 @media (max-width:480px){.tab,.idx-pill,.tf-btn,.li-tab{min-height:48px;padding:12px 10px}}
 /* ─── 2026-05-27 mobile patches (Sire's 375 px review) ─── */
 @media (max-width:480px){
-  /* Lang dropdown: push to bottom-right at mobile so it never overlaps the SEBI sticky bar at top */
-  div[data-chitti-lang-select="auto"]{top:auto!important;bottom:14px!important;right:14px!important;z-index:9001!important}
+  /* Lang dropdown: bottom-LEFT at mobile (bottom-right is the 🎤 FAB), so neither overlaps */
+  div[data-chitti-lang-select="auto"]{top:auto!important;bottom:14px!important;right:auto!important;left:14px!important;z-index:9001!important}
   /* Calls Generator 4-col grid → stack into 2-col rows (selectors row + buttons row) */
   #cg-univ,#cg-tf{width:100%}
   #tab-calls .section-card .scan-btn,#tab-calls .section-card .sp-btn{width:100%}
@@ -5616,11 +5616,11 @@ if (_chatTechInput) {
         <div style="min-width:140px">
           <label style="font-size:11px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.04em" for="cg-univ">Universe</label>
           <select id="cg-univ" aria-label="Stock universe for Calls" style="width:100%;padding:9px 10px;border-radius:8px;font-weight:700;min-height:44px">
-            <option value="nifty50">Nifty 50 (50 stocks)</option>
-            <option value="largecap">Largecap (100 stocks)</option>
-            <option value="midcap">Midcap 150</option>
-            <option value="smallcap">Smallcap 250</option>
-            <option value="microcap">Microcap 250</option>
+            <option value="nifty50">Nifty 50 · 50</option>
+            <option value="largecap">Largecap · 100</option>
+            <option value="midcap">Midcap · 150</option>
+            <option value="smallcap">Smallcap · 250</option>
+            <option value="microcap">Microcap · 250</option>
           </select>
         </div>
         <div style="min-width:140px">
