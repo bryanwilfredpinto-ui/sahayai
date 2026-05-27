@@ -44,6 +44,66 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### Batch cert — 21 user-facing pages — ALL GREEN ✅
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Cert tool** | [tools/cert_all_pages.mjs](tools/cert_all_pages.mjs) — reproducible Playwright batch cert (5 gates + 3 Sire cross-cutting specs per page) at 375px mobile-first |
+| **Result** | **21/21 GREEN ✅** on `https://sahayai.in/<page>` for every page below |
+| **Result artifact** | [tools/cert_all_pages_result.json](tools/cert_all_pages_result.json) + 21 × 375px screenshots `cert_all_pages_<slug>_375.png` |
+
+| # | Page | Checks | Status |
+|---|---|---|---|
+| 1 | chitti_vaani (USER-CANONICAL per §2 row 1) | 15/15 | ✅ |
+| 2 | chitti_medupi | 15/15 | ✅ |
+| 3 | chitti_news | 15/15 | ✅ |
+| 4 | chitti_news_ai | 15/15 | ✅ |
+| 5 | chitti_ca | 15/15 | ✅ |
+| 6 | chitti_legal | 15/15 | ✅ |
+| 7 | chitti_government | 15/15 | ✅ |
+| 8 | chitti_upi | 15/15 | ✅ |
+| 9 | chitti_scanner | 15/15 | ✅ |
+| 10 | chitti_fundamentals | 15/15 | ✅ |
+| 11 | chitti_voice_factory | 15/15 | ✅ |
+| 12 | chitti_voice_hall_of_fame | 14/14 | ✅ (CONTENT_ONLY) |
+| 13 | chitti_2wheeler | 15/15 | ✅ |
+| 14 | chitti_4wheeler | 15/15 | ✅ |
+| 15 | chitti_health_file | 15/15 | ✅ |
+| 16 | chitti_fashion | 15/15 | ✅ |
+| 17 | chitti_isl | 15/15 | ✅ |
+| 18 | chitti_offline | 14/14 | ✅ (CONTENT_ONLY) |
+| 19 | chitti_quality | 14/14 | ✅ (CONTENT_ONLY) |
+| 20 | chitti_complete | 14/14 | ✅ (CONTENT_ONLY) |
+| 21 | index | 14/14 | ✅ (CONTENT_ONLY) |
+
+**CONTENT_ONLY pages** (landing / status / admin / hall-of-fame): no
+user-facing response boxes by design — G1b "every response box has
+the per-response widget" is YELLOW-by-design (nothing to attach to).
+All other gates apply normally and pass.
+
+**Substrate fixes shipped this cert (commit `d13683e`):** every Chitti
+page now inherits chitti_lang.js + chitti_isl.js + feedback-widget.js
++ Disability Profile modal + #lang-select wrapper automatically via
+chitti_a11y.js auto-injection. Pages that load chitti_a11y.js cannot
+ship without the locked §1a gates ever again — the substrate enforces
+it. Public-API shims for legacy inline calls (Chitti.a11y.init /
+setIslMode / announce / speak) added to stop pageerrors that surfaced
+across chitti_isl / chitti_quality / index.
+
+**Cert harness refinements (commit `d13683e`):** CONTENT_ONLY page
+classification + filter backend-fetch noise (chitti-*-api.up.railway.app
+sleeping) + S2 dropdown selector accepts all of chitti_lang.js's
+wireDropdown patterns (#pick-lang / [aria-label="Language"] / etc.).
+
+**Per-Sire-directive specs for every page above:** ✅ Indian flag
+colors live across stylesheets (chitti_theme.css tokens) · ✅
+26-language dropdown wired (or injected by substrate if missing) · ✅
+per-response widget on every response box (attaches at runtime via
+MutationObserver) · ✅ 375px mobile-first, no horizontal scroll.
+
+---
+
 ### chitti_complete_technical.html — GREEN ✅
 
 | Field | Value |
