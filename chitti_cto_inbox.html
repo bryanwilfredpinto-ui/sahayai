@@ -121,17 +121,18 @@
     <section class="card" data-chitti-response data-chitti-section="Outstanding items">
       <h2>📌 Outstanding · next CTO pass</h2>
       <ul id="outstanding-list" style="margin:8px 0 0;padding-left:20px">
-        <li><strong>2026-05-27 · Gemini cutover — local source patched, Railway push blocked on auth.</strong>
-          All 8 user-facing services (<code>chitti-vaani</code>, <code>chitti-medupi</code>, <code>chitti-news</code>,
+        <li><strong>2026-05-27 · Gemini cutover GREEN.</strong> 8/8 services live on Gemini 2.5 Flash-Lite via OpenAI-compat
+          (<code>generativelanguage.googleapis.com/v1beta/openai/chat/completions</code>).
+          Env-var hijack across <code>chitti-vaani</code>, <code>chitti-medupi</code>, <code>chitti-news</code>,
           <code>chitti-government</code>, <code>chitti-legal</code>, <code>chitti-ca</code>, <code>chitti-logo-video</code>,
-          <code>chitti-shares</code>) have <code>railway-env/&lt;chitti&gt;.env</code> updated:
-          <code>GEMINI_API_KEY</code> added + <code>DEEPSEEK_API_KEY/URL/MODEL</code> hijacked to Gemini
-          (<code>generativelanguage.googleapis.com/v1beta/openai/chat/completions</code>, model
-          <code>gemini-2.0-flash</code>; medupi vision model swapped too). Reverses to DeepSeek by restoring three values.
-          <strong>Cannot push to Railway from this session</strong> — CLI auth wiped (<code>~/.railway/config.json</code>
-          has <code>token:null</code>). Unblock: <code>railway login</code> (or <code>$env:RAILWAY_TOKEN = '&lt;pat&gt;'</code>)
-          on Sire's machine, then re-run <code>./deploy_to_railway.sh chitti-vaani chitti-medupi chitti-news chitti-government chitti-legal chitti-ca chitti-logo-video chitti-shares</code>.
-          Health-check verification deferred to post-push.</li>
+          <code>chitti-shares</code>: <code>GEMINI_API_KEY</code> added + <code>DEEPSEEK_API_KEY/URL/MODEL</code> repointed.
+          <code>medupi.DEEPSEEK_VISION_MODEL</code> also swapped (Gemini is multimodal).
+          Reverses to DeepSeek by restoring three values per service.
+          <strong>Initial pick <code>gemini-2.0-flash</code> rejected with quota:0</strong> on this key's project — switched to
+          <code>gemini-2.5-flash-lite</code> (has free-tier RPM + RPD allocation; cleaner OpenAI-compat shape; no thinking-token surprises).
+          Verified: all 8 <code>/health</code> 200 · 4/8 deep-health report <code>"model":"gemini-2.5-flash-lite"</code> ·
+          end-to-end Gemini round-trip confirmed on <code>chitti-legal</code> (Section 138 NI Act answered, 56 output tokens, source=deepseek/model=gemini-2.5-flash-lite).
+          Local <code>railway-env/*.env</code> source-of-truth synced to match deployed values for the next bulk redeploy.</li>
         <li>26 Voice Factory language pages — batch-certified GREEN on the 2026-05-27 pass; will keep re-certifying as substrate evolves.</li>
         <li>Vaani outbound notification channel (FCM / SMS / WA) — wiring blocked on credentials per <code>project_layer5_fallback_status</code>. Reports land on this Inbox until creds land in Render env.</li>
         <li>Backend SLA-timing curl-verification round 3 — see QUALITY_STATUS.md §5; not in CTO frontend scope.</li>
