@@ -101,6 +101,166 @@
     } catch (e) { /* honest skip — non-blocking */ }
   })();
 
+  // ── feedback-widget.js auto-loader (Sire 2026-05-27, fixes batch-cert
+  //    finding on chitti_offline.html) ──
+  // The per-response widget (4 icons + per-box feedback) is the locked
+  // §7 contract. Most pages already include the script explicitly; the
+  // auto-loader catches pages (chitti_offline) that load a11y but not
+  // the widget. Opt-out per page via:
+  //   <meta name="chitti-feedback-widget" content="off">
+  (function injectFeedbackWidget() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-feedback-widget"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="feedback-widget.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'feedback-widget.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
+  // ── chitti_lang.js auto-loader (Sire 2026-05-27, fixes batch-cert
+  //    findings) ──
+  // Some legacy pages (chitti_isl, chitti_offline, chitti_quality,
+  // chitti_complete, chitti_voice_hall_of_fame, index) loaded a11y
+  // without lang — leaving G4 (Chitti.lang.current) RED on every cert
+  // run + breaking a11y's own init (it calls Chitti.lang.extend()).
+  // Auto-inject lang BEFORE a11y init runs, so the dependency is met
+  // for every page that loads a11y. Opt-out per page via:
+  //   <meta name="chitti-lang" content="off">
+  (function injectChittiLang() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-lang"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_lang.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_lang.js';
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      // Synchronous (no defer) — a11y's init() at the bottom of this
+      // file calls Chitti.lang.extend(), so lang MUST land first.
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
+  // ── chitti_isl.js auto-loader (Sire 2026-05-27, fixes batch-cert) ──
+  // chitti_2wheeler, chitti_4wheeler, chitti_fashion + a few admin pages
+  // load a11y + feedback-widget but not chitti_isl.js. ISL plugin is one
+  // of the five locked frontend gates (G5 per QUALITY_STATUS.md §1a) —
+  // auto-load matches the camera_universal / disability_profile /
+  // features pattern. Opt-out per page via:
+  //   <meta name="chitti-isl" content="off">
+  (function injectChittiIsl() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-isl"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_isl.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_isl.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
+  // ── Language <select id="lang-select"> auto-inject (Sire 2026-05-27,
+  //    fixes batch-cert S2) ──
+  // chitti_lang.js's wireDropdown looks for an existing #lang-select on
+  // the page and populates it with the 26-lang list. Pages that don't
+  // ship the element silently miss the language dropdown. Inject a
+  // floating Indian-flag-themed wrapper if no compatible select is found,
+  // matching the chitti_logo_video pattern.
+  (function injectLangSelectIfMissing() {
+    function attempt() {
+      try {
+        var meta = document.querySelector('meta[name="chitti-lang-select"]');
+        if (meta && /^off$/i.test(meta.getAttribute('content') || '')) return;
+        // Match all the selectors chitti_lang.js's wireDropdown looks at.
+        var existing = document.querySelector(
+          'select#lang-select, select#lang, select#hdr-lang, ' +
+          'select#pick-lang, select#onb-lang, ' +
+          'select[name="lang"], select[name="language"], ' +
+          'select[aria-label="Language"]'
+        );
+        if (existing) return;
+        if (document.querySelector('[data-chitti-lang-select-injected]')) return;
+        if (!document.body) {
+          document.addEventListener('DOMContentLoaded', attempt, { once: true });
+          return;
+        }
+        // Style block once.
+        if (!document.getElementById('chitti-langsel-styles')) {
+          var st = document.createElement('style');
+          st.id = 'chitti-langsel-styles';
+          st.appendChild(document.createTextNode(
+            '[data-chitti-lang-select-injected]{position:fixed;top:8px;right:8px;z-index:9001;' +
+            'display:inline-flex;align-items:center;gap:6px;background:var(--navy,#000080);color:#fff;' +
+            'border:2px solid var(--saffron,#FF9933);border-radius:10px;padding:6px 10px;' +
+            'font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 4px 14px rgba(0,0,128,.30)}' +
+            '[data-chitti-lang-select-injected] label{color:#fff;font-size:14px;font-weight:700;margin:0}' +
+            '[data-chitti-lang-select-injected] select{background:#fff;color:var(--navy,#000080);' +
+            'border:1px solid var(--saffron,#FF9933);border-radius:8px;padding:6px 26px 6px 10px;' +
+            'font-weight:700;font-size:13px;min-height:36px;cursor:pointer}' +
+            '@media(max-width:640px){[data-chitti-lang-select-injected]{top:auto;bottom:14px;right:auto;left:14px}}'
+          ));
+          document.head.appendChild(st);
+        }
+        var wrap = document.createElement('div');
+        wrap.setAttribute('data-chitti-lang-select-injected', '1');
+        wrap.innerHTML =
+          '<label for="lang-select" aria-hidden="true">🌐</label>' +
+          '<select id="lang-select" aria-label="Language"><option value="en">English</option></select>';
+        document.body.appendChild(wrap);
+        // If chitti_lang.js already finished wiring (page loaded after
+        // DOMContentLoaded), populate now by triggering wireDropdown
+        // via Chitti.lang.set on the same value.
+        if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
+          var sel = wrap.querySelector('#lang-select');
+          if (sel && window.Chitti.lang.list) {
+            // Populate options manually so chitti_lang.js doesn't have to.
+            sel.innerHTML = '';
+            window.Chitti.lang.list.forEach(function (l) {
+              var o = document.createElement('option');
+              o.value = l.code;
+              o.textContent = l.native + ' · ' + l.label;
+              sel.appendChild(o);
+            });
+            try { sel.value = window.Chitti.lang.current(); } catch (e) {}
+            sel.onchange = function () { window.Chitti.lang.set(this.value); };
+          }
+        }
+      } catch (e) { /* honest skip */ }
+    }
+    // Try once now; also re-try after DOMContentLoaded in case the
+    // page injects its own #lang-select in a late init script.
+    attempt();
+    if (document.readyState !== 'complete') {
+      document.addEventListener('DOMContentLoaded', function () {
+        // Late-attempt: only inject if STILL no real lang select exists.
+        setTimeout(attempt, 300);
+      });
+    }
+  })();
+
   // ── User Disability Profile substrate auto-loader (Sire 2026-05-27,
   //    fixes SAHAYAI_MASTER.md §7 + project_user_disability_profile_locked
   //    contract gap — modal was never built; every page was 🔴 RED on
@@ -1210,6 +1370,75 @@
   window.Chitti.a11y = window.Chitti.a11y || {};
   window.Chitti.a11y.translate = translatePage;
   window.Chitti.a11y.W = W;
+
+  // Public init() shim — many legacy pages carry an inline
+  //   <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){...}}</script>
+  // that was a no-op against an earlier API shape. The CTO cert (2026-05-27)
+  // surfaced `Chitti.a11y.init is not a function` pageerrors on chitti_isl,
+  // chitti_quality, and index. Expose a safe no-op so those legacy inline
+  // calls succeed instead of erroring. The real init runs from
+  // DOMContentLoaded below; the shim is for backwards compatibility with
+  // the inline call pattern.
+  if (typeof window.Chitti.a11y.init !== 'function') {
+    window.Chitti.a11y.init = function (_opts) {
+      // The IIFE's own DOMContentLoaded handler already wired everything.
+      // If the page calls init() before that fires (very early inline
+      // script), force the wiring now.
+      try { if (typeof init === 'function') init(); } catch (e) {}
+      return true;
+    };
+  }
+  // Additional public-API shims surfaced by CTO batch cert (2026-05-27).
+  // chitti_isl.html called Chitti.a11y.setIslMode(bool); chitti_quality.html
+  // called Chitti.a11y.announce(msg). Neither existed on the substrate,
+  // so both pages threw pageerrors on load. Add no-op shims that do the
+  // honest minimal behaviour so the call-sites stop erroring; richer
+  // behaviour can be added later without page-side changes.
+  if (typeof window.Chitti.a11y.setIslMode !== 'function') {
+    window.Chitti.a11y.setIslMode = function (enabled) {
+      try {
+        if (window.Chitti.isl && typeof window.Chitti.isl.setEnabled === 'function') {
+          window.Chitti.isl.setEnabled(!!enabled);
+        }
+        document.documentElement.setAttribute('data-chitti-isl', enabled ? 'on' : 'off');
+      } catch (e) {}
+      return !!enabled;
+    };
+  }
+  if (typeof window.Chitti.a11y.announce !== 'function') {
+    window.Chitti.a11y.announce = function (message, priority) {
+      try {
+        // aria-live region: reuse existing one if present, else create.
+        var live = document.getElementById('chitti-a11y-live');
+        if (!live) {
+          live = document.createElement('div');
+          live.id = 'chitti-a11y-live';
+          live.setAttribute('role', 'status');
+          live.setAttribute('aria-live', priority === 'assertive' ? 'assertive' : 'polite');
+          live.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden';
+          (document.body || document.documentElement).appendChild(live);
+        }
+        live.textContent = String(message || '');
+      } catch (e) {}
+      return true;
+    };
+  }
+  // speak() shim — Voice Factory cascade hook. Many pages call
+  // Chitti.a11y.speak(text, lang). Honest fallback uses Web Speech API
+  // until Voice Factory is wired at window.Chitti.a11y.VOICE_FACTORY_URL.
+  if (typeof window.Chitti.a11y.speak !== 'function') {
+    window.Chitti.a11y.speak = function (text, lang) {
+      try {
+        if (!text) return false;
+        if (!('speechSynthesis' in window)) return false;
+        var u = new SpeechSynthesisUtterance(String(text));
+        if (lang) u.lang = lang.indexOf('-') === -1 ? lang + '-IN' : lang;
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+        return true;
+      } catch (e) { return false; }
+    };
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

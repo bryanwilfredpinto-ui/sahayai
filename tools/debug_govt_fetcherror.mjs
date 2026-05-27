@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ headless: true });
+const page = await (await b.newContext({ viewport:{width:375,height:812}})).newPage();
+const errs = [];
+page.on('pageerror', e => errs.push({ msg: e.message, stack: (e.stack || '').split('\n').slice(0, 5).join('\n') }));
+page.on('requestfailed', r => errs.push({ msg: 'requestfailed: ' + r.url() + ' (' + (r.failure() && r.failure().errorText) + ')' }));
+await page.goto('http://127.0.0.1:8765/chitti_government.html', { waitUntil:'networkidle', timeout: 30000 });
+await page.waitForTimeout(3000);
+console.log(JSON.stringify(errs, null, 2));
+await b.close();
