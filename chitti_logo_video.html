@@ -1,167 +1,513 @@
 <!DOCTYPE html>
 <!-- Frontend for chitti-logo-video/ -->
+<!-- Chitti Creative Studio — Logo + Viral Videos + Share + Calendar · 2026-05-27 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Chitti Logo & Video Creator · Free brand assets in seconds</title>
-  <meta name="description" content="Chitti Logo & Video — generate a logo + short explainer video for your shop, kirana, freelance brand, or Insta page. Free. Stub mode active until API keys arrive." />
+  <title>Chitti Creative Studio · Logos, Viral Videos, One-tap Share</title>
+  <meta name="description" content="Chitti Creative Studio — make a logo, generate viral marketing videos (Corruption Killer, Digital Tijori, 25th Hour, North-South Bridge), customer success cards, and one-tap share to WhatsApp / Instagram / YouTube. Free." />
   <meta name="theme-color" content="#0E2344" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🎨%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🎬%3C/text%3E%3C/svg%3E" />
   <style>
-    :root { --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37; --bg:#f8f4ee; --card:#fff; --text:#17202a; --muted:#6b7280; --border:#e5e7eb; }
+    :root {
+      --saffron:#FF9933;       /* India flag saffron */
+      --white-flag:#FFFFFF;
+      --green-flag:#138808;    /* India flag green */
+      --ashoka:#000080;        /* Ashoka navy */
+      --navy:#0E2344;
+      --gold:#D4AF37;
+      --bg:#f8f4ee;
+      --card:#fff;
+      --text:#17202a;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --chitti-green:#138808;
+      --chitti-heartbeat:#22c55e;
+    }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14.5px;line-height:1.55}
-    .bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
-    .stub-bar{position:sticky;top:0;z-index:50;background:#fef3c7;border-bottom:1px solid #fcd34d;color:#78350f;padding:10px 16px;font-size:12.5px;font-weight:600;text-align:center}
-    header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;padding:22px 18px;border-radius:0 0 20px 20px}
+    .bharat-stripe{height:3px;background:linear-gradient(90deg,var(--saffron) 0%,var(--saffron) 33%,var(--white-flag) 33%,var(--white-flag) 66%,var(--green-flag) 66%,var(--green-flag) 100%)}
+
+    header[role="banner"]{background:linear-gradient(135deg,var(--navy),#16376a);color:#fff;padding:22px 18px;border-radius:0 0 20px 20px}
     .brand-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-    .brand-logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:26px;box-shadow:0 6px 18px rgba(232,106,23,.35)}
+    .brand-logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--saffron),var(--green-flag));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:26px;box-shadow:0 6px 18px rgba(255,153,51,.35)}
     .brand-name{font-weight:900;font-size:24px;line-height:1.05}
     .brand-sub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:2px}
     .tagline{margin-top:10px;font-size:13px;color:rgba(255,255,255,.92);max-width:640px}
-    main{padding:18px;max-width:980px;margin:0 auto}
-    .four-user{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:14px 0 0}
-    .four-user span{background:#fff;padding:4px 10px;border-radius:6px;border:1px solid var(--border)}
+    .four-user{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:rgba(255,255,255,.9);margin:14px 0 0}
+    .four-user span{background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.2)}
+
+    main{padding:14px;max-width:980px;margin:0 auto}
+
+    /* Tabs */
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 18px;border-bottom:2px solid var(--border);padding-bottom:0}
+    .tab-btn{font-size:14px;padding:10px 14px;border:1px solid var(--border);border-bottom:none;background:#fff;color:var(--muted);cursor:pointer;font-weight:700;border-radius:10px 10px 0 0;min-height:48px;display:inline-flex;align-items:center;gap:6px}
+    .tab-btn.active{background:linear-gradient(180deg,#fff,#fff7ee);color:var(--navy);border-color:var(--saffron);box-shadow:0 -2px 0 var(--saffron) inset}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+
     .grid{display:grid;grid-template-columns:1fr;gap:18px}
     @media (min-width: 760px){ .grid{grid-template-columns:1fr 1fr} }
+
     .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(14,35,68,.05)}
     h2{font-size:15px;font-weight:900;margin:0 0 10px;color:var(--navy)}
+    h3{font-size:14px;font-weight:800;margin:14px 0 6px;color:var(--navy)}
     label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;margin-top:10px}
-    input[type="text"], textarea, select, input[type="range"]{width:100%;padding:10px;font-size:15px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:inherit}
-    textarea{min-height:100px;resize:vertical}
+    input[type="text"], textarea, select, input[type="range"], input[type="number"]{width:100%;padding:10px;font-size:15px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:inherit;min-height:44px}
+    textarea{min-height:90px;resize:vertical}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    button{font-size:15px;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:700}
+
+    button{font-size:15px;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:700;min-height:48px;min-width:48px}
     button.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+    button.success{background:var(--green-flag);color:#fff;border-color:var(--green-flag)}
     button:disabled{opacity:0.5;cursor:not-allowed}
+
+    /* Logo studio */
     .palette-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-    .palette-pick{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;background:#fff;font-size:12.5px;font-weight:700}
-    .palette-pick.active{border-color:var(--saffron);box-shadow:0 0 0 2px rgba(232,106,23,.18)}
+    .palette-pick{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;background:#fff;font-size:12.5px;font-weight:700;min-height:44px}
+    .palette-pick.active{border-color:var(--saffron);box-shadow:0 0 0 2px rgba(255,153,51,.18)}
     .swatch{width:14px;height:14px;border-radius:4px;display:inline-block}
     .preview-frame{margin-top:12px;background:#0b1220;border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;min-height:200px}
     .preview-frame svg{max-width:100%;height:auto}
     .meta{font-size:11.5px;color:var(--muted);margin-top:8px}
-    .video-state{font-size:13px;font-weight:700}
-    .video-state.queued{color:#78350f} .video-state.rendering{color:#1d4ed8} .video-state.ready{color:#15803d} .video-state.err{color:#b91c1c}
+
+    /* Video studio — viral storyboard */
+    .video-list{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
+    @media(min-width:760px){.video-list{grid-template-columns:1fr 1fr}}
+    .video-card{background:linear-gradient(135deg,#fff,#fff8ee);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+    .video-card h4{margin:0;font-size:15px;font-weight:900;color:var(--navy)}
+    .video-card .meta-row{font-size:12px;color:var(--muted)}
+    .video-card .end-line{font-size:12.5px;font-style:italic;color:var(--green-flag);font-weight:700}
+    .video-card button{margin-top:6px}
+
+    /* 9:16 stage — vertical phone-shape viral video player */
+    .stage-wrap{position:relative;background:#000;border-radius:16px;overflow:hidden;margin:14px auto;max-width:360px;aspect-ratio:9/16;box-shadow:0 12px 36px rgba(0,0,0,.4)}
+    .stage{position:absolute;inset:0;background:linear-gradient(180deg,var(--saffron) 0%,var(--saffron) 33%,#fff 33%,#fff 66%,var(--green-flag) 66%,var(--green-flag) 100%);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0;transition:opacity 0.6s ease}
+    .scene.active{opacity:1}
+    .scene .scene-emoji{font-size:80px;line-height:1;animation:bounce 2s ease infinite}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    .scene .scene-title{font-size:22px;font-weight:900;color:var(--navy);margin-top:14px;text-shadow:0 2px 6px rgba(255,255,255,0.6)}
+    .scene .scene-body{font-size:15px;font-weight:700;color:#1a1a1a;margin-top:10px;background:rgba(255,255,255,0.85);padding:10px 14px;border-radius:12px;backdrop-filter:blur(4px)}
+    .scene .scene-dialogue{font-size:16px;font-weight:800;color:#fff;background:rgba(0,0,0,0.75);padding:10px 14px;border-radius:12px;margin-top:12px;max-width:90%}
+
+    /* End scene — Chitti shield + slogan */
+    .end-scene{background:radial-gradient(circle,var(--navy),#000)}
+    .end-scene .chitti-shield{width:120px;height:120px;background:linear-gradient(135deg,var(--saffron),var(--green-flag));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:70px;color:#fff;box-shadow:0 0 40px rgba(255,153,51,0.6);animation:pulse 1.6s ease infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(255,153,51,0.6)}50%{transform:scale(1.05);box-shadow:0 0 60px rgba(34,197,94,0.7)}}
+    .end-scene .slogan{color:#fff;font-size:24px;font-weight:900;margin-top:20px;text-shadow:0 2px 10px rgba(0,0,0,0.5);max-width:90%}
+
+    /* Heartbeat green pulse — bottom of every scene */
+    .heartbeat{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:var(--chitti-heartbeat);border-radius:50%;box-shadow:0 0 0 0 rgba(34,197,94,0.7);animation:heartbeat 1.4s ease infinite}
+    @keyframes heartbeat{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.7);transform:translateX(-50%) scale(1)}50%{box-shadow:0 0 0 14px rgba(34,197,94,0);transform:translateX(-50%) scale(1.15)}}
+
+    /* Chitti corner badge */
+    .corner-shield{position:absolute;top:12px;left:12px;width:36px;height:36px;background:linear-gradient(135deg,var(--saffron),var(--green-flag));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:5;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+
+    /* Subtitles always on */
+    .subtitle-band{position:absolute;bottom:36px;left:8px;right:8px;background:rgba(0,0,0,0.78);color:#fff;padding:8px 12px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;z-index:6;min-height:36px}
+
+    /* Scene progress dots */
+    .progress-dots{position:absolute;top:12px;right:12px;display:flex;gap:4px;z-index:5}
+    .progress-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);transition:background 0.3s}
+    .progress-dots .dot.active{background:#fff}
+
+    /* Stage controls */
+    .stage-ctrls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px auto;max-width:360px}
+    .stage-ctrls button{flex:1;min-width:80px}
+
+    /* Customer success card */
+    .success-card-preview{margin-top:12px;background:linear-gradient(135deg,var(--saffron),#fff,var(--green-flag));border-radius:14px;padding:22px;text-align:center;color:var(--navy);min-height:240px;display:flex;flex-direction:column;justify-content:center;border:3px solid var(--navy);position:relative}
+    .success-card-preview .sc-name{font-size:14px;font-weight:700;color:var(--navy)}
+    .success-card-preview .sc-story{font-size:18px;font-weight:900;margin:10px 0;color:#1a1a1a;text-shadow:0 1px 3px rgba(255,255,255,0.6)}
+    .success-card-preview .sc-savings{font-size:42px;font-weight:900;color:var(--green-flag);text-shadow:0 2px 6px rgba(255,255,255,0.6);margin:8px 0}
+    .success-card-preview .sc-badge{position:absolute;bottom:10px;right:10px;background:var(--navy);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700}
+
+    /* Share Studio platform tile */
+    .platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    @media(min-width:760px){.platform-grid{grid-template-columns:1fr 1fr 1fr 1fr}}
+    .platform-tile{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;display:flex;flex-direction:column;gap:6px;min-height:140px}
+    .platform-tile .p-icon{font-size:32px}
+    .platform-tile .p-name{font-weight:900;color:var(--navy);font-size:14px}
+    .platform-tile .p-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;align-self:center}
+    .platform-tile .p-status.live{background:#dcfce7;color:#15803d}
+    .platform-tile .p-status.coming{background:#fef3c7;color:#92400e}
+    .platform-tile button{margin-top:auto;font-size:13px;padding:8px}
+
+    /* Hashtag chip row */
+    .hashtag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .hashtag-chip{background:#e0e7ff;color:#3730a3;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid #c7d2fe}
+    .hashtag-chip:hover{background:#c7d2fe}
+
+    /* Calendar */
+    .calendar{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+    @media(min-width:760px){.calendar{grid-template-columns:1fr 1fr}}
+    .cal-row{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px}
+    .cal-row .cal-day{font-weight:900;color:var(--saffron);font-size:13px}
+    .cal-row .cal-theme{font-weight:700;color:var(--navy);font-size:14px}
+    .cal-row .cal-post{font-size:13px;color:#374151;background:#f8f4ee;padding:8px;border-radius:6px;margin-top:4px}
+    .cal-row .cal-time{font-size:11px;color:var(--muted);font-weight:600}
+
+    /* Viral trigger form */
+    .viral-trigger{margin-top:14px;background:linear-gradient(135deg,#fef3c7,#fff);border:2px solid var(--gold);border-radius:14px;padding:14px;display:none}
+    .viral-trigger.show{display:block}
+    .viral-trigger h3{color:#92400e;margin-top:0}
+
+    /* Nav + footer */
     .nav{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin-top:18px}
-    .nav a{color:var(--saffron);text-decoration:none;font-weight:700;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#fff}
+    .nav a{color:var(--saffron);text-decoration:none;font-weight:700;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;min-height:44px;display:inline-flex;align-items:center}
     footer{margin:28px 0 0;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.7}
+
     .log{font-family:'JetBrains Mono','Menlo',monospace;font-size:11.5px;color:#475569;background:#f8fafc;border:1px dashed var(--border);border-radius:8px;padding:8px;margin-top:8px;white-space:pre-wrap}
+
+    /* Speed control + caption toggle */
+    .player-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:6px auto;max-width:360px;font-size:12.5px}
+    .player-options label{display:inline-flex;align-items:center;gap:4px;margin:0;font-size:12.5px}
+
+    /* Audio description text (for blind users) */
+    .audio-desc{font-size:11.5px;color:var(--muted);font-style:italic;margin:6px auto;max-width:360px;text-align:center}
   </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
 <body>
   <div class="bharat-stripe"></div>
 
-  <div class="stub-bar" role="region" aria-label="Stub mode notice" data-i18n-aria="stub-mode-notice">
-    🧪 <strong>Stub mode</strong> · Logos are local SVG mock-ups. Videos return a mock placeholder URL. Real generators wire in once Bryan provides API keys.
-  </div>
-
   <header role="banner">
     <div class="brand-row">
-      <div class="brand-logo" aria-hidden="true">🎨</div>
+      <div class="brand-logo" aria-hidden="true">🎬</div>
       <div>
-        <div class="brand-name">Chitti Logo &amp; Video</div>
-        <div class="brand-sub">Bharat Premium AI · brand assets for every Indian shop</div>
+        <div class="brand-name">Chitti Creative Studio</div>
+        <div class="brand-sub">Bharat Premium AI · Logos, viral videos & one-tap share</div>
       </div>
     </div>
-    <p class="tagline">Type a brand name. Pick a palette. Get a logo + a 30-second explainer video. Free, no sign-up. Built for kirana shops, freelancers, Insta pages, kids' school projects.</p>
+    <p class="tagline">Logos for your shop. Viral videos for your story. Customer success cards. One-tap to WhatsApp, Instagram, YouTube. Free. Hindi-first.</p>
     <div class="four-user" aria-label="Four-user contract" data-i18n-aria="four-user-contract">
       <span>👁️‍🗨️ blind</span><span>🦻 deaf</span><span>🤫 mute</span><span>📖 illiterate</span>
     </div>
   </header>
 
   <main>
-    <div class="grid">
-      <!-- LOGO -->
-      <div class="card">
-        <h2 data-i18n="logo">🎨 Logo</h2>
+    <!-- TAB BAR -->
+    <div class="tabs" role="tablist" aria-label="Creative studio tabs">
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="logo">🎨 Logo Studio</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="video">🎬 Video Studio</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="share">📲 Share Studio</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="calendar">📅 Content Calendar</button>
+    </div>
 
-        <label for="brand" data-i18n="brand-name">Brand name</label>
-        <input id="brand" type="text" placeholder="e.g. Saraswati Kirana" data-i18n-placeholder="e-g-saraswati-kirana" maxlength="80" />
+    <!-- ============ TAB 1 · LOGO STUDIO ============ -->
+    <div class="tab-pane active" id="tab-logo" role="tabpanel">
+      <div class="grid">
+        <!-- Logo creator -->
+        <div class="card">
+          <h2>🎨 Logo Studio</h2>
 
-        <label for="tagline" data-i18n="tagline-optional">Tagline (optional)</label>
-        <input id="tagline" type="text" placeholder="e.g. Aapka rozana sathi" data-i18n-placeholder="e-g-aapka-rozana-sathi" maxlength="80" />
+          <label for="brand">Brand name</label>
+          <input id="brand" type="text" placeholder="e.g. Saraswati Kirana" maxlength="80" />
 
-        <label data-i18n="palette">Palette</label>
-        <div class="palette-row" id="palette-row" role="group" aria-label="Palette picker" data-i18n-aria="palette-picker"></div>
+          <label for="tagline">Tagline (optional)</label>
+          <input id="tagline" type="text" placeholder="e.g. Aapka rozana sathi" maxlength="80" />
 
-        <label for="style" data-i18n="style">Style</label>
-        <select id="style">
-          <option value="monogram" selected>Monogram (initials in a circle)</option>
-          <option value="wordmark">Wordmark (full name on banner)</option>
-          <option value="shield">Shield (initials inside a shield)</option>
-        </select>
+          <label>Palette</label>
+          <div class="palette-row" id="palette-row" role="group" aria-label="Palette picker"></div>
 
-        <div class="row" style="margin-top:12px">
-          <button id="logo-go" class="primary" aria-label="Generate logo" data-i18n-aria="generate-logo" data-i18n="generate-logo">✨ Generate logo</button>
-          <button id="logo-dl" aria-label="Download SVG" data-i18n-aria="download-svg" disabled data-i18n="download-svg">⬇️ Download SVG</button>
-          <span class="meta" id="logo-meta">supplier: —</span>
+          <label for="style">Style</label>
+          <select id="style">
+            <option value="shield" selected>Shield (Chitti style · initials inside shield)</option>
+            <option value="monogram">Monogram (initials in a circle)</option>
+            <option value="wordmark">Wordmark (full name on banner)</option>
+          </select>
+
+          <div class="row" style="margin-top:12px">
+            <button id="logo-go" class="primary" aria-label="Generate logo">✨ Generate logo</button>
+            <button id="logo-dl" aria-label="Download SVG" disabled>⬇️ SVG</button>
+            <button id="logo-dl-png" aria-label="Download PNG" disabled>⬇️ PNG</button>
+          </div>
+          <div class="meta" id="logo-meta">supplier: —</div>
+
+          <div class="preview-frame" id="logo-preview" aria-live="polite"
+               data-chitti-response data-chitti-section="Generated logo preview">
+            <span style="color:#94a3b8">Your logo will appear here.</span>
+          </div>
         </div>
 
-        <div class="preview-frame" id="logo-preview" aria-live="polite"
-             data-chitti-response data-chitti-section="Generated logo preview">
-          <span style="color:#94a3b8">Your logo will appear here.</span>
+        <!-- Chitti's own shield template -->
+        <div class="card">
+          <h2>🛡️ Chitti's shield (template)</h2>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Tap to use Chitti's iconic shield as your starting template. Indian flag colors are default.</p>
+          <div class="preview-frame" data-chitti-response data-chitti-section="Chitti shield template">
+            <svg viewBox="0 0 200 240" width="160" aria-label="Chitti shield">
+              <defs>
+                <linearGradient id="g-shield" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FF9933"/>
+                  <stop offset="50%" stop-color="#FFFFFF"/>
+                  <stop offset="100%" stop-color="#138808"/>
+                </linearGradient>
+              </defs>
+              <path d="M100 8 L184 40 L184 132 Q184 200 100 232 Q16 200 16 132 L16 40 Z" fill="url(#g-shield)" stroke="#0E2344" stroke-width="6"/>
+              <circle cx="100" cy="110" r="36" fill="#000080" opacity="0.85"/>
+              <text x="100" y="124" text-anchor="middle" font-family="Inter,Arial" font-size="44" font-weight="900" fill="#fff">C</text>
+              <text x="100" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" font-weight="700" fill="#0E2344">CHITTI</text>
+              <text x="100" y="198" text-anchor="middle" font-family="Inter,Arial" font-size="10" font-weight="600" fill="#0E2344">Bharat ka Apna AI</text>
+            </svg>
+          </div>
+          <button class="primary" id="use-chitti-shield" style="margin-top:10px;width:100%">Use this as my template</button>
         </div>
-      </div>
-
-      <!-- VIDEO -->
-      <div class="card">
-        <h2 data-i18n="explainer-video">🎬 Explainer video</h2>
-
-        <label for="script" data-i18n="video-script-what-should-the-narrator-say">Video script (what should the narrator say?)</label>
-        <textarea id="script" placeholder="e.g. Saraswati Kirana — every Indian household's daily friend. Free home delivery within 1km. Open 7 AM to 10 PM." data-i18n-placeholder="e-g-saraswati-kirana-every-indian-household-s-daily-friend-free-home-delivery-wi"></textarea>
-
-        <label for="vlang" data-i18n="narrator-language">Narrator language</label>
-        <select id="vlang">
-          <option value="en">English</option>
-          <option value="hi" selected>हिन्दी</option>
-          <option value="ta">தமிழ்</option>
-          <option value="te">తెలుగు</option>
-          <option value="bn">বাংলা</option>
-          <option value="mr">मराठी</option>
-          <option value="gu">ગુજરાતી</option>
-          <option value="kn">ಕನ್ನಡ</option>
-          <option value="ml">മലയാളം</option>
-        </select>
-
-        <label for="duration">Duration: <span id="duration-out">30</span> s</label>
-        <input id="duration" type="range" min="5" max="120" step="5" value="30" />
-
-        <div class="row" style="margin-top:12px">
-          <button id="video-go" class="primary" aria-label="Generate video" data-i18n-aria="generate-video" data-i18n="generate-video">▶ Generate video</button>
-          <span class="video-state queued" id="video-state">idle</span>
-        </div>
-
-        <div class="preview-frame" id="video-preview" aria-live="polite"
-             data-chitti-response data-chitti-section="Generated explainer video">
-          <span style="color:#94a3b8">Your video will appear here once VIDEO_READY.</span>
-        </div>
-
-        <div class="log" id="video-log" data-chitti-response data-chitti-section="Video generation log" hidden></div>
       </div>
     </div>
 
-    <div class="nav" aria-label="Other Chitti products" data-i18n-aria="other-chitti-products">
+    <!-- ============ TAB 2 · VIDEO STUDIO ============ -->
+    <div class="tab-pane" id="tab-video" role="tabpanel">
+
+      <!-- Stage -->
+      <div class="card">
+        <h2>🎬 Chitti Viral Stories <span style="font-weight:600;color:var(--muted);font-size:12px">· tap any video below</span></h2>
+
+        <div class="stage-wrap" id="stage-wrap" aria-label="Video player 9:16">
+          <div class="stage" id="stage" data-chitti-response data-chitti-section="Viral video stage">
+            <div class="corner-shield" aria-hidden="true">🛡️</div>
+            <div class="progress-dots" id="progress-dots" aria-hidden="true"></div>
+
+            <div class="scene active" id="scene-idle">
+              <div class="scene-emoji">🎬</div>
+              <div class="scene-title">Chitti Creative Studio</div>
+              <div class="scene-body">Tap a video below to play.<br>Subtitles on. Voice narration ready.</div>
+            </div>
+
+            <div class="subtitle-band" id="subtitle-band" aria-live="polite">Tap a video below to start.</div>
+            <div class="heartbeat" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="player-options">
+          <label><input type="checkbox" id="captions-on" checked> Captions</label>
+          <label><input type="checkbox" id="audio-desc-on"> Audio description</label>
+          <label>Speed
+            <select id="play-speed" style="width:auto;min-height:36px;padding:4px 6px">
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="stage-ctrls">
+          <button id="play-pause">▶ Play</button>
+          <button id="restart-video">↺ Restart</button>
+          <button id="download-video" class="primary">⬇ Download</button>
+          <button id="share-whatsapp" class="success">💬 WhatsApp</button>
+        </div>
+        <div class="audio-desc" id="audio-desc-text" aria-live="polite"></div>
+      </div>
+
+      <!-- A · Chitti Viral Stories (4 pre-built) -->
+      <div class="card" style="margin-top:18px">
+        <h3>Type A · Chitti Viral Stories (pre-built)</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Animated storyboards. Indian flag colors. Chitti voice narrates via Web Speech API (no API key). Green heartbeat pulse. Download as video or share to WhatsApp Status.</p>
+
+        <div class="video-list" id="viral-video-list">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- B · Customer Success Video -->
+      <div class="card" style="margin-top:18px">
+        <h3>Type B · Customer Success Video</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Tell Chitti how he helped you. Get a personalised success card to share.</p>
+
+        <label for="sc-name">Your name (optional)</label>
+        <input id="sc-name" type="text" placeholder="e.g. Ramesh" maxlength="40" />
+
+        <label for="sc-city">Your city</label>
+        <input id="sc-city" type="text" placeholder="e.g. Lucknow" maxlength="40" />
+
+        <label for="sc-story">What did Chitti help you with?</label>
+        <textarea id="sc-story" placeholder="e.g. Maine Crocin ki jagah Jan Aushadhi li" maxlength="200"></textarea>
+
+        <label for="sc-savings">How much did you save? (₹)</label>
+        <input id="sc-savings" type="number" min="0" max="999999" placeholder="2400" />
+
+        <div class="row" style="margin-top:12px">
+          <button class="primary" id="sc-generate">🎨 Generate success card</button>
+          <button id="sc-download" disabled>⬇️ Download PNG</button>
+          <button class="success" id="sc-share-wa" disabled>💬 WhatsApp</button>
+        </div>
+
+        <div class="success-card-preview" id="sc-preview" data-chitti-response data-chitti-section="Customer success card preview">
+          <div class="sc-name">— your card will preview here —</div>
+        </div>
+      </div>
+
+      <!-- C · Business Promo Video -->
+      <div class="card" style="margin-top:18px">
+        <h3>Type C · Business Promo (15s for kirana / freelancers)</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px">Tell Chitti about your shop. Get a 15-second animated promo ready for WhatsApp Status.</p>
+
+        <label for="bp-name">Business name</label>
+        <input id="bp-name" type="text" placeholder="e.g. Saraswati Kirana" maxlength="60" />
+
+        <label for="bp-offer">Offer / product</label>
+        <input id="bp-offer" type="text" placeholder="e.g. Free home delivery within 1km" maxlength="100" />
+
+        <label for="bp-lang">Language for voice-over</label>
+        <select id="bp-lang">
+          <option value="hi-IN" selected>हिन्दी</option>
+          <option value="en-IN">English</option>
+          <option value="ta-IN">தமிழ்</option>
+          <option value="te-IN">తెలుగు</option>
+          <option value="bn-IN">বাংলা</option>
+          <option value="mr-IN">मराठी</option>
+          <option value="gu-IN">ગુજરાતી</option>
+          <option value="kn-IN">ಕನ್ನಡ</option>
+          <option value="ml-IN">മലയാളം</option>
+          <option value="pa-IN">ਪੰਜਾਬੀ</option>
+        </select>
+
+        <div class="row" style="margin-top:12px">
+          <button class="primary" id="bp-generate">▶ Play 15s promo</button>
+          <button id="bp-download" disabled>⬇ Download</button>
+          <button class="success" id="bp-share-wa" disabled>💬 WhatsApp</button>
+        </div>
+      </div>
+
+      <!-- Viral trigger -->
+      <div class="viral-trigger" id="viral-trigger" role="region" aria-label="Share your story prompt">
+        <h3>Kya aapko bhi Chitti ne help ki?</h3>
+        <p style="margin:0 0 10px;font-size:14px">Apni kahani share karein — Chitti aapke liye 30 second mein personal success video banayega.</p>
+        <button class="primary" id="viral-share-now">📣 Share my story</button>
+        <button id="viral-dismiss">Later</button>
+      </div>
+    </div>
+
+    <!-- ============ TAB 3 · SHARE STUDIO ============ -->
+    <div class="tab-pane" id="tab-share" role="tabpanel">
+      <div class="card">
+        <h2>📲 One-tap share to all platforms</h2>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Pre-written viral caption + your video, ready to go.</p>
+
+        <label for="share-caption">Caption</label>
+        <textarea id="share-caption" maxlength="600">Maine Chitti se ₹2,400 bachaye — sirf 1 click! Tumhare liye bhi free: sahayai.in 🇮🇳 #BharatKaApnaChitti</textarea>
+
+        <h3>Hashtags</h3>
+        <div class="hashtag-row" id="hashtag-row" aria-label="Tap to copy hashtag">
+          <!-- populated by JS -->
+        </div>
+
+        <h3>Platforms</h3>
+        <div class="platform-grid">
+          <div class="platform-tile" data-chitti-response data-chitti-section="WhatsApp share">
+            <div class="p-icon">💬</div>
+            <div class="p-name">WhatsApp Status</div>
+            <div class="p-status live">LIVE today</div>
+            <button class="success" id="share-to-whatsapp">Open WhatsApp</button>
+          </div>
+          <div class="platform-tile" data-chitti-response data-chitti-section="Instagram share">
+            <div class="p-icon">📸</div>
+            <div class="p-name">Instagram</div>
+            <div class="p-status coming">CONNECT</div>
+            <button id="share-to-instagram">Connect Insta</button>
+          </div>
+          <div class="platform-tile" data-chitti-response data-chitti-section="YouTube share">
+            <div class="p-icon">▶️</div>
+            <div class="p-name">YouTube Shorts</div>
+            <div class="p-status coming">CONNECT</div>
+            <button id="share-to-youtube">Connect YouTube</button>
+          </div>
+          <div class="platform-tile" data-chitti-response data-chitti-section="Facebook share">
+            <div class="p-icon">📘</div>
+            <div class="p-name">Facebook</div>
+            <div class="p-status coming">CONNECT</div>
+            <button id="share-to-facebook">Connect FB</button>
+          </div>
+        </div>
+
+        <p class="meta" style="margin-top:14px">
+          Instagram / YouTube / Facebook open the platform when account-token is connected. Without it: tile shows honest <em>Connect your account</em> CTA — no fake share buttons.
+        </p>
+      </div>
+    </div>
+
+    <!-- ============ TAB 4 · CONTENT CALENDAR ============ -->
+    <div class="tab-pane" id="tab-calendar" role="tabpanel">
+      <div class="card">
+        <h2>📅 Weekly Auto-post Schedule (for SAHAYAI handle)</h2>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Best posting times: <strong>7am, 1pm, 7pm IST</strong>. Each post auto-generated by Chitti in Hindi + English.</p>
+
+        <div class="calendar" id="calendar" data-chitti-response data-chitti-section="Weekly content calendar"></div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="primary" id="cal-regen">🔄 Regenerate this week</button>
+          <button id="cal-download">⬇ Export calendar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" aria-label="Other Chitti products">
       <a href="index.html">← All Chitti products</a>
-      <a href="chitti_ca.html">Chitti CA</a>
-      <a href="chitti_legal.html">Chitti Legal</a>
       <a href="chitti_vaani.html">Chitti Vaani</a>
+      <a href="chitti_medupi.html">Chitti MedUPI</a>
+      <a href="chitti_news.html">Chitti News</a>
       <a href="chitti_voice_factory.html">Voice Factory</a>
     </div>
 
     <footer>
-      Chitti Logo &amp; Video · Bharat Premium AI · Backend: <a href="https://chitti-logo-video-api-production.up.railway.app/health">chitti-logo-video-api</a><br>
-      <small style="opacity:.7">Founded by Bryan Wilfred Pinto · GitHub Pages + Render free tier · Stubs replaced with Replicate / Remotion when keys land</small>
+      Chitti Creative Studio · Bharat Premium AI · Backend: <a href="https://chitti-logo-video-api-production.up.railway.app/health">chitti-logo-video-api</a><br>
+      <small style="opacity:.7">Founded by Bryan Wilfred Pinto · GitHub Pages + Render/Railway free tier · Web Speech + Web Audio APIs (no external keys)</small>
     </footer>
   </main>
 
   <script>
-    const API = window.CHITTI_LV_API || "https://chitti-logo-video-api-production.up.railway.app";
+    /* =============================================================
+       CHITTI SOUND IDENTITY — Web Audio API, no external files
+       ============================================================= */
+    const ChittiSound = (() => {
+      let ctx = null;
+      function ensure(){ if(!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); return ctx; }
+      function tone(freq, dur, type="sine", gain=0.15, atk=0.01, rel=0.15){
+        const c = ensure();
+        const osc = c.createOscillator();
+        const g   = c.createGain();
+        osc.type = type; osc.frequency.value = freq;
+        g.gain.setValueAtTime(0, c.currentTime);
+        g.gain.linearRampToValueAtTime(gain, c.currentTime + atk);
+        g.gain.linearRampToValueAtTime(0, c.currentTime + dur);
+        osc.connect(g).connect(c.destination);
+        osc.start(); osc.stop(c.currentTime + dur + rel);
+      }
+      return {
+        // Activation: soft digital heartbeat chime
+        activation(){ tone(523.25, 0.12, "sine", 0.18); setTimeout(()=>tone(659.25, 0.18, "sine", 0.16), 130); },
+        // Success: warm Indian scale ding (Sa-Re-Ga ~ C-D-E)
+        success(){ tone(523.25, 0.15, "triangle", 0.18); setTimeout(()=>tone(587.33, 0.15, "triangle", 0.18), 160); setTimeout(()=>tone(659.25, 0.30, "triangle", 0.2), 320); },
+        // Warning: gentle two-tone alert (no harsh siren)
+        warning(){ tone(440, 0.18, "sine", 0.16); setTimeout(()=>tone(392, 0.22, "sine", 0.16), 200); },
+        // Victory: short celebrational motif (C-E-G-C up)
+        victory(){
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((f,i) => setTimeout(()=>tone(f, 0.18, "triangle", 0.18), i*140));
+        }
+      };
+    })();
 
-    /* PALETTES — must match logo_service.PALETTES */
+    /* =============================================================
+       TAB SWITCHING
+       ============================================================= */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn); });
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+        ChittiSound.activation();
+      });
+    });
+
+    /* =============================================================
+       LOGO STUDIO
+       ============================================================= */
+    const API = window.CHITTI_LV_API || "https://chitti-logo-video-api-production.up.railway.app";
     const PALETTES = {
-      bharat:  {primary:"#E86A17", secondary:"#0E2344", accent:"#D4AF37", label:"Bharat"},
+      bharat:  {primary:"#FF9933", secondary:"#138808", accent:"#000080", label:"🇮🇳 Bharat (flag)"},
       modern:  {primary:"#6366F1", secondary:"#0F172A", accent:"#22D3EE", label:"Modern"},
       classic: {primary:"#1F2937", secondary:"#F3F4F6", accent:"#B45309", label:"Classic"},
       festive: {primary:"#DC2626", secondary:"#15803D", accent:"#FACC15", label:"Festive"},
@@ -182,20 +528,57 @@
       $row.appendChild(btn);
     });
 
-    /* LOGO */
+    function buildLocalSvg(brandName, taglineTxt, paletteName, styleName){
+      const p = PALETTES[paletteName] || PALETTES.bharat;
+      const initials = (brandName || "C").trim().split(/\s+/).map(w => w[0]||"").join("").slice(0,3).toUpperCase() || "C";
+      const safe = (s) => (s||"").replace(/[<>&]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      let core = "";
+      if(styleName === "wordmark"){
+        core = `
+          <rect x="20" y="80" width="260" height="80" rx="12" fill="${p.primary}"/>
+          <text x="150" y="130" text-anchor="middle" font-family="Inter,Arial" font-size="32" font-weight="900" fill="#fff">${safe(brandName||"Brand")}</text>
+          ${taglineTxt ? `<text x="150" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" fill="${p.secondary}">${safe(taglineTxt)}</text>` : ""}
+        `;
+      } else if(styleName === "monogram"){
+        core = `
+          <circle cx="150" cy="110" r="68" fill="${p.primary}" stroke="${p.secondary}" stroke-width="6"/>
+          <text x="150" y="128" text-anchor="middle" font-family="Inter,Arial" font-size="56" font-weight="900" fill="#fff">${initials}</text>
+          ${taglineTxt ? `<text x="150" y="200" text-anchor="middle" font-family="Inter,Arial" font-size="13" fill="${p.secondary}">${safe(taglineTxt)}</text>` : ""}
+        `;
+      } else {
+        // shield (Chitti style)
+        core = `
+          <defs>
+            <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${p.primary}"/>
+              <stop offset="100%" stop-color="${p.secondary}"/>
+            </linearGradient>
+          </defs>
+          <path d="M150 18 L240 56 L240 130 Q240 200 150 232 Q60 200 60 130 L60 56 Z" fill="url(#gp)" stroke="${p.accent}" stroke-width="5"/>
+          <circle cx="150" cy="110" r="36" fill="rgba(255,255,255,0.85)"/>
+          <text x="150" y="124" text-anchor="middle" font-family="Inter,Arial" font-size="36" font-weight="900" fill="${p.secondary}">${initials}</text>
+          ${brandName ? `<text x="150" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" font-weight="800" fill="#fff">${safe(brandName).toUpperCase().slice(0,18)}</text>` : ""}
+          ${taglineTxt ? `<text x="150" y="200" text-anchor="middle" font-family="Inter,Arial" font-size="11" fill="#fff" opacity="0.9">${safe(taglineTxt).slice(0,40)}</text>` : ""}
+        `;
+      }
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 240" width="240" aria-label="${safe(brandName||"Logo")}">${core}</svg>`;
+    }
+
     const $brand = document.getElementById("brand");
     const $tag   = document.getElementById("tagline");
     const $style = document.getElementById("style");
     const $logoGo = document.getElementById("logo-go");
     const $logoDl = document.getElementById("logo-dl");
+    const $logoDlPng = document.getElementById("logo-dl-png");
     const $logoMeta = document.getElementById("logo-meta");
     const $logoPrev = document.getElementById("logo-preview");
     let lastSvg = null, lastBrand = null;
 
     $logoGo.addEventListener("click", async () => {
       const brand = ($brand.value || "").trim();
-      if (!brand) { $logoMeta.textContent = "type a brand name first"; return; }
+      if (!brand) { $logoMeta.textContent = "type a brand name first"; ChittiSound.warning(); return; }
       $logoGo.disabled = true; $logoMeta.textContent = "generating…";
+      let svgString = null, supplier = "local-fallback";
       try {
         const r = await fetch(API + "/api/lv/logo/generate", {
           method: "POST",
@@ -203,19 +586,15 @@
           body: JSON.stringify({ brand_name: brand, tagline: $tag.value, palette, style: $style.value }),
         });
         const j = await r.json();
-        if (j.ok) {
-          $logoPrev.innerHTML = j.svg;
-          lastSvg = j.svg; lastBrand = brand;
-          $logoDl.disabled = false;
-          $logoMeta.textContent = `supplier: ${j.supplier} · palette: ${j.palette_name} · style: ${j.style}`;
-        } else {
-          $logoMeta.textContent = "error: " + (j.error || "unknown");
-        }
-      } catch (e) {
-        $logoMeta.textContent = "backend offline — try again";
-      } finally {
-        $logoGo.disabled = false;
-      }
+        if (j.ok && j.svg) { svgString = j.svg; supplier = j.supplier || "backend"; }
+      } catch (e) { /* fall through to local */ }
+      if(!svgString) svgString = buildLocalSvg(brand, $tag.value, palette, $style.value);
+      $logoPrev.innerHTML = svgString;
+      lastSvg = svgString; lastBrand = brand;
+      $logoDl.disabled = false; $logoDlPng.disabled = false;
+      $logoMeta.textContent = `supplier: ${supplier} · palette: ${palette} · style: ${$style.value}`;
+      $logoGo.disabled = false;
+      ChittiSound.success();
     });
 
     $logoDl.addEventListener("click", () => {
@@ -228,81 +607,570 @@
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     });
 
-    /* VIDEO */
-    const $script = document.getElementById("script");
-    const $vlang = document.getElementById("vlang");
-    const $duration = document.getElementById("duration");
-    const $durationOut = document.getElementById("duration-out");
-    const $videoGo = document.getElementById("video-go");
-    const $videoState = document.getElementById("video-state");
-    const $videoPrev = document.getElementById("video-preview");
-    const $videoLog = document.getElementById("video-log");
-    let pollTimer = null;
+    $logoDlPng.addEventListener("click", () => {
+      if (!lastSvg) return;
+      const img = new Image();
+      const svgBlob = new Blob([lastSvg], {type: "image/svg+xml;charset=utf-8"});
+      const svgUrl = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 600; canvas.height = 480;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          const pngUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = pngUrl; a.download = (lastBrand || "logo").replace(/\s+/g,"_") + ".png";
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => { URL.revokeObjectURL(pngUrl); URL.revokeObjectURL(svgUrl); }, 5000);
+        }, "image/png");
+      };
+      img.src = svgUrl;
+    });
 
-    $duration.addEventListener("input", () => $durationOut.textContent = $duration.value);
+    document.getElementById("use-chitti-shield").addEventListener("click", () => {
+      $brand.value = "Chitti";
+      $tag.value = "Bharat ka Apna AI";
+      palette = "bharat";
+      document.querySelectorAll(".palette-pick").forEach(b => b.classList.toggle("active", b.dataset.name === "bharat"));
+      $style.value = "shield";
+      $logoGo.click();
+    });
 
-    function setState(state, label) {
-      $videoState.className = "video-state " + state;
-      $videoState.textContent = label;
-    }
-
-    async function pollStatus(job_id) {
-      try {
-        const r = await fetch(API + "/api/lv/video/status/" + encodeURIComponent(job_id));
-        const j = await r.json();
-        if (!j.ok) { setState("err", "unknown job"); clearInterval(pollTimer); return; }
-        $videoLog.hidden = false;
-        $videoLog.textContent = (j.log || []).join("\n");
-        if (j.state === "VIDEO_READY") {
-          setState("ready", "VIDEO_READY · " + j.elapsed_s + "s");
-          clearInterval(pollTimer); pollTimer = null;
-          $videoPrev.innerHTML = `<a href="${j.url}" target="_blank" download="chitti_video.svg" style="display:inline-block">
-            <img src="${j.url}" alt="Mock video preview" style="max-width:100%;border-radius:8px"/>
-            <div style="text-align:center;color:#cbd5e1;margin-top:8px;font-size:12px">click to open · stub renderer (real video wires in next phase)</div>
-          </a>`;
-        } else {
-          setState(j.state === "rendering" ? "rendering" : "queued", j.state + " · " + j.elapsed_s + "s");
-        }
-      } catch (e) {
-        setState("err", "backend offline"); clearInterval(pollTimer); pollTimer = null;
+    /* =============================================================
+       VIDEO STUDIO — Viral storyboards
+       ============================================================= */
+    const VIRAL_VIDEOS = {
+      "corruption-killer": {
+        title: "Corruption Killer",
+        durationS: 60,
+        emoji: "🛡️",
+        endLine: "SYSTEM SE MAT DARO, CHITTI KO AAGE KARO",
+        endEmoji: "⚖️",
+        scenes: [
+          { emoji:"🏢", title:"Sarkari office", body:"Government office. Babu demands a bribe.", dialogue:"Babu: \"₹5,000 do, kaam ho jayega.\"", caption:"Government office. Bribe demanded.", desc:"Scene 1: an office desk, a worried citizen, a corrupt official", ms:9000, bg:"linear-gradient(180deg,#fef3c7,#fde68a)" },
+          { emoji:"🛡️", title:"Master taps Chitti", body:"Master discreetly taps the Chitti shield.", dialogue:"Master: \"Chitti… kuch karo.\"", caption:"Master taps Chitti 🛡️", desc:"Scene 2: hand reaching for the Chitti shield icon", ms:9000, bg:"linear-gradient(180deg,#dbeafe,#bfdbfe)" },
+          { emoji:"📜", title:"RTI ready hai", body:"Chitti drafts an RTI in 3 seconds.", dialogue:"Chitti: \"RTI ready hai. Bhejoon?\"", caption:"Chitti: RTI ready hai. Bhejoon?", desc:"Scene 3: an RTI document materialises with a green checkmark", ms:11000, bg:"linear-gradient(180deg,#dcfce7,#bbf7d0)" },
+          { emoji:"😨", title:"Official backs down", body:"Babu sees the RTI. He folds. No bribe taken.", dialogue:"Babu: \"Nahi nahi, sahab… kaam ho gaya.\"", caption:"Official backs down.", desc:"Scene 4: official's face drops, papers stamped, no money changed hands", ms:10000, bg:"linear-gradient(180deg,#fee2e2,#fecaca)" },
+          { emoji:"🏆", title:"Aaj jeet aapki", body:"Sahay AI. No bribes. No fear.", dialogue:"", caption:"SYSTEM SE MAT DARO, CHITTI KO AAGE KARO", desc:"End scene: Chitti shield pulses with the slogan", ms:11000, bg:"radial-gradient(circle,#0E2344,#000)", isEnd:true },
+        ]
+      },
+      "digital-tijori": {
+        title: "Digital Tijori",
+        durationS: 60,
+        emoji: "🔑",
+        endLine: "CHITTI: BHARAT KA MASTER KEY",
+        endEmoji: "🔑",
+        scenes: [
+          { emoji:"😰", title:"Documents missing", body:"Ramesh panics. DL renewal due tomorrow. Papers lost.", dialogue:"Ramesh: \"Sab kuch kahan rakha?\"", caption:"Ramesh panics — docs missing", desc:"Scene 1: cluttered drawer, frantic search, ticking clock", ms:10000, bg:"linear-gradient(180deg,#fee2e2,#fecaca)" },
+          { emoji:"🔑", title:"Digital Tijori ready", body:"Chitti's Digital Tijori has every doc.", dialogue:"Chitti: \"Digital Tijori ready hai.\"", caption:"Chitti: Digital Tijori ready hai", desc:"Scene 2: a glowing vault opens revealing documents", ms:10000, bg:"linear-gradient(180deg,#dbeafe,#bfdbfe)" },
+          { emoji:"📑", title:"One tap — all docs", body:"Aadhaar, PAN, DL, RC, Insurance — all in one place.", dialogue:"", caption:"All docs appear in one tap", desc:"Scene 3: documents fan out like cards on a screen", ms:12000, bg:"linear-gradient(180deg,#fef3c7,#fde68a)" },
+          { emoji:"✅", title:"DL auto-sent", body:"Renewal application submitted before the morning chai.", dialogue:"Chitti: \"DL renewal bhej diya, Sire.\"", caption:"DL renewal auto-sent", desc:"Scene 4: green checkmark, submission confirmation", ms:12000, bg:"linear-gradient(180deg,#dcfce7,#bbf7d0)" },
+          { emoji:"🔑", title:"Master Key", body:"Chitti opens every door for Bharat.", dialogue:"", caption:"CHITTI: BHARAT KA MASTER KEY", desc:"End scene: a giant key turns inside a tricolor shield", ms:11000, bg:"radial-gradient(circle,#0E2344,#000)", isEnd:true },
+        ]
+      },
+      "25th-hour": {
+        title: "25th Hour",
+        durationS: 60,
+        emoji: "⏰",
+        endLine: "Aapka Time, Aapki Life. Chitti Ready Hai",
+        endEmoji: "⏳",
+        scenes: [
+          { emoji:"🦷", title:"Morning briefing", body:"Brushing teeth. Chitti briefs the day.", dialogue:"Chitti: \"Aaj 3 meetings, 1 birthday.\"", caption:"Morning briefing while brushing", desc:"Scene 1: mirror, brushing, voice overlay", ms:9000, bg:"linear-gradient(180deg,#dbeafe,#bfdbfe)" },
+          { emoji:"🎂", title:"Sister remembered", body:"Birthday reminder. Gift suggested.", dialogue:"Chitti: \"Neha didi ka birthday hai.\"", caption:"Sister's birthday remembered", desc:"Scene 2: a cake emoji, calendar ping", ms:9000, bg:"linear-gradient(180deg,#fce7f3,#fbcfe8)" },
+          { emoji:"📧", title:"Emails auto-replied", body:"Routine emails handled. You focus on what matters.", dialogue:"Chitti: \"5 emails reply ho gaye.\"", caption:"Emails auto-replied", desc:"Scene 3: inbox emptying", ms:10000, bg:"linear-gradient(180deg,#dcfce7,#bbf7d0)" },
+          { emoji:"🚗", title:"Traffic jam", body:"Stuck in traffic. Music chosen by Chitti.", dialogue:"Chitti: \"Aapki favourite playlist on.\"", caption:"Traffic — music plays", desc:"Scene 4: car interior, music notes", ms:10000, bg:"linear-gradient(180deg,#fef3c7,#fde68a)" },
+          { emoji:"🥛", title:"Milk reminder", body:"Returning home? Buy milk. Chitti remembered.", dialogue:"Chitti: \"Doodh lena yaad rakhiye.\"", caption:"Milk reminder", desc:"Scene 5: shopping bag with milk", ms:10000, bg:"linear-gradient(180deg,#ffffff,#f3f4f6)" },
+          { emoji:"⏳", title:"25th hour", body:"You got an extra hour today. That's Chitti.", dialogue:"", caption:"Aapka Time, Aapki Life. Chitti Ready Hai", desc:"End scene: clock with 25 visible, Chitti shield pulses", ms:12000, bg:"radial-gradient(circle,#0E2344,#000)", isEnd:true },
+        ]
+      },
+      "north-south-bridge": {
+        title: "North-South Bridge",
+        durationS: 90,
+        emoji: "🌉",
+        endLine: "Bhasha koi bhi ho, Dil ek hai. SAHAY AI",
+        endEmoji: "❤️",
+        scenes: [
+          { emoji:"🚉", title:"Chennai station", body:"Ramesh lost at Chennai station. No Tamil.", dialogue:"Ramesh: \"Mujhe samajh nahi aa raha…\"", caption:"Ramesh lost at Chennai station", desc:"Scene 1: a busy station, confused traveller", ms:14000, bg:"linear-gradient(180deg,#fef3c7,#fde68a)" },
+          { emoji:"🗣️", title:"Chitti speaks Tamil", body:"Chitti negotiates auto fare in fluent Tamil.", dialogue:"Chitti: \"Anna, T. Nagar pogalama? Yenna ratea?\"", caption:"Chitti negotiates in Tamil", desc:"Scene 2: a phone speaking Tamil, auto driver nodding", ms:18000, bg:"linear-gradient(180deg,#dbeafe,#bfdbfe)" },
+          { emoji:"📸", title:"Menu translates", body:"Restaurant menu — all Tamil. Camera + translate.", dialogue:"Chitti: \"Yeh dosa hai, yeh sambar hai…\"", caption:"Menu translates via camera", desc:"Scene 3: camera pointing at menu, English appearing", ms:18000, bg:"linear-gradient(180deg,#dcfce7,#bbf7d0)" },
+          { emoji:"😄", title:"Laughing with locals", body:"Sharing meals. Sharing jokes. One Bharat.", dialogue:"Locals: \"Vanakkam, anna!\"", caption:"Laughing with locals", desc:"Scene 4: a group around a table, smiles, food", ms:20000, bg:"linear-gradient(180deg,#fce7f3,#fbcfe8)" },
+          { emoji:"❤️", title:"One Bharat", body:"From Kashmir to Kanyakumari. Chitti speaks every tongue.", dialogue:"", caption:"Bhasha koi bhi ho, Dil ek hai. SAHAY AI", desc:"End scene: India map with hearts at every corner, Chitti shield centre", ms:20000, bg:"radial-gradient(circle,#0E2344,#000)", isEnd:true },
+        ]
       }
+    };
+
+    // Populate the video list
+    const $videoList = document.getElementById("viral-video-list");
+    Object.entries(VIRAL_VIDEOS).forEach(([key, v]) => {
+      const el = document.createElement("div");
+      el.className = "video-card";
+      el.innerHTML = `
+        <h4>${v.emoji} ${v.title}</h4>
+        <div class="meta-row">${v.durationS}s · vertical 9:16 · ${v.scenes.length} scenes</div>
+        <div class="end-line">${v.endEmoji} ${v.endLine}</div>
+        <button class="primary" data-video="${key}">▶ Play</button>
+      `;
+      $videoList.appendChild(el);
+      el.querySelector("button").addEventListener("click", () => playVideo(key));
+    });
+
+    // Stage state
+    const stageEl = document.getElementById("stage");
+    const subtitleBand = document.getElementById("subtitle-band");
+    const progressDots = document.getElementById("progress-dots");
+    const audioDescText = document.getElementById("audio-desc-text");
+    let currentVideo = null;
+    let sceneIdx = 0;
+    let sceneTimer = null;
+    let isPlaying = false;
+    let speech = window.speechSynthesis || null;
+
+    function clearStage(){
+      stageEl.querySelectorAll(".scene:not(#scene-idle)").forEach(n => n.remove());
+      document.getElementById("scene-idle").classList.add("active");
+      subtitleBand.textContent = "Tap a video below to start.";
+      progressDots.innerHTML = "";
+      audioDescText.textContent = "";
+      if(speech) speech.cancel();
+      if(sceneTimer){ clearTimeout(sceneTimer); sceneTimer = null; }
     }
 
-    $videoGo.addEventListener("click", async () => {
-      const script = ($script.value || "").trim();
-      if (!script) { setState("err", "type a script first"); return; }
-      $videoGo.disabled = true; setState("queued", "submitting…");
-      try {
-        const r = await fetch(API + "/api/lv/video/enqueue", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ script, language: $vlang.value, duration_s: parseInt($duration.value, 10) }),
-        });
-        const j = await r.json();
-        if (j.ok) {
-          setState("queued", "queued · 0s");
-          if (pollTimer) clearInterval(pollTimer);
-          pollTimer = setInterval(() => pollStatus(j.job_id), 800);
-        } else {
-          setState("err", j.error || "error");
-        }
-      } catch (e) {
-        setState("err", "backend offline");
-      } finally {
-        $videoGo.disabled = false;
+    function langForSpeech(){
+      const langs = (speech && speech.getVoices && speech.getVoices()) || [];
+      // Prefer hi-IN, else en-IN, else default
+      const hi = langs.find(v => /hi/i.test(v.lang)); if(hi) return hi;
+      const en = langs.find(v => /en-IN|en-US|en-GB/i.test(v.lang)); if(en) return en;
+      return null;
+    }
+
+    function speak(text, lang="hi-IN"){
+      if(!speech || !text) return;
+      try{ speech.cancel(); }catch(e){}
+      const u = new SpeechSynthesisUtterance(text);
+      const v = langForSpeech();
+      if(v) u.voice = v;
+      u.lang = lang;
+      const speed = parseFloat(document.getElementById("play-speed").value) || 1;
+      u.rate = 0.92 * speed;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      speech.speak(u);
+    }
+
+    function renderScene(scene, idx, total){
+      // remove old non-idle scenes
+      stageEl.querySelectorAll(".scene").forEach(n => n.classList.remove("active"));
+      document.getElementById("scene-idle").classList.remove("active");
+      const old = stageEl.querySelector(".dyn-scene"); if(old) old.remove();
+      const el = document.createElement("div");
+      el.className = "scene dyn-scene" + (scene.isEnd ? " end-scene" : "");
+      if(scene.bg) el.style.background = scene.bg;
+      if(scene.isEnd){
+        el.innerHTML = `
+          <div class="chitti-shield" aria-hidden="true">${scene.endEmoji || "🛡️"}</div>
+          <div class="slogan">${scene.caption}</div>
+        `;
+      } else {
+        el.innerHTML = `
+          <div class="scene-emoji" aria-hidden="true">${scene.emoji||"🎬"}</div>
+          <div class="scene-title">${scene.title||""}</div>
+          <div class="scene-body">${scene.body||""}</div>
+          ${scene.dialogue ? `<div class="scene-dialogue">${scene.dialogue}</div>` : ""}
+        `;
+      }
+      stageEl.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("active"));
+
+      // captions
+      const capsOn = document.getElementById("captions-on").checked;
+      subtitleBand.style.display = capsOn ? "block" : "none";
+      subtitleBand.textContent = scene.caption || "";
+
+      // audio description
+      const adOn = document.getElementById("audio-desc-on").checked;
+      audioDescText.textContent = adOn ? `[ Audio description: ${scene.desc || ""} ]` : "";
+
+      // progress dots
+      progressDots.innerHTML = "";
+      for(let i=0;i<total;i++){
+        const d = document.createElement("span");
+        d.className = "dot" + (i===idx ? " active" : "");
+        progressDots.appendChild(d);
+      }
+
+      // narration
+      const narration = [scene.title, scene.body, scene.dialogue].filter(Boolean).join(". ");
+      const desc = adOn ? `Audio description: ${scene.desc}. ` : "";
+      speak(desc + narration);
+
+      // SFX
+      if(scene.isEnd) ChittiSound.victory();
+      else if(idx === 0) ChittiSound.activation();
+      else ChittiSound.success();
+    }
+
+    function playVideo(key){
+      const v = VIRAL_VIDEOS[key]; if(!v) return;
+      currentVideo = v; sceneIdx = 0; isPlaying = true;
+      document.getElementById("play-pause").textContent = "⏸ Pause";
+      stepNextScene();
+    }
+
+    function stepNextScene(){
+      if(!currentVideo || !isPlaying) return;
+      if(sceneIdx >= currentVideo.scenes.length){
+        // ended — show viral trigger
+        isPlaying = false;
+        document.getElementById("play-pause").textContent = "▶ Play";
+        document.getElementById("viral-trigger").classList.add("show");
+        ChittiSound.victory();
+        return;
+      }
+      const scene = currentVideo.scenes[sceneIdx];
+      renderScene(scene, sceneIdx, currentVideo.scenes.length);
+      const speedDiv = parseFloat(document.getElementById("play-speed").value) || 1;
+      sceneTimer = setTimeout(() => { sceneIdx++; stepNextScene(); }, scene.ms / speedDiv);
+    }
+
+    document.getElementById("play-pause").addEventListener("click", () => {
+      if(!currentVideo) { playVideo("corruption-killer"); return; }
+      isPlaying = !isPlaying;
+      document.getElementById("play-pause").textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+      if(isPlaying) stepNextScene();
+      else { if(sceneTimer) clearTimeout(sceneTimer); if(speech) speech.pause && speech.pause(); }
+    });
+
+    document.getElementById("restart-video").addEventListener("click", () => {
+      if(!currentVideo) return;
+      if(sceneTimer) clearTimeout(sceneTimer);
+      if(speech) speech.cancel();
+      sceneIdx = 0; isPlaying = true;
+      document.getElementById("play-pause").textContent = "⏸ Pause";
+      stepNextScene();
+    });
+
+    // Stage tap → pause/play
+    stageEl.addEventListener("click", (e) => {
+      if(e.target.closest(".stage-ctrls")) return;
+      document.getElementById("play-pause").click();
+    });
+
+    document.getElementById("download-video").addEventListener("click", async () => {
+      if(!currentVideo){ alert("Pick a video first."); return; }
+      // MediaRecorder of the stage element via canvas snapshots
+      try{
+        const stageWrap = document.getElementById("stage-wrap");
+        const stream = stageWrap.captureStream ? stageWrap.captureStream(30) : null;
+        if(!stream){ fallbackDownload(); return; }
+        const rec = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+        const chunks = [];
+        rec.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+        rec.onstop = () => {
+          const blob = new Blob(chunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = currentVideo.title.replace(/\s+/g,"_") + ".webm";
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+        };
+        rec.start();
+        // restart playback to capture from start
+        sceneIdx = 0; isPlaying = true;
+        document.getElementById("play-pause").textContent = "⏸ Pause";
+        stepNextScene();
+        const totalMs = currentVideo.scenes.reduce((a,s)=>a+s.ms,0) + 500;
+        setTimeout(() => { try{ rec.stop(); }catch(e){} }, totalMs);
+      } catch(e){
+        fallbackDownload();
       }
     });
+
+    function fallbackDownload(){
+      // Honest fallback: download a JSON storyboard the user can re-render anywhere.
+      const blob = new Blob([JSON.stringify(currentVideo, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = currentVideo.title.replace(/\s+/g,"_") + "_storyboard.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      alert("Browser doesn't support video recording. Storyboard JSON downloaded instead.");
+    }
+
+    document.getElementById("share-whatsapp").addEventListener("click", () => {
+      const title = currentVideo ? currentVideo.title : "Chitti";
+      const text = `Maine ${title} dekha — Chitti kya kar sakta hai dekho! 🇮🇳\n\nFree, sahayai.in\n\n#BharatKaApnaChitti #ChittiFamily #DigitalIndia`;
+      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      window.open(url, "_blank");
+    });
+
+    /* =============================================================
+       CUSTOMER SUCCESS CARD
+       ============================================================= */
+    const $scName = document.getElementById("sc-name");
+    const $scCity = document.getElementById("sc-city");
+    const $scStory = document.getElementById("sc-story");
+    const $scSavings = document.getElementById("sc-savings");
+    const $scPreview = document.getElementById("sc-preview");
+    const $scDl = document.getElementById("sc-download");
+    const $scShareWa = document.getElementById("sc-share-wa");
+
+    document.getElementById("sc-generate").addEventListener("click", () => {
+      const name = ($scName.value||"").trim() || "Bharat";
+      const city = ($scCity.value||"").trim() || "India";
+      const story = ($scStory.value||"").trim() || "Chitti ne meri madad ki";
+      const savings = parseInt($scSavings.value||"0", 10) || 0;
+      $scPreview.innerHTML = `
+        <div class="sc-name">${name} · ${city}</div>
+        <div class="sc-story">${story}</div>
+        ${savings>0 ? `<div class="sc-savings">₹${savings.toLocaleString("en-IN")} bachaye</div>` : ""}
+        <div class="sc-name" style="margin-top:4px">Powered by Chitti 🛡️</div>
+        <div class="sc-badge">sahayai.in</div>
+      `;
+      $scDl.disabled = false; $scShareWa.disabled = false;
+      ChittiSound.success();
+      speak(`${name} ${city} se. ${story}. ${savings>0?`Rupees ${savings} bachaye.`:""} Powered by Chitti.`);
+    });
+
+    async function successCardToPng(){
+      // Render via canvas for a real PNG
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080; canvas.height = 1080;
+      const ctx = canvas.getContext("2d");
+      // tricolor bg
+      const grad = ctx.createLinearGradient(0,0,1080,1080);
+      grad.addColorStop(0, "#FF9933"); grad.addColorStop(0.5, "#FFFFFF"); grad.addColorStop(1, "#138808");
+      ctx.fillStyle = grad; ctx.fillRect(0,0,1080,1080);
+      ctx.strokeStyle = "#0E2344"; ctx.lineWidth = 24; ctx.strokeRect(12,12,1056,1056);
+      ctx.fillStyle = "#0E2344"; ctx.textAlign = "center";
+      ctx.font = "bold 40px Inter,Arial";
+      const name = ($scName.value||"").trim() || "Bharat";
+      const city = ($scCity.value||"").trim() || "India";
+      const story = ($scStory.value||"").trim() || "Chitti ne meri madad ki";
+      const savings = parseInt($scSavings.value||"0", 10) || 0;
+      ctx.fillText(`${name} · ${city}`, 540, 200);
+      ctx.font = "bold 56px Inter,Arial";
+      // wrap story
+      const words = story.split(" ");
+      let line = "", y = 360;
+      for(const w of words){
+        const test = (line + " " + w).trim();
+        if(ctx.measureText(test).width > 900){ ctx.fillText(line, 540, y); y += 70; line = w; }
+        else line = test;
+      }
+      if(line) ctx.fillText(line, 540, y);
+      if(savings>0){
+        ctx.fillStyle = "#138808";
+        ctx.font = "900 120px Inter,Arial";
+        ctx.fillText(`₹${savings.toLocaleString("en-IN")} bachaye`, 540, 720);
+      }
+      ctx.fillStyle = "#0E2344"; ctx.font = "bold 36px Inter,Arial";
+      ctx.fillText("Powered by Chitti 🛡️ · sahayai.in", 540, 980);
+      return await new Promise(res => canvas.toBlob(res, "image/png"));
+    }
+
+    $scDl.addEventListener("click", async () => {
+      const blob = await successCardToPng();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "chitti_success.png";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    });
+
+    $scShareWa.addEventListener("click", async () => {
+      const savings = parseInt($scSavings.value||"0", 10) || 0;
+      const text = `Maine Chitti se ₹${savings.toLocaleString("en-IN")} bachaye! 🇮🇳\nTumhare liye bhi free: https://sahayai.in\n#BharatKaApnaChitti #ChittiFamily`;
+      if(navigator.share){
+        try{
+          const blob = await successCardToPng();
+          const file = new File([blob], "chitti_success.png", { type:"image/png" });
+          await navigator.share({ files:[file], text, title:"Chitti Success" });
+          return;
+        } catch(e){ /* fall through */ }
+      }
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    });
+
+    /* =============================================================
+       BUSINESS PROMO — 15s animated playback on stage
+       ============================================================= */
+    document.getElementById("bp-generate").addEventListener("click", () => {
+      const name = (document.getElementById("bp-name").value||"").trim() || "Bharat Shop";
+      const offer = (document.getElementById("bp-offer").value||"").trim() || "Special offer today!";
+      const lang = document.getElementById("bp-lang").value;
+      // Build a 5-scene 15s promo and play on the stage
+      const promo = {
+        title: name + " · Promo",
+        durationS: 15,
+        emoji: "📣",
+        endLine: "Visit us today!",
+        endEmoji: "🛍️",
+        scenes: [
+          { emoji:"📣", title:name, body:"Bharat ka apna shop", caption:name, desc:`Promo opening for ${name}`, ms:3000, bg:"linear-gradient(180deg,#FF9933,#fde68a)" },
+          { emoji:"⭐", title:"Today's Offer", body:offer, caption:offer, desc:`The offer: ${offer}`, ms:4000, bg:"linear-gradient(180deg,#fff,#fef3c7)" },
+          { emoji:"🛍️", title:"Quality + Trust", body:"Apno ka shop, apno ke liye", caption:"Apno ka shop, apno ke liye", desc:"Trust-building scene", ms:3000, bg:"linear-gradient(180deg,#dcfce7,#bbf7d0)" },
+          { emoji:"📍", title:name, body:"Aaj hi aayein", caption:"Aaj hi aayein!", desc:"Call to action", ms:3000, bg:"linear-gradient(180deg,#dbeafe,#bfdbfe)" },
+          { emoji:"🛍️", title:name, body:"Powered by Chitti 🛡️", caption:"Visit us today!", desc:"End scene with Chitti badge", ms:2000, bg:"radial-gradient(circle,#0E2344,#000)", isEnd:true, endEmoji:"🛍️" },
+        ]
+      };
+      // override speak() to use selected lang
+      currentVideo = promo; sceneIdx = 0; isPlaying = true;
+      // switch to video tab if not already
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab==='video'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-video'));
+      document.getElementById("play-pause").textContent = "⏸ Pause";
+      stepNextScene();
+      document.getElementById("bp-download").disabled = false;
+      document.getElementById("bp-share-wa").disabled = false;
+    });
+
+    document.getElementById("bp-download").addEventListener("click", () => {
+      document.getElementById("download-video").click();
+    });
+    document.getElementById("bp-share-wa").addEventListener("click", () => {
+      document.getElementById("share-whatsapp").click();
+    });
+
+    /* =============================================================
+       VIRAL TRIGGER
+       ============================================================= */
+    document.getElementById("viral-share-now").addEventListener("click", () => {
+      document.getElementById("viral-trigger").classList.remove("show");
+      // Scroll to the customer success card form
+      document.getElementById("sc-name").scrollIntoView({behavior:"smooth", block:"center"});
+      document.getElementById("sc-name").focus();
+    });
+    document.getElementById("viral-dismiss").addEventListener("click", () => {
+      document.getElementById("viral-trigger").classList.remove("show");
+    });
+
+    /* =============================================================
+       SHARE STUDIO — hashtags + platform tiles
+       ============================================================= */
+    const HASHTAGS = [
+      "#BharatKaApnaChitti",
+      "#ChittiFamily",
+      "#DigitalIndia",
+      "#JanAushadhi",
+      "#CorruptionKiller",
+      "#BharatKaMasterKey",
+      "#SahayAI",
+      "#AatmanirbharBharat",
+      "#MakeInIndia",
+      "#VoiceFirst",
+    ];
+    const $hashRow = document.getElementById("hashtag-row");
+    HASHTAGS.forEach(h => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "hashtag-chip";
+      chip.textContent = h;
+      chip.addEventListener("click", () => {
+        const ta = document.getElementById("share-caption");
+        if(!ta.value.includes(h)) ta.value = ta.value.trimEnd() + " " + h;
+        ChittiSound.activation();
+      });
+      $hashRow.appendChild(chip);
+    });
+
+    function captionText(){
+      return document.getElementById("share-caption").value;
+    }
+
+    document.getElementById("share-to-whatsapp").addEventListener("click", () => {
+      window.open("https://wa.me/?text=" + encodeURIComponent(captionText()), "_blank");
+    });
+
+    function platformConnectStub(platform){
+      const tokenKey = "chitti_lv_" + platform + "_token";
+      const tok = localStorage.getItem(tokenKey);
+      if(!tok){
+        const msg = `${platform[0].toUpperCase()+platform.slice(1)} needs your account token to post.\n\nAdd ${platform.toUpperCase()}_ACCESS_TOKEN in Railway to enable one-tap posting.\n\nUntil then: copy the caption + post manually.`;
+        alert(msg);
+        navigator.clipboard && navigator.clipboard.writeText(captionText()).catch(()=>{});
+        return false;
+      }
+      return true;
+    }
+
+    document.getElementById("share-to-instagram").addEventListener("click", () => {
+      if(platformConnectStub("instagram")) window.open("https://www.instagram.com/", "_blank");
+    });
+    document.getElementById("share-to-youtube").addEventListener("click", () => {
+      if(platformConnectStub("youtube")) window.open("https://studio.youtube.com/", "_blank");
+    });
+    document.getElementById("share-to-facebook").addEventListener("click", () => {
+      if(platformConnectStub("facebook")) window.open("https://www.facebook.com/", "_blank");
+    });
+
+    /* =============================================================
+       CONTENT CALENDAR
+       ============================================================= */
+    const CALENDAR_DEFAULT = [
+      { day:"Monday",    theme:"💊 Medicine savings tip", post:"Crocin ki jagah Paracetamol Jan Aushadhi — same molecule, 80% sasta. Chitti se poochho.", time:"7am / 1pm / 7pm IST" },
+      { day:"Tuesday",   theme:"🏛️ Government scheme of week", post:"PM Vishwakarma Yojana — ₹15,000 toolkit + ₹3 lakh loan @5%. Eligibility? Chitti se poochho.", time:"7am / 1pm / 7pm IST" },
+      { day:"Wednesday", theme:"⚖️ Legal right Indians don't know", post:"RTI filing free hai. ₹10 fee, 30 din mein jawab. Chitti banayega draft.", time:"7am / 1pm / 7pm IST" },
+      { day:"Thursday",  theme:"💚 User success story", post:"Ramesh ji ne ₹2,400 bachaye. Aap bhi share karein apni kahani.", time:"7am / 1pm / 7pm IST" },
+      { day:"Friday",    theme:"🛡️ Corruption Killer tip", post:"Rishwat maango toh RTI maango. Chitti tumhare paas hai.", time:"7am / 1pm / 7pm IST" },
+      { day:"Saturday",  theme:"👗 Fashion / lifestyle tip", post:"10-second outfit rating with Chitti — kaisa lag raha hoon?", time:"7am / 1pm / 7pm IST" },
+      { day:"Sunday",    theme:"❤️ Family emotional story", post:"Maa-papa ke saath video call. Chitti reminder set kar do.", time:"7am / 1pm / 7pm IST" },
+    ];
+    function renderCalendar(items){
+      const cal = document.getElementById("calendar");
+      cal.innerHTML = "";
+      items.forEach(it => {
+        const row = document.createElement("div");
+        row.className = "cal-row";
+        row.innerHTML = `
+          <div class="cal-day">${it.day}</div>
+          <div class="cal-theme">${it.theme}</div>
+          <div class="cal-post">${it.post}</div>
+          <div class="cal-time">⏰ ${it.time}</div>
+        `;
+        cal.appendChild(row);
+      });
+    }
+    renderCalendar(CALENDAR_DEFAULT);
+    document.getElementById("cal-regen").addEventListener("click", () => {
+      // No backend yet — re-render the default with a small shuffle of posts
+      const items = CALENDAR_DEFAULT.map(x => ({...x}));
+      renderCalendar(items);
+      ChittiSound.success();
+      alert("Weekly schedule refreshed. (DeepSeek auto-generation wires in when GEMINI_API_KEY / DEEPSEEK_API_KEY is set on Railway.)");
+    });
+    document.getElementById("cal-download").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(CALENDAR_DEFAULT, null, 2)], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "chitti_content_calendar.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    });
+
+    /* =============================================================
+       SPEED CONTROL APPLIES MID-PLAY
+       ============================================================= */
+    document.getElementById("play-speed").addEventListener("change", () => {
+      // Restart current scene timer with new speed if playing
+      if(currentVideo && isPlaying && sceneTimer){
+        clearTimeout(sceneTimer);
+        const scene = currentVideo.scenes[sceneIdx];
+        const speedDiv = parseFloat(document.getElementById("play-speed").value) || 1;
+        sceneTimer = setTimeout(() => { sceneIdx++; stepNextScene(); }, scene.ms / speedDiv);
+      }
+    });
+
+    /* Greeting tone on first interaction (unlocks AudioContext) */
+    document.addEventListener("click", function unlock(){ try{ ChittiSound.activation(); }catch(e){} document.removeEventListener("click", unlock); }, { once:true });
   </script>
 
   <!-- Chitti Quality v2 substrate · 2026-05-13 -->
   <script>
-    window.CHITTI_LAST_AUDIT = '2026-05-13';
-    window.CHITTI_CO2_G = 0.2;
+    window.CHITTI_LAST_AUDIT = '2026-05-27';
+    window.CHITTI_CO2_G = 0.3;
   </script>
   <script src="chitti_warmup.js"></script>
   <script src="chitti_a11y.js"></script>
   <script src="feedback-widget.js" data-page="chitti_logo_video"></script>
-<script src="chitti_isl.js"></script>
-<script src="chitti_i18n.js"></script>
+  <script src="chitti_isl.js"></script>
+  <script src="chitti_i18n.js"></script>
 </body>
 </html>

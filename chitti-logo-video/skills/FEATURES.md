@@ -1,3 +1,59 @@
+# Chitti Creative Studio — FEATURES
+
+## 0. Creative Studio — shipped 2026-05-27
+
+`chitti_logo_video.html` is now a **4-tab creative studio** (frontend-only;
+no new backend keys required for any LIVE feature below). Everything below
+runs on Web Speech + Web Audio + MediaRecorder + Canvas — free, no API keys.
+
+### Tab 1 — Logo Studio (LIVE)
+- Backend logo endpoint preserved (LV1 path) **plus** a deterministic local-SVG fallback
+  so the page never breaks when the backend is sleeping.
+- New **Chitti shield template** card — one tap fills Brand=Chitti, Tagline=Bharat ka Apna AI, palette=bharat, style=shield.
+- Indian flag colors are now the default palette (saffron / white / green / Ashoka navy).
+- Downloads: **SVG + PNG** (canvas-rasterised, 600×480).
+
+### Tab 2 — Video Studio (LIVE)
+- **9:16 vertical stage** with corner Chitti shield, progress dots, subtitle band, green-heartbeat pulse.
+- **4 Chitti Viral Stories** (CSS-animated storyboards + Web Speech narration):
+  1. **Corruption Killer** (60s · 5 scenes · end: SYSTEM SE MAT DARO, CHITTI KO AAGE KARO)
+  2. **Digital Tijori** (60s · 5 scenes · end: CHITTI: BHARAT KA MASTER KEY)
+  3. **25th Hour** (60s · 6 scenes · end: Aapka Time, Aapki Life. Chitti Ready Hai)
+  4. **North-South Bridge** (90s · 5 scenes · end: Bhasha koi bhi ho, Dil ek hai. SAHAY AI)
+- Player: play/pause/restart, **0.75× / 1× / 1.25× speed**, **captions toggle**, **audio-description toggle** (spoken description of each scene for blind users).
+- **Download** via `MediaRecorder` (`video/webm`) — honest fallback to storyboard JSON if browser doesn't support captureStream.
+- **Customer Success Card** generator — name + city + story + savings → tricolor 1080×1080 PNG with Chitti badge; one-tap WhatsApp share via `navigator.share` (file) or `wa.me` deep link (text).
+- **Business Promo** — 15-second 5-scene animated promo for kirana / freelancer; voice-over in any of 10 Indian languages via `SpeechSynthesisUtterance`.
+- **Viral Trigger** — at the end of any video, the *"Apni kahani share karein"* prompt opens the success-card form.
+
+### Tab 3 — Share Studio (LIVE for WhatsApp; honest CONNECT stubs for IG/YT/FB)
+- WhatsApp Status: **LIVE today**, no API needed (deep link).
+- Instagram / YouTube Shorts / Facebook: **CONNECT account** tiles. Tile checks `localStorage` token; if absent → honest alert + caption-to-clipboard + manual post. Wires to real Graph / YouTube Data v3 APIs once `INSTAGRAM_ACCESS_TOKEN` / `YOUTUBE_API_KEY` / `FACEBOOK_ACCESS_TOKEN` are set on Railway.
+- **10 hashtag chips** tap-to-append: `#BharatKaApnaChitti`, `#ChittiFamily`, `#DigitalIndia`, `#JanAushadhi`, `#CorruptionKiller`, `#BharatKaMasterKey`, `#SahayAI`, `#AatmanirbharBharat`, `#MakeInIndia`, `#VoiceFirst`.
+
+### Tab 4 — Content Calendar (LIVE static schedule; auto-gen wires later)
+- 7-row weekly schedule (Mon → Sun) with theme + sample post + 7am/1pm/7pm IST slots.
+- **Regenerate** button is honest — surfaces *"DeepSeek auto-generation wires in when the Railway env var lands"* until backend route exists.
+- **Export** as JSON.
+
+### Chitti Sound Identity (LIVE — Web Audio API, no files)
+- **Activation chime** (soft digital heartbeat — C5 → E5).
+- **Success ding** (warm Sa-Re-Ga — C5 → D5 → E5 triangle).
+- **Warning** (gentle two-tone, no harsh siren).
+- **Victory motif** (C5-E5-G5-C6 triangle).
+- All four are oscillator-generated; AudioContext unlocked on first click.
+
+### Accessibility (per SAHAYAI_MASTER §7 — eight gates)
+- Captions on by default; audio-description toggle reads scene descriptions for blind users.
+- Speed control 0.75× for elderly users.
+- Every button ≥48×48px tap target.
+- Tap stage to pause/play.
+- 9:16 stage capped to 360px wide → fits 375px mobile.
+- All scenes use color **plus** symbol + text (never colour alone).
+- Heartbeat-green pulse is decorative — captions + voice carry the message.
+
+---
+
 # Chitti Logo & Video — FEATURES
 
 Honest, code-verified inventory of what the [`chitti_logo_video.html`](../../chitti_logo_video.html) surface actually does today. Same three-section contract as [`chitti-vaani/skills/FEATURES.md`](../../chitti-vaani/skills/FEATURES.md): **Built & working**, **Planned**, **Future**.
