@@ -72,6 +72,23 @@
     .preview-frame svg{max-width:100%;height:auto}
     .meta{font-size:11.5px;color:var(--muted);margin-top:8px}
 
+    /* 3D Logo Studio */
+    .logo3d-stage{position:relative;margin-top:12px;background:radial-gradient(circle at 30% 20%, #1e3a8a 0%, #0b1220 70%);border:1px solid var(--border);border-radius:14px;overflow:hidden;aspect-ratio:1/1;max-width:520px}
+    .logo3d-stage canvas{display:block;width:100%;height:100%}
+    .logo3d-stage .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94a3b8;text-align:center;font-size:13px;padding:20px;pointer-events:none}
+    .logo3d-stage .progress{position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;display:none}
+    .logo3d-stage .progress.show{display:block}
+    .logo3d-stage .progress .bar{height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px;overflow:hidden}
+    .logo3d-stage .progress .bar > div{height:100%;background:var(--saffron);width:0%;transition:width 0.2s}
+    .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+    .opt-pick{padding:10px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-weight:700;min-height:48px;text-align:center;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+    .opt-pick small{font-weight:500;color:var(--muted);font-size:11px}
+    .opt-pick.active{border-color:var(--saffron);background:linear-gradient(180deg,#fff,#fff7ee);box-shadow:0 0 0 2px rgba(255,153,51,.18);color:var(--navy)}
+    .toggle-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;background:#f8f4ee;border-radius:8px;font-size:13px;font-weight:600}
+    .toggle-row input{transform:scale(1.3);margin-right:4px}
+    .dl-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .dl-row button{flex:1;min-width:110px}
+
     /* Video studio — viral storyboard */
     .video-list{display:grid;grid-template-columns:1fr;gap:14px;margin-top:8px}
     @media(min-width:760px){.video-list{grid-template-columns:1fr 1fr}}
@@ -169,6 +186,9 @@
     .audio-desc{font-size:11.5px;color:var(--muted);font-style:italic;margin:6px auto;max-width:360px;text-align:center}
   </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
+  <!-- Creative Studio in-browser engines · no API keys · 2026-05-27 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="bharat-stripe"></div>
@@ -196,63 +216,66 @@
       <button class="tab-btn" role="tab" aria-selected="false" data-tab="calendar">📅 Content Calendar</button>
     </div>
 
-    <!-- ============ TAB 1 · LOGO STUDIO ============ -->
+    <!-- ============ TAB 1 · 3D LOGO STUDIO ============ -->
     <div class="tab-pane active" id="tab-logo" role="tabpanel">
-      <div class="grid">
-        <!-- Logo creator -->
-        <div class="card">
-          <h2>🎨 Logo Studio</h2>
+      <div class="card">
+        <h2>🎨 3D Logo Generator <span style="font-weight:500;color:var(--muted);font-size:12px">· runs in your browser · no API key</span></h2>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Type your brand, pick style + material, tap Generate. A rotating 3D logo appears instantly. Download as PNG, WebM video, or GIF.</p>
 
-          <label for="brand">Brand name</label>
-          <input id="brand" type="text" placeholder="e.g. Saraswati Kirana" maxlength="80" />
+        <div class="grid">
+          <!-- Controls -->
+          <div>
+            <label for="brand">Brand name</label>
+            <input id="brand" type="text" placeholder="SAHAYAI" value="SAHAYAI" maxlength="80" />
 
-          <label for="tagline">Tagline (optional)</label>
-          <input id="tagline" type="text" placeholder="e.g. Aapka rozana sathi" maxlength="80" />
+            <label for="tagline">Tagline</label>
+            <input id="tagline" type="text" placeholder="Bharat ka apna Chitti" value="Bharat ka apna Chitti" maxlength="80" />
 
-          <label>Palette</label>
-          <div class="palette-row" id="palette-row" role="group" aria-label="Palette picker"></div>
+            <label>Style</label>
+            <div class="opt-grid" id="style-grid" role="radiogroup" aria-label="Logo style">
+              <button type="button" class="opt-pick active" data-style="shield" role="radio" aria-checked="true">🛡️ Shield<small>Chitti-style badge</small></button>
+              <button type="button" class="opt-pick" data-style="circle" role="radio" aria-checked="false">⭕ Circle<small>Round emblem</small></button>
+              <button type="button" class="opt-pick" data-style="wordmark" role="radio" aria-checked="false">🅰️ Wordmark<small>Brand on banner</small></button>
+              <button type="button" class="opt-pick" data-style="character" role="radio" aria-checked="false">🤖 Character<small>Chitti hero</small></button>
+            </div>
 
-          <label for="style">Style</label>
-          <select id="style">
-            <option value="shield" selected>Shield (Chitti style · initials inside shield)</option>
-            <option value="monogram">Monogram (initials in a circle)</option>
-            <option value="wordmark">Wordmark (full name on banner)</option>
-          </select>
+            <label>Material</label>
+            <div class="opt-grid" id="material-grid" role="radiogroup" aria-label="Logo material">
+              <button type="button" class="opt-pick active" data-material="saffron" role="radio" aria-checked="true"><span style="color:#FF9933">●</span> Saffron<small>Warm Indian orange</small></button>
+              <button type="button" class="opt-pick" data-material="chrome" role="radio" aria-checked="false"><span style="color:#9aa0a6">●</span> Chrome<small>Mirror polish</small></button>
+              <button type="button" class="opt-pick" data-material="gold" role="radio" aria-checked="false"><span style="color:#D4AF37">●</span> Gold<small>Premium shine</small></button>
+              <button type="button" class="opt-pick" data-material="tricolor" role="radio" aria-checked="false">🇮🇳 Tricolor<small>Flag reflection</small></button>
+            </div>
 
-          <div class="row" style="margin-top:12px">
-            <button id="logo-go" class="primary" aria-label="Generate logo">✨ Generate logo</button>
-            <button id="logo-dl" aria-label="Download SVG" disabled>⬇️ SVG</button>
-            <button id="logo-dl-png" aria-label="Download PNG" disabled>⬇️ PNG</button>
+            <div class="toggle-row">
+              <input type="checkbox" id="with-chitti" checked />
+              <label for="with-chitti" style="margin:0;font-size:13px">Include Chitti mascot character</label>
+            </div>
+
+            <div class="row" style="margin-top:14px">
+              <button id="logo-go" class="primary" aria-label="Generate 3D logo" style="flex:1">✨ Generate 3D Logo</button>
+            </div>
+
+            <div class="dl-row">
+              <button id="logo-dl-png" aria-label="Download PNG" disabled>⬇ PNG</button>
+              <button id="logo-dl-webm" aria-label="Download WebM video" disabled>⬇ WebM (30s)</button>
+              <button id="logo-dl-gif" aria-label="Download animated GIF" disabled>⬇ GIF</button>
+            </div>
+            <div class="meta" id="logo-meta">style: shield · material: saffron · with Chitti: yes</div>
           </div>
-          <div class="meta" id="logo-meta">supplier: —</div>
 
-          <div class="preview-frame" id="logo-preview" aria-live="polite"
-               data-chitti-response data-chitti-section="Generated logo preview">
-            <span style="color:#94a3b8">Your logo will appear here.</span>
+          <!-- 3D stage -->
+          <div>
+            <div class="logo3d-stage" id="logo3d-stage" data-chitti-response data-chitti-section="3D Logo Preview">
+              <canvas id="logo3d-canvas" aria-label="3D rotating logo preview"></canvas>
+              <div class="placeholder" id="logo3d-placeholder">Tap <strong>Generate 3D Logo</strong> to start.<br>Your logo will rotate here in 3D.</div>
+              <div class="progress" id="logo3d-progress" role="status" aria-live="polite">
+                <span id="logo3d-progress-text">Recording…</span>
+                <div class="bar"><div id="logo3d-progress-bar"></div></div>
+              </div>
+            </div>
+            <div class="meta" style="text-align:center;margin-top:6px">Drag to rotate · scroll to zoom</div>
           </div>
-        </div>
-
-        <!-- Chitti's own shield template -->
-        <div class="card">
-          <h2>🛡️ Chitti's shield (template)</h2>
-          <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Tap to use Chitti's iconic shield as your starting template. Indian flag colors are default.</p>
-          <div class="preview-frame" data-chitti-response data-chitti-section="Chitti shield template">
-            <svg viewBox="0 0 200 240" width="160" aria-label="Chitti shield">
-              <defs>
-                <linearGradient id="g-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#FF9933"/>
-                  <stop offset="50%" stop-color="#FFFFFF"/>
-                  <stop offset="100%" stop-color="#138808"/>
-                </linearGradient>
-              </defs>
-              <path d="M100 8 L184 40 L184 132 Q184 200 100 232 Q16 200 16 132 L16 40 Z" fill="url(#g-shield)" stroke="#0E2344" stroke-width="6"/>
-              <circle cx="100" cy="110" r="36" fill="#000080" opacity="0.85"/>
-              <text x="100" y="124" text-anchor="middle" font-family="Inter,Arial" font-size="44" font-weight="900" fill="#fff">C</text>
-              <text x="100" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" font-weight="700" fill="#0E2344">CHITTI</text>
-              <text x="100" y="198" text-anchor="middle" font-family="Inter,Arial" font-size="10" font-weight="600" fill="#0E2344">Bharat ka Apna AI</text>
-            </svg>
-          </div>
-          <button class="primary" id="use-chitti-shield" style="margin-top:10px;width:100%">Use this as my template</button>
         </div>
       </div>
     </div>
@@ -503,139 +526,541 @@
     });
 
     /* =============================================================
-       LOGO STUDIO
+       3D LOGO STUDIO — Three.js · runs entirely in browser
        ============================================================= */
-    const API = window.CHITTI_LV_API || "https://chitti-logo-video-api-production.up.railway.app";
-    const PALETTES = {
-      bharat:  {primary:"#FF9933", secondary:"#138808", accent:"#000080", label:"🇮🇳 Bharat (flag)"},
-      modern:  {primary:"#6366F1", secondary:"#0F172A", accent:"#22D3EE", label:"Modern"},
-      classic: {primary:"#1F2937", secondary:"#F3F4F6", accent:"#B45309", label:"Classic"},
-      festive: {primary:"#DC2626", secondary:"#15803D", accent:"#FACC15", label:"Festive"},
-      calm:    {primary:"#0F766E", secondary:"#0C4A6E", accent:"#67E8F9", label:"Calm"},
-    };
-    let palette = "bharat";
-    const $row = document.getElementById("palette-row");
-    Object.keys(PALETTES).forEach(name => {
-      const p = PALETTES[name];
-      const btn = document.createElement("button");
-      btn.type = "button"; btn.className = "palette-pick" + (name === palette ? " active" : "");
-      btn.dataset.name = name;
-      btn.innerHTML = `<span class="swatch" style="background:${p.primary}"></span><span class="swatch" style="background:${p.secondary}"></span><span class="swatch" style="background:${p.accent}"></span> ${p.label}`;
-      btn.addEventListener("click", () => {
-        palette = name;
-        document.querySelectorAll(".palette-pick").forEach(b => b.classList.toggle("active", b === btn));
-      });
-      $row.appendChild(btn);
-    });
+    const Logo3D = (() => {
+      const canvas = document.getElementById('logo3d-canvas');
+      const placeholder = document.getElementById('logo3d-placeholder');
+      let renderer = null, scene = null, camera = null, mesh = null, rafId = null;
+      let pmrem = null, envMap = null;
+      let userYaw = 0, userPitch = 0.05, autoYaw = 0, zoom = 9.0;
+      let dragging = false, lastX = 0, lastY = 0;
+      let currentSpec = null;
+      const W = 720, H = 720; // internal render resolution
 
-    function buildLocalSvg(brandName, taglineTxt, paletteName, styleName){
-      const p = PALETTES[paletteName] || PALETTES.bharat;
-      const initials = (brandName || "C").trim().split(/\s+/).map(w => w[0]||"").join("").slice(0,3).toUpperCase() || "C";
-      const safe = (s) => (s||"").replace(/[<>&]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      let core = "";
-      if(styleName === "wordmark"){
-        core = `
-          <rect x="20" y="80" width="260" height="80" rx="12" fill="${p.primary}"/>
-          <text x="150" y="130" text-anchor="middle" font-family="Inter,Arial" font-size="32" font-weight="900" fill="#fff">${safe(brandName||"Brand")}</text>
-          ${taglineTxt ? `<text x="150" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" fill="${p.secondary}">${safe(taglineTxt)}</text>` : ""}
-        `;
-      } else if(styleName === "monogram"){
-        core = `
-          <circle cx="150" cy="110" r="68" fill="${p.primary}" stroke="${p.secondary}" stroke-width="6"/>
-          <text x="150" y="128" text-anchor="middle" font-family="Inter,Arial" font-size="56" font-weight="900" fill="#fff">${initials}</text>
-          ${taglineTxt ? `<text x="150" y="200" text-anchor="middle" font-family="Inter,Arial" font-size="13" fill="${p.secondary}">${safe(taglineTxt)}</text>` : ""}
-        `;
-      } else {
-        // shield (Chitti style)
-        core = `
-          <defs>
-            <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="${p.primary}"/>
-              <stop offset="100%" stop-color="${p.secondary}"/>
-            </linearGradient>
-          </defs>
-          <path d="M150 18 L240 56 L240 130 Q240 200 150 232 Q60 200 60 130 L60 56 Z" fill="url(#gp)" stroke="${p.accent}" stroke-width="5"/>
-          <circle cx="150" cy="110" r="36" fill="rgba(255,255,255,0.85)"/>
-          <text x="150" y="124" text-anchor="middle" font-family="Inter,Arial" font-size="36" font-weight="900" fill="${p.secondary}">${initials}</text>
-          ${brandName ? `<text x="150" y="180" text-anchor="middle" font-family="Inter,Arial" font-size="14" font-weight="800" fill="#fff">${safe(brandName).toUpperCase().slice(0,18)}</text>` : ""}
-          ${taglineTxt ? `<text x="150" y="200" text-anchor="middle" font-family="Inter,Arial" font-size="11" fill="#fff" opacity="0.9">${safe(taglineTxt).slice(0,40)}</text>` : ""}
-        `;
+      function initOnce(){
+        if(renderer) return;
+        if(typeof THREE === 'undefined'){
+          placeholder.textContent = '3D engine (Three.js) failed to load — check internet connection.';
+          return;
+        }
+        renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, preserveDrawingBuffer:true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(W, H, false);
+        if(renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace || renderer.outputColorSpace;
+        scene  = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(38, W/H, 0.1, 100);
+        camera.position.set(0, 0, zoom);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(4, 5, 6); scene.add(key);
+        const fill = new THREE.DirectionalLight(0xfff4d6, 0.45); fill.position.set(-5, -2, 3); scene.add(fill);
+        const rim = new THREE.DirectionalLight(0xa0e0ff, 0.7); rim.position.set(0, 3, -6); scene.add(rim);
+
+        // Indian flag equirectangular env map — reflects on chrome/gold
+        try {
+          const ec = document.createElement('canvas'); ec.width = 1024; ec.height = 512;
+          const ex = ec.getContext('2d');
+          const grad = ex.createLinearGradient(0,0,0,512);
+          grad.addColorStop(0,    '#FF9933');
+          grad.addColorStop(0.33, '#FF9933');
+          grad.addColorStop(0.34, '#FFFFFF');
+          grad.addColorStop(0.66, '#FFFFFF');
+          grad.addColorStop(0.67, '#138808');
+          grad.addColorStop(1,    '#138808');
+          ex.fillStyle = grad; ex.fillRect(0,0,1024,512);
+          const sun = ex.createRadialGradient(512, 100, 5, 512, 100, 140);
+          sun.addColorStop(0, 'rgba(255,255,255,0.95)');
+          sun.addColorStop(1, 'rgba(255,255,255,0)');
+          ex.fillStyle = sun; ex.fillRect(0,0,1024,512);
+          const envTex = new THREE.CanvasTexture(ec);
+          envTex.mapping = THREE.EquirectangularReflectionMapping;
+          if(THREE.PMREMGenerator){
+            pmrem = new THREE.PMREMGenerator(renderer);
+            envMap = pmrem.fromEquirectangular(envTex).texture;
+            scene.environment = envMap;
+            envTex.dispose();
+          } else {
+            scene.environment = envTex;
+          }
+        } catch(e){ console.warn('env map failed', e); }
+
+        attachInteraction();
+        renderLoop();
       }
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 240" width="240" aria-label="${safe(brandName||"Logo")}">${core}</svg>`;
+
+      function attachInteraction(){
+        const onDown = (x, y) => { dragging = true; lastX = x; lastY = y; };
+        const onMove = (x, y) => {
+          if(!dragging) return;
+          userYaw   += (x - lastX) * 0.008;
+          userPitch += (y - lastY) * 0.008;
+          userPitch = Math.max(-1.0, Math.min(1.0, userPitch));
+          lastX = x; lastY = y;
+        };
+        const onUp = () => { dragging = false; };
+        canvas.addEventListener('mousedown', e => onDown(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+        window.addEventListener('mouseup', onUp);
+        canvas.addEventListener('touchstart', e => { const t=e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
+        canvas.addEventListener('touchmove',  e => { const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+        canvas.addEventListener('touchend', onUp);
+        canvas.addEventListener('wheel', e => {
+          zoom = Math.max(5, Math.min(16, zoom + e.deltaY * 0.005));
+          camera.position.z = zoom;
+          e.preventDefault();
+        }, {passive:false});
+      }
+
+      function renderLoop(){
+        rafId = requestAnimationFrame(renderLoop);
+        autoYaw += 0.008;
+        if(mesh){
+          mesh.rotation.y = userYaw + autoYaw;
+          mesh.rotation.x = userPitch;
+        }
+        if(renderer && scene && camera) renderer.render(scene, camera);
+      }
+
+      // ----- Face canvas painting (the design drawn onto the front face) -----
+      async function buildFaceCanvas(spec){
+        const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0,0,1024,1024);
+
+        const brand = (spec.brand||'SAHAYAI').trim();
+        const tagline = (spec.tagline||'').trim();
+        const initials = brand.split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase() || 'S';
+
+        if(spec.style === 'shield'){
+          drawShieldFace(ctx, brand, tagline, initials, spec.withChitti);
+        } else if(spec.style === 'circle'){
+          drawCircleFace(ctx, brand, tagline, initials, spec.withChitti);
+        } else if(spec.style === 'wordmark'){
+          drawWordmarkFace(ctx, brand, tagline, spec.withChitti);
+        } else if(spec.style === 'character'){
+          await drawCharacterFace(ctx, brand, tagline);
+        }
+        return c;
+      }
+
+      function drawShieldFace(ctx, brand, tagline, initials, withChitti){
+        // Tricolor diagonal background
+        const bg = ctx.createLinearGradient(0,0,1024,1024);
+        bg.addColorStop(0,'#FF9933'); bg.addColorStop(0.5,'#FFFFFF'); bg.addColorStop(1,'#138808');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,1024,1024);
+        // Ashoka navy disc
+        ctx.fillStyle = 'rgba(0,0,128,0.92)';
+        ctx.beginPath(); ctx.arc(512, 430, 220, 0, Math.PI*2); ctx.fill();
+        // Inner gold ring
+        ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 10;
+        ctx.beginPath(); ctx.arc(512, 430, 210, 0, Math.PI*2); ctx.stroke();
+        // Initials
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '900 280px Inter, Arial, sans-serif';
+        ctx.fillText(initials, 512, 440);
+        // Brand
+        ctx.fillStyle = '#0E2344'; ctx.font = '900 80px Inter, Arial';
+        ctx.fillText(brand.toUpperCase().slice(0,18), 512, 760);
+        if(tagline){
+          ctx.fillStyle = '#0E2344'; ctx.font = '600 44px Inter, Arial';
+          ctx.fillText(tagline.slice(0,42), 512, 840);
+        }
+        if(withChitti) drawTinyChitti(ctx, 880, 880, 90);
+      }
+
+      function drawCircleFace(ctx, brand, tagline, initials, withChitti){
+        // Background
+        ctx.fillStyle = '#0E2344'; ctx.fillRect(0,0,1024,1024);
+        // Outer tricolor ring
+        ctx.lineWidth = 28;
+        ctx.strokeStyle = '#FF9933'; ctx.beginPath(); ctx.arc(512,512,460,-Math.PI/2, Math.PI/6); ctx.stroke();
+        ctx.strokeStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(512,512,460, Math.PI/6, 5*Math.PI/6); ctx.stroke();
+        ctx.strokeStyle = '#138808'; ctx.beginPath(); ctx.arc(512,512,460, 5*Math.PI/6, 3*Math.PI/2); ctx.stroke();
+        // Inner disc
+        const g = ctx.createRadialGradient(512,512,40, 512,512,420);
+        g.addColorStop(0,'#FFFFFF'); g.addColorStop(1,'#E5E7EB');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(512,512,420,0,Math.PI*2); ctx.fill();
+        // Initials
+        ctx.fillStyle = '#0E2344'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '900 360px Inter, Arial, sans-serif';
+        ctx.fillText(initials, 512, 500);
+        // Brand around
+        ctx.font = '700 56px Inter, Arial'; ctx.fillStyle = '#0E2344';
+        ctx.fillText(brand.toUpperCase().slice(0,22), 512, 820);
+        if(tagline){ ctx.font='500 36px Inter,Arial'; ctx.fillText(tagline.slice(0,40), 512, 880); }
+        if(withChitti) drawTinyChitti(ctx, 880, 200, 95);
+      }
+
+      function drawWordmarkFace(ctx, brand, tagline, withChitti){
+        // Indian flag horizontal stripes
+        ctx.fillStyle = '#FF9933'; ctx.fillRect(0,0,1024,341);
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,341,1024,342);
+        ctx.fillStyle = '#138808'; ctx.fillRect(0,683,1024,341);
+        // Ashoka chakra in middle
+        ctx.strokeStyle = '#000080'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(512, 512, 70, 0, Math.PI*2); ctx.stroke();
+        for(let i=0;i<24;i++){ const a = i*Math.PI/12;
+          ctx.beginPath(); ctx.moveTo(512+Math.cos(a)*8, 512+Math.sin(a)*8);
+          ctx.lineTo(512+Math.cos(a)*68, 512+Math.sin(a)*68); ctx.stroke();
+        }
+        // Brand band (dark navy banner)
+        ctx.fillStyle = 'rgba(14,35,68,0.92)'; ctx.fillRect(40, 380, 944, 264);
+        ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 6; ctx.strokeRect(40,380,944,264);
+        // Brand text
+        ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        const maxBrand = Math.min(180, 1700 / Math.max(brand.length, 6));
+        ctx.font = `900 ${maxBrand}px Inter, Arial`;
+        ctx.fillText(brand.toUpperCase().slice(0,22), 512, 480);
+        if(tagline){ ctx.font='600 46px Inter, Arial'; ctx.fillStyle='#FFE6BF'; ctx.fillText(tagline.slice(0,48), 512, 590); }
+        if(withChitti) drawTinyChitti(ctx, 130, 200, 110);
+      }
+
+      async function drawCharacterFace(ctx, brand, tagline){
+        // Background with subtle gradient
+        const bg = ctx.createRadialGradient(512, 400, 60, 512, 512, 700);
+        bg.addColorStop(0, '#1e3a8a'); bg.addColorStop(1, '#0E2344');
+        ctx.fillStyle = bg; ctx.fillRect(0,0,1024,1024);
+        // Tricolor sun rays behind character
+        for(let i=0;i<12;i++){
+          const a = i*Math.PI/6; const col = i%3===0?'#FF9933': i%3===1?'#FFFFFF':'#138808';
+          ctx.strokeStyle = col; ctx.globalAlpha = 0.22; ctx.lineWidth = 60;
+          ctx.beginPath(); ctx.moveTo(512+Math.cos(a)*120, 500+Math.sin(a)*120);
+          ctx.lineTo(512+Math.cos(a)*520, 500+Math.sin(a)*520); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        // Load mascot SVG and draw
+        try {
+          await new Promise((res, rej) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              const w = 560, h = 780;
+              ctx.drawImage(img, 232, 100, w, h);
+              res();
+            };
+            img.onerror = () => res();  // continue without mascot
+            img.src = 'tools/chitti_superhero_mascot.svg';
+          });
+        } catch(e){ /* swallow */ }
+        // Brand band
+        ctx.fillStyle = 'rgba(14,35,68,0.85)'; ctx.fillRect(0, 880, 1024, 144);
+        ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font = '900 80px Inter, Arial'; ctx.fillText((brand||'').toUpperCase().slice(0,18), 512, 928);
+        if(tagline){ ctx.font='500 38px Inter, Arial'; ctx.fillStyle='#FFE6BF'; ctx.fillText(tagline.slice(0,42), 512, 988); }
+      }
+
+      function drawTinyChitti(ctx, cx, cy, r){
+        ctx.save();
+        // Head
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy-r*0.25, r*0.6, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#0F6A1B'; ctx.lineWidth = 4; ctx.stroke();
+        // Visor
+        ctx.fillStyle = '#1B9F2A';
+        ctx.beginPath(); ctx.arc(cx, cy-r*0.2, r*0.4, Math.PI*0.1, Math.PI - Math.PI*0.1); ctx.fill();
+        // Body
+        ctx.fillStyle = '#fff'; ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(cx-r*0.5, cy+r*0.15, r, r*0.85, 12) : ctx.rect(cx-r*0.5, cy+r*0.15, r, r*0.85);
+        ctx.fill(); ctx.stroke();
+        // Chest green
+        ctx.fillStyle = '#1B9F2A';
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(cx-r*0.22, cy+r*0.22, r*0.44, r*0.7, 10) : ctx.rect(cx-r*0.22, cy+r*0.22, r*0.44, r*0.7);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // ----- Geometry per style -----
+      function buildShieldShape(){
+        const s = new THREE.Shape();
+        // shield (centered, ~3.0 wide × 4.0 tall, top point at +2.0, bottom at -2.0)
+        const W = 1.5, H = 2.0;
+        s.moveTo(-W, H*0.6);                  // top-left
+        s.lineTo(0,  H*0.95);                  // peak (slight crown)
+        s.lineTo(W,  H*0.6);                   // top-right
+        s.lineTo(W,  -H*0.2);                  // mid-right
+        s.bezierCurveTo(W, -H*0.85, W*0.5, -H, 0, -H); // curve to bottom point
+        s.bezierCurveTo(-W*0.5, -H, -W, -H*0.85, -W, -H*0.2);
+        s.closePath();
+        return s;
+      }
+      function buildCircleShape(){ const s = new THREE.Shape(); s.absarc(0,0, 1.9, 0, Math.PI*2, false); return s; }
+      function buildBannerShape(){
+        const s = new THREE.Shape();
+        s.moveTo(-2.2, -0.9); s.lineTo(2.2, -0.9); s.lineTo(2.2, 0.9); s.lineTo(-2.2, 0.9); s.closePath();
+        return s;
+      }
+
+      function buildGeometry(style){
+        if(style === 'character') return new THREE.PlaneGeometry(3.0, 4.0, 1, 1);
+        let shape;
+        if(style === 'shield')   shape = buildShieldShape();
+        else if(style === 'circle')  shape = buildCircleShape();
+        else                          shape = buildBannerShape();
+        const geom = new THREE.ExtrudeGeometry(shape, {
+          depth: 0.35,
+          bevelEnabled: true,
+          bevelThickness: 0.06,
+          bevelSize: 0.06,
+          bevelSegments: 3,
+          curveSegments: 48,
+        });
+        geom.center();
+        // Generate UVs that map the front face to the texture
+        assignFrontUVs(geom);
+        return geom;
+      }
+
+      function assignFrontUVs(geom){
+        geom.computeBoundingBox();
+        const bb = geom.boundingBox;
+        const sizeX = bb.max.x - bb.min.x;
+        const sizeY = bb.max.y - bb.min.y;
+        const pos = geom.attributes.position;
+        const uv  = geom.attributes.uv;
+        for(let i=0;i<pos.count;i++){
+          const x = pos.getX(i), y = pos.getY(i);
+          uv.setXY(i, (x - bb.min.x)/sizeX, (y - bb.min.y)/sizeY);
+        }
+        uv.needsUpdate = true;
+      }
+
+      // ----- Material -----
+      function buildMaterial(matName, faceTex){
+        faceTex.colorSpace = THREE.SRGBColorSpace || faceTex.colorSpace;
+        faceTex.anisotropy = 8;
+        const common = { map: faceTex };
+        if(matName === 'saffron'){
+          return new THREE.MeshStandardMaterial({ ...common, color: 0xffd9a8, metalness: 0.45, roughness: 0.35 });
+        }
+        if(matName === 'chrome'){
+          return new THREE.MeshStandardMaterial({ ...common, color: 0xffffff, metalness: 0.95, roughness: 0.12, envMapIntensity: 1.4 });
+        }
+        if(matName === 'gold'){
+          return new THREE.MeshStandardMaterial({ ...common, color: 0xffe7a8, metalness: 0.9, roughness: 0.22, envMapIntensity: 1.2 });
+        }
+        if(matName === 'tricolor'){
+          return new THREE.MeshStandardMaterial({ ...common, color: 0xffffff, metalness: 0.65, roughness: 0.28, envMapIntensity: 1.3 });
+        }
+        return new THREE.MeshStandardMaterial(common);
+      }
+
+      async function generate(spec){
+        initOnce();
+        if(!renderer) return false;
+        currentSpec = spec;
+        placeholder.style.display = 'none';
+
+        // dispose previous mesh
+        if(mesh){
+          scene.remove(mesh);
+          if(mesh.geometry) mesh.geometry.dispose();
+          if(mesh.material){
+            const m = mesh.material;
+            if(m.map) m.map.dispose();
+            m.dispose();
+          }
+          mesh = null;
+        }
+
+        const faceCanvas = await buildFaceCanvas(spec);
+        const faceTex = new THREE.CanvasTexture(faceCanvas);
+        faceTex.needsUpdate = true;
+
+        const geom = buildGeometry(spec.style);
+        const mat  = buildMaterial(spec.material, faceTex);
+        mesh = new THREE.Mesh(geom, mat);
+        scene.add(mesh);
+
+        // reset orientation
+        userYaw = 0; userPitch = 0.05; autoYaw = 0;
+        return true;
+      }
+
+      function snapshotPNG(){
+        if(!renderer) return null;
+        return new Promise(res => {
+          renderer.domElement.toBlob(blob => res(blob), 'image/png');
+        });
+      }
+
+      function recordWebM(durationMs, onProgress){
+        return new Promise((resolve, reject) => {
+          if(!renderer || !mesh) return reject(new Error('Nothing to record'));
+          const stream = renderer.domElement.captureStream(30);
+          let mime = 'video/webm;codecs=vp9';
+          if(!window.MediaRecorder || !MediaRecorder.isTypeSupported(mime)){
+            mime = 'video/webm;codecs=vp8';
+            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+          }
+          const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+          const chunks = [];
+          rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+          rec.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+          rec.onerror = e => reject(e.error || e);
+          const t0 = performance.now();
+          rec.start(200);
+          const tick = () => {
+            const elapsed = performance.now() - t0;
+            if(onProgress) onProgress(Math.min(1, elapsed/durationMs));
+            if(elapsed >= durationMs){ try{ rec.stop(); }catch(e){} return; }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+
+      function recordGIF(durationMs, fps, onProgress){
+        return new Promise((resolve, reject) => {
+          if(!renderer || !mesh) return reject(new Error('Nothing to record'));
+          if(typeof GIF === 'undefined') return reject(new Error('GIF encoder not loaded'));
+          const totalFrames = Math.round(durationMs/1000 * fps);
+          const frameDelayMs = Math.round(1000/fps);
+          const gif = new GIF({
+            workers: 2, quality: 12,
+            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',
+            width: 480, height: 480,
+            transparent: null,
+          });
+          // Offscreen scaler canvas — keeps GIF small
+          const scaler = document.createElement('canvas');
+          scaler.width = 480; scaler.height = 480;
+          const sctx = scaler.getContext('2d');
+
+          let frame = 0;
+          const captureOne = () => {
+            if(frame >= totalFrames){
+              gif.on('progress', p => { if(onProgress) onProgress(0.5 + p*0.5); });
+              gif.on('finished', blob => resolve(blob));
+              gif.render();
+              return;
+            }
+            // ensure THREE rendered the latest tick
+            renderer.render(scene, camera);
+            sctx.clearRect(0,0,480,480);
+            sctx.drawImage(renderer.domElement, 0, 0, 480, 480);
+            gif.addFrame(scaler, { copy: true, delay: frameDelayMs });
+            frame++;
+            if(onProgress) onProgress((frame/totalFrames) * 0.5);
+            setTimeout(captureOne, frameDelayMs);
+          };
+          captureOne();
+        });
+      }
+
+      return { generate, snapshotPNG, recordWebM, recordGIF };
+    })();
+
+    // ----- Wire up Logo Studio form -----
+    const $brand    = document.getElementById('brand');
+    const $tag      = document.getElementById('tagline');
+    const $logoGo   = document.getElementById('logo-go');
+    const $logoDlPng  = document.getElementById('logo-dl-png');
+    const $logoDlWebm = document.getElementById('logo-dl-webm');
+    const $logoDlGif  = document.getElementById('logo-dl-gif');
+    const $logoMeta = document.getElementById('logo-meta');
+    const $logoProg  = document.getElementById('logo3d-progress');
+    const $logoProgT = document.getElementById('logo3d-progress-text');
+    const $logoProgB = document.getElementById('logo3d-progress-bar');
+    let logoStyle = 'shield';
+    let logoMaterial = 'saffron';
+
+    document.querySelectorAll('#style-grid .opt-pick').forEach(b => {
+      b.addEventListener('click', () => {
+        logoStyle = b.dataset.style;
+        document.querySelectorAll('#style-grid .opt-pick').forEach(x => {
+          const active = x === b; x.classList.toggle('active', active); x.setAttribute('aria-checked', active);
+        });
+        updateMeta();
+      });
+    });
+    document.querySelectorAll('#material-grid .opt-pick').forEach(b => {
+      b.addEventListener('click', () => {
+        logoMaterial = b.dataset.material;
+        document.querySelectorAll('#material-grid .opt-pick').forEach(x => {
+          const active = x === b; x.classList.toggle('active', active); x.setAttribute('aria-checked', active);
+        });
+        updateMeta();
+      });
+    });
+    document.getElementById('with-chitti').addEventListener('change', updateMeta);
+    function updateMeta(){
+      const wc = document.getElementById('with-chitti').checked ? 'yes' : 'no';
+      $logoMeta.textContent = `style: ${logoStyle} · material: ${logoMaterial} · with Chitti: ${wc}`;
     }
 
-    const $brand = document.getElementById("brand");
-    const $tag   = document.getElementById("tagline");
-    const $style = document.getElementById("style");
-    const $logoGo = document.getElementById("logo-go");
-    const $logoDl = document.getElementById("logo-dl");
-    const $logoDlPng = document.getElementById("logo-dl-png");
-    const $logoMeta = document.getElementById("logo-meta");
-    const $logoPrev = document.getElementById("logo-preview");
-    let lastSvg = null, lastBrand = null;
-
-    $logoGo.addEventListener("click", async () => {
-      const brand = ($brand.value || "").trim();
-      if (!brand) { $logoMeta.textContent = "type a brand name first"; ChittiSound.warning(); return; }
-      $logoGo.disabled = true; $logoMeta.textContent = "generating…";
-      let svgString = null, supplier = "local-fallback";
-      try {
-        const r = await fetch(API + "/api/lv/logo/generate", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ brand_name: brand, tagline: $tag.value, palette, style: $style.value }),
-        });
-        const j = await r.json();
-        if (j.ok && j.svg) { svgString = j.svg; supplier = j.supplier || "backend"; }
-      } catch (e) { /* fall through to local */ }
-      if(!svgString) svgString = buildLocalSvg(brand, $tag.value, palette, $style.value);
-      $logoPrev.innerHTML = svgString;
-      lastSvg = svgString; lastBrand = brand;
-      $logoDl.disabled = false; $logoDlPng.disabled = false;
-      $logoMeta.textContent = `supplier: ${supplier} · palette: ${palette} · style: ${$style.value}`;
-      $logoGo.disabled = false;
-      ChittiSound.success();
-    });
-
-    $logoDl.addEventListener("click", () => {
-      if (!lastSvg) return;
-      const blob = new Blob([lastSvg], {type: "image/svg+xml"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = (lastBrand || "logo").replace(/\s+/g, "_") + ".svg";
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    });
-
-    $logoDlPng.addEventListener("click", () => {
-      if (!lastSvg) return;
-      const img = new Image();
-      const svgBlob = new Blob([lastSvg], {type: "image/svg+xml;charset=utf-8"});
-      const svgUrl = URL.createObjectURL(svgBlob);
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 600; canvas.height = 480;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          const pngUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = pngUrl; a.download = (lastBrand || "logo").replace(/\s+/g,"_") + ".png";
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => { URL.revokeObjectURL(pngUrl); URL.revokeObjectURL(svgUrl); }, 5000);
-        }, "image/png");
+    function currentSpec(){
+      return {
+        brand: ($brand.value||'').trim() || 'SAHAYAI',
+        tagline: ($tag.value||'').trim() || 'Bharat ka apna Chitti',
+        style: logoStyle,
+        material: logoMaterial,
+        withChitti: document.getElementById('with-chitti').checked,
       };
-      img.src = svgUrl;
+    }
+
+    $logoGo.addEventListener('click', async () => {
+      $logoGo.disabled = true; $logoMeta.textContent = 'generating 3D logo…';
+      try{
+        const ok = await Logo3D.generate(currentSpec());
+        if(ok){
+          updateMeta();
+          $logoDlPng.disabled = false; $logoDlWebm.disabled = false; $logoDlGif.disabled = false;
+          ChittiSound.success();
+        } else {
+          $logoMeta.textContent = '3D engine unavailable — refresh the page.';
+          ChittiSound.warning();
+        }
+      } catch(e){
+        console.error(e); $logoMeta.textContent = 'error: ' + (e.message||e);
+        ChittiSound.warning();
+      } finally { $logoGo.disabled = false; }
     });
 
-    document.getElementById("use-chitti-shield").addEventListener("click", () => {
-      $brand.value = "Chitti";
-      $tag.value = "Bharat ka Apna AI";
-      palette = "bharat";
-      document.querySelectorAll(".palette-pick").forEach(b => b.classList.toggle("active", b.dataset.name === "bharat"));
-      $style.value = "shield";
-      $logoGo.click();
+    function showProgress(label){
+      $logoProg.classList.add('show'); $logoProgT.textContent = label; $logoProgB.style.width = '0%';
+    }
+    function setProgress(p, label){ $logoProgB.style.width = Math.round(p*100)+'%'; if(label) $logoProgT.textContent = label; }
+    function hideProgress(){ $logoProg.classList.remove('show'); }
+
+    function brandFile(ext){ return ((currentSpec().brand)||'logo').replace(/\s+/g,'_').toLowerCase() + '.' + ext; }
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+    }
+
+    $logoDlPng.addEventListener('click', async () => {
+      try{
+        const blob = await Logo3D.snapshotPNG();
+        if(!blob) throw new Error('snapshot failed');
+        downloadBlob(blob, brandFile('png'));
+        ChittiSound.success();
+      } catch(e){ alert('PNG failed: ' + e.message); }
+    });
+
+    $logoDlWebm.addEventListener('click', async () => {
+      $logoDlWebm.disabled = true; showProgress('Recording WebM (30s)…');
+      try{
+        const blob = await Logo3D.recordWebM(30000, p => setProgress(p, `Recording WebM ${Math.round(p*30)}s / 30s`));
+        downloadBlob(blob, brandFile('webm'));
+        ChittiSound.victory();
+      } catch(e){ alert('WebM failed: ' + e.message); }
+      finally { hideProgress(); $logoDlWebm.disabled = false; }
+    });
+
+    $logoDlGif.addEventListener('click', async () => {
+      $logoDlGif.disabled = true; showProgress('Capturing GIF frames…');
+      try{
+        const blob = await Logo3D.recordGIF(6000, 15, p => {
+          const label = p < 0.5 ? `Capturing frames ${Math.round(p*200)}%` : `Encoding GIF ${Math.round((p-0.5)*200)}%`;
+          setProgress(p, label);
+        });
+        downloadBlob(blob, brandFile('gif'));
+        ChittiSound.victory();
+      } catch(e){ alert('GIF failed: ' + e.message); }
+      finally { hideProgress(); $logoDlGif.disabled = false; }
     });
 
     /* =============================================================
@@ -716,6 +1141,63 @@
       el.querySelector("button").addEventListener("click", () => playVideo(key));
     });
 
+    // 5th card: My Success Story (custom storyboard from user inputs)
+    (function addMySuccessStoryCard(){
+      const el = document.createElement('div');
+      el.className = 'video-card';
+      el.style.borderColor = 'var(--saffron)';
+      el.innerHTML = `
+        <h4>⭐ My Success Story <span style="font-size:11px;font-weight:600;color:var(--saffron)">custom</span></h4>
+        <div class="meta-row">40s · vertical 9:16 · 5 scenes · YOUR story</div>
+        <div class="end-line">🇮🇳 Bharat ka Apna Chitti</div>
+        <label for="mss-name" style="margin-top:6px">Your name</label>
+        <input id="mss-name" type="text" placeholder="e.g. Ramesh" maxlength="40" />
+        <label for="mss-city">Your city</label>
+        <input id="mss-city" type="text" placeholder="e.g. Lucknow" maxlength="40" />
+        <label for="mss-help">What did Chitti help you with?</label>
+        <textarea id="mss-help" placeholder="e.g. Crocin ki jagah Jan Aushadhi li, ₹2400 bachaye" maxlength="160"></textarea>
+        <label for="mss-lang">Language for voice-over</label>
+        <select id="mss-lang">
+          <option value="hi-IN" selected>हिन्दी</option>
+          <option value="en-IN">English</option>
+          <option value="ta-IN">தமிழ்</option>
+          <option value="te-IN">తెలుగు</option>
+          <option value="bn-IN">বাংলা</option>
+          <option value="mr-IN">मराठी</option>
+          <option value="gu-IN">ગુજરાતી</option>
+          <option value="kn-IN">ಕನ್ನಡ</option>
+          <option value="ml-IN">മലയാളം</option>
+          <option value="pa-IN">ਪੰਜਾਬੀ</option>
+        </select>
+        <button class="primary" id="mss-play">▶ Create my video</button>
+      `;
+      $videoList.appendChild(el);
+      el.querySelector('#mss-play').addEventListener('click', () => {
+        const name = (document.getElementById('mss-name').value||'').trim() || 'Bharat';
+        const city = (document.getElementById('mss-city').value||'').trim() || 'India';
+        const help = (document.getElementById('mss-help').value||'').trim() || 'Chitti ne meri madad ki';
+        const lang = document.getElementById('mss-lang').value;
+        const customVideo = {
+          title: name + " · My Success Story",
+          durationS: 40,
+          emoji: '⭐',
+          endLine: 'BHARAT KA APNA CHITTI',
+          endEmoji: '🇮🇳',
+          lang,
+          scenes: [
+            { emoji:'😕', title:'Pareshani', body:`${name}, ${city} se`, dialogue:`"Mujhe madad chahiye thi…"`, caption:`${name} from ${city}`, desc:`The story begins: ${name} from ${city} faced a problem`, ms:7000, bg:'linear-gradient(180deg,#fee2e2,#fecaca)' },
+            { emoji:'🛡️', title:'Chitti aaya', body:'Chitti shield activated', dialogue:'"Chitti… kuch karo."', caption:`${name} taps Chitti`, desc:`${name} reaches for Chitti`, ms:7000, bg:'linear-gradient(180deg,#dbeafe,#bfdbfe)' },
+            { emoji:'⚡', title:'Solution', body:help, dialogue:`"${help}"`, caption: help.slice(0,72), desc:`Chitti helps: ${help}`, ms:10000, bg:'linear-gradient(180deg,#dcfce7,#bbf7d0)' },
+            { emoji:'🎉', title:'Jeet!', body:'Problem solved. Chitti style.', dialogue:`"Shukriya Chitti!"`, caption:`${name}: "Shukriya Chitti!"`, desc:`${name} celebrates the win`, ms:8000, bg:'linear-gradient(180deg,#fef3c7,#fde68a)' },
+            { emoji:'🇮🇳', title:'Bharat ka Apna Chitti', body:'Aap bhi try karein. Free.', dialogue:'', caption:'BHARAT KA APNA CHITTI', desc:'Closing scene: Chitti shield pulses', ms:8000, bg:'radial-gradient(circle,#0E2344,#000)', isEnd:true, endEmoji:'🇮🇳' },
+          ]
+        };
+        VIRAL_VIDEOS["my-success-story"] = customVideo;
+        playVideo("my-success-story");
+        ChittiSound.activation();
+      });
+    })();
+
     // Stage state
     const stageEl = document.getElementById("stage");
     const subtitleBand = document.getElementById("subtitle-band");
@@ -737,21 +1219,28 @@
       if(sceneTimer){ clearTimeout(sceneTimer); sceneTimer = null; }
     }
 
-    function langForSpeech(){
+    function langForSpeech(preferred){
       const langs = (speech && speech.getVoices && speech.getVoices()) || [];
-      // Prefer hi-IN, else en-IN, else default
+      if(preferred){
+        const exact = langs.find(v => v.lang && v.lang.toLowerCase() === preferred.toLowerCase());
+        if(exact) return exact;
+        const code = preferred.split('-')[0].toLowerCase();
+        const stem = langs.find(v => v.lang && v.lang.toLowerCase().startsWith(code));
+        if(stem) return stem;
+      }
       const hi = langs.find(v => /hi/i.test(v.lang)); if(hi) return hi;
       const en = langs.find(v => /en-IN|en-US|en-GB/i.test(v.lang)); if(en) return en;
       return null;
     }
 
-    function speak(text, lang="hi-IN"){
+    function speak(text, lang){
       if(!speech || !text) return;
       try{ speech.cancel(); }catch(e){}
       const u = new SpeechSynthesisUtterance(text);
-      const v = langForSpeech();
+      const preferLang = lang || (currentVideo && currentVideo.lang) || "hi-IN";
+      const v = langForSpeech(preferLang);
       if(v) u.voice = v;
-      u.lang = lang;
+      u.lang = preferLang;
       const speed = parseFloat(document.getElementById("play-speed").value) || 1;
       u.rate = 0.92 * speed;
       u.pitch = 1.0;
@@ -1103,17 +1592,108 @@
     });
 
     /* =============================================================
-       CONTENT CALENDAR
+       CONTENT CALENDAR — auto-generates a fresh week in the browser
+       Topic pool × multiple templates per topic. No API key. No backend.
        ============================================================= */
-    const CALENDAR_DEFAULT = [
-      { day:"Monday",    theme:"💊 Medicine savings tip", post:"Crocin ki jagah Paracetamol Jan Aushadhi — same molecule, 80% sasta. Chitti se poochho.", time:"7am / 1pm / 7pm IST" },
-      { day:"Tuesday",   theme:"🏛️ Government scheme of week", post:"PM Vishwakarma Yojana — ₹15,000 toolkit + ₹3 lakh loan @5%. Eligibility? Chitti se poochho.", time:"7am / 1pm / 7pm IST" },
-      { day:"Wednesday", theme:"⚖️ Legal right Indians don't know", post:"RTI filing free hai. ₹10 fee, 30 din mein jawab. Chitti banayega draft.", time:"7am / 1pm / 7pm IST" },
-      { day:"Thursday",  theme:"💚 User success story", post:"Ramesh ji ne ₹2,400 bachaye. Aap bhi share karein apni kahani.", time:"7am / 1pm / 7pm IST" },
-      { day:"Friday",    theme:"🛡️ Corruption Killer tip", post:"Rishwat maango toh RTI maango. Chitti tumhare paas hai.", time:"7am / 1pm / 7pm IST" },
-      { day:"Saturday",  theme:"👗 Fashion / lifestyle tip", post:"10-second outfit rating with Chitti — kaisa lag raha hoon?", time:"7am / 1pm / 7pm IST" },
-      { day:"Sunday",    theme:"❤️ Family emotional story", post:"Maa-papa ke saath video call. Chitti reminder set kar do.", time:"7am / 1pm / 7pm IST" },
+    const CAL_TOPICS = [
+      { theme:"💊 Medicine savings tip", posts:[
+        "Crocin ki jagah Paracetamol Jan Aushadhi — same molecule, 80% sasta. Chitti se poochho.",
+        "Saridon vs Combiflam — kya farak? Generic version sirf ₹12. Chitti scanner se check karo.",
+        "₹450 ki cough syrup → Jan Aushadhi ₹65. Same composition. Chitti MedUPI batayega.",
+        "BP ki dawai ₹240/month? Jan Aushadhi me ₹40/month. Doctor se brand-free likhwao.",
+      ]},
+      { theme:"🏛️ Government scheme of week", posts:[
+        "PM Vishwakarma Yojana — ₹15,000 toolkit + ₹3 lakh loan @5%. Eligibility? Chitti se poochho.",
+        "Ujjwala 2.0 — free LPG connection. Aadhaar + ration card lagega. Chitti form bharega.",
+        "Sukanya Samriddhi — beti ke liye 7.6% interest. ₹250 se start. Tax-free.",
+        "PMAY (Awas Yojana) — ₹2.67 lakh subsidy on first home loan. Chitti se eligibility check.",
+        "Ayushman Bharat — ₹5 lakh free health cover/year. Card kaise banayein? Chitti dikhayega.",
+      ]},
+      { theme:"⚖️ Legal right Indians don't know", posts:[
+        "RTI filing free hai. ₹10 fee, 30 din mein jawab. Chitti banayega draft.",
+        "Consumer forum me 5 lakh tak free hai. Online file. Chitti format ready.",
+        "FIR refuse karein toh DGP ko likho — bound by law. Chitti template degi.",
+        "Salary 60 din se nahi mili? Labour court free hai. Chitti notice banayega.",
+        "Police custody me 24 ghante se zyada ban nahi sakte (Article 22). Janch karo.",
+      ]},
+      { theme:"💚 User success story", posts:[
+        "Ramesh ji ne ₹2,400 bachaye dawai me. Aap bhi share karein apni kahani.",
+        "Sita didi ka DL Chitti ne 5 minute me renew kara diya. Sarkari office gayi hi nahi.",
+        "Vivek ne UPI scam pakad liya Chitti scanner se — ₹50,000 bach gaye.",
+        "Lakshmi amma ko Ujjwala connection mil gaya — Chitti ne form bhara.",
+      ]},
+      { theme:"🛡️ Corruption Killer tip", posts:[
+        "Rishwat maango toh RTI maango. Chitti tumhare paas hai.",
+        "Babu file roke? CPGRAMS pe complaint — 30 din me action. Chitti file karega.",
+        "Police complaint nahi le rahe? Online Zero FIR file karo. Chitti dikhayega.",
+        "Bijli bill galat? Discom ombudsman free. Chitti shikayat banayega.",
+      ]},
+      { theme:"👗 Fashion / lifestyle tip", posts:[
+        "10-second outfit rating with Chitti — kaisa lag raha hoon?",
+        "Shaadi me kaunsa rang? Chitti camera se face tone check karke batayega.",
+        "Office formal vs Friday casual — Chitti style coach.",
+        "Festival outfit ideas — Chitti se 5 options dekho free.",
+      ]},
+      { theme:"❤️ Family emotional story", posts:[
+        "Maa-papa ke saath weekly video call. Chitti reminder set kar do.",
+        "Bhai-behan ka raksha bandhan — Chitti gift ideas + auto-courier.",
+        "Dada-dadi ke purane photo restore — Chitti AI free me karega.",
+        "Wife/husband birthday miss? Chitti yaad rakhega — ek baar bata do.",
+      ]},
+      { theme:"🚗 Vehicle / mechanic tip", posts:[
+        "Bike service ka time? Chitti 2-wheeler batayega — koi mechanic loot nahi sakta.",
+        "Car AC kam? Most likely gas, ₹600. Mechanic ₹3000 kahega. Chitti se confirm.",
+        "Tyre pressure har 15 din check. Chitti reminder + nearest pump locator.",
+        "Insurance renewal 30 din pehle — break = NCB loss. Chitti time se yaad dilayega.",
+      ]},
+      { theme:"📊 Stock market lesson", posts:[
+        "Roshan Indicator green + EMA cross = entry signal. Chitti Technical batayega.",
+        "Promoter pledge >25% = warning. Chitti Fundamentals scan free.",
+        "Bonus/split vs dividend — kaunsa kab achha? Chitti samjhayega.",
+        "P/E 30 se upar = caution zone. Chitti har stock ka P/E live dikhata hai.",
+      ]},
+      { theme:"📰 Trending news angle", posts:[
+        "Aaj ka top headline — Chitti News pe 3-line summary.",
+        "Election waqt fake forwards filter — Chitti fact-checker.",
+        "Local news + state language. Chitti News me 11 languages.",
+        "Markets, politics, sports — alag tabs me. WhatsApp forward se aage.",
+      ]},
+      { theme:"🎉 Festival / season tip", posts:[
+        "Diwali safety — Chitti ne 5 things checklist banayi hai.",
+        "Holi colors safe? Chitti scanner se test karo (skin allergy alert).",
+        "Eid sweets cost compare — Chitti shopping list.",
+        "Pongal/Onam recipes — Chitti dadi se seekha hua.",
+      ]},
     ];
+    const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    const TIME_SLOTS = ["7am / 1pm / 7pm IST", "8am / 12pm / 6pm IST", "9am / 2pm / 8pm IST"];
+
+    function rngSeeded(seed){
+      let s = seed >>> 0;
+      return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    }
+
+    function buildWeek(seed){
+      const rng = rngSeeded(seed || Date.now());
+      const pool = CAL_TOPICS.slice();
+      // shuffle deterministically
+      for(let i = pool.length-1; i>0; i--){ const j = Math.floor(rng()*(i+1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+      const week = [];
+      for(let i=0;i<7;i++){
+        const topic = pool[i % pool.length];
+        const post  = topic.posts[Math.floor(rng() * topic.posts.length)];
+        week.push({
+          day: DAYS[i],
+          theme: topic.theme,
+          post,
+          time: TIME_SLOTS[Math.floor(rng() * TIME_SLOTS.length)],
+        });
+      }
+      return week;
+    }
+
+    let currentWeek = buildWeek(20260527);
+
     function renderCalendar(items){
       const cal = document.getElementById("calendar");
       cal.innerHTML = "";
@@ -1129,18 +1709,24 @@
         cal.appendChild(row);
       });
     }
-    renderCalendar(CALENDAR_DEFAULT);
+    renderCalendar(currentWeek);
+
     document.getElementById("cal-regen").addEventListener("click", () => {
-      // No backend yet — re-render the default with a small shuffle of posts
-      const items = CALENDAR_DEFAULT.map(x => ({...x}));
-      renderCalendar(items);
+      currentWeek = buildWeek(Date.now() ^ Math.floor(Math.random()*1e9));
+      renderCalendar(currentWeek);
       ChittiSound.success();
-      alert("Weekly schedule refreshed. (DeepSeek auto-generation wires in when GEMINI_API_KEY / DEEPSEEK_API_KEY is set on Railway.)");
     });
+
     document.getElementById("cal-download").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(CALENDAR_DEFAULT, null, 2)], { type:"application/json" });
+      // Build a CSV the user can import into Google Sheets / Buffer / Hootsuite
+      const header = "day,theme,post,best_time\n";
+      const rows = currentWeek.map(w => {
+        const safe = s => '"' + String(s).replace(/"/g,'""') + '"';
+        return [safe(w.day), safe(w.theme), safe(w.post), safe(w.time)].join(",");
+      }).join("\n");
+      const blob = new Blob([header + rows], { type:"text/csv" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = "chitti_content_calendar.json";
+      const a = document.createElement("a"); a.href = url; a.download = "chitti_content_calendar.csv";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     });

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" width="500" height="700">
+  <title>Chitti — SAHAYAI Superhero Mascot</title>
+  <desc>Full-body Chitti robot character with Indian-flag cape, green boots, S-heartbeat chest emblem, and clipboard. Official mascot.</desc>
+
+  <defs>
+    <!-- White shell gradient -->
+    <linearGradient id="whiteShell" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#D8D8D8"/>
+    </linearGradient>
+
+    <!-- Green body gradient -->
+    <linearGradient id="greenBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#52E661"/>
+      <stop offset="100%" stop-color="#1B9F2A"/>
+    </linearGradient>
+
+    <!-- Visor radial -->
+    <radialGradient id="visorGrad" cx="40%" cy="35%" r="70%">
+      <stop offset="0%"  stop-color="#7BEC85"/>
+      <stop offset="55%" stop-color="#2DCA3D"/>
+      <stop offset="100%" stop-color="#0F6A1B"/>
+    </radialGradient>
+
+    <!-- Boot gradient -->
+    <linearGradient id="bootGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#3FD64F"/>
+      <stop offset="100%" stop-color="#0F6A1B"/>
+    </linearGradient>
+
+    <!-- Cape shading overlay -->
+    <linearGradient id="capeShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.28"/>
+    </linearGradient>
+
+    <!-- Cape outline / clip -->
+    <clipPath id="capeClip">
+      <path d="M 175 215
+               Q 250 198 325 215
+               C 365 285, 400 410, 420 600
+               Q 400 614 378 600
+               Q 358 614 338 598
+               Q 318 614 298 598
+               Q 278 614 258 598
+               Q 238 614 218 598
+               Q 198 614 178 598
+               Q 158 614 138 598
+               Q 118 614 98 598
+               Q 80 614 80 600
+               C 100 410, 135 285, 175 215 Z"/>
+    </clipPath>
+
+    <!-- S-emblem ring clip (donut) -->
+    <clipPath id="ringClip">
+      <path d="M -42,0 A 42,42 0 1,1 42,0 A 42,42 0 1,1 -42,0 Z
+               M -32,0 A 32,32 0 1,0 32,0 A 32,32 0 1,0 -32,0 Z"
+            fill-rule="evenodd"/>
+    </clipPath>
+
+    <!-- Soft drop shadow -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="3" result="b"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ===== Floor shadow ===== -->
+  <ellipse cx="250" cy="615" rx="140" ry="14" fill="#000" opacity="0.18"/>
+
+  <!-- ===== CAPE (Indian flag) ===== -->
+  <g id="cape">
+    <g clip-path="url(#capeClip)">
+      <rect x="0" y="195" width="500" height="140" fill="#FF9933"/>
+      <rect x="0" y="335" width="500" height="135" fill="#FFFFFF"/>
+      <rect x="0" y="470" width="500" height="150" fill="#138808"/>
+      <!-- Ashoka chakra hint on white stripe (small, centered behind body) -->
+      <circle cx="250" cy="402" r="22" fill="none" stroke="#000080" stroke-width="1.2" opacity="0.55"/>
+      <g stroke="#000080" stroke-width="0.8" opacity="0.55">
+        <line x1="250" y1="380" x2="250" y2="424"/>
+        <line x1="228" y1="402" x2="272" y2="402"/>
+        <line x1="234" y1="386" x2="266" y2="418"/>
+        <line x1="266" y1="386" x2="234" y2="418"/>
+      </g>
+      <!-- Shading -->
+      <rect x="0" y="195" width="500" height="430" fill="url(#capeShade)"/>
+    </g>
+    <!-- Cape outline -->
+    <path d="M 175 215
+             Q 250 198 325 215
+             C 365 285, 400 410, 420 600
+             Q 400 614 378 600
+             Q 358 614 338 598
+             Q 318 614 298 598
+             Q 278 614 258 598
+             Q 238 614 218 598
+             Q 198 614 178 598
+             Q 158 614 138 598
+             Q 118 614 98 598
+             Q 80 614 80 600
+             C 100 410, 135 285, 175 215 Z"
+          fill="none" stroke="#333" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ===== LEGS ===== -->
+  <g id="legs">
+    <!-- Left leg shaft -->
+    <rect x="202" y="430" width="42" height="95" rx="18"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+    <!-- Right leg shaft -->
+    <rect x="256" y="430" width="42" height="95" rx="18"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+    <!-- Knee accent -->
+    <ellipse cx="223" cy="475" rx="14" ry="6" fill="#999" opacity="0.25"/>
+    <ellipse cx="277" cy="475" rx="14" ry="6" fill="#999" opacity="0.25"/>
+
+    <!-- LEFT BOOT -->
+    <path d="M 198 510
+             L 248 510
+             L 248 555
+             Q 250 568 260 572
+             L 272 575
+             Q 280 583 270 590
+             L 178 590
+             Q 168 583 178 575
+             L 192 572
+             Q 200 568 198 555 Z"
+          fill="url(#bootGrad)" stroke="#0F6A1B" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Left boot highlight -->
+    <ellipse cx="218" cy="540" rx="6" ry="18" fill="#A9F2B2" opacity="0.45"/>
+    <!-- Left boot sole -->
+    <path d="M 178 588 L 272 588 Q 274 593 270 595 L 180 595 Q 176 593 178 588 Z"
+          fill="#0F3F18" stroke="#000" stroke-width="0.5"/>
+
+    <!-- RIGHT BOOT -->
+    <path d="M 252 510
+             L 302 510
+             L 302 555
+             Q 300 568 308 572
+             L 322 575
+             Q 332 583 322 590
+             L 230 590
+             Q 220 583 228 575
+             L 240 572
+             Q 250 568 252 555 Z"
+          fill="url(#bootGrad)" stroke="#0F6A1B" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Right boot highlight -->
+    <ellipse cx="282" cy="540" rx="6" ry="18" fill="#A9F2B2" opacity="0.45"/>
+    <!-- Right boot sole -->
+    <path d="M 228 588 L 322 588 Q 324 593 320 595 L 230 595 Q 226 593 228 588 Z"
+          fill="#0F3F18" stroke="#000" stroke-width="0.5"/>
+  </g>
+
+  <!-- ===== BODY / TORSO ===== -->
+  <g id="body">
+    <!-- White outer shell -->
+    <path d="M 178 240
+             Q 178 222 198 222
+             L 302 222
+             Q 322 222 322 240
+             L 326 420
+             Q 326 442 304 442
+             L 196 442
+             Q 174 442 174 420 Z"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- Subtle body shading -->
+    <path d="M 178 240 Q 178 222 198 222 L 220 222 L 222 442 L 196 442 Q 174 442 174 420 Z"
+          fill="#000" opacity="0.05"/>
+
+    <!-- Green chest capsule -->
+    <rect x="212" y="248" width="76" height="180" rx="34"
+          fill="url(#greenBody)" stroke="#0F6A1B" stroke-width="2"/>
+
+    <!-- Chest highlight -->
+    <rect x="218" y="254" width="20" height="160" rx="10" fill="#A9F2B2" opacity="0.45"/>
+
+    <!-- Body camera / dot (matches original) -->
+    <circle cx="250" cy="430" r="3.5" fill="#0F3F18"/>
+  </g>
+
+  <!-- ===== S-HEARTBEAT CHEST EMBLEM ===== -->
+  <g id="sEmblem" transform="translate(250 332)">
+    <!-- Glow -->
+    <circle r="46" fill="#52E661" opacity="0.25"/>
+    <!-- Outer white disc -->
+    <circle r="42" fill="#FFFFFF" stroke="#0F6A1B" stroke-width="1.5"/>
+    <!-- Flag-stripe ring -->
+    <g clip-path="url(#ringClip)">
+      <rect x="-42" y="-42" width="84" height="28" fill="#FF9933"/>
+      <rect x="-42" y="-14" width="84" height="28" fill="#FFFFFF"/>
+      <rect x="-42" y="14"  width="84" height="28" fill="#138808"/>
+    </g>
+    <!-- Inner white -->
+    <circle r="32" fill="#FFFFFF" stroke="#CCC" stroke-width="0.5"/>
+    <!-- S letter -->
+    <text x="0" y="12" text-anchor="middle"
+          font-family="Arial Black, Helvetica, sans-serif"
+          font-size="42" font-weight="900"
+          fill="#1B9F2A" stroke="#0F6A1B" stroke-width="1">S</text>
+    <!-- Heartbeat line -->
+    <path d="M -28 2 L -14 2 L -8 -10 L -1 14 L 6 -10 L 12 2 L 28 2"
+          fill="none" stroke="#1B9F2A" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  </g>
+
+  <!-- ===== LEFT ARM (viewer's left, on hip) ===== -->
+  <g id="leftArm">
+    <circle cx="172" cy="252" r="24" fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+    <ellipse cx="166" cy="246" rx="6" ry="9" fill="#FFF" opacity="0.5"/>
+    <!-- Upper arm angling toward hip -->
+    <path d="M 158 268
+             L 188 268
+             L 200 360
+             L 170 365 Z"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Hand on hip -->
+    <circle cx="188" cy="375" r="16" fill="url(#greenBody)" stroke="#0F6A1B" stroke-width="2"/>
+  </g>
+
+  <!-- ===== RIGHT ARM (viewer's right, holding clipboard) ===== -->
+  <g id="rightArm">
+    <circle cx="328" cy="252" r="24" fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+    <ellipse cx="322" cy="246" rx="6" ry="9" fill="#FFF" opacity="0.5"/>
+    <rect x="312" y="265" width="32" height="90" rx="14"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+    <!-- Hand -->
+    <circle cx="328" cy="362" r="17" fill="url(#greenBody)" stroke="#0F6A1B" stroke-width="2"/>
+  </g>
+
+  <!-- ===== CLIPBOARD ===== -->
+  <g id="clipboard" transform="translate(345 295) rotate(10)">
+    <!-- Board back -->
+    <rect x="0" y="0" width="100" height="135" rx="6"
+          fill="#2C8C9E" stroke="#1A5F6D" stroke-width="2"/>
+    <!-- Clip metal -->
+    <rect x="34" y="-10" width="32" height="22" rx="3"
+          fill="#1A5F6D" stroke="#0D3D47" stroke-width="1"/>
+    <circle cx="50" cy="0" r="3.5" fill="#0D3D47"/>
+    <!-- Paper -->
+    <rect x="8" y="14" width="84" height="112" fill="#FFFFFF" stroke="#CCC" stroke-width="1"/>
+    <!-- Checkmarks -->
+    <g stroke="#1B9F2A" stroke-width="3" fill="none"
+       stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 15 35 L 22 42 L 35 28"/>
+      <path d="M 15 65 L 22 72 L 35 58"/>
+      <path d="M 15 95 L 22 102 L 35 88"/>
+    </g>
+    <!-- Lines -->
+    <g stroke="#999" stroke-width="2" stroke-linecap="round">
+      <line x1="42" y1="36" x2="82" y2="36"/>
+      <line x1="42" y1="66" x2="82" y2="66"/>
+      <line x1="42" y1="96" x2="82" y2="96"/>
+    </g>
+  </g>
+
+  <!-- ===== HEAD ===== -->
+  <g id="head">
+    <!-- Antennae -->
+    <line x1="212" y1="98" x2="204" y2="44" stroke="#888" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="202" cy="40" r="10" fill="#FFDC00" stroke="#B89800" stroke-width="1.5"/>
+    <circle cx="199" cy="37" r="3" fill="#FFF" opacity="0.7"/>
+
+    <line x1="288" y1="98" x2="296" y2="44" stroke="#888" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="298" cy="40" r="10" fill="#FFDC00" stroke="#B89800" stroke-width="1.5"/>
+    <circle cx="295" cy="37" r="3" fill="#FFF" opacity="0.7"/>
+
+    <!-- Helmet dome -->
+    <path d="M 162 185
+             Q 162 90 250 90
+             Q 338 90 338 185
+             Q 338 218 308 222
+             L 192 222
+             Q 162 218 162 185 Z"
+          fill="url(#whiteShell)" stroke="#888" stroke-width="2"/>
+
+    <!-- Dome shine -->
+    <path d="M 180 120 Q 200 100 240 100"
+          fill="none" stroke="#FFF" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+
+    <!-- Ear pods -->
+    <ellipse cx="158" cy="162" rx="14" ry="22"
+             fill="url(#greenBody)" stroke="#0F6A1B" stroke-width="2"/>
+    <ellipse cx="342" cy="162" rx="14" ry="22"
+             fill="url(#greenBody)" stroke="#0F6A1B" stroke-width="2"/>
+
+    <!-- Visor -->
+    <path d="M 182 130
+             Q 182 113 200 113
+             L 300 113
+             Q 318 113 318 130
+             L 318 188
+             Q 318 205 300 205
+             L 200 205
+             Q 182 205 182 188 Z"
+          fill="url(#visorGrad)" stroke="#0F6A1B" stroke-width="2.5"/>
+
+    <!-- Visor highlights -->
+    <ellipse cx="215" cy="142" rx="22" ry="9" fill="#FFFFFF" opacity="0.55"/>
+    <ellipse cx="295" cy="190" rx="9" ry="5" fill="#FFFFFF" opacity="0.35"/>
+
+    <!-- Smile -->
+    <path d="M 232 178 Q 250 195 268 178"
+          fill="none" stroke="#0A4012" stroke-width="3" stroke-linecap="round"/>
+    <!-- Tongue/mouth dot -->
+    <ellipse cx="250" cy="186" rx="5" ry="3" fill="#0A4012" opacity="0.6"/>
+  </g>
+
+  <!-- ===== CAPE FLAP IN FRONT (small shoulder fold for depth) ===== -->
+  <g id="capeShoulderFolds" opacity="0.95">
+    <path d="M 172 218 Q 158 240 162 270 L 178 268 Q 176 240 188 222 Z"
+          fill="#FF9933" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 328 218 Q 342 240 338 270 L 322 268 Q 324 240 312 222 Z"
+          fill="#FF9933" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/>
+  </g>
+</svg>
