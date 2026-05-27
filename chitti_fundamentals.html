@@ -385,12 +385,21 @@ nav.tabs .tab.active{color:#FF9933!important;border-bottom-color:#FF9933!importa
 div[data-chitti-lang-select="auto"]{background:#000080!important;border:2px solid #FF9933!important;border-radius:10px!important;padding:6px 10px!important;box-shadow:0 4px 14px rgba(0,0,128,.30)!important}
 div[data-chitti-lang-select="auto"] select{background:#fff!important;color:#000080!important;border:1px solid #FF9933!important;border-radius:8px!important;padding:6px 26px 6px 10px!important;font-weight:700!important;font-size:13px!important;min-height:36px!important;cursor:pointer}
 div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!important;font-weight:700!important}
+/* ─── 2026-05-27 mobile patches (Sire's 375 px review) ─── */
+@media (max-width:480px){
+  div[data-chitti-lang-select="auto"]{top:auto!important;bottom:14px!important;right:14px!important;z-index:9001!important}
+  .bharat-stripe{height:6px!important}
+  header[role="banner"]{padding:14px 14px 18px!important}
+}
 </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 <!-- NSE 800-stock universe substrate — Nifty 50 / Largecap / Midcap 150 / Smallcap 250 / Microcap 250 — exposed as window.NSE. LOCKED 2026-05-27. -->
 <script src="nse_universe.js"></script>
 </head>
 <body>
+
+<!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
+<div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
 <!-- Chitti language selector (auto-injected) — chitti_lang.js wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">

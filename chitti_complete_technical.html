@@ -494,12 +494,41 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 /* 48px tap targets — WCAG 2.5.5 — per Sire spec */
 .tab,.idx-pill,.tf-btn,.li-tab,.a11y-btn,.scan-btn,.sp-btn,.mic-btn,.fund-spk,.metric-spk,button.scan-all{min-height:48px}
 @media (max-width:480px){.tab,.idx-pill,.tf-btn,.li-tab{min-height:48px;padding:12px 10px}}
+/* ─── 2026-05-27 mobile patches (Sire's 375 px review) ─── */
+@media (max-width:480px){
+  /* Lang dropdown: push to bottom-right at mobile so it never overlaps the SEBI sticky bar at top */
+  div[data-chitti-lang-select="auto"]{top:auto!important;bottom:14px!important;right:14px!important;z-index:9001!important}
+  /* Calls Generator 4-col grid → stack into 2-col rows (selectors row + buttons row) */
+  #cg-univ,#cg-tf{width:100%}
+  #tab-calls .section-card .scan-btn,#tab-calls .section-card .sp-btn{width:100%}
+  /* Rich card grid: allow cards to shrink to viewport */
+  #cg-rich-grid{grid-template-columns:1fr!important}
+  /* Bharat stripe: a touch taller on mobile so the tricolor reads at a glance */
+  .bharat-stripe{height:6px!important}
+  /* Header padding tighter on phones */
+  .header{padding:12px 14px!important}
+  /* Calls Generator section card: less internal padding so content fits */
+  #tab-calls .section-card{padding:14px 12px!important}
+}
+/* Calls Generator grid: drop to single column at narrow widths (covers anything < ~520 px) */
+@media (max-width:520px){
+  #tab-calls > .page-wrap > .section-card > div[style*="grid-template-columns:1fr 1fr auto auto"]{
+    display:flex!important;flex-direction:column!important;gap:10px!important
+  }
+  #tab-calls > .page-wrap > .section-card > div[style*="grid-template-columns:1fr 1fr auto auto"] > div,
+  #tab-calls > .page-wrap > .section-card > div[style*="grid-template-columns:1fr 1fr auto auto"] > button{
+    width:100%!important;min-width:0!important
+  }
+}
 </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 <!-- NSE 800-stock universe substrate — Nifty 50 / Largecap / Midcap 150 / Smallcap 250 / Microcap 250 — exposed as window.NSE. LOCKED 2026-05-27. -->
 <script src="nse_universe.js"></script>
 </head>
 <body>
+
+<!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
+<div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
 <!-- Chitti language selector (auto-injected) — chitti_lang.js wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
