@@ -39,6 +39,20 @@
   var STORAGE_KEY = 'disability_profile';
   var MODAL_ID = 'chitti-disability-profile-modal';
 
+  // ── URL kill-switch (defense-in-depth; chitti_a11y.js also handles this
+  //    earlier). `?dp_skip=1` → never show modal on this device.
+  //    `?dp_reset=1` → wipe storage so the modal will show fresh next visit.
+  try {
+    var __qs = (global.location && global.location.search) || '';
+    if (/[?&]dp_skip=1\b/i.test(__qs)) {
+      global.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        skipped: true, closed_via: 'url_kill_switch', ts: new Date().toISOString(),
+      }));
+    } else if (/[?&]dp_reset=1\b/i.test(__qs)) {
+      global.localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch (e) { /* honest skip */ }
+
   // 8 options + their labels in EN + HI (matching chitti_lang.js's primary
   // pair). Other 24 languages render the EN label; chitti_lang.js's
   // body-wide MutationObserver will translate them on the fly once it

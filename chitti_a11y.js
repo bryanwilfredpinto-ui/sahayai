@@ -49,6 +49,22 @@
   if (window.__chittiA11yLoaded) return;
   window.__chittiA11yLoaded = true;
 
+  // ── URL kill-switch for the Disability Profile modal ──
+  // Runs BEFORE any substrate loads. Lets Sire (or any user) unblock
+  // themselves with one URL: https://sahayai.in/<any-chitti>.html?dp_skip=1
+  // → writes a skipped:true record, modal will never appear on this
+  // device. `?dp_reset=1` wipes the record so a fresh modal shows next visit.
+  try {
+    var __dpQS = (location.search || '').toLowerCase();
+    if (/[?&]dp_skip=1\b/.test(__dpQS)) {
+      localStorage.setItem('disability_profile', JSON.stringify({
+        skipped: true, closed_via: 'url_kill_switch', ts: new Date().toISOString(),
+      }));
+    } else if (/[?&]dp_reset=1\b/.test(__dpQS)) {
+      localStorage.removeItem('disability_profile');
+    }
+  } catch (e) { /* honest skip — non-blocking */ }
+
   // ── Bottom-nav substrate auto-loader (Sire 2026-05-23 Priority-2) ──
   // Every page that loads chitti_a11y.js also gets the unified Bharat
   // bottom nav (Vaani · Karo · Vault · Parivaar · Settings). One script
@@ -282,7 +298,12 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_disability_profile.js';
+      // Cache-bust: GitHub Pages serves substrate JS with Cache-Control:
+      // max-age=600. Bumping the ?v= query forces the browser to fetch the
+      // latest copy on the very next page-load, instead of waiting 10 min
+      // for the cache entry to expire. Bump this version any time
+      // chitti_disability_profile.js changes and users need it RIGHT NOW.
+      s.src = (srcBase || '') + 'chitti_disability_profile.js?v=20260527.2';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
