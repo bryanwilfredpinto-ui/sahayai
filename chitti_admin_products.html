@@ -214,7 +214,7 @@ footer{padding:24px 16px;text-align:center;font-size:11px;color:var(--muted);bor
     <b>Setup checklist</b><br>
     1. Set <code>ADMIN_SECRET</code> in Render env (any random 32-char string).<br>
     2. For persistent storage, set <code>ADMIN_DATABASE_URL</code> to your Supabase Postgres URL — otherwise tokens live in <code>/tmp</code> and vanish on restart.<br>
-    3. In Google Cloud Console → OAuth client → <i>Authorized redirect URIs</i>, add: <code id="redirect-uri-hint">/api/admin/products/oauth/callback</code><br>
+    3. In Google Cloud Console → OAuth client → <i>Authorized redirect URIs</i>, add: <code id="redirect-uri-hint" style="word-break:break-all;display:inline-block;max-width:100%">/api/admin/products/oauth/callback</code><br>
     4. Click <b>Authorize</b> on each product row and sign in to Google as that mailbox. The dashboard warns if you sign in as the wrong account.<br>
     5. Monthly keep-alive runs at <code>day=1, 06:00 IST</code> — change via <code>ADMIN_KEEPALIVE_*</code> env vars. Recipient: <code id="notify-email-hint">sire@gmail.com</code>.
   </section>

@@ -31,9 +31,17 @@ import { writeFileSync } from 'node:fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = (process.env.CERT_BASE || 'https://sahayai.in').replace(/\/$/, '');
 
-// Canonical user-facing pages in repo. Skip the 26 voice-factory
-// language mirrors (they load the same substrate; cert canonical
-// chitti_voice_factory.html covers them).
+// Every user-facing Chitti page in the repo. Set EXCLUDE_LANGS=1 to
+// skip the 26 Voice Factory language mirrors (faster cert runs when
+// only the canonical product pages matter).
+const VOICE_FACTORY_LANGS = [
+  'chitti_hi', 'chitti_bn', 'chitti_te', 'chitti_ta', 'chitti_kn', 'chitti_ml',
+  'chitti_mr', 'chitti_gu', 'chitti_or', 'chitti_as', 'chitti_pa', 'chitti_ur',
+  'chitti_bho', 'chitti_hne', 'chitti_mai', 'chitti_kok', 'chitti_doi',
+  'chitti_sd', 'chitti_ks', 'chitti_mni', 'chitti_brx', 'chitti_sat',
+  'chitti_sa', 'chitti_tcy', 'chitti_kfa', 'chitti_kru',
+];
+
 const PAGES = [
   'chitti_vaani',           // USER-CANONICAL per §2 row 1
   'chitti_medupi',
@@ -55,7 +63,11 @@ const PAGES = [
   'chitti_offline',
   'chitti_quality',
   'chitti_complete',
+  'chitti_claude_complete',
+  'chitti_admin_products',
+  'chitti_admin_feedback',
   'index',
+  ...(process.env.EXCLUDE_LANGS ? [] : VOICE_FACTORY_LANGS),
 ];
 
 const ONLY = (process.env.ONLY || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -130,6 +142,8 @@ async function certPage(browser, slug) {
     'chitti_quality',
     'chitti_complete',
     'chitti_claude_complete',
+    'chitti_admin_products',
+    'chitti_admin_feedback',
     'index',
   ]);
   if (CONTENT_ONLY_PAGES.has(slug)) {

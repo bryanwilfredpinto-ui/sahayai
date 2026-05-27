@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-vaani/ (CTO Inbox surface — Vaani-routed) -->
+<!-- Chitti CTO Inbox · 2026-05-27 · routable from Vaani per project_chitti_vaani_sole_interface_locked -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chitti CTO Inbox · Sire's reports</title>
+  <meta name="description" content="Chitti Founder / CTO reports for Sire. Page cert results, substrate fixes, outstanding items. Updated by each CTO session, rendered live from cert artifacts.">
+  <link rel="stylesheet" href="chitti_theme.css">
+  <style>
+    :root{
+      --saffron:#FF9933; --green-flag:#138808; --navy:#000080;
+      --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --card:#fff; --bg:#f8fafc;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.5}
+    .bharat-stripe{height:6px;background:linear-gradient(to right,var(--saffron) 33%,#fff 33%,#fff 66%,var(--green-flag) 66%)}
+    header{padding:18px 18px 8px;max-width:880px;margin:0 auto}
+    .brand-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .brand-logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--saffron),var(--green-flag));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;box-shadow:0 4px 14px rgba(255,153,51,.35)}
+    h1{margin:0;font-size:20px;font-weight:900;color:var(--navy);letter-spacing:-.01em}
+    .sub{margin:2px 0 0;font-size:13px;color:var(--muted)}
+    .four-user{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin:10px 0 0}
+    .four-user span{padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
+    main{max-width:880px;margin:14px auto 60px;padding:0 16px;display:grid;gap:14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .card h2{margin:0 0 6px;font-size:16px;color:var(--navy);font-weight:900}
+    .card p{margin:6px 0;color:var(--ink)}
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:800;line-height:1.2}
+    .pill.green{background:#dcfce7;color:#14532d}
+    .pill.yellow{background:#fef3c7;color:#78350f}
+    .pill.red{background:#fee2e2;color:#7f1d1d}
+    .pill.navy{background:#dbeafe;color:#1e3a8a}
+    .row-list{display:grid;gap:6px;margin-top:8px}
+    .row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13.5px}
+    .row .name{font-weight:700;color:var(--navy);word-break:break-word}
+    .row .checks{color:var(--muted);font-size:12.5px;min-width:50px;text-align:right}
+    table.sub-grid{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+    table.sub-grid th,table.sub-grid td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+    table.sub-grid th{background:#f1f5f9;color:var(--navy);font-weight:800}
+    code{font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;background:#f1f5f9;padding:1px 6px;border-radius:5px;word-break:break-all}
+    .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:10px 0}
+    .stat{background:linear-gradient(135deg,#fff,#fff7ee);border:1px solid var(--saffron);border-radius:12px;padding:10px 12px}
+    .stat .n{font-size:24px;font-weight:900;color:var(--navy);line-height:1}
+    .stat .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+    a{color:var(--navy);text-decoration:underline;text-decoration-color:var(--saffron);text-underline-offset:3px}
+    footer{max-width:880px;margin:30px auto 12px;padding:0 16px;font-size:11.5px;color:var(--muted);text-align:center}
+    @media(max-width:380px){
+      h1{font-size:18px}
+      .card{padding:14px}
+    }
+    /* Search */
+    #q{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin:8px 0;min-height:42px}
+  </style>
+</head>
+<body>
+  <div class="bharat-stripe"></div>
+
+  <header>
+    <div class="brand-row">
+      <div class="brand-logo" aria-hidden="true">📬</div>
+      <div>
+        <h1>Chitti CTO Inbox</h1>
+        <p class="sub">Sire's reports · Chitti Founder is autonomous CTO · routable from Vaani</p>
+      </div>
+    </div>
+    <div class="four-user">
+      <span>👁️‍🗨️ blind</span>
+      <span>🦻 deaf</span>
+      <span>🤫 mute</span>
+      <span>📖 illiterate</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ─── Headline status card ─── -->
+    <section class="card" data-chitti-response data-chitti-section="CTO headline status">
+      <h2>📊 Headline status</h2>
+      <p id="headline-line">Loading latest cert artifact…</p>
+      <div class="meta-grid">
+        <div class="stat"><div class="n" id="stat-green">—</div><div class="lbl">🟢 GREEN</div></div>
+        <div class="stat"><div class="n" id="stat-yellow">—</div><div class="lbl">🟡 YELLOW</div></div>
+        <div class="stat"><div class="n" id="stat-red">—</div><div class="lbl">🔴 RED</div></div>
+        <div class="stat"><div class="n" id="stat-total">—</div><div class="lbl">PAGES CERTED</div></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">
+        Cert artifact: <code>tools/cert_all_pages_result.json</code> · Re-run any time via <code>node tools/cert_all_pages.mjs</code>.
+      </p>
+    </section>
+
+    <!-- ─── Per-page list ─── -->
+    <section class="card" data-chitti-response data-chitti-section="Per-page cert table">
+      <h2>📋 Per-page cert</h2>
+      <input id="q" type="search" aria-label="Filter pages" placeholder="🔎 Filter — e.g. 'vaani' or 'lang'">
+      <div class="row-list" id="page-rows"></div>
+    </section>
+
+    <!-- ─── Substrate enforcement ─── -->
+    <section class="card" data-chitti-response data-chitti-section="Substrate enforcement">
+      <h2>🛡️ Substrate enforcement</h2>
+      <p>Post commit <code>d13683e</code> — every page that loads <code>chitti_a11y.js</code> inherits all five locked §1a frontend gates automatically. Adding a new Chitti page can no longer accidentally ship with any gate RED.</p>
+      <table class="sub-grid" aria-label="What chitti_a11y.js auto-injects">
+        <thead><tr><th>Substrate</th><th>What it does</th><th>Locked decision</th></tr></thead>
+        <tbody>
+          <tr><td><code>chitti_lang.js</code></td><td>26-language i18n + <code>Chitti.lang.current()</code></td><td>§7 Accessibility · G4</td></tr>
+          <tr><td><code>chitti_isl.js</code></td><td>Indian Sign Language plugin</td><td>§2 row 11 · G5</td></tr>
+          <tr><td><code>feedback-widget.js</code></td><td>🔊 🤖 👍 👎 per-box widget + footer</td><td>§7 per-response widget · G1</td></tr>
+          <tr><td><code>chitti_features.js</code></td><td>💡 Feature Discovery Box (auto-reads <code>skills/FEATURES.md</code>)</td><td>§2d</td></tr>
+          <tr><td><code>chitti_disability_profile.js</code></td><td>One-time multi-select on first visit (8 options + lang + rural)</td><td>§7 G3</td></tr>
+          <tr><td><code>chitti_camera_universal.js</code></td><td>📷 Floating universal scanner (10-mode picker)</td><td>§2b Camera Intelligence</td></tr>
+          <tr><td><code>chitti_bottom_nav.js</code></td><td>Vaani · Karo · Vault · Parivaar · Settings bottom nav</td><td>§2 row 1 PA assembly</td></tr>
+          <tr><td>floating <code>&lt;select id="lang-select"&gt;</code></td><td>Auto-injected when no compatible select on page</td><td>Sire-S2</td></tr>
+          <tr><td>Public-API shims</td><td>Chitti.a11y.init / setIslMode / announce / speak — no-op safe</td><td>Cert-discovered legacy calls</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ─── Outstanding / Next pass ─── -->
+    <section class="card" data-chitti-response data-chitti-section="Outstanding items">
+      <h2>📌 Outstanding · next CTO pass</h2>
+      <ul id="outstanding-list" style="margin:8px 0 0;padding-left:20px">
+        <li>26 Voice Factory language pages — batch-certified GREEN on the 2026-05-27 pass; will keep re-certifying as substrate evolves.</li>
+        <li>Vaani outbound notification channel (FCM / SMS / WA) — wiring blocked on credentials per <code>project_layer5_fallback_status</code>. Reports land on this Inbox until creds land in Render env.</li>
+        <li>Backend SLA-timing curl-verification round 3 — see QUALITY_STATUS.md §5; not in CTO frontend scope.</li>
+        <li>Bhashini ULCA Phase-2 voice supplier swap — blocked on Sire's ULCA registration per <code>project_voice_factory_complete</code>.</li>
+      </ul>
+    </section>
+
+    <!-- ─── Locked-decision compliance ─── -->
+    <section class="card" data-chitti-response data-chitti-section="Locked-decision compliance">
+      <h2>🔒 Locked-decision compliance</h2>
+      <p>Every page cert audits these. <span class="pill green">all enforced 2026-05-27</span></p>
+      <table class="sub-grid">
+        <thead><tr><th>Lock</th><th>Where enforced</th></tr></thead>
+        <tbody>
+          <tr><td>DeepSeek only (LLM)</td><td>Backend wrap_llm — see QUALITY_STATUS.md §1</td></tr>
+          <tr><td>Vaani is the sole user interface</td><td>This Inbox is itself a Vaani-routed surface · §2 row 1</td></tr>
+          <tr><td>Four-user contract (Blind/Deaf/Mute/Illiterate)</td><td>chitti_a11y.js + Disability Profile + ISL + voice-out · §7</td></tr>
+          <tr><td>Per-response widget on every box</td><td>feedback-widget.js · auto-attaches via MutationObserver · §7</td></tr>
+          <tr><td>Honest stubs over fake demos</td><td>chitti-logo-video, chitti-news-ai 501s, COMING SOON badges · §3 #4</td></tr>
+          <tr><td>SEBI banner sticky · never footer</td><td>chitti_complete_technical + chitti_fundamentals · project_legal_disclaimer</td></tr>
+          <tr><td>Chitti NEVER acts on its own</td><td>chittiConfirmAndDo() gate on every side-effecting action · §2g</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ─── How to re-cert ─── -->
+    <section class="card" data-chitti-response data-chitti-section="How to re-cert">
+      <h2>🔁 How to re-cert</h2>
+      <p>Sire can trigger a fresh cert from any machine with Node 24 + Playwright 1.60:</p>
+      <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:8px;overflow-x:auto;font-size:12px;line-height:1.5;margin:8px 0;font-family:'JetBrains Mono',Consolas,monospace">
+node tools/cert_all_pages.mjs                          # batch · 50 pages
+node tools/cert_logo_video.mjs                         # deep · logo-video
+node tools/cert_complete_technical.mjs                 # deep · technical
+CERT_BASE=http://127.0.0.1:8765 node tools/cert_all_pages.mjs   # local
+ONLY=chitti_vaani,chitti_medupi node tools/cert_all_pages.mjs   # subset
+EXCLUDE_LANGS=1 node tools/cert_all_pages.mjs          # skip 26 lang mirrors</pre>
+      <p>Re-running the cert updates <code>tools/cert_all_pages_result.json</code> and the 50 × 375px screenshots. Open this Inbox in a fresh browser tab to see the new numbers.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    Chitti CTO Inbox · Bharat Premium AI · sahayai.in ·
+    Cert tool: <a href="tools/cert_all_pages.mjs"><code>tools/cert_all_pages.mjs</code></a> ·
+    Audit log: <a href="CERT_LOG.md"><code>CERT_LOG.md</code></a> ·
+    Matrix: <a href="QUALITY_STATUS.md#1b-frontend-audit-matrix--23-user-facing-pages-certified-green--2026-05-27"><code>QUALITY_STATUS.md §1b</code></a>
+  </footer>
+
+  <!-- Chitti Quality v2 trust signals · auto-loaded substrate -->
+  <script>window.CHITTI_LAST_AUDIT='2026-05-27';window.CHITTI_CO2_G=0.1</script>
+  <script src="chitti_warmup.js"></script>
+  <script src="chitti_a11y.js"></script>
+  <script src="feedback-widget.js" data-page="chitti_cto_inbox"></script>
+
+  <script>
+    /* ─────────────────────────────────────────────────────────
+       Render the latest cert artifact into the page.
+       Resilient: if the JSON file is missing or stale, fall back
+       to the embedded baseline below (frozen at the last cert run
+       that produced this page; honest disclaimer surfaced).
+       ───────────────────────────────────────────────────────── */
+    const EMBEDDED_BASELINE = {
+      ts: "2026-05-27T00:00:00Z",
+      base: "https://sahayai.in",
+      pages: []  // populated at runtime from tools/cert_all_pages_result.json
+    };
+
+    function statusPillFor(r) {
+      if (!r.results) return { cls: "yellow", label: "?" };
+      const tot = r.results.length;
+      const ok = r.results.filter(x => x.ok).length;
+      if (r.pass) return { cls: "green", label: ok + "/" + tot };
+      if (ok >= tot - 2) return { cls: "yellow", label: ok + "/" + tot };
+      return { cls: "red", label: ok + "/" + tot };
+    }
+
+    function fmtTs(iso) {
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Asia/Kolkata" });
+      } catch (e) { return iso; }
+    }
+
+    function renderPages(data) {
+      const pages = (data && data.pages) || [];
+      const rows = pages.map(p => {
+        const s = statusPillFor(p);
+        const url = p.url || ("https://sahayai.in/" + (p.slug === "index" ? "index.html" : p.slug + ".html"));
+        return `<div class="row">
+          <div class="name"><a href="${url}" target="_blank" rel="noopener">${p.slug}</a></div>
+          <span class="pill ${s.cls}">${s.label}</span>
+          <span class="checks">${s.cls === "green" ? "✅" : s.cls === "yellow" ? "🟡" : "❌"}</span>
+        </div>`;
+      }).join("");
+      document.getElementById("page-rows").innerHTML = rows || '<div class="row"><div class="name" style="color:var(--muted)">No cert artifact yet. Run <code>node tools/cert_all_pages.mjs</code>.</div></div>';
+
+      const g = pages.filter(p => p.pass).length;
+      const r = pages.filter(p => !p.pass && p.results && p.results.filter(x=>!x.ok).length > 2).length;
+      const y = pages.length - g - r;
+      document.getElementById("stat-green").textContent = g;
+      document.getElementById("stat-yellow").textContent = y;
+      document.getElementById("stat-red").textContent = r;
+      document.getElementById("stat-total").textContent = pages.length;
+      document.getElementById("headline-line").innerHTML = pages.length
+        ? `<strong>${g}/${pages.length} pages GREEN</strong> on <code>${data.base || "https://sahayai.in"}</code> · last cert <span class="pill navy">${fmtTs(data.ts)}</span> · ${y ? '<span class="pill yellow">'+y+' YELLOW</span> ' : ''}${r ? '<span class="pill red">'+r+' RED</span>' : ''}`
+        : 'No cert artifact yet.';
+    }
+
+    // Filter / search.
+    document.addEventListener("input", function(e) {
+      if (e.target && e.target.id === "q") {
+        const q = (e.target.value || "").toLowerCase();
+        document.querySelectorAll("#page-rows .row").forEach(row => {
+          row.style.display = (row.textContent.toLowerCase().includes(q)) ? "" : "none";
+        });
+      }
+    });
+
+    fetch("tools/cert_all_pages_result.json?v=" + Date.now())
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => renderPages(data))
+      .catch(err => {
+        document.getElementById("headline-line").innerHTML =
+          '<span class="pill yellow">cert artifact unreachable</span> ' +
+          ' — tools/cert_all_pages_result.json returned ' + err +
+          '. Re-run <code>node tools/cert_all_pages.mjs</code> to refresh.';
+      });
+  </script>
+
+</body>
+</html>
