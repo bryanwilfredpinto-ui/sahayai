@@ -6625,8 +6625,121 @@ function routeVoiceIntent(raw){
   // preserve their casing in modals and URLs.
   const r = raw.trim();
 
+  // ════════════════════════════════════════════════════════════════
+  // Sire 2026-05-27 — Device-control intents (no contact name needed)
+  // MUST be matched before the broad "phone X" / "call X" CALL intent
+  // below, otherwise "Phone silent karo" gets routed as call(silent karo).
+  // ════════════════════════════════════════════════════════════════
+
+  // ── Phone silent karo / Silent mode on / Mute the phone ───────────
+  // Pattern handles every Hinglish word order: "phone silent karo",
+  // "silent karo", "silent mode", "silent", "silent kar do",
+  // "phone silent kar do". The structure is base word + optional
+  // modifier (mode/on/pe/par) + optional verb (karo/kar do).
+  if (/^(?:phone\s+)?(?:silent|mute|chup)(?:\s+(?:mode|on|pe|par))?(?:\s+(?:karo|kar\s+do|kar\s+den))?$/i.test(r)
+   || /^(?:set|put|switch)\s+(?:phone\s+)?(?:on\s+|to\s+)?silent$/i.test(r)
+   || /^mute\s+(?:the\s+)?phone$/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? 'Sire, shall I switch your phone to silent?'
+                              : 'Sire, kya main phone ko silent kar dun?',
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.setSilentMode) {
+          try {
+            const r2 = window.ChittiNative.setSilentMode(true);
+            if (r2 === 'needs_notification_policy') {
+              speakText(CURRENT_LANG === 'en' ? 'I need Do-Not-Disturb permission first. Opening settings.' : 'Pehle Do-Not-Disturb permission chahiye. Settings khol rahi hoon.', CURRENT_LANG);
+              if (window.ChittiNative.requestNotificationPolicy) { try { window.ChittiNative.requestNotificationPolicy(); } catch (e) {} }
+              logAction('Silent mode → needs DND permission', '');
+              return;
+            }
+            speakText(CURRENT_LANG === 'en' ? ('Silent mode: ' + r2) : ('Silent: ' + r2), CURRENT_LANG);
+            logAction('Silent mode → on (native)', r2);
+            return;
+          } catch (e) {}
+        }
+        speakText(CURRENT_LANG === 'en' ? 'Silent mode needs the Android app — browsers cannot toggle the ringer.' : 'Silent mode Android app me — browser se ringer band nahi ho sakti.', CURRENT_LANG);
+        logAction('Silent mode requested (web — no API)', '');
+      },
+    );
+    return true;
+  }
+
+  // ── Phone ring pe karo / Ring mode / Unmute the phone ─────────────
+  // Pattern handles every Hinglish word order: "phone ring pe karo",
+  // "phone ring karo", "ring karo", "ring mode", "ringer on",
+  // "ring chalu karo".
+  if (/^(?:phone\s+)?(?:ring|aawaaz|sound)(?:\s+(?:pe|par|mode|on|chalu))?(?:\s+(?:karo|kar\s+do|kar\s+den))?$/i.test(r)
+   || /^(?:turn\s+(?:on\s+)?(?:the\s+)?)?(?:ring|sound|aawaaz)(?:er)?\s*(?:on|mode|chalu)?$/i.test(r)
+   || /^(?:unmute|silent\s+off|silent\s+band)(?:\s+(?:the\s+)?phone)?$/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? 'Sire, shall I switch your phone to ring mode?'
+                              : 'Sire, kya main phone ring par kar dun?',
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.setSilentMode) {
+          try {
+            const r2 = window.ChittiNative.setSilentMode(false);
+            if (r2 === 'needs_notification_policy') {
+              speakText(CURRENT_LANG === 'en' ? 'I need Do-Not-Disturb permission first. Opening settings.' : 'Pehle Do-Not-Disturb permission chahiye. Settings khol rahi hoon.', CURRENT_LANG);
+              if (window.ChittiNative.requestNotificationPolicy) { try { window.ChittiNative.requestNotificationPolicy(); } catch (e) {} }
+              logAction('Ring mode → needs DND permission', '');
+              return;
+            }
+            speakText(CURRENT_LANG === 'en' ? ('Ring mode: ' + r2) : ('Ring: ' + r2), CURRENT_LANG);
+            logAction('Silent mode → off (native)', r2);
+            return;
+          } catch (e) {}
+        }
+        speakText(CURRENT_LANG === 'en' ? 'Ring mode needs the Android app — browsers cannot toggle the ringer.' : 'Ring mode Android app me — browser se ringer on nahi ho sakti.', CURRENT_LANG);
+        logAction('Ring mode requested (web — no API)', '');
+      },
+    );
+    return true;
+  }
+
+  // ── YouTube pe gaana bajao / Open YouTube (no specific song) ──────
+  if (/^(?:youtube\s+(?:pe|par)\s+(?:gaana|music|video|song)?\s*(?:bajao|chalao|lagao|kholo)|youtube\s+kholo|open\s+youtube|launch\s+youtube|youtube\s+chalao)$/i.test(r)) {
+    chittiConfirmAndDo(
+      (CURRENT_LANG === 'en') ? 'Sire, shall I open YouTube?' : 'Sire, kya main YouTube kholun?',
+      () => {
+        if (hasNativeBridge() && window.ChittiNative.openApp) {
+          try {
+            const r2 = window.ChittiNative.openApp('com.google.android.youtube');
+            if (r2 === 'opened' || r2 === 'opened_play_store') {
+              speakText(CURRENT_LANG === 'en' ? 'Opening YouTube.' : 'YouTube khol rahi hoon.', CURRENT_LANG);
+              logAction('YouTube opened (native)', '');
+              return;
+            }
+          } catch (e) {}
+        }
+        try { window.open('https://www.youtube.com/', '_blank', 'noopener'); } catch (e) {}
+        speakText(CURRENT_LANG === 'en' ? 'Opening YouTube on the web.' : 'YouTube web me khol rahi hoon.', CURRENT_LANG);
+        logAction('YouTube opened (web)', 'https://www.youtube.com/');
+      },
+    );
+    return true;
+  }
+
+  // ── <name> ko call karo / <name> ko phone karo (Hindi word order) ──
+  // Sire 2026-05-27 hotfix — "Wife ko call karo" must dial.
+  let m = r.match(/^(.+?)\s+(?:ko|ke\s+liye)\s+(?:call|phone|dial)(?:\s+karo|\s+kar\s+do|\s+kar\s+den)?$/i);
+  if (m) {
+    const name = m[1].trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    if (idx < 0) {
+      openCallModal();
+      document.getElementById('call-to-free').focus();
+      speakText((CURRENT_LANG === 'en' ? 'I do not have ' + name + ' in your Trusted Circle. Type the number.' : name + ' Trusted Circle me nahi hai. Number type kijiye.'), CURRENT_LANG);
+      return true;
+    }
+    openCallModal();
+    document.getElementById('call-to').value = String(idx);
+    speakCallPreview();
+    return true;
+  }
+
   // ── Call <name> ────────────────────────────────────────────────────
-  let m = r.match(/^(?:call|phone|dial|ph[ao]ne karo|call karo)\s+(.+?)\s*(?:please|ji|na)?$/i);
+  m = r.match(/^(?:call|phone|dial|ph[ao]ne karo|call karo)\s+(.+?)\s*(?:please|ji|na)?$/i);
   if (m) {
     const name = m[1].trim();
     const tc = loadTC();
@@ -6934,6 +7047,119 @@ function routeVoiceIntent(raw){
       () => { kvOpen('voice'); setTimeout(() => { if (_kvUnlockedKey) kvShowTab('eximp'); }, 200); },
     );
     return true;
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // Sire 2026-05-27 hotfix — Voice intent expansion
+  // ════════════════════════════════════════════════════════════════
+  // The 7 intents Sire locked: CALL, YOUTUBE, SMS, SILENT, RING,
+  // WHATSAPP (no-message variant), OPEN APP. Each routes through
+  // chittiConfirmAndDo() per §2g Golden Rule, tries ChittiNative.X
+  // first, falls back to a deep link in the browser.
+  // ════════════════════════════════════════════════════════════════
+
+  // ── <name> ko SMS bhejo [message] / <name> ko message karo ────────
+  m = r.match(/^(.+?)\s+(?:ko|ke\s+liye)\s+(?:sms|message|text)\s+(?:bhejo|karo|kar\s+do|send\s+karo)\s*(.+)?$/i);
+  if (m) {
+    const name = m[1].trim();
+    const msg  = (m[2] || '').trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    openSMSModal();
+    if (msg) {
+      const msgEl = document.getElementById('sms-msg');
+      if (msgEl) msgEl.value = msg;
+    }
+    if (idx >= 0) {
+      const toEl = document.getElementById('sms-to');
+      if (toEl) toEl.value = String(idx);
+    } else {
+      const numHit = name.replace(/[^\d+]/g, '');
+      const freeEl = document.getElementById('sms-to-free');
+      if (numHit.length >= 6 && freeEl) freeEl.value = numHit;
+    }
+    if (typeof showSMSPreview === 'function') showSMSPreview();
+    speakText((CURRENT_LANG === 'en'
+      ? 'Draft SMS to ' + name + (msg ? ' ready.' : ' — speak the message.')
+      : name + ' ko SMS' + (msg ? ' tayyaar.' : ' — message boliye.')), CURRENT_LANG);
+    return true;
+  }
+
+  // ── <name> ko WhatsApp karo (no message required — opens the chat) ─
+  // Distinct from the existing "send WhatsApp to X saying Y" — this is
+  // the no-message variant ("Wife ko WhatsApp karo" → opens her chat).
+  m = r.match(/^(.+?)\s+ko\s+whatsapp(?:\s+(?:karo|kar\s+do|message\s+karo|message\s+bhejo))?\s*(.+)?$/i);
+  if (m) {
+    const name = m[1].trim();
+    const msg  = (m[2] || '').trim();
+    const tc = loadTC();
+    const idx = _fuzzyFindContactIndex(name, tc);
+    openWAModal();
+    if (msg) {
+      const msgEl = document.getElementById('wa-msg');
+      if (msgEl) msgEl.value = msg;
+    }
+    if (idx >= 0) {
+      const toEl = document.getElementById('wa-to');
+      if (toEl) toEl.value = String(idx);
+    } else {
+      const numHit = name.replace(/[^\d+]/g, '');
+      const freeEl = document.getElementById('wa-to-free');
+      if (numHit.length >= 6 && freeEl) freeEl.value = numHit;
+    }
+    if (typeof showWAPreview === 'function') showWAPreview();
+    speakText((CURRENT_LANG === 'en'
+      ? 'WhatsApp drafted to ' + name + (msg ? '.' : ' — speak the message.')
+      : name + ' ko WhatsApp' + (msg ? ' tayyaar.' : ' — message boliye.')), CURRENT_LANG);
+    return true;
+  }
+
+  // ── Open <app> by name / <app> kholo ──────────────────────────────
+  // Reuses the KNOWN_APPS table + resolveAppByName + ChittiNative.openApp.
+  // Browser fallback opens the canonical website. Goes LAST in the
+  // router so domain-specific intents (call / SMS / maps / camera /
+  // health-file) match first.
+  m = r.match(/^(?:open|launch|kholo|chalu\s+karo|chalao)\s+(.+?)(?:\s+app)?$/i)
+   || r.match(/^(.+?)\s+(?:kholo|khol\s+do|open\s+karo|launch\s+karo|chalu\s+karo|chalao)$/i);
+  if (m) {
+    const appName = m[1].trim();
+    // Don't catch obvious non-app phrases — let downstream / DeepSeek handle them.
+    const NON_APP = /^(?:my\s+|the\s+|health\s+file|medical|camera|maps?|emergency|reminder|whatsapp|sms|message|call|youtube|location|chat|conversation|door|kholo\s+door|gate|lock|silent|ring|phone|file|folder)$/i;
+    if (!NON_APP.test(appName) && typeof resolveAppByName === 'function') {
+      const a = resolveAppByName(appName);
+      if (a) {
+        chittiConfirmAndDo(
+          (CURRENT_LANG === 'en') ? ('Sire, shall I open ' + a.name + '?') : ('Sire, kya main ' + a.name + ' kholun?'),
+          () => {
+            if (hasNativeBridge() && window.ChittiNative.openApp && a.pkg) {
+              try {
+                const r2 = window.ChittiNative.openApp(a.pkg);
+                if (r2 === 'opened') {
+                  speakText((CURRENT_LANG === 'en' ? 'Opened ' : 'Khol di ') + a.name + '.', CURRENT_LANG);
+                  logAction('App opened (native): ' + a.name, a.pkg);
+                  return;
+                }
+                if (r2 === 'opened_play_store') {
+                  speakText((CURRENT_LANG === 'en' ? (a.name + ' is not installed. Opening Play Store.') : (a.name + ' install nahi hai. Play Store khol rahi hoon.')), CURRENT_LANG);
+                  logAction('App opened (Play Store): ' + a.name, a.pkg);
+                  return;
+                }
+              } catch (e) {}
+            }
+            if (a.web) {
+              try { window.open(a.web, '_blank', 'noopener'); } catch (e) {}
+              speakText((CURRENT_LANG === 'en' ? 'Opening ' : 'Khol rahi hoon ') + a.name + ' on the web.', CURRENT_LANG);
+              logAction('App opened (web): ' + a.name, a.web);
+            } else {
+              speakText((CURRENT_LANG === 'en' ? (a.name + ' needs the Android app — no web fallback.') : (a.name + ' ke liye Android app chahiye.')), CURRENT_LANG);
+              logAction('App needs Android app (no web): ' + a.name, '');
+            }
+          },
+        );
+        return true;
+      }
+    }
+    // Unknown app → fall through to DeepSeek for a fuzzy answer.
   }
 
   // Not an intent — fall through to DeepSeek.
