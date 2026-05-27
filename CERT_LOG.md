@@ -44,6 +44,26 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### 7 voice intents wired + live-certified — GREEN ✅ 18/18
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Trigger** | Sire 2026-05-27: *"Fix ALL of these in chitti_vaani.html and the Android APK tonight. … Only report when ALL working."* — 7 specific voice intents Sire locked. |
+| **Page** | [chitti_vaani.html](chitti_vaani.html) — routeVoiceIntent() in the Phone Agent script block |
+| **Cert tool** | [tools/cert_voice_intents.mjs](tools/cert_voice_intents.mjs) — fires each utterance through `routeVoiceIntent()`, asserts the correct modal opens + recipient/message pre-filled |
+| **Checks** | **18/18** on live (`https://sahayai.in/chitti_vaani.html`) |
+| **Result** | **GREEN ✅** |
+| **The 7 intents** | (1) **CALL** "Wife ko call karo" → opens #call-modal pre-filled with Wife. (2) **SMS** "Wife ko SMS bhejo …" → opens #sms-modal with recipient + message. (3) **WHATSAPP** "Wife ko WhatsApp karo" → opens #wa-modal pre-filled. (4) **YOUTUBE** "YouTube pe gaana bajao" → chitti-confirm "kya main YouTube kholun?" → opens youtube.com / app. (5) **SILENT** "Phone silent karo" → chitti-confirm → `ChittiNative.setSilentMode(true)`. (6) **RING** "Phone ring pe karo" → chitti-confirm → `setSilentMode(false)`. (7) **OPEN APP** "Zomato kholo" → chitti-confirm → `ChittiNative.openApp('com.zomato.app')` or web URL. |
+| **Browser fallbacks (all 7)** | tel: deep-link · sms: deep-link · wa.me URL · youtube.com URL · "needs Android app" honest deferral (silent/ring) · canonical website URL (open app). Every fallback path certified. |
+| **Native bridge** | [chitti-vaani-android/.../MainActivity.kt](chitti-vaani-android/app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt) already exposes `makeCall(phoneE164)`, `sendSMS(phoneE164, body)`, `setSilentMode(on: Boolean)`, `openApp(packageName)` as `@JavascriptInterface` methods. No Kotlin changes needed — the JS just had to call them on the right intent. |
+| **Bug discovered + fixed by cert** | The existing `^call X` / `^phone X` regex was greedy — "Phone silent karo" was being routed as `call(silent karo)`. Reordering the new device-control intents (SILENT / RING / YouTube / Open-app) to run BEFORE the broad CALL intent fixed it. The cert click-probe caught this exactly: `routeVoiceIntent` returned true but the chitti-confirm overlay was still hidden (the wrong modal had opened instead). |
+| **Golden Rule §2g compliance** | Every side-effecting path routes through `chittiConfirmAndDo()` — Chitti speaks the question, waits for explicit haan (voice OR tap), only then fires the native call. Never defaults to Yes; never times out into Yes. |
+| **Visual proof** | 7 × 375px screenshots under `tools/cert_voice_intent_<INTENT>_375.png` showing the post-intent modal state per utterance. |
+| **Reproducible** | `node tools/cert_voice_intents.mjs` (live) or `CERT_BASE=http://127.0.0.1:8765 node tools/cert_voice_intents.mjs` (local). Seeds a Trusted Circle ("Wife" / "Mom") + vaani consent + dismisses Disability Profile before each probe. |
+
+---
+
 ### Visual screenshot verification LOCKED — every cert writes proof to `tools/cert_screenshots/`
 
 | Field | Value |
