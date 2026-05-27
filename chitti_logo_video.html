@@ -278,6 +278,89 @@
           </div>
         </div>
       </div>
+
+      <!-- =================================================================
+           S HEARTBEAT EMBLEM GENERATOR — Canvas animation
+           ================================================================= -->
+      <div class="card" style="margin-top:18px">
+        <h2>💚 S Heartbeat Emblem <span style="font-weight:500;color:var(--muted);font-size:12px">· animated Canvas · runs offline</span></h2>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 10px">SAHAYAI's animated emblem. ECG line through the S, pulse rings expanding, tricolor ring shimmering. Tap Generate to start the loop.</p>
+
+        <div class="grid">
+          <div>
+            <label for="emb-brand">Brand name</label>
+            <input id="emb-brand" type="text" maxlength="20" value="SAHAYAI" />
+
+            <label>Speed</label>
+            <div class="opt-grid" id="emb-speed-grid" role="radiogroup" aria-label="Animation speed">
+              <button type="button" class="opt-pick" data-speed="0.6" role="radio" aria-checked="false">🐢 Slow<small>0.6×</small></button>
+              <button type="button" class="opt-pick active" data-speed="1.0" role="radio" aria-checked="true">🚶 Normal<small>1.0×</small></button>
+              <button type="button" class="opt-pick" data-speed="1.8" role="radio" aria-checked="false">⚡ Fast<small>1.8×</small></button>
+            </div>
+
+            <label>Colors</label>
+            <div class="opt-grid" id="emb-color-grid" role="radiogroup" aria-label="Color scheme">
+              <button type="button" class="opt-pick active" data-color="tricolor" role="radio" aria-checked="true">🇮🇳 Tricolor<small>Flag ring</small></button>
+              <button type="button" class="opt-pick" data-color="green" role="radio" aria-checked="false"><span style="color:#138808">●</span> All Green<small>Heartbeat</small></button>
+              <button type="button" class="opt-pick" data-color="saffron" role="radio" aria-checked="false"><span style="color:#FF9933">●</span> Saffron<small>Warm</small></button>
+            </div>
+
+            <div class="row" style="margin-top:14px">
+              <button id="emb-go" class="primary" style="flex:1">✨ Generate</button>
+              <button id="emb-stop">⏸ Stop</button>
+            </div>
+            <div class="dl-row">
+              <button id="emb-dl-png" disabled>⬇ PNG</button>
+              <button id="emb-dl-webm" disabled>⬇ WebM (5s)</button>
+            </div>
+            <div class="meta" id="emb-meta">tap Generate to animate</div>
+          </div>
+
+          <div>
+            <div class="logo3d-stage" id="emb-stage" data-chitti-response data-chitti-section="S Heartbeat Emblem">
+              <canvas id="s-emblem-canvas" width="600" height="600" aria-label="S heartbeat emblem animation"></canvas>
+              <div class="placeholder" id="emb-placeholder">Tap <strong>Generate</strong> to start the heartbeat.</div>
+              <div class="progress" id="emb-progress" role="status" aria-live="polite">
+                <span id="emb-progress-text">Recording…</span>
+                <div class="bar"><div id="emb-progress-bar"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================
+           CHITTI CHARACTER — Full-body superhero mascot
+           ================================================================= -->
+      <div class="card" style="margin-top:18px">
+        <h2>🦸 Chitti Character <span style="font-weight:500;color:var(--muted);font-size:12px">· official mascot · download as SVG or PNG</span></h2>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 10px">Full-body Chitti with Indian-flag cape, green superhero boots, S-heartbeat chest emblem, and checklist clipboard. Use in your videos, posters, and shop posters.</p>
+
+        <div class="grid">
+          <div>
+            <p style="font-size:13px;color:var(--text);margin:8px 0">Includes:</p>
+            <ul style="font-size:13px;color:var(--text);margin:0 0 14px 18px;line-height:1.7">
+              <li>White-and-green robot body (Logo&nbsp;1 style)</li>
+              <li>Yellow-tipped antennae + friendly green visor</li>
+              <li>S heartbeat chest emblem (Logo&nbsp;2 style)</li>
+              <li>Indian tricolor superhero cape with Ashoka chakra</li>
+              <li>Green flared boots + confident pose</li>
+              <li>Clipboard with three green tick checkmarks</li>
+            </ul>
+            <div class="dl-row">
+              <button id="character-dl-svg" class="primary">⬇ SVG (vector)</button>
+              <button id="character-dl-png">⬇ PNG 2048×2867</button>
+              <button id="character-dl-1080">⬇ Square 1080</button>
+            </div>
+            <div class="meta" id="character-meta">tap to download · file saves to your phone</div>
+          </div>
+          <div>
+            <div class="logo3d-stage" id="character-stage" style="background:linear-gradient(135deg,#1e3a8a,#0E2344)" data-chitti-response data-chitti-section="Chitti Character Mascot">
+              <object id="character-svg" type="image/svg+xml" data="tools/chitti_superhero_mascot.svg" style="width:100%;height:100%;display:block" aria-label="Chitti superhero mascot"></object>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ============ TAB 2 · VIDEO STUDIO ============ -->
@@ -729,22 +812,46 @@
           ctx.lineTo(512+Math.cos(a)*520, 500+Math.sin(a)*520); ctx.stroke();
         }
         ctx.globalAlpha = 1;
-        // Load mascot SVG and draw
+        // Fetch SVG text first → blob URL → Image (same path that works in Character section)
+        let mascotLoaded = false;
         try {
-          await new Promise((res, rej) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-              const w = 560, h = 780;
-              ctx.drawImage(img, 232, 100, w, h);
-              res();
-            };
-            img.onerror = () => res();  // continue without mascot
-            img.src = 'tools/chitti_superhero_mascot.svg';
-          });
+          const r = await fetch('tools/chitti_superhero_mascot.svg', { cache: 'force-cache' });
+          if(r.ok){
+            const txt  = await r.text();
+            const blob = new Blob([txt], { type: 'image/svg+xml;charset=utf-8' });
+            const url  = URL.createObjectURL(blob);
+            await new Promise((res) => {
+              const img = new Image();
+              img.onload  = () => { try{ ctx.drawImage(img, 232, 100, 560, 780); mascotLoaded = true; }catch(e){} URL.revokeObjectURL(url); res(); };
+              img.onerror = () => { URL.revokeObjectURL(url); res(); };
+              img.src = url;
+            });
+          }
         } catch(e){ /* swallow */ }
+        // Fallback: if mascot didn't load, paint a stylised stand-in so the texture is never blank
+        if(!mascotLoaded){
+          ctx.save();
+          // simple Chitti silhouette: head, body, legs
+          ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#0F6A1B'; ctx.lineWidth = 6;
+          // head
+          ctx.beginPath(); ctx.arc(512, 320, 130, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+          // visor
+          ctx.fillStyle = '#1B9F2A'; ctx.beginPath(); ctx.arc(512, 320, 90, Math.PI*0.15, Math.PI - Math.PI*0.15); ctx.fill();
+          // body
+          ctx.fillStyle = '#FFFFFF'; ctx.fillRect(412, 460, 200, 280); ctx.strokeRect(412, 460, 200, 280);
+          // chest
+          ctx.fillStyle = '#1B9F2A'; ctx.fillRect(452, 490, 120, 220);
+          // legs
+          ctx.fillStyle = '#FFFFFF'; ctx.fillRect(430, 740, 60, 110); ctx.strokeRect(430, 740, 60, 110);
+          ctx.fillRect(534, 740, 60, 110); ctx.strokeRect(534, 740, 60, 110);
+          // boots
+          ctx.fillStyle = '#138808';
+          ctx.beginPath(); ctx.ellipse(460, 855, 50, 15, 0, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(564, 855, 50, 15, 0, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
         // Brand band
-        ctx.fillStyle = 'rgba(14,35,68,0.85)'; ctx.fillRect(0, 880, 1024, 144);
+        ctx.fillStyle = 'rgba(14,35,68,0.92)'; ctx.fillRect(0, 880, 1024, 144);
         ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
         ctx.font = '900 80px Inter, Arial'; ctx.fillText((brand||'').toUpperCase().slice(0,18), 512, 928);
         if(tagline){ ctx.font='500 38px Inter, Arial'; ctx.fillStyle='#FFE6BF'; ctx.fillText(tagline.slice(0,42), 512, 988); }
@@ -826,10 +933,16 @@
       }
 
       // ----- Material -----
-      function buildMaterial(matName, faceTex){
+      function buildMaterial(matName, faceTex, style){
         faceTex.colorSpace = THREE.SRGBColorSpace || faceTex.colorSpace;
         faceTex.anisotropy = 8;
-        const common = { map: faceTex };
+        // Character is a PlaneGeometry — make it double-sided so it shows on both faces
+        const side = (style === 'character') ? THREE.DoubleSide : THREE.FrontSide;
+        // Character is a photo, not metal — use low metalness so the mascot shows clearly
+        if(style === 'character'){
+          return new THREE.MeshStandardMaterial({ map: faceTex, color: 0xffffff, metalness: 0.0, roughness: 0.85, side });
+        }
+        const common = { map: faceTex, side };
         if(matName === 'saffron'){
           return new THREE.MeshStandardMaterial({ ...common, color: 0xffd9a8, metalness: 0.45, roughness: 0.35 });
         }
@@ -868,7 +981,7 @@
         faceTex.needsUpdate = true;
 
         const geom = buildGeometry(spec.style);
-        const mat  = buildMaterial(spec.material, faceTex);
+        const mat  = buildMaterial(spec.material, faceTex, spec.style);
         mesh = new THREE.Mesh(geom, mat);
         scene.add(mesh);
 
@@ -1061,6 +1174,333 @@
         ChittiSound.victory();
       } catch(e){ alert('GIF failed: ' + e.message); }
       finally { hideProgress(); $logoDlGif.disabled = false; }
+    });
+
+    /* =============================================================
+       S HEARTBEAT EMBLEM — Canvas animation
+       ============================================================= */
+    const SEmblem = (() => {
+      const canvas = document.getElementById('s-emblem-canvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      let raf = null, t0 = 0, speed = 1.0, colorScheme = 'tricolor', brand = 'SAHAYAI';
+      let running = false;
+      const pulses = [];
+
+      function colors(){
+        if(colorScheme === 'green'){
+          return { ring:['#138808','#16a34a','#22c55e'], s:'#22c55e', ecg:'#22c55e', dot:'#FFFFFF', bg:'#0E2344', text:'#fff' };
+        }
+        if(colorScheme === 'saffron'){
+          return { ring:['#FF9933','#FFA94D','#FFB770'], s:'#FF9933', ecg:'#22c55e', dot:'#FFFFFF', bg:'#0E2344', text:'#fff' };
+        }
+        return { ring:['#FF9933','#FFFFFF','#138808'], s:'#22c55e', ecg:'#22c55e', dot:'#FFFFFF', bg:'#0E2344', text:'#fff' };
+      }
+
+      function reset(){ pulses.length = 0; t0 = performance.now(); }
+
+      function frame(now){
+        if(!running){ return; }
+        const t = (now - t0) / 1000 * speed;
+        const c = colors();
+        // bg
+        ctx.fillStyle = c.bg; ctx.fillRect(0, 0, W, H);
+
+        const cx = W/2, cy = H/2 - 30;
+        const R = 220;
+
+        // --- pulse rings expanding outward
+        if(Math.random() < 0.02 * speed || pulses.length === 0){
+          pulses.push({ r: R*0.55, age: 0 });
+        }
+        for(let i = pulses.length-1; i >= 0; i--){
+          const p = pulses[i];
+          p.age += 0.016 * speed * 60 / 60;
+          p.r += 2.2 * speed;
+          const alpha = Math.max(0, 0.6 - p.age*0.4);
+          if(alpha <= 0){ pulses.splice(i,1); continue; }
+          ctx.strokeStyle = `rgba(34, 197, 94, ${alpha})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(cx, cy, p.r, 0, Math.PI*2); ctx.stroke();
+        }
+
+        // --- tricolor outer ring (rotates with shimmer)
+        const ringRot = t * 0.4;
+        for(let i = 0; i < 60; i++){
+          const a0 = (i/60) * Math.PI*2 + ringRot;
+          const a1 = ((i+1)/60) * Math.PI*2 + ringRot;
+          const stripe = Math.floor((i + (ringRot*60/(Math.PI*2))) % 3 + 3) % 3;
+          ctx.strokeStyle = c.ring[stripe];
+          ctx.lineWidth = 18;
+          ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.stroke();
+        }
+        // ring shimmer highlight
+        const shimAngle = (t * 1.2) % (Math.PI*2);
+        const shim = ctx.createRadialGradient(cx + Math.cos(shimAngle)*R, cy + Math.sin(shimAngle)*R, 4, cx + Math.cos(shimAngle)*R, cy + Math.sin(shimAngle)*R, 60);
+        shim.addColorStop(0, 'rgba(255,255,255,0.85)');
+        shim.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = shim; ctx.beginPath(); ctx.arc(cx + Math.cos(shimAngle)*R, cy + Math.sin(shimAngle)*R, 60, 0, Math.PI*2); ctx.fill();
+
+        // --- inner disc (slightly off-white)
+        const inner = ctx.createRadialGradient(cx-40, cy-40, 20, cx, cy, R-15);
+        inner.addColorStop(0, '#FFFFFF'); inner.addColorStop(1, '#E5E7EB');
+        ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(cx, cy, R-18, 0, Math.PI*2); ctx.fill();
+
+        // --- S letter (vibrating like heartbeat)
+        const beat = Math.sin(t * Math.PI * 2 * (72/60)); // ~72 bpm
+        const sScale = 1 + (Math.max(0, beat) ** 4) * 0.08;
+        ctx.save();
+        ctx.translate(cx + (Math.random()-0.5) * 1.2, cy + (Math.random()-0.5) * 1.2);
+        ctx.scale(sScale, sScale);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '900 280px Inter, "Segoe UI", Arial, sans-serif';
+        // glow
+        ctx.shadowColor = c.s; ctx.shadowBlur = 30 * (0.6 + Math.max(0,beat)*0.6);
+        ctx.fillStyle = c.s;
+        ctx.fillText('S', 0, 10);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(15, 106, 27, 0.8)'; ctx.lineWidth = 4;
+        ctx.strokeText('S', 0, 10);
+        ctx.restore();
+
+        // --- ECG line going across the S (left-to-right + loop)
+        const lineY = cy + 20;
+        const x0 = cx - R + 30, x1 = cx + R - 30;
+        ctx.strokeStyle = c.ecg; ctx.lineWidth = 4; ctx.lineCap='round'; ctx.lineJoin='round';
+        ctx.beginPath();
+        // baseline
+        ctx.moveTo(x0, lineY); ctx.lineTo(cx - 90, lineY);
+        // first peak (P)
+        ctx.lineTo(cx - 70, lineY - 18); ctx.lineTo(cx - 50, lineY);
+        // Q dip
+        ctx.lineTo(cx - 30, lineY + 22);
+        // R big spike
+        ctx.lineTo(cx - 10, lineY - 90); ctx.lineTo(cx + 12, lineY + 30);
+        // S small
+        ctx.lineTo(cx + 30, lineY); ctx.lineTo(cx + 70, lineY - 28); ctx.lineTo(cx + 90, lineY);
+        ctx.lineTo(x1, lineY);
+        ctx.stroke();
+
+        // --- Moving bright dot following ECG
+        const dotProgress = ((t * 0.35) % 1);
+        const dotX = x0 + (x1 - x0) * dotProgress;
+        // compute Y by sampling our ECG path approximately
+        const dotY = ecgYAt(dotX, cx, lineY);
+        ctx.fillStyle = c.dot;
+        ctx.shadowColor = '#fff'; ctx.shadowBlur = 24;
+        ctx.beginPath(); ctx.arc(dotX, dotY, 10, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+        // tail behind dot
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 4;
+        ctx.beginPath();
+        const tailLen = 60;
+        for(let s = 0; s < tailLen; s += 6){
+          const tx = dotX - s; if(tx < x0) break;
+          const ty = ecgYAt(tx, cx, lineY);
+          if(s === 0) ctx.moveTo(tx, ty); else ctx.lineTo(tx, ty);
+        }
+        ctx.stroke();
+
+        // --- Brand text below
+        ctx.fillStyle = c.text;
+        ctx.font = '900 56px Inter, Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText((brand||'SAHAYAI').toUpperCase().slice(0,18), cx, cy + R + 36);
+        ctx.font = '600 22px Inter, Arial';
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.fillText('Bharat ka apna Chitti', cx, cy + R + 76);
+
+        raf = requestAnimationFrame(frame);
+      }
+
+      function ecgYAt(x, cx, baseY){
+        // Approximate piecewise from the path above
+        if(x < cx - 90) return baseY;
+        if(x < cx - 70) return baseY + (x - (cx-90))/(20) * -18;
+        if(x < cx - 50) return baseY - 18 + (x - (cx-70))/(20) * 18;
+        if(x < cx - 30) return baseY + (x - (cx-50))/(20) * 22;
+        if(x < cx - 10) return baseY + 22 + (x - (cx-30))/(20) * (-90-22);
+        if(x < cx + 12) return baseY - 90 + (x - (cx-10))/(22) * (30+90);
+        if(x < cx + 30) return baseY + 30 + (x - (cx+12))/(18) * (-30);
+        if(x < cx + 70) return baseY + (x - (cx+30))/(40) * -28;
+        if(x < cx + 90) return baseY - 28 + (x - (cx+70))/(20) * 28;
+        return baseY;
+      }
+
+      function start(){
+        if(running) return;
+        running = true; reset();
+        document.getElementById('emb-placeholder').style.display = 'none';
+        raf = requestAnimationFrame(frame);
+      }
+      function stop(){
+        running = false;
+        if(raf){ cancelAnimationFrame(raf); raf = null; }
+      }
+      function setSpeed(v){ speed = v; }
+      function setColor(v){ colorScheme = v; }
+      function setBrand(v){ brand = v; }
+
+      function snapshotPNG(){
+        return new Promise(res => canvas.toBlob(b => res(b), 'image/png'));
+      }
+      function recordWebM(ms, onProgress){
+        return new Promise((resolve, reject) => {
+          if(!running) return reject(new Error('Start the animation first'));
+          const stream = canvas.captureStream(30);
+          let mime = 'video/webm;codecs=vp9';
+          if(!window.MediaRecorder || !MediaRecorder.isTypeSupported(mime)){
+            mime = 'video/webm;codecs=vp8';
+            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+          }
+          if(!window.MediaRecorder) return reject(new Error('Your browser does not support video recording.'));
+          const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3_000_000 });
+          const chunks = [];
+          rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+          rec.onstop = () => resolve(new Blob(chunks, { type:'video/webm' }));
+          rec.onerror = e => reject(e.error || e);
+          const t0 = performance.now();
+          rec.start(200);
+          const tick = () => {
+            const el = performance.now() - t0;
+            if(onProgress) onProgress(Math.min(1, el/ms));
+            if(el >= ms){ try{ rec.stop(); }catch(e){} return; }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+
+      return { start, stop, setSpeed, setColor, setBrand, snapshotPNG, recordWebM };
+    })();
+
+    // Emblem wire-up
+    document.querySelectorAll('#emb-speed-grid .opt-pick').forEach(b => {
+      b.addEventListener('click', () => {
+        SEmblem.setSpeed(parseFloat(b.dataset.speed));
+        document.querySelectorAll('#emb-speed-grid .opt-pick').forEach(x => {
+          const on = x === b; x.classList.toggle('active', on); x.setAttribute('aria-checked', on);
+        });
+      });
+    });
+    document.querySelectorAll('#emb-color-grid .opt-pick').forEach(b => {
+      b.addEventListener('click', () => {
+        SEmblem.setColor(b.dataset.color);
+        document.querySelectorAll('#emb-color-grid .opt-pick').forEach(x => {
+          const on = x === b; x.classList.toggle('active', on); x.setAttribute('aria-checked', on);
+        });
+      });
+    });
+    document.getElementById('emb-brand').addEventListener('input', e => SEmblem.setBrand(e.target.value));
+    document.getElementById('emb-go').addEventListener('click', () => {
+      SEmblem.setBrand(document.getElementById('emb-brand').value || 'SAHAYAI');
+      SEmblem.start();
+      document.getElementById('emb-meta').textContent = 'animating · tap PNG/WebM to download';
+      document.getElementById('emb-dl-png').disabled = false;
+      document.getElementById('emb-dl-webm').disabled = false;
+      ChittiSound.success();
+    });
+    document.getElementById('emb-stop').addEventListener('click', () => {
+      SEmblem.stop();
+      document.getElementById('emb-meta').textContent = 'stopped';
+    });
+    document.getElementById('emb-dl-png').addEventListener('click', async () => {
+      try{
+        const blob = await SEmblem.snapshotPNG();
+        downloadBlob(blob, (document.getElementById('emb-brand').value||'sahayai').replace(/\s+/g,'_').toLowerCase() + '_emblem.png');
+        ChittiSound.success();
+      } catch(e){ alert('PNG failed: ' + e.message); }
+    });
+    document.getElementById('emb-dl-webm').addEventListener('click', async () => {
+      const btn = document.getElementById('emb-dl-webm'); btn.disabled = true;
+      const prog = document.getElementById('emb-progress');
+      const progBar = document.getElementById('emb-progress-bar');
+      const progText = document.getElementById('emb-progress-text');
+      prog.classList.add('show'); progText.textContent = 'Recording WebM (5s)…';
+      try{
+        const blob = await SEmblem.recordWebM(5000, p => { progBar.style.width = Math.round(p*100)+'%'; });
+        downloadBlob(blob, (document.getElementById('emb-brand').value||'sahayai').replace(/\s+/g,'_').toLowerCase() + '_emblem.webm');
+        ChittiSound.victory();
+      } catch(e){ alert('WebM failed: ' + e.message); }
+      finally { prog.classList.remove('show'); btn.disabled = false; }
+    });
+
+    /* =============================================================
+       CHITTI CHARACTER — SVG + PNG downloads
+       ============================================================= */
+    async function loadMascotSvgText(){
+      const r = await fetch('tools/chitti_superhero_mascot.svg', { cache: 'no-cache' });
+      if(!r.ok) throw new Error('mascot fetch HTTP ' + r.status);
+      return await r.text();
+    }
+    async function rasteriseSvg(svgText, w, h, square){
+      return await new Promise((resolve, reject) => {
+        const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const url  = URL.createObjectURL(blob);
+        const img  = new Image();
+        img.onload = () => {
+          const cn = document.createElement('canvas');
+          cn.width = w; cn.height = h;
+          const cx = cn.getContext('2d');
+          // background gradient for PNG
+          const g = cx.createLinearGradient(0,0,w,h);
+          g.addColorStop(0, '#1e3a8a'); g.addColorStop(1, '#0E2344');
+          cx.fillStyle = g; cx.fillRect(0,0,w,h);
+          // draw centred preserving aspect (svg viewBox is 500x700)
+          const svgRatio = 500/700;
+          let dw, dh;
+          if(square){
+            // fit inside square canvas
+            dh = h * 0.92; dw = dh * svgRatio;
+          } else {
+            dw = w; dh = h;
+          }
+          const dx = (w - dw)/2, dy = (h - dh)/2;
+          cx.drawImage(img, dx, dy, dw, dh);
+          // SAHAYAI watermark
+          cx.fillStyle = 'rgba(255,255,255,0.9)';
+          cx.font = '900 ' + Math.round(w*0.035) + 'px Inter, Arial';
+          cx.textAlign = 'center';
+          cx.fillText('SAHAYAI · Bharat ka apna Chitti', w/2, h - 24);
+          cn.toBlob(b => { URL.revokeObjectURL(url); resolve(b); }, 'image/png');
+        };
+        img.onerror = e => { URL.revokeObjectURL(url); reject(new Error('SVG load failed')); };
+        img.src = url;
+      });
+    }
+
+    document.getElementById('character-dl-svg').addEventListener('click', async () => {
+      const btn = document.getElementById('character-dl-svg'); btn.disabled = true;
+      try{
+        const txt = await loadMascotSvgText();
+        downloadBlob(new Blob([txt], { type:'image/svg+xml' }), 'chitti_superhero_mascot.svg');
+        ChittiSound.success();
+      } catch(e){ alert('SVG download failed: ' + e.message); }
+      finally { btn.disabled = false; }
+    });
+    document.getElementById('character-dl-png').addEventListener('click', async () => {
+      const btn = document.getElementById('character-dl-png'); btn.disabled = true;
+      document.getElementById('character-meta').textContent = 'rendering 2048×2867 PNG…';
+      try{
+        const txt = await loadMascotSvgText();
+        const blob = await rasteriseSvg(txt, 2048, 2867, false);
+        downloadBlob(blob, 'chitti_superhero_mascot_2048.png');
+        document.getElementById('character-meta').textContent = 'PNG 2048×2867 saved';
+        ChittiSound.victory();
+      } catch(e){ alert('PNG failed: ' + e.message); document.getElementById('character-meta').textContent = 'error: ' + e.message; }
+      finally { btn.disabled = false; }
+    });
+    document.getElementById('character-dl-1080').addEventListener('click', async () => {
+      const btn = document.getElementById('character-dl-1080'); btn.disabled = true;
+      document.getElementById('character-meta').textContent = 'rendering 1080×1080 PNG…';
+      try{
+        const txt = await loadMascotSvgText();
+        const blob = await rasteriseSvg(txt, 1080, 1080, true);
+        downloadBlob(blob, 'chitti_superhero_mascot_1080sq.png');
+        document.getElementById('character-meta').textContent = 'Square 1080 saved (Insta-ready)';
+        ChittiSound.victory();
+      } catch(e){ alert('PNG failed: ' + e.message); document.getElementById('character-meta').textContent = 'error: ' + e.message; }
+      finally { btn.disabled = false; }
     });
 
     /* =============================================================
