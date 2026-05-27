@@ -44,6 +44,26 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### S Heartbeat Emblem visual fix — clean S + animated scrolling ECG — GREEN ✅
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Trigger** | Sire 2026-05-27: *"CTO process failure. Sire saw broken logo — SA instead of S, frozen ECG line."* |
+| **Page** | [chitti_logo_video.html](chitti_logo_video.html) → Logo Studio tab → "💚 S Heartbeat Emblem" section |
+| **Live URL** | https://sahayai.in/chitti_logo_video.html |
+| **Cert tool** | [tools/cert_s_emblem_visual.mjs](tools/cert_s_emblem_visual.mjs) — 11-check visual cert (canvas pixel hashes + Stop/Restart + screenshots) |
+| **Checks** | **11/11** on live |
+| **Result** | **GREEN ✅** |
+| **Process lesson locked** | `feedback_cto_must_visual_cert.md` — CTO live-cert must validate **rendered output** (canvas pixels, animation frames over time, post-click state), never just DOM existence. The "canvas#s-emblem-canvas present" check that previously passed was insufficient. |
+| **Two visual defects fixed** | (1) ECG R-spike pierced through the central S letter (lineY was cy+20, INSIDE the S glyph) — created a visual artifact that read as "SA". (2) The ECG path itself was drawn STATIC every frame; only the white tracking dot moved — Sire reasonably saw a "frozen" line. |
+| **Fixes shipped (commit `e9e6c2c`)** | (a) ECG band moved BELOW the S letter (lineY = cy+130, dedicated zone inside the disc, no overlap with the S glyph). (b) ECG line now animates via a scrolling-monitor pattern — phase advances 60 px/s, the entire waveform slides left, fresh PQRST pulses appear on the right edge; tracking dot at right edge as "now cursor" with soft gradient tail. (c) PQRST shape factored into `ecgPulseY(u)` for maintainability. (d) S letter centred dead-on (was jittering ±1.2px — blurred the glyph). (e) Brand text font auto-scales (56→44px) for >10-char brand names so "SAHAYAI" doesn't visually bleed into the S. |
+| **Live cert detail** | E1 ✅ canvas + Generate + Stop + brand input present · E2 ✅ ECG band animates (hash changes 1.5s → 3.3s) · E2b ✅ ECG band animates (3.3s → 4.8s) · E3 ✅ S letter has rendered content · E3b ✅ S letter renders the beat-pulse · E5 ✅ Stop button halts animation (hash stable) · E6 ✅ Restart resumes animation (hash changes again) · No pageerrors. |
+| **Screenshot proof** | [running t=3.3s](tools/cert_s_emblem_running_t2_375.png) — clean S + scrolling ECG band visible below · [before generate](tools/cert_s_emblem_before_375.png) · [stopped](tools/cert_s_emblem_stopped_375.png) |
+| **Reproducible** | `node tools/cert_s_emblem_visual.mjs` (live) or `CERT_BASE=http://127.0.0.1:8765 node tools/cert_s_emblem_visual.mjs` (local). Result JSON: [tools/cert_s_emblem_result.json](tools/cert_s_emblem_result.json). |
+
+---
+
 ### Disability Profile modal hotfix — closable + never re-shows — GREEN ✅
 
 | Field | Value |
