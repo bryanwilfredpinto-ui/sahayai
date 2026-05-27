@@ -44,4 +44,23 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### chitti_complete_technical.html — GREEN ✅
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Page** | [chitti_complete_technical.html](chitti_complete_technical.html) |
+| **Live URL** | https://sahayai.in/chitti_complete_technical.html |
+| **Cert tool** | [tools/cert_complete_technical.mjs](tools/cert_complete_technical.mjs) |
+| **Checks** | **20/20** |
+| **Result** | **GREEN ✅** |
+| **Artifact** | [tools/cert_complete_technical_result.json](tools/cert_complete_technical_result.json) + 5 × 375px screenshots (calls / scanner / chart / watch / journal tabs) |
+| **Fix shipped this cert** | The Calls Generator ⚡ Generate Calls button (Sire's Priority-1 feature shipped in 0c7f2a1) was throwing `runCallsScanRich is not defined` on every click. Root cause: 13 async functions inside the page's `if(!window._chittiLoaded){...}` reload-guard block were block-scoped per ES2015 (async function declarations don't get Annex-B web-compat hoisting to `window`, unlike regular `function` declarations). Inline `onclick="…()"` handlers couldn't find them. Fix: explicit `window.X = X;` at the end of the block for all 13 async functions (runCallsScanRich, runCallsScan, runScan, loadChart, loadIndexData, loadStrengthAndRating, loadCV, watchlistRefresh, chittiAskSend, sendChatTech, fetchAndDrawCascadedSR, _buildTradeSetupFromATR, _chittiRefreshSpend). Caught by CTO cert click-probe. |
+| **Per-Sire-directive specs** | (1) ✅ Indian flag colors (`#FF9933` / `#138808` / `#000080` + token names — 6 stylesheet matches). (2) ✅ 26-language dropdown (`#lang-select`) wired by chitti_a11y + chitti_lang. (3) ✅ **Calls tab generating real signals** — `runCallsScanRich` now correctly on `window`; button fires the ATR-based call generator; universe selector carries all 5 buckets (nifty50 / largecap / midcap / smallcap / microcap). (4) ✅ **All stock universes complete** — `window.NSE.NIFTY50` (50) · `LARGECAP` (100) · `MIDCAP150` (150) · `SMALLCAP250` (250) · `MICROCAP250` (250) — 800 unique stocks via `nse_universe.js`. |
+| **5-gate result** | All five gates GREEN on live (substrate fixes from prior commit lifted G3 + G5 across every page; G4 26-language list registered via chitti_lang.js). |
+| **Locked-decision compliance** | NOT SEBI REGISTERED sticky bar present at top (`position:sticky, top=3px`) per `project_legal_disclaimer` — never demoted to footer. Roshan Indicator default ✅. |
+| **Pageerrors** | 0 |
+| **Honest YELLOW carry-forwards** | Some metric cards in Scanner / Chart tabs are marked `COMING SOON` (RSI S/R, Bollinger Bands squeeze, Stoch RSI, Supertrend visualization, Backtest, Saved Scans) — honest stubs per SAHAYAI_MASTER.md §3 rule 4; surfaced visually as "Soon" badges, not silently omitted. |
+| **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. |
+
 ---
