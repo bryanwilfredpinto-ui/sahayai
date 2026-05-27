@@ -367,103 +367,133 @@ textarea:focus{border-color:var(--blue)}
 .rtab{transition:all .15s}
 .rtab:active{transform:scale(0.96)}
 
-/* ════════════════════ BHARAT PREMIUM THEME OVERLAY ════════════════════ */
+/* ════════════════════ INDIAN FLAG THEME OVERLAY (LOCKED 2026-05-27) ════════════════════
+ * Indian flag palette per Sire's Priority-1 spec — REPLACES warm Bharat overlay.
+ * --saffron:#FF9933  --white:#FFFFFF  --green:#138808  --navy:#000080 (Ashok wheel)
+ */
 :root{
-  --saffron:#E86A17;
-  --navy:#0E2344;
-  --gold:#D4AF37;
-  --bg:#f8f4ee;
-  --card:#ffffff;
-  --card2:#fbf8f1;
-  --text:#17202a;
-  --muted:#6b7280;
-  --border:#e5e7eb;
-  --blue:#0E2344;
-  --amber:#D4AF37;
+  --saffron:#FF9933; --saffron-deep:#E07B1D;
+  --green:#138808;   --green-deep:#0E6606;
+  --navy:#000080;    --navy-deep:#00004D;
+  --gold:#FF9933;
+  --bg:#FAFAFA; --card:#FFFFFF; --card2:#FFF7EC;
+  --text:#1a1a1a; --muted:#666; --border:#e5e7eb;
+  --blue:#000080; --amber:#FF9933; --red:#CC0000;
 }
-body{background:linear-gradient(180deg,#f8f4ee,#fff)!important;color:#17202a!important;font-family:Inter,'Segoe UI',Arial,sans-serif!important}
-body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
+body{background:linear-gradient(180deg,#FAFAFA,#fff)!important;color:#1a1a1a!important;font-family:'Noto Sans',Inter,'Segoe UI',Arial,sans-serif!important}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(255,153,51,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(19,136,8,.10),transparent 22%),radial-gradient(circle at 50% 80%,rgba(0,0,128,.06),transparent 28%);z-index:0}
 body > *{position:relative;z-index:1}
-.header{background:linear-gradient(135deg,#0E2344,#16376a)!important;color:#fff!important;border-radius:0 0 24px 24px}
-.a11y-bar{background:linear-gradient(135deg,#0E2344,#16376a)!important;color:#fff!important;border-radius:0!important}
+/* Header — navy (Ashok wheel) */
+.header,header[role="banner"]{background:linear-gradient(135deg,#000080,#1a1a9e)!important;color:#fff!important;border-radius:0 0 24px 24px!important;padding-bottom:18px}
+.brand{color:#fff!important}.tagline{color:rgba(255,255,255,.85)!important}
+/* A11y bar — same navy */
+.a11y-bar{background:linear-gradient(135deg,#000080,#1a1a9e)!important;color:#fff!important;border-radius:0!important}
 .a11y-bar span{color:#fff!important}
-.a11y-btn{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.25)!important;color:#fff!important}
-.a11y-btn:hover{background:rgba(255,255,255,.22)!important}
-.section-card,.card,.fund-wrap,.strategy-card,.cv-wrap,.scan-card,.fund-card,.metric-card,.proscons-col,.swot-cell,.score-pill{background:#ffffff!important;border:1px solid #eee!important;border-radius:18px!important;box-shadow:0 6px 20px rgba(14,35,68,.06)!important;color:#17202a!important}
-.metric-card-pe,.fund-card-pe{color:#6b7280!important}
-.metric-card-lbl,.fund-card-lbl{color:#6b7280!important}
-nav.tabs{background:linear-gradient(180deg,#fff,#fbf8f1)!important;border-bottom:1px solid #e5e7eb!important}
-nav.tabs .tab{color:#6b7280!important}
-nav.tabs .tab.active{color:#E86A17!important;border-bottom-color:#E86A17!important}
-.search-row button,.scanner-actions button:not(.scan-all),.scan-card-head .verdict-pill.buy,.chat-form button[type="submit"]{background:linear-gradient(135deg,#E86A17,#ff9b4a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30)!important}
-.scanner-actions button.scan-all{background:linear-gradient(135deg,#0E2344,#16376a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(14,35,68,.30)!important}
-.coming-soon{color:#8a5a00!important;background:#fff1d6!important;border:1px solid rgba(212,175,55,.55)!important}
-.live-badge{color:#0E2344!important;background:rgba(14,35,68,.08)!important;border:1px solid rgba(14,35,68,.4)!important}
-.chitti-special{color:#7c2d12!important;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18))!important;border:1px solid rgba(232,106,23,.5)!important}
-.bharat-logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:10px;flex-shrink:0}
-.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+.a11y-btn,.header-controls button{background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.30)!important;color:#fff!important;min-height:36px}
+.a11y-btn:hover,.header-controls button:hover{background:rgba(255,255,255,.24)!important}
+.switch-btn,.switch-btn-bharat{background:linear-gradient(135deg,rgba(255,153,51,.22),rgba(19,136,8,.20))!important;border:1px solid rgba(255,153,51,.55)!important;color:#fff!important;padding:8px 14px;font-size:12px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:36px}
+.switch-btn-bharat:hover,.switch-btn:hover{filter:brightness(1.1)}
+/* Cards */
+.section-card,.card,.fund-wrap,.strategy-card,.cv-wrap,.scan-card,.fund-card,.metric-card,.proscons-col,.swot-cell,.score-pill,.news-item,.chat-msgs,.page-card{background:#fff!important;border:1px solid #eee!important;border-radius:14px!important;box-shadow:0 2px 12px rgba(0,0,80,.06)!important;color:#1a1a1a!important}
+.metric-card-pe,.fund-card-pe,.section-sub,.metric-card-lbl,.fund-card-lbl{color:#666!important}
+/* Tabs */
+nav.tabs,.tabs{background:linear-gradient(180deg,#fff,#FFF7EC)!important;border-bottom:2px solid #FF9933!important;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+nav.tabs .tab,.tab{color:#666!important}
+nav.tabs .tab.active,.tab.active{color:#FF9933!important;border-bottom-color:#FF9933!important;background:rgba(255,153,51,.08)!important;font-weight:800!important}
+/* Primary buttons — saffron */
+.search-row button,.scanner-actions button:not(.scan-all),.chat-form button[type="submit"],.portfolio-row button,.scan-btn{background:linear-gradient(135deg,#FF9933,#FFB366)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(255,153,51,.30)!important}
+/* Secondary buttons — navy */
+.scanner-actions button.scan-all{background:linear-gradient(135deg,#000080,#1a1a9e)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(0,0,128,.28)!important}
+/* Inputs */
+.search-row input,.scanner-row select,.chat-form input,.portfolio-row input,.fin-period-btn,.fin-stmt-btn,.sel,select,input,textarea{background:#fff!important;color:#1a1a1a!important;border:1px solid #d1d5db!important}
+input:focus,select:focus,textarea:focus,.search-row input:focus,.chat-form input:focus,.portfolio-row input:focus{border-color:#FF9933!important;outline:none!important}
+.fin-period-btn.active,.fin-stmt-btn.active{background:rgba(255,153,51,.12)!important;border-color:#FF9933!important;color:#FF9933!important}
+/* Badges */
+.coming-soon{color:#8a5a00!important;background:#FFF1D6!important;border:1px solid rgba(255,153,51,.55)!important}
+.live-badge{color:#138808!important;background:rgba(19,136,8,.10)!important;border:1px solid rgba(19,136,8,.40)!important}
+.chitti-special{color:#7c2d12!important;background:linear-gradient(135deg,rgba(255,153,51,.18),rgba(19,136,8,.14))!important;border:1px solid rgba(255,153,51,.55)!important}
+.special-card{border-color:rgba(255,153,51,.45)!important;background:linear-gradient(135deg,rgba(255,153,51,.04),#fff)!important}
+/* ─── BHARAT LOGO (tricolor flag background — S+heartbeat SVG inside) ─── */
+.bharat-logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(180deg,#FF9933 0%,#FF9933 33%,#FFFFFF 33%,#FFFFFF 66%,#138808 66%,#138808 100%)!important;display:inline-flex;align-items:center;justify-content:center;color:#000080;font-weight:900;font-size:22px;box-shadow:0 6px 18px rgba(0,0,128,.30)!important;margin-right:10px;flex-shrink:0;border:2px solid #000080;overflow:hidden;padding:2px}
+.bharat-logo svg{width:34px;height:34px;display:block}
+/* ─── BHARAT STRIPE (pure tricolor 4px — saffron|white|green) ─── */
+.bharat-stripe{height:4px!important;width:100%;background:linear-gradient(90deg,#FF9933 0%,#FF9933 33.33%,#FFFFFF 33.33%,#FFFFFF 66.66%,#138808 66.66%,#138808 100%)!important;border-bottom:1px solid #e5e7eb}
+/* Animations — saffron-tuned */
 .shine-bharat{position:relative;overflow:hidden}
 .shine-bharat:after{content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shineB 4s infinite;pointer-events:none}
 @keyframes shineB{0%{left:-120%}55%,100%{left:140%}}
 .float-bharat{animation:floatB 4s ease-in-out infinite}
-@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .pulse-bharat{animation:pulseB 1.8s infinite}
-@keyframes pulseB{0%{box-shadow:0 0 0 0 rgba(232,106,23,.4)}70%{box-shadow:0 0 0 18px rgba(232,106,23,0)}100%{box-shadow:0 0 0 0 rgba(232,106,23,0)}}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(212,175,55,.12));border:1px solid rgba(212,175,55,.5);color:#fff;padding:8px 14px;font-size:12px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:36px}
-.switch-btn-bharat:hover{filter:brightness(1.1)}
-/* Keep chart panes dark — premium contrast inside white page */
+@keyframes pulseB{0%{box-shadow:0 0 0 0 rgba(255,153,51,.45)}70%{box-shadow:0 0 0 18px rgba(255,153,51,0)}100%{box-shadow:0 0 0 0 rgba(255,153,51,0)}}
+/* Chart panes stay dark — premium contrast */
 #lw-chart,#lw-rsi,#lw-macd,#lw-vol,.cv-wrap{background:#0d1426!important;border-radius:14px!important;color:#e6edf7!important}
 .cv-wrap *{color:inherit}
-/* Sticky disclaimer + demo ribbon — adjust for Bharat */
-.sebi-bar{background:linear-gradient(90deg,rgba(232,106,23,.15),rgba(212,175,55,.10))!important;border-bottom:2px solid #D4AF37!important;color:#17202a!important}
-.sebi-bar .short{color:#17202a!important}
-.sebi-bar .short strong{color:#E86A17!important}
-.sebi-bar a.read-more{color:#E86A17!important}
-.demo-ribbon{background:linear-gradient(90deg,rgba(232,106,23,.20),rgba(212,175,55,.15))!important;border-bottom:1px solid #E86A17!important;color:#17202a!important}
-.demo-banner{background:linear-gradient(135deg,#E86A17,#ff9b4a)!important;border:1px solid #D4AF37!important}
-.demo-banner button{background:#fff!important;color:#E86A17!important}
-
-/* ── Bharat parity for technical-specific classes ── */
-.page-card,.cv-wrap{background:#ffffff!important;border:1px solid #eee!important;border-radius:18px!important;box-shadow:0 6px 20px rgba(14,35,68,.06)!important;color:#17202a!important;padding:14px}
-.cv-wrap{background:#0d1426!important;color:#e6edf7!important}
-.stock-list{background:#ffffff!important;border:1px solid #eee!important;border-radius:18px!important;padding:8px}
-.row-buy,.row-sell,.srow{background:#fbf8f1!important;border:1px solid #eee!important;color:#17202a!important;border-radius:10px!important}
-.row-buy:hover,.row-sell:hover,.srow:hover{background:rgba(232,106,23,.08)!important}
-.tabs{background:linear-gradient(180deg,#fff,#fbf8f1)!important;border-bottom:2px solid #D4AF37!important;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.tab{color:#6b7280!important}
-.tab.active{color:#E86A17!important;border-bottom-color:#E86A17!important;background:rgba(232,106,23,.06)!important}
-.idx-pill{background:#fff!important;border:1px solid #e5e7eb!important;color:#6b7280!important}
-.idx-pill.active{background:#0E2344!important;color:#fff!important;border-color:#0E2344!important}
-.tf-btn{background:#fff!important;border:1px solid #e5e7eb!important;color:#6b7280!important}
-.tf-btn.active{background:#E86A17!important;color:#fff!important;border-color:#E86A17!important}
-.ind-row,.legend-item{background:#fbf8f1!important;border:1px solid #e5e7eb!important;color:#17202a!important;border-radius:8px!important}
-.li-tab{background:transparent!important;color:#6b7280!important}
-.li-tab.active{background:rgba(232,106,23,.12)!important;color:#E86A17!important;border-bottom-color:#E86A17!important}
-.scan-btn{background:linear-gradient(135deg,#E86A17,#ff9b4a)!important;color:#fff!important;border:none!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30)!important}
-.cback{background:#fff!important;border:1px solid #e5e7eb!important;color:#0E2344!important}
-.chart-stock-bar{background:#fff!important;border-bottom:1px solid #e5e7eb!important;color:#17202a!important}
-.csym{color:#0E2344!important;font-weight:800!important}
-.mkt-pill{background:#fff!important;border:1px solid #e5e7eb!important;color:#17202a!important}
-.mkt-pill.open{background:rgba(34,197,94,.12)!important;color:#15803d!important;border-color:rgba(34,197,94,.5)!important}
-.mkt-pill.closed{background:rgba(220,38,38,.10)!important;color:#b91c1c!important;border-color:rgba(220,38,38,.5)!important}
-.j-row,.jnl-table-wrap{background:#fff!important;color:#17202a!important;border-radius:12px!important}
-.jnl-table th{background:#fbf8f1!important;color:#6b7280!important}
-.jnl-table td{color:#17202a!important}
-.lbl{color:#6b7280!important}
-.sel,select,input,textarea{background:#fff!important;color:#17202a!important;border:1px solid #d1d5db!important}
-input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
-.tag-big.up,.tag-big.green,.bull{color:#15803d!important;background:rgba(34,197,94,.12)!important;border-color:rgba(34,197,94,.5)!important}
-.tag-big.down,.tag-big.red,.bear{color:#b91c1c!important;background:rgba(220,38,38,.10)!important;border-color:rgba(220,38,38,.5)!important}
-.tag-big.flat,.neutral{color:#0E2344!important;background:rgba(14,35,68,.10)!important;border-color:rgba(14,35,68,.45)!important}
-.verdict-hero{background:linear-gradient(135deg,rgba(14,35,68,.08),rgba(232,106,23,.08))!important;border:1px solid rgba(14,35,68,.25)!important;color:#17202a!important;border-radius:18px!important}
-.verdict-hero.buy .verdict-text,.verdict-text.buy{color:#15803d!important}
-.verdict-hero.short .verdict-text,.verdict-text.short{color:#b91c1c!important}
-.verdict-hero.wait .verdict-text,.verdict-text.wait{color:#0E2344!important}
-.insight-card{background:#fff!important;border:1px solid #eee!important;color:#17202a!important;border-radius:14px!important;box-shadow:0 4px 12px rgba(0,0,0,.05)!important}
-.insight-text{color:#17202a!important}
-.insight-text b{color:#E86A17!important}
-.lang-toggle-bharat button{transition:all .15s}
-.lang-toggle-bharat button:hover{background:rgba(255,255,255,.20)!important}
+/* SEBI sticky */
+.sebi-bar,.sebi{background:linear-gradient(90deg,rgba(255,153,51,.14),rgba(19,136,8,.08))!important;border-bottom:2px solid #FF9933!important;color:#1a1a1a!important}
+.sebi-bar .short,.sebi-bar span{color:#1a1a1a!important}
+.sebi-bar .short strong{color:#CC0000!important}
+.sebi-bar a.read-more{color:#000080!important}
+.demo-ribbon{background:linear-gradient(90deg,rgba(255,153,51,.20),rgba(19,136,8,.14))!important;border-bottom:1px solid #FF9933!important;color:#1a1a1a!important}
+.demo-banner{background:linear-gradient(135deg,#FF9933,#FFB366)!important;border:1px solid #138808!important;color:#fff!important}
+.demo-banner button{background:#fff!important;color:#FF9933!important}
+/* Mic */
+.mic-btn{background:linear-gradient(135deg,rgba(255,153,51,.18),rgba(19,136,8,.12))!important;border:1px solid #FF9933!important;color:#1a1a1a!important}
+.mic-btn:hover{background:linear-gradient(135deg,rgba(255,153,51,.28),rgba(19,136,8,.20))!important}
+.mic-btn.listening{background:rgba(204,0,0,.18)!important;border-color:#CC0000!important}
+/* Investing.com-style rating tags — BUY=green / SHORT=red / NEUTRAL=navy */
+.tag-strong-buy,.verdict-pill.strong-buy{color:#fff!important;background:#0E6606!important;border-color:#0E6606!important;font-weight:800}
+.tag-buy,.verdict-pill.buy,.tag-screaming-buy{color:#fff!important;background:#138808!important;border-color:#0E6606!important;font-weight:800}
+.tag-hold,.verdict-pill.hold,.neutral,.tag-neutral,.tag-big.flat{color:#fff!important;background:#000080!important;border-color:#00004D!important;font-weight:800}
+.tag-sell,.tag-caution{color:#fff!important;background:#CC0000!important;border-color:#990000!important;font-weight:800}
+.tag-strong-sell,.tag-exit,.tag-avoid{color:#fff!important;background:#990000!important;border-color:#990000!important;font-weight:800}
+.tag-watch{color:#8a5a00!important;background:#FFF1D6!important;border-color:#FF9933!important;font-weight:800}
+.tag-big.up,.tag-big.green,.bull{color:#fff!important;background:#138808!important;border-color:#0E6606!important;font-weight:800}
+.tag-big.down,.tag-big.red,.bear{color:#fff!important;background:#CC0000!important;border-color:#990000!important;font-weight:800}
+/* Index pills + TF buttons */
+.idx-pill{background:#fff!important;border:1px solid #e5e7eb!important;color:#666!important}
+.idx-pill.active{background:#000080!important;color:#fff!important;border-color:#000080!important}
+.tf-btn{background:#fff!important;border:1px solid #e5e7eb!important;color:#666!important}
+.tf-btn.active{background:#FF9933!important;color:#fff!important;border-color:#FF9933!important}
+.ind-row,.legend-item{background:#FFF7EC!important;border:1px solid #e5e7eb!important;color:#1a1a1a!important;border-radius:8px!important}
+.li-tab{background:transparent!important;color:#666!important}
+.li-tab.active{background:rgba(255,153,51,.12)!important;color:#FF9933!important;border-bottom-color:#FF9933!important}
+.cback{background:#fff!important;border:1px solid #e5e7eb!important;color:#000080!important}
+.chart-stock-bar{background:#fff!important;border-bottom:1px solid #e5e7eb!important;color:#1a1a1a!important}
+.csym{color:#000080!important;font-weight:800!important}
+.mkt-pill{background:#fff!important;border:1px solid #e5e7eb!important;color:#1a1a1a!important}
+.mkt-pill.open{background:rgba(19,136,8,.12)!important;color:#138808!important;border-color:#138808!important}
+.mkt-pill.closed{background:rgba(204,0,0,.10)!important;color:#CC0000!important;border-color:#CC0000!important}
+.j-row,.jnl-table-wrap{background:#fff!important;color:#1a1a1a!important;border-radius:12px!important}
+.jnl-table th{background:#FFF7EC!important;color:#666!important}
+.jnl-table td{color:#1a1a1a!important}
+.lbl{color:#666!important}
+.row-buy,.row-sell,.srow{background:#FFF7EC!important;border:1px solid #eee!important;color:#1a1a1a!important;border-radius:10px!important}
+.row-buy:hover,.row-sell:hover,.srow:hover{background:rgba(255,153,51,.08)!important}
+.stock-list{background:#fff!important;border:1px solid #eee!important;border-radius:14px!important;padding:8px}
+/* Verdict hero */
+.verdict-hero,.verdict-card,.fund-verdict{background:linear-gradient(135deg,rgba(0,0,128,.05),rgba(255,153,51,.05))!important;border:1px solid rgba(0,0,128,.20)!important;color:#1a1a1a!important;border-radius:14px!important}
+.verdict-hero.buy .verdict-text,.verdict-text.buy{color:#138808!important;font-weight:800}
+.verdict-hero.short .verdict-text,.verdict-text.short{color:#CC0000!important;font-weight:800}
+.verdict-hero.wait .verdict-text,.verdict-text.wait{color:#000080!important;font-weight:800}
+.insight-card{background:#fff!important;border:1px solid #eee!important;color:#1a1a1a!important;border-radius:14px!important;box-shadow:0 2px 12px rgba(0,0,80,.05)!important}
+.insight-text{color:#1a1a1a!important}.insight-text b{color:#FF9933!important}
+.news-take{background:rgba(255,153,51,.06)!important;border-left:3px solid #FF9933!important}
+.bars-wrap{background:#FFF7EC!important}
+.lang-toggle-bharat button,.lang-toggle button{transition:all .15s}
+.lang-toggle-bharat button:hover,.lang-toggle button:hover{background:rgba(255,255,255,.20)!important}
+.lang-toggle-bharat button.active,.lang-toggle button.active{background:rgba(255,153,51,.20)!important;color:#FF9933!important}
+.fund-spk,.metric-spk{color:#000080!important;border-color:rgba(0,0,128,.40)!important}
+.fund-spk:hover,.metric-spk:hover{background:rgba(0,0,128,.05)!important;color:#000080!important}
+.sp-btn{background:rgba(19,136,8,.12)!important;border:1px solid rgba(19,136,8,.45)!important;color:#138808!important}
+.sp-btn:hover{background:rgba(19,136,8,.22)!important}
+/* Lang dropdown — bigger, flag-themed, prominent */
+div[data-chitti-lang-select="auto"]{background:#000080!important;border:2px solid #FF9933!important;border-radius:10px!important;padding:6px 10px!important;box-shadow:0 4px 14px rgba(0,0,128,.30)!important}
+div[data-chitti-lang-select="auto"] select{background:#fff!important;color:#000080!important;border:1px solid #FF9933!important;border-radius:8px!important;padding:6px 26px 6px 10px!important;font-weight:700!important;font-size:13px!important;min-height:36px!important;cursor:pointer}
+div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!important;font-weight:700!important}
+/* 48px tap targets — WCAG 2.5.5 — per Sire spec */
+.tab,.idx-pill,.tf-btn,.li-tab,.a11y-btn,.scan-btn,.sp-btn,.mic-btn,.fund-spk,.metric-spk,button.scan-all{min-height:48px}
+@media (max-width:480px){.tab,.idx-pill,.tf-btn,.li-tab{min-height:48px;padding:12px 10px}}
 </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
@@ -517,20 +547,25 @@ input:focus,select:focus,textarea:focus{border-color:#E86A17!important}
   <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n-aria="switch-to-chitti-vaani" data-i18n="a11y.switch_vaani">🎙️ Vaani</a>
   <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard" data-i18n="a11y.switch_upi">🛡️ UPI Guard</a>
   <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner" data-i18n="a11y.switch_scanner">📷 Scanner</a>
-  <span class="lang-toggle-bharat" role="group" aria-label="UI language" data-i18n-aria="ui-language" style="display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden;margin-left:6px">
-    <button class="a11y-btn" data-lang="en" onclick="setChittiLang('en')" aria-label="English UI" data-i18n-aria="english-ui" style="border:none;border-radius:0;background:rgba(255,255,255,.18)" data-i18n="en">EN</button>
-    <button class="a11y-btn" data-lang="hi" onclick="setChittiLang('hi')" aria-label="हिंदी UI" data-i18n-aria="ui" style="border:none;border-radius:0" data-i18n="tag">हिं</button>
-  </span>
+  <!-- 2026-05-27: EN/हिं toggle removed — chitti_lang.js dropdown (top-right) is the sole 26-lang control. -->
 </div>
 <div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite">🎬 DEMO MODE — guided walk-through. Tap Skip to exit.</div>
 
 <!-- ════════════════════ HEADER ════════════════════ -->
 <div class="header">
   <div style="display:flex;align-items:center">
-    <div class="bharat-logo float-bharat pulse-bharat" aria-hidden="true">C</div>
+    <div class="bharat-logo float-bharat pulse-bharat" aria-label="Chitti — S heartbeat emblem" role="img">
+      <!-- S-heartbeat emblem: navy S with red heartbeat pulse against tricolor flag bg -->
+      <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Stylized S in navy -->
+        <path d="M26 10c0-2-2-3.5-4.5-3.5h-7C12 6.5 10 8 10 10.5s2 4 4.5 4h5c2.5 0 4.5 1.5 4.5 4S22 22.5 19.5 22.5h-7C10 22.5 8 21 8 19" stroke="#000080" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Heartbeat ECG line crossing through S in red -->
+        <polyline points="2,28 9,28 12,22 15,32 18,18 21,28 34,28" stroke="#CC0000" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div>
       <div style="font-weight:900;font-size:22px;line-height:1.1">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Technical</span></div>
-      <div style="font-size:11px;opacity:.85">Bharat Premium AI · Indian retail trading</div>
+      <div style="font-size:11px;opacity:.85" data-i18n="tagline.bharat">🇮🇳 Bharat ka Apna Chitti</div>
     </div>
   </div>
   <div id="mkt-status" class="mkt-pill mkt-closed" aria-live="polite">
