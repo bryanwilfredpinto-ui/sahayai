@@ -5596,6 +5596,29 @@ if (_chatTechInput) {
   });
 }
 
+// 2026-05-27 — Hoist async functions onto window so inline onclick
+// handlers can find them. Regular `function foo(){}` declarations get
+// Annex-B web-compat hoisting to global scope when declared inside the
+// if(!window._chittiLoaded){...} block; async functions DON'T (they
+// strictly follow ES2015 block-scoping). Without these assignments
+// the Calls Generator button (and a few others) were silent no-ops on
+// every browser. Caught by Chitti CTO cert (Claude Opus 4.7) —
+// tools/cert_complete_technical.mjs returned `runCallsScanRich is not
+// defined` on the click probe. Fix is explicit-window-assign.
+window.runCallsScanRich = runCallsScanRich;
+window.runCallsScan = runCallsScan;
+window.runScan = runScan;
+window.loadChart = loadChart;
+window.loadIndexData = loadIndexData;
+window.loadStrengthAndRating = loadStrengthAndRating;
+window.loadCV = loadCV;
+window.fetchAndDrawCascadedSR = fetchAndDrawCascadedSR;
+window.watchlistRefresh = watchlistRefresh;
+window.chittiAskSend = chittiAskSend;
+window.sendChatTech = sendChatTech;
+window._buildTradeSetupFromATR = _buildTradeSetupFromATR;
+window._chittiRefreshSpend = _chittiRefreshSpend;
+
 }
 </script>
 <!-- CALLS TAB -->
