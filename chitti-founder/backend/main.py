@@ -84,6 +84,10 @@ from lib.cto_verifier import (
     render_cto_weekly_html,
     whatsapp_send,
 )
+from lib.cto_certify import (
+    certify_feature, recent_certificates,
+    vaani_pending, vaani_ack, cto_oath_text,
+)
 
 
 logging.basicConfig(
@@ -1135,6 +1139,80 @@ def _create_app() -> Flask:
         auth = _require_admin()
         if auth: return auth
         return jsonify(run_cto_hourly_job())
+
+    # ---- Chitti CTO certification (2026-05-27 directive) ------------------
+    # Every feature Claude Code builds is certified here BEFORE Sire sees it.
+    # Two notification rails fire on every certification:
+    #   • WhatsApp (lib/cto_verifier.whatsapp_send)
+    #   • Chitti Vaani (queued; Vaani frontend polls /api/cto/notifications/pending)
+    # Doctrine: CHITTI_CTO_OATH.md
+    @app.post("/admin/founder/cto-certify")
+    def admin_cto_certify():
+        """Run a feature certification.
+
+        Body (JSON):
+          {
+            "feature_name": "...",                  # human label
+            "commit_sha":   "abc123",               # short or full
+            "changed_files":["chitti_logo_video.html","..."],
+            "extra_urls":   ["https://..."],        # optional
+            "test_plan_summary": "...",
+            "notify_whatsapp": true,                # default true
+            "notify_vaani":    true                 # default true
+          }
+        Returns the Certificate. Doesn't raise on RED — that's a valid verdict.
+        """
+        auth = _require_admin()
+        if auth: return auth
+        p = request.get_json(silent=True) or {}
+        cert = certify_feature(
+            feature_name=str(p.get("feature_name") or "unspecified-feature")[:200],
+            commit_sha=str(p.get("commit_sha") or "")[:64],
+            changed_files=list(p.get("changed_files") or []),
+            extra_urls=list(p.get("extra_urls") or []),
+            test_plan_summary=str(p.get("test_plan_summary") or "")[:500],
+            notify_whatsapp=bool(p.get("notify_whatsapp", True)),
+            notify_vaani=bool(p.get("notify_vaani", True)),
+        )
+        return jsonify({"ok": True, "certificate": cert.to_dict()})
+
+    @app.get("/admin/founder/cto-certificates")
+    def admin_cto_certificates():
+        """Last 25 certificates (or ?limit=N up to 200). For audit + dashboards."""
+        auth = _require_admin()
+        if auth: return auth
+        try:
+            limit = max(1, min(200, int(request.args.get("limit") or 25)))
+        except ValueError:
+            limit = 25
+        return jsonify({"ok": True, "certificates": recent_certificates(limit)})
+
+    @app.get("/admin/founder/cto-oath")
+    def admin_cto_oath():
+        """The CTO doctrine, returned as plain text. Same content as
+        CHITTI_CTO_OATH.md at repo root."""
+        return Response(cto_oath_text(), mimetype="text/plain")
+
+    # ---- Public Vaani rail (polled by chitti_vaani.html frontend) ----------
+    # Read endpoint is intentionally unauthenticated — same posture as
+    # /api/feedback/collect — because chitti_vaani.html is a static page
+    # without server-side auth, and the only thing in this queue is text the
+    # CTO already decided to publish. We rate-limit via cache headers.
+    @app.get("/api/cto/notifications/pending")
+    def api_cto_notifications_pending():
+        items = vaani_pending()
+        resp = jsonify({"ok": True, "count": len(items), "items": items})
+        # Short cache so multiple Vaani instances don't hammer Railway.
+        resp.headers["Cache-Control"] = "public, max-age=15"
+        return resp
+
+    @app.post("/api/cto/notifications/ack")
+    def api_cto_notifications_ack():
+        p = request.get_json(silent=True) or {}
+        ids = list(p.get("ids") or [])
+        if not ids:
+            return jsonify({"ok": False, "error": "ids required"}), 400
+        return jsonify(vaani_ack(ids))
 
     @app.get("/admin/founder/cto-daily")
     def admin_cto_daily_html():

@@ -7857,6 +7857,100 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   } catch(e){}
 });
+
+/* ── Chitti CTO notification rail ── 2026-05-27
+   Polls chitti-founder for pending certifications/fixes and speaks each
+   one aloud via Vaani. Acks the queue server-side once spoken so Sire
+   never hears the same line twice. Silent on empty queue.
+   ──────────────────────────────────────────────────────────────────── */
+(function CTONotifications(){
+  const FOUNDER = (window.CHITTI_FOUNDER_API || 'https://chitti-founder-api.up.railway.app').replace(/\/+$/, '');
+  const POLL_MS = 60000;          // 60s; gentle on Railway
+  const FIRST_POLL_DELAY_MS = 2000; // 2s after page open
+  const SPOKEN_KEY = 'chitti_cto_spoken_ids_v1';
+  let inFlight = false;
+
+  function alreadySpoken(id){
+    try {
+      const arr = JSON.parse(localStorage.getItem(SPOKEN_KEY) || '[]');
+      return Array.isArray(arr) && arr.indexOf(id) !== -1;
+    } catch(e){ return false; }
+  }
+  function markSpoken(ids){
+    try {
+      const arr = JSON.parse(localStorage.getItem(SPOKEN_KEY) || '[]');
+      const merged = Array.isArray(arr) ? arr : [];
+      ids.forEach(id => { if (merged.indexOf(id) === -1) merged.push(id); });
+      // Keep most recent 200 to bound localStorage
+      while (merged.length > 200) merged.shift();
+      localStorage.setItem(SPOKEN_KEY, JSON.stringify(merged));
+    } catch(e){ /* swallow — quota / privacy mode */ }
+  }
+
+  async function poll(){
+    if (inFlight) return;
+    inFlight = true;
+    try {
+      const r = await fetch(FOUNDER + '/api/cto/notifications/pending', { cache: 'no-store' });
+      if (!r.ok) return;
+      const j = await r.json();
+      const items = (j && j.items) || [];
+      if (!items.length) return;
+      // Filter out anything we already spoke (defensive — server should have
+      // dropped them on ack, but ack is async and we don't want repeats)
+      const fresh = items.filter(n => n && n.id && !alreadySpoken(n.id));
+      if (!fresh.length) return;
+
+      // Speak each in order. Acknowledge after each so a reload mid-flight
+      // doesn't replay everything.
+      for (const n of fresh){
+        const text = String(n.spoken_text || '').slice(0, 800);
+        if (!text) continue;
+        await new Promise(resolve => {
+          try { speakText(text, CURRENT_LANG || 'en', resolve); }
+          catch(e){ resolve(); }
+          // Hard timeout — never let one stuck utterance freeze the queue
+          setTimeout(resolve, 18000);
+        });
+        markSpoken([n.id]);
+        try {
+          await fetch(FOUNDER + '/api/cto/notifications/ack', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [n.id] }),
+          });
+        } catch(e){ /* offline — ack on next poll */ }
+      }
+    } catch(e){
+      /* network blip — try again on next poll */
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  // Kick off the first poll once the page settles, then on an interval.
+  // Only run on document.visible — Vaani in a background tab shouldn't speak.
+  function startWhenVisible(){
+    if (document.visibilityState === 'visible'){
+      setTimeout(poll, FIRST_POLL_DELAY_MS);
+      setInterval(() => { if (document.visibilityState === 'visible') poll(); }, POLL_MS);
+    } else {
+      document.addEventListener('visibilitychange', function once(){
+        if (document.visibilityState === 'visible'){
+          document.removeEventListener('visibilitychange', once);
+          startWhenVisible();
+        }
+      });
+    }
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive'){
+    startWhenVisible();
+  } else {
+    document.addEventListener('DOMContentLoaded', startWhenVisible);
+  }
+  // Expose for debugging from DevTools.
+  window.ChittiCTONotifications = { pollNow: poll };
+})();
 </script>
 
 <script src="chitti_disclaimer.js"></script>

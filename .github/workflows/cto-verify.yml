@@ -98,3 +98,43 @@ jobs:
             exit 1
           fi
           echo "All changed pages green ✅"
+
+      - name: Issue CTO certificate (dual-notify Vaani + WhatsApp)
+        if: steps.changed.outputs.files != ''
+        shell: bash
+        env:
+          FOUNDER_URL: ${{ vars.FOUNDER_URL || 'https://chitti-founder-api.up.railway.app' }}
+          ADMIN_SECRET: ${{ secrets.FOUNDER_ADMIN_SECRET }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ADMIN_SECRET:-}" ]; then
+            echo "::warning::FOUNDER_ADMIN_SECRET unset — skipping certify."; exit 0
+          fi
+          # Collapse changed files into a JSON array
+          files_json=$(printf '%s\n' "${{ steps.changed.outputs.files }}" \
+                       | jq -R . | jq -s 'map(select(length > 0))')
+          # Feature name = first line of the commit message
+          feature=$(printf '%s' "${COMMIT_MSG:-}" | head -1 | sed 's/"/\\"/g')
+          payload=$(jq -n \
+            --arg feat "$feature" \
+            --arg sha  "$COMMIT_SHA" \
+            --argjson files "$files_json" \
+            --arg plan "Auto-issued by .github/workflows/cto-verify.yml after 10-gate verify of all changed pages." \
+            '{feature_name:$feat,commit_sha:$sha,changed_files:$files,test_plan_summary:$plan,notify_whatsapp:true,notify_vaani:true}')
+          echo "→ POST $FOUNDER_URL/admin/founder/cto-certify"
+          echo "$payload" | head -c 400 ; echo
+          resp=$(curl -sS -X POST "$FOUNDER_URL/admin/founder/cto-certify" \
+                   -H "Authorization: Bearer $ADMIN_SECRET" \
+                   -H "Content-Type: application/json" \
+                   --max-time 90 \
+                   -d "$payload")
+          echo "$resp" | head -c 800; echo
+          verdict=$(echo "$resp" | jq -r '.certificate.verdict // "ERROR"')
+          echo "Certificate verdict: $verdict"
+          # Fail the step on REJECTED so the run shows red — Sire/Claude see it.
+          if [ "$verdict" = "REJECTED" ]; then
+            echo "::error::CTO REJECTED this commit. Fix the failing gate(s) above and push again."
+            exit 1
+          fi
