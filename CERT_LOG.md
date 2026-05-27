@@ -44,6 +44,25 @@ to regenerate.
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
 | **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
 
+### Disability Profile modal hotfix — closable + never re-shows — GREEN ✅
+
+| Field | Value |
+|---|---|
+| **Date** | 2026-05-27 |
+| **Trigger** | Sire 2026-05-27: *"Disability Profile modal is blocking Sire. No X or Close button visible. User cannot proceed."* |
+| **Probe URL** | https://sahayai.in/chitti_vaani.html (modal substrate is global — same code on every page) |
+| **Cert tool** | [tools/cert_dp_modal_closability.mjs](tools/cert_dp_modal_closability.mjs) — 5 close-path scenarios × 5 checks each |
+| **Checks** | **25/25** on live |
+| **Result** | **GREEN ✅** |
+| **Artifact** | [tools/cert_dp_modal_result.json](tools/cert_dp_modal_result.json) + [375px screenshot](tools/cert_dp_modal_375.png) showing ✕ button + sticky Skip |
+| **What changed** | Modal redesigned as flex column: sticky flag stripe + absolute ✕ close button + scrollable body + STICKY footer with Save + Skip. Card now `max-width: 380px`, `max-height: 92vh`, header & footer `flex-shrink: 0` so action buttons are ALWAYS visible regardless of viewport height or option-list scroll position. |
+| **Five close paths certified** | (1) **✕ button** top right (closed_via='x-button') · (2) **Skip button** sticky footer (closed_via='skip') · (3) **Save button** with picks (closed_via='save') · (4) **Backdrop tap** anywhere outside card (closed_via='backdrop') · (5) **Esc key** (closed_via='esc'). All five route through `commitAndClose()` which writes `localStorage.disability_profile` synchronously before the modal animates out. |
+| **Never-reshow invariant** | Every close path writes `localStorage.disability_profile` (including a forced `skipped:true` fallback if `collect()` throws). `maybeShow()` returns early as soon as any record exists. Cert verified by navigating to a SECOND page (chitti_medupi.html) after each close and confirming the modal does not re-appear. |
+| **Hindi parity** | Title, sub, options, save button, skip button all carry HI labels when detected language is `hi`. ✕ button aria-label says "बंद करें" in Hindi. |
+| **Accessibility** | ✕ button receives initial focus on open (screen-reader users land on the "exit" affordance first). 48px tap targets on options + footer buttons. mute-user safe (tap-only for every close path; voice optional). |
+
+---
+
 ### Batch cert — 21 user-facing pages — ALL GREEN ✅
 
 | Field | Value |
