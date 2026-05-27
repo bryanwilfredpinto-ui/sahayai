@@ -82,11 +82,12 @@ from lib.cto_verifier import (
     verify_url, verify_deployment,
     run_cto_daily, render_cto_daily_html,
     render_cto_weekly_html,
-    whatsapp_send,
+    # whatsapp_send retired 2026-05-27 rev 2 — Vaani-only via lib.cto_certify
 )
 from lib.cto_certify import (
     certify_feature, recent_certificates,
     vaani_pending, vaani_ack, cto_oath_text,
+    notify_sire_via_vaani,
 )
 
 
@@ -475,34 +476,43 @@ def run_cto_daily_job() -> dict:
     """08:00 IST cron — fetch every sahayai.in page + Railway /health,
     run the 10-gate check, email the WhatsApp-shaped report to Sire.
 
-    Also pushed to WhatsApp via whatsapp_send() when WHATSAPP_BUSINESS_TOKEN
-    is configured (honest stub until then; email rails carry the report)."""
+    Also queued to Chitti Vaani — Vaani speaks + opens wa.me + sms: deep
+    links on next poll (CTO Oath rev 2; no external WhatsApp API)."""
     rep = run_cto_daily()
     _CTO_DAILY_RING.append(rep)
 
     subject, html = render_cto_daily_html(rep)
     email_ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
 
-    # WhatsApp parallel send (honest stub today).
-    wa_text = (
-        f"Good morning Sire. 8am health check:\n"
-        f"✅ {rep.green} pages live and working\n"
-        f"⚠️ {rep.yellow} pages need attention\n"
-        f"🔴 {rep.red} pages down\n"
-        f"💰 {rep.api_costs_note}\n"
-        f"🔧 Recommended fix today: {rep.recommended_fix_today}"
+    # Vaani is the sole notification rail (2026-05-27 rev 2). The full daily
+    # picture stays in email; Vaani speaks a one-sentence summary that fits a
+    # WhatsApp/SMS deep link comfortably.
+    spoken = (
+        f"Sire, Chitti CTO 8am check. "
+        f"{rep.green} pages live, "
+        f"{rep.yellow} need attention, "
+        f"{rep.red} are down."
     )
-    wa_result = whatsapp_send(wa_text)
+    written = (
+        f"🛡 *Chitti CTO — 8am Health*\n"
+        f"✅ {rep.green} live\n"
+        f"⚠️ {rep.yellow} need attention\n"
+        f"🔴 {rep.red} down\n"
+        f"Fix today: {rep.recommended_fix_today}"
+    )
+    notify_result = notify_sire_via_vaani(
+        kind="cto_daily", message=written, spoken_text=spoken,
+    )
 
     log.info(
-        "[cto-daily] email_ok=%s wa_ok=%s · ✅%d ⚠️%d 🔴%d",
-        email_ok, wa_result.get("ok"), rep.green, rep.yellow, rep.red,
+        "[cto-daily] email_ok=%s vaani_queued=%s · ✅%d ⚠️%d 🔴%d",
+        email_ok, notify_result.get("ok"), rep.green, rep.yellow, rep.red,
     )
     return {
         "ok": email_ok,
         "subject": subject,
         "email_recipient": FOUNDER_EMAIL,
-        "whatsapp": wa_result,
+        "vaani": notify_result,
         "report": rep.to_dict(),
     }
 
@@ -547,7 +557,7 @@ def run_cto_hourly_job() -> dict:
         return {"ok": True, "alerted": False, "red": rep.red, "in_cooldown": True}
 
     now_ist = datetime.now(_IST).strftime("%H:%M IST · %a %d %b")
-    msg_lines = [f"⚠️ Chitti CTO — {len(fresh_red)} page(s) DOWN at {now_ist}:"]
+    msg_lines = [f"⚠️ Chitti CTO — {len(fresh_red)} page(s) down at {now_ist}:"]
     for f in fresh_red[:5]:
         page = f.url.split("/")[-1] or f.url
         failed = next((g for g in f.gates if g.status == "fail"), None)
@@ -557,18 +567,25 @@ def run_cto_hourly_job() -> dict:
             msg_lines.append(f"🔴 {page} — HTTP {f.http_status}")
     if len(fresh_red) > 5:
         msg_lines.append(f"+ {len(fresh_red) - 5} more — see /admin/founder/cto-daily")
-    msg_lines.append("\nReply 'silence' to mute for 4h.")
-    wa_text = "\n".join(msg_lines)
-    wa_result = whatsapp_send(wa_text)
+    written = "\n".join(msg_lines)
+    # Vaani spoken text is short — full list goes to WhatsApp/SMS body.
+    first_page = (fresh_red[0].url.split("/")[-1] or fresh_red[0].url) if fresh_red else "a page"
+    if len(fresh_red) == 1:
+        spoken = f"Sire, {first_page} is down. Chitti is fixing now."
+    else:
+        spoken = f"Sire, {len(fresh_red)} pages are down including {first_page}. Chitti is on it."
+    notify_result = notify_sire_via_vaani(
+        kind="cto_hourly_red", message=written, spoken_text=spoken,
+    )
 
     log.info(
-        "[cto-hourly] RED=%d (fresh=%d) · wa_ok=%s supplier=%s",
-        rep.red, len(fresh_red), wa_result.get("ok"), wa_result.get("supplier", "stub"),
+        "[cto-hourly] RED=%d (fresh=%d) · vaani_queued=%s",
+        rep.red, len(fresh_red), notify_result.get("ok"),
     )
     return {
         "ok": True, "alerted": True,
         "red": rep.red, "fresh_red": len(fresh_red),
-        "whatsapp": wa_result,
+        "vaani": notify_result,
         "pages_alerted": [f.url for f in fresh_red],
     }
 
@@ -1140,11 +1157,14 @@ def _create_app() -> Flask:
         if auth: return auth
         return jsonify(run_cto_hourly_job())
 
-    # ---- Chitti CTO certification (2026-05-27 directive) ------------------
+    # ---- Chitti CTO certification (2026-05-27 directive · rev 2) ----------
     # Every feature Claude Code builds is certified here BEFORE Sire sees it.
-    # Two notification rails fire on every certification:
-    #   • WhatsApp (lib/cto_verifier.whatsapp_send)
-    #   • Chitti Vaani (queued; Vaani frontend polls /api/cto/notifications/pending)
+    # The Vaani frontend polls /api/cto/notifications/pending and fires three
+    # rails on every queued message:
+    #   • speakText()        — speaks aloud
+    #   • wa.me deep link    — opens WhatsApp app, pre-filled message
+    #   • sms: deep link     — opens SMS app (Sire's second SIM), pre-filled
+    # No Twilio. No Meta Cloud. No MSG91. Vaani is enough.
     # Doctrine: CHITTI_CTO_OATH.md
     @app.post("/admin/founder/cto-certify")
     def admin_cto_certify():
@@ -1245,23 +1265,28 @@ def _create_app() -> Flask:
         # Bound the wait to keep the request inside the Gunicorn timeout.
         bounded_wait = min(max(0, wait_s), 240)
         result = verify_deployment(url, wait_s=bounded_wait)
-        # WhatsApp Sire if the just-deployed page is RED so she doesn't have
-        # to read this response — same alerting posture as the hourly cron.
-        wa = None
+        # Vaani-route the post-push verify result. On REJECTED we don't alert
+        # Sire (per CTO Oath rev 2 — REJECTED is internal until recovery).
+        # The GH Action's certify call carries the user-facing message.
+        notif = None
         if result.red:
+            page = url.split("/")[-1] or url
             failed = next((g for g in result.gates if g.status == "fail"), None)
-            wa_text = (
-                f"⚠️ Chitti CTO — post-push verify FAILED:\n"
-                f"🔴 {url}\n"
-                f"   HTTP {result.http_status} · gate: "
-                f"{failed.name if failed else 'unknown'} — {failed.detail if failed else ''}\n"
-                f"   load {result.load_ms} ms · bytes {result.bytes}"
+            written = (
+                f"⚠️ Chitti CTO — post-push check failed\n"
+                f"🔴 {page}\n"
+                f"HTTP {result.http_status} · gate: {failed.name if failed else 'unknown'}\n"
+                f"{failed.detail if failed else ''}"
             )
-            wa = whatsapp_send(wa_text)
+            # No Sire spoken alert on raw REJECTED; the recovery notification
+            # will fire when Claude pushes the fix and the certify re-runs.
+            log.info("[cto-post-push] RED · %s · gate=%s — silent until fix lands",
+                     url, failed.name if failed else "?")
+            notif = {"ok": False, "reason": "rejected_silent_until_recovery"}
         return jsonify({
             "ok": True, "waited_s": bounded_wait,
             "result": result.to_dict(),
-            "whatsapp": wa,
+            "vaani": notif,
         })
 
     # Public router used by feedback-widget.js. We accept the payload,

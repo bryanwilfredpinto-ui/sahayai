@@ -7858,15 +7858,21 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch(e){}
 });
 
-/* ── Chitti CTO notification rail ── 2026-05-27
-   Polls chitti-founder for pending certifications/fixes and speaks each
-   one aloud via Vaani. Acks the queue server-side once spoken so Sire
-   never hears the same line twice. Silent on empty queue.
+/* ── Chitti CTO notification rail ── 2026-05-27 (rev 2: Vaani-only)
+   When CTO certifies any page, Vaani fires three rails:
+     1. speakText(spoken_text)          — speaks aloud
+     2. window.open(wa.me?text=…)       — opens WhatsApp app, pre-filled
+     3. location.href = sms:…?body=…    — opens SMS app, pre-filled
+   No Twilio. No Meta Cloud. Just Vaani's own deep links.
+
+   Polls /api/cto/notifications/pending. Acks server-side after speaking so
+   Sire never hears the same line twice. localStorage backup prevents replay
+   on reload. Tap-once card surfaces if pop-ups got blocked.
    ──────────────────────────────────────────────────────────────────── */
 (function CTONotifications(){
   const FOUNDER = (window.CHITTI_FOUNDER_API || 'https://chitti-founder-api.up.railway.app').replace(/\/+$/, '');
-  const POLL_MS = 60000;          // 60s; gentle on Railway
-  const FIRST_POLL_DELAY_MS = 2000; // 2s after page open
+  const POLL_MS = 60000;
+  const FIRST_POLL_DELAY_MS = 2000;
   const SPOKEN_KEY = 'chitti_cto_spoken_ids_v1';
   let inFlight = false;
 
@@ -7881,10 +7887,96 @@ window.addEventListener('DOMContentLoaded', () => {
       const arr = JSON.parse(localStorage.getItem(SPOKEN_KEY) || '[]');
       const merged = Array.isArray(arr) ? arr : [];
       ids.forEach(id => { if (merged.indexOf(id) === -1) merged.push(id); });
-      // Keep most recent 200 to bound localStorage
       while (merged.length > 200) merged.shift();
       localStorage.setItem(SPOKEN_KEY, JSON.stringify(merged));
-    } catch(e){ /* swallow — quota / privacy mode */ }
+    } catch(e){}
+  }
+
+  // wa.me + sms: deep-link builders. wa.me expects digits-only (no +).
+  // sms: expects + prefix on iOS, accepts both on Android.
+  function buildWaUrl(num, msg){
+    const n = String(num || '').replace(/\D+/g, '');
+    if (!n || !msg) return null;
+    return 'https://wa.me/' + n + '?text=' + encodeURIComponent(msg);
+  }
+  function buildSmsUrl(num, msg){
+    if (!num || !msg) return null;
+    const n = String(num).trim();
+    // body= is non-standard but widely supported; ?body= works on iOS, &body= on some Android builds.
+    const sep = n.indexOf('?') >= 0 ? '&' : '?';
+    return 'sms:' + n + sep + 'body=' + encodeURIComponent(msg);
+  }
+
+  // Fallback card — surfaces when window.open is blocked (no user gesture yet).
+  function ensureFallbackCard(){
+    let card = document.getElementById('cto-fallback-card');
+    if (card) return card;
+    card = document.createElement('div');
+    card.id = 'cto-fallback-card';
+    card.setAttribute('role', 'region');
+    card.setAttribute('aria-label', 'Chitti CTO message — tap to send to Sire');
+    Object.assign(card.style, {
+      position: 'fixed', bottom: '16px', left: '16px', right: '16px',
+      maxWidth: '420px', margin: '0 auto', zIndex: '9999',
+      background: 'linear-gradient(135deg,#0E2344,#16376a)', color: '#fff',
+      borderRadius: '14px', padding: '14px 16px',
+      boxShadow: '0 10px 30px rgba(0,0,0,.25)', fontSize: '14px',
+      display: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif',
+    });
+    card.innerHTML = `
+      <div style="font-weight:800;margin-bottom:4px">🛡 Chitti CTO</div>
+      <div id="cto-fc-msg" style="opacity:.92;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a id="cto-fc-wa"  target="_blank" rel="noopener noreferrer"
+           style="flex:1;text-align:center;background:#22c55e;color:#fff;padding:10px;border-radius:8px;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;justify-content:center">📱 Send WhatsApp</a>
+        <a id="cto-fc-sms" target="_blank" rel="noopener noreferrer"
+           style="flex:1;text-align:center;background:#FF9933;color:#fff;padding:10px;border-radius:8px;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;justify-content:center">💬 Send SMS</a>
+        <button id="cto-fc-dismiss"
+           style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:10px 12px;border-radius:8px;font-weight:700;min-height:44px">Dismiss</button>
+      </div>`;
+    document.body.appendChild(card);
+    card.querySelector('#cto-fc-dismiss').addEventListener('click', () => { card.style.display = 'none'; });
+    return card;
+  }
+  function showFallbackCard(message, waUrl, smsUrl){
+    const card = ensureFallbackCard();
+    card.querySelector('#cto-fc-msg').textContent = message;
+    const wa = card.querySelector('#cto-fc-wa');
+    const sm = card.querySelector('#cto-fc-sms');
+    if (waUrl)  { wa.href = waUrl;  wa.style.display = ''; } else wa.style.display = 'none';
+    if (smsUrl) { sm.href = smsUrl; sm.style.display = ''; } else sm.style.display = 'none';
+    card.style.display = 'block';
+  }
+
+  // Fire the WA + SMS rails. Returns true if at least one rail opened
+  // successfully (so we don't show the fallback card needlessly).
+  function fireDeepLinks(message, waNum, smsNum){
+    const waUrl  = buildWaUrl(waNum,  message);
+    const smsUrl = buildSmsUrl(smsNum, message);
+    let anyOpened = false;
+    if (waUrl){
+      try {
+        const w = window.open(waUrl, '_blank', 'noopener,noreferrer');
+        if (w) anyOpened = true;
+      } catch(e){}
+    }
+    if (smsUrl){
+      try {
+        // SMS: deep links: best to navigate the current page so Android picks
+        // it up. On desktop browsers this no-ops silently — that's OK.
+        const a = document.createElement('a');
+        a.href = smsUrl; a.target = '_self'; a.rel = 'noopener';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        anyOpened = true;
+      } catch(e){}
+    }
+    if (!anyOpened && (waUrl || smsUrl)){
+      showFallbackCard(message, waUrl, smsUrl);
+    }
+    return anyOpened;
   }
 
   async function poll(){
@@ -7896,22 +7988,29 @@ window.addEventListener('DOMContentLoaded', () => {
       const j = await r.json();
       const items = (j && j.items) || [];
       if (!items.length) return;
-      // Filter out anything we already spoke (defensive — server should have
-      // dropped them on ack, but ack is async and we don't want repeats)
       const fresh = items.filter(n => n && n.id && !alreadySpoken(n.id));
       if (!fresh.length) return;
 
-      // Speak each in order. Acknowledge after each so a reload mid-flight
-      // doesn't replay everything.
       for (const n of fresh){
-        const text = String(n.spoken_text || '').slice(0, 800);
-        if (!text) continue;
-        await new Promise(resolve => {
-          try { speakText(text, CURRENT_LANG || 'en', resolve); }
-          catch(e){ resolve(); }
-          // Hard timeout — never let one stuck utterance freeze the queue
-          setTimeout(resolve, 18000);
-        });
+        const spoken  = String(n.spoken_text || n.message || '').slice(0, 800);
+        const written = String(n.message || n.spoken_text || '').slice(0, 800);
+        if (!spoken && !written) continue;
+
+        // Rail 1 — speak aloud
+        if (spoken){
+          await new Promise(resolve => {
+            try { speakText(spoken, CURRENT_LANG || 'en', resolve); }
+            catch(e){ resolve(); }
+            setTimeout(resolve, 18000);
+          });
+        }
+
+        // Rails 2 + 3 — WhatsApp + SMS deep links (or fallback card)
+        if (written){
+          fireDeepLinks(written, n.sire_whatsapp, n.sire_sms);
+        }
+
+        // Mark spoken locally + ack server-side
         markSpoken([n.id]);
         try {
           await fetch(FOUNDER + '/api/cto/notifications/ack', {
@@ -7919,17 +8018,15 @@ window.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: [n.id] }),
           });
-        } catch(e){ /* offline — ack on next poll */ }
+        } catch(e){}
       }
     } catch(e){
-      /* network blip — try again on next poll */
+      /* network blip — retry next poll */
     } finally {
       inFlight = false;
     }
   }
 
-  // Kick off the first poll once the page settles, then on an interval.
-  // Only run on document.visible — Vaani in a background tab shouldn't speak.
   function startWhenVisible(){
     if (document.visibilityState === 'visible'){
       setTimeout(poll, FIRST_POLL_DELAY_MS);
@@ -7948,8 +8045,8 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     document.addEventListener('DOMContentLoaded', startWhenVisible);
   }
-  // Expose for debugging from DevTools.
-  window.ChittiCTONotifications = { pollNow: poll };
+  // Expose helpers for testing.
+  window.ChittiCTONotifications = { pollNow: poll, buildWaUrl, buildSmsUrl, fireDeepLinks };
 })();
 </script>
 
