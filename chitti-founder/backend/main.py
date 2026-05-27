@@ -111,6 +111,13 @@ CTO_DAILY_HOUR_IST = int(os.environ.get("CTO_DAILY_HOUR_IST", "8"))
 CTO_DAILY_MINUTE_IST = int(os.environ.get("CTO_DAILY_MINUTE_IST", "0"))
 CTO_WEEKLY_HOUR_IST = int(os.environ.get("CTO_WEEKLY_HOUR_IST", "9"))
 CTO_WEEKLY_MINUTE_IST = int(os.environ.get("CTO_WEEKLY_MINUTE_IST", "0"))
+# CTO hourly sweep — runs the 10-gate check on every sahayai.in page every hour
+# (at minute :30 so it doesn't collide with the escalator's :15 pass). Silent on
+# green/yellow (daily 08:00 summary carries those); WhatsApps Sire only on RED.
+CTO_HOURLY_MINUTE_IST = int(os.environ.get("CTO_HOURLY_MINUTE_IST", "30"))
+# Cooldown so the same RED page doesn't WhatsApp Sire every hour while the fix
+# is in flight. Default 4h; first detection + every 4h until cleared.
+CTO_HOURLY_ALERT_COOLDOWN_S = int(os.environ.get("CTO_HOURLY_ALERT_COOLDOWN_S", "14400"))
 
 # Swarm Intelligence (SAHAYAI_MASTER.md §2f) — weekly pattern extraction.
 # Runs INLINE inside run_weekly_report (Sunday 08:00 IST) since 2026-05-15.
@@ -493,6 +500,72 @@ def run_cto_daily_job() -> dict:
         "email_recipient": FOUNDER_EMAIL,
         "whatsapp": wa_result,
         "report": rep.to_dict(),
+    }
+
+
+# Per-URL last-alert timestamps so we don't WhatsApp Sire every hour about the
+# same broken page. Cleared automatically when the page next reads green.
+_CTO_RED_LAST_ALERT: dict[str, float] = {}
+# Ring of recent hourly sweeps for diagnostic endpoints.
+_CTO_HOURLY_RING: deque = deque(maxlen=24)
+
+
+def run_cto_hourly_job() -> dict:
+    """Hourly CTO sweep (minute :30). 10-gate check on every sahayai.in page;
+    WhatsApp Sire only on RED with per-URL cooldown. Stays silent on green/yellow
+    so the only signal Sire sees from this cron is a real problem."""
+    rep = run_cto_daily()  # same 10-gate code path, reuses the daily aggregator
+    _CTO_HOURLY_RING.append(rep)
+
+    if rep.red == 0:
+        # Clear cooldowns for any URL that previously alerted — fix landed.
+        cleared_urls = list(_CTO_RED_LAST_ALERT.keys())
+        if cleared_urls:
+            _CTO_RED_LAST_ALERT.clear()
+            log.info("[cto-hourly] all green/yellow — cleared cooldown for %d url(s)", len(cleared_urls))
+        log.info("[cto-hourly] green=%d yellow=%d red=0 · silent", rep.green, rep.yellow)
+        return {"ok": True, "alerted": False, "red": 0,
+                "green": rep.green, "yellow": rep.yellow}
+
+    # We have RED. Build per-URL alerts respecting cooldown.
+    now = time.time()
+    cooldown_s = CTO_HOURLY_ALERT_COOLDOWN_S
+    fresh_red = []
+    for f in rep.frontends:
+        if not f.red: continue
+        last = _CTO_RED_LAST_ALERT.get(f.url, 0)
+        if now - last >= cooldown_s:
+            fresh_red.append(f)
+            _CTO_RED_LAST_ALERT[f.url] = now
+
+    if not fresh_red:
+        log.info("[cto-hourly] %d red but all in cooldown — silent", rep.red)
+        return {"ok": True, "alerted": False, "red": rep.red, "in_cooldown": True}
+
+    now_ist = datetime.now(_IST).strftime("%H:%M IST · %a %d %b")
+    msg_lines = [f"⚠️ Chitti CTO — {len(fresh_red)} page(s) DOWN at {now_ist}:"]
+    for f in fresh_red[:5]:
+        page = f.url.split("/")[-1] or f.url
+        failed = next((g for g in f.gates if g.status == "fail"), None)
+        if failed:
+            msg_lines.append(f"🔴 {page} — {failed.name}: {failed.detail}")
+        else:
+            msg_lines.append(f"🔴 {page} — HTTP {f.http_status}")
+    if len(fresh_red) > 5:
+        msg_lines.append(f"+ {len(fresh_red) - 5} more — see /admin/founder/cto-daily")
+    msg_lines.append("\nReply 'silence' to mute for 4h.")
+    wa_text = "\n".join(msg_lines)
+    wa_result = whatsapp_send(wa_text)
+
+    log.info(
+        "[cto-hourly] RED=%d (fresh=%d) · wa_ok=%s supplier=%s",
+        rep.red, len(fresh_red), wa_result.get("ok"), wa_result.get("supplier", "stub"),
+    )
+    return {
+        "ok": True, "alerted": True,
+        "red": rep.red, "fresh_red": len(fresh_red),
+        "whatsapp": wa_result,
+        "pages_alerted": [f.url for f in fresh_red],
     }
 
 
@@ -1055,6 +1128,14 @@ def _create_app() -> Flask:
         if auth: return auth
         return jsonify(run_cto_weekly_job())
 
+    @app.post("/admin/founder/cto-hourly")
+    def admin_cto_hourly():
+        """Manual trigger for the hourly CTO sweep + WhatsApp-on-RED.
+        Body: empty. Same code path as the :30-minute cron."""
+        auth = _require_admin()
+        if auth: return auth
+        return jsonify(run_cto_hourly_job())
+
     @app.get("/admin/founder/cto-daily")
     def admin_cto_daily_html():
         """Render the CTO daily report in-browser for visual review.
@@ -1068,21 +1149,42 @@ def _create_app() -> Flask:
 
     @app.post("/admin/founder/cto-verify-deployment")
     def admin_cto_verify_deployment():
-        """Post-push verifier. Body: {"url": "...", "wait_s": 180}
+        """Post-push verifier. Body: {"url": "...", "wait_s": 0..240}
 
-        Waits the requested seconds, then runs the 10-gate check. Cron
-        timeouts on Render default to 30s, so callers using this from
-        the gh action / webhook should set wait_s ≤ 30 there and call
-        twice if needed."""
+        Waits the requested seconds, then runs the 10-gate check.
+        GitHub Pages typically needs ~180s after a push to publish; the
+        gh action that calls this sleeps externally first to keep the
+        request short. We cap wait_s at 240 on this endpoint (Gunicorn
+        timeout in railway.json is 60 — set Gunicorn higher if you want
+        to block longer here)."""
         auth = _require_admin()
         if auth: return auth
         payload = request.get_json(silent=True) or {}
         url = (payload.get("url") or "").strip()
-        wait_s = int(payload.get("wait_s") or 30)
+        wait_s = int(payload.get("wait_s") or 0)
         if not url:
             return jsonify({"ok": False, "error": "url required"}), 400
-        result = verify_deployment(url, wait_s=min(max(0, wait_s), 30))
-        return jsonify({"ok": True, "waited_s": wait_s, "result": result.to_dict()})
+        # Bound the wait to keep the request inside the Gunicorn timeout.
+        bounded_wait = min(max(0, wait_s), 240)
+        result = verify_deployment(url, wait_s=bounded_wait)
+        # WhatsApp Sire if the just-deployed page is RED so she doesn't have
+        # to read this response — same alerting posture as the hourly cron.
+        wa = None
+        if result.red:
+            failed = next((g for g in result.gates if g.status == "fail"), None)
+            wa_text = (
+                f"⚠️ Chitti CTO — post-push verify FAILED:\n"
+                f"🔴 {url}\n"
+                f"   HTTP {result.http_status} · gate: "
+                f"{failed.name if failed else 'unknown'} — {failed.detail if failed else ''}\n"
+                f"   load {result.load_ms} ms · bytes {result.bytes}"
+            )
+            wa = whatsapp_send(wa_text)
+        return jsonify({
+            "ok": True, "waited_s": bounded_wait,
+            "result": result.to_dict(),
+            "whatsapp": wa,
+        })
 
     # Public router used by feedback-widget.js. We accept the payload,
     # tag it with classifier output, mirror it to the originating
@@ -1158,7 +1260,8 @@ def _start_scheduler() -> None:
         minute=15, timezone=_IST,
         id="hourly_escalator", replace_existing=True,
     )
-    # CTO crons (2026-05-27): 08:00 IST daily, Sun 09:00 IST weekly.
+    # CTO crons (2026-05-27): 08:00 IST daily, Sun 09:00 IST weekly,
+    # plus an hourly sweep at minute :30 that WhatsApps Sire on RED only.
     _sched.add_job(
         run_cto_daily_job, "cron",
         hour=CTO_DAILY_HOUR_IST, minute=CTO_DAILY_MINUTE_IST,
@@ -1168,6 +1271,11 @@ def _start_scheduler() -> None:
         run_cto_weekly_job, "cron",
         day_of_week="sun", hour=CTO_WEEKLY_HOUR_IST, minute=CTO_WEEKLY_MINUTE_IST,
         timezone=_IST, id="cto_weekly_report", replace_existing=True,
+    )
+    _sched.add_job(
+        run_cto_hourly_job, "cron",
+        minute=CTO_HOURLY_MINUTE_IST,
+        timezone=_IST, id="cto_hourly_health", replace_existing=True,
     )
     if SELF_PING_ENABLED:
         _sched.add_job(

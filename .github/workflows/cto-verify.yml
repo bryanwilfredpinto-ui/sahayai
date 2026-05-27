@@ -1,0 +1,100 @@
+name: CTO post-push verify
+# After every push to main that touches a public asset (HTML / shared JS / tools),
+# wait for GitHub Pages to publish, then ping the Chitti Founder CTO endpoint
+# for each changed page. The endpoint runs the 10-gate check and WhatsApps Sire
+# on RED — so Sire never sees a broken page first.
+#
+# Required GitHub repo secret:
+#   FOUNDER_ADMIN_SECRET   — matches ADMIN_SECRET on chitti-founder Railway service.
+#
+# Optional repo variables (with safe defaults):
+#   FOUNDER_URL            — defaults to https://chitti-founder-api.up.railway.app
+#   PAGES_PROPAGATION_WAIT_S — defaults to 180 (GitHub Pages typical)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.js'
+      - 'tools/**'
+      - '.github/workflows/cto-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  cto-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: List changed HTML pages
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          # If this is the first commit (no HEAD~1), fall back to listing all HTMLs.
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            changed=$(git diff --name-only HEAD~1 HEAD -- '*.html' | head -20)
+          else
+            changed=$(git ls-files '*.html' | head -20)
+          fi
+          if [ -z "$changed" ]; then
+            echo "No HTML changes — skipping CTO verify."
+            echo "files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changed HTML files:"
+            echo "$changed"
+            { echo "files<<EOF"; echo "$changed"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for GitHub Pages propagation
+        if: steps.changed.outputs.files != ''
+        run: |
+          wait_s="${PAGES_PROPAGATION_WAIT_S:-180}"
+          echo "Sleeping ${wait_s}s for GitHub Pages to publish…"
+          sleep "$wait_s"
+        env:
+          PAGES_PROPAGATION_WAIT_S: ${{ vars.PAGES_PROPAGATION_WAIT_S }}
+
+      - name: Verify each changed page via Chitti Founder CTO
+        if: steps.changed.outputs.files != ''
+        shell: bash
+        env:
+          FOUNDER_URL: ${{ vars.FOUNDER_URL || 'https://chitti-founder-api.up.railway.app' }}
+          ADMIN_SECRET: ${{ secrets.FOUNDER_ADMIN_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ADMIN_SECRET:-}" ]; then
+            echo "::warning::FOUNDER_ADMIN_SECRET not set — skipping CTO verify (set it under repo Settings → Secrets)."
+            exit 0
+          fi
+          fail_count=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            url="https://sahayai.in/$f"
+            echo "→ POST $FOUNDER_URL/admin/founder/cto-verify-deployment  url=$url"
+            resp=$(curl -sS -X POST "$FOUNDER_URL/admin/founder/cto-verify-deployment" \
+                     -H "Authorization: Bearer $ADMIN_SECRET" \
+                     -H "Content-Type: application/json" \
+                     --max-time 60 \
+                     -d "{\"url\":\"$url\",\"wait_s\":0}")
+            echo "$resp" | head -c 600 ; echo
+            green=$(echo "$resp" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('result',{}).get('green',False))" 2>/dev/null || echo "False")
+            if [ "$green" != "True" ]; then
+              echo "::error::$url is NOT green per CTO 10-gate. See response above."
+              fail_count=$((fail_count + 1))
+            else
+              echo "✅ $url green"
+            fi
+          done <<< "${{ steps.changed.outputs.files }}"
+          if [ "$fail_count" -gt 0 ]; then
+            echo "$fail_count page(s) failed CTO verification."
+            exit 1
+          fi
+          echo "All changed pages green ✅"

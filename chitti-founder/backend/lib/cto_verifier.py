@@ -613,34 +613,73 @@ def render_cto_weekly_html(
 
 
 def whatsapp_send(text: str) -> dict[str, Any]:
-    """Send a WhatsApp message to Sire via WhatsApp Business API.
+    """Send a WhatsApp message to Sire.
 
-    HONEST STUB. Until WHATSAPP_BUSINESS_TOKEN + WHATSAPP_TO_NUMBER are
-    set on Railway, this logs the intent and returns ok=False so the
-    daily cron stays green. Email rails (lib/founder_report.py) carry
-    the same report meanwhile.
+    Two suppliers, tried in order:
+      1. Twilio  — TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM + ALERT_WHATSAPP_TO
+      2. Meta Cloud — WHATSAPP_BUSINESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_TO_NUMBER
+
+    If neither set is complete, returns an honest stub (logs intent,
+    returns ok=False). Email rails carry the same report meanwhile.
+    Real HTTP calls never fake a 200 — failure surfaces in the result.
     """
     import os
-    tok = os.environ.get("WHATSAPP_BUSINESS_TOKEN", "")
-    to_num = os.environ.get("WHATSAPP_TO_NUMBER", "")
-    if not (tok and to_num):
-        log.info(
-            "[cto-whatsapp] honest stub — would have sent %d chars to %s "
-            "(set WHATSAPP_BUSINESS_TOKEN + WHATSAPP_TO_NUMBER on Railway to enable)",
-            len(text), to_num or "<unset>",
-        )
-        return {"ok": False, "reason": "honest_stub_token_unset", "bytes": len(text)}
+    body = (text or "")[:1600]
 
-    # Wire-up (commented until token lands; never fake a 200):
-    # try:
-    #     with httpx.Client(timeout=10.0) as c:
-    #         r = c.post(
-    #             f"https://graph.facebook.com/v18.0/{phone_number_id}/messages",
-    #             headers={"Authorization": f"Bearer {tok}"},
-    #             json={"messaging_product":"whatsapp","to":to_num,
-    #                   "type":"text","text":{"body": text[:4096]}},
-    #         )
-    #     return {"ok": r.status_code in (200,201), "status": r.status_code}
-    # except Exception as e:
-    #     return {"ok": False, "error": str(e)[:200]}
-    return {"ok": False, "reason": "wire_up_pending"}
+    # ---- Supplier 1: Twilio (preferred — simpler one-time auth) ----
+    sid       = os.environ.get("TWILIO_ACCOUNT_SID", "")
+    tok       = os.environ.get("TWILIO_AUTH_TOKEN", "")
+    twi_from  = os.environ.get("TWILIO_WHATSAPP_FROM", "")  # e.g. "whatsapp:+14155238886"
+    alert_to  = os.environ.get("ALERT_WHATSAPP_TO", "")     # e.g. "whatsapp:+91XXXXXXXXXX"
+    if sid and tok and twi_from and alert_to:
+        try:
+            with httpx.Client(timeout=10.0) as c:
+                r = c.post(
+                    f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                    auth=(sid, tok),
+                    data={"From": twi_from, "To": alert_to, "Body": body},
+                )
+            ok = r.status_code in (200, 201)
+            log.info("[cto-whatsapp] twilio status=%d ok=%s", r.status_code, ok)
+            out: dict[str, Any] = {"ok": ok, "supplier": "twilio", "status": r.status_code}
+            try:
+                jr = r.json()
+                if ok: out["sid"] = jr.get("sid")
+                else:  out["error"] = jr.get("message", r.text[:200])
+            except Exception:  # noqa: BLE001
+                if not ok: out["error"] = r.text[:200]
+            return out
+        except Exception as e:  # noqa: BLE001
+            log.warning("[cto-whatsapp] twilio exception: %s", e)
+            return {"ok": False, "supplier": "twilio", "error": str(e)[:200]}
+
+    # ---- Supplier 2: Meta WhatsApp Cloud API ----
+    meta_tok  = os.environ.get("WHATSAPP_BUSINESS_TOKEN", "")
+    phone_id  = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "")
+    to_num    = os.environ.get("WHATSAPP_TO_NUMBER", "")
+    if meta_tok and phone_id and to_num:
+        try:
+            with httpx.Client(timeout=10.0) as c:
+                r = c.post(
+                    f"https://graph.facebook.com/v18.0/{phone_id}/messages",
+                    headers={"Authorization": f"Bearer {meta_tok}"},
+                    json={"messaging_product": "whatsapp", "to": to_num,
+                          "type": "text", "text": {"body": body[:4096]}},
+                )
+            ok = r.status_code in (200, 201)
+            log.info("[cto-whatsapp] meta-cloud status=%d ok=%s", r.status_code, ok)
+            return {"ok": ok, "supplier": "meta_cloud", "status": r.status_code,
+                    "error": (None if ok else r.text[:200])}
+        except Exception as e:  # noqa: BLE001
+            log.warning("[cto-whatsapp] meta-cloud exception: %s", e)
+            return {"ok": False, "supplier": "meta_cloud", "error": str(e)[:200]}
+
+    # ---- Neither configured — honest stub ----
+    log.info(
+        "[cto-whatsapp] honest stub — would have sent %d chars. Set either "
+        "TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM + ALERT_WHATSAPP_TO "
+        "OR WHATSAPP_BUSINESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_TO_NUMBER on "
+        "Railway to enable.", len(body),
+    )
+    return {"ok": False, "reason": "honest_stub_no_creds", "bytes": len(body),
+            "supplier_needed": "twilio_or_meta_cloud"}
