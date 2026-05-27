@@ -75,6 +75,32 @@
     } catch (e) { /* honest skip — non-blocking */ }
   })();
 
+  // ── Universal Camera substrate auto-loader (Sire 2026-05-27) ──
+  // Every page that loads chitti_a11y.js also gets the floating 📷 Scan
+  // button + 10-mode picker (Medicine / Food / Fashion / Document / Bill
+  // / Legal / Crop / Prescription / QR / Product). One substrate, every
+  // Chitti, one tap. Opt-out per page via:
+  //   <meta name="chitti-camera-universal" content="off">
+  // Mirrors the bottom-nav injection pattern.
+  (function injectCameraUniversal() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-camera-universal"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_camera_universal.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_camera_universal.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip — non-blocking */ }
+  })();
+
   // RTL languages — match chitti_lang.js convention.
   var RTL_LANGS = { ur: 1, ks: 1, sd: 1 };
 
