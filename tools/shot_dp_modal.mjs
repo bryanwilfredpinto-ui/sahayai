@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const b = await chromium.launch({ headless: true });
+const ctx = await b.newContext({ viewport: { width: 375, height: 812 } });
+const page = await ctx.newPage();
+await page.goto('https://sahayai.in/', { waitUntil: 'domcontentloaded' }).catch(()=>{});
+await page.evaluate(() => { try { localStorage.clear(); } catch (e) {} });
+await page.goto('https://sahayai.in/chitti_vaani.html', { waitUntil: 'networkidle' });
+await page.waitForSelector('#chitti-disability-profile-modal', { timeout: 6000 });
+await page.waitForTimeout(800);
+const p = resolve(__dirname, 'cert_dp_modal_375.png');
+await page.screenshot({ path: p, fullPage: false });
+console.log('📸 ' + p);
+await b.close();
