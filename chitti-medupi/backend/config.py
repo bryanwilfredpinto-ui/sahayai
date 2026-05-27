@@ -37,6 +37,7 @@ class Settings:
     # project_ai_provider_switch_to_deepseek.
     DEEPSEEK_API_KEY: str = _env("DEEPSEEK_API_KEY", "")
     DEEPSEEK_URL: str = _env("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
+    DEEPSEEK_MODEL: str = _env("DEEPSEEK_MODEL", "deepseek-chat")
     DEEPSEEK_VISION_MODEL: str = _env("DEEPSEEK_VISION_MODEL", "deepseek-vl-7b-chat")
 
     ALLOWED_ORIGINS: str = _env(

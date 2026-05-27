@@ -23,9 +23,6 @@ from services.usage_tracker import CapExceeded, tracked
 
 log = logging.getLogger("deepseek")
 
-DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
-MODEL = "deepseek-chat"
-
 
 class DeepSeekError(Exception):
     pass
@@ -87,7 +84,7 @@ async def chat_with_tokens(system: str, user: str, *,
         "Content-Type": "application/json",
     }
     body = {
-        "model": MODEL,
+        "model": settings.DEEPSEEK_MODEL,
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user_safe},
@@ -97,7 +94,7 @@ async def chat_with_tokens(system: str, user: str, *,
     }
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            r = await client.post(DEEPSEEK_URL, headers=headers, json=body)
+            r = await client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
             r.raise_for_status()
             data = r.json()
     except httpx.HTTPStatusError as e:
@@ -212,7 +209,7 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
         "Content-Type": "application/json",
     }
     body: dict = {
-        "model": MODEL,
+        "model": settings.DEEPSEEK_MODEL,
         "messages": messages,
         "max_tokens": max_tokens,
         "temperature": temperature,
@@ -223,7 +220,7 @@ async def chat_with_tools(messages: list[dict], tools: list[dict] | None = None,
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
-            r = await client.post(DEEPSEEK_URL, headers=headers, json=body)
+            r = await client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
             r.raise_for_status()
             data = r.json()
     except httpx.HTTPStatusError as e:

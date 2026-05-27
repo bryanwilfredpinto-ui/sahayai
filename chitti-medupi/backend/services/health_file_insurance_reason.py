@@ -127,7 +127,7 @@ def reason_over_policy(policy: dict, question: str, lang: str = "hi") -> dict:
 
     messages = _build_prompt(policy, question, lang)
     body = {
-        "model": "deepseek-chat",
+        "model": settings.DEEPSEEK_MODEL,
         "messages": messages,
         "temperature": 0.2,
         "max_tokens": 700,
@@ -138,7 +138,7 @@ def reason_over_policy(policy: dict, question: str, lang: str = "hi") -> dict:
     }
     try:
         with httpx.Client(timeout=60.0) as client:
-            r = client.post("https://api.deepseek.com/chat/completions", headers=headers, json=body)
+            r = client.post(settings.DEEPSEEK_URL, headers=headers, json=body)
             r.raise_for_status()
             data = r.json()
         answer = (data["choices"][0]["message"]["content"] or "").strip()

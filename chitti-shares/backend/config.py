@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     # DeepSeek API key (for "Chitti Market View" AI summary).
     # Already present in your Render env from earlier Chitti work.
     DEEPSEEK_API_KEY: str = ""
+    DEEPSEEK_URL: str = "https://api.deepseek.com/chat/completions"
+    DEEPSEEK_MODEL: str = "deepseek-chat"
 
     # Admin gate for Kite OAuth routes.
     # Mobile number (10 digits, no +91). Only this user can run
