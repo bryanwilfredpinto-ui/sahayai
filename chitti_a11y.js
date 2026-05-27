@@ -101,6 +101,65 @@
     } catch (e) { /* honest skip — non-blocking */ }
   })();
 
+  // ── User Disability Profile substrate auto-loader (Sire 2026-05-27,
+  //    fixes SAHAYAI_MASTER.md §7 + project_user_disability_profile_locked
+  //    contract gap — modal was never built; every page was 🔴 RED on
+  //    QUALITY_STATUS.md §1a Gate G3 because the substrate didn't exist).
+  // Every page that loads chitti_a11y.js also gets the one-time multi-select
+  // Disability Profile prompt — saves locally, never re-asks, syncs across
+  // every Chitti page on the device. Opt-out per page via:
+  //   <meta name="chitti-disability-profile" content="off">
+  // Intended for admin / dev pages only.
+  (function injectDisabilityProfile() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-disability-profile"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_disability_profile.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_disability_profile.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip — non-blocking */ }
+  })();
+
+  // ── Feature Discovery substrate auto-loader (Sire 2026-05-27, fixes
+  //    SAHAYAI_MASTER.md §2d contract gap) ──
+  // Every page that loads chitti_a11y.js also gets the 💡 What can Chitti
+  // do for you? button — floating CTA + a11y-bar mirror — driven by
+  // chitti_features.js parsing each Chitti's skills/FEATURES.md live.
+  // Per §2d the substrate is supposed to be auto-loaded by chitti_a11y.js
+  // so every page inherits without per-page edits. The previous build
+  // shipped chitti_features.js at repo root but never wired the
+  // auto-injection — every Chitti page was missing the Discovery Box.
+  // Opt-out per page via: <meta name="chitti-features" content="off">
+  // (separate from the spec's content="path/to/FEATURES.md" override,
+  // which chitti_features.js itself reads).
+  (function injectFeaturesDiscovery() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-features"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_features.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_features.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip — non-blocking */ }
+  })();
+
   // RTL languages — match chitti_lang.js convention.
   var RTL_LANGS = { ur: 1, ks: 1, sd: 1 };
 
