@@ -8,7 +8,7 @@
 |---|---|
 | Live URL — Technical | https://sahayai.in/chitti_complete_technical.html |
 | Live URL — Fundamentals | https://sahayai.in/chitti_fundamentals.html |
-| Health | https://chitti-shares-api.onrender.com/health |
+| Health | https://chitti-shares-api-production.up.railway.app/health |
 | Status | 🟢 GREEN — `chat_with_tools` rail-gated post commit #2 |
 | Risk | 🟡 Financial — sticky `NOT SEBI REGISTERED` bar + full legal modal mandatory |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, Story Mode |

@@ -45,7 +45,7 @@ class Settings:
         (
             "http://localhost:5173,http://localhost:8001,"
             "https://sahayai.in,https://www.sahayai.in,"
-            "https://chitti-shares-web.onrender.com"
+            "https://chitti-shares-web-production.up.railway.app"
         ),
     )
     BACKEND_URL: str = _env("BACKEND_URL", "http://localhost:8001")

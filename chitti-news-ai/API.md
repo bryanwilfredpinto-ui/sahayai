@@ -1,6 +1,6 @@
 # Chitti News AI — API
 
-Base: `https://chitti-news-ai-api.onrender.com`
+Base: `https://chitti-news-ai-api-production.up.railway.app`
 
 All responses include `disclaimer` (server-enforced). Endpoints not yet
 implemented return **HTTP 501** with a structured COMING SOON payload —

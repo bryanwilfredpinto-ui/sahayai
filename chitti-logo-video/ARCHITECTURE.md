@@ -14,7 +14,7 @@
                                         ▼
               ┌─────────────────────────────────────────────────────┐
               │  Railway free-tier web service                       │
-              │  chitti-logo-video-api.onrender.com                 │
+              │  chitti-logo-video-api-production.up.railway.app                 │
               │  gunicorn main:app --workers 2 --timeout 60         │
               │                                                     │
               │  Flask 3.0.3 app                                    │
@@ -176,4 +176,4 @@ services:
         sync: false
 ```
 
-Public URL: `https://chitti-logo-video-api.onrender.com`. Note: per [`project_render_deploy_status_2026_05_10`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md), this service's `render.yaml` exists but the Railway service may not be wired yet — verify with `curl https://chitti-logo-video-api.onrender.com/health` before declaring it live.
+Public URL: `https://chitti-logo-video-api-production.up.railway.app`. Note: per [`project_render_deploy_status_2026_05_10`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md), this service's `render.yaml` exists but the Railway service may not be wired yet — verify with `curl https://chitti-logo-video-api-production.up.railway.app/health` before declaring it live.

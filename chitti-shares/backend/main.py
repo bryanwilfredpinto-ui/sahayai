@@ -49,7 +49,7 @@ allowed_origins = [
     "http://localhost:5173",
     "http://localhost:4173",
     "http://127.0.0.1:5173",
-    "https://chitti-shares-web.onrender.com",
+    "https://chitti-shares-web-production.up.railway.app",
     "https://sahayai.in",
     "https://www.sahayai.in",
     "https://bryanwilfredpinto-ui.github.io",

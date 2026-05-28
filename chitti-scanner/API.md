@@ -1,6 +1,6 @@
 # API — Chitti Product Scanner
 
-Base URL (planned): `https://chitti-scanner-api.onrender.com`
+Base URL (planned): `https://chitti-scanner-api-production.up.railway.app`
 Local dev: `http://127.0.0.1:8005`
 
 All endpoints return `application/json`. CORS is locked to `ALLOWED_ORIGINS` (CSV env var, default `*` for local).
@@ -64,7 +64,7 @@ Returning the same response shape from both branches lets the frontend stay simp
 Example `curl`:
 
 ```bash
-curl -X POST https://chitti-scanner-api.onrender.com/api/scanner/analyze \
+curl -X POST https://chitti-scanner-api-production.up.railway.app/api/scanner/analyze \
   -F "image=@crocin.jpg;type=image/jpeg" \
   -F "language=hi"
 ```
@@ -81,7 +81,7 @@ curl -X POST https://chitti-scanner-api.onrender.com/api/scanner/analyze \
 Example:
 
 ```bash
-curl -X POST https://chitti-scanner-api.onrender.com/api/scanner/analyze \
+curl -X POST https://chitti-scanner-api-production.up.railway.app/api/scanner/analyze \
   -H "Content-Type: application/json" \
   -d '{"text":"Crocin Advance 500mg, Paracetamol IP 500mg, Mfg Aug 2025, Exp Jul 2027, MRP Rs 35", "language":"hi"}'
 ```

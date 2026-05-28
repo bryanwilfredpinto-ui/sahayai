@@ -37,7 +37,7 @@ End-state commit on `main`: `33b5372`.
 | 🔴 RED    | Substrate missing or never invoked at any call site. |
 | ⚪ N/A    | Not applicable to this backend (no LLM path, intentional stub, etc.). |
 
-**Honesty note:** I cannot curl `*.onrender.com` from this dev environment,
+**Honesty note:** I cannot curl `*-production.up.railway.app` from this dev environment,
 so the GREEN marks below are *code-level wired*, not *production curled*.
 The headers + audit rows light up on the next deploy. Production
 verification protocol is §5; flip the green to bold once a backend passes
@@ -276,7 +276,7 @@ embedded-replica pattern from chitti-news → chitti-news-ai (commits
 
 | Probe | Result |
 |---|---|
-| `curl -sI https://chitti-news-ai-api.onrender.com/health` | ✅ `HTTP 200` + `x-chitti-response-time-ms: 1` + `x-chitti-request-id: ea8024da3a67` |
+| `curl -sI https://chitti-news-ai-api-production.up.railway.app/health` | ✅ `HTTP 200` + `x-chitti-response-time-ms: 1` + `x-chitti-request-id: ea8024da3a67` |
 | `curl -s -X POST .../api/news-ai/admin/rss/poll-now?token=$METRICS_TOKEN` | ✅ `{new_articles: 318, sources_polled: 15, errors: [], sources_failed: 0}` |
 | `wsl turso db shell chitti-news-ai "SELECT COUNT(*) FROM articles;"` | ❌ `no such table: articles` — Turso DB is empty |
 
@@ -326,7 +326,7 @@ For each remaining Chitti URL in [chitti-founder/backend/main.py](chitti-founder
 
 ```bash
 # 1. SLA header — proves install_request_timing fired:
-curl -sI https://<chitti>.onrender.com/health | grep -i x-chitti-response-time
+curl -sI https://<chitti>-production.up.railway.app/health | grep -i x-chitti-response-time
 
 # 2. Audit row — proves observability is recording.
 # CORRECTED 2026-05-15 PM: /admin/founder/slice exists only on chitti-founder,
@@ -336,7 +336,7 @@ curl -s https://chitti-founder-api.up.railway.app/admin/founder/slice/<chitti> \
   | jq '.audit_count_24h'
 
 # 3. (LLM-bearing Chittis) wrap_llm fired — POST a query and check response carries request_id + latency_ms:
-curl -s -X POST https://chitti-upi-api.onrender.com/api/upi/check \
+curl -s -X POST https://chitti-upi-api-production.up.railway.app/api/upi/check \
   -H 'Content-Type: application/json' \
   -d '{"text":"Hello — got SMS for prize money fee","language":"hi"}' | jq '.request_id, .source'
 ```

@@ -145,7 +145,7 @@ a **Personal Access Token** instead of your password:
    *(Railway usually picks this up from `public/_redirects` automatically — adding it via UI is belt-and-suspenders.)*
 
 7. Wait for green build (~2 minutes).
-8. Open the temporary URL Railway gives you (e.g. `https://chitti-shares-web.onrender.com`).
+8. Open the temporary URL Railway gives you (e.g. `https://chitti-shares-web-production.up.railway.app`).
    You should see the **Login** page. ✅
 
 ---
@@ -158,7 +158,7 @@ You need to add ONE CNAME record at your domain registrar (wherever sahayai.in i
 
 1. On the `chitti-shares-web` service page → **Settings** → **Custom Domains** → **Add Custom Domain**.
 2. Enter `shares.sahayai.in` → **Save**.
-3. Railway shows you a **target host**, something like `chitti-shares-web.onrender.com` or `xyz123.cname.render.com`. **Copy that exact string.**
+3. Railway shows you a **target host**, something like `chitti-shares-web-production.up.railway.app` or `xyz123.cname.render.com`. **Copy that exact string.**
 
 ### 5b. Add the CNAME at your DNS provider
 

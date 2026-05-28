@@ -12,7 +12,7 @@ True. Chitti reads what is printed. If a fraudster prints a fake Aadhaar with a 
 
 ## 3. "`render.yaml` exists but the service has never been deployed"
 
-Per [../TODO.md](../TODO.md) P0 #1 and the workspace memory `project_render_deploy_status_2026_05_10.md`, Scanner is in the bucket of "8 with render.yaml unconnected". The frontend at `https://sahayai.in/chitti_scanner.html` is live; the backend `chitti-scanner-api.onrender.com` is **not**. Until then, the production frontend cannot analyse anything. Hard P0.
+Per [../TODO.md](../TODO.md) P0 #1 and the workspace memory `project_render_deploy_status_2026_05_10.md`, Scanner is in the bucket of "8 with render.yaml unconnected". The frontend at `https://sahayai.in/chitti_scanner.html` is live; the backend `chitti-scanner-api-production.up.railway.app` is **not**. Until then, the production frontend cannot analyse anything. Hard P0.
 
 ## 4. "Vision is off in production — the camera button is theatre"
 

@@ -151,7 +151,7 @@ Note the URL Railway gives you, e.g. `chitti-shares-api-production.up.railway.ap
 1. Static site → **Settings** → **Custom Domain** → add `shares.sahayai.in`.
 2. At your DNS provider (where `sahayai.in` is hosted), add a CNAME:
    ```
-   shares.sahayai.in   CNAME   <your-render-static-site>.onrender.com
+   shares.sahayai.in   CNAME   <your-render-static-site>-production.up.railway.app
    ```
 3. Wait 5–15 minutes. Railway auto-provisions HTTPS.
 

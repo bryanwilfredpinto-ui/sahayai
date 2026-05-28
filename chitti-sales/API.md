@@ -2,7 +2,7 @@
 
 **Status: proposal.** No backend code exists yet. The endpoint surface below mirrors [chitti-ca/API.md](../chitti-ca/API.md) and [chitti-legal/API.md](../chitti-legal/API.md) so the three coaching Chittis share a single audit-friendly shape.
 
-Base URL (production, proposed): `https://chitti-sales-api.onrender.com`
+Base URL (production, proposed): `https://chitti-sales-api-production.up.railway.app`
 Base URL (local, proposed): `http://localhost:8003`
 
 All endpoints return JSON. CORS will be enabled for the origins listed in the `ALLOWED_ORIGINS` env var (defaults include `https://sahayai.in`, `https://www.sahayai.in`, and `localhost:5500`).
@@ -144,13 +144,13 @@ These are sketched in [TODO.md](TODO.md) and not part of the v1 proposal:
 
 ```bash
 # Banner
-curl https://chitti-sales-api.onrender.com/
+curl https://chitti-sales-api-production.up.railway.app/
 
 # Health
-curl https://chitti-sales-api.onrender.com/api/sales/health
+curl https://chitti-sales-api-production.up.railway.app/api/sales/health
 
 # Ask (Hindi)
-curl -X POST https://chitti-sales-api.onrender.com/api/sales/ask \
+curl -X POST https://chitti-sales-api-production.up.railway.app/api/sales/ask \
   -H "Content-Type: application/json" \
   -d '{"text":"Mere paas customers aate hain lekin wapas nahi aate. Kya karoon?","language":"hi","topic":"customer_retention"}'
 ```

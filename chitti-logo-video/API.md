@@ -1,6 +1,6 @@
 # API — Chitti Logo & Video
 
-Base URL (production): `https://chitti-logo-video-api.onrender.com`
+Base URL (production): `https://chitti-logo-video-api-production.up.railway.app`
 Base URL (local dev):  `http://localhost:8003`
 
 All endpoints return `application/json`. Errors are also JSON (`{ok: false, error: "..."}`). CORS is restricted to `ALLOWED_ORIGINS` — see [render.yaml](render.yaml).
@@ -138,7 +138,7 @@ Generates a deterministic SVG logo and returns it inline. **No state is persiste
 ### cURL
 
 ```bash
-curl -X POST https://chitti-logo-video-api.onrender.com/api/lv/logo/generate \
+curl -X POST https://chitti-logo-video-api-production.up.railway.app/api/lv/logo/generate \
   -H "Content-Type: application/json" \
   -d '{"brand_name":"Saraswati Kirana","tagline":"Aapka rozana sathi","palette":"bharat","style":"monogram"}'
 ```
@@ -186,7 +186,7 @@ When `VIDEO_PROVIDER` is set but the real wire-up isn't implemented yet, `suppli
 ### cURL
 
 ```bash
-curl -X POST https://chitti-logo-video-api.onrender.com/api/lv/video/enqueue \
+curl -X POST https://chitti-logo-video-api-production.up.railway.app/api/lv/video/enqueue \
   -H "Content-Type: application/json" \
   -d '{"script":"Saraswati Kirana — every Indian household.","language":"hi","duration_s":30}'
 ```
@@ -242,5 +242,5 @@ Future states (real-provider mode): `"failed"` (with `error` field, currently ne
 ### cURL
 
 ```bash
-curl https://chitti-logo-video-api.onrender.com/api/lv/video/status/9a4f8e1c3b7d4f1ea2f6c0e8b5a3d7c2
+curl https://chitti-logo-video-api-production.up.railway.app/api/lv/video/status/9a4f8e1c3b7d4f1ea2f6c0e8b5a3d7c2
 ```

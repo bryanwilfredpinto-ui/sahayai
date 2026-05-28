@@ -1,6 +1,6 @@
 # Chitti UPI Fraud Guard — HTTP API
 
-Base URL (planned prod): `https://chitti-upi-api.onrender.com`
+Base URL (planned prod): `https://chitti-upi-api-production.up.railway.app`
 Local dev: `http://127.0.0.1:8004`
 
 All endpoints return JSON. No authentication. CORS in prod is locked to

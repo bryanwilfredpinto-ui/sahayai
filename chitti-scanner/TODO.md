@@ -7,10 +7,10 @@ A grep for `TODO/FIXME/XXX/HACK` across `chitti-scanner/` returns **zero matches
 ### 1. First Railway deploy
 - `chitti-scanner/render.yaml` has been ready since the skeleton commit (`bc3673b`) but the service has **never been connected to Railway**.
 - Per the repo memory note `project_render_deploy_status_2026_05_10.md`, Scanner is in the bucket of "8 with render.yaml unconnected".
-- Action: provision `chitti-scanner-api.onrender.com`, paste the `DEEPSEEK_API_KEY` secret, verify `/health`, then curl the live `/api/scanner/analyze/text` before declaring the product live (per `feedback_verify_before_handover` rule).
+- Action: provision `chitti-scanner-api-production.up.railway.app`, paste the `DEEPSEEK_API_KEY` secret, verify `/health`, then curl the live `/api/scanner/analyze/text` before declaring the product live (per `feedback_verify_before_handover` rule).
 
 ### 2. Frontend production base URL verification
-- `chitti_scanner.html` defaults to `https://chitti-scanner-api.onrender.com` in the `API_BASE` constant. Confirm this matches the actual Railway URL after deploy; if Railway assigns a different slug, either rename the service or update the JS constant.
+- `chitti_scanner.html` defaults to `https://chitti-scanner-api-production.up.railway.app` in the `API_BASE` constant. Confirm this matches the actual Railway URL after deploy; if Railway assigns a different slug, either rename the service or update the JS constant.
 
 ## P1 — quality / feature
 

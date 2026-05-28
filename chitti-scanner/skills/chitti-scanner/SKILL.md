@@ -91,4 +91,4 @@ Response shape:
 ## Live URLs
 
 - Frontend: https://sahayai.in/chitti_scanner.html
-- Backend:  https://chitti-scanner-api.onrender.com (planned — `render.yaml` ready)
+- Backend:  https://chitti-scanner-api-production.up.railway.app (planned — `render.yaml` ready)

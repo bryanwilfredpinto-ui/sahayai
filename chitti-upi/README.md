@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_upi.html |
-| Health | https://chitti-upi-api.onrender.com/health |
+| Health | https://chitti-upi-api-production.up.railway.app/health |
 | Status | 🟢 GREEN (intentional Railway — see [QUALITY_STATUS.md](../QUALITY_STATUS.md)) |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
 | Languages | Hindi + English + 9 Indian languages |
@@ -23,7 +23,7 @@
 > (orange) / **LOW** (green) in seconds and **reads the warning aloud**.
 
 Live page: <https://sahayai.in/chitti_upi.html>
-Backend (planned): <https://chitti-upi-api.onrender.com>
+Backend (planned): <https://chitti-upi-api-production.up.railway.app>
 
 ---
 

@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_4wheeler.html |
-| Health | https://chitti-4wheeler-api.onrender.com/health |
+| Health | https://chitti-4wheeler-api-production.up.railway.app/health |
 | Status | 🟢 GREEN (intentional Railway) |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
 | Languages | 26 via Voice Factory cascade |
@@ -101,21 +101,21 @@ Per [[project_turso_db_inventory]] — DB lives in `aws-ap-south-1`
 3. In the new service → `Environment`, paste:
    - `DATABASE_URL` = `libsql://…?authToken=…` from Step 1
    - `DEEPSEEK_API_KEY` = your DeepSeek key
-4. Service comes up at `https://chitti-4wheeler-api.onrender.com`.
+4. Service comes up at `https://chitti-4wheeler-api-production.up.railway.app`.
 5. `chitti-founder/backend/main.py::run_self_ping` picks it up
    automatically (Business Continuity Plan, §2e).
 
 ### Step 3 — Smoke test
 
 ```bash
-curl https://chitti-4wheeler-api.onrender.com/health
+curl https://chitti-4wheeler-api-production.up.railway.app/health
 # → {"ok":true,"chitti":"chitti-4wheeler","db_kind":"turso-replica",...}
 
-curl -X POST https://chitti-4wheeler-api.onrender.com/api/4w/profile \
+curl -X POST https://chitti-4wheeler-api-production.up.railway.app/api/4w/profile \
   -H 'Content-Type: application/json' -H 'X-Chitti-Device: smoke-test' \
   -d '{"brand":"Hyundai","model":"i20","fuel":"Petrol","tx":"Manual","odo":45000}'
 
-curl https://chitti-4wheeler-api.onrender.com/api/4w/profile \
+curl https://chitti-4wheeler-api-production.up.railway.app/api/4w/profile \
   -H 'X-Chitti-Device: smoke-test'
 # → confirms row round-tripped through Turso
 ```

@@ -203,7 +203,7 @@ If everything above returns sensible data, **all 5 phases are working in product
 
 ## Step 4 — Verify in browser
 
-1. Open `https://shares.sahayai.in` (or `https://chitti-shares-web.onrender.com`).
+1. Open `https://shares.sahayai.in` (or `https://chitti-shares-web-production.up.railway.app`).
 2. Login with your mobile.
 3. Tap each bottom-nav tab in order:
    - **Home** — should show Nifty + Sensex with live numbers (Yahoo data, ~15 min delayed).

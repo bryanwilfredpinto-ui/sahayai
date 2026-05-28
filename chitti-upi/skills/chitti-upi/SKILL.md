@@ -64,4 +64,4 @@ modal has 6 sections (mirrors Vaani structure) with 🔊 buttons:
 ## Live URLs
 
 - Frontend: https://sahayai.in/chitti_upi.html
-- Backend:  https://chitti-upi-api.onrender.com (planned — `render.yaml` ready)
+- Backend:  https://chitti-upi-api-production.up.railway.app (planned — `render.yaml` ready)

@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_news_ai.html |
-| Health | https://chitti-news-ai-api.onrender.com/health |
+| Health | https://chitti-news-ai-api-production.up.railway.app/health |
 | Status | 🟡 YELLOW — SLA-timing curl-verified 2026-05-15 PM, **but Turso embedded-replica sync UNVERIFIED (`SELECT COUNT(*) FROM articles` → empty)** |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
 | Languages | EN + HI native · 9-profession jargon lens |

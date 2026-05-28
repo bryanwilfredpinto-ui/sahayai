@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_logo_video.html |
-| Health | https://chitti-logo-video.onrender.com/health |
+| Health | https://chitti-logo-video-production.up.railway.app/health |
 | Status | 🟡 YELLOW by design — Observability=None is correct until product graduates |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
 | Languages | EN + HI |
@@ -39,7 +39,7 @@ The wire-up points are already in code — see [`logo_service._replicate_generat
 
 - **Backend**: Flask 3 + flask-cors + gunicorn, Python 3.11.10
 - **Frontend**: single static page [`chitti_logo_video.html`](../chitti_logo_video.html) (HTML/CSS/JS, no framework)
-- **Hosting**: Railway free tier (`chitti-logo-video-api.onrender.com`) + GitHub Pages
+- **Hosting**: Railway free tier (`chitti-logo-video-api-production.up.railway.app`) + GitHub Pages
 - **State**: stateless. Video jobs live in-process in `_JOBS: dict[str, _Job]`. No DB.
 
 ---

@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_scanner.html |
-| Health | https://chitti-scanner-api.onrender.com/health |
+| Health | https://chitti-scanner-api-production.up.railway.app/health |
 | Status | 🟢 GREEN (intentional Railway — Quality Status §1) |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
 | Languages | Hindi + English + 9 Indian languages |
@@ -127,7 +127,7 @@ Every response includes a `cross_links` array. The frontend renders these as dee
 | Surface | URL | Status |
 |---|---|---|
 | Frontend | https://sahayai.in/chitti_scanner.html | Live |
-| Backend | https://chitti-scanner-api.onrender.com | **Planned** — `render.yaml` is ready but the service has not been connected to Railway yet (P0 in [TODO.md](./TODO.md)) |
+| Backend | https://chitti-scanner-api-production.up.railway.app | **Planned** — `render.yaml` is ready but the service has not been connected to Railway yet (P0 in [TODO.md](./TODO.md)) |
 
 ---
 
