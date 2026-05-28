@@ -1190,169 +1190,169 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <div class="section-sub">Tap a card. Speak in your language. Chitti drafts, reads it back, then acts only after you say <b>"haan"</b>. Every action is logged below — undo within 30 seconds.</div>
     <div class="pro-grid">
 
-      <button class="pro-card" onclick="openCallModal()">
+      <button class="pro-card" data-chitti-response onclick="openCallModal()">
         <span class="ico">📞</span><span class="lbl">Make a call</span>
         <span class="sub">"Chitti, Mom ko call karo" — Chitti reads back the name, you say "haan", phone dials. Inside the Android app, Chitti can dial directly.</span>
         <span class="pill" id="pill-make-call">Web ✓ (dialer pre-filled)</span>
       </button>
 
-      <button class="pro-card" onclick="openWAModal()">
+      <button class="pro-card" data-chitti-response onclick="openWAModal()">
         <span class="ico">📲</span><span class="lbl">Send WhatsApp</span>
         <span class="sub">"Mom ko bolo main 7 baje aaunga" — Chitti drafts in Hinglish, reads back, opens WhatsApp ready to send.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openWACallModal()">
+      <button class="pro-card" data-chitti-response onclick="openWACallModal()">
         <span class="ico">📞</span><span class="lbl">WhatsApp call</span>
         <span class="sub">"Mom ko WhatsApp call karo" — opens WhatsApp's call screen for that contact. Free over Wi-Fi, works internationally.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openUPIModal()">
+      <button class="pro-card" data-chitti-response onclick="openUPIModal()">
         <span class="ico">💸</span><span class="lbl">Send UPI payment</span>
         <span class="sub">"Ramesh ko ₹500 bhejo" — Chitti opens UPI app pre-filled with payee + amount. You enter PIN in UPI app (NPCI rule).</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openEmailModal()">
+      <button class="pro-card" data-chitti-response onclick="openEmailModal()">
         <span class="ico">📧</span><span class="lbl">Send email as Chitti AI</span>
         <span class="sub">"Doctor ko likho main kal aa raha hun" — Chitti drafts, identifies as AI in signature, sends after voice "haan".</span>
         <span class="pill" id="pill-email">Web ✓ (after Gmail connect)</span>
       </button>
 
-      <button class="pro-card" onclick="openSMSModal()">
+      <button class="pro-card" data-chitti-response onclick="openSMSModal()">
         <span class="ico">💬</span><span class="lbl">Send SMS</span>
         <span class="sub">"Mom ko SMS karo main 7 baje aaunga" — Chitti drafts, reads back, opens your phone's SMS app pre-filled with the message. Inside the Android app, Chitti sends directly.</span>
         <span class="pill" id="pill-sms">Web ✓ (SMS app pre-filled)</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('lockPhone')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('lockPhone')">
         <span class="ico">🔒</span><span class="lbl">Lock my phone</span>
         <span class="sub">"Chitti, phone lock" — Chitti asks "Shall I lock now?" and locks only after your "haan". NEVER unlocks (Android refuses by design).</span>
         <span class="pill android" id="pill-lock">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('toggleSilent')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('toggleSilent')">
         <span class="ico">🔕</span><span class="lbl">Silent mode</span>
         <span class="sub">"Silent mode on" / "off" — Chitti asks first, then switches ringer.</span>
         <span class="pill android" id="pill-silent">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('dialerRole')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('dialerRole')">
         <span class="ico">📞</span><span class="lbl">Answer call (day)</span>
         <span class="sub">"Chitti, answer" — Chitti asks "Pick up the call?" first. Picks up only after your "haan".</span>
         <span class="pill android" id="pill-call">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('callScreening')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('callScreening')">
         <span class="ico">🌙</span><span class="lbl">Night auto-answer</span>
         <span class="sub">10 PM – 6 AM, Chitti screens calls and asks "Wake the user?" — only escalates on user's "haan" after the caller says emergency / ambulance / hospital.</span>
         <span class="pill android" id="pill-night">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="openYouTubeModal()">
+      <button class="pro-card" data-chitti-response onclick="openYouTubeModal()">
         <span class="ico">🎬</span><span class="lbl">Play on YouTube</span>
         <span class="sub">"Chitti, AR Rahman Vande Mataram play karo" — Chitti reads back the query, you say "haan", YouTube opens with the search.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openMusicModal()">
+      <button class="pro-card" data-chitti-response onclick="openMusicModal()">
         <span class="ico">🎵</span><span class="lbl">Play music</span>
         <span class="sub">"Chitti, Kishore Kumar ke gaane chalao" — opens YouTube Music with your query, on Android opens the music app directly.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openVideoModal()">
+      <button class="pro-card" data-chitti-response onclick="openVideoModal()">
         <span class="ico">📺</span><span class="lbl">Play a video</span>
         <span class="sub">"Bhagavad Gita Chapter 2 explained in Hindi" — Chitti finds and plays a video. Same flow as YouTube but tuned for long-form content.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openMapsModal()">
+      <button class="pro-card" data-chitti-response onclick="openMapsModal()">
         <span class="ico">🗺️</span><span class="lbl">Directions / Maps</span>
         <span class="sub">"Chitti, AIIMS Delhi le chalo" — opens Google Maps with the destination filled in. Android: opens Maps app directly.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openSearchModal()">
+      <button class="pro-card" data-chitti-response onclick="openSearchModal()">
         <span class="ico">🔎</span><span class="lbl">Search the web</span>
         <span class="sub">"Chitti, monsoon kab aayega Delhi mein" — opens Google with the query. Use for anything Chitti can't answer offline.</span>
         <span class="pill">Web ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openAppLauncherModal()">
+      <button class="pro-card" data-chitti-response onclick="openAppLauncherModal()">
         <span class="ico">🧩</span><span class="lbl">Open any app</span>
         <span class="sub">"Chitti, BookMyShow kholo" / "MakeMyTrip" / "Zomato" / "Swiggy" / "Spotify" — Chitti launches the app directly on Android, opens the website otherwise.</span>
         <span class="pill" id="pill-openapp">Web ✓ (opens website)</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('openCamera')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('openCamera')">
         <span class="ico">📷</span><span class="lbl">Open camera</span>
         <span class="sub">"Chitti, camera kholo" — Chitti asks first, then opens the camera. Android only — web browsers don't allow direct camera-app launch.</span>
         <span class="pill android" id="pill-camera">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="confirmNativeAction('toggleFlashlight')">
+      <button class="pro-card" data-chitti-response onclick="confirmNativeAction('toggleFlashlight')">
         <span class="ico">🔦</span><span class="lbl">Flashlight</span>
         <span class="sub">"Chitti, torch on" / "torch off" — Chitti asks first, then toggles. Android only — no web API for the LED.</span>
         <span class="pill android" id="pill-flashlight">Android only</span>
       </button>
 
-      <button class="pro-card" onclick="openAlarmModal()">
+      <button class="pro-card" data-chitti-response onclick="openAlarmModal()">
         <span class="ico">⏰</span><span class="lbl">Set alarm</span>
         <span class="sub">"Subah 6 baje uthao" — opens your clock app with the alarm pre-filled. Web fallback shows a step-by-step.</span>
         <span class="pill android" id="pill-alarm">Android ✓ · Web shows steps</span>
       </button>
 
-      <button class="pro-card" onclick="openReminderModal()">
+      <button class="pro-card" data-chitti-response onclick="openReminderModal()">
         <span class="ico">⏱️</span><span class="lbl">Remind me</span>
         <span class="sub">"Insurance premium 25 December tak yaad dilao" — Chitti schedules a notification on your phone (Android), or shows a step-by-step on the web. Phase 2.7 adds SMS + WhatsApp channels.</span>
         <span class="pill android" id="pill-reminder">Android ✓ · Web shows steps</span>
       </button>
 
-      <button class="pro-card" onclick="openSafeWalkModal()">
+      <button class="pro-card" data-chitti-response onclick="openSafeWalkModal()">
         <span class="ico">🚶‍♀️</span><span class="lbl">SafeWalk mode</span>
         <span class="sub">"Chitti, main akele ja rahi hun, 20 min mein check karna" — Chitti sets a check-in timer. If you don't say "main theek hun" in time, your Trusted Circle gets your live location + an alert. NEVER auto-dials cops.</span>
         <span class="pill" id="pill-safewalk">Web ✓ · Android ✓</span>
       </button>
 
-      <button class="pro-card" onclick="confirmFakeIncomingCall()">
+      <button class="pro-card" data-chitti-response onclick="confirmFakeIncomingCall()">
         <span class="ico">📵</span><span class="lbl">Fake incoming call</span>
         <span class="sub">"Chitti, 2 minute mein call aane ka dikha" — simulates a ringing incoming call so you have an excuse to leave an unsafe situation. Web shows a fullscreen ring overlay; Android plays the real ringtone via the InCallService.</span>
         <span class="pill" id="pill-fake-call">Web ✓ · Android ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openLocationShareModal()">
+      <button class="pro-card" data-chitti-response onclick="openLocationShareModal()">
         <span class="ico">📍</span><span class="lbl">Share my live location</span>
         <span class="sub">"Mom ko meri location bhejo" — Chitti reads your GPS, packages it as a Google Maps link, and WhatsApps it to whoever you pick from the Trusted Circle. Only with your "haan".</span>
         <span class="pill" id="pill-location">Web ✓ · Android ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openMedicalIdModal()">
+      <button class="pro-card" data-chitti-response onclick="openMedicalIdModal()">
         <span class="ico">🏥</span><span class="lbl">Medical ID</span>
         <span class="sub">Blood group · allergies · chronic conditions · primary doctor · emergency contact. Chitti reads it aloud on command + (Android) surfaces it on the lock screen so first responders can see it without unlocking.</span>
         <span class="pill" id="pill-medical-id">Web ✓ · Android lock-screen ✓</span>
       </button>
 
-      <button class="pro-card" onclick="confirmAmbulance108()">
+      <button class="pro-card" data-chitti-response onclick="confirmAmbulance108()">
         <span class="ico">🚑</span><span class="lbl">Ambulance 108</span>
         <span class="sub">"Ambulance bulao" — direct shortcut to 108 (medical emergency line). Chitti confirms "Sire, ambulance call karoon?" first. <b>This is the ONLY health-emergency number Chitti dials — never 112, never auto.</b></span>
         <span class="pill" id="pill-amb108">Web ✓ · Android ✓</span>
       </button>
 
-      <button class="pro-card" onclick="openNearbyHealthModal()">
+      <button class="pro-card" data-chitti-response onclick="openNearbyHealthModal()">
         <span class="ico">🏪</span><span class="lbl">Nearest hospital / chemist</span>
         <span class="sub">"Aaspaas ka chemist khula hai?" / "Sabse paas hospital" — Chitti opens Maps with a category search for hospital / pharmacy / clinic / chemist, scoped to your location.</span>
         <span class="pill" id="pill-nearby-health">Web ✓ · Android ✓</span>
       </button>
 
-      <button class="pro-card" onclick="toggleHeyChitti()">
+      <button class="pro-card" data-chitti-response onclick="toggleHeyChitti()">
         <span class="ico">🎙️</span><span class="lbl">Hey Chitti wake word</span>
         <span class="sub">"Hey Chitti" / "Sun Chitti" — always listening foreground service on Android. Wake word fires → Chitti opens the mic + voice intent router. Tap to enable / disable; persists across reboots.</span>
         <span class="pill android" id="pill-hey-chitti">Android only · off</span>
       </button>
 
-      <button class="pro-card" onclick="openLanguageModal()">
+      <button class="pro-card" data-chitti-response onclick="openLanguageModal()">
         <span class="ico">🌐</span><span class="lbl">Teach Chitti your language</span>
         <span class="sub">Federated learning. Speak Bangla / Tamil / Telugu / Marathi / Gujarati to Chitti. After 6–12 months your samples train Chitti's voice in that language.</span>
         <span class="pill">Web ✓ collecting</span>
@@ -8294,6 +8294,37 @@ window.addEventListener('DOMContentLoaded', () => {
     <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_vaani.html</code>
   </div>
 </div>
+
+<!-- Pro-card label + pill translations · CTO 2026-05-29 P2 fix · 18 missing labels × 12 langs · Chitti.lang.extend() merges into baked T-table + re-runs translateAll on current language -->
+<script>
+(function(){
+  function go(){
+    if(!window.Chitti||!Chitti.lang||!Chitti.lang.extend) return setTimeout(go,80);
+    Chitti.lang.extend({
+      "Play on YouTube": { en:"Play on YouTube", hi:"यूट्यूब पर चलाओ", bn:"ইউটিউবে চালান", te:"యూట్యూబ్‌లో ప్లే చేయండి", ta:"யூடியூபில் இயக்கு", mr:"यूट्यूबवर वाजवा", gu:"યુટ્યુબ પર ચલાવો", kn:"ಯೂಟ್ಯೂಬ್‌ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಿ", ml:"യൂട്യൂബിൽ പ്ലേ ചെയ്യൂ", pa:"ਯੂਟਿਊਬ ਉੱਤੇ ਚਲਾਓ", or:"ୟୁଟ୍ୟୁବରେ ଚଳାନ୍ତୁ", ur:"یوٹیوب پر چلائیں" },
+      "Play music": { en:"Play music", hi:"संगीत बजाओ", bn:"গান চালান", te:"సంగీతం ప్లే చేయండి", ta:"இசை இயக்கு", mr:"संगीत वाजवा", gu:"સંગીત વગાડો", kn:"ಸಂಗೀತ ಪ್ಲೇ ಮಾಡಿ", ml:"സംഗീതം പ്ലേ ചെയ്യൂ", pa:"ਸੰਗੀਤ ਵਜਾਓ", or:"ସଙ୍ଗୀତ ଚଳାନ୍ତୁ", ur:"موسیقی چلائیں" },
+      "Play a video": { en:"Play a video", hi:"वीडियो चलाओ", bn:"ভিডিও চালান", te:"వీడియో ప్లే చేయండి", ta:"வீடியோ இயக்கு", mr:"व्हिडिओ वाजवा", gu:"વિડિઓ ચલાવો", kn:"ವೀಡಿಯೊ ಪ್ಲೇ ಮಾಡಿ", ml:"വീഡിയോ പ്ലേ ചെയ്യൂ", pa:"ਵੀਡੀਓ ਚਲਾਓ", or:"ଭିଡିଓ ଚଳାନ୍ତୁ", ur:"ویڈیو چلائیں" },
+      "Set alarm": { en:"Set alarm", hi:"अलार्म लगाओ", bn:"অ্যালার্ম সেট করুন", te:"అలారం పెట్టండి", ta:"அலாரம் அமை", mr:"अलार्म लावा", gu:"એલાર્મ સેટ કરો", kn:"ಅಲಾರಂ ಸೆಟ್ ಮಾಡಿ", ml:"അലാം സജ്ജമാക്കുക", pa:"ਅਲਾਰਮ ਲਾਓ", or:"ଆଲାର୍ମ ସେଟ କରନ୍ତୁ", ur:"الارم لگائیں" },
+      "Flashlight": { en:"Flashlight", hi:"टॉर्च", bn:"টর্চ", te:"టార్చ్", ta:"டார்ச்", mr:"टॉर्च", gu:"ટોર્ચ", kn:"ಟಾರ್ಚ್", ml:"ടോർച്ച്", pa:"ਟਾਰਚ", or:"ଟର୍ଚ", ur:"ٹارچ" },
+      "Send SMS": { en:"Send SMS", hi:"एसएमएस भेजो", bn:"এসএমএস পাঠান", te:"ఎస్ఎంఎస్ పంపండి", ta:"எஸ்எம்எஸ் அனுப்பு", mr:"एसएमएस पाठवा", gu:"એસએમએસ મોકલો", kn:"ಎಸ್‌ಎಂಎಸ್ ಕಳುಹಿಸಿ", ml:"എസ്എംഎസ് അയക്കുക", pa:"ਐਸਐਮਐਸ ਭੇਜੋ", or:"ଏସଏମଏସ ପଠାନ୍ତୁ", ur:"ایس ایم ایس بھیجیں" },
+      "Open any app": { en:"Open any app", hi:"कोई भी ऐप खोलो", bn:"যেকোনো অ্যাপ খুলুন", te:"ఏదైనా యాప్ తెరవండి", ta:"எந்த பயன்பாட்டையும் திற", mr:"कोणतेही अ‍ॅप उघडा", gu:"કોઈપણ એપ ખોલો", kn:"ಯಾವುದೇ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ", ml:"ഏതെങ്കിലും ആപ്പ് തുറക്കുക", pa:"ਕੋਈ ਵੀ ਐਪ ਖੋਲ੍ਹੋ", or:"କୌଣସି ଆପ ଖୋଲନ୍ତୁ", ur:"کوئی ایپ کھولیں" },
+      "Search the web": { en:"Search the web", hi:"वेब पर खोजो", bn:"ওয়েবে অনুসন্ধান করুন", te:"వెబ్‌లో శోధించండి", ta:"வலையில் தேடு", mr:"वेबवर शोधा", gu:"વેબ પર શોધો", kn:"ವೆಬ್‌ನಲ್ಲಿ ಹುಡುಕಿ", ml:"വെബിൽ തിരയുക", pa:"ਵੈੱਬ ਉੱਤੇ ਖੋਜੋ", or:"ୱେବରେ ସନ୍ଧାନ କରନ୍ତୁ", ur:"ویب پر تلاش کریں" },
+      "Directions / Maps": { en:"Directions / Maps", hi:"दिशा / नक्शा", bn:"দিকনির্দেশ / মানচিত্র", te:"దిశలు / మ్యాప్‌లు", ta:"திசைகள் / வரைபடம்", mr:"दिशा / नकाशा", gu:"દિશા / નકશા", kn:"ನಿರ್ದೇಶನಗಳು / ನಕ್ಷೆ", ml:"ദിശകൾ / മാപ്പുകൾ", pa:"ਦਿਸ਼ਾ / ਨਕਸ਼ਾ", or:"ଦିଗ / ମାନଚିତ୍ର", ur:"ہدایات / نقشہ" },
+      "Remind me": { en:"Remind me", hi:"मुझे याद दिलाओ", bn:"আমাকে মনে করিয়ে দিন", te:"నాకు గుర్తు చేయండి", ta:"எனக்கு நினைவூட்டு", mr:"मला आठवण करून द्या", gu:"મને યાદ કરાવો", kn:"ನನಗೆ ನೆನಪಿಸಿ", ml:"എനിക്ക് ഓർമ്മിപ്പിക്കുക", pa:"ਮੈਨੂੰ ਯਾਦ ਕਰਾਓ", or:"ମୋତେ ମନେ ପକାଅ", ur:"مجھے یاد دلائیں" },
+      "Share my live location": { en:"Share my live location", hi:"मेरी लाइव लोकेशन भेजो", bn:"আমার লাইভ লোকেশন শেয়ার করুন", te:"నా లైవ్ లొకేషన్ షేర్ చేయండి", ta:"என் நேரடி இடத்தை பகிர்", mr:"माझे लाइव्ह लोकेशन शेअर करा", gu:"મારું લાઇવ લોકેશન શેર કરો", kn:"ನನ್ನ ಲೈವ್ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ", ml:"എന്റെ തത്സമയ ലൊക്കേഷൻ പങ്കിടുക", pa:"ਮੇਰੀ ਲਾਈਵ ਲੋਕੇਸ਼ਨ ਸਾਂਝੀ ਕਰੋ", or:"ମୋର ଲାଇଭ୍ ସ୍ଥାନ ସେୟାର କରନ୍ତୁ", ur:"میری لائیو لوکیشن شیئر کریں" },
+      "SafeWalk mode": { en:"SafeWalk mode", hi:"सेफवॉक मोड", bn:"সেফওয়াক মোড", te:"సేఫ్‌వాక్ మోడ్", ta:"செஃப்வாக் முறை", mr:"सेफवॉक मोड", gu:"સેફવોક મોડ", kn:"ಸೇಫ್‌ವಾಕ್ ಮೋಡ್", ml:"സേഫ്‌വാക് മോഡ്", pa:"ਸੇਫਵਾਕ ਮੋਡ", or:"ସେଫୱାକ ମୋଡ", ur:"سیف واک موڈ" },
+      "Nearest hospital / chemist": { en:"Nearest hospital / chemist", hi:"नज़दीकी अस्पताल / केमिस्ट", bn:"নিকটতম হাসপাতাল / কেমিস্ট", te:"సమీప ఆసుపత్రి / కెమిస్ట్", ta:"அருகிலுள்ள மருத்துவமனை / மருந்தகம்", mr:"जवळचा हॉस्पिटल / केमिस्ट", gu:"નજીકની હોસ્પિટલ / કેમિસ્ટ", kn:"ಹತ್ತಿರದ ಆಸ್ಪತ್ರೆ / ಕೆಮಿಸ್ಟ್", ml:"ഏറ്റവും അടുത്ത ആശുപത്രി / കെമിസ്റ്റ്", pa:"ਨੇੜੇ ਦਾ ਹਸਪਤਾਲ / ਕੈਮਿਸਟ", or:"ନିକଟସ୍ଥ ହସ୍ପିଟାଲ / ଔଷଧ ଦୋକାନ", ur:"قریبی ہسپتال / کیمسٹ" },
+      "Ambulance 108": { en:"Ambulance 108", hi:"एम्बुलेंस 108", bn:"অ্যাম্বুলেন্স 108", te:"అంబులెన్స్ 108", ta:"ஆம்புலன்ஸ் 108", mr:"रुग्णवाहिका 108", gu:"એમ્બ્યુલન્સ 108", kn:"ಆಂಬುಲೆನ್ಸ್ 108", ml:"ആംബുലൻസ് 108", pa:"ਐਂਬੁਲੈਂਸ 108", or:"ଆମ୍ବୁଲାନ୍ସ 108", ur:"ایمبولینس 108" },
+      "Medical ID": { en:"Medical ID", hi:"मेडिकल आईडी", bn:"মেডিকেল আইডি", te:"మెడికల్ ఐడి", ta:"மருத்துவ ஐடி", mr:"वैद्यकीय आयडी", gu:"મેડિકલ આઈડી", kn:"ವೈದ್ಯಕೀಯ ಐಡಿ", ml:"മെഡിക്കൽ ഐഡി", pa:"ਮੈਡੀਕਲ ਆਈਡੀ", or:"ମେଡିକାଲ୍ ଆଇଡି", ur:"میڈیکل آئی ڈی" },
+      "Fake incoming call": { en:"Fake incoming call", hi:"नकली कॉल", bn:"নকল ইনকামিং কল", te:"నకిలీ ఇన్‌కమింగ్ కాల్", ta:"போலி வரும் அழைப்பு", mr:"बनावट येणारा कॉल", gu:"બનાવટી આવનારી કૉલ", kn:"ನಕಲಿ ಒಳಬರುವ ಕರೆ", ml:"വ്യാജ ഇൻകമിംഗ് കോൾ", pa:"ਨਕਲੀ ਆਉਣ ਵਾਲੀ ਕਾਲ", or:"ନକଲି ଆସୁଥିବା କଲ", ur:"جعلی آنے والی کال" },
+      "WhatsApp call": { en:"WhatsApp call", hi:"व्हाट्सऐप कॉल", bn:"হোয়াটসঅ্যাপ কল", te:"వాట్సాప్ కాల్", ta:"வாட்ஸ்அப் அழைப்பு", mr:"व्हॉट्सऍप कॉल", gu:"વ્હોટ્સએપ કૉલ", kn:"ವಾಟ್ಸಪ್ ಕರೆ", ml:"വാട്സ്ആപ്പ് കോൾ", pa:"ਵਟਸਐਪ ਕਾਲ", or:"ୱାଟସଆପ କଲ", ur:"واٹس ایپ کال" },
+      "Hey Chitti wake word": { en:"Hey Chitti wake word", hi:"हे चिट्टी जगाने वाला शब्द", bn:"হে চিট্টি জাগানো শব্দ", te:"హే చిట్టి వేక్ వర్డ్", ta:"ஹே சிட்டி எழுச்சி வார்த்தை", mr:"हे चिट्टी जागवणारा शब्द", gu:"હે ચિટ્ટી જગાડવાનો શબ્દ", kn:"ಹೇ ಚಿಟ್ಟಿ ಎಚ್ಚರಿಸುವ ಪದ", ml:"ഹേ ചിട്ടി ഉണർത്തുന്ന വാക്ക്", pa:"ਹੇ ਚਿੱਟੀ ਜਗਾਉਣ ਵਾਲਾ ਸ਼ਬਦ", or:"ହେ ଚିଟ୍ଟି ଜାଗ୍ରତ ଶବ୍ଦ", ur:"ہے چٹی جگانے والا لفظ" }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
 
 </body>
 </html>
