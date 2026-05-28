@@ -149,7 +149,7 @@ End-to-end wired: a real HTTP endpoint OR a frontend handler that produces a vis
 ### 1.13 Railway deploy (Phase 1 + Phase 2 live)
 
 - [`render.yaml`](../render.yaml) connected; service live at
-  `chitti-voice-factory-production.up.railway.app`. The substrate's
+  `chitti-voice-factory-api-production.up.railway.app`. The substrate's
   `window.Chitti.a11y.VOICE_FACTORY_URL` defaults to that host.
 
 ### 1.14 Donations endpoint (Phase 3 placeholder)

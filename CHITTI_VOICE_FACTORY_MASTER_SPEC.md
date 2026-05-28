@@ -41,7 +41,7 @@ Chitti (parent brand at sahayai.in)
 | **Category** | Multi-language voice substrate (TTS + STT + voice routing) |
 | **Mission** | Give every Indian a Chitti that speaks the language they think in — using only legal, consented, openly-licensed voice. |
 | **Target users** | All Chitti users — prioritised for the four-user contract (Blind / Deaf / Mute / Illiterate). |
-| **Backend** | `chitti-voice-factory/backend/` · Flask · `https://chitti-voice-factory-production.up.railway.app` |
+| **Backend** | `chitti-voice-factory/backend/` · Flask · `https://chitti-voice-factory-api-production.up.railway.app` |
 | **Frontend** | 24 generated `chitti_<lang>.html` pages + status dashboard `chitti_voice_factory.html` |
 
 **Positioning:**
@@ -173,7 +173,7 @@ Otherwise `available:false` with a `reason`. **No language returns `available:tr
 
 ## 6. API Surface
 
-Base: `https://chitti-voice-factory-production.up.railway.app`
+Base: `https://chitti-voice-factory-api-production.up.railway.app`
 
 | Method | Path | Purpose |
 |---|---|---|

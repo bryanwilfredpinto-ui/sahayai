@@ -7,7 +7,7 @@
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_voice_factory.html + 26 language pages |
-| Health | https://chitti-voice-factory-production.up.railway.app/health |
+| Health | https://chitti-voice-factory-api-production.up.railway.app/health |
 | Status | 🟢 GREEN (intentional Railway) |
 | Phase 2 blocker | Sire's Bhashini ULCA registration |
 | Primary user | B2B internal — every other Chitti backend |
@@ -21,7 +21,7 @@
 **The shared voice layer for every Chitti product in 26 Indian languages.**
 
 - Frontend: 26 generated HTML pages (`chitti_<lang>.html`)
-- Backend: Flask on Railway (`chitti-voice-factory-production.up.railway.app`)
+- Backend: Flask on Railway (`chitti-voice-factory-api-production.up.railway.app`)
 - Spec: [CHITTI_VOICE_FACTORY_MASTER_SPEC.md](../CHITTI_VOICE_FACTORY_MASTER_SPEC.md)
 
 ---
@@ -81,7 +81,7 @@ gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
 ### Example: Synthesise Hindi
 
 ```bash
-curl -X POST https://chitti-voice-factory-production.up.railway.app/api/voice/speak \
+curl -X POST https://chitti-voice-factory-api-production.up.railway.app/api/voice/speak \
   -H "Content-Type: application/json" \
   -d '{"text": "नमस्ते", "language": "hi"}'
 ```
@@ -208,13 +208,13 @@ Once deployed to Railway:
 
 ```bash
 # Check all languages
-curl https://chitti-voice-factory-production.up.railway.app/api/voice/status | jq .
+curl https://chitti-voice-factory-api-production.up.railway.app/api/voice/status | jq .
 
 # Check one language
-curl https://chitti-voice-factory-production.up.railway.app/api/voice/status/hi | jq .
+curl https://chitti-voice-factory-api-production.up.railway.app/api/voice/status/hi | jq .
 
 # Synthesise (v1: uses Web Speech API)
-curl -X POST https://chitti-voice-factory-production.up.railway.app/api/voice/speak \
+curl -X POST https://chitti-voice-factory-api-production.up.railway.app/api/voice/speak \
   -H "Content-Type: application/json" \
   -d '{"text": "नमस्ते मित्र", "language": "hi"}'
 ```

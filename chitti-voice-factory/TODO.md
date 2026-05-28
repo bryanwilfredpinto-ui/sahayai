@@ -144,7 +144,7 @@ abstraction should extend to STT:
 
 ## 5. Deployment & ops
 
-- Production URL `https://chitti-voice-factory-production.up.railway.app` per spec — confirm Railway service is actually live before next handover (memory: never say "live" without curling).
+- Production URL `https://chitti-voice-factory-api-production.up.railway.app` per spec — confirm Railway service is actually live before next handover (memory: never say "live" without curling).
 - `VOICE_FACTORY_DB=/tmp/...` on Railway means the SQLite database resets on every restart. Move to mounted disk or migrate to Postgres before any data we care about lives in it (i.e. before first real Hall of Fame winner).
 - Health-check `/health` is wired but not pinged. Add a Railway health-check URL or a UptimeRobot ping.
 - Add a `/admin/auth-status` endpoint so the dashboard can show "logged in as bryan@..." without exposing OAuth internals.

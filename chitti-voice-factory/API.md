@@ -1,6 +1,6 @@
 # API — Chitti Voice Factory
 
-Base: `https://chitti-voice-factory-production.up.railway.app`
+Base: `https://chitti-voice-factory-api-production.up.railway.app`
 Local dev: `http://localhost:8000`
 
 Two blueprints:

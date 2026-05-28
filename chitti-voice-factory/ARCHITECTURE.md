@@ -13,7 +13,7 @@
                     └──────────────────────────────────────────────┘
                                        │ HTTPS + CORS
                                        ▼
-   chitti-voice-factory-production.up.railway.app   (Flask · gunicorn · Python 3.11.10)
+   chitti-voice-factory-api-production.up.railway.app   (Flask · gunicorn · Python 3.11.10)
                     ┌──────────────────────────────────────────────┐
                     │  main.py        create_app · CORS · /  /health│
                     │  routes/voice.py  /api/voice/*                │
@@ -42,7 +42,7 @@
 
 The Voice Factory is **the only Chitti backend that other Chittis call directly
 for voice**. Chitti News, MedUPI, Shares, Vaani, Government etc. all route
-TTS / STT through `chitti-voice-factory-production.up.railway.app`, so the cascade and the
+TTS / STT through `chitti-voice-factory-api-production.up.railway.app`, so the cascade and the
 ledger are shared across the entire product family.
 
 ---
