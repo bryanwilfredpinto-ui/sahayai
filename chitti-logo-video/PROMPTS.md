@@ -67,7 +67,7 @@ These will be moved into code (and quoted here verbatim) the moment the real-pro
 
 The "honest stub" pattern means we ship a real deterministic output (an `_mock_svg()` hand-built in Python, an `_placeholder_url()` data-URL card) without involving an LLM. This:
 
-1. Costs zero per request (free-tier Render only).
+1. Costs zero per request (free-tier Railway only).
 2. Has zero failure modes from external LLM rate limits / outages.
 3. Stays meaningful for users even when API keys are unset — the SVG is *real*.
 

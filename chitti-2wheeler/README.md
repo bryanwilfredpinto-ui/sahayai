@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti 2-Wheeler — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Service-due alerts · plain-language diagnostics · breakdown prediction · DTC decoder · family-cascade SOS · 26 languages.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_2wheeler.html |
+| Health | https://chitti-2wheeler-api.onrender.com/health |
+| Status | 🟢 GREEN (intentional Railway) |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
+| Languages | 26 via Voice Factory cascade |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §12](../CHITTI_SOP.md) |
+
+---
+
 # Chitti 2-Wheeler
 
 Bharat's voice-first agent for motorcycle and scooter owners. Predicts
@@ -16,14 +33,14 @@ cops.
 - **DB**: Turso libSQL (one DB per Chitti — SAHAYAI_MASTER §2 row 2).
   Embedded-replica pattern: local SQLite file at `/tmp/chitti_2wheeler.db`
   + 60-s bg sync. **NOT direct Hrana** — see [[project_turso_embedded_replica_pattern]].
-- **Hosting**: Render free tier; `render.yaml` co-located
+- **Hosting**: Railway free tier; `render.yaml` co-located
 
 ## Folder map
 
 ```
 chitti-2wheeler/
 ├── README.md                       — this file
-├── render.yaml                     — Render blueprint
+├── render.yaml                     — Railway blueprint
 ├── backend/
 │   ├── main.py                     — Flask entrypoint
 │   ├── config.py                   — env-var settings (DATABASE_URL + DeepSeek)
@@ -47,7 +64,7 @@ chitti-2wheeler/
   badges); 24 feature cards on the Home tab.
 - Skills folder with FEATURES, SKILL, MECHANIC_KNOWLEDGE markdown.
 - Backend stub:
-  - `GET /health` — for chitti-founder self-ping + Render
+  - `GET /health` — for chitti-founder self-ping + Railway
   - `POST /api/2w/ask` — DeepSeek Hinglish Q&A grounded in
     MECHANIC_KNOWLEDGE
   - `GET /api/2w/dtc/<code>` — 12 most-common codes today
@@ -78,10 +95,10 @@ Per [[project_turso_db_inventory]] — DB lives in `aws-ap-south-1`
 (Mumbai) under the `bryanwilfredpinto` Turso org, same as the other 8
 Chitti DBs.
 
-### Step 2 — Deploy to Render
+### Step 2 — Deploy to Railway
 
 1. Push to `main`.
-2. Render dashboard → `New +` → `Blueprint` → pick the `sahayai` repo
+2. Railway dashboard → `New +` → `Blueprint` → pick the `sahayai` repo
    → select `chitti-2wheeler/render.yaml` → `Apply`.
 3. In the new service → `Environment`, paste:
    - `DATABASE_URL` = `libsql://…?authToken=…` from Step 1

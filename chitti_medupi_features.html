@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti MedUPI — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">💊</div>
+    <div>
+      <h1 class="cf-title">Chitti MedUPI — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_medupi.html">Open MedUPI ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'medupi',
+  label: 'Chitti MedUPI',
+  features: [
+    { name:'STRICT same-composition matcher (molecule + strength + form)', desc:'Returns only same-molecule + same-strength + same-dosage-form generics. No therapeutic substitutions, ever.', status:'green', try:'Search for "Crocin 650" — alternatives must be same paracetamol 650mg tablet', link:'chitti_medupi.html' },
+    { name:'Jan Aushadhi pricing — haversine + by-state fallback', desc:'Surfaces official Jan Aushadhi price (50–90% off branded) with nearest store.', status:'green', try:'Search any common molecule, verify Jan Aushadhi price line', link:'chitti_medupi.html' },
+    { name:'NPPA NLEM ceiling — hard cap (not hint)', desc:'NPPA ceiling enforced as hard cap. No alternative shown above ceiling.', status:'green', try:'Search NLEM-listed medicine, verify ceiling-cap enforced' },
+    { name:'Risk classification (HIGH/MED/LOW) — red banner before alternatives', desc:'Every molecule classified H/M/L. HIGH-risk shows red banner BEFORE any alternative.', status:'green', try:'Search "Metformin" (HIGH-risk) — red banner must appear first' },
+    { name:'Cart simulator — monthly + annual savings + per-line risk', desc:'Drop monthly med list, get cheapest equivalent cart + annual savings projection.', status:'green', try:'Add 3 meds to cart, observe savings calc', link:'chitti_medupi.html' },
+    { name:'Family wallet (self / spouse / child / parent)', desc:'Multi-profile wallet. Per-profile spend + savings + 12-month projection.', status:'green', try:'Create family profile, add wallet entry', link:'chitti_medupi.html' },
+    { name:'Prescription / strip scan — DeepSeek vision', desc:'Camera scans strip → reads molecule + strength + expiry. (Migrated from Anthropic 2026-05-15.)', status:'green', try:'Camera-scan a strip, observe extracted molecule', link:'chitti_medupi.html' },
+    { name:'Insurance match — Ayushman Bharat · CGHS · ESI · private', desc:'Therapeutic-class coverage check across schemes with EN/HI reason text.', status:'green', try:'Search medicine, observe insurance-covered flag' },
+    { name:'Brave Search snippet prices — 1mg/PharmEasy/NetMeds/Apollo', desc:'Snippet-only live price discovery. We NEVER visit pharmacy URLs.', status:'green', try:'Search medicine, observe live snippet prices' },
+    { name:'Community prices (median + IQR + by-city)', desc:'User-reported "I bought X for ₹Y at pharmacy Z" with statistical aggregation.', status:'green', try:'Report a price, observe community-median update' },
+    { name:'QR scanner — CDSCO + GS1 Datamatrix', desc:'Decodes CDSCO traceability QR + GS1 Datamatrix on Indian medicine packs.', status:'green', try:'Camera-scan medicine QR, verify CDSCO data extracted' },
+    { name:'Demo mode — 8-step 4-user walkthrough', desc:'Guided demo honouring blind / deaf / mute / illiterate user contracts.', status:'green', try:'Tap Demo, observe 4-user-aware walkthrough', link:'chitti_medupi.html' },
+    { name:'Health File v3 phase-b2 — 8 endpoints', desc:'Profiles · vitals · quota · translate · doctor-PDF. Curl-verified GREEN 2026-05-24.', status:'green', try:'curl /api/health-file/health', link:'https://chitti-medupi-api-production.up.railway.app/api/health-file/health' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any MedUPI response — widget present', link:'chitti_medupi.html' },
+    { name:'Per-strip camera-intelligence capture', desc:'what / where / when / result / user / satisfaction. Anonymised. "Chitti forget" wipes all.', status:'green', try:'Scan strip, verify capture row written' },
+    { name:'Annual FSSAI fake-medicine report', desc:'Anonymised district-aggregated annual report to FSSAI on confirmed fakes.', status:'green', try:'Internal cron — verify quarterly draft' },
+    { name:'Refill / expiry reminders (browser push)', desc:'CRUD reminders per family profile. Browser push wiring live.', status:'green', try:'Set expiry reminder, wait for notification' },
+    { name:'Price alert ("Tell me when Crocin drops below ₹20")', desc:'Threshold-based price watch. Notification when crossed.', status:'yellow', try:'Planned P1 — pricing-watch cron not yet wired' },
+    { name:'Twilio voice + WhatsApp reminders', desc:'Reminder delivery via Twilio voice call + WhatsApp message.', status:'yellow', try:'Pending Twilio account + WhatsApp Business API onboarding' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain on 5xx-×3.', status:'red', try:'TONIGHT — P0. Currently 0/15 wired.' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

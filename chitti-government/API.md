@@ -45,7 +45,7 @@ Service banner + complete route map.
 
 ### GET `/health`
 
-Liveness probe used by Render. Always 200.
+Liveness probe used by Railway. Always 200.
 
 ```json
 { "ok": true }

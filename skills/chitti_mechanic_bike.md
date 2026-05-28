@@ -46,7 +46,7 @@ brake / brek / steering / handle / tyre / tire / wobble / puncture /
 fork / axle / suspension.
 
 When `safety_critical=true`:
-- Render the message in the red SAFETY bubble.
+- Railway the message in the red SAFETY bubble.
 - Never show DIY steps.
 - Always tell the rider: "Mechanic ko zaroor dikhao. Safety se samjhota mat karo."
 - Never tell the rider to keep riding.

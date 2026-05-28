@@ -37,7 +37,7 @@ Service banner. Defined in [main.py](backend/main.py).
 
 ## `GET /health`
 
-Liveness probe used by Render. Defined in [main.py](backend/main.py).
+Liveness probe used by Railway. Defined in [main.py](backend/main.py).
 
 **Response 200:**
 

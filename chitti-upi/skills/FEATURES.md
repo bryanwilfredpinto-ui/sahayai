@@ -93,7 +93,7 @@ Source: [`chitti-upi/TODO.md`](../TODO.md) sections P0 and P1.
 
 | # | Feature | Priority | Why | Surface needed |
 |---|---|---|---|---|
-| U1 | **First Render deploy** of `chitti-upi-api` | **P0** | `render.yaml` exists since `bc3673b` but has never been connected. Per [[project_render_deploy_status_2026_05_10]] the product is in the "Blueprint present, never connected" bucket — functionally broken in prod. | Click "Apply" on the [render.yaml](../render.yaml) Blueprint in the Render dashboard; paste `DEEPSEEK_API_KEY`; curl `/health` + one `/check` before claiming live (per [[feedback_verify_before_handover]]). |
+| U1 | **First Railway deploy** of `chitti-upi-api` | **P0** | `render.yaml` exists since `bc3673b` but has never been connected. Per [[project_render_deploy_status_2026_05_10]] the product is in the "Blueprint present, never connected" bucket — functionally broken in prod. | Click "Apply" on the [render.yaml](../render.yaml) Blueprint in the Railway dashboard; paste `DEEPSEEK_API_KEY`; curl `/health` + one `/check` before claiming live (per [[feedback_verify_before_handover]]). |
 | U2 | **Wire HIGH-verdict → Vaani deep-link** (live test) | **P0** | Documented in the skill spec; needs a real-page click-through verification, not just a comment in markdown. | Open `chitti_upi.html`, run a HIGH-verdict scam through it, confirm the "Tell Chitti Vaani" button opens Vaani with the text pre-filled. |
 | U3 | **Add `chitti-upi-api` to the founder-dashboard health-ping list** | P0 | Otherwise an outage is invisible. | Add the endpoint to `sahayai.in/founder` health-ping config. |
 | U4 | **Per-IP rate limit** on `/api/upi/check` | P1 | Today a paste loop burns DeepSeek tokens with no cap. | `flask-limiter` token bucket; ~5/min/IP. |

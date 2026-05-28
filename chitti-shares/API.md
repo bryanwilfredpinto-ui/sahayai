@@ -15,7 +15,7 @@ Symbol parameters are URL-encoded canonical form, e.g. `NSE:RELIANCE`, `BSE:SENS
 | Method | Path | Source | Notes |
 |---|---|---|---|
 | GET | `/` | [`main.py`](backend/main.py) | Returns `{app, version, status}` |
-| GET | `/health` | [`main.py`](backend/main.py) | `{ok: true}` — used by Render and the frontend wake-up ping |
+| GET | `/health` | [`main.py`](backend/main.py) | `{ok: true}` — used by Railway and the frontend wake-up ping |
 | GET | `/debug/nse` | [`main.py`](backend/main.py) | NSE direct healthcheck + sample NIFTY/SENSEX/BANKNIFTY quotes |
 | GET | `/debug/angel` | [`main.py`](backend/main.py) | Angel SmartAPI healthcheck |
 | POST | `/debug/ingest-indices` | [`main.py`](backend/main.py) | Body `{secret, quotes:[{canonical,last_price,prev_close,day_open,day_high,day_low,change,pchange},...]}` — laptop pusher upsert into `index_quotes`. Auth = `?secret=CRON_SECRET` match. |

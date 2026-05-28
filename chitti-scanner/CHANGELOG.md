@@ -21,7 +21,7 @@ Included in the skeleton:
 - `backend/routes/scanner.py` — `/api/scanner/{analyze, analyze/text, health}` Blueprint
 - `backend/services/scanner_service.py` — DeepSeek wrapper + `CHITTI_SCANNER_PROMPT` + per-type legal disclaimers + cross-product link builder + safe-parse + fallback
 - `backend/requirements.txt`, `backend/runtime.txt` — Python 3.11.10 + flask 3.0.3 + flask-cors 4.0.1 + gunicorn 22.0.0 + httpx 0.27.2
-- `render.yaml` — Render Blueprint (not yet connected)
+- `render.yaml` — Railway Blueprint (not yet connected)
 - `frontend/index.html` (mirror of `chitti_scanner.html`) — consent gate, camera capture, gallery upload, text fallback with mic, result render, auto-speak in 9 Indian languages, MedUPI inline Jan Aushadhi panel, UPI Guard + Vaani hand-offs, 20-row local history
 - `skills/chitti-scanner/SKILL.md` — top-level sub-agent spec
 
@@ -35,4 +35,4 @@ Behaviour highlights at v1:
 
 ## Unreleased
 
-Nothing committed yet beyond the skeleton. Outstanding items tracked in [TODO.md](./TODO.md). Top of the list: **first Render deploy** — the `render.yaml` exists but has never been connected.
+Nothing committed yet beyond the skeleton. Outstanding items tracked in [TODO.md](./TODO.md). Top of the list: **first Railway deploy** — the `render.yaml` exists but has never been connected.

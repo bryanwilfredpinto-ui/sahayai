@@ -30,7 +30,7 @@ End-to-end wired: a real HTTP endpoint OR a frontend handler that produces a vis
 - **Data source:** [`screener.in`](https://www.screener.in) via
   [`screener_client.py`](../../chitti-shares/backend/services/screener_client.py).
   Yahoo client is kept as **local-dev only** — Yahoo is blocked from
-  Render (locked decision [[project_data_sources]]).
+  Railway (locked decision [[project_data_sources]]).
 - Trailing `%` cells are now accepted (commit `c725c22` —
   *fix(screener): accept trailing % in table cells*) so OPM /
   margin / ratio rows render without parse errors.

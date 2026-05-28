@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti News AI — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> 8 RSS sources · 4 tabs (AI Aaj · Tools · Bharat AI · Prashikshan) · tap 🤖 Chitti icon → DeepSeek explains the article in user's language with 9-profession jargon lens.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_news_ai.html |
+| Health | https://chitti-news-ai-api.onrender.com/health |
+| Status | 🟡 YELLOW — SLA-timing curl-verified 2026-05-15 PM, **but Turso embedded-replica sync UNVERIFIED (`SELECT COUNT(*) FROM articles` → empty)** |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | EN + HI native · 9-profession jargon lens |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §7](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_NEWS_AI_MASTER_SPEC.md) |
+
+---
+
 # Chitti News AI
 
 **Free AI tool and model discovery — in YOUR language.**
@@ -20,7 +37,7 @@ for chitti-news-ai/ -->` comment on line 2 binds it to this folder.
 
 ## Backend
 
-Render free-tier Flask service `chitti-news-ai-api`. See
+Railway free-tier Flask service `chitti-news-ai-api`. See
 [`render.yaml`](render.yaml) for the deploy blueprint.
 
 Endpoint surface:

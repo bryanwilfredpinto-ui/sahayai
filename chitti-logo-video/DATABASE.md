@@ -12,11 +12,11 @@ There is **no database**, **no ORM**, **no `models/` directory**, **no schema mi
 | Video jobs | In-process module-level `_JOBS: dict[str, _Job]` guarded by `_LOCK: threading.Lock` in [`backend/services/video_service.py`](backend/services/video_service.py). | Per-gunicorn-worker. Lost on restart. Not shared across the 2 workers. |
 | Video "rendered output" | A `data:image/svg+xml,...` URL synthesised on-demand by `_placeholder_url(job_id)`. | Self-contained in the URL — no storage. |
 | User accounts / sessions / history | — | None. The product is fully anonymous; no sign-up surface. |
-| Generation counts / usage telemetry | — | None. Render's request log is the only audit trail. |
+| Generation counts / usage telemetry | — | None. Railway's request log is the only audit trail. |
 
 ### Why stateless is the right call for v1
 
-- Free-tier Render web service has no included DB plan; provisioning Postgres = paying.
+- Free-tier Railway web service has no included DB plan; provisioning Postgres = paying.
 - The product is anonymous, so there's no user to attach data to.
 - SVG payloads are small enough (~1–3 KB) to ship inline.
 - The video stub's mock URL is a `data:` URL — also self-contained.

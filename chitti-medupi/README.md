@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti MedUPI — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Scan. Compare. Save. Every same-composition generic, every Jan Aushadhi price, every family medicine cabinet — in one Chitti.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_medupi.html |
+| Health | https://chitti-medupi-api-production.up.railway.app/health |
+| Status | 🟢 GREEN — curl-verified 2026-05-15 (Health File v3 phase-b2 GREEN 2026-05-24) |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | Hindi · English · 13 Indian languages via DeepSeek translate |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §2](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_MEDUPI_MASTER_SPEC.md) |
+
+---
+
 # Chitti MedUPI
 
 > "UPI for your medicine bills — Scan. Compare. Save."
@@ -29,7 +46,7 @@
 | Surface | URL | Status |
 |---|---|---|
 | Frontend | https://sahayai.in/chitti_medupi.html | Live |
-| Backend API | https://chitti-medupi-api-production.up.railway.app | Live (Flask + gunicorn on Render free tier) |
+| Backend API | https://chitti-medupi-api-production.up.railway.app | Live (Flask + gunicorn on Railway free tier) |
 | Database | Neon Postgres — `neondb` on `ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech` | Live, **211,207 rows in `medupi.medicines`** from Apollo Pharmacy dataset |
 | Schema isolation | All tables under `medupi.*` schema | Shared host with Chitti Shares (which lives under `shares.*`) |
 
@@ -66,7 +83,7 @@ chitti-medupi/
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env       # set DATABASE_URL (Neon) + ANTHROPIC_API_KEY for image scan
+cp .env.example .env       # set DATABASE_URL (Neon) + GEMINI_API_KEY for image scan
 python main.py             # http://localhost:8001
 ```
 

@@ -132,6 +132,6 @@ All errors return JSON:
 |---|---|
 | `400` | Missing required field (e.g. `language`) |
 | `404` | Unknown source / tool / article ID |
-| `429` | Rate-limit (per-IP, see Render limits) |
+| `429` | Rate-limit (per-IP, see Railway limits) |
 | `501` | Endpoint not yet implemented — honest COMING SOON payload |
 | `5xx` | Backend error — Layer 5 fallback may have engaged |

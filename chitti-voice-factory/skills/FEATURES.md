@@ -146,7 +146,7 @@ End-to-end wired: a real HTTP endpoint OR a frontend handler that produces a vis
   AI4Bharat option AND no winner show a "donor contest required"
   banner. They are **never** synthesised in the wrong language.
 
-### 1.13 Render deploy (Phase 1 + Phase 2 live)
+### 1.13 Railway deploy (Phase 1 + Phase 2 live)
 
 - [`render.yaml`](../render.yaml) connected; service live at
   `chitti-voice-factory.onrender.com`. The substrate's
@@ -174,13 +174,13 @@ Source: [`chitti-voice-factory/TODO.md`](../TODO.md) §1 / §2 / §3.
 
 | # | Feature | Priority | Why | Surface needed |
 |---|---|---|---|---|
-| VF1 | **Obtain ULCA Bhashini citizen credentials** | **P0** | Phase 6 unblock. `bhashini.py` is code-ready; creds are the only gate. | Submit ULCA form (body draft in [README.md §6](../README.md)); on approval set 3 Render env vars + flip `VOICE_FACTORY_USE_MOCK_BHASHINI=0`; verify `supplier: "bhashini"` on live `hi` synth. |
+| VF1 | **Obtain ULCA Bhashini citizen credentials** | **P0** | Phase 6 unblock. `bhashini.py` is code-ready; creds are the only gate. | Submit ULCA form (body draft in [README.md §6](../README.md)); on approval set 3 Railway env vars + flip `VOICE_FACTORY_USE_MOCK_BHASHINI=0`; verify `supplier: "bhashini"` on live `hi` synth. |
 | VF2 | **Wire AI4Bharat IndicTTS / IndicParler-TTS** | P0 | [`suppliers/ai4bharat.py`](../backend/suppliers/ai4bharat.py) is a stub returning `not_implemented`. Covers Bhojpuri / Bodo / Manipuri / Santhali / Sanskrit (Tier B where Bhashini is thin). | Decide hosting (self-host vs HuggingFace inference endpoint); set `AI4BHARAT_ENDPOINT` / `AI4BHARAT_API_KEY`; flip `supports()`. |
 | VF3 | **Wire Sarvam paid fallback** | P1 | [`suppliers/sarvam.py`](../backend/suppliers/sarvam.py) is a stub gated on `SARVAM_ENABLED=1` + `SARVAM_API_KEY`. Spec §11.3 requires a 100-char/request rate-limit in the supplier (not the router). | Implement the per-call rate-limit + surface ₹/char in the ledger. |
 | VF4 | **On-device IndicTTS via `onnxruntime-web`** | P1 | [`suppliers/on_device.py`](../backend/suppliers/on_device.py) reports `supports() = False` everywhere today. Phase 10 unlocks offline TTS. | Package quantised IndicTTS ONNX models (~50–200 MB each); IndexedDB cache; per-language download button on each `<lang>.html`; status pill `(local cache · 124 MB)`. |
 | VF5 | **Real audio uploads** (Hall of Fame submissions) | P0 | 4 `TODO` markers in code today: `storage_service.py:39, 50, 58`; `routes/voice.py:244`. Submissions currently allocate a mock URL (`https://chitti-internal/submissions/<uuid>`) and never call `storage_service.upload_audio_blob`. | Decide provider (TeraBox or MEGA — cost + Indian-jurisdiction storage); add the upload call **before** `ledger.create_submission`; **fail closed** if upload fails (otherwise the submission row points at an empty URL). |
 | VF6 | **Hall-of-Fame audio in the cascade** | P0 | `voice_synthesis_map[language_code]` is populated when an admin confirms a winner (`supplier_type="winner_voice"`, `winner_id=...`), but the **router does not consult this map yet** — it walks the generic supplier cascade. | Router `walk()` must check the map first; on hit, return the winner's stored audio. This is the whole point of the contest. |
-| VF7 | **Embed pass on fluency corpus** | P1 | Last-mile: 79,414 chunks ingested, embeddings need a Render py3.11 pass to complete ([[project_voice_factory_fluency_pipeline]]). | Run `backend/scripts/embed_all.py` on a Render shell; verify `fluency_ready=true` for all 26 langs. |
+| VF7 | **Embed pass on fluency corpus** | P1 | Last-mile: 79,414 chunks ingested, embeddings need a Railway py3.11 pass to complete ([[project_voice_factory_fluency_pipeline]]). | Run `backend/scripts/embed_all.py` on a Railway shell; verify `fluency_ready=true` for all 26 langs. |
 | VF8 | **Honest banner read-after-synth in every consumer** | P1 | `/api/voice/honest-banner` exists; not every Chitti product reads it aloud after synth today. | Per-product wiring — Vaani, MedUPI, Government, Scanner, UPI Guard should each call the banner endpoint and append the read-aloud. |
 | VF9 | **Localise the disclaimer dictionary** beyond 12 languages | P1 | `_disclaimer_for_language` covers 12 of the 26; the other 14 fall back to English. | Add per-language strings to the dict in [`routes/voice.py`](../backend/routes/voice.py). |
 

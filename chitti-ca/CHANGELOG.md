@@ -13,7 +13,7 @@ Sourced from `git log --oneline -- chitti-ca/` on the main branch.
   - DeepSeek-backed service with server-enforced disclaimer ([backend/services/ca_service.py](backend/services/ca_service.py))
   - 12-language reply map (en, hi, ta, te, bn, mr, gu, kn, ml, or, pa, ur)
   - System prompt (`CHITTI_CA_PROMPT`) covering ITR / GST / TDS / 80-series deductions / 44AD-44ADA / notice reading, with explicit "never give a binding number" guardrails
-  - Render blueprint ([render.yaml](render.yaml)) targeting the `chitti-ca-api` web service on the free plan
+  - Railway blueprint ([render.yaml](render.yaml)) targeting the `chitti-ca-api` web service on the free plan
   - Pinned runtime `python-3.11.10` and dependency set (flask, flask-cors, gunicorn, httpx)
 
   This is currently the **only commit** touching the `chitti-ca/` path. All behaviour documented in [API.md](API.md), [ARCHITECTURE.md](ARCHITECTURE.md), and [PROMPTS.md](PROMPTS.md) was introduced here.

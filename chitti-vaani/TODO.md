@@ -88,7 +88,7 @@ Files present in the working tree, not yet committed:
 Outstanding:
 - [ ] First-pass curl test on production for every `/api/admin/products/*` endpoint with `ADMIN_SECRET` set (per `feedback_verify_before_handover.md`)
 - [ ] Add the new `ADMIN_OAUTH_REDIRECT_URI` to the Google Cloud Console OAuth client's "Authorized redirect URIs" list before any product can be authorized
-- [ ] Set `ADMIN_DATABASE_URL` to the Supabase Postgres URL in Render (SQLite at `/tmp` is ephemeral on free tier and will lose state on every deploy)
+- [ ] Set `ADMIN_DATABASE_URL` to the Supabase Postgres URL in Railway (SQLite at `/tmp` is ephemeral on free tier and will lose state on every deploy)
 - [ ] Manually walk one product mailbox through `authorize → callback → keepalive` to confirm the refresh path works end-to-end before the monthly cron is trusted
 - [ ] Surface the mismatch warning in the dashboard UI when `connected_email != gmail_address`
 - [ ] Commit the admin files together with `chitti_admin_products.html`
@@ -102,7 +102,7 @@ Files present, not yet committed:
 - `chitti_admin_feedback.html` + `feedback-widget.js` (repo root)
 
 Outstanding:
-- [ ] Set `FEEDBACK_IP_SALT` in Render env to a stable random string
+- [ ] Set `FEEDBACK_IP_SALT` in Railway env to a stable random string
 - [ ] Verify the widget posts cleanly from every Chitti HTML page (Vaani / News / MedUPI / CA / Legal / Government / Fundamentals / Technical / UPI / Scanner / Voice Factory) — `_PAGE_RE` is `^[a-z][a-z0-9_]{1,63}$`
 - [ ] Replace placeholder `Effort = 1.0` in [`feedback_db.filter_and_score_suggestions`](backend/services/feedback_db.py) with a human-tagged value once the admin dashboard exposes the tagging UI
 - [ ] Add `is_junk` toggle to admin dashboard list view (route already exists at `POST /api/feedback/<id>/junk`)
@@ -113,5 +113,5 @@ Outstanding:
 - [ ] Graduate SQLite token store to shared Postgres alongside the admin tables (same row shape works — `email_db.py` notes this)
 - [ ] FCM push channel for paired Chittis (web-only today)
 - [ ] Continuous-listening Web Audio implementation for keyword spotting (Vosk-WASM on the web until Android v2)
-- [ ] Move from `apscheduler` BackgroundScheduler to a single Render cron service when we get past free-tier (single-worker source of truth)
+- [ ] Move from `apscheduler` BackgroundScheduler to a single Railway cron service when we get past free-tier (single-worker source of truth)
 - [ ] No `TODO` / `FIXME` markers were found inside `chitti-vaani/` source on this pass — open work lives in this file and the master spec

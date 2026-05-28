@@ -17,7 +17,7 @@ What we measure, where it lives, and how to read it.
 
 ## 3. Scheduler health
 
-- [`services/scheduler.py`](../backend/services/scheduler.py) — in-process APScheduler that replaces paid Render cron jobs.
+- [`services/scheduler.py`](../backend/services/scheduler.py) — in-process APScheduler that replaces paid Railway cron jobs.
 - Jobs and cadence:
   - Alerts check — every 5 min, 09:15–15:30 IST Mon–Fri.
   - Open-call tracker — every 5 min during market hours.

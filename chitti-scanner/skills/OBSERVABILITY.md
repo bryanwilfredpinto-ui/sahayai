@@ -60,4 +60,4 @@ Alerts route to Bryan; the founder dashboard at `sahayai.in/founder` mirrors the
 
 ## 6. Observability state today
 
-Per [../TODO.md](../TODO.md) and workspace memory `project_render_deploy_status_2026_05_10.md`, Scanner is **not yet on Render**. No live observability exists. The instrumentation above is the day-one wiring for whoever pushes the Render connect button.
+Per [../TODO.md](../TODO.md) and workspace memory `project_render_deploy_status_2026_05_10.md`, Scanner is **not yet on Railway**. No live observability exists. The instrumentation above is the day-one wiring for whoever pushes the Railway connect button.

@@ -11,7 +11,7 @@ Outstanding work items, ranked roughly by urgency. Sources:
 
 ### 1.1 Obtain ULCA Bhashini citizen credentials (Phase 6)
 - Submit ULCA application with the body draft in [`README.md`](README.md) §6 / spec §9.
-- On approval, set on Render:
+- On approval, set on Railway:
   - `BHASHINI_USER_ID`
   - `BHASHINI_API_KEY`
   - `BHASHINI_INFERENCE_KEY`
@@ -96,7 +96,7 @@ def validate_oauth_state(state: str) -> bool:
 
 ### 2.6 Admin route uses hard-coded DB path
 
-[`backend/routes/admin.py:96`](backend/routes/admin.py) opens `"./chitti_voice_factory.sqlite"` directly with `sqlite3.connect(...)` instead of going through `ledger.py`. On Render this should be `/tmp/chitti_voice_factory.sqlite` per the `VOICE_FACTORY_DB` env var. Route through the ledger module or read the env var.
+[`backend/routes/admin.py:96`](backend/routes/admin.py) opens `"./chitti_voice_factory.sqlite"` directly with `sqlite3.connect(...)` instead of going through `ledger.py`. On Railway this should be `/tmp/chitti_voice_factory.sqlite` per the `VOICE_FACTORY_DB` env var. Route through the ledger module or read the env var.
 
 ---
 
@@ -112,9 +112,9 @@ def validate_oauth_state(state: str) -> bool:
 
 ### 3.2 Ledger growth
 
-`synthesis_log` grows unbounded. On Render free tier (`/tmp/chitti_voice_factory.sqlite`) this resets on every deploy but accumulates within a deploy. Need:
+`synthesis_log` grows unbounded. On Railway free tier (`/tmp/chitti_voice_factory.sqlite`) this resets on every deploy but accumulates within a deploy. Need:
 
-- A nightly job (cron via Render or an `apscheduler` job inside the app) that prunes `synthesis_log` rows older than 30 days.
+- A nightly job (cron via Railway or an `apscheduler` job inside the app) that prunes `synthesis_log` rows older than 30 days.
 - Or migrate to durable Postgres so we keep history.
 
 ### 3.3 STT (speech-to-text)
@@ -135,7 +135,7 @@ abstraction should extend to STT:
 
 ## 4. Frontend polish
 
-- [`../chitti_voice_factory.html`](../chitti_voice_factory.html) status dashboard hardcodes the API base. Confirm it falls back gracefully when the backend is sleeping (Render free tier cold-starts).
+- [`../chitti_voice_factory.html`](../chitti_voice_factory.html) status dashboard hardcodes the API base. Confirm it falls back gracefully when the backend is sleeping (Railway free tier cold-starts).
 - [`../voice_donor.html`](../voice_donor.html) stage transitions are checkbox-driven. Add an aria-live region for screen readers; blind donors should hear "now on stage 2 of 3, please press record".
 - [`../chitti_voice_hall_of_fame.html`](../chitti_voice_hall_of_fame.html) renders nothing on a backend cold-start because there is no skeleton state. Add a "Waking up Chitti…" placeholder.
 - Add a "Listen to current winner" button on each language's `chitti_<lang>.html` once §2.2 ships.
@@ -144,9 +144,9 @@ abstraction should extend to STT:
 
 ## 5. Deployment & ops
 
-- Production URL `https://chitti-voice-factory.onrender.com` per spec — confirm Render service is actually live before next handover (memory: never say "live" without curling).
-- `VOICE_FACTORY_DB=/tmp/...` on Render means the SQLite database resets on every restart. Move to mounted disk or migrate to Postgres before any data we care about lives in it (i.e. before first real Hall of Fame winner).
-- Health-check `/health` is wired but not pinged. Add a Render health-check URL or a UptimeRobot ping.
+- Production URL `https://chitti-voice-factory.onrender.com` per spec — confirm Railway service is actually live before next handover (memory: never say "live" without curling).
+- `VOICE_FACTORY_DB=/tmp/...` on Railway means the SQLite database resets on every restart. Move to mounted disk or migrate to Postgres before any data we care about lives in it (i.e. before first real Hall of Fame winner).
+- Health-check `/health` is wired but not pinged. Add a Railway health-check URL or a UptimeRobot ping.
 - Add a `/admin/auth-status` endpoint so the dashboard can show "logged in as bryan@..." without exposing OAuth internals.
 
 ---

@@ -48,7 +48,7 @@ For investors, partner Chitti product owners, and accessibility funders.
    Tier A.
 3. **Free at point of use** for Tier A/B today via `mock_bhashini` →
    real Bhashini once ULCA approves.
-4. **One env-var flip to go live.** Set three ULCA vars on Render and
+4. **One env-var flip to go live.** Set three ULCA vars on Railway and
    real Bhashini takes over — no code change, no redeploy logic.
 5. **Permanent Hall of Fame.** Native-speaker donors get a page that
    never goes down (`can_delete=0`).

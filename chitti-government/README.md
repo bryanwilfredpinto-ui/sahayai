@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti Government — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> 30 schemes seeded · PIB poll every 6h · DigiLocker partner-only · honest *"unclear eligibility"* state, never coerced to *"eligible"*.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_government.html |
+| Health | https://chitti-government-api-production.up.railway.app/health |
+| Status | 🟢 GREEN — curl-verified 2026-05-15 |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | 12 Indian languages |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §5](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_GOVERNMENT_MASTER_SPEC.md) |
+
+---
+
 # Chitti Government
 
 Voice-first AI guide to Indian central + state government schemes, built for
@@ -50,7 +67,7 @@ chitti-government/
 ├── API.md                       ← every HTTP endpoint
 ├── DATABASE.md                  ← government.* schema tables
 ├── PROMPTS.md                   ← DeepSeek prompt templates
-├── render.yaml                  ← Render Blueprint (free tier)
+├── render.yaml                  ← Railway Blueprint (free tier)
 └── backend/
     ├── main.py                  ← Flask app + bootstrap
     ├── config.py                ← env-driven Settings
@@ -100,9 +117,9 @@ Set `DEEPSEEK_API_KEY` for the voice-first explainer. Without it the service
 still ships — the rule engine produces a deterministic English/Hindi reply
 so no feature is ever a "coming soon" stub.
 
-## Production (Render)
+## Production (Railway)
 
-The Render Blueprint at [`render.yaml`](render.yaml) creates a single web
+The Railway Blueprint at [`render.yaml`](render.yaml) creates a single web
 service `chitti-government-api`. Required dashboard envs:
 
 | Variable | Notes |

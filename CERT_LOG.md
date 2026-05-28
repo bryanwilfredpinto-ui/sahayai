@@ -42,7 +42,7 @@ to regenerate.
 | **5-gate result** | G1 ✅ (feedback-widget.js + 10 data-chitti-response boxes + 9/10 box-bars attached at runtime — the 10th is in Calendar tab which only renders post-click, expected). G2 ✅ (chitti_a11y.js + window.Chitti.a11y namespace). G3 ✅ (Disability Profile modal renders on first visit with 8 multi-select options + lang preselect + rural toggle, saves to localStorage.disability_profile per §7). G4 ✅ (window.Chitti.lang.current() = 'en'; `<html lang>` reflects it). G5 ✅ (chitti_isl.js + window.Chitti.isl namespace). |
 | **Pageerrors** | 0 |
 | **Honest YELLOW carry-forwards** | Disability Profile modal voice-out uses Web Speech API as a temporary substrate; will graduate to Voice Factory cascade once `chitti_a11y.speak` lands. ISL plugin loaded but Phase-1 dictionary coverage scoped to the 8 Disability Profile option labels — Phase-2 camera detection + Phase-3 community videos still COMING SOON per `project_chitti_isl_spec`. |
-| **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Render env). |
+| **Vaani notification** | Per Sire's Q2=B answer — chat report + this CERT_LOG.md entry. No outbound Vaani channel attempted (Layer-5 fallback keys not in Railway env). |
 
 ### 7 voice intents wired + live-certified — GREEN ✅ 18/18
 

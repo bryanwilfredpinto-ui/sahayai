@@ -151,9 +151,9 @@ A single sub-agent skill (no nested sub-skills yet) that describes the product e
 | Surface | Path | Hosting | Status |
 |---|---|---|---|
 | Frontend | `chitti_scanner.html` (root) + `chitti-scanner/frontend/index.html` (mirror) | Cloudflare Pages → `sahayai.in` | Live |
-| Backend | `chitti-scanner/backend/` via `chitti-scanner/render.yaml` | Render (planned) | **Not connected** — render.yaml ready, service not yet provisioned |
+| Backend | `chitti-scanner/backend/` via `chitti-scanner/render.yaml` | Railway (planned) | **Not connected** — render.yaml ready, service not yet provisioned |
 
-### Render blueprint (`render.yaml`)
+### Railway blueprint (`render.yaml`)
 
 ```yaml
 services:

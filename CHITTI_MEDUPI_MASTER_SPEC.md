@@ -364,11 +364,11 @@ Plus sticky **medical disclaimer banner** at the very top + full legal modal.
 ```
 chitti-medupi/backend/
 ├── main.py                  FastAPI app · CORS · startup seed · /health · /
-├── config.py                Settings (DATABASE_URL · ANTHROPIC_API_KEY · TWILIO · CORS)
+├── config.py                Settings (DATABASE_URL · GEMINI_API_KEY · TWILIO · CORS)
 ├── database.py              SQLAlchemy engine + SessionLocal + get_db
 ├── requirements.txt         fastapi · sqlalchemy · anthropic · rapidfuzz · psycopg2-binary
 ├── runtime.txt              python 3.11.10
-├── render.yaml              Render Blueprint (web service + Postgres DB)
+├── render.yaml              Railway Blueprint (web service + Postgres DB)
 ├── .env.example
 ├── data/
 │   ├── medicines_seed.json           top 51 Indian retail brands
@@ -486,7 +486,7 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 - **Community-reported prices** (`services/medupi_community.py` + `models/community_price.py`) — user-submitted "I bought X for ₹Y at <pharmacy> in <city>" rows. Sanity bounds (₹0.50–₹100,000), rate-limit (20/min/device), median + IQR + by-city aggregation. Always rendered with a "User reported — verify before purchase" badge.
 - **Search-frequency log** (`services/medupi_search_log.py` + `models/search_log.py`) — every text search bumps `count` + `last_searched_at` for that normalized query. The daily 02:00 IST job reads `top_n(100)` for Brave refresh.
 - **Price freshness engine** (`services/medupi_price_freshness.py`) — every API response carries per-price badges: official Jan Aushadhi (🏥 green), NPPA ceiling ("Maximum legal price — no pharmacy can charge more" 🛡️ navy), branded "Last updated X days ago" with amber warning >30 days + red "Verify with pharmacy" >90 days, community 👥 amber. EN + HI captions on every badge.
-- **Schema additions** — `medicines.price_source`, `medicines.updated_at` (with `onupdate=`); new tables `price_cache`, `community_prices`, `search_log`, `loader_runs`. Idempotent migration (`services/medupi_migrations.py`) runs on every startup — ALTER TABLE … ADD COLUMN guarded by inspector + backfills `updated_at` for legacy rows. Works on SQLite (local) and Postgres (Render).
+- **Schema additions** — `medicines.price_source`, `medicines.updated_at` (with `onupdate=`); new tables `price_cache`, `community_prices`, `search_log`, `loader_runs`. Idempotent migration (`services/medupi_migrations.py`) runs on every startup — ALTER TABLE … ADD COLUMN guarded by inspector + backfills `updated_at` for legacy rows. Works on SQLite (local) and Postgres (Railway).
 - **Kaggle bulk loader** (`scripts/loaders/kaggle.py`) — A-Z Medicine Dataset of India (~250,000 rows). Merges `short_composition*` columns, infers strength/form from pack labels, batches commits at 500 rows. Stamps `price_source='kaggle'` on every upsert.
 - **Auto-update wrappers** (`scripts/auto_update.py`) — `auto_jan_aushadhi()` + `auto_nppa()` invoked by the scheduler. URLs env-overridable via `JAN_AUSHADHI_PRODUCT_URL` / `NPPA_CEILING_URL`. Best-effort against govt URLs that drift between releases — failures log + write audit row, never raise (so next month's run still fires).
 - **New routes** (`routes/medupi.py`):
@@ -510,7 +510,7 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 
 ### ✅ DONE — v1.8 supplement (parallel session, 2026-05-08)
 - **Demo Mode** (commit `2e0cc45`) — 8-step guided walk-through with EN/HI narration, 4-user contract honoured (Blind reads narration aloud · Deaf reads it in the banner · Mute uses Next/Skip buttons · Illiterate sees real visible UI moves at each step). Sample Crocin 650 result + freshness pills + fake wallet stats + sample JA stores rendered without API calls.
-- **Flask refactor** (commit `9b55dac`) — chitti-medupi/backend dropped FastAPI + pydantic + httpx, now Flask + flask-cors + gunicorn + requests. Reason: Render free-tier slim image lacks Rust toolchain, so pydantic-core can never compile from source. Flask is pure Python. All 22 endpoints carried over identically. Same shape, same response keys, frontend wiring unchanged.
+- **Flask refactor** (commit `9b55dac`) — chitti-medupi/backend dropped FastAPI + pydantic + httpx, now Flask + flask-cors + gunicorn + requests. Reason: Railway free-tier slim image lacks Rust toolchain, so pydantic-core can never compile from source. Flask is pure Python. All 22 endpoints carried over identically. Same shape, same response keys, frontend wiring unchanged.
 - **Schema isolation** (commit `5dc82dd`) — both backends now share the chitti-shares Supabase Postgres but isolate under `medupi.*` and `shares.*` schemas. `models/_schema.py` + `database.ensure_schema()` on each side. Cross-schema FKs via `fk_target()` helper. SQLite local dev still works (schema = None on SQLite).
 - **Apollo Pharmacy 259k-row loader** (commit `971191b`) — standalone `scripts/load_apollo_oneshot.py` (psycopg2-only, no backend imports). Auto-bootstraps `medupi` schema + `medicines` table + unique constraint. Reads `chitti-medupi/backend/.env` via stdlib parser (overrides existing env). TCP keepalives + reconnect-on-drop for Neon pooler. Dedup-within-batch on `(brand,strength,form)` to handle Apollo's same-medicine-multiple-URLs rows. Successful run: **211,207 rows in `medupi.medicines` on Neon** (213k upserted from 259k seen, 46k skipped for missing fields, 0 errors, 0 reconnects, ~41 min wall time).
 - **QR scanner** (commit `ce0335e`) — 4th button in the Scan tab. Decodes the CDSCO traceability QR / GS1 Datamatrix on Indian medicine packs since 2023. jsQR (~50KB CDN) reads ImageData from a canvas. Three handler paths: GS1 string (shows GTIN, invites brand-name input), URL (opens + extracts guess from path), plain text (feeds into search).
@@ -519,14 +519,14 @@ Reminder(profile_id, medicine_id, kind [refill/expiry], next_due, recurrence)
 
 ### ⚠️ OPEN — production-vs-local DB gap
 - **Apollo's 211k rows are in Neon (`ep-delicate-violet-aqny59zg-pooler.c-8.us-east-1.aws.neon.tech/neondb`). The live `chitti-medupi-api-production.up.railway.app` queries Supabase (`medupi.*` schema, 51-row seed only).** Two paths to close:
-  - (A) Update Render's `chitti-medupi-api` env var `DATABASE_URL` to the Neon URL → live API instantly serves 211k rows.
+  - (A) Update Railway's `chitti-medupi-api` env var `DATABASE_URL` to the Neon URL → live API instantly serves 211k rows.
   - (B) Re-run the Apollo loader against Supabase → both DBs match.
 - Neither path has been chosen yet; live API still serves the original 51-row seed.
 
 ### ⏳ PENDING (next session priority order)
 1. **Top up DeepSeek balance** — unblocks `/api/agent/medupi/ask`, `/api/agent/technical/ask`, `/api/agent/fundamental/ask`, `/api/chitti-view/`. One billing action; no code change.
 2. **Run the loader on real downloads** — Bryan downloads the four government CSV/XLSX files (BPPI products, Jan Aushadhi stores, NPPA ceiling prices, CDSCO approved formulations), then runs `python scripts/load_real_data.py --source <each> --file <path>` four times. Expected DB after: ~2,000 medicines · ~11,000 stores. Then `python scripts/load_real_data.py --source kaggle --file kaggle.csv` (~250k branded rows · ~5 min batch-committed) + `--source rxnorm` (~7 min) + `--source openfda` (~10 min) for enrichment.
-2. **Deploy `chitti-medupi/backend`** to Render as `chitti-medupi-api-production.up.railway.app` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
+2. **Deploy `chitti-medupi/backend`** to Railway as `chitti-medupi-api-production.up.railway.app` — `render.yaml` is ready. After deploy, set `localStorage.chitti_medupi_api_base` on production frontend OR change the default in `chitti_medupi.html`. Run the loaders once against the production DB (or upload SQLite copy).
 3. **Until that ships**, port the upgraded service logic into `chitti-shares/backend/services/medupi_*.py` so the existing `chitti-shares-api` deploy serves the same responses (move the seed JSONs over + add `rapidfuzz` + `anthropic` + `pandas` + `openpyxl` to chitti-shares requirements).
 4. **Live verification** — once deployed, curl `/api/medupi/medicine/Crocin%20650`, `/api/medupi/jan_aushadhi?lat=23.26&lng=77.41`, `/api/medupi/insurance/Telmisartan?scheme=ayushman` from production. Bryan verifies on phone before handover (per the verify-on-live memory).
 5. **Browser push reminders** — service worker + Notification API on top of the live `/api/medupi/reminder` CRUD.

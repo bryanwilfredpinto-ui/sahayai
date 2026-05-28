@@ -69,7 +69,7 @@ code change** — the cascade already prefers `bhashini` over `mock_bhashini`
 when both are enabled.
 
 This is by design: the day Bryan gets the email saying "your ULCA account is
-approved," the only operation is to set three env vars on Render. No re-deploy
+approved," the only operation is to set three env vars on Railway. No re-deploy
 of frontend, no model retraining, no migration.
 
 ---

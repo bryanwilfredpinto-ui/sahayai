@@ -21,7 +21,7 @@ The user-facing page `chitti_ca.html` (at the repo root) exposes some UI afforda
    Each `POST /api/ca/ask` is independent. The frontend does not send prior turns either. For notice-reading questions ("here is the notice — now what should I do?") a 2-turn session would help. Out of scope while we hold the stateless guarantee, but worth listing.
 
 5. **No rate limiting.**
-   The free-tier Render deploy is exposed without any per-IP throttling. Acceptable while traffic is low; revisit once the page is linked from `index.html` and gets real users.
+   The free-tier Railway deploy is exposed without any per-IP throttling. Acceptable while traffic is low; revisit once the page is linked from `index.html` and gets real users.
 
 ## Product gaps (from CONTEXT)
 

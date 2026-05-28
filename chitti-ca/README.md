@@ -1,3 +1,21 @@
+🎖️ **World Class Chitti CA — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Plain-Hindi tax help at CA Final + PhD grade — for the 99% of Indians without a CA on retainer.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_ca.html |
+| Health | https://chitti-ca-api-production.up.railway.app/health |
+| Status | 🟢 GREEN — curl-verified 2026-05-15 |
+| Risk | 🔴 HIGH — server-enforced disclaimer on every response, never client-controlled |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | 12 Indian languages on backend |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §3](../CHITTI_SOP.md) · [CA_KNOWLEDGE.md](skills/CA_KNOWLEDGE.md) |
+
+---
+
 # Chitti CA
 
 AI tax assistant for Indian small businesses, freelancers, and salaried individuals. DeepSeek-powered Q&A on ITR, GST, TDS, deductions, and tax notices in plain Hindi or English (12 Indian languages supported on the backend).
@@ -38,7 +56,7 @@ If `DEEPSEEK_API_KEY` is unset the service still answers — it returns a `sourc
 
 ## Deploy
 
-[render.yaml](render.yaml) is ready. Set `DEEPSEEK_API_KEY` in Render env vars; everything else has defaults.
+[render.yaml](render.yaml) is ready. Set `DEEPSEEK_API_KEY` in Railway env vars; everything else has defaults.
 
 Live URL: https://chitti-ca-api-production.up.railway.app
 

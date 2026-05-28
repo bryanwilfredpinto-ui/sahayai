@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti UPI — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> HIGH / MEDIUM / LOW fraud risk on any UPI message · 2026 RBI rule cards cited on every verdict · honest *"I am a classifier, not a payment intent"*.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_upi.html |
+| Health | https://chitti-upi-api.onrender.com/health |
+| Status | 🟢 GREEN (intentional Railway — see [QUALITY_STATUS.md](../QUALITY_STATUS.md)) |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
+| Languages | Hindi + English + 9 Indian languages |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §8](../CHITTI_SOP.md) |
+
+---
+
 # Chitti UPI Fraud Guard
 
 > Bharat's first AI fraud-warning second-opinion for UPI / digital payments.
@@ -49,7 +66,7 @@ chitti-upi/
 ├── API.md                     every HTTP endpoint
 ├── DATABASE.md                schema (N/A — stateless)
 ├── PROMPTS.md                 verbatim LLM prompts
-├── render.yaml                Render Blueprint (free plan, gunicorn, 2 workers)
+├── render.yaml                Railway Blueprint (free plan, gunicorn, 2 workers)
 ├── frontend/
 │   ├── README.md              "mirror of root chitti_upi.html"
 │   └── index.html             single-page UI, consent gate, verdict bands
@@ -99,9 +116,9 @@ Risk is **never** falsely reassured to `LOW` when the AI is offline.
 startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
 ```
 
-`DEEPSEEK_API_KEY` is `sync: false` — must be set in Render dashboard.
-Per [memory: Render deploy status 2026-05-10](../CHITTI_TECHNICAL_MASTER_SPEC.md),
-this Blueprint is **not yet connected** to Render. See
+`DEEPSEEK_API_KEY` is `sync: false` — must be set in Railway dashboard.
+Per [memory: Railway deploy status 2026-05-10](../CHITTI_TECHNICAL_MASTER_SPEC.md),
+this Blueprint is **not yet connected** to Railway. See
 [`./TODO.md`](./TODO.md) P0.
 
 ---

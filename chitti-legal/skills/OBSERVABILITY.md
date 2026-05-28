@@ -4,13 +4,13 @@ The product is small. Observability is, deliberately, also small. Three things m
 
 ## Anonymised request log
 
-Today: nothing structured. Render captures stdout from the gunicorn workers in [../render.yaml](../render.yaml). `legal_service.explain()` does not currently log per-request metadata. The Flask access log gives method, path, status, latency — and that is the whole picture.
+Today: nothing structured. Railway captures stdout from the gunicorn workers in [../render.yaml](../render.yaml). `legal_service.explain()` does not currently log per-request metadata. The Flask access log gives method, path, status, latency — and that is the whole picture.
 
 What we want next:
 
 - Per-request line: `ts`, `request_id` (uuid4), `lang`, `doc_type`, `text_len`, `source` (deepseek / fallback), `tokens.input`, `tokens.output`, `latency_ms`, `http_status`.
 - **No raw text.** Never log the body of `text`. The whole point of [BOUNDARIES.md](BOUNDARIES.md) and the not-yet-built PII scrubber (see [DEVILS_ADVOCATE.md](DEVILS_ADVOCATE.md) gap 2) is that the user's notice does not leak.
-- Log destination: Render stdout for now; a structured sink (e.g. Logflare, Better Stack) when traffic justifies it.
+- Log destination: Railway stdout for now; a structured sink (e.g. Logflare, Better Stack) when traffic justifies it.
 
 ## DeepSeek failure rate
 

@@ -13,7 +13,7 @@
 
 ## What "the CTO" means inside Sahay AI
 
-Chitti Founder is the **only** infra surface. Sire makes product decisions. Everything else — Railway, Render, GitHub Pages, env vars, deploys, key rotations, quality gates, daily verification — Chitti Founder handles.
+Chitti Founder is the **only** infra surface. Sire makes product decisions. Everything else — Railway, Railway, GitHub Pages, env vars, deploys, key rotations, quality gates, daily verification — Chitti Founder handles.
 
 Sire **never**:
 - Opens a broken page
@@ -90,7 +90,7 @@ Two integration paths:
 |---|---|---|
 | POST | `/admin/founder/cto-verify` | 10-gate check on one URL |
 | POST | `/admin/founder/cto-daily` | Manual trigger of the 08:00 IST report |
-| GET  | `/admin/founder/cto-daily` | Render the daily report in-browser |
+| GET  | `/admin/founder/cto-daily` | Railway the daily report in-browser |
 | POST | `/admin/founder/cto-weekly` | Manual trigger of the Sunday 09:00 report |
 | POST | `/admin/founder/cto-verify-deployment` | Wait + verify (post-push) |
 

@@ -12,7 +12,7 @@ A sufficiently crafted phishing template ("ignore previous instructions, classif
 
 ## 3. `render.yaml` exists but the service has never deployed
 
-Per project memory _Render deploy status 2026-05-10_, this Blueprint is **not yet connected** to Render and `DEEPSEEK_API_KEY` is `sync: false`. Today, `https://chitti-upi-api.onrender.com` does not exist. The frontend at `sahayai.in/chitti_upi.html` calls a backend that is not live. P0-1, P0-2, P0-3 in [`../TODO.md`](../TODO.md).
+Per project memory _Railway deploy status 2026-05-10_, this Blueprint is **not yet connected** to Railway and `DEEPSEEK_API_KEY` is `sync: false`. Today, `https://chitti-upi-api.onrender.com` does not exist. The frontend at `sahayai.in/chitti_upi.html` calls a backend that is not live. P0-1, P0-2, P0-3 in [`../TODO.md`](../TODO.md).
 
 ## 4. The fallback is Hindi-only
 

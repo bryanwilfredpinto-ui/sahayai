@@ -17,7 +17,7 @@ Contents of this commit, scoped to `chitti-logo-video/`:
 - `backend/services/video_service.py` — `_Job` dataclass + thread-safe `_JOBS` dict + `_LOCK`. State machine `queued → rendering → VIDEO_READY` driven by `_MOCK_RENDER_S = 3.0` on lazy poll-time evaluation. `_placeholder_url()` returns a `data:image/svg+xml,...` 640×360 navy card. Real-provider branch in place but unwired.
 - `backend/requirements.txt` — `flask==3.0.3`, `flask-cors==4.0.1`, `gunicorn==22.0.0`. (No DB, no SDK, no LLM client.)
 - `backend/runtime.txt` — `python-3.11.10`.
-- `render.yaml` — Render web service, free tier, gunicorn 2 workers, 60 s timeout, 4 `sync: false` secret slots ready for the real keys.
+- `render.yaml` — Railway web service, free tier, gunicorn 2 workers, 60 s timeout, 4 `sync: false` secret slots ready for the real keys.
 - `README.md` — v1 readme (now superseded by the expanded one in this folder).
 - Frontend (at repo root): [`chitti_logo_video.html`](../chitti_logo_video.html) — single-page HTML/CSS/JS, palette picker, logo form, video form, polling loop @ 800 ms, persistent "Stub mode" banner, four-user contract chips, download-SVG via `Blob`.
 

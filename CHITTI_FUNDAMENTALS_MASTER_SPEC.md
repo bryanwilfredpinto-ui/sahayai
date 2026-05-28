@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-05-08
 **Frontend:** `chitti_fundamentals.html` → live at `https://sahayai.in/chitti_fundamentals.html`
-**Backend:** FastAPI on Render → `chitti-shares-api-production.up.railway.app`
+**Backend:** FastAPI on Railway → `chitti-shares-api-production.up.railway.app`
 **Persona:** Teacher — patient, plain-English, always explains *why* a number matters. Hindi-ready.
 
 ---
@@ -14,7 +14,7 @@ Demystify Indian-equity fundamentals for the four-user audience (Blind, Deaf, Mu
 ## 2. Standing rules (non-negotiable)
 
 1. **NOT SEBI Registered** — sticky banner top of page; full-text modal opens with the disclaimer; English + Hindi versions.
-2. **Yahoo Finance is BLOCKED** from Render IPs. Primary: `services/screener_client.py` (screener.in scrape). Fallback: `yahoo_client` (local-dev only).
+2. **Yahoo Finance is BLOCKED** from Railway IPs. Primary: `services/screener_client.py` (screener.in scrape). Fallback: `yahoo_client` (local-dev only).
 3. **Bharat Premium theme** — saffron `#E86A17` / navy `#0E2344` / gold `#D4AF37` / cream `#f8f4ee`. White rounded 18px cards. Saffron CTAs.
 4. **Four-user contract on every control** — Blind (aria + 🔊), Deaf (▲▼ + word labels — never colour-only), Mute (tap-only), Illiterate (🎤 mic + plain English caption + page-wide Hindi toggle via `_chittiLang`).
 5. **Free-tier only** — no paid market-data APIs.
@@ -73,7 +73,7 @@ Demystify Indian-equity fundamentals for the four-user audience (Blind, Deaf, Mu
 | LiveMint RSS | LIVE | News (secondary) |
 | Anthropic API | LIVE | Q&A, narrative, SWOT/Pros-Cons (when wired) |
 | DeepSeek | LIVE | Story Mode narrative + voice synthesis (when wired) |
-| Yahoo Finance | LOCAL-DEV ONLY | Backup; blocked from Render |
+| Yahoo Finance | LOCAL-DEV ONLY | Backup; blocked from Railway |
 | NSE/BSE corporate-action feed | NOT WIRED | Dividends / splits / bonus / rights |
 | AMFI MF holdings | NOT WIRED | Top MF holders block |
 | AMFI / NSE shareholding | NOT WIRED | Granular shareholder list |

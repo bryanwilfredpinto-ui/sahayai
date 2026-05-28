@@ -9,7 +9,7 @@ A deliberately tiny surface. One Flask app, one blueprint, one service module, o
         |
         |  POST /api/legal/explain  { text, language?, doc_type? }
         v
-[ Flask app — main.py ]             (Render free tier, gunicorn 2 workers)
+[ Flask app — main.py ]             (Railway free tier, gunicorn 2 workers)
         |
         | -> @app.get("/")          banner
         | -> @app.get("/health")    {ok: true}
@@ -37,11 +37,11 @@ A deliberately tiny surface. One Flask app, one blueprint, one service module, o
 
 ## CORS
 
-Configured in [main.py](backend/main.py) via `flask-cors`. Origins come from the comma-separated `ALLOWED_ORIGINS` env var. Default includes `https://sahayai.in`, `https://www.sahayai.in`, and the two common local-dev hosts on port 5500. Render production overrides to just the two real hostnames.
+Configured in [main.py](backend/main.py) via `flask-cors`. Origins come from the comma-separated `ALLOWED_ORIGINS` env var. Default includes `https://sahayai.in`, `https://www.sahayai.in`, and the two common local-dev hosts on port 5500. Railway production overrides to just the two real hostnames.
 
 ## Configuration
 
-All knobs live in [config.py](backend/config.py) as a frozen `Settings` dataclass read from env at import time. Nothing is hot-reloadable; Render redeploys on env change.
+All knobs live in [config.py](backend/config.py) as a frozen `Settings` dataclass read from env at import time. Nothing is hot-reloadable; Railway redeploys on env change.
 
 | Env var | Default | Purpose |
 |---|---|---|
@@ -80,7 +80,7 @@ All knobs live in [config.py](backend/config.py) as a frozen `Settings` dataclas
 ## What is intentionally absent
 
 - **No database.** State is the model + the request. See [DATABASE.md](DATABASE.md).
-- **No auth.** Public endpoint. Rate limiting is Render's default + the 8000-char cap.
+- **No auth.** Public endpoint. Rate limiting is Railway's default + the 8000-char cap.
 - **No file upload.** The user pastes text. A photo-OCR path is on [TODO.md](TODO.md).
 - **No streaming.** Single-shot POST; the frontend shows a `"asking Chitti Legal…"` status while waiting.
 - **No retry logic.** A failed DeepSeek call returns the fallback once; the user can click `Explain` again.

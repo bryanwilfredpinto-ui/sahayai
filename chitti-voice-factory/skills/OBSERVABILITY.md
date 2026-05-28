@@ -89,9 +89,9 @@ Because of the bug noted in [`DEVILS_ADVOCATE.md`](DEVILS_ADVOCATE.md)
 `GET /admin/auth-status` (proposed in [`../TODO.md`](../TODO.md) §5) —
 could expose `len(_OAUTH_STATE_CACHE)`. Alert if > 1000.
 
-## 8. Render cold-start latency
+## 8. Railway cold-start latency
 
-Render free tier sleeps the service after ~15 min idle. First request
+Railway free tier sleeps the service after ~15 min idle. First request
 after sleep takes 30–60 s. Surface this to callers: every Chitti
 frontend that calls Voice Factory must show a "Waking up Chitti…"
 placeholder. The dashboard at

@@ -1,6 +1,6 @@
 # Architecture
 
-The Chitti MedUPI backend is a **Flask + SQLAlchemy + Postgres** service with in-process APScheduler cron, served by gunicorn on Render free tier. It shares its Neon Postgres host with Chitti Shares but keeps every table under a dedicated `medupi.*` schema for isolation. All AI vision (image scan) currently runs through Anthropic Claude — slated for migration to DeepSeek-VL per the 2026-05-11 *"DeepSeek for all"* decision.
+The Chitti MedUPI backend is a **Flask + SQLAlchemy + Postgres** service with in-process APScheduler cron, served by gunicorn on Railway free tier. It shares its Neon Postgres host with Chitti Shares but keeps every table under a dedicated `medupi.*` schema for isolation. All AI vision (image scan) currently runs through Anthropic Claude — slated for migration to DeepSeek-VL per the 2026-05-11 *"DeepSeek for all"* decision.
 
 ---
 
@@ -8,7 +8,7 @@ The Chitti MedUPI backend is a **Flask + SQLAlchemy + Postgres** service with in
 
 | Layer | Choice | Why |
 |---|---|---|
-| Web framework | **Flask 3** + flask-cors + gunicorn | Render free-tier slim image lacks Rust toolchain → pydantic-core can never compile → FastAPI v2 ruled out. Flask is pure Python. See [9b55dac](#) commit. |
+| Web framework | **Flask 3** + flask-cors + gunicorn | Railway free-tier slim image lacks Rust toolchain → pydantic-core can never compile → FastAPI v2 ruled out. Flask is pure Python. See [9b55dac](#) commit. |
 | ORM | SQLAlchemy 2.0 (Declarative + Session) | Same as Chitti Shares for cross-product muscle memory. |
 | DB driver | `psycopg2-binary==2.9.10` | Binary distro — never compiles libpq from source. |
 | Migrations | Hand-rolled idempotent ALTER TABLE in [`services/medupi_migrations.py`](backend/services/medupi_migrations.py) | No alembic dep. Dialect-aware (SQLite + Postgres). |
@@ -17,9 +17,9 @@ The Chitti MedUPI backend is a **Flask + SQLAlchemy + Postgres** service with in
 | Live pharmacy prices | **Brave Search API** (free 2,000 q/mo) — snippet-only | ToS-safe alternative to scraping 1mg/PharmEasy/NetMeds. |
 | Fuzzy search | `rapidfuzz==3.6.1` | Pre-built manylinux wheels for Python 3.11. |
 | Config | `python-dotenv` + plain `os.environ` | No pydantic-settings (dropped with FastAPI). |
-| Runtime | Python 3.11 (pinned via `runtime.txt`) | Render-supported + has wheels for everything we need. |
+| Runtime | Python 3.11 (pinned via `runtime.txt`) | Railway-supported + has wheels for everything we need. |
 
-Full dependency list in [`requirements.txt`](backend/requirements.txt). Pinned at every layer to keep Render builds deterministic on the free tier.
+Full dependency list in [`requirements.txt`](backend/requirements.txt). Pinned at every layer to keep Railway builds deterministic on the free tier.
 
 ---
 
@@ -169,7 +169,7 @@ The text path bumps `search_log.count` for the normalized query (drives the dail
 
 ## 8. CORS + error handling
 
-- CORS allowed origins are env-driven (`ALLOWED_ORIGINS` comma-separated). Defaults cover localhost + sahayai.in + the Render-hosted frontend.
+- CORS allowed origins are env-driven (`ALLOWED_ORIGINS` comma-separated). Defaults cover localhost + sahayai.in + the Railway-hosted frontend.
 - Flask error handlers are registered for 400 / 404 / 405 / 413 / 415 / 500. All return JSON shape `{"error": "<code>", "detail": "..."}`.
 - Upload cap: **8 MB** on `/api/medupi/scan` (configured via `MAX_CONTENT_LENGTH`).
 - Light auth on family-wallet / reminder / scheduler-trigger routes via the `X-User-Token` request header (must be ≥8 chars). Frontend generates a UUID per device and stores in localStorage.

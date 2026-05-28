@@ -12,7 +12,7 @@ Derived from `git log --oneline --reverse -- chitti-legal/` at the time of writi
     - [services/legal_service.py](backend/services/legal_service.py) — `CHITTI_LEGAL_PROMPT`, 12-language map, DeepSeek httpx call, `_enforce_disclaimer()`, `_fallback()`.
     - [requirements.txt](backend/requirements.txt) — flask 3.0.3, flask-cors 4.0.1, gunicorn 22.0.0, httpx 0.27.2.
     - [runtime.txt](backend/runtime.txt) — python 3.11.10.
-    - [render.yaml](render.yaml) — `chitti-legal-api` web service on Render free tier, 2 gunicorn workers, 60s timeout.
+    - [render.yaml](render.yaml) — `chitti-legal-api` web service on Railway free tier, 2 gunicorn workers, 60s timeout.
   - Frontend [chitti_legal.html](../chitti_legal.html) shipped in the same commit at repo root: sticky red disclaimer bar, 12-language picker, 8 doc-type chips, voice-in (SpeechRecognition) / voice-out (SpeechSynthesis), "never drafts" red card.
   - Disclaimer text frozen at: *"AI explanation only. Not a substitute for a licensed lawyer. Consult a lawyer before signing or replying."*
 

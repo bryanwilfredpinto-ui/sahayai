@@ -478,5 +478,5 @@ Per-language mapping of `supplier_type` + `winner_id`. Empty entries omitted.
 
 - **CORS:** the `ALLOWED_ORIGINS` env var controls who can call. In dev defaults include `localhost:5500` and `127.0.0.1:5500` for live-server.
 - **No raw text in the ledger.** `synthesis_log.text_sha256` is the audit hash; you cannot reverse-engineer what users asked Chitti to say.
-- **Render free tier cold-starts.** Expect the first request after idle to take 30–60 s. Frontends must show a "Waking up Chitti…" state.
+- **Railway free tier cold-starts.** Expect the first request after idle to take 30–60 s. Frontends must show a "Waking up Chitti…" state.
 - **Mock supplier is always honestly labelled.** Every successful `/api/voice/speak` carries a `supplier` field. If you see `"supplier": "mock_bhashini"`, that is the truth — never relabel it client-side.

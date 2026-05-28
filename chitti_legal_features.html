@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Legal — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">⚖️</div>
+    <div>
+      <h1 class="cf-title">Chitti Legal — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · HIGH-risk</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_legal.html">Open Legal ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'legal',
+  label: 'Chitti Legal',
+  features: [
+    { name:'Notice-explanation — paste any clause, plain Hindi/EN', desc:'Paste any legal notice → plain-language translation + what to ask a lawyer.', status:'green', try:'Paste a notice excerpt', link:'chitti_legal.html' },
+    { name:'NDA / rent-agreement drafts', desc:'Generate first-draft NDA or rent agreement in EN or HI.', status:'green', try:'Ask "Draft a 2-year rent agreement, Bangalore"', link:'chitti_legal.html' },
+    { name:'BNS / BNSS / BSA 2023 — new criminal code', desc:'Full coverage of new criminal code (replaced IPC / CrPC / IEA on 1 Jul 2024).', status:'green', try:'Ask "What does BNS Section X cover?"' },
+    { name:'Constitution + civil + criminal + family law', desc:'Full Constitution + civil + criminal + family law across all religions.', status:'green', try:'Ask "Hindu vs Muslim succession on intestate death"' },
+    { name:'RERA + CPA 2019 + DPDP 2023 coverage', desc:'Real estate + consumer + data-protection coverage.', status:'green', try:'Ask "RERA complaint process in Maharashtra"' },
+    { name:'POSH / DV act coverage', desc:'POSH workplace + domestic-violence act guidance.', status:'green', try:'Ask "How to file POSH complaint?"' },
+    { name:'Landmark SC judgments referenced', desc:'Major SC judgments cited where relevant.', status:'green', try:'Ask about a landmark case (e.g. Kesavananda Bharati)' },
+    { name:'Server-enforced "not legal advice" disclaimer', desc:'Every response ends with "this is not legal advice — consult a registered advocate".', status:'green', try:'curl /api/legal/explain — verify disclaimer in body' },
+    { name:'Quadrails INJECT rail (with compliance_inject=False for explain_notice JSON)', desc:'Rails gate prompt + inject disclaimer (or ride disclaimer on JSON field for structured output).', status:'green', try:'Internal — verify rail audit row' },
+    { name:'DeepSeek wrap_llm at every call site', desc:'All DeepSeek calls wrapped via lib/hooks.wrap_llm.', status:'green', try:'grep legal_service.py for wrap_llm' },
+    { name:'HIGH-risk Swarm gate — Sire approves every patch', desc:'No skill update lands without Sire\'s review.', status:'green', try:'Internal — verify SWARM_PROPOSED.md gate' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any Legal response', link:'chitti_legal.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Document save, draft send, reminder set — all confirm before fire.', status:'green', try:'Save a generated draft, verify confirm modal' },
+    { name:'LEGAL_KNOWLEDGE.md at LL.M + PhD grade', desc:'Full Constitution + BNS/BNSS/BSA + civil + criminal + family + RERA/CPA/DPDP + POSH/DV + landmark SC.', status:'green', try:'Open chitti-legal/skills/LEGAL_KNOWLEDGE.md' },
+    { name:'Tenant rights by state', desc:'State-specific tenant-rights primer.', status:'green', try:'Ask "Tenant rights in Karnataka"' },
+    { name:'Consumer-protection routes (CPA 2019)', desc:'Consumer complaint routes under CPA 2019.', status:'green', try:'Ask "How to file consumer complaint?"' },
+    { name:'Family-law primers across religions', desc:'Hindu / Muslim / Christian / Parsi / Special Marriage Act primers.', status:'green', try:'Ask "Divorce under Special Marriage Act"' },
+    { name:'"Is this contract fair?" clause checker', desc:'Paste contract clause → balanced-vs-onerous assessment.', status:'yellow', try:'Planned P1 — clause-fairness model pending' },
+    { name:'State-specific updates per gazette cadence', desc:'State gazette diff cadence for state-specific amendments.', status:'yellow', try:'Pending state-gazette feed integration' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

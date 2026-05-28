@@ -32,7 +32,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the proposed wiring and [PROMPTS.md](
 
 ## 3. Deploy (not started)
 
-- [ ] Render service `chitti-sales-api` (free plan).
+- [ ] Railway service `chitti-sales-api` (free plan).
 - [ ] `DEEPSEEK_API_KEY` env var (no other secrets).
 - [ ] UptimeRobot poll on `/health` at 5-minute interval.
 - [ ] Link the page from `index.html` at the repo root.

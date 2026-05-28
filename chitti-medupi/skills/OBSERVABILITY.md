@@ -7,7 +7,7 @@ How we know the product is alive, what we record when something happens, who hea
 ## 1. Logging
 
 **Application logs**
-- Flask + gunicorn stdout → captured by Render's log stream.
+- Flask + gunicorn stdout → captured by Railway's log stream.
 - INFO level on every API request: method, path, status, duration, family-scope (no PII payloads).
 - WARN on degraded paths: Brave quota near limit, LLM key missing, freshness > 7 days served from cache.
 - ERROR on exceptions: full traceback, but **never** the uploaded image bytes or the raw OCR text containing user-identifying info.
@@ -64,14 +64,14 @@ The endpoint returns **HTTP 200 even on degraded** — `ok: false` only when the
 - **Target:** `GET https://chitti-medupi-api-production.up.railway.app/api/medupi/health`.
 - **Alert condition:** HTTP 5xx, timeout > 30s, OR (HTTP 200 with `ok: false`).
 - **Notification:** Email to Bryan + optional WhatsApp via the Chitti Vaani cascade pattern when wired.
-- **Render free-tier note:** First request after idle takes ~30 seconds (cold start). UptimeRobot's 5-min cadence keeps the container warm during business hours; expect cold starts overnight.
+- **Railway free-tier note:** First request after idle takes ~30 seconds (cold start). UptimeRobot's 5-min cadence keeps the container warm during business hours; expect cold starts overnight.
 
 ---
 
-## 4. Deploy monitoring via Render API
+## 4. Deploy monitoring via Railway API
 
-- **Render Blueprint:** [`render.yaml`](../render.yaml) defines the `chitti-medupi-api` service.
-- **Deploy hook:** GitHub push to `main` → Render auto-builds.
+- **Railway Blueprint:** [`render.yaml`](../render.yaml) defines the `chitti-medupi-api` service.
+- **Deploy hook:** GitHub push to `main` → Railway auto-builds.
 - **Post-deploy verification (per memory `feedback_verify_before_handover.md`):** Bryan or the developer must `curl` the production endpoint and confirm a real medicine lookup returns a real row — never assume "the build succeeded" equals "the product works."
 - **Smoke tests:**
   ```bash

@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti News — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> 25+ RSS feeds (EN + HI) · 8 sub-agents · ≥2 sources required before `verified` verdict · politics neutrality enforced.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_news.html |
+| Health | https://chitti-news-api-production.up.railway.app/health |
+| Status | 🟡 YELLOW — backend GREEN curl-verified 2026-05-15, **but Turso `DATABASE_URL` still pointed at Supabase Postgres (fleet-wide gap)** |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | EN + HI native · regional stubbed for v1.1 |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §6](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_NEWS_MASTER_SPEC.md) |
+
+---
+
 # Chitti News
 
 > "Your state. Your language. Your news. Read aloud, fact-checked, and one-tap shareable."
@@ -108,7 +125,7 @@ chitti-news/
 ├── API.md                every /api/news/* endpoint
 ├── DATABASE.md           news.* schema reference
 ├── PROMPTS.md            every LLM prompt template
-├── render.yaml           Render Blueprint
+├── render.yaml           Railway Blueprint
 ├── frontend/
 │   └── index.html        mirror of workspace-root chitti_news.html
 ├── backend/

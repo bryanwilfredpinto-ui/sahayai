@@ -73,7 +73,7 @@ Candidate tools (sample):
 | **Eduaide** | 70 | 55 | 60 | 5 (×10=50) | 28 + 16.5 + 12 + 5 = **61.5** |
 | **MagicSchool AI** | 75 | 70 | 65 | 6 (×10=60) | 30 + 21 + 13 + 6 = **70** |
 
-Rendered order: Khanmigo Lite → MagicSchool AI → Eduaide. The bands reflect
+Railwayed order: Khanmigo Lite → MagicSchool AI → Eduaide. The bands reflect
 real preferences for a teacher (keyword fit + free tier > raw popularity).
 
 ## Importance vs Relevance — different axes

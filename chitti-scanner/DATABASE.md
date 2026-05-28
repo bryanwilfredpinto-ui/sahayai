@@ -6,7 +6,7 @@
 
 1. **Privacy posture.** The product handles labels that may carry Aadhaar / PAN / VPA / medical brand information. A database is the easiest place for that PII to leak; not having one means there is nothing to leak.
 2. **No multi-request flows.** A scan is one shot. There is no session, no draft state, no "resume later" — so no need for persistence.
-3. **Operational simplicity.** The Render service is a single web dyno with `--workers 2 --timeout 90`. No managed Postgres, no migrations, no schema versioning.
+3. **Operational simplicity.** The Railway service is a single web dyno with `--workers 2 --timeout 90`. No managed Postgres, no migrations, no schema versioning.
 
 ## What about the in-browser history?
 

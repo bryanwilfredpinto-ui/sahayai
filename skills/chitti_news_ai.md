@@ -158,7 +158,7 @@ Track completion auto-generates a certificate:
 }
 ```
 
-Saved as `chitti_news_ai_cert_v1`. Rendered card includes:
+Saved as `chitti_news_ai_cert_v1`. Railwayed card includes:
 - Sahayai mark
 - User name
 - Profession + track + level

@@ -40,7 +40,7 @@ Service identity ping.
 
 ### `GET /health`
 
-Render health-check probe.
+Railway health-check probe.
 
 **Response 200**
 ```json
@@ -436,7 +436,7 @@ Note: even on error this endpoint returns HTTP 200 — the JSON body's `ok` flag
 | Method | Path | Purpose | Auth |
 |---|---|---|---|
 | `GET` | `/` | service identity | none |
-| `GET` | `/health` | Render probe | none |
+| `GET` | `/health` | Railway probe | none |
 | `GET` | `/api/news/feed` | filtered feed | none |
 | `GET` | `/api/news/<state>/<language>/<category>` | pretty-URL feed | none |
 | `GET` | `/api/news/breaking` | breaking-news ribbon | none |

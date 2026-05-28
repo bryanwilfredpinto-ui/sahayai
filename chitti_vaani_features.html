@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Vaani — Feature Tests · Sire</title>
+<meta name="description" content="Live feature test panel for Chitti Vaani. 20 features. Status, speaker, thumbs, notes per card. Multi-language. Mobile-first.">
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🎖️</div>
+    <div>
+      <h1 class="cf-title">Chitti Vaani — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_vaani.html">Open Vaani ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main">
+  <div id="features-mount"></div>
+</main>
+<footer class="cf-foot">
+  <a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a>
+</footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'vaani',
+  label: 'Chitti Vaani',
+  features: [
+    { name:'Voice IN / Voice OUT — 9 Indian languages', desc:'Speak in your language; hear the reply spoken back via Voice Factory.', status:'green', try:'Open Vaani, tap mic, say "Hello" in Hindi or Tamil', link:'chitti_vaani.html' },
+    { name:'DeepSeek intent classification → 14 Chittis', desc:'Vaani routes your query to the right Chitti automatically. One conversation, every capability.', status:'green', try:'Say "Compare Crocin prices" → should route to MedUPI', link:'chitti_vaani.html' },
+    { name:'Geo-aware local-business lookup (5/25 km)', desc:'Finds nearby kiranas, taxis, restaurants. Auto-expands radius if none found.', status:'green', try:'Say "Order vegetables nearby"', link:'chitti_vaani.html' },
+    { name:'Always-on emergency keyword spotting', desc:'Listens for emergency words (bachao, madad, dard) in any Chitti audio.', status:'green', try:'Say "Chitti, emergency" — alarm should fire' },
+    { name:'Family-cascade emergency protocol', desc:'On emergency: rings alarm bypassing silent → spouse → family. NEVER auto-dials cops.', status:'green', try:'Trigger emergency keyword, observe cascade order' },
+    { name:'Psychology basics → PhD corpus', desc:'Bounded peer-support conversation; routes to helpline cascade if user is in crisis.', status:'green', try:'Say "I am feeling low" — should route to Tele-MANAS 14416' },
+    { name:'Helpline cascade — 14416 · iCall · Vandrevala · NIMHANS', desc:'Four-tier mental-health helpline routing for psychology queries.', status:'green', try:'Trigger crisis keyword, verify helpline numbers presented' },
+    { name:'Gmail OAuth — send email as Chitti', desc:'One-tap Gmail send-as-user with the Chitti AI signature appended.', status:'green', try:'Say "Email Maa to come for dinner"', link:'chitti_vaani.html' },
+    { name:'WhatsApp / UPI / tel: deep-link actions', desc:'Native deep-links to WhatsApp, UPI apps, phone dialer with one tap.', status:'green', try:'Say "WhatsApp Raj — running late"', link:'chitti_vaani.html' },
+    { name:'Chitti-to-Chitti relay (paired devices)', desc:'Family devices paired to Chitti relay messages even when offline.', status:'green', try:'Pair two devices, send relay message' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Every response carries the mandatory 5-element widget for blind/deaf/mute/illiterate users.', status:'green', try:'Observe any Vaani response — widget should be present', link:'chitti_vaani.html' },
+    { name:'ISL Phase 1 — animation panel on every response', desc:'Indian Sign Language animation alongside every Vaani response. For 6 crore deaf Indians.', status:'green', try:'Enable ISL mode, observe response panel', link:'chitti_vaani.html' },
+    { name:'User Disability Profile (first-visit prompt)', desc:'One-time multi-select (blind/deaf/mute/ISL/illiterate/elderly) saved locally, never re-asked.', status:'green', try:'Open Vaani in fresh tab (clear localStorage), observe prompt', link:'chitti_vaani.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Chitti never acts on its own. Every side-effecting action gates on chittiConfirmAndDo.', status:'green', try:'Trigger any action — verify "Sire, shall I…?" modal' },
+    { name:'7 voice intents — CALL · SMS · WA · Silent · Ring · YouTube · OpenApp', desc:'Locked voice-command vocabulary for the 7 most-used device actions.', status:'green', try:'Say "Call Maa"; "Open YouTube"', link:'chitti_vaani.html' },
+    { name:'Federated voice-sample collection', desc:'Opt-in voice donation. Samples train per-language community voices over time.', status:'green', try:'Open Vaani settings, enable voice donation' },
+    { name:'Camera intelligence — text reading for blind users', desc:'Camera reads text aloud for blind users (sign boards, menus, prescriptions).', status:'yellow', try:'Not yet wired — planned next sprint' },
+    { name:'ISL Phase 2 — camera-based ISL detection', desc:'Camera detects user\'s ISL gestures; Chitti interprets. Marked COMING SOON.', status:'yellow', try:'Phase 2 — pending camera + model integration' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain. Fires only after DeepSeek 5xx ×3. Surfaces honest fallback notice.', status:'red', try:'TONIGHT — P0. Currently 0/15 wired across the platform.' },
+    { name:'Offline P2P emergency relay (Phase 2.7)', desc:'Google Nearby Connections relay for emergencies when both devices are offline. Ships post-Play-Store.', status:'yellow', try:'Phase 2.7 — separate Play Store submission queued' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

@@ -13,7 +13,7 @@ For every `POST /api/ca/ask`, log:
 - Source path taken: `deepseek` / `fallback_no_key` / `fallback_http_<code>` / `fallback_network`
 - `usage.prompt_tokens` and `usage.completion_tokens` from DeepSeek
 
-Today, the service uses Python `logging` to stdout only (Render captures it). No structured JSON logging, no aggregation. Cheap fix: switch to `logging.Formatter` with JSON output.
+Today, the service uses Python `logging` to stdout only (Railway captures it). No structured JSON logging, no aggregation. Cheap fix: switch to `logging.Formatter` with JSON output.
 
 ## 2. DeepSeek failure rate
 
@@ -25,7 +25,7 @@ We need a counter and a dashboard panel for:
 - `deepseek_network_error` — DNS / TLS / timeout
 - `deepseek_no_key` — deploy misconfiguration (should be zero in prod)
 
-Today: nothing. We rely on inspecting Render logs.
+Today: nothing. We rely on inspecting Railway logs.
 
 ## 3. Disclaimer-injection audit (every reply)
 
@@ -54,4 +54,4 @@ Neither endpoint is polled by anything today (see [../TODO.md](../TODO.md) opera
 
 - The raw user question (privacy — they may paste PAN / Aadhaar).
 - The raw DeepSeek reply (size; replay via prompt + topic + language is acceptable).
-- IP addresses beyond what Render's edge already records.
+- IP addresses beyond what Railway's edge already records.

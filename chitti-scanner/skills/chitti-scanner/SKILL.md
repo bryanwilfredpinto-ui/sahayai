@@ -20,7 +20,7 @@ chitti-scanner/
     ├── config.py               settings (DEEPSEEK_API_KEY · vision model · CORS · MEDUPI_API_BASE)
     ├── requirements.txt        flask · flask-cors · gunicorn · httpx
     ├── runtime.txt             Python 3.11
-    ├── render.yaml             Render Blueprint
+    ├── render.yaml             Railway Blueprint
     ├── services/
     │   └── scanner_service.py  DeepSeek wrapper + CHITTI_SCANNER_PROMPT + per-type legal lines + cross-product links
     └── routes/

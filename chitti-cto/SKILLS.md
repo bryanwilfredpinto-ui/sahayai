@@ -89,10 +89,10 @@
 
 ## DEVOPS SKILLS
 - CI/CD: GitHub Actions — test → build → deploy on every push
-- Railway (primary) + Render (secondary)
+- Railway (primary) + Railway (secondary)
 - Docker and Docker Compose
 - Monitoring: Prometheus, Grafana, Sentry, Railway logs
-- All secrets in Railway/Render env vars — never in code
+- All secrets in Railway/Railway env vars — never in code
 - Daily health checks on all 15 Chitti `/health` endpoints
 - **Commando Standard:** Deploy fails = rollback immediately. Never leave production broken. Zero-downtime only.
 

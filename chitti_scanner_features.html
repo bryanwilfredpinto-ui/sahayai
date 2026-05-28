@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Scanner — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">📷</div>
+    <div>
+      <h1 class="cf-title">Chitti Scanner — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · Backend 404</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_scanner.html">Open Scanner ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'scanner',
+  label: 'Chitti Scanner',
+  features: [
+    { name:'DeepSeek vision — packaged food, barcode, medicine strip', desc:'Camera vision via DeepSeek for food, barcodes, medicine strips.', status:'red', try:'Backend 404 — Render service down. Restart needed.' },
+    { name:'FSSAI status lookup per scan (no cache)', desc:'FSSAI status pulled live per scan, never cached.', status:'red', try:'Backend down — FSSAI lookup offline' },
+    { name:'Barcode lookup', desc:'EAN / UPC / GS1 barcode lookup.', status:'red', try:'Backend down' },
+    { name:'Medicine-strip → MedUPI deep-link', desc:'Strip scan auto-deep-links to MedUPI with extracted molecule + strength.', status:'yellow', try:'Code wired; backend down — link surface OK, lookup offline' },
+    { name:'Community-alert feed (annual FSSAI report)', desc:'Community fake-product alerts aggregated to annual FSSAI report.', status:'green', try:'Feed renders client-side from cached data' },
+    { name:'Camera-intelligence contract on every scan', desc:'what / where / when / result / user / satisfaction. Anonymised. "Chitti forget" wipes all.', status:'green', try:'Code wired in capture path' },
+    { name:'Honest `unclear` verdict when confidence low', desc:'Low-confidence scans return `unclear`. NEVER silently coerced to `safe`.', status:'green', try:'Internal — verify confidence threshold logic' },
+    { name:'DeepSeek wrap_llm on analyze_text + analyze_image', desc:'Both text and image vision paths wrapped via lib/hooks.wrap_llm.', status:'yellow', try:'Code wired; backend down' },
+    { name:'HookRegistry + Observability (dedicated /tmp/chitti_scanner_quality.db)', desc:'Quality stack registered with dedicated SQLite engine.', status:'yellow', try:'Code wired; backend down' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any Scanner response', link:'chitti_scanner.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Save-to-history, send-to-MedUPI, report-as-fake — all confirm before fire.', status:'green', try:'Report fake, verify confirm modal' },
+    { name:'Utility bill scanner with consumer-helpline 1800-11-4000 handoff', desc:'Utility bill capture + handoff to consumer helpline for overcharge.', status:'red', try:'Backend down' },
+    { name:'Contract / insurance policy scanner with UPI-Fraud-Guard handoff', desc:'Contract clause scan + handoff to Chitti UPI for premium-fraud check.', status:'red', try:'Backend down' },
+    { name:'"Chitti forget" deletes camera captures (tombstone preserved)', desc:'Voice or button command wipes all captures; tombstone preserves aggregate counts.', status:'green', try:'Say "Chitti forget", verify capture wipe' },
+    { name:'Fake-product alert decay after 90 days unless re-confirmed', desc:'Alerts decay if no fresh scan in same pincode within 90 days.', status:'green', try:'Internal — verify decay cron' },
+    { name:'Type-specific legal disclaimer per scan', desc:'Food / medicine / contract / utility bill — each with its own disclaimer.', status:'green', try:'Open scan result, observe type-specific disclaimer' },
+    { name:'Annual FSSAI report (anonymised, district-aggregated)', desc:'Yearly anonymised FSSAI compliance report.', status:'yellow', try:'Annual generation cron pending' },
+    { name:'Real-time nearby fake-product warnings', desc:'When a fake is confirmed at pincode X, alert nearby users on next scanner-open.', status:'yellow', try:'Pending geo-fanout substrate' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' },
+    { name:'Cross-Chitti scanner deep-links (Vaani / MedUPI)', desc:'Scanner deep-links into Vaani read-aloud + MedUPI alternatives.', status:'yellow', try:'Code wired; backend down — link surface OK' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

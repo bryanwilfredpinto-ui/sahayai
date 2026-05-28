@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti UPI — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🛡️</div>
+    <div>
+      <h1 class="cf-title">Chitti UPI — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · Backend 404</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_upi.html">Open UPI ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'upi',
+  label: 'Chitti UPI',
+  features: [
+    { name:'HIGH / MED / LOW fraud classification', desc:'Three-tier fraud-risk verdict on any UPI message, call, link, or transcript.', status:'red', try:'Backend 404 — Render service down. Restart needed.' },
+    { name:'2026 RBI rule cards cited on every verdict', desc:'Every verdict carries the relevant 2026 RBI rule citation.', status:'red', try:'Backend down — RBI cards offline' },
+    { name:'Honest scope disclosure — "classifier, not payment intent"', desc:'Every response explicitly states "I am a classifier, NOT a payment intent".', status:'red', try:'Backend down — disclosure surface offline' },
+    { name:'DeepSeek wrap_llm (compliance_inject=False for JSON output)', desc:'Disclaimer rides on legal_lines field outside the JSON object.', status:'yellow', try:'Code wired; backend down — cannot verify live' },
+    { name:'HookRegistry + Observability registered (dedicated /tmp/chitti_upi_quality.db)', desc:'Quality stack registered with dedicated SQLite engine.', status:'yellow', try:'Code wired; backend down' },
+    { name:'SMS classifier — paste raw SMS text', desc:'Paste raw SMS → HIGH / MED / LOW verdict.', status:'red', try:'Backend down — SMS endpoint offline' },
+    { name:'Call-transcript classifier', desc:'Paste what caller said → fraud verdict.', status:'red', try:'Backend down' },
+    { name:'UPI deep-link classifier', desc:'Paste upi://pay?... link → fraud verdict.', status:'red', try:'Backend down' },
+    { name:'Message-text classifier (WhatsApp / email)', desc:'Paste WhatsApp or email text → fraud verdict.', status:'red', try:'Backend down' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any UPI response card', link:'chitti_upi.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Saved-pattern alerts, scam-report submission — all confirm before fire.', status:'green', try:'Submit a scam report, verify confirm modal' },
+    { name:'Swarm pattern learning (≥100 confirmations)', desc:'Anonymised scam patterns promoted to skills/*.md after ≥100 confirmations.', status:'yellow', try:'Pending Swarm cron + scam-report DB write' },
+    { name:'Reasoning + rule citation in every verdict', desc:'Each verdict body contains the model\'s reasoning + cited RBI rule.', status:'red', try:'Backend down' },
+    { name:'Fraud-caught retrospective tracking', desc:'Verified retrospectively when user reports outcome.', status:'yellow', try:'Pending outcome-feedback loop' },
+    { name:'False-positive rate dashboard', desc:'Legitimate transactions flagged HIGH tracked over time.', status:'yellow', try:'Pending Founder dashboard tile' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' },
+    { name:'RBI new-circular auto-ingest', desc:'New RBI circulars auto-ingest into rule cards.', status:'yellow', try:'Planned — RBI feed integration pending' },
+    { name:'Bank-name reputation overlay', desc:'Bank-name → reputation score (e.g. SBI vs unknown).', status:'yellow', try:'Planned — bank reputation DB pending' },
+    { name:'Verdict-age expiry (re-classify after 30 days)', desc:'Verdicts older than 30 days do not auto-re-classify — user must re-submit.', status:'green', try:'Internal — verify TTL logic' },
+    { name:'Cross-Chitti deep-link to Scanner for QR codes', desc:'UPI QR codes routed through Chitti Scanner for camera capture.', status:'yellow', try:'Pending Scanner integration' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Government — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🏛️</div>
+    <div>
+      <h1 class="cf-title">Chitti Government — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_government.html">Open Government ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'government',
+  label: 'Chitti Government',
+  features: [
+    { name:'30 schemes seeded at launch', desc:'30 central+state schemes seeded with eligibility + document checklist + apply route.', status:'green', try:'Browse schemes catalog', link:'chitti_government.html' },
+    { name:'PIB poll every 6h — auto-refresh', desc:'PIB feed polled every 6h. New scheme announcements auto-ingested.', status:'green', try:'curl /admin/government/pib-poll — verify last-run timestamp' },
+    { name:'"Am I eligible?" checker (P0)', desc:'Multi-factor eligibility checker across BPL / OBC / SC/ST / farmer / women / senior / PwD.', status:'green', try:'Open scheme, run eligibility checker', link:'chitti_government.html' },
+    { name:'Document checklist per scheme (P0)', desc:'Per-scheme document checklist with deep-link to Chitti Scanner for capture.', status:'green', try:'Open scheme detail, observe doc checklist' },
+    { name:'Honest "unclear eligibility — check with district office"', desc:'Eligibility returns "unclear" when model confidence low. NEVER coerced to "eligible".', status:'green', try:'Try borderline-eligibility input, verify unclear state' },
+    { name:'DigiLocker partner-only — local-upload until approval', desc:'DigiLocker integration honest-stubbed as partner-only. Local-upload flow live.', status:'green', try:'Open document-upload, verify local-upload UI shown' },
+    { name:'DeepSeek wrap_llm at every call site', desc:'All DeepSeek calls wrapped via lib/hooks.wrap_llm.', status:'green', try:'grep government_deepseek.py for wrap_llm' },
+    { name:'HookRegistry + Observability registered', desc:'FastAPI / Flask app carries app.state.chitti_obs + app.state.chitti_hooks.', status:'green', try:'curl / — verify quality-stack headers' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any Government response', link:'chitti_government.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Save eligibility result, doc upload, scheme bookmark — all confirm before fire.', status:'green', try:'Bookmark a scheme, verify confirm modal' },
+    { name:'BPL/OBC/SC-ST/farmer/women/senior/PwD brackets', desc:'Full eligibility brackets per Indian census + ministry definitions.', status:'green', try:'Toggle brackets in eligibility checker' },
+    { name:'False-positive rate held below 5%', desc:'Eligibility false-positive rate monitored on judge eval.', status:'green', try:'Internal — verify weekly judge-eval report' },
+    { name:'State-specific scheme overlay', desc:'State picker reveals state-specific schemes alongside central catalog.', status:'green', try:'Switch state, observe overlay' },
+    { name:'Camera capture on document uploads', desc:'Per §2b camera-intelligence: what / where / when / result / user / satisfaction. Anonymised.', status:'green', try:'Upload document via camera, verify capture' },
+    { name:'Application status tracker (P1)', desc:'Per-scheme application-status tracker once submitted.', status:'yellow', try:'Planned P1 — needs partner-integration with each scheme portal' },
+    { name:'DigiLocker fetch (partner-mode — pending approval)', desc:'Fetch documents from user\'s DigiLocker. Blocked on partner approval.', status:'yellow', try:'Blocked — DigiLocker partner application pending' },
+    { name:'Deadline reminders for application windows', desc:'Reminder before scheme application window closes.', status:'yellow', try:'Planned P1 — deadline-aware cron not yet wired' },
+    { name:'Cross-state scheme comparison', desc:'Side-by-side state-vs-state comparison of similar schemes.', status:'yellow', try:'Planned P2 — comparison UI pending' },
+    { name:'SMS fallback for low-connectivity users', desc:'SMS delivery of eligibility result + document checklist for 2G users.', status:'yellow', try:'Planned P2 — Twilio SMS not yet wired' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

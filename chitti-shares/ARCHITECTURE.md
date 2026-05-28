@@ -40,13 +40,13 @@
 | Layer | Library / version |
 |---|---|
 | Web framework | FastAPI 0.115 |
-| ASGI runner | Uvicorn (single-worker on Render free dyno) |
+| ASGI runner | Uvicorn (single-worker on Railway free dyno) |
 | ORM | SQLAlchemy 2.0 (`declarative_base`, schema-qualified) |
 | Settings | pydantic-settings (`BaseSettings` in `config.py`) |
 | HTTP client | httpx (async for DeepSeek, sync for screener / Angel) |
-| Scheduler | APScheduler (in-process; replaced paid Render cron jobs) |
+| Scheduler | APScheduler (in-process; replaced paid Railway cron jobs) |
 | Auth | mobile OTP via Fast2SMS + JWT access (15 min) + refresh (30 d) + bcrypt OTP hashing |
-| Hosting | Render free tier (cold-start friendly) |
+| Hosting | Railway free tier (cold-start friendly) |
 | Database | Supabase Postgres (`shares` schema) — SQLite for local dev |
 | AI | DeepSeek chat completions (`deepseek-chat`); migrating off Anthropic |
 
@@ -90,9 +90,9 @@ App entry. Mounts the routers and also declares the **public, unauthenticated** 
 
 Engine modules — every one of them is tested by hitting the corresponding route.
 
-- **`screener_client.py`** — HTML scrape of screener.in. Returns identity, ratios, quarterly P&L (last 8), shareholding, full financials (annual P&L + BS + CF). Primary fundamentals source from Render.
-- **`yahoo_client.py`** — yfinance wrapper. LOCAL-DEV ONLY (Yahoo blocked from Render). Kept as a fallback inside `main.py /api/fundamentals` for the rare case where screener returns empty.
-- **`angel_client.py`** — Angel SmartAPI for live quotes + historical candles (Daily through Monthly). The locked price source on Render.
+- **`screener_client.py`** — HTML scrape of screener.in. Returns identity, ratios, quarterly P&L (last 8), shareholding, full financials (annual P&L + BS + CF). Primary fundamentals source from Railway.
+- **`yahoo_client.py`** — yfinance wrapper. LOCAL-DEV ONLY (Yahoo blocked from Railway). Kept as a fallback inside `main.py /api/fundamentals` for the rare case where screener returns empty.
+- **`angel_client.py`** — Angel SmartAPI for live quotes + historical candles (Daily through Monthly). The locked price source on Railway.
 - **`intraday_candles.py`** — Side-door direct-Angel fetch for `15min`/`5min`/`1min` timeframes (separate from the Daily-cap codepath).
 - **`news_client.py`** — Moneycontrol + LiveMint + BSE + NSE RSS aggregator. `fetch_market_news()` and `fetch_stock_news(symbol)`.
 - **`indicators.py`** — RSI, MACD, Bollinger, SMA, EMA, ATR, Williams %R, Force Index, Elder Ray, OBV, ADX, Supertrend, Heikin Ashi Trend, TTM Squeeze, Awesome Oscillator, Vortex, Chandelier Exit, Hull MA, Laguerre RSI, Balance of Power, Chande Kroll Stop, etc. `compute_all(candles)` returns the 43-indicator block plus a summary.
@@ -114,10 +114,10 @@ Engine modules — every one of them is tested by hitting the corresponding rout
 - **`auth_helpers.py`** — JWT create/decode + bcrypt OTP hash.
 - **`otp_sender.py`** — Fast2SMS send + dev fake-OTP mode.
 - **`kite_client.py`** — Optional Zerodha Kite OAuth flow (paid; opt-in via `DATA_SOURCE=kite`).
-- **`nse_client.py`** — NSE direct fetch (blocked on Render → laptop pusher fallback).
+- **`nse_client.py`** — NSE direct fetch (blocked on Railway → laptop pusher fallback).
 - **`deepseek_client.py`** — Async DeepSeek chat completions, decorated with `@tracked` so every call lands in `usage_log`.
 - **`usage_tracker.py`** — Hard-cap pre-check (`CapExceeded`), cost calculation (₹22.50 / 1M input tokens, ₹91.50 / 1M output tokens), per-IST-day rollup into `daily_quota_summary`.
-- **`scheduler.py`** — APScheduler. Replaces Render Cron (Render charges $1/mo each). Runs while the web service is awake.
+- **`scheduler.py`** — APScheduler. Replaces Railway Cron (Railway charges $1/mo each). Runs while the web service is awake.
 - **`agent_runtime.py`** — DeepSeek tool-calling loop. `run_agent(system, user, tools, executors, max_steps)` orchestrates LLM-pick-tool → execute → loop → synthesise.
 - **`agent_tools.py`** — Tool schemas + executors for Chitti Technical, Chitti Fundamental, Chitti MedUPI.
 
@@ -158,14 +158,14 @@ Every model declares `__table_args__ = TABLE_KW` (or combines a tuple with it) s
 
 ## Scheduler design
 
-The Render free tier blocks long-running cron jobs (paid feature). [`backend/services/scheduler.py`](backend/services/scheduler.py) replaces them with an in-process APScheduler that runs **while the web service is awake**:
+The Railway free tier blocks long-running cron jobs (paid feature). [`backend/services/scheduler.py`](backend/services/scheduler.py) replaces them with an in-process APScheduler that runs **while the web service is awake**:
 
 - Alerts check — every 5 min during 09:15–15:30 IST Mon–Fri
 - Open-call tracker — every 5 min during market hours
 - Kite re-auth reminder — daily 05:55 IST (skipped when `DATA_SOURCE=yahoo`)
 - Daily quota summary rollover — 00:00 IST
 
-The legacy `/api/cron/*` URLs remain available for an external curl-based caller (laptop pusher or paid Render cron) and are secret-gated by `CRON_SECRET`.
+The legacy `/api/cron/*` URLs remain available for an external curl-based caller (laptop pusher or paid Railway cron) and are secret-gated by `CRON_SECRET`.
 
 ## Request lifecycle
 
@@ -182,4 +182,4 @@ client request
     +--- exception_handler(CapExceeded) -> 503 {code: BUDGET_CAP_EXCEEDED}
 ```
 
-Cold-start: Render free dyno sleeps after 15 min idle. The frontend pings `/health` on app-mount; if any subsequent API call hangs >8 s, a "Backend is waking up" overlay appears. The HTML pages do not require auth for the Phase 3+ public endpoints, so most users never see auth flow at all.
+Cold-start: Railway free dyno sleeps after 15 min idle. The frontend pings `/health` on app-mount; if any subsequent API call hangs >8 s, a "Backend is waking up" overlay appears. The HTML pages do not require auth for the Phase 3+ public endpoints, so most users never see auth flow at all.

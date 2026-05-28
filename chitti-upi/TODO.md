@@ -13,8 +13,8 @@ Priority key:
 
 | #   | Item                                                                                                                | Why                                                                                                       |
 |-----|---------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| P0-1 | Connect `chitti-upi/render.yaml` Blueprint to Render and deploy `chitti-upi-api`                                   | Per memory _Render deploy status 2026-05-10_, this product has a Blueprint but **no live backend** yet.   |
-| P0-2 | Set `DEEPSEEK_API_KEY` in Render dashboard (it is `sync:false` in render.yaml)                                     | Without it, every request falls back to MEDIUM "AI offline" — the product is functionally broken in prod. |
+| P0-1 | Connect `chitti-upi/render.yaml` Blueprint to Railway and deploy `chitti-upi-api`                                   | Per memory _Railway deploy status 2026-05-10_, this product has a Blueprint but **no live backend** yet.   |
+| P0-2 | Set `DEEPSEEK_API_KEY` in Railway dashboard (it is `sync:false` in render.yaml)                                     | Without it, every request falls back to MEDIUM "AI offline" — the product is functionally broken in prod. |
 | P0-3 | Verify on live before handover: `curl https://chitti-upi-api.onrender.com/api/upi/health` and one `/check` smoke   | Project memory _Verify on live before handover_ — Bryan should never be the one who discovers it broken.  |
 | P0-4 | Add `chitti-upi-api` to the founder-dashboard health-ping list (sahayai.in/founder)                                | Memory: _All feature status visible at sahayai.in/founder_.                                               |
 | P0-5 | Wire HIGH-verdict → Vaani deep-link in `chitti_upi.html` (skill says it exists; verify in the live page)           | Cross-product hook documented in `skills/chitti-upi/SKILL.md` but needs a live test.                      |

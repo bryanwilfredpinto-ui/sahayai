@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti News — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">📰</div>
+    <div>
+      <h1 class="cf-title">Chitti News — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_news.html">Open News ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'news',
+  label: 'Chitti News',
+  features: [
+    { name:'25+ RSS feeds (EN + HI)', desc:'25+ trusted RSS sources across English and Hindi. Regional langs stubbed for v1.1.', status:'green', try:'Open News, observe source list', link:'chitti_news.html' },
+    { name:'8 sub-agents — Politics · Business · Tech · Entertainment · Sports · Factcheck · Summarizer · News-AI bridge', desc:'Routed sub-agents per category. Politics under hard neutrality guardrails.', status:'green', try:'Switch category, observe routed agent' },
+    { name:'State × language × category routing', desc:'Articles filtered by user\'s state + language + category preference.', status:'green', try:'Set state to Tamil Nadu, observe routing', link:'chitti_news.html' },
+    { name:'Fact-checker requires ≥2 sources for `verified`', desc:'Single-source articles surface as `unverified`. NEVER auto-elevated.', status:'green', try:'Inspect article verdict — verify ≥2-source rule' },
+    { name:'`verified` / `partial` / `disputed` / `unverified` verdicts', desc:'Four-tier fact-check verdict labels on every article.', status:'green', try:'Browse articles, observe verdict badges' },
+    { name:'"Chitti\'s Take" — 3-bullet summary via DeepSeek', desc:'Plain-language 3-bullet summary in user\'s chosen language.', status:'green', try:'Open article, observe summary bullets' },
+    { name:'Politics neutrality guardrails', desc:'No opinion words. No party labels in summarizer. Equal coverage across parties.', status:'green', try:'Read politics summaries, verify neutral framing' },
+    { name:'For You page — 👍/👎 → category profile', desc:'Personalised tab driven by localStorage thumbs profile. Never synced to backend.', status:'green', try:'Open For You, observe personalised feed', link:'chitti_news.html' },
+    { name:'Read Later / Cancelled folders per device', desc:'Per-device folder system for queued or dismissed articles.', status:'green', try:'Add article to Read Later, verify persistence' },
+    { name:'Speaker reads FULL RSS body (content:encoded)', desc:'TTS reads entire article body, not just headline.', status:'green', try:'Tap 🔊 on article, verify full body spoken' },
+    { name:'DeepSeek wrap_llm at every call site', desc:'All DeepSeek calls wrapped via lib/hooks.wrap_llm.', status:'green', try:'grep news_summary.py + news_explain.py for wrap_llm' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any article card', link:'chitti_news.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Read Later add, Cancelled mark, share — all confirm before fire.', status:'green', try:'Add article to Read Later, verify confirm' },
+    { name:'Turso embedded-replica pattern wired in code', desc:'libsql-experimental + local SQLite + bg sync code wired.', status:'yellow', try:'grep database.py for embedded replica branch' },
+    { name:'Turso DATABASE_URL on Render — libsql:// form', desc:'Render env DATABASE_URL must point to libsql://... — currently pointing at Supabase Postgres.', status:'red', try:'Fix Render env DATABASE_URL — fleet-wide gap' },
+    { name:'Morning briefing — 5 headlines at 07:00 IST', desc:'Daily 07:00 IST 5-headline briefing read aloud (push).', status:'yellow', try:'Planned P1 — briefing cron pending' },
+    { name:'"Explain this news in simple Hindi" button', desc:'Per-article plain-Hindi explainer for low-literacy users.', status:'yellow', try:'Planned P0 — button pending wire-up' },
+    { name:'Fake-news score visible on every article', desc:'Fake-news risk score on article card (not just on open).', status:'yellow', try:'Planned P0 — card-level score pending' },
+    { name:'Regional language tabs (Tamil/Telugu/Bengali)', desc:'First-class regional language tabs beyond EN + HI.', status:'yellow', try:'Planned v1.1 — regional RSS feed integration pending' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

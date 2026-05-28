@@ -24,4 +24,4 @@ Cross-reading [chitti_legal.html](../chitti_legal.html) against [routes/legal.py
 - **Lawyer-directory referral** — at the end of every reply, optionally surface a "find a lawyer near you" CTA (consent-gated, location from the user's chosen state). The page currently links only to other Chitti products.
 - **`/api/legal/explain` streaming** — long notices can take 6–8s on DeepSeek; a token-stream would let the screen reader start reading sooner.
 - **Server-side language validation** — `_LANG_NAMES.get(language, language or "English")` silently passes garbage through. If the frontend ever sends `lang=xx`, the model is told *"Reply in xx"*. Should 400 instead.
-- **Health endpoint should ping DeepSeek.** Currently `/api/legal/health` only reports `deepseek_configured: bool`. A real readiness check would help Render's health probe distinguish "key set but invalid" from "all good."
+- **Health endpoint should ping DeepSeek.** Currently `/api/legal/health` only reports `deepseek_configured: bool`. A real readiness check would help Railway's health probe distinguish "key set but invalid" from "all good."

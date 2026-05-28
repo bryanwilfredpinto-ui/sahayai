@@ -20,7 +20,7 @@ chitti-vaani/
     ├── config.py               settings (DEEPSEEK_API_KEY · model · CORS · token caps)
     ├── requirements.txt        flask · flask-cors · gunicorn · httpx
     ├── runtime.txt             Python 3.11
-    ├── render.yaml             Render Blueprint
+    ├── render.yaml             Railway Blueprint
     ├── services/
     │   └── vaani_service.py    DeepSeek wrapper + CHITTI_VAANI_PROMPT (canonical) + disclaimer enforcer
     └── routes/

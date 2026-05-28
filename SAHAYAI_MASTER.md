@@ -12,7 +12,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 
 - Built for Tier-2/3 cities, elderly parents, vernacular speakers, and the four user archetypes: **Blind / Deaf / Mute / Illiterate**.
 - No paywalls. No sign-up. Hindi-first. Voice IN + Voice OUT. Plain English when written.
-- Stacked on free tiers: GitHub Pages (frontend), Render (backend), Turso (DB), DeepSeek (LLM), Bhashini (voice, pending ULCA creds).
+- Stacked on free tiers: GitHub Pages (frontend), Railway (backend), Turso (DB), DeepSeek (LLM), Bhashini (voice, pending ULCA creds).
 - Founder: **Bryan Wilfred Pinto**.
 
 **End state: a Bharat SuperApp** — voice-first money, health, govt-schemes, jobs, shopkeeper tools, all in the user's language. The 12 products live today are the first wave.
@@ -27,7 +27,7 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | LLM provider | **DeepSeek only** (`api.deepseek.com`, OpenAI-compatible). Anthropic fully removed from every backend. | `project_ai_provider_switch_to_deepseek` |
 | Database | **Turso libSQL**, one DB per Chitti (8 total incl. medupi). Embedded-replica pattern (`libsql-experimental` + local SQLite file + bg sync), **NOT direct Hrana** — `sqlalchemy-libsql` can't speak PRAGMA / isolation_level / has_table. | `project_db_migration_to_turso`, `project_turso_embedded_replica_pattern`, `project_turso_db_inventory` |
 | Voice substrate | **Chitti Voice Factory** — 26 langs (12 primary + 14 cousin incl. Sanskrit & Oraon). 4-supplier cascade. `mock_bhashini` active until ULCA creds. Tier C **never silently falls back**. | `project_voice_factory_complete`, `project_chitti_voice_factory_spec` |
-| Data sources | **screener.in** fundamentals · **Angel** prices · **RSS** news. **Yahoo BLOCKED from Render** — `yahoo_client` kept as local-dev fallback only. | `project_data_sources` |
+| Data sources | **screener.in** fundamentals · **Angel** prices · **RSS** news. **Yahoo BLOCKED from Railway** — `yahoo_client` kept as local-dev fallback only. | `project_data_sources` |
 | Emergency protocol (Vaani) | **Family cascade, NEVER cops.** Confirm-with-master → ring alarm bypassing silent → spouse → family → Chitti-to-Chitti relay. **NEVER auto-dial 112 / 100 / 102.** Always-on keyword spotting on any Chitti-mediated audio. | `project_chitti_vaani_emergency_protocol` |
 | Legal disclaimer | **Sticky `NOT SEBI REGISTERED` bar + full legal modal** on every Chitti page. **Never move to footer.** | `project_legal_disclaimer` |
 | Accessibility contract | **Four users — Blind / Deaf / Mute / Illiterate.** Voice IN + Voice OUT + symbols + plain English. **Never colour-only.** | `project_four_user_contract` |
@@ -42,8 +42,8 @@ Cross-references throughout point to auto-memory entries under `~/.claude/projec
 | **New-session rule** | **Every Claude Code session MUST begin with `READ SAHAYAI_MASTER.md`.** Non-negotiable. Without it: no code changes, no new features, no deployments. Auto-enforced via repo-root [`CLAUDE.md`](CLAUDE.md) + [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — both files auto-load on session start; no human instruction needed. See §2c. | `project_new_session_rule_locked` |
 | **Feature Discovery Box** | **Every Chitti page carries a `💡 What can Chitti do for you?` button** — floating CTA + a11y-bar mirror. Reads each Chitti's `skills/FEATURES.md` live (nothing hardcoded), groups by LIVE / PLANNED / FUTURE / ANDROID, speaks features aloud in the user's selected language, taps to activate/expand, and **auto-reads on first visit for blind users**. Substrate: [`chitti_features.js`](chitti_features.js); auto-loaded from [`chitti_a11y.js`](chitti_a11y.js) — every product inherits without per-page edits. See §2d. | `project_feature_discovery_box_locked` |
 | **Business Continuity Plan** | **5-layer self-healing — platform self-runs 72 hours without human intervention.** Layer 1 self-ping every 4 min (chitti-founder hits every Chitti `/health`, emails Sire on non-200, logs to Turso). Layer 2 health checks all backends. Layer 3 quality score on every response (per-response widget §7). Layer 4 daily/weekly/hourly feedback monitoring (§6). Layer 5 LLM fallback chain **DeepSeek → Claude → Gemini**. See §2e. | `project_business_continuity_plan_locked` |
-| **Hosting / deploy** | **Frontend on GitHub Pages, backends on Render free tier.** Every Chitti backend ships a `render.yaml` so the platform is reconstitutable from `main`. No vendor lock — we move providers only if the free tier disappears, never for vanity. | — |
-| **Uptime mechanism** | **Self-ping from `chitti-founder` every 4 minutes — NOT UptimeRobot or any external monitor.** Self-ping doubles as a free Render keep-alive (which idles dynos after 15 min), logs to Turso, and emails Sire on non-200 (debounced 1 h per Chitti). External uptime services are explicitly out of scope: they would add a billed subscription, a third-party point of failure, and a data-egress surface for free. See §2e Layer 1. | `project_business_continuity_plan_locked` |
+| **Hosting / deploy** | **Frontend on GitHub Pages, backends on Railway free tier.** Every Chitti backend ships a `render.yaml` so the platform is reconstitutable from `main`. No vendor lock — we move providers only if the free tier disappears, never for vanity. | — |
+| **Uptime mechanism** | **Self-ping from `chitti-founder` every 4 minutes — NOT UptimeRobot or any external monitor.** Self-ping doubles as a free Railway keep-alive (which idles dynos after 15 min), logs to Turso, and emails Sire on non-200 (debounced 1 h per Chitti). External uptime services are explicitly out of scope: they would add a billed subscription, a third-party point of failure, and a data-egress surface for free. See §2e Layer 1. | `project_business_continuity_plan_locked` |
 | **Per-product knowledge corpora** | **Every Chitti must publish a [`skills/FEATURES.md`](chitti-medupi/skills/FEATURES.md) (capability surface, parsed live by [chitti_features.js](chitti_features.js)).** Domain-expert Chittis additionally publish a `skills/<DOMAIN>_KNOWLEDGE.md` at the grade locked in row 12 above — currently [CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md), [LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md), [PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md). Missing knowledge corpus = missing product on launch, same merge-blocker status as a missing FEATURES.md. | — |
 | **Camera substrate** | **[`chitti_camera.js`](chitti_camera.js) at repo root, auto-loaded by [`chitti_a11y.js`](chitti_a11y.js).** Single capture path for every Chitti with camera access; honest queue when `/api/camera/capture` is unreachable; `Chitti.camera.forget()` writes the tombstone. Pages never hand-roll camera capture or storage. See §2b. | `project_camera_intelligence_locked` |
 | **Swarm Intelligence** | **Every Chitti of the same type learns from every other Chitti of the same type.** Anonymised interactions → pattern detection (high 👍, problems solved, strategies that worked) → ≥100 confirmations → human review for HIGH-risk Chittis (Legal, CA, Medical) → push to `skills/*.md` for that Chitti type → all instances benefit. Cycle: daily collect · weekly validate · monthly push to skills · quarterly full review. Always anonymised; user owns their data; "Chitti forget" removes from swarm too. See §2f. | `project_swarm_intelligence_locked` |
@@ -221,7 +221,7 @@ Five layers of self-healing run continuously so the platform survives **72 hours
 
 | Layer | What | Where |
 |---|---|---|
-| **1** | **Self-ping every 4 minutes — NOT UptimeRobot, NOT any external monitor.** chitti-founder hits every Chitti `/health` endpoint on its own APScheduler. Non-200 → email Sire (debounced 1 h per Chitti). Every result logged to Turso `chitti-founder` DB. Self-ping also doubles as the Render free-tier keep-alive (Render idles dynos after 15 min); the 4-min interval is comfortably under that threshold. **No external uptime SaaS** — it would add a billed subscription, a third-party point of failure, and a data-egress surface for free. | [chitti-founder/backend/main.py](chitti-founder/backend/main.py) → `run_self_ping()` cron, interval `SELF_PING_INTERVAL_MIN=4` |
+| **1** | **Self-ping every 4 minutes — NOT UptimeRobot, NOT any external monitor.** chitti-founder hits every Chitti `/health` endpoint on its own APScheduler. Non-200 → email Sire (debounced 1 h per Chitti). Every result logged to Turso `chitti-founder` DB. Self-ping also doubles as the Railway free-tier keep-alive (Railway idles dynos after 15 min); the 4-min interval is comfortably under that threshold. **No external uptime SaaS** — it would add a billed subscription, a third-party point of failure, and a data-egress surface for free. | [chitti-founder/backend/main.py](chitti-founder/backend/main.py) → `run_self_ping()` cron, interval `SELF_PING_INTERVAL_MIN=4` |
 | **2** | **Health checks all backends.** Same self-ping loop; ground truth of which Chitti is up *right now*. Surfaces on the Founder dashboard alongside the daily slice. | same job |
 | **3** | **Quality scoring every response.** Per-response widget (§7) captures 👍 / 👎 + voice/text feedback on every box, tagged to the box ID. | [feedback-widget.js](feedback-widget.js) |
 | **4** | **Feedback monitoring daily.** 07:00 IST quality email + Sunday 08:00 IST weekly trend + hourly :15 escalator (low thumbs → SMS, repeat defect → GH issue, CO₂ > 0.5 g → carbon issue). | §6 — [chitti-founder/backend/main.py](chitti-founder/backend/main.py) |
@@ -231,7 +231,7 @@ Five layers of self-healing run continuously so the platform survives **72 hours
 
 | Scenario | Response |
 |---|---|
-| **Single backend down** | Render auto-restarts the service. Layer-1 self-ping logs the gap and emails Sire on the first non-200 (debounced). |
+| **Single backend down** | Railway auto-restarts the service. Layer-1 self-ping logs the gap and emails Sire on the first non-200 (debounced). |
 | **Database fails** | Standby takes over within **30 s** — Turso embedded-replica pattern (§2) keeps a local SQLite file; writes continue against the local copy and sync resumes once Turso is reachable. |
 | **DeepSeek fails** | Auto-fallback Claude → Gemini in the LLM client. Honest failure if all three are down. |
 | **GitHub Pages down** | Cloudflare mirror — **P2**, not yet wired; queued in §8. |
@@ -756,7 +756,7 @@ user has only out-of-radius confirmed matches. Full spec lives in
 
 ### P1 — Unblock Voice Factory Phase 2
 
-10. **Embed-pass on Voice Factory fluency pipeline** — needs Render py3.11 to finish the 79,414-chunk corpus across 26 langs (`project_voice_factory_fluency_pipeline`).
+10. **Embed-pass on Voice Factory fluency pipeline** — needs Railway py3.11 to finish the 79,414-chunk corpus across 26 langs (`project_voice_factory_fluency_pipeline`).
 11. **Bhashini ULCA registration** by Sire — unblocks swap from `mock_bhashini` to real supplier.
 
 ### P2 — Infrastructure cleanup

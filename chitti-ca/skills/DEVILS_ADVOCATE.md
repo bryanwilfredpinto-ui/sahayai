@@ -24,7 +24,7 @@ A notice-reading flow ("here's the notice — now what do I do?") naturally want
 
 ## 6. No rate limiting
 
-Free-tier Render exposed without per-IP throttling. A single noisy client can drain the DeepSeek budget. Acceptable while traffic is small, dangerous once linked from `index.html`.
+Free-tier Railway exposed without per-IP throttling. A single noisy client can drain the DeepSeek budget. Acceptable while traffic is small, dangerous once linked from `index.html`.
 
 ## 7. No disclaimer-injection metric
 

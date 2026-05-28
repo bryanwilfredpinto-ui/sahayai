@@ -8,7 +8,7 @@ Every article card renders the **byline + outlet display name** exactly as store
 
 ## Publication date / time
 
-Pulled from the RSS `pubDate` (or `published_parsed`) and stored in UTC. Rendered in IST on the card. Never inferred. Never rewritten. If the feed doesn't expose a date, the article is tagged `published_at = null` and surfaces an "Undated" badge — it is **not** stamped with ingest time.
+Pulled from the RSS `pubDate` (or `published_parsed`) and stored in UTC. Railwayed in IST on the card. Never inferred. Never rewritten. If the feed doesn't expose a date, the article is tagged `published_at = null` and surfaces an "Undated" badge — it is **not** stamped with ingest time.
 
 ## URL
 

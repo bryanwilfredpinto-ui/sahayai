@@ -15,7 +15,7 @@ Chitti Technical is the technical-analysis sister product to Chitti Fundamentals
 
 - **File:** [chitti_complete_technical.html](chitti_complete_technical.html) — single-file, vanilla JS, inlined LightweightCharts v4.1.3
 - **Live URL:** `https://sahayai.in/chitti_complete_technical.html`
-- **Backend:** [chitti-shares/backend/](chitti-shares/backend/) (FastAPI on Render) at `chitti-shares-api-production.up.railway.app`
+- **Backend:** [chitti-shares/backend/](chitti-shares/backend/) (FastAPI on Railway) at `chitti-shares-api-production.up.railway.app`
 
 ---
 
@@ -53,12 +53,12 @@ chitti-shares/backend/
 
 | What | Source | Status |
 |---|---|---|
-| Live prices, OHLC candles, indices | Angel SmartAPI | ✅ LIVE — works from Render |
+| Live prices, OHLC candles, indices | Angel SmartAPI | ✅ LIVE — works from Railway |
 | 15min / 5min / 1min intraday candles | Angel via `services/intraday_candles.py` (side-door) | ✅ LIVE |
 | Auto S/R levels, trendlines | `services/levels.py` (computed from candles) | ✅ LIVE |
 | News (per stock + market) | Moneycontrol + LiveMint + BSE + NSE RSS via `services/news_client.py` | ✅ LIVE |
 | AI synthesis (Chitti's View) | DeepSeek (server-side, cached) | ✅ LIVE |
-| **NOT USED:** Yahoo Finance | Blocked from Render IPs | 🚫 |
+| **NOT USED:** Yahoo Finance | Blocked from Railway IPs | 🚫 |
 | **NOT USED:** Kite Connect | Paid (₹2,000/mo); Bryan has no Zerodha account | 🚫 |
 
 ---
@@ -279,7 +279,7 @@ The Chitti edge — these go in the Chart tab footer + Scanner result row + Call
 
 ## 10b. Phase 7 (P1) — Agentic foundations shipped 2026-05-08
 
-The first agentic surface for Chitti Technical is now LIVE on Render. Source-of-truth files: `services/strength.py`, `services/agent_runtime.py`, `services/agent_tools.py` (all NEW, not on the certified list).
+The first agentic surface for Chitti Technical is now LIVE on Railway. Source-of-truth files: `services/strength.py`, `services/agent_runtime.py`, `services/agent_tools.py` (all NEW, not on the certified list).
 
 | Endpoint | Purpose | Verified |
 |---|---|---|
@@ -319,7 +319,7 @@ Scanner fix shipped same week: full-universe scan (cap removed) + `iloc[-2]` cor
 - [ ] Three-user lens audit: aria-label on every new control, 🔊 button on every signal, ▲▼/word labels on every change, plain-English caption on every metric
 - [ ] SEBI banner still visible at the top
 - [ ] Update **section 6** (built) and **section 7** (pending) in this doc — move items between them as they ship
-- [ ] Push to `main` — both GitHub Pages (frontend) and Render (backend) auto-deploy
+- [ ] Push to `main` — both GitHub Pages (frontend) and Railway (backend) auto-deploy
 
 ---
 

@@ -32,7 +32,7 @@ End-state commit on `main`: `33b5372`.
 
 | Mark | Meaning |
 |------|---------|
-| 🟢 GREEN  | Substrate present **AND** invoked at every call site. Production curl confirmation lands after the next Render deploy. |
+| 🟢 GREEN  | Substrate present **AND** invoked at every call site. Production curl confirmation lands after the next Railway deploy. |
 | 🟡 YELLOW | Substrate present, call sites mostly wired, one or more honest gaps remaining (background judge, agent-tool loop, stub product). |
 | 🔴 RED    | Substrate missing or never invoked at any call site. |
 | ⚪ N/A    | Not applicable to this backend (no LLM path, intentional stub, etc.). |
@@ -237,7 +237,7 @@ in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `run_swarm_p
 2. **`evaluators.py` LLM-as-judge — FIXED.** [lib/evaluators.py](lib/evaluators.py) `evaluate_response` now accepts an optional `observability` parameter and writes one `kind="judge"` row before the judge call (carrying user_input + model_output preview + sources_n) and one after (carrying latency_ms + the four scores or the error reason). Quadrails *do not* gate the judge — we want the judge to see the response verbatim — but every judgement turn now lands in the audit fan-in. [lib/founder_report.py](lib/founder_report.py) `compute_slice` auto-constructs an `Observability(chitti=..., engine=engine)` if none is passed, so existing call-sites benefit without code changes. Mirrored to all 12 chitti backends that carry `lib/evaluators.py`.
 3. **chitti-logo-video — YELLOW BY DESIGN, kept.** Intentional honest stub product (SVG monogram + queued mock video) per `project_chitti_ca_legal_logo_video`. Observability=None is correct until a real video provider is wired. Flip to 🟢 only when the product graduates from stub.
 4. **chitti-founder — YELLOW BY DESIGN, kept.** Uses libsql directly per `project_turso_embedded_replica_pattern`; no SQLAlchemy `Observability` engine. Founder is the *aggregator*, not a per-chitti producer — its own HTTP rows showing up in `quality_audit` would be circular. The libsql-backed self-ping logs already cover founder's own observability surface. Will graduate to 🟢 only if/when founder gains a user-facing LLM endpoint.
-5. **Production verification** — no backend earns a *curl-verified* 🟢 until the next Render deploy. Run §5 protocol then; flip the 🟢 marks to bold once each curl check passes.
+5. **Production verification** — no backend earns a *curl-verified* 🟢 until the next Railway deploy. Run §5 protocol then; flip the 🟢 marks to bold once each curl check passes.
 
 ---
 
@@ -245,7 +245,7 @@ in [chitti-founder/backend/main.py](chitti-founder/backend/main.py) `run_swarm_p
 
 ### First-round curl results (2026-05-15)
 
-Confirmed via `curl -sI` from outside the dev box, against live Render
+Confirmed via `curl -sI` from outside the dev box, against live Railway
 production:
 
 ```
@@ -295,7 +295,7 @@ Reading [chitti-news/render.yaml:17](chitti-news/render.yaml#L17):
   sync: false        # paste Supabase URL in dashboard
 ```
 
-chitti-news on Render is still pointed at **Supabase Postgres**, not
+chitti-news on Railway is still pointed at **Supabase Postgres**, not
 Turso. The `libsql_experimental` embedded-replica code in
 [chitti-news/backend/database.py](chitti-news/backend/database.py) only
 fires when `DATABASE_URL` starts with `libsql://` — if the env var is a
@@ -306,11 +306,11 @@ thread never starts. The Turso DB has been provisioned but unused since
 The same misconfiguration is the most likely root cause of the
 chitti-news-ai empty-Turso result. To resolve:
 
-1. On Render dashboard → each Chitti service → Environment, confirm
+1. On Railway dashboard → each Chitti service → Environment, confirm
    `DATABASE_URL` is set to the exact `libsql://<db>-<org>.<region>.turso.io`
    form (no quotes, no whitespace, no trailing `?authToken=` for the
    split-pattern Chittis like news-ai).
-2. Render logs → grep for `Opening embedded replica at` or
+2. Railway logs → grep for `Opening embedded replica at` or
    `Initial Turso sync failed`. Absence of both means the libsql:// branch
    never executed.
 3. Trigger an RSS poll, wait 60 s, re-run the `SELECT COUNT(*)` against
@@ -346,7 +346,7 @@ of its applicable checks pass on production traffic.
 
 ### chitti-voice-factory deploy note
 
-The voice-factory build was OOM-ing on Render free tier because
+The voice-factory build was OOM-ing on Railway free tier because
 sentence-transformers + torch + faiss-cpu + pymupdf + youtube-transcript-api
 were in `requirements.txt`. Commit `f5f3f3a` (2026-05-15) splits them out to
 `requirements-optional.txt` and routes `services/fluency_corpus.py` through
@@ -366,7 +366,7 @@ with explicit `httpx` (already a transitive dep). `config.py` swapped
 `ANTHROPIC_*` env vars for `DEEPSEEK_*` (`DEEPSEEK_API_KEY`, `DEEPSEEK_URL`,
 `DEEPSEEK_VISION_MODEL` — defaults to `deepseek-vl-7b-chat`). On
 production, set `DEEPSEEK_API_KEY` on the chitti-medupi-api service and
-unset the legacy `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` env vars.
+unset the legacy `GEMINI_API_KEY` / `ANTHROPIC_MODEL` env vars.
 
 Locked §2 decision now holds across **every** Chitti backend: DeepSeek
 is the sole LLM provider. `grep -ri 'anthropic\|Anthropic' chitti-*/backend/`

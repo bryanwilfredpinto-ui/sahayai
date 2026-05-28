@@ -38,7 +38,7 @@ This is deliberate: a label-reader that *also* tries to be a price-comparison en
 | Bank account / UPI VPA | Masked to last 4 |
 | Scan history | Lives **only** in the user's `localStorage` (`chitti_scanner_history`), capped at 20 entries, clearable from the UI |
 | User consent | Stored in `localStorage.chitti_scanner_consent_given`; T&C must be read (or read aloud) and accepted before camera, mic, or analyse fires |
-| DeepSeek calls | Use HTTPS, Bearer auth, JSON-mode response; the API key lives only in the Render env (`sync: false`) |
+| DeepSeek calls | Use HTTPS, Bearer auth, JSON-mode response; the API key lives only in the Railway env (`sync: false`) |
 | CORS | Locked to `https://sahayai.in,https://www.sahayai.in` in production (`ALLOWED_ORIGINS`) |
 
 There is no DB. There is no cookie. There is no upstream user account. A scan is a one-shot HTTP request that exists in RAM for the duration of the response and then disappears.

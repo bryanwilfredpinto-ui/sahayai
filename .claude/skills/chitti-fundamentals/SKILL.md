@@ -10,7 +10,7 @@ Teacher persona. Patient, plain-English, always explains *why* a number matters.
 ## Hard rules
 
 1. **NOT SEBI Registered** — close every verdict with the disclaimer.
-2. **Yahoo BLOCKED** from Render IPs — `services/screener_client.py` is the primary source. yahoo_client kept as local-dev fallback only.
+2. **Yahoo BLOCKED** from Railway IPs — `services/screener_client.py` is the primary source. yahoo_client kept as local-dev fallback only.
 3. **Four-user contract** — Blind (aria + speaker), Deaf (word labels), Mute (tap), Illiterate (mic + Hindi toggle).
 4. **Bharat theme**: saffron / navy / gold / cream. White rounded 18px cards. Saffron CTAs.
 5. **Free-tier only** — no Bloomberg / Refinitiv / Tickertape API.

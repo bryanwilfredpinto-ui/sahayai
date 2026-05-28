@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti Scanner — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Snap or type any label · DeepSeek vision · FSSAI status · MedUPI deep-link · honest `unclear` verdict when confidence is low · camera-intelligence contract on every scan.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_scanner.html |
+| Health | https://chitti-scanner-api.onrender.com/health |
+| Status | 🟢 GREEN (intentional Railway — Quality Status §1) |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
+| Languages | Hindi + English + 9 Indian languages |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §9](../CHITTI_SOP.md) |
+
+---
+
 # Chitti Product Scanner
 
 **Snap or type any label. Chitti reads it, warns you, saves you money.**
@@ -44,7 +61,7 @@ chitti-scanner/
 ├── API.md                    (endpoint reference)
 ├── DATABASE.md               (N/A — stateless)
 ├── PROMPTS.md                (CHITTI_SCANNER_PROMPT verbatim)
-├── render.yaml               (Render blueprint — not yet connected)
+├── render.yaml               (Railway blueprint — not yet connected)
 ├── frontend/
 │   ├── index.html            (mirror of /chitti_scanner.html)
 │   └── README.md
@@ -110,7 +127,7 @@ Every response includes a `cross_links` array. The frontend renders these as dee
 | Surface | URL | Status |
 |---|---|---|
 | Frontend | https://sahayai.in/chitti_scanner.html | Live |
-| Backend | https://chitti-scanner-api.onrender.com | **Planned** — `render.yaml` is ready but the service has not been connected to Render yet (P0 in [TODO.md](./TODO.md)) |
+| Backend | https://chitti-scanner-api.onrender.com | **Planned** — `render.yaml` is ready but the service has not been connected to Railway yet (P0 in [TODO.md](./TODO.md)) |
 
 ---
 

@@ -10,7 +10,7 @@ A web app for Indian retail traders. AI-powered stock research with live indices
 
 **Production URL** (after deploy): https://shares.sahayai.in
 **Backend API**: https://chitti-shares-api-production.up.railway.app
-**Database**: SQLite on Render persistent disk
+**Database**: SQLite on Railway persistent disk
 
 ---
 
@@ -20,7 +20,7 @@ A web app for Indian retail traders. AI-powered stock research with live indices
 React SPA (Vite, Tailwind)               FastAPI (uvicorn)
 ─────────────────────                    ─────────────────
 chitti-shares-web                ←──→    chitti-shares-api
-  Render Static Site                       Render Web Service
+  Railway Static Site                       Railway Web Service
   shares.sahayai.in                        chitti-shares-api-production.up.railway.app
                                               │
                                               ├── SQLite (./data/chitti_shares.db)
@@ -30,7 +30,7 @@ chitti-shares-web                ←──→    chitti-shares-api
                                               ├── Fast2SMS (OTP)
                                               └── Telegram bot (Kite reauth alerts)
 
-Render Cron Jobs                         GitHub Actions
+Railway Cron Jobs                         GitHub Actions
 ─────────────────                        ──────────────
 3× scheduled curl hits                   Auto-deploy on push to main
 to /api/cron/* endpoints                   .github/workflows/deploy-chitti-shares.yml
@@ -49,7 +49,7 @@ You can deploy without all of these — Yahoo + DeepSeek are the only **mandator
 | Yahoo Finance | No (free) | (no key needed) | ₹0 |
 | Kite Connect | Optional | https://developers.kite.trade/apps/new | ₹2,000 one-time + ₹500/month |
 | Telegram bot | Optional | Message [@BotFather](https://t.me/BotFather) → `/newbot` | Free |
-| Render | Yes (hosting) | https://dashboard.render.com/ | Free tier OK to start |
+| Railway | Yes (hosting) | https://dashboard.render.com/ | Free tier OK to start |
 
 ### Getting the Telegram bot token + chat ID (for Kite re-auth alerts)
 
@@ -64,7 +64,7 @@ If you skip Telegram, the cron `kite-reauth` endpoint just logs warnings — not
 
 ## Environment variables (every variable, explained)
 
-Set all of these on the Render Web Service dashboard → **Environment** tab. There's a shorter `.env.example` in the repo with the same content.
+Set all of these on the Railway Web Service dashboard → **Environment** tab. There's a shorter `.env.example` in the repo with the same content.
 
 ### Phase 1: Auth + JWT
 ```
@@ -93,7 +93,7 @@ BACKEND_URL=https://chitti-shares-api-production.up.railway.app
 
 ### Phase 5: Watchlist + Alerts
 ```
-ALERTS_POLL_MINUTES=5           # Used in legacy in-process scheduler. Phase 6 uses Render Cron instead.
+ALERTS_POLL_MINUTES=5           # Used in legacy in-process scheduler. Phase 6 uses Railway Cron instead.
 MAX_WATCHLIST_ITEMS=50
 MAX_ALERTS_PER_USER=30
 ```
@@ -114,11 +114,11 @@ CRON_SECRET=                    # Long random string. Used in cron URL: ?secret=
 
 ## First-time deploy (start to finish)
 
-This assumes you already have a Render account and the GitHub Actions workflow committed.
+This assumes you already have a Railway account and the GitHub Actions workflow committed.
 
 ### 1. Create the Web Service (backend)
 
-1. Render Dashboard → **New** → **Web Service**.
+1. Railway Dashboard → **New** → **Web Service**.
 2. Connect your `bryanwilfredpinto-ui/sahayai` repo.
 3. **Root directory**: `chitti-shares/backend`
 4. **Runtime**: Python 3
@@ -134,11 +134,11 @@ This assumes you already have a Render account and the GitHub Actions workflow c
     INFO stock_universe: Seeded 153 stocks into universe
     ```
 
-Note the URL Render gives you, e.g. `chitti-shares-api-production.up.railway.app`.
+Note the URL Railway gives you, e.g. `chitti-shares-api-production.up.railway.app`.
 
 ### 2. Create the Static Site (frontend)
 
-1. Render Dashboard → **New** → **Static Site**.
+1. Railway Dashboard → **New** → **Static Site**.
 2. Same repo.
 3. **Root directory**: `chitti-shares/frontend`
 4. **Build command**: `npm install && npm run build`
@@ -153,11 +153,11 @@ Note the URL Render gives you, e.g. `chitti-shares-api-production.up.railway.app
    ```
    shares.sahayai.in   CNAME   <your-render-static-site>.onrender.com
    ```
-3. Wait 5–15 minutes. Render auto-provisions HTTPS.
+3. Wait 5–15 minutes. Railway auto-provisions HTTPS.
 
-### 4. Set up Render Cron Jobs (Phase 6)
+### 4. Set up Railway Cron Jobs (Phase 6)
 
-Three cron jobs total. Render Dashboard → **New** → **Cron Job**.
+Three cron jobs total. Railway Dashboard → **New** → **Cron Job**.
 
 | Cron name | Schedule (UTC) | Schedule (IST) | Command |
 |---|---|---|---|
@@ -173,7 +173,7 @@ For each cron job:
 
 The endpoints are secret-protected. A wrong/missing secret returns 401.
 
-> **Free tier note:** Render's free plan currently allows 1 cron job. If you only have one slot, prioritise `chitti-alerts`. The other two can be triggered manually via curl until you upgrade.
+> **Free tier note:** Railway's free plan currently allows 1 cron job. If you only have one slot, prioritise `chitti-alerts`. The other two can be triggered manually via curl until you upgrade.
 
 ### 5. Smoke test
 
@@ -212,7 +212,7 @@ Open `https://shares.sahayai.in`, log in with your mobile + OTP, you're on the d
 ### Manual (one-time per setup)
 1. Set all env vars (above)
 2. Configure DNS CNAME for `shares.sahayai.in`
-3. Set up the 3 Render Cron Jobs (or just the alerts one on free tier)
+3. Set up the 3 Railway Cron Jobs (or just the alerts one on free tier)
 4. Push code → CI/CD deploys automatically
 
 ### Manual (ongoing, only if `DATA_SOURCE=kite`)
@@ -304,7 +304,7 @@ Open `https://shares.sahayai.in`, log in with your mobile + OTP, you're on the d
 - `GET /api/quota/breakdown` — this month grouped by provider/operation
 
 ### Cron (3) **(Phase 6)** — secret-protected
-- `POST /api/cron/alerts?secret=...` — alerts checker (called by Render Cron)
+- `POST /api/cron/alerts?secret=...` — alerts checker (called by Railway Cron)
 - `POST /api/cron/track-calls?secret=...` — refresh open calls
 - `POST /api/cron/kite-reauth?secret=...` — Telegram reminder if Kite token stale
 
@@ -377,7 +377,7 @@ curl -s -H "$H" $BASE/api/technical/rules/saved
 ## Common issues
 
 ### "The server is waking up. Please refresh the page in 20–30 seconds."
-This is **expected behaviour** on Render's free tier. Dynos sleep after 15 min idle. The frontend's wake-up overlay handles it gracefully. To eliminate cold starts, upgrade the web service to **Starter ($7/mo)** which never sleeps.
+This is **expected behaviour** on Railway's free tier. Dynos sleep after 15 min idle. The frontend's wake-up overlay handles it gracefully. To eliminate cold starts, upgrade the web service to **Starter ($7/mo)** which never sleeps.
 
 ### `503 BUDGET_CAP_EXCEEDED`
 You've hit the daily ₹100 hard cap (or whatever `HARD_CAP_INR` is set to). Yahoo calls (free) still work. Other metered calls return 503 until 00:00 IST.
@@ -394,8 +394,8 @@ This is by design. Zerodha invalidates all access tokens daily ~06:00 IST. The T
 
 ### Cron job never runs
 - Verify the `secret` query param matches `CRON_SECRET` exactly (case-sensitive)
-- Render free tier only allows 1 cron job; check you're not over the limit
-- Check Render → Cron Job → Logs
+- Railway free tier only allows 1 cron job; check you're not over the limit
+- Check Railway → Cron Job → Logs
 
 ---
 
@@ -421,18 +421,18 @@ That's it. No data migration required.
 ## Cost estimate (typical solo trader)
 
 Month 1 (1 active user, you):
-- Render Web Service free: ₹0 (cold-starts up to 30s; Starter $7 = ₹600 if you want zero cold-starts)
-- Render Static Site: ₹0
-- Render Cron Job (1 free): ₹0
+- Railway Web Service free: ₹0 (cold-starts up to 30s; Starter $7 = ₹600 if you want zero cold-starts)
+- Railway Static Site: ₹0
+- Railway Cron Job (1 free): ₹0
 - Fast2SMS: ~₹6/month (1 OTP/day)
 - DeepSeek: ~₹50–₹150/month (depends on chat usage)
 - Yahoo: ₹0
 - Domain (already owned): ₹0
-- **Total: ₹50–₹160/month** if free Render tier; ~₹650–₹760/month with Starter
+- **Total: ₹50–₹160/month** if free Railway tier; ~₹650–₹760/month with Starter
 
 Month 6+ (with Kite for live trading):
 - Add Kite Connect: ₹500/month
-- Render Starter recommended: ₹600/month
+- Railway Starter recommended: ₹600/month
 - DeepSeek with specialist usage: ~₹200–₹400/month
 - **Total: ~₹1,300–₹1,500/month**
 

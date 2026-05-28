@@ -227,7 +227,7 @@ Defined in `chitti-news/skills/chitti-news-{category}/SKILL.md`. Summary:
 - 4-user contract: Blind / Deaf / Mute / Illiterate
 
 ### Pending (next session priority order)
-1. **Deploy backend** to Render (`chitti-news-api-production.up.railway.app`) — `render.yaml` ready, paste DATABASE_URL + ANTHROPIC_API_KEY, click deploy.
+1. **Deploy backend** to Railway (`chitti-news-api-production.up.railway.app`) — `render.yaml` ready, paste DATABASE_URL + GEMINI_API_KEY, click deploy.
 2. **First RSS poll verification** — after deploy, curl `/api/news/india/en/national` should return ≥10 real articles within 30 min.
 3. **Regional language sources** — Bangla / Telugu / Tamil / Odia outlets mostly don't publish public RSS. Plan: HTML scraping or app-API integration in v1.1.
 4. **Browser push notifications** for breaking news — service worker + Notification API.
@@ -274,11 +274,11 @@ Plus sticky picker bar (state + language + refresh) and breaking-news ribbon.
 ```
 chitti-news/backend/
 ├── main.py                     Flask app · CORS · startup hooks · 5 error handlers
-├── config.py                   Settings (DATABASE_URL · ANTHROPIC_API_KEY · CORS · scheduler)
+├── config.py                   Settings (DATABASE_URL · GEMINI_API_KEY · CORS · scheduler)
 ├── database.py                 SQLAlchemy + ensure_schema('news')
 ├── requirements.txt            flask · feedparser · sqlalchemy · anthropic · rapidfuzz · apscheduler
 ├── runtime.txt + .python-version  → Python 3.11
-├── render.yaml                 Render Blueprint
+├── render.yaml                 Railway Blueprint
 ├── data/
 │   ├── sources.json            26 RSS feeds (national + 4 state slices × 6 categories × 2 languages)
 │   └── articles_seed.json      6-row welcome seed (EN + HI)
@@ -391,7 +391,7 @@ gitignored at the repo root).
 - **Smoke tests** — 19 Python files parse via `ast.parse`; 26 sources + 6 articles JSON-valid; 517 lines of inline JS pass `node --check`
 
 ### ⏳ PENDING (next session priority order)
-1. **Deploy `chitti-news/backend`** to Render as `chitti-news-api-production.up.railway.app` — `render.yaml` is ready. Paste DATABASE_URL (same Supabase URL the others use) + ANTHROPIC_API_KEY (same key). After deploy, first poll fires within 30 min.
+1. **Deploy `chitti-news/backend`** to Railway as `chitti-news-api-production.up.railway.app` — `render.yaml` is ready. Paste DATABASE_URL (same Supabase URL the others use) + GEMINI_API_KEY (same key). After deploy, first poll fires within 30 min.
 2. **Live verification** — once deployed, curl `/health`, `/api/news/india/en/national`, `/api/news/article/1/take`, `/api/news/article/1/factcheck` from production.
 3. **Frontend cache update** — verify the live deploy has `chitti_news.html` and the API_BASE points correctly. The default in HTML is `chitti-news-api-production.up.railway.app`.
 4. **Regional language RSS** — Bangla / Telugu / Tamil / Odia outlets mostly don't publish public RSS. Add HTML scraping or app-API integration in v1.1.

@@ -1,6 +1,23 @@
+🎖️ **World Class Chitti Vaani — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> One dost. Every capability. One conversation.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_vaani.html |
+| Health | https://chitti-vaani-api-production.up.railway.app/health |
+| Status | 🟡 YELLOW — health unverified today |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — all served via voice-first |
+| Languages | 9 first-class · 26 via Voice Factory cascade |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §1](../CHITTI_SOP.md) |
+
+---
+
 # Chitti Vaani
 
-Voice-first conversational guide for Bharat — built around the **four-user accessibility contract** (blind / deaf / mute / illiterate / elderly). Tap mic, speak, get a DeepSeek-powered reply that the phone reads aloud in the user's language. Phase 1 is deployed on Render as a Flask backend + static HTML frontend; Phase 2 is the Android client that adds OS-level capabilities (lock screen, call screening, on-device emergency keyword spotting).
+Voice-first conversational guide for Bharat — built around the **four-user accessibility contract** (blind / deaf / mute / illiterate / elderly). Tap mic, speak, get a DeepSeek-powered reply that the phone reads aloud in the user's language. Phase 1 is deployed on Railway as a Flask backend + static HTML frontend; Phase 2 is the Android client that adds OS-level capabilities (lock screen, call screening, on-device emergency keyword spotting).
 
 ## What ships today (Phase 1 / 1.5 / 1.6)
 
@@ -26,14 +43,14 @@ Voice-first conversational guide for Bharat — built around the **four-user acc
 ```bash
 cd backend
 pip install -r requirements.txt
-DEEPSEEK_API_KEY=sk-... python main.py   # http://127.0.0.1:8003
+GEMINI_API_KEY=... python main.py   # http://127.0.0.1:8003
 ```
 
 Open `../frontend/index.html?api=http://127.0.0.1:8003` (or any of the `chitti_vaani.html` siblings at repo root that point to this API).
 
 ## Deploy
 
-[`render.yaml`](render.yaml) is a Render Blueprint. Push the repo, "New → Blueprint" on Render, set `DEEPSEEK_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ADMIN_SECRET`, `ADMIN_DATABASE_URL`, and `FEEDBACK_IP_SALT` in the dashboard.
+[`render.yaml`](render.yaml) is a Railway Blueprint. Push the repo, "New → Blueprint" on Railway, set `DEEPSEEK_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ADMIN_SECRET`, `ADMIN_DATABASE_URL`, and `FEEDBACK_IP_SALT` in the dashboard.
 
 ## Endpoints (full surface)
 

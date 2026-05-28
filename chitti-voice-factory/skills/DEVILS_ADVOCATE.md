@@ -48,12 +48,12 @@ voice for that language across every Chitti") is therefore *partly*
 true — the recording exists; the cascade has not yet been taught to use
 it. [`../TODO.md`](../TODO.md) §2.2.
 
-## 5. `/tmp` storage on Render free tier is destructive
+## 5. `/tmp` storage on Railway free tier is destructive
 
 [`../DATABASE.md`](../DATABASE.md) §7 — the SQLite file lives at
-`/tmp/chitti_voice_factory.sqlite` and Render's free tier resets `/tmp/`
+`/tmp/chitti_voice_factory.sqlite` and Railway's free tier resets `/tmp/`
 on every deploy. The first time we confirm a real winner on production
-and Render redeploys, the row vanishes. Spec §11.6 promises permanence;
+and Railway redeploys, the row vanishes. Spec §11.6 promises permanence;
 the storage layer cannot keep that promise yet. Migrate to a mounted
 disk or Postgres **before** the first real winner is confirmed.
 
@@ -61,7 +61,7 @@ disk or Postgres **before** the first real winner is confirmed.
 
 [`../backend/routes/admin.py:96`](../backend/routes/admin.py) calls
 `sqlite3.connect("./chitti_voice_factory.sqlite")` directly, bypassing
-`ledger.py` and ignoring the `VOICE_FACTORY_DB` env var. On Render this
+`ledger.py` and ignoring the `VOICE_FACTORY_DB` env var. On Railway this
 points at the wrong location. The query happens to fail closed (empty
 result), but it's silently looking at the wrong file. Fix in
 [`../TODO.md`](../TODO.md) §2.6.

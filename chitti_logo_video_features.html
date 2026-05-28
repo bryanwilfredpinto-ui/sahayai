@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Logo & Video — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🎨</div>
+    <div>
+      <h1 class="cf-title">Chitti Logo & Video — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · YELLOW-by-design (honest stub)</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_logo_video.html">Open Logo & Video ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'logo_video',
+  label: 'Chitti Logo & Video',
+  features: [
+    { name:'SVG monogram generation', desc:'Deterministic SVG monogram / wordmark / shield in 5 palettes. Real working output today.', status:'green', try:'Open Logo & Video, generate monogram', link:'chitti_logo_video.html' },
+    { name:'Mock video queue + status', desc:'In-memory job queue with 3s queued → rendering → VIDEO_READY transitions.', status:'green', try:'Submit a video request, observe queue progression', link:'chitti_logo_video.html' },
+    { name:'Honest "queued mock" disclosure on every response', desc:'Every response surfaces supplier: "mock" + disclaimer. NEVER fakes AI video.', status:'green', try:'Submit any request, observe honest disclosure' },
+    { name:'Observability=None correct until graduation (YELLOW by design)', desc:'Intentional YELLOW until real provider key lands.', status:'yellow', try:'By design — graduates when REPLICATE_API_TOKEN + VIDEO_PROVIDER set' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any output card', link:'chitti_logo_video.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Logo regenerate, queue-submit, brand-kit-export — all confirm before fire.', status:'green', try:'Regenerate logo, verify confirm modal' },
+    { name:'Logo download counter', desc:'Tracks downloads as demand signal for real provider integration.', status:'green', try:'Download logo, observe counter increment' },
+    { name:'Mock-video queue length (unmet-demand signal)', desc:'Queue length tracked over time as demand signal.', status:'green', try:'View admin dashboard' },
+    { name:'Honest-stub disclosure click-through tracking', desc:'Track whether users read the honest-stub disclosure.', status:'green', try:'Open Logo & Video, click disclosure' },
+    { name:'Real video provider integration', desc:'Wire Pika / Runway / Remotion when API keys land.', status:'red', try:'Backend 404 — Render service down. Also blocked on provider keys.' },
+    { name:'Observability + HookRegistry + wrap_llm (graduates with provider)', desc:'Full quality stack activates when product graduates from stub.', status:'red', try:'Activates on provider integration' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback (post-graduation)', desc:'LLM fallback for prompt-to-video.', status:'red', try:'TONIGHT — P0. 0/15 wired.' },
+    { name:'Brand-kit export (colours, fonts)', desc:'Export brand-kit JSON (palette + font + monogram).', status:'yellow', try:'Planned — brand-kit export pending' },
+    { name:'Monogram templates updated on Sire request only', desc:'Templates curated; only updated on Sire approval.', status:'green', try:'Verify monogram-template freeze' },
+    { name:'Mock-video queue purged monthly (original date preserved)', desc:'Monthly purge keeps original queue-date for honest analytics.', status:'green', try:'Internal — verify monthly purge cron' },
+    { name:'WhatsApp-Business-ready logo size', desc:'Logo export sized for WhatsApp Business profile.', status:'green', try:'Export logo, verify WB-ready dimensions' },
+    { name:'Voice-led colour selector for blind users', desc:'Speak colour name → palette applied.', status:'green', try:'Say "Use saffron palette"' },
+    { name:'ISL panel on every response', desc:'Indian Sign Language panel on every output card.', status:'green', try:'Enable ISL mode, observe panel', link:'chitti_logo_video.html' },
+    { name:'Disability Profile activation', desc:'First-visit Disability Profile prompt, persists across all Chittis.', status:'green', try:'Clear localStorage, observe profile prompt' },
+    { name:'Cross-Chitti deep-link to Kirana / Business (post-graduation)', desc:'Deep-link into Chitti Kirana / Business when those ship.', status:'yellow', try:'Pending Kirana / Business launch' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

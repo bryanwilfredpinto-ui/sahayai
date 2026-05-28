@@ -244,6 +244,6 @@ DeepSeek + vision diagnostic. Used by the founder dashboard.
 
 ## Caveats
 
-- The image branch currently returns `fallback_no_vision` in production because `DEEPSEEK_VISION_MODEL="off"`. Flip this in the Render env once a vision endpoint is live.
+- The image branch currently returns `fallback_no_vision` in production because `DEEPSEEK_VISION_MODEL="off"`. Flip this in the Railway env once a vision endpoint is live.
 - All response strings are trimmed and length-capped server-side in `_normalise()` — never assume the model's raw output reaches the client.
 - The `legal_disclaimer` is **not** taken from the model output; it is set from `LEGAL_BY_TYPE[type]` after `type` validation. This is deliberate.

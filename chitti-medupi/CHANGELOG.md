@@ -53,18 +53,18 @@ Eight-step guided walk-through with EN/HI narration. Four-user contract honoured
 
 ---
 
-## Phase 4 — Render build battle (2026-05-08, all same day)
+## Phase 4 — Railway build battle (2026-05-08, all same day)
 
 | Commit | Title |
 |---|---|
-| `51caebc` | fix(medupi): pin rapidfuzz to 3.6.1 for Render build |
-| `a8ee499` | fix(medupi): wheel-only install + pin pydantic stack for Render free tier |
+| `51caebc` | fix(medupi): pin rapidfuzz to 3.6.1 for Railway build |
+| `a8ee499` | fix(medupi): wheel-only install + pin pydantic stack for Railway free tier |
 | `ed4d9f9` | fix(medupi): drop --only-binary + use pydantic 2.5.2 paired with pydantic-core 2.14.5 |
 | `854bafc` | fix(medupi): drop to pydantic v1 — eliminates Rust dep entirely |
 | `9b55dac` | refactor(medupi): swap FastAPI/pydantic/httpx for Flask/requests · zero Rust deps |
 | `9beed1f` | fix(medupi): pin Python 3.11 + bump psycopg2-binary to 2.9.10 |
 
-The Render free-tier slim image lacks Rust + cmake → pydantic-core can never compile from source. After four attempts to wrestle pydantic into shape, we **dropped the entire FastAPI/pydantic/httpx stack** and moved to **Flask + flask-cors + gunicorn + requests**. All 22 endpoints carried over identically — same shape, same response keys, frontend wiring unchanged.
+The Railway free-tier slim image lacks Rust + cmake → pydantic-core can never compile from source. After four attempts to wrestle pydantic into shape, we **dropped the entire FastAPI/pydantic/httpx stack** and moved to **Flask + flask-cors + gunicorn + requests**. All 22 endpoints carried over identically — same shape, same response keys, frontend wiring unchanged.
 
 ---
 

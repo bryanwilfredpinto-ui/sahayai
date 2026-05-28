@@ -1,9 +1,27 @@
+🎖️ **World Class Chitti Voice Factory — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Shared voice substrate · 26 languages · 4-supplier cascade · Tier C never silently falls back · community voices replace Bhashini over time.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_voice_factory.html + 26 language pages |
+| Health | https://chitti-voice-factory.onrender.com/health |
+| Status | 🟢 GREEN (intentional Railway) |
+| Phase 2 blocker | Sire's Bhashini ULCA registration |
+| Primary user | B2B internal — every other Chitti backend |
+| Languages | 26 (12 primary + 14 cousin incl. Sanskrit + Oraon) |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §11](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_VOICE_FACTORY_MASTER_SPEC.md) |
+
+---
+
 # Chitti Voice Factory
 
 **The shared voice layer for every Chitti product in 26 Indian languages.**
 
 - Frontend: 26 generated HTML pages (`chitti_<lang>.html`)
-- Backend: Flask on Render (`chitti-voice-factory.onrender.com`)
+- Backend: Flask on Railway (`chitti-voice-factory.onrender.com`)
 - Spec: [CHITTI_VOICE_FACTORY_MASTER_SPEC.md](../CHITTI_VOICE_FACTORY_MASTER_SPEC.md)
 
 ---
@@ -23,12 +41,12 @@ python main.py
 
 Test: `curl http://localhost:8004/health`
 
-### Render Deployment
+### Railway Deployment
 
 1. Ensure `render.yaml` exists in the repo root.
-2. Link this repo to Render (`sahayai.in` or `sahayai-v2`).
+2. Link this repo to Railway (`sahayai.in` or `sahayai-v2`).
 3. Create a new web service pointing to this directory tree.
-4. Add environment variables in Render dashboard:
+4. Add environment variables in Railway dashboard:
    - `BHASHINI_USER_ID` (once ULCA account is active)
    - `BHASHINI_API_KEY`
    - `BHASHINI_INFERENCE_KEY`
@@ -95,7 +113,7 @@ Frontend then calls browser's `SpeechSynthesisUtterance` API with `lang="hi"`.
 - [x] Honest status endpoints (all return `available: false` until first real synthesis).
 - [x] render.yaml wired.
 
-**Status**: Ready for Render deployment. Uses browser Web Speech API for v1.
+**Status**: Ready for Railway deployment. Uses browser Web Speech API for v1.
 
 ### Phase 2 (Real Bhashini)
 
@@ -180,13 +198,13 @@ Frontend then calls browser's `SpeechSynthesisUtterance` API with `lang="hi"`.
    - `BHASHINI_USER_ID`
    - `BHASHINI_API_KEY`
    - `BHASHINI_INFERENCE_KEY`
-8. **Paste these into Render dashboard** → redeploy.
+8. **Paste these into Railway dashboard** → redeploy.
 
 ---
 
 ## Testing Voice Factory
 
-Once deployed to Render:
+Once deployed to Railway:
 
 ```bash
 # Check all languages

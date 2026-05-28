@@ -22,7 +22,7 @@ The canonical system prompt in [../PROMPTS.md](../PROMPTS.md) contains *"Immedia
 
 A compromised user_token can send mail with the Chitti AI signature, lending it false authority. Mitigation: token rotation, scope limited to `gmail.send`, audit log per send. Not yet exposed to the user.
 
-## 6. SQLite on /tmp loses state on every Render free-tier deploy
+## 6. SQLite on /tmp loses state on every Railway free-tier deploy
 
 Tokens, pairs, relay inbox, feedback log — all on `/tmp` SQLite ([../ARCHITECTURE.md](../ARCHITECTURE.md)). A deploy mid-cascade can drop a paired-Chitti event. Mitigation: graduate to Supabase Postgres (`ADMIN_DATABASE_URL`) — tracked.
 

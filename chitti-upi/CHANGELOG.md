@@ -50,7 +50,7 @@ with the project memory entry _Skeleton-first pass must be exhaustive_.
   cross-product hooks (→ Vaani on HIGH, ← Scanner), and live URLs.
 
 **Deploy**
-- `chitti-upi/render.yaml` — Render Blueprint, free plan, Python runtime,
+- `chitti-upi/render.yaml` — Railway Blueprint, free plan, Python runtime,
   rootDir `backend`, gunicorn 2 workers, 60s timeout. Env: `PYTHON_VERSION`,
   `DEEPSEEK_API_KEY` (sync:false), `DEEPSEEK_MODEL`, `ALLOWED_ORIGINS`
   (sahayai.in + www.sahayai.in), `UPI_MAX_TOKENS`, `UPI_TEMPERATURE`.
@@ -60,7 +60,7 @@ with the project memory entry _Skeleton-first pass must be exhaustive_.
 | Date       | Memory entry                                              | Impact on UPI Guard                                                |
 |------------|-----------------------------------------------------------|---------------------------------------------------------------------|
 | 2026-05-09 | _AI provider switching Anthropic → DeepSeek_              | `upi_service.py` already targets DeepSeek; no migration needed.    |
-| 2026-05-10 | _Render deploy status 2026-05-10_                         | `render.yaml` present but **not yet connected** to Render. P0.     |
+| 2026-05-10 | _Railway deploy status 2026-05-10_                         | `render.yaml` present but **not yet connected** to Railway. P0.     |
 
 ## Pending (not yet a commit)
 

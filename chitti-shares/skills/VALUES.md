@@ -16,7 +16,7 @@ Every model declares `__table_args__ = TABLE_KW` where `SCHEMA = "shares"` on Po
 
 ## 4. Locked truth sources — free tier or nothing
 
-Yahoo Finance is **BLOCKED** from Render IPs ([`project_data_sources.md`](../../memory)). The active sources are:
+Yahoo Finance is **BLOCKED** from Railway IPs ([`project_data_sources.md`](../../memory)). The active sources are:
 
 - **screener.in** scrape → fundamentals, financials, shareholding (`screener_client.py`).
 - **Angel SmartAPI** → live quotes + intraday candles + history (`angel_client.py`, `intraday_candles.py`).

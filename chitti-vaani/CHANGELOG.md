@@ -12,7 +12,7 @@ Derived from `git log --oneline --reverse -- chitti-vaani/`. Newest at the botto
 
 ## Phase 1.0 — `bc3673b`
 
-Initial skeleton: Flask app, [vaani.py](backend/routes/vaani.py), [vaani_service.py](backend/services/vaani_service.py), DeepSeek wiring, `/api/vaani/ask`, `/health`, `/languages`. Renders the canonical `CHITTI_VAANI_PROMPT` system message and enforces the Hindi legal disclaimer on every reply. Ships alongside UPI Fraud Guard and Chitti Scanner as the first wave of Chitti products.
+Initial skeleton: Flask app, [vaani.py](backend/routes/vaani.py), [vaani_service.py](backend/services/vaani_service.py), DeepSeek wiring, `/api/vaani/ask`, `/health`, `/languages`. Railways the canonical `CHITTI_VAANI_PROMPT` system message and enforces the Hindi legal disclaimer on every reply. Ships alongside UPI Fraud Guard and Chitti Scanner as the first wave of Chitti products.
 
 ## Phase 1.5 — `4c72e42`
 

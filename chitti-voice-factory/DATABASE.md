@@ -162,7 +162,7 @@ voice_submissions  ──┐
 
 ## 7. Operational notes
 
-- **Render free tier resets `/tmp/` on every deploy.** Until the SQLite file
+- **Railway free tier resets `/tmp/` on every deploy.** Until the SQLite file
   moves to a mounted disk (or Postgres), every restart wipes the ledger and
   every Hall of Fame winner. Do **not** confirm a real winner on prod until
   storage is durable. See [`TODO.md`](TODO.md) §5.

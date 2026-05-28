@@ -27,7 +27,7 @@ illiterate / elderly users. Tenth product in the Chitti family.
 
 ```
 chitti-government/
-├── render.yaml                       # Render Blueprint (free tier)
+├── render.yaml                       # Railway Blueprint (free tier)
 └── backend/
     ├── main.py                       # Flask app · bootstraps schema + seeds + scheduler
     ├── config.py                     # env-driven Settings (no pydantic)
@@ -151,9 +151,9 @@ one-tap fetch without any UI rework.
 
 ## Deploy
 
-1. Push to `main`. Render Blueprint at `chitti-government/render.yaml`
+1. Push to `main`. Railway Blueprint at `chitti-government/render.yaml`
    creates the `chitti-government-api` web service on first sync.
-2. In the Render dashboard set:
+2. In the Railway dashboard set:
    - `DATABASE_URL` — same Supabase URL used by chitti-shares + chitti-medupi.
    - `DEEPSEEK_API_KEY` — optional; rule-engine fallback ships when missing.
 3. First boot creates `government` schema, the 4 tables, and seeds 30

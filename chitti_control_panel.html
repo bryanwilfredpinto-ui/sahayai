@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎖️ Sahayai Control Panel · Sire</title>
+<meta name="description" content="Sahayai Control Panel — all 15 Chittis at a glance. Live /health pings every 60s. Feature pages, status, GitHub, CTO inbox.">
+<link rel="stylesheet" href="chitti_features_panel.css">
+<style>
+  /* Password gate overlay */
+  #cp-gate{position:fixed;inset:0;background:linear-gradient(135deg,#000080,#138808);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+  #cp-gate.hidden{display:none}
+  .cp-gate-card{background:#fff;border-radius:18px;padding:28px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .cp-gate-card h1{margin:0 0 6px;font-size:24px;color:#000080;font-weight:900}
+  .cp-gate-card p{margin:0 0 18px;color:#475569;font-size:14px}
+  .cp-gate-card input{width:100%;padding:14px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:16px;background:#fafbfc;transition:border-color .2s,background .2s,transform .15s}
+  .cp-gate-card input:focus{outline:none;border-color:#000080;background:#fff}
+  .cp-gate-card input.cp-shake{animation:shake .4s cubic-bezier(.36,.07,.19,.97) both;border-color:#dc2626;background:#fef2f2}
+  @keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+  .cp-gate-card button{width:100%;margin-top:12px;padding:13px;background:#000080;color:#fff;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer}
+  .cp-gate-card button:hover{background:#1e3a8a}
+  .cp-gate-hint{margin-top:10px;font-size:12px;color:#64748b;text-align:center}
+
+  /* Header */
+  .cp-meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 0;font-size:13px;color:var(--muted)}
+  .cp-meta span{background:#fff;padding:3px 10px;border:1px solid var(--line);border-radius:99px;font-weight:600;color:var(--navy)}
+  #cp-clock{font-variant-numeric:tabular-nums}
+
+  /* Grid */
+  main.cp-grid{max-width:1080px;margin:14px auto 80px;padding:0 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .cp-tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);display:grid;gap:8px;transition:transform .15s,box-shadow .15s}
+  .cp-tile:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+  .cp-tile-head{display:flex;align-items:center;gap:10px}
+  .cp-tile-icon{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--saffron),var(--green-flag));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;flex-shrink:0}
+  .cp-tile-name{margin:0;font-size:15px;font-weight:800;color:var(--navy);flex:1;line-height:1.2}
+  .cp-tile-meta{font-size:12px;color:var(--muted)}
+  .cp-tile-meta code{font-size:11.5px;background:#f1f5f9;padding:1px 6px;border-radius:5px;word-break:break-all}
+  .cp-tile-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+  .cp-status-dot{width:10px;height:10px;border-radius:50%;background:#94a3b8}
+  .cp-status-dot.green{background:#138808;box-shadow:0 0 0 3px #dcfce7}
+  .cp-status-dot.yellow{background:#f59e0b;box-shadow:0 0 0 3px #fef3c7}
+  .cp-status-dot.red{background:#dc2626;box-shadow:0 0 0 3px #fee2e2}
+  .cp-tile-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .cp-tile-actions a{flex:1;text-align:center;min-width:90px}
+
+  /* Top status bar */
+  .cp-top-stats{max-width:1080px;margin:6px auto 0;padding:0 16px;display:flex;gap:14px;flex-wrap:wrap}
+  .cp-stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink)}
+  .cp-stat strong{font-size:18px;font-weight:900;color:var(--navy)}
+</style>
+</head>
+<body>
+<!-- Password gate -->
+<div id="cp-gate">
+  <div class="cp-gate-card">
+    <h1>🎖️ Control Panel</h1>
+    <p>Sahayai · 15 Chittis · Sire's command surface</p>
+    <input id="cp-pwd" type="password" autocomplete="off" placeholder="Password" aria-label="Password" autofocus>
+    <button id="cp-go" type="button">Enter</button>
+    <p class="cp-gate-hint">Wrong password = red shake. Stored once per browser session.</p>
+  </div>
+</div>
+
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🎖️</div>
+    <div>
+      <h1 class="cf-title">Sahayai Control Panel</h1>
+      <p class="cf-sub">Sire · Bryan Wilfred Pinto · Founder · World Class · Commando Discipline · Zero Excuses</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <p class="cp-meta">
+    <span id="cp-clock">— IST</span>
+    <span><a href="https://github.com/bryanwilfredpinto-ui/sahayai" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">📦 GitHub Repo</a></span>
+    <span><a href="chitti_cto_inbox.html" style="color:inherit;text-decoration:none">📥 CTO Inbox</a></span>
+  </p>
+</header>
+
+<div class="cp-top-stats">
+  <div class="cp-stat">🟢 <strong id="cp-green">0</strong> Live</div>
+  <div class="cp-stat">🟡 <strong id="cp-yellow">0</strong> Partial</div>
+  <div class="cp-stat">🔴 <strong id="cp-red">0</strong> Down</div>
+  <div class="cp-stat">⏱️ Auto-ping every <strong>60s</strong></div>
+</div>
+
+<main class="cp-grid" id="cp-grid">
+  <!-- Tiles rendered by JS below -->
+</main>
+
+<footer class="cf-foot">
+  Auto-refresh: 60s · Last ping: <span id="cp-last-ping">never</span> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai" target="_blank" rel="noopener">GitHub</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a>
+</footer>
+
+<script>
+// ── Password gate (client-side only; this is a UI shroud, NOT real auth) ──
+(function(){
+  var PWD = 'Chitti';
+  var gate = document.getElementById('cp-gate');
+  var input = document.getElementById('cp-pwd');
+  var btn = document.getElementById('cp-go');
+  function tryUnlock(){
+    if(input.value === PWD){
+      gate.classList.add('hidden');
+      try{ sessionStorage.setItem('cp_unlocked','1'); }catch(e){}
+      init();
+    } else {
+      input.classList.remove('cp-shake');
+      void input.offsetWidth;
+      input.classList.add('cp-shake');
+      input.select();
+    }
+  }
+  btn.onclick = tryUnlock;
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+  // Skip gate if already unlocked this session
+  try{ if(sessionStorage.getItem('cp_unlocked')==='1'){ gate.classList.add('hidden'); init(); return; } }catch(e){}
+})();
+
+// ── Chitti manifest ──
+var CHITTIS = [
+  { slug:'vaani',          name:'Chitti Vaani',          icon:'🗣️', host:'https://chitti-vaani-api-production.up.railway.app/health',          page:'chitti_vaani.html',                features:'chitti_vaani_features.html',          plat:'Railway' },
+  { slug:'medupi',         name:'Chitti MedUPI',         icon:'💊', host:'https://chitti-medupi-api-production.up.railway.app/health',         page:'chitti_medupi.html',               features:'chitti_medupi_features.html',         plat:'Railway' },
+  { slug:'ca',             name:'Chitti CA',             icon:'📊', host:'https://chitti-ca-api-production.up.railway.app/health',             page:'chitti_ca.html',                   features:'chitti_ca_features.html',             plat:'Railway' },
+  { slug:'legal',          name:'Chitti Legal',          icon:'⚖️', host:'https://chitti-legal-api-production.up.railway.app/health',          page:'chitti_legal.html',                features:'chitti_legal_features.html',          plat:'Railway' },
+  { slug:'government',     name:'Chitti Government',     icon:'🏛️', host:'https://chitti-government-api-production.up.railway.app/health',     page:'chitti_government.html',           features:'chitti_government_features.html',     plat:'Railway' },
+  { slug:'news',           name:'Chitti News',           icon:'📰', host:'https://chitti-news-api-production.up.railway.app/health',           page:'chitti_news.html',                 features:'chitti_news_features.html',           plat:'Railway' },
+  { slug:'news_ai',        name:'Chitti News AI',        icon:'🤖', host:'https://chitti-news-ai-api.onrender.com/health',                     page:'chitti_news_ai.html',              features:'chitti_news_ai_features.html',        plat:'Railway' },
+  { slug:'upi',            name:'Chitti UPI',            icon:'🛡️', host:'https://chitti-upi-api.onrender.com/health',                         page:'chitti_upi.html',                  features:'chitti_upi_features.html',            plat:'Railway' },
+  { slug:'scanner',        name:'Chitti Scanner',        icon:'📷', host:'https://chitti-scanner-api.onrender.com/health',                     page:'chitti_scanner.html',              features:'chitti_scanner_features.html',        plat:'Railway' },
+  { slug:'shares',         name:'Chitti Shares',         icon:'📈', host:'https://chitti-shares-api.onrender.com/health',                      page:'chitti_complete_technical.html',   features:'chitti_shares_features.html',         plat:'Railway' },
+  { slug:'voice_factory',  name:'Chitti Voice Factory',  icon:'🎤', host:'https://chitti-voice-factory.onrender.com/health',                   page:'chitti_voice_factory.html',        features:'chitti_voice_factory_features.html',  plat:'Railway' },
+  { slug:'2wheeler',       name:'Chitti 2-Wheeler',      icon:'🏍️', host:'https://chitti-2wheeler-api.onrender.com/health',                    page:'chitti_2wheeler.html',             features:'chitti_2wheeler_features.html',       plat:'Railway' },
+  { slug:'4wheeler',       name:'Chitti 4-Wheeler',      icon:'🚗', host:'https://chitti-4wheeler-api.onrender.com/health',                    page:'chitti_4wheeler.html',             features:'chitti_4wheeler_features.html',       plat:'Railway' },
+  { slug:'logo_video',     name:'Chitti Logo & Video',   icon:'🎨', host:'https://chitti-logo-video-api.onrender.com/health',                  page:'chitti_logo_video.html',           features:'chitti_logo_video_features.html',     plat:'Railway' },
+  { slug:'founder',        name:'Chitti Founder',        icon:'🎖️', host:'https://chitti-founder-api.up.railway.app/health',                   page:'chitti_cto_inbox.html',            features:'chitti_founder_features.html',        plat:'Railway' }
+];
+
+// ── Clock ──
+function tickClock(){
+  var d = new Date();
+  var ist = new Date(d.toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  var s = ist.toLocaleString('en-IN',{hour12:false,weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var clk = document.getElementById('cp-clock');
+  if(clk) clk.textContent = s + ' IST';
+}
+
+// ── Tile render ──
+function tile(c){
+  var t = document.createElement('div');
+  t.className = 'cp-tile';
+  t.dataset.slug = c.slug;
+  t.innerHTML = ''+
+    '<div class="cp-tile-head">'+
+      '<div class="cp-tile-icon">'+c.icon+'</div>'+
+      '<h2 class="cp-tile-name">'+c.name+'</h2>'+
+    '</div>'+
+    '<div class="cp-tile-status" id="cp-st-'+c.slug+'">'+
+      '<span class="cp-status-dot"></span><span class="cp-st-label">pinging…</span>'+
+    '</div>'+
+    '<div class="cp-tile-meta">Backend: <code>'+c.host.replace('https://','').replace('/health','')+'</code></div>'+
+    '<div class="cp-tile-actions">'+
+      '<a class="cf-btn" href="'+c.features+'">📋 Features</a>'+
+      '<a class="cf-btn" href="'+c.page+'">🔗 Open</a>'+
+    '</div>';
+  return t;
+}
+
+function renderGrid(){
+  var g = document.getElementById('cp-grid');
+  CHITTIS.forEach(function(c){ g.appendChild(tile(c)); });
+}
+
+// ── Health ping ──
+function setStatus(slug, st, label){
+  var row = document.getElementById('cp-st-'+slug);
+  if(!row) return;
+  var dot = row.querySelector('.cp-status-dot');
+  var lab = row.querySelector('.cp-st-label');
+  dot.className = 'cp-status-dot ' + st;
+  lab.textContent = label;
+}
+function pingAll(){
+  var greens=0, yellows=0, reds=0;
+  var done=0;
+  CHITTIS.forEach(function(c){
+    // Use no-cors HEAD so we at least know if the host resolves; fall back to GET with AbortController
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var t0 = Date.now();
+    var timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 12000);
+    fetch(c.host, { method:'GET', mode:'cors', signal: ctrl ? ctrl.signal : undefined, cache:'no-store' })
+      .then(function(r){
+        clearTimeout(timer);
+        if(r.ok){ setStatus(c.slug,'green','🟢 LIVE · '+(Date.now()-t0)+'ms'); greens++; }
+        else if(r.status===503){ setStatus(c.slug,'yellow','🟡 503 sleeping · '+r.status); yellows++; }
+        else { setStatus(c.slug,'red','🔴 '+r.status); reds++; }
+      })
+      .catch(function(e){
+        clearTimeout(timer);
+        // CORS / network / 404 etc → treat as unreachable (red)
+        setStatus(c.slug,'red','🔴 unreachable');
+        reds++;
+      })
+      .then(function(){
+        done++;
+        if(done===CHITTIS.length){
+          document.getElementById('cp-green').textContent  = greens;
+          document.getElementById('cp-yellow').textContent = yellows;
+          document.getElementById('cp-red').textContent    = reds;
+          document.getElementById('cp-last-ping').textContent = new Date().toLocaleTimeString('en-IN',{hour12:false,timeZone:'Asia/Kolkata'}) + ' IST';
+        }
+      });
+  });
+}
+
+function init(){
+  renderGrid();
+  tickClock(); setInterval(tickClock, 1000);
+  pingAll();   setInterval(pingAll, 60000);
+}
+</script>
+</body>
+</html>

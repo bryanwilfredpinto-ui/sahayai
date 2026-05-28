@@ -35,7 +35,7 @@ Anything else is a deepfake. See
 
 The supplier field in the API response, the ledger row, and the spoken
 disclaimer is `mock_bhashini` whenever the Web Speech directive path is
-used. The day real Bhashini comes online — three env vars on Render — the
+used. The day real Bhashini comes online — three env vars on Railway — the
 supplier field flips to `bhashini` automatically. Code that hard-codes
 the label, or a UI that strips "mock_" client-side, breaks spec §11.1.
 

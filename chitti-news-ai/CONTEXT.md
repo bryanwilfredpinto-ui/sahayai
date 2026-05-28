@@ -175,7 +175,7 @@ ON USER QUERY
   Extract topics from profession (DeepSeek)
     → Search DB for matching tools / news
     → Rank by relevance formula
-    → Render in user's selected language
+    → Railway in user's selected language
 ```
 
 Pipeline implementation lives in `backend/services/` —
@@ -215,10 +215,10 @@ Full derivation + worked examples in
 | Database | Turso libSQL (embedded-replica pattern, §2 locked decision) |
 | LLM | DeepSeek (`api.deepseek.com`, OpenAI-compatible) — scoring + topic extraction + summarisation |
 | Voice | Chitti Voice Factory (26 langs, swappable supplier at `window.Chitti.a11y.VOICE_FACTORY_URL`) |
-| Scheduling | APScheduler (in-process) + Render free-tier cron |
+| Scheduling | APScheduler (in-process) + Railway free-tier cron |
 | RSS | `feedparser` + `requests` |
 | Scraping | `BeautifulSoup` + `requests` |
-| Hosting | GitHub Pages (frontend) + Render free tier (backend) |
+| Hosting | GitHub Pages (frontend) + Railway free tier (backend) |
 
 ---
 

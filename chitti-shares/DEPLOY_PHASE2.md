@@ -2,7 +2,7 @@
 
 Phase 2 adds real Nifty 50 / Sensex data and the DeepSeek-powered
 "Chitti Market View" card. **Phase 1 is untouched** — same login,
-same dashboard URL, same Render services.
+same dashboard URL, same Railway services.
 
 This guide takes ~25 minutes if you already have a Kite Connect app,
 ~45 minutes if you need to create one.
@@ -22,7 +22,7 @@ This guide takes ~25 minutes if you already have a Kite Connect app,
 
 > **Note on `pandas` / `pandas_ta`**: Phase 2 spec mentioned them but Phase 2's
 > math (50-day SMA + bucketed support/resistance) is plain Python.
-> Adding pandas to a Render free instance costs ~50MB of build size
+> Adding pandas to a Railway free instance costs ~50MB of build size
 > with zero benefit here. Saving it for Phase 4 (RSI/MACD/Williams)
 > where it actually pays off.
 
@@ -69,16 +69,16 @@ git commit -m "feat: phase 2 - live nifty/sensex + chitti market view"
 git push origin main
 ```
 
-Render auto-redeploys both `chitti-shares-api` and `chitti-shares-web` as soon as
-the push lands. You'll see the build start in the Render dashboard within ~30 seconds.
+Railway auto-redeploys both `chitti-shares-api` and `chitti-shares-web` as soon as
+the push lands. You'll see the build start in the Railway dashboard within ~30 seconds.
 
 While they build, set the new env vars (Step 2).
 
 ---
 
-## Step 2 — Add the 5 new env vars on Render
+## Step 2 — Add the 5 new env vars on Railway
 
-Open Render dashboard → `chitti-shares-api` → **Environment** → **Add Environment Variable**.
+Open Railway dashboard → `chitti-shares-api` → **Environment** → **Add Environment Variable**.
 
 Add these one at a time:
 
@@ -90,10 +90,10 @@ Add these one at a time:
 | `DEEPSEEK_API_KEY` | *(your existing DeepSeek key — confirm it's already there)* |
 | `ADMIN_MOBILE` | *(your 10-digit mobile, no +91, no spaces — same one you log in with)* |
 
-Click **Save Changes**. Render redeploys the backend service automatically.
+Click **Save Changes**. Railway redeploys the backend service automatically.
 Wait ~3 minutes for the deploy log to show `Application startup complete`.
 
-> If `DEEPSEEK_API_KEY` was already in your Render env from earlier Chitti work,
+> If `DEEPSEEK_API_KEY` was already in your Railway env from earlier Chitti work,
 > you don't need to re-add it — just verify it's listed.
 
 ---
@@ -260,7 +260,7 @@ You're out of DeepSeek credit. Top up. (Phase 2 uses ~50 tokens per call,
 
 Check the cache TTL — `/api/market/indices` caches for 5 min during market
 hours. If you click "Refresh" on the card and it still shows old data, check
-Render backend logs for `Kite token expired` warnings.
+Railway backend logs for `Kite token expired` warnings.
 
 ### "Redirect URI mismatch" on Kite login page
 
@@ -270,9 +270,9 @@ Fix one or the other so they match.
 
 ### Backend logs show `httpx.ConnectError` on first request after a quiet period
 
-Render free tier sleeps after 15 min idle. First request takes ~30s to wake.
+Railway free tier sleeps after 15 min idle. First request takes ~30s to wake.
 The frontend's auto-refresh hook will retry; users just see a brief loading
-state. Upgrade to Render's $7/month Starter plan to eliminate this.
+state. Upgrade to Railway's $7/month Starter plan to eliminate this.
 
 ---
 

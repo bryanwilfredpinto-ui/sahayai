@@ -69,6 +69,6 @@ From [config.py](backend/config.py):
 | `model` | `deepseek-chat` (override via `DEEPSEEK_MODEL`) | Default DeepSeek chat model |
 | `max_tokens` | `800` (override `LEGAL_MAX_TOKENS`) | A clause-explanation reply rarely needs more |
 | `temperature` | `0.25` (override `LEGAL_TEMPERATURE`) | Low — legal explainer, not creative writer |
-| timeout | `30.0s` (hard-coded in `httpx.Client`) | Keeps Render's request budget happy |
+| timeout | `30.0s` (hard-coded in `httpx.Client`) | Keeps Railway's request budget happy |
 
 No `tools`, no `response_format`, no streaming. Single-shot `messages: [system, user]`.

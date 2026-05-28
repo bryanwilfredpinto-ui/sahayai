@@ -29,7 +29,7 @@ STEP 4: Report session plan to Sire — 5 lines max, plain English
 |---|--------|-------|
 | 1 | Create `chitti-pa` folder + basic backend | ⬜ |
 | 2 | Create `chitti-business` folder + basic backend | ⬜ |
-| 3 | Fix Turso DATABASE_URL on Render for chitti-news + chitti-news-ai | ⬜ |
+| 3 | Fix Turso DATABASE_URL on Railway for chitti-news + chitti-news-ai | ⬜ |
 | 4 | Wire DeepSeek → Claude → Gemini fallback on all 15 Chittis | ⬜ |
 | 5 | Verify `feedback-widget.js` has all 5 mandatory user elements | ⬜ |
 
@@ -43,7 +43,7 @@ STEP 2: Identify exact root cause — one sentence
 STEP 3: Fix — minimum change, maximum impact
 STEP 4: Test locally
 STEP 5: Curl proof — show output
-STEP 6: Deploy to Railway/Render
+STEP 6: Deploy to Railway/Railway
 STEP 7: Curl proof on live URL
 STEP 8: Update QUALITY_STATUS.md
 STEP 9: Commit and push immediately
@@ -103,7 +103,7 @@ MANDATORY TECHNICAL STANDARDS:
 ## QUALITY GATE — Nothing Ships Without This
 GATE 1: Code written + unit tested (80% coverage)
 GATE 2: Integration tested
-GATE 3: Deployed to Railway/Render
+GATE 3: Deployed to Railway/Railway
 GATE 4: /health endpoint returns 200
 GATE 5: Curl proof on live URL
 GATE 6: Visual cert — 375px screenshot saved

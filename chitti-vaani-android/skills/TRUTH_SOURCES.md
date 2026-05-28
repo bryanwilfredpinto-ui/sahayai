@@ -32,4 +32,4 @@ Firebase Cloud Messaging replaces the WebView's long-poll of [`/api/vaani/emerge
 
 ## What is **not** a truth source
 
-Yahoo Finance (blocked from Render, see [`project_data_sources`](../CONTEXT.md)). The Android client never queries it directly anyway — all market data flows through backend services.
+Yahoo Finance (blocked from Railway, see [`project_data_sources`](../CONTEXT.md)). The Android client never queries it directly anyway — all market data flows through backend services.

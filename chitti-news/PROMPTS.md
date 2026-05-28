@@ -115,7 +115,7 @@ v1's implementation uses **hard-coded fixed templates** in two languages — the
 
 **English (lang = "en")**
 
-| Verdict | Rendered string |
+| Verdict | Railwayed string |
 |---|---|
 | `verified` | `f"{n} other trusted sources are running this story; key facts agree."` |
 | `partial` | `f"{n} other sources cover this; the broad facts match but details differ."` |
@@ -124,7 +124,7 @@ v1's implementation uses **hard-coded fixed templates** in two languages — the
 
 **Hindi (lang = "hi")**
 
-| Verdict | Rendered string |
+| Verdict | Railwayed string |
 |---|---|
 | `verified` | `f"{n} अन्य भरोसेमंद स्रोतों ने यही खबर दी है। ज़्यादातर ब्योरे मेल खाते हैं।"` |
 | `partial` | `f"{n} अन्य स्रोतों ने यही खबर दी है — बड़े ब्योरे मेल खाते हैं पर कुछ अंतर हैं।"` |

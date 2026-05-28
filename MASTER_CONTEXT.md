@@ -37,8 +37,8 @@ The implementation rule is simple: **accessibility before AI**. If a feature wor
 |---|---|---|
 | [chitti-medupi](chitti-medupi/) | Medicine cost intelligence — strict same-composition matching, Jan Aushadhi pricing, family wallet | **Live** on Neon Postgres (migrating to Turso) |
 | [chitti-shares](chitti-shares/) | Indian equities — fundamentals (Buffett/Lynch/Graham/Greenblatt lens) + technicals (Roshan Indicator + 43 signals) | **Live** on Supabase |
-| [chitti-news](chitti-news/) | State × language news aggregator, Chitti's Take 3-bullet summary, fact-checker | Render service exists, deploy parked on placeholder DB |
-| [chitti-government](chitti-government/) | Voice-first guide to Indian govt schemes (PM-Kisan, Ayushman, 30+ seeded) | Render service exists, deploy parked on placeholder DB |
+| [chitti-news](chitti-news/) | State × language news aggregator, Chitti's Take 3-bullet summary, fact-checker | Railway service exists, deploy parked on placeholder DB |
+| [chitti-government](chitti-government/) | Voice-first guide to Indian govt schemes (PM-Kisan, Ayushman, 30+ seeded) | Railway service exists, deploy parked on placeholder DB |
 | [chitti-vaani](chitti-vaani/) | Voice conversational layer + Gmail "send as Chitti" + emergency relay | Not yet deployed; render.yaml ready |
 | [chitti-vaani-android](chitti-vaani-android/) | Native Android client for Vaani Phase 2 — always-on listener + emergency cascade | Skeleton in place (3 commits) |
 | [chitti-ca](chitti-ca/) | Chartered Accountant Q&A — server-enforced disclaimer; honest stub | Not yet deployed |
@@ -66,7 +66,7 @@ Stack patterns (variations are tracked in each Chitti's [ARCHITECTURE.md](chitti
 - **Backend**: Flask + SQLAlchemy + APScheduler + DeepSeek (except chitti-shares which is FastAPI).
 - **Frontend**: vanilla HTML/JS at the repo root for each product (e.g. [chitti_medupi.html](chitti_medupi.html)). No SPA framework — every page is a single file the user can open with the address bar.
 - **Persistence**: Turso libSQL with one database per Chitti (in migration as of 2026-05-12). Previously: Neon Postgres for chitti-medupi, Supabase for chitti-shares.
-- **Deploy**: Render free tier, auto-deploy from `main`, UptimeRobot @ 5-minute interval on every `/health`.
+- **Deploy**: Railway free tier, auto-deploy from `main`, UptimeRobot @ 5-minute interval on every `/health`.
 
 ---
 

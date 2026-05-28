@@ -10,7 +10,7 @@ Backend (Flask · APScheduler)
   - `GET /api/news-ai/sources` — DB-backed, trust-ordered, surfaces `last_fetched_utc` and `ai_crawl_blocked`.
   - `GET /api/news-ai/today` — last 24 h, ordered by source trust then recency, every article carries `importance_note: "LLM importance scorer pending"` so the front end stays honest about ranking.
   - `GET /api/news-ai/launches` — last 7 days where `is_launch=1`, includes classifier identifier so we never imply LLM ranking.
-- New `POST /api/news-ai/admin/rss/poll-now` — token-gated via `METRICS_TOKEN`, returns the same stats dict the scheduler logs. Lets us verify on Render without waiting 6 hours.
+- New `POST /api/news-ai/admin/rss/poll-now` — token-gated via `METRICS_TOKEN`, returns the same stats dict the scheduler logs. Lets us verify on Railway without waiting 6 hours.
 
 Seed (`backend/data/sources.json`)
 
@@ -47,7 +47,7 @@ Queued for 0.3.0
 - 14 skill files written: FEATURES, IDENTITY, PERSONALITY, VALUES, GUARDRAILS, BOUNDARIES, DEVILS_ADVOCATE, TRUTH_SOURCES, LANGUAGE_BEHAVIOR, TRUST_VERIFICATION, SOURCE_DISCOVERY, RANKING_FORMULA, IMPORTANCE_SCORING, OBSERVABILITY, SALES_BRIEF.
 - Backend Flask skeleton: `main.py`, `config.py`, `database.py`, 5 SQLAlchemy models, 1 route module (`news_ai.py`) with 10 endpoints, 6 service stubs, APScheduler wiring.
 - `data/sources.json` — 17 verified RSS / scrape seeds with trust-score seeds.
-- `render.yaml` blueprint (Render free tier, gunicorn).
+- `render.yaml` blueprint (Railway free tier, gunicorn).
 - Root frontend `chitti_news_ai.html` — full feature surface, COMING SOON badges, all mandatory plugins wired (chitti_a11y.js, feedback-widget.js, chitti_features.js auto-loaded, ISL dictionary auto-attached, disclaimer bar, camera substrate, per-response widget).
 - `CHITTI_NEWS_AI_MASTER_SPEC.md` at repo root.
 - `SAHAYAI_MASTER.md` §4a frontend↔folder map updated.

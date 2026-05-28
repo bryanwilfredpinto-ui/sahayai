@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti News AI — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🤖</div>
+    <div>
+      <h1 class="cf-title">Chitti News AI — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · YELLOW (Turso unverified)</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_news_ai.html">Open News AI ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'news_ai',
+  label: 'Chitti News AI',
+  features: [
+    { name:'8 RSS sources (5 live + 3 honest stubs)', desc:'Product Hunt, HF Daily Papers, There\'s An AI For That + 5 more sources.', status:'green', try:'Open News AI, observe source list', link:'chitti_news_ai.html' },
+    { name:'4 tabs — AI Aaj · Tools · Bharat AI · Prashikshan', desc:'Top tabs for daily news, tools, Indian-AI scene, training resources.', status:'green', try:'Switch tabs, observe routed content' },
+    { name:'Tap 🤖 → DeepSeek explains in user\'s language', desc:'Per-article 🤖 button → DeepSeek explains in user\'s chosen language.', status:'green', try:'Tap 🤖 on any article', link:'chitti_news_ai.html' },
+    { name:'9-profession jargon lens (farmer/teacher/doctor/lawyer/shopkeeper/driver/artist/engineer/homemaker)', desc:'Same article explained in the analogies the user\'s profession understands.', status:'green', try:'Set profession to farmer, observe analogy lens' },
+    { name:'SLA-timing curl-verified', desc:'x-chitti-response-time-ms header verified on /health probe.', status:'yellow', try:'Service is sleeping (503) — wake on Render dashboard' },
+    { name:'8 of 10 endpoints return honest 501', desc:'Skeleton services that aren\'t built return 501 with explanation. NEVER fake demo.', status:'green', try:'curl /api/news-ai/* — verify honest 501 responses' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any article card', link:'chitti_news_ai.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Save-for-later, subscribe-to-tool — all confirm before fire.', status:'green', try:'Save article, verify confirm modal' },
+    { name:'HookRegistry + Observability registered', desc:'Quality stack defensively registered (services are 501 skeletons today).', status:'green', try:'curl / — verify quality headers' },
+    { name:'Turso embedded-replica code wired', desc:'libsql-experimental code wired but DB write UNVERIFIED.', status:'yellow', try:'grep database.py for embedded replica branch' },
+    { name:'Turso DATABASE_URL on Render — libsql:// form', desc:'Render env DATABASE_URL must point at libsql://... — articles table empty today.', status:'red', try:'Fix Render env DATABASE_URL — fleet-wide gap' },
+    { name:'DeepSeek wrap_llm at every call site', desc:'Code-wired; services 501 today. Will activate when services built.', status:'yellow', try:'grep services/ for wrap_llm' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest fallback chain. Env-slot placeholders only — not wired.', status:'red', try:'TONIGHT — P0. 0/15 wired.' },
+    { name:'Verification rate (% tools with ≥2 sources)', desc:'Two-source rule for tool/model verification — same as News.', status:'yellow', try:'Pending fact-check service wiring' },
+    { name:'New-tool freshness — median lag from launch', desc:'Median lag from external tool launch → appearance in feed.', status:'yellow', try:'Pending metrics dashboard' },
+    { name:'Cross-Chitti bridge to Chitti News', desc:'news-AI bridge sub-agent in Chitti News pulls AI-ecosystem stories.', status:'yellow', try:'Pending bridge sub-agent wiring' },
+    { name:'Tool deprecation archive (monthly)', desc:'Deprecated / dead AI tools archived monthly.', status:'yellow', try:'Planned — archive cron not yet wired' },
+    { name:'Author Hall of Fame for tool/paper submissions', desc:'Surface submitter names for community-suggested tools / papers.', status:'yellow', try:'Planned — Hall of Fame surface pending' },
+    { name:'Daily AI digest — 5 top tools at 07:00 IST', desc:'Daily 5-tool digest delivered at 07:00 IST.', status:'yellow', try:'Planned P1 — digest cron pending' },
+    { name:'Language tabs beyond EN + HI', desc:'First-class language tabs across 9+ Indian languages.', status:'yellow', try:'Planned v1.1 — regional RSS pending' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

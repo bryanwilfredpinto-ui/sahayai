@@ -4,7 +4,7 @@ Sourced from `git log --oneline -- chitti-sales/` on the main branch.
 
 ## 2026-05-12 — Docs-only initial scaffold
 
-- **New product, no commits yet.** The `chitti-sales/` folder is being created with **documentation only**. There is no backend code, no `chitti_sales.html` frontend page, no Render service, and no deploy.
+- **New product, no commits yet.** The `chitti-sales/` folder is being created with **documentation only**. There is no backend code, no `chitti_sales.html` frontend page, no Railway service, and no deploy.
 
   Contents shipped in this scaffold (markdown only):
 

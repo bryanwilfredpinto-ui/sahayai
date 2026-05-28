@@ -105,7 +105,7 @@ body = {
 | `temperature`            | `0.2`                  | Deterministic-ish — same scam SMS should classify the same way.        |
 | `max_tokens`             | `500`                  | Verdict + ~6 indicators + ~5 actions fits; tight cap = cheap.          |
 | `response_format`        | `json_object`          | Forces parseable output. We still defensively strip ``` fences.        |
-| `timeout` (httpx)        | `30.0` s               | Render free-plan cold start + DeepSeek latency tolerance.              |
+| `timeout` (httpx)        | `30.0` s               | Railway free-plan cold start + DeepSeek latency tolerance.              |
 
 ### Defensive guarantees layered after the model
 

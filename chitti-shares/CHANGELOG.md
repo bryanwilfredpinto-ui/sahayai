@@ -88,7 +88,7 @@ Generated from `git log --oneline --reverse -- chitti-shares/` at the repo root.
 | `f568591` | feat(fundamentals): scanner with 31 strategies + Ask Chitti chat + News tab |
 | `0e92fd9` | feat(fundamentals): full skeleton with every feature from Angel/Zerodha/Groww/Screener/Tickertape/Bloomberg |
 | `75fe3a6` | feat(scanner): real universe scan + verdict cards + Scan All |
-| `45720d9` | fix(data): switch fundamentals to screener.in scrape (yahoo blocked from Render) |
+| `45720d9` | fix(data): switch fundamentals to screener.in scrape (yahoo blocked from Railway) |
 | `f778339` | feat(skeleton): full Financials matrix + reference-app feature surface |
 
 ## Sibling product + DB migration

@@ -90,7 +90,7 @@ knowledge-corpus expert grades, Vaani sole interface) never move.
 |---|---|---|---|
 | S1 | ITR form selector — *"Which ITR form should I file?"* based on income type (salary / business / capital gains / etc.). | P1 | Decision tree in `ca_itr_selector.py` (deterministic — never LLM); LLM only narrates the result. Updated annually for the FY's ITR-1 → ITR-7 form revisions. |
 | S2 | GST HSN code finder — search by product description. | P1 | DeepSeek + a curated `hsn_codes.json` seed (from CBIC). User describes the product, Chitti returns the HSN code + GST rate + reasoning. |
-| S3 | TDS calendar — all TDS due dates for the current month. | P1 | Cron-generated calendar (no LLM); cross-references Section 192 / 194 / 195 etc. dates per FY. Renders as a tappable date grid. |
+| S3 | TDS calendar — all TDS due dates for the current month. | P1 | Cron-generated calendar (no LLM); cross-references Section 192 / 194 / 195 etc. dates per FY. Railways as a tappable date grid. |
 | S4 | Advance tax calculator — quarterly amounts. | P1 | Pure calculator + LLM narrative. Reuses Q3 deduction modules. |
 | S5 | Form 26AS explainer — what each entry means in plain Hindi / regional language. | P2 | User pastes Form 26AS text (or PDF upload — COMING SOON); LLM explains TDS / TCS / refund entries with citations. |
 | S6 | New Tax Regime vs Old Tax Regime — comparison with **user's actual numbers**. | **P0** (annually relevant) | Deterministic comparator + LLM narrative. Output: side-by-side ₹ difference + recommendation. Already in CA_KNOWLEDGE.md — surface as a tap-to-launch flow. |

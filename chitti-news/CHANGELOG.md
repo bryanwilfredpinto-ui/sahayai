@@ -33,7 +33,7 @@ Format: chronological, oldest first, grouped by feature theme. Pulled from `git 
 ### Resilience
 
 - **`435ac73`** — `fix(news): graceful fallback when chitti-news-api is unreachable`
-  - Frontend now degrades cleanly when the backend Render service is cold-starting or down.
+  - Frontend now degrades cleanly when the backend Railway service is cold-starting or down.
 
 ### Accessibility (four-user contract)
 
@@ -84,7 +84,7 @@ Format: chronological, oldest first, grouped by feature theme. Pulled from `git 
 
 See [TODO.md](TODO.md) for the full open-issue list. Highest priority:
 
-1. **Deploy backend to Render** — `render.yaml` is ready. Paste `DATABASE_URL` (same Supabase URL the siblings use) + `DEEPSEEK_API_KEY`. First poll fires within 30 min.
+1. **Deploy backend to Railway** — `render.yaml` is ready. Paste `DATABASE_URL` (same Supabase URL the siblings use) + `DEEPSEEK_API_KEY`. First poll fires within 30 min.
 2. **Live verification** — once deployed, curl `/health`, `/api/news/india/en/national`, `/api/news/article/1/take`, `/api/news/article/1/factcheck`.
 3. **Frontend cache update** — verify `API_BASE` points to `chitti-news-api.onrender.com`.
 4. **Regional language RSS** — Bangla / Telugu / Tamil / Odia outlets often don't publish public RSS. Plan: HTML scraping or app-API integration.
@@ -97,8 +97,8 @@ See [TODO.md](TODO.md) for the full open-issue list. Highest priority:
 
 ## Versioning convention
 
-- `v1.x` = pre-Render-deploy iteration. Frontend live, backend is dev-ready but unconnected.
-- `v2.x` planned for when the backend goes live on Render and serves the first 100 real articles end-to-end.
+- `v1.x` = pre-Railway-deploy iteration. Frontend live, backend is dev-ready but unconnected.
+- `v2.x` planned for when the backend goes live on Railway and serves the first 100 real articles end-to-end.
 
 ---
 

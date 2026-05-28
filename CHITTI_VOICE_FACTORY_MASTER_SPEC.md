@@ -427,7 +427,7 @@ chitti-voice-factory/backend/
     └── <lang>/
         ├── _pdfs/                  raw downloaded PDFs (NCERT)
         ├── chunks.jsonl            real text chunks with provenance
-        ├── embeddings.npy          float32 matrix (created on Render after pip install)
+        ├── embeddings.npy          float32 matrix (created on Railway after pip install)
         ├── index.faiss             FAISS IndexFlatIP (created alongside embeddings)
         └── honest_status.json      what worked / what failed / fluency_ready bool
 ```
@@ -473,7 +473,7 @@ chitti-voice-factory/backend/
 | `community` (Wikipedia)           | 13 languages: bn, ta, gu, or, as, sd, bho, mai, kok, ks, mni, sat, tcy |
 | `cousin` (borrowed from related)  | 5 languages: hne, doi, kru, brx, kfa |
 
-`fluency_ready` is `false` for all 26 until the embedding pass runs (deferred to Render py3.11 because local py3.14 lacks stable torch wheels). Run `python -m scripts.embed_all` on the deploy host to lift to ready.
+`fluency_ready` is `false` for all 26 until the embedding pass runs (deferred to Railway py3.11 because local py3.14 lacks stable torch wheels). Run `python -m scripts.embed_all` on the deploy host to lift to ready.
 
 #### Known gaps
 

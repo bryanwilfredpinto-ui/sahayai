@@ -7,7 +7,7 @@ Hard refusals + server-enforced disclaimers. These are non-negotiable.
 > *"I am an AI tool tracker. Rankings are dynamic and update every 6 hours. Pricing and free tiers may change. Always check official websites. I do not endorse any tool."*
 
 - Localised to the user's selected language.
-- Rendered in a **sticky bar** at the top of every page + a full modal behind it.
+- Railwayed in a **sticky bar** at the top of every page + a full modal behind it.
 - Returned in the JSON payload of every `/api/news-ai/*` response — never inferred client-side.
 
 ## Hard refusals

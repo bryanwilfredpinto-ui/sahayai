@@ -34,4 +34,4 @@ Every `/api/vaani/email/send` returns the Gmail `messageId`. Persisted alongside
 
 ## 6. Health endpoints
 
-`GET /health` + `GET /api/vaani/health` — used by Render and any external uptime probe. Per the master memory `feedback_verify_before_handover.md`: never claim "live" without curling production first.
+`GET /health` + `GET /api/vaani/health` — used by Railway and any external uptime probe. Per the master memory `feedback_verify_before_handover.md`: never claim "live" without curling production first.

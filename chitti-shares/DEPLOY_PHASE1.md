@@ -7,7 +7,7 @@ in about 30–40 minutes. Follow it top to bottom — no skipping.
 > ```
 > dgGIRPmoD0f9eeP443uB4uTRf9bsh_1IFKNNGjgsmxy5YgjjcEPWDBsHb6bZUo1EVzmHaYe8OTOK2X76Ep4vfg
 > ```
-> You'll paste this into Render in Step 4.
+> You'll paste this into Railway in Step 4.
 
 ---
 
@@ -59,7 +59,7 @@ a **Personal Access Token** instead of your password:
 
 ---
 
-## Step 2 — Create the Render Postgres database
+## Step 2 — Create the Railway Postgres database
 
 1. Log into https://dashboard.render.com.
 2. Top right: **New +** → **Postgres**.
@@ -80,7 +80,7 @@ a **Personal Access Token** instead of your password:
 
 1. **New +** → **Web Service**.
 2. **Connect a repository** → pick `bryanwilfredpinto-ui/sahayai`.
-   (If you don't see it, click "Configure account" and grant Render access to that repo.)
+   (If you don't see it, click "Configure account" and grant Railway access to that repo.)
 3. Fill in:
    - **Name**: `chitti-shares-api`
    - **Region**: **Singapore** (must match the DB region!)
@@ -115,7 +115,7 @@ a **Personal Access Token** instead of your password:
 8. Once green, open `https://chitti-shares-api-production.up.railway.app/health` in a browser.
    You should see: `{"ok":true}` ✅
 
-> **First-deploy gotcha**: Free Render web services sleep after 15 min of no traffic.
+> **First-deploy gotcha**: Free Railway web services sleep after 15 min of no traffic.
 > First request after sleep takes ~30 seconds. Fine for Phase 1; we'll upgrade later.
 
 ---
@@ -142,10 +142,10 @@ a **Personal Access Token** instead of your password:
    - **Destination**: `/index.html`
    - **Action**: `Rewrite`
 
-   *(Render usually picks this up from `public/_redirects` automatically — adding it via UI is belt-and-suspenders.)*
+   *(Railway usually picks this up from `public/_redirects` automatically — adding it via UI is belt-and-suspenders.)*
 
 7. Wait for green build (~2 minutes).
-8. Open the temporary URL Render gives you (e.g. `https://chitti-shares-web.onrender.com`).
+8. Open the temporary URL Railway gives you (e.g. `https://chitti-shares-web.onrender.com`).
    You should see the **Login** page. ✅
 
 ---
@@ -154,11 +154,11 @@ a **Personal Access Token** instead of your password:
 
 You need to add ONE CNAME record at your domain registrar (wherever sahayai.in is registered — GoDaddy, Namecheap, Hostinger, Cloudflare, etc.).
 
-### 5a. Add the custom domain in Render
+### 5a. Add the custom domain in Railway
 
 1. On the `chitti-shares-web` service page → **Settings** → **Custom Domains** → **Add Custom Domain**.
 2. Enter `shares.sahayai.in` → **Save**.
-3. Render shows you a **target host**, something like `chitti-shares-web.onrender.com` or `xyz123.cname.render.com`. **Copy that exact string.**
+3. Railway shows you a **target host**, something like `chitti-shares-web.onrender.com` or `xyz123.cname.render.com`. **Copy that exact string.**
 
 ### 5b. Add the CNAME at your DNS provider
 
@@ -166,7 +166,7 @@ Log into wherever sahayai.in's DNS is managed and add:
 
 | Type | Name / Host | Value / Points to | TTL |
 |---|---|---|---|
-| `CNAME` | `shares` | *(paste the target Render gave you)* | `300` (5 min) |
+| `CNAME` | `shares` | *(paste the target Railway gave you)* | `300` (5 min) |
 
 > **If your registrar makes you enter the full subdomain in "Name"**, use `shares.sahayai.in`.
 > Most registrars want just `shares` because they auto-append the root domain.
@@ -174,7 +174,7 @@ Log into wherever sahayai.in's DNS is managed and add:
 ### 5c. Wait for DNS + verification
 
 - DNS usually propagates in 5–10 min, sometimes longer.
-- Render auto-verifies and issues a free Let's Encrypt SSL cert.
+- Railway auto-verifies and issues a free Let's Encrypt SSL cert.
 - The Custom Domains page will show **"Verified"** + **"Certificate Issued"**.
 - Open https://shares.sahayai.in — you should see the Login page over HTTPS. ✅
 
@@ -218,7 +218,7 @@ Frontend's `VITE_API_URL` is wrong, OR backend is sleeping (free tier).
 
 ### "OTP not arriving"
 
-→ Backend logs (Render dashboard → `chitti-shares-api` → Logs) should show `Fast2SMS response: {...}`.
+→ Backend logs (Railway dashboard → `chitti-shares-api` → Logs) should show `Fast2SMS response: {...}`.
 → If it shows `"return": false`, the API key is wrong or you're out of credits.
 → Check Fast2SMS dashboard balance.
 → Make sure the mobile starts with 6/7/8/9 — the regex rejects others.
@@ -227,13 +227,13 @@ Frontend's `VITE_API_URL` is wrong, OR backend is sleeping (free tier).
 
 DB tables didn't get created.
 → The startup hook creates them automatically; if it's failing, check `DATABASE_URL` is the **Internal** URL (starts with `postgres://`), not the External one.
-→ Manually trigger redeploy: Render dashboard → Manual Deploy → Clear build cache & deploy.
+→ Manually trigger redeploy: Railway dashboard → Manual Deploy → Clear build cache & deploy.
 
 ### DNS shows "Verification Failed" for >30 minutes
 
-→ Confirm the CNAME value at your registrar matches Render's target EXACTLY (case-insensitive, no trailing dot for most registrars).
+→ Confirm the CNAME value at your registrar matches Railway's target EXACTLY (case-insensitive, no trailing dot for most registrars).
 → Some registrars (Hostinger, GoDaddy) require you to NOT include the domain part in the "Name" field — use just `shares`.
-→ Test with `dig shares.sahayai.in CNAME` in terminal — it should return Render's host.
+→ Test with `dig shares.sahayai.in CNAME` in terminal — it should return Railway's host.
 
 ### Login looks fine but Dashboard endlessly spins
 
@@ -247,8 +247,8 @@ Open browser DevTools → Network tab → look for the `/user/me` call.
 ## What to do after Phase 1 is live
 
 1. **Tell me it's working** — share the live URL or a screenshot.
-2. **Don't burn SMS credits testing** — set `DEV_MODE_FAKE_OTP=true` temporarily on Render if you want to test repeatedly without using real OTPs (the OTP will print in the backend logs instead). Set back to `false` before showing anyone else.
-3. **Phase 2** picks up next session: live Kite Connect data into the Nifty/Sensex cards, then Chitti Market View powered by the DeepSeek key already in your Render env.
+2. **Don't burn SMS credits testing** — set `DEV_MODE_FAKE_OTP=true` temporarily on Railway if you want to test repeatedly without using real OTPs (the OTP will print in the backend logs instead). Set back to `false` before showing anyone else.
+3. **Phase 2** picks up next session: live Kite Connect data into the Nifty/Sensex cards, then Chitti Market View powered by the DeepSeek key already in your Railway env.
 
 ---
 
@@ -260,6 +260,6 @@ Open browser DevTools → Network tab → look for the `/user/me` call.
 | Backend API | https://chitti-shares-api-production.up.railway.app |
 | API docs (Swagger) | https://chitti-shares-api-production.up.railway.app/docs |
 | Health check | https://chitti-shares-api-production.up.railway.app/health |
-| Render dashboard | https://dashboard.render.com |
+| Railway dashboard | https://dashboard.render.com |
 | Repo | https://github.com/bryanwilfredpinto-ui/sahayai |
 | Fast2SMS dashboard | https://www.fast2sms.com/dashboard |

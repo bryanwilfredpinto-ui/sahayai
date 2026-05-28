@@ -25,7 +25,7 @@
 
 ## AUTHORITY (LOCKED)
 ### CTO acts autonomously — no permission needed:
-- Deploy to Railway and Render
+- Deploy to Railway and Railway
 - Rotate all API keys and secrets
 - Create, edit, delete any file or folder
 - Fix bugs and push to GitHub
@@ -107,7 +107,7 @@ Every Chitti, every page, every `.md` file must contain this statement:
 |---|--------|----------|
 | 1 | `chitti-pa` folder missing — no backend | 🔴 P0 |
 | 2 | `chitti-business` folder missing — no backend | 🔴 P0 |
-| 3 | Turso DATABASE_URL broken on Render for chitti-news + chitti-news-ai | 🔴 P0 |
+| 3 | Turso DATABASE_URL broken on Railway for chitti-news + chitti-news-ai | 🔴 P0 |
 | 4 | Layer 5 BCP fallback wired on 0/15 Chittis | 🔴 P0 |
 | 5 | `chitti_share.js` referenced in docs but does not exist | 🔴 P1 |
 | 6 | `feedback-widget.js` — verify all 5 mandatory elements exist | 🔴 P1 |

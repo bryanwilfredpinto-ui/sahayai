@@ -11,9 +11,9 @@ A note on `TODO` markers: a grep of [`chitti-news/`](.) for `TODO|FIXME|XXX` ret
 
 ## P0 — Blocking production launch
 
-### Deploy backend to Render
+### Deploy backend to Railway
 
-- [ ] Paste `DATABASE_URL` (the shared Supabase URL the medupi + shares services already use) into the Render dashboard.
+- [ ] Paste `DATABASE_URL` (the shared Supabase URL the medupi + shares services already use) into the Railway dashboard.
 - [ ] Paste `DEEPSEEK_API_KEY` (same key as siblings — locked LLM provider).
 - [ ] Click "Apply" on the [render.yaml](render.yaml) blueprint.
 - [ ] Wait for the first `rss_poll` to fire (within `RSS_POLL_MINUTES`, default 30).

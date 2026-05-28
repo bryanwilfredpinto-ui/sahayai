@@ -104,7 +104,7 @@ Each step is wrapped in `try / except` with a `log.warning` — boot never fails
 2. `JSON_SORT_KEYS = False` so the `items, count, speak_en, speak_hi, …` ordering stays stable for the frontend.
 3. Routes:
    - `GET /` → `{"app": "Chitti News API", "version": "1.0.0", "status": "ok"}`
-   - `GET /health` → `{"ok": true}` (Render health-check path).
+   - `GET /health` → `{"ok": true}` (Railway health-check path).
 4. Error handlers for 400 / 404 / 405 (generic JSON envelope) + a 500 handler that logs the exception.
 5. `app.register_blueprint(news_bp)` for the `/api/news/*` surface.
 
@@ -123,7 +123,7 @@ Both jobs are wrapped in `_wrap(name, fn)` which logs START / OK / FAILED with `
 
 ### Misfire grace
 
-- `rss_poll`: 600s (10 min) — covers a Render dyno warm-up.
+- `rss_poll`: 600s (10 min) — covers a Railway dyno warm-up.
 - `daily_breaking`: 1800s (30 min) — if the worker was down at 06:00 IST, it'll fire when it comes back.
 
 ### Diagnostic surface
@@ -248,7 +248,7 @@ Loaded via `python-dotenv` so a local `.env` works out-of-the-box.
 
 ## 10. Deployment
 
-### Render Blueprint ([render.yaml](render.yaml))
+### Railway Blueprint ([render.yaml](render.yaml))
 
 ```yaml
 services:
@@ -274,7 +274,7 @@ services:
 
 ### Python 3.11
 
-Pinned via `runtime.txt` + `.python-version` to ensure psycopg2-binary wheels resolve cleanly on Render free-tier (no Rust toolchain, no native build).
+Pinned via `runtime.txt` + `.python-version` to ensure psycopg2-binary wheels resolve cleanly on Railway free-tier (no Rust toolchain, no native build).
 
 ### Dependencies (pinned)
 

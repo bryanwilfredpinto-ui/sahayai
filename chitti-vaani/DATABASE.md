@@ -2,7 +2,7 @@
 
 Three storage layers:
 
-1. **SQLite (Vaani-local)** — Gmail OAuth tokens + emergency relay. Ephemeral on Render's free tier (`/tmp` is wiped on every deploy).
+1. **SQLite (Vaani-local)** — Gmail OAuth tokens + emergency relay. Ephemeral on Railway's free tier (`/tmp` is wiped on every deploy).
 2. **Postgres or SQLite (admin / feedback)** — picked at runtime from `ADMIN_DATABASE_URL` → `DATABASE_URL` → SQLite fallback. Production should always use Supabase Postgres so admin state survives deploys.
 3. **In-memory** — schedulers cache the most recent feedback report and APScheduler job state.
 
@@ -92,7 +92,7 @@ Path: `VAANI_RELAY_DB` (default `/tmp/chitti_vaani_relay.sqlite`).
 Backend resolution order ([admin_db.py `_resolve_url`](backend/services/admin_db.py)):
 1. `ADMIN_DATABASE_URL` — preferred. Set to Supabase Postgres URL.
 2. `DATABASE_URL` — fallback for shared infra.
-3. SQLite at `ADMIN_TOKEN_DB` (default `/tmp/chitti_admin.sqlite`). Ephemeral on Render — only suitable for local dev.
+3. SQLite at `ADMIN_TOKEN_DB` (default `/tmp/chitti_admin.sqlite`). Ephemeral on Railway — only suitable for local dev.
 
 `postgres://...` URLs are rewritten to `postgresql+psycopg2://...` (SQLAlchemy 2.x dialect prefix). Engine uses `pool_pre_ping=True`. The feedback layer adds a third resolution step ([feedback_db.py `_resolve_url`](backend/services/feedback_db.py)): `FEEDBACK_DATABASE_URL` → `ADMIN_DATABASE_URL` → `DATABASE_URL` → SQLite at `FEEDBACK_DB_PATH`.
 
@@ -191,6 +191,6 @@ Scoring (PWD-weighted) — `(impact × frequency × urgency) / effort`:
 
 ## Persistence notes
 
-- **`/tmp` is wiped on every Render free-tier deploy.** Use `ADMIN_DATABASE_URL` (Supabase Postgres) for admin + feedback in production. Vaani's user token DB and relay DB are still SQLite — graduate them when emergency cascade exits beta (a long-running multi-day pair must survive a deploy).
+- **`/tmp` is wiped on every Railway free-tier deploy.** Use `ADMIN_DATABASE_URL` (Supabase Postgres) for admin + feedback in production. Vaani's user token DB and relay DB are still SQLite — graduate them when emergency cascade exits beta (a long-running multi-day pair must survive a deploy).
 - The feedback layer falls back through three env vars before SQLite — make sure at least one Postgres URL is set in production.
 - `FEEDBACK_IP_SALT` should be a stable random string; rotating it resets per-IP rate-limit history but **does not change** any existing hashed rows in `feedback_log`.

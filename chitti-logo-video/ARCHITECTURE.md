@@ -13,7 +13,7 @@
                                         │  HTTPS (CORS: sahayai.in)
                                         ▼
               ┌─────────────────────────────────────────────────────┐
-              │  Render free-tier web service                       │
+              │  Railway free-tier web service                       │
               │  chitti-logo-video-api.onrender.com                 │
               │  gunicorn main:app --workers 2 --timeout 60         │
               │                                                     │
@@ -44,7 +44,7 @@
                             │                         │
                   REPLICATE_API_TOKEN +     VIDEO_PROVIDER +
                   REPLICATE_LOGO_MODEL      VIDEO_PROVIDER_KEY
-                  (env, `sync: false` in render.yaml — set in Render dashboard)
+                  (env, `sync: false` in render.yaml — set in Railway dashboard)
 ```
 
 ---
@@ -60,7 +60,7 @@
 | [`backend/services/video_service.py`](backend/services/video_service.py) | Thread-safe in-memory job queue + mock state machine. |
 | [`backend/requirements.txt`](backend/requirements.txt) | `flask==3.0.3`, `flask-cors==4.0.1`, `gunicorn==22.0.0`. No DB driver, no SDK, no LLM client. |
 | [`backend/runtime.txt`](backend/runtime.txt) | `python-3.11.10` (matches `render.yaml` `PYTHON_VERSION`). |
-| [`render.yaml`](render.yaml) | Render web service, `plan: free`, 2 gunicorn workers, 60 s timeout, 5 env vars (4 of them `sync: false`). |
+| [`render.yaml`](render.yaml) | Railway web service, `plan: free`, 2 gunicorn workers, 60 s timeout, 5 env vars (4 of them `sync: false`). |
 
 ---
 
@@ -167,7 +167,7 @@ services:
       - key: ALLOWED_ORIGINS
         value: https://sahayai.in,https://www.sahayai.in
       - key: REPLICATE_API_TOKEN
-        sync: false                  # set in Render dashboard when key lands
+        sync: false                  # set in Railway dashboard when key lands
       - key: REPLICATE_LOGO_MODEL
         sync: false
       - key: VIDEO_PROVIDER
@@ -176,4 +176,4 @@ services:
         sync: false
 ```
 
-Public URL: `https://chitti-logo-video-api.onrender.com`. Note: per [`project_render_deploy_status_2026_05_10`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md), this service's `render.yaml` exists but the Render service may not be wired yet — verify with `curl https://chitti-logo-video-api.onrender.com/health` before declaring it live.
+Public URL: `https://chitti-logo-video-api.onrender.com`. Note: per [`project_render_deploy_status_2026_05_10`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md), this service's `render.yaml` exists but the Railway service may not be wired yet — verify with `curl https://chitti-logo-video-api.onrender.com/health` before declaring it live.

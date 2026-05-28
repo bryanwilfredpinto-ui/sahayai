@@ -20,7 +20,7 @@ chitti-news/
     ├── database.py             SQLAlchemy engine + ensure_schema('news')
     ├── requirements.txt        flask · feedparser · sqlalchemy · httpx (DeepSeek REST) · rapidfuzz · apscheduler
     ├── runtime.txt + .python-version  → Python 3.11
-    ├── render.yaml             Render Blueprint
+    ├── render.yaml             Railway Blueprint
     ├── data/
     │   ├── sources.json        25+ RSS feeds across state × language × category
     │   └── articles_seed.json  6-row welcome seed (EN + HI)

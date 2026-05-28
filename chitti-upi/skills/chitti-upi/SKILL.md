@@ -21,7 +21,7 @@ chitti-upi/
     ├── config.py               settings (DEEPSEEK_API_KEY · model · CORS · token caps)
     ├── requirements.txt        flask · flask-cors · gunicorn · httpx
     ├── runtime.txt             Python 3.11
-    ├── render.yaml             Render Blueprint
+    ├── render.yaml             Railway Blueprint
     ├── services/
     │   └── upi_service.py      DeepSeek wrapper + CHITTI_UPI_FRAUD_PROMPT + JSON-mode parsing + RBI 2026 cards
     └── routes/

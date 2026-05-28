@@ -11,7 +11,7 @@
                                     │ fetch /api/government/*
                                     ▼
         ┌────────────────────────────────────────────────────────────┐
-        │ Render service: chitti-government-api  (Flask + gunicorn)  │
+        │ Railway service: chitti-government-api  (Flask + gunicorn)  │
         │                                                            │
         │ main.py ─ Flask app, CORS, error handlers, /, /health      │
         │  └─ _bootstrap()                                           │
@@ -52,11 +52,11 @@
 
 | Layer | Choice | Why |
 | --- | --- | --- |
-| Python | 3.11.10 ([runtime.txt](backend/runtime.txt)) | Render free tier; no Rust toolchain needed. |
-| Web framework | Flask 3.0.3 | Pure Python; matches chitti-medupi + chitti-legal. FastAPI requires pydantic-core (Rust) which Render free tier can't compile from source. |
+| Python | 3.11.10 ([runtime.txt](backend/runtime.txt)) | Railway free tier; no Rust toolchain needed. |
+| Web framework | Flask 3.0.3 | Pure Python; matches chitti-medupi + chitti-legal. FastAPI requires pydantic-core (Rust) which Railway free tier can't compile from source. |
 | ORM | SQLAlchemy 2.0.35 | Same as every other Chitti backend. |
 | DB driver | psycopg2-binary 2.9.10 (Postgres) / sqlite3 (local dev) | manylinux wheels — no compile step. |
-| Scheduler | APScheduler 3.10.4 (BackgroundScheduler, MemoryJobStore) | In-process so Render free tier doesn't need a separate cron worker. Idempotent jobs make per-worker duplication safe. |
+| Scheduler | APScheduler 3.10.4 (BackgroundScheduler, MemoryJobStore) | In-process so Railway free tier doesn't need a separate cron worker. Idempotent jobs make per-worker duplication safe. |
 | HTTP client | httpx 0.27.2 (DeepSeek) · requests 2.31.0 (PIB, Nominatim) | httpx supports keep-alive sessions cleanly; requests is battle-tested for short server-to-server calls. |
 | RSS parser | feedparser 6.0.11 | Pure Python, no native deps; tolerates malformed PIB XML. |
 | Fuzzy match | rapidfuzz 3.6.1 | Ships in requirements for future scheme-name fuzzy lookup ("pradhan mantri kisaan" → `pm-kisan`). |
@@ -336,7 +336,7 @@ Per-row schema:
 ## Configuration
 
 [`backend/config.py`](backend/config.py) is a thin `os.environ` reader
-(no pydantic; Render free tier can't compile pydantic-core's Rust backend).
+(no pydantic; Railway free tier can't compile pydantic-core's Rust backend).
 
 | Key | Default | Used by |
 | --- | --- | --- |

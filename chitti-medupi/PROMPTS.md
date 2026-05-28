@@ -58,7 +58,7 @@ The wrapper around the prompt in `_vision_extract()` returns a structured error 
 
 | Failure | Returned dict | Caller behaviour |
 |---|---|---|
-| `ANTHROPIC_API_KEY` unset | `{"_error": "ANTHROPIC_API_KEY not set on server"}` | Frontend renders *"Image recognition unavailable — please type the medicine name instead."* in EN + HI |
+| `GEMINI_API_KEY` unset | `{"_error": "GEMINI_API_KEY not set on server"}` | Frontend renders *"Image recognition unavailable — please type the medicine name instead."* in EN + HI |
 | SDK not installed | `{"_error": "anthropic SDK not installed"}` | Same as above |
 | Model returned non-JSON | `{"_error": "model did not return valid JSON", "_raw": "<text>"}` | Same as above; raw kept for debugging |
 
@@ -82,7 +82,7 @@ Output is consumed by [`recognise_image()`](backend/services/medupi_recognition.
 ### Why Anthropic vision was chosen (and why we are leaving)
 
 **Original rationale** (commit `13c3b99`):
-- No OS-binary install pain on Render free tier (vs Tesseract requiring `libtesseract-dev` + language packs)
+- No OS-binary install pain on Railway free tier (vs Tesseract requiring `libtesseract-dev` + language packs)
 - Handles strip / bottle / blister / handwritten prescription uniformly — a single API for four input shapes
 - Returns strict JSON, no post-OCR LLM extraction step
 - Falls back gracefully when key is missing

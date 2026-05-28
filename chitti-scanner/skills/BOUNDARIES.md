@@ -44,4 +44,4 @@ Hard limits. These are not aspirations; they are enforced in code or by delibera
 
 ### 8. Never widens CORS to `*` in production
 
-- The Render env hard-pins `ALLOWED_ORIGINS` to two domains. Any PR that broadens this must be rejected.
+- The Railway env hard-pins `ALLOWED_ORIGINS` to two domains. Any PR that broadens this must be rejected.

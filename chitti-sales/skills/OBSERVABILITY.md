@@ -14,7 +14,7 @@ For every `POST /api/sales/ask`, log:
 - `usage.prompt_tokens` and `usage.completion_tokens` from DeepSeek
 - `book_cited` — extracted (best-effort) from the reply text for the per-book frequency metric
 
-Default: Python `logging` to stdout (Render captures it). When traffic warrants, switch to structured JSON logging — same plan as Chitti CA.
+Default: Python `logging` to stdout (Railway captures it). When traffic warrants, switch to structured JSON logging — same plan as Chitti CA.
 
 ## 2. Per-tactic / per-book citation frequency
 
@@ -46,7 +46,7 @@ Same as Chitti CA / Legal. Counters for:
 - `deepseek_network_error` — DNS / TLS / timeout
 - `deepseek_no_key` — deploy misconfiguration (should be zero in prod)
 
-Today: nothing. We will rely on inspecting Render logs once the backend lands.
+Today: nothing. We will rely on inspecting Railway logs once the backend lands.
 
 ## 4. Disclaimer-injection audit (every reply)
 
@@ -98,5 +98,5 @@ UptimeRobot polls both at 5-minute interval. Same as the other Chittis.
 
 - The raw user question (privacy — they may have described their customers).
 - The raw DeepSeek reply (size; replay via prompt + topic + language is acceptable for sampled debugging).
-- IP addresses beyond what Render's edge already records.
+- IP addresses beyond what Railway's edge already records.
 - Anything about the user's customers — phone numbers, names, addresses, payment history. The [BOUNDARIES.md](BOUNDARIES.md) rule against accepting customer data means we have nothing to log either.

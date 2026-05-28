@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti Logo & Video — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Intentional honest stub — SVG monogram + queued mock video. NEVER claims to ship AI-generated video. Graduates to 🟢 only when real provider API key lands in Railway env.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_logo_video.html |
+| Health | https://chitti-logo-video.onrender.com/health |
+| Status | 🟡 YELLOW by design — Observability=None is correct until product graduates |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
+| Languages | EN + HI |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §14](../CHITTI_SOP.md) |
+
+---
+
 # Chitti Logo & Video
 
 Small-business **logo + short explainer video** generator for Indian shops, freelancers, kirana counters, Insta brands, and kids' school projects. Free, no sign-up, zero design skill required.
@@ -22,7 +39,7 @@ The wire-up points are already in code — see [`logo_service._replicate_generat
 
 - **Backend**: Flask 3 + flask-cors + gunicorn, Python 3.11.10
 - **Frontend**: single static page [`chitti_logo_video.html`](../chitti_logo_video.html) (HTML/CSS/JS, no framework)
-- **Hosting**: Render free tier (`chitti-logo-video-api.onrender.com`) + GitHub Pages
+- **Hosting**: Railway free tier (`chitti-logo-video-api.onrender.com`) + GitHub Pages
 - **State**: stateless. Video jobs live in-process in `_JOBS: dict[str, _Job]`. No DB.
 
 ---
@@ -52,7 +69,7 @@ If you want the frontend to talk to local backend, set `window.CHITTI_LV_API = "
 | Method | Path | Purpose |
 |---|---|---|
 | `GET`  | `/`                              | banner + env-driven supplier names |
-| `GET`  | `/health`                        | `{ok: true}` (Render health-check) |
+| `GET`  | `/health`                        | `{ok: true}` (Railway health-check) |
 | `GET`  | `/api/lv/health`                 | logo + video supplier status |
 | `POST` | `/api/lv/logo/generate`          | `{brand_name, tagline?, palette?, style?}` → `{svg, ...}` |
 | `POST` | `/api/lv/video/enqueue`          | `{script, language?, duration_s?}` → `{job_id, state, ...}` |
@@ -67,7 +84,7 @@ Full schema in [API.md](API.md).
 ```
 chitti-logo-video/
 ├── README.md            ← this file
-├── render.yaml          ← Render service config (free tier, gunicorn 2 workers)
+├── render.yaml          ← Railway service config (free tier, gunicorn 2 workers)
 ├── CONTEXT.md           ← why this product, four-user contract, honest-stub pattern
 ├── ARCHITECTURE.md      ← Flask + SVG generator + mock queue
 ├── CHANGELOG.md         ← git history

@@ -73,7 +73,7 @@ Today SVGs are returned inline in JSON. Videos are `data:` URLs (small SVG today
 
 | # | Item | Notes |
 |---|---|---|
-| 21 | Pick object storage: **Cloudflare R2** (recommended — zero egress fees) > AWS S3 > Render disk (no good for free tier). | — |
+| 21 | Pick object storage: **Cloudflare R2** (recommended — zero egress fees) > AWS S3 > Railway disk (no good for free tier). | — |
 | 22 | After generation, upload to `r2://chitti-logo-video/<job_id>.svg` (or `.mp4`), return public URL. | New `services/storage.py`. |
 | 23 | 30-day expiry on free-tier generations (cron / lifecycle rule). Paid tier = permanent. | — |
 | 24 | Persistent "my generations" — when we ship auth, list per-user assets. | Depends on Chitti-wide auth, which doesn't exist yet. |

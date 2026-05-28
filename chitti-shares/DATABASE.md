@@ -94,7 +94,7 @@ Indexes: `ix_stocks_name` on `name`.
 
 ### `index_quotes` — [`models/index_quote.py`](backend/models/index_quote.py)
 
-Stores quotes pushed from the user's laptop (workaround for Render IP blocks on Yahoo / NSE).
+Stores quotes pushed from the user's laptop (workaround for Railway IP blocks on Yahoo / NSE).
 
 | Column | Type | Notes |
 |---|---|---|

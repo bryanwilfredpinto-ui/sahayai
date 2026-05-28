@@ -1,3 +1,21 @@
+🎖️ **World Class Chitti Legal — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Plain-Hindi legal help at LL.M + PhD grade — for Indians facing a notice or contract without a lawyer.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_legal.html |
+| Health | https://chitti-legal-api-production.up.railway.app/health |
+| Status | 🟢 GREEN — curl-verified 2026-05-15 |
+| Risk | 🔴 HIGH — server-enforced "this is not legal advice" disclaimer on every response |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
+| Languages | 12 Indian languages |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §4](../CHITTI_SOP.md) · [LEGAL_KNOWLEDGE.md](skills/LEGAL_KNOWLEDGE.md) |
+
+---
+
 # Chitti Legal
 
 Plain-language explainer for Indian legal documents. A citizen pastes any clause, notice, contract, FIR copy, or affidavit; Chitti reads it back in plain Hindi / English / 10 other Indian languages, flags what to watch out for, and tells the user what to ask a lawyer.
@@ -36,7 +54,7 @@ Without `DEEPSEEK_API_KEY` set, the service still runs and returns a fallback pa
 
 ## Production
 
-Deployed on Render as `chitti-legal-api` per [render.yaml](render.yaml). Frontend [chitti_legal.html](../chitti_legal.html) hits `https://chitti-legal-api-production.up.railway.app/api/legal/explain`.
+Deployed on Railway as `chitti-legal-api` per [render.yaml](render.yaml). Frontend [chitti_legal.html](../chitti_legal.html) hits `https://chitti-legal-api-production.up.railway.app/api/legal/explain`.
 
 ## Project shape
 
@@ -47,7 +65,7 @@ Deployed on Render as `chitti-legal-api` per [render.yaml](render.yaml). Fronten
 | [routes/legal.py](backend/routes/legal.py) | `/api/legal/health`, `/api/legal/explain` |
 | [services/legal_service.py](backend/services/legal_service.py) | DeepSeek call, disclaimer enforcement, fallback path |
 | [requirements.txt](backend/requirements.txt) | flask, flask-cors, gunicorn, httpx |
-| [render.yaml](render.yaml) | Render free-tier service definition |
+| [render.yaml](render.yaml) | Railway free-tier service definition |
 
 That is the entire backend. No database, no scheduler, no auth.
 

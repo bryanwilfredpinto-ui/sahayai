@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Voice Factory — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🎤</div>
+    <div>
+      <h1 class="cf-title">Chitti Voice Factory — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · Backend 404 · B2B substrate</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_voice_factory.html">Open Voice Factory ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'voice_factory',
+  label: 'Chitti Voice Factory',
+  features: [
+    { name:'26 languages — 12 primary + 14 cousin (incl. Sanskrit, Oraon, Tulu)', desc:'Full 26-language matrix covering all 22 Scheduled languages + 4 cousins.', status:'green', try:'Open language list, observe 26 entries', link:'chitti_voice_factory.html' },
+    { name:'4-supplier cascade — mock_bhashini → real Bhashini → 3rd-party → community', desc:'Honest 4-tier supplier cascade per language with ledger.', status:'red', try:'Backend 404 — Render service down. Restart needed.' },
+    { name:'Honest ledger — every supplier call logged', desc:'Every STT/TTS call writes ledger row with supplier + success/fail + latency.', status:'red', try:'Backend down — ledger offline' },
+    { name:'Tier C NEVER silently falls back (e.g. Tulu never morphs into Kannada)', desc:'Tier C failure surfaces "not supported in this language" honestly.', status:'green', try:'Internal — verify supplier-cascade abort logic' },
+    { name:'mock_bhashini active (Phase 1 / 1.5)', desc:'Mock Bhashini live as Phase 1 placeholder until real Bhashini ULCA registration.', status:'red', try:'Backend down — mock offline' },
+    { name:'Real Bhashini Phase 2 — blocked on Sire\'s ULCA registration', desc:'Real Bhashini integration blocked on Sire\'s government ULCA registration.', status:'yellow', try:'Blocker: Sire ULCA registration' },
+    { name:'YouTube fluency pipeline (10 vids/lang cap)', desc:'Per-language YouTube training pipeline, 10 videos cap per language.', status:'red', try:'Backend down — fluency pipeline offline' },
+    { name:'Voice Hall of Fame for community contributors', desc:'Public surface for community voice donors.', status:'green', try:'Open chitti_voice_hall_of_fame.html', link:'chitti_voice_hall_of_fame.html' },
+    { name:'Lazy-import optional deps (sentence-transformers/torch/faiss/pymupdf/youtube-transcript-api)', desc:'Optional deps lazy-loaded so Render free tier stays OOM-safe.', status:'green', try:'grep services/fluency_corpus.py for lazy imports' },
+    { name:'Render free tier OOM-safe (commit f5f3f3a)', desc:'Build manifests split optional deps; OOM avoided.', status:'green', try:'grep requirements.txt vs requirements-optional.txt' },
+    { name:'503 fluency_pipeline_not_installed when optional deps absent', desc:'Honest 503 when optional deps not installed. NEVER fakes corpus.', status:'red', try:'Backend down — 503 surface offline' },
+    { name:'Pluggable at window.Chitti.a11y.VOICE_FACTORY_URL', desc:'Single URL hook — no Chitti hard-codes Bhashini.', status:'green', try:'Inspect chitti_a11y.js for VOICE_FACTORY_URL var' },
+    { name:'26 language landing pages (chitti_hi.html … chitti_kru.html)', desc:'One landing page per language — frontend-only, static.', status:'green', try:'Open chitti_hi.html', link:'chitti_hi.html' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any Voice Factory response card', link:'chitti_voice_factory.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Donor submissions, consent re-affirms, voice withdrawals — all confirm before fire.', status:'green', try:'Submit voice donation, verify confirm modal' },
+    { name:'26 language pages batch-cert', desc:'All 26 pages cert-passed at substrate level. Per-page cert run pending.', status:'yellow', try:'Run tools/cert_all_pages.mjs on the 26 pages' },
+    { name:'Textbook + Wikipedia corpus (79,414 chunks, 55 PDFs)', desc:'Per-language textbook + Wikipedia training corpus.', status:'red', try:'Backend down — corpus index offline' },
+    { name:'Donor consent lifecycle (annual re-affirm)', desc:'Expired consent → voice withdrawn from cascade.', status:'yellow', try:'Annual cron pending — needs first-year cohort' },
+    { name:'Phonetic models per language (quarterly refresh)', desc:'Per-language phonetic model with quarterly refresh.', status:'red', try:'Backend down' },
+    { name:'Community voice donation flow — Hall of Fame surface', desc:'End-to-end community donation flow + Hall of Fame recognition.', status:'yellow', try:'Donation submission UI live; backend processing offline' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

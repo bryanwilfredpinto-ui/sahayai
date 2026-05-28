@@ -6,7 +6,7 @@ What we measure, why, and where the signal comes from today.
 
 | Surface | Source | What it tells us |
 |---|---|---|
-| Render stdout log | gunicorn default | Request lines, traceback on crash. |
+| Railway stdout log | gunicorn default | Request lines, traceback on crash. |
 | `GET /` banner | [`../backend/main.py`](../backend/main.py) `root()` | Which suppliers are active (`mock` vs `replicate` vs `pika`). |
 | `GET /api/lv/health` | [`../backend/routes/lv.py`](../backend/routes/lv.py) `health()` | Per-service supplier + `jobs_in_memory` count for the responding worker. |
 

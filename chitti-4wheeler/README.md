@@ -1,3 +1,20 @@
+🎖️ **World Class Chitti 4-Wheeler — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Service-due alerts · DTC decoder · document tracker · family-cascade SOS · anti-overcharge guard · fake-part scanner · 26 languages.
+
+| Field | Value |
+|---|---|
+| Live URL | https://sahayai.in/chitti_4wheeler.html |
+| Health | https://chitti-4wheeler-api.onrender.com/health |
+| Status | 🟢 GREEN (intentional Railway) |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel |
+| Languages | 26 via Voice Factory cascade |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §13](../CHITTI_SOP.md) |
+
+---
+
 # Chitti 4-Wheeler
 
 Bharat's voice-first agent for car owners. Predicts engine problems,
@@ -15,14 +32,14 @@ accessibility. Camera-intelligence-ready. Never auto-dials cops.
 - **DB**: Turso libSQL (one DB per Chitti — SAHAYAI_MASTER §2 row 2).
   Embedded-replica pattern: local SQLite file at `/tmp/chitti_4wheeler.db`
   + 60-s bg sync. **NOT direct Hrana** — see [[project_turso_embedded_replica_pattern]].
-- **Hosting**: Render free tier; `render.yaml` co-located
+- **Hosting**: Railway free tier; `render.yaml` co-located
 
 ## Folder map
 
 ```
 chitti-4wheeler/
 ├── README.md                       — this file
-├── render.yaml                     — Render blueprint
+├── render.yaml                     — Railway blueprint
 ├── backend/
 │   ├── main.py                     — Flask entrypoint
 │   ├── config.py                   — env-var settings (DATABASE_URL + DeepSeek)
@@ -46,7 +63,7 @@ chitti-4wheeler/
   Home tab; LIVE / COMING SOON badges).
 - Skills folder with FEATURES, SKILL, MECHANIC_KNOWLEDGE markdown.
 - Backend stub:
-  - `GET /health` — for chitti-founder self-ping + Render
+  - `GET /health` — for chitti-founder self-ping + Railway
   - `POST /api/4w/ask` — DeepSeek Hinglish Q&A grounded in
     MECHANIC_KNOWLEDGE
   - `GET /api/4w/dtc/<code>` — 16 most-common codes today
@@ -76,10 +93,10 @@ Compose: `libsql://chitti-4wheeler-<org>.turso.io?authToken=<token>`.
 Per [[project_turso_db_inventory]] — DB lives in `aws-ap-south-1`
 (Mumbai) under the `bryanwilfredpinto` Turso org.
 
-### Step 2 — Deploy to Render
+### Step 2 — Deploy to Railway
 
 1. Push to `main`.
-2. Render dashboard → `New +` → `Blueprint` → pick the `sahayai` repo
+2. Railway dashboard → `New +` → `Blueprint` → pick the `sahayai` repo
    → select `chitti-4wheeler/render.yaml` → `Apply`.
 3. In the new service → `Environment`, paste:
    - `DATABASE_URL` = `libsql://…?authToken=…` from Step 1

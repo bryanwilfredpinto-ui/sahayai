@@ -18,7 +18,7 @@ Eight critiques worth taking seriously. Each one names the risk + the current mi
 
 **Gap:** P1 item 17-20 in [`../TODO.md`](../TODO.md). Noto Sans Devanagari / Tamil / Telugu / Bengali subsets need to be embedded as `@font-face` in the SVG.
 
-## 3. No asset storage backend means SVGs disappear on Render restart
+## 3. No asset storage backend means SVGs disappear on Railway restart
 
 **Risk:** SVGs are inlined in JSON response. Video placeholder URLs are `data:` URLs. Nothing is uploaded anywhere. A user who closes the tab loses the asset unless they explicitly downloaded.
 
@@ -28,7 +28,7 @@ Eight critiques worth taking seriously. Each one names the risk + the current mi
 
 ## 4. In-process job queue breaks past 2 gunicorn workers
 
-**Risk:** Render free tier runs 2 workers. Job enqueued on worker A; user polls via worker B → 404 unknown_job_id. Frustrating + looks broken.
+**Risk:** Railway free tier runs 2 workers. Job enqueued on worker A; user polls via worker B → 404 unknown_job_id. Frustrating + looks broken.
 
 **Mitigation today:** Job is "sticky to the originating worker", which on a 2-worker setup works most of the time due to keep-alive.
 
@@ -36,7 +36,7 @@ Eight critiques worth taking seriously. Each one names the risk + the current mi
 
 ## 5. Free-tier cold-start drops queued jobs
 
-**Risk:** Render free dyno sleeps after 15 min idle. A queued job on a sleeping dyno is lost.
+**Risk:** Railway free dyno sleeps after 15 min idle. A queued job on a sleeping dyno is lost.
 
 **Mitigation today:** Polling round-trip itself wakes the dyno; jobs complete in 3 s, well inside the awake window.
 
@@ -46,7 +46,7 @@ Eight critiques worth taking seriously. Each one names the risk + the current mi
 
 **Risk:** A single client can hammer `/api/lv/logo/generate` infinitely. The SVG render is CPU-light but not free.
 
-**Mitigation today:** Render free-tier dyno limit caps the blast radius.
+**Mitigation today:** Railway free-tier dyno limit caps the blast radius.
 
 **Gap:** Add Flask-Limiter (token bucket) before public launch.
 

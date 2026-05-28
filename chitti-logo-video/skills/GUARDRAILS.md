@@ -46,4 +46,4 @@ Even if the client sends `duration_s: 99999`, the server clamps to 120. Even if 
 
 ## 8. Health endpoint always returns 200 with `{ok: true}`
 
-So Render's health check never restarts the service mid-job. See [`../backend/main.py`](../backend/main.py) `health()`.
+So Railway's health check never restarts the service mid-job. See [`../backend/main.py`](../backend/main.py) `health()`.

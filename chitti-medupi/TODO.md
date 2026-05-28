@@ -4,7 +4,7 @@ Outstanding work, drawn from:
 - [CHITTI_MEDUPI_MASTER_SPEC.md](../CHITTI_MEDUPI_MASTER_SPEC.md) §13 "Pending" and §13 "Open"
 - `stub: True` markers in code
 - The 2026-05-11 *"DeepSeek for all"* AI-provider switch (see memory `project_ai_provider_switch_to_deepseek.md`)
-- The Render deploy status note (memory `project_render_deploy_status_2026_05_10`)
+- The Railway deploy status note (memory `project_render_deploy_status_2026_05_10`)
 
 ---
 
@@ -18,7 +18,7 @@ Outstanding work, drawn from:
 Migration checklist:
 - [ ] Confirm DeepSeek-VL (or equivalent) supports the same JSON-mode strict output for the [`_VISION_PROMPT`](backend/services/medupi_recognition.py)
 - [ ] Swap import: `from anthropic import Anthropic` → DeepSeek client of choice
-- [ ] Swap config: `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` → `DEEPSEEK_API_KEY` / `DEEPSEEK_VISION_MODEL`
+- [ ] Swap config: `GEMINI_API_KEY` / `ANTHROPIC_MODEL` → `DEEPSEEK_API_KEY` / `DEEPSEEK_VISION_MODEL`
 - [ ] Update `_vision_extract()` request shape (base64 + prompt) to DeepSeek's schema
 - [ ] Update [`requirements.txt`](backend/requirements.txt) — drop `anthropic==0.39.0`, add DeepSeek SDK
 - [ ] Update [`.env.example`](backend/.env.example) and [`render.yaml`](render.yaml)

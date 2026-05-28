@@ -31,8 +31,8 @@ chitti_sales.html  ── POST /api/sales/ask ──►  Flask (main.py)
 | `backend/routes/sales.py`                         | Blueprint `bp` under `/api/sales`. Two routes: `GET /health` and `POST /ask`.                    |
 | `backend/services/sales_service.py`               | DeepSeek wrapper. Holds the system prompt, the disclaimer string, the language map, the topic map, and the disclaimer enforcer. |
 | `backend/requirements.txt`                        | flask 3.0.3, flask-cors 4.0.1, gunicorn 22.0.0, httpx 0.27.2.                                    |
-| `backend/runtime.txt`                             | `python-3.11.10` (pinned for Render).                                                            |
-| `render.yaml`                                     | Render blueprint. `gunicorn main:app --workers 2 --timeout 60`. Free plan.                       |
+| `backend/runtime.txt`                             | `python-3.11.10` (pinned for Railway).                                                            |
+| `render.yaml`                                     | Railway blueprint. `gunicorn main:app --workers 2 --timeout 60`. Free plan.                       |
 | `chitti_sales.html` (at repo root)                | Voice-first frontend. Topic chips + mic button + SpeechSynthesis. Includes [feedback-widget.js](../feedback-widget.js). |
 
 ## Proposed request flow

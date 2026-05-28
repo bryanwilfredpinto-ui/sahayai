@@ -16,7 +16,7 @@ Naming a verdict `"QUALITY-AT-FAIR-PRICE"` and then narrating it with `"Buffett 
 
 ## 4. screener.in scrape is a single point of failure
 
-If screener.in changes their HTML structure, [`screener_client.py`](../backend/services/screener_client.py) silently returns empty objects until repaired. `yahoo_client` was the historical fallback but is blocked on Render. We need a smoke-test cron to ping a known symbol and alert when fields go null.
+If screener.in changes their HTML structure, [`screener_client.py`](../backend/services/screener_client.py) silently returns empty objects until repaired. `yahoo_client` was the historical fallback but is blocked on Railway. We need a smoke-test cron to ping a known symbol and alert when fields go null.
 
 ## 5. Angel SmartAPI quota is opaque to the user
 
@@ -24,7 +24,7 @@ The user sees their DeepSeek quota via `/api/usage/today` but the Angel rate lim
 
 ## 6. Two frontends, one backend = one cold-start tax for both
 
-Render free dyno sleeps after 15 min. A user opening `chitti_fundamentals.html` first and then switching to `chitti_complete_technical.html` benefits from the warm dyno, but the *first* visitor of either pays 8-20s cold-start. There is no warming cron because that defeats the free-tier cost model.
+Railway free dyno sleeps after 15 min. A user opening `chitti_fundamentals.html` first and then switching to `chitti_complete_technical.html` benefits from the warm dyno, but the *first* visitor of either pays 8-20s cold-start. There is no warming cron because that defeats the free-tier cost model.
 
 ## 7. Hindi LLM output is not lint-checked
 

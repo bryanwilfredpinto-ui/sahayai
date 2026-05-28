@@ -1,3 +1,22 @@
+🎖️ **World Class Chitti Shares — Commando Discipline. Zero Excuses.**
+
+> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
+
+> Bharat-themed agentic Technical + Fundamentals · 43 indicators · Roshan composite · Story Mode · sticky `NOT SEBI REGISTERED` bar.
+
+| Field | Value |
+|---|---|
+| Live URL — Technical | https://sahayai.in/chitti_complete_technical.html |
+| Live URL — Fundamentals | https://sahayai.in/chitti_fundamentals.html |
+| Health | https://chitti-shares-api.onrender.com/health |
+| Status | 🟢 GREEN — `chat_with_tools` rail-gated post commit #2 |
+| Risk | 🟡 Financial — sticky `NOT SEBI REGISTERED` bar + full legal modal mandatory |
+| 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, Story Mode |
+| Languages | English + 9 Indian languages |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §10](../CHITTI_SOP.md) · [CHITTI_TECHNICAL_MASTER_SPEC.md](../CHITTI_TECHNICAL_MASTER_SPEC.md) · [CHITTI_FUNDAMENTALS_MASTER_SPEC.md](../CHITTI_FUNDAMENTALS_MASTER_SPEC.md) |
+
+---
+
 # Chitti Shares
 
 Indian equities backend that powers **two** Chitti front-ends from a single FastAPI service:
@@ -11,7 +30,7 @@ Backend service: `https://chitti-shares-api-production.up.railway.app`
 
 ## Data sources (locked)
 
-Yahoo Finance is **BLOCKED** from Render IPs. The active sources are:
+Yahoo Finance is **BLOCKED** from Railway IPs. The active sources are:
 
 | Need | Source | File |
 |---|---|---|
@@ -36,7 +55,7 @@ Yahoo Finance is **BLOCKED** from Render IPs. The active sources are:
 - Universe scanner (Roshan + 43 indicators) across 5 universes (NIFTY 50 / Largecap / Midcap / Smallcap / Microcap)
 - Strategy screener with 30+ investor-lens slugs (Buffett / Lynch / Graham / Greenblatt / Munger / Pabrai / Marks / RJ / Kedia / RKD / RMD / NS / HDFC / Mirae / Motilal / etc.)
 - Per-call DeepSeek quota tracking (soft cap ₹50 / day, hard cap ₹100 / day, IST reset)
-- In-process APScheduler (replaced paid Render cron jobs)
+- In-process APScheduler (replaced paid Railway cron jobs)
 - MedUPI endpoints co-hosted in this service (sibling product, separate Neon DB)
 
 ## Layout
@@ -74,18 +93,18 @@ chitti-shares/
 +- CHANGELOG.md             git-log driven history
 +- TODO.md                  Outstanding spec items + code TODOs
 +- PROMPTS.md               Every LLM prompt template in the codebase
-+- DEPLOY_FULL.md           Canonical Render walkthrough
++- DEPLOY_FULL.md           Canonical Railway walkthrough
 +- DEPLOY_PHASE1..3-5.md    Historical phase guides
 ```
 
 ## Production deploy
 
-Render Blueprint (`render.yaml`) provisions:
+Railway Blueprint (`render.yaml`) provisions:
 
-1. `chitti-shares-api` — FastAPI web service on the Render free tier (cold-start friendly; `/health` is the wake-up ping).
+1. `chitti-shares-api` — FastAPI web service on the Railway free tier (cold-start friendly; `/health` is the wake-up ping).
 2. `chitti-shares-web` — legacy React static site (the single-file HTMLs now serve from GitHub Pages root).
 
-Manual env vars to set in the Render dashboard:
+Manual env vars to set in the Railway dashboard:
 
 ```
 DATABASE_URL          (Supabase / Neon Postgres "Direct" string)
@@ -98,7 +117,7 @@ KITE_API_KEY / KITE_API_SECRET                                       (optional)
 TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID                                 (optional)
 ```
 
-`DATA_SOURCE=yahoo` is the default but is effectively bypassed by `screener_client` + `angel_client` paths because Yahoo is IP-blocked from Render.
+`DATA_SOURCE=yahoo` is the default but is effectively bypassed by `screener_client` + `angel_client` paths because Yahoo is IP-blocked from Railway.
 
 ## Standing rules
 

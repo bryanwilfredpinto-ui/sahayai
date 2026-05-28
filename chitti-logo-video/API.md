@@ -40,7 +40,7 @@ Banner / discovery endpoint. Useful for `curl`-ing to confirm the deploy is aliv
 
 **Source:** [`backend/main.py`](backend/main.py) `health()`
 
-Render's health-check endpoint. Bryan should curl this in production before declaring a deploy "live" (per [`feedback_verify_before_handover`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md)).
+Railway's health-check endpoint. Bryan should curl this in production before declaring a deploy "live" (per [`feedback_verify_before_handover`](../../../.claude/projects/c--Users-DELL-sahayai-sahayai/memory/MEMORY.md)).
 
 ### Response — 200
 
@@ -149,7 +149,7 @@ curl -X POST https://chitti-logo-video-api.onrender.com/api/lv/logo/generate \
 
 **Source:** [`backend/routes/lv.py`](backend/routes/lv.py) `video_enqueue()` → [`backend/services/video_service.py`](backend/services/video_service.py) `enqueue()`
 
-Submits a video-generation job and returns a `job_id` to poll. **State is in-process** (per-gunicorn-worker) so always poll from the same browser session and accept that a Render free-tier cold restart drops queued jobs.
+Submits a video-generation job and returns a `job_id` to poll. **State is in-process** (per-gunicorn-worker) so always poll from the same browser session and accept that a Railway free-tier cold restart drops queued jobs.
 
 ### Request body
 

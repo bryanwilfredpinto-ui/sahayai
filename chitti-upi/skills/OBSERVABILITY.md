@@ -39,7 +39,7 @@ Specifically the rate at which `_fallback()` fires AND `risk` is therefore `MEDI
 
 ### 5. Latency p50 / p95
 
-DeepSeek is a network call. Render free-plan cold start adds ~30s. p95 budget is 35s; anything beyond is unspeakable for a blind-user flow.
+DeepSeek is a network call. Railway free-plan cold start adds ~30s. p95 budget is 35s; anything beyond is unspeakable for a blind-user flow.
 
 ### 6. Token usage / cost
 

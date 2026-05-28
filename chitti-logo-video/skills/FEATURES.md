@@ -142,7 +142,7 @@ End-to-end wired: a real HTTP endpoint OR a frontend handler that produces a vis
   stub is intentionally stateless and offline-capable.
 - Python 3.11.10.
 
-### 1.8 Render Blueprint exists (not yet connected)
+### 1.8 Railway Blueprint exists (not yet connected)
 
 - [`render.yaml`](../render.yaml) — free tier, gunicorn 2 workers,
   60-s timeout, 4 `sync: false` secret slots ready for the real
@@ -177,7 +177,7 @@ Source: [`chitti-logo-video/TODO.md`](../TODO.md) P0 / P1.
 | LV9 | **Font selector** | P1 | Currently hard-coded `Inter, system-ui, sans-serif` in every SVG. | Allow-list pulled from request body `font_family`: `Inter`, `Poppins`, `Mukta` (Devanagari), `Hind Madurai` (Tamil), `Tiro Devanagari Hindi`, `Lora` (serif), `Bebas Neue` (display). |
 | LV10 | **Embed `@font-face` rules inside the SVG** | P1 | Downloaded SVGs render identically offline. Adds 50-100 KB per SVG (TTF subsetted). Worth it. | Inline subsetted TTF in the SVG `<defs>`. |
 | LV11 | **Multi-language brand-name rendering** (Devanagari / Tamil / Telugu / Kannada / Malayalam / Bengali / Gujarati / Oriya / Gurmukhi) | **P0** | Today `Inter` doesn't include any Indic glyph — brand names in those scripts render as `□□□` (tofu). This is a four-user-contract regression. | Pull the right script's font into the SVG `<defs>` based on the brand-name's Unicode script range. |
-| LV12 | **First Render deploy** | P0 | Blueprint exists, never connected. | Apply [render.yaml](../render.yaml); paste the 4 secrets ; curl `/api/lv/health`; live-page smoke. |
+| LV12 | **First Railway deploy** | P0 | Blueprint exists, never connected. | Apply [render.yaml](../render.yaml); paste the 4 secrets ; curl `/api/lv/health`; live-page smoke. |
 
 **How to apply** when implementing:
 - The mock `_mock_svg()` path stays as a fallback **forever** — never
@@ -219,7 +219,7 @@ Source: [`chitti-logo-video/TODO.md`](../TODO.md) P0 / P1.
   the 4-supplier cascade ([[project_chitti_voice_factory_spec]]).
   Wire is LV5 above.
 - **Chitti Logo & Video → Founder dashboard** — health-ping pending
-  LV12 (Render deploy).
+  LV12 (Railway deploy).
 
 ---
 

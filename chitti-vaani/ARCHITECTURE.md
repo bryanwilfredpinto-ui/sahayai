@@ -13,7 +13,7 @@
                                    │ HTTPS (CORS-gated by ALLOWED_ORIGINS)
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  Render web service: chitti-vaani-api  (Flask + gunicorn, 2 workers)    │
+│  Railway web service: chitti-vaani-api  (Flask + gunicorn, 2 workers)    │
 │                                                                          │
 │  main.py                                                                 │
 │   ├ /api/vaani/*       (routes/vaani.py        → services/vaani_service)│
@@ -38,7 +38,7 @@
 | File | Purpose |
 |---|---|
 | [main.py](backend/main.py) | Flask app factory. Registers 5 blueprints, mounts schedulers, idempotent DB init/seed wrapped in try/except so a misconfigured `ADMIN_DATABASE_URL` cannot take down the rest of Vaani. |
-| [config.py](backend/config.py) | Frozen dataclass `Settings` reading env vars. Avoids pydantic-settings because Render's slim image lacks Rust + cmake (same workaround as MedUPI / News). |
+| [config.py](backend/config.py) | Frozen dataclass `Settings` reading env vars. Avoids pydantic-settings because Railway's slim image lacks Rust + cmake (same workaround as MedUPI / News). |
 | [routes/vaani.py](backend/routes/vaani.py) | `/api/vaani/ask`, `/health`, `/languages`. Thin shell; validates body, hands to `vaani_service.ask()`. |
 | [routes/email.py](backend/routes/email.py) | `/api/vaani/email/{status,auth/start,auth/callback,send,disconnect}`. Per-end-user Gmail OAuth keyed by frontend-generated `user_token`. |
 | [routes/emergency.py](backend/routes/emergency.py) | `/api/vaani/emergency/{trigger,check-in,pair/issue,pair/accept,pair/unpair,pair/list,poll}`. Chitti-to-Chitti pairing + relay inbox. |
@@ -120,7 +120,7 @@ Auth model:
 | `VAANI_MAX_TOKENS` / `VAANI_TEMPERATURE` | DeepSeek tuning | 600 / 0.4 |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Gmail OAuth | unset |
 | `GOOGLE_REDIRECT_URI` | end-user Gmail callback | `https://chitti-vaani-api-production.up.railway.app/api/vaani/email/auth/callback` |
-| `VAANI_TOKEN_DB` / `VAANI_RELAY_DB` | SQLite paths (ephemeral on Render free tier) | `/tmp/chitti_vaani_tokens.sqlite` / `/tmp/chitti_vaani_relay.sqlite` |
+| `VAANI_TOKEN_DB` / `VAANI_RELAY_DB` | SQLite paths (ephemeral on Railway free tier) | `/tmp/chitti_vaani_tokens.sqlite` / `/tmp/chitti_vaani_relay.sqlite` |
 | `ADMIN_SECRET` | shared secret for `/api/admin/*` + `/api/feedback/*` admin endpoints. Missing = 503. | unset |
 | `ADMIN_DATABASE_URL` / `DATABASE_URL` | Postgres for admin + feedback tables; rewrites `postgres://` to `postgresql+psycopg2://` | unset → SQLite |
 | `ADMIN_TOKEN_DB` / `FEEDBACK_DB_PATH` | SQLite fallback paths | `/tmp/chitti_admin.sqlite` / `/tmp/chitti_feedback.sqlite` |

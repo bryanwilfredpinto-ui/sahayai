@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti Founder — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">🎖️</div>
+    <div>
+      <h1 class="cf-title">Chitti Founder — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · CTO seat lives here · aggregator-only</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_cto_inbox.html">CTO Inbox ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'founder',
+  label: 'Chitti Founder',
+  features: [
+    { name:'BCP Layer 1 — self-ping every 4 min (NOT UptimeRobot)', desc:'chitti-founder self-pings every Chitti /health every 4 min. NOT UptimeRobot, NOT any external monitor.', status:'green', try:'curl /admin/founder/self-ping/last — verify timestamp', link:'https://chitti-founder-api.up.railway.app/health' },
+    { name:'BCP Layer 2 — health-check ground truth dashboard', desc:'Self-ping ground truth surfaces on Founder dashboard.', status:'green', try:'Open Founder dashboard' },
+    { name:'BCP Layer 3 — per-response widget signal aggregation', desc:'Aggregates 👍/👎 + text feedback from every Chitti daily.', status:'green', try:'Internal — verify aggregation cron' },
+    { name:'BCP Layer 4 — DAILY 07:00 IST quality+defect email', desc:'07:00 IST daily quality + defect-rate email to Sire.', status:'green', try:'Wait for tomorrow 07:00 IST email' },
+    { name:'BCP Layer 4 — WEEKLY Sun 08:00 IST trend digest', desc:'Sunday 08:00 IST weekly trend digest.', status:'green', try:'Wait for Sunday 08:00 IST digest' },
+    { name:'BCP Layer 4 — HOURLY :15 escalator pass', desc:'Hourly :15 escalator: 3-day repeating defect → GitHub issue; <70% 👍 → SMS Sire.', status:'green', try:'Internal — verify hourly cron' },
+    { name:'BCP Layer 5 — DeepSeek → Claude → Gemini fallback shim', desc:'Honest LLM fallback shim chain across all 15 Chittis. Currently wired on 0/15.', status:'red', try:'TONIGHT — P0. Largest open CTO defect.' },
+    { name:'Swarm Intelligence — Sunday 09:00 IST run_swarm_pass', desc:'Anonymised pattern detection across all Chittis. HIGH-risk requires Sire approval.', status:'green', try:'Wait for Sunday 09:00 IST swarm pass' },
+    { name:'Honest stub on unset env (SMTP/SMS/GH-token/Claude/Gemini)', desc:'Helper returns False on unset env; cron stays green.', status:'green', try:'curl /admin/founder/env-check — verify honest-stub flags' },
+    { name:'libsql embedded-replica pattern (Turso)', desc:'Founder uses libsql directly (no SQLAlchemy Observability engine).', status:'green', try:'grep main.py for libsql_client.create_client' },
+    { name:'Aggregator-only (never per-Chitti producer)', desc:'Founder\'s own HTTP rows do NOT land in quality_audit (circular).', status:'green', try:'Internal — verify no self-audit row' },
+    { name:'Email delivery for daily/weekly reports (SMTP gated by env)', desc:'SMTP env unset → helper returns False; cron stays green.', status:'green', try:'Internal — verify SMTP env-guard' },
+    { name:'Founder dashboard frontend', desc:'Aggregator dashboard surface.', status:'green', try:'Open Founder dashboard' },
+    { name:'Per-response widget — N/A (not user-facing)', desc:'Founder has no user-facing response boxes.', status:'green', try:'N/A — by-design exception' },
+    { name:'Golden Rule confirm gate — N/A (no user actions)', desc:'Founder has no user-initiated side-effecting actions.', status:'green', try:'N/A — by-design exception' },
+    { name:'CTO inbox — chitti_cto_inbox.html + Vaani CTO panel', desc:'CTO reports land on Vaani-routed inbox surface.', status:'green', try:'Open CTO inbox', link:'chitti_cto_inbox.html' },
+    { name:'Layer-5 fallback wired across all 15 Chittis', desc:'Per-Chitti DeepSeek → Claude → Gemini chain wiring.', status:'red', try:'TONIGHT — P0. 0/15 wired.' },
+    { name:'Render → Railway migration tracking', desc:'7 services on Railway · 8 still on Render (7 intentional + 1 stuck). Health audit 2026-05-29.', status:'green', try:'Open Phase 2 status report' },
+    { name:'Self-ping log retention 30 days + weekly rollup', desc:'Self-ping log kept 30 days, then rolled up to weekly aggregates.', status:'green', try:'Internal — verify retention cron' },
+    { name:'"Chitti forget" tombstones honoured across every aggregate', desc:'User forget request preserves tombstone for honest aggregate counts.', status:'green', try:'Internal — verify tombstone preservation' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

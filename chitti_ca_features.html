@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chitti CA — Feature Tests · Sire</title>
+<link rel="stylesheet" href="chitti_features_panel.css">
+</head>
+<body>
+<div class="bharat-stripe"></div>
+<header class="cf-hdr">
+  <div class="cf-brand-row">
+    <div class="cf-logo">📊</div>
+    <div>
+      <h1 class="cf-title">Chitti CA — Feature Tests</h1>
+      <p class="cf-sub">World Class · Commando Discipline · Zero Excuses · HIGH-risk</p>
+    </div>
+  </div>
+  <p class="cf-lifeline"><strong>This Chitti is someone's lifeline.</strong> Build it like your family depends on it. Because someone's family does.</p>
+  <div class="cf-controls">
+    <select id="lang-select" aria-label="Change language"></select>
+    <a class="cf-btn" href="chitti_control_panel.html">⬅ Control Panel</a>
+    <a class="cf-btn" href="chitti_ca.html">Open CA ↗</a>
+  </div>
+  <p id="cf-counts" class="cf-counts"></p>
+</header>
+<main class="cf-main"><div id="features-mount"></div></main>
+<footer class="cf-foot"><a href="chitti_control_panel.html">Control Panel</a> · <a href="chitti_cto_inbox.html">CTO Inbox</a> · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">GitHub</a></footer>
+<script>
+window.CHITTI_FEATURES = {
+  slug: 'ca',
+  label: 'Chitti CA',
+  features: [
+    { name:'ITR slab + deduction guidance (ITR-1/2/3/4)', desc:'Plain-English ITR form selection + slab calculation in 12 languages.', status:'green', try:'Ask "Which ITR form for salary + freelance income?"', link:'chitti_ca.html' },
+    { name:'GST rate + filing flow (GSTR-1, 3B, 9, composition)', desc:'GST rate lookup + filing-frequency guidance + composition-scheme explainer.', status:'green', try:'Ask "What GSTR for ₹40L turnover?"', link:'chitti_ca.html' },
+    { name:'TDS + advance tax + presumptive (44AD/44ADA/44AE)', desc:'TDS section finder + advance-tax schedule + presumptive eligibility.', status:'green', try:'Ask "Am I eligible for 44ADA?"' },
+    { name:'Deductions — 80C, 80D, 80G, 80E, HRA, home-loan interest', desc:'Full deduction explainer with limits and conditions.', status:'green', try:'Ask "How much 80C can I claim?"' },
+    { name:'Budget 2025 changes — slabs, regime comparison', desc:'Budget 2025 new + old regime comparison with break-even calculator.', status:'green', try:'Ask "Compare old vs new regime for ₹15L"' },
+    { name:'Portal navigation hints (incometax.gov.in / gst.gov.in)', desc:'Step-by-step portal navigation for common filing tasks.', status:'green', try:'Ask "How to upload Form 16 on portal?"' },
+    { name:'CBDT / CBIC notice explainer', desc:'Paste notice → plain-EN/HI translation + what to do next.', status:'green', try:'Paste any CBDT/CBIC notice text', link:'chitti_ca.html' },
+    { name:'Treaty interpretation (DTAA basics)', desc:'India\'s DTAA partner countries + applicable relief sections.', status:'green', try:'Ask "DTAA between India and USA on salary"' },
+    { name:'Server-enforced disclaimer on every response', desc:'Every reply ends with "not legal/tax advice — consult a registered CA". NEVER client-controlled.', status:'green', try:'curl POST /api/ca/ask — verify disclaimer in body' },
+    { name:'Quadrails INJECT rail on every DeepSeek call', desc:'Rails gate prompt + inject compliance disclaimer.', status:'green', try:'Internal — verify rail audit row per request' },
+    { name:'DeepSeek wrap_llm at every call site', desc:'All DeepSeek calls wrapped via lib/hooks.wrap_llm.', status:'green', try:'grep ca_service.py for wrap_llm' },
+    { name:'HIGH-risk Swarm gate — Sire approves every skill patch', desc:'No skill update lands without Sire\'s manual review.', status:'green', try:'Internal — verify SWARM_PROPOSED.md gate' },
+    { name:'Per-response widget (🔊 🤖 👍 👎 ✏️🎙️)', desc:'Mandatory 5-element widget on every response box.', status:'green', try:'Observe any CA response', link:'chitti_ca.html' },
+    { name:'Golden Rule — confirm before every action', desc:'Reminder set/delete, calculator save — all confirm before fire.', status:'green', try:'Set tax-saving reminder, verify confirm modal' },
+    { name:'Honest fallback when DEEPSEEK_API_KEY unset', desc:'Returns source: "fallback" reply with disclaimer. Four-user contract never breaks.', status:'green', try:'curl /api/ca/ask with no key', link:'https://chitti-ca-api-production.up.railway.app/health' },
+    { name:'CA_KNOWLEDGE.md at CA Final + PhD grade', desc:'IT Act, GST, Companies Act, AS/Ind AS, Budget 2025, portal nav, treaty interpretation.', status:'green', try:'Open chitti-ca/skills/CA_KNOWLEDGE.md' },
+    { name:'Tax-saving reminder before March 31', desc:'Automated reminder before financial-year close.', status:'yellow', try:'Planned P1 — reminder cron not yet wired' },
+    { name:'GST filing deadline alerts', desc:'GSTR-1 / GSTR-3B / GSTR-9 deadline reminders by registration state.', status:'yellow', try:'Planned P1 — state-aware deadline cron pending' },
+    { name:'"How much tax will I save if I invest X?" calculator', desc:'Interactive tax-saving calculator with regime switching.', status:'yellow', try:'Planned P2 — interactive calculator pending' },
+    { name:'DeepSeek → Claude → Gemini Layer-5 fallback', desc:'Honest LLM fallback chain.', status:'red', try:'TONIGHT — P0. 0/15 wired.' }
+  ]
+};
+</script>
+<script src="chitti_lang.js"></script>
+<script src="chitti_a11y.js"></script>
+<script src="chitti_features_panel.js"></script>
+</body>
+</html>

@@ -72,7 +72,7 @@ FROM feedback
 WHERE page = 'chitti_sales';
 ```
 
-No PII is stored beyond what the user explicitly types into the suggestion box. Email is opt-in. There is no IP correlation beyond what Render's edge already captures.
+No PII is stored beyond what the user explicitly types into the suggestion box. Email is opt-in. There is no IP correlation beyond what Railway's edge already captures.
 
 If Chitti Sales ever stores per-session outcome data (the "did the tactic work?" follow-up sketched in [DATABASE.md](DATABASE.md) `sales_outcomes`), that table is **separate** and lives in the Sales-specific Turso DB — not in the shared Vaani feedback DB.
 

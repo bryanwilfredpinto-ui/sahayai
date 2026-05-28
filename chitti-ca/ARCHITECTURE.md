@@ -31,8 +31,8 @@ chitti_ca.html  ── POST /api/ca/ask ──►  Flask (main.py)
 | [backend/routes/ca.py](backend/routes/ca.py)          | Blueprint `bp` under `/api/ca`. Two routes: `GET /health` and `POST /ask`.                       |
 | [backend/services/ca_service.py](backend/services/ca_service.py) | DeepSeek wrapper. Holds the system prompt, the disclaimer string, the language map, and the disclaimer enforcer. |
 | [backend/requirements.txt](backend/requirements.txt)  | flask 3.0.3, flask-cors 4.0.1, gunicorn 22.0.0, httpx 0.27.2. That's it.                         |
-| [backend/runtime.txt](backend/runtime.txt)            | `python-3.11.10` (pinned for Render).                                                            |
-| [render.yaml](render.yaml)                            | Render blueprint. `gunicorn main:app --workers 2 --timeout 60`. Free plan.                       |
+| [backend/runtime.txt](backend/runtime.txt)            | `python-3.11.10` (pinned for Railway).                                                            |
+| [render.yaml](render.yaml)                            | Railway blueprint. `gunicorn main:app --workers 2 --timeout 60`. Free plan.                       |
 
 ## Request flow
 
@@ -56,7 +56,7 @@ chitti_ca.html  ── POST /api/ca/ask ──►  Flask (main.py)
 
 ## CORS
 
-`flask_cors.CORS` is configured from the `ALLOWED_ORIGINS` env var (comma-separated). Defaults to `https://sahayai.in,https://www.sahayai.in,http://localhost:5500,http://127.0.0.1:5500`. The Render env override narrows this to the two production domains only.
+`flask_cors.CORS` is configured from the `ALLOWED_ORIGINS` env var (comma-separated). Defaults to `https://sahayai.in,https://www.sahayai.in,http://localhost:5500,http://127.0.0.1:5500`. The Railway env override narrows this to the two production domains only.
 
 ## Failure modes & their fallbacks
 

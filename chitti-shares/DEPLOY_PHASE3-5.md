@@ -10,9 +10,9 @@ will auto-deploy everything on `git push`.
 
 ## TL;DR
 
-1. Add 4 new env vars on `chitti-shares-api` (Render dashboard).
+1. Add 4 new env vars on `chitti-shares-api` (Railway dashboard).
 2. `git push origin main` — workflow handles the rest.
-3. After Render shows "Live", run the curl block at the bottom.
+3. After Railway shows "Live", run the curl block at the bottom.
 4. The daily Kite OAuth ritual is **no longer needed** while `DATA_SOURCE=yahoo`.
 
 ---
@@ -40,7 +40,7 @@ will auto-deploy everything on `git push`.
 
 ---
 
-## Step 1 — Add new env vars on Render
+## Step 1 — Add new env vars on Railway
 
 Open the `chitti-shares-api` service → **Environment** tab. Add these 4:
 
@@ -51,7 +51,7 @@ Open the `chitti-shares-api` service → **Environment** tab. Add these 4:
 | `MAX_WATCHLIST_ITEMS` | `50` | Cap per user |
 | `MAX_ALERTS_PER_USER` | `30` | Cap per user |
 
-Click **Save changes**. Render will auto-redeploy. Wait ~3–5 min for "Live" status.
+Click **Save changes**. Railway will auto-redeploy. Wait ~3–5 min for "Live" status.
 
 The previously-set env vars (`JWT_SECRET`, `FAST2SMS_API_KEY`, `KITE_API_KEY`,
 `KITE_API_SECRET`, `KITE_REDIRECT_URL`, `DEEPSEEK_API_KEY`, `ADMIN_MOBILE`,
@@ -86,7 +86,7 @@ git push origin main
 ```
 
 The `Deploy Chitti Shares` workflow runs in Actions. ~10 sec to fire the hooks.
-Render then takes ~3–5 min to build backend (new deps: `yfinance`) and ~2–3 min
+Railway then takes ~3–5 min to build backend (new deps: `yfinance`) and ~2–3 min
 for frontend (just one new build).
 
 You'll see ✅ commit comments when the workflow succeeds. Watch
@@ -108,7 +108,7 @@ curl -s -X POST $API/auth/send-otp \
   -H 'Content-Type: application/json' \
   -d "{\"mobile\":\"$MOBILE\"}"
 
-# OTP appears in Render logs (chitti-shares-api → Logs tab) when DEV_MODE_FAKE_OTP=true
+# OTP appears in Railway logs (chitti-shares-api → Logs tab) when DEV_MODE_FAKE_OTP=true
 # Or arrives via SMS if you've set FAST2SMS_API_KEY.
 
 # Replace 123456 with the actual OTP
@@ -220,9 +220,9 @@ If everything above returns sensible data, **all 5 phases are working in product
 ## Step 5 — Optional: schedule alert checks
 
 Right now, alerts only fire when `POST /api/alerts/check-all` is called (admin-gated).
-To make alerts actually monitor in the background, add a Render Cron Job:
+To make alerts actually monitor in the background, add a Railway Cron Job:
 
-1. Render dashboard → **New +** → **Cron Job**.
+1. Railway dashboard → **New +** → **Cron Job**.
 2. **Name**: `chitti-shares-alerts-cron`
 3. **Schedule**: `*/5 9-15 * * 1-5` (every 5 min, Mon-Fri, 9 AM – 3 PM UTC ≈ 2:30–8:30 PM IST)
    — **WAIT, fix this for IST**: NSE is open 09:15–15:30 IST = 03:45–10:00 UTC.
@@ -246,7 +246,7 @@ and `.BO` for BSE. Some lesser-known stocks aren't on Yahoo.
 
 **`DataSourceError: yfinance failed`**
 → Yahoo throttles aggressive callers. Our 60-sec quote cache prevents this in practice.
-If it persists, check Render logs — most likely a transient rate limit, retries on next
+If it persists, check Railway logs — most likely a transient rate limit, retries on next
 request.
 
 **Chat returns 502 from DeepSeek**
@@ -277,7 +277,7 @@ The 6 examples at `/api/technical/rules/examples` cover the syntax.
 - **Manual chart rendering** in Stock Detail (we show indicator values, not candle charts —
   add Recharts or Plotly later if needed)
 - **Auto-track open calls** (the `track-all` endpoint exists but isn't on a schedule;
-  add as a Render Cron Job alongside the alerts cron above)
+  add as a Railway Cron Job alongside the alerts cron above)
 
 These are deliberate scope cuts — none block the core "trader picks a stock, sees
 fundamentals + technicals + a Chitti opinion + manages a watchlist + gets alerts"
@@ -289,9 +289,9 @@ flow.
 
 If you want to flip to Kite Connect as the active source:
 
-1. Make sure `KITE_API_KEY` and `KITE_API_SECRET` are still set on Render.
+1. Make sure `KITE_API_KEY` and `KITE_API_SECRET` are still set on Railway.
 2. Change `DATA_SOURCE` from `yahoo` to `kite`.
-3. Save → Render redeploys.
+3. Save → Railway redeploys.
 4. Run the Kite OAuth dance from `DEPLOY_PHASE2.md` Step 3 (you'll need to do this
    every morning at 6 AM IST going forward — that's the trade-off).
 5. **Important caveat**: stock-level history via Kite is not implemented in this

@@ -14,7 +14,7 @@ Voice-first technical-only trader assistant. Reads price + volume only. **Never*
 3. **NOT SEBI Registered** — sticky banner on page; close every verdict with the disclaimer.
 4. **Four-user contract**: Blind (aria + 🔊), Deaf (▲▼ + word labels — never colour-only), Mute (tap), Illiterate (🎤 + plain English + Hindi toggle via `_chittiLang`).
 5. **Bharat theme**: saffron `#E86A17`, navy `#0E2344`, gold `#D4AF37`, cream `#f8f4ee`. Never 8-hex.
-6. **Yahoo BLOCKED** from Render IPs — Angel SmartAPI for prices/candles only.
+6. **Yahoo BLOCKED** from Railway IPs — Angel SmartAPI for prices/candles only.
 
 ## Roshan rule (signature signal)
 

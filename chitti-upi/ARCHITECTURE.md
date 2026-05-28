@@ -66,10 +66,10 @@
 
 | Layer        | Choice                       | Why                                                      |
 |--------------|------------------------------|----------------------------------------------------------|
-| Runtime      | Python 3.11.10 (`runtime.txt`) | Pinned for Render reproducibility                       |
+| Runtime      | Python 3.11.10 (`runtime.txt`) | Pinned for Railway reproducibility                       |
 | Framework    | Flask 3.0.3                  | Tiny surface; no template engine needed                  |
 | CORS         | flask-cors 4.0.1             | Lock to `sahayai.in` + `www.sahayai.in` in prod          |
-| HTTP server  | gunicorn 22.0.0              | 2 workers, 60s timeout — fits Render free plan           |
+| HTTP server  | gunicorn 22.0.0              | 2 workers, 60s timeout — fits Railway free plan           |
 | LLM client   | httpx 0.27.2                 | Sync; 30s per-call timeout in `upi_service.py`           |
 | LLM          | DeepSeek `deepseek-chat`     | Project-wide switch from Anthropic (memory entry)        |
 | Persistence  | **none**                     | Stateless by design — see `DATABASE.md`                  |
@@ -188,12 +188,12 @@ skill.
 - **Payload cap.** `MAX_CONTENT_LENGTH = 1 MB` at Flask level; `text`
   clamp `4000 chars` at route level.
 - **API key.** `DEEPSEEK_API_KEY` is `sync: false` in `render.yaml` —
-  must be set in Render dashboard, never committed.
+  must be set in Railway dashboard, never committed.
 - **No session, no cookie, no auth.** The user is anonymous.
 
 ## 8. Deploy
 
-- `render.yaml` is a Render Blueprint, free plan, Python runtime, rootDir
+- `render.yaml` is a Railway Blueprint, free plan, Python runtime, rootDir
   `backend`.
 - `startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60`.
 - Free plan implies cold-start latency (~30s). Acceptable for a paste-and-

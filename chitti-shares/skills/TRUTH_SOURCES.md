@@ -1,6 +1,6 @@
 # TRUTH_SOURCES
 
-Where every number originates. Locked per [`project_data_sources.md`](../../memory) — Yahoo is BLOCKED from Render IPs.
+Where every number originates. Locked per [`project_data_sources.md`](../../memory) — Yahoo is BLOCKED from Railway IPs.
 
 ## Primary sources (production)
 
@@ -31,11 +31,11 @@ Where every number originates. Locked per [`project_data_sources.md`](../../memo
 ### Yahoo Finance — LOCAL-DEV ONLY
 
 - File: [`backend/services/yahoo_client.py`](../backend/services/yahoo_client.py)
-- Render IPs are blocked by Yahoo; this client is **only** invoked when running locally and screener.in returns empty.
+- Railway IPs are blocked by Yahoo; this client is **only** invoked when running locally and screener.in returns empty.
 - Documented in [`../README.md`](../README.md) "Data sources (locked)" and [`project_data_sources.md`](../../memory).
 - Do **not** add a new code path that depends on Yahoo from a deployed environment.
 
-### Laptop pusher — indices when NSE blocks Render
+### Laptop pusher — indices when NSE blocks Railway
 
 - Route: `POST /debug/ingest-indices` in [`main.py`](../backend/main.py).
 - Source: a developer's home machine fetches NIFTY/SENSEX from `nse_client.py` and POSTs the snapshot.

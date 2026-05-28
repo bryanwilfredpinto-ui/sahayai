@@ -160,7 +160,7 @@ Three shipped, two flagged honestly.
    | SMS — global | `_send_twilio_sms` | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` |
    | Email | `_send_email_otp` | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (routes through existing `services/email_service.send`) |
 
-   When none of the env vars are set, the path stays in demo mode (code is `"123456"`, banner says so). The moment Bryan drops the WhatsApp Business or MSG91 keys into Railway / Render env, `_provider_configured` flips True and real codes go out — no other code change needed.
+   When none of the env vars are set, the path stays in demo mode (code is `"123456"`, banner says so). The moment Bryan drops the WhatsApp Business or MSG91 keys into Railway / Railway env, `_provider_configured` flips True and real codes go out — no other code change needed.
 
 5. **Regression check** — all six earlier suites still green:
 
