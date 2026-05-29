@@ -632,7 +632,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529u wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529v wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -2041,11 +2041,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529u (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529v (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529u owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529v owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -5754,7 +5754,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
     <!-- with our Bharat theme: white background, saffron CTAs, navy text, green/red signals. -->
 
     <!-- 1. Search bar — big, prominent, screener-style with voice mic -->
-    <div class="scrn-search-wrap chitti-response" data-chitti-response="ask-chitti-hero" data-chitti-section="Search stock">
+    <div class="scrn-search-wrap">
       <div class="scrn-search-row">
         <input id="ask-sym" type="text" placeholder="Search for a company, e.g. RELIANCE, TCS, INFY" autocomplete="off"
           aria-label="Search for a company" data-chitti-no-translate>
@@ -5824,7 +5824,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
       </div>
 
       <!-- 5. Chitti's verdict (one-line) + widget bar -->
-      <div class="scrn-verdict-card chitti-response" data-chitti-section="Chitti verdict">
+      <div class="scrn-verdict-card" data-chitti-section="Chitti verdict">
         <div class="scrn-verdict-head">
           <div>
             <div class="scrn-verdict-label" data-i18n="chitti_verdict">Chitti's verdict</div>
@@ -6388,7 +6388,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529u"></script>
+<script src="chitti_a11y.js?v=20260529v"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6403,9 +6403,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529u baked T-table + chitti_a11y.js?v=20260529u widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529u"></script>
-<script src="chitti_a11y.js?v=20260529u"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529v baked T-table + chitti_a11y.js?v=20260529v widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529v"></script>
+<script src="chitti_a11y.js?v=20260529v"></script>
 
 </body>
 </html>
