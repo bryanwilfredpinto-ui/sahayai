@@ -231,17 +231,18 @@
   function buildWidget(card){
     if (card._cwBuilt) return;
     card._cwBuilt = true;
-    // Skip if the card has no label-like child (prevents widget bars on
-    // wrapper containers that happen to match the selector).
-    if (!card.querySelector(LABEL_SELECTOR)) return;
     // Skip ONLY if our own widget bar is already there (idempotent).
-    // Previous behavior also skipped data-chitti-response elements — but
-    // feedback-widget.js often fails to render visibly on those (Sire
-    // confirmed 2026-05-29: cards on Voice Factory + Vaani 'Recent' /
-    // 'Reminder channels' had no usable widget). Always attach ours; if
-    // feedback-widget.js later adds its own bar, both coexist (better than
-    // no feedback path at all).
     if (card.querySelector('.chitti-card-widget, .pro-card-widget')) return;
+    // Need SOME identifier for box_id. Accept any of:
+    //   - label-like child (.lbl/.label/.name/.title/h1-h6)
+    //   - data-chitti-section attribute (set on news-ai art-card, etc.)
+    //   - data-i18n attribute (MedUPI pattern)
+    //   - aria-label attribute
+    var hasLabel = !!card.querySelector(LABEL_SELECTOR);
+    var hasSection = !!(card.getAttribute && card.getAttribute('data-chitti-section'));
+    var hasI18n = !!(card.dataset && card.dataset.i18n);
+    var hasAria = !!card.getAttribute && !!card.getAttribute('aria-label');
+    if (!hasLabel && !hasSection && !hasI18n && !hasAria) return;
 
     var bar = document.createElement('span');
     bar.className = 'chitti-card-widget';
