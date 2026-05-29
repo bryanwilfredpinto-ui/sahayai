@@ -21,7 +21,7 @@
 
   var ENDPOINT = (window.CHITTI_TRANSLATE_API ||
                   'https://chitti-medupi-api-production.up.railway.app/api/health-file/translate');
-  var CACHE_PREFIX = 'chitti_xlate_v1';
+  var CACHE_PREFIX = 'chitti_xlate_v2_20260529';
   var SESSION_CAP = 200;         // hard cap per session to prevent runaway LLM calls
   var BATCH_SIZE = 8;            // strings per fetch round
   var BATCH_DELAY_MS = 250;      // wait between batches
