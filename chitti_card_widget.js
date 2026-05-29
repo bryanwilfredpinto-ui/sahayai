@@ -45,8 +45,15 @@
     '.sds-card', '.sds-health-card', '.mb-soon-card', '.mc-soon-card',
     '.platform-tile', '.fa-tile', '.na-cert-card', '.try-card', '.success-card-preview'
   ].join(', ');
+  // Page-level <meta name="chitti-card-selector"> is ADDITIVE — its content
+  // is appended to the default selector, not replacing it. So a page that
+  // adds <meta content=".card"> gets BOTH the universal defaults AND .card.
   var selectorMeta = document.querySelector('meta[name="chitti-card-selector"]');
-  var SELECTOR = (selectorMeta && selectorMeta.getAttribute('content')) || DEFAULT_SELECTOR;
+  var SELECTOR = DEFAULT_SELECTOR;
+  if (selectorMeta) {
+    var extra = (selectorMeta.getAttribute('content') || '').trim();
+    if (extra) SELECTOR = DEFAULT_SELECTOR + ', ' + extra;
+  }
 
   // Structural filter — only attach to elements that ACT like a card:
   //   - has a heading-like child (h1-h6, .lbl, .title, .name, .label)
@@ -62,7 +69,9 @@
     var lbl = el.querySelector(LABEL_SELECTOR);
     if (!lbl) return false;
     var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
-    if (text.length < 12) return false;
+    // Loosened from 12 → 6 chars (Sire 2026-05-29 — News / News AI / Shares
+    // Tech use cards with short labels that 12 was rejecting)
+    if (text.length < 6) return false;
     return true;
   }
 
