@@ -1,4 +1,4 @@
-/* chitti_observability.js — real-time AI observability for every Chitti page
+﻿/* chitti_observability.js — real-time AI observability for every Chitti page
  * ============================================================================
  * 🎖️ World Class Chitti Observability — Commando Discipline. Zero Excuses.
  *
@@ -267,8 +267,11 @@
     badgeEl.setAttribute('aria-live', 'polite');
     badgeEl.setAttribute('aria-label', 'Chitti AI Observability — live status');
     badgeEl.setAttribute('data-chitti-no-translate', '1'); // values change live; skip translation pass
+    // Position above any existing FAB at bottom-left (chitti_camera_universal,
+    // pwd-onboarding, etc all stack at bottom:18px with ~56px height). Start
+    // the badge at bottom: 86px so it never overlaps the FAB.
     badgeEl.style.cssText = [
-      'position:fixed', 'left:14px', 'bottom:14px', 'z-index:88',
+      'position:fixed', 'left:14px', 'bottom:86px', 'z-index:88',
       'background:#fff', 'border:2px solid #FF9933', 'border-radius:12px',
       'padding:8px 12px', 'font-family:Inter,system-ui,sans-serif',
       'font-size:11px', 'color:#0E2344', 'box-shadow:0 4px 12px rgba(14,35,68,.15)',
@@ -300,7 +303,7 @@
       '#chitti-obs-badge .obs-widget{display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px dashed #FF9933}' +
       '#chitti-obs-badge .obs-widget button{background:transparent;border:1px solid #FF9933;border-radius:14px;width:28px;height:28px;font-size:13px;cursor:pointer;padding:0;line-height:1}' +
       '#chitti-obs-badge .obs-widget button:hover{background:#FFF1D6}' +
-      '@media (max-width: 420px){#chitti-obs-badge{font-size:10px;min-width:200px;left:10px;bottom:10px}}';
+      '@media (max-width: 420px){#chitti-obs-badge{font-size:10px;min-width:200px;left:10px;bottom:82px}}';
     document.head.appendChild(s);
   }
 

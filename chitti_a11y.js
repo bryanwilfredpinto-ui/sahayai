@@ -192,7 +192,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529p';
+      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529q';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
@@ -219,7 +219,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529p';
+      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529q';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
@@ -243,7 +243,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_observability.js?v=20260529p';
+      s.src = (srcBase || '') + 'chitti_observability.js?v=20260529q';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
