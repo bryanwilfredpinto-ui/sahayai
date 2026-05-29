@@ -18,21 +18,21 @@ Test: each page loaded headless against `https://sahayai.in`, cache-busted, swit
 |--------|-------|------------|---------------------------|--------|
 | Vaani | 15 | 8/15 (53%) | 7/15 (47%) | 🟡 PARTIAL |
 | MedUPI | 1 | 1/1 (100%) | 1/1 (100%) | ✅ CLOSED |
-| CA | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
-| Legal | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
+| CA | 2 | 2/2 (100%) | 0/2 (0%) | 🟡 PARTIAL |
+| Legal | 2 | 2/2 (100%) | 0/2 (0%) | 🟡 PARTIAL |
 | Government | 12 | 0/12 (0%) | 12/12 (100%) | 🟡 PARTIAL |
-| News | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
+| News | 1 | 1/1 (100%) | 0/1 (0%) | 🟡 PARTIAL |
 | News AI | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
 | UPI | 4 | 3/4 (75%) | 1/4 (25%) | 🟡 PARTIAL |
 | Scanner | 2 | 2/2 (100%) | 1/2 (50%) | 🟡 PARTIAL |
-| Shares Tech | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
+| Shares Tech | 3 | 2/3 (67%) | 3/3 (100%) | 🟡 PARTIAL |
 | Shares Fund | 5 | 4/5 (80%) | 5/5 (100%) | 🟡 PARTIAL |
 | Voice Factory | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
 | 2-Wheeler | 12 | 1/12 (8%) | 1/12 (8%) | 🟡 PARTIAL |
 | 4-Wheeler | 12 | 2/12 (17%) | 1/12 (8%) | 🟡 PARTIAL |
-| Logo & Video | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
+| Logo & Video | 9 | 0/9 (0%) | 4/9 (44%) | 🟡 PARTIAL |
 | Fashion | 9 | 3/9 (33%) | 0/9 (0%) | 🟡 PARTIAL |
-| Health File | 0 | 0/0 (0%) | 0/0 (0%) | ⚪ NO CARDS |
+| Health File | 12 | 1/12 (8%) | 2/12 (17%) | 🟡 PARTIAL |
 | ISL | 3 | 0/3 (0%) | 3/3 (100%) | 🟡 PARTIAL |
 
 ---
@@ -67,11 +67,17 @@ Test: each page loaded headless against `https://sahayai.in`, cache-busted, swit
 
 ### CA
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | Ask Chitti CA | চিট্টি সিএকে জিজ্ঞাসা করুন | ✅ | ✅ | 🔴 | 🔴 | 🔴 | ✅ |
+| 2 | Chitti CA says | চিট্টি সিএ বলেন | ✅ | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 
 ### Legal
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | Paste a clause / notice / contract | একটি ধারা / বিজ্ঞপ্তি / চুক্তি আটকান | ✅ | ✅ | 🔴 | 🔴 | 🔴 | ✅ |
+| 2 | Chitti Legal explains | চিট্টি লিগ্যাল ব্যাখ্যা করেছেন | ✅ | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 
 ### Government
 
@@ -92,7 +98,9 @@ _No action-card-pattern elements detected._
 
 ### News
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | 👋 Welcome — pick your state and language | 👋 স্বাগতম — আপনার রাজ্য এবং ভাষা বেছে নিন | ✅ | ✅ | 🔴 | 🔴 | 🔴 | 🔴 |
 
 ### News AI
 
@@ -116,7 +124,11 @@ _No action-card-pattern elements detected._
 
 ### Shares Tech
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | Date | তারিখ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 2 | Speaker | স্পিকার | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 3 | Help Chitti help you better | Help Chitti help you better | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Shares Fund
 
@@ -168,7 +180,17 @@ _No action-card-pattern elements detected._
 
 ### Logo & Video
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | 🎨 Photorealistic Logo Generator · powered by Replicate Flux | 🎨 Photorealistic Logo Generator · powered by Replicate Flux | 🔴 | ✅ | ✅ | ✅ | ✅ | 🔴 |
+| 2 | 💚 S Heartbeat Emblem · animated Canvas · runs offline | 💚 S Heartbeat Emblem · animated Canvas · runs offline | 🔴 | ✅ | 🔴 | ✅ | ✅ | 🔴 |
+| 3 | 🦸 Chitti Character · official mascot · download as SVG or P | 🦸 Chitti Character · official mascot · download as SVG or P | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 4 | 🎬 Chitti Viral Stories · tap any video below | 🎬 Chitti Viral Stories · tap any video below | 🔴 | ✅ | 🔴 | ✅ | ✅ | 🔴 |
+| 5 | Type A · Chitti Viral Stories (pre-built) | Type A · Chitti Viral Stories (pre-built) | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 6 | Type B · Customer Success Video | Type B · Customer Success Video | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 7 | Type C · Business Promo (15s for kirana / freelancers) | Type C · Business Promo (15s for kirana / freelancers) | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 8 | 📲 One-tap share to all platforms | 📲 One-tap share to all platforms | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 9 | 📅 Weekly Auto-post Schedule (for SAHAYAI handle) | 📅 Weekly Auto-post Schedule (for SAHAYAI handle) | 🔴 | ✅ | 🔴 | ✅ | ✅ | 🔴 |
 
 ### Fashion
 
@@ -186,7 +208,20 @@ _No action-card-pattern elements detected._
 
 ### Health File
 
-_No action-card-pattern elements detected._
+| # | English label | Bengali label | Translated | 🔊 | 🤖 | 👍 | 👎 | ✏️🎙️ |
+|---|---------------|---------------|:---:|:--:|:--:|:--:|:--:|:--:|
+| 1 | 📤 Upload a medical document | 📤 Upload a medical document | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 2 | 🕒 Health timeline | 🕒 Health timeline | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 3 | ⏰ Smart reminders | ⏰ Smart reminders | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 4 | 📈 Vitals log | 📈 Vitals log | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 5 | 🛡️ Insurance manager | 🛡️ Insurance manager | 🔴 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 6 | 🌐 Translate | 🌐 অনুবাদ | ✅ | ✅ | 🔴 | 🔴 | 🔴 | ✅ |
+| 7 | 📤 Quick share with doctor | 📤 Quick share with doctor | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 8 | 🔎 Smart search across all health data | 🔎 Smart search across all health data | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 9 | ＋ Add family member | ＋ Add family member | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 10 | ＋ New reminder | ＋ New reminder | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 11 | ＋ Add insurance policy | ＋ Add insurance policy | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
+| 12 | Chitti Health File — disclaimer | Chitti Health File — disclaimer | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 
 ### ISL
 

@@ -39,7 +39,8 @@ function audit() {
     const latin = (t.match(/[A-Za-z]/g) || []).length;
     return latin >= 3;
   }
-  const SEL = [
+  // Mirror substrate logic: default selector + page-meta selector (additive)
+  const DEFAULT_SEL = [
     '.pro-card','.scan-action','.feature-card','.action-card','[data-chitti-card]',
     '.scheme-card','.act-card','.kv-card','.cat-card','.med-card',
     '.art-card','.section-card','.rule-card','.sample-card',
@@ -49,6 +50,8 @@ function audit() {
     '.sds-card','.sds-health-card','.mb-soon-card','.mc-soon-card',
     '.platform-tile','.fa-tile','.na-cert-card','.try-card','.success-card-preview'
   ].join(', ');
+  const metaEl = document.querySelector('meta[name="chitti-card-selector"]');
+  const SEL = metaEl ? (DEFAULT_SEL + ', ' + (metaEl.getAttribute('content') || '')) : DEFAULT_SEL;
   const seen = new Set();
   const cards = [];
   document.querySelectorAll(SEL).forEach(el => {
@@ -63,6 +66,9 @@ function audit() {
     if (!lbl) return;
     const labelText = (lbl.textContent || '').replace(/\s+/g,' ').trim();
     if (!labelText || labelText.length < 2) return;
+    // Mirror substrate isRealCard: total card text must be >= 6 chars
+    const totalText = (el.textContent || '').replace(/\s+/g,' ').trim();
+    if (totalText.length < 6) return;
     const html = el.innerHTML || '';
     seen.add(el);
     cards.push({
