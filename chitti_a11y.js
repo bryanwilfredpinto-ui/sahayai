@@ -172,6 +172,33 @@
     } catch (e) { /* honest skip */ }
   })();
 
+  // ── chitti_card_widget.js auto-loader (Sire 2026-05-29) ──
+  // Universal in-card 5-element widget (🔊 🤖 👍 👎 ✏️🎙️) for every
+  // Chitti page. Targets .pro-card (Vaani), .scan-action (MedUPI),
+  // .feature-card, .action-card, [data-chitti-card]. Skips elements that
+  // already have feedback-widget.js attached (data-chitti-response).
+  // Per-page override:
+  //   <meta name="chitti-card-selector" content=".my-card-class">
+  //   <meta name="chitti-card-disable"  content="on">
+  (function injectChittiCardWidget() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-card-widget"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_card_widget.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_card_widget.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
   // ── chitti_lang_runtime.js auto-loader (Sire 2026-05-29) ──
   // Runtime LLM translation fallback. When chitti_lang.js's baked T-table
   // misses a string, this substrate POSTs it to the backend translate
