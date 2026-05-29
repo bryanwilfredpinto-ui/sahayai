@@ -70,4 +70,65 @@ Backend `/api/observability/*` endpoints live on `chitti-shares-api-production.u
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# 🎖️ SESSION 2 ADDENDUM — 2026-05-29 PM
+
+## ✅ FIXED THIS SESSION
+
+7. **CTO.md gets PA UI Design Standard v1.0** (commit `78fc8e9`)
+   - New §"Chitti PA UI Design Standard v1.0" added between COORDINATION RULE and MAINTENANCE
+   - 8 subsections locked: Saffron/Navy/Green palette · 5-element feedback strip · Chitti Quality Check overlay (CTO/admin only) · AI Observability strip (CTO/admin only) · No-Hinglish policy · technical-terms-stay-English (RSI/MACD/SEBI/PM-KISAN/UPI...) · card order (Morning Brief → Chitti Agents) · 5 new cert hooks
+   - Last-updated bumped to 2026-05-29
+
+8. **Highest-priority RED closed — chitti-pa skeleton ships** (commit `1e742e2`)
+   - Closes CTO.md P0 defect #1 + SOP.md P0 list #1
+   - 8 files: `README.md` · `SKILLS.md` · `SOP.md` · `backend/{main.py · requirements.txt · runtime.txt · Procfile · railway.json}`
+   - Flask app, `/health` → 200 `{"chitti":"chitti-pa","ok":true}` (smoke-test passed local)
+   - 9 Phase 1 endpoints exposed as honest `501 not_implemented` JSON with `master_spec_section` ref — never 404, never silent — per SOP.md Error Handling contract
+   - Postman Principle baked at route boundary: vault_register drains body without persisting
+   - Railway-deployable today; `DATABASE_URL` falls back to local SQLite until Sire paste
+
+9. **Fleet audit run — RED/YELLOW/GREEN published** (no commit, in this report)
+   - 🟢 GREEN: 5/15 (vaani · news · shares · government · medupi — Turso restart-survival proven)
+   - 🟡 YELLOW: 10/15 (5 env-var blocked on Sire · 4 silent-write-loss risk · 1 honest stub)
+   - 🔴 RED: 0/15 existing; 2 missing fleet members (chitti-pa NOW SCAFFOLDED ✅ · chitti-business)
+
+## 🔴 NEW RED DISCOVERED THIS SESSION
+
+| # | Defect | Priority | Note |
+|---|--------|----------|------|
+| 9 | chitti-ca / chitti-legal / chitti-upi / chitti-scanner NOT covered by 2026-05-29 AM Turso shim PR. May still be on broken embedded-replica pattern → silent write loss. | 🔴 P0 | Discovered during fleet audit. Added to CTO.md defect list. |
+
+## 🔴 STILL BROKEN (CTO.md defect list status — post-session)
+
+| # | Defect | Status 2026-05-29 PM |
+|---|--------|---------------------|
+| 1 | chitti-pa folder missing | ✅ **CLOSED** — `1e742e2` |
+| 2 | chitti-business folder missing | unchanged 🔴 |
+| 3 | Turso DATABASE_URL Railway news + news-ai | **PARTIAL** — news GREEN, news-ai RED (blocked on Sire env paste) |
+| 4 | Layer 5 BCP fallback wired on 0/15 | unchanged 🔴 |
+| 5 | chitti_share.js referenced but missing | confirmed missing via glob 🔴 |
+| 6 | feedback-widget.js 5-element verification | unchanged 🔴 |
+| 7 | 26 Voice Factory language pages unverified | unchanged 🟡 |
+| 8 | SAHAYAI_MASTER.md header date stale | unchanged 🟡 |
+| 9 | **NEW** — ca/legal/upi/scanner Turso risk | flagged 🔴 |
+
+## 🚧 BLOCKED ON SIRE
+
+- Turso `DATABASE_URL` env-var paste for chitti-news-ai / chitti-2wheeler / chitti-4wheeler / chitti-voice-factory / chitti-founder on Railway. Code is correct; falls back to local SQLite until pasted.
+- Railway deploy of chitti-pa skeleton (CTO has authority per CTO.md §Authority but Railway project needs to be linked first — Sire to confirm project naming `chitti-pa-api`).
+
+## 📋 TOMORROW (top 3)
+
+1. **P0 #9 verification** — read ca/legal/upi/scanner `backend/database.py` + `backend/main.py`, grep for `libsql_experimental` vs `lib/turso_http.py`. If still on embedded-replica → port the shim. If already on direct-HTTPS → mark verified GREEN in QUALITY_STATUS.md.
+2. **P0 #2** — scaffold `chitti-business/` mirroring today's `chitti-pa/` pattern. CHITTI_BUSINESS_MASTER.md spec already exists at repo root.
+3. **P0 #4 start** — pick 1 Chitti (suggest chitti-vaani as canonical) and wire Layer 5 BCP fallback (DeepSeek → Claude → Gemini) end-to-end so the pattern is committed before the fleet-wide port.
+
+## 🟢 GREEN COUNT
+
+15/15 Chitti pages still inherit observability + a11y substrate. Backend GREEN count unchanged at 5/15 (Turso restart-survival proven set). chitti-pa now exists at +1 — fleet target moves from 15 → 17 with chitti-business pending.
+
+📊 GITHUB COMMITS THIS SESSION: `78fc8e9` (CTO.md UI Standard) + `1e742e2` (chitti-pa skeleton)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 **World Class Chitti CTO — Commando Discipline. Zero Excuses.**

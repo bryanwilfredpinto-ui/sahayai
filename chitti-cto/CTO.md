@@ -103,16 +103,17 @@ Every Chitti, every page, every `.md` file must contain this statement:
 ---
 
 ## CURRENT OPEN DEFECTS (Fix in priority order)
-| # | Defect | Priority |
-|---|--------|----------|
-| 1 | `chitti-pa` folder missing — no backend | 🔴 P0 |
-| 2 | `chitti-business` folder missing — no backend | 🔴 P0 |
-| 3 | Turso DATABASE_URL broken on Railway for chitti-news + chitti-news-ai | 🔴 P0 |
-| 4 | Layer 5 BCP fallback wired on 0/15 Chittis | 🔴 P0 |
-| 5 | `chitti_share.js` referenced in docs but does not exist | 🔴 P1 |
-| 6 | `feedback-widget.js` — verify all 5 mandatory elements exist | 🔴 P1 |
-| 7 | 26 Voice Factory language pages unverified | 🟡 P2 |
-| 8 | SAHAYAI_MASTER.md header date stale | 🟡 P2 |
+| # | Defect | Priority | Status 2026-05-29 PM |
+|---|--------|----------|---------------------|
+| 1 | `chitti-pa` folder missing — no backend | 🔴 P0 | ✅ CLOSED 2026-05-29 — skeleton committed `1e742e2` (8 files, 9 honest 501 stubs, smoke-test `/health` 200) |
+| 2 | `chitti-business` folder missing — no backend | 🔴 P0 | unchanged |
+| 3 | Turso DATABASE_URL broken on Railway for chitti-news + chitti-news-ai | 🔴 P0 | PARTIAL — chitti-news GREEN per QUALITY_STATUS 2026-05-29; chitti-news-ai still RED (blocked on Sire env-var paste in WSL) |
+| 4 | Layer 5 BCP fallback wired on 0/15 Chittis | 🔴 P0 | unchanged |
+| 5 | `chitti_share.js` referenced in docs but does not exist | 🔴 P1 | confirmed missing 2026-05-29 (glob check) |
+| 6 | `feedback-widget.js` — verify all 5 mandatory elements exist | 🔴 P1 | unchanged |
+| 7 | 26 Voice Factory language pages unverified | 🟡 P2 | unchanged |
+| 8 | SAHAYAI_MASTER.md header date stale | 🟡 P2 | unchanged |
+| 9 | **NEW** — chitti-ca / chitti-legal / chitti-upi / chitti-scanner NOT in 2026-05-29 Turso shim PR. May still be on broken `libsql_experimental` embedded-replica pattern → silent write loss. | 🔴 P0 | discovered 2026-05-29 PM during fleet audit |
 
 ---
 
@@ -290,4 +291,4 @@ left to right on desktop:
 - Updated by CTO when role, authority, or defects change
 - Never summarise this file — always show full contents when asked
 - This file supersedes any Claude auto-memory about CTO role
-- Last updated: 2026-05-29
+- Last updated: 2026-05-29 PM (P0 #1 closed; #9 added)

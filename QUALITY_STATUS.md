@@ -1,7 +1,34 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-05-29 (Chitti CTO pass — Turso persistence FIXED fleet-wide; 5 Chittis GREEN with restart-survival proven on real Turso, 5 YELLOW on env-var blockers) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-05-29 PM (Chitti CTO pass — fleet audit + chitti-pa skeleton ships; new ca/legal/upi/scanner Turso risk flagged) · **Auditor:** Claude Opus 4.7 (1M context) ·
 **Trigger:** "DEFINITIVE ENTERPRISE BASELINE — all Chittis GREEN" from Sire.
+
+## 2026-05-29 PM — Fleet audit + chitti-pa skeleton ships
+
+**Highest-priority RED closed.** CTO.md P0 defect #1 (chitti-pa folder missing) — fixed in commit `1e742e2`:
+
+- `chitti-pa/README.md` + `SKILLS.md` + `SOP.md` (founder template per [chitti-cto/SOP.md](chitti-cto/SOP.md) §"NEW CHITTI .md SET")
+- `chitti-pa/backend/main.py` — Flask app, `/health` returns `{"chitti":"chitti-pa","ok":true}` HTTP 200, 9 honest `501 not_implemented` stubs for Phase 1 features (morning brief · calls · vault · schemes · daily life · truth · safety · forget). Each stub returns `{"feature":"…","master_spec_section":"§X"}` so the contract is committed and visible — never 404, never silent.
+- `chitti-pa/backend/{requirements.txt · runtime.txt · Procfile · railway.json}` — Railway-deployable today; `DATABASE_URL` falls back to local SQLite until Sire provisions Turso.
+- Local smoke-test: `/health` 200 · `/` 200 · 2× POST stubs 501 with proper JSON · 404 handler clean.
+
+**New finding — fleet audit P0:** chitti-ca / chitti-legal / chitti-upi / chitti-scanner were NOT covered by the 2026-05-29 AM Turso direct-HTTPS shim PR. They may still be on the broken `libsql_experimental` embedded-replica pattern. Silent-write-loss risk. Verification + remediation queued as CTO.md defect #9.
+
+**Audit summary — 15 Chittis (truth-source: 2026-05-29 entries):**
+
+| Bucket | Count | Members |
+|---|---|---|
+| 🟢 GREEN (Turso restart-survival proven) | 5 | vaani · news · shares · government · medupi |
+| 🟡 YELLOW (env-var blocker — CTO blocked on Sire) | 5 | news-ai · 2wheeler · 4wheeler · voice-factory · founder |
+| 🟡 YELLOW (Turso shim coverage UNVERIFIED — silent-write-loss risk) | 4 | ca · legal · upi · scanner |
+| 🟡 YELLOW (honest stub by design) | 1 | logo-video |
+| 🔴 RED (folder missing from fleet) | +2 not-in-15 | chitti-pa ✅ NOW SCAFFOLDED · chitti-business |
+
+End-state commit on `main`: `1e742e2`.
+
+---
+
+
 
 ## 2026-05-29 — Turso persistence root-cause + fleet-wide fix
 
