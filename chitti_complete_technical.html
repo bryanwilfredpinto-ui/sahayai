@@ -790,7 +790,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529x wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529y wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -2199,11 +2199,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529x (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529y (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529x owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529y owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -6826,7 +6826,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529x"></script>
+<script src="chitti_a11y.js?v=20260529y"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6841,9 +6841,602 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529x baked T-table + chitti_a11y.js?v=20260529x widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529x"></script>
-<script src="chitti_a11y.js?v=20260529x"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529y baked T-table + chitti_a11y.js?v=20260529y widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529y"></script>
+<script src="chitti_a11y.js?v=20260529y"></script>
+
+<!-- ═════════════════════ MULTI-CHART WORKSTATION (Sire 2026-05-29) ═════════════════════ -->
+<!-- Up to 8 panes. Each pane: symbol + timeframe + indicators (RSI · Bollinger · Pivot · -->
+<!-- Williams %R · EMA) + auto S/R lines. Powered by inlined lightweight-charts v4.1.3. -->
+<!-- Opens full-screen via Fullscreen API; state persists in localStorage. -->
+
+<button id="mc-open-btn" type="button" onclick="chittiMC.open()" aria-label="Open multi-chart workstation" data-chitti-no-translate>
+  <span class="mc-open-emoji">📊</span>
+  <span>Charts</span>
+</button>
+
+<div id="mc-modal" class="mc-modal" aria-hidden="true" data-chitti-no-translate>
+  <!-- Toolbar -->
+  <header class="mc-toolbar">
+    <div class="mc-toolbar-left">
+      <span class="mc-toolbar-title">📊 Chitti Charts</span>
+      <span class="mc-toolbar-sub">8-pane workstation</span>
+    </div>
+    <div class="mc-toolbar-mid" role="group" aria-label="Layout">
+      <button class="mc-layout-btn" data-layout="1" onclick="chittiMC.setLayout(1)">1×1</button>
+      <button class="mc-layout-btn" data-layout="2" onclick="chittiMC.setLayout(2)">2×1</button>
+      <button class="mc-layout-btn" data-layout="4" onclick="chittiMC.setLayout(4)">2×2</button>
+      <button class="mc-layout-btn" data-layout="6" onclick="chittiMC.setLayout(6)">3×2</button>
+      <button class="mc-layout-btn" data-layout="8" onclick="chittiMC.setLayout(8)">4×2</button>
+    </div>
+    <div class="mc-toolbar-right">
+      <button class="mc-tool-btn" onclick="chittiMC.addPane()" aria-label="Add pane">+ Pane</button>
+      <button class="mc-tool-btn" onclick="chittiMC.fullscreen()" aria-label="Fullscreen">⛶</button>
+      <button class="mc-tool-btn mc-tool-close" onclick="chittiMC.close()" aria-label="Close charts">✕</button>
+    </div>
+  </header>
+  <div id="mc-grid" class="mc-grid"></div>
+</div>
+
+<style>
+/* Floating "Charts" button bottom-right above Chitti FAB. */
+#mc-open-btn{position:fixed;right:84px;bottom:18px;z-index:89;background:linear-gradient(135deg,#0E2344,#1c4290);color:#fff;border:0;border-radius:999px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(14,35,68,.40);font-family:Inter,system-ui,sans-serif}
+#mc-open-btn:hover{filter:brightness(1.1)}
+.mc-open-emoji{font-size:15px}
+@media (max-width:480px){#mc-open-btn{right:14px;bottom:84px;padding:9px 12px;font-size:12px}}
+
+/* Full-viewport modal */
+.mc-modal{position:fixed;inset:0;z-index:9990;background:#0a1428;color:#e6e6ea;display:none;flex-direction:column;font-family:Inter,system-ui,sans-serif}
+.mc-modal.open{display:flex}
+
+.mc-toolbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(135deg,#0E2344,#16376a);border-bottom:1px solid rgba(255,255,255,.10);flex-wrap:wrap;flex-shrink:0}
+.mc-toolbar-left{display:flex;align-items:baseline;gap:8px;flex:1;min-width:0}
+.mc-toolbar-title{font-size:15px;font-weight:900;color:#fff}
+.mc-toolbar-sub{font-size:11px;color:rgba(255,255,255,.55)}
+.mc-toolbar-mid{display:flex;gap:2px;background:rgba(255,255,255,.06);border-radius:8px;padding:2px}
+.mc-layout-btn{background:transparent;border:0;color:rgba(255,255,255,.65);padding:6px 10px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.mc-layout-btn:hover{background:rgba(255,255,255,.10);color:#fff}
+.mc-layout-btn.active{background:#FF9933;color:#fff;box-shadow:0 2px 6px rgba(255,153,51,.30)}
+.mc-toolbar-right{display:flex;gap:6px}
+.mc-tool-btn{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px}
+.mc-tool-btn:hover{background:rgba(255,255,255,.20)}
+.mc-tool-close{background:rgba(204,0,0,.20);border-color:rgba(204,0,0,.40)}
+.mc-tool-close:hover{background:rgba(204,0,0,.30)}
+
+/* Grid */
+.mc-grid{flex:1;display:grid;gap:6px;padding:6px;overflow:auto;background:#0a1428}
+.mc-grid.layout-1{grid-template-columns:1fr;grid-template-rows:1fr}
+.mc-grid.layout-2{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+.mc-grid.layout-4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.mc-grid.layout-6{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+.mc-grid.layout-8{grid-template-columns:1fr 1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+@media (max-width:768px){.mc-grid.layout-2,.mc-grid.layout-4,.mc-grid.layout-6,.mc-grid.layout-8{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:minmax(320px,auto)}}
+
+/* Pane */
+.mc-pane{display:flex;flex-direction:column;background:#0f1d36;border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;min-height:280px}
+.mc-pane-head{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#13294f;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.mc-pane-sym{flex:1;min-width:90px;padding:5px 10px;font-size:13px;font-weight:800;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:6px;color:#fff;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+.mc-pane-sym:focus{outline:none;border-color:#FF9933;background:rgba(255,255,255,.16)}
+.mc-pane-tfs{display:flex;gap:1px;background:rgba(255,255,255,.06);border-radius:5px;padding:1px}
+.mc-pane-tf{background:transparent;border:0;color:rgba(255,255,255,.60);padding:4px 7px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.mc-pane-tf.active{background:#FF9933;color:#fff}
+.mc-pane-tf:hover{color:#fff}
+.mc-pane-ind-btn{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-height:28px}
+.mc-pane-ind-btn:hover{background:rgba(255,255,255,.18)}
+.mc-pane-close{background:rgba(204,0,0,.18);border:1px solid rgba(204,0,0,.35);color:#FF9D9D;border-radius:6px;width:28px;height:28px;font-size:12px;cursor:pointer;padding:0;line-height:1}
+.mc-pane-close:hover{background:rgba(204,0,0,.30)}
+
+.mc-pane-ind-panel{display:none;padding:8px 10px;background:#0f1d36;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap;gap:6px}
+.mc-pane-ind-panel.open{display:flex}
+.mc-ind-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);padding:5px 11px;font-size:11px;font-weight:700;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:Inter,system-ui,sans-serif}
+.mc-ind-chip:hover{background:rgba(255,255,255,.14);color:#fff}
+.mc-ind-chip.on{background:#FF9933;border-color:#CC5500;color:#fff;box-shadow:0 2px 6px rgba(255,153,51,.30)}
+.mc-ind-chip-tick{font-size:9px;opacity:.85}
+
+.mc-pane-body{position:relative;flex:1;min-height:200px;background:#0a1428}
+.mc-pane-chart{position:absolute;inset:0}
+.mc-pane-rsi{position:absolute;left:0;right:0;bottom:0;height:80px;background:rgba(0,0,0,.40);border-top:1px solid rgba(255,255,255,.10);display:none}
+.mc-pane-rsi.show{display:block}
+.mc-pane-rsi-inner{position:absolute;inset:0}
+.mc-pane-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.50);font-size:12px;text-align:center;padding:18px;line-height:1.55}
+.mc-pane-empty-emoji{font-size:24px;margin-bottom:6px;opacity:.7}
+.mc-pane-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.60);font-size:12px;background:rgba(10,20,40,.85);z-index:5}
+
+/* Indicator dropdown panel header */
+.mc-pane-ind-title{font-size:10px;font-weight:800;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em;width:100%;margin-bottom:4px}
+</style>
+
+<script>
+// ═══════════ MULTI-CHART WORKSTATION ═══════════
+(function () {
+  'use strict';
+  if (typeof LightweightCharts === 'undefined') {
+    console.warn('[chittiMC] lightweight-charts not loaded — multi-chart disabled');
+    return;
+  }
+  var API = window.API || 'https://chitti-shares-api-production.up.railway.app';
+  var LS_KEY = 'chitti_mc_layout_v1';
+  var DEFAULT_PANES = [
+    { sym: 'RELIANCE', tf: 'D', ind: ['EMA', 'BB'] },
+    { sym: 'TCS',       tf: 'D', ind: ['EMA', 'RSI'] },
+    { sym: 'HDFCBANK',  tf: 'D', ind: ['BB', 'WR'] },
+    { sym: 'INFY',      tf: 'W', ind: ['PIVOT'] }
+  ];
+
+  var TF_LABELS = ['1m', '5m', '15m', '1h', '4h', 'D', 'W', 'M'];
+  // Map UI tf to Angel/backend timeframe
+  var TF_TO_API = {
+    '1m':'ONE_MINUTE', '5m':'FIVE_MINUTE', '15m':'FIFTEEN_MINUTE',
+    '1h':'ONE_HOUR', '4h':'ONE_HOUR', 'D':'ONE_DAY', 'W':'ONE_DAY', 'M':'ONE_DAY'
+  };
+  var TF_DAYS_BACK = { '1m':5, '5m':10, '15m':20, '1h':60, '4h':180, 'D':400, 'W':1200, 'M':2000 };
+
+  var INDICATORS = [
+    { id: 'EMA',   label: 'EMA 20/50/200', kind: 'overlay' },
+    { id: 'BB',    label: 'Bollinger Bands', kind: 'overlay' },
+    { id: 'PIVOT', label: 'Pivot Points',   kind: 'overlay' },
+    { id: 'RSI',   label: 'RSI (14)',       kind: 'subpane' },
+    { id: 'WR',    label: 'Williams %R',    kind: 'subpane' }
+  ];
+
+  // ── Indicator math helpers ───────────────────────────────────────────
+  function ema(arr, period) {
+    if (!arr.length) return [];
+    var k = 2 / (period + 1);
+    var out = new Array(arr.length).fill(null);
+    var sum = 0;
+    for (var i = 0; i < Math.min(period, arr.length); i++) sum += arr[i];
+    if (arr.length < period) return out;
+    out[period - 1] = sum / period;
+    for (var j = period; j < arr.length; j++) {
+      out[j] = arr[j] * k + out[j - 1] * (1 - k);
+    }
+    return out;
+  }
+  function sma(arr, period) {
+    var out = new Array(arr.length).fill(null);
+    var sum = 0;
+    for (var i = 0; i < arr.length; i++) {
+      sum += arr[i];
+      if (i >= period) sum -= arr[i - period];
+      if (i >= period - 1) out[i] = sum / period;
+    }
+    return out;
+  }
+  function stdev(arr, period, smaArr) {
+    var out = new Array(arr.length).fill(null);
+    for (var i = period - 1; i < arr.length; i++) {
+      var m = smaArr[i]; if (m == null) continue;
+      var s = 0;
+      for (var j = i - period + 1; j <= i; j++) s += (arr[j] - m) * (arr[j] - m);
+      out[i] = Math.sqrt(s / period);
+    }
+    return out;
+  }
+  function rsi(closes, period) {
+    var out = new Array(closes.length).fill(null);
+    if (closes.length < period + 1) return out;
+    var gains = 0, losses = 0;
+    for (var i = 1; i <= period; i++) {
+      var d = closes[i] - closes[i - 1];
+      if (d >= 0) gains += d; else losses -= d;
+    }
+    var avgG = gains / period, avgL = losses / period;
+    out[period] = 100 - 100 / (1 + (avgG / (avgL || 1e-9)));
+    for (var k = period + 1; k < closes.length; k++) {
+      var dd = closes[k] - closes[k - 1];
+      var g = dd > 0 ? dd : 0, l = dd < 0 ? -dd : 0;
+      avgG = (avgG * (period - 1) + g) / period;
+      avgL = (avgL * (period - 1) + l) / period;
+      out[k] = 100 - 100 / (1 + (avgG / (avgL || 1e-9)));
+    }
+    return out;
+  }
+  function williamsR(candles, period) {
+    var out = new Array(candles.length).fill(null);
+    for (var i = period - 1; i < candles.length; i++) {
+      var hi = -Infinity, lo = Infinity;
+      for (var j = i - period + 1; j <= i; j++) {
+        if (candles[j].high > hi) hi = candles[j].high;
+        if (candles[j].low  < lo) lo = candles[j].low;
+      }
+      out[i] = ((hi - candles[i].close) / (hi - lo || 1e-9)) * -100;
+    }
+    return out;
+  }
+  function pivotClassic(prevHigh, prevLow, prevClose) {
+    var P = (prevHigh + prevLow + prevClose) / 3;
+    return {
+      P:  P,
+      R1: 2 * P - prevLow,
+      S1: 2 * P - prevHigh,
+      R2: P + (prevHigh - prevLow),
+      S2: P - (prevHigh - prevLow),
+      R3: prevHigh + 2 * (P - prevLow),
+      S3: prevLow  - 2 * (prevHigh - P)
+    };
+  }
+
+  // ── State ────────────────────────────────────────────────────────────
+  var state = (function () {
+    try { var s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (s && s.panes) return s; } catch (e) {}
+    return { layout: 4, panes: DEFAULT_PANES.slice(0, 4) };
+  })();
+  function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ── Candle fetch ─────────────────────────────────────────────────────
+  var candleCache = {}; // sym|tf → candles
+  function fetchCandles(sym, tf) {
+    var key = sym + '|' + tf;
+    if (candleCache[key]) return Promise.resolve(candleCache[key]);
+    var apiTf = TF_TO_API[tf] || 'ONE_DAY';
+    var days = TF_DAYS_BACK[tf] || 400;
+    var url = API + '/api/candles/' + encodeURIComponent('NSE:' + sym) +
+              '?interval=' + apiTf + '&days_back=' + days;
+    return fetch(url, { mode: 'cors', cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (raw) {
+        // Normalise to lightweight-charts format: { time, open, high, low, close, volume }
+        var arr = (raw || []).map(function (c) {
+          var t = c.time || c.timestamp || c.t || c.date;
+          // Convert to UTC seconds (lightweight-charts expects seconds since epoch OR yyyy-mm-dd)
+          var time;
+          if (typeof t === 'number') time = t > 1e12 ? Math.floor(t / 1000) : Math.floor(t);
+          else if (typeof t === 'string') time = Math.floor(new Date(t).getTime() / 1000);
+          else time = Math.floor(Date.now() / 1000);
+          return { time: time, open: +c.open, high: +c.high, low: +c.low, close: +c.close, volume: +(c.volume || 0) };
+        }).filter(function (c) { return !isNaN(c.close); });
+        // Aggregate 4h from 1h
+        if (tf === '4h' && arr.length) arr = aggregate(arr, 4);
+        // Aggregate W/M from D
+        if (tf === 'W' && arr.length) arr = aggregate(arr, 5);
+        if (tf === 'M' && arr.length) arr = aggregate(arr, 22);
+        candleCache[key] = arr;
+        return arr;
+      })
+      .catch(function () { return []; });
+  }
+  function aggregate(candles, n) {
+    var out = [];
+    for (var i = 0; i < candles.length; i += n) {
+      var slice = candles.slice(i, i + n);
+      if (!slice.length) continue;
+      out.push({
+        time:  slice[0].time,
+        open:  slice[0].open,
+        high:  Math.max.apply(null, slice.map(function (c) { return c.high; })),
+        low:   Math.min.apply(null, slice.map(function (c) { return c.low; })),
+        close: slice[slice.length - 1].close,
+        volume: slice.reduce(function (a, c) { return a + (c.volume || 0); }, 0)
+      });
+    }
+    return out;
+  }
+
+  // ── Pane render ──────────────────────────────────────────────────────
+  function renderPane(grid, paneState, idx) {
+    var pane = document.createElement('div');
+    pane.className = 'mc-pane';
+    pane.dataset.idx = idx;
+    pane.innerHTML =
+      '<div class="mc-pane-head">' +
+        '<input class="mc-pane-sym" value="' + (paneState.sym || 'RELIANCE') + '" aria-label="Stock symbol" maxlength="20">' +
+        '<div class="mc-pane-tfs" role="group" aria-label="Timeframe">' +
+          TF_LABELS.map(function (t) {
+            return '<button class="mc-pane-tf' + (paneState.tf === t ? ' active' : '') + '" data-tf="' + t + '">' + t + '</button>';
+          }).join('') +
+        '</div>' +
+        '<button class="mc-pane-ind-btn" aria-label="Indicators">⚙ Ind</button>' +
+        '<button class="mc-pane-close" aria-label="Close pane">✕</button>' +
+      '</div>' +
+      '<div class="mc-pane-ind-panel">' +
+        '<div class="mc-pane-ind-title">Toggle indicators · auto-draws support / resistance</div>' +
+        INDICATORS.map(function (i) {
+          var on = paneState.ind.indexOf(i.id) >= 0;
+          return '<button class="mc-ind-chip' + (on ? ' on' : '') + '" data-ind="' + i.id + '">' +
+                   '<span class="mc-ind-chip-tick">' + (on ? '✓' : '+') + '</span>' +
+                   '<span>' + i.label + '</span>' +
+                 '</button>';
+        }).join('') +
+      '</div>' +
+      '<div class="mc-pane-body">' +
+        '<div class="mc-pane-chart"></div>' +
+        '<div class="mc-pane-rsi"><div class="mc-pane-rsi-inner"></div></div>' +
+        '<div class="mc-pane-empty" style="display:none">' +
+          '<div class="mc-pane-empty-emoji">📉</div>' +
+          '<div>Angel data feed is offline.<br>Charts populate once Sire restores credentials.</div>' +
+        '</div>' +
+        '<div class="mc-pane-loader">⟳ Loading candles…</div>' +
+      '</div>';
+    grid.appendChild(pane);
+
+    var symInp = pane.querySelector('.mc-pane-sym');
+    var indBtn = pane.querySelector('.mc-pane-ind-btn');
+    var indPanel = pane.querySelector('.mc-pane-ind-panel');
+    var closeBtn = pane.querySelector('.mc-pane-close');
+
+    indBtn.addEventListener('click', function () { indPanel.classList.toggle('open'); });
+    pane.querySelectorAll('.mc-pane-tf').forEach(function (b) {
+      b.addEventListener('click', function () {
+        paneState.tf = b.dataset.tf;
+        pane.querySelectorAll('.mc-pane-tf').forEach(function (x) { x.classList.toggle('active', x === b); });
+        save();
+        loadPaneChart(pane, paneState);
+      });
+    });
+    pane.querySelectorAll('.mc-ind-chip').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.dataset.ind;
+        var p = paneState.ind.indexOf(id);
+        if (p >= 0) paneState.ind.splice(p, 1); else paneState.ind.push(id);
+        b.classList.toggle('on');
+        b.querySelector('.mc-ind-chip-tick').textContent = paneState.ind.indexOf(id) >= 0 ? '✓' : '+';
+        save();
+        loadPaneChart(pane, paneState);
+      });
+    });
+    symInp.addEventListener('change', function () {
+      var v = symInp.value.trim().toUpperCase().replace(/^NSE:/, '');
+      if (!v) return;
+      paneState.sym = v;
+      symInp.value = v;
+      save();
+      loadPaneChart(pane, paneState);
+    });
+    closeBtn.addEventListener('click', function () {
+      state.panes.splice(idx, 1);
+      save();
+      rebuildGrid();
+    });
+
+    loadPaneChart(pane, paneState);
+  }
+
+  function loadPaneChart(pane, paneState) {
+    var body = pane.querySelector('.mc-pane-body');
+    var loader = body.querySelector('.mc-pane-loader');
+    var empty = body.querySelector('.mc-pane-empty');
+    loader.style.display = 'flex';
+    empty.style.display = 'none';
+    fetchCandles(paneState.sym, paneState.tf).then(function (candles) {
+      loader.style.display = 'none';
+      if (!candles || !candles.length) {
+        empty.style.display = 'flex';
+        return;
+      }
+      drawChart(pane, paneState, candles);
+    });
+  }
+
+  function drawChart(pane, paneState, candles) {
+    var body = pane.querySelector('.mc-pane-body');
+    var chartMount = pane.querySelector('.mc-pane-chart');
+    var rsiWrap = pane.querySelector('.mc-pane-rsi');
+    var rsiMount = pane.querySelector('.mc-pane-rsi-inner');
+    // Clear previous chart
+    chartMount.innerHTML = '';
+    rsiMount.innerHTML = '';
+    rsiWrap.classList.remove('show');
+
+    var w = body.clientWidth || 320;
+    var h = body.clientHeight || 240;
+    var hasSubpane = paneState.ind.indexOf('RSI') >= 0 || paneState.ind.indexOf('WR') >= 0;
+    var mainH = hasSubpane ? h - 80 : h;
+
+    var chart = LightweightCharts.createChart(chartMount, {
+      width: w, height: mainH,
+      layout: { background: { color: '#0a1428' }, textColor: 'rgba(255,255,255,.75)', fontFamily: 'JetBrains Mono, monospace', fontSize: 10 },
+      grid:   { vertLines: { color: 'rgba(255,255,255,.05)' }, horzLines: { color: 'rgba(255,255,255,.07)' } },
+      rightPriceScale: { borderColor: 'rgba(255,255,255,.15)' },
+      timeScale:       { borderColor: 'rgba(255,255,255,.15)', timeVisible: true, secondsVisible: false },
+      crosshair:       { mode: LightweightCharts.CrosshairMode.Normal },
+    });
+    var candleSeries = chart.addCandlestickSeries({
+      upColor: '#22c55e', downColor: '#ef4444', borderVisible: false,
+      wickUpColor: '#22c55e', wickDownColor: '#ef4444'
+    });
+    candleSeries.setData(candles);
+
+    var closes = candles.map(function (c) { return c.close; });
+
+    // ── EMA overlay (20/50/200) ──
+    if (paneState.ind.indexOf('EMA') >= 0) {
+      [{p:20,c:'#FFD58A'},{p:50,c:'#FF9933'},{p:200,c:'#7EE2A1'}].forEach(function (cfg) {
+        var values = ema(closes, cfg.p);
+        var data = [];
+        for (var i = 0; i < values.length; i++) {
+          if (values[i] != null) data.push({ time: candles[i].time, value: values[i] });
+        }
+        if (data.length) {
+          var s = chart.addLineSeries({ color: cfg.c, lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: 'EMA' + cfg.p });
+          s.setData(data);
+        }
+      });
+    }
+
+    // ── Bollinger Bands (20 SMA ± 2σ) — also draws S/R price lines on last values ──
+    if (paneState.ind.indexOf('BB') >= 0) {
+      var bbSma = sma(closes, 20);
+      var bbSd = stdev(closes, 20, bbSma);
+      var upper = [], mid = [], lower = [];
+      for (var i = 0; i < closes.length; i++) {
+        if (bbSma[i] != null && bbSd[i] != null) {
+          upper.push({ time: candles[i].time, value: bbSma[i] + 2 * bbSd[i] });
+          mid.push({   time: candles[i].time, value: bbSma[i] });
+          lower.push({ time: candles[i].time, value: bbSma[i] - 2 * bbSd[i] });
+        }
+      }
+      if (upper.length) {
+        var sU = chart.addLineSeries({ color: 'rgba(255,153,51,.85)', lineWidth: 1, title: 'BB Upper (R)' }); sU.setData(upper);
+        var sM = chart.addLineSeries({ color: 'rgba(255,255,255,.40)', lineWidth: 1, lineStyle: 2, title: 'BB Mid' });   sM.setData(mid);
+        var sL = chart.addLineSeries({ color: 'rgba(126,226,161,.85)', lineWidth: 1, title: 'BB Lower (S)' }); sL.setData(lower);
+        // S/R horizontal lines at last band values
+        var last = upper.length - 1;
+        candleSeries.createPriceLine({ price: upper[last].value, color: '#FF9933', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'BB-R' });
+        candleSeries.createPriceLine({ price: lower[last].value, color: '#7EE2A1', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'BB-S' });
+      }
+    }
+
+    // ── Pivot Points (Classic, last full session) ──
+    if (paneState.ind.indexOf('PIVOT') >= 0 && candles.length >= 2) {
+      var prev = candles[candles.length - 2];
+      var p = pivotClassic(prev.high, prev.low, prev.close);
+      var lines = [
+        { v: p.R3, lbl: 'R3', c: '#ef4444' },
+        { v: p.R2, lbl: 'R2', c: '#FF9933' },
+        { v: p.R1, lbl: 'R1', c: '#FFD58A' },
+        { v: p.P,  lbl: 'P',  c: '#ffffff' },
+        { v: p.S1, lbl: 'S1', c: '#7EE2A1' },
+        { v: p.S2, lbl: 'S2', c: '#22c55e' },
+        { v: p.S3, lbl: 'S3', c: '#16a34a' }
+      ];
+      lines.forEach(function (L) {
+        candleSeries.createPriceLine({ price: L.v, color: L.c, lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: L.lbl });
+      });
+    }
+
+    // ── RSI sub-pane ──
+    if (paneState.ind.indexOf('RSI') >= 0) {
+      var rsiVals = rsi(closes, 14);
+      var rsiData = [];
+      for (var ri = 0; ri < rsiVals.length; ri++) {
+        if (rsiVals[ri] != null) rsiData.push({ time: candles[ri].time, value: rsiVals[ri] });
+      }
+      if (rsiData.length) {
+        rsiWrap.classList.add('show');
+        var rsiChart = LightweightCharts.createChart(rsiMount, {
+          width: w, height: 80,
+          layout: { background: { color: 'transparent' }, textColor: 'rgba(255,255,255,.75)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9 },
+          grid:   { vertLines: { color: 'rgba(255,255,255,.04)' }, horzLines: { color: 'rgba(255,255,255,.06)' } },
+          rightPriceScale: { borderColor: 'rgba(255,255,255,.10)' },
+          timeScale: { visible: false },
+          crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        });
+        var rsiSeries = rsiChart.addLineSeries({ color: '#FFD58A', lineWidth: 1, title: 'RSI(14)' });
+        rsiSeries.setData(rsiData);
+        rsiSeries.createPriceLine({ price: 70, color: '#ef4444', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: '70 (R)' });
+        rsiSeries.createPriceLine({ price: 30, color: '#22c55e', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: '30 (S)' });
+        rsiSeries.createPriceLine({ price: 50, color: 'rgba(255,255,255,.30)', lineWidth: 1, lineStyle: 1, axisLabelVisible: false });
+      }
+    }
+
+    // ── Williams %R sub-pane (shares the sub-pane with RSI if both on; else its own) ──
+    if (paneState.ind.indexOf('WR') >= 0) {
+      var wrVals = williamsR(candles, 14);
+      var wrData = [];
+      for (var wi = 0; wi < wrVals.length; wi++) {
+        if (wrVals[wi] != null) wrData.push({ time: candles[wi].time, value: wrVals[wi] });
+      }
+      if (wrData.length) {
+        rsiWrap.classList.add('show');
+        // Append WR as second sub-pane stacked above RSI — for compactness we'll just add as a second series on the existing rsiChart if it exists
+        // Simpler: draw W%R on price-pane as a line (scaled invisibly) is wrong; better as ratios on right axis
+        // For now, just log W%R as price lines on the price pane for the current value (most useful as S/R hint)
+        var lastWR = wrVals[wrVals.length - 1];
+        if (lastWR != null) {
+          // Use W%R bounds to compute notional S/R levels on the price pane based on last 14 H/L
+          var per = 14;
+          var hi = -Infinity, lo = Infinity;
+          for (var pi = Math.max(0, candles.length - per); pi < candles.length; pi++) {
+            if (candles[pi].high > hi) hi = candles[pi].high;
+            if (candles[pi].low  < lo) lo = candles[pi].low;
+          }
+          candleSeries.createPriceLine({ price: hi, color: '#ef4444', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'W%R H (R)' });
+          candleSeries.createPriceLine({ price: lo, color: '#22c55e', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'W%R L (S)' });
+        }
+      }
+    }
+
+    chart.timeScale().fitContent();
+
+    // Resize observer keeps chart in sync with pane size
+    if (typeof ResizeObserver !== 'undefined') {
+      var ro = new ResizeObserver(function () {
+        var nw = body.clientWidth, nh = body.clientHeight;
+        var hasSp = pane.querySelector('.mc-pane-rsi.show');
+        chart.resize(nw, hasSp ? nh - 80 : nh);
+        if (hasSp) {
+          // also resize rsi sub-chart if needed (lightweight-charts auto-attaches via createChart param; we re-create on data change)
+        }
+      });
+      ro.observe(body);
+    }
+  }
+
+  // ── Grid rebuild ─────────────────────────────────────────────────────
+  function rebuildGrid() {
+    var grid = document.getElementById('mc-grid');
+    if (!grid) return;
+    grid.className = 'mc-grid layout-' + state.layout;
+    grid.innerHTML = '';
+    // Trim panes to layout
+    while (state.panes.length > state.layout) state.panes.pop();
+    while (state.panes.length < Math.min(state.layout, 4)) state.panes.push({
+      sym: 'RELIANCE', tf: 'D', ind: ['EMA']
+    });
+    state.panes.forEach(function (p, idx) { renderPane(grid, p, idx); });
+    // Update layout button active state
+    document.querySelectorAll('.mc-layout-btn').forEach(function (b) {
+      b.classList.toggle('active', +b.dataset.layout === state.layout);
+    });
+  }
+
+  // ── Public API ───────────────────────────────────────────────────────
+  window.chittiMC = {
+    open: function () {
+      var m = document.getElementById('mc-modal');
+      if (!m) return;
+      m.classList.add('open');
+      m.setAttribute('aria-hidden', 'false');
+      rebuildGrid();
+    },
+    close: function () {
+      var m = document.getElementById('mc-modal');
+      if (!m) return;
+      m.classList.remove('open');
+      m.setAttribute('aria-hidden', 'true');
+      if (document.fullscreenElement) document.exitFullscreen().catch(function(){});
+    },
+    setLayout: function (n) {
+      state.layout = n;
+      // If fewer than n panes, add defaults
+      while (state.panes.length < n && state.panes.length < 8) {
+        state.panes.push({ sym: 'RELIANCE', tf: 'D', ind: ['EMA'] });
+      }
+      save();
+      rebuildGrid();
+    },
+    addPane: function () {
+      if (state.panes.length >= 8) return;
+      state.panes.push({ sym: 'RELIANCE', tf: 'D', ind: ['EMA'] });
+      // Auto-grow layout to fit
+      if (state.panes.length > state.layout) {
+        var lay = [1,2,4,4,6,6,8,8];
+        state.layout = lay[state.panes.length - 1];
+      }
+      save();
+      rebuildGrid();
+    },
+    fullscreen: function () {
+      var m = document.getElementById('mc-modal');
+      if (!m) return;
+      if (!document.fullscreenElement) {
+        (m.requestFullscreen || m.webkitRequestFullscreen || function () {}).call(m);
+      } else {
+        document.exitFullscreen().catch(function(){});
+      }
+    }
+  };
+
+  // Close on ESC
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var m = document.getElementById('mc-modal');
+      if (m && m.classList.contains('open')) window.chittiMC.close();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
