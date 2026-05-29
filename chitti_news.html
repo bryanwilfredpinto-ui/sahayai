@@ -141,7 +141,7 @@ footer a{color:var(--saffron)}
 </head>
 <body>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529m wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529n wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -632,11 +632,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529m (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529n (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529m owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529n owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -1339,12 +1339,12 @@ loadBreaking();
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529m"></script>
+<script src="chitti_a11y.js?v=20260529n"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
 <!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
-<div class="chitti-qr-block" data-chitti-response data-chitti-section="QR — open on phone" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
+<div class="chitti-qr-block" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
   <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEbklEQVR4nO2dQW7dMAwFmyJ7XaJX6al7lV7CJ0i3DlABJEjKBmZm+SP7K/+BpklR1MfX19cPYfDz6QnIORQbhGKDUGwQig1CsUEoNojP3R/Wr9/tX3b9/fPf+2c/j9xzN6ZCZQ6V8Vl2/6+WDUKxQSg2iK3P7vJ5WT9a8d/ZOezo8vHZe078zne0bBCKDUKxQYR89p1sHHnSr0euXYH3gN2YrN+txNATv7OWDUKxQSg2iLTP7iLik7L588i1V9N9snN+A1o2CMUGodggHvPZXWvY2fvf6cq3R94Jdt97Ei0bhGKDUGwQaZ/9htgxmzeu+O8rcO1EbD3xO2vZIBQbhGKDCPnsidrmSt145fM3zCcyhwm0bBCKDUKxQXy8uafK9FryGvDrdyrvEBNo2SAUG4Rig0j77Eoc2bXW27UH7BqOv6fnkB2jZYNQbBCKDSLUU6USF0b2a+2+t2t81/+ymnLX07XuO7RsEIoNQrFBlHLjFR+WjS9P5pxXMq6NzC07poJxtvgYJ6HPBrH12V311V3588q+6grXwLtFZIx141LCxzgIxQYR8tlvW7fejYnM586E739qzTuClg1CsUEoNojtenZX/rbSQ3TH9P7pNZxjmM4ZmBsXH+Mk9NkgRvqgRXxetjYtwvQ68Z2s3+3qnV75v7RsEIoNQrFBtO31iozpyhXfORk3dzFRMx/5HbRsEIoNQrFBjPcu7crrdvUDX5vzu7rmkx3fdd5JBC0bhGKDUGwQof3Zb/BhXed53Hmql3hX7J79zbVsEIoNQrFBlOrGp2u5u8Y/1Uv8Gqi/i6DPFh/jJPTZIELr2dN9uXdU9phF5vbmnH9lPvps8TFOQp8N4nO6RroSs07Hu9fAO8GOSgzdlZ/XskEoNgjFBpHOjWfH7MbvOJkrXk09SrNMx/rG2eJjnIQ+G0Sop8p0njxyn4n+JFfg2ul+bSfXvLVsEIoNQrFBpPuN73iq3/ju2un4/npZnO3+bPmGj3EQig2iVIM20atk2u9eL8i9d8Xl5sZli49xEIoNIl2Dtvt8et23K45fhXquk3u475gblzQ+xkEoNoi2GrQ7E3uXd5w8O2sN33Oiju+Olg1CsUEoNohX7M+eOM9q2pevgft0rTvs0LJBKDYIxQYR6l16so6sq4fayXX31dQbbsJP39GyQSg2CMUGkT7Xq4uTOfMI18De6Moa/8T+MS0bhGKDUGwQ6TNCKlT2Pe8+n64VX8PvCtP3v6Nlg1BsEIoNolSD9lTt944u/329YO15ohZdywah2CAUG0T6/OyJfiMVv57dh7YG1td333syFveMEPmGj3EQig0i7bO7yK7RTtRwrYLv343JzrmyvzyLlg1CsUEoNojHfHbFX3bVUV/JmLUS4073X4vcU8sGodggFBtE2md3ra1m89Jd/c6ug/1eItdO15bf0bJBKDYIxQbRdkZIhOk9Trvvmj53azqX7l4vSeNjHIRig3hsf7acR8sGodggFBuEYoNQbBCKDUKxf3D4BxfDDf/VGbJnAAAAAElFTkSuQmCC" alt="QR code — opens News on your phone at https://sahayai.in/chitti_news.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
   <div style="flex:1;min-width:0">
     <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
@@ -1354,9 +1354,9 @@ loadBreaking();
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529m baked T-table + chitti_a11y.js?v=20260529m widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529m"></script>
-<script src="chitti_a11y.js?v=20260529m"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529n baked T-table + chitti_a11y.js?v=20260529n widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529n"></script>
+<script src="chitti_a11y.js?v=20260529n"></script>
 
 
 <!-- ══════════════ CHAI STALL MODE — styles ══════════════ -->
