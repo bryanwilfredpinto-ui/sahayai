@@ -39,7 +39,16 @@ function audit() {
     const latin = (t.match(/[A-Za-z]/g) || []).length;
     return latin >= 3;
   }
-  const SEL = '.pro-card, .scan-action, .feature-card, .action-card, [data-chitti-card], .scheme-card, .act-card, .kv-card, .cat-card, .med-card';
+  const SEL = [
+    '.pro-card','.scan-action','.feature-card','.action-card','[data-chitti-card]',
+    '.scheme-card','.act-card','.kv-card','.cat-card','.med-card',
+    '.art-card','.section-card','.rule-card','.sample-card',
+    '.cap-card','.course-card',
+    '.cv-card','.ind-card','.insight-card','.learn-card','.metric-card',
+    '.scan-card','.coming-soon-card',
+    '.sds-card','.sds-health-card','.mb-soon-card','.mc-soon-card',
+    '.platform-tile','.fa-tile','.na-cert-card','.try-card','.success-card-preview'
+  ].join(', ');
   const seen = new Set();
   const cards = [];
   document.querySelectorAll(SEL).forEach(el => {
