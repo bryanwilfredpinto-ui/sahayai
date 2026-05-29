@@ -1,7 +1,27 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-05-27 (Chitti CTO pass — 23 user-facing pages CERTIFIED GREEN ✅ on live; see [CERT_LOG.md](CERT_LOG.md)) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-05-29 (Chitti CTO pass — Turso persistence FIXED fleet-wide; 5 Chittis GREEN with restart-survival proven on real Turso, 5 YELLOW on env-var blockers) · **Auditor:** Claude Opus 4.7 (1M context) ·
 **Trigger:** "DEFINITIVE ENTERPRISE BASELINE — all Chittis GREEN" from Sire.
+
+## 2026-05-29 — Turso persistence root-cause + fleet-wide fix
+
+**Root cause uncovered:** The libsql_experimental embedded-replica pattern (per `project_turso_embedded_replica_pattern`) was silently losing every write across the fleet. SQLAlchemy wrote to `/tmp/<chitti>.db` via stdlib sqlite3, producing WAL frames libsql could not push back to Turso (`wal_insert_begin failed` in Railway logs). Container restart wiped /tmp. ZERO tables existed on any Chitti's Turso REMOTE despite months of "successful" deploys.
+
+**Fix shipped:** `backend/lib/turso_http.py` (380-line PEP-249 DBAPI shim) vendored into 10 backends. Talks directly to Turso `/v2/pipeline` over HTTPS with HTTP/1.1 keepalive. Plugged into SQLAlchemy via `create_engine("sqlite://", creator=...)`. No local file. No background sync. Every commit() lands on Turso REMOTE before returning. Container restart preserves every row. See `[[project-turso-direct-https-shim]]`.
+
+**Restart-survival proven** (sample row before → after `railway redeploy`):
+- chitti-vaani: `feedback_log` count 1 → 1 (id=1) + 8 tables on Turso
+- chitti-news: articles 6→6, sources 218→218 + 7 tables
+- chitti-shares: stocks 159→159 + 16 tables (16× boot speedup from keepalive)
+- chitti-government: schemes 12→12 + 7 tables
+- chitti-medupi: medicines 1000→1000, jan_aushadhi 175→175 + 18 tables (replaced the "tactical bypass" mentioned in row above)
+
+**Env-var blockers (CTO blocked on Sire — needs `turso auth login` in WSL OR direct paste):**
+chitti-news-ai · chitti-2wheeler · chitti-4wheeler · chitti-voice-factory · sahayai (chitti-founder). Code is deployed and correct on all 5; falls back to local SQLite until `DATABASE_URL` is set to a real `libsql://...?authToken=...`.
+
+End-state commits on `main`: `7d8e65e` … `f233653` (8 commits).
+
+---
 
 ## Phase B 2026-05-23 — curl-verified GREEN ✅
 
