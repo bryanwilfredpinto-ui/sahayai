@@ -54,6 +54,10 @@
     var extra = (selectorMeta.getAttribute('content') || '').trim();
     if (extra) SELECTOR = DEFAULT_SELECTOR + ', ' + extra;
   }
+  // Always-attach selectors — feedback contracts. These get the widget
+  // EVEN IF they don't pass the structural filter (heading + 6 chars body).
+  // Picks up dynamic news-ai article cards, voice-factory ledger rows, etc.
+  var ALWAYS_ATTACH = '[data-chitti-response], [data-chitti-section], .chitti-response';
 
   // Structural filter — only attach to elements that ACT like a card:
   //   - has a heading-like child (h1-h6, .lbl, .title, .name, .label)
@@ -93,6 +97,9 @@
   // Priority: data-i18n attr on the label > _chittiOrig of the label text node
   //          > textContent of label.
   function getCanonical(card){
+    // Priority: data-chitti-section (explicit, stable) > .lbl[data-i18n] > .lbl text node _chittiOrig > .lbl textContent
+    var sect = card.getAttribute && card.getAttribute('data-chitti-section');
+    if (sect) return sect.trim();
     var lbl = card.querySelector(LABEL_SELECTOR);
     if (!lbl) return 'unknown';
     if (lbl.dataset && lbl.dataset.i18n) return String(lbl.dataset.i18n).trim();
@@ -276,11 +283,11 @@
   }
 
   function scan(){
+    // Pass 1: structural-filter matches (must have heading + 6 chars body)
     var matched = document.querySelectorAll(SELECTOR);
-    // First pass: filter to real cards
     var real = [];
     matched.forEach(function (el) { if (isRealCard(el)) real.push(el); });
-    // Second pass: drop cards that contain other real cards (only attach to leafmost cards)
+    // Pass 2: drop wrappers — only attach to leafmost matching card
     var leafs = real.filter(function (el) {
       for (var i = 0; i < real.length; i++) {
         if (real[i] !== el && el.contains(real[i])) return false;
@@ -288,6 +295,18 @@
       return true;
     });
     leafs.forEach(buildWidget);
+    // Pass 3: ALWAYS-ATTACH elements (feedback contracts) — looser filter
+    // (no body-length check). Catches dynamic news-ai article cards,
+    // voice-factory ledger rows, etc. Skips if already widget-built.
+    document.querySelectorAll(ALWAYS_ATTACH).forEach(function (el) {
+      if (el._cwBuilt) return;
+      if (el.querySelector('.chitti-card-widget, .pro-card-widget')) return;
+      // Still need SOMETHING to label by — heading or data-chitti-section
+      var lbl = el.querySelector(LABEL_SELECTOR);
+      var sectionAttr = el.getAttribute('data-chitti-section');
+      if (!lbl && !sectionAttr) return;
+      buildWidget(el);
+    });
   }
 
   function init(){
@@ -306,6 +325,14 @@
       });
       obs.observe(document.body, { childList: true, subtree: true });
     }
+    // Periodic re-scan for first 30s — catches dynamic content loaded by
+    // page-local JS that runs after our init (news_ai articles, voice
+    // factory ledger rows, etc.).
+    var ticks = 0;
+    var iv = setInterval(function () {
+      scan();
+      if (++ticks >= 15) clearInterval(iv);
+    }, 2000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
