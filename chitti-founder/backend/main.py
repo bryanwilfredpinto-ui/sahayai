@@ -371,7 +371,16 @@ def _swarm_engines() -> list[tuple[str, Any]]:
     Convention: each Chitti exposes `<SLUG_UPPER_DASH_AS_UNDERSCORE>_LIBSQL_URL`.
     e.g. chitti-medupi → CHITTI_MEDUPI_LIBSQL_URL.
     """
-    from sqlalchemy import create_engine  # local import — avoid hard dep at module top
+    # Per SAHAYAI_MASTER.md §2 row 3 — libsql:// URLs go via the direct-HTTPS
+    # shim (lib.turso_http) plugged into SQLAlchemy with creator=. The old
+    # `create_engine(libsql_url)` path went through libsql_experimental which
+    # was broken for both reads and writes (wal_insert_begin failed). The
+    # shim talks Hrana over HTTPS — every SELECT goes to Turso directly.
+    from sqlalchemy import create_engine
+    from sqlalchemy.pool import NullPool
+    import urllib.parse as _urlparse
+    from lib import turso_http
+
     chittis = [
         "chitti-medupi", "chitti-vaani", "chitti-news", "chitti-government",
         "chitti-ca", "chitti-legal", "chitti-voice-factory",
@@ -385,7 +394,20 @@ def _swarm_engines() -> list[tuple[str, Any]]:
         if not url:
             continue
         try:
-            engine = create_engine(url, future=True)
+            if url.startswith("libsql://"):
+                parsed = _urlparse.urlparse(url)
+                qs = _urlparse.parse_qs(parsed.query)
+                token = (qs.get("authToken") or [""])[0]
+                host = parsed.netloc
+                engine = create_engine(
+                    "sqlite://",
+                    creator=lambda h=host, t=token: turso_http.connect(host=h, token=t),
+                    module=turso_http,
+                    poolclass=NullPool,
+                    future=True,
+                )
+            else:
+                engine = create_engine(url, future=True)
             pairs.append((slug, engine))
         except Exception as e:  # noqa: BLE001
             log.info("swarm: could not build engine for %s — %s", slug, e)
@@ -699,7 +721,16 @@ _TURSO_INITED = False
 
 
 def _turso_init() -> None:
-    """Open the embedded replica + ensure schema. Best-effort; never raises."""
+    """Open the direct-HTTPS Turso connection + ensure schema. Best-effort; never raises.
+
+    Per SAHAYAI_MASTER.md §2 row 3 (LOCKED, REVISED 2026-05-29): writes MUST land
+    on Turso REMOTE. The embedded-replica pattern previously used here lost data
+    on Railway restart — the local /tmp file evaporated and the .sync() loop
+    repeatedly failed with `wal_insert_begin failed`.
+
+    Replacement: lib.turso_http (PEP-249 shim talking to Turso /v2/pipeline with
+    HTTP/1.1 keepalive). Every execute() lands on Turso before returning.
+    """
     global _TURSO_CONN, _TURSO_INITED
     if _TURSO_INITED:
         return
@@ -708,17 +739,13 @@ def _turso_init() -> None:
         log.info("[bcp] Turso not configured (CHITTI_FOUNDER_LIBSQL_URL unset) — health rows kept in-memory only")
         return
     try:
-        import libsql_experimental as libsql  # type: ignore[import-not-found]
+        from lib import turso_http
         import urllib.parse as _urlparse
         parsed = _urlparse.urlparse(TURSO_URL)
         qs = _urlparse.parse_qs(parsed.query)
         token = (qs.get("authToken") or [""])[0]
-        sync_url = f"{parsed.scheme}://{parsed.netloc}"
-        _TURSO_CONN = libsql.connect(TURSO_LOCAL_PATH, sync_url=sync_url, auth_token=token)
-        try:
-            _TURSO_CONN.sync()
-        except Exception as e:  # noqa: BLE001
-            log.warning("[bcp] initial Turso sync failed (will retry on next write): %s", e)
+        host = parsed.netloc
+        _TURSO_CONN = turso_http.connect(host=host, token=token)
         _TURSO_CONN.execute(
             "CREATE TABLE IF NOT EXISTS health_pings ("
             "  ts TEXT NOT NULL,"
@@ -731,7 +758,7 @@ def _turso_init() -> None:
             ")"
         )
         _TURSO_CONN.commit()
-        log.info("[bcp] Turso embedded replica ready at %s", TURSO_LOCAL_PATH)
+        log.info("[bcp] Turso direct-HTTPS ready (host=%s)", host)
     except Exception as e:  # noqa: BLE001
         log.warning("[bcp] Turso init failed (continuing in-memory only): %s", e)
         _TURSO_CONN = None
@@ -752,11 +779,9 @@ def _turso_log_pings(rows: list[dict]) -> int:
                  1 if r["ok"] else 0, r.get("latency_ms"), r.get("error")),
             )
             written += 1
+        # Direct-HTTPS: commit() is a no-op because each execute() already
+        # landed on Turso. Retained for symmetry with the old API surface.
         _TURSO_CONN.commit()
-        try:
-            _TURSO_CONN.sync()
-        except Exception as e:  # noqa: BLE001
-            log.info("[bcp] Turso bg sync deferred: %s", e)
     except Exception as e:  # noqa: BLE001
         log.warning("[bcp] Turso write failed for %d rows: %s", len(rows), e)
     return written
