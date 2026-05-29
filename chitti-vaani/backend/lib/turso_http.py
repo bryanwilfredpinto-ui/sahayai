@@ -33,6 +33,7 @@ just enough of stdlib sqlite3's surface for the sqlite dialect to behave:
 from __future__ import annotations
 
 import base64
+import http.client
 import json
 import logging
 import re
@@ -179,27 +180,75 @@ def _map_error(err: dict) -> Exception:
 # --- HTTP transport -----------------------------------------------------
 
 class _HTTPTransport:
-    """Thread-safe POSTer to /v2/pipeline. One per (host, token)."""
+    """Thread-safe POSTer to /v2/pipeline. One per (host, token).
+
+    Uses a persistent HTTPS connection with HTTP/1.1 keepalive so repeated
+    requests during create_all / batch INSERT don't pay the TCP+TLS
+    handshake cost each time (~30-80 ms saved per call). The shim opens
+    one connection per Connection object; the connection auto-reopens on
+    transport errors.
+
+    Concurrency: the per-connection lock serialises requests through the
+    single underlying HTTPSConnection — http.client is not thread-safe.
+    For our use case SQLAlchemy serialises queries through one DBAPI
+    connection anyway, so this matches the natural shape.
+    """
 
     def __init__(self, host: str, token: str, *, timeout: float = 30.0):
-        self._url = f"https://{host}/v2/pipeline"
+        self._host = host
+        self._path = "/v2/pipeline"
         self._auth = f"Bearer {token}" if token else ""
         self._timeout = timeout
         self._lock = threading.Lock()
+        self._conn: Optional[http.client.HTTPSConnection] = None
+
+    def _open(self) -> http.client.HTTPSConnection:
+        if self._conn is None:
+            self._conn = http.client.HTTPSConnection(self._host, timeout=self._timeout)
+        return self._conn
+
+    def _close(self) -> None:
+        if self._conn is not None:
+            try:
+                self._conn.close()
+            except Exception:  # noqa: BLE001
+                pass
+            self._conn = None
 
     def post(self, requests: list[dict]) -> dict:
         body = json.dumps({"requests": requests}).encode("utf-8")
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json", "Connection": "keep-alive"}
         if self._auth:
             headers["Authorization"] = self._auth
-        req = urllib.request.Request(self._url, data=body, headers=headers, method="POST")
-        with self._lock:  # serialise: pipeline batons aren't safe to interleave
-            with urllib.request.urlopen(req, timeout=self._timeout) as resp:
-                raw = resp.read()
+
+        with self._lock:
+            # One retry on transport hiccup (server closed idle keepalive socket).
+            for attempt in (0, 1):
+                try:
+                    conn = self._open()
+                    conn.request("POST", self._path, body=body, headers=headers)
+                    resp = conn.getresponse()
+                    raw = resp.read()
+                    if resp.status >= 500:
+                        # Drop the connection on server errors; next call reopens.
+                        self._close()
+                    break
+                except (http.client.HTTPException, ConnectionError, OSError) as e:
+                    self._close()
+                    if attempt == 1:
+                        raise OperationalError(f"Turso HTTP transport error: {e}")
+                    continue
+
+        if resp.status != 200:
+            raise OperationalError(f"Turso HTTP {resp.status}: {raw[:300]!r}")
         try:
             return json.loads(raw)
         except json.JSONDecodeError as e:
             raise OperationalError(f"non-JSON response from Turso: {e}; body={raw[:200]!r}")
+
+    def close(self) -> None:
+        with self._lock:
+            self._close()
 
 
 # --- Statement splitter (for executescript) -----------------------------
@@ -316,6 +365,10 @@ class Connection:
         return None
 
     def close(self) -> None:
+        try:
+            self._transport.close()
+        except Exception:  # noqa: BLE001
+            pass
         self._closed = True
 
     @property
