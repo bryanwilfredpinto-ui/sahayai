@@ -155,8 +155,139 @@ World Class Chitti CTO — Commando Discipline. Zero Excuses.
 
 ---
 
+## CHITTI PA UI DESIGN STANDARD v1.0
+### Locked 2026-05-29 — World Class Chitti PA. Commando Discipline. Zero Excuses.
+
+This is the canonical UI contract for Chitti PA and every Chitti surface that
+inherits the PA shell. CTO enforces it on every page, every card, every build.
+
+### 1. Color System — Saffron / Navy / Green (LOCKED)
+| Token | Hex | Use |
+|-------|-----|-----|
+| Saffron (Primary) | `#FF9933` | Brand accent, primary CTAs, active states, brand logo |
+| Navy (Surface) | `#000080` | Headers, container surfaces, body text on light bg |
+| Green (Success) | `#138808` | GREEN status, verification ticks, positive deltas |
+| White (Canvas) | `#FFFFFF` | Page background, card surface |
+| Charcoal (Text) | `#1A1A1A` | Default body text (AA contrast on white) |
+
+- The Saffron / Navy / Green triad is the **existing palette** and must not be
+  re-skinned per Chitti — every PA card uses the same three brand colors.
+- No gradient brand experiments. No neon. No alternate "accent" colors.
+- Color is **never** the sole carrier of meaning — pair with icon + text per §7
+  accessibility contract.
+
+### 2. Card Feedback Strip (MANDATORY on every AI response card)
+Every card that renders an AI response — Morning Brief, Agent output, Chitti
+explainer, anything LLM-generated — carries this strip, in this order, anchored
+to the bottom of the card:
+
+| Order | Element | Action |
+|-------|---------|--------|
+| 1 | 🔊 Speaker | Reads the card aloud in active language via Voice Factory |
+| 2 | 👍 Thumbs Up | Positive feedback → swarm intelligence pipeline |
+| 3 | 👎 Thumbs Down | Negative feedback → reversal review queue |
+| 4 | ✏️ Pencil | Type correction / clarification |
+| 5 | 🎙️ Mic | Speak correction → LLM transcribes → reads back for approval |
+
+- The strip is provided by `feedback-widget.js` and wraps every element with
+  `data-chitti-response="<card-id>"`. No page ships GREEN without it.
+- The 🤖 Chitti-explain icon and 🌐 language selector remain available at the
+  page level (chitti_a11y.js) — they are not duplicated per card.
+- Feedback strip is **user-facing on every card** regardless of viewer role.
+
+### 3. Chitti Quality Check Layer (CTO / Admin view ONLY)
+A per-card quality overlay rendered above the feedback strip. **Hidden from
+end users.** Visible only when the viewer has `role=cto` or `role=admin`.
+
+| Field | Meaning |
+|-------|---------|
+| Quality Score | 0–100 composite from chitti_quality.py |
+| Hallucination Risk | LOW / MED / HIGH per response signature |
+| Source Coverage | # sources cited ÷ # claims made |
+| Disclaimer Check | Pass / Fail — SEBI / medical / legal banner present where required |
+| Reversal Watch | Count of 👎→👍 flips for similar prompts in last 7 days |
+
+- Implementation gate: render `<div data-chitti-quality>` only when the page
+  detects CTO/admin session. Default DOM state for normal users = absent.
+- This is an **internal observability surface** — never expose to users, never
+  log to public analytics, never include in shareable screenshots from PA.
+
+### 4. AI Observability Strip (CTO / Admin view ONLY)
+A second per-card overlay, sibling of the Quality Check layer. Same visibility
+rule — CTO / admin only, never rendered for end users.
+
+| Field | Meaning |
+|-------|---------|
+| Response Time | ms from prompt submit → first token → final token |
+| Verification Agent | Which sub-agent verified the response (or `none`) |
+| Audit ID | UUID stamped on the response, joinable to Turso audit log |
+| Feedback Learning | Whether this response was used to update a skills/*.md |
+| Model | Active LLM (DeepSeek / Claude / Gemini per Layer 5 cascade) |
+| Confidence | Self-reported confidence band: LOW / MED / HIGH |
+
+- Both §3 and §4 strips ride together — same visibility flag, same DOM gate.
+- Both are **read-only diagnostic surfaces** — never accept input from the UI.
+
+### 5. Language Policy — No Hinglish (LOCKED)
+- Every response is rendered in **one pure language**, chosen by the user via
+  the language selector. Never mix scripts inside a single sentence.
+- Supported v1.0 languages: **English, Hindi, Marathi, Tamil, Telugu, Bengali,
+  Kannada, Malayalam** (8 active — 7 Indic + English). The full 22-language
+  surface ships through Voice Factory in later phases.
+- Mixing Hindi words into an English sentence (or vice versa) is a defect.
+  Code-switching like "aapka portfolio dekho" is **banned** — write either
+  "आपका पोर्टफोलियो देखिए" or "View your portfolio", never a blend.
+- Voice Factory output must match the active text language token. If the
+  TTS provider returns code-switched audio, that is a Voice Factory defect
+  routed back to CTO.
+
+### 6. Technical Terms Stay in English (LOCKED)
+Even when the active language is Hindi / Marathi / Tamil / etc., the following
+classes of terms render in **English (Latin script)** without transliteration:
+
+| Class | Examples |
+|-------|----------|
+| Technical indicators | RSI, MACD, EMA, VWAP, Bollinger Bands, ATR |
+| Government scheme names | PM-KISAN, Ayushman Bharat, PMJAY, PMSBY, NREGA |
+| Regulators / bodies | SEBI, RBI, IRDAI, FSSAI, TRAI |
+| Exchange / index names | NSE, BSE, Nifty, Sensex, Bank Nifty |
+| Drug salt names | Paracetamol, Atorvastatin, Metformin |
+| API / protocol names | UPI, IMPS, NEFT, FASTag, DigiLocker |
+
+- Rationale: these are proper nouns / standards. Transliterating "आर.एस.आई"
+  for RSI degrades comprehension for the very users we serve.
+- Surrounding prose is translated; the term itself is preserved verbatim.
+- This rule applies to text, voice (TTS pronounces the English letters),
+  and ISL (fingerspell the English term).
+
+### 7. Card Order on Chitti PA Home (LOCKED)
+The PA home renders cards in this exact order — top to bottom on mobile,
+left to right on desktop:
+
+1. **Morning Brief** — Sire's daily situational read (markets · news · health
+   · calendar · pending Chitti actions). Always card #1.
+2. **Chitti Agents** — the agent grid (each tile = one Chitti dispatching
+   into Vaani). Always card #2.
+
+- Any future card class (e.g., Wallet, Family, Inbox) inserts **below** Agents.
+- Morning Brief and Agents never swap positions, never collapse into a single
+  card, never get pushed below the fold by promos / banners / discovery boxes.
+
+### 8. Enforcement & Cert Hooks
+- `tools/cert_*.mjs` adds:
+  - `assert_feedback_strip_present(card_id)` — DOM check for all 5 elements
+  - `assert_quality_overlay_hidden_for_user_role()` — negative check
+  - `assert_no_hinglish(lang_token)` — script-mixing scanner over rendered text
+  - `assert_technical_terms_preserved()` — RSI/SEBI/PM-KISAN regex pass
+  - `assert_card_order(["morning-brief","chitti-agents", ...])`
+- Any cert failure on these hooks **blocks GREEN** for the page.
+- These join the existing 5 frontend gates from QUALITY_STATUS.md §1a — they
+  do not replace them.
+
+---
+
 ## MAINTENANCE
 - Updated by CTO when role, authority, or defects change
 - Never summarise this file — always show full contents when asked
 - This file supersedes any Claude auto-memory about CTO role
-- Last updated: 2026-05-28
+- Last updated: 2026-05-29
