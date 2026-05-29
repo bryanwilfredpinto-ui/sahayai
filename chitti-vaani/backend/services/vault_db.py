@@ -54,21 +54,24 @@ Base = declarative_base()
 
 def _resolve_url() -> str:
     raw = os.environ.get("VAULT_DATABASE_URL") or os.environ.get("DATABASE_URL") or ""
-    if not raw:
-        path = os.environ.get("VAULT_DB_PATH", "/tmp/chitti_vaani_vault.sqlite")
-        return f"sqlite:///{path}"
-    from database import resolve_db_url
-    return resolve_db_url(raw)
+    if raw:
+        return raw
+    # Local-dev fallback only — production always sets DATABASE_URL.
+    path = os.environ.get("VAULT_DB_PATH", "/tmp/chitti_vaani_vault.sqlite")
+    return f"sqlite:///{path}"
 
 
-_DB_URL = _resolve_url()
-_IS_SQLITE = _DB_URL.startswith("sqlite")
-_engine = create_engine(
-    _DB_URL,
+_RAW_URL = _resolve_url()
+_IS_LOCAL_SQLITE = _RAW_URL.startswith("sqlite:")
+from database import make_engine  # noqa: E402
+_engine = make_engine(
+    _RAW_URL,
     pool_pre_ping=True,
-    connect_args={"check_same_thread": False} if _IS_SQLITE else {},
+    connect_args={"check_same_thread": False} if _IS_LOCAL_SQLITE else {},
     future=True,
 )
+_DB_URL = str(_engine.url)
+_IS_SQLITE = _DB_URL.startswith("sqlite") and not _DB_URL.startswith("sqlite+libsql")
 SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False, future=True)
 
 

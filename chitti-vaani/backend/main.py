@@ -13,12 +13,14 @@ Run:    gunicorn main:app --bind 0.0.0.0:$PORT
 from __future__ import annotations
 
 import logging
+import os
 
 from flask import Flask, jsonify
 from flask_cors import CORS
 from sqlalchemy import create_engine
 
 from config import settings
+from database import make_engine
 from routes.vaani import bp as vaani_bp
 from routes.email import bp as email_bp
 from routes.emergency import bp as emergency_bp
@@ -45,13 +47,14 @@ from lib.quadrails import build_default_quadrails
 
 CHITTI_SLUG = "chitti-vaani"
 
-# Chitti Vaani persists admin + feedback data via SQLite at /tmp paths and does
-# not expose a single shared SQLAlchemy engine. Give the quality framework its
-# own dedicated engine so quality_audit / quality_feedback tables live in their
-# own DB file, away from existing admin / feedback subsystems.
-_quality_engine = create_engine(
-    "sqlite:////tmp/chitti_vaani_quality.db",
-    connect_args={"check_same_thread": False},
+# Quality framework engine. Per SAHAYAI_MASTER.md §2 row 3 (LOCKED 2026-05-29):
+# write to Turso REMOTE so quality_audit / quality_feedback rows survive Railway
+# container restart. Was previously hardcoded to sqlite:////tmp/...quality.db,
+# which evaporated on every redeploy.
+_quality_raw_url = os.environ.get("DATABASE_URL") or "sqlite:////tmp/chitti_vaani_quality.db"
+_quality_engine = make_engine(
+    _quality_raw_url,
+    connect_args={"check_same_thread": False} if _quality_raw_url.startswith("sqlite:") else {},
 )
 
 logging.basicConfig(

@@ -52,25 +52,28 @@ def _resolve_url() -> str:
         or os.environ.get("DATABASE_URL")
         or ""
     )
-    if not raw:
-        path = os.environ.get("FEEDBACK_DB_PATH", "/tmp/chitti_feedback.sqlite")
-        return f"sqlite:///{path}"
-    # libsql:// → embedded replica (idempotent per host — admin_db + feedback_db
-    # pointing at the same Turso DB share one local file + one sync thread).
-    # Per SAHAYAI_MASTER.md §2 row 3 — never pass libsql:// straight to create_engine.
-    from database import resolve_db_url
-    return resolve_db_url(raw)
+    if raw:
+        return raw
+    # Local-dev fallback only. In production DATABASE_URL is always set to a
+    # libsql:// URL pointing at Turso, so writes survive container restart.
+    path = os.environ.get("FEEDBACK_DB_PATH", "/tmp/chitti_feedback.sqlite")
+    return f"sqlite:///{path}"
 
 
-_DB_URL = _resolve_url()
-_IS_SQLITE = _DB_URL.startswith("sqlite")
+_RAW_URL = _resolve_url()
+_IS_LOCAL_SQLITE = _RAW_URL.startswith("sqlite:")
 
-_engine = create_engine(
-    _DB_URL,
+# Direct HTTPS to Turso via make_engine; for local SQLite fallback the kwargs pass through.
+from database import make_engine  # noqa: E402
+
+_engine = make_engine(
+    _RAW_URL,
     pool_pre_ping=True,
-    connect_args={"check_same_thread": False} if _IS_SQLITE else {},
+    connect_args={"check_same_thread": False} if _IS_LOCAL_SQLITE else {},
     future=True,
 )
+_DB_URL = str(_engine.url)
+_IS_SQLITE = _DB_URL.startswith("sqlite") and not _DB_URL.startswith("sqlite+libsql")
 SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False, future=True)
 
 

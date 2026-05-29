@@ -1,135 +1,120 @@
 """
 database.py
 -----------
-Embedded-replica resolver for Turso libSQL URLs.
+DB URL + engine resolver for Chitti Vaani.
 
-Per SAHAYAI_MASTER.md §2 row 3 (LOCKED), Chitti backends MUST NOT pass a
-`libsql://` URL straight into SQLAlchemy `create_engine`. The `sqlalchemy-libsql`
-dialect inherits the stock pysqlite dialect, which assumes a stdlib
-`sqlite3.Connection` (PRAGMA support + mutable isolation_level). Turso's remote
-Hrana protocol satisfies neither.
+Per SAHAYAI_MASTER.md §2 row 3 (LOCKED, REVISED 2026-05-29) every write MUST land
+on Turso REMOTE — never on a /tmp local file that disappears on Railway restart.
 
-The embedded-replica pattern (ported from chitti-news/backend/database.py):
+The earlier embedded-replica pattern (`libsql_experimental.connect(local_path,
+sync_url=...)`) opened a local SQLite file at /tmp/<chitti>.db and ran a
+background `.sync()` loop. In production this failed: SQLAlchemy wrote to the
+file via stdlib sqlite3, which produced WAL frames libsql could not reconcile —
+every `syncer.sync()` raised `wal_insert_begin failed` and writes never
+propagated upstream. Container restart wiped /tmp; data was lost.
 
-  1. `libsql_experimental.connect(local_path, sync_url=..., auth_token=...)`
-     opens a real SQLite file on disk that syncs (read + write) with Turso in
-     the background.
-  2. A daemon thread runs `.sync()` every 60s. Initial sync runs once in the
-     background so /health binds well before Render/Railway's 30s probe.
-  3. SQLAlchemy then talks to the local file via plain `sqlite:///<path>` —
-     full PRAGMA support, real stdlib `sqlite3.Connection` semantics.
+The replacement is direct HTTPS to Turso via the shim at `lib.turso_http`. The
+shim implements PEP-249 DBAPI on top of Turso's `/v2/pipeline` Hrana endpoint
+and is plugged into SQLAlchemy via `create_engine(..., creator=...)`. The
+underlying SQLAlchemy dialect remains the stock `sqlite` dialect, which the
+shim is compatible with (qmark paramstyle, PRAGMA passthrough, sqlite-flavoured
+exception types).
 
-`resolve_db_url(...)` is idempotent: it caches per-host so when chitti-vaani's
-three env vars (DATABASE_URL, ADMIN_DATABASE_URL, FEEDBACK_DATABASE_URL) all
-point at the same Turso DB, we open ONE replica and ONE sync thread.
+Public surface:
+  resolve_db_url(raw, local_path_hint=None) -> str
+      Backward-compatible: returns a URL string for callers that pass it
+      straight to make_engine().
 
-URL shapes:
-  - libsql://<host>?authToken=<token>   → embedded replica, returns sqlite:///<local>
-  - postgres://...                      → rewrites to postgresql+psycopg2:// (legacy)
-  - sqlite:///path                      → passed through unchanged
-  - empty / None                        → passed through unchanged
+  make_engine(raw, **engine_kwargs) -> Engine
+      Preferred entry point. For libsql:// it builds a Turso-backed engine
+      using the lib.turso_http shim. For postgres:// or sqlite:// it builds
+      a normal SQLAlchemy engine.
+
+  sync_now(host=None) -> None
+      No-op shim retained for backward compatibility with the embedded-replica
+      module — there is nothing to sync; writes are durable on commit().
 """
 from __future__ import annotations
 
 import logging
-import os
-import threading
-import time
 import urllib.parse
+from typing import Any
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import NullPool
 
 log = logging.getLogger("database")
 
-# host → (local_path, syncer_conn). Guard for idempotency across multiple
-# call sites pointing at the same Turso DB.
-_REPLICAS: dict[str, tuple[str, object]] = {}
-_REPLICAS_LOCK = threading.Lock()
 
-
-def _parse_libsql_url(raw: str) -> tuple[str, str, str]:
-    """Return (host, sync_url, auth_token) from libsql://host?authToken=..."""
+def _parse_libsql_url(raw: str) -> tuple[str, str]:
     parsed = urllib.parse.urlparse(raw)
     qs = urllib.parse.parse_qs(parsed.query)
     token = (qs.get("authToken") or [""])[0]
-    sync_url = f"{parsed.scheme}://{parsed.netloc}"
-    return parsed.netloc, sync_url, token
-
-
-def _default_local_path(host: str) -> str:
-    """Derive a stable /tmp file path from the Turso hostname.
-
-    chitti-vaani-bryanwilfredpinto.aws-ap-south-1.turso.io → /tmp/chitti_vaani.db
-    """
-    # Take the first dotted segment, strip the bryanwilfredpinto suffix.
-    first = host.split(".", 1)[0]
-    short = first.split("-bryanwilfredpinto")[0]
-    safe = short.replace("-", "_")
-    return f"/tmp/{safe}.db"
-
-
-def _bootstrap_replica(libsql_url: str, local_path: str):
-    """Open the local replica + start background sync. Returns the syncer conn."""
-    import libsql_experimental as libsql  # type: ignore[import-not-found]
-
-    host, sync_url, token = _parse_libsql_url(libsql_url)
-    log.info("Opening embedded replica at %s (sync_url=%s)", local_path, sync_url)
-    syncer = libsql.connect(local_path, sync_url=sync_url, auth_token=token)
-
-    def _loop():
-        try:
-            syncer.sync()
-            log.info("Initial sync from Turso complete (%s)", host)
-        except Exception as e:  # noqa: BLE001
-            log.warning("Initial Turso sync failed for %s (will retry): %s", host, e)
-        while True:
-            time.sleep(60)
-            try:
-                syncer.sync()
-            except Exception as e:  # noqa: BLE001
-                log.warning("Background Turso sync failed for %s: %s", host, e)
-
-    threading.Thread(target=_loop, name=f"turso-sync-{host}", daemon=True).start()
-    return syncer
+    return parsed.netloc, token
 
 
 def resolve_db_url(raw: str | None, local_path_hint: str | None = None) -> str:
-    """Resolve any env-provided DB URL into one safe for SQLAlchemy create_engine.
+    """Lightly normalise the URL. Real dialect routing happens in make_engine().
 
-    - libsql:// → bootstrap embedded replica (idempotent per host) and return sqlite:///<local>
-    - postgres:// → rewrite to postgresql+psycopg2://
-    - everything else → pass through unchanged
+    - libsql://     → returned unchanged (make_engine recognises it)
+    - postgres://   → rewritten to postgresql+psycopg2://
+    - sqlite://     → passthrough
+    - empty / None  → empty string (caller handles fallback)
     """
     if not raw:
         return raw or ""
-
-    if raw.startswith("libsql://"):
-        host, _, _ = _parse_libsql_url(raw)
-        with _REPLICAS_LOCK:
-            if host not in _REPLICAS:
-                local_path = (
-                    local_path_hint
-                    or os.environ.get("LIBSQL_REPLICA_PATH")
-                    or _default_local_path(host)
-                )
-                syncer = _bootstrap_replica(raw, local_path)
-                _REPLICAS[host] = (local_path, syncer)
-            local_path, _ = _REPLICAS[host]
-        return f"sqlite:///{local_path}"
-
     if raw.startswith("postgres://"):
         return raw.replace("postgres://", "postgresql+psycopg2://", 1)
-
     return raw
 
 
+def _build_libsql_engine(raw: str, engine_kwargs: dict[str, Any]) -> Engine:
+    """Build a SQLAlchemy engine that talks to Turso directly via lib.turso_http.
+
+    Uses the built-in sqlite dialect with a creator= callable so SQLAlchemy
+    routes every connection through our HTTP shim instead of stdlib sqlite3.
+    """
+    from lib import turso_http
+
+    host, token = _parse_libsql_url(raw)
+    if not token:
+        log.warning("libsql URL for %s has no authToken — Turso will reject the connection", host)
+
+    def _creator():
+        # SQLAlchemy treats this return value as a DBAPI Connection.
+        return turso_http.connect(host=host, token=token)
+
+    # Drop kwargs the sqlite dialect / our shim do not want:
+    kwargs = dict(engine_kwargs)
+    kwargs.pop("pool_pre_ping", None)            # HTTP keep-alive doesn't need it
+    ca = kwargs.get("connect_args") or {}
+    ca = {k: v for k, v in ca.items() if k != "check_same_thread"}
+    if ca:
+        kwargs["connect_args"] = ca
+    else:
+        kwargs.pop("connect_args", None)
+    kwargs.setdefault("poolclass", NullPool)     # each checkout = fresh HTTPS conn
+    kwargs["module"] = turso_http               # tell the sqlite dialect to use our DBAPI
+
+    log.info("Opening Turso engine via direct HTTPS: host=%s pool=NullPool", host)
+    # URL is a placeholder; the actual transport is creator + module.
+    return create_engine("sqlite://", creator=_creator, **kwargs)
+
+
+def make_engine(raw: str | None, **engine_kwargs: Any) -> Engine:
+    """One-stop helper: pick the right transport for the URL."""
+    if not raw:
+        raise ValueError("make_engine: empty DB URL — caller must provide a fallback before calling")
+
+    if raw.startswith("libsql://"):
+        return _build_libsql_engine(raw, engine_kwargs)
+
+    url = resolve_db_url(raw)
+    log.info("Opening DB engine: scheme=%s", url.split(":", 1)[0])
+    return create_engine(url, **engine_kwargs)
+
+
 def sync_now(host: str | None = None) -> None:
-    """Force an immediate Turso sync. host=None syncs every open replica."""
-    with _REPLICAS_LOCK:
-        targets = (
-            [(host, *_REPLICAS[host])] if host and host in _REPLICAS
-            else [(h, *v) for h, v in _REPLICAS.items()]
-        )
-    for h, _path, syncer in targets:
-        try:
-            syncer.sync()  # type: ignore[attr-defined]
-        except Exception as e:  # noqa: BLE001
-            log.warning("Forced Turso sync failed for %s: %s", h, e)
+    """No-op. Retained for backward compatibility with the embedded-replica era."""
+    return None
