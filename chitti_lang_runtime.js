@@ -103,45 +103,70 @@
     return p;
   }
 
-  // Collect every untranslated visible text node on the current page.
-  // A node is "untranslated" if its current nodeValue equals its _chittiOrig
-  // (meaning chitti_lang.js fell back to English on lookup miss).
+  // Collect every visible text node that LOOKS like English in a non-English
+  // session. Aggressive — doesn't rely on chitti_lang.js's _chittiOrig (some
+  // pages like MedUPI have their own i18n that overwrites text via innerHTML,
+  // so the original snapshot is lost). Returns a map of trimmed text → array
+  // of text nodes that hold it (for direct nodeValue replacement later).
   function collectMisses(lang) {
-    var found = {};
-    if (lang === 'en' || !document.body) return found;
+    var found = {};   // text → true (for batching to backend)
+    var nodes = {};   // text → [textNode, textNode, ...]  (for direct override)
+    if (lang === 'en' || !document.body) return { strings: found, byText: nodes };
     var SKIP = {SCRIPT:1, STYLE:1, CODE:1, PRE:1, TEXTAREA:1, NOSCRIPT:1, INPUT:1};
     var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         var p = n.parentElement;
         if (!p || SKIP[p.tagName]) return NodeFilter.FILTER_REJECT;
-        var orig = n._chittiOrig;
-        if (orig === undefined) return NodeFilter.FILTER_REJECT;
-        // If lookup found a translation, nodeValue !== orig. We want misses only.
-        if (n.nodeValue !== orig) return NodeFilter.FILTER_REJECT;
-        var trimmed = (orig || '').replace(/\s+/g, ' ').trim();
+        var raw = n.nodeValue || '';
+        var trimmed = raw.replace(/\s+/g, ' ').trim();
         if (shouldSkip(trimmed)) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
     var node;
     while ((node = w.nextNode())) {
-      var trim = node._chittiOrig.replace(/\s+/g, ' ').trim();
+      var trim = (node.nodeValue || '').replace(/\s+/g, ' ').trim();
       found[trim] = true;
+      (nodes[trim] = nodes[trim] || []).push(node);
     }
-    // Also harvest placeholder / aria-label / title (chitti_lang.js handles them
-    // when the original was in T-table; we only want misses).
+    // Also harvest placeholder / aria-label / title attributes
     ['placeholder', 'aria-label', 'title', 'alt'].forEach(function (a) {
       document.querySelectorAll('[' + a + ']').forEach(function (el) {
-        var orig = el.dataset['chitti' + a.replace(/-/g, '').replace(/^./, function (c) { return c.toUpperCase(); }) + 'Orig'] || '';
-        if (!orig) return;
-        var current = el.getAttribute(a) || '';
-        if (current !== orig) return; // already translated
-        var trim = orig.replace(/\s+/g, ' ').trim();
-        if (shouldSkip(trim)) return;
-        found[trim] = true;
+        var current = (el.getAttribute(a) || '').replace(/\s+/g, ' ').trim();
+        if (shouldSkip(current)) return;
+        found[current] = true;
       });
     });
-    return found;
+    return { strings: found, byText: nodes };
+  }
+
+  // Direct text-node override: set nodeValue without going through
+  // Chitti.lang.extend (avoids fight with page-local i18n systems that
+  // replace innerHTML and would otherwise overwrite our translation).
+  function applyDirect(byText, pairs) {
+    Object.keys(pairs).forEach(function (k) {
+      var translated = pairs[k];
+      if (!translated || translated === k) return;
+      var list = byText[k] || [];
+      list.forEach(function (n) {
+        try {
+          var raw = n.nodeValue || '';
+          var prefix = (raw.match(/^\s*/) || [''])[0];
+          var suffix = (raw.match(/\s*$/) || [''])[0];
+          n.nodeValue = prefix + translated + suffix;
+          n._chittiOrig = raw;   // mark so chitti_lang.js doesn't re-translate
+        } catch (e) {}
+      });
+    });
+    // Also patch attributes (placeholder / aria-label / title / alt)
+    ['placeholder', 'aria-label', 'title', 'alt'].forEach(function (a) {
+      document.querySelectorAll('[' + a + ']').forEach(function (el) {
+        var current = (el.getAttribute(a) || '').replace(/\s+/g, ' ').trim();
+        if (pairs[current]) {
+          try { el.setAttribute(a, pairs[current]); } catch (e) {}
+        }
+      });
+    });
   }
 
   function applyExtensions(lang, pairs) {
@@ -158,7 +183,7 @@
     try { window.Chitti.lang.extend(entries); } catch (e) {}
   }
 
-  function processBatch(strings, lang, done) {
+  function processBatch(strings, lang, byText, done) {
     var pending = strings.slice();
     var pairs = {};
     function next() {
@@ -171,7 +196,10 @@
           if (out) pairs[s] = out;
         });
       })).then(function () {
-        // Apply this batch's translations immediately so user sees progressive update
+        // Apply this batch's translations TWO ways:
+        //  1. Direct nodeValue override (wins over page-local i18n)
+        //  2. Chitti.lang.extend() so chitti_lang.js's own re-renders use it
+        applyDirect(byText, pairs);
         applyExtensions(lang, pairs);
         setTimeout(next, BATCH_DELAY_MS);
       });
@@ -181,12 +209,9 @@
 
   function runFor(lang) {
     if (lang === 'en' || !lang) return;
-    if (lang === lastLang) {
-      // re-scan after DOM changes — only pick up NEW misses
-    }
     lastLang = lang;
-    var misses = collectMisses(lang);
-    var keys = Object.keys(misses);
+    var miss = collectMisses(lang);
+    var keys = Object.keys(miss.strings);
     if (keys.length === 0) return;
     // Apply cached translations immediately (zero-latency for return visits)
     var cachedPairs = {};
@@ -196,19 +221,30 @@
       if (c) cachedPairs[k] = c;
       else remainingKeys.push(k);
     });
+    applyDirect(miss.byText, cachedPairs);
     applyExtensions(lang, cachedPairs);
     if (remainingKeys.length > 0) {
-      processBatch(remainingKeys, lang, function () { /* done */ });
+      processBatch(remainingKeys, lang, miss.byText, function () { /* done */ });
     }
   }
 
-  document.addEventListener('chitti:langchange', function (e) {
+  // Listen on BOTH document AND window because pages have different
+  // dispatch conventions:
+  //  - chitti_lang.js  → document.dispatchEvent
+  //  - chitti_medupi   → window.dispatchEvent
+  // Also debounce so multiple i18n systems can finish their pass first.
+  var debounceTimer = null;
+  function onLangChange(e) {
     var lang = (e && e.detail && e.detail.lang) ||
                (window.Chitti && window.Chitti.lang && window.Chitti.lang.current && window.Chitti.lang.current()) ||
                'en';
-    // Defer to next frame so chitti_lang.js's own translateAll has finished
-    requestAnimationFrame(function () { runFor(lang); });
-  });
+    if (debounceTimer) clearTimeout(debounceTimer);
+    // 300ms delay so page-local i18n (MedUPI's setChittiLang, etc.) finishes
+    // resetting text to English-fallback BEFORE we override with backend xlate
+    debounceTimer = setTimeout(function () { runFor(lang); }, 300);
+  }
+  document.addEventListener('chitti:langchange', onLangChange);
+  window.addEventListener('chitti:langchange', onLangChange);
 
   // Also kick on initial load if a non-English language is already active
   function initialKick() {
