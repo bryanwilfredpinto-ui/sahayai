@@ -141,7 +141,7 @@ footer a{color:var(--saffron)}
 </head>
 <body>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529k wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529l wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -632,11 +632,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529k (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529l (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529k owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529l owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -1339,7 +1339,7 @@ loadBreaking();
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529k"></script>
+<script src="chitti_a11y.js?v=20260529l"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -1349,14 +1349,14 @@ loadBreaking();
   <div style="flex:1;min-width:0">
     <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
     <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open News on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
-    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_news.html</code>
+    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;overflow-wrap:anywhere;word-break:keep-all">https://sahayai.in/chitti_news.html</code>
   </div>
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529k baked T-table + chitti_a11y.js?v=20260529k widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529k"></script>
-<script src="chitti_a11y.js?v=20260529k"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529l baked T-table + chitti_a11y.js?v=20260529l widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529l"></script>
+<script src="chitti_a11y.js?v=20260529l"></script>
 
 
 <!-- ══════════════ CHAI STALL MODE — styles ══════════════ -->

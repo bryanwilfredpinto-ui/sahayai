@@ -146,7 +146,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 </head>
 <body>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529k wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529l wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -695,7 +695,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <div id="share-qr-host" style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:inline-block" aria-label="QR code linking to Chitti MedUPI" data-i18n-aria="qr-code-linking-to-chitti-medupi"></div>
         <div style="flex:1;min-width:220px;font-size:13px;line-height:1.6">
           <div style="font-weight:800;font-size:14px;margin-bottom:6px" data-i18n="share.url_label">Or share this link:</div>
-          <code id="share-url-text" style="background:#fbf8f1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;display:inline-block;word-break:break-all">https://sahayai.in/chitti_medupi.html</code>
+          <code id="share-url-text" style="background:#fbf8f1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;display:inline-block;overflow-wrap:anywhere;word-break:keep-all">https://sahayai.in/chitti_medupi.html</code>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
             <button class="cta-saffron" onclick="copyShareLink()" data-i18n="share.copy">📋 Copy link</button>
             <button class="cta-navy" onclick="downloadShareQr()" data-i18n="share.download">💾 Save QR</button>
@@ -893,11 +893,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529k (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529l (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529k owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529l owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -2129,7 +2129,7 @@ function _renderQrInfo(info){
   let h = '<div style="padding:14px;border-radius:12px;background:rgba(14,35,68,.05);border:1px solid var(--navy);margin-bottom:10px">';
   h += '<div style="font-weight:900;font-size:14px">🔲 ' + _esc(info.heading) + '</div>';
   h += '<div style="font-size:12px;margin-top:6px;line-height:1.55">' + _esc(body) + '</div>';
-  h += '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:monospace;word-break:break-all">' + _esc(info.raw) + '</div>';
+  h += '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:monospace;overflow-wrap:anywhere;word-break:keep-all">' + _esc(info.raw) + '</div>';
   if (info.url) h += '<div style="margin-top:8px"><a target="_blank" rel="noopener noreferrer" href="' + _esc(info.url) + '" style="font-size:12px">' + (lang === 'hi' ? 'लिंक खोलें →' : 'Open link →') + '</a></div>';
   h += '</div>';
   r.innerHTML = h;
@@ -2600,7 +2600,7 @@ async function chittiAskSend() {
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529k"></script>
+<script src="chitti_a11y.js?v=20260529l"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -2610,14 +2610,14 @@ async function chittiAskSend() {
   <div style="flex:1;min-width:0">
     <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
     <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open Medupi on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
-    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;word-break:break-all">https://sahayai.in/chitti_medupi.html</code>
+    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;overflow-wrap:anywhere;word-break:keep-all">https://sahayai.in/chitti_medupi.html</code>
   </div>
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529k baked T-table + chitti_a11y.js?v=20260529k widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529k"></script>
-<script src="chitti_a11y.js?v=20260529k"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529l baked T-table + chitti_a11y.js?v=20260529l widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529l"></script>
+<script src="chitti_a11y.js?v=20260529l"></script>
 
 </body>
 </html>
