@@ -1,10 +1,10 @@
-🎖️ **World Class Chitti Shares — Commando Discipline. Zero Excuses.**
+🎖️ **World Class Chitti Stock AI — Commando Discipline. Zero Excuses.**
 
 > **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
 
-# Chitti Shares — Skills
+# Chitti Stock AI — Skills (repo: `chitti-shares`)
 
-> Bharat-themed agentic technical + fundamental analysis for Indian equities (NSE / BSE) with plain-English *Story Mode* and a Roshan composite signal. Sticky `NOT SEBI REGISTERED` bar on every page.
+> Bharat-themed agentic technical + fundamental analysis for Indian equities (NSE / BSE) with plain-English *Story Mode* and **Roshan Indicator** (Sire's proprietary composite). Sticky `NOT SEBI REGISTERED` bar on every page. Angel One / Zerodha-class skeleton, retail-investor UX.
 
 ---
 
@@ -43,6 +43,30 @@
 | 18 | Yahoo BLOCKED from Railway (local-dev fallback only) | ✅ | CTO | 2026-05-15 |
 | 19 | DeepSeek → Claude → Gemini Layer-5 fallback chain | ⬜ | — | — |
 | 20 | Roshan composite directional accuracy dashboard | ⬜ | — | — |
+| 21 | Chitti Stock AI hero card (Vaani-style Roshan call on Calls tab) | ✅ | CTO | 2026-05-29 |
+| 22 | Indicator-name + ticker English protection in translation runtime (RSI / MACD / EMA / Bollinger / Roshan / RELIANCE → stay English in Telugu/Bengali/Hindi UI) | ✅ | CTO | 2026-05-29 |
+| 23 | Calls / Story Mode explanation translates to user's language (26 langs) | ✅ | CTO | 2026-05-29 |
+| 24 | 9-Layer Agentic Stack (Agent · README · SKILLS · SOP · Quality · Guardrails · Observability · Audit · Swarm) documented in README §9-Layer | ✅ | CTO | 2026-05-29 |
+| 25 | Swarm Intelligence — News + Technical + Macro + Risk + Fundamentals sub-agents → weighted Combine verdict | 🟡 | CTO | 2026-05-29 — composer scaffolded, weights tunable in `services/agent_runtime.py::compose_verdict` |
+
+---
+
+## Translation contract (Sire 2026-05-29 — LOCKED)
+
+When user picks Telugu / Bengali / Tamil / any of 26 languages:
+
+| Item | Stays English | Translates |
+|---|:---:|:---:|
+| Indicator names — RSI, MACD, EMA, SMA, Bollinger, Roshan, Supertrend, Ichimoku, ADX, VWAP, ATR, Stochastic, … | ✅ | — |
+| Stock tickers — RELIANCE, TCS, INFY, HDFCBANK, … | ✅ | — |
+| Brand names — Chitti, Vaani, SEBI, NSE, BSE, NPPA, Angel, Zerodha | ✅ | — |
+| BUY / SELL / SHORT / HOLD / LONG / EXIT / SL / TP | ✅ | — |
+| Verdict explanation — "Strong upward momentum with RSI above 60 and MACD bullish crossover" | — | ✅ |
+| Story Mode narrative | — | ✅ |
+| UI labels (Universe, Timeframe, Target, Stop Loss, Confidence, etc.) | — | ✅ |
+| Disclaimer text (`Not SEBI Registered`, `Educational tool only`) | — | ✅ |
+
+**Enforced by**: `chitti_lang_runtime.js` skip-list (`brands` + `indicators` + ticker regex + BUY/SELL regex) + `translate="no"` attribute on hero card indicator chips.
 
 ---
 
@@ -74,4 +98,4 @@ English + 9 Indian languages — Story Mode honours user's chosen language end-t
 
 ---
 
-> **World Class Chitti Shares — Commando Discipline. Zero Excuses.**
+> **World Class Chitti Stock AI — Commando Discipline. Zero Excuses.**

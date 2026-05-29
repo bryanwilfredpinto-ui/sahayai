@@ -21,7 +21,7 @@
 
   var ENDPOINT = (window.CHITTI_TRANSLATE_API ||
                   'https://chitti-medupi-api-production.up.railway.app/api/health-file/translate');
-  var CACHE_PREFIX = 'chitti_xlate_v2_20260529';
+  var CACHE_PREFIX = 'chitti_xlate_v2_20260529i';
   var SESSION_CAP = 200;         // hard cap per session to prevent runaway LLM calls
   var BATCH_SIZE = 8;            // strings per fetch round
   var BATCH_DELAY_MS = 250;      // wait between batches
@@ -64,9 +64,17 @@
     if (/^https?:\/\//.test(t)) return true;
     if (/^[A-Z_]{2,}$/.test(t)) return true; // CONSTANT_LIKE
     if (/@/.test(t) && /\./.test(t)) return true; // email-ish
-    // Brand / tech keywords that should stay
-    var brands = /^(Chitti|Vaani|MedUPI|YouTube|WhatsApp|UPI|SMS|GST|RBI|SEBI|NPPA|FSSAI|RERA|DPDP|BNS|BNSS|BSA|GitHub|Railway|Turso|DeepSeek|Gemini|Claude|Bhashini|ISL|API|HTML|CSS|JS|JSON)$/;
+    // Brand / tech keywords that should stay in English everywhere
+    var brands = /^(Chitti|Vaani|MedUPI|YouTube|WhatsApp|UPI|SMS|GST|RBI|SEBI|NPPA|FSSAI|RERA|DPDP|BNS|BNSS|BSA|GitHub|Railway|Turso|DeepSeek|Gemini|Claude|Bhashini|ISL|API|HTML|CSS|JS|JSON|PDF|QR|NSE|BSE|LIVE|HD|AI|HD|FII|DII)$/;
     if (brands.test(t)) return true;
+    // Technical analysis indicator names (Chitti Technical · Sire's call: indicator
+    // names stay English across all 26 languages — translation applies to descriptions/calls only)
+    var indicators = /^(RSI|MACD|EMA|SMA|WMA|DEMA|TEMA|HMA|KAMA|TRIX|ATR|ADX|DMI|DI\+|DI-|CCI|ROC|Stoch|StochRSI|MFI|OBV|VWAP|VWMA|Bollinger|BB|Donchian|Keltner|Ichimoku|PSAR|SAR|Supertrend|Williams|Aroon|MOM|Heikin[ -]?Ashi|Pivot|Fibonacci|Fib|Camarilla|Woodie|Roshan|Story Mode|Buffett|Munger|Graham|Kedia|RKD|Nifty|Sensex|F&O)$/i;
+    if (indicators.test(t)) return true;
+    // Stock ticker pattern — 3-12 uppercase letters / digits
+    if (/^[A-Z][A-Z0-9&-]{2,11}$/.test(t)) return true;
+    // BUY / SELL / HOLD English commands (handled separately as full UI labels)
+    if (/^(BUY|SELL|HOLD|LONG|SHORT|EXIT|ENTRY|SL|TP|TARGET|STOPLOSS)$/i.test(t)) return true;
     // Contains mostly non-Latin (already in some Indian lang, or symbol-only)
     var latinChars = (t.match(/[A-Za-z]/g) || []).length;
     if (latinChars < 2) return true;

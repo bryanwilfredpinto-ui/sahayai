@@ -1,12 +1,14 @@
-🎖️ **World Class Chitti Shares — Commando Discipline. Zero Excuses.**
+🎖️ **World Class Chitti Stock AI — Commando Discipline. Zero Excuses.**
 
 > **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
 
-> Bharat-themed agentic Technical + Fundamentals · 43 indicators · Roshan composite · Story Mode · sticky `NOT SEBI REGISTERED` bar.
+> Bharat-themed agentic Technical + Fundamentals · **Roshan Indicator (Sire's proprietary composite)** · 43 indicators · Story Mode · sticky `NOT SEBI REGISTERED` bar · Angel One / Zerodha-class scanner skeleton, retail-investor UX.
+
+**Product name** — Chitti Stock AI (front-end label on `chitti_complete_technical.html` since 2026-05-29). Repo / API still named `chitti-shares` for historical continuity.
 
 | Field | Value |
 |---|---|
-| Live URL — Technical | https://sahayai.in/chitti_complete_technical.html |
+| Live URL — Chitti Stock AI (Technical) | https://sahayai.in/chitti_complete_technical.html |
 | Live URL — Fundamentals | https://sahayai.in/chitti_fundamentals.html |
 | Health | https://chitti-shares-api-production.up.railway.app/health |
 | Status | 🟢 GREEN — `chat_with_tools` rail-gated post commit #2 |
@@ -126,3 +128,95 @@ TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID                                 (optional)
 - **Investor lens always declared** on every fundamentals verdict.
 - **iloc[-2] only** for the last *closed* candle in the Roshan rule; never `[-1]` (in-progress).
 - **Free-tier sources only** — no Bloomberg / Refinitiv / Tickertape API.
+
+---
+
+## 🛡️ Chitti Stock AI — 9-Layer Architecture (Sire 2026-05-29)
+
+Every Chitti — including Chitti Stock AI — runs on the **same 9-layer agentic stack**. This section is the canonical reference for Stock AI; other Chitti docs cross-link here.
+
+### Layer 1 · Agent
+
+- **Identity** — "Chitti Stock AI is your patient market companion. It explains, it never advises."
+- **Role** — Reads NSE / BSE candles + fundamentals + news → composes Roshan Indicator + 43 indicators → narrates Story Mode in user's language.
+- **Boundaries** — `chat_with_tools` rail-gated; refuses buy/sell prescriptions; routes every side-effecting call through `chittiConfirmAndDo()`.
+- **Code** — `backend/main.py` (`/api/agent/technical/ask`), `backend/services/agent_runtime.py`, `backend/services/agent_tools.py`.
+
+### Layer 2 · README.MD
+
+- **Purpose** — One-page entry point: what it does · where it lives · who runs it.
+- **You are reading it.** Keep ≤ 200 lines. Detail belongs in `ARCHITECTURE.md` / `API.md` / `CHITTI_TECHNICAL_MASTER_SPEC.md`.
+
+### Layer 3 · SKILLS.MD
+
+- **Purpose** — Capability ledger. Every shippable feature flagged ✅ / 🟡 / ⬜ with Tested-By + Date.
+- **Spec** — Roshan composite, 43 indicators, Story Mode, ATR trade plans, 9-profession news lens, voice readout 26 langs, per-response widget.
+- **Code reference** — [`SKILLS.md`](SKILLS.md).
+
+### Layer 4 · SOP.MD
+
+- **Purpose** — Operating procedure: how to scan, when to refresh, what triggers escalation.
+- **Critical SOP** — `iloc[-2]` rule, screener.in quarterly refresh cadence, Angel 15:30 IST close-of-session cron, DeepSeek quota tracking.
+- **Code reference** — [`SOP.md`](SOP.md).
+
+### Layer 5 · Quality Measures
+
+| Metric | Target | Measured by |
+|---|---|---|
+| Accuracy — Roshan directional correctness over N days | ≥ 60% | `judge_eval/roshan_directional_*.json` weekly |
+| Speed — `/api/scan/roshan` P95 latency | < 2.5 s | `chitti_obs` middleware → `_chitti_timing_mw` |
+| Hallucination rate — Story Mode fabricates a stock event | 0% | judge audit on every Story Mode output (sample N=50/wk) |
+| Reliability — `/health` uptime | ≥ 99.5% / 30-day | Layer-1 self-ping cron in `chitti-founder` |
+| User satisfaction — 👍 / (👍+👎) on response widget | ≥ 85% | `feedback-widget.js` → `/api/feedback/collect` |
+| Safety — % responses with SEBI disclaimer present | 100% | Compliance INJECT in `after_model` hook |
+| Cost — DeepSeek spend per active user / day | ≤ ₹2.0 | `usage_tracker.py` daily roll-up |
+
+### Layer 6 · Guardrails
+
+**Hard refusals** — non-negotiable, baked into the rail-gate:
+
+1. **Never guarantee profits** — Compliance INJECT scrubs phrases like "you will make X%", "this is going to ₹Y", "100% sure", "no risk".
+2. **Never leak user data** — watchlist / call history / preferences scoped to JWT subject; `agent_tools.py` refuses cross-user queries.
+3. **Never auto-trade** — no broker integration, no order routing. EXPLAIN only.
+4. **Never bypass SEBI bar** — every response surface carries `NOT SEBI REGISTERED` banner OR per-section warning (see `chitti_complete_technical.html` line ~5664).
+5. **Never claim SEBI registration** — Compliance INJECT scrubs "registered advisor", "SEBI certified", "RIA".
+6. **Never recommend leverage / F&O for beginners** — Story Mode prefixes risk disclaimer when leveraged products appear.
+7. **Always mention risk** — every Roshan call ends with "Past indicator triggers do not predict future returns."
+8. **Golden Rule** — every side-effecting action (watchlist save, alert create, story-mode subscription) gates on `chittiConfirmAndDo()`; SAHAYAI_MASTER §2g.
+
+### Layer 7 · Observability
+
+| Signal | Where it lands | TTL |
+|---|---|---|
+| Request logs (path, status, latency, JWT sub, cost) | `_chitti_timing_mw` → Turso `shares.audit_log` | 90 d |
+| Error logs (stack + request_id) | Sentry-compatible JSON to stdout → Railway log | 30 d |
+| DeepSeek cost per call | `usage_tracker.py` → `shares.quota` | 365 d |
+| Speed buckets (P50/P95/P99 per endpoint) | `chitti_obs` rollup, hourly | 30 d |
+| Workflow trace — agentic tool turns | `record_tool_call(phase, args, result)` → `shares.tool_audit` | 90 d |
+| 👍 / 👎 per response box | `/api/feedback/collect` → `shares.feedback` | 365 d |
+| Roshan call → realised P&L (back-test) | `judge_eval/roshan_*.json` | permanent |
+
+### Layer 8 · Audit
+
+- **Permanent history** of who-asked-what-when, immutable, indexed by user JWT sub + day.
+- **What's logged** — input prompt (hashed), tool calls fired, retrieved data sources, final response, compliance INJECT applied (y/n), 👍/👎 received.
+- **Where it lives** — Turso `shares.audit_log` (Mumbai region). Replicated nightly to `shares.audit_log_archive` (cold).
+- **Retention** — 90 d hot, 7 yr cold (matches SEBI record-keeping recommendation for advisory adjacent products even though we are NOT SEBI registered — defensive posture).
+- **Access** — Sire-only via `/api/admin/audit/*` gated by `ADMIN_MOBILE` env var.
+
+### Layer 9 · Swarm Intelligence
+
+Chitti Stock AI composes verdicts from **multiple sub-agents** then combines:
+
+| Sub-agent | Job | Code |
+|---|---|---|
+| 📰 News Agent | Pulls Moneycontrol / LiveMint / BSE / NSE RSS for the stock; surfaces sentiment-tagged top 3 stories | `services/news_client.py` |
+| 📊 Technical Agent | Runs Roshan composite + 43 indicators; outputs directional pill + confidence | `services/technical/*.py` + `services/indicators/*.py` |
+| 🌍 Macro Agent | Layers Nifty trend + sector strength + FII/DII flow context | `services/strength.py` + `services/scanner.py` |
+| ⚠️ Risk Agent | ATR-based stop loss + target + R:R suggestion + drawdown guard | `services/intraday_candles.py::_buildTradeSetupFromATR` |
+| 🏛️ Fundamentals Agent | screener.in scorecard A+ to F + 8-quarter results context | `services/screener_client.py` + `services/scorecard.py` |
+| 🧠 Combine | Weighted ensemble (Roshan 40% / News 15% / Macro 15% / Risk 15% / Fundamentals 15%) → final Stock AI verdict | `services/agent_runtime.py::compose_verdict` |
+
+**Swarm learning** (SAHAYAI_MASTER §2f) — across all Stock AI users, 👍/👎 reversals on identical calls feed a daily pattern-detect job; ≥ 100 corroborating confirmations promote a tweak to `skills/*.md` for human review.
+
+---

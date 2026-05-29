@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!-- Frontend for chitti-shares/ (backend: chitti-shares-api) -->
 <html lang="en">
 <head>
@@ -531,7 +531,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529h wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529i wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -579,7 +579,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
   <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n-aria="switch-to-chitti-vaani" data-i18n="a11y.switch_vaani">🎙️ Vaani</a>
   <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard" data-i18n="a11y.switch_upi">🛡️ UPI Guard</a>
   <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner" data-i18n="a11y.switch_scanner">📷 Scanner</a>
-  <!-- 2026-05-27: EN/हिं toggle removed — chitti_lang.js?v=20260529h dropdown (top-right) is the sole 26-lang control. -->
+  <!-- 2026-05-27: EN/हिं toggle removed — chitti_lang.js?v=20260529i dropdown (top-right) is the sole 26-lang control. -->
 </div>
 <div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite">🎬 DEMO MODE — guided walk-through. Tap Skip to exit.</div>
 
@@ -596,8 +596,8 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
       </svg>
     </div>
     <div>
-      <div style="font-weight:900;font-size:22px;line-height:1.1">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Technical</span></div>
-      <div style="font-size:11px;opacity:.85" data-i18n="tagline.bharat">🇮🇳 Bharat ka Apna Chitti</div>
+      <div style="font-weight:900;font-size:22px;line-height:1.1">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Stock AI</span></div>
+      <div style="font-size:11px;opacity:.85" data-i18n="tagline.bharat">🇮🇳 Bharat ka Apna Chitti · Roshan Indicator · 43 Indicators</div>
     </div>
   </div>
   <div id="mkt-status" class="mkt-pill mkt-closed" aria-live="polite">
@@ -1918,11 +1918,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529h (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529i (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529h owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529i owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -5626,6 +5626,171 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 <div id="tab-calls" class="page active" role="tabpanel" style="min-height:100vh">
   <div class="page-wrap">
 
+    <!-- ═══════════════════════ CHITTI STOCK AI — ROSHAN HERO (Vaani-style, Sire 2026-05-29) ═══════════════════════ -->
+    <!-- Hero card — Vaani-style action card. Indicator names (Roshan / RSI / MACD) + tickers stay English. Verdict + explanation translate. -->
+    <div class="section-card chitti-response" data-chitti-response="roshan-hero" data-chitti-section="Chitti Stock AI — Today's Roshan Call" style="padding:18px;margin-bottom:14px;background:linear-gradient(135deg,#FFF7EC 0%,#FFE6CC 100%);border:2px solid #FF9933;border-radius:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#CC5500;text-transform:uppercase">⭐ Chitti Stock AI · <span translate="no">Roshan Indicator</span></div>
+          <div style="font-size:20px;font-weight:900;margin-top:2px;color:#000080">Today's Top Call</div>
+          <div style="font-size:12px;color:#555;margin-top:2px" data-i18n="roshan_hero_sub">Sire's proprietary composite — multi-timeframe trend + momentum + volume confluence. Reads aloud in your language.</div>
+        </div>
+        <div style="text-align:right;min-width:140px">
+          <div id="rh-pill" style="display:inline-block;padding:8px 16px;border-radius:24px;background:#138808;color:#fff;font-weight:900;font-size:18px;letter-spacing:.04em">— · LOADING</div>
+          <div id="rh-tf" style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.06em">Daily · last-closed candle</div>
+        </div>
+      </div>
+
+      <!-- Universe + Timeframe + Run -->
+      <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;margin-bottom:12px;align-items:end">
+        <div>
+          <label style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.04em" for="rh-univ" data-i18n="universe">Universe</label>
+          <select id="rh-univ" aria-label="Universe for Roshan hero call" style="width:100%;padding:9px 10px;border-radius:8px;font-weight:700;min-height:44px;border:1px solid #FF9933;background:#fff">
+            <option value="nifty50">Nifty 50 · 50</option>
+            <option value="largecap">Largecap · 100</option>
+            <option value="midcap">Midcap · 150</option>
+            <option value="smallcap">Smallcap · 250</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.04em" for="rh-tf-sel" data-i18n="timeframe">Timeframe</label>
+          <select id="rh-tf-sel" aria-label="Timeframe for Roshan hero call" style="width:100%;padding:9px 10px;border-radius:8px;font-weight:700;min-height:44px;border:1px solid #FF9933;background:#fff">
+            <option value="Daily" selected>Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </div>
+        <button class="scan-btn" onclick="runRoshanHero()" aria-label="Run Roshan hero scan now" style="padding:0 16px;font-size:14px;font-weight:800;min-height:48px;min-width:140px;background:#FF9933;color:#fff;border:0;border-radius:10px;cursor:pointer">⚡ <span data-i18n="run_roshan">Run Roshan</span></button>
+        <button class="sp-btn" onclick="speakRoshanHero()" aria-label="Hear Roshan call aloud" style="padding:0 14px;font-size:18px;min-height:48px;min-width:56px;background:#000080;color:#fff;border:0;border-radius:10px;cursor:pointer" data-i18n="tag">🔊</button>
+      </div>
+
+      <!-- Verdict body — Stock ticker + indicator name English, explanation translates -->
+      <div id="rh-body" style="background:#fff;border:1px solid #FF9933;border-radius:10px;padding:14px;min-height:120px">
+        <div style="font-size:12px;color:#999;text-align:center;padding:24px 0" data-i18n="roshan_hero_empty">⚡ Tap Run Roshan to see today's top BUY / SHORT signal — with Entry · Stop Loss · Target · Confidence · plain-language explanation.</div>
+      </div>
+
+      <!-- Sub-indicator chips (always English names) -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;font-size:11px">
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">RSI</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">MACD</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">EMA 20/50/200</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">Bollinger Bands</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">ADX</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">VWAP</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">Supertrend</span>
+        <span style="padding:4px 10px;background:#FFE6CC;color:#CC5500;border-radius:12px;font-weight:700" translate="no">Ichimoku</span>
+      </div>
+
+      <!-- SEBI per-section warning (mandatory on every call surface) -->
+      <div style="font-size:11px;color:#CC0000;background:#FFF1D6;border:1px solid #FF9933;border-radius:8px;padding:8px 12px;line-height:1.4;margin-top:10px">
+        ⚠️ <strong>NOT SEBI REGISTERED.</strong> <span data-i18n="roshan_hero_sebi">Educational composite — Roshan blends indicators with momentum + volume confluence. Past triggers do not predict future returns.</span> <a href="#" onclick="event.preventDefault();openSebiModal();" style="color:#000080;font-weight:700" data-i18n="read_full_disclaimer">Read full disclaimer</a>
+      </div>
+    </div>
+
+    <script>
+    // Roshan hero — calls the existing universe scan endpoint and picks the top
+    // composite verdict. Falls back to honest "no signal" rather than fabricating.
+    // Indicator names + stock tickers are kept English by chitti_lang_runtime.js skip-list.
+    (function () {
+      var LAST = null;
+      function pill(verdict, conf) {
+        var v = (verdict || '').toUpperCase();
+        var bg = '#666', label = v + ' · ' + (conf || 0) + '%';
+        if (/BUY|LONG/.test(v)) bg = '#138808';
+        else if (/SHORT|SELL/.test(v)) bg = '#CC0000';
+        else if (/HOLD|NEUTRAL/.test(v)) bg = '#FF9933';
+        var el = document.getElementById('rh-pill');
+        if (el) { el.textContent = label; el.style.background = bg; }
+      }
+      function render(card) {
+        var b = document.getElementById('rh-body');
+        if (!b) return;
+        if (!card) {
+          b.innerHTML = '<div style="font-size:13px;color:#666;text-align:center;padding:20px 0">No composite signal cleared the Roshan threshold for the selected universe + timeframe. Try a different universe or come back after market close.</div>';
+          return;
+        }
+        var sym = card.symbol || card.ticker || '—';
+        var verdict = (card.verdict || card.call || 'HOLD').toUpperCase();
+        var entry = card.entry || card.cmp || '—';
+        var sl = card.sl || card.stop_loss || '—';
+        var t1 = card.t1 || card.target1 || '—';
+        var t2 = card.t2 || card.target2 || '';
+        var conf = card.confidence || card.conf || 0;
+        var why = card.story || card.explanation || card.why || '';
+        b.innerHTML =
+          '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px">' +
+            '<span translate="no" style="font-size:22px;font-weight:900;color:#000080">' + sym + '</span>' +
+            '<span translate="no" style="font-size:14px;font-weight:800;color:' + (/BUY|LONG/.test(verdict) ? '#138808' : /SHORT|SELL/.test(verdict) ? '#CC0000' : '#FF9933') + '">' + verdict + '</span>' +
+            '<span style="font-size:12px;color:#666">Roshan ' + conf + '%</span>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:10px">' +
+            '<div><div style="font-size:10px;color:#666;text-transform:uppercase" data-i18n="entry">Entry</div><div translate="no" style="font-weight:800">₹' + entry + '</div></div>' +
+            '<div><div style="font-size:10px;color:#666;text-transform:uppercase" data-i18n="stop_loss">Stop Loss</div><div translate="no" style="font-weight:800;color:#CC0000">₹' + sl + '</div></div>' +
+            '<div><div style="font-size:10px;color:#666;text-transform:uppercase" data-i18n="target_1">Target 1</div><div translate="no" style="font-weight:800;color:#138808">₹' + t1 + '</div></div>' +
+            (t2 ? '<div><div style="font-size:10px;color:#666;text-transform:uppercase" data-i18n="target_2">Target 2</div><div translate="no" style="font-weight:800;color:#138808">₹' + t2 + '</div></div>' : '') +
+          '</div>' +
+          (why ? '<div style="font-size:13px;color:#333;line-height:1.5;border-top:1px dashed #FF9933;padding-top:8px">' + why + '</div>' : '');
+        pill(verdict, conf);
+      }
+      window.runRoshanHero = async function () {
+        var univ = (document.getElementById('rh-univ') || {}).value || 'nifty50';
+        var tf = (document.getElementById('rh-tf-sel') || {}).value || 'Daily';
+        var tfEl = document.getElementById('rh-tf');
+        if (tfEl) tfEl.textContent = tf + ' · last-closed candle';
+        pill('LOADING', 0);
+        try {
+          if (typeof runCallsScanRich === 'function') {
+            var sel = document.getElementById('cg-univ'); if (sel) sel.value = univ;
+            var stf = document.getElementById('cg-tf');   if (stf) stf.value = tf;
+            await runCallsScanRich();
+          }
+          var top = null;
+          if (window._chittiRichCalls && Array.isArray(window._chittiRichCalls) && window._chittiRichCalls.length) {
+            var s = window._chittiRichCalls[0];
+            var setup = s.setup || {};
+            top = {
+              symbol: s.sym || s.symbolFull,
+              verdict: s.direction || 'HOLD',
+              entry: setup.entry || '',
+              sl: setup.sl || '',
+              t1: setup.t1 || setup.target1 || '',
+              t2: setup.t2 || setup.target2 || '',
+              confidence: typeof s.conf === 'string' ? (s.conf.match(/\d+/) ? +s.conf.match(/\d+/)[0] : 0) : (s.conf || 0),
+              story: s.story || ''
+            };
+          }
+          LAST = top;
+          render(top);
+        } catch (e) {
+          pill('ERROR', 0);
+          var b = document.getElementById('rh-body');
+          if (b) b.innerHTML = '<div style="font-size:12px;color:#CC0000;text-align:center;padding:20px 0">Could not reach Chitti Stock AI right now. Please try again in a moment.</div>';
+        }
+      };
+      window.speakRoshanHero = function () {
+        var msg;
+        if (!LAST) { msg = 'No Roshan call yet. Tap Run Roshan to scan.'; }
+        else {
+          var v = (LAST.verdict || LAST.call || 'hold').toString();
+          msg = 'Chitti Stock AI Roshan signal. ' + (LAST.symbol || LAST.ticker || '') +
+                '. ' + v + '. Entry ' + (LAST.entry || LAST.cmp || '') +
+                '. Stop loss ' + (LAST.sl || LAST.stop_loss || '') +
+                '. Target ' + (LAST.t1 || LAST.target1 || '') + '. Confidence ' +
+                (LAST.confidence || LAST.conf || 0) + ' percent.';
+        }
+        try {
+          if (window.speechSynthesis) {
+            var u = new SpeechSynthesisUtterance(msg);
+            u.lang = (document.documentElement.lang || 'en') + '-IN';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+          }
+        } catch (e) {}
+      };
+    })();
+    </script>
+    <!-- ═══════════════════════ /CHITTI STOCK AI HERO ═══════════════════════ -->
+
     <!-- ═══════════════════════ CALLS GENERATOR — Sire's Priority-1 (2026-05-27) ═══════════════════════ -->
     <div class="section-card chitti-response" data-chitti-response="calls-generator" data-chitti-section="Calls Generator" style="padding:16px;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
@@ -5811,7 +5976,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529h"></script>
+<script src="chitti_a11y.js?v=20260529i"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -5826,9 +5991,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529h baked T-table + chitti_a11y.js?v=20260529h widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529h"></script>
-<script src="chitti_a11y.js?v=20260529h"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529i baked T-table + chitti_a11y.js?v=20260529i widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529i"></script>
+<script src="chitti_a11y.js?v=20260529i"></script>
 
 </body>
 </html>
