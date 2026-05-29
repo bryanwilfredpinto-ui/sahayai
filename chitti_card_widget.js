@@ -227,10 +227,14 @@
     // Skip if the card has no label-like child (prevents widget bars on
     // wrapper containers that happen to match the selector).
     if (!card.querySelector(LABEL_SELECTOR)) return;
-    // Skip if feedback-widget.js already attached its own bar to this element
-    // (data-chitti-response boxes get the per-response bar — don't double).
-    if (card.querySelector('.chitti-feedback-bar, .pro-card-widget, .chitti-card-widget')) return;
-    if (card.hasAttribute('data-chitti-response')) return;
+    // Skip ONLY if our own widget bar is already there (idempotent).
+    // Previous behavior also skipped data-chitti-response elements — but
+    // feedback-widget.js often fails to render visibly on those (Sire
+    // confirmed 2026-05-29: cards on Voice Factory + Vaani 'Recent' /
+    // 'Reminder channels' had no usable widget). Always attach ours; if
+    // feedback-widget.js later adds its own bar, both coexist (better than
+    // no feedback path at all).
+    if (card.querySelector('.chitti-card-widget, .pro-card-widget')) return;
 
     var bar = document.createElement('span');
     bar.className = 'chitti-card-widget';
