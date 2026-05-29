@@ -632,7 +632,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529v wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529w wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -2041,11 +2041,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529v (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529w (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529v owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529w owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -6040,6 +6040,76 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
         }
       }
 
+      // Re-shape backend response (timeframes.{TF}.{Indicator}.{value/signal/note})
+      // into the flat shape render() needs.
+      function reshape(raw, tf, sym) {
+        var tfData = (raw && raw.timeframes && raw.timeframes[tf]) || {};
+        var pick = function (key) { return tfData[key] || {}; };
+        var v = function (key) { var x = pick(key); return x.value; };
+        var s = function (key) { var x = pick(key); return x.signal; };
+
+        var hasAnyValue = Object.keys(tfData).some(function (k) {
+          var c = tfData[k]; return c && c.value !== null && c.value !== undefined;
+        });
+
+        var roshanCell = pick('Roshan Indicator');
+        var roshanSignal = roshanCell.signal || 'WAIT';
+        var roshanVal = typeof roshanCell.value === 'number' ? roshanCell.value : null;
+
+        // Tally signals for overall verdict + confidence
+        var buy = 0, sell = 0, hold = 0;
+        Object.keys(tfData).forEach(function (k) {
+          var sig = (tfData[k] && tfData[k].signal) || '';
+          if (sig === 'BUY' || sig === 'LONG')  buy++;
+          else if (sig === 'SELL' || sig === 'SHORT') sell++;
+          else if (sig === 'HOLD' || sig === 'NEUTRAL') hold++;
+        });
+        var total = buy + sell + hold;
+        var verdict = 'HOLD', conf = 0;
+        if (total > 0) {
+          conf = Math.round(Math.max(buy, sell, hold) * 100 / total);
+          verdict = (buy >= sell && buy >= hold) ? 'BUY' : (sell >= buy && sell >= hold) ? 'SHORT' : 'HOLD';
+        }
+
+        var inds = {
+          rsi:         v('RSI'),
+          macd_signal: s('MACD') || (pick('MACD').note || '').slice(0, 28),
+          ema_20:      v('EMA(20)') || v('SMA(20)'),
+          ema_50:      v('EMA(50)') || v('SMA(50)'),
+          ema_200:     v('EMA(200)') || v('SMA(200)'),
+          bb_state:    s('Bollinger Bands') || (pick('Bollinger Bands').note || '').slice(0, 24),
+          adx:         v('ADX'),
+          vol_state:   s('OBV') || s('Force Index') || s('Chaikin Money Flow') || (pick('OBV').note || '').slice(0, 24),
+          vwap:        v('VWAP'),
+          atr:         v('ATR'),
+          supertrend:  s('Supertrend') || (pick('Supertrend').note || '').slice(0, 24),
+          roshan:      roshanVal != null ? roshanVal : roshanSignal,
+        };
+
+        // Pros / Cons — every BUY signal = pro, every SELL/SHORT = con
+        var pros = [], cons = [];
+        Object.keys(tfData).forEach(function (k) {
+          var c = tfData[k]; if (!c) return;
+          var note = c.note || '';
+          if (c.signal === 'BUY' || c.signal === 'LONG') pros.push(k + (note ? ' — ' + note : ''));
+          else if (c.signal === 'SELL' || c.signal === 'SHORT') cons.push(k + (note ? ' — ' + note : ''));
+        });
+
+        var explanation = '';
+        if (!hasAnyValue) {
+          explanation = '<strong style="color:#CC0000">Data feed is warming up.</strong> Chitti hit the analysis endpoint but every indicator returned <em>insufficient history</em> — the Angel SmartAPI candle feed has not loaded OHLC bars for ' + sym + ' yet. Sire has been notified; try again in a few minutes, or run a Roshan universe scan from the Scanner tab.';
+        } else {
+          explanation = 'Chitti scanned ' + Object.keys(tfData).length + ' indicators on ' + sym + ' (' + tf + '). Roshan: <strong>' + roshanSignal + '</strong>. ' +
+                        'Signal tally: ' + buy + ' BUY · ' + sell + ' SELL · ' + hold + ' HOLD.';
+        }
+
+        return {
+          symbol: sym, timeframe: tf, verdict: verdict, confidence: conf,
+          indicators: inds, pros: pros, cons: cons,
+          explanation: explanation, data_ok: hasAnyValue,
+        };
+      }
+
       window.askChittiAnalyze = async function () {
         var sym = (document.getElementById('ask-sym') || {}).value || '';
         var tf  = (document.getElementById('ask-tf')  || {}).value || 'Daily';
@@ -6053,20 +6123,12 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
         var v = document.getElementById('scrn-verdict');
         if (v) { v.textContent = 'ANALYSING…'; v.style.background = '#eee'; v.style.color = '#666'; v.style.border = '2px solid #ddd'; }
         try {
-          // Try the agentic technical-analysis endpoint first; if that's not
-          // wired yet, fall back to the per-stock indicator endpoint that
-          // already exists in this build. Verification Agent in the backend
-          // returns honest refusal if data is missing.
-          var url = API + '/api/technical/analyze?symbol=NSE:' + encodeURIComponent(sym) + '&timeframe=' + encodeURIComponent(tf);
+          // Use the correct path-parameter URL: /api/technical/{symbol}/analyze
+          var url = API + '/api/technical/' + encodeURIComponent('NSE:' + sym) + '/analyze?timeframe=' + encodeURIComponent(tf);
           var r = await fetch(url);
-          if (!r.ok) {
-            // Fall back to existing /api/technical endpoint shape
-            url = API + '/api/technical?symbol=NSE:' + encodeURIComponent(sym) + '&timeframe=' + encodeURIComponent(tf);
-            r = await fetch(url);
-          }
           if (!r.ok) throw new Error('HTTP ' + r.status);
-          var data = await r.json();
-          render({ symbol: sym, timeframe: tf, ...data });
+          var raw = await r.json();
+          render(reshape(raw, tf, sym));
         } catch (e) {
           honestFailure('Chitti cannot reach the analysis service right now. Please try again in a moment.');
         }
@@ -6388,7 +6450,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529v"></script>
+<script src="chitti_a11y.js?v=20260529w"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6403,9 +6465,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529v baked T-table + chitti_a11y.js?v=20260529v widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529v"></script>
-<script src="chitti_a11y.js?v=20260529v"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529w baked T-table + chitti_a11y.js?v=20260529w widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529w"></script>
+<script src="chitti_a11y.js?v=20260529w"></script>
 
 </body>
 </html>
