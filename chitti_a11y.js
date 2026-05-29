@@ -172,6 +172,33 @@
     } catch (e) { /* honest skip */ }
   })();
 
+  // ── chitti_lang_runtime.js auto-loader (Sire 2026-05-29) ──
+  // Runtime LLM translation fallback. When chitti_lang.js's baked T-table
+  // misses a string, this substrate POSTs it to the backend translate
+  // endpoint (Gemini 2.5 Flash-Lite), caches in localStorage, and re-extends
+  // the T-table — so every untranslated UI string auto-translates on the fly.
+  // Bengali / Tamil / Punjabi / etc. users see every word in their language,
+  // not just the baked 3,681 keys. Opt-out per page via:
+  //   <meta name="chitti-lang-runtime" content="off">
+  (function injectChittiLangRuntime() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-lang-runtime"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_lang_runtime.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_lang_runtime.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
   // ── chitti_isl.js auto-loader (Sire 2026-05-27, fixes batch-cert) ──
   // chitti_2wheeler, chitti_4wheeler, chitti_fashion + a few admin pages
   // load a11y + feedback-widget but not chitti_isl.js. ISL plugin is one
