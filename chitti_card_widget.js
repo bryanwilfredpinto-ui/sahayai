@@ -29,10 +29,42 @@
   var disableMeta = document.querySelector('meta[name="chitti-card-disable"]');
   if (disableMeta && /^on$/i.test(disableMeta.getAttribute('content') || '')) return;
 
-  var DEFAULT_SELECTOR =
-    '.pro-card, .scan-action, .feature-card, .action-card, [data-chitti-card]';
+  // Universal selector — covers every known card pattern across all 18
+  // Chitti pages (per CTO_CHITTI_AUDIT_2026-05-29.md survey).
+  // Class fragments that legitimately mark a feature card. Children of cards
+  // (.foo-card-lbl, .foo-card-title etc.) are filtered out by structural
+  // check below — only the parent card gets the widget.
+  var DEFAULT_SELECTOR = [
+    '.pro-card', '.scan-action', '.feature-card', '.action-card',
+    '[data-chitti-card]',
+    '.scheme-card', '.act-card', '.kv-card', '.cat-card', '.med-card',
+    '.art-card', '.section-card', '.rule-card', '.sample-card',
+    '.cap-card', '.course-card',
+    '.cv-card', '.ind-card', '.insight-card', '.learn-card', '.metric-card',
+    '.scan-card', '.coming-soon-card',
+    '.sds-card', '.sds-health-card', '.mb-soon-card', '.mc-soon-card',
+    '.platform-tile', '.fa-tile', '.na-cert-card', '.try-card', '.success-card-preview'
+  ].join(', ');
   var selectorMeta = document.querySelector('meta[name="chitti-card-selector"]');
   var SELECTOR = (selectorMeta && selectorMeta.getAttribute('content')) || DEFAULT_SELECTOR;
+
+  // Structural filter — only attach to elements that ACT like a card:
+  //   - has a heading-like child (h1-h6, .lbl, .title, .name, .label)
+  //   - has enough text body (>= 12 chars combined text, excluding nav)
+  //   - is NOT a child of another card (we only widget the OUTERMOST card)
+  //   - is NOT itself a widget bar
+  function isRealCard(el) {
+    if (!el || el._cwBuilt) return false;
+    if (el.classList && (el.classList.contains('pro-card-widget') ||
+                          el.classList.contains('chitti-card-widget') ||
+                          el.classList.contains('pro-card-fb') ||
+                          el.classList.contains('chitti-card-fb'))) return false;
+    var lbl = el.querySelector(LABEL_SELECTOR);
+    if (!lbl) return false;
+    var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text.length < 12) return false;
+    return true;
+  }
 
   var LABEL_SELECTOR = '.lbl, .label, .name, .title, h3, h4';
   var DESC_SELECTOR  = '.sub, .desc, .description';
@@ -231,7 +263,18 @@
   }
 
   function scan(){
-    document.querySelectorAll(SELECTOR).forEach(buildWidget);
+    var matched = document.querySelectorAll(SELECTOR);
+    // First pass: filter to real cards
+    var real = [];
+    matched.forEach(function (el) { if (isRealCard(el)) real.push(el); });
+    // Second pass: drop cards that contain other real cards (only attach to leafmost cards)
+    var leafs = real.filter(function (el) {
+      for (var i = 0; i < real.length; i++) {
+        if (real[i] !== el && el.contains(real[i])) return false;
+      }
+      return true;
+    });
+    leafs.forEach(buildWidget);
   }
 
   function init(){
