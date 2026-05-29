@@ -233,6 +233,14 @@
     card._cwBuilt = true;
     // Skip ONLY if our own widget bar is already there (idempotent).
     if (card.querySelector('.chitti-card-widget, .pro-card-widget')) return;
+    // Sire 2026-05-29 — DEFER to feedback-widget.js when the card is marked
+    // as an explicit chitti-response box. feedback-widget.js attaches its
+    // own bar (▶ Chitti · 🔊 Suno · 👍 · 👎) on those boxes — running this
+    // 5-icon widget too produces 7-element chaos on a 150px metric card.
+    // Single substrate per card: feedback-widget for explicit response
+    // boxes, this substrate for implicit patterns (.scan-action etc).
+    if (card.hasAttribute && card.hasAttribute('data-chitti-response')) return;
+    if (card.classList && card.classList.contains('chitti-response')) return;
     // Need SOME identifier for box_id. Accept any of:
     //   - label-like child (.lbl/.label/.name/.title/h1-h6)
     //   - data-chitti-section attribute (set on news-ai art-card, etc.)

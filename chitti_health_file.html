@@ -8,7 +8,7 @@
 <title>Chitti Health File — your family's medical history, understood</title>
 <meta name="description" content="Upload prescriptions, blood reports, MRI scans, insurance policies. Chitti READS them, extracts every detail, sets reminders, lets you ask 'Wife ki diabetes ka history dikhao' in your language.">
 <link rel="stylesheet" href="chitti_theme.css">
-<script src="chitti_lang.js?v=20260529n" defer></script>
+<script src="chitti_lang.js?v=20260529o" defer></script>
 <meta name="chitti-page-desc" content="Chitti Health File — upload medical reports, Chitti reads + extracts + reminds. Per-profile (self / wife / mother / father / child). Encrypted at rest. Share with doctor only after voice haan.">
 <meta name="chitti-features" content="chitti-health-file/skills/FEATURES.md">
 <!-- Language-key compatibility shim (added 2026-05-23 — Phase B-4 lang fix).
@@ -40,7 +40,7 @@
     });
     document.documentElement.lang = resolved;
     window.CHITTI_LANG_RESOLVED = resolved;
-    // Notify listeners (chitti_a11y.js?v=20260529n + chitti_lang.js?v=20260529n wire on this).
+    // Notify listeners (chitti_a11y.js?v=20260529o + chitti_lang.js?v=20260529o wire on this).
     try { window.dispatchEvent(new CustomEvent('chitti:langchange', {detail:{lang: resolved}})); } catch(e){}
   } catch(e){}
 })();
@@ -2508,14 +2508,14 @@ window.addEventListener('chitti:langchange', () => { try { hfApplyStrings(); } c
        marked data-chitti-response. The 📝 panel is the "5th element"
        in the accessibility mandate — voice + text input, category
        selector, sent to /api/feedback.
-    2. chitti_a11y.js?v=20260529n      — language selector, Voice Required marker,
+    2. chitti_a11y.js?v=20260529o      — language selector, Voice Required marker,
        Braille mode, Disability Profile prompt, ISL plugin loader.
     3. chitti_isl.js       — Indian Sign Language panel per response,
-       tap-word-to-sign modal. (Loaded by chitti_a11y.js?v=20260529n as fallback;
+       tap-word-to-sign modal. (Loaded by chitti_a11y.js?v=20260529o as fallback;
        direct include here keeps the contract explicit.)
   ════════════════════════════════════════════════════════════════ -->
 <script src="feedback-widget.js" data-page="chitti_health_file"></script>
-<script src="chitti_a11y.js?v=20260529n"></script>
+<script src="chitti_a11y.js?v=20260529o"></script>
 <script src="chitti_isl.js"></script>
 </body>
 </html>
