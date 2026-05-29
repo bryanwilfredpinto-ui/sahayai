@@ -6292,6 +6292,11 @@
         if (SKIP_TAG_SET[p.tagName]) return NodeFilter.FILTER_REJECT;
         var t = (n.nodeValue || '').replace(/\s+/g, ' ').trim();
         if (!t) return NodeFilter.FILTER_REJECT;
+        // Sire 2026-05-29 — translate="no" / data-chitti-no-translate ancestor
+        // skipped during snapshot too (snapshot drives translate AND restore).
+        if (p.closest && (p.closest('[translate="no"]') || p.closest('[data-chitti-no-translate]'))) {
+          return NodeFilter.FILTER_REJECT;
+        }
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -6327,6 +6332,12 @@
         if (!p) return NodeFilter.FILTER_REJECT;
         if (SKIP_TAG_SET[p.tagName]) return NodeFilter.FILTER_REJECT;
         if (n._chittiOrig === undefined) return NodeFilter.FILTER_REJECT;
+        // Sire 2026-05-29 — honour translate="no" ancestor (HTML5 standard) +
+        // data-chitti-no-translate so indicator names / tickers / brand strings
+        // stay English in every language. Closest() walks up the tree.
+        if (p.closest && (p.closest('[translate="no"]') || p.closest('[data-chitti-no-translate]'))) {
+          return NodeFilter.FILTER_REJECT;
+        }
         return NodeFilter.FILTER_ACCEPT;
       }
     });

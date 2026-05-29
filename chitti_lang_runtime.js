@@ -1,4 +1,4 @@
-/* chitti_lang_runtime.js — runtime LLM translation fallback for chitti_lang.js
+﻿/* chitti_lang_runtime.js — runtime LLM translation fallback for chitti_lang.js
  * ===================================================================
  * Sire 2026-05-29 — every UI string on every Chitti page translates to the
  * user's selected language. If a string isn't in chitti_lang.js's baked
@@ -21,7 +21,7 @@
 
   var ENDPOINT = (window.CHITTI_TRANSLATE_API ||
                   'https://chitti-medupi-api-production.up.railway.app/api/health-file/translate');
-  var CACHE_PREFIX = 'chitti_xlate_v2_20260529i';
+  var CACHE_PREFIX = 'chitti_xlate_v2_20260529j';
   var SESSION_CAP = 200;         // hard cap per session to prevent runaway LLM calls
   var BATCH_SIZE = 8;            // strings per fetch round
   var BATCH_DELAY_MS = 250;      // wait between batches

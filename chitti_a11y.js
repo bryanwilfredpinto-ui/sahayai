@@ -1,4 +1,4 @@
-// chitti_a11y.js — vaani-only i18n supplement, rebuilt 2026-05-21.
+﻿// chitti_a11y.js — vaani-only i18n supplement, rebuilt 2026-05-21.
 // =====================================================================
 // PURPOSE
 //   chitti_lang.js (551 lines, baked 993×26 translation T-table) already
@@ -192,7 +192,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529i';
+      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529j';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
@@ -219,7 +219,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529i';
+      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529j';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
