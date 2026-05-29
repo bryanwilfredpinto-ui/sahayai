@@ -1047,3 +1047,20 @@ app.include_router(chat.router)
 app.include_router(quota.router)
 app.include_router(specialists.router)
 app.include_router(cron.router)
+
+# Observability — Sire 2026-05-29. Real-time AI observability for Chitti
+# translation/localization. Spec: CHITTI_OBSERVABILITY_SPEC.md
+# The weekly aggregation + hourly cleanup crons register themselves inside
+# services/scheduler.py::start(); here we mount the router + dashboard +
+# ensure the 4 tables exist on Turso.
+try:
+    from observability import router as observability_router, dashboard_router
+    from observability.models import ensure_schema as ensure_obs_schema
+
+    ensure_obs_schema()
+    app.include_router(observability_router)
+    app.include_router(dashboard_router)
+    log.info("[observability] router + dashboard mounted; tables ensured")
+except Exception as e:  # noqa: BLE001
+    # Honest failure — observability is best-effort, never gate the API on it.
+    log.warning("[observability] mount failed: %s", e)

@@ -1,4 +1,4 @@
-// feedback-widget.js  ·  Chitti Quality v2 — 2026-05-13
+﻿// feedback-widget.js  ·  Chitti Quality v2 — 2026-05-13
 // =====================================================================
 // PER-BOX 4-icon widget + page-footer summary. Locked SAHAYAI_MASTER §7.
 //
@@ -315,6 +315,15 @@
     payload.risk = RISK_MAP[payload.page] || 'LOW';
     payload.co2_g = (window.CHITTI_CO2_G != null) ? window.CHITTI_CO2_G : DEFAULT_CO2_G;
     payload.lang = payload.lang || getLang();
+    // Observability — Sire 2026-05-29. Carry the audit_id (CH-YYYYMMDD-XXXX)
+    // so every 👍/👎/✏️/🎤 row in chitti-vaani's feedback table can be joined
+    // to chitti-shares' observability.audits row for retrain aggregation.
+    if (!payload.audit_id) {
+      try {
+        var raw = localStorage.getItem('chitti_audit_id');
+        if (raw) { var p = JSON.parse(raw); if (p && p.id) payload.audit_id = p.id; }
+      } catch (e) {}
+    }
     var url = API_BASE.replace(/\/+$/, '') + '/api/feedback/collect';
     return fetch(url, {
       method: 'POST',

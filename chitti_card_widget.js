@@ -1,4 +1,4 @@
-/* chitti_card_widget.js — universal in-card 5-element widget across ALL Chittis
+﻿/* chitti_card_widget.js — universal in-card 5-element widget across ALL Chittis
  * ===================================================================
  * Sire 2026-05-29 — replaces the Vaani-inline copy with a substrate that
  * targets every Chitti page's card pattern. Inherits canonical English

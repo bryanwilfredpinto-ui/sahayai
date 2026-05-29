@@ -192,7 +192,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529o';
+      s.src = (srcBase || '') + 'chitti_card_widget.js?v=20260529p';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);
@@ -219,7 +219,31 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529o';
+      s.src = (srcBase || '') + 'chitti_lang_runtime.js?v=20260529p';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
+  // ── chitti_observability.js auto-loader (Sire 2026-05-29) ──
+  // Real-time AI observability — audit ID + footer badge + 5-check Verification
+  // Agent + latency ring buffer + feedback learning loop. Per
+  // CHITTI_OBSERVABILITY_SPEC.md. Opt-out per page via:
+  //   <meta name="chitti-observability" content="off">
+  (function injectChittiObservability() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-observability"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_observability.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_observability.js?v=20260529p';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);

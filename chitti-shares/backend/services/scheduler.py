@@ -185,9 +185,17 @@ def start():
         id="kite_reauth", replace_existing=True, max_instances=1,
     )
 
+    # Observability — Sire 2026-05-29. Weekly retrain-queue aggregation +
+    # hourly stale-audit cleanup. Best-effort; never fails the scheduler.
+    try:
+        from observability.jobs import register_jobs as register_obs_jobs
+        register_obs_jobs(sch)
+    except Exception as e:  # noqa: BLE001
+        log.info("[scheduler] observability jobs skipped: %s", e)
+
     sch.start()
     _scheduler = sch
-    log.info("[scheduler] started: 3 jobs registered")
+    log.info("[scheduler] started: jobs registered (alerts, track_calls, kite_reauth, observability)")
 
 
 def stop():

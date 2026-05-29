@@ -401,7 +401,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529o wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529p wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -1422,11 +1422,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529o (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529p (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529o owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529p owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -3357,7 +3357,7 @@ async function rfRefresh(sym) {
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529o"></script>
+<script src="chitti_a11y.js?v=20260529p"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -3372,9 +3372,9 @@ async function rfRefresh(sym) {
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529o baked T-table + chitti_a11y.js?v=20260529o widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529o"></script>
-<script src="chitti_a11y.js?v=20260529o"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529p baked T-table + chitti_a11y.js?v=20260529p widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529p"></script>
+<script src="chitti_a11y.js?v=20260529p"></script>
 
 </body>
 </html>

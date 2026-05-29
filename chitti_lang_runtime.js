@@ -85,6 +85,11 @@
     if (inFlight[text + '|' + lang]) return inFlight[text + '|' + lang];
     if (sessionCalls >= SESSION_CAP) return Promise.resolve(null);
     sessionCalls++;
+    // Observability — Sire 2026-05-29. Record per-translation latency + LLM
+    // reachability for Verification Agent. Fail-soft: no obs ≠ broken
+    // translation; broken translation ≠ obs throws.
+    var _obsStart = (typeof performance !== 'undefined' && performance.now)
+                    ? performance.now() : Date.now();
     var p = fetch(ENDPOINT, {
       method: 'POST',
       mode: 'cors',
@@ -97,6 +102,7 @@
         target_lang: lang
       })
     }).then(function (r) {
+      try { if (window._chittiObs) window._chittiObs.recordLLM(r.ok); } catch (e) {}
       if (!r.ok) return null;
       return r.json();
     }).then(function (j) {
@@ -105,8 +111,25 @@
       if (!out || out === text) return null;
       setCached(text, lang, out);
       return out;
-    }).catch(function () { return null; })
-      .then(function (v) { delete inFlight[text + '|' + lang]; return v; });
+    }).catch(function () {
+      try { if (window._chittiObs) window._chittiObs.recordLLM(false); } catch (e) {}
+      return null;
+    })
+      .then(function (v) {
+        var _obsEnd = (typeof performance !== 'undefined' && performance.now)
+                      ? performance.now() : Date.now();
+        try {
+          if (window._chittiObs && window._chittiObs.recordLatency) {
+            window._chittiObs.recordLatency(
+              Math.round(_obsEnd - _obsStart),
+              'translation',
+              { text_length: text.length, source_lang: 'en', target_lang: lang }
+            );
+          }
+        } catch (e) {}
+        delete inFlight[text + '|' + lang];
+        return v;
+      });
     inFlight[text + '|' + lang] = p;
     return p;
   }
