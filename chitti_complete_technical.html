@@ -384,14 +384,30 @@ textarea:focus{border-color:var(--blue)}
 body{background:linear-gradient(180deg,#FAFAFA,#fff)!important;color:#1a1a1a!important;font-family:'Noto Sans',Inter,'Segoe UI',Arial,sans-serif!important}
 body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(255,153,51,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(19,136,8,.10),transparent 22%),radial-gradient(circle at 50% 80%,rgba(0,0,128,.06),transparent 28%);z-index:0}
 body > *{position:relative;z-index:1}
-/* Header — MedUPI-pattern brand-row + header-controls (Sire 2026-05-29). */
-.header,header[role="banner"]{background:linear-gradient(135deg,#000080,#1a1a9e)!important;color:#fff!important;border-radius:0 0 24px 24px!important;padding:16px!important;padding-bottom:18px!important}
-.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#FF9933,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 22px rgba(255,153,51,.35);margin-right:12px;flex-shrink:0}
-.bharat-logo svg{width:32px;height:32px}
-.brand{font-weight:900!important;font-size:21px!important;line-height:1.1!important;color:#fff!important}
-.tagline{font-size:11px!important;color:rgba(255,255,255,.85)!important;margin-top:2px!important}
+/* Header — minimal single-row chrome (Sire 2026-05-29). Everything else lives in the slide-out drawer. */
+.chitti-clean-header{background:linear-gradient(135deg,#000080,#1a1a9e);color:#fff;border-radius:0 0 16px 16px;padding:10px 14px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,80,.18)}
+.chitti-clean-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chitti-clean-brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.chitti-clean-brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.chitti-clean-brand .brand{font-weight:900;font-size:18px;line-height:1.1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chitti-clean-menu-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.30);color:#fff;width:42px;height:42px;border-radius:10px;font-size:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.chitti-clean-menu-btn:hover,.chitti-clean-menu-btn:focus{background:rgba(255,255,255,.24)}
+.bharat-logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#FF9933,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(255,153,51,.30);flex-shrink:0}
+.bharat-logo svg{width:28px;height:28px}
+.brand,.tagline{color:#fff}
+.chitti-clean-header .mkt-pill{font-size:10px;padding:2px 8px;align-self:flex-start;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);color:#fff}
+/* Slide-out menu drawer */
+.chitti-clean-menu-backdrop{position:fixed;inset:0;background:rgba(0,0,40,.55);z-index:97;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.chitti-clean-menu-backdrop.open{opacity:1;pointer-events:auto}
+.chitti-clean-menu{position:fixed;top:0;right:0;bottom:0;width:min(280px,80vw);background:#fff;z-index:98;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,40,.20);overflow-y:auto}
+.chitti-clean-menu.open{transform:translateX(0)}
+.chitti-clean-menu-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eee}
+.chitti-clean-menu-title{font-weight:800;font-size:15px;color:#0E2344}
+.chitti-clean-menu-close{background:transparent;border:0;font-size:20px;cursor:pointer;color:#0E2344;width:36px;height:36px}
+.chitti-clean-menu-section{padding:10px 12px;border-bottom:1px solid #f3f3f3}
+.chitti-clean-menu-section-title{font-size:10px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.06em;padding:6px 4px}
+.chitti-clean-menu-section a,.chitti-clean-menu-section button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:transparent;border:0;padding:11px 12px;font-size:14px;color:#0E2344;font-weight:600;border-radius:8px;cursor:pointer;text-decoration:none;font-family:inherit}
+.chitti-clean-menu-section a:hover,.chitti-clean-menu-section button:hover{background:#FFF7EC}
 /* A11y bar — same navy */
 .a11y-bar{background:linear-gradient(135deg,#000080,#1a1a9e)!important;color:#fff!important;border-radius:0!important}
 .a11y-bar span{color:#fff!important}
@@ -536,7 +552,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529s wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529t wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -571,44 +587,71 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ════════════════════ BHARAT STRIPE ════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true"></div>
 
-<!-- ════════════════════ HEADER — MedUPI / Vaani theme (Sire 2026-05-29) ════════════════════ -->
-<!-- Cloned from chitti_medupi.html structure: brand-row (logo + brand + tagline + switch tiles + lang toggle) + header-controls (Demo / Read page / Disclaimer / Top). Replaces the old cramped a11y-bar + separate header + duplicate SEBI block. -->
-<header role="banner">
-  <div class="brand-row">
-    <div style="display:flex;align-items:center">
-      <div class="bharat-logo float-bharat pulse-bharat" aria-label="Chitti — S heartbeat emblem" role="img">
-        <!-- S-heartbeat emblem: navy S with red heartbeat pulse against tricolor flag bg -->
+<!-- ════════════════════ HEADER — minimal single-row chrome (Sire 2026-05-29) ════════════════════ -->
+<!-- Sire: "remove existing UI & put clean UI". Single slim row: logo + brand + ☰ menu. -->
+<!-- Everything else (product switchers, demo, read-page, how-to, disclaimer, top, market status) -->
+<!-- moves into the slide-out menu the user opens only if they want it. -->
+<header role="banner" class="chitti-clean-header">
+  <div class="chitti-clean-row">
+    <div class="chitti-clean-brand">
+      <div class="bharat-logo" aria-label="Chitti — S heartbeat emblem" role="img">
         <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M26 10c0-2-2-3.5-4.5-3.5h-7C12 6.5 10 8 10 10.5s2 4 4.5 4h5c2.5 0 4.5 1.5 4.5 4S22 22.5 19.5 22.5h-7C10 22.5 8 21 8 19" stroke="#000080" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           <polyline points="2,28 9,28 12,22 15,32 18,18 21,28 34,28" stroke="#CC0000" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
         </svg>
       </div>
-      <div>
-        <div class="brand" translate="no">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Stock AI</span></div>
-        <div class="tagline" data-i18n="tagline.bharat">🇮🇳 Bharat ka Apna Chitti · <span translate="no">Roshan Indicator</span> · 43 Indicators</div>
+      <div class="chitti-clean-brand-text">
+        <div class="brand" translate="no">Chitti <span style="opacity:.85;font-weight:600;font-size:13px">Stock AI</span></div>
+        <span id="mkt-status" class="mkt-pill mkt-closed" aria-live="polite">
+          <span class="mkt-dot"></span>
+          <span id="mkt-label">Checking…</span>
+        </span>
       </div>
     </div>
-    <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_medupi.html" aria-label="Switch to Chitti MedUPI" data-i18n="switch.medupi" data-i18n-aria="switch-to-chitti-medupi">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals" data-i18n="switch.fund" data-i18n-aria="switch-to-chitti-fundamentals">📋 Fundamentals</a>
-      <a class="switch-btn-bharat" href="chitti_news.html" aria-label="Switch to Chitti News" data-i18n="switch.news" data-i18n-aria="switch-to-chitti-news">📰 News</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n="switch.vaani" data-i18n-aria="switch-to-chitti-vaani">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n="switch.upi" data-i18n-aria="switch-to-chitti-upi-fraud-guard">🛡️ UPI Guard</a>
-      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n="switch.scanner" data-i18n-aria="switch-to-chitti-product-scanner">📷 Scanner</a>
-      <span id="mkt-status" class="mkt-pill mkt-closed" aria-live="polite" style="margin-left:6px">
-        <span class="mkt-dot"></span>
-        <span id="mkt-label">Checking…</span>
-      </span>
-    </div>
-  </div>
-  <div class="header-controls">
-    <button onclick="startDemoMode()" aria-label="Start a guided demo of Chitti Technical Analysis" data-i18n="hdr.demo" data-i18n-aria="start-a-guided-demo-of-chitti-technical-analysis">🎬 Demo Mode</button>
-    <button onclick="speakPage()" aria-label="Read whole page aloud" data-i18n="read_page" data-i18n-aria="read-whole-page-aloud">🔊 Read page</button>
-    <button onclick="speakHelp()" aria-label="Hear step-by-step instructions" data-i18n="hdr.howto" data-i18n-aria="hear-step-by-step-instructions">🎙️ How to use</button>
-    <button onclick="speakDisclaimer()" aria-label="Hear SEBI disclaimer" data-i18n="hdr.disclaimer" data-i18n-aria="hear-sebi-disclaimer">⚠️ Disclaimer</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top" data-i18n="top" data-i18n-aria="back-to-top">↑ Top</button>
+    <button class="chitti-clean-menu-btn" onclick="chittiCleanMenuToggle()" aria-label="Open menu" aria-expanded="false" aria-controls="chitti-clean-menu">☰</button>
   </div>
 </header>
+
+<!-- Slide-out menu (drawer) — opens from the right when ☰ tapped. Closed by default. -->
+<div id="chitti-clean-menu-backdrop" class="chitti-clean-menu-backdrop" onclick="chittiCleanMenuToggle()" aria-hidden="true"></div>
+<aside id="chitti-clean-menu" class="chitti-clean-menu" aria-hidden="true" aria-label="Menu">
+  <div class="chitti-clean-menu-head">
+    <span class="chitti-clean-menu-title" data-i18n="menu">Menu</span>
+    <button class="chitti-clean-menu-close" onclick="chittiCleanMenuToggle()" aria-label="Close menu">✕</button>
+  </div>
+
+  <div class="chitti-clean-menu-section">
+    <div class="chitti-clean-menu-section-title" data-i18n="page_tools">Page tools</div>
+    <button onclick="chittiCleanMenuToggle();startDemoMode()" aria-label="Start a guided demo" data-i18n="hdr.demo">🎬 Demo Mode</button>
+    <button onclick="chittiCleanMenuToggle();speakPage()" aria-label="Read whole page aloud" data-i18n="read_page">🔊 Read page</button>
+    <button onclick="chittiCleanMenuToggle();speakHelp()" aria-label="Hear step-by-step instructions" data-i18n="hdr.howto">🎙️ How to use</button>
+    <button onclick="chittiCleanMenuToggle();speakDisclaimer()" aria-label="Hear SEBI disclaimer" data-i18n="hdr.disclaimer">⚠️ Disclaimer</button>
+    <button onclick="chittiCleanMenuToggle();window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top" data-i18n="top">↑ Top</button>
+  </div>
+
+  <div class="chitti-clean-menu-section">
+    <div class="chitti-clean-menu-section-title" data-i18n="other_chittis">Other Chittis</div>
+    <a href="chitti_medupi.html" data-i18n="switch.medupi">💊 MedUPI</a>
+    <a href="chitti_fundamentals.html" data-i18n="switch.fund">📋 Fundamentals</a>
+    <a href="chitti_news.html" data-i18n="switch.news">📰 News</a>
+    <a href="chitti_vaani.html" data-i18n="switch.vaani">🎙️ Vaani</a>
+    <a href="chitti_upi.html" data-i18n="switch.upi">🛡️ UPI Guard</a>
+    <a href="chitti_scanner.html" data-i18n="switch.scanner">📷 Scanner</a>
+  </div>
+</aside>
+
+<script>
+window.chittiCleanMenuToggle = function () {
+  var menu = document.getElementById('chitti-clean-menu');
+  var bd   = document.getElementById('chitti-clean-menu-backdrop');
+  var btn  = document.querySelector('.chitti-clean-menu-btn');
+  if (!menu) return;
+  var open = menu.classList.toggle('open');
+  if (bd)  bd.classList.toggle('open', open);
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+};
+</script>
 
 <div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite">🎬 DEMO MODE — guided walk-through. Tap Skip to exit.</div>
 
@@ -1918,11 +1961,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529s (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529t (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529s owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529t owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -6142,7 +6185,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529s"></script>
+<script src="chitti_a11y.js?v=20260529t"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6157,9 +6200,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529s baked T-table + chitti_a11y.js?v=20260529s widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529s"></script>
-<script src="chitti_a11y.js?v=20260529s"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529t baked T-table + chitti_a11y.js?v=20260529t widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529t"></script>
+<script src="chitti_a11y.js?v=20260529t"></script>
 
 </body>
 </html>
