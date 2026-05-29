@@ -267,16 +267,18 @@
     badgeEl.setAttribute('aria-live', 'polite');
     badgeEl.setAttribute('aria-label', 'Chitti AI Observability — live status');
     badgeEl.setAttribute('data-chitti-no-translate', '1'); // values change live; skip translation pass
-    // Position above any existing FAB at bottom-left (chitti_camera_universal,
-    // pwd-onboarding, etc all stack at bottom:18px with ~56px height). Start
-    // the badge at bottom: 86px so it never overlaps the FAB.
+    // Collapsed-by-default at top-right (below the language selector at
+    // top:14px which has height ~40px). Expands on tap to the full panel.
+    // Always visible, never competes with the cluster of bottom FABs.
+    // 2026-05-29 Sire: badge must be always visible, never obscured.
     badgeEl.style.cssText = [
-      'position:fixed', 'left:14px', 'bottom:86px', 'z-index:88',
-      'background:#fff', 'border:2px solid #FF9933', 'border-radius:12px',
-      'padding:8px 12px', 'font-family:Inter,system-ui,sans-serif',
-      'font-size:11px', 'color:#0E2344', 'box-shadow:0 4px 12px rgba(14,35,68,.15)',
-      'min-width:220px', 'max-width:300px', 'cursor:pointer', 'user-select:none',
+      'position:fixed', 'top:64px', 'right:8px', 'z-index:97',
+      'background:#fff', 'border:2px solid #FF9933', 'border-radius:20px',
+      'padding:6px 12px', 'font-family:Inter,system-ui,sans-serif',
+      'font-size:11px', 'color:#0E2344', 'box-shadow:0 4px 12px rgba(14,35,68,.20)',
+      'cursor:pointer', 'user-select:none',
       'transition:all .25s ease',
+      'display:flex', 'align-items:center', 'gap:6px',
     ].join(';');
     badgeEl.innerHTML = renderBadge('active');
     badgeEl.addEventListener('click', toggleExpand);
@@ -290,11 +292,11 @@
     var s = document.createElement('style');
     s.id = 'chitti-obs-style';
     s.textContent =
-      '#chitti-obs-badge.expanded{max-width:340px;padding:12px 14px}' +
+      '#chitti-obs-badge.expanded{border-radius:12px;padding:12px 14px;min-width:260px;max-width:320px;display:block}' +
       '#chitti-obs-badge .obs-line{display:flex;justify-content:space-between;gap:8px;line-height:1.5}' +
       '#chitti-obs-badge .obs-line .lbl{color:#666;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em}' +
       '#chitti-obs-badge .obs-line .val{font-weight:700;color:#0E2344}' +
-      '#chitti-obs-badge .obs-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-weight:800;font-size:10px;letter-spacing:.04em}' +
+      '#chitti-obs-badge .obs-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-weight:800;font-size:10px;letter-spacing:.04em;white-space:nowrap}' +
       '#chitti-obs-badge .obs-pill.active{background:#dcfce7;color:#138808}' +
       '#chitti-obs-badge .obs-pill.degraded{background:#FFF1D6;color:#CC5500;border:1px solid #FF9933}' +
       '#chitti-obs-badge .obs-pill.failed{background:#fee2e2;color:#CC0000;border:1px solid #CC0000}' +
@@ -303,7 +305,8 @@
       '#chitti-obs-badge .obs-widget{display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px dashed #FF9933}' +
       '#chitti-obs-badge .obs-widget button{background:transparent;border:1px solid #FF9933;border-radius:14px;width:28px;height:28px;font-size:13px;cursor:pointer;padding:0;line-height:1}' +
       '#chitti-obs-badge .obs-widget button:hover{background:#FFF1D6}' +
-      '@media (max-width: 420px){#chitti-obs-badge{font-size:10px;min-width:200px;left:10px;bottom:82px}}';
+      '#chitti-obs-badge .obs-mini{display:flex;align-items:center;gap:6px;white-space:nowrap}' +
+      '@media (max-width: 420px){#chitti-obs-badge{font-size:10px;top:60px;right:6px;padding:5px 10px}}';
     document.head.appendChild(s);
   }
 
@@ -332,10 +335,13 @@
         '<span class="ttl">AI Observability — LIVE</span>' +
       '</div>';
     if (!expanded) {
-      return head +
-        '<div class="obs-line"><span class="lbl">Response</span><span class="val">' + rt + '</span></div>' +
-        '<div class="obs-line"><span class="lbl">Verifier</span><span class="obs-pill ' + pillCls + '">' + pillTxt + '</span></div>' +
-        '<div class="obs-line"><span class="lbl">Audit ID</span><span class="val" style="font-family:monospace;font-size:10px">' + AUDIT_ID + '</span></div>';
+      // Collapsed pill: emoji + status + audit-id-short. Tap to expand.
+      var auditShort = AUDIT_ID.slice(-4);
+      return '<span class="obs-mini" aria-label="AI Observability ' + pillTxt + ' audit ID ending ' + auditShort + '">' +
+               '<span style="font-size:14px">🔍</span>' +
+               '<span class="obs-pill ' + pillCls + '">' + pillTxt + '</span>' +
+               '<span style="font-family:monospace;font-size:10px;color:#666">#' + auditShort + '</span>' +
+             '</span>';
     }
     return head +
       '<div class="obs-line"><span class="lbl">Response Time</span><span class="val">' + rt + '</span></div>' +
