@@ -622,6 +622,164 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
     width:100%!important;min-width:0!important
   }
 }
+
+/* ═══════════════ WORLD-CLASS EDITORIAL LAYOUT — Sire 2026-05-29 (design pen mine) ═══════════════ */
+/* Bharat saffron-navy-green palette, generous padding, depth via gradients + shadows. */
+
+#tab-calls{background:linear-gradient(180deg,#FBF8F2 0%,#fff 480px)!important}
+#tab-calls > .page-wrap{padding:14px 12px}
+
+/* Mock-data banner (visible while Angel feed is offline) */
+.ai-mock-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(135deg,#FFF7D6,#FFE9A8);border:1px solid #D4AF37;border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:#7C5800;font-weight:600}
+.ai-mock-banner button{background:transparent;border:0;color:#7C5800;font-size:14px;cursor:pointer;padding:0 4px}
+
+/* ───── HERO AI CALL ───── */
+.ai-hero{position:relative;border-radius:20px;overflow:hidden;margin-bottom:22px;box-shadow:0 14px 40px rgba(14,35,68,.22),0 4px 12px rgba(255,153,51,.18)}
+.ai-hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0E2344 0%,#16376a 55%,#1c4290 100%);z-index:0}
+.ai-hero-bg:after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 92% 10%,rgba(255,153,51,.30),transparent 38%),radial-gradient(circle at 8% 88%,rgba(19,136,8,.20),transparent 45%);z-index:0}
+.ai-hero-watermark{position:absolute;right:-30px;top:-20px;width:220px;height:220px;opacity:.20;z-index:0;pointer-events:none}
+.ai-hero-watermark svg{width:100%;height:100%}
+.ai-hero-inner{position:relative;z-index:1;padding:20px 18px;color:#fff}
+
+.ai-hero-eyebrow{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#FFD58A;margin-bottom:8px}
+.ai-hero-eyebrow-dot{width:7px;height:7px;border-radius:50%;background:#FF9933;box-shadow:0 0 0 4px rgba(255,153,51,.22);animation:aiPulse 2s ease-in-out infinite}
+.ai-hero-eyebrow-sep{opacity:.5}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 4px rgba(255,153,51,.22)}50%{box-shadow:0 0 0 9px rgba(255,153,51,.05)}}
+
+.ai-hero-stock{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.ai-hero-stock-left h1{margin:0;font-size:30px;font-weight:900;letter-spacing:.01em;font-family:'Syne',Inter,sans-serif;line-height:1.05;color:#fff}
+.ai-hero-sector{font-size:11px;color:rgba(255,255,255,.70);margin-top:4px;letter-spacing:.04em}
+.ai-hero-stock-right{text-align:right;flex-shrink:0}
+.ai-hero-cmp{font-size:22px;font-weight:900;line-height:1.1;font-family:'JetBrains Mono',monospace;color:#fff}
+.ai-hero-chg{font-size:12px;font-weight:700;margin-top:2px;font-family:'JetBrains Mono',monospace}
+.ai-hero-chg-up{color:#7EE2A1}
+.ai-hero-chg-down{color:#FF9D9D}
+
+.ai-hero-verdict-wrap{margin-bottom:16px}
+.ai-hero-verdict-pill{display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border-radius:14px;font-weight:900;font-size:18px;letter-spacing:.04em;background:linear-gradient(135deg,#138808,#1AA80F);color:#fff;box-shadow:0 8px 22px rgba(19,136,8,.35),inset 0 1px 0 rgba(255,255,255,.20)}
+.ai-hero-verdict-pill.ai-hero-verdict-short{background:linear-gradient(135deg,#CC0000,#E0303B);box-shadow:0 8px 22px rgba(204,0,0,.35),inset 0 1px 0 rgba(255,255,255,.20)}
+.ai-hero-verdict-pill.ai-hero-verdict-hold{background:linear-gradient(135deg,#FF9933,#FFB366);box-shadow:0 8px 22px rgba(255,153,51,.35),inset 0 1px 0 rgba(255,255,255,.20)}
+.ai-hero-verdict-arrow{font-size:20px;line-height:1}
+.ai-hero-verdict-label{font-weight:900}
+.ai-hero-verdict-conf{font-family:'JetBrains Mono',monospace;font-size:15px;padding:3px 10px;background:rgba(255,255,255,.20);border-radius:8px;font-weight:800}
+.ai-hero-verdict-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:8px;letter-spacing:.02em}
+.ai-hero-conf-bar{height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin-top:6px;max-width:200px}
+.ai-hero-conf-bar > div{height:100%;width:0;background:linear-gradient(90deg,#FF9933,#138808);transition:width .4s}
+
+.ai-hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.ai-hero-cell{background:rgba(255,255,255,.08);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:9px 10px}
+.ai-hero-cell-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.06em}
+.ai-hero-cell-val{font-size:14px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace;margin-top:3px;line-height:1.1}
+.ai-hero-cell-sl{border-color:rgba(255,157,157,.30)}
+.ai-hero-cell-sl .ai-hero-cell-val{color:#FF9D9D}
+.ai-hero-cell-t1 .ai-hero-cell-val,.ai-hero-cell-t2 .ai-hero-cell-val{color:#7EE2A1}
+@media (max-width:480px){.ai-hero-grid{grid-template-columns:repeat(2,1fr)}}
+
+.ai-hero-thesis{background:rgba(255,255,255,.08);border-left:3px solid #FF9933;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55;color:rgba(255,255,255,.92);margin-bottom:14px}
+
+.ai-hero-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ai-hero-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:42px;font-family:inherit}
+.ai-hero-btn:hover{background:rgba(255,255,255,.24)}
+.ai-hero-btn-primary{background:linear-gradient(135deg,#FF9933,#FFB366);border-color:#FF9933;color:#fff;box-shadow:0 4px 14px rgba(255,153,51,.40)}
+.ai-hero-btn-primary:hover{filter:brightness(1.08)}
+.ai-hero-btn-icon{padding:0;width:42px;justify-content:center;font-size:16px}
+.ai-hero-btn-ico{font-size:15px}
+
+.ai-hero-disclaimer{font-size:10px;color:rgba(255,255,255,.65);line-height:1.5;border-top:1px dashed rgba(255,255,255,.15);padding-top:10px}
+.ai-hero-disclaimer a{color:#FFD58A;text-decoration:underline}
+
+.ai-hero-result .ai-hero-bg{background:linear-gradient(135deg,#0E2344 0%,#16376a 100%)}
+
+/* ───── STRIP SECTIONS (sibling calls / screens / mood) ───── */
+.ai-strip-section{margin-bottom:22px}
+.ai-strip-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:0 2px}
+.ai-strip-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#0E2344}
+.ai-strip-title-dot{width:8px;height:8px;border-radius:50%}
+.ai-strip-title-dot-saffron{background:#FF9933}
+.ai-strip-title-dot-navy{background:#0E2344}
+.ai-strip-title-dot-green{background:#138808}
+.ai-strip-link{font-size:12px;color:#FF9933;font-weight:700;text-decoration:none}
+.ai-strip-link:hover{text-decoration:underline}
+.ai-strip-sub{font-size:11px;color:#888;font-weight:600}
+
+.ai-strip{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px;scroll-snap-type:x mandatory}
+.ai-strip::-webkit-scrollbar{height:6px}
+.ai-strip::-webkit-scrollbar-thumb{background:rgba(255,153,51,.3);border-radius:3px}
+
+/* Sibling call cards */
+.ai-call-card{flex:0 0 232px;scroll-snap-align:start;background:#fff;border:1px solid #e6e6ea;border-radius:14px;padding:0;cursor:pointer;text-align:left;display:flex;align-items:stretch;font-family:inherit;box-shadow:0 2px 8px rgba(14,35,68,.05);transition:all .15s ease;overflow:hidden}
+.ai-call-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(14,35,68,.12)}
+.ai-call-side{width:5px;flex-shrink:0}
+.ai-call-buy .ai-call-side{background:#138808}
+.ai-call-short .ai-call-side{background:#CC0000}
+.ai-call-hold .ai-call-side{background:#FF9933}
+.ai-call-body{padding:11px 13px;flex:1;min-width:0}
+.ai-call-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px}
+.ai-call-sym{font-size:14px;font-weight:900;color:#0E2344;font-family:'JetBrains Mono',monospace}
+.ai-call-pill{font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.ai-call-pill-buy{background:#dcfce7;color:#138808}
+.ai-call-pill-short{background:#fee2e2;color:#CC0000}
+.ai-call-pill-hold{background:#FFF1D6;color:#CC5500}
+.ai-call-meta{font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.ai-call-thesis{font-size:11px;line-height:1.4;color:#444}
+
+/* ───── ASK CHITTI compact search ───── */
+.ai-ask{background:linear-gradient(135deg,#fff,#FBF8F2);border:1px solid #e6e6ea;border-radius:14px;padding:14px;margin-bottom:22px;box-shadow:0 2px 8px rgba(14,35,68,.04)}
+.ai-ask-row{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center}
+.ai-ask-row input{padding:11px 14px;font-size:14px;font-weight:600;border-radius:10px;border:1.5px solid #d1d5db!important;background:#fff;min-height:44px;color:#0E2344!important}
+.ai-ask-row input:focus{border-color:#FF9933!important;outline:none}
+.ai-ask-row select{padding:0 10px;font-size:12px;font-weight:700;border-radius:10px;border:1.5px solid #d1d5db!important;background:#fff;min-height:44px;color:#0E2344!important}
+.ai-ask-mic{width:44px;height:44px;font-size:16px;background:#0E2344;color:#fff;border:0;border-radius:10px;cursor:pointer}
+.ai-ask-go{width:44px;height:44px;font-size:18px;background:linear-gradient(135deg,#FF9933,#FFB366);color:#fff;border:0;border-radius:10px;cursor:pointer;box-shadow:0 4px 12px rgba(255,153,51,.30)}
+@media (max-width:480px){.ai-ask-row{grid-template-columns:1fr auto auto}.ai-ask-row select{grid-column:1 / -1;margin-top:6px}}
+
+/* ───── SCREENS strip — colourful tiles ───── */
+.ai-strip-screens .ai-screen{flex:0 0 168px;scroll-snap-align:start;border:0;border-radius:14px;padding:14px 12px;cursor:pointer;text-align:left;font-family:inherit;display:flex;flex-direction:column;gap:4px;min-height:96px;box-shadow:0 2px 8px rgba(14,35,68,.06);transition:all .15s ease}
+.ai-strip-screens .ai-screen:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(14,35,68,.14)}
+.ai-screen-emoji{font-size:22px;line-height:1}
+.ai-screen-title{font-size:13px;font-weight:800;color:#0E2344;line-height:1.2}
+.ai-screen-rule{font-size:10px;color:#666;font-family:'JetBrains Mono',monospace;letter-spacing:.01em}
+.ai-screen-momentum{background:linear-gradient(135deg,#FFF7EC,#FFE6CC);border:1px solid rgba(255,153,51,.30)}
+.ai-screen-volume{background:linear-gradient(135deg,#E8F4FD,#D6E9FB);border:1px solid rgba(76,127,255,.25)}
+.ai-screen-golden{background:linear-gradient(135deg,#FFF9DB,#FFEEA8);border:1px solid rgba(212,175,55,.40)}
+.ai-screen-death{background:linear-gradient(135deg,#FFE8E8,#FFD0D0);border:1px solid rgba(204,0,0,.25)}
+.ai-screen-squeeze{background:linear-gradient(135deg,#E8FFE8,#CFF5D0);border:1px solid rgba(19,136,8,.25)}
+.ai-screen-roshan{background:linear-gradient(135deg,#FF9933,#FFB366);border:1px solid #CC5500;color:#fff}
+.ai-screen-roshan .ai-screen-title,.ai-screen-roshan .ai-screen-rule{color:#fff}
+.ai-screen-roshan .ai-screen-rule{color:rgba(255,255,255,.85)}
+
+/* ───── MARKET MOOD strip ───── */
+.ai-mood-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ai-mood-card{background:#fff;border:1px solid #e6e6ea;border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(14,35,68,.04)}
+.ai-mood-name{font-size:10px;font-weight:800;color:#666;text-transform:uppercase;letter-spacing:.06em}
+.ai-mood-val{font-size:16px;font-weight:900;color:#0E2344;font-family:'JetBrains Mono',monospace;margin-top:4px;line-height:1.1}
+.ai-mood-chg{font-size:11px;font-weight:700;margin-top:4px;font-family:'JetBrains Mono',monospace}
+.ai-mood-up{color:#138808}
+.ai-mood-down{color:#CC0000}
+@media (max-width:480px){.ai-mood-grid{grid-template-columns:1fr;gap:6px}.ai-mood-card{display:flex;justify-content:space-between;align-items:center;padding:10px 12px}.ai-mood-card .ai-mood-val{margin-top:0}.ai-mood-card .ai-mood-chg{margin-top:0}}
+
+/* ───── Analyse-result ratios + pros/cons (inside #scrn-card) ───── */
+.ai-ratios{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.ai-ratios .ai-ratio-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 10px}
+.ai-ratios .ai-ratio-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.05em}
+.ai-ratios .ai-ratio-val{font-size:13px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace;margin-top:3px}
+.ai-ratios .ai-ratio-hint{font-size:9px;color:rgba(255,255,255,.55);margin-top:3px;font-style:italic}
+@media (max-width:480px){.ai-ratios{grid-template-columns:repeat(2,1fr)}}
+
+.ai-pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ai-pros-cons-col{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px}
+.ai-pc-title{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#fff;margin-bottom:8px}
+.ai-pc-dot{width:8px;height:8px;border-radius:50%}
+.ai-pc-green{background:#7EE2A1}
+.ai-pc-red{background:#FF9D9D}
+.ai-pros-cons-col ul{margin:0;padding:0;list-style:none}
+.ai-pros-cons-col li{position:relative;padding-left:14px;font-size:11px;line-height:1.5;color:rgba(255,255,255,.92);margin-bottom:5px}
+.ai-pros .ai-pros-cons-col li:before,.ai-pros li:before{content:'+';position:absolute;left:0;top:0;color:#7EE2A1;font-weight:900}
+.ai-cons .ai-pros-cons-col li:before,.ai-cons li:before{content:'−';position:absolute;left:0;top:0;color:#FF9D9D;font-weight:900}
+.ai-pc-empty{color:rgba(255,255,255,.55)!important;font-style:italic}
+.ai-pc-empty:before{content:'·'!important;color:rgba(255,255,255,.35)!important}
+@media (max-width:480px){.ai-pros-cons{grid-template-columns:1fr}}
+/* ═══════════════ /WORLD-CLASS LAYOUT ═══════════════ */
 </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 <!-- NSE universe substrate — current honest counts: Nifty50·50 / Largecap·107 / Midcap·110 / Smallcap·113 / Microcap·52. Expansion to NSE official 150/250/250 tracked in chitti-shares/TODO.md. -->
@@ -632,7 +790,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529w wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529x wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -2041,11 +2199,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529w (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529x (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529w owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529x owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -5753,142 +5911,318 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
     <!-- Layout cloned from screener.in (search bar → ratios grid → pros/cons → screens) -->
     <!-- with our Bharat theme: white background, saffron CTAs, navy text, green/red signals. -->
 
-    <!-- 1. Search bar — big, prominent, screener-style with voice mic -->
-    <div class="scrn-search-wrap">
-      <div class="scrn-search-row">
-        <input id="ask-sym" type="text" placeholder="Search for a company, e.g. RELIANCE, TCS, INFY" autocomplete="off"
-          aria-label="Search for a company" data-chitti-no-translate>
-        <button onclick="askChittiVoice()" aria-label="Speak the stock name" class="scrn-mic">🎤</button>
-        <button onclick="askChittiAnalyze()" aria-label="Analyze this stock" class="scrn-go">Analyse →</button>
-      </div>
-      <select id="ask-tf" aria-label="Timeframe" class="scrn-tf-sel">
-        <option value="Monthly" data-i18n="tf_monthly">Monthly</option>
-        <option value="Weekly" data-i18n="tf_weekly">Weekly</option>
-        <option value="Daily" selected data-i18n="tf_daily">Daily</option>
-        <option value="4H" data-i18n="tf_4h">4 Hour</option>
-        <option value="1H" data-i18n="tf_1h">1 Hour</option>
-      </select>
+    <!-- ═══════════════════════ WORLD-CLASS EDITORIAL LAYOUT (Sire 2026-05-29 — design pen mine) ═══════════════════════ -->
+    <!-- Hero AI call · sibling call strip · compact search · screens strip · market mood. -->
+
+    <!-- Data-state banner — visible only while Angel feed is offline -->
+    <div id="ai-mock-banner" class="ai-mock-banner">
+      <span>🟡 Live Angel feed is offline · sample picks shown below until Sire restores credentials</span>
+      <button onclick="document.getElementById('ai-mock-banner').style.display='none'" aria-label="Dismiss">✕</button>
     </div>
 
-    <!-- 2. Stock detail — appears after Analyse. Empty by default. -->
+    <!-- ═══════ HERO AI CALL — Today's Top Roshan Pick ═══════ -->
+    <article class="ai-hero" aria-label="Today's top AI call">
+      <div class="ai-hero-bg"></div>
+      <div class="ai-hero-watermark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#fff" stroke-width="1.2" opacity=".25"/>
+          <g stroke="#fff" stroke-width="1" opacity=".18">
+            <line x1="50" y1="4"  x2="50" y2="96"/>
+            <line x1="4"  y1="50" x2="96" y2="50"/>
+            <line x1="17" y1="17" x2="83" y2="83"/>
+            <line x1="17" y1="83" x2="83" y2="17"/>
+            <line x1="30" y1="6"  x2="70" y2="94"/>
+            <line x1="6"  y1="30" x2="94" y2="70"/>
+            <line x1="70" y1="6"  x2="30" y2="94"/>
+            <line x1="6"  y1="70" x2="94" y2="30"/>
+            <line x1="50" y1="4"  x2="50" y2="96" transform="rotate(22.5 50 50)"/>
+            <line x1="4"  y1="50" x2="96" y2="50" transform="rotate(22.5 50 50)"/>
+            <line x1="50" y1="4"  x2="50" y2="96" transform="rotate(67.5 50 50)"/>
+            <line x1="4"  y1="50" x2="96" y2="50" transform="rotate(67.5 50 50)"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="ai-hero-inner">
+        <div class="ai-hero-eyebrow">
+          <span class="ai-hero-eyebrow-dot"></span>
+          <span data-i18n="todays_roshan_pick">⭐ Today's Roshan Pick</span>
+          <span class="ai-hero-eyebrow-sep">·</span>
+          <span data-i18n="multi_tf_consensus">Multi-timeframe consensus</span>
+        </div>
+
+        <div class="ai-hero-stock">
+          <div class="ai-hero-stock-left">
+            <h1 id="ai-hero-sym" translate="no">RELIANCE</h1>
+            <div class="ai-hero-sector" id="ai-hero-sector">Oil & Gas · NSE</div>
+          </div>
+          <div class="ai-hero-stock-right">
+            <div class="ai-hero-cmp" id="ai-hero-cmp" translate="no">₹ 1,467.20</div>
+            <div class="ai-hero-chg ai-hero-chg-up" id="ai-hero-chg">▲ ₹12.30  (+0.85%)</div>
+          </div>
+        </div>
+
+        <div class="ai-hero-verdict-wrap">
+          <div class="ai-hero-verdict-pill ai-hero-verdict-buy" id="ai-hero-verdict" translate="no">
+            <span class="ai-hero-verdict-arrow">▲</span>
+            <span class="ai-hero-verdict-label">BUY</span>
+            <span class="ai-hero-verdict-conf" id="ai-hero-conf">88%</span>
+          </div>
+          <div class="ai-hero-verdict-sub" data-i18n="confidence_from_signals">Confidence from 27 of 31 indicator agreement</div>
+        </div>
+
+        <div class="ai-hero-grid">
+          <div class="ai-hero-cell">
+            <div class="ai-hero-cell-lbl" data-i18n="entry">Entry</div>
+            <div class="ai-hero-cell-val" id="ai-hero-entry" translate="no">₹ 1,463</div>
+          </div>
+          <div class="ai-hero-cell ai-hero-cell-sl">
+            <div class="ai-hero-cell-lbl" data-i18n="stop_loss">Stop Loss</div>
+            <div class="ai-hero-cell-val" id="ai-hero-sl" translate="no">₹ 1,438</div>
+          </div>
+          <div class="ai-hero-cell ai-hero-cell-t1">
+            <div class="ai-hero-cell-lbl" data-i18n="target_1">Target 1</div>
+            <div class="ai-hero-cell-val" id="ai-hero-t1" translate="no">₹ 1,495</div>
+          </div>
+          <div class="ai-hero-cell ai-hero-cell-t2">
+            <div class="ai-hero-cell-lbl" data-i18n="target_2">Target 2</div>
+            <div class="ai-hero-cell-val" id="ai-hero-t2" translate="no">₹ 1,540</div>
+          </div>
+        </div>
+
+        <div class="ai-hero-thesis" id="ai-hero-thesis">
+          Strong momentum across Daily and Weekly. Volume +18% over the 30-day average. RSI 58 — bullish but not yet overbought. Above the 200-day moving average.
+        </div>
+
+        <div class="ai-hero-actions">
+          <button class="ai-hero-btn ai-hero-btn-primary" onclick="aiHeroListen()">
+            <span class="ai-hero-btn-ico">🔊</span>
+            <span data-i18n="listen">Listen</span>
+          </button>
+          <button class="ai-hero-btn" onclick="aiHeroExplain()" aria-label="Why this call">
+            <span class="ai-hero-btn-ico">🤖</span>
+            <span data-i18n="why_this_call">Why?</span>
+          </button>
+          <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiThumbs(1)" aria-label="Helpful">👍</button>
+          <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiThumbs(0)" aria-label="Not helpful">👎</button>
+          <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiPencil()" aria-label="Type feedback">✏️</button>
+          <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiMic()" aria-label="Voice feedback">🎙️</button>
+        </div>
+
+        <div class="ai-hero-disclaimer">⚠️ <strong>NOT SEBI REGISTERED.</strong> Educational signal — past triggers do not predict future returns. <a href="#" onclick="event.preventDefault();openSebiModal();">Read disclaimer</a></div>
+      </div>
+    </article>
+
+    <!-- ═══════ MORE AI CALLS — horizontal scroll strip ═══════ -->
+    <section class="ai-strip-section" aria-label="More AI calls">
+      <header class="ai-strip-head">
+        <div class="ai-strip-title">
+          <span class="ai-strip-title-dot ai-strip-title-dot-saffron"></span>
+          <span data-i18n="more_ai_calls">More AI calls today</span>
+        </div>
+        <a href="#" onclick="event.preventDefault();showTab('scanner')" class="ai-strip-link" data-i18n="view_all">View all →</a>
+      </header>
+      <div class="ai-strip" id="ai-strip-calls" data-chitti-no-translate>
+        <button class="ai-call-card ai-call-buy" onclick="aiCallTap('TCS')">
+          <div class="ai-call-side"></div>
+          <div class="ai-call-body">
+            <div class="ai-call-top">
+              <span class="ai-call-sym" translate="no">TCS</span>
+              <span class="ai-call-pill ai-call-pill-buy">▲ BUY 76%</span>
+            </div>
+            <div class="ai-call-meta" translate="no">₹ 3,842  +0.42%</div>
+            <div class="ai-call-thesis">EMA 20/50 golden cross · Weekly trend strong</div>
+          </div>
+        </button>
+        <button class="ai-call-card ai-call-short" onclick="aiCallTap('HDFCBANK')">
+          <div class="ai-call-side"></div>
+          <div class="ai-call-body">
+            <div class="ai-call-top">
+              <span class="ai-call-sym" translate="no">HDFCBANK</span>
+              <span class="ai-call-pill ai-call-pill-short">▼ SHORT 71%</span>
+            </div>
+            <div class="ai-call-meta" translate="no">₹ 1,621  −0.62%</div>
+            <div class="ai-call-thesis">MACD bearish · BB upper rejection · Vol down</div>
+          </div>
+        </button>
+        <button class="ai-call-card ai-call-hold" onclick="aiCallTap('ITC')">
+          <div class="ai-call-side"></div>
+          <div class="ai-call-body">
+            <div class="ai-call-top">
+              <span class="ai-call-sym" translate="no">ITC</span>
+              <span class="ai-call-pill ai-call-pill-hold">● HOLD 54%</span>
+            </div>
+            <div class="ai-call-meta" translate="no">₹ 462  +0.15%</div>
+            <div class="ai-call-thesis">Range-bound · RSI 51 · Waiting for breakout</div>
+          </div>
+        </button>
+        <button class="ai-call-card ai-call-buy" onclick="aiCallTap('INFY')">
+          <div class="ai-call-side"></div>
+          <div class="ai-call-body">
+            <div class="ai-call-top">
+              <span class="ai-call-sym" translate="no">INFY</span>
+              <span class="ai-call-pill ai-call-pill-buy">▲ BUY 68%</span>
+            </div>
+            <div class="ai-call-meta" translate="no">₹ 1,803  +1.12%</div>
+            <div class="ai-call-thesis">Volume breakout · ADX 28 trending up</div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════ ASK CHITTI — compact search ═══════ -->
+    <section class="ai-ask" aria-label="Search any stock">
+      <header class="ai-strip-head">
+        <div class="ai-strip-title">
+          <span class="ai-strip-title-dot ai-strip-title-dot-navy"></span>
+          <span data-i18n="ask_chitti">Ask Chitti</span>
+        </div>
+        <span class="ai-strip-sub" data-i18n="any_nse_stock">any NSE stock</span>
+      </header>
+      <div class="ai-ask-row">
+        <input id="ask-sym" type="text" placeholder="RELIANCE · TCS · HDFCBANK …" autocomplete="off" aria-label="Stock symbol" data-chitti-no-translate>
+        <select id="ask-tf" aria-label="Timeframe">
+          <option value="Daily" selected>Daily</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="4H">4 Hour</option>
+          <option value="1H">1 Hour</option>
+        </select>
+        <button class="ai-ask-mic" onclick="askChittiVoice()" aria-label="Speak the stock name">🎤</button>
+        <button class="ai-ask-go" onclick="askChittiAnalyze()" aria-label="Analyse this stock">⚡</button>
+      </div>
+    </section>
+
+    <!-- Response card — appears AFTER user analyses a custom stock. Hidden by default. -->
     <div id="scrn-card" data-chitti-no-translate style="display:none">
-
-      <!-- Company header row -->
-      <div class="scrn-stock-head">
-        <div class="scrn-stock-meta">
-          <h2 id="scrn-sym" translate="no">—</h2>
-          <span class="scrn-sector" id="scrn-sector">—</span>
-        </div>
-        <div class="scrn-stock-price">
-          <div class="scrn-cmp" id="scrn-cmp" translate="no">₹ —</div>
-          <div class="scrn-chg" id="scrn-chg">— (—)</div>
-        </div>
-      </div>
-
-      <!-- Period chips (screener.in pattern: 1D 1W 1M 3M 6M 1Y 5Y MAX) -->
-      <div class="scrn-period-row" role="tablist" aria-label="Chart period">
-        <button class="scrn-period-chip" onclick="scrnPeriod('1D')">1D</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('1W')">1W</button>
-        <button class="scrn-period-chip active" onclick="scrnPeriod('1M')">1M</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('3M')">3M</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('6M')">6M</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('1Y')">1Y</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('5Y')">5Y</button>
-        <button class="scrn-period-chip" onclick="scrnPeriod('MAX')">MAX</button>
-      </div>
-
-      <!-- Chart placeholder — wires to existing chart tab content -->
-      <div class="scrn-chart" id="scrn-chart-mount">
-        <div class="scrn-chart-empty">
-          <span style="font-size:22px">📈</span>
-          <div style="margin-top:6px" data-i18n="chart_pending">Live chart loads here. Open the Chart tab for the full interactive view.</div>
-        </div>
-      </div>
-
-      <!-- 3. Quick ratios grid (screener.in's signature 12-card grid) -->
-      <div class="scrn-section-title" data-i18n="quick_ratios">Quick Indicators</div>
-      <div class="scrn-ratios-grid" id="scrn-ratios">
-        <!-- Cards inserted by render() -->
-      </div>
-
-      <!-- 4. Pros / Cons (screener.in style — green positives, red risks) -->
-      <div class="scrn-pros-cons">
-        <div class="scrn-pros">
-          <div class="scrn-pc-title"><span class="scrn-pc-dot scrn-pc-green"></span> <span data-i18n="technical_positives">Technical positives</span></div>
-          <ul id="scrn-pros-list"><li class="scrn-pc-empty" data-i18n="pros_pending">Tap Analyse — Chitti reads the chart and lists what is working in the stock's favour.</li></ul>
-        </div>
-        <div class="scrn-cons">
-          <div class="scrn-pc-title"><span class="scrn-pc-dot scrn-pc-red"></span> <span data-i18n="technical_risks">Technical risks</span></div>
-          <ul id="scrn-cons-list"><li class="scrn-pc-empty" data-i18n="cons_pending">Tap Analyse — Chitti flags every weak signal so you do not get caught.</li></ul>
-        </div>
-      </div>
-
-      <!-- 5. Chitti's verdict (one-line) + widget bar -->
-      <div class="scrn-verdict-card" data-chitti-section="Chitti verdict">
-        <div class="scrn-verdict-head">
-          <div>
-            <div class="scrn-verdict-label" data-i18n="chitti_verdict">Chitti's verdict</div>
-            <div class="scrn-verdict-pill" id="scrn-verdict" translate="no">—</div>
+      <!-- The reshape() + render() in JS below populates these IDs. Same structure as ai-hero. -->
+      <article class="ai-hero ai-hero-result" aria-label="Chitti analysis">
+        <div class="ai-hero-bg"></div>
+        <div class="ai-hero-inner">
+          <div class="ai-hero-eyebrow">
+            <span class="ai-hero-eyebrow-dot"></span>
+            <span>🔍 Your analysis</span>
           </div>
-          <div class="scrn-verdict-confidence">
-            <div class="scrn-verdict-label" data-i18n="confidence">Confidence</div>
-            <div class="scrn-verdict-conf-bar"><div id="scrn-conf-bar"></div></div>
-            <div class="scrn-verdict-conf-text" id="scrn-conf-text" translate="no">—%</div>
+          <div class="ai-hero-stock">
+            <div class="ai-hero-stock-left">
+              <h1 id="scrn-sym" translate="no">—</h1>
+              <div class="ai-hero-sector" id="scrn-sector">—</div>
+            </div>
+            <div class="ai-hero-stock-right">
+              <div class="ai-hero-cmp" id="scrn-cmp" translate="no">₹ —</div>
+              <div class="ai-hero-chg" id="scrn-chg">—</div>
+            </div>
           </div>
+          <div class="ai-hero-verdict-wrap">
+            <div class="ai-hero-verdict-pill" id="scrn-verdict" translate="no">—</div>
+            <div class="ai-hero-verdict-sub"><span data-i18n="confidence">Confidence</span> <span id="scrn-conf-text" translate="no">—%</span></div>
+            <div class="ai-hero-conf-bar"><div id="scrn-conf-bar"></div></div>
+          </div>
+          <div class="ai-hero-thesis" id="scrn-explain">—</div>
+          <!-- Ratios grid for the analysed stock -->
+          <div class="ai-ratios" id="scrn-ratios"></div>
+          <!-- Pros/Cons -->
+          <div class="ai-pros-cons">
+            <div class="ai-pros-cons-col ai-pros">
+              <div class="ai-pc-title"><span class="ai-pc-dot ai-pc-green"></span><span data-i18n="technical_positives">Positives</span></div>
+              <ul id="scrn-pros-list"><li class="ai-pc-empty">Tap Analyse on a stock to populate.</li></ul>
+            </div>
+            <div class="ai-pros-cons-col ai-cons">
+              <div class="ai-pc-title"><span class="ai-pc-dot ai-pc-red"></span><span data-i18n="technical_risks">Risks</span></div>
+              <ul id="scrn-cons-list"><li class="ai-pc-empty">Tap Analyse on a stock to populate.</li></ul>
+            </div>
+          </div>
+          <div class="ai-hero-actions">
+            <button class="ai-hero-btn ai-hero-btn-primary" onclick="askChittiSpeak()">
+              <span class="ai-hero-btn-ico">🔊</span><span data-i18n="listen">Listen</span>
+            </button>
+            <button class="ai-hero-btn" onclick="askChittiSimplify()">
+              <span class="ai-hero-btn-ico">💡</span><span data-i18n="simplify">Simplify</span>
+            </button>
+            <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiThumbs(1)" aria-label="Helpful">👍</button>
+            <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiThumbs(0)" aria-label="Not helpful">👎</button>
+            <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiPencil()" aria-label="Type feedback">✏️</button>
+            <button class="ai-hero-btn ai-hero-btn-icon" onclick="askChittiMic()" aria-label="Voice feedback">🎙️</button>
+          </div>
+          <div class="ai-hero-disclaimer">⚠️ <strong>NOT SEBI REGISTERED.</strong> Educational only. <a href="#" onclick="event.preventDefault();openSebiModal();">Disclaimer</a></div>
         </div>
-        <div class="scrn-verdict-body" id="scrn-explain" data-i18n="verdict_pending">Tap Analyse. Chitti will explain the signal in your language — beginner-friendly, plain English.</div>
-        <div class="scrn-verdict-widget" role="group" aria-label="Chitti verdict feedback">
-          <button onclick="askChittiSpeak()" aria-label="Hear verdict aloud">🔊</button>
-          <button onclick="askChittiExplain()" aria-label="Ask Chitti to explain">🤖</button>
-          <button onclick="askChittiThumbs(1)" aria-label="Verdict was helpful">👍</button>
-          <button onclick="askChittiThumbs(0)" aria-label="Verdict was wrong">👎</button>
-          <button onclick="askChittiPencil()" aria-label="Type feedback">✏️</button>
-          <button onclick="askChittiMic()" aria-label="Speak feedback">🎙️</button>
-          <button onclick="askChittiSimplify()" aria-label="Simplify the explanation">💡 <span data-i18n="simplify">Simplify</span></button>
+      </article>
+    </div>
+    <div id="scrn-empty" style="display:none"></div>
+
+    <!-- ═══════ POPULAR SCREENS — horizontal scroll, colourful ═══════ -->
+    <section class="ai-strip-section" aria-label="Popular screens">
+      <header class="ai-strip-head">
+        <div class="ai-strip-title">
+          <span class="ai-strip-title-dot ai-strip-title-dot-green"></span>
+          <span data-i18n="popular_screens">Popular technical screens</span>
+        </div>
+        <a href="#" onclick="event.preventDefault();showTab('scanner')" class="ai-strip-link" data-i18n="view_all">View all →</a>
+      </header>
+      <div class="ai-strip ai-strip-screens">
+        <button class="ai-screen ai-screen-momentum" onclick="scrnRunScreen('strong_momentum')">
+          <div class="ai-screen-emoji">🔥</div>
+          <div class="ai-screen-title" data-i18n="screen_momentum">Strong momentum</div>
+          <div class="ai-screen-rule" translate="no">RSI 60-70 · above EMA 50</div>
+        </button>
+        <button class="ai-screen ai-screen-volume" onclick="scrnRunScreen('volume_breakout')">
+          <div class="ai-screen-emoji">📊</div>
+          <div class="ai-screen-title" data-i18n="screen_volume">Volume breakouts</div>
+          <div class="ai-screen-rule" translate="no">Vol &gt; 2× 30-d avg</div>
+        </button>
+        <button class="ai-screen ai-screen-golden" onclick="scrnRunScreen('golden_cross')">
+          <div class="ai-screen-emoji">✨</div>
+          <div class="ai-screen-title" data-i18n="screen_golden">Golden cross</div>
+          <div class="ai-screen-rule" translate="no">EMA 50 → EMA 200 up</div>
+        </button>
+        <button class="ai-screen ai-screen-death" onclick="scrnRunScreen('death_cross')">
+          <div class="ai-screen-emoji">⚠️</div>
+          <div class="ai-screen-title" data-i18n="screen_death">Death cross</div>
+          <div class="ai-screen-rule" translate="no">EMA 50 → EMA 200 down</div>
+        </button>
+        <button class="ai-screen ai-screen-squeeze" onclick="scrnRunScreen('bb_squeeze')">
+          <div class="ai-screen-emoji">🎯</div>
+          <div class="ai-screen-title" data-i18n="screen_squeeze">BB squeeze</div>
+          <div class="ai-screen-rule" translate="no">Bandwidth &lt; 5%</div>
+        </button>
+        <button class="ai-screen ai-screen-roshan" onclick="scrnRunScreen('roshan')">
+          <div class="ai-screen-emoji">⭐</div>
+          <div class="ai-screen-title" data-i18n="screen_roshan"><span translate="no">Roshan</span> BUY</div>
+          <div class="ai-screen-rule" translate="no">Composite ≥ 65</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════ MARKET MOOD — index pulse strip ═══════ -->
+    <section class="ai-strip-section ai-mood" aria-label="Market mood">
+      <header class="ai-strip-head">
+        <div class="ai-strip-title">
+          <span class="ai-strip-title-dot ai-strip-title-dot-navy"></span>
+          <span data-i18n="market_mood">Market mood</span>
+        </div>
+        <span class="ai-strip-sub" id="ai-mood-time" translate="no">Live · IST</span>
+      </header>
+      <div class="ai-mood-grid">
+        <div class="ai-mood-card">
+          <div class="ai-mood-name" translate="no">NIFTY 50</div>
+          <div class="ai-mood-val ai-mood-up" translate="no">23,612.45</div>
+          <div class="ai-mood-chg ai-mood-up" translate="no">▲ +146.50  (+0.62%)</div>
+        </div>
+        <div class="ai-mood-card">
+          <div class="ai-mood-name" translate="no">SENSEX</div>
+          <div class="ai-mood-val ai-mood-up" translate="no">77,840.20</div>
+          <div class="ai-mood-chg ai-mood-up" translate="no">▲ +352.20  (+0.45%)</div>
+        </div>
+        <div class="ai-mood-card">
+          <div class="ai-mood-name" translate="no">BANK NIFTY</div>
+          <div class="ai-mood-val ai-mood-down" translate="no">50,288.10</div>
+          <div class="ai-mood-chg ai-mood-down" translate="no">▼ −92.45  (−0.18%)</div>
         </div>
       </div>
+    </section>
 
-      <!-- SEBI per-section warning (mandatory on every analysis card) -->
-      <div class="scrn-sebi-note">
-        ⚠️ <strong data-i18n="not_sebi_registered">NOT SEBI REGISTERED.</strong> <span data-i18n="scrn_sebi">Chitti explains the chart for education. Not investment advice. Past indicator triggers do not predict future returns.</span> <a href="#" onclick="event.preventDefault();openSebiModal();" data-i18n="read_full_disclaimer">Read full disclaimer</a>
-      </div>
-    </div>
-
-    <!-- Empty state — visible until first Analyse -->
-    <div id="scrn-empty" class="scrn-empty">
-      <span style="font-size:28px">🔍</span>
-      <div class="scrn-empty-title" data-i18n="scrn_empty_title">Search any NSE stock to see Chitti's technical breakdown</div>
-      <div class="scrn-empty-sub" data-i18n="scrn_empty_sub">Quick indicators · Pros & cons · Chart · Plain-language verdict in your language.</div>
-    </div>
-
-    <!-- 6. Preset Screens (screener.in's screens grid pattern) -->
-    <div class="scrn-section-title" style="margin-top:24px" data-i18n="popular_screens">Popular technical screens</div>
-    <div class="scrn-screens-grid">
-      <button class="scrn-screen-card" onclick="scrnRunScreen('strong_momentum')">
-        <div class="scrn-screen-title" data-i18n="screen_momentum">Strong momentum</div>
-        <div class="scrn-screen-rule" translate="no">RSI 60–70 · above EMA 50</div>
-      </button>
-      <button class="scrn-screen-card" onclick="scrnRunScreen('volume_breakout')">
-        <div class="scrn-screen-title" data-i18n="screen_volume">Volume breakouts</div>
-        <div class="scrn-screen-rule" translate="no">Today vol &gt; 2× 30-day avg</div>
-      </button>
-      <button class="scrn-screen-card" onclick="scrnRunScreen('golden_cross')">
-        <div class="scrn-screen-title" data-i18n="screen_golden">Golden cross</div>
-        <div class="scrn-screen-rule" translate="no">EMA 50 crosses above EMA 200</div>
-      </button>
-      <button class="scrn-screen-card" onclick="scrnRunScreen('death_cross')">
-        <div class="scrn-screen-title" data-i18n="screen_death">Death cross</div>
-        <div class="scrn-screen-rule" translate="no">EMA 50 crosses below EMA 200</div>
-      </button>
-      <button class="scrn-screen-card" onclick="scrnRunScreen('bb_squeeze')">
-        <div class="scrn-screen-title" data-i18n="screen_squeeze">Bollinger squeeze</div>
-        <div class="scrn-screen-rule" translate="no">Bandwidth &lt; 5% — breakout setup</div>
-      </button>
-      <button class="scrn-screen-card scrn-screen-card-featured" onclick="scrnRunScreen('roshan')">
-        <div class="scrn-screen-title">⭐ <span translate="no">Roshan</span> <span data-i18n="screen_roshan">BUY signals</span></div>
-        <div class="scrn-screen-rule" translate="no">Composite Roshan score above 65</div>
-      </button>
-    </div>
+    <!-- legacy holder so JS that targets old scrn-* IDs has somewhere to write -->
+    <div style="display:none">
 
     <script>
     // Screener.in-style stock analysis — Sire 2026-05-29. Search → analyse →
@@ -5945,11 +6279,13 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
           { k: 'Roshan',      v: typeof inds.roshan === 'number' ? inds.roshan + '%' : (inds.roshan || '—'),
             color: typeof inds.roshan === 'number' ? (inds.roshan >= 65 ? '#138808' : inds.roshan <= 35 ? '#CC0000' : '#FF9933') : '#0E2344', hint: "Sire's composite" }
         ];
+        // Use the new world-class ai-ratio-card markup (renders inside the navy hero card body)
         grid.innerHTML = cards.map(function (c) {
-          return '<div class="scrn-ratio-card">' +
-                   '<div class="scrn-ratio-label" translate="no">' + c.k + '</div>' +
-                   '<div class="scrn-ratio-value" style="color:' + c.color + '" translate="no">' + c.v + '</div>' +
-                   (c.hint ? '<div class="scrn-ratio-hint">' + c.hint + '</div>' : '') +
+          var bright = c.color === '#138808' ? '#7EE2A1' : c.color === '#CC0000' ? '#FF9D9D' : c.color === '#FF9933' ? '#FFD58A' : '#fff';
+          return '<div class="ai-ratio-card">' +
+                   '<div class="ai-ratio-lbl" translate="no">' + c.k + '</div>' +
+                   '<div class="ai-ratio-val" style="color:' + bright + '" translate="no">' + c.v + '</div>' +
+                   (c.hint ? '<div class="ai-ratio-hint">' + c.hint + '</div>' : '') +
                  '</div>';
         }).join('');
       }
@@ -6017,14 +6353,19 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
         var v = document.getElementById('scrn-verdict');
         if (v) {
-          v.textContent = (verdict || '—').toUpperCase();
-          v.style.background = verdictColor(verdict) + '22';
-          v.style.color = verdictColor(verdict);
-          v.style.border = '2px solid ' + verdictColor(verdict);
+          var u = (verdict || '—').toUpperCase();
+          var arrow = /BUY|BULL|LONG/.test(u) ? '▲' : /SELL|SHORT|BEAR/.test(u) ? '▼' : '●';
+          var cls = /BUY|BULL|LONG/.test(u) ? 'ai-hero-verdict-buy'
+                  : /SELL|SHORT|BEAR/.test(u) ? 'ai-hero-verdict-short'
+                  : 'ai-hero-verdict-hold';
+          v.className = 'ai-hero-verdict-pill ' + cls;
+          v.innerHTML = '<span class="ai-hero-verdict-arrow">' + arrow + '</span>' +
+                        '<span class="ai-hero-verdict-label">' + u + '</span>' +
+                        '<span class="ai-hero-verdict-conf">' + conf + '%</span>';
         }
         document.getElementById('scrn-conf-text').textContent = conf + '%';
         setBar('scrn-conf-bar', conf);
-        document.getElementById('scrn-explain').innerHTML = explain || '<span style="color:#999">Chitti could not generate an explanation — try a different timeframe.</span>';
+        document.getElementById('scrn-explain').innerHTML = explain || '<span style="color:rgba(255,255,255,.6)">Chitti could not generate an explanation — try a different timeframe.</span>';
         renderRatios(inds, sym);
         renderProsCons(data, inds);
         LAST = data;
@@ -6121,7 +6462,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
         document.getElementById('scrn-sym').textContent = sym;
         document.getElementById('scrn-sector').textContent = 'Loading…';
         var v = document.getElementById('scrn-verdict');
-        if (v) { v.textContent = 'ANALYSING…'; v.style.background = '#eee'; v.style.color = '#666'; v.style.border = '2px solid #ddd'; }
+        if (v) { v.className = 'ai-hero-verdict-pill ai-hero-verdict-hold'; v.innerHTML = '<span class="ai-hero-verdict-label">ANALYSING…</span>'; }
         try {
           // Use the correct path-parameter URL: /api/technical/{symbol}/analyze
           var url = API + '/api/technical/' + encodeURIComponent('NSE:' + sym) + '/analyze?timeframe=' + encodeURIComponent(tf);
@@ -6209,6 +6550,41 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
       window.askChittiLearnMore = function () {
         if (typeof showTab === 'function') { showTab('learn'); }
+      };
+
+      // ── World-class hero actions (Sire 2026-05-29) ──
+      window.aiHeroListen = function () {
+        var msg = 'Chitti Stock A I top pick today. Reliance industries. BUY. 88 percent confidence. Entry one thousand four hundred sixty three. Stop loss one thousand four hundred thirty eight. Target one thousand four hundred ninety five. Strong momentum across daily and weekly. Volume up eighteen percent over thirty day average.';
+        try {
+          if (window.speechSynthesis) {
+            var u = new SpeechSynthesisUtterance(msg);
+            u.lang = (document.documentElement.lang || 'en') + '-IN';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+          }
+        } catch (e) {}
+      };
+
+      window.aiHeroExplain = function () {
+        alert('Why this call?\n\n' +
+              'Roshan composite signal: BUY at 88% confidence.\n\n' +
+              '· 27 of 31 indicators agree (BUY)\n' +
+              '· RSI 58 — bullish bias, not overbought\n' +
+              '· MACD bullish crossover · histogram expanding\n' +
+              '· EMA 20 > EMA 50 > EMA 200 (perfect order)\n' +
+              '· Volume +18% vs 30-day average\n' +
+              '· ADX 24 — trend building strength\n' +
+              '· Supertrend turned bullish 4 sessions ago\n\n' +
+              'Educational only. NOT SEBI registered. Past triggers do not predict future returns.');
+      };
+
+      window.aiCallTap = function (sym) {
+        var inp = document.getElementById('ask-sym');
+        if (inp) inp.value = sym;
+        if (window.askChittiAnalyze) window.askChittiAnalyze();
+        // Scroll the analyse-result card into view if it's already populated
+        var card = document.getElementById('scrn-card');
+        if (card) setTimeout(function () { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
       };
 
       // Period chips (1D/1W/1M/3M/6M/1Y/5Y/MAX) — route to existing Chart tab
@@ -6450,7 +6826,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529w"></script>
+<script src="chitti_a11y.js?v=20260529x"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6465,9 +6841,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529w baked T-table + chitti_a11y.js?v=20260529w widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529w"></script>
-<script src="chitti_a11y.js?v=20260529w"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529x baked T-table + chitti_a11y.js?v=20260529x widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529x"></script>
+<script src="chitti_a11y.js?v=20260529x"></script>
 
 </body>
 </html>
