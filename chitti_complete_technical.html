@@ -790,7 +790,7 @@ div[data-chitti-lang-select="auto"] label{color:#fff!important;font-size:14px!im
 <!-- ═══════════════════════ BHARAT STRIPE (very top of page — 2026-05-27) ═══════════════════════ -->
 <div class="bharat-stripe" aria-hidden="true" style="position:relative;z-index:60"></div>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529z wires this. 2026-05-22 -->
+<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529A wires this. 2026-05-22 -->
 <div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
   <label for="lang-select" style="font-weight:600">🌐</label>
   <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
@@ -2199,11 +2199,11 @@ function applyChittiLang(lang) {
     b.classList.toggle('active', active);
     b.setAttribute('data-active', active ? 'true' : 'false');
   });
-  // Delegate full-body translation to chitti_lang.js?v=20260529z (single source of truth).
+  // Delegate full-body translation to chitti_lang.js?v=20260529A (single source of truth).
   if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
     try { window.Chitti.lang.set(lang); } catch (e) {}
   }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529z owns i18n
+} // neutered 2026-05-22 — chitti_lang.js?v=20260529A owns i18n
 
 function setChittiLang(lang) {
   applyChittiLang(lang);
@@ -6826,7 +6826,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 
 <!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
 <script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529z"></script>
+<script src="chitti_a11y.js?v=20260529A"></script>
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 <script src="chitti_i18n.js"></script>
@@ -6841,9 +6841,9 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 </div>
 
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529z baked T-table + chitti_a11y.js?v=20260529z widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529z"></script>
-<script src="chitti_a11y.js?v=20260529z"></script>
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529A baked T-table + chitti_a11y.js?v=20260529A widget+QR supplement. 2026-05-22 -->
+<script src="chitti_lang.js?v=20260529A"></script>
+<script src="chitti_a11y.js?v=20260529A"></script>
 
 <!-- ═════════════════════ MULTI-CHART WORKSTATION (Sire 2026-05-29) ═════════════════════ -->
 <!-- Up to 8 panes. Each pane: symbol + timeframe + indicators (RSI · Bollinger · Pivot · -->
@@ -6889,7 +6889,7 @@ window._chittiRefreshSpend = _chittiRefreshSpend;
 .mc-modal{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;z-index:999999!important;background:#0a1428!important;color:#e6e6ea;display:none;flex-direction:column;font-family:Inter,system-ui,sans-serif;overflow:hidden}
 .mc-modal.open{display:flex!important}
 body.mc-modal-open{overflow:hidden!important}
-body.mc-modal-open .sebi-bar,body.mc-modal-open .chitti-clean-header,body.mc-modal-open .tabs,body.mc-modal-open #chitti-fab,body.mc-modal-open #chitti-ask-panel{display:none!important}
+body.mc-modal-open .sebi-bar,body.mc-modal-open .chitti-clean-header,body.mc-modal-open .tabs,body.mc-modal-open #chitti-fab,body.mc-modal-open #chitti-ask-panel,body.mc-modal-open [data-chitti-lang-select],body.mc-modal-open #chitti-obs-badge,body.mc-modal-open #mc-open-btn,body.mc-modal-open .chitti-features-fab,body.mc-modal-open .chitti-feat-pill,body.mc-modal-open #chitti-features-pill,body.mc-modal-open .chitti-camera-fab,body.mc-modal-open #camera-fab,body.mc-modal-open .vaani-bottom-nav,body.mc-modal-open .chitti-bottom-nav,body.mc-modal-open .bharat-stripe,body.mc-modal-open .a11y-bar,body.mc-modal-open .demo-banner,body.mc-modal-open .chitti-card-widget,body.mc-modal-open .chitti-fb-box-bar{display:none!important}
 
 .mc-toolbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(135deg,#0E2344,#16376a);border-bottom:1px solid rgba(255,255,255,.10);flex-wrap:wrap;flex-shrink:0}
 .mc-toolbar-left{display:flex;align-items:baseline;gap:8px;flex:1;min-width:0}
