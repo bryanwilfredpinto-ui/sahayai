@@ -1,7 +1,44 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-05-29 PM (Chitti CTO pass — fleet audit + chitti-pa skeleton ships; new ca/legal/upi/scanner Turso risk flagged) · **Auditor:** Claude Opus 4.7 (1M context) ·
-**Trigger:** "DEFINITIVE ENTERPRISE BASELINE — all Chittis GREEN" from Sire.
+**Generated:** 2026-05-14 · **Updated:** 2026-06-02 PM (chitti-news language-coverage end-to-end fix — +30 regional sources, cloudscraper-fallback ingest, json+ app-API dispatch, coverage payload in feed()) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Trigger:** Sire 2026-06-02 — "why am I not getting full news loaded in Chitti News in all languages".
+
+## 2026-06-02 PM — chitti-news language-coverage fixed end-to-end
+
+**Root cause:** Strict `Article.language == language` filter in `news_db.feed()` + shallow regional RSS coverage (1-3 publishers per language vs MSN India's 15-20). Non-en/non-hi users saw empty feeds with no explanation.
+
+**Fix shipped (commit `d3b21e9`):**
+
+| Layer | Change |
+|---|---|
+| Source registry | +30 regional publishers added across two probe rounds (WordPress `/feed` + cloudscraper + `<link rel=alternate>` discovery). [tools/probe_regional_feeds.py](tools/probe_regional_feeds.py) + [tools/probe_v2_cloudscraper.py](tools/probe_v2_cloudscraper.py) committed for repeat runs. |
+| Ingest path | [`news_ingest._http_get`](chitti-news/backend/services/news_ingest.py) is now a two-stage fetcher (requests → cloudscraper fallback). Cloudflare-protected publishers (Saamana, Prajavani, Rozana Spokesman) now ingestable in prod. `cloudscraper==1.2.71` added to requirements, lazy-imported. |
+| Source seed | [`news_seed.seed_sources_if_empty`](chitti-news/backend/services/news_seed.py) rewritten as idempotent UPSERT — was empty-only check, so new sources.json rows never reached prod DB on redeploy. |
+| App-API dispatch | `json+`-prefixed `rss_url` routes to `_fetch_source_json` reading per-slug config at [`data/json_configs/<slug>.json`](chitti-news/backend/data/json_configs/README.md). File-based config = zero schema migration. Ready for Sire's mitmproxy captures of Eenadu / Daily Thanthi / Sandesh / Divya Bhaskar. |
+| Feed response | [`news_db.feed()`](chitti-news/backend/services/news_db.py) embeds `coverage: {per_category, total_in_language, available_categories, english_fallback_count}`. Empty feeds now narrate honestly *"No mr stories yet for mh — 42 English stories available, tap to switch"* or *"No business stories in MR today. Available: national, state."* |
+
+**Per-language source-count delta (enabled):**
+
+| Lang | Before | After | Δ |
+|---|---|---|---|
+| ta Tamil | 2 | 8 | +6 |
+| te Telugu | 3 | 7 | +4 |
+| ml Malayalam | 6 | 11 | +5 |
+| or Odia | 1 | 5 | +4 |
+| kn Kannada | 1 | 4 | +3 |
+| mr Marathi | 4 | 6 | +2 |
+| bn Bengali | 3 | 5 | +2 |
+| pa Punjabi | 6 | 7 | +1 |
+| ur Urdu | 1 | 3 | +2 |
+| en (state-level) | 50 | 53 | +3 |
+| gu Gujarati | 3 | 3 | 0 (app-API only — awaiting Sire's mitmproxy capture) |
+| hi Hindi | 18 | 18 | 0 (already deep) |
+
+**Standing gap:** Gujarati. Every Cloudflare-bypass + feed-discovery probe came back empty — Sandesh / Divya Bhaskar / ABP Asmita / VTV have no public RSS at all. Path forward: Sire captures the Sandesh app's API via mitmproxy, drops the URL into sources.json with `json+` prefix + a config in `data/json_configs/`.
+
+---
+
+
 
 ## 2026-05-29 PM — Fleet audit + chitti-pa skeleton ships
 

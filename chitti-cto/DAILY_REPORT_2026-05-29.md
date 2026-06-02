@@ -131,4 +131,64 @@ Backend `/api/observability/*` endpoints live on `chitti-shares-api-production.u
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# 🎖️ SESSION 3 ADDENDUM — 2026-06-02 PM
+
+(Same report file extended — daily reports roll up across sessions until a new date opens.)
+
+## ✅ FIXED THIS SESSION
+
+10. **Root-caused "why no full news in all languages"** (no commit, in conversation)
+    - Strict `Article.language == language` filter in [news_db.feed()](chitti-news/backend/services/news_db.py) + shallow regional RSS coverage (1-3 publishers per lang vs MSN India's 15-20).
+    - Picked Marathi + Business → empty feed; no Marathi RSS source publishes `category="business"`.
+
+11. **+30 regional RSS sources across 11 languages** (commits `3cac0d5`, `d3b21e9`)
+    - **WordPress `/feed` probe** (tip from Sire) — 19 winners across 8 languages
+    - **cloudscraper + `<link rel=alternate>` discovery** — 11 more winners
+    - Biggest deltas: ta 2→8 · ml 6→11 · te 3→7 · or 1→5 · kn 1→4
+    - Probe tools committed: [tools/probe_regional_feeds.py](tools/probe_regional_feeds.py) + [tools/probe_v2_cloudscraper.py](tools/probe_v2_cloudscraper.py)
+
+12. **`news_ingest._http_get` two-stage fetcher** (commit `d3b21e9`)
+    - Stage 1: plain requests (fast). Stage 2: cloudscraper (Cloudflare bypass).
+    - Cloudflare-protected publishers (Saamana, Prajavani, Rozana Spokesman, Varthabharati) now ingestable in prod, not just local probe.
+    - `cloudscraper==1.2.71` added to chitti-news requirements (lazy-imported — falls back to requests-only if wheel fails to install, so a pip failure doesn't break the whole poll).
+
+13. **`news_seed.seed_sources_if_empty` rewritten as idempotent UPSERT** (commit `d3b21e9`)
+    - Was empty-only — meaning every new sources.json row added in 19f and 11f rounds would have stayed dormant in prod DB forever on redeploy.
+    - Now inserts only NEW slugs; existing rows untouched (admin-tweaked `enabled` / `last_fetched_at` preserved).
+
+14. **`json+` source-type dispatch in news_ingest** (commit `d3b21e9`)
+    - For Sire's mitmproxy capture path on apps with no public RSS (Eenadu, Daily Thanthi, Sandesh, Divya Bhaskar).
+    - Per-slug config at `chitti-news/backend/data/json_configs/<slug>.json` — file-based, zero DB schema migration.
+    - Schema documented in [json_configs/README.md](chitti-news/backend/data/json_configs/README.md) with the mitmproxy capture workflow.
+
+15. **`news_db.feed()` ships honest coverage payload** (commit `d3b21e9`)
+    - Every feed response now embeds `coverage: {per_category, total_in_language, available_categories, english_fallback_count}`.
+    - Empty feeds narrate why: *"No mr stories yet for mh — 42 English stories available, tap to switch"* or *"No business stories in MR today. Available: national, state."*
+    - Frontend can hide empty-category tabs by reading `coverage.available_categories`.
+
+## 🔴 STILL BROKEN
+
+- **Gujarati** — every public-feed probe returned empty. Sandesh / Divya Bhaskar / ABP Asmita / VTV / Nobat all parked their RSS. Only path forward: mitmproxy capture of one of these apps + paste into sources.json with `json+` prefix. Sire-side work.
+- **Eenadu / Sakshi / Andhrajyothy / Daily Thanthi / Anandabazar** — same situation, app-API only. Telugu/Bengali/Tamil have OTHER live sources so these aren't blocking, but capturing them would deepen the bucket significantly.
+
+## 🚧 BLOCKED ON SIRE
+
+- **mitmproxy capture of one Gujarati publisher** (Sandesh or Divya Bhaskar) — unblocks Gujarati from 3 sources to 8+
+- Same Turso `DATABASE_URL` env-var blockers from Session 2 still standing (chitti-news-ai · 2wheeler · 4wheeler · voice-factory · founder)
+- Railway deploy of chitti-pa skeleton (project linkage)
+
+## 📋 TOMORROW (top 3)
+
+1. **Frontend picker update** — read `coverage.available_categories` from feed response, hide empty tabs in the language picker. Tests Marathi business / Kannada tech etc. don't look broken anymore.
+2. **P0 #9 audit** — verify ca/legal/upi/scanner Turso shim coverage from session 2 audit. Either ship the shim or mark them GREEN with proof.
+3. **Once Sire pastes a Gujarati mitmproxy capture** — wire it through json+ + drop the config in json_configs/. ~10 min.
+
+## 🟢 GREEN COUNT
+
+15/15 Chitti pages substrate-inherited unchanged. chitti-news bucket count: **128 → 139 → effectively higher live coverage** because the broken embedded-replica-style seed path was masking 30 dormant sources.
+
+📊 GITHUB COMMITS THIS SESSION: `3cac0d5` (v1 probe + 19 sources) · `d3b21e9` (v2 probe + 11 sources + cloudscraper + json+ dispatch + coverage payload + upsert seed)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 **World Class Chitti CTO — Commando Discipline. Zero Excuses.**
