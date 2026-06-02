@@ -96,6 +96,23 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 .art-card .art-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--gold);opacity:.5}
 .art-card .brk-pill{display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--red);margin-right:4px}
 
+/* Sire 2026-06-02 — collapsed by default, headline + speaker only.
+   Tap card to expand; tap speaker to read full news (delegated to
+   readArticleAloud via data-chitti-speak-handler). Per CTO.md UI
+   Design Standard v1.0: saffron is the primary action color. */
+.art-card{cursor:pointer}
+.art-card.expanded{cursor:default}
+.art-card .art-headline-row{display:flex;align-items:flex-start;gap:10px}
+.art-card .art-headline-row .art-title{flex:1;margin-bottom:0}
+.art-card .art-speak{background:var(--saffron);color:#fff;border:0;border-radius:999px;min-width:40px;min-height:40px;font-size:18px;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.art-card .art-speak:hover{filter:brightness(.95)}
+.art-card .art-speak:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.art-card .art-speak.live{background:var(--green)}
+.art-card .art-body{display:none;margin-top:10px}
+.art-card.expanded .art-body{display:block}
+.art-card .art-hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
+.art-card.expanded .art-hint{display:none}
+
 @media (max-width: 560px){
   .art-card{grid-template-columns:1fr}
   .art-card .art-thumb{display:none}
@@ -796,35 +813,43 @@ function _articleCardHtml(a) {
     ? '<div class="art-thumb" style="background-image:url(\'' + _esc(a.image_url) + '\')"></div>'
     : '<div class="art-thumb placeholder">📰</div>';
   return (
-    // data-chitti-speak-handler="readArticleAloud" tells feedback-widget.js
-    // to delegate the per-box 🔊 click to readArticleAloud(id) instead of
-    // grabbing box.innerText. That function reads a.content (full RSS body
-    // when content:encoded is present) || a.summary — so the speaker
-    // reads the ENTIRE news, not just the headline + summary visible in DOM.
-    // Sire 2026-06-02.
-    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '">' +
+    // Sire 2026-06-02 — Tap-to-expand card:
+    //   - Collapsed (default): meta + headline-row (title + 🔊 speaker pill) + thumb
+    //   - Tap anywhere on the card body → toggleArtCard(id) elongates it
+    //   - Tap the speaker pill → readArticleAloud(id) reads the entire news
+    //     (a.content || a.summary; HTML stripped; 6 000-char cap)
+    //   - event.stopPropagation() on the speaker so tapping it does NOT
+    //     also toggle expansion
+    // data-chitti-speak-handler + data-chitti-speak-id keep the substrate
+    // feedback bar (per CTO.md §2) in sync — its 🔊 also delegates to
+    // readArticleAloud.
+    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '" onclick="toggleArtCard(' + a.id + ')">' +
       '<div>' +
         '<div class="art-meta">' + meta + '</div>' +
-        '<div class="art-title">' + _esc(a.title || '') + '</div>' +
-        // Sire 2026-05-23: full summary visible IN-APP; no truncation.
-        // Primary action 🔊 reads the FULL summary (not just headline).
-        '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
-        '<div class="art-actions">' +
-          '<button class="primary" onclick="readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud" aria-label="Read full article aloud — title, summary and full body">🔊 ' + t('art.read_aloud') + '</button>' +
-          '<button onclick="loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
-          '<button onclick="loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
-          '<button onclick="loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">👍 ' + t('art.save') + '</button>' +
-          '<button onclick="saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-dislike">' + t('art.dislike') + '</button>' +
-          '<button onclick="shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
+        '<div class="art-headline-row">' +
+          '<div class="art-title">' + _esc(a.title || '') + '</div>' +
+          '<button class="art-speak" type="button" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')" aria-label="Read entire news aloud">🔊</button>' +
         '</div>' +
-        // Source link demoted — small, secondary, below the main actions.
-        '<div class="art-source-link" style="margin-top:8px;font-size:13px;color:var(--vai-muted,#666)">' +
-          '<a href="' + _esc(a.link) + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;font-weight:500">📖 ' + _esc((a.source_name || 'Source')) + ' मे मूल ख़बर पढ़ो →</a>' +
+        '<div class="art-hint" data-i18n="art.tap_expand">Tap to read full news</div>' +
+        '<div class="art-body">' +
+          // Full summary visible after tap; no truncation.
+          '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
+          '<div class="art-actions">' +
+            '<button class="primary" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud" aria-label="Read full article aloud — title, summary and full body">🔊 ' + t('art.read_aloud') + '</button>' +
+            '<button onclick="event.stopPropagation(); loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
+            '<button onclick="event.stopPropagation(); loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
+            '<button onclick="event.stopPropagation(); loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
+            '<button onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">👍 ' + t('art.save') + '</button>' +
+            '<button onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-dislike">' + t('art.dislike') + '</button>' +
+            '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
+          '</div>' +
+          '<div class="art-source-link" style="margin-top:8px;font-size:13px;color:var(--vai-muted,#666)" onclick="event.stopPropagation()">' +
+            '<a href="' + _esc(a.link) + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;font-weight:500">📖 ' + _esc((a.source_name || 'Source')) + ' मे मूल ख़बर पढ़ो →</a>' +
+          '</div>' +
+          '<div class="art-take-host" id="take-' + a.id + '" data-chitti-response data-chitti-section="Chitti\'s Take · ' + _esc(a.title || 'News article') + '"></div>' +
+          '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Explain simply · ' + _esc(a.title || 'News article') + '"></div>' +
+          '<div class="art-fact-host" id="fact-' + a.id + '" data-chitti-response data-chitti-section="Fact check · ' + _esc(a.title || 'News article') + '"></div>' +
         '</div>' +
-        '<div class="art-take-host" id="take-' + a.id + '" data-chitti-response data-chitti-section="Chitti\'s Take · ' + _esc(a.title || 'News article') + '"></div>' +
-        '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Explain simply · ' + _esc(a.title || 'News article') + '"></div>' +
-        '<div class="art-fact-host" id="fact-' + a.id + '" data-chitti-response data-chitti-section="Fact check · ' + _esc(a.title || 'News article') + '"></div>' +
       '</div>' +
       thumb +
     '</div>'
@@ -1158,6 +1183,16 @@ function shareArticle(id) {
     const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
     window.open(wa, '_blank', 'noopener');
   }
+}
+
+// Sire 2026-06-02 — tap-to-expand for the headline-first card layout.
+// Body is hidden by default (CSS .art-card .art-body { display: none }).
+// Tapping anywhere on the card toggles .expanded; tapping the speaker
+// pill OR an action button stops propagation so it doesn't also toggle.
+function toggleArtCard(id) {
+  const el = document.getElementById('art-' + id);
+  if (!el) return;
+  el.classList.toggle('expanded');
 }
 
 function readArticleAloud(id) {
