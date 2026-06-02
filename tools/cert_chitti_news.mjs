@@ -324,11 +324,35 @@ async function main() {
         ? `text "${speakAfter[speakAfter.length - 1].text.slice(0, 60)}…"`
         : 'NO utterance logged within 1 s');
 
-  // ── NO_NAVIGATE — URL did not change ─────────────────────────────
-  const stillHere = page.url() === initialUrl;
-  add('NO_NAVIGATE — page URL unchanged after tapping the headline',
+  // ── NO_NAVIGATE — page is still chitti_news.html ─────────────────
+  // Compare basenames so Windows file:// case-normalisation differences
+  // don't falsely flag a successful in-page interaction as a navigation.
+  // The real failure mode we're guarding against is: page jumped to
+  // timesofindia.com / livemint.com / thehindu.com etc.
+  const currentUrl = page.url();
+  const stillHere = /chitti_news\.html(?:$|\?|#)/i.test(currentUrl);
+  add('NO_NAVIGATE — still on chitti_news.html after tapping the headline',
       stillHere,
-      stillHere ? 'URL stable' : `URL changed to ${page.url()}`);
+      stillHere ? `URL: ${currentUrl}`
+                : `LEFT chitti_news.html → ${currentUrl}`);
+
+  // ── NO_OUTBOUND — no visible <a target="_blank"> in the feed ─────
+  // Sire 2026-06-02: any outbound link is a navigation trap for blind
+  // users. The speaker must deliver the entire news; users should
+  // never need to tap a link to TOI/Mint/Hindu.
+  // Expand both cards so this catches links hidden inside .art-body.
+  await page.evaluate(() => {
+    document.querySelectorAll('.art-card').forEach((c) => c.classList.add('expanded'));
+  });
+  await page.waitForTimeout(300);
+  const outbound = await page.$$eval('#feed-root a[target="_blank"]',
+    (els) => els
+      .filter((e) => e.offsetWidth > 0 && e.offsetHeight > 0)
+      .map((e) => e.href).slice(0, 5));
+  add('NO_OUTBOUND — no visible <a target="_blank"> in the feed',
+      outbound.length === 0,
+      outbound.length === 0 ? 'no outbound links visible'
+                            : `${outbound.length} visible outbound links: ${JSON.stringify(outbound)}`);
 
   // ── SPEAKER_BODY — for article 1002 (summary-only), 🔊 fetches /body ──
   const card1002 = '.art-card[id="art-1002"]';

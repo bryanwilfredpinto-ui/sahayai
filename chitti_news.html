@@ -470,10 +470,12 @@ function articleCardHtml(a) {
     +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
     +         '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')">📲 Share</button>'
     +       '</div>'
-    +       '<div class="art-source-link" onclick="event.stopPropagation()">'
-    +         '📖 <a href="' + esc(a.link) + '" target="_blank" rel="noopener">'
-    +           'Read on ' + esc(a.source_name || 'source') + ' →</a>'
-    +       '</div>'
+    +       // Source link REMOVED 2026-06-02 — Sire: "when I click on more
+    +       // news, it opens TOI or mint, my blind user can't hear from TOI.
+    +       // The purpose is defeated." The page now has NO outbound publisher
+    +       // links. Blind users get everything via 🔊 (speaks the entire
+    +       // server-extracted body) without ever leaving chitti_news.html.
+    +       // Attribution stays in .art-meta as plain text.
     +       '<div class="art-sub-host" id="take-' + a.id + '" data-chitti-response'
     +         ' data-chitti-section="Chitti\'s Take · ' + esc(a.title || '') + '"></div>'
     +       '<div class="art-sub-host" id="explain-' + a.id + '" data-chitti-response'
