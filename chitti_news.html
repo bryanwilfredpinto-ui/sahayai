@@ -182,6 +182,12 @@
       display: block; color: var(--warn); font-size: 12px; font-weight: 600;
       margin-bottom: 8px;
     }
+    /* The 5-icon strip in the headline is the canonical action surface.
+       Sub-actions (Take / Fact check / Share) used to appear here as a
+       button row — removed 2026-06-02 per Sire ("MSN simple — nothing
+       to reinvent"). Take / Explain / Fact check now live inside the
+       sub-host panels which the 🤖 Chitti icon expands; Share moves
+       to the strip via long-press on the speaker if we ever need it. */
     .art-sub-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
     .art-sub-actions button {
       padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px;
@@ -441,22 +447,21 @@ function fcBadge(fc) {
 
 // CANONICAL 5-ICON STRIP — per chitti-news/SKILLS.md #12 +
 // chitti-cto/CTO.md §2 — in this exact order on every box.
+// Icons only (MSN-style); aria-label carries the action description for
+// screen readers. Sire 2026-06-02: "nothing to reinvent the wheels".
 function stripHtml(boxId, articleId) {
   return ''
     + '<div class="art-strip" role="group" aria-label="Read, explain, react, give feedback">'
     +   '<button class="primary" type="button" aria-label="Read entire news aloud"'
-    +     ' onclick="event.stopPropagation(); speakArticle(' + articleId + ')">'
-    +     '🔊<span class="lbl">Read</span></button>'
+    +     ' onclick="event.stopPropagation(); speakArticle(' + articleId + ')">🔊</button>'
     +   '<button type="button" aria-label="Ask Chitti to explain simply"'
-    +     ' onclick="event.stopPropagation(); openExplain(' + articleId + ')">'
-    +     '🤖<span class="lbl">Chitti</span></button>'
+    +     ' onclick="event.stopPropagation(); openExplain(' + articleId + ')">🤖</button>'
     +   '<button type="button" aria-label="Helpful"'
     +     ' onclick="event.stopPropagation(); saveArticle(' + articleId + ', \'saved\')">👍</button>'
     +   '<button type="button" aria-label="Wrong"'
     +     ' onclick="event.stopPropagation(); saveArticle(' + articleId + ', \'cancelled\')">👎</button>'
     +   '<button type="button" aria-label="Open feedback page"'
-    +     ' onclick="event.stopPropagation(); openFeedback(\'' + boxId + '\')">'
-    +     '✏️<span class="lbl">Feedback</span></button>'
+    +     ' onclick="event.stopPropagation(); openFeedback(\'' + boxId + '\')">✏️</button>'
     + '</div>';
 }
 
@@ -492,11 +497,6 @@ function articleCardHtml(a) {
     +       '<div class="art-summary" onclick="event.stopPropagation()">' + esc(a.summary || '(No summary available from this source.)') + '</div>'
     +       '<div class="art-fullbody" id="fullbody-' + a.id + '" onclick="event.stopPropagation()" aria-live="polite">'
     +         '<div class="art-fullbody-status">Tap to fetch the full news…</div>'
-    +       '</div>'
-    +       '<div class="art-sub-actions">'
-    +         '<button onclick="event.stopPropagation(); openTake(' + a.id + ')">▶ Chitti\'s Take</button>'
-    +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
-    +         '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')">📲 Share</button>'
     +       '</div>'
     +       '<div class="art-sub-host" id="take-' + a.id + '" data-chitti-response'
     +         ' data-chitti-section="Chitti\'s Take · ' + esc(a.title || '') + '"></div>'
