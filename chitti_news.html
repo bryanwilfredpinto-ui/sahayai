@@ -796,7 +796,13 @@ function _articleCardHtml(a) {
     ? '<div class="art-thumb" style="background-image:url(\'' + _esc(a.image_url) + '\')"></div>'
     : '<div class="art-thumb placeholder">📰</div>';
   return (
-    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-section="' + _esc(a.title || 'News article') + '">' +
+    // data-chitti-speak-handler="readArticleAloud" tells feedback-widget.js
+    // to delegate the per-box 🔊 click to readArticleAloud(id) instead of
+    // grabbing box.innerText. That function reads a.content (full RSS body
+    // when content:encoded is present) || a.summary — so the speaker
+    // reads the ENTIRE news, not just the headline + summary visible in DOM.
+    // Sire 2026-06-02.
+    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '">' +
       '<div>' +
         '<div class="art-meta">' + meta + '</div>' +
         '<div class="art-title">' + _esc(a.title || '') + '</div>' +

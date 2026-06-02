@@ -589,6 +589,25 @@
     bar.querySelector('[data-act="speak"]').addEventListener('click', function () {
       var btn = this; btn.classList.add('live');
       setTimeout(function () { btn.classList.remove('live'); }, 1200);
+      // Sire 2026-06-02 — delegate hook so per-page handlers can speak
+      // content that lives in JS cache (not DOM). When a box carries
+      //   data-chitti-speak-handler="myFn"
+      //   data-chitti-speak-id="<id>"
+      // the widget calls window.myFn(id) and treats that as the
+      // canonical read action — skipping boxText() entirely. Used by
+      // chitti_news.html so the speaker reads a.content (full RSS body
+      // when publishers ship content:encoded) instead of just the
+      // summary visible in DOM.
+      var hName = box.getAttribute && box.getAttribute('data-chitti-speak-handler');
+      var hId   = box.getAttribute && box.getAttribute('data-chitti-speak-id');
+      if (hName && hId && typeof window[hName] === 'function') {
+        try {
+          window[hName](isNaN(+hId) ? hId : +hId);
+          send({ page: page, type: 'box_listen', box_id: boxId, section: section,
+                 delegated: hName }).catch(function () {});
+          return;
+        } catch (e) { /* fall through to default text grab */ }
+      }
       var text = boxText(box);
       if (!text) text = section;
       speak(text, getLang());
