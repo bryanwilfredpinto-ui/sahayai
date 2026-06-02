@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  <title>Chitti PA — Your dost. Every capability. One conversation.</title>
+  <meta name="description" content="Chitti PA — emotionally intelligent personal assistant for every Indian. Free. WhatsApp-native. 24/7. In your language." />
+  <meta name="theme-color" content="#FF9933" />
+
+  <!--
+    Reference implementation of the Chitti PA UI Design Standard v1.0
+    locked in chitti-cto/CTO.md on 2026-05-29.
+
+    Contract demonstrated on this page:
+      §1  Saffron / Navy / Green palette  (CSS custom properties below)
+      §2  5-element feedback strip on every AI response card
+          🔊 speaker · 👍 thumbs up · 👎 thumbs down · ✏️ pencil · 🎙️ mic
+      §3  Chitti Quality Check overlay  — CTO/admin only, DOM-gated
+      §4  AI Observability strip        — CTO/admin only, DOM-gated
+      §5  No-Hinglish — every label rendered in one pure language
+      §6  Technical terms (RSI, MACD, SEBI, PM-KISAN, UPI...) stay in English
+      §7  Card order LOCKED: Morning Brief → Chitti Agents
+
+    Reads chitti-pa/SKILLS.md feature surface + chitti-pa/SOP.md operating
+    rules + chitti-pa/README.md endpoint surface. Inherits the five §1a
+    accessibility gates via chitti_a11y.js substrate auto-injection.
+
+    CTO/admin overlays are hidden by default. Toggle via ?cto=1 in the
+    URL, or set localStorage.user_role = 'cto'.
+  -->
+
+  <style>
+    /* ── 1. Locked palette ──────────────────────────────────────── */
+    :root {
+      --saffron:    #FF9933;
+      --navy:       #000080;
+      --green:      #138808;
+      --canvas:     #FFFFFF;
+      --charcoal:   #1A1A1A;
+
+      --muted:      #6B7280;
+      --rule:       #E5E7EB;
+      --surface:    #F9FAFB;
+      --warn:       #B45309;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--charcoal);
+      background: var(--canvas);
+      min-height: 100vh;
+    }
+
+    /* ── Sticky legal / privacy bar (§3 SAHAYAI_MASTER lock) ───── */
+    .legal-bar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: var(--navy);
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 12px;
+      text-align: center;
+      letter-spacing: .02em;
+    }
+    .legal-bar strong { color: var(--saffron); }
+
+    /* ── Header ────────────────────────────────────────────────── */
+    header {
+      padding: 16px 16px 8px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--canvas);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-mark {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--saffron), var(--green));
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px;
+    }
+    .brand-name {
+      font-weight: 800; font-size: 20px; color: var(--navy);
+      letter-spacing: -0.01em;
+    }
+    .brand-tag {
+      color: var(--muted); font-size: 13px; margin-top: 2px;
+    }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 12px; align-items: center;
+    }
+    .toolbar select, .toolbar button {
+      font: inherit;
+      padding: 6px 10px;
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      background: var(--canvas);
+      color: var(--charcoal);
+      cursor: pointer;
+    }
+    .toolbar button.primary {
+      background: var(--saffron);
+      color: #fff;
+      border-color: var(--saffron);
+      font-weight: 700;
+    }
+    .toolbar .features-btn {
+      background: var(--surface);
+      border-color: var(--saffron);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    /* ── Main column ───────────────────────────────────────────── */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px 12px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Card — universal layout for every Chitti response ────── */
+    .card {
+      background: var(--canvas);
+      border: 1px solid var(--rule);
+      border-left: 4px solid var(--saffron);
+      border-radius: 10px;
+      padding: 16px 14px 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-weight: 800; font-size: 18px; color: var(--navy);
+      margin: 0;
+    }
+    .card-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px;
+      background: var(--green); color: #fff;
+      letter-spacing: .04em;
+    }
+    .card-body {
+      color: var(--charcoal);
+      font-size: 15px;
+    }
+    .card-body p { margin: 0 0 8px; }
+    .card-body ul { margin: 0; padding-left: 20px; }
+    .card-body li { margin-bottom: 4px; }
+    .card-body strong { color: var(--navy); }
+
+    /* English-preserved technical term — never transliterate */
+    .en-term {
+      font-variant: small-caps;
+      letter-spacing: .02em;
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    /* ── §3 Chitti Quality Check overlay — CTO/admin only ───── */
+    .cto-quality, .cto-observability {
+      display: none;             /* hidden by default */
+      margin: 8px 0;
+      padding: 8px 10px;
+      border: 1px dashed var(--saffron);
+      background: #FFF8F0;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--charcoal);
+    }
+    :root[data-cto="1"] .cto-quality,
+    :root[data-cto="1"] .cto-observability {
+      display: block;            /* CTO/admin view only */
+    }
+    .cto-quality strong, .cto-observability strong { color: var(--navy); }
+    .cto-quality .row, .cto-observability .row {
+      display: flex; flex-wrap: wrap; gap: 6px 14px;
+    }
+    .cto-quality .row > span,
+    .cto-observability .row > span {
+      white-space: nowrap;
+    }
+    .cto-header {
+      font-weight: 700; color: var(--navy);
+      margin-bottom: 4px; font-size: 11px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* ── §2 Feedback strip — mandatory on every response card ── */
+    .feedback-strip {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--rule);
+      display: flex; gap: 8px; flex-wrap: wrap;
+      align-items: center;
+    }
+    .feedback-strip button {
+      font: inherit; cursor: pointer;
+      min-width: 44px; min-height: 44px;       /* 48px CTO standard, 44 for compactness */
+      padding: 6px 10px;
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      background: var(--canvas);
+      color: var(--charcoal);
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      font-size: 18px;
+    }
+    .feedback-strip button:hover { background: var(--surface); border-color: var(--saffron); }
+    .feedback-strip .lbl { font-size: 11px; color: var(--muted); margin-left: 2px; }
+
+    /* ── Morning Brief card-specific touches ─────────────────── */
+    .morning-brief .brief-section {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--surface);
+    }
+    .morning-brief .brief-section:last-of-type { border-bottom: 0; }
+    .morning-brief .brief-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .morning-brief .brief-content { font-size: 15px; }
+
+    /* ── Chitti Agents grid (card #2 LOCKED) ─────────────────── */
+    .agents-grid .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .agent-tile {
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 12px 10px;
+      cursor: pointer;
+      background: var(--canvas);
+      display: flex; flex-direction: column; gap: 4px;
+      text-align: left;
+      min-height: 96px;
+      transition: border-color .15s, transform .1s;
+    }
+    .agent-tile:hover { border-color: var(--saffron); transform: translateY(-1px); }
+    .agent-tile .emoji { font-size: 24px; }
+    .agent-tile .label {
+      font-weight: 700; font-size: 13px; color: var(--navy);
+    }
+    .agent-tile .blurb { font-size: 11px; color: var(--muted); }
+    .agent-tile.coming { opacity: 0.6; }
+    .agent-tile.coming .label::after {
+      content: " · COMING SOON";
+      font-size: 9px;
+      color: var(--warn);
+      font-weight: 600;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      max-width: 720px;
+      margin: 24px auto 80px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      border-top: 1px solid var(--rule);
+    }
+    footer strong { color: var(--green); }
+
+    /* ── 375px-first responsive niceties ────────────────────── */
+    @media (max-width: 380px) {
+      main { padding: 12px 8px 64px; }
+      .card-title { font-size: 17px; }
+      .agents-grid .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sticky legal bar — Chitti PA's locked-bar equivalent of the SEBI
+     pattern: Postman Principle + Free Forever + DPDP. -->
+<div class="legal-bar" role="status" aria-live="polite">
+  <strong>Postman Principle:</strong> Chitti never reads private content.
+  Data on your phone only. Free forever. No ads.
+</div>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">च</div>
+    <div>
+      <div class="brand-name">Chitti PA</div>
+      <div class="brand-tag" id="brand-tag">Your dost. Every capability. One conversation.</div>
+    </div>
+  </div>
+
+  <!-- Toolbar — language selector + Feature Discovery (per locked rules) -->
+  <div class="toolbar" role="group" aria-label="Page controls">
+    <label for="lang-select" class="lbl" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Language</label>
+    <select id="lang-select" aria-label="Choose language" onchange="setLang(this.value)">
+      <!-- v1.0 lock: 8 languages. Pure-language only — never code-mixed. -->
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="mr">मराठी</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+      <option value="bn">বাংলা</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+    </select>
+    <button class="features-btn" type="button" aria-label="What can Chitti do for you"
+            onclick="alert('Feature Discovery Box: reads chitti-pa/skills/FEATURES.md live, speaks features aloud, taps to activate.\\n\\nThis demo page wires the entry point; the live reader lives in chitti_features.js (auto-loaded by chitti_a11y.js).')">
+      💡 <span id="features-label">What can Chitti do?</span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ╔════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  CARD #1 — MORNING BRIEF  (locked position, never below #2) ║ -->
+  <!-- ╚════════════════════════════════════════════════════════════╝ -->
+  <section class="card morning-brief" data-chitti-response="morning-brief-2026-06-02">
+
+    <div class="card-head">
+      <h2 class="card-title" id="morning-brief-title">Good morning, Ram bhai</h2>
+      <span class="card-badge" aria-label="Generated at 07:00 IST">07:00 IST</span>
+    </div>
+
+    <!-- §3 Quality Check overlay (CTO/admin only) -->
+    <div class="cto-quality" aria-hidden="true">
+      <div class="cto-header">Chitti Quality Check (CTO view)</div>
+      <div class="row">
+        <span>Quality Score: <strong>92/100</strong></span>
+        <span>Hallucination Risk: <strong>LOW</strong></span>
+        <span>Source Coverage: <strong>5 of 5 claims cited</strong></span>
+        <span>Disclaimer: <strong>Pass</strong></span>
+        <span>Reversal Watch (7d): <strong>0 👎→👍 flips</strong></span>
+      </div>
+    </div>
+
+    <!-- §4 Observability strip (CTO/admin only) -->
+    <div class="cto-observability" aria-hidden="true">
+      <div class="cto-header">AI Observability (CTO view)</div>
+      <div class="row">
+        <span>Response Time: <strong>847 ms</strong></span>
+        <span>Verification Agent: <strong>chitti-news-factcheck</strong></span>
+        <span>Audit ID: <strong>4f7a2c3b9e10</strong></span>
+        <span>Feedback Learning: <strong>seeded into skills/MORNING.md</strong></span>
+        <span>Model: <strong>DeepSeek-chat (Layer 1)</strong></span>
+        <span>Confidence: <strong>HIGH</strong></span>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <div class="brief-section">
+        <div class="brief-label">Weather · Vidarbha</div>
+        <div class="brief-content">32°C, partly cloudy. Light rain expected after 4 PM.</div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">Mandi rates · Cotton</div>
+        <div class="brief-content">
+          Akola APMC: <strong>₹7,420/quintal</strong> &nbsp;·&nbsp;
+          Yavatmal: <strong>₹7,385/quintal</strong>
+          <em style="color:var(--muted);font-size:12px;">(prices indicative — verify with your buyer)</em>
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">Today's 3 reminders</div>
+        <div class="brief-content">
+          <ul>
+            <li>10:30 — Block visit · PM-KISAN payment verification</li>
+            <li>13:00 — Daughter's PTM at school</li>
+            <li>17:00 — Electricity bill due (UPI / cash both supported)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">Bill due today</div>
+        <div class="brief-content">
+          MSEDCL · <strong>₹1,840</strong> · pay via UPI or auto-debit
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">Health tip</div>
+        <div class="brief-content">
+          Heat index is 38° today — drink at least 3L water, especially before noon work.
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">News headline</div>
+        <div class="brief-content">
+          <span class="en-term">SEBI</span> issues new rules on small-investor disclosures —
+          tap to hear Chitti's take.
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-label">AI tip for farmers</div>
+        <div class="brief-content">
+          Try the new <span class="en-term">PM-KISAN</span> Samman Nidhi app — it sends instalment
+          alerts straight to your phone. Free, no fee. Tap to learn how.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- §2 5-element feedback strip (MANDATORY on every response card) -->
+    <div class="feedback-strip" role="group" aria-label="Feedback for this response">
+      <button type="button" aria-label="Read aloud" data-action="speak">🔊<span class="lbl">Read</span></button>
+      <button type="button" aria-label="Thumbs up" data-action="up">👍<span class="lbl">Helpful</span></button>
+      <button type="button" aria-label="Thumbs down" data-action="down">👎<span class="lbl">Wrong</span></button>
+      <button type="button" aria-label="Type correction" data-action="edit">✏️<span class="lbl">Type</span></button>
+      <button type="button" aria-label="Speak correction" data-action="mic">🎙️<span class="lbl">Speak</span></button>
+    </div>
+
+  </section>
+
+
+  <!-- ╔════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  CARD #2 — CHITTI AGENTS GRID  (locked position, after #1)  ║ -->
+  <!-- ╚════════════════════════════════════════════════════════════╝ -->
+  <section class="card agents-grid" data-chitti-response="agents-grid-2026-06-02">
+
+    <div class="card-head">
+      <h2 class="card-title">Chitti Agents</h2>
+      <span class="card-badge" style="background:var(--navy)">Phase 1</span>
+    </div>
+
+    <!-- §3 Quality Check overlay -->
+    <div class="cto-quality" aria-hidden="true">
+      <div class="cto-header">Chitti Quality Check (CTO view)</div>
+      <div class="row">
+        <span>Agents loaded from: <strong>chitti-pa/SKILLS.md (24-feature surface)</strong></span>
+        <span>Live agents: <strong>0 / 24</strong></span>
+        <span>Honest 501 stubs: <strong>9 / 9 backend endpoints</strong></span>
+      </div>
+    </div>
+
+    <!-- §4 Observability strip -->
+    <div class="cto-observability" aria-hidden="true">
+      <div class="cto-header">AI Observability (CTO view)</div>
+      <div class="row">
+        <span>Routing model: <strong>DeepSeek intent classifier (via chitti-vaani)</strong></span>
+        <span>Avg dispatch time: <strong>—</strong> (not yet wired)</span>
+        <span>Audit ID: <strong>(none — no LLM call on this card)</strong></span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <p style="margin-bottom:4px;color:var(--muted);font-size:13px;">
+        Tap an agent to ask Chitti. Routing goes through Vaani per the
+        <strong>one-conversation</strong> lock.
+      </p>
+
+      <div class="grid" role="list">
+
+        <!-- Agents map to chitti-pa/SKILLS.md §5–§8 features. -->
+        <button class="agent-tile" role="listitem" type="button" data-agent="morning-brief">
+          <span class="emoji">🌅</span>
+          <span class="label">Morning Brief</span>
+          <span class="blurb">07:00 IST personalised brief</span>
+        </button>
+
+        <button class="agent-tile coming" role="listitem" type="button" data-agent="calls">
+          <span class="emoji">📞</span>
+          <span class="label">Call segregation</span>
+          <span class="blurb">Personal · Work · Spam · Recruiter</span>
+        </button>
+
+        <button class="agent-tile coming" role="listitem" type="button" data-agent="vault">
+          <span class="emoji">📁</span>
+          <span class="label">Document vault</span>
+          <span class="blurb">On-device only · Postman Principle</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="schemes">
+          <span class="emoji">🏛️</span>
+          <span class="label">Govt schemes</span>
+          <span class="blurb">Routes to chitti-government</span>
+        </button>
+
+        <button class="agent-tile coming" role="listitem" type="button" data-agent="dailylife">
+          <span class="emoji">📅</span>
+          <span class="label">Daily reminders</span>
+          <span class="blurb">Medicines · bills · licences</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="truth">
+          <span class="emoji">🔍</span>
+          <span class="label">Product truth</span>
+          <span class="blurb">Routes to chitti-scanner + chitti-medupi</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="medupi">
+          <span class="emoji">💊</span>
+          <span class="label">Medicine prices</span>
+          <span class="blurb">Routes to chitti-medupi · Jan Aushadhi</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="legal">
+          <span class="emoji">⚖️</span>
+          <span class="label">Legal help</span>
+          <span class="blurb">Routes to chitti-legal · LL.M-grade</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="ca">
+          <span class="emoji">🧾</span>
+          <span class="label">Tax / GST help</span>
+          <span class="blurb">Routes to chitti-ca · CA-Final-grade</span>
+        </button>
+
+        <button class="agent-tile" role="listitem" type="button" data-agent="upi">
+          <span class="emoji">🛡️</span>
+          <span class="label"><span class="en-term">UPI</span> fraud check</span>
+          <span class="blurb">Routes to chitti-upi · QR scam guard</span>
+        </button>
+
+        <button class="agent-tile coming" role="listitem" type="button" data-agent="safety">
+          <span class="emoji">🚨</span>
+          <span class="label">SafeWalk</span>
+          <span class="blurb">Family cascade · never auto-dial 112</span>
+        </button>
+
+        <button class="agent-tile coming" role="listitem" type="button" data-agent="forget">
+          <span class="emoji">🧹</span>
+          <span class="label">Chitti forget</span>
+          <span class="blurb">DPDP 2023 · erase everything</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- §2 5-element feedback strip (also on the agents card) -->
+    <div class="feedback-strip" role="group" aria-label="Feedback for the agents grid">
+      <button type="button" aria-label="Read aloud" data-action="speak">🔊<span class="lbl">Read</span></button>
+      <button type="button" aria-label="Thumbs up" data-action="up">👍<span class="lbl">Helpful</span></button>
+      <button type="button" aria-label="Thumbs down" data-action="down">👎<span class="lbl">Wrong</span></button>
+      <button type="button" aria-label="Type correction" data-action="edit">✏️<span class="lbl">Type</span></button>
+      <button type="button" aria-label="Speak correction" data-action="mic">🎙️<span class="lbl">Speak</span></button>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  <div>
+    <strong>World Class Chitti PA — Commando Discipline. Zero Excuses.</strong>
+  </div>
+  <div style="margin-top:6px;">
+    Built for 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — the four-user contract.
+    Pure language only — never Hinglish.
+    Tech terms (<span class="en-term">SEBI</span>, <span class="en-term">PM-KISAN</span>,
+    <span class="en-term">UPI</span>, <span class="en-term">RSI</span>) stay in English.
+  </div>
+  <div style="margin-top:6px;">
+    Backend skeleton: <a href="chitti-pa/README.md">chitti-pa/</a> ·
+    Locked UI Standard: <a href="chitti-cto/CTO.md">CTO.md §Chitti PA UI Design Standard v1.0</a>
+  </div>
+</footer>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║   Shared substrates (5 frontend gates per CTO.md §1a)        ║
+     ║                                                              ║
+     ║   chitti_a11y.js auto-injects:                               ║
+     ║     - feedback-widget.js   (5-element strip enforcer)        ║
+     ║     - chitti_isl.js        (ISL animation panel per response)║
+     ║     - chitti_lang.js       (no-Hinglish + tech-terms guard)  ║
+     ║     - chitti_features.js   (FEATURES.md reader)              ║
+     ║     - chitti_disability_profile.js (first-visit modal)       ║
+     ║                                                              ║
+     ║   Loading chitti_a11y.js alone is sufficient.                ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<script src="chitti_a11y.js" defer></script>
+
+<script>
+  // CTO/admin overlay gate.
+  // Reveals the §3 Quality Check + §4 Observability strips when:
+  //   - ?cto=1 is in the URL, OR
+  //   - localStorage.user_role === 'cto'
+  // Default: both overlays stay hidden for the end user.
+  (function() {
+    const params = new URLSearchParams(location.search);
+    const isCTO = params.get('cto') === '1'
+                  || localStorage.getItem('user_role') === 'cto';
+    document.documentElement.dataset.cto = isCTO ? '1' : '0';
+    if (params.get('cto') === '1') {
+      try { localStorage.setItem('user_role', 'cto'); } catch (e) {}
+    }
+  })();
+
+  // §5 language switcher — pure-language only (no Hinglish, no mixing).
+  // Translations stay short to demonstrate the contract; the live page
+  // would source these via chitti_lang.js + DeepSeek per request.
+  const TR = {
+    en: {
+      tag: "Your dost. Every capability. One conversation.",
+      featuresBtn: "What can Chitti do?",
+      greet: "Good morning, Ram bhai",
+    },
+    hi: {
+      tag: "आपका दोस्त। हर क्षमता। एक बातचीत।",
+      featuresBtn: "चिट्टी क्या कर सकता है?",
+      greet: "सुप्रभात, राम भाई",
+    },
+    mr: {
+      tag: "तुझा मित्र. प्रत्येक क्षमता. एक संवाद.",
+      featuresBtn: "चिट्टी काय करू शकतो?",
+      greet: "सुप्रभात, राम भाऊ",
+    },
+    ta: {
+      tag: "உங்கள் நண்பர். ஒவ்வொரு திறமையும். ஒரே உரையாடல்.",
+      featuresBtn: "சிட்டி என்ன செய்ய முடியும்?",
+      greet: "காலை வணக்கம், ராம் அண்ணே",
+    },
+    te: {
+      tag: "మీ స్నేహితుడు. ప్రతి సామర్థ్యం. ఒక సంభాషణ.",
+      featuresBtn: "చిట్టి ఏం చేయగలదు?",
+      greet: "శుభోదయం, రాం అన్నా",
+    },
+    bn: {
+      tag: "আপনার বন্ধু। সব ক্ষমতা। একটি কথোপকথন।",
+      featuresBtn: "চিট্টি কি করতে পারে?",
+      greet: "সুপ্রভাত, রাম ভাই",
+    },
+    kn: {
+      tag: "ನಿಮ್ಮ ಸ್ನೇಹಿತ. ಪ್ರತಿ ಸಾಮರ್ಥ್ಯ. ಒಂದು ಸಂಭಾಷಣೆ.",
+      featuresBtn: "ಚಿಟ್ಟಿ ಏನು ಮಾಡಬಲ್ಲದು?",
+      greet: "ಶುಭೋದಯ, ರಾಮ್ ಭಾಯಿ",
+    },
+    ml: {
+      tag: "നിങ്ങളുടെ കൂട്ടുകാരൻ. എല്ലാ കഴിവുകളും. ഒരു സംഭാഷണം.",
+      featuresBtn: "ചിട്ടിക്ക് എന്ത് ചെയ്യാൻ കഴിയും?",
+      greet: "സുപ്രഭാതം, റാം ഭായ്",
+    },
+  };
+
+  function setLang(code) {
+    const t = TR[code] || TR.en;
+    document.documentElement.lang = code;
+    document.getElementById("brand-tag").textContent = t.tag;
+    document.getElementById("features-label").textContent = t.featuresBtn;
+    document.getElementById("morning-brief-title").textContent = t.greet;
+    try { localStorage.setItem("chitti_pa_lang", code); } catch (e) {}
+  }
+
+  // Restore last-chosen language
+  try {
+    const saved = localStorage.getItem("chitti_pa_lang");
+    if (saved && TR[saved]) {
+      document.getElementById("lang-select").value = saved;
+      setLang(saved);
+    }
+  } catch (e) {}
+
+  // Feedback strip wiring — every button collects to the same backend bus.
+  document.querySelectorAll(".feedback-strip button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const card = btn.closest("[data-chitti-response]");
+      const boxId = card ? card.dataset.chittiResponse : "(unknown)";
+      const action = btn.dataset.action;
+      // In production, feedback-widget.js (auto-loaded by chitti_a11y.js)
+      // intercepts these clicks and POSTs to /api/feedback/collect with
+      // box_id, action, user lang, optional voice/text payload.
+      console.log("[feedback]", { boxId, action });
+      btn.style.background = "var(--surface)";
+      btn.style.borderColor = "var(--saffron)";
+    });
+  });
+</script>
+
+</body>
+</html>
