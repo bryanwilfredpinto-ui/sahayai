@@ -335,12 +335,30 @@ def _upsert_articles(db: Session, source: Source, items: list[dict], *, n_fetche
 
 
 def fetch_all() -> dict:
-    """Fetch every enabled source. Returns aggregated stats."""
+    """Fetch every enabled source. Returns aggregated stats.
+
+    Per Sire 2026-06-02 health-monitor spec: skip sources where
+      - status == 'dead'  (excluded until manually revived)
+      - next_retry_at > now  (in backoff cooldown after consecutive failures)
+    Both columns ship via news_seed.ensure_health_columns() so this is
+    safe across deployments that may not yet have the migration applied
+    (getattr with safe defaults).
+    """
     db = SessionLocal()
-    totals = {"sources": 0, "inserted": 0, "skipped": 0, "errors": 0}
+    totals = {"sources": 0, "skipped_dead": 0, "skipped_backoff": 0,
+              "inserted": 0, "skipped": 0, "errors": 0}
     try:
         sources = db.query(Source).filter(Source.enabled == 1).all()
+        now = datetime.utcnow()
         for s in sources:
+            status = getattr(s, "status", "healthy") or "healthy"
+            if status == "dead":
+                totals["skipped_dead"] += 1
+                continue
+            next_retry = getattr(s, "next_retry_at", None)
+            if next_retry and next_retry > now:
+                totals["skipped_backoff"] += 1
+                continue
             res = fetch_source(db, s)
             totals["sources"] += 1
             totals["inserted"] += res["inserted"]

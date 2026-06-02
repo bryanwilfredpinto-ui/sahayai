@@ -23,6 +23,7 @@ from config import settings
 from database import Base, engine, ensure_schema
 import models  # noqa: F401 — registers models with Base.metadata
 from routes.news import bp as news_bp
+from routes.health import bp as admin_health_bp
 from services import news_scheduler, news_seed
 
 # Sahay AI shared quality framework — installed across every Chitti.
@@ -49,6 +50,13 @@ def _bootstrap() -> None:
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_schema skipped: %s", e)
     Base.metadata.create_all(bind=engine)
+    # Health-monitor column migration (2026-06-02 per Sire's monitoring spec).
+    # Idempotent ALTER TABLE — safe on every restart.
+    try:
+        added = news_seed.ensure_health_columns()
+        if added: log.info("health-monitor columns migrated: +%d", added)
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_health_columns skipped: %s", e)
     try:
         n = news_seed.seed_sources_if_empty()
         if n: log.info("sources seed loaded: %d rows", n)
@@ -126,6 +134,8 @@ def _create_app() -> Flask:
         return jsonify({"error": "internal_server_error", "detail": "see server logs"}), 500
 
     app.register_blueprint(news_bp)
+    # Feeds-health monitor: /admin/health (CTO/admin only via ?cto=1)
+    app.register_blueprint(admin_health_bp)
 
     # Quality framework: /api/feedback (thumbs up/down) + optional /metrics.
     app.register_blueprint(feedback_bp)

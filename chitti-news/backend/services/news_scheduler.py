@@ -35,6 +35,18 @@ def _job_rss_poll() -> dict:
     return news_ingest.fetch_all()
 
 
+def _job_feeds_health() -> dict:
+    """Per-feed health probe — added 2026-06-02 per Sire's monitoring spec.
+
+    Runs every 6 hours; classifies each enabled source as
+    healthy / degraded / dead and emails Sire on first entry into
+    degraded or dead (debounced 24h). Implementation in
+    services/source_health.py.
+    """
+    from services import source_health
+    return source_health.check_all_sources()
+
+
 def _job_factcheck_sweep() -> dict:
     """
     P0 2026-05-13 — guarantee every visible article has a verdict badge.
@@ -157,6 +169,14 @@ def start() -> None:
         id="factcheck_sweep",
         replace_existing=True,
         misfire_grace_time=600,
+    )
+    sch.add_job(
+        _wrap("feeds_health", _job_feeds_health),
+        IntervalTrigger(hours=6),
+        id="feeds_health",
+        replace_existing=True,
+        misfire_grace_time=1800,
+        next_run_time=None,
     )
     sch.start()
     _scheduler = sch

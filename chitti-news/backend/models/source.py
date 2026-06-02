@@ -32,4 +32,21 @@ class Source(Base):
     last_fetched_at = Column(DateTime, nullable=True)
     last_error = Column(String(500), nullable=True)
 
+    # Health monitoring (added 2026-06-02 per Sire's monitoring spec)
+    consecutive_failures = Column(Integer, nullable=False, default=0)
+    last_success_at = Column(DateTime, nullable=True)
+    # status: 'healthy' (default), 'degraded' (3+ fails, still retrying),
+    # 'dead' (24h continuous failure, excluded from rss_poll until manual revive)
+    status = Column(String(16), nullable=False, default="healthy")
+    # next_retry_at — set during backoff. fetch_all skips sources where
+    # status='dead' OR next_retry_at > now.
+    next_retry_at = Column(DateTime, nullable=True)
+    # last_alert_at — debounce alerts so one dead feed doesn't spam
+    # Sire's inbox more than once per 24h.
+    last_alert_at = Column(DateTime, nullable=True)
+    # When auto-discovery finds an alternative URL during the dead handler,
+    # the candidate goes here for Sire's review; we don't auto-update the
+    # rss_url (that would be a self-modifying source registry).
+    alternative_url_candidate = Column(String(500), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

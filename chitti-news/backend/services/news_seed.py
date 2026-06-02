@@ -13,7 +13,9 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from database import SessionLocal
+from sqlalchemy import inspect, text
+
+from database import SessionLocal, engine
 from models.article import Article
 from models.source import Source
 
@@ -22,6 +24,40 @@ log = logging.getLogger("news_seed")
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 SOURCES_PATH = DATA_DIR / "sources.json"
 ARTICLES_SEED = DATA_DIR / "articles_seed.json"
+
+
+# Health-monitor columns added 2026-06-02. SQLAlchemy doesn't auto-ALTER
+# existing tables, so we add columns at startup if missing. SQLite +
+# Postgres + Turso libSQL all accept ALTER TABLE ADD COLUMN.
+_HEALTH_COLUMNS = [
+    ("consecutive_failures",       "INTEGER NOT NULL DEFAULT 0"),
+    ("last_success_at",            "TIMESTAMP"),
+    ("status",                     "VARCHAR(16) NOT NULL DEFAULT 'healthy'"),
+    ("next_retry_at",              "TIMESTAMP"),
+    ("last_alert_at",              "TIMESTAMP"),
+    ("alternative_url_candidate",  "VARCHAR(500)"),
+]
+
+
+def ensure_health_columns() -> int:
+    """
+    Idempotent ALTER TABLE for health-monitor columns. Returns the
+    number of columns actually added. Safe to call on every startup.
+    """
+    insp = inspect(engine)
+    existing_cols = {c["name"] for c in insp.get_columns("sources")}
+    added = 0
+    with engine.begin() as conn:
+        for col_name, col_def in _HEALTH_COLUMNS:
+            if col_name in existing_cols:
+                continue
+            try:
+                conn.execute(text(f"ALTER TABLE sources ADD COLUMN {col_name} {col_def}"))
+                added += 1
+                log.info("migrated: added sources.%s", col_name)
+            except Exception as e:  # noqa: BLE001
+                log.warning("could not add column sources.%s: %s", col_name, e)
+    return added
 
 
 def seed_sources_if_empty() -> int:
