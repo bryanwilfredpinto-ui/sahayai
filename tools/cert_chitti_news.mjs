@@ -336,6 +336,29 @@ async function main() {
       stillHere ? `URL: ${currentUrl}`
                 : `LEFT chitti_news.html → ${currentUrl}`);
 
+  // ── BODY_VISIBLE — after tapping a card, the .art-fullbody must
+  // become populated with substantive text within 5 seconds. Sire
+  // 2026-06-02: "If I tap a card and don't see the news, the product
+  // is useless." This gate blocks any regression where tap-to-expand
+  // doesn't bring the body into the DOM.
+  await page.waitForFunction(
+    () => {
+      const fb = document.querySelector('.art-card.expanded .art-fullbody');
+      if (!fb) return false;
+      const txt = (fb.textContent || '').trim();
+      if (txt === '' || /^Loading full news/i.test(txt) || /^Tap to fetch/i.test(txt)) return false;
+      return txt.length >= 80;
+    },
+    { timeout: 5000 },
+  ).catch(() => {});
+  const fullbody = await page.evaluate(() => {
+    const fb = document.querySelector('.art-card.expanded .art-fullbody');
+    return fb ? (fb.textContent || '').trim().slice(0, 120) : '(no .art-fullbody found)';
+  });
+  add('BODY_VISIBLE — full news body appears in the expanded card',
+      fullbody.length >= 80 && !/^Loading/i.test(fullbody) && !/^Tap to fetch/i.test(fullbody),
+      `first 120 chars: "${fullbody}"`);
+
   // ── NO_RAW_TEMPLATE — no NaN<digit> or raw "data-chitti-response"
   // text leaking into the rendered DOM. This catches the class of bug
   // where a `// comment` inside a + string-concat chain makes the next

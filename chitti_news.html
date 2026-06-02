@@ -167,7 +167,21 @@
     /* ── Expanded body — tap card to reveal ─────────────────────── */
     .art-body { display: none; margin-top: 12px; }
     .art-card.expanded .art-body { display: block; }
-    .art-summary { font-size: 14px; line-height: 1.55; color: var(--text); }
+    .art-summary { font-size: 14px; line-height: 1.55; color: var(--text); margin-bottom: 12px; }
+    .art-fullbody {
+      font-size: 14px; line-height: 1.65; color: var(--text);
+      margin: 0 0 12px;
+      padding: 12px;
+      background: var(--surface); border-left: 3px solid var(--saffron);
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+    .art-fullbody-status { color: var(--muted); font-style: italic; font-size: 13px; }
+    .art-fullbody.summary-only-flag::before {
+      content: "ℹ︎ Summary only — the publisher does not share the full body.";
+      display: block; color: var(--warn); font-size: 12px; font-weight: 600;
+      margin-bottom: 8px;
+    }
     .art-sub-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
     .art-sub-actions button {
       padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px;
@@ -475,7 +489,10 @@ function articleCardHtml(a) {
     +     stripHtml(boxId, a.id)
     +     '<div class="art-hint">Tap card to hear the entire news — Chitti stays on this page</div>'
     +     '<div class="art-body">'
-    +       '<div class="art-summary" onclick="event.stopPropagation()">' + esc(a.summary || '') + '</div>'
+    +       '<div class="art-summary" onclick="event.stopPropagation()">' + esc(a.summary || '(No summary available from this source.)') + '</div>'
+    +       '<div class="art-fullbody" id="fullbody-' + a.id + '" onclick="event.stopPropagation()" aria-live="polite">'
+    +         '<div class="art-fullbody-status">Tap to fetch the full news…</div>'
+    +       '</div>'
     +       '<div class="art-sub-actions">'
     +         '<button onclick="event.stopPropagation(); openTake(' + a.id + ')">▶ Chitti\'s Take</button>'
     +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
@@ -524,7 +541,53 @@ function onCardTap(id) {
     }
   } else {
     el.classList.add('expanded');
+    // Three things happen in parallel when the user taps a card:
+    //   1. Summary becomes visible immediately (already in DOM)
+    //   2. Full body lazy-loads + renders into .art-fullbody
+    //   3. Speaker starts reading
+    // Sire 2026-06-02: "What is the use of a speaker when it only reads
+    // the headlines?" — the body needs to be VISIBLE for sighted users
+    // too, not only audible.
+    ensureFullbodyDisplayed(id);
     speakArticle(id);
+  }
+}
+
+// Lazily fetch + display the full body of an article in the .art-fullbody
+// container of its card. Idempotent: marks itself loaded so re-tapping
+// doesn't refetch.
+async function ensureFullbodyDisplayed(id) {
+  const host = document.getElementById('fullbody-' + id);
+  if (!host || host.dataset.loaded === '1') return;
+  host.dataset.loaded = '1';
+  host.innerHTML = '<div class="art-fullbody-status">Loading full news…</div>';
+  const a = ARTICLES[id];
+  let body = (a && a.content) || '';
+  let summaryOnly = false;
+  const hasRich = body && body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length >= 60;
+  if (!hasRich) {
+    try {
+      const data = await api('/api/news/article/' + id + '/body');
+      if (data && data.body && data.body.split(/\s+/).length >= 60) {
+        body = data.body;
+        if (a) a.content = body;
+      } else {
+        body = (a && a.summary) || body;
+        summaryOnly = true;
+      }
+    } catch (e) {
+      body = (a && a.summary) || body;
+      summaryOnly = true;
+    }
+  }
+  const plain = String(body).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (summaryOnly) host.classList.add('summary-only-flag');
+  // Render — use textContent so any residual HTML in body shows as text.
+  host.textContent = plain || '(No body available.)';
+  if (summaryOnly) {
+    // textContent wipes the ::before — re-toggle class to repaint.
+    host.classList.remove('summary-only-flag');
+    host.classList.add('summary-only-flag');
   }
 }
 // Kept for backwards-compat with substrate hooks that might still call
