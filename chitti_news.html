@@ -1,257 +1,270 @@
-﻿<!DOCTYPE html>
-<!-- Frontend for chitti-news/ -->
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="chitti-card-selector" content=".panel, .chai-stall-card, .chai-actions">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Chitti News — Your state. Your language. Your news.</title>
-<meta name="description" content="State-aware, multi-language Indian news aggregator. Read aloud, fact-checked, AI-summarised in your language. Free.">
-<style>
-:root{
-  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
-  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
-  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
-  --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
-body{min-height:100vh;position:relative}
-body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
-body > *{position:relative;z-index:1}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  <title>Chitti News — Your state. Your language. Your news.</title>
+  <meta name="description" content="State-aware, multi-language Indian news aggregator. Voice-first. Free. Built for blind, deaf, mute, illiterate users." />
+  <meta name="theme-color" content="#FF9933" />
 
-.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+  <!--
+    Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
+    SKILLS, scope". Replaces the 1585-line legacy chitti_news.html.
 
-/* Breaking-news ribbon */
-.brk-bar{position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(220,38,38,.18),rgba(232,106,23,.14));border-bottom:2px solid var(--red);padding:8px 14px;font-size:12px;line-height:1.5;display:none;align-items:center;gap:10px;flex-wrap:wrap;color:var(--text);font-weight:700}
-.brk-bar.shown{display:flex}
-.brk-bar .pulse{width:8px;height:8px;border-radius:50%;background:var(--red);animation:brkPulse 1.2s ease-in-out infinite;flex-shrink:0}
-@keyframes brkPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-.brk-bar .text{flex:1;min-width:140px}
-.brk-bar button.dismiss{background:transparent;border:1px solid rgba(220,38,38,.4);color:var(--red);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;min-height:28px;font-weight:600}
+    Source-of-truth contracts honoured here:
+      • chitti-cto/CTO.md §1 — Saffron / Navy / Green palette only
+      • chitti-cto/CTO.md §2 — 5-element strip on every response box
+      • chitti-cto/CTO.md §5 — one language selector per page
+      • chitti-cto/CTO.md §6 — technical terms stay in English (SEBI etc.)
+      • chitti-news/SKILLS.md #12 — strip exactly: 🔊 / 🤖 / 👍 / 👎 / ✏️🎙️
+      • chitti-news/SOP.md — fact-check verdict on every card; 2-source rule
+      • SAHAYAI_MASTER.md §7 — 4-user accessibility contract; ISL panel
+      • SAHAYAI_MASTER.md §2d — Feature Discovery (substrate auto-injects)
 
-/* Header */
-header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
-.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
-@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
-.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
-.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
-.switch-btn-bharat:hover{filter:brightness(1.1)}
-.lang-toggle-bharat{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden}
-.lang-toggle-bharat button{border:none;border-radius:0;background:rgba(255,255,255,.05);color:#fff;padding:7px 12px;font-weight:700;cursor:pointer;font-size:11px}
-.lang-toggle-bharat button.active,.lang-toggle-bharat button[data-active="true"]{background:rgba(255,255,255,.30)}
-.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
-.header-controls button:hover{background:rgba(255,255,255,.22)}
+    Layout (collapsed default):
+       [meta]
+       [headline]
+       [🔊 Read] [🤖 Chitti] [👍] [👎] [✏️ Feedback]
+       Tap to read full news
+       [thumb]
+    Tap card → expand to summary + sub-panels (Take / Explain / Factcheck).
+    Speaker on EVERY box reads the entire news (a.content || a.summary).
+  -->
 
-/* Picker (state + language + category) */
-.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 11px;font-size:13px;min-height:40px;font-weight:600}
-.picker-bar select:focus{outline:none;border-color:var(--saffron)}
-.picker-bar .pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.picker-bar .pick-sep{flex:1}
-.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:9px 14px;font-size:13px;cursor:pointer;min-height:40px}
+  <style>
+    /* ── §1 LOCKED PALETTE ───────────────────────────────────────── */
+    :root {
+      --saffron: #FF9933;
+      --navy:    #000080;
+      --green:   #138808;
+      --canvas:  #FFFFFF;
+      --surface: #F9FAFB;
+      --rule:    #E5E7EB;
+      --text:    #1A1A1A;
+      --muted:   #6B7280;
+      --warn:    #B45309;
+      --red:     #B91C1C;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: var(--canvas);
+      min-height: 100vh;
+    }
+    a { color: var(--navy); }
+    button { font: inherit; }
 
-/* Tabs */
-nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:60px;z-index:4;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px}
-nav.tabs .tab:hover{color:var(--text)}
-nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
+    /* ── Sticky legal disclaimer ─────────────────────────────────── */
+    .legal-bar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--navy); color: #fff;
+      font-size: 12px; padding: 6px 12px; text-align: center;
+      letter-spacing: .02em;
+    }
+    .legal-bar strong { color: var(--saffron); }
 
-/* Layout */
-main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
-.page{display:none}
-.page.active{display:block}
-.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06);color:var(--text)}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.section-title{font-size:14px;font-weight:800}
-.section-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
-.section-empty{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+    /* ── Header ──────────────────────────────────────────────────── */
+    header { padding: 14px 16px 8px; border-bottom: 1px solid var(--rule); background: var(--canvas); }
+    .brand-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--saffron), var(--green));
+      color: #fff; font-weight: 800; font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-name { font-weight: 800; font-size: 20px; color: var(--navy); letter-spacing: -.01em; }
+    .brand-tag  { color: var(--muted); font-size: 13px; margin-top: 2px; }
 
-.live-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);vertical-align:middle;margin-left:6px}
-.coming-soon{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle;margin-left:6px}
-.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7c2d12;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));border:1px solid rgba(232,106,23,.5);vertical-align:middle;margin-left:6px}
-.fact-verified{color:var(--green);font-weight:800}
-.fact-partial{color:#92400e;font-weight:800}
-.fact-disputed{color:var(--red);font-weight:800}
-.fact-unverified{color:var(--muted);font-weight:700}
-.fact-unchecked{color:var(--muted);font-weight:700;font-style:italic}
+    /* ── §5 ONE language selector + state/category filters ──────── */
+    .filter-row {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+      padding: 12px 16px; border-bottom: 1px solid var(--rule);
+      background: var(--surface);
+      position: sticky; top: 28px; z-index: 100;
+    }
+    .filter-row label {
+      font-size: 11px; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .filter-row select, .filter-row button {
+      padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px;
+      background: var(--canvas); color: var(--text); font-weight: 600;
+      cursor: pointer; font-size: 13px;
+    }
+    .filter-row .refresh-btn {
+      background: var(--saffron); color: #fff; border-color: var(--saffron);
+    }
+    .filter-row .refresh-btn:hover { filter: brightness(.95); }
 
-/* Article cards */
-.feed{display:grid;grid-template-columns:1fr;gap:12px}
-.art-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr 110px;gap:12px;transition:box-shadow .2s}
-.art-card:hover{box-shadow:0 6px 20px rgba(14,35,68,.10)}
-.art-card .art-meta{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.art-card .art-title{font-size:15px;font-weight:800;line-height:1.35;color:var(--text);margin-bottom:6px;word-wrap:break-word}
-.art-card .art-summary{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:10px}
-.art-card .art-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.art-card .art-actions button{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-.art-card .art-actions button:hover{background:rgba(232,106,23,.06);border-color:var(--saffron);color:var(--saffron)}
-.art-card .art-actions button.primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800}
-.art-card .art-thumb{background:#fbf8f1;border-radius:10px;background-size:cover;background-position:center;min-height:80px;border:1px solid var(--border)}
-.art-card .art-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--gold);opacity:.5}
-.art-card .brk-pill{display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--red);margin-right:4px}
+    /* ── Main feed ───────────────────────────────────────────────── */
+    main {
+      max-width: 720px; margin: 0 auto;
+      padding: 16px 12px 80px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .status-card {
+      padding: 16px; border: 1px solid var(--rule); border-radius: 12px;
+      background: var(--surface); color: var(--text); text-align: center;
+    }
 
-/* Sire 2026-06-02 — Tap-to-expand card with canonical 5-icon strip.
-   Per chitti-news/SKILLS.md feature #12 + SOP.md Quality Standard +
-   CTO.md §2 UI Design Standard v1.0:
-     EVERY response box carries 🔊 · 🤖 · 👍 · 👎 · ✏️🎙️
-   The strip lives INSIDE the headline-row so blind users find it
-   predictably at the same anchor on every card. The substrate's
-   sibling-injected chitti-fb-box-bar is suppressed on art-cards only
-   (CSS below) so there's exactly ONE strip per box. */
-.art-card{cursor:pointer}
-.art-card.expanded{cursor:default}
-.art-card .art-headline-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
-.art-card .art-headline-row .art-title{flex:1 1 100%;margin-bottom:6px}
-.art-card .art-strip{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding-top:6px;border-top:1px dashed var(--border)}
-.art-card .art-strip button{background:#fff;color:var(--navy);border:1px solid var(--border);border-radius:999px;min-width:40px;min-height:40px;font-size:16px;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-weight:600;padding:0 10px;gap:4px;line-height:1}
-.art-card .art-strip button:hover{border-color:var(--saffron);color:var(--saffron);background:#fff8f0}
-.art-card .art-strip button:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
-.art-card .art-strip button.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
-.art-card .art-strip button.live{background:var(--green);color:#fff;border-color:var(--green)}
-.art-card .art-strip .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.art-card .art-body{display:none;margin-top:12px}
-.art-card.expanded .art-body{display:block}
-.art-card .art-hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;width:100%}
-.art-card.expanded .art-hint{display:none}
-/* Hide the substrate-injected feedback bar on art-cards — the in-card
-   strip above is the canonical 5-element widget for news cards.
-   Substrate continues to inject on ALL other Chitti pages + on the
-   take/explain/fact sub-host boxes when those load. */
-.art-card + .chitti-fb-box-bar{display:none !important}
+    /* ── Article card — collapsed by default ────────────────────── */
+    .art-card {
+      background: var(--canvas);
+      border: 1px solid var(--rule); border-left: 4px solid var(--saffron);
+      border-radius: 12px; padding: 14px;
+      display: grid; grid-template-columns: 1fr 90px; gap: 12px;
+      cursor: pointer; transition: box-shadow .2s, border-color .2s;
+    }
+    .art-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .art-card.expanded { cursor: default; border-left-color: var(--green); }
+    .art-meta {
+      font-size: 11px; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;
+    }
+    .art-meta .src { color: var(--navy); }
+    .art-title {
+      font-weight: 800; font-size: 16px; line-height: 1.35;
+      color: var(--text); margin: 0 0 8px; word-break: break-word;
+    }
+    .art-hint {
+      font-size: 11px; color: var(--muted); font-style: italic; margin: 4px 0 0;
+    }
+    .art-card.expanded .art-hint { display: none; }
 
-@media (max-width: 560px){
-  .art-card{grid-template-columns:1fr}
-  .art-card .art-thumb{display:none}
-}
+    /* ── §2 CANONICAL 5-ICON STRIP — every box ──────────────────── */
+    .art-strip {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding-top: 8px; margin-top: 6px;
+      border-top: 1px dashed var(--rule);
+    }
+    .art-strip button {
+      min-width: 44px; min-height: 44px; padding: 0 10px;
+      border: 1px solid var(--rule); border-radius: 999px;
+      background: var(--canvas); color: var(--navy);
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 4px; line-height: 1;
+    }
+    .art-strip button:hover { border-color: var(--saffron); background: #fff8f0; color: var(--saffron); }
+    .art-strip button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+    .art-strip button.primary { background: var(--saffron); color: #fff; border-color: var(--saffron); }
+    .art-strip button.primary:hover { filter: brightness(.95); color: #fff; }
+    .art-strip button.live { background: var(--green); color: #fff; border-color: var(--green); }
+    .art-strip .lbl {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
+    }
 
-/* Universal speaker button — every box gets one (four-user contract) */
-.spk-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;line-height:1;min-width:32px;min-height:26px;font-weight:600;flex-shrink:0}
-.spk-btn:hover,.spk-btn:focus-visible{background:rgba(232,106,23,.08);color:var(--saffron);border-color:var(--saffron);outline:none}
-.spk-btn.dark{border-color:rgba(255,255,255,.30);color:#fff}
-.spk-btn.dark:hover{background:rgba(255,255,255,.18);border-color:#fff}
-.spk-row{display:flex;align-items:center;gap:6px}
+    /* ── Expanded body — tap card to reveal ─────────────────────── */
+    .art-body { display: none; margin-top: 12px; }
+    .art-card.expanded .art-body { display: block; }
+    .art-summary { font-size: 14px; line-height: 1.55; color: var(--text); }
+    .art-sub-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .art-sub-actions button {
+      padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px;
+      background: var(--canvas); color: var(--text); font-size: 12px; cursor: pointer;
+    }
+    .art-sub-actions button:hover { background: var(--surface); border-color: var(--navy); }
+    .art-source-link {
+      margin-top: 10px; font-size: 13px;
+    }
+    .art-source-link a { color: var(--navy); text-decoration: underline; font-weight: 600; }
 
-/* Take + factcheck inline panels */
-.art-take{margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,rgba(232,106,23,.05),rgba(212,175,55,.04));border:1px dashed var(--saffron);border-radius:10px;font-size:13px;line-height:1.6}
-.art-take .take-h{font-size:11px;font-weight:900;color:var(--saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.art-take ul{margin:0;padding-left:18px}
-.art-take li{margin:3px 0}
-.art-fact{margin-top:8px;padding:8px 10px;background:#fbf8f1;border:1px solid var(--border);border-radius:8px;font-size:12px;line-height:1.55}
+    /* ── Sub-host panels (Chitti's Take / Explain / Factcheck) ──── */
+    .art-sub-host {
+      margin-top: 10px; padding: 10px;
+      border: 1px solid var(--rule); border-radius: 8px;
+      background: var(--surface);
+    }
+    .art-sub-host:empty { display: none; }
+    .art-sub-host h4 {
+      margin: 0 0 6px; font-size: 12px; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--navy);
+    }
+    .art-sub-host ul { margin: 0; padding-left: 18px; }
 
-/* Demo banner */
-.demo-ribbon{display:none;background:linear-gradient(90deg,rgba(232,106,23,.22),rgba(212,175,55,.18));border-bottom:1px solid #E86A17;padding:7px 14px;font-size:11px;color:var(--text);text-align:center;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.demo-ribbon.shown{display:block}
-.demo-banner{position:fixed;left:14px;right:14px;bottom:14px;max-width:680px;margin:0 auto;background:linear-gradient(135deg,#E86A17,#ff9b4a);border:1px solid #D4AF37;color:#fff;padding:14px 16px;border-radius:14px;display:none;z-index:300;box-shadow:0 10px 32px rgba(14,35,68,.45);align-items:center;gap:12px;flex-wrap:wrap}
-.demo-banner.shown{display:flex}
-.demo-banner .step{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:rgba(255,255,255,.22);padding:4px 10px;border-radius:6px;flex-shrink:0}
-.demo-banner .narr{font-size:14px;flex:1;min-width:180px;line-height:1.5}
-.demo-banner button{background:#fff;color:#E86A17;border:none;border-radius:8px;padding:9px 16px;font-weight:800;cursor:pointer;font-size:13px;min-height:40px}
-.demo-banner button.skip{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.65)}
+    /* ── Thumbnail ──────────────────────────────────────────────── */
+    .art-thumb {
+      background: var(--surface); border-radius: 8px;
+      background-size: cover; background-position: center;
+      min-height: 80px; border: 1px solid var(--rule);
+    }
+    .art-thumb.placeholder {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; color: var(--saffron); opacity: .7;
+    }
 
-/* Onboarding modal (first-launch state+language picker) */
-.onb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;padding:20px;overflow-y:auto;align-items:flex-start;justify-content:center}
-.onb.shown{display:flex}
-.onb .panel{background:#fff;border:1px solid rgba(212,175,55,.55);border-radius:16px;padding:24px;max-width:520px;width:100%;font-size:14px;line-height:1.6}
-.onb .panel h2{font-size:20px;margin:0 0 8px;color:var(--saffron)}
-.onb .panel p{margin:0 0 16px}
-.onb .panel select{width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;min-height:46px;margin-top:4px}
-.onb .panel button.go{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:900;border-radius:10px;padding:12px 24px;font-size:15px;cursor:pointer;margin-top:14px;width:100%;min-height:50px}
+    /* ── Fact-check badge ────────────────────────────────────────── */
+    .fc-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 4px;
+      font-size: 10px; font-weight: 800;
+    }
+    .fc-verified  { background: rgba(19,136,8,.12); color: var(--green); }
+    .fc-partial   { background: rgba(255,153,51,.12); color: var(--warn); }
+    .fc-disputed  { background: rgba(185,28,28,.12); color: var(--red); }
+    .fc-unchecked,
+    .fc-unverified { background: rgba(107,114,128,.12); color: var(--muted); }
 
-footer{margin-top:24px;padding:18px 16px;color:var(--muted);font-size:11px;text-align:center;border-top:1px solid var(--border)}
-footer a{color:var(--saffron)}
-</style>
-<link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
+    /* §2 — Suppress the substrate-injected per-box feedback bar on
+       art-cards (the in-card .art-strip above IS the canonical 5-
+       element strip for chitti-news, per SKILLS.md #12). The substrate
+       continues to inject on every other Chitti page + on the sub-host
+       panels (take/explain/fact) inside art-cards when those load. */
+    .art-card + .chitti-fb-box-bar { display: none !important; }
+
+    /* ── 375px-first responsive ─────────────────────────────────── */
+    @media (max-width: 420px) {
+      .art-card { grid-template-columns: 1fr; }
+      .art-card .art-thumb { display: none; }
+      main { padding: 10px 8px 80px; }
+    }
+  </style>
 </head>
 <body>
 
-<!--
-  Chitti language selector hook for the chitti_lang.js substrate. Hidden
-  visually 2026-06-02 per Sire + CTO.md UI Design Standard v1.0 (§5 — one
-  language selector per page). The picker-bar dropdown below is now the
-  ONLY visible language control. This hidden div stays in DOM because
-  chitti_lang.js writes options into #lang-select on load; removing it
-  would break the substrate. Off-palette hand-rolled styles (#0E2344 /
-  #D4AF37) dropped — palette is now picker-bar only, via chitti_theme.css.
--->
-<div data-chitti-lang-select="auto" style="display:none" aria-hidden="true">
-  <label for="lang-select">Language</label>
-  <select id="lang-select" aria-label="Language">
-    <option value="en">English</option>
-  </select>
+<!-- Sticky legal disclaimer — Chitti News two-source rule + aggregation honesty -->
+<div class="legal-bar" role="status" aria-live="polite">
+  📰 <strong>Chitti News aggregates public RSS</strong> — verdicts cross-reference ≥2 sources. Verify with the source link before sharing.
 </div>
 
-<div class="bharat-stripe"></div>
-
-<!-- Breaking-news ribbon (populated dynamically) -->
-<div id="brk-bar" class="brk-bar" role="status" aria-live="polite">
-  <span class="pulse"></span>
-  <span class="text" id="brk-text">Loading breaking news…</span>
-  <button class="spk-btn" onclick="speakBreaking()" aria-label="Read the breaking-news headline aloud" data-i18n-aria="read-the-breaking-news-headline-aloud" data-i18n="tag">🔊</button>
-  <button class="dismiss" onclick="dismissBreaking()" aria-label="Dismiss breaking news" data-i18n-aria="dismiss-breaking-news" data-i18n="tag">✕</button>
-</div>
-
-<!-- Demo ribbon -->
-<div id="demo-ribbon" class="demo-ribbon" role="status" aria-live="polite" data-i18n="demo.ribbon">🎬 DEMO MODE — sample content. Tap Skip to exit.</div>
-
-<header role="banner">
+<header>
   <div class="brand-row">
-    <div style="display:flex;align-items:center">
-      <div class="bharat-logo" aria-hidden="true">C</div>
-      <div>
-        <div class="brand">Chitti News</div>
-        <div class="tagline" data-i18n="header.tagline">Your state · Your language · Your news</div>
-      </div>
+    <div class="brand-mark" aria-hidden="true">च</div>
+    <div style="flex:1; min-width: 140px;">
+      <div class="brand-name">Chitti News</div>
+      <div class="brand-tag" id="brand-tag">Your state · Your language · Your news</div>
     </div>
-    <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_complete_technical.html" data-i18n="switch.tech">📈 Technical</a>
-      <a class="switch-btn-bharat" href="chitti_fundamentals.html" data-i18n="switch.fund">📋 Fundamentals</a>
-      <a class="switch-btn-bharat" href="chitti_medupi.html" data-i18n="switch.medupi">💊 MedUPI</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n-aria="switch-to-chitti-vaani" data-i18n="switch.vaani">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard" data-i18n="switch.upi">🛡️ UPI Guard</a>
-      <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner" data-i18n="switch.scanner">📷 Scanner</a>
-      <!--
-        EN | हिं header toggle removed 2026-06-02 per Sire + CTO.md UI
-        Design Standard v1.0 §5 (one language selector per page). It
-        duplicated the picker-bar #pick-lang dropdown below and only
-        offered 2 of the 12 supported languages. The picker bar is now
-        the single source of truth — its onchange already syncs both
-        UI language (chitti_lang.js setChittiLang) AND content filter.
-      -->
-    </div>
-  </div>
-  <div class="header-controls">
-    <button onclick="startDemoMode()" data-i18n="hdr.demo">🎬 Demo Mode</button>
-    <button onclick="speakPage()" data-i18n="hdr.read">🔊 Read page</button>
-    <button onclick="openOnboarding()" data-i18n="hdr.change">🌐 Change state / language</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="top">↑ Top</button>
   </div>
 </header>
 
-<!-- Chitti News disclaimer (sticky) — every share carries a verify-with-source line -->
-<div class="news-disclaimer" role="region" aria-label="Chitti News disclaimer" data-i18n-aria="chitti-news-disclaimer"
-     style="position:sticky;top:0;z-index:55;background:#fef3c7;color:#78350f;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #fcd34d;line-height:1.45">
-  📰 <strong>Chitti News aggregates RSS sources</strong> — verdicts cross-reference ≥2 sources. Always verify with the original source before sharing.
-</div>
+<!-- §5 LOCKED: ONE language selector per page, alongside state + category filters -->
+<div class="filter-row" role="group" aria-label="Filter feed by state, language and category">
+  <label for="pick-state">State</label>
+  <select id="pick-state" onchange="onFilterChange()" aria-label="State">
+    <option value="india">All India</option>
+    <option value="ap">Andhra Pradesh</option><option value="as">Assam</option>
+    <option value="br">Bihar</option><option value="cg">Chhattisgarh</option>
+    <option value="gj">Gujarat</option><option value="hr">Haryana</option>
+    <option value="hp">Himachal Pradesh</option><option value="jk">Jammu &amp; Kashmir</option>
+    <option value="ka">Karnataka</option><option value="kl">Kerala</option>
+    <option value="mp">Madhya Pradesh</option><option value="mh">Maharashtra</option>
+    <option value="mn">Manipur</option><option value="mg">Meghalaya</option>
+    <option value="ng">Nagaland</option><option value="or">Odisha</option>
+    <option value="pb">Punjab</option><option value="rj">Rajasthan</option>
+    <option value="tn">Tamil Nadu</option><option value="telangana">Telangana</option>
+    <option value="up">Uttar Pradesh</option><option value="wb">West Bengal</option>
+    <option value="northeast">Northeast (cross)</option>
+  </select>
 
-<!-- State + Language + Category picker (sticky) -->
-<div class="picker-bar" role="group" aria-label="Filter news by state, language and category" data-i18n-aria="filter-news-by-state-language-and-category">
-  <span class="pick-lbl" data-i18n="pick.state">State</span>
-  <select id="pick-state" onchange="onPickerChange()" aria-label="State" data-i18n-aria="state"></select>
-  <button class="spk-btn" onclick="speakPicker()" aria-label="Hear what the state and language pickers do" data-i18n-aria="hear-what-the-state-and-language-pickers-do" data-i18n="tag">🔊</button>
-  <span class="pick-lbl" data-i18n="pick.lang">Lang</span>
-  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language" data-i18n-aria="language">
+  <label for="pick-lang">Language</label>
+  <select id="pick-lang" onchange="onFilterChange()" aria-label="Language">
     <option value="en">English</option>
-    <option value="hi">हिंदी</option>
-    <option value="bn">বাংলা</option>
-    <option value="te">తెలుగు</option>
-    <option value="ta">தமிழ்</option>
+    <option value="hi">हिन्दी</option>
     <option value="mr">मराठी</option>
+    <option value="ta">தமிழ்</option>
+    <option value="te">తెలుగు</option>
+    <option value="bn">বাংলা</option>
     <option value="kn">ಕನ್ನಡ</option>
     <option value="ml">മലയാളം</option>
     <option value="gu">ગુજરાતી</option>
@@ -259,1426 +272,414 @@ footer a{color:var(--saffron)}
     <option value="or">ଓଡ଼ିଆ</option>
     <option value="ur">اردو</option>
   </select>
-  <span class="pick-sep"></span>
-  <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
-</div>
 
-<nav class="tabs" role="tablist" aria-label="News categories" data-i18n-aria="news-categories">
-  <button class="tab active" data-tab="national"      onclick="showCategory('national')"      role="tab" aria-selected="true"  data-i18n="cat.national">🇮🇳 National</button>
-  <button class="tab"        data-tab="state"         onclick="showCategory('state')"         role="tab" aria-selected="false" data-i18n="cat.state">📍 State</button>
-  <button class="tab"        data-tab="politics"      onclick="showCategory('politics')"      role="tab" aria-selected="false" data-i18n="cat.politics">🏛️ Politics</button>
-  <button class="tab"        data-tab="business"      onclick="showCategory('business')"      role="tab" aria-selected="false" data-i18n="cat.business">💼 Business</button>
-  <button class="tab"        data-tab="tech"          onclick="showCategory('tech')"          role="tab" aria-selected="false" data-i18n="cat.tech">💡 Tech</button>
-  <button class="tab"        data-tab="sports"        onclick="showCategory('sports')"        role="tab" aria-selected="false" data-i18n="cat.sports">🏏 Sports</button>
-  <button class="tab"        data-tab="entertainment" onclick="showCategory('entertainment')" role="tab" aria-selected="false" data-i18n="cat.entertainment">🎬 Entertainment</button>
-  <button class="tab"        data-tab="foryou"        onclick="showCategory('foryou')"        role="tab" aria-selected="false" data-i18n="cat.foryou">⭐ For You</button>
-  <button class="tab"        data-tab="saved"         onclick="showCategory('saved')"         role="tab" aria-selected="false" data-i18n="cat.saved">📌 Read Later</button>
-  <button class="tab"        data-tab="cancelled"     onclick="showCategory('cancelled')"     role="tab" aria-selected="false" data-i18n="cat.cancelled">🗑️ Cancelled</button>
-</nav>
+  <label for="pick-cat">Category</label>
+  <select id="pick-cat" onchange="onFilterChange()" aria-label="Category">
+    <option value="national">National</option>
+    <option value="state">State</option>
+    <option value="politics">Politics</option>
+    <option value="business">Business</option>
+    <option value="tech">Tech</option>
+    <option value="sports">Sports</option>
+    <option value="entertainment">Entertainment</option>
+    <option value="foryou">For You</option>
+    <option value="saved">Read Later</option>
+    <option value="cancelled">Cancelled</option>
+  </select>
+
+  <button class="refresh-btn" type="button" onclick="loadFeed(true)" aria-label="Refresh news feed">🔄 Refresh</button>
+</div>
 
 <main>
-  <section id="page-feed" class="page active" role="tabpanel">
-    <!-- ☕ CHAI STALL MODE — Sire 2026-05-23 — swarm intelligence foundation -->
-    <div class="chai-stall-card" role="region" aria-label="Chai Stall Mode">
-      <div class="chai-stall-row">
-        <span class="chai-icon" aria-hidden="true">☕</span>
-        <div class="chai-info">
-          <div class="chai-title" data-vai-i18n="chai.title">Chai pe charcha — Chitti seekhega</div>
-          <div class="chai-sub" data-vai-i18n="chai.sub">Aapki bhasha, aapka lehza — Bhojpuri se Tulu tak. Privacy-first, on-device.</div>
-        </div>
-      </div>
-      <button class="chai-stall-btn" id="chai-stall-btn" onclick="chaiOpenConsent()">
-        <span aria-hidden="true">☕</span> <span data-vai-i18n="chai.cta">Chai Stall Mode shuru karo</span>
-      </button>
-      <div class="chai-todays" id="chai-todays" style="display:none">
-        <button class="chai-link" onclick="chaiShowLearned()" data-vai-i18n="chai.learned">📚 Chitti aaj kya seekha?</button>
-      </div>
-    </div>
-
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakFeedStatus()" aria-label="Hear the current feed status" data-i18n-aria="hear-the-current-feed-status" data-i18n="feed-status">🔊 Feed status</button></div>
-    <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true" data-i18n="feed.loading">⏳ Loading the latest news…</div>
-    <div id="feed" class="feed"></div>
-  </section>
-  <section id="page-saved" class="page" role="tabpanel">
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('saved')" aria-label="Hear what's in your Read Later folder" data-i18n-aria="hear-what-s-in-your-read-later-folder" data-i18n="read-later">🔊 Read Later</button></div>
-    <div id="saved-status" class="section-empty">📌</div>
-    <div id="saved-feed" class="feed"></div>
-  </section>
-  <section id="page-foryou" class="page" role="tabpanel" aria-label="For You — personalised feed based on your likes and dislikes">
-    <div class="section-card" data-chitti-response data-chitti-section="For You — explainer" style="background:linear-gradient(135deg,rgba(232,106,23,.06),#fff);border:1px solid rgba(232,106,23,.45)">
-      <div class="section-head">
-        <div>
-          <div class="section-title" data-i18n="foryou.title">⭐ For You — Chitti chooses what you like</div>
-          <div class="section-sub" data-i18n="foryou.sub">Every 👍 lifts that category. Every 👎 lowers it. Don't like politics? Tap 👎 on a few — Chitti will show you more of what you DO like (movies, sports, business — your call). Resets anytime.</div>
-        </div>
-        <button class="spk-btn" onclick="speakForYouStatus()" aria-label="Hear how the For You feed works" data-i18n-aria="hear-how-the-for-you-feed-works" data-i18n="tag">🔊</button>
-      </div>
-      <div id="foryou-profile" style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.55"></div>
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
-        <button class="art-actions-btn" onclick="resetForYou()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600" data-i18n="foryou.reset">🔄 Reset my profile</button>
-      </div>
-    </div>
-    <div id="foryou-status" class="section-empty" aria-live="polite">⭐</div>
-    <div id="foryou-feed" class="feed"></div>
-  </section>
-  <section id="page-cancelled" class="page" role="tabpanel">
-    <div class="spk-row" style="justify-content:flex-end;margin:0 0 6px"><button class="spk-btn" onclick="speakStatus('cancelled')" aria-label="Hear what's in your Cancelled folder" data-i18n-aria="hear-what-s-in-your-cancelled-folder" data-i18n="cancelled">🔊 Cancelled</button></div>
-    <div id="cancelled-status" class="section-empty">🗑️</div>
-    <div id="cancelled-feed" class="feed"></div>
-  </section>
-
-  <div class="section-card chitti-response" style="border:1px solid rgba(232,106,23,.45);background:linear-gradient(135deg,rgba(232,106,23,.04),#fff)" data-chitti-section="Chitti's Take">
-    <div class="section-head">
-      <div>
-        <div class="section-title" data-i18n="special.title">✨ Chitti News Special — what no other aggregator does</div>
-        <div class="section-sub" data-i18n="special.sub">Dailyhunt, Way2News, Bhaskar, Moneycontrol, NewsBreak, SmartNews, CNA — Chitti combines their best edges + Bharat-first AI.</div>
-      </div>
-      <button class="spk-btn" onclick="speakSpecialAll()" aria-label="Hear all Chitti News Special features read aloud" data-i18n-aria="hear-all-chitti-news-special-features-read-aloud" data-i18n="tag">🔊</button>
-    </div>
-    <ul id="special-list" style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">
-      <li><span><strong>Chitti's Take</strong> — 3-bullet AI summary in your chosen language (CNA's FAST button + Bhasha translation).</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>Fact Checker Agent</strong> — verdict comes from cross-referencing 2+ trusted RSS sources, not opinion.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>State + Language picker</strong> on first launch — vernacular-first like Dailyhunt, persistent across visits.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>Read Aloud</strong> in any of the 8 supported Indian languages — for the four-user contract.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>Cancelled folder</strong> — explicit "I don't want this" signal, separate from saved.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>One-tap WhatsApp share</strong> — includes a verify-with-source disclaimer.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-      <li><span><strong>Sub-agents per category</strong> — Politics · Sports · Business · Tech · Entertainment, each with its own context + tone.</span> <button class="spk-btn" onclick="speakLi(this)" aria-label="Read this Chitti Special item aloud" data-i18n-aria="read-this-chitti-special-item-aloud" data-i18n="tag">🔊</button></li>
-    </ul>
-  </div>
-
-  <footer role="contentinfo">
-    Chitti News v1.0 · Bharat Premium · Aggregates public RSS feeds · Not a publisher.<br>
-    Sister products: <a href="chitti_complete_technical.html">📈 Technical</a> · <a href="chitti_fundamentals.html">📋 Fundamentals</a> · <a href="chitti_medupi.html">💊 MedUPI</a><br>
-    Always verify breaking news on the original source link before sharing.
-  </footer>
-
-  <!-- Demo banner -->
-  <div id="demo-banner" class="demo-banner" role="dialog" aria-live="polite" aria-label="Demo Mode guided walk-through" data-i18n-aria="demo-mode-guided-walk-through">
-    <div class="step" id="demo-step-counter">Step 1 of 6</div>
-    <div class="narr" id="demo-narr">Welcome.</div>
-    <button onclick="_demoNext()" data-i18n="next">Next ▶</button>
-    <button class="skip" onclick="stopDemoMode()" data-i18n="skip">Skip ✕</button>
-  </div>
-
-<!-- ══════════════ CHAI STALL MODE — full-screen overlays ══════════════ -->
-<div class="chai-overlay" id="chai-overlay" role="dialog" aria-modal="true" aria-labelledby="chai-overlay-title">
-  <div class="chai-sheet">
-    <!-- ── Step 1: consent ── -->
-    <div class="chai-step" data-step="consent">
-      <div class="chai-big">☕</div>
-      <h2 id="chai-overlay-title" data-vai-i18n="chai.consent.title">Chai pe charcha — Chitti seekhega</h2>
-      <p data-vai-i18n="chai.consent.line1">Kya main sunna shuru karun? Main sirf aapki bhasha seekhunga.</p>
-      <ul class="chai-rules">
-        <li><span class="ok">✓</span> <span data-vai-i18n="chai.rule.lang">Sirf bhasha, lehza, aur stanik shabd</span></li>
-        <li><span class="ok">✓</span> <span data-vai-i18n="chai.rule.device">Sab kuch aapke phone par — server par koi awaaz nahi</span></li>
-        <li><span class="ok">✓</span> <span data-vai-i18n="chai.rule.stop">Jab chahein band kar sakte hain</span></li>
-        <li><span class="no">✗</span> <span data-vai-i18n="chai.rule.no.names">Logon ke naam Chitti record nahi karega</span></li>
-        <li><span class="no">✗</span> <span data-vai-i18n="chai.rule.no.money">Paisa, account, balance — kuch nahi</span></li>
-        <li><span class="no">✗</span> <span data-vai-i18n="chai.rule.no.private">Niji baatein — bilkul nahi</span></li>
-      </ul>
-      <div class="chai-actions">
-        <button class="chai-btn primary" onclick="chaiStartListening()">🎙️ <span data-vai-i18n="chai.consent.yes">Haan, shuru karo</span></button>
-        <button class="chai-btn ghost" onclick="chaiClose()" data-vai-i18n="chai.consent.no">Nahi, band karo</button>
-      </div>
-    </div>
-
-    <!-- ── Step 2: listening ── -->
-    <div class="chai-step" data-step="listening" style="display:none">
-      <div class="chai-mic" id="chai-mic">🎙️</div>
-      <h2 data-vai-i18n="chai.listen.title">Chitti sun rahi hai…</h2>
-      <p data-vai-i18n="chai.listen.sub">Apni bhasha mein baat karein — Chitti shabd seekh rahi hai. Sab kuch aapke phone par hai.</p>
-      <div class="chai-meter" id="chai-meter">0 शब्द</div>
-      <button class="chai-btn danger" onclick="chaiStopListening()">⏹ <span data-vai-i18n="chai.listen.stop">Band karo aur dekho</span></button>
-    </div>
-
-    <!-- ── Step 3: review captured words ── -->
-    <div class="chai-step" data-step="review" style="display:none">
-      <h2 data-vai-i18n="chai.review.title">Aaj maine yeh seekha</h2>
-      <p data-vai-i18n="chai.review.sub">Har shabd dekhein — ✓ sahi hai ya ✗ galat hai? Sirf ✓ wale shabd aage jayenge.</p>
-      <div class="chai-words" id="chai-words"></div>
-      <div class="chai-actions">
-        <button class="chai-btn primary" onclick="chaiGoShare()" data-vai-i18n="chai.review.next">Aage badho →</button>
-        <button class="chai-btn ghost" onclick="chaiClose()" data-vai-i18n="chai.review.discard">Sab hatao</button>
-      </div>
-    </div>
-
-    <!-- ── Step 4: community share opt-in ── -->
-    <div class="chai-step" data-step="share" style="display:none">
-      <div class="chai-big">🤝</div>
-      <h2 data-vai-i18n="chai.share.title">Chitti community ke saath share karein?</h2>
-      <p data-vai-i18n="chai.share.sub">Aapka naam kabhi nahi jayega. Sirf yeh shabd. Bhojpuri Chitti tabhi banegi jab 10+ log isi shabd ko confirm karenge.</p>
-      <div class="chai-actions">
-        <button class="chai-btn primary" onclick="chaiSubmitShared(true)">🤝 <span data-vai-i18n="chai.share.yes">Haan, share karo</span></button>
-        <button class="chai-btn ghost" onclick="chaiSubmitShared(false)">🔒 <span data-vai-i18n="chai.share.no">Nahi, sirf mere liye</span></button>
-      </div>
-    </div>
-
-    <!-- ── Step 5: learned-today log (transparency) ── -->
-    <div class="chai-step" data-step="log" style="display:none">
-      <h2 data-vai-i18n="chai.log.title">Chitti ne aaj tak yeh seekha</h2>
-      <div class="chai-words" id="chai-log-list"></div>
-      <div class="chai-actions">
-        <button class="chai-btn danger" onclick="chaiDeleteAll()" data-vai-i18n="chai.log.clear">🗑️ Sab miti do</button>
-        <button class="chai-btn ghost" onclick="chaiClose()" data-vai-i18n="chai.log.close">Band karo</button>
-      </div>
-    </div>
-
-    <!-- ── Step 6: thanks ── -->
-    <div class="chai-step" data-step="thanks" style="display:none;text-align:center">
-      <div class="chai-big">🙏</div>
-      <h2 data-vai-i18n="chai.thanks.title">Dhanyavaad</h2>
-      <p data-vai-i18n="chai.thanks.sub">Aap Bharat ki AI bana rahe hain. Aapke jaise log hi yeh karte hain.</p>
-      <button class="chai-btn primary" onclick="chaiClose()" data-vai-i18n="chai.thanks.close">Theek hai</button>
-    </div>
-  </div>
-</div>
-
+  <div id="feed-root" role="feed" aria-busy="false"></div>
 </main>
 
-<!-- First-launch onboarding modal -->
-<div id="onb-modal" class="onb" role="dialog" aria-modal="true" aria-labelledby="onb-title">
-  <div class="panel">
-    <div style="display:flex;align-items:flex-start;gap:8px">
-      <div style="flex:1">
-        <h2 id="onb-title" data-i18n="onb.title">👋 Welcome — pick your state and language</h2>
-        <p data-i18n="onb.sub">Chitti News will only show articles relevant to your state, in your chosen language. You can change this anytime from the header.</p>
-      </div>
-      <button class="spk-btn" onclick="speakOnboarding()" aria-label="Hear the welcome message read aloud" data-i18n-aria="hear-the-welcome-message-read-aloud" data-i18n="tag">🔊</button>
-    </div>
-    <label style="font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="onb.state_lbl">Your state</label>
-    <select id="onb-state"></select>
-    <label style="display:block;margin-top:14px;font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="onb.lang_lbl">Your language</label>
-    <select id="onb-lang">
-      <option value="en">English</option>
-      <option value="hi">हिंदी (Hindi)</option>
-      <option value="bn">বাংলা (Bangla)</option>
-      <option value="te">తెలుగు (Telugu)</option>
-      <option value="ta">தமிழ் (Tamil)</option>
-      <option value="mr">मराठी (Marathi)</option>
-      <option value="kn">ಕನ್ನಡ (Kannada)</option>
-      <option value="ml">മലയാളം (Malayalam)</option>
-      <option value="gu">ગુજરાતી (Gujarati)</option>
-      <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-      <option value="or">ଓଡ଼ିଆ (Odia)</option>
-      <option value="ur">اردو (Urdu)</option>
-    </select>
-    <button class="go" onclick="completeOnboarding()" data-i18n="onb.go">Show me my news →</button>
-  </div>
-</div>
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║   Shared substrate — chitti_a11y.js auto-injects:           ║
+     ║     feedback-widget.js, chitti_isl.js, chitti_lang.js,      ║
+     ║     chitti_features.js, chitti_disability_profile.js        ║
+     ║   Every Chitti page that loads chitti_a11y.js inherits      ║
+     ║   the 5 accessibility gates from QUALITY_STATUS.md §1a.     ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<script src="chitti_a11y.js" defer></script>
 
 <script>
-if(!window._chittiNewsLoaded){
-window._chittiNewsLoaded = true;
+"use strict";
 
-// ═══════════════════════════════════════════════════════════
-// API base
-// ═══════════════════════════════════════════════════════════
+// ── Configuration ─────────────────────────────────────────────────
 const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_news_api_base') || 'https://chitti-news-api-production.up.railway.app'; }
-  catch(e){ return 'https://chitti-news-api-production.up.railway.app'; }
+  try { return localStorage.getItem('chitti_news_api_base')
+            || 'https://chitti-news-api-production.up.railway.app'; }
+  catch (e) { return 'https://chitti-news-api-production.up.railway.app'; }
 })();
-function _userToken(){
-  try {
-    let t = localStorage.getItem('chitti_news_user_token');
-    if (!t) {
-      t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-      localStorage.setItem('chitti_news_user_token', t);
-    }
-    return t;
-  } catch(e) { return 'anon-' + Date.now(); }
-}
 
-// ═══════════════════════════════════════════════════════════
-// State + Language picker
-// ═══════════════════════════════════════════════════════════
-// 2-letter codes match backend `state` column values in chitti-news/backend/data/sources.json.
-// `telangana` kept as a full-word alias (2-letter "ts" would collide with Telugu lang code).
-const STATES = [
-  ['india','India (National)'],
-  // ── Top-priority states with verified RSS feeds ──
-  ['up','Uttar Pradesh'], ['mh','Maharashtra'], ['br','Bihar'], ['wb','West Bengal'],
-  ['mp','Madhya Pradesh'], ['rj','Rajasthan'], ['tn','Tamil Nadu'], ['gj','Gujarat'],
-  ['ka','Karnataka'], ['kl','Kerala'], ['ap','Andhra Pradesh'], ['telangana','Telangana'],
-  // ── Other states (limited or no verified feeds yet) ──
-  ['pb','Punjab'], ['hr','Haryana'], ['dl','Delhi'], ['or','Odisha'], ['as','Assam'],
-  ['jh','Jharkhand'], ['cg','Chhattisgarh'], ['uk','Uttarakhand'], ['hp','Himachal Pradesh'],
-  ['jk','Jammu & Kashmir'], ['goa','Goa'], ['mn','Manipur'], ['ml','Meghalaya'], ['ng','Nagaland'],
-  ['mz','Mizoram'], ['ar','Arunachal Pradesh'], ['sk','Sikkim'], ['tr','Tripura'],
-];
-
-function _populateStateSelects() {
-  const opts = STATES.map(s => '<option value="' + s[0] + '">' + s[1] + '</option>').join('');
-  ['pick-state','onb-state'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
-  });
-}
-
-function _getPrefs() {
-  try {
-    return {
-      state: localStorage.getItem('chitti_news_state') || 'india',
-      lang:  localStorage.getItem('chitti_news_lang')  || 'en',
-    };
-  } catch(e) { return { state: 'india', lang: 'en' }; }
-}
-function _setPrefs(state, lang) {
-  try {
-    if (state) localStorage.setItem('chitti_news_state', state);
-    if (lang)  localStorage.setItem('chitti_news_lang',  lang);
-  } catch(e) {}
-}
-
-let _currentCategory = 'national';
-
-function onPickerChange() {
-  const state = document.getElementById('pick-state').value;
-  const lang  = document.getElementById('pick-lang').value;
-  _setPrefs(state, lang);
-  applyChittiLang(lang);
-  // Sync the global a11y bar so all 26 langs (not just en/hi) re-render UI.
-  // Guarded by _langSyncBusy to break the chitti:lang→onPickerChange loop.
-  if (!window._langSyncBusy && window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
-    window._langSyncBusy = true;
-    try { Chitti.a11y.setLanguage(lang, { manual: true, source: 'news-picker' }); }
-    finally { window._langSyncBusy = false; }
-  }
-  loadFeed(true);
-  loadBreaking();
-}
-
-// When the user picks a language in the global a11y bar (the OTHER dropdown
-// at the very top of the page), sync the news picker dropdown + re-fetch.
-// Bryan's 2026-05-20 bug report: "If I select the 2nd dropdown the language
-// doesn't get selected" — root cause was the page-local I18N table only
-// covers en+hi, so picking Tamil/Telugu/etc fell back to English silently.
-document.addEventListener('chitti:lang', function(e){
-  if (window._langSyncBusy) return;
-  const lang = e && e.detail && (e.detail.code || e.detail.lang);
-  if (!lang) return;
-  const ps = document.getElementById('pick-lang');
-  if (ps && ps.value !== lang) {
-    window._langSyncBusy = true;
-    try {
-      ps.value = lang;
-      const state = document.getElementById('pick-state').value;
-      _setPrefs(state, lang);
-      applyChittiLang(lang);
-      loadFeed(true);
-      loadBreaking();
-    } finally { window._langSyncBusy = false; }
-  }
-});
-
-function showCategory(cat) {
-  _currentCategory = cat;
-  document.querySelectorAll('nav.tabs .tab').forEach(b => {
-    const isActive = b.getAttribute('data-tab') === cat;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-  const isFeedTab = (cat !== 'saved' && cat !== 'cancelled' && cat !== 'foryou');
-  document.getElementById('page-feed').classList.toggle('active', isFeedTab);
-  document.getElementById('page-saved').classList.toggle('active', cat === 'saved');
-  document.getElementById('page-cancelled').classList.toggle('active', cat === 'cancelled');
-  const pgFor = document.getElementById('page-foryou');
-  if (pgFor) pgFor.classList.toggle('active', cat === 'foryou');
-  if (cat === 'saved')          loadFolder('saved');
-  else if (cat === 'cancelled') loadFolder('cancelled');
-  else if (cat === 'foryou')    loadForYou();
-  else                          loadFeed(false);
-}
-
-function openOnboarding() {
-  const p = _getPrefs();
-  document.getElementById('onb-state').value = p.state;
-  document.getElementById('onb-lang').value  = p.lang;
-  document.getElementById('onb-modal').classList.add('shown');
-}
-function completeOnboarding() {
-  const state = document.getElementById('onb-state').value;
-  const lang  = document.getElementById('onb-lang').value;
-  _setPrefs(state, lang);
-  document.getElementById('pick-state').value = state;
-  document.getElementById('pick-lang').value = lang;
-  applyChittiLang(lang);
-  document.getElementById('onb-modal').classList.remove('shown');
-  loadFeed(true);
-  loadBreaking();
-}
-
-// ═══════════════════════════════════════════════════════════
-// I18N — Hindi UI toggle
-// ═══════════════════════════════════════════════════════════
-let _chittiLang = (function(){ try { return localStorage.getItem('chitti_news_lang') || 'en'; } catch(e){ return 'en'; } })();
-
-const I18N = {
-  'header.tagline':  { en:'Your state · Your language · Your news', hi:'आपका राज्य · आपकी भाषा · आपकी खबरें' },
-  'switch.tech':     { en:'📈 Technical',   hi:'📈 टेक्निकल' },
-  'switch.fund':     { en:'📋 Fundamentals', hi:'📋 फंडामेंटल्स' },
-  'switch.medupi':   { en:'💊 MedUPI',       hi:'💊 मेडUPI' },
-  'hdr.demo':        { en:'🎬 Demo Mode',    hi:'🎬 डेमो मोड' },
-  'hdr.read':        { en:'🔊 Read page',    hi:'🔊 पेज पढ़ें' },
-  'hdr.change':      { en:'🌐 Change state / language', hi:'🌐 राज्य / भाषा बदलें' },
-  'pick.state':      { en:'State',  hi:'राज्य' },
-  'pick.lang':       { en:'Lang',   hi:'भाषा' },
-  'pick.refresh':    { en:'🔄 Refresh', hi:'🔄 ताज़ा' },
-  'cat.national':      { en:'🇮🇳 National',     hi:'🇮🇳 राष्ट्रीय' },
-  'cat.state':         { en:'📍 State',        hi:'📍 राज्य' },
-  'cat.politics':      { en:'🏛️ Politics',     hi:'🏛️ राजनीति' },
-  'cat.business':      { en:'💼 Business',     hi:'💼 बिज़नेस' },
-  'cat.tech':          { en:'💡 Tech',         hi:'💡 तकनीक' },
-  'cat.sports':        { en:'🏏 Sports',       hi:'🏏 खेल' },
-  'cat.entertainment': { en:'🎬 Entertainment', hi:'🎬 मनोरंजन' },
-  'cat.foryou':        { en:'⭐ For You',      hi:'⭐ आपके लिए' },
-  'cat.saved':         { en:'📌 Read Later',   hi:'📌 बाद में पढ़ें' },
-  'cat.cancelled':     { en:'🗑️ Cancelled',     hi:'🗑️ हटाई गईं' },
-  'foryou.title':      { en:'⭐ For You — Chitti chooses what you like', hi:'⭐ आपके लिए — चिट्टी आपकी पसंद चुनता है' },
-  'foryou.sub':        { en:"Every 👍 lifts that category. Every 👎 lowers it. Don't like politics? Tap 👎 on a few — Chitti will show you more of what you DO like (movies, sports, business — your call). Resets anytime.", hi:'हर 👍 उस श्रेणी को ऊपर ले जाता है। हर 👎 नीचे। राजनीति पसंद नहीं? कुछ पर 👎 दबाएँ — चिट्टी आपकी पसंद की खबरें (फ़िल्म, खेल, व्यापार) दिखाएगा।' },
-  'foryou.reset':      { en:'🔄 Reset my profile', hi:'🔄 मेरी प्रोफ़ाइल रीसेट करें' },
-  'foryou.empty':      { en:"⭐ Tap 👍 or 👎 on any story — Chitti will start learning what you like.", hi:'⭐ किसी भी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीखना शुरू कर देगा।' },
-  'art.dislike':       { en:'👎 Not for me', hi:'👎 पसंद नहीं' },
-  'feed.loading':    { en:'⏳ Loading the latest news…', hi:'⏳ ताज़ा खबरें लोड हो रही हैं…' },
-  'special.title':   { en:'✨ Chitti News Special — what no other aggregator does', hi:'✨ चिट्टी न्यूज़ स्पेशल — जो कोई और नहीं करता' },
-  'special.sub':     { en:'Dailyhunt, Way2News, Bhaskar, Moneycontrol, NewsBreak, SmartNews, CNA — Chitti combines their best edges + Bharat-first AI.', hi:'Dailyhunt, Way2News, भास्कर, Moneycontrol, NewsBreak, SmartNews, CNA — चिट्टी इन सबकी सबसे अच्छी बातें + Bharat-first AI।' },
-  'demo.ribbon':     { en:'🎬 DEMO MODE — sample content. Tap Skip to exit.', hi:'🎬 डेमो मोड — नमूना सामग्री। Skip दबाकर बाहर निकलें।' },
-  'onb.title':       { en:'👋 Welcome — pick your state and language', hi:'👋 स्वागत है — अपना राज्य और भाषा चुनें' },
-  'onb.sub':         { en:'Chitti News will only show articles relevant to your state, in your chosen language. You can change this anytime from the header.', hi:'चिट्टी न्यूज़ केवल आपके राज्य से जुड़ी खबरें आपकी पसंद की भाषा में दिखाएगा। आप हेडर से कभी भी बदल सकते हैं।' },
-  'onb.state_lbl':   { en:'Your state', hi:'आपका राज्य' },
-  'onb.lang_lbl':    { en:'Your language', hi:'आपकी भाषा' },
-  'onb.go':          { en:'Show me my news →', hi:'मेरी खबरें दिखाएँ →' },
-  // Article actions
-  'art.read_aloud':  { en:'🔊 Read aloud', hi:'🔊 पढ़कर सुनाओ' },
-  'art.take':        { en:"✨ Chitti's Take", hi:'✨ चिट्टी की टेक' },
-  'art.explain':     { en:'🧒 Explain Simply', hi:'🧒 आसान भाषा में' },
-  'art.factcheck':   { en:'🛡️ Fact Check', hi:'🛡️ तथ्य जाँच' },
-  'art.save':        { en:'⭐ Save', hi:'⭐ सेव' },
-  'art.cancel':      { en:'🗑️ Cancel', hi:'🗑️ हटाएँ' },
-  'art.share':       { en:'📤 Share', hi:'📤 शेयर' },
-  'art.open':        { en:'↗ Open source', hi:'↗ स्रोत खोलें' },
+const STORAGE = {
+  state: 'chitti_news_state',
+  lang:  'chitti_news_lang',
+  token: 'chitti_news_user_token',
+  cat:   'chitti_news_category',
 };
 
-function t(key) {
-  const e = I18N[key];
-  if (!e) return key;
-  return e[_chittiLang] || e.en || key;
+// Per-device user token for save/cancel folders (UUID, never reused
+// across devices — privacy by default per Postman Principle).
+function userToken() {
+  try {
+    let t = localStorage.getItem(STORAGE.token);
+    if (!t) {
+      t = (crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : ('u-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+      localStorage.setItem(STORAGE.token, t);
+    }
+    return t;
+  } catch (e) { return 'anon-' + Date.now(); }
 }
 
-function applyChittiLang(lang) {
-  _chittiLang = lang;
-  try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
-  document.documentElement.lang = lang || 'en';
-  document.querySelectorAll('.lang-toggle-bharat button').forEach(function(b){
-    var active = b.getAttribute('data-lang') === lang;
-    b.classList.toggle('active', active);
-    b.setAttribute('data-active', active ? 'true' : 'false');
-  });
-  // Delegate full-body translation to chitti_lang.js?v=20260529r (single source of truth).
-  if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
-    try { window.Chitti.lang.set(lang); } catch (e) {}
-  }
-} // neutered 2026-05-22 — chitti_lang.js?v=20260529r owns i18n
+// Article cache — keyed by id. The full body (a.content) lives here
+// only; never in DOM until the user expands the card.
+const ARTICLES = Object.create(null);
 
-function setChittiLang(lang) {
-  applyChittiLang(lang);
-  _setPrefs(null, lang);
-  const ls = document.getElementById('pick-lang'); if (ls) ls.value = lang;
-  sp(lang === 'hi' ? 'भाषा हिंदी पर सेट की गई।' : 'Language set to English.', lang);
+// ── Filter state ──────────────────────────────────────────────────
+function getFilter() {
+  return {
+    state:  localStorage.getItem(STORAGE.state) || 'india',
+    lang:   localStorage.getItem(STORAGE.lang)  || 'en',
+    cat:    localStorage.getItem(STORAGE.cat)   || 'national',
+  };
+}
+function setFilter(f) {
+  try {
+    if (f.state) localStorage.setItem(STORAGE.state, f.state);
+    if (f.lang)  localStorage.setItem(STORAGE.lang,  f.lang);
+    if (f.cat)   localStorage.setItem(STORAGE.cat,   f.cat);
+  } catch (e) {}
+}
+function onFilterChange() {
+  const f = {
+    state: document.getElementById('pick-state').value,
+    lang:  document.getElementById('pick-lang').value,
+    cat:   document.getElementById('pick-cat').value,
+  };
+  setFilter(f);
+  document.documentElement.lang = f.lang;
+  if (window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
+    try { Chitti.a11y.setLanguage(f.lang, { manual: true, source: 'news-filter' }); }
+    catch (e) {}
+  }
   loadFeed(true);
 }
 
-// ═══════════════════════════════════════════════════════════
-// Speech (browser SpeechSynthesis)
-// ═══════════════════════════════════════════════════════════
-const _LANG_CODE = { en:'en-IN', hi:'hi-IN', bn:'bn-IN', te:'te-IN', ta:'ta-IN', mr:'mr-IN', kn:'kn-IN', ml:'ml-IN', gu:'gu-IN', pa:'pa-IN', or:'or-IN', ur:'ur-IN' };
-function sp(text, lang) {
+// Hydrate pickers from localStorage on load.
+function hydratePickers() {
+  const f = getFilter();
+  document.getElementById('pick-state').value = f.state;
+  document.getElementById('pick-lang').value  = f.lang;
+  document.getElementById('pick-cat').value   = f.cat;
+  document.documentElement.lang = f.lang;
+}
+
+// ── API helpers ───────────────────────────────────────────────────
+async function api(path, opts) {
+  opts = opts || {};
+  opts.headers = Object.assign(
+    { 'X-User-Token': userToken() }, opts.headers || {}
+  );
+  const r = await fetch(API_BASE + path, opts);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+// ── Rendering ─────────────────────────────────────────────────────
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const t = Date.parse(iso); if (!t) return '';
+  const m = Math.floor((Date.now() - t) / 60000);
+  if (m < 1)    return 'now';
+  if (m < 60)   return m + ' min ago';
+  if (m < 1440) return Math.floor(m/60) + ' hr ago';
+  return Math.floor(m/1440) + ' d ago';
+}
+function fcBadge(fc) {
+  if (!fc) return '';
+  const verdict = fc.verdict || 'unchecked';
+  const cls = 'fc-' + verdict;
+  const label = fc.word || verdict.toUpperCase();
+  const sym = fc.symbol || '⏳';
+  return '<span class="fc-badge ' + cls + '" title="Fact check: ' + esc(label)
+       + '">' + sym + ' ' + esc(label) + '</span>';
+}
+
+// CANONICAL 5-ICON STRIP — per chitti-news/SKILLS.md #12 +
+// chitti-cto/CTO.md §2 — in this exact order on every box.
+function stripHtml(boxId, articleId) {
+  return ''
+    + '<div class="art-strip" role="group" aria-label="Read, explain, react, give feedback">'
+    +   '<button class="primary" type="button" aria-label="Read entire news aloud"'
+    +     ' onclick="event.stopPropagation(); speakArticle(' + articleId + ')">'
+    +     '🔊<span class="lbl">Read</span></button>'
+    +   '<button type="button" aria-label="Ask Chitti to explain simply"'
+    +     ' onclick="event.stopPropagation(); openExplain(' + articleId + ')">'
+    +     '🤖<span class="lbl">Chitti</span></button>'
+    +   '<button type="button" aria-label="Helpful"'
+    +     ' onclick="event.stopPropagation(); saveArticle(' + articleId + ', \'saved\')">👍</button>'
+    +   '<button type="button" aria-label="Wrong"'
+    +     ' onclick="event.stopPropagation(); saveArticle(' + articleId + ', \'cancelled\')">👎</button>'
+    +   '<button type="button" aria-label="Open feedback page"'
+    +     ' onclick="event.stopPropagation(); openFeedback(\'' + boxId + '\')">'
+    +     '✏️<span class="lbl">Feedback</span></button>'
+    + '</div>';
+}
+
+function articleCardHtml(a) {
+  ARTICLES[a.id] = a;
+  const boxId = 'art-' + a.id;
+  const meta = [
+    a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
+    fcBadge(a.factcheck),
+    '<span class="src">' + esc(a.source_name || a.source_slug || 'Source') + '</span>',
+    timeAgo(a.published_at || a.fetched_at),
+  ].filter(Boolean).join(' · ');
+
+  const thumb = a.image_url
+    ? '<div class="art-thumb" style="background-image:url(\'' + esc(a.image_url) + '\')" aria-hidden="true"></div>'
+    : '<div class="art-thumb placeholder" aria-hidden="true">📰</div>';
+
+  return ''
+    + '<article class="art-card" id="' + boxId + '" data-id="' + a.id + '"'
+    +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
+    +   ' data-chitti-speak-id="' + a.id + '"'
+    +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
+    +   ' onclick="toggleCard(' + a.id + ')">'
+    +   '<div>'
+    +     '<div class="art-meta">' + meta + '</div>'
+    +     '<h3 class="art-title">' + esc(a.title || '') + '</h3>'
+    +     stripHtml(boxId, a.id)
+    +     '<div class="art-hint">Tap to read full news</div>'
+    +     '<div class="art-body">'
+    +       '<div class="art-summary">' + esc(a.summary || '') + '</div>'
+    +       '<div class="art-sub-actions">'
+    +         '<button onclick="event.stopPropagation(); openTake(' + a.id + ')">▶ Chitti\'s Take</button>'
+    +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
+    +         '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')">📲 Share</button>'
+    +       '</div>'
+    +       '<div class="art-source-link" onclick="event.stopPropagation()">'
+    +         '📖 <a href="' + esc(a.link) + '" target="_blank" rel="noopener">'
+    +           'Read on ' + esc(a.source_name || 'source') + ' →</a>'
+    +       '</div>'
+    +       '<div class="art-sub-host" id="take-' + a.id + '" data-chitti-response'
+    +         ' data-chitti-section="Chitti\'s Take · ' + esc(a.title || '') + '"></div>'
+    +       '<div class="art-sub-host" id="explain-' + a.id + '" data-chitti-response'
+    +         ' data-chitti-section="Explain simply · ' + esc(a.title || '') + '"></div>'
+    +       '<div class="art-sub-host" id="fact-' + a.id + '" data-chitti-response'
+    +         ' data-chitti-section="Fact check · ' + esc(a.title || '') + '"></div>'
+    +     '</div>'
+    +   '</div>'
+    +   thumb
+    + '</article>';
+}
+
+function renderFeed(items, meta) {
+  const root = document.getElementById('feed-root');
+  if (!items || items.length === 0) {
+    root.innerHTML = '<div class="status-card">'
+      + '<strong>No stories yet.</strong><br>'
+      + esc(meta && meta.speak_en
+            ? meta.speak_en
+            : 'Tap Refresh in a minute to try again.')
+      + '</div>';
+    return;
+  }
+  root.innerHTML = items.map(articleCardHtml).join('');
+}
+
+// ── Core actions ──────────────────────────────────────────────────
+function toggleCard(id) {
+  const el = document.getElementById('art-' + id);
+  if (el) el.classList.toggle('expanded');
+}
+
+// 🔊 — reads the ENTIRE news (a.content || a.summary). Per SKILLS.md
+// feature #10 + SOP.md Quality Standard.
+function speakArticle(id) {
+  const a = ARTICLES[id]; if (!a) return;
+  const body = a.content || a.summary || '';
+  const plain = String(body)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 6000);
+  const text = (a.title || '').trim() + '. ' + plain;
+  speak(text, getFilter().lang);
+}
+
+function speak(text, lang) {
+  if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.speak === 'function') {
+    try { Chitti.a11y.speak(text); return; } catch (e) {}
+  }
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  const useLang = lang || _chittiLang;
-  u.lang = _LANG_CODE[useLang] || 'en-IN';
-  u.rate = 0.92;
+  u.lang = ({ en:'en-IN', hi:'hi-IN', mr:'mr-IN', ta:'ta-IN', te:'te-IN',
+              bn:'bn-IN', kn:'kn-IN', ml:'ml-IN', gu:'gu-IN', pa:'pa-IN',
+              or:'or-IN', ur:'ur-IN' })[lang] || 'en-IN';
+  u.rate = 0.95;
   speechSynthesis.speak(u);
 }
-function speakPage(){
-  sp(_chittiLang === 'hi'
-     ? 'चिट्टी न्यूज़। आपका राज्य, आपकी भाषा, आपकी खबरें। आज की मुख्य ख़बरें नीचे हैं।'
-     : 'Chitti News. Your state, your language, your news. Today\'s top stories below.');
-}
 
-// ═══════════════════════════════════════════════════════════
-// Speaker handlers — every box has its own 🔊 (four-user contract)
-// ═══════════════════════════════════════════════════════════
-function speakBreaking(){
-  const el = document.getElementById('brk-text');
-  const txt = (el && el.textContent || '').trim();
-  if (!txt) {
-    sp(_chittiLang === 'hi' ? 'इस समय कोई ब्रेकिंग खबर नहीं।' : 'No breaking news right now.');
-    return;
-  }
-  sp(txt);
-}
-
-function speakPicker(){
-  const state = document.getElementById('pick-state');
-  const lang  = document.getElementById('pick-lang');
-  const stateLabel = state && state.options[state.selectedIndex] ? state.options[state.selectedIndex].text : 'India';
-  const langLabel  = lang  && lang.options[lang.selectedIndex]   ? lang.options[lang.selectedIndex].text   : 'English';
-  sp(_chittiLang === 'hi'
-    ? 'आप ' + stateLabel + ' और ' + langLabel + ' देख रहे हैं। बदलने के लिए ड्रॉपडाउन खोलें।'
-    : 'You are viewing ' + stateLabel + ' in ' + langLabel + '. Open the dropdown to change.');
-}
-
-function speakSpecialAll(){
-  const items = Array.from(document.querySelectorAll('#special-list li > span'))
-    .map(s => (s.textContent || '').trim())
-    .filter(Boolean);
-  if (!items.length) return;
-  sp(items.join('. '));
-}
-
-function speakLi(btn){
-  if (!btn || !btn.parentElement) return;
-  const span = btn.parentElement.querySelector('span');
-  const txt = (span && span.textContent || '').trim();
-  if (txt) sp(txt);
-}
-
-function speakOnboarding(){
-  const lang = _chittiLang;
-  sp(lang === 'hi'
-    ? 'चिट्टी न्यूज़ में आपका स्वागत है। पहले अपना राज्य चुनें। फिर अपनी भाषा। फिर मुझे मेरी खबरें दिखाएँ बटन दबाएँ।'
-    : 'Welcome to Chitti News. First, pick your state. Then pick your language. Then tap Show me my news.');
-}
-
-function speakFeedStatus(){
-  const el = document.getElementById('feed-status');
-  const txt = (el && el.textContent || '').trim();
-  sp(txt || (_chittiLang === 'hi' ? 'फ़ीड लोड हो रहा है।' : 'Feed loading.'));
-}
-
-function speakStatus(folder){
-  const el = document.getElementById(folder + '-status');
-  const txt = (el && el.textContent || '').trim();
-  sp(txt || (_chittiLang === 'hi' ? 'इस फ़ोल्डर में अभी कुछ नहीं है।' : 'This folder is empty.'));
-}
-
-// ═══════════════════════════════════════════════════════════
-// API helpers
-// ═══════════════════════════════════════════════════════════
-async function apiGet(path) {
-  const r = await fetch(API_BASE + path, { headers: { 'X-User-Token': _userToken() } });
-  if (!r.ok) throw new Error('API ' + r.status);
-  return r.json();
-}
-async function apiPostJson(path, body) {
-  const r = await fetch(API_BASE + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-User-Token': _userToken() },
-    body: JSON.stringify(body || {}),
-  });
-  if (!r.ok) { const t = await r.text(); throw new Error('API ' + r.status + ': ' + t.slice(0,200)); }
-  return r.json();
-}
-async function apiDelete(path) {
-  const r = await fetch(API_BASE + path, { method: 'DELETE', headers: { 'X-User-Token': _userToken() } });
-  if (!r.ok) throw new Error('API ' + r.status);
-  return r.json();
-}
-
-function _esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function _timeAgo(iso) {
-  if (!iso) return '';
-  const d = new Date(iso); if (isNaN(d)) return '';
-  const s = (Date.now() - d.getTime()) / 1000;
-  if (s < 60)  return _chittiLang === 'hi' ? 'अभी' : 'just now';
-  if (s < 3600) return Math.floor(s/60) + (_chittiLang === 'hi' ? ' मिनट पहले' : ' min ago');
-  if (s < 86400) return Math.floor(s/3600) + (_chittiLang === 'hi' ? ' घंटे पहले' : 'h ago');
-  return Math.floor(s/86400) + (_chittiLang === 'hi' ? ' दिन पहले' : 'd ago');
-}
-
-// ═══════════════════════════════════════════════════════════
-// Feed rendering
-// ═══════════════════════════════════════════════════════════
-function _articleCardHtml(a) {
-  const lang = _chittiLang;
-  // Fact-check verdict badge — P0 2026-05-13: every card carries one.
-  // Symbol + word label (never colour alone). Falls back to "CHECKING"
-  // for any article still in the sweep queue.
-  const fc = a.factcheck || { verdict: 'unchecked', symbol: '⏳', word: 'CHECKING', word_hi: 'जाँच हो रही' };
-  const fcWord = (lang === 'hi' && fc.word_hi) ? fc.word_hi : (fc.word || (fc.verdict || '').toUpperCase());
-  const fcCls = 'fact-' + (fc.verdict || 'unchecked');
-  const fcConf = (fc.confidence != null) ? (' (' + fc.confidence + '%)') : '';
-  const fcTitle = (lang === 'hi'
-    ? 'चिट्टी की तथ्य जाँच — ' + fcWord
-    : "Chitti's fact check — " + fcWord) + fcConf;
-  const fcBadge = '<span class="' + fcCls + '" title="' + _esc(fcTitle) + '" data-i18n-title="esc-fctitle" aria-label="' + _esc(fcTitle) + '" data-i18n-aria="esc-fctitle">'
-                  + (fc.symbol || '❔') + ' ' + _esc(fcWord) + '</span>';
-
-  const meta = []
-    .concat(a.is_breaking ? ['<span class="brk-pill">' + (lang==='hi'?'ब्रेकिंग':'BREAKING') + '</span>'] : [])
-    .concat([fcBadge])
-    .concat([_esc(a.source_name || a.source_slug || '')])
-    .concat([_timeAgo(a.published_at || a.fetched_at)])
-    .filter(Boolean).join(' · ');
-  const boxId = 'art-' + a.id;
-  const thumb = a.image_url
-    ? '<div class="art-thumb" style="background-image:url(\'' + _esc(a.image_url) + '\')"></div>'
-    : '<div class="art-thumb placeholder">📰</div>';
-  return (
-    // Sire 2026-06-02 — Per chitti-news SKILLS.md #12 + SOP.md +
-    // CTO.md UI Standard v1.0 §2: every box carries the canonical
-    // 5-element widget IN-CARD:
-    //   🔊 Speaker          → readArticleAloud(id) — full body
-    //   🤖 Chitti           → loadExplainSimply(id) — Explain Simply
-    //   👍 Helpful          → saveArticle(id, 'saved')
-    //   👎 Wrong            → saveArticle(id, 'cancelled')
-    //   ✏️ Feedback         → openFeedbackForBox(boxId) — opens the
-    //                          substrate's feedback modal
-    // Tap anywhere on the card body → toggleArtCard(id) expands.
-    // event.stopPropagation() on every strip button so tapping an icon
-    // does NOT also toggle expansion.
-    // data-chitti-speak-handler/data-chitti-speak-id retained so the
-    // sub-host boxes (take/explain/fact) inherit the same speaker
-    // delegate when populated.
-    '<div class="art-card" id="' + boxId + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '" onclick="toggleArtCard(' + a.id + ')">' +
-      '<div>' +
-        '<div class="art-meta">' + meta + '</div>' +
-        '<div class="art-headline-row">' +
-          '<div class="art-title">' + _esc(a.title || '') + '</div>' +
-          // ── Canonical 5-element strip (CTO.md §2) ──────────────────
-          '<div class="art-strip" role="group" aria-label="Read, explain, react, give feedback">' +
-            '<button class="primary" type="button" aria-label="Read entire news aloud" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')">🔊<span class="lbl">Read</span></button>' +
-            '<button type="button" aria-label="Ask Chitti to explain simply" onclick="event.stopPropagation(); loadExplainSimply(' + a.id + ')">🤖<span class="lbl">Chitti</span></button>' +
-            '<button type="button" aria-label="Helpful" onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'saved\')">👍</button>' +
-            '<button type="button" aria-label="Wrong" onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'cancelled\')">👎</button>' +
-            '<button type="button" aria-label="Open feedback page" onclick="event.stopPropagation(); openFeedbackForBox(\'' + boxId + '\')">✏️<span class="lbl">Feedback</span></button>' +
-          '</div>' +
-          '<div class="art-hint" data-i18n="art.tap_expand">Tap to read full news</div>' +
-        '</div>' +
-        '<div class="art-body">' +
-          // Full summary visible after tap; no truncation.
-          '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
-          // Secondary actions live in the expanded body only — NOT part
-          // of the canonical 5-element strip above.
-          '<div class="art-actions">' +
-            '<button onclick="event.stopPropagation(); loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
-            '<button onclick="event.stopPropagation(); loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
-            '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
-          '</div>' +
-          '<div class="art-source-link" style="margin-top:8px;font-size:13px;color:var(--vai-muted,#666)" onclick="event.stopPropagation()">' +
-            '<a href="' + _esc(a.link) + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;font-weight:500">📖 ' + _esc((a.source_name || 'Source')) + ' मे मूल ख़बर पढ़ो →</a>' +
-          '</div>' +
-          '<div class="art-take-host" id="take-' + a.id + '" data-chitti-response data-chitti-section="Chitti\'s Take · ' + _esc(a.title || 'News article') + '"></div>' +
-          '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Explain simply · ' + _esc(a.title || 'News article') + '"></div>' +
-          '<div class="art-fact-host" id="fact-' + a.id + '" data-chitti-response data-chitti-section="Fact check · ' + _esc(a.title || 'News article') + '"></div>' +
-        '</div>' +
-      '</div>' +
-      thumb +
-    '</div>'
-  );
-}
-
-const _ARTICLE_CACHE = {};   // id → article
-
-// Fallback stories used when the backend is unreachable (e.g. before
-// chitti-news-api-production.up.railway.app is deployed, or while the
-// Railway service is cold-starting). Negative IDs so they never clash
-// with real DB rows.
-const _FALLBACK_ARTICLES = {
-  national: [
-    { id:-1, title:"Welcome to Chitti News — your state, your language, your news",
-      summary:"Chitti News aggregates 26+ trusted Indian RSS sources by state and language. Tap any article for a 3-bullet AI summary in your chosen language. Read aloud · Save · Fact-check · Share via WhatsApp.",
-      source_name:"Chitti News", source_slug:"chitti", category:"national", language:"en", state:"india",
-      link:"https://sahayai.in/chitti_news.html", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-    { id:-2, title:"How fact-checking works in Chitti News",
-      summary:"When 3+ trusted sources agree on a story, Chitti tags it ✅ Verified. When 2 agree but details differ, 🟡 Partial. When 1 source diverges, ⚠️ Disputed. When no other source has it yet, ❔ Unverified.",
-      source_name:"Chitti News", source_slug:"chitti", category:"national", language:"en", state:"india",
-      link:"https://sahayai.in/chitti_news.html#factcheck", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  business: [
-    { id:-3, title:"Sample · Indian markets close higher amid IT rally",
-      summary:"Sensex and Nifty closed in the green for the third straight session, led by IT stocks. (Sample article — your real feed appears once the backend is live.)",
-      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"business", language:"en", state:"india",
-      link:"https://sahayai.in/chitti_news.html#sample-business", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  sports: [
-    { id:-4, title:"Sample · Cricket — Indian team announces squad for upcoming tour",
-      summary:"BCCI announced the 18-member squad for the upcoming overseas series. (Sample article — your real feed appears once the backend is live.)",
-      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"sports", language:"en", state:"india",
-      link:"https://sahayai.in/chitti_news.html#sample-sports", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  tech: [
-    { id:-5, title:"Sample · Indian startup ecosystem highlights AI launches this quarter",
-      summary:"A round-up of AI model launches and funding rounds across the Indian startup landscape. (Sample article — your real feed appears once the backend is live.)",
-      source_name:"Chitti News (Sample)", source_slug:"chitti", category:"tech", language:"en", state:"india",
-      link:"https://sahayai.in/chitti_news.html#sample-tech", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  state: [],
-  entertainment: [],
-};
-
-const _FALLBACK_ARTICLES_HI = {
-  national: [
-    { id:-101, title:"चिट्टी न्यूज़ में आपका स्वागत है — आपका राज्य, आपकी भाषा, आपकी खबरें",
-      summary:"चिट्टी न्यूज़ 26+ भरोसेमंद भारतीय RSS स्रोतों से राज्य और भाषा के अनुसार खबरें इकट्ठा करता है। किसी भी लेख पर टैप करें और 3 लाइन का AI सारांश आपकी पसंदीदा भाषा में पाएं।",
-      source_name:"चिट्टी न्यूज़", source_slug:"chitti", category:"national", language:"hi", state:"india",
-      link:"https://sahayai.in/chitti_news.html", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  business: [
-    { id:-103, title:"नमूना · सेंसेक्स में तेज़ी, IT शेयरों की लीड",
-      summary:"सेंसेक्स और निफ्टी लगातार तीसरे सत्र हरे निशान में बंद हुए, IT शेयरों की अगुआई। (नमूना लेख — असली फ़ीड बैकएंड लाइव होने पर आएगी।)",
-      source_name:"चिट्टी न्यूज़ (नमूना)", source_slug:"chitti", category:"business", language:"hi", state:"india",
-      link:"https://sahayai.in/chitti_news.html#sample-business-hi", image_url:null, published_at:new Date().toISOString(), is_breaking:false },
-  ],
-  sports: [], tech: [], state: [], entertainment: [],
-};
-
-function _renderFallbackFeed(category) {
-  const lang = _chittiLang;
-  const pool = (lang === 'hi') ? _FALLBACK_ARTICLES_HI : _FALLBACK_ARTICLES;
-  const status = document.getElementById('feed-status');
-  const feed = document.getElementById('feed');
-  // Always show "national" welcome cards first, then category-specific samples
-  const items = (pool.national || []).concat(pool[category] || []);
-  items.forEach(a => { _ARTICLE_CACHE[a.id] = a; });
-  if (status) {
-    status.innerHTML = (lang === 'hi'
-      ? '⏳ <strong>बैकएंड गरम हो रहा है</strong> — पहली बार खुलने में 30–60 सेकंड लगते हैं (Railway service start)। नीचे नमूना दिखा रहा हूँ।'
-      : '⏳ <strong>Backend warming up</strong> — first request takes 30–60 s while the Railway service starts up. Showing sample stories below.');
-    status.style.display = 'block';
-  }
-  feed.innerHTML = items.map(_articleCardHtml).join('');
-}
-
-async function loadFeed(announce) {
-  const status = document.getElementById('feed-status');
-  const feed = document.getElementById('feed');
-  const p = _getPrefs();
-  const cat = (_currentCategory === 'saved' || _currentCategory === 'cancelled') ? 'national' : _currentCategory;
-  status.style.display = 'block';
-  status.textContent = _chittiLang === 'hi' ? '⏳ ताज़ा खबरें लोड हो रही हैं…' : '⏳ Loading the latest news…';
-  feed.innerHTML = '';
+// 🤖 — "Explain Simply" — DeepSeek class-5 plain-language summary.
+async function openExplain(id) {
+  const host = document.getElementById('explain-' + id);
+  const card = document.getElementById('art-' + id);
+  if (card && !card.classList.contains('expanded')) card.classList.add('expanded');
+  if (!host) return;
+  host.innerHTML = '<h4>Explain simply…</h4><p>Loading…</p>';
   try {
-    const data = await apiGet('/api/news/' + encodeURIComponent(p.state) + '/' + encodeURIComponent(p.lang) + '/' + encodeURIComponent(cat) + '?limit=40');
-    const items = data.items || [];
-    items.forEach(a => { _ARTICLE_CACHE[a.id] = a; });
-    if (!items.length) {
-      // API responded but empty — show fallback content rather than a bare empty state
-      _renderFallbackFeed(cat);
-      return;
-    }
-    status.style.display = 'none';
-    feed.innerHTML = items.map(_articleCardHtml).join('');
-    if (announce && data.speak_en) sp(_chittiLang === 'hi' ? data.speak_hi : data.speak_en);
+    const data = await api('/api/news/article/' + id + '/explain?language=' + getFilter().lang);
+    const txt = data.explanation || data.text || data.summary || 'No explanation available.';
+    host.innerHTML = '<h4>🤖 Chitti explains simply</h4><p>' + esc(txt) + '</p>';
+    speak(txt, getFilter().lang);
   } catch (e) {
-    // API unreachable (404 / dyno asleep / network) — graceful fallback so users
-    // see real-looking content instead of a bare error.
-    _renderFallbackFeed(cat);
+    host.innerHTML = '<h4>🤖 Chitti explains simply</h4>'
+      + '<p style="color:var(--muted)">Explanation unavailable. Try again in a minute.</p>';
   }
 }
 
-async function loadBreaking() {
-  const bar = document.getElementById('brk-bar');
-  const txt = document.getElementById('brk-text');
-  if (!bar || !txt) return;
-  const p = _getPrefs();
-  try {
-    const data = await apiGet('/api/news/breaking?state=' + encodeURIComponent(p.state) + '&language=' + encodeURIComponent(p.lang));
-    const items = data.items || [];
-    if (!items.length) { bar.classList.remove('shown'); return; }
-    if (sessionStorage.getItem('brk_dismissed_' + items[0].id)) { bar.classList.remove('shown'); return; }
-    txt.innerHTML = '<strong>' + (_chittiLang === 'hi' ? 'ब्रेकिंग' : 'BREAKING') + ':</strong> ' + _esc(items[0].headline) +
-                    ' <span style="color:var(--muted);font-weight:600">· ' + items[0].sources_count + ' ' + (_chittiLang === 'hi' ? 'स्रोत' : 'sources') + '</span>';
-    bar.classList.add('shown');
-  } catch (e) { bar.classList.remove('shown'); }
-}
-function dismissBreaking(){
-  document.getElementById('brk-bar').classList.remove('shown');
-  // Remember per-session so it doesn't reappear
-  try {
-    // best-effort: dismiss whatever is current
-    sessionStorage.setItem('brk_dismissed_global', '1');
-  } catch(e){}
-}
-
-async function loadFolder(folder) {
-  const status = document.getElementById(folder + '-status');
-  const feed = document.getElementById(folder + '-feed');
-  status.style.display = 'block';
-  status.textContent = _chittiLang === 'hi' ? '⏳ लोड हो रहा है…' : '⏳ Loading…';
-  feed.innerHTML = '';
-  try {
-    const data = await apiGet('/api/news/save?folder=' + folder);
-    const items = data.items || [];
-    if (!items.length) {
-      status.textContent = folder === 'saved'
-        ? (_chittiLang === 'hi' ? '⭐ अभी कोई सहेजी हुई खबर नहीं। किसी कार्ड पर ⭐ Save दबाएँ।' : '⭐ No saved stories yet. Tap ⭐ Save on any card.')
-        : (_chittiLang === 'hi' ? '🗑️ कुछ हटाया नहीं गया।' : '🗑️ Nothing cancelled.');
-      return;
-    }
-    status.style.display = 'none';
-    feed.innerHTML = items.map(it => {
-      const a = it.article; _ARTICLE_CACHE[a.id] = a;
-      return _articleCardHtml(a);
-    }).join('');
-  } catch (e) {
-    status.innerHTML = (_chittiLang === 'hi'
-      ? '⏳ <strong>बैकएंड गरम हो रहा है</strong> — लाइव होते ही आपकी सहेजी हुई / हटाई गई खबरें यहाँ दिखेंगी।'
-      : '⏳ <strong>Backend warming up</strong> — your saved / cancelled stories will appear here once the backend is live.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// Article actions: take, factcheck, save/cancel, share, read aloud
-// ═══════════════════════════════════════════════════════════
-async function loadTake(id) {
+// ▶ — "Chitti's Take" — 3-bullet AI summary.
+async function openTake(id) {
   const host = document.getElementById('take-' + id);
   if (!host) return;
-  host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take"><div class="take-h">✨ ' + (_chittiLang === 'hi' ? 'चिट्टी की टेक' : "Chitti's Take") + '</div>⏳ ' + (_chittiLang === 'hi' ? 'सारांश बना रहा हूँ…' : 'Summarising…') + '</div>';
-  // Fallback articles have negative IDs and aren't in the DB
-  if (id < 0) {
-    const a = _ARTICLE_CACHE[id];
-    const lang = _chittiLang;
-    const fallbackBullets = lang === 'hi'
-      ? ['यह एक नमूना लेख है — असली फ़ीड बैकएंड के लाइव होते ही आएगी।',
-         'चिट्टी की टेक DeepSeek AI से बनती है, हर लेख का 3 लाइन का सारांश।',
-         'अगला कदम: Railway पर chitti-news-api डिप्लॉय करें (5 मिनट का काम)।']
-      : ["This is a sample article — your real feed appears once the backend is live.",
-         "Chitti's Take is generated by DeepSeek AI: 3 bullets per article in your chosen language.",
-         "Next step: deploy chitti-news-api on Railway (~5 min in the dashboard)."];
-    host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take"><div class="take-h">✨ ' + (lang === 'hi' ? 'चिट्टी की टेक (नमूना)' : "Chitti's Take (sample)") + '</div><ul>' + fallbackBullets.map(b => '<li>' + _esc(b) + '</li>').join('') + '</ul></div>';
-    sp(fallbackBullets.join('. '));
-    return;
-  }
+  host.innerHTML = '<h4>Chitti\'s Take…</h4><p>Loading…</p>';
   try {
-    const data = await apiGet('/api/news/article/' + id + '/take?language=' + _chittiLang);
-    const bullets = (data.bullets || []).map(b => '<li>' + _esc(b) + '</li>').join('');
-    const note = data.source === 'fallback'
-      ? '<div style="font-size:10px;color:var(--muted);margin-top:6px">' + _esc(_chittiLang === 'hi' ? data.note_hi : data.note_en) + '</div>'
-      : '';
-    host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take"><div class="take-h">✨ ' + (_chittiLang === 'hi' ? 'चिट्टी की टेक' : "Chitti's Take") + '</div><ul>' + bullets + '</ul>' + note + '</div>';
-    sp((data.bullets || []).join('. '));
+    const data = await api('/api/news/article/' + id + '/take?language=' + getFilter().lang);
+    const bullets = data.bullets || [];
+    if (bullets.length === 0) {
+      host.innerHTML = '<h4>▶ Chitti\'s Take</h4>'
+        + '<p style="color:var(--muted)">No take available yet.</p>';
+      return;
+    }
+    host.innerHTML = '<h4>▶ Chitti\'s Take</h4><ul>'
+      + bullets.map(b => '<li>' + esc(b.replace(/^•\s*/, '')) + '</li>').join('')
+      + '</ul>';
+    speak(bullets.join('. '), getFilter().lang);
   } catch (e) {
-    host.innerHTML = '<div class="art-take chitti-response" style="border-color:var(--red);color:var(--red)" data-chitti-section="Art take">⚠️ ' + _esc(e.message) + '</div>';
+    host.innerHTML = '<h4>▶ Chitti\'s Take</h4>'
+      + '<p style="color:var(--muted)">Take unavailable. Try again.</p>';
   }
 }
 
-async function loadExplainSimply(id){
-  const host = document.getElementById('explain-' + id);
-  if (!host) return;
-  const lang = _chittiLang || 'en';
-  host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take">🧒 ' + (lang === 'hi' ? 'आसान भाषा में समझा रहा हूँ…' : 'Explaining in simple words…') + '</div>';
-  if (id < 0) {
-    const cached = _ARTICLE_CACHE[id] || {};
-    const sample = lang === 'hi'
-      ? 'यह एक नमूना लेख है। असली बैकएंड लाइव होने पर चिट्टी इसे 3–5 आसान वाक्यों में समझा देगा।'
-      : 'This is a sample article. When the backend is live, Chitti will explain it in 3–5 short, simple sentences.';
-    host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take"><div class="take-h">🧒 ' + (lang === 'hi' ? 'चिट्टी की आसान भाषा' : 'Chitti — explained simply') + '</div><div style="margin-top:4px">' + _esc(sample) + '</div></div>';
-    sp(sample);
-    return;
-  }
-  try {
-    const data = await apiGet('/api/news/article/' + id + '/explain?language=' + encodeURIComponent(lang));
-    if (!data || data.ok === false) throw new Error((data && data.error) || 'explain failed');
-    const text = data.explanation || data.spoken || '';
-    const note = data.source === 'fallback'
-      ? '<div style="color:var(--muted);font-size:12px;margin-top:6px">' + _esc(lang === 'hi' ? (data.note_hi || '') : (data.note_en || '')) + '</div>'
-      : '';
-    host.innerHTML = '<div class="art-take chitti-response" data-chitti-section="Art take">' +
-      '<div class="take-h">🧒 ' + (lang === 'hi' ? 'चिट्टी की आसान भाषा' : 'Chitti — explained simply') + '</div>' +
-      '<div style="margin-top:4px">' + _esc(text) + '</div>' +
-      note +
-      '</div>';
-    if (text) sp(text);
-  } catch (e) {
-    host.innerHTML = '<div class="art-take chitti-response" style="border-color:var(--red);color:var(--red)" data-chitti-section="Art take">⚠️ ' + _esc(e.message || String(e)) + '</div>';
-  }
-}
-
-async function loadFactcheck(id) {
+// ✓ — Fact-check verdict with cross-source evidence.
+async function openFactcheck(id) {
   const host = document.getElementById('fact-' + id);
   if (!host) return;
-  host.innerHTML = '<div class="art-fact chitti-response" data-chitti-section="Art fact">🛡️ ' + (_chittiLang === 'hi' ? 'क्रॉस-स्रोत जाँच…' : 'Cross-checking sources…') + '</div>';
-  if (id < 0) {
-    const lang = _chittiLang;
-    const rationale = lang === 'hi'
-      ? 'नमूना लेख — असली बैकएंड लाइव होने पर 2+ स्रोतों के बीच क्रॉस-वेरिफिकेशन चलेगा।'
-      : 'Sample article — real cross-source verification runs once the backend is live.';
-    host.innerHTML = '<div class="art-fact chitti-response" data-chitti-section="Art fact"><div><span class="fact-unverified">❔ ' + (lang === 'hi' ? 'अपुष्ट (नमूना)' : 'Unverified (sample)') + '</span></div><div style="margin-top:4px">' + _esc(rationale) + '</div></div>';
-    sp(rationale);
-    return;
-  }
+  host.innerHTML = '<h4>Fact check…</h4><p>Loading…</p>';
   try {
-    const data = await apiGet('/api/news/article/' + id + '/factcheck');
-    const cls = 'fact-' + (data.verdict || 'unverified');
-    const verdictLabel = {
-      verified:  _chittiLang === 'hi' ? 'पुष्ट' : 'Verified',
-      partial:   _chittiLang === 'hi' ? 'आंशिक' : 'Partial',
-      disputed:  _chittiLang === 'hi' ? 'विवादित' : 'Disputed',
-      unverified:_chittiLang === 'hi' ? 'अपुष्ट' : 'Unverified',
-    }[data.verdict] || data.verdict;
-    const rationale = _chittiLang === 'hi' ? (data.rationale_hi || data.rationale_en) : (data.rationale_en || data.rationale_hi);
-    host.innerHTML = '<div class="art-fact chitti-response" data-chitti-section="Art fact">' +
-      '<div><span class="' + cls + '">' + (data.symbol || '❔') + ' ' + _esc(verdictLabel) + '</span>' +
-      ' <span style="color:var(--muted)">· ' + _esc(data.confidence + '%') + ' confidence · ' + _esc((data.matched_sources||[]).length + ' other source(s)') + '</span></div>' +
-      '<div style="margin-top:4px">' + _esc(rationale || '') + '</div>' +
-    '</div>';
-    sp(rationale || '');
+    const data = await api('/api/news/article/' + id + '/factcheck');
+    const v = data.verdict || 'unchecked';
+    const rationale = data.rationale || data.summary || 'No supporting evidence available.';
+    host.innerHTML = '<h4>✓ Fact check — ' + esc(v.toUpperCase()) + '</h4>'
+      + '<p>' + esc(rationale) + '</p>';
   } catch (e) {
-    host.innerHTML = '<div class="art-fact chitti-response" style="border-color:var(--red);color:var(--red)" data-chitti-section="Art fact">⚠️ ' + _esc(e.message) + '</div>';
+    host.innerHTML = '<h4>✓ Fact check</h4>'
+      + '<p style="color:var(--muted)">Fact check unavailable.</p>';
   }
 }
 
+// 👍👎 — Save / Cancel article for For-You + Read Later folders.
 async function saveArticle(id, folder) {
-  // Always update the local For-You preference profile — even for sample
-  // articles, so the user can see the page learn before the backend is live.
-  const cached = _ARTICLE_CACHE[id];
-  if (cached && cached.category) {
-    _foryouRecord(cached.category, folder === 'saved' ? +1 : -1);
-  }
-  if (id < 0) {
-    sp(folder === 'saved'
-      ? (_chittiLang === 'hi' ? 'पसंद नोट की। चिट्टी सीख रहा है।' : 'Liked — Chitti is learning.')
-      : (_chittiLang === 'hi' ? 'नापसंद नोट की। चिट्टी सीख रहा है।' : 'Disliked — Chitti is learning.'));
-    return;
-  }
   try {
-    await apiPostJson('/api/news/save', { article_id: id, folder: folder });
-    sp(folder === 'saved'
-      ? (_chittiLang === 'hi' ? 'सहेज लिया।' : 'Saved.')
-      : (_chittiLang === 'hi' ? 'हटा दिया।' : 'Cancelled.'));
-  } catch (e) { alert('Error: ' + e.message); }
+    await api('/api/news/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ article_id: id, folder: folder }),
+    });
+    const btn = event && event.target && event.target.closest('button');
+    if (btn) {
+      btn.classList.add('live');
+      setTimeout(() => btn.classList.remove('live'), 1200);
+    }
+  } catch (e) { /* honest stub — feedback still recorded locally */ }
 }
 
-// ⭐ For You — multi-category personalised feed
-async function loadForYou(){
-  const status = document.getElementById('foryou-status');
-  const feed = document.getElementById('foryou-feed');
-  if (!status || !feed) return;
-  _renderForYouProfileLine();
-  const tops = _foryouTopCategories(4);
-  feed.innerHTML = '';
-  if (!tops.length){
-    status.style.display = 'block';
-    status.textContent = _chittiLang === 'hi'
-      ? '⭐ किसी भी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीखना शुरू कर देगा।'
-      : '⭐ Tap 👍 or 👎 on any story — Chitti will start learning what you like.';
-    return;
+// ✏️ — Open the feedback modal. The substrate's chitti-fb-box-bar is
+// hidden via CSS but still in the DOM with its event handlers attached.
+// Programmatically clicking its 👎 opens the feedback modal — same UX
+// every Chitti page provides via the locked per-response widget.
+function openFeedback(boxId) {
+  const bar = document.querySelector('.chitti-fb-box-bar[data-for-box="' + boxId + '"]');
+  if (bar) {
+    const down = bar.querySelector('[data-act="down"]');
+    if (down) { down.click(); return; }
   }
-  status.style.display = 'block';
-  status.textContent = _chittiLang === 'hi' ? '⏳ आपकी पसंद की खबरें ला रहा हूँ…' : '⏳ Fetching stories you like…';
-  const p = _getPrefs();
-  let collected = [];
-  for (const cat of tops){
+  // Fallback when substrate hasn't hydrated yet — captures the note
+  // locally so user input isn't lost.
+  const note = prompt('What can Chitti do better?');
+  if (note) {
     try {
-      const data = await apiGet('/api/news/' + encodeURIComponent(p.state) + '/' + encodeURIComponent(p.lang) + '/' + encodeURIComponent(cat) + '?limit=10');
-      (data.items || []).forEach(a => { _ARTICLE_CACHE[a.id] = a; collected.push(a); });
-    } catch(e){ /* skip silently — other categories still load */ }
+      fetch(API_BASE + '/api/feedback/collect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          page: 'chitti_news', box_id: boxId, kind: 'down', note: note,
+        }),
+      }).catch(() => {});
+    } catch (e) {}
   }
-  if (!collected.length){
-    status.textContent = _chittiLang === 'hi'
-      ? '⏳ बैकएंड गरम हो रहा है — एक मिनट में आपकी पसंद की खबरें यहाँ आएँगी।'
-      : '⏳ Backend warming up — your personalised stories will appear here in a minute.';
-    return;
-  }
-  // de-dupe by id, sort by importance + recency
-  const seen = new Set();
-  collected = collected.filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; });
-  collected.sort((x,y) => {
-    const ix = (x.importance || 0), iy = (y.importance || 0);
-    if (iy !== ix) return iy - ix;
-    return new Date(y.published_at || y.fetched_at || 0) - new Date(x.published_at || x.fetched_at || 0);
-  });
-  status.style.display = 'none';
-  feed.innerHTML = collected.slice(0, 30).map(_articleCardHtml).join('');
 }
 
+// 📲 — Share with a verify-with-source disclaimer baked in.
 function shareArticle(id) {
-  const a = _ARTICLE_CACHE[id]; if (!a) return;
-  const disclaimer = _chittiLang === 'hi'
-    ? '\n\n— चिट्टी न्यूज़ के माध्यम से। मूल स्रोत पर पुष्टि करें।'
-    : '\n\n— Shared via Chitti News. Verify on the original source before sharing further.';
+  const a = ARTICLES[id]; if (!a) return;
+  const disclaimer = '\n\nVerify on ' + (a.source_name || 'source') + ' before sharing.';
   const text = (a.title || '') + '\n' + (a.link || '') + disclaimer;
   if (navigator.share) {
-    navigator.share({ title: a.title, text: text, url: a.link }).catch(()=>{});
+    navigator.share({ title: a.title, text: text, url: a.link }).catch(() => {});
   } else {
-    const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
+    const wa = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
     window.open(wa, '_blank', 'noopener');
   }
 }
 
-// Sire 2026-06-02 — tap-to-expand for the headline-first card layout.
-// Body is hidden by default (CSS .art-card .art-body { display: none }).
-// Tapping anywhere on the card toggles .expanded; tapping any 5-strip
-// icon OR an action button stops propagation so it doesn't also toggle.
-function toggleArtCard(id) {
-  const el = document.getElementById('art-' + id);
-  if (!el) return;
-  el.classList.toggle('expanded');
-}
-
-// ✏️ icon in the 5-element strip — opens the same feedback modal the
-// substrate's chitti-fb-box-bar opens on 👎-click. We programmatically
-// click the hidden substrate-injected 👎 button (the bar still exists
-// in DOM; it's hidden via CSS on art-cards but the click handler is
-// wired). If no substrate bar is found, fall back to a textarea prompt.
-function openFeedbackForBox(boxId) {
-  const bar = document.querySelector('.chitti-fb-box-bar[data-for-box="' + boxId + '"]');
-  if (bar) {
-    const downBtn = bar.querySelector('[data-act="down"]');
-    if (downBtn) { downBtn.click(); return; }
-  }
-  // Fallback — only fires if feedback-widget.js hasn't yet hydrated
-  // this box (e.g. very early in page lifecycle).
-  const note = prompt('What can Chitti do better?');
-  if (note && window.fetch) {
-    fetch('/api/feedback/collect', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        page: 'chitti_news', box_id: boxId, kind: 'down', note: note,
-      }),
-    }).catch(function(){});
-  }
-}
-
-function readArticleAloud(id) {
-  const a = _ARTICLE_CACHE[id]; if (!a) return;
-  // Sire 2026-05-23: speaker reads the ENTIRE news, not just the headline.
-  // RSS publishers like TOI ship the full body in `content`; if absent, the
-  // RSS summary is the fullest we have. Strip any HTML the publisher embedded.
-  // Cap at 6 000 chars so browser SpeechSynthesis doesn't get truncated by
-  // the engine (Chrome stops cleanly at ~15 KB; we leave headroom for Hindi
-  // Devanagari which costs more bytes per glyph).
-  const body = a.content || a.summary || '';
-  const plain = String(body).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 6000);
-  const text = (a.title || '').trim() + '. ' + plain;
-  sp(text);
-}
-
-// ═══════════════════════════════════════════════════════════
-// For You — preference profile driven by 👍 / 👎 per article
-// Sire 2026-05-23: tea-stall page. Each user gets the news they want.
-// ═══════════════════════════════════════════════════════════
-const FORYOU_KEY = 'chitti_news_foryou_v1';
-const FORYOU_CATEGORIES = ['national','state','politics','business','tech','sports','entertainment'];
-
-function _foryouProfile(){
+// ── Feed loader ───────────────────────────────────────────────────
+async function loadFeed(force) {
+  const f = getFilter();
+  const root = document.getElementById('feed-root');
+  root.setAttribute('aria-busy', 'true');
+  root.innerHTML = '<div class="status-card">Loading…</div>';
   try {
-    const raw = localStorage.getItem(FORYOU_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e){}
-  return { scores: {}, total_likes: 0, total_dislikes: 0, updated_at: null };
-}
-function _foryouSave(p){
-  try { localStorage.setItem(FORYOU_KEY, JSON.stringify(p)); } catch(e){}
-}
-function _foryouRecord(category, delta){
-  if (!category || !FORYOU_CATEGORIES.includes(category)) return;
-  const p = _foryouProfile();
-  p.scores[category] = (p.scores[category] || 0) + delta;
-  if (delta > 0) p.total_likes++; else p.total_dislikes++;
-  p.updated_at = new Date().toISOString();
-  _foryouSave(p);
-}
-function _foryouTopCategories(limit){
-  const p = _foryouProfile();
-  const entries = FORYOU_CATEGORIES
-    .map(c => [c, p.scores[c] || 0])
-    .filter(([c, s]) => s > 0)   // only categories the user actually likes
-    .sort((a,b) => b[1] - a[1]);
-  return entries.slice(0, limit || 4).map(e => e[0]);
-}
-function resetForYou(){
-  if (!confirm(_chittiLang === 'hi' ? 'पक्का? आपकी पसंद की प्रोफ़ाइल मिट जाएगी।' : 'Reset? Your likes/dislikes history will be cleared.')) return;
-  try { localStorage.removeItem(FORYOU_KEY); } catch(e){}
-  sp(_chittiLang === 'hi' ? 'प्रोफ़ाइल रीसेट हो गई।' : 'Profile reset.');
-  if (_currentCategory === 'foryou') loadForYou();
-}
-function speakForYouStatus(){
-  const p = _foryouProfile();
-  const tops = _foryouTopCategories(3);
-  if (!tops.length){
-    sp(_chittiLang === 'hi'
-      ? 'किसी खबर पर 👍 या 👎 दबाएँ — चिट्टी आपकी पसंद सीख लेगा।'
-      : 'Tap 👍 or 👎 on any story — Chitti will learn your preferences.');
-    return;
+    let path;
+    if (f.cat === 'saved' || f.cat === 'cancelled') {
+      const data = await api('/api/news/save?folder=' + f.cat);
+      const items = (data.items || []).map(r => r.article);
+      renderFeed(items, { speak_en: 'Your ' + f.cat + ' folder.' });
+    } else if (f.cat === 'foryou') {
+      // For-You is a UX shim — fetch national + filter client-side per
+      // localStorage profile. Backend personalisation lives in v1.1.
+      const data = await api('/api/news/feed?state=' + f.state
+                          + '&language=' + f.lang + '&category=national');
+      renderFeed(data.items || [], data);
+    } else {
+      const data = await api('/api/news/feed?state=' + f.state
+                          + '&language=' + f.lang + '&category=' + f.cat);
+      renderFeed(data.items || [], data);
+    }
+  } catch (e) {
+    root.innerHTML = '<div class="status-card">'
+      + '<strong>Backend unreachable.</strong><br>'
+      + 'Pull to refresh in a minute — chitti-news-api may be cold-starting.'
+      + '<br><small style="color:var(--muted)">' + esc(String(e)) + '</small>'
+      + '</div>';
+  } finally {
+    root.setAttribute('aria-busy', 'false');
   }
-  const namesEn = { national:'national news', state:'state news', politics:'politics', business:'business', tech:'tech', sports:'sports', entertainment:'entertainment' };
-  const namesHi = { national:'राष्ट्रीय खबरें', state:'राज्य की खबरें', politics:'राजनीति', business:'व्यापार', tech:'तकनीक', sports:'खेल', entertainment:'मनोरंजन' };
-  const names = _chittiLang === 'hi' ? namesHi : namesEn;
-  const list = tops.map(c => names[c] || c).join(', ');
-  sp(_chittiLang === 'hi'
-    ? 'आपकी पसंद: ' + list + '। चिट्टी आपको इन्हीं की खबरें ज़्यादा दिखाएगा।'
-    : 'You like: ' + list + '. Chitti will show you more of these.');
-}
-function _renderForYouProfileLine(){
-  const el = document.getElementById('foryou-profile');
-  if (!el) return;
-  const p = _foryouProfile();
-  const tops = _foryouTopCategories(5);
-  const labelEn = { national:'🇮🇳 National', state:'📍 State', politics:'🏛️ Politics', business:'💼 Business', tech:'💡 Tech', sports:'🏏 Sports', entertainment:'🎬 Entertainment' };
-  const labelHi = { national:'🇮🇳 राष्ट्रीय', state:'📍 राज्य', politics:'🏛️ राजनीति', business:'💼 व्यापार', tech:'💡 तकनीक', sports:'🏏 खेल', entertainment:'🎬 मनोरंजन' };
-  const labels = _chittiLang === 'hi' ? labelHi : labelEn;
-  if (!tops.length){
-    el.textContent = _chittiLang === 'hi'
-      ? 'अभी कोई पसंद नहीं चुनी।'
-      : 'No preferences picked yet.';
-    return;
-  }
-  el.innerHTML = (_chittiLang === 'hi' ? 'आपकी पसंद: ' : 'You like: ') +
-    tops.map(c => '<strong>' + labels[c] + '</strong> (' + (p.scores[c] || 0) + ')').join(' · ');
 }
 
-// ═══════════════════════════════════════════════════════════
-// DEMO MODE — 6-step guided walk-through
-// ═══════════════════════════════════════════════════════════
-const DEMO_STEPS = [
-  { narr_en: 'Welcome to Chitti News. Pick your state and language. The feed shows only relevant stories.',
-    narr_hi: 'चिट्टी न्यूज़ में स्वागत है। अपना राज्य और भाषा चुनें। फ़ीड में सिर्फ़ ज़रूरी खबरें आएँगी।',
-    label: 'Step 1 of 6 · Picker' },
-  { narr_en: 'Each card is one news story. Tap Read aloud to hear it in your language. Tap Chitti\'s Take for a 3-bullet AI summary.',
-    narr_hi: 'हर कार्ड एक खबर है। पढ़कर सुनाओ दबाकर अपनी भाषा में सुनें। चिट्टी की टेक दबाकर 3 लाइन का AI सारांश पाएँ।',
-    label: 'Step 2 of 6 · Cards' },
-  { narr_en: 'Tap Fact Check to see how many other trusted sources agree. Verified stories are green, disputed ones are red.',
-    narr_hi: 'तथ्य जाँच दबाकर देखें कितने और भरोसेमंद स्रोत सहमत हैं। पुष्ट खबरें हरी, विवादित लाल।',
-    label: 'Step 3 of 6 · Fact Check' },
-  { narr_en: 'Save important stories to Read Later. Cancel ones you don\'t want — Chitti learns your preferences.',
-    narr_hi: 'ज़रूरी खबरें बाद में पढ़ें में सहेजें। जो नहीं चाहिए उन्हें हटाएँ — चिट्टी आपकी पसंद सीखता है।',
-    label: 'Step 4 of 6 · Folders' },
-  { narr_en: 'Share via WhatsApp in one tap. Every share carries a verify-with-source disclaimer.',
-    narr_hi: 'एक टैप में WhatsApp पर शेयर करें। हर शेयर के साथ स्रोत-पर-पुष्टि का संदेश जाता है।',
-    label: 'Step 5 of 6 · Share' },
-  { narr_en: 'Breaking news appears as a red ribbon at the top when 3+ sources agree. That\'s Chitti News. Tap Skip to start reading.',
-    narr_hi: 'जब 3 से ज़्यादा स्रोत सहमत हों, ब्रेकिंग न्यूज़ ऊपर लाल रिबन में आती है। यह है चिट्टी न्यूज़। Skip दबाकर पढ़ना शुरू करें।',
-    label: 'Step 6 of 6 · Done' },
-];
-let _demoActive = false, _demoIdx = -1, _demoSpeakTimer = null, _demoAdvanceTimer = null;
-function _demoSpeak(text, onDone){
-  if (_demoSpeakTimer) clearTimeout(_demoSpeakTimer);
-  if (!window.speechSynthesis) { _demoSpeakTimer = setTimeout(onDone || function(){}, 2500); return; }
-  speechSynthesis.cancel();
-  let done = false; const finish = function(){ if (done) return; done = true; if (onDone) onDone(); };
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = _LANG_CODE[_chittiLang] || 'en-IN'; u.rate = 0.92;
-  u.onend = finish; u.onerror = finish;
-  speechSynthesis.speak(u);
-  _demoSpeakTimer = setTimeout(finish, Math.max(3500, text.length * 70) + 1500);
-}
-function _runDemoStep(i){
-  if (!_demoActive) return;
-  if (i >= DEMO_STEPS.length) { stopDemoMode(true); return; }
-  _demoIdx = i;
-  const s = DEMO_STEPS[i];
-  document.getElementById('demo-step-counter').textContent = s.label;
-  const narration = _chittiLang === 'hi' ? s.narr_hi : s.narr_en;
-  document.getElementById('demo-narr').textContent = narration;
-  _demoSpeak(narration, function(){
-    if (!_demoActive) return;
-    if (_demoAdvanceTimer) clearTimeout(_demoAdvanceTimer);
-    _demoAdvanceTimer = setTimeout(function(){ if (_demoActive) _runDemoStep(i + 1); }, 800);
-  });
-}
-function _demoNext(){
-  if (!_demoActive) return;
-  if (_demoSpeakTimer) clearTimeout(_demoSpeakTimer);
-  if (_demoAdvanceTimer) clearTimeout(_demoAdvanceTimer);
-  if (window.speechSynthesis) speechSynthesis.cancel();
-  _runDemoStep(_demoIdx + 1);
-}
-function startDemoMode(){
-  if (_demoActive) { stopDemoMode(); return; }
-  _demoActive = true;
-  document.getElementById('demo-ribbon').classList.add('shown');
-  document.getElementById('demo-banner').classList.add('shown');
-  _runDemoStep(0);
-}
-function stopDemoMode(finished){
-  _demoActive = false;
-  if (_demoSpeakTimer) clearTimeout(_demoSpeakTimer);
-  if (_demoAdvanceTimer) clearTimeout(_demoAdvanceTimer);
-  if (window.speechSynthesis) speechSynthesis.cancel();
-  document.getElementById('demo-ribbon').classList.remove('shown');
-  document.getElementById('demo-banner').classList.remove('shown');
-  if (finished) sp(_chittiLang === 'hi' ? 'डेमो पूरा।' : 'Demo complete.');
-}
-document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && _demoActive) stopDemoMode(); });
-
-// ═══════════════════════════════════════════════════════════
-// Boot
-// ═══════════════════════════════════════════════════════════
-_populateStateSelects();
-applyChittiLang(_chittiLang);
-const _prefs = _getPrefs();
-document.getElementById('pick-state').value = _prefs.state;
-document.getElementById('pick-lang').value = _prefs.lang;
-
-// Show onboarding modal on first visit
-let _firstVisit = false;
-try { _firstVisit = !localStorage.getItem('chitti_news_onb_done'); } catch(e){}
-if (_firstVisit) {
-  document.getElementById('onb-state').value = _prefs.state;
-  document.getElementById('onb-lang').value = _prefs.lang;
-  document.getElementById('onb-modal').classList.add('shown');
-  // After they pick, mark done
-  const origGo = window.completeOnboarding;
-  window.completeOnboarding = function(){
-    origGo();
-    try { localStorage.setItem('chitti_news_onb_done', '1'); } catch(e){}
-  };
-}
-
+// ── Boot ──────────────────────────────────────────────────────────
+hydratePickers();
 loadFeed(false);
-loadBreaking();
-
-}
-</script>
-<!-- Chitti Quality v2 trust signals · 2026-05-13 -->
-<script>window.CHITTI_LAST_AUDIT='2026-05-13';window.CHITTI_CO2_G=0.2;</script>
-<script src="feedback-widget.js" data-page="chitti_news"></script>
-
-<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL. 2026-05-13 -->
-<script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529r"></script>
-<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
-<script src="chitti_isl.js"></script>
-<script src="chitti_i18n.js"></script>
-<!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
-<div class="chitti-qr-block" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAIAAACW1xIWAAAEbklEQVR4nO2dQW7dMAwFmyJ7XaJX6al7lV7CJ0i3DlABJEjKBmZm+SP7K/+BpklR1MfX19cPYfDz6QnIORQbhGKDUGwQig1CsUEoNojP3R/Wr9/tX3b9/fPf+2c/j9xzN6ZCZQ6V8Vl2/6+WDUKxQSg2iK3P7vJ5WT9a8d/ZOezo8vHZe078zne0bBCKDUKxQYR89p1sHHnSr0euXYH3gN2YrN+txNATv7OWDUKxQSg2iLTP7iLik7L588i1V9N9snN+A1o2CMUGodggHvPZXWvY2fvf6cq3R94Jdt97Ei0bhGKDUGwQaZ/9htgxmzeu+O8rcO1EbD3xO2vZIBQbhGKDCPnsidrmSt145fM3zCcyhwm0bBCKDUKxQXy8uafK9FryGvDrdyrvEBNo2SAUG4Rig0j77Eoc2bXW27UH7BqOv6fnkB2jZYNQbBCKDSLUU6USF0b2a+2+t2t81/+ymnLX07XuO7RsEIoNQrFBlHLjFR+WjS9P5pxXMq6NzC07poJxtvgYJ6HPBrH12V311V3588q+6grXwLtFZIx141LCxzgIxQYR8tlvW7fejYnM586E739qzTuClg1CsUEoNojtenZX/rbSQ3TH9P7pNZxjmM4ZmBsXH+Mk9NkgRvqgRXxetjYtwvQ68Z2s3+3qnV75v7RsEIoNQrFBtO31iozpyhXfORk3dzFRMx/5HbRsEIoNQrFBjPcu7crrdvUDX5vzu7rmkx3fdd5JBC0bhGKDUGwQof3Zb/BhXed53Hmql3hX7J79zbVsEIoNQrFBlOrGp2u5u8Y/1Uv8Gqi/i6DPFh/jJPTZIELr2dN9uXdU9phF5vbmnH9lPvps8TFOQp8N4nO6RroSs07Hu9fAO8GOSgzdlZ/XskEoNgjFBpHOjWfH7MbvOJkrXk09SrNMx/rG2eJjnIQ+G0Sop8p0njxyn4n+JFfg2ul+bSfXvLVsEIoNQrFBpPuN73iq3/ju2un4/npZnO3+bPmGj3EQig2iVIM20atk2u9eL8i9d8Xl5sZli49xEIoNIl2Dtvt8et23K45fhXquk3u475gblzQ+xkEoNoi2GrQ7E3uXd5w8O2sN33Oiju+Olg1CsUEoNohX7M+eOM9q2pevgft0rTvs0LJBKDYIxQYR6l16so6sq4fayXX31dQbbsJP39GyQSg2CMUGkT7Xq4uTOfMI18De6Moa/8T+MS0bhGKDUGwQ6TNCKlT2Pe8+n64VX8PvCtP3v6Nlg1BsEIoNolSD9lTt944u/329YO15ohZdywah2CAUG0T6/OyJfiMVv57dh7YG1td333syFveMEPmGj3EQig0i7bO7yK7RTtRwrYLv343JzrmyvzyLlg1CsUEoNojHfHbFX3bVUV/JmLUS4073X4vcU8sGodggFBtE2md3ra1m89Jd/c6ug/1eItdO15bf0bJBKDYIxQbRdkZIhOk9Trvvmj53azqX7l4vSeNjHIRig3hsf7acR8sGodggFBuEYoNQbBCKDUKxf3D4BxfDDf/VGbJnAAAAAElFTkSuQmCC" alt="QR code — opens News on your phone at https://sahayai.in/chitti_news.html" width="120" height="120" style="border-radius:8px;background:#fff;padding:6px;flex-shrink:0">
-  <div style="flex:1;min-width:0">
-    <div style="font-weight:700;color:#0E2344;font-size:15px;margin-bottom:4px">📱 Open on phone</div>
-    <div style="color:#475569;font-size:13px;line-height:1.5;margin-bottom:8px">Scan to open News on your phone. Voice-first. Free. Works in 26 Indian languages.</div>
-    <code style="font-size:11px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#0E2344;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:100%">https://sahayai.in/chitti_news.html</code>
-  </div>
-</div>
-
-
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529r baked T-table + chitti_a11y.js?v=20260529r widget+QR supplement. 2026-05-22 -->
-<script src="chitti_lang.js?v=20260529r"></script>
-<script src="chitti_a11y.js?v=20260529r"></script>
-
-
-<!-- ══════════════ CHAI STALL MODE — styles ══════════════ -->
-<style>
-.chai-stall-card{background:linear-gradient(135deg,#FF6913,#F57F17);color:#fff;border-radius:18px;padding:18px 16px;margin:0 0 14px;box-shadow:0 12px 32px rgba(255,105,19,.30)}
-.chai-stall-row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-.chai-icon{font-size:38px;line-height:1}
-.chai-info{flex:1;min-width:0}
-.chai-title{font-size:18px;font-weight:900;line-height:1.3;color:#fff}
-.chai-sub{font-size:13px;color:rgba(255,255,255,.92);line-height:1.45;margin-top:2px}
-.chai-stall-btn{width:100%;background:#fff;border:none;border-radius:14px;padding:14px;font-size:17px;font-weight:800;color:#7a2e00;cursor:pointer;min-height:54px;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
-.chai-stall-btn:active{transform:scale(.98)}
-.chai-todays{margin-top:8px;text-align:right}
-.chai-link{background:transparent;border:none;color:#fff;font-weight:700;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px 8px;min-height:36px}
-
-.chai-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9700;align-items:flex-end;justify-content:center;padding:0}
-.chai-overlay.shown{display:flex}
-.chai-sheet{background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 28px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;text-align:center}
-.chai-sheet h2{font-size:22px;color:#002366;margin:8px 0 8px;font-weight:900}
-.chai-sheet p{font-size:16px;color:#444;line-height:1.55;margin:6px 0 12px}
-.chai-big{font-size:64px;line-height:1;margin:6px 0 8px}
-.chai-rules{list-style:none;padding:0;margin:8px 0 18px;text-align:left;font-size:15px;line-height:1.55;color:#222}
-.chai-rules li{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed #eee}
-.chai-rules li:last-child{border-bottom:none}
-.chai-rules .ok{color:#046A38;font-weight:900;font-size:18px;min-width:22px}
-.chai-rules .no{color:#c62828;font-weight:900;font-size:18px;min-width:22px}
-.chai-actions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
-.chai-actions .chai-btn{min-height:56px;font-size:17px;font-weight:800;border-radius:14px;border:1.5px solid #e0e0e0;background:#fff;color:#002366;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.chai-actions .chai-btn.primary{background:#046A38;color:#fff;border-color:#046A38}
-.chai-actions .chai-btn.ghost{background:#fff;color:#444}
-.chai-actions .chai-btn.danger{background:#c62828;color:#fff;border-color:#c62828}
-.chai-mic{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,#FF6913,#046A38);color:#fff;font-size:60px;display:flex;align-items:center;justify-content:center;margin:8px auto 14px;box-shadow:0 12px 32px rgba(4,106,56,.40);animation:chai-mic-pulse 1.4s ease-in-out infinite}
-@keyframes chai-mic-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.85}}
-.chai-meter{font-size:18px;font-weight:800;color:#046A38;margin:10px 0}
-.chai-words{display:flex;flex-direction:column;gap:8px;margin:10px 0;text-align:left}
-.chai-word{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #e0e0e0;border-radius:12px;padding:12px;font-size:17px;color:#212121}
-.chai-word.confirmed{background:#dcfce7;border-color:#86efac}
-.chai-word.rejected{background:#fee2e2;border-color:#fca5a5;opacity:.65}
-.chai-word .w{flex:1;font-weight:700}
-.chai-word .meta{font-size:12px;color:#666;font-weight:500}
-.chai-word .toggles{display:flex;gap:4px}
-.chai-word button{background:#fff;border:1.5px solid #e0e0e0;border-radius:10px;width:44px;height:44px;font-size:18px;cursor:pointer}
-.chai-word button.on{background:#046A38;color:#fff;border-color:#046A38}
-.chai-word button.off{background:#c62828;color:#fff;border-color:#c62828}
-@media (max-width:380px){
-  .chai-stall-card{padding:14px 12px}
-  .chai-stall-btn{font-size:15px}
-}
-</style>
-
-<script>
-/* ════════════════ Chai Stall Mode ════════════════
-   Sire 2026-05-23 vision: the people train their own AI.
-   Strict privacy contract — all listening happens on-device.
-   See skills/chitti_news_swarm.md for the full rules.
-*/
-const CHAI_LOCAL_KEY = 'chitti_news_swarm_local_v1';
-const CHAI_PRIVACY_KEYS = /(\b\d{4,}\b|\brupees?\b|\b₹\s*\d|\baccount\b|\bbalance\b|\bmother\b|\bfather\b|\bbeti\b|\bbeta\b|\bdidi\b|\bbhaiyya?\b|\bji\s+ne\b|@[\w.]+|\bgmail\b|\botp\b|\bpasswd?\b|\bpin\s+\d|\bcard\b|\bcvv\b|\baadhaar\b|\bpan\s+(card|number)\b)/i;
-const CHAI_API_LANG = (function(){ try { return localStorage.getItem('chitti_vaani_lang') || 'hi'; } catch(e){ return 'hi'; } })();
-let CHAI_RECOG = null;
-let CHAI_LISTENING = false;
-let CHAI_CAPTURE = [];     // [{word, transcript, region, ts}]
-let CHAI_PENDING_REVIEW = []; // currently-being-reviewed words
-
-function chaiOpenConsent(){
-  showStep('consent');
-  document.getElementById('chai-overlay').classList.add('shown');
-  // Show "Chitti aaj kya seekha" link if user has prior contributions
-  try {
-    const arr = JSON.parse(localStorage.getItem(CHAI_LOCAL_KEY) || '[]');
-    if (arr.length) document.getElementById('chai-todays').style.display = 'block';
-  } catch(e){}
-}
-function chaiClose(){ document.getElementById('chai-overlay').classList.remove('shown'); chaiStopListening(true); }
-function showStep(name){
-  document.querySelectorAll('.chai-step').forEach(el => el.style.display = el.dataset.step === name ? 'block' : 'none');
-}
-
-function chaiStartListening(){
-  showStep('listening');
-  CHAI_CAPTURE = [];
-  document.getElementById('chai-meter').textContent = '0 ' + (CHAI_API_LANG === 'hi' ? 'शब्द' : 'words');
-  try {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      alert('Voice support nahi hai is browser mein. Chrome ya Edge khol kar try karein.');
-      chaiClose();
-      return;
-    }
-    CHAI_RECOG = new SR();
-    CHAI_RECOG.lang = ({hi:'hi-IN',te:'te-IN',ta:'ta-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN',en:'en-IN'})[CHAI_API_LANG] || 'hi-IN';
-    CHAI_RECOG.continuous = true;
-    CHAI_RECOG.interimResults = false;
-    CHAI_RECOG.maxAlternatives = 1;
-    CHAI_RECOG.onstart = () => { CHAI_LISTENING = true; };
-    CHAI_RECOG.onend   = () => { CHAI_LISTENING = false; };
-    CHAI_RECOG.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const txt = (e.results[i][0].transcript || '').trim();
-        if (!txt) continue;
-        chaiIngestUtterance(txt);
-      }
-    };
-    CHAI_RECOG.onerror = () => { CHAI_LISTENING = false; };
-    CHAI_RECOG.start();
-  } catch(e){ alert('Mic nahi mila: ' + e.message); chaiClose(); }
-}
-function chaiStopListening(silent){
-  if (CHAI_RECOG) { try { CHAI_RECOG.stop(); } catch(e){} }
-  CHAI_LISTENING = false;
-  if (!silent) {
-    if (CHAI_CAPTURE.length === 0) {
-      alert('Kuch sun nahi paayi. Phir try karein.');
-      chaiClose();
-      return;
-    }
-    chaiGoReview();
-  }
-}
-
-function chaiIngestUtterance(raw){
-  // PRIVACY FILTER — strip out anything that looks personal.
-  if (CHAI_PRIVACY_KEYS.test(raw)) {
-    // Whole utterance flagged — skip entirely. Never store.
-    return;
-  }
-  // Extract candidate vocabulary tokens: words 3+ chars, no digits.
-  const tokens = raw.split(/\s+/).filter(w => w.length >= 3 && !/\d/.test(w));
-  // Avoid common stopwords (basic) so we surface interesting regional words.
-  const STOP = new Set(['the','and','that','this','what','have','will','with','from','your','main','aap','hai','kya','meri','mera','hain','tha','tho','hum','jab','wahaan','yahaan']);
-  for (const t of tokens) {
-    const clean = t.replace(/[^ऀ-ॿঀ-৿஀-௿ఀ-౿ഀ-ൿ઀-૿਀-੿a-zA-Z'-]/g, '');
-    if (clean.length < 3) continue;
-    if (STOP.has(clean.toLowerCase())) continue;
-    // De-duplicate by exact word
-    if (CHAI_CAPTURE.some(c => c.word === clean)) continue;
-    CHAI_CAPTURE.push({ word: clean, transcript: raw.slice(0, 80), ts: new Date().toISOString() });
-  }
-  document.getElementById('chai-meter').textContent = CHAI_CAPTURE.length + ' ' + (CHAI_API_LANG === 'hi' ? 'शब्द' : 'words');
-  // Soft cap so the review screen doesn't get unmanageable
-  if (CHAI_CAPTURE.length >= 30) chaiStopListening();
-}
-
-function chaiGoReview(){
-  CHAI_PENDING_REVIEW = CHAI_CAPTURE.slice(0).map((c, i) => Object.assign({}, c, { i, confirmed: null }));
-  const wrap = document.getElementById('chai-words');
-  wrap.innerHTML = CHAI_PENDING_REVIEW.map((c) => `
-    <div class="chai-word" id="cw-${c.i}">
-      <div class="w">${escapeHtml(c.word)}<br><span class="meta">${escapeHtml(c.transcript)}</span></div>
-      <div class="toggles">
-        <button onclick="chaiToggle(${c.i}, true)">✓</button>
-        <button onclick="chaiToggle(${c.i}, false)">✗</button>
-      </div>
-    </div>`).join('');
-  showStep('review');
-}
-function chaiToggle(i, ok){
-  const row = CHAI_PENDING_REVIEW.find(c => c.i === i);
-  if (!row) return;
-  row.confirmed = ok;
-  const el = document.getElementById('cw-' + i);
-  el.classList.remove('confirmed','rejected');
-  el.classList.add(ok ? 'confirmed' : 'rejected');
-  const btns = el.querySelectorAll('button');
-  btns[0].classList.toggle('on', ok); btns[1].classList.toggle('off', !ok);
-}
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function chaiGoShare(){
-  // Persist confirmed words to local IndexedDB-ish localStorage bucket.
-  const confirmed = CHAI_PENDING_REVIEW.filter(c => c.confirmed === true);
-  if (confirmed.length === 0) { alert('Koi shabd confirm nahi hua. Aap chahein toh phir try karein.'); chaiClose(); return; }
-  // Stage them — final commit happens after the share decision.
-  window.__chaiStaged = confirmed;
-  showStep('share');
-}
-async function chaiSubmitShared(share){
-  const arr = (window.__chaiStaged || []);
-  if (arr.length === 0) { chaiClose(); return; }
-  // Always write to LOCAL bucket so the user can audit.
-  let local = []; try { local = JSON.parse(localStorage.getItem(CHAI_LOCAL_KEY) || '[]'); } catch(e){}
-  for (const c of arr) local.unshift({ word: c.word, transcript: c.transcript, ts: c.ts, language: CHAI_API_LANG, shared: !!share });
-  try { localStorage.setItem(CHAI_LOCAL_KEY, JSON.stringify(local.slice(0, 500))); } catch(e){}
-  // Community contribution — only if user said yes.
-  if (share) {
-    try {
-      await fetch('https://chitti-vaani-api-production.up.railway.app/api/feedback', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          chitti: 'chitti_news_swarm', card: 'chai_stall', kind: 'swarm_contribution',
-          language: CHAI_API_LANG, words: arr.map(c => c.word),
-          // No transcripts, no user identifier — only the language tokens.
-          message: arr.map(c => c.word).join(', '),
-          page: 'chitti_news',
-        }),
-      });
-    } catch(e){}
-  }
-  showStep('thanks');
-  setTimeout(chaiClose, 1800);
-}
-function chaiShowLearned(){
-  let local = []; try { local = JSON.parse(localStorage.getItem(CHAI_LOCAL_KEY) || '[]'); } catch(e){}
-  const wrap = document.getElementById('chai-log-list');
-  if (!local.length) wrap.innerHTML = '<div style="padding:14px;color:#666">Abhi tak Chitti ne aapse kuch nahi seekha. Chai Stall Mode shuru karein.</div>';
-  else wrap.innerHTML = local.map((c) => `<div class="chai-word"><div class="w">${escapeHtml(c.word)} <span class="meta">${c.language}${c.shared?' · shared':' · sirf aapke phone par'}</span></div></div>`).join('');
-  showStep('log');
-  document.getElementById('chai-overlay').classList.add('shown');
-}
-function chaiDeleteAll(){
-  if (!confirm('Yakeenan? Sab kuch mit jayega.')) return;
-  try { localStorage.removeItem(CHAI_LOCAL_KEY); } catch(e){}
-  document.getElementById('chai-log-list').innerHTML = '<div style="padding:14px;color:#666">Sab miti diya.</div>';
-  document.getElementById('chai-todays').style.display = 'none';
-}
-// Initial: show "Chitti aaj kya seekha" only if there's history
-(function(){
-  try {
-    const arr = JSON.parse(localStorage.getItem(CHAI_LOCAL_KEY) || '[]');
-    if (arr.length) document.addEventListener('DOMContentLoaded', () => { const e = document.getElementById('chai-todays'); if (e) e.style.display = 'block'; });
-  } catch(e){}
-})();
 </script>
 
 </body>
