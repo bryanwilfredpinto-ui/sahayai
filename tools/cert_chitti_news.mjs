@@ -440,6 +440,33 @@ async function main() {
         ? 'extracted text appears in utterance'
         : 'extracted text NOT in any utterance');
 
+  // ── SPEAKER_SWITCH — tapping a second card while the first's lazy
+  // fetch is in flight must NOT result in the first card's content
+  // arriving and barging over the second's speech.
+  // Sire 2026-06-02: "if I click on another news, the speaker will
+  // still continue to speak to the earlier message."
+  // Plan: reset 1002 to empty content (force lazy /body), clear log,
+  // tap 1002, then immediately tap 1001. After 4 s, LAST utterance
+  // must be 1001's body — never 1002's.
+  await page.evaluate(() => {
+    document.querySelectorAll('.art-card.expanded').forEach((c) => c.classList.remove('expanded'));
+    if (window.ARTICLES && window.ARTICLES[1002]) window.ARTICLES[1002].content = '';
+    window.__speakLog = [];
+  });
+  await page.locator('.art-card[id="art-1002"]').click({ position: { x: 200, y: 60 } });
+  // Brief wait — long enough for "One moment" utterance, well before
+  // the mocked /body roundtrip resolves.
+  await page.waitForTimeout(200);
+  await page.locator('.art-card[id="art-1001"]').click({ position: { x: 200, y: 60 } });
+  await page.waitForTimeout(4000);
+  const switchLog = await page.evaluate(() => window.__speakLog);
+  const lastTextSwitch = switchLog.length ? switchLog[switchLog.length - 1].text : '';
+  const last1001 = /PM announces new scheme for Indian farmers/.test(lastTextSwitch);
+  const last1002Body = /Maharashtra state government has finalised/.test(lastTextSwitch);
+  add('SPEAKER_SWITCH — last utterance is the LATEST tapped card',
+      last1001 && !last1002Body,
+      `last="${lastTextSwitch.slice(0, 80)}" (utterances: ${switchLog.length})`);
+
   // ── Screenshot ───────────────────────────────────────────────────
   await page.screenshot({ path: SHOT_PATH, fullPage: true });
 

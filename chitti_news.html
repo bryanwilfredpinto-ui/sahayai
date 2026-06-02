@@ -530,24 +530,38 @@ function renderFeed(items, meta) {
 // navigation to mint/TOI/Hindu. The 🔊 button in the 5-icon strip
 // remains an explicit speak (for retap-to-re-read).
 // Already-expanded → tap collapses + cancels any in-flight speech.
+// Tracks which article is "active" for the speaker. Updated on every
+// card tap. Any in-flight async path (lazy /body fetch, deferred speak)
+// checks against this before calling speak() — so that when the user
+// taps a new card before the previous one's fetch resolved, the old
+// fetch's spoken result doesn't barge in over the new card.
+// Sire 2026-06-02: "if I click on another news, the speaker will still
+// continue to speak to the earlier message".
+let _activeArticleId = null;
+
 function onCardTap(id) {
   const el = document.getElementById('art-' + id);
   if (!el) return;
   const wasExpanded = el.classList.contains('expanded');
+
+  // Collapse any OTHER expanded card — MSN-style, one card open at a time.
+  document.querySelectorAll('.art-card.expanded').forEach((other) => {
+    if (other !== el) other.classList.remove('expanded');
+  });
+
+  // ALWAYS cancel the current speaker on any tap. Whether we're
+  // expanding a new card or collapsing the current one, the user's
+  // gesture signals "stop the old stream."
+  if (window.speechSynthesis) {
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
+
   if (wasExpanded) {
     el.classList.remove('expanded');
-    if (window.speechSynthesis) {
-      try { speechSynthesis.cancel(); } catch (e) {}
-    }
+    _activeArticleId = null;
   } else {
     el.classList.add('expanded');
-    // Three things happen in parallel when the user taps a card:
-    //   1. Summary becomes visible immediately (already in DOM)
-    //   2. Full body lazy-loads + renders into .art-fullbody
-    //   3. Speaker starts reading
-    // Sire 2026-06-02: "What is the use of a speaker when it only reads
-    // the headlines?" — the body needs to be VISIBLE for sighted users
-    // too, not only audible.
+    _activeArticleId = id;
     ensureFullbodyDisplayed(id);
     speakArticle(id);
   }
@@ -605,14 +619,20 @@ function toggleCard(id) { onCardTap(id); }
 //      memoized into a.content so subsequent 🔊 clicks are instant.
 async function speakArticle(id) {
   const a = ARTICLES[id]; if (!a) return;
+  // Stamp this article as active for ANY speak() this function fires.
+  // Every async checkpoint below verifies it's still active before
+  // committing audio to the shared speechSynthesis pipe.
+  _activeArticleId = id;
   const lang = getFilter().lang;
   let body = a.content || '';
   let bodySource = 'rss';
   const hasRichBody = body && body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length >= 60;
   if (!hasRichBody) {
+    if (_activeArticleId !== id) return;
     speak('One moment — Chitti is fetching the full news.', lang);
     try {
       const data = await api('/api/news/article/' + id + '/body');
+      if (_activeArticleId !== id) return;   // user moved on while we waited
       if (data && data.body && data.body.split(/\s+/).length >= 60) {
         body = data.body;
         bodySource = data.source || 'extracted';
@@ -622,10 +642,12 @@ async function speakArticle(id) {
         bodySource = 'summary_only';
       }
     } catch (e) {
+      if (_activeArticleId !== id) return;
       body = a.summary || body;
       bodySource = 'summary_only';
     }
   }
+  if (_activeArticleId !== id) return;
   const plain = String(body)
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
@@ -643,6 +665,7 @@ async function speakArticle(id) {
   } else {
     text = (a.title || '').trim() + '. ' + plain;
   }
+  if (_activeArticleId !== id) return;
   speak(text, lang);
 }
 
