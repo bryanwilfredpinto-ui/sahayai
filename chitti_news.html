@@ -141,10 +141,18 @@ footer a{color:var(--saffron)}
 </head>
 <body>
 
-<!-- Chitti language selector (auto-injected) — chitti_lang.js?v=20260529r wires this. 2026-05-22 -->
-<div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-family:Inter,system-ui,sans-serif;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
-  <label for="lang-select" style="font-weight:600">🌐</label>
-  <select id="lang-select" aria-label="Language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px;cursor:pointer">
+<!--
+  Chitti language selector hook for the chitti_lang.js substrate. Hidden
+  visually 2026-06-02 per Sire + CTO.md UI Design Standard v1.0 (§5 — one
+  language selector per page). The picker-bar dropdown below is now the
+  ONLY visible language control. This hidden div stays in DOM because
+  chitti_lang.js writes options into #lang-select on load; removing it
+  would break the substrate. Off-palette hand-rolled styles (#0E2344 /
+  #D4AF37) dropped — palette is now picker-bar only, via chitti_theme.css.
+-->
+<div data-chitti-lang-select="auto" style="display:none" aria-hidden="true">
+  <label for="lang-select">Language</label>
+  <select id="lang-select" aria-label="Language">
     <option value="en">English</option>
   </select>
 </div>
@@ -178,10 +186,14 @@ footer a{color:var(--saffron)}
       <a class="switch-btn-bharat" href="chitti_vaani.html" aria-label="Switch to Chitti Vaani" data-i18n-aria="switch-to-chitti-vaani" data-i18n="switch.vaani">🎙️ Vaani</a>
       <a class="switch-btn-bharat" href="chitti_upi.html" aria-label="Switch to Chitti UPI Fraud Guard" data-i18n-aria="switch-to-chitti-upi-fraud-guard" data-i18n="switch.upi">🛡️ UPI Guard</a>
       <a class="switch-btn-bharat" href="chitti_scanner.html" aria-label="Switch to Chitti Product Scanner" data-i18n-aria="switch-to-chitti-product-scanner" data-i18n="switch.scanner">📷 Scanner</a>
-      <div class="lang-toggle-bharat" role="group" aria-label="Language toggle" data-i18n-aria="language-toggle">
-        <button data-lang="en" class="active" data-active="true" onclick="setChittiLang('en')" data-i18n="en">EN</button>
-        <button data-lang="hi" onclick="setChittiLang('hi')" data-i18n="tag">हिं</button>
-      </div>
+      <!--
+        EN | हिं header toggle removed 2026-06-02 per Sire + CTO.md UI
+        Design Standard v1.0 §5 (one language selector per page). It
+        duplicated the picker-bar #pick-lang dropdown below and only
+        offered 2 of the 12 supported languages. The picker bar is now
+        the single source of truth — its onchange already syncs both
+        UI language (chitti_lang.js setChittiLang) AND content filter.
+      -->
     </div>
   </div>
   <div class="header-controls">
