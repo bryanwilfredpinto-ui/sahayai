@@ -503,18 +503,41 @@ function toggleCard(id) {
   if (el) el.classList.toggle('expanded');
 }
 
-// 🔊 — reads the ENTIRE news (a.content || a.summary). Per SKILLS.md
-// feature #10 + SOP.md Quality Standard.
-function speakArticle(id) {
+// 🔊 — reads the ENTIRE news. Per SKILLS.md feature #10 + SOP.md
+// Quality Standard. Two-stage:
+//   1. If a.content (RSS content:encoded) is present and substantive,
+//      speak that immediately.
+//   2. Otherwise (most regional sources only ship a short summary),
+//      announce "Loading full news…" and lazy-fetch from
+//      GET /api/news/article/<id>/body which extracts the body
+//      server-side, caches it, and returns plain text. Result is
+//      memoized into a.content so subsequent 🔊 clicks are instant.
+async function speakArticle(id) {
   const a = ARTICLES[id]; if (!a) return;
-  const body = a.content || a.summary || '';
+  const lang = getFilter().lang;
+  let body = a.content || '';
+  const hasRichBody = body && body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length >= 60;
+  if (!hasRichBody) {
+    speak('One moment — Chitti is fetching the full news.', lang);
+    try {
+      const data = await api('/api/news/article/' + id + '/body');
+      if (data && data.body && data.body.split(/\s+/).length >= 60) {
+        body = data.body;
+        a.content = body;
+      } else {
+        body = a.summary || body;
+      }
+    } catch (e) {
+      body = a.summary || body;
+    }
+  }
   const plain = String(body)
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 6000);
   const text = (a.title || '').trim() + '. ' + plain;
-  speak(text, getFilter().lang);
+  speak(text, lang);
 }
 
 function speak(text, lang) {

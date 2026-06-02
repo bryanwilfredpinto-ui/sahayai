@@ -34,6 +34,7 @@ from database import SessionLocal
 from models.article import Article
 from models.read_later import ReadLater
 from services import (
+    article_body,
     news_db,
     news_explain,
     news_factcheck,
@@ -125,6 +126,35 @@ def article(db, article_id):
     if not a:
         abort(404, description="article not found")
     return jsonify(a)
+
+
+@bp.get("/article/<int:article_id>/body")
+@with_db
+def article_body_route(db, article_id):
+    """
+    Sire 2026-06-02 — speaker-reads-full-news contract. Many regional
+    RSS publishers ship only a 300-char summary. When the 🔊 button
+    fires on such an article, the frontend hits this endpoint, which
+    fetches the article URL server-side, extracts the main body
+    (BeautifulSoup heuristic over <article> / itemprop="articleBody" /
+    article-content classes), caches it in Article.content, and returns
+    plain text. Blind users then hear the ENTIRE news.
+
+    Idempotent — if Article.content is already populated with enough
+    words, returns it immediately.
+    """
+    from models.article import Article
+    a = db.query(Article).filter(Article.id == article_id).first()
+    if not a:
+        abort(404, description="article not found")
+    body = article_body.ensure_body(db, a)
+    return jsonify({
+        "article_id": article_id,
+        "body": body or "",
+        "word_count": len((body or "").split()),
+        "cached": bool(a.content),
+        "source": "rss_content" if (a.content and len((a.content or "").split()) >= 80) else "extracted",
+    })
 
 
 @bp.get("/article/<int:article_id>/take")

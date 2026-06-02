@@ -23,6 +23,13 @@ cloudscraper==1.2.71
 # RSS / Atom parsing — pure Python, handles every common dialect
 feedparser==6.0.11
 
+# Article-body extraction for speakers — when an RSS publisher ships
+# only a 300-char summary (most regional sources), services/article_body.py
+# fetches the article URL on demand, extracts the main content, and
+# caches it to Article.content so blind users hear the FULL news, not
+# just the headline blurb. Sire 2026-06-02. Pure Python; no lxml.
+beautifulsoup4==4.12.3
+
 # DeepSeek HTTP client — OpenAI-compatible REST, used by news_summary.py
 # and news_explain.py against api.deepseek.com. Anthropic SDK removed
 # per project_ai_provider_switch_to_deepseek (DeepSeek-only LLM provider).
