@@ -454,14 +454,17 @@ function articleCardHtml(a) {
     +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
     +   ' data-chitti-speak-id="' + a.id + '"'
     +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
-    +   ' onclick="toggleCard(' + a.id + ')">'
+    +   ' role="button" tabindex="0"'
+    +   ' aria-label="Tap to hear the entire news"'
+    +   ' onclick="onCardTap(' + a.id + ')"'
+    +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();onCardTap(' + a.id + ')}">'
     +   '<div>'
     +     '<div class="art-meta">' + meta + '</div>'
     +     '<h3 class="art-title">' + esc(a.title || '') + '</h3>'
     +     stripHtml(boxId, a.id)
-    +     '<div class="art-hint">Tap to read full news</div>'
+    +     '<div class="art-hint">Tap card to hear the entire news — Chitti stays on this page</div>'
     +     '<div class="art-body">'
-    +       '<div class="art-summary">' + esc(a.summary || '') + '</div>'
+    +       '<div class="art-summary" onclick="event.stopPropagation()">' + esc(a.summary || '') + '</div>'
     +       '<div class="art-sub-actions">'
     +         '<button onclick="event.stopPropagation(); openTake(' + a.id + ')">▶ Chitti\'s Take</button>'
     +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
@@ -498,10 +501,28 @@ function renderFeed(items, meta) {
 }
 
 // ── Core actions ──────────────────────────────────────────────────
-function toggleCard(id) {
+// Sire 2026-06-02 — Tap a card → expand AND speak the entire news.
+// Blind users get the full body audibly on the first tap; no
+// navigation to mint/TOI/Hindu. The 🔊 button in the 5-icon strip
+// remains an explicit speak (for retap-to-re-read).
+// Already-expanded → tap collapses + cancels any in-flight speech.
+function onCardTap(id) {
   const el = document.getElementById('art-' + id);
-  if (el) el.classList.toggle('expanded');
+  if (!el) return;
+  const wasExpanded = el.classList.contains('expanded');
+  if (wasExpanded) {
+    el.classList.remove('expanded');
+    if (window.speechSynthesis) {
+      try { speechSynthesis.cancel(); } catch (e) {}
+    }
+  } else {
+    el.classList.add('expanded');
+    speakArticle(id);
+  }
 }
+// Kept for backwards-compat with substrate hooks that might still call
+// toggleCard(id) (e.g., older feedback-widget.js builds).
+function toggleCard(id) { onCardTap(id); }
 
 // 🔊 — reads the ENTIRE news. Per SKILLS.md feature #10 + SOP.md
 // Quality Standard. Two-stage:
