@@ -440,6 +440,61 @@ async function main() {
         ? 'extracted text appears in utterance'
         : 'extracted text NOT in any utterance');
 
+  // ── SPEAKER_SWITCH_STRIP — clicking the 🔊 strip button on one card
+  // then on another must stop the first speech. Critical for the case
+  // where Chitti.a11y.speak() is the speech engine (loaded by the real
+  // chitti_a11y.js substrate, which queues rather than preempting).
+  // The cert stubs Chitti.a11y.speak so the engine looks like the live
+  // substrate. The fix is in speak() — it must call speechSynthesis.cancel()
+  // before any path, including the substrate delegate.
+  await page.evaluate(() => {
+    // Replace the cert-stubbed chitti_a11y.js with a Chitti.a11y.speak
+    // that mimics the LIVE substrate behavior: queues into speechSynthesis
+    // without calling speechSynthesis.cancel(). If chitti_news.html's
+    // speak() forgets to call cancel BEFORE delegating, two strip-button
+    // clicks queue two utterances and the FIRST one keeps playing until
+    // it finishes — exactly the bug Sire reported 2026-06-02.
+    window.Chitti = window.Chitti || {};
+    Chitti.a11y = Chitti.a11y || {};
+    Chitti.a11y.speak = function (text) {
+      const u = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(u);   // queue, NO cancel
+    };
+    // Also wrap speechSynthesis.cancel so we can count invocations.
+    window.__cancelCount = 0;
+    const origCancel = window.speechSynthesis.cancel.bind(window.speechSynthesis);
+    window.speechSynthesis.cancel = function () {
+      window.__cancelCount++;
+      return origCancel();
+    };
+    window.__speakLog = [];
+  });
+  // Click 🔊 strip button on card 1001 — fast path (article has rich content)
+  await page.locator('.art-card[id="art-1001"] .art-strip button').first().click();
+  await page.waitForTimeout(200);
+  // Click 🔊 strip button on card 1002. By this point 1002.content was
+  // populated by the earlier SPEAKER_BODY test (MOCK_EXTRACTED_BODY) so
+  // this is also a fast path. We're testing the SUBSTRATE cancel
+  // contract, not the /body fetch.
+  await page.locator('.art-card[id="art-1002"] .art-strip button').first().click();
+  await page.waitForTimeout(500);
+  const stripState = await page.evaluate(() => ({
+    log: window.__speakLog,
+    cancels: window.__cancelCount,
+  }));
+  const lastStrip = stripState.log.length ? stripState.log[stripState.log.length - 1].text : '';
+  // Asserts:
+  //  (a) last utterance contains article 1002's title ("Maharashtra…")
+  //  (b) last utterance does NOT contain 1001's title ("PM announces…")
+  //  (c) speechSynthesis.cancel was called AT LEAST once between the two
+  //      clicks — proves the substrate-delegate path goes through cancel
+  const matches1002 = /Maharashtra finalises EV policy/.test(lastStrip);
+  const matches1001 = /PM announces new scheme/.test(lastStrip);
+  const cancelledOnce = stripState.cancels >= 1;
+  add('SPEAKER_SWITCH_STRIP — strip-button switch via substrate path cancels old speech',
+      matches1002 && !matches1001 && cancelledOnce,
+      `last="${lastStrip.slice(0, 80)}…" cancels=${stripState.cancels}`);
+
   // ── SPEAKER_SWITCH — tapping a second card while the first's lazy
   // fetch is in flight must NOT result in the first card's content
   // arriving and barging over the second's speech.

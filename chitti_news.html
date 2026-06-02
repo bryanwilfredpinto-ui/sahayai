@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="2b1ed24-2026-06-02" />
+  <meta name="chitti-build" content="9fb2708-2026-06-02" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -725,11 +725,20 @@ async function speakArticle(id) {
 }
 
 function speak(text, lang) {
+  // Sire 2026-06-02 — ALWAYS cancel any in-flight speech, regardless of
+  // which engine is about to handle the new utterance. The
+  // chitti_a11y.js substrate's Chitti.a11y.speak() may queue instead
+  // of preempting; calling speechSynthesis.cancel() first guarantees
+  // a hard stop on any path. Cert masks this because it stubs the
+  // substrate; only the live page exposes it. Fixed by unconditional
+  // cancel before delegating.
+  if (window.speechSynthesis) {
+    try { speechSynthesis.cancel(); } catch (e) {}
+  }
   if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.speak === 'function') {
     try { Chitti.a11y.speak(text); return; } catch (e) {}
   }
   if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = ({ en:'en-IN', hi:'hi-IN', mr:'mr-IN', ta:'ta-IN', te:'te-IN',
               bn:'bn-IN', kn:'kn-IN', ml:'ml-IN', gu:'gu-IN', pa:'pa-IN',
