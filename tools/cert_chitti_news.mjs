@@ -336,6 +336,40 @@ async function main() {
       stillHere ? `URL: ${currentUrl}`
                 : `LEFT chitti_news.html → ${currentUrl}`);
 
+  // ── NO_RAW_TEMPLATE — no NaN<digit> or raw "data-chitti-response"
+  // text leaking into the rendered DOM. This catches the class of bug
+  // where a `// comment` inside a + string-concat chain makes the next
+  // `+` a unary operator that converts a string to NaN, then string-
+  // concatenation continues — producing visible text like NaN24633"
+  // data-chitti-response data-chitti-section="...". Sire 2026-06-02
+  // caught this in production; the cert now blocks any regression.
+  const leaks = await page.evaluate(() => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => {
+        // Skip text nodes whose closest non-text ancestor is a <script>
+        // or <style> — that's source code, not rendered content.
+        let p = n.parentElement;
+        while (p) {
+          if (p.tagName === 'SCRIPT' || p.tagName === 'STYLE') return NodeFilter.FILTER_REJECT;
+          p = p.parentElement;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const hits = []; let n;
+    while ((n = walker.nextNode())) {
+      const t = (n.textContent || '').trim(); if (!t) continue;
+      if (/NaN\d/.test(t) || /data-chitti-response/i.test(t)) {
+        hits.push(t.slice(0, 120));
+      }
+    }
+    return hits;
+  });
+  add('NO_RAW_TEMPLATE — no NaN<digit> / raw data-chitti-* text in DOM',
+      leaks.length === 0,
+      leaks.length === 0 ? 'no template leaks'
+                         : `${leaks.length} leaks; first: "${leaks[0]}"`);
+
   // ── NO_OUTBOUND — no visible <a target="_blank"> in the feed ─────
   // Sire 2026-06-02: any outbound link is a navigation trap for blind
   // users. The speaker must deliver the entire news; users should

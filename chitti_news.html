@@ -6,6 +6,14 @@
   <title>Chitti News — Your state. Your language. Your news.</title>
   <meta name="description" content="State-aware, multi-language Indian news aggregator. Voice-first. Free. Built for blind, deaf, mute, illiterate users." />
   <meta name="theme-color" content="#FF9933" />
+  <!-- Cache-busting: GitHub Pages defaults to long cache TTLs; without
+       these no-cache headers Sire's browser keeps showing a stale build
+       even after main is updated. Per Sire 2026-06-02 — caught the page
+       showing a NaN-id template the new code does not contain. -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="chitti-build" content="0572aaa-2026-06-02-build" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -223,9 +231,12 @@
 </head>
 <body>
 
-<!-- Sticky legal disclaimer — Chitti News two-source rule + aggregation honesty -->
+<!-- Sticky legal disclaimer — Chitti News two-source rule + aggregation honesty.
+     The small build-tag at the right edge lets Sire confirm the deployed
+     version when reporting visual bugs. Update at every meaningful commit. -->
 <div class="legal-bar" role="status" aria-live="polite">
-  📰 <strong>Chitti News aggregates public RSS</strong> — verdicts cross-reference ≥2 sources. Verify with the source link before sharing.
+  📰 <strong>Chitti News aggregates public RSS</strong> — verdicts cross-reference ≥2 sources.
+  <span id="build-tag" style="opacity:.6; font-size:10px; margin-left:8px;">build 0572aaa</span>
 </div>
 
 <header>
@@ -470,12 +481,6 @@ function articleCardHtml(a) {
     +         '<button onclick="event.stopPropagation(); openFactcheck(' + a.id + ')">✓ Fact check</button>'
     +         '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')">📲 Share</button>'
     +       '</div>'
-    +       // Source link REMOVED 2026-06-02 — Sire: "when I click on more
-    +       // news, it opens TOI or mint, my blind user can't hear from TOI.
-    +       // The purpose is defeated." The page now has NO outbound publisher
-    +       // links. Blind users get everything via 🔊 (speaks the entire
-    +       // server-extracted body) without ever leaving chitti_news.html.
-    +       // Attribution stays in .art-meta as plain text.
     +       '<div class="art-sub-host" id="take-' + a.id + '" data-chitti-response'
     +         ' data-chitti-section="Chitti\'s Take · ' + esc(a.title || '') + '"></div>'
     +       '<div class="art-sub-host" id="explain-' + a.id + '" data-chitti-response'
