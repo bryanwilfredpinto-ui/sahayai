@@ -96,22 +96,34 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 .art-card .art-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--gold);opacity:.5}
 .art-card .brk-pill{display:inline-block;padding:1px 6px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--red);margin-right:4px}
 
-/* Sire 2026-06-02 — collapsed by default, headline + speaker only.
-   Tap card to expand; tap speaker to read full news (delegated to
-   readArticleAloud via data-chitti-speak-handler). Per CTO.md UI
-   Design Standard v1.0: saffron is the primary action color. */
+/* Sire 2026-06-02 — Tap-to-expand card with canonical 5-icon strip.
+   Per chitti-news/SKILLS.md feature #12 + SOP.md Quality Standard +
+   CTO.md §2 UI Design Standard v1.0:
+     EVERY response box carries 🔊 · 🤖 · 👍 · 👎 · ✏️🎙️
+   The strip lives INSIDE the headline-row so blind users find it
+   predictably at the same anchor on every card. The substrate's
+   sibling-injected chitti-fb-box-bar is suppressed on art-cards only
+   (CSS below) so there's exactly ONE strip per box. */
 .art-card{cursor:pointer}
 .art-card.expanded{cursor:default}
-.art-card .art-headline-row{display:flex;align-items:flex-start;gap:10px}
-.art-card .art-headline-row .art-title{flex:1;margin-bottom:0}
-.art-card .art-speak{background:var(--saffron);color:#fff;border:0;border-radius:999px;min-width:40px;min-height:40px;font-size:18px;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.art-card .art-speak:hover{filter:brightness(.95)}
-.art-card .art-speak:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
-.art-card .art-speak.live{background:var(--green)}
-.art-card .art-body{display:none;margin-top:10px}
+.art-card .art-headline-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.art-card .art-headline-row .art-title{flex:1 1 100%;margin-bottom:6px}
+.art-card .art-strip{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding-top:6px;border-top:1px dashed var(--border)}
+.art-card .art-strip button{background:#fff;color:var(--navy);border:1px solid var(--border);border-radius:999px;min-width:40px;min-height:40px;font-size:16px;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-weight:600;padding:0 10px;gap:4px;line-height:1}
+.art-card .art-strip button:hover{border-color:var(--saffron);color:var(--saffron);background:#fff8f0}
+.art-card .art-strip button:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.art-card .art-strip button.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+.art-card .art-strip button.live{background:var(--green);color:#fff;border-color:var(--green)}
+.art-card .art-strip .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.art-card .art-body{display:none;margin-top:12px}
 .art-card.expanded .art-body{display:block}
-.art-card .art-hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
+.art-card .art-hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;width:100%}
 .art-card.expanded .art-hint{display:none}
+/* Hide the substrate-injected feedback bar on art-cards — the in-card
+   strip above is the canonical 5-element widget for news cards.
+   Substrate continues to inject on ALL other Chitti pages + on the
+   take/explain/fact sub-host boxes when those load. */
+.art-card + .chitti-fb-box-bar{display:none !important}
 
 @media (max-width: 560px){
   .art-card{grid-template-columns:1fr}
@@ -809,38 +821,49 @@ function _articleCardHtml(a) {
     .concat([_esc(a.source_name || a.source_slug || '')])
     .concat([_timeAgo(a.published_at || a.fetched_at)])
     .filter(Boolean).join(' · ');
+  const boxId = 'art-' + a.id;
   const thumb = a.image_url
     ? '<div class="art-thumb" style="background-image:url(\'' + _esc(a.image_url) + '\')"></div>'
     : '<div class="art-thumb placeholder">📰</div>';
   return (
-    // Sire 2026-06-02 — Tap-to-expand card:
-    //   - Collapsed (default): meta + headline-row (title + 🔊 speaker pill) + thumb
-    //   - Tap anywhere on the card body → toggleArtCard(id) elongates it
-    //   - Tap the speaker pill → readArticleAloud(id) reads the entire news
-    //     (a.content || a.summary; HTML stripped; 6 000-char cap)
-    //   - event.stopPropagation() on the speaker so tapping it does NOT
-    //     also toggle expansion
-    // data-chitti-speak-handler + data-chitti-speak-id keep the substrate
-    // feedback bar (per CTO.md §2) in sync — its 🔊 also delegates to
-    // readArticleAloud.
-    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '" onclick="toggleArtCard(' + a.id + ')">' +
+    // Sire 2026-06-02 — Per chitti-news SKILLS.md #12 + SOP.md +
+    // CTO.md UI Standard v1.0 §2: every box carries the canonical
+    // 5-element widget IN-CARD:
+    //   🔊 Speaker          → readArticleAloud(id) — full body
+    //   🤖 Chitti           → loadExplainSimply(id) — Explain Simply
+    //   👍 Helpful          → saveArticle(id, 'saved')
+    //   👎 Wrong            → saveArticle(id, 'cancelled')
+    //   ✏️ Feedback         → openFeedbackForBox(boxId) — opens the
+    //                          substrate's feedback modal
+    // Tap anywhere on the card body → toggleArtCard(id) expands.
+    // event.stopPropagation() on every strip button so tapping an icon
+    // does NOT also toggle expansion.
+    // data-chitti-speak-handler/data-chitti-speak-id retained so the
+    // sub-host boxes (take/explain/fact) inherit the same speaker
+    // delegate when populated.
+    '<div class="art-card" id="' + boxId + '" data-id="' + a.id + '" data-chitti-response data-chitti-speak-handler="readArticleAloud" data-chitti-speak-id="' + a.id + '" data-chitti-section="' + _esc(a.title || 'News article') + '" onclick="toggleArtCard(' + a.id + ')">' +
       '<div>' +
         '<div class="art-meta">' + meta + '</div>' +
         '<div class="art-headline-row">' +
           '<div class="art-title">' + _esc(a.title || '') + '</div>' +
-          '<button class="art-speak" type="button" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')" aria-label="Read entire news aloud">🔊</button>' +
+          // ── Canonical 5-element strip (CTO.md §2) ──────────────────
+          '<div class="art-strip" role="group" aria-label="Read, explain, react, give feedback">' +
+            '<button class="primary" type="button" aria-label="Read entire news aloud" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')">🔊<span class="lbl">Read</span></button>' +
+            '<button type="button" aria-label="Ask Chitti to explain simply" onclick="event.stopPropagation(); loadExplainSimply(' + a.id + ')">🤖<span class="lbl">Chitti</span></button>' +
+            '<button type="button" aria-label="Helpful" onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'saved\')">👍</button>' +
+            '<button type="button" aria-label="Wrong" onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'cancelled\')">👎</button>' +
+            '<button type="button" aria-label="Open feedback page" onclick="event.stopPropagation(); openFeedbackForBox(\'' + boxId + '\')">✏️<span class="lbl">Feedback</span></button>' +
+          '</div>' +
+          '<div class="art-hint" data-i18n="art.tap_expand">Tap to read full news</div>' +
         '</div>' +
-        '<div class="art-hint" data-i18n="art.tap_expand">Tap to read full news</div>' +
         '<div class="art-body">' +
           // Full summary visible after tap; no truncation.
           '<div class="art-summary chitti-response" data-chitti-section="' + _esc(a.title || 'News article') + '">' + _esc(a.summary || '') + '</div>' +
+          // Secondary actions live in the expanded body only — NOT part
+          // of the canonical 5-element strip above.
           '<div class="art-actions">' +
-            '<button class="primary" onclick="event.stopPropagation(); readArticleAloud(' + a.id + ')" data-i18n="t-art-read-aloud" aria-label="Read full article aloud — title, summary and full body">🔊 ' + t('art.read_aloud') + '</button>' +
             '<button onclick="event.stopPropagation(); loadTake(' + a.id + ')" data-i18n="t-art-take">▶ ' + t('art.take') + '</button>' +
-            '<button onclick="event.stopPropagation(); loadExplainSimply(' + a.id + ')" data-i18n="t-art-explain">' + t('art.explain') + '</button>' +
             '<button onclick="event.stopPropagation(); loadFactcheck(' + a.id + ')" data-i18n="t-art-factcheck">' + t('art.factcheck') + '</button>' +
-            '<button onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'saved\')" data-i18n="t-art-save">👍 ' + t('art.save') + '</button>' +
-            '<button onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'cancelled\')" data-i18n="t-art-dislike">' + t('art.dislike') + '</button>' +
             '<button onclick="event.stopPropagation(); shareArticle(' + a.id + ')" data-i18n="t-art-share">📲 ' + t('art.share') + '</button>' +
           '</div>' +
           '<div class="art-source-link" style="margin-top:8px;font-size:13px;color:var(--vai-muted,#666)" onclick="event.stopPropagation()">' +
@@ -1187,12 +1210,36 @@ function shareArticle(id) {
 
 // Sire 2026-06-02 — tap-to-expand for the headline-first card layout.
 // Body is hidden by default (CSS .art-card .art-body { display: none }).
-// Tapping anywhere on the card toggles .expanded; tapping the speaker
-// pill OR an action button stops propagation so it doesn't also toggle.
+// Tapping anywhere on the card toggles .expanded; tapping any 5-strip
+// icon OR an action button stops propagation so it doesn't also toggle.
 function toggleArtCard(id) {
   const el = document.getElementById('art-' + id);
   if (!el) return;
   el.classList.toggle('expanded');
+}
+
+// ✏️ icon in the 5-element strip — opens the same feedback modal the
+// substrate's chitti-fb-box-bar opens on 👎-click. We programmatically
+// click the hidden substrate-injected 👎 button (the bar still exists
+// in DOM; it's hidden via CSS on art-cards but the click handler is
+// wired). If no substrate bar is found, fall back to a textarea prompt.
+function openFeedbackForBox(boxId) {
+  const bar = document.querySelector('.chitti-fb-box-bar[data-for-box="' + boxId + '"]');
+  if (bar) {
+    const downBtn = bar.querySelector('[data-act="down"]');
+    if (downBtn) { downBtn.click(); return; }
+  }
+  // Fallback — only fires if feedback-widget.js hasn't yet hydrated
+  // this box (e.g. very early in page lifecycle).
+  const note = prompt('What can Chitti do better?');
+  if (note && window.fetch) {
+    fetch('/api/feedback/collect', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        page: 'chitti_news', box_id: boxId, kind: 'down', note: note,
+      }),
+    }).catch(function(){});
+  }
 }
 
 function readArticleAloud(id) {
