@@ -25,16 +25,27 @@ ARTICLES_SEED = DATA_DIR / "articles_seed.json"
 
 
 def seed_sources_if_empty() -> int:
+    """
+    Idempotent upsert (2026-06-02 — was empty-only check):
+      * If table is empty → bulk insert every row from sources.json
+      * If table has rows → INSERT only NEW slugs from sources.json
+        (existing rows are left untouched; we don't overwrite an admin
+         who tweaked `enabled` or `last_fetched_at` in prod)
+
+    This makes the JSON registry the source of truth for "what sources
+    exist" without sacrificing prod-side mutability.
+    """
     db = SessionLocal()
     try:
-        if db.query(Source).count() > 0:
-            return 0
         if not SOURCES_PATH.exists():
             log.warning("sources.json not found — skipping")
             return 0
         rows = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
+        existing_slugs = {s.slug for s in db.query(Source.slug).all()}
         n = 0
         for r in rows:
+            if r["slug"] in existing_slugs:
+                continue
             s = Source(
                 slug=r["slug"],
                 display_name=r["display_name"],
@@ -46,8 +57,9 @@ def seed_sources_if_empty() -> int:
                 enabled=int(r.get("enabled", 1)),
             )
             db.add(s); n += 1
-        db.commit()
-        log.info("seeded %d sources", n)
+        if n:
+            db.commit()
+            log.info("upserted %d new sources (registry total → %d)", n, len(existing_slugs) + n)
         return n
     finally:
         db.close()

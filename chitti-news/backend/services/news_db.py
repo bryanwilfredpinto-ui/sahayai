@@ -73,6 +73,49 @@ def _row_to_dict(a: Article, fc: FactCheck | None = None) -> dict:
     }
 
 
+def _coverage_for(db: Session, state: str, language: str) -> dict:
+    """
+    Per-(state, language) coverage matrix — used by the picker to hide
+    categories that have zero articles and by the feed() empty-result path
+    to honestly explain WHY the feed is thin and offer an English fallback.
+
+    Computed in one GROUP BY pass so we never round-trip per category.
+    """
+    from sqlalchemy import func
+
+    rows = (
+        db.query(Article.category, func.count(Article.id))
+        .filter(
+            Article.state.in_([state, "india"]),
+            Article.language == language,
+        )
+        .group_by(Article.category)
+        .all()
+    )
+    per_category = {cat: int(n) for (cat, n) in rows}
+    total = sum(per_category.values())
+
+    # English-fallback availability for the same state (any category) —
+    # so the frontend can render "No Marathi business news today — show
+    # English instead?" without a second round-trip.
+    if language != "en":
+        en_total = (
+            db.query(func.count(Article.id))
+            .filter(Article.state.in_([state, "india"]), Article.language == "en")
+            .scalar()
+            or 0
+        )
+    else:
+        en_total = total
+
+    return {
+        "per_category": per_category,
+        "total_in_language": total,
+        "available_categories": sorted(per_category.keys()),
+        "english_fallback_count": int(en_total),
+    }
+
+
 def feed(
     db: Session,
     *,
@@ -84,7 +127,14 @@ def feed(
     """
     Returns:
       { items, count, state, language, category,
-        speak_en, speak_hi, caption_en, caption_hi, disclaimer_en/hi }
+        speak_en, speak_hi, caption_en, caption_hi, disclaimer_en/hi,
+        coverage: { per_category, total_in_language, available_categories,
+                    english_fallback_count } }
+
+    Coverage matrix added 2026-06-02 — empty feeds now carry an honest
+    "this language has N stories total today, M in <category>" breakdown
+    so the frontend can hide empty-category tabs (cat:0 rows) and offer
+    an English fallback CTA when total_in_language is thin.
     """
     # Outer-join FactCheck so every card carries its verdict badge — P0
     # contract from 2026-05-13: fake-news score visible on every article,
@@ -108,6 +158,37 @@ def feed(
     ).limit(max(1, min(limit, 100))).all()
 
     items = [_row_to_dict(a, fc) for (a, fc) in rows]
+    coverage = _coverage_for(db, state, language)
+
+    # Honest narration — explain WHAT'S MISSING when items is empty,
+    # not just "no news yet". Sire 2026-06-02: users in Marathi were
+    # seeing empty feeds because (mr, business) has zero coverage today,
+    # not because RSS polling is slow.
+    if items:
+        speak_en = f"{len(items)} {category} stories from {state.title()}."
+        speak_hi = f"{state} से {len(items)} {category} खबरें।"
+    elif coverage["total_in_language"] == 0 and coverage["english_fallback_count"] > 0:
+        speak_en = (
+            f"No {language.upper()} stories yet for {state}. "
+            f"{coverage['english_fallback_count']} English stories available — tap to switch."
+        )
+        speak_hi = (
+            f"{state} के लिए अभी {language.upper()} में कोई खबर नहीं। "
+            f"अंग्रेज़ी में {coverage['english_fallback_count']} खबरें उपलब्ध हैं।"
+        )
+    elif coverage["total_in_language"] > 0 and category not in coverage["available_categories"]:
+        avail = ", ".join(coverage["available_categories"]) or "none"
+        speak_en = (
+            f"No {category} stories in {language.upper()} today. "
+            f"Available categories: {avail}."
+        )
+        speak_hi = (
+            f"आज {language.upper()} में {category} की कोई खबर नहीं। "
+            f"उपलब्ध श्रेणियाँ: {avail}।"
+        )
+    else:
+        speak_en = f"No {category} stories yet for {state}. Pull to refresh in a minute."
+        speak_hi = f"{state} के लिए अभी कोई {category} खबर नहीं। एक मिनट में नई खबरें आएँगी।"
 
     return {
         "items": items,
@@ -115,16 +196,11 @@ def feed(
         "state": state,
         "language": language,
         "category": category,
-        "speak_en": (
-            f"{len(items)} {category} stories from {state.title()}."
-            if items else f"No {category} stories yet for {state}. Pull to refresh in a minute."
-        ),
-        "speak_hi": (
-            f"{state} से {len(items)} {category} खबरें।"
-            if items else f"{state} के लिए अभी कोई {category} खबर नहीं। एक मिनट में नई खबरें आएँगी।"
-        ),
+        "speak_en": speak_en,
+        "speak_hi": speak_hi,
         "caption_en": f"{state} · {language} · {category} · {len(items)} stories",
         "caption_hi": f"{state} · {language} · {category} · {len(items)} खबरें",
+        "coverage": coverage,
         "disclaimer_en": (
             "Chitti News aggregates headlines from public RSS feeds. "
             "We do not write the news — we deliver it. Verify with the source link before sharing."

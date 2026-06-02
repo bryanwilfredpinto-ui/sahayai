@@ -13,6 +13,13 @@ libsql-experimental==0.0.55          # pin transitive dep — Rust client w/ TLS
 requests==2.31.0
 python-dotenv==1.0.0
 
+# Cloudflare TLS-fingerprint bypass — required for Saamana, Prajavani,
+# Varthabharati, Rozana Spokesman and other regional publishers whose
+# RSS endpoints sit behind Cloudflare bot-detection. news_ingest.py
+# imports it lazily and falls back to requests-only if absent (so a
+# pip failure doesn't break the whole poll loop). Added 2026-06-02.
+cloudscraper==1.2.71
+
 # RSS / Atom parsing — pure Python, handles every common dialect
 feedparser==6.0.11
 

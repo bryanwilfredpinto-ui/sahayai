@@ -10,9 +10,11 @@ take down the whole poll cycle.
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import re
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import mktime
 from typing import Optional
 
@@ -24,9 +26,25 @@ from database import SessionLocal
 from models.article import Article
 from models.source import Source
 
+# Optional Cloudflare-bypass fetcher. Imported lazily — falling back to
+# requests-only behaviour if cloudscraper isn't installed in this env.
+try:
+    import cloudscraper  # type: ignore
+    _HAS_CLOUDSCRAPER = True
+except ImportError:
+    _HAS_CLOUDSCRAPER = False
+
 log = logging.getLogger("news_ingest")
 
-USER_AGENT = "ChittiNews/1.0 (+https://sahayai.in/chitti_news.html)"
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
+# Per-source JSON config dir for json+ ingestion (b) — Eenadu/Thanthi
+# app-API captures land here when Sire pastes them. File-based so
+# adding a new app-API source needs no DB schema migration.
+JSON_CONFIG_DIR = Path(__file__).resolve().parent.parent / "data" / "json_configs"
 
 
 def _title_hash(t: str) -> str:
@@ -70,17 +88,122 @@ def _extract_image(entry) -> Optional[str]:
     return m.group(1) if m else None
 
 
+def _http_get(url: str) -> tuple[int, bytes, str]:
+    """
+    Two-stage fetcher: requests first (fast), cloudscraper second on
+    SSLError / 403 / empty / non-feed response. Cloudflare-protected
+    publishers (Saamana, Prajavani, Varthabharati, Rozana Spokesman)
+    only succeed via cloudscraper's TLS-fingerprint impersonation.
+
+    Returns (http_code, content, fetcher_used).
+    """
+    try:
+        r = requests.get(
+            url, headers={"User-Agent": USER_AGENT, "Accept": "*/*"},
+            timeout=20, allow_redirects=True,
+        )
+        if r.status_code == 200 and r.content and len(r.content) > 200:
+            return r.status_code, r.content, "requests"
+        last_code = r.status_code
+    except Exception:
+        last_code = 0
+    # Fallback
+    if not _HAS_CLOUDSCRAPER:
+        return last_code, b"", "no-cloudscraper"
+    try:
+        s = cloudscraper.create_scraper(browser={"browser": "chrome", "platform": "windows"})
+        r = s.get(url, timeout=25, allow_redirects=True)
+        return r.status_code, r.content, "cloudscraper"
+    except Exception as e:  # noqa: BLE001
+        return 0, b"", f"cs-exception:{type(e).__name__}"
+
+
+def _fetch_source_json(source: Source) -> Optional[list[dict]]:
+    """
+    JSON ingestion path (b). Activated when source.rss_url starts with
+    "json+" — strip the prefix, fetch the URL, then map JSON → article
+    dicts using a per-slug config file at data/json_configs/<slug>.json:
+
+      {
+        "articles_path": "data.items",       // dot-path into JSON root
+        "title": "headline",
+        "link": "url",
+        "summary": "subtitle",
+        "image": "media.image_url",
+        "published": "published_at",
+        "headers": { "x-api-key": "..." }    // optional
+      }
+
+    Returns list of normalized article dicts ready for upsert, or None
+    on failure (caller falls back to error path).
+    """
+    url = source.rss_url.removeprefix("json+")
+    config_path = JSON_CONFIG_DIR / f"{source.slug}.json"
+    if not config_path.exists():
+        log.warning("[%s] json+ source but no config at %s", source.slug, config_path)
+        return None
+    try:
+        cfg = json.loads(config_path.read_text(encoding="utf-8"))
+        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        headers.update(cfg.get("headers", {}))
+        r = requests.get(url, headers=headers, timeout=20, allow_redirects=True)
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:  # noqa: BLE001
+        log.warning("[%s] json fetch failed: %s", source.slug, e)
+        return None
+
+    def _dotget(obj, path):
+        for key in path.split("."):
+            if isinstance(obj, list):
+                try:
+                    obj = obj[int(key)]
+                except (ValueError, IndexError):
+                    return None
+            elif isinstance(obj, dict):
+                obj = obj.get(key)
+            else:
+                return None
+            if obj is None:
+                return None
+        return obj
+
+    items = _dotget(data, cfg.get("articles_path", "")) or data
+    if not isinstance(items, list):
+        log.warning("[%s] json path '%s' did not resolve to a list", source.slug, cfg.get("articles_path"))
+        return None
+    out = []
+    for it in items[:50]:
+        title = str(_dotget(it, cfg.get("title", "title")) or "").strip()
+        link = str(_dotget(it, cfg.get("link", "link")) or "").strip()
+        if not (title and link):
+            continue
+        out.append({
+            "title": title[:500],
+            "link": link[:900],
+            "summary": (str(_dotget(it, cfg.get("summary", "summary")) or "") or None),
+            "image": (str(_dotget(it, cfg.get("image", "image")) or "") or None),
+            "published": str(_dotget(it, cfg.get("published", "published")) or "") or None,
+        })
+    return out
+
+
 def fetch_source(db: Session, source: Source) -> dict:
     """Fetch one source. Returns {fetched, inserted, skipped, error}."""
+    # (b) JSON path dispatch
+    if source.rss_url.startswith("json+"):
+        json_items = _fetch_source_json(source)
+        if json_items is None:
+            source.last_error = "json_fetch_failed"
+            source.last_fetched_at = datetime.utcnow()
+            db.commit()
+            return {"slug": source.slug, "fetched": 0, "inserted": 0, "skipped": 0, "error": "json_fetch_failed"}
+        return _upsert_articles(db, source, json_items, n_fetched=len(json_items))
     try:
-        resp = requests.get(
-            source.rss_url,
-            headers={"User-Agent": USER_AGENT, "Accept": "*/*"},
-            timeout=20,
-            allow_redirects=True,
-        )
-        resp.raise_for_status()
-        feed = feedparser.parse(resp.content)
+        code, content, fetcher = _http_get(source.rss_url)
+        if code != 200 or not content:
+            raise RuntimeError(f"http={code} via {fetcher}")
+        feed = feedparser.parse(content)
     except Exception as e:  # noqa: BLE001
         msg = str(e).strip()[:400]
         source.last_error = msg
@@ -147,6 +270,67 @@ def fetch_source(db: Session, source: Source) -> dict:
     db.commit()
     log.info("[%s] %d new, %d skipped", source.slug, inserted, skipped)
     return {"slug": source.slug, "fetched": len(feed.entries or []),
+            "inserted": inserted, "skipped": skipped, "error": None}
+
+
+def _upsert_articles(db: Session, source: Source, items: list[dict], *, n_fetched: int) -> dict:
+    """
+    Shared upsert path for normalized {title, link, summary, image, published}
+    dicts — used by the json+ ingestion path. RSS path inlines its own loop
+    above because it has feed-specific image / content:encoded extraction.
+    """
+    inserted = skipped = 0
+    for it in items:
+        try:
+            link, title = (it.get("link") or "")[:900], (it.get("title") or "")[:500]
+            if not (link and title):
+                skipped += 1
+                continue
+            if db.query(Article).filter(Article.link == link).first():
+                skipped += 1
+                continue
+            # Parse published_at when present — accept ISO 8601 or RFC 2822
+            # via stdlib only. No feedparser private APIs.
+            published = None
+            raw_pub = it.get("published")
+            if raw_pub:
+                from email.utils import parsedate_to_datetime
+                for parser in (datetime.fromisoformat, parsedate_to_datetime):
+                    try:
+                        dt = parser(raw_pub)
+                        # Normalize to naive UTC to match the existing column shape.
+                        published = dt.replace(tzinfo=None) if getattr(dt, "tzinfo", None) else dt
+                        break
+                    except Exception:  # noqa: BLE001
+                        continue
+            a = Article(
+                title=title,
+                title_hash=_title_hash(title),
+                link=link,
+                summary=(_strip_html(it.get("summary")) or "")[:2000] or None,
+                content=None,
+                source_slug=source.slug,
+                source_name=source.display_name,
+                source_url=source.homepage_url,
+                image_url=(it.get("image") or None),
+                author=None,
+                state=source.state,
+                language=source.language,
+                category=source.category,
+                is_breaking=0,
+                importance=5,
+                published_at=published,
+                fetched_at=datetime.utcnow(),
+            )
+            db.add(a); inserted += 1
+        except Exception as e:  # noqa: BLE001
+            log.exception("[%s] json item failed: %s", source.slug, e)
+            skipped += 1
+    source.last_error = None
+    source.last_fetched_at = datetime.utcnow()
+    db.commit()
+    log.info("[%s] (json) %d new, %d skipped", source.slug, inserted, skipped)
+    return {"slug": source.slug, "fetched": n_fetched,
             "inserted": inserted, "skipped": skipped, "error": None}
 
 
