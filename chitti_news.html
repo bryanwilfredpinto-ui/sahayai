@@ -544,6 +544,7 @@ async function speakArticle(id) {
   const a = ARTICLES[id]; if (!a) return;
   const lang = getFilter().lang;
   let body = a.content || '';
+  let bodySource = 'rss';
   const hasRichBody = body && body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length >= 60;
   if (!hasRichBody) {
     speak('One moment — Chitti is fetching the full news.', lang);
@@ -551,12 +552,15 @@ async function speakArticle(id) {
       const data = await api('/api/news/article/' + id + '/body');
       if (data && data.body && data.body.split(/\s+/).length >= 60) {
         body = data.body;
+        bodySource = data.source || 'extracted';
         a.content = body;
       } else {
         body = a.summary || body;
+        bodySource = 'summary_only';
       }
     } catch (e) {
       body = a.summary || body;
+      bodySource = 'summary_only';
     }
   }
   const plain = String(body)
@@ -564,7 +568,18 @@ async function speakArticle(id) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 6000);
-  const text = (a.title || '').trim() + '. ' + plain;
+  // Sire 2026-06-02 — be honest when we only have the summary. Some
+  // publishers (NDTV / TOI) block scraping behind Akamai 403s; for those
+  // articles the speaker can only read the RSS summary. Don't pretend
+  // it's the full news — blind users deserve to know.
+  let text;
+  if (bodySource === 'summary_only' && plain.split(/\s+/).length < 80) {
+    text = (a.title || '').trim() + '. '
+         + 'This article is summary only — the publisher does not share the full body. '
+         + plain;
+  } else {
+    text = (a.title || '').trim() + '. ' + plain;
+  }
   speak(text, lang);
 }
 
