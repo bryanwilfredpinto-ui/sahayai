@@ -275,11 +275,129 @@
        panels (take/explain/fact) inside art-cards when those load. */
     .art-card + .chitti-fb-box-bar { display: none !important; }
 
+    /* ── Amazon-style home rails (only on National tab) ───────────── */
+    .rail-section { margin: 18px 0 6px; }
+    .rail-section:first-child { margin-top: 6px; }
+    .rail-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 0 4px 8px;
+    }
+    .rail-title {
+      font-size: 18px; font-weight: 800; color: var(--navy);
+      letter-spacing: -.01em; margin: 0;
+    }
+    .rail-see-all {
+      background: none; border: 0; color: var(--navy);
+      font-weight: 700; font-size: 12px; cursor: pointer;
+      text-decoration: none;
+    }
+    .rail-see-all:hover { text-decoration: underline; color: var(--saffron); }
+    .rail-track {
+      display: flex; gap: 12px;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 4px 12px;
+      scrollbar-width: thin;
+    }
+    .rail-track::-webkit-scrollbar { height: 6px; }
+    .rail-track::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+    .rail-card {
+      flex: 0 0 240px; scroll-snap-align: start;
+      background: var(--canvas);
+      border: 1px solid var(--rule); border-radius: 10px;
+      overflow: hidden; cursor: pointer;
+      display: flex; flex-direction: column;
+      transition: box-shadow .2s, transform .12s;
+    }
+    .rail-card:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+      transform: translateY(-1px);
+    }
+    .rail-card .rail-thumb {
+      width: 100%; height: 130px;
+      background-size: cover; background-position: center;
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--rule);
+    }
+    .rail-card .rail-thumb.placeholder {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; color: var(--saffron); opacity: .65;
+    }
+    .rail-card .rail-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; }
+    .rail-card .rail-meta {
+      font-size: 10px; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .04em;
+      margin-bottom: 6px;
+      display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+    }
+    .rail-card .rail-meta .src { color: var(--navy); }
+    .rail-card .rail-headline {
+      font-size: 14px; font-weight: 700; color: var(--text);
+      line-height: 1.35; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rail-card .rail-mini-strip {
+      display: flex; gap: 6px; margin-top: 8px;
+      padding-top: 8px; border-top: 1px dashed var(--rule);
+    }
+    .rail-card .rail-mini-strip button {
+      width: 34px; height: 34px; border-radius: 999px;
+      border: 1px solid var(--rule); background: var(--canvas);
+      cursor: pointer; font-size: 14px; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .rail-card .rail-mini-strip button:hover {
+      border-color: var(--saffron); background: #fff8f0; color: var(--saffron);
+    }
+    .rail-card .rail-mini-strip button.primary {
+      background: var(--saffron); color: #fff; border-color: var(--saffron);
+    }
+
+    /* ── Featured hero (Amazon-style takeover card) ────────────────── */
+    .hero-card {
+      background: var(--canvas); border: 1px solid var(--rule);
+      border-radius: 12px; overflow: hidden; cursor: pointer;
+      transition: box-shadow .2s;
+      display: grid; grid-template-columns: 1fr;
+    }
+    .hero-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+    .hero-card .hero-thumb {
+      width: 100%; min-height: 220px;
+      background-size: cover; background-position: center;
+      background-color: var(--surface);
+    }
+    .hero-card .hero-thumb.placeholder {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px; color: var(--saffron); opacity: .6;
+    }
+    .hero-card .hero-body { padding: 16px 18px 18px; }
+    .hero-card .hero-eyebrow {
+      font-size: 11px; font-weight: 800;
+      color: var(--saffron); text-transform: uppercase; letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .hero-card .hero-title {
+      font-size: 22px; font-weight: 800; line-height: 1.25;
+      color: var(--navy); margin: 0 0 10px;
+    }
+    .hero-card .hero-meta {
+      font-size: 11px; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .04em;
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .hero-card .hero-meta .src { color: var(--navy); }
+
     /* ── 375px-first responsive ─────────────────────────────────── */
     @media (max-width: 420px) {
       .art-card { grid-template-columns: 1fr; }
       .art-card .art-thumb { display: none; }
       main { padding: 10px 8px 80px; }
+      .rail-card { flex-basis: 200px; }
+      .rail-card .rail-thumb { height: 110px; }
+      .hero-card .hero-title { font-size: 19px; }
+      .hero-card .hero-thumb { min-height: 180px; }
     }
   </style>
 </head>
@@ -612,23 +730,197 @@ function articleCardHtml(a, featured) {
     + '</article>';
 }
 
+// ── Amazon-style HOME view ────────────────────────────────────────
+// Sire 2026-06-03: "National news has to be divided as per politics,
+// business, sports, etc." + "you can have a view of amazon." When the
+// National tab is active we treat it as the *home page* and render
+// each sub-category (Politics, Business, Sports, Entertainment, Tech)
+// as a horizontally scrollable rail — same pattern as Amazon's
+// "Customers also bought" / category aisles. Tap a rail headline to
+// drill into that category as the linear feed. Tap any card to expand
+// + speak (same speak path as the linear feed).
+//
+// Note: the hero is the freshest "national" headline; the rails are
+// fetched in PARALLEL (Promise.all of 6 requests) so the page paints
+// within ~1 RTT of the slowest source.
+
+const HOME_RAILS = [
+  { cat: 'politics',      label: 'Politics' },
+  { cat: 'business',      label: 'Business' },
+  { cat: 'sports',        label: 'Sports' },
+  { cat: 'entertainment', label: 'Entertainment' },
+  { cat: 'tech',          label: 'Technology' },
+];
+const HOME_RAIL_LIMIT = 8;        // cards per rail
+const HOME_NATIONAL_LIMIT = 12;   // cards under the hero "Top National" rail
+
+function railCardHtml(a) {
+  ARTICLES[a.id] = a;
+  const boxId = 'rail-' + a.id;
+  const thumb = a.image_url
+    ? '<div class="rail-thumb" style="background-image:url(\'' + esc(a.image_url) + '\')" aria-hidden="true"></div>'
+    : '<div class="rail-thumb placeholder" aria-hidden="true">📰</div>';
+  const meta = [
+    a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
+    fcBadge(a.factcheck),
+    '<span class="src">' + esc(a.source_name || 'Source') + '</span>',
+    timeAgo(a.published_at || a.fetched_at),
+  ].filter(Boolean).join(' · ');
+  return ''
+    + '<article class="rail-card" id="' + boxId + '" data-id="' + a.id + '"'
+    +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
+    +   ' data-chitti-speak-id="' + a.id + '"'
+    +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
+    +   ' role="button" tabindex="0"'
+    +   ' aria-label="Tap to hear the entire news"'
+    +   ' onclick="onHomeCardTap(' + a.id + ')"'
+    +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();onHomeCardTap(' + a.id + ')}">'
+    +   thumb
+    +   '<div class="rail-body">'
+    +     '<div class="rail-meta">' + meta + '</div>'
+    +     '<h3 class="rail-headline">' + esc(a.title || '') + '</h3>'
+    +     '<div class="rail-mini-strip" role="group" aria-label="Read, react">'
+    +       '<button class="primary" type="button" aria-label="Read aloud"'
+    +         ' onclick="event.stopPropagation(); speakArticle(' + a.id + ')">🔊</button>'
+    +       '<button type="button" aria-label="Helpful"'
+    +         ' onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'saved\')">👍</button>'
+    +       '<button type="button" aria-label="Wrong"'
+    +         ' onclick="event.stopPropagation(); saveArticle(' + a.id + ', \'cancelled\')">👎</button>'
+    +       '<button type="button" aria-label="Open feedback"'
+    +         ' onclick="event.stopPropagation(); openFeedback(\'' + boxId + '\')">✏️</button>'
+    +     '</div>'
+    +   '</div>'
+    + '</article>';
+}
+
+function heroCardHtml(a) {
+  ARTICLES[a.id] = a;
+  const boxId = 'hero-' + a.id;
+  const thumb = a.image_url
+    ? '<div class="hero-thumb" style="background-image:url(\'' + esc(a.image_url) + '\')" aria-hidden="true"></div>'
+    : '<div class="hero-thumb placeholder" aria-hidden="true">📰</div>';
+  const meta = [
+    a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
+    fcBadge(a.factcheck),
+    '<span class="src">' + esc(a.source_name || 'Source') + '</span>',
+    timeAgo(a.published_at || a.fetched_at),
+  ].filter(Boolean).join(' · ');
+  return ''
+    + '<article class="hero-card" id="' + boxId + '" data-id="' + a.id + '"'
+    +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
+    +   ' data-chitti-speak-id="' + a.id + '"'
+    +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
+    +   ' role="button" tabindex="0"'
+    +   ' aria-label="Top story — tap to hear the entire news"'
+    +   ' onclick="onHomeCardTap(' + a.id + ')"'
+    +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();onHomeCardTap(' + a.id + ')}">'
+    +   thumb
+    +   '<div class="hero-body">'
+    +     '<div class="hero-eyebrow">Top story</div>'
+    +     '<div class="hero-meta">' + meta + '</div>'
+    +     '<h2 class="hero-title">' + esc(a.title || '') + '</h2>'
+    +     stripHtml(boxId, a.id)
+    +   '</div>'
+    + '</article>';
+}
+
+function railSectionHtml(label, cat, items) {
+  if (!items || items.length === 0) return '';
+  const cards = items.slice(0, HOME_RAIL_LIMIT).map(railCardHtml).join('');
+  return ''
+    + '<section class="rail-section" aria-label="' + esc(label) + '">'
+    +   '<div class="rail-header">'
+    +     '<h2 class="rail-title">' + esc(label) + '</h2>'
+    +     '<button class="rail-see-all" type="button" '
+    +       'onclick="switchToCategory(\'' + esc(cat) + '\')">See all ' + esc(label) + ' &rarr;</button>'
+    +   '</div>'
+    +   '<div class="rail-track" role="list">' + cards + '</div>'
+    + '</section>';
+}
+
+async function loadHome() {
+  const myToken = ++_feedToken;
+  const f = getFilter();
+  const root = document.getElementById('feed-root');
+  root.setAttribute('aria-busy', 'true');
+  root.innerHTML = '<div class="status-card">Loading…</div>';
+
+  // Six parallel requests — one per category — so the page paints in
+  // a single RTT of the slowest source.
+  const cats = ['national'].concat(HOME_RAILS.map(r => r.cat));
+  const responses = await Promise.allSettled(cats.map((c) =>
+    api('/api/news/feed?state=' + f.state + '&language=' + f.lang + '&category=' + c),
+  ));
+  if (myToken !== _feedToken) return;
+  const data = {};
+  cats.forEach((c, i) => {
+    const r = responses[i];
+    data[c] = (r.status === 'fulfilled' && r.value && Array.isArray(r.value.items))
+      ? r.value.items : [];
+  });
+  // Pull the coverage payload from any successful response so the
+  // empty-state branch can show available_categories + english_fallback.
+  const firstOk = responses.find(r => r.status === 'fulfilled' && r.value);
+  const meta = firstOk ? firstOk.value : {};
+
+  // No content in this language at all → empty-state with switches.
+  const totalItems = cats.reduce((sum, c) => sum + data[c].length, 0);
+  if (totalItems === 0) {
+    renderFeed([], meta);
+    root.setAttribute('aria-busy', 'false');
+    return;
+  }
+
+  const nationalItems = data['national'];
+  const hero = nationalItems[0];
+  const topRailItems = nationalItems.slice(1, 1 + HOME_NATIONAL_LIMIT);
+
+  let html = '';
+  if (hero) html += heroCardHtml(hero);
+  html += railSectionHtml('Top National', 'national', topRailItems);
+  for (const { cat, label } of HOME_RAILS) {
+    html += railSectionHtml(label, cat, data[cat]);
+  }
+  root.innerHTML = html;
+  root.setAttribute('aria-busy', 'false');
+}
+
+// Friendly long-form names for the empty-state honesty message. Backend
+// gives us the code (ml, kn…) so we look up the English name for the
+// "Chitti News doesn't have <LANG> sources yet" copy.
+const LANG_LABELS = {
+  en: 'English', hi: 'Hindi', mr: 'Marathi', ta: 'Tamil', te: 'Telugu',
+  bn: 'Bengali', kn: 'Kannada', ml: 'Malayalam', gu: 'Gujarati',
+  pa: 'Punjabi', or: 'Odia', ur: 'Urdu', as: 'Assamese',
+};
+
 function renderFeed(items, meta) {
   const root = document.getElementById('feed-root');
   if (!items || items.length === 0) {
-    // Honest empty state. When backend returns the coverage payload, we
-    // show available_categories as one-tap switch buttons so the user
-    // can pick something that DOES have content in their chosen language.
+    // Honest empty state. Three layered cases:
+    //   (1) total_in_language === 0  → "no sources yet" (kn/or/as today)
+    //   (2) total_in_language > 0 but category empty → "no <cat> in <lang>"
+    //   (3) backend gave neither    → generic refresh prompt
+    // Each case offers concrete one-tap recoveries: switch to an
+    // available category in the SAME language, or fall back to English.
     // Sire 2026-06-03: "if language is Malayalam it should be in Malayalam,
     // not English" — showing stale English content is wrong; the right
     // answer is "no Malayalam X today, here is Malayalam Y instead."
     const cov = (meta && meta.coverage) || {};
     const cats = Array.isArray(cov.available_categories) ? cov.available_categories : [];
     const f = getFilter();
+    const langName = LANG_LABELS[f.lang] || f.lang.toUpperCase();
+    const totalInLang = typeof cov.total_in_language === 'number' ? cov.total_in_language : null;
+    const noCorpus = totalInLang === 0;
+    const headline = noCorpus
+      ? 'Chitti News doesn\'t have ' + langName + ' sources yet.'
+      : 'No stories yet.';
+    const body = noCorpus
+      ? 'We\'re adding more publishers every week. For now, try one of the languages below.'
+      : (meta && meta.speak_en ? meta.speak_en : 'Tap Refresh in a minute.');
     let html = '<div class="status-card" style="padding:24px 16px;text-align:left;">'
-      + '<strong style="font-size:16px;color:var(--navy);">No stories yet.</strong><br>'
-      + '<div style="margin-top:8px;font-size:14px;">'
-      + esc(meta && meta.speak_en ? meta.speak_en : 'Tap Refresh in a minute.')
-      + '</div>';
+      + '<strong style="font-size:16px;color:var(--navy);">' + esc(headline) + '</strong><br>'
+      + '<div style="margin-top:8px;font-size:14px;">' + esc(body) + '</div>';
     if (cats.length > 0) {
       html += '<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">';
       for (const c of cats) {
@@ -661,11 +953,17 @@ function renderFeed(items, meta) {
 function switchToCategory(cat) {
   document.getElementById('pick-cat').value = cat;
   const f = getFilter(); f.cat = cat; setFilter(f);
+  syncCategoryTabs(cat);
   loadFeed(true);
 }
 function switchToLanguage(lang) {
   document.getElementById('pick-lang').value = lang;
   const f = getFilter(); f.lang = lang; setFilter(f);
+  document.documentElement.lang = lang;
+  if (window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
+    try { Chitti.a11y.setLanguage(lang, { manual: true, source: 'news-switchToLanguage' }); }
+    catch (e) {}
+  }
   loadFeed(true);
 }
 
@@ -683,6 +981,17 @@ function switchToLanguage(lang) {
 // Sire 2026-06-02: "if I click on another news, the speaker will still
 // continue to speak to the earlier message".
 let _activeArticleId = null;
+
+// Rail / hero card tap — primary action is "speak the entire news"
+// (faithful to the four-user contract, blind first). No visual
+// expansion because rails are dense by design and a hero already shows
+// the headline + image at full width. Always cancels any prior
+// utterance before starting the new one — same contract as onCardTap.
+function onHomeCardTap(id) {
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  _activeArticleId = id;
+  speakArticle(id);
+}
 
 function onCardTap(id) {
   const el = document.getElementById('art-' + id);
@@ -996,8 +1305,10 @@ function shareArticle(id) {
 // write to the DOM. Stale responses are discarded silently.
 let _feedToken = 0;
 async function loadFeed(force) {
-  const myToken = ++_feedToken;
   const f = getFilter();
+  // Amazon-style home: National = the home page with sub-category rails.
+  if (f.cat === 'national') return loadHome();
+  const myToken = ++_feedToken;
   const root = document.getElementById('feed-root');
   root.setAttribute('aria-busy', 'true');
   root.innerHTML = '<div class="status-card">Loading…</div>';

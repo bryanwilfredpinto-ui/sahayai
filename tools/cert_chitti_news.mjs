@@ -148,8 +148,18 @@ async function main() {
 
   // Track speech utterances via window.speechSynthesis.speak stub.
   // Stubbed BEFORE the page scripts run so they see our wrapper.
+  // Also pre-seed localStorage so the page loads in the LINEAR feed view
+  // (cat=politics). The home/national view fires 6 parallel category
+  // fetches and renders rails — that path gets its own gate at the end.
+  // Pre-seeding here keeps every other gate's selectors (`.art-card`)
+  // unchanged and the cert focused on one concern at a time.
   await page.addInitScript(() => {
     window.__speakLog = [];
+    try {
+      localStorage.setItem('chitti_news_state',    'india');
+      localStorage.setItem('chitti_news_lang',     'en');
+      localStorage.setItem('chitti_news_category', 'politics');
+    } catch (e) {}
     if (window.speechSynthesis) {
       const orig = window.speechSynthesis.speak.bind(window.speechSynthesis);
       window.speechSynthesis.speak = (utterance) => {
@@ -581,12 +591,13 @@ async function main() {
   // fires en then ml back-to-back; after both settle, asserts the DOM
   // shows the empty status-card (from ml) — never the English cards.
   await page.evaluate(() => {
-    const origFetch = window.fetch.bind(window);
+    // Save original so we can restore it before the next gate runs.
+    if (!window.__certFetchOrig) window.__certFetchOrig = window.fetch.bind(window);
     window.fetch = function (url, opts) {
       const u = typeof url === 'string' ? url : (url && url.url) || '';
       const delay = /language=en/.test(u) ? 800 : 0;
       return new Promise((resolve, reject) => {
-        setTimeout(() => origFetch(url, opts).then(resolve, reject), delay);
+        setTimeout(() => window.__certFetchOrig(url, opts).then(resolve, reject), delay);
       });
     };
     // Reset filter state to a deterministic baseline.
@@ -625,7 +636,206 @@ async function main() {
       raceState.cardCount === 0 && raceState.hasStatus && raceState.pickLang === 'ml',
       `cards=${raceState.cardCount} status="${raceState.statusText.slice(0, 60)}…" lang=${raceState.pickLang}`);
 
+  // ── HOME_RAILS — Sire 2026-06-03: "National news as to be divided
+  // as per politics, business, sports, etc." + "you can have a view of
+  // amazon." When the user lands on the National tab we render an
+  // Amazon-style home: one hero + horizontal aisles for Top National
+  // and each sub-category. This gate asserts:
+  //   (a) tapping National fires 6 parallel feed requests
+  //   (b) one .hero-card renders
+  //   (c) ≥4 .rail-section elements render (Top National + ≥3 sub-cats)
+  //   (d) Politics / Business / Sports rail titles are visible in DOM
+  //   (e) Tap "See all Politics" → cat switches to politics AND the
+  //       active tab is "politics" AND linear .art-cards re-appear.
+  // Restore fetch to the unwrapped original (FETCH_RACE_GUARD wrapped
+  // it to add per-language latency; here we want all 6 to race fairly).
+  await page.evaluate(() => {
+    if (window.__certFetchOrig) window.fetch = window.__certFetchOrig;
+  });
+  await page.evaluate(() => {
+    // Replace per-cat mock — bump items per category so each rail has
+    // visible cards and we can sample distinct titles per cat.
+    window.__railTitles = {
+      national:      ['Hero National A','Top National B','Top National C','Top National D'],
+      politics:      ['Politics Story 1','Politics Story 2','Politics Story 3'],
+      business:      ['Business Story 1','Business Story 2','Business Story 3'],
+      sports:        ['Sports Story 1','Sports Story 2'],
+      entertainment: ['Entertainment 1','Entertainment 2'],
+      tech:          ['Tech Story 1','Tech Story 2'],
+    };
+  });
+  await page.unroute('**://chitti-news-api-production.up.railway.app/**');
+  await page.route('**://chitti-news-api-production.up.railway.app/**', async (route) => {
+    const u = route.request().url();
+    apiHits.push(u);
+    if (u.includes('/api/news/feed')) {
+      const catMatch  = u.match(/category=([a-z]+)/);
+      const cat = (catMatch && catMatch[1]) || 'national';
+      const langMatch = u.match(/language=([a-z]+)/);
+      const lang = (langMatch && langMatch[1]) || 'en';
+      const titles = await page.evaluate((c) => (window.__railTitles || {})[c] || [], cat);
+      const items = titles.map((t, i) => ({
+        id: 7000 + i + (cat.charCodeAt(0) * 10),
+        title: lang === 'en' ? t : (t + ' [' + lang + ']'),
+        summary: t + ' summary.',
+        content: '',
+        link: 'https://example.com/' + cat + '/' + i,
+        image_url: '',
+        source_name: 'CertSource',
+        source_slug: 'cert',
+        published_at: new Date().toISOString(),
+        factcheck: { verdict: 'verified', word: 'VERIFIED', symbol: '✓' },
+      }));
+      return route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          items, count: items.length,
+          state: 'india', language: lang, category: cat,
+          speak_en: items.length + ' ' + cat + ' stories.',
+          coverage: {
+            per_category: { national: 4, politics: 3, business: 3, sports: 2, entertainment: 2, tech: 2 },
+            total_in_language: 16, english_fallback_count: 7000,
+            available_categories: ['national','politics','business','sports','entertainment','tech'],
+          },
+        }),
+      });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
+  // Reset filter to a clean en/national to land on the home view.
+  await page.evaluate(() => {
+    localStorage.setItem('chitti_news_state', 'india');
+    localStorage.setItem('chitti_news_lang',  'en');
+    localStorage.setItem('chitti_news_category', 'national');
+    document.getElementById('pick-lang').value = 'en';
+    document.getElementById('pick-cat').value = 'national';
+  });
+  const apiHitsBeforeHome = apiHits.length;
+  // Trigger the home view via the same code path the user takes (clicking
+  // the National tab calls switchToCategory which loadFeed → loadHome).
+  await page.evaluate(() => { switchToCategory('national'); });
+  await page.waitForFunction(() => document.querySelectorAll('.rail-section').length >= 4, { timeout: 6000 }).catch(() => {});
+  const homeState = await page.evaluate(() => ({
+    hero:      document.querySelectorAll('.hero-card').length,
+    rails:     document.querySelectorAll('.rail-section').length,
+    railTitles: Array.from(document.querySelectorAll('.rail-title')).map(e => e.textContent.trim()),
+    railCards: document.querySelectorAll('.rail-card').length,
+  }));
+  const homeApiCalls = apiHits.slice(apiHitsBeforeHome).filter(u => /\/api\/news\/feed/.test(u));
+  const homeCats = new Set(homeApiCalls.map(u => (u.match(/category=([a-z]+)/) || [])[1]));
+  const expectedCats = ['national','politics','business','sports','entertainment','tech'];
+  const allFired = expectedCats.every(c => homeCats.has(c));
+  add('HOME_RAILS — National tab fires 6 parallel category fetches',
+      allFired,
+      `cats fetched: ${[...homeCats].sort().join(',')}`);
+  add('HOME_RAILS — hero + ≥4 rail sections render with sub-category titles',
+      homeState.hero === 1 && homeState.rails >= 4
+        && homeState.railTitles.includes('Politics')
+        && homeState.railTitles.includes('Business')
+        && homeState.railTitles.includes('Sports'),
+      `hero=${homeState.hero} rails=${homeState.rails} titles=[${homeState.railTitles.join(', ')}]`);
+  add('HOME_RAILS — at least 6 rail cards visible in the rail tracks',
+      homeState.railCards >= 6,
+      `rail-card count: ${homeState.railCards}`);
+
+  // Tap "See all Politics" → drill into politics linear feed.
+  await page.locator('.rail-see-all', { hasText: 'Politics' }).first().click();
+  // Wait until politics linear cards render — give the fetch + render
+  // a generous budget so the gate isn't flaky under cold-cache runs.
+  await page.waitForFunction(
+    () => document.querySelectorAll('.art-card').length >= 1
+       && document.getElementById('pick-cat').value === 'politics',
+    { timeout: 5000 },
+  ).catch(() => {});
+  const drillState = await page.evaluate(() => ({
+    artCards:  document.querySelectorAll('.art-card').length,
+    activeTab: Array.from(document.querySelectorAll('.cat-tab.active')).map(e => e.dataset.cat),
+    pickCat:   document.getElementById('pick-cat').value,
+  }));
+  add('HOME_RAILS — tapping "See all Politics" drills into linear politics feed',
+      drillState.artCards >= 1
+        && drillState.pickCat === 'politics'
+        && drillState.activeTab.includes('politics'),
+      `cards=${drillState.artCards} pickCat=${drillState.pickCat} activeTab=${drillState.activeTab}`);
+
+  // ── MULTI_LANG_MATRIX — switch the picker through every supported
+  // language code and assert: (a) URL fires with the matching
+  // language=<code>, (b) <html lang> updates, (c) the page does NOT
+  // hard-error and (d) for zero-corpus languages (kn/or/as) the empty
+  // state shows the honest "no <Language> sources yet" headline.
+  const LANGS = ['en','hi','mr','ta','te','bn','kn','ml','gu','pa','or','ur'];
+  const ZERO_CORPUS = new Set();   // mock returns items for every lang here
+  // Re-stub feed so kn/or/as return [] with total_in_language=0 to
+  // exercise the noCorpus branch of the empty-state copy.
+  await page.unroute('**://chitti-news-api-production.up.railway.app/**');
+  await page.route('**://chitti-news-api-production.up.railway.app/**', async (route) => {
+    const u = route.request().url();
+    apiHits.push(u);
+    if (u.includes('/api/news/feed')) {
+      const catMatch  = u.match(/category=([a-z]+)/);
+      const cat = (catMatch && catMatch[1]) || 'national';
+      const langMatch = u.match(/language=([a-z]+)/);
+      const lang = (langMatch && langMatch[1]) || 'en';
+      const zeroLangs = new Set(['kn','or','as']);
+      const titles = await page.evaluate((c) => (window.__railTitles || {})[c] || [], cat);
+      const items = zeroLangs.has(lang) ? [] : titles.map((t, i) => ({
+        id: 8000 + i + (cat.charCodeAt(0) * 10),
+        title: lang === 'en' ? t : (t + ' [' + lang + ']'),
+        summary: t + ' summary.', content: '',
+        link: 'https://example.com/' + cat + '/' + i,
+        image_url: '', source_name: 'CertSource', source_slug: 'cert',
+        published_at: new Date().toISOString(),
+        factcheck: { verdict: 'verified', word: 'VERIFIED', symbol: '✓' },
+      }));
+      return route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          items, count: items.length,
+          state: 'india', language: lang, category: cat,
+          speak_en: items.length ? '2 stories.' : ('No ' + lang.toUpperCase() + ' stories'),
+          coverage: {
+            per_category: items.length ? { national: items.length } : {},
+            total_in_language: items.length ? items.length : 0,
+            english_fallback_count: 7000,
+            available_categories: items.length ? ['national','politics','business','sports','entertainment','tech'] : [],
+          },
+        }),
+      });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
+  // Set a sentinel non-English language first so the loop's first iter
+  // (en) actually triggers a fetch.
+  await page.evaluate(() => switchToLanguage('hi'));
+  await page.waitForTimeout(400);
+  const langResults = [];
+  for (const lang of LANGS) {
+    const beforeHits = apiHits.length;
+    await page.evaluate((l) => switchToLanguage(l), lang);
+    await page.waitForTimeout(500);
+    const newHits = apiHits.slice(beforeHits).filter(u => u.includes(`language=${lang}`));
+    const docLang = await page.evaluate(() => document.documentElement.lang);
+    const isZero = new Set(['kn','or','as']).has(lang);
+    const statusText = await page.evaluate(() => (document.querySelector('.status-card')?.textContent || '').slice(0, 200));
+    const noSourcesShown = /doesn['']t have/i.test(statusText) && /sources yet/i.test(statusText);
+    const pass = newHits.length > 0 && docLang === lang
+      && (isZero ? noSourcesShown : true);
+    langResults.push({ lang, hits: newHits.length, docLang, statusText: statusText.slice(0, 60), pass });
+  }
+  const allLangsPass = langResults.every(r => r.pass);
+  add('MULTI_LANG_MATRIX — all 12 languages route through filter + render correctly',
+      allLangsPass,
+      langResults.map(r =>
+        `${r.lang}${r.pass ? '✓' : '✗'}(${r.hits}h,${r.docLang}${/doesn['']t have/i.test(r.statusText) ? ',no-src' : ''})`
+      ).join(' '));
+
   // ── Screenshot ───────────────────────────────────────────────────
+  // Switch back to en/national for the final hero screenshot.
+  await page.evaluate(() => switchToLanguage('en'));
+  await page.evaluate(() => switchToCategory('national'));
+  await page.waitForTimeout(1200);
   await page.screenshot({ path: SHOT_PATH, fullPage: true });
 
   await browser.close();

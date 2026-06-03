@@ -1,7 +1,7 @@
 {
   "overall": "GREEN",
-  "greens": 17,
-  "total": 17,
+  "greens": 23,
+  "total": 23,
   "checks": [
     {
       "label": "§1 PALETTE — no off-locked colors in buttons / filters / header",
@@ -87,14 +87,73 @@
       "label": "SPEAKER_SWITCH — last utterance is the LATEST tapped card",
       "ok": true,
       "detail": "last=\"PM announces new scheme for Indian farmers. In a major announcement today, the P\" (utterances: 2)"
+    },
+    {
+      "label": "FETCH_RACE_GUARD — late en/* response does NOT overwrite ml/* empty state",
+      "ok": true,
+      "detail": "cards=0 status=\"Chitti News doesn't have Malayalam sources yet.We're adding …\" lang=ml"
+    },
+    {
+      "label": "HOME_RAILS — National tab fires 6 parallel category fetches",
+      "ok": true,
+      "detail": "cats fetched: business,entertainment,national,politics,sports,tech"
+    },
+    {
+      "label": "HOME_RAILS — hero + ≥4 rail sections render with sub-category titles",
+      "ok": true,
+      "detail": "hero=1 rails=6 titles=[Top National, Politics, Business, Sports, Entertainment, Technology]"
+    },
+    {
+      "label": "HOME_RAILS — at least 6 rail cards visible in the rail tracks",
+      "ok": true,
+      "detail": "rail-card count: 15"
+    },
+    {
+      "label": "HOME_RAILS — tapping \"See all Politics\" drills into linear politics feed",
+      "ok": true,
+      "detail": "cards=3 pickCat=politics activeTab=politics"
+    },
+    {
+      "label": "MULTI_LANG_MATRIX — all 12 languages route through filter + render correctly",
+      "ok": true,
+      "detail": "en✓(1h,en) hi✓(1h,hi) mr✓(1h,mr) ta✓(1h,ta) te✓(1h,te) bn✓(1h,bn) kn✓(1h,kn,no-src) ml✓(1h,ml) gu✓(1h,gu) pa✓(1h,pa) or✓(1h,or,no-src) ur✓(1h,ur)"
     }
   ],
   "apiHits": [
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ml&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/article/1002/body",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ml&category=entertainment",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=entertainment",
     "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=national",
-    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ml&category=national",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=business",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=sports",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=entertainment",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=tech",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=hi&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=hi&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=mr&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ta&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=te&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=bn&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=kn&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ml&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=gu&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=pa&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=or&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=ur&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
     "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=national",
-    "https://chitti-news-api-production.up.railway.app/api/news/article/1002/body"
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=politics",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=business",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=sports",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=entertainment",
+    "https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=tech"
   ],
   "screenshot": "C:\\Users\\DELL\\sahayai\\sahayai\\tools\\cert_screenshots\\chitti_news_375.png",
-  "ranAt": "2026-06-03T03:34:02.555Z"
+  "ranAt": "2026-06-03T04:01:20.987Z"
 }
