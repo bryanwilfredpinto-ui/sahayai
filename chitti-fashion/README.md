@@ -33,6 +33,15 @@ Full capability surface: [skills/FEATURES.md](skills/FEATURES.md).
 - **Swarm:** 7 agents vote before any advice shows (Fashion, Color, Occasion, Comfort, Accessibility, Budget, Confidence; Trend advises only).
 - **Privacy:** wardrobe photos live in the browser (IndexedDB) and **never** leave the device — only short text descriptions reach the model. DPDP Act 2023 compliant.
 
+## Languages
+
+Anchored to **Chitti Vaani's** language surface (per [CTO.md §5](../chitti-cto/CTO.md)):
+**9 primary languages — 100% native UI** (verified 87/87 labels, 0 English fallback):
+English · Hindi · Tamil · Telugu · Bengali · Marathi · Gujarati · Kannada · Malayalam.
+Selector auto-enriches to the **26-language Voice Factory substrate** (`chitti_lang.js`);
+voice-out covers all 26. Cousin-language UI text = English baseline pending community
+translation (locked voice strategy). No Hinglish — one pure language per response.
+
 ## Live URL
 
 - Page: `https://sahayai.in/chitti_fashion.html`

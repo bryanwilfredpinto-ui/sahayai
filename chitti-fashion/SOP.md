@@ -21,7 +21,7 @@
 4. **Never the body.** Rate cut/colour/fit; body commentary is a P0 incident.
 5. **Confirm before action.** No share/buy/anything side-effecting without `chittiConfirmAndDo()`.
 6. **Honest empty states.** Empty wardrobe → guide, never invent.
-7. **One pure language.** No Hinglish; technical/brand nouns stay English.
+7. **One pure language.** No Hinglish; technical/brand nouns stay English. UI is **100% native in the 9 primary Vaani languages** (en/hi/ta/te/bn/mr/gu/kn/ml); selector enriches to the 26-language Voice Factory substrate; cousin-language UI text = English baseline + native voice ([CTO.md §5](../chitti-cto/CTO.md)).
 
 ## Error handling
 
