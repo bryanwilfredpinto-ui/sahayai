@@ -12,8 +12,10 @@
 <link rel="stylesheet" href="sahayai_design_system.css">
 <link rel="stylesheet" href="chitti_theme.css">
 <!-- strings.js + chitti_lang.js before paint so i18n keys resolve; defer keeps parse non-blocking -->
-<script src="strings.js" defer></script>
-<script src="chitti_lang.js?v=20260603" defer></script>
+<script src="strings.js?v=20260604" defer></script>
+<script src="chitti_lang.js?v=20260604" defer></script>
+<!-- Self-contained, guarded fashion i18n — never shows a raw key even if strings.js is stale-cached -->
+<script src="chitti_fashion_i18n.js?v=20260604" defer></script>
 <script src="feedback-widget.js" data-page="chitti_fashion" defer></script>
 <style>
 /* ── Chitti Fashion — CFOS surface. Tricolour palette inherited from chitti_theme.css ── */
@@ -460,8 +462,10 @@ function faChangeLang(v){
   PROFILE.lang = CURRENT_LANG; faSaveProfile();
   document.documentElement.lang = CURRENT_LANG;
   try { localStorage.setItem('chitti_vaani_lang', CURRENT_LANG); } catch(e){}
-  // platform i18n: translate every [data-vai-i18n] label (strFor falls back to EN for missing keys)
+  // self-contained guarded i18n (never shows a raw key); platform translator as secondary
+  try { if (typeof window.faI18nApply === 'function') window.faI18nApply(CURRENT_LANG); } catch(e){}
   try { if (typeof window.updateAllStrings === 'function') window.updateAllStrings(CURRENT_LANG); } catch(e){}
+  try { if (typeof window.faI18nGuard === 'function') setTimeout(window.faI18nGuard, 60); } catch(e){}
   try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: CURRENT_LANG } })); } catch(e){}
   try { if (typeof changeLang === 'function') changeLang(CURRENT_LANG); } catch(e){}
   try { if (window.Chitti && Chitti.a11y && Chitti.a11y.setLang) Chitti.a11y.setLang(CURRENT_LANG); } catch(e){}
@@ -1125,7 +1129,9 @@ function faBoot(){
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   faMaybeOnboard();
   try { localStorage.setItem('chitti_vaani_lang', CURRENT_LANG); } catch(e){}
+  try { if (typeof window.faI18nApply === 'function') window.faI18nApply(CURRENT_LANG); } catch(e){}
   try { if (typeof window.updateAllStrings === 'function') window.updateAllStrings(CURRENT_LANG); } catch(e){}
+  try { if (typeof window.faI18nGuard === 'function') { setTimeout(window.faI18nGuard, 100); setTimeout(window.faI18nGuard, 600); } } catch(e){}
   faRenderWearers();
   faTwinHydrate();
   faRenderWardrobe();
