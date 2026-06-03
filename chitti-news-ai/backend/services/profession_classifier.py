@@ -56,6 +56,8 @@ from sqlalchemy.exc import IntegrityError
 
 from database import SessionLocal
 from models.courses_v2 import CourseV2, ProfessionRelevance
+from models.aggregated_items import AggregatedItem
+from models.articles import Article
 
 log = logging.getLogger("profession_classifier")
 
@@ -283,6 +285,90 @@ def _persist_tags(item_kind: str, item_id: int, tags: list[dict]) -> int:
                 log.warning("persist tag failed kind=%s id=%s slug=%s: %s",
                             item_kind, item_id, t["profession_slug"], e)
     return inserted
+
+
+def classify_unlabeled_articles(*, limit: int = 1000) -> dict:
+    """Run the rules-only classifier over every news article lacking tags
+    at the current RULE_VERSION. Idempotent. News articles have no
+    source-default tags or url_patterns (sources are RSS-only) — pure
+    keyword classification.
+    """
+    report = {
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "rule_version": RULE_VERSION,
+        "min_confidence": DEFAULT_MIN_CONFIDENCE,
+        "kind": "article",
+        "scanned": 0, "tagged": 0, "untagged": 0, "labels_persisted": 0,
+    }
+    with SessionLocal() as db:
+        existing_q = db.query(ProfessionRelevance.item_id).filter(
+            ProfessionRelevance.item_kind == "article",
+            ProfessionRelevance.classifier_version == RULE_VERSION,
+        ).subquery()
+        candidates = (
+            db.query(Article)
+              .filter(~Article.id.in_(existing_q.select()))
+              .order_by(Article.id.asc())
+              .limit(limit).all()
+        )
+        report["scanned"] = len(candidates)
+        snapshots = [(a.id, a.title, a.summary, None, a.source_slug, a.url) for a in candidates]
+
+    for cid, title, summary, topics, source_slug, url in snapshots:
+        tags = classify(title, summary, topics, source_slug=None, url=url)
+        if tags:
+            report["tagged"] += 1
+            report["labels_persisted"] += _persist_tags("article", cid, tags)
+        else:
+            report["untagged"] += 1
+    report["finished_at"] = datetime.utcnow().isoformat() + "Z"
+    return report
+
+
+def classify_unlabeled_stream_items(*, kind: Optional[str] = None, limit: int = 1000) -> dict:
+    """Classify aggregated_items rows (cert/tool/job/scheme/roadmap_node).
+    If kind is None, classifies across all kinds."""
+    report = {
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "rule_version": RULE_VERSION,
+        "min_confidence": DEFAULT_MIN_CONFIDENCE,
+        "kind": kind or "all",
+        "scanned": 0, "tagged": 0, "untagged": 0, "labels_persisted": 0,
+    }
+    with SessionLocal() as db:
+        # Build a query of (item_id, kind) tuples already classified.
+        existing_pairs = set(
+            (r.item_id, r.item_kind) for r in db.query(
+                ProfessionRelevance.item_id, ProfessionRelevance.item_kind
+            ).filter(
+                ProfessionRelevance.classifier_version == RULE_VERSION,
+                ProfessionRelevance.item_kind.in_([
+                    "cert", "tool", "job", "scheme", "roadmap_node",
+                ]),
+            )
+        )
+        q = db.query(AggregatedItem)
+        if kind:
+            q = q.filter(AggregatedItem.kind == kind)
+        candidates = [
+            a for a in q.order_by(AggregatedItem.id.asc()).limit(limit).all()
+            if (a.id, a.kind) not in existing_pairs
+        ]
+        report["scanned"] = len(candidates)
+        snapshots = [
+            (a.id, a.kind, a.title, a.summary, a.topics, a.source_slug, a.url)
+            for a in candidates
+        ]
+
+    for cid, ckind, title, summary, topics, source_slug, url in snapshots:
+        tags = classify(title, summary, topics, source_slug=source_slug, url=url)
+        if tags:
+            report["tagged"] += 1
+            report["labels_persisted"] += _persist_tags(ckind, cid, tags)
+        else:
+            report["untagged"] += 1
+    report["finished_at"] = datetime.utcnow().isoformat() + "Z"
+    return report
 
 
 def classify_unlabeled_courses(*, limit: int = 1000) -> dict:
