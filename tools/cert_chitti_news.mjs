@@ -572,6 +572,59 @@ async function main() {
       last1001 && !last1002Body,
       `last="${lastTextSwitch.slice(0, 80)}" (utterances: ${switchLog.length})`);
 
+  // ── FETCH_RACE_GUARD — Sire 2026-06-03: "when I selected malayalam,
+  // why is it coming in english". Root cause: fetch race. The earlier
+  // en/<cat> request resolved AFTER the user switched to ml/<cat>;
+  // its 30 English cards overwrote the empty ml status. loadFeed now
+  // mints a token per call and discards stale responses. This gate
+  // wraps window.fetch so en/* takes 800 ms while ml/* is instant;
+  // fires en then ml back-to-back; after both settle, asserts the DOM
+  // shows the empty status-card (from ml) — never the English cards.
+  await page.evaluate(() => {
+    const origFetch = window.fetch.bind(window);
+    window.fetch = function (url, opts) {
+      const u = typeof url === 'string' ? url : (url && url.url) || '';
+      const delay = /language=en/.test(u) ? 800 : 0;
+      return new Promise((resolve, reject) => {
+        setTimeout(() => origFetch(url, opts).then(resolve, reject), delay);
+      });
+    };
+    // Reset filter state to a deterministic baseline.
+    const f = { state: 'india', lang: 'en', cat: 'national' };
+    localStorage.setItem('chitti_news_state', f.state);
+    localStorage.setItem('chitti_news_lang',  f.lang);
+    localStorage.setItem('chitti_news_category', f.cat);
+    document.getElementById('pick-lang').value = 'en';
+    document.getElementById('pick-cat').value  = 'national';
+  });
+  // Step 1: switch to en/entertainment — this will be delayed 800 ms.
+  await page.evaluate(() => {
+    document.getElementById('pick-cat').value = 'entertainment';
+    document.getElementById('pick-cat').dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  // Step 2: immediately switch to ml/entertainment — instant return.
+  await page.waitForTimeout(50);
+  await page.evaluate(() => {
+    document.getElementById('pick-lang').value = 'ml';
+    document.getElementById('pick-lang').dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  // Wait long enough for the delayed en/* response to land — if the
+  // guard works, it's discarded; if it doesn't, it overwrites the
+  // empty ml status with English cards.
+  await page.waitForTimeout(1500);
+  const raceState = await page.evaluate(() => {
+    const root = document.getElementById('feed-root');
+    return {
+      cardCount: root.querySelectorAll('.art-card').length,
+      hasStatus: !!root.querySelector('.status-card'),
+      statusText: (root.querySelector('.status-card')?.textContent || '').slice(0, 120),
+      pickLang: document.getElementById('pick-lang').value,
+    };
+  });
+  add('FETCH_RACE_GUARD — late en/* response does NOT overwrite ml/* empty state',
+      raceState.cardCount === 0 && raceState.hasStatus && raceState.pickLang === 'ml',
+      `cards=${raceState.cardCount} status="${raceState.statusText.slice(0, 60)}…" lang=${raceState.pickLang}`);
+
   // ── Screenshot ───────────────────────────────────────────────────
   await page.screenshot({ path: SHOT_PATH, fullPage: true });
 

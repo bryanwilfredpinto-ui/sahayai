@@ -988,15 +988,23 @@ function shareArticle(id) {
 }
 
 // ── Feed loader ───────────────────────────────────────────────────
+// Sire 2026-06-03 — "when I selected malayalam, why is it coming in
+// english". Root cause: en/entertainment fetch fired BEFORE the ml
+// switch could land its own empty state. The earlier response landed
+// LAST and overwrote the empty status with 30 stale English cards.
+// Fix: every loadFeed call mints a token; only the latest token may
+// write to the DOM. Stale responses are discarded silently.
+let _feedToken = 0;
 async function loadFeed(force) {
+  const myToken = ++_feedToken;
   const f = getFilter();
   const root = document.getElementById('feed-root');
   root.setAttribute('aria-busy', 'true');
   root.innerHTML = '<div class="status-card">Loading…</div>';
   try {
-    let path;
     if (f.cat === 'saved' || f.cat === 'cancelled') {
       const data = await api('/api/news/save?folder=' + f.cat);
+      if (myToken !== _feedToken) return;
       const items = (data.items || []).map(r => r.article);
       renderFeed(items, { speak_en: 'Your ' + f.cat + ' folder.' });
     } else if (f.cat === 'foryou') {
@@ -1004,20 +1012,23 @@ async function loadFeed(force) {
       // localStorage profile. Backend personalisation lives in v1.1.
       const data = await api('/api/news/feed?state=' + f.state
                           + '&language=' + f.lang + '&category=national');
+      if (myToken !== _feedToken) return;
       renderFeed(data.items || [], data);
     } else {
       const data = await api('/api/news/feed?state=' + f.state
                           + '&language=' + f.lang + '&category=' + f.cat);
+      if (myToken !== _feedToken) return;
       renderFeed(data.items || [], data);
     }
   } catch (e) {
+    if (myToken !== _feedToken) return;
     root.innerHTML = '<div class="status-card">'
       + '<strong>Backend unreachable.</strong><br>'
       + 'Pull to refresh in a minute — chitti-news-api may be cold-starting.'
       + '<br><small style="color:var(--muted)">' + esc(String(e)) + '</small>'
       + '</div>';
   } finally {
-    root.setAttribute('aria-busy', 'false');
+    if (myToken === _feedToken) root.setAttribute('aria-busy', 'false');
   }
 }
 
