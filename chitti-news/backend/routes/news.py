@@ -309,43 +309,78 @@ def scheduler_trigger(job_id):
 @bp.post("/admin/reclassify")
 @with_db
 def admin_reclassify(db):
+    """
+    Run the content classifier over existing articles.  Chunks the
+    work so a slow caller doesn't roll back partial progress on a
+    timeout — every batch of CHUNK rows commits independently.
+
+    Query params:
+      apply : 0/1   — 1 to write category changes, 0 (default) for dry-run
+      limit : int   — max rows to scan total (default: all rows)
+      after : int   — start AFTER this article id (use the returned
+                      `next_after` to paginate). Highest id first.
+
+    Returns:
+      { applied, scanned, overridden, moves, examples, next_after,
+        done } — `done` is true when there are no more rows past
+      next_after.
+    """
     _user_token_or_400()
     apply_changes = request.args.get("apply", "0").lower() in ("1", "true", "yes")
     limit_raw = request.args.get("limit")
+    after_raw = request.args.get("after")
     try:
-        limit = int(limit_raw) if limit_raw else None
+        limit = int(limit_raw) if limit_raw else 1500
+        after = int(after_raw) if after_raw else None
     except (TypeError, ValueError):
-        abort(400, description="limit must be an integer")
+        abort(400, description="limit and after must be integers")
+
+    CHUNK = 250  # commit every 250 rows so a timeout never wipes progress
 
     q = db.query(Article).order_by(Article.id.desc())
-    if limit:
-        q = q.limit(limit)
+    if after is not None:
+        q = q.filter(Article.id < after)
+    q = q.limit(limit)
 
-    moves: dict = {}     # (from_cat, to_cat) -> count
-    examples: dict = {}  # (from_cat, to_cat) -> [titles]
+    moves: dict = {}
+    examples: dict = {}
     scanned = 0
     overridden = 0
-    for art in q.yield_per(500):
+    last_id = None
+    pending = 0
+    for art in q.yield_per(CHUNK):
         scanned += 1
+        last_id = art.id
         new_cat = classify_article(art.title or "", art.summary or "", art.category)
-        if new_cat == art.category:
-            continue
-        overridden += 1
-        key = f"{art.category}->{new_cat}"
-        moves[key] = moves.get(key, 0) + 1
-        if len(examples.setdefault(key, [])) < 3:
-            examples[key].append({
-                "id": art.id, "source": art.source_name,
-                "title": (art.title or "")[:120],
-            })
-        if apply_changes:
-            art.category = new_cat
-    if apply_changes:
+        if new_cat != art.category:
+            overridden += 1
+            key = f"{art.category}->{new_cat}"
+            moves[key] = moves.get(key, 0) + 1
+            if len(examples.setdefault(key, [])) < 3:
+                examples[key].append({
+                    "id": art.id, "source": art.source_name,
+                    "title": (art.title or "")[:120],
+                })
+            if apply_changes:
+                art.category = new_cat
+                pending += 1
+        if apply_changes and pending >= CHUNK:
+            db.commit()
+            pending = 0
+    if apply_changes and pending:
         db.commit()
+
+    # Determine whether more rows exist below last_id (i.e. older ids).
+    done = True
+    if last_id is not None:
+        more = db.query(Article.id).filter(Article.id < last_id).limit(1).first()
+        done = more is None
     return jsonify({
         "applied": apply_changes,
         "scanned": scanned,
         "overridden": overridden,
         "moves": moves,
         "examples": examples,
+        "next_after": last_id,
+        "done": done,
     })
