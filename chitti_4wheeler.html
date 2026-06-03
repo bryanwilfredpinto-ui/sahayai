@@ -1734,17 +1734,17 @@ function swEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&a
 function swMic(){
   if (typeof mcStartListening === 'function') {
     mcStartListening((utter) => { if (utter) { document.getElementById('sw-symptom').value = utter; swDiagnose(); } });
-  } else { speakText('Voice abhi available nahi hai — type kar dijiye.', CURRENT_LANG); }
+  } else { speakText(strFor4W('sw.novoice'), CURRENT_LANG); }
 }
 function swScamToggle(){ document.getElementById('sw-scam-box').classList.toggle('hidden'); }
 
 async function swDiagnose(){
   const sym = (document.getElementById('sw-symptom').value || '').trim();
   const out = document.getElementById('sw-result');
-  if (!sym) { out.innerHTML = '<div class="sw-verdict">Pehle takleef bataaiye — bol kar (🎤) ya type karke. OBD2 DTC code ho toh likh dijiye (e.g. P0301).</div>'; return; }
+  if (!sym) { out.innerHTML = '<div class="sw-verdict">'+swEsc(strFor4W('sw.empty.car'))+'</div>'; return; }
   const car = (typeof loadCar === 'function' && loadCar()) || {};
   const ctx = [car.make, car.model, car.variant, car.fuel, car.year, car.odo ? car.odo+'km' : ''].filter(Boolean).join(' ');
-  out.innerHTML = '<div class="sw-verdict">🧠 8 agents soch rahe hain… (Symptom · Engine · Electrical · Fuel · Safety · DIY · Cost · Trust)</div>';
+  out.innerHTML = '<div class="sw-verdict">🧠 '+swEsc(strFor4W('sw.thinking'))+'</div>';
   const prompt =
     'You are the Chitti Car Doctor diagnostic SWARM of 8 specialist agents (Symptom, Engine, Electrical, Fuel, Safety, DIY, Cost, Trust). '+
     'The Safety agent is supreme and can only LOWER the can-drive verdict; the Trust agent prevents over-diagnosis and overconfidence. '+
@@ -1771,33 +1771,33 @@ function swRenderVerdict(out, v){
   const cb = (v.confidence||'Low').toLowerCase();
   const ccls = cb.indexOf('high')>=0?'high':(cb.indexOf('med')>=0?'med':'low');
   const tier = (v.diy_tier||'orange').toLowerCase();
-  const tmap = {green:['t-green','🟢 DIY Allowed'],amber:['t-amber','🟡 DIY Assisted'],orange:['t-orange','🟠 Professional Required'],red:['t-red','🔴 DO NOT DRIVE — Emergency']};
+  const tmap = {green:['t-green','🟢 '+strFor4W('sw.tier.green')],amber:['t-amber','🟡 '+strFor4W('sw.tier.amber')],orange:['t-orange','🟠 '+strFor4W('sw.tier.orange')],red:['t-red','🔴 '+strFor4W('sw.tier.redcar')]};
   const t = tmap[tier] || tmap.orange;
   let votes = (v.votes||[]).slice(0,4).map(x => {
     const pct = Math.max(0, Math.min(100, parseInt(x.pct||0,10)));
     return '<div class="sw-vote"><div class="lab"><span>'+swEsc(x.cause)+'</span><span>'+pct+'%</span></div><div class="sw-bar"><i style="width:'+pct+'%"></i></div></div>';
   }).join('');
   let html = '<div class="sw-verdict">'+
-    '<span class="sw-conf '+ccls+'">Confidence: '+swEsc(v.confidence||'Low')+'</span>'+
+    '<span class="sw-conf '+ccls+'">'+swEsc(strFor4W('sw.conf'))+': '+swEsc(v.confidence||'Low')+'</span>'+
     '<span class="sw-tier '+t[0]+'">'+t[1]+(v.diy_label?(' · '+swEsc(v.diy_label)):'')+'</span>'+
     '<div style="margin-top:10px">'+votes+'</div>'+
     '<div class="sw-fields">'+
-      (v.why?'<div class="f"><b>Kyun (Why):</b> '+swEsc(v.why)+'</div>':'')+
-      (v.severity?'<div class="f"><b>Kitna serious:</b> '+swEsc(v.severity)+'</div>':'')+
-      (v.can_ride?'<div class="f"><b>Chala sakte ho?:</b> '+swEsc(v.can_ride)+'</div>':'')+
-      (v.cost?'<div class="f"><b>Expected cost:</b> '+swEsc(v.cost)+'</div>':'')+
-      (v.alternatives?'<div class="f"><b>Aur kya ho sakta:</b> '+swEsc(v.alternatives)+'</div>':'')+
+      (v.why?'<div class="f"><b>'+swEsc(strFor4W('sw.f.why'))+':</b> '+swEsc(v.why)+'</div>':'')+
+      (v.severity?'<div class="f"><b>'+swEsc(strFor4W('sw.f.sev'))+':</b> '+swEsc(v.severity)+'</div>':'')+
+      (v.can_ride?'<div class="f"><b>'+swEsc(strFor4W('sw.f.drive'))+':</b> '+swEsc(v.can_ride)+'</div>':'')+
+      (v.cost?'<div class="f"><b>'+swEsc(strFor4W('sw.f.cost'))+':</b> '+swEsc(v.cost)+'</div>':'')+
+      (v.alternatives?'<div class="f"><b>'+swEsc(strFor4W('sw.f.alt'))+':</b> '+swEsc(v.alternatives)+'</div>':'')+
     '</div></div>';
   out.innerHTML = html;
-  SW_LAST_SPEAK = [v.confidence?('Confidence '+v.confidence):'', t[1], (v.votes&&v.votes[0]?v.votes[0].cause:''), v.why, v.can_ride, v.cost].filter(Boolean).join('. ');
+  SW_LAST_SPEAK = [v.confidence?(strFor4W('sw.conf')+' '+v.confidence):'', t[1], (v.votes&&v.votes[0]?v.votes[0].cause:''), v.why, v.can_ride, v.cost].filter(Boolean).join('. ');
   speakText(SW_LAST_SPEAK, CURRENT_LANG);
 }
 
 function swRenderHonestFallback(out, reply, sym){
   const body = (reply && reply.trim()) ? swEsc(reply.trim())
-    : 'Abhi diagnosis ka confidence Low hai (network/LLM busy). Safety ke liye: agar brake / steering / overheat / airbag / tyre ka maamla hai, toh gaadi mat chalao aur mechanic se inspection karwao.';
-  out.innerHTML = '<div class="sw-verdict"><span class="sw-conf low">Confidence: Low</span>'+
-    '<span class="sw-tier t-orange">🟠 Inspection recommended</span>'+
+    : swEsc(strFor4W('sw.lowconf.car'));
+  out.innerHTML = '<div class="sw-verdict"><span class="sw-conf low">'+swEsc(strFor4W('sw.conf'))+': Low</span>'+
+    '<span class="sw-tier t-orange">🟠 '+swEsc(strFor4W('sw.inspect'))+'</span>'+
     '<div class="sw-fields"><div class="f">'+body+'</div></div></div>';
   SW_LAST_SPEAK = body.replace(/<[^>]+>/g,'');
   speakText(SW_LAST_SPEAK, CURRENT_LANG);
@@ -1807,25 +1807,25 @@ async function swScamCheck(){
   const job = (document.getElementById('sw-scam-job').value||'').trim();
   const amt = (document.getElementById('sw-scam-amt').value||'').trim();
   const out = document.getElementById('sw-result');
-  if (!job || !amt) { out.innerHTML = '<div class="sw-verdict">Kaam aur garage ka quote (₹) dono bhariye.</div>'; return; }
+  if (!job || !amt) { out.innerHTML = '<div class="sw-verdict">'+swEsc(strFor4W('sw.scam.empty'))+'</div>'; return; }
   const car = (typeof loadCar === 'function' && loadCar()) || {};
-  out.innerHTML = '<div class="sw-verdict">💰 Cost Agent fair-price band nikaal raha hai…</div>';
+  out.innerHTML = '<div class="sw-verdict">💰 '+swEsc(strFor4W('sw.scam.thinking'))+'</div>';
   const prompt = 'You are the Chitti Car Doctor Cost+Trust agents. Give a FAIR PRICE RANGE (parts+labour) in INR for this Indian 4-wheeler job, then judge the quote. '+
     'Car: '+([car.make,car.model,car.fuel].filter(Boolean).join(' ')||'generic hatchback')+'. Job: "'+job+'". Quoted: ₹'+amt+'. '+
     'NEVER accuse a named garage. Reply ONLY JSON in language '+CURRENT_LANG+': {"low":0,"high":0,"verdict":"fair|high|very_high","note":"..."}';
   let data={}; try { const r=await fetch(API_BASE+'/api/vaani/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:prompt,language:CURRENT_LANG,mode:'ask'})}); data=await r.json(); } catch(e){}
   const reply=data.reply||data.answer||''; const m=reply.match(/\{[\s\S]*\}/); let v=null; if(m){try{v=JSON.parse(m[0]);}catch(e){}}
   if(!v||v.low==null){ swRenderHonestFallback(out, reply, job); return; }
-  const vmap={fair:['high','✅ Quote theek lagta hai'],high:['med','⚠️ Quote thoda zyada lagta hai'],very_high:['low','🚩 Quote bahut zyada lagta hai']};
+  const vmap={fair:['high','✅ '+strFor4W('sw.v.fair')],high:['med','⚠️ '+strFor4W('sw.v.high')],very_high:['low','🚩 '+strFor4W('sw.v.vhigh')]};
   const vd=vmap[v.verdict]||vmap.high;
-  out.innerHTML='<div class="sw-verdict"><span class="sw-conf '+vd[0]+'">'+vd[1]+'</span>'+
+  out.innerHTML='<div class="sw-verdict"><span class="sw-conf '+vd[0]+'">'+swEsc(vd[1])+'</span>'+
     '<div class="sw-fields">'+
-    '<div class="f"><b>Expected fair range:</b> ₹'+swEsc(v.low)+' – ₹'+swEsc(v.high)+'</div>'+
-    '<div class="f"><b>Aapse maanga:</b> ₹'+swEsc(amt)+'</div>'+
+    '<div class="f"><b>'+swEsc(strFor4W('sw.scam.range'))+':</b> ₹'+swEsc(v.low)+' – ₹'+swEsc(v.high)+'</div>'+
+    '<div class="f"><b>'+swEsc(strFor4W('sw.scam.asked'))+':</b> ₹'+swEsc(amt)+'</div>'+
     (v.note?'<div class="f">'+swEsc(v.note)+'</div>':'')+
-    '<div class="f" style="color:var(--sds-muted);font-size:12px">Yeh ek estimate hai, kisi garage par ilzaam nahi. Apne shehar ke 1-2 aur quote se compare karein.</div>'+
+    '<div class="f" style="color:var(--sds-muted);font-size:12px">'+swEsc(strFor4W('sw.scam.note'))+'</div>'+
     '</div></div>';
-  SW_LAST_SPEAK=vd[1]+'. Fair range '+v.low+' se '+v.high+' rupaye. Aapse maanga '+amt+' rupaye.';
+  SW_LAST_SPEAK=vd[1]+'. '+strFor4W('sw.scam.range')+' ₹'+v.low+' – ₹'+v.high+'. '+strFor4W('sw.scam.asked')+' ₹'+amt+'.';
   speakText(SW_LAST_SPEAK, CURRENT_LANG);
 }
 function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LANG); }

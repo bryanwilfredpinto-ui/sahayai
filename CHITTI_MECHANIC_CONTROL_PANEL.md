@@ -122,10 +122,10 @@ Legend: ✅ Delivered & verified · 🟡 Delivered but unverified / partial · �
 | `data-vai-i18n-attr` handler (was a latent fleet-wide bug) | ✅ | Fixed in `strings.js` — every page's placeholders/aria now translate. |
 | AI diagnostic *answers* in user language | ✅ | Prompt carries `CURRENT_LANG`. |
 | Voice in/out 26 languages | ✅ | Voice Factory substrate. |
-| **JS-rendered verdict labels** (`Kyun (Why):`, `Chala sakte ho?:`, `Aapse maanga:`) | ❌ | **§5 DEFECT — hardcoded Hinglish code-switch.** Must be i18n'd to pure-language keys. Logged as open defect MECH-1. |
-| Full 22-language UI chrome | ❌ | Only 9 primary bags exist; rest fall back to EN (clean, per §5 contract). |
+| **JS-rendered verdict labels** (`Why`, `Can you ride/drive?`, `You were quoted`…) | ✅ | **MECH-1 CLOSED 2026-06-04.** 27 `sw.*` keys added to all 9 bags; `swDiagnose`/`swRenderVerdict`/`swRenderHonestFallback`/`swScamCheck`/`swMic` rewired to `strFor2W`/`strFor4W`. Grep confirms **0 Hinglish literals** in the swarm JS. |
+| Full 22-language UI chrome | ❌ | Only 9 primary bags exist; rest fall back to EN (clean single-language, permitted by §5). Extending to 22 is a separate strings.js pass. |
 
-**Section F verdict: 🟡 mostly compliant; 1 open §5 defect (MECH-1).**
+**Section F verdict: ✅ §5-compliant on the Swarm card** (all dynamic labels translate in 9 primary languages, clean EN fallback beyond). Open item: extend UI chrome to 22 (not a §5 violation — fallback is clean).
 
 ---
 
@@ -142,7 +142,7 @@ Legend: ✅ Delivered & verified · 🟡 Delivered but unverified / partial · �
 
 | ID | Defect | Priority |
 |---|---|---|
-| MECH-1 | §5 Hinglish in JS-rendered swarm verdict labels → i18n them | P1 |
+| ~~MECH-1~~ | ~~§5 Hinglish in JS-rendered swarm verdict labels~~ → **CLOSED 2026-06-04** (27 sw.* keys ×9 langs; 0 Hinglish literals; node-verified) | ✅ done |
 | MECH-2 | Run 375px visual cert + save screenshots (gate 6) | P1 |
 | MECH-3 | Write unit/integration tests for the Swarm Diagnosis render + parse path (gates 1–2) | P1 |
 | MECH-4 | Curl-verify both `/health` + a live Vaani-routed mechanic query once §G#1 lands (gates 4–5) | P0 (after unblock) |
