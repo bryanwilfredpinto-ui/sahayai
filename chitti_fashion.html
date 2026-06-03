@@ -1,95 +1,127 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
+<!-- Frontend for chitti-fashion/ — CFOS v1.0 (rebuilt 2026-06-03). Spec: chitti-fashion/ROLE.md + PRD.md + ARCHITECTURE.md -->
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Chitti Fashion AI — Young India का personal stylist</title>
-<meta name="description" content="Voice-first personal stylist for every young Indian. Build your wardrobe, get outfit suggestions from what you own, body-positive shopping ratings. Photos stay on your device. Privacy-first.">
+<title>Chitti Fashion — आपकी अलमारी से, हर किसी के लिए</title>
+<meta name="description" content="World Class Chitti Fashion. Voice-first, wardrobe-first stylist for every Indian — children to seniors, blind/deaf/mute/illiterate. Dress from what you already own. Photos stay on your device. DPDP 2023 compliant.">
+<meta name="chitti-page-desc" content="Chitti Fashion. Aapki almari ka dost. Jo aapke paas hai, usi se Chitti aapko taiyaar karegi. Kuch kharidne ki zaroorat nahi.">
+<!-- Feature Discovery maps this page to the Chitti Fashion capability surface -->
+<meta name="chitti-features" content="chitti-fashion/skills/FEATURES.md">
 <link rel="stylesheet" href="sahayai_design_system.css">
 <link rel="stylesheet" href="chitti_theme.css">
-<!-- strings.js MUST load before any i18n key paints. defer lets the HTML
-     parse but guarantees the bag is ready before DOMContentLoaded fires. -->
+<!-- strings.js + chitti_lang.js before paint so i18n keys resolve; defer keeps parse non-blocking -->
 <script src="strings.js" defer></script>
-<script src="chitti_lang.js?v=20260529r" defer></script>
+<script src="chitti_lang.js?v=20260603" defer></script>
 <script src="feedback-widget.js" data-page="chitti_fashion" defer></script>
 <style>
-/* Fashion — bolder type, larger images, saffron accents */
-body{font-size:18px}
+/* ── Chitti Fashion — CFOS surface. Tricolour palette inherited from chitti_theme.css ── */
+body{font-size:17px}
 .fa-body{background:#F7F7F4}
+.fa-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#138808;background:#eafbe7;border:1px solid #b7ebb0;border-radius:999px;padding:3px 10px;letter-spacing:.02em}
 
-/* Privacy banner */
-.fa-privacy{background:linear-gradient(135deg,#fff7e6,#fffaf0);border:1.5px solid var(--sds-saffron);border-radius:14px;padding:12px 14px;margin:0 0 14px;display:flex;gap:10px;align-items:flex-start}
+/* Privacy + gender onboarding */
+.fa-privacy{background:linear-gradient(135deg,#fff7e6,#fffaf0);border:1.5px solid var(--sds-saffron,#FF9933);border-radius:14px;padding:12px 14px;margin:0 0 14px;display:flex;gap:10px;align-items:flex-start}
 .fa-privacy .ico{font-size:24px}
-.fa-privacy .info{flex:1}
-.fa-privacy .info b{display:block;font-weight:900;color:var(--sds-navy);font-size:16px}
+.fa-privacy .info b{display:block;font-weight:900;color:var(--sds-navy,#000080);font-size:15px}
 .fa-privacy .info small{font-size:13px;color:#444;line-height:1.5}
-
-/* Gender pick (one-time) */
-.fa-gender{padding:20px 16px;text-align:center;background:#fff;border:1.5px solid var(--sds-line);border-radius:18px;margin-bottom:14px}
-.fa-gender h2{font-size:22px;font-weight:900;color:var(--sds-navy);margin:0 0 14px}
+.fa-gender{padding:18px 16px;text-align:center;background:#fff;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:18px;margin-bottom:14px}
+.fa-gender h2{font-size:20px;font-weight:900;color:var(--sds-navy,#000080);margin:0 0 12px}
 .fa-gender .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.fa-gender .opts button{padding:18px 6px;border:2px solid var(--sds-line);background:#fff;border-radius:14px;font-size:16px;font-weight:800;color:var(--sds-navy);cursor:pointer;min-height:96px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.fa-gender .opts button .em{font-size:32px}
-.fa-gender .opts button.active{background:linear-gradient(180deg,#fff,#fff8e1);border-color:var(--sds-saffron)}
+.fa-gender .opts button{padding:16px 6px;border:2px solid var(--sds-line,#e5e7eb);background:#fff;border-radius:14px;font-size:15px;font-weight:800;color:var(--sds-navy,#000080);cursor:pointer;min-height:92px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.fa-gender .opts button .em{font-size:30px}
+.fa-gender .opts button.active{background:linear-gradient(180deg,#fff,#fff8e1);border-color:var(--sds-saffron,#FF9933)}
 
-/* Wardrobe (Pinterest-style) */
-.fa-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
-.fa-stats .stat{background:#fff;border:1.5px solid var(--sds-line);border-radius:12px;padding:12px 10px;text-align:center}
-.fa-stats .stat .n{font-size:24px;font-weight:900;color:var(--sds-saffron);line-height:1}
-.fa-stats .stat .l{font-size:13px;color:var(--sds-muted);margin-top:4px}
-.fa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
-.fa-tile{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;overflow:hidden;position:relative;aspect-ratio:1/1;display:flex;flex-direction:column}
-.fa-tile img{width:100%;height:100%;object-fit:cover;background:#f0f0f0}
-.fa-tile .badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em}
-.fa-tile .chip{position:absolute;bottom:6px;left:6px;background:#fff;border:1px solid var(--sds-line);font-size:11px;font-weight:700;color:var(--sds-navy);padding:2px 8px;border-radius:8px;display:flex;align-items:center;gap:4px}
-.fa-tile .swatch{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #999}
-.fa-tile .x{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border:none;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer}
+/* HERO — Dress Me From What I Own */
+.fa-hero{background:linear-gradient(135deg,#FFF3E0,#fff,#E9F7EA);border:1.5px solid #FFD9B0;border-radius:20px;padding:20px 18px;margin-bottom:14px;box-shadow:0 8px 22px rgba(255,153,51,.12)}
+.fa-hero h2{font-size:21px;font-weight:900;color:#000080;margin:0 0 6px;line-height:1.25;display:flex;align-items:center;gap:8px}
+.fa-hero p{font-size:14.5px;color:#1a1a1a;line-height:1.55;margin:0 0 14px}
+.fa-hero .cta{display:block;width:100%;background:linear-gradient(135deg,#FF9933,#E07B1D);color:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:900;font-family:inherit;cursor:pointer;min-height:54px;box-shadow:0 8px 22px rgba(255,153,51,.35)}
+.fa-hero .cta:disabled{filter:grayscale(.4);cursor:wait}
+.fa-hero .free-pill{display:inline-block;background:#138808;color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;margin-bottom:8px}
 
-/* Add-item modal */
-.fa-add{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9500;align-items:flex-end;justify-content:center;padding:0}
-.fa-add.shown{display:flex}
-.fa-add .sheet{background:#fff;border-radius:18px 18px 0 0;padding:16px 14px 24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
-.fa-add .sheet h2{margin:0 0 8px;font-size:20px;color:var(--sds-navy);font-weight:900}
-.fa-add .sheet .preview{width:100%;height:200px;background:#f5f5f5;border:1.5px dashed var(--sds-line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:48px;color:#aaa;overflow:hidden;margin-bottom:12px}
-.fa-add .sheet .preview img{width:100%;height:100%;object-fit:cover}
-.fa-add .sheet .actions{display:flex;gap:8px}
-
-/* Rating */
-.fa-stars{display:inline-flex;gap:2px;font-size:18px;color:#f0d28a}
-.fa-stars .on{color:var(--sds-saffron)}
-.fa-rating-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 0;border-bottom:1px dashed var(--sds-line);font-size:15px}
-.fa-rating-row:last-child{border-bottom:none}
-.fa-rating-row .label{font-weight:800;color:var(--sds-navy)}
-.fa-rating-note{padding:12px;background:#f0f8f0;border:1.5px solid var(--sds-green);border-radius:12px;font-size:15px;line-height:1.55;margin-top:10px;color:var(--sds-dark)}
-
-/* Outfit suggestion card */
-.fa-outfit{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:14px;margin-bottom:12px}
-.fa-outfit .title{font-size:17px;font-weight:900;color:var(--sds-navy);margin-bottom:4px}
+/* Outfit cards */
+.fa-outfit{background:#fff;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:14px;padding:14px;margin-bottom:12px}
+.fa-outfit .title{font-size:16px;font-weight:900;color:#000080;margin-bottom:4px}
 .fa-outfit .why{font-size:14px;color:#444;line-height:1.5;margin:6px 0}
 .fa-outfit .pieces{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
-.fa-outfit .pieces .p{aspect-ratio:1/1;background:#f5f5f5;border:1px solid var(--sds-line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;position:relative}
+.fa-outfit .pieces .p{aspect-ratio:1/1;background:#f5f5f5;border:1px solid var(--sds-line,#e5e7eb);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;position:relative}
 .fa-outfit .pieces .p img{width:100%;height:100%;object-fit:cover}
-.fa-outfit .pieces .p .role{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px;text-align:center;text-transform:uppercase}
+.fa-outfit .pieces .p .role{position:absolute;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;padding:1px 3px;border-radius:4px;text-align:center;text-transform:uppercase}
 
-/* Trend story */
-.fa-trend{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:14px;margin-bottom:12px}
-.fa-trend .head{font-size:18px;font-weight:900;color:var(--sds-navy);line-height:1.35}
-.fa-trend .meta{font-size:12px;color:var(--sds-muted);margin-top:4px}
-.fa-trend ul{margin:8px 0 0;padding-left:20px;font-size:15px;line-height:1.55;color:var(--sds-dark)}
-.fa-trend .have{margin-top:8px;padding:8px 10px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;font-size:14px;color:#14532d}
-.fa-trend .buy{margin-top:6px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:14px;color:#78350f}
-.fa-trend .buy b{color:#451a03}
+/* Swarm vote panel */
+.fa-swarm{margin-top:10px;border:1.5px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.fa-swarm .head{background:#000080;color:#fff;padding:10px 12px;font-weight:800;font-size:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.fa-swarm .head .score{background:#FF9933;color:#fff;border-radius:999px;padding:2px 12px;font-weight:900}
+.fa-swarm .rows{display:none;padding:8px 12px;background:#fafafa}
+.fa-swarm .rows.open{display:block}
+.fa-swarm .row{display:grid;grid-template-columns:130px 44px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dashed #e5e7eb;font-size:13px}
+.fa-swarm .row:last-child{border-bottom:none}
+.fa-swarm .row .ag{font-weight:800;color:#000080}
+.fa-swarm .row .sc{font-weight:900;color:#138808;text-align:center}
+.fa-swarm .row .wh{color:#555;line-height:1.4}
+.fa-swarm .trend{padding:8px 12px;background:#fff8e1;font-size:12.5px;color:#78350f;border-top:1px solid #fcd34d}
 
-/* Coach */
-.fa-coach-card{background:#fff;border:1.5px solid var(--sds-line);border-radius:14px;padding:14px;margin-bottom:12px}
-.fa-coach-card h3{margin:0 0 8px;font-size:18px;color:var(--sds-navy);font-weight:900}
+/* Teach block */
+.fa-teach{margin-top:10px;border:1.5px solid #c7d2fe;background:#eef2ff;border-radius:12px;padding:10px 12px}
+.fa-teach summary{font-weight:800;color:#3730a3;cursor:pointer;font-size:14px}
+.fa-teach .t{font-size:13.5px;line-height:1.55;color:#1e1b4b;margin-top:6px}
+.fa-teach .t b{color:#3730a3}
 
-/* Camera capture preview */
+/* Budget tiers */
+.fa-tiers{display:grid;gap:8px;margin-top:10px}
+.fa-tier{border:1.5px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5}
+.fa-tier.free{border-color:#138808;background:#f0faf0}
+.fa-tier.budget{border-color:#FF9933;background:#fff8ef}
+.fa-tier.premium{border-color:#c7c7c7;background:#fafafa}
+.fa-tier .lab{font-weight:900;display:flex;align-items:center;gap:6px}
+.fa-tier.free .lab{color:#138808}
+.fa-tier.budget .lab{color:#b45309}
+
+/* Wardrobe grid */
+.fa-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.fa-stats .stat{background:#fff;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:12px;padding:10px 8px;text-align:center}
+.fa-stats .stat .n{font-size:22px;font-weight:900;color:var(--sds-saffron,#FF9933);line-height:1}
+.fa-stats .stat .l{font-size:12px;color:var(--sds-muted,#777);margin-top:4px}
+.fa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.fa-tile{background:#fff;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:12px;overflow:hidden;position:relative;aspect-ratio:1/1}
+.fa-tile img{width:100%;height:100%;object-fit:cover;background:#f0f0f0}
+.fa-tile .badge{position:absolute;top:5px;left:5px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:7px;text-transform:uppercase}
+.fa-tile .x{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.55);color:#fff;border:none;width:24px;height:24px;border-radius:50%;font-size:12px;cursor:pointer}
+
+/* Add modal */
+.fa-add{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9500;align-items:flex-end;justify-content:center}
+.fa-add.shown{display:flex}
+.fa-add .sheet{background:#fff;border-radius:18px 18px 0 0;padding:16px 14px 24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.fa-add .sheet h2{margin:0 0 8px;font-size:19px;color:#000080;font-weight:900}
+.fa-add .preview{width:100%;height:180px;background:#f5f5f5;border:1.5px dashed var(--sds-line,#e5e7eb);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:46px;color:#aaa;overflow:hidden;margin-bottom:12px}
+.fa-add .preview img{width:100%;height:100%;object-fit:cover}
+.fa-field{margin-bottom:10px}
+.fa-field label{display:block;font-size:13px;font-weight:700;color:#000080;margin-bottom:4px}
+.fa-field select,.fa-field input{width:100%;padding:11px;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:10px;font-size:15px;font-family:inherit;min-height:44px}
+.fa-chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.fa-chip{padding:8px 12px;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;min-height:40px}
+.fa-chip.on{background:#fff8e1;border-color:#FF9933;color:#b45309}
+
+/* generic result + helpers */
+.fa-result{margin-top:10px}
+.fa-spin{display:inline-block;width:16px;height:16px;border:2px solid #FF9933;border-top-color:transparent;border-radius:50%;animation:fa-spin .9s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes fa-spin{to{transform:rotate(360deg)}}
+.fa-row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.fa-btn{flex:1;min-width:140px;min-height:48px;border:1.5px solid #FF9933;background:#fff;color:#b45309;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;padding:10px}
+.fa-btn.primary{background:linear-gradient(135deg,#FF9933,#E07B1D);color:#fff;border:none}
+.fa-input{width:100%;padding:12px;border:1.5px solid var(--sds-line,#e5e7eb);border-radius:12px;font-size:15px;font-family:inherit;min-height:48px;margin-top:8px}
+.fa-occasion-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fa-toolbar{display:flex;gap:6px;align-items:center;margin-top:10px;border-top:1px dashed #e5e7eb;padding-top:8px}
+.fa-toolbar button{min-width:44px;min-height:40px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-size:16px;cursor:pointer}
+.fa-tabbar{position:sticky;top:0;z-index:50;display:flex;gap:4px;overflow-x:auto;background:#F7F7F4;padding:8px 0;margin-bottom:12px}
+.fa-tabbar button{flex:0 0 auto;padding:9px 14px;border:1.5px solid #e5e7eb;background:#fff;border-radius:999px;font-size:13.5px;font-weight:800;color:#000080;cursor:pointer;min-height:44px}
+.fa-tabbar button.active{background:#000080;color:#fff;border-color:#000080}
+.fa-panel{display:none}
+.fa-panel.active{display:block}
 #fa-cam-canvas{display:none}
 </style>
-
-<!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
-     (the canonical Indian-flag palette). -->
 </head>
 <body class="sds-page fa-body">
 
@@ -99,1129 +131,692 @@ body{font-size:18px}
   <div class="sds-brand-row">
     <div class="sds-logo" aria-hidden="true">👗</div>
     <div class="sds-brand">
-      <div class="sds-brand-name" data-vai-i18n="fa.title">Chitti Fashion AI</div>
-      <div class="sds-tagline" data-vai-i18n="fa.tag">Young India का personal stylist</div>
+      <div class="sds-brand-name">Chitti Fashion</div>
+      <div class="sds-tagline">आपकी अलमारी से · हर किसी के लिए</div>
     </div>
   </div>
   <div class="sds-header-actions">
-    <select id="lang-select" class="sds-select" aria-label="भाषा बदलें" onchange="changeLang(this.value)">
+    <select id="lang-select" class="sds-select" aria-label="भाषा बदलें / Change language" onchange="faChangeLang(this.value)">
       <option value="hi">हिन्दी</option><option value="en">English</option>
       <option value="bn">বাংলা</option><option value="ta">தமிழ்</option>
       <option value="te">తెలుగు</option><option value="mr">मराठी</option>
       <option value="gu">ગુજરાતી</option><option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
     </select>
-    <button onclick="window.location.href='chitti_vaani.html'">🎙️ Chitti Vaani</button>
+    <button onclick="window.location.href='chitti_vaani.html'">🎙️ Vaani</button>
   </div>
 </header>
 
 <main>
+  <div style="margin:4px 0 12px"><span class="fa-badge">🎖️ World Class Chitti Fashion — Commando Discipline</span></div>
 
-<!-- One-time gender + privacy banner -->
-<div id="fa-onboard" style="display:none">
-  <div class="fa-privacy">
-    <span class="ico">🔒</span>
-    <div class="info"><b data-vai-i18n="fa.privacy.title">आपकी photos सिर्फ़ आपकी हैं।</b>
-    <small data-vai-i18n="fa.privacy.body">आपके device पर ही रहती हैं। बिना आपकी मर्ज़ी कहीं नहीं जातीं। DPDP 2023 के अनुसार। AI training के लिए कभी नहीं।</small></div>
-  </div>
-  <div class="fa-gender">
-    <h2 data-vai-i18n="fa.gender.title">Chitti आज किसका style करे?</h2>
-    <div class="opts">
-      <button data-g="male"   onclick="faSetGender('male',this)"><span class="em">👨</span><span data-vai-i18n="fa.gender.male">पुरुष</span></button>
-      <button data-g="female" onclick="faSetGender('female',this)"><span class="em">👩</span><span data-vai-i18n="fa.gender.female">महिला</span></button>
-      <button data-g="other"  onclick="faSetGender('other',this)"><span class="em">🌈</span><span data-vai-i18n="fa.gender.other">अन्य / बताना नहीं</span></button>
+  <!-- ── One-time gender + privacy onboarding ── -->
+  <div id="fa-onboard" style="display:none">
+    <div class="fa-privacy">
+      <span class="ico">🔒</span>
+      <div class="info"><b>आपकी photos सिर्फ़ आपकी हैं।</b>
+      <small>हर कपड़े की photo आपके phone पर ही रहती है — server पर कभी नहीं जाती। AI training के लिए कभी नहीं। DPDP 2023 के अनुसार।</small></div>
     </div>
-    <p style="font-size:13px;color:var(--sds-muted);margin:14px 0 0;line-height:1.5" data-vai-i18n="fa.body.positive">Chitti सिर्फ़ कपड़े का fit और style बताती है — आपके शरीर पर कोई टिप्पणी नहीं। हर शरीर सुंदर है।</p>
-  </div>
-</div>
-
-<!-- ══════════════ 10-second outfit video rating (Sire 2026-05-27 TASK 5) ══════════════
-     Records a 10s clip of the user's outfit, samples 5 keyframes (one every 2s)
-     and POSTs them to /api/camera/analyze with mode=fashion_video. Backend
-     uses the Gemini-OpenAI-compat multimodal endpoint to reason across the
-     frames — fit-in-motion / colour / occasion / accessories.
-     Honest stub: works only when chitti-vaani-api has the Gemini env vars set
-     (the same env-var hijack as every other LLM call site). When unconfigured
-     the result box surfaces the bilingual "server unreachable" message.
--->
-<style>
-  .fa-video-cta{margin:0 0 14px;padding:18px 16px;background:linear-gradient(135deg,#FFF7EC,#fff,#FFEDE0);border:1.5px solid #FFD9B0;border-radius:18px;box-shadow:0 6px 18px rgba(255,153,51,.12)}
-  .fa-video-cta h2{font-size:18px;font-weight:900;color:#000080;margin:0 0 6px;display:flex;align-items:center;gap:8px}
-  .fa-video-cta .sub{font-size:14px;color:#1a1a1a;line-height:1.55;margin:0 0 12px}
-  .fa-video-cta .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#FF9933,#E07B1D);color:#fff;border:none;border-radius:14px;padding:14px 22px;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;min-height:48px;box-shadow:0 8px 22px rgba(255,153,51,.35);transition:transform .15s}
-  .fa-video-cta .btn:hover,.fa-video-cta .btn:focus-visible{transform:translateY(-2px);outline:none;box-shadow:0 12px 28px rgba(255,153,51,.45)}
-  .fa-video-cta .btn:disabled{filter:grayscale(.4) brightness(.95);cursor:wait}
-
-  .fa-video-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9700;align-items:flex-start;justify-content:center;padding:14px;flex-direction:column}
-  .fa-video-overlay.shown{display:flex}
-  .fa-video-overlay .fa-video-head{color:#fff;font-weight:900;font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;width:100%;max-width:620px;margin-left:auto;margin-right:auto}
-  .fa-video-overlay .fa-video-head .close{margin-left:auto;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);color:#fff;border-radius:10px;width:44px;height:44px;font-size:18px;cursor:pointer}
-  .fa-video-overlay video{flex:1;width:100%;max-width:620px;background:#000;border-radius:14px;object-fit:cover;margin:0 auto}
-  .fa-video-overlay .fa-video-ctl{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;max-width:620px;margin:14px auto 0;color:#fff}
-  .fa-video-overlay .fa-video-shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:4px solid #FF9933;cursor:pointer;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(255,153,51,.5)}
-  .fa-video-overlay .fa-video-shutter[disabled]{background:#ddd;border-color:#aaa;color:#666;cursor:not-allowed}
-  .fa-video-overlay .fa-video-shutter.recording{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;animation:fa-pulse 1s infinite}
-  @keyframes fa-pulse{50%{box-shadow:0 0 0 12px rgba(220,38,38,.18)}}
-  .fa-video-overlay .countdown{font-size:20px;font-weight:900;min-width:60px;text-align:center;background:rgba(255,255,255,.10);border-radius:10px;padding:6px 10px}
-  .fa-video-overlay .fa-video-flip{min-width:48px;min-height:48px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);color:#fff;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer}
-
-  .fa-video-result{margin:14px 0;background:#fff;border:1.5px solid #FF9933;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(255,153,51,.18)}
-  .fa-video-result h3{margin:0 0 8px;font-size:16px;color:#FF9933;display:flex;align-items:center;gap:6px;font-weight:900}
-  .fa-video-result .body{font-size:15px;line-height:1.65;white-space:pre-wrap;color:#1a1a1a}
-  .fa-video-result .frames{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-  .fa-video-result .frames img{width:64px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb}
-  .fa-video-result .spinner{display:inline-block;width:16px;height:16px;border:2px solid #FF9933;border-top-color:transparent;border-radius:50%;animation:fa-spin .9s linear infinite;vertical-align:middle;margin-right:8px}
-  @keyframes fa-spin{to{transform:rotate(360deg)}}
-</style>
-<div class="fa-video-cta" role="region" aria-label="10-second outfit video rating">
-  <h2>🎬 <span>10-second outfit rating</span></h2>
-  <p class="sub">पूरा outfit 10 second तक record कीजिए — Chitti fit, रंग, occasion और movement rate करेगी, और एक accessory भी suggest करेगी (₹1,500 के अंदर).</p>
-  <button id="fa-vid-start" class="btn" type="button" aria-label="Start 10-second outfit rating recording">
-    <span aria-hidden="true">🎬</span> Start 10-second rating
-  </button>
-</div>
-<div id="fa-vid-result-host"></div>
-<div id="fa-vid-overlay" class="fa-video-overlay" role="dialog" aria-modal="true" aria-labelledby="fa-vid-title" aria-hidden="true">
-  <div class="fa-video-head">
-    <span id="fa-vid-title">🎬 Outfit rating — 10 seconds</span>
-    <button class="close" type="button" id="fa-vid-close" aria-label="Cancel recording">✕</button>
-  </div>
-  <video id="fa-vid-video" autoplay playsinline muted></video>
-  <div class="fa-video-ctl">
-    <button class="fa-video-flip" type="button" id="fa-vid-flip" aria-label="Flip camera">⟳ Flip</button>
-    <button class="fa-video-shutter" type="button" id="fa-vid-shutter" aria-label="Start / stop recording">●</button>
-    <div class="countdown" id="fa-vid-count" aria-live="polite">10s</div>
-  </div>
-</div>
-<script>
-(function(){
-  'use strict';
-  var VAANI_API = window.CHITTI_VAANI_API || window.CHITTI_CAMERA_ANALYZE_API ||
-                  'https://chitti-vaani-api-production.up.railway.app';
-  var FRAMES_PER_CLIP = 5;
-  var CLIP_DURATION_MS = 10000;
-  var stream = null, frameTimer = null, stopTimer = null, frames = [];
-  var facing = 'user';   // selfie default — outfit shots are usually self-recorded
-
-  function $(id){ return document.getElementById(id); }
-  function langNow(){
-    try {
-      if (window.Chitti && Chitti.a11y && Chitti.a11y.lang && Chitti.a11y.lang.current)
-        return Chitti.a11y.lang.current;
-    } catch(e){}
-    var k = (localStorage.getItem('chitti_lang') || localStorage.getItem('language_preference') || '').trim();
-    if (k) return k;
-    var n = (navigator.language || 'hi').split('-')[0];
-    return ['hi','en','bn','te','ta','mr','gu','kn','ml','pa'].indexOf(n) >= 0 ? n : 'hi';
-  }
-  function speak(text){
-    try {
-      if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.speak === 'function') {
-        Chitti.a11y.speak(text, langNow());
-        return;
-      }
-      if (window.speechSynthesis) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.lang = (langNow() === 'en' ? 'en-IN' : (langNow() + '-IN'));
-        speechSynthesis.speak(u);
-      }
-    } catch(e){}
-  }
-  function userToken(){
-    try {
-      var t = localStorage.getItem('chitti_user_token_v1');
-      if (t && t.length >= 8) return t;
-      t = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
-        : 'fv-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
-      localStorage.setItem('chitti_user_token_v1', t);
-      return t;
-    } catch(e){ return 'fv-anon-' + Date.now().toString(36); }
-  }
-
-  async function openCam(){
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('Camera इस device पर open नहीं हो सका. Vaani से चलाएं या नयी डिवाइस आज़माएं.');
-      return;
-    }
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-      $('fa-vid-video').srcObject = stream;
-      $('fa-vid-overlay').classList.add('shown');
-      $('fa-vid-overlay').setAttribute('aria-hidden', 'false');
-      $('fa-vid-shutter').disabled = false;
-      $('fa-vid-shutter').classList.remove('recording');
-      $('fa-vid-shutter').textContent = '●';
-      $('fa-vid-count').textContent = '10s';
-    } catch(e){
-      console.warn('[fa-video] getUserMedia failed:', e);
-      alert('Camera permission नहीं मिली. Browser settings में जाकर allow करें.');
-    }
-  }
-  function closeCam(){
-    if (stopTimer)  { clearTimeout(stopTimer);  stopTimer = null; }
-    if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
-    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
-    $('fa-vid-overlay').classList.remove('shown');
-    $('fa-vid-overlay').setAttribute('aria-hidden', 'true');
-  }
-  function startRecording(){
-    if (!stream) return;
-    frames = [];
-    $('fa-vid-shutter').classList.add('recording');
-    $('fa-vid-shutter').textContent = '■';
-    $('fa-vid-shutter').disabled = true;
-    speak(langNow() === 'hi' ? 'Outfit दिखाइए, 10 second' : 'Show the outfit for 10 seconds');
-
-    var startedAt = Date.now();
-    var video = $('fa-vid-video');
-    var canvas = document.createElement('canvas');
-    // 1280×720 → scaled down to ~720 long-side to keep payload modest
-    var sourceW = video.videoWidth || 1280, sourceH = video.videoHeight || 720;
-    var scale = Math.min(720 / Math.max(sourceW, sourceH), 1);
-    canvas.width  = Math.floor(sourceW * scale);
-    canvas.height = Math.floor(sourceH * scale);
-    var ctx = canvas.getContext('2d');
-
-    function snap(){
-      try {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        frames.push(canvas.toDataURL('image/jpeg', 0.78));
-        var remain = Math.max(0, Math.ceil((CLIP_DURATION_MS - (Date.now() - startedAt)) / 1000));
-        $('fa-vid-count').textContent = remain + 's';
-      } catch(e){
-        console.warn('[fa-video] snap failed:', e);
-      }
-    }
-    snap(); // t=0
-    var step = CLIP_DURATION_MS / FRAMES_PER_CLIP;
-    frameTimer = setInterval(snap, step);
-    stopTimer = setTimeout(function(){
-      if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
-      // Cap frames at FRAMES_PER_CLIP — extra ticks can sneak in due to drift.
-      var picked = frames.slice(0, FRAMES_PER_CLIP);
-      closeCam();
-      analyzeFrames(picked);
-    }, CLIP_DURATION_MS);
-  }
-  async function analyzeFrames(framesArr){
-    var host = $('fa-vid-result-host');
-    var box = document.createElement('div');
-    box.className = 'fa-video-result chitti-response';
-    var boxId = 'fa-vid-' + Date.now().toString(36);
-    box.id = boxId;
-    box.setAttribute('data-chitti-response', boxId);
-    box.setAttribute('data-chitti-section', 'Chitti Fashion — 10s outfit rating');
-    box.setAttribute('role', 'region');
-    box.setAttribute('aria-live', 'polite');
-    box.innerHTML = '<h3><span class="spinner" aria-hidden="true"></span> Chitti rating ' + framesArr.length + ' frames…</h3>';
-    host.insertBefore(box, host.firstChild);
-    try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
-    speak(langNow() === 'hi' ? 'चित्ती देख रही है' : 'Chitti is looking');
-
-    try {
-      var r = await fetch(VAANI_API.replace(/\/$/, '') + '/api/camera/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'fashion_video',
-          lang: langNow(),
-          user_token: userToken(),
-          page: 'chitti_fashion',
-          image_b64_frames: framesArr,
-        }),
-      });
-      var j = await r.json().catch(function(){ return {}; });
-      if (!r.ok || !j.ok) throw new Error(j.error || ('http ' + r.status));
-      renderResult(box, j.text || '', framesArr);
-    } catch(e){
-      console.warn('[fa-video] analyze failed:', e);
-      var msg = (langNow() === 'hi')
-        ? 'चित्ती को server से जवाब नहीं मिला. थोड़ी देर में दोबारा try करें.'
-        : "Chitti could not reach the server. Try again in a moment.";
-      renderResult(box, msg, framesArr);
-    }
-  }
-  function escapeHTML(s){
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function renderResult(box, text, framesArr){
-    var thumbs = '';
-    framesArr.forEach(function(b, i){ thumbs += '<img alt="frame ' + (i+1) + '" src="' + b + '">'; });
-    box.innerHTML =
-      '<h3>👗 Chitti Fashion — 10s outfit rating</h3>' +
-      '<div class="body">' + escapeHTML(text) + '</div>' +
-      '<div class="frames" aria-label="captured frames">' + thumbs + '</div>';
-    try { speak(text); } catch(e){}
-    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
-  }
-
-  // Wire UI.
-  function init(){
-    var btn = $('fa-vid-start');
-    if (!btn) return;
-    btn.addEventListener('click', openCam);
-    $('fa-vid-close').addEventListener('click', closeCam);
-    $('fa-vid-shutter').addEventListener('click', startRecording);
-    $('fa-vid-flip').addEventListener('click', async function(){
-      facing = (facing === 'user') ? 'environment' : 'user';
-      if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false,
-        });
-        $('fa-vid-video').srcObject = stream;
-      } catch(e){ console.warn('[fa-video] flip failed:', e); }
-    });
-    // ESC closes the overlay.
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape' && $('fa-vid-overlay').classList.contains('shown')) closeCam();
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-<!-- ══════════════ TAB 1 · ALMARI ══════════════ -->
-<div class="sds-tab-panel active" id="fa-tab-almari">
-  <div id="fa-almari-empty" class="sds-empty" style="display:none">
-    <div class="big">👗</div>
-    <div class="title" data-vai-i18n="fa.empty.almari.title">अपनी अलमारी बनाइए</div>
-    <div class="sub" data-vai-i18n="fa.empty.almari.sub">हर कपड़े की एक photo लीजिए — Chitti रंग और श्रेणी ख़ुद टैग करेगी। Photos सिर्फ़ आपके phone पर रहती हैं।</div>
-    <button class="sds-btn primary" onclick="faOpenAdd()" data-vai-i18n="fa.almari.add">📷 नया item जोड़ें</button>
-  </div>
-
-  <div id="fa-almari-main" style="display:none">
-    <div  data-chitti-response="fa-card-01" class="sds-card chitti-response" data-chitti-section="👗 आपकी अलमारी">
-      <h2 class="sds-card-title"><span class="ico">👗</span> <span data-vai-i18n="fa.almari.stats">आपकी अलमारी</span></h2>
-      <div class="fa-stats">
-        <div class="stat"><div class="n" id="fa-n-top">0</div><div class="l" data-vai-i18n="fa.cat.top">ऊपर के कपड़े</div></div>
-        <div class="stat"><div class="n" id="fa-n-bottom">0</div><div class="l" data-vai-i18n="fa.cat.bottom">नीचे के कपड़े</div></div>
-        <div class="stat"><div class="n" id="fa-n-outfit">0</div><div class="l" data-vai-i18n="fa.cat.outfit">पूरा पहनावा</div></div>
-        <div class="stat"><div class="n" id="fa-n-foot">0</div><div class="l" data-vai-i18n="fa.cat.foot">पादत्राण</div></div>
-        <div class="stat"><div class="n" id="fa-n-bag">0</div><div class="l" data-vai-i18n="fa.cat.bag">बैग</div></div>
-        <div class="stat"><div class="n" id="fa-n-jewel">0</div><div class="l" data-vai-i18n="fa.cat.jewel">ज़ेवर</div></div>
+    <div class="fa-gender">
+      <h2>Chitti आज किसका style करे?</h2>
+      <div class="opts">
+        <button data-g="male"   onclick="faSetGender('male',this)"><span class="em">👨</span><span>पुरुष</span></button>
+        <button data-g="female" onclick="faSetGender('female',this)"><span class="em">👩</span><span>महिला</span></button>
+        <button data-g="other"  onclick="faSetGender('other',this)"><span class="em">🌈</span><span>अन्य / बताना नहीं</span></button>
       </div>
-      <button class="sds-btn accent block" style="margin-top:10px" onclick="faOpenAdd()" data-vai-i18n="fa.almari.add">📷 नया item जोड़ें</button>
-      <div id="fa-rare-alert" style="display:none;margin-top:10px;padding:10px;background:#fff8e1;border:1.5px solid #fcd34d;border-radius:10px;font-size:14px;color:#78350f"></div>
-      <div class="sds-card-toolbar">
-        <button onclick="speakText(faStatsLine(), CURRENT_LANG)">🔊</button>
-        <span class="sep"></span>
-        <button class="fb-pos" onclick="logProductAction('fa_almari',1)">👍</button>
-        <button class="fb-neg" onclick="sdsToggleFb('fa-almari-fb')">👎</button>
-      </div>
-      <div class="sds-fb-panel" id="fa-almari-fb">
-        <textarea id="fa-almari-fb-text" placeholder="Almari mein kya kami hai?"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-almari-fb')">रद्द</button><button onclick="sendFb('fa_almari','fa-almari-fb-text','fa-almari-fb')">भेजो</button></div>
-      </div>
+      <p style="font-size:13px;color:#777;margin:12px 0 0;line-height:1.5">Chitti सिर्फ़ कपड़े का fit, रंग और style बताती है — आपके शरीर पर कोई टिप्पणी नहीं। हर शरीर सुंदर है।</p>
     </div>
+  </div>
 
-    <div  data-chitti-response="fa-card-02" class="sds-card chitti-response" data-chitti-section="🧺 सभी items">
-      <h2 class="sds-card-title"><span class="ico">🧺</span> सभी items</h2>
+  <!-- ── HERO · Dress Me From What I Own (PRD F0) ── -->
+  <div data-chitti-response="fa-card-hero" class="fa-hero chitti-response" data-chitti-section="👗 आज क्या पहनूँ — मेरी अलमारी से">
+    <span class="free-pill">₹0 · आपके अपने कपड़ों से</span>
+    <h2>👗 आज क्या पहनूँ?</h2>
+    <p>Chitti आपकी अलमारी देखकर 3 पूरे outfit बनाएगी — कुछ खरीदने की ज़रूरत नहीं। जो आपके पास है, उसी से।</p>
+    <button class="cta" id="fa-dressme" onclick="faDressMe()">✨ मेरी अलमारी से outfit बनाओ</button>
+    <div id="fa-dressme-result" class="fa-result"></div>
+    <div class="fa-toolbar">
+      <button onclick="faSpeak(faHeroSpoken())" aria-label="सुनें">🔊</button>
+      <button onclick="faExplain('fa-card-hero')" aria-label="Chitti समझाए">🤖</button>
+      <button onclick="faFeedback('fa_today',1)" aria-label="अच्छा लगा">👍</button>
+      <button onclick="faFeedback('fa_today',-1)" aria-label="अच्छा नहीं लगा">👎</button>
+    </div>
+  </div>
+
+  <!-- ── Tab bar ── -->
+  <nav class="fa-tabbar" role="tablist" aria-label="Chitti Fashion sections">
+    <button class="active" data-tab="almari" onclick="faTab('almari',this)">🧺 अलमारी</button>
+    <button data-tab="review" onclick="faTab('review',this)">🪞 Outfit जाँच</button>
+    <button data-tab="occasion" onclick="faTab('occasion',this)">🎉 मौक़ा</button>
+    <button data-tab="budget" onclick="faTab('budget',this)">💸 बजट</button>
+    <button data-tab="learn" onclick="faTab('learn',this)">🎓 सीखें</button>
+  </nav>
+
+  <!-- ════ TAB · ALMARI ════ -->
+  <section class="fa-panel active" id="fa-panel-almari" role="tabpanel">
+    <div data-chitti-response="fa-card-01" class="sds-card chitti-response" data-chitti-section="🧺 आपकी अलमारी">
+      <h2 class="sds-card-title"><span class="ico">🧺</span> आपकी अलमारी</h2>
+      <div id="fa-almari-empty" style="display:none;text-align:center;padding:14px 4px">
+        <div style="font-size:46px">👗</div>
+        <p style="font-weight:800;color:#000080;margin:6px 0 4px">अपनी अलमारी बनाइए</p>
+        <p style="font-size:13.5px;color:#666;line-height:1.5">हर कपड़े की एक photo लीजिए — Chitti रंग और श्रेणी ख़ुद टैग करेगी। Photos सिर्फ़ आपके phone पर रहती हैं।</p>
+      </div>
+      <div class="fa-stats" id="fa-stats">
+        <div class="stat"><div class="n" id="fa-n-top">0</div><div class="l">ऊपर</div></div>
+        <div class="stat"><div class="n" id="fa-n-bottom">0</div><div class="l">नीचे</div></div>
+        <div class="stat"><div class="n" id="fa-n-outfit">0</div><div class="l">पूरा</div></div>
+        <div class="stat"><div class="n" id="fa-n-foot">0</div><div class="l">जूते</div></div>
+        <div class="stat"><div class="n" id="fa-n-jewel">0</div><div class="l">ज़ेवर</div></div>
+        <div class="stat"><div class="n" id="fa-n-other">0</div><div class="l">बाक़ी</div></div>
+      </div>
+      <button class="fa-btn primary" style="width:100%;margin-top:10px" onclick="faOpenAdd()">📷 नया item जोड़ें</button>
+      <div id="fa-rare-alert" style="display:none;margin-top:10px;padding:10px;background:#fff8e1;border:1.5px solid #fcd34d;border-radius:10px;font-size:13.5px;color:#78350f"></div>
       <div class="fa-grid" id="fa-grid"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faStatsSpoken())" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-01')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_almari',1)">👍</button>
+        <button onclick="faFeedback('fa_almari',-1)">👎</button>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- ══════════════ TAB 2 · SHOPPING ══════════════ -->
-<div class="sds-tab-panel" id="fa-tab-shopping">
-  <div  data-chitti-response="fa-card-03" class="sds-card chitti-response" data-chitti-section="🛍️ खरीदारी साथी">
-    <h2 class="sds-card-title"><span class="ico">🛍️</span> <span data-vai-i18n="fa.shop.title">खरीदारी साथी</span></h2>
-    <div class="sds-card-sub" data-vai-i18n="fa.shop.sub">Trial room की photo या product का link — Chitti fit, रंग, अलमारी match, मौक़ा और दाम rate करेगी।</div>
-    <div class="fa-add .preview" id="fa-shop-preview" style="display:none"></div>
-    <img id="fa-shop-photo" style="display:none;width:100%;border-radius:12px;border:1px solid var(--sds-line);margin-bottom:10px" alt="try-on">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="sds-btn accent" onclick="faShopTakePhoto()"><span data-vai-i18n="fa.shop.take">📷 Trial room photo</span></button>
-      <button class="sds-btn ghost" onclick="document.getElementById('fa-shop-file').click()"><span data-vai-i18n="fa.shop.upload">⬆️ Upload photo</span></button>
+  <!-- ════ TAB · OUTFIT REVIEW / DESCRIBE MY OUTFIT ════ -->
+  <section class="fa-panel" id="fa-panel-review" role="tabpanel">
+    <div data-chitti-response="fa-card-02" class="sds-card chitti-response" data-chitti-section="🪞 Outfit जाँच">
+      <h2 class="sds-card-title"><span class="ico">🪞</span> आज का outfit जाँचें</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">बताइए आप क्या पहन रहे हैं और कहाँ जा रहे हैं — Chitti के 7 expert मिलकर राय देंगे। (आँखों से न देख पाने वालों के लिए: Chitti आपका outfit बोलकर बताएगी।)</p>
+      <input class="fa-input" id="fa-review-text" placeholder="जैसे: नीला cotton kurta, काली pant — office जाना है">
+      <div class="fa-occasion-chips" id="fa-review-occasions"></div>
+      <div class="fa-row-btns">
+        <button class="fa-btn primary" onclick="faReview()">🪞 7 experts की राय लो</button>
+        <button class="fa-btn" onclick="faDescribeMine()">👁️ मैं क्या पहन रहा/रही हूँ?</button>
+      </div>
+      <div id="fa-review-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-review-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-02')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_review',1)">👍</button>
+        <button onclick="faFeedback('fa_review',-1)">👎</button>
+      </div>
     </div>
-    <input type="file" id="fa-shop-file" accept="image/*" style="display:none" onchange="faShopFile(this)">
+  </section>
 
-    <div class="sds-field" style="margin-top:14px">
-      <label>मौक़ा (occasion)</label>
-      <select id="fa-shop-occ" class="sds-select">
-        <option value="casual" data-vai-i18n="fa.occ.casual">आम</option>
-        <option value="office" data-vai-i18n="fa.occ.office">दफ़्तर</option>
-        <option value="formal" data-vai-i18n="fa.occ.formal">औपचारिक</option>
-        <option value="wedding" data-vai-i18n="fa.occ.wedding">शादी</option>
-        <option value="festive" data-vai-i18n="fa.occ.festive">त्योहार</option>
-      </select>
+  <!-- ════ TAB · OCCASION + WEATHER ════ -->
+  <section class="fa-panel" id="fa-panel-occasion" role="tabpanel">
+    <div data-chitti-response="fa-card-03" class="sds-card chitti-response" data-chitti-section="🎉 मौक़े के लिए तैयार?">
+      <h2 class="sds-card-title"><span class="ico">🎉</span> मौक़े के लिए तैयार?</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">शादी, interview, office, त्योहार — बताइए कहाँ जाना है। Chitti आपकी अलमारी से सही outfit चुनेगी और मौसम भी देखेगी।</p>
+      <div class="fa-occasion-chips" id="fa-occasion-chips"></div>
+      <input class="fa-input" id="fa-occasion-text" placeholder="और कुछ? जैसे: चचेरे भाई की शादी की sangeet, Bangalore">
+      <div class="fa-row-btns">
+        <button class="fa-btn primary" onclick="faOccasion()">🎯 क्या पहनूँ बताओ</button>
+        <button class="fa-btn" onclick="faWeather()">☁️ आज का मौसम देखो</button>
+      </div>
+      <div id="fa-occasion-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-occasion-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-03')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_occasion',1)">👍</button>
+        <button onclick="faFeedback('fa_occasion',-1)">👎</button>
+      </div>
     </div>
-    <div class="sds-field">
-      <label>दाम (₹)</label>
-      <input id="fa-shop-price" class="sds-input" placeholder="2000" inputmode="numeric">
-    </div>
-    <div class="sds-field">
-      <label>कौनसा kapda / जगह?</label>
-      <input id="fa-shop-desc" class="sds-input" placeholder="e.g. blue cotton kurta, Pantaloons, M size">
-    </div>
-    <button class="sds-btn primary block" onclick="faShopRate()" data-vai-i18n="fa.shop.rate">⭐ Rate this</button>
+  </section>
 
-    <div id="fa-shop-result" style="margin-top:12px"></div>
+  <!-- ════ TAB · BUDGET (Free → Budget → Premium) ════ -->
+  <section class="fa-panel" id="fa-panel-budget" role="tabpanel">
+    <div data-chitti-response="fa-card-04" class="sds-card chitti-response" data-chitti-section="💸 खरीदना ज़रूरी है? तीन रास्ते">
+      <h2 class="sds-card-title"><span class="ico">💸</span> खरीदना ज़रूरी है?</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti पहले देखेगी कि आपकी अलमारी से ही काम हो जाए (₹0)। फिर सस्ता, फिर premium — और हमेशा सच बताएगी कि कहाँ सस्ता मिलेगा।</p>
+      <input class="fa-input" id="fa-budget-text" placeholder="क्या चाहिए? जैसे: office के लिए formal shirt">
+      <div class="fa-row-btns">
+        <button class="fa-btn primary" onclick="faBudget()">💸 तीन रास्ते दिखाओ</button>
+      </div>
+      <div id="fa-budget-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-budget-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-04')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_budget',1)">👍</button>
+        <button onclick="faFeedback('fa_budget',-1)">👎</button>
+      </div>
+    </div>
+  </section>
 
-    <div class="sds-card-toolbar">
-      <button onclick="speakText('Photo lijiye trial room ki ya upload kijiye. Chitti fit, rang, almari match, mauqa aur daam rate karegi.', CURRENT_LANG)">🔊</button>
-      <span class="sep"></span>
-      <button class="fb-pos" onclick="logProductAction('fa_shop',1)">👍</button>
-      <button class="fb-neg" onclick="sdsToggleFb('fa-shop-fb')">👎</button>
+  <!-- ════ TAB · LEARN (Teach mode) ════ -->
+  <section class="fa-panel" id="fa-panel-learn" role="tabpanel">
+    <div data-chitti-response="fa-card-05" class="sds-card chitti-response" data-chitti-section="🎓 Chitti सिखाती है">
+      <h2 class="sds-card-title"><span class="ico">🎓</span> Chitti सिखाती है</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">सिर्फ़ जवाब नहीं — Chitti बताती है <b>क्यों</b>। रंग क्यों match करते हैं, कौन-सा cut क्यों अच्छा लगता है, accessory कब टकराती है।</p>
+      <input class="fa-input" id="fa-learn-text" placeholder="कुछ पूछिए: जैसे — नीले के साथ कौन-सा रंग जँचता है?">
+      <div class="fa-row-btns">
+        <button class="fa-btn primary" onclick="faLearn()">🎓 समझाओ Chitti</button>
+      </div>
+      <div id="fa-learn-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-learn-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-05')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_learn',1)">👍</button>
+        <button onclick="faFeedback('fa_learn',-1)">👎</button>
+      </div>
     </div>
-    <div class="sds-fb-panel" id="fa-shop-fb">
-      <textarea id="fa-shop-fb-text" placeholder="Rating kaisa laga?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-shop-fb')">रद्द</button><button onclick="sendFb('fa_shop','fa-shop-fb-text','fa-shop-fb')">भेजो</button></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ TAB 3 · AAJ KYA PEHNU ══════════════ -->
-<div class="sds-tab-panel" id="fa-tab-today">
-  <div  data-chitti-response="fa-card-04" class="sds-card chitti-response" data-chitti-section="✨ आज क्या पहनूँ">
-    <h2 class="sds-card-title"><span class="ico">✨</span> <span data-vai-i18n="fa.today.title">आज क्या पहनूँ</span></h2>
-    <div class="sds-card-sub" data-vai-i18n="fa.today.sub">आपकी अपनी अलमारी से 3 outfits — खरीदना नहीं है।</div>
-    <div class="sds-field"><label data-vai-i18n="fa.today.go">आज कहाँ जा रहे हैं?</label>
-      <select id="fa-today-occ" class="sds-select">
-        <option value="office" data-vai-i18n="fa.occ.office">दफ़्तर</option>
-        <option value="casual" data-vai-i18n="fa.occ.casual">आम / college</option>
-        <option value="formal" data-vai-i18n="fa.occ.formal">औपचारिक meeting</option>
-        <option value="wedding" data-vai-i18n="fa.occ.wedding">शादी</option>
-        <option value="festive" data-vai-i18n="fa.occ.festive">त्योहार</option>
-        <option value="date">Date</option>
-      </select>
-    </div>
-    <div class="sds-field"><label data-vai-i18n="fa.today.need">कोई ख़ास ज़रूरत?</label>
-      <input id="fa-today-need" class="sds-input" placeholder="Comfortable, impress karna hai, traditional, western — कुछ भी"></div>
-    <div class="sds-field"><label data-vai-i18n="fa.today.weather">आज का मौसम</label>
-      <select id="fa-today-weather" class="sds-select">
-        <option value="summer" data-vai-i18n="fa.season.summer">गर्मी</option>
-        <option value="winter" data-vai-i18n="fa.season.winter">सर्दी</option>
-        <option value="monsoon">मानसून</option>
-        <option value="all" data-vai-i18n="fa.season.all">हर मौसम</option>
-      </select>
-    </div>
-    <button class="sds-btn primary block" onclick="faToday()"><span data-vai-i18n="fa.today.suggest">✨ Outfit सुझाओ</span></button>
-    <div id="fa-today-result" style="margin-top:12px"></div>
-    <div class="sds-card-toolbar">
-      <button onclick="speakText('Apni almari se 3 outfits suggest karoongi. Aapko bas mauqa batao aur mausam.', CURRENT_LANG)">🔊</button>
-      <span class="sep"></span>
-      <button class="fb-pos" onclick="logProductAction('fa_today',1)">👍</button>
-      <button class="fb-neg" onclick="sdsToggleFb('fa-today-fb')">👎</button>
-    </div>
-    <div class="sds-fb-panel" id="fa-today-fb">
-      <textarea id="fa-today-fb-text" placeholder="Suggestions kaisi rahin?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-today-fb')">रद्द</button><button onclick="sendFb('fa_today','fa-today-fb-text','fa-today-fb')">भेजो</button></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ TAB 4 · TRENDS ══════════════ -->
-<div class="sds-tab-panel" id="fa-tab-trends">
-  <div  data-chitti-response="fa-card-05" class="sds-card chitti-response" data-chitti-section="📰 भारत में ट्रेंड">
-    <h2 class="sds-card-title"><span class="ico">📰</span> <span data-vai-i18n="fa.trends.title">भारत में क्या trend है</span></h2>
-    <div class="sds-card-sub" data-vai-i18n="fa.trends.sub">रोज़ — Instagram India, Bollywood इस हफ़्ते, त्योहार + बजट खोज।</div>
-    <button class="sds-btn ghost block" style="margin-bottom:10px" onclick="faLoadTrends()">↻ ताज़ा ट्रेंड लाओ</button>
-    <div id="fa-trends-list"></div>
-    <div class="sds-card-toolbar">
-      <button onclick="speakText(document.getElementById('fa-trends-list').textContent, CURRENT_LANG)">🔊</button>
-      <span class="sep"></span>
-      <button class="fb-pos" onclick="logProductAction('fa_trends',1)">👍</button>
-      <button class="fb-neg" onclick="sdsToggleFb('fa-trends-fb')">👎</button>
-    </div>
-    <div class="sds-fb-panel" id="fa-trends-fb">
-      <textarea id="fa-trends-fb-text" placeholder="Trends sahi hain?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-trends-fb')">रद्द</button><button onclick="sendFb('fa_trends','fa-trends-fb-text','fa-trends-fb')">भेजो</button></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ TAB 5 · FASHION AI COACH ══════════════ -->
-<div class="sds-tab-panel" id="fa-tab-coach">
-  <div  data-chitti-response="fa-card-06" class="sds-card chitti-response" data-chitti-section="🎓 Fashion AI Coach">
-    <h2 class="sds-card-title"><span class="ico">🎓</span> <span data-vai-i18n="fa.coach.title">Fashion AI Coach</span></h2>
-    <div class="sds-card-sub" data-vai-i18n="fa.coach.profile">आप कौन हैं?</div>
-    <div id="fa-role-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-      <button class="sds-btn ghost" data-role="student"    onclick="faSetRole('student',this)"><span data-vai-i18n="fa.role.student">📚 विद्यार्थी</span></button>
-      <button class="sds-btn ghost" data-role="pro"        onclick="faSetRole('pro',this)"><span data-vai-i18n="fa.role.pro">💼 नौकरीपेशा</span></button>
-      <button class="sds-btn ghost" data-role="designer"   onclick="faSetRole('designer',this)"><span data-vai-i18n="fa.role.designer">✂️ डिज़ाइनर</span></button>
-      <button class="sds-btn ghost" data-role="boutique"   onclick="faSetRole('boutique',this)"><span data-vai-i18n="fa.role.boutique">🏪 बुटीक</span></button>
-      <button class="sds-btn ghost" data-role="influencer" onclick="faSetRole('influencer',this)"><span data-vai-i18n="fa.role.influencer">📸 Influencer</span></button>
-      <button class="sds-btn ghost" data-role="curious"    onclick="faSetRole('curious',this)"><span data-vai-i18n="fa.role.curious">🌱 जिज्ञासु</span></button>
-    </div>
-    <button class="sds-btn primary block" style="margin-top:10px" onclick="faCoachLoad()">🎓 Chitti से fresh insights लो</button>
-  </div>
-
-  <div  data-chitti-response="fa-card-07" class="sds-card chitti-response" data-chitti-section="🛠️ Fashion AI tools" id="fa-tools-card" style="display:none">
-    <h2 class="sds-card-title"><span class="ico">🛠️</span> <span data-vai-i18n="fa.coach.tools">Fashion के लिए AI tools</span></h2>
-    <div id="fa-tools-list">…</div>
-    <div class="sds-card-toolbar">
-      <button onclick="speakText(document.getElementById('fa-tools-list').textContent, CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="faCoachLoad()">▶ Refresh</button>
-      <span class="sep"></span>
-      <button class="fb-pos" onclick="logProductAction('fa_tools',1)">👍</button>
-      <button class="fb-neg" onclick="sdsToggleFb('fa-tools-fb')">👎</button>
-    </div>
-    <div class="sds-fb-panel" id="fa-tools-fb">
-      <textarea id="fa-tools-fb-text" placeholder="Tools list kaisa laga?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-tools-fb')">रद्द</button><button onclick="sendFb('fa_tools','fa-tools-fb-text','fa-tools-fb')">भेजो</button></div>
-    </div>
-  </div>
-
-  <div  data-chitti-response="fa-card-08" class="sds-card chitti-response" data-chitti-section="🏆 Real free certs" id="fa-certs-card" style="display:none">
-    <h2 class="sds-card-title"><span class="ico">🏆</span> <span data-vai-i18n="fa.coach.certs">असली मुफ़्त certifications</span></h2>
-    <div id="fa-certs-list"></div>
-    <div class="sds-card-toolbar">
-      <button onclick="speakText(document.getElementById('fa-certs-list').textContent, CURRENT_LANG)">🔊</button>
-      <button class="demo" onclick="faCoachLoad()">▶ Refresh</button>
-      <span class="sep"></span>
-      <button class="fb-pos" onclick="logProductAction('fa_certs',1)">👍</button>
-      <button class="fb-neg" onclick="sdsToggleFb('fa-certs-fb')">👎</button>
-    </div>
-    <div class="sds-fb-panel" id="fa-certs-fb">
-      <textarea id="fa-certs-fb-text" placeholder="Certs sahi hain?"></textarea>
-      <div class="actions"><button class="cancel" onclick="sdsToggleFb('fa-certs-fb')">रद्द</button><button onclick="sendFb('fa_certs','fa-certs-fb-text','fa-certs-fb')">भेजो</button></div>
-    </div>
-  </div>
-
-  <div  data-chitti-response="fa-card-09" class="sds-card chitti-response" data-chitti-section="🎖️ Sahayai Fashion AI Certificate" id="fa-cert-card-wrap" style="display:none">
-    <h2 class="sds-card-title"><span class="ico">🎖️</span> <span data-vai-i18n="fa.coach.cert">Sahayai Fashion AI Certificate</span></h2>
-    <div class="sds-cert" id="fa-cert-card"></div>
-    <button class="sds-btn primary block" style="margin-top:10px" onclick="faShareCert()">📱 शेयर करो</button>
-  </div>
-  <button class="sds-btn ghost block" onclick="faGenerateCert()">🎖️ Sample certificate देखो</button>
-</div>
+  </section>
 
 </main>
 
-<!-- ══════════════ ADD-ITEM SHEET ══════════════ -->
-<div class="fa-add" id="fa-add-modal" role="dialog" aria-modal="true">
+<!-- Add-item modal -->
+<div class="fa-add" id="fa-add" role="dialog" aria-modal="true" aria-labelledby="fa-add-title">
   <div class="sheet">
-    <h2>📷 कपड़ा जोड़ें</h2>
-    <div class="preview" id="fa-add-preview">📷</div>
-    <div class="actions">
-      <button class="sds-btn accent" onclick="faTakePhoto()">📷 Camera</button>
-      <button class="sds-btn ghost" onclick="document.getElementById('fa-add-file').click()">⬆️ Upload</button>
-    </div>
-    <input type="file" id="fa-add-file" accept="image/*" capture="environment" style="display:none" onchange="faAddFile(this)">
-
-    <div class="sds-field" style="margin-top:14px"><label>श्रेणी</label>
-      <select id="fa-add-cat" class="sds-select">
-        <option value="top" data-vai-i18n="fa.cat.top">👕 ऊपर के कपड़े</option>
-        <option value="bottom" data-vai-i18n="fa.cat.bottom">👖 नीचे के कपड़े</option>
-        <option value="outfit" data-vai-i18n="fa.cat.outfit">👗 पूरा पहनावा</option>
-        <option value="foot" data-vai-i18n="fa.cat.foot">👟 पादत्राण</option>
-        <option value="bag" data-vai-i18n="fa.cat.bag">👜 बैग</option>
-        <option value="jewel" data-vai-i18n="fa.cat.jewel">💍 ज़ेवर</option>
-        <option value="dupatta" data-vai-i18n="fa.cat.dupatta">🧣 दुपट्टा</option>
+    <h2 id="fa-add-title">📷 नया item जोड़ें</h2>
+    <div class="preview" id="fa-add-preview">👗</div>
+    <input type="file" accept="image/*" id="fa-add-file" capture="environment" style="margin-bottom:12px">
+    <div class="fa-field">
+      <label>श्रेणी</label>
+      <select id="fa-add-cat">
+        <option value="top">ऊपर के कपड़े (shirt/kurta/top)</option>
+        <option value="bottom">नीचे के कपड़े (pant/jeans/skirt)</option>
+        <option value="outfit">पूरा पहनावा (saree/suit/dress)</option>
+        <option value="footwear">जूते / chappal</option>
+        <option value="jewellery">ज़ेवर / accessories</option>
+        <option value="dupatta">dupatta / scarf</option>
+        <option value="bag">बैग</option>
       </select>
     </div>
-    <div class="sds-field"><label>रंग (auto-detected)</label>
-      <div id="fa-add-colour" style="display:flex;align-items:center;gap:8px;padding:8px 0">
-        <span id="fa-add-swatch" style="width:24px;height:24px;border-radius:50%;border:1.5px solid #999;background:#ccc"></span>
-        <span id="fa-add-colour-name">—</span>
+    <div class="fa-field">
+      <label>रंग (Chitti ख़ुद पहचानती है — बदल सकते हैं)</label>
+      <input id="fa-add-colour" placeholder="रंग">
+    </div>
+    <div class="fa-field">
+      <label>किन मौक़ों के लिए?</label>
+      <div class="fa-chip-row" id="fa-add-occasions">
+        <span class="fa-chip" data-occ="casual">रोज़</span>
+        <span class="fa-chip" data-occ="office">office</span>
+        <span class="fa-chip" data-occ="formal">formal</span>
+        <span class="fa-chip" data-occ="wedding">शादी</span>
+        <span class="fa-chip" data-occ="festive">त्योहार</span>
       </div>
     </div>
-    <div class="sds-field"><label>मौक़ा</label>
-      <select id="fa-add-occ" class="sds-select" multiple size="3">
-        <option value="casual" data-vai-i18n="fa.occ.casual">आम</option>
-        <option value="office" data-vai-i18n="fa.occ.office">दफ़्तर</option>
-        <option value="formal" data-vai-i18n="fa.occ.formal">औपचारिक</option>
-        <option value="wedding" data-vai-i18n="fa.occ.wedding">शादी</option>
-        <option value="festive" data-vai-i18n="fa.occ.festive">त्योहार</option>
-      </select>
+    <div class="fa-row-btns">
+      <button class="fa-btn" onclick="faCloseAdd()">रद्द</button>
+      <button class="fa-btn primary" onclick="faSaveItem()">✅ अलमारी में रखो</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="sds-field"><label>मौसम</label><select id="fa-add-season" class="sds-select">
-        <option value="all" data-vai-i18n="fa.season.all">हर मौसम</option>
-        <option value="summer" data-vai-i18n="fa.season.summer">गर्मी</option>
-        <option value="winter" data-vai-i18n="fa.season.winter">सर्दी</option>
-      </select></div>
-      <div class="sds-field"><label>हालत</label><select id="fa-add-cond" class="sds-select">
-        <option value="new" data-vai-i18n="fa.cond.new">नया</option>
-        <option value="good" data-vai-i18n="fa.cond.good">अच्छा</option>
-        <option value="old" data-vai-i18n="fa.cond.old">पुराना</option>
-      </select></div>
-    </div>
-    <button class="sds-btn primary block" onclick="faAddItem()" style="margin-top:10px">अलमारी में जोड़ो</button>
-    <button class="sds-btn ghost block" onclick="faCloseAdd()" style="margin-top:8px">रद्द करें</button>
   </div>
 </div>
-
 <canvas id="fa-cam-canvas"></canvas>
 
-<nav class="sds-tabs" role="tablist" aria-label="Chitti Fashion AI">
-  <button class="active" data-tab="almari" onclick="faTab('almari')"><span class="ico">👗</span><span data-vai-i18n="fa.tab.almari">अलमारी</span></button>
-  <button data-tab="shopping" onclick="faTab('shopping')"><span class="ico">🛍️</span><span data-vai-i18n="fa.tab.shopping">खरीदारी</span></button>
-  <button data-tab="today" onclick="faTab('today')"><span class="ico">✨</span><span data-vai-i18n="fa.tab.today">आज क्या पहनूँ</span></button>
-  <button data-tab="trends" onclick="faTab('trends')"><span class="ico">📰</span><span data-vai-i18n="fa.tab.trends">ट्रेंड</span></button>
-  <button data-tab="coach" onclick="faTab('coach')"><span class="ico">🎓</span><span data-vai-i18n="fa.tab.coach">Coach</span></button>
-</nav>
-
-<script src="chitti_a11y.js?v=20260529r"></script>
+<!-- Substrate: a11y (auto-injects Disability Profile, ISL, language, read-page), feedback widget, feature discovery -->
+<script src="chitti_a11y.js?v=20260603"></script>
 <script src="feedback-widget.js" data-page="chitti_fashion"></script>
 <script src="chitti_features.js" defer></script>
+
 <script>
-/* ════════════ Chitti Fashion AI ════════════
-   Privacy-first. Photos stay on device (IndexedDB).
-   Body-positive. Chitti rates clothing fit/style, never the body.
-   Dynamic via DeepSeek — no hardcoded fashion advice.
-*/
+/* ════════════════════════════════════════════════════════════════════════
+   Chitti Fashion — CFOS v1.0 client. Spec: chitti-fashion/PRD.md + ARCHITECTURE.md
+   - Reasoning: DeepSeek via chitti-vaani-api /api/vaani/ask (mode=ask)
+   - Wardrobe: IndexedDB on-device only; only TEXT descriptions leave the device
+   - Swarm: one round-trip returns 7 agent scores + teach + tiers (JSON)
+   ════════════════════════════════════════════════════════════════════════ */
+'use strict';
 const API_BASE = 'https://chitti-vaani-api-production.up.railway.app';
-const LANG_KEY = 'chitti_vaani_lang';
+const LANGS = ['hi','en','bn','ta','te','mr','gu','kn','ml'];
+let CURRENT_LANG = 'hi';
 const PROFILE_KEY = 'chitti_fashion_profile_v1';
-const ALMARI_DB = 'chitti_fashion_almari';
-const ALMARI_STORE = 'items';
-const TRENDS_KEY = 'chitti_fashion_trends_v1';
-const COACH_SNAP_KEY = 'chitti_fashion_coach_v1';
-const FA_CERT_KEY = 'chitti_fashion_cert_v1';
+let PROFILE = (function(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || {}; } catch(e){ return {}; } })();
 
-let CURRENT_LANG = (function(){ try { return localStorage.getItem(LANG_KEY) || 'hi'; } catch(e) { return 'hi'; } })();
-let CURRENT_GENDER = (function(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')?.gender || null; } catch(e){ return null; } })();
-let CURRENT_ROLE = (function(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')?.role || null; } catch(e){ return null; } })();
-let PENDING_PHOTO = null; // base64
-let SHOP_PHOTO = null;
-
-function speakText(t, lang){ try { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = lang || CURRENT_LANG; window.speechSynthesis.speak(u); } catch(e){} }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-/* ── Tab nav ── */
-function faTab(name){
-  document.querySelectorAll('.sds-tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('fa-tab-' + name).classList.add('active');
-  document.querySelectorAll('.sds-tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  if (name === 'almari') faRenderAlmari();
-  if (name === 'today') {} // no-op — user-driven
-  try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
+/* ---------- language ---------- */
+function faDetectLang(){
+  try {
+    if (window.Chitti && Chitti.a11y && Chitti.a11y.lang && Chitti.a11y.lang.current) return Chitti.a11y.lang.current;
+  } catch(e){}
+  if (PROFILE.lang && LANGS.includes(PROFILE.lang)) return PROFILE.lang;
+  const n = (navigator.language || 'hi').split('-')[0];
+  return LANGS.includes(n) ? n : 'hi';
 }
-
-function changeLang(code){
-  CURRENT_LANG = code;
-  try { localStorage.setItem(LANG_KEY, code); } catch(e){}
-  if (typeof updateAllStrings === 'function') updateAllStrings(code);
-  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail:{lang: code}})); } catch(e){}
+function faChangeLang(v){
+  CURRENT_LANG = LANGS.includes(v) ? v : 'hi';
+  PROFILE.lang = CURRENT_LANG; faSaveProfile();
+  document.documentElement.lang = CURRENT_LANG;
+  try { if (typeof changeLang === 'function') changeLang(CURRENT_LANG); } catch(e){}
+  try { if (window.Chitti && Chitti.a11y && Chitti.a11y.setLang) Chitti.a11y.setLang(CURRENT_LANG); } catch(e){}
 }
+function faSaveProfile(){ try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PROFILE)); } catch(e){} }
 
-/* ── Gender / role (profile) ── */
-function loadProfile(){ try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch(e){ return null; } }
-function saveProfile(p){ try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e){} }
+/* ---------- speech ---------- */
+function faSpeak(text){
+  if (!text) return;
+  try {
+    if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.speak === 'function') { Chitti.a11y.speak(text, CURRENT_LANG); return; }
+    if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(text); u.lang = (CURRENT_LANG === 'en' ? 'en-IN' : CURRENT_LANG + '-IN'); speechSynthesis.speak(u); }
+  } catch(e){}
+}
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function faLastText(hostId){ const h = document.getElementById(hostId); return h ? (h.dataset.spoken || h.textContent || '').trim() : ''; }
+
+/* ---------- onboarding ---------- */
 function faSetGender(g, btn){
-  document.querySelectorAll('.fa-gender .opts button').forEach(b => b.classList.remove('active'));
+  PROFILE.gender = g; faSaveProfile();
+  document.querySelectorAll('#fa-onboard .opts button').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  const p = loadProfile() || {};
-  p.gender = g;
-  saveProfile(p);
-  CURRENT_GENDER = g;
-  setTimeout(() => { document.getElementById('fa-onboard').style.display = 'none'; faRenderAlmari(); }, 400);
-  speakText('Chitti aapke liye style suggest karegi. Aapki photos sirf aapki hain.', CURRENT_LANG);
+  setTimeout(() => { const o = document.getElementById('fa-onboard'); if (o) o.style.display = 'none'; }, 350);
 }
-function faSetRole(role, btn){
-  document.querySelectorAll('#fa-role-grid button').forEach(b => b.classList.remove('primary'));
-  if (btn) btn.classList.add('primary');
-  const p = loadProfile() || {};
-  p.role = role;
-  saveProfile(p);
-  CURRENT_ROLE = role;
+function faMaybeOnboard(){
+  if (!PROFILE.gender) { const o = document.getElementById('fa-onboard'); if (o) o.style.display = 'block'; }
 }
 
-/* ── IndexedDB wardrobe — photos stay LOCAL ── */
-function openDB(){
+/* ---------- tabs ---------- */
+function faTab(name, btn){
+  document.querySelectorAll('.fa-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('fa-panel-' + name); if (panel) panel.classList.add('active');
+  document.querySelectorAll('.fa-tabbar button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+/* ════════ WARDROBE — IndexedDB (on-device only) ════════ */
+const DB_NAME = 'chitti_fashion_almari', STORE = 'items';
+let _db = null;
+function faDB(){
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(ALMARI_DB, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(ALMARI_STORE)) db.createObjectStore(ALMARI_STORE, { keyPath:'id' });
-    };
-    req.onsuccess = () => resolve(req.result);
+    if (_db) return resolve(_db);
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' }); };
+    req.onsuccess = () => { _db = req.result; resolve(_db); };
     req.onerror = () => reject(req.error);
   });
 }
-async function almariAdd(item){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(ALMARI_STORE, 'readwrite');
-    tx.objectStore(ALMARI_STORE).put(item);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
+async function faAllItems(){
+  try {
+    const db = await faDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+      tx.onsuccess = () => resolve(tx.result || []); tx.onerror = () => reject(tx.error);
+    });
+  } catch(e){ return []; }
 }
-async function almariList(){
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(ALMARI_STORE, 'readonly');
-    const req = tx.objectStore(ALMARI_STORE).getAll();
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => reject(req.error);
-  });
-}
-async function almariRemove(id){
-  const db = await openDB();
-  return new Promise((resolve) => {
-    const tx = db.transaction(ALMARI_STORE, 'readwrite');
-    tx.objectStore(ALMARI_STORE).delete(id);
-    tx.oncomplete = () => resolve();
-  });
-}
+async function faPutItem(item){ const db = await faDB(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readwrite').objectStore(STORE).put(item); tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error); }); }
+async function faDelItem(id){ const db = await faDB(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error); }); }
 
-/* ── Add-item flow ── */
-function faOpenAdd(){
-  PENDING_PHOTO = null;
-  document.getElementById('fa-add-preview').innerHTML = '📷';
-  document.getElementById('fa-add-swatch').style.background = '#ccc';
-  document.getElementById('fa-add-colour-name').textContent = '—';
-  document.getElementById('fa-add-modal').classList.add('shown');
+/* add modal */
+let _pendingPhoto = null, _pendingColour = '';
+function faOpenAdd(){ _pendingPhoto = null; _pendingColour = '';
+  document.getElementById('fa-add-preview').textContent = '👗';
+  document.getElementById('fa-add-colour').value = '';
+  document.querySelectorAll('#fa-add-occasions .fa-chip').forEach(c => c.classList.remove('on'));
+  document.getElementById('fa-add').classList.add('shown');
 }
-function faCloseAdd(){ document.getElementById('fa-add-modal').classList.remove('shown'); }
-
-function faTakePhoto(){ document.getElementById('fa-add-file').click(); }
-function faAddFile(input){
-  const f = input.files && input.files[0]; if (!f) return;
+function faCloseAdd(){ document.getElementById('fa-add').classList.remove('shown'); }
+document.addEventListener('change', function(e){
+  if (e.target && e.target.id === 'fa-add-file') faReadPhoto(e.target.files[0]);
+});
+document.addEventListener('click', function(e){
+  if (e.target && e.target.classList.contains('fa-chip') && e.target.closest('#fa-add-occasions')) e.target.classList.toggle('on');
+});
+function faReadPhoto(file){
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    PENDING_PHOTO = reader.result;
-    const prev = document.getElementById('fa-add-preview');
-    prev.innerHTML = '<img src="' + PENDING_PHOTO + '" alt="preview">';
-    // Auto-detect dominant colour
-    faAutoColour(PENDING_PHOTO).then(c => {
-      document.getElementById('fa-add-swatch').style.background = c.hex;
-      document.getElementById('fa-add-colour-name').textContent = c.name + ' (' + c.hex + ')';
-      window.__faPendingColour = c;
-    });
-  };
-  reader.readAsDataURL(f);
-}
-function faAutoColour(dataUrl){
-  return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      const c = document.getElementById('fa-cam-canvas');
-      c.width = 80; c.height = 80;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, 80, 80);
-      const data = ctx.getImageData(0, 0, 80, 80).data;
-      // Average centre 40x40
-      let r = 0, g = 0, b = 0, n = 0;
-      for (let y = 20; y < 60; y++) {
-        for (let x = 20; x < 60; x++) {
-          const i = (y*80 + x) * 4;
-          r += data[i]; g += data[i+1]; b += data[i+2]; n++;
-        }
-      }
-      r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n);
-      const hex = '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
-      resolve({ hex, name: colourName(r,g,b), r, g, b });
+      // downscale to ~480 long-side for on-device storage
+      const canvas = document.getElementById('fa-cam-canvas');
+      const scale = Math.min(480 / Math.max(img.width, img.height), 1);
+      canvas.width = Math.max(1, Math.floor(img.width * scale));
+      canvas.height = Math.max(1, Math.floor(img.height * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      _pendingPhoto = canvas.toDataURL('image/jpeg', 0.8);
+      _pendingColour = faDetectColour(ctx, canvas.width, canvas.height);
+      document.getElementById('fa-add-preview').innerHTML = '<img alt="preview" src="' + _pendingPhoto + '">';
+      const cInput = document.getElementById('fa-add-colour'); if (!cInput.value) cInput.value = _pendingColour;
     };
-    img.src = dataUrl;
-  });
-}
-function colourName(r,g,b){
-  // Coarse classifier (not perfect — gives the user a starting label).
-  const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  const l = (max+min)/2;
-  if (max - min < 18) {
-    if (l < 60) return 'काला';
-    if (l < 130) return 'भूरा/grey';
-    if (l < 200) return 'हल्का grey';
-    return 'सफ़ेद';
-  }
-  if (r > g && r > b) {
-    if (g > 120) return 'नारंगी / orange';
-    if (b > 120) return 'गुलाबी / pink';
-    return 'लाल / red';
-  }
-  if (g > r && g > b) return 'हरा / green';
-  if (b > r && b > g) {
-    if (r > 100) return 'बैंगनी / purple';
-    return 'नीला / blue';
-  }
-  if (r > 180 && g > 150) return 'पीला / yellow';
-  return 'मिक्स रंग';
-}
-async function faAddItem(){
-  if (!PENDING_PHOTO) { speakText('Pehle ek photo lijiye.', CURRENT_LANG); return; }
-  const occSel = document.getElementById('fa-add-occ');
-  const occ = Array.from(occSel.selectedOptions).map(o => o.value);
-  const item = {
-    id: 'fa-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
-    photo: PENDING_PHOTO,
-    category: document.getElementById('fa-add-cat').value,
-    colour: (window.__faPendingColour || { hex:'#999', name:'?' }),
-    occasions: occ.length ? occ : ['casual'],
-    season: document.getElementById('fa-add-season').value,
-    condition: document.getElementById('fa-add-cond').value,
-    last_worn: null,
-    added_at: new Date().toISOString(),
+    img.src = reader.result;
   };
-  await almariAdd(item);
-  speakText('Item almari mein add ho gaya. Bilkul aapke device par hi save hua hai.', CURRENT_LANG);
-  faCloseAdd();
-  faRenderAlmari();
+  reader.readAsDataURL(file);
 }
-
-async function faRenderAlmari(){
-  const items = await almariList();
-  const empty = document.getElementById('fa-almari-empty');
-  const main = document.getElementById('fa-almari-main');
-  if (!items.length) { empty.style.display = 'block'; main.style.display = 'none'; return; }
-  empty.style.display = 'none'; main.style.display = 'block';
-  // Stats
-  const counts = items.reduce((a, it) => (a[it.category] = (a[it.category]||0) + 1, a), {});
-  document.getElementById('fa-n-top').textContent = counts.top || 0;
-  document.getElementById('fa-n-bottom').textContent = counts.bottom || 0;
-  document.getElementById('fa-n-outfit').textContent = counts.outfit || 0;
-  document.getElementById('fa-n-foot').textContent = counts.foot || 0;
-  document.getElementById('fa-n-bag').textContent = counts.bag || 0;
-  document.getElementById('fa-n-jewel').textContent = (counts.jewel || 0) + (counts.dupatta || 0);
-  // Rare-worn alert
-  const sixMonthsAgo = Date.now() - 180*24*3600*1000;
-  const stale = items.filter(it => (it.last_worn ? new Date(it.last_worn).getTime() < sixMonthsAgo : new Date(it.added_at).getTime() < sixMonthsAgo));
-  const ra = document.getElementById('fa-rare-alert');
-  if (stale.length) {
-    ra.style.display = 'block';
-    ra.innerHTML = '💡 <b>' + stale.length + ' items 6 महीने से नहीं पहना</b> — कोई नया combination try करें?';
-  } else { ra.style.display = 'none'; }
-  // Grid
-  const grid = document.getElementById('fa-grid');
-  grid.innerHTML = items.map(it => {
-    const catLabel = ({top:'TOP',bottom:'BOTTOM',outfit:'OUTFIT',foot:'SHOE',bag:'BAG',jewel:'JEWEL',dupatta:'DUPATTA'})[it.category] || it.category;
-    return '<div class="fa-tile">' +
-      '<img src="'+ it.photo +'" alt="' + escapeHtml(it.category) + '">' +
-      '<span class="badge">' + catLabel + '</span>' +
-      '<span class="chip"><span class="swatch" style="background:' + (it.colour?.hex || '#ccc') + '"></span>' + escapeHtml((it.colour?.name||'').slice(0,12)) + '</span>' +
-      '<button class="x" onclick="faRemove(\'' + it.id + '\')" aria-label="remove">✕</button>' +
-      '</div>';
-  }).join('');
-}
-async function faRemove(id){ await almariRemove(id); faRenderAlmari(); }
-
-function faStatsLine(){
-  const t = document.getElementById('fa-n-top').textContent;
-  const b = document.getElementById('fa-n-bottom').textContent;
-  const o = document.getElementById('fa-n-outfit').textContent;
-  return 'Aapke paas hai: ' + t + ' tops, ' + b + ' bottoms, ' + o + ' full outfits.';
-}
-async function faDemoAlmari(){
-  // Add 4 demo tinted-rectangle items
-  const demos = [
-    { category:'top', colour:{hex:'#1e3a8a', name:'navy blue'}, color:'#1e3a8a' },
-    { category:'bottom', colour:{hex:'#fffaf0', name:'cream'}, color:'#fffaf0' },
-    { category:'outfit', colour:{hex:'#c2185b', name:'gulabi'}, color:'#c2185b' },
-    { category:'foot', colour:{hex:'#5d4037', name:'brown'}, color:'#5d4037' },
-    { category:'jewel', colour:{hex:'#fbc02d', name:'gold'}, color:'#fbc02d' },
-  ];
-  for (const d of demos) {
-    const img = makeDemoTile(d.color, d.category);
-    await almariAdd({
-      id: 'fa-demo-' + d.category + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,5),
-      photo: img,
-      category: d.category, colour: d.colour,
-      occasions:['casual','office'], season:'all', condition:'good',
-      last_worn:null, added_at: new Date().toISOString(),
-    });
-  }
-  faRenderAlmari();
-  speakText('5 demo items add kar diye. Real photos add karne ke liye add item dabaye.', CURRENT_LANG);
-}
-function makeDemoTile(hex, cat){
-  const c = document.getElementById('fa-cam-canvas');
-  c.width = 200; c.height = 200;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = hex; ctx.fillRect(0, 0, 200, 200);
-  ctx.fillStyle = 'rgba(255,255,255,.55)';
-  ctx.font = 'bold 90px Inter, Arial';
-  const emoji = ({top:'👕',bottom:'👖',outfit:'👗',foot:'👟',bag:'👜',jewel:'💍',dupatta:'🧣'})[cat] || '🧺';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(emoji, 100, 110);
-  return c.toDataURL('image/jpeg', 0.6);
-}
-
-/* ── DeepSeek wrappers ── */
-async function ask(prompt){
+function faDetectColour(ctx, w, h){
   try {
-    const r = await fetch(API_BASE + '/api/vaani/ask', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' })
-    });
-    const d = await r.json();
-    return d && d.ok ? (d.reply || '') : null;
-  } catch(e){ return null; }
+    const sx = Math.floor(w/2 - 20), sy = Math.floor(h/2 - 20);
+    const d = ctx.getImageData(Math.max(0,sx), Math.max(0,sy), 40, 40).data;
+    let r=0,g=0,b=0,n=0; for (let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; n++; }
+    r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+    return faColourName(r,g,b);
+  } catch(e){ return ''; }
 }
-function extractJSON(reply){ if (!reply) return null; const m = reply.match(/\{[\s\S]+\}/); if (!m) return null; try { return JSON.parse(m[0]); } catch(e){ return null; } }
-function star5(n){ n = Math.max(0, Math.min(5, n|0)); return '<span class="fa-stars">' + '★'.repeat(n).split('').map(()=>'<span class="on">★</span>').join('') + '☆'.repeat(5-n) + '</span>'; }
-
-/* ── Shopping rating ── */
-function faShopTakePhoto(){ document.getElementById('fa-shop-file').click(); }
-function faShopFile(input){
-  const f = input.files && input.files[0]; if (!f) return;
-  const reader = new FileReader();
-  reader.onload = () => { SHOP_PHOTO = reader.result; const img = document.getElementById('fa-shop-photo'); img.src = SHOP_PHOTO; img.style.display = 'block'; };
-  reader.readAsDataURL(f);
+function faColourName(r,g,b){
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  if (max-min < 28){ if (max>200) return 'सफ़ेद'; if (max<60) return 'काला'; return 'ग्रे'; }
+  if (r>g && r>b) return (g>120?'नारंगी':'लाल');
+  if (g>r && g>b) return 'हरा';
+  if (b>r && b>g) return 'नीला';
+  if (r>150 && g>120 && b<100) return 'पीला';
+  return 'mixed';
 }
-async function faShopRate(){
-  const desc = (document.getElementById('fa-shop-desc').value || '').trim();
-  const price = (document.getElementById('fa-shop-price').value || '').trim();
-  const occ = document.getElementById('fa-shop-occ').value;
-  if (!desc) { speakText('Item ke baare mein bataiye — kya hai aur kahaan se.', CURRENT_LANG); return; }
-  const items = await almariList();
-  const wardrobeSummary = items.slice(0, 20).map(it => it.category + ':' + (it.colour?.name||'')).join('; ');
-  const gender = CURRENT_GENDER || 'other';
-  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
-  const out = document.getElementById('fa-shop-result');
-  out.innerHTML = '<div style="padding:14px;background:#fff8e1;border:1.5px dashed var(--sds-saffron);border-radius:12px;font-size:14px;color:#78350f">Chitti rate kar rahi hai…</div>';
-  const prompt =
-    'You are Chitti — a body-positive fashion stylist for young Indians. NEVER comment on the user\'s body. ONLY rate the clothing fit, colour, and style.\n' +
-    'Item description: "' + desc + '". Stated price: ₹' + (price || 'unknown') + '. Occasion: ' + occ + '. Gender: ' + gender + '.\n' +
-    'User wardrobe snapshot (so you can rate wardrobe match): ' + (wardrobeSummary || 'empty') + '.\n' +
-    'Return ONLY JSON with these fields:\n' +
-    '{ stars_fit:0..5, stars_colour:0..5, stars_match:0..5, stars_occasion:0..5, stars_value:0..5,\n' +
-    '  note:"<2-3 short ' + langName + ' sentences. Body-positive language. Talk about cut, fabric, colour, season, occasion only.>",\n' +
-    '  ' + (gender === 'female' ? 'pairing:{earrings:"<' + langName + '>", dupatta:"<' + langName + '>", footwear:"<' + langName + '>", bag:"<' + langName + '>"},' : (gender === 'male' ? 'pairing:{trouser:"<' + langName + '>", belt_shoe:"<' + langName + '>", watch:"<' + langName + '>", formal_casual:"<' + langName + '>"},' : 'pairing:{accessories:"<' + langName + '>", footwear:"<' + langName + '>"},')) + '\n' +
-    '  fair_price_min_inr:int, fair_price_max_inr:int,\n' +
-    '  cheaper_options:[{where:"Myntra|Amazon|Meesho|local market", est_price:int}]\n' +
-    '}.\n' +
-    'Rules: Never mention the user\'s body shape, size or weight. Compliment cut/colour/fit instead. Fair price MUST be honest 2026 INR. cheaper_options must always be present.';
-  const reply = await ask(prompt);
-  const parsed = extractJSON(reply);
-  if (!parsed) { out.innerHTML = '<div class="na-loading">Chitti se rating abhi nahi mili — phir try karein.</div>'; return; }
-  faShopRender(parsed, gender, price);
-}
-function faShopRender(p, gender, askedPrice){
-  const out = document.getElementById('fa-shop-result');
-  const pairingHtml = (() => {
-    if (!p.pairing) return '';
-    if (gender === 'female') {
-      return '<div class="fa-rating-note">' +
-        '<b>👂 Earrings:</b> ' + escapeHtml(p.pairing.earrings || '—') + '<br>' +
-        '<b>🧣 Dupatta:</b> ' + escapeHtml(p.pairing.dupatta || '—') + '<br>' +
-        '<b>👡 Footwear:</b> ' + escapeHtml(p.pairing.footwear || '—') + '<br>' +
-        '<b>👜 Bag:</b> ' + escapeHtml(p.pairing.bag || '—') +
-      '</div>';
-    } else if (gender === 'male') {
-      return '<div class="fa-rating-note">' +
-        '<b>👖 Trouser:</b> ' + escapeHtml(p.pairing.trouser || '—') + '<br>' +
-        '<b>👞 Belt + shoe:</b> ' + escapeHtml(p.pairing.belt_shoe || '—') + '<br>' +
-        '<b>⌚ Watch:</b> ' + escapeHtml(p.pairing.watch || '—') + '<br>' +
-        '<b>📐 Formal vs casual:</b> ' + escapeHtml(p.pairing.formal_casual || '—') +
-      '</div>';
-    } else {
-      return '<div class="fa-rating-note">' +
-        '<b>✨ Accessories:</b> ' + escapeHtml(p.pairing.accessories || '—') + '<br>' +
-        '<b>👟 Footwear:</b> ' + escapeHtml(p.pairing.footwear || '—') +
-      '</div>';
-    }
-  })();
-  const cheap = (p.cheaper_options || []).map(c => '<div style="margin-top:4px">• <b>' + escapeHtml(c.where) + '</b> — ₹' + (c.est_price || '?') + '</div>').join('');
-  out.innerHTML =
-    '<div class="sds-card" style="padding:14px;margin:0">' +
-      '<div class="fa-rating-row"><div class="label">⭐ ' + (window.VAI_STRINGS?.[CURRENT_LANG]?.['fa.shop.fit'] || 'Fit') + '</div>' + star5(p.stars_fit) + '</div>' +
-      '<div class="fa-rating-row"><div class="label">🎨 ' + (window.VAI_STRINGS?.[CURRENT_LANG]?.['fa.shop.colour'] || 'Colour') + '</div>' + star5(p.stars_colour) + '</div>' +
-      '<div class="fa-rating-row"><div class="label">👗 ' + (window.VAI_STRINGS?.[CURRENT_LANG]?.['fa.shop.match'] || 'Wardrobe match') + '</div>' + star5(p.stars_match) + '</div>' +
-      '<div class="fa-rating-row"><div class="label">🎯 ' + (window.VAI_STRINGS?.[CURRENT_LANG]?.['fa.shop.occasion'] || 'Occasion') + '</div>' + star5(p.stars_occasion) + '</div>' +
-      '<div class="fa-rating-row"><div class="label">💰 ' + (window.VAI_STRINGS?.[CURRENT_LANG]?.['fa.shop.value'] || 'Value') + '</div>' + star5(p.stars_value) + '</div>' +
-      (p.note ? '<div class="fa-rating-note">💬 ' + escapeHtml(p.note) + '</div>' : '') +
-      pairingHtml +
-      (p.fair_price_min_inr ? '<div class="fa-rating-note" style="background:#fff8e1;border-color:var(--sds-saffron);color:#78350f">💰 <b>सही दाम</b>: ₹' + p.fair_price_min_inr + ' – ₹' + p.fair_price_max_inr + (askedPrice ? ' · आपसे ₹' + askedPrice + ' माँगा गया है' : '') + '</div>' : '') +
-      (cheap ? '<div class="fa-rating-note" style="background:#dcfce7;border-color:#86efac;color:#14532d"><b>🔁 इसी जैसा cheaper:</b>' + cheap + '</div>' : '') +
-    '</div>';
-  speakText(p.note || 'Rating ready hai.', CURRENT_LANG);
-}
-function faShopDemo(){
-  document.getElementById('fa-shop-desc').value = 'Blue cotton kurta, Pantaloons, M size';
-  document.getElementById('fa-shop-price').value = '2000';
-  faShopRate();
-}
-
-/* ── Aaj Kya Pehnu ── */
-async function faToday(){
-  const items = await almariList();
-  if (!items.length) {
-    document.getElementById('fa-today-result').innerHTML = '<div class="sds-empty"><div class="big">👗</div><div class="title">Pehle almari भरें</div><div class="sub">Aapke kapde dekhe bina suggestion nahi hogi — Almari tab मे जाइए।</div></div>';
-    return;
-  }
-  const occ = document.getElementById('fa-today-occ').value;
-  const need = (document.getElementById('fa-today-need').value || '').trim();
-  const weather = document.getElementById('fa-today-weather').value;
-  const gender = CURRENT_GENDER || 'other';
-  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
-  const out = document.getElementById('fa-today-result');
-  out.innerHTML = '<div style="padding:14px;background:#fff8e1;border:1.5px dashed var(--sds-saffron);border-radius:12px">Chitti aapki almari se 3 outfits bana rahi hai…</div>';
-  // Pack a compact wardrobe id→category→colour map for the LLM.
-  const wardrobe = items.map(it => ({ id: it.id, category: it.category, colour: it.colour?.name || '', occasions: it.occasions || [] }));
-  const prompt =
-    'You are Chitti — body-positive fashion stylist. Pick 3 complete outfits FROM the user\'s wardrobe ONLY. Never suggest buying.\n' +
-    'Occasion: ' + occ + '. User note: "' + need + '". Weather: ' + weather + '. Gender: ' + gender + '.\n' +
-    'Wardrobe (id : category : colour) — pick item ids:\n' + JSON.stringify(wardrobe) + '\n' +
-    'Return ONLY JSON: {outfits:[{title:"<' + langName + '>", pieces:["<id1>","<id2>","..."], why:"<' + langName + ' explanation, 1-2 sentences, body-positive>", stars:0..5}]}.\n' +
-    'Each outfit MUST have at least one top OR full-outfit piece. For female users include an accessory id (jewel/dupatta) if available. For male users include footwear+belt if available.';
-  const reply = await ask(prompt);
-  const parsed = extractJSON(reply);
-  if (!parsed) { out.innerHTML = '<div class="na-loading">Chitti se suggestions abhi nahi mili — phir try karein.</div>'; return; }
-  const byId = new Map(items.map(it => [it.id, it]));
-  out.innerHTML = (parsed.outfits || []).map((o, idx) => {
-    const piecesHtml = (o.pieces || []).map(id => {
-      const it = byId.get(id);
-      if (!it) return '<div class="p">?</div>';
-      const role = ({top:'TOP',bottom:'BOTTOM',outfit:'OUTFIT',foot:'SHOE',bag:'BAG',jewel:'JEWEL',dupatta:'DUPATTA'})[it.category] || '';
-      return '<div class="p"><img src="' + it.photo + '"><div class="role">' + role + '</div></div>';
-    }).join('');
-    return '<div class="fa-outfit">' +
-      '<div class="title">Option ' + (idx+1) + ' — ' + escapeHtml(o.title || '') + '</div>' +
-      star5(o.stars) +
-      '<div class="why">' + escapeHtml(o.why || '') + '</div>' +
-      '<div class="pieces">' + piecesHtml + '</div>' +
-    '</div>';
-  }).join('');
-  speakText('3 outfits ready hain aapki almari se. Pehla option ka description: ' + ((parsed.outfits||[])[0]?.why || ''), CURRENT_LANG);
-}
-async function faTodayDemo(){
-  // Seed demo wardrobe + run
-  const items = await almariList();
-  if (items.length < 3) await faDemoAlmari();
-  document.getElementById('fa-today-occ').value = 'office';
-  document.getElementById('fa-today-need').value = 'Comfortable + professional';
-  faToday();
-}
-
-/* ── Trends ── */
-async function faLoadTrends(forceFresh){
-  const wrap = document.getElementById('fa-trends-list');
-  let cached;
-  try { cached = JSON.parse(localStorage.getItem(TRENDS_KEY) || 'null'); } catch(e){ cached = null; }
-  if (!forceFresh && cached && (Date.now() - new Date(cached.at).getTime() < 6*3600*1000)) {
-    renderTrends(cached.items); return;
-  }
-  wrap.innerHTML = '<div class="na-loading">Chitti latest India fashion trends la rahi hai…</div>';
-  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
-  const prompt =
-    'Generate 5 CURRENT-feel fashion trend stories specifically for young Indians, drawn from Instagram India + Bollywood this week + festive/wedding season + budget finds (Meesho/Myntra). ' +
-    'Indo-western fusion + regional fashion celebrated. Return ONLY JSON: ' +
-    '{items:[{headline:"<' + langName + '>", region_or_source:"<source/region>", bullets:["<bullet>","<bullet>","<bullet>"], recreate_from_almari:["<short item type 1>","<short item type 2>"], items_to_buy:[{name:"<short>", est_price_inr:int}]}]}. ' +
-    'Each bullet under 18 words. Include at least one regional (Bengali/Rajasthani/South Indian/Punjabi) and one budget find.';
-  const reply = await ask(prompt);
-  const parsed = extractJSON(reply);
-  if (!parsed || !parsed.items) { wrap.innerHTML = '<div class="na-loading">Trends abhi nahi mile — phir try karein.</div>'; return; }
-  try { localStorage.setItem(TRENDS_KEY, JSON.stringify({ at: new Date().toISOString(), items: parsed.items })); } catch(e){}
-  renderTrends(parsed.items);
-}
-function renderTrends(items){
-  document.getElementById('fa-trends-list').innerHTML = items.map(t => {
-    const have = (t.recreate_from_almari || []).map(x => '<span class="sds-chip green">' + escapeHtml(x) + '</span>').join(' ');
-    const buy = (t.items_to_buy || []).map(b => '<div style="margin-top:4px">• <b>' + escapeHtml(b.name) + '</b> · ~₹' + (b.est_price_inr || '?') + '</div>').join('');
-    return '<div  data-chitti-response="fa-card-10" class="fa-trend chitti-response" data-chitti-section="📰 ' + (t.headline||'').slice(0,40) + '">' +
-      '<div class="head">' + escapeHtml(t.headline || '') + '</div>' +
-      '<div class="meta">' + escapeHtml(t.region_or_source || '') + '</div>' +
-      '<ul>' + (t.bullets || []).map(b => '<li>' + escapeHtml(b) + '</li>').join('') + '</ul>' +
-      (have ? '<div class="have">✅ Aapke almari se बन सकता है: ' + have + '</div>' : '') +
-      (buy ? '<div class="buy"><b>🛒 खरीदने पड़ेंगे:</b>' + buy + '</div>' : '') +
-    '</div>';
-  }).join('');
-}
-function faTrendsDemo(){ try { localStorage.removeItem(TRENDS_KEY); } catch(e){} faLoadTrends(true); }
-
-/* ── Coach (Fashion) ── */
-async function faCoachLoad(){
-  if (!CURRENT_ROLE) { speakText('Pehle apni bhumika chuniye — student, designer, ya jo bhi aap ho.', CURRENT_LANG); return; }
-  document.getElementById('fa-tools-card').style.display = 'block';
-  document.getElementById('fa-certs-card').style.display = 'block';
-  document.getElementById('fa-tools-list').innerHTML = '<em>Chitti latest AI fashion tools dhoondh rahi hai…</em>';
-  document.getElementById('fa-certs-list').innerHTML = '<em>Chitti aapke liye real free certifications chun rahi hai…</em>';
-  const langName = CURRENT_LANG === 'hi' ? 'Hindi' : (CURRENT_LANG === 'te' ? 'Telugu' : (CURRENT_LANG === 'bn' ? 'Bangla' : 'English'));
-  const prompt =
-    'Generate a Fashion AI snapshot for an Indian "' + CURRENT_ROLE + '". Return ONLY JSON:\n' +
-    '{ how_ai_helps:"<2-3 sentences in ' + langName + '>",\n' +
-    '  best_tools:[{name, url, paid_or_free:"free|freemium|paid", why_for_role:"<1 sentence in ' + langName + '>"}],\n' +
-    '  free_certifications:[{name, provider, url, duration, why:"<1 sentence in ' + langName + '>"}]\n' +
-    '}.\n' +
-    'best_tools — 6 items, MUST include Midjourney, DALL-E (OpenAI), Runway, CLO3D, Canva, plus one role-specific.\n' +
-    'free_certifications — 5 items, MUST be real and free: Google UX Design (Coursera audit), Adobe Creative AI essentials, Canva Design certification, NSDC Skill India Fashion, Elements of AI Helsinki, OR similar real free courses. NEVER invent a certification name.';
-  const reply = await ask(prompt);
-  const parsed = extractJSON(reply);
-  if (!parsed) { document.getElementById('fa-tools-list').innerHTML = '<em>Snapshot abhi nahi mila — phir try karein.</em>'; return; }
-  try { localStorage.setItem(COACH_SNAP_KEY, JSON.stringify(parsed)); } catch(e){}
-  faRenderCoach(parsed);
-}
-function faRenderCoach(s){
-  document.getElementById('fa-tools-list').innerHTML = (s.how_ai_helps ? '<p style="font-size:16px;line-height:1.6;margin-top:0">' + escapeHtml(s.how_ai_helps) + '</p>' : '') +
-    (s.best_tools || []).map(t => '<div class="sds-doc-row" style="margin-bottom:8px">' +
-      '<span class="ico">🛠️</span>' +
-      '<div class="info"><div class="name">' + escapeHtml(t.name||'') + ' <small style="color:var(--sds-muted);font-weight:600">· ' + escapeHtml(t.paid_or_free||'') + '</small></div>' +
-      '<div class="meta">' + escapeHtml(t.why_for_role||'') + '</div></div>' +
-      (t.url ? '<a class="sds-btn ghost" href="'+t.url+'" target="_blank" rel="noopener" style="padding:6px 10px;min-height:38px;font-size:13px;text-decoration:none">खोलें →</a>' : '') +
-    '</div>').join('');
-  document.getElementById('fa-certs-list').innerHTML = (s.free_certifications || []).map(c => '<div class="na-cert-card" style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--sds-line);border-radius:12px;padding:12px;margin-bottom:8px">' +
-    '<span style="font-size:24px">🏆</span>' +
-    '<div style="flex:1"><div style="font-weight:800;color:var(--sds-navy);font-size:15px">' + escapeHtml(c.name||'') + '</div>' +
-    '<div style="font-size:12px;color:var(--sds-muted)">' + escapeHtml(c.provider||'') + ' · ' + escapeHtml(c.duration||'') + '</div>' +
-    '<div style="font-size:13px;color:#555;margin-top:2px">' + escapeHtml(c.why||'') + '</div></div>' +
-    (c.url ? '<a href="'+c.url+'" target="_blank" rel="noopener" style="color:var(--sds-green);font-weight:800;text-decoration:none">शुरू →</a>' : '') +
-  '</div>').join('');
-}
-async function faGenerateCert(){
-  if (!CURRENT_ROLE) { speakText('Pehle apni bhumika chunein — coach tab mein.', CURRENT_LANG); return; }
-  let snap; try { snap = JSON.parse(localStorage.getItem(COACH_SNAP_KEY) || 'null'); } catch(e){ snap = null; }
-  const certId = 'sahayai-fa-' + Math.random().toString(36).slice(2,10).toUpperCase();
-  const cert = {
-    id: certId,
-    user: 'You', role: CURRENT_ROLE, track: 'Fashion AI for ' + CURRENT_ROLE,
-    level: ['Beginner','Intermediate','Advanced','Expert'][1],
-    date: new Date().toISOString().slice(0,10),
-    next: (snap && snap.free_certifications) ? snap.free_certifications.slice(0,3) : [],
+async function faSaveItem(){
+  const occ = Array.from(document.querySelectorAll('#fa-add-occasions .fa-chip.on')).map(c => c.dataset.occ);
+  const item = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : 'it-' + Date.now().toString(36) + Math.random().toString(36).slice(2,7)),
+    photo: _pendingPhoto || '',
+    category: document.getElementById('fa-add-cat').value,
+    colour: (document.getElementById('fa-add-colour').value || _pendingColour || '').trim(),
+    occasions: occ.length ? occ : ['casual'],
+    last_worn: null,
+    added_at: new Date().toISOString()
   };
-  try { localStorage.setItem(FA_CERT_KEY, JSON.stringify(cert)); } catch(e){}
-  faRenderCert(cert);
+  await faPutItem(item);
+  faCloseAdd();
+  faRenderWardrobe();
+  faSpeak(CURRENT_LANG === 'en' ? 'Added to your wardrobe' : 'अलमारी में जोड़ दिया');
 }
-function faRenderCert(c){
-  document.getElementById('fa-cert-card-wrap').style.display = 'block';
-  const verifyUrl = 'https://sahayai.in/verify/' + c.id;
-  const qr = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(verifyUrl);
-  const nextHtml = (c.next || []).map(n => '<div style="font-size:13px;margin-top:4px;color:var(--sds-muted)">• <b>' + escapeHtml(n.name||'') + '</b> · ' + escapeHtml(n.provider||'') + '</div>').join('');
-  document.getElementById('fa-cert-card').innerHTML =
-    '<div class="sahayai-mark">SAHAYAI</div>' +
-    '<div class="cert-title">Fashion AI Certificate</div>' +
-    '<div class="cert-user">' + escapeHtml(c.user) + '</div>' +
-    '<div class="cert-track">' + escapeHtml(c.track) + ' · <b>' + escapeHtml(c.level) + '</b></div>' +
-    '<img class="qr" src="' + qr + '" alt="verify">' +
-    '<div class="cert-meta">verify: ' + verifyUrl + '</div>' +
-    '<div class="cert-meta" style="margin-top:6px">' + escapeHtml(c.date) + ' · ID ' + c.id + '</div>' +
-    (nextHtml ? '<div style="margin-top:14px;text-align:left"><b style="color:var(--sds-navy)">Recommended next certifications</b>' + nextHtml + '</div>' : '');
-  speakText('Fashion AI certificate ban gaya — ' + c.user + ', ' + c.track + '.', CURRENT_LANG);
-  document.getElementById('fa-cert-card-wrap').scrollIntoView({ block:'center', behavior:'smooth' });
+async function faRenderWardrobe(){
+  const items = await faAllItems();
+  const cnt = { top:0, bottom:0, outfit:0, footwear:0, jewellery:0, other:0 };
+  items.forEach(i => { if (cnt[i.category] != null) cnt[i.category]++; else if (i.category==='dupatta'||i.category==='bag') cnt.other++; });
+  document.getElementById('fa-n-top').textContent = cnt.top;
+  document.getElementById('fa-n-bottom').textContent = cnt.bottom;
+  document.getElementById('fa-n-outfit').textContent = cnt.outfit;
+  document.getElementById('fa-n-foot').textContent = cnt.footwear;
+  document.getElementById('fa-n-jewel').textContent = cnt.jewellery;
+  document.getElementById('fa-n-other').textContent = cnt.other;
+  document.getElementById('fa-almari-empty').style.display = items.length ? 'none' : 'block';
+
+  // rare-worn (sustainability) — > 6 months
+  const sixMo = Date.now() - 1000*60*60*24*182;
+  const rare = items.filter(i => { const t = i.last_worn ? Date.parse(i.last_worn) : Date.parse(i.added_at); return t && t < sixMo; });
+  const ra = document.getElementById('fa-rare-alert');
+  if (rare.length){ ra.style.display = 'block'; ra.textContent = '♻️ ' + rare.length + ' कपड़े 6 महीने से नहीं पहने — Chitti इन्हें फिर से style कर सकती है। (खरीदने से अच्छा, जो है उसे पहनें।)'; }
+  else ra.style.display = 'none';
+
+  // grid
+  const grid = document.getElementById('fa-grid');
+  grid.innerHTML = items.map(i =>
+    '<div class="fa-tile">' +
+      (i.photo ? '<img alt="' + esc(i.category) + '" src="' + i.photo + '">' : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:34px">👕</div>') +
+      '<span class="badge">' + esc(i.colour || i.category) + '</span>' +
+      '<button class="x" aria-label="हटाओ" onclick="faRemove(\'' + i.id + '\')">✕</button>' +
+    '</div>'
+  ).join('');
 }
-function faShareCert(){
-  let c; try { c = JSON.parse(localStorage.getItem(FA_CERT_KEY) || 'null'); } catch(e){ c = null; }
-  if (!c) return;
-  const url = 'https://sahayai.in/verify/' + c.id;
-  const text = 'Mera Sahayai Fashion AI Certificate. ' + c.track + '. Verify: ' + url;
-  if (navigator.share) navigator.share({ title:'Sahayai Fashion AI Certificate', text, url }).catch(()=>{});
-  else window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+async function faRemove(id){ await faDelItem(id); faRenderWardrobe(); }
+
+/* wardrobe as TEXT snapshot (only this leaves the device) */
+async function faWardrobeText(){
+  const items = await faAllItems();
+  if (!items.length) return '';
+  return items.map(i => i.id + ':' + i.category + ':' + (i.colour||'?') + ':' + (i.occasions||[]).join('/')).join(' | ');
+}
+function faStatsSpoken(){
+  return (CURRENT_LANG === 'en' ? 'Your wardrobe: ' : 'आपकी अलमारी: ') +
+    document.getElementById('fa-n-top').textContent + ' tops, ' +
+    document.getElementById('fa-n-bottom').textContent + ' bottoms, ' +
+    document.getElementById('fa-n-foot').textContent + ' footwear.';
+}
+function faHeroSpoken(){ const h = document.getElementById('fa-dressme-result'); return (h && h.dataset.spoken) || 'आज क्या पहनूँ — Chitti आपकी अलमारी से outfit बनाएगी।'; }
+
+/* ════════ DeepSeek call (single round-trip) ════════ */
+async function faAsk(prompt){
+  const r = await fetch(API_BASE + '/api/vaani/ask', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode: 'ask' })
+  });
+  if (!r.ok) throw new Error('http ' + r.status);
+  const j = await r.json();
+  return (j.answer || j.text || j.response || j.reply || '').trim();
+}
+function faParseJSON(s){
+  if (!s) return null;
+  const m = s.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch(e){ return null; }
+}
+const BODY_POSITIVE_RULE =
+  'You are Chitti — a warm, body-positive Indian fashion stylist. NEVER comment on the user\'s body, size, shape, weight, height or skin tone. ONLY talk about the clothing (cut, colour, fit, fabric, drape). Be budget-first: prefer outfits from what the user already owns. Celebrate every region, religion, gender, age and ability. Reply in language code: ' + ' ';
+
+function faAgentRow(name, label, obj){
+  if (!obj) return '';
+  return '<div class="row"><span class="ag">' + label + '</span><span class="sc">' + esc(obj.score) + '/10</span><span class="wh">' + esc(obj.why || '') + '</span></div>';
+}
+function faRenderSwarm(j){
+  const a = j.agents || {};
+  let rows = '';
+  rows += faAgentRow('fashion','👗 Style', a.fashion);
+  rows += faAgentRow('color','🎨 रंग', a.color);
+  rows += faAgentRow('occasion','🎉 मौक़ा', a.occasion);
+  rows += faAgentRow('comfort','😌 आराम', a.comfort);
+  rows += faAgentRow('accessibility','♿ सबके लिए', a.accessibility);
+  rows += faAgentRow('budget','💸 बजट', a.budget);
+  rows += faAgentRow('confidence','✨ आत्मविश्वास', a.confidence);
+  const overall = (j.overall != null ? j.overall : '—');
+  let html =
+    '<div class="fa-swarm">' +
+      '<div class="head" onclick="this.nextElementSibling.classList.toggle(\'open\')">' +
+        '<span>🤝 7 experts की राय <span style="font-weight:600;opacity:.8">(खोलें)</span></span>' +
+        '<span class="score">' + esc(overall) + '/10</span>' +
+      '</div>' +
+      '<div class="rows">' + (rows || '<div class="row"><span class="wh">—</span></div>') + '</div>' +
+      (j.trend_note ? '<div class="trend">📈 Trend (सिर्फ़ जानकारी, राय नहीं बदलती): ' + esc(j.trend_note) + '</div>' : '') +
+    '</div>';
+  if (j.teach){
+    const t = j.teach;
+    html += '<details class="fa-teach"><summary>🎓 Chitti क्यों? (समझिए)</summary><div class="t">' +
+      (t.why ? '<p><b>क्यों:</b> ' + esc(t.why) + '</p>' : '') +
+      (t.benefits ? '<p><b>फ़ायदे:</b> ' + esc(t.benefits) + '</p>' : '') +
+      (t.tradeoffs ? '<p><b>समझौते:</b> ' + esc(t.tradeoffs) + '</p>' : '') +
+      (t.alternatives ? '<p><b>और विकल्प:</b> ' + esc(t.alternatives) + '</p>' : '') +
+    '</div></details>';
+  }
+  if (j.tiers){
+    const ti = j.tiers;
+    html += '<div class="fa-tiers">' +
+      (ti.free ? '<div class="fa-tier free"><span class="lab">✅ मुफ़्त (आपकी अलमारी से · ₹0)</span><div>' + esc(ti.free) + '</div></div>' : '') +
+      (ti.budget ? '<div class="fa-tier budget"><span class="lab">💸 सस्ता विकल्प</span><div>' + esc(ti.budget) + '</div></div>' : '') +
+      (ti.premium ? '<div class="fa-tier premium"><span class="lab">⭐ Premium</span><div>' + esc(ti.premium) + '</div></div>' : '') +
+    '</div>';
+  }
+  return html;
 }
 
-/* ── Feedback ── */
-function sdsToggleFb(id){ document.getElementById(id)?.classList.toggle('shown'); }
-async function sendFb(card, textareaId, panelId){
-  const txt = (document.getElementById(textareaId).value || '').trim();
-  if (!txt) { sdsToggleFb(panelId); return; }
+function faLoading(hostId, msg){
+  const h = document.getElementById(hostId);
+  h.innerHTML = '<div class="sds-card" style="border:1.5px solid #FFD9B0"><span class="fa-spin"></span> ' + esc(msg) + '</div>';
+  faSpeak(CURRENT_LANG === 'en' ? 'Chitti is thinking' : 'Chitti सोच रही है');
+}
+function faError(hostId){
+  const h = document.getElementById(hostId);
+  const msg = CURRENT_LANG === 'en'
+    ? 'Chitti could not reach the server. Please try again in a moment.'
+    : 'Chitti को server से जवाब नहीं मिला। थोड़ी देर में फिर कोशिश करें।';
+  h.innerHTML = '<div class="sds-card" style="border:1.5px solid #fca5a5;background:#fef2f2">⚠️ ' + esc(msg) + '</div>';
+  h.dataset.spoken = msg; faSpeak(msg);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
+/* ════════ HERO · Dress Me From What I Own ════════ */
+async function faDressMe(){
+  const btn = document.getElementById('fa-dressme'); btn.disabled = true;
+  const host = 'fa-dressme-result';
+  const wardrobe = await faWardrobeText();
+  if (!wardrobe){
+    const m = CURRENT_LANG === 'en'
+      ? 'First add a few clothes in the Almari tab — then Chitti will build outfits for you. 🎙️'
+      : 'पहले 🧺 अलमारी में कुछ कपड़े जोड़ें — फिर Chitti आपके लिए outfit बनाएगी। 🎙️';
+    document.getElementById(host).innerHTML = '<div class="sds-card">🧺 ' + esc(m) + '</div>';
+    document.getElementById(host).dataset.spoken = m; faSpeak(m);
+    btn.disabled = false; return;
+  }
+  faLoading(host, CURRENT_LANG === 'en' ? 'Building outfits from your wardrobe…' : 'आपकी अलमारी से outfit बना रही हूँ…');
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. Build 3 complete outfits using ONLY these owned wardrobe items (id:category:colour:occasions): [' + wardrobe + ']. ' +
+    'Gender preference: ' + (PROFILE.gender || 'unspecified') + '. Use ONLY item ids from the list — never invent an item. ' +
+    'Return STRICT JSON: {"outfits":[{"title":"...","stars":8,"item_ids":["id1","id2"],"why":"one warm body-positive line about cut/colour"}]}. ' +
+    'Each outfit must be wearable from owned items. No purchases.';
+  try {
+    const ans = await faAsk(prompt);
+    const j = faParseJSON(ans);
+    const items = await faAllItems();
+    const byId = {}; items.forEach(i => byId[i.id] = i);
+    if (!j || !Array.isArray(j.outfits) || !j.outfits.length) {
+      // honest fallback — show plain text answer rather than fabricate
+      document.getElementById(host).innerHTML = '<div class="sds-card">' + esc(ans || '—') + '</div>';
+      document.getElementById(host).dataset.spoken = ans; faSpeak(ans);
+    } else {
+      let html = '', spoken = '';
+      j.outfits.slice(0,3).forEach((o, idx) => {
+        const valid = (o.item_ids || []).filter(id => byId[id]); // drop phantom items
+        const tiles = valid.map(id => {
+          const it = byId[id];
+          return '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(it.category) + '</span></div>';
+        }).join('');
+        html += '<div class="fa-outfit"><div class="title">' + esc(o.title || ('Outfit ' + (idx+1))) + ' · ' + esc(o.stars||8) + '/10</div>' +
+          '<div class="why">' + esc(o.why || '') + '</div>' +
+          '<div class="pieces">' + (tiles || '<div class="p">👕</div>') + '</div></div>';
+        spoken += (o.title || ('Outfit ' + (idx+1))) + ': ' + valid.map(id => byId[id].colour + ' ' + byId[id].category).join(', ') + '. ' + (o.why||'') + ' ';
+      });
+      document.getElementById(host).innerHTML = html;
+      document.getElementById(host).dataset.spoken = spoken; faSpeak(spoken);
+    }
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+  btn.disabled = false;
+}
+
+/* ════════ Outfit Review / Describe (7-agent swarm) ════════ */
+let _selectedReviewOcc = '';
+function faBuildOccChips(hostId, onPick){
+  const occs = [['office','🏢 office'],['wedding','💍 शादी'],['interview','🎯 interview'],['festive','🪔 त्योहार'],['casual','🙂 रोज़'],['party','🎉 party']];
+  const host = document.getElementById(hostId);
+  host.innerHTML = occs.map(o => '<span class="fa-chip" data-occ="' + o[0] + '">' + o[1] + '</span>').join('');
+  host.querySelectorAll('.fa-chip').forEach(c => c.addEventListener('click', () => {
+    host.querySelectorAll('.fa-chip').forEach(x => x.classList.remove('on')); c.classList.add('on'); onPick(c.dataset.occ);
+  }));
+}
+async function faReview(){
+  const host = 'fa-review-result';
+  const outfit = (document.getElementById('fa-review-text').value || '').trim();
+  if (!outfit){ faSpeak(CURRENT_LANG==='en'?'Tell me what you are wearing':'बताइए आप क्या पहन रहे हैं'); document.getElementById('fa-review-text').focus(); return; }
+  faLoading(host, CURRENT_LANG==='en'?'7 experts are voting…':'7 experts राय दे रहे हैं…');
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. Seven specialist agents review this outfit: "' + outfit + '". Occasion: ' + (_selectedReviewOcc||'unspecified') + '. ' +
+    'Return STRICT JSON with each agent scoring 0-10 about the CLOTHING ONLY: ' +
+    '{"overall":8.4,"agents":{"fashion":{"score":8,"why":""},"color":{"score":9,"why":""},"occasion":{"score":8,"why":""},"comfort":{"score":9,"why":""},"accessibility":{"score":10,"why":""},"budget":{"score":10,"why":""},"confidence":{"score":8,"why":""}},' +
+    '"teach":{"why":"","benefits":"","tradeoffs":"","alternatives":""},"tiers":{"free":"fix using clothes likely owned","budget":"","premium":""},"trend_note":"advisory only"}. ' +
+    'overall = mean of the 7 agent scores. Never mention the body.';
+  try {
+    const ans = await faAsk(prompt);
+    const j = faParseJSON(ans);
+    const h = document.getElementById(host);
+    if (!j || !j.agents){ h.innerHTML = '<div class="sds-card">' + esc(ans||'—') + '</div>'; h.dataset.spoken = ans; faSpeak(ans); }
+    else {
+      h.innerHTML = '<div class="sds-card chitti-response" data-chitti-response="fa-review-out" data-chitti-section="🪞 Outfit की राय">' + faRenderSwarm(j) + '</div>';
+      const sp = 'कुल ' + (j.overall||'') + ' में से 10. ' + (j.teach && j.teach.why ? j.teach.why : '');
+      h.dataset.spoken = sp; faSpeak(sp);
+    }
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+async function faDescribeMine(){
+  // Blind-user hero: describe what's in the wardrobe / today's pick aloud + suitability
+  const host = 'fa-review-result';
+  const wardrobe = await faWardrobeText();
+  if (!wardrobe){ const m = CURRENT_LANG==='en'?'Add clothes to your Almari so Chitti can describe an outfit for you.':'अलमारी में कपड़े जोड़ें — फिर Chitti आपका outfit बोलकर बताएगी।'; document.getElementById(host).innerHTML='<div class="sds-card">'+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  faLoading(host, CURRENT_LANG==='en'?'Describing an outfit for you…':'आपका outfit बता रही हूँ…');
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. The user may be blind. From these owned items [' + wardrobe + '], pick one good everyday outfit and DESCRIBE it in plain spoken words: name each garment and its colour, then say what occasion it suits. Use ONLY owned item colours/categories. Keep it warm and short. Return plain text, not JSON.';
+  try { const ans = await faAsk(prompt); const h=document.getElementById(host); h.innerHTML='<div class="sds-card">👁️ '+esc(ans)+'</div>'; h.dataset.spoken=ans; faSpeak(ans);
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+
+/* ════════ Occasion + Weather ════════ */
+let _selectedOcc = '';
+async function faOccasion(){
+  const host = 'fa-occasion-result';
+  const extra = (document.getElementById('fa-occasion-text').value || '').trim();
+  const occ = _selectedOcc || extra;
+  if (!occ){ faSpeak(CURRENT_LANG==='en'?'Pick an occasion':'मौक़ा चुनिए'); return; }
+  faLoading(host, CURRENT_LANG==='en'?'Choosing from your wardrobe…':'आपकी अलमारी से चुन रही हूँ…');
+  const wardrobe = await faWardrobeText();
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. Occasion: "' + (_selectedOcc ? _selectedOcc + (extra ? ' — ' + extra : '') : extra) + '". ' +
+    (wardrobe ? 'Owned items [' + wardrobe + ']. Build from owned first. ' : 'No wardrobe yet — give a budget-first plan. ') +
+    'Tell the user if their likely outfit is too casual / just right / over-dressed for the occasion and how to fix it from what they own. ' +
+    'Consider Indian city office cultures + festival/wedding norms respectfully. Return STRICT JSON: {"overall":8,"agents":{"occasion":{"score":8,"why":""},"comfort":{"score":8,"why":""},"budget":{"score":10,"why":""},"accessibility":{"score":9,"why":""}},"teach":{"why":"","alternatives":""},"tiers":{"free":"","budget":"","premium":""}}.';
+  try { const ans = await faAsk(prompt); const j = faParseJSON(ans); const h=document.getElementById(host);
+    if (!j || !j.agents){ h.innerHTML='<div class="sds-card">'+esc(ans||'—')+'</div>'; h.dataset.spoken=ans; faSpeak(ans); }
+    else { h.innerHTML='<div class="sds-card chitti-response" data-chitti-response="fa-occ-out" data-chitti-section="🎉 मौक़े की राय">'+faRenderSwarm(j)+'</div>'; const sp=(j.teach&&j.teach.why)||''; h.dataset.spoken=sp; faSpeak(sp); }
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+async function faWeather(){
+  const host = 'fa-occasion-result';
+  faLoading(host, CURRENT_LANG==='en'?'Checking weather…':'मौसम देख रही हूँ…');
+  let city = PROFILE.city || '';
+  try {
+    if (!city && window.Chitti && Chitti.location && Chitti.location.get){ const loc = await Chitti.location.get(); city = (loc && (loc.city || loc.pincode)) || ''; }
+  } catch(e){}
+  if (!city){ const m = CURRENT_LANG==='en'?'Tell me your city and I will advise fabric and layers for the weather.':'अपना शहर बताइए — Chitti मौसम के हिसाब से कपड़े और layer बताएगी।'; document.getElementById(host).innerHTML='<div class="sds-card">☁️ '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG + '. For typical current-season weather in ' + city + ', India, advise the right fabric and layering from a normal Indian wardrobe. Plain text, short, practical.';
+  try { const ans = await faAsk(prompt); const h=document.getElementById(host); h.innerHTML='<div class="sds-card">☁️ '+esc(ans)+'</div>'; h.dataset.spoken=ans; faSpeak(ans); } catch(e){ faError(host); }
+}
+
+/* ════════ Budget tiers ════════ */
+async function faBudget(){
+  const host = 'fa-budget-result';
+  const need = (document.getElementById('fa-budget-text').value || '').trim();
+  if (!need){ faSpeak(CURRENT_LANG==='en'?'What do you need?':'क्या चाहिए?'); return; }
+  faLoading(host, CURRENT_LANG==='en'?'Finding the honest cheapest path…':'सबसे सच्चा सस्ता रास्ता ढूँढ रही हूँ…');
+  const wardrobe = await faWardrobeText();
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. The user thinks they need: "' + need + '". ' + (wardrobe ? 'Owned items [' + wardrobe + ']. ' : '') +
+    'FIRST try to solve it from owned clothes (Free, ₹0). Only then give a Budget option (Meesho/local market, real 2026 INR) and a Premium option (Myntra/Ajio). Be honest about cheaper-elsewhere. ' +
+    'Return STRICT JSON: {"tiers":{"free":"solve from owned ₹0","budget":"~₹X where","premium":"~₹Y where"},"teach":{"why":"why I\'d start free","tradeoffs":""}}.';
+  try { const ans = await faAsk(prompt); const j = faParseJSON(ans); const h=document.getElementById(host);
+    if (!j || !j.tiers){ h.innerHTML='<div class="sds-card">'+esc(ans||'—')+'</div>'; h.dataset.spoken=ans; faSpeak(ans); }
+    else { h.innerHTML='<div class="sds-card chitti-response" data-chitti-response="fa-bud-out" data-chitti-section="💸 तीन रास्ते">'+faRenderSwarm(j)+'</div>'; const sp=(j.tiers.free||''); h.dataset.spoken=sp; faSpeak(sp); }
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+
+/* ════════ Learn (teach mode) ════════ */
+async function faLearn(){
+  const host = 'fa-learn-result';
+  const q = (document.getElementById('fa-learn-text').value || '').trim();
+  if (!q){ faSpeak(CURRENT_LANG==='en'?'Ask me anything about style':'style के बारे में कुछ पूछिए'); return; }
+  faLoading(host, CURRENT_LANG==='en'?'Teaching…':'समझा रही हूँ…');
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. The user wants to LEARN, not just be told. Question: "' + q + '". Teach the principle in simple words with a Why, a Benefit, and one example. Never mention the body. Plain text.';
+  try { const ans = await faAsk(prompt); const h=document.getElementById(host); h.innerHTML='<div class="sds-card">🎓 '+esc(ans)+'</div>'; h.dataset.spoken=ans; faSpeak(ans);
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+
+/* ════════ Explain (🤖) + Feedback (👍/👎) ════════ */
+function faExplain(cardId){
+  const card = document.querySelector('[data-chitti-response="' + cardId + '"]');
+  const section = card ? (card.getAttribute('data-chitti-section') || '') : '';
+  faSpeak(CURRENT_LANG==='en' ? ('Chitti will explain: ' + section) : ('Chitti समझाएगी: ' + section));
+  try { if (window.ChittiFeedback && ChittiFeedback.explain) ChittiFeedback.explain(cardId); } catch(e){}
+}
+async function faFeedback(card, dir){
+  if (dir === 1){ faSpeak(CURRENT_LANG==='en'?'Thank you':'धन्यवाद'); }
+  else { faSpeak(CURRENT_LANG==='en'?'Sorry — I will learn from this. What was wrong?':'माफ़ कीजिए — Chitti इससे सीखेगी। क्या ग़लत था?'); }
   try {
     await fetch(API_BASE + '/api/feedback', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chitti:'chitti_fashion_ai', card, kind:'thumbs_down', message: txt, page:'chitti_fashion' }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chitti: 'chitti_fashion', card: card, vote: dir, language: CURRENT_LANG })
     });
   } catch(e){}
-  document.getElementById(textareaId).value = '';
-  sdsToggleFb(panelId);
-  speakText('Feedback bhej diya, dhanyavaad.', CURRENT_LANG);
 }
-function logProductAction(card, v){ try { console.log('product', card, v); } catch(e){} }
 
-/* ── Init ── */
-window.addEventListener('DOMContentLoaded', () => {
+/* ════════ boot ════════ */
+function faBoot(){
+  CURRENT_LANG = faDetectLang();
+  document.documentElement.lang = CURRENT_LANG;
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
-  if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
-  if (!CURRENT_GENDER) document.getElementById('fa-onboard').style.display = 'block';
-  else faRenderAlmari();
-});
+  faMaybeOnboard();
+  faRenderWardrobe();
+  faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
+  faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', faBoot);
+else faBoot();
 </script>
 </body>
 </html>

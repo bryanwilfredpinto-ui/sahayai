@@ -418,6 +418,7 @@ These two docs are the **single source of truth** for their respective products.
 | `chitti_legal.html` | `chitti-legal/` |
 | `chitti_logo_video.html` | `chitti-logo-video/` |
 | `chitti_voice_factory.html` | `chitti-voice-factory/` |
+| `chitti_fashion.html` | `chitti-fashion/` — full CFOS operating system (2026-06-03); backend: shared `chitti-vaani-api` (Vaani-sole-interface) |
 | `chitti_quality.html` | `chitti-quality/` |
 | `chitti_fundamentals.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
 | `chitti_complete_technical.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
