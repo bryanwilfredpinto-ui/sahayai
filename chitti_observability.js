@@ -35,6 +35,12 @@
   // ── Config ─────────────────────────────────────────────────────────────
   var API = window.CHITTI_OBS_API ||
             'https://chitti-shares-api-production.up.railway.app';
+  // Remote telemetry is OPT-IN. Without an explicit window.CHITTI_OBS_API the
+  // collector lives on chitti-shares-api, which sends no CORS header for these
+  // endpoints — so cross-origin pages were logging a CORS error on every tick
+  // (Sire 2026-06-04). The badge runs 100% locally (runChecks); the network
+  // POST/GET only add a central dashboard. Default = local-only, zero console noise.
+  var OBS_REMOTE = !!window.CHITTI_OBS_API;
   var AUDIT_KEY = 'chitti_audit_id';
   var AUDIT_TTL_MS = 24 * 60 * 60 * 1000;     // 24 h rolling
   var SAMPLES_KEY = 'chitti_obs_samples_v1';   // localStorage ring buffer
@@ -115,6 +121,7 @@
 
   // ── POST helpers (fail-soft) ──────────────────────────────────────────
   function post(path, payload) {
+    if (!OBS_REMOTE) return; // local-only by default — no cross-origin telemetry
     try {
       fetch(API + path, {
         method: 'POST', mode: 'cors', cache: 'no-store',
@@ -451,7 +458,8 @@
       latency_p95_ms:   stats.p95,
       latency_p99_ms:   stats.p99,
     });
-    // also pull aggregate badge data
+    // also pull aggregate badge data (opt-in only — see OBS_REMOTE)
+    if (!OBS_REMOTE) return;
     try {
       fetch(API + '/api/observability/dashboard', { mode: 'cors', cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })

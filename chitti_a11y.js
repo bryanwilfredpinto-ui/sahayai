@@ -243,7 +243,7 @@
         srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
       }
       var s = document.createElement('script');
-      s.src = (srcBase || '') + 'chitti_observability.js?v=20260529r';
+      s.src = (srcBase || '') + 'chitti_observability.js?v=20260604';
       s.defer = true;
       s.setAttribute('data-injected-by', 'chitti_a11y');
       document.head.appendChild(s);

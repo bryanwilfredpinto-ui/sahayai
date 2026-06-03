@@ -147,7 +147,9 @@ Legend: ✅ Delivered & verified · 🟡 Delivered but unverified / partial · �
 | ~~MECH-3~~ | ~~unit/integration tests~~ → **CLOSED 2026-06-04** (frontend 18/18 + backend 7/7 + 7/7) | ✅ done |
 | MECH-4 | Curl-verify a live Vaani-routed mechanic query once §G#1 lands (gate 5) | 🚧 P0 (blocked on Sire) |
 | ~~MECH-5~~ | ~~Dashboard/Sound/OBD2/Inspector/Passport backend routes~~ → **CLOSED 2026-06-04** — 5 deterministic endpoint groups LIVE on both backends + `PassportEvent` model + Trust Score; tested **24/24 (2w) + 22/22 (4w)**. Only photo/audio auto-detect stays honest COMING-SOON (LLM). | ✅ done |
-| MECH-6 | **NEW** — wire the Inspector + Health-Passport screens in the HTML to the new live routes | P2 (CTO, no blocker) |
+| MECH-6 | wire the Inspector + Health-Passport screens in the HTML to the new live routes | P2 (CTO, no blocker) |
+| ~~QA bugs~~ | ~~observability CORS console errors + `strFor` KYV crash~~ → **FIXED 2026-06-04** in the full QA pass ([CHITTI_MECHANIC_QA_REPORT.md](CHITTI_MECHANIC_QA_REPORT.md), `tools/qa_mechanic.mjs` → 0 issues) | ✅ done |
+| MECH-7 | **NEW** — full §5 no-Hinglish sweep of LEGACY page strings ×9 langs (new surfaces already clean) | P2 (CTO, no blocker) |
 
 ---
 

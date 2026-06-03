@@ -1719,7 +1719,7 @@ function mbKyvRender(j, b){
   h += '</div>';
 
   // Anatomy
-  h += '<div class="kyv-section-title">' + strFor('kyv.sec.anatomy') + '</div>';
+  h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.anatomy') + '</div>';
   (j.anatomy||[]).forEach(a => {
     h += '<div class="kyv-row"><div class="kyv-row-head"><b>'+kyvEsc(a.part||'')+'</b> <span class="kyv-loc">'+kyvEsc(a.location||'')+'</span></div>';
     h += '<div class="kyv-row-body">'+kyvEsc(a.function||'')+'</div>';
@@ -1728,7 +1728,7 @@ function mbKyvRender(j, b){
   });
 
   // Consumables
-  h += '<div class="kyv-section-title">' + strFor('kyv.sec.consumables') + '</div>';
+  h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.consumables') + '</div>';
   (j.consumables||[]).forEach(c => {
     h += '<div class="kyv-consume">';
     h += '<div class="kyv-consume-head"><b>'+kyvEsc(c.item||'')+'</b>';
@@ -1750,7 +1750,7 @@ function mbKyvRender(j, b){
   });
 
   // Cleaning & care
-  h += '<div class="kyv-section-title">' + strFor('kyv.sec.cleaning') + '</div>';
+  h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.cleaning') + '</div>';
   (j.cleaning_care||[]).forEach(c => {
     h += '<div class="kyv-clean">';
     h += '<div class="kyv-clean-head">'+kyvEsc(c.surface||'')+'</div>';
@@ -1762,7 +1762,7 @@ function mbKyvRender(j, b){
 
   // Toolkit
   if (j.toolkit) {
-    h += '<div class="kyv-section-title">' + strFor('kyv.sec.toolkit') + '</div>';
+    h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.toolkit') + '</div>';
     [['starter','💰 Starter'],['mid','💰💰 Mid'],['pro','💰💰💰 Pro']].forEach(p => {
       const arr = j.toolkit[p[0]];
       if (arr && arr.length) {
@@ -1772,7 +1772,7 @@ function mbKyvRender(j, b){
   }
 
   // Warnings
-  h += '<div class="kyv-section-title">' + strFor('kyv.sec.warnings') + '</div>';
+  h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.warnings') + '</div>';
   (j.warnings||[]).forEach(w => {
     const ucls = w.urgency === 'high' ? 'kyv-warn-high' : (w.urgency === 'medium' ? 'kyv-warn-med' : 'kyv-warn-low');
     h += '<div class="kyv-warn '+ucls+'">';
@@ -1789,7 +1789,7 @@ function mbKyvRender(j, b){
   }
 
   // Care calendar + cost + pre-ride + resale
-  h += '<div class="kyv-section-title">' + strFor('kyv.sec.calendar') + '</div>';
+  h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.calendar') + '</div>';
   if (j.seasonal) {
     h += '<div class="kyv-season">';
     if (j.seasonal.monsoon) h += '<div><b>🌧️ Monsoon:</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
@@ -1799,7 +1799,7 @@ function mbKyvRender(j, b){
   }
   if (j.service_cost) {
     h += '<div class="kyv-cost"><b>💸 Service cost benchmark:</b><br>';
-    h += strFor('kyv.cost.local') + ' ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · ' + strFor('kyv.cost.auth') + ' ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
+    h += strFor2W('kyv.cost.local') + ' ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · ' + strFor2W('kyv.cost.auth') + ' ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
     if (j.service_cost.what_is_done) h += '<div class="kyv-svc">'+kyvEsc(j.service_cost.what_is_done)+'</div>';
     h += '</div>';
   }

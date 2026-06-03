@@ -2,6 +2,31 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-04 PM — Chitti Mechanic — full QA pass: 2 real bugs found + fixed → 0 issues
+
+**Trigger:** Sire — broken live render + "run the app, test every page/button/form, check the
+console, responsive, Playwright e2e, fix all, repeat until zero, give a QA report."
+
+Built [tools/qa_mechanic.mjs](tools/qa_mechanic.mjs) (Playwright, self-serving, network mocked):
+both pages × 3 viewports (375/768/1280) + console/page/network-error capture + render sanity +
+tab nav + 5 box-elements + i18n switch + form persistence + Swarm + Scam flows. Report:
+[CHITTI_MECHANIC_QA_REPORT.md](CHITTI_MECHANIC_QA_REPORT.md).
+
+**2 real bugs caught + fixed** (3 iterations → 0 issues):
+1. **Observability CORS** — `chitti_observability.js` POSTed telemetry cross-origin to
+   `chitti-shares-api` (no CORS header) → console errors + false "Degraded" on every non-shares
+   page. Fixed: remote telemetry now **opt-in** (`OBS_REMOTE` / `window.CHITTI_OBS_API`); badge runs
+   100% locally. Fleet-wide fix.
+2. **`ReferenceError: strFor is not defined`** — KYV render called bare `strFor()` (helper is
+   `strFor2W`/`strFor4W`); crashed whenever a saved vehicle's KYV card rendered. Fixed in both pages.
+
+(2 further "form" findings were harness artifacts — invalid `<select>` option values — corrected.)
+
+**Final: `QA_RESULT:{"issues":0}`** — 0 console/page/network errors, responsive clean, all
+tabs/forms/flows functional, 18 response boxes carry the 5 mandatory elements, i18n applies.
+Plus cert_mechanic 24/24 + backend 24/24+22/22. Remaining: legacy §5-Hinglish sweep (MECH-7),
+live curl (MECH-4, Sire-blocked), Inspector/Passport UI (MECH-6).
+
 ## 2026-06-04 PM — Chitti Mechanic — MECH-5 closed: Doctor backends LIVE (deterministic)
 
 **Trigger:** Sire — "Close MECH-5."
