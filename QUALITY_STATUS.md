@@ -2,6 +2,25 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-04 — Chitti Mechanic — CTO gates certified (cert 22/22 · tests 32/32)
+
+**Trigger:** Sire — "Complete your job." (close the CTO-owned, no-Sire-blocker gates).
+
+Ran the CTO-owned quality gates for both products. **54/54 checks green.** Control Panel:
+[CHITTI_MECHANIC_CONTROL_PANEL.md](CHITTI_MECHANIC_CONTROL_PANEL.md) §B/§I.
+
+| Gate | Result | Artifact |
+|---|---|---|
+| Visual cert (Playwright, 375/768/1280, both pages) | 🟢 **22/22** | [tools/cert_mechanic.mjs](tools/cert_mechanic.mjs) — self-serving; 5 frontend gates + Swarm card 5-elements + tap targets + **runtime i18n proof** (en→ta title renders `🧠 ஸ்வார்ம் பரிசோதனை`, zero Hinglish) |
+| Real 375/768/1280 screenshots | 🟢 6 full-page + 2 swarm-card crops | [tools/cert_screenshots/](tools/cert_screenshots/) `chitti_2wheeler_*.png` · `chitti_4wheeler_*.png` |
+| Frontend logic + §5 regression | 🟢 **18/18** | [tools/test_mechanic.mjs](tools/test_mechanic.mjs) — 387 i18n keys verified ×9 bags; swarm parse/tier/fallback fixtures; 0 Hinglish literals |
+| Backend routes (Flask test client) | 🟢 **7/7 + 7/7** | `chitti-{2,4}wheeler/backend/test_routes.py` — /health 200, DTC, breakdown (**family-cascade-never-cops** asserted), maintenance, honest 501 |
+
+CTO 8-gate status now **6/8 GREEN** (code+unit ✅ · integration ✅ · /health ✅ · visual cert ✅ ·
+5 elements ✅ · daily report ✅); gate 3 (live deploy re-verify) 🟡; gate 5 (live Vaani-routed
+answer curl) ❌ **blocked on Sire** — Vaani relevance-rail allowlist for mechanic intent + DeepSeek
+funding. MECH-1/2/3 closed; MECH-4 is the only remaining item and it is Sire-blocked.
+
 ## 2026-06-03 — Chitti Mechanic (Auto OS) rebuilt — CEOS + CQOS doc set + Swarm Diagnosis UI
 
 **Trigger:** Sire — "Redo Chitti-2wheeler & chitti-4wheeler completely, including the html. Prepare read/skills/sops etc. under the CEOS framework. Quality is its own pillar (CQOS)."
