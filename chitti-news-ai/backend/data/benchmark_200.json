@@ -1,20 +1,23 @@
 {
   "_doc": "Hand-labelled benchmark dataset for Chitti News AI Phase 0 (CHITTI_NEWS_AI_MASTER_SPEC v0.3 §8). Ground-truth labels were derived by an independent URL+title heuristic explicitly designed to be DIFFERENT from the classifier's rules — so passing this benchmark is a real test, not a self-check.",
-  "_version": "1.0.0",
+  "_version": "1.1.0",
   "_built_at": "2026-05-29",
   "_label_distribution": {
     "software-developer": 122,
-    "student": 45,
-    "business-owner": 13,
-    "accountant": 9,
-    "hr-professional": 2,
-    "talent-acquisition": 2,
-    "doctor": 2,
-    "oncologist": 1,
-    "farmer": 1,
-    "lawyer": 1
+    "student": 47,
+    "business-owner": 17,
+    "accountant": 13,
+    "doctor": 10,
+    "oncologist": 4,
+    "farmer": 6,
+    "talent-acquisition": 5,
+    "hr-professional": 6,
+    "lawyer": 5,
+    "nurse": 5,
+    "teacher": 5,
+    "government-employee": 4
   },
-  "_total_rows": 200,
+  "_total_rows": 250,
   "_zero_label_rows": 43,
   "rows": [
     {
@@ -1562,9 +1565,7 @@
       "summary": "Learn how to configure Microsoft Defender XDR, deploy Microsoft Defender for Endpoint and onboard devices, configure policies, mitigate threats, and respond to incidents with Defender XDR.",
       "topics": "security",
       "expected": [
-        "hr-professional",
-        "software-developer",
-        "talent-acquisition"
+        "software-developer"
       ]
     },
     {
@@ -2570,6 +2571,659 @@
       "topics": "BNS,BNSS,BSA,litigation,case-law",
       "expected": [
         "lawyer"
+      ]
+    },
+    {
+      "id": "s-hr-1",
+      "source_slug": "synthetic-shrm",
+      "source_name": "SHRM India",
+      "source_domain": "shrmindia.org",
+      "title": "DEI in Workplace Certification for HR Professionals",
+      "url": "https://shrmindia.org/dei-workplace-cert",
+      "summary": "Diversity equity inclusion programme for human resources practitioners covering policy design, training delivery and performance management.",
+      "topics": "human-resources,DEI,workplace,employee-engagement",
+      "expected": [
+        "hr-professional"
+      ]
+    },
+    {
+      "id": "s-hr-2",
+      "source_slug": "synthetic-aon",
+      "source_name": "Aon Hewitt Learning",
+      "source_domain": "aon.com",
+      "title": "Compensation and Benefits Design for HR Managers",
+      "url": "https://aon.com/learning/comp-benefits-hr",
+      "summary": "End-to-end programme on compensation strategy, benefits design and HRIS implementation for human resources leaders.",
+      "topics": "compensation,benefits,HRIS,human-resources",
+      "expected": [
+        "hr-professional"
+      ]
+    },
+    {
+      "id": "s-hr-3",
+      "source_slug": "synthetic-mercer",
+      "source_name": "Mercer People Ops Academy",
+      "source_domain": "mercer.com",
+      "title": "Performance Management and L&D for People Operations Teams",
+      "url": "https://mercer.com/academy/performance-mgmt",
+      "summary": "Workshop for people ops and HR practitioners on performance review cycles, learning and development planning, and workforce planning.",
+      "topics": "performance-review,learning-and-development,people-operations,human-resources",
+      "expected": [
+        "hr-professional"
+      ]
+    },
+    {
+      "id": "s-hr-4",
+      "source_slug": "synthetic-iihr",
+      "source_name": "Indian Institute of Human Resources",
+      "source_domain": "iihr.org",
+      "title": "Onboarding and Employee Engagement Programs (HR Certification)",
+      "url": "https://iihr.org/cert/onboarding-engagement",
+      "summary": "Six-month certification for HR professionals on structured onboarding, employee engagement surveys, and exit interview frameworks.",
+      "topics": "onboarding,employee-engagement,exit-interview,human-resources",
+      "expected": [
+        "hr-professional"
+      ]
+    },
+    {
+      "id": "s-hr-5",
+      "source_slug": "synthetic-shrm-2",
+      "source_name": "SHRM India",
+      "source_domain": "shrmindia.org",
+      "title": "Workplace Policy Drafting for HR Heads",
+      "url": "https://shrmindia.org/cert/workplace-policy",
+      "summary": "Drafting workplace policy frameworks: leave policy, POSH policy, code of conduct, and HRIS integration.",
+      "topics": "workplace-policy,human-resources,HRIS",
+      "expected": [
+        "hr-professional"
+      ]
+    },
+    {
+      "id": "s-ta-1",
+      "source_slug": "synthetic-linkedin-learn",
+      "source_name": "LinkedIn Talent Solutions",
+      "source_domain": "linkedin.com",
+      "title": "Boolean Search Mastery for Tech Recruiters",
+      "url": "https://linkedin.com/talent/learn/boolean-search-mastery",
+      "summary": "Build candidate pipelines using boolean search, X-ray search, and Naukri Recruiter advanced filters. For talent acquisition and sourcing teams.",
+      "topics": "boolean-search,sourcing,naukri-recruiter,candidate-pipeline",
+      "expected": [
+        "talent-acquisition"
+      ]
+    },
+    {
+      "id": "s-ta-2",
+      "source_slug": "synthetic-naukri",
+      "source_name": "Naukri RMS Academy",
+      "source_domain": "naukri.com",
+      "title": "Applicant Tracking System Optimization for Recruiters",
+      "url": "https://naukri.com/rms-academy/ats-optimization",
+      "summary": "Optimize your ATS workflows: job posting templates, candidate experience scoring, screening rubric design, offer rollout.",
+      "topics": "ATS,applicant-tracking,sourcing,job-posting,screening",
+      "expected": [
+        "talent-acquisition"
+      ]
+    },
+    {
+      "id": "s-ta-3",
+      "source_slug": "synthetic-instahyre",
+      "source_name": "Instahyre Recruiter Academy",
+      "source_domain": "instahyre.com",
+      "title": "Candidate Experience Best Practices for Talent Acquisition",
+      "url": "https://instahyre.com/academy/candidate-experience",
+      "summary": "Three-week programme on candidate experience, interview scheduling efficiency and offer-to-accept ratios for tech recruiters.",
+      "topics": "candidate-experience,interview,offer,sourcing",
+      "expected": [
+        "talent-acquisition"
+      ]
+    },
+    {
+      "id": "s-ta-4",
+      "source_slug": "synthetic-shl",
+      "source_name": "SHL Assessment",
+      "source_domain": "shl.com",
+      "title": "Sourcing Strategy and LinkedIn Recruiter Workflows",
+      "url": "https://shl.com/sourcing-strategy-recruiter",
+      "summary": "Sourcing strategy patterns for senior tech recruiters using LinkedIn Recruiter, passive candidate engagement, and talent pipeline metrics.",
+      "topics": "sourcing-strategy,linkedin-recruiter,passive-candidate,talent-pipeline",
+      "expected": [
+        "talent-acquisition"
+      ]
+    },
+    {
+      "id": "s-doc-1",
+      "source_slug": "synthetic-bmj",
+      "source_name": "BMJ Learning",
+      "source_domain": "learning.bmj.com",
+      "title": "Clinical Decision Support Systems for Primary Care Physicians",
+      "url": "https://learning.bmj.com/clinical-decision-support",
+      "summary": "Module for doctors on integrating clinical decision support into EMR workflows, evidence-based medicine references and differential diagnosis frameworks.",
+      "topics": "clinical-decision-support,EMR,evidence-based-medicine,primary-care",
+      "expected": [
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-doc-2",
+      "source_slug": "synthetic-jama",
+      "source_name": "JAMA Network Learning",
+      "source_domain": "jamanetwork.com",
+      "title": "Radiology Imaging Workflows for Physicians",
+      "url": "https://jamanetwork.com/learning/radiology-imaging",
+      "summary": "Course for clinicians on radiology imaging review, pathology slide interpretation, and ICD-10 coding accuracy in EHR systems.",
+      "topics": "radiology,imaging,pathology,ICD-10,EHR",
+      "expected": [
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-doc-3",
+      "source_slug": "synthetic-medscape",
+      "source_name": "Medscape Education",
+      "source_domain": "medscape.org",
+      "title": "Patient Triage Protocols for Emergency Physicians",
+      "url": "https://medscape.org/triage-protocols",
+      "summary": "Emergency room patient triage protocols, clinical decision support, and FDA-approved diagnostic tools for clinicians.",
+      "topics": "patient,triage,clinical-decision-support,FDA",
+      "expected": [
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-doc-4",
+      "source_slug": "synthetic-aiims",
+      "source_name": "AIIMS Continuing Medical Education",
+      "source_domain": "aiims.edu",
+      "title": "Differential Diagnosis Workshop for Doctors",
+      "url": "https://aiims.edu/cme/differential-diagnosis",
+      "summary": "AIIMS CME for clinicians on differential diagnosis methodology, medical literature review, and CDSCO regulatory compliance.",
+      "topics": "differential-diagnosis,medical-literature,CDSCO,clinical",
+      "expected": [
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-doc-5",
+      "source_slug": "synthetic-imdcouncil",
+      "source_name": "Indian Medical Council",
+      "source_domain": "imc.org.in",
+      "title": "EHR Integration for Indian Hospitals (Physician Track)",
+      "url": "https://imc.org.in/cme/ehr-integration",
+      "summary": "Electronic health record integration for primary care physicians and MBBS doctors in Indian hospital settings.",
+      "topics": "EHR,EMR,clinical,primary-care",
+      "expected": [
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-nur-1",
+      "source_slug": "synthetic-inc",
+      "source_name": "Indian Nursing Council",
+      "source_domain": "indiannursingcouncil.gov.in",
+      "title": "ICU Nursing Care Plan and Vital Signs Documentation",
+      "url": "https://indiannursingcouncil.gov.in/cme/icu-nursing",
+      "summary": "Module for ICU nurses on patient monitoring, vital signs documentation, medication administration and shift handover protocols.",
+      "topics": "nursing-care-plan,bedside-nursing,patient-monitoring,medication-administration,ICU-nursing",
+      "expected": [
+        "nurse"
+      ]
+    },
+    {
+      "id": "s-nur-2",
+      "source_slug": "synthetic-nursingnow",
+      "source_name": "Nursing Now India",
+      "source_domain": "nursingnow.in",
+      "title": "Triage Nursing Skills for Emergency Departments",
+      "url": "https://nursingnow.in/learn/triage-nursing",
+      "summary": "Hands-on programme for staff nurses on triage nursing, patient monitoring, vital signs documentation, and shift handover.",
+      "topics": "triage-nursing,patient-monitoring,vital-signs-documentation",
+      "expected": [
+        "nurse"
+      ]
+    },
+    {
+      "id": "s-nur-3",
+      "source_slug": "synthetic-incgnm",
+      "source_name": "INC GNM Programme",
+      "source_domain": "indiannursingcouncil.gov.in",
+      "title": "GNM Nursing Bedside Care Refresher Course",
+      "url": "https://indiannursingcouncil.gov.in/gnm-refresher",
+      "summary": "GNM training refresher for staff nurses on bedside nursing, INC India guidelines, and Indian Nursing Council protocols.",
+      "topics": "GNM training,bedside-nursing,INC India",
+      "expected": [
+        "nurse"
+      ]
+    },
+    {
+      "id": "s-nur-4",
+      "source_slug": "synthetic-annurses",
+      "source_name": "ANM Nurses Association",
+      "source_domain": "anmnurses.in",
+      "title": "ANM Training Module on Medication Administration",
+      "url": "https://anmnurses.in/training/medication-admin",
+      "summary": "Auxiliary nurse midwife training on medication administration accuracy, nursing care plans, and bedside nursing standards.",
+      "topics": "ANM training,medication-administration,nursing-care-plan",
+      "expected": [
+        "nurse"
+      ]
+    },
+    {
+      "id": "s-nur-5",
+      "source_slug": "synthetic-aiims-nursing",
+      "source_name": "AIIMS College of Nursing",
+      "source_domain": "aiims.edu",
+      "title": "BSc Nursing Patient Monitoring Workshop",
+      "url": "https://aiims.edu/nursing/patient-monitoring-workshop",
+      "summary": "Hands-on workshop for BSc Nursing students on patient monitoring, vital signs documentation, and shift handover protocols.",
+      "topics": "BSc nursing,patient-monitoring,vital-signs-documentation",
+      "expected": [
+        "nurse"
+      ]
+    },
+    {
+      "id": "s-far-1",
+      "source_slug": "synthetic-icar",
+      "source_name": "ICAR Krishi Vigyan Kendra",
+      "source_domain": "icar.org.in",
+      "title": "Soil Health Card Interpretation for Farmers",
+      "url": "https://icar.org.in/cme/soil-health-card",
+      "summary": "Hands-on training for kisans on soil health card interpretation, fertilizer application timing and irrigation scheduling.",
+      "topics": "soil-health-card,fertilizer,irrigation,kisan,agriculture",
+      "expected": [
+        "farmer"
+      ]
+    },
+    {
+      "id": "s-far-2",
+      "source_slug": "synthetic-iari-2",
+      "source_name": "IARI Agritech",
+      "source_domain": "iari.res.in",
+      "title": "Crop Yield Maximization for FPO Members",
+      "url": "https://iari.res.in/training/crop-yield",
+      "summary": "Programme for farmer producer organisation members on crop yield optimisation, pest management and weather-aware sowing schedules.",
+      "topics": "crop-yield,FPO,pest,weather,agriculture",
+      "expected": [
+        "farmer"
+      ]
+    },
+    {
+      "id": "s-far-3",
+      "source_slug": "synthetic-pmkisan-train",
+      "source_name": "PM-Kisan Skill Hub",
+      "source_domain": "pmkisan.gov.in",
+      "title": "PM-Kisan Scheme Awareness for Krishaks",
+      "url": "https://pmkisan.gov.in/training/scheme-awareness",
+      "summary": "Awareness module for krishaks covering PM-Kisan registration, minimum support price MSP basics, and Krishi Vigyan Kendra services.",
+      "topics": "PM-Kisan,MSP,Krishi Vigyan Kendra,kisan,agriculture",
+      "expected": [
+        "farmer"
+      ]
+    },
+    {
+      "id": "s-far-4",
+      "source_slug": "synthetic-iari-pest",
+      "source_name": "IARI Plant Pathology",
+      "source_domain": "iari.res.in",
+      "title": "Pest Detection and Crop Disease Identification (Agritech)",
+      "url": "https://iari.res.in/training/pest-detection",
+      "summary": "Agritech course for farmers on AI-aided pest detection, crop disease identification, and precision agriculture techniques.",
+      "topics": "pest detection,crop disease detection,precision agriculture,agritech,agriculture",
+      "expected": [
+        "farmer"
+      ]
+    },
+    {
+      "id": "s-far-5",
+      "source_slug": "synthetic-vgu-agri",
+      "source_name": "Vellore Institute of Technology — Agri Programme",
+      "source_domain": "vit.ac.in",
+      "title": "Precision Agriculture and Drone Surveying for Farmers",
+      "url": "https://vit.ac.in/agri/precision-drone",
+      "summary": "Three-week programme for farmer cooperatives on precision agriculture, drone-based crop monitoring, and irrigation scheduling.",
+      "topics": "precision-agriculture,drone,crop-monitoring,irrigation,agriculture",
+      "expected": [
+        "farmer"
+      ]
+    },
+    {
+      "id": "s-tch-1",
+      "source_slug": "synthetic-diksha",
+      "source_name": "DIKSHA Teacher Hub",
+      "source_domain": "diksha.gov.in",
+      "title": "NEP 2020 Lesson Plan Templates for K-12 Educators",
+      "url": "https://diksha.gov.in/teachers/nep-lesson-plans",
+      "summary": "DIKSHA platform module for K-12 educators on NEP 2020 aligned lesson plans, classroom management techniques, and student assessment rubrics.",
+      "topics": "NEP 2020,lesson plan,classroom management,K-12 educator,pedagogy",
+      "expected": [
+        "teacher"
+      ]
+    },
+    {
+      "id": "s-tch-2",
+      "source_slug": "synthetic-cbse-train",
+      "source_name": "CBSE Training Portal",
+      "source_domain": "cbse.gov.in",
+      "title": "CBSE Curriculum Integration with AI Teaching Aids",
+      "url": "https://cbse.gov.in/training/ai-teaching-aids",
+      "summary": "Workshop for teachers on integrating AI teaching aids into the CBSE curriculum: lesson plan templates, student assessment, and pedagogy techniques.",
+      "topics": "CBSE curriculum,lesson plan,student assessment,pedagogy,educator",
+      "expected": [
+        "teacher"
+      ]
+    },
+    {
+      "id": "s-tch-3",
+      "source_slug": "synthetic-pmedu",
+      "source_name": "PM-eVidya Channel",
+      "source_domain": "pmevidya.gov.in",
+      "title": "PM-eVidya Multi-channel Teaching for Educators",
+      "url": "https://pmevidya.gov.in/training/multi-channel-teaching",
+      "summary": "Teaching multi-channel content delivery via PM-eVidya, DIKSHA, and state board syllabus for K-12 educators across India.",
+      "topics": "PM-eVidya,DIKSHA,state board,K-12 educator,pedagogy",
+      "expected": [
+        "teacher"
+      ]
+    },
+    {
+      "id": "s-tch-4",
+      "source_slug": "synthetic-ignou-edu",
+      "source_name": "IGNOU School of Education",
+      "source_domain": "ignou.ac.in",
+      "title": "Higher Education Educator Programme on Pedagogy",
+      "url": "https://ignou.ac.in/edu/higher-ed-pedagogy",
+      "summary": "Programme for higher education educators on pedagogy frameworks, assessment design, and ICSE/state board mapping.",
+      "topics": "higher education educator,pedagogy,assessment,ICSE,educator",
+      "expected": [
+        "teacher"
+      ]
+    },
+    {
+      "id": "s-tch-5",
+      "source_slug": "synthetic-ncert",
+      "source_name": "NCERT Teacher Training",
+      "source_domain": "ncert.nic.in",
+      "title": "Classroom Management for Government School Teachers",
+      "url": "https://ncert.nic.in/training/classroom-management",
+      "summary": "NCERT module for shikshak on classroom management, NEP 2020 alignment, CBSE/state-board syllabus mapping and student assessment.",
+      "topics": "classroom,NEP 2020,CBSE,state board,assessment,shikshak,educator",
+      "expected": [
+        "teacher"
+      ]
+    },
+    {
+      "id": "s-law-1",
+      "source_slug": "synthetic-bci",
+      "source_name": "Bar Council of India Learning",
+      "source_domain": "barcouncilofindia.org",
+      "title": "Contract Drafting for Advocates",
+      "url": "https://barcouncilofindia.org/learning/contract-drafting",
+      "summary": "Hands-on contract drafting workshop for advocates: due diligence legal, civil procedure, and case law research.",
+      "topics": "contract drafting,advocate,due diligence legal,civil procedure,case law",
+      "expected": [
+        "lawyer"
+      ]
+    },
+    {
+      "id": "s-law-2",
+      "source_slug": "synthetic-sci",
+      "source_name": "Supreme Court of India Bar Library",
+      "source_domain": "sci.gov.in",
+      "title": "Litigation Strategy and BNSS 2023 Workshop",
+      "url": "https://sci.gov.in/library/litigation-bnss",
+      "summary": "Workshop for advocates on litigation strategy, Bharatiya Nagarik Suraksha Sanhita BNSS 2023 and Supreme Court of India procedure.",
+      "topics": "litigation,BNSS,Bharatiya Nyaya Sanhita,supreme court,advocate",
+      "expected": [
+        "lawyer"
+      ]
+    },
+    {
+      "id": "s-law-3",
+      "source_slug": "synthetic-nls-2",
+      "source_name": "National Law School Bengaluru",
+      "source_domain": "nls.ac.in",
+      "title": "Constitutional Law and Case Law Research for Lawyers",
+      "url": "https://nls.ac.in/library/constitutional-law",
+      "summary": "Programme for lawyers on constitutional law, case law research, criminal law procedure and Bharatiya Sakshya Adhiniyam BSA.",
+      "topics": "constitutional law,case law,criminal law,BSA,case law,advocate",
+      "expected": [
+        "lawyer"
+      ]
+    },
+    {
+      "id": "s-law-4",
+      "source_slug": "synthetic-nujs",
+      "source_name": "NUJS Kolkata",
+      "source_domain": "nujs.edu",
+      "title": "Tribunal Practice for Advocates",
+      "url": "https://nujs.edu/cle/tribunal-practice",
+      "summary": "Continuing legal education for vakils on tribunal practice, high court advocacy, and BNS Bharatiya Nyaya Sanhita 2023 case-law walkthroughs.",
+      "topics": "tribunal,high court,BNS,Bharatiya Nyaya Sanhita,vakil,advocate",
+      "expected": [
+        "lawyer"
+      ]
+    },
+    {
+      "id": "s-acc-1",
+      "source_slug": "synthetic-icai",
+      "source_name": "ICAI Digital Learning",
+      "source_domain": "icai.org",
+      "title": "GST Return Filing Masterclass for Chartered Accountants",
+      "url": "https://icai.org/learning/gst-return-masterclass",
+      "summary": "Masterclass for chartered accountants on GST return filing, TDS deduction workflows, and ITR filing across all categories.",
+      "topics": "GST return,TDS deduction,ITR filing,ICAI,chartered accountant",
+      "expected": [
+        "accountant"
+      ]
+    },
+    {
+      "id": "s-acc-2",
+      "source_slug": "synthetic-icmai",
+      "source_name": "ICMAI India",
+      "source_domain": "icmai.in",
+      "title": "Tax Audit Procedures and Indian Accounting Standards Update",
+      "url": "https://icmai.in/learning/tax-audit-ind-as",
+      "summary": "Update programme for CFOs and CA professionals on tax audit procedures, transfer pricing, and Indian Accounting Standard Ind AS updates.",
+      "topics": "tax audit,transfer pricing,Indian Accounting Standard,Ind AS,ICMAI",
+      "expected": [
+        "accountant"
+      ]
+    },
+    {
+      "id": "s-acc-3",
+      "source_slug": "synthetic-mca",
+      "source_name": "MCA Portal Learning",
+      "source_domain": "mca.gov.in",
+      "title": "MCA Portal ROC Filing for Practising CAs",
+      "url": "https://mca.gov.in/learning/roc-filing",
+      "summary": "Hands-on for chartered accountants on MCA portal, ROC filing workflows, and Ind AS compliance for SMEs.",
+      "topics": "MCA portal,ROC filing,Ind AS,chartered accountant",
+      "expected": [
+        "accountant"
+      ]
+    },
+    {
+      "id": "s-acc-4",
+      "source_slug": "synthetic-icsi",
+      "source_name": "ICSI Learning",
+      "source_domain": "icsi.edu",
+      "title": "Income Tax Return Filing Workshop for Tax Consultants",
+      "url": "https://icsi.edu/learning/itr-workshop",
+      "summary": "Workshop for tax consultants and accountants on income tax return ITR filing, GST returns, and ICAI compliance updates.",
+      "topics": "income tax,ITR filing,GST,ICAI,tax consultant",
+      "expected": [
+        "accountant"
+      ]
+    },
+    {
+      "id": "s-biz-1",
+      "source_slug": "synthetic-msde",
+      "source_name": "MSDE Skill India",
+      "source_domain": "msde.gov.in",
+      "title": "MUDRA Loan and Udyam Registration for MSMEs",
+      "url": "https://msde.gov.in/learning/mudra-udyam",
+      "summary": "Programme for small business owners on MUDRA loan applications, udyam registration, Stand-up India scheme, and udyog aadhaar.",
+      "topics": "MUDRA,udyam registration,MSME,stand-up India,udyog aadhaar,entrepreneur",
+      "expected": [
+        "business-owner"
+      ]
+    },
+    {
+      "id": "s-biz-2",
+      "source_slug": "synthetic-ondc",
+      "source_name": "ONDC Seller Academy",
+      "source_domain": "ondc.org",
+      "title": "ONDC Seller Onboarding for Kirana Shops",
+      "url": "https://ondc.org/academy/seller-onboarding",
+      "summary": "Hands-on onboarding for kirana shop owners and small businesses on ONDC marketplace registration, product cataloguing, and B2B marketplace integration.",
+      "topics": "ONDC seller,kirana digitisation,B2B marketplace,MSME",
+      "expected": [
+        "business-owner"
+      ]
+    },
+    {
+      "id": "s-biz-3",
+      "source_slug": "synthetic-startup-india",
+      "source_name": "Startup India Hub",
+      "source_domain": "startupindia.gov.in",
+      "title": "Startup India Recognition and DPIIT Registration",
+      "url": "https://startupindia.gov.in/learning/dpiit-recognition",
+      "summary": "Programme for entrepreneurs and founders on startup India recognition, DPIIT registration, customer acquisition cost benchmarking, and supply chain finance.",
+      "topics": "startup,startup india,customer acquisition cost,supply chain finance,entrepreneur",
+      "expected": [
+        "business-owner"
+      ]
+    },
+    {
+      "id": "s-biz-4",
+      "source_slug": "synthetic-nasscom-msme",
+      "source_name": "NASSCOM MSME Hub",
+      "source_domain": "nasscom.in",
+      "title": "GST for Business and B2B Marketplace Strategy for SMEs",
+      "url": "https://nasscom.in/msme/gst-b2b",
+      "summary": "Workshop for small business and MSME owners on GST for business compliance, B2B marketplace strategy, and customer acquisition.",
+      "topics": "GST for business,MSME,B2B,marketplace,customer acquisition",
+      "expected": [
+        "business-owner"
+      ]
+    },
+    {
+      "id": "s-stu-1",
+      "source_slug": "synthetic-byjus",
+      "source_name": "BYJU's Test Prep",
+      "source_domain": "byjus.com",
+      "title": "JEE Main 2026 Mathematics Foundation Course",
+      "url": "https://byjus.com/jee-main-math",
+      "summary": "Free course for JEE Main aspirants covering algebra, calculus, coordinate geometry. Scholarship details inside.",
+      "topics": "JEE main,scholarship for,fundamentals of",
+      "expected": [
+        "student"
+      ]
+    },
+    {
+      "id": "s-stu-2",
+      "source_slug": "synthetic-vajiram",
+      "source_name": "Vajiram & Ravi UPSC Prep",
+      "source_domain": "vajiramandravi.com",
+      "title": "UPSC Civil Services Foundation Course (Free)",
+      "url": "https://vajiramandravi.com/free/upsc-foundation",
+      "summary": "Free UPSC Civil Services foundation course for aspirants. Covers Indian Polity fundamentals, scholarship eligibility.",
+      "topics": "UPSC,scholarship for,fundamentals of",
+      "expected": [
+        "student"
+      ]
+    },
+    {
+      "id": "s-gov-1",
+      "source_slug": "synthetic-igot",
+      "source_name": "iGOT Karmayogi Portal",
+      "source_domain": "igotkarmayogi.gov.in",
+      "title": "Mission Karmayogi Module on Service Rules and DOPT Circulars",
+      "url": "https://igotkarmayogi.gov.in/modules/service-rules",
+      "summary": "Mandatory module for central government employees on CCS rules, DOPT circulars, vigilance manual updates, and RTI Act compliance.",
+      "topics": "iGOT Karmayogi,DOPT circular,CCS rules,RTI Act,vigilance manual,central civil services",
+      "expected": [
+        "government-employee"
+      ]
+    },
+    {
+      "id": "s-gov-2",
+      "source_slug": "synthetic-dopt",
+      "source_name": "DOPT Training Hub",
+      "source_domain": "dopt.gov.in",
+      "title": "CGHS and Pension Workshop for Gazetted Officers",
+      "url": "https://dopt.gov.in/training/cghs-pension-workshop",
+      "summary": "Workshop for gazetted officers on CGHS benefits, pension entitlement and central civil services service rules.",
+      "topics": "CGHS,service rules,gazetted officer,central civil services,DOPT",
+      "expected": [
+        "government-employee"
+      ]
+    },
+    {
+      "id": "s-gov-3",
+      "source_slug": "synthetic-psu",
+      "source_name": "BHEL PSU Training",
+      "source_domain": "bhel.com",
+      "title": "PSU Training on Promotion Policies and DPE Guidelines",
+      "url": "https://bhel.com/psu-training/promotion-dpe",
+      "summary": "Training programme for PSU employees on promotion policies, DPE guidelines, MeitY training programmes and Mission Karmayogi alignment.",
+      "topics": "DPE guidelines,PSU training,MeitY training,iGOT Karmayogi",
+      "expected": [
+        "government-employee"
+      ]
+    },
+    {
+      "id": "s-gov-4",
+      "source_slug": "synthetic-meity",
+      "source_name": "MeitY Capacity Building",
+      "source_domain": "meity.gov.in",
+      "title": "Digital India Skill-Up for Central Government Employees",
+      "url": "https://meity.gov.in/capacity-building/digital-skillup",
+      "summary": "Digital skill-up programme for central govt and state govt employees covering DOPT circulars, RTI compliance, and CCS rules.",
+      "topics": "central govt,state govt,DOPT,RTI,CCS rules",
+      "expected": [
+        "government-employee"
+      ]
+    },
+    {
+      "id": "s-onc-1",
+      "source_slug": "synthetic-tata-memorial",
+      "source_name": "Tata Memorial Hospital CME",
+      "source_domain": "tmc.gov.in",
+      "title": "Chemotherapy Regimen Selection — NCCN Guideline Update",
+      "url": "https://tmc.gov.in/cme/chemo-nccn-update",
+      "summary": "CME for medical oncologists on chemotherapy regimen selection, NCCN guideline updates, and immunotherapy trial protocols.",
+      "topics": "chemotherapy,NCCN guidelines,immunotherapy,tata memorial,oncology,cancer",
+      "expected": [
+        "oncologist",
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-onc-2",
+      "source_slug": "synthetic-aiims-onc",
+      "source_name": "AIIMS Oncology Department",
+      "source_domain": "aiims.edu",
+      "title": "Tumour Histopathology and TNM Staging Workshop",
+      "url": "https://aiims.edu/oncology/tumour-histopath",
+      "summary": "Workshop for cancer specialists and radiation oncologists on tumour histopathology, TNM staging, biopsy interpretation and AIIMS oncology guidelines.",
+      "topics": "tumour,histopathology,TNM staging,biopsy,AIIMS oncology,oncology,cancer",
+      "expected": [
+        "oncologist",
+        "doctor"
+      ]
+    },
+    {
+      "id": "s-onc-3",
+      "source_slug": "synthetic-asco-2",
+      "source_name": "ASCO India",
+      "source_domain": "asco.org",
+      "title": "Lymphoma and Leukemia Treatment Update for Medical Oncologists",
+      "url": "https://asco.org/india/lymphoma-leukemia",
+      "summary": "Update for medical oncologists on lymphoma and leukemia treatment protocols, immunotherapy trials, and carcinoma metastasis management.",
+      "topics": "lymphoma,leukemia,immunotherapy,carcinoma,metastasis,oncology,cancer",
+      "expected": [
+        "oncologist",
+        "doctor"
       ]
     }
   ]
