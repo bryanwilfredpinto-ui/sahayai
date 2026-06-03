@@ -335,8 +335,8 @@ def opportunity_engine(profession_slug: str, geo: str = "india",
                 "ingested_at": item.ingested_at.isoformat() if item.ingested_at else None,
                 "age_days": age_days,
                 "profession_confidence": round(rel.confidence or 0, 3),
+                "classifier_version": rel.classifier_version,
                 "score": round(score, 1),
-                "matched_keywords": rel.matched_keywords,
             })
 
     ranked.sort(key=lambda x: -x["score"])
