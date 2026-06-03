@@ -216,7 +216,7 @@
       + '.chitti-fb-box-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center;margin:14px 0 0;padding-top:10px;border-top:1px dashed #e5e7eb;}'
       + '.chitti-fb-bbtn-label{margin-right:auto;font-size:12px;font-weight:600;color:#475569;display:inline-flex;align-items:center;gap:6px;}'
       + '.chitti-fb-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}'
-      + '.chitti-fb-bbtn{appearance:none;border:1px solid #e5e7eb;background:#fff;color:#0E2344;padding:12px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;min-width:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .08s ease,background .12s ease;}'
+      + '.chitti-fb-bbtn{appearance:none;border:1px solid #e5e7eb;background:#fff;color:#0E2344;padding:0 12px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;box-sizing:border-box;min-width:48px;width:auto;height:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .08s ease,background .12s ease;}'
       + '.chitti-fb-bbtn:hover{background:#f1f5f9;}'
       + '.chitti-fb-bbtn:active{transform:scale(.96);}'
       + '.chitti-fb-bbtn:focus-visible{outline:3px solid #D4AF37;outline-offset:2px;}'
@@ -225,7 +225,7 @@
       + '.chitti-fb-bbtn.speak.live{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a;}'
       + '.chitti-fb-bbtn.ask.live{background:#fde68a;border-color:#fbbf24;color:#7c2d12;animation:chitti-pulse 1.2s ease-in-out infinite;}'
       // Demo button — saffron-tinted, lives on the LEFT of the box bar.
-      + '.chitti-fb-bbtn.demo{background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-color:rgba(232,106,23,.45);color:#7c2d12;font-weight:700;padding:12px;font-size:13px;line-height:1;display:inline-flex;align-items:center;gap:5px;min-height:48px;}'
+      + '.chitti-fb-bbtn.demo{background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-color:rgba(232,106,23,.45);color:#7c2d12;font-weight:700;padding:0 14px;font-size:13px;line-height:1;display:inline-flex;align-items:center;gap:5px;box-sizing:border-box;height:48px;min-height:48px;}'
       + '.chitti-fb-bbtn.demo .chitti-fb-bbtn-text{font-size:12px;letter-spacing:.02em;}'
       + '.chitti-fb-bbtn.demo:hover{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.15));border-color:#E86A17;}'
       + '.chitti-fb-bbtn.demo.live{background:linear-gradient(135deg,rgba(232,106,23,.28),rgba(212,175,55,.22));border-color:#E86A17;color:#7c2d12;animation:chitti-pulse 1.2s ease-in-out infinite;}'
