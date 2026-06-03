@@ -28,6 +28,7 @@ import models  # noqa: F401 — registers models with Base.metadata
 from models.sources import Source
 from routes.news_ai import bp as news_ai_bp
 from routes.news_ai import daily_tip_bp
+from routes.feed import bp as feed_bp                              # v0.2 aggregator
 from services import news_scheduler
 
 
@@ -138,6 +139,7 @@ def create_app() -> Flask:
 
     app.register_blueprint(news_ai_bp)
     app.register_blueprint(daily_tip_bp)
+    app.register_blueprint(feed_bp)                                    # v0.2 aggregator
 
     # Sahay AI shared quality framework — installed across every Chitti.
     try:

@@ -1,0 +1,173 @@
+{
+  "_doc": "Course source registry — 8 free public catalogues for Phase 0 (CHITTI_NEWS_AI_MASTER_SPEC v0.2 §8). Per the aggregator doctrine: real sources, no AI-generated entries. Each source is either a dynamic catalogue (RSS / JSON REST) or a static manifest hand-maintained from the provider's own public page. If a provider has no machine-readable surface, a static manifest is the honest fallback — entries are explicit, dated, and provider-attributed. Per Sire 2026-05-29: prefer free + public; never the default recommend a paid path.",
+  "_version": "0.2.0",
+  "_locked_at": "2026-05-29",
+  "sources": [
+    {
+      "slug": "microsoft-learn",
+      "name": "Microsoft Learn",
+      "official_domain": "learn.microsoft.com",
+      "type": "json",
+      "url": "https://learn.microsoft.com/api/catalog/?type=modules&locale=en-us",
+      "items_path": "modules",
+      "fields": {
+        "title": "title",
+        "url": "url",
+        "summary": "summary",
+        "duration_min": "durationInMinutes",
+        "level": "levels",
+        "topics": "subjects"
+      },
+      "free": true,
+      "free_note": "All Microsoft Learn modules are free. Some certifications (Azure / Microsoft 365) have paid exams; modules are always free.",
+      "license": "Microsoft Terms",
+      "active": true
+    },
+    {
+      "slug": "google-cloud-skills-boost",
+      "name": "Google Cloud Skills Boost",
+      "official_domain": "cloudskillsboost.google",
+      "type": "static_manifest",
+      "url": "https://www.cloudskillsboost.google/catalog",
+      "free": true,
+      "free_note": "Skills Boost has a generous free tier (badges + intro labs); some quests / labs require Google Cloud credits. Honestly labelled per item. No public catalogue JSON API — manifest hand-curated from the public catalogue page.",
+      "license": "Google Cloud Terms",
+      "active": true,
+      "manifest": [
+        {"id": "gcsb-generative-ai-learning-path", "title": "Generative AI Learning Path", "url": "https://www.cloudskillsboost.google/paths/118", "topics": ["generative-AI", "AI"], "duration_min": 600, "level": "beginner"},
+        {"id": "gcsb-introduction-to-gen-ai", "title": "Introduction to Generative AI", "url": "https://www.cloudskillsboost.google/course_templates/536", "topics": ["generative-AI", "AI"], "duration_min": 45, "level": "beginner"},
+        {"id": "gcsb-introduction-to-llms", "title": "Introduction to Large Language Models", "url": "https://www.cloudskillsboost.google/course_templates/539", "topics": ["llm", "AI"], "duration_min": 30, "level": "beginner"},
+        {"id": "gcsb-responsible-ai", "title": "Introduction to Responsible AI", "url": "https://www.cloudskillsboost.google/course_templates/554", "topics": ["AI", "ethics"], "duration_min": 30, "level": "beginner"},
+        {"id": "gcsb-prompt-design", "title": "Prompt Design in Vertex AI", "url": "https://www.cloudskillsboost.google/course_templates/976", "topics": ["llm", "prompt-engineering", "vertex-AI"], "duration_min": 60, "level": "intermediate"},
+        {"id": "gcsb-image-gen", "title": "Introduction to Image Generation", "url": "https://www.cloudskillsboost.google/course_templates/541", "topics": ["computer-vision", "AI", "diffusion"], "duration_min": 60, "level": "intermediate"},
+        {"id": "gcsb-encoder-decoder", "title": "Encoder-Decoder Architecture", "url": "https://www.cloudskillsboost.google/course_templates/543", "topics": ["nlp", "AI", "transformers"], "duration_min": 60, "level": "intermediate"},
+        {"id": "gcsb-attention", "title": "Attention Mechanism", "url": "https://www.cloudskillsboost.google/course_templates/537", "topics": ["nlp", "AI", "transformers"], "duration_min": 60, "level": "intermediate"},
+        {"id": "gcsb-transformer-bert", "title": "Transformer Models and BERT Model", "url": "https://www.cloudskillsboost.google/course_templates/538", "topics": ["nlp", "AI", "transformers"], "duration_min": 90, "level": "intermediate"},
+        {"id": "gcsb-ml-on-gcp", "title": "Machine Learning on Google Cloud", "url": "https://www.cloudskillsboost.google/course_templates/17", "topics": ["machine-learning", "cloud", "gcp"], "duration_min": 600, "level": "intermediate"}
+      ]
+    },
+    {
+      "slug": "mit-ocw",
+      "name": "MIT OpenCourseWare",
+      "official_domain": "ocw.mit.edu",
+      "type": "static_manifest",
+      "url": "https://ocw.mit.edu/",
+      "free": true,
+      "free_note": "Fully free, audit-only (no certificate). Lecture videos + problem sets + exams on every course. RSS feed was discontinued; manifest hand-curated from MIT OCW's AI/CS catalogue at https://ocw.mit.edu/search/?d=Electrical%20Engineering%20and%20Computer%20Science",
+      "license": "Creative Commons BY-NC-SA",
+      "active": true,
+      "manifest": [
+        {"id": "mit-6.0001", "title": "Introduction to Computer Science and Programming in Python (6.0001)", "url": "https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/", "topics": ["python", "programming", "computer-science"], "duration_min": 1800, "level": "beginner"},
+        {"id": "mit-6.034", "title": "Artificial Intelligence (6.034)", "url": "https://ocw.mit.edu/courses/6-034-artificial-intelligence-fall-2010/", "topics": ["AI", "computer-science"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "mit-6.036", "title": "Introduction to Machine Learning (6.036)", "url": "https://ocw.mit.edu/courses/6-036-introduction-to-machine-learning-fall-2020/", "topics": ["machine-learning", "AI"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "mit-6.S191", "title": "Introduction to Deep Learning (6.S191)", "url": "https://ocw.mit.edu/courses/res-6-009-introduction-to-deep-learning-january-iap-2024/", "topics": ["deep-learning", "AI"], "duration_min": 1500, "level": "intermediate"},
+        {"id": "mit-6.S897", "title": "Machine Learning for Healthcare (6.S897)", "url": "https://ocw.mit.edu/courses/6-s897-machine-learning-for-healthcare-spring-2019/", "topics": ["machine-learning", "healthcare", "AI"], "duration_min": 1800, "level": "advanced"},
+        {"id": "mit-6.864", "title": "Advanced Natural Language Processing (6.864)", "url": "https://ocw.mit.edu/courses/6-864-advanced-natural-language-processing-fall-2005/", "topics": ["nlp", "AI"], "duration_min": 2400, "level": "advanced"},
+        {"id": "mit-6.825", "title": "Techniques in Artificial Intelligence (6.825)", "url": "https://ocw.mit.edu/courses/6-825-techniques-in-artificial-intelligence-sma-5504-fall-2002/", "topics": ["AI", "reinforcement-learning"], "duration_min": 2400, "level": "advanced"},
+        {"id": "mit-6.006", "title": "Introduction to Algorithms (6.006)", "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/", "topics": ["algorithms", "computer-science"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "mit-6.046J", "title": "Design and Analysis of Algorithms (6.046J)", "url": "https://ocw.mit.edu/courses/6-046j-design-and-analysis-of-algorithms-spring-2015/", "topics": ["algorithms", "computer-science"], "duration_min": 2400, "level": "advanced"},
+        {"id": "mit-18.06", "title": "Linear Algebra (18.06)", "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/", "topics": ["mathematics", "linear-algebra"], "duration_min": 2400, "level": "intermediate"}
+      ]
+    },
+    {
+      "slug": "nptel",
+      "name": "NPTEL (IIT / IISc)",
+      "official_domain": "nptel.ac.in",
+      "type": "static_manifest",
+      "url": "https://nptel.ac.in/courses",
+      "free": true,
+      "free_note": "Lectures + assignments are fully free. The optional NPTEL Online Certification exam costs ~₹1000 (proctored); listed honestly.",
+      "license": "NPTEL Terms",
+      "active": true,
+      "manifest": [
+        {"id": "nptel-cs6101", "title": "Introduction to Machine Learning (Prof. Balaraman Ravindran, IIT Madras)", "url": "https://nptel.ac.in/courses/106106139", "topics": ["machine-learning", "AI"], "duration_min": 1800, "level": "intermediate"},
+        {"id": "nptel-cs5500", "title": "Deep Learning (Prof. Mitesh Khapra, IIT Madras)", "url": "https://nptel.ac.in/courses/106106184", "topics": ["deep-learning", "neural-networks"], "duration_min": 1800, "level": "advanced"},
+        {"id": "nptel-cs7019", "title": "Natural Language Processing (Prof. Pawan Goyal, IIT Kharagpur)", "url": "https://nptel.ac.in/courses/106105158", "topics": ["nlp", "AI"], "duration_min": 1800, "level": "intermediate"},
+        {"id": "nptel-cs6001", "title": "Programming, Data Structures and Algorithms using Python (Prof. Madhavan Mukund, CMI)", "url": "https://nptel.ac.in/courses/106106182", "topics": ["python", "data-structures", "algorithms"], "duration_min": 2400, "level": "beginner"},
+        {"id": "nptel-cs5570", "title": "Reinforcement Learning (Prof. B. Ravindran, IIT Madras)", "url": "https://nptel.ac.in/courses/106106143", "topics": ["reinforcement-learning", "AI"], "duration_min": 2400, "level": "advanced"},
+        {"id": "nptel-cs6011", "title": "Cloud Computing (Prof. Soumya Kanti Ghosh, IIT Kharagpur)", "url": "https://nptel.ac.in/courses/106105167", "topics": ["cloud", "devops"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "nptel-cs5320", "title": "Software Engineering (Prof. Rajib Mall, IIT Kharagpur)", "url": "https://nptel.ac.in/courses/106105182", "topics": ["software-engineering"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "nptel-cs6620", "title": "Data Mining (Prof. Pabitra Mitra, IIT Kharagpur)", "url": "https://nptel.ac.in/courses/106105174", "topics": ["data-mining", "data-science"], "duration_min": 2400, "level": "intermediate"},
+        {"id": "nptel-noc25-cs36", "title": "Introduction to LLMs and Agentic AI (NPTEL Spring 2025)", "url": "https://nptel.ac.in/courses/106106241", "topics": ["llm", "agentic-AI", "AI"], "duration_min": 1800, "level": "intermediate"},
+        {"id": "nptel-cs6210", "title": "GPU Computing and CUDA Programming", "url": "https://nptel.ac.in/courses/106106197", "topics": ["gpu", "cuda", "parallel-computing"], "duration_min": 2400, "level": "advanced"}
+      ]
+    },
+    {
+      "slug": "fast-ai",
+      "name": "fast.ai",
+      "official_domain": "course.fast.ai",
+      "type": "static_manifest",
+      "url": "https://course.fast.ai/",
+      "free": true,
+      "free_note": "Fully free, no certificate. Jeremy Howard's practical deep-learning course is the de-facto bootcamp for ML engineers.",
+      "license": "fast.ai Terms",
+      "active": true,
+      "manifest": [
+        {"id": "fastai-pdl", "title": "Practical Deep Learning for Coders (Part 1)", "url": "https://course.fast.ai/", "topics": ["deep-learning", "AI"], "duration_min": 1800, "level": "intermediate"},
+        {"id": "fastai-fdl", "title": "From Deep Learning Foundations to Stable Diffusion (Part 2)", "url": "https://course.fast.ai/Lessons/part2.html", "topics": ["deep-learning", "diffusion", "AI"], "duration_min": 1800, "level": "advanced"},
+        {"id": "fastai-nlp", "title": "Code-first Introduction to NLP", "url": "https://www.fast.ai/posts/2019-07-08-fastai-nlp.html", "topics": ["nlp", "AI"], "duration_min": 1200, "level": "intermediate"},
+        {"id": "fastai-ml", "title": "Introduction to Machine Learning for Coders", "url": "https://course18.fast.ai/ml", "topics": ["machine-learning"], "duration_min": 1500, "level": "intermediate"}
+      ]
+    },
+    {
+      "slug": "huggingface-learn",
+      "name": "Hugging Face Learn",
+      "official_domain": "huggingface.co",
+      "type": "static_manifest",
+      "url": "https://huggingface.co/learn",
+      "free": true,
+      "free_note": "Fully free. Code-first courses on transformers, RL, audio, computer vision and LLM agents.",
+      "license": "Apache 2.0 (course content)",
+      "active": true,
+      "manifest": [
+        {"id": "hf-nlp", "title": "Hugging Face NLP Course", "url": "https://huggingface.co/learn/nlp-course", "topics": ["nlp", "transformers", "AI"], "duration_min": 1500, "level": "intermediate"},
+        {"id": "hf-deeprl", "title": "Deep Reinforcement Learning Course", "url": "https://huggingface.co/learn/deep-rl-course", "topics": ["reinforcement-learning", "AI"], "duration_min": 1500, "level": "advanced"},
+        {"id": "hf-audio", "title": "Audio Course (ASR, TTS, music)", "url": "https://huggingface.co/learn/audio-course", "topics": ["audio", "speech", "AI"], "duration_min": 1200, "level": "intermediate"},
+        {"id": "hf-cv", "title": "Computer Vision Course", "url": "https://huggingface.co/learn/computer-vision-course", "topics": ["computer-vision", "AI"], "duration_min": 1500, "level": "intermediate"},
+        {"id": "hf-agents", "title": "Agents Course (Smol agents, LangGraph, LlamaIndex)", "url": "https://huggingface.co/learn/agents-course", "topics": ["agents", "llm", "AI"], "duration_min": 1500, "level": "advanced"},
+        {"id": "hf-llm", "title": "Open-Source LLM Course", "url": "https://huggingface.co/learn/llm-course", "topics": ["llm", "AI"], "duration_min": 1500, "level": "advanced"}
+      ]
+    },
+    {
+      "slug": "freecodecamp",
+      "name": "freeCodeCamp",
+      "official_domain": "freecodecamp.org",
+      "type": "static_manifest",
+      "url": "https://www.freecodecamp.org/learn",
+      "free": true,
+      "free_note": "Fully free, free certification on completing project requirements. AI / ML / data certifications are mostly Python-first.",
+      "license": "BSD-3-Clause",
+      "active": true,
+      "manifest": [
+        {"id": "fcc-mlpy", "title": "Machine Learning with Python (Certification)", "url": "https://www.freecodecamp.org/learn/machine-learning-with-python/", "topics": ["machine-learning", "python", "AI"], "duration_min": 18000, "level": "intermediate"},
+        {"id": "fcc-dap", "title": "Data Analysis with Python (Certification)", "url": "https://www.freecodecamp.org/learn/data-analysis-with-python/", "topics": ["data-analysis", "python"], "duration_min": 18000, "level": "intermediate"},
+        {"id": "fcc-sciapi", "title": "Scientific Computing with Python (Certification)", "url": "https://www.freecodecamp.org/learn/scientific-computing-with-python/", "topics": ["python", "scientific-computing"], "duration_min": 18000, "level": "beginner"},
+        {"id": "fcc-resp", "title": "Responsive Web Design (Certification)", "url": "https://www.freecodecamp.org/learn/2022/responsive-web-design/", "topics": ["frontend", "web"], "duration_min": 18000, "level": "beginner"},
+        {"id": "fcc-jsd", "title": "JavaScript Algorithms and Data Structures (Certification)", "url": "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures-v8/", "topics": ["javascript", "data-structures", "algorithms"], "duration_min": 18000, "level": "beginner"},
+        {"id": "fcc-fed", "title": "Front End Development Libraries (Certification)", "url": "https://www.freecodecamp.org/learn/front-end-development-libraries/", "topics": ["frontend", "react"], "duration_min": 18000, "level": "intermediate"},
+        {"id": "fcc-bend", "title": "Back End Development and APIs (Certification)", "url": "https://www.freecodecamp.org/learn/back-end-development-and-apis/", "topics": ["backend", "api", "node"], "duration_min": 18000, "level": "intermediate"},
+        {"id": "fcc-coll-algo", "title": "College Algebra with Python", "url": "https://www.freecodecamp.org/learn/college-algebra-with-python/", "topics": ["mathematics", "python"], "duration_min": 18000, "level": "beginner"}
+      ]
+    },
+    {
+      "slug": "deeplearning-ai",
+      "name": "DeepLearning.AI (Andrew Ng — short courses)",
+      "official_domain": "deeplearning.ai",
+      "type": "static_manifest",
+      "url": "https://www.deeplearning.ai/short-courses/",
+      "free": true,
+      "free_note": "DeepLearning.AI short courses are free. The full Coursera specializations (Machine Learning, Deep Learning) have a paid certification but full audit-mode lectures are free.",
+      "license": "DeepLearning.AI Terms",
+      "active": true,
+      "manifest": [
+        {"id": "dlai-chatgpt-prompt-eng", "title": "ChatGPT Prompt Engineering for Developers", "url": "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/", "topics": ["llm", "prompt-engineering", "AI"], "duration_min": 60, "level": "beginner"},
+        {"id": "dlai-langchain", "title": "LangChain for LLM Application Development", "url": "https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/", "topics": ["llm", "agents", "AI"], "duration_min": 90, "level": "intermediate"},
+        {"id": "dlai-rag", "title": "Building and Evaluating Advanced RAG Applications", "url": "https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/", "topics": ["rag", "llm", "AI"], "duration_min": 90, "level": "intermediate"},
+        {"id": "dlai-agents", "title": "AI Agents in LangGraph", "url": "https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/", "topics": ["agents", "llm", "AI"], "duration_min": 90, "level": "intermediate"},
+        {"id": "dlai-mlops", "title": "Machine Learning in Production", "url": "https://www.deeplearning.ai/courses/machine-learning-in-production/", "topics": ["mlops", "machine-learning"], "duration_min": 600, "level": "advanced"},
+        {"id": "dlai-genai-everyone", "title": "Generative AI for Everyone", "url": "https://www.deeplearning.ai/courses/generative-ai-for-everyone/", "topics": ["AI", "generative-AI"], "duration_min": 300, "level": "beginner"},
+        {"id": "dlai-eval-llm", "title": "Evaluating and Debugging Generative AI", "url": "https://www.deeplearning.ai/short-courses/evaluating-debugging-generative-ai/", "topics": ["llm", "evaluation", "AI"], "duration_min": 90, "level": "intermediate"}
+      ]
+    }
+  ]
+}
