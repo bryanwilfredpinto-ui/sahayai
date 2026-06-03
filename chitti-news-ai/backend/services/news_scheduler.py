@@ -45,6 +45,34 @@ def _job_rss_poll() -> dict:
     return result
 
 
+def _job_streams_refresh() -> dict:
+    """Re-ingest the 5 aggregator streams (cert / tool / job / scheme /
+    roadmap) every 6 h. RemoteOK + HF Spaces + GitHub Trending refresh
+    on this cadence; static manifests are upserted (idempotent) without
+    duplicates. Always followed by a classification pass so new items
+    surface in /api/news-ai/feed/<stream> immediately."""
+    from services.streams_ingestor import ingest_all
+    from services.profession_classifier import classify_unlabeled_stream_items
+    ing = ingest_all()
+    clf = classify_unlabeled_stream_items(limit=2000)
+    return {"ingest": ing.get("total_landed"), "classify": clf.get("labels_persisted")}
+
+
+def _job_classify_sweep() -> dict:
+    """Hourly sweep: classify anything that landed via rss_poll or the
+    streams_refresh but wasn't tagged yet (e.g. because the rule version
+    changed). Rules-only — no LLM calls."""
+    from services.profession_classifier import (
+        classify_unlabeled_articles, classify_unlabeled_courses,
+        classify_unlabeled_stream_items,
+    )
+    return {
+        "articles": classify_unlabeled_articles(limit=2000).get("labels_persisted"),
+        "courses":  classify_unlabeled_courses(limit=2000).get("labels_persisted"),
+        "streams":  classify_unlabeled_stream_items(limit=2000).get("labels_persisted"),
+    }
+
+
 def _wrap(name, fn):
     def runner():
         log.info("[scheduler] %s START", name)
@@ -69,6 +97,20 @@ def start() -> None:
         _wrap("rss_poll", _job_rss_poll),
         IntervalTrigger(minutes=max(5, int(settings.rss_poll_minutes))),
         id="rss_poll",
+        replace_existing=True,
+        misfire_grace_time=600,
+    )
+    sch.add_job(
+        _wrap("streams_refresh", _job_streams_refresh),
+        IntervalTrigger(hours=6),
+        id="streams_refresh",
+        replace_existing=True,
+        misfire_grace_time=1800,
+    )
+    sch.add_job(
+        _wrap("classify_sweep", _job_classify_sweep),
+        IntervalTrigger(hours=1),
+        id="classify_sweep",
         replace_existing=True,
         misfire_grace_time=600,
     )

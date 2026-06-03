@@ -117,6 +117,43 @@ def _bootstrap() -> None:
     except Exception as e:  # noqa: BLE001
         log.warning("boot-time rss_poll kick failed: %s", e)
 
+    # v0.3 aggregator: ingest courses + the 5 streams + classify everything
+    # on boot. Runs in a background thread so /health binds well before
+    # ingest finishes. Failure of any of the four steps is non-fatal — the
+    # rules-only classifier still serves whatever data did land.
+    import threading
+
+    def _boot_ingest_and_classify():
+        try:
+            from services.courses_ingestor import ingest_all as _ingest_courses
+            r = _ingest_courses()
+            log.info("[boot] courses ingest: %s landed", r.get("total_landed"))
+        except Exception as e:  # noqa: BLE001
+            log.warning("[boot] courses ingest skipped: %s", e)
+        try:
+            from services.streams_ingestor import ingest_all as _ingest_streams
+            r = _ingest_streams()
+            log.info("[boot] streams ingest: %s landed", r.get("total_landed"))
+        except Exception as e:  # noqa: BLE001
+            log.warning("[boot] streams ingest skipped: %s", e)
+        try:
+            from services.profession_classifier import (
+                classify_unlabeled_courses, classify_unlabeled_articles,
+                classify_unlabeled_stream_items,
+            )
+            c = classify_unlabeled_courses(limit=2000)
+            log.info("[boot] courses classify: %s", c)
+            a = classify_unlabeled_articles(limit=2000)
+            log.info("[boot] articles classify: %s", a)
+            s = classify_unlabeled_stream_items(limit=2000)
+            log.info("[boot] streams classify: %s", s)
+        except Exception as e:  # noqa: BLE001
+            log.warning("[boot] classification skipped: %s", e)
+
+    threading.Thread(target=_boot_ingest_and_classify,
+                     name="news-ai-boot-ingest", daemon=True).start()
+    log.info("[boot] v0.3 aggregator ingest+classify started in background")
+
 
 def create_app() -> Flask:
     app = Flask(__name__)

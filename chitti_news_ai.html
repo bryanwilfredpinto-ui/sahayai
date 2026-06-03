@@ -203,12 +203,39 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="tab"        data-tab="bharat-ai"   onclick="showCategory('bharat-ai')"   role="tab" aria-selected="false" data-i18n="cat.bharat">🇮🇳 Bharat AI</button>
   <button class="tab"        data-tab="prashikshan" onclick="showCategory('prashikshan')" role="tab" aria-selected="false" data-i18n="cat.prash">🎓 Prashikshan</button>
   <button class="tab" id="tab-foryou" data-tab="foryou" onclick="showCategory('foryou')" role="tab" aria-selected="false" style="display:none">🎯 For You</button>
+  <button class="tab" data-tab="stream-cert"    onclick="showCategory('stream-cert')"    role="tab" aria-selected="false">🏅 Certs</button>
+  <button class="tab" data-tab="stream-tool"    onclick="showCategory('stream-tool')"    role="tab" aria-selected="false">🛠️ Tools+</button>
+  <button class="tab" data-tab="stream-job"     onclick="showCategory('stream-job')"     role="tab" aria-selected="false">💼 Jobs</button>
+  <button class="tab" data-tab="stream-scheme"  onclick="showCategory('stream-scheme')"  role="tab" aria-selected="false">🏛️ Schemes</button>
+  <button class="tab" data-tab="stream-roadmap" onclick="showCategory('stream-roadmap')" role="tab" aria-selected="false">🗺️ Roadmaps</button>
 </nav>
 
 <main>
   <section id="page-feed" class="page active" role="tabpanel">
     <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true">⏳ Loading the latest AI news…</div>
     <div id="feed" class="feed"></div>
+  </section>
+
+  <!-- v0.3 per-stream browseable pages — one per stream, profession-filterable -->
+  <section id="page-stream-cert"    class="page" role="tabpanel" aria-label="Certifications" style="display:none">
+    <div id="stream-cert-status"    class="section-empty" aria-live="polite">⏳ Loading certifications…</div>
+    <div id="stream-cert-list"></div>
+  </section>
+  <section id="page-stream-tool"    class="page" role="tabpanel" aria-label="Tools" style="display:none">
+    <div id="stream-tool-status"    class="section-empty" aria-live="polite">⏳ Loading tools…</div>
+    <div id="stream-tool-list"></div>
+  </section>
+  <section id="page-stream-job"     class="page" role="tabpanel" aria-label="Jobs" style="display:none">
+    <div id="stream-job-status"     class="section-empty" aria-live="polite">⏳ Loading jobs…</div>
+    <div id="stream-job-list"></div>
+  </section>
+  <section id="page-stream-scheme"  class="page" role="tabpanel" aria-label="Government Schemes" style="display:none">
+    <div id="stream-scheme-status"  class="section-empty" aria-live="polite">⏳ Loading schemes…</div>
+    <div id="stream-scheme-list"></div>
+  </section>
+  <section id="page-stream-roadmap" class="page" role="tabpanel" aria-label="Learning Roadmaps" style="display:none">
+    <div id="stream-roadmap-status" class="section-empty" aria-live="polite">⏳ Loading roadmaps…</div>
+    <div id="stream-roadmap-list"></div>
   </section>
 
   <!-- v0.3 "For You" page — per-profession 7-stream career intelligence -->
@@ -632,27 +659,79 @@ document.getElementById('prof-clear-link')?.addEventListener('click', function()
   onProfessionChange();
 });
 
-// Hijack showCategory to also handle 'foryou'
+// Hijack showCategory to also handle 'foryou' + per-stream tabs
+const _STREAM_TABS = ['cert', 'tool', 'job', 'scheme', 'roadmap'];
+const _STREAM_TAB_TO_KIND = {cert:'cert', tool:'tool', job:'job', scheme:'scheme', roadmap:'roadmap_node'};
+
+function _hideAllAndActivate(pageId, tabSel){
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
+  document.querySelectorAll('nav.tabs .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  const page = document.getElementById(pageId);
+  if (page) { page.style.display = 'block'; page.classList.add('active'); }
+  const tab = document.querySelector(`nav.tabs .tab${tabSel}`);
+  if (tab) { tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); }
+}
+
 const _origShowCategory = showCategory;
 window.showCategory = function(cat){
   if (cat === 'foryou') {
-    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
-    document.querySelectorAll('nav.tabs .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
-    const page = document.getElementById('page-foryou');
-    page.style.display = 'block';
-    page.classList.add('active');
-    const tab = document.getElementById('tab-foryou');
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
+    _hideAllAndActivate('page-foryou', '#tab-foryou');
     _currentCategory = 'foryou';
     loadForYou();
     return;
   }
-  // Ensure foryou page is hidden when switching back to original tabs
-  const fy = document.getElementById('page-foryou');
-  if (fy) { fy.style.display = 'none'; fy.classList.remove('active'); }
+  if (typeof cat === 'string' && cat.startsWith('stream-')) {
+    const tabSlug = cat.replace('stream-', '');
+    const kind = _STREAM_TAB_TO_KIND[tabSlug];
+    if (!kind) return;
+    _hideAllAndActivate('page-' + cat, `[data-tab="${cat}"]`);
+    _currentCategory = cat;
+    loadStreamPage(kind, tabSlug);
+    return;
+  }
+  // Ensure new pages hide when switching back to original tabs
+  ['page-foryou','page-stream-cert','page-stream-tool','page-stream-job','page-stream-scheme','page-stream-roadmap']
+    .forEach(id => { const e = document.getElementById(id); if(e){e.style.display='none';e.classList.remove('active');} });
   return _origShowCategory(cat);
 };
+
+async function loadStreamPage(kind, tabSlug){
+  const profession = _getProfession();
+  const lang = _chittiLang;
+  const status = document.getElementById(`stream-${tabSlug}-status`);
+  const host = document.getElementById(`stream-${tabSlug}-list`);
+  status.textContent = '⏳ Loading…';
+  host.innerHTML = '';
+  try {
+    const url = `${API_BASE}/api/news-ai/feed/${kind}?profession=${encodeURIComponent(profession)}&lang=${lang}&n=30`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!data.items || data.items.length === 0) {
+      status.textContent = profession === 'everyone'
+        ? `No ${kind} ingested yet — try again in a minute (background ingest may still be running).`
+        : `No ${kind} classified for ${_profLabel(profession)} yet. Try 'Everyone' to see all ingested ${kind}.`;
+      return;
+    }
+    status.textContent = '';
+    const sub = profession === 'everyone'
+      ? `${data.count} ${kind} items · sorted by ingest date`
+      : `${data.count} ${kind} items · filtered for ${_profLabel(profession)}`;
+    const section = document.createElement('div');
+    section.className = 'section-card';
+    section.setAttribute('data-chitti-response', '');
+    section.innerHTML = `
+      <div class="section-head">
+        <div>
+          <div class="section-title">${STREAM_LABELS[kind] || kind} (${data.count})</div>
+          <div class="section-sub">${sub}</div>
+        </div>
+      </div>
+      <div>${data.items.map(it => _cardHTML(it, kind)).join('')}</div>`;
+    host.appendChild(section);
+  } catch (e) {
+    status.textContent = `Could not load ${kind}: ${e.message || e}`;
+  }
+}
 
 function _profLabel(slug){
   const sel = document.getElementById('pick-profession');
