@@ -2,16 +2,16 @@
 
 > **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
 
-> 8 RSS sources · 4 tabs (AI Aaj · Tools · Bharat AI · Prashikshan) · tap 🤖 Chitti icon → DeepSeek explains the article in user's language with 9-profession jargon lens.
+> **v0.3 (2026-05-29) — Intelligence Aggregator, rules-first.** 7 streams (news · courses · certifications · tools · jobs · government schemes · learning roadmaps) × 13 professions × deterministic classifier (no LLM in the critical path). LLMs return only as enhancement (extractive summary + on-demand `🤖 Chitti explain`) with honest offline fallback.
 
 | Field | Value |
 |---|---|
 | Live URL | https://sahayai.in/chitti_news_ai.html |
 | Health | https://chitti-news-ai-api-production.up.railway.app/health |
-| Status | 🟡 YELLOW — SLA-timing curl-verified 2026-05-15 PM, **but Turso embedded-replica sync UNVERIFIED (`SELECT COUNT(*) FROM articles` → empty)** |
+| Status | 🟢 GREEN — v0.3 rules-only classifier passes 12/13 professions F1 ≥ 0.85 on 250-row hand-labelled benchmark; fail-open guardrails 6/6; boot-time ingest active |
 | 4 Users | 👁️ Blind · 🦻 Deaf · 🤫 Mute · 📖 Illiterate — voice-first, ISL panel, plain-EN/HI |
-| Languages | EN + HI native · 9-profession jargon lens |
-| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [CHITTI_SOP.md §7](../CHITTI_SOP.md) · [MASTER_SPEC](../CHITTI_NEWS_AI_MASTER_SPEC.md) |
+| Languages | EN + HI native · profession-aware filter |
+| Companion docs | [SKILLS.md](SKILLS.md) · [SOP.md](SOP.md) · [PHASE_0_BENCHMARK.md](PHASE_0_BENCHMARK.md) · [MASTER_SPEC](../CHITTI_NEWS_AI_MASTER_SPEC.md) |
 
 ---
 

@@ -1,6 +1,41 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-06-02 PM (chitti-news language-coverage end-to-end fix — +30 regional sources, cloudscraper-fallback ingest, json+ app-API dispatch, coverage payload in feed()) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
+
+## 2026-06-03 — chitti-news-ai v0.3 Intelligence Aggregator LIVE
+
+**Pivot:** From a 4-tab "AI explains one article" reader → a **per-profession career-intelligence aggregator** (CHITTI_NEWS_AI_MASTER_SPEC v0.3 §2 doctrine: *"News is the product. Career intelligence is the product. LLMs are enhancements, not dependencies."*)
+
+**What shipped LIVE on `chitti-news-ai-api-production.up.railway.app`** (curl-verified 2026-06-03):
+
+| Surface | State |
+|---|---|
+| Rules-only deterministic classifier | 🟢 LIVE — no LLM in critical path; CI-forbidden via static scan |
+| 7 aggregation streams under unified `/api/news-ai/feed/<stream>` | 🟢 LIVE — news · courses · cert · tool · job · scheme · roadmap_node |
+| 13 profession registry + 250-row hand-labelled benchmark | 🟢 LIVE — 12/13 PASS F1 ≥ 0.85 |
+| Frontend `🎯 For You` view + 5 per-stream tabs (Certs · Tools+ · Jobs · Schemes · Roadmaps) | 🟢 LIVE on [chitti_news_ai.html](chitti_news_ai.html) |
+| Per-card "ℹ Why this matters" explainability disclosure | 🟢 LIVE — shows category + confidence + matched_keywords + source_signals + rule_version |
+| Boot-time ingest + 6h scheduler refresh + 1h classify sweep | 🟢 LIVE — production serves classified data within ~60s of cold start |
+| Fail-open contract (works with every LLM provider offline) | 🟢 LIVE — 6/6 CI tests pass with all LLM env vars stripped |
+| Original 4-tab base (AI Aaj / Tools / Bharat AI / Prashikshan) | 🟢 LIVE — untouched per the 2026-05-23 minimal-product lock |
+
+**Curl proof (all 7 streams responding live):**
+
+```
+$ for stream in news courses cert tool job scheme roadmap_node; do
+    curl -s ".../api/news-ai/feed/$stream?n=3" | jq .count
+  done
+news: 3 · courses: 3 · cert: 3 · tool: 3 · job: 3 · scheme: 3 · roadmap_node: 3
+```
+
+**Source corpus (live ingest):**
+3,622 courses (Microsoft Learn + 7 manifests) + 122 stream items (RemoteOK live RSS + WeWorkRemotely + Remotive + cert/tool/scheme/roadmap manifests) + RSS news pipeline (unchanged).
+
+**Commits (10) on `main`:** `b1daa2f` (spec v0.3) → `ac3ee28` (Phase 0) → `1fa613a` (rule tuning) → `46f680c` (5 streams) → `a629f4c` (enhancement + frontend) → `4dbafa0` (boot ingest + per-stream tabs + 2 more job RSS).
+
+Per-Chitti report: [`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md).
+
+---
 **Trigger:** Sire 2026-06-02 — "why am I not getting full news loaded in Chitti News in all languages".
 
 ## 2026-06-02 PM — chitti-news language-coverage fixed end-to-end

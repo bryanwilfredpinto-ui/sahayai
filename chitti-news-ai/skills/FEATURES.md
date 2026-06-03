@@ -2,11 +2,32 @@
 
 **Read by the [Feature Discovery Box](../../SAHAYAI_MASTER.md#2d-feature-discovery-box--locked-2026-05-14) on every page load.** Parsed live by [`chitti_features.js`](../../chitti_features.js); nothing in this file is hardcoded in JS. The status badge (`LIVE 🟢 / PLANNED 🟡 / FUTURE 🔵 / ANDROID 📱`) is inferred from the section title.
 
-Last touched: **2026-05-14**.
+Last touched: **2026-05-29 (v0.3 rules-first aggregator)**.
 
 ---
 
 ## 1. Built and working
+
+### 🎯 Per-profession career-intelligence feed (v0.3)
+Pick "I am a..." at the top — Chitti reorganises every stream around your profession (Software Developer · HR · Doctor · Farmer · Teacher · Lawyer · Accountant · Student · Business Owner · Govt Employee + more). Default is **Everyone** (never gates content). Lives in the **🎯 For You** tab. Picker stored locally only.
+
+### 🧱 Seven aggregation streams under one rules-only engine
+- 📰 **News** — RSS poll over 8 publishers
+- 🎓 **Courses** — 3,600+ free courses (Microsoft Learn, NPTEL, MIT OCW, fast.ai, Hugging Face, DeepLearning.AI, freeCodeCamp, Google Cloud Skills Boost)
+- 🏅 **Certifications** — Microsoft / AWS / NASSCOM FutureSkills Prime / Google Cloud free study paths (exam cost honestly labelled per cert)
+- 🛠️ **Tools** — Hugging Face Spaces + GitHub Trending AI manifests
+- 💼 **Jobs** — live RSS from RemoteOK + We Work Remotely + Remotive, plus HN Who-is-Hiring + NCS India
+- 🏛️ **Government Schemes** — PMKVY · iGOT Karmayogi · Startup India · MUDRA · PM-Kisan · Stand-Up India · MeitY
+- 🗺️ **Learning Roadmaps** — roadmap.sh AI/ML/DevOps/Backend + OSSU curriculum
+
+### 🔍 Explainable classifications — every card auditable
+Every classified item carries `category` + `confidence` + `matched_keywords` + `source_signals` + `rule_version`. Tap "ℹ Why this matters" to see exactly which rule fired. No black box.
+
+### 🛡️ Trust-first contract on every item
+Every card shows: source name + domain + free/paid honest label + link to the provider's own page. No Chitti-owned links. No invented courses. No fabricated certs.
+
+### 🔌 Fail-open: works with every LLM provider offline
+Profession classification is rules-only (zero LLM calls in the critical path). CI guardrail forbids LLM imports in `services/profession_classifier.py`. With every LLM env var unset, the feed still returns real items with classifications.
 
 ### 🔊 Voice-first language onboarding
 On first visit, the page asks the user to pick one of **26 Indian languages** (Voice Factory cascade). No default. Voice-guided for blind users via `chitti_a11y.js`.

@@ -82,7 +82,7 @@ Before building **any** new Chitti product:
 
 Examples already queued under this contract:
 - **Chitti Mechanic** — OBD2 diagnostics; reference apps to copy: Torque Pro, Car Scanner, FIXD.
-- ✅ **Chitti News AI** — SKELETON shipped 2026-05-14. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers + Inshorts, Ground News, Artifact). 14 skill files, 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), frontend at [`chitti_news_ai.html`](chitti_news_ai.html). Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md).
+- ✅ **Chitti News AI** — **v0.3 Intelligence-Aggregator shipped 2026-05-29.** Rules-only deterministic classifier (zero LLM calls in the classification critical path); 12 / 13 professions PASS F1 ≥ 0.85 on a 250-row hand-labelled benchmark; 7 streams live (news · courses · certifications · tools · jobs · government schemes · learning roadmaps); per-profession **🎯 For You** view + 5 per-stream tabs; every classification carries `category` + `matched_keywords` + `confidence` + `source_signals` for full audit; fail-open guardrails (6 CI tests) ensure the feed serves real items with every LLM provider offline. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md) v0.3.0; benchmark: [`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md).
 - Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
 
 ---
