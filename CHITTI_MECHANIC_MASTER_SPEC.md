@@ -6,7 +6,8 @@
 **Authored from Sire's CEOS + CQOS brief (2026-06-03).**
 **Companion docs:** [SAHAYAI_MASTER.md](SAHAYAI_MASTER.md) (vision + locked decisions) ·
 [QUALITY_STATUS.md](QUALITY_STATUS.md) (live audit) · [CHITTI_SOP.md](CHITTI_SOP.md) §12–§13 ·
-[chitti-cto/SOP.md](chitti-cto/SOP.md) (8 gates).
+[chitti-cto/SOP.md](chitti-cto/SOP.md) (8 gates) ·
+**[CHITTI_MECHANIC_CONTROL_PANEL.md](CHITTI_MECHANIC_CONTROL_PANEL.md) — what's delivered vs not (start here for status).**
 
 > This spec is the **umbrella** over two shipped products:
 > [`chitti-2wheeler/`](chitti-2wheeler/) — **Chitti Bike Doctor**, and
