@@ -520,6 +520,17 @@
       nextSib.parentNode.removeChild(nextSib);
     }
     var section = sectionNameFor(box);
+    // §5 No-Hinglish: box-bar labels resolve from the active-language string bag
+    // (data-vai-i18n keeps them in sync on every changeLang). Romanized "Suno"
+    // was hardcoded here and showed on every box in every language fleet-wide.
+    var _t = function (key, fb) {
+      try {
+        var L = getLang();
+        var bag = window.VAI_STRINGS && (window.VAI_STRINGS[L] || window.VAI_STRINGS.en);
+        return (bag && bag[key]) || (window.VAI_STRINGS && window.VAI_STRINGS.en && window.VAI_STRINGS.en[key]) || fb;
+      } catch (e) { return fb; }
+    };
+    var sunoLbl = _t('ui.suno', 'Listen');
     var bar = document.createElement('div');
     bar.className = 'chitti-fb-box-bar';
     bar.setAttribute('data-for-box', boxId);
@@ -535,7 +546,7 @@
       // Keep a sr-only span so an actual screen reader still announces context.
       '<span class="chitti-fb-sr-only">' + escAttr(section) + '</span>' +
       '<button type="button" class="chitti-fb-bbtn demo"  data-act="demo"  aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">▶</span> <span class="chitti-fb-bbtn-text">Chitti</span></button>' +
-      '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud"><span aria-hidden="true">🔊</span> <span class="chitti-fb-bbtn-text">Suno</span></button>' +
+      '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud"><span aria-hidden="true">🔊</span> <span class="chitti-fb-bbtn-text" data-vai-i18n="ui.suno">' + escAttr(sunoLbl) + '</span></button>' +
       '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
       '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>';
     // Insert as a SIBLING after the box, not inside, so page re-renders
