@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+/**
+ * tools/fashion_qa.mjs — full QA pass for Chitti Fashion.
+ * Tests: 3 viewports · all 6 tabs · every button · the add-item form · language
+ * switch (en/hi/ta/bn) · console/page errors · horizontal overflow · tap targets ·
+ * 5-elements-per-box · raw-i18n-key leakage. Prints QA_REPORT JSON.
+ * Run: CERT_BASE=http://127.0.0.1:8765 node tools/fashion_qa.mjs
+ */
+import { chromium } from 'playwright';
+const BASE = (process.env.CERT_BASE || 'http://127.0.0.1:8765').replace(/\/$/, '') + '/chitti_fashion.html';
+const issues = [];
+const passes = [];
+function P(n) { passes.push(n); console.log('✅ ' + n); }
+function F(n, d) { issues.push({ test: n, detail: d }); console.log('❌ ' + n + (d ? ' — ' + d : '')); }
+
+// classify console noise: external substrate CORS/network is non-blocking; page JS errors are blocking
+function isExternal(t) { return /railway\.app|CORS|ERR_FAILED|Failed to load resource|net::|observability\/(alert|heartbeat)/i.test(t); }
+
+const b = await chromium.launch({ headless: true });
+
+async function newPage(vp) {
+  const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: 1 });
+  const p = await ctx.newPage();
+  const errs = [];
+  p.on('pageerror', e => errs.push('pageerror: ' + String(e).split('\n')[0]));
+  p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().split('\n')[0]); });
+  p.on('dialog', d => d.accept('QA Tester')); // handle window.prompt (add wearer)
+  await p.goto(BASE, { waitUntil: 'domcontentloaded' });
+  await p.evaluate(() => { try { localStorage.setItem('disability_profile', JSON.stringify({ done: true })); localStorage.setItem('chitti_fashion_profile_v1', JSON.stringify({ gender: 'female', lang: 'en' })); localStorage.setItem('chitti_vaani_lang', 'en'); } catch (e) {} });
+  await p.reload({ waitUntil: 'networkidle' }).catch(() => {});
+  await p.waitForTimeout(1500);
+  return { ctx, p, errs };
+}
+const pageErrs = (errs) => errs.filter(e => !isExternal(e));
+
+// seed a wardrobe so engine flows produce real output
+async function seed(p) {
+  await p.evaluate(async () => {
+    await new Promise((res) => { const r = indexedDB.open('chitti_fashion_almari', 1);
+      r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('items')) db.createObjectStore('items', { keyPath: 'id' }); };
+      r.onsuccess = () => { const db = r.result, tx = db.transaction('items', 'readwrite'), st = tx.objectStore('items'), now = new Date().toISOString();
+        [['t1','top','navy','blazer'],['t2','top','white','shirt'],['b1','bottom','beige','chinos'],['b2','bottom','blue','jeans'],['f1','footwear','brown','loafers'],['f2','footwear','white','sneakers']].forEach(x => st.put({ id: x[0], category: x[1], colour: x[2], desc: x[3], occasions: ['office','casual'], wearer: 'me', added_at: now }));
+        tx.oncomplete = () => res(); tx.onerror = () => res(); }; r.onerror = () => res(); });
+  });
+  await p.reload({ waitUntil: 'networkidle' }).catch(() => {});
+  await p.waitForTimeout(1200);
+}
+const mutated = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); return !!e && ((e.textContent || '').trim().length > 0 || e.children.length > 0); }, sel);
+
+// ───────────────── 1. Responsive: 3 viewports, overflow + errors ─────────────────
+for (const vp of [{ width: 375, height: 812 }, { width: 768, height: 1024 }, { width: 1280, height: 900 }]) {
+  const { ctx, p, errs } = await newPage(vp);
+  const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
+  overflow ? F('no horizontal overflow @' + vp.width, 'scrollWidth>' + vp.width) : P('no horizontal overflow @' + vp.width);
+  const pe = pageErrs(errs);
+  pe.length ? F('no page JS errors @' + vp.width, pe.slice(0, 3).join(' | ')) : P('no page JS errors @' + vp.width);
+  await ctx.close();
+}
+
+// ───────────────── 2. Mobile: tabs, buttons, form, language ─────────────────
+const { ctx, p, errs } = await newPage({ width: 375, height: 812 });
+await seed(p);
+
+// 2a. all 6 tabs switch
+for (const t of ['almari', 'review', 'occasion', 'budget', 'learn', 'family']) {
+  const ok = await p.evaluate((tab) => { const btn = document.querySelector('.fa-tabbar button[data-tab="' + tab + '"]'); if (!btn) return false; btn.click(); const panel = document.getElementById('fa-panel-' + tab); return panel && panel.classList.contains('active'); }, t);
+  ok ? P('tab switches: ' + t) : F('tab switches: ' + t);
+}
+
+// 2b. every button -> result host mutates (engine flows are deterministic; LLM-free)
+const buttonTests = [
+  ['family', () => {}, 'fa-week-result', 'faSimulate', '#fa-panel-family'],
+];
+// hero
+await p.evaluate(() => faDressMe());
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-dressme-result')) ? P('button: hero Dress-Me renders') : F('button: hero Dress-Me');
+// review (engine)
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="review"]').click(); document.getElementById('fa-review-text').value = 'navy blazer, beige chinos, brown loafers'; faReview(); });
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-review-result')) ? P('button: Outfit Review (7-agent) renders') : F('button: Outfit Review');
+// describe
+await p.evaluate(() => faDescribeMine());
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-review-result')) ? P('button: Describe-My-Outfit renders') : F('button: Describe-My-Outfit');
+// occasion
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="occasion"]').click(); const c = document.querySelector('#fa-occasion-chips .fa-chip'); if (c) c.click(); faOccasion(); });
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-occasion-result')) ? P('button: Occasion renders') : F('button: Occasion');
+// weather
+await p.evaluate(() => faWeather());
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-occasion-result')) ? P('button: Weather renders') : F('button: Weather');
+// budget
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="budget"]').click(); document.getElementById('fa-budget-text').value = 'formal shirt'; faBudget(); });
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-budget-result')) ? P('button: Budget renders') : F('button: Budget');
+// learn
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="learn"]').click(); document.getElementById('fa-learn-text').value = 'what colour matches blue?'; faLearn(); });
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-learn-result')) ? P('button: Learn renders') : F('button: Learn');
+// family: simulator + ROI
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="family"]').click(); faSimulate(); });
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-week-result')) ? P('button: Outfit Simulator renders') : F('button: Outfit Simulator');
+await p.evaluate(() => faROI());
+await p.waitForTimeout(800);
+(await mutated(p, '#fa-roi-result')) ? P('button: Wardrobe ROI renders') : F('button: Wardrobe ROI');
+
+// 2c. add-item form: open modal, fill, save -> wardrobe count up
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="almari"]').click(); });
+const before = await p.evaluate(() => +document.getElementById('fa-n-top').textContent);
+const modalOpened = await p.evaluate(() => { faOpenAdd(); return document.getElementById('fa-add').classList.contains('shown'); });
+modalOpened ? P('form: add-item modal opens') : F('form: add-item modal opens');
+await p.evaluate(() => { document.getElementById('fa-add-cat').value = 'top'; document.getElementById('fa-add-colour').value = 'green'; const ch = document.querySelector('#fa-add-occasions .fa-chip'); if (ch) ch.click(); faSaveItem(); });
+await p.waitForTimeout(600);
+const after = await p.evaluate(() => +document.getElementById('fa-n-top').textContent);
+(after === before + 1) ? P('form: save item increments wardrobe (' + before + '->' + after + ')') : F('form: save item', before + '->' + after);
+const modalClosed = await p.evaluate(() => !document.getElementById('fa-add').classList.contains('shown'));
+modalClosed ? P('form: modal closes after save') : F('form: modal closes after save');
+
+// 2d. 5 elements per box
+const fiveEl = await p.evaluate(() => { const cards = [...document.querySelectorAll('[data-chitti-response]')]; let bad = 0; cards.forEach(c => { const tb = c.querySelector('.fa-toolbar'); if (!tb || tb.querySelectorAll('button').length < 4) bad++; }); return { cards: cards.length, bad }; });
+fiveEl.bad === 0 ? P('5-elements: all ' + fiveEl.cards + ' cards have toolbar (4 icons)') : F('5-elements per box', fiveEl.bad + ' cards missing');
+
+// 2e. tap targets
+const small = await p.evaluate(() => { const out = []; ['.fa-tabbar button', '#fa-dressme', '.fa-btn', '.fa-toolbar button', '#lang-select'].forEach(s => { document.querySelectorAll(s).forEach(el => { const r = el.getBoundingClientRect(); if (r.width && (r.width < 44 || r.height < 38)) out.push(s + '=' + Math.round(r.width) + 'x' + Math.round(r.height)); }); }); return out; });
+small.length === 0 ? P('tap targets >= 44x38') : F('tap targets', small.slice(0, 5).join(', '));
+
+// 2f. language switch en/hi/ta/bn -> 0 raw keys + non-blank lang labels
+for (const L of ['hi', 'ta', 'bn', 'en']) {
+  await p.evaluate((x) => { document.getElementById('lang-select').value = x; faChangeLang(x); }, L);
+  await p.waitForTimeout(500);
+  const r = await p.evaluate(() => { const tg = [...document.querySelectorAll('[data-vai-i18n]')]; let raw = 0; tg.forEach(e => { if ((e.textContent || '').trim() === e.getAttribute('data-vai-i18n')) raw++; }); const sel = document.getElementById('lang-select'); const blankOpts = [...sel.options].filter(o => !(o.textContent || '').trim()).length; return { raw, blankOpts }; });
+  (r.raw === 0 && r.blankOpts === 0) ? P('language ' + L + ': 0 raw keys, 0 blank lang labels') : F('language ' + L, 'rawKeys=' + r.raw + ' blankLangLabels=' + r.blankOpts);
+}
+
+const finalPE = pageErrs(errs);
+finalPE.length === 0 ? P('no page JS errors during full interaction') : F('page JS errors during interaction', finalPE.slice(0, 4).join(' | '));
+console.log('   (external substrate console noise, non-blocking: ' + errs.filter(isExternal).length + ' lines — CORS to chitti-shares observability)');
+
+await ctx.close();
+await b.close();
+
+console.log('\nQA_REPORT:' + JSON.stringify({ total: passes.length + issues.length, pass: passes.length, fail: issues.length, issues }));
+process.exit(issues.length ? 1 : 0);

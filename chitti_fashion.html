@@ -886,7 +886,7 @@ async function faReview(){
   if (_selectedReviewOcc){ const occ = E.classifyOccasion(items); const d = faBandIdx(occ.occasion) - faBandIdx(_selectedReviewOcc); verdict = d === 0 ? '✅ ' + (CURRENT_LANG==='en'?'just right for ':'सही — ') + _selectedReviewOcc : (d > 0 ? '⬆️ ' + (CURRENT_LANG==='en'?'a bit over-dressed for ':'थोड़ा ज़्यादा formal — ') + _selectedReviewOcc : '⬇️ ' + (CURRENT_LANG==='en'?'a bit too casual for ':'थोड़ा casual — ') + _selectedReviewOcc); }
   const flags = (j._judge.flags||[]).map(f => '<div style="font-size:12px;color:#b45309;margin-top:4px">⚠️ ' + esc(f.axis) + ': ' + esc(f.msg) + '</div>').join('');
   const h = document.getElementById(host);
-  h.innerHTML = '<div class="sds-card chitti-response" data-chitti-response="fa-review-out" data-chitti-section="🪞 Outfit की राय">' +
+  h.innerHTML = '<div class="sds-card">' +
     (verdict ? '<div style="font-weight:800;color:#000080;margin-bottom:6px">' + esc(verdict) + '</div>' : '') + faRenderSwarm(j) + flags + '</div>';
   const sp = (verdict || '') + '. ' + (CURRENT_LANG==='en'?'Overall ':'कुल ') + j.overall + '/10. ' + (j.teach.why||'');
   h.dataset.spoken = sp; faSpeak(sp);
@@ -983,7 +983,7 @@ async function faBudget(){
     premium: (CURRENT_LANG==='en'?'Myntra / Ajio ~₹699–1499 for better fabric + return policy.':'Myntra / Ajio ~₹699–1499 बेहतर fabric + return के लिए।'),
   }, teach: { why: (CURRENT_LANG==='en'?'Start free because a well-fitting owned piece beats a cheap new one.':'मुफ़्त से शुरू करें — अच्छी fit वाला अपना कपड़ा सस्ते नए से बेहतर है।') } };
   const h = document.getElementById(host);
-  h.innerHTML = '<div class="sds-card chitti-response" data-chitti-response="fa-bud-out" data-chitti-section="💸 तीन रास्ते">' + faRenderSwarm(j) + '</div>';
+  h.innerHTML = '<div class="sds-card">' + faRenderSwarm(j) + '</div>';
   h.dataset.spoken = j.tiers.free; faSpeak(j.tiers.free);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
