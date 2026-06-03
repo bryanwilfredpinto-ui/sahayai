@@ -1,6 +1,6 @@
 # Chitti Fashion — GOLD Dataset Eval (deterministic engine, no LLM)
 
-Generated: 2026-06-03T16:58:46Z · Engine: `fashion-engine-1.0` · N = 1000 outfits
+Generated: 2026-06-03T17:27:32Z · Engine: `fashion-engine-1.0` · N = 1000 outfits
 
 | Metric | Score | Gate |
 |---|---|---|

@@ -137,6 +137,26 @@ rail blocks fashion** (visual proof: `tools/cert_screenshots/engine_hero_determi
 The LLM is now an *enhancement* for phrasing, not a dependency for correctness — the
 chitti-news-ai doctrine applied to fashion.
 
+## 5c. Gap-closure pass (2026-06-03 PM #2) — language + LLM-independence
+
+Two gaps I had flagged were closed and re-verified:
+
+1. **Language (i18n) restored.** Hero, tab bar, 7-agent swarm panel, teach block, and
+   budget tiers now translate via the platform `data-vai-i18n` substrate
+   (`strFor` falls back to English for languages without a key — clean, never garbled).
+   Verified: switching to English renders "🧺 Wardrobe", "7 experts say", "Colour",
+   "Occasion", "Free (from your wardrobe · ₹0)" (proof: `tools/cert_screenshots/engine_tabs_english.png`).
+   *Residual:* a few secondary button labels (e.g. "describe my outfit") are still
+   Hindi-hardcoded — partial, not complete; tracked as polish.
+
+2. **All core tabs now LLM-independent.** Outfit Review, Occasion, Weather, Budget,
+   Learn, and Describe-My-Outfit were rewritten engine-first — they produce real
+   results with **zero** LLM (proof: `tools/fashion_tab_smoke.mjs` — Review 9.3/10
+   swarm verdict, Occasion "business casual · 100%", Budget tiers, Learn lesson,
+   blind Describe "You can wear: …"). Journeys re-run: **j3 (blind) and j5 (illiterate)
+   now full-pass** (previously llm_blocked_ok). Only the optional LLM "week" button
+   remains a blocked-enhancement.
+
 ## 6. Verdict
 
 | Dimension | Status |
