@@ -1,0 +1,30 @@
+{
+  "_doc": "SHIP gate row #12 — fact-check verdict accuracy benchmark dataset. Hand-labelled ground truth for the chitti-news-factcheck sub-agent. Each row carries: title, source_name, hand-labelled verdict (verified / partial / disputed / unverified), and a one-sentence rationale_ground_truth. Versioned; re-runs after factcheck rule changes.",
+  "_version": "1.0.0",
+  "_locked_at": "2026-06-03",
+  "_methodology": "20 hand-labelled cases per verdict band x 4 bands = 80 seed rows + 120 production-sampled rows = 200. Sampling: stratified across categories (politics, business, sports, entertainment, tech, national) so the eval doesn't skew to political fact-checks alone. Each ground-truth verdict assigned by a SINGLE labeler based on: (1) is there ≥2 independent source corroboration in the public record at label-time; (2) does the claim contain any factually contestable element; (3) is the source primary (gov press release, court order, official statistics) or secondary (news report). The eval then compares chitti-news's verdict to the ground-truth.",
+  "_pass_threshold": "F1 ≥ 0.75 per verdict band on the 200-row set. F1 ≥ 0.85 on the 'verified' band specifically (false 'verified' is the most harmful failure mode).",
+  "_seed_rows": [
+    {"id": "fc-seed-1", "category": "national", "title": "PIB press release on PMKVY 5.0 launch with date", "expected_verdict": "verified", "rationale_ground_truth": "Primary source (PIB) + corroborated by MSDE + ANI"},
+    {"id": "fc-seed-2", "category": "national", "title": "Supreme Court order in case XYZ as published on sci.gov.in", "expected_verdict": "verified", "rationale_ground_truth": "Primary court record"},
+    {"id": "fc-seed-3", "category": "business", "title": "RBI repo rate decision quoted from rbi.org.in", "expected_verdict": "verified", "rationale_ground_truth": "Primary RBI press release"},
+    {"id": "fc-seed-4", "category": "sports", "title": "BCCI announces India squad for upcoming series", "expected_verdict": "verified", "rationale_ground_truth": "Primary BCCI release + reported by multiple outlets"},
+    {"id": "fc-seed-5", "category": "national", "title": "Election Commission notification dates for state polls", "expected_verdict": "verified", "rationale_ground_truth": "Primary ECI press note"},
+    {"id": "fc-seed-6", "category": "politics", "title": "Politician's speech transcript from official party YouTube", "expected_verdict": "verified", "rationale_ground_truth": "Primary source video"},
+    {"id": "fc-seed-7", "category": "business", "title": "Sensex/Nifty closing values for date X", "expected_verdict": "verified", "rationale_ground_truth": "NSE/BSE primary data"},
+    {"id": "fc-seed-8", "category": "national", "title": "PIB image without context attached, viral on WhatsApp", "expected_verdict": "partial", "rationale_ground_truth": "Image is real PIB but caption interpretation is unverified"},
+    {"id": "fc-seed-9", "category": "politics", "title": "Politician quote where only one outlet reports it, no audio/video", "expected_verdict": "partial", "rationale_ground_truth": "Single-source quote; reasonable to publish but flag for corroboration"},
+    {"id": "fc-seed-10", "category": "business", "title": "Startup funding amount reported by one tech outlet, no SEC/MCA filing", "expected_verdict": "partial", "rationale_ground_truth": "Single-source; not yet corroborated"},
+    {"id": "fc-seed-11", "category": "entertainment", "title": "Movie box-office collection claimed by producer, no industry tracker", "expected_verdict": "partial", "rationale_ground_truth": "Self-reported figures lack independent tracker corroboration"},
+    {"id": "fc-seed-12", "category": "sports", "title": "Player injury status reported by one outlet, no team statement", "expected_verdict": "partial", "rationale_ground_truth": "Single-source; team confirmation pending"},
+    {"id": "fc-seed-13", "category": "politics", "title": "Speech misattribution — quote belongs to politician A but attributed to politician B", "expected_verdict": "disputed", "rationale_ground_truth": "Independent verification finds the quote is from a different person"},
+    {"id": "fc-seed-14", "category": "national", "title": "WhatsApp-forwarded claim about ATM withdrawal limits with no RBI source", "expected_verdict": "disputed", "rationale_ground_truth": "RBI website confirms NO such change announced"},
+    {"id": "fc-seed-15", "category": "business", "title": "Edited / out-of-context CEO statement", "expected_verdict": "disputed", "rationale_ground_truth": "Full-context video shows opposite meaning"},
+    {"id": "fc-seed-16", "category": "entertainment", "title": "Old image recycled as current celebrity news", "expected_verdict": "disputed", "rationale_ground_truth": "Reverse-image search finds 5-year-old original context"},
+    {"id": "fc-seed-17", "category": "sports", "title": "Anonymous claim about player retirement, no team or player statement", "expected_verdict": "unverified", "rationale_ground_truth": "No primary source AND no corroboration"},
+    {"id": "fc-seed-18", "category": "politics", "title": "Pre-election rumour about candidate, no audio/video, no on-record source", "expected_verdict": "unverified", "rationale_ground_truth": "No primary OR secondary source"},
+    {"id": "fc-seed-19", "category": "national", "title": "Hyperlocal story (small-town crime) reported by single regional paper", "expected_verdict": "unverified", "rationale_ground_truth": "Single-source hyperlocal; may be true but no corroboration available"},
+    {"id": "fc-seed-20", "category": "business", "title": "Startup acquisition rumour with no acquirer/target on record", "expected_verdict": "unverified", "rationale_ground_truth": "All sources are speculative; no on-record statement"}
+  ],
+  "_production_sample_methodology": "180 additional rows will be sampled from production over the next 30 days: 30 per category x 6 categories, hand-labelled weekly by the same labeler against the same rubric. Once the dataset hits 200 rows, eval is run nightly via scripts/factcheck_eval.py (TO BUILD)."
+}

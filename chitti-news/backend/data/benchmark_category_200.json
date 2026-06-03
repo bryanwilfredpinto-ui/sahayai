@@ -1,0 +1,45 @@
+{
+  "_doc": "SHIP gate row #13 — per-category classifier accuracy benchmark dataset. Hand-labelled ground truth for the content-based reclassifier in chitti-news/backend/services/news_db.py and the per-category sub-agents. Each row carries: title, expected_category (national / state / politics / business / sports / entertainment / tech), and a one-sentence rationale. Versioned; re-run after classifier changes.",
+  "_version": "1.0.0",
+  "_locked_at": "2026-06-03",
+  "_methodology": "30 hand-labelled seed rows here (5 per category) covering the most-confusing edge cases the production system has historically mis-classified (e.g. FIFA-in-Amazon-Prime-Day must be Business not Sports per recent commit 7466a91; Telugu-film-business-deals must be Entertainment not Business). The remaining 170 rows will be sampled from production over 30 days to hit 200. Eval at scripts/category_classifier_eval.py (TO BUILD) computes F1 per category.",
+  "_pass_threshold": "F1 >= 0.85 per category; F1 >= 0.92 on politics specifically (mis-classifying politics is the highest-risk failure mode for neutrality and bias).",
+  "_seed_rows": [
+    {"id": "cat-1", "title": "PM addresses joint session of parliament", "expected": "national", "rationale": "Generic national institutional story; not party-tagged so not politics"},
+    {"id": "cat-2", "title": "Floods displace 12,000 in Assam district", "expected": "national", "rationale": "Multi-state national disaster"},
+    {"id": "cat-3", "title": "Republic Day parade route announced", "expected": "national", "rationale": "National event"},
+    {"id": "cat-4", "title": "AIIMS launches new outpatient block in Delhi", "expected": "national", "rationale": "National institution announcement"},
+    {"id": "cat-5", "title": "Census 2026 schedule released by Home Ministry", "expected": "national", "rationale": "National administrative announcement"},
+
+    {"id": "cat-6", "title": "Maharashtra cabinet expansion announced", "expected": "state", "rationale": "State-specific cabinet news"},
+    {"id": "cat-7", "title": "Tamil Nadu CM inaugurates highway", "expected": "state", "rationale": "Single-state infrastructure"},
+    {"id": "cat-8", "title": "Karnataka high court ruling on civic body", "expected": "state", "rationale": "State judiciary"},
+    {"id": "cat-9", "title": "Kerala unveils tourism roadmap for monsoon season", "expected": "state", "rationale": "Single-state policy"},
+    {"id": "cat-10", "title": "Andhra Pradesh state assembly passes farmer-debt bill", "expected": "state", "rationale": "Single-state legislative action"},
+
+    {"id": "cat-11", "title": "BJP releases manifesto for 2027 state polls", "expected": "politics", "rationale": "Party-specific electoral content; politics"},
+    {"id": "cat-12", "title": "Congress holds rally; party president speaks on alliance arithmetic", "expected": "politics", "rationale": "Party + electoral context"},
+    {"id": "cat-13", "title": "AAP candidate files nomination from constituency X", "expected": "politics", "rationale": "Party + candidate-specific"},
+    {"id": "cat-14", "title": "DMK accuses opposition of misusing ED", "expected": "politics", "rationale": "Inter-party criticism"},
+    {"id": "cat-15", "title": "SP-RLD alliance seat-sharing finalised", "expected": "politics", "rationale": "Coalition / electoral mechanics"},
+
+    {"id": "cat-16", "title": "Sensex closes 350 points lower amid IT selloff", "expected": "business", "rationale": "Market movement"},
+    {"id": "cat-17", "title": "Reliance Q2 results beat estimates", "expected": "business", "rationale": "Corporate earnings"},
+    {"id": "cat-18", "title": "RBI keeps repo rate unchanged at 6.50%", "expected": "business", "rationale": "Monetary policy"},
+    {"id": "cat-19", "title": "Amazon Prime Day kicks off; record FIFA jersey deals", "expected": "business", "rationale": "MUST classify as Business not Sports — Prime Day is a commerce event. Per commit 7466a91 context-check classifier."},
+    {"id": "cat-20", "title": "Zomato's new instant-grocery service launches in 3 cities", "expected": "business", "rationale": "Corporate product launch"},
+
+    {"id": "cat-21", "title": "India beats Australia by 4 wickets in 2nd T20I", "expected": "sports", "rationale": "Cricket match result"},
+    {"id": "cat-22", "title": "Neeraj Chopra wins gold at Diamond League final", "expected": "sports", "rationale": "Athletics"},
+    {"id": "cat-23", "title": "Pro Kabaddi League season 12 schedule announced", "expected": "sports", "rationale": "League announcement"},
+    {"id": "cat-24", "title": "AIFF announces ISL roster cap changes for 2026-27", "expected": "sports", "rationale": "Sports federation rule change"},
+    {"id": "cat-25", "title": "Indian women's hockey team qualifies for Olympics", "expected": "sports", "rationale": "Team sports qualification"},
+
+    {"id": "cat-26", "title": "Box-office: Tamil film hits Rs 100 cr in 5 days", "expected": "entertainment", "rationale": "Box-office reporting"},
+    {"id": "cat-27", "title": "Bollywood director announces next film with major star cast", "expected": "entertainment", "rationale": "Film industry announcement"},
+    {"id": "cat-28", "title": "Telugu film business: producer signs 3-film deal with OTT major", "expected": "entertainment", "rationale": "MUST classify as Entertainment not Business — film-trade is an entertainment-industry sub-topic"},
+    {"id": "cat-29", "title": "Netflix announces 2026 India slate; 22 originals", "expected": "entertainment", "rationale": "OTT slate announcement"},
+    {"id": "cat-30", "title": "T-Series acquires music rights for 5-film deal", "expected": "entertainment", "rationale": "Music + film industry deal"}
+  ],
+  "_production_sample_plan": "170 additional rows from production over 30 days, weekly labeling pass. The seed rows above are deliberately the EDGE CASES (FIFA-in-Prime-Day, Telugu-film-business-deal etc) — the classifier MUST get these right to pass."
+}

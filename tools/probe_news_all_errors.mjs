@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({headless:true});
+const ctx = await b.newContext({viewport:{width:375,height:812}});
+const p = await ctx.newPage();
+p.on('pageerror', e => console.log('PAGE_ERR:', e.message));
+p.on('console', m => console.log(m.type().toUpperCase() + ':', m.text().slice(0,300)));
+await p.goto('https://sahayai.in/chitti_news.html', {waitUntil:'domcontentloaded'});
+await p.waitForTimeout(10000);
+const final = await p.evaluate(() => document.getElementById('feed-root')?.innerHTML?.slice(0,200));
+console.log('FINAL feed-root:', final);
+await b.close();
