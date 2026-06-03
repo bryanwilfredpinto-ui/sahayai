@@ -229,7 +229,7 @@ def main(target_lang: Optional[str] = None) -> int:
             "rss_found": sum(1 for r in results if r["found"]),
             "results": results,
         }, indent=2))
-        print(f"  → {out_path}")
+        print(f"  -> {out_path}")
 
     total_found = sum(sum(1 for r in v if r["found"]) for v in overall_results.values())
     total_probed = sum(len(v) for v in overall_results.values())
