@@ -383,6 +383,59 @@ def ai_impact_score_endpoint():
     return jsonify(_score(profession, geo=geo)), 200
 
 
+# v1 world-class features (rules-only, no LLM in critical path) ────────
+
+@bp.get("/skill-gap-radar")
+def skill_gap_radar_endpoint():
+    """Per-profession demand-vs-supply skill gap radar."""
+    profession = _arg_str("profession", "")
+    if not profession or profession == "everyone":
+        abort(400, description="profession is required")
+    geo = _arg_str("geo", "india")
+    lookback = max(1, min(_arg_int("lookback_days", 30), 90))
+    from services.world_class import skill_gap_radar as _sgr
+    return jsonify(_sgr(profession, geo=geo, lookback_days=lookback)), 200
+
+
+@bp.get("/mentor")
+def chitti_mentor_endpoint():
+    """Chitti Mentor: LEARN -> PROVE -> APPLY top 3 actions for the profession."""
+    profession = _arg_str("profession", "")
+    if not profession or profession == "everyone":
+        abort(400, description="profession is required")
+    current_level = _arg_str("current_level", "any")
+    lookback = max(1, min(_arg_int("lookback_days", 14), 60))
+    from services.world_class import chitti_mentor as _m
+    return jsonify(_m(profession, current_level=current_level,
+                      lookback_days=lookback)), 200
+
+
+@bp.get("/coach")
+def chitti_coach_endpoint():
+    """Chitti Coach: N-week learning plan for (profession, skill_keyword)."""
+    profession = _arg_str("profession", "")
+    skill = _arg_str("skill", "")
+    if not profession or not skill:
+        abort(400, description="profession and skill are required")
+    weeks = max(1, min(_arg_int("weeks", 4), 12))
+    from services.world_class import chitti_coach as _c
+    return jsonify(_c(profession, skill_keyword=skill, weeks=weeks)), 200
+
+
+@bp.get("/opportunity-engine")
+def opportunity_engine_endpoint():
+    """Opportunity Engine: ranked actionable items (job + grant + scheme + startup)."""
+    profession = _arg_str("profession", "")
+    if not profession or profession == "everyone":
+        abort(400, description="profession is required")
+    geo = _arg_str("geo", "india")
+    lookback = max(1, min(_arg_int("lookback_days", 30), 90))
+    limit = max(1, min(_arg_int("limit", 20), 100))
+    from services.world_class import opportunity_engine as _oe
+    return jsonify(_oe(profession, geo=geo, lookback_days=lookback,
+                       limit=limit)), 200
+
+
 @bp.get("/admin/stats")
 def admin_stats():
     _require_metrics_token()

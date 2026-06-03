@@ -91,6 +91,14 @@ def _row_to_dict(
     # attempt has been made yet OR the validator rejected the LLM
     # output. The frontend hides the line entirely when NULL.
     insight = getattr(a, "chitti_insight", None)
+    # Per-publisher trust score (SHIP gate #11). Lazy import so the
+    # frontend gets a clean None when no snapshot is available yet.
+    try:
+        from services.publisher_trust import get as _trust_get
+        trust = _trust_get(a.source_name)
+    except Exception:  # noqa: BLE001
+        trust = None
+
     return {
         "id": a.id,
         "title": a.title,
@@ -99,6 +107,7 @@ def _row_to_dict(
         "content": a.content,  # full RSS body when the publisher provides it; speaker reads this in full
         "source_slug": a.source_slug,
         "source_name": a.source_name,
+        "publisher_trust": trust,  # {score, band, n_articles, computed_at} or None
         "image_url": a.image_url,
         "state": a.state,
         "language": a.language,

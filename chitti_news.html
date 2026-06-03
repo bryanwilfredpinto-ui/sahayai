@@ -163,6 +163,16 @@
       display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;
     }
     .art-meta .src { color: var(--navy); }
+    .art-meta .pt-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 999px;
+      font-size: 10px; font-weight: 800; letter-spacing: .03em;
+      border: 1px solid currentColor; background: transparent;
+    }
+    .pt-trusted      { color: #166534; background: rgba(22,163,74,.08); }
+    .pt-acceptable   { color: #92400e; background: rgba(212,175,55,.10); }
+    .pt-questionable { color: #b45309; background: rgba(245,158,11,.10); }
+    .pt-reject       { color: #b91c1c; background: rgba(220,38,38,.08); }
     .art-title {
       font-weight: 800; font-size: 16px; line-height: 1.35;
       color: var(--text); margin: 0 0 8px; word-break: break-word;
@@ -913,6 +923,26 @@ function _trustRationale(fc, lang) {
   if (v === 'unverified') return 'No cross-source corroboration yet — single-source story, may be hyperlocal or breaking.';
   return 'Chitti is still cross-checking this story across other sources.';
 }
+// Per-publisher trust badge (SHIP gate #11). a.publisher_trust is
+// {score, band, n_articles, computed_at} from compute_publisher_trust.py
+// methodology. When the snapshot is missing we render NOTHING.
+const _PT_BAND = {
+  trusted:      {label: 'TRUSTED',      cls: 'pt-trusted'},
+  acceptable:   {label: 'ACCEPTABLE',   cls: 'pt-acceptable'},
+  questionable: {label: 'QUESTIONABLE', cls: 'pt-questionable'},
+  reject:       {label: 'LOW TRUST',    cls: 'pt-reject'},
+  unknown:      null,
+};
+function publisherTrustBadge(a) {
+  const pt = a && a.publisher_trust;
+  if (!pt || typeof pt.score !== 'number') return '';
+  const conf = _PT_BAND[(pt.band || '').toLowerCase()];
+  if (!conf) return '';
+  const tip = 'Publisher trust score ' + pt.score + '/100 over ' + (pt.n_articles || 0)
+            + ' articles. Methodology: 50 + 0.5·verified − 1.0·disputed − 0.3·unverified.';
+  return '<span class="src pt-badge ' + conf.cls + '" title="' + esc(tip)
+       + '" aria-label="' + esc(tip) + '">' + esc(conf.label) + ' ' + esc(String(pt.score)) + '</span>';
+}
 function _trustSourcesList(fc) {
   // Names if backend resolved them, fall back to slugs.
   if (!fc) return [];
@@ -1091,6 +1121,7 @@ function articleCardHtml(a, featured) {
   const meta = [
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
     '<span class="src">' + esc(a.source_name || a.source_slug || 'Source') + '</span>',
+    publisherTrustBadge(a),
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
 
@@ -1165,6 +1196,7 @@ function railCardHtml(a) {
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
     fcBadge(a.factcheck),
     '<span class="src">' + esc(a.source_name || 'Source') + '</span>',
+    publisherTrustBadge(a),
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
   return ''
@@ -1208,6 +1240,7 @@ function heroCardHtml(a) {
   const meta = [
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
     '<span class="src">' + esc(a.source_name || 'Source') + '</span>',
+    publisherTrustBadge(a),
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
   return ''
