@@ -298,6 +298,32 @@ async function main() {
       dupCount === 0,
       dupCount === 0 ? 'none found' : `${dupCount} visible duplicates`);
 
+  // ── MODAL_NOT_BLOCKING — no fullscreen overlay must intercept clicks
+  // on the category tabs or the language picker. Sire 2026-06-03
+  // caught chitti_a11y.js's disability-profile modal eating taps —
+  // the page looked broken because Malayalam selection couldn't reach
+  // the picker. This gate proves the click path is clear.
+  const blockingOverlay = await page.evaluate(() => {
+    // First visible tab — guaranteed to be inside the viewport at 375 px.
+    const tab = document.querySelector('.cat-tab');
+    if (!tab) return 'no .cat-tab found';
+    tab.scrollIntoView({ block: 'nearest', inline: 'center' });
+    const rect = tab.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    if (cx < 0 || cy < 0 || cx > innerWidth || cy > innerHeight) {
+      return 'first tab outside viewport (' + cx.toFixed(0) + ',' + cy.toFixed(0) + ')';
+    }
+    const el = document.elementFromPoint(cx, cy);
+    if (!el) return 'no element at tab center';
+    if (el === tab || tab.contains(el)) return null;   // tab clickable
+    return el.tagName + (el.id ? '#' + el.id : '') + ' (cls=' + el.className.toString().slice(0, 40) + ')';
+  });
+  add('MODAL_NOT_BLOCKING — no overlay intercepts clicks on the category tab',
+      blockingOverlay === null,
+      blockingOverlay === null ? 'tab top-most at its center'
+                               : 'BLOCKED BY: ' + blockingOverlay);
+
   // ── LANG_SWITCH_FIRES — selecting a different language MUST trigger
   // a new /api/news/feed fetch with the new language parameter.
   // Sire 2026-06-03: chitti_a11y.js substrate hijacked the onchange

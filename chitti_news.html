@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="2b77eba-msn-layout" />
+  <meta name="chitti-build" content="f16295a-2026-06-03" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -1024,6 +1024,44 @@ async function loadFeed(force) {
 // ── Boot ──────────────────────────────────────────────────────────
 hydratePickers();
 loadFeed(false);
+
+// Sire 2026-06-03 — chitti_a11y.js's chitti-disability-profile-modal
+// was intercepting pointer events on chitti_news.html — tap on a
+// category tab or the language picker did nothing because the modal
+// (sometimes invisible to the user) ate the click. Probe confirmed
+// the failure: "<div id=chitti-disability-profile-modal> subtree
+// intercepts pointer events". Per memory [project_user_disability_profile_locked]
+// the modal should be one-time-per-device; if it's reappearing for a
+// returning chitti-news user, it's a substrate bug — but rather than
+// fight the substrate from here we just dismiss it when the user has
+// clearly already engaged with the page (a saved filter pref proves
+// they've used Chitti News before, so the disability prompt is not
+// the right blocker).
+(function autoSkipDisabilityModalIfReturning() {
+  const hasFilterPrefs = ['chitti_news_lang', 'chitti_news_state', 'chitti_news_category']
+    .some(function (k) { try { return !!localStorage.getItem(k); } catch (e) { return false; } });
+  if (!hasFilterPrefs) return;
+  function tryDismiss() {
+    const m = document.getElementById('chitti-disability-profile-modal');
+    if (!m) return false;
+    // Prefer the substrate's "skip" button so localStorage is set
+    // consistently. Fall back to removing the node entirely if no
+    // skip button is exposed.
+    const skip = m.querySelector('button[data-act="skip"], .chitti-dp-skip, [aria-label="Skip"]');
+    if (skip) { try { skip.click(); return true; } catch (e) {} }
+    m.remove();
+    try { localStorage.setItem('chitti_disability_profile_v1', JSON.stringify({ skipped: true })); } catch (e) {}
+    return true;
+  }
+  if (tryDismiss()) return;
+  // Substrate may inject the modal asynchronously after our boot —
+  // retry briefly so we catch the late insertion.
+  let attempts = 0;
+  const iv = setInterval(function () {
+    attempts++;
+    if (tryDismiss() || attempts > 20) clearInterval(iv);
+  }, 250);
+})();
 </script>
 
 </body>
