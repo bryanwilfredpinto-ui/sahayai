@@ -66,12 +66,30 @@ def _arg_int(key: str, default: int) -> int:
 
 def _explain(relevance: Optional[ProfessionRelevance],
              title: str, summary: Optional[str], topics: Optional[str],
-             source_slug: Optional[str], url: Optional[str]) -> Optional[dict]:
-    """Re-derive the explainability bundle so re-tunes show up without re-ingest."""
-    if relevance is None:
-        return None
+             source_slug: Optional[str], url: Optional[str]) -> dict:
+    """Re-derive the explainability bundle so re-tunes show up without re-ingest.
+
+    ALWAYS returns a dict so the frontend "Why this matters" disclosure
+    renders on every card -- even in profession=everyone mode where no
+    ProfessionRelevance row exists. The honest tombstone shape lets the
+    user audit "this card was not profession-classified" without us
+    silently hiding the explainability contract.
+    """
     from services.profession_classifier import classify as _classify
     tags = _classify(title, summary, topics, source_slug=source_slug, url=url)
+    if relevance is None:
+        # Tombstone -- surfaces the rules-only category from the classifier
+        # without a profession tag. matched_keywords / source_signals show
+        # what fired; rule_version always present so the disclosure is auditable.
+        primary = (tags[0] if tags else {})
+        return {
+            "category":         primary.get("profession_slug", "unclassified"),
+            "confidence":       float(primary.get("confidence", 0.0)),
+            "matched_keywords": primary.get("matched_keywords", []),
+            "source_signals":   primary.get("source_signals", []),
+            "rule_version":     primary.get("rule_version", "rules-only-no-profession-tag"),
+            "profession_tagged": False,
+        }
     match = next((t for t in tags if t["profession_slug"] == relevance.profession_slug), None)
     return {
         "category":         relevance.profession_slug,
@@ -79,6 +97,7 @@ def _explain(relevance: Optional[ProfessionRelevance],
         "matched_keywords": (match or {}).get("matched_keywords", []),
         "source_signals":   (match or {}).get("source_signals", []),
         "rule_version":     relevance.classifier_version,
+        "profession_tagged": True,
     }
 
 
