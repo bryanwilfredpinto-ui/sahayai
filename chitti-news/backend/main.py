@@ -97,6 +97,27 @@ def _create_app() -> Flask:
     app = Flask(__name__)
     app.config["JSON_SORT_KEYS"] = False
 
+    # Sire 2026-06-04 (pillar audit, performance) — /api/news/feed was
+    # being served uncompressed at ~37 KB per response. With 6 parallel
+    # category calls on the home view, a rural 3G hotspot was loading
+    # ~260 KB just to paint. Flask-Compress applies gzip/brotli at
+    # response time when the Accept-Encoding header asks for it; no
+    # behavioural change for clients that don't (older curl, etc.).
+    try:
+        from flask_compress import Compress  # type: ignore
+        Compress(app)
+        # Compress JSON down to >=512 bytes; below that the header cost
+        # is higher than the payload saving.
+        app.config["COMPRESS_MIN_SIZE"] = 512
+        app.config["COMPRESS_LEVEL"] = 6
+        app.config["COMPRESS_MIMETYPES"] = [
+            "application/json", "text/html", "text/plain", "text/css",
+            "application/javascript", "text/javascript",
+        ]
+        log.info("flask-compress: gzip enabled on responses ≥512 bytes")
+    except ImportError:
+        log.warning("flask-compress not installed — responses will ship uncompressed")
+
     allowed = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
     # Explicit header + method lists — Flask-CORS 4.x doesn't reliably echo a
     # wildcard `allow_headers="*"` into the preflight response on Railway,

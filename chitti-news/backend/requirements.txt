@@ -4,6 +4,10 @@
 
 flask==3.0.3
 flask-cors==4.0.0
+# Response gzip — Sire 2026-06-04. /api/news/feed responses were ~37 KB
+# uncompressed; on a 3G hotspot the 6 parallel home-view calls were a
+# trust-killer. Compresses application/json down to ~5-7 KB per response.
+flask-compress==1.15
 gunicorn==21.2.0
 
 sqlalchemy==2.0.35

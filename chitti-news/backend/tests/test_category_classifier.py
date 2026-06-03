@@ -154,6 +154,72 @@ SIRE_CORPUS = [
         "Ranveer Singh sues film body a week after 'ban' amid Don 3 row",
         "national", "entertainment", "Bollywood actor + film body — entertainment.",
     ),
+
+    # ── Sire 2026-06-04 (pillar audit) — Delhi-hotel-fire disaster wires
+    #    that were flooding the Politics tab. Each must demote to national. ──
+    (
+        "\"We Can't Recognise Them\": Families Search For Loved Ones After Delhi Fire. "
+        "21 killed in massive hotel fire near New Delhi Railway Station. Death toll "
+        "rises as foreign medical tourists trapped on upper floors burnt alive. "
+        "Rescue teams continue search for missing persons; NDRF deployed.",
+        "politics", "national",
+        "Delhi hotel fire — multi-pattern disaster bank fire (hotel fire + killed in fire + death toll + rescue teams). Must demote politics → national.",
+    ),
+    (
+        "Delhi Hotel Fire: Killer Lapses? Permission For 6 Rooms, Operated 25. "
+        "Massive blaze killed 21 charred to death; fire safety violations under probe. "
+        "Toll rises to 23.",
+        "politics", "national",
+        "Same Delhi fire wire, different angle — disaster patterns score well above threshold.",
+    ),
+    (
+        "Foreign Medical Tourists Were Staying At Delhi Hotel Where Fire Killed 21. "
+        "Building collapse feared; rescue operation underway. NDRF deployed.",
+        "business", "national",
+        "Disaster wire that NDTV business filed as business — demote.",
+    ),
+
+    # ── Education / exam-result notices that NDTV / India Today filed under
+    #    politics. Each must demote to national. ──
+    (
+        "AFCAT 1 2026 answer key released at afcat.cdac.in — cut-off marks expected next week. "
+        "Provisional answer key window opens for objections; final answer key in July. "
+        "Merit list to follow after objection resolution.",
+        "politics", "national",
+        "AFCAT exam result wire — answer key + cut-off marks + merit list. Demote.",
+    ),
+    (
+        "RRB NTPC result declared at rrbcdg.gov.in — check merit list, cut-off marks. "
+        "Recruitment notification for next phase released; admit card download window opens.",
+        "politics", "national",
+        "RRB recruitment result — multi-pattern education bank. Demote.",
+    ),
+    (
+        "UPPSC PCS prelims result declared — mains result expected by end of month. "
+        "Interview list to follow. Reserve list for OBC candidates released separately.",
+        "politics", "national",
+        "UPPSC result + mains result + interview list. Demote.",
+    ),
+    (
+        "CBSE Class 10 board exam result declared at cbseresults.nic.in — merit list released. "
+        "Tie-break rules clarified for candidates seeking re-evaluation.",
+        "politics", "national",
+        "CBSE board result + merit list. Demote.",
+    ),
+
+    # ── Genuine politics that contains a fire/exam keyword in passing.
+    #    Must NOT demote — single keyword hits below the 2-pattern threshold. ──
+    (
+        "Modi announces fire-safety policy reform during cabinet meeting; "
+        "BJP, Congress agree on parliamentary committee setup",
+        "politics", "politics",
+        "Politics about fire policy — only one disaster word, no death toll, no rescue. Stays politics.",
+    ),
+    (
+        "Amit Shah inaugurates engineering exam centre at IIT Delhi during state visit",
+        "politics", "politics",
+        "Single 'exam' mention without merit list / answer key / result. Stays politics.",
+    ),
 ]
 
 

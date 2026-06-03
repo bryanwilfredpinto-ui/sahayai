@@ -73,19 +73,65 @@ def _parse_published(entry) -> Optional[datetime]:
     return None
 
 
+_IMG_SRC_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)', re.IGNORECASE)
+
+
 def _extract_image(entry) -> Optional[str]:
-    """Best-effort image extraction from RSS extensions."""
+    """
+    Best-effort image extraction from RSS extensions.
+
+    Sire 2026-06-04 (pillar audit) — earlier version only checked
+    media:content / enclosures / <img> in summary. That missed:
+      • media:thumbnail   — BBC Tamil/Bengali/Marathi/Punjabi/Urdu
+                            ship images here, not media:content
+      • content:encoded   — every WordPress feed (Saamana, Anandabazar,
+                            Punjabi Tribune…) embeds <img> in this field
+                            via feedparser's entry.content[0].value
+    Result: 6 Indic languages went from 100% placeholder tiles to
+    real images.
+
+    Branch order (cheapest → most expensive):
+      1. media:content (most common)
+      2. media:thumbnail (BBC family)
+      3. enclosures (RSS 2.0 standard)
+      4. <img> in content:encoded (WordPress family)
+      5. <img> in summary / description (fallback)
+    """
+    # 1. media:content
     media = entry.get("media_content") or []
     if media and isinstance(media, list):
         u = media[0].get("url") if isinstance(media[0], dict) else None
         if u:
             return u
+    # 2. media:thumbnail — BBC standard, missed by the original extractor
+    thumb = entry.get("media_thumbnail") or []
+    if thumb and isinstance(thumb, list):
+        u = thumb[0].get("url") if isinstance(thumb[0], dict) else None
+        if u:
+            return u
+    # 3. enclosures
     enc = entry.get("enclosures") or []
     if enc and isinstance(enc, list) and isinstance(enc[0], dict):
         if enc[0].get("type", "").startswith("image/"):
             return enc[0].get("href") or enc[0].get("url")
+    # 4. content:encoded — feedparser exposes this as entry.content[0].value;
+    #    a list of {value: "<html>", type: "text/html"} dicts. WordPress
+    #    publishers (Saamana, Anandabazar, Punjabi Tribune, most Indic
+    #    Hindi sites) embed the lead <img> here, NOT in summary.
+    content_list = entry.get("content") or []
+    if content_list and isinstance(content_list, list):
+        for c in content_list:
+            if not isinstance(c, dict):
+                continue
+            v = c.get("value") or ""
+            if not v:
+                continue
+            m = _IMG_SRC_RE.search(v)
+            if m:
+                return m.group(1)
+    # 5. <img> in summary / description (cheap fallback)
     summary = entry.get("summary") or entry.get("description") or ""
-    m = re.search(r'<img[^>]+src=["\']([^"\']+)', summary)
+    m = _IMG_SRC_RE.search(summary)
     return m.group(1) if m else None
 
 

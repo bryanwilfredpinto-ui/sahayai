@@ -88,12 +88,21 @@ def factcheck(db: Session, article_id: int, *, force: bool = False) -> dict:
                 break
 
     n = len(matched_sources)
+    # Sire 2026-06-04 (pillar audit) — the n==1 branch used to label
+    # the verdict "disputed" with the rationale "headlines diverge".
+    # In practice the codepath never checked divergence — it fired a
+    # red "Check first — sources disagree" warning on every story
+    # with exactly one corroborating outlet, including mainstream
+    # The Hindu / NDTV / News18 corroboration. That actively faked
+    # un-verification. Now: n==1 is "partial" with a calmer
+    # confidence band; the brief's "never fake verification" promise
+    # applies in both directions.
     if n >= 3:
         verdict = "verified"; confidence = min(95, 60 + n * 8)
     elif n == 2:
         verdict = "partial"; confidence = 70
     elif n == 1:
-        verdict = "disputed"; confidence = 45
+        verdict = "partial"; confidence = 55
     else:
         verdict = "unverified"; confidence = 25
 
@@ -122,21 +131,31 @@ def factcheck(db: Session, article_id: int, *, force: bool = False) -> dict:
 def _build_rationale(article, matched_sources: set[str], matched: list[dict],
                      verdict: str, lang: str) -> str:
     n = len(matched_sources)
+    # Sire 2026-06-04 — n==1 used to render "headlines diverge / check
+    # first" as a red warning. There was no actual divergence check;
+    # the copy was fake. With the verdict now collapsed to "partial",
+    # the n==1 rationale must read as "one other source confirms" so
+    # the user gets the truth: one corroboration is partial confidence,
+    # not a red flag.
     if lang == "hi":
         if verdict == "verified":
             return f"{n} अन्य भरोसेमंद स्रोतों ने यही खबर दी है। ज़्यादातर ब्योरे मेल खाते हैं।"
         if verdict == "partial":
+            if n == 1:
+                return "1 अन्य स्रोत ने भी यही खबर दी है — पूरी पुष्टि के लिए और स्रोतों का इंतज़ार है।"
             return f"{n} अन्य स्रोतों ने यही खबर दी है — बड़े ब्योरे मेल खाते हैं पर कुछ अंतर हैं।"
         if verdict == "disputed":
-            return f"केवल 1 अन्य स्रोत मिला और सुर्खियाँ अलग हैं। पुष्टि से पहले स्रोत पर जाएँ।"
+            return "इस सुर्खी पर अन्य स्रोतों से असहमति है। पुष्टि से पहले स्रोत पर जाएँ।"
         return "अभी किसी अन्य स्रोत पर यह खबर नहीं मिली। अकेला स्रोत — खबर पुरानी हो सकती है या क्षेत्रीय।"
     # EN
     if verdict == "verified":
         return f"{n} other trusted sources are running this story; key facts agree."
     if verdict == "partial":
+        if n == 1:
+            return "1 other source confirms this — waiting on a second corroboration for full verification."
         return f"{n} other sources cover this; the broad facts match but details differ."
     if verdict == "disputed":
-        return "Only 1 other source found and the headline diverges. Check the source link before sharing."
+        return "Other sources disagree with this headline. Check the source link before sharing."
     return "No cross-source corroboration yet. Single-source story — may be hyperlocal or just-breaking."
 
 

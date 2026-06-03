@@ -188,6 +188,23 @@ def feed(
     )
     if category and category != "all":
         q = q.filter(Article.category == category)
+    # Sire 2026-06-04 (pillar audit) — dev seed / sample / welcome rows
+    # were ranking #1 in 3 of 6 categories ("Sample · Indian markets…",
+    # "Sample · Cricket…", "Welcome to Chitti News…"). Every first-time
+    # visitor read a placeholder as the lead headline. Exclude them
+    # from every feed response. The seed rows still live in the DB
+    # (so /article/<id> still resolves them if linked from elsewhere)
+    # but they no longer surface in the scroll.
+    q = q.filter(
+        ~Article.title.ilike("Sample %"),
+        ~Article.title.ilike("Sample·%"),
+        ~Article.title.ilike("Sample \xc2\xb7 %"),
+        ~Article.title.ilike("Welcome to Chitti%"),
+        ~Article.title.ilike("How Chitti News works%"),
+        Article.source_slug.notlike("sample-%"),
+        Article.source_slug.notlike("seed-%"),
+        Article.source_slug != "chitti-news",
+    )
 
     rows = q.order_by(
         desc(Article.is_breaking),

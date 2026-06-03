@@ -131,6 +131,45 @@ _BUSINESS = [
     _w(r"goldman sachs|morgan stanley|jp morgan|nomura|citi(?:group)?|deutsche bank|barclays|hsbc|standard chartered"),
 ]
 
+# Sire 2026-06-04 (pillar audit, news_quality) — new demotion banks
+# for stories that the source RSS tagged as politics or business but
+# are actually disaster wires or exam-result notices. These banks
+# never PROMOTE an article INTO disaster/education (we don't expose
+# those as user-facing tabs); they only fire as a TRIGGER to demote
+# the source category back to "national" so the Politics tab stops
+# being a Delhi-hotel-fire wire.
+_DISASTER = [
+    _w(r"hotel fire|building fire|industrial fire|kitchen fire|restaurant fire|massive blaze|"
+       r"factory fire|forest fire|warehouse fire|shop fire"),
+    _w(r"killed in fire|killed in blaze|dead in fire|charred to death|trapped in fire|burnt alive"),
+    _w(r"earthquake|aftershock|magnitude \d|seismograph|tremors? felt"),
+    _w(r"landslide|landslip|hillside collapse|debris flow|cloudburst"),
+    _w(r"flash flood|flood waters|cyclone|tropical storm|tsunami|storm surge"),
+    _w(r"building collapse|wall collapse|bridge collapse|under-?construction collapse"),
+    _w(r"stampede|crushed in stampede|stampede at"),
+    _w(r"hooch tragedy|spurious liquor|illicit liquor|methanol poisoning"),
+    _w(r"train accident|train derailment|bus accident|road accident|killed in (?:road|train|bus) accident|"
+       r"killed in crash|killed in collision"),
+    _w(r"blast|explosion|killed in blast|cylinder blast|boiler blast|firecracker blast"),
+    _w(r"\d+ dead|\d+ killed|\d+ injured|\d+ hospitalis|toll rises to|death toll"),
+    _w(r"rescue (?:teams?|operation)|debris being cleared|search for missing|disaster relief|ndrf"),
+]
+
+_EDUCATION = [
+    _w(r"answer key|provisional answer key|final answer key|merit list|cut[-\s]?off marks?|"
+       r"cut[-\s]?off list|rank list|qualifying marks?|tie[-\s]?break(?:er|ing) rules?"),
+    _w(r"jee main|jee advanced|neet ug|neet pg|cuet|cuet ug|clat|jee main result|neet result"),
+    _w(r"ssc cgl|ssc chsl|ssc mts|ssc gd|ssc je|ssc cpo"),
+    _w(r"upsc|civil services exam|prelims result|mains result|interview list|reserve list"),
+    _w(r"rrb (?:ntpc|group d|alp|je)|rrb result|railway recruitment|recruitment notification"),
+    _w(r"uppsc|bpsc|mppsc|tnpsc|kpsc|appsc|tspsc|wbpsc|rpsc|hpsc|gpsc"),
+    _w(r"afcat|cds|nda exam|tes recruitment|territorial army|sainik school"),
+    _w(r"ctet|state tet|stet|kvs tet|nvs tet|tgt|pgt|prt"),
+    _w(r"icse result|cbse result|board exam result|class 10 result|class 12 result|hsc result|ssc result"),
+    _w(r"admit card|hall ticket|exam date|exam city|exam centre|window opens?"),
+    _w(r"answer key released|result declared|merit list released|notification released|notification out"),
+]
+
 _TECH = [
     _w(r"artificial intelligence|machine learning|deep learning|neural network|llm\b|large language model|generative ai|gen ai|chatgpt|gemini|claude|grok|openai|open ai|anthropic|deepseek|gpt-?4|gpt-?5|copilot|microsoft copilot|ai models?|new ai model"),
     _w(r"smartphone|smartphones|android phone|iphone|ios|samsung galaxy|oneplus|xiaomi|redmi|realme|vivo|oppo|nothing phone"),
@@ -158,6 +197,12 @@ _BANKS = {
     "politics":      _POLITICS,
     "business":      _BUSINESS,
     "tech":          _TECH,
+    # Demotion-only banks (Sire 2026-06-04). Never used as a destination
+    # category — they exist purely so a disaster wire tagged as politics
+    # by NDTV gets pulled back to "national". See _maybe_demote() below
+    # and the override hook in classify().
+    "_disaster":     _DISASTER,
+    "_education":    _EDUCATION,
 }
 
 # Confidence threshold: count of distinct keyword patterns that
@@ -272,6 +317,24 @@ def classify(text: str, source_category: str) -> ClassificationResult:
         if hits:
             scores[bank_name] = hits
 
+    # Sire 2026-06-04 — disaster + education demotion check.  When the
+    # source category is politics or business (the two tabs that were
+    # leaking 43% and 27% in the pillar audit) AND either demotion
+    # bank scores >= 2 distinct patterns, demote to "national".  Two
+    # patterns is the trust threshold: a single mention of "fire" or
+    # "exam" is not enough; "hotel fire" + "killed in fire" + "death
+    # toll" together is.
+    if src in ("politics", "business"):
+        disaster_score = scores.get("_disaster", 0)
+        education_score = scores.get("_education", 0)
+        if disaster_score >= 2 or education_score >= 2:
+            label = "disaster" if disaster_score >= education_score else "education"
+            return ClassificationResult(
+                category="national", overridden=True,
+                reason=f"demote:{label}({disaster_score if label == 'disaster' else education_score})|src={src}",
+                scores=scores,
+            )
+
     # Smoking-gun pass.
     sg_hits: list[str] = []
     for bank, pat in _SMOKING_GUN.items():
@@ -308,13 +371,19 @@ def classify(text: str, source_category: str) -> ClassificationResult:
             reason="no-bank-matched", scores=scores,
         )
 
-    # Pick the bank with the most distinct-pattern matches.  Resolve
-    # ties via CATEGORY_PRIORITY so cricket-context beats business-
-    # context (the original Sire case).
-    top_bank = max(scores.keys(), key=lambda b: (scores[b], -CATEGORY_PRIORITY.index(b)
-                                                  if b in CATEGORY_PRIORITY else 99))
-    top_score = scores[top_bank]
-    src_score = scores.get(src, 0)
+    # Pick the bank with the most distinct-pattern matches, ignoring
+    # demotion-only banks (prefixed with "_") which are never user-
+    # facing destination categories. Resolve ties via CATEGORY_PRIORITY.
+    user_facing = {b: s for b, s in scores.items() if not b.startswith("_")}
+    if not user_facing:
+        return ClassificationResult(
+            category=src, overridden=False,
+            reason="no-user-facing-bank-matched", scores=scores,
+        )
+    top_bank = max(user_facing.keys(), key=lambda b: (user_facing[b], -CATEGORY_PRIORITY.index(b)
+                                                       if b in CATEGORY_PRIORITY else 99))
+    top_score = user_facing[top_bank]
+    src_score = user_facing.get(src, 0)
 
     # National is the catch-all default — most "national" articles
     # would be better classified as something specific. Lower the
