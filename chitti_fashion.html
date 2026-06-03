@@ -190,6 +190,7 @@ body{font-size:17px}
     <button data-tab="occasion" onclick="faTab('occasion',this)">🎉 मौक़ा</button>
     <button data-tab="budget" onclick="faTab('budget',this)">💸 बजट</button>
     <button data-tab="learn" onclick="faTab('learn',this)">🎓 सीखें</button>
+    <button data-tab="family" onclick="faTab('family',this)">👨‍👩‍👧 परिवार + Twin</button>
   </nav>
 
   <!-- ════ TAB · ALMARI ════ -->
@@ -297,6 +298,57 @@ body{font-size:17px}
         <button onclick="faExplain('fa-card-05')" aria-label="Chitti समझाए">🤖</button>
         <button onclick="faFeedback('fa_learn',1)">👍</button>
         <button onclick="faFeedback('fa_learn',-1)">👎</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ TAB · FAMILY + FASHION TWIN ════ -->
+  <section class="fa-panel" id="fa-panel-family" role="tabpanel">
+    <!-- Family Mode: per-wearer wardrobes under one household -->
+    <div data-chitti-response="fa-card-06" class="sds-card chitti-response" data-chitti-section="👨‍👩‍👧 परिवार — एक घर, सबका style">
+      <h2 class="sds-card-title"><span class="ico">👨‍👩‍👧</span> परिवार — एक घर, सबका style</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">एक ही Chitti — बच्चा, किशोर, बड़े, और बुज़ुर्ग — सबकी अपनी अलमारी। नीचे से चुनिए किसका style करना है। हर सदस्य की photos अलग और सिर्फ़ इसी device पर।</p>
+      <div class="fa-field" style="margin-top:10px">
+        <label>अभी किसका style? (Family member)</label>
+        <select id="fa-wearer" onchange="faSetWearer(this.value)"></select>
+      </div>
+      <div class="fa-row-btns">
+        <button class="fa-btn" onclick="faAddWearer()">➕ नया सदस्य जोड़ें</button>
+      </div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faWearerSpoken())" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-06')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_family',1)">👍</button>
+        <button onclick="faFeedback('fa_family',-1)">👎</button>
+      </div>
+    </div>
+
+    <!-- Build-my-week: multi-occasion outfit generation from owned items -->
+    <div data-chitti-response="fa-card-07" class="sds-card chitti-response" data-chitti-section="🗓️ पूरे हफ़्ते के outfit — आपकी अलमारी से">
+      <h2 class="sds-card-title"><span class="ico">🗓️</span> हर मौक़े के outfit — एक साथ</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपकी अलमारी से एक-एक outfit बनाएगी — office, interview, शादी, casual, travel — सब आपके अपने कपड़ों से, ₹0।</p>
+      <div class="fa-row-btns">
+        <button class="fa-btn primary" onclick="faBuildMyWeek()">🗓️ सब मौक़ों के outfit बनाओ</button>
+      </div>
+      <div id="fa-week-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-week-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-07')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_week',1)">👍</button>
+        <button onclick="faFeedback('fa_week',-1)">👎</button>
+      </div>
+    </div>
+
+    <!-- Fashion Twin: on-device personal style memory -->
+    <div data-chitti-response="fa-card-08" class="sds-card chitti-response" data-chitti-section="🧬 आपका Fashion Twin">
+      <h2 class="sds-card-title"><span class="ico">🧬</span> आपका Fashion Twin</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपके अपने कपड़ों से आपकी style-पहचान बनाती है — कौन-से रंग, कौन-सी चीज़ें आपके पास हैं। सब इसी phone पर। इससे Chitti की सलाह और सटीक होती है।</p>
+      <div id="fa-twin-body" style="margin-top:10px"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-twin-body'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-08')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_twin',1)">👍</button>
+        <button onclick="faFeedback('fa_twin',-1)">👎</button>
       </div>
     </div>
   </section>
@@ -422,7 +474,7 @@ function faDB(){
     req.onerror = () => reject(req.error);
   });
 }
-async function faAllItems(){
+async function faAllItemsRaw(){
   try {
     const db = await faDB();
     return await new Promise((resolve, reject) => {
@@ -430,6 +482,13 @@ async function faAllItems(){
       tx.onsuccess = () => resolve(tx.result || []); tx.onerror = () => reject(tx.error);
     });
   } catch(e){ return []; }
+}
+/* Family Mode: items carry a `wearer` id; faAllItems() returns the active wearer's items.
+   Legacy items with no wearer belong to the default 'me' wearer. */
+async function faAllItems(){
+  const all = await faAllItemsRaw();
+  const w = faCurrentWearer();
+  return all.filter(i => (i.wearer || 'me') === w);
 }
 async function faPutItem(item){ const db = await faDB(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readwrite').objectStore(STORE).put(item); tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error); }); }
 async function faDelItem(id){ const db = await faDB(); return new Promise((res, rej) => { const tx = db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error); }); }
@@ -498,11 +557,13 @@ async function faSaveItem(){
     colour: (document.getElementById('fa-add-colour').value || _pendingColour || '').trim(),
     occasions: occ.length ? occ : ['casual'],
     last_worn: null,
+    wearer: faCurrentWearer(),
     added_at: new Date().toISOString()
   };
   await faPutItem(item);
   faCloseAdd();
   faRenderWardrobe();
+  try { faRenderTwin(); } catch(e){}
   faSpeak(CURRENT_LANG === 'en' ? 'Added to your wardrobe' : 'अलमारी में जोड़ दिया');
 }
 async function faRenderWardrobe(){
@@ -534,7 +595,7 @@ async function faRenderWardrobe(){
     '</div>'
   ).join('');
 }
-async function faRemove(id){ await faDelItem(id); faRenderWardrobe(); }
+async function faRemove(id){ await faDelItem(id); faRenderWardrobe(); try { faRenderTwin(); } catch(e){} }
 
 /* wardrobe as TEXT snapshot (only this leaves the device) */
 async function faWardrobeText(){
@@ -680,7 +741,7 @@ async function faDressMe(){
 /* ════════ Outfit Review / Describe (7-agent swarm) ════════ */
 let _selectedReviewOcc = '';
 function faBuildOccChips(hostId, onPick){
-  const occs = [['office','🏢 office'],['wedding','💍 शादी'],['interview','🎯 interview'],['festive','🪔 त्योहार'],['casual','🙂 रोज़'],['party','🎉 party']];
+  const occs = [['office','🏢 office'],['interview','🎯 interview'],['college','🎓 college'],['wedding','💍 शादी'],['festive','🪔 त्योहार'],['religious','🛕 धार्मिक'],['date','💖 date night'],['travel','✈️ travel'],['funeral','🕊️ शोक/funeral'],['family','👨‍👩‍👧 family function'],['casual','🙂 रोज़']];
   const host = document.getElementById(hostId);
   host.innerHTML = occs.map(o => '<span class="fa-chip" data-occ="' + o[0] + '">' + o[1] + '</span>').join('');
   host.querySelectorAll('.fa-chip').forEach(c => c.addEventListener('click', () => {
@@ -805,13 +866,106 @@ async function faFeedback(card, dir){
   } catch(e){}
 }
 
+/* ════════ Family Mode (per-wearer wardrobes, on-device) ════════ */
+function faWearers(){
+  if (!Array.isArray(PROFILE.wearers) || !PROFILE.wearers.length)
+    PROFILE.wearers = [{ id:'me', name: (CURRENT_LANG==='en'?'Me':'मैं'), band:'adult' }];
+  return PROFILE.wearers;
+}
+function faCurrentWearer(){ return PROFILE.activeWearer || 'me'; }
+function faSetWearer(id){ PROFILE.activeWearer = id; faSaveProfile(); faRenderWardrobe(); faRenderTwin(); }
+function faAddWearer(){
+  const name = (prompt(CURRENT_LANG==='en'?'New family member name:':'नए सदस्य का नाम:') || '').trim();
+  if (!name) return;
+  const band = (prompt(CURRENT_LANG==='en'?'Age group? child / teen / adult / senior':'उम्र? child / teen / adult / senior','adult') || 'adult').trim().toLowerCase();
+  const id = 'w-' + Date.now().toString(36);
+  faWearers().push({ id, name, band: ['child','teen','adult','senior'].includes(band)?band:'adult' });
+  PROFILE.activeWearer = id; faSaveProfile();
+  faRenderWearers(); faRenderWardrobe(); faRenderTwin();
+  faSpeak(CURRENT_LANG==='en'?('Added '+name):(name+' जोड़ दिया'));
+}
+function faRenderWearers(){
+  const sel = document.getElementById('fa-wearer'); if (!sel) return;
+  const cur = faCurrentWearer();
+  sel.innerHTML = faWearers().map(w => '<option value="'+w.id+'"'+(w.id===cur?' selected':'')+'>'+esc(w.name)+' ('+esc(w.band)+')</option>').join('');
+}
+function faWearerSpoken(){
+  const w = faWearers().find(x => x.id === faCurrentWearer());
+  return (CURRENT_LANG==='en'?'Now styling: ':'अभी style कर रही हूँ: ') + (w?w.name:'') ;
+}
+
+/* ════════ Fashion Twin (on-device style profile) ════════ */
+async function faRenderTwin(){
+  const host = document.getElementById('fa-twin-body'); if (!host) return;
+  const items = await faAllItems();
+  if (!items.length){
+    const m = CURRENT_LANG==='en'?'Add clothes to your Almari — Chitti will build your Fashion Twin automatically.':'अलमारी में कपड़े जोड़ें — Chitti आपका Fashion Twin ख़ुद बना देगी।';
+    host.innerHTML = '<div style="font-size:14px;color:#666">🧬 '+esc(m)+'</div>'; host.dataset.spoken = m; return;
+  }
+  const colours = {}, cats = {};
+  items.forEach(i => { if (i.colour) colours[i.colour]=(colours[i.colour]||0)+1; cats[i.category]=(cats[i.category]||0)+1; });
+  const topColours = Object.entries(colours).sort((a,b)=>b[1]-a[1]).slice(0,4).map(c=>c[0]);
+  const liked = (PROFILE.liked_styles||[]).slice(-5);
+  const gaps = [];
+  if ((cats.bottom||0) < (cats.top||0) - 2) gaps.push(CURRENT_LANG==='en'?'more bottoms unlock more outfits':'और नीचे के कपड़े = ज़्यादा outfit');
+  if (!(cats.footwear)) gaps.push(CURRENT_LANG==='en'?'add footwear':'जूते जोड़ें');
+  const spoken = (CURRENT_LANG==='en'?'Your Fashion Twin: ':'आपका Fashion Twin: ') +
+    items.length + (CURRENT_LANG==='en'?' items, favourite colours ':' चीज़ें, पसंदीदा रंग ') + (topColours.join(', ')||'—');
+  host.innerHTML =
+    '<div class="fa-tiers">' +
+      '<div class="fa-tier"><span class="lab">🧬 '+(CURRENT_LANG==='en'?'Items owned':'कुल चीज़ें')+'</span><div>'+items.length+'</div></div>' +
+      '<div class="fa-tier"><span class="lab">🎨 '+(CURRENT_LANG==='en'?'Your palette':'आपके रंग')+'</span><div>'+(esc(topColours.join(' · '))||'—')+'</div></div>' +
+      (liked.length?'<div class="fa-tier"><span class="lab">⭐ '+(CURRENT_LANG==='en'?'You liked':'आपको पसंद आया')+'</span><div>'+esc(liked.join(' · '))+'</div></div>':'') +
+      (gaps.length?'<div class="fa-tier budget"><span class="lab">♻️ '+(CURRENT_LANG==='en'?'To unlock more':'और outfit के लिए')+'</span><div>'+esc(gaps.join(' · '))+'</div></div>':'') +
+    '</div>';
+  host.dataset.spoken = spoken;
+}
+
+/* ════════ Build my week — multi-occasion generation from owned items ════════ */
+async function faBuildMyWeek(){
+  const host = 'fa-week-result';
+  const wardrobe = await faWardrobeText();
+  if (!wardrobe){ const m = CURRENT_LANG==='en'?'Add clothes to your Almari first.':'पहले अलमारी में कपड़े जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  faLoading(host, CURRENT_LANG==='en'?'Building one outfit per occasion…':'हर मौक़े के लिए एक outfit बना रही हूँ…');
+  const w = faWearers().find(x=>x.id===faCurrentWearer());
+  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
+    '. Wearer age group: ' + (w?w.band:'adult') + ', gender pref: ' + (PROFILE.gender||'unspecified') + '. ' +
+    'From these OWNED items only [' + wardrobe + '], build ONE complete outfit for EACH occasion: office, interview, wedding, casual, travel. ' +
+    'Use ONLY item ids from the list — never invent an item. Return STRICT JSON: ' +
+    '{"week":[{"occasion":"office","item_ids":["id"],"why":"one warm line"},{"occasion":"interview",...},{"occasion":"wedding",...},{"occasion":"casual",...},{"occasion":"travel",...}]}. ' +
+    'If an occasion truly cannot be met from owned items, set item_ids:[] and say so honestly in why.';
+  try {
+    const ans = await faAsk(prompt);
+    const j = faParseJSON(ans);
+    const items = await faAllItems(); const byId = {}; items.forEach(i => byId[i.id]=i);
+    const h = document.getElementById(host);
+    if (!j || !Array.isArray(j.week)){ h.innerHTML='<div class="sds-card">'+esc(ans||'—')+'</div>'; h.dataset.spoken=ans; faSpeak(ans); }
+    else {
+      const labels = {office:'🏢 office',interview:'🎯 interview',wedding:'💍 शादी',casual:'🙂 casual',travel:'✈️ travel'};
+      let html='', spoken='';
+      j.week.forEach(o => {
+        const valid = (o.item_ids||[]).filter(id => byId[id]);
+        const tiles = valid.map(id => '<div class="p">'+(byId[id].photo?'<img alt="" src="'+byId[id].photo+'">':'👕')+'<span class="role">'+esc(byId[id].category)+'</span></div>').join('');
+        html += '<div class="fa-outfit"><div class="title">'+esc(labels[o.occasion]||o.occasion)+'</div>'+
+          '<div class="why">'+esc(o.why||'')+'</div>'+
+          '<div class="pieces">'+(tiles||'<div class="p" style="font-size:11px;padding:4px">'+(CURRENT_LANG==='en'?'add items':'कपड़े जोड़ें')+'</div>')+'</div></div>';
+        spoken += (labels[o.occasion]||o.occasion)+': '+(valid.map(id=>byId[id].colour+' '+byId[id].category).join(', ')||'—')+'. ';
+      });
+      h.innerHTML = html; h.dataset.spoken = spoken; faSpeak(spoken);
+    }
+    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+  } catch(e){ faError(host); }
+}
+
 /* ════════ boot ════════ */
 function faBoot(){
   CURRENT_LANG = faDetectLang();
   document.documentElement.lang = CURRENT_LANG;
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   faMaybeOnboard();
+  faRenderWearers();
   faRenderWardrobe();
+  faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
 }

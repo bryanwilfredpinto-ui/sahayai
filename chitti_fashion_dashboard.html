@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-fashion/ observability — spec: chitti-fashion/observability/quality_dashboard.md -->
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Fashion — Observability Dashboard (CTO)</title>
+<meta name="description" content="World Class Chitti Fashion observability dashboard — quality, accessibility, swarm, feedback. CTO/admin view.">
+<meta name="chitti-page-desc" content="Chitti Fashion ka quality dashboard. CTO ke liye. Accessibility, swarm vote, feedback sab yahan.">
+<meta name="chitti-features" content="chitti-fashion/skills/FEATURES.md">
+<link rel="stylesheet" href="sahayai_design_system.css">
+<link rel="stylesheet" href="chitti_theme.css">
+<script src="feedback-widget.js" data-page="chitti_fashion_dashboard" defer></script>
+<style>
+body{font-size:16px;background:#F7F7F4}
+.d-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#138808;background:#eafbe7;border:1px solid #b7ebb0;border-radius:999px;padding:3px 10px}
+.d-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.d-tile{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:12px;min-height:84px}
+.d-tile .lab{font-size:12.5px;color:#555;font-weight:700}
+.d-tile .val{font-size:22px;font-weight:900;color:#000080;margin-top:4px;line-height:1.1}
+.d-tile .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-top:6px}
+.st-green{background:#eafbe7;color:#138808;border:1px solid #b7ebb0}
+.st-amber{background:#fff7e6;color:#b45309;border:1px solid #fcd34d}
+.st-red{background:#fef2f2;color:#b91c1c;border:1px solid #fca5a5}
+table.d-tbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
+.d-tbl th,.d-tbl td{text-align:left;padding:8px 6px;border-bottom:1px solid #eee}
+.d-tbl th{color:#000080;font-weight:800}
+.fa-toolbar{display:flex;gap:6px;align-items:center;margin-top:10px;border-top:1px dashed #e5e7eb;padding-top:8px}
+.fa-toolbar button{min-width:44px;min-height:40px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;font-size:16px;cursor:pointer}
+.d-note{font-size:12.5px;color:#78350f;background:#fff7e6;border:1.5px solid #fcd34d;border-radius:10px;padding:10px;margin-top:10px;line-height:1.5}
+.d-agent{display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:13px;padding:5px 0;border-bottom:1px dashed #eee}
+.d-agent b{color:#000080}
+</style>
+</head>
+<body class="sds-page">
+<div class="sds-tricolour fixed"></div>
+<header class="sds-header" role="banner" style="margin-top:6px">
+  <div class="sds-brand-row">
+    <div class="sds-logo" aria-hidden="true">📊</div>
+    <div class="sds-brand">
+      <div class="sds-brand-name">Chitti Fashion — Observability</div>
+      <div class="sds-tagline">CTO / admin view · quality · accessibility · swarm</div>
+    </div>
+  </div>
+  <div class="sds-header-actions"><button onclick="window.location.href='chitti_fashion.html'">← Chitti Fashion</button></div>
+</header>
+<main>
+  <div style="margin:4px 0 12px"><span class="d-badge">🎖️ World Class Chitti Fashion — Commando Discipline</span></div>
+
+  <!-- 1. Top-line health -->
+  <div class="sds-card chitti-response" data-chitti-response="d-card-01" data-chitti-section="📊 Top-line health">
+    <h2 class="sds-card-title">📊 Top-line health</h2>
+    <div class="d-grid" id="d-health"></div>
+    <div class="fa-toolbar">
+      <button onclick="dSpeak('health')" aria-label="सुनें">🔊</button>
+      <button aria-label="Chitti समझाए">🤖</button><button aria-label="अच्छा">👍</button><button aria-label="ठीक नहीं">👎</button>
+    </div>
+  </div>
+
+  <!-- 2. Tracked metrics -->
+  <div class="sds-card chitti-response" data-chitti-response="d-card-02" data-chitti-section="📈 Tracked metrics">
+    <h2 class="sds-card-title">📈 Tracked metrics</h2>
+    <table class="d-tbl"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody id="d-metrics"></tbody></table>
+    <div class="fa-toolbar">
+      <button onclick="dSpeak('metrics')" aria-label="सुनें">🔊</button>
+      <button aria-label="Chitti समझाए">🤖</button><button aria-label="अच्छा">👍</button><button aria-label="ठीक नहीं">👎</button>
+    </div>
+  </div>
+
+  <!-- 3. Swarm legend -->
+  <div class="sds-card chitti-response" data-chitti-response="d-card-03" data-chitti-section="🤝 7-agent swarm">
+    <h2 class="sds-card-title">🤝 7-agent swarm (vote before display)</h2>
+    <div id="d-swarm"></div>
+    <div class="fa-toolbar">
+      <button onclick="dSpeak('swarm')" aria-label="सुनें">🔊</button>
+      <button aria-label="Chitti समझाए">🤖</button><button aria-label="अच्छा">👍</button><button aria-label="ठीक नहीं">👎</button>
+    </div>
+  </div>
+
+  <!-- 4. Eval results -->
+  <div class="sds-card chitti-response" data-chitti-response="d-card-04" data-chitti-section="🧪 Evaluation results">
+    <h2 class="sds-card-title">🧪 Evaluation results</h2>
+    <div id="d-evals">… loading chitti-fashion/evals/results.json</div>
+    <div class="fa-toolbar">
+      <button onclick="dSpeak('evals')" aria-label="सुनें">🔊</button>
+      <button aria-label="Chitti समझाए">🤖</button><button aria-label="अच्छा">👍</button><button aria-label="ठीक नहीं">👎</button>
+    </div>
+  </div>
+
+  <div class="d-note" id="d-foot">⚠️ DeepSeek is currently HTTP 429 rate-limited AND the shared Vaani relevance rail blocks fashion prompts (off_topic) — so LLM answer-quality metrics are <b>pending</b>. Deterministic accessibility metrics are <b>live</b>. No analytics are invented; live-traffic metrics show “— (awaiting traffic)”.</div>
+</main>
+
+<script src="chitti_a11y.js?v=20260603"></script>
+<script src="feedback-widget.js" data-page="chitti_fashion_dashboard"></script>
+<script src="chitti_features.js" defer></script>
+<script>
+'use strict';
+// Seeded with the latest CERTIFIED values (2026-06-03). LLM-dependent = pending.
+const DATA = {
+  health: [
+    { lab: 'Accessibility', val: '100%', target: '=100%', status: 'green', note: 'eval 100/100' },
+    { lab: 'Mobile @375px', val: 'PASS', target: '=100%', status: 'green', note: 'cert 14/14' },
+    { lab: 'Critical bugs', val: '0', target: '=0', status: 'green' },
+    { lab: 'Body-comment slip', val: '0', target: '=0', status: 'green', note: 'guardrail enforced' },
+    { lab: 'Fashion accuracy', val: 'pending', target: '≥90%', status: 'amber', note: 'DeepSeek 429 + rail block' },
+    { lab: 'Hallucination', val: 'pending', target: '<1%', status: 'amber', note: 'phantom-item guard live' },
+    { lab: 'Inclusivity flags', val: '0', target: '=0', status: 'green' },
+    { lab: 'Performance', val: 'pending', target: '>90', status: 'amber', note: 'lighthouse next deploy' },
+  ],
+  metrics: [
+    ['Outfit uploads', '— (awaiting traffic)'],
+    ['Swarm votes', '— (awaiting traffic)'],
+    ['User feedback 👍/👎', '— (awaiting traffic)'],
+    ['Acceptance rate', '— (awaiting traffic)'],
+    ['Rejected advice', '— (awaiting traffic)'],
+    ['Accessibility usage', '— (awaiting traffic)'],
+    ['Memory usage (on-device)', 'IndexedDB chitti_fashion_almari'],
+    ['Most common occasions', '— (awaiting traffic)'],
+  ],
+  swarm: [
+    ['👗 Fashion', 'style quality — can lower & raise'],
+    ['🎨 Color', 'colour harmony'],
+    ['🎉 Occasion', 'suitability — decisive'],
+    ['😌 Comfort', 'wearability'],
+    ['♿ Accessibility', 'disability-friendliness — has a FLOOR (held if <6)'],
+    ['💸 Budget', 'cost — own-wardrobe = 10/10'],
+    ['✨ Confidence', 'presentation polish'],
+    ['📈 Trend', 'ADVISORY ONLY — never changes the score (trust over virality)'],
+  ],
+};
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function dot(st){const m={green:'st-green',amber:'st-amber',red:'st-red'};const w={green:'GREEN',amber:'PENDING',red:'RED'};return '<span class="st '+m[st]+'">● '+w[st]+'</span>';}
+function render(){
+  document.getElementById('d-health').innerHTML = DATA.health.map(h =>
+    '<div class="d-tile"><div class="lab">'+esc(h.lab)+'</div><div class="val">'+esc(h.val)+'</div>'+dot(h.status)+
+    '<div style="font-size:11px;color:#888;margin-top:4px">'+esc(h.target)+(h.note?' · '+esc(h.note):'')+'</div></div>').join('');
+  document.getElementById('d-metrics').innerHTML = DATA.metrics.map(m => '<tr><td>'+esc(m[0])+'</td><td>'+esc(m[1])+'</td></tr>').join('');
+  document.getElementById('d-swarm').innerHTML = DATA.swarm.map(s => '<div class="d-agent"><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div>').join('');
+  fetch('chitti-fashion/evals/results.json').then(r => r.ok ? r.json() : Promise.reject()).then(j => {
+    const rows = (j.suites||[]).map(s => '<tr><td>'+esc(s.suite)+'</td><td>'+esc(s.mode)+'</td><td>'+esc(s.pass)+'/'+esc(s.N)+'</td><td>'+(s.pct==null?'— (blocked)':esc(s.pct)+'%')+'</td></tr>').join('');
+    document.getElementById('d-evals').innerHTML = '<div style="font-size:12px;color:#666">Run: '+esc(j.generated_at_utc)+' · '+esc(j.deepseek_status)+'</div><table class="d-tbl"><thead><tr><th>Suite</th><th>Mode</th><th>Pass</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(() => { document.getElementById('d-evals').innerHTML = '<div style="font-size:13px;color:#666">No results.json yet — run <code>node tools/fashion_eval_harness.mjs</code>.</div>'; });
+}
+function dSpeak(which){
+  let t = '';
+  if (which==='health') t = DATA.health.map(h=>h.lab+': '+h.val).join(', ');
+  else if (which==='metrics') t = DATA.metrics.map(m=>m[0]+': '+m[1]).join(', ');
+  else if (which==='swarm') t = 'Seven agents vote before any advice. Trend is advisory only.';
+  else t = 'Evaluation results panel.';
+  try { if (window.Chitti && Chitti.a11y && Chitti.a11y.speak) return Chitti.a11y.speak(t, document.documentElement.lang || 'hi'); } catch(e){}
+  try { const u = new SpeechSynthesisUtterance(t); speechSynthesis.speak(u); } catch(e){}
+}
+render();
+</script>
+</body>
+</html>

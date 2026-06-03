@@ -2,6 +2,27 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-03 — Chitti Fashion CFOS v1.0 built + certified (proof, not architecture)
+
+**Trigger:** Sire — "Finish the product. Return with proof, not architecture updates."
+
+Real Playwright cert + eval harness against a locally-served copy of the rebuilt
+`chitti_fashion.html` + live `chitti-vaani-api`. Full report:
+[chitti-fashion/CERTIFICATION_REPORT.md](chitti-fashion/CERTIFICATION_REPORT.md).
+
+| Proof | Result |
+|---|---|
+| Responsive cert ([tools/cert_fashion.mjs](tools/cert_fashion.mjs)) | 🟢 **14/14** — real screenshots @375/768/1280 |
+| 5 frontend gates G1–G5 | 🟢 all pass (G3 disability modal visually confirmed) |
+| 5 user journeys ([tools/cert_fashion_journeys.mjs](tools/cert_fashion_journeys.mjs)) | 🟢 **5/5** — wardrobe-memory roundtrip + blind/deaf/illiterate paths; screenshots saved |
+| Accessibility eval ([tools/fashion_eval_harness.mjs](tools/fashion_eval_harness.mjs), 100 cases) | 🟢 **100/100 (100%)** deterministic vs live DOM |
+| Outfit / Occasion accuracy (100+100 cases) | ⛔ **BLOCKED** — DeepSeek 429 **AND** Vaani relevance rail returns fashion as `off_topic`. Backend fix in `chitti-vaani-api` (allowlist fashion intent / dedicated mode); harness auto-scores once LLM answers. |
+| Product features | 🟢 hero "Dress Me From What I Own", multi-occasion "Build my week", 10 occasions, 7-agent swarm panel, Describe-My-Outfit, Fashion Twin, Family Mode, Budget tiers, Learn |
+| Observability dashboard | 🟢 [chitti_fashion_dashboard.html](chitti_fashion_dashboard.html) (CTO view) |
+
+CFOS operating system: 61 docs under [chitti-fashion/](chitti-fashion/).
+**Standing backend blocker for CTO:** relevance-rail allowlist + DeepSeek funding — the ONLY thing between this page and a real fashion-accuracy number.
+
 ## 2026-06-03 — chitti-news-ai v0.3 Intelligence Aggregator LIVE
 
 **Pivot:** From a 4-tab "AI explains one article" reader → a **per-profession career-intelligence aggregator** (CHITTI_NEWS_AI_MASTER_SPEC v0.3 §2 doctrine: *"News is the product. Career intelligence is the product. LLMs are enhancements, not dependencies."*)

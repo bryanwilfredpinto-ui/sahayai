@@ -1,0 +1,1002 @@
+[
+ {
+  "id": "A001",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "script[src*=\"feedback-widget\"]",
+  "expect": "present",
+  "gate": "G1",
+  "severity": "blocker",
+  "rationale": "per-box widget for spoken/feedback"
+ },
+ {
+  "id": "A002",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response]",
+  "expect": "count>=9",
+  "gate": "G1",
+  "severity": "blocker",
+  "rationale": "each response box gets 4 icons"
+ },
+ {
+  "id": "A003",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "script[src*=\"chitti_a11y\"]",
+  "expect": "present",
+  "gate": "G2",
+  "severity": "blocker",
+  "rationale": "a11y substrate (lang, read-page, ISL)"
+ },
+ {
+  "id": "A004",
+  "user": "illiterate",
+  "check_type": "behaviour",
+  "selector_or_action": "first_visit_profile",
+  "expect": "profile-or-onboarding-modal",
+  "gate": "G3",
+  "severity": "blocker",
+  "rationale": "first-visit disability profile"
+ },
+ {
+  "id": "A005",
+  "user": "blind",
+  "check_type": "aria",
+  "selector_or_action": "html[lang]",
+  "expect": "lang-2-letter",
+  "gate": "G4",
+  "severity": "blocker",
+  "rationale": "screen reader + Voice Factory voice"
+ },
+ {
+  "id": "A006",
+  "user": "deaf",
+  "check_type": "isl",
+  "selector_or_action": "isl_loaded",
+  "expect": "script-or-runtime",
+  "gate": "G5",
+  "severity": "blocker",
+  "rationale": "ISL panel for deaf users"
+ },
+ {
+  "id": "A007",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-hero\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A008",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-01\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A009",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-02\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A010",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-03\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A011",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-04\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A012",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-05\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A013",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-06\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A014",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-07\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A015",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "[data-chitti-response=\"fa-card-08\"] .fa-toolbar button",
+  "expect": "count>=4",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "speaker+explain+thumbs on this card"
+ },
+ {
+  "id": "A016",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": ".fa-tabbar button",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A017",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-dressme",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A018",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": ".fa-btn",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A019",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": ".fa-toolbar button",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A020",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#lang-select",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A021",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": ".fa-chip",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "48px target for limited mobility"
+ },
+ {
+  "id": "A022",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"almari\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A023",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"review\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A024",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"occasion\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A025",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"budget\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A026",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"learn\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A027",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": ".fa-tabbar button[data-tab=\"family\"]",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A028",
+  "user": "limited_mobility",
+  "check_type": "keyboard",
+  "selector_or_action": "#fa-dressme",
+  "expect": "focusable",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "keyboard-only navigation"
+ },
+ {
+  "id": "A029",
+  "user": "deaf",
+  "check_type": "no_colour_alone",
+  "selector_or_action": ".fa-badge, .free-pill, .fa-tier .lab",
+  "expect": "present",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "status carried by word+icon, not colour"
+ },
+ {
+  "id": "A030",
+  "user": "deaf",
+  "check_type": "caption",
+  "selector_or_action": ".fa-result, .sds-card",
+  "expect": "text-rendered",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "every result has visible text"
+ },
+ {
+  "id": "A031",
+  "user": "mute",
+  "check_type": "dom",
+  "selector_or_action": "#fa-add-file",
+  "expect": "present",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "add wardrobe by photo, no speech"
+ },
+ {
+  "id": "A032",
+  "user": "mute",
+  "check_type": "dom",
+  "selector_or_action": "#fa-add-cat",
+  "expect": "present",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "category by dropdown, no speech"
+ },
+ {
+  "id": "A033",
+  "user": "mute",
+  "check_type": "dom",
+  "selector_or_action": "#fa-add-occasions .fa-chip",
+  "expect": "count>=3",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "occasion by tap chips"
+ },
+ {
+  "id": "A034",
+  "user": "mute",
+  "check_type": "dom",
+  "selector_or_action": "#fa-occasion-chips",
+  "expect": "present",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "occasion selectable by tap"
+ },
+ {
+  "id": "A035",
+  "user": "illiterate",
+  "check_type": "spoken",
+  "selector_or_action": "faSpeak",
+  "expect": "function-present",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "everything can be spoken"
+ },
+ {
+  "id": "A036",
+  "user": "illiterate",
+  "check_type": "dom",
+  "selector_or_action": ".fa-tabbar button",
+  "expect": "emoji-labelled",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "picture/emoji menus"
+ },
+ {
+  "id": "A037",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "faDescribeMine",
+  "expect": "function-present",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "describe my outfit aloud"
+ },
+ {
+  "id": "A038",
+  "user": "blind",
+  "check_type": "behaviour",
+  "selector_or_action": "result-dataset-spoken",
+  "expect": "supported",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "results carry spoken text"
+ },
+ {
+  "id": "A039",
+  "user": "elderly",
+  "check_type": "dom",
+  "selector_or_action": ".fa-btn, #fa-dressme",
+  "expect": "large-min-height",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "large touch + slow flow"
+ },
+ {
+  "id": "A040",
+  "user": "low_vision",
+  "check_type": "dom",
+  "selector_or_action": "body",
+  "expect": "base-font>=16px",
+  "gate": "four_user",
+  "severity": "major",
+  "rationale": "readable base font"
+ },
+ {
+  "id": "A041",
+  "user": "cognitive",
+  "check_type": "dom",
+  "selector_or_action": ".fa-tabbar",
+  "expect": "simple-tabbed-nav",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "one section at a time"
+ },
+ {
+  "id": "A042",
+  "user": "blind",
+  "check_type": "dom",
+  "selector_or_action": "IndexedDB:chitti_fashion_almari",
+  "expect": "on-device-store",
+  "gate": "four_user",
+  "severity": "blocker",
+  "rationale": "photos stay on device"
+ },
+ {
+  "id": "A043",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A044",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A045",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A046",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A047",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A048",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A049",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A050",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A051",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A052",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A053",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A054",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A055",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A056",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A057",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A058",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A059",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A060",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A061",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A062",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A063",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A064",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A065",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A066",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A067",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A068",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A069",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A070",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A071",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A072",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A073",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A074",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A075",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A076",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A077",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A078",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A079",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A080",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A081",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A082",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A083",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A084",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A085",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A086",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A087",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A088",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A089",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A090",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A091",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A092",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A093",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A094",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A095",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-add-colour@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A096",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-review-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A097",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-occasion-text@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ },
+ {
+  "id": "A098",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-budget-text@1280",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 1280px"
+ },
+ {
+  "id": "A099",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-learn-text@375",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 375px"
+ },
+ {
+  "id": "A100",
+  "user": "limited_mobility",
+  "check_type": "tap_target",
+  "selector_or_action": "#fa-wearer@768",
+  "expect": "min-44x40",
+  "gate": "four_user",
+  "severity": "minor",
+  "rationale": "input usable at 768px"
+ }
+]
