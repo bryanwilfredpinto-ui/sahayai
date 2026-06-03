@@ -42,8 +42,8 @@ log = logging.getLogger("routes.feed")
 
 bp = Blueprint("feed", __name__, url_prefix="/api/news-ai/feed")
 
-_STREAM_KINDS = {"news", "courses", "cert", "tool", "job", "scheme", "roadmap_node"}
-_AGG_KINDS    = {"cert", "tool", "job", "scheme", "roadmap_node"}
+_STREAM_KINDS = {"news", "courses", "cert", "tool", "job", "scheme", "roadmap_node", "grant", "research", "startup"}
+_AGG_KINDS    = {"cert", "tool", "job", "scheme", "roadmap_node", "grant", "research", "startup"}
 _DEFAULT_LIMIT = 20
 _MAX_LIMIT = 100
 

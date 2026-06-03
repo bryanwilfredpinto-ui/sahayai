@@ -344,6 +344,7 @@ def classify_unlabeled_stream_items(*, kind: Optional[str] = None, limit: int = 
                 ProfessionRelevance.classifier_version == RULE_VERSION,
                 ProfessionRelevance.item_kind.in_([
                     "cert", "tool", "job", "scheme", "roadmap_node",
+                    "grant", "research", "startup",
                 ]),
             )
         )
