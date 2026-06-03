@@ -268,9 +268,15 @@ classes of terms render in **English (Latin script)** without transliteration:
 | Exchange / index names | NSE, BSE, Nifty, Sensex, Bank Nifty |
 | Drug salt names | Paracetamol, Atorvastatin, Metformin |
 | API / protocol names | UPI, IMPS, NEFT, FASTag, DigiLocker |
+| Brand / product names | Chitti, Vaani, Sahayai, Digital Twin, Simulator, AI, LLM, DPDP |
+| **Fashion domain vocabulary** (added 2026-06-04) | **Garment types:** kurta, saree, dupatta, chappal, jutti, lehenga, sherwani, anarkali, churidar, palazzo, shirt, pant, jeans, skirt, top, dress, suit, blazer, chino. **Fashion-technical:** fit, cut, contrast, undertone, confidence score, style, comfort. (Analogous to finance indicators / drug salts — domain proper-nouns + technical terms whose transliteration degrades comprehension.) |
 
-- Rationale: these are proper nouns / standards. Transliterating "आर.एस.आई"
-  for RSI degrades comprehension for the very users we serve.
+- Rationale: these are proper nouns / standards / domain vocabulary. Transliterating "आर.एस.आई"
+  for RSI — or "कुर्ता" notwithstanding, "fit"/"contrast" — degrades comprehension for the very users we serve.
+- **Everything OUTSIDE these allowlists must be in the active script** — common English
+  words (Outfit→पहनावा/உடை, expert→विशेषज्ञ, office→दफ़्तर, photo→तस्वीर, accessory) are
+  translated, verified 0-leakage. The Fashion page was de-Hinglished on 2026-06-04
+  (`tools/fa_dehinglish.py`); residual Latin is allowlist-only.
 - Surrounding prose is translated; the term itself is preserved verbatim.
 - This rule applies to text, voice (TTS pronounces the English letters),
   and ISL (fingerspell the English term).

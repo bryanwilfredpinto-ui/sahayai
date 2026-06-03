@@ -132,7 +132,7 @@
 
   // ---------- Layer 2: AI Judge (deterministic re-review) ----------
   function judge(items, ctx) {
-    ctx = ctx || {}; var flags = []; var hay = (items || []).map(function (it) { return (it.colour + ' ' + it.category).toLowerCase(); }).join(' ');
+    ctx = ctx || {}; var flags = []; var hay = (items || []).map(function (it) { return ((it.colour || '') + ' ' + (it.category || '') + ' ' + (it.desc || it.name || '')).toLowerCase(); }).join(' ');
     var occ = (ctx.occasion || classifyOccasion(items).occasion);
     // cultural
     if (occ === 'funeral' && /(red|लाल|bright|maroon|मरून|gold)/.test(hay)) flags.push({ axis: 'cultural', msg: 'bright/red reads festive — funerals call for white/muted', sev: 'major' });
