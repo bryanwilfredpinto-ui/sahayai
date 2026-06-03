@@ -102,11 +102,21 @@ await safe('profession_picker_aria', async () => {
 });
 
 // ---- 2c. Tap targets ≥ 48×48 ----
+// Per WCAG 2.5.5, inline text links (anchors inside flowing prose) are
+// exempt from the 44×44 target-size rule. We check buttons, selects,
+// role=button, and only those <a> elements that are NOT inline-in-prose
+// (i.e. inside <p>, <li>, <span>, <details>, or article body copy).
 await safe('tap_targets_48px', async () => {
   const small = await page.evaluate(() => {
-    const targets = document.querySelectorAll('button, a, select, [role="button"]');
+    const targets = document.querySelectorAll('button, select, [role="button"], a');
     const bad = [];
     targets.forEach(el => {
+      // Per WCAG 2.5.5 exemption: inline anchors in flowing text are exempt
+      // from the 44x44 target-size rule. We detect by computed display:inline.
+      if (el.tagName === 'A') {
+        const cs = window.getComputedStyle(el);
+        if (cs.display === 'inline') return;
+      }
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44)) {
         bad.push(`${el.tagName}.${el.className || ''}[${Math.round(r.width)}x${Math.round(r.height)}]`);
