@@ -41,6 +41,7 @@ from services import (
     news_scheduler,
     news_summary,
 )
+from services.category_classifier import classify_article
 
 log = logging.getLogger("routes.news")
 
@@ -289,3 +290,62 @@ def scheduler_status_route():
 def scheduler_trigger(job_id):
     _user_token_or_400()
     return jsonify(news_scheduler.trigger_now(job_id))
+
+
+# ─── Retroactive category reclassifier ───
+# Sire 2026-06-03 — trust-in-IA fix. Before this endpoint shipped,
+# clicking "Business" surfaced "West Indies vs Sri Lanka: Schedule…"
+# as the top card because NDTV's /business RSS mixed cricket into
+# business at the source. We now re-classify at ingest, but the 7000+
+# rows already in the DB still carry the polluted source.category.
+#
+# This endpoint walks every Article and re-classifies from title+
+# summary. Dry-run by default (?apply=0) so an audit pass costs nothing
+# and surfaces the counts before any UPDATE. Pass ?apply=1 + the
+# X-User-Token header to commit the corrected categories. Returns the
+# per-bank delta so we can see "Business shed 412 sports rows, gained
+# 17 from tech."
+
+@bp.post("/admin/reclassify")
+@with_db
+def admin_reclassify(db):
+    _user_token_or_400()
+    apply_changes = request.args.get("apply", "0").lower() in ("1", "true", "yes")
+    limit_raw = request.args.get("limit")
+    try:
+        limit = int(limit_raw) if limit_raw else None
+    except (TypeError, ValueError):
+        abort(400, description="limit must be an integer")
+
+    q = db.query(Article).order_by(Article.id.desc())
+    if limit:
+        q = q.limit(limit)
+
+    moves: dict = {}     # (from_cat, to_cat) -> count
+    examples: dict = {}  # (from_cat, to_cat) -> [titles]
+    scanned = 0
+    overridden = 0
+    for art in q.yield_per(500):
+        scanned += 1
+        new_cat = classify_article(art.title or "", art.summary or "", art.category)
+        if new_cat == art.category:
+            continue
+        overridden += 1
+        key = f"{art.category}->{new_cat}"
+        moves[key] = moves.get(key, 0) + 1
+        if len(examples.setdefault(key, [])) < 3:
+            examples[key].append({
+                "id": art.id, "source": art.source_name,
+                "title": (art.title or "")[:120],
+            })
+        if apply_changes:
+            art.category = new_cat
+    if apply_changes:
+        db.commit()
+    return jsonify({
+        "applied": apply_changes,
+        "scanned": scanned,
+        "overridden": overridden,
+        "moves": moves,
+        "examples": examples,
+    })

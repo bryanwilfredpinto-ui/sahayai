@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models.article import Article
 from models.source import Source
+from services.category_classifier import classify_article
 
 # Optional Cloudflare-bypass fetcher. Imported lazily — falling back to
 # requests-only behaviour if cloudscraper isn't installed in this env.
@@ -240,6 +241,16 @@ def fetch_source(db: Session, source: Source) -> dict:
             full_body = _strip_html(full_body_raw) if full_body_raw else ""
             published = _parse_published(entry)
 
+            # Sire 2026-06-03 — NDTV's /business RSS feed mixes cricket,
+            # politics, weather alerts and IPO news into the same firehose,
+            # so trusting source.category gave us "West Indies vs Sri
+            # Lanka cricket schedule" sitting in Business as the top
+            # card. Re-classify every article from its title+summary
+            # before we commit. The classifier is high-precision: it
+            # only overrides when confidence is strong (smoking-gun
+            # regex OR ≥2 distinct keyword pattern matches beating the
+            # source bank). Keeps source.category as fallback.
+            refined_cat = classify_article(title, summary_text, source.category)
             a = Article(
                 title=title,
                 title_hash=_title_hash(title),
@@ -253,7 +264,7 @@ def fetch_source(db: Session, source: Source) -> dict:
                 author=(entry.get("author") or None),
                 state=source.state,
                 language=source.language,
-                category=source.category,
+                category=refined_cat,
                 is_breaking=0,
                 importance=5,
                 published_at=published,
@@ -303,11 +314,14 @@ def _upsert_articles(db: Session, source: Source, items: list[dict], *, n_fetche
                         break
                     except Exception:  # noqa: BLE001
                         continue
+            json_summary = _strip_html(it.get("summary")) or ""
+            # Same reclassification pass as the RSS path — see comment above.
+            refined_cat = classify_article(title, json_summary, source.category)
             a = Article(
                 title=title,
                 title_hash=_title_hash(title),
                 link=link,
-                summary=(_strip_html(it.get("summary")) or "")[:2000] or None,
+                summary=(json_summary[:2000] or None),
                 content=None,
                 source_slug=source.slug,
                 source_name=source.display_name,
@@ -316,7 +330,7 @@ def _upsert_articles(db: Session, source: Source, items: list[dict], *, n_fetche
                 author=None,
                 state=source.state,
                 language=source.language,
-                category=source.category,
+                category=refined_cat,
                 is_breaking=0,
                 importance=5,
                 published_at=published,
