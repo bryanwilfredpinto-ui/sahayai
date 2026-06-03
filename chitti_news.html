@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="cab905d-2026-06-03" />
+  <meta name="chitti-build" content="2b77eba-msn-layout" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -75,60 +75,88 @@
     }
     .legal-bar strong { color: var(--saffron); }
 
-    /* ── Header ──────────────────────────────────────────────────── */
-    header { padding: 14px 16px 8px; border-bottom: 1px solid var(--rule); background: var(--canvas); }
-    .brand-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    /* ── Header (slim, MSN-style) ────────────────────────────────── */
+    header {
+      padding: 10px 14px; border-bottom: 1px solid var(--rule);
+      background: var(--canvas); display: flex; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+      position: sticky; top: 28px; z-index: 110;
+    }
     .brand-mark {
-      width: 40px; height: 40px; border-radius: 8px;
+      width: 32px; height: 32px; border-radius: 8px;
       background: linear-gradient(135deg, var(--saffron), var(--green));
-      color: #fff; font-weight: 800; font-size: 20px;
+      color: #fff; font-weight: 800; font-size: 16px;
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .brand-name { font-weight: 800; font-size: 20px; color: var(--navy); letter-spacing: -.01em; }
-    .brand-tag  { color: var(--muted); font-size: 13px; margin-top: 2px; }
-
-    /* ── §5 ONE language selector + state/category filters ──────── */
-    .filter-row {
-      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-      padding: 12px 16px; border-bottom: 1px solid var(--rule);
-      background: var(--surface);
-      position: sticky; top: 28px; z-index: 100;
-    }
-    .filter-row label {
-      font-size: 11px; color: var(--muted); font-weight: 700;
-      text-transform: uppercase; letter-spacing: .04em;
-    }
-    .filter-row select, .filter-row button {
-      padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px;
+    .brand-name { font-weight: 800; font-size: 18px; color: var(--navy); letter-spacing: -.01em; }
+    header .filter-mini { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+    header .filter-mini select {
+      padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px;
       background: var(--canvas); color: var(--text); font-weight: 600;
+      cursor: pointer; font-size: 12px;
+    }
+    header .refresh-btn {
+      padding: 6px 10px; border-radius: 999px; border: 0;
+      background: var(--saffron); color: #fff; font-weight: 700;
       cursor: pointer; font-size: 13px;
     }
-    .filter-row .refresh-btn {
-      background: var(--saffron); color: #fff; border-color: var(--saffron);
+    header .refresh-btn:hover { filter: brightness(.95); }
+
+    /* ── MSN-style sticky category tab strip ───────────────────── */
+    .cat-tabs {
+      position: sticky; top: 80px; z-index: 100;
+      background: var(--canvas); border-bottom: 1px solid var(--rule);
+      padding: 8px 14px;
+      display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
     }
-    .filter-row .refresh-btn:hover { filter: brightness(.95); }
+    .cat-tabs::-webkit-scrollbar { height: 4px; }
+    .cat-tabs::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+    .cat-tab {
+      padding: 6px 14px; border: 0; border-radius: 999px;
+      background: transparent; color: var(--muted); font-size: 13px;
+      font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .cat-tab:hover { color: var(--navy); }
+    .cat-tab.active { background: var(--saffron); color: #fff; }
 
     /* ── Main feed ───────────────────────────────────────────────── */
     main {
       max-width: 720px; margin: 0 auto;
-      padding: 16px 12px 80px;
-      display: flex; flex-direction: column; gap: 14px;
+      padding: 14px 12px 80px;
+      display: flex; flex-direction: column; gap: 12px;
     }
     .status-card {
-      padding: 16px; border: 1px solid var(--rule); border-radius: 12px;
-      background: var(--surface); color: var(--text); text-align: center;
+      padding: 20px 16px; border: 1px solid var(--rule); border-radius: 12px;
+      background: var(--canvas); color: var(--text); text-align: left;
     }
 
-    /* ── Article card — collapsed by default ────────────────────── */
+    /* ── Article card (compact / MSN-style) ───────────────────── */
     .art-card {
       background: var(--canvas);
-      border: 1px solid var(--rule); border-left: 4px solid var(--saffron);
-      border-radius: 12px; padding: 14px;
-      display: grid; grid-template-columns: 1fr 90px; gap: 12px;
-      cursor: pointer; transition: box-shadow .2s, border-color .2s;
+      border: 1px solid var(--rule);
+      border-radius: 10px; padding: 12px;
+      display: grid; grid-template-columns: 1fr 96px; gap: 12px;
+      cursor: pointer; transition: box-shadow .2s;
     }
-    .art-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.06); }
-    .art-card.expanded { cursor: default; border-left-color: var(--green); }
+    .art-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+    .art-card.expanded { cursor: default; }
+
+    /* ── Article card — FEATURED (first card, MSN hero) ───────── */
+    .art-card.featured {
+      grid-template-columns: 1fr; padding: 0;
+      border: 1px solid var(--rule); overflow: hidden;
+    }
+    .art-card.featured .art-thumb {
+      width: 100%; min-height: 200px; border: 0; border-radius: 0;
+      grid-column: 1 / -1; order: -1; margin: 0;
+    }
+    .art-card.featured .art-thumb.placeholder { min-height: 160px; }
+    .art-card.featured > div { padding: 14px; }
+    .art-card.featured .art-title { font-size: 19px; line-height: 1.3; }
+    .art-card.featured .art-meta { font-size: 11px; }
     .art-meta {
       font-size: 11px; color: var(--muted); font-weight: 700;
       text-transform: uppercase; letter-spacing: .04em;
@@ -277,66 +305,69 @@
 </script>
 
 <header>
-  <div class="brand-row">
-    <div class="brand-mark" aria-hidden="true">च</div>
-    <div style="flex:1; min-width: 140px;">
-      <div class="brand-name">Chitti News</div>
-      <div class="brand-tag" id="brand-tag">Your state · Your language · Your news</div>
-    </div>
+  <div class="brand-mark" aria-hidden="true">च</div>
+  <div class="brand-name">Chitti News</div>
+  <div class="filter-mini" role="group" aria-label="State and language">
+    <select id="pick-state" data-chitti-news-picker aria-label="State">
+      <option value="india">All India</option>
+      <option value="ap">Andhra Pradesh</option><option value="as">Assam</option>
+      <option value="br">Bihar</option><option value="cg">Chhattisgarh</option>
+      <option value="gj">Gujarat</option><option value="hr">Haryana</option>
+      <option value="hp">Himachal Pradesh</option><option value="jk">Jammu &amp; Kashmir</option>
+      <option value="ka">Karnataka</option><option value="kl">Kerala</option>
+      <option value="mp">Madhya Pradesh</option><option value="mh">Maharashtra</option>
+      <option value="mn">Manipur</option><option value="mg">Meghalaya</option>
+      <option value="ng">Nagaland</option><option value="or">Odisha</option>
+      <option value="pb">Punjab</option><option value="rj">Rajasthan</option>
+      <option value="tn">Tamil Nadu</option><option value="telangana">Telangana</option>
+      <option value="up">Uttar Pradesh</option><option value="wb">West Bengal</option>
+      <option value="northeast">Northeast</option>
+    </select>
+    <select id="pick-lang" data-chitti-news-picker aria-label="Language">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="mr">मराठी</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+      <option value="bn">বাংলা</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+      <option value="gu">ગુજરાતી</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="ur">اردو</option>
+    </select>
+    <button class="refresh-btn" type="button" onclick="loadFeed(true)" aria-label="Refresh news feed">🔄</button>
   </div>
 </header>
 
-<!-- §5 LOCKED: ONE language selector per page, alongside state + category filters -->
-<div class="filter-row" role="group" aria-label="Filter feed by state, language and category">
-  <label for="pick-state">State</label>
-  <select id="pick-state" data-chitti-news-picker aria-label="State">
-    <option value="india">All India</option>
-    <option value="ap">Andhra Pradesh</option><option value="as">Assam</option>
-    <option value="br">Bihar</option><option value="cg">Chhattisgarh</option>
-    <option value="gj">Gujarat</option><option value="hr">Haryana</option>
-    <option value="hp">Himachal Pradesh</option><option value="jk">Jammu &amp; Kashmir</option>
-    <option value="ka">Karnataka</option><option value="kl">Kerala</option>
-    <option value="mp">Madhya Pradesh</option><option value="mh">Maharashtra</option>
-    <option value="mn">Manipur</option><option value="mg">Meghalaya</option>
-    <option value="ng">Nagaland</option><option value="or">Odisha</option>
-    <option value="pb">Punjab</option><option value="rj">Rajasthan</option>
-    <option value="tn">Tamil Nadu</option><option value="telangana">Telangana</option>
-    <option value="up">Uttar Pradesh</option><option value="wb">West Bengal</option>
-    <option value="northeast">Northeast (cross)</option>
-  </select>
-
-  <label for="pick-lang">Language</label>
-  <select id="pick-lang" data-chitti-news-picker aria-label="Language">
-    <option value="en">English</option>
-    <option value="hi">हिन्दी</option>
-    <option value="mr">मराठी</option>
-    <option value="ta">தமிழ்</option>
-    <option value="te">తెలుగు</option>
-    <option value="bn">বাংলা</option>
-    <option value="kn">ಕನ್ನಡ</option>
-    <option value="ml">മലയാളം</option>
-    <option value="gu">ગુજરાતી</option>
-    <option value="pa">ਪੰਜਾਬੀ</option>
-    <option value="or">ଓଡ଼ିଆ</option>
-    <option value="ur">اردو</option>
-  </select>
-
-  <label for="pick-cat">Category</label>
-  <select id="pick-cat" data-chitti-news-picker aria-label="Category">
-    <option value="national">National</option>
-    <option value="state">State</option>
-    <option value="politics">Politics</option>
-    <option value="business">Business</option>
-    <option value="tech">Tech</option>
-    <option value="sports">Sports</option>
-    <option value="entertainment">Entertainment</option>
-    <option value="foryou">For You</option>
-    <option value="saved">Read Later</option>
-    <option value="cancelled">Cancelled</option>
-  </select>
-
-  <button class="refresh-btn" type="button" onclick="loadFeed(true)" aria-label="Refresh news feed">🔄 Refresh</button>
-</div>
+<!-- MSN-style category tabs (horizontal scroll). The hidden <select>
+     #pick-cat backs the picker logic + the LANG_SWITCH_FIRES cert gate,
+     while the visible tab buttons are what the user actually taps. -->
+<nav class="cat-tabs" role="tablist" aria-label="News categories">
+  <button class="cat-tab" data-cat="national" role="tab" type="button">National</button>
+  <button class="cat-tab" data-cat="state" role="tab" type="button">State</button>
+  <button class="cat-tab" data-cat="politics" role="tab" type="button">Politics</button>
+  <button class="cat-tab" data-cat="business" role="tab" type="button">Business</button>
+  <button class="cat-tab" data-cat="tech" role="tab" type="button">Tech</button>
+  <button class="cat-tab" data-cat="sports" role="tab" type="button">Sports</button>
+  <button class="cat-tab" data-cat="entertainment" role="tab" type="button">Entertainment</button>
+  <button class="cat-tab" data-cat="foryou" role="tab" type="button">For You</button>
+  <button class="cat-tab" data-cat="saved" role="tab" type="button">Read Later</button>
+  <button class="cat-tab" data-cat="cancelled" role="tab" type="button">Cancelled</button>
+</nav>
+<select id="pick-cat" data-chitti-news-picker aria-label="Category (mirrored by tabs)" style="display:none">
+  <option value="national">National</option>
+  <option value="state">State</option>
+  <option value="politics">Politics</option>
+  <option value="business">Business</option>
+  <option value="tech">Tech</option>
+  <option value="sports">Sports</option>
+  <option value="entertainment">Entertainment</option>
+  <option value="foryou">For You</option>
+  <option value="saved">Read Later</option>
+  <option value="cancelled">Cancelled</option>
+</select>
 
 <main>
   <div id="feed-root" role="feed" aria-busy="false"></div>
@@ -410,6 +441,7 @@ function onFilterChange() {
   };
   setFilter(f);
   document.documentElement.lang = f.lang;
+  syncCategoryTabs(f.cat);
   if (window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
     try { Chitti.a11y.setLanguage(f.lang, { manual: true, source: 'news-filter' }); }
     catch (e) {}
@@ -424,7 +456,36 @@ function hydratePickers() {
   document.getElementById('pick-lang').value  = f.lang;
   document.getElementById('pick-cat').value   = f.cat;
   document.documentElement.lang = f.lang;
+  syncCategoryTabs(f.cat);
 }
+
+function syncCategoryTabs(cat) {
+  document.querySelectorAll('.cat-tab').forEach(function (b) {
+    if (b.dataset.cat === cat) {
+      b.classList.add('active');
+      b.setAttribute('aria-selected', 'true');
+    } else {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    }
+  });
+}
+
+// Category tab clicks update the hidden <select> + fire onFilterChange.
+// One source of truth — the <select> remains canonical state for the
+// picker layer; tabs are presentation.
+document.addEventListener('click', function (e) {
+  const tab = e.target && e.target.closest && e.target.closest('.cat-tab');
+  if (!tab) return;
+  const cat = tab.dataset.cat;
+  if (!cat) return;
+  const sel = document.getElementById('pick-cat');
+  if (sel.value !== cat) {
+    sel.value = cat;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  syncCategoryTabs(cat);
+});
 
 // Sire 2026-06-03 — chitti_a11y.js substrate recognises #pick-lang as
 // a language dropdown (matches its `select#pick-lang` selector) and
@@ -505,9 +566,10 @@ function stripHtml(boxId, articleId) {
     + '</div>';
 }
 
-function articleCardHtml(a) {
+function articleCardHtml(a, featured) {
   ARTICLES[a.id] = a;
   const boxId = 'art-' + a.id;
+  const featuredCls = featured ? ' featured' : '';
   const meta = [
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
     fcBadge(a.factcheck),
@@ -520,7 +582,7 @@ function articleCardHtml(a) {
     : '<div class="art-thumb placeholder" aria-hidden="true">📰</div>';
 
   return ''
-    + '<article class="art-card" id="' + boxId + '" data-id="' + a.id + '"'
+    + '<article class="art-card' + featuredCls + '" id="' + boxId + '" data-id="' + a.id + '"'
     +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
     +   ' data-chitti-speak-id="' + a.id + '"'
     +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
@@ -589,7 +651,11 @@ function renderFeed(items, meta) {
     root.innerHTML = html;
     return;
   }
-  root.innerHTML = items.map(articleCardHtml).join('');
+  // MSN-style: first card gets the featured (hero) layout — full-width
+  // image + bigger headline. The rest render compact (text + thumb).
+  root.innerHTML = items.map(function (a, i) {
+    return articleCardHtml(a, i === 0);
+  }).join('');
 }
 
 function switchToCategory(cat) {
