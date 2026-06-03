@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="f16295a-2026-06-03" />
+  <meta name="chitti-build" content="rails-polish-2026-06-03" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -269,11 +269,18 @@
     .fc-unverified { background: rgba(107,114,128,.12); color: var(--muted); }
 
     /* §2 — Suppress the substrate-injected per-box feedback bar on
-       art-cards (the in-card .art-strip above IS the canonical 5-
-       element strip for chitti-news, per SKILLS.md #12). The substrate
-       continues to inject on every other Chitti page + on the sub-host
-       panels (take/explain/fact) inside art-cards when those load. */
-    .art-card + .chitti-fb-box-bar { display: none !important; }
+       art-cards / rail-cards / hero-card. Each of these carries its
+       own canonical strip (per SKILLS.md #12). The substrate continues
+       to inject on every other Chitti page + on the sub-host panels
+       (take/explain/fact) inside art-cards when those load. Without
+       this rule the 240 px rail cards stack a duplicate 5-icon bar
+       under every card and the layout breaks (Sire 2026-06-03). */
+    .art-card  + .chitti-fb-box-bar,
+    .rail-card + .chitti-fb-box-bar,
+    .hero-card + .chitti-fb-box-bar { display: none !important; }
+    /* Belt-and-braces: also suppress anything the substrate might
+       inject INSIDE a rail-card. We render our own mini-strip. */
+    .rail-card .chitti-fb-box-bar { display: none !important; }
 
     /* ── Amazon-style home rails (only on National tab) ───────────── */
     .rail-section { margin: 18px 0 6px; }
@@ -319,11 +326,21 @@
       background-size: cover; background-position: center;
       background-color: var(--surface);
       border-bottom: 1px solid var(--rule);
+      position: relative;
     }
     .rail-card .rail-thumb.placeholder {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,153,51,.18) 0%, transparent 55%),
+        radial-gradient(circle at 70% 70%, rgba(19,136,8,.14) 0%, transparent 55%),
+        linear-gradient(135deg, #FFF6EC 0%, #E6F4E6 100%);
       display: flex; align-items: center; justify-content: center;
-      font-size: 36px; color: var(--saffron); opacity: .65;
+      font-size: 44px; color: var(--saffron); opacity: 1;
     }
+    /* Hide the substrate's yellow "Suno"/save pills inside or
+       attached to rail cards. The rail-card carries its own 4-icon
+       mini-strip — extra pills make the 240 px card unreadable. */
+    .rail-card [data-chitti-pill],
+    .rail-card .chitti-fb-pill { display: none !important; }
     .rail-card .rail-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; }
     .rail-card .rail-meta {
       font-size: 10px; font-weight: 800; color: var(--muted);
@@ -369,8 +386,12 @@
       background-color: var(--surface);
     }
     .hero-card .hero-thumb.placeholder {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(255,153,51,.22) 0%, transparent 55%),
+        radial-gradient(circle at 75% 75%, rgba(19,136,8,.18) 0%, transparent 55%),
+        linear-gradient(135deg, #FFF6EC 0%, #E6F4E6 100%);
       display: flex; align-items: center; justify-content: center;
-      font-size: 64px; color: var(--saffron); opacity: .6;
+      font-size: 72px; color: var(--saffron); opacity: 1;
     }
     .hero-card .hero-body { padding: 16px 18px 18px; }
     .hero-card .hero-eyebrow {
@@ -767,10 +788,14 @@ function railCardHtml(a) {
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
   return ''
+    // Note: NO data-chitti-response here — rail cards already carry
+    // their own mini 4-icon strip below. Marking them as a "response box"
+    // would cause chitti_a11y.js's feedback-widget.js to inject ANOTHER
+    // strip after each card, doubling icons and breaking the 240 px
+    // layout. The substrate's per-box strip is suppressed for
+    // .art-card via CSS in this file; rail-card uses the same approach
+    // (rule below) for safety.
     + '<article class="rail-card" id="' + boxId + '" data-id="' + a.id + '"'
-    +   ' data-chitti-response data-chitti-speak-handler="speakArticle"'
-    +   ' data-chitti-speak-id="' + a.id + '"'
-    +   ' data-chitti-section="' + esc(a.title || 'News article') + '"'
     +   ' role="button" tabindex="0"'
     +   ' aria-label="Tap to hear the entire news"'
     +   ' onclick="onHomeCardTap(' + a.id + ')"'
