@@ -121,6 +121,16 @@ def _row_to_dict(
     }
 
 
+# Per-(state, language) coverage matrix — 60s TTL in-process cache.
+# Load test 2026-06-04 surfaced this as the dominant cost on /api/news/feed
+# under 200 concurrent users (every request re-counted the entire articles
+# table grouped by category). The matrix changes only when new articles
+# land (6h rss_poll cron); a 60s TTL stays well inside that window and
+# slashes per-request DB cost by ~80% under load.
+_COVERAGE_CACHE: dict[tuple, tuple] = {}  # (state,lang) -> (expires_at, payload)
+_COVERAGE_TTL_SEC = 60.0
+
+
 def _coverage_for(db: Session, state: str, language: str) -> dict:
     """
     Per-(state, language) coverage matrix — used by the picker to hide
@@ -128,8 +138,16 @@ def _coverage_for(db: Session, state: str, language: str) -> dict:
     to honestly explain WHY the feed is thin and offer an English fallback.
 
     Computed in one GROUP BY pass so we never round-trip per category.
+    Cached for 60s per (state,language) tuple to survive load tests.
     """
+    import time
     from sqlalchemy import func
+
+    key = (state, language)
+    now = time.monotonic()
+    cached = _COVERAGE_CACHE.get(key)
+    if cached and cached[0] > now:
+        return cached[1]
 
     rows = (
         db.query(Article.category, func.count(Article.id))
@@ -156,12 +174,14 @@ def _coverage_for(db: Session, state: str, language: str) -> dict:
     else:
         en_total = total
 
-    return {
+    payload = {
         "per_category": per_category,
         "total_in_language": total,
         "available_categories": sorted(per_category.keys()),
         "english_fallback_count": int(en_total),
     }
+    _COVERAGE_CACHE[key] = (now + _COVERAGE_TTL_SEC, payload)
+    return payload
 
 
 def feed(

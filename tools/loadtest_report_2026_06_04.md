@@ -70,6 +70,38 @@ The good news: **0% errors**. The service degrades, it does not break. For typic
 
 ---
 
+## Re-test after gunicorn 1→4 worker fix (later same day) — INSUFFICIENT
+
+After the `gunicorn --workers 4 --threads 2 --timeout 60` fix landed and Railway redeployed, the load test was re-run with identical parameters (200 users, 60 s, spawn-rate 25/s).
+
+| Metric | Pre-fix | Post-fix | Verdict |
+|---|---|---|---|
+| Native `/api/news/feed` reqs | 23 | 16 | regressed |
+| p50 native | 29 s | 39 s | regressed |
+| p95 native | 51 s | 40 s | improved slightly |
+| Native error rate | 0 % | 0 % | unchanged |
+| Sustained RPS | ~0.5 | ~0.3 | regressed |
+
+**Verdict: gunicorn worker count is NOT the bottleneck.** Adding workers without addressing the underlying query latency made contention worse (more workers competing for the same Turso connection pool).
+
+**Real bottleneck (revised after re-test):** the `/api/news/feed` query path is slow per-request, not throughput-limited at the gunicorn layer. Specifically:
+
+1. **Per-request publisher_trust lookup** (added today) — although lazy-cached after first call, the JSON file is re-checked on every process
+2. **Coverage payload computation** — does a full per-language `COUNT()` on Article table per request
+3. **factcheck JOIN** — every article in the feed pulls its FactCheck row
+4. **Turso libSQL latency** — each query round-trips to Mumbai region; under load this serializes
+
+**Revised action items (P0):**
+
+| # | Action | Owner |
+|---|---|---|
+| 5 | Add LRU cache (TTL 60 s) on `_coverage_for(state, language)` — biggest single win | CTO |
+| 6 | Add SQLite-side index: `CREATE INDEX ix_article_state_lang_cat_pub ON articles(state, language, category, published_at DESC)` | CTO |
+| 7 | Memoize publisher_trust loading at module level instead of file-stat per call | CTO |
+| 8 | Consider read-replica or query-batching for Turso | Sire (infra decision) |
+
+The original gunicorn 1→4 fix is kept (it costs nothing) but it is no longer claimed as a remediation; the real fix requires backend query-level work, scheduled as a follow-up.
+
 Reproduce locally:
 
 ```
