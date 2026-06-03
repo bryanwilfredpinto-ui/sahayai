@@ -344,6 +344,14 @@ def generate_for(db: Session, article: Article) -> dict:
     return {"ok": True, "insight": article.chitti_insight}
 
 
+# Throttle between calls. Tuned for the worst-case provider — Gemini
+# 2.0 Flash free tier has a 15 RPM hard cap; 5 s/article = 12 RPM
+# comfortably under that. DeepSeek paid tier accepts ~50 RPM but the
+# extra latency here is worth the cross-provider robustness.
+# Tunable via INSIGHT_THROTTLE_S env when on a higher-quota tier.
+_THROTTLE_S = float(os.environ.get("INSIGHT_THROTTLE_S", "5.0"))
+
+
 def sweep_missing(db: Session, *, limit: int = 30, lookback_hours: int = 48) -> dict:
     """
     Walk recently-fetched articles missing an insight and try to
@@ -355,7 +363,14 @@ def sweep_missing(db: Session, *, limit: int = 30, lookback_hours: int = 48) -> 
 
     Only English articles for v1 — DeepSeek's Indic quality is uneven
     and the validators are tuned for English bodies.
+
+    Rate-limit handling: between successive calls we sleep
+    INSIGHT_THROTTLE_S (default 1.2 s). On HTTP 429 we also short-circuit
+    out of the rest of the batch — burning quota retrying when the
+    provider is throttling us is a waste; the scheduler will pick up
+    the remaining rows on the next interval (15 min).
     """
+    import time
     from sqlalchemy import desc
     cutoff = datetime.utcnow() - timedelta(hours=lookback_hours)
     rows = (
@@ -371,20 +386,35 @@ def sweep_missing(db: Session, *, limit: int = 30, lookback_hours: int = 48) -> 
     )
     accepted = rejected = errored = 0
     reject_reasons: dict[str, int] = {}
-    for art in rows:
+    rate_limited = False
+    for i, art in enumerate(rows):
+        if rate_limited:
+            break
         r = generate_for(db, art)
         if r.get("ok"):
             accepted += 1
         elif r.get("reason", "").startswith("llm_"):
             errored += 1
+            if r.get("reason") == "llm_http_429":
+                # Provider says slow down — stop the whole batch, leave
+                # the rest for the next 15-min sweep.
+                rate_limited = True
         else:
             rejected += 1
             reject_reasons[r.get("reason", "?")] = reject_reasons.get(r.get("reason", "?"), 0) + 1
+        # Throttle between successful calls. Skip the sleep on the last
+        # iteration — no point holding the request open after the loop.
+        if i < len(rows) - 1 and not rate_limited:
+            time.sleep(_THROTTLE_S)
     return {
         "scanned": len(rows),
         "accepted": accepted,
         "rejected": rejected,
         "errored":  errored,
+        "rate_limited": rate_limited,
         "reject_reasons": reject_reasons,
-        "note": f"insight sweep: {accepted} new / {rejected} rejected / {errored} llm-errored",
+        "note": (
+            f"insight sweep: {accepted} new / {rejected} rejected / {errored} llm-errored"
+            + (" — RATE-LIMITED, paused" if rate_limited else "")
+        ),
     }
