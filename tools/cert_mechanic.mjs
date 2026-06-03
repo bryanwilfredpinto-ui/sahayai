@@ -91,6 +91,22 @@ for (const P of PAGES) {
     check(`${P.label} G5 ISL (script or runtime)`, tag || rt, `script:${tag} runtime:${rt}`);
   });
 
+  // ---- 2b. RENDER SANITY: no raw i18n keys visible + real content (catches the
+  //         mid-deploy / stale-cache broken render Sire reported 2026-06-04) ----
+  await safe(`${P.label}_render_sanity`, async () => {
+    const r = await page.evaluate(() => {
+      const txt = document.body.innerText || '';
+      const rawKeys = /\b(mb|mc)\.(title|tag|swarm)\b/.test(txt); // unresolved data-vai-i18n
+      const brand = (document.querySelector('.sds-brand-name') || {}).textContent || '';
+      const home = document.querySelector('#mb-tab-home, #mc-tab-home');
+      const homeVisible = home && getComputedStyle(home).display !== 'none' && home.innerText.trim().length > 20;
+      const langSelects = document.querySelectorAll('#lang-select').length; // exactly 1, no collision
+      return { rawKeys, brand, homeVisible, langSelects, brandHasKey: /\.(title|tag)$/.test(brand.trim()) };
+    });
+    const ok = !r.rawKeys && !r.brandHasKey && r.homeVisible && r.langSelects === 1;
+    check(`${P.label} render sanity (no raw keys, content rendered, 1 lang select)`, ok, JSON.stringify(r));
+  });
+
   // ---- 3. Swarm card exists + 5 mandatory elements ----
   await safe(`${P.label}_swarm_card`, async () => {
     const r = await page.evaluate((card) => {
