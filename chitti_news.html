@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="9fb2708-2026-06-02" />
+  <meta name="chitti-build" content="cab905d-2026-06-03" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -289,7 +289,7 @@
 <!-- §5 LOCKED: ONE language selector per page, alongside state + category filters -->
 <div class="filter-row" role="group" aria-label="Filter feed by state, language and category">
   <label for="pick-state">State</label>
-  <select id="pick-state" onchange="onFilterChange()" aria-label="State">
+  <select id="pick-state" data-chitti-news-picker aria-label="State">
     <option value="india">All India</option>
     <option value="ap">Andhra Pradesh</option><option value="as">Assam</option>
     <option value="br">Bihar</option><option value="cg">Chhattisgarh</option>
@@ -306,7 +306,7 @@
   </select>
 
   <label for="pick-lang">Language</label>
-  <select id="pick-lang" onchange="onFilterChange()" aria-label="Language">
+  <select id="pick-lang" data-chitti-news-picker aria-label="Language">
     <option value="en">English</option>
     <option value="hi">हिन्दी</option>
     <option value="mr">मराठी</option>
@@ -322,7 +322,7 @@
   </select>
 
   <label for="pick-cat">Category</label>
-  <select id="pick-cat" onchange="onFilterChange()" aria-label="Category">
+  <select id="pick-cat" data-chitti-news-picker aria-label="Category">
     <option value="national">National</option>
     <option value="state">State</option>
     <option value="politics">Politics</option>
@@ -425,6 +425,29 @@ function hydratePickers() {
   document.getElementById('pick-cat').value   = f.cat;
   document.documentElement.lang = f.lang;
 }
+
+// Sire 2026-06-03 — chitti_a11y.js substrate recognises #pick-lang as
+// a language dropdown (matches its `select#pick-lang` selector) and
+// attaches its own handlers, which silently broke the inline
+// data-chitti-news-picker attribute on the select. Result:
+// changing language did not fetch new articles.
+//
+// Fix: bypass with a single document-level listener at the CAPTURE
+// phase so it fires BEFORE any substrate-attached bubble-phase
+// listener can interfere. Deduplication flag prevents double fires if
+// the user double-taps.
+let _pickerChangeInFlight = false;
+document.addEventListener('change', function (e) {
+  const t = e && e.target;
+  if (!t || !t.id) return;
+  if (t.id !== 'pick-state' && t.id !== 'pick-lang' && t.id !== 'pick-cat') return;
+  if (_pickerChangeInFlight) return;
+  _pickerChangeInFlight = true;
+  try { onFilterChange(); }
+  finally {
+    setTimeout(function () { _pickerChangeInFlight = false; }, 50);
+  }
+}, true);  // ← capture phase: runs BEFORE substrate listeners
 
 // ── API helpers ───────────────────────────────────────────────────
 async function api(path, opts) {
@@ -530,15 +553,54 @@ function articleCardHtml(a) {
 function renderFeed(items, meta) {
   const root = document.getElementById('feed-root');
   if (!items || items.length === 0) {
-    root.innerHTML = '<div class="status-card">'
-      + '<strong>No stories yet.</strong><br>'
-      + esc(meta && meta.speak_en
-            ? meta.speak_en
-            : 'Tap Refresh in a minute to try again.')
+    // Honest empty state. When backend returns the coverage payload, we
+    // show available_categories as one-tap switch buttons so the user
+    // can pick something that DOES have content in their chosen language.
+    // Sire 2026-06-03: "if language is Malayalam it should be in Malayalam,
+    // not English" — showing stale English content is wrong; the right
+    // answer is "no Malayalam X today, here is Malayalam Y instead."
+    const cov = (meta && meta.coverage) || {};
+    const cats = Array.isArray(cov.available_categories) ? cov.available_categories : [];
+    const f = getFilter();
+    let html = '<div class="status-card" style="padding:24px 16px;text-align:left;">'
+      + '<strong style="font-size:16px;color:var(--navy);">No stories yet.</strong><br>'
+      + '<div style="margin-top:8px;font-size:14px;">'
+      + esc(meta && meta.speak_en ? meta.speak_en : 'Tap Refresh in a minute.')
       + '</div>';
+    if (cats.length > 0) {
+      html += '<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">';
+      for (const c of cats) {
+        if (c === f.cat) continue;
+        html += '<button onclick="switchToCategory(\'' + esc(c) + '\')" '
+              + 'style="background:var(--saffron);color:#fff;border:0;border-radius:999px;'
+              + 'padding:8px 14px;font-weight:700;cursor:pointer;font-size:13px;">'
+              + 'Switch to ' + esc(c) + '</button>';
+      }
+      html += '</div>';
+    }
+    if (typeof cov.english_fallback_count === 'number' && cov.english_fallback_count > 0 && f.lang !== 'en') {
+      html += '<div style="margin-top:14px;font-size:13px;color:var(--muted);">'
+            + esc(cov.english_fallback_count) + ' stories available in English. '
+            + '<button onclick="switchToLanguage(\'en\')" style="background:none;color:var(--navy);'
+            + 'border:0;text-decoration:underline;cursor:pointer;font:inherit;padding:0;">'
+            + 'Switch to English?</button></div>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
     return;
   }
   root.innerHTML = items.map(articleCardHtml).join('');
+}
+
+function switchToCategory(cat) {
+  document.getElementById('pick-cat').value = cat;
+  const f = getFilter(); f.cat = cat; setFilter(f);
+  loadFeed(true);
+}
+function switchToLanguage(lang) {
+  document.getElementById('pick-lang').value = lang;
+  const f = getFilter(); f.lang = lang; setFilter(f);
+  loadFeed(true);
 }
 
 // ── Core actions ──────────────────────────────────────────────────

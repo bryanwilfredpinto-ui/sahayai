@@ -175,15 +175,21 @@ async function main() {
     const url = route.request().url();
     apiHits.push(url);
     if (url.includes('/api/news/feed')) {
+      // Match the language=… param so LANG_SWITCH_FIRES can verify
+      // the URL the page actually sent.
+      const langMatch = url.match(/language=([a-z]+)/);
+      const langParam = (langMatch && langMatch[1]) || 'en';
+      const items = langParam === 'en' ? MOCK_ARTICLES : [];
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          items: MOCK_ARTICLES,
-          count: MOCK_ARTICLES.length,
-          state: 'india', language: 'en', category: 'national',
-          speak_en: '2 stories.',
-          coverage: { per_category: { national: 1, state: 1 }, total_in_language: 2 },
+          items,
+          count: items.length,
+          state: 'india', language: langParam, category: 'national',
+          speak_en: items.length ? '2 stories.' : ('No stories in ' + langParam),
+          coverage: { per_category: { national: 1, state: 1 }, total_in_language: items.length,
+                      english_fallback_count: 10, available_categories: ['national', 'state'] },
         }),
       });
       return;
@@ -291,6 +297,24 @@ async function main() {
   add('§2 NO_DUPLICATE — no visible substrate bar adjacent to .art-card',
       dupCount === 0,
       dupCount === 0 ? 'none found' : `${dupCount} visible duplicates`);
+
+  // ── LANG_SWITCH_FIRES — selecting a different language MUST trigger
+  // a new /api/news/feed fetch with the new language parameter.
+  // Sire 2026-06-03: chitti_a11y.js substrate hijacked the onchange
+  // attribute on #pick-lang so changing language silently kept showing
+  // stale English content. Document-level capture-phase listener
+  // bypasses the hijack. This gate locks the behavior in.
+  const apiHitsAtSwitch = apiHits.length;
+  await page.selectOption('#pick-lang', 'ml');
+  await page.waitForTimeout(2000);
+  const newHits = apiHits.slice(apiHitsAtSwitch)
+                         .filter((u) => u.includes('/api/news/feed') && u.includes('language=ml'));
+  add('LANG_SWITCH_FIRES — selecting Malayalam triggers /api/news/feed?language=ml',
+      newHits.length > 0,
+      `apiHits since switch: ${apiHits.length - apiHitsAtSwitch}, ml fetches: ${newHits.length}`);
+  // Reset for downstream tests.
+  await page.selectOption('#pick-lang', 'en');
+  await page.waitForTimeout(1500);
 
   // ── §5 ONE_LANG_SEL — exactly one visible <select> for language ──
   const langSelects = await page.$$eval(
