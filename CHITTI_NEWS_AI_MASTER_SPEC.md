@@ -4,8 +4,8 @@
 aggregator for Bharat. **Intelligence aggregator, not AI content
 generator.**
 
-Last touched: **2026-05-29** · Version **0.2.0** · Status: **AGGREGATOR
-PIVOT — Phase 0 in flight**.
+Last touched: **2026-05-29** · Version **0.3.0** · Status: **RULES-FIRST
+PIVOT — Phase 0 deterministic build in flight**.
 
 > Read [`SAHAYAI_MASTER.md`](SAHAYAI_MASTER.md) first. This spec sits under
 > the platform-wide locked decisions there — never overrides them.
@@ -18,7 +18,8 @@ PIVOT — Phase 0 in flight**.
 |---|---|---|
 | 0.1.0 | 2026-05-14 | SKELETON — 10-tab surface, trust/ranker/discovery machinery |
 | 0.1.1 | 2026-05-23 | LOCK — discarded ranker/discovery; 4 tabs + per-article 🤖 explain only |
-| **0.2.0** | **2026-05-29** | **DOCTRINE — Intelligence Aggregator, not AI Content Generator. 7 aggregation streams × N profession lenses. AI classifies, translates, and explains — never generates substance.** |
+| 0.2.0 | 2026-05-29 (AM) | DOCTRINE — Intelligence Aggregator, not AI Content Generator. 7 aggregation streams × N profession lenses. AI classifies, translates, and explains — never generates substance. |
+| **0.3.0** | **2026-05-29 (PM)** | **RULES-FIRST. LLMs OUT of the classification critical path entirely. News + courses + certs + tools + jobs + govt + roadmap must function with every LLM provider offline. LLMs return as OPTIONAL enrichment only (summaries, explanations, recommendations) once the deterministic core ships and proves itself.** |
 
 The 2026-05-23 4-tab base is **kept honest**. The aggregator is a *layer
 on top* — never a replacement.
@@ -44,18 +45,28 @@ trust-first design, voice-out, ISL, and the four-user contract intact.
 
 ---
 
-## 2. Doctrine — LOCKED 2026-05-29
+## 2. Doctrine — LOCKED 2026-05-29 (REVISED PM)
 
-**Chitti is an Intelligence Aggregator, not an AI Content Generator.**
+**Chitti is an Intelligence Aggregator, not an AI Content Generator. The
+classification critical path is deterministic. LLMs are enhancement, not
+dependency.**
 
 - The primary source of value is **collecting, organizing, verifying,
   ranking, filtering, and personalizing free information**.
-- AI is used **only to enhance understanding** — classify items by
-  profession, translate to user's language, explain on demand,
-  summarise extractively (pull from the source, never invent).
-- **AI never generates the substance** — never fabricates a course that
-  doesn't exist, never invents a certificate, never makes up a job
-  posting, never hallucinates pros/cons.
+- **News is the product. Career intelligence is the product. LLMs are
+  enhancements, not dependencies.** A user must still receive AI news +
+  courses + certifications + tools + jobs + government programs + corporate
+  training + university programs **when every LLM provider is offline.**
+- Classification (profession tagging, source tagging, deduplication,
+  category routing) is **rules-only**. Keyword maps + source-default
+  tags + URL pattern rules + topic-field weighting. No Gemini calls,
+  no DeepSeek calls, no OpenAI calls in the critical path.
+- Every classification is **explainable.** Every API response that
+  surfaces a tagged item carries: `category`, `matched_keywords`,
+  `confidence`, `source` (the source URL on the item is one of the
+  source signals — the user can verify the trail).
+- **AI never generates the substance** — never fabricates a course,
+  never invents a certificate, never hallucinates a job posting.
 - Every item shown to the user **carries a source URL** that the user can
   open. No claim is made that cannot be traced back to a real public
   source.
@@ -64,6 +75,12 @@ trust-first design, voice-out, ISL, and the four-user contract intact.
 - **Free and publicly available information is preferred wherever
   possible.** Paid courses are surfaced only when honestly labelled
   with the cost; never hidden, never the default recommendation.
+- **LLMs are introduced ONLY after** the rules-only Phase 0 benchmark
+  passes (Software Developer F1 ≥ 0.85 with rules alone). When LLMs
+  return, they are **bound to enhancement roles only**: extractive
+  summaries, on-demand explanations, recommendations, career insights.
+  They never replace, override, or substitute for the deterministic
+  classification. The system fails open when LLMs are offline.
 
 ---
 
@@ -86,23 +103,66 @@ from real free public sources. AI's role is bounded per column.
 
 ---
 
-## 4. AI's redefined role (Gemini free tier, 1500 calls/day ceiling)
+## 4. Classifier — deterministic, explainable, LLM-free
 
-| AI role | Type | Call shape | Budget |
-|---|---|---|---|
-| **Profession classifier** | Few-shot multi-label classifier | 1 call per ingested item, returns array of profession labels | ~150 items/day × 1 = **150 calls** |
-| **Headline translator** | Per-language cache | 1 call per (item, language), only on first request | Lazy, cached forever — **~50 calls/day** |
-| **On-demand 🤖 explain** | Extractive + simplification (current `news_explain.py`) | 1 call per user tap | **~500 calls/day** budget |
-| **Daily "AI Impact Today" digest** | Extractive ranking of already-classified items | 1 call per profession per day | 13 professions × 1 = **13 calls** |
-| **Total** | | | **~700 calls/day** ≈ 50% of free-tier ceiling |
+The Phase 0 classifier is rules-only. Every profession tag emitted by the
+system has a traceable rule chain — no model weights, no calls to any
+external inference endpoint, no surprises.
 
-AI is **never asked to know a fact, generate a list, or invent a
-recommendation**. Every output is grounded in a specific source URL.
+### 4.1 Rule sources (combined)
 
-LLM provider is **env-var-driven** (`DEEPSEEK_URL` / `DEEPSEEK_MODEL` /
-`DEEPSEEK_API_KEY`). Per the [[project_deepseek_balance_exhausted_2026_05_27]]
-hijack, these point at Gemini 2.0 Flash today. Reverses to DeepSeek the
-moment DeepSeek is funded — no code change.
+| Signal | Where it lives | Weight |
+|---|---|---|
+| **Source-default tags** | `courses_sources.json` `default_professions` array per source | Highest — "every fast.ai course is for software-developer by default" |
+| **URL path patterns** | `courses_sources.json` `url_patterns` per source | High — e.g. `microsoft-learn` items at `/training/paths/azure-developer/` → software-developer |
+| **Title keyword hits** | `profession_registry.json` `intent_keywords` + `aliases` per profession, matched in `title` | Medium |
+| **Topics-field hits** | Same keywords matched in the item's `topics` field | Medium |
+| **Summary keyword hits** | Same keywords matched in `summary` | Low — summary tends to be noisier |
+| **Negative keyword exclusions** | `profession_registry.json` `exclude_keywords` per profession (e.g. *"for nurses"* in a title excludes software-developer) | Veto |
+
+Each signal contributes a numeric weight; the final per-profession score
+is summed and normalised to a `confidence ∈ [0, 1]`. Items above a per-
+profession `min_confidence` (default 0.5) emit a tag.
+
+### 4.2 Explainability contract (mandatory on every classified item)
+
+Every tag carries:
+
+```json
+{
+  "profession_slug": "software-developer",
+  "confidence": 0.82,
+  "matched_keywords": ["python", "github", "machine learning"],
+  "source_signals": ["source_default:fast-ai", "url_pattern:fast-ai-deep-learning"],
+  "rule_version": "v0.3-rules-2026-05-29"
+}
+```
+
+The UI must surface these on tap-and-hold per v0.3 §10 trust contract.
+**Every classification must be auditable end-to-end.**
+
+### 4.3 LLM enhancements (post-Phase-0 only)
+
+LLMs are introduced **only after** rules-only Phase 0 passes
+(Software Developer F1 ≥ 0.85). Permitted enhancement roles:
+
+| Enhancement | Allowed? | Constraint |
+|---|---|---|
+| Extractive summary (pull existing sentences from item description) | ✅ | Must work offline (extractive fallback to first 3 sentences when LLM down) |
+| On-demand `🤖 Chitti explain` (current `news_explain.py`) | ✅ | Honest empty state when LLM down |
+| Per-article career-insight bullets in user's language | ✅ | Optional layer above the rules-tagged item |
+| Translate headlines / category labels | ✅ | Cache forever; original-language fallback |
+| Profession classification | ❌ | **NEVER** — rules-only critical path |
+| Source tagging | ❌ | **NEVER** |
+| Course/cert/tool categorisation | ❌ | **NEVER** |
+| Deduplication | ❌ | **NEVER** |
+| Free/paid labelling | ❌ | **NEVER** — provider's verbatim text only |
+
+**Fail-open contract:** every aggregator endpoint must return useful
+content (news, courses, certs, tools, jobs, govt schemes) when every
+configured LLM provider is offline. CI test: boot with `DEEPSEEK_API_KEY`
+unset, `OPENAI_API_KEY` unset, `GEMINI_API_KEY` unset → all `/api/news-
+ai/feed/*` endpoints must respond 200 with real items.
 
 ---
 
@@ -185,27 +245,43 @@ chitti-news-ai/backend/
 
 ---
 
-## 8. Phase 0 — scope LOCKED 2026-05-29
+## 8. Phase 0 — scope LOCKED 2026-05-29 (REVISED PM)
 
-**Goal:** prove the full pipeline end-to-end for **one profession × one
-source-type** before scaling to 13 × 7.
+**Goal:** prove that Chitti News AI delivers useful, accurate, trustworthy
+results for one profession × one source-type **using rules alone, no LLM
+calls anywhere in the classification critical path**, before scaling to
+13 × 7.
 
 **Pick:** `software-developer` × `courses`.
 
-**Done when all 5 benchmark metrics pass** (else iterate; do **not**
-advance to all professions until Sire approves the benchmark):
+**Pass = ALL six metrics pass with rules-only.** Else iterate the rules;
+do **not** advance to all professions until Sire approves the benchmark.
 
 | Metric | Pass threshold |
 |---|---|
 | **Source coverage** | Ingested ≥ 100 courses from ≥ 6 of the 8 seeded providers |
-| **Classification accuracy** | F1 ≥ 0.85 on a hand-labelled 50-course holdout set for `software-developer` |
+| **Classification F1 (Software Developer, rules-only)** | **F1 ≥ 0.85** on a hand-labelled **200-record** benchmark dataset |
 | **Broken-link rate** | < 5 % of course URLs return non-2xx on HEAD probe |
-| **Official-source share** | ≥ 80 % of courses come from the provider's own domain (`nptel.ac.in`, `learn.microsoft.com`, etc.), not third-party catalogues |
+| **Official-source share** | ≥ 80 % of courses come from the provider's own domain |
 | **Free / paid labelling accuracy** | Spot-check 20 courses by hand; ≥ 90 % match the provider's declared price |
+| **Fail-open** | With every LLM env var unset, `GET /api/news-ai/feed/courses?profession=software-developer` returns 200 with ≥ 10 real items |
 
-Benchmark report lives at
-[`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md)
-and is committed alongside Phase 0 code.
+### Benchmark dataset
+
+- Hand-labelled **200 records**, stratified across the 8 sources.
+- Each record: `{course_id, source_slug, title, expected_labels: [<profession_slug>, …]}`.
+- Includes Sire's worked examples:
+  - NVIDIA CUDA course → `software-developer`
+  - Oncology AI conference → `oncologist`, `doctor`
+  - Precision agriculture drone training → `farmer`
+  - ATS optimization certification → `talent-acquisition`, `hr-professional`
+- Lives at `chitti-news-ai/backend/data/benchmark_200.json`, committed.
+
+### Benchmark output
+
+- Per-profession Precision, Recall, F1, false-positive list, false-negative list.
+- Per-rule contribution breakdown (how many tags came from source-default vs URL-pattern vs keyword).
+- Lives at [`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md), committed.
 
 ---
 

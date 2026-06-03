@@ -50,7 +50,34 @@ def _arg_int(key: str, default: int) -> int:
 
 
 def _course_to_dict(c: CourseV2, relevance: Optional[ProfessionRelevance]) -> dict:
-    """One course → JSON. Source attribution + classifier transparency are mandatory."""
+    """One course → JSON. Source attribution + classifier transparency are mandatory
+    per CHITTI_NEWS_AI_MASTER_SPEC v0.3 §4.2 explainability contract.
+
+    Every classified item carries:
+      - category          (the profession slug it was matched against)
+      - matched_keywords  (the actual keywords that fired the rule)
+      - confidence        (numeric, [0, 1])
+      - source            (provider attribution + the URL the user can open)
+    """
+    # Re-derive the explainability bundle from the live rules so re-tunes
+    # show up in the response without a full re-ingest. The cached
+    # confidence on ProfessionRelevance remains the persisted truth.
+    explain = None
+    if relevance is not None:
+        # Re-run the classifier just for this single item × this profession
+        # to get fresh matched_keywords for display.
+        from services.profession_classifier import classify as _classify
+        tags = _classify(c.title, c.summary, c.topics,
+                         source_slug=c.source_slug, url=c.url)
+        match = next((t for t in tags if t["profession_slug"] == relevance.profession_slug), None)
+        explain = {
+            "category":         relevance.profession_slug,
+            "confidence":       float(relevance.confidence),
+            "matched_keywords": (match or {}).get("matched_keywords", []),
+            "source_signals":   (match or {}).get("source_signals", []),
+            "rule_version":     relevance.classifier_version,
+        }
+
     return {
         "id": c.id,
         "kind": "course",
@@ -60,7 +87,7 @@ def _course_to_dict(c: CourseV2, relevance: Optional[ProfessionRelevance]) -> di
         "duration_minutes": c.duration_minutes,
         "level": c.level,
         "topics": (c.topics or "").split(",") if c.topics else [],
-        # Provider attribution — required by v0.2 §10 Trust contract.
+        # Provider attribution — required by v0.3 §10 Trust contract.
         "source": {
             "slug": c.source_slug,
             "name": c.source_name,
@@ -69,12 +96,8 @@ def _course_to_dict(c: CourseV2, relevance: Optional[ProfessionRelevance]) -> di
         # Cost — verbatim from the provider; never inferred.
         "is_free": bool(c.is_free),
         "cost_label": c.cost_label,
-        # Classifier transparency — required by v0.2 §10.
-        "classification": {
-            "profession_slug": relevance.profession_slug if relevance else None,
-            "confidence": float(relevance.confidence) if relevance else None,
-            "classifier_version": relevance.classifier_version if relevance else None,
-        } if relevance else None,
+        # Classifier transparency (v0.3 §4.2 explainability contract).
+        "classification": explain,
         # Bookkeeping — visible on tap-and-hold for stale flagging.
         "ingested_at": c.ingested_at.isoformat() + "Z" if c.ingested_at else None,
         "last_verified_at": c.last_verified_at.isoformat() + "Z" if c.last_verified_at else None,

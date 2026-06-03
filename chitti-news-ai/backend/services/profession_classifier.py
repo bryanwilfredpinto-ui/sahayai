@@ -1,45 +1,57 @@
 """
 services/profession_classifier.py
 ---------------------------------
-Multi-label profession classifier for ingested items (CHITTI_NEWS_AI_MASTER_SPEC
-v0.2 §4 + §5).
+Rules-only deterministic classifier (CHITTI_NEWS_AI_MASTER_SPEC v0.3 §4).
 
-**Aggregator doctrine — locked 2026-05-29.** The classifier's job is
-classification, NOT generation. It does not write summaries, invent course
-content, or recommend tools. It takes ONE item (title + summary + topics)
-and returns the subset of the 13 profession slugs that genuinely care
-about it. Confidence is reported per label.
+**Doctrine — locked 2026-05-29 (PM).** Classification is rules-only. No
+Gemini, no DeepSeek, no OpenAI, no paid inference of any kind. The system
+must function with every LLM provider offline.
 
-LLM endpoint is env-var-driven via the existing `DEEPSEEK_*` knobs (per
-the [[project_deepseek_balance_exhausted_2026_05_27]] hijack, these point
-at Gemini 2.0 Flash's OpenAI-compatible endpoint today). The classifier
-calls the chat-completions endpoint with `response_format=json_object`
-and a tight system prompt.
+The classifier emits per-profession tags built from four signal layers:
 
-Honest fallback ladder:
-  1. LLM unreachable / no API key  →  rule-based classifier via keyword
-     match against the profession registry's `aliases` + `intent_keywords`.
-     Confidence is capped at 0.6 for rule-based hits — surfaces clearly
-     to the UI as "classification offline" mode.
-  2. LLM returns malformed JSON      →  log + fall through to rule-based.
-  3. LLM returns empty label set    →  the item appears in feeds for
-     `Everyone` only, never in a profession feed.
+  1. **Source-default tags**     (highest signal — the source declares its
+                                  primary audience in courses_sources.json)
+  2. **URL pattern matches**     (per-source `url_patterns`; e.g. a
+                                  microsoft-learn URL at /azure/developer/
+                                  emits software-developer)
+  3. **Keyword hits in text**    (title >> topics >> summary, weighted)
+       - `strong_keywords`       — high-signal terms (boost 0.5)
+       - `aliases`               — display/synonyms     (boost 0.3)
+       - `intent_keywords`       — broader signals      (boost 0.2)
+  4. **Exclude keywords (veto)** — `exclude_keywords` in
+                                  profession_registry.json veto a tag
+                                  entirely no matter how high the score.
 
-Cache shape: profession_relevance rows are keyed by
-  (item_kind, item_id, profession_slug, classifier_version)
-so re-running with a new prompt version produces a fresh set without
-clobbering history.
+Final per-profession confidence is the SUM of all positive signals,
+clamped to [0, 1.0]. Tags above `min_confidence` (default 0.5) emit.
+
+Every emitted tag carries:
+  - profession_slug
+  - confidence            (float, in [0, 1.0])
+  - matched_keywords      (the actual keywords that fired)
+  - source_signals        (which source-default / URL-pattern rules fired)
+  - rule_version          (so re-runs after rule edits get fresh tags)
+
+Public API:
+
+  classify(title, summary, topics, *, source_slug=None, url=None)
+    → list[dict]    one dict per emitted tag (the explainability shape above)
+
+  classify_unlabeled_courses(limit=N)
+    → dict          batch ingest helper, identical contract to v0.2 but
+                    uses the new rules engine and writes the same
+                    profession_relevance rows.
 """
 from __future__ import annotations
 
 import json
 import logging
 import os
+import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
-import httpx
 from sqlalchemy.exc import IntegrityError
 
 from database import SessionLocal
@@ -47,182 +59,217 @@ from models.courses_v2 import CourseV2, ProfessionRelevance
 
 log = logging.getLogger("profession_classifier")
 
-# ────────────────────────────────────────────────────────────────────────
-# Configuration
-# ────────────────────────────────────────────────────────────────────────
-
-_LLM_URL = os.environ.get("DEEPSEEK_URL", "https://api.deepseek.com/chat/completions")
-_LLM_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
-_LLM_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
-_LLM_TIMEOUT_S = float(os.environ.get("CLASSIFIER_TIMEOUT_SEC", "20"))
-_CLASSIFIER_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.2-2026-05-29")
-
 _REGISTRY_FILE = Path(__file__).resolve().parent.parent / "data" / "profession_registry.json"
+_SOURCES_FILE  = Path(__file__).resolve().parent.parent / "data" / "courses_sources.json"
+
+RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.3-rules-2026-05-29")
+DEFAULT_MIN_CONFIDENCE = float(os.environ.get("CLASSIFIER_MIN_CONFIDENCE", "0.5"))
+
+# Per-signal weights — tunable but tracked under RULE_VERSION so re-tunes
+# invalidate cached tags cleanly.
+_W_STRONG_TITLE     = 0.50
+_W_STRONG_TOPIC     = 0.40
+_W_STRONG_SUMMARY   = 0.25
+_W_ALIAS_TITLE      = 0.30
+_W_ALIAS_TOPIC      = 0.20
+_W_ALIAS_SUMMARY    = 0.10
+_W_INTENT_TITLE     = 0.20
+_W_INTENT_TOPIC     = 0.15
+_W_INTENT_SUMMARY   = 0.05
+# (source-default and URL-pattern weights live IN the JSON so non-coders
+# can re-tune without touching Python.)
 
 
 # ────────────────────────────────────────────────────────────────────────
-# Profession registry
+# Registry loaders + indexes
 # ────────────────────────────────────────────────────────────────────────
 
-def _load_registry() -> list[dict]:
+def _load_registry() -> dict[str, dict]:
+    """profession_slug → profession dict (with lowered keyword lists)."""
     with _REGISTRY_FILE.open(encoding="utf-8") as f:
-        return json.load(f).get("professions", [])
+        rows = json.load(f).get("professions", [])
+    out: dict[str, dict] = {}
+    for p in rows:
+        out[p["slug"]] = {
+            "slug": p["slug"],
+            "label_en": p["label_en"],
+            "strong_keywords":  [k.lower() for k in p.get("strong_keywords",  []) if k],
+            "aliases":          [k.lower() for k in p.get("aliases",          []) if k],
+            "intent_keywords":  [k.lower() for k in p.get("intent_keywords",  []) if k],
+            "exclude_keywords": [k.lower() for k in p.get("exclude_keywords", []) if k],
+        }
+    return out
+
+
+def _load_sources() -> dict[str, dict]:
+    """source_slug → source dict with default_professions + url_patterns."""
+    with _SOURCES_FILE.open(encoding="utf-8") as f:
+        rows = json.load(f).get("sources", [])
+    return {s["slug"]: s for s in rows}
 
 
 _REGISTRY = _load_registry()
-_SLUGS = [p["slug"] for p in _REGISTRY]
-_RULE_KEYWORDS: dict[str, list[str]] = {
-    p["slug"]: [k.lower() for k in (p.get("intent_keywords", []) + p.get("aliases", []))]
-    for p in _REGISTRY
-}
+_SOURCES  = _load_sources()
+
+
+def reload_rules() -> None:
+    """Hot-reload helper for benchmark iterations."""
+    global _REGISTRY, _SOURCES
+    _REGISTRY = _load_registry()
+    _SOURCES = _load_sources()
 
 
 # ────────────────────────────────────────────────────────────────────────
-# Rule-based fallback
+# Matching primitives
 # ────────────────────────────────────────────────────────────────────────
 
-def classify_rule_based(text: str) -> list[tuple[str, float]]:
-    """Keyword-match against intent_keywords + aliases. Confidence capped at 0.6.
+def _word_in(needle: str, haystack: str) -> bool:
+    """Token-boundary aware substring match (cheap, no regex compile per call)."""
+    if not needle or not haystack:
+        return False
+    # Treat strong_keywords containing "/" or "." (e.g. "fast.ai", "node.js")
+    # as literal substring matches — word boundaries don't behave well there.
+    if any(ch in needle for ch in ".+/-"):
+        return needle in haystack
+    # General case: word boundary on each side
+    pattern = r"(?<![a-z0-9])" + re.escape(needle) + r"(?![a-z0-9])"
+    return re.search(pattern, haystack) is not None
 
-    Returns a list of (profession_slug, confidence). The UI must surface
-    these with a visible "classification offline" note per v0.2 §10.
+
+def _hits(needles: list[str], haystack: str) -> list[str]:
+    """Return the subset of needles that match haystack (token-aware)."""
+    return [n for n in needles if _word_in(n, haystack)]
+
+
+# ────────────────────────────────────────────────────────────────────────
+# The classifier
+# ────────────────────────────────────────────────────────────────────────
+
+def classify(
+    title: str,
+    summary: Optional[str] = None,
+    topics: Optional[str] = None,
+    *,
+    source_slug: Optional[str] = None,
+    url: Optional[str] = None,
+    min_confidence: float = DEFAULT_MIN_CONFIDENCE,
+) -> list[dict]:
+    """Return list of per-profession tag dicts (explainable shape).
+
+    Each dict:
+        {
+          "profession_slug": str,
+          "confidence":      float,                 # in [0, 1.0]
+          "matched_keywords": list[str],            # human-readable terms that fired
+          "source_signals":  list[str],             # rule traces ("source_default:fast-ai", "url_pattern:/azure/developer")
+          "rule_version":    str,
+        }
     """
-    if not text:
-        return []
-    lc = text.lower()
-    hits: list[tuple[str, float]] = []
-    for slug, keywords in _RULE_KEYWORDS.items():
-        matches = sum(1 for k in keywords if k and k in lc)
-        if matches >= 1:
-            conf = min(0.6, 0.3 + 0.1 * matches)
-            hits.append((slug, round(conf, 3)))
-    return hits
+    title_lc   = (title   or "").lower()
+    topics_lc  = (topics  or "").lower()
+    summary_lc = (summary or "").lower()
+    url_lc     = (url     or "").lower()
 
+    # Accumulators keyed by profession_slug
+    scores: dict[str, float] = {}
+    keywords: dict[str, set[str]] = {}
+    signals: dict[str, set[str]] = {}
 
-# ────────────────────────────────────────────────────────────────────────
-# LLM-based classifier
-# ────────────────────────────────────────────────────────────────────────
+    def add(slug: str, weight: float, *, kw: Optional[str] = None, signal: Optional[str] = None) -> None:
+        scores[slug] = scores.get(slug, 0.0) + weight
+        if kw:
+            keywords.setdefault(slug, set()).add(kw)
+        if signal:
+            signals.setdefault(slug, set()).add(signal)
 
-_SYSTEM_PROMPT = (
-    "You are a multi-label classifier. Given ONE learning item (a free course, "
-    "certification, tool, job listing, government scheme, or learning roadmap "
-    "node), decide which Indian-professional audiences would genuinely benefit "
-    "from it. You are NOT a recommender. You do not invent content. You do not "
-    "add commentary. You do not translate. You only classify.\n\n"
-    "Allowed labels (return only slugs from this list):\n"
-    + "\n".join(f"  - {p['slug']}: {p['label_en']}" for p in _REGISTRY)
-    + "\n\nRules:\n"
-    "  - Return AT MOST 4 labels. Quality over quantity.\n"
-    "  - If the item is generally educational (programming basics, English, "
-    "math), include `student` AND the specific profession.\n"
-    "  - If unsure, return [] (empty list). Do not guess.\n"
-    "  - confidence ∈ [0,1]. Use 0.9+ only when the item explicitly mentions the profession.\n\n"
-    "Output STRICTLY this JSON shape and nothing else:\n"
-    '{"labels":[{"slug":"<one of the slugs above>","confidence":<0..1>}],"reason":"<≤120 chars>"}'
-)
+    # ---- Layer 1: source-default tags ----------------------------------
+    if source_slug and source_slug in _SOURCES:
+        src = _SOURCES[source_slug]
+        for entry in src.get("default_professions", []) or []:
+            if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                slug, w = entry
+                if slug in _REGISTRY:
+                    add(slug, float(w), signal=f"source_default:{source_slug}")
 
+    # ---- Layer 2: URL pattern rules ------------------------------------
+    if source_slug and source_slug in _SOURCES and url_lc:
+        for pat in _SOURCES[source_slug].get("url_patterns", []) or []:
+            needle = pat.get("match", "").lower()
+            if needle and needle in url_lc:
+                for entry in pat.get("labels", []) or []:
+                    if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                        slug, w = entry
+                        if slug in _REGISTRY:
+                            add(slug, float(w), signal=f"url_pattern:{needle}")
 
-def _llm_call(user_text: str) -> Optional[dict]:
-    if not _LLM_KEY:
-        return None
-    try:
-        with httpx.Client(timeout=_LLM_TIMEOUT_S) as client:
-            resp = client.post(
-                _LLM_URL,
-                headers={
-                    "Authorization": f"Bearer {_LLM_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": _LLM_MODEL,
-                    "messages": [
-                        {"role": "system", "content": _SYSTEM_PROMPT},
-                        {"role": "user", "content": user_text},
-                    ],
-                    "temperature": 0.0,
-                    "max_tokens": 350,
-                    "response_format": {"type": "json_object"},
-                },
-            )
-            if resp.status_code >= 400:
-                log.warning("classifier LLM HTTP %s: %s", resp.status_code, resp.text[:200])
-                return None
-            body = resp.json()
-            content = body["choices"][0]["message"]["content"]
-            return json.loads(content)
-    except Exception as e:  # noqa: BLE001
-        log.warning("classifier LLM call failed: %s", e)
-        return None
+    # ---- Layer 3: keyword hits (title >> topics >> summary) ------------
+    for slug, prof in _REGISTRY.items():
+        for kw in _hits(prof["strong_keywords"], title_lc):
+            add(slug, _W_STRONG_TITLE, kw=kw)
+        for kw in _hits(prof["strong_keywords"], topics_lc):
+            add(slug, _W_STRONG_TOPIC, kw=kw)
+        for kw in _hits(prof["strong_keywords"], summary_lc):
+            add(slug, _W_STRONG_SUMMARY, kw=kw)
 
+        for kw in _hits(prof["aliases"], title_lc):
+            add(slug, _W_ALIAS_TITLE, kw=kw)
+        for kw in _hits(prof["aliases"], topics_lc):
+            add(slug, _W_ALIAS_TOPIC, kw=kw)
+        for kw in _hits(prof["aliases"], summary_lc):
+            add(slug, _W_ALIAS_SUMMARY, kw=kw)
 
-def classify_llm(title: str, summary: Optional[str], topics: Optional[str]) -> Optional[list[tuple[str, float]]]:
-    """Return list of (slug, confidence) from the LLM, or None if unavailable."""
-    parts = [f"Title: {title}"]
-    if summary:
-        parts.append(f"Summary: {summary[:400]}")
-    if topics:
-        parts.append(f"Topics: {topics[:200]}")
-    user_text = "\n".join(parts)
+        for kw in _hits(prof["intent_keywords"], title_lc):
+            add(slug, _W_INTENT_TITLE, kw=kw)
+        for kw in _hits(prof["intent_keywords"], topics_lc):
+            add(slug, _W_INTENT_TOPIC, kw=kw)
+        for kw in _hits(prof["intent_keywords"], summary_lc):
+            add(slug, _W_INTENT_SUMMARY, kw=kw)
 
-    payload = _llm_call(user_text)
-    if not payload:
-        return None
-    labels = payload.get("labels")
-    if not isinstance(labels, list):
-        return None
-    out: list[tuple[str, float]] = []
-    for lab in labels:
-        if not isinstance(lab, dict):
+    # ---- Layer 4: exclude_keywords (veto) ------------------------------
+    full_text = " ".join([title_lc, topics_lc, summary_lc])
+    for slug, prof in _REGISTRY.items():
+        if not prof["exclude_keywords"]:
             continue
-        slug = lab.get("slug")
-        conf = lab.get("confidence")
-        if not isinstance(slug, str) or slug not in _SLUGS:
+        for kw in prof["exclude_keywords"]:
+            if kw and kw in full_text:
+                scores.pop(slug, None)
+                keywords.pop(slug, None)
+                signals.pop(slug, None)
+                break
+
+    # ---- Assemble + filter ---------------------------------------------
+    out: list[dict] = []
+    for slug, raw_score in scores.items():
+        conf = round(min(1.0, raw_score), 3)
+        if conf < min_confidence:
             continue
-        try:
-            conf_f = float(conf)
-        except (TypeError, ValueError):
-            continue
-        out.append((slug, round(max(0.0, min(1.0, conf_f)), 3)))
+        out.append({
+            "profession_slug":  slug,
+            "confidence":       conf,
+            "matched_keywords": sorted(keywords.get(slug, set())),
+            "source_signals":   sorted(signals.get(slug, set())),
+            "rule_version":     RULE_VERSION,
+        })
+    out.sort(key=lambda d: -d["confidence"])
     return out
 
 
 # ────────────────────────────────────────────────────────────────────────
-# Hybrid: LLM with rule-based fallback
+# Batch persist over the courses table
 # ────────────────────────────────────────────────────────────────────────
 
-def classify(title: str, summary: Optional[str] = None, topics: Optional[str] = None) -> tuple[list[tuple[str, float]], str]:
-    """Best-available classification. Returns (labels, mode).
-
-    mode ∈ {"llm", "rule", "none"} — the UI shows this so users can see
-    when classifications are confidence-limited fallbacks.
-    """
-    llm_labels = classify_llm(title, summary, topics)
-    if llm_labels is not None and llm_labels:
-        return llm_labels, "llm"
-    text = " ".join([title or "", summary or "", topics or ""])
-    rule_labels = classify_rule_based(text)
-    if rule_labels:
-        return rule_labels, "rule"
-    return [], "none"
-
-
-# ────────────────────────────────────────────────────────────────────────
-# Persist
-# ────────────────────────────────────────────────────────────────────────
-
-def _persist_labels(item_kind: str, item_id: int, labels: list[tuple[str, float]]) -> int:
-    """Insert ProfessionRelevance rows. Returns count inserted."""
-    if not labels:
+def _persist_tags(item_kind: str, item_id: int, tags: list[dict]) -> int:
+    if not tags:
         return 0
     inserted = 0
     with SessionLocal() as db:
-        for slug, conf in labels:
+        for t in tags:
             row = ProfessionRelevance(
                 item_kind=item_kind,
                 item_id=item_id,
-                profession_slug=slug,
-                confidence=conf,
-                classifier_version=_CLASSIFIER_VERSION,
+                profession_slug=t["profession_slug"],
+                confidence=t["confidence"],
+                classifier_version=t["rule_version"],
             )
             db.add(row)
             try:
@@ -233,55 +280,49 @@ def _persist_labels(item_kind: str, item_id: int, labels: list[tuple[str, float]
                 continue
             except Exception as e:  # noqa: BLE001
                 db.rollback()
-                log.warning("persist labels failed kind=%s id=%s slug=%s: %s",
-                            item_kind, item_id, slug, e)
+                log.warning("persist tag failed kind=%s id=%s slug=%s: %s",
+                            item_kind, item_id, t["profession_slug"], e)
     return inserted
 
 
-# ────────────────────────────────────────────────────────────────────────
-# Public entrypoint: classify all un-classified courses
-# ────────────────────────────────────────────────────────────────────────
-
-def classify_unlabeled_courses(*, limit: int = 500) -> dict:
-    """Find courses with no classification at the current classifier_version
-    and label them. Returns a structured report. Idempotent.
+def classify_unlabeled_courses(*, limit: int = 1000) -> dict:
+    """Run the rules-only classifier over every course lacking tags at the
+    current RULE_VERSION. Idempotent. Returns a structured report.
     """
     report = {
         "started_at": datetime.utcnow().isoformat() + "Z",
-        "classifier_version": _CLASSIFIER_VERSION,
-        "llm_used": bool(_LLM_KEY),
+        "rule_version": RULE_VERSION,
+        "min_confidence": DEFAULT_MIN_CONFIDENCE,
         "scanned": 0,
-        "classified_llm": 0,
-        "classified_rule": 0,
-        "no_labels": 0,
+        "tagged": 0,
+        "untagged": 0,
         "labels_persisted": 0,
     }
     with SessionLocal() as db:
-        # Find courses that have no relevance row at the current version.
         existing_q = db.query(ProfessionRelevance.item_id).filter(
             ProfessionRelevance.item_kind == "course",
-            ProfessionRelevance.classifier_version == _CLASSIFIER_VERSION,
+            ProfessionRelevance.classifier_version == RULE_VERSION,
         ).subquery()
         candidates = (
             db.query(CourseV2)
-              .filter(~CourseV2.id.in_(existing_q))
+              .filter(~CourseV2.id.in_(existing_q.select()))
               .order_by(CourseV2.id.asc())
               .limit(limit)
               .all()
         )
         report["scanned"] = len(candidates)
-        snapshots = [(c.id, c.title, c.summary, c.topics) for c in candidates]
+        snapshots = [
+            (c.id, c.title, c.summary, c.topics, c.source_slug, c.url)
+            for c in candidates
+        ]
 
-    for course_id, title, summary, topics in snapshots:
-        labels, mode = classify(title, summary, topics)
-        if mode == "llm":
-            report["classified_llm"] += 1
-        elif mode == "rule":
-            report["classified_rule"] += 1
+    for cid, title, summary, topics, source_slug, url in snapshots:
+        tags = classify(title, summary, topics, source_slug=source_slug, url=url)
+        if tags:
+            report["tagged"] += 1
+            report["labels_persisted"] += _persist_tags("course", cid, tags)
         else:
-            report["no_labels"] += 1
-        if labels:
-            report["labels_persisted"] += _persist_labels("course", course_id, labels)
+            report["untagged"] += 1
 
     report["finished_at"] = datetime.utcnow().isoformat() + "Z"
     return report

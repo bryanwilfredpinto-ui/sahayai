@@ -1,7 +1,8 @@
 {
-  "_doc": "Course source registry — 8 free public catalogues for Phase 0 (CHITTI_NEWS_AI_MASTER_SPEC v0.2 §8). Per the aggregator doctrine: real sources, no AI-generated entries. Each source is either a dynamic catalogue (RSS / JSON REST) or a static manifest hand-maintained from the provider's own public page. If a provider has no machine-readable surface, a static manifest is the honest fallback — entries are explicit, dated, and provider-attributed. Per Sire 2026-05-29: prefer free + public; never the default recommend a paid path.",
-  "_version": "0.2.0",
+  "_doc": "Course source registry — 8 free public catalogues for Phase 0 (CHITTI_NEWS_AI_MASTER_SPEC v0.3 §3 + §4). Per the rules-first doctrine: real sources, no AI-generated entries, classification is deterministic and explainable. Each source declares: (a) default_professions — base tags every item from this source inherits (e.g. fast.ai is software-developer by default), (b) url_patterns — additional tags emitted when an item's URL matches a substring or regex, (c) the standard transport (json/rss/static_manifest). The classifier combines these source-level signals with item-level keyword matches against profession_registry.json to produce explainable tags.",
+  "_version": "0.3.0",
   "_locked_at": "2026-05-29",
+  "_classifier_contract": "Source-default tags + URL patterns + item keyword hits → per-profession confidence score. No LLM in the critical path. Every emitted tag carries matched_keywords + source_signals for audit.",
   "sources": [
     {
       "slug": "microsoft-learn",
@@ -21,7 +22,39 @@
       "free": true,
       "free_note": "All Microsoft Learn modules are free. Some certifications (Azure / Microsoft 365) have paid exams; modules are always free.",
       "license": "Microsoft Terms",
-      "active": true
+      "active": true,
+      "default_professions": [],
+      "url_patterns": [
+        {"match": "/training/paths/azure-developer", "labels": [["software-developer", 0.55]]},
+        {"match": "/dotnet", "labels": [["software-developer", 0.55]]},
+        {"match": "/azure/developer", "labels": [["software-developer", 0.55]]},
+        {"match": "/python/", "labels": [["software-developer", 0.55]]},
+        {"match": "/javascript/", "labels": [["software-developer", 0.55]]},
+        {"match": "/typescript/", "labels": [["software-developer", 0.55]]},
+        {"match": "/visualstudio", "labels": [["software-developer", 0.55]]},
+        {"match": "/azure/devops", "labels": [["software-developer", 0.55]]},
+        {"match": "/github/", "labels": [["software-developer", 0.55]]},
+        {"match": "/powershell", "labels": [["software-developer", 0.4]]},
+        {"match": "/azure/machine-learning", "labels": [["software-developer", 0.5]]},
+        {"match": "/azure/cognitive", "labels": [["software-developer", 0.5]]},
+        {"match": "/dynamics365", "labels": [["business-owner", 0.45], ["accountant", 0.35]]},
+        {"match": "/power-platform", "labels": [["business-owner", 0.4]]},
+        {"match": "/power-apps", "labels": [["business-owner", 0.4]]},
+        {"match": "/power-bi", "labels": [["business-owner", 0.35], ["accountant", 0.45]]},
+        {"match": "/industry/financial", "labels": [["accountant", 0.55]]},
+        {"match": "/industry/healthcare", "labels": [["doctor", 0.45], ["nurse", 0.35]]},
+        {"match": "/industry/education", "labels": [["teacher", 0.55]]},
+        {"match": "/industry/government", "labels": [["government-employee", 0.55]]},
+        {"match": "/industry/sustainability", "labels": [["business-owner", 0.35]]},
+        {"match": "/industry/retail", "labels": [["business-owner", 0.4]]},
+        {"match": "/industry/manufacturing", "labels": [["business-owner", 0.35]]},
+        {"match": "/training/career-paths/software-developer", "labels": [["software-developer", 0.7]]},
+        {"match": "/training/career-paths/data-scientist", "labels": [["software-developer", 0.5]]},
+        {"match": "/training/career-paths/data-analyst", "labels": [["accountant", 0.4]]},
+        {"match": "/training/career-paths/business-owner", "labels": [["business-owner", 0.65]]},
+        {"match": "/training/career-paths/k-12-educator", "labels": [["teacher", 0.7]]},
+        {"match": "/training/career-paths/higher-education-educator", "labels": [["teacher", 0.7]]}
+      ]
     },
     {
       "slug": "google-cloud-skills-boost",
@@ -33,6 +66,11 @@
       "free_note": "Skills Boost has a generous free tier (badges + intro labs); some quests / labs require Google Cloud credits. Honestly labelled per item. No public catalogue JSON API — manifest hand-curated from the public catalogue page.",
       "license": "Google Cloud Terms",
       "active": true,
+      "default_professions": [["software-developer", 0.4]],
+      "url_patterns": [
+        {"match": "/paths/118", "labels": [["software-developer", 0.5]]},
+        {"match": "course_templates/53", "labels": [["software-developer", 0.45]]}
+      ],
       "manifest": [
         {"id": "gcsb-generative-ai-learning-path", "title": "Generative AI Learning Path", "url": "https://www.cloudskillsboost.google/paths/118", "topics": ["generative-AI", "AI"], "duration_min": 600, "level": "beginner"},
         {"id": "gcsb-introduction-to-gen-ai", "title": "Introduction to Generative AI", "url": "https://www.cloudskillsboost.google/course_templates/536", "topics": ["generative-AI", "AI"], "duration_min": 45, "level": "beginner"},
@@ -53,9 +91,15 @@
       "type": "static_manifest",
       "url": "https://ocw.mit.edu/",
       "free": true,
-      "free_note": "Fully free, audit-only (no certificate). Lecture videos + problem sets + exams on every course. RSS feed was discontinued; manifest hand-curated from MIT OCW's AI/CS catalogue at https://ocw.mit.edu/search/?d=Electrical%20Engineering%20and%20Computer%20Science",
+      "free_note": "Fully free, audit-only (no certificate). Lecture videos + problem sets + exams on every course. RSS feed was discontinued; manifest hand-curated from MIT OCW's AI/CS catalogue.",
       "license": "Creative Commons BY-NC-SA",
       "active": true,
+      "default_professions": [["student", 0.4]],
+      "url_patterns": [
+        {"match": "/courses/6-", "labels": [["software-developer", 0.6]]},
+        {"match": "/courses/18-", "labels": [["software-developer", 0.3]]},
+        {"match": "machine-learning-for-healthcare", "labels": [["doctor", 0.55]]}
+      ],
       "manifest": [
         {"id": "mit-6.0001", "title": "Introduction to Computer Science and Programming in Python (6.0001)", "url": "https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/", "topics": ["python", "programming", "computer-science"], "duration_min": 1800, "level": "beginner"},
         {"id": "mit-6.034", "title": "Artificial Intelligence (6.034)", "url": "https://ocw.mit.edu/courses/6-034-artificial-intelligence-fall-2010/", "topics": ["AI", "computer-science"], "duration_min": 2400, "level": "intermediate"},
@@ -79,6 +123,11 @@
       "free_note": "Lectures + assignments are fully free. The optional NPTEL Online Certification exam costs ~₹1000 (proctored); listed honestly.",
       "license": "NPTEL Terms",
       "active": true,
+      "default_professions": [["student", 0.4], ["software-developer", 0.45]],
+      "url_patterns": [
+        {"match": "/106106", "labels": [["software-developer", 0.2]]},
+        {"match": "/106105", "labels": [["software-developer", 0.2]]}
+      ],
       "manifest": [
         {"id": "nptel-cs6101", "title": "Introduction to Machine Learning (Prof. Balaraman Ravindran, IIT Madras)", "url": "https://nptel.ac.in/courses/106106139", "topics": ["machine-learning", "AI"], "duration_min": 1800, "level": "intermediate"},
         {"id": "nptel-cs5500", "title": "Deep Learning (Prof. Mitesh Khapra, IIT Madras)", "url": "https://nptel.ac.in/courses/106106184", "topics": ["deep-learning", "neural-networks"], "duration_min": 1800, "level": "advanced"},
@@ -102,6 +151,8 @@
       "free_note": "Fully free, no certificate. Jeremy Howard's practical deep-learning course is the de-facto bootcamp for ML engineers.",
       "license": "fast.ai Terms",
       "active": true,
+      "default_professions": [["software-developer", 0.7]],
+      "url_patterns": [],
       "manifest": [
         {"id": "fastai-pdl", "title": "Practical Deep Learning for Coders (Part 1)", "url": "https://course.fast.ai/", "topics": ["deep-learning", "AI"], "duration_min": 1800, "level": "intermediate"},
         {"id": "fastai-fdl", "title": "From Deep Learning Foundations to Stable Diffusion (Part 2)", "url": "https://course.fast.ai/Lessons/part2.html", "topics": ["deep-learning", "diffusion", "AI"], "duration_min": 1800, "level": "advanced"},
@@ -119,6 +170,8 @@
       "free_note": "Fully free. Code-first courses on transformers, RL, audio, computer vision and LLM agents.",
       "license": "Apache 2.0 (course content)",
       "active": true,
+      "default_professions": [["software-developer", 0.7]],
+      "url_patterns": [],
       "manifest": [
         {"id": "hf-nlp", "title": "Hugging Face NLP Course", "url": "https://huggingface.co/learn/nlp-course", "topics": ["nlp", "transformers", "AI"], "duration_min": 1500, "level": "intermediate"},
         {"id": "hf-deeprl", "title": "Deep Reinforcement Learning Course", "url": "https://huggingface.co/learn/deep-rl-course", "topics": ["reinforcement-learning", "AI"], "duration_min": 1500, "level": "advanced"},
@@ -138,6 +191,8 @@
       "free_note": "Fully free, free certification on completing project requirements. AI / ML / data certifications are mostly Python-first.",
       "license": "BSD-3-Clause",
       "active": true,
+      "default_professions": [["software-developer", 0.65], ["student", 0.4]],
+      "url_patterns": [],
       "manifest": [
         {"id": "fcc-mlpy", "title": "Machine Learning with Python (Certification)", "url": "https://www.freecodecamp.org/learn/machine-learning-with-python/", "topics": ["machine-learning", "python", "AI"], "duration_min": 18000, "level": "intermediate"},
         {"id": "fcc-dap", "title": "Data Analysis with Python (Certification)", "url": "https://www.freecodecamp.org/learn/data-analysis-with-python/", "topics": ["data-analysis", "python"], "duration_min": 18000, "level": "intermediate"},
@@ -159,6 +214,8 @@
       "free_note": "DeepLearning.AI short courses are free. The full Coursera specializations (Machine Learning, Deep Learning) have a paid certification but full audit-mode lectures are free.",
       "license": "DeepLearning.AI Terms",
       "active": true,
+      "default_professions": [["software-developer", 0.7]],
+      "url_patterns": [],
       "manifest": [
         {"id": "dlai-chatgpt-prompt-eng", "title": "ChatGPT Prompt Engineering for Developers", "url": "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/", "topics": ["llm", "prompt-engineering", "AI"], "duration_min": 60, "level": "beginner"},
         {"id": "dlai-langchain", "title": "LangChain for LLM Application Development", "url": "https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/", "topics": ["llm", "agents", "AI"], "duration_min": 90, "level": "intermediate"},

@@ -1,98 +1,125 @@
 {
-  "_doc": "Profession registry — seed of 13 from CHITTI_NEWS_AI_MASTER_SPEC v0.2 §5. Architecture must support unlimited professions — add new rows here, not in code. Slugs are kebab-case stable identifiers used by the classifier; labels are display-only and can be translated by the AI translator layer.",
-  "_version": "0.2.0",
+  "_doc": "Profession registry — seed of 13 from CHITTI_NEWS_AI_MASTER_SPEC v0.3 §5. Architecture must support unlimited professions — add new rows here, not in code. Slugs are kebab-case stable identifiers used by the deterministic classifier; labels are display-only and can be translated by the AI translator layer. v0.3 adds `exclude_keywords` (negative-match guards that veto an otherwise-positive classification) and `strong_keywords` (high-signal terms whose presence in the title alone is enough for a tag without other corroboration).",
+  "_version": "0.3.0",
   "_locked_at": "2026-05-29",
+  "_classifier_contract": "Rules-only. Source defaults + URL patterns + title/topics/summary keyword hits → per-profession confidence. exclude_keywords veto the tag entirely. Every emitted tag carries matched_keywords + source_signals for audit.",
   "professions": [
     {
       "slug": "software-developer",
       "label_en": "Software Developer",
       "label_hi": "सॉफ़्टवेयर डेवलपर",
-      "aliases": ["dev", "developer", "engineer", "swe", "programmer", "coder"],
-      "intent_keywords": ["python", "javascript", "react", "node", "api", "github", "code review", "system design", "devops", "k8s", "kubernetes", "docker", "sql", "frontend", "backend", "ml engineering", "llm", "agent", "prompt engineering"]
+      "aliases": ["dev", "developer", "engineer", "swe", "programmer", "coder", "developers", "engineers", "programming"],
+      "strong_keywords": ["python", "javascript", "typescript", "react", "node.js", "kubernetes", "docker", "github", "fastapi", "flask", "spring boot", "django", "cuda", "tensorflow", "pytorch", "huggingface", "hugging face", "langchain", "llamaindex", "langgraph", "code-first", "for coders", "for developers", "rest api", "graphql", "git ", "devops", "ci/cd", "system design", "data structures", "algorithms", "compiler", "linux kernel", "tensorrt", "jax", "transformers", "fine-tuning", "rag pipeline", "vector database", "sql", "postgresql", "asp.net", "aspnet", "azure machine learning", "azure ai", "cognitive services", "azure cosmos", "powershell", "ansible", "terraform", "copilot studio", "microsoft fabric", "microsoft sentinel", "key vault", "azure database", "azure cyclecloud", "microsoft purview", "power pages", "dataverse", "lakeflow", "unity catalog", "azure defender", "microsoft defender for cloud", "well-architected", "azure pipeline", "build pipeline", "deployment pipeline", "app-development", "custom-app-development", "machine-learning", "artificial-intelligence", "cloud-computing", "cloud-security", "databases", "data-management", "data-storage", "data-engineering", "information-protection-governance", "infrastructure", "networking", "resource-management", "virtual-machine", "containers", "azure-ai", "cognitive-services", "developer-tools"],
+      "intent_keywords": ["python", "javascript", "react", "node", "api", "github", "code review", "system design", "devops", "k8s", "kubernetes", "docker", "sql", "frontend", "backend", "ml engineering", "llm", "agent", "prompt engineering", "coding", "ide", "compiler", "linter", "debugger", "microservices", "container", "vector db", "embedding", "architecture", "storage", "security"],
+      "exclude_keywords": ["for nurses only", "nursing care plan", "clinical bedside", "tractor maintenance", "soil ph", "courtroom procedure"]
     },
     {
       "slug": "hr-professional",
       "label_en": "HR Professional",
       "label_hi": "HR पेशेवर",
       "aliases": ["hr", "human resources", "people ops", "people operations"],
-      "intent_keywords": ["hiring", "payroll", "employee engagement", "L&D", "learning and development", "compensation", "benefits", "DEI", "performance review", "HRIS"]
+      "strong_keywords": ["human resources", "people ops", "people operations", "employee engagement", "performance management", "compensation and benefits", "diversity equity inclusion", "DEI in workplace", "HRIS", "workforce planning", "succession planning", "talent management"],
+      "intent_keywords": ["hiring", "payroll", "employee engagement", "L&D", "learning and development", "compensation", "benefits", "DEI", "performance review", "HRIS", "onboarding", "exit interview", "workplace policy"],
+      "exclude_keywords": []
     },
     {
       "slug": "talent-acquisition",
       "label_en": "Talent Acquisition",
       "label_hi": "टैलेंट ऐक्विज़िशन",
-      "aliases": ["recruiter", "tech recruiter", "talent", "TA"],
-      "intent_keywords": ["sourcing", "boolean search", "ATS", "candidate experience", "screening", "interview", "offer", "linkedin recruiter", "naukri recruiter"]
+      "aliases": ["recruiter", "tech recruiter", "talent", "TA", "sourcer"],
+      "strong_keywords": ["applicant tracking system", "ATS", "boolean search", "candidate experience", "talent pipeline", "sourcing strategy", "ATS optimization", "linkedin recruiter", "naukri recruiter", "passive candidate", "recruiting funnel"],
+      "intent_keywords": ["sourcing", "boolean search", "ATS", "candidate experience", "screening", "interview", "offer", "linkedin recruiter", "naukri recruiter", "job posting", "candidate pipeline"],
+      "exclude_keywords": []
     },
     {
       "slug": "doctor",
       "label_en": "Doctor",
       "label_hi": "डॉक्टर",
       "aliases": ["physician", "MBBS", "MD", "clinician", "medical doctor"],
-      "intent_keywords": ["clinical", "patient", "diagnosis", "EMR", "imaging", "radiology", "pathology", "FDA", "CDSCO", "medical literature", "clinical decision support"]
+      "strong_keywords": ["clinical decision support", "electronic health record", "EMR", "EHR", "ICD-10", "differential diagnosis", "patient triage", "radiology imaging", "pathology slide", "FDA approval", "CDSCO", "clinical trial", "medical literature", "evidence-based medicine"],
+      "intent_keywords": ["clinical", "patient", "diagnosis", "EMR", "imaging", "radiology", "pathology", "FDA", "CDSCO", "medical literature", "clinical decision support", "primary care"],
+      "exclude_keywords": []
     },
     {
       "slug": "oncologist",
       "label_en": "Oncologist",
       "label_hi": "ऑन्कोलॉजिस्ट",
       "aliases": ["cancer specialist", "medical oncologist", "radiation oncologist"],
-      "intent_keywords": ["tumour", "tumor", "chemotherapy", "immunotherapy", "biopsy", "histopathology", "TNM staging", "NCCN", "tata memorial", "AIIMS oncology"]
+      "strong_keywords": ["oncology", "cancer", "tumour", "tumor", "chemotherapy", "immunotherapy", "biopsy", "histopathology", "TNM staging", "NCCN guidelines", "tata memorial", "AIIMS oncology", "radiation therapy", "metastasis", "carcinoma", "lymphoma", "leukemia"],
+      "intent_keywords": ["tumour", "tumor", "chemotherapy", "immunotherapy", "biopsy", "histopathology", "TNM staging", "NCCN", "tata memorial", "AIIMS oncology", "radiation"],
+      "exclude_keywords": []
     },
     {
       "slug": "nurse",
       "label_en": "Nurse",
       "label_hi": "नर्स",
       "aliases": ["nursing", "ANM", "GNM", "BSc nursing", "ICU nurse"],
-      "intent_keywords": ["bedside care", "triage", "vital signs", "patient monitoring", "medication administration", "INC", "Indian Nursing Council", "shift handover"]
+      "strong_keywords": ["nursing care plan", "bedside nursing", "patient monitoring", "medication administration", "INC India", "Indian Nursing Council", "shift handover", "vital signs documentation", "ICU nursing", "triage nursing", "ANM training", "GNM training"],
+      "intent_keywords": ["bedside care", "triage", "vital signs", "patient monitoring", "medication administration", "INC", "Indian Nursing Council", "shift handover"],
+      "exclude_keywords": []
     },
     {
       "slug": "farmer",
       "label_en": "Farmer",
       "label_hi": "किसान",
       "aliases": ["agriculture", "kisan", "krishak", "agricultural worker"],
-      "intent_keywords": ["crop", "yield", "irrigation", "fertilizer", "pest", "weather", "MSP", "PM-Kisan", "Krishi Vigyan Kendra", "soil health card", "FPO", "agritech"]
+      "strong_keywords": ["precision agriculture", "agritech", "drone for agriculture", "crop yield", "soil health card", "fertilizer application", "irrigation scheduling", "PM-Kisan", "Krishi Vigyan Kendra", "FPO", "minimum support price", "MSP", "agriculture extension", "pest detection", "farm to fork", "crop disease detection"],
+      "intent_keywords": ["crop", "yield", "irrigation", "fertilizer", "pest", "weather", "MSP", "PM-Kisan", "Krishi Vigyan Kendra", "soil health card", "FPO", "agritech", "agriculture", "farming"],
+      "exclude_keywords": []
     },
     {
       "slug": "teacher",
       "label_en": "Teacher",
       "label_hi": "शिक्षक",
       "aliases": ["educator", "professor", "lecturer", "instructor", "guru", "shikshak"],
-      "intent_keywords": ["lesson plan", "classroom", "NEP 2020", "CBSE", "ICSE", "state board", "DIKSHA", "PM-eVidya", "pedagogy", "assessment"]
+      "strong_keywords": ["lesson plan", "classroom management", "NEP 2020", "CBSE curriculum", "ICSE curriculum", "state board syllabus", "DIKSHA platform", "PM-eVidya", "pedagogy", "student assessment", "K-12 educator", "higher education educator", "teaching with AI", "EdTech for educators"],
+      "intent_keywords": ["lesson plan", "classroom", "NEP 2020", "CBSE", "ICSE", "state board", "DIKSHA", "PM-eVidya", "pedagogy", "assessment", "educator"],
+      "exclude_keywords": []
     },
     {
       "slug": "lawyer",
       "label_en": "Lawyer",
       "label_hi": "वकील",
       "aliases": ["advocate", "attorney", "legal counsel", "vakil"],
-      "intent_keywords": ["litigation", "contract", "BNS", "BNSS", "BSA", "supreme court", "high court", "tribunal", "Bar Council of India", "legal research", "case law"]
+      "strong_keywords": ["litigation strategy", "contract drafting", "Bharatiya Nyaya Sanhita", "BNS", "BNSS", "BSA", "supreme court of india", "high court", "tribunal", "Bar Council of India", "legal research", "case law", "constitutional law", "criminal law", "civil procedure", "due diligence legal"],
+      "intent_keywords": ["litigation", "contract", "BNS", "BNSS", "BSA", "supreme court", "high court", "tribunal", "Bar Council of India", "legal research", "case law", "advocate"],
+      "exclude_keywords": []
     },
     {
       "slug": "accountant",
       "label_en": "Accountant / CA",
       "label_hi": "लेखाकार / CA",
       "aliases": ["CA", "chartered accountant", "CFO", "controller", "tax consultant"],
-      "intent_keywords": ["GST", "TDS", "income tax", "ITR", "ICAI", "ICSI", "ICMAI", "Ind AS", "MCA", "ROC filing", "tax audit"]
+      "strong_keywords": ["chartered accountant", "GST return", "TDS deduction", "income tax return", "ITR filing", "ICAI", "ICSI", "ICMAI", "Indian Accounting Standard", "Ind AS", "MCA portal", "ROC filing", "tax audit", "transfer pricing", "GAAR", "advance ruling tax", "finance-accounting", "general-ledger", "accounts-payable", "accounts-receivable", "vat rate"],
+      "intent_keywords": ["GST", "TDS", "income tax", "ITR", "ICAI", "ICSI", "ICMAI", "Ind AS", "MCA", "ROC filing", "tax audit", "balance sheet", "finance", "accounting"],
+      "exclude_keywords": []
     },
     {
       "slug": "student",
       "label_en": "Student",
       "label_hi": "छात्र / विद्यार्थी",
       "aliases": ["learner", "vidyarthi", "undergrad", "postgrad", "school student"],
-      "intent_keywords": ["college", "entrance exam", "JEE", "NEET", "UPSC", "GATE", "campus placement", "internship", "scholarship", "free course", "certification"]
+      "strong_keywords": ["JEE main", "JEE advanced", "NEET", "UPSC", "GATE exam", "campus placement", "internship for students", "scholarship for", "free certification for students", "introduction to", "fundamentals of"],
+      "intent_keywords": ["college", "entrance exam", "JEE", "NEET", "UPSC", "GATE", "campus placement", "internship", "scholarship", "free course", "certification", "introduction", "fundamentals"],
+      "exclude_keywords": []
     },
     {
       "slug": "business-owner",
       "label_en": "Business Owner",
       "label_hi": "व्यवसायी / उद्यमी",
       "aliases": ["entrepreneur", "founder", "SME", "MSME", "shopkeeper", "trader"],
-      "intent_keywords": ["startup", "GST", "MSME", "udyam", "MUDRA", "stand-up India", "marketplace", "ONDC", "kirana", "B2B", "supply chain", "customer acquisition"]
+      "strong_keywords": ["small business", "MSME", "udyam registration", "MUDRA loan", "stand-up India", "ONDC seller", "kirana digitisation", "B2B marketplace", "supply chain finance", "customer acquisition cost", "GST for business", "udyog aadhaar", "startup india", "dynamics 365 business central", "supply-chain-management", "process-workflow", "business central"],
+      "intent_keywords": ["startup", "GST", "MSME", "udyam", "MUDRA", "stand-up India", "marketplace", "ONDC", "kirana", "B2B", "supply chain", "customer acquisition", "entrepreneur", "business operations"],
+      "exclude_keywords": []
     },
     {
       "slug": "government-employee",
       "label_en": "Government Employee",
       "label_hi": "सरकारी कर्मचारी",
       "aliases": ["babu", "civil servant", "PSU employee", "central govt", "state govt"],
-      "intent_keywords": ["DOPT", "DPE", "iGOT Karmayogi", "CGHS", "service rules", "RTI", "DOP&T circulars", "vigilance", "promotion", "pension", "gazetted"]
+      "strong_keywords": ["DOPT circular", "DPE guidelines", "iGOT Karmayogi", "Mission Karmayogi", "central civil services", "CCS rules", "CGHS", "service rules", "RTI Act", "vigilance manual", "gazetted officer", "PSU training", "MeitY training"],
+      "intent_keywords": ["DOPT", "DPE", "iGOT Karmayogi", "CGHS", "service rules", "RTI", "DOP&T circulars", "vigilance", "promotion", "pension", "gazetted"],
+      "exclude_keywords": []
     }
   ]
 }
