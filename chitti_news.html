@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="chitti-take-2026-06-04" />
+  <meta name="chitti-build" content="ship-now-5-2026-06-04" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -631,12 +631,17 @@
       <option value="ta">தமிழ்</option>
       <option value="te">తెలుగు</option>
       <option value="bn">বাংলা</option>
-      <option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
       <option value="gu">ગુજરાતી</option>
       <option value="pa">ਪੰਜਾਬੀ</option>
-      <option value="or">ଓଡ଼ିଆ</option>
       <option value="ur">اردو</option>
+      <!-- Sire 2026-06-04 (decision A) — Kannada (kn) + Odia (or)
+           removed from the visible picker until (a) ≥1 native RSS
+           source is wired AND (b) the empty-state apology string is
+           localised in that script. Honest absence beats showing a
+           tab that returns zero articles + an English apology.
+           Re-add as <option value="kn">ಕನ್ನಡ</option> + <option
+           value="or">ଓଡ଼ିଆ</option> the moment both conditions hold. -->
     </select>
     <button class="refresh-btn" type="button" onclick="loadFeed(true)" aria-label="Refresh news feed">🔄</button>
   </div>
@@ -751,8 +756,17 @@ function onFilterChange() {
 }
 
 // Hydrate pickers from localStorage on load.
+// Sire 2026-06-04 (decision A) — kn / or are temporarily hidden from
+// the picker; any user whose localStorage already pins those is
+// rewritten to en on hydrate so they don't land on a permanently
+// empty feed. We persist the change so this is a one-way migration.
+const _RETIRED_LANGS = new Set(['kn', 'or']);
 function hydratePickers() {
   const f = getFilter();
+  if (_RETIRED_LANGS.has(f.lang)) {
+    f.lang = 'en';
+    setFilter(f);
+  }
   document.getElementById('pick-state').value = f.state;
   document.getElementById('pick-lang').value  = f.lang;
   document.getElementById('pick-cat').value   = f.cat;
@@ -986,7 +1000,14 @@ function insightHtml(a) {
 // Toggle expansion of the trust panel on a card. Independent of the
 // article-body expansion so a user can read corroborating sources
 // without committing to a full read-aloud.
-function toggleTrust(articleId) {
+//
+// Sire 2026-06-04 (pillar audit, news_intelligence) — on first expand
+// we lazy-fetch /article/<id>/factcheck so the panel can show each
+// matched outlet's actual headline + a tap-to-open link, not just the
+// outlet name. The full panel data is already on the wire today and
+// was being discarded. Cache on first fetch so re-expansion is instant.
+const _trustMatchedCache = Object.create(null);
+async function toggleTrust(articleId) {
   const card = document.getElementById('art-' + articleId)
             || document.getElementById('hero-' + articleId);
   if (!card) return;
@@ -994,6 +1015,50 @@ function toggleTrust(articleId) {
   if (!strip) return;
   const open = strip.classList.toggle('expanded');
   strip.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (!open) return;
+  // First-expand: hydrate the matched-articles list from the per-article
+  // factcheck endpoint. Subsequent expands of the same card use cache.
+  const sources = strip.querySelector('.trust-sources');
+  if (!sources) return;
+  if (_trustMatchedCache[articleId]) {
+    sources.innerHTML = _trustMatchedCache[articleId];
+    return;
+  }
+  // Only fetch if backend told us there ARE matches — n=0 (Unverified)
+  // panels just show the "No other sources matched yet" empty state.
+  const a = ARTICLES[articleId];
+  const fc = a && a.factcheck;
+  if (!fc || !fc.match_count || fc.match_count < 1) return;
+  try {
+    const data = await api('/api/news/article/' + articleId + '/factcheck');
+    const matched = Array.isArray(data.matched_articles) ? data.matched_articles : [];
+    if (!matched.length) return;
+    const html = matched.slice(0, 5).map(function (m) {
+      const src = esc(m.source_name || m.source_slug || 'Source');
+      const ttl = esc((m.title || '').slice(0, 140));
+      const lnk = esc(m.link || '');
+      // Each matched outlet renders as: ✓ Outlet name (small, bold)
+      // followed by their own headline phrasing, then a "Read on
+      // <outlet>" link that opens the source's page in a new tab.
+      return '<div class="trust-source-row">'
+           +   '<span class="src-check">✓</span>'
+           +   '<div style="display:flex;flex-direction:column;gap:2px;min-width:0;">'
+           +     '<span class="trust-source-name">' + src + '</span>'
+           +     '<span style="font-size:11px;color:var(--text);line-height:1.4;">' + ttl + '</span>'
+           +     (lnk
+                  ? '<a href="' + lnk + '" target="_blank" rel="noopener noreferrer" '
+                    + 'onclick="event.stopPropagation()" '
+                    + 'style="font-size:10px;font-weight:700;color:var(--navy);text-decoration:underline;">'
+                    + 'Read on ' + src + ' &rarr;</a>'
+                  : '')
+           +   '</div>'
+           + '</div>';
+    }).join('');
+    _trustMatchedCache[articleId] = html;
+    sources.innerHTML = html;
+  } catch (e) {
+    // Silent failure — leave the existing source-name list visible.
+  }
 }
 
 // CANONICAL 5-ICON STRIP — per chitti-news/SKILLS.md #12 +
@@ -1587,6 +1652,22 @@ async function openTake(id) {
   host.innerHTML = '<h4>Chitti\'s Take…</h4><p>Loading…</p>';
   try {
     const data = await api('/api/news/article/' + id + '/take?language=' + getFilter().lang);
+    // Sire 2026-06-04 (decision B) — backend returns data.source =
+    // "fallback" when the LLM (DeepSeek / Gemini) is unavailable; the
+    // bullets in that branch are just the publisher's RSS summary
+    // sliced on periods, laundered through a "Chitti's Take" header.
+    // That is fake editorial value. Render an honest "unavailable"
+    // panel instead. Re-show real bullets the moment data.source
+    // returns to "deepseek" / a real model.
+    if (data && data.source === 'fallback') {
+      host.innerHTML = '<h4>▶ Chitti\'s Take</h4>'
+        + '<p style="color:var(--muted);font-size:13px;line-height:1.5;">'
+        + 'Chitti\'s editorial take is offline right now. The publisher\'s '
+        + 'own summary is in the body above. We\'ll restore the take when '
+        + 'our model budget returns — no fabricated content in the meantime.'
+        + '</p>';
+      return;
+    }
     const bullets = data.bullets || [];
     if (bullets.length === 0) {
       host.innerHTML = '<h4>▶ Chitti\'s Take</h4>'
