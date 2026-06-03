@@ -38,10 +38,35 @@ _VERDICT_BADGE = {
 }
 
 
-def _factcheck_payload(fc: FactCheck | None) -> dict:
-    """Return a card-ready badge payload — present on EVERY article card."""
+def _factcheck_payload(
+    fc: FactCheck | None,
+    slug_to_name: dict[str, str] | None = None,
+) -> dict:
+    """
+    Return a card-ready badge payload — present on EVERY article card.
+
+    Sire 2026-06-04: extended to ship `matched_sources` (slug list),
+    `matched_source_names` (display names resolved via the optional
+    slug→name map), and `rationale_en` / `rationale_hi` (plain-English
+    one-liners) so the Trust Strip can render an explanation + named
+    sources without a second round-trip to /article/<id>/factcheck.
+    The payload stays backwards-compatible — older clients can ignore
+    the extra fields.
+    """
+    import json as _json
     verdict = (fc.verdict if fc else None) or "unchecked"
     badge = _VERDICT_BADGE.get(verdict, _VERDICT_BADGE["unchecked"])
+    matched: list[str] = []
+    if fc and fc.matched_sources:
+        try:
+            parsed = _json.loads(fc.matched_sources or "[]")
+            matched = [s for s in parsed if isinstance(s, str)]
+        except (TypeError, ValueError):
+            matched = []
+    matched_names = (
+        [slug_to_name.get(s, s) for s in matched]
+        if slug_to_name else matched
+    )
     return {
         "verdict": verdict,
         "symbol": badge["symbol"],
@@ -49,10 +74,19 @@ def _factcheck_payload(fc: FactCheck | None) -> dict:
         "word_hi": badge["hi"],
         "confidence": (fc.confidence if fc else None),
         "checked_at": (fc.checked_at.isoformat() if fc and fc.checked_at else None),
+        "matched_sources": matched,
+        "matched_source_names": matched_names,
+        "match_count": len(matched),
+        "rationale_en": (fc.rationale if fc else None),
+        "rationale_hi": (fc.rationale_hi if fc else None),
     }
 
 
-def _row_to_dict(a: Article, fc: FactCheck | None = None) -> dict:
+def _row_to_dict(
+    a: Article,
+    fc: FactCheck | None = None,
+    slug_to_name: dict[str, str] | None = None,
+) -> dict:
     return {
         "id": a.id,
         "title": a.title,
@@ -69,7 +103,7 @@ def _row_to_dict(a: Article, fc: FactCheck | None = None) -> dict:
         "importance": a.importance,
         "published_at": a.published_at.isoformat() if a.published_at else None,
         "fetched_at": a.fetched_at.isoformat() if a.fetched_at else None,
-        "factcheck": _factcheck_payload(fc),
+        "factcheck": _factcheck_payload(fc, slug_to_name),
     }
 
 
@@ -157,7 +191,15 @@ def feed(
         desc(Article.fetched_at),
     ).limit(max(1, min(limit, 100))).all()
 
-    items = [_row_to_dict(a, fc) for (a, fc) in rows]
+    # One batched lookup that resolves matched-source slugs into display
+    # names — so the Trust Strip can render "The Hindu, NDTV, Indian
+    # Express" instead of "thehindu, ndtv, ie". Caches in-process for
+    # the duration of the request.
+    from models.source import Source
+    slug_to_name = dict(
+        db.query(Source.slug, Source.display_name).all()
+    )
+    items = [_row_to_dict(a, fc, slug_to_name) for (a, fc) in rows]
     coverage = _coverage_for(db, state, language)
 
     # Honest narration — explain WHAT'S MISSING when items is empty,
@@ -248,7 +290,9 @@ def get_article(db: Session, article_id: int) -> Optional[dict]:
     if not row:
         return None
     a, fc = row
-    return _row_to_dict(a, fc)
+    from models.source import Source
+    slug_to_name = dict(db.query(Source.slug, Source.display_name).all())
+    return _row_to_dict(a, fc, slug_to_name)
 
 
 def list_sources(

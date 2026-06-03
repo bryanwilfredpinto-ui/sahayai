@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="rails-modalskip-2026-06-03" />
+  <meta name="chitti-build" content="trust-strip-2026-06-04" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -257,7 +257,7 @@
       font-size: 28px; color: var(--saffron); opacity: .7;
     }
 
-    /* ── Fact-check badge ────────────────────────────────────────── */
+    /* ── Fact-check badge (compact form, kept for 240 px rail cards) ── */
     .fc-badge {
       display: inline-block; padding: 1px 6px; border-radius: 4px;
       font-size: 10px; font-weight: 800;
@@ -267,6 +267,136 @@
     .fc-disputed  { background: rgba(185,28,28,.12); color: var(--red); }
     .fc-unchecked,
     .fc-unverified { background: rgba(107,114,128,.12); color: var(--muted); }
+
+    /* ── Trust Strip — full-width verification UX on every art-card ──
+       Sire 2026-06-04: replaces the 10 px pill above the headline. Goal:
+       a user understands trustworthiness in under 2 seconds.
+
+       Each strip carries:
+         • 6 px coloured left rail (green/amber/red/grey) — peripheral
+           vision picks this up before reading the headline
+         • icon + status word in 13 px — the verdict in plain English
+         • numeric confidence (0-100) — "92%"
+         • dot gauge — 5 dots, 0-4 filled by confidence quintile
+         • plain-English rationale — backend's rationale_en, one line
+         • source-count chip — "3 sources agree" / "1 other source"
+         • expand chevron — taps reveal matched_source_names inline
+
+       Anchored to four verdict states + an unchecked/loading state so
+       no card ever ships without a trust signal. */
+    .trust-strip {
+      display: grid; grid-template-columns: 6px 1fr auto;
+      align-items: stretch; gap: 0;
+      background: var(--surface);
+      border-radius: 10px 10px 0 0;
+      margin: -12px -12px 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border-bottom: 1px solid var(--rule);
+      transition: background .15s;
+    }
+    .trust-strip:hover { background: #F2F4F7; }
+    .trust-strip:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+    .trust-rail { background: var(--muted); }      /* default, overridden per verdict */
+    .trust-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .trust-head {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 13px; line-height: 1.2;
+    }
+    .trust-icon {
+      font-size: 16px; line-height: 1;
+      width: 20px; display: inline-flex; justify-content: center;
+    }
+    .trust-word {
+      font-weight: 800; letter-spacing: .02em;
+      text-transform: uppercase; font-size: 12px;
+    }
+    .trust-conf {
+      margin-left: auto; font-weight: 700; font-size: 12px;
+      color: var(--text); opacity: .8;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .trust-dots { display: inline-flex; gap: 3px; }
+    .trust-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(0,0,0,.08);
+    }
+    .trust-dot.filled { background: currentColor; }
+    .trust-rationale {
+      color: var(--text); font-size: 12px; line-height: 1.4;
+      margin: 0; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .trust-meta {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--muted); font-weight: 700;
+    }
+    .trust-chip {
+      padding: 1px 8px; border-radius: 999px;
+      background: rgba(0,0,0,.05); color: var(--text);
+      font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .03em;
+      white-space: nowrap;
+    }
+    .trust-expand {
+      padding: 0 14px; align-self: stretch;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 16px;
+      border-left: 1px solid var(--rule);
+    }
+    .trust-expand::before {
+      content: "›"; display: inline-block;
+      transition: transform .18s;
+      font-weight: 700; font-size: 22px; line-height: 1;
+    }
+    .trust-strip.expanded .trust-expand::before { transform: rotate(90deg); }
+    .trust-sources {
+      grid-column: 1 / -1;
+      display: none;
+      padding: 0 14px 12px; gap: 6px;
+      flex-direction: column;
+      background: rgba(255,255,255,.7);
+      border-top: 1px solid var(--rule);
+    }
+    .trust-strip.expanded .trust-sources { display: flex; }
+    .trust-source-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--text); padding: 4px 0;
+      border-bottom: 1px dashed var(--rule);
+    }
+    .trust-source-row:last-child { border-bottom: 0; }
+    .trust-source-row .src-check { color: var(--green); width: 14px; }
+    .trust-source-name { font-weight: 700; }
+    .trust-empty-evidence {
+      font-size: 12px; color: var(--muted); padding: 6px 0; font-style: italic;
+    }
+
+    /* Verdict colour treatments — left rail + status word + confidence text. */
+    .trust-strip.verdict-verified   .trust-rail { background: var(--green); }
+    .trust-strip.verdict-verified   .trust-word { color: var(--green); }
+    .trust-strip.verdict-verified   .trust-conf,
+    .trust-strip.verdict-verified   .trust-dots { color: var(--green); }
+    .trust-strip.verdict-partial    .trust-rail { background: var(--saffron); }
+    .trust-strip.verdict-partial    .trust-word { color: var(--warn); }
+    .trust-strip.verdict-partial    .trust-conf,
+    .trust-strip.verdict-partial    .trust-dots { color: var(--warn); }
+    .trust-strip.verdict-disputed   .trust-rail { background: var(--red); }
+    .trust-strip.verdict-disputed   .trust-word { color: var(--red); }
+    .trust-strip.verdict-disputed   .trust-conf,
+    .trust-strip.verdict-disputed   .trust-dots { color: var(--red); }
+    .trust-strip.verdict-unverified .trust-rail,
+    .trust-strip.verdict-unchecked  .trust-rail { background: var(--muted); }
+    .trust-strip.verdict-unverified .trust-word,
+    .trust-strip.verdict-unchecked  .trust-word { color: var(--muted); }
+    .trust-strip.verdict-unverified .trust-conf,
+    .trust-strip.verdict-unverified .trust-dots,
+    .trust-strip.verdict-unchecked  .trust-conf,
+    .trust-strip.verdict-unchecked  .trust-dots { color: var(--muted); }
+
+    /* The strip belongs to art-card and hero-card. Rail cards (240 px)
+       are too narrow for the rationale line; they keep .fc-badge in
+       the meta line. */
+    .hero-card .trust-strip { margin: 0 0 14px; border-radius: 0; }
 
     /* §2 — Suppress the substrate-injected per-box feedback bar on
        art-cards / rail-cards / hero-card. Each of these carries its
@@ -685,6 +815,136 @@ function fcBadge(fc) {
        + '">' + sym + ' ' + esc(label) + '</span>';
 }
 
+// ── Trust Strip ──────────────────────────────────────────────────────
+// Sire 2026-06-04: replaces the 10 px .fc-badge above the headline.
+// Goal: a user understands trustworthiness in under 2 seconds.
+//
+// Status word is plain English, not jargon:
+//   verified   → "Verified by ≥3 sources"
+//   partial    → "Matches 2 sources"
+//   disputed   → "Check first — sources disagree"
+//   unverified → "Unverified — no cross-checks yet"
+//   unchecked  → "Checking…" (still computing)
+const _TRUST_PRESENTATION = {
+  verified:   { icon: '✓',  word: 'Verified',    cta: '%n sources agree' },
+  partial:    { icon: '◐',  word: 'Matches',     cta: '%n sources cover this' },
+  disputed:   { icon: '!',  word: 'Check first', cta: 'Only %n other source' },
+  unverified: { icon: '?',  word: 'Unverified',  cta: 'No cross-checks yet' },
+  unchecked:  { icon: '⏳', word: 'Checking…',   cta: 'Trust score loading' },
+};
+function _trustChip(fc) {
+  const verdict = (fc && fc.verdict) || 'unchecked';
+  const pres = _TRUST_PRESENTATION[verdict] || _TRUST_PRESENTATION.unchecked;
+  const n = (fc && fc.match_count != null) ? fc.match_count : 0;
+  if (verdict === 'unverified') return pres.cta;
+  if (verdict === 'unchecked')  return pres.cta;
+  return pres.cta.replace('%n', String(n));
+}
+function _trustDots(confidence) {
+  // 5-dot gauge by quintile of confidence ∈ [0,100]. Conservative
+  // floor of 1 filled dot when there's ANY confidence so the gauge
+  // never reads as "zero" for an unverified score of 25%.
+  const c = Math.max(0, Math.min(100, Number(confidence) || 0));
+  const filled = c === 0 ? 0 : Math.max(1, Math.round(c / 20));
+  let html = '';
+  for (let i = 0; i < 5; i++) {
+    html += '<span class="trust-dot' + (i < filled ? ' filled' : '') + '"></span>';
+  }
+  return html;
+}
+function _trustRationale(fc, lang) {
+  if (!fc) return '';
+  const rk = lang === 'hi' ? 'rationale_hi' : 'rationale_en';
+  // Fallback chain: requested-language rationale → English → derived
+  // copy from verdict + count, so the strip never renders blank text.
+  if (fc[rk]) return fc[rk];
+  if (fc.rationale_en) return fc.rationale_en;
+  const v = fc.verdict || 'unchecked';
+  const n = fc.match_count || 0;
+  if (v === 'verified')  return n + ' other trusted sources are running this story; key facts agree.';
+  if (v === 'partial')   return n + ' other sources cover this; broad facts match but details differ.';
+  if (v === 'disputed')  return 'Only 1 other source and the headlines diverge — read the source link before sharing.';
+  if (v === 'unverified') return 'No cross-source corroboration yet — single-source story, may be hyperlocal or breaking.';
+  return 'Chitti is still cross-checking this story across other sources.';
+}
+function _trustSourcesList(fc) {
+  // Names if backend resolved them, fall back to slugs.
+  if (!fc) return [];
+  const names = Array.isArray(fc.matched_source_names) ? fc.matched_source_names : null;
+  const slugs = Array.isArray(fc.matched_sources) ? fc.matched_sources : [];
+  if (names && names.length) return names;
+  return slugs;
+}
+function trustStripHtml(fc, articleId) {
+  // fc is the per-article factcheck dict from the feed payload.
+  // Renders the always-visible top strip + the collapsed source list
+  // below (revealed by .expanded class). Tapping the strip toggles
+  // expansion; tapping a source row navigates to that outlet's URL
+  // when one is available (currently only the slug list is shipped).
+  const f = fc || {};
+  const verdict = f.verdict || 'unchecked';
+  const pres = _TRUST_PRESENTATION[verdict] || _TRUST_PRESENTATION.unchecked;
+  const conf = (typeof f.confidence === 'number') ? f.confidence : null;
+  const confLabel = (conf != null) ? (conf + '%') : '—';
+  const dots = _trustDots(conf || 0);
+  const rationale = _trustRationale(f, getFilter().lang);
+  const chip = _trustChip(f);
+  const sources = _trustSourcesList(f);
+  let sourcesHtml = '';
+  if (sources.length) {
+    sourcesHtml = sources.slice(0, 6).map(function (n) {
+      return '<div class="trust-source-row">'
+           +   '<span class="src-check">✓</span>'
+           +   '<span class="trust-source-name">' + esc(n) + '</span>'
+           + '</div>';
+    }).join('');
+  } else {
+    sourcesHtml = '<div class="trust-empty-evidence">'
+                + (verdict === 'unchecked'
+                    ? 'Chitti is still cross-checking this story.'
+                    : 'No other sources matched yet.')
+                + '</div>';
+  }
+  const aria = pres.word + '. ' + chip + '. ' + 'Confidence ' + confLabel
+             + '. Tap to see ' + (sources.length || 'no') + ' matching sources.';
+  return ''
+    + '<div class="trust-strip verdict-' + esc(verdict) + '"'
+    +   ' role="button" tabindex="0"'
+    +   ' aria-label="' + esc(aria) + '"'
+    +   ' aria-expanded="false"'
+    +   ' onclick="event.stopPropagation(); toggleTrust(' + articleId + ');"'
+    +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();toggleTrust(' + articleId + ');}">'
+    +   '<div class="trust-rail" aria-hidden="true"></div>'
+    +   '<div class="trust-body">'
+    +     '<div class="trust-head">'
+    +       '<span class="trust-icon" aria-hidden="true">' + esc(pres.icon) + '</span>'
+    +       '<span class="trust-word">' + esc(pres.word) + '</span>'
+    +       '<span class="trust-chip">' + esc(chip) + '</span>'
+    +       '<span class="trust-conf">'
+    +         '<span class="trust-dots" aria-hidden="true">' + dots + '</span>'
+    +         '<span>' + esc(confLabel) + '</span>'
+    +       '</span>'
+    +     '</div>'
+    +     '<p class="trust-rationale">' + esc(rationale) + '</p>'
+    +   '</div>'
+    +   '<div class="trust-expand" aria-hidden="true"></div>'
+    +   '<div class="trust-sources" role="list">' + sourcesHtml + '</div>'
+    + '</div>';
+}
+
+// Toggle expansion of the trust panel on a card. Independent of the
+// article-body expansion so a user can read corroborating sources
+// without committing to a full read-aloud.
+function toggleTrust(articleId) {
+  const card = document.getElementById('art-' + articleId)
+            || document.getElementById('hero-' + articleId);
+  if (!card) return;
+  const strip = card.querySelector('.trust-strip');
+  if (!strip) return;
+  const open = strip.classList.toggle('expanded');
+  strip.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
 // CANONICAL 5-ICON STRIP — per chitti-news/SKILLS.md #12 +
 // chitti-cto/CTO.md §2 — in this exact order on every box.
 // Icons only (MSN-style); aria-label carries the action description for
@@ -709,9 +969,11 @@ function articleCardHtml(a, featured) {
   ARTICLES[a.id] = a;
   const boxId = 'art-' + a.id;
   const featuredCls = featured ? ' featured' : '';
+  // No fcBadge here — the Trust Strip above the headline carries the
+  // verdict now (Sire 2026-06-04). Meta line stays slim: BREAKING +
+  // source name + time-ago only.
   const meta = [
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
-    fcBadge(a.factcheck),
     '<span class="src">' + esc(a.source_name || a.source_slug || 'Source') + '</span>',
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
@@ -730,6 +992,7 @@ function articleCardHtml(a, featured) {
     +   ' onclick="onCardTap(' + a.id + ')"'
     +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();onCardTap(' + a.id + ')}">'
     +   '<div>'
+    +     trustStripHtml(a.factcheck, a.id)
     +     '<div class="art-meta">' + meta + '</div>'
     +     '<h3 class="art-title">' + esc(a.title || '') + '</h3>'
     +     stripHtml(boxId, a.id)
@@ -824,9 +1087,9 @@ function heroCardHtml(a) {
   const thumb = a.image_url
     ? '<div class="hero-thumb" style="background-image:url(\'' + esc(a.image_url) + '\')" aria-hidden="true"></div>'
     : '<div class="hero-thumb placeholder" aria-hidden="true">📰</div>';
+  // No fcBadge — Trust Strip sits above the eyebrow now.
   const meta = [
     a.is_breaking ? '<span class="src" style="color:var(--red)">BREAKING</span>' : '',
-    fcBadge(a.factcheck),
     '<span class="src">' + esc(a.source_name || 'Source') + '</span>',
     timeAgo(a.published_at || a.fetched_at),
   ].filter(Boolean).join(' · ');
@@ -841,6 +1104,7 @@ function heroCardHtml(a) {
     +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();onHomeCardTap(' + a.id + ')}">'
     +   thumb
     +   '<div class="hero-body">'
+    +     trustStripHtml(a.factcheck, a.id)
     +     '<div class="hero-eyebrow">Top story</div>'
     +     '<div class="hero-meta">' + meta + '</div>'
     +     '<h2 class="hero-title">' + esc(a.title || '') + '</h2>'
@@ -1182,8 +1446,35 @@ async function speakArticle(id) {
   } else {
     text = (a.title || '').trim() + '. ' + plain;
   }
+  // Sire 2026-06-04 — blind-first trust preface. A sighted user gets
+  // the Trust Strip; a blind user only hears the speak utterance, so
+  // we lead with the verdict before the headline. Once per spoken
+  // article. Verified is a confidence boost; disputed is a warning.
+  const preface = _trustPreface(a.factcheck, lang);
+  if (preface) text = preface + ' ' + text;
   if (_activeArticleId !== id) return;
   speak(text, lang);
+}
+
+// Spoken-form of the trust verdict, prepended to the body utterance so
+// blind users hear "Verified by three sources. " before the headline.
+// Kept very short (max ~12 words) — the user's primary intent is the
+// news content, not the audit trail.
+function _trustPreface(fc, lang) {
+  if (!fc || !fc.verdict || fc.verdict === 'unchecked') return '';
+  const n = fc.match_count || 0;
+  if (lang === 'hi') {
+    if (fc.verdict === 'verified')  return n + ' अन्य स्रोतों ने पुष्टि की।';
+    if (fc.verdict === 'partial')   return n + ' अन्य स्रोतों ने यह खबर दी।';
+    if (fc.verdict === 'disputed')  return 'सावधान — सिर्फ़ एक अन्य स्रोत और सुर्खियाँ अलग हैं।';
+    if (fc.verdict === 'unverified') return 'अकेला स्रोत — पुष्टि बाकी।';
+    return '';
+  }
+  if (fc.verdict === 'verified')  return 'Verified by ' + n + ' other sources.';
+  if (fc.verdict === 'partial')   return n + ' other sources cover this.';
+  if (fc.verdict === 'disputed')  return 'Caution — only one other source, headlines diverge.';
+  if (fc.verdict === 'unverified') return 'Unverified — single source, no cross-checks yet.';
+  return '';
 }
 
 function speak(text, lang) {

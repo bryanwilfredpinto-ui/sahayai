@@ -368,7 +368,7 @@ async function main() {
   const cardSel = '.art-card[id="art-1001"]';
   await page.evaluate(() => { window.__speakLog = []; });
   const speakBefore = await page.evaluate(() => window.__speakLog.length);
-  await page.locator(cardSel).click({ position: { x: 200, y: 60 } });
+  await page.locator(cardSel).click({ position: { x: 200, y: 140 } });
   await page.waitForTimeout(1000);
   const expanded = await page.locator(cardSel).evaluate((el) =>
     el.classList.contains('expanded'));
@@ -568,11 +568,11 @@ async function main() {
     if (window.ARTICLES && window.ARTICLES[1002]) window.ARTICLES[1002].content = '';
     window.__speakLog = [];
   });
-  await page.locator('.art-card[id="art-1002"]').click({ position: { x: 200, y: 60 } });
+  await page.locator('.art-card[id="art-1002"]').click({ position: { x: 200, y: 140 } });
   // Brief wait — long enough for "One moment" utterance, well before
   // the mocked /body roundtrip resolves.
   await page.waitForTimeout(200);
-  await page.locator('.art-card[id="art-1001"]').click({ position: { x: 200, y: 60 } });
+  await page.locator('.art-card[id="art-1001"]').click({ position: { x: 200, y: 140 } });
   await page.waitForTimeout(4000);
   const switchLog = await page.evaluate(() => window.__speakLog);
   const lastTextSwitch = switchLog.length ? switchLog[switchLog.length - 1].text : '';
