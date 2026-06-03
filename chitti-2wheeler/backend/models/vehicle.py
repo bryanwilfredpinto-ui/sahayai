@@ -38,3 +38,23 @@ class BikeProfile(Base):
     reg = Column(String(32), nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class PassportEvent(Base):
+    """One row per Vehicle Health Passport event — keyed by device token.
+
+    kind ∈ service | repair | diagnosis | inspection | doc. The Trust
+    Score in routes/doctor.py is computed deterministically from the
+    spread + recency of these events (FEATURES.md Health Passport).
+    """
+
+    __tablename__ = "passport_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    device_token = Column(String(128), nullable=False, index=True)
+    kind = Column(String(24), nullable=False)  # service|repair|diagnosis|inspection|doc
+    title = Column(String(200), nullable=False)
+    detail = Column(String(1000), nullable=True)
+    cost = Column(Integer, nullable=True)  # rupees
+    odo = Column(Integer, nullable=True)
+    at = Column(DateTime, server_default=func.now(), nullable=False)

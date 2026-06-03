@@ -2,6 +2,29 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-04 PM — Chitti Mechanic — MECH-5 closed: Doctor backends LIVE (deterministic)
+
+**Trigger:** Sire — "Close MECH-5."
+
+Turned the five `501` stubs into LIVE deterministic endpoints on BOTH backends — no DeepSeek,
+no network, no LLM in any route. The only LLM-needed parts (photo auto-detect of a dashboard light,
+audio classification of a sound) return an honest `mode:"pick_or_describe"` (HTTP 200, never a
+fabricated result) — the deterministic "pick from the list / describe it" path is fully live.
+
+| Feature | Routes (per product, `/api/2w` + `/api/4w`) | Proof |
+|---|---|---|
+| Dashboard Doctor | `GET /dashboard/lights` · `POST /dashboard/check` (red-line lights force can-drive=false; colour always paired with a WORD label) | deterministic KB |
+| Sound Doctor | `GET /sound/catalogue` · `POST /sound/check` (2–4 ranked candidates + diy-tier + cost band) | deterministic KB |
+| OBD2 | `POST /obd/snapshot` (decodes DTCs via `_DTC`, flags volts/coolant/fuel-trim; coolant>110°C → no-drive) | deterministic |
+| Used-Vehicle Inspector | `GET /inspect/checklist` (~100 points) · `POST /inspect/score` (critical fail → avoid; weight-scored buy/caution/avoid) | deterministic |
+| Vehicle Health Passport | `POST /passport/event` · `GET /passport` · `GET /passport/trust-score` (`PassportEvent` model + Trust Score 0–100) | persisted (local SQLite until Turso env) |
+
+New files: `chitti-{2,4}wheeler/backend/routes/doctor.py` + `services/doctor_data.py`; `PassportEvent`
+added to each `models/`. **Backend tests: 24/24 (2w) + 22/22 (4w) green** via Flask test client
+(independently re-run by CTO). `skills/FEATURES.md` updated (5 features moved to "Built"). Every
+diagnostic carries a `confidence` band; safety red-lines force can-drive=false. UI wiring of the new
+Inspector/Passport screens tracked as MECH-6 (CTO, no blocker).
+
 ## 2026-06-04 — Chitti Mechanic — CTO gates certified (cert 22/22 · tests 32/32)
 
 **Trigger:** Sire — "Complete your job." (close the CTO-owned, no-Sire-blocker gates).

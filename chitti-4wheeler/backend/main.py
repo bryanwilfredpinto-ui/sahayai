@@ -22,6 +22,7 @@ from flask_cors import CORS
 from config import settings
 from database import Base, engine, ensure_schema
 import models  # noqa: F401 — registers models with Base.metadata
+from routes.doctor import doctor_bp
 from routes.wheels import bp as wheels_bp
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -69,6 +70,10 @@ def create_app() -> Flask:
             "db_kind": "turso-replica" if settings.DATABASE_URL.startswith("libsql://") else "sqlite-local",
         })
 
+    # Register the specific Car Doctor routes; wheels_bp carries the
+    # /<path:rest> coming-soon catch-all. Werkzeug rule specificity makes
+    # these static routes win over the catch-all regardless of order.
+    app.register_blueprint(doctor_bp, url_prefix="/api/4w")
     app.register_blueprint(wheels_bp, url_prefix="/api/4w")
 
     try:

@@ -100,17 +100,17 @@ Legend: ✅ Delivered & verified · 🟡 Delivered but unverified / partial · �
 | Swarm Diagnosis (8-agent vote + 6-field verdict) | ✅ | ✅ (both pages) | 🚧 via Vaani — blocked |
 | Scam Shield (quote fairness) | ✅ | ✅ | 🚧 via Vaani — blocked |
 | Symptom Doctor (voice/text) | ✅ | ✅ | 🚧 |
-| Dashboard Doctor (photo of warning light) | ✅ | 🟡 (existing Photo card) | ❌ route 501 |
-| Sound Doctor (record 10s) | ✅ | 🟡 (existing Sound card) | ❌ route 501 |
-| DIY Repair Coach | ✅ | 🟡 | ❌ 501 |
-| OBD2 / Mode-2 (cars first-class) | ✅ | 🟡 (existing OBD card) | ❌ 501 |
+| Dashboard Doctor (warning-light KB) | ✅ | 🟡 (existing Photo card) | ✅ **LIVE** `GET /dashboard/lights` · `POST /dashboard/check` (photo auto-detect = honest pick/describe) |
+| Sound Doctor (sound catalogue) | ✅ | 🟡 (existing Sound card) | ✅ **LIVE** `GET /sound/catalogue` · `POST /sound/check` (audio auto-detect = honest pick/describe) |
+| DIY Repair Coach | ✅ | 🟡 | 🚧 (LLM) |
+| OBD2 / Mode-2 (cars first-class) | ✅ | 🟡 (existing OBD card) | ✅ **LIVE** `POST /obd/snapshot` (deterministic DTC + live-param interpreter) |
 | Vehicle Twin / Garage Twin | ✅ | 🟡 (profile exists) | 🟡 local only (Turso unset) |
-| Vehicle Health Passport (Trust Score) | ✅ | ❌ | ❌ |
-| Used-Vehicle Inspector (100-point) | ✅ | ❌ | ❌ |
+| Vehicle Health Passport (Trust Score) | ✅ | ❌ (UI todo) | ✅ **LIVE** `POST /passport/event` · `GET /passport` · `/passport/trust-score` |
+| Used-Vehicle Inspector (100-point) | ✅ | ❌ (UI todo) | ✅ **LIVE** `GET /inspect/checklist` · `POST /inspect/score` |
 | Emergency Mode (family cascade) | ✅ | ✅ (SOS exists) | 🟡 |
 | Preventive Maintenance / Parts-Life | ✅ | 🟡 | 🟡 |
 
-**Section E verdict:** Phase-1 hero surfaces (Swarm Diagnosis + Scam Shield) shipped in UI; deeper features are **honest skeletons** (documented + designed, backend `501`). No fake demos.
+**Section E verdict (updated 2026-06-04):** Phase-1 hero surfaces (Swarm Diagnosis + Scam Shield) shipped in UI; **MECH-5 closed — Dashboard / Sound / OBD2 / Inspector / Health-Passport backends are now LIVE deterministic endpoints** (knowledge tables + scoring, no LLM), tested 24/24 (2w) + 22/22 (4w). The only honest COMING-SOON left is the *photo/audio auto-detect* (returns "pick or describe", never a fake result) — it needs the DeepSeek vision/audio unblock. Remaining UI wiring of the Inspector/Passport screens is a frontend follow-up (MECH-6).
 
 ---
 
@@ -146,7 +146,8 @@ Legend: ✅ Delivered & verified · 🟡 Delivered but unverified / partial · �
 | ~~MECH-2~~ | ~~375px visual cert + screenshots~~ → **CLOSED 2026-06-04** ([tools/cert_mechanic.mjs](tools/cert_mechanic.mjs) 22/22; screenshots saved) | ✅ done |
 | ~~MECH-3~~ | ~~unit/integration tests~~ → **CLOSED 2026-06-04** (frontend 18/18 + backend 7/7 + 7/7) | ✅ done |
 | MECH-4 | Curl-verify a live Vaani-routed mechanic query once §G#1 lands (gate 5) | 🚧 P0 (blocked on Sire) |
-| MECH-5 | Build Dashboard/Sound/OBD2/Used-Inspector/Passport backend routes (replace 501s) | P2 (vision/sound parts need DeepSeek funding) |
+| ~~MECH-5~~ | ~~Dashboard/Sound/OBD2/Inspector/Passport backend routes~~ → **CLOSED 2026-06-04** — 5 deterministic endpoint groups LIVE on both backends + `PassportEvent` model + Trust Score; tested **24/24 (2w) + 22/22 (4w)**. Only photo/audio auto-detect stays honest COMING-SOON (LLM). | ✅ done |
+| MECH-6 | **NEW** — wire the Inspector + Health-Passport screens in the HTML to the new live routes | P2 (CTO, no blocker) |
 
 ---
 

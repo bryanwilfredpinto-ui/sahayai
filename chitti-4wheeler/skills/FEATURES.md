@@ -42,6 +42,37 @@ _Anchor against routes + frontend handlers. Cross-reference [`../README.md`](../
 - Voice IN + voice OUT in 26 languages — inherited from Chitti Voice
   Factory.
 
+### Car Doctor — deterministic diagnostics (MECH-5, shipped 2026-06-04)
+
+All deterministic (knowledge tables + scoring) — NO DeepSeek, NO
+network. Every diagnostic carries a `confidence` band; red-line systems
+(brakes / steering / airbag-SRS / overheat / tyre / EV-HV) force
+`can_drive:false` + a do-not-drive note. Routes live in
+[`backend/routes/doctor.py`](../backend/routes/doctor.py); tables in
+[`backend/services/doctor_data.py`](../backend/services/doctor_data.py).
+
+- **Dashboard Doctor** — `GET /api/4w/dashboard/lights` (14-telltale KB)
+  + `POST /api/4w/dashboard/check` (interpret one light → severity /
+  can-drive / risk / confidence / Hinglish note). Photo **auto-detect**
+  of a light is **COMING SOON** (needs vision); `{image:true}` returns
+  HTTP 200 `mode:"pick_or_describe"`, never a fabricated result.
+- **Sound Doctor** — `GET /api/4w/sound/catalogue` (9 car sounds) +
+  `POST /api/4w/sound/check` (2-4 ranked causes summing ~100%, DIY tier,
+  car rupee bands, safety note). Audio **auto-classify** of a recorded
+  sound is **COMING SOON**; `{audio:true}` returns
+  `mode:"pick_or_describe"`.
+- **OBD2 snapshot interpreter** — `POST /api/4w/obd/snapshot` decodes
+  DTCs from the local library + flags live params (volts<12.0,
+  coolant>110°C → can-drive false, |stft+ltft|>25%). Unknown codes
+  returned honestly (`sev:"?"`).
+- **Used-Vehicle Inspector** — `GET /api/4w/inspect/checklist`
+  (~100-point sheet across 11 categories, safety points marked
+  `critical`) + `POST /api/4w/inspect/score` → weighted score, verdict
+  (buy / caution / avoid), named critical fails, expected repair band.
+- **Vehicle Health Passport** — `POST /api/4w/passport/event` (persist),
+  `GET /api/4w/passport` (events newest-first + deterministic Trust
+  Score 0-100, green/amber/red), `GET /api/4w/passport/trust-score`.
+
 ---
 
 ## 2. Planned — queued 2026-05-14
@@ -158,7 +189,7 @@ knowledge-corpus expert grades, Vaani sole interface) never move.
 | # | Item | How to apply |
 |---|---|---|
 | Q1–Q3 | Mirror of [chitti-2wheeler Q1–Q3](../../chitti-2wheeler/skills/FEATURES.md) — make/model-specific intervals, DIY-vs-mechanic cost delta, recall notices. | Same backend pattern; 4wheeler-specific OEM catalogs. |
-| Q4 | **OBD2 interpreter** — user describes the error code (P0420 / P0301 / etc.), Chitti explains in plain language. **Interpreter only — not reader.** No phone-to-OBD adapter needed. | Curated `obd2_codes.json` (~2,000 OBD-II generic + manufacturer-specific codes). LLM narrates severity + likely cause + DIY-vs-mechanic recommendation. |
+| Q4 | **OBD2 interpreter** — ✅ SHIPPED (MECH-5, 2026-06-04) as `POST /api/4w/obd/snapshot` (deterministic decode + live-param flags) and `GET /api/4w/dtc/<code>`. **Interpreter only — not reader.** No phone-to-OBD adapter needed. Full ~2 000-code library still queued (C5). | Local `_DTC` table narrates severity + likely cause + repair band, deterministically (no LLM). |
 
 
 ### Scope

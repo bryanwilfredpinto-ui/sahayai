@@ -41,6 +41,40 @@ _Anchor against routes + frontend handlers. Cross-reference [`../README.md`](../
   [chitti_a11y.js](../../chitti_a11y.js).
 - Voice IN + voice OUT in 26 languages — inherited from Chitti Voice
   Factory.
+- **Dashboard Doctor** — deterministic warning-light knowledge base.
+  `GET /api/2w/dashboard/lights` lists ~12 common telltales (every colour
+  carries a WORD label + symbol, never colour alone); `POST
+  /api/2w/dashboard/check {light_key}` returns severity · can_ride · risk ·
+  confidence · Hinglish note. Red-line lights (low oil, overheat, EV
+  fault) force `can_ride:false`. **Photo AUTO-DETECT of a light is COMING
+  SOON** (needs a vision provider) — sending `{image:true}` returns an
+  honest `mode:"pick_or_describe"` (HTTP 200), never a fabricated result.
+- **Sound Doctor** — deterministic sound catalogue. `GET
+  /api/2w/sound/catalogue` lists ~8 bike sounds; `POST /api/2w/sound/check
+  {sound_key}` returns 2-4 ranked candidate causes (≈100%) with DIY-tier +
+  rupee cost band + confidence + safety note. **Audio AUTO-DETECT is
+  COMING SOON** (needs an audio model) — `{audio:true}` returns honest
+  `mode:"pick_or_describe"` (HTTP 200).
+- **OBD2 snapshot interpreter** — `POST /api/2w/obd/snapshot
+  {codes:[...], live:{volts,rpm,coolant_c}}` decodes each DTC from the
+  local library, flags live params vs red-lines (volts<11.8 charging
+  issue, coolant>110°C overheat → `can_ride:false`), and returns overall
+  severity + confidence + Hinglish summary. Unknown codes are listed
+  honestly as `sev:"?"`.
+- **Used-Vehicle Inspector** — 100-point deterministic checklist. `GET
+  /api/2w/inspect/checklist` (Engine, Transmission/Chain, Electrical,
+  Brakes, Tyres/Wheels, Suspension/Fork, Frame/Rust, Documents, Service
+  history, Test-ride — safety/title points marked `critical`); `POST
+  /api/2w/inspect/score {answers}` returns score % + verdict
+  (buy/caution/avoid) + named critical fails + expected repair band. Any
+  critical fail caps the verdict — never "buy".
+- **Vehicle Health Passport** — persisted per device (Turso). `POST
+  /api/2w/passport/event` records service/repair/diagnosis/inspection/doc
+  events; `GET /api/2w/passport` returns the timeline newest-first plus a
+  deterministic **Trust Score** (0-100, green ≥80 / amber 50-79 / red <50)
+  from service history, breadth/recency, unresolved critical repairs, and
+  missing docs; `GET /api/2w/passport/trust-score` returns just the score.
+  Honest empty state when no events.
 
 ---
 
@@ -56,14 +90,14 @@ where blind / illiterate users are the primary audience.
 | W2 | **Breakdown coach** — step-by-step Hinglish flowchart when bike refuses to start; emits roadside-assistance numbers | **P0** | Safety; rural / highway users with no mechanic nearby | `POST /api/2w/breakdown` returns decision tree; voice-walks user through each step |
 | W3 | **Document vault** — RC · insurance · PUC · driving licence · loan EMI · auto-expiry alerts 30 / 7 / 1 days before | **P0** | Expired PUC = ₹10 000 fine; 6 crore Indians have a 2W, most miss renewal dates | Camera capture → Tesseract / DeepSeek OCR → encrypted Turso row + 3 reminder crons per doc |
 | W4 | **Fuel log + km/l calculator** | P1 | Drivvo's core feature; lets riders track real economy | Voice "Chitti, 200 rupees ka petrol bhara, 4.5 litre, odo 25 100" → row + rolling km/l |
-| W5 | **Predictive maintenance (OBD2 mode)** — oil quality %, coolant trend, battery voltage drop, misfire detect via ELM327 | P1 | For bikes that have an OBD2 port (RE Meteor 350+, KTM 390+, Pulsar NS200+, most ABS bikes 2018+) | Web-Bluetooth UI to pair adapter + `POST /api/2w/obd/snapshot` |
+| W5 | **Predictive maintenance (OBD2 mode)** — oil quality %, coolant trend, battery voltage drop, misfire detect via ELM327 | P1 | For bikes that have an OBD2 port (RE Meteor 350+, KTM 390+, Pulsar NS200+, most ABS bikes 2018+) | ✅ **Snapshot interpreter LIVE** — `POST /api/2w/obd/snapshot` decodes codes + flags live params (see §1). Web-Bluetooth ELM327 pairing UI still queued. |
 | W6 | **DTC plain-English library** — every P0xxx + manufacturer-specific code translated to Hinglish + repair cost band | P1 | Removes mechanic information asymmetry — rider can verify quoted repair | `dtc_codes` table + `GET /api/2w/dtc/<code>` |
 | W7 | **Anti-overcharge guard** — "Mechanic ne ₹1 800 maanga oil change ke liye, kya theek hai?" → community fair-price band by city + DeepSeek opinion | **P0** | Mechanic overcharging is the #1 complaint; Chitti is the rider's commando | `fair_price` table seeded from community + `POST /api/2w/quote/check` |
 | W8 | **Theft guard — community ping** | **P0** | Bike theft is rampant; insurance pays slow; community network is fastest recovery channel | Owner reports theft → pincode-radius alert to every Chitti 2W user in that pincode; sightings replied + spoken to owner |
 | W9 | **Roadside SOS — family cascade** | **P0** | Per [Vaani locked emergency protocol](../../SAHAYAI_MASTER.md#2-locked-decisions--do-not-relitigate) — confirm-with-master → alarm → spouse → family → Chitti-to-Chitti relay. **Never auto-dials 100 / 108 / 112.** | Reuses `chitti-vaani` emergency endpoint; 2W adds GPS + RC plate to the payload |
 | W10 | **Mechanic finder + honesty score** | P1 | Community-driven ratings; surfaces "fair-price + on-time" mechanics nearby | Geo-aware list (Haversine, §8 P0 #5–#9 substrate) + rating table |
 | W11 | **Spare parts — genuine vs fake scanner** | P1 | Per [Camera Intelligence LOCKED §2b](../../SAHAYAI_MASTER.md#2b-camera-intelligence-across-all-chittis--locked-2026-05-13) — every camera capture feeds community alerts + annual report. Fake bearings / fake brake shoes kill riders. | `POST /api/camera/capture` (shared substrate) + community-alert flywheel |
-| W12 | **AI engine listening** — phone mic records 10 s clip; DeepSeek + audio classifier flags misfire / bearing whine / chain rattle / tappet noise | P2 | Most riders can't diagnose by ear; Chitti can. | `POST /api/2w/listen` accepts blob; returns ranked candidate faults |
+| W12 | **AI engine listening** — phone mic records 10 s clip; DeepSeek + audio classifier flags misfire / bearing whine / chain rattle / tappet noise | P2 | Most riders can't diagnose by ear; Chitti can. | 🟡 **Sound Doctor catalogue LIVE** (deterministic `POST /api/2w/sound/check {sound_key}`, see §1). **Audio AUTO-DETECT (the 10 s clip classifier) remains COMING SOON** — needs an audio model; `{audio:true}` returns honest `pick_or_describe`. |
 | W13 | **Weather-aware maintenance** — monsoon arriving → "chain lube every 300 km not 500"; dust storm season → "air filter check 2× more often" | P1 | India's seasons stress the bike differently; reminders should adapt | IMD weather feed + rule table |
 | W14 | **WhatsApp booking** — book service from WhatsApp without app | P1 | Per [SAHAYAI_MASTER §5b — WhatsApp integration P0](../../SAHAYAI_MASTER.md#5b-cross-cutting--applies-to-all-chittis-queued-2026-05-13). Rural unlock. | WhatsApp Business API + service-centre directory |
 | W15 | **Group ride planner** | P2 | Royal Enfield / BMW Motorrad apps have it; community-feature for Bullet / KTM riders | Trip plan + live location share + auto-fire Vaani SOS if a rider stops moving for 10 min |
