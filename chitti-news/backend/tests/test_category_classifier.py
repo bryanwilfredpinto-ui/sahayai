@@ -121,6 +121,39 @@ SIRE_CORPUS = [
         "PM Modi inaugurates infra — politics keyword present but bank score "
         "doesn't beat source enough to override",
     ),
+
+    # ── Real false positives from the live dry-run pass ──
+    # Sire 2026-06-03 — these surfaced when the live ?apply=0 pass ran
+    # against ~200 articles. Adding them locks the fix.
+    (
+        "Amazon has preponed its biggest sale event of the year, Prime Day. "
+        "Amazon's annual Prime Day sale is moving to June 23-26 in the US, a first "
+        "since 2021, influenced by the FIFA World Cup and US Independence Day. "
+        "This four-day event aims to boost online spending, with a significant focus "
+        "on groceries and household essentials as Amazon expands its rapid delivery "
+        "services to compete with rivals.",
+        "national", "business",
+        "Amazon Prime Day — title+summary mentions FIFA World Cup in passing but "
+        "the article IS about commerce. Must NOT classify as sports.",
+    ),
+    (
+        "Rupee falls 28 paise to 95.64 against U.S. dollar in early trade",
+        "national", "business", "Forex story — bank pattern fires; from national.",
+    ),
+    (
+        "Sensex, Nifty tank in early trade over crude oil price rise; TCS falls 6%",
+        "national", "business", "Market story — bank pattern fires.",
+    ),
+    (
+        "Microsoft unveils AI models in push for independence from OpenAI",
+        "national", "tech",
+        "Microsoft + AI Models + OpenAI — clearly tech, was being missed by the "
+        "first pass before smoking-gun tightening.",
+    ),
+    (
+        "Ranveer Singh sues film body a week after 'ban' amid Don 3 row",
+        "national", "entertainment", "Bollywood actor + film body — entertainment.",
+    ),
 ]
 
 

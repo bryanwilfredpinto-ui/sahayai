@@ -52,11 +52,15 @@ def _w(pattern: str) -> re.Pattern:
 
 
 _SPORTS = [
-    _w(r"cricket|cricketer|t20|odi|ipl 20\d\d|ipl\s*-?\s*\d+|wickets?|batsman|batsmen|bowler|bowlers|innings|test match|test series|test cricket|fielding"),
-    _w(r"world cup|asia cup|champions trophy|asian games|olympics?|olympic games|paralympics?|commonwealth games|cwg|world athletics"),
-    _w(r"fifa|messi|ronaldo|premier league|epl|la liga|serie a|champions league|football match|football team|footballers?"),
-    _w(r"tennis|wimbledon|us open|french open|australian open|atp|wta|grand slam|federer|nadal|djokovic|sinner|alcaraz"),
-    _w(r"hockey league|hockey match|hockey india|hockey team|fih"),
+    _w(r"cricket|cricketer|t20i|odi series|ipl 20\d\d|ipl\s*-?\s*\d+|wickets?|batsmen|bowler|bowlers|innings|test match|test series|test cricket|fielding"),
+    # "world cup" / "asia cup" alone are too generic — FIFA World Cup is
+    # routinely mentioned in business/political context (e.g. Amazon
+    # Prime Day moved BECAUSE of FIFA World Cup). Require a sport
+    # qualifier here so we only fire on actual sports articles.
+    _w(r"(?:fifa|icc|t20i?|cricket|football|hockey|kabaddi) world cup|asia cup [a-z0-9]+|champions trophy|asian games|olympic medals?|paralympics?|commonwealth games|cwg 20\d\d|world athletics"),
+    _w(r"messi|ronaldo|premier league|epl\b|la liga|serie a|champions league fixture|football match|football team|footballers?"),
+    _w(r"tennis|wimbledon|us open tennis|french open tennis|australian open tennis|atp tour|wta tour|grand slam|federer|nadal|djokovic|sinner|alcaraz"),
+    _w(r"hockey league|hockey match|hockey india|hockey team|fih (?:pro|world)"),
     _w(r"badminton|pv sindhu|saina nehwal|chirag shetty|satwiksairaj"),
     _w(r"wrestling|wrestler|kabaddi|pro kabaddi|pkl|boxing match|boxers? defeat|boxers? beat|olympic boxer"),
     _w(r"chess|gukesh|magnus carlsen|fide|grandmaster"),
@@ -105,8 +109,15 @@ _POLITICS = [
 ]
 
 _BUSINESS = [
+    # Commerce / retail — Amazon, Flipkart, sale events, ecommerce
+    # heading words must register so "Amazon Prime Day" or "Flipkart
+    # Big Billion Days" stays in business rather than falling out.
+    _w(r"amazon|flipkart|reliance retail|jiomart|meesho|nykaa|myntra|tata cliq|big bazaar|d-mart|dmart|future retail|walmart|costco|shoprite"),
+    _w(r"prime day|big billion days|great indian sale|end of season sale|black friday sale|cyber monday|festive sale|wedding sale"),
+    _w(r"ecommerce|e-commerce|online shopping|online retail|grocery delivery|quick commerce|q-commerce|10[\s-]?minute delivery|rapid delivery|last[\s-]?mile delivery"),
     _w(r"stock|stocks|share market|sharemarket|share price|stock market|equities?|nifty|sensex|bse\b|nse\b|nasdaq|dow jones|s&p 500"),
-    _w(r"rupee|dollar|forex|exchange rate|currency|currency reserves|forex reserves"),
+    _w(r"\brupee\b|\bdollar\b|\beuro\b|\byen\b"),
+    _w(r"forex|exchange rate|currency reserves|forex reserves|currency basket"),
     _w(r"gdp|inflation|cpi|wpi|repo rate|reverse repo|monetary policy|mpc meeting|rbi\b|sebi\b|finance ministry|fiscal deficit"),
     _w(r"ipo|fpo|qip|preferential issue|rights issue|listing day|fund(?:-|\s)?raise|fundraising|valuation|unicorn|decacorn"),
     _w(r"merger|acquisition|m&a|takeover|stake sale|equity stake|joint venture|jv\b"),
@@ -159,9 +170,19 @@ MIN_MATCHES_TO_OVERRIDE = 2
 # in a headline is never about anything but cricket.
 _SMOKING_GUN = {
     "sports": _w(
-        r"wickets?|innings|batsman|batsmen|bowler|odi|t20|test match|ranji trophy|ipl 20\d\d|"
-        r"world cup|asia cup|premier league|champions league|grand slam|olympic medal|"
+        # All entries here must be unambiguously sports — words that can
+        # appear in business/national summaries as context (e.g. "FIFA
+        # World Cup" mentioned in an Amazon Prime Day article) DO NOT
+        # belong. Generic "world cup" / "asia cup" was demoted out of
+        # smoking-gun after a live false positive 2026-06-03 — they now
+        # need 2+ other sports patterns to fire via the bank route.
+        r"wickets?|innings|batsmen|bowler|odi series|odi century|odi double century|t20i|test match|test series|test century|test double century|ranji trophy|"
+        r"ipl 20\d\d|champions trophy|grand slam|olympic medal|"
+        r"(?:icc|fifa|fih|hockey india league|hil) (?:world cup|t20i?|champions trophy)|"
+        # Cricket figures whose mere mention in a headline is unambiguous.
+        r"virat kohli|rohit sharma|jasprit bumrah|ms dhoni|ravindra jadeja|hardik pandya|sachin tendulkar|"
         r"india vs (?:australia|england|pakistan|south africa|new zealand|sri lanka|west indies|bangladesh|afghanistan)|"
+        r"india(?:['']s)? clash with (?:australia|england|pakistan|south africa|new zealand|sri lanka|west indies|bangladesh|afghanistan)|"
         r"west indies vs (?:australia|england|pakistan|south africa|new zealand|sri lanka|bangladesh|afghanistan|india)"
     ),
     "entertainment": _w(
@@ -215,10 +236,19 @@ def classify(text: str, source_category: str) -> ClassificationResult:
 
     Decision rules (in order):
       1. Score every bank by counting distinct pattern matches.
-      2. If a SMOKING_GUN regex matches a single bank, override.
-      3. Else if any bank scores >= MIN_MATCHES_TO_OVERRIDE AND beats
-         the source's score by at least 1, override to that bank.
-      4. Else keep the source's category.
+      2. Run the smoking-gun pass to identify "strong" category signals.
+      3. If a smoking gun fires AND no OTHER bank scores >= 2, override
+         to the smoking-gun's bank. (Context check: an Amazon Prime Day
+         article mentioning FIFA World Cup in passing should not become
+         a sports article when its business signals are obviously
+         dominant.)
+      4. Else, if any bank scores >= MIN_MATCHES_TO_OVERRIDE AND beats
+         the source's score, override to that bank.
+      5. National-source nuance: when src == "national" (the catch-all
+         default), MIN_MATCHES drops to 1 — a single forex pattern
+         hit ("Rupee falls against dollar") is enough to move it to
+         business.
+      6. Else keep the source's category.
 
     The source's category is never overridden when (a) confidence is
     weak, (b) the leading bank is the same as the source, or (c) the
@@ -235,23 +265,6 @@ def classify(text: str, source_category: str) -> ClassificationResult:
 
     src = (source_category or "national").lower()
 
-    # Smoking-gun pass — these are unambiguous category signals.
-    sg_hits = []
-    for bank, pat in _SMOKING_GUN.items():
-        if pat.search(txt):
-            sg_hits.append(bank)
-    # Resolve a smoking-gun by CATEGORY_PRIORITY so cricket beats biz
-    # if both fire (extremely rare).
-    if sg_hits:
-        for cand in CATEGORY_PRIORITY:
-            if cand in sg_hits and cand != src:
-                return ClassificationResult(
-                    category=cand,
-                    overridden=True,
-                    reason=f"smoking-gun:{cand}",
-                    scores={"sg": sg_hits},
-                )
-
     # Score every bank by distinct-pattern match count.
     scores: dict[str, int] = {}
     for bank_name, patterns in _BANKS.items():
@@ -259,24 +272,60 @@ def classify(text: str, source_category: str) -> ClassificationResult:
         if hits:
             scores[bank_name] = hits
 
+    # Smoking-gun pass.
+    sg_hits: list[str] = []
+    for bank, pat in _SMOKING_GUN.items():
+        if pat.search(txt):
+            sg_hits.append(bank)
+
+    # Smoking gun fires AND no competing bank scores >= 2 → override.
+    # If another bank scores >= 2, the smoking gun is most likely a
+    # passing mention (Amazon Prime Day cites FIFA World Cup), so the
+    # bank-scoring pass below should decide.
+    if sg_hits:
+        for cand in CATEGORY_PRIORITY:
+            if cand not in sg_hits:
+                continue
+            if cand == src:
+                continue
+            # Any OTHER bank scoring >= 2 vetoes the smoking gun unless
+            # the smoking gun's own bank also scores >= 2 (i.e. it has
+            # both a smoking gun AND clear bank evidence).
+            competing = [b for b, s in scores.items()
+                         if b != cand and b != src and s >= 2]
+            sg_bank_score = scores.get(cand, 0)
+            if competing and sg_bank_score < 2:
+                continue
+            return ClassificationResult(
+                category=cand, overridden=True,
+                reason=f"smoking-gun:{cand}|bankScore={sg_bank_score}|competing={competing}",
+                scores=scores | {"sg": sg_hits},
+            )
+
     if not scores:
         return ClassificationResult(
             category=src, overridden=False,
             reason="no-bank-matched", scores=scores,
         )
 
-    # Pick the bank with the most distinct-pattern matches (resolve
-    # ties via CATEGORY_PRIORITY).  If it beats source score by enough
-    # and clears MIN_MATCHES_TO_OVERRIDE, override.
+    # Pick the bank with the most distinct-pattern matches.  Resolve
+    # ties via CATEGORY_PRIORITY so cricket-context beats business-
+    # context (the original Sire case).
     top_bank = max(scores.keys(), key=lambda b: (scores[b], -CATEGORY_PRIORITY.index(b)
                                                   if b in CATEGORY_PRIORITY else 99))
     top_score = scores[top_bank]
     src_score = scores.get(src, 0)
 
-    if top_bank != src and top_score >= MIN_MATCHES_TO_OVERRIDE and top_score > src_score:
+    # National is the catch-all default — most "national" articles
+    # would be better classified as something specific. Lower the
+    # threshold there so single strong signals (one forex pattern,
+    # one entertainment pattern) can pull articles out of the bucket.
+    min_matches = 1 if src == "national" else MIN_MATCHES_TO_OVERRIDE
+
+    if top_bank != src and top_score >= min_matches and top_score > src_score:
         return ClassificationResult(
             category=top_bank, overridden=True,
-            reason=f"banks:top={top_bank}({top_score})>src={src}({src_score})",
+            reason=f"banks:top={top_bank}({top_score})>src={src}({src_score})|minMatches={min_matches}",
             scores=scores,
         )
 
