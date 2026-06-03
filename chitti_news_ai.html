@@ -175,10 +175,11 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
 </div>
 
-<!-- v0.3 inline profession picker — default Everyone, never gates content -->
-<div class="picker-bar" role="group" aria-label="I am a..." style="border-top:1px solid #f0e7d4">
-  <span class="pick-lbl" data-i18n="pick.iam">I am a</span>
-  <select id="pick-profession" onchange="onProfessionChange()" aria-label="Profession">
+<!-- v0.3 inline profession picker — default Everyone, never gates content
+     accessibility: aria-labelled + speak-on-focus for blind users (v0.3 §11.NFR-3 row 7) -->
+<div class="picker-bar chitti-response" data-chitti-response data-chitti-section="Profession picker (I am a)" role="group" aria-label="I am a — profession picker, optional, default Everyone" style="border-top:1px solid #f0e7d4">
+  <span class="pick-lbl" data-i18n="pick.iam" aria-hidden="true">I am a</span>
+  <select id="pick-profession" onchange="onProfessionChange()" onfocus="_speakPickerHint()" aria-label="Profession — choose any time, default Everyone. Use arrow keys to browse options." aria-describedby="pick-prof-hint">
     <option value="everyone">🌐 Everyone (default)</option>
     <option value="software-developer">💻 Software Developer</option>
     <option value="hr-professional">🤝 HR Professional</option>
@@ -194,7 +195,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
     <option value="business-owner">🏪 Business Owner</option>
     <option value="government-employee">🏛️ Government Employee</option>
   </select>
-  <span class="section-sub" style="margin-left:8px">Optional. Pick anytime. <span id="prof-clear-link" style="display:none;cursor:pointer;color:var(--saffron);font-weight:700">✕ Clear</span></span>
+  <span id="pick-prof-hint" class="section-sub" style="margin-left:8px">Optional. Pick anytime. Stored locally only. <span id="prof-clear-link" style="display:none;cursor:pointer;color:var(--saffron);font-weight:700">✕ Clear</span></span>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Chitti News AI categories">
@@ -637,6 +638,38 @@ const STREAM_LABELS = {
 };
 const STREAM_ORDER = ['news', 'courses', 'cert', 'tool', 'job', 'scheme', 'roadmap_node'];
 
+// v0.3 SHIP row #10 — profession picker readable for blind users.
+// Speaks an audible hint the first time the picker gets focus this session.
+// Uses Voice Factory via chitti_a11y.js when available; falls back to
+// browser SpeechSynthesis. Honors the Disability Profile auto-read pattern.
+let _professionPickerSpoken = false;
+function _speakPickerHint(){
+  if (_professionPickerSpoken) return;
+  _professionPickerSpoken = true;
+  const hint = "Choose your profession to get a personalised career feed. " +
+               "Default is everyone. You can change or clear any time. " +
+               "Stored on this device only.";
+  try {
+    if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak === 'function') {
+      window.Chitti.a11y.speak(hint);
+    } else if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(hint);
+      u.lang = _LANG_CODE[_chittiLang] || 'en-IN';
+      window.speechSynthesis.speak(u);
+    }
+  } catch (e) { /* honest silent fallback */ }
+}
+
+// Auto-read for blind users on first visit per User Disability Profile.
+// SAHAYAI_MASTER §7 + project_user_disability_profile_locked.
+try {
+  const prof = JSON.parse(localStorage.getItem('chitti_disability_profile') || '{}');
+  if (prof.blind === true) {
+    // Defer until DOM + a11y.js settles
+    setTimeout(_speakPickerHint, 1500);
+  }
+} catch (e) {}
+
 function onProfessionChange(){
   const sel = document.getElementById('pick-profession');
   const p = sel.value;
@@ -741,6 +774,7 @@ function _profLabel(slug){
 
 function _cardHTML(item, stream){
   const cls = item.classification;
+  const sectionLabel = `${STREAM_LABELS[stream]||stream} — ${(item.title||'').slice(0,50)}`;
   const expl = cls ? `
     <details class="why-this" style="margin-top:8px">
       <summary style="font-size:11px;color:var(--muted);font-weight:700;cursor:pointer">ℹ️ Why this matters — tap to audit (rule v${(cls.rule_version||'').replace(/^v/,'')})</summary>
@@ -753,9 +787,27 @@ function _cardHTML(item, stream){
     </details>` : '';
   const cost = item.cost_label ? `<div style="font-size:11px;color:${item.is_free ? 'var(--green)' : 'var(--red)'};font-weight:700;margin-top:4px">💰 ${item.cost_label}</div>` : '';
   const src = item.source ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">📡 ${item.source.name}${item.source.domain ? ' · ' + item.source.domain : ''}</div>` : '';
+
+  // v0.3 Trust Strip — verification UX a user reads in <2s (per chitti-news pattern)
+  const trustBadge = cls
+    ? `<span style="display:inline-block;background:${cls.confidence>=0.85?'rgba(22,163,74,.12)':cls.confidence>=0.6?'rgba(212,175,55,.15)':'rgba(220,38,38,.10)'};color:${cls.confidence>=0.85?'var(--green)':cls.confidence>=0.6?'var(--amber)':'var(--red)'};border:1px solid currentColor;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase">${cls.confidence>=0.85?'✅ HIGH-CONFIDENCE':cls.confidence>=0.6?'⚠️ MEDIUM':'🟡 LOW'}</span>`
+    : '';
+  const freeBadge = `<span style="display:inline-block;background:${item.is_free?'rgba(22,163,74,.12)':'rgba(220,38,38,.10)'};color:${item.is_free?'var(--green)':'var(--red)'};border:1px solid currentColor;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase">${item.is_free?'FREE':'PAID'}</span>`;
+
+  // Stale-data flag: items > 30 days unverified (last_verified_at < now-30d, or null + ingested >30d ago)
+  let staleBadge = '';
+  const stamp = item.last_verified_at || item.ingested_at;
+  if (stamp) {
+    const ageDays = (Date.now() - new Date(stamp).getTime()) / 86400000;
+    if (ageDays > 30) {
+      staleBadge = `<span style="display:inline-block;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #fbbf24;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase" title="Last verified ${Math.round(ageDays)} days ago">⏳ ${Math.round(ageDays)}d STALE</span>`;
+    }
+  }
+
   return `
-    <div class="art-card" style="grid-template-columns:1fr;data-chitti-response">
+    <div class="art-card chitti-response" data-chitti-response data-chitti-section="${sectionLabel.replace(/"/g,'&quot;')}" style="grid-template-columns:1fr">
       <div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${trustBadge} ${freeBadge} ${staleBadge}</div>
         <div class="art-title">${item.title.replace(/</g,'&lt;')}</div>
         ${item.summary ? `<div class="art-summary">${(item.summary || '').slice(0,300).replace(/</g,'&lt;')}</div>` : ''}
         ${src}
