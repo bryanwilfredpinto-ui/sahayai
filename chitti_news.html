@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="rails-polish-2026-06-03" />
+  <meta name="chitti-build" content="rails-modalskip-2026-06-03" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -1397,7 +1397,18 @@ loadFeed(false);
     const skip = m.querySelector('button[data-act="skip"], .chitti-dp-skip, [aria-label="Skip"]');
     if (skip) { try { skip.click(); return true; } catch (e) {} }
     m.remove();
-    try { localStorage.setItem('chitti_disability_profile_v1', JSON.stringify({ skipped: true })); } catch (e) {}
+    // Persist the skip under the substrate's actual storage key
+    // (`disability_profile`, set by chitti_disability_profile.js:39).
+    // Previously this wrote `chitti_disability_profile_v1` which the
+    // substrate never reads — so the modal kept re-injecting on every
+    // load. Sire 2026-06-03 caught this when the live screenshot still
+    // showed the modal covering the hero card.
+    try {
+      localStorage.setItem('disability_profile', JSON.stringify({
+        skipped: true, skippedAt: new Date().toISOString(),
+        skipReason: 'returning-news-user-auto-skip',
+      }));
+    } catch (e) {}
     return true;
   }
   if (tryDismiss()) return;

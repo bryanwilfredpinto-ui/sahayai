@@ -52,15 +52,18 @@ for (const lang of LANGS) {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrs.push(m.text()); });
 
   // Pre-seed localStorage BEFORE the first paint so the page boots
-  // straight into the target language. Also skip the disability
-  // profile modal — proves the click path is unblocked.
+  // straight into the target language. Use the actual substrate key
+  // (`disability_profile`, set in chitti_disability_profile.js:39) so
+  // the modal is suppressed cleanly without relying on a post-inject
+  // dismissal race.
   await page.addInitScript((l) => {
     try {
       localStorage.setItem('chitti_news_state', 'india');
       localStorage.setItem('chitti_news_lang',  l);
       localStorage.setItem('chitti_news_category', 'national');
-      localStorage.setItem('chitti_disability_profile_v1',
-        JSON.stringify({ skipped: true }));
+      localStorage.setItem('disability_profile', JSON.stringify({
+        skipped: true, ts: new Date().toISOString(), source: 'probe',
+      }));
     } catch (e) {}
   }, lang);
 
