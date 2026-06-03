@@ -325,10 +325,11 @@ body{font-size:17px}
 
     <!-- Build-my-week: multi-occasion outfit generation from owned items -->
     <div data-chitti-response="fa-card-07" class="sds-card chitti-response" data-chitti-section="🗓️ पूरे हफ़्ते के outfit — आपकी अलमारी से">
-      <h2 class="sds-card-title"><span class="ico">🗓️</span> हर मौक़े के outfit — एक साथ</h2>
-      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपकी अलमारी से एक-एक outfit बनाएगी — office, interview, शादी, casual, travel — सब आपके अपने कपड़ों से, ₹0।</p>
+      <h2 class="sds-card-title"><span class="ico">🗓️</span> Outfit Simulator — अपने कपड़ों से</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपकी अलमारी से कई outfit बनाती है — हर एक पर confidence score। पूरी तरह आपके अपने कपड़ों से, ₹0। (यह LLM के बिना भी चलता है।)</p>
       <div class="fa-row-btns">
-        <button class="fa-btn primary" onclick="faBuildMyWeek()">🗓️ सब मौक़ों के outfit बनाओ</button>
+        <button class="fa-btn primary" onclick="faSimulate()">✨ 30 outfit बनाओ (Simulator)</button>
+        <button class="fa-btn" onclick="faBuildMyWeek()">🗓️ हर मौक़े का एक (Chitti की राय)</button>
       </div>
       <div id="fa-week-result" class="fa-result"></div>
       <div class="fa-toolbar">
@@ -339,10 +340,39 @@ body{font-size:17px}
       </div>
     </div>
 
-    <!-- Fashion Twin: on-device personal style memory -->
-    <div data-chitti-response="fa-card-08" class="sds-card chitti-response" data-chitti-section="🧬 आपका Fashion Twin">
-      <h2 class="sds-card-title"><span class="ico">🧬</span> आपका Fashion Twin</h2>
-      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपके अपने कपड़ों से आपकी style-पहचान बनाती है — कौन-से रंग, कौन-सी चीज़ें आपके पास हैं। सब इसी phone पर। इससे Chitti की सलाह और सटीक होती है।</p>
+    <!-- Wardrobe ROI -->
+    <div data-chitti-response="fa-card-09" class="sds-card chitti-response" data-chitti-section="🛒 Wardrobe ROI — एक खरीद, कितने नए outfit">
+      <h2 class="sds-card-title"><span class="ico">🛒</span> Wardrobe ROI</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">अगर आपको कुछ खरीदना ही हो — Chitti बताती है कौन-सी एक चीज़ आपके मौजूदा कपड़ों के साथ सबसे ज़्यादा नए outfit खोलेगी। समझदारी से खर्च।</p>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faROI()">🛒 सबसे फ़ायदेमंद खरीद दिखाओ</button></div>
+      <div id="fa-roi-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-roi-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-09')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_roi',1)">👍</button>
+        <button onclick="faFeedback('fa_roi',-1)">👎</button>
+      </div>
+    </div>
+
+    <!-- Fashion Digital Twin: on-device personal style memory + profile -->
+    <div data-chitti-response="fa-card-08" class="sds-card chitti-response" data-chitti-section="🧬 आपका Fashion Digital Twin">
+      <h2 class="sds-card-title"><span class="ico">🧬</span> आपका Fashion Digital Twin</h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5">Chitti आपके कपड़ों + पसंद से आपकी style-पहचान बनाती है। सब इसी phone पर। नीचे की बातें Chitti की सलाह को और सटीक बनाती हैं — किसी पर कोई judgement नहीं।</p>
+      <details style="margin-top:10px"><summary style="font-weight:800;color:#000080;cursor:pointer">⚙️ अपना Twin बेहतर बनाएं (वैकल्पिक)</summary>
+        <div class="fa-field" style="margin-top:8px"><label>पेशा / Profession</label>
+          <select id="fa-twin-prof" onchange="faTwinSet('profession',this.value)"><option value="">—</option><option value="student">student</option><option value="professional">professional</option><option value="teacher">teacher</option><option value="business">business owner</option><option value="creative">creative</option><option value="homemaker">homemaker</option><option value="retired">retired</option></select></div>
+        <div class="fa-field"><label>संस्कृति / Culture (राय का आदर)</label>
+          <select id="fa-twin-cult" onchange="faTwinSet('culture',this.value)"><option value="">—</option><option value="north">North Indian</option><option value="south">South Indian</option><option value="bengali">Bengali</option><option value="punjabi">Punjabi</option><option value="rajasthani">Rajasthani</option><option value="maharashtrian">Maharashtrian</option><option value="other">other</option></select></div>
+        <div class="fa-field"><label>मौसम / Climate</label>
+          <select id="fa-twin-clim" onchange="faTwinSet('season',this.value)"><option value="">—</option><option value="summer">गर्म / hot</option><option value="winter">ठंडा / cold</option><option value="all">मिला-जुला / moderate</option></select></div>
+        <div class="fa-field"><label>बजट / Budget</label>
+          <select id="fa-twin-budget" onchange="faTwinSet('budget',this.value)"><option value="">—</option><option value="low">कम / tight</option><option value="mid">मध्यम / mid</option><option value="flex">flexible</option></select></div>
+        <p style="font-size:11.5px;color:#888;line-height:1.45">वैकल्पिक — सिर्फ़ contrast और fit की सलाह सुधारने के लिए, किसी आकलन के लिए नहीं: रंग-रूप / body comfort. Chitti आपके शरीर पर कभी टिप्पणी नहीं करती।</p>
+        <div class="fa-field"><label>contrast सलाह के लिए (वैकल्पिक)</label>
+          <select id="fa-twin-tone" onchange="faTwinSet('tone',this.value)"><option value="">बताना नहीं</option><option value="warm">warm undertone</option><option value="cool">cool undertone</option><option value="neutral">neutral</option></select></div>
+        <div class="fa-field"><label>fit comfort (वैकल्पिक)</label>
+          <select id="fa-twin-fit" onchange="faTwinSet('fit',this.value)"><option value="">बताना नहीं</option><option value="relaxed">relaxed / loose पसंद</option><option value="structured">structured / fitted पसंद</option><option value="any">कोई भी</option></select></div>
+      </details>
       <div id="fa-twin-body" style="margin-top:10px"></div>
       <div class="fa-toolbar">
         <button onclick="faSpeak(faLastText('fa-twin-body'))" aria-label="सुनें">🔊</button>
@@ -395,6 +425,8 @@ body{font-size:17px}
 </div>
 <canvas id="fa-cam-canvas"></canvas>
 
+<!-- Deterministic fashion intelligence engine (works with ZERO LLM dependency) -->
+<script src="chitti_fashion_engine.js?v=20260603"></script>
 <!-- Substrate: a11y (auto-injects Disability Profile, ISL, language, read-page), feedback widget, feature discovery -->
 <script src="chitti_a11y.js?v=20260603"></script>
 <script src="feedback-widget.js" data-page="chitti_fashion"></script>
@@ -689,53 +721,95 @@ function faError(hostId){
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
 
-/* ════════ HERO · Dress Me From What I Own ════════ */
+/* ════════ engine helpers — deterministic, no LLM needed ════════ */
+function faEngine(){ return (window.ChittiFashionEngine || null); }
+function faCtx(extra){
+  const w = (faWearers().find(x => x.id === faCurrentWearer()) || {});
+  return Object.assign({ gender: PROFILE.gender, age_band: w.band, season: PROFILE.season, culture: PROFILE.culture, profile: (PROFILE.disability || {}) }, extra || {});
+}
+function faConfBadge(c){
+  const col = c >= 80 ? '#138808' : (c >= 60 ? '#b45309' : '#b91c1c');
+  return '<span style="display:inline-block;background:'+col+';color:#fff;font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px">Confidence ' + c + '%</span>';
+}
+function faRenderOutfitCard(rec, byId){
+  const tiles = rec.items.map(it => '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(it.category) + '</span></div>').join('');
+  const reasons = (rec.reasons || []).map(r => '<span style="font-size:11px;color:#555;margin-right:8px">' + esc(r) + '</span>').join('');
+  const flags = (rec.judge && rec.judge.flags || []).map(f => '<div style="font-size:12px;color:#b45309;margin-top:4px">⚠️ ' + esc(f.axis) + ': ' + esc(f.msg) + '</div>').join('');
+  return '<div class="fa-outfit"><div class="title">' + esc((rec.occasion||'').replace('-',' ')) + ' · ' + faConfBadge(rec.confidence) + '</div>' +
+    '<div class="pieces">' + (tiles || '<div class="p">👕</div>') + '</div>' +
+    '<div class="why">' + esc(rec.explain || '') + '</div>' +
+    '<div style="margin-top:4px">' + reasons + '</div>' + flags + '</div>';
+}
+
+/* ════════ HERO · Dress Me From What I Own (engine-first, LLM-optional) ════════ */
 async function faDressMe(){
   const btn = document.getElementById('fa-dressme'); btn.disabled = true;
   const host = 'fa-dressme-result';
-  const wardrobe = await faWardrobeText();
-  if (!wardrobe){
+  const items = await faAllItems();
+  const E = faEngine();
+  if (!items.length){
     const m = CURRENT_LANG === 'en'
       ? 'First add a few clothes in the Almari tab — then Chitti will build outfits for you. 🎙️'
       : 'पहले 🧺 अलमारी में कुछ कपड़े जोड़ें — फिर Chitti आपके लिए outfit बनाएगी। 🎙️';
     document.getElementById(host).innerHTML = '<div class="sds-card">🧺 ' + esc(m) + '</div>';
-    document.getElementById(host).dataset.spoken = m; faSpeak(m);
-    btn.disabled = false; return;
+    document.getElementById(host).dataset.spoken = m; faSpeak(m); btn.disabled = false; return;
   }
-  faLoading(host, CURRENT_LANG === 'en' ? 'Building outfits from your wardrobe…' : 'आपकी अलमारी से outfit बना रही हूँ…');
-  const prompt = BODY_POSITIVE_RULE + CURRENT_LANG +
-    '. Build 3 complete outfits using ONLY these owned wardrobe items (id:category:colour:occasions): [' + wardrobe + ']. ' +
-    'Gender preference: ' + (PROFILE.gender || 'unspecified') + '. Use ONLY item ids from the list — never invent an item. ' +
-    'Return STRICT JSON: {"outfits":[{"title":"...","stars":8,"item_ids":["id1","id2"],"why":"one warm body-positive line about cut/colour"}]}. ' +
-    'Each outfit must be wearable from owned items. No purchases.';
-  try {
-    const ans = await faAsk(prompt);
-    const j = faParseJSON(ans);
-    const items = await faAllItems();
-    const byId = {}; items.forEach(i => byId[i.id] = i);
-    if (!j || !Array.isArray(j.outfits) || !j.outfits.length) {
-      // honest fallback — show plain text answer rather than fabricate
-      document.getElementById(host).innerHTML = '<div class="sds-card">' + esc(ans || '—') + '</div>';
-      document.getElementById(host).dataset.spoken = ans; faSpeak(ans);
-    } else {
-      let html = '', spoken = '';
-      j.outfits.slice(0,3).forEach((o, idx) => {
-        const valid = (o.item_ids || []).filter(id => byId[id]); // drop phantom items
-        const tiles = valid.map(id => {
-          const it = byId[id];
-          return '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(it.category) + '</span></div>';
-        }).join('');
-        html += '<div class="fa-outfit"><div class="title">' + esc(o.title || ('Outfit ' + (idx+1))) + ' · ' + esc(o.stars||8) + '/10</div>' +
-          '<div class="why">' + esc(o.why || '') + '</div>' +
-          '<div class="pieces">' + (tiles || '<div class="p">👕</div>') + '</div></div>';
-        spoken += (o.title || ('Outfit ' + (idx+1))) + ': ' + valid.map(id => byId[id].colour + ' ' + byId[id].category).join(', ') + '. ' + (o.why||'') + ' ';
-      });
-      document.getElementById(host).innerHTML = html;
-      document.getElementById(host).dataset.spoken = spoken; faSpeak(spoken);
+  // DETERMINISTIC first — this WORKS even when DeepSeek is down (doctrine: rules are the product).
+  let html = '', spoken = '';
+  if (E){
+    const recs = E.recommend(items, faCtx({ max: 3 }));
+    if (recs.length){
+      recs.forEach(r => { html += faRenderOutfitCard(r); spoken += r.occasion + ' outfit, confidence ' + r.confidence + '%: ' + r.items.map(it => (it.colour||'') + ' ' + it.category).join(', ') + '. ' + (r.explain||'') + ' '; });
     }
-    try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
-  } catch(e){ faError(host); }
+  }
+  if (!html){
+    const m = CURRENT_LANG === 'en' ? 'Add at least a top and a bottom so Chitti can pair an outfit.' : 'कम से कम एक ऊपर और एक नीचे का कपड़ा जोड़ें — फिर Chitti जोड़ी बनाएगी।';
+    html = '<div class="sds-card">🧺 ' + esc(m) + '</div>'; spoken = m;
+  }
+  document.getElementById(host).innerHTML = html;
+  document.getElementById(host).dataset.spoken = spoken; faSpeak(spoken);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
   btn.disabled = false;
+}
+
+/* ════════ Outfit Simulator — build up to 30 from owned items ════════ */
+async function faSimulate(){
+  const host = 'fa-week-result';
+  const items = await faAllItems(); const E = faEngine();
+  if (!items.length || !E){ const m = CURRENT_LANG==='en'?'Add clothes first.':'पहले कपड़े जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  const built = E.buildOutfits(items, { max: 30 });
+  if (!built.count){ const m = CURRENT_LANG==='en'?'Add a top + bottom (or a full outfit) + footwear to unlock combinations.':'एक ऊपर + एक नीचे (या पूरा पहनावा) + जूते जोड़ें — फिर combinations बनेंगे।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  let html = '<div style="font-weight:800;color:#138808;margin-bottom:8px">✨ ' + built.count + (CURRENT_LANG==='en'?' outfits from clothes you already own — ₹0':' outfit आपके अपने कपड़ों से — ₹0') + '</div>';
+  built.outfits.forEach(o => { html += faRenderOutfitCard({ items: o.items, occasion: o.occasion, confidence: o.score, reasons: ['✓ '+o.harmony], explain: '', judge: {flags:[]} }); });
+  const h = document.getElementById(host); h.innerHTML = html;
+  const sp = (CURRENT_LANG==='en'?('I built '+built.count+' outfits from your wardrobe'):('मैंने आपकी अलमारी से '+built.count+' outfit बनाए'));
+  h.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
+/* ════════ Wardrobe ROI — "buying X unlocks N outfits" ════════ */
+async function faROI(){
+  const host = 'fa-roi-result';
+  const items = await faAllItems(); const E = faEngine();
+  if (!items.length || !E){ const m = CURRENT_LANG==='en'?'Add clothes first.':'पहले कपड़े जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
+  // candidate gap items to test (cheap, versatile basics)
+  const candidates = [
+    { category:'bottom', colour:'beige', desc:'beige chinos' },
+    { category:'top', colour:'white', desc:'white shirt' },
+    { category:'footwear', colour:'brown', desc:'brown loafers' },
+    { category:'bottom', colour:'black', desc:'black trousers' },
+    { category:'top', colour:'navy', desc:'navy blazer' },
+  ];
+  const rois = candidates.map(c => E.wardrobeROI(items, c)).filter(r => r.unlocked > 0).sort((a,b)=>b.unlocked-a.unlocked).slice(0,3);
+  let html, sp;
+  if (!rois.length){ html = '<div class="sds-card">'+(CURRENT_LANG==='en'?'Your wardrobe already pairs well — no single buy adds many new outfits. Reuse what you own. ♻️':'आपकी अलमारी पहले से अच्छी जोड़ी बनाती है — कुछ नया खरीदने की ज़रूरत नहीं। जो है उसे पहनें। ♻️')+'</div>'; sp = html; }
+  else {
+    html = rois.map(r => '<div class="fa-tier budget"><span class="lab">🛒 ' + esc(r.candidate.colour + ' ' + r.candidate.category) + '</span><div>' + (CURRENT_LANG==='en' ? ('+' + r.unlocked + ' new outfits unlocked (you have ' + r.before + ' now → ' + r.after + ')') : ('+' + r.unlocked + ' नए outfit खुलेंगे (अभी ' + r.before + ' → ' + r.after + ')')) + '</div></div>').join('');
+    html = '<div class="fa-tiers">' + html + '</div>';
+    sp = (CURRENT_LANG==='en'?('Best value buy: '+rois[0].candidate.colour+' '+rois[0].candidate.category+', unlocks '+rois[0].unlocked+' new outfits'):('सबसे फ़ायदेमंद: '+rois[0].candidate.colour+' '+rois[0].candidate.category+', '+rois[0].unlocked+' नए outfit'));
+  }
+  const h = document.getElementById(host); h.innerHTML = html; h.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
 
 /* ════════ Outfit Review / Describe (7-agent swarm) ════════ */
@@ -894,7 +968,12 @@ function faWearerSpoken(){
   return (CURRENT_LANG==='en'?'Now styling: ':'अभी style कर रही हूँ: ') + (w?w.name:'') ;
 }
 
-/* ════════ Fashion Twin (on-device style profile) ════════ */
+/* ════════ Fashion Digital Twin (on-device style profile) ════════ */
+function faTwinSet(key, val){ PROFILE[key] = val; faSaveProfile(); faRenderTwin(); faSpeak(CURRENT_LANG==='en'?'Saved':'सेव कर दिया'); }
+function faTwinHydrate(){
+  const map = { 'fa-twin-prof':'profession','fa-twin-cult':'culture','fa-twin-clim':'season','fa-twin-budget':'budget','fa-twin-tone':'tone','fa-twin-fit':'fit' };
+  Object.keys(map).forEach(id => { const el = document.getElementById(id); if (el && PROFILE[map[id]]) el.value = PROFILE[map[id]]; });
+}
 async function faRenderTwin(){
   const host = document.getElementById('fa-twin-body'); if (!host) return;
   const items = await faAllItems();
@@ -911,10 +990,12 @@ async function faRenderTwin(){
   if (!(cats.footwear)) gaps.push(CURRENT_LANG==='en'?'add footwear':'जूते जोड़ें');
   const spoken = (CURRENT_LANG==='en'?'Your Fashion Twin: ':'आपका Fashion Twin: ') +
     items.length + (CURRENT_LANG==='en'?' items, favourite colours ':' चीज़ें, पसंदीदा रंग ') + (topColours.join(', ')||'—');
+  const prof = [PROFILE.profession, PROFILE.culture, PROFILE.season, PROFILE.budget && (PROFILE.budget+' budget'), PROFILE.tone && (PROFILE.tone+' undertone'), PROFILE.fit && (PROFILE.fit+' fit')].filter(Boolean);
   host.innerHTML =
     '<div class="fa-tiers">' +
       '<div class="fa-tier"><span class="lab">🧬 '+(CURRENT_LANG==='en'?'Items owned':'कुल चीज़ें')+'</span><div>'+items.length+'</div></div>' +
       '<div class="fa-tier"><span class="lab">🎨 '+(CURRENT_LANG==='en'?'Your palette':'आपके रंग')+'</span><div>'+(esc(topColours.join(' · '))||'—')+'</div></div>' +
+      (prof.length?'<div class="fa-tier"><span class="lab">👤 '+(CURRENT_LANG==='en'?'Style profile':'आपकी पहचान')+'</span><div>'+esc(prof.join(' · '))+'</div></div>':'') +
       (liked.length?'<div class="fa-tier"><span class="lab">⭐ '+(CURRENT_LANG==='en'?'You liked':'आपको पसंद आया')+'</span><div>'+esc(liked.join(' · '))+'</div></div>':'') +
       (gaps.length?'<div class="fa-tier budget"><span class="lab">♻️ '+(CURRENT_LANG==='en'?'To unlock more':'और outfit के लिए')+'</span><div>'+esc(gaps.join(' · '))+'</div></div>':'') +
     '</div>';
@@ -964,6 +1045,7 @@ function faBoot(){
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   faMaybeOnboard();
   faRenderWearers();
+  faTwinHydrate();
   faRenderWardrobe();
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });

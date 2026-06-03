@@ -54,6 +54,20 @@ WHY an accessory clashes. You get smarter every time.
 Adaptive dressing for seniors, low-vision and seated users — easy fasteners,
 comfortable drape, high-contrast safe combinations.
 
+### Outfit Simulator
+Chitti instantly builds up to 30 complete outfits from the clothes you already
+own — each with a confidence score — using a deterministic engine that works even
+when the internet AI is down.
+
+### Wardrobe ROI
+If you must buy, Chitti tells you which single item unlocks the most new outfits
+from clothes you already own — e.g. "a beige chino unlocks 18 new outfits." Spend
+smart.
+
+### Confidence Score
+Every recommendation shows a confidence % and the reasons behind it — ✓ occasion,
+✓ colour, ✓ weather, ✓ budget — so you can trust the advice.
+
 ### Travel Packing
 Tell Chitti where you're going and for how long — it packs a mix-and-match list
 from your own wardrobe.
