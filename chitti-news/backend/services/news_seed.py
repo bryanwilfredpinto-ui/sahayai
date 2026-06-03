@@ -38,6 +38,14 @@ _HEALTH_COLUMNS = [
     ("alternative_url_candidate",  "VARCHAR(500)"),
 ]
 
+# Chitti's Insight columns added 2026-06-04 (Sire priority #2). See
+# models/article.py for the doc — these mirror the column definitions.
+_ARTICLE_INSIGHT_COLUMNS = [
+    ("chitti_insight",          "TEXT"),
+    ("chitti_insight_at",       "TIMESTAMP"),
+    ("chitti_insight_reject",   "VARCHAR(64)"),
+]
+
 
 def ensure_health_columns() -> int:
     """
@@ -57,6 +65,28 @@ def ensure_health_columns() -> int:
                 log.info("migrated: added sources.%s", col_name)
             except Exception as e:  # noqa: BLE001
                 log.warning("could not add column sources.%s: %s", col_name, e)
+    return added
+
+
+def ensure_insight_columns() -> int:
+    """
+    Idempotent ALTER TABLE for the Chitti's Insight columns on the
+    articles table. Safe to call on every startup — only emits ALTER
+    for missing columns. Returns the number actually added.
+    """
+    insp = inspect(engine)
+    existing_cols = {c["name"] for c in insp.get_columns("articles")}
+    added = 0
+    with engine.begin() as conn:
+        for col_name, col_def in _ARTICLE_INSIGHT_COLUMNS:
+            if col_name in existing_cols:
+                continue
+            try:
+                conn.execute(text(f"ALTER TABLE articles ADD COLUMN {col_name} {col_def}"))
+                added += 1
+                log.info("migrated: added articles.%s", col_name)
+            except Exception as e:  # noqa: BLE001
+                log.warning("could not add column articles.%s: %s", col_name, e)
     return added
 
 

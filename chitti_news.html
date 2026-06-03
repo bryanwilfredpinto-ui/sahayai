@@ -15,7 +15,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="chitti-build" content="trust-strip-2026-06-04" />
+  <meta name="chitti-build" content="chitti-take-2026-06-04" />
 
   <!--
     Clean rebuild 2026-06-02 per Sire's instruction "follow CTO.md,
@@ -397,6 +397,38 @@
        are too narrow for the rationale line; they keep .fc-badge in
        the meta line. */
     .hero-card .trust-strip { margin: 0 0 14px; border-radius: 0; }
+
+    /* ── Chitti's Insight (Sire 2026-06-04, priority #2) ──
+       One italicised editorial sentence between the headline and the
+       5-icon strip. Cached server-side; renders instantly when present.
+       Hidden entirely when the article has no insight (NULL on the
+       row, e.g. validator rejected the model output). Tappable —
+       expands the existing "Chitti's Take" 3-bullet panel via
+       openTake(). */
+    .art-insight {
+      margin: 10px 0 8px;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, rgba(255,153,51,.05), rgba(19,136,8,.04));
+      border-left: 3px solid var(--saffron);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px; line-height: 1.5; color: var(--text);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .art-insight:hover  { background: linear-gradient(135deg, rgba(255,153,51,.10), rgba(19,136,8,.08)); }
+    .art-insight:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+    .art-insight-label {
+      font-size: 11px; font-weight: 800;
+      letter-spacing: .03em; text-transform: uppercase;
+      color: var(--navy);
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-bottom: 2px;
+    }
+    .art-insight-label::before { content: "🤖"; font-size: 13px; }
+    .art-insight-body {
+      font-style: italic; color: var(--text);
+      display: block;
+    }
 
     /* §2 — Suppress the substrate-injected per-box feedback bar on
        art-cards / rail-cards / hero-card. Each of these carries its
@@ -932,6 +964,25 @@ function trustStripHtml(fc, articleId) {
     + '</div>';
 }
 
+// ── Chitti's Insight on the card ─────────────────────────────────────
+// Sire 2026-06-04 priority #2. The backend pre-computes one short
+// editorial sentence per article and caches it on Article.chitti_insight.
+// If the field is NULL — never generated, OR the hallucination validator
+// rejected the model's attempt — we render NOTHING. No placeholder,
+// no spinner, no "loading insight" copy. Trust over coverage.
+function insightHtml(a) {
+  const insight = a && a.chitti_insight;
+  if (!insight || !String(insight).trim()) return '';
+  return ''
+    + '<div class="art-insight" role="button" tabindex="0"'
+    +   ' aria-label="Chitti\'s Take: ' + esc(insight) + '. Tap to expand the full take."'
+    +   ' onclick="event.stopPropagation(); openTake(' + a.id + ');"'
+    +   ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();openTake(' + a.id + ');}">'
+    +   '<div class="art-insight-label">Chitti\'s Take:</div>'
+    +   '<span class="art-insight-body">' + esc(insight) + '</span>'
+    + '</div>';
+}
+
 // Toggle expansion of the trust panel on a card. Independent of the
 // article-body expansion so a user can read corroborating sources
 // without committing to a full read-aloud.
@@ -995,6 +1046,7 @@ function articleCardHtml(a, featured) {
     +     trustStripHtml(a.factcheck, a.id)
     +     '<div class="art-meta">' + meta + '</div>'
     +     '<h3 class="art-title">' + esc(a.title || '') + '</h3>'
+    +     insightHtml(a)
     +     stripHtml(boxId, a.id)
     +     '<div class="art-hint">Tap card to hear the entire news — Chitti stays on this page</div>'
     +     '<div class="art-body">'
@@ -1108,6 +1160,7 @@ function heroCardHtml(a) {
     +     '<div class="hero-eyebrow">Top story</div>'
     +     '<div class="hero-meta">' + meta + '</div>'
     +     '<h2 class="hero-title">' + esc(a.title || '') + '</h2>'
+    +     insightHtml(a)
     +     stripHtml(boxId, a.id)
     +   '</div>'
     + '</article>';
@@ -1451,7 +1504,16 @@ async function speakArticle(id) {
   // we lead with the verdict before the headline. Once per spoken
   // article. Verified is a confidence boost; disputed is a warning.
   const preface = _trustPreface(a.factcheck, lang);
-  if (preface) text = preface + ' ' + text;
+  // Sire 2026-06-04 priority #2 — Chitti's Take preface, appended to
+  // the trust verdict so blind users hear:
+  //   "Verified by 3 other sources. Chitti's take: <insight>. <headline>. <body>"
+  const insightPreface = (a.chitti_insight && String(a.chitti_insight).trim())
+    ? ((lang === 'hi' ? 'चिट्टी की टेक: ' : 'Chitti\'s take: ')
+       + String(a.chitti_insight).trim().replace(/[.!?]?$/, '.'))
+    : '';
+  if (preface || insightPreface) {
+    text = [preface, insightPreface, text].filter(Boolean).join(' ');
+  }
   if (_activeArticleId !== id) return;
   speak(text, lang);
 }

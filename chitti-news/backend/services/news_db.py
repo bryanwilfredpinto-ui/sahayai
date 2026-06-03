@@ -87,6 +87,10 @@ def _row_to_dict(
     fc: FactCheck | None = None,
     slug_to_name: dict[str, str] | None = None,
 ) -> dict:
+    # Chitti's Insight (Sire 2026-06-04, priority #2). NULL when no
+    # attempt has been made yet OR the validator rejected the LLM
+    # output. The frontend hides the line entirely when NULL.
+    insight = getattr(a, "chitti_insight", None)
     return {
         "id": a.id,
         "title": a.title,
@@ -104,6 +108,7 @@ def _row_to_dict(
         "published_at": a.published_at.isoformat() if a.published_at else None,
         "fetched_at": a.fetched_at.isoformat() if a.fetched_at else None,
         "factcheck": _factcheck_payload(fc, slug_to_name),
+        "chitti_insight": insight or None,
     }
 
 

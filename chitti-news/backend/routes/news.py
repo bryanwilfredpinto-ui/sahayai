@@ -292,6 +292,42 @@ def scheduler_trigger(job_id):
     return jsonify(news_scheduler.trigger_now(job_id))
 
 
+# ─── Chitti's Insight admin (Sire 2026-06-04 priority #2) ───
+# Manual backfill / re-run so we don't wait 15 min between sweeps when
+# pushing a prompt or validator change. X-User-Token gated.
+@bp.post("/admin/insight_sweep")
+@with_db
+def admin_insight_sweep(db):
+    _user_token_or_400()
+    limit_raw = request.args.get("limit", "30")
+    lookback_raw = request.args.get("lookback_hours", "48")
+    try:
+        limit = max(1, min(200, int(limit_raw)))
+        lookback_hours = max(1, min(720, int(lookback_raw)))
+    except (TypeError, ValueError):
+        abort(400, description="limit and lookback_hours must be integers")
+    from services import news_insight
+    return jsonify(news_insight.sweep_missing(
+        db, limit=limit, lookback_hours=lookback_hours,
+    ))
+
+
+# Inspect a single article's insight state — used by the cert + probes
+# to confirm cached insight presence + the rejection reason if any.
+@bp.get("/article/<int:article_id>/insight")
+@with_db
+def article_insight(db, article_id):
+    art = db.query(Article).filter(Article.id == article_id).first()
+    if not art:
+        abort(404)
+    return jsonify({
+        "article_id": art.id,
+        "chitti_insight": art.chitti_insight,
+        "chitti_insight_at": art.chitti_insight_at.isoformat() if art.chitti_insight_at else None,
+        "chitti_insight_reject": art.chitti_insight_reject,
+    })
+
+
 # ─── Retroactive category reclassifier ───
 # Sire 2026-06-03 — trust-in-IA fix. Before this endpoint shipped,
 # clicking "Business" surfaced "West Indies vs Sri Lanka: Schedule…"

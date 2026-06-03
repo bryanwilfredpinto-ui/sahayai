@@ -62,6 +62,25 @@ def _job_factcheck_sweep() -> dict:
         db.close()
 
 
+def _job_insight_sweep() -> dict:
+    """
+    Sire 2026-06-04 priority #2 — Chitti's Insight, pre-computed.
+
+    Walks recent English articles missing a Chitti's Insight and asks
+    DeepSeek to produce a one-sentence editorial line, validated by
+    the hallucination guard in services/news_insight.py before commit.
+    Trust > coverage: capped at 30 per run so a slow LLM can't queue
+    a backlog. Runs every 15 min.
+    """
+    from database import SessionLocal
+    from services import news_insight
+    db = SessionLocal()
+    try:
+        return news_insight.sweep_missing(db, limit=30, lookback_hours=48)
+    finally:
+        db.close()
+
+
 def _job_breaking() -> dict:
     """Recompute the breaking-news ribbon from the last 4 hours of articles."""
     from datetime import datetime, timedelta
@@ -167,6 +186,13 @@ def start() -> None:
         _wrap("factcheck_sweep", _job_factcheck_sweep),
         IntervalTrigger(minutes=15),
         id="factcheck_sweep",
+        replace_existing=True,
+        misfire_grace_time=600,
+    )
+    sch.add_job(
+        _wrap("insight_sweep", _job_insight_sweep),
+        IntervalTrigger(minutes=15),
+        id="insight_sweep",
         replace_existing=True,
         misfire_grace_time=600,
     )

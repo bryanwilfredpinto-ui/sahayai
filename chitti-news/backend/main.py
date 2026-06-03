@@ -57,6 +57,12 @@ def _bootstrap() -> None:
         if added: log.info("health-monitor columns migrated: +%d", added)
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_health_columns skipped: %s", e)
+    # Chitti's Insight column migration (2026-06-04, Sire priority #2).
+    try:
+        added = news_seed.ensure_insight_columns()
+        if added: log.info("chitti-insight columns migrated: +%d", added)
+    except Exception as e:  # noqa: BLE001
+        log.warning("ensure_insight_columns skipped: %s", e)
     try:
         n = news_seed.seed_sources_if_empty()
         if n: log.info("sources seed loaded: %d rows", n)
