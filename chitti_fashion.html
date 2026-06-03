@@ -1124,6 +1124,23 @@ async function faBuildMyWeek(){
   } catch(e){ faError(host); }
 }
 
+/* ════════ language dropdown guard — never let labels render blank ════════ */
+var FA_LANG_NAMES = { en:'English', hi:'हिन्दी', bn:'বাংলা', ta:'தமிழ்', te:'తెలుగు', mr:'मराठी', gu:'ગુજરાતી', kn:'ಕನ್ನಡ', ml:'മലയാളം', pa:'ਪੰਜਾਬੀ', or:'ଓଡ଼ିଆ', as:'অসমীয়া', ur:'اردو', sa:'संस्कृतम्', mai:'मैथिली', kok:'कोंकणी', doi:'डोगरी', ks:'کٲشُر', ne:'नेपाली', sd:'سنڌي', mni:'ꯃꯩꯇꯩꯂꯣꯟ', sat:'ᱥᱟᱱᱛᱟᱲᱤ', bho:'भोजपुरी', raj:'राजस्थानी', kru:'कुड़ुख़', hoc:'हो', tcy:'ತುಳು', kfy:'कुमाऊँनी', brx:'बड़ो' };
+function faFixLangLabels(){
+  var sel = document.getElementById('lang-select'); if (!sel) return;
+  // ensure the 9 primary are present even if enrichment never ran
+  var have = {}; for (var i=0;i<sel.options.length;i++) have[sel.options[i].value]=1;
+  ['en','hi','bn','ta','te','mr','gu','kn','ml'].forEach(function(code){
+    if (!have[code]) { var o=document.createElement('option'); o.value=code; o.textContent=FA_LANG_NAMES[code]||code; sel.appendChild(o); }
+  });
+  // fill any blank labels from the native-name map (fixes stale-cache enrichment)
+  for (var j=0;j<sel.options.length;j++){
+    var op=sel.options[j];
+    if (!(op.textContent||'').trim()) op.textContent = FA_LANG_NAMES[op.value] || (op.value||'').toUpperCase();
+  }
+  sel.value = CURRENT_LANG;
+}
+
 /* ════════ boot ════════ */
 function faBoot(){
   CURRENT_LANG = faDetectLang();
@@ -1140,6 +1157,8 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
+  // language dropdown guard — run now + after chitti_lang.js enrichment + once more
+  faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', faBoot);
 else faBoot();
