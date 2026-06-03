@@ -232,9 +232,23 @@ rule — CTO / admin only, never rendered for end users.
 ### 5. Language Policy — No Hinglish (LOCKED)
 - Every response is rendered in **one pure language**, chosen by the user via
   the language selector. Never mix scripts inside a single sentence.
-- Supported v1.0 languages: **English, Hindi, Marathi, Tamil, Telugu, Bengali,
-  Kannada, Malayalam** (8 active — 7 Indic + English). The full 22-language
-  surface ships through Voice Factory in later phases.
+- **Language set is anchored to Chitti Vaani — the sole user interface — not a
+  per-Chitti list (UPDATED 2026-06-03 per Sire).** Every Chitti uses the **same
+  language surface Vaani exposes**, in two tiers:
+  - **9 primary languages** (Vaani's authored selector): **English, Hindi, Tamil,
+    Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam.** Full UI-string
+    translation is required for these (functional labels in native script; long
+    help-text may fall back to EN/HI until community/native QA lands).
+  - **26-language substrate** (Voice Factory / `chitti_lang.js` `LANGS`): the
+    language selector auto-enriches to all 26 (incl. Punjabi, Odia, Urdu, Assamese,
+    Bhojpuri, Sanskrit, Santali, etc.). Voice-out covers all 26 via Voice Factory.
+  - Implementation contract: a Chitti page exposes a `<select id="lang-select">`;
+    `chitti_lang.js` enriches it to the 26-set; `strings.js` (`data-vai-i18n`)
+    provides per-language UI text, with `strFor` falling back to English for any
+    missing key (clean, never garbled). New UI strings MUST be added to at least
+    `en` + `hi`, and to the 9-primary set before a page is called language-complete.
+  - The old "8 active" list is superseded — it under-counted Vaani's 9 primary and
+    ignored the 26-language substrate.
 - Mixing Hindi words into an English sentence (or vice versa) is a defect.
   Code-switching like "aapka portfolio dekho" is **banned** — write either
   "आपका पोर्टफोलियो देखिए" or "View your portfolio", never a blend.

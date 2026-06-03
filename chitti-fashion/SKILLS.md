@@ -40,9 +40,12 @@
 
 ## Language support
 
-8 active (English + Hindi, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam,
-Gujarati on the page selector); full 22-language surface via Voice Factory. No
-Hinglish — one pure language per response ([CTO.md §5](../chitti-cto/CTO.md)).
+Anchored to **Chitti Vaani's** language surface (per [CTO.md §5](../chitti-cto/CTO.md), updated 2026-06-03):
+**9 primary** with native UI translation — English, Hindi, Tamil, Telugu, Bengali,
+Marathi, Gujarati, Kannada, Malayalam (74/87 functional labels native in each;
+long help-text falls back EN/HI pending native QA) — plus the **26-language Voice
+Factory substrate** (`chitti_lang.js`) auto-enriching the selector + voice-out.
+No Hinglish — one pure language per response.
 
 ## Commando standard
 
