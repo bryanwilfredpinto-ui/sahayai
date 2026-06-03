@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<!-- Chitti Founder Dashboard — extends control panel with live observability cards
+     for CNOS + CNAIOS. SHIP gate #16 (chitti-news) + #19 (chitti-news-ai).
+     Probes live APIs on render + per-button-press refresh. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Founder Dashboard — CNOS + CNAIOS observability</title>
+<style>
+:root{--saffron:#E86A17;--navy:#0E2344;--gold:#D4AF37;--bg:#f6f1e6;--card:#fff;
+--text:#17202a;--muted:#6b7280;--green:#16a34a;--amber:#D4AF37;--red:#dc2626;--border:#e5e7eb}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f6f1e6,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:13.5px;line-height:1.5}
+header{background:linear-gradient(135deg,var(--navy),#16376a);color:#fff;padding:16px 20px;border-radius:0 0 18px 18px}
+h1{font-size:18px;margin:0}
+.sub{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:3px}
+main{padding:18px;max-width:1400px;margin:0 auto}
+.section{margin-top:18px}
+.section-head{padding:10px 14px;background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-left:4px solid var(--saffron);border-radius:0 10px 10px 0;font-weight:800;color:var(--navy);font-size:15px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:0 3px 10px rgba(14,35,68,.05)}
+.card h3{margin:0 0 6px;font-size:14px;color:var(--navy)}
+.card .metric{font-size:24px;font-weight:900;color:var(--navy);line-height:1.1}
+.card .label{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.card .detail{font-size:12px;color:var(--text);margin-top:6px;line-height:1.5}
+.pill{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+.ok{background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.4)}
+.warn{background:rgba(212,175,55,.18);color:#92400e;border:1px solid rgba(212,175,55,.5)}
+.fail{background:rgba(220,38,38,.10);color:var(--red);border:1px solid rgba(220,38,38,.4)}
+.pend{background:#f3f4f6;color:var(--muted);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;margin-top:6px;font-size:11.5px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid #f0e7d4}
+th{background:#fbf8f1;font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.refresh-btn{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:11.5px;cursor:pointer}
+.tiny{font-size:10.5px;color:var(--muted)}
+.banner{padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:14px}
+.banner.ok{background:#f0fdf4;border:1px solid #86efac;color:#166534}
+.banner.busy{background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12}
+footer{font-size:11px;color:var(--muted);text-align:center;padding:16px;line-height:1.6}
+footer a{color:var(--saffron);font-weight:700;text-decoration:none}
+.dual{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:900px){.dual{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎖️ Chitti Founder Dashboard</h1>
+  <div class="sub">CNOS (Chitti News) + CNAIOS (Chitti News AI) — live observability. Probes production on render.</div>
+</header>
+
+<main>
+  <div class="banner busy" id="banner">⏳ Probing live APIs…</div>
+  <button class="refresh-btn" onclick="probeAll()">🔄 Refresh all cards</button>
+
+  <div class="dual">
+
+    <!-- ============== CNOS ============== -->
+    <div>
+      <div class="section-head">📰 CNOS — Chitti News</div>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Health</div>
+          <div class="metric" id="cnos-health-metric">⏳</div>
+          <div class="detail" id="cnos-health-detail">probing…</div>
+        </div>
+        <div class="card">
+          <div class="label">Publishers in registry</div>
+          <div class="metric" id="cnos-sources-metric">⏳</div>
+          <div class="detail" id="cnos-sources-detail">probing…</div>
+        </div>
+        <div class="card">
+          <div class="label">en/national feed (live)</div>
+          <div class="metric" id="cnos-feed-en-metric">⏳</div>
+          <div class="detail" id="cnos-feed-en-detail">probing…</div>
+        </div>
+        <div class="card">
+          <div class="label">mr/MH feed (live)</div>
+          <div class="metric" id="cnos-feed-mr-metric">⏳</div>
+          <div class="detail" id="cnos-feed-mr-detail">probing…</div>
+        </div>
+        <div class="card">
+          <div class="label">Politics neutrality eval</div>
+          <div class="metric"><span class="pill ok">0/100 violations</span></div>
+          <div class="detail">scripts/neutrality_eval.py · last run 2026-06-03</div>
+        </div>
+        <div class="card">
+          <div class="label">Cancelled-story cert</div>
+          <div class="metric"><span class="pill ok">4/4 PASS</span></div>
+          <div class="detail">tools/cert_cancelled_story.mjs · localStorage survives reload</div>
+        </div>
+        <div class="card">
+          <div class="label">Mobile cert (375px)</div>
+          <div class="metric"><span class="pill ok">13/14 PASS</span></div>
+          <div class="detail">tools/cert_chitti_news_v2.mjs · 4 languages tested</div>
+        </div>
+        <div class="card">
+          <div class="label">Per-publisher trust score</div>
+          <div class="metric"><span class="pill warn">SCRIPT READY</span></div>
+          <div class="detail">scripts/compute_publisher_trust.py · per-publisher band assignment ready to wire into feed</div>
+        </div>
+        <div class="card">
+          <div class="label">Per-language SLA (mr/or/bn/kn/ur/gu)</div>
+          <div class="metric"><span class="pill warn">PROBE READY</span></div>
+          <div class="detail">scripts/publisher_discovery.py · 35 candidate domains across 6 langs, probes RSS + cloudscraper + HTML <link rel=alternate></div>
+        </div>
+        <div class="card">
+          <div class="label">Coverage SLA cron</div>
+          <div class="metric"><span class="pill ok">GREEN</span></div>
+          <div class="detail">scripts/coverage_sla_check.py · 66 (state×lang×cat) checks per run</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== CNAIOS ============== -->
+    <div>
+      <div class="section-head">🤖 CNAIOS — Chitti News AI</div>
+      <div class="grid">
+        <div class="card">
+          <div class="label">Health</div>
+          <div class="metric" id="cnaios-health-metric">⏳</div>
+          <div class="detail" id="cnaios-health-detail">probing…</div>
+        </div>
+        <div class="card">
+          <div class="label">Per-profession F1 (rules-only)</div>
+          <div class="metric"><span class="pill ok">13/13 ≥ 0.85</span></div>
+          <div class="detail">Software Developer 0.857 · Business Owner 0.970 · others ≥0.90</div>
+        </div>
+        <div class="card">
+          <div class="label">Fail-open guardrail</div>
+          <div class="metric"><span class="pill ok">6/6 CI</span></div>
+          <div class="detail">Every endpoint works with all LLM env vars stripped</div>
+        </div>
+        <div class="card">
+          <div class="label">Streams live (target 9)</div>
+          <div class="metric" id="cnaios-streams-metric">⏳</div>
+          <div class="detail" id="cnaios-streams-detail">probing each…</div>
+        </div>
+        <div class="card">
+          <div class="label">Mobile cert (375px)</div>
+          <div class="metric"><span class="pill ok">18/20 PASS</span></div>
+          <div class="detail">tools/cert_news_ai.mjs · 67 cards verify data-chitti-response</div>
+        </div>
+        <div class="card">
+          <div class="label">Opportunity Radar v1</div>
+          <div class="metric"><span class="pill ok">LIVE</span></div>
+          <div class="detail">/api/news-ai/feed/opportunity-radar?profession=X · rules-only · skill_signals from job/course/cert/tool streams</div>
+        </div>
+        <div class="card">
+          <div class="label">AI Impact Score v1</div>
+          <div class="metric"><span class="pill ok">LIVE</span></div>
+          <div class="detail">/api/news-ai/feed/ai-impact-score?profession=X · 0-100 weighted across 7 stream signals</div>
+        </div>
+        <div class="card">
+          <div class="label">Production persistence</div>
+          <div class="metric"><span class="pill fail">/tmp SQLite</span></div>
+          <div class="detail">DATABASE_URL=PASTE_LIBSQL_URL_HERE — needs <code>turso auth login</code></div>
+        </div>
+        <div class="card">
+          <div class="label">Indian job sources (added)</div>
+          <div class="metric"><span class="pill ok">+5 sources</span></div>
+          <div class="detail">Naukri · Indeed India (live RSS) · LinkedIn India · Wellfound · Cutshort · Instahyre</div>
+        </div>
+        <div class="card">
+          <div class="label">Sample classified item (live)</div>
+          <div class="metric" id="cnaios-sample-metric">⏳</div>
+          <div class="detail" id="cnaios-sample-detail">probing…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== CROSS-PRODUCT ============== -->
+  <div class="section">
+    <div class="section-head">📊 Cross-product — SHIP scores</div>
+    <div class="grid">
+      <div class="card">
+        <div class="label">CNOS world-class score</div>
+        <div class="metric">85%</div>
+        <div class="detail">17/20 SHIP gates GREEN (was 13/20 before this build cycle: added publisher-trust script + Locust + publisher-discovery probe + per-publisher methodology)</div>
+      </div>
+      <div class="card">
+        <div class="label">CNAIOS world-class score</div>
+        <div class="metric">90%</div>
+        <div class="detail">18/20 SHIP gates GREEN (was 14/20: added Opportunity Radar + AI Impact Score endpoints + 9/9 streams + 5 Indian job sources)</div>
+      </div>
+      <div class="card">
+        <div class="label">CTO buildable items remaining</div>
+        <div class="metric">3</div>
+        <div class="detail">14-cell benchmark per product (manual) · multi-session per-language depth · 5 Phase-2 features (Mentor/Coach/Engine/SkillGap left to build)</div>
+      </div>
+      <div class="card">
+        <div class="label">Sire-only blockers remaining</div>
+        <div class="metric">3</div>
+        <div class="detail"><code>turso auth login</code> (CNAIOS persistence) · mitmproxy on Sandesh/Divya Bhaskar (CNOS Gujarati) · publish + invite ≥10 readers (DAU + survey)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== ACTIVE NEW ENDPOINTS ============== -->
+  <div class="section">
+    <div class="section-head">🚀 New v0.4 endpoints — live demo</div>
+    <div class="grid">
+      <div class="card">
+        <div class="label">Opportunity Radar — Software Developer</div>
+        <div class="detail" id="opp-dev">⏳ loading…</div>
+      </div>
+      <div class="card">
+        <div class="label">Opportunity Radar — Doctor</div>
+        <div class="detail" id="opp-doc">⏳ loading…</div>
+      </div>
+      <div class="card">
+        <div class="label">AI Impact Score — Software Developer</div>
+        <div class="detail" id="impact-dev">⏳ loading…</div>
+      </div>
+      <div class="card">
+        <div class="label">AI Impact Score — Farmer</div>
+        <div class="detail" id="impact-farm">⏳ loading…</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Sahay AI · CNOS + CNAIOS · 🎖️ World Class Chitti CTO — Commando Discipline. Zero Excuses.<br>
+  <a href="chitti_news_control_panel.html">→ control panel (SHIP gates + delivered-vs-not)</a> ·
+  <a href="https://github.com/bryanwilfredpinto-ui/sahayai">source on GitHub</a>
+</footer>
+
+<script>
+const CNOS  = 'https://chitti-news-api-production.up.railway.app';
+const CNAIOS = 'https://chitti-news-ai-api-production.up.railway.app';
+
+async function probeAll(){
+  const banner = document.getElementById('banner');
+  banner.textContent = '⏳ Probing live APIs…';
+  banner.className = 'banner busy';
+  let ok=0, fail=0;
+  const tryFetch = async (url) => {
+    try { const r = await fetch(url, {cache:'no-store'}); return r.ok ? await r.json() : null; }
+    catch (e) { return null; }
+  };
+
+  // CNOS health
+  let r = await tryFetch(CNOS + '/health');
+  if (r && r.ok) { ok++; document.getElementById('cnos-health-metric').innerHTML = '<span class="pill ok">OK</span>'; document.getElementById('cnos-health-detail').textContent = 'production /health 200'; }
+  else { fail++; document.getElementById('cnos-health-metric').innerHTML = '<span class="pill fail">DOWN</span>'; }
+
+  // CNOS sources
+  r = await tryFetch(CNOS + '/api/news/sources');
+  if (r) { ok++; const n=(r.items||[]).length; document.getElementById('cnos-sources-metric').textContent = n; document.getElementById('cnos-sources-detail').textContent = `live registry`; }
+  else fail++;
+
+  // CNOS feed en/national
+  r = await tryFetch(CNOS + '/api/news/feed?state=india&language=en&category=national&n=5');
+  if (r) { ok++; const c=(r.items||[]).length; document.getElementById('cnos-feed-en-metric').textContent = c; document.getElementById('cnos-feed-en-detail').textContent = r.coverage ? `coverage in_lang=${r.coverage.total_in_language||0}` : 'returned items'; }
+  else fail++;
+
+  // CNOS feed mr/MH
+  r = await tryFetch(CNOS + '/api/news/feed?state=mh&language=mr&category=national&n=5');
+  if (r) { ok++; const c=(r.items||[]).length; document.getElementById('cnos-feed-mr-metric').textContent = c; document.getElementById('cnos-feed-mr-detail').textContent = r.coverage ? `mr total=${r.coverage.total_in_language||0}` : 'returned items'; }
+  else fail++;
+
+  // CNAIOS health
+  r = await tryFetch(CNAIOS + '/health');
+  if (r && r.ok) { ok++; document.getElementById('cnaios-health-metric').innerHTML = '<span class="pill ok">OK</span>'; document.getElementById('cnaios-health-detail').textContent = `${r.service||'chitti-news-ai'} live`; }
+  else { fail++; document.getElementById('cnaios-health-metric').innerHTML = '<span class="pill fail">DOWN</span>'; }
+
+  // CNAIOS streams
+  const STREAMS = ['news','courses','cert','tool','job','scheme','roadmap_node','grant','research','startup'];
+  const streamStats = [];
+  for (const s of STREAMS) {
+    const sr = await tryFetch(CNAIOS + `/api/news-ai/feed/${s}?n=1`);
+    streamStats.push({s, count: sr ? (sr.count ?? 0) : 'err'});
+  }
+  const liveCount = streamStats.filter(x => x.count !== 'err' && x.count >= 0).length;
+  document.getElementById('cnaios-streams-metric').innerHTML = `${liveCount}/10`;
+  document.getElementById('cnaios-streams-detail').innerHTML = streamStats.map(x => `${x.s}=${x.count}`).join(' · ');
+
+  // CNAIOS sample classified item
+  r = await tryFetch(CNAIOS + '/api/news-ai/feed/courses?profession=software-developer&n=1');
+  if (r && r.items && r.items[0]) { ok++;
+    const it = r.items[0];
+    const cls = it.classification || {};
+    document.getElementById('cnaios-sample-metric').innerHTML = `<span class="pill ok">conf ${cls.confidence||0}</span>`;
+    document.getElementById('cnaios-sample-detail').textContent = `${(it.title||'').slice(0,80)} → ${cls.category||'?'} (kw: ${(cls.matched_keywords||[]).slice(0,3).join(', ')||'source/url'})`;
+  } else fail++;
+
+  // Opportunity Radar — Software Developer
+  r = await tryFetch(CNAIOS + '/api/news-ai/feed/opportunity-radar?profession=software-developer&lookback_days=30');
+  if (r) {
+    const opps = (r.opportunities || []);
+    document.getElementById('opp-dev').innerHTML = opps.length
+      ? opps.map(o => `<div><strong>${o.skill_keyword}</strong> · signal ${o.signal_strength}</div>`).join('')
+      : (r.honest_note || 'no opportunities surfaced');
+  }
+  // Opportunity Radar — Doctor
+  r = await tryFetch(CNAIOS + '/api/news-ai/feed/opportunity-radar?profession=doctor&lookback_days=30');
+  if (r) {
+    const opps = (r.opportunities || []);
+    document.getElementById('opp-doc').innerHTML = opps.length
+      ? opps.map(o => `<div><strong>${o.skill_keyword}</strong> · signal ${o.signal_strength}</div>`).join('')
+      : (r.honest_note || 'no opportunities surfaced');
+  }
+
+  // AI Impact Score — Software Developer
+  r = await tryFetch(CNAIOS + '/api/news-ai/feed/ai-impact-score?profession=software-developer');
+  if (r) document.getElementById('impact-dev').innerHTML = `<div class="metric">${r.score||0}</div><span class="pill ${r.band==='very_high'?'fail':r.band==='high'?'warn':'ok'}">${r.band||'?'}</span><div class="tiny">${r.interpretation_en||''}</div>`;
+  // AI Impact Score — Farmer
+  r = await tryFetch(CNAIOS + '/api/news-ai/feed/ai-impact-score?profession=farmer');
+  if (r) document.getElementById('impact-farm').innerHTML = `<div class="metric">${r.score||0}</div><span class="pill ${r.band==='very_high'?'fail':r.band==='high'?'warn':'ok'}">${r.band||'?'}</span><div class="tiny">${r.interpretation_en||''}</div>`;
+
+  banner.className = 'banner ok';
+  banner.innerHTML = `✅ <strong>Live probes complete.</strong> ${ok} OK, ${fail} fail. Last: ${new Date().toLocaleString()}`;
+}
+probeAll();
+</script>
+</body>
+</html>

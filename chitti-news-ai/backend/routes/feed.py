@@ -356,6 +356,33 @@ def career_insight_endpoint(stream: str, item_id: int):
     return jsonify(result), 200
 
 
+# ────────────────────────────────────────────────────────────────────────
+# v0.4 World-class features (rules-only, no LLM in critical path)
+# ────────────────────────────────────────────────────────────────────────
+
+@bp.get("/opportunity-radar")
+def opportunity_radar_endpoint():
+    """Per-profession top-3 skill opportunities (Opportunity Radar v1)."""
+    profession = _arg_str("profession", "")
+    if not profession or profession == "everyone":
+        abort(400, description="profession is required (one of the 13 slugs)")
+    geo = _arg_str("geo", "india")
+    lookback = max(1, min(_arg_int("lookback_days", 7), 90))
+    from services.opportunity_radar import compute as _compute
+    return jsonify(_compute(profession, geo=geo, lookback_days=lookback)), 200
+
+
+@bp.get("/ai-impact-score")
+def ai_impact_score_endpoint():
+    """Per-profession AI Impact Score (0-100, rules-only)."""
+    profession = _arg_str("profession", "")
+    if not profession or profession == "everyone":
+        abort(400, description="profession is required (one of the 13 slugs)")
+    geo = _arg_str("geo", "india")
+    from services.opportunity_radar import ai_impact_score as _score
+    return jsonify(_score(profession, geo=geo)), 200
+
+
 @bp.get("/admin/stats")
 def admin_stats():
     _require_metrics_token()
