@@ -1,86 +1,101 @@
-# Chitti News AI — PRODUCT VISION
+# Chitti News AI Operating System (CNAIOS) — PRODUCT VISION
 
 > *"News is the product. Career intelligence is the product. LLMs are enhancements, not dependencies."* — Sire, 2026-05-29 PM directive.
 
 ---
 
-## The user we serve
+## The vision in one line
 
-A working Indian professional — software developer in Bangalore, doctor in Lucknow, farmer in Vidarbha, teacher in Salem, accountant in Surat, government employee in Bhubaneswar — opens Chitti every morning and asks one question:
+CNAIOS delivers **career-changing opportunities, AI learning, certifications, tools, jobs, grants, research, and industry intelligence — personalized to every Indian profession, in every Indian language, free forever**.
 
-> *"AI is changing my work. What should I do today?"*
+---
 
-We answer that question. In their language. In voice. For free. Forever.
+## What every Indian professional receives, every day
+
+| Stream | Status today |
+|---|---|
+| 📰 **AI News** | ✅ LIVE — 8 RSS sources, profession-classified |
+| 🎓 **AI Courses** | ✅ LIVE — 3,622 courses (Microsoft Learn + 7 manifests) |
+| 🏅 **AI Certifications** | ✅ LIVE — 18 from Microsoft / AWS / NASSCOM / Google Cloud |
+| 💼 **AI Jobs** | ⚠️ PARTIAL — RemoteOK / WWR / Remotive live; Naukri / Indeed India pending |
+| 🎁 **AI Grants** | 🔴 PENDING — Indian gov + research grant feeds |
+| 🔬 **AI Research** | 🔴 PENDING — arXiv + HF Daily Papers + IIT/IISc feeds |
+| 🛠️ **AI Tools** | ✅ LIVE — Hugging Face Spaces + GitHub Trending |
+| 🚀 **AI Startups** | 🔴 PENDING — funding signals + Indian startup index |
+| 🏛️ **AI Government Schemes** | ✅ LIVE — PMKVY / iGOT Karmayogi / MeitY / Skill India |
+
+Per profession. In their language. Auditable. Free.
+
+---
 
 ## The 10-year picture
 
-When this product matures, **every Indian professional** has Chitti as their daily 5-minute career-intelligence ritual — the way Bloomberg is for traders, Coursera is for upskillers, LinkedIn is for recruiters. Except free, vernacular, and trustworthy.
-
-## What we will be when we are world-class
+CNAIOS becomes the **daily 5-minute career-intelligence ritual for every Indian professional** — the operating system, not just an app. The Bloomberg-for-careers, except free, vernacular, and trustworthy.
 
 | | World-class state |
 |---|---|
-| **Coverage** | Every Indian profession (13 → 50+) has its own real-time career feed across 7 streams. |
-| **Reach** | 26 Indian languages, including the four-user contract (blind / deaf / mute / illiterate). |
-| **Trust** | Every classification auditable. Every source attributed. Zero fabrication. Trust score ≥ 0.95 in user surveys. |
-| **Speed** | <1s feed render on 2G. <30s ingest latency for new live sources. |
-| **Honesty** | Fail-open: works with every LLM provider offline. CI-enforced. |
-| **Independence** | Free public sources only. No paid partnerships. No advertorials. No paid-tool default recommendations. |
-| **Influence** | Indian government cites Chitti's per-state coverage gaps in annual AI-skilling reports. |
+| Profession coverage | 50+ (today: 13) |
+| Stream coverage | All 9 streams live with real data (today: 5 of 9) |
+| Language coverage | 26 Indian languages + ISL |
+| Classification F1 | ≥ 0.90 for every profession (today: 13/13 ≥ 0.85) |
+| LLM independence | Critical path 100% rules-only (today: ✅ CI-enforced) |
+| Trust score per item | ≥ 0.95 user-survey (today: no users yet) |
+| Career-outcome impact | ≥ 0.40 12-month survey (today: no users yet) |
 
-## What we will never be
+---
 
-- A subscription product. No paywall, ever.
-- A recommendation engine that hides its rules (we will always show "Why this matters").
-- A content generator. We aggregate, we never invent.
-- An LLM-dependent product. The core works when the LLM is down.
-- A US-product translated into Hindi. We are Indian-first by design.
-- A vehicle for vendor partnerships. Our rankings are reproducible from public formulas.
+## The 5 strategic moats
+
+1. **Rules-only classification critical path.** Most career-AI products wrap an LLM and inherit its failure modes. CNAIOS classification works with every LLM provider offline (6/6 CI tests).
+2. **Vernacular by design.** 26 Voice Factory languages + four-user contract integrated — not bolted on.
+3. **Government source preference.** NPTEL / MSDE / NASSCOM / MyGov / MeitY / iGOT Karmayogi are first-class sources. A US incumbent cannot credibly aggregate these.
+4. **Free + ad-free + paid-tool-honest.** Most career-AI products monetise affiliate links. We never will. Promise to user is durable.
+5. **Explainable.** Every classification carries `category + confidence + matched_keywords + source_signals + rule_version`. User tap → audit.
+
+---
+
+## Founder rules (locked)
+
+> **Trust > Engagement · Truth > Virality · Context > Clicks · Learning > Doomscrolling · Career outcomes > LLM cleverness**
+
+---
 
 ## The three north-star metrics
 
 | Metric | Target at world-class |
 |---|---|
-| **Time-to-useful-answer** (user opens → finds a career-relevant item) | < 10 seconds |
-| **Trust score** (per-card user survey: "Did this come from a real source?") | ≥ 0.95 |
-| **Career-outcome impact** (12-month survey: "Did Chitti help you learn / get a job / earn more?") | ≥ 0.40 |
-
-The product is not done until all three hit target.
-
-## Strategic moats (why this can't be cloned by a US incumbent)
-
-1. **Vernacular by design** — translating an English product to Marathi is not the same as designing for a Marathi-first reader. The Voice Factory + ISL + four-user-contract integration is structural.
-2. **Government-source preference** — NPTEL, MSDE, NASSCOM, MyGov, MeitY, iGOT Karmayogi are first-class sources. A US incumbent can't credibly aggregate these.
-3. **Rules-first auditability** — most career-AI products are LLM-summarisation wrappers. We are the only one that can show a deterministic rule chain for every classification. That is a defensible trust position.
-4. **Fail-open architecture** — most career-AI products fail when their LLM provider is down. We don't.
-5. **Free + ad-free + paid-tool-honest** — most career-AI products monetise through course/cert affiliate links. We will never do that. Our promise to the user is durable.
-
-## What "phase 2" looks like
-
-Once v0.3 ships at world-class quality:
-
-| Phase 2 feature | Why |
-|---|---|
-| Profession registry → 50 | More Indian professions (electrician, plumber, beautician, kirana shopkeeper, auto driver, security guard, accountant trainee) |
-| Stream count → 10 | Add: peer-network discussions · live sessions · Indian-language YouTube transcripts · mentor matching |
-| Live job ingest → 20 sources | Naukri / Indeed India / TimesJobs / Hirect / Cutshort / Wellfound India / state-govt career portals |
-| Multi-modal items | Per-source video summaries (extractive, never re-generated) |
-| Federated learning across Chittis | [Swarm](../SAHAYAI_MASTER.md#2f-swarm-intelligence--locked-2026-05-14) — every Chitti's classifications improve from every other's |
-
-## What we will measure to prove we are working
-
-- DAU per profession (growth + retention)
-- Per-card "ℹ Why this matters" expand rate (proves audit trail is being used)
-- Per-card 👍/👎 ratio per profession (proves classification quality)
-- "Open at source" CTR (proves users trust us to send them onward)
-- Time-on-card before either dismiss or save (proves card content is dense enough)
-- Per-profession F1 against expanding hand-labelled benchmark (proves engine works)
-- Per-source freshness (≤30 days for live; ≤90 days for manifest) — staleness flag CTR (proves users trust our staleness signal)
-
-## The product principle in one line
-
-> **The career-intelligence layer that an Indian professional would build for themselves if they had infinite time. Free, in their language, with the rules visible.**
+| **Time-to-useful-answer** (user opens → finds career-relevant item) | < 10 s |
+| **Trust score** (per-card user survey) | ≥ 0.95 |
+| **12-month career-outcome impact** | ≥ 0.40 |
 
 ---
 
-**World Class Chitti News AI — Commando Discipline. Zero Excuses.**
+## World-class features nobody has (Phase 2)
+
+| Feature | What it does |
+|---|---|
+| **Opportunity Radar** | "You should learn Agentic AI because job postings for it increased 45% in your state this quarter" |
+| **Skill Gap Radar** | "Your profession: HR. Missing skill: AI Interviewing. Recommended: Google + Microsoft + NPTEL course" |
+| **AI Impact Score** | Per profession: "How AI will impact YOUR career in next 12 months" — sourced from real job-posting + cert demand signals |
+| **Chitti Mentor** | "What should I learn next?" — recommends single next-best-action |
+| **Chitti Coach** | "30-day learning plan" — sequenced from the 9 streams |
+| **Chitti Opportunity Engine** | Combines News + Courses + Certs + Jobs + Grants + Research + Tools + Schemes into ONE recommendation per day |
+
+Each is specified in [`features/`](features/) (TO BUILD in Phase 2).
+
+---
+
+## What "phase 2" looks like
+
+| Phase 2 feature | Why |
+|---|---|
+| Profession registry → 50 | Electrician / plumber / beautician / kirana / driver / accountant trainee |
+| All 9 streams live with real data | grants / research / startups still pending |
+| 20+ Indian job RSS sources | Naukri / Indeed / TimesJobs / Hirect / state career portals |
+| Federated swarm across Chittis | Patterns from chitti-news flow to chitti-news-ai trust scores |
+| Native Android push | Chitti PA morning brief surfaces top item per profession |
+| 12-month career-outcome dashboard | Per-user (opt-in) tracking of what they learned + earned |
+
+---
+
+**World Class CNAIOS — Commando Discipline. Zero Excuses.**

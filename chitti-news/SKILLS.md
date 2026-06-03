@@ -1,76 +1,84 @@
-🎖️ **World Class Chitti News — Commando Discipline. Zero Excuses.**
+# CNOS — SKILLS
 
-> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
-
-# Chitti News — Skills
-
-> State-aware multi-language Indian news aggregator. ≥2 independent RSS sources required before issuing `verified` verdict. Politics sub-agent under hard neutrality guardrails.
+The capabilities every CNOS contributor (human or agent) must master.
 
 ---
 
-## The 4 Users I Serve
+## Skill 1 — News Classification
 
-| User | How News serves them |
-|------|-----------------------|
-| 👁️ Blind | "Chitti's Take" 3-bullet summary + full RSS body read aloud |
-| 🦻 Deaf | Full text + ISL panel + fact-check verdict badge |
-| 🤫 Mute | Tap-led category filter + Read Later / Cancelled folders |
-| 📖 Illiterate | Voice everything in chosen language; picture menus for categories |
+| Category | Owner | Eval bar |
+|---|---|---|
+| National | content classifier | F1 ≥ 0.90 |
+| Politics | [`skills/chitti-news-politics/`](skills/chitti-news-politics/) — hard neutrality | F1 ≥ 0.92 |
+| Business | [`skills/chitti-news-business/`](skills/chitti-news-business/) | F1 ≥ 0.90 |
+| Sports | [`skills/chitti-news-sports/`](skills/chitti-news-sports/) — cricket-first India | F1 ≥ 0.90 |
+| Entertainment | [`skills/chitti-news-entertainment/`](skills/chitti-news-entertainment/) — tasteful, no gossip | F1 ≥ 0.90 |
+| Technology | [`skills/chitti-news-tech/`](skills/chitti-news-tech/) | F1 ≥ 0.90 |
+| World | covered by national + tech | — |
+| State / Local | state-aware routing via `state` query param | per-state coverage SLA |
+| Government | overlap with politics + national; PIB-sourced when possible | F1 ≥ 0.90 |
+| Education / Health / Agriculture | partial coverage today; extend | — |
 
----
-
-## Features
-
-| # | Feature | Status | Tested By | Date |
-|---|---------|--------|-----------|------|
-| 1 | 25+ RSS feeds (EN + HI) | ✅ | CTO | 2026-05-15 |
-| 2 | 8 sub-agents — politics · business · tech · entertainment · sports · factcheck · summarizer · news-AI bridge | ✅ | CTO | 2026-05-23 |
-| 3 | State × language × category routing | ✅ | CTO | 2026-05-15 |
-| 4 | Fact-checker requires ≥2 independent sources for `verified` verdict | ✅ | CTO | 2026-05-15 |
-| 5 | `verified` / `partial` / `disputed` / `unverified` verdict labels | ✅ | CTO | 2026-05-15 |
-| 6 | "Chitti's Take" — 3-bullet summary via DeepSeek | ✅ | CTO | 2026-05-15 |
-| 7 | Politics neutrality guardrails (no opinion, no labels, equal coverage) | ✅ | CTO | 2026-05-15 |
-| 8 | For You page — personalised tab driven by 👍/👎 → category profile in localStorage | ✅ | CTO | 2026-05-23 |
-| 9 | Read Later / Cancelled folders per device | ✅ | CTO | 2026-05-15 |
-| 10 | Speaker reads FULL RSS body (content:encoded), not just headline | ✅ | CTO | 2026-05-23 |
-| 11 | DeepSeek `wrap_llm` at every call site | ✅ | CTO | 2026-05-15 |
-| 12 | Per-response widget — 🔊 / 🤖 / 👍 / 👎 / ✏️🎙️ | ✅ | CTO | 2026-05-27 |
-| 13 | Golden Rule confirm gate on every side-effecting action | ✅ | CTO | 2026-05-23 |
-| 14 | Turso embedded-replica pattern wired in code | ✅ | CTO | 2026-05-12 |
-| 15 | **Turso DATABASE_URL on Railway** — actually pointed at libsql:// | 🔴 | — | — |
-| 16 | Morning briefing — 5 headlines read aloud at 07:00 IST | ⬜ | — | — |
-| 17 | "Explain this news in simple Hindi" button (P0) | ⬜ | — | — |
-| 18 | Fake-news score visible on every article (not just on open) | ⬜ | — | — |
-| 19 | Regional language tabs (Tamil / Telugu / Bengali) | ⬜ | — | — |
-| 20 | DeepSeek → Claude → Gemini Layer-5 fallback chain | ⬜ | — | — |
+**Hard rule:** Content-based reclassifier MUST get the FIFA-in-Amazon-Prime-Day → Business case right (commit `7466a91`), AND Telugu-film-business-deal → Entertainment. Both in benchmark seed.
 
 ---
 
-## Indian User Support
+## Skill 2 — Fact Verification
 
-- Vernacular reader without paywalls
-- State-specific news consumer (Mumbai user sees Maharashtra-relevant stories)
-- Fact-conscious reader who needs cross-source verification
-- User who wants voice-only news in 2G areas
+| Sub-skill | Owner | Output |
+|---|---|---|
+| Cross-source matching | [`skills/chitti-news-factcheck/`](skills/chitti-news-factcheck/) | `match_count` ≥ 2 → eligible for `verified` |
+| Confidence scoring | factcheck service | 0-100, surfaced on card |
+| Source reputation | weekly per-publisher trust score | per-source `trust_score` (PENDING render — SHIP #11) |
+| Hyperlocal handling | factcheck rationale | "single-source story — may be hyperlocal or just-breaking" |
 
-## Language Support
-
-EN + HI native today. Regional languages (Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam) stubbed for v1.1.
-
-## Mandatory 5-element widget on every response box
-
-🔊 Speaker · 🤖 Chitti icon · 👍👎 Thumbs · ✏️🎙️ Pencil+Mic · 🌐 Language selector — verified live on `chitti_news.html` per [CERT_LOG.md](../CERT_LOG.md).
-
-## Commando Standard
-
-- ≥2 independent sources for `verified` verdict — single-source articles surface as `unverified`, never auto-elevated
-- Politics sub-agent: no opinion, no labels, equal coverage across parties
-- No paywalls, no ads, no original journalism
-- RSS poll cadence: every 30 min
-- Articles older than 7 days auto-archive (demoted, still searchable)
-- Sources reviewed monthly for trust score
-- 🔴 OPEN DEFECT: Railway env `DATABASE_URL` must be `libsql://…` form — currently Supabase Postgres URL; embedded-replica bg sync never starts
+**Hard rule:** Never assign `verified` verdict without ≥2 independent source corroboration. Single-source → `partial` at most.
 
 ---
 
-> **World Class Chitti News — Commando Discipline. Zero Excuses.**
+## Skill 3 — Personalization
+
+| Dimension | Where | Privacy |
+|---|---|---|
+| State | URL query + localStorage | per-device |
+| Language | URL query + localStorage | per-device |
+| Profession (handoff to CNAIOS) | localStorage | per-device |
+| Interest history (For You) | localStorage | per-device, never synced |
+| Reading history (Read Later / Cancelled) | localStorage | per-device |
+
+**Hard rule:** Nothing leaves the user's device. `Chitti.forget()` wipes everything.
+
+---
+
+## Skill 4 — Trust Strip composition
+
+| Element | Source | Render |
+|---|---|---|
+| Verdict badge | `factcheck.verdict` | colour-coded chip |
+| Corroboration count | `factcheck.match_count` | "verified by N sources" |
+| Publisher trust score | per-publisher rolling score (PENDING) | numeric badge |
+| Reading time | computed from content length | "X min read" |
+
+**Hard rule:** Trust Strip must render in <2 s. CI cert: `cert_chitti_news_v2.mjs`.
+
+---
+
+## Skill 5 — Coverage honesty
+
+| When | What |
+|---|---|
+| Per-(state, lang, cat) returns 0 items | Embed `coverage` payload narrating per-category counts + english_fallback + tap-to-switch action |
+| Per-language thin (<10 publishers) | Same payload + flag |
+| Per-publisher dead-link rate >10 % | Auto-deprioritise + flag in chitti-founder dashboard |
+
+**Hard rule:** No silent empty feed. Every empty state carries coverage payload + action to escape.
+
+---
+
+## How mastery is proved
+
+Build a 30-row hand-labelled mini-benchmark per skill, run the eval, commit the report with F1 ≥ target.
+
+---
+
+**World Class CNOS — Commando Discipline. Zero Excuses.**

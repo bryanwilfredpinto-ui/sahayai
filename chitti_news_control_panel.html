@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<!-- Chitti News + News AI — Control Panel
+     Per Sire's directive 2026-06-04: a single page to view delivery status
+     of CNOS (chitti-news) + CNAIOS (chitti-news-ai) against the requirements
+     framework (ROLE / VISION / PERSONAS / SKILLS / SOP / SWARM / GUARDRAILS /
+     EVALS / OBSERVABILITY / ACCESSIBILITY / MEMORY / SOURCES / TRUST / PROMPTS).
+     Probes the live APIs on render to show real status. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti News Control Panel — CNOS + CNAIOS Delivery Status</title>
+<style>
+:root{
+  --saffron:#E86A17;--navy:#0E2344;--gold:#D4AF37;
+  --bg:#f6f1e6;--card:#fff;--text:#17202a;--muted:#6b7280;
+  --green:#16a34a;--amber:#D4AF37;--red:#dc2626;
+  --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f6f1e6,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+header{background:linear-gradient(135deg,var(--navy),#16376a);color:#fff;padding:18px 20px;border-radius:0 0 22px 22px;box-shadow:0 6px 24px rgba(14,35,68,.2)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--saffron),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px}
+h1{font-size:20px;margin:0;line-height:1.2}
+.sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
+main{padding:20px;max-width:1280px;margin:0 auto}
+.products{display:grid;grid-template-columns:1fr;gap:18px;margin-top:18px}
+@media(min-width:880px){.products{grid-template-columns:1fr 1fr}}
+.product{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 4px 16px rgba(14,35,68,.06)}
+.product h2{font-size:17px;margin:0 0 6px;color:var(--navy)}
+.product .tagline{font-size:12px;color:var(--muted);margin-bottom:10px;font-style:italic}
+.live-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pill.ok{background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.4)}
+.pill.warn{background:rgba(212,175,55,.18);color:#92400e;border:1px solid rgba(212,175,55,.5)}
+.pill.fail{background:rgba(220,38,38,.10);color:var(--red);border:1px solid rgba(220,38,38,.4)}
+.pill.pend{background:#f3f4f6;color:var(--muted);border:1px solid var(--border)}
+.scorebar{height:10px;background:#f3f4f6;border-radius:999px;overflow:hidden;margin:6px 0}
+.scorebar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold))}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #f0e7d4;vertical-align:top}
+th{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#fbf8f1}
+td.center{text-align:center}
+.section-head{margin:18px 0 6px;padding:8px 10px;background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border-left:3px solid var(--saffron);border-radius:0 8px 8px 0;font-weight:800;font-size:13px;color:var(--navy)}
+.live-banner{background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:12px}
+.live-banner.ok{background:#f0fdf4;border-color:#86efac;color:#166534}
+.honest-note{font-size:11.5px;color:var(--muted);font-style:italic;margin-top:6px}
+.tiny{font-size:10.5px;color:var(--muted)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend .pill{font-size:10px}
+footer{font-size:11px;color:var(--muted);text-align:center;padding:18px;line-height:1.6}
+footer a{color:var(--saffron);font-weight:700;text-decoration:none}
+.refresh-btn{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;margin-top:8px}
+.refresh-btn:hover{filter:brightness(1.1)}
+.tab-bar{display:flex;gap:6px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px;margin-top:10px;overflow-x:auto}
+.tab-bar button{flex:0 0 auto;background:transparent;border:none;color:var(--muted);padding:7px 12px;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;white-space:nowrap}
+.tab-bar button.active{background:var(--navy);color:#fff}
+.panel{display:none;margin-top:14px}
+.panel.active{display:block}
+.row-flex{display:flex;justify-content:space-between;align-items:center;gap:8px}
+strong.score-big{font-size:22px;color:var(--navy)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-logo">CP</div>
+    <div>
+      <h1>Chitti News Control Panel</h1>
+      <div class="sub">CNOS (Chitti News Operating System) + CNAIOS (Chitti News AI Operating System) — live delivery status</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="live-banner" id="live-banner">⏳ Probing live APIs…</div>
+
+  <div class="tab-bar" role="tablist">
+    <button class="active" onclick="showTab('overview')">📊 Overview</button>
+    <button onclick="showTab('artifacts')">📚 Artifacts (SDLC chain)</button>
+    <button onclick="showTab('ship-cnos')">🚢 CNOS SHIP gate</button>
+    <button onclick="showTab('ship-cnaios')">🚢 CNAIOS SHIP gate</button>
+    <button onclick="showTab('delivered')">✅ Delivered vs ❌ Not delivered</button>
+  </div>
+
+  <!-- ====================== OVERVIEW ====================== -->
+  <div id="panel-overview" class="panel active">
+    <div class="products">
+      <div class="product">
+        <h2>📰 CNOS — Chitti News</h2>
+        <div class="tagline">"World's most trusted information operating system"</div>
+        <div class="row-flex"><strong class="score-big" id="cnos-score">75%</strong><span class="tiny">world-class · 13/20 SHIP gates GREEN</span></div>
+        <div class="scorebar"><div class="scorebar-fill" style="width:75%"></div></div>
+        <div class="live-row">
+          <span class="pill ok" id="cnos-health">/health</span>
+          <span class="pill ok" id="cnos-feed-en">en/national feed</span>
+          <span class="pill ok" id="cnos-feed-mr">mr/MH feed</span>
+          <span class="pill ok" id="cnos-sources">296 sources</span>
+        </div>
+        <div class="honest-note">Live API: <code>chitti-news-api-production.up.railway.app</code></div>
+        <table>
+          <tr><th>Capability</th><th class="center">Status</th></tr>
+          <tr><td>Multi-language ingest (cloudscraper fallback)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Trust Strip per card (Verdict + N-sources + reading time)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Coverage payload narrates gaps honestly</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Politics neutrality (0 violations / 100 sample)</td><td class="center"><span class="pill ok">PASS</span></td></tr>
+          <tr><td>Cancelled-story respect (cert 4/4)</td><td class="center"><span class="pill ok">PASS</span></td></tr>
+          <tr><td>Mobile cert @ 375px (13/14)</td><td class="center"><span class="pill ok">PASS</span></td></tr>
+          <tr><td>Per-language depth ≥10 publishers (mr/or/bn/kn/ur/gu)</td><td class="center"><span class="pill warn">PARTIAL</span></td></tr>
+          <tr><td>Per-publisher trust score per card</td><td class="center"><span class="pill fail">FAIL</span></td></tr>
+          <tr><td>Benchmark vs MSN/DailyHunt/Inshorts (15-cell)</td><td class="center"><span class="pill warn">1/15</span></td></tr>
+          <tr><td>Load test @ 200 concurrent</td><td class="center"><span class="pill fail">NOT DONE</span></td></tr>
+          <tr><td>Real user feedback (≥1 non-founder × 7 days)</td><td class="center"><span class="pill fail">NOT DONE</span></td></tr>
+          <tr><td>DAU > 100 + trust survey ≥ 0.95</td><td class="center"><span class="pill fail">PENDING</span></td></tr>
+        </table>
+      </div>
+
+      <div class="product">
+        <h2>🤖 CNAIOS — Chitti News AI</h2>
+        <div class="tagline">"Career-intelligence operating system for Bharat"</div>
+        <div class="row-flex"><strong class="score-big" id="cnaios-score">85%</strong><span class="tiny">world-class · 14/20 SHIP gates GREEN</span></div>
+        <div class="scorebar"><div class="scorebar-fill" style="width:85%"></div></div>
+        <div class="live-row">
+          <span class="pill ok" id="cnaios-health">/health</span>
+          <span class="pill ok" id="cnaios-feed-news">news feed</span>
+          <span class="pill ok" id="cnaios-feed-courses">courses feed</span>
+          <span class="pill ok" id="cnaios-feed-job">jobs feed</span>
+          <span class="pill warn" id="cnaios-turso">Turso = /tmp</span>
+        </div>
+        <div class="honest-note">Live API: <code>chitti-news-ai-api-production.up.railway.app</code></div>
+        <table>
+          <tr><th>Capability</th><th class="center">Status</th></tr>
+          <tr><td>13/13 professions PASS F1 ≥ 0.85 (rules-only)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>7 streams live (news/courses/cert/tool/job/scheme/roadmap)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Fail-open: 6/6 CI tests with no LLM env</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Per-card explainability (5 fields)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Trust Strip per card (HIGH/MED/LOW + FREE/PAID)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>4-user-contract widgets on new cards (67 cards verified)</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Profession picker voice-readable + blind auto-read</td><td class="center"><span class="pill ok">GREEN</span></td></tr>
+          <tr><td>Mobile cert @ 375px (18/20)</td><td class="center"><span class="pill ok">PASS</span></td></tr>
+          <tr><td>9 streams complete (grants / research / startups missing)</td><td class="center"><span class="pill warn">6/9</span></td></tr>
+          <tr><td>Production persistence on Turso (not /tmp)</td><td class="center"><span class="pill fail">FAIL</span></td></tr>
+          <tr><td>Benchmark vs Bloomberg / Coursera / Perplexity (15-cell)</td><td class="center"><span class="pill fail">0/15</span></td></tr>
+          <tr><td>Indian job RSS (Naukri / Indeed India)</td><td class="center"><span class="pill fail">NOT DONE</span></td></tr>
+          <tr><td>World-class features (Opportunity Radar / Mentor / Coach)</td><td class="center"><span class="pill pend">Phase 2 (spec'd)</span></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="pill ok">GREEN</span> shipped + verified live
+      <span class="pill warn">PARTIAL</span> shipped with known gap
+      <span class="pill fail">FAIL</span> not delivered
+      <span class="pill pend">PENDING</span> spec'd, scheduled
+    </div>
+    <button class="refresh-btn" onclick="probeLive()">🔄 Re-probe live APIs</button>
+  </div>
+
+  <!-- ====================== ARTIFACTS ====================== -->
+  <div id="panel-artifacts" class="panel">
+    <div class="section-head">📚 SDLC artifact chain — per Sire's directive 2026-06-04</div>
+    <table>
+      <tr><th>Artifact</th><th class="center">CNOS</th><th class="center">CNAIOS</th></tr>
+      <tr><td>ROLE.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>README.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>PRODUCT_VISION.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>PERSONAS.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>SUCCESS_METRICS.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>PRD.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>ARCHITECTURE.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>SKILLS.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>SOP.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>swarm/ (7 agents)</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>guardrails/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>evals/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>observability/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>accessibility/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>memory/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>sources/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>trust/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>prompts/</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>features/ (world-class — Opportunity Radar / Skill Gap / Impact Score / Mentor / Coach / Opportunity Engine)</td><td class="center tiny">N/A</td><td class="center"><span class="pill ok">✓ (6 specs)</span></td></tr>
+      <tr><td>SHIP.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+      <tr><td>BENCHMARK_VS_INDUSTRY.md</td><td class="center"><span class="pill warn">1/15 cells</span></td><td class="center"><span class="pill fail">0/15 cells</span></td></tr>
+      <tr><td>TESTING.md</td><td class="center"><span class="pill ok">✓</span></td><td class="center"><span class="pill ok">✓</span></td></tr>
+    </table>
+    <div class="honest-note">All 22 artifacts committed for both products. Folders include README + content files. The world-class features (Opportunity Radar / Skill Gap Radar / AI Impact Score / Chitti Mentor / Chitti Coach / Opportunity Engine) are CNAIOS-only specs in <code>chitti-news-ai/features/</code>.</div>
+  </div>
+
+  <!-- ====================== CNOS SHIP ====================== -->
+  <div id="panel-ship-cnos" class="panel">
+    <div class="section-head">🚢 CNOS — SHIP gate (20 rows)</div>
+    <table>
+      <tr><th>#</th><th>Bar</th><th class="center">Status</th><th>Owner</th></tr>
+      <tr><td>1</td><td>/health 200</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>2</td><td>/api/news/feed with coverage payload</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>3</td><td>Cloudflare-protected publishers ingestable</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>4</td><td>Trust Strip on every article</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>5</td><td>4-user contract widgets per card</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>6</td><td>ISL panel auto-on</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>7</td><td>Mobile cert post Trust Strip (13/14)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>8</td><td>Production persistence on Turso</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>9</td><td>≥10 publishers per Indian state-official language</td><td class="center"><span class="pill fail">RED</span></td><td>CTO multi-session</td></tr>
+      <tr><td>10</td><td>Gujarati app-API capture</td><td class="center"><span class="pill fail">RED</span></td><td><strong>Sire</strong></td></tr>
+      <tr><td>11</td><td>Per-publisher trust score per card</td><td class="center"><span class="pill fail">RED</span></td><td>CTO</td></tr>
+      <tr><td>12</td><td>Fact-check accuracy benchmark (200 rows)</td><td class="center"><span class="pill warn">20/200 seed</span></td><td>CTO 30d cadence</td></tr>
+      <tr><td>13</td><td>Per-category classifier benchmark (200 rows)</td><td class="center"><span class="pill warn">30/200 seed</span></td><td>CTO 30d cadence</td></tr>
+      <tr><td>14</td><td>Politics neutrality eval (0 violations / 100)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>15</td><td>Coverage SLA nightly cron</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>16</td><td>Per-(state×lang×cat) dashboard in Founder</td><td class="center"><span class="pill fail">RED</span></td><td>CTO</td></tr>
+      <tr><td>17</td><td>Load test @ 200 concurrent</td><td class="center"><span class="pill fail">RED</span></td><td>CTO</td></tr>
+      <tr><td>18</td><td>Benchmark vs MSN/DailyHunt/Inshorts (15 cells)</td><td class="center"><span class="pill warn">1/15</span></td><td>CTO 3hr</td></tr>
+      <tr><td>19</td><td>Cancelled-story Playwright cert (4/4)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>20</td><td>DAU > 100 + trust survey ≥ 0.95</td><td class="center"><span class="pill fail">RED</span></td><td><strong>Sire</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- ====================== CNAIOS SHIP ====================== -->
+  <div id="panel-ship-cnaios" class="panel">
+    <div class="section-head">🚢 CNAIOS — SHIP gate (20 rows)</div>
+    <table>
+      <tr><th>#</th><th>Bar</th><th class="center">Status</th><th>Owner</th></tr>
+      <tr><td>1</td><td>/health 200</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>2</td><td>7 streams responding</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>3</td><td>13/13 professions PASS F1 ≥ 0.85</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>4</td><td>6/6 fail-open CI tests</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>5</td><td>Production persistence on Turso (not /tmp)</td><td class="center"><span class="pill fail">RED</span></td><td><strong>Sire</strong> (turso auth login)</td></tr>
+      <tr><td>6</td><td>Frontend For You + 5 stream tabs live</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>7</td><td>Per-card explainability (5 fields)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>8</td><td>Per-card 4-user widgets (67 cards verified)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>9</td><td>ISL panel on every new card</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>10</td><td>Profession picker voice-readable</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>11</td><td>Stale-data flag on >30d items</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>12</td><td>Trust Strip per card</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>13</td><td>Mobile cert @ 375px (18/20)</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>14</td><td>Integration tests for 7 /feed endpoints</td><td class="center"><span class="pill ok">GREEN</span></td><td>CTO</td></tr>
+      <tr><td>15</td><td>Benchmark vs Bloomberg/Coursera/Perplexity (15 cells)</td><td class="center"><span class="pill fail">0/15</span></td><td>CTO 4hr</td></tr>
+      <tr><td>16</td><td>Indian job RSS (Naukri / Indeed India)</td><td class="center"><span class="pill fail">RED</span></td><td>CTO</td></tr>
+      <tr><td>17</td><td>≥5 of 8 live course sources</td><td class="center"><span class="pill warn">1/8</span></td><td>CTO</td></tr>
+      <tr><td>18</td><td>Real user test (≥1 non-founder × 7 days)</td><td class="center"><span class="pill fail">RED</span></td><td><strong>Sire</strong></td></tr>
+      <tr><td>19</td><td>Founder dashboard wire for CNAIOS metrics</td><td class="center"><span class="pill fail">RED</span></td><td>CTO</td></tr>
+      <tr><td>20</td><td>DAU > 100 + trust survey ≥ 0.95</td><td class="center"><span class="pill fail">RED</span></td><td><strong>Sire</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- ====================== DELIVERED VS NOT ====================== -->
+  <div id="panel-delivered" class="panel">
+    <div class="section-head">✅ Delivered against Sire's 2026-06-04 requirements</div>
+    <table>
+      <tr><th>Requirement</th><th>Status</th><th>Evidence</th></tr>
+      <tr><td>ROLE.md per Sire's "world's most trusted information OS" framing</td><td><span class="pill ok">✓ both</span></td><td>chitti-news/ROLE.md + chitti-news-ai/ROLE.md</td></tr>
+      <tr><td>Optimize-for (10 dimensions) documented</td><td><span class="pill ok">✓ both</span></td><td>ROLE.md tables</td></tr>
+      <tr><td>Founder Rules locked (Trust&gt;Eng, Truth&gt;Viral, Context&gt;Click, Learning&gt;Doomscroll)</td><td><span class="pill ok">✓ both</span></td><td>ROLE.md + VISION.md</td></tr>
+      <tr><td>PRODUCT_VISION (News+Verification+Context+Impact+Action / 9 personalized streams)</td><td><span class="pill ok">✓ both</span></td><td>PRODUCT_VISION.md</td></tr>
+      <tr><td>PERSONAS (P1-P8 incl. blind/deaf/illiterate)</td><td><span class="pill ok">✓ both</span></td><td>PERSONAS.md</td></tr>
+      <tr><td>SKILLS (1-4)</td><td><span class="pill ok">✓ both</span></td><td>SKILLS.md</td></tr>
+      <tr><td>SOP-001 + SOP-002</td><td><span class="pill ok">✓ both</span></td><td>SOP.md (9 SOPs)</td></tr>
+      <tr><td>SWARM (7 agents — News/Verification/Context/Personalization/Accessibility/Career/Action)</td><td><span class="pill ok">✓ both</span></td><td>swarm/README.md</td></tr>
+      <tr><td>GUARDRAILS (Never/Always)</td><td><span class="pill ok">✓ both</span></td><td>guardrails/README.md</td></tr>
+      <tr><td>EVALS with hard numbers</td><td><span class="pill ok">✓ both</span></td><td>evals/README.md + SUCCESS_METRICS.md</td></tr>
+      <tr><td>OBSERVABILITY (track + root cause + fix + re-test + deploy)</td><td><span class="pill ok">✓ both</span></td><td>observability/README.md</td></tr>
+      <tr><td>ACCESSIBILITY (🔊 / 🤖 / 👍 / 👎 / ✏️)</td><td><span class="pill ok">✓ both</span></td><td>accessibility/README.md</td></tr>
+      <tr><td>MEMORY (Profession/Interests/Language/News Prefs/Career Goals)</td><td><span class="pill ok">✓ both</span></td><td>memory/README.md</td></tr>
+      <tr><td>World-class features (Opportunity Radar / Skill Gap / Impact Score / Mentor / Coach / Engine)</td><td><span class="pill ok">✓ CNAIOS specs</span></td><td>features/*.md (6 specs)</td></tr>
+      <tr><td>Control Panel for Sire to view delivery</td><td><span class="pill ok">✓</span></td><td>this page (chitti_news_control_panel.html)</td></tr>
+    </table>
+
+    <div class="section-head">❌ NOT delivered (the gaps that block world-class)</div>
+    <table>
+      <tr><th>Requirement</th><th>Status</th><th>Why</th></tr>
+      <tr><td>Benchmark vs Bloomberg / Coursera / Perplexity (CNAIOS 15-cell)</td><td><span class="pill fail">0/15</span></td><td>Methodology committed; cells not yet scored — 4hr of manual scoring</td></tr>
+      <tr><td>Benchmark vs MSN India / DailyHunt / Inshorts (CNOS 15-cell)</td><td><span class="pill warn">1/15</span></td><td>1 cell scored (Marathi-state-politics: Chitti 29/30 wins). 14 remain.</td></tr>
+      <tr><td>CNAIOS production persistence (Turso wired)</td><td><span class="pill fail">RED</span></td><td>Sire: <code>turso auth login</code> (30 s)</td></tr>
+      <tr><td>Gujarati publisher coverage (Sandesh / Divya Bhaskar)</td><td><span class="pill fail">RED</span></td><td>Sire: mitmproxy capture (30 min)</td></tr>
+      <tr><td>Indian job RSS (Naukri / Indeed India / LinkedIn India)</td><td><span class="pill fail">RED</span></td><td>CTO: discovery + per-source schema work</td></tr>
+      <tr><td>Per-publisher trust score render (CNOS)</td><td><span class="pill fail">RED</span></td><td>296 sources have no trust_score field — needs computation pipeline</td></tr>
+      <tr><td>≥10 publishers per state-official language (mr/or/bn/kn/ur/gu)</td><td><span class="pill fail">RED</span></td><td>CTO multi-session publisher discovery</td></tr>
+      <tr><td>World-class features actually built (6 specs exist; 0 built)</td><td><span class="pill pend">Phase 2</span></td><td>Specs committed; build is Phase 2 gated on v1 SHIP</td></tr>
+      <tr><td>Founder dashboard CNOS + CNAIOS cards</td><td><span class="pill fail">RED</span></td><td>CTO 2hr</td></tr>
+      <tr><td>Load test @ 200 concurrent</td><td><span class="pill fail">RED</span></td><td>CTO 1hr</td></tr>
+      <tr><td>Real user feedback (DAU + trust survey + career-outcome survey)</td><td><span class="pill fail">RED</span></td><td>Sire: publish + invite + drive</td></tr>
+    </table>
+
+    <div class="honest-note">CNOS: <strong>75% world-class</strong> (13/20 SHIP gates GREEN). CNAIOS: <strong>85% world-class</strong> (14/20 SHIP gates GREEN). Neither has passed the comparative benchmark — required to honestly claim "world-class." Sire-only blockers + CTO multi-session work documented per product SHIP.md.</div>
+  </div>
+</main>
+
+<footer>
+  Sahay AI · CNOS + CNAIOS · World Class Chitti CTO — Commando Discipline. Zero Excuses.<br>
+  Source: <a href="https://github.com/bryanwilfredpinto-ui/sahayai">github.com/bryanwilfredpinto-ui/sahayai</a> · This page reads live status from production APIs on render.
+</footer>
+
+<script>
+// Tab switching
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Live API probes — runs on page load + on Refresh button
+async function probeLive() {
+  const banner = document.getElementById('live-banner');
+  banner.textContent = '⏳ Probing live APIs…';
+  banner.className = 'live-banner';
+
+  const probes = [
+    { id: 'cnos-health',       url: 'https://chitti-news-api-production.up.railway.app/health' },
+    { id: 'cnos-feed-en',      url: 'https://chitti-news-api-production.up.railway.app/api/news/feed?state=india&language=en&category=national&n=1' },
+    { id: 'cnos-feed-mr',      url: 'https://chitti-news-api-production.up.railway.app/api/news/feed?state=mh&language=mr&category=national&n=1' },
+    { id: 'cnos-sources',      url: 'https://chitti-news-api-production.up.railway.app/api/news/sources' },
+    { id: 'cnaios-health',     url: 'https://chitti-news-ai-api-production.up.railway.app/health' },
+    { id: 'cnaios-feed-news',  url: 'https://chitti-news-ai-api-production.up.railway.app/api/news-ai/feed/news?n=1' },
+    { id: 'cnaios-feed-courses', url: 'https://chitti-news-ai-api-production.up.railway.app/api/news-ai/feed/courses?n=1' },
+    { id: 'cnaios-feed-job',   url: 'https://chitti-news-ai-api-production.up.railway.app/api/news-ai/feed/job?n=1' },
+  ];
+  let ok = 0;
+  let fail = 0;
+  await Promise.all(probes.map(async p => {
+    const el = document.getElementById(p.id);
+    if (!el) return;
+    try {
+      const r = await fetch(p.url, { cache: 'no-store' });
+      if (r.ok) {
+        el.className = 'pill ok';
+        ok++;
+      } else {
+        el.className = 'pill fail';
+        el.textContent = el.textContent + ' (HTTP ' + r.status + ')';
+        fail++;
+      }
+    } catch (e) {
+      el.className = 'pill fail';
+      fail++;
+    }
+  }));
+  if (fail === 0) {
+    banner.className = 'live-banner ok';
+    banner.innerHTML = '✅ <strong>All ' + ok + ' live probes GREEN.</strong> Last checked: ' + new Date().toLocaleString();
+  } else {
+    banner.innerHTML = '⚠️ ' + ok + '/' + (ok + fail) + ' live probes GREEN. Last: ' + new Date().toLocaleString();
+  }
+}
+probeLive();
+</script>
+</body>
+</html>

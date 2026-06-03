@@ -1,50 +1,118 @@
-🎖️ **World Class Chitti News AI — Commando Discipline. Zero Excuses.**
+# CNAIOS — STANDARD OPERATING PROCEDURES
 
-> **This Chitti is someone's lifeline. Build it like your family depends on it. Because someone's family does.**
-
-# Chitti News AI — Standard Operating Procedure
-
-## Objective
-Track new AI tools, models, and papers from the AI ecosystem (Product Hunt, There's An AI For That, HF Daily Papers) in an Inshorts / Ground News / Artifact-style feed.
-
-## Primary User
-Indian AI builder, student, founder watching the AI ecosystem — and downstream Chitti developers looking for new substrate.
-
-## Success Metric
-(a) New-tool freshness (median lag from launch → appearance in feed) · (b) summary 👍 rate · (c) verification rate (% tools surfaced with ≥2 corroborating sources).
-
-## Quality Standard
-- SLA-timing curl-verified (`x-chitti-response-time-ms` header present)
-- Skeleton services that aren't built yet return **honest 501** (8 of 10 endpoints today) — never fake demos
-- Per-response widget on every response box (🔊 / 🤖 / 👍 / 👎 / ✏️🎙️)
-- **Turso embedded-replica sync UNVERIFIED today** — flagged 🔴 until Railway env var fix lands
-
-## Operating Rules
-1. **Honest 501.** If a service isn't built, it returns 501 with explanation. NEVER fake a demo.
-2. **No subjective ranking.** No "top 10" lists. No paid placement.
-3. **No mainstream news.** That's Chitti News. News AI is AI-ecosystem only.
-4. **Two-source rule for verification.** Single-source tools tagged `unverified`. NEVER auto-elevate.
-5. **9-profession jargon lens.** Tap 🤖 → DeepSeek explains article in user's language + profession context. Default = farmer.
-6. **Golden Rule on every action.** Save-for-later, subscribe-to-tool — all confirm before fire.
-
-## Error Handling
-- DeepSeek 5xx → return RSS article without 🤖 explanation + honest "explanation unavailable" banner
-- RSS source 5xx → mark as down in ledger; never silently drop
-- Turso bg sync fails → log to Founder dashboard (🔴 OPEN: DATABASE_URL gap blocks this entirely)
-- Skeleton endpoint hit → return 501 with body explaining "not built yet"
-
-## Escalation to CTO
-- Turso `articles` table empty after RSS poll (confirms `DATABASE_URL` env still broken)
-- Layer-5 fallback chain still env-slot placeholder (the 4 remaining skeleton services need DeepSeek wiring + Claude/Gemini fallback)
-- New skeleton service shipped without honest 501 (defect — fake-demo violation)
-- Railway service unreachable > 1h (cold-start vs outage)
-
-## Stale Data Rule
-RSS poll every 30 min. Tools not corroborated by ≥2 sources tagged `unverified`. Deprecated / dead models archived monthly.
-
-## Evolution Owner
-[chitti-news-ai/skills/](skills/) — 14 skill files + `RSS_SOURCES_AI.md`. New sources reviewed by Sire.
+Mechanical steps for the operational events. Owned by the 7-agent swarm in [`swarm/`](swarm/).
 
 ---
 
-> **World Class Chitti News AI — Commando Discipline. Zero Excuses.**
+## SOP-001 — New course / item lands in ingest
+
+When `streams_ingestor` or `courses_ingestor` writes a new row:
+
+| Step | Owner | Output |
+|---|---|---|
+| 1. **Verify source** | Verification Agent | source_slug ∈ allowed registry; URL on `official_domain` |
+| 2. **Classify profession** (rules-only) | News Agent + `profession_classifier.py` | per-profession labels with confidence + matched_keywords + source_signals |
+| 3. **Determine free/paid** | from source manifest | `is_free` + `cost_label` verbatim — NEVER inferred |
+| 4. **Estimate effort** | from source manifest (`duration_minutes`) | optional |
+| 5. **Apply exclude-keyword veto** | classifier `exclude_keywords` rule | drop profession tag if any veto fires |
+| 6. **Publish** | feed engine | item surfaces in `/api/news-ai/feed/<stream>?profession=X` |
+
+**Hard rules:**
+- Zero LLM calls in steps 1–6 (rules-only critical path)
+- Every published item carries full explainability bundle
+- Items > 30 days unverified get a `⏳ Nd STALE` flag (frontend)
+
+---
+
+## SOP-002 — Sire's worked examples regression check
+
+Every commit that touches `profession_classifier.py` or `profession_registry.json` MUST pass `test_classifier_sire_worked_examples`:
+
+1. NVIDIA CUDA C/C++ → `software-developer`
+2. Oncology AI Conference → `oncologist`
+3. Precision Agriculture Drone Training → `farmer`
+4. ATS Optimization → `talent-acquisition`
+
+If any fails → block merge.
+
+---
+
+## SOP-003 — Fail-open guardrail
+
+CI test forbids:
+- `import httpx` / `import openai` / `import anthropic` / `google.generativeai` in `profession_classifier.py`
+- env-var reads of `DEEPSEEK_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` in the classifier module
+
+If any new commit re-introduces forbidden imports → block merge.
+
+---
+
+## SOP-004 — Per-profession F1 regression
+
+After every rule edit:
+
+1. Run benchmark harness against 250-row hand-labelled dataset
+2. Compute per-profession precision / recall / F1
+3. If any profession drops below 0.85 → block merge, surface drop
+4. Commit benchmark report alongside the rule change
+
+Current state: 13/13 PASS (business-owner 0.97; software-developer 0.857).
+
+---
+
+## SOP-005 — Scheduler refresh cycle
+
+| Job | Cadence |
+|---|---|
+| `rss_poll` (news articles) | every 6 h |
+| `streams_refresh` (cert/tool/job/scheme/roadmap) | every 6 h |
+| `classify_sweep` (catch un-tagged) | hourly |
+| Per-source link-check (HEAD probe) | weekly Sunday 04:00 IST (PENDING build) |
+
+All scheduler runs log to application logs + Founder dashboard.
+
+---
+
+## SOP-006 — On-demand 🤖 Chitti explains
+
+1. Try LLM path via `news_explain.py` (if LLM key configured)
+2. On LLM failure: extractive fallback via `enhancement.summarise()`
+3. Response carries `source: "llm"|"extractive"` so UI shows honesty marker
+4. NEVER 500 — always returns useful text
+
+Cert: 6/6 fail-open tests.
+
+---
+
+## SOP-007 — Profession picker UX
+
+1. Stored in `localStorage.chitti_news_ai_profession`
+2. NEVER sent to backend
+3. Triggers For You tab to appear in nav
+4. Triggers blind-user auto-read if Disability Profile has blind=true
+5. User can clear any time via "✕ Clear" link → reverts to Everyone
+
+Cert: `cert_news_ai.mjs` verifies aria + auto-read + persistence across reload.
+
+---
+
+## SOP-008 — Stale-data flag rendering
+
+1. Compute `ageDays = (now - (last_verified_at || ingested_at)) / 86400000`
+2. If `ageDays > 30`: render `⏳ <ageDays>d STALE` badge
+3. Yellow with amber border + title attribute for screen readers
+
+---
+
+## SOP-009 — Per-stream tab navigation
+
+5 stream tabs (Certs / Tools+ / Jobs / Schemes / Roadmaps) always visible:
+
+1. Each tab loads `/api/news-ai/feed/<kind>?profession=<X>&n=30`
+2. Profession filter honored (default Everyone)
+3. Honest empty state: "No <kind> classified for X yet — try Everyone"
+4. Every card: Trust Strip + stale flag + "ℹ Why this matters" disclosure + 4-user widgets
+
+---
+
+**World Class CNAIOS — Commando Discipline. Zero Excuses.**
