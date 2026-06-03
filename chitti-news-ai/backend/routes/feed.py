@@ -270,6 +270,92 @@ def admin_classify_all_now():
     }), 200
 
 
+# ────────────────────────────────────────────────────────────────────────
+# Enhancement endpoints (v0.3 §4.3) — LLM optional, extractive fallback
+# ────────────────────────────────────────────────────────────────────────
+
+@bp.post("/<string:stream>/<int:item_id>/explain")
+def explain_item(stream: str, item_id: int):
+    """On-demand long-form explanation. Tries LLM, falls back to extractive."""
+    stream = stream.lower()
+    if stream not in _STREAM_KINDS:
+        abort(400, description=f"unknown stream {stream!r}")
+    body = request.get_json(silent=True) or {}
+    language = (body.get("language") or _arg_str("language", "en")).lower()
+
+    with SessionLocal() as db:
+        if stream == "courses":
+            row = db.query(CourseV2).filter(CourseV2.id == item_id).first()
+            if not row:
+                abort(404, description="course not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "content": None, "url": row.url, "language": "en"}
+        elif stream == "news":
+            row = db.query(Article).filter(Article.id == item_id).first()
+            if not row:
+                abort(404, description="article not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "content": row.content, "url": row.url,
+                    "language": row.language or "en"}
+        elif stream in _AGG_KINDS:
+            row = db.query(AggregatedItem).filter(
+                AggregatedItem.kind == stream, AggregatedItem.id == item_id
+            ).first()
+            if not row:
+                abort(404, description=f"{stream} item not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "content": None, "url": row.url, "language": "en"}
+
+    from services.enhancement import explain as _explain_item
+    result = _explain_item(item, language=language)
+    result["item_id"] = item_id
+    result["stream"] = stream
+    result["url"] = item.get("url")
+    return jsonify(result), 200
+
+
+@bp.post("/<string:stream>/<int:item_id>/career-insight")
+def career_insight_endpoint(stream: str, item_id: int):
+    """Extractive career-insight bullets for a profession (no LLM)."""
+    stream = stream.lower()
+    if stream not in _STREAM_KINDS:
+        abort(400, description=f"unknown stream {stream!r}")
+    body = request.get_json(silent=True) or {}
+    profession = (body.get("profession") or _arg_str("profession", "")).lower()
+    if not profession:
+        abort(400, description="profession is required")
+    language = (body.get("language") or _arg_str("language", "en")).lower()
+
+    with SessionLocal() as db:
+        if stream == "courses":
+            row = db.query(CourseV2).filter(CourseV2.id == item_id).first()
+            if not row:
+                abort(404, description="course not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "topics": row.topics, "url": row.url}
+        elif stream == "news":
+            row = db.query(Article).filter(Article.id == item_id).first()
+            if not row:
+                abort(404, description="article not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "topics": row.tab, "url": row.url}
+        elif stream in _AGG_KINDS:
+            row = db.query(AggregatedItem).filter(
+                AggregatedItem.kind == stream, AggregatedItem.id == item_id
+            ).first()
+            if not row:
+                abort(404, description=f"{stream} item not found")
+            item = {"title": row.title, "summary": row.summary,
+                    "topics": row.topics, "url": row.url}
+
+    from services.enhancement import career_insight as _ci
+    result = _ci(item, profession_slug=profession, language=language)
+    result["item_id"] = item_id
+    result["stream"] = stream
+    result["profession"] = profession
+    return jsonify(result), 200
+
+
 @bp.get("/admin/stats")
 def admin_stats():
     _require_metrics_token()

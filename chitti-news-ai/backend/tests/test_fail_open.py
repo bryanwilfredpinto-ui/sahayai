@@ -127,8 +127,55 @@ def test_no_llm_imports_in_classifier_critical_path() -> None:
             f"forbidden LLM dependency found in profession_classifier.py: {f!r}"
 
 
+def test_enhancement_summarise_works_offline() -> None:
+    """Extractive summary works with zero LLM dependencies (v0.3 §4.3)."""
+    _kill_llm_env_vars()
+    from services.enhancement import summarise
+    out = summarise(
+        title="ChatGPT Prompt Engineering for Developers",
+        summary="Andrew Ng's free 1-hour course covers prompt design patterns. Targets software developers building LLM apps. No prior ML knowledge required.",
+    )
+    assert out["source"] == "extractive"
+    assert "Andrew Ng" in out["text"]
+    assert out["text"]  # never empty
+
+
+def test_enhancement_explain_falls_back_to_extractive() -> None:
+    """When LLM env vars are unset, explain() returns extractive text — not 500."""
+    _kill_llm_env_vars()
+    from services.enhancement import explain
+    out = explain({
+        "title": "Practical Deep Learning for Coders",
+        "summary": "Top-down course for developers learning deep learning. Covers PyTorch and Hugging Face transformers.",
+        "url": "https://course.fast.ai/",
+        "language": "en",
+    }, language="en")
+    assert out["ok"] is True
+    assert out["source"] == "extractive"
+    assert out["fallback_reason"] in ("llm_key_unset", None) or out["fallback_reason"].startswith("llm_")
+    assert out["text"]
+
+
+def test_enhancement_career_insight_offline() -> None:
+    """career_insight is rules-only (no LLM ever); produces honest output."""
+    _kill_llm_env_vars()
+    from services.enhancement import career_insight
+    out = career_insight({
+        "title": "Practical Deep Learning for Coders",
+        "summary": "Top-down practical course teaching modern deep learning for software engineers. Hands-on with PyTorch.",
+        "topics": "deep-learning,AI",
+    }, profession_slug="software-developer")
+    assert out["source"] == "extractive"
+    # Should surface the developer-keyword-bearing sentence
+    assert any(("software engineers" in b.lower() or "developers" in b.lower() or "pytorch" in b.lower()) for b in out["bullets"]), \
+        f"expected dev keywords in bullets, got {out['bullets']}"
+
+
 if __name__ == "__main__":
     test_classifier_produces_tags_with_no_llm_env()
     test_classifier_sire_worked_examples()
     test_no_llm_imports_in_classifier_critical_path()
-    print("All fail-open tests passed.")
+    test_enhancement_summarise_works_offline()
+    test_enhancement_explain_falls_back_to_extractive()
+    test_enhancement_career_insight_offline()
+    print("All fail-open tests passed (6).")

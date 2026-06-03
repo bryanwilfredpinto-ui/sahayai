@@ -175,17 +175,54 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
 </div>
 
+<!-- v0.3 inline profession picker — default Everyone, never gates content -->
+<div class="picker-bar" role="group" aria-label="I am a..." style="border-top:1px solid #f0e7d4">
+  <span class="pick-lbl" data-i18n="pick.iam">I am a</span>
+  <select id="pick-profession" onchange="onProfessionChange()" aria-label="Profession">
+    <option value="everyone">🌐 Everyone (default)</option>
+    <option value="software-developer">💻 Software Developer</option>
+    <option value="hr-professional">🤝 HR Professional</option>
+    <option value="talent-acquisition">🎯 Talent Acquisition</option>
+    <option value="doctor">🩺 Doctor</option>
+    <option value="oncologist">🎗️ Oncologist</option>
+    <option value="nurse">🩹 Nurse</option>
+    <option value="farmer">🌾 Farmer</option>
+    <option value="teacher">📚 Teacher</option>
+    <option value="lawyer">⚖️ Lawyer</option>
+    <option value="accountant">📊 Accountant / CA</option>
+    <option value="student">🎓 Student</option>
+    <option value="business-owner">🏪 Business Owner</option>
+    <option value="government-employee">🏛️ Government Employee</option>
+  </select>
+  <span class="section-sub" style="margin-left:8px">Optional. Pick anytime. <span id="prof-clear-link" style="display:none;cursor:pointer;color:var(--saffron);font-weight:700">✕ Clear</span></span>
+</div>
+
 <nav class="tabs" role="tablist" aria-label="Chitti News AI categories">
   <button class="tab active" data-tab="ai-news"     onclick="showCategory('ai-news')"     role="tab" aria-selected="true"  data-i18n="cat.ai_news">📰 AI Aaj</button>
   <button class="tab"        data-tab="tools"       onclick="showCategory('tools')"       role="tab" aria-selected="false" data-i18n="cat.tools">🔧 Tools</button>
   <button class="tab"        data-tab="bharat-ai"   onclick="showCategory('bharat-ai')"   role="tab" aria-selected="false" data-i18n="cat.bharat">🇮🇳 Bharat AI</button>
   <button class="tab"        data-tab="prashikshan" onclick="showCategory('prashikshan')" role="tab" aria-selected="false" data-i18n="cat.prash">🎓 Prashikshan</button>
+  <button class="tab" id="tab-foryou" data-tab="foryou" onclick="showCategory('foryou')" role="tab" aria-selected="false" style="display:none">🎯 For You</button>
 </nav>
 
 <main>
   <section id="page-feed" class="page active" role="tabpanel">
     <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true">⏳ Loading the latest AI news…</div>
     <div id="feed" class="feed"></div>
+  </section>
+
+  <!-- v0.3 "For You" page — per-profession 7-stream career intelligence -->
+  <section id="page-foryou" class="page" role="tabpanel" aria-label="Per-profession career intelligence" style="display:none">
+    <div class="section-card" data-chitti-response data-chitti-section="For You — career intel" style="background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.06));border-color:rgba(232,106,23,.45)">
+      <div class="section-head">
+        <div>
+          <div class="section-title" id="foryou-title">🎯 For You — career-relevant items today</div>
+          <div class="section-sub">Real free sources. Rules-only classification. Every card shows which rule fired (tap "Why?" to audit).</div>
+        </div>
+      </div>
+    </div>
+    <div id="foryou-status" class="section-empty" aria-live="polite">⏳ Loading your career intel…</div>
+    <div id="foryou-streams"></div>
   </section>
 
   <section id="page-courses" class="page" role="tabpanel" aria-label="Free AI certifications">
@@ -555,6 +592,150 @@ document.addEventListener('chitti:lang', function(e){
     else loadFeed(true);
   }
 });
+
+// ═══════════════════════════════════════════════════════════
+// v0.3 Profession picker + "For You" career-intel view
+// Accessibility takes precedence over personalization — picker is
+// optional, default "everyone", never blocks content.
+// ═══════════════════════════════════════════════════════════
+const PROFESSION_KEY = 'chitti_news_ai_profession';
+function _getProfession(){ try { return localStorage.getItem(PROFESSION_KEY) || 'everyone'; } catch(e){ return 'everyone'; } }
+function _setProfession(p){ try { if(p) localStorage.setItem(PROFESSION_KEY, p); } catch(e){} }
+function _clearProfession(){ try { localStorage.removeItem(PROFESSION_KEY); } catch(e){} }
+
+const STREAM_LABELS = {
+  news: '📰 News', courses: '🎓 Courses', cert: '🏅 Certifications',
+  tool: '🛠️ Tools', job: '💼 Jobs',
+  scheme: '🏛️ Government Schemes', roadmap_node: '🗺️ Learning Roadmaps',
+};
+const STREAM_ORDER = ['news', 'courses', 'cert', 'tool', 'job', 'scheme', 'roadmap_node'];
+
+function onProfessionChange(){
+  const sel = document.getElementById('pick-profession');
+  const p = sel.value;
+  if (p === 'everyone') {
+    _clearProfession();
+    document.getElementById('tab-foryou').style.display = 'none';
+    document.getElementById('prof-clear-link').style.display = 'none';
+    // Stay on whatever tab we're on.
+    return;
+  }
+  _setProfession(p);
+  document.getElementById('tab-foryou').style.display = '';
+  document.getElementById('prof-clear-link').style.display = '';
+  showCategory('foryou');
+}
+
+document.getElementById('prof-clear-link')?.addEventListener('click', function(){
+  const sel = document.getElementById('pick-profession');
+  sel.value = 'everyone';
+  onProfessionChange();
+});
+
+// Hijack showCategory to also handle 'foryou'
+const _origShowCategory = showCategory;
+window.showCategory = function(cat){
+  if (cat === 'foryou') {
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
+    document.querySelectorAll('nav.tabs .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    const page = document.getElementById('page-foryou');
+    page.style.display = 'block';
+    page.classList.add('active');
+    const tab = document.getElementById('tab-foryou');
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    _currentCategory = 'foryou';
+    loadForYou();
+    return;
+  }
+  // Ensure foryou page is hidden when switching back to original tabs
+  const fy = document.getElementById('page-foryou');
+  if (fy) { fy.style.display = 'none'; fy.classList.remove('active'); }
+  return _origShowCategory(cat);
+};
+
+function _profLabel(slug){
+  const sel = document.getElementById('pick-profession');
+  const opt = sel.querySelector(`option[value="${slug}"]`);
+  return opt ? opt.textContent : slug;
+}
+
+function _cardHTML(item, stream){
+  const cls = item.classification;
+  const expl = cls ? `
+    <details class="why-this" style="margin-top:8px">
+      <summary style="font-size:11px;color:var(--muted);font-weight:700;cursor:pointer">ℹ️ Why this matters — tap to audit (rule v${(cls.rule_version||'').replace(/^v/,'')})</summary>
+      <div style="font-size:11.5px;color:var(--text);margin-top:6px;padding:8px;background:rgba(212,175,55,.08);border-radius:8px;line-height:1.5">
+        <div><strong>category:</strong> ${cls.category}</div>
+        <div><strong>confidence:</strong> ${(cls.confidence*100).toFixed(0)}%</div>
+        <div><strong>matched keywords:</strong> ${(cls.matched_keywords||[]).join(', ') || '<em>none — source/URL rule fired</em>'}</div>
+        <div><strong>source signals:</strong> ${(cls.source_signals||[]).join(', ') || '<em>none — keyword-only match</em>'}</div>
+      </div>
+    </details>` : '';
+  const cost = item.cost_label ? `<div style="font-size:11px;color:${item.is_free ? 'var(--green)' : 'var(--red)'};font-weight:700;margin-top:4px">💰 ${item.cost_label}</div>` : '';
+  const src = item.source ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">📡 ${item.source.name}${item.source.domain ? ' · ' + item.source.domain : ''}</div>` : '';
+  return `
+    <div class="art-card" style="grid-template-columns:1fr;data-chitti-response">
+      <div>
+        <div class="art-title">${item.title.replace(/</g,'&lt;')}</div>
+        ${item.summary ? `<div class="art-summary">${(item.summary || '').slice(0,300).replace(/</g,'&lt;')}</div>` : ''}
+        ${src}
+        ${cost}
+        <div class="art-actions" style="margin-top:8px">
+          <a class="primary" href="${item.url}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:11px">↗ Open at source</a>
+        </div>
+        ${expl}
+      </div>
+    </div>`;
+}
+
+async function loadForYou(){
+  const profession = _getProfession();
+  const lang = _chittiLang;
+  const title = document.getElementById('foryou-title');
+  title.textContent = `🎯 For You — ${_profLabel(profession)} · today's career intel`;
+  const status = document.getElementById('foryou-status');
+  const host = document.getElementById('foryou-streams');
+  status.textContent = '⏳ Loading…';
+  host.innerHTML = '';
+
+  let anyItems = false;
+  for (const stream of STREAM_ORDER) {
+    try {
+      const r = await fetch(`${API_BASE}/api/news-ai/feed/${stream}?profession=${encodeURIComponent(profession)}&lang=${lang}&n=5`);
+      const data = await r.json();
+      if (!data.items || data.items.length === 0) continue;
+      anyItems = true;
+      const section = document.createElement('div');
+      section.className = 'section-card';
+      section.setAttribute('data-chitti-response', '');
+      section.setAttribute('data-chitti-section', `For You — ${stream}`);
+      section.innerHTML = `
+        <div class="section-head">
+          <div>
+            <div class="section-title">${STREAM_LABELS[stream] || stream} (${data.count})</div>
+            <div class="section-sub">classified for ${_profLabel(profession)} · ${data.classification_mode || 'on'}</div>
+          </div>
+        </div>
+        <div>${data.items.map(it => _cardHTML(it, stream)).join('')}</div>`;
+      host.appendChild(section);
+    } catch (e) {
+      console.warn(`For-You ${stream} load failed:`, e);
+    }
+  }
+  status.textContent = anyItems
+    ? ''
+    : `No items classified for ${_profLabel(profession)} yet — Chitti is still building. Switch to "Everyone" to see all ingested items.`;
+}
+
+// Restore saved profession on boot
+const savedProf = _getProfession();
+if (savedProf !== 'everyone') {
+  const psel = document.getElementById('pick-profession');
+  psel.value = savedProf;
+  document.getElementById('tab-foryou').style.display = '';
+  document.getElementById('prof-clear-link').style.display = '';
+}
 
 // ═══════════════════════════════════════════════════════════
 // Boot — no profiling, no prompts. Real AI news + Chitti explains. That is all.
