@@ -23,6 +23,28 @@
 .mc-safety-tip{padding:14px;background:linear-gradient(180deg,#fff8e1,#fff);border:1.5px solid var(--sds-saffron);border-radius:14px;margin-bottom:14px;font-size:16px;line-height:1.55}
 .mc-safety-tip .head{font-size:13px;font-weight:900;color:var(--sds-saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .mc-obd-stub{padding:14px;background:#e0e7ff;border:1.5px dashed #6366f1;border-radius:14px;font-size:14px;color:#3730a3;line-height:1.55;margin-top:10px}
+.sw-card{border:1.5px solid var(--sds-navy)}
+.sw-input-row{display:flex;gap:8px;margin-top:10px}
+.sw-input-row .sds-input{flex:1}
+.sw-mic{font-size:20px;min-width:48px;min-height:48px;border:1.5px solid var(--sds-saffron);background:#fff;border-radius:12px;cursor:pointer}
+.sw-btn-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.sw-btn-row button{min-height:48px}
+.sw-scam{margin-top:10px;display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff8e1;border:1.5px solid #fcd34d;border-radius:12px}
+.sw-scam.hidden{display:none}
+.sw-result{margin-top:12px}
+.sw-result:empty{display:none}
+.sw-verdict{padding:12px 14px;border-radius:14px;background:#f8fafc;border:1.5px solid var(--sds-line);margin-bottom:10px}
+.sw-conf{display:inline-block;font-size:12px;font-weight:900;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+.sw-conf.high{background:#dcfce7;color:#14532d}.sw-conf.med{background:#fef9c3;color:#713f12}.sw-conf.low{background:#fee2e2;color:#7f1d1d}
+.sw-tier{display:inline-block;font-size:13px;font-weight:800;padding:4px 12px;border-radius:10px;margin:8px 6px 0 0}
+.sw-tier.t-green{background:#dcfce7;color:#14532d}.sw-tier.t-amber{background:#fef9c3;color:#713f12}.sw-tier.t-orange{background:#ffedd5;color:#7c2d12}.sw-tier.t-red{background:#fee2e2;color:#7f1d1d;border:1.5px solid #ef4444}
+.sw-vote{margin:4px 0}
+.sw-vote .lab{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:2px}
+.sw-bar{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.sw-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--sds-saffron),var(--sds-navy));border-radius:999px}
+.sw-fields{margin-top:10px;font-size:14px;line-height:1.5}
+.sw-fields .f{margin:5px 0}.sw-fields .f b{color:var(--sds-navy)}
+.sw-disclaimer{margin-top:12px;font-size:12px;color:var(--sds-muted);line-height:1.5;border-top:1px dashed var(--sds-line);padding-top:8px}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -136,6 +158,37 @@
         <textarea id="mc-tip-fb-text" placeholder="यह tip कैसा लगा?"></textarea>
         <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-tip-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_safety_tip','mc-tip-fb-text','mc-tip-fb')" data-vai-i18n="ui.send">भेजो</button></div>
       </div>
+    </div>
+
+    <!-- ════════ CEOS Swarm Diagnosis — 8-agent confidence vote (Chitti Car Doctor) ════════ -->
+    <div data-chitti-response="mc-card-swarm" class="sds-card chitti-response sw-card" data-chitti-section="🧠 Swarm Diagnosis">
+      <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mc.swarm.title">Swarm Diagnosis</span></h2>
+      <div class="sds-card-sub" data-vai-i18n="mc.swarm.sub">8 maahir agents milke aapki gaadi ka diagnosis karte hain — guess nahi, vote. OBD2 code ho toh aur sateek.</div>
+      <div class="sw-input-row">
+        <input id="sw-symptom" class="sds-input" type="text" placeholder="Check-engine light aaya… / AC thanda nahi… / Steering bhaari… / DTC code P0301…" aria-label="Describe the problem">
+        <button class="sw-mic" onclick="swMic()" aria-label="Bol kar bataaiye">🎤</button>
+      </div>
+      <div class="sw-btn-row">
+        <button class="sds-btn-primary sw-go" onclick="swDiagnose()">🔍 <span data-vai-i18n="mc.swarm.go">Diagnose karo</span></button>
+        <button class="sds-btn-ghost" onclick="swScamToggle()">💰 <span data-vai-i18n="mc.swarm.scam">Quote sahi hai?</span></button>
+      </div>
+      <div id="sw-scam-box" class="sw-scam hidden">
+        <input id="sw-scam-job" class="sds-input" type="text" placeholder="Kaam kya hai? e.g. AC compressor / Clutch / Brake pads">
+        <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" placeholder="Garage ne kitna maanga? ₹">
+        <button class="sds-btn-primary" onclick="swScamCheck()">Check karo</button>
+      </div>
+      <div id="sw-result" class="sw-result" aria-live="polite"></div>
+      <div class="sds-card-toolbar">
+        <button onclick="swSpeakResult()">🔊</button>
+        <span class="sep"></span>
+        <button class="fb-pos" onclick="logProductAction('mc_swarm', 1)">👍</button>
+        <button class="fb-neg" onclick="sdsToggleFb('mc-swarm-fb')">👎</button>
+      </div>
+      <div class="sds-fb-panel" id="mc-swarm-fb">
+        <textarea id="mc-swarm-fb-text" placeholder="Diagnosis galat tha? Garage ne kya nikla? Chitti seekhega…"></textarea>
+        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-swarm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_swarm','mc-swarm-fb-text','mc-swarm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
+      </div>
+      <div class="sw-disclaimer">⚠️ Chitti mechanic nahi hai — yeh ek <b>confidence-based</b> diagnosis hai (Likely / Possible). Brake · steering · airbag · overheat · EV high-voltage par hamesha <b>inspection</b>. Emergency = family cascade, <b>cops ko auto-dial nahi</b>.</div>
     </div>
   </div>
 </div>
@@ -1670,6 +1723,112 @@ function mcKyvRender(j, c){
   out.innerHTML = h;
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
 }
+
+/* ════════ CEOS Swarm Diagnosis — 8-agent confidence vote (Chitti Car Doctor) ════════
+   Calls DeepSeek via the Vaani sole-interface (/api/vaani/ask). The model role-plays the
+   8-agent swarm and returns strict JSON. Honest fallback: if no parseable JSON comes back,
+   we say "confidence low — recommend inspection" rather than fabricate a verdict. */
+let SW_LAST_SPEAK = '';
+function swEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function swMic(){
+  if (typeof mcStartListening === 'function') {
+    mcStartListening((utter) => { if (utter) { document.getElementById('sw-symptom').value = utter; swDiagnose(); } });
+  } else { speakText('Voice abhi available nahi hai — type kar dijiye.', CURRENT_LANG); }
+}
+function swScamToggle(){ document.getElementById('sw-scam-box').classList.toggle('hidden'); }
+
+async function swDiagnose(){
+  const sym = (document.getElementById('sw-symptom').value || '').trim();
+  const out = document.getElementById('sw-result');
+  if (!sym) { out.innerHTML = '<div class="sw-verdict">Pehle takleef bataaiye — bol kar (🎤) ya type karke. OBD2 DTC code ho toh likh dijiye (e.g. P0301).</div>'; return; }
+  const car = (typeof loadCar === 'function' && loadCar()) || {};
+  const ctx = [car.make, car.model, car.variant, car.fuel, car.year, car.odo ? car.odo+'km' : ''].filter(Boolean).join(' ');
+  out.innerHTML = '<div class="sw-verdict">🧠 8 agents soch rahe hain… (Symptom · Engine · Electrical · Fuel · Safety · DIY · Cost · Trust)</div>';
+  const prompt =
+    'You are the Chitti Car Doctor diagnostic SWARM of 8 specialist agents (Symptom, Engine, Electrical, Fuel, Safety, DIY, Cost, Trust). '+
+    'The Safety agent is supreme and can only LOWER the can-drive verdict; the Trust agent prevents over-diagnosis and overconfidence. '+
+    'NEVER claim certainty — use confidence bands. NEVER invent parts or DTC codes. If evidence is thin, set confidence Low and recommend inspection. '+
+    'If the symptom contains an OBD2 DTC code, decode it from the standard SAE-J2012 library. Indian 4-wheeler context. Car: '+(ctx||'unknown')+'. Symptom: "'+sym+'". '+
+    'Reply ONLY with one JSON object, no prose, in the user language ('+CURRENT_LANG+'): '+
+    '{"votes":[{"cause":"...","pct":0}],"confidence":"High|Medium|Low","why":"...","severity":"...","can_ride":"can-drive verdict",'+
+    '"diy_tier":"green|amber|orange|red","diy_label":"short tier text","cost":"₹band","alternatives":"..."} '+
+    'votes: 2-4 most likely causes summing ~100. diy_tier red ONLY for genuine safety hazards (brakes/steering/airbag-SRS/overheat/tyre/EV-HV).';
+  let data = {};
+  try {
+    const r = await fetch(API_BASE + '/api/vaani/ask', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode:'ask' }) });
+    data = await r.json();
+  } catch(e) { data = {}; }
+  const reply = data.reply || data.answer || '';
+  const m = reply.match(/\{[\s\S]*\}/);
+  let v = null; if (m) { try { v = JSON.parse(m[0]); } catch(e){ v = null; } }
+  if (!v || !v.votes) { swRenderHonestFallback(out, reply, sym); return; }
+  swRenderVerdict(out, v);
+}
+
+function swRenderVerdict(out, v){
+  const cb = (v.confidence||'Low').toLowerCase();
+  const ccls = cb.indexOf('high')>=0?'high':(cb.indexOf('med')>=0?'med':'low');
+  const tier = (v.diy_tier||'orange').toLowerCase();
+  const tmap = {green:['t-green','🟢 DIY Allowed'],amber:['t-amber','🟡 DIY Assisted'],orange:['t-orange','🟠 Professional Required'],red:['t-red','🔴 DO NOT DRIVE — Emergency']};
+  const t = tmap[tier] || tmap.orange;
+  let votes = (v.votes||[]).slice(0,4).map(x => {
+    const pct = Math.max(0, Math.min(100, parseInt(x.pct||0,10)));
+    return '<div class="sw-vote"><div class="lab"><span>'+swEsc(x.cause)+'</span><span>'+pct+'%</span></div><div class="sw-bar"><i style="width:'+pct+'%"></i></div></div>';
+  }).join('');
+  let html = '<div class="sw-verdict">'+
+    '<span class="sw-conf '+ccls+'">Confidence: '+swEsc(v.confidence||'Low')+'</span>'+
+    '<span class="sw-tier '+t[0]+'">'+t[1]+(v.diy_label?(' · '+swEsc(v.diy_label)):'')+'</span>'+
+    '<div style="margin-top:10px">'+votes+'</div>'+
+    '<div class="sw-fields">'+
+      (v.why?'<div class="f"><b>Kyun (Why):</b> '+swEsc(v.why)+'</div>':'')+
+      (v.severity?'<div class="f"><b>Kitna serious:</b> '+swEsc(v.severity)+'</div>':'')+
+      (v.can_ride?'<div class="f"><b>Chala sakte ho?:</b> '+swEsc(v.can_ride)+'</div>':'')+
+      (v.cost?'<div class="f"><b>Expected cost:</b> '+swEsc(v.cost)+'</div>':'')+
+      (v.alternatives?'<div class="f"><b>Aur kya ho sakta:</b> '+swEsc(v.alternatives)+'</div>':'')+
+    '</div></div>';
+  out.innerHTML = html;
+  SW_LAST_SPEAK = [v.confidence?('Confidence '+v.confidence):'', t[1], (v.votes&&v.votes[0]?v.votes[0].cause:''), v.why, v.can_ride, v.cost].filter(Boolean).join('. ');
+  speakText(SW_LAST_SPEAK, CURRENT_LANG);
+}
+
+function swRenderHonestFallback(out, reply, sym){
+  const body = (reply && reply.trim()) ? swEsc(reply.trim())
+    : 'Abhi diagnosis ka confidence Low hai (network/LLM busy). Safety ke liye: agar brake / steering / overheat / airbag / tyre ka maamla hai, toh gaadi mat chalao aur mechanic se inspection karwao.';
+  out.innerHTML = '<div class="sw-verdict"><span class="sw-conf low">Confidence: Low</span>'+
+    '<span class="sw-tier t-orange">🟠 Inspection recommended</span>'+
+    '<div class="sw-fields"><div class="f">'+body+'</div></div></div>';
+  SW_LAST_SPEAK = body.replace(/<[^>]+>/g,'');
+  speakText(SW_LAST_SPEAK, CURRENT_LANG);
+}
+
+async function swScamCheck(){
+  const job = (document.getElementById('sw-scam-job').value||'').trim();
+  const amt = (document.getElementById('sw-scam-amt').value||'').trim();
+  const out = document.getElementById('sw-result');
+  if (!job || !amt) { out.innerHTML = '<div class="sw-verdict">Kaam aur garage ka quote (₹) dono bhariye.</div>'; return; }
+  const car = (typeof loadCar === 'function' && loadCar()) || {};
+  out.innerHTML = '<div class="sw-verdict">💰 Cost Agent fair-price band nikaal raha hai…</div>';
+  const prompt = 'You are the Chitti Car Doctor Cost+Trust agents. Give a FAIR PRICE RANGE (parts+labour) in INR for this Indian 4-wheeler job, then judge the quote. '+
+    'Car: '+([car.make,car.model,car.fuel].filter(Boolean).join(' ')||'generic hatchback')+'. Job: "'+job+'". Quoted: ₹'+amt+'. '+
+    'NEVER accuse a named garage. Reply ONLY JSON in language '+CURRENT_LANG+': {"low":0,"high":0,"verdict":"fair|high|very_high","note":"..."}';
+  let data={}; try { const r=await fetch(API_BASE+'/api/vaani/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:prompt,language:CURRENT_LANG,mode:'ask'})}); data=await r.json(); } catch(e){}
+  const reply=data.reply||data.answer||''; const m=reply.match(/\{[\s\S]*\}/); let v=null; if(m){try{v=JSON.parse(m[0]);}catch(e){}}
+  if(!v||v.low==null){ swRenderHonestFallback(out, reply, job); return; }
+  const vmap={fair:['high','✅ Quote theek lagta hai'],high:['med','⚠️ Quote thoda zyada lagta hai'],very_high:['low','🚩 Quote bahut zyada lagta hai']};
+  const vd=vmap[v.verdict]||vmap.high;
+  out.innerHTML='<div class="sw-verdict"><span class="sw-conf '+vd[0]+'">'+vd[1]+'</span>'+
+    '<div class="sw-fields">'+
+    '<div class="f"><b>Expected fair range:</b> ₹'+swEsc(v.low)+' – ₹'+swEsc(v.high)+'</div>'+
+    '<div class="f"><b>Aapse maanga:</b> ₹'+swEsc(amt)+'</div>'+
+    (v.note?'<div class="f">'+swEsc(v.note)+'</div>':'')+
+    '<div class="f" style="color:var(--sds-muted);font-size:12px">Yeh ek estimate hai, kisi garage par ilzaam nahi. Apne shehar ke 1-2 aur quote se compare karein.</div>'+
+    '</div></div>';
+  SW_LAST_SPEAK=vd[1]+'. Fair range '+v.low+' se '+v.high+' rupaye. Aapse maanga '+amt+' rupaye.';
+  speakText(SW_LAST_SPEAK, CURRENT_LANG);
+}
+function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LANG); }
 
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;

@@ -188,24 +188,24 @@ See [SAHAYAI_MASTER.md §2g](SAHAYAI_MASTER.md) for the full architectural callo
 
 | Field | Value |
 |---|---|
-| **Objective** | Service-due alerts + plain-language diagnostic guidance for 2-wheeler owners (mileage, service intervals, common repairs). |
-| **Primary user** | Delivery rider, college student, family with a single bike — non-mechanic owner who needs to know whether the noise is serious. |
-| **Success metric** | (a) Service-due alert accuracy (false-positive rate); (b) repair-guidance 👍 rate; (c) cost-saved vs. service-centre estimate when user follows DIY tier. |
-| **Quality standard** | DeepSeek wrapped via `hooks.wrap_llm` (rails + observability + Compliance INJECT); HookRegistry registered; per-response widget. Frontend HTML at repo root verified before the next Vaani-routed query lands here. |
-| **Scope** | **Does:** Mileage tracking, service-interval calendar, common-fault diagnosis, DIY-vs-mechanic recommendation, spare-part price hints. **Does NOT:** book service appointments, dispatch mechanics, certify roadworthy / fitness, perform OBD2 (queued under Chitti Mechanic). |
-| **Evolution owner** | [chitti-2wheeler/skills/FEATURES.md](chitti-2wheeler/skills/FEATURES.md) (verify file exists; create if missing per §2a row 1). |
+| **Objective** | Digital mechanic companion (Chitti Bike Doctor): *"Do I need a mechanic, can I fix it myself, and is this quote fair?"* — symptom/dashboard/sound diagnosis + DIY coach + Scam Shield, for 2-wheeler owners. Full CEOS spec: [chitti-2wheeler/](chitti-2wheeler/) (57 docs) under [CHITTI_MECHANIC_MASTER_SPEC.md](CHITTI_MECHANIC_MASTER_SPEC.md). |
+| **Primary user** | Delivery rider (bike = livelihood), college student, family with a single bike — non-mechanic owner who needs to know whether the noise is serious + whether the quote is fair. |
+| **Success metric** | (a) Diagnostic accuracy ≥90%; (b) **Safety accuracy =100%** (critical safety errors=0); (c) cost-band accuracy ≥85% + ₹ saved vs workshop; (d) mechanic-verification-loop confirmation rate (predicted vs what the mechanic actually fixed); (e) per-response 👍. |
+| **Quality standard** | **CQOS 5 layers** ([chitti-2wheeler/evals/](chitti-2wheeler/evals/)): Diagnostic ≥90% · Safety =100% · DIY-safety unsafe-recs=0 · Cost ≥85% · Hallucination <1% (+accessibility=100%). 8-agent diagnostic **swarm** with Safety supreme + Trust anti-overconfidence; **never claim certainty** (confidence bands); six-field answer (Why/Severity/Can-ride/DIY-tier/Cost/Alternatives). DeepSeek wrapped via `hooks.wrap_llm`; HookRegistry; per-response widget. Frontend CEOS Swarm Diagnosis card on [chitti_2wheeler.html](chitti_2wheeler.html). **Eval numbers measured only after the Vaani relevance-rail allowlist + DeepSeek funding land — never claimed before.** |
+| **Scope** | **Does:** symptom/dashboard/sound diagnosis (swarm), DIY-vs-mechanic with safety-tier, Scam Shield (quote fairness), Vehicle Twin + Health Passport, mileage/service-interval calendar, spare-part price hints, OBD2 (Mode 2, future on bikes). **Does NOT:** book service, dispatch mechanics, certify fitness, **claim diagnostic certainty**, or auto-dial cops (emergency = family cascade). |
+| **Evolution owner** | [chitti-2wheeler/skills/FEATURES.md](chitti-2wheeler/skills/FEATURES.md) + the CEOS doc set ([ROLE.md](chitti-2wheeler/ROLE.md), [swarm/](chitti-2wheeler/swarm/), [evals/](chitti-2wheeler/evals/)). HIGH-risk (safety) swarm changes require Sire's approval. |
 | **Stale data rule** | Service interval tables updated per manufacturer revision (annual model refresh). Spare-part prices: monthly diff per zone. Recall notices: tracked weekly against manufacturer + ARAI feeds. |
 
 ## 13. Chitti 4-Wheeler — 4-wheeler assistant
 
 | Field | Value |
 |---|---|
-| **Objective** | Service-due alerts + plain-language diagnostic guidance for 4-wheeler owners (mileage, service intervals, common repairs, OBD2-ready). |
-| **Primary user** | Family-car owner in Tier-2/3, taxi driver, small-business fleet manager — non-mechanic decision-maker. |
-| **Success metric** | (a) Service-due alert accuracy; (b) repair-guidance 👍 rate; (c) cost-saved vs. service-centre estimate when user follows DIY tier. |
-| **Quality standard** | DeepSeek wrapped via `hooks.wrap_llm`; HookRegistry registered; per-response widget. Frontend HTML at repo root verified before Vaani-routed queries land here. |
-| **Scope** | **Does:** Mileage tracking, service-interval calendar, common-fault diagnosis, DIY-vs-mechanic recommendation, spare-part price hints. **Does NOT:** book service, dispatch mechanics, certify fitness, perform OBD2 capture itself (interpreter only — Chitti Mechanic queued separately). |
-| **Evolution owner** | [chitti-4wheeler/skills/FEATURES.md](chitti-4wheeler/skills/FEATURES.md) (verify file exists; create if missing). |
+| **Objective** | Digital mechanic companion (Chitti Car Doctor): *"Do I need a mechanic, can I fix it myself, and is this quote fair?"* — symptom/dashboard/sound + **OBD2 (Mode 2, first-class for cars)** diagnosis + DIY coach + Scam Shield + Used-Car Inspector, for 4-wheeler owners. Full CEOS spec: [chitti-4wheeler/](chitti-4wheeler/) (57 docs) under [CHITTI_MECHANIC_MASTER_SPEC.md](CHITTI_MECHANIC_MASTER_SPEC.md). |
+| **Primary user** | Family-car owner in Tier-2/3, taxi/Ola-Uber driver (car = livelihood), small-business fleet manager, used-car buyer — non-mechanic decision-maker. |
+| **Success metric** | (a) Diagnostic accuracy ≥90%; (b) **Safety accuracy =100%** (critical safety errors=0); (c) cost-band accuracy ≥85% + ₹ saved vs garage; (d) mechanic-verification-loop confirmation rate; (e) per-response 👍. |
+| **Quality standard** | **CQOS 5 layers** ([chitti-4wheeler/evals/](chitti-4wheeler/evals/)): Diagnostic ≥90% · Safety =100% · DIY-safety unsafe-recs=0 (airbag/SRS · ABS · brake lines · fuel rail · EV HV/orange · AC refrigerant NEVER DIY) · Cost ≥85% · Hallucination <1%. 8-agent diagnostic **swarm** (Safety supreme, Trust anti-overconfidence); **never claim certainty**; six-field answer. DeepSeek `hooks.wrap_llm`; HookRegistry; per-response widget. Frontend CEOS Swarm Diagnosis card on [chitti_4wheeler.html](chitti_4wheeler.html). **Eval numbers measured only after the Vaani relevance-rail allowlist + DeepSeek funding land.** |
+| **Scope** | **Does:** symptom/dashboard/sound + OBD2 (standard SAE-J2012 DTC library, live coolant/RPM/fuel-trim) diagnosis, DIY-vs-mechanic with safety-tier, Scam Shield, Vehicle Twin + Health Passport, 100-point Used-Car Inspector, mileage/service calendar, spare-part hints. **Does NOT:** book service, dispatch mechanics, certify fitness, **claim diagnostic certainty**, or auto-dial cops (emergency = family cascade). |
+| **Evolution owner** | [chitti-4wheeler/skills/FEATURES.md](chitti-4wheeler/skills/FEATURES.md) + the CEOS doc set ([ROLE.md](chitti-4wheeler/ROLE.md), [swarm/](chitti-4wheeler/swarm/), [evals/](chitti-4wheeler/evals/)). HIGH-risk (safety) swarm changes require Sire's approval. |
 | **Stale data rule** | Same as 2-wheeler — manufacturer service tables annually, parts monthly, recalls weekly (manufacturer + ARAI). |
 
 ## 14. Chitti Logo & Video — intentional honest stub

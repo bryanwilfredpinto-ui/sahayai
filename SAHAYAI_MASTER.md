@@ -81,7 +81,7 @@ Before building **any** new Chitti product:
 5. **Define capabilities in `skills/*.md`** — capability surface lives in markdown, not in code.
 
 Examples already queued under this contract:
-- **Chitti Mechanic** — OBD2 diagnostics; reference apps to copy: Torque Pro, Car Scanner, FIXD.
+- ✅ **Chitti Mechanic (Chitti Auto OS)** — **CEOS + CQOS rebuild shipped 2026-06-03.** Two products elevated to the full chitti-fashion CEOS bar (57 docs each): [chitti-2wheeler/](chitti-2wheeler/) Bike Doctor + [chitti-4wheeler/](chitti-4wheeler/) Car Doctor. 8-agent diagnostic swarm (Safety supreme, Trust anti-overconfidence), CQOS 5 quality layers (Diagnostic ≥90% · Safety =100% · DIY-safety unsafe-recs=0 · Cost ≥85% · Hallucination <1%), Mechanic Verification Loop, Vehicle Twin + Health Passport, and a CEOS Swarm-Diagnosis UI card (confidence vote + six-field verdict + Scam Shield) on both HTML pages. Eval *numbers* pending the Vaani relevance-rail allowlist + DeepSeek funding (never claimed before measured). Reference apps audited: Torque Pro, Car Scanner, FIXD, Carly, OBDeleven. Spec: [`CHITTI_MECHANIC_MASTER_SPEC.md`](CHITTI_MECHANIC_MASTER_SPEC.md).
 - ✅ **Chitti News AI** — **v0.3 Intelligence-Aggregator shipped 2026-05-29.** Rules-only deterministic classifier (zero LLM calls in the classification critical path); 12 / 13 professions PASS F1 ≥ 0.85 on a 250-row hand-labelled benchmark; 7 streams live (news · courses · certifications · tools · jobs · government schemes · learning roadmaps); per-profession **🎯 For You** view + 5 per-stream tabs; every classification carries `category` + `matched_keywords` + `confidence` + `source_signals` for full audit; fail-open guardrails (6 CI tests) ensure the feed serves real items with every LLM provider offline. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md) v0.3.0; benchmark: [`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md).
 - Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
 
@@ -384,7 +384,7 @@ See [[project_chitti_golden_rule_locked]].
 | 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
 | 14 | Chitti News AI | `chitti_news_ai.html` | `chitti-news-ai-api` | SKELETON 2026-05-14 — AI-only tool & model discovery. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers, Inshorts, Ground News, Artifact). 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), 14 skill files. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md). |
 
-**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_NEWS_AI_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
+**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_NEWS_AI_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`, `CHITTI_MECHANIC_MASTER_SPEC.md` (Chitti Auto OS — Bike + Car Doctor, CEOS + CQOS).
 
 ### Founder master product docs — single source of truth
 

@@ -2,6 +2,37 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-03 — Chitti Mechanic (Auto OS) rebuilt — CEOS + CQOS doc set + Swarm Diagnosis UI
+
+**Trigger:** Sire — "Redo Chitti-2wheeler & chitti-4wheeler completely, including the html. Prepare read/skills/sops etc. under the CEOS framework. Quality is its own pillar (CQOS)."
+
+Both products elevated from a 5-doc skeleton to the full **chitti-fashion CEOS bar**, plus Sire's
+**CQOS** (Chitti Quality Operating System). Umbrella spec:
+[CHITTI_MECHANIC_MASTER_SPEC.md](CHITTI_MECHANIC_MASTER_SPEC.md) (Chitti Auto OS — Bike Doctor +
+Car Doctor; EV Doctor / Fleet Doctor on the roadmap as honest COMING SOON).
+
+| Proof | Result |
+|---|---|
+| CEOS doc set per product (57 files each) | 🟢 ROLE · PRODUCT_VISION · PERSONAS · SUCCESS_METRICS · PRD · ARCHITECTURE + `skills/ sop/ swarm/ guardrails/ evals/ observability/ memory/ accessibility/` |
+| 8-agent diagnostic SWARM | 🟢 documented per product (Symptom · Engine · Electrical · Fuel · **Safety (supreme)** · DIY · Cost · **Trust**); weighted-vote verdict; "confidence low → recommend inspection" when agents disagree |
+| CQOS 5 quality layers | 🟢 eval designs authored: Diagnostic ≥90% · **Safety =100% (critical errors=0)** · DIY-safety unsafe-recs=0 · Cost ≥85% · Hallucination <1% · Accessibility=100% (+sound honesty) |
+| Mechanic Verification Loop | 🟢 spec'd (`observability/mechanic_verification_loop.md`) — predicted-vs-actual closes the learning loop |
+| Vehicle Twin + Health Passport | 🟢 spec'd (`memory/`) — Vehicle Trust Score on resale (patent-level) |
+| HTML — **CEOS Swarm Diagnosis card** on both pages | 🟢 [chitti_2wheeler.html](chitti_2wheeler.html) + [chitti_4wheeler.html](chitti_4wheeler.html): symptom (voice/type) → 8-agent confidence-vote bars + six-field verdict (Why/Severity/Can-drive/DIY-tier/Cost/Alternatives) + **Scam Shield** quote-checker; honest "confidence low" fallback (never fabricates a verdict); inline-script syntax validated via `node` |
+| 5 frontend gates | 🟢 inherited via `chitti_a11y.js` substrate; new boxes carry `data-chitti-response` (G1) — **re-cert pending** next deploy |
+
+**Honest CQOS status:** the quality *contract* now exists (gates, eval set designs, swarm,
+verification loop). The *numbers are not yet measured* — that needs the labelled eval sets run
+against live `chitti-vaani-api`, which is **BLOCKED** on the same standing backend issue as Chitti
+Fashion: DeepSeek 429/funding **and** the Vaani relevance-rail returning mechanic intent as
+`off_topic`. We do **not** claim a diagnostic-accuracy number until the harness runs. Honest stubs
+over fake demos.
+
+**Standing blockers for CTO:** (1) Vaani relevance-rail allowlist for mechanic intent + DeepSeek
+funding (unblocks the Swarm Diagnosis live answers + the eval numbers); (2) Turso `DATABASE_URL`
+(libsql:// form) on chitti-2wheeler / chitti-4wheeler Railway services — both still fall back to
+local SQLite per the 2026-05-29 fleet audit.
+
 ## 2026-06-03 — Chitti Fashion CFOS v1.0 built + certified (proof, not architecture)
 
 **Trigger:** Sire — "Finish the product. Return with proof, not architecture updates."
