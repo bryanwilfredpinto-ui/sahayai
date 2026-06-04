@@ -58,6 +58,20 @@ class Article(Base):
     # NULL when no attempt has been made yet OR the insight was accepted.
     chitti_insight_reject = Column(String(64), nullable=True)
 
+    # SOP-001 step 5 — Context Agent: "why this matters" + affected-group note.
+    # ≤ 140 chars, declarative present-tense, one short sentence. NULL = not
+    # generated yet or rejected by validator. Frontend hides line when NULL.
+    why_this_matters = Column(Text, nullable=True)
+    why_this_matters_at = Column(DateTime, nullable=True)
+    why_this_matters_reject = Column(String(64), nullable=True)
+
+    # SOP-001 step 6 — Action Agent: "what to watch for" or "what to do next".
+    # ≤ 140 chars, imperative voice. NULL = not generated yet or rejected.
+    # Frontend hides line when NULL.
+    action_plan = Column(Text, nullable=True)
+    action_plan_at = Column(DateTime, nullable=True)
+    action_plan_reject = Column(String(64), nullable=True)
+
     # ── Time ──
     published_at = Column(DateTime, index=True, nullable=True)
     fetched_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)

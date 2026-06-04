@@ -40,10 +40,18 @@ _HEALTH_COLUMNS = [
 
 # Chitti's Insight columns added 2026-06-04 (Sire priority #2). See
 # models/article.py for the doc — these mirror the column definitions.
+# Extended 2026-06-04 (later) with SOP-001 step 5 (why-this-matters) and
+# step 6 (action-plan) per CNOS SOP compliance audit.
 _ARTICLE_INSIGHT_COLUMNS = [
     ("chitti_insight",          "TEXT"),
     ("chitti_insight_at",       "TIMESTAMP"),
     ("chitti_insight_reject",   "VARCHAR(64)"),
+    ("why_this_matters",        "TEXT"),
+    ("why_this_matters_at",     "TIMESTAMP"),
+    ("why_this_matters_reject", "VARCHAR(64)"),
+    ("action_plan",             "TEXT"),
+    ("action_plan_at",          "TIMESTAMP"),
+    ("action_plan_reject",      "VARCHAR(64)"),
 ]
 
 

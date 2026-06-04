@@ -29,7 +29,7 @@ The capabilities every CNOS contributor (human or agent) must master.
 |---|---|---|
 | Cross-source matching | [`skills/chitti-news-factcheck/`](skills/chitti-news-factcheck/) | `match_count` ≥ 2 → eligible for `verified` |
 | Confidence scoring | factcheck service | 0-100, surfaced on card |
-| Source reputation | weekly per-publisher trust score | per-source `trust_score` (PENDING render — SHIP #11) |
+| Source reputation | weekly per-publisher trust score | per-source `trust_score` **LIVE 2026-06-04** — backend `services/publisher_trust.py` loads latest snapshot; frontend `publisherTrustBadge()` renders coloured chip on every card (TRUSTED / ACCEPTABLE / QUESTIONABLE / LOW TRUST) |
 | Hyperlocal handling | factcheck rationale | "single-source story — may be hyperlocal or just-breaking" |
 
 **Hard rule:** Never assign `verified` verdict without ≥2 independent source corroboration. Single-source → `partial` at most.
@@ -56,7 +56,7 @@ The capabilities every CNOS contributor (human or agent) must master.
 |---|---|---|
 | Verdict badge | `factcheck.verdict` | colour-coded chip |
 | Corroboration count | `factcheck.match_count` | "verified by N sources" |
-| Publisher trust score | per-publisher rolling score (PENDING) | numeric badge |
+| Publisher trust score | per-publisher rolling score (**LIVE 2026-06-04**) | numeric chip with band (TRUSTED ≥80 / ACCEPTABLE ≥60 / QUESTIONABLE ≥40 / LOW TRUST <40) |
 | Reading time | computed from content length | "X min read" |
 
 **Hard rule:** Trust Strip must render in <2 s. CI cert: `cert_chitti_news_v2.mjs`.
@@ -72,6 +72,18 @@ The capabilities every CNOS contributor (human or agent) must master.
 | Per-publisher dead-link rate >10 % | Auto-deprioritise + flag in chitti-founder dashboard |
 
 **Hard rule:** No silent empty feed. Every empty state carries coverage payload + action to escape.
+
+---
+
+## Skill 6 — SOP-001 per-article enrichment contract (CNOS SOP-001 steps 4-6)
+
+| Field | Owner | Render | Source-of-truth |
+|---|---|---|---|
+| `chitti_insight` | step 4 Summarizer | inline italic "Chitti's Take" line on card | `articles.chitti_insight` column, set by `news_insight` sweeper, validated for hallucinations |
+| `why_this_matters` | step 5 Context Agent | "🎯 Why this matters:" line on card | `articles.why_this_matters` column **shipped 2026-06-04** per compliance audit |
+| `action_plan` | step 6 Action Agent | "✅ What to do:" line on card | `articles.action_plan` column **shipped 2026-06-04** per compliance audit |
+
+**Hard rule:** Each field renders NULL → nothing (no placeholder, no spinner). Trust over coverage.
 
 ---
 

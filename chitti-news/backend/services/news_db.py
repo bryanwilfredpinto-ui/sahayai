@@ -118,6 +118,11 @@ def _row_to_dict(
         "fetched_at": a.fetched_at.isoformat() if a.fetched_at else None,
         "factcheck": _factcheck_payload(fc, slug_to_name),
         "chitti_insight": insight or None,
+        # SOP-001 step 5 + 6 — Context + Action.
+        # NULL = not yet generated OR validator rejected.
+        # Frontend hides each line when NULL — never shows placeholder.
+        "why_this_matters": getattr(a, "why_this_matters", None) or None,
+        "action_plan":      getattr(a, "action_plan", None) or None,
     }
 
 

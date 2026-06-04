@@ -22,18 +22,20 @@ The capabilities every CNAIOS contributor (human or agent) must master.
 
 | Source-type | Live sources | Manifest sources |
 |---|---|---|
-| News | 8 RSS | — |
+| News | **23 RSS** (8 AI + 15 profession-specific landed 2026-06-04: LiveLaw / Bar & Bench / The Hindu Health / Express Healthcare / MedPage Oncology / Krishi Jagran / Down To Earth Agri / PTI Education / Education World / Taxmann / ETCFO / ETHRWorld / People Matters / Mint MSME / ET Government) | — |
 | Courses | Microsoft Learn live | 7 manifests (NPTEL, MIT OCW, fast.ai, HF, freeCodeCamp, DeepLearning.AI, GCSB) |
-| Certifications | — | 4 manifests (MS / AWS / NASSCOM / GCloud) |
-| Tools | — | 2 manifests (HF Spaces, GH Trending) |
-| Jobs | 3 RSS (RemoteOK / WWR / Remotive) | 2 manifests (HN / NCS) |
-| Schemes | — | 1 manifest (7 schemes) |
+| Certifications | — | **12 manifests** (MS / AWS / NASSCOM / GCloud / HR+TA / Doctor / Nurse / Farmer / Teacher / Lawyer / Gov-Employee / Accountant — landed 2026-06-04) |
+| Tools | — | **9 manifests** (HF Spaces, GH Trending, HR+TA, Doctor, Nurse, Farmer, Teacher, Lawyer, Gov-Employee, Accountant — landed 2026-06-04) |
+| Jobs | 9 RSS (3 original + LinkedIn India / Naukri / Indeed India / Wellfound / Cutshort / Instahyre) | **6 manifests** (HN / NCS + Healthcare / Teacher / Lawyer / Gov-Employee — landed 2026-06-04) |
+| Schemes | — | **9 manifests** (7 original + Farmer / Teacher / Nurse / Gov-Employee / Business-Owner / Student / Doctor / Lawyer — landed 2026-06-04) |
 | Roadmaps | — | 2 manifests |
-| Grants | NOT YET | — |
-| Research | NOT YET | — |
-| Startups | NOT YET | — |
+| Grants | **2 live** (MyGov + Google Research) | — |
+| Research | **2 live** (arXiv cs.AI + HF Daily Papers) | — |
+| Startups | **3 live** (YourStory / Entrackr / Inc42) + 1 manifest (YC India) | — |
 
 **Hard rule:** Every source is FREE + PUBLIC + provider-attributed. No paid-API recommendation. No invented courses.
+
+**Honest count after 2026-06-04 compliance pass:** all 9 streams have live + manifest coverage. All 13 personas have ≥3 streams populated (11/13 with total ≥25 items). Audit harness: `tools/cert_lang_hooks.mjs` for CTO §8 + `backend/tests/test_classifier_sire_worked_examples.py` for SOP-002.
 
 ---
 

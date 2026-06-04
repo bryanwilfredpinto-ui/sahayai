@@ -440,6 +440,20 @@
       display: block;
     }
 
+    /* SOP-001 step 5 + 6 — Why / What strip per CNOS SOP compliance audit 2026-06-04 */
+    .art-sop {
+      display: flex; flex-direction: column; gap: 6px;
+      margin: 8px 0; padding: 10px 12px;
+      background: linear-gradient(135deg, rgba(14,35,68,.04), rgba(212,175,55,.04));
+      border-left: 3px solid var(--saffron);
+      border-radius: 6px; font-size: 13.5px; line-height: 1.45;
+    }
+    .art-sop-line { color: var(--text); }
+    .art-sop-label { font-weight: 700; color: var(--navy); margin-right: 4px; }
+    .art-sop-body  { color: var(--text); }
+    .art-sop-why .art-sop-label { color: #b45309; }
+    .art-sop-act .art-sop-label { color: #166534; }
+
     /* §2 — Suppress the substrate-injected per-box feedback bar on
        art-cards / rail-cards / hero-card. Each of these carries its
        own canonical strip (per SKILLS.md #12). The substrate continues
@@ -1027,6 +1041,31 @@ function insightHtml(a) {
     + '</div>';
 }
 
+// SOP-001 step 5 + 6 — "Why this matters" + "What to do" lines per article.
+// Both render NULL → nothing. Same trust-over-coverage discipline as Insight.
+// 2026-06-04 per CNOS SOP compliance audit.
+function whyAndActionHtml(a) {
+  if (!a) return '';
+  const why = a.why_this_matters && String(a.why_this_matters).trim();
+  const act = a.action_plan      && String(a.action_plan).trim();
+  if (!why && !act) return '';
+  let html = '<div class="art-sop" role="group" aria-label="Why this matters and what to do">';
+  if (why) {
+    html += '<div class="art-sop-line art-sop-why" aria-label="Why this matters: ' + esc(why) + '">'
+         +    '<span class="art-sop-label">🎯 Why this matters:</span> '
+         +    '<span class="art-sop-body">' + esc(why) + '</span>'
+         +  '</div>';
+  }
+  if (act) {
+    html += '<div class="art-sop-line art-sop-act" aria-label="What to do: ' + esc(act) + '">'
+         +    '<span class="art-sop-label">✅ What to do:</span> '
+         +    '<span class="art-sop-body">' + esc(act) + '</span>'
+         +  '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 // Toggle expansion of the trust panel on a card. Independent of the
 // article-body expansion so a user can read corroborating sources
 // without committing to a full read-aloud.
@@ -1143,6 +1182,7 @@ function articleCardHtml(a, featured) {
     +     '<div class="art-meta">' + meta + '</div>'
     +     '<h3 class="art-title">' + esc(a.title || '') + '</h3>'
     +     insightHtml(a)
+    +     whyAndActionHtml(a)
     +     stripHtml(boxId, a.id)
     +     '<div class="art-hint">Tap card to hear the entire news — Chitti stays on this page</div>'
     +     '<div class="art-body">'
@@ -1259,6 +1299,7 @@ function heroCardHtml(a) {
     +     '<div class="hero-meta">' + meta + '</div>'
     +     '<h2 class="hero-title">' + esc(a.title || '') + '</h2>'
     +     insightHtml(a)
+    +     whyAndActionHtml(a)
     +     stripHtml(boxId, a.id)
     +   '</div>'
     + '</article>';
