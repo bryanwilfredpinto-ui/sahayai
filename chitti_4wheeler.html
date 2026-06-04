@@ -103,7 +103,7 @@
     <div class="big">🚗</div>
     <div class="title" data-vai-i18n="mc.empty.title">अपनी गाड़ी जोड़ें</div>
     <div class="sub" data-vai-i18n="mc.empty.sub">बोलें — "मेरी गाड़ी Maruti Swift DL3CAB5678 2020 सफ़ेद"</div>
-    <div class="quote">🎙️ "मेरी गाड़ी Maruti Swift DL3CAB5678 2020 सफ़ेद"</div>
+    <div class="quote" data-vai-i18n="mc.empty.quote">🎙️ "मेरी गाड़ी Maruti Swift DL 3C AB 5678 2020 सफ़ेद"</div>
     <br><button class="sds-btn primary" onclick="mcAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
   </div>
 
@@ -175,7 +175,7 @@
       <div id="sw-scam-box" class="sw-scam hidden">
         <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mc.swarm.scamjob" placeholder="Kaam kya hai? e.g. AC compressor / Clutch / Brake pads">
         <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mc.swarm.scamamt" placeholder="Garage ne kitna maanga? ₹">
-        <button class="sds-btn-primary" onclick="swScamCheck()">Check karo</button>
+        <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mc.swarm.checkgo">Check karo</button>
       </div>
       <div id="sw-result" class="sw-result" aria-live="polite"></div>
       <div class="sds-card-toolbar">
@@ -211,8 +211,8 @@
     <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
       <select id="mc-model" class="sds-select"><option value="" data-vai-i18n="vh.model.dash">— Model —</option></select>
     </div>
-    <div class="sds-field"><label data-vai-i18n="mc.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(XZ+ / VXi / ZXi+ / SX(O) / standard)</span></label><input id="mc-variant" class="sds-input" placeholder="XZ+ / VXi / ZXi+ / SX(O) / standard"></div>
-    <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL3CAB5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
+    <div class="sds-field"><label data-vai-i18n="mc.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(XZ+ / VXi / ZXi+ / SX(O) / standard)</span></label><input id="mc-variant" class="sds-input" data-vai-i18n-attr="placeholder|mc.form.variant.ph" placeholder="XZ+ / VXi / ZXi+ / SX(O)"></div>
+    <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mc-reg" class="sds-input" placeholder="DL 3C AB 5678" style="text-transform:uppercase;letter-spacing:.1em"></div>
     <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
       <div><label data-vai-i18n="mb.form.year">Year</label>
         <select id="mc-year" class="sds-select">
@@ -369,7 +369,7 @@
   <div id="mc-docs-list"></div>
   <div  data-chitti-response="mc-card-05" class="sds-card chitti-response" data-chitti-section="📋 कागज़ात के बारे में">
     <h2 class="sds-card-title"><span class="ico">📋</span> <span data-vai-i18n="dc.title">कागज़ात — सब एक जगह</span></h2>
-    <div class="sds-card-sub">Insurance · PUC · RC · DL · FASTag — हर कागज़ की expiry track होती है। Chitti के अपने inbox में reminder आएगी।</div>
+    <div class="sds-card-sub" data-vai-i18n="mc.docs.sub">Insurance · PUC · RC · DL · FASTag — हर कागज़ की expiry track होती है। Chitti के अपने inbox में reminder आएगी।</div>
     <div class="sds-field"><label data-vai-i18n="dc.rem.label">Reminder कब चाहिए?</label>
       <select id="mc-rem-window" class="sds-select"><option value="30" data-vai-i18n="dc.rem.30">30 दिन पहले</option><option value="7" data-vai-i18n="dc.rem.7">7 दिन पहले</option><option value="1" data-vai-i18n="dc.rem.1">1 दिन पहले</option></select>
     </div>
@@ -418,7 +418,7 @@
   <div id="mc-alerts-list"></div>
   <div  data-chitti-response="mc-card-07" class="sds-card chitti-response" data-chitti-section="🚨 सक्रिय चेतावनी">
     <h2 class="sds-card-title"><span class="ico">🚨</span> <span data-vai-i18n="al.title">सक्रिय चेतावनी</span></h2>
-    <div class="sds-card-sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी।</div>
+    <div class="sds-card-sub" data-vai-i18n="mc.alerts.sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakAllAlerts()">🔊 <span data-vai-i18n="ui.sab_padho">सब पढ़ो</span></button>
       <span class="sep"></span>
@@ -748,6 +748,7 @@ function mcTab(name){
 
 function changeLang(code){
   CURRENT_LANG = code;
+  window.CURRENT_LANG = code; // also expose globally for shared substrate
   try { localStorage.setItem(LANG_KEY, code); } catch(e){}
   if (typeof updateAllStrings === 'function') updateAllStrings(code);
   try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
@@ -757,8 +758,22 @@ function changeLang(code){
   try { mcRenderAlerts(); } catch(e){}
   try { mcLogRenderList(); } catch(e){}
   try { renderMcFleetSwitcher(); } catch(e){}
-  try { mcKyvLoad(); } catch(e){}
-  window.CURRENT_LANG = code; // expose to shared substrate
+  try { mcKyvLoad(); } catch(e){} // re-render from cache in new language (cache key includes lang)
+  // Substrate-injected labels (feedback-widget footer/box bars, the 💡 feature
+  // CTA, observability pill) are localised by their own substrate. chitti_lang.js
+  // resets unrecognised nodes to English on this same event, so re-apply AFTER
+  // it has run to guarantee zero-English on every language. (§5 No-Hinglish)
+  function mcReLocalizeSubstrate(){
+    try { if (typeof updateAllStrings === 'function') updateAllStrings(code); } catch(e){}
+    try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch(e){}
+    try { if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.translate) window.Chitti.a11y.translate(code); } catch(e){}
+  }
+  mcReLocalizeSubstrate();
+  try { Promise.resolve().then(mcReLocalizeSubstrate); } catch(e){}
+  [10, 30, 60, 90, 120, 160, 220, 300, 450].forEach(function(ms){ setTimeout(mcReLocalizeSubstrate, ms); });
+  // Also win against chitti_lang.js's rAF-scheduled reset.
+  try { (window.requestAnimationFrame || function(f){setTimeout(f,16);})(mcReLocalizeSubstrate); } catch(e){}
+  return;
 }
 
 function speakText(t, lang){
@@ -790,7 +805,7 @@ function mcDemoForm(){
   mcOnMakeChange('Maruti Suzuki');
   document.getElementById('mc-model').value = 'Swift';
   const vEl = document.getElementById('mc-variant'); if (vEl) vEl.value = 'VXi';
-  document.getElementById('mc-reg').value = 'DL3CAB5678';
+  document.getElementById('mc-reg').value = 'DL 3C AB 5678';
   document.getElementById('mc-year').value = '2020';
   document.getElementById('mc-color').value = 'सफ़ेद';
   document.getElementById('mc-odo').value = '52000';
@@ -974,7 +989,7 @@ function speakAllAlerts(){
   const alerts = computeAlerts(loadCar(), loadDocs());
   speakText(alerts.length ? alerts.map(a => a.name + '. ' + a.desc).join('. ') : 'कोई चेतावनी नहीं।', CURRENT_LANG);
 }
-function mcDemoAlerts(){ mcDemoDocs(); const c = loadCar() || { make:'Maruti', model:'Swift', reg:'DL3CAB5678', odo:59100, year:'2020' }; c.odo = 59100; saveCar(c); mcTab('alerts'); }
+function mcDemoAlerts(){ mcDemoDocs(); const c = loadCar() || { make:'Maruti', model:'Swift', reg:'DL 3C AB 5678', odo:59100, year:'2020' }; c.odo = 59100; saveCar(c); mcTab('alerts'); }
 
 function mcToggleMic(){
   if (LISTENING) { try { RECOG.stop(); } catch(e){} return; }
@@ -1218,13 +1233,13 @@ function renderMcFleetSwitcher(){
   if (!container) return;
   const fleet = mcLoadFleet();
   const idx = mcGetActiveIdx();
-  if (fleet.length <= 1) { container.innerHTML = '<button class="mc-fleet-add" onclick="mcFleetAdd()">➕ Add another car</button>'; return; }
+  if (fleet.length <= 1) { container.innerHTML = '<button class="mc-fleet-add" onclick="mcFleetAdd()">➕ ' + escapeHtmlMc(strFor4W('mc.fleet.add')) + '</button>'; return; }
   let h = '<div class="mc-fleet-row">';
   fleet.forEach((v, i) => {
-    const label = v.make ? ((v.make + ' ' + (v.model || '')).slice(0, 18)) : 'Empty';
-    h += '<button class="mc-fleet-slot' + (i === idx ? ' active' : '') + '" onclick="mcFleetSwitch(' + i + ')">🚗 ' + (label || 'Empty') + '</button>';
+    const label = v.make ? ((v.make + ' ' + (v.model || '')).slice(0, 18)) : strFor4W('mc.fleet.empty');
+    h += '<button class="mc-fleet-slot' + (i === idx ? ' active' : '') + '" onclick="mcFleetSwitch(' + i + ')">🚗 ' + (label || strFor4W('mc.fleet.empty')) + '</button>';
   });
-  h += '<button class="mc-fleet-add" onclick="mcFleetAdd()">➕ Add</button>';
+  h += '<button class="mc-fleet-add" onclick="mcFleetAdd()">➕ ' + escapeHtmlMc(strFor4W('mc.fleet.add_short')) + '</button>';
   h += '</div>';
   container.innerHTML = h;
 }
@@ -1264,9 +1279,9 @@ function mcLogRenderList(){
   const out = document.getElementById('mc-log-list');
   if (!out) return;
   const list = mcLogLoad();
-  if (list.length === 0) { out.innerHTML = '<div class="mc-log-empty">Abhi koi entry nahi. Pehli service log karein.</div>'; return; }
+  if (list.length === 0) { out.innerHTML = '<div class="mc-log-empty">' + escapeHtmlMc(strFor4W('mc.log.empty_line')) + '</div>'; return; }
   const total = list.reduce((s, e) => s + (e.cost || 0), 0);
-  let h = '<div style="font-size:12px;color:#666;margin-bottom:6px">Total ' + list.length + ' entries · ₹' + total + ' kharch</div>';
+  let h = '<div style="font-size:12px;color:#666;margin-bottom:6px">' + escapeHtmlMc(strFor4W('mc.log.total_pre')) + ' ' + list.length + ' ' + escapeHtmlMc(strFor4W('mc.log.total_mid')) + ' · ₹' + total + ' ' + escapeHtmlMc(strFor4W('mc.log.total_post')) + '</div>';
   list.slice(0, 15).forEach(e => {
     h += '<div class="mc-log-row">';
     h += '<div class="mc-log-head"><span>📅 ' + escapeHtmlMc(e.date || '') + '</span><span>' + (e.km ? '🛣️ ' + e.km + ' km' : '') + '</span></div>';
@@ -1830,8 +1845,35 @@ async function swScamCheck(){
 }
 function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LANG); }
 
+// Gate the language dropdown to ONLY the 9 fully-translated languages.
+// chitti_lang.js enriches the <select> to 26 at runtime; 17 of those have no
+// car translations and would show English. Prune them on this page so a user
+// can never pick a language that doesn't fully translate. (CTO.md §5 No-Hinglish)
+const MC_COMPLETE_LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
+function mcPruneLangSelect(){
+  const sel = document.getElementById('lang-select');
+  if (!sel) return;
+  Array.from(sel.options).forEach(o => {
+    if (MC_COMPLETE_LANGS.indexOf(o.value) === -1) o.remove();
+  });
+  // chitti_lang.js's wireDropdown overrides our onchange with its own
+  // translateAll. Re-bind so changeLang() runs (it re-renders every dynamic
+  // panel in the new language) — and still let chitti_lang's listeners fire
+  // via the chitti:langchange event dispatched inside changeLang().
+  sel.onchange = function(){ changeLang(this.value); };
+  // If the active language is no longer offered, fall back to English.
+  if (MC_COMPLETE_LANGS.indexOf(CURRENT_LANG) === -1) { changeLang('en'); }
+  else { try { sel.value = CURRENT_LANG; } catch(e){} }
+}
+// Run now + again after chitti_lang.js finishes its async enrichment.
+mcPruneLangSelect();
+setTimeout(mcPruneLangSelect, 400);
+setTimeout(mcPruneLangSelect, 1200);
+document.addEventListener('chitti:langlistready', mcPruneLangSelect);
+
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  mcPruneLangSelect();
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mcRefreshHome();
   try { mcKyvLoad(); } catch(e){}

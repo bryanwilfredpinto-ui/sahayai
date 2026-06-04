@@ -190,7 +190,7 @@
       <div id="sw-scam-box" class="sw-scam hidden">
         <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mb.swarm.scamjob" placeholder="Kaam kya hai? e.g. Battery replace / Oil change">
         <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mb.swarm.scamamt" placeholder="Mechanic ne kitna maanga? ₹">
-        <button class="sds-btn-primary" onclick="swScamCheck()">Check karo</button>
+        <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mb.swarm.check">Check karo</button>
       </div>
       <div id="sw-result" class="sw-result" aria-live="polite"></div>
       <div class="sds-card-toolbar">
@@ -224,7 +224,7 @@
     <div class="sds-field"><label data-vai-i18n="mb.form.model">मॉडल (Model)</label>
       <select id="mb-model" class="sds-select"><option value="" data-vai-i18n="vh.model.dash">— Model —</option></select>
     </div>
-    <div class="sds-field"><label data-vai-i18n="mb.form.variant">Variant <span style="color:#999;font-weight:400;font-size:12px">(optional)</span></label><input id="mb-variant" class="sds-input" placeholder="Self-start / Drum / i3S / Disc / standard"></div>
+    <div class="sds-field"><label><span data-vai-i18n="mb.form.variant">Variant</span> <span style="color:#999;font-weight:400;font-size:12px" data-vai-i18n="ui.optional">(optional)</span></label><input id="mb-variant" class="sds-input" data-vai-i18n-attr="placeholder|mb.variant.ph" placeholder="Self-start / Drum / i3S / Disc / standard"></div>
     <div class="sds-field"><label data-vai-i18n="mb.form.reg">रजिस्ट्रेशन नंबर</label><input id="mb-reg" class="sds-input" placeholder="UP32AB1234" style="text-transform:uppercase;letter-spacing:.1em"></div>
     <div class="sds-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end">
       <div><label data-vai-i18n="mb.form.year">Year</label>
@@ -351,7 +351,7 @@
   <div id="mb-docs-list"></div>
   <div  data-chitti-response="mb-card-05" class="sds-card chitti-response" data-chitti-section="📋 कागज़ात के बारे में">
     <h2 class="sds-card-title"><span class="ico">📋</span> <span data-vai-i18n="dc.title">कागज़ात — सब एक जगह</span></h2>
-    <div class="sds-card-sub">Insurance · PUC · RC · DL · FASTag — हर कागज़ की expiry track होती है। Chitti के अपने inbox में reminder आएगी — WhatsApp में नहीं।</div>
+    <div class="sds-card-sub" data-vai-i18n="mb.docs.sub">Insurance · PUC · RC · DL · FASTag — हर कागज़ की expiry track होती है। Chitti के अपने inbox में reminder आएगी — WhatsApp में नहीं।</div>
     <div class="sds-field"><label data-vai-i18n="dc.rem.label">Reminder कब चाहिए?</label>
       <select id="mb-rem-window" class="sds-select"><option value="30" data-vai-i18n="dc.rem.30">30 दिन पहले</option><option value="7" data-vai-i18n="dc.rem.7">7 दिन पहले</option><option value="1" data-vai-i18n="dc.rem.1">1 दिन पहले</option></select>
     </div>
@@ -400,7 +400,7 @@
   <div id="mb-alerts-list"></div>
   <div  data-chitti-response="mb-card-07" class="sds-card chitti-response" data-chitti-section="🚨 सक्रिय चेतावनी">
     <h2 class="sds-card-title"><span class="ico">🚨</span> <span data-vai-i18n="al.title">सक्रिय चेतावनी</span></h2>
-    <div class="sds-card-sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी — दिखाई न दे तब भी notification मिलेगी।</div>
+    <div class="sds-card-sub" data-vai-i18n="mb.alerts.sub">सबसे ज़रूरी ऊपर। हर alert Chitti के inbox में आएगी — दिखाई न दे तब भी notification मिलेगी।</div>
     <div class="sds-card-toolbar">
       <button onclick="speakAllAlerts()">🔊 <span data-vai-i18n="ui.sab_padho">सब पढ़ो</span></button>
       <span class="sep"></span>
@@ -634,8 +634,8 @@
   </div>
 
   <div class="sds-field">
-    <textarea id="mb-ask-text" class="sds-textarea" placeholder='या यहाँ लिखें — "मेरी बाइक से चेन की आवाज़ आ रही है, तेज़ चलाने पे ज़्यादा"'></textarea>
-    <button class="sds-btn primary block" style="margin-top:8px" onclick="mbAsk()">Chitti से पूछो ➜</button>
+    <textarea id="mb-ask-text" class="sds-textarea" data-vai-i18n-attr="placeholder|mb.ask.placeholder" placeholder='या यहाँ लिखें — "मेरी बाइक से चेन की आवाज़ आ रही है, तेज़ चलाने पे ज़्यादा"'></textarea>
+    <button class="sds-btn primary block" style="margin-top:8px" onclick="mbAsk()" data-vai-i18n="mb.ask.send">Chitti से पूछो ➜</button>
   </div>
 
   <div class="mb-bubble-row" id="mb-ask-thread"></div>
@@ -750,7 +750,9 @@ function mbDailyTip(){
   return arr[idx % arr.length];
 }
 function mbNextSafetyTip(){
-  const arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
+  let arr = [];
+  for (let i = 0; i < 8; i++) { const v = strFor2W('st.tip.' + i); if (v && v !== 'st.tip.' + i) arr.push(v); }
+  if (arr.length === 0) arr = DAILY_TIPS[CURRENT_LANG] || DAILY_TIPS.en;
   let idx = parseInt(localStorage.getItem(TIP_IDX_KEY) || '0', 10);
   idx = (idx + 1) % arr.length;
   try { localStorage.setItem(TIP_IDX_KEY, String(idx)); } catch(e){}
@@ -782,6 +784,19 @@ function changeLang(code){
   try { mbLogRenderList(); } catch(e){}
   try { renderFleetSwitcher(); } catch(e){}
   try { mbKyvLoad(); } catch(e){} // re-render from cache in new language (cache key includes lang)
+  // Substrate-injected labels (feedback-widget footer/box bars, the 💡 feature
+  // CTA, observability pill) are localised by their own substrate. chitti_lang.js
+  // resets unrecognised nodes to English on this same event, so re-apply AFTER
+  // it has run to guarantee zero-English on every language. (§5 No-Hinglish)
+  function mbReLocalizeSubstrate(){
+    try { if (typeof updateAllStrings === 'function') updateAllStrings(code); } catch(e){}
+    try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch(e){}
+    try { if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.translate) window.Chitti.a11y.translate(code); } catch(e){}
+  }
+  mbReLocalizeSubstrate();
+  [30, 90, 160, 260, 450].forEach(function(ms){ setTimeout(mbReLocalizeSubstrate, ms); });
+  // Also win against chitti_lang.js's rAF-scheduled reset.
+  try { (window.requestAnimationFrame || function(f){setTimeout(f,16);})(mbReLocalizeSubstrate); } catch(e){}
   return;
 }
 
@@ -861,9 +876,9 @@ function mbRefreshHome(){
   document.getElementById('mb-alerts').textContent = alerts.length;
   const health = document.getElementById('mb-health');
   health.classList.remove('green','amber','red');
-  let cls = 'green', label = 'mb.health.good', sub = 'सब कुछ ठीक है';
-  if (alerts.some(a => a.urgency === 'red')) { cls='red'; label='mb.health.bad'; sub='तुरंत mechanic दिखाएँ'; }
-  else if (alerts.length > 0 || expiring > 0) { cls='amber'; label='mb.health.warn'; sub='कुछ कागज़ात / alerts देखने हैं'; }
+  let cls = 'green', label = 'mb.health.good', sub = strFor2W('mb.health.ok_sub');
+  if (alerts.some(a => a.urgency === 'red')) { cls='red'; label='mb.health.bad'; sub=strFor2W('mb.health.bad_sub'); }
+  else if (alerts.length > 0 || expiring > 0) { cls='amber'; label='mb.health.warn'; sub=strFor2W('mb.health.warn_sub'); }
   health.classList.add(cls);
   const lbl = document.getElementById('mb-health-label'); lbl.setAttribute('data-vai-i18n', label);
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
@@ -873,8 +888,8 @@ function mbRefreshHome(){
   try { if (typeof renderFleetSwitcher === 'function') renderFleetSwitcher(); } catch(e){}
 }
 function mbSummary(){
-  const b = loadBike(); if (!b) return 'अभी कोई बाइक नहीं जोड़ी।';
-  return 'बाइक ' + (b.make+' '+b.model) + ', ' + b.reg + '. अगली service ' + (b.odo ? Math.max(0, 3000 - (b.odo % 3000)) + ' km में' : '—');
+  const b = loadBike(); if (!b) return strFor2W('mb.summary.none');
+  return strFor2W('mb.tab.bike') + ' ' + (b.make+' '+b.model) + ', ' + b.reg + '. ' + strFor2W('mb.next_service') + ' ' + (b.odo ? Math.max(0, 3000 - (b.odo % 3000)) + ' km' : '—');
 }
 function mbDemoHome(){ speakText(mbSummary(), CURRENT_LANG); }
 
@@ -966,18 +981,20 @@ function mbScheduleReminder(doc){
   if (!doc.expiry) return;
   const w = parseInt(document.getElementById('mb-rem-window')?.value || doc.reminder || 30, 10);
   const fireAt = new Date(new Date(doc.expiry).getTime() - w*24*3600*1000);
-  inboxAdd({ kind:'doc_expiry', doc_id: doc.id, doc_name: doc.name, expiry: doc.expiry, fire_at: fireAt.toISOString(), msg: doc.name + ' ' + w + ' दिन में expire हो रही है (Chitti inbox)' });
-  speakText(doc.name + ' के लिए ' + w + ' दिन पहले Chitti reminder set हो गई।', CURRENT_LANG);
+  const nm = (typeof docName === 'function') ? docName(doc) : (doc.name || '');
+  inboxAdd({ kind:'doc_expiry', doc_id: doc.id, doc_name: nm, expiry: doc.expiry, fire_at: fireAt.toISOString(), msg: nm + ' ' + w + ' ' + strFor2W('mb.rem.in_days_expire') });
+  speakText(nm + ' ' + strFor2W('mb.rem.set_pre') + ' ' + w + ' ' + strFor2W('mb.rem.set_post'), CURRENT_LANG);
 }
 
 function computeAlerts(b, docs){
   const a = [];
-  if (b && b.odo && (b.odo % 3000) > 2700) a.push({ ico:'🔧', name:'Service due', desc:'अगला service '+ Math.max(0, 3000 - (b.odo % 3000)) +' km में।', urgency:'amber' });
+  if (b && b.odo && (b.odo % 3000) > 2700) a.push({ ico:'🔧', name:strFor2W('mb.alert.service_due'), desc:strFor2W('mb.alert.next_service')+' '+ Math.max(0, 3000 - (b.odo % 3000)) +' km.', urgency:'amber' });
   (docs || []).forEach(d => {
     if (!d.expiry) return;
+    const nm = (typeof docName === 'function') ? docName(d) : (d.name || '');
     const days = Math.ceil((new Date(d.expiry) - new Date()) / (24*3600*1000));
-    if (days <= 0) a.push({ ico:d.icon, name:d.name + ' expired', desc:'अभी renew कीजिए — पकड़े गए तो चालान।', urgency:'red' });
-    else if (days <= 30) a.push({ ico:d.icon, name:d.name, desc:days+' दिन बाकी। अभी renew करें।', urgency:'amber' });
+    if (days <= 0) a.push({ ico:d.icon, name:nm + ' — ' + strFor2W('doc.expired'), desc:strFor2W('mb.alert.renew_now'), urgency:'red' });
+    else if (days <= 30) a.push({ ico:d.icon, name:nm, desc:days+' '+strFor2W('doc.days_remaining')+'. '+strFor2W('mb.alert.renew_soon'), urgency:'amber' });
   });
   return a;
 }
@@ -985,7 +1002,7 @@ function mbRenderAlerts(){
   const list = document.getElementById('mb-alerts-list');
   const alerts = computeAlerts(loadBike(), loadDocs());
   if (alerts.length === 0) {
-    list.innerHTML = '<div class="sds-empty"><div class="big">🟢</div><div class="title">कोई चेतावनी नहीं</div><div class="sub">सब कुछ ठीक है। Chitti यहाँ रहती है।</div></div>';
+    list.innerHTML = '<div class="sds-empty"><div class="big">🟢</div><div class="title">'+escapeHtml(strFor2W('mb.alerts.none'))+'</div><div class="sub">'+escapeHtml(strFor2W('mb.alerts.none.sub'))+'</div></div>';
     return;
   }
   alerts.sort((x,y) => (x.urgency==='red'?0:1) - (y.urgency==='red'?0:1));
@@ -998,7 +1015,7 @@ function mbRenderAlerts(){
 }
 function speakAllAlerts(){
   const alerts = computeAlerts(loadBike(), loadDocs());
-  speakText(alerts.length ? alerts.map(a => a.name + '. ' + a.desc).join('. ') : 'कोई चेतावनी नहीं।', CURRENT_LANG);
+  speakText(alerts.length ? alerts.map(a => a.name + '. ' + a.desc).join('. ') : strFor2W('mb.alerts.none'), CURRENT_LANG);
 }
 function mbDemoAlerts(){
   mbDemoDocs();
@@ -1029,7 +1046,7 @@ function mbStartListening(cb){
 async function mbAsk(){
   const text = (document.getElementById('mb-ask-text').value || '').trim();
   if (!text) { speakText(strFor2W('mb.speak.tell_problem'), CURRENT_LANG); return; }
-  appendBubble('user', text, 'आप:');
+  appendBubble('user', text, strFor2W('mb.thread.you'));
   document.getElementById('mb-ask-text').value = '';
 
   const safetyHit = /(brake|brek|brakes|steering|handle|tyre|tire|wheel wobble|wobble|punctur|fork|axle)/i.test(text);
@@ -1055,7 +1072,7 @@ async function mbAsk(){
     'User said: """' + text + '"""\n' +
     'Reply with ONLY the JSON object.';
 
-  appendBubble('chitti', '… Chitti soch rahi hai …', 'Chitti:');
+  appendBubble('chitti', '… ' + strFor2W('mb.bubble.thinking'), strFor2W('mb.thread.chitti'));
   let data;
   try {
     const r = await fetch(API_BASE + '/api/vaani/ask', {
@@ -1063,10 +1080,10 @@ async function mbAsk(){
       body: JSON.stringify({ text: prompt, language: CURRENT_LANG, mode: 'ask' })
     });
     data = await r.json();
-  } catch(e){ replaceLastChitti('Chitti sun nahi payi — net check karke phir try karein.', null); return; }
+  } catch(e){ replaceLastChitti(strFor2W('mb.ask.netfail'), null); return; }
   let parsed;
   try { const m = (data.reply || '').match(/\{[\s\S]+\}/); parsed = JSON.parse(m[0]); } catch(e) { parsed = null; }
-  if (!parsed) { replaceLastChitti((data && data.reply) || 'Chitti samjh nahi paayi — phir se boliye.', null); return; }
+  if (!parsed) { replaceLastChitti((data && data.reply) || strFor2W('mb.ask.notunderstood'), null); return; }
   if (safetyHit) { parsed.safety_critical = true; parsed.diy_possible = false; }
   replaceLastChitti(parsed.diagnosis || '…', parsed);
   speakText(parsed.diagnosis || '', CURRENT_LANG);
@@ -1085,26 +1102,26 @@ function replaceLastChitti(diagnosis, parsed){
   const last = wrap.lastElementChild;
   if (last && last.classList.contains('chitti')) last.remove();
   const colour = parsed && parsed.safety_critical ? 'safety' : 'chitti';
-  const head = parsed && parsed.safety_critical ? '⚠️ ज़रूरी सुरक्षा सलाह' : 'Chitti:';
+  const head = parsed && parsed.safety_critical ? ('⚠️ ' + strFor2W('mb.safety.head')) : strFor2W('mb.thread.chitti');
   appendBubble(colour, diagnosis, head);
   if (!parsed) return;
   if (parsed.diy_possible) {
-    const txt = '<b>घर पे ठीक हो सकता है:</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' +
-      (parsed.diy_steps || []).map(s => '<li>' + s + '</li>').join('') + '</ol>';
-    appendBubble('chitti mb-diy-yes', txt, '🛠️ खुद करो');
+    const txt = '<b>'+escapeHtml(strFor2W('mb.diy.canfix'))+'</b><ol style="margin:6px 0 0;padding-left:18px;line-height:1.6">' +
+      (parsed.diy_steps || []).map(s => '<li>' + escapeHtml(s) + '</li>').join('') + '</ol>';
+    appendBubble('chitti mb-diy-yes', txt, '🛠️ ' + strFor2W('mb.diy.self'));
   } else {
-    const txt = '<b>Mechanic के पास ले जाओ —</b> ' + (parsed.mechanic_advice || 'safety se samjhota mat karo.') +
-      ' <button class="sds-btn ghost" style="margin-top:8px;min-height:38px" onclick="mbHelmetGate(()=>mbOpenMaps())">🗺️ पास का mechanic</button>';
-    appendBubble('chitti mb-diy-no', txt, '🔧 Mechanic ज़रूरी');
+    const txt = '<b>'+escapeHtml(strFor2W('mb.diy.take_mech'))+'</b> ' + escapeHtml(parsed.mechanic_advice || strFor2W('mb.diy.no_compromise')) +
+      ' <button class="sds-btn ghost" style="margin-top:8px;min-height:38px" onclick="mbHelmetGate(()=>mbOpenMaps())">🗺️ '+escapeHtml(strFor2W('mb.diy.nearby_mech'))+'</button>';
+    appendBubble('chitti mb-diy-no', txt, '🔧 ' + strFor2W('mb.diy.mech_needed'));
   }
   if (parsed.fair_price_min_inr && parsed.fair_price_max_inr) {
     const wrap2 = document.getElementById('mb-ask-thread');
     const fp = document.createElement('div');
     fp.className = 'mb-fairprice';
-    fp.innerHTML = '💰 <b>सही दाम क्या है</b><br>धोखा मत खाओ — यह काम <b>₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</b> में होना चाहिए।';
+    fp.innerHTML = '💰 <b>'+escapeHtml(strFor2W('mb.fairprice'))+'</b><br>'+escapeHtml(strFor2W('mb.fp.should_cost'))+' <b>₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</b>';
     wrap2.appendChild(fp);
   }
-  if (parsed.ask_followup) appendBubble('chitti', '🤔 ' + parsed.ask_followup, 'Chitti pooch rahi hai:');
+  if (parsed.ask_followup) appendBubble('chitti', '🤔 ' + parsed.ask_followup, strFor2W('mb.thread.chitti_asks'));
 }
 
 function mbHelmetGate(fn){
@@ -1172,8 +1189,8 @@ async function mbObdScan(){
   out.innerHTML =
     '<div class="sds-bubble chitti"><span class="who">' + code + ' · ' + sev + '</span>' + escapeHtml(parsed.meaning || '') + '</div>' +
     (parsed.what_to_do ? '<div class="sds-bubble chitti"><span class="who">' + strFor2W('mb.bubble.what_to_do') + '</span>' + escapeHtml(parsed.what_to_do) + '</div>' : '') +
-    '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '"><span class="who">Riding</span>' + safe + '</div>' +
-    (parsed.fair_price_min_inr ? '<div class="mb-fairprice">💰 <b>सही दाम</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
+    '<div class="sds-bubble ' + (parsed.safe_to_ride ? 'chitti' : 'safety') + '"><span class="who">' + escapeHtml(strFor2W('mb.bubble.riding')) + '</span>' + safe + '</div>' +
+    (parsed.fair_price_min_inr ? '<div class="mb-fairprice">💰 <b>' + escapeHtml(strFor2W('mb.fp.fair_price')) + '</b>: ₹' + parsed.fair_price_min_inr + ' – ₹' + parsed.fair_price_max_inr + '</div>' : '');
   speakText((parsed.meaning || '') + ' ' + (parsed.what_to_do || ''), CURRENT_LANG);
 }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1185,7 +1202,7 @@ function mbOnMakeChange(make){
   if (make && (BIKE_MODELS[make] || []).length === 0) {
     // Other → free-text
     const inp = document.createElement('input');
-    inp.id = 'mb-model'; inp.className = 'sds-input'; inp.placeholder = 'Type your model';
+    inp.id = 'mb-model'; inp.className = 'sds-input'; inp.placeholder = strFor2W('mb.model.type');
     sel.parentNode.replaceChild(inp, sel);
   }
 }
@@ -1278,13 +1295,14 @@ function renderFleetSwitcher(){
   if (!container) return;
   const fleet = mbLoadFleet();
   const idx = mbGetActiveIdx();
-  if (fleet.length <= 1) { container.innerHTML = '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ Add another bike</button>'; return; }
+  if (fleet.length <= 1) { container.innerHTML = '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ '+escapeHtml(strFor2W('mb.fleet.add_another'))+'</button>'; return; }
   let h = '<div class="mb-fleet-row">';
+  const emptyLbl = strFor2W('mb.fleet.empty');
   fleet.forEach((v, i) => {
-    const label = v.make ? ((v.make + ' ' + (v.model || '')).slice(0, 18)) : 'Empty';
-    h += '<button class="mb-fleet-slot' + (i === idx ? ' active' : '') + '" onclick="mbFleetSwitch(' + i + ')">🏍️ ' + (label || 'Empty') + '</button>';
+    const label = v.make ? ((v.make + ' ' + (v.model || '')).slice(0, 18)) : emptyLbl;
+    h += '<button class="mb-fleet-slot' + (i === idx ? ' active' : '') + '" onclick="mbFleetSwitch(' + i + ')">🏍️ ' + escapeHtml(label || emptyLbl) + '</button>';
   });
-  h += '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ Add</button>';
+  h += '<button class="mb-fleet-add" onclick="mbFleetAdd()">➕ '+escapeHtml(strFor2W('mb.fleet.add'))+'</button>';
   h += '</div>';
   container.innerHTML = h;
 }
@@ -1326,9 +1344,9 @@ function mbLogRenderList(){
   const out = document.getElementById('mb-log-list');
   if (!out) return;
   const list = mbLogLoad();
-  if (list.length === 0) { out.innerHTML = '<div class="mb-log-empty">Abhi koi entry nahi. Pehli service log karein.</div>'; return; }
+  if (list.length === 0) { out.innerHTML = '<div class="mb-log-empty">'+escapeHtml(strFor2W('lg.empty'))+'</div>'; return; }
   const total = list.reduce((s, e) => s + (e.cost || 0), 0);
-  let h = '<div style="font-size:12px;color:#666;margin-bottom:6px">Total ' + list.length + ' entries · ₹' + total + ' kharch</div>';
+  let h = '<div style="font-size:12px;color:#666;margin-bottom:6px">'+escapeHtml(strFor2W('lg.total'))+' ' + list.length + ' · ₹' + total + '</div>';
   list.slice(0, 15).forEach(e => {
     h += '<div class="mb-log-row">';
     h += '<div class="mb-log-head"><span>📅 ' + escapeHtml(e.date || '') + '</span><span>' + (e.km ? '🛣️ ' + e.km + ' km' : '') + '</span></div>';
@@ -1405,24 +1423,16 @@ async function mbTripReady(){
     }
   } catch(e){}
   if (items.length === 0) {
-    items = [
-      'Tyre pressure check (front + rear)',
-      'Brake feel — press front + rear once',
-      'Headlight, tail-light, indicators, horn',
-      'Chain dry ya wet? Lube due?',
-      'Engine oil dipstick — golden hai?',
-      'Fuel + reserve range check',
-      'Helmet, gloves, raincoat (monsoon)'
-    ];
+    items = [0,1,2,3,4,5,6].map(i => strFor2W('mb.trip.item.' + i));
   }
-  let html = '<div  data-chitti-response="mb-card-15" class="sds-card chitti-response" data-chitti-section="🧳 Pre-trip check"><h3 class="sds-card-title">🧳 Pre-trip 30-sec check</h3>';
+  let html = '<div  data-chitti-response="mb-card-15" class="sds-card chitti-response" data-chitti-section="🧳 ' + escapeHtml(strFor2W('mb.trip.head')) + '"><h3 class="sds-card-title">🧳 ' + escapeHtml(strFor2W('mb.trip.head')) + '</h3>';
   html += '<ol style="margin:0 0 8px 18px;font-size:14px;line-height:1.8">';
   items.forEach((it, i) => {
     html += '<li id="mb-trip-' + i + '"><label style="cursor:pointer"><input type="checkbox" onchange="mbTripTick(' + i + ')" style="margin-right:6px">' + escapeHtml(it) + '</label></li>';
   });
   html += '</ol>';
-  html += '<div id="mb-trip-verdict" style="margin-top:6px;font-size:13px;color:#666">' + items.length + ' items — sab tick karne par GO ✅</div>';
-  html += '<div class="sds-card-toolbar"><button onclick="speakText(\'Pre trip check. Tyre, brake, lights, chain, oil, fuel, helmet.\', CURRENT_LANG)">🔊</button><span class="sep"></span><button class="fb-pos" onclick="logProductAction(\'mb_trip\', 1)">👍</button><button class="fb-neg" onclick="window.location.href=\'feedback.html?product=chitti_mechanic_bike&card=mb_trip\'">👎</button></div>';
+  html += '<div id="mb-trip-verdict" style="margin-top:6px;font-size:13px;color:#666">' + items.length + ' — ' + escapeHtml(strFor2W('mb.trip.all_tick_go')) + ' ✅</div>';
+  html += '<div class="sds-card-toolbar"><button onclick="speakText(strFor2W(\'mb.trip.speak\'), CURRENT_LANG)">🔊</button><span class="sep"></span><button class="fb-pos" onclick="logProductAction(\'mb_trip\', 1)">👍</button><button class="fb-neg" onclick="window.location.href=\'feedback.html?product=chitti_mechanic_bike&card=mb_trip\'">👎</button></div>';
   html += '</div>';
   out.innerHTML = html;
   speakText(strFor2W('mb.speak.trip_start'), CURRENT_LANG);
@@ -1452,7 +1462,7 @@ async function mbPhotoSubmit(input){
   const img = document.getElementById('mb-photo-preview');
   img.src = previewUrl; img.style.display = 'block';
   const out = document.getElementById('mb-photo-result');
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti dekh rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">'+escapeHtml(strFor2W('mb.bubble.seeing'))+'</span></div>';
   const reader = new FileReader();
   reader.onload = async (e) => {
     const dataUrl = e.target.result || '';
@@ -1574,7 +1584,7 @@ async function mbFindMechanic(){
   const pincode = (document.getElementById('mb-pin').value || '').trim();
   const b = loadBike() || {};
   const out = document.getElementById('mb-mech-result');
-  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">Chitti dhund rahi hai…</span></div>';
+  out.innerHTML = '<div class="sds-bubble chitti"><span class="who">'+escapeHtml(strFor2W('mb.bubble.searching'))+'</span></div>';
   const lang = (LANG_NAMES_MB && LANG_NAMES_MB[CURRENT_LANG]) || 'English';
   const mapQ = (b.make ? b.make + ' ' : '') + 'bike mechanic ' + (pincode || 'near me');
   const mapUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(mapQ);
@@ -1595,7 +1605,7 @@ async function mbFindMechanic(){
     });
   }
   out.innerHTML = listHtml +
-    '<a class="sds-btn primary block" style="margin-top:10px;text-align:center;text-decoration:none" href="' + mapUrl + '" target="_blank" rel="noopener">🗺️ Google Maps mein khol</a>';
+    '<a class="sds-btn primary block" style="margin-top:10px;text-align:center;text-decoration:none" href="' + mapUrl + '" target="_blank" rel="noopener">🗺️ '+escapeHtml(strFor2W('mb.fm.open_map'))+'</a>';
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1710,10 +1720,10 @@ function mbKyvRender(j, b){
   h += '<div class="kyv-section-title">🧠 ' + kyvEsc(b.make + ' ' + b.model + ' ' + (b.year||'') + (b.variant ? ' · ' + b.variant : '')) + '</div>';
   h += '<div class="kyv-stats">';
   const stats = [
-    ['Engine', (j.engine_cc?j.engine_cc+' cc':'-')], ['Type', (j.engine_type||'-')],
-    ['BHP', (j.bhp||'-')], ['Torque', ((j.torque_nm||'-')+' Nm')],
-    ['Tank', ((j.fuel_tank_l||'-')+' L')], ['Mileage', j.rated_mileage||'-'],
-    ['Service', j.service_interval||'-']
+    [strFor2W('kyv.stat.engine'), (j.engine_cc?j.engine_cc+' cc':'-')], [strFor2W('kyv.stat.type'), (j.engine_type||'-')],
+    [strFor2W('kyv.stat.bhp'), (j.bhp||'-')], [strFor2W('kyv.stat.torque'), ((j.torque_nm||'-')+' Nm')],
+    [strFor2W('kyv.stat.tank'), ((j.fuel_tank_l||'-')+' L')], [strFor2W('kyv.stat.mileage'), j.rated_mileage||'-'],
+    [strFor2W('kyv.stat.service'), j.service_interval||'-']
   ];
   stats.forEach(s => h += '<div class="kyv-stat"><div class="lbl">'+kyvEsc(s[0])+'</div><div class="val">'+kyvEsc(s[1])+'</div></div>');
   h += '</div>';
@@ -1735,17 +1745,17 @@ function mbKyvRender(j, b){
     if (c.spec) h += ' · <span class="kyv-spec">'+kyvEsc(c.spec)+'</span>';
     if (c.capacity) h += ' · '+kyvEsc(c.capacity);
     h += '</div>';
-    if (c.change_interval) h += '<div class="kyv-consume-when">🕒 Change: '+kyvEsc(c.change_interval)+'</div>';
+    if (c.change_interval) h += '<div class="kyv-consume-when">🕒 '+kyvEsc(strFor2W('kyv.change'))+': '+kyvEsc(c.change_interval)+'</div>';
     if (c.options && c.options.length) {
-      h += '<table class="kyv-table"><thead><tr><th>Brand · Product</th><th>Price</th><th>Verdict</th></tr></thead><tbody>';
+      h += '<table class="kyv-table"><thead><tr><th>'+kyvEsc(strFor2W('kyv.th.brand'))+'</th><th>'+kyvEsc(strFor2W('kyv.th.price'))+'</th><th>'+kyvEsc(strFor2W('kyv.th.verdict'))+'</th></tr></thead><tbody>';
       c.options.forEach(o => {
         const verdictCls = /vfm|best/i.test(o.verdict||'') ? 'vfm' : '';
         h += '<tr class="'+verdictCls+'"><td>'+kyvEsc(o.brand||'')+' <em>'+kyvEsc(o.name||'')+'</em></td><td>₹'+(o.price_inr||'?')+'</td><td>'+kyvEsc(o.verdict||'')+'</td></tr>';
       });
       h += '</tbody></table>';
     }
-    if (c.fake_alert) h += '<div class="kyv-fake">⚠️ <b>Fake alert:</b> '+kyvEsc(c.fake_alert)+'</div>';
-    if (c.diy_check) h += '<div class="kyv-diy">🔍 <b>DIY check:</b> '+kyvEsc(c.diy_check)+'</div>';
+    if (c.fake_alert) h += '<div class="kyv-fake">⚠️ <b>'+kyvEsc(strFor2W('kyv.fake'))+':</b> '+kyvEsc(c.fake_alert)+'</div>';
+    if (c.diy_check) h += '<div class="kyv-diy">🔍 <b>'+kyvEsc(strFor2W('kyv.diycheck'))+':</b> '+kyvEsc(c.diy_check)+'</div>';
     h += '</div>';
   });
 
@@ -1755,7 +1765,7 @@ function mbKyvRender(j, b){
     h += '<div class="kyv-clean">';
     h += '<div class="kyv-clean-head">'+kyvEsc(c.surface||'')+'</div>';
     if (c.store_bought && c.store_bought.length) h += '<div class="kyv-clean-store">🏪 '+c.store_bought.map(s => kyvEsc(s.brand||'')+' ₹'+(s.price||'?')).join(' · ')+'</div>';
-    if (c.diy_recipe) h += '<div class="kyv-clean-diy">🏠 <b>DIY:</b> '+kyvEsc(c.diy_recipe)+'</div>';
+    if (c.diy_recipe) h += '<div class="kyv-clean-diy">🏠 <b>'+kyvEsc(strFor2W('kyv.diy'))+':</b> '+kyvEsc(c.diy_recipe)+'</div>';
     if (c.warning) h += '<div class="kyv-clean-warn">⛔ '+kyvEsc(c.warning)+'</div>';
     h += '</div>';
   });
@@ -1763,7 +1773,7 @@ function mbKyvRender(j, b){
   // Toolkit
   if (j.toolkit) {
     h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.toolkit') + '</div>';
-    [['starter','💰 Starter'],['mid','💰💰 Mid'],['pro','💰💰💰 Pro']].forEach(p => {
+    [['starter','💰 '+strFor2W('kyv.tool.starter')],['mid','💰💰 '+strFor2W('kyv.tool.mid')],['pro','💰💰💰 '+strFor2W('kyv.tool.pro')]].forEach(p => {
       const arr = j.toolkit[p[0]];
       if (arr && arr.length) {
         h += '<div class="kyv-kit"><div class="kyv-kit-head">'+p[1]+'</div><ul>'+arr.map(x => '<li>'+kyvEsc(x)+'</li>').join('')+'</ul></div>';
@@ -1784,7 +1794,7 @@ function mbKyvRender(j, b){
 
   // Known issues
   if (j.known_issues && j.known_issues.length) {
-    h += '<div class="kyv-section-title">📌 '+kyvEsc(b.make+' '+b.model)+' ki khaas baatein</div>';
+    h += '<div class="kyv-section-title">📌 '+kyvEsc(b.make+' '+b.model)+' — '+kyvEsc(strFor2W('kyv.sec.known'))+'</div>';
     h += '<ul class="kyv-known">'+j.known_issues.map(i => '<li>'+kyvEsc(i)+'</li>').join('')+'</ul>';
   }
 
@@ -1792,22 +1802,22 @@ function mbKyvRender(j, b){
   h += '<div class="kyv-section-title">' + strFor2W('kyv.sec.calendar') + '</div>';
   if (j.seasonal) {
     h += '<div class="kyv-season">';
-    if (j.seasonal.monsoon) h += '<div><b>🌧️ Monsoon:</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
-    if (j.seasonal.summer) h += '<div><b>☀️ Summer:</b> '+kyvEsc(j.seasonal.summer)+'</div>';
-    if (j.seasonal.winter) h += '<div><b>❄️ Winter:</b> '+kyvEsc(j.seasonal.winter)+'</div>';
+    if (j.seasonal.monsoon) h += '<div><b>🌧️ '+kyvEsc(strFor2W('kyv.season.monsoon'))+':</b> '+kyvEsc(j.seasonal.monsoon)+'</div>';
+    if (j.seasonal.summer) h += '<div><b>☀️ '+kyvEsc(strFor2W('kyv.season.summer'))+':</b> '+kyvEsc(j.seasonal.summer)+'</div>';
+    if (j.seasonal.winter) h += '<div><b>❄️ '+kyvEsc(strFor2W('kyv.season.winter'))+':</b> '+kyvEsc(j.seasonal.winter)+'</div>';
     h += '</div>';
   }
   if (j.service_cost) {
-    h += '<div class="kyv-cost"><b>💸 Service cost benchmark:</b><br>';
+    h += '<div class="kyv-cost"><b>💸 '+kyvEsc(strFor2W('kyv.cost.lbl'))+':</b><br>';
     h += strFor2W('kyv.cost.local') + ' ₹'+kyvEsc(j.service_cost.local_inr||'-')+' · ' + strFor2W('kyv.cost.auth') + ' ₹'+kyvEsc(j.service_cost.authorised_inr||'-');
     if (j.service_cost.what_is_done) h += '<div class="kyv-svc">'+kyvEsc(j.service_cost.what_is_done)+'</div>';
     h += '</div>';
   }
   if (j.pre_ride_check && j.pre_ride_check.length) {
-    h += '<div class="kyv-preride"><b>🎙️ Pre-ride 30-sec check:</b><ol>'+j.pre_ride_check.map(p => '<li>'+kyvEsc(p)+'</li>').join('')+'</ol></div>';
+    h += '<div class="kyv-preride"><b>🎙️ '+kyvEsc(strFor2W('kyv.preride'))+':</b><ol>'+j.pre_ride_check.map(p => '<li>'+kyvEsc(p)+'</li>').join('')+'</ol></div>';
   }
   if (j.resale_prep && j.resale_prep.length) {
-    h += '<div class="kyv-resale"><b>💰 Resale prep:</b><ul>'+j.resale_prep.map(r => '<li>'+kyvEsc(r)+'</li>').join('')+'</ul></div>';
+    h += '<div class="kyv-resale"><b>💰 '+kyvEsc(strFor2W('kyv.resale'))+':</b><ul>'+j.resale_prep.map(r => '<li>'+kyvEsc(r)+'</li>').join('')+'</ul></div>';
   }
 
   out.innerHTML = h;
@@ -1922,8 +1932,35 @@ async function swScamCheck(){
 }
 function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LANG); }
 
+// Gate the language dropdown to ONLY the 9 fully-translated languages.
+// chitti_lang.js enriches the <select> to 26 at runtime; 17 of those have no
+// bike translations and would show English. Prune them on this page so a user
+// can never pick a language that doesn't fully translate. (CTO.md §5 No-Hinglish)
+const MB_COMPLETE_LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
+function mbPruneLangSelect(){
+  const sel = document.getElementById('lang-select');
+  if (!sel) return;
+  Array.from(sel.options).forEach(o => {
+    if (MB_COMPLETE_LANGS.indexOf(o.value) === -1) o.remove();
+  });
+  // chitti_lang.js's wireDropdown overrides our onchange with its own
+  // translateAll. Re-bind so changeLang() runs (it re-renders every dynamic
+  // panel in the new language) — and still let chitti_lang's listeners fire
+  // via the chitti:langchange event dispatched inside changeLang().
+  sel.onchange = function(){ changeLang(this.value); };
+  // If the active language is no longer offered, fall back to English.
+  if (MB_COMPLETE_LANGS.indexOf(CURRENT_LANG) === -1) { changeLang('en'); }
+  else { try { sel.value = CURRENT_LANG; } catch(e){} }
+}
+// Run now + again after chitti_lang.js finishes its async enrichment.
+mbPruneLangSelect();
+setTimeout(mbPruneLangSelect, 400);
+setTimeout(mbPruneLangSelect, 1200);
+document.addEventListener('chitti:langlistready', mbPruneLangSelect);
+
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  mbPruneLangSelect();
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mbRefreshHome();
   try { mbKyvLoad(); } catch(e){}

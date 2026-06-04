@@ -452,6 +452,42 @@
       pa:'ਇਹ ਭਾਗ', or:'ଏହି ବିଭାଗ', as:'এই বিভাগ',
       ur:'یہ سیکشن', sa:'अयं खण्डः',
     },
+    // ── Feature Discovery substrate (chitti_features.js) ────────────────
+    // The 💡 "What can Chitti do?" CTA + bar button are injected English-only
+    // by chitti_features.js. Register them here so the a11y translate pass
+    // localises them on every page (§5 No-Hinglish). Backward-compatible:
+    // pages without these buttons simply have no matching node.
+    '💡 What can Chitti do for you?': {
+      en:'💡 What can Chitti do for you?', hi:'💡 चिट्टी आपके लिए क्या कर सकती है?',
+      bn:'💡 চিট্টি আপনার জন্য কী করতে পারে?', te:'💡 చిట్టి మీ కోసం ఏం చేయగలదు?',
+      ta:'💡 சிட்டி உங்களுக்கு என்ன செய்ய முடியும்?', mr:'💡 चिट्टी तुमच्यासाठी काय करू शकते?',
+      gu:'💡 ચિટ્ટી તમારા માટે શું કરી શકે?', kn:'💡 ಚಿಟ್ಟಿ ನಿಮಗಾಗಿ ಏನು ಮಾಡಬಲ್ಲದು?',
+      ml:'💡 ചിട്ടി നിങ്ങൾക്കായി എന്ത് ചെയ്യാനാകും?',
+    },
+    '💡 What can Chitti do?': {
+      en:'💡 What can Chitti do?', hi:'💡 चिट्टी क्या कर सकती है?',
+      bn:'💡 চিট্টি কী করতে পারে?', te:'💡 చిట్టి ఏం చేయగలదు?',
+      ta:'💡 சிட்டி என்ன செய்ய முடியும்?', mr:'💡 चिट्टी काय करू शकते?',
+      gu:'💡 ચિટ્ટી શું કરી શકે?', kn:'💡 ಚಿಟ್ಟಿ ಏನು ಮಾಡಬಲ್ಲದು?',
+      ml:'💡 ചിട്ടി എന്ത് ചെയ്യാനാകും?',
+    },
+    'Active': {
+      en:'Active', hi:'सक्रिय', bn:'সক্রিয়', te:'క్రియాశీలం',
+      ta:'செயலில்', mr:'सक्रिय', gu:'સક્રિય', kn:'ಸಕ್ರಿಯ', ml:'സജീവം',
+    },
+    // Observability status pill (chitti_observability.js) — status text + tick.
+    'Active ✅': {
+      en:'Active ✅', hi:'सक्रिय ✅', bn:'সক্রিয় ✅', te:'క్రియాశీలం ✅',
+      ta:'செயலில் ✅', mr:'सक्रिय ✅', gu:'સક્રિય ✅', kn:'ಸಕ್ರಿಯ ✅', ml:'സജീവം ✅',
+    },
+    'Degraded ⚠️': {
+      en:'Degraded ⚠️', hi:'कमज़ोर ⚠️', bn:'দুর্বল ⚠️', te:'క్షీణించింది ⚠️',
+      ta:'குறைந்தது ⚠️', mr:'कमकुवत ⚠️', gu:'નબળું ⚠️', kn:'ದುರ್ಬಲ ⚠️', ml:'ദുർബലം ⚠️',
+    },
+    'Failed ❌': {
+      en:'Failed ❌', hi:'विफल ❌', bn:'ব্যর্থ ❌', te:'విఫలమైంది ❌',
+      ta:'தோல்வி ❌', mr:'अयशस्वी ❌', gu:'નિષ્ફળ ❌', kn:'ವಿಫಲ ❌', ml:'പരാജയം ❌',
+    },
     'Was this helpful?': {
       en:'Was this helpful?', hi:'क्या यह उपयोगी था?',
       bn:'এটি সহায়ক ছিল?', te:'ఇది ఉపయోగపడిందా?',
@@ -1258,16 +1294,22 @@
     '.chitti-fb-modal-bg',     // page-footer feedback modal
     '#chitti-fb-box-modal-bg', // per-box feedback modal
     '.chitti-qr-block',        // QR block (page footer)
+    '.chitti-features-cta',    // 💡 "What can Chitti do?" floating CTA
+    '#chitti-features-bar-btn',// 💡 CTA mirrored into the a11y bar
+    '.chitti-features-status', // Active / status badge in the feature list
+    '#chitti-obs-badge',       // observability status pill (Active/Degraded/Failed)
+    '.obs-pill',               // the status pill itself (in case badge id differs)
   ];
 
   var SKIP_TAGS = { SCRIPT:1, STYLE:1, NOSCRIPT:1, CODE:1, PRE:1, TEXTAREA:1, OPTION:1 };
 
   function getCurrentLang() {
     try {
+      if (window.CURRENT_LANG) return window.CURRENT_LANG;
       if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.current === 'function') {
         return window.Chitti.lang.current();
       }
-      return localStorage.getItem('chitti_lang') || 'en';
+      return localStorage.getItem('chitti_lang') || localStorage.getItem('chitti_vaani_lang') || 'en';
     } catch (e) { return 'en'; }
   }
 
@@ -1385,8 +1427,10 @@
     });
   }
 
+  var _lastLang = null;
   function translatePage(lang) {
-    if (!lang) lang = getCurrentLang();
+    if (!lang) lang = _lastLang || getCurrentLang();
+    _lastLang = lang;
     document.documentElement.lang = lang;
     document.documentElement.dir = RTL_LANGS[lang] ? 'rtl' : 'ltr';
     WALK_ROOTS.forEach(function (sel) {
@@ -1430,11 +1474,20 @@
     // the two scripts cooperate instead of fighting on every mutation.
     registerWithChittiLang();
     translatePage();
-    // Listen for chitti_lang.js's lang change event.
-    document.addEventListener('chitti:langchange', function (ev) {
+    // Listen for the lang-change event. NOTE: chitti_lang.js dispatches it on
+    // `document`, but several pages (incl. the mechanic pages) dispatch it on
+    // `window` via window.dispatchEvent — which does NOT reach document
+    // listeners. Listen on BOTH so a11y re-translates on every page's path.
+    // chitti_lang.js's translateAll resets unrecognised nodes to English, so
+    // we re-apply once on the next tick to win the final paint (the late
+    // 💡 feature-discovery CTA from chitti_features.js needs this).
+    function onLangChange(ev) {
       var lang = (ev && ev.detail && ev.detail.lang) || getCurrentLang();
       translatePage(lang);
-    });
+      setTimeout(function () { translatePage(lang); }, 60);
+    }
+    document.addEventListener('chitti:langchange', onLangChange);
+    window.addEventListener('chitti:langchange', onLangChange);
     // Defensive — also listen for the dropdown directly.
     var sel = document.getElementById('lang-select');
     if (sel) {

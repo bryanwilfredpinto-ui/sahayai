@@ -98,6 +98,23 @@
       return localStorage.getItem('chitti_lang') || 'en-IN';
     } catch (e) { return 'en-IN'; }
   }
+  // ── Shared i18n resolver (fleet substrate) ───────────────────────────
+  // Resolve a UI string from the page's VAI_STRINGS bag in the active
+  // language, with an English fallback so any page WITHOUT that key (or
+  // without strings.js at all) keeps working unchanged. §5 No-Hinglish.
+  function tLang() {
+    var L = window.CURRENT_LANG || getLang() || 'en';
+    return String(L).toLowerCase().split('-')[0];
+  }
+  function _tg(key, fb) {
+    try {
+      var L = tLang();
+      var S = window.VAI_STRINGS;
+      if (!S) return fb;
+      var bag = S[L] || S.en;
+      return (bag && bag[key]) || (S.en && S.en[key]) || fb;
+    } catch (e) { return fb; }
+  }
 
   // ── i18n — apology + thank-you in 11 Indian languages + en ──────────
   // Kept short. Voice OUT will read these verbatim.
@@ -247,28 +264,28 @@
     var lastAudit = (window.CHITTI_LAST_AUDIT || '2026-05-13');
     var helpedToday = (window.CHITTI_HELPED_TODAY != null) ? window.CHITTI_HELPED_TODAY : '—';
     var co2 = (window.CHITTI_CO2_G != null) ? window.CHITTI_CO2_G : DEFAULT_CO2_G;
-    var co2Str = '🌿 ~' + Number(co2).toFixed(1) + 'g CO₂ for this reply';
+    var co2Str = '🌿 ~' + Number(co2).toFixed(1) + 'g CO₂ ' + _tg('fb.co2_for_reply', 'for this reply');
 
     var wrap = document.createElement('section');
     wrap.className = 'chitti-fb-wrap';
     wrap.setAttribute('aria-label', 'Help us build better Chitti');
     wrap.innerHTML =
       '<div class="chitti-fb-card">' +
-      '  <div class="chitti-fb-title">💬 Was this helpful?' +
-      '    <button type="button" class="chitti-fb-report" data-action="report" aria-label="Report a problem with this page">📣 Report a problem</button>' +
+      '  <div class="chitti-fb-title">💬 <span data-vai-i18n="fb.was_helpful">' + escAttr(_tg('fb.was_helpful', 'Was this helpful?')) + '</span>' +
+      '    <button type="button" class="chitti-fb-report" data-action="report" aria-label="Report a problem with this page">📣 <span data-vai-i18n="fb.report">' + escAttr(_tg('fb.report', 'Report a problem')) + '</span></button>' +
       '  </div>' +
       '  <div class="chitti-fb-row">' +
-      '    <button type="button" class="chitti-fb-btn speak" data-vote="speak" aria-label="Chitti — read this page aloud"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span><span aria-hidden="true">🔊</span><span class="lbl">Speaker</span></button>' +
+      '    <button type="button" class="chitti-fb-btn speak" data-vote="speak" aria-label="Chitti — read this page aloud"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span><span aria-hidden="true">🔊</span><span class="lbl" data-vai-i18n="fb.speaker">' + escAttr(_tg('fb.speaker', 'Speaker')) + '</span></button>' +
       '    <button type="button" class="chitti-fb-btn mic" data-vote="mic" aria-label="Talk to Chitti"><span class="chitti-fb-mini-logo" aria-hidden="true">C</span><span aria-hidden="true">🎙️</span><span class="lbl">Chitti</span></button>' +
-      '    <button type="button" class="chitti-fb-btn up" data-vote="thumbs_up" aria-label="This page was helpful"><span aria-hidden="true">👍</span><span class="lbl">Helpful</span></button>' +
-      '    <button type="button" class="chitti-fb-btn down" data-vote="thumbs_down" aria-label="Something did not work"><span aria-hidden="true">👎</span><span class="lbl">Not OK</span></button>' +
+      '    <button type="button" class="chitti-fb-btn up" data-vote="thumbs_up" aria-label="This page was helpful"><span aria-hidden="true">👍</span><span class="lbl" data-vai-i18n="fb.helpful">' + escAttr(_tg('fb.helpful', 'Helpful')) + '</span></button>' +
+      '    <button type="button" class="chitti-fb-btn down" data-vote="thumbs_down" aria-label="Something did not work"><span aria-hidden="true">👎</span><span class="lbl" data-vai-i18n="fb.notok">' + escAttr(_tg('fb.notok', 'Not OK')) + '</span></button>' +
       '  </div>' +
-      '  <p class="chitti-fb-help">Tap <b>🔊</b> to listen. Tap <b>🎙️</b> to talk to Chitti. Tap <b>👍</b> if helpful. Tap <b>👎</b> and tell Chitti — in your language — what was wrong.</p>' +
+      '  <p class="chitti-fb-help">' + _tg('fb.help', 'Tap <b>🔊</b> to listen. Tap <b>🎙️</b> to talk to Chitti. Tap <b>👍</b> if helpful. Tap <b>👎</b> and tell Chitti — in your language — what was wrong.') + '</p>' +
       '  <div class="chitti-fb-trust" aria-label="Trust signals">' +
-      '    <span class="chip ' + riskClass + '" title="Risk level for this Chitti">🛡️ ' + risk + ' RISK</span>' +
+      '    <span class="chip ' + riskClass + '" title="Risk level for this Chitti">🛡️ ' + escAttr(_tg('fb.risk.' + risk.toLowerCase(), risk + ' RISK')) + '</span>' +
       '    <span class="chip" title="Carbon footprint of this reply">' + co2Str + '</span>' +
-      '    <span class="chip" title="Last Chitti Quality audit">📅 Last audit: ' + lastAudit + '</span>' +
-      '    <span class="chip" title="Indians helped today by this Chitti">🇮🇳 ' + helpedToday + ' helped today</span>' +
+      '    <span class="chip" title="Last Chitti Quality audit">📅 ' + escAttr(_tg('fb.last_audit', 'Last audit:')) + ' ' + lastAudit + '</span>' +
+      '    <span class="chip" title="Indians helped today by this Chitti">🇮🇳 ' + helpedToday + ' ' + escAttr(_tg('fb.helped_today', 'helped today')) + '</span>' +
       '  </div>' +
       '</div>';
     document.body.appendChild(wrap);
@@ -278,13 +295,13 @@
     modalBg.className = 'chitti-fb-modal-bg';
     modalBg.innerHTML =
       '<div class="chitti-fb-modal" role="dialog" aria-modal="true" aria-labelledby="chitti-fb-modal-title">' +
-      '  <h3 id="chitti-fb-modal-title">📣 Tell Chitti what was wrong</h3>' +
-      '  <p>Your microphone is not available. Please type instead — Chitti will still learn from this.</p>' +
-      '  <label for="chitti-fb-text">What went wrong?</label>' +
-      '  <textarea id="chitti-fb-text" placeholder="e.g. The Hindi translation was wrong on the scheme page..."></textarea>' +
+      '  <h3 id="chitti-fb-modal-title">📣 ' + escAttr(_tg('fb.modal.title', 'Tell Chitti what was wrong')) + '</h3>' +
+      '  <p>' + escAttr(_tg('fb.modal.body', 'Your microphone is not available. Please type instead — Chitti will still learn from this.')) + '</p>' +
+      '  <label for="chitti-fb-text">' + escAttr(_tg('fb.modal.label', 'What went wrong?')) + '</label>' +
+      '  <textarea id="chitti-fb-text" placeholder="' + escAttr(_tg('fb.modal.ph', 'e.g. the translation was wrong on this page...')) + '"></textarea>' +
       '  <div class="chitti-fb-modal-actions">' +
-      '    <button type="button" class="chitti-fb-cancel">Cancel</button>' +
-      '    <button type="button" class="chitti-fb-submit">Submit</button>' +
+      '    <button type="button" class="chitti-fb-cancel">' + escAttr(_tg('ui.cancel', 'Cancel')) + '</button>' +
+      '    <button type="button" class="chitti-fb-submit">' + escAttr(_tg('fb.submit', 'Submit')) + '</button>' +
       '  </div>' +
       '</div>';
     document.body.appendChild(modalBg);
@@ -432,7 +449,7 @@
     submit.onclick = onSubmit;
     cancel.onclick = close;
     modalBg.onclick = function (ev) { if (ev.target === modalBg) close(); };
-    document.addEventListener('keydown', function esc(ev) {
+    document.addEventListener('keydown', function escAttr(ev) {
       if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
     });
   }
@@ -543,8 +560,11 @@
       // Sire 2026-05-23 — remove the visible "Feedback for: …" label.
       // The toolbar is icon-only now. The section name still lives in
       // aria-label on every button + the bar itself for screen readers.
-      // Keep a sr-only span so an actual screen reader still announces context.
-      '<span class="chitti-fb-sr-only">' + escAttr(section) + '</span>' +
+      // Screen-reader context now lives entirely in the bar's aria-label and
+      // each button's aria-label below (the section name is announced there).
+      // The previously clipped sr-only <span> duplicated that text AND — because
+      // clip:rect keeps it in the render tree — leaked the English section name
+      // into the §5 No-Hinglish scan on every box. Removed (no a11y loss).
       '<button type="button" class="chitti-fb-bbtn demo"  data-act="demo"  aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">▶</span> <span class="chitti-fb-bbtn-text">Chitti</span></button>' +
       '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud"><span aria-hidden="true">🔊</span> <span class="chitti-fb-bbtn-text" data-vai-i18n="ui.suno">' + escAttr(sunoLbl) + '</span></button>' +
       '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
@@ -681,13 +701,13 @@
     bg.innerHTML =
       '<div class="chitti-fb-modal" role="dialog" aria-modal="true" aria-labelledby="chitti-fb-box-title">' +
       '  <h3 id="chitti-fb-box-title">📣 <span class="chitti-fb-box-section-target">…</span></h3>' +
-      '  <p class="chitti-fb-box-prompt">What was wrong with this?</p>' +
-      '  <label for="chitti-fb-box-text">Type or record:</label>' +
-      '  <textarea id="chitti-fb-box-text" placeholder="Tell Chitti — in any language — what was wrong with this box..."></textarea>' +
+      '  <p class="chitti-fb-box-prompt">' + escAttr(_tg('fb.box.prompt', 'What was wrong with this?')) + '</p>' +
+      '  <label for="chitti-fb-box-text">' + escAttr(_tg('fb.box.label', 'Type or record:')) + '</label>' +
+      '  <textarea id="chitti-fb-box-text" placeholder="' + escAttr(_tg('fb.box.ph', 'Tell Chitti — in any language — what was wrong with this box...')) + '"></textarea>' +
       '  <div class="chitti-fb-modal-actions">' +
-      '    <button type="button" class="chitti-fb-cancel">Cancel</button>' +
-      '    <button type="button" class="chitti-fb-box-mic" aria-label="Record voice feedback">🎙️ Record voice</button>' +
-      '    <button type="button" class="chitti-fb-submit chitti-fb-box-submit">Submit</button>' +
+      '    <button type="button" class="chitti-fb-cancel">' + escAttr(_tg('ui.cancel', 'Cancel')) + '</button>' +
+      '    <button type="button" class="chitti-fb-box-mic" aria-label="Record voice feedback">🎙️ ' + escAttr(_tg('fb.box.record', 'Record voice')) + '</button>' +
+      '    <button type="button" class="chitti-fb-submit chitti-fb-box-submit">' + escAttr(_tg('fb.submit', 'Submit')) + '</button>' +
       '  </div>' +
       '</div>';
     document.body.appendChild(bg);
@@ -750,7 +770,7 @@
     submit.onclick = onSubmit;
     cancel.onclick = close;
     modalBg.onclick = function (ev) { if (ev.target === modalBg) close(); };
-    document.addEventListener('keydown', function esc(ev) {
+    document.addEventListener('keydown', function escAttr(ev) {
       if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
     });
   }
@@ -783,6 +803,9 @@
       (window.requestAnimationFrame || function (fn) { setTimeout(fn, 16); })(function () {
         _boxRescanPending = false;
         scanAndAttachBoxes(page);
+        // Newly-attached bars carry the build-time (often English) suno label —
+        // re-resolve all box-bar labels in the active language.
+        if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize();
       });
     });
     obs.observe(document.body, { childList: true, subtree: true });
@@ -839,6 +862,87 @@
     ensureBoxModal();
     scanAndAttachBoxes(page);
     startBoxObserver(page);
+
+    // §5 No-Hinglish: the footer bar + modals are built ONCE, so a later
+    // changeLang() would leave them in the old language. Re-resolve their
+    // labels from VAI_STRINGS whenever the active language changes (and once
+    // now, in case strings.js finished loading after this bar was built).
+    function relocalize() {
+      try {
+        var risk = (RISK_MAP[page] || 'LOW');
+        var setTxt = function (sel, val) { var el = wrap.querySelector(sel); if (el) el.textContent = val; };
+        // title keeps its 💬 emoji + the Report button as a child — set only the
+        // leading text node so we don't wipe the nested button.
+        var titleEl = wrap.querySelector('.chitti-fb-title');
+        if (titleEl && titleEl.firstChild && titleEl.firstChild.nodeType === 3) {
+          titleEl.firstChild.nodeValue = '💬 ' + _tg('fb.was_helpful', 'Was this helpful?') + ' ';
+        }
+        var rep = wrap.querySelector('.chitti-fb-report'); if (rep) rep.textContent = '📣 ' + _tg('fb.report', 'Report a problem');
+        setTxt('[data-vote="speak"] .lbl', _tg('fb.speaker', 'Speaker'));
+        setTxt('[data-vote="thumbs_up"] .lbl', _tg('fb.helpful', 'Helpful'));
+        setTxt('[data-vote="thumbs_down"] .lbl', _tg('fb.notok', 'Not OK'));
+        var help = wrap.querySelector('.chitti-fb-help'); if (help) help.innerHTML = _tg('fb.help', help.innerHTML);
+        var chips = wrap.querySelectorAll('.chitti-fb-trust .chip');
+        if (chips[0]) chips[0].textContent = '🛡️ ' + _tg('fb.risk.' + risk.toLowerCase(), risk + ' RISK');
+        if (chips[1]) { var co2v = (window.CHITTI_CO2_G != null) ? window.CHITTI_CO2_G : DEFAULT_CO2_G; chips[1].textContent = '🌿 ~' + Number(co2v).toFixed(1) + 'g CO₂ ' + _tg('fb.co2_for_reply', 'for this reply'); }
+        // chips[2] = last audit; chips[3] = helped today
+        var lastAudit = (window.CHITTI_LAST_AUDIT || '2026-05-13');
+        var helpedToday = (window.CHITTI_HELPED_TODAY != null) ? window.CHITTI_HELPED_TODAY : '—';
+        if (chips[2]) chips[2].textContent = '📅 ' + _tg('fb.last_audit', 'Last audit:') + ' ' + lastAudit;
+        if (chips[3]) chips[3].textContent = '🇮🇳 ' + helpedToday + ' ' + _tg('fb.helped_today', 'helped today');
+        // page-level text modal
+        var mb = els.modalBg;
+        if (mb) {
+          var mt = mb.querySelector('#chitti-fb-modal-title'); if (mt) mt.textContent = '📣 ' + _tg('fb.modal.title', 'Tell Chitti what was wrong');
+          var mp = mb.querySelector('p'); if (mp) mp.textContent = _tg('fb.modal.body', mp.textContent);
+          var ml = mb.querySelector('label'); if (ml) ml.textContent = _tg('fb.modal.label', 'What went wrong?');
+          var mta = mb.querySelector('textarea'); if (mta) mta.setAttribute('placeholder', _tg('fb.modal.ph', mta.getAttribute('placeholder') || ''));
+          var mc = mb.querySelector('.chitti-fb-cancel'); if (mc) mc.textContent = _tg('ui.cancel', 'Cancel');
+          var ms = mb.querySelector('.chitti-fb-submit'); if (ms) ms.textContent = _tg('fb.submit', 'Submit');
+        }
+        // Feature Discovery CTA (chitti_features.js) — injected English-only
+        // and reset to English by chitti_lang.js on each langchange. We win
+        // the final paint here. §5 No-Hinglish. The CTA text node keeps its
+        // leading 💡 emoji; we only swap the words after it.
+        document.querySelectorAll('.chitti-features-cta, #chitti-features-bar-btn').forEach(function (btn) {
+          btn.childNodes.forEach(function (n) {
+            if (n.nodeType !== 3) return;
+            var t = (n.nodeValue || '').replace(/\s+/g, ' ').trim();
+            // Snapshot the English baseline once (it has the words we key on);
+            // re-resolve on every call so language flips work both ways.
+            if (!n.__cfBase && /What can Chitti do/.test(t)) n.__cfBase = t;
+            if (!n.__cfBase) return;
+            var longForm = /for you/.test(n.__cfBase);
+            var val = _tg(longForm ? 'cf.cta_long' : 'cf.cta_short', null);
+            if (val) n.nodeValue = '💡 ' + val;
+          });
+        });
+        // "Active" / status badge in the feature list.
+        document.querySelectorAll('.chitti-features-status').forEach(function (el) {
+          var t = (el.textContent || '').trim();
+          if (t === 'Active' || el.__cfActive) { el.__cfActive = true; el.textContent = _tg('cf.active', 'Active'); }
+        });
+        // Per-box bars: the ▶ "Chitti" demo + 🔊 listen label. Bars attached
+        // by the MutationObserver AFTER strings.js's updateAllStrings ran keep
+        // the build-time English label, so re-resolve them here too.
+        var sunoTxt = _tg('ui.suno', 'Listen');
+        document.querySelectorAll('.chitti-fb-bbtn-text[data-vai-i18n="ui.suno"]').forEach(function (sp) { sp.textContent = sunoTxt; });
+        // Box feedback modal (built once, hidden until opened)
+        var bm = document.getElementById('chitti-fb-box-modal-bg');
+        if (bm) {
+          var bp = bm.querySelector('.chitti-fb-box-prompt'); if (bp) bp.textContent = _tg('fb.box.prompt', 'What was wrong with this?');
+          var bl = bm.querySelector('label'); if (bl) bl.textContent = _tg('fb.box.label', 'Type or record:');
+          var bta = bm.querySelector('textarea'); if (bta) bta.setAttribute('placeholder', _tg('fb.box.ph', bta.getAttribute('placeholder') || ''));
+          var bc = bm.querySelector('.chitti-fb-cancel'); if (bc) bc.textContent = _tg('ui.cancel', 'Cancel');
+          var brec = bm.querySelector('.chitti-fb-box-mic'); if (brec) brec.textContent = '🎙️ ' + _tg('fb.box.record', 'Record voice');
+          var bs = bm.querySelector('.chitti-fb-box-submit'); if (bs) bs.textContent = _tg('fb.submit', 'Submit');
+        }
+      } catch (e) {}
+    }
+    window.__chittiFbRelocalize = relocalize;
+    relocalize();
+    setTimeout(relocalize, 600); // after strings.js + chitti_lang.js settle
+    window.addEventListener('chitti:langchange', relocalize);
   }
 
   if (document.readyState === 'loading') {
