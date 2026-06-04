@@ -1,0 +1,105 @@
+/* chitti_fashion_dyn.js — localize the engine's DYNAMIC output (occasion names,
+   harmony, confidence, judge verdicts, swarm chrome, explain templates) into the
+   9 primary Vaani languages. Engine returns language-neutral CODES; this maps them.
+   Falls back to English for any missing token. v20260604 */
+(function () {
+  'use strict';
+  var D = {
+    en: {
+      occ: { casual:'casual', 'smart-casual':'smart-casual', 'business-casual':'business-casual', formal:'formal', festive:'festive', wedding:'wedding', office:'office', interview:'interview', college:'college', religious:'religious', date:'date night', travel:'travel', funeral:'funeral', family:'family function' },
+      harm: { single:'one colour — always safe', 'neutral-anchored':'a neutral lets one colour lead — clean and intentional', monochrome:'one colour family reads cohesive', 'two-tone':'two families with balanced contrast', mixed:'several families — a neutral would calm it', competing:'two brights compete — anchor with a neutral' },
+      agent: { fashion:'👗 Style', color:'🎨 Colour', occasion:'🎉 Occasion', comfort:'😌 Comfort', accessibility:'♿ For everyone', budget:'💸 Budget', confidence:'✨ Confidence' },
+      chrome: { experts:'7 experts say', open:'(open)', trend:'📈 Trend (info only): ', whyq:'🎓 Why, Chitti? (learn)', why:'Why', benefits:'Benefits', tradeoffs:'Trade-offs', alts:'Alternatives', free:'✅ Free (from your wardrobe · ₹0)', cheap:'💸 Budget option', premium:'⭐ Premium', conf:'Confidence', checks_pass:'checks pass' },
+      conf: { occasion:'occasion', color:'colour', weather:'weather', budget:'budget', accessibility:'accessibility' },
+      judge: { cultural:'cultural', weather:'weather', age:'age', accessibility:'accessibility', funeral_bright:'bright/red reads festive — funerals call for white or muted', wedding_white:'all-white at a wedding can read as mourning in many communities — confirm', season_mismatch:'fabric leans the other season — adjust your layers', senior_footwear:'prefer non-slip, easy-fasten footwear for comfort and safety', child_safety:'keep it comfortable and safe for a child', easy_fasten:'prefer magnetic/velcro/front-open for independent dressing' },
+      tmpl: { reads:'This reads {occ} (formality {band}/5). Colour: {harm}.', wear:'You can wear: {items}. This reads {occ} and is good to go.', built:'{n} outfits from clothes you already own — ₹0', made:'I built {n} outfits from your wardrobe', just:'✅ just right for {occ}', over:'⬆️ a bit over-dressed for {occ}', under:'⬇️ a bit too casual for {occ}', overall:'Overall {n}/10' },
+    },
+    hi: {
+      occ: { casual:'रोज़', 'smart-casual':'स्मार्ट-कैज़ुअल', 'business-casual':'बिज़नेस-कैज़ुअल', formal:'फ़ॉर्मल', festive:'त्योहारी', wedding:'शादी', office:'दफ़्तर', interview:'इंटरव्यू', college:'कॉलेज', religious:'धार्मिक', date:'डेट नाइट', travel:'यात्रा', funeral:'शोक', family:'पारिवारिक समारोह' },
+      harm: { single:'एक रंग — हमेशा सुरक्षित', 'neutral-anchored':'एक neutral रंग बाक़ी को निखारता है — साफ़ और सोचा-समझा', monochrome:'एक ही रंग-परिवार सुसंगत लगता है', 'two-tone':'दो रंग-परिवार, संतुलित कंट्रास्ट', mixed:'कई रंग — एक neutral इसे शांत करेगा', competing:'दो चटक रंग टकराते हैं — एक neutral जोड़ें' },
+      agent: { fashion:'👗 स्टाइल', color:'🎨 रंग', occasion:'🎉 मौक़ा', comfort:'😌 आराम', accessibility:'♿ सबके लिए', budget:'💸 बजट', confidence:'✨ आत्मविश्वास' },
+      chrome: { experts:'7 विशेषज्ञों की राय', open:'(खोलें)', trend:'📈 ट्रेंड (सिर्फ़ जानकारी): ', whyq:'🎓 क्यों, Chitti? (समझें)', why:'क्यों', benefits:'फ़ायदे', tradeoffs:'समझौते', alts:'विकल्प', free:'✅ मुफ़्त (आपकी अलमारी से · ₹0)', cheap:'💸 सस्ता विकल्प', premium:'⭐ प्रीमियम', conf:'आत्मविश्वास', checks_pass:'जाँच पास' },
+      conf: { occasion:'मौक़ा', color:'रंग', weather:'मौसम', budget:'बजट', accessibility:'सबके लिए' },
+      judge: { cultural:'सांस्कृतिक', weather:'मौसम', age:'उम्र', accessibility:'सबके लिए', funeral_bright:'चटक/लाल रंग त्योहारी लगता है — शोक में सफ़ेद या हल्के रंग', wedding_white:'शादी में पूरा सफ़ेद कई समुदायों में शोक जैसा लगता है — पुष्टि करें', season_mismatch:'कपड़ा दूसरे मौसम का है — layer ठीक करें', senior_footwear:'आराम और सुरक्षा के लिए non-slip, आसान जूते बेहतर', child_safety:'बच्चे के लिए आरामदायक और सुरक्षित रखें', easy_fasten:'ख़ुद पहनने के लिए magnetic/velcro/front-open बेहतर' },
+      tmpl: { reads:'यह {occ} लगता है (formality {band}/5)। रंग: {harm}।', wear:'आप पहन सकते हैं: {items}। यह {occ} के लिए सही है।', built:'{n} पहनावे आपके अपने कपड़ों से — ₹0', made:'मैंने आपकी अलमारी से {n} पहनावे बनाए', just:'✅ {occ} के लिए सही', over:'⬆️ {occ} के लिए थोड़ा ज़्यादा formal', under:'⬇️ {occ} के लिए थोड़ा casual', overall:'कुल {n}/10' },
+    },
+    ta: {
+      occ: { casual:'தினசரி', 'smart-casual':'ஸ்மார்ட்-கேஷுவல்', 'business-casual':'பிசினஸ்-கேஷுவல்', formal:'முறையான', festive:'பண்டிகை', wedding:'திருமணம்', office:'அலுவலகம்', interview:'நேர்காணல்', college:'கல்லூரி', religious:'மத', date:'டேட் நைட்', travel:'பயணம்', funeral:'இரங்கல்', family:'குடும்ப விழா' },
+      harm: { single:'ஒரே நிறம் — எப்போதும் பாதுகாப்பானது', 'neutral-anchored':'ஒரு நடுநிலை நிறம் மற்றதை மிளிரச் செய்கிறது — சுத்தமானது', monochrome:'ஒரே நிற குடும்பம் ஒத்திசைவாக இருக்கிறது', 'two-tone':'இரு நிற குடும்பங்கள், சமநிலை மாறுபாடு', mixed:'பல நிறங்கள் — ஒரு நடுநிலை நிறம் அமைதிப்படுத்தும்', competing:'இரு பிரகாச நிறங்கள் மோதுகின்றன — ஒரு நடுநிலை சேர்க்கவும்' },
+      agent: { fashion:'👗 ஸ்டைல்', color:'🎨 நிறம்', occasion:'🎉 சந்தர்ப்பம்', comfort:'😌 வசதி', accessibility:'♿ அனைவருக்கும்', budget:'💸 பட்ஜெட்', confidence:'✨ நம்பிக்கை' },
+      chrome: { experts:'7 நிபுணர்களின் கருத்து', open:'(திற)', trend:'📈 டிரெண்ட் (தகவல் மட்டும்): ', whyq:'🎓 ஏன், Chitti? (கற்க)', why:'ஏன்', benefits:'நன்மைகள்', tradeoffs:'சமரசங்கள்', alts:'மாற்றுகள்', free:'✅ இலவசம் (உங்கள் அலமாரியிலிருந்து · ₹0)', cheap:'💸 மலிவான வழி', premium:'⭐ பிரீமியம்', conf:'நம்பிக்கை', checks_pass:'சரிபார்ப்புகள் சரி' },
+      conf: { occasion:'சந்தர்ப்பம்', color:'நிறம்', weather:'வானிலை', budget:'பட்ஜெட்', accessibility:'அனைவருக்கும்' },
+      judge: { cultural:'கலாச்சாரம்', weather:'வானிலை', age:'வயது', accessibility:'அணுகல்', funeral_bright:'பிரகாச/சிவப்பு நிறம் பண்டிகை போல் தெரிகிறது — இரங்கலுக்கு வெள்ளை அல்லது மென்நிறம்', wedding_white:'திருமணத்தில் முழு வெள்ளை சில சமூகங்களில் இரங்கல் போல் தெரியலாம் — உறுதிசெய்யவும்', season_mismatch:'துணி வேறு பருவத்திற்கானது — அடுக்குகளை சரிசெய்யவும்', senior_footwear:'வசதி, பாதுகாப்பிற்கு வழுக்காத, எளிதாக அணியும் காலணி நல்லது', child_safety:'குழந்தைக்கு வசதியாகவும் பாதுகாப்பாகவும் வைக்கவும்', easy_fasten:'தானே அணிய magnetic/velcro/front-open நல்லது' },
+      tmpl: { reads:'இது {occ} போல் தெரிகிறது (formality {band}/5). நிறம்: {harm}.', wear:'நீங்கள் அணியலாம்: {items}. இது {occ}-க்கு சரியானது.', built:'{n} உடைகள் உங்கள் சொந்த ஆடைகளிலிருந்து — ₹0', made:'உங்கள் அலமாரியிலிருந்து {n} உடைகளை உருவாக்கினேன்', just:'✅ {occ}-க்கு சரியானது', over:'⬆️ {occ}-க்கு கொஞ்சம் அதிக முறையானது', under:'⬇️ {occ}-க்கு கொஞ்சம் கேஷுவல்', overall:'மொத்தம் {n}/10' },
+    },
+    bn: {
+      occ: { casual:'প্রতিদিন', 'smart-casual':'স্মার্ট-ক্যাজুয়াল', 'business-casual':'বিজনেস-ক্যাজুয়াল', formal:'ফর্মাল', festive:'উৎসব', wedding:'বিয়ে', office:'অফিস', interview:'সাক্ষাৎকার', college:'কলেজ', religious:'ধর্মীয়', date:'ডেট নাইট', travel:'ভ্রমণ', funeral:'শোক', family:'পারিবারিক অনুষ্ঠান' },
+      harm: { single:'একটি রঙ — সবসময় নিরাপদ', 'neutral-anchored':'একটি নিরপেক্ষ রঙ বাকিগুলোকে ফুটিয়ে তোলে — পরিষ্কার', monochrome:'একই রঙ-পরিবার সুসংগত লাগে', 'two-tone':'দুটি রঙ-পরিবার, ভারসাম্যপূর্ণ বৈসাদৃশ্য', mixed:'অনেক রঙ — একটি নিরপেক্ষ রঙ শান্ত করবে', competing:'দুটি উজ্জ্বল রঙ লড়ছে — একটি নিরপেক্ষ যোগ করুন' },
+      agent: { fashion:'👗 স্টাইল', color:'🎨 রঙ', occasion:'🎉 উপলক্ষ', comfort:'😌 আরাম', accessibility:'♿ সবার জন্য', budget:'💸 বাজেট', confidence:'✨ আত্মবিশ্বাস' },
+      chrome: { experts:'৭ বিশেষজ্ঞের মত', open:'(খুলুন)', trend:'📈 ট্রেন্ড (শুধু তথ্য): ', whyq:'🎓 কেন, Chitti? (শিখুন)', why:'কেন', benefits:'সুবিধা', tradeoffs:'আপস', alts:'বিকল্প', free:'✅ বিনামূল্যে (আপনার আলমারি থেকে · ₹0)', cheap:'💸 সস্তা উপায়', premium:'⭐ প্রিমিয়াম', conf:'আত্মবিশ্বাস', checks_pass:'যাচাই পাস' },
+      conf: { occasion:'উপলক্ষ', color:'রঙ', weather:'আবহাওয়া', budget:'বাজেট', accessibility:'সবার জন্য' },
+      judge: { cultural:'সাংস্কৃতিক', weather:'আবহাওয়া', age:'বয়স', accessibility:'প্রবেশযোগ্যতা', funeral_bright:'উজ্জ্বল/লাল উৎসবের মতো — শোকে সাদা বা নরম রঙ', wedding_white:'বিয়েতে পুরো সাদা অনেক সম্প্রদায়ে শোকের মতো লাগতে পারে — নিশ্চিত করুন', season_mismatch:'কাপড় অন্য ঋতুর — স্তর ঠিক করুন', senior_footwear:'আরাম ও নিরাপত্তার জন্য পিছল-রোধী, সহজ জুতো ভালো', child_safety:'শিশুর জন্য আরামদায়ক ও নিরাপদ রাখুন', easy_fasten:'নিজে পরার জন্য magnetic/velcro/front-open ভালো' },
+      tmpl: { reads:'এটি {occ} লাগছে (formality {band}/5)। রঙ: {harm}।', wear:'আপনি পরতে পারেন: {items}। এটি {occ}-এর জন্য ঠিক আছে।', built:'{n} পোশাক আপনার নিজের জামাকাপড় থেকে — ₹0', made:'আপনার আলমারি থেকে {n} পোশাক তৈরি করেছি', just:'✅ {occ}-এর জন্য ঠিক', over:'⬆️ {occ}-এর জন্য একটু বেশি ফর্মাল', under:'⬇️ {occ}-এর জন্য একটু ক্যাজুয়াল', overall:'মোট {n}/10' },
+    },
+    te: {
+      occ: { casual:'ప్రతిరోజూ', 'smart-casual':'స్మార్ట్-క్యాజువల్', 'business-casual':'బిజినెస్-క్యాజువల్', formal:'ఫార్మల్', festive:'పండుగ', wedding:'వివాహం', office:'కార్యాలయం', interview:'ఇంటర్వ్యూ', college:'కళాశాల', religious:'మత', date:'డేట్ నైట్', travel:'ప్రయాణం', funeral:'సంతాపం', family:'కుటుంబ వేడుక' },
+      harm: { single:'ఒకే రంగు — ఎప్పుడూ సురక్షితం', 'neutral-anchored':'ఒక తటస్థ రంగు మిగతావాటిని మెరిపిస్తుంది — శుభ్రం', monochrome:'ఒకే రంగు కుటుంబం పొందికగా ఉంటుంది', 'two-tone':'రెండు రంగు కుటుంబాలు, సమతుల్య వ్యత్యాసం', mixed:'చాలా రంగులు — ఒక తటస్థ రంగు శాంతపరుస్తుంది', competing:'రెండు ప్రకాశవంతమైన రంగులు పోటీపడతాయి — ఒక తటస్థ రంగు జోడించండి' },
+      agent: { fashion:'👗 స్టైల్', color:'🎨 రంగు', occasion:'🎉 సందర్భం', comfort:'😌 సౌకర్యం', accessibility:'♿ అందరికీ', budget:'💸 బడ్జెట్', confidence:'✨ నమ్మకం' },
+      chrome: { experts:'7 నిపుణుల అభిప్రాయం', open:'(తెరువు)', trend:'📈 ట్రెండ్ (సమాచారం మాత్రమే): ', whyq:'🎓 ఎందుకు, Chitti? (నేర్చుకో)', why:'ఎందుకు', benefits:'ప్రయోజనాలు', tradeoffs:'రాజీలు', alts:'ప్రత్యామ్నాయాలు', free:'✅ ఉచితం (మీ అలమారా నుండి · ₹0)', cheap:'💸 చౌక మార్గం', premium:'⭐ ప్రీమియం', conf:'నమ్మకం', checks_pass:'తనిఖీలు సరి' },
+      conf: { occasion:'సందర్భం', color:'రంగు', weather:'వాతావరణం', budget:'బడ్జెట్', accessibility:'అందరికీ' },
+      judge: { cultural:'సాంస్కృతిక', weather:'వాతావరణం', age:'వయస్సు', accessibility:'ప్రాప్యత', funeral_bright:'ప్రకాశవంతమైన/ఎరుపు పండుగలా కనిపిస్తుంది — సంతాపానికి తెలుపు లేదా మృదు రంగు', wedding_white:'వివాహంలో పూర్తి తెలుపు చాలా వర్గాల్లో సంతాపంలా కనిపించవచ్చు — నిర్ధారించండి', season_mismatch:'వస్త్రం వేరే కాలానికి సంబంధించినది — పొరలను సర్దుబాటు చేయండి', senior_footwear:'సౌకర్యం, భద్రత కోసం జారని, సులభంగా వేసుకునే పాదరక్షలు మంచివి', child_safety:'పిల్లలకు సౌకర్యవంతంగా, సురక్షితంగా ఉంచండి', easy_fasten:'స్వయంగా వేసుకోవడానికి magnetic/velcro/front-open మంచిది' },
+      tmpl: { reads:'ఇది {occ} లా కనిపిస్తుంది (formality {band}/5). రంగు: {harm}.', wear:'మీరు ధరించవచ్చు: {items}. ఇది {occ}కు సరైనది.', built:'{n} దుస్తులు మీ సొంత దుస్తుల నుండి — ₹0', made:'మీ అలమారా నుండి {n} దుస్తులను తయారు చేశాను', just:'✅ {occ}కు సరైనది', over:'⬆️ {occ}కు కొంచెం ఎక్కువ ఫార్మల్', under:'⬇️ {occ}కు కొంచెం క్యాజువల్', overall:'మొత్తం {n}/10' },
+    },
+    mr: {
+      occ: { casual:'रोज', 'smart-casual':'स्मार्ट-कॅज्युअल', 'business-casual':'बिझनेस-कॅज्युअल', formal:'फॉर्मल', festive:'सणाचा', wedding:'लग्न', office:'कार्यालय', interview:'मुलाखत', college:'महाविद्यालय', religious:'धार्मिक', date:'डेट नाइट', travel:'प्रवास', funeral:'शोक', family:'कौटुंबिक समारंभ' },
+      harm: { single:'एक रंग — नेहमी सुरक्षित', 'neutral-anchored':'एक तटस्थ रंग बाकीच्यांना उठाव देतो — स्वच्छ', monochrome:'एकच रंग-कुटुंब सुसंगत दिसते', 'two-tone':'दोन रंग-कुटुंबे, संतुलित विरोधाभास', mixed:'अनेक रंग — एक तटस्थ रंग शांत करेल', competing:'दोन भडक रंग भिडतात — एक तटस्थ रंग जोडा' },
+      agent: { fashion:'👗 स्टाईल', color:'🎨 रंग', occasion:'🎉 प्रसंग', comfort:'😌 आराम', accessibility:'♿ सर्वांसाठी', budget:'💸 बजेट', confidence:'✨ आत्मविश्वास' },
+      chrome: { experts:'7 तज्ज्ञांचे मत', open:'(उघडा)', trend:'📈 ट्रेंड (फक्त माहिती): ', whyq:'🎓 का, Chitti? (शिका)', why:'का', benefits:'फायदे', tradeoffs:'तडजोडी', alts:'पर्याय', free:'✅ मोफत (तुमच्या अलमारीतून · ₹0)', cheap:'💸 स्वस्त मार्ग', premium:'⭐ प्रीमियम', conf:'आत्मविश्वास', checks_pass:'तपासण्या पास' },
+      conf: { occasion:'प्रसंग', color:'रंग', weather:'हवामान', budget:'बजेट', accessibility:'सर्वांसाठी' },
+      judge: { cultural:'सांस्कृतिक', weather:'हवामान', age:'वय', accessibility:'सुलभता', funeral_bright:'भडक/लाल रंग सणासारखा दिसतो — शोकात पांढरा किंवा मऊ रंग', wedding_white:'लग्नात पूर्ण पांढरा अनेक समाजांत शोकासारखा वाटू शकतो — खात्री करा', season_mismatch:'कापड दुसऱ्या हंगामाचे आहे — थर समायोजित करा', senior_footwear:'आराम व सुरक्षेसाठी न घसरणारे, सोपे पादत्राण चांगले', child_safety:'मुलासाठी आरामदायी व सुरक्षित ठेवा', easy_fasten:'स्वतः घालण्यासाठी magnetic/velcro/front-open चांगले' },
+      tmpl: { reads:'हे {occ} वाटते (formality {band}/5). रंग: {harm}.', wear:'तुम्ही घालू शकता: {items}. हे {occ}साठी योग्य आहे.', built:'{n} पोशाक तुमच्याच कपड्यांमधून — ₹0', made:'तुमच्या अलमारीतून {n} पोशाक तयार केले', just:'✅ {occ}साठी योग्य', over:'⬆️ {occ}साठी थोडे जास्त फॉर्मल', under:'⬇️ {occ}साठी थोडे कॅज्युअल', overall:'एकूण {n}/10' },
+    },
+    gu: {
+      occ: { casual:'રોજ', 'smart-casual':'સ્માર્ટ-કેઝ્યુઅલ', 'business-casual':'બિઝનેસ-કેઝ્યુઅલ', formal:'ફોર્મલ', festive:'તહેવારી', wedding:'લગ્ન', office:'ઓફિસ', interview:'ઇન્ટરવ્યૂ', college:'કૉલેજ', religious:'ધાર્મિક', date:'ડેટ નાઇટ', travel:'મુસાફરી', funeral:'શોક', family:'કૌટુંબિક પ્રસંગ' },
+      harm: { single:'એક રંગ — હંમેશા સલામત', 'neutral-anchored':'એક તટસ્થ રંગ બાકીનાને નિખારે છે — સ્વચ્છ', monochrome:'એક જ રંગ-કુટુંબ સુસંગત લાગે', 'two-tone':'બે રંગ-કુટુંબ, સંતુલિત વિરોધાભાસ', mixed:'ઘણા રંગ — એક તટસ્થ રંગ શાંત કરશે', competing:'બે ભડક રંગ ટકરાય — એક તટસ્થ ઉમેરો' },
+      agent: { fashion:'👗 સ્ટાઇલ', color:'🎨 રંગ', occasion:'🎉 પ્રસંગ', comfort:'😌 આરામ', accessibility:'♿ બધા માટે', budget:'💸 બજેટ', confidence:'✨ આત્મવિશ્વાસ' },
+      chrome: { experts:'7 નિષ્ણાતોનો મત', open:'(ખોલો)', trend:'📈 ટ્રેન્ડ (ફક્ત માહિતી): ', whyq:'🎓 શા માટે, Chitti? (શીખો)', why:'શા માટે', benefits:'ફાયદા', tradeoffs:'સમાધાન', alts:'વિકલ્પ', free:'✅ મફત (તમારી અલમારીમાંથી · ₹0)', cheap:'💸 સસ્તો રસ્તો', premium:'⭐ પ્રીમિયમ', conf:'આત્મવિશ્વાસ', checks_pass:'તપાસ પાસ' },
+      conf: { occasion:'પ્રસંગ', color:'રંગ', weather:'હવામાન', budget:'બજેટ', accessibility:'બધા માટે' },
+      judge: { cultural:'સાંસ્કૃતિક', weather:'હવામાન', age:'ઉંમર', accessibility:'સુલભતા', funeral_bright:'ભડક/લાલ રંગ તહેવાર જેવો લાગે — શોકમાં સફેદ કે હળવો રંગ', wedding_white:'લગ્નમાં આખો સફેદ ઘણા સમુદાયોમાં શોક જેવો લાગે — ખાતરી કરો', season_mismatch:'કાપડ બીજી ઋતુનું છે — સ્તર સમાયોજિત કરો', senior_footwear:'આરામ અને સલામતી માટે ન લપસે તેવા, સરળ પગરખાં સારા', child_safety:'બાળક માટે આરામદાયક અને સલામત રાખો', easy_fasten:'જાતે પહેરવા magnetic/velcro/front-open સારું' },
+      tmpl: { reads:'આ {occ} લાગે છે (formality {band}/5). રંગ: {harm}.', wear:'તમે પહેરી શકો: {items}. આ {occ} માટે યોગ્ય છે.', built:'{n} પોશાક તમારા પોતાના કપડાંમાંથી — ₹0', made:'તમારી અલમારીમાંથી {n} પોશાક બનાવ્યા', just:'✅ {occ} માટે યોગ્ય', over:'⬆️ {occ} માટે થોડું વધારે ફોર્મલ', under:'⬇️ {occ} માટે થોડું કેઝ્યુઅલ', overall:'કુલ {n}/10' },
+    },
+    kn: {
+      occ: { casual:'ಪ್ರತಿದಿನ', 'smart-casual':'ಸ್ಮಾರ್ಟ್-ಕ್ಯಾಶುಯಲ್', 'business-casual':'ಬಿಸಿನೆಸ್-ಕ್ಯಾಶುಯಲ್', formal:'ಫಾರ್ಮಲ್', festive:'ಹಬ್ಬದ', wedding:'ಮದುವೆ', office:'ಕಚೇರಿ', interview:'ಸಂದರ್ಶನ', college:'ಕಾಲೇಜು', religious:'ಧಾರ್ಮಿಕ', date:'ಡೇಟ್ ನೈಟ್', travel:'ಪ್ರಯಾಣ', funeral:'ಶೋಕ', family:'ಕೌಟುಂಬಿಕ ಸಮಾರಂಭ' },
+      harm: { single:'ಒಂದೇ ಬಣ್ಣ — ಯಾವಾಗಲೂ ಸುರಕ್ಷಿತ', 'neutral-anchored':'ಒಂದು ತಟಸ್ಥ ಬಣ್ಣ ಉಳಿದವನ್ನು ಹೊಳೆಯಿಸುತ್ತದೆ — ಸ್ವಚ್ಛ', monochrome:'ಒಂದೇ ಬಣ್ಣ ಕುಟುಂಬ ಹೊಂದಿಕೆಯಾಗಿದೆ', 'two-tone':'ಎರಡು ಬಣ್ಣ ಕುಟುಂಬಗಳು, ಸಮತೋಲಿತ ವ್ಯತ್ಯಾಸ', mixed:'ಹಲವು ಬಣ್ಣಗಳು — ಒಂದು ತಟಸ್ಥ ಬಣ್ಣ ಶಾಂತಗೊಳಿಸುತ್ತದೆ', competing:'ಎರಡು ಪ್ರಕಾಶಮಾನ ಬಣ್ಣಗಳು ಸ್ಪರ್ಧಿಸುತ್ತವೆ — ಒಂದು ತಟಸ್ಥ ಸೇರಿಸಿ' },
+      agent: { fashion:'👗 ಸ್ಟೈಲ್', color:'🎨 ಬಣ್ಣ', occasion:'🎉 ಸಂದರ್ಭ', comfort:'😌 ಸೌಕರ್ಯ', accessibility:'♿ ಎಲ್ಲರಿಗೂ', budget:'💸 ಬಜೆಟ್', confidence:'✨ ಆತ್ಮವಿಶ್ವಾಸ' },
+      chrome: { experts:'7 ತಜ್ಞರ ಅಭಿಪ್ರಾಯ', open:'(ತೆರೆ)', trend:'📈 ಟ್ರೆಂಡ್ (ಮಾಹಿತಿ ಮಾತ್ರ): ', whyq:'🎓 ಏಕೆ, Chitti? (ಕಲಿ)', why:'ಏಕೆ', benefits:'ಪ್ರಯೋಜನ', tradeoffs:'ರಾಜಿ', alts:'ಪರ್ಯಾಯ', free:'✅ ಉಚಿತ (ನಿಮ್ಮ ಅಲಮಾರಿಯಿಂದ · ₹0)', cheap:'💸 ಅಗ್ಗದ ಮಾರ್ಗ', premium:'⭐ ಪ್ರೀಮಿಯಂ', conf:'ಆತ್ಮವಿಶ್ವಾಸ', checks_pass:'ಪರಿಶೀಲನೆ ಪಾಸ್' },
+      conf: { occasion:'ಸಂದರ್ಭ', color:'ಬಣ್ಣ', weather:'ಹವಾಮಾನ', budget:'ಬಜೆಟ್', accessibility:'ಎಲ್ಲರಿಗೂ' },
+      judge: { cultural:'ಸಾಂಸ್ಕೃತಿಕ', weather:'ಹವಾಮಾನ', age:'ವಯಸ್ಸು', accessibility:'ಪ್ರವೇಶ', funeral_bright:'ಪ್ರಕಾಶಮಾನ/ಕೆಂಪು ಹಬ್ಬದಂತೆ ಕಾಣುತ್ತದೆ — ಶೋಕಕ್ಕೆ ಬಿಳಿ ಅಥವಾ ಮೃದು ಬಣ್ಣ', wedding_white:'ಮದುವೆಯಲ್ಲಿ ಪೂರ್ಣ ಬಿಳಿ ಹಲವು ಸಮುದಾಯಗಳಲ್ಲಿ ಶೋಕದಂತೆ ಕಾಣಬಹುದು — ಖಚಿತಪಡಿಸಿ', season_mismatch:'ಬಟ್ಟೆ ಬೇರೆ ಋತುವಿನದು — ಪದರಗಳನ್ನು ಸರಿಹೊಂದಿಸಿ', senior_footwear:'ಸೌಕರ್ಯ, ಸುರಕ್ಷತೆಗೆ ಜಾರದ, ಸುಲಭ ಪಾದರಕ್ಷೆ ಒಳ್ಳೆಯದು', child_safety:'ಮಗುವಿಗೆ ಆರಾಮ ಮತ್ತು ಸುರಕ್ಷಿತವಾಗಿರಿಸಿ', easy_fasten:'ಸ್ವತಃ ಧರಿಸಲು magnetic/velcro/front-open ಒಳ್ಳೆಯದು' },
+      tmpl: { reads:'ಇದು {occ} ಎಂದು ಕಾಣುತ್ತದೆ (formality {band}/5). ಬಣ್ಣ: {harm}.', wear:'ನೀವು ಧರಿಸಬಹುದು: {items}. ಇದು {occ}ಗೆ ಸರಿಯಾಗಿದೆ.', built:'{n} ಉಡುಗೆಗಳು ನಿಮ್ಮ ಸ್ವಂತ ಬಟ್ಟೆಗಳಿಂದ — ₹0', made:'ನಿಮ್ಮ ಅಲಮಾರಿಯಿಂದ {n} ಉಡುಗೆಗಳನ್ನು ತಯಾರಿಸಿದೆ', just:'✅ {occ}ಗೆ ಸರಿ', over:'⬆️ {occ}ಗೆ ಸ್ವಲ್ಪ ಹೆಚ್ಚು ಫಾರ್ಮಲ್', under:'⬇️ {occ}ಗೆ ಸ್ವಲ್ಪ ಕ್ಯಾಶುಯಲ್', overall:'ಒಟ್ಟು {n}/10' },
+    },
+    ml: {
+      occ: { casual:'ദിവസവും', 'smart-casual':'സ്മാർട്ട്-കാഷ്വൽ', 'business-casual':'ബിസിനസ്-കാഷ്വൽ', formal:'ഫോർമൽ', festive:'ഉത്സവ', wedding:'വിവാഹം', office:'ഓഫീസ്', interview:'ഇന്റർവ്യൂ', college:'കോളേജ്', religious:'മത', date:'ഡേറ്റ് നൈറ്റ്', travel:'യാത്ര', funeral:'ദുഃഖാചരണം', family:'കുടുംബ ചടങ്ങ്' },
+      harm: { single:'ഒരേ നിറം — എപ്പോഴും സുരക്ഷിതം', 'neutral-anchored':'ഒരു നിഷ്പക്ഷ നിറം ബാക്കിയുള്ളവയെ തിളക്കുന്നു — വൃത്തിയുള്ളത്', monochrome:'ഒരേ നിറ കുടുംബം യോജിച്ചതായി തോന്നുന്നു', 'two-tone':'രണ്ട് നിറ കുടുംബങ്ങൾ, സന്തുലിത വൈരുദ്ധ്യം', mixed:'പല നിറങ്ങൾ — ഒരു നിഷ്പക്ഷ നിറം ശാന്തമാക്കും', competing:'രണ്ട് തിളക്കമുള്ള നിറങ്ങൾ മത്സരിക്കുന്നു — ഒരു നിഷ്പക്ഷ നിറം ചേർക്കുക' },
+      agent: { fashion:'👗 സ്റ്റൈൽ', color:'🎨 നിറം', occasion:'🎉 അവസരം', comfort:'😌 സൗകര്യം', accessibility:'♿ എല്ലാവർക്കും', budget:'💸 ബജറ്റ്', confidence:'✨ ആത്മവിശ്വാസം' },
+      chrome: { experts:'7 വിദഗ്ധരുടെ അഭിപ്രായം', open:'(തുറക്കൂ)', trend:'📈 ട്രെൻഡ് (വിവരം മാത്രം): ', whyq:'🎓 എന്തുകൊണ്ട്, Chitti? (പഠിക്കൂ)', why:'എന്തുകൊണ്ട്', benefits:'നേട്ടങ്ങൾ', tradeoffs:'വിട്ടുവീഴ്ചകൾ', alts:'ബദലുകൾ', free:'✅ സൗജന്യം (നിങ്ങളുടെ അലമാരയിൽ നിന്ന് · ₹0)', cheap:'💸 വിലകുറഞ്ഞ വഴി', premium:'⭐ പ്രീമിയം', conf:'ആത്മവിശ്വാസം', checks_pass:'പരിശോധനകൾ പാസ്' },
+      conf: { occasion:'അവസരം', color:'നിറം', weather:'കാലാവസ്ഥ', budget:'ബജറ്റ്', accessibility:'എല്ലാവർക്കും' },
+      judge: { cultural:'സാംസ്കാരിക', weather:'കാലാവസ്ഥ', age:'പ്രായം', accessibility:'പ്രവേശനക്ഷമത', funeral_bright:'തിളക്കമുള്ള/ചുവപ്പ് ഉത്സവം പോലെ തോന്നുന്നു — ദുഃഖത്തിന് വെള്ള അല്ലെങ്കിൽ മൃദു നിറം', wedding_white:'വിവാഹത്തിൽ പൂർണ വെള്ള പല സമൂഹങ്ങളിലും ദുഃഖം പോലെ തോന്നാം — സ്ഥിരീകരിക്കുക', season_mismatch:'വസ്ത്രം മറ്റൊരു ഋതുവിന്റേതാണ് — പാളികൾ ക്രമീകരിക്കുക', senior_footwear:'സൗകര്യത്തിനും സുരക്ഷയ്ക്കും വഴുതാത്ത, എളുപ്പം ധരിക്കാവുന്ന പാദരക്ഷ നല്ലത്', child_safety:'കുട്ടിക്ക് സൗകര്യപ്രദവും സുരക്ഷിതവുമായി സൂക്ഷിക്കുക', easy_fasten:'സ്വയം ധരിക്കാൻ magnetic/velcro/front-open നല്ലത്' },
+      tmpl: { reads:'ഇത് {occ} പോലെ തോന്നുന്നു (formality {band}/5). നിറം: {harm}.', wear:'നിങ്ങൾക്ക് ധരിക്കാം: {items}. ഇത് {occ}-ന് അനുയോജ്യമാണ്.', built:'{n} വസ്ത്രങ്ങൾ നിങ്ങളുടെ സ്വന്തം വസ്ത്രങ്ങളിൽ നിന്ന് — ₹0', made:'നിങ്ങളുടെ അലമാരയിൽ നിന്ന് {n} വസ്ത്രങ്ങൾ ഉണ്ടാക്കി', just:'✅ {occ}-ന് ശരി', over:'⬆️ {occ}-ന് അൽപം കൂടുതൽ ഫോർമൽ', under:'⬇️ {occ}-ന് അൽപം കാഷ്വൽ', overall:'ആകെ {n}/10' },
+    },
+  };
+  function lang() { try { return localStorage.getItem('chitti_vaani_lang') || 'hi'; } catch (e) { return 'hi'; } }
+  function bag(L) { return D[L] || D.en; }
+  function t(group, key, L) { L = L || lang(); var g = bag(L)[group] || {}; return g[key] || (D.en[group] || {})[key] || key; }
+  function tmpl(key, vars, L) { L = L || lang(); var s = (bag(L).tmpl || {})[key] || (D.en.tmpl || {})[key] || ''; for (var k in (vars || {})) s = s.split('{' + k + '}').join(vars[k]); return s; }
+  window.FashionDyn = {
+    occ: function (code, L) { return t('occ', code, L); },
+    harm: function (code, L) { return t('harm', code, L); },
+    agent: function (code, L) { return t('agent', code, L); },
+    chrome: function (code, L) { return t('chrome', code, L); },
+    conf: function (code, L) { return t('conf', code, L); },
+    judgeAxis: function (code, L) { return t('judge', code, L); },
+    judgeMsg: function (code, L) { return t('judge', code, L); },
+    tmpl: tmpl,
+    lang: lang,
+  };
+})();

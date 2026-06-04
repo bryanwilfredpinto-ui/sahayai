@@ -127,7 +127,7 @@
     var total = 0, got = 0, reasons = [];
     for (var k in weights) { if (k in checks) { total += weights[k]; if (checks[k]) { got += weights[k]; reasons.push('✓ ' + k + ' match'); } else { reasons.push('✗ ' + k); } } }
     var pct = total ? Math.round((got / total) * 100) : 0;
-    return { confidence: pct, reasons: reasons };
+    return { confidence: pct, reasons: reasons, checks: checks };
   }
 
   // ---------- Layer 2: AI Judge (deterministic re-review) ----------
@@ -135,16 +135,16 @@
     ctx = ctx || {}; var flags = []; var hay = (items || []).map(function (it) { return ((it.colour || '') + ' ' + (it.category || '') + ' ' + (it.desc || it.name || '')).toLowerCase(); }).join(' ');
     var occ = (ctx.occasion || classifyOccasion(items).occasion);
     // cultural
-    if (occ === 'funeral' && /(red|लाल|bright|maroon|मरून|gold)/.test(hay)) flags.push({ axis: 'cultural', msg: 'bright/red reads festive — funerals call for white/muted', sev: 'major' });
-    if (occ === 'wedding' && /\bwhite\b|सफ़ेद|सफेद/.test(hay) && (ctx.culture === 'hindu' || !ctx.culture)) flags.push({ axis: 'cultural', msg: 'all-white at a wedding can read as mourning in many Indian communities — confirm', sev: 'minor' });
+    if (occ === 'funeral' && /(red|लाल|bright|maroon|मरून|gold)/.test(hay)) flags.push({ axis: 'cultural', code: 'funeral_bright', msg: 'bright/red reads festive — funerals call for white/muted', sev: 'major' });
+    if (occ === 'wedding' && /\bwhite\b|सफ़ेद|सफेद/.test(hay) && (ctx.culture === 'hindu' || !ctx.culture)) flags.push({ axis: 'cultural', code: 'wedding_white', msg: 'all-white at a wedding can read as mourning in many Indian communities — confirm', sev: 'minor' });
     // weather
     var seas = seasonalSuitability(items, ctx.season);
-    if (seas.score < 1) flags.push({ axis: 'weather', msg: seas.why, sev: 'minor' });
+    if (seas.score < 1) flags.push({ axis: 'weather', code: 'season_mismatch', msg: seas.why, sev: 'minor' });
     // age
-    if (ctx.age_band === 'senior' && /(heel|stiff|tight)/.test(hay)) flags.push({ axis: 'age', msg: 'prefer non-slip, easy-fasten footwear for comfort + safety', sev: 'minor' });
-    if (ctx.age_band === 'child' && /(heel|sharp|choking)/.test(hay)) flags.push({ axis: 'age', msg: 'keep it comfortable + safe for a child', sev: 'major' });
+    if (ctx.age_band === 'senior' && /(heel|stiff|tight)/.test(hay)) flags.push({ axis: 'age', code: 'senior_footwear', msg: 'prefer non-slip, easy-fasten footwear for comfort + safety', sev: 'minor' });
+    if (ctx.age_band === 'child' && /(heel|sharp|choking)/.test(hay)) flags.push({ axis: 'age', code: 'child_safety', msg: 'keep it comfortable + safe for a child', sev: 'major' });
     // accessibility
-    if (ctx.profile && (ctx.profile.limited_mobility || ctx.profile.elderly) && /(button-heavy|zip-back|tight)/.test(hay)) flags.push({ axis: 'accessibility', msg: 'favour magnetic/velcro/front-open for independent dressing', sev: 'minor' });
+    if (ctx.profile && (ctx.profile.limited_mobility || ctx.profile.elderly) && /(button-heavy|zip-back|tight)/.test(hay)) flags.push({ axis: 'accessibility', code: 'easy_fasten', msg: 'favour magnetic/velcro/front-open for independent dressing', sev: 'minor' });
     var blockers = flags.filter(function (f) { return f.sev === 'major'; });
     return { pass: blockers.length === 0, flags: flags, held: blockers.length > 0 };
   }
@@ -206,7 +206,8 @@
       var h = colorHarmony(o.items);
       var seas = seasonalSuitability(o.items, ctx.season);
       var conf = confidence({ occasion: o.occFit >= 0.7, color: h.score >= 0.7, weather: seas.score >= 1, budget: true, accessibility: j.pass });
-      return { items: o.items, occasion: o.occasion, confidence: conf.confidence, reasons: conf.reasons, judge: j, explain: explain(o.items, ctx), harmony: h.type };
+      var band = classifyOccasion(o.items).band;
+      return { items: o.items, occasion: o.occasion, band: band, confidence: conf.confidence, reasons: conf.reasons, checks: conf.checks, judge: j, explain: explain(o.items, ctx), harmony: h.type, season: seas };
     });
   }
 

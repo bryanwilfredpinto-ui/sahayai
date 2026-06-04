@@ -428,7 +428,9 @@ body{font-size:17px}
 <canvas id="fa-cam-canvas"></canvas>
 
 <!-- Deterministic fashion intelligence engine (works with ZERO LLM dependency) -->
-<script src="chitti_fashion_engine.js?v=20260603"></script>
+<script src="chitti_fashion_engine.js?v=20260604"></script>
+<!-- 9-language localization of the engine's dynamic output (occasion/harmony/judge/explain) -->
+<script src="chitti_fashion_dyn.js?v=20260604"></script>
 <!-- Substrate: a11y (auto-injects Disability Profile, ISL, language, read-page), feedback widget, feature discovery -->
 <script src="chitti_a11y.js?v=20260603"></script>
 <script src="feedback-widget.js" data-page="chitti_fashion"></script>
@@ -679,7 +681,12 @@ const FA_L = {
   en: { experts:'7 experts say', open:'(open)', a_fashion:'👗 Style', a_color:'🎨 Colour', a_occasion:'🎉 Occasion', a_comfort:'😌 Comfort', a_access:'♿ For everyone', a_budget:'💸 Budget', a_conf:'✨ Confidence', trend:'📈 Trend (info only — does not change the verdict): ', why_q:'🎓 Why, Chitti? (learn)', why:'Why', benefits:'Benefits', tradeoffs:'Trade-offs', alts:'Alternatives', free:'✅ Free (from your wardrobe · ₹0)', cheap:'💸 Budget option', premium:'⭐ Premium' },
   hi: { experts:'7 experts की राय', open:'(खोलें)', a_fashion:'👗 Style', a_color:'🎨 रंग', a_occasion:'🎉 मौक़ा', a_comfort:'😌 आराम', a_access:'♿ सबके लिए', a_budget:'💸 बजट', a_conf:'✨ आत्मविश्वास', trend:'📈 Trend (सिर्फ़ जानकारी, राय नहीं बदलती): ', why_q:'🎓 Chitti क्यों? (समझिए)', why:'क्यों', benefits:'फ़ायदे', tradeoffs:'समझौते', alts:'और विकल्प', free:'✅ मुफ़्त (आपकी अलमारी से · ₹0)', cheap:'💸 सस्ता विकल्प', premium:'⭐ Premium' },
 };
-function L(k){ const b = FA_L[CURRENT_LANG === 'en' ? 'en' : 'hi']; return (b && b[k]) || FA_L.en[k] || k; }
+var L_MAP = { a_fashion:['agent','fashion'], a_color:['agent','color'], a_occasion:['agent','occasion'], a_comfort:['agent','comfort'], a_access:['agent','accessibility'], a_budget:['agent','budget'], a_conf:['agent','confidence'], experts:['chrome','experts'], open:['chrome','open'], trend:['chrome','trend'], why_q:['chrome','whyq'], why:['chrome','why'], benefits:['chrome','benefits'], tradeoffs:['chrome','tradeoffs'], alts:['chrome','alts'], free:['chrome','free'], cheap:['chrome','cheap'], premium:['chrome','premium'] };
+function L(k){
+  var FD = window.FashionDyn;
+  if (FD && L_MAP[k]) { var g = L_MAP[k]; var v = (g[0]==='agent') ? FD.agent(g[1]) : FD.chrome(g[1]); if (v) return v; }
+  const b = FA_L[CURRENT_LANG === 'en' ? 'en' : 'hi']; return (b && b[k]) || FA_L.en[k] || k;
+}
 function faAgentRow(name, label, obj){
   if (!obj) return '';
   return '<div class="row"><span class="ag">' + label + '</span><span class="sc">' + esc(obj.score) + '/10</span><span class="wh">' + esc(obj.why || '') + '</span></div>';
@@ -747,16 +754,36 @@ function faCtx(extra){
 }
 function faConfBadge(c){
   const col = c >= 80 ? '#138808' : (c >= 60 ? '#b45309' : '#b91c1c');
-  return '<span style="display:inline-block;background:'+col+';color:#fff;font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px">Confidence ' + c + '%</span>';
+  const lbl = faDyn() ? faDyn().chrome('conf') : 'Confidence';
+  return '<span style="display:inline-block;background:'+col+';color:#fff;font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px">' + esc(lbl) + ' ' + c + '%</span>';
+}
+function faDyn(){ return window.FashionDyn || null; }
+function faLocExplain(rec){
+  const FD = faDyn(); if (!FD) return rec.explain || '';
+  const occ = FD.occ(rec.occasion); const harm = rec.harmony ? FD.harm(rec.harmony) : '';
+  return FD.tmpl('reads', { occ: occ, band: (rec.band!=null?rec.band:''), harm: harm }, CURRENT_LANG);
+}
+function faLocReasons(rec){
+  const FD = faDyn(); if (!FD || !rec.checks) return (rec.reasons||[]).map(r=>esc(r)).join(' · ');
+  const out = []; ['occasion','color','weather','budget','accessibility'].forEach(k => { if (k in rec.checks) out.push((rec.checks[k]?'✓ ':'✗ ') + FD.conf(k==='color'?'color':k)); });
+  return out.map(r=>'<span style="font-size:11px;color:#555;margin-right:8px">'+esc(r)+'</span>').join('');
+}
+function faLocFlags(rec){
+  const FD = faDyn();
+  return (rec.judge && rec.judge.flags || []).map(f => {
+    const axis = FD ? FD.judgeAxis(f.axis) : f.axis;
+    const msg = (FD && f.code) ? FD.judgeMsg(f.code) : (f.msg||'');
+    return '<div style="font-size:12px;color:#b45309;margin-top:4px">⚠️ ' + esc(axis) + ': ' + esc(msg) + '</div>';
+  }).join('');
 }
 function faRenderOutfitCard(rec, byId){
+  const FD = faDyn();
   const tiles = rec.items.map(it => '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(it.category) + '</span></div>').join('');
-  const reasons = (rec.reasons || []).map(r => '<span style="font-size:11px;color:#555;margin-right:8px">' + esc(r) + '</span>').join('');
-  const flags = (rec.judge && rec.judge.flags || []).map(f => '<div style="font-size:12px;color:#b45309;margin-top:4px">⚠️ ' + esc(f.axis) + ': ' + esc(f.msg) + '</div>').join('');
-  return '<div class="fa-outfit"><div class="title">' + esc((rec.occasion||'').replace('-',' ')) + ' · ' + faConfBadge(rec.confidence) + '</div>' +
+  const title = FD ? FD.occ(rec.occasion) : (rec.occasion||'').replace('-',' ');
+  return '<div class="fa-outfit"><div class="title">' + esc(title) + ' · ' + faConfBadge(rec.confidence) + '</div>' +
     '<div class="pieces">' + (tiles || '<div class="p">👕</div>') + '</div>' +
-    '<div class="why">' + esc(rec.explain || '') + '</div>' +
-    '<div style="margin-top:4px">' + reasons + '</div>' + flags + '</div>';
+    '<div class="why">' + esc(faLocExplain(rec)) + '</div>' +
+    '<div style="margin-top:4px">' + faLocReasons(rec) + '</div>' + faLocFlags(rec) + '</div>';
 }
 
 /* ════════ HERO · Dress Me From What I Own (engine-first, LLM-optional) ════════ */
@@ -797,10 +824,11 @@ async function faSimulate(){
   if (!items.length || !E){ const m = CURRENT_LANG==='en'?'Add clothes first.':'पहले कपड़े जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
   const built = E.buildOutfits(items, { max: 30 });
   if (!built.count){ const m = CURRENT_LANG==='en'?'Add a top + bottom (or a full outfit) + footwear to unlock combinations.':'एक ऊपर + एक नीचे (या पूरा पहनावा) + जूते जोड़ें — फिर combinations बनेंगे।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
-  let html = '<div style="font-weight:800;color:#138808;margin-bottom:8px">✨ ' + built.count + (CURRENT_LANG==='en'?' outfits from clothes you already own — ₹0':' outfit आपके अपने कपड़ों से — ₹0') + '</div>';
-  built.outfits.forEach(o => { html += faRenderOutfitCard({ items: o.items, occasion: o.occasion, confidence: o.score, reasons: ['✓ '+o.harmony], explain: '', judge: {flags:[]} }); });
+  const FD = faDyn();
+  let html = '<div style="font-weight:800;color:#138808;margin-bottom:8px">✨ ' + (FD ? FD.tmpl('built', { n: built.count }, CURRENT_LANG) : (built.count + ' outfits — ₹0')) + '</div>';
+  built.outfits.forEach(o => { html += faRenderOutfitCard({ items: o.items, occasion: o.occasion, band: null, confidence: o.score, harmony: o.harmony, checks: null, reasons: [], explain: '', judge: {flags:[]} }); });
   const h = document.getElementById(host); h.innerHTML = html;
-  const sp = (CURRENT_LANG==='en'?('I built '+built.count+' outfits from your wardrobe'):('मैंने आपकी अलमारी से '+built.count+' outfit बनाए'));
+  const sp = FD ? FD.tmpl('made', { n: built.count }, CURRENT_LANG) : ('Built ' + built.count + ' outfits');
   h.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
@@ -833,9 +861,11 @@ async function faROI(){
 /* ════════ Outfit Review / Describe (7-agent swarm) ════════ */
 let _selectedReviewOcc = '';
 function faBuildOccChips(hostId, onPick){
-  const occs = [['office','🏢 office'],['interview','🎯 interview'],['college','🎓 college'],['wedding','💍 शादी'],['festive','🪔 त्योहार'],['religious','🛕 धार्मिक'],['date','💖 date night'],['travel','✈️ travel'],['funeral','🕊️ शोक/funeral'],['family','👨‍👩‍👧 family function'],['casual','🙂 रोज़']];
+  const EMO = { office:'🏢', interview:'🎯', college:'🎓', wedding:'💍', festive:'🪔', religious:'🛕', date:'💖', travel:'✈️', funeral:'🕊️', family:'👨‍👩‍👧', casual:'🙂' };
+  const codes = ['office','interview','college','wedding','festive','religious','date','travel','funeral','family','casual'];
+  const FD = faDyn();
   const host = document.getElementById(hostId);
-  host.innerHTML = occs.map(o => '<span class="fa-chip" data-occ="' + o[0] + '">' + o[1] + '</span>').join('');
+  host.innerHTML = codes.map(code => '<span class="fa-chip" data-occ="' + code + '">' + EMO[code] + ' ' + esc(FD ? FD.occ(code) : code) + '</span>').join('');
   host.querySelectorAll('.fa-chip').forEach(c => c.addEventListener('click', () => {
     host.querySelectorAll('.fa-chip').forEach(x => x.classList.remove('on')); c.classList.add('on'); onPick(c.dataset.occ);
   }));
@@ -859,19 +889,24 @@ function faEngineSwarmJSON(items, ctx){
   const occOK = !ctx.occasion || occ.occasion === ctx.occasion;
   const conf = E.confidence({ occasion: occOK, color: h.score >= 0.7, weather: seas.score >= 1, budget: true, accessibility: j.pass });
   const s = (x) => Math.max(2, Math.min(10, Math.round(x)));
+  const FD = faDyn();
+  const occName = FD ? FD.occ(occ.occasion) : occ.occasion;
+  const flag0 = (FD && j.flags[0] && j.flags[0].code) ? FD.judgeMsg(j.flags[0].code) : (j.flags[0] && j.flags[0].msg || '');
+  const nChecks = conf.reasons.filter(r=>r[0]==='✓').length;
   const agents = {
-    fashion: { score: s(h.score*5 + occ.band), why: occ.occasion + ' silhouette' },
-    color: { score: s(h.score*10), why: h.why },
-    occasion: { score: s(occOK ? 9 : 5), why: ctx.occasion ? (occOK ? 'matches ' + ctx.occasion : 'reads ' + occ.occasion + ', not ' + ctx.occasion) : ('reads ' + occ.occasion) },
-    comfort: { score: s(seas.score*8 + 2), why: seas.why },
-    accessibility: { score: s(j.pass ? 9 : 5), why: j.pass ? 'works for the profile' : (j.flags[0] && j.flags[0].msg || 'review needed') },
-    budget: { score: 10, why: 'reviewing clothes you own — ₹0' },
-    confidence: { score: s(conf.confidence/10), why: conf.reasons.filter(r=>r[0]==='✓').length + ' checks pass' },
+    fashion: { score: s(h.score*5 + occ.band), why: occName },
+    color: { score: s(h.score*10), why: FD ? FD.harm(h.type) : h.why },
+    occasion: { score: s(occOK ? 9 : 5), why: occName },
+    comfort: { score: s(seas.score*8 + 2), why: (FD && seas.score<1) ? FD.judgeMsg('season_mismatch') : (FD ? FD.conf('weather') : seas.why) },
+    accessibility: { score: s(j.pass ? 9 : 5), why: j.pass ? (FD?FD.conf('accessibility'):'ok') : flag0 },
+    budget: { score: 10, why: FD ? FD.chrome('free') : '₹0' },
+    confidence: { score: s(conf.confidence/10), why: nChecks + ' ' + (FD ? FD.chrome('checks_pass') : 'checks pass') },
   };
   const overall = Math.round((Object.values(agents).reduce((a,b)=>a+b.score,0)/7)*10)/10;
-  const tiers = { free: 'You already own these — pair as-is. ₹0.' };
-  if (!j.pass && j.flags[0]) tiers.budget = 'Fix: ' + j.flags[0].msg;
-  return { overall, agents, teach: { why: E.explain(items, ctx), tradeoffs: h.type === 'competing' ? 'two brights compete — a neutral would calm it' : '' }, tiers, trend_note: '', _judge: j };
+  const teachWhy = FD ? FD.tmpl('reads', { occ: occName, band: (occ.band!=null?occ.band:''), harm: FD.harm(h.type) }, CURRENT_LANG) : E.explain(items, ctx);
+  const tiers = { free: FD ? FD.chrome('free') : 'Free · ₹0' };
+  if (!j.pass && j.flags[0]) tiers.budget = flag0;
+  return { overall, agents, teach: { why: teachWhy, tradeoffs: h.type === 'competing' ? (FD?FD.harm('competing'):'') : '' }, tiers, trend_note: '', _judge: j };
 }
 async function faReview(){
   const host = 'fa-review-result';
@@ -882,13 +917,14 @@ async function faReview(){
   if (!E || !items.length){ const m = CURRENT_LANG==='en'?'Tell me your outfit, e.g. "blue shirt, black pants, brown shoes".':'अपना outfit बताइए, जैसे "नीली शर्ट, काली पैंट, भूरे जूते"।'; document.getElementById(host).innerHTML='<div class="sds-card">'+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
   const j = faEngineSwarmJSON(items, faCtx({ occasion: _selectedReviewOcc || null }));
   // verdict vs the selected occasion
+  const FD = faDyn();
   let verdict = '';
-  if (_selectedReviewOcc){ const occ = E.classifyOccasion(items); const d = faBandIdx(occ.occasion) - faBandIdx(_selectedReviewOcc); verdict = d === 0 ? '✅ ' + (CURRENT_LANG==='en'?'just right for ':'सही — ') + _selectedReviewOcc : (d > 0 ? '⬆️ ' + (CURRENT_LANG==='en'?'a bit over-dressed for ':'थोड़ा ज़्यादा formal — ') + _selectedReviewOcc : '⬇️ ' + (CURRENT_LANG==='en'?'a bit too casual for ':'थोड़ा casual — ') + _selectedReviewOcc); }
-  const flags = (j._judge.flags||[]).map(f => '<div style="font-size:12px;color:#b45309;margin-top:4px">⚠️ ' + esc(f.axis) + ': ' + esc(f.msg) + '</div>').join('');
+  if (_selectedReviewOcc){ const occ = E.classifyOccasion(items); const d = faBandIdx(occ.occasion) - faBandIdx(_selectedReviewOcc); const oc = FD ? FD.occ(_selectedReviewOcc) : _selectedReviewOcc; const key = d===0?'just':(d>0?'over':'under'); verdict = FD ? FD.tmpl(key, { occ: oc }, CURRENT_LANG) : ((d===0?'✅ just right for ':(d>0?'⬆️ over-dressed for ':'⬇️ too casual for ')) + oc); }
+  const flags = faLocFlags({ judge: j._judge });
   const h = document.getElementById(host);
   h.innerHTML = '<div class="sds-card">' +
     (verdict ? '<div style="font-weight:800;color:#000080;margin-bottom:6px">' + esc(verdict) + '</div>' : '') + faRenderSwarm(j) + flags + '</div>';
-  const sp = (verdict || '') + '. ' + (CURRENT_LANG==='en'?'Overall ':'कुल ') + j.overall + '/10. ' + (j.teach.why||'');
+  const sp = (verdict || '') + '. ' + (FD ? FD.tmpl('overall', { n: j.overall }, CURRENT_LANG) : ('Overall ' + j.overall + '/10')) + ' ' + (j.teach.why||'');
   h.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
@@ -901,9 +937,11 @@ async function faDescribeMine(){
   if (!recs.length){ const m = CURRENT_LANG==='en'?'Add at least a top and a bottom and Chitti will describe an outfit.':'कम से कम एक ऊपर और एक नीचे का कपड़ा जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">'+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
   const r = recs[0];
   const names = r.items.map(it => (it.colour ? it.colour + ' ' : '') + it.category).join(', ');
-  const text = (CURRENT_LANG==='en'
-    ? ('You can wear: ' + names + '. This reads ' + r.occasion + ' and is good to go. ' + r.explain)
-    : ('आप पहन सकते हैं: ' + names + '। यह ' + r.occasion + ' के लिए सही है। ' + r.explain));
+  const FD = faDyn();
+  let text = (CURRENT_LANG==='en'
+    ? ('You can wear: ' + names + '. This reads ' + r.occasion + ' and is good to go.')
+    : ('आप पहन सकते हैं: ' + names + '। यह ' + r.occasion + ' के लिए सही है।'));
+  if (FD) { text = FD.tmpl('wear', { items: names, occ: FD.occ(r.occasion) }, CURRENT_LANG); }
   const h=document.getElementById(host); h.innerHTML='<div class="sds-card">👁️ '+esc(text)+'</div>'; h.dataset.spoken=text; faSpeak(text);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
