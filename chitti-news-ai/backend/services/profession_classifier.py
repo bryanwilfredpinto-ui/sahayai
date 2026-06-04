@@ -63,8 +63,9 @@ log = logging.getLogger("profession_classifier")
 
 _REGISTRY_FILE = Path(__file__).resolve().parent.parent / "data" / "profession_registry.json"
 _SOURCES_FILE  = Path(__file__).resolve().parent.parent / "data" / "courses_sources.json"
+_STREAMS_FILE  = Path(__file__).resolve().parent.parent / "data" / "streams_sources.json"
 
-RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.5-rules-2026-06-04-all13-prof-bundles")
+RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.6-rules-2026-06-04-streams-defaults-honored")
 DEFAULT_MIN_CONFIDENCE = float(os.environ.get("CLASSIFIER_MIN_CONFIDENCE", "0.5"))
 
 # Per-signal weights — tunable but tracked under RULE_VERSION so re-tunes
@@ -104,10 +105,38 @@ def _load_registry() -> dict[str, dict]:
 
 
 def _load_sources() -> dict[str, dict]:
-    """source_slug → source dict with default_professions + url_patterns."""
+    """source_slug -> source dict with default_professions + url_patterns.
+
+    Merges sources from BOTH data files so that default_professions on
+    cert / tool / job / scheme / grant / research / startup manifests
+    in streams_sources.json are honored at classification time.
+
+    Without the streams merge, the classifier was silently ignoring the
+    default_professions on every aggregator-stream source -- so a Doctor
+    cert manifest tagged [["doctor", 0.85]] would only get a 'doctor'
+    tag if its title also matched a doctor keyword.  Discovered 2026-06-04
+    during the all-13-personas audit (teacher cert = 0 despite 8 tagged
+    items).
+    """
+    out: dict[str, dict] = {}
     with _SOURCES_FILE.open(encoding="utf-8") as f:
-        rows = json.load(f).get("sources", [])
-    return {s["slug"]: s for s in rows}
+        for s in json.load(f).get("sources", []):
+            out[s["slug"]] = s
+    try:
+        with _STREAMS_FILE.open(encoding="utf-8") as f:
+            streams = json.load(f).get("streams", {})
+        for stream_key, stream_spec in streams.items():
+            if stream_key.startswith("_"):
+                continue
+            for s in stream_spec.get("sources", []) or []:
+                # streams_sources.json sources don't always have url_patterns;
+                # normalise so the classifier doesn't KeyError later.
+                s.setdefault("url_patterns", [])
+                s.setdefault("default_professions", [])
+                out[s["slug"]] = s
+    except Exception:  # noqa: BLE001
+        pass
+    return out
 
 
 _REGISTRY = _load_registry()
