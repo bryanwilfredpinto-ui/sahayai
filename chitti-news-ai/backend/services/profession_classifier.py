@@ -65,7 +65,7 @@ _REGISTRY_FILE = Path(__file__).resolve().parent.parent / "data" / "profession_r
 _SOURCES_FILE  = Path(__file__).resolve().parent.parent / "data" / "courses_sources.json"
 _STREAMS_FILE  = Path(__file__).resolve().parent.parent / "data" / "streams_sources.json"
 
-RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.9-rules-2026-06-04-master-curriculum-roadmaps")
+RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v1.0-rules-2026-06-04-people-youtube-free-resources")
 DEFAULT_MIN_CONFIDENCE = float(os.environ.get("CLASSIFIER_MIN_CONFIDENCE", "0.5"))
 
 # Per-signal weights — tunable but tracked under RULE_VERSION so re-tunes
@@ -374,6 +374,7 @@ def classify_unlabeled_stream_items(*, kind: Optional[str] = None, limit: int = 
                 ProfessionRelevance.item_kind.in_([
                     "cert", "tool", "job", "scheme", "roadmap_node",
                     "grant", "research", "startup",
+                    "person", "channel", "free_resource",  # 2026-06-04
                 ]),
             )
         )

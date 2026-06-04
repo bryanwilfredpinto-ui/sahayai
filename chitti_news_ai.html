@@ -239,6 +239,9 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="tab" data-tab="stream-job"     onclick="showCategory('stream-job')"     role="tab" aria-selected="false">💼 Jobs</button>
   <button class="tab" data-tab="stream-scheme"  onclick="showCategory('stream-scheme')"  role="tab" aria-selected="false">🏛️ Schemes</button>
   <button class="tab" data-tab="stream-roadmap" onclick="showCategory('stream-roadmap')" role="tab" aria-selected="false">🗺️ Roadmaps</button>
+  <button class="tab" data-tab="stream-channel" onclick="showCategory('stream-channel')" role="tab" aria-selected="false">📺 YouTube</button>
+  <button class="tab" data-tab="stream-person"  onclick="showCategory('stream-person')"  role="tab" aria-selected="false">👥 People</button>
+  <button class="tab" data-tab="stream-free_resource" onclick="showCategory('stream-free_resource')" role="tab" aria-selected="false">🆓 Free Resources</button>
 </nav>
 
 <main>
@@ -267,6 +270,18 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <section id="page-stream-roadmap" class="page" role="tabpanel" aria-label="Learning Roadmaps" style="display:none">
     <div id="stream-roadmap-status" class="section-empty" aria-live="polite">⏳ Loading roadmaps…</div>
     <div id="stream-roadmap-list"></div>
+  </section>
+  <section id="page-stream-channel" class="page" role="tabpanel" aria-label="YouTube channels to follow" style="display:none">
+    <div id="stream-channel-status" class="section-empty" aria-live="polite">⏳ Loading YouTube channels…</div>
+    <div id="stream-channel-list"></div>
+  </section>
+  <section id="page-stream-person" class="page" role="tabpanel" aria-label="People to follow" style="display:none">
+    <div id="stream-person-status" class="section-empty" aria-live="polite">⏳ Loading people to follow…</div>
+    <div id="stream-person-list"></div>
+  </section>
+  <section id="page-stream-free_resource" class="page" role="tabpanel" aria-label="Free Resources" style="display:none">
+    <div id="stream-free_resource-status" class="section-empty" aria-live="polite">⏳ Loading free resources…</div>
+    <div id="stream-free_resource-list"></div>
   </section>
 
   <!-- v0.3 "For You" page — per-profession 7-stream career intelligence -->
@@ -685,8 +700,10 @@ const STREAM_LABELS = {
   news: '📰 News', courses: '🎓 Courses', cert: '🏅 Certifications',
   tool: '🛠️ Tools', job: '💼 Jobs',
   scheme: '🏛️ Government Schemes', roadmap_node: '🗺️ Learning Roadmaps',
+  channel: '📺 YouTube Channels', person: '👥 People to Follow',
+  free_resource: '🆓 Free Resources',
 };
-const STREAM_ORDER = ['news', 'courses', 'cert', 'tool', 'job', 'scheme', 'roadmap_node'];
+const STREAM_ORDER = ['news', 'courses', 'cert', 'tool', 'job', 'scheme', 'roadmap_node', 'channel', 'person', 'free_resource'];
 
 // v0.3 SHIP row #10 — profession picker readable for blind users.
 // Speaks an audible hint the first time the picker gets focus this session.
@@ -743,8 +760,8 @@ document.getElementById('prof-clear-link')?.addEventListener('click', function()
 });
 
 // Hijack showCategory to also handle 'foryou' + per-stream tabs
-const _STREAM_TABS = ['cert', 'tool', 'job', 'scheme', 'roadmap'];
-const _STREAM_TAB_TO_KIND = {cert:'cert', tool:'tool', job:'job', scheme:'scheme', roadmap:'roadmap_node'};
+const _STREAM_TABS = ['cert', 'tool', 'job', 'scheme', 'roadmap', 'channel', 'person', 'free_resource'];
+const _STREAM_TAB_TO_KIND = {cert:'cert', tool:'tool', job:'job', scheme:'scheme', roadmap:'roadmap_node', channel:'channel', person:'person', free_resource:'free_resource'};
 
 function _hideAllAndActivate(pageId, tabSel){
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
