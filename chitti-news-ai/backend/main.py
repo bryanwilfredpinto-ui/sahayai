@@ -141,12 +141,19 @@ def _bootstrap() -> None:
                 classify_unlabeled_courses, classify_unlabeled_articles,
                 classify_unlabeled_stream_items,
             )
-            c = classify_unlabeled_courses(limit=2000)
-            log.info("[boot] courses classify: %s", c)
-            a = classify_unlabeled_articles(limit=2000)
-            log.info("[boot] articles classify: %s", a)
-            s = classify_unlabeled_stream_items(limit=2000)
-            log.info("[boot] streams classify: %s", s)
+            # 2026-06-04 P0 fix: limit was 2000 — Microsoft Learn JSON dump
+            # has thousands of older-id items that consumed the slot, leaving
+            # the newer hand-curated YouTube / vendor-academy / free-cert
+            # manifests UNCLASSIFIED. Bumped to 20000 across all kinds AND
+            # we loop until exhausted so no item is ever left dangling.
+            for pass_no in range(5):
+                c = classify_unlabeled_courses(limit=20000)
+                a = classify_unlabeled_articles(limit=20000)
+                s = classify_unlabeled_stream_items(limit=20000)
+                log.info("[boot] classify pass %d: courses=%s articles=%s streams=%s",
+                         pass_no, c.get("tagged"), a.get("tagged"), s.get("tagged"))
+                if (c.get("scanned") or 0) + (a.get("scanned") or 0) + (s.get("scanned") or 0) == 0:
+                    break
         except Exception as e:  # noqa: BLE001
             log.warning("[boot] classification skipped: %s", e)
 
