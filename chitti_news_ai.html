@@ -106,6 +106,77 @@ main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
 
 footer{font-size:11px;color:var(--muted);text-align:center;padding:20px;line-height:1.55}
 footer a{color:var(--saffron);text-decoration:none;font-weight:700}
+
+/* ── Chitti Coach UI (gaps #1-#25, rules-only, 2026-06-04) ───────────── */
+/* Quality tier badges (#17, #21) — visual hierarchy gold > silver > bronze */
+.cc-tier-badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-right:6px;border:1px solid currentColor}
+.cc-tier-gold{color:#92400e;background:linear-gradient(135deg,rgba(212,175,55,.20),rgba(252,211,77,.10))}
+.cc-tier-silver{color:#475569;background:rgba(148,163,184,.10)}
+.cc-tier-bronze{color:#b91c1c;background:rgba(220,38,38,.10)}
+/* Per-card decoration row (#13 why-for-you + #3 outcome + #6 done/skip) */
+.cc-why{font-size:12.5px;line-height:1.45;color:#374151;background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.04));border-left:3px solid var(--saffron);padding:7px 10px;border-radius:6px;margin:8px 0}
+.cc-why strong{color:var(--navy)}
+.cc-outcome{font-size:12px;color:#166534;font-weight:600;margin:4px 0}
+.cc-outcome::before{content:"🎯 ";opacity:.9}
+.cc-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.cc-actions button{appearance:none;border:1px solid var(--border);background:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;min-height:36px}
+.cc-actions button.done{border-color:#86efac;color:#166534;background:rgba(22,163,74,.06)}
+.cc-actions button.skip{border-color:#fca5a5;color:#7f1d1d;background:rgba(220,38,38,.04)}
+.cc-actions button.progress{border-color:#93c5fd;color:#1e40af;background:rgba(37,99,235,.06)}
+.cc-actions .done-tag{font-size:11px;color:var(--green);font-weight:800;padding:6px 8px}
+/* Urgent top strip (#8 #16 #17) */
+#cc-urgent{margin:8px 0;padding:10px 12px;background:linear-gradient(135deg,#fff1f2,#fef3c7);border:1.5px solid #fca5a5;border-radius:12px}
+#cc-urgent .urgent-title{font-size:12px;font-weight:900;color:#7f1d1d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+#cc-urgent .urgent-item{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(127,29,29,.18);font-size:13px;align-items:center}
+#cc-urgent .urgent-item:last-child{border-bottom:none}
+#cc-urgent .urgent-days{font-weight:800;color:#7f1d1d;flex:0 0 auto}
+#cc-urgent a{color:var(--navy);font-weight:700;text-decoration:underline}
+#cc-urgent.empty{display:none}
+/* Salary outcome panel (#3 #11) */
+.cc-salary-card{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:12px;margin:10px 0;font-size:13px;line-height:1.55}
+.cc-salary-card .label{font-size:11px;color:#166534;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.cc-salary-card .value{font-size:18px;font-weight:900;color:var(--navy)}
+.cc-salary-card .delta{font-size:13px;color:#166534;font-weight:700;margin-top:4px}
+/* Peer stories panel (#10 #20) */
+.cc-peer{background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:12px;margin:10px 0}
+.cc-peer h4{font-size:13px;font-weight:900;color:var(--navy);margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.cc-peer ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#1e3a8a}
+/* Modal (#1 intake, #5 Q&A, #14 CV) */
+.cc-modal-bg{position:fixed;inset:0;background:rgba(14,35,68,.55);display:none;align-items:center;justify-content:center;z-index:9000;padding:14px}
+.cc-modal-bg.open{display:flex}
+.cc-modal{background:#fff;border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(14,35,68,.35)}
+.cc-modal h3{margin:0 0 6px;color:var(--navy);font-size:18px}
+.cc-modal .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.cc-modal label{display:block;font-size:12px;font-weight:800;color:var(--navy);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em}
+.cc-modal select, .cc-modal input[type=number], .cc-modal textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:10px;min-height:44px;font-family:inherit}
+.cc-modal .chips{display:flex;flex-wrap:wrap;gap:6px}
+.cc-modal .chips label{display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;border:1px solid var(--border);padding:8px 12px;border-radius:999px;cursor:pointer;font-size:12px;margin:0;text-transform:none;letter-spacing:0}
+.cc-modal .chips input{margin:0}
+.cc-modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.cc-modal .actions button{appearance:none;border-radius:10px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;border:1px solid var(--border);background:#fff;min-height:48px}
+.cc-modal .actions button.primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none}
+/* My Coach tab styles */
+.cc-week{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.cc-week h4{margin:0 0 10px;color:var(--navy);font-size:15px;display:flex;align-items:center;gap:8px}
+.cc-week .week-summary{font-size:12px;color:var(--muted);margin-bottom:10px}
+.cc-week .item-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);align-items:flex-start}
+.cc-week .item-row:last-child{border-bottom:none}
+.cc-week .item-row .title{font-size:13.5px;color:var(--text);font-weight:700;flex:1;line-height:1.45}
+.cc-week .item-row a{color:var(--navy)}
+.cc-week .item-row .tier{flex:0 0 auto}
+/* Skip-this list */
+.cc-skip-card{background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:14px;margin-bottom:10px}
+.cc-skip-card .skip-title{font-size:14px;font-weight:900;color:#7c2d12;margin-bottom:4px}
+.cc-skip-card .skip-reason{font-size:13px;color:#7c2d12;line-height:1.55;margin-bottom:6px}
+.cc-skip-card .skip-alt{font-size:13px;color:#166534;font-weight:700;background:rgba(22,163,74,.08);border-left:3px solid #16a34a;padding:6px 10px;border-radius:6px}
+/* Q&A buttons */
+.cc-qa-question{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;line-height:1.45;min-height:48px}
+.cc-qa-question:hover{background:#f3f4f6}
+/* Already-done state on cards */
+.cc-card-done{opacity:.55}
+.cc-card-done .cc-actions button.done{background:#dcfce7;border-color:#16a34a;color:#166534;font-weight:900}
+/* In-progress badge */
+.cc-in-progress{display:inline-block;font-size:10px;font-weight:800;color:#1e40af;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.35);padding:1px 6px;border-radius:6px;margin-left:6px}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -242,7 +313,12 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="tab" data-tab="stream-channel" onclick="showCategory('stream-channel')" role="tab" aria-selected="false">📺 YouTube</button>
   <button class="tab" data-tab="stream-person"  onclick="showCategory('stream-person')"  role="tab" aria-selected="false">👥 People</button>
   <button class="tab" data-tab="stream-free_resource" onclick="showCategory('stream-free_resource')" role="tab" aria-selected="false">🆓 Free Resources</button>
+  <button class="tab" data-tab="my-coach" onclick="showCategory('my-coach')" role="tab" aria-selected="false">🎓 My Coach</button>
+  <button class="tab" data-tab="what-not-to-do" onclick="showCategory('what-not-to-do')" role="tab" aria-selected="false">🚫 Skip This</button>
 </nav>
+
+<!-- Urgent top strip (gap #8, #16, #17) — rendered by chitti_coach.js if any item lives -->
+<section id="cc-urgent" class="empty" data-chitti-response data-chitti-section="Time-sensitive opportunities" role="region" aria-label="Time-sensitive opportunities — closing soon"></section>
 
 <main>
   <section id="page-feed" class="page active" role="tabpanel">
@@ -282,6 +358,20 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <section id="page-stream-free_resource" class="page" role="tabpanel" aria-label="Free Resources" style="display:none">
     <div id="stream-free_resource-status" class="section-empty" aria-live="polite">⏳ Loading free resources…</div>
     <div id="stream-free_resource-list"></div>
+  </section>
+
+  <!-- 🎓 MY COACH tab — personalised 4-week plan + salary + peer stories + ask-the-coach + CV -->
+  <section id="page-my-coach" class="page" role="tabpanel" aria-label="My Coach — personalised plan" style="display:none">
+    <div id="my-coach-content" data-chitti-response data-chitti-section="My Coach — personalised plan">
+      <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your coach…</div>
+    </div>
+  </section>
+
+  <!-- 🚫 WHAT NOT TO DO tab — explicit anti-recommendations -->
+  <section id="page-what-not-to-do" class="page" role="tabpanel" aria-label="Skip This — what NOT to do" style="display:none">
+    <div id="what-not-to-do-content" data-chitti-response data-chitti-section="Skip This — what NOT to do">
+      <div class="section-empty">⏳ Loading skip list…</div>
+    </div>
   </section>
 
   <!-- v0.3 "For You" page — per-profession 7-stream career intelligence -->
@@ -961,6 +1051,358 @@ loadFeed(false);
 <script src="chitti_isl.js"></script>
 <script src="chitti_lang.js?v=20260529r"></script>
 <script src="chitti_features.js" defer></script>
+
+<!-- 🎓 Chitti Coach (rules-only, localStorage, closes the 25 gaps audited 2026-06-04) -->
+<script src="chitti_coach.js?v=20260604"></script>
+
+<!-- Modal: Intake (gap #1 — skill assessment + goal + hours) -->
+<div id="cc-modal-intake" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-intake-title">
+  <div class="cc-modal" data-chitti-response data-chitti-section="Intake — get your personalised plan">
+    <h3 id="cc-intake-title">🎓 Get your AI plan</h3>
+    <p class="sub">3 quick questions — no signup, stored on this device only. You can change any time.</p>
+    <label for="cc-intake-skills">Which of these do you already know? (tap all that apply)</label>
+    <div id="cc-intake-skills" class="chips" role="group" aria-label="Existing skills"></div>
+    <label for="cc-intake-goal">Your goal for the next 6 months</label>
+    <select id="cc-intake-goal" aria-label="Goal"></select>
+    <label for="cc-intake-hours">Hours per week you can spend learning</label>
+    <input id="cc-intake-hours" type="number" min="1" max="40" value="5" aria-label="Hours per week" />
+    <div class="actions">
+      <button type="button" onclick="ccIntakeClose()">Maybe later</button>
+      <button type="button" class="primary" onclick="ccIntakeSave()">Build my plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ask the Coach (gap #5) -->
+<div id="cc-modal-ask" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-ask-title">
+  <div class="cc-modal" data-chitti-response data-chitti-section="Ask the coach">
+    <h3 id="cc-ask-title">💬 Ask the Coach</h3>
+    <p class="sub">Pick the question closest to yours. The coach is rules-only — answers come from the corpus, no LLM.</p>
+    <div id="cc-ask-questions"></div>
+    <div id="cc-ask-answer" style="margin-top:14px"></div>
+    <div class="actions">
+      <button type="button" onclick="ccAskClose()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: CV Builder (gap #14) -->
+<div id="cc-modal-cv" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-cv-title">
+  <div class="cc-modal" data-chitti-response data-chitti-section="CV builder">
+    <h3 id="cc-cv-title">📋 Your AI Upskilling CV section</h3>
+    <p class="sub">Auto-generated from items you marked done. Copy into your LinkedIn About / GitHub README / CV.</p>
+    <textarea id="cc-cv-text" readonly rows="14" aria-label="Generated CV markdown"></textarea>
+    <div class="actions">
+      <button type="button" onclick="ccCvClose()">Close</button>
+      <button type="button" class="primary" onclick="ccCvCopy()">📋 Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  if (!window.ChittiCoach) return;
+  var CC = window.ChittiCoach;
+
+  // Build a lookup so CV builder can resolve titles
+  window.__ccItemTitleCache = window.__ccItemTitleCache || {};
+  function _registerItemTitle(id, title) { if (id && title) window.__ccItemTitleCache[id] = title; }
+  function _itemTitle(id) { return window.__ccItemTitleCache[id] || null; }
+
+  // ── Sync intake with existing profession/exp/salary pickers (gap #1, #7) ──
+  function ccBootstrap() {
+    var p = CC.profile.init();
+    // Seed from existing UI inputs
+    try {
+      var profession = (document.getElementById('pick-profession') || {}).value;
+      if (profession && profession !== 'everyone' && (!p.profession || p.profession === 'everyone')) {
+        p.profession = profession;
+      }
+      var exp = (document.getElementById('pick-experience') || {}).value;
+      if (exp && !p.experience) p.experience = exp;
+      var sal = (document.getElementById('pick-salary') || {}).value;
+      if (sal && !p.salary_band) p.salary_band = sal;
+      var lang = (document.getElementById('pick-lang') || {}).value;
+      if (lang) p.language = lang;
+      CC.profile.set(p);
+    } catch (e) {}
+
+    ccRenderUrgentStrip();
+    ccRenderMyCoach();
+    ccRenderSkipList();
+
+    // First-visit auto-prompt only when user has picked a profession but no goal yet (gap #1)
+    if (p.profession && p.profession !== 'everyone' && !p.goal) {
+      setTimeout(ccIntakeOpen, 1200);
+    }
+  }
+
+  // ── Intake modal (gap #1, #7) ──
+  window.ccIntakeOpen = function () {
+    var p = CC.profile.init();
+    var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
+    if (!prof || prof === 'everyone') prof = 'student';
+    var skills = CC.vocab.skills[prof] || [];
+    var goals  = CC.vocab.goals[prof]  || [];
+    var skillsBox = document.getElementById('cc-intake-skills');
+    skillsBox.innerHTML = skills.map(function (s) {
+      var checked = (p.current_skills || []).indexOf(s) >= 0 ? 'checked' : '';
+      return '<label><input type="checkbox" value="' + s + '" ' + checked + '> ' + s.replace(/-/g,' ') + '</label>';
+    }).join('');
+    var goalSel = document.getElementById('cc-intake-goal');
+    goalSel.innerHTML = '<option value="">— pick one —</option>' + goals.map(function (g) {
+      var sel = p.goal === g.v ? 'selected' : '';
+      return '<option value="' + g.v + '" ' + sel + '>' + g.t + '</option>';
+    }).join('');
+    document.getElementById('cc-intake-hours').value = p.hours_per_week || 5;
+    document.getElementById('cc-modal-intake').classList.add('open');
+    CC.speak('Three quick questions to build your AI learning plan.');
+  };
+  window.ccIntakeClose = function () { document.getElementById('cc-modal-intake').classList.remove('open'); };
+  window.ccIntakeSave = function () {
+    var p = CC.profile.init();
+    var skills = Array.prototype.map.call(
+      document.querySelectorAll('#cc-intake-skills input:checked'),
+      function (cb) { return cb.value; });
+    p.current_skills  = skills;
+    p.goal            = document.getElementById('cc-intake-goal').value || '';
+    p.hours_per_week  = Math.max(1, Math.min(40, parseInt(document.getElementById('cc-intake-hours').value, 10) || 5));
+    CC.profile.set(p);
+    ccIntakeClose();
+    ccRenderMyCoach();
+    ccRenderUrgentStrip();
+    showCategory('my-coach');
+  };
+
+  // ── Ask the Coach (gap #5) ──
+  window.ccAskOpen = function () {
+    var qs = CC.listQuestions();
+    document.getElementById('cc-ask-questions').innerHTML = qs.map(function (q) {
+      return '<button type="button" class="cc-qa-question" onclick="ccAskShow(' + q.idx + ')">' + q.q + '</button>';
+    }).join('');
+    document.getElementById('cc-ask-answer').innerHTML = '';
+    document.getElementById('cc-modal-ask').classList.add('open');
+    CC.speak('Pick the question closest to yours. The coach picks resources from the corpus.');
+  };
+  window.ccAskClose = function () { document.getElementById('cc-modal-ask').classList.remove('open'); };
+  window.ccAskShow = function (idx) {
+    var flow = CC.askCoach(idx); if (!flow) return;
+    document.getElementById('cc-ask-answer').innerHTML =
+      '<div style="font-size:13px;font-weight:800;margin-bottom:8px;color:#0E2344">' +
+      'Chitti recommends:</div>' +
+      '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">' +
+      flow.items.map(function (id) {
+        var title = _itemTitle(id) || id;
+        return '<li><strong>' + title + '</strong> <span style="color:#6b7280">(id: ' + id + ')</span></li>';
+      }).join('') +
+      '</ul>' +
+      '<p style="font-size:12px;color:#6b7280;margin-top:10px;font-style:italic">Open the Roadmaps / Tools / Free Resources tabs to find these items in context.</p>';
+  };
+
+  // ── CV Builder (gap #14) ──
+  window.ccCvOpen = function () {
+    var p = CC.profile.init();
+    document.getElementById('cc-cv-text').value = CC.buildCV(p, _itemTitle);
+    document.getElementById('cc-modal-cv').classList.add('open');
+  };
+  window.ccCvClose = function () { document.getElementById('cc-modal-cv').classList.remove('open'); };
+  window.ccCvCopy = function () {
+    var ta = document.getElementById('cc-cv-text');
+    ta.select(); document.execCommand('copy');
+    CC.speak('Copied to clipboard.');
+  };
+
+  // ── Urgent strip (gap #8, #16, #17) ──
+  function ccRenderUrgentStrip() {
+    var box = document.getElementById('cc-urgent'); if (!box) return;
+    var p   = CC.profile.init();
+    var u   = CC.urgentList(p);
+    if (!u || u.length === 0) { box.classList.add('empty'); box.innerHTML = ''; return; }
+    box.classList.remove('empty');
+    box.innerHTML =
+      '<div class="urgent-title">🔥 Closing soon — act this week</div>' +
+      u.slice(0,3).map(function (it) {
+        var d = CC.daysUntilIST(it.deadline);
+        return '<div class="urgent-item">' +
+          '<div><a href="' + it.url + '" target="_blank" rel="noopener">' + it.title + '</a> ' +
+          '<span style="color:#6b7280;font-size:11px">· ' + it.tag + '</span></div>' +
+          '<div class="urgent-days">' + d + 'd</div>' +
+        '</div>';
+      }).join('');
+  }
+
+  // ── My Coach tab (gaps #2, #3, #11, #12, #13, #14, #20, #25) ──
+  function ccRenderMyCoach() {
+    var host = document.getElementById('my-coach-content'); if (!host) return;
+    var p = CC.profile.init();
+    if (!p.profession || p.profession === 'everyone' || !p.goal) {
+      host.innerHTML =
+        '<div class="section-card" style="text-align:center;padding:24px" data-chitti-response data-chitti-section="My Coach intro">' +
+          '<h3 style="margin:0 0 8px;color:var(--navy)">🎓 Welcome to your Coach</h3>' +
+          '<p style="margin:0 0 14px;color:var(--muted);font-size:13.5px;line-height:1.55">Tell me 3 quick things and I\'ll build a personalised 4-week plan from 800+ free resources.</p>' +
+          '<button onclick="ccIntakeOpen()" class="refresh" style="border:none;color:#fff">Start intake</button>' +
+        '</div>';
+      return;
+    }
+    var salary = CC.salaryFor(p.profession, p.experience);
+    var delta  = CC.salaryDelta(p.profession);
+    var stories = CC.peerStoriesFor(p.profession);
+    var html =
+      '<div class="cc-salary-card" data-chitti-response data-chitti-section="Your salary outlook">' +
+        '<div class="label">Your current band (estimated India median)</div>' +
+        '<div class="value">' + salary + '</div>' +
+        '<div class="delta">+ AI skill premium: ' + delta + '</div>' +
+      '</div>';
+    if (stories.length) {
+      html += '<div class="cc-peer" data-chitti-response data-chitti-section="Peers who upskilled">' +
+        '<h4>👥 Peers who did this</h4>' +
+        '<ul>' + stories.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+      '</div>';
+    }
+    html +=
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">' +
+        '<button class="refresh" onclick="ccAskOpen()" style="border:none">💬 Ask the Coach</button>' +
+        '<button class="refresh" onclick="ccCvOpen()" style="border:none">📋 Build my CV section</button>' +
+        '<button class="refresh" onclick="ccIntakeOpen()" style="border:none;background:#fff;color:var(--navy);border:1px solid var(--border)">⚙️ Re-do intake</button>' +
+        '<button class="refresh" onclick="ccRequestNotifs()" style="border:none;background:#fff;color:var(--navy);border:1px solid var(--border)">🔔 Notify me</button>' +
+      '</div>';
+    host.innerHTML = html +
+      '<div id="cc-plan-host"><div class="section-empty">Loading your plan from the corpus…</div></div>' +
+      '<p style="font-size:11.5px;color:var(--muted);font-style:italic;margin-top:14px">' +
+      'Plan is generated by deterministic rules from your profile — no LLM. Mark items Done / Skip to refine future plans.</p>';
+    ccBuildPlanFromCorpus(p);
+  }
+
+  // Fetch a wide slice of corpus across roadmap/cert/tool/channel/free_resource,
+  // then run CC.generatePlan(items, profile).
+  function ccBuildPlanFromCorpus(p) {
+    var base = (typeof getApiBase === 'function') ? getApiBase() : '';
+    if (!base) return;
+    var streams = ['roadmap_node', 'cert', 'tool', 'channel', 'free_resource'];
+    var fetches = streams.map(function (s) {
+      return fetch(base + '/api/news-ai/feed/' + s + '?profession=' + encodeURIComponent(p.profession) + '&n=100')
+        .then(function (r) { return r.json(); })
+        .then(function (d) { return (d.items || []).map(function (it) { it.__stream = s; return it; }); })
+        .catch(function () { return []; });
+    });
+    Promise.all(fetches).then(function (lists) {
+      var all = [].concat.apply([], lists);
+      all.forEach(function (it) { _registerItemTitle(it.id || it.external_id, it.title); });
+      var plan = CC.generatePlan(all, p);
+      var host = document.getElementById('cc-plan-host'); if (!host) return;
+      if (!plan.weeks || plan.weeks.every(function (w) { return w.length === 0; })) {
+        host.innerHTML = '<div class="section-empty">Plan is empty — corpus thin for this profession + goal combination. Open Roadmaps tab to browse.</div>';
+        return;
+      }
+      host.innerHTML = plan.weeks.map(function (week, i) {
+        if (week.length === 0) return '';
+        var subtitle = 'Week ' + (i+1) + ' · ' + week.length + ' items · ~' + (plan.hours_per_week) + ' h target';
+        return '<div class="cc-week" data-chitti-response data-chitti-section="Week ' + (i+1) + ' plan">' +
+          '<h4>📅 Week ' + (i+1) + '</h4>' +
+          '<div class="week-summary">' + subtitle + '</div>' +
+          week.map(function (it) {
+            var url = it.url || '#';
+            var tier = it._tier || 'silver';
+            var tierBadge = '<span class="cc-tier-badge cc-tier-' + tier + '">' + tier + '</span>';
+            var why = CC.whyThisForYou(it, p);
+            var outcome = CC.outcomeFor(it.id);
+            return '<div class="item-row">' +
+              '<div class="tier">' + tierBadge + '</div>' +
+              '<div class="title"><a href="' + url + '" target="_blank" rel="noopener">' + (it.title || it.id || '?') + '</a>' +
+                (why ? '<div class="cc-why">' + why + '</div>' : '') +
+                (outcome ? '<div class="cc-outcome">' + outcome + '</div>' : '') +
+                '<div class="cc-actions">' +
+                  '<button class="done" onclick="ccMarkDone(\'' + (it.id||'') + '\', this)">✅ Mark Done</button>' +
+                  '<button class="skip" onclick="ccMarkSkip(\'' + (it.id||'') + '\', this)">🚫 Skip</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }).join('');
+    });
+  }
+
+  window.ccMarkDone = function (id, btn) {
+    if (!id) return; CC.markDone(id, _itemTitle(id));
+    if (btn) btn.textContent = '✓ Done';
+    setTimeout(ccRenderMyCoach, 400);
+  };
+  window.ccMarkSkip = function (id, btn) {
+    if (!id) return; CC.markSkipped(id);
+    if (btn) { var row = btn.closest('.item-row'); if (row) row.style.opacity = '.4'; }
+    setTimeout(ccRenderMyCoach, 400);
+  };
+  window.ccRequestNotifs = function () {
+    CC.requestNotificationPermission().then(function (perm) {
+      CC.speak(perm === 'granted' ? 'Notifications enabled. I will alert you on deadlines.' : 'Notifications are off. You can enable any time.');
+    });
+  };
+
+  // ── Skip-This tab (gap #24) ──
+  function ccRenderSkipList() {
+    var host = document.getElementById('what-not-to-do-content'); if (!host) return;
+    var skips = CC.skipList();
+    host.innerHTML =
+      '<div class="section-card" style="background:#fef3c7;border-color:#f59e0b;margin-bottom:14px" data-chitti-response data-chitti-section="Skip This intro">' +
+        '<h3 style="margin:0 0 6px;color:#7c2d12">🚫 What NOT to do (and what to do instead)</h3>' +
+        '<p style="margin:0;color:#7c2d12;font-size:13.5px;line-height:1.55">A career coach who only says "do this" is half-useful. Here is the explicit "skip" list — save ₹ and time.</p>' +
+      '</div>' +
+      skips.map(function (s) {
+        return '<div class="cc-skip-card" data-chitti-response data-chitti-section="Skip — ' + s.id + '">' +
+          '<div class="skip-title">🚫 ' + s.title + '</div>' +
+          '<div class="skip-reason"><strong>Why skip:</strong> ' + s.reason + '</div>' +
+          '<div class="skip-alt"><strong>Do instead:</strong> ' + s.alternative + '</div>' +
+        '</div>';
+      }).join('');
+  }
+
+  // ── Hook into existing showCategory to render coach tabs on demand ──
+  var _origShow = window.showCategory;
+  window.showCategory = function (cat) {
+    if (cat === 'my-coach') {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
+      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      var pg = document.getElementById('page-my-coach'); if (pg) { pg.style.display = 'block'; pg.classList.add('active'); }
+      var tb = document.querySelector('nav.tabs .tab[data-tab="my-coach"]'); if (tb) { tb.classList.add('active'); tb.setAttribute('aria-selected','true'); }
+      ccRenderMyCoach(); return;
+    }
+    if (cat === 'what-not-to-do') {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
+      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      var pg2 = document.getElementById('page-what-not-to-do'); if (pg2) { pg2.style.display = 'block'; pg2.classList.add('active'); }
+      var tb2 = document.querySelector('nav.tabs .tab[data-tab="what-not-to-do"]'); if (tb2) { tb2.classList.add('active'); tb2.setAttribute('aria-selected','true'); }
+      ccRenderSkipList(); return;
+    }
+    if (typeof _origShow === 'function') return _origShow(cat);
+  };
+
+  // ── Boot ──
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ccBootstrap);
+  } else {
+    setTimeout(ccBootstrap, 100);
+  }
+
+  // Hook into profession change so plan updates when user changes profession
+  var origProfChange = window.onProfessionChange;
+  window.onProfessionChange = function () {
+    try { if (typeof origProfChange === 'function') origProfChange(); } catch (e) {}
+    try {
+      var p = CC.profile.init();
+      var pSel = document.getElementById('pick-profession');
+      if (pSel && pSel.value && pSel.value !== 'everyone') {
+        p.profession = pSel.value;
+        if (!p.goal) { CC.profile.set(p); setTimeout(ccIntakeOpen, 600); }
+        else { CC.profile.set(p); ccRenderMyCoach(); ccRenderUrgentStrip(); }
+      }
+    } catch (e) {}
+  };
+
+  // Maybe-notify on boot (gap #15)
+  setTimeout(function () { try { CC.maybeNotifyUrgent(); } catch (e) {} }, 5000);
+})();
+</script>
 
 </body>
 </html>
