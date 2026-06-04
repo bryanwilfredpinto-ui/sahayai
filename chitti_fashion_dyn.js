@@ -87,6 +87,18 @@
       tmpl: { reads:'ഇത് {occ} പോലെ തോന്നുന്നു (formality {band}/5). നിറം: {harm}.', wear:'നിങ്ങൾക്ക് ധരിക്കാം: {items}. ഇത് {occ}-ന് അനുയോജ്യമാണ്.', built:'{n} വസ്ത്രങ്ങൾ നിങ്ങളുടെ സ്വന്തം വസ്ത്രങ്ങളിൽ നിന്ന് — ₹0', made:'നിങ്ങളുടെ അലമാരയിൽ നിന്ന് {n} വസ്ത്രങ്ങൾ ഉണ്ടാക്കി', just:'✅ {occ}-ന് ശരി', over:'⬆️ {occ}-ന് അൽപം കൂടുതൽ ഫോർമൽ', under:'⬇️ {occ}-ന് അൽപം കാഷ്വൽ', overall:'ആകെ {n}/10' },
     },
   };
+  var MORE = {
+    en: { add_first:'Add clothes to your Almari first.', need_more:'Add a top and a bottom.', gap_bottom:'more bottoms unlock more outfits', gap_footwear:'add footwear', total:'items', outfits:'outfits', gaps:'Gaps', rare:'not worn in 6 months', best_buy:'Best-value buy', items:'items', go:'Ready — go!', roi:'{item} unlocks {n} new outfits', pack_for:'Packed for {days} days', pack_why:'{n} items → {c} mix-and-match outfits' },
+    hi: { add_first:'पहले अलमारी में कपड़े जोड़ें।', need_more:'एक ऊपर और एक नीचे का कपड़ा जोड़ें।', gap_bottom:'और नीचे के कपड़े = ज़्यादा पहनावे', gap_footwear:'जूते जोड़ें', total:'चीज़ें', outfits:'पहनावे', gaps:'कमी', rare:'6 महीने से नहीं पहने', best_buy:'सबसे फ़ायदेमंद खरीद', items:'चीज़ें', go:'तैयार — चलिए!', roi:'{item} से {n} नए पहनावे खुलते हैं', pack_for:'{days} दिन के लिए पैक', pack_why:'{n} चीज़ें → {c} mix-and-match पहनावे' },
+    ta: { add_first:'முதலில் அலமாரியில் ஆடைகளைச் சேர்க்கவும்.', need_more:'ஒரு மேலாடை, ஒரு கீழாடை சேர்க்கவும்.', gap_bottom:'மேலும் கீழாடைகள் = அதிக உடைகள்', gap_footwear:'காலணி சேர்க்கவும்', total:'பொருட்கள்', outfits:'உடைகள்', gaps:'குறை', rare:'6 மாதமாக அணியவில்லை', best_buy:'மிகப் பயனுள்ள வாங்குதல்', items:'பொருட்கள்', go:'தயார் — செல்லுங்கள்!', roi:'{item} {n} புதிய உடைகளைத் திறக்கிறது', pack_for:'{days} நாட்களுக்குப் பேக்', pack_why:'{n} பொருட்கள் → {c} உடைகள்' },
+    bn: { add_first:'প্রথমে আলমারিতে জামাকাপড় যোগ করুন।', need_more:'একটি উপরের ও একটি নিচের পোশাক যোগ করুন।', gap_bottom:'আরও নিচের পোশাক = বেশি পোশাক', gap_footwear:'জুতো যোগ করুন', total:'জিনিস', outfits:'পোশাক', gaps:'ঘাটতি', rare:'৬ মাস ধরে পরা হয়নি', best_buy:'সবচেয়ে লাভজনক কেনাকাটা', items:'জিনিস', go:'প্রস্তুত — চলুন!', roi:'{item} {n}টি নতুন পোশাক খোলে', pack_for:'{days} দিনের জন্য প্যাক', pack_why:'{n} জিনিস → {c} পোশাক' },
+    te: { add_first:'ముందుగా అలమారాలో దుస్తులు జోడించండి.', need_more:'ఒక పైదుస్తు, ఒక కింది దుస్తు జోడించండి.', gap_bottom:'మరిన్ని కింది దుస్తులు = ఎక్కువ దుస్తులు', gap_footwear:'పాదరక్షలు జోడించండి', total:'వస్తువులు', outfits:'దుస్తులు', gaps:'లోటు', rare:'6 నెలలుగా ధరించలేదు', best_buy:'అత్యధిక విలువైన కొనుగోలు', items:'వస్తువులు', go:'సిద్ధం — వెళ్ళండి!', roi:'{item} {n} కొత్త దుస్తులను తెరుస్తుంది', pack_for:'{days} రోజులకు ప్యాక్', pack_why:'{n} వస్తువులు → {c} దుస్తులు' },
+    mr: { add_first:'आधी अलमारीत कपडे जोडा.', need_more:'एक वरचा आणि एक खालचा कपडा जोडा.', gap_bottom:'अधिक खालचे कपडे = जास्त पोशाक', gap_footwear:'पादत्राण जोडा', total:'वस्तू', outfits:'पोशाक', gaps:'कमतरता', rare:'6 महिने घातले नाहीत', best_buy:'सर्वात फायदेशीर खरेदी', items:'वस्तू', go:'तयार — चला!', roi:'{item} {n} नवे पोशाक उघडते', pack_for:'{days} दिवसांसाठी पॅक', pack_why:'{n} वस्तू → {c} पोशाक' },
+    gu: { add_first:'પહેલા અલમારીમાં કપડાં ઉમેરો.', need_more:'એક ઉપરનું અને એક નીચેનું કપડું ઉમેરો.', gap_bottom:'વધુ નીચેના કપડાં = વધુ પોશાક', gap_footwear:'પગરખાં ઉમેરો', total:'વસ્તુઓ', outfits:'પોશાક', gaps:'ઉણપ', rare:'6 મહિનાથી પહેર્યા નથી', best_buy:'સૌથી ફાયદાકારક ખરીદી', items:'વસ્તુઓ', go:'તૈયાર — ચાલો!', roi:'{item} {n} નવા પોશાક ખોલે', pack_for:'{days} દિવસ માટે પૅક', pack_why:'{n} વસ્તુઓ → {c} પોશાક' },
+    kn: { add_first:'ಮೊದಲು ಅಲಮಾರಿಯಲ್ಲಿ ಬಟ್ಟೆ ಸೇರಿಸಿ.', need_more:'ಒಂದು ಮೇಲಿನ, ಒಂದು ಕೆಳಗಿನ ಬಟ್ಟೆ ಸೇರಿಸಿ.', gap_bottom:'ಹೆಚ್ಚು ಕೆಳಗಿನ ಬಟ್ಟೆ = ಹೆಚ್ಚು ಉಡುಗೆ', gap_footwear:'ಪಾದರಕ್ಷೆ ಸೇರಿಸಿ', total:'ವಸ್ತುಗಳು', outfits:'ಉಡುಗೆಗಳು', gaps:'ಕೊರತೆ', rare:'6 ತಿಂಗಳಿಂದ ಧರಿಸಿಲ್ಲ', best_buy:'ಅತ್ಯಂತ ಲಾಭದಾಯಕ ಖರೀದಿ', items:'ವಸ್ತುಗಳು', go:'ಸಿದ್ಧ — ಹೋಗಿ!', roi:'{item} {n} ಹೊಸ ಉಡುಗೆಗಳನ್ನು ತೆರೆಯುತ್ತದೆ', pack_for:'{days} ದಿನಗಳಿಗೆ ಪ್ಯಾಕ್', pack_why:'{n} ವಸ್ತುಗಳು → {c} ಉಡುಗೆಗಳು' },
+    ml: { add_first:'ആദ്യം അലമാരയിൽ വസ്ത്രങ്ങൾ ചേർക്കൂ.', need_more:'ഒരു മേൽവസ്ത്രവും ഒരു കീഴ്വസ്ത്രവും ചേർക്കൂ.', gap_bottom:'കൂടുതൽ കീഴ്വസ്ത്രം = കൂടുതൽ വസ്ത്രങ്ങൾ', gap_footwear:'പാദരക്ഷ ചേർക്കൂ', total:'വസ്തുക്കൾ', outfits:'വസ്ത്രങ്ങൾ', gaps:'കുറവ്', rare:'6 മാസമായി ധരിച്ചിട്ടില്ല', best_buy:'ഏറ്റവും ലാഭകരമായ വാങ്ങൽ', items:'വസ്തുക്കൾ', go:'തയ്യാർ — പോകൂ!', roi:'{item} {n} പുതിയ വസ്ത്രങ്ങൾ തുറക്കുന്നു', pack_for:'{days} ദിവസത്തേക്ക് പായ്ക്ക്', pack_why:'{n} വസ്തുക്കൾ → {c} വസ്ത്രങ്ങൾ' },
+  };
+  function more(key, vars, L) { L = L || lang(); var s = (MORE[L] || MORE.en)[key] || MORE.en[key] || key; for (var k in (vars || {})) s = s.split('{' + k + '}').join(vars[k]); return s; }
   function lang() { try { return localStorage.getItem('chitti_vaani_lang') || 'hi'; } catch (e) { return 'hi'; } }
   function bag(L) { return D[L] || D.en; }
   function t(group, key, L) { L = L || lang(); var g = bag(L)[group] || {}; return g[key] || (D.en[group] || {})[key] || key; }
@@ -100,6 +112,7 @@
     judgeAxis: function (code, L) { return t('judge', code, L); },
     judgeMsg: function (code, L) { return t('judge', code, L); },
     tmpl: tmpl,
+    more: more,
     lang: lang,
   };
 })();

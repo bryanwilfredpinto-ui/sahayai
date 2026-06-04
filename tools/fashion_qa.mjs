@@ -61,8 +61,8 @@ for (const vp of [{ width: 375, height: 812 }, { width: 768, height: 1024 }, { w
 const { ctx, p, errs } = await newPage({ width: 375, height: 812 });
 await seed(p);
 
-// 2a. all 6 tabs switch
-for (const t of ['almari', 'review', 'occasion', 'budget', 'learn', 'family']) {
+// 2a. all 7 tabs switch
+for (const t of ['almari', 'review', 'occasion', 'budget', 'learn', 'family', 'more']) {
   const ok = await p.evaluate((tab) => { const btn = document.querySelector('.fa-tabbar button[data-tab="' + tab + '"]'); if (!btn) return false; btn.click(); const panel = document.getElementById('fa-panel-' + tab); return panel && panel.classList.contains('active'); }, t);
   ok ? P('tab switches: ' + t) : F('tab switches: ' + t);
 }
@@ -106,6 +106,16 @@ await p.waitForTimeout(800);
 await p.evaluate(() => faROI());
 await p.waitForTimeout(800);
 (await mutated(p, '#fa-roi-result')) ? P('button: Wardrobe ROI renders') : F('button: Wardrobe ROI');
+// more tab: audit, packing, emergency
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="more"]').click(); faAudit(); });
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-audit-result')) ? P('button: Wardrobe Audit renders') : F('button: Wardrobe Audit');
+await p.evaluate(() => faPacking());
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-pack-result')) ? P('button: Travel Packing renders') : F('button: Travel Packing');
+await p.evaluate(() => faEmergency());
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-emrg-result')) ? P('button: Emergency outfit renders') : F('button: Emergency outfit');
 
 // 2c. add-item form: open modal, fill, save -> wardrobe count up
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="almari"]').click(); });

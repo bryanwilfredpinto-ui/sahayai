@@ -193,6 +193,7 @@ body{font-size:17px}
     <button data-tab="budget" onclick="faTab('budget',this)" data-vai-i18n="fa.t.budget">💸 बजट</button>
     <button data-tab="learn" onclick="faTab('learn',this)" data-vai-i18n="fa.t.learn">🎓 सीखें</button>
     <button data-tab="family" onclick="faTab('family',this)" data-vai-i18n="fa.t.family">👨‍👩‍👧 परिवार + Twin</button>
+    <button data-tab="more" onclick="faTab('more',this)" data-vai-i18n="fa.t.more">✨ और</button>
   </nav>
 
   <!-- ════ TAB · ALMARI ════ -->
@@ -381,6 +382,46 @@ body{font-size:17px}
         <button onclick="faExplain('fa-card-08')" aria-label="Chitti समझाए">🤖</button>
         <button onclick="faFeedback('fa_twin',1)">👍</button>
         <button onclick="faFeedback('fa_twin',-1)">👎</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ TAB · MORE (Wardrobe Audit · Travel Packing · Emergency) ════ -->
+  <section class="fa-panel" id="fa-panel-more" role="tabpanel">
+    <div data-chitti-response="fa-card-10" class="sds-card chitti-response" data-chitti-section="🔍 अलमारी की जाँच">
+      <h2 class="sds-card-title"><span class="ico">🔍</span> <span data-vai-i18n="fa.m.audit">अलमारी की जाँच</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.audit_sub">Chitti आपकी अलमारी जाँचती है — किस चीज़ की कमी है, क्या जोड़ी बनती है, कौन-से कपड़े महीनों से नहीं पहने।</p>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faAudit()" data-vai-i18n="fa.m.audit_btn">🔍 मेरी अलमारी जाँचो</button></div>
+      <div id="fa-audit-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-audit-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-10')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_audit',1)">👍</button><button onclick="faFeedback('fa_audit',-1)">👎</button>
+      </div>
+    </div>
+
+    <div data-chitti-response="fa-card-11" class="sds-card chitti-response" data-chitti-section="🧳 यात्रा पैकिंग">
+      <h2 class="sds-card-title"><span class="ico">🧳</span> <span data-vai-i18n="fa.m.pack">यात्रा पैकिंग</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.pack_sub">कितने दिन की यात्रा? Chitti आपकी अलमारी से mix-and-match पैकिंग सूची बनाएगी — कम कपड़े, ज़्यादा outfit।</p>
+      <input class="fa-input" id="fa-pack-days" type="number" min="1" max="14" value="3" placeholder="कितने दिन?">
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faPacking()" data-vai-i18n="fa.m.pack_btn">🧳 पैकिंग सूची बनाओ</button></div>
+      <div id="fa-pack-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-pack-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-11')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_pack',1)">👍</button><button onclick="faFeedback('fa_pack',-1)">👎</button>
+      </div>
+    </div>
+
+    <div data-chitti-response="fa-card-12" class="sds-card chitti-response" data-chitti-section="⚡ तुरंत पहनावा">
+      <h2 class="sds-card-title"><span class="ico">⚡</span> <span data-vai-i18n="fa.m.emrg">तुरंत पहनावा</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.emrg_sub">5 मिनट में निकलना है? Chitti आपकी अलमारी से एक तैयार outfit तुरंत चुनेगी।</p>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faEmergency()" data-vai-i18n="fa.m.emrg_btn">⚡ अभी एक outfit दो</button></div>
+      <div id="fa-emrg-result" class="fa-result"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-emrg-result'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-12')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_emrg',1)">👍</button><button onclick="faFeedback('fa_emrg',-1)">👎</button>
       </div>
     </div>
   </section>
@@ -855,6 +896,62 @@ async function faROI(){
     sp = (CURRENT_LANG==='en'?('Best value buy: '+rois[0].candidate.colour+' '+rois[0].candidate.category+', unlocks '+rois[0].unlocked+' new outfits'):('सबसे फ़ायदेमंद: '+rois[0].candidate.colour+' '+rois[0].candidate.category+', '+rois[0].unlocked+' नए outfit'));
   }
   const h = document.getElementById(host); h.innerHTML = html; h.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
+/* ════════ More: Wardrobe Audit · Travel Packing · Emergency (deterministic, localized) ════════ */
+function faMoreT(key, vars){ const FD = faDyn(); return FD ? FD.more(key, vars) : key; }
+async function faAudit(){
+  const host = 'fa-audit-result'; const items = await faAllItems(); const E = faEngine();
+  if (!items.length){ const m = faMoreT('add_first'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
+  const cnt = {}; items.forEach(i => cnt[i.category] = (cnt[i.category]||0)+1);
+  const sixMo = Date.now() - 1000*60*60*24*182;
+  const rare = items.filter(i => { const t = i.last_worn ? Date.parse(i.last_worn) : Date.parse(i.added_at); return t && t < sixMo; });
+  const built = E ? E.buildOutfits(items, { max: 1000 }).count : 0;
+  // gaps
+  const gaps = [];
+  if ((cnt.bottom||0) < (cnt.top||0) - 1) gaps.push(faMoreT('gap_bottom'));
+  if (!(cnt.footwear)) gaps.push(faMoreT('gap_footwear'));
+  // best ROI buy
+  let roiLine = '';
+  if (E){ const cands = [{category:'bottom',colour:'beige',desc:'beige chinos'},{category:'top',colour:'white',desc:'white shirt'},{category:'footwear',colour:'brown',desc:'brown loafers'}]; const best = cands.map(c=>E.wardrobeROI(items,c)).sort((a,b)=>b.unlocked-a.unlocked)[0]; if (best && best.unlocked>0) roiLine = faMoreT('roi', { item: (faDyn()?(best.candidate.colour+' '+best.candidate.category):best.candidate.desc), n: best.unlocked }); }
+  let html = '<div class="fa-tiers">' +
+    '<div class="fa-tier"><span class="lab">🧬 '+faMoreT('total')+'</span><div>'+items.length+' · '+built+' '+faMoreT('outfits')+'</div></div>' +
+    (gaps.length?'<div class="fa-tier budget"><span class="lab">⚠️ '+faMoreT('gaps')+'</span><div>'+esc(gaps.join(' · '))+'</div></div>':'') +
+    (rare.length?'<div class="fa-tier"><span class="lab">♻️ '+faMoreT('rare')+'</span><div>'+rare.length+'</div></div>':'') +
+    (roiLine?'<div class="fa-tier budget"><span class="lab">🛒 '+faMoreT('best_buy')+'</span><div>'+esc(roiLine)+'</div></div>':'') +
+  '</div>';
+  const h = document.getElementById(host); h.innerHTML = html; const sp = items.length+' '+faMoreT('total')+', '+built+' '+faMoreT('outfits'); h.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+async function faPacking(){
+  const host = 'fa-pack-result'; const items = await faAllItems(); const E = faEngine();
+  const days = Math.max(1, Math.min(14, parseInt(document.getElementById('fa-pack-days').value||'3',10)));
+  if (!items.length || !E){ const m = faMoreT('add_first'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
+  // capsule: pick a minimal set of tops/bottoms/footwear that maximises outfits
+  const tops = items.filter(i=>i.category==='top').slice(0, Math.min(3, Math.ceil(days/2)+1));
+  const bottoms = items.filter(i=>i.category==='bottom').slice(0, Math.min(2, Math.ceil(days/3)+1));
+  const foot = items.filter(i=>i.category==='footwear').slice(0,2);
+  const extra = items.filter(i=>['outfit','jewellery','dupatta','bag'].indexOf(i.category)>=0).slice(0,2);
+  const capsule = tops.concat(bottoms, foot, extra);
+  const combos = E.buildOutfits(capsule, { max: 30 }).count;
+  const list = capsule.map(i => '<div class="p" style="font-size:10px;padding:2px">'+(i.photo?'<img alt="" src="'+i.photo+'">':'👕')+'<span class="role">'+esc(i.category)+'</span></div>').join('');
+  let html = '<div class="fa-outfit"><div class="title">🧳 '+faMoreT('pack_for', { days: days })+' · '+combos+' '+faMoreT('outfits')+'</div>' +
+    '<div class="why">'+esc(faMoreT('pack_why', { n: capsule.length, c: combos }))+'</div>' +
+    '<div class="pieces" style="grid-template-columns:repeat(5,1fr)">'+list+'</div></div>';
+  const h = document.getElementById(host); h.innerHTML = html; const sp = faMoreT('pack_for', { days: days })+', '+capsule.length+' '+faMoreT('items'); h.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+async function faEmergency(){
+  const host = 'fa-emrg-result'; const items = await faAllItems(); const E = faEngine();
+  if (!items.length || !E){ const m = faMoreT('add_first'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
+  const recs = E.recommend(items, faCtx({ max: 1 }));
+  if (!recs.length){ const m = faMoreT('need_more'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
+  const r = recs[0];
+  const h = document.getElementById(host);
+  h.innerHTML = '<div style="font-weight:800;color:#138808;margin-bottom:6px">⚡ '+faMoreT('go')+'</div>' + faRenderOutfitCard(r);
+  const FD = faDyn(); const names = r.items.map(it => (it.colour?it.colour+' ':'')+it.category).join(', ');
+  const sp = faMoreT('go') + ': ' + names; h.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
 
