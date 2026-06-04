@@ -21,7 +21,7 @@ await new Promise(r => server.listen(0, '127.0.0.1', r));
 const BASE = `http://127.0.0.1:${server.address().port}`;
 
 // Allowed Latin tokens (lowercased): brands + §6 technical terms + units + product names.
-const WHITE = new Set(['chitti', 'chitthi', 'sahayai', 'vaani', 'obd', 'dtc', 'rsi', 'macd', 'sebi', 'rbi', 'upi', 'npci', 'fssai', 'abs', 'ev', 'puc', 'rc', 'sos', 'km', 'kmpl', 'kms', 'ac', 'dpf', 'egr', 'srs', 'esp', 'tpms', 'eps', 'id', 'co', 'pdf', 'gst', 'pan', 'emi', 'rsa', 'isl', 'app', 'ok', 'english', 'sa', 'maf', 'map', 'evap', 'ecm', 'ecu', 'soc', 'mil', 'cvt', 'at', 'mt',
+const WHITE = new Set(['chitti', 'chitthi', 'sahayai', 'vaani', 'obd', 'dtc', 'rsi', 'macd', 'sebi', 'rbi', 'upi', 'npci', 'fssai', 'abs', 'ev', 'puc', 'rc', 'sos', 'km', 'kmpl', 'kms', 'ac', 'dpf', 'egr', 'srs', 'esp', 'tpms', 'eps', 'id', 'co', 'pdf', 'gst', 'pan', 'emi', 'rsa', 'isl', 'app', 'ok', 'english', 'bluetooth', 'elm327', 'wi', 'fi', 'usb', 'sa', 'maf', 'map', 'evap', 'ecm', 'ecu', 'soc', 'mil', 'cvt', 'at', 'mt',
   'honda', 'hero', 'bajaj', 'tvs', 'yamaha', 'suzuki', 'ktm', 'royal', 'enfield', 'splendor', 'activa', 'jupiter', 'pulsar', 'ola', 'ather', 'maruti', 'swift', 'creta', 'nexon', 'venue', 'baleno', 'tata', 'hyundai', 'plus', 'meteor', 'classic', 'bullet', 'apache', 'jawa', 'i3s', 'disc']);
 const LATIN = /[A-Za-z][A-Za-z'’]{2,}/g;
 const NONLATIN = /[ऀ-ॿঀ-৿஀-௿ఀ-౿઀-૿ಀ-೿ഀ-ൿ]/; // Deva/Beng/Tamil/Telu/Guj/Kann/Mala

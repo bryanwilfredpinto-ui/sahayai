@@ -12,6 +12,38 @@
 
 ---
 
+## ✅ CLOSED 2026-06-04 (v2 build)
+Most of this report has been **closed**. Status now:
+- **§1 visuals — CLOSED:** `chitti_breakdown_diagrams.js` — 13 labelled inline-SVG **locator diagrams**
+  (kill switch, fuel tap, fuse box, battery terminals, jumper hookup, jack point, chain adjust,
+  shift-lock, fob key, coolant reservoir, EV aux-battery, EV charge port) render at the top of each
+  fix; 9 languages. (Step **video** still TODO — voice + diagram shipped.)
+- **§2 coverage — CLOSED:** KB now **10 bike + 9 car** scenarios (added chain, all-electrics-dead,
+  stalling, smoke-by-colour, cranks-no-fire, won't-move, locked-out, serpentine-belt).
+- **§3 EV — CLOSED:** `bike_ev_nopower` + `car_ev_nopower` added, incl. the **12 V aux-battery** no-start
+  and the **flat-bed-only / never-flat-tow** safety rule + "never touch orange HV cables".
+- **§4 OBD2 live — CLOSED:** `chitti_obd_ble.js` — real **Web-Bluetooth ELM327** connect + live
+  RPM/coolant/speed/voltage + DTC read (→ `/api/4w/obd/snapshot` when online), honest "use Symptom
+  mode" fallback on iPhone/desktop. Wired on both pages.
+- **§5 make/model + triage — CLOSED:** per-scenario **triage** "check these first"; per-cause `when`
+  conditions de-emphasise causes that don't match the saved vehicle (fuel→EV/petrol/diesel, AT/MT).
+- **§6 roadside reality — CLOSED:** **🧭 "Couldn't fix it? Find help nearby"** (geo maps links for
+  pump / puncture / mechanic / hospital) + **RSA insurance reminder** + collapsible **night/highway
+  safety drill** + 🆘 SOS family.
+- **§7 trust — PARTIAL:** self-repair **injury disclaimer** gate + per-cause **"did it fix it?" outcome
+  feedback** shipped. Still open: certified-mechanic sign-off + measured accuracy (needs the live-LLM
+  eval run, MECH-4).
+- **§8 platform blockers — UNCHANGED (Sire-gated):** live Vaani answers + eval numbers (DeepSeek
+  funding + relevance-rail); Turso persistence.
+
+Proof: QA 0 issues · cert 24/24 · Hinglish scanner 8 (bike 0) · 9-language 0-fallback · Hindi & Tamil
+visually inspected. Remaining: step **video**, **certified-mechanic validation**, and the Sire-gated
+platform items. The detailed original gap analysis is kept below for the record.
+
+---
+
+---
+
 ## 1. 🔴 The "I can't SEE where that is" gap (biggest real-world failure)
 A mechanic **points**: *"that switch, there."* The wizard is **text + voice only**. A first-time
 or illiterate user told *"turn the fuel tap to RES"* often **cannot find the fuel tap, the fuse

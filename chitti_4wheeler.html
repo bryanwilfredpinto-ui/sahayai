@@ -11,6 +11,7 @@
 <script src="strings.js?v=20260604" defer></script>
 <script src="chitti_lang.js?v=20260604" defer></script>
 <script src="feedback-widget.js?v=20260604" data-page="chitti_4wheeler" defer></script>
+<script src="chitti_obd_ble.js?v=20260604"></script>
 <style>
 .mc-hp .health-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px;font-size:14px}
 .mc-hp .health-cell{background:#fff;border:1px solid var(--sds-line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
@@ -450,7 +451,7 @@
     </div>
     <button class="sds-btn primary block" onclick="mcObdScan()"><span data-vai-i18n="obd.scan">इस code का मतलब</span></button>
     <div id="mc-obd-result" style="margin-top:10px"></div>
-    <div style="font-size:12px;color:var(--sds-muted);margin-top:8px" data-vai-i18n="obd.disclaim">Phase 2 में Bluetooth direct read भी आएगा।</div>
+    <button class="sds-btn block" style="margin-top:10px;border:1.5px solid var(--sds-navy)" onclick="(window.ChittiOBD&&ChittiOBD.open({vehicle:'4w'}))">🔌 <span data-vai-i18n="obd.live">Live OBD</span> (Bluetooth)</button>
     <div class="sds-card-toolbar">
       <button onclick="speakText('OBD2 scan. Error code likhiye, Chitti use plain Hindi mein samjhayegi.', CURRENT_LANG)">🔊</button>
       <span class="sep"></span>
@@ -646,6 +647,7 @@
 <script src="chitti_a11y.js?v=20260604"></script>
 <script src="chitti_mechanic_shared.js?v=20260604"></script>
 <script src="chitti_breakdown_kb.js?v=20260604"></script>
+<script src="chitti_breakdown_diagrams.js?v=20260604"></script>
 <script src="chitti_breakdown_ui.js?v=20260604"></script>
 <script src="feedback-widget.js?v=20260604" data-page="chitti_mechanic_car"></script>
 <script src="chitti_features.js?v=20260604" defer></script>
