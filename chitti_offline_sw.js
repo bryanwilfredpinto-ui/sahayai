@@ -49,10 +49,12 @@ const PRECACHE_URLS = [
   '/chitti_camera.js',
   '/chitti_isl_dictionary.json',
   '/feedback-widget.js',
+  '/chitti_breakdown_kb.js',
+  '/chitti_breakdown_ui.js',
 ];
 
 // Substrate scripts → stale-while-revalidate.
-const SUBSTRATE_RX = /\/(chitti_a11y|chitti_features|chitti_camera|chitti_offline|feedback-widget)\.js(\?.*)?$/;
+const SUBSTRATE_RX = /\/(chitti_a11y|chitti_features|chitti_camera|chitti_offline|chitti_breakdown_kb|chitti_breakdown_ui|feedback-widget)\.js(\?.*)?$/;
 const SUBSTRATE_JSON_RX = /\/chitti_isl_dictionary\.json(\?.*)?$/;
 // Static assets → cache-first.
 const STATIC_RX = /\.(css|js|json|svg|png|webp|jpg|jpeg|gif|woff2?|mp3|ogg)(\?.*)?$/;
