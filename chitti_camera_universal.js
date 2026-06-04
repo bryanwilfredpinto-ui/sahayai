@@ -426,16 +426,16 @@
     return overlay;
   }
 
-  function openPicker() {
-    var ov = document.getElementById('chitti-cam-overlay') || (function () {
-      var built = buildPicker();
-      built.id = 'chitti-cam-overlay';
-      document.body.appendChild(built);
-      return built;
-    })();
-    // Refresh labels if language changed since last open
+  // Re-translate the picker chrome (title + every mode tile) into the
+  // CURRENT language. Called on open AND on chitti:langchange so a user
+  // who switches language while the sheet is open sees it update live
+  // (strict language-compliance — no stale English left on screen).
+  function refreshPickerLabels(ov) {
+    if (!ov) return;
     var h2 = ov.querySelector('#chitti-cam-title');
     if (h2) h2.textContent = t('title');
+    var close = ov.querySelector('.chitti-cam-close');
+    if (close) close.setAttribute('aria-label', t('cancel'));
     ov.querySelectorAll('.chitti-cam-mode').forEach(function (tile, i) {
       var m = MODES[i];
       if (!m) return;
@@ -445,6 +445,17 @@
       if (hnt) hnt.textContent = modeHint(m);
       tile.setAttribute('aria-label', modeLabel(m) + ' — ' + modeHint(m));
     });
+  }
+
+  function openPicker() {
+    var ov = document.getElementById('chitti-cam-overlay') || (function () {
+      var built = buildPicker();
+      built.id = 'chitti-cam-overlay';
+      document.body.appendChild(built);
+      return built;
+    })();
+    // Refresh labels if language changed since last open
+    refreshPickerLabels(ov);
     ov.setAttribute('aria-hidden', 'false');
     // Auto-announce for blind users
     try {
@@ -751,6 +762,10 @@
           fab.setAttribute('aria-label', t('scan') + ' — ' + t('title'));
           fab.setAttribute('title', t('scan'));
         }
+        // If the mode-picker sheet is open, re-translate it live so no
+        // stale English tile is left when the user switches language.
+        var ov = document.getElementById('chitti-cam-overlay');
+        if (ov && ov.getAttribute('aria-hidden') === 'false') refreshPickerLabels(ov);
       });
     } catch (_) {}
     global.Chitti = global.Chitti || {};

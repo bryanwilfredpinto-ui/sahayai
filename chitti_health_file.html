@@ -2417,12 +2417,18 @@ const HF_I18N = {
 };
 
 function hfGetLang(){
-  try { return localStorage.getItem(HF_LANG_KEY) || 'hi'; }
+  // Read the substrate key (chitti_lang) first so the tagged-element path
+  // stays in sync when chitti_lang.js drives the change; fall back to the
+  // legacy Vaani key, then Hindi. (QA 2026-06-05 — language desync fix.)
+  try { return localStorage.getItem('chitti_lang') || localStorage.getItem(HF_LANG_KEY) || 'hi'; }
   catch(e){ return 'hi'; }
 }
 function hfSetLanguage(lang){
-  try { localStorage.setItem(HF_LANG_KEY, lang); } catch(e){}
+  try { localStorage.setItem(HF_LANG_KEY, lang); localStorage.setItem('chitti_lang', lang); } catch(e){}
   hfApplyStrings();
+  // Drive the Vaani-anchored substrate, which is the single translator for
+  // all page chrome (tagged + untagged) — the same way Chitti Vaani works.
+  try { if (window.Chitti && window.Chitti.lang && window.Chitti.lang.set) window.Chitti.lang.set(lang); } catch(e){}
   // Cross-page sync: notify any listeners (Vaani's substrate listens for this).
   try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang } })); } catch(e){}
 }
@@ -2433,15 +2439,14 @@ function hfApplyStrings(){
   // Resolve key: try requested lang → fall back to Hindi → fall back to English.
   // Per Sire: never English fallback for Hindi-default users. So the chain is
   // lang → hi → en. (The five non-translated langs hit `hi` for free.)
-  const bag = HF_I18N[lang] || HF_I18N.hi;
-  const hi  = HF_I18N.hi;
-  const en  = HF_I18N.en;
-  document.querySelectorAll('[data-hf-i18n]').forEach(el => {
-    const k = el.getAttribute('data-hf-i18n');
-    const v = bag[k] || hi[k] || en[k];
-    if (v) el.textContent = v;
-  });
   document.documentElement.lang = lang;
+  // NOTE: the data-hf-i18n HF_I18N bag is intentionally NOT applied to the
+  // DOM. It was code-mixed (Hinglish — e.g. "medical documents को सुरक्षित
+  // रखती है"), which violates the no-Hinglish rule (CTO.md §5), and it was
+  // incomplete (missing keys fell back to English, leaking English in every
+  // non-en language). All chrome — tagged and untagged — now translates
+  // through the single Vaani-anchored substrate (chitti_lang.js + the T
+  // dictionary), which carries pure, audited translations. (QA 2026-06-05)
 }
 
 /* ── Hash-deep-link routing (Sire 2026-05-24 Gap-3) ──

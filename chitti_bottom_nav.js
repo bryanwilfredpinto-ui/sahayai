@@ -82,8 +82,14 @@
   };
 
   function getLang() {
-    try { return localStorage.getItem(STORAGE_KEY) || 'hi'; }
-    catch (e) { return 'hi'; }
+    // Read the substrate key first (chitti_lang.js persists to
+    // 'chitti_lang'); fall back to the legacy Vaani key, then Hindi.
+    // Reading only 'chitti_vaani_lang' left the nav stuck in Hindi/English
+    // when the user switched language via the main selector. (QA 2026-06-05)
+    try {
+      return localStorage.getItem('chitti_lang') ||
+             localStorage.getItem(STORAGE_KEY) || 'hi';
+    } catch (e) { return 'hi'; }
   }
   function label(slug) {
     var lang = getLang();
@@ -178,10 +184,22 @@
   } else {
     render();
   }
-  // Language updates
-  window.addEventListener('chitti:langchange', refreshLabels);
+  // Language updates. Listen on BOTH document and window: chitti_lang.js
+  // dispatches chitti:langchange on document, and the event detail carries
+  // the new lang. (Pre-fix, this listened on window only — combined with a
+  // non-bubbling document event, the nav never updated. QA 2026-06-05.)
+  function onLangChange(e) {
+    try {
+      if (e && e.detail && e.detail.lang) {
+        localStorage.setItem('chitti_lang', e.detail.lang);
+      }
+    } catch (_) {}
+    refreshLabels();
+  }
+  document.addEventListener('chitti:langchange', onLangChange);
+  window.addEventListener('chitti:langchange', onLangChange);
   window.addEventListener('storage', function (e) {
-    if (e.key === STORAGE_KEY) refreshLabels();
+    if (e.key === STORAGE_KEY || e.key === 'chitti_lang') refreshLabels();
   });
   // Hash changes (e.g. user lands on chitti_health_file.html#profile)
   window.addEventListener('hashchange', refreshActive);
