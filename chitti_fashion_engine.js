@@ -35,6 +35,73 @@
   var BRIGHTS = ['red', 'orange', 'yellow', 'pink', 'green', 'purple', 'mustard', 'लाल', 'नारंगी', 'पीला', 'गुलाबी', 'हरा'];
   function isBright(name) { var s = String(name || '').toLowerCase(); return BRIGHTS.some(function (c) { return s.indexOf(c) >= 0; }); }
 
+  // ════════ REAL COLOUR SCIENCE (gap P0#2) — works on actual hex from photo ════════
+  function hexToHSL(hex) {
+    if (!hex) return null; hex = String(hex).replace('#', '');
+    if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    if (hex.length < 6) return null;
+    var r = parseInt(hex.slice(0, 2), 16) / 255, g = parseInt(hex.slice(2, 4), 16) / 255, b = parseInt(hex.slice(4, 6), 16) / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0, s = 0, l = (mx + mn) / 2;
+    if (d) { s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0)); else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; }
+    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+  }
+  // analyse a real colour -> undertone (warm/cool/neutral) · value (light/mid/dark) · chroma (muted/clear)
+  function analyseColour(hex, name) {
+    var hsl = hexToHSL(hex);
+    if (!hsl) { return { family: colourFamily(name), undertone: (colourFamily(name) === 'warm' ? 'warm' : colourFamily(name) === 'cool' ? 'cool' : 'neutral'), value: 'mid', chroma: isBright(name) ? 'clear' : 'muted', hsl: null }; }
+    var undertone = 'neutral';
+    if (hsl.s >= 12) undertone = (hsl.h >= 45 && hsl.h <= 200) ? 'cool' : 'warm'; // green→blue range cool-ish, reds/oranges/yellows warm
+    if (hsl.h >= 16 && hsl.h <= 45) undertone = 'warm';   // oranges/golds
+    if (hsl.h > 200 && hsl.h < 320) undertone = 'cool';   // blue→violet
+    var value = hsl.l >= 68 ? 'light' : (hsl.l <= 32 ? 'dark' : 'mid');
+    var chroma = hsl.s >= 55 ? 'clear' : (hsl.s <= 20 ? 'muted' : 'soft');
+    var family = hsl.s < 12 ? 'neutral' : undertone;
+    return { family: family, undertone: undertone, value: value, chroma: chroma, hsl: hsl };
+  }
+  // personal palette: a "season" (warm/cool/clear/soft) -> guidance + scoring bias
+  var PALETTES = {
+    warm: { best: ['warm', 'neutral'], avoid: ['cool'], note: 'warm tones (mustard, rust, olive, cream, gold) glow on you' },
+    cool: { best: ['cool', 'neutral'], avoid: ['warm'], note: 'cool tones (navy, teal, plum, grey, true white) suit you' },
+    clear: { best: ['clear', 'neutral'], avoid: ['muted'], note: 'clear, saturated colours with crisp contrast suit you' },
+    soft: { best: ['muted', 'neutral'], avoid: ['clear'], note: 'soft, muted tones and low contrast flatter you' },
+    neutral: { best: ['neutral', 'warm', 'cool'], avoid: [], note: 'most tones work — anchor with neutrals' },
+  };
+  function paletteFor(season) { return PALETTES[season] || PALETTES.neutral; }
+  // derive a likely season from the wardrobe's analysed colours
+  function deriveSeason(items) {
+    var warm = 0, cool = 0, clear = 0, muted = 0;
+    (items || []).forEach(function (it) { var a = analyseColour(it.hex, it.colour); if (a.undertone === 'warm') warm++; else if (a.undertone === 'cool') cool++; if (a.chroma === 'clear') clear++; else if (a.chroma === 'muted') muted++; });
+    var season = warm === cool ? 'neutral' : (warm > cool ? 'warm' : 'cool');
+    return { season: season, warm: warm, cool: cool, clear: clear, muted: muted };
+  }
+
+  // ════════ FABRIC + PATTERN intelligence (gap P0#4) ════════
+  function fabricSeason(it) {
+    var hay = hayOf(it);
+    if (/linen|cotton|chiffon|georgette|light|mul|khadi/.test(hay)) return 'summer';
+    if (/wool|tweed|velvet|leather|denim|fleece|heavy|woolen|woollen/.test(hay)) return 'winter';
+    if (/silk|satin|crepe|rayon|poly/.test(hay)) return 'all';
+    return 'all';
+  }
+  function patternOf(it) { var hay = hayOf(it); if (/floral|print|polka|stripe|check|plaid|geometr|paisley|bandhej|ikat|block.?print/.test(hay)) return 'patterned'; return 'solid'; }
+  function patternRule(items) {
+    var patt = (items || []).filter(function (i) { return patternOf(i) === 'patterned'; }).length;
+    if (patt >= 2) return { ok: false, code: 'two_patterns', note: 'two prints compete — keep one print, pair with solids' };
+    return { ok: true, code: 'pattern_ok', note: '' };
+  }
+
+  // ════════ FIT / PROPORTION (gap P0#3) — garment terms only, never the body ════════
+  function fitNote(items, profile) {
+    profile = profile || {};
+    var fit = profile.fit; // relaxed | structured | any
+    var has = function (re) { return (items || []).some(function (i) { return re.test(hayOf(i)); }); };
+    if (fit === 'structured') return { code: 'fit_structured', note: 'a structured cut + a defined waist reads sharp and intentional' };
+    if (fit === 'relaxed') return { code: 'fit_relaxed', note: 'a relaxed, draped cut moves comfortably and reads easy' };
+    if (has(/blazer|jacket|kurta/) ) return { code: 'fit_layer', note: 'an open layer adds a clean vertical line' };
+    return { code: 'fit_any', note: 'tuck or roll once to define the line' };
+  }
+
   // ---------- category formality (0 casual .. 5 grand) ----------
   // keyword -> formality. Higher = dressier.
   var FORMALITY = [
@@ -44,7 +111,7 @@
     [/kurta|kurti|churidar|salwar|palazzo|skirt|jutti|sandal|heel|watch|sweater|jacket|loafer|chino|dupatta/i, 2],
     [/jeans|tee|t-shirt|tshirt|hoodie|sneaker|shorts|chappal|slipper|flip|track|gym|hood/i, 0],
   ];
-  function hayOf(it) { return ((it.category || '') + ' ' + (it.colour || '') + ' ' + (it.desc || it.name || '')).toLowerCase(); }
+  function hayOf(it) { return ((it.category || '') + ' ' + (it.colour || '') + ' ' + (it.fabric || '') + ' ' + (it.pattern || '') + ' ' + (it.desc || it.name || '')).toLowerCase(); }
   function itemFormality(it) {
     var hay = hayOf(it);
     if (it.category === 'outfit') { if (/sherwani|lehenga|gown/i.test(hay)) return 5; if (/saree|sari|\bsuit\b/i.test(hay)) return 4; if (/anarkali/i.test(hay)) return 3; return 3; }
@@ -105,6 +172,18 @@
     else if (distinctFams === 1) { score = 0.85; type = 'monochrome'; why = 'one colour family reads cohesive'; }
     else if (distinctFams === 2) { score = 0.8; type = 'two-tone'; why = 'two families with contrast — balanced'; }
     else { score = 0.6; type = 'mixed'; why = 'several families — add a neutral anchor to calm it'; }
+    // refine with REAL colour when hex present (additive — no hex => unchanged, gold-safe)
+    var withHex = (items || []).filter(function (it) { return it.hex; });
+    if (withHex.length >= 2) {
+      var an = withHex.map(function (it) { return analyseColour(it.hex, it.colour); });
+      var nonNeutral = an.filter(function (a) { return a.family !== 'neutral'; });
+      var undertones = {}; nonNeutral.forEach(function (a) { undertones[a.undertone] = 1; });
+      var values = an.map(function (a) { return a.value; });
+      var clash = undertones.warm && undertones.cool && nonNeutral.length >= 2; // mixing warm+cool brights
+      var valSpread = (values.indexOf('light') >= 0 && values.indexOf('dark') >= 0);
+      if (clash) { score = Math.min(score, 0.5); type = 'undertone-clash'; why = 'warm and cool tones pull against each other — keep one temperature'; }
+      else if (valSpread && type !== 'competing') { score = Math.max(score, 0.9); type = 'value-contrast'; why = 'light + dark gives clean, intentional contrast'; }
+    }
     return { score: score, type: type, why: why };
   }
 
@@ -165,10 +244,17 @@
     var byCat = { top: [], bottom: [], footwear: [], outfit: [], jewellery: [], dupatta: [], bag: [] };
     (items || []).forEach(function (it) { if (byCat[it.category]) byCat[it.category].push(it); });
     var combos = [];
+    var liked = (opts.liked || {}); // learning loop: { colours:{family:n}, cats:{cat:n} }
+    function likeBoost(set) {
+      if (!liked.colours && !liked.cats) return 0; var b = 0;
+      set.forEach(function (s) { var f = analyseColour(s.hex, s.colour).family; if (liked.colours && liked.colours[f]) b += 0.04; if (liked.cats && liked.cats[s.category]) b += 0.02; });
+      return Math.min(0.15, b);
+    }
     function rank(set) {
       var h = colorHarmony(set), o = classifyOccasion(set);
       var occFit = targetOcc ? (o.occasion === targetOcc ? 1 : (set.some(function (s) { return (s.occasions || []).indexOf(targetOcc) >= 0; }) ? 0.7 : 0.3)) : 0.8;
-      return { items: set, score: Math.round((h.score * 0.5 + occFit * 0.5) * 100), harmony: h.type, occasion: o.occasion, occFit: occFit };
+      var base = h.score * 0.5 + occFit * 0.5;
+      return { items: set, score: Math.round(Math.min(1, base + likeBoost(set)) * 100), harmony: h.type, occasion: o.occasion, occFit: occFit };
     }
     // full outfits + footwear
     byCat.outfit.forEach(function (o) { (byCat.footwear.length ? byCat.footwear : [null]).forEach(function (f) { combos.push(rank([o].concat(f ? [f] : []))); }); });
@@ -216,6 +302,9 @@
     classifyOccasion: classifyOccasion, colorHarmony: colorHarmony, seasonalSuitability: seasonalSuitability,
     confidence: confidence, judge: judge, explain: explain,
     buildOutfits: buildOutfits, wardrobeROI: wardrobeROI, recommend: recommend,
-    version: 'fashion-engine-1.0',
+    // craft upgrades (gaps P0#2/#3/#4): real colour science, palette, fabric/pattern, fit
+    hexToHSL: hexToHSL, analyseColour: analyseColour, paletteFor: paletteFor, deriveSeason: deriveSeason,
+    fabricSeason: fabricSeason, patternOf: patternOf, patternRule: patternRule, fitNote: fitNote,
+    version: 'fashion-engine-2.0',
   };
 });

@@ -80,6 +80,21 @@ ok('judge: senior + heels flags age/comfort',
   ok('recommend: returns outfit with confidence + explain + judge', r.length === 1 && typeof r[0].confidence === 'number' && !!r[0].explain && !!r[0].judge);
 })();
 
+// ---- craft v2.0: colour science / palette / fabric / pattern / fit ----
+ok('colour science: navy hex = cool/dark', (() => { const a = E.analyseColour('#1A3A6B', 'navy'); return a.undertone === 'cool' && a.value === 'dark'; })());
+ok('colour science: mustard hex = warm', E.analyseColour('#D4A017', 'mustard').undertone === 'warm');
+ok('colour science: undertone-clash lowers harmony', (() => { const h = E.colorHarmony([{ category: 'top', colour: 'mustard', hex: '#D4A017' }, { category: 'bottom', colour: 'teal', hex: '#0B6E6E' }]); return h.type === 'undertone-clash' && h.score <= 0.5; })());
+ok('palette: warm season recommends warm+neutral', (() => { const p = E.paletteFor('warm'); return p.best.indexOf('warm') >= 0 && p.best.indexOf('neutral') >= 0; })());
+ok('fabric season: linen=summer, wool=winter', E.fabricSeason({ category: 'top', fabric: 'linen' }) === 'summer' && E.fabricSeason({ category: 'top', fabric: 'wool' }) === 'winter');
+ok('pattern rule: two prints flagged', E.patternRule([{ desc: 'floral top' }, { desc: 'striped pant' }]).ok === false);
+ok('fit note: structured returns garment-term guidance (no body words)', (() => { const n = E.fitNote([{ category: 'top' }], { fit: 'structured' }); return !!n.note && !/fat|thin|body|size/i.test(n.note); })());
+ok('learning: liked colours boost score (>= baseline)', (() => {
+  const wd = [{ id: 'a', category: 'top', colour: 'navy', hex: '#1A3A6B' }, { id: 'b', category: 'bottom', colour: 'beige', hex: '#D8C8A8' }, { id: 'c', category: 'footwear', colour: 'brown', hex: '#5A3A22' }];
+  const base = E.buildOutfits(wd, { max: 1 }).outfits[0].score;
+  const liked = E.buildOutfits(wd, { max: 1, liked: { colours: { cool: 3 }, cats: {} } }).outfits[0].score;
+  return liked >= base;
+})());
+
 // ---- i18n guard (self-contained bundle) ----
 (() => {
   const js = readFileSync(resolve(ROOT, 'chitti_fashion_i18n.js'), 'utf8');

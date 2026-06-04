@@ -392,6 +392,18 @@ body{font-size:17px}
       <input id="fa-add-colour" placeholder="रंग">
     </div>
     <div class="fa-field">
+      <label data-vai-i18n="fa.add.fabric">कपड़ा / Fabric</label>
+      <select id="fa-add-fabric"><option value="">—</option><option value="cotton">cotton</option><option value="linen">linen</option><option value="silk">silk</option><option value="wool">wool</option><option value="denim">denim</option><option value="georgette">georgette</option><option value="poly">polyester</option></select>
+    </div>
+    <div class="fa-field">
+      <label data-vai-i18n="fa.add.pattern">डिज़ाइन / Pattern</label>
+      <select id="fa-add-pattern"><option value="solid" data-vai-i18n="fa.add.solid">सादा / solid</option><option value="patterned" data-vai-i18n="fa.add.print">print / floral / stripe / check</option></select>
+    </div>
+    <div class="fa-field">
+      <label data-vai-i18n="fa.add.cost">क़ीमत ₹ (cost-per-wear, वैकल्पिक)</label>
+      <input id="fa-add-cost" type="number" min="0" placeholder="₹">
+    </div>
+    <div class="fa-field">
       <label data-vai-i18n="fa.z.063">किन मौक़ों के लिए?</label>
       <div class="fa-chip-row" id="fa-add-occasions">
         <span class="fa-chip" data-occ="casual" data-vai-i18n="fa.z.064">रोज़</span>
@@ -560,14 +572,17 @@ function faReadPhoto(file){
   };
   reader.readAsDataURL(file);
 }
+let _pendingHex = '';
+function faRgbHex(r,g,b){ const h=x=>('0'+x.toString(16)).slice(-2); return '#'+h(r)+h(g)+h(b); }
 function faDetectColour(ctx, w, h){
   try {
     const sx = Math.floor(w/2 - 20), sy = Math.floor(h/2 - 20);
     const d = ctx.getImageData(Math.max(0,sx), Math.max(0,sy), 40, 40).data;
     let r=0,g=0,b=0,n=0; for (let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; n++; }
     r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+    _pendingHex = faRgbHex(r,g,b);   // REAL colour for the engine's colour science
     return faColourName(r,g,b);
-  } catch(e){ return ''; }
+  } catch(e){ _pendingHex=''; return ''; }
 }
 function faColourName(r,g,b){
   const max=Math.max(r,g,b), min=Math.min(r,g,b);
@@ -580,11 +595,17 @@ function faColourName(r,g,b){
 }
 async function faSaveItem(){
   const occ = Array.from(document.querySelectorAll('#fa-add-occasions .fa-chip.on')).map(c => c.dataset.occ);
+  const fabricEl = document.getElementById('fa-add-fabric'), patternEl = document.getElementById('fa-add-pattern'), costEl = document.getElementById('fa-add-cost');
   const item = {
     id: (crypto.randomUUID ? crypto.randomUUID() : 'it-' + Date.now().toString(36) + Math.random().toString(36).slice(2,7)),
     photo: _pendingPhoto || '',
     category: document.getElementById('fa-add-cat').value,
     colour: (document.getElementById('fa-add-colour').value || _pendingColour || '').trim(),
+    hex: _pendingHex || '',                          // real colour for colour-science (gap P0#2)
+    fabric: fabricEl ? fabricEl.value : '',           // fabric/season (gap P0#4)
+    pattern: patternEl ? patternEl.value : 'solid',   // pattern-mixing (gap P0#4)
+    cost: costEl ? (parseInt(costEl.value||'0',10)||0) : 0,  // cost-per-wear (sustainability)
+    wears: 0,
     occasions: occ.length ? occ : ['casual'],
     last_worn: null,
     wearer: faCurrentWearer(),
@@ -786,8 +807,9 @@ async function faDressMe(){
   // DETERMINISTIC first — this WORKS even when DeepSeek is down (doctrine: rules are the product).
   let html = '', spoken = '';
   if (E){
-    const recs = E.recommend(items, faCtx({ max: 3 }));
+    const recs = E.recommend(items, faCtx({ max: 3, liked: faLikedProfile() }));
     if (recs.length){
+      window._faLastItems = recs[0].items;  // learning loop: 👍 records this outfit
       recs.forEach(r => { html += faRenderOutfitCard(r); spoken += r.occasion + ' outfit, confidence ' + r.confidence + '%: ' + r.items.map(it => (it.colour||'') + ' ' + it.category).join(', ') + '. ' + (r.explain||'') + ' '; });
     }
   }
@@ -810,6 +832,7 @@ async function faSimulate(){
   if (!built.count){ const m = CURRENT_LANG==='en'?'Add a top + bottom (or a full outfit) + footwear to unlock combinations.':'एक ऊपर + एक नीचे (या पूरा पहनावा) + जूते जोड़ें — फिर combinations बनेंगे।'; document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
   const FD = faDyn();
   let html = '<div style="font-weight:800;color:#138808;margin-bottom:8px">✨ ' + (FD ? FD.tmpl('built', { n: built.count }, CURRENT_LANG) : (built.count + ' outfits — ₹0')) + '</div>';
+  if (built.outfits[0]) window._faLastItems = built.outfits[0].items;
   built.outfits.forEach(o => { html += faRenderOutfitCard({ items: o.items, occasion: o.occasion, band: null, confidence: o.score, harmony: o.harmony, checks: null, reasons: [], explain: '', judge: {flags:[]} }); });
   const h = document.getElementById(host); h.innerHTML = html;
   const sp = FD ? FD.tmpl('made', { n: built.count }, CURRENT_LANG) : ('Built ' + built.count + ' outfits');
@@ -855,14 +878,22 @@ async function faAudit(){
   const gaps = [];
   if ((cnt.bottom||0) < (cnt.top||0) - 1) gaps.push(faMoreT('gap_bottom'));
   if (!(cnt.footwear)) gaps.push(faMoreT('gap_footwear'));
-  // best ROI buy
-  let roiLine = '';
-  if (E){ const cands = [{category:'bottom',colour:'beige',desc:'beige chinos'},{category:'top',colour:'white',desc:'white shirt'},{category:'footwear',colour:'brown',desc:'brown loafers'}]; const best = cands.map(c=>E.wardrobeROI(items,c)).sort((a,b)=>b.unlocked-a.unlocked)[0]; if (best && best.unlocked>0) roiLine = faMoreT('roi', { item: (faDyn()?(best.candidate.colour+' '+best.candidate.category):best.candidate.desc), n: best.unlocked }); }
+  // cost-per-wear (sustainability — CFOS v2.0 skill_08)
+  const costed = items.filter(i => (i.cost||0) > 0);
+  let cpwLine = '';
+  if (costed.length){ const tc = costed.reduce((a,i)=>a+(i.cost||0),0); const tw = costed.reduce((a,i)=>a+(i.wears||0),0); const cpw = tw>0?Math.round(tc/tw):tc; cpwLine = '₹'+cpw+' '+faMoreT('per_wear')+' ('+costed.length+' '+faMoreT('items')+', ₹'+tc+')'; }
+  // best ROI buy + shopping links (gap P1#7) — Founder Rule: this is the LAST option
+  let roiLine = '', best = null;
+  if (E){ const cands = [{category:'bottom',colour:'beige',desc:'beige chinos'},{category:'top',colour:'white',desc:'white shirt'},{category:'footwear',colour:'brown',desc:'brown loafers'}]; best = cands.map(c=>E.wardrobeROI(items,c)).sort((a,b)=>b.unlocked-a.unlocked)[0]; if (best && best.unlocked>0) roiLine = faMoreT('roi', { item: (faDyn()?(best.candidate.colour+' '+best.candidate.category):best.candidate.desc), n: best.unlocked }); }
+  const shopQ = best ? encodeURIComponent(best.candidate.colour+' '+best.candidate.category) : '';
   let html = '<div class="fa-tiers">' +
     '<div class="fa-tier"><span class="lab">🧬 '+faMoreT('total')+'</span><div>'+items.length+' · '+built+' '+faMoreT('outfits')+'</div></div>' +
+    (cpwLine?'<div class="fa-tier free"><span class="lab">♻️ '+faMoreT('cpw')+'</span><div>'+esc(cpwLine)+'</div></div>':'') +
     (gaps.length?'<div class="fa-tier budget"><span class="lab">⚠️ '+faMoreT('gaps')+'</span><div>'+esc(gaps.join(' · '))+'</div></div>':'') +
-    (rare.length?'<div class="fa-tier"><span class="lab">♻️ '+faMoreT('rare')+'</span><div>'+rare.length+'</div></div>':'') +
-    (roiLine?'<div class="fa-tier budget"><span class="lab">🛒 '+faMoreT('best_buy')+'</span><div>'+esc(roiLine)+'</div></div>':'') +
+    (rare.length?'<div class="fa-tier"><span class="lab">♻️ '+faMoreT('rare')+'</span><div>'+rare.length+' — '+faMoreT('reuse_ladder')+'</div></div>':'') +
+    (roiLine?'<div class="fa-tier budget"><span class="lab">🛒 '+faMoreT('best_buy')+' ('+faMoreT('last_option')+')</span><div>'+esc(roiLine)+
+      (shopQ?'<div style="margin-top:6px;font-size:12px">🔎 <a href="https://www.meesho.com/search?q='+shopQ+'" target="_blank" rel="noopener" style="color:#000080;font-weight:700">Meesho</a> · <a href="https://www.myntra.com/'+shopQ+'" target="_blank" rel="noopener" style="color:#000080;font-weight:700">Myntra</a> · <a href="https://www.ajio.com/search/?text='+shopQ+'" target="_blank" rel="noopener" style="color:#000080;font-weight:700">Ajio</a></div>':'')+
+      '</div></div>':'') +
   '</div>';
   const h = document.getElementById(host); h.innerHTML = html; const sp = items.length+' '+faMoreT('total')+', '+built+' '+faMoreT('outfits'); h.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
@@ -890,7 +921,7 @@ async function faEmergency(){
   if (!items.length || !E){ const m = faMoreT('add_first'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
   const recs = E.recommend(items, faCtx({ max: 1 }));
   if (!recs.length){ const m = faMoreT('need_more'); document.getElementById(host).innerHTML='<div class="sds-card">🧺 '+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; return; }
-  const r = recs[0];
+  const r = recs[0]; window._faLastItems = r.items;
   const h = document.getElementById(host);
   h.innerHTML = '<div style="font-weight:800;color:#138808;margin-bottom:6px">⚡ '+faMoreT('go')+'</div>' + faRenderOutfitCard(r);
   const FD = faDyn(); const names = r.items.map(it => (it.colour?it.colour+' ':'')+it.category).join(', ');
@@ -975,7 +1006,7 @@ async function faDescribeMine(){
   if (!items.length || !E){ const m = CURRENT_LANG==='en'?'Add clothes to your Almari so Chitti can describe an outfit for you.':'अलमारी में कपड़े जोड़ें — फिर Chitti आपका outfit बोलकर बताएगी।'; document.getElementById(host).innerHTML='<div class="sds-card">'+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
   const recs = E.recommend(items, faCtx({ max: 1 }));
   if (!recs.length){ const m = CURRENT_LANG==='en'?'Add at least a top and a bottom and Chitti will describe an outfit.':'कम से कम एक ऊपर और एक नीचे का कपड़ा जोड़ें।'; document.getElementById(host).innerHTML='<div class="sds-card">'+esc(m)+'</div>'; document.getElementById(host).dataset.spoken=m; faSpeak(m); return; }
-  const r = recs[0];
+  const r = recs[0]; window._faLastItems = r.items;
   const names = r.items.map(it => (it.colour ? it.colour + ' ' : '') + it.category).join(', ');
   const FD = faDyn();
   let text = (CURRENT_LANG==='en'
@@ -1001,6 +1032,7 @@ async function faOccasion(){
     const recs = E.recommend(items, faCtx({ occasion: target, max: 3 }));
     if (recs.length){
       let html = '', sp = (CURRENT_LANG==='en'?'For ':'') + (_selectedOcc||occ) + (CURRENT_LANG==='en'?', from your wardrobe: ':' के लिए, आपकी अलमारी से: ');
+      if (recs[0]) window._faLastItems = recs[0].items;
       recs.forEach(r => { html += faRenderOutfitCard(r); sp += r.items.map(it=>(it.colour||'')+' '+it.category).join(', ') + '. '; });
       const h = document.getElementById(host); h.innerHTML = html; h.dataset.spoken = sp; faSpeak(sp);
       try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){} return;
@@ -1093,9 +1125,23 @@ function faExplain(cardId){
   faSpeak(CURRENT_LANG==='en' ? ('Chitti will explain: ' + section) : ('Chitti समझाएगी: ' + section));
   try { if (window.ChittiFeedback && ChittiFeedback.explain) ChittiFeedback.explain(cardId); } catch(e){}
 }
+/* ════════ Learning loop (gap P1#9) — 👍/👎 on an outfit biases future picks ════════ */
+function faLikedProfile(){ return (PROFILE.liked && (PROFILE.liked.colours || PROFILE.liked.cats)) ? PROFILE.liked : {}; }
+function faLearnFromOutfit(items, dir){
+  if (!items || !items.length) return; const E = faEngine(); if (!E) return;
+  PROFILE.liked = PROFILE.liked || { colours:{}, cats:{} };
+  items.forEach(it => { const fam = E.analyseColour(it.hex, it.colour).family; const d = dir>0?1:-1;
+    PROFILE.liked.colours[fam] = Math.max(0, (PROFILE.liked.colours[fam]||0) + d);
+    PROFILE.liked.cats[it.category] = Math.max(0, (PROFILE.liked.cats[it.category]||0) + d);
+  });
+  faSaveProfile();
+  try { faRenderTwin(); } catch(e){}
+}
 async function faFeedback(card, dir){
-  if (dir === 1){ faSpeak(CURRENT_LANG==='en'?'Thank you':'धन्यवाद'); }
+  if (dir === 1){ faSpeak(CURRENT_LANG==='en'?'Thank you — I will remember this':'धन्यवाद — Chitti याद रखेगी'); }
   else { faSpeak(CURRENT_LANG==='en'?'Sorry — I will learn from this. What was wrong?':'माफ़ कीजिए — Chitti इससे सीखेगी। क्या ग़लत था?'); }
+  // learn from outfit-bearing cards
+  if (['fa_today','fa_review','fa_occasion','fa_week','fa_emrg'].indexOf(card) >= 0) faLearnFromOutfit(window._faLastItems, dir);
   try {
     await fetch(API_BASE + '/api/feedback', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
