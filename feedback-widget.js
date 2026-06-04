@@ -526,6 +526,14 @@
   function attachBoxWidget(box, page) {
     if (!box || !box.parentNode) return;
     var boxId = boxIdFor(box);
+    // Stamp the canonical marker on every box we attach to. Boxes matched
+    // via .chitti-response / [data-chitti-section] / heuristic IDs got the
+    // feedback bar but were missing the data-chitti-response attribute that
+    // the per-response-widget contract (SAHAYAI_MASTER §7) + cert_all_pages
+    // G1b key off. Stamping it here makes the marker consistent fleet-wide
+    // and lets attribute-based queries (and the cert) see every real box.
+    // (QA 2026-06-05 — Vaani showed 0 boxes despite 22 .chitti-response cards.)
+    if (!box.hasAttribute('data-chitti-response')) box.setAttribute('data-chitti-response', '');
     // DOM-based idempotency: did we already insert a bar bound to THIS box
     // right after it? (We do NOT use a JS flag — page re-renders that wipe
     // the bar must be allowed to re-attach.)
