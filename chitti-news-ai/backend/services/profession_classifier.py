@@ -65,7 +65,7 @@ _REGISTRY_FILE = Path(__file__).resolve().parent.parent / "data" / "profession_r
 _SOURCES_FILE  = Path(__file__).resolve().parent.parent / "data" / "courses_sources.json"
 _STREAMS_FILE  = Path(__file__).resolve().parent.parent / "data" / "streams_sources.json"
 
-RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.8-rules-2026-06-04-r2-vendor-academies-235")
+RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.9-rules-2026-06-04-master-curriculum-roadmaps")
 DEFAULT_MIN_CONFIDENCE = float(os.environ.get("CLASSIFIER_MIN_CONFIDENCE", "0.5"))
 
 # Per-signal weights — tunable but tracked under RULE_VERSION so re-tunes
