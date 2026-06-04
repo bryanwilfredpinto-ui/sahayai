@@ -61,8 +61,8 @@ for (const vp of [{ width: 375, height: 812 }, { width: 768, height: 1024 }, { w
 const { ctx, p, errs } = await newPage({ width: 375, height: 812 });
 await seed(p);
 
-// 2a. all 7 tabs switch
-for (const t of ['almari', 'review', 'occasion', 'budget', 'learn', 'family', 'more']) {
+// 2a. all 8 tabs switch
+for (const t of ['almari', 'review', 'occasion', 'budget', 'learn', 'family', 'more', 'career']) {
   const ok = await p.evaluate((tab) => { const btn = document.querySelector('.fa-tabbar button[data-tab="' + tab + '"]'); if (!btn) return false; btn.click(); const panel = document.getElementById('fa-panel-' + tab); return panel && panel.classList.contains('active'); }, t);
   ok ? P('tab switches: ' + t) : F('tab switches: ' + t);
 }
@@ -116,6 +116,11 @@ await p.waitForTimeout(600);
 await p.evaluate(() => faEmergency());
 await p.waitForTimeout(600);
 (await mutated(p, '#fa-emrg-result')) ? P('button: Emergency outfit renders') : F('button: Emergency outfit');
+// career coach: pick a role -> plan with real resources renders
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="career"]').click(); const r = document.querySelector('#fa-coach-host [data-role]'); if (r) r.click(); });
+await p.waitForTimeout(500);
+const coach = await p.evaluate(() => { const el = document.getElementById('fa-coach-plan'); const t = el ? el.textContent : ''; return { mut: !!t && t.length > 20, hasLink: !!(el && el.querySelector('a[href^="http"]')) }; });
+(coach.mut && coach.hasLink) ? P('button: Career Coach plan + real resource links render') : F('button: Career Coach', JSON.stringify(coach));
 
 // 2c. add-item form: open modal, fill, save -> wardrobe count up
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="almari"]').click(); });

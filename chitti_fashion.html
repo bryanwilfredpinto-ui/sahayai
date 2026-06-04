@@ -194,6 +194,7 @@ body{font-size:17px}
     <button data-tab="learn" onclick="faTab('learn',this)" data-vai-i18n="fa.t.learn">🎓 सीखें</button>
     <button data-tab="family" onclick="faTab('family',this)" data-vai-i18n="fa.t.family">👨‍👩‍👧 परिवार + Twin</button>
     <button data-tab="more" onclick="faTab('more',this)" data-vai-i18n="fa.t.more">✨ और</button>
+    <button data-tab="career" onclick="faTab('career',this)" data-vai-i18n="fa.t.career">🎓 Pro बनें</button>
   </nav>
 
   <!-- ════ TAB · ALMARI ════ -->
@@ -426,6 +427,20 @@ body{font-size:17px}
     </div>
   </section>
 
+  <!-- ════ TAB · CAREER COACH (upskill to pro — free/low-cost) ════ -->
+  <section class="fa-panel" id="fa-panel-career" role="tabpanel">
+    <div data-chitti-response="fa-card-13" class="sds-card chitti-response" data-chitti-section="🎓 फैशन में Pro बनें">
+      <h2 class="sds-card-title"><span class="ico">🎓</span> <span data-vai-i18n="fa.c.title">फैशन में Pro बनें — मुफ़्त / कम खर्च</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.c.sub">सिर्फ़ कपड़े नहीं — Chitti आपको हुनर सिखाकर कमाई तक पहुँचाती है। अपना लक्ष्य चुनें — Chitti असली मुफ़्त courses, सरकारी certificate और औज़ार बताएगी, और इस हफ़्ते का पहला क़दम।</p>
+      <div id="fa-coach-host"></div>
+      <div class="fa-toolbar">
+        <button onclick="faSpeak(faLastText('fa-coach-plan')||faLastText('fa-coach-host'))" aria-label="सुनें">🔊</button>
+        <button onclick="faExplain('fa-card-13')" aria-label="Chitti समझाए">🤖</button>
+        <button onclick="faFeedback('fa_coach',1)">👍</button><button onclick="faFeedback('fa_coach',-1)">👎</button>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- Add-item modal -->
@@ -478,6 +493,8 @@ body{font-size:17px}
 <script src="chitti_features.js" defer></script>
 <!-- CTO.md §3 Quality Check + §4 AI Observability per-card overlays (role-gated: cto/admin only) -->
 <script src="chitti_fashion_cto.js?v=20260604" defer></script>
+<!-- Fashion Career Coach — real free/low-cost courses, certs, tools (deterministic, 9-lang) -->
+<script src="chitti_fashion_coach.js?v=20260604" defer></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════════════════
@@ -1301,8 +1318,19 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
+  faInitCoach();
   // language dropdown guard — run now + after chitti_lang.js enrichment + once more
   faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);
+}
+function faInitCoach(){
+  try {
+    if (!window.FashionCoach) { setTimeout(faInitCoach, 300); return; }
+    window.FashionCoach.renderRoles('fa-coach-host', function(role){
+      window.FashionCoach.renderPlan(role, 'fa-coach-plan', CURRENT_LANG);
+      faSpeak(window.FashionCoach.spoken(role, CURRENT_LANG));
+      try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+    });
+  } catch(e){}
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', faBoot);
 else faBoot();

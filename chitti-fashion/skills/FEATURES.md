@@ -76,6 +76,12 @@ from your own wardrobe.
 Five minutes to an event? Chitti picks the fastest good outfit from clean clothes
 you own.
 
+### Become a Pro — Fashion Career Coach
+Chitti can lift you into earning. Pick a goal — personal stylist, tailor/boutique,
+fashion student, content creator, reseller, or earn-from-home — and Chitti gives you
+real **free / low-cost** courses, **government certificates**, free tools, and one
+do-this-week first step. Built for budget-first users; everything cost-tagged honestly.
+
 ## PLANNED — coming next
 
 ### Family Stylist
