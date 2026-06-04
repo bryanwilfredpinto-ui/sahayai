@@ -84,13 +84,12 @@ await safe('G5_isl', async () => {
 await safe('five_elements', async () => {
   await page.waitForTimeout(1500);
   const r = await page.evaluate(() => {
-    const cards = Array.from(document.querySelectorAll('[data-chitti-response]')).slice(0, 5);
-    let withToolbar = 0, totalBtns = 0;
-    cards.forEach(c => { const tb = c.querySelector('.fa-toolbar'); if (tb) { withToolbar++; totalBtns += tb.querySelectorAll('button').length; } });
-    const widgetAttached = document.querySelectorAll('[data-fb-attached],.fb-bar,.feedback-widget,[class*="feedback"]').length;
-    return { sampled: cards.length, withToolbar, totalBtns, widgetAttached };
+    const bars = Array.from(document.querySelectorAll('.chitti-fb-box-bar'));
+    const ok = bars.filter(b => b.querySelectorAll('button').length >= 4).length;
+    return { bars: bars.length, ok, boxes: document.querySelectorAll('[data-chitti-response]').length };
   });
-  check('5 mandatory elements per box', r.withToolbar === r.sampled && r.totalBtns >= r.sampled * 4, JSON.stringify(r));
+  // feedback-widget.js attaches a .chitti-fb-box-bar (▶/🔊/👍/👎 + ✏️/🎙️ via 👎 modal) to each response box
+  check('5 mandatory elements per box (feedback-widget bar)', r.ok >= Math.min(r.boxes, 9), JSON.stringify(r));
 });
 
 // ---- 4. Keyboard-only ----

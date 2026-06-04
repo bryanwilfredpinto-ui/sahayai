@@ -259,6 +259,9 @@
 
   // ── DOM ──────────────────────────────────────────────────────────────
   function buildWidget(page) {
+    // idempotency: never render the global feedback panel twice (fixes duplicate
+    // "Was this helpful?" when buildWidget is reached more than once). Fleet-wide.
+    if (document.querySelector('.chitti-fb-wrap')) return;
     var risk = RISK_MAP[page] || 'LOW';
     var riskClass = 'risk-' + risk.toLowerCase();
     var lastAudit = (window.CHITTI_LAST_AUDIT || '2026-05-13');
@@ -875,8 +878,10 @@
         // leading text node so we don't wipe the nested button.
         var titleEl = wrap.querySelector('.chitti-fb-title');
         if (titleEl && titleEl.firstChild && titleEl.firstChild.nodeType === 3) {
-          titleEl.firstChild.nodeValue = '💬 ' + _tg('fb.was_helpful', 'Was this helpful?') + ' ';
+          titleEl.firstChild.nodeValue = '💬 ';  // emoji only — the phrase lives in the <span> (avoids "Was this helpful? Was this helpful?")
         }
+        var titleSpan = titleEl && titleEl.querySelector('[data-vai-i18n="fb.was_helpful"]');
+        if (titleSpan) titleSpan.textContent = _tg('fb.was_helpful', 'Was this helpful?');
         var rep = wrap.querySelector('.chitti-fb-report'); if (rep) rep.textContent = '📣 ' + _tg('fb.report', 'Report a problem');
         setTxt('[data-vote="speak"] .lbl', _tg('fb.speaker', 'Speaker'));
         setTxt('[data-vote="thumbs_up"] .lbl', _tg('fb.helpful', 'Helpful'));

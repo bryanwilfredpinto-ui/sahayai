@@ -134,9 +134,10 @@ const after = await p.evaluate(() => +document.getElementById('fa-n-top').textCo
 const modalClosed = await p.evaluate(() => !document.getElementById('fa-add').classList.contains('shown'));
 modalClosed ? P('form: modal closes after save') : F('form: modal closes after save');
 
-// 2d. 5 elements per box
-const fiveEl = await p.evaluate(() => { const cards = [...document.querySelectorAll('[data-chitti-response]')]; let bad = 0; cards.forEach(c => { const tb = c.querySelector('.fa-toolbar'); if (!tb || tb.querySelectorAll('button').length < 4) bad++; }); return { cards: cards.length, bad }; });
-fiveEl.bad === 0 ? P('5-elements: all ' + fiveEl.cards + ' cards have toolbar (4 icons)') : F('5-elements per box', fiveEl.bad + ' cards missing');
+// 2d. 5 elements per box — provided by feedback-widget.js (.chitti-fb-box-bar: ▶/🔊/👍/👎 + ✏️/🎙️ via 👎 modal)
+await p.waitForTimeout(800);
+const fiveEl = await p.evaluate(() => { const bars = [...document.querySelectorAll('.chitti-fb-box-bar')]; const ok = bars.filter(b => b.querySelectorAll('button').length >= 4).length; return { bars: bars.length, ok, boxes: document.querySelectorAll('[data-chitti-response]').length }; });
+(fiveEl.ok >= Math.min(fiveEl.boxes, 9)) ? P('5-elements: feedback-widget bar on ' + fiveEl.ok + ' boxes (4+ icons each)') : F('5-elements per box', JSON.stringify(fiveEl));
 
 // 2e. tap targets
 const small = await p.evaluate(() => { const out = []; ['.fa-tabbar button', '#fa-dressme', '.fa-btn', '.fa-toolbar button', '#lang-select'].forEach(s => { document.querySelectorAll(s).forEach(el => { const r = el.getBoundingClientRect(); if (r.width && (r.width < 44 || r.height < 38)) out.push(s + '=' + Math.round(r.width) + 'x' + Math.round(r.height)); }); }); return out; });

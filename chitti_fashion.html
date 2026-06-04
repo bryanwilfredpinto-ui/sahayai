@@ -11,6 +11,12 @@
 <meta name="chitti-features" content="chitti-fashion/skills/FEATURES.md">
 <link rel="stylesheet" href="sahayai_design_system.css">
 <link rel="stylesheet" href="chitti_theme.css">
+<!-- Premium editorial fonts (degrade to system fonts on slow links) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<!-- World-class editorial redesign — loaded LAST so it elevates the look (logic untouched) -->
+<link rel="stylesheet" href="chitti_fashion_ui.css?v=20260604">
 <!-- strings.js + chitti_lang.js before paint so i18n keys resolve; defer keeps parse non-blocking -->
 <script src="strings.js?v=20260604" defer></script>
 <script src="chitti_lang.js?v=20260604" defer></script>
@@ -177,13 +183,7 @@ body{font-size:17px}
     <p data-vai-i18n="fa.hero.sub">Chitti आपकी अलमारी देखकर पूरे outfit बनाएगी — कुछ खरीदने की ज़रूरत नहीं। जो आपके पास है, उसी से।</p>
     <button class="cta" id="fa-dressme" onclick="faDressMe()" data-vai-i18n="fa.hero.cta">✨ मेरी अलमारी से outfit बनाओ</button>
     <div id="fa-dressme-result" class="fa-result"></div>
-    <div class="fa-toolbar">
-      <button onclick="faSpeak(faHeroSpoken())" aria-label="सुनें">🔊</button>
-      <button onclick="faExplain('fa-card-hero')" aria-label="Chitti समझाए">🤖</button>
-      <button onclick="faFeedback('fa_today',1)" aria-label="अच्छा लगा">👍</button>
-      <button onclick="faFeedback('fa_today',-1)" aria-label="अच्छा नहीं लगा">👎</button>
     </div>
-  </div>
 
   <!-- ── Tab bar ── -->
   <nav class="fa-tabbar" role="tablist" aria-label="Chitti Fashion sections">
@@ -217,13 +217,7 @@ body{font-size:17px}
       <button class="fa-btn primary" style="width:100%;margin-top:10px" onclick="faOpenAdd()" data-vai-i18n="fa.z.019">📷 नया item जोड़ें</button>
       <div id="fa-rare-alert" style="display:none;margin-top:10px;padding:10px;background:#fff8e1;border:1.5px solid #fcd34d;border-radius:10px;font-size:13.5px;color:#78350f"></div>
       <div class="fa-grid" id="fa-grid"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faStatsSpoken())" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-01')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_almari',1)">👍</button>
-        <button onclick="faFeedback('fa_almari',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · OUTFIT REVIEW / DESCRIBE MY OUTFIT ════ -->
@@ -238,13 +232,7 @@ body{font-size:17px}
         <button class="fa-btn" onclick="faDescribeMine()" data-vai-i18n="fa.z.022">👁️ मैं क्या पहन रहा/रही हूँ?</button>
       </div>
       <div id="fa-review-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-review-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-02')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_review',1)">👍</button>
-        <button onclick="faFeedback('fa_review',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · OCCASION + WEATHER ════ -->
@@ -259,13 +247,7 @@ body{font-size:17px}
         <button class="fa-btn" onclick="faWeather()" data-vai-i18n="fa.z.025">☁️ आज का मौसम देखो</button>
       </div>
       <div id="fa-occasion-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-occasion-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-03')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_occasion',1)">👍</button>
-        <button onclick="faFeedback('fa_occasion',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · BUDGET (Free → Budget → Premium) ════ -->
@@ -278,13 +260,7 @@ body{font-size:17px}
         <button class="fa-btn primary" onclick="faBudget()" data-vai-i18n="fa.z.027">💸 तीन रास्ते दिखाओ</button>
       </div>
       <div id="fa-budget-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-budget-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-04')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_budget',1)">👍</button>
-        <button onclick="faFeedback('fa_budget',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · LEARN (Teach mode) ════ -->
@@ -297,13 +273,7 @@ body{font-size:17px}
         <button class="fa-btn primary" onclick="faLearn()" data-vai-i18n="fa.z.029">🎓 समझाओ Chitti</button>
       </div>
       <div id="fa-learn-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-learn-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-05')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_learn',1)">👍</button>
-        <button onclick="faFeedback('fa_learn',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · FAMILY + FASHION TWIN ════ -->
@@ -319,13 +289,7 @@ body{font-size:17px}
       <div class="fa-row-btns">
         <button class="fa-btn" onclick="faAddWearer()" data-vai-i18n="fa.z.032">➕ नया सदस्य जोड़ें</button>
       </div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faWearerSpoken())" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-06')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_family',1)">👍</button>
-        <button onclick="faFeedback('fa_family',-1)">👎</button>
       </div>
-    </div>
 
     <!-- Build-my-week: multi-occasion outfit generation from owned items -->
     <div data-chitti-response="fa-card-07" class="sds-card chitti-response" data-chitti-section="🗓️ पूरे हफ़्ते के outfit — आपकी अलमारी से">
@@ -336,13 +300,7 @@ body{font-size:17px}
         <button class="fa-btn" onclick="faBuildMyWeek()" data-vai-i18n="fa.z.035">🗓️ हर मौक़े का एक (Chitti की राय)</button>
       </div>
       <div id="fa-week-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-week-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-07')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_week',1)">👍</button>
-        <button onclick="faFeedback('fa_week',-1)">👎</button>
       </div>
-    </div>
 
     <!-- Wardrobe ROI -->
     <div data-chitti-response="fa-card-09" class="sds-card chitti-response" data-chitti-section="🛒 Wardrobe ROI — एक खरीद, कितने नए outfit">
@@ -350,13 +308,7 @@ body{font-size:17px}
       <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.z.036">अगर आपको कुछ खरीदना ही हो — Chitti बताती है कौन-सी एक चीज़ आपके मौजूदा कपड़ों के साथ सबसे ज़्यादा नए outfit खोलेगी। समझदारी से खर्च।</p>
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faROI()" data-vai-i18n="fa.z.037">🛒 सबसे फ़ायदेमंद खरीद दिखाओ</button></div>
       <div id="fa-roi-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-roi-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-09')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_roi',1)">👍</button>
-        <button onclick="faFeedback('fa_roi',-1)">👎</button>
       </div>
-    </div>
 
     <!-- Fashion Digital Twin: on-device personal style memory + profile -->
     <div data-chitti-response="fa-card-08" class="sds-card chitti-response" data-chitti-section="🧬 आपका Fashion Digital Twin">
@@ -378,13 +330,7 @@ body{font-size:17px}
           <select id="fa-twin-fit" onchange="faTwinSet('fit',this.value)"><option value="" data-vai-i18n="fa.z.050">बताना नहीं</option><option value="relaxed" data-vai-i18n="fa.z.052">relaxed / loose पसंद</option><option value="structured" data-vai-i18n="fa.z.053">structured / fitted पसंद</option><option value="any" data-vai-i18n="fa.z.054">कोई भी</option></select></div>
       </details>
       <div id="fa-twin-body" style="margin-top:10px"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-twin-body'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-08')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_twin',1)">👍</button>
-        <button onclick="faFeedback('fa_twin',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · MORE (Wardrobe Audit · Travel Packing · Emergency) ════ -->
@@ -394,12 +340,7 @@ body{font-size:17px}
       <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.audit_sub">Chitti आपकी अलमारी जाँचती है — किस चीज़ की कमी है, क्या जोड़ी बनती है, कौन-से कपड़े महीनों से नहीं पहने।</p>
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faAudit()" data-vai-i18n="fa.m.audit_btn">🔍 मेरी अलमारी जाँचो</button></div>
       <div id="fa-audit-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-audit-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-10')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_audit',1)">👍</button><button onclick="faFeedback('fa_audit',-1)">👎</button>
       </div>
-    </div>
 
     <div data-chitti-response="fa-card-11" class="sds-card chitti-response" data-chitti-section="🧳 यात्रा पैकिंग">
       <h2 class="sds-card-title"><span class="ico">🧳</span> <span data-vai-i18n="fa.m.pack">यात्रा पैकिंग</span></h2>
@@ -407,24 +348,14 @@ body{font-size:17px}
       <input class="fa-input" id="fa-pack-days" type="number" min="1" max="14" value="3" placeholder="कितने दिन?">
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faPacking()" data-vai-i18n="fa.m.pack_btn">🧳 पैकिंग सूची बनाओ</button></div>
       <div id="fa-pack-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-pack-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-11')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_pack',1)">👍</button><button onclick="faFeedback('fa_pack',-1)">👎</button>
       </div>
-    </div>
 
     <div data-chitti-response="fa-card-12" class="sds-card chitti-response" data-chitti-section="⚡ तुरंत पहनावा">
       <h2 class="sds-card-title"><span class="ico">⚡</span> <span data-vai-i18n="fa.m.emrg">तुरंत पहनावा</span></h2>
       <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.emrg_sub">5 मिनट में निकलना है? Chitti आपकी अलमारी से एक तैयार outfit तुरंत चुनेगी।</p>
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faEmergency()" data-vai-i18n="fa.m.emrg_btn">⚡ अभी एक outfit दो</button></div>
       <div id="fa-emrg-result" class="fa-result"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-emrg-result'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-12')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_emrg',1)">👍</button><button onclick="faFeedback('fa_emrg',-1)">👎</button>
       </div>
-    </div>
   </section>
 
   <!-- ════ TAB · CAREER COACH (upskill to pro — free/low-cost) ════ -->
@@ -433,12 +364,7 @@ body{font-size:17px}
       <h2 class="sds-card-title"><span class="ico">🎓</span> <span data-vai-i18n="fa.c.title">फैशन में Pro बनें — मुफ़्त / कम खर्च</span></h2>
       <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.c.sub">सिर्फ़ कपड़े नहीं — Chitti आपको हुनर सिखाकर कमाई तक पहुँचाती है। अपना लक्ष्य चुनें — Chitti असली मुफ़्त courses, सरकारी certificate और औज़ार बताएगी, और इस हफ़्ते का पहला क़दम।</p>
       <div id="fa-coach-host"></div>
-      <div class="fa-toolbar">
-        <button onclick="faSpeak(faLastText('fa-coach-plan')||faLastText('fa-coach-host'))" aria-label="सुनें">🔊</button>
-        <button onclick="faExplain('fa-card-13')" aria-label="Chitti समझाए">🤖</button>
-        <button onclick="faFeedback('fa_coach',1)">👍</button><button onclick="faFeedback('fa_coach',-1)">👎</button>
       </div>
-    </div>
   </section>
 
 </main>
@@ -488,8 +414,8 @@ body{font-size:17px}
 <!-- 9-language localization of the engine's dynamic output (occasion/harmony/judge/explain) -->
 <script src="chitti_fashion_dyn.js?v=20260604"></script>
 <!-- Substrate: a11y (auto-injects Disability Profile, ISL, language, read-page), feedback widget, feature discovery -->
-<script src="chitti_a11y.js?v=20260603"></script>
-<script src="feedback-widget.js" data-page="chitti_fashion"></script>
+<script src="chitti_a11y.js?v=20260604"></script>
+<!-- feedback-widget.js already loaded once in <head> (defer) — single instance avoids duplicate strips -->
 <script src="chitti_features.js" defer></script>
 <!-- CTO.md §3 Quality Check + §4 AI Observability per-card overlays (role-gated: cto/admin only) -->
 <script src="chitti_fashion_cto.js?v=20260604" defer></script>
