@@ -294,14 +294,42 @@ def chitti_coach(profession_slug: str, skill_keyword: str,
 # 4. Opportunity Engine
 # ────────────────────────────────────────────────────────────────────────
 
+_EXP_KEYWORDS = {
+    "fresher":    ["fresher", "graduate", "entry level", "0-1 year", "intern"],
+    "0-2":        ["junior", "associate", "entry level", "0-2", "1-2 year"],
+    "3-5":        ["mid level", "3-5 year", "associate"],
+    "6-10":       ["senior", "lead", "5-10 year", "specialist"],
+    "11-15":      ["staff", "principal", "manager", "10+ year"],
+    "16-20":      ["director", "head of", "vp", "principal"],
+    "20+":        ["vp", "svp", "director", "head of", "cxo", "chief"],
+    "sabbalogical": [],
+    "sabbatical": ["returner", "career restart", "back to work", "second innings"],
+    "retired":    ["consultant", "advisor", "part time", "fractional", "mentor"],
+}
+_SAL_KEYWORDS = {
+    "below-3l":  ["intern", "entry level", "fresher", "trainee"],
+    "3-6l":      ["junior", "associate", "entry level"],
+    "6-12l":     ["mid level", "senior", "specialist"],
+    "12-25l":    ["senior", "lead", "staff"],
+    "25-50l":    ["principal", "staff", "lead", "manager"],
+    "50l-1cr":   ["director", "principal", "head of", "vp"],
+    "1cr+":      ["vp", "svp", "cxo", "chief", "head of"],
+    "prefer-not": [],
+}
+
+
 def opportunity_engine(profession_slug: str, geo: str = "india",
-                       lookback_days: int = 30, limit: int = 20) -> dict:
+                       lookback_days: int = 30, limit: int = 20,
+                       experience: Optional[str] = None,
+                       salary_band: Optional[str] = None) -> dict:
     """Ranked top-N actionable opportunities across job + grant + scheme + startup.
 
     Ranking signal per item:
         score = profession_relevance_confidence * 100
               + freshness_bonus  (0..30, decays linearly over lookback_days)
               + stream_weight    (job=20, grant=15, scheme=10, startup=5)
+              + experience_bias  (0..15, when title/summary matches the user's level)
+              + salary_bias      (0..15, when title/summary matches the user's salary band)
     Returns the top `limit` items, with full provenance.
     """
     limit = max(1, min(limit, 100))
@@ -310,6 +338,8 @@ def opportunity_engine(profession_slug: str, geo: str = "india",
 
     stream_weight = {"job": 20, "grant": 15, "scheme": 10, "startup": 5}
     interesting_kinds = list(stream_weight.keys())
+    exp_kw = _EXP_KEYWORDS.get(experience or "", []) if experience else []
+    sal_kw = _SAL_KEYWORDS.get(salary_band or "", []) if salary_band else []
 
     ranked = []
     with SessionLocal() as db:
@@ -323,9 +353,14 @@ def opportunity_engine(profession_slug: str, geo: str = "india",
         for rel, item in rows:
             age_days = (datetime.utcnow() - (item.ingested_at or datetime.utcnow())).days
             freshness = max(0, 30 - (age_days * 30 // max(1, lookback_days)))
+            text_pool = (" ".join(filter(None, [item.title, item.summary, item.topics])) or "").lower()
+            exp_bias = 15 if any(k in text_pool for k in exp_kw) else 0
+            sal_bias = 15 if any(k in text_pool for k in sal_kw) else 0
             score = ((rel.confidence or 0) * 100
                      + freshness
-                     + stream_weight.get(rel.item_kind, 0))
+                     + stream_weight.get(rel.item_kind, 0)
+                     + exp_bias
+                     + sal_bias)
             ranked.append({
                 "id": item.id,
                 "stream": rel.item_kind,
@@ -336,6 +371,8 @@ def opportunity_engine(profession_slug: str, geo: str = "india",
                 "age_days": age_days,
                 "profession_confidence": round(rel.confidence or 0, 3),
                 "classifier_version": rel.classifier_version,
+                "experience_bias": exp_bias,
+                "salary_bias": sal_bias,
                 "score": round(score, 1),
             })
 
@@ -346,17 +383,22 @@ def opportunity_engine(profession_slug: str, geo: str = "india",
         "geo": geo,
         "lookback_days": lookback_days,
         "limit": limit,
+        "experience": experience,
+        "salary_band": salary_band,
         "total_candidates": len(ranked),
         "opportunities": top,
         "ranking_formula": (
             "score = profession_confidence*100 + freshness(0..30) + "
-            "stream_weight(job=20/grant=15/scheme=10/startup=5)"
+            "stream_weight(job=20/grant=15/scheme=10/startup=5) + "
+            "exp_bias(0|15) + sal_bias(0|15) -- both default 0 when unset"
         ),
         "rule_version": RULE_VERSION,
         "honest_note": (
             "Rules-only. Ranks profession-tagged items from "
-            "job/grant/scheme/startup streams. If total_candidates=0 the "
-            "corpus is empty for this profession; we never pad."
+            "job/grant/scheme/startup streams. Experience + salary biases "
+            "lift role-appropriate items by ~10%, never filter. If "
+            "total_candidates=0 the corpus is empty for this profession; "
+            "we never pad."
         ),
     }
 

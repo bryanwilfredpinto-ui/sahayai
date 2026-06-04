@@ -443,16 +443,26 @@ def chitti_coach_endpoint():
 
 @bp.get("/opportunity-engine")
 def opportunity_engine_endpoint():
-    """Opportunity Engine: ranked actionable items (job + grant + scheme + startup)."""
+    """Opportunity Engine: ranked actionable items (job + grant + scheme + startup).
+
+    Optional bias params (v0.4 2026-06-04, per Sire request):
+      experience   one of {fresher, 0-2, 3-5, 6-10, 11-15, 16-20, 20+, sabbatical, retired}
+      salary_band  one of {below-3l, 3-6l, 6-12l, 12-25l, 25-50l, 50l-1cr, 1cr+, prefer-not}
+    These never filter content (the corpus is too thin today to risk false-negatives);
+    they bias ranking by ~10% so role-appropriate items float up.
+    """
     profession = _arg_str("profession", "")
     if not profession or profession == "everyone":
         abort(400, description="profession is required")
     geo = _arg_str("geo", "india")
     lookback = max(1, min(_arg_int("lookback_days", 30), 90))
     limit = max(1, min(_arg_int("limit", 20), 100))
+    experience  = _arg_str("experience", "")  or None
+    salary_band = _arg_str("salary_band", "") or None
     from services.world_class import opportunity_engine as _oe
     return jsonify(_oe(profession, geo=geo, lookback_days=lookback,
-                       limit=limit)), 200
+                       limit=limit,
+                       experience=experience, salary_band=salary_band)), 200
 
 
 @bp.get("/admin/stats")

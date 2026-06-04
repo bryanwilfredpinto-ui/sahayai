@@ -64,7 +64,7 @@ log = logging.getLogger("profession_classifier")
 _REGISTRY_FILE = Path(__file__).resolve().parent.parent / "data" / "profession_registry.json"
 _SOURCES_FILE  = Path(__file__).resolve().parent.parent / "data" / "courses_sources.json"
 
-RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.3-rules-2026-05-29")
+RULE_VERSION = os.environ.get("CLASSIFIER_VERSION", "v0.4-rules-2026-06-04-hr-ta-expanded")
 DEFAULT_MIN_CONFIDENCE = float(os.environ.get("CLASSIFIER_MIN_CONFIDENCE", "0.5"))
 
 # Per-signal weights — tunable but tracked under RULE_VERSION so re-tunes

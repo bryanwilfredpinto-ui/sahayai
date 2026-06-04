@@ -196,6 +196,36 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
     <option value="government-employee">🏛️ Government Employee</option>
   </select>
   <span id="pick-prof-hint" class="section-sub" style="margin-left:8px">Optional. Pick anytime. Stored locally only. <span id="prof-clear-link" style="display:none;cursor:pointer;color:var(--saffron);font-weight:700">✕ Clear</span></span>
+
+  <!-- v0.4 2026-06-04 — Experience + Salary fields (Sire request).
+       Optional, stored locally, used to bias Opportunity Engine ranking
+       toward role-appropriate jobs. Never sent to backend without profession. -->
+  <span class="pick-lbl" data-i18n="pick.exp" aria-hidden="true" style="margin-left:14px">Experience</span>
+  <select id="pick-experience" onchange="onProfileFieldChange('exp', this.value)" aria-label="Years of experience — optional, default any">
+    <option value="">— Any —</option>
+    <option value="fresher">🎓 Fresher (0 yrs)</option>
+    <option value="0-2">0–2 yrs</option>
+    <option value="3-5">3–5 yrs</option>
+    <option value="6-10">6–10 yrs</option>
+    <option value="11-15">11–15 yrs</option>
+    <option value="16-20">16–20 yrs</option>
+    <option value="20+">20+ yrs</option>
+    <option value="sabbatical">Sabbatical / Career break</option>
+    <option value="retired">Retired</option>
+  </select>
+
+  <span class="pick-lbl" data-i18n="pick.sal" aria-hidden="true" style="margin-left:14px">Current Salary</span>
+  <select id="pick-salary" onchange="onProfileFieldChange('sal', this.value)" aria-label="Current annual salary band in INR — optional, default any">
+    <option value="">— Any —</option>
+    <option value="below-3l">Below ₹3 LPA</option>
+    <option value="3-6l">₹3 – 6 LPA</option>
+    <option value="6-12l">₹6 – 12 LPA</option>
+    <option value="12-25l">₹12 – 25 LPA</option>
+    <option value="25-50l">₹25 – 50 LPA</option>
+    <option value="50l-1cr">₹50 LPA – 1 Cr</option>
+    <option value="1cr+">₹1 Cr +</option>
+    <option value="prefer-not">Prefer not to say</option>
+  </select>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Chitti News AI categories">
@@ -627,9 +657,29 @@ document.addEventListener('chitti:lang', function(e){
 // optional, default "everyone", never blocks content.
 // ═══════════════════════════════════════════════════════════
 const PROFESSION_KEY = 'chitti_news_ai_profession';
+const EXP_KEY        = 'chitti_news_ai_experience';
+const SAL_KEY        = 'chitti_news_ai_salary';
 function _getProfession(){ try { return localStorage.getItem(PROFESSION_KEY) || 'everyone'; } catch(e){ return 'everyone'; } }
 function _setProfession(p){ try { if(p) localStorage.setItem(PROFESSION_KEY, p); } catch(e){} }
 function _clearProfession(){ try { localStorage.removeItem(PROFESSION_KEY); } catch(e){} }
+function _getExperience(){ try { return localStorage.getItem(EXP_KEY) || ''; } catch(e){ return ''; } }
+function _getSalary(){     try { return localStorage.getItem(SAL_KEY) || ''; } catch(e){ return ''; } }
+
+// Persist experience / salary as soon as the user picks them; both are
+// fully optional, never block content, never sent without a profession
+// (Opportunity Engine uses them to bias ranking only).
+function onProfileFieldChange(which, value){
+  try {
+    const key = which === 'exp' ? EXP_KEY : SAL_KEY;
+    if (value) localStorage.setItem(key, value);
+    else       localStorage.removeItem(key);
+  } catch (e) { /* honest silent fallback */ }
+  // If we're on the For You tab, re-render with the new bias.
+  if (typeof _currentCategory !== 'undefined' && _currentCategory === 'foryou'
+      && typeof loadForYou === 'function') {
+    try { loadForYou(); } catch (e) {}
+  }
+}
 
 const STREAM_LABELS = {
   news: '📰 News', courses: '🎓 Courses', cert: '🏅 Certifications',
@@ -867,6 +917,11 @@ if (savedProf !== 'everyone') {
   document.getElementById('tab-foryou').style.display = '';
   document.getElementById('prof-clear-link').style.display = '';
 }
+// Restore experience + salary (v0.4 2026-06-04)
+try {
+  const e = _getExperience(); if (e) document.getElementById('pick-experience').value = e;
+  const s = _getSalary();     if (s) document.getElementById('pick-salary').value     = s;
+} catch (err) { /* honest silent fallback */ }
 
 // ═══════════════════════════════════════════════════════════
 // Boot — no profiling, no prompts. Real AI news + Chitti explains. That is all.
