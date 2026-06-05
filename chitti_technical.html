@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-technical/ — backend engine: chitti-shares-api -->
+<!-- 🎖️ World Class Chitti Technical — Commando Discipline. Zero Excuses. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="description" content="Chitti Technical — voice-first, risk-first, explainable technical analysis for every NSE trader. Educational only, NOT SEBI registered.">
+<meta name="chitti-features" content="chitti-technical/skills/FEATURES.md">
+<title>Chitti Technical — explainable NSE analysis</title>
+
+<!-- substrate: lang + engine before paint; a11y + widgets deferred -->
+<script src="chitti_lang.js?v=20260606" defer></script>
+<script src="chitti_technical_i18n.js?v=20260606" defer></script>
+<script src="chitti_technical_engine.js?v=20260606" defer></script>
+<script src="chitti_a11y.js?v=20260606" defer></script>
+<script src="feedback-widget.js" data-page="chitti_technical" defer></script>
+<script src="chitti_isl.js?v=20260606" defer></script>
+
+<style>
+:root{
+  --saffron:#FF9933; --navy:#000080; --green:#138808; --red:#C62828;
+  --ink:#1A1A1A; --bg:#F6F7FB; --card:#FFFFFF; --line:#E3E6EF; --muted:#5b637a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.5; font-size:16px;}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 14px 64px}
+
+/* SEBI sticky bar */
+#sebi-bar{position:sticky;top:0;z-index:60;background:var(--navy);color:#fff;
+  font-weight:700;font-size:13px;padding:8px 12px;display:flex;gap:10px;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+#sebi-bar .dot{font-size:15px}
+#sebi-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:120;display:none;align-items:center;justify-content:center;padding:18px}
+#sebi-modal.show{display:flex}
+#sebi-modal .box{background:#fff;max-width:560px;border-radius:14px;padding:22px;max-height:84vh;overflow:auto}
+#sebi-modal h3{color:var(--navy);margin:0 0 10px}
+
+/* header */
+header.hdr{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:14px 0 6px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--saffron),#ff7a00);display:flex;align-items:center;justify-content:center;font-size:22px}
+.brand h1{font-size:20px;margin:0;color:var(--navy);font-weight:900}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
+.hdr-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,.btn,input[type=text]{font:inherit}
+select{padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:#fff;min-height:44px}
+.btn{min-height:44px;min-width:44px;border:0;border-radius:10px;padding:9px 14px;font-weight:800;cursor:pointer;background:var(--saffron);color:#1a1200}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--navy)}
+.btn.nav{background:var(--navy);color:#fff}
+.vaani-banner{background:#fff7ec;border:1.5px solid #ffd9a8;border-radius:10px;padding:8px 12px;font-size:13px;color:#7a4a00;display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0}
+.asof{font-size:12px;color:var(--muted)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+@media(min-width:1024px){.grid{grid-template-columns:1.4fr 1fr}.col-full{grid-column:1/-1}}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;position:relative}
+.card h2{font-size:16px;margin:0 0 10px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:700;border:1px solid var(--line)}
+.tier{background:#eef1ff;color:var(--navy)}
+
+/* verdict */
+.verdict{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:6px 0 12px}
+.verdict .big{font-size:30px;font-weight:900;padding:8px 18px;border-radius:12px;display:flex;gap:10px;align-items:center}
+.v-BUY{background:#e7f6e7;color:var(--green)}
+.v-SELL{background:#fdeaea;color:var(--red)}
+.v-HOLD{background:#fff4e0;color:#9a6700}
+.conf{font-size:13px;font-weight:800}
+.why{font-size:14px;color:var(--ink);background:#f7f8fc;border-left:4px solid var(--saffron);padding:10px 12px;border-radius:8px;margin:8px 0}
+
+/* ladder */
+.ladder{display:flex;flex-direction:column;gap:6px}
+.rung{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.rung .tf{min-width:78px;font-weight:700;color:var(--navy)}
+.bar{flex:1;height:18px;border-radius:6px;background:#eef0f6;position:relative;overflow:hidden}
+.bar span{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#bbb}
+.bar .fill{position:absolute;top:0;bottom:0}
+.up .fill{background:var(--green);left:50%}
+.down .fill{background:var(--red);right:50%}
+.word{min-width:84px;font-weight:700;text-align:right}
+
+/* risk block */
+.risk{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+@media(min-width:560px){.risk{grid-template-columns:repeat(3,1fr)}}
+.risk .kv{background:#f7f8fc;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.risk .k{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.risk .v{font-size:16px;font-weight:800;color:var(--navy)}
+.risk .v.stop{color:var(--red)}
+.risk .v.tgt{color:var(--green)}
+.invalid{font-size:13px;margin-top:8px;color:#7a4a00;background:#fff7ec;border-radius:8px;padding:8px 10px}
+
+/* indicators */
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ind{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.ind .nm{font-weight:800;color:var(--navy);font-size:12.5px}
+.ind .val{font-size:15px;font-weight:800}
+.sig{font-size:11.5px;font-weight:800;padding:2px 7px;border-radius:6px}
+.sig.BUY{background:#e7f6e7;color:var(--green)} .sig.SELL{background:#fdeaea;color:var(--red)} .sig.WAIT{background:#eef0f6;color:#666}
+
+/* chart */
+.chart-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+canvas{display:block;width:100%}
+.pane-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tog{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
+.tog.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* screener */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
+.chip.on{background:var(--saffron);color:#1a1200;border-color:var(--saffron)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--muted);text-transform:uppercase}
+tr.click{cursor:pointer}
+tr.click:hover{background:#f7f8fc}
+
+/* portfolio */
+.trade{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;font-size:13.5px}
+
+/* confirm modal */
+#confirm{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:130;display:none;align-items:center;justify-content:center;padding:18px}
+#confirm.show{display:flex}
+#confirm .box{background:#fff;border-radius:14px;padding:20px;max-width:420px;text-align:center}
+#confirm .box .q{font-size:16px;font-weight:700;margin-bottom:14px;color:var(--navy)}
+#confirm .acts{display:flex;gap:10px;justify-content:center}
+
+.muted{color:var(--muted);font-size:12.5px}
+.demo-flag{font-size:11.5px;color:#9a6700;background:#fff7ec;border-radius:6px;padding:3px 8px;display:inline-block}
+@media(max-width:380px){.brand h1{font-size:18px}.verdict .big{font-size:24px;padding:6px 12px}}
+</style>
+</head>
+<body>
+
+<!-- BO1: SEBI sticky bar + modal -->
+<div id="sebi-bar" onclick="document.getElementById('sebi-modal').classList.add('show')">
+  <span class="dot">⚠️</span><span data-i18n="sebi.bar">NOT SEBI REGISTERED — educational only, not investment advice</span>
+  <span style="text-decoration:underline" data-i18n="sebi.more">Read full disclaimer</span>
+</div>
+<div id="sebi-modal" onclick="if(event.target.id==='sebi-modal')this.classList.remove('show')">
+  <div class="box">
+    <h3>⚠️ <span data-i18n="sebi.bar">NOT SEBI REGISTERED</span></h3>
+    <p>Chitti Technical provides <b>educational technical analysis only</b>. It is
+    <b>not</b> investment advice and is <b>not</b> registered with SEBI. Markets carry
+    risk. Past performance does not guarantee future results. Every signal shows its
+    risk, its stop loss, and what would prove it wrong — you decide. Consult a
+    SEBI-registered adviser before investing.</p>
+    <button class="btn" onclick="document.getElementById('sebi-modal').classList.remove('show')" data-i18n="confirm.yes" style="margin-top:8px">OK</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- BO1/BO2: header -->
+  <header class="hdr">
+    <div class="brand">
+      <div class="logo">📈</div>
+      <div>
+        <h1 data-i18n="app.title">Chitti Technical</h1>
+        <p data-i18n="app.tag">Educational technical analysis — never advice</p>
+      </div>
+    </div>
+    <div class="hdr-tools">
+      <select id="lang-select" aria-label="Change language" title="Language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+        <option value="mr">मराठी</option>
+        <option value="gu">ગુજરાતી</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+      <button class="btn" id="tech-refresh" onclick="TechUI.refresh()">🔄 <span data-i18n="refresh">Refresh</span></button>
+    </div>
+  </header>
+
+  <div class="vaani-banner">🗣️ <span data-i18n="vaani">Talk to Vaani instead</span>
+    — <a href="chitti_vaani.html" style="color:#7a4a00;font-weight:700">Vaani</a></div>
+
+  <div class="row" style="justify-content:space-between;margin-top:4px">
+    <span class="asof"><span data-i18n="dataAsOf">Data as of</span>: <b id="asof-val">—</b></span>
+    <span class="demo-flag" id="demo-flag" data-i18n="demoData">DEMO data — tap Refresh to fetch live</span>
+  </div>
+
+  <!-- BO3: search + trade type -->
+  <div class="card col-full" style="margin-top:12px">
+    <div class="row" style="gap:10px">
+      <input type="text" id="sym" list="universe" placeholder="Search NSE stock, index or ETF" data-i18n-ph="search.ph"
+             style="flex:1;min-width:160px;padding:11px;border:1.5px solid var(--line);border-radius:10px;min-height:44px" value="RELIANCE">
+      <datalist id="universe"></datalist>
+      <select id="tradetype" aria-label="Trade type">
+        <option value="longterm" data-i18n="tt.longterm">Long-term</option>
+        <option value="positional" data-i18n="tt.positional">Positional</option>
+        <option value="swing" selected data-i18n="tt.swing">Swing</option>
+        <option value="intraday" data-i18n="tt.intraday">Intraday</option>
+      </select>
+      <button class="btn nav" onclick="TechUI.scan()">🔍 <span data-i18n="scan.btn">Scan</span></button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- BO5/BO6: signal card (left) -->
+    <div class="card" id="signal-card" data-chitti-response="tech-signal" data-chitti-section="Signal">
+      <h2>📊 <span id="sig-sym">—</span> <span class="pill tier" id="sig-tier"></span></h2>
+      <div class="verdict" id="verdict-row"></div>
+      <div class="why" id="why-box"></div>
+      <h2 style="font-size:14px;margin-top:14px">🪜 <span data-i18n="ladder.title">Multi-timeframe</span></h2>
+      <div class="ladder" id="ladder"></div>
+      <div id="risk-block"></div>
+      <button class="btn ghost" style="margin-top:10px" onclick="TechUI.audioSummary()">🔊 <span data-i18n="audio.summary">Audio trade summary</span></button>
+    </div>
+
+    <!-- BO11: explain + BO7 roshan (right) -->
+    <div>
+      <div class="card" data-chitti-response="tech-explain" data-chitti-section="Explain">
+        <h2>🤖 <span data-i18n="explain.title">Chitti explains</span></h2>
+        <p id="explain-text" style="font-size:14px">—</p>
+      </div>
+      <div class="card" style="margin-top:14px" data-chitti-response="tech-roshan" data-chitti-section="Roshan">
+        <h2>⭐ <span data-i18n="roshan.title">Roshan Indicator</span></h2>
+        <div id="roshan-box" style="font-size:14px">—</div>
+      </div>
+    </div>
+
+    <!-- BO8: chart -->
+    <div class="card col-full" data-chitti-response="tech-chart" data-chitti-section="Chart">
+      <h2>📈 <span data-i18n="chart.title">Chart</span> <span class="muted" id="chart-tf"></span></h2>
+      <div class="pane-toggles" id="pane-toggles"></div>
+      <div class="chart-wrap"><canvas id="price-canvas" height="280"></canvas></div>
+      <div class="chart-wrap" id="osc-wrap" style="margin-top:6px"><canvas id="osc-canvas" height="130"></canvas></div>
+    </div>
+
+    <!-- BO4: indicators -->
+    <div class="card col-full" data-chitti-response="tech-indicators" data-chitti-section="Indicators">
+      <h2>🧮 <span data-i18n="ind.title">Indicators</span></h2>
+      <div class="ind-grid" id="ind-grid"></div>
+    </div>
+
+    <!-- BO9: screener -->
+    <div class="card col-full" data-chitti-response="tech-screener" data-chitti-section="Screener">
+      <h2>🔎 <span data-i18n="screener.title">Screener</span></h2>
+      <div class="filters" id="screener-filters"></div>
+      <button class="btn" onclick="TechUI.runScreen()">▶ <span data-i18n="screener.run">Run screen</span></button>
+      <div id="screener-results" style="margin-top:10px"></div>
+    </div>
+
+    <!-- BO10: portfolio -->
+    <div class="card col-full" data-chitti-response="tech-portfolio" data-chitti-section="Portfolio">
+      <h2>📒 <span data-i18n="portfolio.title">My trades</span></h2>
+      <div class="row" style="margin-bottom:8px">
+        <span class="pill"><span data-i18n="portfolio.open">Open</span>: <b id="pf-open">0</b></span>
+        <span class="pill"><span data-i18n="portfolio.closed">Closed</span>: <b id="pf-closed">0</b></span>
+        <span class="pill"><span data-i18n="portfolio.pnl">Profit / Loss</span>: <b id="pf-pnl">₹0</b></span>
+        <span class="pill"><span data-i18n="portfolio.risk">Open risk</span>: <b id="pf-risk">₹0</b></span>
+      </div>
+      <button class="btn ghost" onclick="TechUI.logTrade()">➕ <span data-i18n="portfolio.log">Log this trade</span></button>
+      <div id="pf-list" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <p class="muted" style="text-align:center;margin-top:18px">
+    🎖️ World Class Chitti Technical — Commando Discipline. Zero Excuses. ·
+    Engine v<span id="eng-ver">—</span> · educational only</p>
+</div>
+
+<!-- BO10: golden-rule confirm modal -->
+<div id="confirm" onclick="if(event.target.id==='confirm')TechUI._confirmNo()">
+  <div class="box">
+    <div class="q" id="confirm-q">—</div>
+    <div class="acts">
+      <button class="btn" onclick="TechUI._confirmYes()" data-i18n="confirm.yes">Yes</button>
+      <button class="btn ghost" onclick="TechUI._confirmNo()" data-i18n="confirm.no">No</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
+   Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
+window.TechUI = (function(){
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily';
+  var oscMode={}, activeOsc='RSI', confirmCb=null;
+  var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
+  var screenFilters={tiers:[],roshan:null,verdict:null};
+
+  function T(key){
+    var pack=(I18N&&I18N[lang])||(I18N&&I18N.en)||{};
+    return pack[key]!=null?pack[key]:((I18N&&I18N.en&&I18N.en[key])||key);
+  }
+  function fmt(n){return n==null?'—':'₹'+Number(n).toLocaleString('en-IN');}
+
+  // ---------- i18n: whole-UI re-render ----------
+  function applyLang(code){
+    lang = (I18N&&I18N[code])?code:(code||'en');
+    document.documentElement.setAttribute('lang', code||'en');
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k=el.getAttribute('data-i18n'); var v=T(k); if(v) el.textContent=v;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      el.setAttribute('placeholder', T(el.getAttribute('data-i18n-ph')));
+    });
+    // re-render dynamic content in the new language
+    if(lastScan) renderScan(lastScan);
+    renderScreenerFilters();
+  }
+
+  // ---------- data (manual refresh; live fetch best-effort, demo fallback) ----------
+  var candleCache={};
+  function getTf(sym){ if(!candleCache[sym]) candleCache[sym]=E.genAllTf(sym); return candleCache[sym]; }
+  function refresh(){
+    candleCache={}; // force regenerate; (live fetch would POST chitti-shares-api here)
+    var now=new Date();
+    document.getElementById('asof-val').textContent = now.toLocaleString('en-IN',{hour12:false});
+    scan();
+    speak(T('refresh'));
+  }
+
+  // ---------- scan ----------
+  function scan(){
+    var sym=(document.getElementById('sym').value||'RELIANCE').trim().toUpperCase();
+    var tt=document.getElementById('tradetype').value;
+    lastSym=sym;
+    var tf=getTf(sym);
+    var res=E.scan(tf,{tradeType:tt});
+    res._sym=sym; res._tt=tt;
+    lastTf=(E.LADDERS[tt]||E.LADDERS.swing).trigger;
+    res._stock=E.UNIVERSE.filter(function(s){return s.sym===sym;})[0]||{sym:sym,tier:'—',sector:'—'};
+    lastScan=res;
+    renderScan(res);
+    if(!document.getElementById('asof-val').textContent || document.getElementById('asof-val').textContent==='—')
+      document.getElementById('asof-val').textContent=new Date().toLocaleString('en-IN',{hour12:false});
+  }
+
+  function renderScan(res){
+    document.getElementById('sig-sym').textContent=res._sym;
+    var tierEl=document.getElementById('sig-tier');
+    tierEl.textContent=T('tier.'+(res._stock.tier))||res._stock.tier;
+    // verdict
+    var vr=document.getElementById('verdict-row');
+    var icon={BUY:'📈',SELL:'🛑',HOLD:'⏸️'}[res.verdict];
+    vr.innerHTML='<div class="big v-'+res.verdict+'">'+icon+' '+T('verdict.'+res.verdict)+'</div>'+
+      '<div><div class="conf">'+T('conf.label')+': '+T('conf.'+res.confidence)+'</div>'+
+      '<div class="muted">'+(res.confluence_score!=null?('score '+res.confluence_score):'')+'</div></div>';
+    document.getElementById('why-box').textContent=res.why||'';
+    renderLadder(res);
+    renderRisk(res);
+    renderIndicators(res);
+    renderRoshan(res);
+    renderExplain(res);
+    drawChart(res);
+    buildPaneToggles();
+  }
+
+  function renderLadder(res){
+    var L=document.getElementById('ladder'); L.innerHTML='';
+    Object.keys(res.timeframes).forEach(function(tf){
+      var v=res.timeframes[tf];
+      var cls=v.trend==='up'?'up':(v.trend==='down'?'down':'');
+      var word=T('trend.'+(v.trend==='up'?'up':v.trend==='down'?'down':'sideways'));
+      var arrow=v.trend==='up'?'▲':(v.trend==='down'?'▼':'▬');
+      L.innerHTML+='<div class="rung '+cls+'"><span class="tf">'+(T('tf.'+tf)||tf)+'</span>'+
+        '<span class="bar"><span></span><span class="fill" style="width:42%"></span></span>'+
+        '<span class="word" style="color:'+(v.trend==='up'?'var(--green)':v.trend==='down'?'var(--red)':'#888')+'">'+arrow+' '+word+'</span></div>';
+    });
+  }
+
+  function renderRisk(res){
+    var box=document.getElementById('risk-block');
+    if(res.verdict==='HOLD'||!res.stop){ box.innerHTML=''; return; }
+    var tg=res.targets.map(function(t,i){return '<div class="kv"><div class="k">'+T('risk.targets')+' '+(i+1)+' ('+t.rr+')</div><div class="v tgt">'+t.price+'</div></div>';}).join('');
+    box.innerHTML='<div class="risk">'+
+      '<div class="kv"><div class="k">'+T('risk.entry')+'</div><div class="v">'+res.entry.ideal+'</div></div>'+
+      '<div class="kv"><div class="k">'+T('risk.stop')+' ('+res.stop.pct+'%)</div><div class="v stop">'+res.stop.price+'</div></div>'+
+      '<div class="kv"><div class="k">'+T('risk.size')+'</div><div class="v">'+res.position_size.qty+'</div></div>'+
+      tg+'</div>'+
+      '<div class="invalid">⚠️ '+T('risk.invalid')+': '+res.invalidation.replace('wrong if','').trim()+'</div>';
+  }
+
+  function renderIndicators(res){
+    var g=document.getElementById('ind-grid'); g.innerHTML='';
+    var tf=getTf(res._sym)[lastTf];
+    var ind=E.indicatorSet(tf);
+    Object.keys(ind).forEach(function(k){
+      var d=ind[k];
+      g.innerHTML+='<div class="ind"><div class="nm">'+k+'</div>'+
+        '<div class="row" style="justify-content:space-between"><span class="val">'+(d.value==null?'—':d.value)+'</span>'+
+        '<span class="sig '+d.signal+'">'+d.signal+'</span></div></div>';
+    });
+  }
+
+  function renderRoshan(res){
+    var b=document.getElementById('roshan-box');
+    if(!res.roshan){b.textContent='—';return;}
+    var r=res.roshan, icon={BUY:'📈',SELL:'🛑',WAIT:'⏸️'}[r.signal];
+    b.innerHTML='<div class="row" style="justify-content:space-between">'+
+      '<span>RSI '+r.value+' · avg '+r.avg+'</span><span class="sig '+(r.signal==='WAIT'?'WAIT':r.signal)+'">'+icon+' '+r.signal+'</span></div>'+
+      '<p class="muted" style="margin:8px 0 0">'+T('roshan.title')+': RSI(14) vs SMA(20)-of-RSI — '+
+      (r.signal==='BUY'?'momentum above its average':r.signal==='SELL'?'momentum below its average':'flat')+'.</p>';
+  }
+
+  function renderExplain(res){
+    document.getElementById('explain-text').textContent=E.explain(res);
+  }
+
+  // ---------- chart (BO8) ----------
+  function buildPaneToggles(){
+    var oscs=['RSI','Williams %R','Stochastic'];
+    var c=document.getElementById('pane-toggles'); c.innerHTML='';
+    oscs.forEach(function(o){
+      var mode=oscMode[o]||(o==='RSI'?'separate':'off');
+      oscMode[o]=mode;
+      var btn=document.createElement('button'); btn.className='tog'+(mode!=='off'?' on':'');
+      btn.textContent=o+' · '+(mode==='separate'?T('chart.separate'):mode==='overlay'?T('chart.overlay'):'—');
+      btn.onclick=function(){
+        oscMode[o]= mode==='off'?'separate':(mode==='separate'?'overlay':'off');
+        if(oscMode[o]!=='off'&&mode==='off') activeOsc=o;
+        drawChart(lastScan); buildPaneToggles();
+      };
+      c.appendChild(btn);
+    });
+    document.getElementById('chart-tf').textContent='· '+(T('tf.'+lastTf)||lastTf);
+  }
+
+  function drawChart(res){
+    if(!res) return;
+    var candles=getTf(res._sym)[lastTf].slice(-70);
+    var cv=document.getElementById('price-canvas');
+    var W=cv.clientWidth||cv.parentElement.clientWidth||600; cv.width=W; var H=cv.height;
+    var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+    var hi=Math.max.apply(null,candles.map(function(c){return c.high;}));
+    var lo=Math.min.apply(null,candles.map(function(c){return c.low;}));
+    // include stop/target lines in range
+    if(res.stop){hi=Math.max(hi,res.stop.price);lo=Math.min(lo,res.stop.price);}
+    if(res.targets)res.targets.forEach(function(t){hi=Math.max(hi,t.price);lo=Math.min(lo,t.price);});
+    var pad=18, cw=(W-pad*2)/candles.length;
+    function y(v){return pad+(H-pad*2)*(1-(v-lo)/((hi-lo)||1));}
+    // EMA overlay
+    var ema=E.ema(candles.map(function(c){return c.close;}),20);
+    // candles
+    candles.forEach(function(c,i){
+      var x=pad+i*cw+cw/2;
+      var up=c.close>=c.open;
+      ctx.strokeStyle=up?'#138808':'#C62828'; ctx.fillStyle=up?'#138808':'#C62828';
+      ctx.beginPath();ctx.moveTo(x,y(c.high));ctx.lineTo(x,y(c.low));ctx.stroke();
+      var bt=y(Math.max(c.open,c.close)),bb=y(Math.min(c.open,c.close));
+      ctx.fillRect(x-cw*0.3,bt,cw*0.6,Math.max(1,bb-bt));
+    });
+    // EMA line
+    ctx.strokeStyle='#000080';ctx.lineWidth=1.5;ctx.beginPath();var started=false;
+    candles.forEach(function(c,i){var v=ema[i];if(v==null)return;var x=pad+i*cw+cw/2;if(!started){ctx.moveTo(x,y(v));started=true;}else ctx.lineTo(x,y(v));});
+    ctx.stroke();ctx.lineWidth=1;
+    // entry/stop/target lines (word + colour, never colour alone)
+    function hline(val,color,label){if(val==null)return;ctx.strokeStyle=color;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pad,y(val));ctx.lineTo(W-pad,y(val));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=color;ctx.font='10px system-ui';ctx.fillText(label+' '+val,pad+2,y(val)-2);}
+    if(res.verdict!=='HOLD'&&res.stop){
+      hline(res.entry.ideal,'#000080','▶ '+T('risk.entry'));
+      hline(res.stop.price,'#C62828','🛑 '+T('risk.stop'));
+      hline(res.targets[0].price,'#138808','🎯 '+T('risk.targets'));
+    }
+    // oscillator pane (separate) or overlay
+    drawOsc(candles);
+  }
+
+  function drawOsc(candles){
+    var wrap=document.getElementById('osc-wrap');
+    // find a separate-pane oscillator
+    var sep=Object.keys(oscMode).filter(function(o){return oscMode[o]==='separate';});
+    if(sep.length===0){wrap.style.display='none';return;}
+    wrap.style.display='block';
+    var name=sep[0];
+    var cv=document.getElementById('osc-canvas');var W=cv.clientWidth||600;cv.width=W;var H=cv.height;
+    var ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    var series,lo=0,hi=100;
+    if(name==='RSI'){series=E.rsi(candles.map(function(c){return c.close;}),14);}
+    else if(name==='Williams %R'){series=E.williamsR(candles,14);lo=-100;hi=0;}
+    else{var st=E.stochastic(candles);series=st.k;}
+    var pad=14,cw=(W-pad*2)/candles.length;
+    function y(v){return pad+(H-pad*2)*(1-(v-lo)/((hi-lo)||1));}
+    // guide lines
+    ctx.strokeStyle='#e3e6ef';[lo+(hi-lo)*0.2,lo+(hi-lo)*0.8].forEach(function(g){ctx.beginPath();ctx.moveTo(pad,y(g));ctx.lineTo(W-pad,y(g));ctx.stroke();});
+    ctx.strokeStyle='#FF9933';ctx.lineWidth=1.6;ctx.beginPath();var s=false;
+    series.forEach(function(v,i){if(v==null)return;var x=pad+i*cw+cw/2;if(!s){ctx.moveTo(x,y(v));s=true;}else ctx.lineTo(x,y(v));});
+    ctx.stroke();ctx.lineWidth=1;
+    ctx.fillStyle='#000080';ctx.font='11px system-ui';ctx.fillText(name,pad,12);
+  }
+
+  // ---------- screener (BO9) ----------
+  function renderScreenerFilters(){
+    var c=document.getElementById('screener-filters'); if(!c)return; c.innerHTML='';
+    SCREEN_TIERS.forEach(function(t){
+      var on=screenFilters.tiers.indexOf(t)>=0;
+      var b=document.createElement('button');b.className='chip'+(on?' on':'');
+      b.textContent=T('tier.'+t)||t;
+      b.onclick=function(){var i=screenFilters.tiers.indexOf(t);if(i>=0)screenFilters.tiers.splice(i,1);else screenFilters.tiers.push(t);renderScreenerFilters();};
+      c.appendChild(b);
+    });
+    ['BUY','SELL'].forEach(function(v){
+      var on=screenFilters.roshan===v;
+      var b=document.createElement('button');b.className='chip'+(on?' on':'');
+      b.textContent='⭐ Roshan '+v;
+      b.onclick=function(){screenFilters.roshan=on?null:v;renderScreenerFilters();};
+      c.appendChild(b);
+    });
+  }
+  function runScreen(){
+    var tt=document.getElementById('tradetype').value;
+    var f={tiers:screenFilters.tiers.slice(),roshan:screenFilters.roshan};
+    var rows=E.screen(f,tt);
+    var html='<table><tr><th>#</th><th>Stock</th><th>'+T('screener.tier')+'</th><th>'+T('conf.label')+'</th><th>Signal</th><th>Roshan</th></tr>';
+    if(rows.length===0){
+      document.getElementById('screener-results').innerHTML='<p class="invalid">'+T('screener.nomatch')+'</p>';return;
+    }
+    rows.slice(0,20).forEach(function(r,i){
+      var icon={BUY:'📈',SELL:'🛑',HOLD:'⏸️'}[r.verdict];
+      html+='<tr class="click" onclick="TechUI.pick(\''+r.stock.sym+'\')"><td>'+(i+1)+'</td><td><b>'+r.stock.sym+'</b><br><span class="muted">'+r.stock.name+'</span></td>'+
+        '<td>'+(T('tier.'+r.stock.tier)||r.stock.tier)+'</td><td>'+T('conf.'+r.confidence)+'</td>'+
+        '<td>'+icon+' '+T('verdict.'+r.verdict)+'</td><td>'+(r.roshan||'—')+'</td></tr>';
+    });
+    html+='</table>';
+    document.getElementById('screener-results').innerHTML=html;
+  }
+  function pick(sym){document.getElementById('sym').value=sym;scan();window.scrollTo({top:0,behavior:'smooth'});}
+
+  // ---------- portfolio (BO10) ----------
+  function pf(){try{return JSON.parse(localStorage.getItem('chitti_tech_pf_v1')||'[]');}catch(e){return [];}}
+  function savePf(a){try{localStorage.setItem('chitti_tech_pf_v1',JSON.stringify(a));}catch(e){}}
+  function logTrade(){
+    if(!lastScan||lastScan.verdict==='HOLD'){ speak(T('verdict.HOLD')); alert(T('screener.nomatch')); return; }
+    var s=lastScan;
+    confirmGate(T('verdict.'+s.verdict)+' '+s._sym+' — '+T('risk.entry')+' '+s.entry.ideal+', '+T('risk.stop')+' '+s.stop.price+'?',function(){
+      var list=pf();
+      list.push({id:'t'+Date.now(),sym:s._sym,side:s.verdict,entry:s.entry.ideal,stop:s.stop.price,
+        target:s.targets[0].price,qty:s.position_size.qty,risk:s.position_size.rupee_risk,status:'open',pnl:0});
+      savePf(list);renderPf();
+    });
+  }
+  function closeTrade(id){
+    var list=pf();var t=list.filter(function(x){return x.id===id;})[0];if(!t)return;
+    confirmGate('Close '+t.sym+' at target '+t.target+'?',function(){
+      t.status='closed';t.pnl=Math.round((t.side==='BUY'?(t.target-t.entry):(t.entry-t.target))*t.qty);savePf(list);renderPf();
+    });
+  }
+  function renderPf(){
+    var list=pf();var open=list.filter(function(t){return t.status==='open';});
+    var closed=list.filter(function(t){return t.status==='closed';});
+    document.getElementById('pf-open').textContent=open.length;
+    document.getElementById('pf-closed').textContent=closed.length;
+    document.getElementById('pf-pnl').textContent=fmt(closed.reduce(function(a,t){return a+t.pnl;},0));
+    document.getElementById('pf-risk').textContent=fmt(open.reduce(function(a,t){return a+(t.risk||0);},0));
+    var el=document.getElementById('pf-list');el.innerHTML='';
+    list.slice().reverse().forEach(function(t){
+      var icon={BUY:'📈',SELL:'🛑'}[t.side]||'';
+      el.innerHTML+='<div class="trade"><b>'+icon+' '+t.sym+'</b> · '+T('risk.entry')+' '+t.entry+' · '+T('risk.stop')+' '+t.stop+
+        ' · '+(t.status==='open'?('<button class="btn ghost" style="padding:4px 10px;min-height:32px" onclick="TechUI.closeTrade(\''+t.id+'\')">'+T('portfolio.closed')+'</button>')
+        :('<b style="color:'+(t.pnl>=0?'var(--green)':'var(--red)')+'">'+fmt(t.pnl)+'</b>'))+'</div>';
+    });
+  }
+
+  // ---------- golden-rule confirm ----------
+  function confirmGate(q,onYes){confirmCb=onYes;document.getElementById('confirm-q').textContent=q;document.getElementById('confirm').classList.add('show');speak(q);}
+  function _confirmYes(){document.getElementById('confirm').classList.remove('show');if(confirmCb){var cb=confirmCb;confirmCb=null;cb();}}
+  function _confirmNo(){document.getElementById('confirm').classList.remove('show');confirmCb=null;}
+
+  // ---------- voice ----------
+  function speak(txt){
+    try{ if(window.Chitti&&window.Chitti.a11y&&window.Chitti.a11y.speak){window.Chitti.a11y.speak(txt,lang);return;} }catch(e){}
+    try{ if(window.speechSynthesis){var u=new SpeechSynthesisUtterance(txt);u.lang=({hi:'hi-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN'})[lang]||'en-IN';window.speechSynthesis.cancel();window.speechSynthesis.speak(u);} }catch(e){}
+  }
+  function audioSummary(){
+    if(!lastScan){return;} var s=lastScan;
+    var parts=[s._sym, T('verdict.'+s.verdict), T('conf.label')+' '+T('conf.'+s.confidence)];
+    if(s.verdict!=='HOLD'&&s.stop){
+      parts.push(T('risk.entry')+' '+s.entry.ideal);
+      parts.push(T('risk.stop')+' '+s.stop.price);
+      parts.push(T('risk.targets')+' '+s.targets[0].price);
+    } else parts.push(s.why);
+    parts.push('NOT SEBI REGISTERED');
+    speak(parts.join('. '));
+  }
+
+  // ---------- init ----------
+  function init(){
+    E=window.TechEngine; I18N=window.TECH_I18N;
+    if(!E||!I18N){ setTimeout(init,60); return; }
+    document.getElementById('eng-ver').textContent=E.VERSION;
+    // universe datalist
+    var dl=document.getElementById('universe');
+    E.UNIVERSE.forEach(function(s){var o=document.createElement('option');o.value=s.sym;o.label=s.name;dl.appendChild(o);});
+    // language: saved or browser
+    var saved='en'; try{saved=localStorage.getItem('chitti_lang')||localStorage.getItem('lang')||(navigator.language||'en').slice(0,2);}catch(e){}
+    if(!I18N[saved]) saved='en';
+    document.getElementById('lang-select').value=saved;
+    applyLang(saved);
+    // wire language (addEventListener survives chitti_lang.js onchange=)
+    document.getElementById('lang-select').addEventListener('change',function(){applyLang(this.value);});
+    document.addEventListener('chitti:langchange',function(e){if(e.detail&&e.detail.lang)applyLang(e.detail.lang);});
+    document.getElementById('asof-val').textContent=new Date().toLocaleString('en-IN',{hour12:false});
+    renderScreenerFilters();
+    renderPf();
+    scan();
+    window.addEventListener('resize',function(){if(lastScan)drawChart(lastScan);});
+  }
+  if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
+
+  return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
+    audioSummary:audioSummary,applyLang:applyLang,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
+})();
+</script>
+</body>
+</html>
