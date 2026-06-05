@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "chitti-2wheeler/memory/vehicle_twin_schema.json",
+  "title": "Chitti Bike Doctor — Digital Vehicle Twin (per-vehicle)",
+  "description": "COSDF v1.0 Level 9 per-vehicle schema, adapted to the SAHAYAI_MASTER.md §2b contract: on-device (IndexedDB chitti_2w_twin), user-owned, anonymised aggregates only, wiped by 'Chitti forget'. World Class Chitti Bike Doctor — Commando Discipline. Zero Excuses.",
+  "type": "object",
+  "$comment": "STORAGE: IndexedDB database 'chitti_2w_twin', object store 'vehicles', keyed by vehicle_id. Nothing here leaves the device except the anonymised {predicted, actual, cost_band} tuple via the mechanic verification loop. No plate / identity / GPS in any aggregate. 'Chitti forget' wipes the record and tombstones aggregates (§2b).",
+  "required": ["vehicle_id", "make", "model", "type", "ownership"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "default": "1.0", "description": "COSDF L9 twin schema version." },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Local random UUID. NOT the registration plate. Plate is never stored in the twin (§2b)."
+    },
+    "make": { "type": "string", "examples": ["Hero", "Honda", "Bajaj", "TVS", "Royal Enfield", "Yamaha", "Suzuki", "Ather", "Ola Electric"] },
+    "model": { "type": "string", "examples": ["Splendor Plus", "Activa 6G", "Pulsar 150", "Classic 350", "R15 V4", "450X"] },
+    "year": { "type": "integer", "minimum": 1980, "maximum": 2100 },
+    "type": {
+      "type": "string",
+      "enum": ["scooter", "motorcycle", "moped", "ev_2w"],
+      "description": "ev_2w gates HV-safety guardrails (DO NOT TOUCH battery) — see guardrails/safety-rules.md."
+    },
+    "fuel_cooling": {
+      "type": "string",
+      "enum": ["petrol_air_cooled", "petrol_oil_cooled", "petrol_liquid_cooled", "electric"],
+      "description": "Drives hallucination guard: an air-cooled bike has no coolant (see evals/hallucination_eval.md)."
+    },
+    "odometer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "km": { "type": "integer", "minimum": 0 },
+        "km_per_day": { "type": "number", "minimum": 0, "description": "Rolling average from fuel/trip logs." },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "last_service": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Most recent service markers; full history lives append-only in the Vehicle Health Passport.",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "odo_km": { "type": "integer", "minimum": 0 },
+        "oil_changed": { "type": "boolean" },
+        "air_filter_done": { "type": "boolean" },
+        "spark_plug_done": { "type": "boolean" }
+      }
+    },
+    "component_status": {
+      "type": "object",
+      "description": "0-100 health per component. Drives predictive alerts (F9) and primes the swarm as prior evidence.",
+      "additionalProperties": false,
+      "properties": {
+        "battery":     { "$ref": "#/$defs/component" },
+        "tyres":       { "$ref": "#/$defs/component" },
+        "brake_pads":  { "$ref": "#/$defs/component" },
+        "engine_oil":  { "$ref": "#/$defs/component" },
+        "chain":       { "$ref": "#/$defs/component" }
+      }
+    },
+    "maintenance_history": {
+      "type": "array",
+      "description": "Pointer-mirror of Passport events of type 'service'. Source of truth = chitti_2w_passport (append-only).",
+      "items": { "$ref": "#/$defs/history_event" }
+    },
+    "repair_history": {
+      "type": "array",
+      "description": "Pointer-mirror of Passport events of type 'repair'. Each carries a fair-price band check.",
+      "items": { "$ref": "#/$defs/history_event" }
+    },
+    "fault_history": {
+      "type": "array",
+      "description": "Every diagnosis Chitti gave + the verified outcome from the mechanic verification loop.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "symptom_tags": { "type": "array", "items": { "type": "string" } },
+          "predicted_fault": { "type": "string" },
+          "predicted_confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "safety_tier": { "type": "string", "enum": ["green", "yellow", "orange", "red"] },
+          "actual_fix": { "type": ["string", "null"], "description": "Ground truth from the verification loop; null until the rider reports back." },
+          "match": { "type": ["string", "null"], "enum": ["match", "mismatch", null] }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local_climate": { "type": "string", "description": "Derived from pincode -> IMD (monsoon/dust season). Pincode is coarse, not GPS." },
+        "road_conditions": { "type": "string", "enum": ["city", "highway", "rural", "pothole_heavy", "mixed"] },
+        "usage_profile": { "type": "string", "enum": ["commuter", "tourer", "delivery"], "description": "delivery = ~3x wear; raises service cadence." }
+      }
+    },
+    "user_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "garage": { "type": "string", "description": "Rider's trusted workshop label (free text, local-only)." },
+        "budget_tier": { "type": "string", "enum": ["economy", "balanced", "premium"] },
+        "language": {
+          "type": "string",
+          "description": "9 primary live (en,hi,ta,te,bn,mr,gu,kn,ml); wider 26-voice substrate via Voice Factory. Wider COSDF language list = roadmap.",
+          "enum": ["en", "hi", "ta", "te", "bn", "mr", "gu", "kn", "ml"]
+        },
+        "accessibility_mode": {
+          "type": "array",
+          "description": "From the one-time Disability Profile (§7). Drives modality: voice-first / visual-first / icon-first / haptic.",
+          "items": { "type": "string", "enum": ["blind", "deaf", "mute", "illiterate", "isl", "elderly", "limited_mobility", "cognitive"] }
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "description": "The §2b user-ownership contract, encoded so any reader of a twin record sees the privacy rules.",
+      "additionalProperties": false,
+      "required": ["on_device", "user_owned", "shareable", "forgettable"],
+      "properties": {
+        "on_device": { "const": true, "description": "Twin lives in IndexedDB on the rider's phone." },
+        "user_owned": { "const": true, "description": "Rider owns every byte." },
+        "shareable": { "type": "boolean", "default": false, "description": "Rider may export a read-only resale card; never auto-uploaded or sold." },
+        "forgettable": { "const": true, "description": "'Chitti forget' wipes this record and tombstones any anonymised aggregate." },
+        "aggregate_leaves": {
+          "type": "array",
+          "description": "The ONLY fields that may leave the device, and only anonymised, via the verification loop.",
+          "items": { "type": "string", "enum": ["predicted_fault", "actual_fix", "cost_band", "symptom_tags", "make_model_band"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "health_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "age_months": { "type": "number", "minimum": 0 },
+        "km_since_replaced": { "type": "integer", "minimum": 0 },
+        "predicted_window": { "type": "string", "description": "Plain-language Likely/Possible window, e.g. '3-5 months'. NEVER a guaranteed date (never-claim-certainty.md)." },
+        "risk": { "type": "string", "enum": ["low", "medium", "high"] }
+      }
+    },
+    "history_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "passport_event_id": { "type": "string", "description": "Join key into chitti_2w_passport (append-only source of truth)." },
+        "date": { "type": "string", "format": "date" },
+        "odo_km": { "type": "integer", "minimum": 0 },
+        "item": { "type": "string", "examples": ["chain + sprocket set", "front brake pads", "mineral oil change"] },
+        "cost_inr": { "type": "number", "minimum": 0 },
+        "within_fair_band": { "type": ["boolean", "null"] },
+        "verified": { "type": "boolean", "description": "Confirmed via the mechanic verification loop?" }
+      }
+    }
+  }
+}

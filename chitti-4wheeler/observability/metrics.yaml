@@ -1,0 +1,232 @@
+# 🎖️ World Class Chitti Car Doctor — Commando Discipline. Zero Excuses.
+#
+# COSDF v1.0 Level 10 — machine-readable metric registry for Chitti Car Doctor.
+# Companion to OBSERVABILITY.md and observability/metrics.md (prose source of truth).
+#
+# LOCKS (SAHAYAI_MASTER.md §2 / CHITTI_MECHANIC_COSDF.md platform-adaptation):
+#   - All `target` values are TARGETS, not measured. `measured` stays null until the
+#     eval run lands (MECH-4, Sire-gated). NEVER print target as achieved.
+#   - All metrics are anonymised, on-device-first, tombstoned on "Chitti forget" (§2b).
+#   - No time-in-app / session-count / engagement metrics — refused by design.
+
+meta:
+  product: chitti-4wheeler
+  display_name: Chitti Car Doctor
+  cosdf_level: 10
+  privacy: { anonymised: true, on_device_first: true, pii: none, plate: never, gps: never }
+  llm: deepseek-only
+  measured_status: pending_eval_run   # MECH-4, Sire-gated
+  prose_source: observability/metrics.md
+
+north_star:
+  id: rupees_saved_per_driver
+  description: >
+    Money kept in the driver's pocket via correct diagnoses, fair-price checks and safe DIY
+    (vs being over-charged or sold a fault they didn't have). One avoided AC-compressor swap
+    is a month's salary saved.
+  direction: maximise
+  measured: null
+
+# ── Tier-1 tracked metrics ────────────────────────────────────────────────
+metrics:
+
+  # Diagnosis family
+  - id: diagnosis_accuracy
+    family: diagnosis
+    target: ">= 0.90"
+    blocks_green_if: "< 0.90"
+    source: [release_eval, mechanic_verification_loop]
+    measured: null
+  - id: dtc_interpretation_accuracy   # P-code -> cause mapping read correctly
+    family: diagnosis
+    target: ">= 0.90"
+    source: [obd2_logs, mechanic_verification_loop]
+    measured: null
+  - id: mechanic_confirmation_rate     # predicted == actual
+    family: diagnosis
+    target: ">= 0.85"
+    source: [mechanic_verification_loop]
+    measured: null
+  - id: confidence_band_present        # every verdict carries Likely/Possible + High/Med/Low
+    family: diagnosis
+    target: "= 1.00"
+    source: [guardrails_check]
+    measured: null
+  - id: overconfidence_rate            # High confidence + predicted != actual
+    family: diagnosis
+    direction: minimise
+    target: "-> 0"
+    note: biggest quality penalty
+    measured: null
+
+  # Safety family (CRITICAL — release blockers)
+  - id: safety_accuracy
+    family: safety
+    target: "= 1.00"
+    blocks_green_if: "< 1.00"
+    source: [safety_eval, mechanic_verification_loop]
+    measured: null
+  - id: critical_safety_errors
+    family: safety
+    target: "= 0"
+    blocks_green_if: "> 0"
+    measured: null
+  - id: safety_false_negative          # said safe, was dangerous — the error we never make
+    family: safety
+    target: "= 0"
+    blocks_green_if: "> 0"
+    measured: null
+  - id: overheat_keep_driving_errors   # told a driver to keep driving an overheating car — worst car-specific miss
+    family: safety
+    target: "= 0"
+    blocks_green_if: "> 0"
+    measured: null
+  - id: unsafe_diy_recommendations     # brake bleed / fuel rail / SRS-airbag / EV HV / AC refrigerant
+    family: safety
+    target: "= 0"
+    blocks_green_if: "> 0"
+    source: [diy_safety_eval]
+    measured: null
+  - id: blocked_unsafe_attempts        # held the line on a red-line DIY/drive
+    family: safety
+    direction: track
+    measured: null
+  - id: emergency_response             # family-cascade fired correctly; NEVER auto-dial cops/112/100/108
+    family: safety
+    target: "= 1.00"
+    measured: null
+  - id: false_emergency_rate
+    family: safety
+    direction: minimise
+    note: a false-positive is acceptable; a false-negative on safety is never
+    measured: null
+
+  # Accessibility family
+  - id: accessibility_pass             # four-user (blind/deaf/mute/illiterate)
+    family: accessibility
+    target: "= 1.00"
+    blocks_green_if: "< 1.00"
+    source: [accessibility_eval, cert]
+    measured: null
+  - id: voice_command_success
+    family: accessibility
+    target: ">= 0.95"
+    measured: null
+  - id: offline_core_success
+    family: accessibility
+    target: "= 1.00"
+    measured: null
+  - id: output_mode_usage              # voice_first / visual_first / icon_first / haptic distribution
+    family: accessibility
+    direction: track
+    measured: null
+
+  # Business family
+  - id: diy_success_rate               # driver fixed it, didn't make it worse
+    family: business
+    target: ">= 0.90"
+    source: [post_diy_feedback]
+    measured: null
+  - id: cost_band_hit_rate             # real cost inside predicted parts+labour band
+    family: business
+    target: ">= 0.85"
+    source: [quote_check, invoices]
+    measured: null
+  - id: rupees_saved_per_driver
+    family: business
+    direction: maximise
+    measured: null
+  - id: retention_by_persona           # ROADMAP — not yet instrumented
+    family: business
+    status: roadmap
+    measured: null
+  - id: used_inspections               # ROADMAP — F8 used-car 100-point inspector (camera AI roadmap)
+    family: business
+    status: roadmap
+    measured: null
+
+  # Quality family
+  - id: hallucination_rate             # invented part/code/model/procedure/price
+    family: quality
+    target: "< 0.01"
+    blocks_green_if: ">= 0.01"
+    source: [hallucination_eval]
+    measured: null
+  - id: low_confidence_inspection_rate # honestly punted to inspection on thin evidence
+    family: quality
+    direction: track
+    note: honest beats wrong — high here is healthy
+    measured: null
+  - id: per_response_thumbs_up_rate
+    family: quality
+    target: ">= 0.80"
+    source: [feedback_widget]
+    measured: null
+  - id: mechanic_defamation_flags      # a named-mechanic/centre accusation slipped through
+    family: quality
+    target: "= 0"
+    blocks_green_if: "> 0"
+    source: [scam_shield_defamation_flag]
+    measured: null
+
+  # System family
+  - id: median_response_time_ms
+    family: system
+    target: "< 3000"
+    measured: null
+  - id: p95_response_time_ms
+    family: system
+    target: "< 5000"
+    measured: null
+  - id: co2_per_reply_g
+    family: system
+    direction: minimise
+    source: [request_carbon_accounting]
+    measured: null
+
+# ── Counter-metrics (kept LOW) ────────────────────────────────────────────
+counter_metrics:
+  - id: false_positive_unsafe          # said unsafe, was fine
+    target: low
+    note: always preferred over a false-negative
+  - id: over_diagnosis                 # expensive fault pushed when a cheap one fit (e.g. compressor when cabin filter fit)
+    target: "= 0"
+  - id: action_confirm_bypass          # any side-effect without Golden-Rule confirm
+    target: "= 0"
+    note: SOS/RSA dial/alarm must gate on chittiConfirmAndDo() (§2g)
+
+# ── Explicitly NOT tracked (Founder Rule) ─────────────────────────────────
+not_tracked:
+  metrics: [time_in_app, session_count, engagement]
+  reason: >
+    A driver who fixes the car and leaves fast is a success, not a churn event.
+
+# ── Per-diagnosis event (COSDF L10) — decomposes into observability/logs.md families ──
+event_log:
+  one_event_per: diagnosis
+  join_key: audit_id
+  visibility: cto_admin_only      # CTO.md §3-4 — hidden from drivers
+  fields:
+    - audit_id
+    - timestamp
+    - persona
+    - vehicle: [make_model_band, year_band, fuel, odo_band]   # never plate
+    - input_type                  # symptom | photo | sound | dashboard | obd2
+    - symptom_tags
+    - dtc_code                    # OBD2 P-code if used; unknown codes queried, never invented
+    - diagnosis
+    - confidence                  # label + per-candidate vote
+    - safety_check                # tier, red_lines, drive_decision
+    - diy_tier                    # tier, capped_by_safety
+    - cost_band                   # parts, parts_labour
+    - output_mode                 # voice_first | visual_first | icon_first | haptic
+    - feedback                    # thumb, verified_actual (filled later by verification loop)
+    - latency_ms
+    - model                       # deepseek (Layer-5 fallback surfaced, never silent)
+    - lang
+  scrub:
+    - no_pii
+    - no_plate
+    - no_gps
+    - free_text_pii_stripped
+# 🎖️ World Class Chitti Car Doctor — Commando Discipline. Zero Excuses.

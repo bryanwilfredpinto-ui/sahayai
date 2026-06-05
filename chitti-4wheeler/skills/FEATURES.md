@@ -149,6 +149,27 @@ where blind / illiterate users are the primary audience.
 
 ---
 
+## 4a. COSDF domain skills (Level 5 capability files)
+
+The 12 COSDF Level-5 skill files live alongside this one and give every
+diagnosis its domain depth, symptom→cause maps, confidence bands and
+DIY-safety tiers (per [../../CHITTI_MECHANIC_COSDF.md](../../CHITTI_MECHANIC_COSDF.md) §L5).
+They feed the [8-agent swarm](../swarm/README.md):
+
+[engine.md](engine.md) · [electrical.md](electrical.md) · [brakes.md](brakes.md) ·
+[tyres.md](tyres.md) · [cooling.md](cooling.md) · [transmission.md](transmission.md) ·
+[exhaust.md](exhaust.md) · [obd.md](obd.md) · [cost.md](cost.md) ·
+[safety.md](safety.md) · [accessibility.md](accessibility.md) ·
+[sound_recognition.md](sound_recognition.md).
+
+These are knowledge/contract files (not new routes). Where a COSDF
+capability exceeds the live deterministic engine — camera/audio
+auto-detect, ML prediction, wider language list — it is marked
+**roadmap / COMING SOON** inside each file (honest-stub rule), never
+claimed live.
+
+---
+
 ## 5. How to keep this file honest
 
 - If a feature lands in the JS but isn't in `## 1. Built and working`

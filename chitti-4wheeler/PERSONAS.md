@@ -9,6 +9,13 @@ serves none of them is not built. The four-user accessibility contract
 Each persona carries a **user story** in the canonical form:
 *"As an Indian [user], I want [action] so that [outcome]."*
 
+These car-specific personas are the **named, lived** versions of the canonical
+COSDF archetypes P1–P10 ([../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md)
+**LEVEL 2**). The COSDF crosswalk is at the end of this file — every COSDF archetype
+is covered, adapted to a 4-wheeler (Car Doctor) reality. Where an archetype is
+inherently a 2-wheeler / rural-only role, it is mapped to its **car-world equivalent**
+and any gap is marked roadmap (never faked — §3 honest-stubs).
+
 ---
 
 ## P1 — Suresh, 34 — Family-Car Owner, Tier-2/3
@@ -72,6 +79,65 @@ Each persona carries a **user story** in the canonical form:
 
 ---
 
+## COSDF archetypes carried into the car world (P11–P13)
+
+COSDF P1 (farmer/tractor), P2 (student/2-wheeler) and P8 (professional mechanic)
+are not native to a 4-wheeler product. They are kept here as **first-class personas
+mapped to their car-world equivalent**, so the COSDF crosswalk is honest end-to-end
+and nothing is dropped.
+
+## P11 — Devendra, 52 — Farmer with a Pickup / Utility 4×4 (COSDF P1 — tractor → utility-vehicle)
+- **Vehicle:** Mahindra Bolero Pik-Up / Tata Yodha, hauls produce to the mandi; the tractor is COSDF P1's domain (see [chitti-2wheeler / Tractor Mode](../chitti-2wheeler/) + PRD F11 roadmap). For the car product, his **diesel utility 4×4** is the surface.
+- **Needs:** diagnose a diesel utility vehicle with **no mechanic within 50 km**; works **offline** in the field on a 2G feature-phone-class connection; voice-first, low-literacy.
+- **Pain:** a grounded pick-up means the day's produce rots; the nearest diesel mechanic is a 60 km tow away.
+- **Story:** *As a farmer whose pick-up is my livelihood, I want Chitti to diagnose a diesel fault by sound and voice — offline, with no mechanic nearby — so that I can keep hauling to the mandi without a 60 km tow.*
+- **Chitti's first move:** offline-cached diesel SOP + Sound Doctor + nearest-help cache. **Full tractor / generator / water-pump diagnosis = roadmap (PRD F11, rural differentiator) — not faked today.**
+
+## P12 — Arjun, 21 — Student Driving the Family Hatchback (COSDF P2 — student)
+- **Vehicle:** the household Maruti Alto / WagonR he borrows for college and errands; no income of his own.
+- **Needs:** **budget repairs ₹500–2 000**; preventive alerts before a small problem becomes a big bill his parents pay; learn enough to not be cheated.
+- **Pain:** zero repair knowledge, zero spare cash, and a service centre that sees a young face and upsells.
+- **Story:** *As a student borrowing the family car, I want Chitti to flag cheap fixes early and teach me what's real so that I keep the car running on a student budget and never hand a mechanic an excuse to overcharge.*
+- **Chitti's first move:** preventive alert (Vehicle Twin, PRD F6) + DIY-feasibility for the cheap, safe jobs + fair-price band. Served alongside the **repair-education** Founder-Rule priority.
+
+## P13 — Rafiq, 39 — Professional Mechanic (COSDF P8 — pro-tool mode)
+- **Context:** runs a 2-bay independent garage; uses Chitti as a **faster lookup**, not a replacement for his judgment.
+- **Needs:** rapid OBD2 DTC decode, P-code → likely-component shortlists, parts-compatibility hints, labour-time reference — to quote a customer faster and more honestly.
+- **Story:** *As an independent garage mechanic, I want Chitti to decode the OBD2 code, shortlist likely components and give a labour-time reference so that I quote my customer faster and at a fair price.*
+- **Chitti's first move:** OBD2 freeze-frame + SAE J2012 P-code decode (PRD F3, LIVE) + fair-band. **Wiring diagrams + full parts-compatibility DB = roadmap (PRD pro-tool track) — deterministic decode is LIVE, the diagram library is not.**
+- *Note:* Rafiq is a **partner, not the anti-persona**. The anti-persona is the *overcharging* advisor — Chitti arms the honest mechanic and exposes the dishonest quote.
+
+---
+
+## COSDF P1–P10 crosswalk (canonical archetype → this car persona)
+
+Every COSDF LEVEL-2 archetype, mapped to the lived Car Doctor persona that carries
+it. The four-user accessibility contract (P5–P8 in COSDF terms) is the floor under
+all of them ([../SAHAYAI_MASTER.md §7](../SAHAYAI_MASTER.md)).
+
+| COSDF # | Canonical archetype | Car Doctor persona | Notes |
+|---|---|---|---|
+| **P1** | Farmer (tractor) | **P11 Devendra** — diesel utility 4×4 | Tractor/generator/water-pump = roadmap (PRD F11); diesel-utility surface is the car-world live mapping |
+| **P2** | Student (2-wheeler) | **P12 Arjun** — family hatchback | Mapped to a borrowed car; budget ₹500–2 000, preventive, education |
+| **P3** | Professional driver (car) | **P2 Ravi** — taxi / Ola-Uber driver | Native fit; can-I-drive verdict + roadside SOS + mechanic verification |
+| **P4** | Senior citizen | **P4 Lakshmi** — elderly driver | ELDERLY profile: large text, slow speech, simple mode |
+| **P5** | Blind | **P5 Anand** — blind owner's household | Voice-only, describe-my-dashboard, Sound Doctor; no visual-only step |
+| **P6** | Deaf | **P6 Imran** — deaf driver | Visual cards + severity icons + text + ISL; waveform, never audio-only |
+| **P7** | Illiterate | **P8 Bhola** — illiterate rural driver | Audio + icons only; 👍👎; 2G; SMS fallback. (Mute = **P7 Priya**, photo-first) |
+| **P8** | Professional mechanic | **P13 Rafiq** — independent garage | Faster OBD lookup; wiring diagrams = roadmap |
+| **P9** | Fleet owner | **P3 Meera** — small-business fleet manager | Multi-vehicle health, service-due, document-expiry (PRD F12/F15) |
+| **P10** | Used-vehicle buyer | **P10 Vikram** — used-car buyer | 100-point inspection + OBD2 + Health Passport (PRD F8/F10) |
+
+Two car-world personas have **no COSDF archetype** and are kept because the car
+context demands them:
+- **P1 Suresh** — the single-family-car owner facing service-centre upsell. The
+  North-Star persona (see [SUCCESS_METRICS.md](SUCCESS_METRICS.md)): one car, no
+  spare cash, the upsell is the whole threat.
+- **P9 Kavya** — the woman driving alone after dark. Drives the **Roadside SOS →
+  family cascade** (PRD F9); **never auto-dials 100/108/112** ([../SAHAYAI_MASTER.md §2](../SAHAYAI_MASTER.md)).
+
+---
+
 ## Persona → adaptation matrix (inherited from chitti_a11y.js)
 
 | Persona | Profile flag | Adaptation (auto) |
@@ -82,6 +148,9 @@ Each persona carries a **user story** in the canonical form:
 | Priya | MUTE | Tap / photo input · voice never required · photo-first flow |
 | Bhola | ILLITERATE + RURAL | Voice-everything · picture menus · 2G mode · SMS fallback |
 | Kavya | (safety profile) | SOS prominent · family cascade · never cops |
+| Devendra | ILLITERATE + RURAL + OFFLINE | Offline-cached SOPs · voice-first · diesel sound library · nearest-help cache |
+| Arjun | (budget profile) | Cheapest-safe-fix first · preventive alerts · repair education |
+| Rafiq | PRO-MECHANIC | Fast OBD2 decode · P-code shortlist · labour-time ref (wiring diagrams roadmap) |
 
 ---
 

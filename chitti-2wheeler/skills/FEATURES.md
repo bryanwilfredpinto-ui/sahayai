@@ -127,6 +127,33 @@ where blind / illiterate users are the primary audience.
 
 ---
 
+## 3b. COSDF domain skill files (knowledge core)
+
+Per [COSDF v1.0 LEVEL 5](../../CHITTI_MECHANIC_COSDF.md), the diagnostic
+knowledge is split into 12 domain skill files. Each carries domain principles,
+Indian-fleet failure patterns (Activa / Splendor / Pulsar / RE / Ather / Ola),
+symptom→cause mapping, the confidence-band + DIY-safety-tier outputs, and the
+swarm agents it feeds. These ground the flagship reasoner
+[`symptom-diagnosis.md`](./symptom-diagnosis.md) and the
+[8-agent swarm](../swarm/README.md):
+
+| Domain | File | Owns |
+|---|---|---|
+| Engine | [`engine.md`](./engine.md) | combustion, cranking, fuelling, compression |
+| Electrical | [`electrical.md`](./electrical.md) | battery, charging, starting; EV-HV (no-DIY) |
+| Brakes | [`brakes.md`](./brakes.md) | drum/disc/CBS/ABS — Safety-supreme |
+| Tyres & wheels | [`tyres.md`](./tyres.md) | tread/pressure/age/bearing |
+| Cooling | [`cooling.md`](./cooling.md) | air/oil/liquid; no-hot-cap; EV thermal |
+| Transmission | [`transmission.md`](./transmission.md) | clutch/gearbox/chain, CVT, EV drive |
+| Exhaust | [`exhaust.md`](./exhaust.md) | smoke-colour map, BS6 emissions, PUC |
+| OBD | [`obd.md`](./obd.md) | DTC decode, ELM327, dashboard MIL |
+| Cost | [`cost.md`](./cost.md) | fair-price bands, quote verification |
+| Safety | [`safety.md`](./safety.md) | the supreme veto + emergency path |
+| Accessibility | [`accessibility.md`](./accessibility.md) | four-user modality adaptation |
+| Sound recognition | [`sound_recognition.md`](./sound_recognition.md) | sound→component; audio AUTO-DETECT roadmap |
+
+---
+
 ## 4. Cross-product hooks
 
 - **[Chitti Vaani](../../chitti_vaani.html)** — emergency cascade endpoint; Chitti 2W's

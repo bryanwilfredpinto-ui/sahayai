@@ -1,0 +1,231 @@
+# 🎖️ World Class Chitti Bike Doctor — Commando Discipline. Zero Excuses.
+#
+# swarm/agents.yaml — COSDF v1.0 LEVEL 6 (8-agent diagnostic pipeline), machine-readable.
+# Every diagnosis passes ALL agents before it reaches the rider. The user sees the
+# SYNTHESIZED verdict (weighted likelihood + confidence band + DIY tier + cost band +
+# can-I-ride call), never one agent's raw guess. This is the CQOS gate for Chitti Bike Doctor.
+#
+# This file encodes the COSDF L6 canonical 8-agent pipeline and ALIGNS each COSDF role to
+# the existing per-agent prose spec in this folder (swarm/*.md). Where the existing fleet
+# carries extra agents (Symptom, Fuel) they are kept as first-class members of the panel;
+# COSDF's 8 are a subset/rename, never a contradiction.
+#
+# Locks honoured: DeepSeek-only LLM; Chitti Vaani is the sole user surface (the HTML page
+# is dev/debug/parity); emergency = family cascade, NEVER auto-dial cops/112/100/108;
+# 9 live languages + 26-voice substrate; camera/audio AI auto-detect = roadmap (deterministic LIVE).
+
+version: "1.0"
+framework: "COSDF v1.0 — LEVEL 6 SWARM"
+product: "chitti-2wheeler (Chitti Bike Doctor)"
+canonical_reference: "../../CHITTI_MECHANIC_COSDF.md#level-6--swarm-swarm--8-agent-pipeline-every-output-passes-all"
+panel_doc: "./README.md"
+llm: "DeepSeek only (single round-trip returns strict per-agent JSON)"
+grounding: "../skills/MECHANIC_KNOWLEDGE.md and ../skills/*.md"
+
+# ---------------------------------------------------------------------------------------
+# Pipeline ordering. The swarm runs in one DeepSeek round-trip; `order` is the logical
+# precedence used for synthesis + display, NOT separate network calls.
+#   diagnose  -> engine, electrical, fuel, symptom (weighted candidate faults)
+#   gate      -> safety (VETO/supreme), diy-feasibility, cost
+#   verify    -> hallucination-detector (Trust), accessibility, quality-assurance (final)
+# ---------------------------------------------------------------------------------------
+
+agents:
+
+  # ---- COSDF #1 — Engine Specialist -----------------------------------------------------
+  - id: engine
+    cosdf_role: "1 Engine Specialist"
+    spec: "./engine-agent.md"
+    stage: diagnose
+    order: 1
+    judges: "misfire, knock, overheat, oil/lubrication; primary mechanical fault"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    returns: { candidate: string, weight: number, why: string, confidence: 'High|Medium|Low' }
+    feeds_skills: ["../skills/engine.md", "../skills/cooling.md", "../skills/transmission.md"]
+    hard_rules:
+      - "Never escalate to 'engine seized / block cracked' without strong evidence."
+      - "Hands head-gasket / bottom-end / bore work to Professional via diy-feasibility."
+
+  # ---- COSDF #2 — Electrical Specialist -------------------------------------------------
+  - id: electrical
+    cosdf_role: "2 Electrical Specialist"
+    spec: "./electrical-agent.md"
+    stage: diagnose
+    order: 2
+    judges: "battery, magneto/alternator, starter, fuse, wiring, regulator-rectifier"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    returns: { candidate: string, weight: number, why: string, confidence: 'High|Medium|Low' }
+    feeds_skills: ["../skills/electrical.md"]
+    feeds_sop: ["../sop/not_starting.md"]
+    hard_rules:
+      - "Cranks-fine => it is NOT the battery; say so (battery is over- AND under-diagnosed)."
+      - "EV high-voltage traction battery / DC-DC is NEVER rider-touchable -> Professional/OEM."
+
+  # ---- Existing fleet member — Fuel Specialist (kept first-class) ------------------------
+  - id: fuel
+    cosdf_role: "(fleet) Fuel Specialist — within COSDF Engine/diagnosis cluster"
+    spec: "./fuel-agent.md"
+    stage: diagnose
+    order: 3
+    judges: "reserve, fuel cock, filter, injector, carburettor, contamination, choke"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    returns: { candidate: string, weight: number, why: string, confidence: 'High|Medium|Low' }
+    feeds_sop: ["../sop/not_starting.md", "../sop/smoke_color.md"]
+    hard_rules:
+      - "Always test the free cause first (empty reserve / stuck choke) before any fuel-system repair."
+
+  # ---- Existing fleet member — Symptom Specialist (narrows the question) -----------------
+  - id: symptom
+    cosdf_role: "(fleet) Symptom Specialist — frames what the problem actually is"
+    spec: "./symptom-agent.md"
+    stage: diagnose
+    order: 4
+    judges: "what the rider is actually reporting; which clarifying question to ask next"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    returns: { problem_frame: string, next_question: string, why: string }
+
+  # ---- COSDF #3 — Safety Specialist — CAN VETO ANYONE (SUPREME) --------------------------
+  - id: safety
+    cosdf_role: "3 Safety Specialist — CAN VETO ANYONE"
+    spec: "./safety-agent.md"
+    stage: gate
+    order: 5
+    supreme: true
+    judges: "safe to ride now? safe DIY for THIS user? EMERGENCY if dangerous?"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: true            # the ONLY agent with veto — outranks every other agent
+    veto_effect: "Forces 🔴 DO NOT RIDE to the top of the verdict, above any cheap/likely fault."
+    returns:
+      tier: '"🟢 DIY Allowed", "🟡 DIY Assisted", "🟠 Professional Required", "🔴 Emergency — DO NOT RIDE"'
+      ride_decision: string
+      red_lines: list
+      why: string
+    red_lines: [brakes, tyres, steering, "fork/suspension", chain, "frame/wheel", "EV high-voltage"]
+    accuracy_target: "100% — critical safety errors = 0 (../evals/safety_eval.md)"
+    feeds_skills: ["../skills/brakes.md", "../skills/tyres.md"]
+    feeds_sop: ["../sop/brake_noise.md", "../sop/overheating.md", "../sop/emergency.md"]
+    hard_rules:
+      - "Metal-on-metal brake grind / no bite / fluid leak -> 🔴 STOP DRIVING."
+      - "When evidence is thin but a brake/tyre/steering hazard is possible -> err to caution, never 'probably fine'."
+      - "Emergency = family cascade (../sop/emergency.md), NEVER auto-dial cops/112/100/108."
+
+  # ---- COSDF #5 — DIY-Feasibility Specialist --------------------------------------------
+  - id: diy-feasibility
+    cosdf_role: "5 DIY-Feasibility Specialist"
+    spec: "./diy-agent.md"
+    stage: gate
+    order: 6
+    judges: "can THIS rider fix this at home safely? skill level, tools, time, difficulty 1-5"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    constrained_by: safety     # may NOT propose a home fix the safety agent flagged
+    returns: { diy_tier: '"🟢","🟡","🟠","🔴"', tools: list, time_min: number, difficulty: number, steps_ref: string }
+    feeds_sop: ["../sop/diy-repair-coach.md"]
+    hard_rules:
+      - "DIY never beats safety — no home fix for brake hydraulics, EV HV, fork internals, fuel-system."
+
+  # ---- COSDF #4 — Cost Specialist -------------------------------------------------------
+  - id: cost
+    cosdf_role: "4 Cost Specialist"
+    spec: "./cost-agent.md"
+    stage: gate
+    order: 7
+    judges: "expected repair band (parts + labour, ₹); feeds Scam Shield quote verification"
+    can_lower_confidence: true
+    can_raise_confidence: true
+    can_veto: false
+    returns: { part_cost_band: string, labour_band: string, total_band: string, fair_verdict: 'Fair,High,Scam' }
+    feeds_skills: ["../skills/scam-shield.md"]
+    feeds_sop: ["../sop/scam-quote-check.md"]
+    hard_rules:
+      - "Always a BAND, never a single number; never quote a price without data."
+
+  # ---- COSDF #6 — Accessibility Specialist ----------------------------------------------
+  - id: accessibility
+    cosdf_role: "6 Accessibility Specialist"
+    spec: "../ACCESSIBILITY.md"     # modality matrix lives in the product ACCESSIBILITY.md
+    substrate: "../../chitti_a11y.js + feedback-widget.js (5 mandatory box elements)"
+    stage: verify
+    order: 8
+    judges: "adapt the verdict to the user's modality: voice / text / icons / haptic / ISL"
+    can_lower_confidence: false
+    can_raise_confidence: false
+    can_veto: false
+    returns: { output_mode: 'voice-first, visual-first, icon-first, haptic', speak_first: bool, isl: bool }
+    serves_users: ["blind", "deaf", "mute", "illiterate", "senior"]
+    languages:
+      primary_live: [en, hi, ta, te, bn, mr, gu, kn, ml]   # 9 live
+      substrate: "26-voice Voice Factory"
+      roadmap: "wider COSDF language list (Portuguese, Swahili, Arabic, Yoruba, ...)"
+    hard_rules:
+      - "Safety verdict spoken FIRST (blind) and shown as symbol+word+flash (deaf) — never colour-only."
+      - "Every result card carries the 5 mandatory elements: 🔊 / 🤖 / 👍👎 / ✏️🎙️ / 🌐."
+
+  # ---- COSDF #7 — Hallucination Detector (existing Trust Agent) --------------------------
+  - id: hallucination-detector
+    cosdf_role: "7 Hallucination Detector"
+    spec: "./trust-agent.md"        # the fleet's Trust Agent IS the hallucination detector
+    aka: "Trust Agent"
+    stage: verify
+    order: 9
+    judges: "matches known patterns? invented part/code/model? false-high confidence? over-diagnosis?"
+    can_lower_confidence: true
+    can_raise_confidence: false     # asymmetric by design — can ONLY lower
+    can_veto: false
+    returns: { confidence_cap: 'High|Medium|Low', dropped_claims: list, force_inspection: bool, why: string }
+    final_confidence_rule: "min(swarm_confidence, trust_cap)"
+    feeds_evals: ["../evals/hallucination_eval.md"]
+    hard_rules:
+      - "Never invents a part, DTC, model, or procedure to fill a gap — honest 'don't know'."
+      - "Thin evidence on a strong claim -> cap at Low -> 'recommend inspection'."
+      - "Cheapest sufficient cause preferred over an expensive guess (keep Chitti cheap + honest)."
+
+  # ---- COSDF #8 — Quality Assurance (final synthesis gate) -------------------------------
+  - id: quality-assurance
+    cosdf_role: "8 Quality Assurance"
+    spec: "./README.md#voting-rules-non-negotiable"
+    stage: verify
+    order: 10
+    final: true                    # produces FINAL OUTPUT after all agents have run
+    judges: "guardrails passed? required fields present? no forbidden content? consensus reached?"
+    can_lower_confidence: true
+    can_raise_confidence: false
+    can_veto: false                # cannot override Safety; can BLOCK a non-compliant output
+    blocks_if_missing: [confidence_band, safety_tier, cost_band, diy_tier]
+    enforces:
+      - "Disagreement floor — top two candidates within ~15 pts OR top weight < 50% => 'confidence low, recommend inspection'."
+      - "Safety final approval — no output ships if the safety agent vetoed and the verdict didn't surface 🔴 first."
+      - "Box elements present — 🔊/🤖/👍👎/✏️🎙️/🌐 on the response card (data-chitti-response)."
+      - "No-Hinglish — one pure language per response; technical terms (UPI, FI, ABS, P0xxx) stay English."
+    feeds_evals: ["../evals/diagnostic_accuracy.md", "../evals/safety_eval.md", "../evals/cost_accuracy.md"]
+
+# ---------------------------------------------------------------------------------------
+# Voting rules (non-negotiable) — mirror swarm/README.md, machine-readable form.
+# ---------------------------------------------------------------------------------------
+voting_rules:
+  safety_supreme: "Safety can VETO + reorder display: any brake/tyre/steering/fork/chain red line forces 🔴 DO NOT RIDE to the top."
+  trust_only_lowers: "Hallucination-Detector (Trust) can cap/lower confidence or force inspection; it can NEVER raise a score."
+  diy_never_beats_safety: "diy-feasibility may not propose a home fix safety flagged (brake hydraulics, EV HV, fork internals)."
+  confidence_band_always: "Every verdict ships Likely/Possible + High/Medium/Low — Chitti never bluffs a rider."
+  disagreement_floor: "top-2 within ~15 pts OR combined top weight < 50% => downgrade to 'recommend inspection'."
+
+# ---------------------------------------------------------------------------------------
+# Mechanic Verification Loop — ground truth re-weights the swarm over time (§2f swarm learning).
+# ---------------------------------------------------------------------------------------
+verification_loop:
+  doc: "../observability/mechanic_verification_loop.md"
+  flow: "rider reports what the mechanic actually fixed -> predicted-vs-actual re-weights agents -> Swarm Intelligence (../../SAHAYAI_MASTER.md §2f)"
+  learnable: "high-confidence patterns confirmed by >=100 real outcomes -> anonymised -> validated -> pushed to ../skills/"
+  never_learnable: ["unsafe-DIY shortcuts", "'you are being cheated by <named shop>'", "HIGH-risk safety patterns without human review"]
+
+# > World Class Chitti Bike Doctor — Commando Discipline. Zero Excuses.

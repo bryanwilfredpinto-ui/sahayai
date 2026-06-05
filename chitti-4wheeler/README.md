@@ -74,24 +74,31 @@ local SQLite fallback until `DATABASE_URL` (libsql:// composed form) is set (see
 
 ## Document map
 
-| Area | File(s) |
-|---|---|
-| Constitution | [ROLE.md](ROLE.md) |
-| Vision / metrics | [PRODUCT_VISION.md](PRODUCT_VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
-| Users | [PERSONAS.md](PERSONAS.md) |
-| Spec | [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Operating profile | [SOP.md](SOP.md) · [../CHITTI_SOP.md](../CHITTI_SOP.md) |
-| Capabilities | [SKILLS.md](SKILLS.md) · [skills/](skills/) (+ [skills/FEATURES.md](skills/FEATURES.md)) |
-| Knowledge corpus | [skills/MECHANIC_KNOWLEDGE.md](skills/MECHANIC_KNOWLEDGE.md) |
-| Voting agents | [swarm/](swarm/) |
-| Guardrails | [guardrails/](guardrails/) |
-| Tests / evals | [evals/](evals/) |
-| Observability | [observability/](observability/) |
-| Memory | [memory/](memory/) |
-| Accessibility | [accessibility/](accessibility/) |
-| SOP detail | [sop/](sop/) |
-| Real backend | [backend/routes/wheels.py](backend/routes/wheels.py) (`/api/4w/*`) |
-| Sibling | [chitti-2wheeler/](../chitti-2wheeler/) (Bike Doctor — shared family fleet) |
+**Built on COSDF v1.0 — see [../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md).**
+This doc set is the per-product application of the canonical Complete Operating System
+Development Framework; the LEVEL each file realises is noted below.
+
+| COSDF level | Area | File(s) |
+|---|---|---|
+| L0 | Constitution | [ROLE.md](ROLE.md) |
+| L1 | Product vision | [PRODUCT_VISION.md](PRODUCT_VISION.md) |
+| L2 | Personas | [PERSONAS.md](PERSONAS.md) |
+| L3 | Success metrics | [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
+| L4 | PRD (features F0–F12) | [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) |
+| L5 | Skills (capabilities) | [SKILLS.md](SKILLS.md) · [skills/](skills/) (+ [skills/FEATURES.md](skills/FEATURES.md)) · [skills/MECHANIC_KNOWLEDGE.md](skills/MECHANIC_KNOWLEDGE.md) |
+| L6 | Swarm (8-agent pipeline) | [swarm/](swarm/) · **[swarm/agents.yaml](swarm/agents.yaml)** (COSDF L6 encoded) · [swarm/README.md](swarm/README.md) |
+| L7 | SOPs | [sop/](sop/) — SOP-001 [not_starting.md](sop/not_starting.md) · SOP-002 [brake_noise.md](sop/brake_noise.md) · SOP-003 [overheating.md](sop/overheating.md) · SOP-004 [smoke_color.md](sop/smoke_color.md) · SOP-005 [used_inspection.md](sop/used_inspection.md) · SOP-006 [emergency.md](sop/emergency.md) · plus [breakdown-roadside.md](sop/breakdown-roadside.md), [dashboard-warning-light.md](sop/dashboard-warning-light.md), [diy-repair-coach.md](sop/diy-repair-coach.md), [scam-quote-check.md](sop/scam-quote-check.md), [used-car-inspection.md](sop/used-car-inspection.md) (full 100-point), [preventive-maintenance.md](sop/preventive-maintenance.md), [accessibility-diagnosis.md](sop/accessibility-diagnosis.md) |
+| L8 | Guardrails | [GUARDRAILS.md](GUARDRAILS.md) · [guardrails/](guardrails/) |
+| L9 | Memory (Vehicle Twin) | [MEMORY.md](MEMORY.md) · [memory/](memory/) (+ [memory/vehicle_twin_schema.json](memory/vehicle_twin_schema.json)) |
+| L10 | Observability | [OBSERVABILITY.md](OBSERVABILITY.md) · [observability/](observability/) (+ [observability/metrics.yaml](observability/metrics.yaml)) |
+| L11 | Evals | [EVALS.md](EVALS.md) · [evals/](evals/) |
+| L12 | Accessibility | [ACCESSIBILITY.md](ACCESSIBILITY.md) · [accessibility/](accessibility/) |
+| L13 | Quality gates | [QUALITY.md](QUALITY.md) |
+| L14 | Certification | [CERTIFICATION.md](CERTIFICATION.md) |
+| L15 | World-class features | [WORLD_CLASS_FEATURES.md](WORLD_CLASS_FEATURES.md) |
+| — | Operating profile | [SOP.md](SOP.md) · [../CHITTI_SOP.md](../CHITTI_SOP.md) |
+| — | Real backend | [backend/routes/wheels.py](backend/routes/wheels.py) (`/api/4w/*`) |
+| — | Sibling | [chitti-2wheeler/](../chitti-2wheeler/) (Bike Doctor — shared family fleet) |
 
 > Subtree dirs (`swarm/` `guardrails/` `evals/` `observability/` `memory/`
 > `accessibility/` `sop/` `skills/`) are built by another agent. This doc set

@@ -6,8 +6,47 @@
 > Failure modes · DIY-safety class · Test/Eval ref · Backend route status.** A
 > feature missing any of these is not built (ROLE.md "Required documentation").
 > Personas referenced as P1–P10 from [PERSONAS.md](PERSONAS.md). Backend routes
-> are the real ones in [backend/routes/wheels.py](backend/routes/wheels.py)
+> are the real ones in [backend/routes/wheels.py](backend/routes/wheels.py) +
+> [backend/routes/doctor.py](backend/routes/doctor.py)
 > (prefix `/api/4w/`); anything not there is marked **COMING SOON** honestly.
+> The COSDF F0–F12 crosswalk below maps the canonical
+> [CHITTI_MECHANIC_COSDF.md LEVEL 4](../CHITTI_MECHANIC_COSDF.md) feature set onto
+> this product's real surface; the product's own F0–F15 spec follows it.
+
+## COSDF F0–F12 crosswalk (canonical → this product)
+
+[COSDF LEVEL 4](../CHITTI_MECHANIC_COSDF.md) names twelve canonical features.
+Each is mapped here to the **real** 4-wheeler route(s) and an **honest status**,
+verified against [backend/routes/doctor.py](backend/routes/doctor.py) +
+[backend/routes/wheels.py](backend/routes/wheels.py) and the shipped substrate
+([../chitti_ai_scanners.js](../chitti_ai_scanners.js),
+[../chitti_breakdown_ui.js](../chitti_breakdown_ui.js),
+[../chitti_obd_ble.js](../chitti_obd_ble.js),
+[backend/lib/swarm.py](backend/lib/swarm.py)). Status legend:
+✅ **LIVE** · 🟡 **PARTIAL** (deterministic core LIVE, AI/ML auto-detect ROADMAP) · 🔵 **ROADMAP**.
+
+| COSDF | Feature | This product | Real route / surface | Status |
+|---|---|---|---|---|
+| **F0** | Camera Diagnosis | Dashboard / Tire / Leak scanners ([§F2](#f2--dashboard-doctor--coming-soon-routes-via-f0-today), AI Scanners) | `chitti_ai_scanners.js` (photo captured on-device) + `POST /api/4w/dashboard/check` | 🟡 deterministic pick/colour-match LIVE; vision auto-detect ROADMAP |
+| **F1** | Audio Diagnosis | Sound Doctor / Engine Sound Analysis ([§F3](#f3--sound-doctor--post-api4wlisten--501-coming-soon)) | `GET /api/4w/sound/catalogue` + `POST /api/4w/sound/check` | 🟡 sound-picker (9 sounds) LIVE; audio auto-classify ROADMAP |
+| **F2** | Dashboard Scanner | Dashboard Doctor ([§F2](#f2--dashboard-doctor--coming-soon-routes-via-f0-today)) | `GET /api/4w/dashboard/lights` (14-telltale KB) + `POST /api/4w/dashboard/check` | 🟡 light-picker + severity/can-drive LIVE; photo auto-read ROADMAP |
+| **F3** | OBD2 Integration | OBD2 snapshot interpreter ([§F13](#f13--dtc-plain-hinglish-library-obd2--get-api4wdtccode--live-16-codes)) + BLE pair | `POST /api/4w/obd/snapshot` + `chitti_obd_ble.js` (Web-Bluetooth ELM327) | 🟡 snapshot decode + live-param flags LIVE; full live-PID stream PARTIAL |
+| **F4** | No-OBD Mode | Symptom Doctor + Roadside Self-Fix ([§F0](#f0--symptom-doctor-hero--post-api4wask--live), [§F9](#f9--emergency-mode--roadside-sos--post-api4wbreakdown--live)) | `POST /api/4w/ask` + `ChittiSelfFix.open('4w')` (offline, no LLM) | ✅ LIVE (single DeepSeek call; swarm fusion ROADMAP) |
+| **F5** | Cost Estimator + quote verification | Scam Shield / Anti-Overcharge Guard ([§F5](#f5--scam-shield--post-api4wquotecheck--501-coming-soon), [§F14](#f14--anti-overcharge-guard--folds-into-scam-shield-f5)) | `POST /api/4w/quote/check` → **501 today**; cost bands inline in `dashboard/check` + `sound/check` | 🔵 fair-price band table ROADMAP; per-fault ₹ cost bands LIVE |
+| **F6** | DIY Repair Mode | DIY Coach ([§F4](#f4--diy-coach--coming-soon-guidance-via-f0-today)) | guidance via `POST /api/4w/ask`; DIY tier stamped on every diagnosis | 🟡 voice guidance LIVE; step-card + video library ROADMAP |
+| **F7** | Emergency Breakdown Mode | Emergency Mode + Roadside SOS ([§F9](#f9--emergency-mode--roadside-sos--post-api4wbreakdown--live)) | `POST /api/4w/breakdown` (9-step tree + brand RSA) + `ChittiSelfFix` + Vaani cascade | ✅ LIVE (family-cascade only; **NEVER auto-dials 100/108/112**) |
+| **F8** | Used-Vehicle Inspector | Used Vehicle Inspector ([§F8](#f8--used-vehicle-inspector-100-point--coming-soon--huge-for-cars)) | `GET /api/4w/inspect/checklist` (~100-point, 11 cats) + `POST /api/4w/inspect/score` | ✅ deterministic LIVE; walk-around camera AI ROADMAP |
+| **F9** | Predictive Maintenance | Vehicle Twin + Parts Life Predictor ([§F6](#f6--vehicle-twin--get-api4wmaintenancenext--live-twin-partial), [§F7](#f7--parts-life-predictor--coming-soon)) | `GET /api/4w/maintenance/next` (brand schedule) | 🟡 odometer projection LIVE; part-age + ML trend ROADMAP |
+| **F10** | Vehicle Health Score | Vehicle Health Passport Trust Score ([§F10](#f10--vehicle-health-passport--coming-soon--huge-for-cars--resale)) | `GET /api/4w/passport/trust-score` (0–100, green/amber/red) | ✅ Trust Score LIVE; weighted per-system Health Score (engine/brakes/tyres…) ROADMAP |
+| **F11** | Tractor / Generator / Water-Pump | Rural-equipment mode | — (shared rural module, lands here per [2W vehicle-class note](../chitti-2wheeler/WORLD_CLASS_FEATURES.md)) | 🔵 ROADMAP (rural differentiator — built where it belongs: 4W + shared module) |
+| **F12** | Sound Library & Education | Sound catalogue + DTC library ([§F3](#f3--sound-doctor--post-api4wlisten--501-coming-soon), [§F13](#f13--dtc-plain-hinglish-library-obd2--get-api4wdtccode--live-16-codes)) | `GET /api/4w/sound/catalogue` + `GET /api/4w/dtc/<code>` (~16 codes) | 🟡 catalogue + ~16-code library LIVE; full ~2 000-code library + tutorials ROADMAP |
+
+> **Cross-instance learning IS wired** ([backend/lib/swarm.py](backend/lib/swarm.py), [§2f](../SAHAYAI_MASTER.md)) —
+> every Car Doctor instance learns from every other via a weekly cron (≥100 confirmations,
+> ≥70% 👍 → `skills/SWARM_LEARNED.md`; HIGH-risk → `SWARM_PROPOSED.md` for Sire). This is
+> distinct from the **per-diagnosis** 8-agent fusion vote ([swarm/](swarm/)), which is
+> ROADMAP — `ask()` is a single profile-aware DeepSeek call today (see *Global contracts*).
+> See the world-class differentiators in [WORLD_CLASS_FEATURES.md](WORLD_CLASS_FEATURES.md) (COSDF L15).
 
 ## DIY-safety classification (the spine of every diagnosis)
 
@@ -28,9 +67,13 @@ DIY is a P0 incident.
 
 ## Global contracts (apply to every feature below)
 
-- **Swarm vote before display** — 8 agents ([swarm/](swarm/)) score; frontend shows
-  the synthesized confidence-weighted verdict (*"Misfire 80% / Coil 12% / Fuel 8%"*)
-  + a per-agent breakdown the owner can expand.
+- **Swarm vote before display (ROADMAP)** — the 8 agent specs ([swarm/](swarm/)) define a
+  confidence-weighted verdict (*"Misfire 80% / Coil 12% / Fuel 8%"*) + a per-agent
+  breakdown the owner can expand. **Honest status:** the per-diagnosis fusion engine is
+  **not yet invoked** — `POST /api/4w/ask` is a single profile-aware DeepSeek call today.
+  The deterministic Doctor routes (`dashboard/check`, `sound/check`, `obd/snapshot`,
+  `inspect/score`) DO emit ranked causes + confidence; the multi-agent *fusion* across
+  modalities is the roadmap layer. We never render a per-agent score the backend did not compute.
 - **Six fields, always** — Why · Severity · Can-I-drive · DIY class · Cost band · Alternatives.
 - **Never claim certainty** — Likely / Possible / Unlikely + High / Medium / Low confidence.
 - **Per-response widget** — every card has `data-chitti-response` (🔊 / 🤖 / 👍 / 👎 + feedback). No card ships without it.

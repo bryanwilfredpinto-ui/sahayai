@@ -2,6 +2,13 @@
 
 # SUCCESS_METRICS — Chitti Car Doctor
 
+Canonical framework: [../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md)
+**LEVEL 3 — SUCCESS METRICS**. This file is the Car-Doctor instance of that level.
+The COSDF L3 target tables (business / AI-accuracy / accessibility / safety) are
+near the end of this file, **clearly marked TARGETS** — unmeasured until the eval
+harness runs (Sire-gated **MECH-4**). The Tier-1 / Tier-2 tables below are *how* the
+Car Doctor measures against that ambition.
+
 The North Star is chosen to be **un-gameable by engagement**. We do not measure
 time-in-app, sessions, or bookings generated; those reward funnels and addiction,
 not the owner's outcome (Founder Rule).
@@ -77,6 +84,71 @@ owner tells Chitti *what the service centre actually fixed*. That confirmation
 2. **Swarm learning** ([§2f](../SAHAYAI_MASTER.md)) — confirmed patterns (≥ 100
    confirmations, HIGH-risk human review) push to [skills/](skills/).
 3. **Cost accuracy** — the real bill refines the fair-price band by city.
+
+## COSDF LEVEL-3 metric tables (TARGETS — unmeasured)
+
+These four tables are the canonical COSDF **LEVEL 3 — SUCCESS METRICS**
+([../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md)), adapted to the Car
+Doctor. They sit **above** the Tier-1/Tier-2 tables — those define *how* we measure
+on this product; these define the *ambition we are measured against*.
+
+> **EVERY NUMBER BELOW IS A TARGET, NOT AN ACHIEVED RESULT.** Nothing here is
+> measured until the **eval harness runs the live-LLM pass** — Sire-gated
+> **MECH-4** ([../CHITTI_MECHANIC_CONTROL_PANEL.md](../CHITTI_MECHANIC_CONTROL_PANEL.md)).
+> Per [../SAHAYAI_MASTER.md §2](../SAHAYAI_MASTER.md) and COSDF §3 (honest-stubs),
+> we never print an unmeasured metric as achieved. The "Measured" column stays
+> `— (pending MECH-4)` until the gold-set run lands. DAU/scale numbers are Y1
+> ambitions for the **whole Mechanic line** (2w + 4w), not a measured Car-Doctor figure.
+
+### L3.1 — Business (TARGETS)
+
+| Metric | Target | Measured | Notes |
+|---|---|---|---|
+| Daily active users (Mechanic line, Y1) | 1M+ | — (pending MECH-4) | Line-level ambition; Vaani-routed, not a Car-Doctor-only count |
+| D30 retention | > 40% | — (pending MECH-4) | Per-persona retention tracked at [OBSERVABILITY](../CHITTI_MECHANIC_COSDF.md) |
+| Diagnoses / day (line) | 500K+ | — (pending MECH-4) | Aggregate across 2w + 4w |
+| DIY-success rate | > 70% | — (pending MECH-4) | Safe DIY fixes completed without escalation |
+| Mechanic-escalation rate | < 30% | — (pending MECH-4) | Counter-metric; lower is better |
+| **₹ saved vs service centre** (North Star) | tracked, growing | — (pending MECH-4) | The un-gameable North Star; per-event log |
+
+### L3.2 — AI accuracy (TARGETS)
+
+| Metric | Target | Measured | Proven by |
+|---|---|---|---|
+| Engine diagnosis | > 90% | — (pending MECH-4) | [evals/diagnostic_accuracy.md](evals/diagnostic_accuracy.md) |
+| Electrical diagnosis | > 85% | — (pending MECH-4) | [evals/diagnostic_accuracy.md](evals/diagnostic_accuracy.md) |
+| **Brakes diagnosis** | **> 95%** | — (pending MECH-4) | safety-critical; [evals/safety_eval.md](evals/safety_eval.md) |
+| Sound recognition (top-3 hit) | > 85% | — (pending MECH-4) | Sound Doctor vs labelled car-audio library |
+| Dashboard warning-light ID | 100% (DB-backed) | — (pending MECH-4) | deterministic light DB, not a guess |
+| DTC P-code decode | > 95% | — (pending MECH-4) | vs SAE J2012 generic-code reference |
+| Cost estimation | ± 10% | — (pending MECH-4) | car ₹ ranges; [evals/cost_accuracy.md](evals/cost_accuracy.md) |
+| Hallucination rate | < 1% | — (pending MECH-4) | [evals/hallucination_eval.md](evals/hallucination_eval.md) |
+
+### L3.3 — Accessibility (TARGETS)
+
+| Metric | Target | Measured | Notes |
+|---|---|---|---|
+| Blind-user task success | > 99% | — (pending MECH-4) | P5 Anand flow, no visual dependency |
+| Deaf-user task success | > 99% | — (pending MECH-4) | P6 Imran flow, no audio-only step |
+| Illiterate-user task success | > 99% | — (pending MECH-4) | P8 Bhola flow, no reading dependency |
+| Voice-command success | > 95% | — (pending MECH-4) | Vaani is the sole user surface |
+| Offline core flow | 100% | — (pending MECH-4) | P11 Devendra field scenario; offline-cached SOPs |
+| Languages live (primary) | 9 (en,hi,ta,te,bn,mr,gu,kn,ml) | **LIVE** | substrate; wider COSDF list = roadmap |
+| Voice substrate (Voice Factory) | 26 voices | **LIVE** | voice-out coverage; not a per-string UI claim |
+
+### L3.4 — Safety (CRITICAL — TARGETS, hard zeros)
+
+| Metric | Target | Measured | Notes |
+|---|---|---|---|
+| Unsafe-recommendation rate | **0%** (hard) | — (pending MECH-4) | Safety-Agent veto; [evals/diy_safety_eval.md](evals/diy_safety_eval.md) |
+| Missed safety-warning rate | **0%** (hard) | — (pending MECH-4) | e.g. metal-on-metal brake → STOP DRIVING |
+| Can-I-drive correctness (unsafe class) | 100% | — (pending MECH-4) | wrong "drive it" can kill a family |
+| Emergency-response success | 100% | — (pending MECH-4) | family cascade only; **never** 100/108/112 |
+| HV-EV / airbag / brake jobs coached as DIY | **0** (hard) | — (pending MECH-4) | hard refusal, code-level |
+
+These map onto the existing Tier-1 hard gates above (Safety accuracy = 100%,
+Unsafe-DIY = 0, Auto-dials = 0). The L3 tables are the COSDF-canonical phrasing;
+the Tier-1/Tier-2 tables are how the Car Doctor operationalises them.
 
 ## How metrics are computed
 

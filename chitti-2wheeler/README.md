@@ -25,6 +25,11 @@ group, including blind, deaf, mute and illiterate riders.**
 
 Full capability surface: [skills/FEATURES.md](skills/FEATURES.md).
 
+> **Built on COSDF v1.0** — the Complete Operating System Development Framework
+> for Chitti Mechanic. See [../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md)
+> for the 16 canonical LEVELs (L0 Constitution → L15 World-Class Features) this
+> product's doc set, swarm, SOPs and evals implement.
+
 ## Who I serve (always the 4 users)
 
 | User | Challenge | How Chitti Bike Doctor serves them |
@@ -66,21 +71,32 @@ Sire** — `chitti-2wheeler-api` runs on the local SQLite fallback until
 `DATABASE_URL` (libsql:// composed form) is set on Railway (see
 [ARCHITECTURE.md §env-blocker](ARCHITECTURE.md)).
 
-## Document map
+## Document map (COSDF v1.0 — full doc set)
 
-| Area | File(s) |
-|---|---|
-| Constitution | [ROLE.md](ROLE.md) |
-| Vision / metrics | [PRODUCT_VISION.md](PRODUCT_VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
-| Users | [PERSONAS.md](PERSONAS.md) |
-| Spec | [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Operating profile | [SOP.md](SOP.md) · [../CHITTI_SOP.md §12](../CHITTI_SOP.md) |
-| Capabilities | [SKILLS.md](SKILLS.md) · [skills/](skills/) (+ [skills/FEATURES.md](skills/FEATURES.md)) |
-| Knowledge corpus | [skills/MECHANIC_KNOWLEDGE.md](skills/MECHANIC_KNOWLEDGE.md) |
-| Voting agents | [swarm/](swarm/) |
-| Tests | [evals/](evals/) |
-| Real backend | [backend/routes/wheels.py](backend/routes/wheels.py) |
-| Sibling | [chitti-4wheeler/](../chitti-4wheeler/) (Car Doctor — shared family fleet) |
+Every doc below maps to a COSDF LEVEL in
+[../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md).
+
+| COSDF LEVEL | Area | File(s) |
+|---|---|---|
+| L0 Constitution | Role / charter | [ROLE.md](ROLE.md) |
+| L1 Vision | Product vision | [PRODUCT_VISION.md](PRODUCT_VISION.md) |
+| L2 Personas | Users (P1–P10 + 4-user floor) | [PERSONAS.md](PERSONAS.md) |
+| L3 Success metrics | Targets (unmeasured until eval run) | [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
+| L4 PRD | Features F0–F12 | [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) |
+| L5 Skills | Capability files | [SKILLS.md](SKILLS.md) · [skills/](skills/) (engine · electrical · brakes · tyres · cooling · transmission + more) · [skills/FEATURES.md](skills/FEATURES.md) · [skills/MECHANIC_KNOWLEDGE.md](skills/MECHANIC_KNOWLEDGE.md) |
+| L6 Swarm | 8-agent pipeline | [swarm/agents.yaml](swarm/agents.yaml) · [swarm/](swarm/) (engine · electrical · fuel · symptom · safety[VETO] · diy · cost · trust) |
+| L7 SOPs | Decision-tree runbooks | [sop/](sop/) — [not_starting.md](sop/not_starting.md) (SOP-001) · [brake_noise.md](sop/brake_noise.md) (SOP-002) · [overheating.md](sop/overheating.md) (SOP-003) · [smoke_color.md](sop/smoke_color.md) (SOP-004) · [used_inspection.md](sop/used_inspection.md) (SOP-005) · [emergency.md](sop/emergency.md) (SOP-006) · plus [breakdown-roadside](sop/breakdown-roadside.md) · [dashboard-warning-light](sop/dashboard-warning-light.md) · [used-bike-inspection](sop/used-bike-inspection.md) · [diy-repair-coach](sop/diy-repair-coach.md) · [preventive-maintenance](sop/preventive-maintenance.md) · [scam-quote-check](sop/scam-quote-check.md) · [accessibility-diagnosis](sop/accessibility-diagnosis.md) |
+| L8 Guardrails | P0/P1/P2 rules | [GUARDRAILS.md](GUARDRAILS.md) · [guardrails/](guardrails/) (emergency-protocol · safety-rules · diy-safety · never-claim-certainty · scam-shield-rules) |
+| L9 Memory | Digital Vehicle Twin | [MEMORY.md](MEMORY.md) · [memory/](memory/) (vehicle_twin · vehicle_twin_schema.json · vehicle_health_passport) |
+| L10 Observability | Metrics + verification loop | [OBSERVABILITY.md](OBSERVABILITY.md) · [observability/](observability/) |
+| L11 Evals | Gold-set tests | [EVALS.md](EVALS.md) · [evals/](evals/) (diagnostic_accuracy · safety_eval · accessibility_eval · hallucination_eval · cost_accuracy · sound_eval · diy_safety_eval) |
+| L12 Accessibility | Modality matrix | [ACCESSIBILITY.md](ACCESSIBILITY.md) · [accessibility/](accessibility/) |
+| L13 Quality gates | 10 ship gates | [QUALITY.md](QUALITY.md) |
+| L14 Certification | Pre-release scorecard | [CERTIFICATION.md](CERTIFICATION.md) |
+| L15 World-class features | Ambition layer | [WORLD_CLASS_FEATURES.md](WORLD_CLASS_FEATURES.md) |
+| — Operating profile | 7-field SOP | [SOP.md](SOP.md) · [../CHITTI_SOP.md §12](../CHITTI_SOP.md) |
+| — Real backend | Parity + deterministic routes | [backend/routes/wheels.py](backend/routes/wheels.py) |
+| — Sibling | Car Doctor (shared family fleet) | [chitti-4wheeler/](../chitti-4wheeler/) |
 
 ---
 > **World Class Chitti Bike Doctor — Commando Discipline. Zero Excuses.**

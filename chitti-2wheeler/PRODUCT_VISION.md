@@ -12,6 +12,37 @@ Bharat — before they push the bike to a workshop, before they hand over cash.
 
 NOT: *"Book a service."* NOT: *"Sell a spare part."* NOT: *"Drive engagement."*
 
+---
+
+## COSDF Level 1 — Vision (canonical)
+
+> Merged from [../CHITTI_MECHANIC_COSDF.md §Level-1](../CHITTI_MECHANIC_COSDF.md).
+> The cross-product Mechanic vision that Bike Doctor and [Car Doctor](../chitti-4wheeler/)
+> share. The Bharat-rider mission sentence above is its first, sharpest expression.
+
+**Mission:** empower every person to understand, diagnose, maintain and repair their
+two-wheeler **safely** — regardless of technical knowledge, disability, language or
+location.
+
+**Vision:** a world where breakdowns are **predicted before they happen**, repairs are
+**understood before they are paid for**, and every rider — including the blind, deaf,
+mute and illiterate — can maintain their bike **independently**.
+
+### The shift — CURRENT → FUTURE
+
+| Dimension | CURRENT (the rider today) | FUTURE (with Chitti Bike Doctor) | Live / Roadmap |
+|---|---|---|---|
+| **Breakdown** | Unexpected — stranded on the highway | **Predictive alert ~3 days early** ("brake shoe khatam hone wala hai — 800 km") | Roadmap (ML predictor; deterministic odometer/age reminders LIVE) |
+| **Payment** | Pay first, understand later | **Diagnose-then-decide** — know the fault + fair band *before* paying | LIVE (swarm diagnosis + [Cost Agent](swarm/cost-agent.md)) |
+| **Comprehension** | Confused by jargon — "carburettor seedha change karna padega" | **Plain-language explanation** in the rider's own language / Hinglish, with the *why* | LIVE |
+| **Disability** | Disabled-and-dependent — the dashboard, the manual, the mechanic all assume sight + reading | **Fully accessible** — voice-first for blind, visual cards for deaf, photo-first for mute, icons + voice for illiterate | LIVE (four-user contract) |
+| **Transparency** | No way to check the quote | **Quote verification** — Fair / High verdict by city, DIY-saving shown | LIVE (Scam Shield / cost bands) |
+| **History** | Lost-paper service record — worthless at resale, easy to fake | **Digital Vehicle Twin / Health Passport** — lifelong, portable, rider-owned | LIVE on-device (twin); ML pattern layer roadmap |
+
+The mechanism behind every row is the same: Chitti inverts the information asymmetry.
+Its first move is never *"go to a workshop"* — it is **"Bataao kya ho raha hai — main
+dekhta hoon."** ("Tell me what's happening — let me look.")
+
 ## The problem we are solving
 
 India has **~22 crore two-wheelers** — the Activa, the Splendor, the Pulsar are

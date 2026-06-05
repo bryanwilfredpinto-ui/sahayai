@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "chitti-4wheeler/memory/vehicle_twin_schema.json",
+  "title": "Chitti Car Doctor — Digital Vehicle Twin (per-vehicle)",
+  "description": "COSDF v1.0 Level 9 per-vehicle schema, adapted to the SAHAYAI_MASTER.md §2b contract: on-device (IndexedDB chitti_4w_twin), user-owned, anonymised aggregates only, wiped by 'Chitti forget'. World Class Chitti Car Doctor — Commando Discipline. Zero Excuses.",
+  "type": "object",
+  "$comment": "STORAGE: IndexedDB database 'chitti_4w_twin', object store 'vehicles', keyed by vehicle_id. Nothing here leaves the device except the anonymised {predicted, actual, cost_band} tuple via the mechanic verification loop. No plate / identity / GPS in any aggregate. 'Chitti forget' wipes the record and tombstones aggregates (§2b). Mirrors CarProfile in backend/routes/wheels.py.",
+  "required": ["vehicle_id", "make", "model", "type", "ownership"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "default": "1.0", "description": "COSDF L9 twin schema version." },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Local random UUID. NOT the registration plate. Plate is never stored in the twin (§2b)."
+    },
+    "make": { "type": "string", "examples": ["Maruti Suzuki", "Hyundai", "Tata", "Mahindra", "Kia", "Toyota", "Honda", "Renault"] },
+    "model": { "type": "string", "examples": ["Swift", "Baleno", "Creta", "Venue", "Nexon", "Nexon EV", "Scorpio", "Innova Crysta"] },
+    "year": { "type": "integer", "minimum": 1980, "maximum": 2100 },
+    "type": {
+      "type": "string",
+      "enum": ["hatchback", "sedan", "suv", "muv", "ev_4w"],
+      "description": "ev_4w gates HV-safety guardrails (DO NOT TOUCH orange HV cables) — see guardrails/safety-rules.md."
+    },
+    "fuel": {
+      "type": "string",
+      "enum": ["petrol", "diesel", "cng", "ev", "hybrid"],
+      "description": "Drives diesel-specific DPF/EGR/turbo priors, CNG checks, and the hallucination guard (an EV has no engine oil / spark plugs — see evals/hallucination_eval.md)."
+    },
+    "transmission": {
+      "type": "string",
+      "enum": ["mt", "at", "cvt", "amt", "dct"],
+      "description": "MT/AT/CVT/AMT/DCT. Drives transmission-fault priors (e.g. AMT shift judder vs CVT belt whine)."
+    },
+    "odometer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "km": { "type": "integer", "minimum": 0 },
+        "km_per_day": { "type": "number", "minimum": 0, "description": "Rolling average from fuel/trip logs." },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "last_service": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Most recent service markers; full history lives append-only in the Vehicle Health Passport.",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "odo_km": { "type": "integer", "minimum": 0 },
+        "oil_changed": { "type": "boolean" },
+        "air_filter_done": { "type": "boolean" },
+        "spark_plug_done": { "type": "boolean", "description": "N/A for diesel/EV." },
+        "coolant_flushed": { "type": "boolean" },
+        "brake_fluid_done": { "type": "boolean" },
+        "ac_serviced": { "type": "boolean" }
+      }
+    },
+    "component_status": {
+      "type": "object",
+      "description": "0-100 health per component. Drives predictive alerts (F9) and primes the swarm as prior evidence.",
+      "additionalProperties": false,
+      "properties": {
+        "battery":      { "$ref": "#/$defs/component", "$comment": "12V starter battery; EV HV pack tracked separately in ev_health." },
+        "tyres":        { "$ref": "#/$defs/component" },
+        "brake_pads":   { "$ref": "#/$defs/component" },
+        "engine_oil":   { "$ref": "#/$defs/component", "$comment": "N/A for EV." },
+        "coolant":      { "$ref": "#/$defs/component" },
+        "brake_fluid":  { "$ref": "#/$defs/component" }
+      }
+    },
+    "ev_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "EV-only (type=ev_4w / fuel=ev). On-device range/SoH trend. HV cells are NEVER a DIY surface (guardrails/safety-rules.md).",
+      "properties": {
+        "soh_pct": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Estimated state-of-health from charge-cycle + range trend." },
+        "range_trend": { "type": "string", "enum": ["stable", "seasonal_dip", "declining"], "description": "A winter/AC-load dip is NORMAL — not pack failure (see evals/diagnostic_accuracy.md)." },
+        "charge_cycles": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "maintenance_history": {
+      "type": "array",
+      "description": "Pointer-mirror of Passport events of type 'service'. Source of truth = chitti_4w_passport (append-only).",
+      "items": { "$ref": "#/$defs/history_event" }
+    },
+    "repair_history": {
+      "type": "array",
+      "description": "Pointer-mirror of Passport events of type 'repair'. Each carries a fair-price band check.",
+      "items": { "$ref": "#/$defs/history_event" }
+    },
+    "fault_history": {
+      "type": "array",
+      "description": "Every diagnosis Chitti gave + the verified outcome from the mechanic verification loop.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "symptom_tags": { "type": "array", "items": { "type": "string" } },
+          "dtc_code": { "type": ["string", "null"], "description": "OBD2 P-code if a scanner was used, e.g. P0420. Unknown codes are queried, never invented." },
+          "predicted_fault": { "type": "string" },
+          "predicted_confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "safety_tier": { "type": "string", "enum": ["green", "yellow", "orange", "red"] },
+          "actual_fix": { "type": ["string", "null"], "description": "Ground truth from the verification loop; null until the driver reports back." },
+          "match": { "type": ["string", "null"], "enum": ["match", "mismatch", null] }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local_climate": { "type": "string", "description": "Derived from pincode -> IMD (monsoon/dust/heat season). Pincode is coarse, not GPS." },
+        "road_conditions": { "type": "string", "enum": ["city", "highway", "rural", "pothole_heavy", "mixed"] },
+        "usage_profile": { "type": "string", "enum": ["commuter", "highway", "cab_commercial"], "description": "cab_commercial = higher wear; raises service cadence and brake/tyre weights." }
+      }
+    },
+    "user_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "garage": { "type": "string", "description": "Driver's trusted workshop label (free text, local-only). Never stored against a quality verdict (no defamation — scam-shield-rules.md)." },
+        "budget_tier": { "type": "string", "enum": ["economy", "balanced", "premium"] },
+        "language": {
+          "type": "string",
+          "description": "9 primary live (en,hi,ta,te,bn,mr,gu,kn,ml); wider 26-voice substrate via Voice Factory. Wider COSDF language list = roadmap.",
+          "enum": ["en", "hi", "ta", "te", "bn", "mr", "gu", "kn", "ml"]
+        },
+        "accessibility_mode": {
+          "type": "array",
+          "description": "From the one-time Disability Profile (§7). Drives modality: voice-first / visual-first / icon-first / haptic.",
+          "items": { "type": "string", "enum": ["blind", "deaf", "mute", "illiterate", "isl", "elderly", "limited_mobility", "cognitive"] }
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "description": "The §2b user-ownership contract, encoded so any reader of a twin record sees the privacy rules.",
+      "additionalProperties": false,
+      "required": ["on_device", "user_owned", "shareable", "forgettable"],
+      "properties": {
+        "on_device": { "const": true, "description": "Twin lives in IndexedDB on the driver's phone." },
+        "user_owned": { "const": true, "description": "Driver owns every byte." },
+        "shareable": { "type": "boolean", "default": false, "description": "Driver may export a read-only resale card (Vehicle Trust Score); never auto-uploaded or sold." },
+        "forgettable": { "const": true, "description": "'Chitti forget' wipes this record and tombstones any anonymised aggregate." },
+        "aggregate_leaves": {
+          "type": "array",
+          "description": "The ONLY fields that may leave the device, and only anonymised, via the verification loop.",
+          "items": { "type": "string", "enum": ["predicted_fault", "actual_fix", "cost_band", "symptom_tags", "make_model_band", "dtc_code"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "health_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "age_months": { "type": "number", "minimum": 0 },
+        "km_since_replaced": { "type": "integer", "minimum": 0 },
+        "predicted_window": { "type": "string", "description": "Plain-language Likely/Possible window, e.g. '3-5 months'. NEVER a guaranteed date (never-claim-certainty.md)." },
+        "risk": { "type": "string", "enum": ["low", "medium", "high"] }
+      }
+    },
+    "history_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "passport_event_id": { "type": "string", "description": "Join key into chitti_4w_passport (append-only source of truth)." },
+        "date": { "type": "string", "format": "date" },
+        "odo_km": { "type": "integer", "minimum": 0 },
+        "item": { "type": "string", "examples": ["front brake pads + discs", "AC compressor", "DPF clean", "timing belt", "synthetic oil change"] },
+        "cost_inr": { "type": "number", "minimum": 0 },
+        "within_fair_band": { "type": ["boolean", "null"] },
+        "verified": { "type": "boolean", "description": "Confirmed via the mechanic verification loop?" }
+      }
+    }
+  }
+}

@@ -23,9 +23,12 @@ safety gate** — misclassifying a brake/fuel/steering job as DIY is a P0 incide
 
 ## Global contracts (apply to every feature below)
 
-- **Swarm vote before display** — 8 agents ([swarm/](swarm/)) score; frontend shows
-  the synthesized confidence-weighted verdict (*"Battery 85% / Starter 10% / Fuel 5%"*)
-  + a per-agent breakdown the rider can expand.
+- **Swarm vote before display (target)** — 8 agents ([swarm/](swarm/)) score; the
+  frontend is designed to show a synthesized confidence-weighted verdict
+  (*"Battery 85% / Starter 10% / Fuel 5%"*) + an expandable per-agent breakdown.
+  **Honest status:** the agent specs exist but per-diagnosis fusion is **ROADMAP** —
+  today `ask()` returns a single confidence-banded DeepSeek verdict. We never render a
+  per-agent score breakdown the backend did not compute.
 - **Six fields, always** — Why · Severity · Can-I-drive · DIY class · Cost band · Alternatives.
 - **Never claim certainty** — Likely / Possible / Unlikely + High / Medium / Low confidence.
 - **Per-response widget** — every card has `data-chitti-response` (🔊 / 🤖 / 👍 / 👎 + feedback). No card ships without it.
@@ -37,9 +40,55 @@ safety gate** — misclassifying a brake/fuel/steering job as DIY is a P0 incide
 
 ---
 
+## COSDF L4 mapping — features F0–F12 → Chitti Bike Doctor
+
+This product's own feature spine (F0–F14 below) predates the COSDF F0–F12
+catalogue ([../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md) §LEVEL 4).
+This table is the **honest crosswalk** — every COSDF feature mapped to what is
+actually built for the 2-wheeler, with status verified against
+[backend/routes/wheels.py](backend/routes/wheels.py),
+[backend/routes/doctor.py](backend/routes/doctor.py),
+[skills/FEATURES.md](skills/FEATURES.md), and the shared JS
+([../chitti_ai_scanners.js](../chitti_ai_scanners.js),
+[../chitti_breakdown_ui.js](../chitti_breakdown_ui.js),
+[../chitti_obd_ble.js](../chitti_obd_ble.js)).
+
+> **Status legend** — ✅ **LIVE** (real route / shipped JS, curl-verifiable) ·
+> 🟡 **PARTIAL** (a real deterministic core LIVE; the AI/ML or auto-detect layer is COMING SOON) ·
+> 🔵 **ROADMAP** (honest stub or not yet built — never faked, §3 honest-stubs).
+> Where COSDF assumes a vision/audio/ML model, the **deterministic version is LIVE**
+> and the **auto-detect is ROADMAP** (vision/audio model funding-gated, [§8](../SAHAYAI_MASTER.md)).
+
+| COSDF | Feature | Status | What is actually built (2W) | The gap that is ROADMAP |
+|---|---|---|---|---|
+| **F0** | Camera Diagnosis | 🟡 PARTIAL | **Tire Scanner** + **Leak Detection** + **Dashboard Scanner** deterministic flows LIVE via `ChittiScanners.open('2w')` ([../chitti_ai_scanners.js](../chitti_ai_scanners.js)) — real photo captured on-device (object-URL preview), user matches what they see (tread/coin test, fluid colour, lit light) → real result. | Photo **auto-detect** of damage/tyre-wear/leak/light (vision model) — funding-gated. `{image:true}` returns honest `mode:"pick_or_describe"` (HTTP 200), never a fabricated verdict. |
+| **F1** | Audio Diagnosis | 🟡 PARTIAL | **Sound Doctor** catalogue LIVE — `GET /api/2w/sound/catalogue` + `POST /api/2w/sound/check {sound_key}` returns ranked candidate causes + DIY-tier + ₹ band + safety note. **Engine Sound Analysis** scanner records ~10 s for real, then user picks closest sound. | 10-s clip **auto-classify** (audio model) — funding-gated. `{audio:true}` returns honest `pick_or_describe`. Maps to product feature **F3 / W12**. |
+| **F2** | Dashboard Scanner | 🟡 PARTIAL | **Dashboard Doctor** LIVE — `GET /api/2w/dashboard/lights` (~10 telltales, every colour carries a WORD label) + `POST /api/2w/dashboard/check {light_key}` → severity · can-ride · risk · confidence · Hinglish note. Oil/coolant/brake red-line forces `can_ride:false`. | Photo-to-light **auto-detect** (vision model). Maps to product feature **F2** below. |
+| **F3** | OBD2 Integration | 🟡 PARTIAL | **OBD snapshot interpreter** LIVE — `POST /api/2w/obd/snapshot {codes,live}` decodes DTCs from the local library + flags live params vs red-lines (volts<11.8, coolant>110°C → `can_ride:false`). **Web-Bluetooth ELM327** live-read shipped in [../chitti_obd_ble.js](../chitti_obd_ble.js) (`ChittiOBD.open`, Nordic-UART, honest fallback when `navigator.bluetooth` absent). | Full BLE pairing UI inside the 2W page (W5); ELM327 motorcycle-mode PID coverage beyond RPM/coolant/speed/voltage. |
+| **F4** | No-OBD Mode | ✅ LIVE | **Symptom Doctor** `POST /api/2w/ask` (DeepSeek, profile-aware, server-enforced disclaimer) + **Roadside Self-Fix** deterministic offline wizard ([../chitti_breakdown_ui.js](../chitti_breakdown_ui.js), `ChittiSelfFix.open('2w')`, no network/LLM). Camera + sound + Q&A all route here when no OBD. | The per-diagnosis **8-agent swarm vote** (confidence-weighted fusion of camera+sound+answers) — see note below; today `ask()` is a single DeepSeek call. |
+| **F5** | Cost Estimator + quote verification | 🟡 PARTIAL | Fair-price **₹ cost bands** surfaced inline on Sound Doctor / Inspector results (deterministic tables). | **Scam Shield** quote-vs-fair verdict endpoint `POST /api/2w/quote/check` is 501 today (product **F5/W7**); fair-price table seed queued. |
+| **F6** | DIY Repair Mode | 🟡 PARTIAL | DIY-safety class stamped on every diagnosis (🟢/🟡/🟠/🔴); 🟢/🟡 fixes get voice + SVG-diagram steps; 🟠/🔴 **never coached** (unsafe-DIY = 0 gate). | Step-by-step **video** library + "record yourself to verify" (product **F4/W4**). |
+| **F7** | Emergency Breakdown Mode | ✅ LIVE | `POST /api/2w/breakdown` returns the 8-step deterministic decision tree + brand RSA number + explicit **family-cascade** line. SOS reuses Vaani's cascade. **NEVER auto-dials 100/108/112.** GPS + RC plate added to payload. | Nearest-help **offline POI cache** richness; live location auto-share UX polish. Maps to product **F9/W9**. |
+| **F8** | Used-Vehicle Inspector | ✅ LIVE (deterministic) | **100-point checklist** LIVE — `GET /api/2w/inspect/checklist` + `POST /api/2w/inspect/score {answers}` → score % + verdict (buy/caution/avoid) + named critical fails + repair band. Any critical fail caps the verdict — never "buy". | Walk-around **camera AI** (paint/panel/rust auto-flag) — vision model ROADMAP. Maps to product **F8**. |
+| **F9** | Predictive Maintenance | 🟡 PARTIAL | `GET /api/2w/maintenance/next` LIVE — odometer-aware oil/air/plug/chain km-remaining per brand schedule. **Vehicle Health Passport** (`/api/2w/passport*`) persists the history the predictor needs. | Part-**age** model (tyre/battery/brake age → "brake pads in ~500 km") + ML predictor (product **F6/F7/W17**). |
+| **F10** | Vehicle Health Score | 🟡 PARTIAL | **Passport Trust Score** LIVE — `GET /api/2w/passport/trust-score` (0–100, green ≥80 / amber 50–79 / red <50) from service history, breadth/recency, unresolved critical repairs, missing docs. | The **weighted component health** breakdown (engine 30 / brakes 20 / tyres 15 / electrical 15 / fluids 10 / body 10). Maps to product **F10**. |
+| **F11** | Tractor / Generator / Water-Pump Mode | 🔵 ROADMAP | — | Rural diesel/hydraulics/PTO mode (Mahindra/JD/MF/Escorts/Sonalika), offline-first. Detailed in [WORLD_CLASS_FEATURES.md](WORLD_CLASS_FEATURES.md). Note: 2W is the wrong vehicle class for this — it lands primarily in [chitti-4wheeler](../chitti-4wheeler/) + a shared rural-equipment module. |
+| **F12** | Sound Library & Education | 🟡 PARTIAL | Sound **catalogue** LIVE (`GET /api/2w/sound/catalogue`, ~8 bike sounds with cause + DIY-tier + cost). | "Listen to normal-vs-problem" audio clips + tutorials + glossary library (product **F12-side / W23 checklist** adjacency). |
+
+**Swarm note (honest):** the COSDF 8-agent per-diagnosis vote
+([../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md) §LEVEL 6) is **authored as
+agent specs** in [swarm/](swarm/) (symptom · engine · electrical · fuel · cost · diy ·
+safety · trust) but is **not yet invoked per request** — `ask()` is a single
+profile-aware DeepSeek call today. The **cross-instance learning swarm**
+([backend/lib/swarm.py](backend/lib/swarm.py), SAHAYAI_MASTER §2f) IS wired as a cron
+pipeline. Marking the per-diagnosis vote 🔵 **ROADMAP** is the honest call — we do not
+claim a confidence-weighted multi-agent verdict the route does not produce.
+
+---
+
 ## F0 — Symptom Doctor (HERO) — `POST /api/2w/ask` ✅ LIVE
 - **Story (P1/P2/P8):** *As a rider, I want to describe what's wrong in my own words and get a clear diagnosis so that I know if I really need a mechanic.*
-- **UX flow:** Home → big primary "🩺 Meri bike ka problem bataao" → rider speaks/types/photos → Symptom Agent maps to candidate faults → 8-agent swarm vote → card with the six fields + confidence-weighted verdict.
+- **UX flow:** Home → big primary "🩺 Meri bike ka problem bataao" → rider speaks/types/photos → profile-aware DeepSeek diagnosis → card with the six fields + a Likely/Possible/Unlikely confidence band. *(The per-diagnosis 8-agent swarm vote is authored in [swarm/](swarm/) but not yet invoked in `ask()` — see the COSDF L4 swarm note above. Today the verdict is a single confidence-banded DeepSeek answer; the multi-agent fusion is ROADMAP.)*
 - **DIY class:** per fault, stamped by the DIY Agent.
 - **A11y:** blind → fully spoken, sound-first; deaf → visual severity card + ISL; mute → photo-first; illiterate → voice + picture icons.
 - **Failure modes:** symptom too vague → Chitti asks one clarifying question, never guesses; DeepSeek malformed → honest "phir se try karo," no fabricated score; fault not in corpus → "isko mechanic dikhao" + fair-price band, never invents.

@@ -2,6 +2,29 @@
 
 # PRODUCT_VISION — Chitti Car Doctor
 
+> **COSDF alignment:** this file is the **Level 1 — Vision** of Chitti Car Doctor,
+> applying the canonical framework at
+> [../CHITTI_MECHANIC_COSDF.md §Level-1](../CHITTI_MECHANIC_COSDF.md). The mission,
+> vision and CURRENT→FUTURE shift below are the car-platform expression of the
+> shared Chitti Mechanic vision; the rest of this file is the car-specific depth.
+> Locks win over COSDF ambition — DeepSeek-only · Vaani is the sole user surface
+> (`chitti_4wheeler.html` is dev/debug/parity) · emergency = family cascade,
+> **never** auto-dial 100/108/112 · 9 live languages + 26-voice substrate ·
+> camera/audio AI auto-detect = roadmap, deterministic versions LIVE
+> ([SAHAYAI_MASTER.md §2](../SAHAYAI_MASTER.md)).
+
+## Mission & Vision (COSDF L1)
+
+**Mission:** empower **every car owner in Bharat** to understand, diagnose,
+maintain and repair their vehicle **safely** — regardless of technical knowledge,
+disability, language or location. The first move is never "go to the service
+centre"; it is *"Bataao kya ho raha hai — main dekhta hoon."*
+
+**Vision:** a world where car breakdowns are **predicted before they happen**,
+repairs are **understood before they are paid for**, and **every** owner —
+including blind / deaf / mute / illiterate — can maintain their car independently
+and can never be overcharged ₹35 000 for a ₹2 000 job.
+
 ## Mission (the one sentence)
 
 > **"My car has a problem — do I really need a service centre, can I fix it
@@ -36,6 +59,26 @@ than a bike**:
 Chitti inverts this. Its first move is never "go to the service centre." It is:
 **"Bataao kya ho raha hai — main dekhta hoon."** ("Tell me what's happening — let
 me look.")
+
+## The shift — CURRENT → FUTURE (COSDF L1)
+
+This is the world Car Doctor moves the owner from, to
+([../CHITTI_MECHANIC_COSDF.md §Level-1](../CHITTI_MECHANIC_COSDF.md)):
+
+| Today (CURRENT) | With Chitti Car Doctor (FUTURE) |
+|---|---|
+| Unexpected breakdown strands the family on the highway | **Predictive alert** — "brake pads ~500 km", "battery 6 months", "monsoon: wiper + DPF regen due" *(twin LIVE; ML predictor = roadmap)* |
+| Pay ₹35 000 *then* wonder if it was real | **Diagnose-then-decide** — fair-price band + DIY-vs-mechanic verdict *before* any money changes hands |
+| Confused by jargon — "compressor gone", "ECU replacement" | **Plain-language explanation** in Hinglish / 9 live languages — *why*, *how severe*, *can I drive*, *what it should cost* |
+| Disabled-and-dependent — can't read the dashboard, can't describe the sound | **Fully accessible** — "Chitti, dashboard padho" (blind), visual cards (deaf), photo-first (mute), voice + icons (illiterate) |
+| No transparency — the mechanic decides the price | **Quote verification** — upload the invoice, get Fair / High / Scam by city + Mechanic Copilot script |
+| Lost paper service history; can't prove the car at resale | **Digital Vehicle Twin / Health Passport** — lifelong, portable, owner-owned record, decisive in the used-car market |
+
+> Every row above is a *direction of travel*, not a measured claim. Where the
+> mechanism is LIVE it is unmarked; where it needs the funding-gated vision/audio
+> model or the Sire-gated eval run it is marked **roadmap** — we never print an
+> unmeasured metric as achieved (§3 honest-stubs;
+> [../CHITTI_MECHANIC_COSDF.md](../CHITTI_MECHANIC_COSDF.md) platform-adaptation block).
 
 ## Two modes — works for everyone, advanced for nearly every car
 

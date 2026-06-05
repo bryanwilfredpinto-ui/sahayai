@@ -1,0 +1,253 @@
+# 🎖️ World Class Chitti Car Doctor — Commando Discipline. Zero Excuses.
+#
+# swarm/agents.yaml — COSDF v1.0 LEVEL 6 8-agent diagnostic pipeline, encoded.
+# Built on COSDF v1.0 — see ../../CHITTI_MECHANIC_COSDF.md (LEVEL 6).
+# Prose spec + voting rules: ./README.md. Each agent below references its existing
+# swarm/*.md file. Where a COSDF role spans more than one existing agent file (the
+# fault-diagnosis layer is split Symptom/Engine/Electrical/Fuel in this product), the
+# mapping is made explicit. NOTHING here claims a capability the product does not have:
+# accessibility adaptation and the hallucination/QA gates are LIVE as deterministic
+# guardrails; the ML "auto-detect" layers are roadmap (§ honest-stubs, see notes).
+
+framework: COSDF v1.0
+level: 6
+product: chitti-4wheeler (Chitti Car Doctor)
+canonical_reference: ../../CHITTI_MECHANIC_COSDF.md
+prose_spec: ./README.md
+
+# --- Platform locks honored (SAHAYAI_MASTER §2) ------------------------------
+locks:
+  llm_provider: deepseek-only          # one round-trip returns the strict-JSON vote
+  user_surface: chitti-vaani           # the HTML page is dev/debug/parity
+  emergency: family-cascade-never-cops # NEVER auto-dial 100/108/112 (see safety agent)
+  languages_live: [en, hi, ta, te, bn, mr, gu, kn, ml]   # 9 + 26-voice substrate
+  ml_autodetect: roadmap               # camera/audio/vibration auto-detect = COMING SOON
+  deterministic_now: live              # pick-the-light / pick-the-sound / OBD2 = LIVE
+
+# --- Execution model ---------------------------------------------------------
+execution:
+  mode: single-pass-strict-json
+  description: >
+    One DeepSeek round-trip returns a JSON object carrying every agent's
+    {candidate, weight, why, confidence}, the Safety verdict + tier, the DIY tier,
+    the cost band, the accessibility modality, and the Trust/QA notes. The frontend
+    renders the SYNTHESIZED verdict (weighted likelihood + confidence band + can-I-drive
+    + DIY tier + cost band) with an expandable per-agent breakdown. The user never sees
+    one agent's raw guess.
+  obd2_evidence: >
+    When a Mode-2 OBD2 snapshot is present (live DTC + freeze-frame + coolant/RPM/
+    fuel-trim/battery-voltage), the fault agents read it as HARD EVIDENCE — a confirmed
+    P-code outranks a described symptom.
+  output_contract:           # the six fields every diagnosis must carry
+    - why                    # plain-language cause
+    - severity               # 🟢/🟡/🟠/🔴
+    - can_i_drive            # owned by the Safety agent
+    - diy_or_not             # owned by the DIY-feasibility agent
+    - cost_band              # owned by the Cost agent (band, never a single number)
+    - alternatives           # cheaper-first next steps
+  disagreement_floor: >
+    If the top two candidates are within ~15 weight points OR the combined top weight
+    is < 50%, the verdict downgrades to "diagnosis confidence low — recommend
+    inspection." Chitti never bluffs a driver.
+
+# --- The 8-agent pipeline (COSDF L6) -----------------------------------------
+# order = the sequence in which contributions are composed; Safety holds the VETO
+# regardless of order, and the QA gate runs last.
+agents:
+
+  # 1 — Engine Specialist (COSDF) -> engine-agent.md
+  - id: engine
+    cosdf_role: "1 Engine Specialist (primary fault + confidence)"
+    file: ./engine-agent.md
+    order: 1
+    judges: >
+      Engine-side mechanical causes — misfire, knock, overheating, coolant, oil,
+      and (diesel) DPF/EGR/turbo. OBD2-aware.
+    obd2_aware: true
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    feeds_sops: [not_starting.md, overheating.md, smoke_color.md]
+    grounded_on: ../skills/engine.md
+
+  # 2 — Electrical Specialist (COSDF) -> electrical-agent.md
+  - id: electrical
+    cosdf_role: "2 Electrical Specialist (rules out / in electrical)"
+    file: ./electrical-agent.md
+    order: 2
+    judges: >
+      Battery, alternator/charging, starter, fuse, wiring, ECU, ABS/SRS codes.
+      OBD2-aware. Owns the battery-voltage gates of SOP-001.
+    obd2_aware: true
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    feeds_sops: [not_starting.md]
+    grounded_on: ../skills/electrical.md
+
+  # COSDF folds fuel + symptom-triage into the fault-diagnosis layer; this product
+  # keeps them as first-class agents. They run alongside engine + electrical.
+  - id: fuel
+    cosdf_role: "fault-diagnosis layer (fuel sub-specialist, product-specific split)"
+    file: ./fuel-agent.md
+    order: 2
+    judges: >
+      Fuel-trim, filter, injector, pump, contamination; EV range / state-of-health.
+      OBD2-aware.
+    obd2_aware: true
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    feeds_sops: [not_starting.md, smoke_color.md]
+    grounded_on: ../skills/engine.md
+
+  - id: symptom
+    cosdf_role: "fault-diagnosis layer (symptom triage / question-narrowing, product-specific)"
+    file: ./symptom-agent.md
+    order: 0
+    judges: >
+      What the problem actually is; narrows the questions asked; reads the DTC and
+      routes to the right SOP.
+    obd2_aware: true
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    feeds_sops: [not_starting.md, brake_noise.md, dashboard-warning-light.md]
+    grounded_on: ../skills/symptom-diagnosis.md
+
+  # 3 — Safety Specialist — CAN VETO ANYONE (COSDF) -> safety-agent.md
+  - id: safety
+    cosdf_role: "3 Safety Specialist — SUPREME, CAN VETO ANYONE"
+    file: ./safety-agent.md
+    order: 3
+    judges: >
+      Can the driver safely drive this car right now? Is the proposed fix safe for THIS
+      user? Is it an EMERGENCY? Outranks every other agent.
+    veto: true                 # THE VETO — see veto_authority below
+    can_lower_confidence: true
+    can_raise_confidence: true
+    accuracy_target: "100% — critical safety errors = 0 (../evals/safety_eval.md)"
+    red_lines:                 # any one forces 🔴 DO NOT DRIVE to the top of the verdict
+      - brakes-soft-or-metal-on-metal
+      - steering-loss-or-lock
+      - airbag-srs-non-deploy
+      - tyre-cord-cut-bulge-blowout-risk
+      - overheating-coolant-red-or-steam
+      - suspension-strut-balljoint-failure
+      - fuel-or-oil-leak-near-hot-exhaust
+      - ev-hv-pack-smoke-heat-or-damaged-orange-cable
+    emergency_protocol: family-cascade-NEVER-cops   # see ../guardrails/emergency-protocol.md, ../sop/emergency.md
+    feeds_sops: [brake_noise.md, overheating.md, emergency.md, breakdown-roadside.md]
+    grounded_on: ../skills/brakes.md
+
+  # 4 — Cost Specialist (COSDF) -> cost-agent.md
+  - id: cost
+    cosdf_role: "4 Cost Specialist (expected repair band; feeds Scam Shield)"
+    file: ./cost-agent.md
+    order: 4
+    judges: "What this repair SHOULD cost — as a band (₹), never a single number."
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    feeds: scam-shield
+    feeds_sops: [scam-quote-check.md, used_inspection.md]
+    grounded_on: ../skills/scam-shield.md
+
+  # 5 — DIY-Feasibility Specialist (COSDF) -> diy-agent.md
+  - id: diy-feasibility
+    cosdf_role: "5 DIY-Feasibility Specialist (skill level, tools, time)"
+    file: ./diy-agent.md
+    order: 5
+    judges: >
+      Can THIS driver fix this at home safely, and how hard is it (difficulty 1–5,
+      tools, time, the saving)?
+    can_lower_confidence: true
+    can_raise_confidence: true
+    veto: false
+    hard_rule: "may NEVER propose a home fix the Safety agent flagged 🟠/🔴 (brake hydraulics/ABS, airbag/SRS, fuel rail, EV HV)."
+    feeds_sops: [diy-repair-coach.md, not_starting.md, overheating.md]
+    grounded_on: ../skills/diy-coach.md
+
+  # 6 — Accessibility Specialist (COSDF) -> served by chitti_a11y.js + accessibility/*.md
+  - id: accessibility
+    cosdf_role: "6 Accessibility Specialist (adapt modality: voice/text/icons/haptic)"
+    file: ../accessibility/    # no single swarm/*.md yet; served by the a11y substrate
+    references:
+      - ../accessibility/blind_user.md
+      - ../accessibility/deaf_user.md
+      - ../accessibility/mute_user.md
+      - ../accessibility/illiterate_user.md
+      - ../ACCESSIBILITY.md
+    order: 6
+    judges: >
+      Which modality fits THIS user — voice-first (blind), visual-first + ISL (deaf),
+      photo/tap presets (mute), voice + icons (illiterate), large-text + voice (senior).
+    status: live-deterministic     # modality routing via chitti_a11y.js substrate is LIVE
+    roadmap_note: >
+      A dedicated swarm/accessibility-agent.md is roadmap; today the modality decision is
+      driven deterministically by the User Disability Profile + chitti_a11y.js, not by an
+      LLM agent vote. Honest-stub: not claimed as an autonomous agent yet.
+    can_lower_confidence: false
+    can_raise_confidence: false
+    veto: false
+
+  # 7 — Hallucination Detector (COSDF) -> trust-agent.md
+  - id: hallucination-detector
+    cosdf_role: "7 Hallucination Detector (matches known patterns? false-high confidence?)"
+    file: ./trust-agent.md         # this product names it the Trust Agent
+    order: 7
+    judges: >
+      Should we be this confident at all? Does the diagnosis match known patterns? Is a
+      warning lamp / DTC / cause being invented? Caps over-diagnosis and overconfidence.
+    can_lower_confidence: true
+    can_raise_confidence: false    # CAN ONLY LOWER — never raises a score to look useful
+    veto: false                    # not a safety veto; a confidence cap / "recommend inspection" floor
+    grounded_on: ../guardrails/never-claim-certainty.md
+    eval: ../evals/hallucination_eval.md
+
+  # 8 — Quality Assurance (COSDF) -> guardrails + QUALITY gate (deterministic)
+  - id: quality-assurance
+    cosdf_role: "8 Quality Assurance (guardrails, required fields, no forbidden content) -> FINAL OUTPUT"
+    file: ../guardrails/           # served by the guardrail layer + lib/quadrails.py
+    references:
+      - ../guardrails/safety-rules.md
+      - ../guardrails/diy-safety.md
+      - ../guardrails/scam-shield-rules.md
+      - ../guardrails/never-claim-certainty.md
+      - ../guardrails/emergency-protocol.md
+      - ../QUALITY.md
+    order: 8
+    judges: >
+      Final gate before the verdict reaches the driver: all six output fields present?
+      confidence band attached? no forbidden content (unsafe-DIY, fake certainty,
+      auto-dial-cops, invented code)? safety verdict final-approved?
+    status: live-deterministic     # enforced by backend/lib/quadrails.py guardrails, not an LLM vote
+    roadmap_note: >
+      A dedicated swarm/qa-agent.md is roadmap; today the QA gate is the deterministic
+      guardrail layer (lib/quadrails.py) + the 10 QUALITY.md gates, which is honest and
+      verifiable. Not claimed as an autonomous LLM agent.
+    can_lower_confidence: true     # can block / downgrade an output that fails a gate
+    can_raise_confidence: false
+    veto: false                    # quality block, not a safety veto
+
+# --- Veto + voting authority (COSDF L6 non-negotiables) ----------------------
+veto_authority:
+  supreme_agent: safety
+  rule: >
+    The Safety agent can override the DISPLAY ORDER — any brake/steering/airbag-SRS/tyre/
+    overheat/EV-HV red line forces DO NOT DRIVE to the top of the verdict, no matter how
+    cheap or "likely" the cheaper fault is. DIY-feasibility may never propose a fix Safety
+    flagged. The hallucination-detector (Trust) can only LOWER confidence, never raise it.
+  safety_accuracy_target: "100%; critical safety errors = 0"
+
+# --- The loop that closes the swarm (COSDF L9/L11 tie-in) --------------------
+verification_loop:
+  name: Mechanic Verification Loop
+  file: ../observability/mechanic_verification_loop.md
+  description: >
+    After a real repair, the driver tells Chitti what the mechanic ACTUALLY fixed. That
+    ground truth re-weights the swarm over time (predicted-vs-actual) and feeds Swarm
+    Intelligence (SAHAYAI_MASTER §2f). Unsafe-DIY and "you're being cheated by X" patterns
+    are NEVER learnable.
+
+# 🎖️ World Class Chitti Car Doctor — Commando Discipline. Zero Excuses.
