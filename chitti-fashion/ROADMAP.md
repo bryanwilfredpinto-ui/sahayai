@@ -15,15 +15,17 @@
 - Travel Packing · Emergency Fashion · Fashion Twin (profile) · Family Mode (per-wearer)
 - Fashion Teacher (Learn) · **Career Coach** (real free/low-cost courses, certs, tools)
 - 9-language native UI **and** dynamic output · 4-user accessibility (100/100) · premium UI
+- **🩺 Clothing Doctor** — repair-not-buy: 12 damage types → tools/steps/time, DIY-vs-tailor,
+  local-tailor deep-link, mark needs-repair (skipped from outfits) (shipped 2026-06-05)
+- **💍 Wedding Planner** — family-palette coordination, anchor/accent roles,
+  borrow-before-rent-before-buy (shipped 2026-06-05)
+- **📅 Office Week Planner** — Mon–Fri, no-repeat greedy, variety%, honest-degrade (shipped 2026-06-05)
 
 ## 🟡 BUILDING (next — deterministic, in CTO's control)
 
 - **9-agent swarm** surfaced on every verdict (add Sustainability · Climate · Cultural agents)
-- **Clothing Doctor** — repair-not-buy tips + local-tailor deep-link (Founder-Rule step 4)
-- **Wedding Planner** — groom/bride/family/guests, budget-wise
-- **Office Week Planner** — Mon–Fri capsule from minimal wardrobe
 - **Senior Mode** + **Kids Mode** — dedicated entry points (adaptations already live via a11y)
-- **Family Wardrobe** — coordinate the whole family for one occasion
+- **Family Wardrobe** — broader coordination beyond weddings (everyday + festivals)
 - **My Colours** palette card (engine ready; UI surface)
 - **Regional composition** (saree-drape, sherwani sets, regional accents)
 - Shopping-reduction % / cost-saved / carbon-saved observability

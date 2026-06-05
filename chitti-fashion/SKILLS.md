@@ -39,7 +39,10 @@
 | Accessibility Fashion (adaptive dressing) | ✅ LIVE | CTO | 2026-06-03 |
 | Travel Packing AI | ✅ LIVE | CTO | 2026-06-03 |
 | Emergency Fashion | ✅ LIVE | CTO | 2026-06-03 |
-| Family Stylist + Fashion Twin | 🟡 PLANNED | — | — |
+| 🩺 Clothing Doctor (repair-not-buy) | ✅ LIVE | CTO | 2026-06-05 |
+| 💍 Wedding Planner (family coordination) | ✅ LIVE | CTO | 2026-06-05 |
+| 📅 Office Week Planner (5 days, no repeats) | ✅ LIVE | CTO | 2026-06-05 |
+| Family Stylist + Fashion Twin | ✅ LIVE | CTO | 2026-06-05 |
 | AR Try-On · On-device camera ISL | 🔵 COMING SOON | — | — |
 
 ## Skill definitions (reasoning libraries)

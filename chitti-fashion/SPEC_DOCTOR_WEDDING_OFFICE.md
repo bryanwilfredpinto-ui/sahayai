@@ -4,6 +4,11 @@
 
 > No API. No LLM. Pure rule logic on the existing engine + on-device wardrobe.
 > Governed by [CONSTITUTION.md](CONSTITUTION.md) (Founder Rule) and [QUALITY.md](QUALITY.md).
+>
+> ✅ **IMPLEMENTED & SHIPPED 2026-06-05** (engine v2.1). `diagnoseRepair`/`planWedding`/`planWeek`
+> + `REPAIR_RULES` in `chitti_fashion_engine.js`; 3 gate-compliant UI cards in `chitti_fashion.html`;
+> 9-lang labels (strings.js bundle) + dynamic `FashionDyn.repair/wedding/week`. Verified:
+> engine 48/48 unit · gold 91.6% exact · QA 43/43 · visual cert 14/14 · journeys 5/5.
 
 ## 0. Foundations to reuse (existing 🟢 modules)
 

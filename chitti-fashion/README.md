@@ -54,7 +54,10 @@ translation (locked voice strategy). No Hinglish — one pure language per respo
 ## Status
 
 🟡 **YELLOW** — full CFOS operating system + rebuilt page committed 2026-06-03;
-production functional cert pending next deploy. Substrate 5-gate inherited 🟢.
+**CFOS v2.1 shipped 2026-06-05** — 🩺 Clothing Doctor, 💍 Wedding Planner, 📅 Office
+Week Planner (all deterministic, no API). Engine 48/48 unit, gold 91.6% exact,
+QA 43/43, visual cert 14/14, journeys 5/5. Production functional cert pending
+next deploy. Substrate 5-gate inherited 🟢.
 
 ## Document map (CFOS v2.0)
 
