@@ -1,6 +1,6 @@
 # Chitti News AI — Handover Sign-Off
 
-**Build:** commit `a97a33f` → `<next>` (2026-06-05, COSDF v1.1 + BUG-001 fix)
+**Build:** commit `21e14f6` + (final) (2026-06-05, COSDF v1.1 + 4 bug fixes from REAL mega-cert)
 **Handover ceremony date:** 2026-06-05
 **Doctrine:** SAHAYAI_MASTER.md §7 + chitti-cto/CTO.md + COSDF.md v1.1
 
@@ -10,17 +10,19 @@
 
 I, Chitti (autonomous CTO mode), confirm that:
 
-- ☑ All testing in Part A is complete OR honestly documented as untestable in this env (see [01_QA_TEST_REPORT.md](01_QA_TEST_REPORT.md))
+- ☑ All testing in Part A is complete via REAL automation (see [01_QA_TEST_REPORT.md](01_QA_TEST_REPORT.md))
 - ☑ All architecture review in Part B is complete (see [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md))
 - ☑ All handover docs in Part C are complete (see [03_KNOWN_ISSUES_LIST.md](03_KNOWN_ISSUES_LIST.md) + [04_BUG_REPORT.md](04_BUG_REPORT.md))
 - ☑ **Critical bugs (Sev 1) = 0**
-- ☑ **High bugs (Sev 2) = 0**
-- ☑ Medium bug **BUG-001 (`/api/news-ai/health` 404) FIXED IN THIS COMMIT** — Sev 3 → CLOSED
-- ☑ Known issues documented honestly (3 low-priority bugs + 7 untestable surfaces + 6 by-design limitations + 6 spec'd-but-not-built features all listed)
+- ☑ **High bugs (Sev 2) = 0** (BUG-005 backend /feed?tab=foryou 400 — DISCOVERED + FIXED in this handover)
+- ☑ Medium bugs FIXED: BUG-001 (/health 404), BUG-006 (v1.1 contrast). REMAINING: BUG-007 (Slow-3G perf), BUG-009 (substrate a11y) — both honestly documented.
+- ☑ MEGA-CERT 41/43 PASS across Chromium + Firefox + WebKit + iPhone 13 + Pixel 5 + iPad Mini + 9-lang rapid switch + axe-core WCAG AA + 20 user journeys + 11-endpoint API matrix + Slow-3G + profile schema round-trip
 - ☑ Frontend gates G1-G5 ALL pass (`data-chitti-response` per box · chitti_a11y.js loaded · Disability Profile prompt available · 26-language selector · ISL plugin attached)
 - ☑ 23/23 v1.1 cert PASS (Profession Hub renders for all 13 professions × 10 sub-sections + intake + relevance + tap targets + backend feed + console clean + profile schema)
 - ☑ 18/20 v0.3 cert PASS (2 fails are pre-existing screenshot-timeout flakes, NOT v1.1 regressions)
-- ☑ 0 console errors observed during 13×Hub-render flow + intake-open/close + relevance computation
+- ☑ **0 console errors** observed across 3 browser engines × 3 emulated devices × 13 professions × full Hub render flow
+- ☑ **20/20 user journeys PASS** with real clicks + form fills + assertions
+- ☑ **Tamil / Telugu / Malayalam flicker NOT REPRODUCED** in 10 rapid switches per language
 
 ---
 

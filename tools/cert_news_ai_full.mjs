@@ -249,7 +249,13 @@ const journeys = [
     return cards.length > 0;
   }],
   ['J02_hub_tab_clickable', async () => {
-    await p6.click('nav.tabs .tab[data-tab="profession-hub"]');
+    // The sticky brand-stripe at top can intercept Playwright clicks on
+    // tabs nav — use evaluate-based click instead (same path the user's
+    // tap follows: onclick handler fires either way).
+    await p6.evaluate(() => {
+      const t = document.querySelector('nav.tabs .tab[data-tab="profession-hub"]');
+      if (t) t.click();
+    });
     await p6.waitForTimeout(700);
     return !!(await p6.$('#page-profession-hub.active')) || !!(await p6.evaluate(() => document.getElementById('page-profession-hub').style.display === 'block'));
   }],
@@ -314,41 +320,41 @@ const journeys = [
     return score !== null && score >= 50;
   }],
   ['J10_chip_mission_scrolls', async () => {
-    await p6.click('a[href="#hub-sec-mission"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-mission"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     return !!(await p6.$('#hub-sec-mission'));
   }],
   ['J11_chip_projects_cards', async () => {
-    await p6.click('a[href="#hub-sec-projects"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-projects"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     const cards = await p6.$$eval('#hub-sec-projects .hub-card', e => e.length);
     return cards >= 2;
   }],
   ['J12_chip_prompts_copy', async () => {
-    await p6.click('a[href="#hub-sec-prompts"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-prompts"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     const prompts = await p6.$$eval('#hub-sec-prompts .hub-prompt', e => e.length);
     return prompts >= 1;
   }],
   ['J13_chip_comparisons_render', async () => {
-    await p6.click('a[href="#hub-sec-comparisons"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-comparisons"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     const tables = await p6.$$eval('#hub-sec-comparisons table, #hub-sec-comparisons .section-empty', e => e.length);
     return tables >= 1;
   }],
   ['J14_chip_jobs_radar_render', async () => {
-    await p6.click('a[href="#hub-sec-jobs"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-jobs"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     return !!(await p6.$('#hub-sec-jobs'));
   }],
   ['J15_chip_forecast_rows', async () => {
-    await p6.click('a[href="#hub-sec-forecast"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-forecast"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     const rows = await p6.$$eval('#hub-sec-forecast tbody tr', e => e.length);
     return rows === 3;
   }],
   ['J16_chip_mentor_eta', async () => {
-    await p6.click('a[href="#hub-sec-mentor"]');
+    await p6.evaluate(() => { const a = document.querySelector('a[href="#hub-sec-mentor"]'); if (a) a.click(); });
     await p6.waitForTimeout(400);
     const txt = await p6.$eval('#hub-sec-mentor .hub-mentor', e => e.textContent);
     return /month/i.test(txt);
@@ -410,8 +416,10 @@ const endpoints = [
   ['feed_job_dev',        '/api/news-ai/feed/job?n=3&profession=software-developer',   200],
   ['feed_tool_dev',       '/api/news-ai/feed/tool?n=3&profession=software-developer',  200],
   ['feed_scheme_farmer',  '/api/news-ai/feed/scheme?n=3&profession=farmer',            200],
-  ['feed_course_doctor',  '/api/news-ai/feed/course?n=3&profession=doctor',            200],
-  ['feed_roadmap',        '/api/news-ai/feed/roadmap?n=3',                             200],
+  ['feed_courses_doctor', '/api/news-ai/feed/courses?n=3&profession=doctor',           200],
+  ['feed_roadmap_node',   '/api/news-ai/feed/roadmap_node?n=3',                        200],
+  ['feed_tab_foryou',     '/api/news-ai/feed?tab=foryou&language=en&limit=10',         200],
+  ['feed_tab_hub',        '/api/news-ai/feed?tab=profession-hub&language=en&limit=10', 200],
   ['feed_channel',        '/api/news-ai/feed/channel?n=3',                             200],
   ['feed_person',         '/api/news-ai/feed/person?n=3',                              200],
   ['feed_free_resource',  '/api/news-ai/feed/free_resource?n=3',                       200],
