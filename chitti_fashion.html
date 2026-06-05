@@ -1201,10 +1201,20 @@ async function faRenderTwin(){
   const spoken = (CURRENT_LANG==='en'?'Your Fashion Twin: ':'आपका Fashion Twin: ') +
     items.length + (CURRENT_LANG==='en'?' items, favourite colours ':' चीज़ें, पसंदीदा रंग ') + (topColours.join(', ')||'—');
   const prof = [PROFILE.profession, PROFILE.culture, PROFILE.season, PROFILE.budget && (PROFILE.budget+' budget'), PROFILE.tone && (PROFILE.tone+' undertone'), PROFILE.fit && (PROFILE.fit+' fit')].filter(Boolean);
+  // My Colours — personal palette from real hex (gap P0#2)
+  const E2 = faEngine(); let palTier = '';
+  if (E2 && items.some(i=>i.hex)){ const ds = E2.deriveSeason(items); const pal = E2.paletteFor(ds.season);
+    const sName = CURRENT_LANG==='en' ? ({warm:'warm',cool:'cool',neutral:'balanced'}[ds.season]||ds.season) : ({warm:'गर्म',cool:'ठंडे',neutral:'संतुलित'}[ds.season]||ds.season);
+    const note = CURRENT_LANG==='en' ? pal.note : (ds.season==='warm'?'गर्म रंग (mustard, rust, cream, gold) आप पर खिलते हैं':ds.season==='cool'?'ठंडे रंग (navy, teal, grey, true white) आप पर जँचते हैं':'ज़्यादातर रंग चलते हैं — neutral से anchor करें');
+    palTier = '<div class="fa-tier free"><span class="lab">🎨 '+(CURRENT_LANG==='en'?'My Colours':'मेरे रंग')+'</span><div>'+(CURRENT_LANG==='en'?('Your palette leans '+sName+'. '):(sName+' पैलेट। '))+esc(note)+'</div></div>'; }
+  // learned likes from the feedback loop
+  let learned = []; try { const lc = (PROFILE.liked && PROFILE.liked.colours)||{}; learned = Object.keys(lc).filter(k=>lc[k]>0).sort((a,b)=>lc[b]-lc[a]).slice(0,3); } catch(e){}
   host.innerHTML =
     '<div class="fa-tiers">' +
       '<div class="fa-tier"><span class="lab">🧬 '+(CURRENT_LANG==='en'?'Items owned':'कुल चीज़ें')+'</span><div>'+items.length+'</div></div>' +
       '<div class="fa-tier"><span class="lab">🎨 '+(CURRENT_LANG==='en'?'Your palette':'आपके रंग')+'</span><div>'+(esc(topColours.join(' · '))||'—')+'</div></div>' +
+      palTier +
+      (learned.length?'<div class="fa-tier"><span class="lab">🧠 '+(CURRENT_LANG==='en'?'Chitti learned you like':'Chitti ने सीखा आपको पसंद है')+'</span><div>'+esc(learned.join(' · '))+'</div></div>':'') +
       (prof.length?'<div class="fa-tier"><span class="lab">👤 '+(CURRENT_LANG==='en'?'Style profile':'आपकी पहचान')+'</span><div>'+esc(prof.join(' · '))+'</div></div>':'') +
       (liked.length?'<div class="fa-tier"><span class="lab">⭐ '+(CURRENT_LANG==='en'?'You liked':'आपको पसंद आया')+'</span><div>'+esc(liked.join(' · '))+'</div></div>':'') +
       (gaps.length?'<div class="fa-tier budget"><span class="lab">♻️ '+(CURRENT_LANG==='en'?'To unlock more':'और outfit के लिए')+'</span><div>'+esc(gaps.join(' · '))+'</div></div>':'') +
