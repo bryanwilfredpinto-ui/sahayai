@@ -14,8 +14,9 @@
 
 | | Count | % |
 |---|---:|---:|
-| Mega-cert automated checks **PASS** | **41 / 43** | **95.3%** |
-| Mega-cert automated checks **FAIL** | 2 / 43 | 4.7% — both are honest debt items, NOT v1.1 regressions |
+| Mega-cert automated checks **PASS** | **44 / 46** | **95.7%** |
+| Mega-cert automated checks **FAIL** | 2 / 46 | 4.3% — both are honest debt items, NOT v1.1 regressions (Slow-3G perf + pre-existing substrate a11y) |
+| **Blind-user Voice-First mode** | **3 / 3** | 100% — disability_profile.blind=true activates Voice-First with 44 voice commands |
 | Cross-engine PASS (Chromium + Firefox + WebKit) | **3 / 3** | 100% |
 | Real-device emulation PASS (iPhone 13 + Pixel 5 + iPad Mini) | **3 / 3** | 100% |
 | 20 real user journeys PASS | **20 / 20** | 100% |
@@ -109,6 +110,8 @@ All run via Playwright against live https://sahayai.in/chitti_news_ai.html:
 | **G4** — Language auto-detect + 26-lang selector | ✅ PASS | Picker present, 9-lang rapid switch PASS |
 | **G5** — ISL plugin attached per response | ✅ PASS | Auto-attached via chitti_a11y.js to every `data-chitti-response` box |
 | **WCAG 2.1 AA axe-core scan** | ⚠️ 1 finding, 3 nodes — ALL pre-existing in substrate (NOT v1.1) | `@axe-core/playwright .withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa'])` |
+| **Blind-user Voice-First mode** | ✅ **PASS (Sire 2026-06-05 PM gap fix)** — When `disability_profile.blind=true`, page auto-activates Voice-First Mode: welcome announcement + 44 voice commands (news/hub/profession/mission/projects/prompts/forecast/mentor/ask coach/cv/help/repeat/stop + 13 profession names + 7 stream tabs) + aria-label sweep covers picker + 17 tabs + 10 Hub chips + all buttons | Cert checks `blind_voice_first_activates`, `blind_voice_cmd_news_routes`, `blind_aria_labels_complete` — all PASS |
+| **Aria-label dynamic completeness** | ✅ MutationObserver throttled @250 ms re-runs sweep on any DOM mutation; dynamically rendered Hub content gets labels automatically | — |
 
 axe-core violations found (3 nodes total, all `color-contrast` serious):
 - `.chitti-fb-bbtn-text` — in feedback-widget.js (pre-existing substrate)
