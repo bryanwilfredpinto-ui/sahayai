@@ -242,7 +242,13 @@
   function buildOutfits(items, opts) {
     opts = opts || {}; var max = opts.max || 30; var targetOcc = opts.occasion || null;
     var byCat = { top: [], bottom: [], footwear: [], outfit: [], jewellery: [], dupatta: [], bag: [] };
-    (items || []).forEach(function (it) { if (byCat[it.category]) byCat[it.category].push(it); });
+    // Clothing Doctor guard: never style an item that needs repair (additive — items without
+    // a condition field are unaffected, so gold/existing tests stay green). opts.includeRepair
+    // bypasses the guard for the Doctor's own listing.
+    (items || []).forEach(function (it) {
+      if (!opts.includeRepair && it.condition === 'needs_repair') return;
+      if (byCat[it.category]) byCat[it.category].push(it);
+    });
     var combos = [];
     var liked = (opts.liked || {}); // learning loop: { colours:{family:n}, cats:{cat:n} }
     function likeBoost(set) {
@@ -297,6 +303,182 @@
     });
   }
 
+  // ════════════════════════════════════════════════════════════════════════
+  //  CFOS v2.1 — DETERMINISTIC FEATURES (no LLM, no API). Spec:
+  //  chitti-fashion/SPEC_DOCTOR_WEDDING_OFFICE.md
+  // ════════════════════════════════════════════════════════════════════════
+
+  // ---------- 1. CLOTHING DOCTOR (repair-not-buy — Founder Rule step 4) ----------
+  // Language-neutral repair knowledge. Page localizes via FashionDyn.repair.
+  var REPAIR_RULES = {
+    tear_small:    { tools: ['needle', 'thread', 'scissors'],          stitch: 'running/backstitch', difficulty: 'easy',   minutes: 15, diy: true,  tailor: false },
+    tear_large:    { tools: ['needle', 'thread', 'patch', 'iron'],     stitch: 'patch+backstitch',   difficulty: 'medium', minutes: 30, diy: true,  tailor: true },
+    button_missing:{ tools: ['needle', 'thread', 'spare button'],      stitch: 'shank-button',       difficulty: 'easy',   minutes: 10, diy: true,  tailor: false },
+    hem_loose:     { tools: ['needle', 'thread', 'pins', 'iron'],      stitch: 'blind-hem',          difficulty: 'easy',   minutes: 20, diy: true,  tailor: false },
+    seam_open:     { tools: ['needle', 'thread'],                      stitch: 'backstitch',         difficulty: 'easy',   minutes: 15, diy: true,  tailor: false },
+    zip_broken:    { tools: ['new zip', 'seam-ripper', 'needle'],      stitch: 'replace',            difficulty: 'hard',   minutes: 60, diy: false, tailor: true },
+    hole_knit:     { tools: ['darning needle', 'yarn'],                stitch: 'darning',            difficulty: 'medium', minutes: 30, diy: true,  tailor: false },
+    stain_oil:     { tools: ['dish soap', 'warm water'],               stitch: 'blot+soap',          difficulty: 'easy',   minutes: 10, diy: true,  tailor: false },
+    stain_ink:     { tools: ['rubbing alcohol', 'cotton'],             stitch: 'dab',                difficulty: 'medium', minutes: 15, diy: true,  tailor: false },
+    too_tight:     { tools: ['tailor'],                                stitch: 'let-out seam',       difficulty: 'hard',   minutes: 0,  diy: false, tailor: true },
+    too_loose:     { tools: ['tailor'],                                stitch: 'take-in seam',       difficulty: 'hard',   minutes: 0,  diy: false, tailor: true },
+    fade:          { tools: ['fabric dye'],                            stitch: 'redye',              difficulty: 'medium', minutes: 60, diy: true,  tailor: false }
+  };
+  // Ordered step-codes per damage; the page localizes + speaks each step (FashionDyn.repair.step).
+  var STEP_SEQUENCES = {
+    tear_small:    ['turn_inside', 'align_edges', 'thread_needle', 'stitch_back', 'knot_off'],
+    tear_large:    ['turn_inside', 'cut_patch', 'pin_patch', 'stitch_around', 'press_iron'],
+    button_missing:['position_button', 'thread_needle', 'sew_xcross', 'wrap_shank', 'knot_off'],
+    hem_loose:     ['fold_hem', 'pin_hem', 'press_iron', 'blind_stitch', 'knot_off'],
+    seam_open:     ['turn_inside', 'align_seam', 'thread_needle', 'stitch_back', 'knot_off'],
+    zip_broken:    ['unpick_old', 'pin_newzip', 'tailor_recommend'],
+    hole_knit:     ['turn_inside', 'span_hole', 'darn_warp', 'darn_weft', 'knot_off'],
+    stain_oil:     ['blot_excess', 'apply_soap', 'rub_gentle', 'rinse_warm', 'air_dry'],
+    stain_ink:     ['blot_excess', 'apply_alcohol', 'dab_lift', 'rinse_cool', 'air_dry'],
+    too_tight:     ['tailor_recommend'],
+    too_loose:     ['tailor_recommend'],
+    fade:          ['wash_clean', 'mix_dye', 'soak_even', 'rinse_clear', 'air_dry']
+  };
+  function diagnoseRepair(code) {
+    var r = REPAIR_RULES[code]; if (!r) return null;
+    return {
+      code: code, tools: r.tools.slice(), steps: (STEP_SEQUENCES[code] || []).slice(),
+      stitch: r.stitch, difficulty: r.difficulty, minutes: r.minutes,
+      diy: r.diy, tailor: r.tailor, ladderStep: 4
+    };
+  }
+  function repairCodes() { return Object.keys(REPAIR_RULES); }
+
+  // ---------- 2. WEDDING PLANNER (coordinated, wardrobe-first) ----------
+  var FUNCTION_BAND = { mehendi: 'festive', sangeet: 'festive', wedding: 'wedding', reception: 'formal' };
+  // one step down when the wearer is not the couple (don't outshine)
+  var BAND_LADDER = ['casual', 'smart-casual', 'business-casual', 'formal', 'festive', 'wedding'];
+  function stepBandDown(band) { var i = BAND_LADDER.indexOf(band); return i > 0 ? BAND_LADDER[i - 1] : band; }
+  function isFestiveItem(it) {
+    return ETHNIC.test(hayOf(it)) || FESTIVE_COLOUR.test(hayOf(it)) ||
+      (it.occasions || []).some(function (o) { return /festive|wedding|sangeet|mehendi|reception/.test(o); });
+  }
+  // wardrobesByWearer: { wearer_id: [items...] }
+  function planWedding(input, wardrobesByWearer) {
+    input = input || {}; wardrobesByWearer = wardrobesByWearer || {};
+    var members = input.members || [];
+    var targetBand = FUNCTION_BAND[input.function] || 'festive';
+    if (input.role && input.role !== 'own') targetBand = stepBandDown(targetBand);
+
+    // family palette: tally undertone across everyone's festive pieces
+    var warm = 0, cool = 0, famTally = {};
+    members.forEach(function (m) {
+      (wardrobesByWearer[m.wearer_id] || []).filter(isFestiveItem).forEach(function (it) {
+        var a = analyseColour(it.hex, it.colour);
+        if (a.undertone === 'warm') warm++; else if (a.undertone === 'cool') cool++;
+        if (a.family !== 'neutral') famTally[a.family] = (famTally[a.family] || 0) + 1;
+      });
+    });
+    var undertone = cool > warm ? 'cool' : 'warm'; // festive default warm on ties
+    var anchorFamily = undertone; // family in our model IS the undertone for non-neutrals
+    var palette = {
+      undertone: undertone,
+      anchor: undertone === 'warm' ? 'maroon + gold' : 'navy + teal',
+      note: undertone === 'warm'
+        ? 'warm family theme — maroon, gold, rust, mustard read as one set'
+        : 'cool family theme — navy, teal, plum, emerald read as one set'
+    };
+
+    // assign one anchor (boldest festive piece), rest accents with varied value
+    var scored = members.map(function (m) {
+      var items = (wardrobesByWearer[m.wearer_id] || []);
+      var rec = recommend(items, {
+        occasion: targetBand, season: input.season, age_band: m.ageBand, max: 1,
+        liked: m.liked
+      });
+      var outfit = rec[0] || null;
+      var festiveStrength = items.filter(isFestiveItem).reduce(function (a, it) { return a + itemFormality(it); }, 0);
+      return { m: m, outfit: outfit, items: items, festiveStrength: festiveStrength };
+    });
+    var anchorIdx = -1, best = -1;
+    scored.forEach(function (s, i) { if (s.outfit && s.festiveStrength > best) { best = s.festiveStrength; anchorIdx = i; } });
+
+    var matched = 0, planned = 0;
+    var perMember = scored.map(function (s, i) {
+      var role = i === anchorIdx ? 'anchor' : 'accent';
+      var gaps = [], shopLinks = [];
+      if (!s.outfit) {
+        // Founder Rule ladder: borrow within family -> rent -> buy
+        var lender = members.find(function (mm) {
+          return mm.wearer_id !== s.m.wearer_id &&
+            (wardrobesByWearer[mm.wearer_id] || []).some(isFestiveItem);
+        });
+        gaps.push({
+          code: 'no_festive', ladder: lender
+            ? ['borrow', 'rent', 'buy'] : ['rent', 'buy'],
+          borrowFrom: lender ? lender.wearer_id : null
+        });
+        shopLinks.push({ tier: 'budget', q: (input.culture || '') + ' festive wear' });
+      } else {
+        planned++;
+        var ut = s.outfit.items.map(function (it) { return analyseColour(it.hex, it.colour); })
+          .filter(function (a) { return a.family !== 'neutral'; })
+          .some(function (a) { return a.undertone === undertone; });
+        if (ut) matched++;
+      }
+      return {
+        wearer_id: s.m.wearer_id, relation: s.m.relation, role: role,
+        outfit: s.outfit, gaps: gaps, shopLinks: shopLinks,
+        paletteMatch: !!(s.outfit && s.outfit.items.some(function (it) {
+          var a = analyseColour(it.hex, it.colour); return a.family !== 'neutral' && a.undertone === undertone;
+        }))
+      };
+    });
+    var coordinationScore = planned ? Math.round((matched / planned) * 100) : 0;
+    return {
+      function: input.function, role: input.role || 'own', targetBand: targetBand,
+      familyPalette: palette, perMember: perMember, coordinationScore: coordinationScore
+    };
+  }
+
+  // ---------- 3. OFFICE WEEK PLANNER (5 days, no repeats) ----------
+  var DRESSCODE_BAND = { casual: 'casual', smart: 'business-casual', formal: 'formal' };
+  var WEATHER_SEASON = { hot: 'summer', cold: 'winter', mod: 'all' };
+  function weatherOK(items, season) {
+    if (!season || season === 'all') return true;
+    // an item is fine if its fabric suits the season or is all-season; reject clear opposite
+    return !(items || []).some(function (it) {
+      var fs = fabricSeason(it); return fs !== 'all' && fs !== season;
+    });
+  }
+  function countUsed(items, usedSet) {
+    return (items || []).reduce(function (n, it) { return n + (usedSet[it.id] ? 1 : 0); }, 0);
+  }
+  function planWeek(items, days) {
+    days = days || [];
+    var officeItems = (items || []);
+    var used = {}, distinct = {}, totalUses = 0, reuseCount = 0;
+    var out = days.map(function (d) {
+      var target = DRESSCODE_BAND[d.dressCode] || 'business-casual';
+      var season = WEATHER_SEASON[d.weather] || 'all';
+      var pool = buildOutfits(officeItems, { occasion: target, max: 30 }).outfits;
+      var fit = pool.filter(function (o) { return weatherOK(o.items, season); });
+      var search = fit.length ? fit : pool; // weather is a preference, not a hard block
+      var ranked = search.map(function (o) {
+        return { o: o, adj: o.score - 25 * countUsed(o.items, used) };
+      }).sort(function (a, b) { return b.adj - a.adj; });
+      var pick = ranked[0] ? ranked[0].o : null;
+      var reused = false, note = '';
+      if (pick && countUsed(pick.items, used) > 0) {
+        reused = true; reuseCount++;
+        note = 'small wardrobe — same pieces, fresh pairing';
+      }
+      if (pick) pick.items.forEach(function (it) { used[it.id] = 1; distinct[it.id] = 1; totalUses++; });
+      return { day: d.day, dressCode: d.dressCode, weather: d.weather, outfit: pick, reused: reused, note: note };
+    });
+    var distinctCount = Object.keys(distinct).length;
+    // variety = distinct items / total item-wears across the week. 100% = nothing repeats.
+    var variety = totalUses ? Math.round((distinctCount / totalUses) * 100) : 0;
+    var honest = '';
+    if (reuseCount > 0) honest = 'Add 1-2 bottoms to unlock a no-repeat week';
+    return { days: out, variety: variety, reuseCount: reuseCount, honest: honest };
+  }
+
   return {
     colourFamily: colourFamily, itemFormality: itemFormality,
     classifyOccasion: classifyOccasion, colorHarmony: colorHarmony, seasonalSuitability: seasonalSuitability,
@@ -305,6 +487,10 @@
     // craft upgrades (gaps P0#2/#3/#4): real colour science, palette, fabric/pattern, fit
     hexToHSL: hexToHSL, analyseColour: analyseColour, paletteFor: paletteFor, deriveSeason: deriveSeason,
     fabricSeason: fabricSeason, patternOf: patternOf, patternRule: patternRule, fitNote: fitNote,
-    version: 'fashion-engine-2.0',
+    // CFOS v2.1 deterministic features
+    REPAIR_RULES: REPAIR_RULES, diagnoseRepair: diagnoseRepair, repairCodes: repairCodes,
+    planWedding: planWedding, planWeek: planWeek,
+    FUNCTION_BAND: FUNCTION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
+    version: 'fashion-engine-2.1',
   };
 });

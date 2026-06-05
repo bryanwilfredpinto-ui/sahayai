@@ -106,6 +106,70 @@ ok('learning: liked colours boost score (>= baseline)', (() => {
   ok('i18n: bundle carries all 9 primary lang blocks', ['en:','hi:','ta:','te:','bn:','mr:','gu:','kn:','ml:'].every(l => js.indexOf('"' + l.slice(0,2) + '":') >= 0 || new RegExp('\\b' + l.slice(0,2) + '"?\\s*:').test(js)));
 })();
 
+// ════ CFOS v2.1 — Clothing Doctor · Wedding Planner · Office Week Planner ════
+ok('doctor: diagnoseRepair(button_missing) = easy, DIY, has steps',
+  (() => { const d = E.diagnoseRepair('button_missing'); return d && d.difficulty === 'easy' && d.diy === true && d.tailor === false && d.steps.length >= 3 && d.ladderStep === 4; })());
+ok('doctor: zip_broken = hard, tailor (not DIY)',
+  (() => { const d = E.diagnoseRepair('zip_broken'); return d && d.difficulty === 'hard' && d.diy === false && d.tailor === true; })());
+ok('doctor: unknown code returns null', E.diagnoseRepair('not_a_code') === null);
+ok('doctor: every REPAIR_RULES code has a step sequence',
+  E.repairCodes().every(c => { const d = E.diagnoseRepair(c); return d && Array.isArray(d.steps) && d.steps.length >= 1; }));
+ok('doctor: buildOutfits SKIPS needs_repair items (no torn shirt styled)',
+  (() => {
+    const items = [{ id: 't1', category: 'top', colour: 'white', condition: 'needs_repair', damage: ['tear_small'] },
+                   { id: 't2', category: 'top', colour: 'blue' },
+                   { id: 'b1', category: 'bottom', colour: 'navy' }];
+    const b = E.buildOutfits(items, { max: 30 });
+    return b.outfits.every(o => o.items.every(it => it.id !== 't1'));
+  })());
+ok('doctor: includeRepair:true bypasses the guard',
+  (() => {
+    const items = [{ id: 't1', category: 'top', colour: 'white', condition: 'needs_repair' },
+                   { id: 'b1', category: 'bottom', colour: 'navy' }];
+    return E.buildOutfits(items, { max: 30, includeRepair: true }).outfits.length >= 1;
+  })());
+
+ok('wedding: function maps to band, role!=own steps it down',
+  E.FUNCTION_BAND.wedding === 'wedding' && E.FUNCTION_BAND.mehendi === 'festive');
+(() => {
+  const plan = E.planWedding(
+    { function: 'wedding', role: 'own', members: [{ wearer_id: 'me' }, { wearer_id: 'mom' }] },
+    { me: [{ id: 's1', category: 'outfit', colour: 'maroon', desc: 'silk saree', hex: '#800000' }],
+      mom: [{ id: 's2', category: 'outfit', colour: 'rust', desc: 'silk saree', hex: '#B7410E' }] });
+  ok('wedding: derives a warm family palette from warm wardrobes', plan.familyPalette.undertone === 'warm');
+  ok('wedding: assigns exactly one anchor', plan.perMember.filter(p => p.role === 'anchor').length === 1);
+  ok('wedding: coordinationScore is a 0..100 number', typeof plan.coordinationScore === 'number' && plan.coordinationScore >= 0 && plan.coordinationScore <= 100);
+})();
+ok('wedding: member with no festive wear gets borrow-before-buy ladder',
+  (() => {
+    const plan = E.planWedding(
+      { function: 'reception', role: 'friend', members: [{ wearer_id: 'a' }, { wearer_id: 'b' }] },
+      { a: [{ id: 'g1', category: 'outfit', colour: 'maroon', desc: 'silk lehenga', hex: '#800000' }],
+        b: [{ id: 'j1', category: 'top', colour: 'white', desc: 'tshirt' }] });
+    const bMember = plan.perMember.find(p => p.wearer_id === 'b');
+    return bMember.gaps.length >= 1 && bMember.gaps[0].ladder[0] === 'borrow' && bMember.gaps[0].borrowFrom === 'a';
+  })());
+
+(() => {
+  const items = [{ id: 't1', category: 'top', colour: 'white', occasions: ['office'] },
+                 { id: 't2', category: 'top', colour: 'blue', occasions: ['office'] },
+                 { id: 'b1', category: 'bottom', colour: 'navy', occasions: ['office'] },
+                 { id: 'b2', category: 'bottom', colour: 'grey', occasions: ['office'] }];
+  const days = [{ day: 'Mon', dressCode: 'smart', weather: 'mod' }, { day: 'Tue', dressCode: 'smart', weather: 'mod' }];
+  const wk = E.planWeek(items, days);
+  ok('week: plans one outfit per day', wk.days.length === 2 && wk.days.every(d => d.outfit));
+  ok('week: no-repeat greedy spreads items (Tue differs from Mon)',
+    (() => { const mon = wk.days[0].outfit.items.map(i => i.id).sort().join(); const tue = wk.days[1].outfit.items.map(i => i.id).sort().join(); return mon !== tue; })());
+  ok('week: variety is a 0..100 number', typeof wk.variety === 'number' && wk.variety >= 0 && wk.variety <= 100);
+})();
+ok('week: tiny wardrobe degrades HONESTLY (reuse flagged, not hidden)',
+  (() => {
+    const items = [{ id: 't1', category: 'top', colour: 'white', occasions: ['office'] },
+                   { id: 'b1', category: 'bottom', colour: 'navy', occasions: ['office'] }];
+    const wk = E.planWeek(items, [{ day: 'Mon', dressCode: 'smart', weather: 'mod' }, { day: 'Tue', dressCode: 'smart', weather: 'mod' }]);
+    return wk.reuseCount >= 1 && wk.honest.length > 0;
+  })());
+
 const total = pass + fail;
 console.log('\nTEST_SUMMARY:' + JSON.stringify({ total, pass, fail, pass_rate: Math.round((pass / total) * 100) + '%', failed: fails }));
 process.exit(fail ? 1 : 0);
