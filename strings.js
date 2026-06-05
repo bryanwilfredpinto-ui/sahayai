@@ -83,21 +83,29 @@
   // strings.js OWNS the page's language. A MutationObserver re-applies the active
   // language the instant anything resets it. updateAllStrings is now idempotent
   // (set-if-different) and a busy-flag ignores the heal's own writes — never loops.
-  let __healing = false, __healPending = false;
-  // setTimeout, NOT requestAnimationFrame — rAF is throttled to zero when the page
-  // is idle / backgrounded, so an rAF-debounced heal would never fire once settled.
-  const __raf = function (f) { return setTimeout(f, 0); };
   function __activeLang() {
     try { return localStorage.getItem('chitti_vaani_lang') || window.CURRENT_LANG || 'hi'; }
     catch (e) { return window.CURRENT_LANG || 'hi'; }
   }
-  function __heal() {
-    if (__healing) return;
-    __healing = true;
-    try { updateAllStrings(__activeLang()); } catch (e) {}
-    try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch (e) {}
-    __raf(function () { __healing = false; });  // clear after observer processed the heal's own mutations
+  // updateAllStrings is idempotent (set-if-different), so re-healing is loop-free WITHOUT
+  // a busy-flag: a reset by chitti_lang.js (which carries its own dictionary and reverts
+  // unknown data-vai-i18n elements toward English) is a DOM mutation → observer → heal →
+  // updateAllStrings re-asserts the active-language value → next heal finds it correct →
+  // no write → quiet. Dropping the busy-flag is what lets the heal WIN a coinciding reset.
+  let __pending = false, __cnt = 0, __win = 0;
+  function __heal() { try { updateAllStrings(__activeLang()); } catch (e) {} }
+  function __schedHeal() {
+    if (__pending) return;
+    var now = Date.now(); if (now - __win > 1000) { __win = now; __cnt = 0; }
+    if (__cnt > 40) return;            // rate-cap: never burn CPU if two dictionaries ping-pong
+    __cnt++; __pending = true;
+    setTimeout(function () { __pending = false; __heal(); }, 0);
   }
-  function __schedHeal() { if (__healing || __healPending) return; __healPending = true; __raf(function () { __healPending = false; __heal(); }); }
   try { new MutationObserver(__schedHeal).observe(document.documentElement, { subtree: true, childList: true }); } catch (e) {}
+  // The non-data-vai-i18n widget chrome (help-text innerHTML, CTA text node) is healed by
+  // the feedback-widget relocalize, fired here at settle ticks (not on every mutation, so
+  // its non-idempotent writes can't ping-pong the observer).
+  [60, 250, 700, 1500, 3000].forEach(function (ms) {
+    setTimeout(function () { __heal(); try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch (e) {} }, ms);
+  });
 })();

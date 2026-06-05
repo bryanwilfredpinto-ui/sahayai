@@ -65,8 +65,13 @@ for (const P of PAGES) {
         const tag = el.tagName;
         if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'OPTION') continue;
         if (el.closest('#lang-select')) continue;
+        // TRUE visibility: getClientRects() is empty for any element inside a
+        // display:none subtree (e.g. closed feedback modals) — the element's OWN
+        // computed display is non-none, so the old check wrongly counted hidden
+        // modal text users never see. Measure what is actually rendered.
+        if (!el.getClientRects || el.getClientRects().length === 0) continue;
         const cs = getComputedStyle(el);
-        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        if (cs.visibility === 'hidden' || cs.opacity === '0') continue;
         const t = (n.textContent || '').trim();
         if (t) texts.push(t);
       }

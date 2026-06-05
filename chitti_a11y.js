@@ -1319,6 +1319,12 @@
       acceptNode: function (n) {
         var p = n.parentElement;
         if (!p || SKIP_TAGS[p.tagName]) return NodeFilter.FILTER_REJECT;
+        // §5 ownership (LOCKED 2026-06-05): elements with data-vai-i18n /
+        // data-vai-i18n-attr are owned by strings.js (VAI_STRINGS — the authoritative
+        // per-key translation). a11y's text-node walker MUST NOT touch them, or the two
+        // systems fight and the chrome (brand, bottom-nav, feedback widget) oscillates
+        // English↔active-lang. a11y still translates all UNMANAGED loose text.
+        if (p.closest && p.closest('[data-vai-i18n],[data-vai-i18n-attr]')) return NodeFilter.FILTER_REJECT;
         var t = (n.nodeValue || '').replace(/\s+/g, ' ').trim();
         if (!t) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;

@@ -952,10 +952,37 @@
         }
       } catch (e) {}
     }
-    window.__chittiFbRelocalize = relocalize;
-    relocalize();
-    setTimeout(relocalize, 600); // after strings.js + chitti_lang.js settle
-    window.addEventListener('chitti:langchange', relocalize);
+    // ── §5 self-healing chrome (LOCKED 2026-06-05) ───────────────────────
+    // chitti_lang.js re-resets the shared substrate chrome (this footer, the
+    // feature CTA, the per-box 🔊 labels, status pills) toward English AFTER a
+    // one-shot relocalize runs — a race the widget kept losing, so a Telugu/
+    // Kannada user saw English chrome. Fix: the widget OWNS its language. A
+    // MutationObserver re-applies the active-language bag the instant anything
+    // resets it. Guarded so the widget never reacts to its own writes (no loop).
+    var __relocalizing = false, __pending = false;
+    // setTimeout(0), NOT rAF (rAF is throttled to zero when idle → guard would stick).
+    function relocalizeGuarded() {
+      if (__relocalizing) return;
+      __relocalizing = true;
+      try { relocalize(); } catch (e) {}
+      // clear in a macrotask — after the observer's microtask has seen (and ignored)
+      // this relocalize's own mutations.
+      setTimeout(function () { __relocalizing = false; }, 0);
+    }
+    function scheduleRelocalize() {
+      if (__relocalizing || __pending) return;
+      __pending = true;
+      setTimeout(function () { __pending = false; relocalizeGuarded(); }, 0);
+    }
+    window.__chittiFbRelocalize = relocalizeGuarded;
+    relocalizeGuarded();
+    setTimeout(relocalizeGuarded, 600); // after strings.js + chitti_lang.js settle
+    window.addEventListener('chitti:langchange', relocalizeGuarded);
+    document.addEventListener('chitti:langchange', relocalizeGuarded);
+    // The page-wide self-healing MutationObserver lives in strings.js (single owner);
+    // it calls window.__chittiFbRelocalize() on any chrome reset. No widget-local
+    // observer needed — scheduleRelocalize stays available for that hook.
+    void scheduleRelocalize;
   }
 
   if (document.readyState === 'loading') {
