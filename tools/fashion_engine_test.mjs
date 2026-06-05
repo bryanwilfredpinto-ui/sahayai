@@ -170,6 +170,15 @@ ok('week: tiny wardrobe degrades HONESTLY (reuse flagged, not hidden)',
     return wk.reuseCount >= 1 && wk.honest.length > 0;
   })());
 
+// CFOS v2.1 — Senior / Kids adaptive mode
+ok('mode: senior guidance returns easy-fasten + non-slip tips',
+  (() => { const g = E.modeGuidance('senior'); return g.band === 'senior' && g.tips.includes('easy_fasten') && g.tips.includes('non_slip'); })());
+ok('mode: child guidance returns comfort + safe-fasten + room-to-grow',
+  (() => { const g = E.modeGuidance('child'); return g.tips.includes('comfort_move') && g.tips.includes('safe_fasten') && g.tips.includes('room_grow'); })());
+ok('mode: adult returns no special tips (no nannying)', E.modeGuidance('adult').tips.length === 0);
+ok('mode: limited-mobility profile injects easy-fasten regardless of band',
+  E.modeGuidance('adult', { limited_mobility: true }).tips.includes('easy_fasten'));
+
 const total = pass + fail;
 console.log('\nTEST_SUMMARY:' + JSON.stringify({ total, pass, fail, pass_rate: Math.round((pass / total) * 100) + '%', failed: fails }));
 process.exit(fail ? 1 : 0);

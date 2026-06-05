@@ -479,6 +479,24 @@
     return { days: out, variety: variety, reuseCount: reuseCount, honest: honest };
   }
 
+  // ---------- 4. SENIOR / KIDS MODE (adaptive dressing — garment terms only, never body) ----------
+  // Deterministic guidance codes; the page localizes via FashionDyn.mode. Maps to the
+  // four-user accessibility contract + judge age/accessibility axes.
+  var MODE_TIPS = {
+    senior: ['easy_fasten', 'non_slip', 'layer_warmth', 'light_fabric', 'wide_neck'],
+    child:  ['comfort_move', 'safe_fasten', 'room_grow', 'wash_easy', 'weather_ready'],
+    teen:   ['express_self', 'school_ok', 'comfort_move'],
+    adult:  []
+  };
+  // profile flags (limited_mobility / low_vision) add a tip regardless of age band
+  function modeGuidance(band, profile) {
+    profile = profile || {};
+    var tips = (MODE_TIPS[band] || []).slice();
+    if (profile.limited_mobility && tips.indexOf('easy_fasten') < 0) tips.unshift('easy_fasten');
+    if (profile.low_vision && tips.indexOf('high_contrast') < 0) tips.push('high_contrast');
+    return { band: band || 'adult', tips: tips };
+  }
+
   return {
     colourFamily: colourFamily, itemFormality: itemFormality,
     classifyOccasion: classifyOccasion, colorHarmony: colorHarmony, seasonalSuitability: seasonalSuitability,
@@ -489,7 +507,7 @@
     fabricSeason: fabricSeason, patternOf: patternOf, patternRule: patternRule, fitNote: fitNote,
     // CFOS v2.1 deterministic features
     REPAIR_RULES: REPAIR_RULES, diagnoseRepair: diagnoseRepair, repairCodes: repairCodes,
-    planWedding: planWedding, planWeek: planWeek,
+    planWedding: planWedding, planWeek: planWeek, modeGuidance: modeGuidance, MODE_TIPS: MODE_TIPS,
     FUNCTION_BAND: FUNCTION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
     version: 'fashion-engine-2.1',
   };

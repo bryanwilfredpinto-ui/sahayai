@@ -139,6 +139,15 @@ const wedChips = await p.evaluate(() => document.querySelectorAll('#fa-wed-func 
 await p.evaluate(() => faWedding());
 await p.waitForTimeout(600);
 (await mutated(p, '#fa-wed-result')) ? P('button: Wedding Planner renders') : F('button: Wedding Planner');
+// CFOS v2.1: Senior & Kids Mode — lens chips render, picking Senior shows adaptive guidance
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="family"]').click(); });
+await p.waitForTimeout(200);
+const modeChips = await p.evaluate(() => document.querySelectorAll('#fa-mode-chips .fa-chip').length);
+(modeChips >= 4) ? P('v2.1 Modes: senior/kids/teen/adult lens chips render') : F('v2.1 Mode chips', String(modeChips));
+await p.evaluate(() => { const c = document.querySelector('#fa-mode-chips .fa-chip'); if (c) c.click(); });
+await p.waitForTimeout(500);
+const modeGuide = await p.evaluate(() => { const e = document.getElementById('fa-mode-result'); return !!e && e.querySelectorAll('li').length >= 3; });
+modeGuide ? P('v2.1 Modes: Senior lens shows adaptive dressing guidance') : F('v2.1 Mode guidance');
 // career coach: pick a role -> plan with real resources renders
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="career"]').click(); const r = document.querySelector('#fa-coach-host [data-role]'); if (r) r.click(); });
 await p.waitForTimeout(500);

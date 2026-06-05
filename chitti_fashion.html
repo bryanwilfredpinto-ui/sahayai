@@ -345,6 +345,14 @@ body{font-size:17px}
       </details>
       <div id="fa-twin-body" style="margin-top:10px"></div>
       </div>
+
+    <!-- 👵🧒 Senior & Kids Mode — adaptive dressing lens (CFOS v2.1, deterministic) -->
+    <div data-chitti-response="fa-card-17" class="sds-card chitti-response" data-chitti-section="👵🧒 Senior & Kids Mode">
+      <h2 class="sds-card-title"><span class="ico">👵</span> <span data-vai-i18n="fa.sk.title">👵🧒 Senior & Kids Mode</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.sk.sub">Dressing made easy for every age — adaptive, comfortable, dignified. Pick who you're styling; Chitti adapts the guidance and the outfits (easy fastenings, safe footwear, room to grow) — and never comments on anyone's body.</p>
+      <div class="fa-occasion-chips" id="fa-mode-chips"></div>
+      <div id="fa-mode-result" class="fa-result"></div>
+      </div>
   </section>
 
   <!-- ════ TAB · MORE (Clothing Doctor · Office Week · Wardrobe Audit · Travel · Emergency) ════ -->
@@ -540,6 +548,7 @@ function faTab(name, btn){
   try {
     if (name === 'more') { faDoctorInit(); faWeekInit(); }
     if (name === 'occasion') faWeddingInit();
+    if (name === 'family') faModeInit();
   } catch(e){}
 }
 
@@ -794,9 +803,10 @@ function faError(hostId){
 
 /* ════════ engine helpers — deterministic, no LLM needed ════════ */
 function faEngine(){ return (window.ChittiFashionEngine || null); }
+var _faModeLens = '';   // Senior/Kids adaptive lens — overrides age_band across all flows when set
 function faCtx(extra){
   const w = (faWearers().find(x => x.id === faCurrentWearer()) || {});
-  return Object.assign({ gender: PROFILE.gender, age_band: w.band, season: PROFILE.season, culture: PROFILE.culture, profile: (PROFILE.disability || {}) }, extra || {});
+  return Object.assign({ gender: PROFILE.gender, age_band: (_faModeLens || w.band), season: PROFILE.season, culture: PROFILE.culture, profile: (PROFILE.disability || {}) }, extra || {});
 }
 function faConfBadge(c){
   const col = c >= 80 ? '#138808' : (c >= 60 ? '#b45309' : '#b91c1c');
@@ -1496,6 +1506,36 @@ async function faOfficeWeek(){
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
 
+/* ── 👵🧒 Senior & Kids Mode (adaptive dressing lens) ── */
+function faModeInit(){
+  const FD = faDyn();
+  faChipRow('fa-mode-chips', ['senior','child','teen','adult'].map(c => ({ code: c, label: FD ? FD.mode(c) : c, on: (_faModeLens || 'adult') === c })), false, faModeLens);
+}
+async function faModeLens(band){
+  _faModeLens = (band === 'adult') ? '' : band;
+  const host = document.getElementById('fa-mode-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const g = E.modeGuidance(band, PROFILE.disability || {});
+  const title = FD ? FD.mode('title') : 'Dressing made easy';
+  let html = '<div class="fa-outfit"><div class="title">' + (FD ? FD.mode(band) : band) + ' · ' + esc(title) + '</div>';
+  if (!g.tips.length){ html += '<div class="why">' + esc(FD ? FD.mode('none') : 'No special adaptations — style as usual.') + '</div>'; }
+  else {
+    html += '<ul style="margin:6px 0 0 18px;line-height:1.7;font-size:13.5px">' +
+      g.tips.map(t => '<li>' + esc(FD ? FD.mode(t) : t) + ' <button class="fa-spk" aria-label="🔊" onclick="faSpeak(this.previousSibling.textContent||\'\')">🔊</button></li>').join('') + '</ul>';
+  }
+  html += '</div>';
+  // adapted outfits from the wardrobe under this lens (judge adds senior/child adaptations)
+  const items = await faAllItems();
+  if (items.length){
+    const recs = E.recommend(items, faCtx({ max: 2 }));
+    if (recs.length){ window._faLastItems = recs[0].items; recs.forEach(r => { html += faRenderOutfitCard(r); }); }
+  }
+  host.innerHTML = html;
+  const sp = (FD ? FD.mode(band) : band) + '. ' + title + '. ' + g.tips.map(t => FD ? FD.mode(t) : t).join('. ');
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
 /* ════════ boot ════════ */
 function faBoot(){
   CURRENT_LANG = faDetectLang();
@@ -1512,7 +1552,7 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
-  try { faDoctorInit(); faWeekInit(); faWeddingInit(); } catch(e){}
+  try { faDoctorInit(); faWeekInit(); faWeddingInit(); faModeInit(); } catch(e){}
   faInitCoach();
   // language dropdown guard — run now + after chitti_lang.js enrichment + once more
   faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);

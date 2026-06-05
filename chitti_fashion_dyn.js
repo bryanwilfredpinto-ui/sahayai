@@ -35,6 +35,23 @@
         dc_casual:'Casual', dc_smart:'Smart', dc_formal:'Formal', wx_hot:'☀️ Hot', wx_cold:'❄️ Cold', wx_mod:'⛅ Mild',
         reused:'♻️ same pieces, fresh pairing', variety:'Variety', plan_title:'Your office week', honest_tip:'Add 1–2 bottoms to unlock a no-repeat week', dress_code:'Dress code', weather:'Weather'
       },
+      mode: {
+        senior:'👵 Senior', child:'🧒 Kids', teen:'🧑 Teen', adult:'🧑 Adult',
+        title:'Dressing made easy', none:'No special adaptations — style as usual.',
+        easy_fasten:'Easy-open fastenings (magnetic, velcro, front buttons) for independent dressing',
+        non_slip:'Non-slip, easy-on footwear for safe, steady steps',
+        layer_warmth:'Light layers you can add or remove to stay warm without weight',
+        light_fabric:'Soft, lightweight fabrics that are gentle on the skin',
+        wide_neck:'Wide or open necklines that pull on and off easily',
+        comfort_move:'Room to run and play — soft, stretchy, comfortable',
+        safe_fasten:'No loose cords or sharp fasteners near the neck — safe for a child',
+        room_grow:'A little room to grow, so it lasts more than one season',
+        wash_easy:'Easy-wash, hard-wearing fabric for everyday mess',
+        weather_ready:'Layer for the weather — a jacket for cold, cotton for heat',
+        express_self:'Let them pick a colour they love — confidence comes first',
+        school_ok:'Neat and school-appropriate when needed',
+        high_contrast:'High-contrast colours so pieces are easy to tell apart'
+      },
     },
     hi: {
       occ: { casual:'रोज़', 'smart-casual':'स्मार्ट-कैज़ुअल', 'business-casual':'बिज़नेस-कैज़ुअल', formal:'फ़ॉर्मल', festive:'त्योहारी', wedding:'शादी', office:'दफ़्तर', interview:'इंटरव्यू', college:'कॉलेज', religious:'धार्मिक', date:'डेट नाइट', travel:'यात्रा', funeral:'शोक', family:'पारिवारिक समारोह' },
@@ -61,6 +78,23 @@
         Mon:'सोमवार', Tue:'मंगलवार', Wed:'बुधवार', Thu:'गुरुवार', Fri:'शुक्रवार',
         dc_casual:'कैज़ुअल', dc_smart:'स्मार्ट', dc_formal:'फ़ॉर्मल', wx_hot:'☀️ गरम', wx_cold:'❄️ ठंडा', wx_mod:'⛅ हल्का',
         reused:'♻️ वही कपड़े, नई जोड़ी', variety:'विविधता', plan_title:'आपका ऑफ़िस सप्ताह', honest_tip:'1–2 नीचे के कपड़े जोड़ें — पूरा हफ़्ता बिना दोहराव', dress_code:'ड्रेस कोड', weather:'मौसम'
+      },
+      mode: {
+        senior:'👵 बुज़ुर्ग', child:'🧒 बच्चे', teen:'🧑 किशोर', adult:'🧑 वयस्क',
+        title:'पहनना आसान बनाया', none:'कोई ख़ास बदलाव नहीं — हमेशा की तरह style करें।',
+        easy_fasten:'आसानी से खुलने वाले fastening (magnetic, velcro, सामने के बटन) — ख़ुद पहनने के लिए',
+        non_slip:'न फिसलने वाले, आसानी से पहनने वाले जूते — सुरक्षित, स्थिर क़दम',
+        layer_warmth:'हल्की परतें जो गर्मी के लिए जोड़ या हटा सकें — बिना भारीपन',
+        light_fabric:'नरम, हल्के कपड़े जो त्वचा पर कोमल हों',
+        wide_neck:'चौड़े या खुले गले — आसानी से पहनने-उतारने के लिए',
+        comfort_move:'दौड़ने-खेलने की जगह — नरम, खिंचने वाला, आरामदायक',
+        safe_fasten:'गले के पास ढीली डोरी या नुकीले fastener नहीं — बच्चे के लिए सुरक्षित',
+        room_grow:'थोड़ी बढ़ने की जगह — एक मौसम से ज़्यादा चले',
+        wash_easy:'आसानी से धुलने वाला, मज़बूत कपड़ा — रोज़ की गंदगी के लिए',
+        weather_ready:'मौसम के हिसाब से परत — ठंड में jacket, गर्मी में cotton',
+        express_self:'उन्हें अपना पसंदीदा रंग चुनने दें — आत्मविश्वास पहले',
+        school_ok:'ज़रूरत पर साफ़-सुथरा और स्कूल के अनुकूल',
+        high_contrast:'अलग-अलग पहचानने के लिए गहरे-हल्के विपरीत रंग'
       },
     },
     ta: {
@@ -158,6 +192,7 @@
     repair: function (code, L) { return t('repair', code, L); },
     wedding: function (code, L) { return t('wedding', code, L); },
     week: function (code, L) { return t('week', code, L); },
+    mode: function (code, L) { return t('mode', code, L); },
     lang: lang,
   };
 })();
