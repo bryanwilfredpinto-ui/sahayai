@@ -17,6 +17,8 @@
   --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
   --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
   --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
+  /* MedUPI-parity tokens (Sire 2026-06-05 PM "UI should be in accordance to Chitti MedUPI") */
+  --med-green:#15803d; --med-red:#b91c1c;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
@@ -60,7 +62,7 @@ nav.tabs .tab:hover{color:var(--text)}
 nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
 
 /* Layout */
-main{padding:14px 16px 40px;max-width:980px;margin:0 auto}
+main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}  /* MedUPI parity */
 .page{display:none}
 .page.active{display:block}
 .section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
@@ -290,6 +292,57 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 .tt-curric-name{font-size:12.5px;font-weight:800;color:var(--navy);line-height:1.3}
 .tt-curric-days{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em}
 .tt-curric-btn.active .tt-curric-days{color:#9a3412}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MEDUPI-PARITY DESIGN TOKENS (Sire 2026-06-05 PM)
+   "UI SHOULD BE IN ACCORDANCE TO CHITTI MEDUPI"
+   These tokens come from chitti_medupi.html lines 92-114.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* MedUPI signature badges */
+.coming-soon{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle;margin-left:6px}
+.coming-soon-card{border-style:dashed!important}
+.live-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);vertical-align:middle;margin-left:6px}
+.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7c2d12;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));border:1px solid rgba(232,106,23,.5);vertical-align:middle;margin-left:6px}
+
+/* MedUPI risk pills (now used for AI Disruption Risk + relevance bands) */
+.risk-high{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--med-red);border:1px solid var(--med-red)}
+.risk-medium{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#92400e;background:rgba(245,158,11,.18);border:1px solid #f59e0b}
+.risk-low{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--med-green);background:rgba(34,197,94,.12);border:1px solid var(--med-green)}
+
+/* MedUPI metric-grid + metric-card — used in Profession Hub + 28-Day Tour progress */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.metric-card{border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-height:96px;box-shadow:0 4px 12px rgba(14,35,68,.04)}
+.metric-card-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;line-height:1.3}
+.metric-card-val{font-size:17px;font-weight:800;font-family:'JetBrains Mono','Menlo','Consolas',monospace;margin-top:6px;color:var(--navy)}
+.metric-card-val.dim{color:var(--muted);font-size:14px}
+.metric-card-pe{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* MedUPI CTA buttons — reusable across Hub, Tour, intake, etc. */
+.cta-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.cta-saffron:hover{filter:brightness(1.05)}
+.cta-navy{background:linear-gradient(135deg,var(--navy),#16376a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(14,35,68,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.cta-navy:hover{filter:brightness(1.10)}
+
+/* MedUPI metric speak-button micro UI (consistent with shares/medupi) */
+.metric-spk{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;line-height:1;min-width:32px;min-height:24px}
+.metric-spk:hover{background:rgba(232,106,23,.06);color:var(--saffron)}
+
+/* MedUPI mono font for numerics across Hub (re-skin) */
+.hub-score-val{font-family:'JetBrains Mono','Menlo','Consolas',monospace}
+.tt-progress-label{font-family:'JetBrains Mono','Menlo','Consolas',monospace;font-size:13px}
+
+/* Bump tab min-height to MedUPI's 46px for tap target parity */
+nav.tabs .tab{min-height:46px}
+
+/* Align disclaimer bar visual weight with MedUPI med-bar */
+.news-disclaimer{background:linear-gradient(90deg,rgba(232,106,23,.10),rgba(212,175,55,.10));border-bottom:2px solid var(--gold);color:var(--text);font-weight:600}
+.news-disclaimer strong{color:var(--med-red);letter-spacing:.04em}
+
+@media (max-width:640px){
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .cta-saffron,.cta-navy{font-size:13px;padding:10px 14px}
+}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -1246,8 +1299,8 @@ loadFeed(false);
     </select>
 
     <div class="actions">
-      <button type="button" onclick="ccIntakeClose()">Maybe later</button>
-      <button type="button" class="primary" onclick="ccIntakeSave()">Build my plan</button>
+      <button type="button" onclick="ccIntakeClose()" aria-label="Maybe later — close intake">Maybe later</button>
+      <button type="button" class="cta-saffron" onclick="ccIntakeSave()" aria-label="Save my intake and build my AI plan">Build my plan</button>
     </div>
   </div>
 </div>
@@ -1612,11 +1665,14 @@ loadFeed(false);
     html += '<header class="hub-header" data-chitti-response data-chitti-section="Profession Hub header">';
     html += '<h2 class="hub-title">🏛️ ' + _hubEsc(_hubProfLabel(prof)) + ' Hub</h2>';
     html += '<p class="hub-sub">COSDF v1.1 · 10 layers, one role · FREE-first · ' + _hubEsc((p.language || 'en').toUpperCase()) + '</p>';
-    html += '<div class="hub-scores">';
-    html += '  <div class="hub-score"><div class="hub-score-label">AI Disruption Risk</div><div class="hub-score-val">' + imp.disruption_risk + '%</div>' + _hubBar(imp.disruption_risk, 100, 0) + '</div>';
-    html += '  <div class="hub-score"><div class="hub-score-label">AI Adoption (industry)</div><div class="hub-score-val">' + imp.adoption_level + '</div>' + _hubBar({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50, 100, 200) + '</div>';
-    html += '  <div class="hub-score"><div class="hub-score-label">AI Opportunity</div><div class="hub-score-val">' + imp.opportunity_level + '%</div>' + _hubBar(imp.opportunity_level, 100, 140) + '</div>';
-    html += '  <div class="hub-score"><div class="hub-score-label">Your AI Readiness</div><div class="hub-score-val">' + rd.score + '<span style="font-size:.55em;color:#666"> /100 · ' + _hubEsc(rd.band) + '</span></div>' + _hubBar(rd.score, 100, 28) + '</div>';
+    // MedUPI-parity: use metric-grid + metric-card pattern (parity with chitti_medupi.html)
+    var riskBand = imp.disruption_risk >= 60 ? 'risk-high' : imp.disruption_risk >= 40 ? 'risk-medium' : 'risk-low';
+    var oppBand  = imp.opportunity_level >= 70 ? 'risk-low' : imp.opportunity_level >= 40 ? 'risk-medium' : 'risk-high';
+    html += '<div class="metric-grid hub-scores">';
+    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Disruption Risk <span class="' + riskBand + '">' + (imp.disruption_risk>=60?'HIGH':imp.disruption_risk>=40?'MED':'LOW') + '</span></div><div class="metric-card-val hub-score-val">' + imp.disruption_risk + '%</div>' + _hubBar(imp.disruption_risk, 100, 0) + '</div>';
+    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Adoption (industry)</div><div class="metric-card-val hub-score-val">' + imp.adoption_level + '</div>' + _hubBar({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50, 100, 200) + '</div>';
+    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Opportunity <span class="' + oppBand + '">' + (imp.opportunity_level>=70?'HIGH':imp.opportunity_level>=40?'MED':'LOW') + '</span></div><div class="metric-card-val hub-score-val">' + imp.opportunity_level + '%</div>' + _hubBar(imp.opportunity_level, 100, 140) + '</div>';
+    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">Your AI Readiness</div><div class="metric-card-val hub-score-val">' + rd.score + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100 · ' + _hubEsc(rd.band) + '</span></div>' + _hubBar(rd.score, 100, 28) + '</div>';
     html += '</div>';
     html += '<div class="hub-verdict">💡 <strong>Chitti\'s verdict:</strong> ' + _hubEsc(imp.verdict) + '</div>';
     html += '<div class="hub-sourced">📡 ' + _hubEsc(imp.sourced_from) + '</div>';
@@ -1662,7 +1718,7 @@ loadFeed(false);
     } else if (roadmap) {
       html += '<p class="hub-note">' + _hubEsc(roadmap.note) + '</p>';
     }
-    html += '<div class="hub-actions"><button type="button" class="primary" onclick="ccIntakeOpen()">✏️ Update my readiness inputs</button></div>';
+    html += '<div class="hub-actions"><button type="button" class="cta-saffron" onclick="ccIntakeOpen()" aria-label="Update my AI readiness inputs">✏️ Update my readiness inputs</button></div>';
     html += '</section>';
 
     // Section 4 — THIS WEEK'S MISSION (L16)
@@ -1775,9 +1831,9 @@ loadFeed(false);
     html += '<p>📈 At your current pace, AI-ready (80/100) in about <strong>' + etaMonths + ' month' + (etaMonths === 1 ? '' : 's') + '</strong>.</p>';
     html += '<p>👉 <strong>Do this next:</strong> <a href="' + _hubEsc(nextItem.url) + '" target="_blank" rel="noopener">' + _hubEsc(nextItem.title) + ' ↗</a></p>';
     html += '<div class="hub-actions">';
-    html += '  <button type="button" class="cc-btn" onclick="ccAskOpen()">💬 Ask the Coach</button>';
-    html += '  <button type="button" class="cc-btn" onclick="ccCvOpen()">📋 Generate my AI CV</button>';
-    html += '  <button type="button" class="primary" onclick="showCategory(\'my-coach\')">📅 Open my 4-week plan</button>';
+    html += '  <button type="button" class="cta-navy" onclick="ccAskOpen()" aria-label="Ask the Coach">💬 Ask the Coach</button>';
+    html += '  <button type="button" class="cta-navy" onclick="ccCvOpen()" aria-label="Generate my AI CV">📋 Generate my AI CV</button>';
+    html += '  <button type="button" class="cta-saffron" onclick="showCategory(\'my-coach\')" aria-label="Open my 4-week plan">📅 Open my 4-week plan</button>';
     html += '</div></div></section>';
 
     host.innerHTML = html;
@@ -1800,7 +1856,7 @@ loadFeed(false);
       ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' completed">✅ Completed</button>'
       : (locked
         ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' locked — finish earlier days first">🔒 Locked</button>'
-        : '<button class="cc-btn primary" type="button" onclick="ccTourMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Mark Day ' + d.day + ' Done</button>');
+        : '<button class="cta-saffron" type="button" onclick="ccTourMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done" style="font-size:12px;padding:8px 14px;min-height:36px">✓ Mark Day ' + d.day + ' Done</button>');
     var html = '<article class="tt-day ' + stateCls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _ttEsc(d.tool) + '">';
     html += '  <header class="tt-day-head"><span class="tt-day-num">DAY ' + d.day + '</span><span class="tt-day-state">' + stateBadge + '</span></header>';
     html += '  <h4 class="tt-day-tool">' + _ttEsc(d.tool) + '</h4>';
@@ -1865,7 +1921,7 @@ loadFeed(false);
     html += '</div></div>';
     if (prog.certified) {
       html += '  <div class="tt-cert-cta"><strong>🎉 Curriculum complete.</strong> ' +
-              '<button class="cc-btn primary" type="button" onclick="ccTourClaimCert(\'' + meta.id + '\')" aria-label="Claim your Chitti ' + _ttEsc(meta.name) + ' certificate">📜 Claim Chitti Certificate</button></div>';
+              '<button class="cta-saffron" type="button" onclick="ccTourClaimCert(\'' + meta.id + '\')" aria-label="Claim your Chitti ' + _ttEsc(meta.name) + ' certificate">📜 Claim Chitti Certificate</button></div>';
     }
     html += '</header>';
 
