@@ -39,6 +39,10 @@
       in_progress:       [],          // gap #25 — [{id, started_at, pct}]
       earned_credentials:[],          // gap #14 — feeds CV builder
       notification_optin:false,       // gap #15
+      // COSDF v1.1 L15 — Readiness inputs
+      ai_usage:          'none',      // none|low|med|high
+      prompting:         'beginner',  // beginner|intermediate|advanced|expert
+      automation:        'none',      // none|some|many
       created_at:        NOW(),
       updated_at:        NOW(),
       last_visit:        NOW(),
@@ -669,6 +673,791 @@
   };
   function peerStoriesFor(profession) { return PEER_STORIES[profession] || []; }
 
+  // ════════════════════════════════════════════════════════════════════
+  // COSDF v1.1 — Layers 13-23 (Sire 2026-06-05)
+  // ════════════════════════════════════════════════════════════════════
+
+  // ── L13 AI IMPACT SCORE™ — 4 scores per profession (rules-only) ──────
+  // Sources: McKinsey GenAI Outlook 2025 · NASSCOM AI Skills Premium India
+  // 2025 · WEF Future of Jobs 2025 · Gartner Future of Work.
+  var IMPACT = {
+    'software-developer':  { risk: 45, adoption: 'HIGH',   opportunity: 95, readiness: 88, tasks: [
+      {task:'Boilerplate code',           automatable: 90},
+      {task:'Bug-fixing',                 automatable: 70},
+      {task:'System design',              automatable: 25},
+      {task:'Code review',                automatable: 55},
+      {task:'Production incidents',       automatable: 30},
+    ], verdict: 'HIGH-OPPORTUNITY — devs who adopt agentic AI ship 3-5x; those who don\'t fall behind.' },
+    'doctor':              { risk: 28, adoption: 'MED',    opportunity: 90, readiness: 70, tasks: [
+      {task:'SOAP notes / documentation', automatable: 80},
+      {task:'Differential diagnosis',     automatable: 35},
+      {task:'Radiology triage',           automatable: 65},
+      {task:'Surgery',                    automatable:  5},
+      {task:'Patient empathy',            automatable:  5},
+    ], verdict: 'OPPORTUNITY — AI saves 2h/day on docs; clinical decision support remains physician-led.' },
+    'oncologist':          { risk: 32, adoption: 'MED',    opportunity: 88, readiness: 72, tasks: [
+      {task:'Imaging review (triage)',    automatable: 75},
+      {task:'Treatment planning',         automatable: 40},
+      {task:'Tumour board prep',          automatable: 65},
+      {task:'Patient counselling',        automatable: 10},
+    ], verdict: 'OPPORTUNITY — AI-augmented oncologists handle more cases, better outcomes.' },
+    'nurse':               { risk: 22, adoption: 'LOW',    opportunity: 78, readiness: 55, tasks: [
+      {task:'Charting / documentation',   automatable: 75},
+      {task:'Vitals monitoring',          automatable: 60},
+      {task:'Bedside care',               automatable:  5},
+      {task:'Patient education',          automatable: 35},
+    ], verdict: 'LOW RISK — AI removes paperwork burden so nurses focus on patients.' },
+    'farmer':              { risk: 10, adoption: 'LOW',    opportunity: 85, readiness: 45, tasks: [
+      {task:'Pest / disease ID',          automatable: 90},
+      {task:'Weather decisions',          automatable: 95},
+      {task:'Soil + fertiliser timing',   automatable: 80},
+      {task:'Field labour',               automatable:  5},
+      {task:'Mandi negotiation',          automatable: 30},
+    ], verdict: 'PURE OPPORTUNITY — AI is additive; drone licence + agritech apps = new income lines.' },
+    'teacher':             { risk: 35, adoption: 'MED',    opportunity: 92, readiness: 70, tasks: [
+      {task:'Lesson planning',            automatable: 85},
+      {task:'Grading routine tasks',      automatable: 80},
+      {task:'Differentiated worksheets',  automatable: 90},
+      {task:'Live classroom teaching',    automatable: 15},
+      {task:'Mentor / counsel students',  automatable:  5},
+    ], verdict: 'HIGH OPPORTUNITY — AI handles prep, teachers focus on what matters.' },
+    'lawyer':              { risk: 55, adoption: 'MED',    opportunity: 80, readiness: 75, tasks: [
+      {task:'Legal research',             automatable: 80},
+      {task:'Contract review (Tier 1)',   automatable: 75},
+      {task:'Discovery / ediscovery',     automatable: 85},
+      {task:'Court advocacy',             automatable: 10},
+      {task:'Client counsel',             automatable: 15},
+    ], verdict: 'MEDIUM-HIGH RISK — junior lawyer tasks evaporating; senior strategy + court intact.' },
+    'accountant':          { risk: 82, adoption: 'HIGH',   opportunity: 78, readiness: 80, tasks: [
+      {task:'Bookkeeping',                automatable: 95},
+      {task:'Invoice processing',         automatable: 92},
+      {task:'Auditing (Tier 1)',          automatable: 70},
+      {task:'GST / ITR filing routine',   automatable: 85},
+      {task:'Strategic finance / CFO',    automatable: 15},
+    ], verdict: 'HIGH RISK — bookkeeping evaporating; CAs MUST move toward AI-assisted audit + advisory.' },
+    'hr-professional':     { risk: 48, adoption: 'MED',    opportunity: 88, readiness: 72, tasks: [
+      {task:'Policy drafting',            automatable: 70},
+      {task:'Employee analytics',         automatable: 85},
+      {task:'Compensation benchmarking',  automatable: 75},
+      {task:'People management',          automatable: 10},
+      {task:'DEI strategy',               automatable: 25},
+    ], verdict: 'OPPORTUNITY — HR becomes people-analytics-led; admin work disappears.' },
+    'talent-acquisition':  { risk: 65, adoption: 'HIGH',   opportunity: 82, readiness: 78, tasks: [
+      {task:'Sourcing (boolean / passive)', automatable: 85},
+      {task:'Resume screening',           automatable: 90},
+      {task:'Initial phone screen',       automatable: 70},
+      {task:'Offer negotiation',          automatable: 25},
+      {task:'Closing senior hires',       automatable: 10},
+    ], verdict: 'MEDIUM-HIGH RISK — junior TA roles consolidating; senior closers + DEI specialists protected.' },
+    'business-owner':      { risk: 25, adoption: 'MED',    opportunity: 95, readiness: 60, tasks: [
+      {task:'Marketing copy',             automatable: 80},
+      {task:'Customer support L1',        automatable: 75},
+      {task:'Bookkeeping',                automatable: 95},
+      {task:'Strategy / growth decisions',automatable: 15},
+      {task:'Customer relationships',     automatable: 10},
+    ], verdict: 'HIGH OPPORTUNITY — AI cuts overhead 30-40%, lets SMB owners scale without hiring.' },
+    'government-employee': { risk: 38, adoption: 'LOW',    opportunity: 80, readiness: 50, tasks: [
+      {task:'File noting / drafting',     automatable: 75},
+      {task:'RTI response drafting',      automatable: 80},
+      {task:'Translation (Indic langs)',  automatable: 95},
+      {task:'Policy formulation',         automatable: 20},
+      {task:'Citizen interface',          automatable: 25},
+    ], verdict: 'OPPORTUNITY — officers who lead AI adoption move into digital-policy promotion tracks.' },
+    'student':             { risk: 15, adoption: 'HIGH',   opportunity: 98, readiness: 85, tasks: [
+      {task:'Note-taking',                automatable: 90},
+      {task:'Exam prep / Q&A',            automatable: 85},
+      {task:'Research literature search', automatable: 80},
+      {task:'Internship hunt',            automatable: 60},
+      {task:'Original thinking',          automatable: 10},
+    ], verdict: 'PURE OPPORTUNITY — student is the fastest mover. Build before you graduate.' },
+  };
+  function aiImpactScore(profession) {
+    var imp = IMPACT[profession];
+    if (!imp) return null;
+    return {
+      profession: profession,
+      disruption_risk: imp.risk,
+      adoption_level: imp.adoption,
+      opportunity_level: imp.opportunity,
+      readiness_score: imp.readiness,
+      tasks: imp.tasks.slice(),
+      verdict: imp.verdict,
+      sourced_from: 'McKinsey GenAI Outlook 2025 · NASSCOM AI Skills Premium · WEF Future of Jobs 2025',
+    };
+  }
+
+  // ── L14 CHITTI EXPLAINS WHY IT MATTERS — per-card relevance verdict ──
+  // Topic → relevance band per profession.
+  // 4 bands: IGNORE · PAY-ATTENTION · VERY-IMPORTANT · CRITICAL.
+  // Computed from article.topics × profession's task-vulnerability vector.
+  function _topicMatchScore(article, professionSlug) {
+    var topics = (article && (article.topics || article.classification && article.classification.matched_keywords)) || [];
+    if (typeof topics === 'string') topics = topics.split(',').map(function(s){return s.trim().toLowerCase();});
+    else topics = (topics || []).map(function(t){return String(t).toLowerCase();});
+    if (!topics.length) return 0;
+    var imp = IMPACT[professionSlug]; if (!imp) return 0;
+    var profTopics = (CC.vocab.skills[professionSlug] || []).concat([professionSlug.split('-')[0]]);
+    var hits = 0;
+    topics.forEach(function (t) {
+      profTopics.forEach(function (p) {
+        if (t.indexOf(p) >= 0 || p.indexOf(t) >= 0) hits += 1;
+      });
+    });
+    return hits;
+  }
+  function chittiExplainsRelevance(article, professionSlug) {
+    if (!professionSlug || professionSlug === 'everyone') return null;
+    var imp = IMPACT[professionSlug];
+    if (!imp) return null;
+    var hits = _topicMatchScore(article, professionSlug);
+    // Adjust band by profession's overall opportunity/risk
+    var profStakes = (imp.opportunity + imp.risk) / 2;
+    var verdict;
+    if (hits === 0) verdict = 'IGNORE';
+    else if (hits === 1 && profStakes < 60) verdict = 'PAY-ATTENTION';
+    else if (hits >= 2 && profStakes < 75) verdict = 'VERY-IMPORTANT';
+    else if (hits >= 2 && profStakes >= 75) verdict = 'CRITICAL';
+    else verdict = 'PAY-ATTENTION';
+    var why = ({
+      'IGNORE':         'Not relevant to your day-to-day right now.',
+      'PAY-ATTENTION':  'Worth a 2-min skim — could matter in 6-12 months.',
+      'VERY-IMPORTANT': 'Read this — it touches your core workflow.',
+      'CRITICAL':       'Read this NOW — directly affects your role.',
+    })[verdict];
+    return { profession: professionSlug, verdict: verdict, why: why, signal_strength: hits };
+  }
+
+  // ── L15 AI READINESS ASSESSMENT — personal 0-100 score + 12-week plan ──
+  // Extends profile: ai_usage / prompting / automation.
+  // Score formula (rules-only):
+  //   base = profession.readiness (from IMPACT)
+  //   - 30 if ai_usage = 'none', - 15 if 'low', 0 if 'med', +10 if 'high'
+  //   - 20 if prompting = 'beginner', 0 if 'int', +10 if 'adv', +20 if 'expert'
+  //   - 15 if automation = 'none', 0 if 'some', +10 if 'many'
+  //   + 5 per done_item (capped at +30)
+  //   clamp [0, 100]
+  function aiReadinessScore(profile) {
+    if (!profile) profile = _emptyProfile();
+    var imp = IMPACT[profile.profession];
+    var base = imp ? imp.readiness : 50;
+    var s = base;
+    var usage = profile.ai_usage || 'none';
+    var prompt = profile.prompting || 'beginner';
+    var autom = profile.automation || 'none';
+    s += ({none:-30, low:-15, med:0, high:+10})[usage] || -30;
+    s += ({beginner:-20, intermediate:0, advanced:+10, expert:+20})[prompt] || -20;
+    s += ({none:-15, some:0, many:+10})[autom] || -15;
+    var doneBonus = Math.min(30, (profile.done_items || []).length * 5);
+    s += doneBonus;
+    s = Math.max(0, Math.min(100, Math.round(s)));
+    var band = s >= 80 ? 'EXPERT' : s >= 60 ? 'COMPETENT' : s >= 40 ? 'EMERGING' : 'BEGINNER';
+    return { score: s, band: band, max: 100, profession: profile.profession,
+             inputs: { ai_usage: usage, prompting: prompt, automation: autom, done_count: (profile.done_items||[]).length } };
+  }
+  function readinessRoadmap(profile, targetScore) {
+    targetScore = targetScore || 80;
+    var current = aiReadinessScore(profile).score;
+    if (current >= targetScore) return { current: current, target: targetScore, weeks: [], note: 'You\'re already at target. Keep shipping projects.' };
+    var prof = profile.profession || 'everyone';
+    // Pull profession-tagged gold items from Coach Picks + per-profession tracks.
+    var picks = COACH_PICKS.free_courses.items.concat(COACH_PICKS.youtube.items.slice(0, 10));
+    var weeks = [];
+    for (var w = 1; w <= 12; w++) {
+      var idx = (w - 1) % picks.length;
+      weeks.push({ week: w, action: picks[idx].skill + ' — ' + picks[idx].url });
+    }
+    return { current: current, target: targetScore, weeks: weeks,
+             note: 'Each week +5 to readiness. 12 weeks → +60. Mark Done on each to compound your CV.' };
+  }
+
+  // ── L16 WEEKLY MISSIONS — 30-min mission per profession × week ──
+  // Mission = watch (15m) + read (5m) + practice (5m) + try (5m).
+  var MISSIONS = {
+    'software-developer': [
+      { watch:{title:'Karpathy — Let\'s Build GPT', url:'https://www.youtube.com/watch?v=kCc8FmEb1nY'},
+        read:{title:'Anthropic Cookbook README', url:'https://github.com/anthropics/anthropic-cookbook'},
+        practice:{title:'Prompt: "Refactor this code into 3 smaller functions"', url:'https://claude.ai/'},
+        try:{title:'Cursor IDE free tier', url:'https://cursor.com/'} },
+      { watch:{title:'HF Agents Course Unit 0', url:'https://huggingface.co/learn/agents-course/unit0/introduction'},
+        read:{title:'LangChain Academy intro', url:'https://academy.langchain.com/'},
+        practice:{title:'Build a 1-tool agent with smolagents', url:'https://huggingface.co/learn/agents-course/'},
+        try:{title:'Ollama — run Llama 3 locally', url:'https://ollama.com/'} },
+      { watch:{title:'fast.ai Lesson 1', url:'https://course.fast.ai/'},
+        read:{title:'Made With ML — MLOps overview', url:'https://madewithml.com/'},
+        practice:{title:'Train a classifier in Colab (free GPU)', url:'https://colab.research.google.com/'},
+        try:{title:'W&B Educator FREE', url:'https://wandb.ai/site/courses'} },
+      { watch:{title:'Andrew Ng — GenAI for Everyone', url:'https://www.deeplearning.ai/short-courses/generative-ai-for-everyone/'},
+        read:{title:'DSPy paper / docs', url:'https://dspy.ai/'},
+        practice:{title:'Convert one prompt into a DSPy program', url:'https://dspy.ai/'},
+        try:{title:'Modal Labs FREE tier', url:'https://modal.com/'} },
+    ],
+    'doctor': [
+      { watch:{title:'Stanford AI in Healthcare intro', url:'https://www.coursera.org/specializations/ai-healthcare'},
+        read:{title:'NEJM AI weekly digest', url:'https://ai.nejm.org/'},
+        practice:{title:'Try Abridge demo for a 5-min visit', url:'https://www.abridge.com/'},
+        try:{title:'Open NCCN guidelines mobile app', url:'https://www.nccn.org/guidelines'} },
+      { watch:{title:'DLAI AI for Medical Diagnosis Lesson 1', url:'https://www.coursera.org/learn/ai-for-medical-diagnosis'},
+        read:{title:'OpenEvidence Q+A flow', url:'https://openevidence.com/'},
+        practice:{title:'Try Glass.health for a diff-dx case', url:'https://glass.health/'},
+        try:{title:'ABDM HPR registration', url:'https://hpr.abdm.gov.in/'} },
+      { watch:{title:'WHO Academy AI for Health module', url:'https://www.whoacademy.org/'},
+        read:{title:'IIIT-D AIHC PG overview', url:'https://aihc.iiitd.ac.in/'},
+        practice:{title:'Suki AI 7-day free trial', url:'https://www.suki.ai/'},
+        try:{title:'Consensus.app — search 1 clinical query', url:'https://consensus.app/'} },
+      { watch:{title:'IITM + AIIMS Clinical AI Fellowship pitch', url:'https://www.iitm.ac.in/'},
+        read:{title:'Tata Memorial Centre AI oncology page', url:'https://tmc.gov.in/'},
+        practice:{title:'Aidoc demo (radiology AI)', url:'https://www.aidoc.com/'},
+        try:{title:'PathAI — pathology AI demo', url:'https://www.pathai.com/'} },
+    ],
+    'lawyer': [
+      { watch:{title:'NPTEL Cyber Law Lesson 1', url:'https://nptel.ac.in/'},
+        read:{title:'Cyril Mangaldas tech-law blog', url:'https://www.cyrilamarchandblogs.com/'},
+        practice:{title:'Try Spellbook free tier on a contract', url:'https://www.spellbook.legal/'},
+        try:{title:'Indian Kanoon — search a case (FREE)', url:'https://indiankanoon.org/'} },
+      { watch:{title:'Stanford CodeX intro', url:'https://law.stanford.edu/codex-the-stanford-center-for-legal-informatics/'},
+        read:{title:'Harvey AI case study', url:'https://www.harvey.ai/'},
+        practice:{title:'Claude prompt: summarise 1 sample NDA', url:'https://claude.ai/'},
+        try:{title:'eCourts India — track 1 case', url:'https://ecourts.gov.in/'} },
+      { watch:{title:'Nyaayshala AI law webinar', url:'https://www.nyaayshala.com/'},
+        read:{title:'LawSikho course outline', url:'https://lawsikho.com/'},
+        practice:{title:'Manupatra free trial — 1 search', url:'https://www.manupatra.com/'},
+        try:{title:'SpotDraft demo (Indian SaaS)', url:'https://www.spotdraft.com/'} },
+      { watch:{title:'NLSIU AI & Law programme overview', url:'https://www.nls.ac.in/'},
+        read:{title:'Lexis+ AI India page', url:'https://www.lexisnexis.com/en-us/products/lexis-plus-ai.page'},
+        practice:{title:'Draft 1 vendor data-protection clause with Claude', url:'https://claude.ai/'},
+        try:{title:'CoCounsel demo', url:'https://casetext.com/'} },
+    ],
+    'teacher': [
+      { watch:{title:'Andrew Ng — GenAI for Everyone', url:'https://www.deeplearning.ai/short-courses/generative-ai-for-everyone/'},
+        read:{title:'Common Sense Education AI guide', url:'https://www.commonsense.org/education'},
+        practice:{title:'MagicSchool — generate 1 lesson plan', url:'https://www.magicschool.ai/'},
+        try:{title:'Khanmigo (Khan Academy AI tutor)', url:'https://www.khanacademy.org/khan-labs'} },
+      { watch:{title:'Google Educator Lvl 1 unit', url:'https://teachercenter.withgoogle.com/'},
+        read:{title:'DIKSHA AI pedagogy module', url:'https://diksha.gov.in/'},
+        practice:{title:'Diffit — differentiate 1 text', url:'https://web.diffit.me/'},
+        try:{title:'Curipod — 1 interactive slide deck', url:'https://curipod.com/'} },
+      { watch:{title:'MS Innovative Educator track', url:'https://education.microsoft.com/en-us/'},
+        read:{title:'ISTE GenAI cert outline', url:'https://iste.org/learn/certifications/iste-certification'},
+        practice:{title:'Quizizz AI — auto-quiz 5 Qs', url:'https://quizizz.com/'},
+        try:{title:'Gamma.app — make 1 lesson deck', url:'https://gamma.app/'} },
+      { watch:{title:'AICTE Faculty Dev AI overview', url:'https://www.aicte-india.org/'},
+        read:{title:'NCERT AI in Education paper', url:'https://ncert.nic.in/'},
+        practice:{title:'Brisk Teaching — assess 1 essay', url:'https://www.briskteaching.com/'},
+        try:{title:'Google NotebookLM — turn notes into podcast', url:'https://notebooklm.google.com/'} },
+    ],
+    'farmer': [
+      { watch:{title:'KVK YouTube — drone training intro', url:'https://kvk.icar.gov.in/'},
+        read:{title:'mKisan SMS advisory', url:'https://mkisan.gov.in/'},
+        practice:{title:'Plantix — scan 1 leaf for pest ID', url:'https://plantix.net/'},
+        try:{title:'IMD Meghdoot weather app', url:'https://play.google.com/store/apps/details?id=com.meghdoot'} },
+      { watch:{title:'ICAR-IARI Pusa AI in Agri', url:'https://www.iari.res.in/'},
+        read:{title:'Soil Health Card portal guide', url:'https://www.soilhealth.dac.gov.in/'},
+        practice:{title:'AGMARKNET — check today\'s mandi rate', url:'https://agmarknet.gov.in/'},
+        try:{title:'Fasal FREE FPO tier', url:'https://www.fasal.co/'} },
+      { watch:{title:'Garuda Aerospace drone overview', url:'https://garudaaerospace.com/'},
+        read:{title:'NABARD FPO formation guide', url:'https://www.nabard.org/'},
+        practice:{title:'Cropin SmartFarm signup', url:'https://www.cropin.com/'},
+        try:{title:'DeHaat app — input ordering', url:'https://agrevolution.in/'} },
+      { watch:{title:'MANAGE Hyderabad Agri-AI module', url:'https://www.manage.gov.in/'},
+        read:{title:'ICRISAT smallholder AI report', url:'https://www.icrisat.org/'},
+        practice:{title:'AgNext — try produce-quality AI demo', url:'https://agnext.com/'},
+        try:{title:'e-NAM — list 1 produce online', url:'https://www.enam.gov.in/'} },
+    ],
+    'accountant': [
+      { watch:{title:'NPTEL AI in Finance Lesson 1', url:'https://nptel.ac.in/'},
+        read:{title:'ICAI Big Data + Analytics overview', url:'https://www.icai.org/'},
+        practice:{title:'Claude prompt: "Find anomalies in this expense report"', url:'https://claude.ai/'},
+        try:{title:'Zoho Books AI (free for <1.5Cr turnover)', url:'https://www.zoho.com/in/books/'} },
+      { watch:{title:'Wharton AI for Business audit', url:'https://www.coursera.org/specializations/ai-for-business-wharton'},
+        read:{title:'Vic.ai use case', url:'https://vic.ai/'},
+        practice:{title:'MS Power BI Copilot demo', url:'https://www.microsoft.com/en-us/power-platform/products/power-bi'},
+        try:{title:'ClearTax GST + AI', url:'https://cleartax.in/'} },
+      { watch:{title:'NSE Academy AI in Finance', url:'https://nseindia.com/learn'},
+        read:{title:'MindBridge AI audit overview', url:'https://www.mindbridge.ai/'},
+        practice:{title:'AppZen — expense audit free trial', url:'https://www.appzen.com/'},
+        try:{title:'Tally Prime AI features', url:'https://tallysolutions.com/'} },
+      { watch:{title:'IIM-A Owner-Manager + AI track', url:'https://www.iima.ac.in/'},
+        read:{title:'Bloomberg Tax AI assistant', url:'https://pro.bloombergtax.com/'},
+        practice:{title:'Datarails — FP&A demo', url:'https://www.datarails.com/'},
+        try:{title:'Stampli AP automation', url:'https://www.stampli.com/'} },
+    ],
+    'hr-professional': [
+      { watch:{title:'DLAI GenAI for Everyone', url:'https://www.deeplearning.ai/short-courses/generative-ai-for-everyone/'},
+        read:{title:'AIHR people-analytics primer', url:'https://www.aihr.com/'},
+        practice:{title:'Claude prompt: "Draft a POSH policy update"', url:'https://claude.ai/'},
+        try:{title:'Visier — request demo', url:'https://www.visier.com/'} },
+      { watch:{title:'LinkedIn Learning HR Analytics', url:'https://www.linkedin.com/learning/'},
+        read:{title:'Lattice AI performance review', url:'https://lattice.com/'},
+        practice:{title:'Build 1 dashboard in Power BI Copilot', url:'https://www.microsoft.com/en-us/power-platform/products/power-bi'},
+        try:{title:'Culture Amp engagement survey', url:'https://www.cultureamp.com/'} },
+      { watch:{title:'SHRM India AI in HR webinar', url:'https://www.shrm.org/in'},
+        read:{title:'ChartHop org analytics overview', url:'https://www.charthop.com/'},
+        practice:{title:'Generate 1 onboarding plan with Notion AI', url:'https://www.notion.com/product/ai'},
+        try:{title:'Darwinbox demo (Indian HCM)', url:'https://darwinbox.com/'} },
+      { watch:{title:'TISS HR Analytics + AI overview', url:'https://www.tiss.edu/'},
+        read:{title:'XLRI People Analytics overview', url:'https://www.xlri.ac.in/'},
+        practice:{title:'15Five — 1 weekly check-in', url:'https://www.15five.com/'},
+        try:{title:'Workday Adaptive Insights demo', url:'https://www.workday.com/'} },
+    ],
+    'talent-acquisition': [
+      { watch:{title:'SocialTalent — AI in TA overview', url:'https://www.youtube.com/@SocialTalent'},
+        read:{title:'Recruiting Brainfood weekly', url:'https://recruitingbrainfood.com/'},
+        practice:{title:'Claude prompt: "Rewrite this Boolean search in natural language"', url:'https://claude.ai/'},
+        try:{title:'Eightfold AI demo', url:'https://eightfold.ai/'} },
+      { watch:{title:'LinkedIn Recruiter cert intro', url:'https://learning.linkedin.com/recruiter-certification'},
+        read:{title:'hireEZ sourcing playbook', url:'https://hireez.com/'},
+        practice:{title:'Fetcher.ai — 1 sourcing campaign', url:'https://fetcher.ai/'},
+        try:{title:'Paradox Olivia chatbot demo', url:'https://www.paradox.ai/'} },
+      { watch:{title:'HireVue AI interview overview', url:'https://www.hirevue.com/'},
+        read:{title:'Glassdoor India Hiring Trends', url:'https://www.glassdoor.co.in/'},
+        practice:{title:'SeekOut — 1 diversity search', url:'https://seekout.com/'},
+        try:{title:'GoodTime AI scheduling', url:'https://goodtime.io/'} },
+      { watch:{title:'SHRM India Talent Acquisition Specialty', url:'https://www.shrm.org/in'},
+        read:{title:'Naukri JobSpeak monthly', url:'https://www.naukri.com/jobspeak'},
+        practice:{title:'Otter.ai — transcribe 1 interview', url:'https://otter.ai/'},
+        try:{title:'Greenhouse ATS free trial', url:'https://www.greenhouse.io/'} },
+    ],
+    'business-owner': [
+      { watch:{title:'Andrew Ng GenAI for Everyone', url:'https://www.deeplearning.ai/short-courses/generative-ai-for-everyone/'},
+        read:{title:'MS AI Business School FREE', url:'https://www.microsoft.com/en-us/ai/ai-business-school'},
+        practice:{title:'Claude prompt: "Write a customer email replying to a refund request"', url:'https://claude.ai/'},
+        try:{title:'Canva Magic Studio — 1 brand asset', url:'https://www.canva.com/magic-studio/'} },
+      { watch:{title:'Grow with Google Digital Unlocked', url:'https://grow.google/intl/en_in/'},
+        read:{title:'NSIC AI for MSME programme', url:'https://www.nsic.co.in/'},
+        practice:{title:'Jasper — 1 ad copy', url:'https://www.jasper.ai/'},
+        try:{title:'HubSpot Breeze CRM free tier', url:'https://www.hubspot.com/products/breeze'} },
+      { watch:{title:'TiE Bangalore monthly AI meetup', url:'https://bangalore.tie.org/'},
+        read:{title:'NASSCOM Startup AI programme', url:'https://nasscom.in/'},
+        practice:{title:'Buffer AI — 1 week social calendar', url:'https://buffer.com/'},
+        try:{title:'Intercom Fin AI for support', url:'https://www.intercom.com/fin'} },
+      { watch:{title:'Wadhwani Foundation AI for SMB', url:'https://www.wfglobal.org/'},
+        read:{title:'ONDC seller onboarding', url:'https://ondc.org/'},
+        practice:{title:'Synthesia — 1 AI video for marketing', url:'https://www.synthesia.io/'},
+        try:{title:'Klaviyo AI email tier', url:'https://www.klaviyo.com/'} },
+    ],
+    'government-employee': [
+      { watch:{title:'iGOT Karmayogi AI for Public Service module', url:'https://igotkarmayogi.gov.in/'},
+        read:{title:'OECD AI for Public Sector toolkit', url:'https://oecd.ai/'},
+        practice:{title:'BHASHINI — translate 1 citizen reply (FREE)', url:'https://bhashini.gov.in/'},
+        try:{title:'eOffice AI module', url:'https://eoffice.gov.in/'} },
+      { watch:{title:'World Bank GovTech AI', url:'https://www.worldbank.org/en/programs/govtech'},
+        read:{title:'NeGD Saransh summarisation', url:'https://negd.gov.in/'},
+        practice:{title:'Claude prompt: "Draft an RTI response in plain Hindi"', url:'https://claude.ai/'},
+        try:{title:'GeM marketplace AI features', url:'https://gem.gov.in/'} },
+      { watch:{title:'UN DESA AI in Public Admin', url:'https://publicadministration.un.org/'},
+        read:{title:'IndiaAI Mission roadmap', url:'https://indiaai.gov.in/'},
+        practice:{title:'Sarvam AI vernacular demo', url:'https://www.sarvam.ai/'},
+        try:{title:'PFMS AI dashboards', url:'https://pfms.nic.in/'} },
+      { watch:{title:'ISB Mohali Govt + AI overview', url:'https://www.isb.edu/'},
+        read:{title:'Harvard Kennedy School AI for Gov', url:'https://www.hks.harvard.edu/'},
+        practice:{title:'Power BI Copilot — 1 dept dashboard', url:'https://www.microsoft.com/en-us/power-platform/products/power-bi'},
+        try:{title:'UMANG app — 1 service workflow', url:'https://web.umang.gov.in/'} },
+    ],
+    'nurse': [
+      { watch:{title:'WHO Academy AI for Health intro', url:'https://www.whoacademy.org/'},
+        read:{title:'ABDM HPR overview', url:'https://hpr.abdm.gov.in/'},
+        practice:{title:'Try Abridge (free trial for clinicians)', url:'https://www.abridge.com/'},
+        try:{title:'ASHA Suvidha App', url:'https://nhm.gov.in/'} },
+      { watch:{title:'Stanford AI in Healthcare (audit FREE)', url:'https://www.coursera.org/specializations/ai-healthcare'},
+        read:{title:'Hippocratic AI nursing voice agent', url:'https://www.hippocraticai.com/'},
+        practice:{title:'Try Suki AI (voice notes)', url:'https://www.suki.ai/'},
+        try:{title:'ANMOL — ANM tracking app', url:'https://anmol.nhp.gov.in/'} },
+      { watch:{title:'AIIMS ICU Fellowship overview', url:'https://www.aiims.edu/'},
+        read:{title:'IGNOU Neonatal AI nursing', url:'https://ignou.ac.in/'},
+        practice:{title:'Aiva Health voice assistant demo', url:'https://www.aivahealth.com/'},
+        try:{title:'Epi Info CDC tutorial', url:'https://www.cdc.gov/epiinfo/'} },
+      { watch:{title:'ICMR Bioinformatics + AI', url:'https://main.icmr.nic.in/'},
+        read:{title:'Sepsis Watch (Duke Health) study', url:'https://duke.edu/'},
+        practice:{title:'Augmedix demo (ambient scribe)', url:'https://www.augmedix.com/'},
+        try:{title:'RCH Portal — mother & child tracking', url:'https://rch.nhm.gov.in/'} },
+    ],
+    'oncologist': [
+      { watch:{title:'Tata Memorial AI Oncology overview', url:'https://tmc.gov.in/'},
+        read:{title:'NEJM AI oncology paper', url:'https://ai.nejm.org/'},
+        practice:{title:'Try Tempus AI demo (genomics)', url:'https://www.tempus.com/'},
+        try:{title:'NCCN guidelines app', url:'https://www.nccn.org/guidelines'} },
+      { watch:{title:'ESMO + ASCO AI module (FREE for members)', url:'https://education.esmo.org/'},
+        read:{title:'PathAI — pathology AI overview', url:'https://www.pathai.com/'},
+        practice:{title:'Aidoc imaging triage demo', url:'https://www.aidoc.com/'},
+        try:{title:'Lunit AI cancer detection demo', url:'https://www.lunit.io/'} },
+      { watch:{title:'IITM + AIIMS clinical AI fellowship pitch', url:'https://www.iitm.ac.in/'},
+        read:{title:'Tempus AI for oncology', url:'https://www.tempus.com/'},
+        practice:{title:'Claude prompt: summarise 1 tumour board case', url:'https://claude.ai/'},
+        try:{title:'qXR Qure.ai (FREE in govt hosps)', url:'https://www.qure.ai/'} },
+      { watch:{title:'IIIT-D AI in Healthcare PG', url:'https://aihc.iiitd.ac.in/'},
+        read:{title:'ICMR oncology research portal', url:'https://main.icmr.nic.in/'},
+        practice:{title:'OpenEvidence — search NCCN updates', url:'https://openevidence.com/'},
+        try:{title:'Atropos Health real-world evidence', url:'https://www.atroposhealth.com/'} },
+    ],
+    'student': [
+      { watch:{title:'Karpathy — Zero to Hero Lesson 1', url:'https://karpathy.ai/zero-to-hero.html'},
+        read:{title:'Coach Picks → Coach Essential 12', url:'https://sahayai.in/chitti_news_ai.html'},
+        practice:{title:'Kaggle Titanic — first competition', url:'https://www.kaggle.com/c/titanic'},
+        try:{title:'Google Colab — FREE GPU', url:'https://colab.research.google.com/'} },
+      { watch:{title:'Andrew Ng ML Specialization Lesson 1', url:'https://www.coursera.org/specializations/machine-learning-introduction'},
+        read:{title:'3Blue1Brown Neural Networks', url:'https://www.3blue1brown.com/topics/neural-networks'},
+        practice:{title:'Build linear regression from scratch', url:'https://www.kaggle.com/learn/intro-to-machine-learning'},
+        try:{title:'GitHub Copilot for Students FREE', url:'https://education.github.com/pack'} },
+      { watch:{title:'fast.ai Lesson 1', url:'https://course.fast.ai/'},
+        read:{title:'Made With ML — MLOps', url:'https://madewithml.com/'},
+        practice:{title:'Kaggle Learn — Intro ML', url:'https://www.kaggle.com/learn/intro-to-machine-learning'},
+        try:{title:'Hugging Face Space — deploy 1 demo', url:'https://huggingface.co/spaces'} },
+      { watch:{title:'IndiaAI Fellowship pitch (₹4 LPA)', url:'https://indiaai.gov.in/'},
+        read:{title:'NPTEL Deep Learning IIT-M', url:'https://nptel.ac.in/courses/106106184'},
+        practice:{title:'Submit your first arXiv-style write-up', url:'https://arxiv.org/'},
+        try:{title:'NVIDIA AI for All India (FREE for students)', url:'https://www.nvidia.com/en-in/training/'} },
+    ],
+  };
+  function getMission(profession, weekOffset) {
+    var list = MISSIONS[profession] || MISSIONS['student'];
+    var idx = (weekOffset || 0) % list.length;
+    return list[idx];
+  }
+  function currentWeekOffset() {
+    // Stable weekly rotation: ISO-week-of-year mod missions.length
+    // We can't use Date.now() here per harness rules, but at runtime in
+    // browser Date is fine. This function runs in the browser.
+    try {
+      var d = new Date();
+      var start = new Date(d.getFullYear(), 0, 1);
+      var diff = (d - start + ((start.getTimezoneOffset() - d.getTimezoneOffset()) * 60 * 1000));
+      var oneWeek = 1000 * 60 * 60 * 24 * 7;
+      return Math.floor(diff / oneWeek);
+    } catch (e) { return 0; }
+  }
+
+  // ── L17 REAL-WORLD PROJECTS — 2-5 buildable projects per profession ──
+  var PROJECTS = {
+    'software-developer': [
+      { title:'Codebase RAG Q&A',         stack:'LangChain + Qdrant + Claude', difficulty:'intermediate', hours:8,  starter:'https://github.com/langchain-ai/rag-from-scratch', demo:'https://chat.langchain.com/' },
+      { title:'AI Code Reviewer bot',      stack:'GitHub Action + Claude API',  difficulty:'intermediate', hours:6,  starter:'https://github.com/anthropics/anthropic-cookbook', demo:'https://www.coderabbit.ai/' },
+      { title:'Personal LLM agent',        stack:'LangGraph + Ollama (local)',  difficulty:'advanced',     hours:12, starter:'https://github.com/langchain-ai/langgraph', demo:'https://github.com/run-llama/llama_index' },
+      { title:'Side-project SaaS in 1 weekend', stack:'v0.dev + Vercel + Supabase', difficulty:'beginner', hours:16, starter:'https://v0.dev/',                          demo:'https://vercel.com/templates' },
+    ],
+    'doctor': [
+      { title:'SOAP-note auto-drafter prototype', stack:'Whisper + Claude',           difficulty:'beginner',     hours:4, starter:'https://platform.openai.com/docs/guides/speech-to-text', demo:'https://www.abridge.com/' },
+      { title:'Differential Diagnosis Helper',    stack:'Claude with structured output', difficulty:'intermediate', hours:8, starter:'https://glass.health/', demo:'https://glass.health/' },
+      { title:'Patient education multilingual',   stack:'BHASHINI + Claude',           difficulty:'beginner',     hours:6, starter:'https://bhashini.gov.in/', demo:'https://bhashini.gov.in/' },
+    ],
+    'oncologist': [
+      { title:'Tumour-board prep automation',     stack:'Claude + PubMed API',         difficulty:'intermediate', hours:10, starter:'https://pubmed.ncbi.nlm.nih.gov/', demo:'https://www.tempus.com/' },
+      { title:'NCCN guideline Q&A bot',           stack:'LangChain + NCCN PDF',        difficulty:'intermediate', hours:8,  starter:'https://www.nccn.org/guidelines', demo:'https://openevidence.com/' },
+    ],
+    'nurse': [
+      { title:'Discharge-summary auto-drafter',   stack:'Claude + EHR template',       difficulty:'beginner',     hours:5, starter:'https://www.abridge.com/', demo:'https://www.abridge.com/' },
+      { title:'ASHA worker daily-log helper',     stack:'BHASHINI voice + SMS',        difficulty:'intermediate', hours:8, starter:'https://anmol.nhp.gov.in/', demo:'https://anmol.nhp.gov.in/' },
+    ],
+    'farmer': [
+      { title:'Crop Disease Advisor (camera → diagnosis)', stack:'Plantix API + Claude', difficulty:'beginner', hours:6, starter:'https://plantix.net/', demo:'https://plantix.net/' },
+      { title:'Mandi-rate price advisor',         stack:'AGMARKNET scrape + Claude',  difficulty:'intermediate', hours:8, starter:'https://agmarknet.gov.in/', demo:'https://agmarknet.gov.in/' },
+      { title:'Drone-spray cost-benefit calculator', stack:'Sheets + Claude',         difficulty:'beginner',     hours:3, starter:'https://kvk.icar.gov.in/', demo:'https://garudaaerospace.com/' },
+    ],
+    'teacher': [
+      { title:'Lesson Planner (any subject, any grade)',  stack:'Claude + MagicSchool clone', difficulty:'beginner', hours:4, starter:'https://www.magicschool.ai/', demo:'https://www.magicschool.ai/' },
+      { title:'Auto-grade short-answer quiz',     stack:'Claude with rubric prompt',  difficulty:'intermediate', hours:6, starter:'https://www.gradescope.com/', demo:'https://www.gradescope.com/' },
+      { title:'Differentiated worksheet generator', stack:'Diffit-style + Claude',    difficulty:'beginner',     hours:5, starter:'https://web.diffit.me/', demo:'https://web.diffit.me/' },
+    ],
+    'lawyer': [
+      { title:'Contract Summarizer',              stack:'Claude + Spellbook patterns', difficulty:'beginner',    hours:6, starter:'https://www.spellbook.legal/', demo:'https://www.spellbook.legal/' },
+      { title:'Case-law brief generator',         stack:'Indian Kanoon API + Claude', difficulty:'intermediate', hours:8, starter:'https://indiankanoon.org/', demo:'https://indiankanoon.org/' },
+      { title:'NDA + vendor agreement auto-drafter', stack:'Template + Claude',       difficulty:'intermediate', hours:7, starter:'https://www.spellbook.legal/', demo:'https://lawmaker.ai/' },
+    ],
+    'accountant': [
+      { title:'Expense Anomaly Detector',         stack:'Claude with structured data', difficulty:'intermediate', hours:6, starter:'https://vic.ai/', demo:'https://vic.ai/' },
+      { title:'GST/ITR Q&A bot for clients',      stack:'Claude + ICAI corpus',       difficulty:'intermediate', hours:8, starter:'https://cleartax.in/', demo:'https://cleartax.in/' },
+      { title:'Invoice → categorisation automation', stack:'OCR + Claude',           difficulty:'beginner',     hours:5, starter:'https://www.stampli.com/', demo:'https://www.appzen.com/' },
+    ],
+    'hr-professional': [
+      { title:'Auto-draft POSH / compensation policies', stack:'Claude + templates', difficulty:'beginner',     hours:4, starter:'https://www.shrm.org/in', demo:'https://lattice.com/' },
+      { title:'People-analytics dashboard',       stack:'Power BI Copilot + HRIS',    difficulty:'intermediate', hours:10, starter:'https://www.visier.com/', demo:'https://www.charthop.com/' },
+      { title:'Employee Q&A bot (handbook)',      stack:'LangChain + Claude + RAG',  difficulty:'intermediate', hours:8, starter:'https://academy.langchain.com/', demo:'https://www.notion.com/product/ai' },
+    ],
+    'talent-acquisition': [
+      { title:'Interview Question Generator',     stack:'Claude with role + level prompts', difficulty:'beginner', hours:3, starter:'https://claude.ai/', demo:'https://www.hirevue.com/' },
+      { title:'Resume → JD Match Scorer',         stack:'Claude with structured output', difficulty:'intermediate', hours:6, starter:'https://www.deeplearning.ai/short-courses/functions-tools-agents-langchain/', demo:'https://eightfold.ai/' },
+      { title:'Boolean → natural-language search converter', stack:'Claude', difficulty:'beginner', hours:2, starter:'https://claude.ai/', demo:'https://hireez.com/' },
+    ],
+    'business-owner': [
+      { title:'Customer support FAQ bot',         stack:'Claude + Intercom',          difficulty:'intermediate', hours:8, starter:'https://www.intercom.com/fin', demo:'https://www.intercom.com/fin' },
+      { title:'AI marketing copy assembly line', stack:'Jasper + Buffer AI',        difficulty:'beginner',     hours:5, starter:'https://www.jasper.ai/', demo:'https://buffer.com/' },
+      { title:'Sales lead enrichment from website + LinkedIn', stack:'Claude + Salesforce', difficulty:'intermediate', hours:10, starter:'https://www.salesforce.com/products/einstein/', demo:'https://www.hubspot.com/products/breeze' },
+    ],
+    'government-employee': [
+      { title:'Multi-language Citizen Reply Drafter', stack:'BHASHINI + Claude',     difficulty:'beginner', hours:5, starter:'https://bhashini.gov.in/', demo:'https://bhashini.gov.in/' },
+      { title:'RTI auto-response template generator', stack:'Claude + RTI templates', difficulty:'intermediate', hours:8, starter:'https://rtionline.gov.in/', demo:'https://negd.gov.in/' },
+      { title:'eOffice file-noting summariser',  stack:'Claude + eOffice export',    difficulty:'intermediate', hours:8, starter:'https://eoffice.gov.in/', demo:'https://negd.gov.in/' },
+    ],
+    'student': [
+      { title:'Personal Tutor for exam prep',     stack:'Claude with structured Q&A', difficulty:'beginner',     hours:4, starter:'https://www.khanacademy.org/khan-labs', demo:'https://www.khanacademy.org/khan-labs' },
+      { title:'Build a Kaggle competition entry', stack:'Python + sklearn + Colab',  difficulty:'intermediate', hours:12, starter:'https://www.kaggle.com/c/titanic', demo:'https://www.kaggle.com/competitions' },
+      { title:'Open-source PR on Hugging Face',   stack:'GitHub + HF Transformers',  difficulty:'advanced',     hours:16, starter:'https://github.com/huggingface/transformers', demo:'https://huggingface.co/' },
+    ],
+  };
+  function getProjects(profession) { return PROJECTS[profession] || []; }
+
+  // ── L18 JOBS RADAR — news topic → jobs → certs → tools → project ──
+  var JOBS_RADAR_RULES = [
+    { keyword:'healthcare ai',   jobs:['Clinical AI specialist','Radiology AI eng','Medical-coding AI'], cert:'WHO Academy AI for Health (FREE)', tool:'Aidoc / Abridge / Suki AI', project:'SOAP-note auto-drafter' },
+    { keyword:'radiology',       jobs:['Radiology AI eng','PACS specialist'],                        cert:'Stanford AI in Healthcare (audit FREE)', tool:'Aidoc / Annalise / Lunit', project:'Differential Dx Helper' },
+    { keyword:'oncology',        jobs:['Oncology AI fellow','Tumor-board analyst'],                  cert:'Tata Memorial AI Oncology fellowship', tool:'Tempus AI / PathAI', project:'Tumour-board prep automation' },
+    { keyword:'legal ai',        jobs:['Legal-tech specialist','Contract review AI eng'],            cert:'NPTEL Cyber Law (FREE)',                tool:'Harvey / CoCounsel / Spellbook', project:'Contract Summarizer' },
+    { keyword:'finance ai',      jobs:['AI Finance Analyst','FP&A AI eng'],                          cert:'NPTEL AI in Finance (FREE)',            tool:'Vic.ai / Datarails',  project:'Expense Anomaly Detector' },
+    { keyword:'audit',           jobs:['AI Auditor','Continuous-audit specialist'],                  cert:'ICAI Big Data + Analytics',             tool:'MindBridge / AuditBoard', project:'GST/ITR Q&A bot' },
+    { keyword:'recruiting',      jobs:['AI Sourcer','TA Lead — automation'],                         cert:'LinkedIn Recruiter Cert (FREE w/ licence)', tool:'Eightfold / hireEZ / SeekOut', project:'Resume → JD Match Scorer' },
+    { keyword:'people analytics',jobs:['People-analytics HR','HR Data Lead'],                        cert:'SHRM AI in HR specialty',               tool:'Visier / ChartHop',     project:'People-analytics dashboard' },
+    { keyword:'ai in education', jobs:['EdTech AI specialist','Curriculum AI designer'],             cert:'ISTE GenAI in Education',               tool:'MagicSchool / Khanmigo', project:'Lesson Planner' },
+    { keyword:'agritech',        jobs:['AgriTech specialist','Drone-service operator'],              cert:'KVK Drone Pilot DGCA (FREE)',           tool:'Plantix / Fasal / Cropin', project:'Crop Disease Advisor' },
+    { keyword:'public sector',   jobs:['Govt AI policy lead','Digital-service designer'],            cert:'iGOT Karmayogi AI (FREE)',              tool:'BHASHINI / NeGD Saransh', project:'Multi-lang Citizen Reply Drafter' },
+    { keyword:'gen ai',          jobs:['GenAI engineer','LLM Application engineer','AI agent eng'],   cert:'Databricks GenAI Engineer Associate',   tool:'Cursor / Claude / LangGraph', project:'Personal LLM agent' },
+    { keyword:'agents',          jobs:['AI Agent engineer','Multi-agent orchestrator'],              cert:'HF Agents Course completion',           tool:'LangGraph / smolagents', project:'Personal LLM agent' },
+    { keyword:'rag',             jobs:['RAG engineer','Enterprise-search AI eng'],                   cert:'DLAI RAG short course',                 tool:'Pinecone / Weaviate / Qdrant', project:'Codebase RAG Q&A' },
+  ];
+  function jobsRadarFor(article) {
+    if (!article) return [];
+    var hay = ((article.title || '') + ' ' + (article.summary || '') + ' ' + (article.topics || '')).toLowerCase();
+    var hits = [];
+    JOBS_RADAR_RULES.forEach(function (r) { if (hay.indexOf(r.keyword) >= 0) hits.push(r); });
+    return hits;
+  }
+
+  // ── L21 TOOL COMPARISON LAB ─────────────────────────────────────────
+  var COMPARISONS = [
+    { id:'harvey-vs-cocounsel', title:'Harvey vs CoCounsel (for Lawyers)',
+      a:'Harvey AI', b:'Casetext CoCounsel',
+      dimensions:[
+        {dim:'Price',             a:'Enterprise', b:'Starter from INR 2 L/yr'},
+        {dim:'Legal Research',    a:'★★★★★',     b:'★★★★'},
+        {dim:'Contract Review',   a:'★★★★',       b:'★★★★★'},
+        {dim:'India case-law',    a:'Limited',    b:'Limited'},
+      ],
+      verdicts:{ 'BigLaw / Tier-1':'Harvey', 'Small / mid firms':'CoCounsel', 'India-only practice':'Use Indian Kanoon + Manupatra + Claude' } },
+    { id:'gpt-vs-claude-vs-gemini-teachers', title:'ChatGPT vs Claude vs Gemini (for Teachers)',
+      a:'ChatGPT', b:'Claude + Gemini',
+      dimensions:[
+        {dim:'Lesson planning',   a:'★★★★',      b:'Claude ★★★★★ / Gemini ★★★★★'},
+        {dim:'Multimodal images', a:'★★★★',      b:'Claude ★★★★ / Gemini ★★★★★'},
+        {dim:'Indic languages',   a:'★★★',       b:'Claude ★★★★ / Gemini ★★★★★'},
+        {dim:'FREE tier',         a:'Yes',       b:'Claude Yes / Gemini Yes'},
+      ],
+      verdicts:{ 'Hindi/Tamil teacher':'Gemini', 'STEM teacher':'Claude', 'Arts/Lang teacher':'ChatGPT' } },
+    { id:'gpt-vs-claude-vs-gemini-doctors', title:'ChatGPT vs Claude vs Gemini (for Doctors)',
+      a:'ChatGPT', b:'Claude + Gemini',
+      dimensions:[
+        {dim:'Clinical reasoning', a:'★★★★',     b:'Claude ★★★★★ / Gemini ★★★★'},
+        {dim:'Citation honesty',   a:'★★★',      b:'Claude ★★★★★ / Gemini ★★★★'},
+        {dim:'PubMed search',      a:'★★★',      b:'Claude ★★★★ / Gemini ★★★★★ (Deep Research)'},
+      ],
+      verdicts:{ 'Differential Dx':'Claude', 'Literature search':'Gemini Deep Research', 'Quick Q&A':'ChatGPT' } },
+    { id:'gpt-vs-claude-vs-gemini-hr', title:'ChatGPT vs Claude vs Gemini (for HR)',
+      a:'ChatGPT', b:'Claude + Gemini',
+      dimensions:[
+        {dim:'Policy drafting',   a:'★★★★',     b:'Claude ★★★★★ / Gemini ★★★★'},
+        {dim:'Cultural nuance (India)', a:'★★★', b:'Claude ★★★★ / Gemini ★★★★'},
+        {dim:'Survey/feedback synthesis', a:'★★★★', b:'Claude ★★★★★ / Gemini ★★★★'},
+      ],
+      verdicts:{ 'Indian HR policy':'Claude', 'Global HR':'Claude', 'Quick FAQs':'ChatGPT' } },
+    { id:'cursor-vs-windsurf', title:'Cursor vs Windsurf (for Developers)',
+      a:'Cursor', b:'Windsurf (Codeium)',
+      dimensions:[
+        {dim:'Codebase context',    a:'★★★★★',  b:'★★★★'},
+        {dim:'Agent mode',          a:'★★★★',   b:'★★★★★'},
+        {dim:'Price (FREE tier)',   a:'Yes',    b:'Yes (more generous)'},
+      ],
+      verdicts:{ 'Solo dev':'Cursor', 'Team / agentic tasks':'Windsurf', 'Trying first time':'Either — both FREE tiers' } },
+    { id:'eightfold-vs-paradox', title:'Eightfold vs Paradox (for TA)',
+      a:'Eightfold AI', b:'Paradox Olivia',
+      dimensions:[
+        {dim:'AI sourcing',          a:'★★★★★', b:'★★★'},
+        {dim:'Conversational hiring', a:'★★★',  b:'★★★★★'},
+        {dim:'Indian market fit',     a:'★★★★',  b:'★★★'},
+      ],
+      verdicts:{ 'Volume hiring':'Paradox', 'Senior + DEI':'Eightfold', 'India SMB':'Naukri Recruiter + Claude' } },
+  ];
+  function getComparisons() { return COMPARISONS.slice(); }
+
+  // ── L22 FUTURE FORECAST™ — 3-year per-profession trajectory ─────────
+  var FORECAST = {
+    'software-developer': [
+      {year:2026, theme:'Agentic IDEs become default', risk:'Low',    opp:'Very High'},
+      {year:2027, theme:'AI-generated entire features ship', risk:'Med', opp:'Very High'},
+      {year:2028, theme:'Senior devs become AI orchestrators', risk:'Med', opp:'Very High'},
+    ],
+    'doctor': [
+      {year:2026, theme:'Ambient AI scribes become standard', risk:'Low', opp:'High'},
+      {year:2027, theme:'Radiology + path AI triage routine', risk:'Low', opp:'Very High'},
+      {year:2028, theme:'CDSS embedded in EHR everywhere',     risk:'Med', opp:'Very High'},
+    ],
+    'oncologist': [
+      {year:2026, theme:'AI tumour-board prep mainstream', risk:'Low', opp:'High'},
+      {year:2027, theme:'Genomics + AI treatment matching', risk:'Low', opp:'Very High'},
+      {year:2028, theme:'AI predicts immunotherapy response', risk:'Med', opp:'Very High'},
+    ],
+    'nurse': [
+      {year:2026, theme:'Voice-charting eliminates 50% paperwork', risk:'Low', opp:'High'},
+      {year:2027, theme:'AI vitals alerts standard in ICU',         risk:'Low', opp:'Very High'},
+      {year:2028, theme:'Nurse-informatics becomes promotion track', risk:'Low', opp:'Very High'},
+    ],
+    'farmer': [
+      {year:2026, theme:'Drone spraying spreads to 10% farmers', risk:'Very Low', opp:'High'},
+      {year:2027, theme:'AI pest-disease ID universal via phone', risk:'Very Low', opp:'Very High'},
+      {year:2028, theme:'Climate-smart agri AI mandatory for subsidies', risk:'Low', opp:'Very High'},
+    ],
+    'teacher': [
+      {year:2026, theme:'AI tutor adoption (Khanmigo) — supplements teaching', risk:'Low',  opp:'High'},
+      {year:2027, theme:'Automated grading mainstream',                         risk:'Low',  opp:'Very High'},
+      {year:2028, theme:'Personalised curriculum auto-generated',               risk:'Med',  opp:'Very High'},
+    ],
+    'lawyer': [
+      {year:2026, theme:'AI drafts 50% of contracts', risk:'Med', opp:'High'},
+      {year:2027, theme:'Junior associates replaced by AI agents', risk:'High', opp:'Med'},
+      {year:2028, theme:'AI court-strategy assistants standard',   risk:'Med',  opp:'Very High'},
+    ],
+    'accountant': [
+      {year:2026, theme:'Bookkeeping fully automated for SMBs', risk:'High',      opp:'Med'},
+      {year:2027, theme:'Continuous audit replaces sampling',    risk:'Very High', opp:'High'},
+      {year:2028, theme:'CAs move into advisory + CFO tracks',   risk:'High',      opp:'Very High'},
+    ],
+    'hr-professional': [
+      {year:2026, theme:'People-analytics becomes table stakes', risk:'Med',  opp:'High'},
+      {year:2027, theme:'AI compensation + performance loops',    risk:'Med',  opp:'Very High'},
+      {year:2028, theme:'HRBP role redefined around AI insight', risk:'High', opp:'Very High'},
+    ],
+    'talent-acquisition': [
+      {year:2026, theme:'AI sourcing replaces Boolean search',     risk:'High',     opp:'High'},
+      {year:2027, theme:'AI conducts first-round interviews',      risk:'High',     opp:'Med'},
+      {year:2028, theme:'TA Lead role consolidates 3-5 jobs',      risk:'Very High', opp:'Very High'},
+    ],
+    'business-owner': [
+      {year:2026, theme:'AI cuts 30-40% operating cost', risk:'Low', opp:'Very High'},
+      {year:2027, theme:'AI customer support standard',  risk:'Low', opp:'Very High'},
+      {year:2028, theme:'Solo founders run 10-person businesses', risk:'Low', opp:'Very High'},
+    ],
+    'government-employee': [
+      {year:2026, theme:'iGOT Karmayogi AI tracks mandatory', risk:'Low', opp:'High'},
+      {year:2027, theme:'AI-augmented decision support in files', risk:'Med', opp:'Very High'},
+      {year:2028, theme:'Digital-policy officers in every dept',  risk:'Low', opp:'Very High'},
+    ],
+    'student': [
+      {year:2026, theme:'AI tutors standard in college', risk:'Very Low', opp:'Very High'},
+      {year:2027, theme:'Portfolio (GitHub + Kaggle + projects) > marks',  risk:'Very Low', opp:'Very High'},
+      {year:2028, theme:'AI-native graduates command 2-3x salary premium', risk:'Very Low', opp:'Very High'},
+    ],
+  };
+  function getForecast(profession) { return FORECAST[profession] || []; }
+
+  // ── L17.5 PROMPT LIBRARY — copy-paste prompts per profession ─────────
+  var PROMPTS = {
+    'software-developer': [
+      'Refactor this code into three smaller pure functions and explain the trade-offs.',
+      'Given this stack trace, what are the 3 most likely root causes?',
+      'Write a step-by-step migration plan from REST to GraphQL for this schema.',
+      'Generate a system-design interview answer for "design Uber"; structure: requirements → API → data model → bottlenecks → trade-offs.',
+      'Review this PR and surface security risks (OWASP Top-10 lens).',
+    ],
+    'doctor': [
+      'Suggest 3 differential diagnoses for chest pain with fever in a 45-year-old male; include red flags.',
+      'Summarise this patient\'s 5-year history into a one-page round handoff.',
+      'Compare 3 first-line antihypertensives for a diabetic patient; cite Indian guidelines.',
+      'Translate this discharge summary into simple Hindi for the family.',
+      'Draft an empathetic explanation of stage-3 cancer diagnosis to the patient.',
+    ],
+    'oncologist': [
+      'Summarise NCCN v2025 first-line therapy for HER2+ metastatic breast cancer.',
+      'Given this tumour profile, list 3 immunotherapy candidates + trial citations.',
+      'Draft a tumour-board presentation summary for case ID XX (de-identified).',
+      'Compare this Indian patient cost-of-care across 3 oncology regimens.',
+    ],
+    'nurse': [
+      'Generate a discharge plan for a 5-year-old with pneumonia, in plain Hindi.',
+      'Build a 12-h ICU vitals monitoring checklist for a post-op cardiac patient.',
+      'Translate this medication schedule into Tamil for the family.',
+      'Draft an empathic explanation of sepsis to the patient\'s relative.',
+    ],
+    'farmer': [
+      'Should I spray today? Conditions: wind 12 km/h, temp 32°C, humidity 70%, cotton crop.',
+      'My cotton leaves have yellow spots — what disease? (Will paste a photo.)',
+      'Calculate fertiliser cost for 5 acres of paddy in Vidarbha at current mandi rates.',
+      'Translate this farming advisory into Marathi.',
+    ],
+    'teacher': [
+      'Create a lesson plan for 8th-grade science on photosynthesis (60 min, ICSE syllabus).',
+      'Generate 5 quiz questions on fractions with answer key (Class 6).',
+      'Build a differentiated worksheet for 3 reading levels on the same chapter.',
+      'Draft a parent-teacher meeting email re: behavioural concern — tone supportive, factual.',
+      'Convert this English passage into 3 reading-level variants for differentiated instruction.',
+    ],
+    'lawyer': [
+      'Find Indian case-law on AI copyright infringement; cite court + year.',
+      'Draft a data-protection clause for a vendor contract under DPDP 2023.',
+      'Summarise this 40-page contract; flag indemnity + termination + IP clauses.',
+      'Compare BNS Sec 318 (cheating) vs the old IPC 420 — what changed?',
+      'Generate a notice-reply skeleton for a tenant eviction case in Maharashtra.',
+    ],
+    'accountant': [
+      'Analyse this expense report for anomalies (column: amount, vendor, date, category).',
+      'Draft an audit programme for revenue recognition under Ind AS 115.',
+      'Reconcile this GSTR-2A vs GSTR-3B mismatch and flag risk items.',
+      'Generate ITR section-wise input checklist for a salaried + freelance income filer.',
+      'Build a 12-month cash-flow projection from these monthly P&Ls.',
+    ],
+    'hr-professional': [
+      'Draft a POSH policy update aligned with 2025 Supreme Court guidance.',
+      'Build a compensation benchmark question set for software-eng roles in Bangalore.',
+      'Summarise this 600-response engagement survey into 5 themes + recommendations.',
+      'Generate an exit-interview question set focused on attrition causes (manager / pay / growth).',
+      'Draft a return-to-office communication that anticipates employee concerns.',
+    ],
+    'talent-acquisition': [
+      'Rewrite this Boolean search as a natural-language sourcing prompt.',
+      'Score this resume against this JD on a 1-10 scale across 5 dimensions.',
+      'Generate 10 behavioural interview questions for a Senior PM role.',
+      'Draft a personalised outreach to a passive candidate — short, specific, no-fluff.',
+      'Convert this rejection email to one that invites future application.',
+    ],
+    'business-owner': [
+      'Write a customer email replying to a refund request — empathetic, policy-aligned.',
+      'Generate a 30-day social-media content calendar for an Indian D2C kurta brand.',
+      'Draft a 1-page investor update for a seed-stage SaaS startup.',
+      'Build a comparison table: 3 vendor quotes for the same scope; recommend best fit.',
+      'Convert this customer review into 3 actionable product improvements.',
+    ],
+    'government-employee': [
+      'Draft an RTI response to this query in plain Hindi within 30-day SLA.',
+      'Summarise this 50-page cabinet note into a 1-page executive brief.',
+      'Translate this scheme guideline into Tamil for citizen distribution.',
+      'Generate a file-noting for approving a tender within GFR 2017 rules.',
+      'Draft a press release announcing a new scheme launch (under 250 words).',
+    ],
+    'student': [
+      'Explain backpropagation like I\'m 12 years old; then like I\'m a CS undergrad.',
+      'Quiz me on linear algebra fundamentals — 10 Qs, then grade me.',
+      'Help me write a SOP for MS in AI at IIT-Madras; I have GPA 8.2 and 1 Kaggle medal.',
+      'Build a 24-month roadmap from B.Tech 2nd year to first AI job — month-by-month.',
+      'Translate this Karpathy lecture transcript into Hindi for my notes.',
+    ],
+  };
+  function getPrompts(profession) { return PROMPTS[profession] || []; }
+
+  // ── L23 PROFESSION HUB — assemble all 10 sub-sections in one object ─
+  function buildHub(profession, profile) {
+    if (!profession) profession = (profile && profile.profession) || 'student';
+    return {
+      profession: profession,
+      impact:     aiImpactScore(profession),
+      readiness:  aiReadinessScore(profile || _emptyProfile()),
+      mission:    getMission(profession, currentWeekOffset()),
+      projects:   getProjects(profession),
+      prompts:    getPrompts(profession),
+      comparisons: COMPARISONS.filter(function(c){
+        return c.id.indexOf(profession.split('-')[0]) >= 0
+          || c.title.toLowerCase().indexOf(profession.replace(/-/g,' ')) >= 0
+          || c.id.indexOf('gpt-vs-claude') >= 0;  // generic LLM comparisons apply to all
+      }),
+      forecast:   getForecast(profession),
+      verdict:    (aiImpactScore(profession) || {}).verdict || '',
+    };
+  }
+
   // ── Coach Picks — ONE per skill, scannable Instagram-post format ─────
   // Sire 2026-06-05: "see how I get recommendations vs how u give"
   // Format: { sub, items: [ {skill, url, tag, lang?} ] }
@@ -925,5 +1714,18 @@
     peerStoriesFor: peerStoriesFor,
     speak: speak,
     coachPicks: coachPicks,
+    // COSDF v1.1 — Layers 13-23
+    impact: aiImpactScore,
+    relevance: chittiExplainsRelevance,
+    readiness: aiReadinessScore,
+    readinessRoadmap: readinessRoadmap,
+    mission: getMission,
+    currentWeekOffset: currentWeekOffset,
+    projects: getProjects,
+    jobsRadar: jobsRadarFor,
+    comparisons: getComparisons,
+    forecast: getForecast,
+    prompts: getPrompts,
+    buildHub: buildHub,
   };
 })();
