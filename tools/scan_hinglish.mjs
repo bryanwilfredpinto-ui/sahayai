@@ -37,6 +37,10 @@ const REPORT = {};
 
 for (const P of PAGES) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  // Pre-seed BEFORE page scripts run so the first-visit disability-onboarding modal
+  // (which carries its OWN language picker) never shows — we measure the steady-state
+  // page a returning user sees, not the one-time onboarding overlay.
+  await ctx.addInitScript(() => { try { localStorage.setItem('disability_profile', JSON.stringify({ done: true })); } catch (e) {} });
   const pg = await ctx.newPage();
   await pg.route('**/api/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' })).catch(() => {});
   await pg.goto(`${BASE}/${P.file}`, { waitUntil: 'domcontentloaded' });
@@ -54,7 +58,7 @@ for (const P of PAGES) {
       await pg.evaluate((t) => { try { (window.mbTab || window.mcTab) && (window.mbTab || window.mcTab)(t); } catch (e) {} }, t);
     }
     await pg.evaluate((c) => { try { window.changeLang ? window.changeLang(c) : window.updateAllStrings(c); } catch (e) {} }, code);
-    await pg.waitForTimeout(150);
+    await pg.waitForTimeout(800);  // let strings.js settle (steady-state, not mid-transition)
     const res = await pg.evaluate(() => {
       const bad = {};
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
