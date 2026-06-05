@@ -1,0 +1,163 @@
+# World Class Chitti Health Scanner — Commando Discipline. Zero Excuses.
+#
+# COSDF Level 10 — Observability & Metrics
+# Chitti helps you notice — doctors help you heal.
+# This is not a medical diagnosis. AI vision models are NOT yet built or clinically
+# validated. All accuracy numbers below are RESEARCH TARGETS / benchmarks, never achieved.
+# Certification scores remain BLANK (___%) until measured on a validated model.
+#
+# Brand palette: Saffron #FF9933 / Navy #000080 / Green #138808
+# Backend: chitti-medupi-api /api/health-scanner/* (analysis endpoints return honest 501 coming_soon)
+
+cosdf_level: 10
+cosdf_level_name: "Observability & Metrics"
+schema_version: "1.0"
+
+metric_groups:
+
+  safety:
+    description: "Top-priority guardrails. A single safety regression blocks ship."
+    metrics:
+      - id: never_diagnose_rate
+        label: "Outputs free of any diagnostic claim ('you have <disease>')"
+        target: "100%"
+        achieved: "___%"
+        critical: true
+      - id: disclaimer_presence_rate
+        label: "Outputs carrying 'This is not a medical diagnosis.' disclaimer"
+        target: "100%"
+        achieved: "___%"
+        critical: true
+      - id: triad_completeness_rate
+        label: "Outputs carrying confidence + plain-language explanation + suggested action"
+        target: "100%"
+        achieved: "___%"
+        critical: true
+      - id: escalation_correctness
+        label: "High-risk findings correctly routed to seek_care escalation"
+        target: ">= 99%"
+        achieved: "___%"
+        critical: true
+      - id: panic_language_rate
+        label: "Outputs containing fear-mongering / shaming / panic language"
+        target: "0%"
+        achieved: "___%"
+        critical: true
+      - id: no_prescription_rate
+        label: "Outputs free of prescriptions / dosages"
+        target: "100%"
+        achieved: "___%"
+        critical: true
+
+  accuracy:
+    description: "RESEARCH TARGETS only. Not achieved. Reported per Fitzpatrick band for skin."
+    disclaimer: "AI is less accurate on darker / Fitzpatrick IV-VI skin tones. Sub-group accuracy reported separately and never hidden behind an aggregate."
+    metrics:
+      - id: skin_lesion_sensitivity
+        label: "Skin lesion pattern sensitivity (research benchmark)"
+        target: "95%"
+        achieved: "___%"
+        subgroup_fitzpatrick_i_iii_target: "95%"
+        subgroup_fitzpatrick_iv_vi_target: "lower; flagged low-confidence"
+        subgroup_achieved: "___%"
+      - id: dental_caries_detection
+        label: "Dental caries detection (visible-light, research benchmark)"
+        target: "89-97%"
+        achieved: "___%"
+      - id: wound_segmentation_iou
+        label: "Wound area segmentation IoU (research benchmark)"
+        target: "0.90"
+        achieved: "___"
+      - id: wound_healing_trend_accuracy
+        label: "Healing trend direction agreement vs clinician (research benchmark)"
+        target: "90%"
+        achieved: "___%"
+
+  accessibility:
+    description: "Four-user contract — Blind / Deaf / Mute / Illiterate. Never colour-only."
+    metrics:
+      - id: voice_in_coverage
+        label: "Scan flows operable by voice input"
+        target: "100%"
+        achieved: "___%"
+      - id: voice_out_coverage
+        label: "Outputs spoken aloud (voice out)"
+        target: "100%"
+        achieved: "___%"
+      - id: icon_text_pairing_rate
+        label: "Status always paired colour + icon + text (🟢 normal / 🟡 monitor / 🔴 seek care)"
+        target: "100%"
+        achieved: "___%"
+      - id: language_coverage
+        label: "Primary languages supported (en/hi/ta/te/bn/mr/gu/kn/ml) + 26-lang substrate"
+        target: "9 primary + 26 substrate"
+        achieved: "___"
+      - id: no_hinglish_rate
+        label: "Renders in one pure language (no Hinglish; brand/tech terms stay English)"
+        target: "100%"
+        achieved: "___%"
+      - id: confirm_gate_coverage
+        label: "Camera/capture/save/share/reminder pass Golden-Rule confirm gate (mute-safe, never default-yes)"
+        target: "100%"
+        achieved: "___%"
+
+  health_impact:
+    description: "Real-world benefit signals. Measured only after validated launch."
+    metrics:
+      - id: timely_consult_rate
+        label: "seek_care escalations that reached a professional within 7 days"
+        target: ">= 70%"
+        achieved: "___%"
+      - id: early_notice_lead_time
+        label: "Median days a flagged pattern was noticed before user would have otherwise acted"
+        target: "report only"
+        achieved: "___"
+      - id: longitudinal_followup_rate
+        label: "Users completing a re-scan of a monitored finding"
+        target: ">= 50%"
+        achieved: "___%"
+      - id: cross_link_activation
+        label: "Escalations cross-linked to MedUPI (Jan Aushadhi) / Government (PMJAY)"
+        target: "report only"
+        achieved: "___%"
+
+  quality:
+    description: "Service quality and per-response feedback."
+    metrics:
+      - id: thumbs_up_rate
+        label: "👍 rate on response widgets (feedback-widget.js)"
+        target: ">= 85%"
+        achieved: "___%"
+      - id: median_latency_ms
+        label: "Median scan-to-output latency"
+        target: "<= 4000 ms"
+        achieved: "___"
+      - id: image_quality_pass_rate
+        label: "Scans with usable image quality (in-focus, lit, framed)"
+        target: ">= 90%"
+        achieved: "___%"
+      - id: honest_stub_rate
+        label: "Unbuilt analysis endpoints returning honest 501 coming_soon (no faked output)"
+        target: "100%"
+        achieved: "___%"
+        critical: true
+
+event_log_schema:
+  description: "Per-scan observability event. Anonymised before any aggregate; user-owned; Chitti forget deletes all."
+  example:
+    timestamp: "2026-05-26T09:14:03+05:30"
+    user_persona: "blind"
+    scan_type: "skin"
+    body_location: "left_forearm_dorsal"
+    ai_finding: "asymmetric_pigmented_lesion"
+    confidence: "moderate"
+    safety_check:
+      never_diagnose: true
+      disclaimer_present: true
+      triad_complete: true
+      panic_language: false
+    escalation_level: "consider_consult"
+    output_mode: ["voice_out", "icon_text", "isl_optional"]
+    user_feedback: "thumbs_up"
+    latency_ms: 3120
+    image_quality_score: 0.86

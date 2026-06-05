@@ -1,0 +1,158 @@
+# World Class Chitti Health Scanner — Commando Discipline. Zero Excuses.
+#
+# COSDF Level 6 — Swarm agent manifest.
+# Every scan passes through these 9 agents IN ORDER. Chitti DETECTS and ESCALATES; it NEVER diagnoses.
+# Golden line: "Chitti helps you notice — doctors help you heal."
+#
+# Brand palette: Saffron #FF9933 / Navy #000080 / Green #138808.
+# LLM: DeepSeek only (api.deepseek.com); vision via DeepSeek-vision, disclaimer-guarded.
+# Honest-stub: vision models are NOT yet built or clinically validated. Accuracy numbers are research
+# TARGETS, never achieved. Analysis endpoints return 501 coming_soon. Certification scores stay BLANK.
+
+pipeline:
+  name: chitti-health-scanner-swarm
+  order_is_mandatory: true
+  golden_line: "Chitti helps you notice — doctors help you heal."
+  disclaimer: "This is not a medical diagnosis."
+
+agents:
+  - id: 1
+    name: visual_dermatology
+    role: >
+      Examine skin images for visual patterns (moles, lesions, rashes, discolouration). Notices
+      patterns only; never names a disease. Honest about lower accuracy on Fitzpatrick IV–VI skin tones.
+      Research target accuracy ~95% (NOT achieved — target only).
+    inputs:
+      - skin_image
+      - body_region
+      - fitzpatrick_tone
+      - prior_scans_of_region
+    outputs:
+      - noticed_patterns
+      - confidence_level
+      - tone_accuracy_caveat
+    can_veto: false
+
+  - id: 2
+    name: dental
+    role: >
+      Examine oral/dental images for visual patterns (caries indicators, gum colour changes, plaque,
+      discolouration). Notices patterns only; never diagnoses. Research target accuracy ~89–97%
+      (NOT achieved — target only).
+    inputs:
+      - oral_image
+      - region_of_mouth
+      - prior_dental_scans
+    outputs:
+      - noticed_patterns
+      - confidence_level
+    can_veto: false
+
+  - id: 3
+    name: wound_assessment
+    role: >
+      Examine wound/injury images for visual signs of healing vs concern (redness spread, swelling,
+      discharge cues). Notices patterns only; flags possible infection signals for professional review.
+    inputs:
+      - wound_image
+      - wound_age_days
+      - prior_wound_scans
+    outputs:
+      - noticed_patterns
+      - healing_trend
+      - confidence_level
+    can_veto: false
+
+  - id: 4
+    name: longitudinal_tracking
+    role: >
+      Compare the current scan against the user's prior scans of the same area over time. Surfaces
+      change (size, colour, shape) so professionals can act. Notices change; never interprets it as
+      diagnosis.
+    inputs:
+      - current_scan
+      - prior_scans_timeline
+      - region_id
+    outputs:
+      - change_summary
+      - change_significance_flag
+      - confidence_level
+    can_veto: false
+
+  - id: 5
+    name: oncology_safety
+    role: >
+      Watch specifically for visual red-flag patterns associated with possible malignancy (e.g. ABCDE
+      cues). Errs toward escalation. Can VETO a "normal" output to force "seek care" when a red-flag
+      pattern is present. Never names cancer; never reassures away from care.
+    inputs:
+      - noticed_patterns
+      - change_summary
+      - confidence_level
+    outputs:
+      - red_flag_present
+      - escalation_override
+      - rationale
+    can_veto: true
+
+  - id: 6
+    name: medical_safety
+    role: >
+      Final clinical-safety gate. Enforces never-diagnose. Strips any diagnosis/prescription/certainty
+      language. Verifies the disclaimer, confidence level, plain-language explanation, suggested action
+      (monitor / consider consult / seek care), and referral/nearby-care path are present. Can VETO ALL
+      and rewrite or block any output that breaks a guardrail.
+    inputs:
+      - all_upstream_agent_outputs
+      - guardrails
+    outputs:
+      - safety_approved
+      - sanitized_output
+      - disclaimer_attached
+      - referral_path
+    can_veto: true
+
+  - id: 7
+    name: accessibility
+    role: >
+      Adapt the approved output to the user's modality for Blind / Deaf / Mute / Illiterate users:
+      voice OUT, icons/symbols, plain language, colour-plus-icon-plus-text severity (never colour-only).
+      Keeps one pure language per render (no Hinglish); brand/technical terms stay English.
+    inputs:
+      - sanitized_output
+      - user_disability_profile
+      - language_preference
+    outputs:
+      - voice_rendering
+      - symbol_icon_rendering
+      - plain_text_rendering
+    can_veto: false
+
+  - id: 8
+    name: hallucination_detector
+    role: >
+      Cross-checks the output against what the image actually supports. Flags invented findings,
+      fabricated metrics, or any unmeasured accuracy claim. Blocks "live"/"verified"/"GREEN" or any
+      faked metric from reaching the user.
+    inputs:
+      - sanitized_output
+      - source_image_evidence
+    outputs:
+      - hallucination_flags
+      - unsupported_claims_removed
+    can_veto: false
+
+  - id: 9
+    name: quality_assurance
+    role: >
+      Final QA before delivery. Confirms the response template matches the scenario (Normal / Minor /
+      Concerning / Uncertain / Emergency), the per-response widget (data-chitti-response + 🔊/🤖/👍/👎)
+      is attached, the confirm gate was honoured, and certification scores remain BLANK until measured.
+    inputs:
+      - accessible_output
+      - response_template
+      - widget_contract
+    outputs:
+      - qa_passed
+      - delivery_ready
+    can_veto: false

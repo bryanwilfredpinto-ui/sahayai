@@ -51,6 +51,7 @@
     { slug: 'chitti_logo_video',         folder: 'chitti-logo-video',           emoji: '🎬', label: 'Chitti Logo & Video' },
     { slug: 'chitti_government',         folder: 'chitti-government',           emoji: '🏛️', label: 'Chitti Government' },
     { slug: 'chitti_voice_factory',      folder: 'chitti-voice-factory',        emoji: '🎙️', label: 'Chitti Voice Factory' },
+    { slug: 'chitti_health_scanner',     folder: 'chitti-health-scanner',       emoji: '🩺', label: 'Chitti Health Scanner' },
   ];
 
   // Page slug → product folder. Pulled from SAHAYAI_MASTER §4a frontend
@@ -78,6 +79,7 @@
     'chitti_complete_technical': 'chitti-complete-technical',
     'chitti_isl': 'chitti-isl',
     'chitti_kirana': 'chitti-kirana',
+    'chitti_health_scanner': 'chitti-health-scanner',
   };
 
   function loadState() {

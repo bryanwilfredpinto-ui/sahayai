@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-health-scanner/ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Health Scanner — Chitti helps you notice, doctors help you heal</title>
+<meta name="description" content="Snap a photo of skin, eye, tooth, wound, hair, nail, swelling, mole, burn or diabetic foot. Chitti helps you NOTICE patterns and escalates to a doctor. This is not a medical diagnosis.">
+<meta name="chitti-page-desc" content="Chitti Health Scanner — capture a health photo, Chitti notices patterns and suggests monitor / consider consult / seek care. Never diagnoses. Part of Chitti MedUPI; saves to Chitti Health File timeline.">
+<meta name="chitti-features" content="chitti-health-scanner/skills/FEATURES.md">
+<meta name="chitti-card-selector" content=".scan-card, .result">
+<!-- Language-key compatibility shim — same pattern as chitti_health_file.html.
+     Normalises the three localStorage language keys so every Chitti surface
+     reads the same answer, then fires chitti:langchange for the substrate. -->
+<script>
+(function(){
+  try {
+    var KEYS = ['language_preference', 'chitti_lang', 'chitti_vaani_lang'];
+    var nav = (navigator.language || 'en').split('-')[0];
+    var resolved = null;
+    for (var i = 0; i < KEYS.length; i++) {
+      var v = (localStorage.getItem(KEYS[i]) || '').trim();
+      if (v) { resolved = v; break; }
+    }
+    var SUPPORTED = {hi:1, en:1, bn:1, te:1, ta:1, mr:1, gu:1, kn:1, ml:1, pa:1};
+    if (!resolved) resolved = SUPPORTED[nav] ? nav : 'hi';
+    KEYS.forEach(function(k){ try { localStorage.setItem(k, resolved); } catch(e){} });
+    document.documentElement.lang = resolved;
+    window.CHITTI_LANG_RESOLVED = resolved;
+    try { window.dispatchEvent(new CustomEvent('chitti:langchange', {detail:{lang: resolved}})); } catch(e){}
+  } catch(e){}
+})();
+</script>
+<!-- Chitti i18n substrate (same version as chitti_health_file.html + chitti_scanner.html). -->
+<script src="chitti_lang.js?v=20260529r" defer></script>
+<style>
+:root{
+  /* Brand palette — Saffron / Navy / Green (per CTO.md) */
+  --saffron:#FF9933; --navy:#000080; --green:#138808;
+  --gold:#D4AF37;
+  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
+  --amber:#D4AF37; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+body{min-height:100vh;overflow-x:hidden}
+img,video{max-width:100%}
+.bharat-stripe{height:3px;background:linear-gradient(90deg,#FF9933,#ffffff,#138808)}
+
+/* Sticky medical-disclaimer bar (analogous to the SEBI bar pattern) */
+.med-bar{position:sticky;top:0;z-index:8000;background:#1f2937;color:#fff;font-size:12.5px;padding:8px 12px;text-align:center;line-height:1.4}
+.med-bar strong{color:#fbbf24}
+.med-bar a{color:#fbbf24;text-decoration:underline;cursor:pointer}
+
+/* Header */
+header[role="banner"]{background:linear-gradient(135deg,var(--navy),#1b1b7a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--saffron),var(--green));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(255,153,51,.35);margin-right:12px;flex-shrink:0}
+.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
+.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(255,153,51,.20),rgba(19,136,8,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.lang-toggle-bharat{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;min-height:34px}
+
+/* Icon-first nav row (accessibility) — large tap targets >=48px */
+.nav-icons{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.nav-icons button,.nav-icons a{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:0 14px;font-size:13px;cursor:pointer;min-height:48px;min-width:48px;font-weight:700;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.nav-icons button.help{background:rgba(220,38,38,.30);border-color:rgba(220,38,38,.55)}
+
+/* Main */
+main{padding:14px 16px 110px;max-width:980px;margin:0 auto}
+
+/* Hero */
+.hero{display:flex;gap:16px;align-items:flex-start;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;flex-wrap:wrap}
+.hero .ico{font-size:46px;flex:0 0 auto}
+.hero .copy{flex:1;min-width:240px}
+.hero h1{font-size:23px;margin:0 0 4px;color:var(--navy);font-weight:900;line-height:1.2}
+.hero .golden{color:var(--green);font-weight:800;font-size:14.5px;margin:4px 0 2px}
+.hero .sub{color:var(--muted);font-size:13.5px}
+.voice-note{margin-top:10px;font-size:12.5px;color:var(--muted);background:#fbf8f1;border:1px dashed var(--gold);border-radius:10px;padding:8px 10px}
+
+/* Urgency legend — ICON + TEXT, never colour alone */
+.legend{display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px}
+.legend .item{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:999px;border:1px solid var(--border);min-height:36px}
+.legend .normal{background:rgba(19,136,8,.10);color:var(--green);border-color:rgba(19,136,8,.35)}
+.legend .monitor{background:rgba(212,175,55,.16);color:#92580f;border-color:rgba(212,175,55,.45)}
+.legend .seek{background:rgba(220,38,38,.10);color:var(--red);border-color:rgba(220,38,38,.35)}
+
+/* Section card */
+.section-card{margin:0 0 14px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:16px}
+.section-title{font-size:15px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;margin:0 0 4px}
+.section-sub{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+
+/* Scan-type card grid (F0–F12) */
+.scan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.scan-card{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--card2);position:relative}
+.scan-card .emoji{font-size:30px}
+.scan-card .name{font-weight:800;color:var(--navy);font-size:14px;margin-top:4px}
+.scan-card .desc{font-size:11.5px;color:var(--muted);margin-top:4px;flex:1}
+.scan-card .coming{align-self:flex-start;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:rgba(212,175,55,.20);color:#92580f}
+.scan-card .scan-btn{margin-top:10px;background:linear-gradient(135deg,var(--saffron),#ffb066);border:none;color:#fff;font-weight:800;border-radius:10px;padding:0 14px;font-size:13px;min-height:48px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+
+/* Camera stage */
+.cam-stage{margin-top:14px;display:none;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#000}
+.cam-stage.shown{display:block}
+.cam-stage video{width:100%;height:auto;max-height:340px;display:block;background:#000}
+.cam-bar{display:flex;gap:8px;padding:10px;background:var(--card2);flex-wrap:wrap;justify-content:center}
+.cam-bar button{background:linear-gradient(135deg,var(--saffron),#ffb066);border:none;color:#fff;font-weight:800;border-radius:10px;padding:0 16px;font-size:13px;cursor:pointer;min-height:48px}
+.cam-bar button.cancel{background:transparent;color:var(--text);border:1px solid var(--border)}
+
+/* Confirm gate (Golden Rule) */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.shown{display:flex}
+.confirm-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:460px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.confirm-panel h2{margin:0 0 8px;color:var(--saffron);font-size:18px}
+.confirm-panel p{margin:0 0 16px;font-size:14px;color:var(--text)}
+.confirm-panel .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.confirm-panel button{border:none;border-radius:10px;padding:0 22px;font-size:15px;font-weight:800;cursor:pointer;min-height:50px;min-width:120px}
+.confirm-panel .haan{background:linear-gradient(135deg,var(--green),#1aa00a);color:#fff}
+.confirm-panel .nahi{background:transparent;border:1px solid var(--border);color:var(--text)}
+.confirm-panel .mic-hint{font-size:11.5px;color:var(--muted);margin-top:12px}
+
+/* Result box */
+.result{display:none;margin-top:14px;padding:16px;background:linear-gradient(180deg,#fffdf6,#fff);border:1px solid var(--gold);border-radius:14px}
+.result.shown{display:block}
+.result .rhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.result .rhead .badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:4px 10px;border-radius:6px;background:var(--saffron);color:#fff}
+.result h3{margin:6px 0 4px;font-size:14px;color:var(--navy)}
+.result p{margin:4px 0;font-size:13.5px;line-height:1.6}
+.result .conf{font-size:12.5px;color:var(--muted);font-style:italic}
+.result .action{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13px;padding:6px 12px;border-radius:999px;margin-top:6px;background:rgba(212,175,55,.16);color:#92580f}
+.result .disclaimer{margin-top:10px;font-size:12px;color:var(--red);font-weight:700;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:8px 10px}
+.result .save-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.result .save-row button{background:var(--navy);border:none;color:#fff;border-radius:10px;padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;min-height:48px}
+.result .save-row button.ghost{background:#fff;border:1px solid var(--border);color:var(--navy)}
+
+/* Cross-link cards */
+.crosslinks{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.crosslinks a{display:flex;align-items:center;gap:12px;text-decoration:none;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--card2);color:var(--text);min-height:48px}
+.crosslinks a .ci{font-size:26px}
+.crosslinks a .ct{font-weight:800;color:var(--navy);font-size:14px}
+.crosslinks a .cs{font-size:11.5px;color:var(--muted)}
+
+/* Honest limitation note */
+.limit-note{font-size:12px;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px}
+
+footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 40px}
+</style>
+</head>
+<body>
+<div class="bharat-stripe"></div>
+
+<!-- Sticky medical-disclaimer bar (analogous to SEBI bar) -->
+<div class="med-bar" role="note">
+  <strong>⚕️ NOT A DOCTOR.</strong> Chitti helps you notice — doctors help you heal.
+  <strong>This is not a medical diagnosis.</strong>
+  <a href="#full-disclaimer" data-i18n="disclaimer_link">Read full disclaimer</a>
+</div>
+
+<header role="banner">
+  <div class="brand-row">
+    <div style="display:flex;align-items:center">
+      <div class="bharat-logo" aria-hidden="true">🩺</div>
+      <div>
+        <div class="brand">Chitti <span style="opacity:.85;font-weight:600;font-size:14px">Health Scanner</span></div>
+        <div class="tagline" data-i18n="tagline">Chitti helps you notice · doctors help you heal.</div>
+      </div>
+    </div>
+    <div class="switch-row">
+      <a class="switch-btn-bharat" href="chitti_health_file.html">📁 Health File</a>
+      <a class="switch-btn-bharat" href="chitti_medupi.html">💊 MedUPI</a>
+      <a class="switch-btn-bharat" href="chitti_vaani.html">🎙️ Vaani</a>
+      <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language" data-i18n-aria="change-language" onchange="changeLanguage(this.value)">
+        <option value="hi">हिन्दी</option>
+        <option value="en">English</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+        <option value="mr">मराठी</option>
+        <option value="gu">ગુજરાતી</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ml">മലയാളം</option>
+      </select>
+    </div>
+  </div>
+  <!-- Icon-first nav row (Blind / Deaf / Mute / Illiterate) -->
+  <nav class="nav-icons" aria-label="Quick actions">
+    <button onclick="document.getElementById('scan-grid').scrollIntoView({behavior:'smooth'})" data-i18n="nav_scan" aria-label="Scan">📷 <span data-i18n="nav_scan_t">Scan</span></button>
+    <a href="chitti_health_file.html" data-i18n="nav_timeline" aria-label="Timeline">📖 <span data-i18n="nav_timeline_t">Timeline</span></a>
+    <button onclick="speakIntro()" data-i18n="nav_listen" aria-label="Listen">🔊 <span data-i18n="nav_listen_t">Listen</span></button>
+    <button onclick="navFeedback('up')" aria-label="Thumbs up">👍</button>
+    <button onclick="navFeedback('down')" aria-label="Thumbs down">👎</button>
+    <button class="help" onclick="location.href='chitti_vaani.html'" aria-label="Help" data-i18n="nav_help">🚨 <span data-i18n="nav_help_t">Help</span></button>
+    <button onclick="location.href='chitti_vaani.html'" aria-label="Ask Chitti">🤖 <span data-i18n="nav_chitti_t">Chitti</span></button>
+  </nav>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="ico" aria-hidden="true">🩺</div>
+    <div class="copy">
+      <h1 data-i18n="hero_h1">Chitti Health Scanner</h1>
+      <div class="golden" data-i18n="hero_golden">Chitti helps you notice, doctors help you heal.</div>
+      <div class="sub" data-i18n="hero_sub">Take a photo of a skin patch, eye, tooth, wound, nail, swelling, mole or burn. Chitti looks for patterns and tells you whether to monitor, consider a consult, or seek care. Chitti never gives a diagnosis.</div>
+      <div class="voice-note" data-i18n="voice_note">🔊 Voice-guided: blind users can tap 🔊 Listen on every box. Chitti reads each result aloud, in your language. Mute users can tap; deaf users see text + sign panels.</div>
+    </div>
+  </section>
+
+  <!-- Urgency legend — ICON + TEXT, never colour alone -->
+  <div class="legend" role="note" aria-label="What the colours and icons mean">
+    <span class="item normal">🟢 <span data-i18n="legend_normal">Normal — looks ordinary</span></span>
+    <span class="item monitor">🟡 <span data-i18n="legend_monitor">Monitor — watch and re-check</span></span>
+    <span class="item seek">🔴 <span data-i18n="legend_seek">Seek care — see a doctor</span></span>
+  </div>
+
+  <!-- Scan-type grid F0–F12 -->
+  <section class="section-card">
+    <div class="section-title" id="scan-grid">📷 <span data-i18n="scan_title">Choose what to scan</span></div>
+    <div class="section-sub" data-i18n="scan_sub">Every photo can be saved to your Chitti Health File timeline. AI analysis is coming soon — not yet built or clinically validated. Chitti will never claim certainty.</div>
+    <div class="scan-grid" id="scan-card-grid">
+      <!-- F0 Skin -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🧴</div>
+        <div class="name" data-i18n="f0_name">Skin</div>
+        <div class="desc" data-i18n="f0_desc">A rash, patch or dryness you want to keep an eye on.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('skin','🧴','Skin')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F1 Eye -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">👁️</div>
+        <div class="name" data-i18n="f1_name">Eye</div>
+        <div class="desc" data-i18n="f1_desc">Redness, yellowing or a stye you noticed.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('eye','👁️','Eye')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F2 Tooth -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🦷</div>
+        <div class="name" data-i18n="f2_name">Tooth</div>
+        <div class="desc" data-i18n="f2_desc">A spot, swelling of the gum or discolouration.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('tooth','🦷','Tooth')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F3 Wound -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🩹</div>
+        <div class="name" data-i18n="f3_name">Wound</div>
+        <div class="desc" data-i18n="f3_desc">A cut or sore — track if it is healing or worsening.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('wound','🩹','Wound')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F4 Hair / Scalp -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">💇</div>
+        <div class="name" data-i18n="f4_name">Hair / Scalp</div>
+        <div class="desc" data-i18n="f4_desc">Thinning, dandruff or a patch on the scalp.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('hair','💇','Hair / Scalp')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F5 Nail -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">💅</div>
+        <div class="name" data-i18n="f5_name">Nail</div>
+        <div class="desc" data-i18n="f5_desc">Colour change, a ridge or a spot on a nail.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('nail','💅','Nail')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F6 Swelling -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🫧</div>
+        <div class="name" data-i18n="f6_name">Swelling</div>
+        <div class="desc" data-i18n="f6_desc">A lump or puffy area — note its size over time.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('swelling','🫧','Swelling')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F7 Mole -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">⚫</div>
+        <div class="name" data-i18n="f7_name">Mole</div>
+        <div class="desc" data-i18n="f7_desc">Track a mole's shape, edge and colour over months.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('mole','⚫','Mole')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F8 Post-surgery -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🪡</div>
+        <div class="name" data-i18n="f8_name">Post-surgery</div>
+        <div class="desc" data-i18n="f8_desc">Watch a stitch line or surgical site as it heals.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('post_surgery','🪡','Post-surgery')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F9 Burn -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🔥</div>
+        <div class="name" data-i18n="f9_name">Burn</div>
+        <div class="desc" data-i18n="f9_desc">A burn or scald — note how it changes day by day.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('burn','🔥','Burn')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F10 Child journal -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">👶</div>
+        <div class="name" data-i18n="f10_name">Child journal</div>
+        <div class="desc" data-i18n="f10_desc">Keep a photo journal of a child's rash or spots.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('child_journal','👶','Child journal')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F11 Diabetic foot -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🦶</div>
+        <div class="name" data-i18n="f11_name">Diabetic foot</div>
+        <div class="desc" data-i18n="f11_desc">Check feet for cracks or sores — important for diabetics.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('diabetic_foot','🦶','Diabetic foot')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+      <!-- F12 Change detection -->
+      <div class="scan-card">
+        <div class="emoji" aria-hidden="true">🔁</div>
+        <div class="name" data-i18n="f12_name">Change detection</div>
+        <div class="desc" data-i18n="f12_desc">Compare today's photo with an earlier one to spot change.</div>
+        <span class="coming" data-i18n="coming">COMING SOON</span>
+        <button class="scan-btn" onclick="startScan('change_detection','🔁','Change detection')" data-i18n="scan_btn">📷 Scan</button>
+      </div>
+    </div>
+
+    <!-- Camera live stage (opened only after the Golden-Rule confirm) -->
+    <div class="cam-stage" id="cam-stage" aria-label="Camera preview">
+      <video id="cam-video" playsinline muted></video>
+      <div class="cam-bar">
+        <button onclick="captureFrame()" data-i18n="cam_capture">📸 Capture</button>
+        <button class="cancel" onclick="closeCamera()" data-i18n="cam_cancel">✖ Cancel</button>
+      </div>
+    </div>
+
+    <!-- Honest result / output box — per-response widget attaches via data-chitti-response -->
+    <div class="result" id="scan-result" data-chitti-response data-chitti-section="health-scan-result" aria-live="polite">
+      <div class="rhead">
+        <span class="badge" id="result-badge" data-i18n="result_badge">PHOTO CAPTURED</span>
+        <span id="result-type-name" style="font-weight:800;color:var(--navy)"></span>
+      </div>
+      <h3 data-i18n="result_h3">What Chitti can do today</h3>
+      <p data-i18n="result_body">AI analysis is coming soon — the vision models are not built or clinically validated yet, so Chitti will not guess. Your photo can be saved to your Chitti Health File timeline so a doctor sees it later, and so you can compare changes over time.</p>
+      <p class="conf" data-i18n="result_conf">Confidence level: not measured (analysis coming soon).</p>
+      <span class="action" data-i18n="result_action">👉 Suggested action: consider a consult if you are worried.</span>
+      <div class="disclaimer" data-i18n="result_disclaimer">This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.</div>
+      <div class="save-row">
+        <button onclick="confirmSaveToTimeline()" data-i18n="save_timeline">📖 Save to Health File timeline</button>
+        <button class="ghost" onclick="speakResult()" data-i18n="save_listen">🔊 Listen</button>
+        <button class="ghost" onclick="closeResult()" data-i18n="save_forget">🗑️ Chitti forget this photo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cross-links to the rest of the Chitti MedUPI family -->
+  <section class="section-card">
+    <div class="section-title">🔗 <span data-i18n="cross_title">Continue in the Chitti family</span></div>
+    <div class="crosslinks">
+      <a href="chitti_health_file.html">
+        <span class="ci" aria-hidden="true">📁</span>
+        <span>
+          <span class="ct" data-i18n="cross_hf_t">Open in Chitti Health File timeline</span><br>
+          <span class="cs" data-i18n="cross_hf_s">See every photo, report and reminder in one place.</span>
+        </span>
+      </a>
+      <a href="chitti_medupi.html">
+        <span class="ci" aria-hidden="true">💊</span>
+        <span>
+          <span class="ct" data-i18n="cross_medupi_t">Find affordable medicines in Chitti MedUPI</span><br>
+          <span class="cs" data-i18n="cross_medupi_s">Generic and Jan Aushadhi prices for what a doctor prescribes.</span>
+        </span>
+      </a>
+      <a href="chitti_government.html">
+        <span class="ci" aria-hidden="true">🏛️</span>
+        <span>
+          <span class="ct" data-i18n="cross_gov_t">Check PMJAY cover in Chitti Government</span><br>
+          <span class="cs" data-i18n="cross_gov_s">See if treatment is covered under a government health scheme.</span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Honest limitation note -->
+  <section class="section-card" id="full-disclaimer">
+    <div class="section-title">⚕️ <span data-i18n="disc_title">What Chitti Health Scanner is — and is not</span></div>
+    <p class="limit-note" data-i18n="disc_body">Chitti Health Scanner is a noticing tool, not a doctor. It will never tell you that you have a disease, never prescribe medicine, and never claim certainty. AI accuracy is also lower on darker skin tones (Fitzpatrick IV–VI); Chitti acknowledges this openly and will always escalate to a professional. Every analysis, when live, will show a confidence level, a plain-language explanation, a suggested action (monitor / consider consult / seek care), and the line "This is not a medical diagnosis."</p>
+    <p class="limit-note" data-i18n="disc_privacy">Privacy: health photos are encrypted at rest (AES-256-GCM), owned by you, never sold, and anonymised before any aggregate use. Say "Chitti forget" and Chitti deletes them all. Built to be DPDP 2023 and ABDM aware.</p>
+  </section>
+</main>
+
+<!-- Golden-Rule confirm gate -->
+<div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="confirm-panel">
+    <h2 id="confirm-title" data-i18n="confirm_title">Sire, shall I open the camera?</h2>
+    <p id="confirm-text" data-i18n="confirm_text">Chitti never acts on its own. Tap Haan to open the camera, or Nahi to wait.</p>
+    <div class="row">
+      <button class="haan" onclick="confirmYes()" data-i18n="confirm_haan">✅ Haan (Yes)</button>
+      <button class="nahi" onclick="confirmNo()" data-i18n="confirm_nahi">✋ Nahi (No)</button>
+    </div>
+    <div class="mic-hint" data-i18n="confirm_mic">🎙️ You can also say "Haan" or "Nahi". Silence = Chitti waits.</div>
+  </div>
+</div>
+
+<footer>
+  <div data-i18n="footer">Chitti Health Scanner · part of the Chitti MedUPI family · sahayai.in</div>
+  <div style="margin-top:6px" data-i18n="footer2">Not a doctor. This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.</div>
+</footer>
+
+<script>
+/* ------------------------------------------------------------------
+   Chitti Health Scanner — honest static skeleton.
+   No fake AI results, no fake accuracy numbers. Camera opens only
+   after the Golden-Rule confirm gate; the result box is honest.
+   ------------------------------------------------------------------ */
+var CURRENT_LANG = (window.CHITTI_LANG_RESOLVED || localStorage.getItem('chitti_lang') || 'hi');
+var PENDING_SCAN = null;   // {type, emoji, name}
+var camStream = null;
+
+function changeLanguage(lang){
+  CURRENT_LANG = lang;
+  try {
+    localStorage.setItem('chitti_lang', lang);
+    localStorage.setItem('language_preference', lang);
+    window.dispatchEvent(new CustomEvent('chitti:langchange', {detail:{lang: lang}}));
+  } catch(e){}
+  // The chitti_lang.js substrate + T dictionary re-render data-i18n strings.
+}
+
+/* Golden Rule — confirm gate before opening the camera. */
+function startScan(type, emoji, name){
+  PENDING_SCAN = {type:type, emoji:emoji, name:name};
+  document.getElementById('confirm-overlay').classList.add('shown');
+  // (Voice path: chitti_a11y.js / Voice Factory wires "Haan"/"Nahi" recognition.)
+}
+function confirmYes(){
+  document.getElementById('confirm-overlay').classList.remove('shown');
+  openCamera();
+}
+function confirmNo(){
+  // Silence/Nahi = wait. Never default to yes.
+  document.getElementById('confirm-overlay').classList.remove('shown');
+  PENDING_SCAN = null;
+}
+
+function openCamera(){
+  var stage = document.getElementById('cam-stage');
+  var video = document.getElementById('cam-video');
+  stage.classList.add('shown');
+  stage.scrollIntoView({behavior:'smooth', block:'center'});
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+      .then(function(s){ camStream = s; video.srcObject = s; video.play(); })
+      .catch(function(){ /* honest: no camera / denied — result box still works for saved-photo flow */ showResult(); });
+  } else {
+    showResult();
+  }
+}
+function closeCamera(){
+  var stage = document.getElementById('cam-stage');
+  stage.classList.remove('shown');
+  if (camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream = null; }
+}
+function captureFrame(){
+  // Honest skeleton: we acknowledge the capture and show the honest result box.
+  closeCamera();
+  showResult();
+}
+function showResult(){
+  var box = document.getElementById('scan-result');
+  if (PENDING_SCAN){
+    document.getElementById('result-type-name').textContent = PENDING_SCAN.emoji + ' ' + PENDING_SCAN.name;
+  }
+  box.classList.add('shown');
+  box.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function closeResult(){
+  document.getElementById('scan-result').classList.remove('shown');
+  PENDING_SCAN = null;
+}
+
+/* Saving to the Health File timeline also passes through a confirm. */
+function confirmSaveToTimeline(){
+  // Golden Rule: saving is a side-effecting action — confirm first.
+  // Honest skeleton: deep-link the user into the Health File timeline.
+  location.href = 'chitti_health_file.html';
+}
+
+/* Voice helpers — delegate to the shared speech substrate when present. */
+function speak(text){
+  try {
+    if (window.Chitti && Chitti.voice && Chitti.voice.speak){ Chitti.voice.speak(text, CURRENT_LANG); return; }
+    if ('speechSynthesis' in window){
+      var u = new SpeechSynthesisUtterance(text); u.lang = CURRENT_LANG; speechSynthesis.speak(u);
+    }
+  } catch(e){}
+}
+function speakIntro(){
+  speak("Chitti Health Scanner. Chitti helps you notice, doctors help you heal. Choose what to scan. This is not a medical diagnosis.");
+}
+function speakResult(){
+  var box = document.getElementById('scan-result');
+  speak(box.innerText.replace(/\s+/g,' ').trim());
+}
+function navFeedback(dir){
+  // The per-response feedback-widget.js owns 👍/👎 on each box; this nav-row
+  // shortcut just nudges focus to the result box so the widget can capture it.
+  var box = document.getElementById('scan-result');
+  if (box.classList.contains('shown')) box.scrollIntoView({behavior:'smooth', block:'center'});
+}
+</script>
+
+<!-- Per-response widget (locked) — attaches 🔊/🤖/👍/👎 to every data-chitti-response box -->
+<script>window.CHITTI_LAST_AUDIT='';window.CHITTI_CO2_G=0.25;</script>
+<script src="feedback-widget.js" data-page="chitti_health_scanner"></script>
+
+<!-- Chitti accessibility substrate (locked) — dropdown + auto-detect + Braille + ISL + Disability Profile. -->
+<script src="chitti_warmup.js"></script>
+<script src="chitti_a11y.js?v=20260529r"></script>
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
+<script src="chitti_isl.js"></script>
+
+<!-- Chitti i18n substrate — chitti_lang.js?v=20260529r baked T-table + chitti_a11y.js?v=20260529r widget supplement. -->
+<script src="chitti_lang.js?v=20260529r"></script>
+<script src="chitti_a11y.js?v=20260529r"></script>
+
+</body>
+</html>

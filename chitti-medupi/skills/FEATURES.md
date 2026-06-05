@@ -51,6 +51,28 @@ Required marker if blind/illiterate users are the primary audience.
 
 ---
 
+## 2b. Cross-product hooks — Chitti Health Scanner (sibling capability)
+
+**Chitti Health Scanner** is a new visual-health capability in the MedUPI
+family. It **shares this backend** — it extends `chitti-medupi-api` with
+`/api/health-scanner/*` (no new service) — and every confirmed scan **feeds
+the Chitti Health File timeline**, the same timeline MedUPI's wallet /
+reminder events flow into. Frontend is `chitti_health_scanner.html`; the
+COSDF v1.0 doc set lives under
+[`../../chitti-health-scanner/`](../../chitti-health-scanner/README.md).
+
+- **AI analysis is COMING SOON** — all `/api/health-scanner/*` analysis
+  endpoints return an honest `501 coming_soon`. The vision models are NOT
+  built / NOT clinically validated; every accuracy figure (skin 95%, dental
+  89–97%, etc.) is a research **target**, never an achieved result.
+- **Never diagnoses** — it DETECTS / NOTICES and ESCALATES to a professional.
+  *"Chitti helps you notice — doctors help you heal."*
+- **Cross-links back to MedUPI** — a scan that suggests a consult can hand off
+  to MedUPI's Jan Aushadhi / generic-cost lookup, and to Chitti Government's
+  PMJAY check.
+
+---
+
 ## 3. Future — needs partnership / regulator
 
 - Direct Jan Aushadhi store inventory (live stock, not just price)

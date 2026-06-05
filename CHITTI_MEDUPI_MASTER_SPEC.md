@@ -23,6 +23,31 @@ Sibling product file at the workspace root. Same Bharat Premium theme. Same back
 
 ---
 
+## 0a. Sibling capability — Chitti Health Scanner (NEW, in the MedUPI family)
+
+**Chitti Health Scanner** is a new visual-health capability that joins the MedUPI family alongside Chitti MedUPI (medicine cost) and Chitti Health File (records / timeline). It lets a user point the phone camera at skin, eyes, teeth, wounds, nails, hair and more, and — when the AI vision capability ships — helps them **notice** patterns worth a professional's attention.
+
+```
+Chitti MedUPI family
+├── Chitti MedUPI         (chitti_medupi.html)          — medicine cost intelligence
+├── Chitti Health File    (records / timeline)          — every scan feeds this
+└── Chitti Health Scanner (chitti_health_scanner.html)  ← NEW visual-health capability
+```
+
+| Field | Value |
+|---|---|
+| **What it is** | Visual-health scanner — DETECTS / NOTICES patterns and **ESCALATES** to a professional. Golden line: *"Chitti helps you notice — doctors help you heal."* |
+| **Backend** | Extends `chitti-medupi-api` with **`/api/health-scanner/*`** (shared backend, not a new service). |
+| **Frontend** | **`chitti_health_scanner.html`** (page skeleton built). |
+| **Doc set** | COSDF v1.0 (Chitti Organ-Scan Discipline Framework — 15 levels) lives under **`chitti-health-scanner/`**. See `chitti-health-scanner/README.md`. |
+| **Status** | **Honest skeleton** — AI vision models are **NOT built / NOT clinically validated**. All analysis endpoints return honest **`501 coming_soon`**. Every research accuracy number (skin 95%, dental 89–97%, etc.) is a **TARGET / research benchmark, never an achieved result**. Certification scores stay **BLANK (`___%`)** until measured. |
+| **Safety** | **NEVER diagnoses** — no "you have <disease>", no prescriptions, no certainty, no fear-mongering, no shaming. Every output carries confidence level + plain-language explanation + suggested action (🟢 monitor / 🟡 consider consult / 🔴 seek care) + the disclaimer **"This is not a medical diagnosis."** Honest about lower accuracy on darker / Fitzpatrick IV–VI skin tones. |
+| **Cross-links** | Feeds the **Chitti Health File** timeline on every confirmed scan; cross-links to **MedUPI** (Jan Aushadhi generics) and **Chitti Government** (PMJAY). |
+
+Same locked platform rules as MedUPI apply unchanged: DeepSeek-only LLM (vision via DeepSeek-vision, disclaimer-guarded), four-user accessibility (Blind / Deaf / Mute / Illiterate — voice IN + voice OUT + icons/symbols + plain language, never colour-only), multilingual via the shared substrate (no Hinglish), the Golden Rule confirm gate (opening camera / capturing / saving / sharing all pass *"Sire, shall I open the camera? Haan / Nahi"*), the per-response widget (`data-chitti-response` + 🔊 / 🤖 / 👍 / 👎), and camera-intelligence privacy (health images **AES-256-GCM** encrypted at rest, user-owned, never sold, anonymised before any aggregate, "Chitti forget" deletes all; DPDP 2023 + ABDM-aware).
+
+---
+
 ## 1. Product Overview
 
 | Field | Value |

@@ -310,6 +310,7 @@ wired into every previously-raw DeepSeek service across the 15 backends).
 | chitti-2wheeler      | 🟢 main.py:74 | 🟢 main.py (HookRegistry registered, post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:76 | 🟢 | ⚪ wrapped | 🔴 page TBD — 5-gate audit pending (also verify HTML exists at repo root) | **GREEN** |
 | chitti-4wheeler      | 🟢 main.py:63 | 🟢 main.py (post-PR) | 🟢 deepseek_client.py:ask | 🟢 main.py:65 | 🟢 | ⚪ wrapped | 🔴 page TBD — 5-gate audit pending (also verify HTML exists at repo root) | **GREEN** |
 | chitti-news-ai       | 🟢 main.py:95 | 🟢 main.py (post-PR, defensive — services are 501 skeletons today) | ⚪ no DeepSeek calls yet (services 501) | 🟢 main.py:97 — **SLA curl-verified 2026-05-15 PM** (`x-chitti-response-time-ms: 1`) | 🟢 | ⚪ | 🔴 `chitti_news_ai.html` — 5-gate audit pending | **GREEN (quality framework) · Turso sync UNVERIFIED — see §5 round 2** |
+| chitti-health-scanner (part of chitti-medupi-api) | ⚪ honest stub | ⚪ honest stub | ⚪ no DeepSeek calls yet (analysis routes return 501 `coming_soon` — AI vision models not built/clinically validated) | ⚪ honest stub | ⚪ | ⚪ | 🟡 `chitti_health_scanner.html` — 5-gate audit PENDING/UNVERIFIED (skeleton) | **HONEST STUB — `/api/health-scanner/*` returns `coming_soon`; nothing GREEN; accuracy targets are research benchmarks, not achieved** |
 
 ### 1a. Frontend quality gates — five audits per page (LOCKED 2026-05-15)
 
@@ -357,6 +358,7 @@ Full audit log: [CERT_LOG.md](CERT_LOG.md).
 | `chitti_4wheeler.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_health_file.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_fashion.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
+| `chitti_health_scanner.html` (NEW skeleton — part of Chitti MedUPI family) | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | Not yet cert-run — G1 feedback-widget.js + `data-chitti-response`, G2 chitti_a11y.js, G3 Disability Profile prompt, G4 language auto-detect, G5 ISL plugin all PENDING/UNVERIFIED. Backend `/api/health-scanner/*` = honest stub (`coming_soon`). Queued for next CTO pass. |
 | `chitti_isl.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_offline.html` | 🟢◇ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_quality.html` | 🟢◇ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |

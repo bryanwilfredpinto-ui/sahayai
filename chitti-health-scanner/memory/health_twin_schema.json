@@ -1,0 +1,111 @@
+{
+  "_commando": "World Class Chitti Health Scanner — Commando Discipline. Zero Excuses.",
+  "_privacy": "AES-256-GCM at rest; user-owned; Chitti forget deletes all; DPDP 2023 + ABDM-aware",
+  "schema_version": "1.0",
+  "cosdf_level": 9,
+  "cosdf_level_name": "Personal Health Twin",
+  "description": "Longitudinal per-user health twin assembled from Chitti Health Scanner visual scans. Chitti helps you notice — doctors help you heal. This is not a medical diagnosis.",
+  "user_id": "usr_4f9c2a7b8e1d",
+  "health_timeline": {
+    "skin": [
+      {
+        "date": "2026-05-12",
+        "body_location": "left_forearm_dorsal",
+        "image_reference": "enc://aes-256-gcm/skin/usr_4f9c2a7b8e1d/2026-05-12/forearm_01",
+        "findings": "Asymmetric pigmented lesion noted; borders irregular on one edge; ~6 mm widest axis.",
+        "ai_confidence": "moderate",
+        "abcde_flags": {
+          "asymmetry": true,
+          "border_irregularity": true,
+          "color_variation": false,
+          "diameter_over_6mm": true,
+          "evolving": "unknown_first_scan"
+        },
+        "fitzpatrick_estimate": "III",
+        "accuracy_note": "AI vision model NOT clinically validated. Research target only. Accuracy is lower on darker / Fitzpatrick IV–VI skin tones; results on such tones are flagged low-confidence.",
+        "recommendation": "consider_consult",
+        "disclaimer": "This is not a medical diagnosis."
+      },
+      {
+        "date": "2026-05-26",
+        "body_location": "left_forearm_dorsal",
+        "image_reference": "enc://aes-256-gcm/skin/usr_4f9c2a7b8e1d/2026-05-26/forearm_02",
+        "findings": "Same lesion re-scanned; no measurable change in size or asymmetry vs 2026-05-12 baseline.",
+        "ai_confidence": "moderate",
+        "fitzpatrick_estimate": "III",
+        "recommendation": "monitor",
+        "disclaimer": "This is not a medical diagnosis."
+      }
+    ],
+    "wounds": [
+      {
+        "date": "2026-05-10",
+        "body_location": "right_heel_plantar",
+        "image_reference": "enc://aes-256-gcm/wound/usr_4f9c2a7b8e1d/2026-05-10/heel_01",
+        "findings": "Open wound with surrounding erythema; diabetic foot context flagged.",
+        "size_mm2": 412.0,
+        "color_analysis": {
+          "granulation_red_pct": 55,
+          "slough_yellow_pct": 35,
+          "necrotic_black_pct": 10,
+          "periwound_erythema": "present"
+        },
+        "healing_trend": "baseline",
+        "percent_change_7d": null,
+        "ai_confidence": "low",
+        "recommendation": "seek_care",
+        "escalation_reason": "Diabetic risk factor + necrotic tissue present.",
+        "disclaimer": "This is not a medical diagnosis."
+      },
+      {
+        "date": "2026-05-17",
+        "body_location": "right_heel_plantar",
+        "image_reference": "enc://aes-256-gcm/wound/usr_4f9c2a7b8e1d/2026-05-17/heel_02",
+        "findings": "Wound re-scanned; slough reduced, granulation increased; area smaller than baseline.",
+        "size_mm2": 338.0,
+        "color_analysis": {
+          "granulation_red_pct": 70,
+          "slough_yellow_pct": 25,
+          "necrotic_black_pct": 5,
+          "periwound_erythema": "reduced"
+        },
+        "healing_trend": "improving",
+        "percent_change_7d": -17.96,
+        "ai_confidence": "low",
+        "recommendation": "consider_consult",
+        "disclaimer": "This is not a medical diagnosis."
+      }
+    ],
+    "dental": [
+      {
+        "date": "2026-05-14",
+        "body_location": "lower_right_quadrant",
+        "image_reference": "enc://aes-256-gcm/dental/usr_4f9c2a7b8e1d/2026-05-14/lr_01",
+        "findings": "Possible occlusal surface discolouration noted on molars; visible-light scan only.",
+        "affected_teeth": ["46", "47"],
+        "caries_type": "occlusal_suspected",
+        "confidence": "moderate",
+        "accuracy_note": "Visible-light intraoral scan cannot replace dental radiography. AI model NOT clinically validated. Research target only.",
+        "recommendation": "consider_consult",
+        "disclaimer": "This is not a medical diagnosis."
+      }
+    ]
+  },
+  "risk_factors": {
+    "diabetic": true,
+    "cancer_survivor": false,
+    "high_uv_exposure": true,
+    "family_history_skin_cancer": true
+  },
+  "preferences": {
+    "language": "hi",
+    "accessibility_mode": ["blind", "voice_out", "large_text"],
+    "reminder_frequency": "weekly"
+  },
+  "golden_rule": "Chitti NEVER acts on its own. Opening camera, capturing, saving, sharing, or setting a reminder passes a confirm gate (voice + tap, mute-safe, never default-to-yes, silence = wait).",
+  "cross_links": {
+    "chitti_health_file_timeline": true,
+    "chitti_medupi_jan_aushadhi": true,
+    "chitti_government_pmjay": true
+  }
+}

@@ -188,6 +188,7 @@ const PAGES = [
   'chitti_2wheeler',
   'chitti_4wheeler',
   'chitti_health_file',
+  'chitti_health_scanner',
   'chitti_fashion',
   'chitti_isl',
   'chitti_offline',
