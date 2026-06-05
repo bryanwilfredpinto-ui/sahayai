@@ -19,8 +19,16 @@
 ## Headline
 | Suite | Result |
 |---|---|
-| Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **229 PASS / 0 FAIL** |
-| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **21 PASS / 0 FAIL · 0 page errors** |
+| Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **236 PASS / 0 FAIL** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **24 PASS / 0 FAIL · 0 page errors** |
+
+## All-stocks dropdown (Sire's ask: type REL → RELAXO, RELIANCE, RELIGARE)
+✅ **PASS** — wired to the repo's `nse_universe.js` (**750 NSE names**, 5 cap-tier buckets).
+`ITEM dropdown_REL_shows_RELAXO_RELIANCE_RELIGARE — shown: RELIANCE, RELAXO, RPOWER, RELINFRA, RELIGARE`.
+Custom type-ahead (prefix-first, keyboard ↑↓/Enter/Esc, tap, screen-reader `role=combobox`/`listbox`),
+each row shows company name + cap-tier badge; selecting runs the scan. Screener now scans the full
+universe (capped per run with an honest "Scanned N of 750" note). Screenshot:
+[tools/cert_screenshots/chitti_technical_dropdown.png](../../tools/cert_screenshots/chitti_technical_dropdown.png).
 
 ## The five items you named — PASS/FAIL
 

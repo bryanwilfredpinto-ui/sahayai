@@ -16,6 +16,8 @@
 - **Roshan Indicator ⭐** — Sire's custom composite (RSI vs its own 20-SMA),
   favourited by default.
 - **NSE stock / index / ETF analysis** via the existing `chitti-shares-api` engine.
+- **All-stocks type-ahead dropdown** — 750 NSE names across all 5 cap tiers; type "REL" → RELAXO,
+  RELIANCE, RELIGARE, RPOWER, RELINFRA (symbol + company name + tier badge), keyboard + tap + voice.
 
 ## PLANNED — building now (CEOS rebuild)
 

@@ -148,6 +148,22 @@ const tbl = await p.evaluate(() => {
 check('ITEM accessible_chart_data_table', tbl.shown && tbl.rows >= 10 && tbl.headers >= 6 && tbl.caption && tbl.expanded === 'true',
   `rows=${tbl.rows} headers=${tbl.headers} caption=${tbl.caption} expanded=${tbl.expanded}`);
 
+// ---- ITEM: ALL-STOCKS dropdown — type "REL" → RELAXO, RELIANCE, RELIGARE (Sire's explicit ask) ----
+check('all_stocks_universe_loaded', await p.evaluate(() => !!(window.NSE && window.NSE.ALL && window.NSE.ALL.length >= 200)),
+  await p.evaluate(() => window.NSE && window.NSE.ALL ? window.NSE.ALL.length + ' symbols' : 'window.NSE missing'));
+await p.fill('#sym', '');
+await p.fill('#sym', 'REL');
+await p.waitForTimeout(350);
+const relOpts = await p.$$eval('#sym-listbox .ac-opt .s', els => els.map(e => e.textContent.trim()));
+await p.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_dropdown.png') });
+check('ITEM dropdown_REL_shows_RELAXO_RELIANCE_RELIGARE',
+  ['RELAXO','RELIANCE','RELIGARE'].every(s => relOpts.includes(s)), 'shown: ' + relOpts.slice(0,8).join(', '));
+const relIdx = relOpts.indexOf('RELIANCE');
+await p.evaluate(i => window.TechUI.acPick(i), relIdx);
+await p.waitForTimeout(300);
+check('dropdown_select_runs_scan', await p.evaluate(() =>
+  document.getElementById('sym').value === 'RELIANCE' && document.getElementById('sig-sym').textContent === 'RELIANCE'));
+
 // ---- tap targets >= 44px on primary buttons ----
 const smallBtns = await p.$$eval('.btn', els => els.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.height < 44; }).length);
 check('ITEM tap_targets_44px', smallBtns === 0, smallBtns + ' under 44px');

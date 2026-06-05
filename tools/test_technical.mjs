@@ -116,6 +116,20 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('screener impossible combo → 0 rows', impossible.length === 0);
 }
 
+// ───── all-stocks dropdown universe + scanSymbol + capped screen ─────
+{
+  const ufile = readFileSync(join(ROOT, 'nse_universe.js'), 'utf8');
+  ok('nse_universe.js has RELAXO + RELIANCE + RELIGARE (Sire example)',
+     /\bRELAXO\b/.test(ufile) && /\bRELIANCE\b/.test(ufile) && /\bRELIGARE\b/.test(ufile));
+  const r = E.scanSymbol('RELIANCE', 'swing');
+  ok('scanSymbol returns a valid verdict (only needed TFs)', ['BUY','SELL','HOLD'].includes(r.verdict));
+  ok('neededTfs(swing) = daily + 4h', JSON.stringify(E.neededTfs('swing')) === JSON.stringify(['daily','4h']));
+  ok('neededTfs(longterm) = monthly+weekly+daily', JSON.stringify(E.neededTfs('longterm')) === JSON.stringify(['monthly','weekly','daily']));
+  const bigUni = Array.from({ length: 120 }, (_, i) => ({ sym: 'SYM' + i, tier: 'Small Cap', name: 'Stock ' + i }));
+  const capped = E.screen({}, 'swing', bigUni, 30);
+  ok('screen respects the cap (<=30 of 120 scanned)', capped.length <= 30);
+}
+
 // ───── BO2: i18n completeness + no-Hinglish ─────
 const LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
 ok('i18n has all 9 primary languages', LANGS.every(l => I18N[l]));
@@ -147,6 +161,8 @@ if (existsSync(htmlPath)) {
   ok('G: engine loaded', /chitti_technical_engine\.js/.test(html));
   ok('G: i18n loaded', /chitti_technical_i18n\.js/.test(html));
   ok('G: chitti_lang.js loaded', /chitti_lang\.js/.test(html));
+  ok('G: nse_universe.js (all-stocks list) loaded', /nse_universe\.js/.test(html));
+  ok('G: type-ahead combobox + listbox present', /role=["']combobox["']/.test(html) && /id=["']sym-listbox["']/.test(html));
   ok('G1: >=1 data-chitti-response box', (html.match(/data-chitti-response/g)||[]).length >= 1);
   ok('G: SEBI bar present', /NOT SEBI REGISTERED/i.test(html));
   ok('G: lang-select present', /id=["']lang-select["']/.test(html));

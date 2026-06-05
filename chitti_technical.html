@@ -11,6 +11,7 @@
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
 <script src="chitti_lang.js?v=20260606" defer></script>
+<script src="nse_universe.js?v=20260606" defer></script>
 <script src="chitti_technical_i18n.js?v=20260606" defer></script>
 <script src="chitti_technical_engine.js?v=20260606" defer></script>
 <script src="chitti_a11y.js?v=20260606" defer></script>
@@ -128,6 +129,14 @@ tr.click:hover{background:#f7f8fc}
 #confirm .box .q{font-size:16px;font-weight:700;margin-bottom:14px;color:var(--navy)}
 #confirm .acts{display:flex;gap:10px;justify-content:center}
 
+/* all-stocks type-ahead dropdown */
+.ac-box{flex:1;min-width:170px;position:relative}
+#sym-listbox{display:none;position:absolute;z-index:80;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;box-shadow:0 10px 28px rgba(0,0,0,.14)}
+.ac-opt{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);min-height:44px}
+.ac-opt:last-child{border-bottom:0}
+.ac-opt.active,.ac-opt:hover{background:#eef1ff}
+.ac-opt .s{font-weight:800;color:var(--navy);min-width:88px}
+.ac-opt .n{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .muted{color:var(--muted);font-size:12.5px}
 .demo-flag{font-size:11.5px;color:#9a6700;background:#fff7ec;border-radius:6px;padding:3px 8px;display:inline-block}
 @media(max-width:380px){.brand h1{font-size:18px}.verdict .big{font-size:24px;padding:6px 12px}}
@@ -189,9 +198,13 @@ tr.click:hover{background:#f7f8fc}
   <!-- BO3: search + trade type -->
   <div class="card col-full" style="margin-top:12px">
     <div class="row" style="gap:10px">
-      <input type="text" id="sym" list="universe" placeholder="Search NSE stock, index or ETF" data-i18n-ph="search.ph"
-             style="flex:1;min-width:160px;padding:11px;border:1.5px solid var(--line);border-radius:10px;min-height:44px" value="RELIANCE">
-      <datalist id="universe"></datalist>
+      <div class="ac-box">
+        <input type="text" id="sym" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sym-listbox" autocomplete="off"
+               placeholder="Search NSE stock, index or ETF" data-i18n-ph="search.ph"
+               style="width:100%;padding:11px;border:1.5px solid var(--line);border-radius:10px;min-height:44px" value="RELIANCE"
+               oninput="TechUI.acInput()" onkeydown="TechUI.acKey(event)" onfocus="TechUI.acInput()">
+        <div id="sym-listbox" role="listbox" aria-label="Stock results"></div>
+      </div>
       <select id="tradetype" aria-label="Trade type">
         <option value="longterm" data-i18n="tt.longterm">Long-term</option>
         <option value="positional" data-i18n="tt.positional">Positional</option>
@@ -290,6 +303,15 @@ window.TechUI = (function(){
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
+  var ALL_STOCKS=[], acMatches=[], acIndex=-1;
+  var SCREEN_CAP=60; // browser-perf guard when scanning the full ~800-name NSE universe
+  // company names for the well-known symbols (rest show the symbol); honest — search is by symbol too
+  var NAMES={RELIANCE:'Reliance Industries',RELAXO:'Relaxo Footwears',RELIGARE:'Religare Enterprises',
+    RELINFRA:'Reliance Infrastructure',RPOWER:'Reliance Power',TCS:'Tata Consultancy Services',
+    HDFCBANK:'HDFC Bank',INFY:'Infosys',ICICIBANK:'ICICI Bank',SBIN:'State Bank of India',
+    ITC:'ITC',LT:'Larsen & Toubro',BHARTIARTL:'Bharti Airtel',HINDUNILVR:'Hindustan Unilever',
+    TATAMOTORS:'Tata Motors',WIPRO:'Wipro',MARUTI:'Maruti Suzuki',SUNPHARMA:'Sun Pharma',
+    TATASTEEL:'Tata Steel',AXISBANK:'Axis Bank',KOTAKBANK:'Kotak Mahindra Bank',BAJFINANCE:'Bajaj Finance'};
 
   function T(key){
     var pack=(I18N&&I18N[lang])||(I18N&&I18N.en)||{};
@@ -521,6 +543,65 @@ window.TechUI = (function(){
     ctx.fillStyle='#000080';ctx.font='11px system-ui';ctx.fillText(name,pad,12);
   }
 
+  // ---------- all-stocks type-ahead dropdown (Sire: type REL → RELAXO, RELIANCE, RELIGARE) ----------
+  function tierFromNSE(sym){
+    var N=window.NSE; if(!N) return 'Small Cap';
+    if(N.NIFTY50&&N.NIFTY50.indexOf(sym)>=0) return 'Nifty 50';
+    if(N.LARGECAP&&N.LARGECAP.indexOf(sym)>=0) return 'Large Cap';
+    if(N.MIDCAP150&&N.MIDCAP150.indexOf(sym)>=0) return 'Mid Cap';
+    if(N.SMALLCAP250&&N.SMALLCAP250.indexOf(sym)>=0) return 'Small Cap';
+    if(N.MICROCAP250&&N.MICROCAP250.indexOf(sym)>=0) return 'Micro Cap';
+    return 'Small Cap';
+  }
+  function buildStocks(){
+    var N=window.NSE;
+    if(N&&N.ALL&&N.ALL.length){
+      ALL_STOCKS=N.ALL.map(function(sym){return {sym:sym,tier:tierFromNSE(sym),name:NAMES[sym]||sym,sector:''};});
+    } else {
+      ALL_STOCKS=E.UNIVERSE.map(function(s){return {sym:s.sym,tier:s.tier,name:s.name,sector:s.sector};});
+    }
+  }
+  function acInput(){
+    var q=(document.getElementById('sym').value||'').trim().toUpperCase();
+    var box=document.getElementById('sym-listbox');
+    if(!q){ acClose(); return; }
+    var pre=[], con=[];
+    for(var i=0;i<ALL_STOCKS.length;i++){
+      var s=ALL_STOCKS[i], nm=(s.name||'').toUpperCase();
+      if(s.sym.indexOf(q)===0 || nm.indexOf(q)===0) pre.push(s);
+      else if(s.sym.indexOf(q)>=0 || nm.indexOf(q)>=0) con.push(s);
+      if(pre.length>=30) break;
+    }
+    acMatches=pre.concat(con).slice(0,30); acIndex=-1;
+    renderAc();
+  }
+  function renderAc(){
+    var box=document.getElementById('sym-listbox');
+    if(!acMatches.length){
+      box.innerHTML='<div class="ac-opt" style="cursor:default"><span class="n">'+T('search.nomatch')+'</span></div>';
+      box.style.display='block'; return;
+    }
+    box.innerHTML=acMatches.map(function(s,i){
+      var nm=(s.name&&s.name!==s.sym)?s.name:'';
+      return '<div class="ac-opt'+(i===acIndex?' active':'')+'" role="option" id="ac-'+i+'" aria-selected="'+(i===acIndex)+'"'+
+        ' onmousedown="event.preventDefault();TechUI.acPick('+i+')"><span class="s">'+s.sym+'</span>'+
+        '<span class="n">'+nm+'</span><span class="pill tier">'+(T('tier.'+s.tier)||s.tier)+'</span></div>';
+    }).join('');
+    box.style.display='block';
+    document.getElementById('sym').setAttribute('aria-expanded','true');
+  }
+  function setActiveDesc(){ document.getElementById('sym').setAttribute('aria-activedescendant', acIndex>=0?('ac-'+acIndex):''); }
+  function acKey(e){
+    var box=document.getElementById('sym-listbox');
+    if(box.style.display==='none'){ if(e.key==='Enter'){ acClose(); scan(); } return; }
+    if(e.key==='ArrowDown'){ e.preventDefault(); acIndex=Math.min(acMatches.length-1,acIndex+1); renderAc(); setActiveDesc(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); acIndex=Math.max(0,acIndex-1); renderAc(); setActiveDesc(); }
+    else if(e.key==='Enter'){ if(acIndex>=0){ e.preventDefault(); acPick(acIndex); } else { acClose(); scan(); } }
+    else if(e.key==='Escape'){ acClose(); }
+  }
+  function acPick(i){ var s=acMatches[i]; if(!s) return; document.getElementById('sym').value=s.sym; acClose(); scan(); speak(s.sym); }
+  function acClose(){ var box=document.getElementById('sym-listbox'); box.style.display='none'; document.getElementById('sym').setAttribute('aria-expanded','false'); acIndex=-1; }
+
   // ---------- screener (BO9) ----------
   function renderScreenerFilters(){
     var c=document.getElementById('screener-filters'); if(!c)return; c.innerHTML='';
@@ -542,10 +623,14 @@ window.TechUI = (function(){
   function runScreen(){
     var tt=document.getElementById('tradetype').value;
     var f={tiers:screenFilters.tiers.slice(),roshan:screenFilters.roshan};
-    var rows=E.screen(f,tt);
-    var html='<table><tr><th>#</th><th>Stock</th><th>'+T('screener.tier')+'</th><th>'+T('conf.label')+'</th><th>Signal</th><th>Roshan</th></tr>';
+    var uni=ALL_STOCKS.length?ALL_STOCKS:E.UNIVERSE;
+    var pool=f.tiers.length?uni.filter(function(s){return f.tiers.indexOf(s.tier)>=0;}):uni;
+    var scanned=Math.min(SCREEN_CAP,pool.length);
+    var rows=E.screen(f,tt,pool,SCREEN_CAP);
+    var note='<p class="muted" style="margin:0 0 8px">'+T('screener.scanned').replace('{0}',scanned).replace('{1}',pool.length)+'</p>';
+    var html=note+'<table><tr><th>#</th><th>Stock</th><th>'+T('screener.tier')+'</th><th>'+T('conf.label')+'</th><th>Signal</th><th>Roshan</th></tr>';
     if(rows.length===0){
-      document.getElementById('screener-results').innerHTML='<p class="invalid">'+T('screener.nomatch')+'</p>';return;
+      document.getElementById('screener-results').innerHTML=note+'<p class="invalid">'+T('screener.nomatch')+'</p>';return;
     }
     rows.slice(0,20).forEach(function(r,i){
       var icon={BUY:'📈',SELL:'🛑',HOLD:'⏸️'}[r.verdict];
@@ -624,9 +709,12 @@ window.TechUI = (function(){
     E=window.TechEngine; I18N=window.TECH_I18N;
     if(!E||!I18N){ setTimeout(init,60); return; }
     document.getElementById('eng-ver').textContent=E.VERSION;
-    // universe datalist
-    var dl=document.getElementById('universe');
-    E.UNIVERSE.forEach(function(s){var o=document.createElement('option');o.value=s.sym;o.label=s.name;dl.appendChild(o);});
+    // build the all-stocks list (from nse_universe.js window.NSE — ~800 names; fallback to engine UNIVERSE)
+    buildStocks();
+    // close the dropdown on outside click
+    document.addEventListener('click',function(e){
+      var inBox=e.target.closest&&e.target.closest('.ac-box'); if(!inBox) acClose();
+    });
     // language: saved or browser
     var saved='en'; try{saved=localStorage.getItem('chitti_lang')||localStorage.getItem('lang')||(navigator.language||'en').slice(0,2);}catch(e){}
     if(!I18N[saved]) saved='en';
@@ -644,7 +732,8 @@ window.TechUI = (function(){
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
-    audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
+    audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
+    acInput:acInput,acKey:acKey,acPick:acPick,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
 })();
 </script>
 </body>

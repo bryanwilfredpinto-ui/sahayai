@@ -559,12 +559,25 @@
     return true;
   }
 
-  function screen(filters, tradeType, candleProvider) {
+  // only the timeframes a trade type actually needs (keeps the screener fast over a big universe)
+  function neededTfs(tradeType) { var L = LADDERS[tradeType] || LADDERS.swing; return L.dir.concat([L.trigger]); }
+  function scanSymbol(sym, tradeType) {
+    var tfs = {};
+    neededTfs(tradeType).forEach(function (tf) {
+      var n = (tf === 'daily' || tf === '4h' || tf === '1h') ? 260 : 220;
+      tfs[tf] = genCandles(sym, tf, n);
+    });
+    return scan(tfs, { tradeType: tradeType });
+  }
+  // universe: array of {sym, tier, name, sector?}. Defaults to the curated UNIVERSE.
+  // cap: max symbols to scan per run (browser-perf guard over the full ~800-name NSE list).
+  function screen(filters, tradeType, universe, cap) {
     tradeType = tradeType || 'swing';
-    candleProvider = candleProvider || function (sym) { return genAllTf(sym); };
+    universe = universe || UNIVERSE;
+    var list = (cap && cap < universe.length) ? universe.slice(0, cap) : universe;
     var rows = [];
-    UNIVERSE.forEach(function (stock) {
-      var res = scan(candleProvider(stock.sym), { tradeType: tradeType });
+    list.forEach(function (stock) {
+      var res = scanSymbol(stock.sym, tradeType);
       if (matchFilters(stock, res, filters)) {
         rows.push({ stock: stock, verdict: res.verdict, confidence: res.confidence,
                     score: res.confluence_score, roshan: res.roshan ? res.roshan.signal : null });
@@ -613,6 +626,7 @@
     trendOf: trendOf, tfVerdict: tfVerdict, confluence: confluence, riskBlock: riskBlock, scan: scan,
     // data + universe
     genCandles: genCandles, genAllTf: genAllTf, UNIVERSE: UNIVERSE, tierOf: tierOf, screen: screen,
+    neededTfs: neededTfs, scanSymbol: scanSymbol,
     // explain + guardrails
     explain: explain, hasBannedPhrase: hasBannedPhrase, BANNED: BANNED, LADDERS: LADDERS,
     VERSION: '1.0.0'

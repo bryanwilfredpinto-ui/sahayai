@@ -33,7 +33,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'Large Cap', 'tier.Mid Cap': 'Mid Cap', 'tier.Small Cap': 'Small Cap', 'tier.Micro Cap': 'Micro Cap',
       'vaani': 'Talk to Vaani instead',
       'chart.table': 'Show data table', 'chart.tablehide': 'Hide data table', 'chart.tablecap': 'Chart data — same numbers as the chart, for screen readers',
-      'nudge.overtrade': "That's a lot of open trades — quality over quantity."
+      'nudge.overtrade': "That's a lot of open trades — quality over quantity.",
+      'search.nomatch': 'No stock found', 'screener.scanned': 'Scanned {0} of {1} stocks'
     },
     hi: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षिक तकनीकी विश्लेषण — सलाह नहीं',
@@ -56,7 +57,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'बड़ी पूँजी', 'tier.Mid Cap': 'मध्यम पूँजी', 'tier.Small Cap': 'छोटी पूँजी', 'tier.Micro Cap': 'सूक्ष्म पूँजी',
       'vaani': 'वाणी से बात करें',
       'chart.table': 'डेटा टेबल दिखाएँ', 'chart.tablehide': 'डेटा टेबल छुपाएँ', 'chart.tablecap': 'चार्ट डेटा — चार्ट जैसे ही अंक, स्क्रीन रीडर के लिए',
-      'nudge.overtrade': 'बहुत सारे खुले ट्रेड — मात्रा से ज़्यादा गुणवत्ता।'
+      'nudge.overtrade': 'बहुत सारे खुले ट्रेड — मात्रा से ज़्यादा गुणवत्ता।',
+      'search.nomatch': 'कोई शेयर नहीं मिला', 'screener.scanned': '{1} में से {0} शेयर जाँचे'
     },
     ta: {
       'app.title': 'சிட்டி டெக்னிக்கல்', 'app.tag': 'கல்வி நுட்ப பகுப்பாய்வு — அறிவுரை அல்ல',
@@ -79,7 +81,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'பெரிய நிறுவனம்', 'tier.Mid Cap': 'நடுத்தர நிறுவனம்', 'tier.Small Cap': 'சிறு நிறுவனம்', 'tier.Micro Cap': 'நுண் நிறுவனம்',
       'vaani': 'வாணியிடம் பேசு',
       'chart.table': 'தரவு அட்டவணை காட்டு', 'chart.tablehide': 'தரவு அட்டவணை மறை', 'chart.tablecap': 'விளக்கப்பட தரவு — விளக்கப்படத்தின் அதே எண்கள், திரை வாசிப்பாளருக்கு',
-      'nudge.overtrade': 'நிறைய திறந்த வர்த்தகங்கள் — எண்ணிக்கையை விட தரம்.'
+      'nudge.overtrade': 'நிறைய திறந்த வர்த்தகங்கள் — எண்ணிக்கையை விட தரம்.',
+      'search.nomatch': 'பங்கு எதுவும் இல்லை', 'screener.scanned': '{1} இல் {0} பங்குகள் பரிசோதிக்கப்பட்டன'
     },
     te: {
       'app.title': 'చిట్టి టెక్నికల్', 'app.tag': 'విద్యా సాంకేతిక విశ్లేషణ — సలహా కాదు',
@@ -102,7 +105,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'పెద్ద సంస్థ', 'tier.Mid Cap': 'మధ్య సంస్థ', 'tier.Small Cap': 'చిన్న సంస్థ', 'tier.Micro Cap': 'సూక్ష్మ సంస్థ',
       'vaani': 'వాణితో మాట్లాడు',
       'chart.table': 'డేటా టేబుల్ చూపించు', 'chart.tablehide': 'డేటా టేబుల్ దాచు', 'chart.tablecap': 'చార్ట్ డేటా — చార్ట్ లాంటి అంకెలు, స్క్రీన్ రీడర్ కోసం',
-      'nudge.overtrade': 'చాలా తెరిచిన ట్రేడ్లు — పరిమాణం కంటే నాణ్యత.'
+      'nudge.overtrade': 'చాలా తెరిచిన ట్రేడ్లు — పరిమాణం కంటే నాణ్యత.',
+      'search.nomatch': 'షేరు ఏదీ దొరకలేదు', 'screener.scanned': '{1} లో {0} షేర్లు పరిశీలించబడ్డాయి'
     },
     bn: {
       'app.title': 'চিট্টি টেকনিক্যাল', 'app.tag': 'শিক্ষামূলক প্রযুক্তিগত বিশ্লেষণ — পরামর্শ নয়',
@@ -125,7 +129,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'বড় মূলধন', 'tier.Mid Cap': 'মাঝারি মূলধন', 'tier.Small Cap': 'ছোট মূলধন', 'tier.Micro Cap': 'অতি ছোট মূলধন',
       'vaani': 'বাণীর সাথে কথা বলুন',
       'chart.table': 'ডেটা টেবিল দেখান', 'chart.tablehide': 'ডেটা টেবিল লুকান', 'chart.tablecap': 'চার্ট ডেটা — চার্টের মতোই সংখ্যা, স্ক্রিন রিডারের জন্য',
-      'nudge.overtrade': 'অনেক খোলা ট্রেড — পরিমাণের চেয়ে গুণমান।'
+      'nudge.overtrade': 'অনেক খোলা ট্রেড — পরিমাণের চেয়ে গুণমান।',
+      'search.nomatch': 'কোনও শেয়ার পাওয়া যায়নি', 'screener.scanned': '{1} টির মধ্যে {0} টি শেয়ার যাচাই'
     },
     mr: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षणिक तांत्रिक विश्लेषण — सल्ला नाही',
@@ -148,7 +153,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'मोठे भांडवल', 'tier.Mid Cap': 'मध्यम भांडवल', 'tier.Small Cap': 'लहान भांडवल', 'tier.Micro Cap': 'सूक्ष्म भांडवल',
       'vaani': 'वाणीशी बोला',
       'chart.table': 'डेटा टेबल दाखवा', 'chart.tablehide': 'डेटा टेबल लपवा', 'chart.tablecap': 'चार्ट डेटा — चार्टसारखेच आकडे, स्क्रीन रीडरसाठी',
-      'nudge.overtrade': 'बरेच खुले ट्रेड — संख्येपेक्षा गुणवत्ता.'
+      'nudge.overtrade': 'बरेच खुले ट्रेड — संख्येपेक्षा गुणवत्ता.',
+      'search.nomatch': 'कोणताही शेअर सापडला नाही', 'screener.scanned': '{1} पैकी {0} शेअर तपासले'
     },
     gu: {
       'app.title': 'ચિટ્ટી ટેક્નિકલ', 'app.tag': 'શૈક્ષણિક ટેક્નિકલ વિશ્લેષણ — સલાહ નહીં',
@@ -171,7 +177,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'મોટી મૂડી', 'tier.Mid Cap': 'મધ્યમ મૂડી', 'tier.Small Cap': 'નાની મૂડી', 'tier.Micro Cap': 'સૂક્ષ્મ મૂડી',
       'vaani': 'વાણી સાથે વાત કરો',
       'chart.table': 'ડેટા ટેબલ બતાવો', 'chart.tablehide': 'ડેટા ટેબલ છુપાવો', 'chart.tablecap': 'ચાર્ટ ડેટા — ચાર્ટ જેવા જ આંકડા, સ્ક્રીન રીડર માટે',
-      'nudge.overtrade': 'ઘણા ખુલ્લા ટ્રેડ — જથ્થા કરતાં ગુણવત્તા.'
+      'nudge.overtrade': 'ઘણા ખુલ્લા ટ્રેડ — જથ્થા કરતાં ગુણવત્તા.',
+      'search.nomatch': 'કોઈ શેર મળ્યો નથી', 'screener.scanned': '{1} માંથી {0} શેર તપાસ્યા'
     },
     kn: {
       'app.title': 'ಚಿಟ್ಟಿ ಟೆಕ್ನಿಕಲ್', 'app.tag': 'ಶೈಕ್ಷಣಿಕ ತಾಂತ್ರಿಕ ವಿಶ್ಲೇಷಣೆ — ಸಲಹೆ ಅಲ್ಲ',
@@ -194,7 +201,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'ದೊಡ್ಡ ಬಂಡವಾಳ', 'tier.Mid Cap': 'ಮಧ್ಯಮ ಬಂಡವಾಳ', 'tier.Small Cap': 'ಸಣ್ಣ ಬಂಡವಾಳ', 'tier.Micro Cap': 'ಸೂಕ್ಷ್ಮ ಬಂಡವಾಳ',
       'vaani': 'ವಾಣಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
       'chart.table': 'ಡೇಟಾ ಟೇಬಲ್ ತೋರಿಸಿ', 'chart.tablehide': 'ಡೇಟಾ ಟೇಬಲ್ ಮರೆಮಾಡಿ', 'chart.tablecap': 'ಚಾರ್ಟ್ ಡೇಟಾ — ಚಾರ್ಟ್‌ನಂತೆಯೇ ಸಂಖ್ಯೆಗಳು, ಸ್ಕ್ರೀನ್ ರೀಡರ್‌ಗಾಗಿ',
-      'nudge.overtrade': 'ಹಲವು ತೆರೆದ ಟ್ರೇಡ್‌ಗಳು — ಪ್ರಮಾಣಕ್ಕಿಂತ ಗುಣಮಟ್ಟ.'
+      'nudge.overtrade': 'ಹಲವು ತೆರೆದ ಟ್ರೇಡ್‌ಗಳು — ಪ್ರಮಾಣಕ್ಕಿಂತ ಗುಣಮಟ್ಟ.',
+      'search.nomatch': 'ಯಾವುದೇ ಷೇರು ಸಿಗಲಿಲ್ಲ', 'screener.scanned': '{1} ರಲ್ಲಿ {0} ಷೇರುಗಳು ಪರಿಶೀಲಿಸಲಾಗಿದೆ'
     },
     ml: {
       'app.title': 'ചിട്ടി ടെക്നിക്കൽ', 'app.tag': 'വിദ്യാഭ്യാസ സാങ്കേതിക വിശകലനം — ഉപദേശമല്ല',
@@ -217,7 +225,8 @@
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'വലിയ മൂലധനം', 'tier.Mid Cap': 'ഇടത്തരം മൂലധനം', 'tier.Small Cap': 'ചെറിയ മൂലധനം', 'tier.Micro Cap': 'സൂക്ഷ്മ മൂലധനം',
       'vaani': 'വാണിയോട് സംസാരിക്കുക',
       'chart.table': 'ഡാറ്റ പട്ടിക കാണിക്കുക', 'chart.tablehide': 'ഡാറ്റ പട്ടിക മറയ്ക്കുക', 'chart.tablecap': 'ചാർട്ട് ഡാറ്റ — ചാർട്ടിലെ അതേ സംഖ്യകൾ, സ്ക്രീൻ റീഡറിന്',
-      'nudge.overtrade': 'ധാരാളം തുറന്ന ട്രേഡുകൾ — അളവിനെക്കാൾ ഗുണനിലവാരം.'
+      'nudge.overtrade': 'ധാരാളം തുറന്ന ട്രേഡുകൾ — അളവിനെക്കാൾ ഗുണനിലവാരം.',
+      'search.nomatch': 'ഓഹരി ഒന്നും കണ്ടെത്തിയില്ല', 'screener.scanned': '{1} ൽ {0} ഓഹരികൾ പരിശോധിച്ചു'
     }
   };
 
