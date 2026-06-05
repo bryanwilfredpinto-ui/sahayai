@@ -304,7 +304,7 @@
       '#chitti-obs-badge .obs-line .lbl{color:#666;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em}' +
       '#chitti-obs-badge .obs-line .val{font-weight:700;color:#0E2344}' +
       '#chitti-obs-badge .obs-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-weight:800;font-size:10px;letter-spacing:.04em;white-space:nowrap}' +
-      '#chitti-obs-badge .obs-pill.active{background:#dcfce7;color:#138808}' +
+      '#chitti-obs-badge .obs-pill.active{background:#dcfce7;color:#0a5a04}' +
       '#chitti-obs-badge .obs-pill.degraded{background:#FFF1D6;color:#CC5500;border:1px solid #FF9933}' +
       '#chitti-obs-badge .obs-pill.failed{background:#fee2e2;color:#CC0000;border:1px solid #CC0000}' +
       '#chitti-obs-badge .obs-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}' +

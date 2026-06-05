@@ -1,0 +1,344 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "browser": "chromium",
+  "journeys": [
+    {
+      "name": "01 page loads no console errors",
+      "pass": true,
+      "ms": 3465,
+      "detail": "grid + 13 cards"
+    },
+    {
+      "name": "02 disability profile bypassed",
+      "pass": true,
+      "ms": 2730,
+      "detail": "no blocking modal"
+    },
+    {
+      "name": "03 language en->hi translates chrome",
+      "pass": true,
+      "ms": 3720,
+      "detail": "Hindi rendered | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "04 scan card opens golden-rule confirm",
+      "pass": true,
+      "ms": 3781,
+      "detail": "confirm gate shown | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "05 Nahi keeps camera CLOSED (golden rule)",
+      "pass": true,
+      "ms": 3866,
+      "detail": "camera stayed closed | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "06 Haan opens camera stage",
+      "pass": true,
+      "ms": 4469,
+      "detail": "camera stage opened (upload fallback available) | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "07 upload photo shows result + thumbnail",
+      "pass": true,
+      "ms": 4743,
+      "detail": "result shown, thumb display=block | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "08 save to memory shows site card",
+      "pass": true,
+      "ms": 5829,
+      "detail": "1 memory site(s) | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "09 compare overlay after 2 saves",
+      "pass": true,
+      "ms": 9762,
+      "detail": "compare imgs=2 | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "10 trend honest (no % no diagnosis)",
+      "pass": true,
+      "ms": 9234,
+      "detail": "trend honest (says \"not a diagnosis\"/\"see a doctor\", no %): You have tracked this area 2 photos over | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "11 add family profile + per-profile memory",
+      "pass": true,
+      "ms": 6256,
+      "detail": "profiles=Self,Mother memOnNew=0 | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "12 save caregiver persists",
+      "pass": true,
+      "ms": 4087,
+      "detail": "saved wa=+919999999999 | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "13 notify w/o number is blocked",
+      "pass": true,
+      "ms": 3801,
+      "detail": "blocked (alerted=true) | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "14 notify with number → golden-rule confirm",
+      "pass": true,
+      "ms": 3697,
+      "detail": "confirm gate before WhatsApp | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "15 medicine link → MedUPI",
+      "pass": true,
+      "ms": 6287,
+      "detail": "navigated to MedUPI | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "16 health file link",
+      "pass": true,
+      "ms": 3492,
+      "detail": "navigated to Health File"
+    },
+    {
+      "name": "17 forget area (golden-rule) removes it",
+      "pass": true,
+      "ms": 7859,
+      "detail": "area forgotten (confirm overlay z-index above site overlay) | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "18 forget pending photo closes result",
+      "pass": true,
+      "ms": 5173,
+      "detail": "discarded, not saved | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "19 listen (speaker) no error",
+      "pass": true,
+      "ms": 3680,
+      "detail": "speak invoked (no throw) | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "name": "20 per-response widget on result box",
+      "pass": true,
+      "ms": 3805,
+      "detail": "boxes=1 fb-bars=1 | console:CE:Access to fetch at 'https://chitti-vaani-api-production.up.railway.app/health' from origin 'http://1;CE:Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "edge": [
+    {
+      "name": "offline — local-first still works",
+      "pass": true,
+      "ms": 6120,
+      "detail": "saved offline, memory works"
+    },
+    {
+      "name": "slow 3G page load time",
+      "pass": false,
+      "ms": 30016,
+      "detail": "ERR page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:8765/chitti_health_scanner.html?d"
+    },
+    {
+      "name": "corrupted image upload graceful",
+      "pass": true,
+      "ms": 4507,
+      "detail": "handled corrupted file (result shown, no crash)"
+    },
+    {
+      "name": "large 9MB image upload",
+      "pass": true,
+      "ms": 7611,
+      "detail": "handled ~9MB in 3755ms"
+    },
+    {
+      "name": "rapid language switch x10 in <5s",
+      "pass": true,
+      "ms": 4876,
+      "detail": "10 switches in 1822ms, final hi rendered=true"
+    },
+    {
+      "name": "localStorage disabled — no crash",
+      "pass": true,
+      "ms": 2991,
+      "detail": "page renders with localStorage blocked (grid present)"
+    },
+    {
+      "name": "JS disabled — static fallback",
+      "pass": true,
+      "ms": 592,
+      "detail": "static content + disclaimer render; 13 cards visible; interactivity needs JS (documented)"
+    }
+  ],
+  "viewports": [
+    {
+      "name": "mobile-375",
+      "pass": true,
+      "ms": 2922,
+      "detail": "overflow=0px"
+    },
+    {
+      "name": "tablet-768",
+      "pass": true,
+      "ms": 3000,
+      "detail": "overflow=0px"
+    },
+    {
+      "name": "desktop-1440",
+      "pass": true,
+      "ms": 2836,
+      "detail": "overflow=0px"
+    },
+    {
+      "name": "Pixel5-emulation(chromium)",
+      "pass": true,
+      "ms": 0,
+      "detail": "overflow=0px — chromium emulation, NOT real Android"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "coveragePct": 1,
+      "untranslated": 127,
+      "switchMs": 1258,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti helps you notice,",
+        "Chitti helps you notice,",
+        "Chitti helps you notice,",
+        "Chitti helps you notice,"
+      ]
+    },
+    {
+      "lang": "hi",
+      "coveragePct": 98,
+      "untranslated": 3,
+      "switchMs": 1628,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "ta",
+      "coveragePct": 97,
+      "untranslated": 4,
+      "switchMs": 1459,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "te",
+      "coveragePct": 93,
+      "untranslated": 9,
+      "switchMs": 1606,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "ml",
+      "coveragePct": 97,
+      "untranslated": 4,
+      "switchMs": 1572,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "kn",
+      "coveragePct": 97,
+      "untranslated": 4,
+      "switchMs": 1531,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "mr",
+      "coveragePct": 97,
+      "untranslated": 4,
+      "switchMs": 1461,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "bn",
+      "coveragePct": 98,
+      "untranslated": 3,
+      "switchMs": 1625,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    },
+    {
+      "lang": "gu",
+      "coveragePct": 98,
+      "untranslated": 3,
+      "switchMs": 1463,
+      "flicker": false,
+      "sampleSeq": [
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म",
+        "Chitti आपको ध्यान देने म"
+      ]
+    }
+  ],
+  "a11y": {
+    "axe": {
+      "violations": []
+    },
+    "manual": {
+      "langAttr": "en",
+      "ariaLive": 3,
+      "speakerBtns": 5,
+      "smallTaps": 76,
+      "iconNav": 7,
+      "btnsNoLabel": 0,
+      "imgNoAlt": 0
+    }
+  },
+  "performance": {
+    "domContentLoaded": 840,
+    "loadComplete": 909,
+    "jsHeapMB": 25,
+    "langSwitchMs": 90,
+    "captureSaveMs": 3753
+  },
+  "notRun": [
+    "Firefox (desktop) — engine not installed in this environment",
+    "Safari (desktop) / WebKit — engine not installed at run time (install attempted separately)",
+    "Real Chrome on Android (2 devices) — no physical device / device cloud",
+    "Real Safari on iOS (2 devices) — no physical device / device cloud",
+    "Human screen-share live demo — not performable by an automated agent (screenshots + this reproducible script are the proxy)",
+    "Lighthouse performance audit — lighthouse not installed (navigation-timing used instead)"
+  ]
+}

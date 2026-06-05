@@ -89,9 +89,10 @@ main{padding:14px 16px 110px;max-width:980px;margin:0 auto}
 /* Urgency legend — ICON + TEXT, never colour alone */
 .legend{display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px}
 .legend .item{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:999px;border:1px solid var(--border);min-height:36px}
-.legend .normal{background:rgba(19,136,8,.10);color:var(--green);border-color:rgba(19,136,8,.35)}
-.legend .monitor{background:rgba(212,175,55,.16);color:#92580f;border-color:rgba(212,175,55,.45)}
-.legend .seek{background:rgba(220,38,38,.10);color:var(--red);border-color:rgba(220,38,38,.35)}
+/* Text colours darkened to clear WCAG AA 4.5:1 on the tinted pills (QA 2026-06-05). */
+.legend .normal{background:rgba(19,136,8,.10);color:#0a5a04;border-color:rgba(19,136,8,.35)}
+.legend .monitor{background:rgba(212,175,55,.16);color:#7a4a0c;border-color:rgba(212,175,55,.45)}
+.legend .seek{background:rgba(220,38,38,.10);color:#a31515;border-color:rgba(220,38,38,.35)}
 
 /* Section card */
 .section-card{margin:0 0 14px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:16px}
@@ -116,8 +117,9 @@ main{padding:14px 16px 110px;max-width:980px;margin:0 auto}
 .cam-bar button.cancel{background:transparent;color:var(--text);border:1px solid var(--border)}
 .cam-bar label.upload{background:var(--navy)}
 
-/* Confirm gate (Golden Rule) */
-.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px}
+/* Confirm gate (Golden Rule) — MUST sit above the site/compare overlay
+   (z-index 9100) so "forget this area" can be confirmed. QA 2026-06-05. */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9500;display:none;align-items:center;justify-content:center;padding:20px}
 .confirm-overlay.shown{display:flex}
 .confirm-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:460px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .confirm-panel h2{margin:0 0 8px;color:var(--saffron);font-size:18px}
@@ -203,7 +205,8 @@ footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 4
 <div class="bharat-stripe"></div>
 
 <!-- Sticky medical-disclaimer bar (analogous to SEBI bar) -->
-<div class="med-bar" role="note">
+<!-- role=region + aria-label makes it a named landmark (axe 'region' fix, QA 2026-06-05). -->
+<div class="med-bar" role="region" aria-label="Medical disclaimer">
   <strong>⚕️ NOT A DOCTOR.</strong> Chitti helps you notice — doctors help you heal.
   <strong>This is not a medical diagnosis.</strong>
   <a href="#full-disclaimer" data-i18n="disclaimer_link">Read full disclaimer</a>
@@ -436,7 +439,11 @@ footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 4
    - Photos live on THIS device (localStorage); Chitti Health File is the
      encrypted-backend sync target (deep-linked). "Chitti forget" wipes.
    ------------------------------------------------------------------ */
-var CURRENT_LANG = (window.CHITTI_LANG_RESOLVED || localStorage.getItem('chitti_lang') || 'hi');
+var CURRENT_LANG = (function(){
+  // Guard localStorage — Safari private mode / "storage disabled" throws on access.
+  try { return window.CHITTI_LANG_RESOLVED || localStorage.getItem('chitti_lang') || 'hi'; }
+  catch(e){ return window.CHITTI_LANG_RESOLVED || 'hi'; }
+})();
 var PENDING_SCAN = null;   // {type, emoji, name}
 var PENDING_IMG = null;    // dataURL of the just-captured/uploaded photo
 var OPEN_SITE = null;      // site currently open in the compare overlay
@@ -448,8 +455,12 @@ var PROFILE_KEY  = 'chitti_hs_profile_v1';
 var TIMELINE_KEY = 'chitti_hs_timeline_v1';
 var CAREGIVER_KEY= 'chitti_hs_caregiver_v1';
 
+/* All localStorage access is guarded — Safari private mode / disabled storage
+   throws on access; the page must degrade, never crash. (QA 2026-06-05) */
 function lsGet(k, fb){ try { return JSON.parse(localStorage.getItem(k)) || fb; } catch(e){ return fb; } }
 function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function lsGetRaw(k, fb){ try { return localStorage.getItem(k) || fb; } catch(e){ return fb; } }
+function lsSetRaw(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 
 function changeLanguage(lang){
   CURRENT_LANG = lang;
@@ -466,19 +477,19 @@ function getProfiles(){
   if (!p || !p.length){ p = [{id:'self', name:'Self'}]; lsSet(PROFILES_KEY, p); }
   return p;
 }
-function currentProfile(){ return localStorage.getItem(PROFILE_KEY) || 'self'; }
+function currentProfile(){ return lsGetRaw(PROFILE_KEY, 'self'); }
 function renderProfiles(){
   var sel = document.getElementById('profile-select');
   var ps = getProfiles(); var cur = currentProfile();
   sel.innerHTML = ps.map(function(p){ return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+escapeHtml(p.name)+'</option>'; }).join('');
 }
-function switchProfile(id){ localStorage.setItem(PROFILE_KEY, id); renderMemory(); loadCaregiver(); }
+function switchProfile(id){ lsSetRaw(PROFILE_KEY, id); renderMemory(); loadCaregiver(); }
 function addProfile(){
   var name = prompt('Family member name (e.g. Mother, Father, Child):');
   if (!name) return;
   var ps = getProfiles(); var id = 'p'+Date.now();
   ps.push({id:id, name:name}); lsSet(PROFILES_KEY, ps);
-  localStorage.setItem(PROFILE_KEY, id);
+  lsSetRaw(PROFILE_KEY, id);
   renderProfiles(); renderMemory(); loadCaregiver();
 }
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
