@@ -573,6 +573,83 @@ await safe('tour_renders_per_profession', async () => {
   check('tour_renders_per_profession', all28, JSON.stringify(counts));
 });
 
+await safe('curricula_7_registered', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  const got = await p.evaluate(() => window.ChittiCoach.curricula());
+  await b.close();
+  const ids = (got || []).map(c => c.id).sort();
+  const expected = ['14-day-build','18-day-coursiv-match','28-day-tour','5-day-phone-only','7-day-sprint','90-day-pro','industry-sprint','team-tour'].sort();
+  const ok = JSON.stringify(ids) === JSON.stringify(expected);
+  check('curricula_7_registered', ok, ids.join(','));
+});
+
+await safe('curriculum_18day_has_11_creative_tools', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  const tools = await p.evaluate(() => {
+    const d = window.ChittiCoach.curriculumDays('18-day-coursiv-match', 'student');
+    return d.map(x => x.tool);
+  });
+  await b.close();
+  // Must include Sire's screenshot tools Days 8-18
+  const required = ['Lovable','Manus','Nano Banana','Leonardo AI','Meta AI','AssemblyAI','Canva AI','Veo 3','Sora 2','Kimi','Kling'];
+  const missing = required.filter(r => !tools.some(t => t.indexOf(r) >= 0));
+  check('curriculum_18day_has_11_creative_tools', missing.length === 0 && tools.length === 18,
+    `total=${tools.length}/18 missing=${missing.join(',') || 'none'}`);
+});
+
+await safe('curriculum_lengths_correct', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  const lengths = await p.evaluate(() => ({
+    'flagship-28':     window.ChittiCoach.curriculumDays('28-day-tour', 'doctor').length,
+    'coursiv-18':      window.ChittiCoach.curriculumDays('18-day-coursiv-match', 'doctor').length,
+    'sprint-7':        window.ChittiCoach.curriculumDays('7-day-sprint', 'doctor').length,
+    'pro-90':          window.ChittiCoach.curriculumDays('90-day-pro', 'doctor').length,
+    'phone-5':         window.ChittiCoach.curriculumDays('5-day-phone-only', 'doctor').length,
+    'build-14':        window.ChittiCoach.curriculumDays('14-day-build', 'doctor').length,
+    'team-14':         window.ChittiCoach.curriculumDays('team-tour', 'doctor').length,
+    'industry-21':     window.ChittiCoach.curriculumDays('industry-sprint', 'doctor').length,
+  }));
+  await b.close();
+  const ok = lengths['flagship-28'] === 28
+    && lengths['coursiv-18'] === 18
+    && lengths['sprint-7'] === 7
+    && lengths['pro-90'] === 90
+    && lengths['phone-5'] === 5
+    && lengths['build-14'] === 14
+    && lengths['team-14'] === 14
+    && lengths['industry-21'] === 21;
+  check('curriculum_lengths_correct', ok, JSON.stringify(lengths));
+});
+
+await safe('curriculum_picker_renders_8_buttons', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  await p.evaluate(() => {
+    const sel = document.getElementById('pick-profession');
+    sel.value = 'doctor'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    window.showCategory && window.showCategory('tool-tour');
+  });
+  await p.waitForTimeout(1200);
+  const btns = await p.$$eval('.tt-curric-btn', els => els.length);
+  await b.close();
+  check('curriculum_picker_renders_8_buttons', btns === 8, `${btns} curriculum buttons`);
+});
+
 // =====================================================================
 // SECTION 8 — Profile schema round-trip (set → reload → verify)
 // =====================================================================

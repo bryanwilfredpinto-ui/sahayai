@@ -1508,6 +1508,261 @@
       promise: '15 minutes a day. 28 days. Week 1: you\'ll feel unstoppable. Week 2: you\'ll know more than 90% of your colleagues. Month 1: certificate.',
     };
   }
+
+  // ── L16.6 — SIX CURRICULA REGISTRY (Sire 2026-06-05 PM ship-all-six) ──
+  // Each curriculum: { id, name, emoji, days_count, promise, generator(prof) }
+  // Generator returns array of day cards using existing TOOL_TOURS data
+  // plus a few small additions for phone-only and advanced-build tracks.
+
+  // Sire's 2026-06-05 screenshot — Days 8-18 from Coursiv's "AI Certificate
+  // in 28 Days" ad. Real product URLs verified.
+  var TOUR_CREATIVE_11 = [
+    { day:8,  tool:'Lovable',     why:'Build a full-stack app with auth + DB + deploy from one prompt. AI app builder used by 1M+ devs.',
+      watch:{title:'Lovable — Get started',                       url:'https://docs.lovable.dev/'},
+      try:  {title:'Build "a landing page for my AI side-project" — deploys instantly', url:'https://lovable.dev/'}, minutes:15 },
+    { day:9,  tool:'Manus',       why:'Autonomous AI agent that browses the web, writes code, plans trips, fills forms — without you watching.',
+      watch:{title:'Manus — How it works',                        url:'https://manus.im/'},
+      try:  {title:'Ask Manus to "research the top 5 AI tools for [your role] + summarise"', url:'https://manus.im/'}, minutes:15 },
+    { day:10, tool:'Nano Banana (Gemini Image)', why:'Google\'s fastest image generator — folded into Gemini. State-of-the-art editing + composition.',
+      watch:{title:'Gemini Image generation',                     url:'https://gemini.google.com/'},
+      try:  {title:'Gemini -> "generate an image of [my pitch deck cover idea]"', url:'https://gemini.google.com/'}, minutes:15 },
+    { day:11, tool:'Leonardo AI', why:'Pro-grade image generator. Used by marketing + game-dev teams for assets.',
+      watch:{title:'Leonardo AI — Quickstart',                    url:'https://leonardo.ai/learn'},
+      try:  {title:'Generate 1 brand-asset image in Leonardo (free 150 tokens/day)', url:'https://leonardo.ai/'}, minutes:15 },
+    { day:12, tool:'Meta AI',     why:'Free, fast, conversational. Lives inside WhatsApp + Instagram + Messenger — already on your phone.',
+      watch:{title:'Meta AI overview',                            url:'https://www.meta.ai/'},
+      try:  {title:'Open WhatsApp -> Meta AI -> ask "what changed in my industry this week?"', url:'https://www.meta.ai/'}, minutes:15 },
+    { day:13, tool:'AssemblyAI',  why:'Speech-to-text + speaker-detection API. Powers podcast transcription + meeting analysis.',
+      watch:{title:'AssemblyAI — Quickstart',                     url:'https://www.assemblyai.com/docs/'},
+      try:  {title:'Use AssemblyAI playground to transcribe any audio file', url:'https://www.assemblyai.com/'}, minutes:15 },
+    { day:14, tool:'Canva AI (Magic Studio)', why:'AI design — text-to-image, magic-write, magic-edit, presentations in seconds. FREE tier.',
+      watch:{title:'Canva Magic Studio — overview',               url:'https://www.canva.com/magic-studio/'},
+      try:  {title:'Generate "an Instagram carousel about my career win" with Magic Studio', url:'https://www.canva.com/magic-studio/'}, minutes:15 },
+    { day:15, tool:'Veo 3',       why:'Google DeepMind\'s state-of-the-art text-to-video (now with audio). Coming to consumers via Gemini.',
+      watch:{title:'Veo 3 — Google DeepMind',                     url:'https://deepmind.google/technologies/veo/'},
+      try:  {title:'Gemini Advanced -> "generate a 10-second video of [your idea]"', url:'https://deepmind.google/technologies/veo/'}, minutes:15 },
+    { day:16, tool:'Sora 2',      why:'OpenAI\'s text-to-video. Generate cinema-quality clips from one prompt.',
+      watch:{title:'Sora — OpenAI overview',                      url:'https://openai.com/sora'},
+      try:  {title:'Open openai.com/sora — generate 1 short clip', url:'https://openai.com/sora'}, minutes:15 },
+    { day:17, tool:'Kimi (Moonshot)', why:'Chinese AI lab. 2M-token context window. Free. Strong for long documents.',
+      watch:{title:'Kimi overview',                               url:'https://kimi.ai/'},
+      try:  {title:'Paste a 200-page PDF into kimi.ai — ask "summarise + 5 risks"', url:'https://kimi.ai/'}, minutes:15 },
+    { day:18, tool:'Kling',       why:'Kuaishou (China) — text-to-video competitor to Sora. Strong motion + physics.',
+      watch:{title:'Kling AI — Overview',                         url:'https://klingai.com/'},
+      try:  {title:'Generate 1 short video at klingai.com', url:'https://klingai.com/'}, minutes:15 },
+  ];
+
+  var PHONE_ONLY_5 = [
+    { day:1, tool:'ChatGPT mobile app', why:'Same ChatGPT, fully mobile. Voice input works in Hindi/Tamil/Telugu/Bengali too.',
+      try:{title:'Install ChatGPT app, tap mic, ask in your mother tongue', url:'https://chat.openai.com/'}, minutes:15 },
+    { day:2, tool:'Gemini app',         why:'Google\'s AI in your language — best Indic-lang support on mobile.',
+      try:{title:'Install Gemini app, ask "summarise today\'s news in Hindi"', url:'https://gemini.google.com/'}, minutes:15 },
+    { day:3, tool:'BHASHINI',           why:'Govt of India — free 22-language translation. Works on basic phones.',
+      try:{title:'Install BHASHINI app, translate 1 message from English -> your language', url:'https://bhashini.gov.in/'}, minutes:15 },
+    { day:4, tool:'Sarvam AI',          why:'Indian-built LLM. Strongest for vernacular voice + chat.',
+      try:{title:'Open sarvam.ai chat — ask anything in your language', url:'https://www.sarvam.ai/'}, minutes:15 },
+    { day:5, tool:'WhatsApp + AI bots', why:'Save 91+ WhatsApp AI bots as contacts; chat with AI without any app.',
+      try:{title:'Search "WhatsApp Meta AI" — open + start a chat', url:'https://www.whatsapp.com/'}, minutes:15 },
+  ];
+
+  var ADVANCED_BUILD_7 = [
+    { day:1, tool:'Build A — Production RAG bot',     why:'Combine LangChain + Qdrant + Claude on YOUR own corpus.',
+      try:{title:'Walk the LangChain RAG tutorial end-to-end', url:'https://academy.langchain.com/'}, minutes:15 },
+    { day:2, tool:'Build B — Multi-tool agent',       why:'Smolagents or LangGraph agent that uses 3+ tools in sequence.',
+      try:{title:'HF Agents Course Unit 1', url:'https://huggingface.co/learn/agents-course/unit1/introduction'}, minutes:15 },
+    { day:3, tool:'Build C — Fine-tune your own model', why:'LoRA-fine-tune a 3B model on your domain in Colab.',
+      try:{title:'Hugging Face PEFT LoRA tutorial', url:'https://huggingface.co/docs/peft/conceptual_guides/lora'}, minutes:15 },
+    { day:4, tool:'Build D — Deploy to production',   why:'Ship your agent to Modal Labs or Vercel — public URL.',
+      try:{title:'Modal Labs FREE deploy', url:'https://modal.com/'}, minutes:15 },
+    { day:5, tool:'Build E — Evaluation harness',     why:'W&B Weave or LangSmith — measure quality, not just vibes.',
+      try:{title:'LangSmith eval quickstart', url:'https://docs.smith.langchain.com/'}, minutes:15 },
+    { day:6, tool:'Build F — Open-source 1 PR',       why:'Pick any HF Transformers issue tagged "good first issue" + PR it.',
+      try:{title:'HF Transformers issues', url:'https://github.com/huggingface/transformers/issues?q=is%3Aopen+is%3Aissue+label%3A%22Good+First+Issue%22'}, minutes:15 },
+    { day:7, tool:'Build G — Showcase',               why:'LinkedIn carousel + YouTube short. Tag #ChittiBuilders.',
+      try:{title:'LinkedIn post + Gamma deck of your 7 builds', url:'https://gamma.app/'}, minutes:15 },
+  ];
+
+  // Sector-to-profession map for Industry Sprint
+  var SECTOR_MAP = {
+    'healthcare':     ['doctor','oncologist','nurse'],
+    'bfsi':           ['accountant','lawyer','business-owner'],
+    'public-sector':  ['government-employee','lawyer','accountant'],
+    'education':      ['teacher','student'],
+    'agritech':       ['farmer','business-owner','government-employee'],
+    'tech':           ['software-developer','student'],
+    'people':         ['hr-professional','talent-acquisition','business-owner'],
+  };
+
+  function _idxClamp(arr, i) { return arr[i % arr.length]; }
+
+  var CURRICULA = [
+    {
+      id: '28-day-tour', name: '28-Day AI Tool Tour', emoji: '🎓', days_count: 28,
+      promise: 'The flagship. 15 min/day for 4 weeks. Week 1 foundation, Weeks 2-3 your role, Week 4 build. Certificate at end.',
+      generator: function (prof) {
+        var mid = TOUR_PROFESSION_14[prof] || TOUR_PROFESSION_14['student'];
+        return TOUR_COMMON_7.concat(mid, TOUR_BUILD_7).map(function (d, i) {
+          return Object.assign({}, d, { day: i + 1 });
+        });
+      },
+    },
+    {
+      id: '18-day-coursiv-match', name: '18-Day Foundation (Creative + LLMs)', emoji: '🎬', days_count: 18,
+      promise: 'Covers the 18 tools from the viral "AI Certificate in 28 days" Coursiv ad. Day 1-7 the 7 foundation LLMs, Day 8-18 creative + image + video + speech AI (Lovable / Manus / Nano Banana / Leonardo / Meta AI / AssemblyAI / Canva AI / Veo 3 / Sora 2 / Kimi / Kling).',
+      generator: function (prof) {
+        return TOUR_COMMON_7.concat(TOUR_CREATIVE_11).map(function (d, i) {
+          return Object.assign({}, d, { day: i + 1 });
+        });
+      },
+    },
+    {
+      id: '7-day-sprint', name: '7-Day AI Sprint', emoji: '🏃', days_count: 7,
+      promise: 'Quick wins. The 7 highest-impact tools — 4 universal + 3 role-specific. For busy weeks.',
+      generator: function (prof) {
+        var mid = TOUR_PROFESSION_14[prof] || TOUR_PROFESSION_14['student'];
+        // 4 must-have universals + top 3 profession tools
+        var seq = TOUR_COMMON_7.slice(0, 4).concat(mid.slice(0, 3));
+        return seq.map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+    {
+      id: '90-day-pro', name: '90-Day AI Pro', emoji: '🎯', days_count: 90,
+      promise: 'Deep mastery. 3 months. Foundation > Profession deep-dive (Level 1, 2, 3 reps) > Build sprint > Advanced agents. Portfolio-ready.',
+      generator: function (prof) {
+        var mid = TOUR_PROFESSION_14[prof] || TOUR_PROFESSION_14['student'];
+        var days = [];
+        // Days 1-7: Foundation common
+        TOUR_COMMON_7.forEach(function (d) { days.push(d); });
+        // Days 8-49: 3 reps of the 14 profession tools (rep1: try, rep2: build with, rep3: teach others)
+        ['Use it','Build with it','Automate with it'].forEach(function (level) {
+          mid.forEach(function (d) {
+            days.push(Object.assign({}, d, {
+              tool: d.tool + ' (Level: ' + level + ')',
+              why: '[' + level + '] ' + (d.why || ''),
+            }));
+          });
+        });
+        // Days 50-56: 7-day build sprint
+        TOUR_BUILD_7.forEach(function (d) { days.push(d); });
+        // Days 57-77: 21 days advanced — re-iterate top 7 prof tools at expert level, then 7 of build_7 with own data, then last 7 = advanced 7-day build
+        mid.slice(0, 7).forEach(function (d) {
+          days.push(Object.assign({}, d, {
+            tool: d.tool + ' (Expert)',
+            why: '[Expert] Integrate this into your daily workflow + measure impact.',
+          }));
+        });
+        TOUR_BUILD_7.forEach(function (d) {
+          days.push(Object.assign({}, d, {
+            tool: d.tool.replace('Build #', 'Build #v2-'),
+            why: '[Reps] Repeat with your own data this time.',
+          }));
+        });
+        ADVANCED_BUILD_7.forEach(function (d) { days.push(d); });
+        // Days 78-90: weave in the 11 creative AI tools (image/video/speech/agent)
+        TOUR_CREATIVE_11.slice(0, 12).forEach(function (d) {
+          days.push(Object.assign({}, d, {
+            tool: d.tool + ' (Apply to your role)',
+            why: '[Creative AI] Use this on a real ' + (prof ? prof.replace(/-/g, ' ') : 'work') + ' deliverable today.',
+          }));
+        });
+        days.push({ day:90, tool:'Build H — 90-Day Portfolio + Demo Day',
+          why:'Write your 90-day story. Tag #ChittiNewsAI #AICareerCoach. Get certificate.',
+          try:{title:'Gamma deck + LinkedIn long-form + YouTube reel', url:'https://gamma.app/'}, minutes:15 });
+        return days.slice(0, 90).map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+    {
+      id: '5-day-phone-only', name: '5-Day Phone-Only AI', emoji: '📱', days_count: 5,
+      promise: 'For users without laptops. WhatsApp + browser + camera only. Indic-language first. No paid apps.',
+      generator: function (prof) {
+        return PHONE_ONLY_5.map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+    {
+      id: '14-day-build', name: '14-Day Build Sprint', emoji: '🛠️', days_count: 14,
+      promise: 'For AI-fluent users. 14 ship-able projects. From CV-revamp Day 1 to production RAG-agent Day 14.',
+      generator: function (prof) {
+        return TOUR_BUILD_7.concat(ADVANCED_BUILD_7).map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+    {
+      id: 'team-tour', name: 'Team Tour (Manager-led)', emoji: '👥', days_count: 14,
+      promise: 'For managers onboarding their team. Days 1-7 everyone does Foundation. Days 8-14 collaborative build. Manager tracks team progress.',
+      generator: function (prof) {
+        var mid = TOUR_PROFESSION_14[prof] || TOUR_PROFESSION_14['student'];
+        var days = TOUR_COMMON_7.slice();
+        // Days 8-14: team-collaboration framing for prof tools + final demo
+        mid.slice(0, 6).forEach(function (d) {
+          days.push(Object.assign({}, d, {
+            tool: d.tool + ' (Team Drill)',
+            why: '[Team] Each team member tries this tool + shares 1 prompt that worked in standup.',
+          }));
+        });
+        days.push({ day:14, tool:'Team Demo Day', why:'Each team member ships 1 use case. Manager assembles a team-portfolio deck.',
+          try:{title:'Gamma — team deck template', url:'https://gamma.app/'}, minutes:15 });
+        return days.slice(0, 14).map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+    {
+      id: 'industry-sprint', name: 'Industry Sprint (21 days)', emoji: '🏢', days_count: 21,
+      promise: 'For a whole sector. Cross-pollinate tools across the 3 most-related professions. Healthcare / BFSI / Public Sector / Education / Agritech / Tech / People.',
+      generator: function (prof) {
+        // Find which sector the profession belongs to
+        var sector = null;
+        Object.keys(SECTOR_MAP).forEach(function (s) {
+          if (SECTOR_MAP[s].indexOf(prof) >= 0 && !sector) sector = s;
+        });
+        if (!sector) sector = 'tech';
+        var profsInSector = SECTOR_MAP[sector];
+        var days = TOUR_COMMON_7.slice();    // 7 foundation
+        // 14 from the 3 related professions — take top 5/5/4 from each
+        var allProfTools = [];
+        profsInSector.forEach(function (p, idx) {
+          var pTools = (TOUR_PROFESSION_14[p] || []).slice(0, idx === 2 ? 4 : 5);
+          pTools.forEach(function (d) {
+            allProfTools.push(Object.assign({}, d, {
+              tool: d.tool + ' (' + p.replace(/-/g, ' ') + ' lens)',
+            }));
+          });
+        });
+        days = days.concat(allProfTools.slice(0, 14));
+        return days.slice(0, 21).map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
+      },
+    },
+  ];
+
+  function getCurricula() {
+    return CURRICULA.map(function (c) {
+      return { id: c.id, name: c.name, emoji: c.emoji, days_count: c.days_count, promise: c.promise };
+    });
+  }
+  function getCurriculumDays(id, profession) {
+    var c = CURRICULA.filter(function (x) { return x.id === id; })[0];
+    if (!c) return [];
+    return c.generator(profession || 'student');
+  }
+  function _curriculumDoneKey(id) { return 'curric_' + id.replace(/[^a-z0-9]/g, '_') + '_days'; }
+  function getCurriculumProgress(id, profile) {
+    if (!profile) profile = _emptyProfile();
+    var key = _curriculumDoneKey(id);
+    var done = profile[key] || [];
+    var c = CURRICULA.filter(function (x) { return x.id === id; })[0];
+    var total = c ? c.days_count : 0;
+    var nextDay = 1;
+    for (var d = 1; d <= total; d++) { if (done.indexOf(d) < 0) { nextDay = d; break; } if (d === total) nextDay = total + 1; }
+    return { id: id, done: done.slice(), done_count: done.length, total: total, next_day: nextDay, certified: total > 0 && done.length >= total };
+  }
+  function markCurriculumDayDone(id, day) {
+    var p = _getProfile() || _emptyProfile();
+    var key = _curriculumDoneKey(id);
+    if (!p[key]) p[key] = [];
+    var n = parseInt(day, 10);
+    var c = CURRICULA.filter(function (x) { return x.id === id; })[0];
+    var total = c ? c.days_count : 0;
+    if (n >= 1 && n <= total && p[key].indexOf(n) < 0) p[key].push(n);
+    _setProfile(p);
+    return getCurriculumProgress(id, p);
+  }
   function getTourDayProgress(profile) {
     if (!profile) profile = _emptyProfile();
     var done = profile.tour_days_done || [];
@@ -2060,5 +2315,10 @@
     tour: getToolTour,
     tourProgress: getTourDayProgress,
     markTourDayDone: markTourDayDone,
+    // L16.6 — 7 curricula (28-day flagship + 18-day Coursiv-match + 7-day sprint + 90-day pro + 5-day phone + 14-day build + team + industry)
+    curricula: getCurricula,
+    curriculumDays: getCurriculumDays,
+    curriculumProgress: getCurriculumProgress,
+    markCurriculumDayDone: markCurriculumDayDone,
   };
 })();

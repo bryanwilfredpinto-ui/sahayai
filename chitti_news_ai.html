@@ -278,6 +278,18 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 .tt-day-actions .cc-btn.primary{background:#b8500e;color:#fff;border:none;font-weight:700}
 .tt-day-actions .cc-btn[disabled]{opacity:.65;cursor:default}
 @media(max-width:520px){.tt-grid{grid-template-columns:1fr}.tt-cert-cta{flex-direction:column;align-items:stretch}}
+
+/* COSDF v1.1 L16.6 — Curriculum picker (7 curricula incl. 18-Day Coursiv-match) */
+.tt-curric-picker{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px}
+.tt-curric-label{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px}
+.tt-curric-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.tt-curric-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;font-family:inherit;min-height:64px}
+.tt-curric-btn:hover{background:rgba(232,106,23,.06);border-color:var(--saffron)}
+.tt-curric-btn.active{background:linear-gradient(135deg,rgba(232,106,23,.12),rgba(212,175,55,.08));border-color:var(--saffron);box-shadow:0 2px 8px rgba(232,106,23,.20)}
+.tt-curric-emoji{font-size:18px;line-height:1}
+.tt-curric-name{font-size:12.5px;font-weight:800;color:var(--navy);line-height:1.3}
+.tt-curric-days{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+.tt-curric-btn.active .tt-curric-days{color:#9a3412}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -1802,57 +1814,66 @@ loadFeed(false);
     html += '</article>';
     return html;
   }
+  // Active curriculum stored in localStorage so it persists across reloads
+  function _activeCurriculumId() {
+    try { return localStorage.getItem('chitti_tour_curriculum') || '28-day-tour'; } catch (e) { return '28-day-tour'; }
+  }
+  function _setActiveCurriculum(id) {
+    try { localStorage.setItem('chitti_tour_curriculum', id); } catch (e) {}
+  }
+  window.ccTourSwitchCurriculum = function (id) { _setActiveCurriculum(id); ccRenderTour(); };
+
   function ccRenderTour() {
     var host = document.getElementById('tool-tour-content'); if (!host) return;
     var CC = window.ChittiCoach;
     var p = CC.profile.init();
     var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
     if (!prof || prof === 'everyone') prof = 'student';
-    var tour = CC.tour(prof);
-    var prog = CC.tourProgress(p);
-    var pct = Math.round((prog.done_count / 28) * 100);
-    var allDays = tour.common_7.concat(tour.profession_14, tour.build_7);
+
+    var curricula = CC.curricula();
+    var activeId = _activeCurriculumId();
+    if (!curricula.some(function (c) { return c.id === activeId; })) { activeId = curricula[0].id; _setActiveCurriculum(activeId); }
+    var meta = curricula.filter(function (c) { return c.id === activeId; })[0];
+    var days = CC.curriculumDays(activeId, prof);
+    var prog = CC.curriculumProgress(activeId, p);
+    var pct = meta.days_count > 0 ? Math.round((prog.done_count / meta.days_count) * 100) : 0;
 
     var html = '';
-    html += '<header class="tt-hero" data-chitti-response data-chitti-section="28-Day Tour header">';
-    html += '  <h2 class="tt-title">🎓 28-Day AI Tool Tour</h2>';
-    html += '  <p class="tt-promise">' + _ttEsc(tour.promise) + '</p>';
-    html += '  <div class="tt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="28" aria-valuenow="' + prog.done_count + '" aria-label="Tour progress">';
+
+    // ── Curriculum picker ─────────────────────────────────────────────
+    html += '<nav class="tt-curric-picker" data-chitti-response data-chitti-section="Curriculum picker" role="tablist" aria-label="Choose a curriculum">';
+    html += '<div class="tt-curric-label">📚 Choose your learning path:</div>';
+    html += '<div class="tt-curric-options">';
+    curricula.forEach(function (c) {
+      var active = c.id === activeId;
+      html += '<button class="tt-curric-btn ' + (active ? 'active' : '') + '" type="button" role="tab" aria-selected="' + active + '" onclick="ccTourSwitchCurriculum(\'' + c.id + '\')" aria-label="Switch to ' + _ttEsc(c.name) + ' — ' + c.days_count + ' days">' +
+              '<span class="tt-curric-emoji" aria-hidden="true">' + c.emoji + '</span>' +
+              '<span class="tt-curric-name">' + _ttEsc(c.name) + '</span>' +
+              '<span class="tt-curric-days">' + c.days_count + ' days</span>' +
+              '</button>';
+    });
+    html += '</div></nav>';
+
+    // ── Hero + progress ───────────────────────────────────────────────
+    html += '<header class="tt-hero" data-chitti-response data-chitti-section="' + _ttEsc(meta.name) + ' header">';
+    html += '  <h2 class="tt-title">' + _ttEsc(meta.emoji) + ' ' + _ttEsc(meta.name) + '</h2>';
+    html += '  <p class="tt-promise">' + _ttEsc(meta.promise) + '</p>';
+    html += '  <div class="tt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + meta.days_count + '" aria-valuenow="' + prog.done_count + '" aria-label="' + _ttEsc(meta.name) + ' progress">';
     html += '    <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:' + pct + '%"></div></div>';
-    html += '    <div class="tt-progress-label">' + prog.done_count + ' / 28 days done · ' + pct + '% · ';
+    html += '    <div class="tt-progress-label">' + prog.done_count + ' / ' + meta.days_count + ' days done · ' + pct + '% · ';
     html += (prog.certified ? '🏆 CERTIFIED — claim your certificate' : 'Day ' + prog.next_day + ' next');
     html += '</div></div>';
     if (prog.certified) {
-      html += '  <div class="tt-cert-cta"><strong>🎉 Tour complete.</strong> ' +
-              '<button class="cc-btn primary" type="button" onclick="ccTourClaimCert()" aria-label="Claim your Chitti AI Tool Tour certificate">📜 Claim Chitti Certificate</button></div>';
+      html += '  <div class="tt-cert-cta"><strong>🎉 Curriculum complete.</strong> ' +
+              '<button class="cc-btn primary" type="button" onclick="ccTourClaimCert(\'' + meta.id + '\')" aria-label="Claim your Chitti ' + _ttEsc(meta.name) + ' certificate">📜 Claim Chitti Certificate</button></div>';
     }
     html += '</header>';
 
-    html += '<section class="tt-band" data-chitti-section="Days 1-7 — Foundation LLMs">';
-    html += '<h3 class="tt-band-title">📚 Week 1 — Foundation (Days 1-7)</h3>';
-    html += '<p class="tt-band-sub">Every professional learns these 7 tools. Same for all professions.</p>';
+    // ── Days grid (single section; bands inferred for 28-day) ─────────
+    html += '<section class="tt-band" data-chitti-section="' + _ttEsc(meta.name) + ' days">';
+    html += '<h3 class="tt-band-title">📅 Your ' + meta.days_count + ' days</h3>';
     html += '<div class="tt-grid">';
-    tour.common_7.forEach(function (d) {
-      var done = prog.done.indexOf(d.day) >= 0;
-      html += _ttDayCard(d, done, false, prog.next_day);
-    });
-    html += '</div></section>';
-
-    html += '<section class="tt-band" data-chitti-section="Days 8-21 — ' + _ttEsc(prof) + ' tools">';
-    html += '<h3 class="tt-band-title">🎯 Weeks 2-3 — Your Profession (Days 8-21)</h3>';
-    html += '<p class="tt-band-sub">14 tools curated for <strong>' + _ttEsc(prof.replace(/-/g, ' ')) + '</strong>.</p>';
-    html += '<div class="tt-grid">';
-    tour.profession_14.forEach(function (d) {
-      var done = prog.done.indexOf(d.day) >= 0;
-      html += _ttDayCard(d, done, false, prog.next_day);
-    });
-    html += '</div></section>';
-
-    html += '<section class="tt-band" data-chitti-section="Days 22-28 — Build sprint">';
-    html += '<h3 class="tt-band-title">🛠️ Week 4 — Build Sprint (Days 22-28)</h3>';
-    html += '<p class="tt-band-sub">Ship one small thing per day. Day 28 = LinkedIn post + certificate.</p>';
-    html += '<div class="tt-grid">';
-    tour.build_7.forEach(function (d) {
+    days.forEach(function (d) {
       var done = prog.done.indexOf(d.day) >= 0;
       html += _ttDayCard(d, done, false, prog.next_day);
     });
@@ -1860,19 +1881,23 @@ loadFeed(false);
 
     host.innerHTML = html;
     if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.refresh) { try { window.Chitti.a11y.refresh(); } catch (e) {} }
-    CC.speak('Twenty-eight day A I tool tour for ' + prof.replace(/-/g, ' ') + '. ' +
-             prog.done_count + ' of 28 days done. ' +
-             (prog.certified ? 'Tour complete. Claim your certificate.' : 'Day ' + prog.next_day + ' is next.'));
+    CC.speak(meta.name + ' for ' + prof.replace(/-/g, ' ') + '. ' +
+             prog.done_count + ' of ' + meta.days_count + ' days done. ' +
+             (prog.certified ? 'Curriculum complete. Claim your certificate.' : 'Day ' + prog.next_day + ' is next.'));
   }
   window.ccRenderTour = ccRenderTour;
   window.ccTourMarkDay = function (day, btn) {
-    if (!window.ChittiCoach || !window.ChittiCoach.markTourDayDone) return;
-    window.ChittiCoach.markTourDayDone(day);
+    if (!window.ChittiCoach || !window.ChittiCoach.markCurriculumDayDone) return;
+    var id = _activeCurriculumId();
+    window.ChittiCoach.markCurriculumDayDone(id, day);
     if (btn) { btn.textContent = '✅ Completed'; btn.disabled = true; }
     setTimeout(ccRenderTour, 600);
   };
-  window.ccTourClaimCert = function () {
-    var p = window.ChittiCoach.profile.init();
+  window.ccTourClaimCert = function (curriculumId) {
+    var CC = window.ChittiCoach;
+    var p = CC.profile.init();
+    var id = curriculumId || _activeCurriculumId();
+    var meta = CC.curricula().filter(function (c) { return c.id === id; })[0] || { name: 'AI Tool Tour', days_count: 28 };
     var profname = ({
       'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist',
       'nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer',
@@ -1881,33 +1906,34 @@ loadFeed(false);
       'government-employee':'Government Employee','student':'Student'
     })[p.profession] || 'Professional';
     var dateStr = new Date().toISOString().slice(0,10);
+    var line = function (s) { return '║  ' + (s + '').padEnd(57) + '║'; };
     var cert = [
       '╔═══════════════════════════════════════════════════════════╗',
       '║                                                           ║',
-      '║                CHITTI AI TOOL TOUR                        ║',
+      '║                CHITTI AI CAREER COACH                     ║',
       '║                   CERTIFICATE                             ║',
       '║                                                           ║',
-      '║  This certifies that you have completed                   ║',
-      '║  28 days × 15 minutes of hands-on AI tool training.       ║',
+      line('This certifies that you have completed'),
+      line(meta.name + ' (' + meta.days_count + ' days x 15 min).'),
       '║                                                           ║',
-      '║  Role: ' + profname.padEnd(50) + '║',
-      '║  Tools mastered: 21                                       ║',
-      '║  Projects shipped: 7                                      ║',
-      '║  Date: ' + dateStr.padEnd(50) + '║',
+      line('Role: ' + profname),
+      line('Curriculum: ' + meta.name),
+      line('Days completed: ' + meta.days_count + ' / ' + meta.days_count),
+      line('Date: ' + dateStr),
       '║                                                           ║',
-      '║  Issued by Chitti News AI · sahayai.in                    ║',
+      line('Issued by Chitti News AI - sahayai.in'),
       '║                                                           ║',
       '╚═══════════════════════════════════════════════════════════╝',
       '',
       'Share on LinkedIn:',
-      '  "I just completed Chitti\'s 28-day AI tool tour — learned',
-      '   21 AI tools + shipped 7 projects in 28 days × 15 min/day."',
+      '  "I just completed Chitti\'s ' + meta.name + ' — ' + meta.days_count + ' days',
+      '   x 15 min of hands-on AI training, role-specific for ' + profname + '."',
       '   #ChittiNewsAI #AICareerCoach',
     ].join('\n');
     try {
       var w = window.open('', '_blank');
       w.document.write('<pre style="font-family:monospace;font-size:13px;padding:24px;background:#fff;color:#000">' + cert.replace(/</g,'&lt;') + '</pre>');
-      w.document.title = 'Chitti AI Tool Tour Certificate';
+      w.document.title = 'Chitti ' + meta.name + ' Certificate';
     } catch (e) {
       alert(cert);
     }
@@ -2095,8 +2121,24 @@ loadFeed(false);
     'my coach':        function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
     'cv':              function () { if (window.ccCvOpen) window.ccCvOpen(); },
     'tour':            function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '28 day tour':     function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '28 days':         function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '28 day tour':     function () { try { localStorage.setItem('chitti_tour_curriculum', '28-day-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '28 days':         function () { try { localStorage.setItem('chitti_tour_curriculum', '28-day-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '18 day tour':     function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '18 days':         function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'creative tour':   function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '7 day sprint':    function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'seven day sprint':function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'sprint':          function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '90 day pro':      function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'ninety day pro':  function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'pro tour':        function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'phone only':      function () { try { localStorage.setItem('chitti_tour_curriculum', '5-day-phone-only'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '5 day phone':     function () { try { localStorage.setItem('chitti_tour_curriculum', '5-day-phone-only'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'build sprint':    function () { try { localStorage.setItem('chitti_tour_curriculum', '14-day-build'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '14 day build':    function () { try { localStorage.setItem('chitti_tour_curriculum', '14-day-build'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'team tour':       function () { try { localStorage.setItem('chitti_tour_curriculum', 'team-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'industry sprint': function () { try { localStorage.setItem('chitti_tour_curriculum', 'industry-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'industry':        function () { try { localStorage.setItem('chitti_tour_curriculum', 'industry-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
     'certificate':     function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
     'mark done':       function () {
       try {
