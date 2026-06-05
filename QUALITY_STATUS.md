@@ -358,7 +358,7 @@ Full audit log: [CERT_LOG.md](CERT_LOG.md).
 | `chitti_4wheeler.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_health_file.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_fashion.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
-| `chitti_health_scanner.html` (NEW skeleton — part of Chitti MedUPI family) | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | Not yet cert-run — G1 feedback-widget.js + `data-chitti-response`, G2 chitti_a11y.js, G3 Disability Profile prompt, G4 language auto-detect, G5 ISL plugin all PENDING/UNVERIFIED. Backend `/api/health-scanner/*` = honest stub (`coming_soon`). Queued for next CTO pass. |
+| `chitti_health_scanner.html` (Chitti MedUPI family — **Guardian Memory** 2026-06-05) | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | **cert_all_pages 18/18 GREEN** (all 5 gates + 375px responsive + brand + lang dropdown); language coverage ~96% across 9 Vaani primary langs; functional probe ✅ (capture→save→memory→compare→family, 0 console errors). Guardian Memory LIVE local-first: health-memory timeline, first-vs-latest compare, conservative trend (no fake %), family caregiver-alert (Golden-Rule confirmed), medicine/Health-File links. **AI pattern analysis (L1/L6) intentionally `COMING SOON`**; backend `/api/health-scanner/*` honest stub (`/analyze` 501, `/timeline` local-first, `/compare` 501); not clinically validated — RED on CERTIFICATION until medical-board sign-off. |
 | `chitti_isl.html` | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_offline.html` | 🟢◇ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |
 | `chitti_quality.html` | 🟢◇ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | [batch](CERT_LOG.md) |

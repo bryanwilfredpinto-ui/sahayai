@@ -15,8 +15,18 @@ Feature Discovery Box. Honest status only.
 
 ## 1. Built and working
 
-- **Health Scanner page skeleton** — `chitti_health_scanner.html` loads with brand palette (Saffron / Navy / Green), header, and capture surface.
-- **Camera capture** — point-and-capture via `chitti_camera_universal.js`, behind the Golden-Rule confirm gate ("Sire, shall I open the camera? Haan / Nahi" — voice + tap, mute-safe, never default-to-yes).
+> **Guardian Memory release (2026-06-05)** — the Scanner is now a *companion that
+> remembers*, not just a camera. See [`../GUARDIAN.md`](../GUARDIAN.md) for the full
+> 10-level map. Everything below is real and local-first; **no AI diagnosis is
+> claimed** — the AI pattern analysis in §2 is still honest `COMING SOON`.
+
+- **🩺 Capture / Upload a health photo** — point-and-capture, or **Upload** a photo when there is no camera (rural / desktop). Behind the Golden-Rule confirm gate ("Sire, shall I open the camera? Haan / Nahi" — voice + tap, mute-safe, never default-to-yes).
+- **📖 Health Memory timeline (Level 2 — Chitti remembers)** — every saved photo is kept on a private, on-device timeline per body-area. A memory grid shows photo count + days tracked; tap an area to see it. **Save is Golden-Rule confirmed.**
+- **🔁 First-vs-latest compare + conservative trend (Level 2 + 9)** — side-by-side compare of your first and most-recent photo, a full day-by-day strip, and an honest trend line (*"4 photos over 12 days — if it looks worse, see a doctor"*). **No fake %, no measurement claim, no prophecy.**
+- **👨‍👩‍👧 Family mode + caregiver alert (Level 7)** — per-family-member profiles; save a caregiver + WhatsApp number; daily-check reminder; **"Notify caregiver — something looks worse"** → Golden-Rule confirm → pre-filled WhatsApp message. Chitti never auto-sends.
+- **💊 Medicine link (Level 4)** — from any scan, **"Scan the medicine for this"** deep-links into Chitti MedUPI. Reads the medicine *strip*, never the skin.
+- **🌾 Village / rural mode (Level 8)** — local-first (works offline), upload fallback, voice-first, low-data.
+- **🗑️ "Chitti forget"** — delete a single photo or a whole area; the data is the user's.
 - **Voice-guided, icon-first accessibility** — Blind / Deaf / Mute / Illiterate contract: Voice IN + Voice OUT + icons/symbols + plain language; never colour-only (🟢 normal / 🟡 monitor / 🔴 seek care always paired with icon + text); ISL panel + Disability Profile via `chitti_a11y.js`.
 - **Multilingual substrate** — `chitti_lang.js` + `T` dictionary: 9 primary languages (en/hi/ta/te/bn/mr/gu/kn/ml) + 26-language substrate, one pure language per render, no Hinglish. Brand/technical terms (Chitti, DeepSeek, UPI, AI, DPDP, ABDM, AES-256-GCM) stay English.
 - **Per-response widget on every box** — `data-chitti-response` + 🔊 / 🤖 / 👍 / 👎 via `feedback-widget.js`.

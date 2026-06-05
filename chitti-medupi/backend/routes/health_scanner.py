@@ -213,3 +213,61 @@ def save_to_timeline():
         body_location=body_location or None,
         profile_id=profile_id,
     )), 501
+
+
+# ── /timeline — Guardian Memory (Level 2). Local-first today ──────────
+
+@bp.get("/timeline")
+def timeline():
+    """Query: profile_id, scan_type
+
+    Guardian Memory is LOCAL-FIRST: the canonical health-photo timeline
+    lives on the user's device (browser localStorage), so no health image
+    leaves the phone unless the user explicitly saves it to Chitti Health
+    File. This endpoint documents the server-sync shape; server-stored
+    history is an honest `coming_soon` and points at the encrypted Health
+    File vault as the sync target. It NEVER returns analysis or a diagnosis.
+    """
+    profile_id = request.args.get("profile_id")
+    scan_type = (request.args.get("scan_type") or "").strip()
+    return jsonify(_safety_envelope(
+        status="local_first",
+        message=(
+            "Your health-photo memory is kept privately on your device. "
+            "Server sync to the AES-256-GCM encrypted Chitti Health File "
+            "vault is coming soon. This is not a medical diagnosis."
+        ),
+        canonical_store="device_localStorage:chitti_hs_timeline_v1",
+        sync_target="/api/health-file/docs",
+        profile_id=profile_id,
+        scan_type=scan_type or None,
+        items=[],  # server holds none yet — honest empty, not a fake history
+    )), 200
+
+
+# ── /compare — first-vs-latest (Level 2 + 9). Measurement is gated ────
+
+@bp.get("/compare")
+def compare():
+    """Query: profile_id, scan_type
+
+    The app shows the first vs latest photo side by side on-device. AUTOMATIC
+    size/area measurement and any "% change" needs a validated CV model and is
+    honest `coming_soon` — we never fabricate a measurement or a trend %.
+    Conservative, honest framing only: count of photos + days tracked.
+    """
+    profile_id = request.args.get("profile_id")
+    scan_type = (request.args.get("scan_type") or "").strip()
+    return jsonify(_safety_envelope(
+        status="coming_soon",
+        message=(
+            "Automatic size/area comparison is coming soon — it needs a "
+            "clinically-validated vision model, so Chitti will not guess a "
+            "number. For now, compare the first and latest photo with your "
+            "own eyes, or show them to a doctor. This is not a medical diagnosis."
+        ),
+        measured_change=None,        # never a fabricated %
+        trend=None,                  # never a fabricated trend
+        profile_id=profile_id,
+        scan_type=scan_type or None,
+    )), 501
