@@ -177,6 +177,23 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 .cc-card-done .cc-actions button.done{background:#dcfce7;border-color:#16a34a;color:#166534;font-weight:900}
 /* In-progress badge */
 .cc-in-progress{display:inline-block;font-size:10px;font-weight:800;color:#1e40af;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.35);padding:1px 6px;border-radius:6px;margin-left:6px}
+/* 🎯 Coach Picks — Instagram-post-style ONE-per-skill compact list */
+.cp-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.cp-section h3{font-size:16px;font-weight:900;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.cp-section .cp-sub{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px}
+.cp-list{list-style:none;margin:0;padding:0}
+.cp-list li{padding:7px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;align-items:baseline;line-height:1.45;font-size:13.5px}
+.cp-list li:last-child{border-bottom:none}
+.cp-list li .cp-skill{font-weight:700;color:var(--navy);flex:0 0 45%}
+.cp-list li .cp-link{flex:1;text-align:right;font-size:12.5px}
+.cp-list li .cp-link a{color:var(--saffron);font-weight:700;text-decoration:underline;word-break:break-all}
+.cp-list li .cp-tag{display:inline-block;font-size:10.5px;color:#6b7280;margin-left:6px;font-weight:600;text-transform:lowercase;letter-spacing:.02em}
+.cp-list li .cp-tag.gold{color:#92400e;background:rgba(212,175,55,.18);border:1px solid rgba(212,175,55,.5);border-radius:6px;padding:1px 5px}
+.cp-list li .cp-tag.hindi{color:#7c2d12;background:rgba(232,106,23,.10);border:1px solid rgba(232,106,23,.45);border-radius:6px;padding:1px 5px}
+.cp-list li .cp-tag.indian{color:#166534;background:rgba(22,163,74,.10);border:1px solid rgba(22,163,74,.5);border-radius:6px;padding:1px 5px}
+.cp-list li .cp-tag.free{color:#1e40af;background:rgba(37,99,235,.10);border:1px solid rgba(37,99,235,.45);border-radius:6px;padding:1px 5px}
+@media(max-width:520px){.cp-list li{flex-direction:column;align-items:flex-start;gap:2px}.cp-list li .cp-skill{flex:none}.cp-list li .cp-link{text-align:left}}
+.cp-cta{margin-top:14px;padding:10px 12px;background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border:1px solid rgba(232,106,23,.30);border-radius:10px;font-size:12.5px;color:var(--text);text-align:center}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -314,6 +331,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="tab" data-tab="stream-person"  onclick="showCategory('stream-person')"  role="tab" aria-selected="false">👥 People</button>
   <button class="tab" data-tab="stream-free_resource" onclick="showCategory('stream-free_resource')" role="tab" aria-selected="false">🆓 Free Resources</button>
   <button class="tab" data-tab="my-coach" onclick="showCategory('my-coach')" role="tab" aria-selected="false">🎓 My Coach</button>
+  <button class="tab" data-tab="coach-picks" onclick="showCategory('coach-picks')" role="tab" aria-selected="false">🎯 Coach Picks</button>
   <button class="tab" data-tab="what-not-to-do" onclick="showCategory('what-not-to-do')" role="tab" aria-selected="false">🚫 Skip This</button>
 </nav>
 
@@ -364,6 +382,13 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <section id="page-my-coach" class="page" role="tabpanel" aria-label="My Coach — personalised plan" style="display:none">
     <div id="my-coach-content" data-chitti-response data-chitti-section="My Coach — personalised plan">
       <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your coach…</div>
+    </div>
+  </section>
+
+  <!-- 🎯 COACH PICKS — ONE per skill, scannable Instagram-post format -->
+  <section id="page-coach-picks" class="page" role="tabpanel" aria-label="Coach Picks — ONE per skill" style="display:none">
+    <div id="coach-picks-content" data-chitti-response data-chitti-section="Coach Picks — one per skill">
+      <div class="section-empty">⏳ Loading coach picks…</div>
     </div>
   </section>
 
@@ -1357,6 +1382,41 @@ loadFeed(false);
       }).join('');
   }
 
+  // ── Coach Picks tab (Sire 2026-06-05 — Instagram-post style) ──
+  function ccRenderCoachPicks() {
+    var host = document.getElementById('coach-picks-content'); if (!host) return;
+    var picks = CC.coachPicks();
+    var keys  = ['youtube','free_courses','corporate','govt','free_certs','ai_tools'];
+    function tagClass(t) {
+      var s = (t || '').toLowerCase();
+      if (s.indexOf('gold')   >= 0) return 'gold';
+      if (s.indexOf('hindi')  >= 0) return 'hindi';
+      if (s.indexOf('indian') >= 0) return 'indian';
+      if (s.indexOf('free')   >= 0) return 'free';
+      return '';
+    }
+    var html = '';
+    keys.forEach(function (k) {
+      var grp = picks[k]; if (!grp) return;
+      html += '<div class="cp-section" data-chitti-response data-chitti-section="' + grp.title + '">';
+      html += '<h3>' + grp.title + '</h3>';
+      html += '<div class="cp-sub">' + grp.sub + '</div>';
+      html += '<ul class="cp-list">';
+      grp.items.forEach(function (it) {
+        var tc = tagClass(it.tag);
+        var tagHtml = it.tag ? ' <span class="cp-tag ' + tc + '">' + it.tag + '</span>' : '';
+        html += '<li>' +
+          '<span class="cp-skill">' + it.skill + '</span>' +
+          '<span class="cp-link"><a href="' + it.url + '" target="_blank" rel="noopener">' + it.url.replace(/^https?:\/\//,'') + '</a>' + tagHtml + '</span>' +
+        '</li>';
+      });
+      html += '</ul></div>';
+    });
+    html += '<div class="cp-cta">Inspired by Sire (2026-06-05): one channel/course/tool per skill — scannable, opinionated, no fluff. Refresh this tab as we expand. <strong>Free-first.</strong></div>';
+    host.innerHTML = html;
+    CC.speak('Coach picks loaded. One channel, course or tool per skill — free first.');
+  }
+
   // ── Hook into existing showCategory to render coach tabs on demand ──
   var _origShow = window.showCategory;
   window.showCategory = function (cat) {
@@ -1373,6 +1433,13 @@ loadFeed(false);
       var pg2 = document.getElementById('page-what-not-to-do'); if (pg2) { pg2.style.display = 'block'; pg2.classList.add('active'); }
       var tb2 = document.querySelector('nav.tabs .tab[data-tab="what-not-to-do"]'); if (tb2) { tb2.classList.add('active'); tb2.setAttribute('aria-selected','true'); }
       ccRenderSkipList(); return;
+    }
+    if (cat === 'coach-picks') {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
+      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      var pg3 = document.getElementById('page-coach-picks'); if (pg3) { pg3.style.display = 'block'; pg3.classList.add('active'); }
+      var tb3 = document.querySelector('nav.tabs .tab[data-tab="coach-picks"]'); if (tb3) { tb3.classList.add('active'); tb3.setAttribute('aria-selected','true'); }
+      ccRenderCoachPicks(); return;
     }
     if (typeof _origShow === 'function') return _origShow(cat);
   };
