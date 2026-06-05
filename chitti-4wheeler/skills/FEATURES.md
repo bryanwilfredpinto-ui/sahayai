@@ -245,3 +245,29 @@ Both rejections are documented here, not silently dropped, so any
 future revisit knows the reasoning. If Sire wants either of these
 shipped anyway, the override lives in `Chitti.a11y` and either can be
 wired in a future patch.
+
+
+## AI Scanners (camera + audio)
+
+Four camera/audio diagnostic scanners on the car HOME tab, launched from the
+**🔬 AI Scanners** card → `ChittiScanners.open('4w')` (`chitti_ai_scanners.js`).
+Honest-stub contract: the camera/audio AI auto-detect needs a vision/audio
+model that is **not funded yet**, so we NEVER fabricate an AI verdict. Each
+flow captures the photo/audio for real (object-URL preview, stays on-device),
+shows a 🔵 "AI auto-read — coming soon" badge, then gives a REAL deterministic
+result based only on what the user tells us. All strings are pure native script
+in 9 languages; §6 terms (AI, OBD, EV, AC, ATF, km, ₹, mm, °C, brand/model)
+stay English.
+
+| Scanner | Deterministic self-check | Camera/audio AI auto-detect |
+|---|---|---|
+| 📸 **Dashboard Scanner** — read a warning light | 🟢 LIVE — tap the light you see (~10 lights: check-engine/MIL, battery, oil-pressure, coolant-temp, brake, TPMS, ABS, airbag/SRS, EV) → severity (word + colour) · can-drive? · within · plain note. Oil/coolant/brake/airbag = HIGH → stop / don't drive. | 🔵 COMING SOON — needs vision-model funding |
+| 📸 **Tire Scanner** — check tyre health | 🟢 LIVE — 30-second yes/no self-check (₹1-coin tread test, sidewall cracks, bulge, uneven wear, nail/cut, age >5–6 yrs) → 🟢 OK / 🟡 watch / 🔴 replace + which checks failed. | 🔵 COMING SOON — needs wear/crack vision model funding |
+| 🎙️ **Engine Sound Analysis** — identify a noise | 🟢 LIVE — record ~10 s near the engine, then pick the closest sound (knocking, belt squeal/chirp, bearing whine, tappet tick, misfire, brake squeal, exhaust blow) → ranked causes · can-drive? · ₹ cost band · safety note. | 🔵 COMING SOON — needs audio-match model funding |
+| 📸 **Leak Detection** — find a leak | 🟢 LIVE — photo of the puddle/underside, then match the fluid colour (brown/black = engine oil, amber = transmission oil, green/orange/pink = coolant, red/pink = ATF/power-steering, clear under AC = water/normal, dark-oily near a wheel = 🔴 brake fluid) → what it is · severity · can-drive? · action. | 🔵 COMING SOON — needs leak vision model funding |
+
+Every result block carries a 🔊 speak button (`speakText` / `Chitti.a11y.speak`)
+and an "ℹ️ based on what you told me — not an AI verdict" honesty line.
+Registered in `chitti_offline_sw.js` (PRECACHE_URLS + SUBSTRATE_RX) so it works
+offline. The launch card is a `data-chitti-response` box so the per-response
+feedback widget attaches.
