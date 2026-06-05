@@ -232,6 +232,18 @@
 <div class="sds-tab-panel" id="mb-tab-bike">
   <div id="mb-fleet-switcher"></div>
 
+  <div data-chitti-response="mb-card-rc" class="sds-card chitti-response" data-chitti-section="📷 RC scan">
+    <h2 class="sds-card-title"><span class="ico">📷</span> <span data-vai-i18n="rc.title">Scan your RC</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="rc.sub">Point your camera at your RC — Chitti reads the make, model and year. AI auto-read is coming soon; for now, confirm the details below.</div>
+    <input id="mb-rc-file" type="file" accept="image/*" capture="environment" style="display:none" onchange="rcOnFile('2w', this)" aria-hidden="true" tabindex="-1">
+    <div class="sds-field" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <button class="sds-btn-primary" style="flex:1 1 140px;min-height:48px" onclick="rcCapture('2w')">📷 <span data-vai-i18n="rc.scan">Scan RC</span></button>
+      <button class="sds-btn-ghost" style="flex:1 1 140px;min-height:48px" onclick="rcManual('2w')">✍️ <span data-vai-i18n="rc.manual">Fill manually</span></button>
+    </div>
+    <img id="mb-rc-preview" alt="Your captured RC photo" style="display:none;max-width:100%;border-radius:12px;margin-top:8px">
+    <div id="mb-rc-result" class="sds-rc-result" aria-live="polite"></div>
+  </div>
+
   <div  data-chitti-response="mb-card-03" class="sds-card chitti-response" data-chitti-section="🏍️ बाइक की जानकारी">
     <h2 class="sds-card-title"><span class="ico">🏍️</span> <span data-vai-i18n="mb.form.title">मेरी बाइक</span></h2>
     <div class="sds-card-sub" data-vai-i18n="mb.form.sub">बोलकर भरें या टाइप करें। सब Chitti के पास सुरक्षित है।</div>
@@ -685,6 +697,7 @@
 <script src="chitti_breakdown_ui.js?v=20260604"></script>
 <script src="chitti_ai_scanners.js?v=20260605"></script>
 <script src="chitti_health_score.js?v=20260605"></script>
+<script src="chitti_rc_scan.js?v=20260605"></script>
 <script src="feedback-widget.js?v=20260605" data-page="chitti_mechanic_bike"></script>
 <script src="chitti_features.js?v=20260604" defer></script>
 <script>

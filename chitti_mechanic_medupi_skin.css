@@ -86,3 +86,11 @@ body.sds-page > * { position: relative; z-index: 1; }
 /* Swarm / scanner / health cards inherit the saffron/navy via the tokens above;
    keep the navy accent border consistent with MedUPI section heads. */
 .sw-card, .sds-card[data-chitti-response*="card-swarm"] { border-color: var(--gold) !important; }
+
+/* RC-scan card result chip + status (chitti_rc_scan.js) — MedUPI tokens */
+.sds-rc-result:empty { display: none; }
+.sds-rc-result { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.sds-rc-result .rc-status { font-size: 14px; line-height: 1.45; padding: 8px 12px; border-radius: 10px; background: #f8f4ee; border: 1px solid #eadfce; }
+.sds-rc-result .rc-status.rc-ok { background: rgba(21,128,61,.08); border-color: rgba(21,128,61,.25); color: #15803d; }
+.sds-rc-result .rc-status.rc-soon { background: rgba(232,106,23,.08); border-color: rgba(232,106,23,.28); color: #b45309; }
+.sds-rc-result .rc-chip { font-size: 14px; padding: 8px 12px; border-radius: 10px; background: linear-gradient(135deg, rgba(14,35,68,.06), rgba(212,175,55,.10)); border: 1px solid #eadfce; color: #0E2344; }
