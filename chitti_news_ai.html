@@ -245,6 +245,39 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 .hub-actions .primary{background:#b8500e;color:#fff;border:none;font-weight:700}
 .hub-verdicts{font-size:12.5px;color:var(--navy);margin:8px 0 4px}
 @media(max-width:520px){.hub-scores{grid-template-columns:1fr 1fr}.hub-card-actions{flex-direction:column;align-items:stretch}.hub-mission-step{flex-direction:column;align-items:flex-start;gap:4px}}
+
+/* COSDF v1.1 L16.5 — 28-Day AI Tool Tour */
+.tt-hero{background:linear-gradient(135deg,#0a3d62 0%,#3b1f5b 100%);color:#fff;border-radius:14px;padding:18px;margin-bottom:16px}
+.tt-title{margin:0 0 4px;font-size:22px;font-weight:900;color:#fff}
+.tt-promise{margin:0 0 14px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.92)}
+.tt-progress{background:rgba(0,0,0,.25);border-radius:10px;padding:10px 12px}
+.tt-progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.tt-progress-fill{height:100%;background:linear-gradient(90deg,#fbbf24 0%,#22c55e 100%);transition:width .5s ease}
+.tt-progress-label{font-size:12px;font-weight:700;color:#fff;letter-spacing:.02em}
+.tt-cert-cta{margin-top:12px;padding:12px;background:rgba(34,197,94,.20);border:1px solid rgba(34,197,94,.65);border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#fff;font-size:13.5px}
+.tt-band{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.tt-band-title{margin:0 0 4px;font-size:16px;font-weight:900;color:var(--navy)}
+.tt-band-sub{margin:0 0 12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+.tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.tt-day{background:#f9fafb;border:1.5px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column}
+.tt-day.tt-day-done{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.55)}
+.tt-day.tt-day-next{background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-color:var(--saffron);box-shadow:0 4px 12px rgba(232,106,23,.18)}
+.tt-day.tt-day-locked{opacity:.55}
+.tt-day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tt-day-num{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.06em}
+.tt-day-state{font-size:10px;font-weight:800;color:var(--navy);background:rgba(0,0,0,.05);border:1px solid var(--border);border-radius:99px;padding:2px 8px;letter-spacing:.04em}
+.tt-day.tt-day-done .tt-day-state{color:#166534;background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.55)}
+.tt-day.tt-day-next .tt-day-state{color:#9a3412;background:rgba(232,106,23,.18);border-color:var(--saffron)}
+.tt-day-tool{margin:4px 0 4px;font-size:16px;font-weight:900;color:var(--navy);line-height:1.25}
+.tt-day-why{margin:0 0 8px;font-size:12.5px;color:#374151;line-height:1.5}
+.tt-day-links{list-style:none;padding:0;margin:0 0 10px;font-size:12.5px;line-height:1.6}
+.tt-day-links li{padding:3px 0;color:#374151}
+.tt-day-links a{color:var(--saffron);font-weight:700;text-decoration:underline;word-break:break-word}
+.tt-day-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--border)}
+.tt-day-mins{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.03em}
+.tt-day-actions .cc-btn.primary{background:#b8500e;color:#fff;border:none;font-weight:700}
+.tt-day-actions .cc-btn[disabled]{opacity:.65;cursor:default}
+@media(max-width:520px){.tt-grid{grid-template-columns:1fr}.tt-cert-cta{flex-direction:column;align-items:stretch}}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -382,6 +415,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <button class="tab" data-tab="stream-person"  onclick="showCategory('stream-person')"  role="tab" aria-selected="false">👥 People</button>
   <button class="tab" data-tab="stream-free_resource" onclick="showCategory('stream-free_resource')" role="tab" aria-selected="false">🆓 Free Resources</button>
   <button class="tab cosdf-v11" data-tab="profession-hub" onclick="showCategory('profession-hub')" role="tab" aria-selected="false" title="COSDF v1.1 — your full profession-specific Hub">🏛️ Profession Hub</button>
+  <button class="tab cosdf-v11" data-tab="tool-tour" onclick="showCategory('tool-tour')" role="tab" aria-selected="false" title="28 days, 15 min/day, one AI tool per day — get your Chitti certificate">🎓 28-Day Tour</button>
   <button class="tab" data-tab="my-coach" onclick="showCategory('my-coach')" role="tab" aria-selected="false">🎓 My Coach</button>
   <button class="tab" data-tab="coach-picks" onclick="showCategory('coach-picks')" role="tab" aria-selected="false">🎯 Coach Picks</button>
   <button class="tab" data-tab="what-not-to-do" onclick="showCategory('what-not-to-do')" role="tab" aria-selected="false">🚫 Skip This</button>
@@ -434,6 +468,13 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
   <section id="page-profession-hub" class="page" role="tabpanel" aria-label="Profession Hub — every layer your role needs" style="display:none">
     <div id="profession-hub-content" data-chitti-response data-chitti-section="Profession Hub — every layer your role needs">
       <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your Profession Hub…</div>
+    </div>
+  </section>
+
+  <!-- 🎓 28-DAY AI TOOL TOUR (COSDF v1.1 L16.5) — Coursiv-style daily curriculum -->
+  <section id="page-tool-tour" class="page" role="tabpanel" aria-label="28-Day AI Tool Tour — 15 min per day, certificate at end" style="display:none">
+    <div id="tool-tour-content" data-chitti-response data-chitti-section="28-Day AI Tool Tour">
+      <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your 28-day tour…</div>
     </div>
   </section>
 
@@ -1736,9 +1777,152 @@ loadFeed(false);
     try { navigator.clipboard.writeText(btn.getAttribute('data-copy') || ''); btn.textContent = '✓ Copied'; setTimeout(function(){ btn.textContent = '📋 Copy'; }, 1400); } catch (e) {}
   };
 
+  // ── COSDF v1.1 L16.5 — 28-DAY AI TOOL TOUR renderer (Sire 2026-06-05) ──
+  function _ttEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+  }); }
+  function _ttDayCard(d, done, locked, nextDay) {
+    var stateCls = done ? 'tt-day-done' : (locked ? 'tt-day-locked' : (d.day === nextDay ? 'tt-day-next' : 'tt-day-open'));
+    var stateBadge = done ? '✅ DONE' : (locked ? '🔒 LOCKED' : (d.day === nextDay ? '👉 DO TODAY' : '⏳ AVAILABLE'));
+    var btn = done
+      ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' completed">✅ Completed</button>'
+      : (locked
+        ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' locked — finish earlier days first">🔒 Locked</button>'
+        : '<button class="cc-btn primary" type="button" onclick="ccTourMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Mark Day ' + d.day + ' Done</button>');
+    var html = '<article class="tt-day ' + stateCls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _ttEsc(d.tool) + '">';
+    html += '  <header class="tt-day-head"><span class="tt-day-num">DAY ' + d.day + '</span><span class="tt-day-state">' + stateBadge + '</span></header>';
+    html += '  <h4 class="tt-day-tool">' + _ttEsc(d.tool) + '</h4>';
+    html += '  <p class="tt-day-why">' + _ttEsc(d.why || '') + '</p>';
+    html += '  <ul class="tt-day-links">';
+    if (d.watch) html += '<li>📺 Watch <a href="' + _ttEsc(d.watch.url) + '" target="_blank" rel="noopener">' + _ttEsc(d.watch.title) + ' ↗</a></li>';
+    if (d.read)  html += '<li>📖 Read <a href="' + _ttEsc(d.read.url)  + '" target="_blank" rel="noopener">' + _ttEsc(d.read.title)  + ' ↗</a></li>';
+    if (d.try)   html += '<li>🚀 Try it <a href="' + _ttEsc(d.try.url)  + '" target="_blank" rel="noopener">' + _ttEsc(d.try.title)   + ' ↗</a></li>';
+    html += '  </ul>';
+    html += '  <div class="tt-day-actions"><span class="tt-day-mins">⏱ ' + (d.minutes || 15) + ' min</span>' + btn + '</div>';
+    html += '</article>';
+    return html;
+  }
+  function ccRenderTour() {
+    var host = document.getElementById('tool-tour-content'); if (!host) return;
+    var CC = window.ChittiCoach;
+    var p = CC.profile.init();
+    var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
+    if (!prof || prof === 'everyone') prof = 'student';
+    var tour = CC.tour(prof);
+    var prog = CC.tourProgress(p);
+    var pct = Math.round((prog.done_count / 28) * 100);
+    var allDays = tour.common_7.concat(tour.profession_14, tour.build_7);
+
+    var html = '';
+    html += '<header class="tt-hero" data-chitti-response data-chitti-section="28-Day Tour header">';
+    html += '  <h2 class="tt-title">🎓 28-Day AI Tool Tour</h2>';
+    html += '  <p class="tt-promise">' + _ttEsc(tour.promise) + '</p>';
+    html += '  <div class="tt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="28" aria-valuenow="' + prog.done_count + '" aria-label="Tour progress">';
+    html += '    <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:' + pct + '%"></div></div>';
+    html += '    <div class="tt-progress-label">' + prog.done_count + ' / 28 days done · ' + pct + '% · ';
+    html += (prog.certified ? '🏆 CERTIFIED — claim your certificate' : 'Day ' + prog.next_day + ' next');
+    html += '</div></div>';
+    if (prog.certified) {
+      html += '  <div class="tt-cert-cta"><strong>🎉 Tour complete.</strong> ' +
+              '<button class="cc-btn primary" type="button" onclick="ccTourClaimCert()" aria-label="Claim your Chitti AI Tool Tour certificate">📜 Claim Chitti Certificate</button></div>';
+    }
+    html += '</header>';
+
+    html += '<section class="tt-band" data-chitti-section="Days 1-7 — Foundation LLMs">';
+    html += '<h3 class="tt-band-title">📚 Week 1 — Foundation (Days 1-7)</h3>';
+    html += '<p class="tt-band-sub">Every professional learns these 7 tools. Same for all professions.</p>';
+    html += '<div class="tt-grid">';
+    tour.common_7.forEach(function (d) {
+      var done = prog.done.indexOf(d.day) >= 0;
+      html += _ttDayCard(d, done, false, prog.next_day);
+    });
+    html += '</div></section>';
+
+    html += '<section class="tt-band" data-chitti-section="Days 8-21 — ' + _ttEsc(prof) + ' tools">';
+    html += '<h3 class="tt-band-title">🎯 Weeks 2-3 — Your Profession (Days 8-21)</h3>';
+    html += '<p class="tt-band-sub">14 tools curated for <strong>' + _ttEsc(prof.replace(/-/g, ' ')) + '</strong>.</p>';
+    html += '<div class="tt-grid">';
+    tour.profession_14.forEach(function (d) {
+      var done = prog.done.indexOf(d.day) >= 0;
+      html += _ttDayCard(d, done, false, prog.next_day);
+    });
+    html += '</div></section>';
+
+    html += '<section class="tt-band" data-chitti-section="Days 22-28 — Build sprint">';
+    html += '<h3 class="tt-band-title">🛠️ Week 4 — Build Sprint (Days 22-28)</h3>';
+    html += '<p class="tt-band-sub">Ship one small thing per day. Day 28 = LinkedIn post + certificate.</p>';
+    html += '<div class="tt-grid">';
+    tour.build_7.forEach(function (d) {
+      var done = prog.done.indexOf(d.day) >= 0;
+      html += _ttDayCard(d, done, false, prog.next_day);
+    });
+    html += '</div></section>';
+
+    host.innerHTML = html;
+    if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.refresh) { try { window.Chitti.a11y.refresh(); } catch (e) {} }
+    CC.speak('Twenty-eight day A I tool tour for ' + prof.replace(/-/g, ' ') + '. ' +
+             prog.done_count + ' of 28 days done. ' +
+             (prog.certified ? 'Tour complete. Claim your certificate.' : 'Day ' + prog.next_day + ' is next.'));
+  }
+  window.ccRenderTour = ccRenderTour;
+  window.ccTourMarkDay = function (day, btn) {
+    if (!window.ChittiCoach || !window.ChittiCoach.markTourDayDone) return;
+    window.ChittiCoach.markTourDayDone(day);
+    if (btn) { btn.textContent = '✅ Completed'; btn.disabled = true; }
+    setTimeout(ccRenderTour, 600);
+  };
+  window.ccTourClaimCert = function () {
+    var p = window.ChittiCoach.profile.init();
+    var profname = ({
+      'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist',
+      'nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer',
+      'accountant':'Chartered Accountant','hr-professional':'HR Professional',
+      'talent-acquisition':'Talent Acquisition specialist','business-owner':'Business Owner',
+      'government-employee':'Government Employee','student':'Student'
+    })[p.profession] || 'Professional';
+    var dateStr = new Date().toISOString().slice(0,10);
+    var cert = [
+      '╔═══════════════════════════════════════════════════════════╗',
+      '║                                                           ║',
+      '║                CHITTI AI TOOL TOUR                        ║',
+      '║                   CERTIFICATE                             ║',
+      '║                                                           ║',
+      '║  This certifies that you have completed                   ║',
+      '║  28 days × 15 minutes of hands-on AI tool training.       ║',
+      '║                                                           ║',
+      '║  Role: ' + profname.padEnd(50) + '║',
+      '║  Tools mastered: 21                                       ║',
+      '║  Projects shipped: 7                                      ║',
+      '║  Date: ' + dateStr.padEnd(50) + '║',
+      '║                                                           ║',
+      '║  Issued by Chitti News AI · sahayai.in                    ║',
+      '║                                                           ║',
+      '╚═══════════════════════════════════════════════════════════╝',
+      '',
+      'Share on LinkedIn:',
+      '  "I just completed Chitti\'s 28-day AI tool tour — learned',
+      '   21 AI tools + shipped 7 projects in 28 days × 15 min/day."',
+      '   #ChittiNewsAI #AICareerCoach',
+    ].join('\n');
+    try {
+      var w = window.open('', '_blank');
+      w.document.write('<pre style="font-family:monospace;font-size:13px;padding:24px;background:#fff;color:#000">' + cert.replace(/</g,'&lt;') + '</pre>');
+      w.document.title = 'Chitti AI Tool Tour Certificate';
+    } catch (e) {
+      alert(cert);
+    }
+  };
+
   // ── Hook into existing showCategory to render coach tabs on demand ──
   var _origShow = window.showCategory;
   window.showCategory = function (cat) {
+    if (cat === 'tool-tour') {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
+      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      var pgT = document.getElementById('page-tool-tour'); if (pgT) { pgT.style.display = 'block'; pgT.classList.add('active'); }
+      var tbT = document.querySelector('nav.tabs .tab[data-tab="tool-tour"]'); if (tbT) { tbT.classList.add('active'); tbT.setAttribute('aria-selected','true'); }
+      ccRenderTour(); return;
+    }
     if (cat === 'profession-hub') {
       document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
       document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
@@ -1910,6 +2094,16 @@ loadFeed(false);
     'coach':           function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
     'my coach':        function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
     'cv':              function () { if (window.ccCvOpen) window.ccCvOpen(); },
+    'tour':            function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '28 day tour':     function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    '28 days':         function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'certificate':     function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
+    'mark done':       function () {
+      try {
+        var pr = window.ChittiCoach.tourProgress(window.ChittiCoach.profile.get());
+        if (pr.next_day <= 28) { window.ChittiCoach.markTourDayDone(pr.next_day); _vfSpeak('Day ' + pr.next_day + ' marked done. ' + (pr.next_day === 28 ? 'Tour complete!' : 'Next is Day ' + (pr.next_day + 1) + '.')); }
+      } catch (e) {}
+    },
     'help':            function () { vfWelcome(); },
     'repeat':          function () { vfWelcome(); },
     'stop':            function () { try { window.speechSynthesis.cancel(); } catch (e) {} },
@@ -1970,6 +2164,19 @@ loadFeed(false);
       }
       if (v) msg += 'Chitti\'s verdict: ' + (v.textContent || '').trim() + ' ';
       msg += 'Say "mission" for this week\'s 30-minute learning mission, "projects" for projects you can ship, "prompts" for copy-paste prompts, "forecast" for the 3-year outlook, "mentor" for your next action, or "stop".';
+      _vfSpeak(msg);
+    } catch (e) {}
+  }
+  function vfReadTour() {
+    try {
+      var CC = window.ChittiCoach; if (!CC || !CC.tourProgress) return;
+      var p = CC.profile.get() || {};
+      var prog = CC.tourProgress(p);
+      var msg = 'Twenty-eight day A I tool tour. ' +
+                prog.done_count + ' of 28 days completed. ' +
+                (prog.certified
+                  ? 'Tour complete. Say "certificate" to claim it.'
+                  : 'Today\'s task is Day ' + prog.next_day + '. Say "mark done" when you have finished it.');
       _vfSpeak(msg);
     } catch (e) {}
   }

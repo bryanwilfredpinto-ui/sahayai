@@ -509,6 +509,71 @@ await safe('blind_aria_labels_complete', async () => {
 });
 
 // =====================================================================
+// SECTION 7.6 — 28-DAY AI TOOL TOUR (Sire 2026-06-05 PM Coursiv format)
+// =====================================================================
+console.log('\n=== SECTION 7.6: 28-Day AI Tool Tour ===');
+await safe('tour_tab_in_nav', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  const has = await p.$('nav.tabs .tab[data-tab="tool-tour"]');
+  await b.close();
+  check('tour_tab_in_nav', !!has);
+});
+
+await safe('tour_renders_28_days', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  await p.evaluate(() => {
+    const sel = document.getElementById('pick-profession');
+    sel.value = 'doctor'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    window.showCategory && window.showCategory('tool-tour');
+  });
+  await p.waitForTimeout(1200);
+  const dayCount = await p.$$eval('.tt-day', els => els.length);
+  const bands    = await p.$$eval('.tt-band', els => els.length);
+  await b.close();
+  check('tour_renders_28_days', dayCount === 28 && bands === 3, `days=${dayCount}/28 bands=${bands}/3`);
+});
+
+await safe('tour_mark_day_done_persists', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  await p.evaluate(() => window.ChittiCoach.markTourDayDone(1));
+  await p.evaluate(() => window.ChittiCoach.markTourDayDone(2));
+  const prog = await p.evaluate(() => window.ChittiCoach.tourProgress(window.ChittiCoach.profile.get()));
+  await b.close();
+  check('tour_mark_day_done_persists', prog.done_count === 2 && prog.next_day === 3, JSON.stringify(prog));
+});
+
+await safe('tour_renders_per_profession', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  // Test 3 representative professions
+  const counts = {};
+  for (const prof of ['doctor','farmer','lawyer','student','software-developer']) {
+    counts[prof] = await p.evaluate((pr) => {
+      const t = window.ChittiCoach.tour(pr);
+      return t.common_7.length + t.profession_14.length + t.build_7.length;
+    }, prof);
+  }
+  await b.close();
+  const all28 = Object.values(counts).every(c => c === 28);
+  check('tour_renders_per_profession', all28, JSON.stringify(counts));
+});
+
+// =====================================================================
 // SECTION 8 — Profile schema round-trip (set → reload → verify)
 // =====================================================================
 console.log('\n=== SECTION 8: Profile schema round-trip ===');
