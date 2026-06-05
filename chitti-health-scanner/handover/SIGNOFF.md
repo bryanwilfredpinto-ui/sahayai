@@ -14,7 +14,7 @@
 | Item | Status |
 |---|---|
 | All **Critical** bugs fixed | ✅ Critical = **0** |
-| All **High** bugs fixed OR documented with workaround | ✅ High (open) = **0** — BUG-01 & BUG-02 fixed; KI-01 is High tech-debt with a documented workaround |
+| All **High** bugs fixed OR documented with workaround | ✅ High (open) = **0** — BUG-01 & BUG-02 fixed; KI-01 reclassified **Medium** tech-debt (served compressed ~2 MB brotli, not 16 MB) with a documented workaround |
 | 20 user journeys complete (PASS/FAIL + timing) | ✅ **20/20 PASS** |
 | Edge cases tested | ✅ 6/7 (1 = documented KI-01) |
 | Cross-platform | ✅ Chromium + WebKit(Safari engine) + Firefox(Gecko); ⛔ real iOS/Android hardware NOT run (honest) |

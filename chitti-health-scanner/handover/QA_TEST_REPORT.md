@@ -59,7 +59,7 @@
 | Case | Result | Detail |
 |---|---|---|
 | No internet (offline) | ✅ | Local-first: capture→save→memory works fully offline. |
-| Slow 3G full load | ❌ | `load` event > 30 s due to the **16 MB `chitti_lang.js`** (KI-01). Page is **interactive at ~1 s** (DOMContentLoaded); only the full-asset `load` is slow. Workaround documented; fix = split the i18n dict (platform-wide). |
+| Slow 3G full load | ⚠️ | The local test server sent `chitti_lang.js` **uncompressed (16 MB)** → `load` timed out >30 s. **Corrected:** production (GitHub Pages) serves it **brotli ~2 MB / gzip ~3.3 MB**, so the real 3G transfer is far smaller (≈10 s Fast-3G). Still the heaviest asset (KI-01); fix = split the i18n dict (platform-wide). Reclassified Medium. |
 | Corrupted image upload | ✅ | Non-image bytes → graceful result, no crash. |
 | Large ~9 MB image | ✅ | Handled in ~3.8 s, no crash. |
 | Rapid language switch (10× in <5 s) | ✅ | 10 switches in ~1.8 s, final state correct, **no errors, no flicker**. |
@@ -114,7 +114,7 @@
 | Metric | Target | Measured | Verdict |
 |---|---|---|---|
 | Page load (local) | — | DOMContentLoaded ~1.0 s, load ~1.1 s | ✅ fast |
-| Page load on 3G | < 3 s | full `load` > 30 s (16 MB i18n) | ❌ KI-01; interactive ~1 s |
+| Page load on 3G | < 3 s | uncompressed-local-test >30 s; **prod-served brotli ~2 MB ≈ 10 s Fast-3G** | ⚠️ KI-01 (Medium); fix = split i18n |
 | Language switch | < 1 s | **103 ms** | ✅ |
 | Image capture/save | < 5 s | sub-second real work (measured value includes deliberate test delays) | ✅ |
 | Memory usage | < 100 MB | **23 MB** JS heap | ✅ |

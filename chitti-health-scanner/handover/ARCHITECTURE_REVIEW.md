@@ -52,7 +52,7 @@ deliberate `501 coming_soon`.
 | Load | Frontend (static) | Backend (`/api/health-scanner/*`) | First to break |
 |---|---|---|---|
 | 1,000 concurrent | ✅ trivial (GitHub Pages CDN) | ✅ cheap (stubs, no DB writes) | nothing |
-| 100,000 concurrent | ✅ CDN scales | ⚠️ Railway free-tier dyno + Turso connection cap | **(a) the 16 MB `chitti_lang.js` download (bandwidth)**, then **(b) Railway dyno** when AI ships and each scan calls DeepSeek |
+| 100,000 concurrent | ✅ CDN scales | ⚠️ Railway free-tier dyno + Turso connection cap | **(a) `chitti_lang.js` bandwidth — 2.0 MB brotli / 3.3 MB gzip per first-load** (16 MB raw but GitHub Pages compresses), then **(b) Railway dyno** when AI ships and each scan calls DeepSeek |
 | When AI ships | n/a | 🔴 DeepSeek inference rate-limit + cost is the real ceiling | DeepSeek throughput |
 
 **Recommendations:** (1) **split / lazy-load** the 16 MB i18n dictionary (active language only) — biggest single win; (2) long-cache + CDN the static substrate; (3) when AI lands, run inference behind a **queue** (not request-synchronous) with backpressure; (4) keep analysis idempotent + cacheable by image hash.
@@ -111,7 +111,7 @@ deliberate `501 coming_soon`.
 
 | Item | Priority | Effort | Note |
 |---|---|---|---|
-| **16 MB `chitti_lang.js`** loaded whole → slow full-load on 3G | 🔴 Must-fix (platform-wide) | M–L | Split per-language / lazy-load active lang. Biggest perf + scalability win. |
+| **`chitti_lang.js`** loaded whole (16 MB raw → **2.0 MB brotli / 3.3 MB gzip** served) → heavy first-load, `defer` gates DOMContentLoaded | 🟠 Should-fix (platform-wide) | M–L | Split per-language / lazy-load active lang (~250 KB). Biggest perf + scalability win. Needs 38-page regression. |
 | **localStorage photos unencrypted** at rest | 🟠 Should-fix | M | Encrypt on device or make Health File vault canonical. |
 | Shared substrate not fully storage-guarded (errors under Safari private mode) | 🟠 Should-fix | S | Wrap substrate `localStorage` access (page itself is now guarded). |
 | No `fetch` timeout/retry wrapper for API | 🟠 Should-fix **before AI ships** | S | Not critical today (local-first); critical when `/analyze` is network-bound. |
@@ -126,7 +126,7 @@ deliberate `501 coming_soon`.
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | User over-trusts a future AI result | low (gated) | **high** | Constitution + guardrails enforce "never diagnose"; AI stays `COMING SOON`; Medical Board gate before any number ships. |
-| Slow load on 2G/3G | medium | medium | Page interactive at DOMContentLoaded (~1 s); fix = split the 16 MB dict. |
+| Slow load on 2G/3G | medium | medium | Served compressed (~2 MB brotli, not 16 MB); ~1 s on Wi-Fi/4G. `defer` gates DCL on slow links → fix = split the dict. |
 | Local data loss (device wipe) | medium | low–medium | Save-to-Health-File is the durable path; documented to user. |
 | Storage-blocked browser (Safari private) | low | low | Page now guarded → renders + degrades; substrate guard is tech-debt. |
 
