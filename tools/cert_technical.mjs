@@ -61,7 +61,24 @@ const c = await b.newContext({ viewport:{ width:1280, height:900 } });
 const p = await c.newPage();
 p.on('pageerror', e => pageErrors.push('fn: ' + e.message));
 await p.goto(URL, { waitUntil:'domcontentloaded' });
-await p.waitForTimeout(1600);
+await p.waitForTimeout(1800);
+
+// ── ITEM 1: DISABILITY MODAL on first visit (G3) ──
+const dpModal = await p.evaluate(() => {
+  const m = document.getElementById('chitti-disability-profile-modal');
+  if (!m) return { present:false };
+  const vis = m.offsetParent !== null || getComputedStyle(m).display !== 'none';
+  const opts = m.querySelectorAll('input[type="checkbox"]').length;
+  return { present:true, vis, opts };
+});
+check('ITEM disability_modal_first_visit', dpModal.present && dpModal.vis && dpModal.opts >= 5,
+  dpModal.present ? (dpModal.opts + ' options, visible=' + dpModal.vis) : 'modal not found');
+// dismiss the modal so downstream interaction is clean (save with no selection = skip)
+await p.evaluate(() => {
+  const m = document.getElementById('chitti-disability-profile-modal');
+  if (m) { const btn = m.querySelector('button'); if (btn) btn.click(); m.style.display='none'; m.remove(); }
+});
+await p.waitForTimeout(300);
 
 // G2: substrate + engine loaded
 check('engine_loaded', await p.evaluate(() => !!window.TechEngine));
@@ -85,10 +102,10 @@ const widgetCounts = await p.evaluate(() => {
   return out;
 });
 const boxesWired = widgetCounts.filter(w => w.btns >= 4).length;
-check('5_element_box_on_every_response', boxesWired === widgetCounts.length && widgetCounts.length >= 5,
+check('ITEM feedback_bar_every_box', boxesWired === widgetCounts.length && widgetCounts.length >= 5,
   boxesWired + '/' + widgetCounts.length + ' boxes wired (' + widgetCounts.map(w => w.id + ':' + w.btns).join(' ') + ')');
 // SEBI bar
-check('SEBI_bar_present', await p.evaluate(() => /NOT SEBI REGISTERED/i.test(document.getElementById('sebi-bar').textContent)));
+check('ITEM sebi_bar', await p.evaluate(() => /NOT SEBI REGISTERED/i.test(document.getElementById('sebi-bar').textContent)));
 // a signal verdict rendered
 check('signal_verdict_rendered', await p.evaluate(() => {
   const t = document.getElementById('verdict-row').textContent; return /BUY|SELL|HOLD|खरीद|कोन|রাখ|ख़रीदें/.test(t) || t.length > 1;
@@ -100,7 +117,7 @@ await p.selectOption('#lang-select', 'bn');
 await p.waitForTimeout(700);
 const bnTitle = await p.evaluate(() => document.querySelector('[data-i18n="app.title"]').textContent);
 const bnExpected = await p.evaluate(() => window.TECH_I18N.bn['app.title']);
-check('lang_switch_rerenders_en_to_bn', bnTitle === bnExpected && bnTitle !== enTitle, `"${enTitle}" → "${bnTitle}"`);
+check('ITEM language_flip_en_to_bangla', bnTitle === bnExpected && bnTitle !== enTitle, `"${enTitle}" → "${bnTitle}"`);
 check('html_lang_attr_updates', await p.evaluate(() => document.documentElement.lang === 'bn'));
 // switch to te and ta too
 await p.selectOption('#lang-select', 'te'); await p.waitForTimeout(400);
@@ -120,7 +137,7 @@ check('chart_pane_toggles_present', toggleWorks);
 
 // ---- tap targets >= 44px on primary buttons ----
 const smallBtns = await p.$$eval('.btn', els => els.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.height < 44; }).length);
-check('tap_targets_44px', smallBtns === 0, smallBtns + ' under 44px');
+check('ITEM tap_targets_44px', smallBtns === 0, smallBtns + ' under 44px');
 
 // ---- run screener + scan smoke ----
 await p.evaluate(() => window.TechUI.runScreen());

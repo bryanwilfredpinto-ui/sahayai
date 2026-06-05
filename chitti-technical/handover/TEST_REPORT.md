@@ -1,0 +1,85 @@
+🎖️ World Class Chitti Technical — Commando Discipline. Zero Excuses.
+
+# CHITTI TECHNICAL — TEST REPORT (self-certified)
+
+**Date:** 2026-06-06 · **By:** Chitti CTO (automated, not Sire) · **Verdict: ✅ ALL PASS**
+
+> I ran the QA myself. Both suites are committed and reproducible on any machine:
+> `node tools/test_technical.mjs` and `node tools/cert_technical.mjs` (Playwright/Chromium).
+> Nothing below is hand-asserted — every row is a machine check with its console output.
+
+## Headline
+| Suite | Result |
+|---|---|
+| Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **229 PASS / 0 FAIL** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **19 PASS / 0 FAIL · 0 page errors** |
+
+## The five items you named — PASS/FAIL
+
+| # | Item | Result | Machine evidence |
+|---|------|--------|------------------|
+| 1 | **Disability modal (first visit)** | ✅ **PASS** | `ITEM disability_modal_first_visit — 9 options, visible=true` — `#chitti-disability-profile-modal` renders on a fresh visit with 9 checkboxes (blind/deaf/mute/ISL/illiterate/elderly/limited-mobility/cognitive/rural). |
+| 2 | **Language flip** | ✅ **PASS** | `ITEM language_flip_en_to_bangla — "Chitti Technical" → "চিট্টি টেকনিক্যাল"` + `lang_switch_telugu` ✅ + `lang_switch_tamil` ✅ + `html_lang_attr_updates` ✅. Whole UI re-renders; node test confirms 0 missing keys + 0 Hinglish across all 9 languages. |
+| 3 | **SEBI bar** | ✅ **PASS** | `ITEM sebi_bar` — sticky "NOT SEBI REGISTERED" bar present + legal modal behind it. |
+| 4 | **Tap targets** | ✅ **PASS** | `ITEM tap_targets_44px — 0 under 44px` — every `.btn` ≥ 44px (blind/limited-mobility floor). |
+| 5 | **Feedback bar (5-element)** | ✅ **PASS** | `ITEM feedback_bar_every_box — 7/7 boxes wired` — every response card has the 🤖/🔊/👍/👎 per-box bar (tech-signal, explain, roshan, chart, indicators, screener, portfolio). |
+
+## Full node logic test (229/0)
+Covers BO3–BO11. Key gates:
+- **Indicator math** — SMA/EMA exact on fixtures; RSI→~100 rising / ~0 falling; warmup → null (abstains, never counted as 0). ✅
+- **Roshan ⭐** — signal matches RSI(14)-vs-SMA(20) formula on fixture. ✅
+- **Market-cap tiers** — Nifty50 / Large(>₹1L cr) / Mid(50k–1L) / Small(5k–50k) / Micro(<5k) boundaries correct; every universe row tiered. ✅
+- **Multi-timeframe confluence** — aligned timeframes → directional; opposed timeframes → HOLD. ✅
+- **GUARDRAIL — NO stop → NO signal** — `stopViolations:0, rrViolations:0` across **96 scans** (24 stocks × 4 trade types): 20 directional signals, all with a correct-side stop + RR ≥ floor; 76 honest HOLDs. ✅
+- **GUARDRAIL — no banned phrase** — 0 "guaranteed/sure-shot/100%" in any explanation. ✅
+- **Screener** — tier filter, Roshan filter return correct subsets; impossible combo → 0 rows + nearest-miss. ✅
+- **i18n** — all 9 packs complete, 0 Hinglish leaks, title differs per language. ✅
+- **HTML gates** — a11y + feedback-widget + engine + i18n + lang scripts loaded; ≥1 `data-chitti-response`; SEBI bar; lang-select; refresh; Vaani banner. ✅
+
+```
+scan coverage: 20 directional, 76 HOLD across 96 scans
+PASS: 229   FAIL: 0
+TECH_TEST_RESULT:{"pass":229,"fail":0,"directional":20,"holds":76,"stopViolations":0,"rrViolations":0}
+```
+
+## Full Playwright cert (19/0, 0 page errors)
+```
+✅ screenshot_375        ✅ no_horizontal_overflow_375 — clean
+✅ screenshot_768        ✅ screenshot_1280
+✅ ITEM disability_modal_first_visit — 9 options, visible=true
+✅ engine_loaded         ✅ i18n_loaded
+✅ G1_response_boxes_present — 7 boxes
+✅ ITEM feedback_bar_every_box — 7/7 boxes wired
+✅ ITEM sebi_bar         ✅ signal_verdict_rendered
+✅ ITEM language_flip_en_to_bangla — "Chitti Technical" → "চিট্টি টেকনিক্যাল"
+✅ html_lang_attr_updates ✅ lang_switch_telugu  ✅ lang_switch_tamil
+✅ chart_pane_toggles_present
+✅ ITEM tap_targets_44px — 0 under 44px
+✅ screener_runs         ✅ no_page_errors
+PASS: 19   FAIL: 0   ·   pageErrors: 0
+```
+
+Real screenshots committed: [tools/cert_screenshots/chitti_technical_375.png](../../tools/cert_screenshots/chitti_technical_375.png) ·
+[768](../../tools/cert_screenshots/chitti_technical_768.png) · [1280](../../tools/cert_screenshots/chitti_technical_1280.png).
+
+## What is complete and working (offline, no backend needed)
+Stock search · multi-timeframe BUY/SELL/HOLD + confidence · entry/stop/targets/RR/size ·
+Roshan card + chart pane + screener filter · candlestick chart with RSI/Williams %R/Stochastic
+overlay-or-separate-pane toggle · screener by cap tier · Portfolio (Golden-Rule confirm) ·
+Chitti Explain + Audio Trade Summary · 9-language whole-UI flip · 5-element box on every card ·
+responsive 375/768/1280.
+
+## Honest limits (NOT a QA gap — external dependencies, clearly labelled in-app)
+- **Live prices:** uses a labelled DEMO candle feed offline; a `chitti-shares-api` fetch on
+  Refresh replaces it once deployed. The "DEMO data" flag is visible in the UI — nothing is faked as live.
+- **Directional accuracy ≥70% vs market:** NOT YET MEASURED — needs live signals to elapse
+  against real NSE closes. No number is claimed. (Risk-*structural* validity IS measured: 100%.)
+- **DeepSeek-enhanced Explain:** deterministic template today; LLM enhancement needs a funded key.
+
+## Spot-check guide for Sire (optional — QA already done)
+Open `chitti_technical.html` → the disability modal greets you → pick a language (try Bangla)
+and watch the whole screen flip → tap 🔍 Scan → read the BUY/SELL/HOLD + stop/target → tap
+🔊 Audio trade summary → toggle RSI between "same window" and "separate pane" → Run screen.
+
+---
+> **World Class Chitti Technical — Commando Discipline. Zero Excuses.**
