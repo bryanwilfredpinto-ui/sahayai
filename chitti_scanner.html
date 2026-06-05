@@ -619,7 +619,7 @@ function renderRouterCard(det, opts){
 
   card.className = cls;
   card.innerHTML =
-    `<div class="rc-head"><span class="rc-ico">🧭</span><span class="rc-title">${escapeHtml(headTitle)}</span>` +
+    `<div class="rc-head"><span class="rc-title">${escapeHtml(headTitle)}</span>` +
     `<span class="${confClass}">${useHi?'भरोसा ':'sure '}${confTxt}</span></div>` +
     dest +
     `<p class="rc-reason">${escapeHtml(reason)}</p>` +
@@ -852,7 +852,24 @@ function showResultLoading(){
 }
 function applyResult(d){
   if (!d || !d.ok) {
-    document.getElementById('r-summary').textContent = '⚠️ ' + ((d && d.error) || 'Could not analyse.');
+    // Backend failed OR the relevance-rail blocked the text. The deterministic
+    // Universal Router still works WITHOUT the backend — route from the typed text
+    // so the user is never left at a dead end (CUSOS doctrine: rules are the product).
+    const _typed = document.getElementById('typed-text');
+    const typedVal = (_typed ? _typed.value : '') || '';
+    const useHi = (CURRENT_LANG === 'hi');
+    const serverMsg = (d && d.error) || (d && d.summary) || (useHi ? 'सर्वर अभी जवाब नहीं दे पाया।' : 'The server could not analyse this right now.');
+    document.getElementById('r-summary').textContent = '⚠️ ' + serverMsg;
+    if (window.CHITTI_SCANNER_ROUTER !== false && typedVal.trim()) {
+      const det = detectCategory({ type: null, summary: typedVal, facts: {}, key_findings: [] }, typedVal);
+      renderRouterCard(det, { speak: false });
+      if (LAST_ROUTE) {
+        const lead = useHi
+          ? 'सर्वर अभी उपलब्ध नहीं, पर आपके टेक्स्ट से मैं इसे यहाँ भेज सकती हूँ: '
+          : "The server isn't available right now, but from your text I can still route this to: ";
+        speakText(lead + LAST_ROUTE.label + '. ' + LAST_ROUTE.reason, CURRENT_LANG);
+      }
+    }
     return;
   }
   LAST_RESULT = d;
