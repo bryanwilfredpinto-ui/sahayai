@@ -385,7 +385,8 @@
       anchor: undertone === 'warm' ? 'maroon + gold' : 'navy + teal',
       note: undertone === 'warm'
         ? 'warm family theme — maroon, gold, rust, mustard read as one set'
-        : 'cool family theme — navy, teal, plum, emerald read as one set'
+        : 'cool family theme — navy, teal, plum, emerald read as one set',
+      regionCode: opts.culture ? regionGuide(opts.culture).code : null   // localized in the page
     };
     // recommend per member; pick one anchor (strongest relevant pieces), rest accents
     var scored = members.map(function (m) {
@@ -525,6 +526,30 @@
     };
   }
 
+  // ---------- 6. SIZE / MEASUREMENT (cross-brand) — numbers only, never a body comment ----------
+  var SIZE_BANDS = [
+    { key: 'XS',  chestMax: 85,  india: 34, eu: 42, us: 'XS',  uk: 'XS' },
+    { key: 'S',   chestMax: 91,  india: 36, eu: 44, us: 'S',   uk: 'S' },
+    { key: 'M',   chestMax: 97,  india: 40, eu: 46, us: 'M',   uk: 'M' },
+    { key: 'L',   chestMax: 104, india: 42, eu: 48, us: 'L',   uk: 'L' },
+    { key: 'XL',  chestMax: 112, india: 44, eu: 50, us: 'XL',  uk: 'XL' },
+    { key: 'XXL', chestMax: 999, india: 46, eu: 52, us: 'XXL', uk: 'XXL' }
+  ];
+  function sizeGuide(m) {
+    m = m || {}; var band = null;
+    if (m.chestCm) { for (var i = 0; i < SIZE_BANDS.length; i++) { if (m.chestCm <= SIZE_BANDS[i].chestMax) { band = SIZE_BANDS[i]; break; } } }
+    else if (m.base) { band = SIZE_BANDS.filter(function (x) { return x.key === m.base; })[0] || null; }
+    if (!band) return null;
+    return { size: band.key, india: band.india + '"', us: band.us, uk: band.uk, eu: 'EU ' + band.eu, noteCode: 'size_note' };
+  }
+
+  // ---------- 7. REGIONAL COMPOSITION — garment/styling facts by culture (never the body) ----------
+  var REGION_CULTURES = ['north', 'south', 'bengali', 'punjabi', 'rajasthani', 'maharashtrian', 'other'];
+  function regionGuide(culture) {
+    culture = (REGION_CULTURES.indexOf(culture) >= 0) ? culture : 'other';
+    return { culture: culture, code: culture }; // page localizes via FashionDyn.region(code)
+  }
+
   return {
     colourFamily: colourFamily, itemFormality: itemFormality,
     classifyOccasion: classifyOccasion, colorHarmony: colorHarmony, seasonalSuitability: seasonalSuitability,
@@ -536,7 +561,7 @@
     // CFOS v2.1 deterministic features
     REPAIR_RULES: REPAIR_RULES, diagnoseRepair: diagnoseRepair, repairCodes: repairCodes,
     planWedding: planWedding, planFamily: planFamily, planWeek: planWeek, modeGuidance: modeGuidance, MODE_TIPS: MODE_TIPS,
-    impactStats: impactStats,
+    impactStats: impactStats, sizeGuide: sizeGuide, regionGuide: regionGuide, SIZE_BANDS: SIZE_BANDS,
     FUNCTION_BAND: FUNCTION_BAND, OCCASION_BAND: OCCASION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
     version: 'fashion-engine-2.1',
   };

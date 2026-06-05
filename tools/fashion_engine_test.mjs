@@ -170,6 +170,15 @@ ok('week: tiny wardrobe degrades HONESTLY (reuse flagged, not hidden)',
     return wk.reuseCount >= 1 && wk.honest.length > 0;
   })());
 
+// CFOS v2.1 — Size (cross-brand) + Regional composition
+ok('size: chest 95cm -> M with India/US/UK/EU labels', (() => { const g = E.sizeGuide({ chestCm: 95 }); return g && g.size === 'M' && g.india === '40"' && g.us === 'M' && /EU 46/.test(g.eu); })());
+ok('size: base XL resolves directly', E.sizeGuide({ base: 'XL' }).size === 'XL');
+ok('size: no input returns null (no guessing)', E.sizeGuide({}) === null);
+ok('region: known culture returns its code', E.regionGuide('bengali').code === 'bengali');
+ok('region: unknown culture falls back to other', E.regionGuide('martian').code === 'other');
+ok('region: family plan carries a regionCode when culture set',
+  (() => { const p = E.planFamily({ occasion: 'festive', culture: 'south', members: [{ wearer_id: 'x' }] }, { x: [{ id: 's', category: 'outfit', colour: 'maroon', desc: 'silk saree', hex: '#800000' }] }); return p.familyPalette.regionCode === 'south'; })());
+
 // CFOS v2.1 — Impact / sustainability observability (Founder Rule made visible)
 (() => {
   const items = [{ id: 't1', category: 'top', colour: 'navy', cost: 600, wears: 12 }, { id: 'b1', category: 'bottom', colour: 'beige', cost: 900, wears: 8 }];

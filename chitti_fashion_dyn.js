@@ -58,6 +58,20 @@
         value:'wardrobe value working for you', none:'Start wearing, repairing and re-styling — Chitti will count your savings here.',
         note:'Every repair and re-wear is a garment not bought. Counted on your device only.'
       },
+      size: {
+        your:'Your size', india:'India', us:'US', uk:'UK', eu:'EU', saved:'Saved on this device',
+        note:'Brands vary — check each brand\'s size chart; if between sizes, size up for comfort.',
+        ask:'Enter your chest in cm (or pick a base size) — numbers only, never a comment on you.'
+      },
+      region: {
+        north:'Anchor with a kurta + churidar; a Nehru jacket adds a clean formal lift.',
+        south:'A silk saree with a contrast blouse + temple jewellery reads classic South Indian.',
+        bengali:'White-and-red (lal-paar) with gold reads quintessential Bengali festive.',
+        punjabi:'A bright phulkari dupatta over a plain suit lifts the whole look.',
+        rajasthani:'Bandhej / leheriya prints with mirror-work read Rajasthani festive.',
+        maharashtrian:'A nauvari drape with a paithani border + nath reads Maharashtrian classic.',
+        other:'Pick one regional anchor piece and keep the rest neutral.'
+      },
     },
     hi: {
       occ: { casual:'रोज़', 'smart-casual':'स्मार्ट-कैज़ुअल', 'business-casual':'बिज़नेस-कैज़ुअल', formal:'फ़ॉर्मल', festive:'त्योहारी', wedding:'शादी', office:'दफ़्तर', interview:'इंटरव्यू', college:'कॉलेज', religious:'धार्मिक', date:'डेट नाइट', travel:'यात्रा', funeral:'शोक', family:'पारिवारिक समारोह' },
@@ -107,6 +121,20 @@
         repairs:'कपड़े मरम्मत किए, फिर नहीं खरीदे', money:'पैसा बचा', carbon:'CO₂ बची', cpw:'प्रति बार लागत',
         value:'आपके लिए काम करती अलमारी की क़ीमत', none:'पहनना, मरम्मत और फिर से style करना शुरू करें — Chitti आपकी बचत यहाँ गिनेगी।',
         note:'हर मरम्मत और दोबारा पहनना — एक कपड़ा जो नहीं खरीदा। सिर्फ़ आपके device पर गिना जाता है।'
+      },
+      size: {
+        your:'आपका साइज़', india:'भारत', us:'US', uk:'UK', eu:'EU', saved:'इसी device पर सहेजा',
+        note:'हर ब्रांड अलग होता है — हर ब्रांड का size chart देखें; दो साइज़ के बीच हों तो आराम के लिए बड़ा लें।',
+        ask:'अपना सीना cm में डालें (या base size चुनें) — सिर्फ़ नाप, आप पर कोई टिप्पणी नहीं।'
+      },
+      region: {
+        north:'कुर्ता + चूड़ीदार को आधार बनाएँ; Nehru jacket साफ़ formal लुक देती है।',
+        south:'silk साड़ी + contrast ब्लाउज़ + temple ज़ेवर — classic दक्षिण भारतीय।',
+        bengali:'सफ़ेद-लाल (लाल-पाड़) + सोना — विशिष्ट बंगाली त्योहारी।',
+        punjabi:'सादे सूट पर चटक फुलकारी दुपट्टा पूरे लुक को उठाता है।',
+        rajasthani:'बंधेज / लहरिया प्रिंट + शीशे का काम — राजस्थानी त्योहारी।',
+        maharashtrian:'नौवारी drape + पैठणी बॉर्डर + नथ — classic महाराष्ट्रीयन।',
+        other:'एक regional मुख्य piece चुनें, बाक़ी neutral रखें।'
       },
     },
     ta: {
@@ -206,6 +234,8 @@
     week: function (code, L) { return t('week', code, L); },
     mode: function (code, L) { return t('mode', code, L); },
     impact: function (code, L) { return t('impact', code, L); },
+    size: function (code, L) { return t('size', code, L); },
+    region: function (code, L) { return t('region', code, L); },
     lang: lang,
   };
 })();

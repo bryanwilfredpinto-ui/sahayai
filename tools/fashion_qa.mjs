@@ -158,6 +158,11 @@ const famChips = await p.evaluate(() => document.querySelectorAll('#fa-fam-occ .
 await p.evaluate(() => { const c = document.querySelector('#fa-fam-occ .fa-chip'); if (c) c.click(); faFamilyCoordinate(); });
 await p.waitForTimeout(600);
 (await mutated(p, '#fa-fam-result')) ? P('button: Family coordination renders') : F('button: Family coordination');
+// CFOS v2.1: My Size — cross-brand size guidance from a chest measurement
+await p.evaluate(() => { const c = document.getElementById('fa-size-chest'); if (c) c.value = '95'; faSizeGuide(); });
+await p.waitForTimeout(400);
+const sizeOut = await p.evaluate(() => { const e = document.getElementById('fa-size-result'); return !!e && /\bM\b/.test(e.textContent) && /40/.test(e.textContent); });
+sizeOut ? P('v2.1 Size: chest 95cm -> M + India/US/UK/EU labels render') : F('v2.1 Size guidance');
 // career coach: pick a role -> plan with real resources renders
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="career"]').click(); const r = document.querySelector('#fa-coach-host [data-role]'); if (r) r.click(); });
 await p.waitForTimeout(500);

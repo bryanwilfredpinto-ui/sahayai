@@ -364,6 +364,19 @@ body{font-size:17px}
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faFamilyCoordinate()" data-vai-i18n="fa.fam.btn">🎨 Coordinate the family</button></div>
       <div id="fa-fam-result" class="fa-result"></div>
       </div>
+
+    <!-- 📏 My size — cross-brand size guidance (CFOS v2.1, deterministic, on-device) -->
+    <div data-chitti-response="fa-card-20" class="sds-card chitti-response" data-chitti-section="📏 My size">
+      <h2 class="sds-card-title"><span class="ico">📏</span> <span data-vai-i18n="fa.sz.title">📏 My size (cross-brand)</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.sz.sub">Save your measurements once and Chitti gives honest size guidance across brands (Indian, US, UK, EU) — so you order the right fit and avoid returns. Numbers only, never a comment on your body.</p>
+      <p id="fa-size-ask" style="font-size:12px;color:#888;margin:8px 0 4px"></p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <input class="fa-input" id="fa-size-chest" type="number" min="60" max="160" placeholder="chest cm" style="flex:1;min-width:110px">
+        <select id="fa-size-base" style="min-height:40px"></select>
+      </div>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faSizeGuide()" data-vai-i18n="fa.sz.btn">📏 Save my size</button></div>
+      <div id="fa-size-result" class="fa-result"></div>
+      </div>
   </section>
 
   <!-- ════ TAB · MORE (Clothing Doctor · Office Week · Wardrobe Audit · Travel · Emergency) ════ -->
@@ -567,7 +580,7 @@ function faTab(name, btn){
   try {
     if (name === 'more') { faDoctorInit(); faWeekInit(); }
     if (name === 'occasion') faWeddingInit();
-    if (name === 'family') { faModeInit(); faFamilyInit(); }
+    if (name === 'family') { faModeInit(); faFamilyInit(); faSizeInit(); }
   } catch(e){}
 }
 
@@ -1455,8 +1468,10 @@ function faRenderCoordPlan(plan, host, headEmoji, headText){
   const FD = faDyn(); const wearers = faWearers();
   const nameOf = id => (wearers.find(w => w.id === id) || {}).name || id;
   const themeNote = FD ? FD.wedding(plan.familyPalette.undertone) : plan.familyPalette.note;
+  const regionTip = (plan.familyPalette.regionCode && FD) ? FD.region(plan.familyPalette.regionCode) : '';
   let html = '<div class="fa-outfit"><div class="title">' + headEmoji + ' ' + esc(headText) + '</div>' +
     '<div class="why">🎨 ' + esc(FD ? FD.wedding('theme') : 'Family theme') + ': ' + esc(themeNote) + '</div>' +
+    (regionTip ? '<div class="why" style="margin-top:4px">🪔 ' + esc(regionTip) + '</div>' : '') +
     '<div style="margin-top:4px">' + faConfBadge(plan.coordinationScore) + ' <span style="font-size:11px;color:#555">' + esc(FD ? FD.wedding('coordination') : 'Coordination') + '</span></div></div>';
   plan.perMember.forEach(pm => {
     const roleLbl = FD ? FD.wedding(pm.role) : pm.role;
@@ -1581,6 +1596,40 @@ async function faImpact(){
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }
 
+/* ── 📏 My size — cross-brand guidance (deterministic, on-device) ── */
+function faSizeInit(){
+  const FD = faDyn();
+  const ask = document.getElementById('fa-size-ask'); if (ask) ask.textContent = FD ? FD.size('ask') : '';
+  const sel = document.getElementById('fa-size-base');
+  if (sel && !sel.dataset.built){ sel.innerHTML = '<option value="">—</option>' + ['XS','S','M','L','XL','XXL'].map(s => '<option value="' + s + '">' + s + '</option>').join(''); sel.dataset.built = '1'; }
+  // restore saved
+  if (PROFILE.size){ const c = document.getElementById('fa-size-chest'); if (c && PROFILE.size.chestCm) c.value = PROFILE.size.chestCm; if (sel && PROFILE.size.base) sel.value = PROFILE.size.base; }
+}
+function faSizeGuide(){
+  const host = document.getElementById('fa-size-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const chest = parseInt((document.getElementById('fa-size-chest').value || '0'), 10) || 0;
+  const base = document.getElementById('fa-size-base').value || '';
+  const m = chest ? { chestCm: chest } : (base ? { base: base } : null);
+  const g = m ? E.sizeGuide(m) : null;
+  if (!g){ const msg = CURRENT_LANG==='en'?'Enter your chest in cm or pick a base size.':'अपना सीना cm में डालें या base size चुनें।'; host.innerHTML='<div class="sds-card">📏 '+esc(msg)+'</div>'; host.dataset.spoken=msg; faSpeak(msg); return; }
+  PROFILE.size = { chestCm: chest || null, base: base || g.size }; faSaveProfile();
+  const T = k => FD ? FD.size(k) : k;
+  const rows = [['', T('your'), g.size], [T('india'), '', g.india], [T('us'), '', g.us], [T('uk'), '', g.uk], [T('eu'), '', g.eu]];
+  let html = '<div class="fa-outfit"><div class="title">📏 ' + esc(T('your')) + ': ' + esc(g.size) + '</div>' +
+    '<div class="fa-tiers">' +
+    '<div class="fa-tier"><span class="lab">🇮🇳 ' + esc(T('india')) + '</span><div>' + esc(g.india) + '</div></div>' +
+    '<div class="fa-tier"><span class="lab">🇺🇸 ' + esc(T('us')) + '</span><div>' + esc(g.us) + '</div></div>' +
+    '<div class="fa-tier"><span class="lab">🇬🇧 ' + esc(T('uk')) + '</span><div>' + esc(g.uk) + '</div></div>' +
+    '<div class="fa-tier"><span class="lab">🇪🇺 ' + esc(T('eu')) + '</span><div>' + esc(g.eu) + '</div></div>' +
+    '</div><div class="why" style="margin-top:6px">ℹ️ ' + esc(T('note')) + '</div>' +
+    '<div style="font-size:11px;color:#138808;margin-top:4px">✅ ' + esc(T('saved')) + '</div></div>';
+  host.innerHTML = html;
+  const sp = T('your') + ' ' + g.size + '. ' + T('india') + ' ' + g.india + ', ' + T('us') + ' ' + g.us + ', ' + T('uk') + ' ' + g.uk + ', ' + g.eu + '. ' + T('note');
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
 /* ── 👵🧒 Senior & Kids Mode (adaptive dressing lens) ── */
 function faModeInit(){
   const FD = faDyn();
@@ -1627,7 +1676,7 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
-  try { faDoctorInit(); faWeekInit(); faWeddingInit(); faModeInit(); faFamilyInit(); } catch(e){}
+  try { faDoctorInit(); faWeekInit(); faWeddingInit(); faModeInit(); faFamilyInit(); faSizeInit(); } catch(e){}
   faInitCoach();
   // language dropdown guard — run now + after chitti_lang.js enrichment + once more
   faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);
