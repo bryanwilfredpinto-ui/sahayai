@@ -46,13 +46,18 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#
 /* Disclaimer — compact, smaller, non-sticky to free vertical real-estate */
 .news-disclaimer{background:rgba(212,175,55,.12);color:#78350f;padding:4px 14px;text-align:center;font-size:11px;font-weight:600;border-bottom:1px solid rgba(212,175,55,.45);line-height:1.4}
 
-/* Picker bar — collapsed default (just profession in 1 row); experience+salary only on first visit / advanced */
-.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;min-height:40px;font-weight:600}
+/* Picker bar — single row at every viewport; experience+salary only behind Advanced */
+.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;gap:6px;flex-wrap:nowrap;align-items:center;position:sticky;top:0;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 8px;font-size:12.5px;min-height:36px;font-weight:600;min-width:0}
 .picker-bar select:focus{outline:none;border-color:var(--saffron)}
-.picker-bar .pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.picker-bar .pick-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
 .picker-bar .pick-sep{flex:1}
-.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:36px}
+.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;min-height:36px;min-width:40px;flex-shrink:0}
+@media (max-width:520px){
+  .picker-bar .pick-lbl{display:none}      /* aria-label remains; visual label drops to free width */
+  .picker-bar select{font-size:12px;padding:6px 6px}
+  #pick-lang{max-width:80px}                /* Lang select compact on small screens */
+}
 .spk-btn{background:#fff;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 
 /* Tabs */
