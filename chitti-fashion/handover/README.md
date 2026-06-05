@@ -2,8 +2,11 @@
 
 # Chitti Fashion — HANDOVER PACK (CFOS v2.1)
 
-> **Date:** 2026-06-05 · **Build:** `fashion-engine-2.1` · **Live:** `https://sahayai.in/chitti_fashion.html`
+> **Date:** 2026-06-05 · **Build:** `fashion-engine-2.1` + MedUPI UI · **Live:** `https://sahayai.in/chitti_fashion.html`
 > The five deliverables QA + Solution-Architect sign-off requires, grounded in **executed** test runs.
+>
+> 👉 **Start here:** [HANDOVER_MASTER.md](HANDOVER_MASTER.md) — one consolidated scorecard mapping every
+> Part A–D line item to its evidence (incl. the real **axe-core WCAG scan = 0 violations**).
 
 ## The 5 deliverables
 

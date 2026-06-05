@@ -109,9 +109,12 @@ body.fa-body > *, body.sds-page > * { position: relative; z-index: 1; }
   padding: 22px 18px !important; box-shadow: 0 6px 20px rgba(14,35,68,.06) !important;
 }
 .fa-hero .free-pill {
-  background: var(--green) !important; border-radius: 999px; letter-spacing: .03em;
+  /* green-800 #166534: white text passes WCAG AA (~6.4:1); --green #16a34a was 3.29 (axe serious) */
+  background: #166534 !important; border-radius: 999px; letter-spacing: .03em;
   font-size: 11px !important; padding: 4px 12px !important; text-transform: uppercase; color: #fff !important;
 }
+/* feedback-widget demo button text — darken saffron so it clears AA on its pale bg (axe serious, 2.77→AA) */
+body.fa-body .chitti-fb-bbtn .chitti-fb-bbtn-text, body.sds-page .chitti-fb-bbtn .chitti-fb-bbtn-text { color: #9a4513 !important; }
 .fa-hero h2 { font-size: 24px !important; line-height: 1.2 !important; font-weight: 900 !important; color: var(--navy) !important; margin: 10px 0 8px !important; }
 .fa-hero p { color: #4a5160 !important; font-size: 14px !important; }
 .fa-hero .cta {

@@ -94,9 +94,14 @@ Playwright drives the three real rendering engines. **WebKit is the exact engine
 | Per-box 5-element feedback bar (🔊/🤖/👍/👎 + window) | ✅ 21/21 boxes | cert G1 + audit `fbBars=21` |
 | 48 px tap targets (min 44×40) | ✅ all pass | cert + QA |
 
-> **NOT TESTED (requires human + tools):** WAVE browser-extension manual scan; Lighthouse a11y score;
-> real screen-reader pass with NVDA (Windows) / VoiceOver (iOS) / TalkBack (Android). The 107/107 is a
-> deterministic DOM/ARIA assertion suite, not a substitute for a human screen-reader session (KI-04).
+| Automated WCAG scanner (**axe-core**, WCAG 2.1 A+AA) | ✅ **0 violations** (was 1 critical + 1 serious + 1 moderate — all fixed) | `fashion_axe_scan.mjs` |
+
+> **Automated scanner — now run for real.** axe-core (the engine behind WAVE/Lighthouse a11y) reports
+> **0 violations** across critical/serious/moderate/minor (36 rule-groups pass). It initially found 3 real
+> WCAG issues (tablist children, contrast, missing h1) that the selector suite missed — all fixed (BUG-F5/F6/F7).
+>
+> **STILL NOT TESTED (requires a human):** real screen-reader pass with NVDA (Windows) / VoiceOver (iOS) /
+> TalkBack (Android). The 107/107 + axe-0 are automated; they are not a substitute for a human screen-reader session (KI-04).
 
 ## A5. Language Testing — all 9 primary languages + flicker check
 

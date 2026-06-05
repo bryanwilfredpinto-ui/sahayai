@@ -20,9 +20,24 @@ improvements tracked in **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** (KI-01…KI-08), 
 | BUG-F2 | High | Accessibility eval 90/100 — 10 cases asserted the **removed** `.fa-toolbar` selector | Corrected dataset to the real shipped `+ .chitti-fb-box-bar` (adjacent sibling, DOM-verified) + added 7 new-card cases | `fashion_eval_harness.mjs` → **107/107** |
 | BUG-F3 | Low | `gold_no_match` gap label missing for everyday family coordination | Added `gap_no_match` to the wedding/dyn group (en+hi) | `fashion_qa.mjs` family coordination PASS |
 | BUG-F4 | Medium | **MedUPI UI reskin** dropped base font to 15px → a11y **106/107** (low-vision case A040 needs ≥16px) | Held base font at **16px** in `chitti_fashion_ui.css` (accessibility beats density, ROLE.md §2) | `fashion_eval_harness.mjs` → **107/107** restored |
+| BUG-F5 | **Critical** (WCAG) | axe-core: `.fa-tabbar[role=tablist]` children were plain buttons (missing `role="tab"`) — `aria-required-children` | Added `role="tab"` + `aria-selected` to all 8 tabs; `faTab()` toggles `aria-selected` | `fashion_axe_scan.mjs` → 0 critical |
+| BUG-F6 | **Serious** (WCAG) | axe-core: contrast — `.free-pill` white-on-green 3.29; feedback-widget demo-button text 2.77 | Pill → green-800 `#166534` (~6.4:1); demo text → `#9a4513` (AA) | `fashion_axe_scan.mjs` → 0 serious |
+| BUG-F7 | Moderate (WCAG) | axe-core: page had no `<h1>` (`page-has-heading-one`) | Added a visually-hidden `<h1>` | `fashion_axe_scan.mjs` → 0 moderate |
 
-These are recorded for transparency; **all four are closed and re-verified.** BUG-F4 was caught **because**
-the full accessibility suite was re-run after the visual reskin — a CSS-only change still got gate-checked.
+These are recorded for transparency; **all seven are closed and re-verified.** BUG-F4 was caught by re-running
+the a11y suite after the reskin; **BUG-F5/F6/F7 were caught by running a real automated WCAG scanner (axe-core)**
+— the selector-based suite (107/107) could not see them, which is exactly why the scanner was added as a gate.
+
+## Automated WCAG scan (axe-core) — A4 evidence
+
+| Run | critical | serious | moderate | minor | violations |
+|---|---|---|---|---|---|
+| Before fix | 1 | 1 | 1 | 0 | 3 |
+| **After fix** | **0** | **0** | **0** | **0** | **0** |
+
+Scanner: `node_modules/axe-core` (the WCAG engine behind WAVE/Lighthouse a11y), WCAG 2.1 A+AA + best-practice
+rulesets, run via `tools/fashion_axe_scan.mjs`. 36 rule-groups pass, 0 violations. (2 "incomplete" items are
+axe's manual-review flags, not failures.)
 
 ## Evidence / screenshots
 

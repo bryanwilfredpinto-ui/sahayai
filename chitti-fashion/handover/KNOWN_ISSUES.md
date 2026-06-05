@@ -72,10 +72,11 @@ re-run `node tools/fashion_handover_audit.mjs` and check the `flicker[]` block �
   devices) and iOS-Safari (2 devices) hardware — touch, camera capture, on-device TalkBack/VoiceOver —
   was **not** run from this environment. **Recommendation:** a short human device-lab pass before sign-off to a human owner.
 
-**KI-04 — Human screen-reader + WAVE/Lighthouse not run.** *Must do before final HUMAN handover.*
-- Accessibility is **107/107 (100%)** on the deterministic DOM/ARIA suite, plus 5/5 four-user journeys.
-  A human pass with NVDA/VoiceOver/TalkBack and a WAVE/Lighthouse scan is the remaining verification and is
-  **recommended before human owner sign-off**.
+**KI-04 — Human screen-reader pass not run.** *Must do before final HUMAN handover.*
+- Accessibility is **107/107** on the DOM/ARIA suite, **axe-core 0 violations** (the WCAG engine behind
+  WAVE/Lighthouse — now run as a gate, `fashion_axe_scan.mjs`), plus 5/5 four-user journeys. **The automated
+  scanner is now DONE.** What remains is a **human** pass with NVDA (Windows) / VoiceOver (iOS) / TalkBack
+  (Android) — recommended before human-owner sign-off. (axe initially found 3 real WCAG issues; all fixed — BUG-F5/F6/F7.)
 
 **LLM-dependent features capped (by design, awaiting the DeepSeek key — Sire's one unblock):**
 - **Garment vision** (auto-detect garment/damage from a photo) → today the user taps a category/damage chip (complete).

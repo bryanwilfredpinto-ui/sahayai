@@ -21,8 +21,9 @@ I confirm, against executed evidence (not assertion):
 - ✅ All **automatable** testing in Part A is complete and green — engine 66/66, gold 91.6%, QA 50/50,
   visual cert 14/14, accessibility 107/107, journeys 5/5, **20/20** handover journeys, **9/9** cross-engine combos.
 - ✅ **Re-verified after the MedUPI UI reskin** (2026-06-05): the full suite was re-run against the new
-  design system. One CSS-induced regression (BUG-F4: base font 15px → low-vision case) was **caught by the
-  re-run and fixed** (held at 16px). a11y back to **107/107**. No functional gate moved.
+  design system. CSS-induced regressions (BUG-F4 base-font; BUG-F5/F6/F7 WCAG) were **caught and fixed**.
+- ✅ **Real automated WCAG scanner added + passing**: axe-core **0 violations** (critical/serious/moderate/minor),
+  `fashion_axe_scan.mjs`. It found 3 genuine issues the selector suite missed — all fixed. a11y **107/107**.
 - ✅ All architecture review in Part B is complete (diagram, scalability, security, data integrity, integrations, deployment, debt log).
 - ✅ All handover docs in Part C are complete.
 - ✅ **Critical bugs = 0**
