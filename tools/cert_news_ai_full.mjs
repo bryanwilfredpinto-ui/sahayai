@@ -435,6 +435,80 @@ for (const [name, path, expected] of endpoints) {
 }
 
 // =====================================================================
+// SECTION 7.5 — BLIND-USER VOICE-FIRST mode (Sire 2026-06-05 PM)
+// =====================================================================
+console.log('\n=== SECTION 7.5: Blind user Voice-First mode ===');
+await safe('blind_voice_first_activates', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(1500);
+  // Set disability profile = blind
+  await p.evaluate(() => {
+    localStorage.setItem('disability_profile', JSON.stringify({ blind: true }));
+  });
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(3500);
+  const has = await p.evaluate(() => ({
+    voice_first_attr: document.documentElement.getAttribute('data-chitti-voice-first') === '1',
+    indicator:        !!document.getElementById('vf-indicator'),
+    api:              !!(window.ChittiVoiceFirst && window.ChittiVoiceFirst.welcome),
+    cmds_count:       window.ChittiVoiceFirst ? Object.keys(window.ChittiVoiceFirst.cmds || {}).length : 0,
+    aria_picker:      !!(document.getElementById('pick-profession') || {}).getAttribute && document.getElementById('pick-profession').getAttribute('aria-label'),
+    aria_tabs:        Array.prototype.slice.call(document.querySelectorAll('nav.tabs .tab')).every(t => !!t.getAttribute('aria-label')),
+  }));
+  await b.close();
+  const ok = has.voice_first_attr && has.indicator && has.api && has.cmds_count >= 25 && !!has.aria_picker && has.aria_tabs;
+  check('blind_voice_first_activates', ok, JSON.stringify(has));
+});
+
+await safe('blind_voice_cmd_news_routes', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(1500);
+  await p.evaluate(() => localStorage.setItem('disability_profile', JSON.stringify({ blind: true })));
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(3500);
+  // Simulate voice command for "hub"
+  await p.evaluate(() => window.ChittiVoiceFirst.cmds['hub']());
+  await p.waitForTimeout(1500);
+  const hubVisible = await p.evaluate(() => {
+    const el = document.getElementById('page-profession-hub');
+    return el && (el.classList.contains('active') || el.style.display === 'block');
+  });
+  await b.close();
+  check('blind_voice_cmd_news_routes', hubVisible, 'voice "hub" command opens Hub: ' + hubVisible);
+});
+
+await safe('blind_aria_labels_complete', async () => {
+  const b = await chromium.launch({ headless: true });
+  const c = await b.newContext({ viewport: { width: 375, height: 812 } });
+  const p = await c.newPage();
+  await p.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await p.waitForTimeout(2500);
+  // Set profession + open hub so Hub elements exist
+  await p.evaluate(() => {
+    const sel = document.getElementById('pick-profession');
+    sel.value = 'doctor'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    window.showCategory && window.showCategory('profession-hub');
+  });
+  await p.waitForTimeout(1500);
+  const audit = await p.evaluate(() => ({
+    picker_aria:    !!document.getElementById('pick-profession').getAttribute('aria-label'),
+    tabs_with_aria: Array.prototype.slice.call(document.querySelectorAll('nav.tabs .tab')).filter(t => t.getAttribute('aria-label')).length,
+    tabs_total:     document.querySelectorAll('nav.tabs .tab').length,
+    chips_with_aria: Array.prototype.slice.call(document.querySelectorAll('.hub-chip')).filter(a => a.getAttribute('aria-label')).length,
+    chips_total:    document.querySelectorAll('.hub-chip').length,
+  }));
+  await b.close();
+  const ok = audit.picker_aria && audit.tabs_with_aria === audit.tabs_total && audit.chips_with_aria === audit.chips_total;
+  check('blind_aria_labels_complete', ok, JSON.stringify(audit));
+});
+
+// =====================================================================
 // SECTION 8 — Profile schema round-trip (set → reload → verify)
 // =====================================================================
 console.log('\n=== SECTION 8: Profile schema round-trip ===');

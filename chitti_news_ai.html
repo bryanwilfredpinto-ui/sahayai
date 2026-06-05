@@ -1797,5 +1797,266 @@ loadFeed(false);
 })();
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     VOICE-FIRST MODE for BLIND / ILLITERATE users (Sire 2026-06-05 PM)
+     Sire screenshot review surfaced the gap: page passed CTO G1-G5
+     technically (data-chitti-response on every box, chitti_a11y.js
+     loaded, ISL plugin attached) but provided NO usable flow for a
+     blind user. SAHAYAI §7 four-user contract = blind users MUST
+     have full functionality.
+
+     This script reads localStorage.disability_profile (set by
+     chitti_disability_profile.js). If user picked blind OR illiterate,
+     it activates Voice-First mode:
+       1. Auto-announce on page load (welcome + 6 voice commands)
+       2. Speak top news headline + top Hub verdict
+       3. Listen for voice commands via Web SpeechRecognition
+       4. Map commands -> page actions (open tab, pick profession,
+          read content, ask coach, repeat, stop, help)
+       5. Add aria-labels to every Hub control
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  // ── Read disability profile (set by chitti_disability_profile.js) ──
+  function _readProfile() {
+    try { return JSON.parse(localStorage.getItem('disability_profile') || '{}'); }
+    catch (e) { return {}; }
+  }
+  function needsVoiceFirst(p) { return !!(p && (p.blind || p.illiterate)); }
+
+  // ── Aria-label sweep — applies regardless of voice-first mode ──
+  function ariaLabelSweep() {
+    try {
+      var pp = document.getElementById('pick-profession');
+      if (pp) pp.setAttribute('aria-label', 'I am a — pick your profession (Talent Acquisition, Doctor, Farmer, Teacher, Lawyer, and 8 more). Stored on this device only, never sent to backend.');
+      var pe = document.getElementById('pick-experience');
+      if (pe) pe.setAttribute('aria-label', 'Experience — pick your years of experience');
+      var ps = document.getElementById('pick-salary');
+      if (ps) ps.setAttribute('aria-label', 'Current salary — pick your salary band');
+      var pl = document.getElementById('pick-lang');
+      if (pl) pl.setAttribute('aria-label', 'Language — pick your preferred language. 26 Indian languages supported.');
+      // Tabs nav
+      document.querySelectorAll('nav.tabs .tab').forEach(function (b) {
+        if (!b.getAttribute('aria-label')) {
+          b.setAttribute('aria-label', 'Tab — ' + (b.textContent || '').trim());
+        }
+      });
+      // Hub chips + section action buttons
+      document.querySelectorAll('.hub-chip').forEach(function (a) {
+        if (!a.getAttribute('aria-label')) {
+          a.setAttribute('aria-label', 'Jump to ' + (a.textContent || '').trim() + ' section in your Profession Hub');
+        }
+      });
+      document.querySelectorAll('.cc-btn').forEach(function (b) {
+        if (!b.getAttribute('aria-label')) {
+          var t = (b.textContent || '').trim();
+          if (t) b.setAttribute('aria-label', t);
+        }
+      });
+    } catch (e) {}
+  }
+
+  // ── Voice-first speak with chunking + cancel ──
+  function _vfSpeak(text) {
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95;
+      u.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // ── Voice-first welcome (audible by default; profession-aware) ──
+  function vfWelcome() {
+    var prof = (window.ChittiCoach && window.ChittiCoach.profile && window.ChittiCoach.profile.get && window.ChittiCoach.profile.get()) || {};
+    var name = ({
+      'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist',
+      'nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer',
+      'accountant':'Chartered Accountant','hr-professional':'HR Professional',
+      'talent-acquisition':'Talent Acquisition specialist','business-owner':'Business Owner',
+      'government-employee':'Government Employee','student':'Student'
+    })[prof.profession] || 'professional';
+    var msg = 'Welcome to Chitti News AI, your A.I. career coach. ' +
+              (prof.profession ? 'You are signed in as ' + name + '. ' : 'I do not know your profession yet. Say "profession" to pick one. ') +
+              'Say "news" to hear today\'s top A.I. story. ' +
+              'Say "hub" to hear your Profession Hub. ' +
+              'Say "mission" for this week\'s 30-minute learning mission. ' +
+              'Say "ask coach" to ask a career question. ' +
+              'Say "repeat" any time. Say "help" to hear these options again. Say "stop" to silence me.';
+    _vfSpeak(msg);
+  }
+
+  // ── Voice commands ──
+  var VOICE_CMDS = {
+    'news':            function () { window.showCategory('ai-news'); setTimeout(vfReadCurrentTab, 800); },
+    'ai news':         function () { window.showCategory('ai-news'); setTimeout(vfReadCurrentTab, 800); },
+    'tools':           function () { window.showCategory('stream-tool'); setTimeout(vfReadCurrentTab, 800); },
+    'jobs':            function () { window.showCategory('stream-job'); setTimeout(vfReadCurrentTab, 800); },
+    'courses':         function () { window.showCategory('prashikshan'); setTimeout(vfReadCurrentTab, 800); },
+    'certs':           function () { window.showCategory('stream-cert'); setTimeout(vfReadCurrentTab, 800); },
+    'schemes':         function () { window.showCategory('stream-scheme'); setTimeout(vfReadCurrentTab, 800); },
+    'hub':             function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1000); },
+    'profession hub':  function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1000); },
+    'profession':      function () { vfProfessionPicker(); },
+    'change profession': function () { vfProfessionPicker(); },
+    'mission':         function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-mission'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
+    'projects':        function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-projects'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
+    'prompts':         function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-prompts'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
+    'forecast':        function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-forecast'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
+    'mentor':          function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-mentor'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
+    'ask coach':       function () { if (window.ccAskOpen) window.ccAskOpen(); },
+    'coach':           function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
+    'my coach':        function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
+    'cv':              function () { if (window.ccCvOpen) window.ccCvOpen(); },
+    'help':            function () { vfWelcome(); },
+    'repeat':          function () { vfWelcome(); },
+    'stop':            function () { try { window.speechSynthesis.cancel(); } catch (e) {} },
+  };
+  // Profession voice-aliases
+  ['software developer','developer','doctor','oncologist','nurse','farmer','teacher','lawyer','accountant','chartered accountant','ca','hr','human resources','talent acquisition','ta','recruiter','business owner','entrepreneur','government','government employee','student'].forEach(function (a) {
+    VOICE_CMDS[a] = function () { vfSetProfession(a); };
+  });
+
+  function vfProfessionPicker() {
+    _vfSpeak('Pick your profession by saying one of these: software developer, doctor, oncologist, nurse, farmer, teacher, lawyer, chartered accountant, H R professional, talent acquisition, business owner, government employee, or student.');
+  }
+  function vfSetProfession(alias) {
+    var map = {
+      'software developer':'software-developer','developer':'software-developer',
+      'doctor':'doctor','oncologist':'oncologist','nurse':'nurse','farmer':'farmer',
+      'teacher':'teacher','lawyer':'lawyer','accountant':'accountant',
+      'chartered accountant':'accountant','ca':'accountant',
+      'hr':'hr-professional','human resources':'hr-professional',
+      'talent acquisition':'talent-acquisition','ta':'talent-acquisition','recruiter':'talent-acquisition',
+      'business owner':'business-owner','entrepreneur':'business-owner',
+      'government':'government-employee','government employee':'government-employee',
+      'student':'student',
+    };
+    var slug = map[alias]; if (!slug) return;
+    try {
+      var sel = document.getElementById('pick-profession');
+      if (sel) { sel.value = slug; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+      _vfSpeak('Profession set to ' + alias + '. Opening your Profession Hub now.');
+      setTimeout(function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1200); }, 600);
+    } catch (e) {}
+  }
+
+  function vfReadCurrentTab() {
+    try {
+      var page = document.querySelector('.page.active') || document.querySelector('main .page[style*="block"]');
+      if (!page) return;
+      var titles = Array.prototype.slice.call(page.querySelectorAll('h2, h3, .art-title')).slice(0, 5);
+      var text = titles.map(function (t) { return (t.textContent || '').trim(); }).filter(Boolean).join('. ');
+      if (text) _vfSpeak('Top items in this tab: ' + text + '. Say "next" to hear more, or "stop" to silence me.');
+      else _vfSpeak('This tab is loading or empty. Say another command.');
+    } catch (e) {}
+  }
+  function vfReadHub() {
+    try {
+      var v = document.querySelector('.hub-verdict');
+      var score = document.querySelector('.hub-scores');
+      var msg = '';
+      if (score) {
+        var vals = Array.prototype.slice.call(score.querySelectorAll('.hub-score'));
+        if (vals.length === 4) {
+          msg += 'Your Profession Hub. ' +
+            'A I Disruption Risk ' + (vals[0].querySelector('.hub-score-val') || {}).textContent + '. ' +
+            'A I Adoption ' + (vals[1].querySelector('.hub-score-val') || {}).textContent + '. ' +
+            'A I Opportunity ' + (vals[2].querySelector('.hub-score-val') || {}).textContent + '. ' +
+            'Your Readiness Score is ' + ((vals[3].querySelector('.hub-score-val') || {}).textContent || '').replace(/\s+/g, ' ').trim() + '. ';
+        }
+      }
+      if (v) msg += 'Chitti\'s verdict: ' + (v.textContent || '').trim() + ' ';
+      msg += 'Say "mission" for this week\'s 30-minute learning mission, "projects" for projects you can ship, "prompts" for copy-paste prompts, "forecast" for the 3-year outlook, "mentor" for your next action, or "stop".';
+      _vfSpeak(msg);
+    } catch (e) {}
+  }
+  function vfReadElement(el) {
+    if (!el) return;
+    try {
+      var text = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 1200);
+      _vfSpeak(text);
+    } catch (e) {}
+  }
+
+  // ── SpeechRecognition (Chromium/WebKit) ──
+  var _vfRec = null;
+  function startListening() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      _vfSpeak('Voice input is not supported on this browser. Please use Chrome or Edge for full voice commands. You can still listen to Chitti.');
+      return false;
+    }
+    if (_vfRec) return true;
+    _vfRec = new SR();
+    _vfRec.continuous = true;
+    _vfRec.interimResults = false;
+    _vfRec.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
+    _vfRec.onresult = function (e) {
+      var heard = ((e.results[e.results.length - 1][0].transcript) || '').trim().toLowerCase();
+      console.log('[voice-first] heard:', heard);
+      // Match longest command first
+      var matched = null;
+      Object.keys(VOICE_CMDS).sort(function (a, b) { return b.length - a.length; }).forEach(function (cmd) {
+        if (!matched && heard.indexOf(cmd) >= 0) matched = cmd;
+      });
+      if (matched) { try { VOICE_CMDS[matched](); } catch (e2) {} }
+    };
+    _vfRec.onerror = function (e) { console.log('[voice-first] error:', e.error); };
+    _vfRec.onend = function () { try { _vfRec && _vfRec.start(); } catch (e) {} };
+    try { _vfRec.start(); return true; } catch (e) { return false; }
+  }
+
+  // ── Activate ──
+  function activate(p) {
+    document.documentElement.setAttribute('data-chitti-voice-first', '1');
+    ariaLabelSweep();
+    // Floating "voice mode active" indicator (visible to sighted helpers too)
+    if (!document.getElementById('vf-indicator')) {
+      var ind = document.createElement('div');
+      ind.id = 'vf-indicator';
+      ind.setAttribute('role', 'status');
+      ind.setAttribute('aria-live', 'polite');
+      ind.style.cssText = 'position:fixed;left:8px;bottom:8px;background:#0a3d62;color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.25)';
+      ind.textContent = '🎙️ Voice-First Mode — say "help" for commands';
+      document.body.appendChild(ind);
+    }
+    setTimeout(vfWelcome, 900);
+    setTimeout(startListening, 2200);
+  }
+
+  // ── Boot ──
+  function boot() {
+    ariaLabelSweep(); // always — even for sighted users this helps screen readers
+    var p = _readProfile();
+    if (needsVoiceFirst(p)) {
+      activate(p);
+    }
+    // React to live profile changes
+    document.addEventListener('chitti:disability_profile', function (e) {
+      var np = (e && e.detail) || _readProfile();
+      if (needsVoiceFirst(np)) activate(np);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    setTimeout(boot, 200);
+  }
+
+  // Expose for cert / manual triggering
+  window.ChittiVoiceFirst = {
+    activate: function () { activate({ blind: true }); },
+    speak: _vfSpeak,
+    welcome: vfWelcome,
+    readHub: vfReadHub,
+    readCurrentTab: vfReadCurrentTab,
+    cmds: VOICE_CMDS,
+  };
+})();
+</script>
+
 </body>
 </html>
