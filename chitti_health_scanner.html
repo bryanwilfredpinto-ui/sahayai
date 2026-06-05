@@ -129,6 +129,22 @@ main{padding:14px 16px 110px;max-width:980px;margin:0 auto}
 .confirm-panel .haan{background:linear-gradient(135deg,var(--green),#1aa00a);color:#fff}
 .confirm-panel .nahi{background:transparent;border:1px solid var(--border);color:var(--text)}
 .confirm-panel .mic-hint{font-size:11.5px;color:var(--muted);margin-top:12px}
+.confirm-panel .cost-ask{display:flex;align-items:center;gap:8px;justify-content:center;margin:0 0 14px;font-size:12.5px;color:var(--muted)}
+.confirm-panel .cost-ask input{width:18px;height:18px}
+
+/* AI observation output (non-diagnostic) */
+.ai-out{margin:8px 0 4px}
+.ai-out .ai-head{font-weight:800;color:var(--navy);font-size:14px;margin:6px 0 4px;display:flex;align-items:center;gap:6px}
+.ai-out .ai-obs{font-size:13.5px;line-height:1.6;margin:4px 0}
+.ai-out .ai-conf{font-size:12px;color:var(--muted);font-style:italic;margin:4px 0}
+.ai-out .ai-reasons{font-size:12px;color:var(--muted);margin:4px 0 0;padding-left:18px}
+.ai-out .ai-skintone{font-size:11.5px;color:#7a4a0c;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.4);border-radius:8px;padding:6px 8px;margin-top:8px}
+.ai-out .ai-loading{font-size:13px;color:var(--muted)}
+/* urgency chip — colour + ICON + TEXT (never colour alone) */
+.ai-urg{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13px;padding:6px 12px;border-radius:999px;margin-top:6px;border:1px solid}
+.ai-urg.normal{background:rgba(19,136,8,.10);color:#0a5a04;border-color:rgba(19,136,8,.4)}
+.ai-urg.monitor{background:rgba(212,175,55,.16);color:#7a4a0c;border-color:rgba(212,175,55,.5)}
+.ai-urg.seek_care{background:rgba(220,38,38,.10);color:#a31515;border-color:rgba(220,38,38,.45)}
 
 /* Result box */
 .result{display:none;margin-top:14px;padding:16px;background:linear-gradient(180deg,#fffdf6,#fff);border:1px solid var(--gold);border-radius:14px}
@@ -281,19 +297,19 @@ footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 4
     <div class="section-title" id="scan-grid">📷 <span data-i18n="scan_title">Choose what to scan</span></div>
     <div class="section-sub" data-i18n="scan_sub">Every photo is saved privately to your health memory on THIS device so you can compare changes over time. AI pattern analysis is coming soon — not yet built or clinically validated. Chitti will never claim certainty.</div>
     <div class="scan-grid" id="scan-card-grid">
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🧴</div><div class="name" data-i18n="f0_name">Skin</div><div class="desc" data-i18n="f0_desc">A rash, patch or dryness you want to keep an eye on.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('skin','🧴','Skin')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">👁️</div><div class="name" data-i18n="f1_name">Eye</div><div class="desc" data-i18n="f1_desc">Redness, yellowing or a stye you noticed.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('eye','👁️','Eye')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🦷</div><div class="name" data-i18n="f2_name">Tooth</div><div class="desc" data-i18n="f2_desc">A spot, swelling of the gum or discolouration.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('tooth','🦷','Tooth')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🩹</div><div class="name" data-i18n="f3_name">Wound</div><div class="desc" data-i18n="f3_desc">A cut or sore — track if it is healing or worsening.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('wound','🩹','Wound')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">💇</div><div class="name" data-i18n="f4_name">Hair / Scalp</div><div class="desc" data-i18n="f4_desc">Thinning, dandruff or a patch on the scalp.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('hair','💇','Hair / Scalp')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">💅</div><div class="name" data-i18n="f5_name">Nail</div><div class="desc" data-i18n="f5_desc">Colour change, a ridge or a spot on a nail.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('nail','💅','Nail')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🫧</div><div class="name" data-i18n="f6_name">Swelling</div><div class="desc" data-i18n="f6_desc">A lump or puffy area — note its size over time.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('swelling','🫧','Swelling')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">⚫</div><div class="name" data-i18n="f7_name">Mole</div><div class="desc" data-i18n="f7_desc">Track a mole's shape, edge and colour over months.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('mole','⚫','Mole')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🪡</div><div class="name" data-i18n="f8_name">Post-surgery</div><div class="desc" data-i18n="f8_desc">Watch a stitch line or surgical site as it heals.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('post_surgery','🪡','Post-surgery')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🔥</div><div class="name" data-i18n="f9_name">Burn</div><div class="desc" data-i18n="f9_desc">A burn or scald — note how it changes day by day.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('burn','🔥','Burn')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">👶</div><div class="name" data-i18n="f10_name">Child journal</div><div class="desc" data-i18n="f10_desc">Keep a photo journal of a child's rash or spots.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('child_journal','👶','Child journal')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🦶</div><div class="name" data-i18n="f11_name">Diabetic foot</div><div class="desc" data-i18n="f11_desc">Check feet for cracks or sores — important for diabetics.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('diabetic_foot','🦶','Diabetic foot')" data-i18n="scan_btn">📷 Scan</button></div>
-      <div class="scan-card"><div class="emoji" aria-hidden="true">🔁</div><div class="name" data-i18n="f12_name">Change detection</div><div class="desc" data-i18n="f12_desc">Compare today's photo with an earlier one to spot change.</div><span class="coming" data-i18n="ai_soon">AI ANALYSIS COMING SOON</span><button class="scan-btn" onclick="startScan('change_detection','🔁','Change detection')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🧴</div><div class="name" data-i18n="f0_name">Skin</div><div class="desc" data-i18n="f0_desc">A rash, patch or dryness you want to keep an eye on.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('skin','🧴','Skin')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">👁️</div><div class="name" data-i18n="f1_name">Eye</div><div class="desc" data-i18n="f1_desc">Redness, yellowing or a stye you noticed.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('eye','👁️','Eye')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🦷</div><div class="name" data-i18n="f2_name">Tooth</div><div class="desc" data-i18n="f2_desc">A spot, swelling of the gum or discolouration.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('tooth','🦷','Tooth')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🩹</div><div class="name" data-i18n="f3_name">Wound</div><div class="desc" data-i18n="f3_desc">A cut or sore — track if it is healing or worsening.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('wound','🩹','Wound')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">💇</div><div class="name" data-i18n="f4_name">Hair / Scalp</div><div class="desc" data-i18n="f4_desc">Thinning, dandruff or a patch on the scalp.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('hair','💇','Hair / Scalp')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">💅</div><div class="name" data-i18n="f5_name">Nail</div><div class="desc" data-i18n="f5_desc">Colour change, a ridge or a spot on a nail.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('nail','💅','Nail')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🫧</div><div class="name" data-i18n="f6_name">Swelling</div><div class="desc" data-i18n="f6_desc">A lump or puffy area — note its size over time.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('swelling','🫧','Swelling')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">⚫</div><div class="name" data-i18n="f7_name">Mole</div><div class="desc" data-i18n="f7_desc">Track a mole's shape, edge and colour over months.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('mole','⚫','Mole')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🪡</div><div class="name" data-i18n="f8_name">Post-surgery</div><div class="desc" data-i18n="f8_desc">Watch a stitch line or surgical site as it heals.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('post_surgery','🪡','Post-surgery')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🔥</div><div class="name" data-i18n="f9_name">Burn</div><div class="desc" data-i18n="f9_desc">A burn or scald — note how it changes day by day.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('burn','🔥','Burn')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">👶</div><div class="name" data-i18n="f10_name">Child journal</div><div class="desc" data-i18n="f10_desc">Keep a photo journal of a child's rash or spots.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('child_journal','👶','Child journal')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🦶</div><div class="name" data-i18n="f11_name">Diabetic foot</div><div class="desc" data-i18n="f11_desc">Check feet for cracks or sores — important for diabetics.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('diabetic_foot','🦶','Diabetic foot')" data-i18n="scan_btn">📷 Scan</button></div>
+      <div class="scan-card"><div class="emoji" aria-hidden="true">🔁</div><div class="name" data-i18n="f12_name">Change detection</div><div class="desc" data-i18n="f12_desc">Compare today's photo with an earlier one to spot change.</div><span class="coming" data-i18n="ai_soon">🤖 AI analysis</span><button class="scan-btn" onclick="startScan('change_detection','🔁','Change detection')" data-i18n="scan_btn">📷 Scan</button></div>
     </div>
 
     <!-- Camera live stage (opened only after the Golden-Rule confirm) -->
@@ -314,10 +330,7 @@ footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 4
         <span id="result-type-name" style="font-weight:800;color:var(--navy)"></span>
       </div>
       <img id="result-thumb" class="thumb" alt="The photo you just captured">
-      <h3 data-i18n="result_h3">Saved to your health memory</h3>
-      <p data-i18n="result_body">Chitti has remembered this photo on your private timeline on this device. AI pattern analysis is coming soon — the vision models are not built or clinically validated yet, so Chitti will not guess. Open Memory below to compare it with earlier photos and notice change over time.</p>
-      <p class="conf" data-i18n="result_conf">Confidence level: not measured (AI analysis coming soon).</p>
-      <span class="action" data-i18n="result_action">👉 Suggested action: keep tracking; consider a consult if it looks worse.</span>
+      <div id="ai-out" class="ai-out" aria-live="polite"></div>
       <div class="disclaimer" data-i18n="result_disclaimer">This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.</div>
       <div class="save-row">
         <button onclick="confirmSaveToTimeline()" data-i18n="save_timeline">📖 Save to health memory</button>
@@ -393,8 +406,23 @@ footer{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 16px 4
     <div class="section-title">⚕️ <span data-i18n="disc_title">What Chitti Health Scanner is — and is not</span></div>
     <p class="limit-note" data-i18n="disc_body">Chitti Health Scanner is a noticing and remembering tool, not a doctor. It will never tell you that you have a disease, never prescribe medicine, and never claim certainty. AI accuracy is also lower on darker skin tones (Fitzpatrick IV–VI); Chitti acknowledges this openly and will always escalate to a professional. Every analysis, when live, will show a confidence level, a plain-language explanation, a suggested action (monitor / consider consult / seek care), and the line "This is not a medical diagnosis."</p>
     <p class="limit-note" data-i18n="disc_privacy">Privacy: health photos are stored privately on this device (and, when you choose, encrypted at rest in Chitti Health File with AES-256-GCM), owned by you, never sold, and anonymised before any aggregate use. Say "Chitti forget" and Chitti deletes them all. Built to be DPDP 2023 and ABDM aware.</p>
+    <p class="limit-note" data-i18n="disc_cost">Cost: each AI analysis is a paid call to the AI provider, about ₹0.05–0.10 per scan. You bear this cost, not Chitti or Sahayai. Chitti asks before the first scan and you can switch off the reminder for 24 hours. Saving a photo to your health memory is always free; only the AI observation costs.</p>
   </section>
 </main>
+
+<!-- Cost-disclosure gate (shown before the first AI scan; user bears the cost) -->
+<div class="confirm-overlay" id="cost-overlay" role="dialog" aria-modal="true" aria-labelledby="cost-title">
+  <div class="confirm-panel">
+    <h2 id="cost-title" data-i18n="cost_title">🤖 AI analysis has a small cost</h2>
+    <p data-i18n="cost_body">This AI analysis costs about ₹0.05–0.10 per scan, paid to the AI provider. You bear this cost. Continue?</p>
+    <label class="cost-ask"><input type="checkbox" id="cost-dont-ask"> <span data-i18n="cost_dont_ask">Don't ask again for 24 hours</span></label>
+    <div class="row">
+      <button class="haan" onclick="costYes()" data-i18n="cost_continue">✅ Continue</button>
+      <button class="nahi" onclick="costNo()" data-i18n="cost_cancel">✋ Cancel</button>
+    </div>
+    <div class="mic-hint" data-i18n="cost_note">You pay the AI provider per scan, not Chitti. Saving to your health memory is always free.</div>
+  </div>
+</div>
 
 <!-- Golden-Rule confirm gate (generic — used for camera, save, caregiver) -->
 <div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -462,6 +490,32 @@ function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(
 function lsGetRaw(k, fb){ try { return localStorage.getItem(k) || fb; } catch(e){ return fb; } }
 function lsSetRaw(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 
+/* ---------- AI analysis backend + cost-disclosure gate ----------
+   The AI analysis is a paid DeepSeek-vision call (~₹0.05–0.10/scan) that the
+   USER bears. We show a cost gate before the first scan; "Don't ask again for
+   24 hours" suppresses it for a day. Saving to health memory is always free. */
+var API_BASE = 'https://chitti-medupi-api-production.up.railway.app';
+var COST_SUPPRESS_KEY = 'chitti_hs_cost_suppress_until';
+var pendingCostOk = null;
+function ensureCostAck(onOk){
+  var until = parseInt(lsGetRaw(COST_SUPPRESS_KEY, '0'), 10) || 0;
+  if (until > Date.now()) { onOk(); return; }     // suppressed for 24h
+  pendingCostOk = onOk;
+  var cb = document.getElementById('cost-dont-ask'); if (cb) cb.checked = false;
+  document.getElementById('cost-overlay').classList.add('shown');
+}
+function costYes(){
+  document.getElementById('cost-overlay').classList.remove('shown');
+  var cb = document.getElementById('cost-dont-ask');
+  if (cb && cb.checked) lsSetRaw(COST_SUPPRESS_KEY, String(Date.now() + 24*60*60*1000));
+  var ok = pendingCostOk; pendingCostOk = null;
+  if (typeof ok === 'function') ok();
+}
+function costNo(){
+  document.getElementById('cost-overlay').classList.remove('shown');
+  pendingCostOk = null;   // never default to yes
+}
+
 function changeLanguage(lang){
   CURRENT_LANG = lang;
   try {
@@ -521,7 +575,10 @@ function confirmNo(){
 function startScan(type, emoji, name){
   PENDING_SCAN = {type:type, emoji:emoji, name:name};
   PENDING_IMG = null;
-  askConfirm('confirm_title', 'Sire, shall I open the camera?', openCamera);
+  // Cost gate first (AI analysis is paid), THEN the Golden-Rule camera confirm.
+  ensureCostAck(function(){
+    askConfirm('confirm_title', 'Sire, shall I open the camera?', openCamera);
+  });
 }
 function openCamera(){
   var stage = document.getElementById('cam-stage');
@@ -568,6 +625,49 @@ function showResult(){
   else { thumb.style.display = 'none'; }
   box.classList.add('shown');
   box.scrollIntoView({behavior:'smooth', block:'center'});
+  runAnalysis();
+}
+
+/* ---------- AI analysis (NON-DIAGNOSTIC) ---------- */
+function runAnalysis(){
+  var out = document.getElementById('ai-out');
+  if (!out) return;
+  if (!PENDING_IMG || !PENDING_SCAN){ out.innerHTML = ''; return; }
+  out.innerHTML = '<div class="ai-loading">🤖 ' + strFor('ai_looking', 'Chitti is looking… (AI analysis, about ₹0.05–0.10)') + '</div>';
+  var payload = {
+    scan_type: PENDING_SCAN.type, image_b64: PENDING_IMG,
+    body_location: PENDING_SCAN.name, profile_id: currentProfile(), lang: CURRENT_LANG
+  };
+  fetch(API_BASE + '/api/health-scanner/analyze', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); })
+    .then(function(j){ renderAI(j); })
+    .catch(function(){ renderAI({ status: 'unavailable', message: strFor('ai_offline', 'Chitti could not reach the analysis service. Your photo is saved — please consult a doctor if you are worried.') }); });
+}
+function renderAI(j){
+  var out = document.getElementById('ai-out'); if (!out) return;
+  if (!j){ out.innerHTML = ''; return; }
+  if (j.status === 'ok'){
+    var urg = j.urgency || 'monitor';
+    var map = {
+      normal:    { i: '🟢', t: strFor('legend_normal', 'Normal — looks ordinary') },
+      monitor:   { i: '🟡', t: strFor('legend_monitor', 'Monitor — watch and re-check') },
+      seek_care: { i: '🔴', t: strFor('legend_seek', 'Seek care — see a doctor') }
+    };
+    var u = map[urg] || map.monitor;
+    var html = '<div class="ai-head">🤖 ' + strFor('ai_obs_head', "Chitti's observation") + '</div>';
+    html += '<div class="ai-obs">' + escapeHtml(j.observation || '') + '</div>';
+    html += '<div class="ai-conf">' + strFor('ai_conf', 'Confidence') + ': ' + (j.confidence != null ? j.confidence : '—') + '% — ' + strFor('ai_not_diag', 'this is not a diagnosis') + '</div>';
+    html += '<div class="ai-urg ' + urg + '">' + u.i + ' ' + escapeHtml(u.t) + '</div>';
+    if (j.action) html += '<div class="ai-obs">👉 ' + escapeHtml(j.action) + '</div>';
+    if (j.reasons && j.reasons.length) html += '<ul class="ai-reasons">' + j.reasons.map(function(x){ return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul>';
+    if (j.skin_tone_note) html += '<div class="ai-skintone">⚠️ ' + escapeHtml(j.skin_tone_note) + '</div>';
+    out.innerHTML = html;
+  } else if (j.status === 'unclear'){
+    out.innerHTML = '<div class="ai-head">🤖 ' + strFor('ai_unclear_head', 'Chitti could not see clearly') + '</div><div class="ai-obs">' + escapeHtml(j.message || '') + '</div>';
+  } else {
+    out.innerHTML = '<div class="ai-head">🤖 ' + strFor('ai_unavail_head', 'AI analysis unavailable') + '</div><div class="ai-obs">' + escapeHtml(j.message || strFor('ai_offline', 'Your photo is saved — please consult a doctor if you are worried.')) + '</div>';
+  }
 }
 function forgetPending(){
   PENDING_IMG = null; PENDING_SCAN = null;
@@ -721,9 +821,39 @@ document.addEventListener('DOMContentLoaded', function(){
 <script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
 <script src="chitti_isl.js"></script>
 
-<!-- Chitti i18n substrate — chitti_lang.js?v=20260529r baked T-table + chitti_a11y.js?v=20260529r widget supplement. -->
+<!-- Chitti i18n substrate — chitti_lang.js lazy-loads per-language packs. -->
 <script src="chitti_lang.js?v=20260529r"></script>
 <script src="chitti_a11y.js?v=20260529r"></script>
+
+<!-- Page-local strings for the cost gate + AI result, registered via the
+     sanctioned Chitti.lang.extend() API (same pattern chitti_a11y.js uses for
+     widget strings). 9 primary languages for short chrome; long prose is Hindi +
+     honest English fallback. No Hinglish; ₹ amounts are universal. -->
+<script>
+(function(){
+  function E(hi,ta,te,bn,mr,gu,kn,ml){var o={hi:hi};if(ta)o.ta=ta;if(te)o.te=te;if(bn)o.bn=bn;if(mr)o.mr=mr;if(gu)o.gu=gu;if(kn)o.kn=kn;if(ml)o.ml=ml;return o;}
+  function HI(hi){return {hi:hi};} // hi only; other langs honest English fallback
+  var ADD = {
+    "🤖 AI analysis": E("🤖 AI विश्लेषण","🤖 AI பகுப்பாய்வு","🤖 AI విశ్లేషణ","🤖 AI বিশ্লেষণ","🤖 AI विश्लेषण","🤖 AI વિશ્લેષણ","🤖 AI ವಿಶ್ಲೇಷಣೆ","🤖 AI വിശകലനം"),
+    "✅ Continue": E("✅ आगे बढ़ें","✅ தொடரவும்","✅ కొనసాగించు","✅ চালিয়ে যান","✅ पुढे जा","✅ ચાલુ રાખો","✅ ಮುಂದುವರಿಸಿ","✅ തുടരുക"),
+    "✋ Cancel": E("✋ रद्द करें","✋ ரத்து","✋ రద్దు","✋ বাতিল","✋ रद्द","✋ રદ કરો","✋ ರದ್ದುಮಾಡಿ","✋ റദ്ദാക്കുക"),
+    "Don't ask again for 24 hours": E("24 घंटे तक दोबारा न पूछें","24 மணி நேரம் மீண்டும் கேட்காதே","24 గంటలు మళ్లీ అడగవద్దు","24 ঘণ্টা আর জিজ্ঞাসা করবেন না","24 तास पुन्हा विचारू नका","24 કલાક ફરી ન પૂછો","24 ಗಂಟೆ ಮತ್ತೆ ಕೇಳಬೇಡ","24 മണിക്കൂർ വീണ്ടും ചോദിക്കരുത്"),
+    "Confidence": E("विश्वास","நம்பிக்கை","విశ్వాసం","আস্থা","विश्वास","વિશ્વાસ","ವಿಶ್ವಾಸ","ആത്മവിശ്വാസം"),
+    "Chitti's observation": E("Chitti ने क्या देखा","Chitti பார்த்தது","Chitti గమనించింది","Chitti যা দেখল","Chitti ने काय पाहिले","Chitti એ શું જોયું","Chitti ಗಮನಿಸಿದ್ದು","Chitti കണ്ടത്"),
+    "this is not a diagnosis": E("यह निदान नहीं है","இது நோயறிதல் அல்ல","ఇది నిర్ధారణ కాదు","এটি রোগ নির্ণয় নয়","हे निदान नाही","આ નિદાન નથી","ಇದು ರೋಗನಿರ್ಣಯವಲ್ಲ","ഇത് രോഗനിർണയമല്ല"),
+    "🤖 AI analysis has a small cost": E("🤖 AI विश्लेषण की छोटी लागत है","🤖 AI பகுப்பாய்வுக்கு சிறு கட்டணம்","🤖 AI విశ్లేషణకు చిన్న ఖర్చు","🤖 AI বিশ্লেষণে সামান্য খরচ","🤖 AI विश्लेषणाला थोडा खर्च","🤖 AI વિશ્લેષણનો નાનો ખર્ચ","🤖 AI ವಿಶ್ಲೇಷಣೆಗೆ ಸಣ್ಣ ವೆಚ್ಚ","🤖 AI വിശകലനത്തിന് ചെറിയ ചെലവ്"),
+    "AI analysis unavailable": E("AI विश्लेषण उपलब्ध नहीं","AI பகுப்பாய்வு கிடைக்கவில்லை","AI విశ్లేషణ అందుబాటులో లేదు","AI বিশ্লেষণ অনুপলব্ধ","AI विश्लेषण उपलब्ध नाही","AI વિશ્લેષણ ઉપલબ્ધ નથી","AI ವಿಶ್ಲೇಷಣೆ ಲಭ್ಯವಿಲ್ಲ","AI വിശകലനം ലഭ്യമല്ല"),
+    "Chitti could not see clearly": E("Chitti स्पष्ट रूप से नहीं देख पाया","Chitti தெளிவாகப் பார்க்க முடியவில்லை","Chitti స్పష్టంగా చూడలేకపోయింది","Chitti স্পষ্ট দেখতে পারেনি","Chitti स्पष्ट पाहू शकले नाही","Chitti સ્પષ્ટ જોઈ શક્યું નહીં","Chitti ಸ್ಪಷ್ಟವಾಗಿ ನೋಡಲಾಗಲಿಲ್ಲ","Chitti വ്യക്തമായി കാണാനായില്ല"),
+    "This AI analysis costs about ₹0.05–0.10 per scan, paid to the AI provider. You bear this cost. Continue?": HI("इस AI विश्लेषण की लागत प्रति स्कैन लगभग ₹0.05–0.10 है, जो AI प्रदाता को दी जाती है। यह लागत आप वहन करते हैं। आगे बढ़ें?"),
+    "You pay the AI provider per scan, not Chitti. Saving to your health memory is always free.": HI("आप हर स्कैन पर AI प्रदाता को भुगतान करते हैं, Chitti को नहीं। सेहत स्मृति में सेव करना हमेशा मुफ़्त है।"),
+    "Your photo is saved — please consult a doctor if you are worried.": HI("आपकी फ़ोटो सेव हो गई है — अगर आप चिंतित हैं तो डॉक्टर से सलाह लें।"),
+    "Cost: each AI analysis is a paid call to the AI provider, about ₹0.05–0.10 per scan. You bear this cost, not Chitti or Sahayai. Chitti asks before the first scan and you can switch off the reminder for 24 hours. Saving a photo to your health memory is always free; only the AI observation costs.": HI("लागत: हर AI विश्लेषण AI प्रदाता को एक भुगतान वाली कॉल है, प्रति स्कैन लगभग ₹0.05–0.10। यह लागत आप वहन करते हैं, Chitti या Sahayai नहीं। Chitti पहली स्कैन से पहले पूछता है और आप 24 घंटे के लिए यह याद-दिलावा बंद कर सकते हैं। सेहत स्मृति में फ़ोटो सेव करना हमेशा मुफ़्त है; केवल AI अवलोकन की लागत है।")
+  };
+  function go(){ try{ if(window.Chitti&&Chitti.lang&&Chitti.lang.extend) Chitti.lang.extend(ADD); }catch(e){} }
+  if(window.Chitti&&Chitti.lang&&Chitti.lang.extend) go();
+  else document.addEventListener('DOMContentLoaded', function(){ setTimeout(go,300); });
+})();
+</script>
 
 </body>
 </html>

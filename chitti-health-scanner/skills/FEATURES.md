@@ -18,7 +18,8 @@ Feature Discovery Box. Honest status only.
 > **Guardian Memory release (2026-06-05)** — the Scanner is now a *companion that
 > remembers*, not just a camera. See [`../GUARDIAN.md`](../GUARDIAN.md) for the full
 > 10-level map. Everything below is real and local-first; **no AI diagnosis is
-> claimed** — the AI pattern analysis in §2 is still honest `COMING SOON`.
+> claimed**. The AI visual analysis in §2 is now **built (non-diagnostic, paid)** —
+> it describes visible features + urgency, never a disease.
 
 - **🩺 Capture / Upload a health photo** — point-and-capture, or **Upload** a photo when there is no camera (rural / desktop). Behind the Golden-Rule confirm gate ("Sire, shall I open the camera? Haan / Nahi" — voice + tap, mute-safe, never default-to-yes).
 - **📖 Health Memory timeline (Level 2 — Chitti remembers)** — every saved photo is kept on a private, on-device timeline per body-area. A memory grid shows photo count + days tracked; tap an area to see it. **Save is Golden-Rule confirmed.**
@@ -35,28 +36,40 @@ Feature Discovery Box. Honest status only.
 
 ---
 
-## 2. Planned — COMING SOON
+## 2. AI analysis — BUILT (non-diagnostic) · paid · 2026-06-05
 
-> These are the F0–F12 AI-analysis capabilities. **None of them work yet.**
-> The AI vision models are not built or clinically validated. Backend endpoints
-> under `/api/health-scanner/*` return an honest `501 coming_soon`. All accuracy
-> numbers below are research **TARGETS**, never achieved results.
+> **The AI visual analysis is now built and wired** — `POST /api/health-scanner/analyze`
+> (DeepSeek-vision, [`services/health_scanner_analyze.py`](../../chitti-medupi/backend/services/health_scanner_analyze.py)).
+> It is **NON-DIAGNOSTIC by construction**: it describes only *visible features*,
+> gives a confidence level + an urgency (🟢 normal / 🟡 monitor / 🔴 seek care) +
+> the mandatory disclaimer, and a **server-side safety envelope** suppresses any
+> disease name / diagnosis the model might emit (escalating to seek-care). It
+> **never** names a condition. The research accuracy numbers below remain
+> **TARGETS** (clinical validation is still pending — see CERTIFICATION, RED).
+>
+> **Cost (user-borne):** each scan is one paid vision call, ~**₹0.05–0.10**. The
+> page shows a cost-disclosure gate before the first scan ("Continue?" + "Don't
+> ask again for 24 hours"). **The user bears this cost, not Chitti/Sahayai.**
+>
+> **Honest availability:** until the backend's LLM key is funded, `/analyze`
+> returns `status:"unavailable"` and the UI shows "please consult a doctor" — it
+> **never fabricates** a result (SAHAYAI_MASTER §3 rule 4).
 
-| ID | Feature | What it will help you notice | Status | Research target* |
+| ID | Feature | What it describes (visible only) | Status | Research target* |
 |----|---------|------------------------------|--------|------------------|
-| **F0** | **Skin scan** | Rashes, infections, discoloration patterns on skin | 🔜 COMING SOON | ~95% |
-| **F1** | **Eye scan** | Redness, jaundice (yellowing), conjunctiva patterns | 🔜 COMING SOON | ___% |
-| **F2** | **Tooth / dental scan** | Cavities, gum patterns, plaque, discoloration | 🔜 COMING SOON | 89–97% |
-| **F3** | **Wound scan** | Wound size, redness, signs that may need care | 🔜 COMING SOON | ___% |
-| **F4** | **Mole scan** | Asymmetry / border / colour / size change patterns (ABCDE) | 🔜 COMING SOON | ___% |
-| **F5** | **Nail scan** | Colour, ridges, fungal-looking patterns | 🔜 COMING SOON | ___% |
-| **F6** | **Hair / scalp scan** | Thinning, patches, scalp patterns | 🔜 COMING SOON | ___% |
-| **F7** | **Swelling scan** | Visible swelling, comparison left vs right | 🔜 COMING SOON | ___% |
-| **F8** | **Post-surgery scan** | Healing progress, redness around incision | 🔜 COMING SOON | ___% |
-| **F9** | **Burn scan** | Burn area appearance, suggested care level | 🔜 COMING SOON | ___% |
-| **F10** | **Child health journal** | Track a child's visible symptoms over time | 🔜 COMING SOON | ___% |
-| **F11** | **Diabetic-foot scan** | Foot ulcers, colour change, pressure-point patterns | 🔜 COMING SOON | ___% |
-| **F12** | **Change detection** | Compare today's scan to a past scan, flag change | 🔜 COMING SOON | ___% |
+| **F0** | **Skin scan** | colour, redness, dryness, border, size, spreading/oozing | ✅ BUILT (non-diagnostic) | ~95% |
+| **F1** | **Eye scan** | redness, swelling, watering/discharge, yellow tint, lid lump | ✅ BUILT (non-diagnostic) | ___% |
+| **F2** | **Tooth / dental scan** | dark spots/holes, chips, discolouration, gum redness/swelling | ✅ BUILT (non-diagnostic) | 89–97% |
+| **F3** | **Wound scan** | size, wound-bed colour, spreading redness, swelling, discharge | ✅ BUILT (non-diagnostic) | ___% |
+| **F4** | **Mole scan** | Asymmetry / border / colour / size change patterns (ABCDE) | ✅ BUILT (non-diagnostic) | ___% |
+| **F5** | **Nail scan** | Colour, ridges, fungal-looking patterns | ✅ BUILT (non-diagnostic) | ___% |
+| **F6** | **Hair / scalp scan** | Thinning, patches, scalp patterns | ✅ BUILT (non-diagnostic) | ___% |
+| **F7** | **Swelling scan** | Visible swelling, comparison left vs right | ✅ BUILT (non-diagnostic) | ___% |
+| **F8** | **Post-surgery scan** | Healing progress, redness around incision | ✅ BUILT (non-diagnostic) | ___% |
+| **F9** | **Burn scan** | Burn area appearance, suggested care level | ✅ BUILT (non-diagnostic) | ___% |
+| **F10** | **Child health journal** | Track a child's visible symptoms over time | ✅ BUILT (non-diagnostic) | ___% |
+| **F11** | **Diabetic-foot scan** | Foot ulcers, colour change, pressure-point patterns | ✅ BUILT (non-diagnostic) | ___% |
+| **F12** | **Change detection** | Compare today's scan to a past scan, flag change | ✅ BUILT (non-diagnostic) | ___% |
 
 \* Targets are from published research literature, NOT measured results of this
 product. AI is known to be **less accurate on darker / Fitzpatrick IV–VI skin

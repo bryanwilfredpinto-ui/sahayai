@@ -49,11 +49,15 @@ This blueprint MIRRORS routes/health_file.py: Blueprint object named
 """
 from __future__ import annotations
 
+import base64
 import logging
 
 from flask import Blueprint, jsonify, request
 
 log = logging.getLogger("routes.health_scanner")
+
+# Max decoded image size accepted for analysis (defensive). ~12 MB.
+_MAX_IMG_BYTES = 12 * 1024 * 1024
 
 bp = Blueprint("health_scanner", __name__, url_prefix="/api/health-scanner")
 
@@ -126,32 +130,68 @@ def scan_types():
     })
 
 
-# ── /analyze — honest 501, NEVER a diagnosis ──────────────────────
+# ── /analyze — NON-DIAGNOSTIC visual observation, NEVER a diagnosis ───
 
 @bp.post("/analyze")
 def analyze():
-    """Body: { scan_type, image_b64, body_location, profile_id }
+    """Body: { scan_type, image_b64, body_location, profile_id, lang }
 
-    Honest 501 — the AI visual analysis is not yet clinically validated.
-    This endpoint NEVER returns a diagnosis, a probability, or any health
-    verdict. It can offer to store the image to the Health File timeline.
+    Returns a SAFE, NON-DIAGNOSTIC observation (visible features only) +
+    confidence + urgency (normal / monitor / seek_care) + action + the
+    mandatory disclaimer. NEVER a disease name, NEVER a diagnosis (enforced
+    by a server-side safety envelope in services.health_scanner_analyze).
+
+    Cost: one DeepSeek-vision call (~₹0.05–0.10). The frontend shows a
+    cost-disclosure gate before the first scan; the USER bears this cost.
+
+    Honest failure: status="unavailable" if the LLM key is unset or the
+    provider errors — we NEVER fabricate a result. HTTP stays 200 so the
+    frontend can render the honest message + still offer to save the photo.
     """
     body = request.get_json(silent=True) or {}
-    scan_type = (body.get("scan_type") or "").strip()
+    scan_type = (body.get("scan_type") or "skin").strip()
     body_location = (body.get("body_location") or "").strip()
     profile_id = body.get("profile_id")
+    lang = (body.get("lang") or "en").strip()
+    image_b64 = body.get("image_b64") or ""
 
-    return jsonify(_safety_envelope(
-        status="coming_soon",
-        message=(
-            "AI visual analysis is not yet clinically validated. "
-            "Chitti can store this image to your Health File timeline. "
-            "This is not a medical diagnosis."
-        ),
-        scan_type=scan_type or None,
-        body_location=body_location or None,
-        profile_id=profile_id,
-    )), 501
+    # Accept a raw base64 string or a data-URL (data:image/jpeg;base64,...).
+    mime = "image/jpeg"
+    if image_b64.startswith("data:"):
+        try:
+            head, image_b64 = image_b64.split(",", 1)
+            mime = head[5:].split(";")[0] or mime
+        except ValueError:
+            image_b64 = ""
+    if not image_b64:
+        return jsonify(_safety_envelope(
+            status="error", message="No image provided.", scan_type=scan_type)), 400
+    try:
+        image_bytes = base64.b64decode(image_b64, validate=False)
+    except (ValueError, TypeError):
+        return jsonify(_safety_envelope(
+            status="error", message="Image could not be read. Please retake.", scan_type=scan_type)), 400
+    if not image_bytes or len(image_bytes) > _MAX_IMG_BYTES:
+        return jsonify(_safety_envelope(
+            status="error", message="Image is empty or too large (max ~12 MB).", scan_type=scan_type)), 400
+
+    # Lazy import so the blueprint still loads if optional deps are missing.
+    try:
+        from services.health_scanner_analyze import analyze as _analyze
+    except Exception as e:  # noqa: BLE001
+        log.error("health_scanner_analyze import failed: %s", e)
+        return jsonify(_safety_envelope(
+            status="unavailable",
+            message=("AI analysis is temporarily unavailable. Your photo is saved — "
+                     "please consult a doctor if you are worried."),
+            scan_type=scan_type)), 200
+
+    result = _analyze(scan_type, image_bytes, mime, lang)
+    # Always carry the golden line + body_location/profile through.
+    result.setdefault("golden_line", GOLDEN_LINE)
+    result["body_location"] = body_location or None
+    result["profile_id"] = profile_id
+    return jsonify(result), 200
 
 
 # ── /save-to-timeline — honest stub, references Health File if present ─

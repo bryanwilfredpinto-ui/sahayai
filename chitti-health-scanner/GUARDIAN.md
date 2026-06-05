@@ -43,7 +43,7 @@ the Guardian Memory release.
 
 | Lvl | Guardian capability | Status | What is live now |
 |----|----|----|----|
-| **1** | **Visual scanner** (skin/eye/wound/…) | 🔴 GATED | Capture + save works; **AI pattern analysis is honest `COMING SOON`** — needs validated models, diverse-skin-tone dataset, medical board. Never faked. |
+| **1** | **Visual scanner** (skin/eye/tooth/wound/…) | 🟢 BUILT (non-diagnostic) | **AI analysis shipped 2026-06-05** — `/api/health-scanner/analyze` (DeepSeek-vision) describes visible features + confidence + urgency (🟢/🟡/🔴) + disclaimer; a server-side safety envelope suppresses any disease name. **Paid (~₹0.05–0.10/scan, user-borne; cost gate before first scan).** Returns honest `unavailable` until the LLM key is funded — never faked. *Clinical-grade accuracy* (validated diagnosis) is still 🔴 — needs dataset + medical board. |
 | **2** | **Health Timeline — Chitti remembers** | 🟢 SHIPPED | Every scan saved to a private, on-device health memory; per-area "Day 1 / Day 5…" history; side-by-side **first-vs-latest compare**; full photo strip. |
 | **3** | **Blind / Deaf / Illiterate friendly** | 🟢 SHIPPED | Icon-first nav, per-box 🔊 read-aloud, colour **+ icon + text** urgency (🟢🟡🔴), ISL + Disability Profile via `chitti_a11y.js`. Voice-guided capture phrasing is wired; full "move left / lighting low" coaching is 🟡 next. |
 | **4** | **Medicine integration (MedUPI)** | 🟢 SHIPPED | From any saved scan: **"Scan the medicine for this"** deep-links into Chitti MedUPI (same-composition + Jan Aushadhi price). Honest — it reads the *strip*, never the skin. |
