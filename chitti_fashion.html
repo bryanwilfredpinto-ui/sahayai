@@ -16,12 +16,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
 <!-- World-class editorial redesign — loaded LAST so it elevates the look (logic untouched) -->
-<link rel="stylesheet" href="chitti_fashion_ui.css?v=20260604">
+<link rel="stylesheet" href="chitti_fashion_ui.css?v=20260605">
 <!-- strings.js + chitti_lang.js before paint so i18n keys resolve; defer keeps parse non-blocking -->
-<script src="strings.js?v=20260604" defer></script>
-<script src="chitti_lang.js?v=20260604" defer></script>
+<script src="strings.js?v=20260605" defer></script>
+<script src="chitti_lang.js?v=20260605" defer></script>
 <!-- Self-contained, guarded fashion i18n — never shows a raw key even if strings.js is stale-cached -->
-<script src="chitti_fashion_i18n.js?v=20260604" defer></script>
+<script src="chitti_fashion_i18n.js?v=20260605" defer></script>
 <script src="feedback-widget.js" data-page="chitti_fashion" defer></script>
 <style>
 /* ── Chitti Fashion — CFOS surface. Tricolour palette inherited from chitti_theme.css ── */
@@ -248,6 +248,20 @@ body{font-size:17px}
       </div>
       <div id="fa-occasion-result" class="fa-result"></div>
       </div>
+
+    <!-- 💍 Wedding Planner — coordinated, wardrobe-first (CFOS v2.1, deterministic) -->
+    <div data-chitti-response="fa-card-15" class="sds-card chitti-response" data-chitti-section="💍 Wedding Planner">
+      <h2 class="sds-card-title"><span class="ico">💍</span> <span data-vai-i18n="fa.w.title">💍 Wedding Planner — coordinate the whole family</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.w.sub">One family, one coordinated look — from clothes you already own. Chitti finds a shared colour theme, gives each member a role, and only suggests borrowing, renting or buying for a real gap.</p>
+      <label style="display:block;font-size:12.5px;color:#555;margin:8px 0 4px" data-vai-i18n="fa.w.func">Which function?</label>
+      <div class="fa-occasion-chips" id="fa-wed-func"></div>
+      <label style="display:block;font-size:12.5px;color:#555;margin:8px 0 4px" data-vai-i18n="fa.w.role">Your role?</label>
+      <div class="fa-occasion-chips" id="fa-wed-role"></div>
+      <label style="display:block;font-size:12.5px;color:#555;margin:8px 0 4px" data-vai-i18n="fa.w.members">Who is getting dressed?</label>
+      <div class="fa-occasion-chips" id="fa-wed-members"></div>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faWedding()" data-vai-i18n="fa.w.btn">💍 Plan the family</button></div>
+      <div id="fa-wed-result" class="fa-result"></div>
+      </div>
   </section>
 
   <!-- ════ TAB · BUDGET (Free → Budget → Premium) ════ -->
@@ -333,8 +347,28 @@ body{font-size:17px}
       </div>
   </section>
 
-  <!-- ════ TAB · MORE (Wardrobe Audit · Travel Packing · Emergency) ════ -->
+  <!-- ════ TAB · MORE (Clothing Doctor · Office Week · Wardrobe Audit · Travel · Emergency) ════ -->
   <section class="fa-panel" id="fa-panel-more" role="tabpanel">
+    <!-- 🩺 Clothing Doctor — repair-not-buy (CFOS v2.1, deterministic) -->
+    <div data-chitti-response="fa-card-14" class="sds-card chitti-response" data-chitti-section="🩺 Clothing Doctor">
+      <h2 class="sds-card-title"><span class="ico">🩺</span> <span data-vai-i18n="fa.d.title">🩺 Clothing Doctor — repair, don't buy</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.d.sub">A torn hem or a missing button is not a reason to buy new. Pick the item and the problem — Chitti shows the tools, the steps, the time, and whether you can do it at home or need a tailor.</p>
+      <div class="fa-field" style="margin-top:8px"><label data-vai-i18n="fa.d.item">Which item?</label><select id="fa-doc-item"></select></div>
+      <label style="display:block;font-size:12.5px;color:#555;margin:8px 0 4px" data-vai-i18n="fa.d.damage">What needs fixing?</label>
+      <div class="fa-occasion-chips" id="fa-doc-damage"></div>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faDiagnose()" data-vai-i18n="fa.d.btn">🩺 Show me how to fix it</button></div>
+      <div id="fa-doc-result" class="fa-result"></div>
+      </div>
+
+    <!-- 📅 Office Week Planner — 5 days, no repeats (CFOS v2.1, deterministic) -->
+    <div data-chitti-response="fa-card-16" class="sds-card chitti-response" data-chitti-section="📅 Office Week Planner">
+      <h2 class="sds-card-title"><span class="ico">📅</span> <span data-vai-i18n="fa.o.title">📅 Office Week Planner — 5 days, no repeats</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.o.sub">Five office days dressed from your wardrobe with nothing repeating. Chitti spreads your clothes across the week, adapts to each day's weather, and tells you honestly if the wardrobe is too small — and the one buy that fixes it.</p>
+      <div id="fa-week-rows" style="margin-top:8px"></div>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faOfficeWeek()" data-vai-i18n="fa.o.btn">📅 Plan my week</button></div>
+      <div id="fa-office-result" class="fa-result"></div>
+      </div>
+
     <div data-chitti-response="fa-card-10" class="sds-card chitti-response" data-chitti-section="🔍 अलमारी की जाँच">
       <h2 class="sds-card-title"><span class="ico">🔍</span> <span data-vai-i18n="fa.m.audit">अलमारी की जाँच</span></h2>
       <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.m.audit_sub">Chitti आपकी अलमारी जाँचती है — किस चीज़ की कमी है, क्या जोड़ी बनती है, कौन-से कपड़े महीनों से नहीं पहने।</p>
@@ -422,17 +456,17 @@ body{font-size:17px}
 <canvas id="fa-cam-canvas"></canvas>
 
 <!-- Deterministic fashion intelligence engine (works with ZERO LLM dependency) -->
-<script src="chitti_fashion_engine.js?v=20260604"></script>
+<script src="chitti_fashion_engine.js?v=20260605"></script>
 <!-- 9-language localization of the engine's dynamic output (occasion/harmony/judge/explain) -->
-<script src="chitti_fashion_dyn.js?v=20260604"></script>
+<script src="chitti_fashion_dyn.js?v=20260605"></script>
 <!-- Substrate: a11y (auto-injects Disability Profile, ISL, language, read-page), feedback widget, feature discovery -->
-<script src="chitti_a11y.js?v=20260604"></script>
+<script src="chitti_a11y.js?v=20260605"></script>
 <!-- feedback-widget.js already loaded once in <head> (defer) — single instance avoids duplicate strips -->
 <script src="chitti_features.js" defer></script>
 <!-- CTO.md §3 Quality Check + §4 AI Observability per-card overlays (role-gated: cto/admin only) -->
-<script src="chitti_fashion_cto.js?v=20260604" defer></script>
+<script src="chitti_fashion_cto.js?v=20260605" defer></script>
 <!-- Fashion Career Coach — real free/low-cost courses, certs, tools (deterministic, 9-lang) -->
-<script src="chitti_fashion_coach.js?v=20260604" defer></script>
+<script src="chitti_fashion_coach.js?v=20260605" defer></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════════════════
@@ -502,6 +536,11 @@ function faTab(name, btn){
   const panel = document.getElementById('fa-panel-' + name); if (panel) panel.classList.add('active');
   document.querySelectorAll('.fa-tabbar button').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // lazy-init the CFOS v2.1 cards when their tab opens
+  try {
+    if (name === 'more') { faDoctorInit(); faWeekInit(); }
+    if (name === 'occasion') faWeddingInit();
+  } catch(e){}
 }
 
 /* ════════ WARDROBE — IndexedDB (on-device only) ════════ */
@@ -1284,6 +1323,169 @@ function faFixLangLabels(){
 }
 var _faLangBusy = false;
 
+/* ════════════════════════════════════════════════════════════════════
+   CFOS v2.1 — Clothing Doctor · Wedding Planner · Office Week Planner
+   Deterministic (no API). Engine: diagnoseRepair / planWedding / planWeek.
+   ════════════════════════════════════════════════════════════════════ */
+async function faGetItem(id){ const all = await faAllItemsRaw(); return all.find(x => x.id === id) || null; }
+function faChipRow(hostId, opts, multi, onPick){
+  const host = document.getElementById(hostId); if (!host) return;
+  host.innerHTML = opts.map(o => '<span class="fa-chip' + (o.on ? ' on' : '') + '" data-code="' + o.code + '">' + o.label + '</span>').join('');
+  host.querySelectorAll('.fa-chip').forEach(c => c.addEventListener('click', () => {
+    if (multi) { c.classList.toggle('on'); }
+    else { host.querySelectorAll('.fa-chip').forEach(x => x.classList.remove('on')); c.classList.add('on'); }
+    if (onPick) onPick(c.dataset.code, c.classList.contains('on'));
+  }));
+}
+
+/* ── 🩺 Clothing Doctor ── */
+let _docItem = '', _docDamage = '';
+async function faDoctorInit(){
+  const E = faEngine(); const FD = faDyn(); if (!E) return;
+  const items = await faAllItems();
+  const sel = document.getElementById('fa-doc-item');
+  if (sel){
+    const placeholder = CURRENT_LANG === 'en' ? '— pick an item —' : '— कपड़ा चुनें —';
+    sel.innerHTML = '<option value="">' + placeholder + '</option>' + items.map(i =>
+      '<option value="' + i.id + '">' + esc((i.colour ? i.colour + ' ' : '') + i.category + (i.condition === 'needs_repair' ? ' 🩺' : '')) + '</option>').join('');
+    sel.onchange = () => { _docItem = sel.value; };
+  }
+  const codes = E.repairCodes();
+  faChipRow('fa-doc-damage', codes.map(c => ({ code: c, label: FD ? FD.repair('dmg_' + c) : c })), false, code => { _docDamage = code; });
+}
+async function faDiagnose(){
+  const host = document.getElementById('fa-doc-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  if (!_docDamage){ const m = CURRENT_LANG==='en'?'Tap what needs fixing.':'क्या ठीक करना है — चुनिए।'; host.innerHTML='<div class="sds-card">🩺 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  const d = E.diagnoseRepair(_docDamage); if (!d) return;
+  const diffWord = FD ? FD.repair(d.difficulty) : d.difficulty;
+  const diffCol = d.difficulty === 'easy' ? '#138808' : (d.difficulty === 'medium' ? '#b45309' : '#b91c1c');
+  const steps = d.steps.map((s, i) => '<li>' + esc(FD ? FD.repair(s) : s) + ' <button class="fa-spk" aria-label="🔊" onclick="faSpeak(this.previousSibling.textContent||\'\')">🔊</button></li>').join('');
+  const verdict = d.diy ? (FD ? FD.repair('diy_yes') : '✅ You can do this at home') + (d.tailor ? ' ' + (FD ? FD.repair('tailor_too') : '') : '')
+                        : (FD ? FD.repair('diy_no') : '🧵 Best done by a tailor');
+  const toolsLbl = FD ? FD.repair('tools') : 'You need'; const stepsLbl = FD ? FD.repair('steps') : 'Steps'; const minLbl = FD ? FD.repair('minutes') : 'min';
+  const tailorLink = d.tailor ? '<div class="fa-row-btns"><a class="fa-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/tailor+near+me">' + (FD ? FD.repair('find_tailor') : '🔎 Find a tailor near me') + '</a></div>' : '';
+  const markBtns = _docItem
+    ? '<div class="fa-row-btns"><button class="fa-btn" onclick="faMarkRepair()">' + (FD ? FD.repair('mark_repair') : '🩺 Mark: needs repair') + '</button>'
+      + '<button class="fa-btn" onclick="faMarkRepaired()">' + (FD ? FD.repair('mark_repaired') : '✅ Mark: repaired') + '</button></div>'
+    : '';
+  const dmgLabel = FD ? FD.repair('dmg_' + _docDamage) : _docDamage;
+  host.innerHTML = '<div class="fa-outfit"><div class="title">🩺 ' + esc(FD ? FD.repair('plan_title') : 'Repair plan') + ' — ' + esc(dmgLabel) + '</div>' +
+    '<div style="margin:6px 0"><span style="display:inline-block;background:' + diffCol + ';color:#fff;font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px">' + esc(diffWord) + '</span>' +
+    (d.minutes ? ' <span style="font-size:12px;color:#555">⏱️ ' + d.minutes + ' ' + esc(minLbl) + '</span>' : '') + '</div>' +
+    '<div class="why"><b>' + esc(toolsLbl) + ':</b> ' + esc(d.tools.join(', ')) + '</div>' +
+    '<div style="margin-top:6px"><b>' + esc(stepsLbl) + ':</b><ol style="margin:6px 0 0 18px;line-height:1.7;font-size:13.5px">' + steps + '</ol></div>' +
+    '<div style="margin-top:8px;font-weight:700;color:' + (d.diy ? '#138808' : '#b45309') + '">' + esc(verdict) + '</div>' +
+    '<div style="margin-top:4px;font-size:12px;color:#000080">♻️ ' + esc(FD ? FD.repair('ladder_note') : 'Repair before you buy — Founder Rule.') + '</div>' +
+    tailorLink + markBtns + '</div>';
+  const sp = (FD ? FD.repair('plan_title') : 'Repair plan') + '. ' + diffWord + ', ' + d.minutes + ' ' + minLbl + '. ' + d.steps.map(s => FD ? FD.repair(s) : s).join('. ') + '. ' + verdict;
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+async function faMarkRepair(){
+  if (!_docItem || !_docDamage) return;
+  const it = await faGetItem(_docItem); if (!it) return;
+  it.condition = 'needs_repair'; it.damage = [_docDamage]; await faPutItem(it);
+  faSpeak(CURRENT_LANG==='en'?'Marked as needs repair. Chitti will not style it until you fix it.':'मरम्मत के लिए चिह्नित। ठीक होने तक Chitti इसे style नहीं करेगी।');
+  faDoctorInit(); try { faRenderWardrobe(); } catch(e){}
+}
+async function faMarkRepaired(){
+  if (!_docItem) return;
+  const it = await faGetItem(_docItem); if (!it) return;
+  it.condition = 'good'; it.damage = []; await faPutItem(it);
+  faSpeak(CURRENT_LANG==='en'?'Marked repaired — back in your outfits.':'ठीक हो गया — फिर से आपके outfit में।');
+  faDoctorInit(); try { faRenderWardrobe(); } catch(e){}
+}
+
+/* ── 💍 Wedding Planner ── */
+let _wedFunc = 'wedding', _wedRole = 'own', _wedMembers = null;
+function faWeddingInit(){
+  const FD = faDyn();
+  faChipRow('fa-wed-func', ['mehendi','sangeet','wedding','reception'].map(c => ({ code: c, label: FD ? FD.wedding('fn_' + c) : c, on: c === _wedFunc })), false, c => { _wedFunc = c; });
+  faChipRow('fa-wed-role', ['own','sibling','friend','colleague'].map(c => ({ code: c, label: FD ? FD.wedding('role_' + c) : c, on: c === _wedRole })), false, c => { _wedRole = c; });
+  const wearers = faWearers();
+  if (!_wedMembers) _wedMembers = new Set(wearers.map(w => w.id));
+  faChipRow('fa-wed-members', wearers.map(w => ({ code: w.id, label: '👤 ' + esc(w.name), on: _wedMembers.has(w.id) })), true, (id, on) => { if (on) _wedMembers.add(id); else _wedMembers.delete(id); });
+}
+async function faWedding(){
+  const host = document.getElementById('fa-wed-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const wearers = faWearers();
+  const memberIds = (_wedMembers && _wedMembers.size) ? Array.from(_wedMembers) : wearers.map(w => w.id);
+  const nameOf = id => (wearers.find(w => w.id === id) || {}).name || id;
+  const bandOf = id => (wearers.find(w => w.id === id) || {}).band;
+  const raw = await faAllItemsRaw();
+  const wardrobes = {}; memberIds.forEach(id => { wardrobes[id] = raw.filter(i => (i.wearer || 'me') === id); });
+  const totalItems = memberIds.reduce((n, id) => n + wardrobes[id].length, 0);
+  if (!totalItems){ const m = CURRENT_LANG==='en'?'Add festive clothes for the family in the Almari + Family tabs first.':'पहले अलमारी + परिवार tab में त्योहारी कपड़े जोड़ें।'; host.innerHTML='<div class="sds-card">💍 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  const plan = E.planWedding({ function: _wedFunc, role: _wedRole, season: PROFILE.season, culture: PROFILE.culture,
+    members: memberIds.map(id => ({ wearer_id: id, ageBand: bandOf(id) })) }, wardrobes);
+  const themeNote = FD ? FD.wedding(plan.familyPalette.undertone) : plan.familyPalette.note;
+  let html = '<div class="fa-outfit"><div class="title">💍 ' + esc(FD ? FD.wedding('plan_title') : 'Family wedding plan') + ' · ' +
+    esc((FD ? FD.wedding('fn_' + _wedFunc) : _wedFunc)) + '</div>' +
+    '<div class="why">🎨 ' + esc(FD ? FD.wedding('theme') : 'Family theme') + ': ' + esc(themeNote) + '</div>' +
+    '<div style="margin-top:4px">' + faConfBadge(plan.coordinationScore) + ' <span style="font-size:11px;color:#555">' + esc(FD ? FD.wedding('coordination') : 'Coordination') + '</span></div></div>';
+  plan.perMember.forEach(pm => {
+    const roleLbl = FD ? FD.wedding(pm.role) : pm.role;
+    html += '<div style="margin-top:8px"><div style="font-weight:800;color:#000080;margin-bottom:2px">👤 ' + esc(nameOf(pm.wearer_id)) + ' · ' + esc(roleLbl) + '</div>';
+    if (pm.outfit){ html += faRenderOutfitCard(pm.outfit); }
+    else {
+      const g = pm.gaps[0] || { ladder: ['buy'] };
+      const ladder = g.ladder.map(step => FD ? FD.wedding(step) : step);
+      let line = (FD ? FD.wedding('gap_no_festive') : 'No festive wear yet') + ' → ' + ladder.join(' · ');
+      if (g.borrowFrom) line += ' (' + (FD ? FD.wedding('borrow_from') : 'borrow from') + ' ' + esc(nameOf(g.borrowFrom)) + ')';
+      html += '<div class="fa-tier budget"><span class="lab">♻️</span><div>' + esc(line) + '</div></div>';
+    }
+    html += '</div>';
+  });
+  host.innerHTML = html;
+  const sp = (FD ? FD.wedding('plan_title') : 'Family wedding plan') + '. ' + (FD ? FD.wedding('theme') : 'Theme') + ' ' + themeNote + '. ' +
+    plan.perMember.map(pm => nameOf(pm.wearer_id) + ': ' + (pm.outfit ? (FD ? FD.wedding(pm.role) : pm.role) + ', ' + pm.outfit.items.map(it => (it.colour||'') + ' ' + it.category).join(', ') : (FD ? FD.wedding('gap_no_festive') : 'gap'))).join('. ');
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
+/* ── 📅 Office Week Planner ── */
+const FA_WEEK_DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+function faWeekInit(){
+  const FD = faDyn(); const host = document.getElementById('fa-week-rows'); if (!host || host.dataset.built) return;
+  const dc = [['casual','dc_casual'],['smart','dc_smart'],['formal','dc_formal']];
+  const wx = [['mod','wx_mod'],['hot','wx_hot'],['cold','wx_cold']];
+  host.innerHTML = FA_WEEK_DAYS.map(day => {
+    const dayLbl = FD ? FD.week(day) : day;
+    const dcOpts = dc.map(([v, k]) => '<option value="' + v + '"' + (v === 'smart' ? ' selected' : '') + '>' + (FD ? FD.week(k) : v) + '</option>').join('');
+    const wxOpts = wx.map(([v, k]) => '<option value="' + v + '">' + (FD ? FD.week(k) : v) + '</option>').join('');
+    return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">' +
+      '<span style="min-width:74px;font-weight:700;font-size:13px">' + esc(dayLbl) + '</span>' +
+      '<select class="fa-week-dc" data-day="' + day + '" style="flex:1;min-height:40px">' + dcOpts + '</select>' +
+      '<select class="fa-week-wx" data-day="' + day + '" style="flex:1;min-height:40px">' + wxOpts + '</select></div>';
+  }).join('');
+  host.dataset.built = '1';
+}
+async function faOfficeWeek(){
+  const host = document.getElementById('fa-office-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const items = await faAllItems();
+  if (!items.length){ const m = faMoreT('add_first'); host.innerHTML='<div class="sds-card">📅 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  const dcs = document.querySelectorAll('.fa-week-dc'); const wxs = document.querySelectorAll('.fa-week-wx');
+  const days = FA_WEEK_DAYS.map((day, i) => ({ day: day, dressCode: (dcs[i] ? dcs[i].value : 'smart'), weather: (wxs[i] ? wxs[i].value : 'mod') }));
+  const plan = E.planWeek(items, days);
+  if (!plan.days.some(d => d.outfit)){ const m = CURRENT_LANG==='en'?'Add a top + a bottom (and footwear) so Chitti can build office outfits.':'एक ऊपर + एक नीचे (और जूते) जोड़ें — फिर office outfit बनेंगे।'; host.innerHTML='<div class="sds-card">📅 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  let html = '<div style="font-weight:800;color:#138808;margin-bottom:6px">📅 ' + esc(FD ? FD.week('plan_title') : 'Your office week') + '</div>';
+  plan.days.forEach(d => {
+    const dayLbl = FD ? FD.week(d.day) : d.day;
+    html += '<div style="margin-top:6px"><div style="font-weight:800;color:#000080">' + esc(dayLbl) + (d.reused ? ' · <span style="font-size:11px;color:#b45309">' + esc(FD ? FD.week('reused') : '♻️ reused') + '</span>' : '') + '</div>';
+    if (d.outfit) html += faRenderOutfitCard({ items: d.outfit.items, occasion: d.outfit.occasion, band: null, confidence: d.outfit.score, harmony: d.outfit.harmony, checks: null, reasons: [], explain: '', judge: { flags: [] } });
+    html += '</div>';
+  });
+  html += '<div class="fa-tier free" style="margin-top:8px"><span class="lab">' + esc(FD ? FD.week('variety') : 'Variety') + '</span><div>' + plan.variety + '%</div></div>';
+  if (plan.honest) html += '<div class="fa-tier budget"><span class="lab">🛒</span><div>' + esc(FD ? FD.week('honest_tip') : plan.honest) + '</div></div>';
+  host.innerHTML = html;
+  const sp = (FD ? FD.week('plan_title') : 'Office week') + '. ' + plan.days.filter(d=>d.outfit).map(d => (FD?FD.week(d.day):d.day) + ': ' + d.outfit.items.map(it => (it.colour||'') + ' ' + it.category).join(', ')).join('. ') + '. ' + (FD ? FD.week('variety') : 'Variety') + ' ' + plan.variety + '%';
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
 /* ════════ boot ════════ */
 function faBoot(){
   CURRENT_LANG = faDetectLang();
@@ -1300,6 +1502,7 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
+  try { faDoctorInit(); faWeekInit(); faWeddingInit(); } catch(e){}
   faInitCoach();
   // language dropdown guard — run now + after chitti_lang.js enrichment + once more
   faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);

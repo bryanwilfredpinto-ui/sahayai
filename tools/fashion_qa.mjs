@@ -116,6 +116,27 @@ await p.waitForTimeout(600);
 await p.evaluate(() => faEmergency());
 await p.waitForTimeout(600);
 (await mutated(p, '#fa-emrg-result')) ? P('button: Emergency outfit renders') : F('button: Emergency outfit');
+// CFOS v2.1: Clothing Doctor — damage chips render, diagnose shows a repair plan
+const docChips = await p.evaluate(() => document.querySelectorAll('#fa-doc-damage .fa-chip').length);
+(docChips >= 10) ? P('v2.1 Doctor: ' + docChips + ' damage chips render') : F('v2.1 Doctor chips', String(docChips));
+await p.evaluate(() => { const c = document.querySelector('#fa-doc-damage .fa-chip'); if (c) c.click(); faDiagnose(); });
+await p.waitForTimeout(500);
+const docPlan = await p.evaluate(() => { const e = document.getElementById('fa-doc-result'); return !!e && /ol|Steps|तरीक़ा/i.test(e.innerHTML) && e.querySelectorAll('li').length >= 1; });
+docPlan ? P('v2.1 Doctor: diagnose renders a step-by-step repair plan') : F('v2.1 Doctor plan');
+// CFOS v2.1: Office Week Planner — 5 day rows render, plan produces day cards
+const weekRows = await p.evaluate(() => document.querySelectorAll('#fa-week-rows .fa-week-dc').length);
+(weekRows === 5) ? P('v2.1 Office Week: 5 day rows render') : F('v2.1 Office Week rows', String(weekRows));
+await p.evaluate(() => faOfficeWeek());
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-office-result')) ? P('button: Office Week Planner renders') : F('button: Office Week Planner');
+// CFOS v2.1: Wedding Planner — chips render on occasion tab, plan produces a family layout
+await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="occasion"]').click(); });
+await p.waitForTimeout(200);
+const wedChips = await p.evaluate(() => document.querySelectorAll('#fa-wed-func .fa-chip').length + document.querySelectorAll('#fa-wed-role .fa-chip').length);
+(wedChips >= 8) ? P('v2.1 Wedding: function + role chips render') : F('v2.1 Wedding chips', String(wedChips));
+await p.evaluate(() => faWedding());
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-wed-result')) ? P('button: Wedding Planner renders') : F('button: Wedding Planner');
 // career coach: pick a role -> plan with real resources renders
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="career"]').click(); const r = document.querySelector('#fa-coach-host [data-role]'); if (r) r.click(); });
 await p.waitForTimeout(500);

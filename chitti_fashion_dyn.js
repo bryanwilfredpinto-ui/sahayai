@@ -13,6 +13,27 @@
       conf: { occasion:'occasion', color:'colour', weather:'weather', budget:'budget', accessibility:'accessibility' },
       judge: { cultural:'cultural', weather:'weather', age:'age', accessibility:'accessibility', funeral_bright:'bright/red reads festive — funerals call for white or muted', wedding_white:'all-white at a wedding can read as mourning in many communities — confirm', season_mismatch:'fabric leans the other season — adjust your layers', senior_footwear:'prefer non-slip, easy-fasten footwear for comfort and safety', child_safety:'keep it comfortable and safe for a child', easy_fasten:'prefer magnetic/velcro/front-open for independent dressing' },
       tmpl: { reads:'This reads {occ} (formality {band}/5). Colour: {harm}.', wear:'You can wear: {items}. This reads {occ} and is good to go.', built:'{n} outfits from clothes you already own — ₹0', made:'I built {n} outfits from your wardrobe', just:'✅ just right for {occ}', over:'⬆️ a bit over-dressed for {occ}', under:'⬇️ a bit too casual for {occ}', overall:'Overall {n}/10' },
+      // ── CFOS v2.1 dynamic output ──
+      repair: {
+        // damage chips (icon + label)
+        dmg_tear_small:'✂️ Small tear', dmg_tear_large:'🩹 Big tear', dmg_button_missing:'🔘 Button off', dmg_hem_loose:'〰️ Loose hem', dmg_seam_open:'➰ Open seam', dmg_zip_broken:'🤐 Broken zip', dmg_hole_knit:'🕳️ Knit hole', dmg_stain_oil:'🟤 Oil stain', dmg_stain_ink:'🖊️ Ink stain', dmg_too_tight:'➖ Too tight', dmg_too_loose:'➕ Too loose', dmg_fade:'🌗 Faded',
+        // difficulty + verdict
+        easy:'Easy', medium:'Medium', hard:'Hard', diy_yes:'✅ You can do this at home', diy_no:'🧵 Best done by a tailor', tailor_too:'(a tailor can also do it)', minutes:'min', tools:'You need', steps:'Steps', find_tailor:'🔎 Find a tailor near me', mark_repair:'🩺 Mark: needs repair', mark_repaired:'✅ Mark: repaired', ladder_note:'Repair before you buy — Founder Rule.', plan_title:'Repair plan',
+        // step text
+        turn_inside:'Turn the garment inside out', align_edges:'Bring the torn edges together', thread_needle:'Thread the needle and knot the end', stitch_back:'Backstitch along the line, small and even', knot_off:'Knot off and trim the thread', cut_patch:'Cut a patch slightly bigger than the tear', pin_patch:'Pin the patch behind the hole', stitch_around:'Stitch all around the patch', press_iron:'Press flat with a warm iron', position_button:'Place the button where it sits', sew_xcross:'Sew through the holes in an X', wrap_shank:'Wrap the thread under to make a shank', fold_hem:'Fold the hem to the old crease', pin_hem:'Pin the fold in place', blind_stitch:'Blind-stitch so it does not show outside', align_seam:'Line up the open seam', unpick_old:'Unpick the old zip with a seam-ripper', pin_newzip:'Pin the new zip in place', tailor_recommend:'Take it to a tailor — this one is fiddly', span_hole:'Span the hole with the darning needle', darn_warp:'Lay rows of thread one way', darn_weft:'Weave across the other way', blot_excess:'Blot the excess — do not rub it in', apply_soap:'Work in a little dish soap', rub_gentle:'Rub gently from the outside in', rinse_warm:'Rinse with warm water', air_dry:'Air-dry in shade', apply_alcohol:'Dab rubbing alcohol on the stain', dab_lift:'Dab to lift the ink onto cotton', rinse_cool:'Rinse with cool water', wash_clean:'Wash the garment clean first', mix_dye:'Mix the dye as on the pack', soak_even:'Soak evenly, stirring slowly', rinse_clear:'Rinse until the water runs clear'
+      },
+      wedding: {
+        fn_mehendi:'Mehendi', fn_sangeet:'Sangeet', fn_wedding:'Wedding', fn_reception:'Reception',
+        role_own:'It is my function', role_sibling:'Sibling’s', role_friend:'Friend’s', role_colleague:'Colleague’s',
+        cul_north:'North Indian', cul_south:'South Indian', cul_bengali:'Bengali', cul_punjabi:'Punjabi', cul_rajasthani:'Rajasthani', cul_maharashtrian:'Maharashtrian', cul_other:'Other',
+        anchor:'⭐ Lead look', accent:'🎀 Coordinated', theme:'Family theme', warm:'warm — maroon, gold, rust read as one set', cool:'cool — navy, teal, plum read as one set',
+        coordination:'Coordination', plan_title:'Family wedding plan', gap_no_festive:'No festive wear yet', borrow:'borrow in the family', rent:'rent', buy:'buy (last option)', borrow_from:'borrow from'
+      },
+      week: {
+        Mon:'Monday', Tue:'Tuesday', Wed:'Wednesday', Thu:'Thursday', Fri:'Friday',
+        dc_casual:'Casual', dc_smart:'Smart', dc_formal:'Formal', wx_hot:'☀️ Hot', wx_cold:'❄️ Cold', wx_mod:'⛅ Mild',
+        reused:'♻️ same pieces, fresh pairing', variety:'Variety', plan_title:'Your office week', honest_tip:'Add 1–2 bottoms to unlock a no-repeat week', dress_code:'Dress code', weather:'Weather'
+      },
     },
     hi: {
       occ: { casual:'रोज़', 'smart-casual':'स्मार्ट-कैज़ुअल', 'business-casual':'बिज़नेस-कैज़ुअल', formal:'फ़ॉर्मल', festive:'त्योहारी', wedding:'शादी', office:'दफ़्तर', interview:'इंटरव्यू', college:'कॉलेज', religious:'धार्मिक', date:'डेट नाइट', travel:'यात्रा', funeral:'शोक', family:'पारिवारिक समारोह' },
@@ -22,6 +43,23 @@
       conf: { occasion:'मौक़ा', color:'रंग', weather:'मौसम', budget:'बजट', accessibility:'सबके लिए' },
       judge: { cultural:'सांस्कृतिक', weather:'मौसम', age:'उम्र', accessibility:'सबके लिए', funeral_bright:'चटक/लाल रंग त्योहारी लगता है — शोक में सफ़ेद या हल्के रंग', wedding_white:'शादी में पूरा सफ़ेद कई समुदायों में शोक जैसा लगता है — पुष्टि करें', season_mismatch:'कपड़ा दूसरे मौसम का है — layer ठीक करें', senior_footwear:'आराम और सुरक्षा के लिए non-slip, आसान जूते बेहतर', child_safety:'बच्चे के लिए आरामदायक और सुरक्षित रखें', easy_fasten:'ख़ुद पहनने के लिए magnetic/velcro/front-open बेहतर' },
       tmpl: { reads:'यह {occ} लगता है (formality {band}/5)। रंग: {harm}।', wear:'आप पहन सकते हैं: {items}। यह {occ} के लिए सही है।', built:'{n} पहनावे आपके अपने कपड़ों से — ₹0', made:'मैंने आपकी अलमारी से {n} पहनावे बनाए', just:'✅ {occ} के लिए सही', over:'⬆️ {occ} के लिए थोड़ा ज़्यादा formal', under:'⬇️ {occ} के लिए थोड़ा casual', overall:'कुल {n}/10' },
+      repair: {
+        dmg_tear_small:'✂️ छोटा फटाव', dmg_tear_large:'🩹 बड़ा फटाव', dmg_button_missing:'🔘 बटन टूटा', dmg_hem_loose:'〰️ किनारा ढीला', dmg_seam_open:'➰ सिलाई खुली', dmg_zip_broken:'🤐 ज़िप ख़राब', dmg_hole_knit:'🕳️ बुनाई में छेद', dmg_stain_oil:'🟤 तेल का दाग़', dmg_stain_ink:'🖊️ स्याही का दाग़', dmg_too_tight:'➖ बहुत तंग', dmg_too_loose:'➕ बहुत ढीला', dmg_fade:'🌗 रंग उड़ा',
+        easy:'आसान', medium:'मध्यम', hard:'मुश्किल', diy_yes:'✅ यह घर पर हो जाएगा', diy_no:'🧵 दर्ज़ी से करवाना बेहतर', tailor_too:'(दर्ज़ी भी कर सकता है)', minutes:'मिनट', tools:'चाहिए', steps:'तरीक़ा', find_tailor:'🔎 पास का दर्ज़ी ढूँढो', mark_repair:'🩺 निशान: मरम्मत चाहिए', mark_repaired:'✅ निशान: ठीक हो गया', ladder_note:'खरीदने से पहले मरम्मत — Founder Rule।', plan_title:'मरम्मत का तरीक़ा',
+        turn_inside:'कपड़े को उल्टा कर लें', align_edges:'फटे किनारों को मिलाएँ', thread_needle:'सूई में धागा डालें, सिरे पर गाँठ', stitch_back:'लाइन पर छोटे, बराबर बैकस्टिच करें', knot_off:'गाँठ लगाकर धागा काट दें', cut_patch:'फटाव से थोड़ा बड़ा पैच काटें', pin_patch:'छेद के पीछे पैच पिन करें', stitch_around:'पैच के चारों ओर सिलाई करें', press_iron:'गरम इस्त्री से दबाएँ', position_button:'बटन को सही जगह रखें', sew_xcross:'छेदों में X आकार में सिलें', wrap_shank:'नीचे धागा लपेटकर shank बनाएँ', fold_hem:'किनारे को पुरानी तह पर मोड़ें', pin_hem:'तह को पिन करें', blind_stitch:'ब्लाइंड-स्टिच करें ताकि बाहर न दिखे', align_seam:'खुली सिलाई को मिलाएँ', unpick_old:'सीम-रिपर से पुरानी ज़िप खोलें', pin_newzip:'नई ज़िप पिन करें', tailor_recommend:'दर्ज़ी के पास ले जाएँ — यह बारीक काम है', span_hole:'डार्निंग सूई से छेद को घेरें', darn_warp:'एक तरफ़ धागे की कतारें बिछाएँ', darn_weft:'दूसरी तरफ़ बुनाई करें', blot_excess:'ज़्यादा को सोखें — रगड़ें नहीं', apply_soap:'थोड़ा डिश साबुन लगाएँ', rub_gentle:'बाहर से अंदर की ओर हल्के रगड़ें', rinse_warm:'गुनगुने पानी से धोएँ', air_dry:'छाँव में सुखाएँ', apply_alcohol:'दाग़ पर रबिंग अल्कोहल लगाएँ', dab_lift:'रुई से थपथपाकर स्याही उठाएँ', rinse_cool:'ठंडे पानी से धोएँ', wash_clean:'पहले कपड़ा साफ़ धो लें', mix_dye:'पैक के अनुसार डाई घोलें', soak_even:'धीरे हिलाते हुए बराबर भिगोएँ', rinse_clear:'जब तक पानी साफ़ न आए धोएँ'
+      },
+      wedding: {
+        fn_mehendi:'मेहंदी', fn_sangeet:'संगीत', fn_wedding:'शादी', fn_reception:'रिसेप्शन',
+        role_own:'मेरा अपना फ़ंक्शन', role_sibling:'भाई/बहन का', role_friend:'दोस्त का', role_colleague:'सहकर्मी का',
+        cul_north:'उत्तर भारतीय', cul_south:'दक्षिण भारतीय', cul_bengali:'बंगाली', cul_punjabi:'पंजाबी', cul_rajasthani:'राजस्थानी', cul_maharashtrian:'महाराष्ट्रीयन', cul_other:'अन्य',
+        anchor:'⭐ मुख्य look', accent:'🎀 साथ में', theme:'परिवार की थीम', warm:'गरम — मरून, सुनहरा, रस्ट एक सेट जैसे', cool:'ठंडा — नेवी, टील, बैंगनी एक सेट जैसे',
+        coordination:'तालमेल', plan_title:'परिवार का शादी प्लान', gap_no_festive:'अभी कोई त्योहारी पहनावा नहीं', borrow:'परिवार में उधार', rent:'किराया', buy:'खरीद (आख़िरी विकल्प)', borrow_from:'इनसे उधार'
+      },
+      week: {
+        Mon:'सोमवार', Tue:'मंगलवार', Wed:'बुधवार', Thu:'गुरुवार', Fri:'शुक्रवार',
+        dc_casual:'कैज़ुअल', dc_smart:'स्मार्ट', dc_formal:'फ़ॉर्मल', wx_hot:'☀️ गरम', wx_cold:'❄️ ठंडा', wx_mod:'⛅ हल्का',
+        reused:'♻️ वही कपड़े, नई जोड़ी', variety:'विविधता', plan_title:'आपका ऑफ़िस सप्ताह', honest_tip:'1–2 नीचे के कपड़े जोड़ें — पूरा हफ़्ता बिना दोहराव', dress_code:'ड्रेस कोड', weather:'मौसम'
+      },
     },
     ta: {
       occ: { casual:'தினசரி', 'smart-casual':'ஸ்மார்ட்-கேஷுவல்', 'business-casual':'பிசினஸ்-கேஷுவல்', formal:'முறையான', festive:'பண்டிகை', wedding:'திருமணம்', office:'அலுவலகம்', interview:'நேர்காணல்', college:'கல்லூரி', religious:'மத', date:'டேட் நைட்', travel:'பயணம்', funeral:'இரங்கல்', family:'குடும்ப விழா' },
@@ -113,6 +151,10 @@
     judgeMsg: function (code, L) { return t('judge', code, L); },
     tmpl: tmpl,
     more: more,
+    // CFOS v2.1 dynamic-output accessors (en+hi full; cousins fall back to en via t())
+    repair: function (code, L) { return t('repair', code, L); },
+    wedding: function (code, L) { return t('wedding', code, L); },
+    week: function (code, L) { return t('week', code, L); },
     lang: lang,
   };
 })();
