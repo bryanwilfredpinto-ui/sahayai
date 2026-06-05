@@ -145,6 +145,32 @@ main{padding:14px 16px 110px;max-width:920px;margin:0 auto}
 .history-row .badge{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;flex-shrink:0;background:var(--gold);color:var(--text)}
 .history-row .q{flex:1;min-width:160px;font-size:12px;color:var(--text)}
 .history-row button{background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;min-height:30px}
+.history-row .cat-ico{font-size:18px;flex-shrink:0}
+
+/* Universal Router (CUSOS) — the CEOS routing card */
+.router-card{margin:6px 0 12px;padding:13px 14px;background:linear-gradient(180deg,#eef4ff,#fff);border:1px solid #1d4ed8;border-radius:14px}
+.router-card.coming{background:linear-gradient(180deg,#fff8e1,#fff);border-color:var(--gold)}
+.router-card.unknownc{background:linear-gradient(180deg,#f8f4ee,#fff);border-color:var(--border)}
+.router-card .rc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.router-card .rc-head .rc-ico{font-size:22px}
+.router-card .rc-head .rc-title{font-weight:800;font-size:14px;color:var(--navy)}
+.router-card .rc-conf{margin-left:auto;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:#dbeafe;color:#1e3a8a}
+.router-card .rc-conf.med{background:#fef3c7;color:#92400e}
+.router-card .rc-conf.low{background:#fee2e2;color:#991b1b}
+.router-card .rc-dest{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--navy);margin:2px 0 4px}
+.router-card .rc-dest .em{font-size:20px}
+.router-card .rc-reason{font-size:13px;color:var(--text);line-height:1.55;margin:0 0 10px}
+.router-card .rc-coming-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--gold);color:#3a2a00;padding:2px 8px;border-radius:6px;margin-left:6px}
+.router-card .rc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.router-card .rc-open{background:linear-gradient(135deg,var(--navy),#1d4ed8);color:#fff;border:none;font-weight:800;border-radius:10px;padding:11px 16px;font-size:13px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.router-card .rc-open:hover{filter:brightness(1.1)}
+.router-card .rc-alt{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:700;border-radius:10px;padding:11px 14px;font-size:12px;min-height:44px;cursor:pointer}
+.router-card .rc-why{background:transparent;border:1px solid var(--gold);color:var(--saffron);font-weight:700;border-radius:10px;padding:11px 14px;font-size:12px;min-height:44px;cursor:pointer}
+/* picture-menu for unknown / pick category */
+.cat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:8px}
+.cat-tiles button{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--border);border-radius:12px;padding:10px 6px;background:#fff;cursor:pointer;min-height:74px;font-size:11px;font-weight:700;color:var(--text)}
+.cat-tiles button:hover{border-color:var(--saffron);background:rgba(232,106,23,.05)}
+.cat-tiles button .te{font-size:26px}
 
 /* Floating Vaani */
 .fab-vaani{position:fixed;right:14px;bottom:14px;z-index:50;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 10px 30px rgba(232,106,23,.45);display:flex;align-items:center;gap:8px;min-height:50px}
@@ -329,6 +355,11 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
           <button onclick="sendToVaani()" data-i18n="send-to-vaani">🎙️ Send to Vaani</button>
         </div>
       </div>
+
+      <!-- ════ UNIVERSAL ROUTER (CUSOS · CEOS) ════ -->
+      <div id="router-card" class="router-card" style="display:none"
+           data-chitti-response data-chitti-section="Chitti routing"></div>
+
       <div class="summary chitti-response" id="r-summary" data-chitti-section="Key facts"></div>
       <h3 data-i18n="key-facts">Key facts</h3>
       <div class="facts" id="r-facts"></div>
@@ -355,11 +386,25 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     </div>
   </section>
 
-  <!-- ════════ HISTORY ════════ -->
-  <section class="section-card chitti-response" aria-labelledby="hist-title" data-chitti-section="🕘 Recent scans">
-    <h2 class="section-title" id="hist-title"><span class="ico">🕘</span> Recent scans</h2>
-    <div class="section-sub">Stays only on this device.</div>
-    <div id="history" data-chitti-response data-chitti-section="Recent scans"></div>
+  <!-- ════════ UNIVERSAL MEMORY (Life Twin) ════════ -->
+  <section class="section-card chitti-response" aria-labelledby="hist-title" data-chitti-section="🧠 Universal Memory">
+    <h2 class="section-title" id="hist-title"><span class="ico">🧠</span> Universal Memory — your scan timeline</h2>
+    <div class="section-sub">Every scan Chitti remembers. Stays only on this device. Say "Chitti forget" to wipe it.</div>
+    <div id="history" data-chitti-response data-chitti-section="Scan timeline"></div>
+  </section>
+
+  <!-- ════════ FAMILY KNOWLEDGE GRAPH (honest COMING SOON) ════════ -->
+  <section class="section-card chitti-response" aria-labelledby="fg-title" data-chitti-section="👨‍👩‍👧 Family graph">
+    <h2 class="section-title" id="fg-title"><span class="ico">👨‍👩‍👧</span> Family Knowledge Graph
+      <span class="router-card-coming" style="display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--gold);color:#3a2a00;padding:2px 8px;border-radius:6px;margin-left:8px">Coming soon</span>
+    </h2>
+    <div class="section-sub">Link Father · Mother · Child · Vehicle · Home · Medicine · Insurance · Certificates, then ask <em>"show everything expiring in 30 days."</em></div>
+    <div data-chitti-response data-chitti-section="Family graph status" style="font-size:13px;color:var(--text);line-height:1.55">
+      Today your scans are remembered <strong>on this device only</strong> (Universal Memory above).
+      The cross-device Family Graph + predictive expiry reminders are <strong>coming soon</strong> —
+      they switch on once secure cross-device storage is verified. Chitti will never show you a
+      fabricated family. <span style="color:var(--muted)">(CUSOS Level 8 · honest stub.)</span>
+    </div>
   </section>
 
   <footer>
@@ -399,6 +444,211 @@ let CAM_BLOB   = null;       // captured Blob (from camera)
 let UPLOAD_FILE = null;      // selected File (from gallery)
 let LAST_RESULT = null;
 let RECOG = null, LISTENING = false;
+let LAST_ROUTE = null;
+
+/* ══════════════════════════════════════════════════════════════════
+   UNIVERSAL ROUTER (CUSOS · CEOS) — deterministic detect → route.
+   Rules are the product; the LLM is an enhancement (works offline).
+   Canonical contract: chitti-scanner/routing/routing_table.md
+   Feature flag: window.CHITTI_SCANNER_ROUTER (default ON).
+   ══════════════════════════════════════════════════════════════════ */
+if (typeof window.CHITTI_SCANNER_ROUTER === 'undefined') window.CHITTI_SCANNER_ROUTER = true;
+
+const ROUTING_MAP = {
+  medicine:      { em:'💊', label_en:'Chitti MedUPI', label_hi:'चिट्टी मेडUPI', page:'chitti_medupi.html', state:'live', handoff:'session',
+                   reason_en:"I saw a composition and an expiry — this is a medicine. MedUPI finds a cheaper same-composition Jan Aushadhi option.",
+                   reason_hi:"दवा की संरचना और एक्सपायरी दिखी — यह दवाई है। MedUPI सस्ता Jan Aushadhi विकल्प ढूँढती है।" },
+  health:        { em:'🩺', label_en:'Chitti Health Scanner', label_hi:'चिट्टी हेल्थ स्कैनर', page:'chitti_health_scanner.html', state:'live', handoff:'session',
+                   reason_en:"This looks like a health/body or report scan. The Health Scanner describes what it sees and helps you decide to see a doctor — it never diagnoses.",
+                   reason_hi:"यह सेहत/शरीर या रिपोर्ट लगती है। हेल्थ स्कैनर सिर्फ़ बताता है क्या दिखा और डॉक्टर को दिखाने में मदद करता है — निदान नहीं करता।" },
+  vehicle_2w:    { em:'🏍️', label_en:'Chitti Bike Doctor', label_hi:'चिट्टी बाइक डॉक्टर', page:'chitti_2wheeler.html', state:'live', handoff:'session',
+                   reason_en:"Two-wheeler words tell me this is a bike/scooter. The Bike Doctor diagnoses it and checks if a repair quote is fair.",
+                   reason_hi:"दोपहिया शब्द बताते हैं यह बाइक/स्कूटर है। बाइक डॉक्टर जाँचता है और बताता है कि मरम्मत का दाम सही है या नहीं।" },
+  vehicle_4w:    { em:'🚗', label_en:'Chitti Car Doctor', label_hi:'चिट्टी कार डॉक्टर', page:'chitti_4wheeler.html', state:'live', handoff:'session',
+                   reason_en:"Engine/dashboard/OBD words tell me this is a car. The Car Doctor diagnoses it and checks if the quote is fair.",
+                   reason_hi:"इंजन/डैशबोर्ड/OBD शब्द बताते हैं यह कार है। कार डॉक्टर जाँचता है और दाम की सच्चाई बताता है।" },
+  fashion:       { em:'👕', label_en:'Chitti Fashion', label_hi:'चिट्टी फ़ैशन', page:'chitti_fashion.html', state:'live', handoff:'session',
+                   reason_en:"Fabric/garment words tell me this is clothing. Chitti Fashion styles it from what you already own first.",
+                   reason_hi:"कपड़े के शब्द बताते हैं यह पहनावा है। चिट्टी फ़ैशन पहले आपके अपने कपड़ों से ही स्टाइल देता है।" },
+  government_doc:{ em:'📄', label_en:'Chitti Government', label_hi:'चिट्टी गवर्नमेंट', page:'chitti_government.html', state:'live', handoff:'session',
+                   reason_en:"This looks like an ID or a government/scheme document. Chitti Government checks which schemes you're eligible for.",
+                   reason_hi:"यह पहचान-पत्र या सरकारी/योजना दस्तावेज़ लगता है। चिट्टी गवर्नमेंट बताती है कौन-सी योजना आपके लिए है।" },
+  legal_doc:     { em:'⚖️', label_en:'Chitti Legal', label_hi:'चिट्टी लीगल', page:'chitti_legal.html', state:'live', handoff:'prefill',
+                   reason_en:"Notice/agreement words tell me this is a legal document. Chitti Legal explains it in plain language — it isn't legal advice.",
+                   reason_hi:"नोटिस/एग्रीमेंट शब्द बताते हैं यह क़ानूनी दस्तावेज़ है। चिट्टी लीगल इसे आसान भाषा में समझाती है — यह क़ानूनी सलाह नहीं है।" },
+  fraud_signal:  { em:'🛡️', label_en:'Chitti UPI Fraud Guard', label_hi:'चिट्टी UPI फ्रॉड गार्ड', page:'chitti_upi.html', state:'live', handoff:'session',
+                   reason_en:"I saw UPI/OTP/prize words — common scam signals — so for your safety I'm sending this to Fraud Guard first.",
+                   reason_hi:"UPI/OTP/इनाम जैसे शब्द दिखे — ये ठगी के संकेत हैं — इसलिए सुरक्षा के लिए मैं इसे पहले फ्रॉड गार्ड भेज रही हूँ।" },
+  food:          { em:'🍪', label_en:'reads it here', label_hi:'यहीं पढ़ती है', page:null, state:'live', handoff:'inline',
+                   reason_en:"This is packaged food. I'll read the FSSAI status, sugar/salt/fat and MRP right here — tap Send to Vaani to hear it.",
+                   reason_hi:"यह पैकेज्ड खाना है। FSSAI, चीनी/नमक/फैट और MRP मैं यहीं पढ़ूँगी — Vaani से सुनने के लिए दबाइए।" },
+  bill:          { em:'🧾', label_en:'Consumer helpline', label_hi:'उपभोक्ता हेल्पलाइन', page:'tel:1800114000', state:'live', handoff:'tel',
+                   reason_en:"This looks like a bill. If you suspect overcharging, the consumer helpline 1800-11-4000 can help.",
+                   reason_hi:"यह बिल लगता है। ज़्यादा वसूली का शक हो तो उपभोक्ता हेल्पलाइन 1800-11-4000 मदद करती है।" },
+  mrp:           { em:'🏷️', label_en:'Consumer helpline', label_hi:'उपभोक्ता हेल्पलाइन', page:'tel:1800114000', state:'live', handoff:'tel',
+                   reason_en:"I'm comparing MRP vs the charged price. If you were overcharged, call the consumer helpline 1800-11-4000.",
+                   reason_hi:"मैं MRP और वसूले गए दाम की तुलना कर रही हूँ। ज़्यादा वसूला हो तो हेल्पलाइन 1800-11-4000 पर कॉल करें।" },
+  news:          { em:'📰', label_en:'Chitti News', label_hi:'चिट्टी न्यूज़', page:'chitti_news.html', state:'live', handoff:'session',
+                   reason_en:"This looks like a news article. Chitti News gives a 3-bullet take and a fact-check verdict.",
+                   reason_hi:"यह समाचार लेख लगता है। चिट्टी न्यूज़ 3-पॉइंट सार और फैक्ट-चेक देती है।" },
+  crop:          { em:'🌿', label_en:'Chitti Farmer', label_hi:'चिट्टी किसान', page:null, state:'coming_soon', handoff:'vaani',
+                   reason_en:"This looks like a crop/leaf or farm item. Chitti Farmer is coming soon — for now I can read the label or hand off to Vaani.",
+                   reason_hi:"यह फ़सल/पत्ती या खेती की चीज़ लगती है। चिट्टी किसान जल्द आ रहा है — फ़िलहाल मैं लेबल पढ़ सकती हूँ या Vaani को भेज सकती हूँ।" },
+  education:     { em:'📚', label_en:'Chitti Education', label_hi:'चिट्टी शिक्षा', page:null, state:'coming_soon', handoff:'vaani',
+                   reason_en:"This looks like homework, a book or a certificate. Chitti Education is coming soon — routing you to Vaani meanwhile.",
+                   reason_hi:"यह होमवर्क, किताब या प्रमाणपत्र लगता है। चिट्टी शिक्षा जल्द आ रही है — तब तक Vaani को भेज रही हूँ।" },
+  appliance:     { em:'🔌', label_en:'Chitti Home Repair', label_hi:'चिट्टी होम रिपेयर', page:null, state:'coming_soon', handoff:'vaani',
+                   reason_en:"This looks like an appliance (fan/AC/fridge). Chitti Home-Repair is coming soon — I can read the warranty/model text now.",
+                   reason_hi:"यह उपकरण (पंखा/AC/फ्रिज) लगता है। चिट्टी होम-रिपेयर जल्द आ रहा है — मैं अभी वारंटी/मॉडल पढ़ सकती हूँ।" },
+  career_doc:    { em:'💼', label_en:'Chitti Career', label_hi:'चिट्टी करियर', page:null, state:'coming_soon', handoff:'vaani',
+                   reason_en:"This looks like a resume or job document. Chitti Career is coming soon — Vaani can help in the meantime.",
+                   reason_hi:"यह रिज़्यूमे या नौकरी का दस्तावेज़ लगता है। चिट्टी करियर जल्द आ रहा है — तब तक Vaani मदद करेगी।" },
+  unknown:       { em:'🎙️', label_en:'Chitti Vaani', label_hi:'चिट्टी वाणी', page:'chitti_vaani.html', state:'live', handoff:'session',
+                   reason_en:"I'm not fully sure what this is. Pick a category below, or let your dost Vaani take a look.",
+                   reason_hi:"मुझे पूरा यक़ीन नहीं यह क्या है। नीचे से श्रेणी चुनिए, या अपनी दोस्त Vaani को दिखाइए।" },
+};
+
+// Keyword signals (deterministic detection). Multiple hits raise confidence.
+const ROUTE_KW = {
+  fraud_signal:  ['upi','qr code',' otp','prize','lottery','kyc','click link','click here','refund','you won','reward','blocked account','verify account','lucky draw'],
+  medicine:      ['paracetamol','tablet','capsule','syrup',' mg','exp ','expiry','mfg','batch',' ip ','composition','dosage','prescription','crocin','antibiotic'],
+  health:        ['skin','rash','mole','wound','eye','swelling','burn','lab report','hemoglobin','x-ray','blood test','scan report'],
+  vehicle_4w:    ['car','engine','dashboard','tyre','tire','brake','obd','dtc','rpm','coolant','clutch','windscreen','four wheeler','4 wheeler','sedan','suv'],
+  vehicle_2w:    ['bike','scooter','two wheeler','2 wheeler','motorcycle','chain sprocket','helmet','activa','pulsar','splendor'],
+  fashion:       ['cotton','polyester','wash care','fabric','garment','footwear','jewellery','jewelry','shirt','saree','kurta','size m','size l','dress'],
+  government_doc:['aadhaar','aadhar','pan card','passport','ration card','scheme','yojana','gazette','eligibility','voter id','pmjay','digilocker'],
+  legal_doc:     ['notice','summons','eviction','section 138','demand notice','agreement','arbitration','court','clause','contract','tenant','rent agreement'],
+  career_doc:    ['resume','curriculum vitae',' cv ','offer letter','ctc','designation','work experience','skills section','appointment letter'],
+  crop:          ['leaf','pest','fungus','blight','soil','fertiliser','fertilizer','pesticide','crop','mandi','plant disease','farm','seed packet'],
+  appliance:     ['ceiling fan','air conditioner','refrigerator','compressor','washing machine','warranty card','model no','wattage','induction'],
+  food:          ['fssai','ingredients','kcal','energy','sugar','sodium','protein','best before','preservative','nutrition'],
+  news:          ['breaking news','headline','correspondent','newspaper','published by'],
+};
+
+// Backend `type` → base category (handles both backend vocabularies seen in docs).
+const TYPE_BASE = {
+  medicine:'medicine', packaged_food:'food', food:'food',
+  legal_doc:'legal_doc', kyc_doc:'government_doc', government_doc:'government_doc',
+  upi_scam:'fraud_signal', insurance:'fraud_signal',
+  bill:'bill', mrp:'mrp', news:'news',
+  general_text:null, other:null, unknown:null,
+};
+
+const PICK_TILES = [
+  ['medicine','💊','Medicine'], ['food','🍪','Food'], ['vehicle_4w','🚗','Vehicle'],
+  ['fashion','👕','Clothing'], ['government_doc','📄','ID / Document'], ['fraud_signal','🛡️','UPI / Scam'],
+  ['health','🩺','Health'], ['crop','🌿','Crop / Farm'], ['unknown','🎙️','Not sure'],
+];
+
+function detectCategory(d, typedText){
+  const text = (((d && d.summary) || '') + ' ' + (typedText || '') + ' ' +
+                JSON.stringify((d && d.facts) || {}) + ' ' +
+                ((d && (d.key_findings || [])).join(' '))).toLowerCase();
+  const scores = {};
+  for (const cat in ROUTE_KW){
+    let hits = 0;
+    for (const kw of ROUTE_KW[cat]) if (text.indexOf(kw) >= 0) hits++;
+    if (hits) scores[cat] = hits;
+  }
+  // SAFETY SUPREME — a fraud signal wins over any other route.
+  if (scores['fraud_signal']) {
+    return { category:'fraud_signal', confidence: Math.min(0.96, 0.62 + scores['fraud_signal']*0.1) };
+  }
+  const base = (d && d.type) ? TYPE_BASE[d.type] : null;
+  let best = base, bestScore = base ? 3 : 0;
+  for (const cat in scores){ if (scores[cat] > bestScore){ best = cat; bestScore = scores[cat]; } }
+  if (!best) return { category:'unknown', confidence: 0.3 };
+  const confidence = (base && best === base) ? 0.9 : Math.min(0.85, 0.5 + bestScore*0.12);
+  if (confidence < 0.55) return { category:'unknown', confidence };
+  return { category: best, confidence };
+}
+
+function categoryEmoji(typeOrCat){
+  const r = ROUTING_MAP[typeOrCat] || ROUTING_MAP[TYPE_BASE[typeOrCat]];
+  return (r && r.em) || '🔎';
+}
+
+function renderRouterCard(det, opts){
+  opts = opts || {};
+  const card = document.getElementById('router-card');
+  if (!card) return;
+  if (window.CHITTI_SCANNER_ROUTER === false) { card.style.display = 'none'; return; }
+  const cat = (det && det.category) || 'unknown';
+  const r = ROUTING_MAP[cat] || ROUTING_MAP['unknown'];
+  const useHi = (CURRENT_LANG === 'hi');
+  const label  = useHi ? r.label_hi  : r.label_en;
+  const reason = useHi ? r.reason_hi : r.reason_en;
+  const confPct = Math.round((det.confidence || 0) * 100);
+  LAST_ROUTE = { cat, reason, label };
+
+  let confClass = 'rc-conf', confTxt = confPct + '%';
+  if (det.confidence < 0.55) { confClass += ' low'; }
+  else if (det.confidence < 0.85) { confClass += ' med'; }
+
+  let cls = 'router-card', headTitle, dest, actions;
+  if (cat === 'unknown') {
+    cls += ' unknownc';
+    headTitle = useHi ? '🧭 चिट्टी पूरी तरह यक़ीन नहीं' : "🧭 Chitti isn't fully sure";
+    dest = '';
+    actions = '<div class="cat-tiles">' + PICK_TILES.map(t =>
+        `<button onclick="routePick('${t[0]}')"><span class="te">${t[1]}</span>${escapeHtml(t[2])}</button>`
+      ).join('') + '</div>';
+  } else if (r.state === 'coming_soon') {
+    cls += ' coming';
+    headTitle = useHi ? '🧭 चिट्टी ने पहचाना' : '🧭 Chitti detected this';
+    dest = `<div class="rc-dest"><span class="em">${r.em}</span>${escapeHtml(label)}<span class="rc-coming-badge">${useHi?'जल्द आ रहा':'Coming soon'}</span></div>`;
+    actions = `<button class="rc-open" onclick="routeOpen('unknown')">${useHi?'🎙️ Vaani से पूछें':'🎙️ Ask Vaani instead'}</button>` +
+              `<button class="rc-alt" onclick="showCatPicker()">${useHi?'दूसरी श्रेणी चुनें':'Pick another'}</button>` +
+              `<button class="rc-why" onclick="whyRoute()">🤖 ${useHi?'क्यों?':'Why?'}</button>`;
+  } else if (r.handoff === 'inline' || !r.page) {
+    headTitle = useHi ? '🧭 चिट्टी इसे यहीं पढ़ रही है' : '🧭 Chitti is reading this here';
+    dest = `<div class="rc-dest"><span class="em">${r.em}</span>${escapeHtml(label)}</div>`;
+    actions = `<button class="rc-open" onclick="sendToVaani()">${useHi?'🎙️ Vaani से सुनें':'🎙️ Hear it with Vaani'}</button>` +
+              `<button class="rc-alt" onclick="showCatPicker()">${useHi?'गलत? श्रेणी चुनें':'Wrong? pick category'}</button>` +
+              `<button class="rc-why" onclick="whyRoute()">🤖 ${useHi?'क्यों?':'Why?'}</button>`;
+  } else {
+    headTitle = useHi ? '🧭 चिट्टी इसे भेज रही है' : '🧭 Chitti is sending this to';
+    dest = `<div class="rc-dest"><span class="em">${r.em}</span>${escapeHtml(label)}</div>`;
+    const openTxt = (r.handoff === 'tel')
+        ? (useHi ? '📞 हेल्पलाइन कॉल करें' : '📞 Call helpline')
+        : (useHi ? ('खोलें: ' + label) : ('Open ' + label));
+    actions = `<button class="rc-open" onclick="routeOpen('${cat}')">${escapeHtml(openTxt)}</button>` +
+              `<button class="rc-alt" onclick="showCatPicker()">${useHi?'गलत? श्रेणी चुनें':'Wrong? pick category'}</button>` +
+              `<button class="rc-why" onclick="whyRoute()">🤖 ${useHi?'क्यों?':'Why?'}</button>`;
+  }
+
+  card.className = cls;
+  card.innerHTML =
+    `<div class="rc-head"><span class="rc-ico">🧭</span><span class="rc-title">${escapeHtml(headTitle)}</span>` +
+    `<span class="${confClass}">${useHi?'भरोसा ':'sure '}${confTxt}</span></div>` +
+    dest +
+    `<p class="rc-reason">${escapeHtml(reason)}</p>` +
+    `<div class="rc-actions">${actions}</div>`;
+  card.style.display = 'block';
+
+  // Speak the route for blind users (the destination + the why).
+  // Skipped when applyResult will speak a combined route+result line (opts.speak===false).
+  if (opts.speak !== false) speakText(label + '. ' + reason, CURRENT_LANG);
+}
+
+function routePick(cat){ renderRouterCard({ category: cat, confidence: 0.9 }); }
+function showCatPicker(){ renderRouterCard({ category: 'unknown', confidence: 0.3 }); }
+function whyRoute(){ if (LAST_ROUTE) speakText(LAST_ROUTE.reason, CURRENT_LANG); }
+
+function routeOpen(cat){
+  const r = ROUTING_MAP[cat];
+  if (!r || !r.page) return;
+  if (r.handoff === 'tel') { window.location.href = r.page; return; }
+  const txt = LAST_RESULT
+    ? ((CURRENT_LANG === 'en' ? LAST_RESULT.speak_en : LAST_RESULT.speak_hi) || LAST_RESULT.summary || '')
+    : '';
+  try { sessionStorage.setItem('chitti_handoff_text', txt); } catch(e){}
+  if (r.handoff === 'prefill') {              // Legal: pre-load the OCR text
+    try { localStorage.setItem('chitti_legal_prefill', (txt || '').slice(0, 7000)); } catch(e){}
+  }
+  const sep = r.page.indexOf('?') >= 0 ? '&' : '?';
+  window.location.href = r.page + sep + 'from=scanner';
+}
 
 const SECTIONS = {
   1: { en: "What Chitti Scanner is and is not. Chitti reads a label, bill, medicine strip or document you show it and explains what it sees. Chitti does not diagnose, prescribe, or give legal verdicts.",
@@ -598,6 +848,7 @@ function showResultLoading(){
   document.getElementById('r-legal').textContent = '';
   document.getElementById('r-links').innerHTML = '';
   document.getElementById('ja-panel').classList.remove('shown');
+  const rcard = document.getElementById('router-card'); if (rcard) rcard.style.display = 'none';
 }
 function applyResult(d){
   if (!d || !d.ok) {
@@ -679,9 +930,15 @@ function applyResult(d){
     }
   }
 
-  // AUTO-SPEAK the result + legal line
+  // Universal Router (CUSOS) — deterministic detect → route. Renders the route card.
+  const _typed = document.getElementById('typed-text');
+  const det = detectCategory(d, _typed ? _typed.value : '');
+  renderRouterCard(det, { speak: false });
+
+  // AUTO-SPEAK the route + the result + legal line (the route leads, for blind users).
   const t = (CURRENT_LANG === 'en' ? d.speak_en : d.speak_hi) || d.summary || '';
-  speakText(t + '. ' + (d.legal_disclaimer || ''), CURRENT_LANG);
+  const routeSentence = LAST_ROUTE ? (LAST_ROUTE.label + '. ' + LAST_ROUTE.reason + ' ') : '';
+  speakText(routeSentence + t + '. ' + (d.legal_disclaimer || ''), CURRENT_LANG);
 
   pushHistory({ type: d.type, summary: d.summary, ts: Date.now(), lang: CURRENT_LANG });
 
@@ -746,6 +1003,7 @@ function renderHistory(){
   if (!h.length) { el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px">No scans yet.</div>'; return; }
   el.innerHTML = h.map((e,i) => `
     <div class="history-row">
+      <span class="cat-ico" aria-hidden="true">${categoryEmoji(e.type)}</span>
       <span class="badge">${escapeHtml(e.type || 'other')}</span>
       <div class="q">${escapeHtml((e.summary||'').slice(0,160))}</div>
       <button onclick="speakText(${JSON.stringify((e.summary||''))}, '${escapeHtml(e.lang||CURRENT_LANG)}')" data-i18n="hear">🔊 Hear</button>

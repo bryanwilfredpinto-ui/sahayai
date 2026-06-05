@@ -244,3 +244,35 @@ Both rejections are documented here, not silently dropped, so any
 future revisit knows the reasoning. If Sire wants either of these
 shipped anyway, the override lives in `Chitti.a11y` and either can be
 wired in a future patch.
+
+---
+
+## 4. Chitti Universal Scanner (CUSOS / CEOS) — the routing layer (2026-06-05)
+
+The scanner is being elevated from a label-reader into the **Chitti Universal Scanner** —
+the CEOS front door that *detects → routes → explains → remembers* so the user never has to
+choose a product. Full operating-system doc set under [chitti-scanner/](../) (CONSTITUTION ·
+ROLE · VISION · DETECTION_ENGINE · ROUTING_ENGINE · swarm/ · evals/ · memory/ · etc.).
+**Deterministic core; LLM is an enhancement.** Honest COMING SOON where a specialist isn't
+built or the vision LLM isn't funded.
+
+### 4.1 Built and working
+
+| Feature | What |
+|---|---|
+| **Universal Router card** | After any analyse, a `🧭 Chitti is sending this to …` card shows the detected category + confidence + the recommended specialist Chitti + a one-tap "Open <Chitti>" deep-link + a plain-English reason. Deterministic (works with DeepSeek down). |
+| **Deterministic detection** | Category from the backend `type` + a client-side keyword map ([routing/routing_table.md](../routing/routing_table.md)). Low confidence → honest `unknown` + picture-menu pick; never a guess. |
+| **Live routes** | MedUPI · Health Scanner · Bike/Car Doctor · Fashion · Government · Legal · UPI Fraud Guard · Food (in-page) · News · Vaani — via the existing handoff mechanisms (deeplink / prefill / session / inline / tel). |
+| **Safety-first precedence** | A fraud/UPI signal routes to Fraud Guard before any commerce; a health scan routes non-diagnostically; emergency → Vaani family cascade (never cops). |
+| **Universal Memory timeline** | Recent-scans history becomes a life-event timeline (category icon · date · summary · 🔊 Hear · expiry chip). Local-first. |
+| **Explanation Layer** | Every route carries a reason; 🤖 icon (feedback-widget) expands "why". |
+
+### 4.2 COMING SOON (honest — visible, never faked)
+
+| Feature | Why gated |
+|---|---|
+| **Camera vision auto-detect** of arbitrary objects (fan / leaf / wound) | Needs a funded DeepSeek-vision key (~₹0.05–0.10/scan, user-borne, opt-in). Until then: `describe or pick`. |
+| **Farmer · Education · Home-Repair · Career · Guardian** routes | Specialist Chittis not built yet — router names them + gives a real fallback (read label / Vaani). |
+| **Cross-device Universal Memory + Family Knowledge Graph** | Needs verified Turso persistence on chitti-scanner (RED item, QUALITY_STATUS 2026-05-29 / CTO defect #9). Local graph only today. |
+| **Predictive reminders** (medicine/insurance/warranty/service expiry) | Needs cross-device memory + a delivery channel (WhatsApp gateway, queued). |
+| **LLM-graded 8-agent swarm vote** | Needs DeepSeek funding + the Vaani relevance-rail allowlist (same blocker as Fashion + Mechanic). Deterministic vote ships today. |

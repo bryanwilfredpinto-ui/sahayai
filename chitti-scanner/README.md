@@ -15,6 +15,49 @@
 
 ---
 
+# Chitti Universal Scanner — CUSOS (the CEOS front door)
+
+**The user scans. Chitti detects, routes, explains, and remembers — so nobody ever has to
+know which Chitti to open.** This is the scanner's instantiation of the platform-wide
+**Chitti Engineering Operating System (CEOS)** — *"the OS that powers ALL Chittis."*
+
+> One Scan. Infinite Intelligence. For Every Human. Regardless of language, literacy,
+> disability, or wealth.
+
+**Deterministic core, LLM is an enhancement** (works with DeepSeek down). **Honest stubs
+over fake demos** — unbuilt specialists + unfunded vision surface a visible COMING SOON,
+never a fake answer. **Vaani-sole-interface** — the scanner is a routable service; its
+canonical home is inside Chitti Vaani.
+
+## CUSOS document map (Levels 0–13)
+
+| Level | Area | File(s) |
+|---|---|---|
+| **0 — Constitution** | supreme law | [CONSTITUTION.md](CONSTITUTION.md) |
+| **1 — Role** | Chief Architect | [ROLE.md](ROLE.md) |
+| **2 — Vision** | mission | [VISION.md](VISION.md) · [PRODUCT_VISION.md](PRODUCT_VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
+| **3 — Users** | personas P1–P7 | [PERSONAS.md](PERSONAS.md) |
+| Spec | runtime + PRD | [CEOS_ARCHITECTURE.md](CEOS_ARCHITECTURE.md) · [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) (label-reader) |
+| **3 — Detection** | universal detector | [DETECTION_ENGINE.md](DETECTION_ENGINE.md) |
+| **4 — Routing** | router + table | [ROUTING_ENGINE.md](ROUTING_ENGINE.md) · [routing/routing_table.md](routing/routing_table.md) |
+| **4 — Swarm** | 8 voting agents | [swarm/](swarm/) |
+| **5 — SOPs** | per-category playbooks | [sop/](sop/) (medicine · document · vehicle · fraud · unknown) |
+| **7 — Guardrails** | safety/privacy/scope | [guardrails/](guardrails/) |
+| **7 — Memory / Twin** | Universal Memory · Family Graph | [memory/](memory/) |
+| **9 — Accessibility** | 4-user floor | [accessibility/](accessibility/) |
+| **10 — Observability** | metrics/logs/dashboard | [observability/](observability/) |
+| **11 — Evals** | gates + results | [EVALS.md](EVALS.md) · [evals/](evals/) |
+| Quality | merge-blocker bar | [QUALITY.md](QUALITY.md) |
+| Roadmap | phased, honest | [ROADMAP.md](ROADMAP.md) |
+| Capability surface | live + COMING SOON | [skills/FEATURES.md §4](skills/FEATURES.md) |
+
+> 🔴 **Honest persistence gate:** cross-device Memory, the Family Graph, and predictive
+> reminders are **COMING SOON** until the Turso direct-HTTPS shim is verified on
+> chitti-scanner (QUALITY_STATUS 2026-05-29 fleet audit / CTO defect #9). Today everything
+> is **local-first** — it never leaves the device.
+
+---
+
 # Chitti Product Scanner
 
 **Snap or type any label. Chitti reads it, warns you, saves you money.**
