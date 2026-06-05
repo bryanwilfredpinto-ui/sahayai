@@ -2046,6 +2046,23 @@ loadFeed(false);
     setTimeout(boot, 200);
   }
 
+  // Expose aria-sweep so other modules (Hub renderer etc.) can call it
+  // after dynamically-rendered content lands. Otherwise chips/buttons
+  // that don't exist at boot won't get labels.
+  window.ChittiAriaSweep = ariaLabelSweep;
+
+  // MutationObserver — auto-sweep on any DOM change so dynamically
+  // injected Hub chips / cards get aria-labels without each renderer
+  // having to remember to call ChittiAriaSweep. Throttled at 250ms.
+  try {
+    var _sweepTO = null;
+    var mo = new MutationObserver(function () {
+      if (_sweepTO) return;
+      _sweepTO = setTimeout(function () { _sweepTO = null; ariaLabelSweep(); }, 250);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+  } catch (e) {}
+
   // Expose for cert / manual triggering
   window.ChittiVoiceFirst = {
     activate: function () { activate({ blind: true }); },
@@ -2054,6 +2071,7 @@ loadFeed(false);
     readHub: vfReadHub,
     readCurrentTab: vfReadCurrentTab,
     cmds: VOICE_CMDS,
+    sweepAria: ariaLabelSweep,
   };
 })();
 </script>
