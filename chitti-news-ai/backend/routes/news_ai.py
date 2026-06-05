@@ -105,7 +105,20 @@ def feed():
                 "speak_hi": "प्रशिक्षण टैब में मुफ़्त AI कोर्स दिखते हैं, खबरें नहीं। कोर्सेज़ देखें।",
             })
         else:
-            abort(400, description=f"unknown tab: {tab}")
+            # Fail-open: tabs that have their own dedicated client-side
+            # loader (foryou, profession-hub, coach-picks, my-coach,
+            # what-not-to-do, stream-*) should never break the page if the
+            # caller hits this generic endpoint. Return an honest empty
+            # state instead of 400. Per CTO §FR-1.3 + SAHAYAI fail-open
+            # contract.
+            return jsonify({
+                "items": [],
+                "count": 0,
+                "tab": tab,
+                "language": language,
+                "honest_note_en": f"Tab '{tab}' uses a dedicated client-side loader, not this endpoint. Returning an empty list so the page never breaks.",
+                "honest_note_hi": f"टैब '{tab}' का अपना लोडर है। पेज न टूटे, इसलिए खाली सूची लौटाई।",
+            })
 
         rows = (
             q.order_by(desc(Article.published_utc), desc(Article.ingested_utc))
