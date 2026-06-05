@@ -537,8 +537,11 @@ await safe('tour_renders_28_days', async () => {
   await p.waitForTimeout(1200);
   const dayCount = await p.$$eval('.tt-day', els => els.length);
   const bands    = await p.$$eval('.tt-band', els => els.length);
+  const picker   = await p.$$eval('.tt-curric-btn', els => els.length);
   await b.close();
-  check('tour_renders_28_days', dayCount === 28 && bands === 3, `days=${dayCount}/28 bands=${bands}/3`);
+  // v1.1.1 layout: curriculum picker (8 btns) + 1 unified days grid (28 cards)
+  check('tour_renders_28_days', dayCount === 28 && bands === 1 && picker === 8,
+    `days=${dayCount}/28 bands=${bands}/1 picker=${picker}/8`);
 });
 
 await safe('tour_mark_day_done_persists', async () => {

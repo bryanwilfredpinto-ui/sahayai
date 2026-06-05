@@ -1665,9 +1665,12 @@
             why: '[Creative AI] Use this on a real ' + (prof ? prof.replace(/-/g, ' ') : 'work') + ' deliverable today.',
           }));
         });
-        days.push({ day:90, tool:'Build H — 90-Day Portfolio + Demo Day',
-          why:'Write your 90-day story. Tag #ChittiNewsAI #AICareerCoach. Get certificate.',
-          try:{title:'Gamma deck + LinkedIn long-form + YouTube reel', url:'https://gamma.app/'}, minutes:15 });
+        days.push({ tool:'Build H — Portfolio assembly',
+          why:'Pick your 5 best builds across 89 days. Assemble into a single Gamma deck + GitHub README.',
+          try:{title:'Gamma deck of your top 5 builds', url:'https://gamma.app/'}, minutes:15 });
+        days.push({ tool:'Build I — 90-Day Demo Day',
+          why:'Write your 90-day story. LinkedIn long-form + YouTube reel + Hall-of-Fame submission. Tag #ChittiNewsAI #AICareerCoach. Get certificate.',
+          try:{title:'LinkedIn long-form + YouTube short', url:'https://www.linkedin.com/'}, minutes:15 });
         return days.slice(0, 90).map(function (d, i) { return Object.assign({}, d, { day: i + 1 }); });
       },
     },
