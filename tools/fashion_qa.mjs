@@ -78,7 +78,9 @@ await p.waitForTimeout(800);
 // review (engine)
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="review"]').click(); document.getElementById('fa-review-text').value = 'navy blazer, beige chinos, brown loafers'; faReview(); });
 await p.waitForTimeout(800);
-(await mutated(p, '#fa-review-result')) ? P('button: Outfit Review (7-agent) renders') : F('button: Outfit Review');
+(await mutated(p, '#fa-review-result')) ? P('button: Outfit Review (9-agent) renders') : F('button: Outfit Review');
+const swarmRows = await p.evaluate(() => document.querySelectorAll('#fa-review-result .fa-swarm .rows .row').length);
+(swarmRows >= 9) ? P('v2.1 swarm: 9 voting agents on the verdict panel (' + swarmRows + ')') : F('v2.1 swarm 9 agents', String(swarmRows));
 // describe
 await p.evaluate(() => faDescribeMine());
 await p.waitForTimeout(800);

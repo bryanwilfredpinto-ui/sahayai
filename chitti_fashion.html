@@ -722,10 +722,10 @@ const BODY_POSITIVE_RULE =
 
 /* one-language-at-a-time labels (no Hinglish — CTO §5) */
 const FA_L = {
-  en: { experts:'7 experts say', open:'(open)', a_fashion:'👗 Style', a_color:'🎨 Colour', a_occasion:'🎉 Occasion', a_comfort:'😌 Comfort', a_access:'♿ For everyone', a_budget:'💸 Budget', a_conf:'✨ Confidence', trend:'📈 Trend (info only — does not change the verdict): ', why_q:'🎓 Why, Chitti? (learn)', why:'Why', benefits:'Benefits', tradeoffs:'Trade-offs', alts:'Alternatives', free:'✅ Free (from your wardrobe · ₹0)', cheap:'💸 Budget option', premium:'⭐ Premium' },
-  hi: { experts:'7 experts की राय', open:'(खोलें)', a_fashion:'👗 Style', a_color:'🎨 रंग', a_occasion:'🎉 मौक़ा', a_comfort:'😌 आराम', a_access:'♿ सबके लिए', a_budget:'💸 बजट', a_conf:'✨ आत्मविश्वास', trend:'📈 Trend (सिर्फ़ जानकारी, राय नहीं बदलती): ', why_q:'🎓 Chitti क्यों? (समझिए)', why:'क्यों', benefits:'फ़ायदे', tradeoffs:'समझौते', alts:'और विकल्प', free:'✅ मुफ़्त (आपकी अलमारी से · ₹0)', cheap:'💸 सस्ता विकल्प', premium:'⭐ Premium' },
+  en: { experts:'9 experts say', open:'(open)', a_fashion:'👗 Style', a_color:'🎨 Colour', a_occasion:'🎉 Occasion', a_comfort:'😌 Comfort', a_access:'♿ For everyone', a_sustain:'♻️ Sustainability', a_budget:'💸 Budget', a_climate:'🌦️ Climate', a_cultural:'🪔 Cultural', a_conf:'✨ Confidence', trend:'📈 Trend (info only — does not change the verdict): ', why_q:'🎓 Why, Chitti? (learn)', why:'Why', benefits:'Benefits', tradeoffs:'Trade-offs', alts:'Alternatives', free:'✅ Free (from your wardrobe · ₹0)', cheap:'💸 Budget option', premium:'⭐ Premium' },
+  hi: { experts:'9 experts की राय', open:'(खोलें)', a_fashion:'👗 Style', a_color:'🎨 रंग', a_occasion:'🎉 मौक़ा', a_comfort:'😌 आराम', a_access:'♿ सबके लिए', a_sustain:'♻️ टिकाऊपन', a_budget:'💸 बजट', a_climate:'🌦️ मौसम', a_cultural:'🪔 सांस्कृतिक', a_conf:'✨ आत्मविश्वास', trend:'📈 Trend (सिर्फ़ जानकारी, राय नहीं बदलती): ', why_q:'🎓 Chitti क्यों? (समझिए)', why:'क्यों', benefits:'फ़ायदे', tradeoffs:'समझौते', alts:'और विकल्प', free:'✅ मुफ़्त (आपकी अलमारी से · ₹0)', cheap:'💸 सस्ता विकल्प', premium:'⭐ Premium' },
 };
-var L_MAP = { a_fashion:['agent','fashion'], a_color:['agent','color'], a_occasion:['agent','occasion'], a_comfort:['agent','comfort'], a_access:['agent','accessibility'], a_budget:['agent','budget'], a_conf:['agent','confidence'], experts:['chrome','experts'], open:['chrome','open'], trend:['chrome','trend'], why_q:['chrome','whyq'], why:['chrome','why'], benefits:['chrome','benefits'], tradeoffs:['chrome','tradeoffs'], alts:['chrome','alts'], free:['chrome','free'], cheap:['chrome','cheap'], premium:['chrome','premium'] };
+var L_MAP = { a_fashion:['agent','fashion'], a_color:['agent','color'], a_occasion:['agent','occasion'], a_comfort:['agent','comfort'], a_access:['agent','accessibility'], a_sustain:['agent','sustainability'], a_budget:['agent','budget'], a_climate:['agent','climate'], a_cultural:['agent','cultural'], a_conf:['agent','confidence'], experts:['chrome','experts'], open:['chrome','open'], trend:['chrome','trend'], why_q:['chrome','whyq'], why:['chrome','why'], benefits:['chrome','benefits'], tradeoffs:['chrome','tradeoffs'], alts:['chrome','alts'], free:['chrome','free'], cheap:['chrome','cheap'], premium:['chrome','premium'] };
 function L(k){
   var FD = window.FashionDyn;
   if (FD && L_MAP[k]) { var g = L_MAP[k]; var v = (g[0]==='agent') ? FD.agent(g[1]) : FD.chrome(g[1]); if (v) return v; }
@@ -743,8 +743,10 @@ function faRenderSwarm(j){
   rows += faAgentRow('occasion', L('a_occasion'), a.occasion);
   rows += faAgentRow('comfort', L('a_comfort'), a.comfort);
   rows += faAgentRow('accessibility', L('a_access'), a.accessibility);
+  rows += faAgentRow('sustainability', L('a_sustain'), a.sustainability);
   rows += faAgentRow('budget', L('a_budget'), a.budget);
-  rows += faAgentRow('confidence', L('a_conf'), a.confidence);
+  rows += faAgentRow('climate', L('a_climate'), a.climate);
+  rows += faAgentRow('cultural', L('a_cultural'), a.cultural);
   const overall = (j.overall != null ? j.overall : '—');
   let html =
     '<div class="fa-swarm">' +
@@ -1003,16 +1005,24 @@ function faEngineSwarmJSON(items, ctx){
   const occName = FD ? FD.occ(occ.occasion) : occ.occasion;
   const flag0 = (FD && j.flags[0] && j.flags[0].code) ? FD.judgeMsg(j.flags[0].code) : (j.flags[0] && j.flags[0].msg || '');
   const nChecks = conf.reasons.filter(r=>r[0]==='✓').length;
+  // CFOS v2.0 swarm: 9 voting specialists (3 added — Sustainability/Climate/Cultural — from real engine signals)
+  const versatile = items.filter(it => E.colourFamily(it.colour) === 'neutral' || E.fabricSeason(it) === 'all').length;
+  const cFlag = (j.flags || []).find(f => f.axis === 'cultural');
   const agents = {
     fashion: { score: s(h.score*5 + occ.band), why: occName },
     color: { score: s(h.score*10), why: FD ? FD.harm(h.type) : h.why },
     occasion: { score: s(occOK ? 9 : 5), why: occName },
     comfort: { score: s(seas.score*8 + 2), why: (FD && seas.score<1) ? FD.judgeMsg('season_mismatch') : (FD ? FD.conf('weather') : seas.why) },
     accessibility: { score: s(j.pass ? 9 : 5), why: j.pass ? (FD?FD.conf('accessibility'):'ok') : flag0 },
+    sustainability: { score: s(7 + versatile), why: FD ? FD.agentWhy('sustain') : 're-wearable — cost-per-wear drops' },
     budget: { score: 10, why: FD ? FD.chrome('free') : '₹0' },
+    climate: { score: s(seas.score*10), why: (FD && seas.score<1) ? FD.judgeMsg('season_mismatch') : (FD ? FD.agentWhy('climate_ok') : 'fabric suits the season') },
+    cultural: { score: s(cFlag ? 5 : 9), why: cFlag ? (FD ? FD.judgeMsg(cFlag.code) : cFlag.msg) : (FD ? FD.agentWhy('cultural_ok') : 'respects the occasion') },
     confidence: { score: s(conf.confidence/10), why: nChecks + ' ' + (FD ? FD.chrome('checks_pass') : 'checks pass') },
   };
-  const overall = Math.round((Object.values(agents).reduce((a,b)=>a+b.score,0)/7)*10)/10;
+  // 9 CFOS voting specialists (Trend is advisory-only, excluded from the mean — trust over virality)
+  const VOTERS = ['fashion','color','occasion','comfort','accessibility','sustainability','budget','climate','cultural'];
+  const overall = Math.round((VOTERS.reduce((a,k)=>a+agents[k].score,0)/VOTERS.length)*10)/10;
   const teachWhy = FD ? FD.tmpl('reads', { occ: occName, band: (occ.band!=null?occ.band:''), harm: FD.harm(h.type) }, CURRENT_LANG) : E.explain(items, ctx);
   const tiers = { free: FD ? FD.chrome('free') : 'Free · ₹0' };
   if (!j.pass && j.flags[0]) tiers.budget = flag0;
