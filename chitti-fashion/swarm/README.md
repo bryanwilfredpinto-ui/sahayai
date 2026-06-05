@@ -1,6 +1,6 @@
 🎖️ World Class Chitti Fashion — Swarm
 
-# SWARM — the 7-agent vote (+ 1 advisor)
+# SWARM — the 9-agent vote (+ 1 advisor)
 
 Before any recommendation is shown to the user, the swarm votes. The user sees
 the **synthesized verdict** plus an expandable per-agent breakdown — never a single
@@ -26,15 +26,19 @@ breakdown in the user's language.
 | [Comfort](comfort-agent.md) / [Confidence](confidence-agent.md) | wearability / polish (retained) | ✅ / ✅ |
 | [Trend](trend-agent.md) | relevance/freshness | ❌ advisory only (trust over virality) |
 
-**Final recommendation only after the vote.** The live verdict panel currently surfaces
-7 agents; the 3 CFOS-v2.0 additions (Sustainability/Climate/Cultural) are 🟡 being surfaced
-on the panel — their logic already runs in the engine (`fabricSeason`, reuse-ladder,
-cultural judge codes). See [ROADMAP.md](../ROADMAP.md).
+**Final recommendation only after the vote.** ✅ **As of 2026-06-05 the live verdict panel
+surfaces all 9 voting agents** — the 3 CFOS-v2.0 additions (Sustainability/Climate/Cultural)
+are now shown, scored deterministically from real engine signals (versatility/`fabricSeason`/
+cultural judge codes). `overall = mean(9 voters)`; Trend stays advisory-only. Native labels +
+why-text in all 9 languages. Verified by `tools/fashion_qa.mjs` (asserts 9 rows render).
 
 ## Execution
-One DeepSeek round-trip returns a strict JSON object with all 7 scores + a teach
-block + Free/Budget/Premium tiers + a trend note ([../ARCHITECTURE.md](../ARCHITECTURE.md)).
-`overall = mean(7 agent scores)`. The Trend note is attached but excluded from the mean.
+The **deterministic engine** scores all 9 voters with zero LLM dependency
+(`faEngineSwarmJSON` in `chitti_fashion.html`): Style/Colour/Occasion/Comfort/Accessibility
+from harmony+occasion+season+judge; Sustainability from versatility; Climate from
+`fabricSeason`; Cultural from cultural judge flags. `overall = mean(9 voters)`; the Trend
+note is attached but excluded from the mean. When the DeepSeek key is funded, one round-trip
+can enrich the same 9-score shape — the panel renders identically either way.
 
 ## Voting rules
 - **Suitability beats trend** — Trend can flag "this is current" but can never raise the score (ROLE.md Principle 1).

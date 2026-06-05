@@ -18,7 +18,7 @@
 | 08 | **Sustainability advisor** (reuse score · cost-per-wear) | [SUSTAINABILITY.md](SUSTAINABILITY.md) + Audit | 🟢 |
 | 09 | **Fashion teacher** (explain WHY) | Learn + [teacher agent](swarm/teacher-agent.md) | 🟢 |
 | 10 | **Travel stylist** (destination-based) | Travel Packing | 🟢 |
-| 11 | **Adaptive clothing** (disability-friendly) | [ADAPTIVE_CLOTHING.md](ADAPTIVE_CLOTHING.md) | 🟢 guidance; UI surface 🟡 |
+| 11 | **Adaptive clothing** (disability-friendly) | [ADAPTIVE_CLOTHING.md](ADAPTIVE_CLOTHING.md) + 👵🧒 Senior & Kids Mode card | 🟢 guidance + UI surface (2026-06-05) |
 | 12 | **Fashion Digital Twin** (wardrobe/usage/history + learning) | [FASHION_TWIN.md](FASHION_TWIN.md) + engine learning loop | 🟢 profile + learning |
 
 ## Features
@@ -42,6 +42,11 @@
 | 🩺 Clothing Doctor (repair-not-buy) | ✅ LIVE | CTO | 2026-06-05 |
 | 💍 Wedding Planner (family coordination) | ✅ LIVE | CTO | 2026-06-05 |
 | 📅 Office Week Planner (5 days, no repeats) | ✅ LIVE | CTO | 2026-06-05 |
+| 9-agent swarm surfaced (Sustainability/Climate/Cultural) | ✅ LIVE | CTO | 2026-06-05 |
+| 👵🧒 Senior & Kids adaptive Mode | ✅ LIVE | CTO | 2026-06-05 |
+| 👨‍👩‍👧 Everyday Family coordination (any occasion) | ✅ LIVE | CTO | 2026-06-05 |
+| 🌱 My Impact (Founder-Rule observability) | ✅ LIVE | CTO | 2026-06-05 |
+| 📏 Cross-brand Size + Regional composition | ✅ LIVE | CTO | 2026-06-05 |
 | Family Stylist + Fashion Twin | ✅ LIVE | CTO | 2026-06-05 |
 | AR Try-On · On-device camera ISL | 🔵 COMING SOON | — | — |
 

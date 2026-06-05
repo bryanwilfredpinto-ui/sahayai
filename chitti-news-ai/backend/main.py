@@ -203,14 +203,13 @@ def create_app() -> Flask:
     except Exception as e:  # noqa: BLE001
         log.warning("quality framework install skipped: %s", e)
 
-    @app.get("/health")
-    def health():
+    def _health_payload():
         with SessionLocal() as s:
             try:
                 sources_active = s.query(Source).filter(Source.active == True).count()  # noqa: E712
             except Exception:
                 sources_active = 0
-        return jsonify({
+        return {
             "ok": True,
             "service": "chitti-news-ai-api",
             "chitti_slug": CHITTI_SLUG,
@@ -218,7 +217,15 @@ def create_app() -> Flask:
             "sources_active": sources_active,
             "scheduler_enabled": settings.scheduler_enabled,
             "rss_poll_minutes": settings.rss_poll_minutes,
-        })
+        }
+
+    @app.get("/health")
+    def health():
+        return jsonify(_health_payload())
+
+    @app.get("/api/news-ai/health")
+    def health_prefixed():
+        return jsonify(_health_payload())
 
     @app.get("/")
     def root():

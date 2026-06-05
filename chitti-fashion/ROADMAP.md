@@ -21,11 +21,16 @@
   borrow-before-rent-before-buy (shipped 2026-06-05)
 - **📅 Office Week Planner** — Mon–Fri, no-repeat greedy, variety%, honest-degrade (shipped 2026-06-05)
 
+- **9-agent swarm** surfaced on every verdict (Sustainability · Climate · Cultural now shown) (2026-06-05)
+- **👵🧒 Senior & Kids Mode** — adaptive dressing lens, overrides age_band across all flows (2026-06-05)
+- **👨‍👩‍👧 Everyday Family coordination** — shared palette + roles for ANY occasion, not just weddings (2026-06-05)
+- **🌱 My Impact** — Founder-Rule observability: ₹0 outfits, repairs, money + carbon saved (2026-06-05)
+- **📏 Cross-brand Size** profile (India/US/UK/EU) + **Regional composition** notes (saree-drape/sherwani/…) (2026-06-05)
+
 ## 🟡 BUILDING (next — deterministic, in CTO's control)
 
-- **9-agent swarm** surfaced on every verdict (add Sustainability · Climate · Cultural agents)
-- **Senior Mode** + **Kids Mode** — dedicated entry points (adaptations already live via a11y)
-- **Family Wardrobe** — broader coordination beyond weddings (everyday + festivals)
+- **Size-aware fit warnings** in outfit cards (size profile now captured — wire into judge)
+- **Regional drape tutorials** (step-by-step saree/dhoti, like the Clothing Doctor steps)
 - **My Colours** palette card (engine ready; UI surface)
 - **Regional composition** (saree-drape, sherwani sets, regional accents)
 - Shopping-reduction % / cost-saved / carbon-saved observability

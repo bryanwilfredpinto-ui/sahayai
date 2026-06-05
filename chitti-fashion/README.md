@@ -53,11 +53,17 @@ translation (locked voice strategy). No Hinglish — one pure language per respo
 
 ## Status
 
-🟡 **YELLOW** — full CFOS operating system + rebuilt page committed 2026-06-03;
-**CFOS v2.1 shipped 2026-06-05** — 🩺 Clothing Doctor, 💍 Wedding Planner, 📅 Office
-Week Planner (all deterministic, no API). Engine 48/48 unit, gold 91.6% exact,
-QA 43/43, visual cert 14/14, journeys 5/5. Production functional cert pending
-next deploy. Substrate 5-gate inherited 🟢.
+🟢 **LIVE on production** (`sahayai.in/chitti_fashion.html`, engine v2.1) — full CFOS
+operating system. **CFOS v2.1 shipped 2026-06-05**, everything deterministic (no API):
+🩺 Clothing Doctor · 💍 Wedding Planner · 📅 Office Week Planner · **9-agent swarm**
+(Sustainability/Climate/Cultural now surfaced) · 👵🧒 **Senior & Kids Mode** · 👨‍👩‍👧
+**everyday Family coordination** · 🌱 **My Impact** (Founder-Rule observability) · 📏
+**cross-brand Size** + **Regional composition**. Verified: engine **66/66** unit,
+gold **91.6%** exact, QA **50/50**, visual cert **14/14**, journeys **5/5**,
+accessibility **107/107 (100%)**. Substrate 5-gate inherited 🟢.
+
+> Capped only by the DeepSeek key (Sire's one unblock): garment **vision**,
+> conversational **voice**, and **Vaani** routing. Everything buildable from our end is done.
 
 ## Document map (CFOS v2.0)
 

@@ -1,12 +1,12 @@
 # Chitti Fashion — Evaluation Results
 
-Generated: 2026-06-03T23:00:25Z · DeepSeek: **HTTP 429 rate-limited at run time**
+Generated: 2026-06-05T02:36:38Z · DeepSeek: **HTTP 429 rate-limited at run time**
 
 | Suite | Run mode | N | Pass | Blocked | Fail | Score |
 |---|---|---|---|---|---|---|
-| accessibility | deterministic (live page) | 100 | 100 | 0 | 0 | 100% |
-| outfit | live API (sampled 2 of 100) | 2 | 0 | 2 | 0 | — (blocked) |
-| occasion | live API (sampled 2 of 100) | 2 | 0 | 2 | 0 | — (blocked) |
+| accessibility | deterministic (live page) | 107 | 107 | 0 | 0 | 100% |
+| outfit | live API (sampled 6 of 100) | 6 | 0 | 6 | 0 | — (blocked) |
+| occasion | live API (sampled 6 of 100) | 6 | 0 | 6 | 0 | — (blocked) |
 
 ## Honesty notes
 - **Accessibility** is a REAL deterministic score measured against the live page now.
