@@ -1,0 +1,88 @@
+/* chitti_mechanic_medupi_skin.css — aligns Chitti Bike/Car Doctor UI to Chitti MedUPI.
+ * Sire 2026-06-05: "UI should be in accordance with Chitti MedUPI."
+ * Re-skins the existing sds-* structure (no class renames → harnesses + i18n + the
+ * feedback widget keep working; strings.js stays the sole translator — chitti_lang.js
+ * is NOT reintroduced). Loaded AFTER chitti_theme.css so these tokens win.
+ * Mirrors MedUPI's :root + header + cards + bharat-stripe (chitti_medupi.html). */
+
+:root, body.sds-page {
+  /* MedUPI "Bharat-premium" palette */
+  --sds-saffron: #E86A17;
+  --saffron:     #E86A17;
+  --sds-navy:    #0E2344;
+  --navy:        #0E2344;
+  --gold:        #D4AF37;
+  --sds-line:    #e5e7eb;
+  --sds-muted:   #6b7280;
+  --med-green:   #15803d;
+  --med-red:     #b91c1c;
+}
+
+/* Warm cream page background + the MedUPI radial-gradient ambience */
+body.sds-page {
+  background: linear-gradient(180deg, #f8f4ee, #fff) !important;
+  color: #17202a;
+  font-family: Inter, 'Segoe UI', Arial, sans-serif;
+}
+body.sds-page::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(232,106,23,.10), transparent 25%),
+    radial-gradient(circle at 85% 10%, rgba(212,175,55,.12), transparent 20%),
+    radial-gradient(circle at 50% 80%, rgba(14,35,68,.08), transparent 28%);
+}
+body.sds-page > * { position: relative; z-index: 1; }
+
+/* Bharat tricolour stripe → MedUPI saffron·gold·navy */
+.sds-tricolour { background: linear-gradient(90deg, #E86A17, #D4AF37, #0E2344) !important; height: 3px !important; }
+
+/* Navy-gradient header with the MedUPI rounded bottom */
+.sds-header {
+  background: linear-gradient(135deg, #0E2344, #16376a) !important;
+  color: #fff !important;
+  border-radius: 0 0 24px 24px !important;
+  padding: 16px !important;
+  box-shadow: 0 10px 28px rgba(14,35,68,.18);
+}
+.sds-header .sds-brand-name { color: #fff !important; font-weight: 800; }
+.sds-header .sds-tagline { color: rgba(255,255,255,.82) !important; }
+
+/* Floating Bharat-logo (saffron → gold), matching MedUPI .bharat-logo */
+.sds-logo {
+  background: linear-gradient(135deg, #E86A17, #D4AF37) !important;
+  color: #fff !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 22px rgba(232,106,23,.35);
+  animation: chittiFloatB 4s ease-in-out infinite;
+}
+@keyframes chittiFloatB { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* Header action buttons (lang select + controls) → MedUPI translucent-white */
+.sds-header .sds-header-actions button,
+.sds-header .sds-header-actions .sds-select,
+.sds-header select {
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
+  color: #fff; border-radius: 8px;
+}
+.sds-header select option { color: #0E2344; }
+
+/* Cards → MedUPI white .section-card look (warm, soft-shadow, rounded) */
+.sds-card, .sds-doc-row, .sds-alert-row, .mb-safety-tip, .mc-safety-tip {
+  background: #fff !important;
+  border: 1px solid #eadfce !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 10px rgba(14,35,68,.05);
+}
+.sds-card-title { color: #0E2344 !important; }
+.sds-card-sub { color: #6b7280 !important; }
+
+/* Primary buttons → MedUPI saffron gradient */
+.sds-btn-primary, .sds-btn.primary, .sw-go, .chs-submit, .csf-go {
+  background: linear-gradient(135deg, #E86A17, #ff9b4a) !important;
+  border: none !important; color: #fff !important; font-weight: 800;
+  box-shadow: 0 6px 18px rgba(232,106,23,.28);
+}
+
+/* Swarm / scanner / health cards inherit the saffron/navy via the tokens above;
+   keep the navy accent border consistent with MedUPI section heads. */
+.sw-card, .sds-card[data-chitti-response*="card-swarm"] { border-color: var(--gold) !important; }
