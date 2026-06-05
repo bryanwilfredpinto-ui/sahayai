@@ -501,6 +501,30 @@
     return { band: band || 'adult', tips: tips };
   }
 
+  // ---------- 5. IMPACT / SUSTAINABILITY OBSERVABILITY (Founder Rule, made visible) ----------
+  // Honest, conservative constants — every saved figure ties to a real avoided purchase.
+  var AVG_GARMENT_COST = 800;   // ₹, conservative replacement cost of one garment
+  var CO2_PER_GARMENT = 10;     // kg CO2e, conservative apparel life-cycle average
+  // ledger (on-device): { repairs, reuses } — repairs = garments fixed not rebought; reuses = 👍 re-wear intents
+  function impactStats(items, ledger) {
+    items = items || []; ledger = ledger || {};
+    var outfits = buildOutfits(items, { max: 1000 }).count;          // ₹0 outfits from owned clothes
+    var costed = items.filter(function (i) { return (i.cost || 0) > 0; });
+    var wardrobeValue = costed.reduce(function (a, i) { return a + (i.cost || 0); }, 0);
+    var totalWears = items.reduce(function (a, i) { return a + (i.wears || 0); }, 0);
+    var cpw = totalWears > 0 ? Math.round(wardrobeValue / totalWears) : null;
+    var repairs = ledger.repairs || 0;
+    var reuses = ledger.reuses || 0;
+    var garmentsAvoided = repairs;                                    // each repair = one garment not rebought
+    var moneySaved = repairs * AVG_GARMENT_COST;
+    var carbonSaved = garmentsAvoided * CO2_PER_GARMENT;             // kg CO2e
+    return {
+      outfits: outfits, wardrobeValue: wardrobeValue, costPerWear: cpw,
+      repairs: repairs, reuses: reuses, garmentsAvoided: garmentsAvoided,
+      moneySaved: moneySaved, carbonSaved: carbonSaved
+    };
+  }
+
   return {
     colourFamily: colourFamily, itemFormality: itemFormality,
     classifyOccasion: classifyOccasion, colorHarmony: colorHarmony, seasonalSuitability: seasonalSuitability,
@@ -512,6 +536,7 @@
     // CFOS v2.1 deterministic features
     REPAIR_RULES: REPAIR_RULES, diagnoseRepair: diagnoseRepair, repairCodes: repairCodes,
     planWedding: planWedding, planFamily: planFamily, planWeek: planWeek, modeGuidance: modeGuidance, MODE_TIPS: MODE_TIPS,
+    impactStats: impactStats,
     FUNCTION_BAND: FUNCTION_BAND, OCCASION_BAND: OCCASION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
     version: 'fashion-engine-2.1',
   };

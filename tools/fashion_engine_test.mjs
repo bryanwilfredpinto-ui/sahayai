@@ -170,6 +170,16 @@ ok('week: tiny wardrobe degrades HONESTLY (reuse flagged, not hidden)',
     return wk.reuseCount >= 1 && wk.honest.length > 0;
   })());
 
+// CFOS v2.1 — Impact / sustainability observability (Founder Rule made visible)
+(() => {
+  const items = [{ id: 't1', category: 'top', colour: 'navy', cost: 600, wears: 12 }, { id: 'b1', category: 'bottom', colour: 'beige', cost: 900, wears: 8 }];
+  const st = E.impactStats(items, { repairs: 3, reuses: 5 });
+  ok('impact: counts ₹0 outfits from owned clothes', typeof st.outfits === 'number' && st.outfits >= 1);
+  ok('impact: 3 repairs = 3 garments avoided, money + carbon saved', st.garmentsAvoided === 3 && st.moneySaved === 2400 && st.carbonSaved === 30);
+  ok('impact: cost-per-wear computed from cost/wears', st.costPerWear === Math.round(1500 / 20));
+  ok('impact: zero ledger = zero saved (no overclaim)', (() => { const z = E.impactStats(items, {}); return z.moneySaved === 0 && z.carbonSaved === 0; })());
+})();
+
 // CFOS v2.1 — everyday Family coordination (any occasion, not just weddings)
 (() => {
   const plan = E.planFamily(

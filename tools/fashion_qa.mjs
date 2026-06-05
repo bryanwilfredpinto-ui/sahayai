@@ -131,6 +131,10 @@ const weekRows = await p.evaluate(() => document.querySelectorAll('#fa-week-rows
 await p.evaluate(() => faOfficeWeek());
 await p.waitForTimeout(600);
 (await mutated(p, '#fa-office-result')) ? P('button: Office Week Planner renders') : F('button: Office Week Planner');
+// CFOS v2.1: My Impact — Founder-Rule observability renders ₹0 outfits + saved figures
+await p.evaluate(() => faImpact());
+await p.waitForTimeout(400);
+(await mutated(p, '#fa-impact-result')) ? P('button: My Impact (Founder-Rule observability) renders') : F('button: My Impact');
 // CFOS v2.1: Wedding Planner — chips render on occasion tab, plan produces a family layout
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="occasion"]').click(); });
 await p.waitForTimeout(200);

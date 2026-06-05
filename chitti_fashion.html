@@ -409,6 +409,14 @@ body{font-size:17px}
       <div class="fa-row-btns"><button class="fa-btn primary" onclick="faEmergency()" data-vai-i18n="fa.m.emrg_btn">⚡ अभी एक outfit दो</button></div>
       <div id="fa-emrg-result" class="fa-result"></div>
       </div>
+
+    <!-- 🌱 My impact — Founder Rule made visible (CFOS v2.1, deterministic, on-device) -->
+    <div data-chitti-response="fa-card-19" class="sds-card chitti-response" data-chitti-section="🌱 My impact">
+      <h2 class="sds-card-title"><span class="ico">🌱</span> <span data-vai-i18n="fa.eco.title">🌱 My impact — money & planet saved</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.eco.sub">Every ₹0 outfit, every repair, every re-wear adds up. Chitti shows how much money and how much carbon you have saved by wearing what you already own — the Founder Rule, made visible. Stays on your device.</p>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faImpact()" data-vai-i18n="fa.eco.btn">🌱 Show my impact</button></div>
+      <div id="fa-impact-result" class="fa-result"></div>
+      </div>
   </section>
 
   <!-- ════ TAB · CAREER COACH (upskill to pro — free/low-cost) ════ -->
@@ -1197,8 +1205,11 @@ function faExplain(cardId){
 }
 /* ════════ Learning loop (gap P1#9) — 👍/👎 on an outfit biases future picks ════════ */
 function faLikedProfile(){ return (PROFILE.liked && (PROFILE.liked.colours || PROFILE.liked.cats)) ? PROFILE.liked : {}; }
+function faImpactLedger(){ PROFILE.impact = PROFILE.impact || { repairs: 0, reuses: 0 }; return PROFILE.impact; }
+function faBumpImpact(key, n){ const L = faImpactLedger(); L[key] = Math.max(0, (L[key] || 0) + (n || 1)); faSaveProfile(); }
 function faLearnFromOutfit(items, dir){
   if (!items || !items.length) return; const E = faEngine(); if (!E) return;
+  if (dir > 0) faBumpImpact('reuses', 1);   // a 👍 on an own-wardrobe outfit = a re-wear intent (Founder Rule)
   PROFILE.liked = PROFILE.liked || { colours:{}, cats:{} };
   items.forEach(it => { const fam = E.analyseColour(it.hex, it.colour).family; const d = dir>0?1:-1;
     PROFILE.liked.colours[fam] = Math.max(0, (PROFILE.liked.colours[fam]||0) + d);
@@ -1423,6 +1434,7 @@ async function faMarkRepair(){
 async function faMarkRepaired(){
   if (!_docItem) return;
   const it = await faGetItem(_docItem); if (!it) return;
+  if (it.condition === 'needs_repair') faBumpImpact('repairs', 1);   // fixed, not rebought (Founder Rule)
   it.condition = 'good'; it.damage = []; await faPutItem(it);
   faSpeak(CURRENT_LANG==='en'?'Marked repaired — back in your outfits.':'ठीक हो गया — फिर से आपके outfit में।');
   faDoctorInit(); try { faRenderWardrobe(); } catch(e){}
@@ -1540,6 +1552,31 @@ async function faOfficeWeek(){
   if (plan.honest) html += '<div class="fa-tier budget"><span class="lab">🛒</span><div>' + esc(FD ? FD.week('honest_tip') : plan.honest) + '</div></div>';
   host.innerHTML = html;
   const sp = (FD ? FD.week('plan_title') : 'Office week') + '. ' + plan.days.filter(d=>d.outfit).map(d => (FD?FD.week(d.day):d.day) + ': ' + d.outfit.items.map(it => (it.colour||'') + ' ' + it.category).join(', ')).join('. ') + '. ' + (FD ? FD.week('variety') : 'Variety') + ' ' + plan.variety + '%';
+  host.dataset.spoken = sp; faSpeak(sp);
+  try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+
+/* ── 🌱 My impact — Founder Rule made visible (deterministic, on-device) ── */
+async function faImpact(){
+  const host = document.getElementById('fa-impact-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const items = await faAllItems();
+  const st = E.impactStats(items, faImpactLedger());
+  const T = k => FD ? FD.impact(k) : k;
+  const tiers = [];
+  tiers.push('<div class="fa-tier free"><span class="lab">✅ ' + esc(T('outfits')) + '</span><div>' + st.outfits + ' · ₹0</div></div>');
+  if (st.repairs) tiers.push('<div class="fa-tier free"><span class="lab">🩺 ' + esc(T('repairs')) + '</span><div>' + st.repairs + '</div></div>');
+  if (st.moneySaved) tiers.push('<div class="fa-tier free"><span class="lab">💰 ' + esc(T('money')) + '</span><div>~₹' + st.moneySaved + '</div></div>');
+  if (st.carbonSaved) tiers.push('<div class="fa-tier free"><span class="lab">🌍 ' + esc(T('carbon')) + '</span><div>~' + st.carbonSaved + ' kg CO₂</div></div>');
+  if (st.costPerWear != null) tiers.push('<div class="fa-tier"><span class="lab">♻️ ' + esc(T('cpw')) + '</span><div>₹' + st.costPerWear + '</div></div>');
+  if (st.wardrobeValue) tiers.push('<div class="fa-tier"><span class="lab">🧬 ' + esc(T('value')) + '</span><div>₹' + st.wardrobeValue + '</div></div>');
+  const empty = (!st.repairs && !st.moneySaved && st.outfits === 0);
+  let html = '<div class="fa-outfit"><div class="title">🌱 ' + esc(T('title')) + '</div>' +
+    (empty ? '<div class="why">' + esc(T('none')) + '</div>' : '<div class="fa-tiers">' + tiers.join('') + '</div>' +
+      '<div style="margin-top:6px;font-size:12px;color:#000080">♻️ ' + esc(T('note')) + '</div>') + '</div>';
+  host.innerHTML = html;
+  const sp = T('title') + '. ' + st.outfits + ' ' + T('outfits') + '. ' +
+    (st.repairs ? st.repairs + ' ' + T('repairs') + ', ~₹' + st.moneySaved + ' ' + T('money') + ', ~' + st.carbonSaved + ' kg ' + T('carbon') + '.' : '');
   host.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
 }

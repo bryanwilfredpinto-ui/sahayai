@@ -52,6 +52,12 @@
         school_ok:'Neat and school-appropriate when needed',
         high_contrast:'High-contrast colours so pieces are easy to tell apart'
       },
+      impact: {
+        title:'Your impact — Founder Rule, made visible', outfits:'₹0 outfits from your wardrobe',
+        repairs:'garments repaired, not rebought', money:'money saved', carbon:'CO₂ saved', cpw:'cost per wear',
+        value:'wardrobe value working for you', none:'Start wearing, repairing and re-styling — Chitti will count your savings here.',
+        note:'Every repair and re-wear is a garment not bought. Counted on your device only.'
+      },
     },
     hi: {
       occ: { casual:'रोज़', 'smart-casual':'स्मार्ट-कैज़ुअल', 'business-casual':'बिज़नेस-कैज़ुअल', formal:'फ़ॉर्मल', festive:'त्योहारी', wedding:'शादी', office:'दफ़्तर', interview:'इंटरव्यू', college:'कॉलेज', religious:'धार्मिक', date:'डेट नाइट', travel:'यात्रा', funeral:'शोक', family:'पारिवारिक समारोह' },
@@ -95,6 +101,12 @@
         express_self:'उन्हें अपना पसंदीदा रंग चुनने दें — आत्मविश्वास पहले',
         school_ok:'ज़रूरत पर साफ़-सुथरा और स्कूल के अनुकूल',
         high_contrast:'अलग-अलग पहचानने के लिए गहरे-हल्के विपरीत रंग'
+      },
+      impact: {
+        title:'आपका असर — Founder Rule, आँखों के सामने', outfits:'आपकी अलमारी से ₹0 outfit',
+        repairs:'कपड़े मरम्मत किए, फिर नहीं खरीदे', money:'पैसा बचा', carbon:'CO₂ बची', cpw:'प्रति बार लागत',
+        value:'आपके लिए काम करती अलमारी की क़ीमत', none:'पहनना, मरम्मत और फिर से style करना शुरू करें — Chitti आपकी बचत यहाँ गिनेगी।',
+        note:'हर मरम्मत और दोबारा पहनना — एक कपड़ा जो नहीं खरीदा। सिर्फ़ आपके device पर गिना जाता है।'
       },
     },
     ta: {
@@ -193,6 +205,7 @@
     wedding: function (code, L) { return t('wedding', code, L); },
     week: function (code, L) { return t('week', code, L); },
     mode: function (code, L) { return t('mode', code, L); },
+    impact: function (code, L) { return t('impact', code, L); },
     lang: lang,
   };
 })();
