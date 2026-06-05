@@ -2,6 +2,28 @@
 
 The numeric bars. If we can't measure it, we can't claim it.
 
+> **COSDF v1.1 (2026-06-05):** add the four AI Impact Score™ targets +
+> Profession Hub coverage targets + per-user Readiness Score targets.
+> Canonical spec: [COSDF.md](COSDF.md) Levels 13-23.
+
+## COSDF v1.1 — new targets
+
+| # | Metric | Target | How measured | Status |
+|---|---|---|---|---|
+| H1 | **Role coverage (Hubs live)** | 13 hardcoded + ANY-role dynamic mapping | Hub count + dynamic-role success rate | ⚠️ to build (L23) |
+| H2 | **AI Impact Score completeness** | All 4 scores (Risk/Adoption/Opportunity/Readiness) populated for 100% of hubs | `COSDF_IMPACT_DATA.json` row count vs hub count | ⚠️ to build (L13) |
+| H3 | **Per-card relevance verdict coverage** | 100% of news cards carry a 4-band verdict per profession | News-card audit | ⚠️ to build (L14) |
+| H4 | **User Readiness Score adoption** | ≥ 60% of intake-completed users see their score | Profile field: `readiness_score` populated | ⚠️ to build (L15) |
+| H5 | **Weekly Mission completion** | ≥ 40% of users who see a mission mark it complete | Mission state machine: started → completed | ⚠️ to build (L16) |
+| H6 | **Projects spec'd per profession** | ≥ 2, target 5, per profession | `PROJECTS_PER_PROFESSION.json` row count | ⚠️ to build (L17) |
+| H7 | **Jobs Radar enrichment** | 100% of news cards have `jobs_radar` field | News API contract | ⚠️ to build (L18) |
+| H8 | **Mentor Track ETA presence** | Every user with done_items > 0 sees an ETA | Mentor card render | ⚠️ to build (L19) |
+| H9 | **Community submissions/week** | ≥ 50 (post-launch) | Submission stream count | ⚠️ to build (L20) |
+| H10 | **Tool comparisons live** | ≥ 12 head-to-heads (top tools per top professions) | `COSDF_COMPARISONS.json` row count | ⚠️ to build (L21) |
+| H11 | **Forecast coverage** | All 13 hardcoded + top-30 dynamic professions | `COSDF_FORECASTS.json` row count | ⚠️ to build (L22) |
+| H12 | **Language coverage** | ≥ 100 languages (per COSDF L9) | Translation pipeline coverage | ⚠️ 26 today; needs 100+ pipeline |
+| H13 | **Accessibility modes shipped** | 7 distinct modes (Blind/Deaf/Mute/Illiterate/Blind+Deaf/Low-Vision/Cognitive) | Frontend mode switcher + cert | 🟡 2 of 7 wired (Blind+Deaf via substrate) |
+
 ---
 
 ## North-star metrics

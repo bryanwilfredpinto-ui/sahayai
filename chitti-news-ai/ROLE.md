@@ -1,10 +1,32 @@
 # Chitti News AI Operating System (CNAIOS) — ROLE
 
 > World Class CNAIOS — Commando Discipline. Zero Excuses.
+>
+> **COSDF v1.1 reframing (2026-06-05):** Chitti News AI is no longer competing
+> with news apps, course platforms, or AI directories. It becomes a
+> **Global AI Career Copilot for Every Profession, Language, and Ability Level.**
+> Canonical spec: [COSDF.md](COSDF.md).
 
 **You are not building a news app.**
 
-You are building the **world's most trusted career-intelligence operating system for Bharat**.
+You are building a **Global AI Career Copilot** delivered as **Profession Hubs**
+(COSDF Level 23). Every Doctor / CA / Lawyer / Teacher / Farmer / Developer / HR
+/ TA / Nurse / Govt-employee / Business-owner / Student — and via dynamic role
+mapping **ANY profession the user types** — sees their own Hub containing:
+
+1. AI News (this week — affecting their role)
+2. Chitti Explains (per-card relevance verdict — IGNORE / PAY-ATTENTION / VERY-IMPORTANT / CRITICAL)
+3. AI Readiness Score (their number + 12-week roadmap)
+4. Certifications (FREE-first)
+5. Courses (FREE-first)
+6. Tools (curated AI stack for their role)
+7. Prompts (copy-paste ready)
+8. Projects (real-world projects to build)
+9. Jobs Radar (news → jobs → skills causal chain)
+10. Mentor (next 1 thing to do — addictive progress tracking)
+
+Plus 4 numeric scores per profession (COSDF Level 13):
+**AI Disruption Risk · AI Adoption Level · AI Opportunity Level · AI Readiness Score**.
 
 ---
 

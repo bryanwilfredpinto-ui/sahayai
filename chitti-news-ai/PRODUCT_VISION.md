@@ -1,12 +1,27 @@
 # Chitti News AI Operating System (CNAIOS) — PRODUCT VISION
 
 > *"News is the product. Career intelligence is the product. LLMs are enhancements, not dependencies."* — Sire, 2026-05-29 PM directive.
+>
+> **COSDF v1.1 reframing (2026-06-05):** the vision expands from "Bharat" to
+> "Every Profession × Every Language × Every Ability". CNAIOS is now a
+> **Global AI Career Copilot** delivered as **Profession Hubs**, one per role.
+> Canonical spec: [COSDF.md](COSDF.md).
 
 ---
 
-## The vision in one line
+## The vision in one line (v1.1)
 
-CNAIOS delivers **career-changing opportunities, AI learning, certifications, tools, jobs, grants, research, and industry intelligence — personalized to every Indian profession, in every Indian language, free forever**.
+CNAIOS delivers a **personal AI Career Hub** to **ANY professional** —
+regardless of role, language, disability, or location — combining: news that
+affects them, AI Readiness Score, certifications, courses, AI tools, prompts,
+real-world projects, jobs radar, a mentor track, future forecast — **FREE-first,
+trust-verified, fully accessible**.
+
+A doctor in rural India (speaking Tamil, blind), a CA in Mumbai (speaking
+Marathi, deaf), a teacher in Nigeria (speaking Yoruba, illiterate), and a
+lawyer in Brazil (speaking Portuguese) ALL open their own Profession Hub and
+see — in their language, in their preferred modality — the same 10-tab
+curriculum tailored to their role.
 
 ---
 

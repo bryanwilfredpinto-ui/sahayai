@@ -1,11 +1,23 @@
-# COSDF v1.0 — CHITTI NEWS AI
+# COSDF v1.1 — CHITTI NEWS AI
 ## Complete Operating System Development Framework
 
 > **Authored:** Sire (Bryan Wilfred Pinto) — 2026-06-05
+> **v1.1 revision:** 2026-06-05 PM — added Levels 13-23 (the 10 missing layers
+> + Profession Hub architecture) per Sire's 9.8/10 enhancement directive
 > **Committed to repo:** 2026-06-05 — single source of truth, never re-litigated
 > **Supersedes:** Any prior per-Chitti spec for chitti-news-ai. Reconciles with
 > `SAHAYAI_MASTER.md` (vision) + `CHITTI_SOP.md` §7 (per-Chitti contract) +
 > `chitti-cto/CTO.md` (build rules).
+>
+> **v1.0 → v1.1 changelog:**
+> - +10 missing layers (AI Impact Score™ · Chitti Explains · Readiness
+>   Assessment · Weekly Missions · Real-World Projects · Jobs Radar · Mentor
+>   · Community Intelligence · Tool Comparison Lab · Future Forecast™)
+> - + Level 23 Profession Hub architecture (replaces flat feed-of-streams)
+> - + Final rating matrix (current 8.8/10 → 9.8/10 target with the 10 additions)
+> - Reframing: Chitti News AI is no longer competing with news apps, course
+>   platforms, or AI directories. It becomes a **Global AI Career Copilot for
+>   Every Profession, Language, and Ability Level.**
 
 ---
 
@@ -564,8 +576,375 @@ Users submit new certifications, tools, prompts for their role. Moderated, then 
 
 ---
 
-**Document Version:** 1.0
+---
+
+## LEVEL 13 — AI IMPACT SCORE™ (v1.1 Missing Layer 1)
+
+Every profession carries 4 numeric scores, computed deterministically from
+labelled task-automation data + verified industry signals (no LLM in the
+critical path; LLM may enhance phrasing only).
+
+| Score | Range | Meaning |
+|---|---|---|
+| AI Disruption Risk | 0-100% | % of current tasks automatable in 24 months |
+| AI Adoption Level | LOW/MED/HIGH | How much of the profession already uses AI |
+| AI Opportunity Level | 0-100% | New value unlocked by adding AI to this role |
+| AI Readiness Score | 0-100 | Industry maturity — tools + jobs + cert availability |
+
+### Worked examples
+
+**Chartered Accountant**
+```
+AI Risk: 82%
+  Bookkeeping:        95% automatable
+  Auditing:           70% automatable
+  Strategic Finance:  15% automatable
+Recommendation: Move toward AI-assisted audit and advisory.
+```
+
+**Farmer**
+```
+AI Risk:        10%
+AI Opportunity: 85%
+Recommendation: Use AI for
+  - Weather prediction
+  - Disease detection
+  - Fertilizer optimization
+```
+
+### Implementation contract
+- `chitti_coach.js` exposes `aiImpactScore(profession_slug)` returning the
+  4-score object + per-task breakdown + verdict.
+- Data source: `COSDF_IMPACT_DATA.json` (hand-curated, cited).
+- Updated quarterly per labour-market AI adoption reports
+  (McKinsey GenAI 2025, NASSCOM AI Skills Premium, IndiaAI labour studies).
+- Surfaced on Profession Hub (Level 23) as the top card.
+
+---
+
+## LEVEL 14 — CHITTI EXPLAINS WHY IT MATTERS (v1.1 Missing Layer 2)
+
+Every news card gets a per-profession relevance verdict, not just a Chitti's Take.
+
+### Current (insufficient)
+> *"OpenAI released X."*
+
+### v1.1 contract
+> 🤖 **Chitti Says**
+> - **Ignore** if you're a teacher
+> - **Pay attention** if you're a software developer
+> - **Very important** if you're in HR
+> - **CRITICAL** if you're in customer support
+
+### Implementation
+- 4 relevance bands: IGNORE · PAY-ATTENTION · VERY-IMPORTANT · CRITICAL
+- Computed deterministically from article topics × profession's
+  task-vulnerability vector (Level 13 data).
+- Renders on every news card under the existing `chitti_insight` line.
+
+---
+
+## LEVEL 15 — AI READINESS ASSESSMENT (v1.1 Missing Layer 3)
+
+Every user gets a personal AI Readiness Score, not just a salary band.
+
+### Worked example
+```
+Current Role:  Talent Acquisition
+AI Usage:      Low
+Prompting:     Beginner
+Automation:    None
+Score:         21/100
+
+Roadmap to 80/100:
+  Week 1-2:  Anthropic Skilljar Prompt Engineering (FREE)
+  Week 3-4:  Eightfold AI hands-on trial
+  Week 5-6:  LinkedIn Talent Insights certification
+  Week 7-8:  Build: Interview Question Generator (Project Layer 5)
+  Week 9-12: SHRM AI in HR Specialty Credential
+```
+
+### Implementation
+- Extends intake from 5 questions to 8:
+  - existing: profession · experience · current_skills · goal · hours_per_week
+  - **NEW**: ai_usage (None/Low/Med/High) · prompting (Beginner/Int/Adv/Expert) · automation (None/Some/Many)
+- `aiReadinessScore(profile)` returns 0-100 + 3-segment roadmap.
+- Surfaced on Profession Hub as the second card after Impact Score.
+
+---
+
+## LEVEL 16 — WEEKLY LEARNING MISSIONS (v1.1 Missing Layer 4)
+
+Replace "take this 50-hour course" (low completion) with a 30-minute weekly
+mission (high completion).
+
+### Mission card contract
+```
+📋 THIS WEEK'S MISSION (chosen for: Talent Acquisition)
+
+Watch:     LinkedIn Recruiter AI demo                 15 min
+Read:      Hung Lee: Recruiting Brainfood newsletter   5 min
+Practice:  Write a Boolean → AI-rewritten prompt        5 min
+Try:       Free Eightfold trial — paste 1 JD            5 min
+
+Total commitment: 30 minutes this week.
+
+[ Start Mission ]   [ Skip ]
+```
+
+### Implementation
+- 1 mission/week per profession × user level (auto-rotates)
+- Mission slot fields: watch (1 YT link 15 min) · read (1 article 5 min) ·
+  practice (1 prompt 5 min) · try (1 tool 5 min)
+- Stored as `MISSIONS[profession][week_offset]` in chitti_coach.js
+- Marked complete → contributes +5 to AI Readiness Score
+- Renders as 4th card on Profession Hub
+
+---
+
+## LEVEL 17 — REAL WORLD PROJECTS (v1.1 Missing Layer 5)
+
+Courses don't create careers. Projects do. Each profession ships with
+2-5 buildable AI projects + starter repos.
+
+### Per-profession examples (the spec)
+| Profession | Project to build |
+|---|---|
+| HR | Interview Question Generator |
+| Teacher | Lesson Planner |
+| Lawyer | Contract Summarizer |
+| Farmer | Crop Disease Advisor (camera → diagnosis) |
+| Doctor | Differential Diagnosis Helper |
+| Accountant | Expense Anomaly Detector |
+| Talent Acquisition | Resume → JD Match Scorer |
+| Govt Employee | Multi-language Citizen Reply Drafter |
+| Business Owner | Customer Support FAQ Bot |
+| Software Developer | Codebase RAG Q&A |
+| Nurse | Discharge-summary Auto-Drafter |
+| Student | Personal Tutor for Exam Prep |
+
+### Project card contract
+- title · what-you-build · stack (which gold tool from Coach Picks) ·
+  difficulty · estimated_hours · starter_repo_url · sample_demo_url
+- Completing a project = +20 to AI Readiness Score + +1 portfolio entry
+- Renders as a tab inside Profession Hub.
+
+---
+
+## LEVEL 18 — AI JOBS RADAR (v1.1 Missing Layer 6)
+
+Connect news → learning → jobs in a single causal chain. No competitor does this.
+
+### Worked example
+```
+News:    AI adoption in healthcare ↑ 30% (Q1 2026)
+Jobs:    Radiology AI, Medical Coding AI, Clinical Documentation
+Skills:  Clinical decision support, NCCN AI, AI radiology basics
+Course:  Stanford AI for Healthcare (Coursera audit FREE)
+Cert:    WHO Academy AI for Health (FREE)
+Tool:    Aidoc, Abridge, Suki AI
+Project: Build a SOAP-note auto-drafter prototype
+```
+
+### Implementation
+- Every news article in `/api/news-ai/feed/news` gets an enriched
+  `jobs_radar` field listing: affected_roles[], unlocked_certs[], unlocked_tools[]
+- Rendered as a Radar panel on each Profession Hub (4th tab)
+- Stored as deterministic map in `JOBS_RADAR_DATA.json`
+
+---
+
+## LEVEL 19 — CHITTI MENTOR (v1.1 Missing Layer 7)
+
+Move from "course recommendation" to addictive progress tracking.
+
+### Mentor card contract
+```
+🎓 Your Mentor Says
+
+You completed:        2 courses
+You skipped:          4
+Progress:             18%
+At this pace:         AI readiness in 14 months
+
+Recommended next:     Prompt Engineering (1 week)
+
+[ Pick up here ]
+```
+
+### Implementation
+- Reads existing `profile.done_items` + `skipped_items` + `in_progress`
+- Estimates time-to-target-readiness as: (target - current) / weekly_velocity
+- Renders the next 1 item, never 30 (anti-paralysis discipline)
+- Surfaced as 5th card on Profession Hub
+
+---
+
+## LEVEL 20 — COMMUNITY INTELLIGENCE (v1.1 Missing Layer 8)
+
+Crowdsourcing becomes the moat. Users submit prompts, courses, tools, certs,
+use cases; moderated; ranked.
+
+### Submission contract
+- Anyone with a profile can submit: {type, title, url, profession, what-it-does, why-useful}
+- Submissions enter Pending → moderated (Trust Agent checks: real URL,
+  no spam, profession match) → promoted to "Most Useful For [Profession]" panel
+- "Most Useful For" panel shows top-5 community-submitted items per profession,
+  ordered by 👍 votes from same-profession users
+
+### Implementation
+- New stream type: `community_pick`
+- Frontend: `📥 Submit` button on every page; modal with 5 fields
+- Backend: `/api/news-ai/community/submit` (rate-limited; later: human review)
+- Phase 1: localStorage-staged submissions awaiting Sire's moderation
+- Phase 2: Turso-backed once `turso auth login` lands
+
+---
+
+## LEVEL 21 — AI TOOL COMPARISON LAB (v1.1 Missing Layer 9)
+
+Side-by-side comparisons for the hard decisions.
+
+### Worked examples
+```
+Harvey vs CoCounsel  (for Lawyers)
+                Harvey      CoCounsel
+Price:          Enterprise  ₹2L/yr starter
+Accuracy:       Higher      High
+Legal Research: ★★★★★      ★★★★
+Contract Rev:   ★★★★       ★★★★★
+Winner (small firm):  CoCounsel
+Winner (BigLaw):      Harvey
+```
+
+```
+ChatGPT vs Claude vs Gemini  (per profession)
+                 ChatGPT  Claude   Gemini
+For Teachers:    ★★★★    ★★★★★   ★★★★★
+For HR:          ★★★★    ★★★★★   ★★★★
+For Doctors:     ★★★★    ★★★★★   ★★★★
+```
+
+### Implementation
+- `COSDF_COMPARISONS.json` — hand-curated head-to-head matrices
+- Each comparison: tool_a, tool_b, dimensions[], score_per_dimension, verdict_per_persona
+- Rendered as a Comparison panel inside Profession Hub (6th tab)
+- Updated monthly; "as of YYYY-MM" stamp visible
+
+---
+
+## LEVEL 22 — CHITTI FUTURE FORECAST™ (v1.1 Missing Layer 10)
+
+Per-profession 3-year AI trajectory. Nobody has this.
+
+### Worked example
+```
+Teacher
+
+2026:  AI Tutor adoption        — Risk: Low      Opportunity: High
+2027:  Automated grading        — Risk: Low      Opportunity: Very High
+2028:  Personalised curriculum  — Risk: Medium   Opportunity: Very High
+
+Verdict: STRONG OPPORTUNITY — teachers who adopt AI become curriculum leads.
+```
+
+Same forecast structure for: Doctor · Lawyer · CA · HR · Farmer · Developer ·
+Architect · Mechanic · Nurse · Govt Employee · Business Owner · Student
+(+ ANY role per Level 23 dynamic mapping).
+
+### Implementation
+- `COSDF_FORECASTS.json` — per-profession 3-year roadmap (cited from
+  McKinsey GenAI Outlook + Gartner Future of Work + WEF Future of Jobs)
+- Rendered as a Forecast panel inside Profession Hub (7th tab)
+- Quarterly refresh
+
+---
+
+## LEVEL 23 — PROFESSION HUB ARCHITECTURE (the BIGGEST change)
+
+### Before (v1.0): Flat feed-of-streams
+```
+[Tabs] AI News · Tools · Bharat AI · Prashikshan · Certs · Tools+ · Jobs ·
+       Schemes · Roadmaps · YouTube · People · Free Resources · My Coach ·
+       Coach Picks · Skip This
+```
+User picks a profession from a dropdown; same flat tabs filter.
+
+### After (v1.1): Hub-per-profession
+```
+[Pick a role] → DOCTOR HUB
+  ├── 1. AI News              (this week's news that affects YOU)
+  ├── 2. Chitti Explains      (per-card relevance verdict)
+  ├── 3. AI Readiness Score   (your number + roadmap)
+  ├── 4. Certifications       (FREE-first, ranked)
+  ├── 5. Courses              (FREE-first, ranked)
+  ├── 6. Tools                (curated stack for your role)
+  ├── 7. Prompts              (copy-paste-ready)
+  ├── 8. Projects             (build to learn)
+  ├── 9. Jobs Radar           (news → jobs → skills)
+  └── 10. Mentor              (next 1 thing to do)
+```
+
+### Hubs to ship (Phase 1)
+13 hardcoded hubs first (matches current professions):
+Doctor · Oncologist · Nurse · CA / Accountant · Lawyer · Teacher ·
+Software Developer · Talent Acquisition · HR Professional · Farmer ·
+Government Employee · Business Owner · Student
+
+### Hubs to ship (Phase 2)
+**ANY-role hub** via dynamic mapping (per Level 6 Agent 1):
+User types "Veterinarian" → Hub auto-assembles using:
+- Mapped domain (veterinary medicine → healthcare adjacent)
+- Mapped tools (filter Tools stream by veterinary keywords)
+- Mapped courses (filter Course stream by veterinary keywords)
+- Mapped jobs (filter Jobs stream by veterinary keywords)
+- Default Impact Score template + per-task overrides if known
+
+### Implementation
+- New page: `chitti_hub.html` (or `?hub=doctor` query on existing page)
+- Hub layout: 10 tabs inside the hub, each populated from existing streams
+  + new layers (Impact / Readiness / Mission / Projects / Mentor / Comparison
+  / Forecast)
+- Profession picker becomes a Hub picker (with search for ANY role)
+- Old flat-tab UI deprecated; old tabs accessible under "Browse all"
+
+### Persistence
+- `profile.active_hub` added to schema (default: profile.profession)
+- Switching hub re-renders all 10 sections from the corpus + new layers
+
+---
+
+## LEVEL 24 — FINAL RATING (v1.1)
+
+| Area | Current (v1.0) | With v1.1 (10 additions + Hub) |
+|---|---:|---:|
+| Accessibility | 10/10 | 10/10 |
+| Vision | 10/10 | 10/10 |
+| Swarm Design | 9/10 | 10/10 (Risk/Readiness/Mission/Project/Mentor/Comparison/Forecast/Community agents) |
+| Trust Model | 9/10 | 9.5/10 |
+| Learning Engine | 8/10 | 10/10 (Missions + Projects + Mentor) |
+| Personalization | 8/10 | 10/10 (Per-user Readiness + per-card Relevance) |
+| Career Outcomes | 7/10 | 9.5/10 (Jobs Radar + Future Forecast + Real Projects) |
+| Competitive Moat | 8/10 | 10/10 (Community Intelligence + Forecast + Hubs) |
+
+| Overall | Score |
+|---|---:|
+| **Current COSDF v1.0** | **8.8 / 10** |
+| **With v1.1 additions** | **9.8 / 10** |
+
+At v1.1, Chitti News AI is no longer competing with:
+- News apps (Inshorts / Google News)
+- Course platforms (Coursera / UpGrad)
+- AI directories (There's An AI For That)
+
+It becomes a **Global AI Career Copilot for Every Profession, Language,
+and Ability Level**.
+
+---
+
+**Document Version:** 1.1
 **Prepared for:** Chitti News AI OS Development
 **Classification:** COSDF Internal Framework
 
-> **"Chitti News AI — ANY role. ANY language. EVERY person."**
+> **"Chitti News AI — ANY role. ANY language. EVERY person.
+> ANY readiness level. ANY future."**

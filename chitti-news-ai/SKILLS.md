@@ -2,6 +2,27 @@
 
 The capabilities every CNAIOS contributor (human or agent) must master.
 
+> **COSDF v1.1 (2026-06-05):** the 7 skills below extend to 15 with the 10
+> missing layers. Canonical spec: [COSDF.md](COSDF.md) Levels 13-23.
+
+---
+
+## COSDF v1.1 — NEW skills (to build)
+
+| Skill | What it does | How (rules-only) |
+|---|---|---|
+| **Impact Scoring** (L13) | Compute 4 numeric scores per profession (Disruption Risk / Adoption / Opportunity / Readiness) | `COSDF_IMPACT_DATA.json` hand-curated from McKinsey + NASSCOM + WEF reports; `aiImpactScore(prof_slug)` returns the bundle |
+| **Per-card Relevance** (L14) | For every news article, return one of 4 verdicts per profession (IGNORE / PAY-ATTENTION / VERY-IMPORTANT / CRITICAL) | Deterministic mapping: article.topics × profession's task-vulnerability vector |
+| **Readiness Assessment** (L15) | 0-100 personal AI Readiness Score + 12-week roadmap | Intake captures ai_usage / prompting / automation; rules compute score + sequence existing items into 12-week plan |
+| **Mission Generation** (L16) | Build a 30-min weekly mission: watch + read + practice + try | Select 1 video + 1 article + 1 prompt + 1 tool from corpus per (profession, week_offset) |
+| **Project Recommendation** (L17) | Suggest 2-5 buildable AI projects per profession with starter repos | Curated `PROJECTS_PER_PROFESSION.json` with stack + difficulty + sample_demo_url |
+| **Jobs Radar Linking** (L18) | Connect news article → affected job roles → required certs → unlocked tools → buildable project | Enrich `/api/news-ai/feed/news` items with `jobs_radar` field; deterministic map per topic |
+| **Mentor Track** (L19) | Read profile, compute time-to-target-readiness, surface 1 next item (never 30) | `velocity = done/weeks_active`; `eta = (target - current) / velocity`; pick highest-score unstarted gold item |
+| **Tool Comparison** (L21) | Side-by-side head-to-head with verdict per persona | Curated `COSDF_COMPARISONS.json`; renders matrix + winner per persona |
+| **Future Forecast** (L22) | Per-profession 3-year trajectory with verdict | Curated `COSDF_FORECASTS.json` from WEF Future of Jobs + Gartner + McKinsey |
+| **Community Moderation** (L20) | Accept submissions, route to moderator, promote to "Most Useful For [Profession]" | Submission flow + Pending → Approved state machine + 👍 ranking by same-profession users |
+| **Dynamic Role Mapping** (L23) | ANY role user types → mapped to domain + tools + courses + certs + jobs | Keyword + alias dictionary; falls back to "general AI for [your role]" if no specific mapping |
+
 ---
 
 ## Skill 1 — Profession Classification (rules-only)

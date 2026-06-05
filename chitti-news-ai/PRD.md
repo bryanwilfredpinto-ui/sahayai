@@ -1,8 +1,27 @@
 # Chitti News AI — Product Requirements (PRD)
 
-**Version:** v0.3.0 (2026-05-29) · **Status:** v0.3 doctrine LIVE; PRD parity audit complete.
+**Version:** v0.3.0 (2026-05-29) · **PRD v1.1 (2026-06-05): expanded for COSDF v1.1 — 10 new features + Profession Hub architecture.**
+**Status:** v0.3 doctrine LIVE; PRD v1.1 features N6-N15 spec'd; Profession Hub architecture spec'd.
 
-Cross-references: [ROLE.md](ROLE.md) · [PRODUCT_VISION.md](PRODUCT_VISION.md) · [PERSONAS.md](PERSONAS.md) · [CHITTI_NEWS_AI_MASTER_SPEC.md](../CHITTI_NEWS_AI_MASTER_SPEC.md) v0.3 · [PHASE_0_BENCHMARK.md](PHASE_0_BENCHMARK.md).
+Cross-references: [COSDF.md](COSDF.md) (canonical) · [ROLE.md](ROLE.md) · [PRODUCT_VISION.md](PRODUCT_VISION.md) · [PERSONAS.md](PERSONAS.md) · [CHITTI_NEWS_AI_MASTER_SPEC.md](../CHITTI_NEWS_AI_MASTER_SPEC.md) v0.3 · [PHASE_0_BENCHMARK.md](PHASE_0_BENCHMARK.md).
+
+---
+
+## COSDF v1.1 Features (added 2026-06-05) — to build
+
+| Feature | Status | COSDF Level | One-line |
+|---|---|---|---|
+| N6 — AI Impact Score™ (4 scores per profession) | spec'd | L13 | Disruption Risk · Adoption · Opportunity · Readiness |
+| N7 — Chitti Explains relevance (per-card verdict) | spec'd | L14 | IGNORE / PAY-ATTENTION / VERY-IMPORTANT / CRITICAL per profession |
+| N8 — Personal AI Readiness Score + roadmap | spec'd | L15 | 0-100 score, 12-week roadmap to 80/100 |
+| N9 — Weekly Learning Missions (30 min) | spec'd | L16 | watch/read/practice/try — completion-optimised |
+| N10 — Real World Projects (2-5 per profession) | spec'd | L17 | starter repos + sample demos — courses don't create careers, projects do |
+| N11 — AI Jobs Radar (news → jobs → skills) | spec'd | L18 | causal chain nobody else has |
+| N12 — Chitti Mentor (addictive progress) | spec'd | L19 | "you completed 2, skipped 4, AI-ready in 14 months" |
+| N13 — Community Intelligence (submission flow) | spec'd | L20 | users submit prompts/courses/tools/certs → moderated → ranked |
+| N14 — AI Tool Comparison Lab (Harvey vs CoCounsel etc.) | spec'd | L21 | side-by-side decisions |
+| N15 — Future Forecast™ (3-year per profession) | spec'd | L22 | 2026/2027/2028 trajectory + verdict |
+| **N16 — Profession Hub architecture** | spec'd | **L23** | **replace flat-tab feed with hub-per-role (10 tabs inside each hub); dynamic mapping for ANY role typed** |
 
 ---
 

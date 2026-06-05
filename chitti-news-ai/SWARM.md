@@ -4,6 +4,42 @@ Inherits the platform-wide [SAHAYAI_MASTER §2f Swarm Intelligence contract](../
 
 > *"Every Chitti of the same type learns from every other Chitti of the same type. Anonymised → pattern detect → ≥100 confirmations → human review → push to skills/*.md → all instances benefit."*
 
+> **COSDF v1.1 (2026-06-05):** the existing 7-agent swarm extends to a
+> per-request 8-agent swarm (Role-Mapping → Cert → Course → Tool → Prompt →
+> Accessibility → Trust & Quality → Language) PLUS 10 v1.1 background agents
+> for the new layers. Canonical spec: [COSDF.md](COSDF.md) Levels 6 + 13-22.
+
+## COSDF v1.1 — Per-request 8-agent SWARM
+
+Every user request passes through all 8 agents (per [COSDF.md Level 6](COSDF.md)):
+
+1. **Role Mapping Agent** — ANY role → mapped domain/tools/keywords (L23)
+2. **Certification Agent** — verified certs for that role, FREE-first
+3. **Course Agent** — free courses, difficulty-tagged
+4. **Tool Agent** — AI tools relevant to that role with use-case examples
+5. **Prompt Agent** — curated copy-paste-ready prompts (L17 PROMPT_LIBRARY)
+6. **Accessibility Agent** — adapts output for blind/deaf/illiterate/mute/blind+deaf/low-vision/cognitive
+7. **Trust & Quality Agent** — verifies real links, no fake certs, FREE-first compliance
+8. **Language Agent** — translates output to user's selected language (100+)
+
+## COSDF v1.1 — Background agents (new layers)
+
+| Agent | Role | Runs |
+|---|---|---|
+| **Impact Score Agent** (L13) | Computes 4 scores per profession; updates quarterly | Quarterly cron + on-demand |
+| **Relevance Agent** (L14) | Tags every news article with 4-band relevance per profession | On ingest |
+| **Readiness Agent** (L15) | Computes user's 0-100 score + 12-week roadmap | On intake change + weekly |
+| **Mission Agent** (L16) | Builds the 30-min weekly mission per profession × week | Weekly cron |
+| **Project Agent** (L17) | Surfaces 2-5 buildable projects per profession | On Hub render |
+| **Jobs Radar Agent** (L18) | Links news → jobs → certs → tools → projects | On ingest |
+| **Mentor Agent** (L19) | Reads profile, surfaces next 1 item, estimates ETA | On Hub render |
+| **Community Moderation Agent** (L20) | Routes submissions to Pending → Approved | On submission |
+| **Comparison Agent** (L21) | Renders head-to-head matrix per persona | On request |
+| **Forecast Agent** (L22) | Renders 3-year per-profession trajectory | Quarterly cron + on Hub render |
+
+All agents are **rules-only** (per CLAUDE.md fail-open contract). LLM may
+enhance phrasing but is never in any critical path.
+
 ---
 
 ## Signals collected (anonymised)
