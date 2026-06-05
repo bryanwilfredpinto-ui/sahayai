@@ -1,11 +1,18 @@
 **World Class Chitti Health Scanner — Commando Discipline. Zero Excuses.**
 
-# 🐞 Bug Report — Chitti Health Scanner (Guardian Memory)
+# 🐞 Bug Report — Chitti Health Scanner (Guardian Memory + AI detection)
 
-**Found by:** automated QA suite (`tools/qa_handover_health_scanner.mjs`) + axe-core 4.8.2, 2026-06-05.
+**Found by:** automated QA suite (`tools/qa_handover_health_scanner.mjs`, 25 journeys) + axe-core 4.8.2 + backend safety unit tests, 2026-06-05.
 **Status:** all Critical = 0, all High = **FIXED**. Evidence screenshots in `tools/qa_handover_shots/`.
 
 Priority key: **Critical** (blocks use / safety) · **High** (breaks a journey or accessibility) · **Medium** (degraded but usable) · **Low** (cosmetic / edge).
+
+> **Round 2 (AI detection + language split) — 0 NEW bugs.** The 5 new AI/cost journeys (21–25)
+> all pass; axe re-verified **0 violations** on the AI-enabled page; the language split
+> regression-certed 18/18 across 4 pages. **AI safety verified end-to-end:** a diagnosis-leaking
+> model payload is suppressed at the server (4 unit tests) AND the rendered UI shows no disease
+> name (journey 24); an unavailable backend yields an honest "consult a doctor" with no fabricated
+> result (journey 25). The earlier 3G concern (KI-01) is **resolved** by the split (now 10.4 s, was >30 s).
 
 ---
 

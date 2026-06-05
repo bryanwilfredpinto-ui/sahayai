@@ -18,14 +18,15 @@
 | **KI-10** | **AI analysis is a paid call** (~₹0.05–0.10/scan) | 🔵 By design | Every AI scan | **User bears the cost** (cost-disclosure gate before first scan + "don't ask 24 h"); saving to memory is free. Documented in-app + handover. | — (working as intended) |
 | **KI-08** | No `fetch` timeout/retry wrapper for `/api/health-scanner/*` | 🟡 Medium | Not today (local-first; no scanner call is critical) | n/a (no critical network call) | Add **before** AI analysis ships (it will be network-critical). |
 | **KI-09** | No multi-device sync of the local health memory | 🟢 Low | User switches devices | Save to Chitti Health File (durable, multi-device) | Health File write-back + sync. |
+| **KI-11** | **Lazy language packs** — first switch to a language fetches its ~170 KB pack | 🟢 Low | The **first** time a session switches to a given language (or first paint for non-English) | English shows for ~100–300 ms until the pack lands, then the chosen language; the runtime **background-preloads** the rest so later switches are instant. **Not flicker** (no flip-back). | Inline a tiny "above-the-fold" pack, or hide body until first translate — only if real-device testing shows it's noticeable. |
 
 ---
 
 ## Specifically requested checks (honest answers)
 
-- **Malayalam / Tamil / Telugu flicker:** **NONE detected.** Sampled a translating element at 0/60/200/300 ms after each switch — value settles once, never flips back to English. Rapid 10× switching in ~1.8 s: no flicker, no errors. (If a specific device shows flicker, capture it and we'll repro — none was reproducible here.)
-- **Any other languages with issues:** none functionally; all 9 primary at 97–98% coverage, no Hinglish. Urdu is **not** on this page's dropdown (it's in the 26-language substrate) — by design, documented.
-- **Performance bottlenecks:** one — KI-01 (the i18n dictionary: 16 MB raw but **2.0 MB brotli / 3.3 MB gzip** as actually served by GitHub Pages). My initial "30 s on 3G" was measured against an **uncompressed** local server and overstated it; corrected here. Everything else is within target (load ~1 s, switch 103 ms, heap 23 MB).
+- **Malayalam / Tamil / Telugu flicker:** **NONE detected.** Sampled a translating element at 0/60/200/300 ms after each switch — value settles once, never flips back to English. Rapid 10× switching in ~2.5 s: no flicker, no errors. **Post-split nuance (KI-11):** the *first* switch to a language briefly shows English until its lazy pack loads (~100–300 ms) — a one-time load, not flicker.
+- **Any other languages with issues:** none functionally; all 9 primary reach **95–98%** coverage (the per-switch measure can read lower if sampled before the lazy pack finishes — KI-11), no Hinglish. Urdu is **not** on this page's dropdown (it's in the 26-language substrate) — by design, documented.
+- **Performance bottlenecks:** KI-01 (the 16 MB i18n monolith) is **RESOLVED** — split into a 14 KB runtime + per-language packs. Load **617 ms**, JS heap **10 MB** (was 23 MB), switch **95 ms**, 3G **10.4 s** (was >30 s). The AI analysis adds one paid DeepSeek-vision call per scan (live latency pending funded key).
 - **Feature limitations:** AI detection is **built but non-diagnostic** (visible features + urgency, never a disease) and returns `unavailable` until the LLM key is funded (KI-07); it is a **paid, user-borne** call (KI-10); local-first = single-device until Health File sync (KI-09).
 
 ## Not tested in this environment (honest)

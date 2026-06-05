@@ -14,20 +14,26 @@
 
 | Section | Result |
 |---|---|
-| **A1 — 20 user journeys** | **20 / 20 PASS** |
-| **A2 — edge cases (7)** | **6 / 7 PASS** (1 = the documented 16 MB-i18n 3G load issue, KI-01) |
-| **A3 — viewports (375/768/1440 + mobile emulation)** | **4 / 4 PASS** (0 px horizontal overflow) |
-| **A4 — accessibility (axe-core)** | **0 violations** (contrast + landmark fixed) |
-| **A5 — 9 languages + flicker** | **9 / 9** 97–98% coverage · **0 flicker detected** |
-| **A6 — regression cert** | Health Scanner **18/18**, Fashion **18/18** GREEN; 2wheeler/4wheeler 16/18 (pre-existing, unrelated — see Known Issues KI-06) |
-| **A7 — performance** | load **~1.0 s** local · JS heap **23 MB** · lang switch **103 ms** — all within targets (3G full-load = KI-01) |
-| **Cross-engine** | Chromium ✅ · WebKit/Safari-engine ✅ (functional) · Firefox/Gecko ✅ |
+> **Round 2 — 2026-06-05 (AI detection added).** Re-run after the AI visual analysis,
+> cost-disclosure gate, and the 16 MB→14 KB language-split shipped. 5 new AI/cost journeys
+> added (21–25). Numbers below are this round.
 
-**Overall functional pass rate: 100% of product journeys (20/20).** The single edge "fail" (slow-3G full load) is a platform-wide bottleneck (the 16 MB shared i18n file), documented with workaround — the page is interactive at DOMContentLoaded (~1 s).
+| **A1 — 25 user journeys** (20 core + 5 AI/cost) | **25 / 25 PASS** |
+| **A2 — edge cases (7)** | **7 / 7 PASS** (slow-3G now **10.4 s** — the language split fixed KI-01) |
+| **A3 — viewports (375/768/1440 + mobile emulation)** | **4 / 4 PASS** (0 px horizontal overflow) |
+| **A4 — accessibility (axe-core)** | **0 violations** (re-verified on the AI-enabled page) |
+| **A5 — 9 languages + flicker** | **9 / 9** — eventual 95–98% coverage · **0 flicker**; brief first-switch pack-load (lazy-split), see A5 note |
+| **A6 — regression cert** | Health Scanner **18/18**, Fashion **18/18**, MedUPI **18/18**, Health File **18/18** GREEN; 2-/4-wheeler 16/18 (pre-existing, unrelated — KI-06) |
+| **A7 — performance** | load **617 ms** · JS heap **10 MB** · lang switch **95 ms** · 3G **10.4 s** — all within targets (the split cut load + memory) |
+| **Cross-engine** | Chromium ✅ · WebKit/Safari-engine ✅ · Firefox/Gecko ✅ (core render+journey+lang; AI/cost UI is standard DOM/fetch) |
+
+**Overall functional pass rate: 100% (25/25 journeys, 7/7 edge).** The language split (16 MB→14 KB runtime + per-language packs) resolved the prior 3G bottleneck and cut JS heap 23 MB→10 MB.
+
+**AI-detection safety verified:** journey 24 asserts the rendered AI result shows an observation + confidence + urgency + "not a diagnosis" and **no disease name leaks**; journey 25 asserts an unavailable backend shows an honest "consult a doctor" with **no fabricated confidence/result**. Backend safety-envelope unit tests (diagnosis-leak suppression, red-flag escalation, confidence clamp, no-key→unavailable) all pass.
 
 ---
 
-## A1. User journeys (20) — all timed, all PASS
+## A1. User journeys (25) — all timed, all PASS
 
 | # | Journey | Result | ~Time |
 |---|---|---|---|
@@ -51,18 +57,23 @@
 | 18 | Forget pending photo → result closes, nothing saved | ✅ | ~6 s |
 | 19 | Listen (speaker) — no error | ✅ | ~3.4 s |
 | 20 | Per-response widget on result box (data-chitti-response + feedback bar) | ✅ | ~3.9 s |
+| **21** | **Cost gate shown before first AI scan** (shows ₹ amount) | ✅ | ~4.4 s |
+| **22** | **Cost "Cancel" aborts** — no camera, no scan | ✅ | ~5.8 s |
+| **23** | **"Don't ask again for 24 hours" suppresses** the gate on the 2nd scan | ✅ | ~7.8 s |
+| **24** | **AI result renders SAFE** — observation + confidence + urgency chip + "not a diagnosis"; **no disease name** | ✅ | ~5.9 s |
+| **25** | **AI unavailable → honest "consult a doctor"**, no fabricated result/confidence | ✅ | ~5.8 s |
 
 *Console note:* the only console message during journeys is a **localhost CORS** line for `chitti-vaani-api/health` — a same-origin artifact of testing on `127.0.0.1`; production allows `https://sahayai.in` (verified earlier). It is **not a page error** and does not affect any journey.
 
-## A2. Edge cases & breakage (6/7)
+## A2. Edge cases & breakage (7/7)
 
 | Case | Result | Detail |
 |---|---|---|
-| No internet (offline) | ✅ | Local-first: capture→save→memory works fully offline. |
-| Slow 3G full load | ⚠️ | The local test server sent `chitti_lang.js` **uncompressed (16 MB)** → `load` timed out >30 s. **Corrected:** production (GitHub Pages) serves it **brotli ~2 MB / gzip ~3.3 MB**, so the real 3G transfer is far smaller (≈10 s Fast-3G). Still the heaviest asset (KI-01); fix = split the i18n dict (platform-wide). Reclassified Medium. |
+| No internet (offline) | ✅ | Local-first: capture→save→memory works fully offline. AI analysis honestly shows "unavailable — consult a doctor" (never fabricated). |
+| Slow 3G full load | ✅ | **Now passes — 10.4 s** (was a >30 s timeout). The **language split** (16 MB→14 KB runtime + lazy per-language packs) fixed KI-01: a page loads the 14 KB runtime + only the active pack. |
 | Corrupted image upload | ✅ | Non-image bytes → graceful result, no crash. |
-| Large ~9 MB image | ✅ | Handled in ~3.8 s, no crash. |
-| Rapid language switch (10× in <5 s) | ✅ | 10 switches in ~1.8 s, final state correct, **no errors, no flicker**. |
+| Large ~9 MB image | ✅ | Handled (~10 s under 3G throttle), no crash. |
+| Rapid language switch (10× in <5 s) | ✅ | 10 switches in ~2.5 s, final state correct, **no errors, no flicker**. |
 | localStorage disabled (Safari private) | ✅ | Page renders + degrades (fixed — all page storage now guarded). |
 | JavaScript disabled | ✅ | Static content + medical disclaimer + 13 cards render; interactivity requires JS (documented, expected). |
 
@@ -100,6 +111,7 @@
 | Bengali | 98% | ~1.7 s | **none** |
 | Gujarati | 98% | ~1.5 s | **none** |
 
+- **Round 2 (post-split) note:** with lazy per-language packs, switching to a language for the **first time** fetches its pack (~170 KB brotli, ~100–300 ms) — the chrome shows English until the pack lands, then the chosen language. This is **not flicker** (it does not flip back), and the runtime **background-preloads** the other packs after first paint so subsequent switches are instant. The per-switch coverage measure can read **82–98%** depending on whether the pack finished loading inside the ~300 ms sample window; eventual coverage is **95–98%** (same as pre-split). No regression in translated content.
 - **Flicker check (the specific Tamil/Telugu/Malayalam concern): NO flicker detected.** A translating element was sampled at 0/60/200/300 ms after each switch — the value settles once and does not flip back to English. The rapid-switch stress (10×) also showed no flicker and no errors.
 - The ~2–3% residual per language is intentional brand/technical English (Chitti, DeepSeek, AES-256-GCM…) plus widget-owned labels, and the long "golden line" which honestly Hindi-falls-back for non-Hindi (per the Voice-Strategy contract). **No Hinglish.**
 - **Urdu:** not in this page's primary 9-language selector (the page exposes the **Vaani 9**: en/hi/ta/te/bn/mr/gu/kn/ml). Urdu lives in the 26-language substrate (voice-out + dictionary), not the on-page dropdown — documented, not a defect.
@@ -113,11 +125,12 @@
 
 | Metric | Target | Measured | Verdict |
 |---|---|---|---|
-| Page load (local) | — | DOMContentLoaded ~1.0 s, load ~1.1 s | ✅ fast |
-| Page load on 3G | < 3 s | uncompressed-local-test >30 s; **prod-served brotli ~2 MB ≈ 10 s Fast-3G** | ⚠️ KI-01 (Medium); fix = split i18n |
-| Language switch | < 1 s | **103 ms** | ✅ |
+| Page load (local) | — | DOMContentLoaded **617 ms**, load **844 ms** | ✅ faster (split removed the 16 MB inline dict) |
+| Page load on 3G | < 3 s | **10.4 s** Fast-3G (14 KB runtime + one ~170 KB pack) | ⚠️ much improved vs >30 s; > 3 s target driven by the pack + page assets |
+| Language switch | < 1 s | **95 ms** (loaded lang) | ✅ |
 | Image capture/save | < 5 s | sub-second real work (measured value includes deliberate test delays) | ✅ |
-| Memory usage | < 100 MB | **23 MB** JS heap | ✅ |
+| Memory usage | < 100 MB | **10 MB** JS heap (was 23 MB pre-split) | ✅ |
+| AI analysis call | — | one paid DeepSeek-vision call/scan (~₹0.05–0.10) — live latency pending funded key | ⏳ verify on deploy |
 
 ---
 

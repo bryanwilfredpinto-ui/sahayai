@@ -36,11 +36,21 @@
    ┌────────────▼───────────────────────────────────────────────┐
    │ BACKEND — chitti-medupi-api (Flask, Railway)                │
    │ /api/health-scanner/  health(200) · scan-types(200)         │
-   │   analyze(501 coming_soon) · save-to-timeline(200/501)      │
-   │   timeline(local_first) · compare(501)                      │
-   │ Turso libSQL via direct-HTTPS shim · DeepSeek (NOT yet used)│
+   │   analyze(200) → DeepSeek-vision, NON-DIAGNOSTIC + SAFETY    │
+   │     ENVELOPE (services/health_scanner_analyze.py); honest    │
+   │     "unavailable" if no key — never fabricates               │
+   │   save-to-timeline(200/501) · timeline(local_first) ·        │
+   │   compare(501)                                               │
+   │ Turso libSQL via direct-HTTPS shim · DeepSeek-vision (USED)  │
    └─────────────────────────────────────────────────────────────┘
 ```
+
+> **AI analysis flow (2026-06-05):** capture → cost-disclosure gate (user bears ~₹0.05–0.10/scan)
+> → Golden-Rule camera confirm → `POST /analyze` (image as base64) → DeepSeek-vision describes
+> only visible features → **server-side safety envelope** suppresses any disease name / diagnostic
+> certainty (red-flag → seek_care; confidence clamped ≤95; disclaimer + skin-tone caveat always
+> appended) → safe JSON → frontend renders it (observation text is `escapeHtml`-ed). No image is
+> stored server-side by `/analyze`; persistence is the user's explicit Save-to-Health-File action.
 
 **Primary data flow (today):** `camera/upload → dataURL → localStorage (on device)`. **No health image
 leaves the device** unless the user explicitly saves it to Chitti Health File (encrypted) or sends a
@@ -82,7 +92,7 @@ deliberate `501 coming_soon`.
 | GitHub Pages | static hosting | CDN; outage → Cloudflare mirror (P2, platform) | n/a |
 | Railway (`chitti-medupi-api`) | scanner stub endpoints | scanner is local-first → **page fully works if API is down** | self-ping keep-alive; no per-call retry needed (no critical call) |
 | Turso libSQL | (only when saving to Health File) | Health File path handles; scanner unaffected | direct-HTTPS shim, keepalive |
-| DeepSeek | **not used yet** (analysis gated) | n/a today; Layer-5 DeepSeek→Claude→Gemini chain applies when it lands | to be set when AI ships |
+| **DeepSeek (vision)** | **NOW USED** — `/analyze` calls DeepSeek-vision for the non-diagnostic observation (one paid call/scan, ~₹0.05–0.10, user-borne) | **honest `unavailable`** if the key is unset or the provider errors — never a fabricated result; the UI shows "consult a doctor" + still saves the photo | timeout **90 s** (httpx client). **Retry: none yet** — KI-08 (add before high traffic); not critical today (single call, fail-soft) |
 | WhatsApp `wa.me` | caregiver alert (user-sent) | opens user's WhatsApp; if absent, browser shows wa.me page | n/a (user-driven) |
 | Bhashini / Voice Factory | voice-out (read-aloud) | falls back to Web Speech API `speechSynthesis` | graceful |
 | axe-core CDN | **test-only** (a11y scan) | test degrades to manual checklist | n/a (not in product) |

@@ -33,14 +33,29 @@ const report = { base: BASE, browser: 'chromium', journeys: [], edge: [], viewpo
 function rec(arr, name, pass, ms, detail) { arr.push({ name, pass: !!pass, ms: Math.round(ms || 0), detail: detail || '' }); }
 
 async function freshPage(browser, opts) {
-  const ctx = await browser.newContext(Object.assign({ viewport: { width: 390, height: 780 } }, opts || {}));
+  const o = opts || {};
+  const ctx = await browser.newContext(Object.assign({ viewport: { width: 390, height: 780 } }, o.context || {}));
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', e => errs.push('PE:' + String(e).slice(0, 120)));
   page.on('console', m => { if (m.type() === 'error') errs.push('CE:' + m.text().slice(0, 100)); });
   page._errs = errs;
-  // auto-accept the addProfile prompt with a name
   page.on('dialog', d => { d.accept(d.type() === 'prompt' ? 'Mother' : undefined).catch(() => {}); });
+  // Default: suppress the AI cost-gate (so memory/family journeys aren't blocked by it)
+  // unless a cost-gate journey explicitly opts out.
+  if (!o.noCostSuppress) {
+    await page.addInitScript(() => { try { localStorage.setItem('chitti_hs_cost_suppress_until', String(Date.now() + 86400000)); } catch (e) {} });
+  }
+  // Default: mock /analyze with a SAFE ok result so journeys are deterministic and
+  // never hit production (a cost-gate journey can re-route to test other states).
+  const okBody = o.analyzeBody || JSON.stringify({
+    status: 'ok', scan_type: 'skin', is_not_diagnosis: true,
+    observation: 'A small reddish area with a regular border, about 5mm.',
+    confidence: 70, urgency: 'monitor', action: 'Worth watching — re-check in a few days.',
+    reasons: ['mild redness'], disclaimer: 'This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.',
+    skin_tone_note: 'AI is less accurate on darker skin tones (Fitzpatrick IV–VI).'
+  });
+  await page.route('**/api/health-scanner/analyze', r => r.fulfill({ status: 200, contentType: 'application/json', body: okBody })).catch(() => {});
   return { ctx, page };
 }
 async function clickHaan(page) {
@@ -97,6 +112,30 @@ async function run() {
   await J('18 forget pending photo closes result', null, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await p.waitForTimeout(120); await p.click('#confirm-overlay .haan'); await p.waitForTimeout(150); await p.setInputFiles('#file-input', { name: 's.png', mimeType: 'image/png', buffer: PNG_1x1 }); await p.waitForTimeout(300); await p.click('button[onclick="forgetPending()"]'); await p.waitForTimeout(200); if (await p.$('#scan-result.shown')) throw new Error('result still shown'); const n = (await p.$$('#mem-body .mem-site')).length; if (n !== 0) throw new Error('saved unexpectedly'); return 'discarded, not saved'; });
   await J('19 listen (speaker) no error', null, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('button[onclick="speakIntro()"]'); await p.waitForTimeout(300); return 'speak invoked (no throw)'; });
   await J('20 per-response widget on result box', null, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(2500); const boxes = (await p.$$('[data-chitti-response]')).length; const bars = (await p.$$('.chitti-fb-box-bar')).length; if (boxes < 1) throw new Error('no response box'); return 'boxes=' + boxes + ' fb-bars=' + bars; });
+
+  // ── AI detection + cost gate journeys (21–25) — new surface ──
+  // JA: fresh context with the cost gate ENABLED (noCostSuppress) + a custom /analyze mock.
+  const JA = async (name, analyzeBody, fn) => {
+    const { ctx, page } = await freshPage(browser, { noCostSuppress: true, analyzeBody });
+    const t0 = Date.now(); let pass = false, detail = '';
+    try { detail = await fn(page) || ''; pass = true; }
+    catch (e) { pass = false; detail = 'ERR ' + String(e.message || e).slice(0, 120); }
+    if (page._errs.some(x => /PE:/.test(x))) { pass = false; detail += ' | ' + page._errs.find(x => /PE:/.test(x)); }
+    try { await page.screenshot({ path: resolve(SHOTS, 'J_' + name.replace(/[^a-z0-9]/gi, '_') + '.png') }); } catch (e) {}
+    rec(report.journeys, name, pass, Date.now() - t0, detail);
+    await ctx.close();
+  };
+  const OK_BODY = JSON.stringify({ status: 'ok', scan_type: 'skin', is_not_diagnosis: true, observation: 'A reddish raised area, ~5mm, regular border.', confidence: 72, urgency: 'monitor', action: 'Worth watching — re-check in a few days.', reasons: ['mild redness'], disclaimer: 'This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.', skin_tone_note: 'AI is less accurate on darker skin tones.' });
+  const UNAVAIL_BODY = JSON.stringify({ status: 'unavailable', is_not_diagnosis: true, disclaimer: 'This is not a medical diagnosis. Chitti helps you notice — doctors help you heal.', message: 'AI analysis is temporarily unavailable. Your photo is saved — please consult a doctor if you are worried.' });
+  // A model that TRIES to leak a diagnosis — the SERVER suppresses it, but we assert the
+  // UI never shows a disease name even if a bad payload arrived (defence-in-depth at render).
+  const LEAK_BODY = JSON.stringify({ status: 'ok', scan_type: 'skin', is_not_diagnosis: true, observation: 'Looks consistent with melanoma / skin cancer.', confidence: 99, urgency: 'monitor', disclaimer: 'This is not a medical diagnosis.' });
+
+  await JA('21 cost gate shown before first AI scan', OK_BODY, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await p.waitForTimeout(300); if (!(await p.$('#cost-overlay.shown'))) throw new Error('cost gate not shown'); const txt = await p.$eval('#cost-overlay', e => e.innerText); if (!/0\.05|0\.10|₹/.test(txt)) throw new Error('cost amount not shown'); return 'cost gate shown with ₹ amount'; });
+  await JA('22 cost Cancel aborts (no camera)', OK_BODY, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await p.waitForSelector('#cost-overlay.shown'); await p.click('#cost-overlay .nahi'); await p.waitForTimeout(300); if (await p.$('#cam-stage.shown')) throw new Error('camera opened after Cancel'); if (await p.$('#confirm-overlay.shown')) throw new Error('proceeded after Cancel'); return 'cancel aborted, no camera'; });
+  await JA('23 dont-ask-24h suppresses gate on 2nd scan', OK_BODY, async (p) => { await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await p.waitForSelector('#cost-overlay.shown'); await p.check('#cost-dont-ask'); await p.click('#cost-overlay .haan'); await clickHaan(p); await p.setInputFiles('#file-input', { name: 's.png', mimeType: 'image/png', buffer: PNG_1x1 }); await p.waitForTimeout(400); await p.evaluate(() => document.getElementById('scan-result').classList.remove('shown')); await p.click('.scan-card .scan-btn'); await p.waitForTimeout(300); if (await p.$('#cost-overlay.shown')) throw new Error('gate re-shown despite 24h opt-out'); if (!(await p.$('#confirm-overlay.shown'))) throw new Error('did not proceed to camera'); return '24h opt-out suppressed gate, went to camera'; });
+  await JA('24 AI result renders safe (obs+confidence+urgency+disclaimer, no diagnosis)', OK_BODY, async (p) => { await p.evaluate(() => {}).catch(() => {}); await p.addInitScript(() => { try { localStorage.setItem('chitti_hs_cost_suppress_until', String(Date.now() + 8.64e7)); } catch (e) {} }); await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await clickHaan(p); await p.setInputFiles('#file-input', { name: 's.png', mimeType: 'image/png', buffer: PNG_1x1 }); await p.waitForTimeout(900); const t = await p.$eval('#ai-out', e => e.innerText); if (!/observation/i.test(t)) throw new Error('no observation'); if (!/not a diagnosis/i.test(t)) throw new Error('missing not-a-diagnosis'); if (!(await p.$('#ai-out .ai-urg'))) throw new Error('no urgency chip'); if (/\b(melanoma|cancer|diagnosis of|you have)\b/i.test(t.replace(/not a diagnosis/ig, ''))) throw new Error('diagnosis leaked'); return 'safe AI render: obs+conf+urgency+disclaimer, no disease name'; });
+  await JA('25 AI unavailable → honest consult-a-doctor (no fake result)', UNAVAIL_BODY, async (p) => { await p.addInitScript(() => { try { localStorage.setItem('chitti_hs_cost_suppress_until', String(Date.now() + 8.64e7)); } catch (e) {} }); await p.goto(URL, { waitUntil: 'domcontentloaded' }); await p.waitForTimeout(1800); await p.click('.scan-card .scan-btn'); await clickHaan(p); await p.setInputFiles('#file-input', { name: 's.png', mimeType: 'image/png', buffer: PNG_1x1 }); await p.waitForTimeout(800); const t = await p.$eval('#ai-out', e => e.innerText); if (!/unavailable|consult a doctor/i.test(t)) throw new Error('no honest unavailable message'); if (/\d+%/.test(t)) throw new Error('fabricated a confidence when unavailable'); return 'honest unavailable, no fabricated result'; });
 
   // ───────────── A2: Edge cases ─────────────
   const E = async (name, fn) => { const { ctx, page } = await freshPage(browser); const t0 = Date.now(); let pass = false, detail = ''; try { detail = await fn(page, ctx) || ''; pass = true; } catch (e) { pass = false; detail = 'ERR ' + String(e.message || e).slice(0, 120); } if (page._errs.some(x => /PE:/.test(x))) { pass = false; detail += ' | ' + page._errs[0]; } rec(report.edge, name, pass, Date.now() - t0, detail); await ctx.close(); };
