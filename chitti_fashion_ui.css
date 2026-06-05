@@ -1,170 +1,206 @@
-/* chitti_fashion_ui.css — premium editorial redesign for Chitti Fashion.
-   Loaded LAST so it elevates the look without touching logic/markup/gates.
-   Keeps brand triad (Saffron/Navy/Green, CTO §1); AA contrast; emoji/symbols kept
-   (deaf/illiterate); all data-* attributes untouched. Degrades to system fonts on 2G. */
+/* chitti_fashion_ui.css — Chitti Fashion UI aligned to the CHITTI MEDUPI design system.
+   Loaded LAST + uses !important so it governs the look without touching logic/markup/gates.
+   Palette, header, tabs, cards, buttons all mirror chitti_medupi.html (Bharat saffron/navy/gold,
+   Inter, gold-bordered underline tabs, white section-cards, saffron CTAs). 2026-06-05.
+   Brand triad preserved (CTO §1); AA contrast; emoji/symbols kept (deaf/illiterate). */
 
 :root {
-  --fa-ink: #181826;        /* near-navy ink */
-  --fa-navy: #14143f;
-  --fa-cream: #FAF6EE;      /* warm ivory canvas */
-  --fa-card: #FFFFFF;
-  --fa-line: #ECE3D2;       /* warm hairline */
-  --fa-saffron: #E07B1D;    /* refined saffron */
-  --fa-saffron-2: #FF9A3D;
-  --fa-green: #1A7D3C;
-  --fa-muted: #8C8273;
-  --fa-shadow: 0 8px 30px rgba(24, 18, 6, .08);
-  --fa-shadow-sm: 0 2px 10px rgba(24, 18, 6, .06);
-  --fa-radius: 18px;
+  --saffron: #E86A17; --saffron-2: #ff9b4a;
+  --navy: #0E2344; --navy-2: #16376a;
+  --gold: #D4AF37;
+  --bg: #f8f4ee; --card: #ffffff; --card2: #fbf8f1;
+  --text: #17202a; --muted: #6b7280; --border: #e5e7eb;
+  --green: #16a34a; --red: #dc2626;
 }
 
-/* ---------- typography: editorial serif headings + clean sans body ---------- */
+/* ---------- canvas + type (MedUPI) ---------- */
 body.fa-body, body.sds-page {
-  background: var(--fa-cream) !important;
-  color: var(--fa-ink);
-  font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
+  background: linear-gradient(180deg, #f8f4ee, #fff) !important;
+  color: var(--text) !important;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+  font-size: 15px !important; line-height: 1.45 !important;
+  -webkit-font-smoothing: antialiased; min-height: 100vh; position: relative;
 }
-.fa-hero h2, .sds-card-title, .fa-outfit .title, .sds-brand-name,
-.fa-gender h2, #fa-add-title {
-  font-family: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  letter-spacing: -.01em;
+/* soft Bharat radial wash, exactly like MedUPI body:before */
+body.fa-body::before, body.sds-page::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(232,106,23,.10), transparent 25%),
+    radial-gradient(circle at 85% 10%, rgba(212,175,55,.12), transparent 20%),
+    radial-gradient(circle at 50% 80%, rgba(14,35,68,.08), transparent 28%);
+}
+body.fa-body > *, body.sds-page > * { position: relative; z-index: 1; }
+/* Inter for headings too (drop the editorial serif) */
+.fa-hero h2, .sds-card-title, .fa-outfit .title, .sds-brand-name, .fa-gender h2, #fa-add-title {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important; letter-spacing: 0 !important;
 }
 
-/* ---------- header: lighter, refined ---------- */
+/* ---------- Bharat stripe (saffron → gold → navy) ---------- */
+.sds-tricolour.fixed, .sds-tricolour {
+  height: 3px !important; background: linear-gradient(90deg, #E86A17, #D4AF37, #0E2344) !important;
+  border: none !important;
+}
+
+/* ---------- HEADER — navy gradient, rounded bottom (MedUPI) ---------- */
 .sds-header {
-  background: linear-gradient(135deg, #14143f 0%, #232366 100%) !important;
-  border-radius: 0 0 22px 22px;
-  box-shadow: var(--fa-shadow);
-  padding: 14px 16px 16px !important;
+  background: linear-gradient(135deg, #0E2344, #16376a) !important;
+  color: #fff !important; border-radius: 0 0 24px 24px !important;
+  padding: 16px !important; box-shadow: 0 8px 22px rgba(14,35,68,.18) !important; margin-top: 0 !important;
 }
-.sds-brand-name { font-size: 22px !important; font-weight: 600 !important; letter-spacing: .2px; }
-.sds-tagline { color: #cfd0f0 !important; font-size: 12.5px !important; font-style: italic; }
-.sds-logo { border-radius: 14px !important; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+/* bharat-logo: 48px saffron→gold gradient square, floating */
+.sds-logo {
+  width: 48px !important; height: 48px !important; border-radius: 14px !important;
+  background: linear-gradient(135deg, #E86A17, #D4AF37) !important;
+  color: #fff !important; font-size: 24px !important; font-weight: 900 !important;
+  box-shadow: 0 8px 22px rgba(232,106,23,.35) !important; margin-right: 12px !important;
+  display: inline-flex !important; align-items: center; justify-content: center;
+  animation: faFloatB 4s ease-in-out infinite;
+}
+@keyframes faFloatB { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.sds-brand-name { font-size: 21px !important; font-weight: 900 !important; color: #fff !important; line-height: 1.1; letter-spacing: 0 !important; }
+.sds-tagline { color: rgba(255,255,255,.85) !important; font-size: 11px !important; font-style: normal !important; margin-top: 2px; }
+/* language select — white field, gold border (MedUPI lang select) */
 .sds-select, #lang-select {
-  background: rgba(255,255,255,.12) !important; color: #fff !important;
-  border: 1px solid rgba(255,255,255,.28) !important; border-radius: 12px !important;
-  padding: 10px 12px !important; font-weight: 600; min-height: 44px;
+  background: #fff !important; color: #0E2344 !important;
+  border: 1px solid #D4AF37 !important; border-radius: 8px !important;
+  padding: 7px 10px !important; font-weight: 600 !important; min-height: 40px !important; font-size: 12px;
 }
+/* header action buttons — translucent (MedUPI header-controls / switch-btn) */
 .sds-header-actions button {
-  background: var(--fa-saffron) !important; color: #fff !important; border: none !important;
-  border-radius: 12px !important; font-weight: 700 !important; min-height: 44px; padding: 0 14px;
-  box-shadow: 0 4px 14px rgba(224,123,29,.4);
+  background: linear-gradient(135deg, rgba(232,106,23,.20), rgba(212,175,55,.20)) !important;
+  color: #fff !important; border: 1px solid rgba(212,175,55,.55) !important;
+  border-radius: 8px !important; font-weight: 700 !important; min-height: 40px !important; padding: 0 14px !important;
+  box-shadow: none !important;
+}
+.sds-header-actions button:hover { filter: brightness(1.1); }
+
+/* World Class badge — MedUPI "chitti-special" pill */
+.fa-badge {
+  background: linear-gradient(135deg, rgba(232,106,23,.18), rgba(212,175,55,.18)) !important;
+  border: 1px solid rgba(232,106,23,.5) !important; color: #7c2d12 !important;
+  text-transform: uppercase; letter-spacing: .05em; font-size: 10px !important; font-weight: 800 !important;
 }
 
-/* World Class badge — subtle, not shouting */
-.fa-badge { background: #fff7ec !important; border-color: #f2d8b4 !important; color: #b4670f !important; }
+/* ---------- TABS — MedUPI nav.tabs (gold underline bar, saffron active) ---------- */
+.fa-tabbar {
+  background: linear-gradient(180deg, #fff, #fbf8f1) !important;
+  border-bottom: 2px solid #D4AF37 !important; box-shadow: 0 2px 8px rgba(0,0,0,.04) !important;
+  gap: 0 !important; padding: 0 !important; margin-bottom: 14px !important;
+  position: sticky !important; top: 0 !important; z-index: 5 !important;
+}
+.fa-tabbar button {
+  background: transparent !important; border: none !important; border-radius: 0 !important;
+  border-bottom: 3px solid transparent !important; color: var(--muted) !important;
+  padding: 14px 14px !important; font-size: 13px !important; font-weight: 600 !important;
+  min-height: 46px !important; white-space: nowrap; box-shadow: none !important;
+}
+.fa-tabbar button:hover { color: var(--text) !important; }
+.fa-tabbar button.active {
+  color: var(--saffron) !important; border-bottom-color: var(--saffron) !important;
+  background: rgba(232,106,23,.06) !important;
+}
 
-/* ---------- HERO — editorial ---------- */
+/* ---------- HERO — Bharat warm panel, navy heading ---------- */
 .fa-hero {
-  background: linear-gradient(135deg, #FFF4E2 0%, #FDEFEA 55%, #F3F7EE 100%) !important;
-  border: 1px solid #F3E2C9 !important; border-radius: 22px !important;
-  padding: 24px 20px !important; box-shadow: var(--fa-shadow) !important;
+  background: linear-gradient(135deg, rgba(232,106,23,.10), #fff 55%, rgba(212,175,55,.12)) !important;
+  border: 1px solid rgba(212,175,55,.55) !important; border-radius: 18px !important;
+  padding: 22px 18px !important; box-shadow: 0 6px 20px rgba(14,35,68,.06) !important;
 }
 .fa-hero .free-pill {
-  background: var(--fa-green) !important; border-radius: 999px; letter-spacing: .03em;
-  font-size: 11px !important; padding: 4px 12px !important; text-transform: uppercase;
+  background: var(--green) !important; border-radius: 999px; letter-spacing: .03em;
+  font-size: 11px !important; padding: 4px 12px !important; text-transform: uppercase; color: #fff !important;
 }
-.fa-hero h2 { font-size: 28px !important; line-height: 1.15 !important; font-weight: 600 !important; color: var(--fa-navy) !important; margin: 10px 0 8px !important; }
-.fa-hero p { color: #5d5547 !important; font-size: 15px !important; }
+.fa-hero h2 { font-size: 24px !important; line-height: 1.2 !important; font-weight: 900 !important; color: var(--navy) !important; margin: 10px 0 8px !important; }
+.fa-hero p { color: #4a5160 !important; font-size: 14px !important; }
 .fa-hero .cta {
-  background: linear-gradient(135deg, var(--fa-saffron), #C9690F) !important;
-  border-radius: 16px !important; font-weight: 700 !important; font-size: 16px !important;
-  box-shadow: 0 10px 26px rgba(224,123,29,.38) !important; letter-spacing: .2px;
-  transition: transform .15s ease, box-shadow .15s ease;
+  background: linear-gradient(135deg, var(--saffron), var(--saffron-2)) !important;
+  border: none !important; border-radius: 10px !important; font-weight: 800 !important; font-size: 15px !important;
+  box-shadow: 0 6px 18px rgba(232,106,23,.30) !important; min-height: 50px !important;
 }
-.fa-hero .cta:hover, .fa-hero .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(224,123,29,.48) !important; outline: none; }
+.fa-hero .cta:hover, .fa-hero .cta:focus-visible { filter: brightness(1.05); outline: none; }
 
-/* ---------- tabs — clean pills with fade scroll ---------- */
-.fa-tabbar { background: transparent !important; padding: 12px 0 6px !important; gap: 8px !important; }
-.fa-tabbar button {
-  background: #fff !important; border: 1px solid var(--fa-line) !important; color: var(--fa-navy) !important;
-  border-radius: 999px !important; font-weight: 600 !important; font-size: 13.5px !important;
-  box-shadow: var(--fa-shadow-sm); padding: 10px 16px !important; transition: all .15s ease;
-}
-.fa-tabbar button.active {
-  background: linear-gradient(135deg, var(--fa-navy), #2a2a72) !important; color: #fff !important;
-  border-color: var(--fa-navy) !important; box-shadow: 0 6px 16px rgba(20,20,63,.32);
-}
-
-/* ---------- cards — generous whitespace, soft elevation ---------- */
+/* ---------- CARDS — MedUPI section-card ---------- */
 .sds-card, .fa-outfit, .fa-video-result {
-  background: var(--fa-card) !important; border: 1px solid var(--fa-line) !important;
-  border-radius: var(--fa-radius) !important; box-shadow: var(--fa-shadow) !important;
-  padding: 18px !important; margin-bottom: 14px !important;
+  background: #fff !important; border: 1px solid #eee !important; border-radius: 18px !important;
+  box-shadow: 0 6px 20px rgba(14,35,68,.06) !important; padding: 14px !important; margin: 0 0 14px !important;
 }
-.sds-card-title { font-size: 19px !important; font-weight: 600 !important; color: var(--fa-navy) !important; margin-bottom: 6px !important; display: flex; align-items: center; gap: 8px; }
-.sds-card-title .ico { font-size: 22px; }
+.sds-card-title { font-size: 15px !important; font-weight: 800 !important; color: var(--text) !important; margin-bottom: 6px !important; display: flex; align-items: center; gap: 8px; }
+.sds-card-title .ico { font-size: 20px; }
 
-/* ---------- buttons ---------- */
+/* ---------- BUTTONS — MedUPI cta-saffron / outline ---------- */
 .fa-btn {
-  border: 1.5px solid var(--fa-saffron) !important; color: #B4670F !important; background: #fff !important;
-  border-radius: 14px !important; font-weight: 700 !important; min-height: 50px !important; transition: all .15s ease;
+  border: 1px solid var(--border) !important; color: var(--navy) !important; background: #fff !important;
+  border-radius: 10px !important; font-weight: 700 !important; min-height: 46px !important;
 }
-.fa-btn:hover { background: #fff6ec !important; }
+.fa-btn:hover { background: rgba(232,106,23,.04) !important; border-color: var(--saffron) !important; }
 .fa-btn.primary {
-  background: linear-gradient(135deg, var(--fa-saffron), #C9690F) !important; color: #fff !important;
-  border: none !important; box-shadow: 0 8px 20px rgba(224,123,29,.34) !important;
+  background: linear-gradient(135deg, var(--saffron), var(--saffron-2)) !important; color: #fff !important;
+  border: none !important; box-shadow: 0 6px 18px rgba(232,106,23,.30) !important; font-weight: 800 !important;
 }
-.fa-btn.primary:hover { transform: translateY(-1px); }
+.fa-btn.primary:hover { filter: brightness(1.05); }
+/* a tag styled as button (find-a-tailor / maps links) */
+a.fa-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 
-/* ---------- input ---------- */
+/* ---------- INPUTS ---------- */
 .fa-input, .fa-field input, .fa-field select {
-  border: 1.5px solid var(--fa-line) !important; border-radius: 14px !important;
-  background: #FDFBF6 !important; min-height: 50px !important; font-size: 15px;
+  border: 1px solid var(--border) !important; border-radius: 10px !important; background: #fff !important;
+  min-height: 46px !important; font-size: 14px; color: var(--text);
 }
-.fa-input:focus, .fa-field input:focus, .fa-field select:focus { outline: none; border-color: var(--fa-saffron) !important; box-shadow: 0 0 0 3px rgba(224,123,29,.15); }
+.fa-input:focus, .fa-field input:focus, .fa-field select:focus { outline: none; border-color: var(--saffron) !important; box-shadow: 0 0 0 3px rgba(232,106,23,.12); }
 
-/* ---------- chips ---------- */
+/* ---------- CHIPS ---------- */
 .fa-chip {
-  border: 1px solid var(--fa-line) !important; border-radius: 999px !important; background: #fff !important;
-  font-weight: 600 !important; box-shadow: var(--fa-shadow-sm); transition: all .12s ease; min-height: 44px;
+  border: 1px solid var(--border) !important; border-radius: 999px !important; background: #fff !important;
+  font-weight: 600 !important; min-height: 44px; color: var(--text) !important;
 }
 .fa-chip.on, .fa-occasion-chips .fa-chip.on {
-  background: #fff3e3 !important; border-color: var(--fa-saffron) !important; color: #B4670F !important;
-  box-shadow: 0 4px 12px rgba(224,123,29,.2);
+  background: rgba(232,106,23,.10) !important; border-color: var(--saffron) !important; color: #b4500f !important;
 }
 
-/* ---------- stats ---------- */
-.fa-stats .stat { background: #FDFBF6 !important; border: 1px solid var(--fa-line) !important; border-radius: 14px !important; box-shadow: none !important; }
-.fa-stats .stat .n { color: var(--fa-saffron) !important; font-weight: 800; }
+/* ---------- stats / metric look ---------- */
+.fa-stats .stat { background: #fff !important; border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: 0 4px 12px rgba(14,35,68,.04) !important; }
+.fa-stats .stat .n { color: var(--saffron) !important; font-weight: 800; font-family: 'JetBrains Mono','Menlo',monospace; }
 
 /* ---------- wardrobe tiles ---------- */
-.fa-tile { border: 1px solid var(--fa-line) !important; border-radius: 14px !important; box-shadow: var(--fa-shadow-sm); }
+.fa-tile { border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: 0 4px 12px rgba(14,35,68,.04); }
 #fa-grid { gap: 10px !important; }
 
 /* ---------- outfit + swarm + tiers ---------- */
-.fa-outfit .title { font-size: 17px !important; color: var(--fa-navy) !important; }
-.fa-outfit .pieces .p { border-radius: 12px !important; background: #FBF7F0 !important; }
-.fa-swarm { border: 1px solid var(--fa-line) !important; border-radius: 14px !important; box-shadow: var(--fa-shadow-sm); }
-.fa-swarm .head { background: linear-gradient(135deg, var(--fa-navy), #2a2a72) !important; }
-.fa-swarm .head .score { background: var(--fa-saffron) !important; }
-.fa-teach { border-color: #d9d4f0 !important; background: #f6f4fd !important; border-radius: 14px !important; }
-.fa-tier { border-radius: 14px !important; }
-.fa-tier.free { background: #f1faf2 !important; border-color: #bfe6c8 !important; }
-.fa-tier.budget { background: #fff6ec !important; border-color: #f3d6b0 !important; }
+.fa-outfit .title { font-size: 16px !important; color: var(--navy) !important; }
+.fa-outfit .pieces .p { border-radius: 12px !important; background: #fbf8f1 !important; }
+.fa-swarm { border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: 0 4px 12px rgba(14,35,68,.04); }
+.fa-swarm .head { background: linear-gradient(135deg, var(--navy), var(--navy-2)) !important; }
+.fa-swarm .head .score { background: var(--saffron) !important; }
+.fa-swarm .row .ag { color: var(--navy) !important; }
+.fa-swarm .row .sc { color: var(--green) !important; }
+.fa-teach { border-color: rgba(212,175,55,.45) !important; background: #fbf8f1 !important; border-radius: 12px !important; }
+.fa-teach summary { color: var(--saffron) !important; }
+.fa-tier { border-radius: 12px !important; }
+.fa-tier.free { background: rgba(22,163,74,.08) !important; border-color: rgba(22,163,74,.4) !important; }
+.fa-tier.free .lab { color: var(--green) !important; }
+.fa-tier.budget { background: rgba(232,106,23,.06) !important; border-color: rgba(232,106,23,.4) !important; }
+.fa-tier.budget .lab { color: #b4500f !important; }
 
-/* ---------- per-box toolbar — quiet, elegant ---------- */
-.fa-toolbar { border-top: 1px solid var(--fa-line) !important; padding-top: 10px !important; gap: 8px !important; }
-.fa-toolbar button {
-  border: 1px solid var(--fa-line) !important; background: #FDFBF6 !important; border-radius: 12px !important;
-  min-width: 46px !important; min-height: 44px !important; transition: background .12s ease;
+/* ---------- per-box toolbar + feedback bar ---------- */
+.fa-toolbar { border-top: 1px solid var(--border) !important; padding-top: 10px !important; gap: 8px !important; }
+.fa-toolbar button, .fa-spk {
+  border: 1px solid var(--border) !important; background: #fff !important; border-radius: 8px !important;
+  min-width: 44px !important; min-height: 40px !important; cursor: pointer;
 }
-.fa-toolbar button:hover { background: #fff3e3 !important; }
+.fa-toolbar button:hover, .fa-spk:hover { background: rgba(232,106,23,.06) !important; color: var(--saffron) !important; }
 
-/* ---------- gender onboarding ---------- */
-.fa-gender { border: 1px solid var(--fa-line) !important; border-radius: 20px !important; box-shadow: var(--fa-shadow); }
-.fa-gender .opts button { border-radius: 16px !important; border: 1.5px solid var(--fa-line) !important; }
-.fa-gender .opts button.active { background: #fff3e3 !important; border-color: var(--fa-saffron) !important; }
+/* ---------- privacy + gender onboarding (Bharat) ---------- */
+.fa-privacy { background: linear-gradient(135deg, rgba(232,106,23,.08), rgba(212,175,55,.10)) !important; border: 1px solid rgba(212,175,55,.55) !important; border-radius: 14px !important; }
+.fa-privacy .info b { color: var(--navy) !important; }
+.fa-gender { border: 1px solid #eee !important; border-radius: 18px !important; box-shadow: 0 6px 20px rgba(14,35,68,.06); }
+.fa-gender h2 { color: var(--navy) !important; font-weight: 900 !important; }
+.fa-gender .opts button { border-radius: 14px !important; border: 1.5px solid var(--border) !important; color: var(--navy) !important; }
+.fa-gender .opts button.active { background: rgba(232,106,23,.08) !important; border-color: var(--saffron) !important; }
 
-/* ---------- modal ---------- */
-.fa-add .sheet { border-radius: 24px 24px 0 0 !important; box-shadow: 0 -10px 40px rgba(0,0,0,.25); }
+/* ---------- spinner + add-sheet ---------- */
+.fa-spin { border-color: var(--saffron) !important; border-top-color: transparent !important; }
+.fa-add .sheet { border-radius: 20px 20px 0 0 !important; box-shadow: 0 -10px 40px rgba(14,35,68,.25); }
+.fa-add .sheet h2 { color: var(--navy) !important; }
 
-/* keep tricolour accent but slimmer */
-.sds-tricolour.fixed { height: 4px !important; }
-
-@media (min-width: 760px) {
-  main { max-width: 720px; margin: 0 auto; }
-  .fa-hero h2 { font-size: 34px !important; }
-}
+@media (min-width: 760px) { main { max-width: 1100px; margin: 0 auto; } }
+@media (max-width: 640px) { .sds-brand-name { font-size: 18px !important; } .fa-tabbar button { font-size: 12px !important; padding: 12px 10px !important; } }
