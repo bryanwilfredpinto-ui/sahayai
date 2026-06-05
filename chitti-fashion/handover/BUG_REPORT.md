@@ -19,8 +19,10 @@ improvements tracked in **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** (KI-01…KI-08), 
 | BUG-F1 | Medium | Office Week `variety` could exceed 100% (4 distinct items ÷ 2 day-slots = 200%) | Reframed as distinct ÷ total item-wears (100% = no repeats) | `fashion_engine_test.mjs` "week: variety 0..100" |
 | BUG-F2 | High | Accessibility eval 90/100 — 10 cases asserted the **removed** `.fa-toolbar` selector | Corrected dataset to the real shipped `+ .chitti-fb-box-bar` (adjacent sibling, DOM-verified) + added 7 new-card cases | `fashion_eval_harness.mjs` → **107/107** |
 | BUG-F3 | Low | `gold_no_match` gap label missing for everyday family coordination | Added `gap_no_match` to the wedding/dyn group (en+hi) | `fashion_qa.mjs` family coordination PASS |
+| BUG-F4 | Medium | **MedUPI UI reskin** dropped base font to 15px → a11y **106/107** (low-vision case A040 needs ≥16px) | Held base font at **16px** in `chitti_fashion_ui.css` (accessibility beats density, ROLE.md §2) | `fashion_eval_harness.mjs` → **107/107** restored |
 
-These are recorded for transparency; **all three are closed and re-verified.**
+These are recorded for transparency; **all four are closed and re-verified.** BUG-F4 was caught **because**
+the full accessibility suite was re-run after the visual reskin — a CSS-only change still got gate-checked.
 
 ## Evidence / screenshots
 

@@ -25,12 +25,14 @@ re-run `node tools/fashion_handover_audit.mjs` and check the `flicker[]` block �
 
 ### 🟠 MEDIUM (Must / Should fix — none block core use)
 
-**KI-01 — 3G page load is 6.2 s (target < 3 s).** *Must fix.*
+**KI-01 — 3G page load is 6.8 s (target < 3 s).** *Must fix.*
 - **Trigger:** first load on a throttled 3G link (400 kbps, 400 ms RTT).
-- **Cause:** the shared `strings.js` is 561 KB (whole-platform string table loaded by every page).
-- **Workaround today:** after first load the app is fully cached and instant; the deterministic engine
-  then works even offline. Repeat visits are fast.
-- **Fix:** split `strings.js` per page, or lazy-load non-active languages. Effort: M.
+- **Cause:** the shared `strings.js` is 561 KB (whole-platform string table loaded by every page); the
+  MedUPI-aligned font pair (Inter + JetBrains Mono) adds ~0.6 s vs the prior single-font skin.
+- **Workaround today:** fonts use `display=swap` so text paints immediately; after first load the app is
+  fully cached and instant; the deterministic engine works even offline. Repeat visits are fast.
+- **Fix:** split `strings.js` per page / lazy-load non-active languages; optionally self-host or subset the
+  fonts. Effort: M.
 
 **KI-02 — No `<noscript>` fallback.** *Should fix.*
 - **Trigger:** JavaScript disabled in the browser.

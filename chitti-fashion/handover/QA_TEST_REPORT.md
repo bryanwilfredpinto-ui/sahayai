@@ -3,7 +3,8 @@
 # QA TEST REPORT — Chitti Fashion (CFOS v2.1)
 
 > **Tested by:** Chitti CTO automated QA harness (Playwright, real browser engines).
-> **Date:** 2026-06-05 · **Build:** `fashion-engine-2.1`, page live at `https://sahayai.in/chitti_fashion.html`
+> **Date:** 2026-06-05 · **Build:** `fashion-engine-2.1` + **MedUPI-aligned UI skin** (`chitti_fashion_ui.css?v=20260605c`), page live at `https://sahayai.in/chitti_fashion.html`
+> **Re-verified after the UI reskin** — the whole suite was re-run against the new MedUPI design system, not the prior editorial skin.
 > **Honesty rule:** every PASS below was produced by an executed test. Anything that needs a
 > physical device lab or a human screen-reader is listed as **NOT TESTED** in §A3/§A4, not as PASS.
 > Reproduce: `node tools/fashion_handover_audit.mjs` (writes `tools/_handover_audit.json`),
@@ -133,10 +134,16 @@ Engine **66/66**, QA **50/50**, gold **91.6%** unchanged (every v2.1 addition wa
 |---|---|---|---|
 | DOMContentLoaded (local) | — | 1605 ms | ✅ |
 | Full load (local) | — | 2175 ms | ✅ |
-| **Page load on 3G** | < 3 s | **6.2 s** | ⚠️ **MISS** — KI-01 (shared `strings.js` 561 KB dominates) |
+| DOMContentLoaded (local, post-reskin) | — | 1513 ms | ✅ |
+| Full load (local, post-reskin) | — | 4370 ms | ⚠️ web-font-bound (Inter+JetBrains Mono, `display=swap` so text paints early) |
+| **Page load on 3G** | < 3 s | **6.8 s** | ⚠️ **MISS** — KI-01 (shared `strings.js` 561 KB + the MedUPI font pair add ~0.6 s) |
 | Language switch response | < 1 s | < 200 ms (rapid-switch survived 10×) | ✅ |
-| Add/save item | < 5 s | 927 ms (J20) | ✅ |
-| JS heap memory | < 100 MB | **26.3 MB** | ✅ |
+| Add/save item | < 5 s | 1138 ms (clean max journey) | ✅ |
+| JS heap memory | < 100 MB | **9.5 MB** | ✅ |
+
+> **Measurement honesty:** journey timings in an earlier combined run showed up to 5.6 s — that was **CPU contention**
+> from running the 3-engine cross-test and the journey browser simultaneously. The **isolated** re-run (nothing else
+> running) shows **max 1.1 s**, avg ~1 s. The numbers above are the isolated readings.
 
 ## A8. Bug Report
 

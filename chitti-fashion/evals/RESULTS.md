@@ -1,6 +1,6 @@
 # Chitti Fashion — Evaluation Results
 
-Generated: 2026-06-05T02:36:38Z · DeepSeek: **HTTP 429 rate-limited at run time**
+Generated: 2026-06-05T11:14:52Z · DeepSeek: **HTTP 429 rate-limited at run time**
 
 | Suite | Run mode | N | Pass | Blocked | Fail | Score |
 |---|---|---|---|---|---|---|
