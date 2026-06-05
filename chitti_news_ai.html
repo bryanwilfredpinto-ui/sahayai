@@ -376,24 +376,25 @@ nav.tabs .tab{min-height:46px}
 <body>
 <div class="bharat-stripe"></div>
 
-<header role="banner">
-  <div class="brand-row">
-    <div style="display:flex;align-items:center">
-      <div class="bharat-logo" aria-hidden="true">C</div>
-      <div>
-        <div class="brand">Chitti News AI</div>
-        <div class="tagline" data-i18n="header.tagline">Real AI news · Chitti explains in your language</div>
+<header role="banner" style="padding:10px 14px">
+  <div class="brand-row" style="gap:8px">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+      <div class="bharat-logo" aria-hidden="true" style="width:36px;height:36px;font-size:18px">C</div>
+      <div style="min-width:0;flex:1">
+        <div class="brand" style="font-size:16px;line-height:1.1">Chitti News AI</div>
+        <div class="tagline" data-i18n="header.tagline" style="font-size:10px;margin-top:2px;color:rgba(255,255,255,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Real AI news · in your language</div>
       </div>
     </div>
-    <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_news.html" data-i18n="switch.news">📰 News</a>
-      <a class="switch-btn-bharat" href="chitti_vaani.html" data-i18n="switch.vaani">🎙️ Vaani</a>
-      <a class="switch-btn-bharat" href="chitti_medupi.html" data-i18n="switch.medupi">💊 MedUPI</a>
-    </div>
-  </div>
-  <div class="header-controls">
-    <button onclick="speakPage()" data-i18n="hdr.read">🔊 Read page</button>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" data-i18n="top">↑ Top</button>
+    <details class="hdr-more" style="position:relative">
+      <summary class="switch-btn-bharat" style="list-style:none;padding:6px 10px;font-size:11px;cursor:pointer;min-height:36px;display:inline-flex;align-items:center" aria-label="More options menu">⋯ More</summary>
+      <div style="position:absolute;right:0;top:42px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(14,35,68,.20);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:180px;z-index:60">
+        <a href="chitti_news.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">📰 Chitti News (regular)</a>
+        <a href="chitti_vaani.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">🎙️ Chitti Vaani</a>
+        <a href="chitti_medupi.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">💊 Chitti MedUPI</a>
+        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
+        <button type="button" onclick="speakPage()" style="background:none;border:none;color:var(--text);padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600;text-align:left;cursor:pointer">🔊 Read page aloud</button>
+      </div>
+    </details>
   </div>
 </header>
 
@@ -401,10 +402,26 @@ nav.tabs .tab{min-height:46px}
   📰 <strong>Chitti News AI</strong> — 8 real AI publishers · Tap 🤖 Chitti icon on any article for a simple explanation in your language.
 </div>
 
-<!-- Picker bar -->
-<div class="picker-bar" role="group" aria-label="Filter by language">
-  <span class="pick-lbl" data-i18n="pick.lang">Lang</span>
-  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language">
+<!-- Picker bar — MERGED single row (Sire 2026-06-05 PM declutter) -->
+<div class="picker-bar" role="group" aria-label="Filter by profession + language" style="border-top:none">
+  <span class="pick-lbl" data-i18n="pick.iam" aria-hidden="true">I am</span>
+  <select id="pick-profession" onchange="onProfessionChange()" onfocus="_speakPickerHint()" aria-label="Profession — choose any time, default Everyone. Use arrow keys to browse options." aria-describedby="pick-prof-hint" style="flex:1;min-width:140px">
+    <option value="everyone">🌐 Everyone</option>
+    <option value="software-developer">💻 Software Developer</option>
+    <option value="hr-professional">🤝 HR Professional</option>
+    <option value="talent-acquisition">🎯 Talent Acquisition</option>
+    <option value="doctor">🩺 Doctor</option>
+    <option value="oncologist">🎗️ Oncologist</option>
+    <option value="nurse">🩹 Nurse</option>
+    <option value="farmer">🌾 Farmer</option>
+    <option value="teacher">📚 Teacher</option>
+    <option value="lawyer">⚖️ Lawyer</option>
+    <option value="accountant">📊 Accountant / CA</option>
+    <option value="student">🎓 Student</option>
+    <option value="business-owner">🏪 Business Owner</option>
+    <option value="government-employee">🏛️ Government Employee</option>
+  </select>
+  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language" style="min-width:90px">
     <option value="en">English</option>
     <option value="hi">हिंदी (Hindi)</option>
     <option value="bn">বাংলা (Bangla)</option>
@@ -433,62 +450,42 @@ nav.tabs .tab{min-height:46px}
     <option value="kfa">ಕೊಡವ (Kodava)</option>
     <option value="kru">ओराओं (Kurukh)</option>
   </select>
-  <span class="pick-sep"></span>
-  <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh">🔄 Refresh</button>
+  <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh" aria-label="Refresh feed">🔄</button>
+  <span id="pick-prof-hint" style="display:none">Stored locally only.</span>
+  <span id="prof-clear-link" style="display:none"></span>
 </div>
 
-<!-- v0.3 inline profession picker — default Everyone, never gates content
-     accessibility: aria-labelled + speak-on-focus for blind users (v0.3 §11.NFR-3 row 7) -->
-<div class="picker-bar chitti-response" data-chitti-response data-chitti-section="Profession picker (I am a)" role="group" aria-label="I am a — profession picker, optional, default Everyone" style="border-top:1px solid #f0e7d4">
-  <span class="pick-lbl" data-i18n="pick.iam" aria-hidden="true">I am a</span>
-  <select id="pick-profession" onchange="onProfessionChange()" onfocus="_speakPickerHint()" aria-label="Profession — choose any time, default Everyone. Use arrow keys to browse options." aria-describedby="pick-prof-hint">
-    <option value="everyone">🌐 Everyone (default)</option>
-    <option value="software-developer">💻 Software Developer</option>
-    <option value="hr-professional">🤝 HR Professional</option>
-    <option value="talent-acquisition">🎯 Talent Acquisition</option>
-    <option value="doctor">🩺 Doctor</option>
-    <option value="oncologist">🎗️ Oncologist</option>
-    <option value="nurse">🩹 Nurse</option>
-    <option value="farmer">🌾 Farmer</option>
-    <option value="teacher">📚 Teacher</option>
-    <option value="lawyer">⚖️ Lawyer</option>
-    <option value="accountant">📊 Accountant / CA</option>
-    <option value="student">🎓 Student</option>
-    <option value="business-owner">🏪 Business Owner</option>
-    <option value="government-employee">🏛️ Government Employee</option>
-  </select>
-  <span id="pick-prof-hint" class="section-sub" style="margin-left:8px">Optional. Pick anytime. Stored locally only. <span id="prof-clear-link" style="display:none;cursor:pointer;color:var(--saffron);font-weight:700">✕ Clear</span></span>
-
-  <!-- v0.4 2026-06-04 — Experience + Salary fields (Sire request).
-       Optional, stored locally, used to bias Opportunity Engine ranking
-       toward role-appropriate jobs. Never sent to backend without profession. -->
-  <span class="pick-lbl" data-i18n="pick.exp" aria-hidden="true" style="margin-left:14px">Experience</span>
-  <select id="pick-experience" onchange="onProfileFieldChange('exp', this.value)" aria-label="Years of experience — optional, default any">
-    <option value="">— Any —</option>
-    <option value="fresher">🎓 Fresher (0 yrs)</option>
-    <option value="0-2">0–2 yrs</option>
-    <option value="3-5">3–5 yrs</option>
-    <option value="6-10">6–10 yrs</option>
-    <option value="11-15">11–15 yrs</option>
-    <option value="16-20">16–20 yrs</option>
-    <option value="20+">20+ yrs</option>
-    <option value="sabbatical">Sabbatical / Career break</option>
-    <option value="retired">Retired</option>
-  </select>
-
-  <span class="pick-lbl" data-i18n="pick.sal" aria-hidden="true" style="margin-left:14px">Current Salary</span>
-  <select id="pick-salary" onchange="onProfileFieldChange('sal', this.value)" aria-label="Current annual salary band in INR — optional, default any">
-    <option value="">— Any —</option>
-    <option value="below-3l">Below ₹3 LPA</option>
-    <option value="3-6l">₹3 – 6 LPA</option>
-    <option value="6-12l">₹6 – 12 LPA</option>
-    <option value="12-25l">₹12 – 25 LPA</option>
-    <option value="25-50l">₹25 – 50 LPA</option>
-    <option value="50l-1cr">₹50 LPA – 1 Cr</option>
-    <option value="1cr+">₹1 Cr +</option>
-    <option value="prefer-not">Prefer not to say</option>
-  </select>
-</div>
+<!-- Experience + Salary — collapsed behind 'Advanced' so they don't crowd the default view -->
+<details class="picker-advanced" style="background:#fff;border-bottom:1px solid var(--border);padding:0 14px;font-size:12px">
+  <summary style="padding:6px 0;color:var(--muted);cursor:pointer;font-weight:600;list-style:none;display:inline-flex;align-items:center;gap:4px" aria-label="Advanced filters — experience and salary">⚙ Advanced (experience · salary)</summary>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:6px 0 10px;align-items:center">
+    <span class="pick-lbl" data-i18n="pick.exp" aria-hidden="true">Experience</span>
+    <select id="pick-experience" onchange="onProfileFieldChange('exp', this.value)" aria-label="Years of experience — optional" style="font-size:12px;min-height:34px;padding:6px 8px">
+      <option value="">— Any —</option>
+      <option value="fresher">🎓 Fresher (0 yrs)</option>
+      <option value="0-2">0–2 yrs</option>
+      <option value="3-5">3–5 yrs</option>
+      <option value="6-10">6–10 yrs</option>
+      <option value="11-15">11–15 yrs</option>
+      <option value="16-20">16–20 yrs</option>
+      <option value="20+">20+ yrs</option>
+      <option value="sabbatical">Sabbatical / Career break</option>
+      <option value="retired">Retired</option>
+    </select>
+    <span class="pick-lbl" data-i18n="pick.sal" aria-hidden="true">Salary</span>
+    <select id="pick-salary" onchange="onProfileFieldChange('sal', this.value)" aria-label="Current annual salary band in INR — optional" style="font-size:12px;min-height:34px;padding:6px 8px">
+      <option value="">— Any —</option>
+      <option value="below-3l">Below ₹3 LPA</option>
+      <option value="3-6l">₹3 – 6 LPA</option>
+      <option value="6-12l">₹6 – 12 LPA</option>
+      <option value="12-25l">₹12 – 25 LPA</option>
+      <option value="25-50l">₹25 – 50 LPA</option>
+      <option value="50l-1cr">₹50 LPA – 1 Cr</option>
+      <option value="1cr+">₹1 Cr +</option>
+      <option value="prefer-not">Prefer not to say</option>
+    </select>
+  </div>
+</details>
 
 <nav class="tabs" role="tablist" aria-label="Chitti News AI categories">
   <button class="tab active" data-tab="ai-news"     onclick="showCategory('ai-news')"     role="tab" aria-selected="true"  data-i18n="cat.ai_news">📰 AI Aaj</button>
