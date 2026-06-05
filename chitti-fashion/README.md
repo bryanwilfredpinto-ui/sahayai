@@ -56,22 +56,27 @@ translation (locked voice strategy). No Hinglish — one pure language per respo
 🟡 **YELLOW** — full CFOS operating system + rebuilt page committed 2026-06-03;
 production functional cert pending next deploy. Substrate 5-gate inherited 🟢.
 
-## Document map
+## Document map (CFOS v2.0)
 
 | Area | File(s) |
 |---|---|
-| Constitution | [ROLE.md](ROLE.md) |
-| Vision / metrics | [PRODUCT_VISION.md](PRODUCT_VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
-| Users | [PERSONAS.md](PERSONAS.md) |
+| **Level 0 — Constitution** | [CONSTITUTION.md](CONSTITUTION.md) (Founder Rule) |
+| **Level 1 — Role** | [ROLE.md](ROLE.md) (Chief Designer) |
+| **Level 2 — Vision** | [VISION.md](VISION.md) · [PRODUCT_VISION.md](PRODUCT_VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
+| **Level 3 — Users** | [PERSONAS.md](PERSONAS.md) (P1–P12) |
 | Spec | [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Capabilities | [skills/](skills/) (+ [skills/FEATURES.md](skills/FEATURES.md)) |
-| Playbooks | [sop/](sop/) |
-| Voting agents | [swarm/](swarm/) |
-| Safety | [guardrails/](guardrails/) |
-| Tests | [evals/](evals/) |
-| Accessibility reviews | [accessibility/](accessibility/) |
-| Memory model | [memory/](memory/) |
-| Observability | [observability/](observability/) |
+| **Level 4 — Skills** | [SKILLS.md](SKILLS.md) (12 skills) · [skills/](skills/) (+ [FEATURES.md](skills/FEATURES.md), [master-stylist-method.md](skills/master-stylist-method.md), [career-coach.md](skills/career-coach.md)) |
+| **Level 5 — SOPs** | [SOP.md](SOP.md) · [sop/](sop/) |
+| **Level 6 — Swarm** | [swarm/](swarm/) (9 voting agents + Trend) |
+| **Level 7 — Guardrails** | [guardrails/](guardrails/) |
+| **Level 8 — Accessibility** | [accessibility/](accessibility/) · [ADAPTIVE_CLOTHING.md](ADAPTIVE_CLOTHING.md) |
+| **Level 9 — Memory / Twin** | [memory/](memory/) · [FASHION_TWIN.md](FASHION_TWIN.md) |
+| **Level 10 — Observability** | [OBSERVABILITY.md](OBSERVABILITY.md) · [observability/](observability/) |
+| **Level 11 — Evals** | [EVALS.md](EVALS.md) · [evals/](evals/) |
+| Sustainability | [SUSTAINABILITY.md](SUSTAINABILITY.md) |
+| Cultural | [CULTURAL_INTELLIGENCE.md](CULTURAL_INTELLIGENCE.md) |
+| Quality | [QUALITY.md](QUALITY.md) · [CERTIFICATION_REPORT.md](CERTIFICATION_REPORT.md) |
+| Roadmap | [ROADMAP.md](ROADMAP.md) |
 
 ---
 > **World Class Chitti Fashion — Commando Discipline. Zero Excuses.**

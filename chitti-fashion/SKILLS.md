@@ -4,6 +4,23 @@
 > the user-facing capability surface (parsed live by `chitti_features.js`) is
 > [skills/FEATURES.md](skills/FEATURES.md).
 
+## CFOS v2.0 — the 12 skills (Level 4)
+
+| # | Skill | Where it lives | Status |
+|---|---|---|---|
+| 01 | **Clothing recognition** (shirt/saree/kurta/jeans/blazer/shoes…) | vision — needs LLM | 🔵 vision-pending; categories used today |
+| 02 | **Colour matching** (complementary/analogous/monochrome + real undertone/value/chroma) | engine `analyseColour`/`colorHarmony` + [color-theory.md](skills/color-theory.md) | 🟢 |
+| 03 | **Body-proportion analysis** (garment terms, never shame) | engine `fitNote` + [body-proportion.md](skills/body-proportion.md) | 🟢 |
+| 04 | **Climate intelligence** (weather/location/season, fabric→season) | engine `fabricSeason`/`seasonalSuitability` + [climate agent](swarm/climate-agent.md) | 🟢 |
+| 05 | **Cultural intelligence** (region/religion/festival) | engine ethnic detection + [CULTURAL_INTELLIGENCE.md](CULTURAL_INTELLIGENCE.md) | 🟢 |
+| 06 | **Accessibility assistant** (blind/deaf/mute/illiterate) | [accessibility/](accessibility/) + a11y substrate | 🟢 |
+| 07 | **Budget optimizer** (₹0 → ₹500 → ₹2000 → ₹10000, ₹0 first) | [budget-stylist.md](skills/budget-stylist.md) + Founder Rule | 🟢 |
+| 08 | **Sustainability advisor** (reuse score · cost-per-wear) | [SUSTAINABILITY.md](SUSTAINABILITY.md) + Audit | 🟢 |
+| 09 | **Fashion teacher** (explain WHY) | Learn + [teacher agent](swarm/teacher-agent.md) | 🟢 |
+| 10 | **Travel stylist** (destination-based) | Travel Packing | 🟢 |
+| 11 | **Adaptive clothing** (disability-friendly) | [ADAPTIVE_CLOTHING.md](ADAPTIVE_CLOTHING.md) | 🟢 guidance; UI surface 🟡 |
+| 12 | **Fashion Digital Twin** (wardrobe/usage/history + learning) | [FASHION_TWIN.md](FASHION_TWIN.md) + engine learning loop | 🟢 profile + learning |
+
 ## Features
 
 | Feature | Status | Tested By | Date |

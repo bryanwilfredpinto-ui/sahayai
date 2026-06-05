@@ -54,7 +54,26 @@ Each persona carries a **user story** in the canonical form:
 - **Story:** *As a user who cannot read, I want to hear everything and tap pictures so that I can dress well for a wedding without reading a word.*
 - See [accessibility/illiterate_user.md](accessibility/illiterate_user.md).
 
-## P9 — The Family (cross-persona)
+## P9b — Rural User (CFOS v2.0 · P9)
+- **Needs:** voice-first, 2G, picture menus, SMS fallback, budget-zero, local-festival aware.
+- **Story:** *As a rural user with a basic phone and little money, I want Chitti to dress me for a festival from what my family already owns, by voice, on slow internet.*
+- Triggers RURAL/LOW-CONNECTIVITY adaptations + the Founder Rule (reuse before buy). Almost no app serves this user.
+
+## P10 — Budget User (CFOS v2.0)
+- **Needs:** ₹0 first, honest cheaper-elsewhere, cost-per-wear, no purchase pressure.
+- **Story:** *As someone on a tight budget, I want the ₹0 answer first and the true cost-per-wear, so I never overspend.*
+
+## P11 — Sustainable Fashion User (CFOS v2.0, from research)
+- **Needs:** reuse · repair · borrow · rent before buy; cost-per-wear; rare-worn revival; low waste.
+- **Story:** *As someone who cares about waste, I want Chitti to help me wear what I own longer and repair before replacing.*
+- Served by the [Founder Rule](CONSTITUTION.md) + [SUSTAINABILITY.md](SUSTAINABILITY.md) + Sustainability swarm agent.
+
+## P12 — Adaptive Clothing User (CFOS v2.0, from research)
+- **Needs:** easy fasteners, seated fit, low-vision-safe, sensory-friendly, independent dressing — styled with dignity.
+- **Story:** *As a wheelchair user (or limited-dexterity / sensory-sensitive), I want stylish clothes I can put on myself, with comfort treated as good fashion.*
+- Served by [ADAPTIVE_CLOTHING.md](ADAPTIVE_CLOTHING.md) + the engine's `fitNote`/judge codes + the Accessibility-Agent floor.
+
+## P0 — The Family (cross-persona)
 - One device, many wearers: father, mother, child, grandparent.
 - **Story:** *As a family, I want one Chitti to dress all of us for the same wedding so that we coordinate without four separate apps.*
 - Served by the **Family Stylist** (PRD F12), each wearer a separate local profile.
