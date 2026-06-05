@@ -43,20 +43,20 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#
 .header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
 .header-controls button:hover{background:rgba(255,255,255,.22)}
 
-/* Disclaimer */
-.news-disclaimer{position:sticky;top:0;z-index:55;background:#fef3c7;color:#78350f;padding:8px 14px;text-align:center;font-size:12.5px;font-weight:600;border-bottom:1px solid #fcd34d;line-height:1.45}
+/* Disclaimer — compact, smaller, non-sticky to free vertical real-estate */
+.news-disclaimer{background:rgba(212,175,55,.12);color:#78350f;padding:4px 14px;text-align:center;font-size:11px;font-weight:600;border-bottom:1px solid rgba(212,175,55,.45);line-height:1.4}
 
-/* Picker bar */
-.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:36px;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 11px;font-size:13px;min-height:48px;font-weight:600}
+/* Picker bar — collapsed default (just profession in 1 row); experience+salary only on first visit / advanced */
+.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;min-height:40px;font-weight:600}
 .picker-bar select:focus{outline:none;border-color:var(--saffron)}
 .picker-bar .pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .picker-bar .pick-sep{flex:1}
-.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:10px;padding:9px 14px;font-size:13px;cursor:pointer;min-height:40px}
+.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:36px}
 .spk-btn{background:#fff;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
 
 /* Tabs */
-nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:96px;z-index:4;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:56px;z-index:4;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px}
 nav.tabs .tab:hover{color:var(--text)}
 nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
@@ -210,7 +210,7 @@ footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 .hub-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
 .hub-verdict{background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.06));border-left:4px solid var(--saffron);padding:10px 12px;border-radius:8px;font-size:13.5px;line-height:1.5;margin-bottom:6px}
 .hub-sourced{font-size:11px;color:var(--muted);font-style:italic}
-.hub-subnav{display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:10;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);padding:10px 0;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.hub-subnav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;margin-bottom:10px;border-bottom:1px solid var(--border)}
 .hub-chip{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;background:#f3f4f6;border:1px solid var(--border);border-radius:999px;color:var(--navy);font-size:12px;font-weight:700;text-decoration:none}
 .hub-chip:hover{background:rgba(232,106,23,.12);border-color:var(--saffron)}
 .hub-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;scroll-margin-top:60px}
@@ -343,6 +343,31 @@ nav.tabs .tab{min-height:46px}
   .metric-grid{grid-template-columns:1fr 1fr}
   .cta-saffron,.cta-navy{font-size:13px;padding:10px 14px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DECLUTTER (Sire 2026-06-05 PM "not user friendly at all")
+   - News cards now title + meta + 1 action; everything else under <details>
+   - Hub sections (Impact / Prompts / Comparisons / Forecast) collapsible
+   - Tour: hide done days visually distinct so user focuses on Day-Today
+   ═══════════════════════════════════════════════════════════════════ */
+.hub-section > details > summary{cursor:pointer;list-style:none;padding:6px 0;position:relative;padding-left:24px}
+.hub-section > details > summary::-webkit-details-marker{display:none}
+.hub-section > details > summary::before{content:'▸';position:absolute;left:6px;top:7px;font-size:13px;color:var(--saffron);transition:transform .15s}
+.hub-section > details[open] > summary::before{transform:rotate(90deg)}
+.hub-section > details > summary h3{margin:0;font-size:15px}
+.hub-section > details[open] > summary h3{color:var(--saffron)}
+.hub-section > details{padding:0}
+.hub-section > details > *:not(summary){margin-top:10px}
+
+.card-details > summary{list-style:none;padding-left:18px;position:relative}
+.card-details > summary::-webkit-details-marker{display:none}
+.card-details > summary::before{content:'▸';position:absolute;left:2px;top:5px;font-size:11px;color:var(--muted);transition:transform .15s}
+.card-details[open] > summary::before{transform:rotate(90deg)}
+
+/* Tour: dim done-days so eye lands on today */
+.tt-day.tt-day-done{opacity:.55}
+.tt-day.tt-day-done:hover{opacity:1}
+.tt-day.tt-day-next{transform:scale(1.01)}
 </style>
 
 <!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
@@ -1120,39 +1145,15 @@ function _profLabel(slug){
 }
 
 function _cardHTML(item, stream){
+  // ── DECLUTTERED CARD (Sire 2026-06-05 PM "not user friendly at all") ──
+  // Default view: title + 1-line meta + relevance flag if CRITICAL/VERY-IMPORTANT
+  //              + 1 primary action. Everything else under <details> tap-to-expand.
   const cls = item.classification;
   const sectionLabel = `${STREAM_LABELS[stream]||stream} — ${(item.title||'').slice(0,50)}`;
-  const expl = cls ? `
-    <details class="why-this" style="margin-top:8px">
-      <summary style="font-size:11px;color:var(--muted);font-weight:700;cursor:pointer">ℹ️ Why this matters — tap to audit (rule v${(cls.rule_version||'').replace(/^v/,'')})</summary>
-      <div style="font-size:11.5px;color:var(--text);margin-top:6px;padding:8px;background:rgba(212,175,55,.08);border-radius:8px;line-height:1.5">
-        <div><strong>category:</strong> ${cls.category}</div>
-        <div><strong>confidence:</strong> ${(cls.confidence*100).toFixed(0)}%</div>
-        <div><strong>matched keywords:</strong> ${(cls.matched_keywords||[]).join(', ') || '<em>none — source/URL rule fired</em>'}</div>
-        <div><strong>source signals:</strong> ${(cls.source_signals||[]).join(', ') || '<em>none — keyword-only match</em>'}</div>
-      </div>
-    </details>` : '';
-  const cost = item.cost_label ? `<div style="font-size:11px;color:${item.is_free ? 'var(--green)' : 'var(--red)'};font-weight:700;margin-top:4px">💰 ${item.cost_label}</div>` : '';
-  const src = item.source ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">📡 ${item.source.name}${item.source.domain ? ' · ' + item.source.domain : ''}</div>` : '';
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 
-  // v0.3 Trust Strip — verification UX a user reads in <2s (per chitti-news pattern)
-  const trustBadge = cls
-    ? `<span style="display:inline-block;background:${cls.confidence>=0.85?'rgba(22,163,74,.12)':cls.confidence>=0.6?'rgba(212,175,55,.15)':'rgba(220,38,38,.10)'};color:${cls.confidence>=0.85?'var(--green)':cls.confidence>=0.6?'var(--amber)':'var(--red)'};border:1px solid currentColor;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase">${cls.confidence>=0.85?'✅ HIGH-CONFIDENCE':cls.confidence>=0.6?'⚠️ MEDIUM':'🟡 LOW'}</span>`
-    : '';
-  const freeBadge = `<span style="display:inline-block;background:${item.is_free?'rgba(22,163,74,.12)':'rgba(220,38,38,.10)'};color:${item.is_free?'var(--green)':'var(--red)'};border:1px solid currentColor;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase">${item.is_free?'FREE':'PAID'}</span>`;
-
-  // Stale-data flag: items > 30 days unverified (last_verified_at < now-30d, or null + ingested >30d ago)
-  let staleBadge = '';
-  const stamp = item.last_verified_at || item.ingested_at;
-  if (stamp) {
-    const ageDays = (Date.now() - new Date(stamp).getTime()) / 86400000;
-    if (ageDays > 30) {
-      staleBadge = `<span style="display:inline-block;background:rgba(212,175,55,.18);color:#92400e;border:1px solid #fbbf24;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase" title="Last verified ${Math.round(ageDays)} days ago">⏳ ${Math.round(ageDays)}d STALE</span>`;
-    }
-  }
-
-  // COSDF v1.1 L14 — Chitti Explains relevance band per profession
-  let relBadge = '';
+  // High-signal relevance flag (only CRITICAL + VERY-IMPORTANT shown by default; rest hidden)
+  let relFlag = '';
   try {
     const _profForRel = (typeof _getProfession === 'function' ? _getProfession() : null);
     if (_profForRel && _profForRel !== 'everyone' && window.ChittiCoach && window.ChittiCoach.relevance) {
@@ -1160,23 +1161,47 @@ function _cardHTML(item, stream){
         title: item.title || '', summary: item.summary || '',
         topics: (cls && cls.matched_keywords) ? cls.matched_keywords.join(',') : ''
       }, _profForRel);
-      if (_rel && _rel.verdict && _rel.verdict !== 'IGNORE') {
-        relBadge = `<span class="band band-${_rel.verdict}" title="${(_rel.why||'').replace(/"/g,'&quot;')}">${_rel.verdict === 'CRITICAL' ? '🔥 ' : _rel.verdict === 'VERY-IMPORTANT' ? '⚡ ' : '👀 '}${_rel.verdict}</span>`;
+      if (_rel && (_rel.verdict === 'CRITICAL' || _rel.verdict === 'VERY-IMPORTANT')) {
+        relFlag = `<span class="band band-${_rel.verdict}" style="margin-right:6px" title="${esc(_rel.why)}">${_rel.verdict === 'CRITICAL' ? '🔥 Critical' : '⚡ Important'}</span>`;
       }
     }
   } catch (e) {}
 
+  // One-line meta: source name + free/paid + (age if stale)
+  const srcName = item.source ? item.source.name : '';
+  const freeChip = item.is_free
+    ? '<span style="color:var(--med-green);font-weight:700">FREE</span>'
+    : '<span style="color:var(--med-red);font-weight:700">PAID</span>';
+  let ageHint = '';
+  const stamp = item.last_verified_at || item.ingested_at;
+  if (stamp) {
+    const ageDays = (Date.now() - new Date(stamp).getTime()) / 86400000;
+    if (ageDays > 30) ageHint = ` · <span title="Last verified ${Math.round(ageDays)} days ago" style="color:#92400e">⏳ ${Math.round(ageDays)}d</span>`;
+  }
+
+  // Hidden disclosure carries all old badges + classification audit
+  const detailsBlock = `
+    <details class="card-details" style="margin-top:10px">
+      <summary style="font-size:11px;color:var(--muted);font-weight:600;cursor:pointer;padding:4px 0">ℹ More details · trust · classification</summary>
+      <div style="font-size:11.5px;color:var(--text);margin-top:6px;padding:10px;background:rgba(212,175,55,.06);border-radius:8px;line-height:1.6">
+        ${cls ? `<div><strong>Trust:</strong> ${cls.confidence>=0.85?'✅ HIGH-CONFIDENCE':cls.confidence>=0.6?'⚠️ MEDIUM':'🟡 LOW'} · ${(cls.confidence*100).toFixed(0)}% match</div>` : ''}
+        ${item.cost_label ? `<div><strong>Cost:</strong> ${esc(item.cost_label)}</div>` : ''}
+        ${cls ? `<div><strong>Category:</strong> ${esc(cls.category)} · rule v${esc((cls.rule_version||'').replace(/^v/,''))}</div>` : ''}
+        ${cls && (cls.matched_keywords||[]).length ? `<div><strong>Matched keywords:</strong> ${esc((cls.matched_keywords||[]).join(', '))}</div>` : ''}
+        ${cls && (cls.source_signals||[]).length ? `<div><strong>Source signals:</strong> ${esc((cls.source_signals||[]).join(', '))}</div>` : ''}
+      </div>
+    </details>`;
+
   return `
-    <div class="art-card chitti-response" data-chitti-response data-chitti-section="${sectionLabel.replace(/"/g,'&quot;')}" style="grid-template-columns:1fr">
+    <div class="art-card chitti-response" data-chitti-response data-chitti-section="${sectionLabel.replace(/"/g,'&quot;')}" style="grid-template-columns:1fr;padding:14px 16px">
       <div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${trustBadge} ${freeBadge} ${staleBadge} ${relBadge}</div>
-        <div class="art-title">${item.title.replace(/</g,'&lt;')}</div>
-        ${item.summary ? `<div class="art-summary">${(item.summary || '').slice(0,300).replace(/</g,'&lt;')}</div>` : ''}
-        ${src}
-        ${cost}
-        <div class="art-actions" style="margin-top:8px">
-          <a class="primary" href="${item.url}" target="_blank" rel="noopener" style="background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:11px">↗ Open at source</a>
+        <div class="art-title" style="margin-bottom:6px">${relFlag}${esc(item.title)}</div>
+        ${item.summary ? `<div class="art-summary" style="margin-bottom:10px">${esc((item.summary || '').slice(0,180))}${(item.summary||'').length>180?'…':''}</div>` : ''}
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">📡 ${esc(srcName)} · ${freeChip}${ageHint}</div>
+        <div class="art-actions" style="margin-top:4px">
+          <a class="cta-saffron" href="${esc(item.url)}" target="_blank" rel="noopener" aria-label="Open ${esc(item.title).slice(0,60)} at source" style="font-size:12px;padding:8px 14px;min-height:36px;text-decoration:none;display:inline-block">↗ Open at source</a>
         </div>
+        ${detailsBlock}
         ${expl}
       </div>
     </div>`;
@@ -1689,14 +1714,14 @@ loadFeed(false);
     });
     html += '</nav>';
 
-    // Section 1 — IMPACT task breakdown (L13)
+    // Section 1 — IMPACT task breakdown (L13) — COLLAPSED by default
     html += '<section id="hub-sec-impact" class="hub-section" data-chitti-response data-chitti-section="AI Impact — task breakdown">';
-    html += '<h3>📊 AI Impact — task-by-task</h3>';
+    html += '<details><summary><h3 style="display:inline">📊 AI Impact — task-by-task</h3></summary>';
     html += '<table class="hub-table"><thead><tr><th>Task</th><th>% automatable</th></tr></thead><tbody>';
     imp.tasks.forEach(function (t) {
       html += '<tr><td>' + _hubEsc(t.task) + '</td><td><strong>' + t.automatable + '%</strong> ' + _hubBar(t.automatable, 100, 12) + '</td></tr>';
     });
-    html += '</tbody></table></section>';
+    html += '</tbody></table></details></section>';
 
     // Section 2 — CHITTI EXPLAINS (L14) — sample relevance verdicts over current feed
     html += '<section id="hub-sec-explains" class="hub-section" data-chitti-response data-chitti-section="Chitti Explains — relevance to your work">';
@@ -1753,9 +1778,9 @@ loadFeed(false);
     }
     html += '</section>';
 
-    // Section 6 — PROMPTS (L17.5)
+    // Section 6 — PROMPTS (L17.5) — COLLAPSED
     html += '<section id="hub-sec-prompts" class="hub-section" data-chitti-response data-chitti-section="Copy-paste prompts for your role">';
-    html += '<h3>💬 Copy-paste prompts for your role</h3>';
+    html += '<details><summary><h3 style="display:inline">💬 Copy-paste prompts for your role</h3></summary>';
     if (prompts.length) {
       html += '<ol class="hub-list hub-prompts">';
       prompts.forEach(function (pmt) {
@@ -1763,11 +1788,11 @@ loadFeed(false);
       });
       html += '</ol>';
     } else { html += '<p class="section-empty">No prompts curated yet.</p>'; }
-    html += '</section>';
+    html += '</details></section>';
 
-    // Section 7 — TOOL COMPARISONS (L21)
+    // Section 7 — TOOL COMPARISONS (L21) — COLLAPSED parent
     html += '<section id="hub-sec-comparisons" class="hub-section" data-chitti-response data-chitti-section="Tool comparisons for your role">';
-    html += '<h3>⚖️ Tool comparisons — head-to-head</h3>';
+    html += '<details><summary><h3 style="display:inline">⚖️ Tool comparisons — head-to-head</h3></summary>';
     if (comps.length) {
       comps.forEach(function (c) {
         html += '<details><summary><strong>' + _hubEsc(c.title) + '</strong></summary>';
@@ -1781,7 +1806,7 @@ loadFeed(false);
         html += '</ul></details>';
       });
     } else { html += '<p class="section-empty">No comparisons curated for this role yet.</p>'; }
-    html += '</section>';
+    html += '</details></section>';
 
     // Section 8 — JOBS RADAR (L18) — sample
     html += '<section id="hub-sec-jobs" class="hub-section" data-chitti-response data-chitti-section="AI Jobs Radar — news linked to jobs and tools">';
@@ -1806,9 +1831,9 @@ loadFeed(false);
     }
     html += '</section>';
 
-    // Section 9 — FORECAST (L22)
+    // Section 9 — FORECAST (L22) — COLLAPSED
     html += '<section id="hub-sec-forecast" class="hub-section" data-chitti-response data-chitti-section="3-year forecast for your role">';
-    html += '<h3>🔮 3-year forecast (2026 · 2027 · 2028)</h3>';
+    html += '<details><summary><h3 style="display:inline">🔮 3-year forecast (2026 · 2027 · 2028)</h3></summary>';
     if (fc.length) {
       html += '<table class="hub-table"><thead><tr><th>Year</th><th>Theme</th><th>Risk</th><th>Opportunity</th></tr></thead><tbody>';
       fc.forEach(function (yr) {
@@ -1816,25 +1841,28 @@ loadFeed(false);
       });
       html += '</tbody></table>';
     } else { html += '<p class="section-empty">No forecast curated for this role yet.</p>'; }
-    html += '</section>';
+    html += '</details></section>';
 
-    // Section 10 — MENTOR (L19)
+    // Section 10 — MENTOR (L19) — focused: ONE clear next action; stats minimal
     html += '<section id="hub-sec-mentor" class="hub-section" data-chitti-response data-chitti-section="Chitti Mentor — next 1 action">';
-    html += '<h3>🧑‍🏫 Chitti Mentor — your next 1 action</h3>';
+    html += '<h3 style="margin:0 0 10px;font-size:16px">🧑‍🏫 Your next move</h3>';
     var done = (p.done_items||[]).length;
-    var skipped = (p.skipped_items||[]).length;
     var gap = Math.max(0, 80 - rd.score);
     var etaMonths = gap === 0 ? 0 : Math.max(1, Math.ceil(gap / 5));
     var nextItem = (ms && ms.watch) ? ms.watch : { title: 'Take the first Coach Pick course this week', url: '#' };
     html += '<div class="hub-mentor">';
-    html += '<p>✅ Completed: <strong>' + done + '</strong> · ⏭ Skipped: <strong>' + skipped + '</strong></p>';
-    html += '<p>📈 At your current pace, AI-ready (80/100) in about <strong>' + etaMonths + ' month' + (etaMonths === 1 ? '' : 's') + '</strong>.</p>';
-    html += '<p>👉 <strong>Do this next:</strong> <a href="' + _hubEsc(nextItem.url) + '" target="_blank" rel="noopener">' + _hubEsc(nextItem.title) + ' ↗</a></p>';
+    html += '<p style="margin:0 0 12px;font-size:15px"><strong>👉 Do this next:</strong><br><a href="' + _hubEsc(nextItem.url) + '" target="_blank" rel="noopener" style="font-size:14px;color:var(--saffron);font-weight:700;text-decoration:underline">' + _hubEsc(nextItem.title) + ' ↗</a></p>';
+    html += '<p style="margin:0 0 12px;font-size:12px;color:var(--muted)">' + done + ' tasks done · AI-ready in ~' + etaMonths + ' month' + (etaMonths === 1 ? '' : 's') + ' at current pace</p>';
     html += '<div class="hub-actions">';
+    html += '  <button type="button" class="cta-saffron" onclick="showCategory(\'tool-tour\')" aria-label="Open the 28-day tool tour">🎓 Start 28-day tour</button>';
+    html += '</div>';
+    html += '<details style="margin-top:10px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">▸ More actions</summary>';
+    html += '<div class="hub-actions" style="margin-top:8px">';
     html += '  <button type="button" class="cta-navy" onclick="ccAskOpen()" aria-label="Ask the Coach">💬 Ask the Coach</button>';
-    html += '  <button type="button" class="cta-navy" onclick="ccCvOpen()" aria-label="Generate my AI CV">📋 Generate my AI CV</button>';
-    html += '  <button type="button" class="cta-saffron" onclick="showCategory(\'my-coach\')" aria-label="Open my 4-week plan">📅 Open my 4-week plan</button>';
-    html += '</div></div></section>';
+    html += '  <button type="button" class="cta-navy" onclick="ccCvOpen()" aria-label="Generate my AI CV">📋 Generate AI CV</button>';
+    html += '  <button type="button" class="cta-navy" onclick="showCategory(\'my-coach\')" aria-label="Open my 4-week plan">📅 4-week plan</button>';
+    html += '</div></details>';
+    html += '</div></section>';
 
     host.innerHTML = html;
     if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.refresh) { try { window.Chitti.a11y.refresh(); } catch (e) {} }
