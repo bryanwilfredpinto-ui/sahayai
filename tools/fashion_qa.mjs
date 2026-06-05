@@ -148,6 +148,12 @@ await p.evaluate(() => { const c = document.querySelector('#fa-mode-chips .fa-ch
 await p.waitForTimeout(500);
 const modeGuide = await p.evaluate(() => { const e = document.getElementById('fa-mode-result'); return !!e && e.querySelectorAll('li').length >= 3; });
 modeGuide ? P('v2.1 Modes: Senior lens shows adaptive dressing guidance') : F('v2.1 Mode guidance');
+// CFOS v2.1: everyday Family coordination — occasion + member chips, coordinate produces a family plan
+const famChips = await p.evaluate(() => document.querySelectorAll('#fa-fam-occ .fa-chip').length + document.querySelectorAll('#fa-fam-members .fa-chip').length);
+(famChips >= 2) ? P('v2.1 Family: occasion + member chips render') : F('v2.1 Family chips', String(famChips));
+await p.evaluate(() => { const c = document.querySelector('#fa-fam-occ .fa-chip'); if (c) c.click(); faFamilyCoordinate(); });
+await p.waitForTimeout(600);
+(await mutated(p, '#fa-fam-result')) ? P('button: Family coordination renders') : F('button: Family coordination');
 // career coach: pick a role -> plan with real resources renders
 await p.evaluate(() => { document.querySelector('.fa-tabbar button[data-tab="career"]').click(); const r = document.querySelector('#fa-coach-host [data-role]'); if (r) r.click(); });
 await p.waitForTimeout(500);

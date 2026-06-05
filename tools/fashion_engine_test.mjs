@@ -170,6 +170,19 @@ ok('week: tiny wardrobe degrades HONESTLY (reuse flagged, not hidden)',
     return wk.reuseCount >= 1 && wk.honest.length > 0;
   })());
 
+// CFOS v2.1 — everyday Family coordination (any occasion, not just weddings)
+(() => {
+  const plan = E.planFamily(
+    { occasion: 'office', members: [{ wearer_id: 'a' }, { wearer_id: 'b' }] },
+    { a: [{ id: 't1', category: 'top', colour: 'navy', hex: '#1A3A6B', occasions: ['office'] }, { id: 'b1', category: 'bottom', colour: 'grey', occasions: ['office'] }],
+      b: [{ id: 't2', category: 'top', colour: 'blue', hex: '#2A6FB0', occasions: ['office'] }, { id: 'b2', category: 'bottom', colour: 'charcoal', occasions: ['office'] }] });
+  ok('family: everyday occasion maps to a band (office→business-casual)', plan.targetBand === 'business-casual');
+  ok('family: produces a shared palette + one anchor for any occasion', !!plan.familyPalette.undertone && plan.perMember.filter(p => p.role === 'anchor').length === 1);
+  ok('family: coordinationScore is 0..100', typeof plan.coordinationScore === 'number' && plan.coordinationScore >= 0 && plan.coordinationScore <= 100);
+})();
+ok('family: festive occasion still uses festive-item relevance (reuses wedding core)',
+  (() => { const p = E.planFamily({ occasion: 'festive', members: [{ wearer_id: 'x' }] }, { x: [{ id: 's', category: 'outfit', colour: 'maroon', desc: 'silk saree', hex: '#800000' }] }); return p.targetBand === 'festive' && p.perMember.length === 1; })());
+
 // CFOS v2.1 — Senior / Kids adaptive mode
 ok('mode: senior guidance returns easy-fasten + non-slip tips',
   (() => { const g = E.modeGuidance('senior'); return g.band === 'senior' && g.tips.includes('easy_fasten') && g.tips.includes('non_slip'); })());

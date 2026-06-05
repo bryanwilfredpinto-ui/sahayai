@@ -358,24 +358,28 @@
     return ETHNIC.test(hayOf(it)) || FESTIVE_COLOUR.test(hayOf(it)) ||
       (it.occasions || []).some(function (o) { return /festive|wedding|sangeet|mehendi|reception/.test(o); });
   }
+  // Occasion (everyday) → engine band, for general family coordination beyond weddings.
+  var OCCASION_BAND = {
+    festive: 'festive', wedding: 'wedding', religious: 'festive', family: 'smart-casual',
+    office: 'business-casual', interview: 'smart-casual', college: 'casual', casual: 'casual',
+    travel: 'casual', date: 'smart-casual', photo: 'festive', funeral: 'formal'
+  };
+  // ── shared coordination core (used by both Wedding and everyday Family planners) ──
+  // relevantFn: which items define the palette + the "anchor strength" + the borrow-lender.
   // wardrobesByWearer: { wearer_id: [items...] }
-  function planWedding(input, wardrobesByWearer) {
-    input = input || {}; wardrobesByWearer = wardrobesByWearer || {};
-    var members = input.members || [];
-    var targetBand = FUNCTION_BAND[input.function] || 'festive';
-    if (input.role && input.role !== 'own') targetBand = stepBandDown(targetBand);
-
-    // family palette: tally undertone across everyone's festive pieces
-    var warm = 0, cool = 0, famTally = {};
+  function coordinateFamily(members, wardrobesByWearer, targetBand, opts) {
+    members = members || []; wardrobesByWearer = wardrobesByWearer || {}; opts = opts || {};
+    var relevant = opts.relevantFn || function () { return true; };
+    var gapCode = opts.gapCode || 'no_match', gapQuery = opts.gapQuery || 'outfit';
+    // family palette: tally undertone across everyone's relevant pieces
+    var warm = 0, cool = 0;
     members.forEach(function (m) {
-      (wardrobesByWearer[m.wearer_id] || []).filter(isFestiveItem).forEach(function (it) {
+      (wardrobesByWearer[m.wearer_id] || []).filter(relevant).forEach(function (it) {
         var a = analyseColour(it.hex, it.colour);
         if (a.undertone === 'warm') warm++; else if (a.undertone === 'cool') cool++;
-        if (a.family !== 'neutral') famTally[a.family] = (famTally[a.family] || 0) + 1;
       });
     });
     var undertone = cool > warm ? 'cool' : 'warm'; // festive default warm on ties
-    var anchorFamily = undertone; // family in our model IS the undertone for non-neutrals
     var palette = {
       undertone: undertone,
       anchor: undertone === 'warm' ? 'maroon + gold' : 'navy + teal',
@@ -383,57 +387,57 @@
         ? 'warm family theme — maroon, gold, rust, mustard read as one set'
         : 'cool family theme — navy, teal, plum, emerald read as one set'
     };
-
-    // assign one anchor (boldest festive piece), rest accents with varied value
+    // recommend per member; pick one anchor (strongest relevant pieces), rest accents
     var scored = members.map(function (m) {
       var items = (wardrobesByWearer[m.wearer_id] || []);
-      var rec = recommend(items, {
-        occasion: targetBand, season: input.season, age_band: m.ageBand, max: 1,
-        liked: m.liked
-      });
-      var outfit = rec[0] || null;
-      var festiveStrength = items.filter(isFestiveItem).reduce(function (a, it) { return a + itemFormality(it); }, 0);
-      return { m: m, outfit: outfit, items: items, festiveStrength: festiveStrength };
+      var rec = recommend(items, { occasion: targetBand, season: opts.season, age_band: m.ageBand, max: 1, liked: m.liked });
+      var strength = items.filter(relevant).reduce(function (a, it) { return a + itemFormality(it); }, 0);
+      return { m: m, outfit: rec[0] || null, items: items, strength: strength };
     });
     var anchorIdx = -1, best = -1;
-    scored.forEach(function (s, i) { if (s.outfit && s.festiveStrength > best) { best = s.festiveStrength; anchorIdx = i; } });
-
+    scored.forEach(function (s, i) { if (s.outfit && s.strength > best) { best = s.strength; anchorIdx = i; } });
     var matched = 0, planned = 0;
     var perMember = scored.map(function (s, i) {
       var role = i === anchorIdx ? 'anchor' : 'accent';
       var gaps = [], shopLinks = [];
       if (!s.outfit) {
-        // Founder Rule ladder: borrow within family -> rent -> buy
         var lender = members.find(function (mm) {
-          return mm.wearer_id !== s.m.wearer_id &&
-            (wardrobesByWearer[mm.wearer_id] || []).some(isFestiveItem);
+          return mm.wearer_id !== s.m.wearer_id && (wardrobesByWearer[mm.wearer_id] || []).some(relevant);
         });
-        gaps.push({
-          code: 'no_festive', ladder: lender
-            ? ['borrow', 'rent', 'buy'] : ['rent', 'buy'],
-          borrowFrom: lender ? lender.wearer_id : null
-        });
-        shopLinks.push({ tier: 'budget', q: (input.culture || '') + ' festive wear' });
+        gaps.push({ code: gapCode, ladder: lender ? ['borrow', 'rent', 'buy'] : ['rent', 'buy'], borrowFrom: lender ? lender.wearer_id : null });
+        shopLinks.push({ tier: 'budget', q: (opts.culture || '') + ' ' + gapQuery });
       } else {
         planned++;
         var ut = s.outfit.items.map(function (it) { return analyseColour(it.hex, it.colour); })
-          .filter(function (a) { return a.family !== 'neutral'; })
-          .some(function (a) { return a.undertone === undertone; });
+          .filter(function (a) { return a.family !== 'neutral'; }).some(function (a) { return a.undertone === undertone; });
         if (ut) matched++;
       }
       return {
-        wearer_id: s.m.wearer_id, relation: s.m.relation, role: role,
-        outfit: s.outfit, gaps: gaps, shopLinks: shopLinks,
-        paletteMatch: !!(s.outfit && s.outfit.items.some(function (it) {
-          var a = analyseColour(it.hex, it.colour); return a.family !== 'neutral' && a.undertone === undertone;
-        }))
+        wearer_id: s.m.wearer_id, relation: s.m.relation, role: role, outfit: s.outfit, gaps: gaps, shopLinks: shopLinks,
+        paletteMatch: !!(s.outfit && s.outfit.items.some(function (it) { var a = analyseColour(it.hex, it.colour); return a.family !== 'neutral' && a.undertone === undertone; }))
       };
     });
-    var coordinationScore = planned ? Math.round((matched / planned) * 100) : 0;
-    return {
-      function: input.function, role: input.role || 'own', targetBand: targetBand,
-      familyPalette: palette, perMember: perMember, coordinationScore: coordinationScore
-    };
+    return { targetBand: targetBand, familyPalette: palette, perMember: perMember, coordinationScore: planned ? Math.round((matched / planned) * 100) : 0 };
+  }
+  function planWedding(input, wardrobesByWearer) {
+    input = input || {};
+    var targetBand = FUNCTION_BAND[input.function] || 'festive';
+    if (input.role && input.role !== 'own') targetBand = stepBandDown(targetBand);
+    var core = coordinateFamily(input.members || [], wardrobesByWearer, targetBand,
+      { relevantFn: isFestiveItem, season: input.season, culture: input.culture, gapCode: 'no_festive', gapQuery: 'festive wear' });
+    core.function = input.function; core.role = input.role || 'own';
+    return core;
+  }
+  // everyday family coordination — ANY occasion, not just weddings
+  function planFamily(input, wardrobesByWearer) {
+    input = input || {};
+    var targetBand = OCCASION_BAND[input.occasion] || 'smart-casual';
+    var festiveBand = (targetBand === 'festive' || targetBand === 'wedding');
+    var core = coordinateFamily(input.members || [], wardrobesByWearer, targetBand,
+      { relevantFn: festiveBand ? isFestiveItem : function () { return true; }, season: input.season, culture: input.culture,
+        gapCode: 'no_match', gapQuery: (input.occasion || '') + ' wear' });
+    core.occasion = input.occasion || 'family';
+    return core;
   }
 
   // ---------- 3. OFFICE WEEK PLANNER (5 days, no repeats) ----------
@@ -507,8 +511,8 @@
     fabricSeason: fabricSeason, patternOf: patternOf, patternRule: patternRule, fitNote: fitNote,
     // CFOS v2.1 deterministic features
     REPAIR_RULES: REPAIR_RULES, diagnoseRepair: diagnoseRepair, repairCodes: repairCodes,
-    planWedding: planWedding, planWeek: planWeek, modeGuidance: modeGuidance, MODE_TIPS: MODE_TIPS,
-    FUNCTION_BAND: FUNCTION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
+    planWedding: planWedding, planFamily: planFamily, planWeek: planWeek, modeGuidance: modeGuidance, MODE_TIPS: MODE_TIPS,
+    FUNCTION_BAND: FUNCTION_BAND, OCCASION_BAND: OCCASION_BAND, DRESSCODE_BAND: DRESSCODE_BAND, WEATHER_SEASON: WEATHER_SEASON,
     version: 'fashion-engine-2.1',
   };
 });

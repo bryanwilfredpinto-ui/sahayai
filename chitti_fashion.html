@@ -353,6 +353,17 @@ body{font-size:17px}
       <div class="fa-occasion-chips" id="fa-mode-chips"></div>
       <div id="fa-mode-result" class="fa-result"></div>
       </div>
+
+    <!-- 👨‍👩‍👧 Family coordination — any day, not just weddings (CFOS v2.1, deterministic) -->
+    <div data-chitti-response="fa-card-18" class="sds-card chitti-response" data-chitti-section="👨‍👩‍👧 Family coordination">
+      <h2 class="sds-card-title"><span class="ico">👨‍👩‍👧</span> <span data-vai-i18n="fa.fam.title">👨‍👩‍👧 Family — coordinate for any day</span></h2>
+      <p style="font-size:13.5px;color:#666;line-height:1.5" data-vai-i18n="fa.fam.sub">One household, one coordinated look for any day — festival, function or family photo. Chitti finds a shared colour theme from everyone's wardrobe and gives each person a role, so the family reads together without anyone buying new.</p>
+      <div class="fa-occasion-chips" id="fa-fam-occ" style="margin-top:8px"></div>
+      <label style="display:block;font-size:12.5px;color:#555;margin:8px 0 4px" data-vai-i18n="fa.w.members">Who is getting dressed?</label>
+      <div class="fa-occasion-chips" id="fa-fam-members"></div>
+      <div class="fa-row-btns"><button class="fa-btn primary" onclick="faFamilyCoordinate()" data-vai-i18n="fa.fam.btn">🎨 Coordinate the family</button></div>
+      <div id="fa-fam-result" class="fa-result"></div>
+      </div>
   </section>
 
   <!-- ════ TAB · MORE (Clothing Doctor · Office Week · Wardrobe Audit · Travel · Emergency) ════ -->
@@ -548,7 +559,7 @@ function faTab(name, btn){
   try {
     if (name === 'more') { faDoctorInit(); faWeekInit(); }
     if (name === 'occasion') faWeddingInit();
-    if (name === 'family') faModeInit();
+    if (name === 'family') { faModeInit(); faFamilyInit(); }
   } catch(e){}
 }
 
@@ -1427,22 +1438,12 @@ function faWeddingInit(){
   if (!_wedMembers) _wedMembers = new Set(wearers.map(w => w.id));
   faChipRow('fa-wed-members', wearers.map(w => ({ code: w.id, label: '👤 ' + esc(w.name), on: _wedMembers.has(w.id) })), true, (id, on) => { if (on) _wedMembers.add(id); else _wedMembers.delete(id); });
 }
-async function faWedding(){
-  const host = document.getElementById('fa-wed-result'); const E = faEngine(); const FD = faDyn();
-  if (!E) return;
-  const wearers = faWearers();
-  const memberIds = (_wedMembers && _wedMembers.size) ? Array.from(_wedMembers) : wearers.map(w => w.id);
+// shared family-coordination renderer (used by Wedding Planner AND everyday Family coordination)
+function faRenderCoordPlan(plan, host, headEmoji, headText){
+  const FD = faDyn(); const wearers = faWearers();
   const nameOf = id => (wearers.find(w => w.id === id) || {}).name || id;
-  const bandOf = id => (wearers.find(w => w.id === id) || {}).band;
-  const raw = await faAllItemsRaw();
-  const wardrobes = {}; memberIds.forEach(id => { wardrobes[id] = raw.filter(i => (i.wearer || 'me') === id); });
-  const totalItems = memberIds.reduce((n, id) => n + wardrobes[id].length, 0);
-  if (!totalItems){ const m = CURRENT_LANG==='en'?'Add festive clothes for the family in the Almari + Family tabs first.':'पहले अलमारी + परिवार tab में त्योहारी कपड़े जोड़ें।'; host.innerHTML='<div class="sds-card">💍 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
-  const plan = E.planWedding({ function: _wedFunc, role: _wedRole, season: PROFILE.season, culture: PROFILE.culture,
-    members: memberIds.map(id => ({ wearer_id: id, ageBand: bandOf(id) })) }, wardrobes);
   const themeNote = FD ? FD.wedding(plan.familyPalette.undertone) : plan.familyPalette.note;
-  let html = '<div class="fa-outfit"><div class="title">💍 ' + esc(FD ? FD.wedding('plan_title') : 'Family wedding plan') + ' · ' +
-    esc((FD ? FD.wedding('fn_' + _wedFunc) : _wedFunc)) + '</div>' +
+  let html = '<div class="fa-outfit"><div class="title">' + headEmoji + ' ' + esc(headText) + '</div>' +
     '<div class="why">🎨 ' + esc(FD ? FD.wedding('theme') : 'Family theme') + ': ' + esc(themeNote) + '</div>' +
     '<div style="margin-top:4px">' + faConfBadge(plan.coordinationScore) + ' <span style="font-size:11px;color:#555">' + esc(FD ? FD.wedding('coordination') : 'Coordination') + '</span></div></div>';
   plan.perMember.forEach(pm => {
@@ -1450,19 +1451,56 @@ async function faWedding(){
     html += '<div style="margin-top:8px"><div style="font-weight:800;color:#000080;margin-bottom:2px">👤 ' + esc(nameOf(pm.wearer_id)) + ' · ' + esc(roleLbl) + '</div>';
     if (pm.outfit){ html += faRenderOutfitCard(pm.outfit); }
     else {
-      const g = pm.gaps[0] || { ladder: ['buy'] };
+      const g = pm.gaps[0] || { ladder: ['buy'], code: 'no_match' };
       const ladder = g.ladder.map(step => FD ? FD.wedding(step) : step);
-      let line = (FD ? FD.wedding('gap_no_festive') : 'No festive wear yet') + ' → ' + ladder.join(' · ');
+      const gapKey = g.code === 'no_festive' ? 'gap_no_festive' : 'gap_no_match';
+      let line = (FD ? FD.wedding(gapKey) : 'No suitable outfit yet') + ' → ' + ladder.join(' · ');
       if (g.borrowFrom) line += ' (' + (FD ? FD.wedding('borrow_from') : 'borrow from') + ' ' + esc(nameOf(g.borrowFrom)) + ')';
       html += '<div class="fa-tier budget"><span class="lab">♻️</span><div>' + esc(line) + '</div></div>';
     }
     html += '</div>';
   });
   host.innerHTML = html;
-  const sp = (FD ? FD.wedding('plan_title') : 'Family wedding plan') + '. ' + (FD ? FD.wedding('theme') : 'Theme') + ' ' + themeNote + '. ' +
-    plan.perMember.map(pm => nameOf(pm.wearer_id) + ': ' + (pm.outfit ? (FD ? FD.wedding(pm.role) : pm.role) + ', ' + pm.outfit.items.map(it => (it.colour||'') + ' ' + it.category).join(', ') : (FD ? FD.wedding('gap_no_festive') : 'gap'))).join('. ');
+  const sp = esc(headText) + '. ' + (FD ? FD.wedding('theme') : 'Theme') + ' ' + themeNote + '. ' +
+    plan.perMember.map(pm => nameOf(pm.wearer_id) + ': ' + (pm.outfit ? (FD ? FD.wedding(pm.role) : pm.role) + ', ' + pm.outfit.items.map(it => (it.colour||'') + ' ' + it.category).join(', ') : (FD ? FD.wedding('gap_no_match') : 'gap'))).join('. ');
   host.dataset.spoken = sp; faSpeak(sp);
   try { if (window.ChittiFeedback && ChittiFeedback.scan) ChittiFeedback.scan(); } catch(e){}
+}
+async function faGatherFamily(memberSet){
+  const wearers = faWearers();
+  const memberIds = (memberSet && memberSet.size) ? Array.from(memberSet) : wearers.map(w => w.id);
+  const bandOf = id => (wearers.find(w => w.id === id) || {}).band;
+  const raw = await faAllItemsRaw();
+  const wardrobes = {}; memberIds.forEach(id => { wardrobes[id] = raw.filter(i => (i.wearer || 'me') === id); });
+  const totalItems = memberIds.reduce((n, id) => n + wardrobes[id].length, 0);
+  return { memberIds, wardrobes, totalItems, members: memberIds.map(id => ({ wearer_id: id, ageBand: bandOf(id) })) };
+}
+async function faWedding(){
+  const host = document.getElementById('fa-wed-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const g = await faGatherFamily(_wedMembers);
+  if (!g.totalItems){ const m = CURRENT_LANG==='en'?'Add festive clothes for the family in the Almari + Family tabs first.':'पहले अलमारी + परिवार tab में त्योहारी कपड़े जोड़ें।'; host.innerHTML='<div class="sds-card">💍 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  const plan = E.planWedding({ function: _wedFunc, role: _wedRole, season: PROFILE.season, culture: PROFILE.culture, members: g.members }, g.wardrobes);
+  const headText = (FD ? FD.wedding('plan_title') : 'Family wedding plan') + ' · ' + (FD ? FD.wedding('fn_' + _wedFunc) : _wedFunc);
+  faRenderCoordPlan(plan, host, '💍', headText);
+}
+/* ── 👨‍👩‍👧 Everyday Family coordination (any occasion) ── */
+let _famOcc = '', _famMembers = null;
+function faFamilyInit(){
+  faBuildOccChips('fa-fam-occ', v => { _famOcc = v; });
+  const wearers = faWearers();
+  if (!_famMembers) _famMembers = new Set(wearers.map(w => w.id));
+  faChipRow('fa-fam-members', wearers.map(w => ({ code: w.id, label: '👤 ' + esc(w.name), on: _famMembers.has(w.id) })), true, (id, on) => { if (on) _famMembers.add(id); else _famMembers.delete(id); });
+}
+async function faFamilyCoordinate(){
+  const host = document.getElementById('fa-fam-result'); const E = faEngine(); const FD = faDyn();
+  if (!E) return;
+  const g = await faGatherFamily(_famMembers);
+  if (!g.totalItems){ const m = CURRENT_LANG==='en'?'Add clothes for the family in the Almari + Family tabs first.':'पहले अलमारी + परिवार tab में कपड़े जोड़ें।'; host.innerHTML='<div class="sds-card">👨‍👩‍👧 '+esc(m)+'</div>'; host.dataset.spoken=m; faSpeak(m); return; }
+  const occ = _famOcc || 'family';
+  const plan = E.planFamily({ occasion: occ, season: PROFILE.season, culture: PROFILE.culture, members: g.members }, g.wardrobes);
+  const headText = (FD ? FD.occ(occ) : occ);
+  faRenderCoordPlan(plan, host, '👨‍👩‍👧', headText);
 }
 
 /* ── 📅 Office Week Planner ── */
@@ -1552,7 +1590,7 @@ function faBoot(){
   faRenderTwin();
   faBuildOccChips('fa-review-occasions', v => { _selectedReviewOcc = v; });
   faBuildOccChips('fa-occasion-chips', v => { _selectedOcc = v; });
-  try { faDoctorInit(); faWeekInit(); faWeddingInit(); faModeInit(); } catch(e){}
+  try { faDoctorInit(); faWeekInit(); faWeddingInit(); faModeInit(); faFamilyInit(); } catch(e){}
   faInitCoach();
   // language dropdown guard — run now + after chitti_lang.js enrichment + once more
   faFixLangLabels(); setTimeout(faFixLangLabels, 400); setTimeout(faFixLangLabels, 1200); setTimeout(faFixLangLabels, 2500);

@@ -28,7 +28,7 @@
         role_own:'It is my function', role_sibling:'Sibling’s', role_friend:'Friend’s', role_colleague:'Colleague’s',
         cul_north:'North Indian', cul_south:'South Indian', cul_bengali:'Bengali', cul_punjabi:'Punjabi', cul_rajasthani:'Rajasthani', cul_maharashtrian:'Maharashtrian', cul_other:'Other',
         anchor:'⭐ Lead look', accent:'🎀 Coordinated', theme:'Family theme', warm:'warm — maroon, gold, rust read as one set', cool:'cool — navy, teal, plum read as one set',
-        coordination:'Coordination', plan_title:'Family wedding plan', gap_no_festive:'No festive wear yet', borrow:'borrow in the family', rent:'rent', buy:'buy (last option)', borrow_from:'borrow from'
+        coordination:'Coordination', plan_title:'Family wedding plan', gap_no_festive:'No festive wear yet', gap_no_match:'No suitable outfit yet', borrow:'borrow in the family', rent:'rent', buy:'buy (last option)', borrow_from:'borrow from'
       },
       week: {
         Mon:'Monday', Tue:'Tuesday', Wed:'Wednesday', Thu:'Thursday', Fri:'Friday',
@@ -72,7 +72,7 @@
         role_own:'मेरा अपना फ़ंक्शन', role_sibling:'भाई/बहन का', role_friend:'दोस्त का', role_colleague:'सहकर्मी का',
         cul_north:'उत्तर भारतीय', cul_south:'दक्षिण भारतीय', cul_bengali:'बंगाली', cul_punjabi:'पंजाबी', cul_rajasthani:'राजस्थानी', cul_maharashtrian:'महाराष्ट्रीयन', cul_other:'अन्य',
         anchor:'⭐ मुख्य look', accent:'🎀 साथ में', theme:'परिवार की थीम', warm:'गरम — मरून, सुनहरा, रस्ट एक सेट जैसे', cool:'ठंडा — नेवी, टील, बैंगनी एक सेट जैसे',
-        coordination:'तालमेल', plan_title:'परिवार का शादी प्लान', gap_no_festive:'अभी कोई त्योहारी पहनावा नहीं', borrow:'परिवार में उधार', rent:'किराया', buy:'खरीद (आख़िरी विकल्प)', borrow_from:'इनसे उधार'
+        coordination:'तालमेल', plan_title:'परिवार का शादी प्लान', gap_no_festive:'अभी कोई त्योहारी पहनावा नहीं', gap_no_match:'अभी कोई उपयुक्त पहनावा नहीं', borrow:'परिवार में उधार', rent:'किराया', buy:'खरीद (आख़िरी विकल्प)', borrow_from:'इनसे उधार'
       },
       week: {
         Mon:'सोमवार', Tue:'मंगलवार', Wed:'बुधवार', Thu:'गुरुवार', Fri:'शुक्रवार',
