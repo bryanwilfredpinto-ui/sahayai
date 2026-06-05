@@ -1,10 +1,12 @@
 🎖️ World Class Chitti Mechanic (Chitti Auto OS) — Commando Discipline. Zero Excuses.
 
 # BUG REPORT — Chitti Mechanic
-**Deliverable 4 of 5 · Pre-handover sign-off (Part A8)**
+**Deliverable 4 of 5 · Pre-handover sign-off (Part A8) · v2 (2026-06-05)**
 
-**Date:** 2026-06-05 · **From:** [tools/qa_handover.mjs](tools/qa_handover.mjs) run (41/43 PASS) + standing suites.
-**Totals:** Critical **0** · High **0** · Medium **2** (1 FIXED, 1 OPEN-with-workaround) · Low **0**.
+**Date:** 2026-06-05 · **From:** [tools/qa_handover.mjs](tools/qa_handover.mjs) re-run (**44/45 PASS**, 22 journeys
+incl. RC J11, 3 engines) + standing suites (cert 24/24 · §5 8–16 · RC 20/20 · RC-langs 54/54).
+**Totals:** Critical **0** · High **0** · Medium **1 OPEN-with-workaround** (BUG-1) + **3 FIXED** (BUG-2 img-alt,
+BUG-3 car-title i18n, BUG-4 a test-harness bug) · Low **0**.
 
 > Evidence note: this AI cannot attach video; bugs carry **reproduction steps + measured numbers + the
 > committed screenshots** that the harness wrote to [tools/cert_screenshots/](tools/cert_screenshots/).
@@ -29,6 +31,26 @@
 - **Impact:** screen readers announce nothing for the user's captured photo.
 - **Fix (this pass):** added `alt="Your captured photo for diagnosis"` to both. Re-audit: **all `<img>` have alt** ✅.
 
+## BUG-3 — Car Doctor form title showed "My Bike" · **Medium (i18n)** · **FIXED** *(v2)*
+- **Where:** [chitti_4wheeler.html](chitti_4wheeler.html) add-vehicle card title — used the bike-namespaced key
+  `mb.form.title` ("My bike" / "मेरी बाइक"), so a Hindi car user saw **"मेरी बाइक"** on the **car** page.
+- **Root cause:** `mc.form.title` was never created in `strings.js`.
+- **Repro:** car page → switch to Hindi → add-vehicle card title reads "मेरी बाइक".
+- **Fix (v2):** injected `mc.form.title` into `strings.js` for **all 9 languages** (from the vetted `mc.tab.car`
+  values), retargeted the car page. **Verified on pixels:** hi "मेरी गाड़ी" · en "My Car" · ta "என் கார்"
+  ([CARFIX_form_title.png](tools/cert_screenshots/CARFIX_form_title.png)). A full car-page sweep found **no other
+  bike/car string bleed**. RC-langs matrix re-confirms: **54/54**.
+
+## BUG-4 — *Test-harness only* — J11 read a leftover demo `make` · **Low (test, not product)** · **FIXED** *(v2)*
+- **Where:** the new J11 RC journey in [qa_handover.mjs](tools/qa_handover.mjs).
+- **What happened:** J11 asserted `make===''` to prove "RC doesn't fabricate a make", but an **earlier** journey
+  (J2) had already saved a demo bike, leaving `mb-make` = "Hero". So the assertion read the **demo leftover**,
+  not anything the RC scan did → false negative (the standalone RC tests passed 20/20 + 54/54).
+- **Why it matters:** important to log honestly — it was a **test bug, the product is correct** (RC leaves the
+  make untouched and never fabricates one).
+- **Fix:** J11 now clears `make` immediately before the capture, then asserts it **stays** empty → proves
+  non-fabrication regardless of prior journeys. Re-run: **22/22 journeys, 44/45 total**.
+
 ---
 
 ## Things QA explicitly TRIED to break — and could not (no bug)
@@ -40,10 +62,14 @@
 | 10 MB image + corrupted image upload | ✅ handled, no crash |
 | JS disabled | ✅ static content shows (interactivity needs JS — by design) |
 | Cross-engine (Firefox + WebKit/Safari) render + diagnose + Tamil | ✅ 4/4 |
+| **Force RC to fabricate a make** (capture with no vision endpoint) | ✅ never fabricates — shows honest "coming soon" |
+| **RC reg parser fed junk** ("hello world") | ✅ returns null, no false state/RTO |
 
 ## Screenshots (committed)
 - [handover_bike.png](tools/cert_screenshots/handover_bike.png) · [handover_car.png](tools/cert_screenshots/handover_car.png) — post-journey state, mobile 390px.
 - [handover_safari_bike.png](tools/cert_screenshots/handover_safari_bike.png) — WebKit/Safari engine render.
+- **RC scan (v2):** [RC_bike.png](tools/cert_screenshots/RC_bike.png) · [RC_car.png](tools/cert_screenshots/RC_car.png) — saffron MedUPI card, live "Registered in: <State> · RTO <nn>" chip.
+- **Car-title fix (v2):** [CARFIX_form_title.png](tools/cert_screenshots/CARFIX_form_title.png) — "मेरी गाड़ी" not "मेरी बाइक".
 - Prior language proof: [LIVE_selffix_ta.png](tools/cert_screenshots/LIVE_selffix_ta.png) (Tamil),
   [LIVE_healthscore_hi.png](tools/cert_screenshots/LIVE_healthscore_hi.png) (Hindi).
 

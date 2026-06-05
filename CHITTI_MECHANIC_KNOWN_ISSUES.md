@@ -1,10 +1,13 @@
 🎖️ World Class Chitti Mechanic (Chitti Auto OS) — Commando Discipline. Zero Excuses.
 
 # KNOWN ISSUES LIST (HONEST) — Chitti Mechanic
-**Deliverable 3 of 5 · Pre-handover sign-off (Part C)**
+**Deliverable 3 of 5 · Pre-handover sign-off (Part C) · v2 (2026-06-05)**
 
 **Date:** 2026-06-05 · **Owner:** Chitti CTO. Nothing hidden. If it isn't here, QA believes it doesn't exist —
 the live demo + spot-check is the cross-check (see [Sign-off](CHITTI_MECHANIC_HANDOVER_SIGNOFF.md)).
+
+> **v2 additions:** §10 (RC make/model AI auto-read — honest stub), §11 (Urdu / wider languages not shipped),
+> §12 (RC photo has no server backup — device-local by design). The flicker (§1) remains **RESOLVED**.
 
 ## 1. The Tamil/Telugu/Malayalam flicker — **RESOLVED** (documented in full per request)
 - **What it was:** the shared chrome (brand, bottom-nav, feedback-widget labels) flickered English↔active-
@@ -65,10 +68,31 @@ the live demo + spot-check is the cross-check (see [Sign-off](CHITTI_MECHANIC_HA
 - **Automated a11y scanner** (WAVE/Lighthouse) — not installed; a **manual attribute audit** was substituted.
 - **Real production curl** of the deployed Railway endpoints + live Vaani answer — blocked by §5/§6 above.
 
+## 10. RC make/model **AI auto-read** — **OPEN (by-design honest stub)** *(new in v2)*
+- **What it is:** "Scan your RC" captures + saves the RC photo and parses the **registration number → State +
+  RTO code deterministically (offline, works today)**. Reading the **make/model/year from the photo** needs a
+  **vision model** (DeepSeek vision, §8 funding) **or** a **VAHAN/Parivahan API** partnership (roadmap).
+- **Exactly what the user sees today:** the chip "Registered in: <State> · RTO <nn>", the saved photo, and an
+  honest **"AI auto-read of make & model is coming soon — confirm below 👇"**. It **never fabricates** a make/
+  model. The path is **wired** (`window.CHITTI_RC_VISION_URL`) and auto-activates when an endpoint is set.
+
+## 11. Language coverage — Urdu / wider set **NOT shipped** — **OPEN (Low, scope clarification)** *(new in v2)*
+- The shipped UI is **9 languages**: en, hi, ta, te, bn, mr, gu, kn, **ml**. **Urdu is NOT one of them** — the
+  pre-handover checklist's "Urdu — FULL test" does not match the build; the 9th language is **Malayalam**.
+- Urdu + the wider 22/26 set (Punjabi, Odia, Assamese, …) are **roadmap**, untranslated → **not tested, not
+  claimed**. Untranslated strings show **clean English fallback** (no garble) per §5. The dropdown is pruned to
+  the 9 so a user can't pick an untranslated one. (Voice covers 26 via Voice Factory; this is about **UI chrome**.)
+
+## 12. RC photo has **no server backup** — **OPEN (by-design, Low)** *(new in v2)*
+- The captured RC photo is stored **device-local only** (`localStorage chitti_rc_photo_2w/4w`) for privacy — it
+  is **never uploaded by us**. Consequence: clearing browser data / "Chitti forget" removes it; there is **no
+  server copy** to restore. Same durability caveat as §6 (Turso unset). Acceptable for a privacy-first design;
+  a consented, encrypted Digital Service Book export is the roadmap fix.
+
 ## Severity roll-up
 | Critical | High | Medium | Low / by-design / Sire-blocked |
 |---|---|---|---|
-| **0** | **0** | **1 open** (slow 3G) + 1 fixed (img-alt) | flicker (resolved), modal lang, AI-stubs, JS-off, lang-coverage, persistence (Sire), live-LLM (Sire) |
+| **0** | **0** | **1 open** (slow 3G) + 2 fixed (img-alt, car-title i18n) | flicker (resolved), modal lang, AI-stubs (incl. RC make/model), JS-off, lang-coverage (Urdu not shipped), RC photo device-local, persistence (Sire), live-LLM (Sire) |
 
 ---
 > **World Class Chitti Mechanic (Chitti Auto OS) — Commando Discipline. Zero Excuses.**

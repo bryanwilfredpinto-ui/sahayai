@@ -1,7 +1,11 @@
 🎖️ World Class Chitti Mechanic (Chitti Auto OS) — Commando Discipline. Zero Excuses.
 
 # ARCHITECTURE REVIEW — Chitti Mechanic
-**Deliverable 2 of 5 · Pre-handover sign-off (Part B)**
+**Deliverable 2 of 5 · Pre-handover sign-off (Part B) · v2 (2026-06-05)**
+
+> **v2 delta:** added **"Scan your RC"** (`chitti_rc_scan.js`) — a self-contained frontend module; the
+> **MedUPI skin** (`chitti_mechanic_medupi_skin.css`) — a presentation-only layer; and the `mc.form.title`
+> i18n fix. No backend/data-flow change. Reflected in B1/B2/B3/B5 below.
 
 **Date:** 2026-06-05 · **Solution Architect:** Chitti CTO (Claude Opus 4.8) ·
 **Companions:** [CHITTI_MECHANIC_MASTER_SPEC.md](CHITTI_MECHANIC_MASTER_SPEC.md) · [CHITTI_MECHANIC_COSDF.md](CHITTI_MECHANIC_COSDF.md) ·
@@ -50,6 +54,14 @@
    `/api/Nw/passport/*`. Today Turso `DATABASE_URL` is unset → backend uses local SQLite (ephemeral across
    Railway restart). **Risk: server-side persistence not durable yet** (Sire-blocked, §B4).
 4. **Voice:** text → Voice Factory / Web Speech (TTS/STT) → audio. Fail-soft (silent if unavailable).
+5. **Scan-your-RC (`chitti_rc_scan.js`):** RC photo → `FileReader` → **saved to localStorage device-local only**
+   (never uploaded by us) + preview. **Two extraction paths:** (a) **deterministic, offline** — the typed/known
+   registration number is parsed to **issuing State + RTO code** (37-entry table, no network); (b) **vision
+   auto-read** — `rcTryVision()` POSTs the image to `window.CHITTI_RC_VISION_URL` **only if configured**, expects
+   `{make,model,year}`, and **fills the form**. With **no endpoint set (today)** it returns `null` → the card
+   shows **"AI auto-read coming soon"** and **never fabricates** a make/model. The 9-language strings are merged
+   into `VAI_STRINGS` at load so `strings.js` stays the sole translator. This path auto-activates the moment a
+   vision endpoint (DeepSeek vision / VAHAN-Parivahan partner) is wired — **no code change** needed.
 
 ## B3 — External dependencies
 | Dependency | Use | Failure behavior | Timeout | Retry |
@@ -61,6 +73,7 @@
 | **Voice Factory / Web Speech** | TTS/STT | silent fail | n/a | n/a |
 | **Google Maps** (geo deep-link) | nearest-help | plain search query | n/a | n/a |
 | **Web Bluetooth (ELM327)** | live OBD2 | honest "use Symptom mode" | n/a | n/a |
+| **RC vision endpoint** (`CHITTI_RC_VISION_URL`) | RC make/model auto-read | **unset today** → honest "coming soon" (no fabrication) | ⚠️ none explicit (tech-debt #2) | none |
 | Playwright browsers | test only | — | — | — |
 
 ## B4 — Scalability review
@@ -77,8 +90,9 @@
 ## B5 — Security review
 | Check | Status |
 |---|---|
-| PII stored without consent? | ✅ No — vehicle data is device-local (localStorage), keyed by per-device token; no name/phone/Aadhaar collected. |
-| localStorage encrypted? | ❌ No — low-sensitivity vehicle data (make/model/odo). Acceptable; **do not** store anything sensitive there. |
+| PII stored without consent? | ✅ No — vehicle data is device-local (localStorage), keyed by per-device token; no name/phone/Aadhaar collected. **RC photo is saved device-local only (`chitti_rc_photo_2w/4w`) and never uploaded by us**; the registration number is parsed on-device. |
+| localStorage encrypted? | ❌ No — low-sensitivity vehicle data (make/model/odo) + the RC photo dataURL. Acceptable for device-local; **do not** sync it anywhere without consent. A registration number is mildly sensitive — kept on-device. |
+| RC vision upload? | Only if `CHITTI_RC_VISION_URL` is explicitly configured (unset today). When wired, the image POSTs to **our** server-side endpoint — **must** carry consent + TLS; no third-party direct upload from the browser. |
 | Backend auth required? | Public deterministic routes are read-mostly + unauthenticated by design; admin/metrics routes gated by `X-Admin-Secret`/token. |
 | API keys exposed in frontend? | ✅ No — DeepSeek key lives **server-side** in `chitti-vaani-api`; frontend only calls the gateway. |
 | XSS? | Mitigated — dynamic render escapes via `swEsc()` / `escAttr()`; model output is inserted as escaped text, not raw HTML. **Recommend** a CSP header on GitHub Pages/Cloudflare. |
@@ -118,7 +132,7 @@ explicit fetch timeouts or retry/backoff — a hung backend relies on the browse
 | 5 | **No ESLint + console.log strip** for production | Should fix | S |
 | 6 | **CSP header** on the static host (defense-in-depth XSS) | Should fix | S |
 | 7 | **22-language UI chrome** incomplete (9 complete; rest clean English fallback) | Nice to fix | L |
-| 8 | **Camera/audio AI auto-detect** stubbed (needs vision/audio model funding) | Nice to fix | L (Sire) |
+| 8 | **Camera/audio AI auto-detect + RC make/model auto-read** stubbed (all need the vision/audio model — DeepSeek funding or a VAHAN/Parivahan API; the RC path is already wired to `CHITTI_RC_VISION_URL`, auto-activates when set) | Nice to fix | L (Sire) |
 | 9 | **No automated a11y scanner** (axe/Lighthouse) in the gate | Nice to fix | S |
 | 10 | **Backup/restore + multi-device sync** (service book export, family fleet) | Nice to fix | L |
 

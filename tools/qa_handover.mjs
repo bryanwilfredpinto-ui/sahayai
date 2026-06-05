@@ -70,6 +70,29 @@ for (const P of PAGES) {
 
   t0 = Date.now(); const j10 = await pg.evaluate(async () => { for (const l of ['ta', 'te', 'ml', 'en']) { try { window.changeLang(l); } catch (e) { } await new Promise(r => setTimeout(r, 250)); } await new Promise(r => setTimeout(r, 800)); return !/\b(mb|mc)\.(title|tag)\b/.test(document.body.innerText); });
   ok(R.journeys, `${P.id} J10 language switch en→ta→te→ml clean`, j10 === true, Date.now() - t0);
+
+  t0 = Date.now(); const j11 = await pg.evaluate(async (P) => {
+    try {
+      window.changeLang && window.changeLang('en');
+      window[P.tab](P.id === 'bike' ? 'bike' : 'car'); await new Promise(r => setTimeout(r, 250));
+      const regId = P.v === '2w' ? 'mb-reg' : 'mc-reg', outId = P.v === '2w' ? 'mb-rc-result' : 'mc-rc-result';
+      const inpId = P.v === '2w' ? 'mb-rc-file' : 'mc-rc-file', makeId = P.v === '2w' ? 'mb-make' : 'mc-make';
+      const reg = document.getElementById(regId); reg.value = 'KA05MG7788'; reg.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(r => setTimeout(r, 150));
+      const chip = /Karnataka/.test(document.getElementById(outId).textContent || '');     // deterministic reg→state, offline
+      document.getElementById(makeId).value = '';                                            // clear any prior-journey demo value
+      delete window.CHITTI_RC_VISION_URL;                                                    // no vision endpoint → honest path
+      const tiny = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+      const file = new File([await (await fetch(tiny)).blob()], 'rc.png', { type: 'image/png' });
+      const dt = new DataTransfer(); dt.items.add(file); const inp = document.getElementById(inpId); inp.files = dt.files;
+      window.rcOnFile(P.v, inp); await new Promise(r => setTimeout(r, 400));
+      const honest = /🤖|👇/.test(document.getElementById(outId).textContent || '') && (document.getElementById(makeId).value || '') === '';  // never fabricates make
+      const saved = !!localStorage.getItem('chitti_rc_photo_' + P.v);                        // photo device-local only
+      return chip && honest && saved;
+    } catch (e) { return 'ERR:' + e; }
+  }, P);
+  ok(R.journeys, `${P.id} J11 Scan RC → state/RTO chip + honest auto-fill (no fabrication)`, j11 === true, Date.now() - t0, j11 === true ? '' : String(j11));
+
   await pg.screenshot({ path: resolve(SHOT, `handover_${P.id}.png`), fullPage: false });
   if (errs.length) R.bugs.push({ severity: 'High', area: `${P.id} pageerror`, detail: errs[0] });
   await ctx.close();
