@@ -111,7 +111,7 @@ deliberate `501 coming_soon`.
 
 | Item | Priority | Effort | Note |
 |---|---|---|---|
-| **`chitti_lang.js`** loaded whole (16 MB raw → **2.0 MB brotli / 3.3 MB gzip** served) → heavy first-load, `defer` gates DOMContentLoaded | 🟠 Should-fix (platform-wide) | M–L | Split per-language / lazy-load active lang (~250 KB). Biggest perf + scalability win. Needs 38-page regression. |
+| ~~`chitti_lang.js` loaded whole (16 MB)~~ | ✅ **DONE 2026-06-05** | — | **Split into a 14 KB runtime + per-language `lang/<code>.js` packs** (lazy-load active lang only: ~170 KB brotli Hindi / ~14 KB English; background-preload the rest). Verified parity + cert 18/18 across 11 pages + a Voice-Factory page. The architect's pre-AI condition #1 is met. |
 | **localStorage photos unencrypted** at rest | 🟠 Should-fix | M | Encrypt on device or make Health File vault canonical. |
 | Shared substrate not fully storage-guarded (errors under Safari private mode) | 🟠 Should-fix | S | Wrap substrate `localStorage` access (page itself is now guarded). |
 | No `fetch` timeout/retry wrapper for API | 🟠 Should-fix **before AI ships** | S | Not critical today (local-first); critical when `/analyze` is network-bound. |
