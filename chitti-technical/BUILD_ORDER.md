@@ -20,6 +20,15 @@
 
 ---
 
+## BO0 — Research best practices FIRST, then dismantle the legacy
+**Build:** study the world's best charting/trading apps + fintech UX + accessibility literature
+([RESEARCH.md](RESEARCH.md)); **dismantle** the legacy 7,447-line `chitti_complete_technical.html`
+monolith (archive to [_legacy/](_legacy/), redirect the URL to the rebuilt `chitti_technical.html`),
+**keeping only the technical indicators** from its scanner section (ported into the new engine).
+**TEST (BO0):** RESEARCH.md cites real sources + maps each finding to built/added/roadmap; the
+legacy URL now redirects (no old monolith UI); the research-driven gap (accessible chart data-table)
+is added and cert-checked.
+
 ## BO1 — Page shell + 5 substrate gates + SEBI bar + manual-refresh skeleton
 **Build:** `chitti_technical.html` at repo root; load `chitti_a11y.js`, `chitti_lang.js`,
 `feedback-widget.js` (→ inherits a11y, ISL, disability-profile, features, lang-select);
@@ -105,10 +114,11 @@ that didn't run is honestly marked PENDING, not GREEN.
 
 ---
 
-## Execution log — EXECUTED 2026-06-06 (node 229/0 · cert 18/18 · 0 page errors)
+## Execution log — EXECUTED 2026-06-06 (research-led; node + cert re-run)
 
 | BO | Built | Test | Status |
 |----|-------|------|--------|
+| BO0 | best-practices research + dismantle legacy monolith + add accessible chart data-table | sources cited; legacy redirects; data-table cert | ✅ [RESEARCH.md](RESEARCH.md); legacy archived+redirected; table toggle live |
 | BO1 | page shell + 5 gates + SEBI bar/modal + manual refresh | HTML gates grep + syntax | ✅ 11 HTML gates pass |
 | BO2 | 9-lang i18n + whole-UI re-render | key-completeness + no-Hinglish + en→bn/te/ta | ✅ 0 missing keys, 0 Hinglish, switch proven |
 | BO3 | search + 24-stock universe by cap tier | tier boundaries | ✅ all tiers correct |

@@ -31,7 +31,9 @@
       'explain.title': 'Chitti explains', 'audio.summary': 'Audio trade summary', 'speak': 'Read aloud',
       'confirm.yes': 'Yes', 'confirm.no': 'No',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'Large Cap', 'tier.Mid Cap': 'Mid Cap', 'tier.Small Cap': 'Small Cap', 'tier.Micro Cap': 'Micro Cap',
-      'vaani': 'Talk to Vaani instead'
+      'vaani': 'Talk to Vaani instead',
+      'chart.table': 'Show data table', 'chart.tablehide': 'Hide data table', 'chart.tablecap': 'Chart data — same numbers as the chart, for screen readers',
+      'nudge.overtrade': "That's a lot of open trades — quality over quantity."
     },
     hi: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षिक तकनीकी विश्लेषण — सलाह नहीं',
@@ -52,7 +54,9 @@
       'explain.title': 'चिट्टी समझाती है', 'audio.summary': 'ध्वनि ट्रेड सारांश', 'speak': 'पढ़कर सुनाएँ',
       'confirm.yes': 'हाँ', 'confirm.no': 'नहीं',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'बड़ी पूँजी', 'tier.Mid Cap': 'मध्यम पूँजी', 'tier.Small Cap': 'छोटी पूँजी', 'tier.Micro Cap': 'सूक्ष्म पूँजी',
-      'vaani': 'वाणी से बात करें'
+      'vaani': 'वाणी से बात करें',
+      'chart.table': 'डेटा टेबल दिखाएँ', 'chart.tablehide': 'डेटा टेबल छुपाएँ', 'chart.tablecap': 'चार्ट डेटा — चार्ट जैसे ही अंक, स्क्रीन रीडर के लिए',
+      'nudge.overtrade': 'बहुत सारे खुले ट्रेड — मात्रा से ज़्यादा गुणवत्ता।'
     },
     ta: {
       'app.title': 'சிட்டி டெக்னிக்கல்', 'app.tag': 'கல்வி நுட்ப பகுப்பாய்வு — அறிவுரை அல்ல',
@@ -73,7 +77,9 @@
       'explain.title': 'சிட்டி விளக்குகிறது', 'audio.summary': 'ஒலி வர்த்தக சுருக்கம்', 'speak': 'படித்துக் காட்டு',
       'confirm.yes': 'ஆம்', 'confirm.no': 'இல்லை',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'பெரிய நிறுவனம்', 'tier.Mid Cap': 'நடுத்தர நிறுவனம்', 'tier.Small Cap': 'சிறு நிறுவனம்', 'tier.Micro Cap': 'நுண் நிறுவனம்',
-      'vaani': 'வாணியிடம் பேசு'
+      'vaani': 'வாணியிடம் பேசு',
+      'chart.table': 'தரவு அட்டவணை காட்டு', 'chart.tablehide': 'தரவு அட்டவணை மறை', 'chart.tablecap': 'விளக்கப்பட தரவு — விளக்கப்படத்தின் அதே எண்கள், திரை வாசிப்பாளருக்கு',
+      'nudge.overtrade': 'நிறைய திறந்த வர்த்தகங்கள் — எண்ணிக்கையை விட தரம்.'
     },
     te: {
       'app.title': 'చిట్టి టెక్నికల్', 'app.tag': 'విద్యా సాంకేతిక విశ్లేషణ — సలహా కాదు',
@@ -94,7 +100,9 @@
       'explain.title': 'చిట్టి వివరిస్తుంది', 'audio.summary': 'ఆడియో ట్రేడ్ సారాంశం', 'speak': 'చదివి వినిపించు',
       'confirm.yes': 'అవును', 'confirm.no': 'కాదు',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'పెద్ద సంస్థ', 'tier.Mid Cap': 'మధ్య సంస్థ', 'tier.Small Cap': 'చిన్న సంస్థ', 'tier.Micro Cap': 'సూక్ష్మ సంస్థ',
-      'vaani': 'వాణితో మాట్లాడు'
+      'vaani': 'వాణితో మాట్లాడు',
+      'chart.table': 'డేటా టేబుల్ చూపించు', 'chart.tablehide': 'డేటా టేబుల్ దాచు', 'chart.tablecap': 'చార్ట్ డేటా — చార్ట్ లాంటి అంకెలు, స్క్రీన్ రీడర్ కోసం',
+      'nudge.overtrade': 'చాలా తెరిచిన ట్రేడ్లు — పరిమాణం కంటే నాణ్యత.'
     },
     bn: {
       'app.title': 'চিট্টি টেকনিক্যাল', 'app.tag': 'শিক্ষামূলক প্রযুক্তিগত বিশ্লেষণ — পরামর্শ নয়',
@@ -115,7 +123,9 @@
       'explain.title': 'চিট্টি ব্যাখ্যা করে', 'audio.summary': 'শব্দ ট্রেড সারাংশ', 'speak': 'পড়ে শোনান',
       'confirm.yes': 'হ্যাঁ', 'confirm.no': 'না',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'বড় মূলধন', 'tier.Mid Cap': 'মাঝারি মূলধন', 'tier.Small Cap': 'ছোট মূলধন', 'tier.Micro Cap': 'অতি ছোট মূলধন',
-      'vaani': 'বাণীর সাথে কথা বলুন'
+      'vaani': 'বাণীর সাথে কথা বলুন',
+      'chart.table': 'ডেটা টেবিল দেখান', 'chart.tablehide': 'ডেটা টেবিল লুকান', 'chart.tablecap': 'চার্ট ডেটা — চার্টের মতোই সংখ্যা, স্ক্রিন রিডারের জন্য',
+      'nudge.overtrade': 'অনেক খোলা ট্রেড — পরিমাণের চেয়ে গুণমান।'
     },
     mr: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षणिक तांत्रिक विश्लेषण — सल्ला नाही',
@@ -136,7 +146,9 @@
       'explain.title': 'चिट्टी समजावते', 'audio.summary': 'आवाज ट्रेड सारांश', 'speak': 'वाचून दाखवा',
       'confirm.yes': 'होय', 'confirm.no': 'नाही',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'मोठे भांडवल', 'tier.Mid Cap': 'मध्यम भांडवल', 'tier.Small Cap': 'लहान भांडवल', 'tier.Micro Cap': 'सूक्ष्म भांडवल',
-      'vaani': 'वाणीशी बोला'
+      'vaani': 'वाणीशी बोला',
+      'chart.table': 'डेटा टेबल दाखवा', 'chart.tablehide': 'डेटा टेबल लपवा', 'chart.tablecap': 'चार्ट डेटा — चार्टसारखेच आकडे, स्क्रीन रीडरसाठी',
+      'nudge.overtrade': 'बरेच खुले ट्रेड — संख्येपेक्षा गुणवत्ता.'
     },
     gu: {
       'app.title': 'ચિટ્ટી ટેક્નિકલ', 'app.tag': 'શૈક્ષણિક ટેક્નિકલ વિશ્લેષણ — સલાહ નહીં',
@@ -157,7 +169,9 @@
       'explain.title': 'ચિટ્ટી સમજાવે છે', 'audio.summary': 'અવાજ ટ્રેડ સારાંશ', 'speak': 'વાંચી સંભળાવો',
       'confirm.yes': 'હા', 'confirm.no': 'ના',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'મોટી મૂડી', 'tier.Mid Cap': 'મધ્યમ મૂડી', 'tier.Small Cap': 'નાની મૂડી', 'tier.Micro Cap': 'સૂક્ષ્મ મૂડી',
-      'vaani': 'વાણી સાથે વાત કરો'
+      'vaani': 'વાણી સાથે વાત કરો',
+      'chart.table': 'ડેટા ટેબલ બતાવો', 'chart.tablehide': 'ડેટા ટેબલ છુપાવો', 'chart.tablecap': 'ચાર્ટ ડેટા — ચાર્ટ જેવા જ આંકડા, સ્ક્રીન રીડર માટે',
+      'nudge.overtrade': 'ઘણા ખુલ્લા ટ્રેડ — જથ્થા કરતાં ગુણવત્તા.'
     },
     kn: {
       'app.title': 'ಚಿಟ್ಟಿ ಟೆಕ್ನಿಕಲ್', 'app.tag': 'ಶೈಕ್ಷಣಿಕ ತಾಂತ್ರಿಕ ವಿಶ್ಲೇಷಣೆ — ಸಲಹೆ ಅಲ್ಲ',
@@ -178,7 +192,9 @@
       'explain.title': 'ಚಿಟ್ಟಿ ವಿವರಿಸುತ್ತದೆ', 'audio.summary': 'ಧ್ವನಿ ಟ್ರೇಡ್ ಸಾರಾಂಶ', 'speak': 'ಓದಿ ಕೇಳಿಸಿ',
       'confirm.yes': 'ಹೌದು', 'confirm.no': 'ಇಲ್ಲ',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'ದೊಡ್ಡ ಬಂಡವಾಳ', 'tier.Mid Cap': 'ಮಧ್ಯಮ ಬಂಡವಾಳ', 'tier.Small Cap': 'ಸಣ್ಣ ಬಂಡವಾಳ', 'tier.Micro Cap': 'ಸೂಕ್ಷ್ಮ ಬಂಡವಾಳ',
-      'vaani': 'ವಾಣಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ'
+      'vaani': 'ವಾಣಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
+      'chart.table': 'ಡೇಟಾ ಟೇಬಲ್ ತೋರಿಸಿ', 'chart.tablehide': 'ಡೇಟಾ ಟೇಬಲ್ ಮರೆಮಾಡಿ', 'chart.tablecap': 'ಚಾರ್ಟ್ ಡೇಟಾ — ಚಾರ್ಟ್‌ನಂತೆಯೇ ಸಂಖ್ಯೆಗಳು, ಸ್ಕ್ರೀನ್ ರೀಡರ್‌ಗಾಗಿ',
+      'nudge.overtrade': 'ಹಲವು ತೆರೆದ ಟ್ರೇಡ್‌ಗಳು — ಪ್ರಮಾಣಕ್ಕಿಂತ ಗುಣಮಟ್ಟ.'
     },
     ml: {
       'app.title': 'ചിട്ടി ടെക്നിക്കൽ', 'app.tag': 'വിദ്യാഭ്യാസ സാങ്കേതിക വിശകലനം — ഉപദേശമല്ല',
@@ -199,7 +215,9 @@
       'explain.title': 'ചിട്ടി വിശദീകരിക്കുന്നു', 'audio.summary': 'ശബ്ദ ട്രേഡ് സംഗ്രഹം', 'speak': 'വായിച്ചു കേൾപ്പിക്കുക',
       'confirm.yes': 'അതെ', 'confirm.no': 'അല്ല',
       'tier.Nifty 50': 'Nifty 50', 'tier.Large Cap': 'വലിയ മൂലധനം', 'tier.Mid Cap': 'ഇടത്തരം മൂലധനം', 'tier.Small Cap': 'ചെറിയ മൂലധനം', 'tier.Micro Cap': 'സൂക്ഷ്മ മൂലധനം',
-      'vaani': 'വാണിയോട് സംസാരിക്കുക'
+      'vaani': 'വാണിയോട് സംസാരിക്കുക',
+      'chart.table': 'ഡാറ്റ പട്ടിക കാണിക്കുക', 'chart.tablehide': 'ഡാറ്റ പട്ടിക മറയ്ക്കുക', 'chart.tablecap': 'ചാർട്ട് ഡാറ്റ — ചാർട്ടിലെ അതേ സംഖ്യകൾ, സ്ക്രീൻ റീഡറിന്',
+      'nudge.overtrade': 'ധാരാളം തുറന്ന ട്രേഡുകൾ — അളവിനെക്കാൾ ഗുണനിലവാരം.'
     }
   };
 

@@ -135,6 +135,19 @@ const toggleWorks = await p.evaluate(() => {
 });
 check('chart_pane_toggles_present', toggleWorks);
 
+// ---- ITEM (research-driven): accessible chart DATA TABLE (canvas alternative for blind users) ----
+await p.evaluate(() => window.TechUI.toggleTable());
+await p.waitForTimeout(300);
+const tbl = await p.evaluate(() => {
+  const box = document.getElementById('chart-table');
+  const t = box.querySelector('table');
+  return { shown: box.style.display !== 'none', rows: t ? t.querySelectorAll('tr').length : 0,
+           headers: t ? t.querySelectorAll('th[scope="col"]').length : 0, caption: t ? !!t.querySelector('caption') : false,
+           expanded: document.getElementById('table-toggle').getAttribute('aria-expanded') };
+});
+check('ITEM accessible_chart_data_table', tbl.shown && tbl.rows >= 10 && tbl.headers >= 6 && tbl.caption && tbl.expanded === 'true',
+  `rows=${tbl.rows} headers=${tbl.headers} caption=${tbl.caption} expanded=${tbl.expanded}`);
+
 // ---- tap targets >= 44px on primary buttons ----
 const smallBtns = await p.$$eval('.btn', els => els.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.height < 44; }).length);
 check('ITEM tap_targets_44px', smallBtns === 0, smallBtns + ' under 44px');
@@ -145,6 +158,14 @@ await p.waitForTimeout(400);
 check('screener_runs', await p.evaluate(() => document.getElementById('screener-results').children.length > 0));
 
 check('no_page_errors', pageErrors.length === 0, pageErrors.slice(0,5).join(' | '));
+
+// ---- ITEM: legacy UI DISMANTLED (old monolith URL redirects to the rebuilt product) ----
+const lp = await c.newPage();
+await lp.goto(BASE + '/chitti_complete_technical.html', { waitUntil:'domcontentloaded' });
+await lp.waitForTimeout(800);
+const landed = lp.url();
+check('ITEM legacy_dismantled_redirects', /chitti_technical\.html/.test(landed), 'landed on ' + landed);
+await lp.close();
 
 await c.close();
 await b.close();

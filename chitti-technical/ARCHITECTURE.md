@@ -90,11 +90,19 @@ top of that engine — not a new Flask app. Endpoints under the existing
 `/technical/*`, `/market/*`, `/stocks/*` routes; new screener/Roshan/multi-TF
 endpoints added there.
 
+## Dismantle of the legacy UI (DONE 2026-06-06)
+
+Per Sire's order, the legacy 7,447-line monolith `chitti_complete_technical.html` is
+**dismantled**: archived to [_legacy/chitti_complete_technical.legacy.html](_legacy/) and the
+root URL replaced by a redirect to the rebuilt `chitti_technical.html`. Only the **technical
+indicators** from its scanner section are kept (ported into `chitti_technical_engine.js`). The old
+React technical surface in `chitti-shares/frontend` is not the canonical UI any longer — the new
+standalone product is.
+
 ## Rollback plan
 
-- The legacy `chitti_complete_technical.html` stays in the tree until the new
-  `chitti_technical.html` passes certification ([certification/](certification/)).
-  Cutover is a single page swap; rollback = point the route back at the legacy page.
+- The legacy monolith is preserved in [_legacy/](_legacy/) (full git history via `git mv`).
+  Rollback = restore that file to the root path. Cutover is a single redirect swap.
 - The deterministic engine is versioned; a bad indicator change reverts by git
   revert of the engine commit without touching the UI.
 - DeepSeek/Explain is non-critical: if a new prompt regresses, disable Explain

@@ -230,8 +230,11 @@ tr.click:hover{background:#f7f8fc}
     <div class="card col-full" data-chitti-response="tech-chart" data-chitti-section="Chart">
       <h2>📈 <span data-i18n="chart.title">Chart</span> <span class="muted" id="chart-tf"></span></h2>
       <div class="pane-toggles" id="pane-toggles"></div>
-      <div class="chart-wrap"><canvas id="price-canvas" height="280"></canvas></div>
-      <div class="chart-wrap" id="osc-wrap" style="margin-top:6px"><canvas id="osc-canvas" height="130"></canvas></div>
+      <div class="chart-wrap"><canvas id="price-canvas" height="280" role="img" aria-label="Price candlestick chart"></canvas></div>
+      <div class="chart-wrap" id="osc-wrap" style="margin-top:6px"><canvas id="osc-canvas" height="130" role="img" aria-label="Oscillator pane"></canvas></div>
+      <!-- research-driven: accessible data-table alternative to the canvas (Deque/accessiBe best practice) -->
+      <button class="btn ghost" id="table-toggle" onclick="TechUI.toggleTable()" style="margin-top:8px" aria-expanded="false" aria-controls="chart-table">📋 <span data-i18n="chart.table">Show data table</span></button>
+      <div id="chart-table" role="region" aria-label="Chart data table" style="display:none;margin-top:8px;overflow:auto"></div>
     </div>
 
     <!-- BO4: indicators -->
@@ -258,6 +261,7 @@ tr.click:hover{background:#f7f8fc}
         <span class="pill"><span data-i18n="portfolio.risk">Open risk</span>: <b id="pf-risk">₹0</b></span>
       </div>
       <button class="btn ghost" onclick="TechUI.logTrade()">➕ <span data-i18n="portfolio.log">Log this trade</span></button>
+      <div id="pf-nudge" class="invalid" role="status" style="display:none;margin-top:10px"></div>
       <div id="pf-list" style="margin-top:10px"></div>
     </div>
   </div>
@@ -353,6 +357,36 @@ window.TechUI = (function(){
     renderExplain(res);
     drawChart(res);
     buildPaneToggles();
+    if(document.getElementById('chart-table').style.display!=='none') renderChartTable(res);
+  }
+
+  // ---------- accessible data-table (research-driven: canvas alternative for blind users) ----------
+  function toggleTable(){
+    var box=document.getElementById('chart-table'), btn=document.getElementById('table-toggle');
+    var show=box.style.display==='none';
+    box.style.display=show?'block':'none';
+    btn.setAttribute('aria-expanded', show?'true':'false');
+    btn.querySelector('[data-i18n]').textContent=show?T('chart.tablehide'):T('chart.table');
+    btn.querySelector('[data-i18n]').setAttribute('data-i18n', show?'chart.tablehide':'chart.table');
+    if(show&&lastScan) renderChartTable(lastScan);
+  }
+  function renderChartTable(res){
+    var box=document.getElementById('chart-table'); if(!box) return;
+    var candles=getTf(res._sym)[lastTf].slice(-20);
+    var rsiArr=E.rsi(candles.map(function(c){return c.close;}),14);
+    var rows=candles.map(function(c,i){
+      return '<tr><th scope="row">'+(candles.length-i)+'</th><td>'+c.open+'</td><td>'+c.high+'</td><td>'+c.low+'</td><td>'+c.close+'</td><td>'+(rsiArr[i]==null?'—':Math.round(rsiArr[i]*100)/100)+'</td></tr>';
+    }).join('');
+    var risk='';
+    if(res.verdict!=='HOLD'&&res.stop){
+      risk='<tr><th scope="row">▶ '+T('risk.entry')+'</th><td colspan="5">'+res.entry.ideal+'</td></tr>'+
+           '<tr><th scope="row">🛑 '+T('risk.stop')+'</th><td colspan="5">'+res.stop.price+'</td></tr>'+
+           '<tr><th scope="row">🎯 '+T('risk.targets')+'</th><td colspan="5">'+res.targets.map(function(t){return t.price+' ('+t.rr+')';}).join(', ')+'</td></tr>';
+    }
+    box.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+
+      res._sym+' · '+(T('tf.'+lastTf)||lastTf)+' — '+T('chart.tablecap')+'</caption>'+
+      '<tr><th scope="col">#</th><th scope="col">O</th><th scope="col">H</th><th scope="col">L</th><th scope="col">C</th><th scope="col">RSI</th></tr>'+
+      rows+risk+'</table>';
   }
 
   function renderLadder(res){
@@ -550,6 +584,10 @@ window.TechUI = (function(){
     document.getElementById('pf-closed').textContent=closed.length;
     document.getElementById('pf-pnl').textContent=fmt(closed.reduce(function(a,t){return a+t.pnl;},0));
     document.getElementById('pf-risk').textContent=fmt(open.reduce(function(a,t){return a+(t.risk||0);},0));
+    // research-driven behaviour brake: over-trading nudge (openwebsolutions pattern #6/#7)
+    var nudge=document.getElementById('pf-nudge');
+    if(open.length>=3){ nudge.textContent='⚠️ '+T('nudge.overtrade'); nudge.style.display='block'; }
+    else nudge.style.display='none';
     var el=document.getElementById('pf-list');el.innerHTML='';
     list.slice().reverse().forEach(function(t){
       var icon={BUY:'📈',SELL:'🛑'}[t.side]||'';
@@ -606,7 +644,7 @@ window.TechUI = (function(){
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
-    audioSummary:audioSummary,applyLang:applyLang,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
+    audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
 })();
 </script>
 </body>

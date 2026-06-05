@@ -2,17 +2,25 @@
 
 # CHITTI TECHNICAL — TEST REPORT (self-certified)
 
-**Date:** 2026-06-06 · **By:** Chitti CTO (automated, not Sire) · **Verdict: ✅ ALL PASS**
+**Date:** 2026-06-06 (rev 2 — research-led, legacy dismantled) · **By:** Chitti CTO (automated, not Sire) · **Verdict: ✅ ALL PASS**
 
 > I ran the QA myself. Both suites are committed and reproducible on any machine:
 > `node tools/test_technical.mjs` and `node tools/cert_technical.mjs` (Playwright/Chromium).
 > Nothing below is hand-asserted — every row is a machine check with its console output.
 
+## Process correction (rev 2)
+- **Best-practices research done FIRST** ([../RESEARCH.md](../RESEARCH.md)) — TradingView · Zerodha
+  Kite · Groww · Upstox · Robinhood + fintech-UX + accessibility literature, with live sources.
+  It validated the build AND exposed one real gap → fixed (accessible chart data-table).
+- **Legacy UI dismantled** — the 7,447-line `chitti_complete_technical.html` monolith is archived
+  to `chitti-technical/_legacy/` and the URL now **redirects** to the rebuilt product (cert-verified).
+  Only the technical indicators from its scanner section are kept (ported into the new engine).
+
 ## Headline
 | Suite | Result |
 |---|---|
 | Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **229 PASS / 0 FAIL** |
-| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **19 PASS / 0 FAIL · 0 page errors** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **21 PASS / 0 FAIL · 0 page errors** |
 
 ## The five items you named — PASS/FAIL
 
@@ -23,6 +31,8 @@
 | 3 | **SEBI bar** | ✅ **PASS** | `ITEM sebi_bar` — sticky "NOT SEBI REGISTERED" bar present + legal modal behind it. |
 | 4 | **Tap targets** | ✅ **PASS** | `ITEM tap_targets_44px — 0 under 44px` — every `.btn` ≥ 44px (blind/limited-mobility floor). |
 | 5 | **Feedback bar (5-element)** | ✅ **PASS** | `ITEM feedback_bar_every_box — 7/7 boxes wired` — every response card has the 🤖/🔊/👍/👎 per-box bar (tech-signal, explain, roshan, chart, indicators, screener, portfolio). |
+| 6 | **Accessible chart data-table** (research-driven) | ✅ **PASS** | `ITEM accessible_chart_data_table — rows=21 headers=6 caption=true expanded=true` — blind users get a text-table alternative to the `<canvas>` (Deque/accessiBe best practice). |
+| 7 | **Legacy UI dismantled** | ✅ **PASS** | `ITEM legacy_dismantled_redirects — landed on chitti_technical.html` — old monolith archived + URL redirects. |
 
 ## Full node logic test (229/0)
 Covers BO3–BO11. Key gates:
