@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap">
 <!-- UI aligned to chitti_medupi.html design system — loaded LAST so it governs the look (logic untouched) -->
-<link rel="stylesheet" href="chitti_fashion_ui.css?v=20260605d">
+<link rel="stylesheet" href="chitti_fashion_ui.css?v=20260606">
 <!-- strings.js + chitti_lang.js before paint so i18n keys resolve; defer keeps parse non-blocking -->
 <script src="strings.js?v=20260605" defer></script>
 <script src="chitti_lang.js?v=20260605" defer></script>
@@ -133,6 +133,9 @@ body{font-size:17px}
 </head>
 <body class="sds-page fa-body">
 
+<!-- BO1 blind-first: skip-to-content for screen-reader + keyboard users -->
+<a class="fa-skip" href="#fa-main">⏭️ Skip to content</a>
+
 <div class="sds-tricolour fixed"></div>
 
 <header class="sds-header" role="banner" style="margin-top:6px">
@@ -155,7 +158,7 @@ body{font-size:17px}
   </div>
 </header>
 
-<main>
+<main id="fa-main" role="main">
   <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Chitti Fashion — voice-first wardrobe stylist for every Indian</h1>
   <div style="margin:4px 0 12px"><span class="fa-badge">🎖️ World Class Chitti Fashion — Commando Discipline</span></div>
 
@@ -1662,9 +1665,18 @@ async function faModeLens(band){
 }
 
 /* ════════ boot ════════ */
+function faWireLive(){
+  document.querySelectorAll('.fa-result, #fa-coach-plan, #fa-twin-body').forEach(function(el){
+    if (el && !el.getAttribute('aria-live')) { el.setAttribute('aria-live', 'polite'); el.setAttribute('role', 'status'); el.setAttribute('aria-atomic', 'false'); }
+  });
+}
 function faBoot(){
   CURRENT_LANG = faDetectLang();
   document.documentElement.lang = CURRENT_LANG;
+  // BO1 blind-first: every result host is an aria-live region so screen readers
+  // announce results the moment they render (not only via TTS). role=status = polite.
+  // Re-swept after init to catch dynamically-created hosts (e.g. the coach plan).
+  faWireLive(); setTimeout(faWireLive, 1500);
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
   faMaybeOnboard();
   try { localStorage.setItem('chitti_vaani_lang', CURRENT_LANG); } catch(e){}

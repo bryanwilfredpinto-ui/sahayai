@@ -7,6 +7,11 @@
 >
 > 👉 **Start here:** [HANDOVER_MASTER.md](HANDOVER_MASTER.md) — one consolidated scorecard mapping every
 > Part A–D line item to its evidence (incl. the real **axe-core WCAG scan = 0 violations**).
+>
+> 🧱 **The redo (research → build order → execute):** [HANDOVER_BUILD_ORDER.md](HANDOVER_BUILD_ORDER.md) +
+> [../RESEARCH_BEST_APPS.md](../RESEARCH_BEST_APPS.md) + [../BUILD_ORDER.md](../BUILD_ORDER.md) — the four users
+> built as BO1–BO5 foundations (skip-link, **aria-live announcements**, role=tab, reduced-motion, forced-colors),
+> each test-gated. Surfaced + fixed real defects the prior sighted-first structure hid.
 
 ## The 5 deliverables
 

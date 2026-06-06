@@ -209,3 +209,35 @@ a.fa-btn { display: inline-flex; align-items: center; justify-content: center; t
 
 @media (min-width: 760px) { main { max-width: 1100px; margin: 0 auto; } }
 @media (max-width: 640px) { .sds-brand-name { font-size: 18px !important; } .fa-tabbar button { font-size: 12px !important; padding: 12px 10px !important; } }
+
+/* ════════ BO1 blind/keyboard-first: skip link + visible focus ════════ */
+.fa-skip {
+  position: fixed; top: -60px; left: 8px; z-index: 9999; background: #0E2344; color: #fff;
+  padding: 10px 16px; border-radius: 0 0 10px 10px; font-weight: 800; text-decoration: none;
+  transition: top .15s ease;
+}
+.fa-skip:focus { top: 0; outline: 3px solid #D4AF37; outline-offset: 2px; }
+/* a clearly visible focus ring on EVERY interactive element (keyboard + low-vision) */
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
+.fa-chip:focus-visible, .fa-tabbar button:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid #E86A17 !important; outline-offset: 2px !important; border-radius: 6px;
+}
+
+/* ════════ BO5 low-vision / vestibular / elderly ════════ */
+/* respect reduced-motion: kill the floating logo + all animation/transition */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .sds-logo { animation: none !important; }
+}
+/* honour the OS "increase contrast" setting — strengthen borders + darken muted text */
+@media (prefers-contrast: more) {
+  .fa-tabbar button { color: #1f2937 !important; }
+  .sds-card, .fa-outfit, .fa-tile, .fa-chip, .fa-btn { border-color: #111 !important; }
+  .section-sub, .fa-hero p, .sds-tagline { color: #111 !important; }
+}
+/* Windows High Contrast / forced-colors: let the OS palette through, keep structure visible */
+@media (forced-colors: active) {
+  .sds-card, .fa-outfit, .fa-tile, .fa-chip, .fa-btn, .fa-tabbar button { border: 1px solid CanvasText !important; }
+  .fa-tabbar button.active { border-bottom: 3px solid Highlight !important; }
+  .fa-hero .cta, .fa-btn.primary { forced-color-adjust: none; }
+}
