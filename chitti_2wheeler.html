@@ -88,6 +88,40 @@
 <main>
 
 <div class="sds-tab-panel active mb-hp" id="mb-tab-home">
+
+  <!-- ════════ HERO: Swarm Diagnosis — ALWAYS visible on landing (BO-Diagnose). A roadside
+       user (Ramesh/Fatima/Babu) must diagnose on screen 1 WITHOUT adding a vehicle first.
+       Moved out of #mb-summary (which is hidden until a vehicle exists). ════════ -->
+  <div data-chitti-response="mb-card-swarm" class="sds-card chitti-response sw-card" data-chitti-section="🧠 Swarm Diagnosis">
+    <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mb.swarm.title">Swarm Diagnosis</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mb.swarm.sub">8 maahir agents milke aapki bike ka diagnosis karte hain — guess nahi, vote.</div>
+    <div class="sw-input-row">
+      <input id="sw-symptom" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mb.swarm.ph" placeholder="Bike start nahi ho rahi… / Chain se awaaz aa rahi… / Mileage gir gaya…" aria-label="Describe the problem">
+      <button class="sw-mic" onclick="swMic()" aria-label="Bol kar bataaiye">🎤</button>
+    </div>
+    <div class="sw-btn-row">
+      <button class="sds-btn-primary sw-go" onclick="swDiagnose()">🔍 <span data-vai-i18n="mb.swarm.go">Diagnose karo</span></button>
+      <button class="sds-btn-ghost" onclick="swScamToggle()">💰 <span data-vai-i18n="mb.swarm.scam">Quote sahi hai?</span></button>
+    </div>
+    <div id="sw-scam-box" class="sw-scam hidden">
+      <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mb.swarm.scamjob" placeholder="Kaam kya hai? e.g. Battery replace / Oil change">
+      <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mb.swarm.scamamt" placeholder="Mechanic ne kitna maanga? ₹">
+      <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mb.swarm.check">Check karo</button>
+    </div>
+    <div id="sw-result" class="sw-result" aria-live="polite"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="swSpeakResult()">🔊</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mb_swarm', 1)">👍</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mb-swarm-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mb-swarm-fb">
+      <textarea id="mb-swarm-fb-text" placeholder="Diagnosis galat tha? Mechanic ne kya nikla? Chitti seekhega…"></textarea>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-swarm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mb_swarm','mb-swarm-fb-text','mb-swarm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
+    </div>
+    <div class="sw-disclaimer" data-vai-i18n="mb.swarm.disc">⚠️ Chitti mechanic nahi hai — yeh ek confidence-based diagnosis hai (Likely / Possible). Safety red-line par hamesha inspection karwayein. Emergency = family cascade, cops ko auto-dial nahi.</div>
+  </div>
+
   <div id="mb-empty" class="sds-empty" style="display:none">
     <div class="big">🏍️</div>
     <div class="title" data-vai-i18n="mb.empty.title">अपनी बाइक जोड़ें</div>
@@ -188,36 +222,6 @@
       </div>
     </div>
 
-    <!-- ════════ CEOS Swarm Diagnosis — 8-agent confidence vote (Chitti Bike Doctor) ════════ -->
-    <div data-chitti-response="mb-card-swarm" class="sds-card chitti-response sw-card" data-chitti-section="🧠 Swarm Diagnosis">
-      <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mb.swarm.title">Swarm Diagnosis</span></h2>
-      <div class="sds-card-sub" data-vai-i18n="mb.swarm.sub">8 maahir agents milke aapki bike ka diagnosis karte hain — guess nahi, vote.</div>
-      <div class="sw-input-row">
-        <input id="sw-symptom" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mb.swarm.ph" placeholder="Bike start nahi ho rahi… / Chain se awaaz aa rahi… / Mileage gir gaya…" aria-label="Describe the problem">
-        <button class="sw-mic" onclick="swMic()" aria-label="Bol kar bataaiye">🎤</button>
-      </div>
-      <div class="sw-btn-row">
-        <button class="sds-btn-primary sw-go" onclick="swDiagnose()">🔍 <span data-vai-i18n="mb.swarm.go">Diagnose karo</span></button>
-        <button class="sds-btn-ghost" onclick="swScamToggle()">💰 <span data-vai-i18n="mb.swarm.scam">Quote sahi hai?</span></button>
-      </div>
-      <div id="sw-scam-box" class="sw-scam hidden">
-        <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mb.swarm.scamjob" placeholder="Kaam kya hai? e.g. Battery replace / Oil change">
-        <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mb.swarm.scamamt" placeholder="Mechanic ne kitna maanga? ₹">
-        <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mb.swarm.check">Check karo</button>
-      </div>
-      <div id="sw-result" class="sw-result" aria-live="polite"></div>
-      <div class="sds-card-toolbar">
-        <button onclick="swSpeakResult()">🔊</button>
-        <span class="sep"></span>
-        <button class="fb-pos" onclick="logProductAction('mb_swarm', 1)">👍</button>
-        <button class="fb-neg" onclick="sdsToggleFb('mb-swarm-fb')">👎</button>
-      </div>
-      <div class="sds-fb-panel" id="mb-swarm-fb">
-        <textarea id="mb-swarm-fb-text" placeholder="Diagnosis galat tha? Mechanic ne kya nikla? Chitti seekhega…"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mb-swarm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mb_swarm','mb-swarm-fb-text','mb-swarm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
-      </div>
-      <div class="sw-disclaimer" data-vai-i18n="mb.swarm.disc">⚠️ Chitti mechanic nahi hai — yeh ek confidence-based diagnosis hai (Likely / Possible). Safety red-line par hamesha inspection karwayein. Emergency = family cascade, cops ko auto-dial nahi.</div>
-    </div>
   </div>
 </div>
 

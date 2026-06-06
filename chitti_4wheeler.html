@@ -88,6 +88,40 @@
 <main>
 
 <div class="sds-tab-panel active mc-hp" id="mc-tab-home">
+
+  <!-- ════════ HERO: Swarm Diagnosis — ALWAYS visible on landing (BO-Diagnose). A roadside
+       user must diagnose on screen 1 WITHOUT adding a vehicle first. Moved out of
+       #mc-summary (which is hidden until a vehicle exists). ════════ -->
+  <div data-chitti-response="mc-card-swarm" class="sds-card chitti-response sw-card" data-chitti-section="🧠 Swarm Diagnosis">
+    <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mc.swarm.title">Swarm Diagnosis</span></h2>
+    <div class="sds-card-sub" data-vai-i18n="mc.swarm.sub">8 maahir agents milke aapki gaadi ka diagnosis karte hain — guess nahi, vote. OBD2 code ho toh aur sateek.</div>
+    <div class="sw-input-row">
+      <input id="sw-symptom" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mc.swarm.ph" placeholder="Check-engine light aaya… / AC thanda nahi… / Steering bhaari… / DTC code P0301…" aria-label="Describe the problem">
+      <button class="sw-mic" onclick="swMic()" aria-label="Bol kar bataaiye">🎤</button>
+    </div>
+    <div class="sw-btn-row">
+      <button class="sds-btn-primary sw-go" onclick="swDiagnose()">🔍 <span data-vai-i18n="mc.swarm.go">Diagnose karo</span></button>
+      <button class="sds-btn-ghost" onclick="swScamToggle()">💰 <span data-vai-i18n="mc.swarm.scam">Quote sahi hai?</span></button>
+    </div>
+    <div id="sw-scam-box" class="sw-scam hidden">
+      <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mc.swarm.scamjob" placeholder="Kaam kya hai? e.g. AC compressor / Clutch / Brake pads">
+      <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mc.swarm.scamamt" placeholder="Garage ne kitna maanga? ₹">
+      <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mc.swarm.checkgo">Check karo</button>
+    </div>
+    <div id="sw-result" class="sw-result" aria-live="polite"></div>
+    <div class="sds-card-toolbar">
+      <button onclick="swSpeakResult()">🔊</button>
+      <span class="sep"></span>
+      <button class="fb-pos" onclick="logProductAction('mc_swarm', 1)">👍</button>
+      <button class="fb-neg" onclick="sdsToggleFb('mc-swarm-fb')">👎</button>
+    </div>
+    <div class="sds-fb-panel" id="mc-swarm-fb">
+      <textarea id="mc-swarm-fb-text" placeholder="Diagnosis galat tha? Garage ne kya nikla? Chitti seekhega…"></textarea>
+      <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-swarm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_swarm','mc-swarm-fb-text','mc-swarm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
+    </div>
+    <div class="sw-disclaimer" data-vai-i18n="mc.swarm.disc">⚠️ Chitti mechanic nahi hai — yeh ek confidence-based diagnosis hai (Likely / Possible). Brake · steering · airbag · overheat · EV high-voltage par hamesha inspection. Emergency = family cascade, cops ko auto-dial nahi.</div>
+  </div>
+
   <div id="mc-empty" class="sds-empty" style="display:none">
     <div class="big">🚗</div>
     <div class="title" data-vai-i18n="mc.empty.title">अपनी गाड़ी जोड़ें</div>
@@ -173,36 +207,6 @@
       </div>
     </div>
 
-    <!-- ════════ CEOS Swarm Diagnosis — 8-agent confidence vote (Chitti Car Doctor) ════════ -->
-    <div data-chitti-response="mc-card-swarm" class="sds-card chitti-response sw-card" data-chitti-section="🧠 Swarm Diagnosis">
-      <h2 class="sds-card-title"><span class="ico">🧠</span> <span data-vai-i18n="mc.swarm.title">Swarm Diagnosis</span></h2>
-      <div class="sds-card-sub" data-vai-i18n="mc.swarm.sub">8 maahir agents milke aapki gaadi ka diagnosis karte hain — guess nahi, vote. OBD2 code ho toh aur sateek.</div>
-      <div class="sw-input-row">
-        <input id="sw-symptom" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mc.swarm.ph" placeholder="Check-engine light aaya… / AC thanda nahi… / Steering bhaari… / DTC code P0301…" aria-label="Describe the problem">
-        <button class="sw-mic" onclick="swMic()" aria-label="Bol kar bataaiye">🎤</button>
-      </div>
-      <div class="sw-btn-row">
-        <button class="sds-btn-primary sw-go" onclick="swDiagnose()">🔍 <span data-vai-i18n="mc.swarm.go">Diagnose karo</span></button>
-        <button class="sds-btn-ghost" onclick="swScamToggle()">💰 <span data-vai-i18n="mc.swarm.scam">Quote sahi hai?</span></button>
-      </div>
-      <div id="sw-scam-box" class="sw-scam hidden">
-        <input id="sw-scam-job" class="sds-input" type="text" data-vai-i18n-attr="placeholder|mc.swarm.scamjob" placeholder="Kaam kya hai? e.g. AC compressor / Clutch / Brake pads">
-        <input id="sw-scam-amt" class="sds-input" type="number" inputmode="numeric" data-vai-i18n-attr="placeholder|mc.swarm.scamamt" placeholder="Garage ne kitna maanga? ₹">
-        <button class="sds-btn-primary" onclick="swScamCheck()" data-vai-i18n="mc.swarm.checkgo">Check karo</button>
-      </div>
-      <div id="sw-result" class="sw-result" aria-live="polite"></div>
-      <div class="sds-card-toolbar">
-        <button onclick="swSpeakResult()">🔊</button>
-        <span class="sep"></span>
-        <button class="fb-pos" onclick="logProductAction('mc_swarm', 1)">👍</button>
-        <button class="fb-neg" onclick="sdsToggleFb('mc-swarm-fb')">👎</button>
-      </div>
-      <div class="sds-fb-panel" id="mc-swarm-fb">
-        <textarea id="mc-swarm-fb-text" placeholder="Diagnosis galat tha? Garage ne kya nikla? Chitti seekhega…"></textarea>
-        <div class="actions"><button class="cancel" onclick="sdsToggleFb('mc-swarm-fb')" data-vai-i18n="ui.cancel">रद्द</button><button onclick="sendFb('mc_swarm','mc-swarm-fb-text','mc-swarm-fb')" data-vai-i18n="ui.send">भेजो</button></div>
-      </div>
-      <div class="sw-disclaimer" data-vai-i18n="mc.swarm.disc">⚠️ Chitti mechanic nahi hai — yeh ek confidence-based diagnosis hai (Likely / Possible). Brake · steering · airbag · overheat · EV high-voltage par hamesha inspection. Emergency = family cascade, cops ko auto-dial nahi.</div>
-    </div>
   </div>
 </div>
 
