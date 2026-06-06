@@ -860,14 +860,23 @@ function applyResult(d){
     const useHi = (CURRENT_LANG === 'hi');
     const serverMsg = (d && d.error) || (d && d.summary) || (useHi ? 'सर्वर अभी जवाब नहीं दे पाया।' : 'The server could not analyse this right now.');
     document.getElementById('r-summary').textContent = '⚠️ ' + serverMsg;
-    if (window.CHITTI_SCANNER_ROUTER !== false && typedVal.trim()) {
-      const det = detectCategory({ type: null, summary: typedVal, facts: {}, key_findings: [] }, typedVal);
-      renderRouterCard(det, { speak: false });
-      if (LAST_ROUTE) {
-        const lead = useHi
-          ? 'सर्वर अभी उपलब्ध नहीं, पर आपके टेक्स्ट से मैं इसे यहाँ भेज सकती हूँ: '
-          : "The server isn't available right now, but from your text I can still route this to: ";
-        speakText(lead + LAST_ROUTE.label + '. ' + LAST_ROUTE.reason, CURRENT_LANG);
+    if (window.CHITTI_SCANNER_ROUTER !== false) {
+      if (typedVal.trim()) {
+        const det = detectCategory({ type: null, summary: typedVal, facts: {}, key_findings: [] }, typedVal);
+        renderRouterCard(det, { speak: false });
+        if (LAST_ROUTE) {
+          const lead = useHi
+            ? 'सर्वर अभी उपलब्ध नहीं, पर आपके टेक्स्ट से मैं इसे यहाँ भेज सकती हूँ: '
+            : "The server isn't available right now, but from your text I can still route this to: ";
+          speakText(lead + LAST_ROUTE.label + '. ' + LAST_ROUTE.reason, CURRENT_LANG);
+        }
+      } else {
+        // Image-only failure (no text to route from) — never a dead end. Offer the
+        // picture-menu so the user can still pick a category and route by one tap.
+        renderRouterCard({ category: 'unknown', confidence: 0.3 }, { speak: false });
+        speakText(useHi
+          ? 'सर्वर अभी तस्वीर नहीं पढ़ पाया। नीचे से श्रेणी चुनिए, या लेबल टाइप कीजिए।'
+          : "The server couldn't read the image. Pick a category below, or type the label.", CURRENT_LANG);
       }
     }
     return;

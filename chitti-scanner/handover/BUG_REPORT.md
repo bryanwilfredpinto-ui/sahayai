@@ -21,6 +21,17 @@ Priority: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low.
   still routes `medicine → MedUPI`. ✅
 - **Status:** ✅ FIXED + verified.
 
+### BUG-6 — Image-only upload dead-ends when analyse fails (found in the full-automation pass)
+- **Severity:** HIGH (resilience gap).
+- **Repro:** Upload a real label PNG; if the backend analyse fails (CORS from localhost / rail
+  block / vision off), there is **no typed text** to route from, so the earlier resilience fix
+  rendered no router card → the user saw only "⚠️ Could not analyse".
+- **Found by:** `tools/scanner_upload.mjs` (router=false on all 4 image uploads).
+- **Fix:** on an image-only failure, render the **picture-menu** (`unknown` router card) so the
+  user can still pick a category and route by one tap. Spoken prompt in EN/HI.
+- **Verified:** upload suite re-run → **router=true on all 4** image uploads; cert still 16/16.
+- **Status:** ✅ FIXED + verified.
+
 ## 🟡 MEDIUM
 
 ### BUG-2 — Double 🧭 icon on the router card header (cosmetic)
@@ -49,7 +60,7 @@ Priority: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low.
 | Priority | Found | Fixed | Open |
 |---|---|---|---|
 | 🔴 Critical | 0 | 0 | 0 |
-| 🟠 High | 1 (BUG-1) | 1 | 0 |
+| 🟠 High | 2 (BUG-1 backend-block dead-end, BUG-6 image-only dead-end) | 2 | 0 |
 | 🟡 Medium | 2 (BUG-2 cosmetic, BUG-3 pre-existing a11y) | 1 | 1 (pre-existing, documented) |
 | 🔵 Backend P1 | 2 (BUG-4/5) | 0 | 2 (infra/backend owner) |
 

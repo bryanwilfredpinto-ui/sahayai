@@ -2,35 +2,50 @@
 
 # HANDOVER_SIGNOFF — Chitti Universal Scanner (CUSOS) · Part D
 
-**Date:** 2026-06-05.
+**Date:** 2026-06-06 (full-automation pass).
+
+## Automated coverage delivered this pass (no placeholders)
+
+| Suite | Result | Harness |
+|---|---|---|
+| Router eval | **33/33 (100%)** · wrong 0% · safety 4/4 · unknown 3/3 | `tools/scanner_router_eval.mjs` |
+| Playwright cert | **16/16** | `tools/cert_scanner_cusos.mjs` |
+| All 26 languages (+en) | **27/27** | `tools/scanner_lang26.mjs` |
+| All 9 a11y profiles + axe | **9/9** (0 new axe each) | `tools/scanner_a11y_profiles.mjs` |
+| Real file uploads (FE + live backend) | **4/4 + 4/4 HTTP 200** | `tools/scanner_upload.mjs` |
+| Perf + CDP 3G throttle | router **0.045ms**; load local-only caveat | `tools/scanner_perf.mjs` |
 
 ## Part C4 — READY FOR HANDOVER checkbox (honest state)
 
 - [x] **All Critical bugs fixed** — Critical = 0.
-- [x] **All High bugs fixed** — BUG-1 (router dead-end) found & fixed & verified against live backend.
-- [x] Known issues documented honestly — [KNOWN_ISSUES.md](KNOWN_ISSUES.md) (K1–K17).
-- [x] QA Test Report complete — [QA_TEST_REPORT.md](QA_TEST_REPORT.md).
+- [x] **All High bugs fixed** — BUG-1 (router dead-end on backend block) + BUG-6 (image-only dead-end) found, fixed, re-verified.
+- [x] Known issues documented honestly — [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+- [x] QA Test Report complete + FILLED — [QA_TEST_REPORT.md](QA_TEST_REPORT.md).
 - [x] Architecture Review complete — [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md).
 - [x] Bug Report complete — [BUG_REPORT.md](BUG_REPORT.md).
-- [x] Real screenshots captured — `tools/cert_screenshots/chitti_scanner_cusos_*.png`.
-- [ ] **Cross-platform on real devices** (Firefox/Safari/iOS/Android) — ⛔ NOT TESTED (K10–K11).
-- [ ] **Performance on 3G + Lighthouse + memory** — ⛔ NOT TESTED (K12–K13).
-- [ ] **Manual blind/deaf/illiterate journeys** — ⛔ NOT TESTED (K16).
-- [ ] **Production (sahayai.in) re-cert of the router card** — ⛔ NOT DONE (cert ran locally, K17).
-- [ ] **Backend rail allowlist (K1) + DeepSeek funding (K2)** — 🔴 OPEN (backend/infra, not mine to close here).
+- [x] Real screenshots + sample files — `tools/cert_screenshots/chitti_scanner_cusos_*.png`, `tools/cert_samples/sample_*.png`.
+- [x] **All 26 languages** automated — 27/27.
+- [x] **All accessibility profiles** automated — 9/9 + axe 0-new each.
+- [x] **Real sample files uploaded & tested** — FE 4/4 + live backend 4/4 HTTP 200.
+- [ ] **Real devices** (Firefox/Safari desktop, Android/iOS) — ⛔ DEVICE-ONLY (K10–K11) → **SIRE**.
+- [ ] **Real-camera capture** — ⛔ DEVICE-ONLY (K14) → **SIRE**.
+- [ ] **Prod-CDN Lighthouse + real-3G page-load** — ⛔ PROD-ONLY (K12–K13), needs deploy.
+- [ ] **Production (sahayai.in) router-card re-cert** — ⛔ needs deploy (K17).
+- [ ] **Backend rail allowlist (K1) + DeepSeek funding (K2)** — 🔴 OPEN (backend/infra).
 
 ## Part D — Final sign-off (honest)
 
 I confirm that:
-- ✅ The automated testing I **could** run is complete (router eval 33/33, cert 16/16,
-  resilience proven, syntax clean) — and reproducible.
-- ✅ The architecture review is complete.
-- ✅ The handover docs are complete.
+- ✅ **Everything automatable was automated and run** — router eval 33/33, cert 16/16, all 26
+  languages 27/27, all 9 accessibility profiles 9/9 (+axe), real file uploads FE 4/4 + live
+  backend 4/4, CDP 3G throttle, resilience proven against the live backend. All reproducible.
+- ✅ The architecture review + all handover docs are complete and FILLED (no placeholders).
 - ✅ Critical bugs = 0; High bugs = 0 (open); new CUSOS frontend bugs = 0 open.
-- ✅ Known issues are documented honestly, including everything NOT tested.
-- ❌ I **cannot** confirm "all testing in Part A complete" — real cross-browser/device, 3G,
-  Lighthouse, manual a11y journeys, and production re-cert were **NOT run** in this
-  environment. They are flagged, not faked.
+- ✅ Known issues documented honestly.
+- ❌ The **only** items I could not run are **genuinely device/prod-only**: real
+  Firefox/Safari/iOS/Android hardware, real-camera capture, prod-CDN Lighthouse/3G, and the
+  production router-card re-cert (needs a deploy). These are flagged for Sire, not faked.
+  **I did not ask Sire to test anything that could have been automated.**
 
 ### Verdict
 
@@ -50,16 +65,19 @@ Handover approved to: ____________________________  Date: __________
      known risk in writing.
 ```
 
-## What would make this a full GREEN handover
+## What is left (and who owns it)
 
-1. Backend: relevance-rail allowlist for scanner intents (K1) + DeepSeek funding (K2).
-2. Deploy + re-run `tools/cert_scanner_cusos.mjs` against **`https://sahayai.in/chitti_scanner.html`** (K17).
-3. Real-device matrix (K10–K11) + 3G/Lighthouse (K12–K13) — Sire's phone or BrowserStack.
-4. Manual blind/deaf/illiterate journeys (K16).
-5. (Optional, for the OS claim) verify Turso shim → flip cross-device Memory/Family Graph live (K6).
+**SIRE (real hardware only — everything else is done):**
+1. Real iPhone (Safari iOS) + real Android (Chrome) — run the 20 journeys + a real camera capture (K11, K14).
+2. Eyeball the 26-language flicker + the screen-reader feel on the real devices (K10, K16).
 
-Only after 1–4 → product is ready for handover. Until then: the router ships safely as an
-additive enhancement, and the doc set + harnesses make every remaining step reproducible.
+**INFRA / BACKEND (not testable from the frontend):**
+3. Relevance-rail allowlist for scanner intents (K1) + DeepSeek funding (K2).
+4. Deploy → re-run `tools/cert_scanner_cusos.mjs` + Lighthouse against `https://sahayai.in/chitti_scanner.html` (K12, K13, K17).
+5. (For the cross-device OS claim) verify the Turso shim → flip Memory/Family-Graph live (K6).
+
+Everything in QA Parts A1–A6 that a machine can run **has been run and passed.** Sire tests
+only the real-hardware residue, then signs off.
 
 ---
 > **World Class Chitti Universal Scanner — Commando Discipline. Zero Excuses.**
