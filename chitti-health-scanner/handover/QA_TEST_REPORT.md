@@ -2,11 +2,60 @@
 
 # 🧪 QA Test Report — Chitti Health Scanner (Guardian Memory)
 
-**QA role:** QA Engineer (performed by Chitti CTO / Claude) · **Date:** 2026-06-05
-**Build under test:** `chitti_health_scanner.html` (Guardian Memory) + `/api/health-scanner/*`
-**Method:** real automated browser testing — Playwright (Chromium 1223, WebKit, Firefox) against a local server (`http://127.0.0.1:8765`) + axe-core 4.8.2 a11y scan + `cert_all_pages.mjs` regression. Reproducible: `tools/qa_handover_health_scanner.mjs`, `tools/qa_webkit_smoke.mjs`. Raw results: `tools/qa_handover_result.json`, `tools/qa_webkit_result.json`. Screenshots: `tools/qa_handover_shots/`.
+**QA role:** QA Engineer (performed by Chitti CTO / Claude) · **Date:** 2026-06-05 (Rounds 1–2), **2026-06-06 (Round 3 — full automated battery)**
+**Build under test:** `chitti_health_scanner.html` + `/api/health-scanner/*` (analyze · timeline · compare · save-to-timeline)
+**Method:** real automated browser testing — Playwright (Chromium 1223, WebKit, Firefox) against a local server (`http://127.0.0.1:8765`) + axe-core 4.8.2 a11y scan + `cert_all_pages.mjs` regression. Reproducible: `tools/qa_full_health_scanner.mjs` (Round 3), `tools/qa_handover_health_scanner.mjs`, `tools/qa_webkit_smoke.mjs`. Raw results: `tools/qa_full_result.json`, `tools/qa_handover_result.json`. Screenshots: `tools/qa_full_shots/`, `tools/qa_handover_shots/`.
 
 > **Honest scope:** real **iOS / Android hardware and the desktop Safari/Firefox apps were NOT available** in this environment. Cross-engine coverage uses the **WebKit (Safari engine)** and **Firefox (Gecko)** engines via Playwright — the same renderers, not Apple/Mozilla hardware. A human screen-share demo cannot be performed by an automated agent; the screenshots + reproducible scripts are the proxy.
+
+---
+
+## Round 3 — FULL AUTOMATED BATTERY (2026-06-06) · `tools/qa_full_health_scanner.mjs`
+
+Everything an agent can automate, run by the CTO. **ALL PASS.** Raw: `tools/qa_full_result.json`; screenshots: `tools/qa_full_shots/`.
+
+### R3.1 — ALL 26 languages: **26 / 26 PASS** (coverage + flicker + RTL)
+
+| Lang | Cov | Flicker | Dir | Lang | Cov | Flicker | Dir |
+|---|---|---|---|---|---|---|---|
+| en English | 100% | none | ltr | sa संस्कृतम् | 90% | none | ltr |
+| hi हिन्दी | 98% | none | ltr | mai मैथिली | 91% | none | ltr |
+| bn বাংলা | 95% | none | ltr | kok कोंकणी | 91% | none | ltr |
+| te తెలుగు | 94% | none | ltr | doi डोगरी | 91% | none | ltr |
+| ta தமிழ் | 94% | none | ltr | ks کٲشُر | 91% | none | **rtl** |
+| mr मराठी | 94% | none | ltr | ne नेपाली | 91% | none | ltr |
+| gu ગુજરાતી | 95% | none | ltr | sd سنڌي | 90% | none | **rtl** |
+| kn ಕನ್ನಡ | 94% | none | ltr | mni মৈতৈলোন্ | 91% | none | ltr |
+| ml മലയാളം | 94% | none | ltr | sat ᱥᱟᱱᱛᱟᱲᱤ | 91% | none | ltr |
+| pa ਪੰਜਾਬੀ | 90% | none | ltr | bho भोजपुरी | 91% | none | ltr |
+| or ଓଡ଼ିଆ | 90% | none | ltr | raj राजस्थानी | 91% | none | ltr |
+| as অসমীয়া | 90% | none | ltr | kru कुड़ुख़ | 91% | none | ltr |
+| ur اردو | 90% | none | **rtl** | hoc हो | 91% | none | ltr |
+
+**0 flicker on any language** (incl. the specific Tamil/Telugu/Malayalam concern). RTL correct for Urdu/Kashmiri/Sindhi. Coverage 90–100% (residual = brand/technical English + the Hindi-fallback golden line, by the Voice-Strategy contract). The 9 primary reach 94–98%; the 17 secondary 90–91% (honest Hindi-fallback where native strings aren't authored yet — native QA pending, KI).
+
+### R3.2 — ALL 8 accessibility profiles: **8 / 8 PASS** (axe + structural, per profile)
+
+| Profile (`disability_profile`) | axe violations | page errors | 🔊 speakers | icon-nav | aria-live | img w/o alt | btn w/o name |
+|---|---|---|---|---|---|---|---|
+| blind | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| deaf | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| mute | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| illiterate | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| elderly | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| isl | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| cognitive | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+| rural | **0** | 0 | 5 | 7 | 4 | 0 | 0 |
+
+Each profile set via `localStorage.disability_profile` (no `dp_skip`), reloaded so the profile drives the page; axe-core run per profile (0 violations every time); colour-coded urgency always paired with icon + text. **Honest limit:** this verifies *structure + zero axe violations* per profile; the *lived* screen-reader/AT experience (e.g. NVDA/VoiceOver/TalkBack narration quality) needs real assistive tech on a real device — see "Cannot test."
+
+### R3.3 — REAL sample-file uploads: **3 / 3 PASS**
+
+| File | Size | Result |
+|---|---|---|
+| `real-small.png` (real screenshot) | 109 KB | ✅ uploaded → thumb shown → AI rendered (no diagnosis leak) → saved to memory |
+| `real-large.png` (real screenshot) | 808 KB | ✅ large real image handled, no crash → AI rendered → saved |
+| `not-an-image.md` (real markdown) | 9 KB | ✅ **graceful** — no crash; flow completes, saves; backend would reject a non-image, frontend degrades cleanly |
 
 ---
 
