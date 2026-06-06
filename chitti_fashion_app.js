@@ -25,7 +25,7 @@ function faDetectLang(){
   return LANGS.includes(n) ? n : 'hi';
 }
 function faChangeLang(v){
-  CURRENT_LANG = LANGS.includes(v) ? v : 'hi';
+  CURRENT_LANG = LANGS.includes(v) ? v : 'en'; // cousins -> English baseline (locked policy); voice-out stays in-language
   PROFILE.lang = CURRENT_LANG; faSaveProfile();
   document.documentElement.lang = CURRENT_LANG;
   try { localStorage.setItem('chitti_vaani_lang', CURRENT_LANG); } catch(e){}
@@ -359,7 +359,7 @@ function faLocFlags(rec){
 }
 function faRenderOutfitCard(rec, byId){
   const FD = faDyn();
-  const tiles = rec.items.map(it => '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(it.category) + '</span></div>').join('');
+  const tiles = rec.items.map(it => '<div class="p">' + (it.photo ? '<img alt="" src="' + it.photo + '">' : '👕') + '<span class="role">' + esc(faDyn() ? faDyn().cat(it.category) : it.category) + '</span></div>').join('');
   const title = FD ? FD.occ(rec.occasion) : (rec.occasion||'').replace('-',' ');
   return '<div class="fa-outfit"><div class="title">' + esc(title) + ' · ' + faConfBadge(rec.confidence) + '</div>' +
     '<div class="pieces">' + (tiles || '<div class="p">👕</div>') + '</div>' +
@@ -485,7 +485,7 @@ async function faPacking(){
   const extra = items.filter(i=>['outfit','jewellery','dupatta','bag'].indexOf(i.category)>=0).slice(0,2);
   const capsule = tops.concat(bottoms, foot, extra);
   const combos = E.buildOutfits(capsule, { max: 30 }).count;
-  const list = capsule.map(i => '<div class="p" style="font-size:10px;padding:2px">'+(i.photo?'<img alt="" src="'+i.photo+'">':'👕')+'<span class="role">'+esc(i.category)+'</span></div>').join('');
+  const list = capsule.map(i => '<div class="p" style="font-size:10px;padding:2px">'+(i.photo?'<img alt="" src="'+i.photo+'">':'👕')+'<span class="role">'+esc(faDyn()?faDyn().cat(i.category):i.category)+'</span></div>').join('');
   let html = '<div class="fa-outfit"><div class="title">🧳 '+faMoreT('pack_for', { days: days })+' · '+combos+' '+faMoreT('outfits')+'</div>' +
     '<div class="why">'+esc(faMoreT('pack_why', { n: capsule.length, c: combos }))+'</div>' +
     '<div class="pieces" style="grid-template-columns:repeat(5,1fr)">'+list+'</div></div>';
@@ -833,7 +833,7 @@ async function faBuildMyWeek(){
       let html='', spoken='';
       j.week.forEach(o => {
         const valid = (o.item_ids||[]).filter(id => byId[id]);
-        const tiles = valid.map(id => '<div class="p">'+(byId[id].photo?'<img alt="" src="'+byId[id].photo+'">':'👕')+'<span class="role">'+esc(byId[id].category)+'</span></div>').join('');
+        const tiles = valid.map(id => '<div class="p">'+(byId[id].photo?'<img alt="" src="'+byId[id].photo+'">':'👕')+'<span class="role">'+esc(faDyn()?faDyn().cat(byId[id].category):byId[id].category)+'</span></div>').join('');
         html += '<div class="fa-outfit"><div class="title">'+esc(labels[o.occasion]||o.occasion)+'</div>'+
           '<div class="why">'+esc(o.why||'')+'</div>'+
           '<div class="pieces">'+(tiles||'<div class="p" style="font-size:11px;padding:4px">'+(CURRENT_LANG==='en'?'add items':'कपड़े जोड़ें')+'</div>')+'</div></div>';
