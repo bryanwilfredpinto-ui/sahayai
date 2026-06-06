@@ -269,11 +269,17 @@ function _t(key) {
   return (I18N[lang] && I18N[lang][key]) || (I18N.en[key] || key);
 }
 function changeLanguage(lang) {
-  try {
-    localStorage.setItem('chitti_lang', lang);
-    document.documentElement.setAttribute('lang', lang);
-    if (window.Chitti && window.Chitti.lang && window.Chitti.lang.setLang) window.Chitti.lang.setLang(lang);
-  } catch (e) {}
+  // Authoritative write order: substrate first (it may dispatch events
+  // that overwrite our values), then our own write LAST so we win.
+  try { if (window.Chitti && window.Chitti.lang && window.Chitti.lang.setLang) window.Chitti.lang.setLang(lang); } catch (e) {}
+  try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+  try { document.documentElement.setAttribute('lang', lang); } catch (e) {}
+  // Re-assert after a tick so any async substrate normalisation (which
+  // would fallback unsupported langs to 'en') cannot win:
+  setTimeout(function () {
+    try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+    try { document.documentElement.setAttribute('lang', lang); } catch (e) {}
+  }, 50);
   renderAll();
   try {
     const u = new SpeechSynthesisUtterance('Language changed to ' + lang);
