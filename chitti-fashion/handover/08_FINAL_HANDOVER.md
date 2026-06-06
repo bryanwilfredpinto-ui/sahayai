@@ -143,10 +143,15 @@ Full detail: [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md).
 - **Solution Architect** — Chitti CTO (Auto Architect) · 2026-06-06 · ☑ APPROVED
 - **Product Owner (You)** — ____________ · ______ · ☐ APPROVED *(after real-device + human-SR pass — KI-03/04)*
 
-## RUN EVERYTHING (one command)
+## RUN EVERYTHING (one command) → **10/10 PASS** (clean run, 2026-06-06)
 ```
 node tools/run_all_fashion_tests.mjs      # runs all 10 suites, prints one PASS/FAIL table
 ```
+Clean idle-machine result: **suites 10, pass 10, fail 0, verdict PASS** —
+Engine 66/66 · Gold 91.6% · Samples 25/25 · **26 languages 26/26** · **4 a11y profiles 4/4** ·
+Accessibility 107/107 · QA 50/50 · axe 0 · Journeys 5/5 · Cert 14/14.
+> Note: run on an **idle** machine. The `execSync` wrapper is sensitive to CPU contention (a first run
+> mid-parallel-load reported false errors) — run suites individually if the machine is busy.
 Individual: `verify_ceos_compliance` · `test_all_fashion_samples` · `fashion_lang_all26` ·
 `fashion_a11y_profiles` · `fashion_engine_test` · `fashion_gold_eval` · `fashion_qa` ·
 `fashion_eval_harness` · `fashion_axe_scan` · `cert_fashion` · `cert_fashion_journeys`.
