@@ -73,13 +73,30 @@
     <select id="lang-select" class="sds-select lang-toggle-bharat" aria-label="Change language / भाषा बदलें" onchange="changeLang(this.value)">
       <option value="hi">हिन्दी</option>
       <option value="en">English</option>
-      <option value="ta">தமிழ்</option>
-      <option value="te">తెలుగు</option>
       <option value="bn">বাংলা</option>
+      <option value="te">తెలుగు</option>
+      <option value="ta">தமிழ்</option>
       <option value="mr">मराठी</option>
       <option value="gu">ગુજરાતી</option>
       <option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="as">অসমীয়া</option>
+      <option value="ur">اردو</option>
+      <option value="sa">संस्कृतम्</option>
+      <option value="mai">मैथिली</option>
+      <option value="kok">कोंकणी</option>
+      <option value="doi">डोगरी</option>
+      <option value="ks">کٲشُر</option>
+      <option value="ne">नेपाली</option>
+      <option value="sd">سنڌي</option>
+      <option value="mni">মৈতৈলোন্</option>
+      <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ</option>
+      <option value="bho">भोजपुरी</option>
+      <option value="raj">राजस्थानी</option>
+      <option value="kru">कुड़ुख़</option>
+      <option value="hoc">हो</option>
     </select>
     <button onclick="window.location.href='chitti_vaani.html'"><span data-vai-i18n="ui.open_vaani">🎙️ Chitti Vaani</span></button>
   </div>
@@ -804,12 +821,24 @@ function mbTab(name){
   try { window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ window.scrollTo(0,0); }
 }
 
+// ── Language model (matches Chitti Vaani's 26-language dropdown) ──────────────
+// The 9 below fully translate via strings.js (VAI_STRINGS). The other 17 "cousin"
+// languages render the CHROME in Hindi — exactly like Vaani's chitti_lang.js
+// fallback — while the dropdown still shows the picked language and voice/diagnosis
+// use it. SEL_KEY remembers the true pick (incl. cousins). chitti_lang.js stays OFF
+// (no second translator → no §5 flicker); strings.js is the sole translator.
+const MB_TRANSLATED = ['hi','en','ta','te','bn','mr','gu','kn','ml'];
+const SEL_KEY = 'chitti_mech_lang';
+function mbChromeLang(code){ return MB_TRANSLATED.indexOf(code) !== -1 ? code : 'hi'; }
+
 function changeLang(code){
-  CURRENT_LANG = code;
-  window.CURRENT_LANG = code; // also expose globally for shared substrate
-  try { localStorage.setItem(LANG_KEY, code); } catch(e){}
-  if (typeof updateAllStrings === 'function') updateAllStrings(code);
-  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: code } })); } catch(e){}
+  const chrome = mbChromeLang(code);
+  CURRENT_LANG = chrome;               // UI + voice render in chrome (Hindi for cousins)
+  window.CURRENT_LANG = chrome;        // strings.js self-heal reads this / LANG_KEY → no race
+  try { localStorage.setItem(SEL_KEY, code); localStorage.setItem(LANG_KEY, chrome); } catch(e){}
+  try { document.documentElement.lang = chrome; } catch(e){}
+  if (typeof updateAllStrings === 'function') updateAllStrings(chrome);
+  try { window.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: chrome, picked: code } })); } catch(e){}
   // Re-render every dynamic UI that produces strings in user's language
   try { mbRefreshHome(); } catch(e){}
   try { mbRenderDocs(); } catch(e){}
@@ -817,10 +846,10 @@ function changeLang(code){
   try { mbLogRenderList(); } catch(e){}
   try { renderFleetSwitcher(); } catch(e){}
   try { mbKyvLoad(); } catch(e){} // re-render from cache in new language (cache key includes lang)
+  // Keep the dropdown on the PICKED language (cousin stays visible though chrome is Hindi).
+  try { const s = document.getElementById('lang-select'); if (s && s.value !== code) s.value = code; } catch(e){}
   // Substrate-injected labels (feedback-widget bars, the 💡 feature CTA) localise
-  // themselves; nudge them once. No setTimeout/rAF cascade — chitti_lang.js is OFF,
-  // so strings.js (VAI_STRINGS) owns the page and there is no second translator to
-  // race. The strings.js self-heal observer handles any late-rendered node. (§5)
+  // themselves; nudge them once. strings.js self-heal handles late-rendered nodes. (§5)
   try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch(e){}
 }
 
@@ -1960,15 +1989,19 @@ function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LA
 // list (the fully-translated VAI_STRINGS set). chitti_lang.js is OFF (meta
 // chitti-lang=off), so there is no runtime enrichment to prune and no async race.
 // All we do is sync the select to the active language + guard a stale saved lang.
-const MB_LANGS = ['hi','en','ta','te','bn','mr','gu','kn','ml'];
+// All 26 dropdown languages (same set as Chitti Vaani).
+const MB_ALL_LANGS = ['hi','en','bn','te','ta','mr','gu','kn','ml','pa','or','as','ur','sa','mai','kok','doi','ks','ne','sd','mni','sat','bho','raj','kru','hoc'];
 function mbSyncLangSelect(){
   const sel = document.getElementById('lang-select');
   if (!sel) return;
-  // A pre-existing install may have saved a now-unsupported lang (e.g. 'pa'); fall back.
-  if (MB_LANGS.indexOf(CURRENT_LANG) === -1) { changeLang('hi'); }
-  try { sel.value = CURRENT_LANG; } catch(e){}
+  let picked = 'hi';
+  try { picked = localStorage.getItem(SEL_KEY) || localStorage.getItem(LANG_KEY) || CURRENT_LANG || 'hi'; } catch(e){ picked = CURRENT_LANG || 'hi'; }
+  if (MB_ALL_LANGS.indexOf(picked) === -1) picked = 'hi';
+  try { sel.value = picked; } catch(e){}                 // dropdown shows the picked language (incl. cousins)
+  CURRENT_LANG = mbChromeLang(picked);                   // but the chrome renders in Hindi for cousins
+  window.CURRENT_LANG = CURRENT_LANG;
 }
-window.addEventListener('chitti:langchange', () => { try { const s = document.getElementById('lang-select'); if (s && s.value !== CURRENT_LANG) s.value = CURRENT_LANG; } catch(e){} });
+window.addEventListener('chitti:langchange', () => { try { const s = document.getElementById('lang-select'); let p = localStorage.getItem(SEL_KEY) || CURRENT_LANG; if (s && p && s.value !== p) s.value = p; } catch(e){} });
 
 window.addEventListener('DOMContentLoaded', () => {
   mbSyncLangSelect();

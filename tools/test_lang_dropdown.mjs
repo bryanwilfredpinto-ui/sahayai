@@ -17,7 +17,9 @@ const s = createServer((q, r) => { try { const u = decodeURIComponent((q.url || 
 await new Promise(r => s.listen(0, '127.0.0.1', r));
 const B = `http://127.0.0.1:${s.address().port}`;
 
-const WANT = ['hi', 'en', 'ta', 'te', 'bn', 'mr', 'gu', 'kn', 'ml'];
+// All 26 languages (same set + order as Chitti Vaani's dropdown).
+const WANT = ['hi', 'en', 'bn', 'te', 'ta', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as', 'ur', 'sa', 'mai', 'kok', 'doi', 'ks', 'ne', 'sd', 'mni', 'sat', 'bho', 'raj', 'kru', 'hoc'];
+const TRANSLATED = ['hi', 'en', 'ta', 'te', 'bn', 'mr', 'gu', 'kn', 'ml']; // the 9 fully-translated; rest → Hindi chrome
 const SCRIPT = { en: /[A-Za-z]/, hi: /[ऀ-ॿ]/, mr: /[ऀ-ॿ]/, bn: /[ঀ-৿]/, ta: /[஀-௿]/, te: /[ఀ-౿]/, kn: /[ಀ-೿]/, ml: /[ഀ-ൿ]/, gu: /[઀-૿]/ };
 const PAGES = [{ id: 'bike', file: 'chitti_2wheeler.html' }, { id: 'car', file: 'chitti_4wheeler.html' }];
 
@@ -33,33 +35,35 @@ for (const P of PAGES) {
   await pg.waitForTimeout(800);
   try { await pg.click('button:has-text("Skip — none of these")', { timeout: 1500 }); } catch (e) {}
 
-  // 1. exactly the 9 wanted options
+  // 1. exactly the 26 wanted options (matches Chitti Vaani)
   const opts = await pg.$$eval('#lang-select option', os => os.map(o => o.value));
-  (JSON.stringify(opts) === JSON.stringify(WANT)) ? ok() : bad(`${P.id}/options`, `got [${opts}]`);
+  (JSON.stringify(opts) === JSON.stringify(WANT)) ? ok() : bad(`${P.id}/options`, `got ${opts.length}: [${opts}]`);
 
-  // 2. each language switches cleanly
+  // 2. each language switches cleanly. The 9 TRANSLATED render in their own script;
+  //    the 17 cousins render the chrome in HINDI (Devanagari) — like Vaani — while the
+  //    dropdown still shows the picked language and SEL_KEY persists it.
   for (const lang of WANT) {
-    const res = await pg.evaluate((lang) => {
+    await pg.evaluate((lang) => {
       const sel = document.getElementById('lang-select');
       sel.value = lang;
       sel.dispatchEvent(new Event('change', { bubbles: true }));   // drives onchange="changeLang"
-      return null;
     }, lang);
-    await pg.waitForTimeout(220);
+    await pg.waitForTimeout(200);
     const out = await pg.evaluate(() => ({
       brand: (document.querySelector('.sds-brand-name') || {}).textContent || '',
       selVal: document.getElementById('lang-select').value,
-      saved: (() => { try { return localStorage.getItem('chitti_vaani_lang'); } catch (e) { return ''; } })(),
+      picked: (() => { try { return localStorage.getItem('chitti_mech_lang'); } catch (e) { return ''; } })(),
       rawKeys: (document.body.innerText.match(/\b(mb|mc|rc)\.[a-z]+\.[a-z]+/g) || []).length,
     }));
-    const scriptOk = SCRIPT[lang].test(out.brand);
-    (scriptOk && out.selVal === lang && out.saved === lang && out.rawKeys === 0)
+    const chrome = TRANSLATED.indexOf(lang) !== -1 ? lang : 'hi';   // cousins → Hindi chrome
+    const scriptOk = SCRIPT[chrome].test(out.brand);
+    (scriptOk && out.selVal === lang && out.picked === lang && out.rawKeys === 0)
       ? ok()
-      : bad(`${P.id}/${lang}`, `brand="${out.brand}" sel=${out.selVal} saved=${out.saved} raw=${out.rawKeys}`);
+      : bad(`${P.id}/${lang}`, `brand="${out.brand}" sel=${out.selVal} picked=${out.picked} raw=${out.rawKeys}`);
   }
 
-  // 3. stale-lang guard — saved 'pa' (no longer offered) must fall back to a valid 9
-  await pg.evaluate(() => { try { localStorage.setItem('chitti_vaani_lang', 'pa'); } catch (e) {} });
+  // 3. stale-lang guard — a truly invalid saved lang must fall back to a valid option
+  await pg.evaluate(() => { try { localStorage.setItem('chitti_mech_lang', 'zz'); localStorage.setItem('chitti_vaani_lang', 'zz'); } catch (e) {} });
   await pg.goto(`${B}/${P.file}`, { waitUntil: 'domcontentloaded' });
   await pg.waitForTimeout(700);
   const guard = await pg.evaluate(() => document.getElementById('lang-select').value);

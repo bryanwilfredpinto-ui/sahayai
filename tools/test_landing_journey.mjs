@@ -23,7 +23,8 @@ const s = createServer((q, r) => { try { const u = decodeURIComponent((q.url || 
 await new Promise(r => s.listen(0, '127.0.0.1', r));
 const B = `http://127.0.0.1:${s.address().port}`;
 
-const WANT9 = ['hi', 'en', 'ta', 'te', 'bn', 'mr', 'gu', 'kn', 'ml'];
+// All 26 languages (matches Chitti Vaani's dropdown).
+const WANT9 = ['hi', 'en', 'bn', 'te', 'ta', 'mr', 'gu', 'kn', 'ml', 'pa', 'or', 'as', 'ur', 'sa', 'mai', 'kok', 'doi', 'ks', 'ne', 'sd', 'mni', 'sat', 'bho', 'raj', 'kru', 'hoc'];
 const PAGES = [{ id: 'bike', file: 'chitti_2wheeler.html' }, { id: 'car', file: 'chitti_4wheeler.html' }];
 
 const failed = []; let pass = 0;
