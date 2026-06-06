@@ -66,20 +66,33 @@
     </div>
   </div>
   <div class="sds-header-actions">
-    <!-- Language dropdown — clean static 9-language pattern, modeled on chitti_vaani.html.
-         Exactly the 9 fully-translated languages (VAI_STRINGS); no runtime enrichment,
-         no prune machinery → every option works, no flicker. Sire 2026-06-06: "language
-         dropdown HAS TO WORK, refer Chitti Vaani." -->
-    <select id="lang-select" class="sds-select lang-toggle-bharat" aria-label="Change language / भाषा बदलें" onchange="changeLang(this.value)">
-      <option value="hi">हिन्दी</option>
+    <select id="lang-select" class="sds-select" aria-label="Change language / भाषा बदलें" onchange="changeLang(this.value)">
       <option value="en">English</option>
-      <option value="ta">தமிழ்</option>
-      <option value="te">తెలుగు</option>
+      <option value="hi">हिन्दी</option>
       <option value="bn">বাংলা</option>
+      <option value="te">తెలుగు</option>
+      <option value="ta">தமிழ்</option>
       <option value="mr">मराठी</option>
       <option value="gu">ગુજરાતી</option>
       <option value="kn">ಕನ್ನಡ</option>
       <option value="ml">മലയാളം</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="as">অসমীয়া</option>
+      <option value="ur">اردو</option>
+      <option value="sa">संस्कृतम्</option>
+      <option value="mai">मैथिली</option>
+      <option value="kok">कोंकणी</option>
+      <option value="doi">डोगरी</option>
+      <option value="ks">کٲشُر</option>
+      <option value="ne">नेपाली</option>
+      <option value="sd">سنڌي</option>
+      <option value="mni">মৈতৈলোন্</option>
+      <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ</option>
+      <option value="bho">भोजपुरी</option>
+      <option value="raj">राजस्थानी</option>
+      <option value="kru">कुड़ुख़</option>
+      <option value="hoc">हो</option>
     </select>
     <button onclick="window.location.href='chitti_vaani.html'"><span data-vai-i18n="ui.open_vaani">🎙️ Chitti Vaani</span></button>
   </div>
@@ -785,11 +798,21 @@ function changeLang(code){
   try { mcLogRenderList(); } catch(e){}
   try { renderMcFleetSwitcher(); } catch(e){}
   try { mcKyvLoad(); } catch(e){} // re-render from cache in new language (cache key includes lang)
-  // Substrate-injected labels (feedback-widget bars, the 💡 feature CTA) localise
-  // themselves; nudge them once. No setTimeout/rAF cascade — chitti_lang.js is OFF,
-  // so strings.js (VAI_STRINGS) owns the page and there is no second translator to
-  // race. The strings.js self-heal observer handles any late-rendered node. (§5)
-  try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch(e){}
+  // Substrate-injected labels (feedback-widget footer/box bars, the 💡 feature
+  // CTA, observability pill) are localised by their own substrate. chitti_lang.js
+  // resets unrecognised nodes to English on this same event, so re-apply AFTER
+  // it has run to guarantee zero-English on every language. (§5 No-Hinglish)
+  function mcReLocalizeSubstrate(){
+    try { if (typeof updateAllStrings === 'function') updateAllStrings(code); } catch(e){}
+    try { if (typeof window.__chittiFbRelocalize === 'function') window.__chittiFbRelocalize(); } catch(e){}
+    try { if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.translate) window.Chitti.a11y.translate(code); } catch(e){}
+  }
+  mcReLocalizeSubstrate();
+  try { Promise.resolve().then(mcReLocalizeSubstrate); } catch(e){}
+  [10, 30, 60, 90, 120, 160, 220, 300, 450].forEach(function(ms){ setTimeout(mcReLocalizeSubstrate, ms); });
+  // Also win against chitti_lang.js's rAF-scheduled reset.
+  try { (window.requestAnimationFrame || function(f){setTimeout(f,16);})(mcReLocalizeSubstrate); } catch(e){}
+  return;
 }
 
 function speakText(t, lang){
@@ -1861,21 +1884,35 @@ async function swScamCheck(){
 }
 function swSpeakResult(){ if (SW_LAST_SPEAK) speakText(SW_LAST_SPEAK, CURRENT_LANG); }
 
-// Language dropdown — clean Vaani pattern. The <select> is a STATIC 9-language
-// list (the fully-translated VAI_STRINGS set). chitti_lang.js is OFF (meta
-// chitti-lang=off), so there is no runtime enrichment to prune and no async race.
-// All we do is sync the select to the active language + guard a stale saved lang.
-const MC_LANGS = ['hi','en','ta','te','bn','mr','gu','kn','ml'];
-function mcSyncLangSelect(){
+// Gate the language dropdown to ONLY the 9 fully-translated languages.
+// chitti_lang.js enriches the <select> to 26 at runtime; 17 of those have no
+// car translations and would show English. Prune them on this page so a user
+// can never pick a language that doesn't fully translate. (CTO.md §5 No-Hinglish)
+const MC_COMPLETE_LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
+function mcPruneLangSelect(){
   const sel = document.getElementById('lang-select');
   if (!sel) return;
-  if (MC_LANGS.indexOf(CURRENT_LANG) === -1) { changeLang('hi'); }
-  try { sel.value = CURRENT_LANG; } catch(e){}
+  Array.from(sel.options).forEach(o => {
+    if (MC_COMPLETE_LANGS.indexOf(o.value) === -1) o.remove();
+  });
+  // chitti_lang.js's wireDropdown overrides our onchange with its own
+  // translateAll. Re-bind so changeLang() runs (it re-renders every dynamic
+  // panel in the new language) — and still let chitti_lang's listeners fire
+  // via the chitti:langchange event dispatched inside changeLang().
+  sel.onchange = function(){ changeLang(this.value); };
+  // If the active language is no longer offered, fall back to English.
+  if (MC_COMPLETE_LANGS.indexOf(CURRENT_LANG) === -1) { changeLang('en'); }
+  else { try { sel.value = CURRENT_LANG; } catch(e){} }
 }
-window.addEventListener('chitti:langchange', () => { try { const s = document.getElementById('lang-select'); if (s && s.value !== CURRENT_LANG) s.value = CURRENT_LANG; } catch(e){} });
+// Run now + again after chitti_lang.js finishes its async enrichment.
+mcPruneLangSelect();
+setTimeout(mcPruneLangSelect, 400);
+setTimeout(mcPruneLangSelect, 1200);
+document.addEventListener('chitti:langlistready', mcPruneLangSelect);
 
 window.addEventListener('DOMContentLoaded', () => {
-  mcSyncLangSelect();
+  const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  mcPruneLangSelect();
   if (typeof updateAllStrings === 'function') updateAllStrings(CURRENT_LANG);
   mcRefreshHome();
   try { mcKyvLoad(); } catch(e){}
