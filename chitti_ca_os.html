@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<!-- Chitti CA OS — Frontend for chitti-ca/ceos/  (CEOS v1.0, built 2026-06-06)
+     Accessibility-first (blind/deaf/mute/illiterate). Language dropdown is Vaani-canonical:
+     chitti_lang.js owns #lang-select. Deterministic engine: chitti_ca_os_engine.js.
+     Spec: chitti-ca/ceos/BUILD_ORDER.md + RESEARCH_BEST_APPS.md + PRD.md -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti CA OS — your Accountant, CA, Auditor & CFO in one</title>
+<meta name="description" content="Chitti CA OS — one financial companion for every Indian. Save tax legally, prevent penalties, find the government money you are owed, catch fraud — by voice, in your language, for free. Built for the blind, deaf, mute and illiterate too.">
+<meta name="chitti-page-desc" content="Chitti CA OS. Aapka Accountant, CA, Auditor aur CFO — ek hi Chitti mein. Tax bachao, penalty se bacho, sarkari paisa paao.">
+<meta name="chitti-features" content="chitti-ca/ceos/skills/FEATURES.md">
+<style>
+  :root{ --saffron:#FF9933; --navy:#000080; --green:#138808; --line:#e5e7eb; --ink:#1a1a2e; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.55;margin:0;color:var(--ink);background:#F7F7F4}
+  .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 14px;z-index:1000;border-radius:0 0 8px 0}
+  .skip:focus{left:0}
+  a{color:#1d4ed8}
+  /* sticky disclaimer */
+  .disc{position:sticky;top:0;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:13px;padding:7px 12px;text-align:center;font-weight:600}
+  /* header + a11y bar */
+  header{background:linear-gradient(135deg,#fff7e6,#fff,#eafbe7);border-bottom:2px solid var(--saffron);padding:14px 16px}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 2px;display:flex;align-items:center;gap:8px}
+  .tagline{font-size:14px;color:#444;margin:0 0 10px}
+  .a11y-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .a11y-bar label{font-size:13px;font-weight:700;color:var(--navy)}
+  #lang-select{min-height:44px;font-size:15px;padding:6px 10px;border:2px solid var(--saffron);border-radius:10px;background:#fff;color:var(--navy);font-weight:700}
+  .btn{min-height:48px;font-size:15px;font-weight:800;font-family:inherit;border:2px solid var(--line);background:#fff;color:var(--navy);border-radius:12px;padding:10px 14px;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--saffron),#E07B1D);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(255,153,51,.3)}
+  .btn:focus-visible,.tab:focus-visible,#lang-select:focus-visible,a:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+  .btn.read{border-color:#1d4ed8;color:#1d4ed8}
+  main{max-width:760px;margin:0 auto;padding:14px 16px 80px}
+  /* hero */
+  .hero{background:#fff;border:1.5px solid #FFD9B0;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 22px rgba(255,153,51,.12)}
+  .hero h2{font-size:20px;color:var(--navy);margin:0 0 6px}
+  .hero p{font-size:14.5px;color:#333;margin:0 0 12px}
+  .free{display:inline-block;background:var(--green);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;margin-bottom:6px}
+  /* tabs */
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+  .tab{flex:0 0 auto;min-height:48px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12.5px;font-weight:800;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+  .tab .em{font-size:22px}
+  .tab[aria-selected="true"]{background:linear-gradient(180deg,#fff,#fff3e0);border-color:var(--saffron)}
+  .panel{display:none}
+  .panel.active{display:block}
+  /* cards */
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:17px;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .card .sub{font-size:13.5px;color:#666;margin:0 0 10px;line-height:1.5}
+  label.fl{display:block;font-size:13px;font-weight:700;color:#333;margin:8px 0 4px}
+  input.fi,select.fs{width:100%;min-height:48px;font-size:16px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-family:inherit;background:#fff}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:130px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .chip{min-height:44px;font-size:14px;font-weight:700;border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--navy)}
+  .chip[aria-pressed="true"]{background:#fff3e0;border-color:var(--saffron)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  /* result host */
+  .result{margin-top:12px}
+  .res-box{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:#fafafa}
+  .res-box.ok{border-color:var(--green);background:#f0faf0}
+  .res-box.warning{border-color:#f0a000;background:#fff8ec}
+  .res-box.info{border-color:#1d4ed8;background:#eff4ff}
+  .res-status{font-weight:900;font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .res-box .big{font-size:20px;font-weight:900;color:var(--navy)}
+  .res-box ul{margin:6px 0 0;padding-left:20px;font-size:14px}
+  .res-box .sp{margin-top:8px;display:flex;gap:8px}
+  .speak-btn{min-height:40px;border:2px solid #1d4ed8;color:#1d4ed8;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;padding:6px 12px;font-size:13px}
+  .prov{font-size:11.5px;color:#777;margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+  footer{max-width:760px;margin:0 auto;padding:16px;color:#777;font-size:12.5px;text-align:center}
+  /* accessibility media queries (BO5) */
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  @media (prefers-contrast: more){.card,.res-box{border-width:2.5px}.tab[aria-selected="true"]{outline:2px solid var(--navy)}}
+  @media (forced-colors: active){.btn.primary{border:2px solid}.tab[aria-selected="true"]{border:3px solid}}
+</style>
+<!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate). -->
+<script src="chitti_lang.js" defer></script>
+<!-- A11Y SUBSTRATE: injects ISL, feedback-widget, disability profile, features, etc. on every page. -->
+<script src="chitti_a11y.js" defer></script>
+<script src="feedback-widget.js" data-page="chitti_ca_os" defer></script>
+<!-- DETERMINISTIC ENGINE: rules are the product. -->
+<script src="chitti_ca_os_engine.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<div class="disc" role="note">⚖️ Chitti CA OS gives guidance & exact calculations from your own numbers — it is <b>not</b> professional/legal advice and never files or signs for you. For high-risk matters (audit, scrutiny, large filings) see a qualified CA.</div>
+
+<header>
+  <div class="wrap">
+    <h1>🧮 Chitti CA OS</h1>
+    <p class="tagline">Your Accountant + CA + Auditor + CFO + Government-Benefits guide — in one Chitti, in your language, for free.</p>
+    <div class="a11y-bar">
+      <label for="lang-select">🌐 Language</label>
+      <select id="lang-select" aria-label="Choose language"></select>
+      <button class="btn read" type="button" onclick="caReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" role="main">
+
+  <section class="hero" aria-labelledby="hero-h">
+    <span class="free">100% FREE · works offline · numbers stay on your device</span>
+    <h2 id="hero-h">“Chitti, help me.”</h2>
+    <p>You never have to ask <i>“should I hire an accountant, a CA, or a CFO?”</i> Pick what you need below. Every rupee figure is computed exactly from your own numbers — never guessed. We show you the money you can save and the government money you are <b>owed</b> first.</p>
+  </section>
+
+  <!-- TABS -->
+  <div class="tabs" role="tablist" aria-label="Chitti CA OS modules">
+    <button class="tab" role="tab" id="tab-tax" aria-controls="panel-tax" aria-selected="true" onclick="caTab('tax')"><span class="em" aria-hidden="true">💰</span>Tax</button>
+    <button class="tab" role="tab" id="tab-gst" aria-controls="panel-gst" aria-selected="false" onclick="caTab('gst')"><span class="em" aria-hidden="true">🧾</span>GST</button>
+    <button class="tab" role="tab" id="tab-comp" aria-controls="panel-comp" aria-selected="false" onclick="caTab('comp')"><span class="em" aria-hidden="true">📅</span>Compliance</button>
+    <button class="tab" role="tab" id="tab-biz" aria-controls="panel-biz" aria-selected="false" onclick="caTab('biz')"><span class="em" aria-hidden="true">📊</span>Business</button>
+    <button class="tab" role="tab" id="tab-gov" aria-controls="panel-gov" aria-selected="false" onclick="caTab('gov')"><span class="em" aria-hidden="true">🏛️</span>Govt money</button>
+    <button class="tab" role="tab" id="tab-fraud" aria-controls="panel-fraud" aria-selected="false" onclick="caTab('fraud')"><span class="em" aria-hidden="true">🛡️</span>Fraud</button>
+    <button class="tab" role="tab" id="tab-cfo" aria-controls="panel-cfo" aria-selected="false" onclick="caTab('cfo')"><span class="em" aria-hidden="true">📈</span>CFO</button>
+    <button class="tab" role="tab" id="tab-twin" aria-controls="panel-twin" aria-selected="false" onclick="caTab('twin')"><span class="em" aria-hidden="true">🧬</span>My Twin</button>
+  </div>
+
+  <!-- TAX -->
+  <section class="panel active" id="panel-tax" role="tabpanel" aria-labelledby="tab-tax">
+    <div class="card chitti-response" data-chitti-response="caos-tax" data-chitti-section="Income tax — old vs new regime">
+      <h2><span aria-hidden="true">💰</span> Income tax — which regime saves you more?</h2>
+      <p class="sub">Enter your yearly income. Chitti compares the old and new regime to the rupee and tells you which is cheaper. (Old regime can use deductions like 80C/80D.)</p>
+      <label class="fl" for="tx-gross">Yearly income (₹)</label>
+      <input class="fi" id="tx-gross" type="number" min="0" inputmode="numeric" placeholder="e.g. 1200000">
+      <div class="chips" role="group" aria-label="Are you salaried?">
+        <button class="chip" id="tx-sal" aria-pressed="true" onclick="caToggle('tx-sal')">🧑‍💼 Salaried (₹75k/₹50k standard deduction)</button>
+      </div>
+      <label class="fl" for="tx-80c">80C (PF, LIC, ELSS…) ₹ — old regime only</label>
+      <input class="fi" id="tx-80c" type="number" min="0" inputmode="numeric" placeholder="e.g. 150000">
+      <label class="fl" for="tx-80d">80D (health insurance) ₹ — old regime only</label>
+      <input class="fi" id="tx-80d" type="number" min="0" inputmode="numeric" placeholder="e.g. 25000">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="caRunTax()">💰 Compare my tax</button>
+        <button class="btn" type="button" onclick="caRunTaxHealth()">❤️ Tax Health Score</button>
+      </div>
+      <div class="result" id="r-tax" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="caos-cg" data-chitti-section="Capital gains">
+      <h2><span aria-hidden="true">📈</span> Capital gains (shares / property / funds)</h2>
+      <p class="sub">Tell Chitti the profit and how long you held it. Chitti applies the correct rate and exemption.</p>
+      <div class="chips" role="group" aria-label="Asset type">
+        <button class="chip" id="cg-equity" aria-pressed="true" onclick="caRadio('cg',['cg-equity','cg-other'],'cg-equity')">📈 Shares / equity MF</button>
+        <button class="chip" id="cg-other" aria-pressed="false" onclick="caRadio('cg',['cg-equity','cg-other'],'cg-other')">🏠 Property / other</button>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="cg-gain">Profit (₹)</label><input class="fi" id="cg-gain" type="number" min="0" inputmode="numeric" placeholder="e.g. 300000"></div>
+        <div><label class="fl" for="cg-months">Held (months)</label><input class="fi" id="cg-months" type="number" min="0" inputmode="numeric" placeholder="e.g. 18"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunCG()">📈 Calculate gains tax</button></div>
+      <div class="result" id="r-cg" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- GST -->
+  <section class="panel" id="panel-gst" role="tabpanel" aria-labelledby="tab-gst">
+    <div class="card chitti-response" data-chitti-response="caos-gstreg" data-chitti-section="Do I need GST?">
+      <h2><span aria-hidden="true">🧾</span> Do I need GST registration?</h2>
+      <p class="sub">Chitti checks the threshold for your turnover, supply type and state.</p>
+      <label class="fl" for="gr-turn">Yearly turnover (₹)</label>
+      <input class="fi" id="gr-turn" type="number" min="0" inputmode="numeric" placeholder="e.g. 4500000">
+      <div class="chips" role="group" aria-label="Supply type">
+        <button class="chip" id="gr-goods" aria-pressed="true" onclick="caRadio('gr',['gr-goods','gr-serv'],'gr-goods')">📦 Goods</button>
+        <button class="chip" id="gr-serv" aria-pressed="false" onclick="caRadio('gr',['gr-goods','gr-serv'],'gr-serv')">🛠️ Services</button>
+      </div>
+      <div class="chips" role="group" aria-label="Other conditions">
+        <button class="chip" id="gr-inter" aria-pressed="false" onclick="caToggle('gr-inter')">🚚 I sell to other states</button>
+        <button class="chip" id="gr-ecom" aria-pressed="false" onclick="caToggle('gr-ecom')">🛒 I sell online</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunGstReg()">🧾 Check GST need</button></div>
+      <div class="result" id="r-gstreg" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="caos-gsthealth" data-chitti-section="GST Health Score">
+      <h2><span aria-hidden="true">❤️</span> GST Health Score & ITC check</h2>
+      <p class="sub">Catch an ITC mismatch before it becomes a notice. Enter what you claimed vs what is in GSTR-2B.</p>
+      <div class="row">
+        <div><label class="fl" for="gh-claim">ITC claimed (₹)</label><input class="fi" id="gh-claim" type="number" min="0" inputmode="numeric" placeholder="e.g. 60000"></div>
+        <div><label class="fl" for="gh-2b">ITC in GSTR-2B (₹)</label><input class="fi" id="gh-2b" type="number" min="0" inputmode="numeric" placeholder="e.g. 50000"></div>
+      </div>
+      <div class="chips" role="group" aria-label="Returns filed">
+        <button class="chip" id="gh-g1" aria-pressed="true" onclick="caToggle('gh-g1')">✅ GSTR-1 filed</button>
+        <button class="chip" id="gh-g3" aria-pressed="true" onclick="caToggle('gh-g3')">✅ GSTR-3B filed</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunGstHealth()">❤️ Check GST health</button></div>
+      <div class="result" id="r-gsthealth" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- COMPLIANCE -->
+  <section class="panel" id="panel-comp" role="tabpanel" aria-labelledby="tab-comp">
+    <div class="card chitti-response" data-chitti-response="caos-cal" data-chitti-section="Compliance calendar">
+      <h2><span aria-hidden="true">📅</span> My compliance calendar</h2>
+      <p class="sub">See your due dates so you never miss one. Prevention &gt; Penalty.</p>
+      <div class="chips" role="group" aria-label="What applies to you">
+        <button class="chip" id="cal-gst" aria-pressed="true" onclick="caToggle('cal-gst')">🧾 I have GST</button>
+        <button class="chip" id="cal-emp" aria-pressed="false" onclick="caToggle('cal-emp')">👥 I have employees (TDS/PF/ESI)</button>
+        <button class="chip" id="cal-co" aria-pressed="false" onclick="caToggle('cal-co')">🏢 I run a company (ROC)</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunCalendar()">📅 Show my due dates</button></div>
+      <div class="result" id="r-cal" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="caos-pen" data-chitti-section="Penalty estimate">
+      <h2><span aria-hidden="true">⏰</span> What will being late cost me?</h2>
+      <p class="sub">Chitti estimates the penalty/interest — file before the date and it becomes ₹0.</p>
+      <div class="chips" role="group" aria-label="Which return">
+        <button class="chip" id="pn-gstr" aria-pressed="true" onclick="caRadio('pn',['pn-gstr','pn-tds','pn-at','pn-itr'],'pn-gstr')">🧾 GST return</button>
+        <button class="chip" id="pn-tds" aria-pressed="false" onclick="caRadio('pn',['pn-gstr','pn-tds','pn-at','pn-itr'],'pn-tds')">💸 TDS</button>
+        <button class="chip" id="pn-at" aria-pressed="false" onclick="caRadio('pn',['pn-gstr','pn-tds','pn-at','pn-itr'],'pn-at')">📊 Advance tax</button>
+        <button class="chip" id="pn-itr" aria-pressed="false" onclick="caRadio('pn',['pn-gstr','pn-tds','pn-at','pn-itr'],'pn-itr')">📄 ITR</button>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="pn-days">Days late</label><input class="fi" id="pn-days" type="number" min="0" inputmode="numeric" placeholder="e.g. 10"></div>
+        <div><label class="fl" for="pn-amt">Tax due (₹)</label><input class="fi" id="pn-amt" type="number" min="0" inputmode="numeric" placeholder="e.g. 100000"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunPenalty()">⏰ Estimate penalty</button></div>
+      <div class="result" id="r-pen" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- BUSINESS -->
+  <section class="panel" id="panel-biz" role="tabpanel" aria-labelledby="tab-biz">
+    <div class="card chitti-response" data-chitti-response="caos-biz" data-chitti-section="Business Doctor">
+      <h2><span aria-hidden="true">📊</span> Business Doctor</h2>
+      <p class="sub">Enter a few figures and Chitti gives you Profitability, Liquidity, Working-capital and overall Health scores — plus what to fix.</p>
+      <div class="row">
+        <div><label class="fl" for="bz-rev">Revenue (₹/yr)</label><input class="fi" id="bz-rev" type="number" min="0" inputmode="numeric" placeholder="e.g. 1000000"></div>
+        <div><label class="fl" for="bz-np">Net profit (₹/yr)</label><input class="fi" id="bz-np" type="number" inputmode="numeric" placeholder="e.g. 150000"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bz-ca">Current assets (₹)</label><input class="fi" id="bz-ca" type="number" min="0" inputmode="numeric" placeholder="e.g. 400000"></div>
+        <div><label class="fl" for="bz-cl">Current liabilities (₹)</label><input class="fi" id="bz-cl" type="number" min="0" inputmode="numeric" placeholder="e.g. 200000"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bz-debt">Debt (₹)</label><input class="fi" id="bz-debt" type="number" min="0" inputmode="numeric" placeholder="e.g. 100000"></div>
+        <div><label class="fl" for="bz-eq">Equity / own capital (₹)</label><input class="fi" id="bz-eq" type="number" min="0" inputmode="numeric" placeholder="e.g. 300000"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunBiz()">📊 Diagnose my business</button></div>
+      <div class="result" id="r-biz" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- GOVT MONEY (the moat) -->
+  <section class="panel" id="panel-gov" role="tabpanel" aria-labelledby="tab-gov">
+    <div class="card chitti-response" data-chitti-response="caos-gov" data-chitti-section="Government money you are owed">
+      <h2><span aria-hidden="true">🏛️</span> Government money you may be owed</h2>
+      <p class="sub">Most apps tell you what to <i>pay</i>. Chitti finds the subsidies and schemes you are <b>owed</b> — with the money you are losing by not claiming.</p>
+      <label class="fl" for="gv-state">State</label>
+      <input class="fi" id="gv-state" type="text" placeholder="e.g. Maharashtra">
+      <div class="chips" role="group" aria-label="Industry">
+        <button class="chip" id="gv-mfg" aria-pressed="false" onclick="caRadio('gv',['gv-mfg','gv-serv','gv-agri','gv-food'],'gv-mfg')">🏭 Manufacturing</button>
+        <button class="chip" id="gv-serv" aria-pressed="false" onclick="caRadio('gv',['gv-mfg','gv-serv','gv-agri','gv-food'],'gv-serv')">🛠️ Services</button>
+        <button class="chip" id="gv-agri" aria-pressed="false" onclick="caRadio('gv',['gv-mfg','gv-serv','gv-agri','gv-food'],'gv-agri')">🌾 Agriculture</button>
+        <button class="chip" id="gv-food" aria-pressed="false" onclick="caRadio('gv',['gv-mfg','gv-serv','gv-agri','gv-food'],'gv-food')">🍲 Food processing</button>
+      </div>
+      <div class="chips" role="group" aria-label="Business type">
+        <button class="chip" id="gv-msme" aria-pressed="true" onclick="caRadio('gvt',['gv-msme','gv-startup'],'gv-msme')">🏪 MSME / business</button>
+        <button class="chip" id="gv-startup" aria-pressed="false" onclick="caRadio('gvt',['gv-msme','gv-startup'],'gv-startup')">🚀 Startup (DPIIT)</button>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="gv-turn">Turnover (₹/yr)</label><input class="fi" id="gv-turn" type="number" min="0" inputmode="numeric" placeholder="e.g. 20000000"></div>
+        <div><label class="fl" for="gv-age">Business age (yrs)</label><input class="fi" id="gv-age" type="number" min="0" inputmode="numeric" placeholder="e.g. 4"></div>
+      </div>
+      <div class="chips" role="group" aria-label="Exporter"><button class="chip" id="gv-exp" aria-pressed="false" onclick="caToggle('gv-exp')">🌍 I export</button></div>
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunGov()">🏛️ Find my schemes & lost money</button></div>
+      <div class="result" id="r-gov" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- FRAUD -->
+  <section class="panel" id="panel-fraud" role="tabpanel" aria-labelledby="tab-fraud">
+    <div class="card chitti-response" data-chitti-response="caos-fraud" data-chitti-section="Fraud Shield">
+      <h2><span aria-hidden="true">🛡️</span> Fraud Shield — check a GSTIN</h2>
+      <p class="sub">Paste a vendor's GSTIN. Chitti validates the format and checksum to flag a likely fake before you pay.</p>
+      <label class="fl" for="fr-gstin">GSTIN (15 characters)</label>
+      <input class="fi" id="fr-gstin" type="text" maxlength="15" placeholder="e.g. 27AAPFU0939F1ZV" style="text-transform:uppercase">
+      <div class="actions"><button class="btn primary" type="button" onclick="caRunFraud()">🛡️ Check this GSTIN</button></div>
+      <div class="result" id="r-fraud" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- CFO -->
+  <section class="panel" id="panel-cfo" role="tabpanel" aria-labelledby="tab-cfo">
+    <div class="card chitti-response" data-chitti-response="caos-cfo" data-chitti-section="CFO Dashboard">
+      <h2><span aria-hidden="true">📈</span> CFO Dashboard</h2>
+      <p class="sub">One glance at your business: revenue, profit, cash, tax exposure, health and growth. Uses your Business numbers above (or your saved Twin).</p>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="caRunCFO()">📈 Show my CFO view</button>
+      </div>
+      <div class="result" id="r-cfo" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- TWIN -->
+  <section class="panel" id="panel-twin" role="tabpanel" aria-labelledby="tab-twin">
+    <div class="card chitti-response" data-chitti-response="caos-twin" data-chitti-section="Financial Twin">
+      <h2><span aria-hidden="true">🧬</span> My Financial Twin (stays on this device)</h2>
+      <p class="sub">Chitti remembers your details so every answer is personal. Nothing leaves your phone. Tap “Chitti forget” to wipe it all.</p>
+      <label class="fl" for="tw-name">Name / business name</label>
+      <input class="fi" id="tw-name" type="text" placeholder="optional">
+      <label class="fl" for="tw-pan">PAN (last digits ok)</label>
+      <input class="fi" id="tw-pan" type="text" placeholder="optional — stays on device">
+      <label class="fl" for="tw-state">State</label>
+      <input class="fi" id="tw-state" type="text" placeholder="e.g. Maharashtra">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="caTwinSave()">💾 Save to my Twin</button>
+        <button class="btn" type="button" onclick="caTwinForget()">🗑️ Chitti, forget everything</button>
+      </div>
+      <div class="result" id="r-twin" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Chitti CA OS · part of <a href="index.html">sahay.ai</a> · Bharat Premium AI · DeepSeek-only · Turso · voice-first · 26 languages.
+  Numbers computed on your device. Not professional advice. <a href="chitti-ca/ceos/README.md">CEOS docs</a>.
+</footer>
+
+<script>
+/* ── Chitti CA OS controller — wires accessible UI → deterministic engine ──
+   No rupee figure is produced here; every number comes from ChittiCAOS (the engine). */
+(function(){
+  'use strict';
+  function E(){ return window.ChittiCAOS; }
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var e=$(id); return e?e.value:''; }
+  function num(id){ return Number(val(id))||0; }
+  function pressed(id){ var e=$(id); return e && e.getAttribute('aria-pressed')==='true'; }
+  function inr(x){ return '₹'+Number(x||0).toLocaleString('en-IN'); }
+
+  // tabs
+  window.caTab=function(key){
+    var map={tax:'tax',gst:'gst',comp:'comp',biz:'biz',gov:'gov',fraud:'fraud',cfo:'cfo',twin:'twin'};
+    Object.keys(map).forEach(function(k){
+      var t=$('tab-'+k), p=$('panel-'+k);
+      var on = (k===key);
+      if(t) t.setAttribute('aria-selected', on?'true':'false');
+      if(p) p.classList.toggle('active', on);
+    });
+    var p=$('panel-'+key); if(p){ var h=p.querySelector('h2'); if(h){ h.setAttribute('tabindex','-1'); h.focus(); } }
+  };
+  window.caToggle=function(id){ var e=$(id); if(!e)return; e.setAttribute('aria-pressed', e.getAttribute('aria-pressed')==='true'?'false':'true'); };
+  window.caRadio=function(group,ids,sel){ ids.forEach(function(i){ var e=$(i); if(e) e.setAttribute('aria-pressed', i===sel?'true':'false'); }); };
+
+  // speak helper (blind-first)
+  function speak(text){
+    try{
+      if(window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak==='function'){ window.Chitti.a11y.speak(text); return; }
+      if(window.speechSynthesis){ var u=new SpeechSynthesisUtterance(text); var lang=(window.Chitti&&window.Chitti.lang&&window.Chitti.lang.current())||'en'; u.lang=lang==='en'?'en-IN':lang; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+    }catch(e){}
+  }
+  function isBlind(){
+    try{ var p=JSON.parse(localStorage.getItem('disability_profile')||localStorage.getItem('chitti_disability_profile')||'{}'); return !!(p&&(p.blind||p.illiterate||(p.profiles&&(p.profiles.indexOf&&p.profiles.indexOf('blind')>-1)))); }catch(e){ return false; }
+  }
+
+  // status word+symbol (never colour alone — BO2 deaf)
+  var STAT={ ok:{sym:'✅',word:'Good'}, warning:{sym:'⚠️',word:'Check this'}, info:{sym:'ℹ️',word:'Note'} };
+
+  // generic renderer → builds an accessible result box and auto-reads for blind users
+  function render(hostId, opts){
+    var host=$(hostId); if(!host)return;
+    var st=STAT[opts.status||'info'];
+    var box=document.createElement('div');
+    box.className='res-box '+(opts.status||'info');
+    var html='<div class="res-status"><span aria-hidden="true">'+st.sym+'</span> '+st.word+'</div>';
+    if(opts.big) html+='<div class="big">'+opts.big+'</div>';
+    if(opts.text) html+='<p style="margin:6px 0 0;font-size:14.5px">'+opts.text+'</p>';
+    if(opts.lines&&opts.lines.length){ html+='<ul>'+opts.lines.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>'; }
+    if(opts.sources) html+='<div class="prov">Source: '+opts.sources.join(' · ')+(opts.confidence?(' · Confidence: '+opts.confidence):'')+'</div>';
+    box.innerHTML=html;
+    var sp=document.createElement('div'); sp.className='sp';
+    var b=document.createElement('button'); b.className='speak-btn'; b.type='button'; b.textContent='🔊 Read this aloud';
+    var spoken=opts.speak||((opts.big?opts.big+'. ':'')+(opts.text||'')+' '+(opts.lines||[]).join('. '));
+    b.onclick=function(){ speak(spoken); };
+    sp.appendChild(b); box.appendChild(sp);
+    host.innerHTML=''; host.appendChild(box);
+    if(isBlind()) speak(spoken);
+  }
+  function risksLines(r){ return (r.risks||[]).map(function(x){return '⚠️ '+x;}); }
+
+  // ── TAX ──
+  window.caRunTax=function(){
+    var inp={ gross:num('tx-gross'), salaried:pressed('tx-sal'), deductions:{'80C':num('tx-80c'),'80D':num('tx-80d')} };
+    var r=E().incomeTax(inp);
+    render('r-tax',{ status:'ok',
+      big:'Best: '+r.recommendedRegime.toUpperCase()+' regime — tax '+inr(r.result.totalTax),
+      text:r.summary,
+      lines:['New regime tax: '+inr(r.newRegime.totalTax)+' (taxable '+inr(r.newRegime.taxableIncome)+')',
+             'Old regime tax: '+inr(r.oldRegime.totalTax)+' (taxable '+inr(r.oldRegime.taxableIncome)+')',
+             'You save '+inr(r.savingByChoosing)+' by choosing the '+r.recommendedRegime+' regime.'].concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.caRunTaxHealth=function(){
+    var inp={ gross:num('tx-gross'), salaried:pressed('tx-sal'), deductions:{'80C':num('tx-80c'),'80D':num('tx-80d')} };
+    var r=E().taxHealthScore(inp);
+    render('r-tax',{ status:r.band==='healthy'?'ok':'warning', big:'Tax Health: '+r.score+'/100 ('+r.band+')',
+      lines:r.top3, confidence:r.confidence, sources:r.sources });
+  };
+  window.caRunCG=function(){
+    var inp={ assetType:pressed('cg-equity')?'equity':'other', gain:num('cg-gain'), holdingMonths:num('cg-months') };
+    var r=E().capitalGains(inp);
+    render('r-cg',{ status:'info', big:r.tax==null?r.classification:(r.classification+' tax '+inr(r.tax)), text:r.summary,
+      lines:risksLines(r), confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── GST ──
+  window.caRunGstReg=function(){
+    var inp={ turnover:num('gr-turn'), supply:pressed('gr-goods')?'goods':'services', interState:pressed('gr-inter'), ecommerce:pressed('gr-ecom') };
+    var r=E().gstRegistrationNeed(inp);
+    render('r-gstreg',{ status:r.mandatory?'warning':'ok', big:r.mandatory?'GST registration: likely REQUIRED':'GST registration: not mandatory yet',
+      text:r.summary, lines:risksLines(r), confidence:r.confidence, sources:r.sources });
+  };
+  window.caRunGstHealth=function(){
+    var inp={ itcClaimed:num('gh-claim'), itc2B:num('gh-2b'), gstr1Filed:pressed('gh-g1'), gstr3bFiled:pressed('gh-g3') };
+    var r=E().gstHealth(inp);
+    render('r-gsthealth',{ status:r.band==='healthy'?'ok':'warning', big:'GST Health: '+r.score+'/100 ('+r.band+')',
+      lines:r.issues.map(function(i){return (STAT[i.status]||STAT.info).sym+' '+i.text;}).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── COMPLIANCE ──
+  window.caRunCalendar=function(){
+    var roles=['individual']; if(pressed('cal-gst'))roles.push('gst'); if(pressed('cal-emp'))roles.push('employer'); if(pressed('cal-co'))roles.push('company');
+    var r=E().complianceCalendar({roles:roles});
+    render('r-cal',{ status:'info', big:r.items.length+' due dates apply to you', text:r.summary,
+      lines:r.items.map(function(d){ return d.task+' — '+(d.freq==='monthly'?('by the '+d.day+'th every month'):('by '+d.day+'/'+(d.month||'?'))); }).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.caRunPenalty=function(){
+    var kind=pressed('pn-gstr')?'gstr':pressed('pn-tds')?'tds':pressed('pn-at')?'advance_tax':'itr';
+    var r=E().penaltyEstimate({ kind:kind, daysLate:num('pn-days'), taxDue:num('pn-amt') });
+    render('r-pen',{ status:'warning', big:'Estimated cost if late: '+inr(r.estimate), text:r.summary,
+      lines:risksLines(r), confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── BUSINESS ──
+  function bizInput(){ return { revenue:num('bz-rev'), netProfit:num('bz-np'), currentAssets:num('bz-ca'), currentLiabilities:num('bz-cl'), debt:num('bz-debt'), equity:num('bz-eq') }; }
+  window.caRunBiz=function(){
+    var r=E().businessDoctor(bizInput());
+    render('r-biz',{ status:r.businessHealthScore>=60?'ok':'warning', big:'Business Health: '+r.businessHealthScore+'/100',
+      lines:['Profitability: '+r.profitabilityScore+'/100 (net margin '+r.netMargin+'%)',
+             'Liquidity: '+r.liquidityScore+'/100 (current ratio '+(r.currentRatio==null?'n/a':r.currentRatio)+')',
+             'Working capital: '+r.workingCapitalScore+'/100 ('+inr(r.workingCapital)+')']
+             .concat(r.costReductionAreas.map(function(c){return '⚠️ '+c;}))
+             .concat(r.growthOpportunities.map(function(g){return '➕ '+g;}))
+             .concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── GOVT MONEY (the moat) ──
+  function govProfile(){
+    var industry=pressed('gv-mfg')?'manufacturing':pressed('gv-serv')?'services':pressed('gv-agri')?'agriculture':pressed('gv-food')?'food':null;
+    var type=pressed('gv-startup')?'startup':'msme';
+    return { state:val('gv-state'), industry:industry, type:type, turnover:num('gv-turn'), employees:0, entityAgeYears:num('gv-age'), exporter:pressed('gv-exp') };
+  }
+  window.caRunGov=function(){
+    var p=govProfile(); var r=E().govtBenefits(p); var so=E().schemeOpportunity(p);
+    render('r-gov',{ status:r.count?'ok':'info',
+      big:r.count?(r.count+' scheme(s) you may be owed'):'Add more detail for a match',
+      text:so.summary,
+      lines:r.schemes.map(function(s){ return '🏛️ '+s.name+' — '+s.impact; }).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── FRAUD ──
+  window.caRunFraud=function(){
+    var r=E().fraudShield({ gstin:val('fr-gstin') });
+    var bad=r.flags.some(function(f){return f.status==='warning';});
+    render('r-fraud',{ status:bad?'warning':'ok', big:bad?'⚠️ Verify before you pay':'No fraud signal found',
+      lines:r.flags.map(function(f){return (STAT[f.status]||STAT.info).sym+' '+f.text;}).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── CFO ──
+  window.caRunCFO=function(){
+    var t=E().twin.load(); var inp=bizInput();
+    if(!inp.revenue && t.biz) inp=t.biz;
+    var r=E().cfoDashboard(inp);
+    render('r-cfo',{ status:'info', big:'Health '+r.businessHealth+'/100 · Profit '+inr(r.profit),
+      text:r.summary,
+      lines:['Revenue: '+inr(r.revenue),'Profit: '+inr(r.profit),'Cash flow: '+inr(r.cashFlow),
+             'Tax exposure (est.): '+inr(r.taxExposure),'Compliance score: '+r.complianceScore+'/100',
+             'Growth score: '+r.growthScore+'/100'].concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── TWIN ──
+  window.caTwinSave=function(){
+    var t=E().twin.load();
+    t.name=val('tw-name'); t.pan=val('tw-pan'); t.state=val('tw-state'); t.biz=bizInput();
+    var okq=E().twin.save(t);
+    render('r-twin',{ status:okq?'ok':'warning', big:okq?'Saved to your device ✅':'Could not save',
+      text:okq?'Chitti will remember this — only on this device. Nothing was sent anywhere.':'Storage is blocked in this browser.',
+      lines:['🔒 Your PAN and numbers never leave this device.','🗑️ “Chitti, forget everything” wipes it all.'],
+      confidence:'high', sources:['on-device localStorage'] });
+  };
+  window.caTwinForget=function(){
+    E().twin.forget();
+    render('r-twin',{ status:'ok', big:'Forgotten ✅', text:'Chitti has wiped your Financial Twin from this device.',
+      confidence:'high', sources:['on-device localStorage'] });
+  };
+
+  // ── read whole page aloud ──
+  window.caReadPage=function(){
+    var active=document.querySelector('.panel.active'); var t='Chitti CA OS. ';
+    var h1=document.querySelector('h1'); if(h1) t+=h1.textContent+'. ';
+    if(active){ active.querySelectorAll('h2,.sub').forEach(function(e){ t+=e.textContent+'. '; }); }
+    speak(t);
+  };
+
+  // prefill state from twin if present
+  document.addEventListener('DOMContentLoaded',function(){
+    try{ var t=E&&E()&&E().twin.load(); if(t){ if(t.state){ if($('gv-state'))$('gv-state').value=t.state; if($('tw-state'))$('tw-state').value=t.state; } if(t.name&&$('tw-name'))$('tw-name').value=t.name; } }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
