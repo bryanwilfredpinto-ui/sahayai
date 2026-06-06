@@ -132,13 +132,18 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
 
 // ───── full indicator catalogue (the dropdown) + new indicators compute ─────
 {
-  ok('INDICATOR_NAMES exposes >=20 indicators', (E.INDICATOR_NAMES || []).length >= 20, (E.INDICATOR_NAMES || []).length + ' names');
+  ok('INDICATOR_NAMES exposes >=38 indicators (full scanner catalogue)', (E.INDICATOR_NAMES || []).length >= 38, (E.INDICATOR_NAMES || []).length + ' names');
   const c = E.genCandles('TESTSYM', 'daily', 260);
   const set = E.indicatorSet(c);
-  ok('indicatorSet returns >=20 indicators', Object.keys(set).length >= 20, Object.keys(set).length + ' computed');
-  ['CCI','ROC','MFI','Aroon','Donchian Channels','Awesome Oscillator','Stochastic RSI','VWAP','Keltner Channels','TRIX','Momentum'].forEach(function (n) {
-    ok('new indicator computes + signals: ' + n, set[n] != null && ['BUY','SELL','WAIT'].includes(set[n].signal));
+  ok('indicatorSet returns >=38 indicators', Object.keys(set).length >= 38, Object.keys(set).length + ' computed');
+  ['CCI','ROC','MFI','Aroon','Donchian Channels','Awesome Oscillator','Stochastic RSI','VWAP','Keltner Channels','TRIX','Momentum',
+   'Ultimate Oscillator','Parabolic SAR','Ichimoku','Vortex Indicator','Hull MA','Heikin Ashi Trend','Elder Ray','Elder Impulse','ATR',
+   'TTM Squeeze','Chandelier Exit','Chande Kroll Stop','Force Index','Accumulation/Distribution','Chaikin Money Flow','Laguerre RSI','Balance of Power'].forEach(function (n) {
+    ok('catalogue indicator computes + signals: ' + n, set[n] != null && ['BUY','SELL','WAIT'].includes(set[n].signal), set[n] ? set[n].signal : 'MISSING');
   });
+  // every INDICATOR_NAMES entry must actually be produced by indicatorSet (no phantom names)
+  const missingNames = E.INDICATOR_NAMES.filter(function (n) { return set[n] == null; });
+  ok('every dropdown name is computed (no phantoms)', missingNames.length === 0, missingNames.join(', '));
   // CCI sanity: rising series → not SELL
   const rising = Array.from({length: 60}, (_, i) => ({ open: 100+i, high: 101+i, low: 99+i, close: 100.5+i, volume: 1000+i }));
   ok('CCI on a strong uptrend is finite', E.cci(rising).pop() != null);

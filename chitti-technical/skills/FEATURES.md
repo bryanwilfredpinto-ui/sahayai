@@ -18,9 +18,12 @@
 - **NSE stock / index / ETF analysis** via the existing `chitti-shares-api` engine.
 - **All-stocks type-ahead dropdown** — 750 NSE names across all 5 cap tiers; type "REL" → RELAXO,
   RELIANCE, RELIGARE, RPOWER, RELINFRA (symbol + company name + tier badge), keyboard + tap + voice.
-- **Indicator dropdown (22 indicators)** — choose which indicators to show (All/None); each carries
-  BUY/SELL/WAIT. RSI · MACD · Stochastic · Williams %R · Supertrend · EMA · Bollinger · OBV · ADX · CCI ·
-  ROC · Momentum · MFI · Aroon · Donchian · Awesome Oscillator · Stochastic RSI · VWAP · Keltner · TRIX · Roshan.
+- **Indicator dropdown (39 indicators — the full scanner catalogue)** — choose which to show (All/None);
+  each carries BUY/SELL/WAIT. RSI · Stochastic · Stochastic RSI · Williams %R · CCI · ROC · Momentum · TRIX ·
+  Ultimate Oscillator · Awesome Oscillator · Laguerre RSI · Balance of Power · MACD · ADX · Aroon ·
+  Parabolic SAR · Supertrend · Ichimoku · Vortex · Hull MA · Heikin Ashi Trend · Elder Ray · Elder Impulse ·
+  EMA 50 · EMA 200 · Bollinger Bands · ATR · Keltner · Donchian · TTM Squeeze · Chandelier Exit ·
+  Chande Kroll Stop · OBV · Force Index · Accumulation/Distribution · Chaikin Money Flow · MFI · VWAP · Roshan.
 - **BUY · SELL · TARGET · SL plan** — a four-cell trade plan on every directional signal (entry side
   highlighted), plus the full entry-zone / stop / 3 targets / RR / position-size block below it.
 

@@ -168,12 +168,12 @@ check('dropdown_select_runs_scan', await p.evaluate(() =>
 await p.evaluate(() => window.TechUI.toggleIndMenu());
 await p.waitForTimeout(250);
 const indBoxes = await p.$$eval('#ind-menu input[type="checkbox"]', els => els.length);
-check('ITEM indicator_dropdown_lists_all', indBoxes >= 20, indBoxes + ' indicators in dropdown');
+check('ITEM indicator_dropdown_lists_all', indBoxes >= 38, indBoxes + ' indicators in dropdown');
 await p.evaluate(() => window.TechUI.indAll(false)); await p.waitForTimeout(200);
 const gridNone = await p.$$eval('#ind-grid .ind', els => els.length);
-await p.evaluate(() => window.TechUI.indAll(true)); await p.waitForTimeout(200);
+await p.evaluate(() => window.TechUI.indAll(true)); await p.waitForTimeout(250);
 const gridAll = await p.$$eval('#ind-grid .ind', els => els.length);
-check('indicator_dropdown_toggle_filters_grid', gridNone === 0 && gridAll >= 20, `none=${gridNone} all=${gridAll}`);
+check('indicator_dropdown_toggle_filters_grid', gridNone === 0 && gridAll >= 38, `none=${gridNone} all=${gridAll}`);
 await p.evaluate(() => window.TechUI.toggleIndMenu());
 
 // ---- ITEM: BUY · SELL · TARGET · SL plan on a directional signal ----

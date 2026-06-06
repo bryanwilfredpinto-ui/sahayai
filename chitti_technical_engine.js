@@ -305,10 +305,158 @@
     return out;
   }
 
-  // master list — exactly what indicatorSet can produce (drives the indicator dropdown)
-  var INDICATOR_NAMES = ['RSI', 'MACD', 'Stochastic', 'Williams %R', 'Supertrend', 'EMA 50', 'EMA 200',
-    'Bollinger Bands', 'OBV', 'ADX', 'CCI', 'ROC', 'Momentum', 'MFI', 'Aroon', 'Donchian Channels',
-    'Awesome Oscillator', 'Stochastic RSI', 'VWAP', 'Keltner Channels', 'TRIX', 'Roshan Indicator'];
+  // ── full catalogue extras (so the dropdown matches the legacy scanner) ──
+  function wma(values, period) {
+    var out = new Array(values.length).fill(null), denom = period * (period + 1) / 2;
+    for (var i = period - 1; i < values.length; i++) { var s = 0; for (var k = 0; k < period; k++) s += values[i - k] * (period - k); out[i] = s / denom; }
+    return out;
+  }
+  function hma(values, period) {
+    period = period || 20;
+    var half = wma(values, Math.max(1, Math.floor(period / 2))), full = wma(values, period);
+    var raw = values.map(function (_, i) { return (half[i] == null || full[i] == null) ? null : 2 * half[i] - full[i]; });
+    var rawC = raw.filter(function (v) { return v != null; });
+    var h = wma(rawC, Math.max(1, Math.round(Math.sqrt(period))));
+    var out = new Array(values.length).fill(null), off = values.length - h.length;
+    for (var i = 0; i < h.length; i++) out[off + i] = h[i];
+    return out;
+  }
+  function ultimateOsc(candles) {
+    var bp = [], tr = [];
+    for (var i = 0; i < candles.length; i++) {
+      if (i === 0) { bp.push(0); tr.push(candles[i].high - candles[i].low); continue; }
+      var pc = candles[i - 1].close, minLP = Math.min(candles[i].low, pc), maxHP = Math.max(candles[i].high, pc);
+      bp.push(candles[i].close - minLP); tr.push(maxHP - minLP);
+    }
+    function avg(n, i) { var sb = 0, st = 0; for (var j = i - n + 1; j <= i; j++) { sb += bp[j]; st += tr[j]; } return st === 0 ? 0 : sb / st; }
+    var out = new Array(candles.length).fill(null);
+    for (var i = 27; i < candles.length; i++) out[i] = 100 * (4 * avg(7, i) + 2 * avg(14, i) + avg(28, i)) / 7;
+    return out;
+  }
+  function psar(candles, step, maxAf) {
+    step = step || 0.02; maxAf = maxAf || 0.2;
+    var out = new Array(candles.length).fill(null);
+    if (candles.length < 2) return out;
+    var bull = true, af = step, ep = candles[0].high, sar = candles[0].low;
+    for (var i = 1; i < candles.length; i++) {
+      sar = sar + af * (ep - sar);
+      if (bull) {
+        if (candles[i].low < sar) { bull = false; sar = ep; ep = candles[i].low; af = step; }
+        else if (candles[i].high > ep) { ep = candles[i].high; af = Math.min(maxAf, af + step); }
+      } else {
+        if (candles[i].high > sar) { bull = true; sar = ep; ep = candles[i].high; af = step; }
+        else if (candles[i].low < ep) { ep = candles[i].low; af = Math.min(maxAf, af + step); }
+      }
+      out[i] = sar;
+    }
+    return out;
+  }
+  function ichimoku(candles) {
+    function hh(n, i) { var m = -Infinity; for (var j = i - n + 1; j <= i; j++) if (candles[j] && candles[j].high > m) m = candles[j].high; return m; }
+    function ll(n, i) { var m = Infinity; for (var j = i - n + 1; j <= i; j++) if (candles[j] && candles[j].low < m) m = candles[j].low; return m; }
+    var i = candles.length - 1; if (i < 52) return null;
+    var tenkan = (hh(9, i) + ll(9, i)) / 2, kijun = (hh(26, i) + ll(26, i)) / 2;
+    var sa = (tenkan + kijun) / 2, sb = (hh(52, i) + ll(52, i)) / 2;
+    return { cloudTop: Math.max(sa, sb), cloudBot: Math.min(sa, sb) };
+  }
+  function forceIndex(candles, period) {
+    period = period || 13; var fi = [0];
+    for (var i = 1; i < candles.length; i++) fi.push((candles[i].close - candles[i - 1].close) * (candles[i].volume || 0));
+    return ema(fi, period);
+  }
+  function adl(candles) {
+    var out = [], run = 0;
+    for (var i = 0; i < candles.length; i++) { var c = candles[i], hl = c.high - c.low, mfm = hl === 0 ? 0 : ((c.close - c.low) - (c.high - c.close)) / hl; run += mfm * (c.volume || 0); out.push(run); }
+    return out;
+  }
+  function cmf(candles, period) {
+    period = period || 20; var out = new Array(candles.length).fill(null);
+    for (var i = period - 1; i < candles.length; i++) {
+      var mfv = 0, vol = 0;
+      for (var j = i - period + 1; j <= i; j++) { var c = candles[j], hl = c.high - c.low, m = hl === 0 ? 0 : ((c.close - c.low) - (c.high - c.close)) / hl; mfv += m * (c.volume || 0); vol += (c.volume || 0); }
+      out[i] = vol === 0 ? 0 : mfv / vol;
+    }
+    return out;
+  }
+  function ttmSqueeze(candles) {
+    var cl = closes(candles), bb = bollinger(cl, 20, 2), kc = keltner(candles, 20, 1.5), s20 = sma(cl, 20), i = candles.length - 1;
+    var mom = (cl[i] != null && s20[i] != null) ? cl[i] - s20[i] : 0;
+    var on = (bb.upper[i] != null && kc.upper[i] != null) ? (bb.upper[i] < kc.upper[i] && bb.lower[i] > kc.lower[i]) : false;
+    return { on: on, mom: mom };
+  }
+  function vortex(candles, period) {
+    period = period || 14; var i = candles.length - 1; if (i < period) return null;
+    var vmP = 0, vmM = 0, tr = 0;
+    for (var j = i - period + 1; j <= i; j++) {
+      if (j === 0) continue;
+      vmP += Math.abs(candles[j].high - candles[j - 1].low); vmM += Math.abs(candles[j].low - candles[j - 1].high);
+      var pc = candles[j - 1].close; tr += Math.max(candles[j].high - candles[j].low, Math.abs(candles[j].high - pc), Math.abs(candles[j].low - pc));
+    }
+    return tr === 0 ? null : { viP: vmP / tr, viM: vmM / tr };
+  }
+  function chandelier(candles, period, mult) {
+    period = period || 22; mult = mult || 3; var i = candles.length - 1; if (i < period) return null;
+    var a = last(atr(candles, period)); if (a == null) return null;
+    var hh = -Infinity, ll = Infinity;
+    for (var j = i - period + 1; j <= i; j++) { if (candles[j].high > hh) hh = candles[j].high; if (candles[j].low < ll) ll = candles[j].low; }
+    return { longStop: hh - mult * a, shortStop: ll + mult * a };
+  }
+  function laguerreRsi(values, gamma) {
+    gamma = gamma || 0.5; var L0 = 0, L1 = 0, L2 = 0, L3 = 0, out = new Array(values.length).fill(null);
+    for (var i = 0; i < values.length; i++) {
+      var p = values[i], L0p = L0, L1p = L1, L2p = L2, L3p = L3;
+      L0 = (1 - gamma) * p + gamma * L0p; L1 = -gamma * L0 + L0p + gamma * L1p; L2 = -gamma * L1 + L1p + gamma * L2p; L3 = -gamma * L2 + L2p + gamma * L3p;
+      var cu = 0, cd = 0;
+      if (L0 >= L1) cu += L0 - L1; else cd += L1 - L0;
+      if (L1 >= L2) cu += L1 - L2; else cd += L2 - L1;
+      if (L2 >= L3) cu += L2 - L3; else cd += L3 - L2;
+      out[i] = (cu + cd) === 0 ? 0 : cu / (cu + cd);
+    }
+    return out;
+  }
+  function heikinTrend(candles) {
+    var haOpen = candles[0].open, haClose = (candles[0].open + candles[0].high + candles[0].low + candles[0].close) / 4;
+    for (var i = 1; i < candles.length; i++) { var c = candles[i]; haOpen = (haOpen + haClose) / 2; haClose = (c.open + c.high + c.low + c.close) / 4; }
+    return { open: haOpen, close: haClose };
+  }
+  function balanceOfPower(candles, period) {
+    period = period || 14;
+    var bop = candles.map(function (c) { var r = c.high - c.low; return r === 0 ? 0 : (c.close - c.open) / r; });
+    return sma(bop, period);
+  }
+  function chandeKroll(candles, p, x, q) {
+    p = p || 10; x = x || 1; q = q || 9; var i = candles.length - 1; if (i < p + q) return null;
+    var a = atr(candles, p), hStops = [], lStops = [];
+    for (var k = 0; k < candles.length; k++) {
+      if (a[k] == null) { hStops.push(null); lStops.push(null); continue; }
+      var hh = -Infinity, ll = Infinity;
+      for (var j = Math.max(0, k - p + 1); j <= k; j++) { if (candles[j].high > hh) hh = candles[j].high; if (candles[j].low < ll) ll = candles[j].low; }
+      hStops.push(hh - x * a[k]); lStops.push(ll + x * a[k]);
+    }
+    var longStop = -Infinity, shortStop = Infinity;
+    for (var j2 = i - q + 1; j2 <= i; j2++) { if (hStops[j2] != null && hStops[j2] > longStop) longStop = hStops[j2]; if (lStops[j2] != null && lStops[j2] < shortStop) shortStop = lStops[j2]; }
+    return { longStop: longStop, shortStop: shortStop };
+  }
+  function elderRay(candles, period) {
+    period = period || 13; var e = last(ema(closes(candles), period)); if (e == null) return null;
+    var c = candles[candles.length - 1]; return { bull: c.high - e, bear: c.low - e };
+  }
+  function elderImpulse(candles) {
+    var cl = closes(candles), e = ema(cl, 13), m = macd(cl), i = candles.length - 1;
+    if (e[i] == null || e[i - 1] == null || m.hist[i] == null || m.hist[i - 1] == null) return null;
+    return { emaUp: e[i] > e[i - 1], histUp: m.hist[i] > m.hist[i - 1] };
+  }
+
+  // master list — exactly what indicatorSet can produce (drives the indicator dropdown). 39 indicators.
+  var INDICATOR_NAMES = [
+    'RSI', 'Stochastic', 'Stochastic RSI', 'Williams %R', 'CCI', 'ROC', 'Momentum', 'TRIX',
+    'Ultimate Oscillator', 'Awesome Oscillator', 'Laguerre RSI', 'Balance of Power',
+    'MACD', 'ADX', 'Aroon', 'Parabolic SAR', 'Supertrend', 'Ichimoku', 'Vortex Indicator',
+    'Hull MA', 'Heikin Ashi Trend', 'Elder Ray', 'Elder Impulse', 'EMA 50', 'EMA 200',
+    'Bollinger Bands', 'ATR', 'Keltner Channels', 'Donchian Channels', 'TTM Squeeze',
+    'Chandelier Exit', 'Chande Kroll Stop',
+    'OBV', 'Force Index', 'Accumulation/Distribution', 'Chaikin Money Flow', 'MFI', 'VWAP',
+    'Roshan Indicator'];
 
   // ───────────────────────── per-indicator signals ─────────────────────────
   function indicatorSet(candles) {
@@ -359,6 +507,25 @@
     var kc = keltner(candles); var kU = last(kc.upper), kL = last(kc.lower), kM = last(kc.mid);
     if (kU != null) add('Keltner Channels', kM, p2 >= kU ? 'SELL' : (p2 <= kL ? 'BUY' : 'WAIT'), 'Keltner(20): band touch');
     var vtx = last(trix(cl)); if (vtx != null) add('TRIX', vtx, vtx > 0 ? 'BUY' : (vtx < 0 ? 'SELL' : 'WAIT'), 'TRIX(15): >0 BUY');
+
+    // ── full-catalogue indicators ──
+    var vuo = last(ultimateOsc(candles)); if (vuo != null) add('Ultimate Oscillator', vuo, vuo < 30 ? 'BUY' : (vuo > 70 ? 'SELL' : 'WAIT'), 'UO: <30 BUY, >70 SELL');
+    var vsar = last(psar(candles)); if (vsar != null) add('Parabolic SAR', vsar, p2 > vsar ? 'BUY' : 'SELL', 'PSAR: price above = BUY');
+    var ich = ichimoku(candles); if (ich) add('Ichimoku', round2(ich.cloudTop), p2 > ich.cloudTop ? 'BUY' : (p2 < ich.cloudBot ? 'SELL' : 'WAIT'), 'Ichimoku: above cloud BUY');
+    var vvor = vortex(candles); if (vvor) add('Vortex Indicator', round2(vvor.viP), vvor.viP > vvor.viM ? 'BUY' : 'SELL', 'Vortex(14): VI+>VI- BUY');
+    var vhma = last(hma(cl, 20)); if (vhma != null) add('Hull MA', round2(vhma), p2 > vhma ? 'BUY' : 'SELL', 'Hull MA(20): price above BUY');
+    var hat = heikinTrend(candles); if (hat) add('Heikin Ashi Trend', round2(hat.close), hat.close > hat.open ? 'BUY' : 'SELL', 'Heikin Ashi: green = BUY');
+    var er = elderRay(candles); if (er) add('Elder Ray', round2(er.bull), (er.bull > 0 && er.bear > 0) ? 'BUY' : ((er.bull < 0 && er.bear < 0) ? 'SELL' : 'WAIT'), 'Elder Ray: bull/bear vs EMA13');
+    var eimp = elderImpulse(candles); if (eimp) add('Elder Impulse', null, (eimp.emaUp && eimp.histUp) ? 'BUY' : ((!eimp.emaUp && !eimp.histUp) ? 'SELL' : 'WAIT'), 'Elder Impulse: EMA13 + MACD hist');
+    var vatr = last(atr(candles, 14)); if (vatr != null) add('ATR', round2(vatr), 'WAIT', 'ATR(14): volatility unit for stops');
+    var ttm = ttmSqueeze(candles); if (ttm) add('TTM Squeeze', round2(ttm.mom), ttm.on ? 'WAIT' : (ttm.mom > 0 ? 'BUY' : 'SELL'), 'TTM: squeeze on = wait');
+    var vce = chandelier(candles); if (vce) add('Chandelier Exit', round2(vce.longStop), p2 > vce.longStop ? 'BUY' : 'SELL', 'Chandelier(22,3) trailing stop');
+    var vck = chandeKroll(candles); if (vck) add('Chande Kroll Stop', round2(vck.longStop), p2 > vck.longStop ? 'BUY' : 'SELL', 'Chande Kroll trailing stop');
+    var vfi = last(forceIndex(candles)); if (vfi != null) add('Force Index', round2(vfi), vfi > 0 ? 'BUY' : 'SELL', 'Force Index(13): >0 BUY');
+    var vadl = adl(candles); var adlSlope = vadl.length > 5 ? vadl[vadl.length - 1] - vadl[vadl.length - 6] : 0; add('Accumulation/Distribution', round2(last(vadl)), adlSlope > 0 ? 'BUY' : (adlSlope < 0 ? 'SELL' : 'WAIT'), 'A/D line slope');
+    var vcmf = last(cmf(candles)); if (vcmf != null) add('Chaikin Money Flow', Math.round(vcmf * 1000) / 1000, vcmf > 0 ? 'BUY' : (vcmf < 0 ? 'SELL' : 'WAIT'), 'CMF(20): >0 BUY');
+    var vlag = last(laguerreRsi(cl)); if (vlag != null) add('Laguerre RSI', Math.round(vlag * 100) / 100, vlag < 0.2 ? 'BUY' : (vlag > 0.8 ? 'SELL' : 'WAIT'), 'Laguerre RSI: <0.2 BUY, >0.8 SELL');
+    var vbop = last(balanceOfPower(candles)); if (vbop != null) add('Balance of Power', Math.round(vbop * 1000) / 1000, vbop > 0 ? 'BUY' : (vbop < 0 ? 'SELL' : 'WAIT'), 'BOP: >0 buyers in control');
 
     var ro = roshan(cl);
     add('Roshan Indicator', ro.value, ro.signal, 'Roshan: RSI(14) vs SMA20 of RSI (custom)');
