@@ -321,19 +321,26 @@ def get_candles(symbol: str, interval: str = "ONE_DAY", days_back: int = 365):
     if not is_configured():
         return pd.DataFrame()
 
+    # Normalize a bare symbol ("RELIANCE") to the canonical key the token map uses
+    # ("NSE:RELIANCE"). Quotes already arrive canonical; candle callers often pass bare
+    # symbols — that mismatch was returning empty candles ("symbol not resolved").
+    raw = (symbol or "").strip().upper()
+    cands = [raw] if ":" in raw else [raw, "NSE:" + raw, "BSE:" + raw]
+
     with _lock:
         try:
             jwt = _ensure_jwt()
         except Exception as e:  # noqa: BLE001
             log.error("[angel] candles auth failed: %s", e)
             return pd.DataFrame()
-        tokens = _resolve_tokens([symbol])
+        tokens = _resolve_tokens(cands)
 
-    if symbol not in tokens:
+    key = next((c for c in cands if c in tokens), None)
+    if not key:
         log.warning("[angel] candle: symbol not resolved: %s", symbol)
         return pd.DataFrame()
 
-    exch, tok = tokens[symbol]
+    exch, tok = tokens[key]
 
     if interval == "ONE_DAY":
         days_back = min(days_back, 2000)
