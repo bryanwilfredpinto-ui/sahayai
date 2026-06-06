@@ -13,7 +13,7 @@ const SUITES = [
   ['All 4 a11y profiles', 'fashion_a11y_profiles.mjs', /A11Y_PROFILES:({.*})/, d => d.fail === 0, d => d.pass + '/' + d.total],
   ['Accessibility (107 DOM)', 'fashion_eval_harness.mjs', /EVAL_SUMMARY:({.*})/, d => d.accessibility_pct === 100, d => d.accessibility_pass],
   ['Page QA (50)', 'fashion_qa.mjs', /QA_REPORT:({.*})/, d => d.fail === 0, d => d.pass + '/' + d.total],
-  ['WCAG axe-core', 'fashion_axe_scan.mjs', /AXE_SCAN:({.*})/, d => d.violations === 0, d => d.violations + ' violations'],
+  ['WCAG axe-core', 'fashion_axe_scan.mjs', /AXE_LINE:({.*})/, d => d.violations === 0, d => d.violations + ' violations'],
   ['Four-user journeys (5)', 'cert_fashion_journeys.mjs', /JOURNEY_SUMMARY:({.*})/, d => d.steps_pass === d.steps_total, d => d.steps_pass + '/' + d.steps_total],
   ['Visual cert (14)', 'cert_fashion.mjs', /CERT_SUMMARY:({.*})/, d => d.total_fail === 0, d => d.total_pass + '/' + d.total_checks],
 ];

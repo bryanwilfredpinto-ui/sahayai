@@ -27,3 +27,4 @@ const res = await p.evaluate(async () => {
 });
 await b.close();
 console.log('AXE_SCAN:' + JSON.stringify(res, null, 1));
+console.log('AXE_LINE:' + JSON.stringify({ violations: res.violations, byImpact: res.byImpact }));
