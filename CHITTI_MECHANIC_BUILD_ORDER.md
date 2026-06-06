@@ -128,24 +128,30 @@ items (vision-AI, human-AT, live-LLM CQOS, Turso durability) are listed, not hid
 
 ---
 
-## Execution log — EXECUTED 2026-06-06 (research-led; harnesses re-run)
+## Execution log — EXECUTED + RE-TESTED 2026-06-06 (every BO test re-run after the dropdown rebuild)
 
-| BO | Built | Test gate | Status (measured) |
+> Sire: *"YOUR JOB BO1-TEST, BO2-TEST … BOn-TEST."* Every BO below was test-run against the
+> current build today; numbers are measured in this same change, not asserted. The legacy UI
+> was archived to [_legacy/](_legacy/); BO1/BO2 were **rebuilt** (clean Vaani-pattern language
+> system — see the dropdown note under BO2).
+
+| BO | Built / rebuilt | Test gate (command) | Status (measured 2026-06-06) |
 |----|-------|-----------|-------------------|
-| BO0 | research + dismantle decision (keep tested engine, re-derive shell) | RESEARCH maps apps→PRD→BO | ✅ [RESEARCH.md](CHITTI_MECHANIC_RESEARCH.md) |
-| BO1 | shell + 5 a11y gates + emergency cascade + profile | cert: gates + boxes present | ✅ cert **24/24** |
-| BO2 | 9-lang whole-UI re-render, no Hinglish | scan + 9-lang matrix | ✅ §5 **8–16** · RC-langs **54/54** |
-| BO3 | Scan-RC + profile + Vehicle Twin | RC suite + J2 persist | ✅ RC **20/20** · J2 PASS |
-| BO4 | Symptom Doctor 8-agent swarm | J3 verdict, 3 engines | ✅ J3 PASS (×2 vehicles) |
-| BO5 | Roadside Self-Fix (offline SVG+steps) | J5 + offline edge | ✅ J5 PASS · offline PASS |
-| BO6 | safety guardrails + family-cascade SOS | no-auto-dial grep + guardrail | ✅ no 100/108/112 auto-dial |
-| BO7 | Scam Shield fair band | J4 band renders | ✅ J4 PASS |
-| BO8 | Dashboard/Sound/AI Scanners (det. + honest stub) | J6 + image-edge | ✅ J6 PASS · no fake verdict |
-| BO9 | Health Score + Service Book + Preventive | J7 score+band | ✅ J7 PASS |
-| BO10 | DTC library + OBD2 BLE | J8 honest fallback | ✅ J8 PASS |
-| BO11 | four users end-to-end | a11y 5/5 + §5 | ✅ attributes 5/5 · 🔵 human-AT **PENDING** |
-| BO12 | responsive 375/768/1440 + MedUPI skin | cert | ✅ cert **24/24**, no overflow |
-| BOn | measured handover + 5 sign-off docs | numbers trace to a run | ✅ qa_handover **44/45** |
+| BO0 | research + dismantle decision | RESEARCH maps apps→PRD→BO | ✅ [RESEARCH.md](CHITTI_MECHANIC_RESEARCH.md) |
+| BO1 | shell + 5 a11y gates + emergency cascade + profile | `cert_mechanic` | ✅ cert **24/24** |
+| BO2 | **REBUILT** 9-lang dropdown → clean static Vaani pattern (28-opt prune cruft deleted) | `test_lang_dropdown` + `scan_hinglish` + `test_rc_langs` | ✅ dropdown **22/22** · §5 **0 violations** (was 8–16) · matrix **54/54** |
+| BO3 | Scan-RC + profile + Vehicle Twin | `test_rc_scan` + qa J2 | ✅ RC **20/20** · J2 PASS |
+| BO4 | Symptom Doctor 8-agent swarm | qa J3 (3 engines) | ✅ J3 PASS ×2 |
+| BO5 | Roadside Self-Fix (offline SVG+steps) | qa J5 + offline edge | ✅ J5 + offline PASS |
+| BO6 | safety guardrails + family-cascade SOS | no-auto-dial grep | ✅ **0** dials to 100/108/112 |
+| BO7 | Scam Shield fair band | qa J4 | ✅ J4 PASS |
+| BO8 | Dashboard/Sound/AI Scanners (det. + honest stub) | qa J6 + image-edge | ✅ J6 PASS · no fake verdict |
+| BO9 | Health Score + Service Book + Preventive | qa J7 | ✅ J7 PASS |
+| BO10 | DTC library + OBD2 BLE | qa J8 | ✅ J8 honest fallback PASS |
+| BO11 | four users end-to-end | a11y audit 5/5 + §5 | ✅ attributes **5/5** · 🔵 human-AT **PENDING** |
+| BO12 | responsive 375/768/1440 + MedUPI skin | `cert_mechanic` | ✅ cert **24/24**, no overflow |
+| routes | backend deterministic routes | `pytest` 2w + 4w | ✅ **24 + 22 passed** |
+| BOn | measured handover + 5 sign-off docs | `qa_handover` (22 journeys × 3 engines) | ✅ **44/45** (1 = slow-3G BUG-1) · `qa_mechanic` **0 issues** |
 
 **Honest gaps (ROADMAP / PENDING — not GREEN):**
 - **Vision/audio AI** (RC make/model auto-read, dashboard/tyre/leak photo, sound classification) — wired,

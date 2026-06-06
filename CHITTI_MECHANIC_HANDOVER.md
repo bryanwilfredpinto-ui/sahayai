@@ -52,14 +52,18 @@ proceeded with the test-driven path (CTO SOP Rule 4).
 
 | Harness | What it proves | Result |
 |---|---|---|
+| [test_lang_dropdown.mjs](tools/test_lang_dropdown.mjs) | **language dropdown works** — exactly-9 options, all 9 switch+persist+sync, stale-lang guard | **22/22** |
 | [qa_handover.mjs](tools/qa_handover.mjs) | 22 journeys × Chromium/Firefox/WebKit (Safari) + edge + perf + a11y | **44/45** |
 | [cert_mechanic.mjs](tools/cert_mechanic.mjs) | responsive + 5-element box + language re-render | **24/24** |
 | [test_rc_scan.mjs](tools/test_rc_scan.mjs) | Scan-RC (parser, chip, no-fabrication, device-local) | **20/20** |
 | [test_rc_langs.mjs](tools/test_rc_langs.mjs) | RC + form titles, 9 languages × 2 pages | **54/54** |
-| [scan_hinglish.mjs](tools/scan_hinglish.mjs) | §5 No-Hinglish, all 9 languages | **stable 8–16** |
-| `pytest chitti-{2,4}wheeler/backend` | backend deterministic routes | **24 passed** |
+| [scan_hinglish.mjs](tools/scan_hinglish.mjs) | §5 No-Hinglish, all 9 languages | **0 violations** (was 8–16 before the dropdown rebuild) |
+| `pytest chitti-2wheeler/backend` · `…4wheeler/backend` | backend deterministic routes | **24 + 22 passed** |
+| `qa_mechanic.mjs` | page-load + functional QA | **0 issues** |
 
 The single QA fail = **BUG-1 slow-3G first load (~37s)**, documented + SW-cache-mitigated.
+**Dropdown rebuild bonus:** removing the dead 28-option prune/setTimeout machinery dropped §5
+violations from 8–16 to **0** — the Hinglish race is gone, not just mitigated.
 
 ## 5. The four users — explicit status (the floor, per BO11)
 | User | Persona | How they complete a job | Verified | Gap |
