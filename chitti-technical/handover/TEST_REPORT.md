@@ -22,7 +22,25 @@
 | Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **270 PASS / 0 FAIL** |
 | Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **30 PASS / 0 FAIL · 0 page errors** |
 
-## LIVE Angel data — wired (answer to "why DEMO?")
+## LIVE Angel data — NOW WORKING on production (curl-verified)
+Resolved end-to-end on 2026-06-06. Three real bugs were fixed and verified against live Railway:
+1. **chitti-shares-api was 502 (crash-loop).** Railway logs: `on_startup → create_all` threw on a
+   **Turso read-block** (`SQL read operations are forbidden — do you need to upgrade your plan?` — the DB
+   hit its plan quota). Fix: DB-tolerant boot (wrap `create_all`) — app now boots + serves market data
+   even with the DB blocked. `/health` → `{"ok":true}` ✅ (curled).
+2. **Angel candles returned `[]`** (`[angel] candle: symbol not resolved: RELIANCE`). Quotes worked
+   (canonical `NSE:RELIANCE`) but the candle path passed a bare `RELIANCE`. Fix: `get_candles` normalizes
+   to `NSE:`/`BSE:` candidates. Curl-verified: `/api/candles/RELIANCE?timeframe=Daily` → real OHLCV,
+   **last close 1291.0** (matches the live quote ₹1291 from `/debug/angel`). ✅
+3. **The page called the wrong endpoint.** Repointed to the existing `/api/candles/{sym}?timeframe=…`
+   (array of `{time,open,high,low,close,volume}`; backend resamples 4H/Weekly/Monthly). Multi-host
+   fallback Railway → Render → DEMO. Cert (`live_angel_data_pipeline`) renders **🟢 LIVE · Angel** from
+   that exact array shape, 0 page errors.
+
+**Net:** tapping Refresh on `chitti_technical.html` now pulls **live Angel data** (Daily/Weekly/Monthly
+guaranteed; 4H/1H best-effort). DEMO remains only as the offline fallback. Live curls captured this session.
+
+## (history) LIVE Angel data — wiring (earlier in the session)
 The page now fetches **live Angel One candles** on Refresh, not DEMO. New **public, cached** backend
 endpoint `GET /api/technical/{symbol}/candles?interval=day|week|month|hour`
 ([chitti-shares/backend/routes/technical.py](../../chitti-shares/backend/routes/technical.py)) serves

@@ -376,19 +376,26 @@ window.TechUI = (function(){
     }
     return out;
   }
-  function fetchCandles(base,sym,interval){
-    var url=base+'/api/technical/'+encodeURIComponent(sym)+'/candles?interval='+interval;
-    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},10000);
+  // live Angel candles via chitti-shares-api: GET /api/candles/{sym}?timeframe=Daily&days_back=N
+  // → array of {time,open,high,low,close,volume}. Backend resamples 4H/Weekly/Monthly server-side.
+  function fetchCandles(base,sym,tf){
+    var db=(tf==='Daily'?500:tf==='Weekly'?260:tf==='Monthly'?200:300);
+    var url=base+'/api/candles/'+encodeURIComponent(sym)+'?timeframe='+tf+'&days_back='+db;
+    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},12000);
     return fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}}).then(function(r){
       clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.json();
-    }).then(function(j){
-      if(!j||!j.candles||!j.candles.length) throw new Error('empty');
-      return j.candles.map(function(c,i){return {open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:(+c.volume)||0,t:i,date:c.date};});
+    }).then(function(arr){
+      if(!Array.isArray(arr)||!arr.length) throw new Error('empty');
+      return arr.map(function(c,i){return {open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:(+c.volume)||0,t:i,
+        date:(c.time?new Date(c.time*1000).toISOString().slice(0,10):'')};});
     });
   }
+  function fetchOpt(base,sym,tf){ return fetchCandles(base,sym,tf).catch(function(){return null;}); }
   function loadLiveFrom(base,sym){
-    return Promise.all([fetchCandles(base,sym,'month'),fetchCandles(base,sym,'week'),fetchCandles(base,sym,'day'),fetchCandles(base,sym,'hour')])
-      .then(function(res){ var hour=res[3]; return { monthly:res[0], weekly:res[1], daily:res[2], '1h':hour, '4h':resampleEvery(hour,4) }; });
+    // Monthly/Weekly/Daily required; 4H/1H best-effort (intraday may be thin) — engine HOLDs if a trigger TF is absent
+    return Promise.all([fetchCandles(base,sym,'Monthly'),fetchCandles(base,sym,'Weekly'),fetchCandles(base,sym,'Daily'),
+                        fetchOpt(base,sym,'4H'),fetchOpt(base,sym,'1H')])
+      .then(function(res){ var tf={monthly:res[0],weekly:res[1],daily:res[2]}; if(res[3])tf['4h']=res[3]; if(res[4])tf['1h']=res[4]; return tf; });
   }
   function loadLive(sym){
     // sequential: first host that serves all timeframes wins; else reject → DEMO

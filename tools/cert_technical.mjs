@@ -251,17 +251,18 @@ await c.close();
 // ---- ITEM: LIVE Angel data pipeline (mock the /candles endpoint → page must render LIVE) ----
 const liveCtx = await b.newContext({ viewport: { width: 1280, height: 900 } });
 const liveErrors = [];
-await liveCtx.route('**/api/technical/**/candles*', route => {
-  const m = /[?&]interval=([^&]+)/.exec(route.request().url());
-  const iv = m ? m[1] : 'day';
-  const n = iv === 'hour' ? 320 : (iv === 'month' ? 200 : (iv === 'week' ? 300 : 700));
-  const candles = []; let px = 2500;
+await liveCtx.route('**/api/candles/**', route => {
+  const m = /[?&]timeframe=([^&]+)/.exec(route.request().url());
+  const tf = m ? m[1] : 'Daily';
+  const n = (tf === '1H' || tf === '4H') ? 220 : (tf === 'Monthly' ? 80 : (tf === 'Weekly' ? 160 : 400));
+  const arr = []; let px = 2500;
+  let t0 = 1750000000; // fixed epoch base (deterministic)
   for (let i = 0; i < n; i++) {
     px *= 1 + (((i % 9) - 4) / 900);
     const o = px, cl = px * 1.0015, h = Math.max(o, cl) * 1.004, lo = Math.min(o, cl) * 0.996;
-    candles.push({ date: '2026-0' + (1 + (i % 9)) + '-15', open: +o.toFixed(2), high: +h.toFixed(2), low: +lo.toFixed(2), close: +cl.toFixed(2), volume: 100000 + i });
+    arr.push({ time: t0 + i * 86400, open: +o.toFixed(2), high: +h.toFixed(2), low: +lo.toFixed(2), close: +cl.toFixed(2), volume: 100000 + i });
   }
-  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ symbol: 'RELIANCE', interval: iv, count: n, candles, latest_date: '2026-09-15', source: 'angel' }) });
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(arr) });
 });
 const liveP = await liveCtx.newPage();
 liveP.on('pageerror', e => liveErrors.push(e.message));
