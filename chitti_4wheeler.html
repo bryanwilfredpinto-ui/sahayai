@@ -695,6 +695,11 @@ let CURRENT_LANG = (function(){
   } catch(e){}
   return 'en';
 })();
+// Commit the chosen language IMMEDIATELY so strings.js (which self-heals to
+// localStorage('chitti_vaani_lang')||'hi') and this page agree from the first paint.
+// Without this the content rendered in hi while the dropdown showed en. (Vaani parity)
+window.CURRENT_LANG = CURRENT_LANG;
+try { localStorage.setItem(LANG_KEY, CURRENT_LANG); } catch(e){}
 let LISTENING = false; let RECOG = null;
 
 const DAILY_TIPS = {
