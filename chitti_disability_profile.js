@@ -164,7 +164,7 @@
       'border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer}' +
       '#' + MODAL_ID + ' .chitti-dp-save{background:linear-gradient(135deg,var(--saffron,#FF9933),var(--green-flag,#138808));color:#fff}' +
       '#' + MODAL_ID + ' .chitti-dp-skip{background:#f1f5f9;color:#475569;font-weight:700}' +
-      '#' + MODAL_ID + ' .chitti-dp-foot{margin:0;font-size:11px;color:#94a3b8;text-align:center;line-height:1.35}' +
+      '#' + MODAL_ID + ' .chitti-dp-foot{margin:0;font-size:11px;color:#475569;text-align:center;line-height:1.35}' +
       // Tighter padding on narrow phones (375px and below).
       '@media(max-width:380px){#' + MODAL_ID + '{padding:8px}' +
       '#' + MODAL_ID + ' .chitti-dp-body{padding:14px 14px 8px}' +

@@ -87,6 +87,11 @@ body.sds-page > * { position: relative; z-index: 1; }
    keep the navy accent border consistent with MedUPI section heads. */
 .sw-card, .sds-card[data-chitti-response*="card-swarm"] { border-color: var(--gold) !important; }
 
+/* a11y (axe WCAG 2.1 AA): the active bottom-nav label was saffron #E86A17 on white
+   (3.22:1 — fails AA for 12px bold). Darken to a warm orange that passes 4.5:1. */
+.sds-tabs button.active, .sds-tabs button.active .lbl, .sds-tabs button.active span,
+.sds-tabs .active, .sds-tabs .active .lbl { color: #9a3412 !important; }
+
 /* RC-scan card result chip + status (chitti_rc_scan.js) — MedUPI tokens */
 .sds-rc-result:empty { display: none; }
 .sds-rc-result { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }

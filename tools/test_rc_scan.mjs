@@ -50,9 +50,11 @@ for (const P of PAGES) {
   // 1. Card + buttons present, tap targets ≥48px.
   const card = await pg.$(`#${P.card}`);
   card ? ok('card') : bad(`${P.id}/card`, 'RC card/file input missing');
+  // Only VISIBLE buttons on the current (My-Vehicle) tab — the landing Scan-RC button
+  // matches the same selector but is hidden on the Home tab (height 0), which is correct.
   const btns = await pg.$$eval(`[onclick*="rcCapture('${P.kind}')"], [onclick*="rcManual('${P.kind}')"]`,
-    els => els.map(e => Math.min(e.getBoundingClientRect().height, 48)));
-  (btns.length >= 2 && btns.every(h => h >= 44)) ? ok('btns') : bad(`${P.id}/btns`, `buttons=${btns.length} sizes=${btns}`);
+    els => els.filter(e => e.offsetParent !== null && e.getBoundingClientRect().height > 0).map(e => Math.min(e.getBoundingClientRect().height, 48)));
+  (btns.length >= 2 && btns.every(h => h >= 44)) ? ok('btns') : bad(`${P.id}/btns`, `visible buttons=${btns.length} sizes=${btns}`);
 
   // 2. Deterministic reg parser.
   const parsed = await pg.evaluate(() => ({
