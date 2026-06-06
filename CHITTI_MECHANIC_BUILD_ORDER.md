@@ -153,6 +153,18 @@ items (vision-AI, human-AT, live-LLM CQOS, Turso durability) are listed, not hid
 | routes | backend deterministic routes | `pytest` 2w + 4w | ✅ **24 + 22 passed** |
 | BOn | measured handover + 5 sign-off docs | `qa_handover` (22 journeys × 3 engines) | ✅ **44/45** (1 = slow-3G BUG-1) · `qa_mechanic` **0 issues** |
 
+## Rebuild journey gates — added 2026-06-06 (test-first, from the real landing screen)
+
+Per [CHITTI_MECHANIC_PROCESS.md](CHITTI_MECHANIC_PROCESS.md): these tests start where the USER starts
+(default landing, no tab nav, no saved vehicle) — the discipline the old QC lacked. Each was written
+**failing-first**, then built to green.
+
+| Gate | What it proves (real journey) | Test | Status |
+|---|---|---|---|
+| **Landing** | screen 1 has the 9-lang dropdown + visible Scan-RC + visible voice + ≥44px taps + dropdown matches content language | [test_landing_journey.mjs](tools/test_landing_journey.mjs) | ✅ **12/12** (fixed: Scan-RC was buried in a tab; dropdown showed en while content was hi) |
+| **Diagnose** | a roadside user diagnoses on screen 1 WITHOUT adding a vehicle first | [test_diagnose_journey.mjs](tools/test_diagnose_journey.mjs) | ✅ **10/10** (fixed: HERO was trapped in #*-summary, hidden until a vehicle existed) |
+| **Four users** | blind (box-speak+mic) · deaf (visible verdict+ISL) · mute (type+photo+tap) · illiterate (icon+speak) each operate screen 1 | [test_four_users.mjs](tools/test_four_users.mjs) | ✅ **12/12** |
+
 **Honest gaps (ROADMAP / PENDING — not GREEN):**
 - **Vision/audio AI** (RC make/model auto-read, dashboard/tyre/leak photo, sound classification) — wired,
   honest "coming soon", **never fabricated**; needs DeepSeek-vision funding or a VAHAN/Parivahan API.
