@@ -91,10 +91,15 @@
   <div id="mb-empty" class="sds-empty" style="display:none">
     <div class="big">🏍️</div>
     <div class="title" data-vai-i18n="mb.empty.title">अपनी बाइक जोड़ें</div>
-    <div class="sub" data-vai-i18n="mb.empty.sub">बोलें — "मेरी बाइक Hero Splendor UP32AB1234 2018 लाल"</div>
-    <div class="quote">🎙️ "मेरी बाइक Hero Splendor UP32AB1234 2018 लाल"</div>
+    <div class="sub" data-vai-i18n="rc.sub">अपना RC स्कैन करें — Chitti कंपनी, मॉडल और साल पढ़ लेगा।</div>
     <br>
-    <button class="sds-btn primary" onclick="mbAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
+    <!-- PRIMARY onboarding action: Scan your RC (Sire: lead with RC, not manual entry).
+         Visible on the HOME landing so a first-time user sees it without hunting tabs. -->
+    <button class="sds-btn primary" style="min-height:54px;font-size:17px" onclick="mbTab('bike'); setTimeout(function(){ if(window.rcCapture) window.rcCapture('2w'); }, 350)">📷 <span data-vai-i18n="rc.title">अपना RC स्कैन करें</span></button>
+    <div style="height:10px"></div>
+    <button class="sds-btn" onclick="mbAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
+    <div style="height:6px"></div>
+    <button class="sds-btn" onclick="mbTab('bike')" data-vai-i18n="rc.manual">✍️ खुद भरें</button>
   </div>
 
   <div id="mb-summary" style="display:none">

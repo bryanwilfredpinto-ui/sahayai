@@ -91,9 +91,14 @@
   <div id="mc-empty" class="sds-empty" style="display:none">
     <div class="big">🚗</div>
     <div class="title" data-vai-i18n="mc.empty.title">अपनी गाड़ी जोड़ें</div>
-    <div class="sub" data-vai-i18n="mc.empty.sub">बोलें — "मेरी गाड़ी Maruti Swift DL3CAB5678 2020 सफ़ेद"</div>
-    <div class="quote" data-vai-i18n="mc.empty.quote">🎙️ "मेरी गाड़ी Maruti Swift DL 3C AB 5678 2020 सफ़ेद"</div>
-    <br><button class="sds-btn primary" onclick="mcAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
+    <div class="sub" data-vai-i18n="rc.sub">अपना RC स्कैन करें — Chitti कंपनी, मॉडल और साल पढ़ लेगा।</div>
+    <br>
+    <!-- PRIMARY onboarding action: Scan your RC, visible on the HOME landing. -->
+    <button class="sds-btn primary" style="min-height:54px;font-size:17px" onclick="mcTab('car'); setTimeout(function(){ if(window.rcCapture) window.rcCapture('4w'); }, 350)">📷 <span data-vai-i18n="rc.title">अपना RC स्कैन करें</span></button>
+    <div style="height:10px"></div>
+    <button class="sds-btn" onclick="mcAddByVoice()" data-vai-i18n="em.add_voice">🎙️ बोलकर जोड़ें</button>
+    <div style="height:6px"></div>
+    <button class="sds-btn" onclick="mcTab('car')" data-vai-i18n="rc.manual">✍️ खुद भरें</button>
   </div>
 
   <div id="mc-summary" style="display:none">
