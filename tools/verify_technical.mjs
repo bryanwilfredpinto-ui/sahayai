@@ -26,10 +26,13 @@ const out = (s) => { L.push(s); };
 out('🎖️ World Class Chitti Technical — Commando Discipline. Zero Excuses.\n');
 out('# FUNCTIONAL VERIFICATION — Chitti Technical\n');
 out('**Run:** `node tools/verify_technical.mjs` · **By:** Chitti CTO (automated).\n');
-out('> **Data honesty:** prices below are the deterministic **DEMO** feed (until live `chitti-shares-api`');
-out('> candles are wired). This proves the **mechanics** work end-to-end — rates populate, all 39');
-out('> indicators compute, BUY/SELL/SL/Target fire, outcomes evaluate, portfolio works. It is **not**');
-out('> a market-performance claim.\n');
+out('> **Data source:** the page fetches **LIVE Angel candles** on Refresh via the new backend endpoint');
+out('> `GET /api/technical/{symbol}/candles?interval=day|week|month|hour` (Angel One SmartAPI, cached 5 min);');
+out('> the live→render pipeline is cert-verified (`live_angel_data_pipeline`, mocked Angel response).');
+out('> The **DEMO** feed below is the deterministic *offline fallback* used by this Node harness (no');
+out('> backend in CI). The numbers here prove the **mechanics** end-to-end — rates populate, all 39');
+out('> indicators compute, BUY/SELL/SL/Target fire, outcomes evaluate, portfolio works — they are **not**');
+out('> a market-performance claim (that needs the live Angel feed + elapsed time).\n');
 
 // ───────── 1. Rates populate ─────────
 out('## 1. Rates / candles populate ✅');

@@ -56,6 +56,75 @@ router_calls = APIRouter(prefix="/api/calls", tags=["calls"])
 
 MAX_SAVED_RULES_PER_USER = 5
 VALID_TIMEFRAMES = {"day", "week", "month"}
+CANDLE_DAYS = {"day": 1100, "week": 365 * 5, "month": 365 * 15}
+
+
+def _flt(v):
+    try:
+        return None if v is None else float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+# =============================================================
+# Public OHLC candles — feeds the standalone Chitti Technical page
+# (its client-side engine runs 39 indicators + multi-timeframe on raw candles).
+# No auth: read-only market data. Cached 5 min to protect the Angel quota.
+# =============================================================
+@router_tech.get("/{symbol:path}/candles")
+def candles(symbol: str,
+            interval: str = "day",
+            days: int | None = None,
+            db: Session = Depends(get_db)):
+    sym = unquote(symbol)
+    iv = (interval or "day").lower()
+    cache_key = f"candles:{sym}:{iv}:{days or 0}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    rows: list[dict] = []
+    try:
+        if iv in ("day", "week", "month"):
+            dd = days or CANDLE_DAYS[iv]
+            rows = get_history(sym, days=dd, interval=iv, db=db)
+        elif iv in ("hour", "1h", "one_hour", "60min"):
+            from services import angel_client
+            df = angel_client.get_candles(sym, interval="ONE_HOUR", days_back=days or 90)
+            if df is not None and not df.empty:
+                for ts, r in df.iterrows():
+                    rows.append({
+                        "date": str(ts),
+                        "open": _flt(r.get("open")), "high": _flt(r.get("high")),
+                        "low": _flt(r.get("low")), "close": _flt(r.get("close")),
+                        "volume": _flt(r.get("volume")),
+                    })
+        else:
+            raise HTTPException(status_code=400, detail="interval must be day|week|month|hour")
+    except DataSourceAuthError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except DataSourceError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:  # noqa: BLE001 — surface a clean 502, never a 500 stacktrace
+        log.error("[candles] %s %s: %s", sym, iv, e)
+        raise HTTPException(status_code=502, detail="candle fetch failed")
+
+    try:
+        from services import angel_client
+        source = "angel" if angel_client.is_configured() else "fallback"
+    except Exception:
+        source = "fallback"
+
+    out = {
+        "symbol": sym, "interval": iv, "count": len(rows), "candles": rows,
+        "latest_date": rows[-1]["date"] if rows else None,
+        "latest_close": rows[-1]["close"] if rows else None,
+        "source": source,
+    }
+    cache.set(cache_key, out, 5 * 60)
+    return out
 
 
 # =============================================================

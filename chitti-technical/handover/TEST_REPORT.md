@@ -20,7 +20,23 @@
 | Suite | Result |
 |---|---|
 | Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **270 PASS / 0 FAIL** |
-| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **29 PASS / 0 FAIL · 0 page errors** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **30 PASS / 0 FAIL · 0 page errors** |
+
+## LIVE Angel data — wired (answer to "why DEMO?")
+The page now fetches **live Angel One candles** on Refresh, not DEMO. New **public, cached** backend
+endpoint `GET /api/technical/{symbol}/candles?interval=day|week|month|hour`
+([chitti-shares/backend/routes/technical.py](../../chitti-shares/backend/routes/technical.py)) serves
+raw OHLC from `angel_client` (day/week/month via `get_history`, hourly via Angel `ONE_HOUR`; 4h resampled
+from hourly). The page's client engine runs the 39 indicators + multi-timeframe on those live candles and
+the flag flips to **🟢 LIVE · Angel · <date>**; **DEMO is now only the offline fallback** (used by CI/tests).
+- Cert proof: `ITEM live_angel_data_pipeline — source=LIVE flag="🟢 LIVE · Angel · 2026-07-15" errs=0`
+  (mocked Angel candle response → page renders LIVE, BUY/SELL/SL/Target from those prices). Screenshot
+  [tools/cert_screenshots/chitti_technical_live.png](../../tools/cert_screenshots/chitti_technical_live.png).
+- **Honest remaining step (infra, not code):** the backend `chitti-shares-api` on Railway must be
+  **redeployed** to expose the new `/candles` route, with the **Angel env vars set** (`ANGEL_API_KEY`,
+  `ANGEL_CLIENT_CODE`, `ANGEL_PIN`, `ANGEL_TOTP_SECRET`). I **cannot** reach Railway/Angel from this
+  sandbox, so I verified the pipeline with a mocked Angel response and could not curl the real feed —
+  flagged per "verify on live before handover". CORS already allows `sahayai.in` + GitHub Pages.
 | Functional verification ([tools/verify_technical.mjs](../../tools/verify_technical.mjs)) | **all sections ✅** → [FUNCTIONAL_VERIFICATION.md](FUNCTIONAL_VERIFICATION.md) |
 
 ## Functional verification (Sire's ask: rates? indicators? BUY/SELL/SL/Target? 2-month sample? portfolio?)

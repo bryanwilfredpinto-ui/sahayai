@@ -4,10 +4,13 @@
 
 **Run:** `node tools/verify_technical.mjs` · **By:** Chitti CTO (automated).
 
-> **Data honesty:** prices below are the deterministic **DEMO** feed (until live `chitti-shares-api`
-> candles are wired). This proves the **mechanics** work end-to-end — rates populate, all 39
-> indicators compute, BUY/SELL/SL/Target fire, outcomes evaluate, portfolio works. It is **not**
-> a market-performance claim.
+> **Data source:** the page fetches **LIVE Angel candles** on Refresh via the new backend endpoint
+> `GET /api/technical/{symbol}/candles?interval=day|week|month|hour` (Angel One SmartAPI, cached 5 min);
+> the live→render pipeline is cert-verified (`live_angel_data_pipeline`, mocked Angel response).
+> The **DEMO** feed below is the deterministic *offline fallback* used by this Node harness (no
+> backend in CI). The numbers here prove the **mechanics** end-to-end — rates populate, all 39
+> indicators compute, BUY/SELL/SL/Target fire, outcomes evaluate, portfolio works — they are **not**
+> a market-performance claim (that needs the live Angel feed + elapsed time).
 
 ## 1. Rates / candles populate ✅
 `genCandles("RELIANCE","daily")` → 260 OHLCV bars. Last 6 bars:

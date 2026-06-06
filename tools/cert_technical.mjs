@@ -247,6 +247,37 @@ check('ITEM legacy_dismantled_redirects', /chitti_technical\.html/.test(landed),
 await lp.close();
 
 await c.close();
+
+// ---- ITEM: LIVE Angel data pipeline (mock the /candles endpoint → page must render LIVE) ----
+const liveCtx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+const liveErrors = [];
+await liveCtx.route('**/api/technical/**/candles*', route => {
+  const m = /[?&]interval=([^&]+)/.exec(route.request().url());
+  const iv = m ? m[1] : 'day';
+  const n = iv === 'hour' ? 320 : (iv === 'month' ? 200 : (iv === 'week' ? 300 : 700));
+  const candles = []; let px = 2500;
+  for (let i = 0; i < n; i++) {
+    px *= 1 + (((i % 9) - 4) / 900);
+    const o = px, cl = px * 1.0015, h = Math.max(o, cl) * 1.004, lo = Math.min(o, cl) * 0.996;
+    candles.push({ date: '2026-0' + (1 + (i % 9)) + '-15', open: +o.toFixed(2), high: +h.toFixed(2), low: +lo.toFixed(2), close: +cl.toFixed(2), volume: 100000 + i });
+  }
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ symbol: 'RELIANCE', interval: iv, count: n, candles, latest_date: '2026-09-15', source: 'angel' }) });
+});
+const liveP = await liveCtx.newPage();
+liveP.on('pageerror', e => liveErrors.push(e.message));
+liveP.on('dialog', d => d.dismiss().catch(() => {}));
+await liveP.goto(URL, { waitUntil: 'domcontentloaded' });
+await liveP.waitForTimeout(1400);
+await liveP.evaluate(() => { const m = document.getElementById('chitti-disability-profile-modal'); if (m) m.remove(); });
+await liveP.evaluate(() => window.TechUI.refresh());     // fetches the mocked Angel candles
+await liveP.waitForTimeout(1500);
+const liveSrc = await liveP.evaluate(() => document.documentElement.getAttribute('data-tech-source'));
+const liveFlag = await liveP.evaluate(() => document.getElementById('demo-flag').textContent);
+const liveAsof = await liveP.evaluate(() => document.getElementById('asof-val').textContent);
+await liveP.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_live.png') });
+check('ITEM live_angel_data_pipeline', liveSrc === 'LIVE' && /Angel/.test(liveFlag) && liveErrors.length === 0,
+  `source=${liveSrc} flag="${liveFlag}" asof=${liveAsof} errs=${liveErrors.length}`);
+await liveP.close(); await liveCtx.close();
 await b.close();
 server.close();
 

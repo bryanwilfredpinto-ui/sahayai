@@ -359,15 +359,59 @@ window.TechUI = (function(){
     renderScreenerFilters();
   }
 
-  // ---------- data (manual refresh; live fetch best-effort, demo fallback) ----------
-  var candleCache={};
+  // ---------- data: LIVE Angel candles on Refresh; DEMO only as honest offline fallback ----------
+  var candleCache={}, liveSymbols={}, dataSource='DEMO';
+  var SHARES_API=(window.CHITTI_SHARES_API||'https://chitti-shares-api-production.up.railway.app').replace(/\/$/,'');
   function getTf(sym){ if(!candleCache[sym]) candleCache[sym]=E.genAllTf(sym); return candleCache[sym]; }
+  function resampleEvery(arr,k){
+    var out=[];
+    for(var i=0;i<arr.length;i+=k){
+      var g=arr.slice(i,i+k); if(!g.length) break;
+      var hi=-Infinity,lo=Infinity,vol=0;
+      for(var j=0;j<g.length;j++){ if(g[j].high>hi)hi=g[j].high; if(g[j].low<lo)lo=g[j].low; vol+=g[j].volume||0; }
+      out.push({open:g[0].open,high:hi,low:lo,close:g[g.length-1].close,volume:vol,t:out.length});
+    }
+    return out;
+  }
+  function fetchCandles(sym,interval){
+    var url=SHARES_API+'/api/technical/'+encodeURIComponent(sym)+'/candles?interval='+interval;
+    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},9000);
+    return fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}}).then(function(r){
+      clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.json();
+    }).then(function(j){
+      if(!j||!j.candles||!j.candles.length) throw new Error('empty');
+      return j.candles.map(function(c,i){return {open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:(+c.volume)||0,t:i,date:c.date};});
+    });
+  }
+  function loadLive(sym){
+    return Promise.all([fetchCandles(sym,'month'),fetchCandles(sym,'week'),fetchCandles(sym,'day'),fetchCandles(sym,'hour')])
+      .then(function(res){ var hour=res[3]; return { monthly:res[0], weekly:res[1], daily:res[2], '1h':hour, '4h':resampleEvery(hour,4) }; });
+  }
+  function updateDataFlag(sym){
+    var el=document.getElementById('demo-flag'); if(!el) return;
+    var live=liveSymbols[sym];
+    if(live){
+      el.removeAttribute('data-i18n'); el.textContent='🟢 LIVE · Angel'+(typeof live==='string'?(' · '+live):'');
+      el.style.color='#0a6b1e'; el.style.background='#e7f6e7';
+      document.documentElement.setAttribute('data-tech-source','LIVE');
+    } else {
+      el.setAttribute('data-i18n','demoData'); el.textContent=T('demoData');
+      el.style.color=''; el.style.background='';
+      document.documentElement.setAttribute('data-tech-source','DEMO');
+    }
+  }
   function refresh(){
-    candleCache={}; // force regenerate; (live fetch would POST chitti-shares-api here)
-    var now=new Date();
-    document.getElementById('asof-val').textContent = now.toLocaleString('en-IN',{hour12:false});
-    scan();
-    speak(T('refresh'));
+    var sym=(document.getElementById('sym').value||'RELIANCE').trim().toUpperCase();
+    var btn=document.getElementById('tech-refresh'); if(btn) btn.disabled=true;
+    loadLive(sym).then(function(tf){
+      candleCache[sym]=tf;
+      var ld=(tf.daily&&tf.daily.length)?tf.daily[tf.daily.length-1].date:true;
+      liveSymbols[sym]=ld; dataSource='LIVE';
+      scan(); speak('LIVE Angel');
+    }).catch(function(){
+      delete candleCache[sym]; delete liveSymbols[sym]; dataSource='DEMO';
+      scan(); speak(T('refresh'));
+    }).finally(function(){ if(btn) btn.disabled=false; });
   }
 
   // ---------- scan ----------
@@ -382,8 +426,9 @@ window.TechUI = (function(){
     res._stock=E.UNIVERSE.filter(function(s){return s.sym===sym;})[0]||{sym:sym,tier:'—',sector:'—'};
     lastScan=res;
     renderScan(res);
-    if(!document.getElementById('asof-val').textContent || document.getElementById('asof-val').textContent==='—')
-      document.getElementById('asof-val').textContent=new Date().toLocaleString('en-IN',{hour12:false});
+    updateDataFlag(sym);
+    var live=liveSymbols[sym];
+    document.getElementById('asof-val').textContent=(typeof live==='string'?live:new Date().toLocaleString('en-IN',{hour12:false}));
   }
 
   function renderScan(res){
