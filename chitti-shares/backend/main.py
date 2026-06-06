@@ -994,7 +994,12 @@ def on_startup():
         ensure_schema()
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_schema skipped: %s", e)
-    Base.metadata.create_all(bind=engine)
+    # DB-tolerant boot: a Turso/DB hiccup must NOT 502 the whole API. Market-data
+    # endpoints (Angel candles/quotes) don't need this DB, so swallow + log and keep serving.
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:  # noqa: BLE001
+        log.warning("create_all skipped (DB unreachable — market-data endpoints still serve): %s", e)
     # Seed Nifty 500 stock universe (idempotent)
     try:
         from services.stock_universe import seed_if_empty
