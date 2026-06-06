@@ -1,2413 +1,634 @@
-﻿<!DOCTYPE html>
-<!-- Frontend for chitti-news-ai/ — LOCKED 2026-05-23 per Sire's final architecture.
-     Real AI news from 8 sources. Tap Chitti icon → DeepSeek explains ONLY that article.
-     No spice. No extras. Same design as Chitti News. Same toolbar. -->
+<!DOCTYPE html>
+<!-- Frontend for chitti-news-ai/ — REBUILT 2026-06-06 per Sire's "dismantle"
+     directive. COSDF v1.1-aligned BO1-BO12 (see chitti-news-ai/BUILDORDER.md).
+     Vaani-pattern lang dropdown. Universal accessibility from BO2. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="chitti-card-selector" content=".art-explain-box">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Chitti News AI — Real AI news. Chitti explains in your language.</title>
-<meta name="description" content="Real AI news from 8 trusted sources. Tap the Chitti icon — DeepSeek explains that exact article in your language, in simple words. No opinions added. No extras.">
-<link rel="stylesheet" href="chitti_theme.css">
-<script src="chitti_lang.js?v=20260529r" defer></script>
+<title>Chitti News AI — AI Career Copilot for Every Profession, Language, Ability</title>
+<meta name="description" content="Chitti News AI: AI news + 28-day tool tour + Profession Hub. For ANY role, ANY language, ALL disabilities. FREE-first.">
+<meta name="chitti-disability-profile" content="on">
 <style>
 :root{
   --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
-  --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
+  --bg:#f8f4ee; --card:#fff; --card2:#fbf8f1;
   --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
   --green:#16a34a; --red:#dc2626; --amber:#D4AF37;
-  /* MedUPI-parity tokens (Sire 2026-06-05 PM "UI should be in accordance to Chitti MedUPI") */
   --med-green:#15803d; --med-red:#b91c1c;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.45}
-body{min-height:100vh;position:relative}
-body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
-body > *{position:relative;z-index:1}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:15px;line-height:1.5}
+body{min-height:100vh}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 .bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
 
-/* Header */
-header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;border-radius:0 0 24px 24px;padding:16px}
-.brand-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.bharat-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:24px;box-shadow:0 8px 22px rgba(232,106,23,.35);margin-right:12px;flex-shrink:0;animation:floatB 4s ease-in-out infinite}
-@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
-.tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
-.switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:12px 14px;font-size:12px;border-radius:10px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:48px;white-space:nowrap}
-.switch-btn-bharat:hover{filter:brightness(1.1)}
-.header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
-.header-controls button:hover{background:rgba(255,255,255,.22)}
+/* BO2 — Header (Vaani-pattern, compact) */
+header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;padding:10px 14px;border-radius:0 0 18px 18px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brand-id{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.bharat-logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#E86A17,#D4AF37);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0;box-shadow:0 4px 14px rgba(232,106,23,.4)}
+.brand{font-weight:900;font-size:17px;line-height:1.1}
+.tagline{font-size:11px;color:rgba(255,255,255,.82);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
 
-/* Disclaimer — compact, smaller, non-sticky to free vertical real-estate */
-.news-disclaimer{background:rgba(212,175,55,.12);color:#78350f;padding:4px 14px;text-align:center;font-size:11px;font-weight:600;border-bottom:1px solid rgba(212,175,55,.45);line-height:1.4}
+/* BO3 — Vaani-pattern language dropdown (header-right) */
+.lang-toggle-bharat{display:inline-flex;border:1px solid rgba(255,255,255,.35);border-radius:8px;overflow:hidden}
+.lang-toggle-bharat select{background:rgba(255,255,255,.10);color:#fff;border:none;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px}
+.lang-toggle-bharat select option{color:#000;background:#fff}
+.lang-toggle-bharat select:focus{background:rgba(255,255,255,.25)}
 
-/* Picker bar — single row at every viewport; experience+salary only behind Advanced */
-.picker-bar{background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;gap:6px;flex-wrap:nowrap;align-items:center;position:sticky;top:0;z-index:5;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.picker-bar select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 8px;font-size:12.5px;min-height:36px;font-weight:600;min-width:0}
-.picker-bar select:focus{outline:none;border-color:var(--saffron)}
-.picker-bar .pick-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
-.picker-bar .pick-sep{flex:1}
-.picker-bar button.refresh{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;min-height:36px;min-width:40px;flex-shrink:0}
-@media (max-width:520px){
-  .picker-bar .pick-lbl{display:none}      /* aria-label remains; visual label drops to free width */
-  .picker-bar select{font-size:12px;padding:6px 6px}
-  #pick-lang{max-width:80px}                /* Lang select compact on small screens */
-}
-.spk-btn{background:#fff;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+/* Header More dropdown */
+.hdr-more{position:relative}
+.hdr-more summary{list-style:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px;display:inline-flex;align-items:center}
+.hdr-more summary::-webkit-details-marker{display:none}
+.hdr-more[open] summary{background:rgba(255,255,255,.25)}
+.hdr-more-menu{position:absolute;right:0;top:48px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(14,35,68,.2);padding:6px;display:flex;flex-direction:column;gap:2px;min-width:200px;z-index:60}
+.hdr-more-menu a,.hdr-more-menu button{display:flex;align-items:center;gap:8px;color:var(--text);text-decoration:none;background:none;border:none;padding:10px 12px;border-radius:6px;font-size:13px;font-weight:600;text-align:left;cursor:pointer;min-height:40px}
+.hdr-more-menu a:hover,.hdr-more-menu button:hover{background:rgba(232,106,23,.08);color:var(--saffron)}
 
-/* Tabs */
-nav.tabs{display:flex;gap:0;background:linear-gradient(180deg,#fff,#fbf8f1);border-bottom:2px solid #D4AF37;position:sticky;top:56px;z-index:4;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-nav.tabs .tab{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:42px}
-nav.tabs .tab:hover{color:var(--text)}
-nav.tabs .tab.active{color:var(--saffron);border-bottom-color:var(--saffron);background:rgba(232,106,23,.06)}
+/* BO5 — Hero */
+.hero{margin:14px 14px 0;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+.hero h1{margin:0 0 4px;font-size:20px;font-weight:900;color:var(--navy);line-height:1.25}
+.hero .hero-sub{margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+.hero-state-1 .hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:10px}
+.hero-grid button{background:linear-gradient(135deg,#fff,#fbf8f1);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--navy);min-height:74px;display:flex;flex-direction:column;align-items:center;gap:6px;line-height:1.3}
+.hero-grid button:hover{border-color:var(--saffron);background:rgba(232,106,23,.06)}
+.hero-grid button .ico{font-size:24px;line-height:1}
+.hero-cta-primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800;border-radius:12px;padding:16px 20px;font-size:16px;cursor:pointer;min-height:56px;width:100%;box-shadow:0 8px 24px rgba(232,106,23,.32);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.hero-cta-primary:hover{filter:brightness(1.05)}
+.hero-prog{margin-top:12px;background:rgba(14,35,68,.06);border-radius:10px;padding:10px 12px}
+.hero-prog-bar{height:8px;background:rgba(0,0,0,.10);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.hero-prog-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#22c55e);transition:width .4s}
+.hero-prog-lbl{font-size:12px;color:var(--muted);font-weight:700}
 
-/* Layout */
-main{padding:14px 16px 40px;max-width:1100px;margin:0 auto}  /* MedUPI parity */
-.page{display:none}
-.page.active{display:block}
-.section-card{margin:0 0 14px;padding:14px;background:#fff;border:1px solid #eee;border-radius:18px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.section-title{font-size:14px;font-weight:800}
-.section-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
-.section-empty{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+/* BO4 — Profession picker (compact, inline with hero) */
+.pickers{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.pickers label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;align-self:center}
+.pickers select{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;min-height:38px;font-weight:600;flex:1;min-width:140px}
+.pickers select:focus{outline-color:var(--saffron);border-color:var(--saffron)}
 
-/* Article cards */
-.feed{display:grid;grid-template-columns:1fr;gap:12px}
-.art-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr 110px;gap:12px;transition:box-shadow .2s}
-.art-card:hover{box-shadow:0 6px 20px rgba(14,35,68,.10)}
-.art-card .art-meta{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.art-card .art-title{font-size:15px;font-weight:800;line-height:1.35;color:var(--text);margin-bottom:6px;word-wrap:break-word}
-.art-card .art-summary{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:10px}
-.art-card .art-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.art-card .art-actions button{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;min-height:32px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-.art-card .art-actions button:hover{background:rgba(232,106,23,.06);border-color:var(--saffron);color:var(--saffron)}
-.art-card .art-actions button.primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);border:none;color:#fff;font-weight:800}
-.art-card .art-actions button.chitti{background:linear-gradient(135deg,#0E2344,#16376a);border:none;color:#fff;font-weight:800}
-.art-card .art-thumb{background:#fbf8f1;border-radius:10px;background-size:cover;background-position:center;min-height:80px;border:1px solid var(--border)}
-.art-card .art-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--gold);opacity:.5}
-.art-card .art-explain-host{margin-top:10px}
-.art-explain-box{background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.06));border:1px solid rgba(232,106,23,.45);border-radius:12px;padding:12px;font-size:13.5px;line-height:1.6;color:var(--text);white-space:pre-wrap}
-.art-explain-h{font-size:12px;font-weight:800;color:var(--saffron);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+/* BO7 — Cards (decluttered) */
+main{padding:14px;max-width:1100px;margin:0 auto}
+.section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(14,35,68,.04)}
+.section-title{font-size:15px;font-weight:900;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.section-sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+.feed{display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 6px 16px rgba(14,35,68,.10)}
+.card-title{font-size:15px;font-weight:800;color:var(--text);line-height:1.4;margin:0 0 6px}
+.card-summary{font-size:13.5px;color:var(--text);line-height:1.55;margin:0 0 10px}
+.card-meta{font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.card-meta .sep{color:var(--border)}
+.card-action{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;font-weight:800;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;min-height:36px;text-decoration:none;cursor:pointer}
+.card-action:hover{filter:brightness(1.05)}
+.card details{margin-top:10px}
+.card details summary{cursor:pointer;font-size:11.5px;color:var(--muted);font-weight:600;list-style:none;padding-left:16px;position:relative}
+.card details summary::-webkit-details-marker{display:none}
+.card details summary::before{content:'▸';position:absolute;left:0;top:2px;font-size:11px;color:var(--muted);transition:transform .15s}
+.card details[open] summary::before{transform:rotate(90deg)}
+.card details > div{margin-top:8px;padding:10px;background:rgba(212,175,55,.06);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text)}
 
-@media (max-width: 560px){
-  .art-card{grid-template-columns:1fr}
-  .art-card .art-thumb{display:none}
-}
+/* Relevance flags (high signal only) */
+.flag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:800;letter-spacing:.04em;margin-right:6px;vertical-align:middle}
+.flag-critical{background:rgba(220,38,38,.12);color:#991b1b;border:1px solid rgba(220,38,38,.5)}
+.flag-important{background:rgba(232,106,23,.14);color:#9a3412;border:1px solid var(--saffron)}
 
-/* Courses */
-.course-section{margin-bottom:24px}
-.course-section-head{margin:18px 0 10px;padding:12px 14px;background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border-left:4px solid var(--saffron);border-radius:0 12px 12px 0}
-.course-section-title{font-size:16px;font-weight:900;color:var(--navy);margin:0}
-.course-section-blurb{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px}
-.course-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
-.course-card .name{font-weight:900;font-size:15px;color:var(--navy);margin-bottom:4px}
-.course-card .meta{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
-.course-card .desc{font-size:13px;line-height:1.55;color:var(--text);margin-bottom:10px}
-.course-card a.go{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:800;text-decoration:none;display:inline-block;font-size:13px}
-.course-card .free-badge{display:inline-block;background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.5);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-left:6px}
+/* BO8/BO9 — Metric cards (MedUPI parity) */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+.metric-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;min-height:96px;box-shadow:0 4px 10px rgba(14,35,68,.04)}
+.metric-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.metric-val{font-size:22px;font-weight:900;font-family:'JetBrains Mono','Menlo',monospace;color:var(--navy);margin-top:6px}
+.bar{height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;border-radius:99px;transition:width .4s}
+.risk-high{background:rgba(220,38,38,.12);color:#991b1b;border:1px solid var(--med-red);border-radius:6px;padding:1px 6px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.risk-medium{background:rgba(245,158,11,.18);color:#92400e;border:1px solid #f59e0b;border-radius:6px;padding:1px 6px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.risk-low{background:rgba(34,197,94,.12);color:var(--med-green);border:1px solid var(--med-green);border-radius:6px;padding:1px 6px;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 
-footer{font-size:11px;color:var(--muted);text-align:center;padding:20px;line-height:1.55}
-footer a{color:var(--saffron);text-decoration:none;font-weight:700}
-
-/* ── Chitti Coach UI (gaps #1-#25, rules-only, 2026-06-04) ───────────── */
-/* Quality tier badges (#17, #21) — visual hierarchy gold > silver > bronze */
-.cc-tier-badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-right:6px;border:1px solid currentColor}
-.cc-tier-gold{color:#92400e;background:linear-gradient(135deg,rgba(212,175,55,.20),rgba(252,211,77,.10))}
-.cc-tier-silver{color:#475569;background:rgba(148,163,184,.10)}
-.cc-tier-bronze{color:#b91c1c;background:rgba(220,38,38,.10)}
-/* Per-card decoration row (#13 why-for-you + #3 outcome + #6 done/skip) */
-.cc-why{font-size:12.5px;line-height:1.45;color:#374151;background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.04));border-left:3px solid var(--saffron);padding:7px 10px;border-radius:6px;margin:8px 0}
-.cc-why strong{color:var(--navy)}
-.cc-outcome{font-size:12px;color:#166534;font-weight:600;margin:4px 0}
-.cc-outcome::before{content:"🎯 ";opacity:.9}
-.cc-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.cc-actions button{appearance:none;border:1px solid var(--border);background:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;min-height:36px}
-.cc-actions button.done{border-color:#86efac;color:#166534;background:rgba(22,163,74,.06)}
-.cc-actions button.skip{border-color:#fca5a5;color:#7f1d1d;background:rgba(220,38,38,.04)}
-.cc-actions button.progress{border-color:#93c5fd;color:#1e40af;background:rgba(37,99,235,.06)}
-.cc-actions .done-tag{font-size:11px;color:var(--green);font-weight:800;padding:6px 8px}
-/* Urgent top strip (#8 #16 #17) */
-#cc-urgent{margin:8px 0;padding:10px 12px;background:linear-gradient(135deg,#fff1f2,#fef3c7);border:1.5px solid #fca5a5;border-radius:12px}
-#cc-urgent .urgent-title{font-size:12px;font-weight:900;color:#7f1d1d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-#cc-urgent .urgent-item{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(127,29,29,.18);font-size:13px;align-items:center}
-#cc-urgent .urgent-item:last-child{border-bottom:none}
-#cc-urgent .urgent-days{font-weight:800;color:#7f1d1d;flex:0 0 auto}
-#cc-urgent a{color:var(--navy);font-weight:700;text-decoration:underline}
-#cc-urgent.empty{display:none}
-/* Salary outcome panel (#3 #11) */
-.cc-salary-card{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:12px;margin:10px 0;font-size:13px;line-height:1.55}
-.cc-salary-card .label{font-size:11px;color:#166534;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.cc-salary-card .value{font-size:18px;font-weight:900;color:var(--navy)}
-.cc-salary-card .delta{font-size:13px;color:#166534;font-weight:700;margin-top:4px}
-/* Peer stories panel (#10 #20) */
-.cc-peer{background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:12px;margin:10px 0}
-.cc-peer h4{font-size:13px;font-weight:900;color:var(--navy);margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em}
-.cc-peer ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#1e3a8a}
-/* Modal (#1 intake, #5 Q&A, #14 CV) */
-.cc-modal-bg{position:fixed;inset:0;background:rgba(14,35,68,.55);display:none;align-items:center;justify-content:center;z-index:9000;padding:14px}
-.cc-modal-bg.open{display:flex}
-.cc-modal{background:#fff;border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(14,35,68,.35)}
-.cc-modal h3{margin:0 0 6px;color:var(--navy);font-size:18px}
-.cc-modal .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
-.cc-modal label{display:block;font-size:12px;font-weight:800;color:var(--navy);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em}
-.cc-modal select, .cc-modal input[type=number], .cc-modal textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:10px;min-height:44px;font-family:inherit}
-.cc-modal .chips{display:flex;flex-wrap:wrap;gap:6px}
-.cc-modal .chips label{display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;border:1px solid var(--border);padding:8px 12px;border-radius:999px;cursor:pointer;font-size:12px;margin:0;text-transform:none;letter-spacing:0}
-.cc-modal .chips input{margin:0}
-.cc-modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
-.cc-modal .actions button{appearance:none;border-radius:10px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;border:1px solid var(--border);background:#fff;min-height:48px}
-.cc-modal .actions button.primary{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;border:none}
-/* My Coach tab styles */
-.cc-week{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
-.cc-week h4{margin:0 0 10px;color:var(--navy);font-size:15px;display:flex;align-items:center;gap:8px}
-.cc-week .week-summary{font-size:12px;color:var(--muted);margin-bottom:10px}
-.cc-week .item-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);align-items:flex-start}
-.cc-week .item-row:last-child{border-bottom:none}
-.cc-week .item-row .title{font-size:13.5px;color:var(--text);font-weight:700;flex:1;line-height:1.45}
-.cc-week .item-row a{color:var(--navy)}
-.cc-week .item-row .tier{flex:0 0 auto}
-/* Skip-this list */
-.cc-skip-card{background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:14px;margin-bottom:10px}
-.cc-skip-card .skip-title{font-size:14px;font-weight:900;color:#7c2d12;margin-bottom:4px}
-.cc-skip-card .skip-reason{font-size:13px;color:#7c2d12;line-height:1.55;margin-bottom:6px}
-.cc-skip-card .skip-alt{font-size:13px;color:#166534;font-weight:700;background:rgba(22,163,74,.08);border-left:3px solid #16a34a;padding:6px 10px;border-radius:6px}
-/* Q&A buttons */
-.cc-qa-question{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;line-height:1.45;min-height:48px}
-.cc-qa-question:hover{background:#f3f4f6}
-/* Already-done state on cards */
-.cc-card-done{opacity:.55}
-.cc-card-done .cc-actions button.done{background:#dcfce7;border-color:#16a34a;color:#166534;font-weight:900}
-/* In-progress badge */
-.cc-in-progress{display:inline-block;font-size:10px;font-weight:800;color:#1e40af;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.35);padding:1px 6px;border-radius:6px;margin-left:6px}
-/* 🎯 Coach Picks — Instagram-post-style ONE-per-skill compact list */
-.cp-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
-.cp-section h3{font-size:16px;font-weight:900;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
-.cp-section .cp-sub{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px}
-.cp-list{list-style:none;margin:0;padding:0}
-.cp-list li{padding:7px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;align-items:baseline;line-height:1.45;font-size:13.5px}
-.cp-list li:last-child{border-bottom:none}
-.cp-list li .cp-skill{font-weight:700;color:var(--navy);flex:0 0 45%}
-.cp-list li .cp-link{flex:1;text-align:right;font-size:12.5px}
-.cp-list li .cp-link a{color:var(--saffron);font-weight:700;text-decoration:underline;word-break:break-all}
-.cp-list li .cp-tag{display:inline-block;font-size:10.5px;color:#6b7280;margin-left:6px;font-weight:600;text-transform:lowercase;letter-spacing:.02em}
-.cp-list li .cp-tag.gold{color:#92400e;background:rgba(212,175,55,.18);border:1px solid rgba(212,175,55,.5);border-radius:6px;padding:1px 5px}
-.cp-list li .cp-tag.hindi{color:#7c2d12;background:rgba(232,106,23,.10);border:1px solid rgba(232,106,23,.45);border-radius:6px;padding:1px 5px}
-.cp-list li .cp-tag.indian{color:#166534;background:rgba(22,163,74,.10);border:1px solid rgba(22,163,74,.5);border-radius:6px;padding:1px 5px}
-.cp-list li .cp-tag.free{color:#1e40af;background:rgba(37,99,235,.10);border:1px solid rgba(37,99,235,.45);border-radius:6px;padding:1px 5px}
-@media(max-width:520px){.cp-list li{flex-direction:column;align-items:flex-start;gap:2px}.cp-list li .cp-skill{flex:none}.cp-list li .cp-link{text-align:left}}
-.cp-cta{margin-top:14px;padding:10px 12px;background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border:1px solid rgba(232,106,23,.30);border-radius:10px;font-size:12.5px;color:var(--text);text-align:center}
-
-/* COSDF v1.1 — Profession Hub (L23) */
-.tab.cosdf-v11{background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.16));border-color:rgba(232,106,23,.6);font-weight:900}
-.hub-header{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
-.hub-title{margin:0 0 4px;font-size:20px;font-weight:900;color:var(--navy)}
-.hub-sub{margin:0 0 14px;font-size:12px;color:var(--muted);font-style:italic}
-.hub-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
-.hub-score{background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:10px}
-.hub-score-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.hub-score-val{font-size:24px;font-weight:900;color:var(--navy);line-height:1.1;margin-bottom:6px}
-.hub-bar{height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden}
-.hub-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
-.hub-verdict{background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.06));border-left:4px solid var(--saffron);padding:10px 12px;border-radius:8px;font-size:13.5px;line-height:1.5;margin-bottom:6px}
-.hub-sourced{font-size:11px;color:var(--muted);font-style:italic}
-.hub-subnav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;margin-bottom:10px;border-bottom:1px solid var(--border)}
-.hub-chip{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;background:#f3f4f6;border:1px solid var(--border);border-radius:999px;color:var(--navy);font-size:12px;font-weight:700;text-decoration:none}
-.hub-chip:hover{background:rgba(232,106,23,.12);border-color:var(--saffron)}
-.hub-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;scroll-margin-top:60px}
-.hub-section h3{margin:0 0 8px;font-size:16px;font-weight:900;color:var(--navy)}
-.hub-help{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.5}
-.hub-note{font-size:12px;color:var(--muted);font-style:italic;margin-top:8px}
-.hub-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-.hub-table th,.hub-table td{padding:6px 8px;border-bottom:1px dashed var(--border);text-align:left;vertical-align:top}
-.hub-table th{color:var(--navy);font-weight:800;background:#f9fafb}
-.hub-list{margin:6px 0;padding-left:22px;font-size:13.5px;line-height:1.6}
-.hub-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.hub-card{background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:12px}
-.hub-card-title{font-weight:800;color:var(--navy);font-size:14px;margin-bottom:6px;line-height:1.35}
-.hub-card-meta{font-size:12.5px;color:#374151;margin-bottom:4px;line-height:1.45}
-.hub-card-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-.cc-btn{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--navy);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none}
-.cc-btn:hover{background:rgba(232,106,23,.08);border-color:var(--saffron)}
-.hub-mission-step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border)}
-.hub-mission-step:last-child{border-bottom:none}
-.hub-mission-step-label{font-weight:800;color:var(--navy);font-size:13px;min-width:140px}
-.hub-mission-step-link{flex:1;color:var(--saffron);font-weight:700;font-size:13.5px;text-decoration:underline;word-break:break-word}
-.hub-prompt{display:block;background:#f3f4f6;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12px;line-height:1.5;word-break:break-word;margin-bottom:6px}
-.hub-prompts li{padding:6px 0;border-bottom:1px dashed var(--border);display:flex;flex-direction:column;gap:6px}
-.hub-prompts li button{align-self:flex-start}
-.hub-band-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.band{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em}
-.band-CRITICAL{background:rgba(220,38,38,.12);color:#991b1b;border:1px solid rgba(220,38,38,.45)}
-.band-VERY-IMPORTANT{background:rgba(232,106,23,.12);color:#9a3412;border:1px solid rgba(232,106,23,.45)}
-.band-PAY-ATTENTION{background:rgba(212,175,55,.16);color:#854d0e;border:1px solid rgba(212,175,55,.45)}
-.band-IGNORE{background:#e5e7eb;color:#374151;border:1px solid #9ca3af}
-.hub-mentor{background:linear-gradient(135deg,rgba(22,163,74,.06),rgba(212,175,55,.04));border:1px solid rgba(22,163,74,.30);border-radius:10px;padding:12px}
-.hub-mentor p{margin:0 0 8px;font-size:13.5px;line-height:1.5}
-.hub-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.hub-actions .primary{background:#b8500e;color:#fff;border:none;font-weight:700}
-.hub-verdicts{font-size:12.5px;color:var(--navy);margin:8px 0 4px}
-@media(max-width:520px){.hub-scores{grid-template-columns:1fr 1fr}.hub-card-actions{flex-direction:column;align-items:stretch}.hub-mission-step{flex-direction:column;align-items:flex-start;gap:4px}}
-
-/* COSDF v1.1 L16.5 — 28-Day AI Tool Tour */
-.tt-hero{background:linear-gradient(135deg,#0a3d62 0%,#3b1f5b 100%);color:#fff;border-radius:14px;padding:18px;margin-bottom:16px}
-.tt-title{margin:0 0 4px;font-size:22px;font-weight:900;color:#fff}
-.tt-promise{margin:0 0 14px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.92)}
-.tt-progress{background:rgba(0,0,0,.25);border-radius:10px;padding:10px 12px}
-.tt-progress-bar{height:10px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;margin-bottom:6px}
-.tt-progress-fill{height:100%;background:linear-gradient(90deg,#fbbf24 0%,#22c55e 100%);transition:width .5s ease}
-.tt-progress-label{font-size:12px;font-weight:700;color:#fff;letter-spacing:.02em}
-.tt-cert-cta{margin-top:12px;padding:12px;background:rgba(34,197,94,.20);border:1px solid rgba(34,197,94,.65);border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#fff;font-size:13.5px}
-.tt-band{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
-.tt-band-title{margin:0 0 4px;font-size:16px;font-weight:900;color:var(--navy)}
-.tt-band-sub{margin:0 0 12px;font-size:12.5px;color:var(--muted);line-height:1.5}
-.tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.tt-day{background:#f9fafb;border:1.5px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column}
-.tt-day.tt-day-done{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.55)}
-.tt-day.tt-day-next{background:linear-gradient(135deg,rgba(232,106,23,.10),rgba(212,175,55,.08));border-color:var(--saffron);box-shadow:0 4px 12px rgba(232,106,23,.18)}
-.tt-day.tt-day-locked{opacity:.55}
-.tt-day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.tt-day-num{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.06em}
-.tt-day-state{font-size:10px;font-weight:800;color:var(--navy);background:rgba(0,0,0,.05);border:1px solid var(--border);border-radius:99px;padding:2px 8px;letter-spacing:.04em}
-.tt-day.tt-day-done .tt-day-state{color:#166534;background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.55)}
-.tt-day.tt-day-next .tt-day-state{color:#9a3412;background:rgba(232,106,23,.18);border-color:var(--saffron)}
-.tt-day-tool{margin:4px 0 4px;font-size:16px;font-weight:900;color:var(--navy);line-height:1.25}
-.tt-day-why{margin:0 0 8px;font-size:12.5px;color:#374151;line-height:1.5}
-.tt-day-links{list-style:none;padding:0;margin:0 0 10px;font-size:12.5px;line-height:1.6}
-.tt-day-links li{padding:3px 0;color:#374151}
-.tt-day-links a{color:var(--saffron);font-weight:700;text-decoration:underline;word-break:break-word}
-.tt-day-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--border)}
-.tt-day-mins{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.03em}
-.tt-day-actions .cc-btn.primary{background:#b8500e;color:#fff;border:none;font-weight:700}
-.tt-day-actions .cc-btn[disabled]{opacity:.65;cursor:default}
-@media(max-width:520px){.tt-grid{grid-template-columns:1fr}.tt-cert-cta{flex-direction:column;align-items:stretch}}
-
-/* COSDF v1.1 L16.6 — Curriculum picker (7 curricula incl. 18-Day Coursiv-match) */
-.tt-curric-picker{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px}
-.tt-curric-label{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px}
-.tt-curric-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
-.tt-curric-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;text-align:left;font-family:inherit;min-height:64px}
-.tt-curric-btn:hover{background:rgba(232,106,23,.06);border-color:var(--saffron)}
-.tt-curric-btn.active{background:linear-gradient(135deg,rgba(232,106,23,.12),rgba(212,175,55,.08));border-color:var(--saffron);box-shadow:0 2px 8px rgba(232,106,23,.20)}
-.tt-curric-emoji{font-size:18px;line-height:1}
-.tt-curric-name{font-size:12.5px;font-weight:800;color:var(--navy);line-height:1.3}
-.tt-curric-days{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em}
-.tt-curric-btn.active .tt-curric-days{color:#9a3412}
-
-/* ═══════════════════════════════════════════════════════════════════
-   MEDUPI-PARITY DESIGN TOKENS (Sire 2026-06-05 PM)
-   "UI SHOULD BE IN ACCORDANCE TO CHITTI MEDUPI"
-   These tokens come from chitti_medupi.html lines 92-114.
-   ═══════════════════════════════════════════════════════════════════ */
-
-/* MedUPI signature badges */
-.coming-soon{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a5a00;background:#fff1d6;border:1px solid rgba(212,175,55,.55);vertical-align:middle;margin-left:6px}
-.coming-soon-card{border-style:dashed!important}
-.live-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);background:rgba(14,35,68,.08);border:1px solid rgba(14,35,68,.4);vertical-align:middle;margin-left:6px}
-.chitti-special{display:inline-block;padding:1px 7px;border-radius:6px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7c2d12;background:linear-gradient(135deg,rgba(232,106,23,.18),rgba(212,175,55,.18));border:1px solid rgba(232,106,23,.5);vertical-align:middle;margin-left:6px}
-
-/* MedUPI risk pills (now used for AI Disruption Risk + relevance bands) */
-.risk-high{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--med-red);border:1px solid var(--med-red)}
-.risk-medium{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#92400e;background:rgba(245,158,11,.18);border:1px solid #f59e0b}
-.risk-low{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--med-green);background:rgba(34,197,94,.12);border:1px solid var(--med-green)}
-
-/* MedUPI metric-grid + metric-card — used in Profession Hub + 28-Day Tour progress */
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
-.metric-card{border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff;min-height:96px;box-shadow:0 4px 12px rgba(14,35,68,.04)}
-.metric-card-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;line-height:1.3}
-.metric-card-val{font-size:17px;font-weight:800;font-family:'JetBrains Mono','Menlo','Consolas',monospace;margin-top:6px;color:var(--navy)}
-.metric-card-val.dim{color:var(--muted);font-size:14px}
-.metric-card-pe{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
-
-/* MedUPI CTA buttons — reusable across Hub, Tour, intake, etc. */
-.cta-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(232,106,23,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+/* CTA buttons (universal) */
+.cta-saffron,.cta-navy{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:800;border-radius:10px;padding:10px 16px;font-size:13.5px;cursor:pointer;min-height:42px;border:none;text-decoration:none}
+.cta-saffron{background:linear-gradient(135deg,var(--saffron),#ff9b4a);color:#fff;box-shadow:0 6px 18px rgba(232,106,23,.30)}
 .cta-saffron:hover{filter:brightness(1.05)}
-.cta-navy{background:linear-gradient(135deg,var(--navy),#16376a)!important;border:none!important;color:#fff!important;font-weight:800!important;box-shadow:0 6px 18px rgba(14,35,68,.30);padding:12px 18px;border-radius:10px;cursor:pointer;font-size:14px;min-height:46px}
+.cta-navy{background:linear-gradient(135deg,var(--navy),#16376a);color:#fff;box-shadow:0 6px 18px rgba(14,35,68,.30)}
 .cta-navy:hover{filter:brightness(1.10)}
 
-/* MedUPI metric speak-button micro UI (consistent with shares/medupi) */
-.metric-spk{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer;line-height:1;min-width:32px;min-height:24px}
-.metric-spk:hover{background:rgba(232,106,23,.06);color:var(--saffron)}
+/* BO9 — Tour day cards (Coursiv-style) */
+.tour-curric-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px}
+.tour-curric-btn{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:64px;font-family:inherit}
+.tour-curric-btn.active{background:linear-gradient(135deg,rgba(232,106,23,.12),rgba(212,175,55,.08));border-color:var(--saffron);box-shadow:0 4px 12px rgba(232,106,23,.20)}
+.tour-curric-emoji{font-size:18px}
+.tour-curric-name{font-size:12.5px;font-weight:800;color:var(--navy);line-height:1.3}
+.tour-curric-days{font-size:11px;color:var(--muted);font-weight:700}
+.tour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.tour-day{border:1.5px solid var(--border);border-radius:12px;padding:12px;background:#fbf8f1}
+.tour-day.done{opacity:.55;background:rgba(34,197,94,.08)}
+.tour-day.today{border-color:var(--saffron);box-shadow:0 4px 14px rgba(232,106,23,.20);background:linear-gradient(135deg,#fff,rgba(232,106,23,.06))}
+.tour-day h4{margin:0 0 6px;font-size:14.5px;font-weight:800;color:var(--navy)}
+.tour-day .why{font-size:12.5px;color:var(--text);line-height:1.5;margin:0 0 10px}
+.tour-day .lessons{font-size:12.5px;list-style:none;padding:0;margin:0 0 10px}
+.tour-day .lessons li{padding:3px 0}
+.tour-day .lessons a{color:var(--saffron);font-weight:700;text-decoration:underline}
+.tour-day .day-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:8px;border-top:1px dashed var(--border)}
+.tour-day .mins{font-size:11px;color:var(--muted);font-weight:700}
+.tour-day .day-num{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 
-/* MedUPI mono font for numerics across Hub (re-skin) */
-.hub-score-val{font-family:'JetBrains Mono','Menlo','Consolas',monospace}
-.tt-progress-label{font-family:'JetBrains Mono','Menlo','Consolas',monospace;font-size:13px}
+/* Hub */
+.hub-sub{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.hub-chip{display:inline-flex;align-items:center;min-height:34px;padding:6px 12px;background:#f3f4f6;border:1px solid var(--border);border-radius:99px;color:var(--navy);font-size:12px;font-weight:700;text-decoration:none}
+.hub-chip:hover{background:rgba(232,106,23,.10);border-color:var(--saffron)}
+.hub-sect{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.hub-sect details summary{cursor:pointer;list-style:none;padding-left:20px;position:relative;font-weight:800;color:var(--navy);font-size:14.5px}
+.hub-sect details summary::-webkit-details-marker{display:none}
+.hub-sect details summary::before{content:'▸';position:absolute;left:4px;top:3px;color:var(--saffron);transition:transform .15s}
+.hub-sect details[open] summary::before{transform:rotate(90deg)}
+.hub-verdict{background:linear-gradient(135deg,rgba(232,106,23,.08),rgba(212,175,55,.06));border-left:4px solid var(--saffron);padding:10px 12px;border-radius:0 10px 10px 0;font-size:13.5px;line-height:1.55;margin-bottom:10px}
+.hub-source{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:14px}
 
-/* Bump tab min-height to MedUPI's 46px for tap target parity */
-nav.tabs .tab{min-height:46px}
+/* Voice-First indicator */
+.vf-indicator{position:fixed;left:8px;bottom:8px;background:#0a3d62;color:#fff;padding:8px 14px;border-radius:99px;font-size:12.5px;font-weight:700;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.25);display:none}
+.vf-indicator.shown{display:block}
 
-/* Align disclaimer bar visual weight with MedUPI med-bar */
-.news-disclaimer{background:linear-gradient(90deg,rgba(232,106,23,.10),rgba(212,175,55,.10));border-bottom:2px solid var(--gold);color:var(--text);font-weight:600}
-.news-disclaimer strong{color:var(--med-red);letter-spacing:.04em}
+/* Footer */
+footer{font-size:11.5px;color:var(--muted);text-align:center;padding:24px;line-height:1.6}
+footer a{color:var(--saffron);text-decoration:none;font-weight:700}
 
-@media (max-width:640px){
+@media (max-width:520px){
+  .tagline{max-width:160px}
   .metric-grid{grid-template-columns:1fr 1fr}
-  .cta-saffron,.cta-navy{font-size:13px;padding:10px 14px}
+  .hero h1{font-size:18px}
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   DECLUTTER (Sire 2026-06-05 PM "not user friendly at all")
-   - News cards now title + meta + 1 action; everything else under <details>
-   - Hub sections (Impact / Prompts / Comparisons / Forecast) collapsible
-   - Tour: hide done days visually distinct so user focuses on Day-Today
-   ═══════════════════════════════════════════════════════════════════ */
-.hub-section > details > summary{cursor:pointer;list-style:none;padding:6px 0;position:relative;padding-left:24px}
-.hub-section > details > summary::-webkit-details-marker{display:none}
-.hub-section > details > summary::before{content:'▸';position:absolute;left:6px;top:7px;font-size:13px;color:var(--saffron);transition:transform .15s}
-.hub-section > details[open] > summary::before{transform:rotate(90deg)}
-.hub-section > details > summary h3{margin:0;font-size:15px}
-.hub-section > details[open] > summary h3{color:var(--saffron)}
-.hub-section > details{padding:0}
-.hub-section > details > *:not(summary){margin-top:10px}
-
-.card-details > summary{list-style:none;padding-left:18px;position:relative}
-.card-details > summary::-webkit-details-marker{display:none}
-.card-details > summary::before{content:'▸';position:absolute;left:2px;top:5px;font-size:11px;color:var(--muted);transition:transform .15s}
-.card-details[open] > summary::before{transform:rotate(90deg)}
-
-/* Tour: dim done-days so eye lands on today */
-.tt-day.tt-day-done{opacity:.55}
-.tt-day.tt-day-done:hover{opacity:1}
-.tt-day.tt-day-next{transform:scale(1.01)}
 </style>
-
-<!-- Theme overlay removed 2026-05-23 — replaced by chitti_theme.css
-     (the canonical Indian-flag palette). -->
+<link rel="stylesheet" href="chitti_theme.css">
 </head>
 <body>
 <div class="bharat-stripe"></div>
 
-<header role="banner" style="padding:10px 14px">
-  <div class="brand-row" style="gap:8px">
-    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
-      <div class="bharat-logo" aria-hidden="true" style="width:36px;height:36px;font-size:18px">C</div>
-      <div style="min-width:0;flex:1">
-        <div class="brand" style="font-size:16px;line-height:1.1">Chitti News AI</div>
-        <div class="tagline" data-i18n="header.tagline" style="font-size:10px;margin-top:2px;color:rgba(255,255,255,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Real AI news · in your language</div>
+<header role="banner">
+  <div class="brand-row">
+    <div class="brand-id">
+      <div class="bharat-logo" aria-hidden="true">C</div>
+      <div style="min-width:0">
+        <div class="brand">Chitti News AI</div>
+        <div class="tagline">AI Career Copilot · ANY role · ANY language</div>
       </div>
     </div>
-    <details class="hdr-more" style="position:relative">
-      <summary class="switch-btn-bharat" style="list-style:none;padding:6px 10px;font-size:11px;cursor:pointer;min-height:36px;display:inline-flex;align-items:center" aria-label="More options menu">⋯ More</summary>
-      <div style="position:absolute;right:0;top:42px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(14,35,68,.20);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:180px;z-index:60">
-        <a href="chitti_news.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">📰 Chitti News (regular)</a>
-        <a href="chitti_vaani.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">🎙️ Chitti Vaani</a>
-        <a href="chitti_medupi.html" style="color:var(--text);text-decoration:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600">💊 Chitti MedUPI</a>
+
+    <!-- BO3 — Vaani-pattern language dropdown -->
+    <select id="lang-select" class="lang-toggle-bharat" aria-label="Change language — currently English. Use arrow keys to browse 26 Indian languages." onchange="changeLanguage(this.value)" onfocus="speakLangHint()">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+      <option value="bn">বাংলা</option>
+      <option value="mr">मराठी</option>
+      <option value="gu">ગુજરાતી</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="as">অসমীয়া</option>
+      <option value="ur">اردو</option>
+      <option value="bho">भोजपुरी</option>
+      <option value="hne">छत्तीसगढ़ी</option>
+      <option value="mai">मैथिली</option>
+      <option value="kok">कोंकणी</option>
+      <option value="doi">डोगरी</option>
+      <option value="sd">سنڌي</option>
+      <option value="ks">कॉशुर</option>
+      <option value="mni">মৈতৈলোন্</option>
+      <option value="brx">बड़ो</option>
+      <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ</option>
+      <option value="sa">संस्कृत</option>
+      <option value="tcy">ತುಳು</option>
+      <option value="kfa">ಕೊಡವ</option>
+      <option value="kru">ओराओं</option>
+    </select>
+
+    <details class="hdr-more">
+      <summary aria-label="More options">⋯ More</summary>
+      <div class="hdr-more-menu" role="menu">
+        <a href="chitti_news.html" role="menuitem">📰 Chitti News</a>
+        <a href="chitti_vaani.html" role="menuitem">🎙️ Chitti Vaani</a>
+        <a href="chitti_medupi.html" role="menuitem">💊 Chitti MedUPI</a>
         <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
-        <button type="button" onclick="speakPage()" style="background:none;border:none;color:var(--text);padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600;text-align:left;cursor:pointer">🔊 Read page aloud</button>
+        <button type="button" onclick="speakPage()" role="menuitem">🔊 Read page aloud</button>
+        <button type="button" onclick="window.ChittiVoiceFirst && window.ChittiVoiceFirst.activate()" role="menuitem">🎙️ Voice-First mode</button>
       </div>
     </details>
   </div>
 </header>
 
-<div class="news-disclaimer" role="region" aria-label="Chitti News AI disclaimer">
-  📰 <strong>Chitti News AI</strong> — 8 real AI publishers · Tap 🤖 Chitti icon on any article for a simple explanation in your language.
-</div>
-
-<!-- Picker bar — MERGED single row (Sire 2026-06-05 PM declutter) -->
-<div class="picker-bar" role="group" aria-label="Filter by profession + language" style="border-top:none">
-  <span class="pick-lbl" data-i18n="pick.iam" aria-hidden="true">I am</span>
-  <select id="pick-profession" onchange="onProfessionChange()" onfocus="_speakPickerHint()" aria-label="Profession — choose any time, default Everyone. Use arrow keys to browse options." aria-describedby="pick-prof-hint" style="flex:1;min-width:140px">
-    <option value="everyone">🌐 Everyone</option>
-    <option value="software-developer">💻 Software Developer</option>
-    <option value="hr-professional">🤝 HR Professional</option>
-    <option value="talent-acquisition">🎯 Talent Acquisition</option>
-    <option value="doctor">🩺 Doctor</option>
-    <option value="oncologist">🎗️ Oncologist</option>
-    <option value="nurse">🩹 Nurse</option>
-    <option value="farmer">🌾 Farmer</option>
-    <option value="teacher">📚 Teacher</option>
-    <option value="lawyer">⚖️ Lawyer</option>
-    <option value="accountant">📊 Accountant / CA</option>
-    <option value="student">🎓 Student</option>
-    <option value="business-owner">🏪 Business Owner</option>
-    <option value="government-employee">🏛️ Government Employee</option>
-  </select>
-  <select id="pick-lang" onchange="onPickerChange()" aria-label="Language" style="min-width:90px">
-    <option value="en">English</option>
-    <option value="hi">हिंदी (Hindi)</option>
-    <option value="bn">বাংলা (Bangla)</option>
-    <option value="te">తెలుగు (Telugu)</option>
-    <option value="ta">தமிழ் (Tamil)</option>
-    <option value="mr">मराठी (Marathi)</option>
-    <option value="kn">ಕನ್ನಡ (Kannada)</option>
-    <option value="ml">മലയാളം (Malayalam)</option>
-    <option value="gu">ગુજરાતી (Gujarati)</option>
-    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-    <option value="or">ଓଡ଼ିଆ (Odia)</option>
-    <option value="as">অসমীয়া (Assamese)</option>
-    <option value="ur">اردو (Urdu)</option>
-    <option value="bho">भोजपुरी (Bhojpuri)</option>
-    <option value="hne">छत्तीसगढ़ी (Chhattisgarhi)</option>
-    <option value="mai">मैथिली (Maithili)</option>
-    <option value="kok">कोंकणी (Konkani)</option>
-    <option value="doi">डोगरी (Dogri)</option>
-    <option value="sd">सिंधी (Sindhi)</option>
-    <option value="ks">कॉशुर (Kashmiri)</option>
-    <option value="mni">মৈতৈলোন্ (Manipuri)</option>
-    <option value="brx">बड़ो (Bodo)</option>
-    <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
-    <option value="sa">संस्कृत (Sanskrit)</option>
-    <option value="tcy">ತುಳು (Tulu)</option>
-    <option value="kfa">ಕೊಡವ (Kodava)</option>
-    <option value="kru">ओराओं (Kurukh)</option>
-  </select>
-  <button class="refresh" onclick="loadFeed(true)" data-i18n="pick.refresh" aria-label="Refresh feed">🔄</button>
-  <span id="pick-prof-hint" style="display:none">Stored locally only.</span>
-  <span id="prof-clear-link" style="display:none"></span>
-</div>
-
-<!-- Experience + Salary — collapsed behind 'Advanced' so they don't crowd the default view -->
-<details class="picker-advanced" style="background:#fff;border-bottom:1px solid var(--border);padding:0 14px;font-size:12px">
-  <summary style="padding:6px 0;color:var(--muted);cursor:pointer;font-weight:600;list-style:none;display:inline-flex;align-items:center;gap:4px" aria-label="Advanced filters — experience and salary">⚙ Advanced (experience · salary)</summary>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:6px 0 10px;align-items:center">
-    <span class="pick-lbl" data-i18n="pick.exp" aria-hidden="true">Experience</span>
-    <select id="pick-experience" onchange="onProfileFieldChange('exp', this.value)" aria-label="Years of experience — optional" style="font-size:12px;min-height:34px;padding:6px 8px">
-      <option value="">— Any —</option>
-      <option value="fresher">🎓 Fresher (0 yrs)</option>
-      <option value="0-2">0–2 yrs</option>
-      <option value="3-5">3–5 yrs</option>
-      <option value="6-10">6–10 yrs</option>
-      <option value="11-15">11–15 yrs</option>
-      <option value="16-20">16–20 yrs</option>
-      <option value="20+">20+ yrs</option>
-      <option value="sabbatical">Sabbatical / Career break</option>
-      <option value="retired">Retired</option>
-    </select>
-    <span class="pick-lbl" data-i18n="pick.sal" aria-hidden="true">Salary</span>
-    <select id="pick-salary" onchange="onProfileFieldChange('sal', this.value)" aria-label="Current annual salary band in INR — optional" style="font-size:12px;min-height:34px;padding:6px 8px">
-      <option value="">— Any —</option>
-      <option value="below-3l">Below ₹3 LPA</option>
-      <option value="3-6l">₹3 – 6 LPA</option>
-      <option value="6-12l">₹6 – 12 LPA</option>
-      <option value="12-25l">₹12 – 25 LPA</option>
-      <option value="25-50l">₹25 – 50 LPA</option>
-      <option value="50l-1cr">₹50 LPA – 1 Cr</option>
-      <option value="1cr+">₹1 Cr +</option>
-      <option value="prefer-not">Prefer not to say</option>
-    </select>
-  </div>
-</details>
-
-<nav class="tabs" role="tablist" aria-label="Chitti News AI categories">
-  <button class="tab active" data-tab="ai-news"     onclick="showCategory('ai-news')"     role="tab" aria-selected="true"  data-i18n="cat.ai_news">📰 AI Aaj</button>
-  <button class="tab"        data-tab="tools"       onclick="showCategory('tools')"       role="tab" aria-selected="false" data-i18n="cat.tools">🔧 Tools</button>
-  <button class="tab"        data-tab="bharat-ai"   onclick="showCategory('bharat-ai')"   role="tab" aria-selected="false" data-i18n="cat.bharat">🇮🇳 Bharat AI</button>
-  <button class="tab"        data-tab="prashikshan" onclick="showCategory('prashikshan')" role="tab" aria-selected="false" data-i18n="cat.prash">🎓 Prashikshan</button>
-  <button class="tab" id="tab-foryou" data-tab="foryou" onclick="showCategory('foryou')" role="tab" aria-selected="false" style="display:none">🎯 For You</button>
-  <button class="tab" data-tab="stream-cert"    onclick="showCategory('stream-cert')"    role="tab" aria-selected="false">🏅 Certs</button>
-  <button class="tab" data-tab="stream-tool"    onclick="showCategory('stream-tool')"    role="tab" aria-selected="false">🛠️ Tools+</button>
-  <button class="tab" data-tab="stream-job"     onclick="showCategory('stream-job')"     role="tab" aria-selected="false">💼 Jobs</button>
-  <button class="tab" data-tab="stream-scheme"  onclick="showCategory('stream-scheme')"  role="tab" aria-selected="false">🏛️ Schemes</button>
-  <button class="tab" data-tab="stream-roadmap" onclick="showCategory('stream-roadmap')" role="tab" aria-selected="false">🗺️ Roadmaps</button>
-  <button class="tab" data-tab="stream-channel" onclick="showCategory('stream-channel')" role="tab" aria-selected="false">📺 YouTube</button>
-  <button class="tab" data-tab="stream-person"  onclick="showCategory('stream-person')"  role="tab" aria-selected="false">👥 People</button>
-  <button class="tab" data-tab="stream-free_resource" onclick="showCategory('stream-free_resource')" role="tab" aria-selected="false">🆓 Free Resources</button>
-  <button class="tab cosdf-v11" data-tab="profession-hub" onclick="showCategory('profession-hub')" role="tab" aria-selected="false" title="COSDF v1.1 — your full profession-specific Hub">🏛️ Profession Hub</button>
-  <button class="tab cosdf-v11" data-tab="tool-tour" onclick="showCategory('tool-tour')" role="tab" aria-selected="false" title="28 days, 15 min/day, one AI tool per day — get your Chitti certificate">🎓 28-Day Tour</button>
-  <button class="tab" data-tab="my-coach" onclick="showCategory('my-coach')" role="tab" aria-selected="false">🎓 My Coach</button>
-  <button class="tab" data-tab="coach-picks" onclick="showCategory('coach-picks')" role="tab" aria-selected="false">🎯 Coach Picks</button>
-  <button class="tab" data-tab="what-not-to-do" onclick="showCategory('what-not-to-do')" role="tab" aria-selected="false">🚫 Skip This</button>
-</nav>
-
-<!-- Urgent top strip (gap #8, #16, #17) — rendered by chitti_coach.js if any item lives -->
-<section id="cc-urgent" class="empty" data-chitti-response data-chitti-section="Time-sensitive opportunities" role="region" aria-label="Time-sensitive opportunities — closing soon"></section>
+<!-- BO5 — Hero (adaptive 4-state CTA) -->
+<section class="hero" id="hero" data-chitti-response data-chitti-section="Hero — what do you want today" aria-live="polite"></section>
 
 <main>
-  <section id="page-feed" class="page active" role="tabpanel">
-    <div id="feed-status" class="section-empty" aria-live="polite" aria-atomic="true">⏳ Loading the latest AI news…</div>
-    <div id="feed" class="feed"></div>
+  <!-- BO7 — News feed (default visible after hero) -->
+  <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
+    <h2 class="section-title">📰 Top AI news for you</h2>
+    <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
+    <div class="feed" id="news-feed" aria-live="polite"></div>
   </section>
 
-  <!-- v0.3 per-stream browseable pages — one per stream, profession-filterable -->
-  <section id="page-stream-cert"    class="page" role="tabpanel" aria-label="Certifications" style="display:none">
-    <div id="stream-cert-status"    class="section-empty" aria-live="polite">⏳ Loading certifications…</div>
-    <div id="stream-cert-list"></div>
-  </section>
-  <section id="page-stream-tool"    class="page" role="tabpanel" aria-label="Tools" style="display:none">
-    <div id="stream-tool-status"    class="section-empty" aria-live="polite">⏳ Loading tools…</div>
-    <div id="stream-tool-list"></div>
-  </section>
-  <section id="page-stream-job"     class="page" role="tabpanel" aria-label="Jobs" style="display:none">
-    <div id="stream-job-status"     class="section-empty" aria-live="polite">⏳ Loading jobs…</div>
-    <div id="stream-job-list"></div>
-  </section>
-  <section id="page-stream-scheme"  class="page" role="tabpanel" aria-label="Government Schemes" style="display:none">
-    <div id="stream-scheme-status"  class="section-empty" aria-live="polite">⏳ Loading schemes…</div>
-    <div id="stream-scheme-list"></div>
-  </section>
-  <section id="page-stream-roadmap" class="page" role="tabpanel" aria-label="Learning Roadmaps" style="display:none">
-    <div id="stream-roadmap-status" class="section-empty" aria-live="polite">⏳ Loading roadmaps…</div>
-    <div id="stream-roadmap-list"></div>
-  </section>
-  <section id="page-stream-channel" class="page" role="tabpanel" aria-label="YouTube channels to follow" style="display:none">
-    <div id="stream-channel-status" class="section-empty" aria-live="polite">⏳ Loading YouTube channels…</div>
-    <div id="stream-channel-list"></div>
-  </section>
-  <section id="page-stream-person" class="page" role="tabpanel" aria-label="People to follow" style="display:none">
-    <div id="stream-person-status" class="section-empty" aria-live="polite">⏳ Loading people to follow…</div>
-    <div id="stream-person-list"></div>
-  </section>
-  <section id="page-stream-free_resource" class="page" role="tabpanel" aria-label="Free Resources" style="display:none">
-    <div id="stream-free_resource-status" class="section-empty" aria-live="polite">⏳ Loading free resources…</div>
-    <div id="stream-free_resource-list"></div>
+  <!-- BO8 — Profession Hub (rendered when profession is set) -->
+  <section class="section" id="hub-section" data-chitti-response data-chitti-section="Your Profession Hub" style="display:none">
+    <h2 class="section-title">🏛️ Your Profession Hub</h2>
+    <div id="hub-content"></div>
   </section>
 
-  <!-- 🏛️ PROFESSION HUB (COSDF v1.1 L23) — 10 sub-sections per role -->
-  <section id="page-profession-hub" class="page" role="tabpanel" aria-label="Profession Hub — every layer your role needs" style="display:none">
-    <div id="profession-hub-content" data-chitti-response data-chitti-section="Profession Hub — every layer your role needs">
-      <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your Profession Hub…</div>
-    </div>
+  <!-- BO9 — 28-Day AI Tool Tour -->
+  <section class="section" id="tour-section" data-chitti-response data-chitti-section="28-Day AI Tool Tour">
+    <h2 class="section-title">🎓 28-Day AI Tool Tour</h2>
+    <div id="tour-content"></div>
   </section>
-
-  <!-- 🎓 28-DAY AI TOOL TOUR (COSDF v1.1 L16.5) — Coursiv-style daily curriculum -->
-  <section id="page-tool-tour" class="page" role="tabpanel" aria-label="28-Day AI Tool Tour — 15 min per day, certificate at end" style="display:none">
-    <div id="tool-tour-content" data-chitti-response data-chitti-section="28-Day AI Tool Tour">
-      <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your 28-day tour…</div>
-    </div>
-  </section>
-
-  <!-- 🎓 MY COACH tab — personalised 4-week plan + salary + peer stories + ask-the-coach + CV -->
-  <section id="page-my-coach" class="page" role="tabpanel" aria-label="My Coach — personalised plan" style="display:none">
-    <div id="my-coach-content" data-chitti-response data-chitti-section="My Coach — personalised plan">
-      <div class="section-empty" style="text-align:center;padding:30px">⏳ Loading your coach…</div>
-    </div>
-  </section>
-
-  <!-- 🎯 COACH PICKS — ONE per skill, scannable Instagram-post format -->
-  <section id="page-coach-picks" class="page" role="tabpanel" aria-label="Coach Picks — ONE per skill" style="display:none">
-    <div id="coach-picks-content" data-chitti-response data-chitti-section="Coach Picks — one per skill">
-      <div class="section-empty">⏳ Loading coach picks…</div>
-    </div>
-  </section>
-
-  <!-- 🚫 WHAT NOT TO DO tab — explicit anti-recommendations -->
-  <section id="page-what-not-to-do" class="page" role="tabpanel" aria-label="Skip This — what NOT to do" style="display:none">
-    <div id="what-not-to-do-content" data-chitti-response data-chitti-section="Skip This — what NOT to do">
-      <div class="section-empty">⏳ Loading skip list…</div>
-    </div>
-  </section>
-
-  <!-- v0.3 "For You" page — per-profession 7-stream career intelligence -->
-  <section id="page-foryou" class="page" role="tabpanel" aria-label="Per-profession career intelligence" style="display:none">
-    <div class="section-card" data-chitti-response data-chitti-section="For You — career intel" style="background:linear-gradient(135deg,rgba(232,106,23,.06),rgba(212,175,55,.06));border-color:rgba(232,106,23,.45)">
-      <div class="section-head">
-        <div>
-          <div class="section-title" id="foryou-title">🎯 For You — career-relevant items today</div>
-          <div class="section-sub">Real free sources. Rules-only classification. Every card shows which rule fired (tap "Why?" to audit).</div>
-        </div>
-      </div>
-    </div>
-    <div id="foryou-status" class="section-empty" aria-live="polite">⏳ Loading your career intel…</div>
-    <div id="foryou-streams"></div>
-  </section>
-
-  <section id="page-courses" class="page" role="tabpanel" aria-label="Free AI certifications">
-    <div class="section-card" data-chitti-response data-chitti-section="Prashikshan — explainer" style="background:linear-gradient(135deg,rgba(22,163,74,.06),#fff);border-color:rgba(22,163,74,.45)">
-      <div class="section-head">
-        <div>
-          <div class="section-title" data-i18n="prash.title">🎓 Prashikshan — Real free AI courses</div>
-          <div class="section-sub" data-i18n="prash.sub">Curated free certifications from Google, Microsoft, NASSCOM, Andrew Ng's DeepLearning.AI, fast.ai. Real links. No generated courses.</div>
-        </div>
-      </div>
-    </div>
-    <div id="courses-status" class="section-empty" aria-live="polite">⏳ Loading courses…</div>
-    <div id="courses-list"></div>
-  </section>
-
-  <footer role="contentinfo">
-    Chitti News AI · 8 real AI publishers · Chitti explains in your language using only what the article says · <a href="https://github.com/bryanwilfredpinto-ui/sahayai">source on GitHub</a><br>
-    Always verify with the original source link before sharing.
-  </footer>
 </main>
 
+<footer>
+  Chitti News AI · COSDF v1.1 · ANY role × ANY language × ALL disabilities ·
+  Built for blind / deaf / mute / illiterate / low-vision users from BO2 ·
+  <a href="chitti-news-ai/BUILDORDER.md">BuildOrder</a> ·
+  <a href="chitti-news-ai/HANDOVER/">Handover docs</a>
+</footer>
+
+<div id="vf-indicator" class="vf-indicator" role="status" aria-live="polite">🎙️ Voice-First Mode — say "help" for commands</div>
+
+<!-- Substrate (BO10 ISL + per-response widget) -->
+<script src="chitti_a11y.js?v=20260606.1"></script>
+<script src="feedback-widget.js?v=20260606.1"></script>
+<script src="chitti_coach.js?v=20260606.1"></script>
+
+<!-- BO3 — Language pipeline -->
 <script>
-if(!window._chittiNewsAILoaded){
-window._chittiNewsAILoaded = true;
-
-// ═══════════════════════════════════════════════════════════
-// API base
-// ═══════════════════════════════════════════════════════════
-const API_BASE = (function(){
-  try { return localStorage.getItem('chitti_news_ai_api_base') || 'https://chitti-news-ai-api-production.up.railway.app'; }
-  catch(e){ return 'https://chitti-news-ai-api-production.up.railway.app'; }
-})();
-
-function _userToken(){
-  try {
-    let t = localStorage.getItem('chitti_news_ai_user_token');
-    if (!t) {
-      t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-      localStorage.setItem('chitti_news_ai_user_token', t);
-    }
-    return t;
-  } catch(e) { return 'anon-' + Date.now(); }
-}
-
-// ═══════════════════════════════════════════════════════════
-// Prefs (language only — no profiling per Sire 2026-05-23)
-// ═══════════════════════════════════════════════════════════
-function _getLang(){ try { return localStorage.getItem('chitti_news_ai_lang') || 'en'; } catch(e){ return 'en'; } }
-function _setLang(l){ try { if (l) localStorage.setItem('chitti_news_ai_lang', l); } catch(e){} }
-
-let _chittiLang = _getLang();
-let _currentCategory = 'ai-news';
-const _ARTICLE_CACHE = {};
-
-// ═══════════════════════════════════════════════════════════
-// I18N
-// ═══════════════════════════════════════════════════════════
 const I18N = {
-  'header.tagline':  { en:'Real AI news · Chitti explains in your language', hi:'असली AI ख़बरें · चिट्टी आपकी भाषा में समझाएगा' },
-  'switch.news':     { en:'📰 News', hi:'📰 न्यूज़' },
-  'switch.vaani':    { en:'🎙️ Vaani', hi:'🎙️ वाणी' },
-  'switch.medupi':   { en:'💊 MedUPI', hi:'💊 मेडUPI' },
-  'hdr.read':        { en:'🔊 Read page', hi:'🔊 पेज पढ़ें' },
-  'pick.lang':       { en:'Lang', hi:'भाषा' },
-  'pick.refresh':    { en:'🔄 Refresh', hi:'🔄 ताज़ा' },
-  'cat.ai_news':     { en:'📰 AI Aaj',  hi:'📰 AI आज' },
-  'cat.tools':       { en:'🔧 Tools',   hi:'🔧 टूल्स' },
-  'cat.bharat':      { en:'🇮🇳 Bharat AI', hi:'🇮🇳 भारत AI' },
-  'cat.prash':       { en:'🎓 Prashikshan', hi:'🎓 प्रशिक्षण' },
-  'prash.title':     { en:'🎓 Prashikshan — Real free AI courses', hi:'🎓 प्रशिक्षण — असली मुफ़्त AI कोर्स' },
-  'prash.sub':       { en:'Curated free certifications from Google, Microsoft, NASSCOM, Andrew Ng, fast.ai. Real links. No generated courses.', hi:'Google, Microsoft, NASSCOM, Andrew Ng, fast.ai से चुनिंदा मुफ़्त सर्टिफिकेशन। असली लिंक। कोई बनाई हुई कोर्स नहीं।' },
-  'feed.loading':    { en:'⏳ Loading the latest AI news…', hi:'⏳ ताज़ा AI ख़बरें लोड हो रही हैं…' },
-  'feed.empty':      { en:'No stories yet — RSS poll has not run. Try Refresh in a minute.', hi:'अभी कोई ख़बर नहीं — RSS फ़ेच नहीं हुआ। एक मिनट में ताज़ा करें।' },
-  'art.read_aloud':  { en:'🔊 Read aloud', hi:'🔊 पढ़कर सुनाओ' },
-  'art.chitti':      { en:'🤖 Chitti explains', hi:'🤖 चिट्टी समझाएगा' },
-  'art.save':        { en:'👍', hi:'👍' },
-  'art.dislike':     { en:'👎', hi:'👎' },
-  'art.share':       { en:'📲 Share', hi:'📲 शेयर' },
-  'art.open':        { en:'↗ Open source', hi:'↗ स्रोत खोलें' },
-  'top':             { en:'↑ Top', hi:'↑ ऊपर' },
+  en: { hero_s1_h:'What is your profession?', hero_s1_sub:'Pick your role to get personalised AI news, tools, and a 28-day tour. Or type your role.', hero_s2_h:'Ready to upgrade your AI skills?', hero_s2_sub:'15 minutes a day. 28 days. Get the Chitti certificate.', hero_s2_cta:'Start your 28-Day AI Tour for', hero_s3_h:'Keep going', hero_s3_sub:'Your AI Tool Tour is in progress.', hero_s4_h:'🏆 You did it!', hero_s4_sub:'Curriculum complete.', hero_s4_cta:'Claim your certificate', news_loading:'Loading the latest AI stories…', news_for:'Top AI news for', news_everyone:'everyone' },
+  hi: { hero_s1_h:'आपका पेशा क्या है?', hero_s1_sub:'अपनी भूमिका चुनें — Chitti आपके लिए AI समाचार, टूल और 28-दिन का दौरा देगा।', hero_s2_h:'AI कौशल बढ़ाने के लिए तैयार?', hero_s2_sub:'दिन में 15 मिनट · 28 दिन · Chitti प्रमाणपत्र।', hero_s2_cta:'अपना 28-दिन AI दौरा शुरू करें —', hero_s3_h:'जारी रखें', hero_s3_sub:'आपका AI दौरा जारी है।', hero_s4_h:'🏆 बधाई हो!', hero_s4_sub:'पाठ्यक्रम पूरा।', hero_s4_cta:'प्रमाणपत्र प्राप्त करें', news_loading:'AI समाचार लोड हो रहे हैं…', news_for:'आपके लिए AI समाचार —', news_everyone:'सभी' },
 };
-function t(key){ const e = I18N[key]; if (!e) return key; return e[_chittiLang] || e.en || key; }
-
-function applyChittiLang(lang){
-  _chittiLang = lang;
-  _setLang(lang);
-  document.documentElement.lang = lang || 'en';
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
-    const v = t(k);
-    if (v && v !== k) el.textContent = v;
-  });
-  if (window.Chitti && window.Chitti.lang && typeof window.Chitti.lang.set === 'function') {
-    try { window.Chitti.lang.set(lang); } catch(e){}
-  }
+function _t(key) {
+  const lang = (localStorage.getItem('chitti_lang') || 'en');
+  return (I18N[lang] && I18N[lang][key]) || (I18N.en[key] || key);
 }
-
-// ═══════════════════════════════════════════════════════════
-// Speech
-// ═══════════════════════════════════════════════════════════
-const _LANG_CODE = {
-  en:'en-IN', hi:'hi-IN', bn:'bn-IN', te:'te-IN', ta:'ta-IN', mr:'mr-IN',
-  kn:'kn-IN', ml:'ml-IN', gu:'gu-IN', pa:'pa-IN', or:'or-IN', as:'as-IN',
-  ur:'ur-IN', sa:'hi-IN',
-};
-function sp(text, lang){
-  if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = _LANG_CODE[lang || _chittiLang] || 'en-IN';
-  u.rate = 0.92;
-  speechSynthesis.speak(u);
-}
-function speakPage(){
-  sp(_chittiLang === 'hi'
-    ? 'चिट्टी न्यूज़ AI। आज की असली AI ख़बरें नीचे हैं। समझ नहीं आ रही? चिट्टी आइकन दबाएँ — चिट्टी आपकी भाषा में समझा देगा।'
-    : 'Chitti News AI. Real AI news below. Tap the Chitti icon on any article — Chitti will explain it in your language, simply.');
-}
-
-// ═══════════════════════════════════════════════════════════
-// API
-// ═══════════════════════════════════════════════════════════
-async function apiGet(path){
-  const r = await fetch(API_BASE + path, { headers: { 'X-User-Token': _userToken() } });
-  if (!r.ok) throw new Error('API ' + r.status);
-  return r.json();
-}
-async function apiPostJson(path, body){
-  const r = await fetch(API_BASE + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-User-Token': _userToken() },
-    body: JSON.stringify(body || {}),
-  });
-  if (!r.ok) { const t = await r.text(); throw new Error('API ' + r.status + ': ' + t.slice(0,200)); }
-  return r.json();
-}
-
-// ═══════════════════════════════════════════════════════════
-// Helpers
-// ═══════════════════════════════════════════════════════════
-function _esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function _timeAgo(iso){
-  if (!iso) return '';
-  const d = new Date(iso); if (isNaN(d)) return '';
-  const s = (Date.now() - d.getTime()) / 1000;
-  if (s < 60) return _chittiLang === 'hi' ? 'अभी' : 'just now';
-  if (s < 3600) return Math.floor(s/60) + (_chittiLang === 'hi' ? ' मिनट पहले' : ' min ago');
-  if (s < 86400) return Math.floor(s/3600) + (_chittiLang === 'hi' ? ' घंटे पहले' : 'h ago');
-  return Math.floor(s/86400) + (_chittiLang === 'hi' ? ' दिन पहले' : 'd ago');
-}
-
-// ═══════════════════════════════════════════════════════════
-// Card rendering
-// ═══════════════════════════════════════════════════════════
-function _articleCardHtml(a){
-  const meta = [_esc(a.source_name || a.source_slug || '')]
-    .concat([_timeAgo(a.published_utc || a.ingested_utc)])
-    .filter(Boolean).join(' · ');
-  const thumb = a.image_url
-    ? '<div class="art-thumb" style="background-image:url(\'' + _esc(a.image_url) + '\')"></div>'
-    : '<div class="art-thumb placeholder">🤖</div>';
-  const summary = a.summary || '';
-  return (
-    '<div class="art-card" id="art-' + a.id + '" data-id="' + a.id + '" data-chitti-response data-chitti-section="' + _esc(a.title || 'AI news') + '">' +
-      '<div>' +
-        '<div class="art-meta">' + meta + '</div>' +
-        '<div class="art-title" id="title-' + a.id + '">' + _esc(a.title || '') + '</div>' +
-        '<div class="art-summary">' + _esc(summary) + '</div>' +
-        '<div class="art-actions">' +
-          '<button class="primary" onclick="readArticleAloud(' + a.id + ')">🔊 ' + t('art.read_aloud') + '</button>' +
-          '<button class="chitti" onclick="loadExplain(' + a.id + ')">🤖 ' + t('art.chitti') + '</button>' +
-          '<button onclick="thumbsArticle(' + a.id + ', 1)" aria-label="Like">👍</button>' +
-          '<button onclick="thumbsArticle(' + a.id + ', -1)" aria-label="Dislike">👎</button>' +
-          '<button onclick="shareArticle(' + a.id + ')">📲 ' + t('art.share') + '</button>' +
-        '</div>' +
-        '<div style="margin-top:8px;font-size:13px"><a href="' + _esc(a.url) + '" target="_blank" rel="noopener" style="color:#555;text-decoration:underline;font-weight:500">📖 ' + _esc(a.source_name || 'Source') + ' →</a></div>' +
-        '<div class="art-explain-host" id="explain-' + a.id + '" data-chitti-response data-chitti-section="Chitti explains · ' + _esc(a.title || '') + '"></div>' +
-      '</div>' +
-      thumb +
-    '</div>'
-  );
-}
-
-async function loadFeed(announce){
-  const status = document.getElementById('feed-status');
-  const feed = document.getElementById('feed');
-  status.style.display = 'block';
-  status.textContent = t('feed.loading');
-  feed.innerHTML = '';
+function changeLanguage(lang) {
   try {
-    const data = await apiGet('/api/news-ai/feed?tab=' + encodeURIComponent(_currentCategory) + '&language=' + encodeURIComponent(_chittiLang) + '&limit=40');
-    const items = data.items || [];
-    items.forEach(a => { _ARTICLE_CACHE[a.id] = a; });
-    if (!items.length){
-      status.textContent = t('feed.empty');
-      return;
-    }
-    status.style.display = 'none';
-    feed.innerHTML = items.map(_articleCardHtml).join('');
-    if (announce && data.speak_en) sp(_chittiLang === 'hi' ? data.speak_hi : data.speak_en);
-    // Lazy-translate headlines if user is not in English.
-    if (_chittiLang !== 'en') {
-      items.forEach(a => { _lazyTranslateHeadline(a.id); });
-    }
-  } catch (e) {
-    status.innerHTML = '⏳ <strong>Backend warming up</strong> — first request can take 30–60 s while Railway starts the service. Try Refresh in a minute.<br><small style="color:var(--muted)">' + _esc(e.message || '') + '</small>';
-  }
-}
-
-async function _lazyTranslateHeadline(id){
-  try {
-    const r = await apiPostJson('/api/news-ai/article/' + id + '/translate_headline', { language: _chittiLang });
-    if (r && r.ok && r.text) {
-      const el = document.getElementById('title-' + id);
-      if (el) el.textContent = r.text;
-    }
-  } catch(e){ /* silent — keep English */ }
-}
-
-async function loadExplain(id){
-  const host = document.getElementById('explain-' + id);
-  if (!host) return;
-  host.innerHTML = '<div class="art-explain-box"><div class="art-explain-h">🤖 ' + (_chittiLang === 'hi' ? 'चिट्टी समझा रहा है…' : 'Chitti explaining…') + '</div>' + (_chittiLang === 'hi' ? 'आपकी भाषा में, सिर्फ़ इस लेख की बातें।' : 'In your language, only what this article says.') + '</div>';
-  try {
-    const data = await apiPostJson('/api/news-ai/article/' + id + '/explain', { language: _chittiLang });
-    if (data && data.ok && data.text) {
-      host.innerHTML = '<div class="art-explain-box"><div class="art-explain-h">🤖 ' + (_chittiLang === 'hi' ? 'चिट्टी' : 'Chitti') + '</div>' + _esc(data.text) + '</div>';
-      sp(data.text);
-    } else {
-      const err = (data && data.error) || 'no explanation returned';
-      host.innerHTML = '<div class="art-explain-box" style="border-color:var(--red);color:var(--red)">⚠️ ' + _esc(err) + '</div>';
-    }
-  } catch (e) {
-    host.innerHTML = '<div class="art-explain-box" style="border-color:var(--red);color:var(--red)">⚠️ ' + _esc(e.message || String(e)) + '</div>';
-  }
-}
-
-function readArticleAloud(id){
-  const a = _ARTICLE_CACHE[id]; if (!a) return;
-  const body = a.content || a.summary || '';
-  const plain = String(body).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 6000);
-  const titleEl = document.getElementById('title-' + id);
-  const title = (titleEl && titleEl.textContent) || a.title || '';
-  sp(title.trim() + '. ' + plain);
-}
-
-function thumbsArticle(id, delta){
-  try {
-    const key = 'chitti_news_ai_thumbs_v1';
-    const raw = localStorage.getItem(key);
-    const map = raw ? JSON.parse(raw) : {};
-    map[id] = (map[id] || 0) + delta;
-    localStorage.setItem(key, JSON.stringify(map));
-  } catch(e){}
-  sp(delta > 0
-    ? (_chittiLang === 'hi' ? 'पसंद नोट की।' : 'Noted.')
-    : (_chittiLang === 'hi' ? 'नापसंद नोट की।' : 'Noted.'));
-}
-
-function shareArticle(id){
-  const a = _ARTICLE_CACHE[id]; if (!a) return;
-  const disclaimer = _chittiLang === 'hi'
-    ? '\n\n— चिट्टी न्यूज़ AI के माध्यम से।'
-    : '\n\n— Shared via Chitti News AI.';
-  const text = (a.title || '') + '\n' + (a.url || '') + disclaimer;
-  if (navigator.share) {
-    navigator.share({ title: a.title, text: text, url: a.url }).catch(()=>{});
-  } else {
-    const wa = 'https://wa.me/?text=' + encodeURIComponent(text);
-    window.open(wa, '_blank', 'noopener');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// Courses
-// ═══════════════════════════════════════════════════════════
-async function loadCourses(){
-  const status = document.getElementById('courses-status');
-  const list = document.getElementById('courses-list');
-  status.style.display = 'block';
-  status.textContent = _chittiLang === 'hi' ? '⏳ कोर्स लोड हो रहे हैं…' : '⏳ Loading courses…';
-  list.innerHTML = '';
-  try {
-    const data = await apiGet('/api/news-ai/courses');
-    const sections = data.sections || [];
-    const items = data.items || [];
-    if (!items.length){
-      status.textContent = _chittiLang === 'hi' ? 'अभी कोई कोर्स नहीं।' : 'No courses listed.';
-      return;
-    }
-    status.style.display = 'none';
-    // Group courses by section
-    const grouped = {};
-    items.forEach(c => {
-      const k = c.section || 'other';
-      (grouped[k] = grouped[k] || []).push(c);
-    });
-    // Render section order from sections[] (fallback to grouped keys for stragglers)
-    const order = sections.map(s => s.key);
-    Object.keys(grouped).forEach(k => { if (!order.includes(k)) order.push(k); });
-    const lang = _chittiLang;
-    list.innerHTML = order.map(key => {
-      const meta = sections.find(s => s.key === key) || { label_en: key, label_hi: key, blurb_en: '', blurb_hi: '' };
-      const label = lang === 'hi' ? (meta.label_hi || meta.label_en) : meta.label_en;
-      const blurb = lang === 'hi' ? (meta.blurb_hi || meta.blurb_en) : meta.blurb_en;
-      const sectionCourses = grouped[key] || [];
-      const cards = sectionCourses.map(c => (
-        '<div class="course-card" data-chitti-response data-chitti-section="' + _esc(c.name) + '">' +
-          '<div class="name">' + _esc(c.name) + (c.free ? ' <span class="free-badge">FREE</span>' : '') + '</div>' +
-          '<div class="meta">' + _esc(c.provider) + ' · ' + _esc(c.duration) + ' · ' + _esc(c.level) + ' · ' + _esc(c.language) + '</div>' +
-          '<div class="desc"><strong>' + (lang === 'hi' ? 'किसके लिए' : 'For') + ':</strong> ' + _esc(c.for_whom || '') + '</div>' +
-          (c.free_note ? '<div class="desc" style="color:var(--muted);font-size:12px">' + _esc(c.free_note) + '</div>' : '') +
-          '<a class="go" href="' + _esc(c.url) + '" target="_blank" rel="noopener">' + (lang === 'hi' ? 'कोर्स खोलें →' : 'Open course →') + '</a>' +
-        '</div>'
-      )).join('');
-      return (
-        '<div class="course-section">' +
-          '<div class="course-section-head">' +
-            '<div class="course-section-title">' + _esc(label) + '</div>' +
-            (blurb ? '<div class="course-section-blurb">' + _esc(blurb) + '</div>' : '') +
-          '</div>' +
-          cards +
-        '</div>'
-      );
-    }).join('');
-  } catch (e) {
-    status.innerHTML = '⚠️ ' + _esc(e.message || String(e));
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// Category routing
-// ═══════════════════════════════════════════════════════════
-function showCategory(cat){
-  _currentCategory = cat;
-  document.querySelectorAll('nav.tabs .tab').forEach(b => {
-    const isActive = b.getAttribute('data-tab') === cat;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-  document.getElementById('page-feed').classList.toggle('active', cat !== 'prashikshan');
-  document.getElementById('page-courses').classList.toggle('active', cat === 'prashikshan');
-  if (cat === 'prashikshan') loadCourses();
-  else loadFeed(false);
-}
-
-function onPickerChange(){
-  const lang = document.getElementById('pick-lang').value;
-  _setLang(lang);
-  applyChittiLang(lang);
-  if (window.Chitti && Chitti.a11y && Chitti.a11y.setLanguage) {
-    try { Chitti.a11y.setLanguage(lang, { manual: true, source: 'news-ai-picker' }); } catch(e){}
-  }
-  if (_currentCategory === 'prashikshan') loadCourses();
-  else loadFeed(true);
-}
-
-document.addEventListener('chitti:lang', function(e){
-  const lang = e && e.detail && (e.detail.code || e.detail.lang);
-  if (!lang) return;
-  const ps = document.getElementById('pick-lang');
-  if (ps && ps.value !== lang) {
-    ps.value = lang;
-    _setLang(lang);
-    applyChittiLang(lang);
-    if (_currentCategory === 'prashikshan') loadCourses();
-    else loadFeed(true);
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-// v0.3 Profession picker + "For You" career-intel view
-// Accessibility takes precedence over personalization — picker is
-// optional, default "everyone", never blocks content.
-// ═══════════════════════════════════════════════════════════
-const PROFESSION_KEY = 'chitti_news_ai_profession';
-const EXP_KEY        = 'chitti_news_ai_experience';
-const SAL_KEY        = 'chitti_news_ai_salary';
-function _getProfession(){ try { return localStorage.getItem(PROFESSION_KEY) || 'everyone'; } catch(e){ return 'everyone'; } }
-function _setProfession(p){ try { if(p) localStorage.setItem(PROFESSION_KEY, p); } catch(e){} }
-function _clearProfession(){ try { localStorage.removeItem(PROFESSION_KEY); } catch(e){} }
-function _getExperience(){ try { return localStorage.getItem(EXP_KEY) || ''; } catch(e){ return ''; } }
-function _getSalary(){     try { return localStorage.getItem(SAL_KEY) || ''; } catch(e){ return ''; } }
-
-// Persist experience / salary as soon as the user picks them; both are
-// fully optional, never block content, never sent without a profession
-// (Opportunity Engine uses them to bias ranking only).
-function onProfileFieldChange(which, value){
-  try {
-    const key = which === 'exp' ? EXP_KEY : SAL_KEY;
-    if (value) localStorage.setItem(key, value);
-    else       localStorage.removeItem(key);
-  } catch (e) { /* honest silent fallback */ }
-  // If we're on the For You tab, re-render with the new bias.
-  if (typeof _currentCategory !== 'undefined' && _currentCategory === 'foryou'
-      && typeof loadForYou === 'function') {
-    try { loadForYou(); } catch (e) {}
-  }
-}
-
-const STREAM_LABELS = {
-  news: '📰 News', courses: '🎓 Courses', cert: '🏅 Certifications',
-  tool: '🛠️ Tools', job: '💼 Jobs',
-  scheme: '🏛️ Government Schemes', roadmap_node: '🗺️ Learning Roadmaps',
-  channel: '📺 YouTube Channels', person: '👥 People to Follow',
-  free_resource: '🆓 Free Resources',
-};
-const STREAM_ORDER = ['news', 'courses', 'cert', 'tool', 'job', 'scheme', 'roadmap_node', 'channel', 'person', 'free_resource'];
-
-// v0.3 SHIP row #10 — profession picker readable for blind users.
-// Speaks an audible hint the first time the picker gets focus this session.
-// Uses Voice Factory via chitti_a11y.js when available; falls back to
-// browser SpeechSynthesis. Honors the Disability Profile auto-read pattern.
-let _professionPickerSpoken = false;
-function _speakPickerHint(){
-  if (_professionPickerSpoken) return;
-  _professionPickerSpoken = true;
-  const hint = "Choose your profession to get a personalised career feed. " +
-               "Default is everyone. You can change or clear any time. " +
-               "Stored on this device only.";
-  try {
-    if (window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak === 'function') {
-      window.Chitti.a11y.speak(hint);
-    } else if ('speechSynthesis' in window) {
-      const u = new SpeechSynthesisUtterance(hint);
-      u.lang = _LANG_CODE[_chittiLang] || 'en-IN';
-      window.speechSynthesis.speak(u);
-    }
-  } catch (e) { /* honest silent fallback */ }
-}
-
-// Auto-read for blind users on first visit per User Disability Profile.
-// SAHAYAI_MASTER §7 + project_user_disability_profile_locked.
-try {
-  const prof = JSON.parse(localStorage.getItem('chitti_disability_profile') || '{}');
-  if (prof.blind === true) {
-    // Defer until DOM + a11y.js settles
-    setTimeout(_speakPickerHint, 1500);
-  }
-} catch (e) {}
-
-function onProfessionChange(){
-  const sel = document.getElementById('pick-profession');
-  const p = sel.value;
-  if (p === 'everyone') {
-    _clearProfession();
-    document.getElementById('tab-foryou').style.display = 'none';
-    document.getElementById('prof-clear-link').style.display = 'none';
-    // Stay on whatever tab we're on.
-    return;
-  }
-  _setProfession(p);
-  document.getElementById('tab-foryou').style.display = '';
-  document.getElementById('prof-clear-link').style.display = '';
-  showCategory('foryou');
-}
-
-document.getElementById('prof-clear-link')?.addEventListener('click', function(){
-  const sel = document.getElementById('pick-profession');
-  sel.value = 'everyone';
-  onProfessionChange();
-});
-
-// Hijack showCategory to also handle 'foryou' + per-stream tabs
-const _STREAM_TABS = ['cert', 'tool', 'job', 'scheme', 'roadmap', 'channel', 'person', 'free_resource'];
-const _STREAM_TAB_TO_KIND = {cert:'cert', tool:'tool', job:'job', scheme:'scheme', roadmap:'roadmap_node', channel:'channel', person:'person', free_resource:'free_resource'};
-
-function _hideAllAndActivate(pageId, tabSel){
-  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
-  document.querySelectorAll('nav.tabs .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
-  const page = document.getElementById(pageId);
-  if (page) { page.style.display = 'block'; page.classList.add('active'); }
-  const tab = document.querySelector(`nav.tabs .tab${tabSel}`);
-  if (tab) { tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); }
-}
-
-const _origShowCategory = showCategory;
-window.showCategory = function(cat){
-  if (cat === 'foryou') {
-    _hideAllAndActivate('page-foryou', '#tab-foryou');
-    _currentCategory = 'foryou';
-    loadForYou();
-    return;
-  }
-  if (typeof cat === 'string' && cat.startsWith('stream-')) {
-    const tabSlug = cat.replace('stream-', '');
-    const kind = _STREAM_TAB_TO_KIND[tabSlug];
-    if (!kind) return;
-    _hideAllAndActivate('page-' + cat, `[data-tab="${cat}"]`);
-    _currentCategory = cat;
-    loadStreamPage(kind, tabSlug);
-    return;
-  }
-  // Ensure new pages hide when switching back to original tabs
-  ['page-foryou','page-stream-cert','page-stream-tool','page-stream-job','page-stream-scheme','page-stream-roadmap']
-    .forEach(id => { const e = document.getElementById(id); if(e){e.style.display='none';e.classList.remove('active');} });
-  return _origShowCategory(cat);
-};
-
-async function loadStreamPage(kind, tabSlug){
-  const profession = _getProfession();
-  const lang = _chittiLang;
-  const status = document.getElementById(`stream-${tabSlug}-status`);
-  const host = document.getElementById(`stream-${tabSlug}-list`);
-  status.textContent = '⏳ Loading…';
-  host.innerHTML = '';
-  try {
-    const url = `${API_BASE}/api/news-ai/feed/${kind}?profession=${encodeURIComponent(profession)}&lang=${lang}&n=30`;
-    const r = await fetch(url);
-    const data = await r.json();
-    if (!data.items || data.items.length === 0) {
-      status.textContent = profession === 'everyone'
-        ? `No ${kind} ingested yet — try again in a minute (background ingest may still be running).`
-        : `No ${kind} classified for ${_profLabel(profession)} yet. Try 'Everyone' to see all ingested ${kind}.`;
-      return;
-    }
-    status.textContent = '';
-    const sub = profession === 'everyone'
-      ? `${data.count} ${kind} items · sorted by ingest date`
-      : `${data.count} ${kind} items · filtered for ${_profLabel(profession)}`;
-    const section = document.createElement('div');
-    section.className = 'section-card';
-    section.setAttribute('data-chitti-response', '');
-    section.innerHTML = `
-      <div class="section-head">
-        <div>
-          <div class="section-title">${STREAM_LABELS[kind] || kind} (${data.count})</div>
-          <div class="section-sub">${sub}</div>
-        </div>
-      </div>
-      <div>${data.items.map(it => _cardHTML(it, kind)).join('')}</div>`;
-    host.appendChild(section);
-  } catch (e) {
-    status.textContent = `Could not load ${kind}: ${e.message || e}`;
-  }
-}
-
-function _profLabel(slug){
-  const sel = document.getElementById('pick-profession');
-  const opt = sel.querySelector(`option[value="${slug}"]`);
-  return opt ? opt.textContent : slug;
-}
-
-function _cardHTML(item, stream){
-  // ── DECLUTTERED CARD (Sire 2026-06-05 PM "not user friendly at all") ──
-  // Default view: title + 1-line meta + relevance flag if CRITICAL/VERY-IMPORTANT
-  //              + 1 primary action. Everything else under <details> tap-to-expand.
-  const cls = item.classification;
-  const sectionLabel = `${STREAM_LABELS[stream]||stream} — ${(item.title||'').slice(0,50)}`;
-  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-
-  // High-signal relevance flag (only CRITICAL + VERY-IMPORTANT shown by default; rest hidden)
-  let relFlag = '';
-  try {
-    const _profForRel = (typeof _getProfession === 'function' ? _getProfession() : null);
-    if (_profForRel && _profForRel !== 'everyone' && window.ChittiCoach && window.ChittiCoach.relevance) {
-      const _rel = window.ChittiCoach.relevance({
-        title: item.title || '', summary: item.summary || '',
-        topics: (cls && cls.matched_keywords) ? cls.matched_keywords.join(',') : ''
-      }, _profForRel);
-      if (_rel && (_rel.verdict === 'CRITICAL' || _rel.verdict === 'VERY-IMPORTANT')) {
-        relFlag = `<span class="band band-${_rel.verdict}" style="margin-right:6px" title="${esc(_rel.why)}">${_rel.verdict === 'CRITICAL' ? '🔥 Critical' : '⚡ Important'}</span>`;
-      }
-    }
+    localStorage.setItem('chitti_lang', lang);
+    document.documentElement.setAttribute('lang', lang);
+    if (window.Chitti && window.Chitti.lang && window.Chitti.lang.setLang) window.Chitti.lang.setLang(lang);
   } catch (e) {}
-
-  // One-line meta: source name + free/paid + (age if stale)
-  const srcName = item.source ? item.source.name : '';
-  const freeChip = item.is_free
-    ? '<span style="color:var(--med-green);font-weight:700">FREE</span>'
-    : '<span style="color:var(--med-red);font-weight:700">PAID</span>';
-  let ageHint = '';
-  const stamp = item.last_verified_at || item.ingested_at;
-  if (stamp) {
-    const ageDays = (Date.now() - new Date(stamp).getTime()) / 86400000;
-    if (ageDays > 30) ageHint = ` · <span title="Last verified ${Math.round(ageDays)} days ago" style="color:#92400e">⏳ ${Math.round(ageDays)}d</span>`;
-  }
-
-  // Hidden disclosure carries all old badges + classification audit
-  const detailsBlock = `
-    <details class="card-details" style="margin-top:10px">
-      <summary style="font-size:11px;color:var(--muted);font-weight:600;cursor:pointer;padding:4px 0">ℹ More details · trust · classification</summary>
-      <div style="font-size:11.5px;color:var(--text);margin-top:6px;padding:10px;background:rgba(212,175,55,.06);border-radius:8px;line-height:1.6">
-        ${cls ? `<div><strong>Trust:</strong> ${cls.confidence>=0.85?'✅ HIGH-CONFIDENCE':cls.confidence>=0.6?'⚠️ MEDIUM':'🟡 LOW'} · ${(cls.confidence*100).toFixed(0)}% match</div>` : ''}
-        ${item.cost_label ? `<div><strong>Cost:</strong> ${esc(item.cost_label)}</div>` : ''}
-        ${cls ? `<div><strong>Category:</strong> ${esc(cls.category)} · rule v${esc((cls.rule_version||'').replace(/^v/,''))}</div>` : ''}
-        ${cls && (cls.matched_keywords||[]).length ? `<div><strong>Matched keywords:</strong> ${esc((cls.matched_keywords||[]).join(', '))}</div>` : ''}
-        ${cls && (cls.source_signals||[]).length ? `<div><strong>Source signals:</strong> ${esc((cls.source_signals||[]).join(', '))}</div>` : ''}
-      </div>
-    </details>`;
-
-  return `
-    <div class="art-card chitti-response" data-chitti-response data-chitti-section="${sectionLabel.replace(/"/g,'&quot;')}" style="grid-template-columns:1fr;padding:14px 16px">
-      <div>
-        <div class="art-title" style="margin-bottom:6px">${relFlag}${esc(item.title)}</div>
-        ${item.summary ? `<div class="art-summary" style="margin-bottom:10px">${esc((item.summary || '').slice(0,180))}${(item.summary||'').length>180?'…':''}</div>` : ''}
-        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">📡 ${esc(srcName)} · ${freeChip}${ageHint}</div>
-        <div class="art-actions" style="margin-top:4px">
-          <a class="cta-saffron" href="${esc(item.url)}" target="_blank" rel="noopener" aria-label="Open ${esc(item.title).slice(0,60)} at source" style="font-size:12px;padding:8px 14px;min-height:36px;text-decoration:none;display:inline-block">↗ Open at source</a>
-        </div>
-        ${detailsBlock}
-        ${expl}
-      </div>
-    </div>`;
+  renderAll();
+  try {
+    const u = new SpeechSynthesisUtterance('Language changed to ' + lang);
+    u.rate = .95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
 }
-
-async function loadForYou(){
-  const profession = _getProfession();
-  const lang = _chittiLang;
-  const title = document.getElementById('foryou-title');
-  title.textContent = `🎯 For You — ${_profLabel(profession)} · today's career intel`;
-  const status = document.getElementById('foryou-status');
-  const host = document.getElementById('foryou-streams');
-  status.textContent = '⏳ Loading…';
-  host.innerHTML = '';
-
-  let anyItems = false;
-  for (const stream of STREAM_ORDER) {
-    try {
-      const r = await fetch(`${API_BASE}/api/news-ai/feed/${stream}?profession=${encodeURIComponent(profession)}&lang=${lang}&n=5`);
-      const data = await r.json();
-      if (!data.items || data.items.length === 0) continue;
-      anyItems = true;
-      const section = document.createElement('div');
-      section.className = 'section-card';
-      section.setAttribute('data-chitti-response', '');
-      section.setAttribute('data-chitti-section', `For You — ${stream}`);
-      section.innerHTML = `
-        <div class="section-head">
-          <div>
-            <div class="section-title">${STREAM_LABELS[stream] || stream} (${data.count})</div>
-            <div class="section-sub">classified for ${_profLabel(profession)} · ${data.classification_mode || 'on'}</div>
-          </div>
-        </div>
-        <div>${data.items.map(it => _cardHTML(it, stream)).join('')}</div>`;
-      host.appendChild(section);
-    } catch (e) {
-      console.warn(`For-You ${stream} load failed:`, e);
-    }
-  }
-  status.textContent = anyItems
-    ? ''
-    : `No items classified for ${_profLabel(profession)} yet — Chitti is still building. Switch to "Everyone" to see all ingested items.`;
+function speakLangHint() {
+  try {
+    const sel = document.getElementById('lang-select');
+    const u = new SpeechSynthesisUtterance('Language. Currently ' + (sel.options[sel.selectedIndex].textContent || 'English') + '. Use arrow keys to browse 26 Indian languages.');
+    u.rate = .95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
 }
-
-// Restore saved profession on boot
-const savedProf = _getProfession();
-if (savedProf !== 'everyone') {
-  const psel = document.getElementById('pick-profession');
-  psel.value = savedProf;
-  document.getElementById('tab-foryou').style.display = '';
-  document.getElementById('prof-clear-link').style.display = '';
+function speakPage() {
+  try {
+    const u = new SpeechSynthesisUtterance(document.querySelector('main').innerText);
+    u.rate = .95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
 }
-// Restore experience + salary (v0.4 2026-06-04)
-try {
-  const e = _getExperience(); if (e) document.getElementById('pick-experience').value = e;
-  const s = _getSalary();     if (s) document.getElementById('pick-salary').value     = s;
-} catch (err) { /* honest silent fallback */ }
-
-// ═══════════════════════════════════════════════════════════
-// Boot — no profiling, no prompts. Real AI news + Chitti explains. That is all.
-// ═══════════════════════════════════════════════════════════
-applyChittiLang(_chittiLang);
-document.getElementById('pick-lang').value = _chittiLang;
-
-loadFeed(false);
-
-} // _chittiNewsAILoaded guard
 </script>
 
-<!-- Chitti Quality v2 trust signals -->
-<script>window.CHITTI_LAST_AUDIT='2026-05-23';window.CHITTI_CO2_G=0.2;</script>
-<script src="feedback-widget.js" data-page="chitti_news_ai"></script>
-<!-- Chitti accessibility substrate -->
-<script src="chitti_warmup.js"></script>
-<script src="chitti_a11y.js?v=20260529r"></script>
-<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init failed',e);}}</script>
-<script src="chitti_isl.js"></script>
-<script src="chitti_lang.js?v=20260529r"></script>
-<script src="chitti_features.js" defer></script>
-
-<!-- 🎓 Chitti Coach (rules-only, localStorage, closes the 25 gaps audited 2026-06-04) -->
-<script src="chitti_coach.js?v=20260604"></script>
-
-<!-- Modal: Intake (gap #1 — skill assessment + goal + hours) -->
-<div id="cc-modal-intake" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-intake-title">
-  <div class="cc-modal" data-chitti-response data-chitti-section="Intake — get your personalised plan">
-    <h3 id="cc-intake-title">🎓 Get your AI plan</h3>
-    <p class="sub">3 quick questions — no signup, stored on this device only. You can change any time.</p>
-    <label for="cc-intake-skills">Which of these do you already know? (tap all that apply)</label>
-    <div id="cc-intake-skills" class="chips" role="group" aria-label="Existing skills"></div>
-    <label for="cc-intake-goal">Your goal for the next 6 months</label>
-    <select id="cc-intake-goal" aria-label="Goal"></select>
-    <label for="cc-intake-hours">Hours per week you can spend learning</label>
-    <input id="cc-intake-hours" type="number" min="1" max="40" value="5" aria-label="Hours per week" />
-
-    <hr style="border:none;border-top:1px solid #eee;margin:14px 0" />
-    <p class="sub" style="font-weight:600;color:#444">🧭 AI Readiness — 3 quick taps (COSDF v1.1)</p>
-
-    <label for="cc-intake-ai-usage">How much do you use AI today?</label>
-    <select id="cc-intake-ai-usage" aria-label="AI usage level">
-      <option value="none">Never used AI</option>
-      <option value="low">Tried ChatGPT/Claude a few times</option>
-      <option value="med">Use it weekly</option>
-      <option value="high">Use it daily for real work</option>
-    </select>
-
-    <label for="cc-intake-prompting">Your prompting comfort</label>
-    <select id="cc-intake-prompting" aria-label="Prompting comfort">
-      <option value="beginner">Beginner — I write short questions</option>
-      <option value="intermediate">Intermediate — I structure prompts</option>
-      <option value="advanced">Advanced — I use system prompts, chains</option>
-      <option value="expert">Expert — I build agents / RAG / DSPy</option>
-    </select>
-
-    <label for="cc-intake-automation">Workflows you have automated with AI</label>
-    <select id="cc-intake-automation" aria-label="Automation level">
-      <option value="none">None yet</option>
-      <option value="some">1-3 workflows</option>
-      <option value="many">Many workflows / production deployments</option>
-    </select>
-
-    <div class="actions">
-      <button type="button" onclick="ccIntakeClose()" aria-label="Maybe later — close intake">Maybe later</button>
-      <button type="button" class="cta-saffron" onclick="ccIntakeSave()" aria-label="Save my intake and build my AI plan">Build my plan</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Ask the Coach (gap #5) -->
-<div id="cc-modal-ask" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-ask-title">
-  <div class="cc-modal" data-chitti-response data-chitti-section="Ask the coach">
-    <h3 id="cc-ask-title">💬 Ask the Coach</h3>
-    <p class="sub">Pick the question closest to yours. The coach is rules-only — answers come from the corpus, no LLM.</p>
-    <div id="cc-ask-questions"></div>
-    <div id="cc-ask-answer" style="margin-top:14px"></div>
-    <div class="actions">
-      <button type="button" onclick="ccAskClose()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: CV Builder (gap #14) -->
-<div id="cc-modal-cv" class="cc-modal-bg" role="dialog" aria-modal="true" aria-labelledby="cc-cv-title">
-  <div class="cc-modal" data-chitti-response data-chitti-section="CV builder">
-    <h3 id="cc-cv-title">📋 Your AI Upskilling CV section</h3>
-    <p class="sub">Auto-generated from items you marked done. Copy into your LinkedIn About / GitHub README / CV.</p>
-    <textarea id="cc-cv-text" readonly rows="14" aria-label="Generated CV markdown"></textarea>
-    <div class="actions">
-      <button type="button" onclick="ccCvClose()">Close</button>
-      <button type="button" class="primary" onclick="ccCvCopy()">📋 Copy</button>
-    </div>
-  </div>
-</div>
-
+<!-- BO4-9 — Picker + Hero + News + Hub + Tour orchestration -->
 <script>
 (function () {
-  if (!window.ChittiCoach) return;
-  var CC = window.ChittiCoach;
+  const API = 'https://chitti-news-ai-api-production.up.railway.app';
 
-  // Build a lookup so CV builder can resolve titles
-  window.__ccItemTitleCache = window.__ccItemTitleCache || {};
-  function _registerItemTitle(id, title) { if (id && title) window.__ccItemTitleCache[id] = title; }
-  function _itemTitle(id) { return window.__ccItemTitleCache[id] || null; }
+  // ── BO4 — Profession picker (embedded in hero State-1) + persistence ──
+  const PROF_OPTIONS = [
+    ['everyone', '🌐 Everyone'],
+    ['software-developer', '💻 Software Developer'],
+    ['hr-professional', '🤝 HR Professional'],
+    ['talent-acquisition', '🎯 Talent Acquisition'],
+    ['doctor', '🩺 Doctor'],
+    ['oncologist', '🎗️ Oncologist'],
+    ['nurse', '🩹 Nurse'],
+    ['farmer', '🌾 Farmer'],
+    ['teacher', '📚 Teacher'],
+    ['lawyer', '⚖️ Lawyer'],
+    ['accountant', '📊 Accountant / CA'],
+    ['student', '🎓 Student'],
+    ['business-owner', '🏪 Business Owner'],
+    ['government-employee', '🏛️ Government Employee'],
+  ];
+  const PROF_LABEL = Object.fromEntries(PROF_OPTIONS);
 
-  // ── Sync intake with existing profession/exp/salary pickers (gap #1, #7) ──
-  function ccBootstrap() {
-    var p = CC.profile.init();
-    // Seed from existing UI inputs
-    try {
-      var profession = (document.getElementById('pick-profession') || {}).value;
-      if (profession && profession !== 'everyone' && (!p.profession || p.profession === 'everyone')) {
-        p.profession = profession;
-      }
-      var exp = (document.getElementById('pick-experience') || {}).value;
-      if (exp && !p.experience) p.experience = exp;
-      var sal = (document.getElementById('pick-salary') || {}).value;
-      if (sal && !p.salary_band) p.salary_band = sal;
-      var lang = (document.getElementById('pick-lang') || {}).value;
-      if (lang) p.language = lang;
-      CC.profile.set(p);
-    } catch (e) {}
+  function _profileInit() {
+    return (window.ChittiCoach && window.ChittiCoach.profile && window.ChittiCoach.profile.init && window.ChittiCoach.profile.init()) || {};
+  }
+  function _profileSet(p) {
+    if (window.ChittiCoach && window.ChittiCoach.profile && window.ChittiCoach.profile.set) window.ChittiCoach.profile.set(p);
+  }
+  function pickProfession(slug) {
+    const p = _profileInit();
+    p.profession = slug;
+    _profileSet(p);
+    renderAll();
+  }
 
-    ccRenderUrgentStrip();
-    ccRenderMyCoach();
-    ccRenderSkipList();
-    try { ccRenderHub(); } catch (e) {}
-
-    // First-visit auto-prompt only when user has picked a profession but no goal yet (gap #1)
-    if (p.profession && p.profession !== 'everyone' && !p.goal) {
-      setTimeout(ccIntakeOpen, 1200);
+  // ── BO5 — Hero state machine ──
+  function heroState() {
+    const p = _profileInit();
+    if (!p.profession || p.profession === 'everyone') return 1;
+    if (window.ChittiCoach && window.ChittiCoach.curriculumProgress) {
+      const prog = window.ChittiCoach.curriculumProgress('28-day-tour', p);
+      if (prog.certified) return 4;
+      if (prog.done_count > 0) return 3;
     }
+    return 2;
   }
-
-  // ── Intake modal (gap #1, #7) ──
-  window.ccIntakeOpen = function () {
-    var p = CC.profile.init();
-    var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
-    if (!prof || prof === 'everyone') prof = 'student';
-    var skills = CC.vocab.skills[prof] || [];
-    var goals  = CC.vocab.goals[prof]  || [];
-    var skillsBox = document.getElementById('cc-intake-skills');
-    skillsBox.innerHTML = skills.map(function (s) {
-      var checked = (p.current_skills || []).indexOf(s) >= 0 ? 'checked' : '';
-      return '<label><input type="checkbox" value="' + s + '" ' + checked + '> ' + s.replace(/-/g,' ') + '</label>';
-    }).join('');
-    var goalSel = document.getElementById('cc-intake-goal');
-    goalSel.innerHTML = '<option value="">— pick one —</option>' + goals.map(function (g) {
-      var sel = p.goal === g.v ? 'selected' : '';
-      return '<option value="' + g.v + '" ' + sel + '>' + g.t + '</option>';
-    }).join('');
-    document.getElementById('cc-intake-hours').value = p.hours_per_week || 5;
-    // COSDF v1.1 — 3 readiness inputs
-    var au = document.getElementById('cc-intake-ai-usage');   if (au) au.value = p.ai_usage   || 'none';
-    var pr = document.getElementById('cc-intake-prompting');  if (pr) pr.value = p.prompting  || 'beginner';
-    var am = document.getElementById('cc-intake-automation'); if (am) am.value = p.automation || 'none';
-    document.getElementById('cc-modal-intake').classList.add('open');
-    CC.speak('Six quick taps to build your AI learning plan and readiness score.');
-  };
-  window.ccIntakeClose = function () { document.getElementById('cc-modal-intake').classList.remove('open'); };
-  window.ccIntakeSave = function () {
-    var p = CC.profile.init();
-    var skills = Array.prototype.map.call(
-      document.querySelectorAll('#cc-intake-skills input:checked'),
-      function (cb) { return cb.value; });
-    p.current_skills  = skills;
-    p.goal            = document.getElementById('cc-intake-goal').value || '';
-    p.hours_per_week  = Math.max(1, Math.min(40, parseInt(document.getElementById('cc-intake-hours').value, 10) || 5));
-    // COSDF v1.1 — 3 readiness inputs
-    var au = document.getElementById('cc-intake-ai-usage');   if (au) p.ai_usage   = au.value || 'none';
-    var pr = document.getElementById('cc-intake-prompting');  if (pr) p.prompting  = pr.value || 'beginner';
-    var am = document.getElementById('cc-intake-automation'); if (am) p.automation = am.value || 'none';
-    CC.profile.set(p);
-    ccIntakeClose();
-    ccRenderMyCoach();
-    if (typeof ccRenderHub === 'function') ccRenderHub();
-    ccRenderUrgentStrip();
-    showCategory('profession-hub');
-  };
-
-  // ── Ask the Coach (gap #5) ──
-  window.ccAskOpen = function () {
-    var qs = CC.listQuestions();
-    document.getElementById('cc-ask-questions').innerHTML = qs.map(function (q) {
-      return '<button type="button" class="cc-qa-question" onclick="ccAskShow(' + q.idx + ')">' + q.q + '</button>';
-    }).join('');
-    document.getElementById('cc-ask-answer').innerHTML = '';
-    document.getElementById('cc-modal-ask').classList.add('open');
-    CC.speak('Pick the question closest to yours. The coach picks resources from the corpus.');
-  };
-  window.ccAskClose = function () { document.getElementById('cc-modal-ask').classList.remove('open'); };
-  window.ccAskShow = function (idx) {
-    var flow = CC.askCoach(idx); if (!flow) return;
-    document.getElementById('cc-ask-answer').innerHTML =
-      '<div style="font-size:13px;font-weight:800;margin-bottom:8px;color:#0E2344">' +
-      'Chitti recommends:</div>' +
-      '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">' +
-      flow.items.map(function (id) {
-        var title = _itemTitle(id) || id;
-        return '<li><strong>' + title + '</strong> <span style="color:#6b7280">(id: ' + id + ')</span></li>';
-      }).join('') +
-      '</ul>' +
-      '<p style="font-size:12px;color:#6b7280;margin-top:10px;font-style:italic">Open the Roadmaps / Tools / Free Resources tabs to find these items in context.</p>';
-  };
-
-  // ── CV Builder (gap #14) ──
-  window.ccCvOpen = function () {
-    var p = CC.profile.init();
-    document.getElementById('cc-cv-text').value = CC.buildCV(p, _itemTitle);
-    document.getElementById('cc-modal-cv').classList.add('open');
-  };
-  window.ccCvClose = function () { document.getElementById('cc-modal-cv').classList.remove('open'); };
-  window.ccCvCopy = function () {
-    var ta = document.getElementById('cc-cv-text');
-    ta.select(); document.execCommand('copy');
-    CC.speak('Copied to clipboard.');
-  };
-
-  // ── Urgent strip (gap #8, #16, #17) ──
-  function ccRenderUrgentStrip() {
-    var box = document.getElementById('cc-urgent'); if (!box) return;
-    var p   = CC.profile.init();
-    var u   = CC.urgentList(p);
-    if (!u || u.length === 0) { box.classList.add('empty'); box.innerHTML = ''; return; }
-    box.classList.remove('empty');
-    box.innerHTML =
-      '<div class="urgent-title">🔥 Closing soon — act this week</div>' +
-      u.slice(0,3).map(function (it) {
-        var d = CC.daysUntilIST(it.deadline);
-        return '<div class="urgent-item">' +
-          '<div><a href="' + it.url + '" target="_blank" rel="noopener">' + it.title + '</a> ' +
-          '<span style="color:#6b7280;font-size:11px">· ' + it.tag + '</span></div>' +
-          '<div class="urgent-days">' + d + 'd</div>' +
-        '</div>';
-      }).join('');
-  }
-
-  // ── My Coach tab (gaps #2, #3, #11, #12, #13, #14, #20, #25) ──
-  function ccRenderMyCoach() {
-    var host = document.getElementById('my-coach-content'); if (!host) return;
-    var p = CC.profile.init();
-    if (!p.profession || p.profession === 'everyone' || !p.goal) {
-      host.innerHTML =
-        '<div class="section-card" style="text-align:center;padding:24px" data-chitti-response data-chitti-section="My Coach intro">' +
-          '<h3 style="margin:0 0 8px;color:var(--navy)">🎓 Welcome to your Coach</h3>' +
-          '<p style="margin:0 0 14px;color:var(--muted);font-size:13.5px;line-height:1.55">Tell me 3 quick things and I\'ll build a personalised 4-week plan from 800+ free resources.</p>' +
-          '<button onclick="ccIntakeOpen()" class="refresh" style="border:none;color:#fff">Start intake</button>' +
-        '</div>';
-      return;
-    }
-    var salary = CC.salaryFor(p.profession, p.experience);
-    var delta  = CC.salaryDelta(p.profession);
-    var stories = CC.peerStoriesFor(p.profession);
-    var html =
-      '<div class="cc-salary-card" data-chitti-response data-chitti-section="Your salary outlook">' +
-        '<div class="label">Your current band (estimated India median)</div>' +
-        '<div class="value">' + salary + '</div>' +
-        '<div class="delta">+ AI skill premium: ' + delta + '</div>' +
-      '</div>';
-    if (stories.length) {
-      html += '<div class="cc-peer" data-chitti-response data-chitti-section="Peers who upskilled">' +
-        '<h4>👥 Peers who did this</h4>' +
-        '<ul>' + stories.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
-      '</div>';
-    }
-    html +=
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">' +
-        '<button class="refresh" onclick="ccAskOpen()" style="border:none">💬 Ask the Coach</button>' +
-        '<button class="refresh" onclick="ccCvOpen()" style="border:none">📋 Build my CV section</button>' +
-        '<button class="refresh" onclick="ccIntakeOpen()" style="border:none;background:#fff;color:var(--navy);border:1px solid var(--border)">⚙️ Re-do intake</button>' +
-        '<button class="refresh" onclick="ccRequestNotifs()" style="border:none;background:#fff;color:var(--navy);border:1px solid var(--border)">🔔 Notify me</button>' +
-      '</div>';
-    host.innerHTML = html +
-      '<div id="cc-plan-host"><div class="section-empty">Loading your plan from the corpus…</div></div>' +
-      '<p style="font-size:11.5px;color:var(--muted);font-style:italic;margin-top:14px">' +
-      'Plan is generated by deterministic rules from your profile — no LLM. Mark items Done / Skip to refine future plans.</p>';
-    ccBuildPlanFromCorpus(p);
-  }
-
-  // Fetch a wide slice of corpus across roadmap/cert/tool/channel/free_resource,
-  // then run CC.generatePlan(items, profile).
-  function ccBuildPlanFromCorpus(p) {
-    var base = (typeof getApiBase === 'function') ? getApiBase() : '';
-    if (!base) return;
-    var streams = ['roadmap_node', 'cert', 'tool', 'channel', 'free_resource'];
-    var fetches = streams.map(function (s) {
-      return fetch(base + '/api/news-ai/feed/' + s + '?profession=' + encodeURIComponent(p.profession) + '&n=100')
-        .then(function (r) { return r.json(); })
-        .then(function (d) { return (d.items || []).map(function (it) { it.__stream = s; return it; }); })
-        .catch(function () { return []; });
-    });
-    Promise.all(fetches).then(function (lists) {
-      var all = [].concat.apply([], lists);
-      all.forEach(function (it) { _registerItemTitle(it.id || it.external_id, it.title); });
-      var plan = CC.generatePlan(all, p);
-      var host = document.getElementById('cc-plan-host'); if (!host) return;
-      if (!plan.weeks || plan.weeks.every(function (w) { return w.length === 0; })) {
-        host.innerHTML = '<div class="section-empty">Plan is empty — corpus thin for this profession + goal combination. Open Roadmaps tab to browse.</div>';
-        return;
-      }
-      host.innerHTML = plan.weeks.map(function (week, i) {
-        if (week.length === 0) return '';
-        var subtitle = 'Week ' + (i+1) + ' · ' + week.length + ' items · ~' + (plan.hours_per_week) + ' h target';
-        return '<div class="cc-week" data-chitti-response data-chitti-section="Week ' + (i+1) + ' plan">' +
-          '<h4>📅 Week ' + (i+1) + '</h4>' +
-          '<div class="week-summary">' + subtitle + '</div>' +
-          week.map(function (it) {
-            var url = it.url || '#';
-            var tier = it._tier || 'silver';
-            var tierBadge = '<span class="cc-tier-badge cc-tier-' + tier + '">' + tier + '</span>';
-            var why = CC.whyThisForYou(it, p);
-            var outcome = CC.outcomeFor(it.id);
-            return '<div class="item-row">' +
-              '<div class="tier">' + tierBadge + '</div>' +
-              '<div class="title"><a href="' + url + '" target="_blank" rel="noopener">' + (it.title || it.id || '?') + '</a>' +
-                (why ? '<div class="cc-why">' + why + '</div>' : '') +
-                (outcome ? '<div class="cc-outcome">' + outcome + '</div>' : '') +
-                '<div class="cc-actions">' +
-                  '<button class="done" onclick="ccMarkDone(\'' + (it.id||'') + '\', this)">✅ Mark Done</button>' +
-                  '<button class="skip" onclick="ccMarkSkip(\'' + (it.id||'') + '\', this)">🚫 Skip</button>' +
-                '</div>' +
-              '</div>' +
-            '</div>';
-          }).join('') +
-        '</div>';
-      }).join('');
-    });
-  }
-
-  window.ccMarkDone = function (id, btn) {
-    if (!id) return; CC.markDone(id, _itemTitle(id));
-    if (btn) btn.textContent = '✓ Done';
-    setTimeout(ccRenderMyCoach, 400);
-  };
-  window.ccMarkSkip = function (id, btn) {
-    if (!id) return; CC.markSkipped(id);
-    if (btn) { var row = btn.closest('.item-row'); if (row) row.style.opacity = '.4'; }
-    setTimeout(ccRenderMyCoach, 400);
-  };
-  window.ccRequestNotifs = function () {
-    CC.requestNotificationPermission().then(function (perm) {
-      CC.speak(perm === 'granted' ? 'Notifications enabled. I will alert you on deadlines.' : 'Notifications are off. You can enable any time.');
-    });
-  };
-
-  // ── Skip-This tab (gap #24) ──
-  function ccRenderSkipList() {
-    var host = document.getElementById('what-not-to-do-content'); if (!host) return;
-    var skips = CC.skipList();
-    host.innerHTML =
-      '<div class="section-card" style="background:#fef3c7;border-color:#f59e0b;margin-bottom:14px" data-chitti-response data-chitti-section="Skip This intro">' +
-        '<h3 style="margin:0 0 6px;color:#7c2d12">🚫 What NOT to do (and what to do instead)</h3>' +
-        '<p style="margin:0;color:#7c2d12;font-size:13.5px;line-height:1.55">A career coach who only says "do this" is half-useful. Here is the explicit "skip" list — save ₹ and time.</p>' +
-      '</div>' +
-      skips.map(function (s) {
-        return '<div class="cc-skip-card" data-chitti-response data-chitti-section="Skip — ' + s.id + '">' +
-          '<div class="skip-title">🚫 ' + s.title + '</div>' +
-          '<div class="skip-reason"><strong>Why skip:</strong> ' + s.reason + '</div>' +
-          '<div class="skip-alt"><strong>Do instead:</strong> ' + s.alternative + '</div>' +
-        '</div>';
-      }).join('');
-  }
-
-  // ── Coach Picks tab (Sire 2026-06-05 — Instagram-post style) ──
-  function ccRenderCoachPicks() {
-    var host = document.getElementById('coach-picks-content'); if (!host) return;
-    var picks = CC.coachPicks();
-    var keys  = ['youtube','free_courses','corporate','govt','free_certs','ai_tools'];
-    function tagClass(t) {
-      var s = (t || '').toLowerCase();
-      if (s.indexOf('gold')   >= 0) return 'gold';
-      if (s.indexOf('hindi')  >= 0) return 'hindi';
-      if (s.indexOf('indian') >= 0) return 'indian';
-      if (s.indexOf('free')   >= 0) return 'free';
-      return '';
-    }
-    var html = '';
-    keys.forEach(function (k) {
-      var grp = picks[k]; if (!grp) return;
-      html += '<div class="cp-section" data-chitti-response data-chitti-section="' + grp.title + '">';
-      html += '<h3>' + grp.title + '</h3>';
-      html += '<div class="cp-sub">' + grp.sub + '</div>';
-      html += '<ul class="cp-list">';
-      grp.items.forEach(function (it) {
-        var tc = tagClass(it.tag);
-        var tagHtml = it.tag ? ' <span class="cp-tag ' + tc + '">' + it.tag + '</span>' : '';
-        html += '<li>' +
-          '<span class="cp-skill">' + it.skill + '</span>' +
-          '<span class="cp-link"><a href="' + it.url + '" target="_blank" rel="noopener">' + it.url.replace(/^https?:\/\//,'') + '</a>' + tagHtml + '</span>' +
-        '</li>';
+  function renderHero() {
+    const el = document.getElementById('hero'); if (!el) return;
+    const p = _profileInit();
+    const state = heroState();
+    let html = '';
+    if (state === 1) {
+      el.classList.add('hero-state-1');
+      html = '<h1>' + _t('hero_s1_h') + '</h1><p class="hero-sub">' + _t('hero_s1_sub') + '</p>';
+      html += '<div class="hero-grid">';
+      ['doctor','farmer','teacher','software-developer','accountant','student'].forEach(function (slug) {
+        const lbl = PROF_LABEL[slug] || slug;
+        html += '<button type="button" onclick="window.ccPick(\'' + slug + '\')" aria-label="I am a ' + slug.replace(/-/g,' ') + '"><span class="ico" aria-hidden="true">' + lbl.split(' ')[0] + '</span><span>' + lbl.split(' ').slice(1).join(' ') + '</span></button>';
       });
-      html += '</ul></div>';
-    });
-    html += '<div class="cp-cta">Inspired by Sire (2026-06-05): one channel/course/tool per skill — scannable, opinionated, no fluff. Refresh this tab as we expand. <strong>Free-first.</strong></div>';
-    host.innerHTML = html;
-    CC.speak('Coach picks loaded. One channel, course or tool per skill — free first.');
+      html += '</div>';
+      html += '<div class="pickers"><label for="hero-pick-prof">Or pick from full list</label><select id="hero-pick-prof" onchange="window.ccPick(this.value)" onfocus="speakProfessionHint()" aria-label="Pick your profession. 13 options plus Everyone.">';
+      PROF_OPTIONS.forEach(function (opt) {
+        const sel = (p.profession || 'everyone') === opt[0] ? ' selected' : '';
+        html += '<option value="' + opt[0] + '"' + sel + '>' + opt[1] + '</option>';
+      });
+      html += '</select></div>';
+    } else if (state === 2) {
+      const lbl = (PROF_LABEL[p.profession] || p.profession).replace(/^[^ ]+ /, '');
+      html = '<h1>' + _t('hero_s2_h') + '</h1><p class="hero-sub">' + _t('hero_s2_sub') + '</p>';
+      html += '<button type="button" class="hero-cta-primary" onclick="window.ccScroll(\'tour-section\')" aria-label="' + _t('hero_s2_cta') + ' ' + lbl + '">🎓 ' + _t('hero_s2_cta') + ' ' + lbl + '</button>';
+      html += '<p style="margin-top:10px;font-size:12px;color:var(--muted);text-align:center">Or <a href="#" onclick="event.preventDefault();window.ccClearProf()" style="color:var(--saffron);font-weight:700">change role</a></p>';
+    } else if (state === 3) {
+      const prog = window.ChittiCoach.curriculumProgress('28-day-tour', p);
+      const pct = Math.round((prog.done_count / 28) * 100);
+      html = '<h1>' + _t('hero_s3_h') + '</h1><p class="hero-sub">' + _t('hero_s3_sub') + '</p>';
+      html += '<button type="button" class="hero-cta-primary" onclick="window.ccScroll(\'tour-section\')" aria-label="Day ' + prog.next_day + ' of 28">📚 Day ' + prog.next_day + ' of 28 — today\'s 15-min mission</button>';
+      html += '<div class="hero-prog" aria-live="polite"><div class="hero-prog-bar"><div class="hero-prog-fill" style="width:' + pct + '%"></div></div><div class="hero-prog-lbl">' + prog.done_count + ' / 28 days complete · ' + pct + '%</div></div>';
+    } else {
+      html = '<h1>' + _t('hero_s4_h') + '</h1><p class="hero-sub">' + _t('hero_s4_sub') + '</p>';
+      html += '<button type="button" class="hero-cta-primary" onclick="window.ccClaimCert()" aria-label="' + _t('hero_s4_cta') + '">📜 ' + _t('hero_s4_cta') + '</button>';
+    }
+    el.innerHTML = html;
+  }
+  window.ccPick = pickProfession;
+  window.ccScroll = function (id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); };
+  window.ccClearProf = function () { const p = _profileInit(); p.profession = 'everyone'; _profileSet(p); renderAll(); };
+  window.speakProfessionHint = function () {
+    try { const u = new SpeechSynthesisUtterance('Profession picker. 14 options. Use arrow keys to browse. Default everyone.'); u.rate = .95; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {}
+  };
+
+  // ── BO7 — News feed (decluttered cards) ──
+  async function renderNews() {
+    const sub = document.getElementById('news-sub');
+    const feed = document.getElementById('news-feed');
+    const p = _profileInit();
+    const profSlug = p.profession || 'everyone';
+    const profLbl = (PROF_LABEL[profSlug] || _t('news_everyone')).replace(/^[^ ]+ /, '');
+    sub.textContent = _t('news_for') + ' ' + profLbl;
+    feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">' + _t('news_loading') + '</div>';
+    try {
+      const lang = localStorage.getItem('chitti_lang') || 'en';
+      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10');
+      const j = await r.json();
+      const items = (j && j.items) || [];
+      if (!items.length) { feed.innerHTML = '<p style="color:var(--muted);text-align:center;padding:16px">No AI news yet. Try Refresh in a minute.</p>'; return; }
+      feed.innerHTML = items.map(_renderCard).join('');
+    } catch (e) {
+      feed.innerHTML = '<p style="color:var(--med-red);text-align:center;padding:16px">Could not load news. Check connection and try again.</p>';
+    }
+  }
+  function _esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+  function _renderCard(item) {
+    const cls = item.classification;
+    const p = _profileInit();
+    let flag = '';
+    try {
+      if (p.profession && p.profession !== 'everyone' && window.ChittiCoach && window.ChittiCoach.relevance) {
+        const rel = window.ChittiCoach.relevance({ title: item.title || '', summary: item.summary || '', topics: (cls && cls.matched_keywords) ? cls.matched_keywords.join(',') : '' }, p.profession);
+        if (rel && rel.verdict === 'CRITICAL') flag = '<span class="flag flag-critical" title="' + _esc(rel.why) + '">🔥 Critical for you</span>';
+        else if (rel && rel.verdict === 'VERY-IMPORTANT') flag = '<span class="flag flag-important" title="' + _esc(rel.why) + '">⚡ Important for you</span>';
+      }
+    } catch (e) {}
+    const src = item.source && item.source.name ? item.source.name : 'Unknown source';
+    const free = item.is_free
+      ? '<span style="color:var(--med-green);font-weight:700">FREE</span>'
+      : '<span style="color:var(--med-red);font-weight:700">PAID</span>';
+    let stale = '';
+    const stamp = item.last_verified_at || item.ingested_at;
+    if (stamp) { const age = (Date.now() - new Date(stamp).getTime()) / 86400000; if (age > 30) stale = '<span class="sep">·</span><span style="color:#92400e">⏳ ' + Math.round(age) + 'd</span>'; }
+    return '<article class="card" data-chitti-response data-chitti-section="' + _esc((item.title||'').slice(0,50)) + '">' +
+      '<h3 class="card-title">' + flag + _esc(item.title) + '</h3>' +
+      (item.summary ? '<p class="card-summary">' + _esc((item.summary || '').slice(0,180)) + ((item.summary||'').length>180?'…':'') + '</p>' : '') +
+      '<div class="card-meta">📡 ' + _esc(src) + '<span class="sep">·</span>' + free + stale + '</div>' +
+      '<a class="card-action" href="' + _esc(item.url) + '" target="_blank" rel="noopener" aria-label="Open ' + _esc((item.title||'').slice(0,60)) + ' at source">↗ Open at source</a>' +
+      (cls ? '<details><summary>ℹ More details · trust · classification</summary><div>' +
+        (cls ? '<div><strong>Trust:</strong> ' + (cls.confidence>=0.85?'✅ HIGH-CONFIDENCE':cls.confidence>=0.6?'⚠️ MEDIUM':'🟡 LOW') + ' · ' + (cls.confidence*100).toFixed(0) + '% match</div>' : '') +
+        '<div><strong>Category:</strong> ' + _esc(cls.category) + '</div>' +
+        ((cls.matched_keywords||[]).length ? '<div><strong>Matched keywords:</strong> ' + _esc((cls.matched_keywords||[]).join(', ')) + '</div>' : '') +
+        '</div></details>' : '') +
+      '</article>';
   }
 
-  // ── COSDF v1.1 — Profession Hub renderer (L23) ─────────────────────
-  function _hubEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
-  }); }
-  function _hubBar(value, max, hue) {
-    max = max || 100; hue = hue || 28;
-    var pct = Math.max(0, Math.min(100, (value/max)*100));
-    return '<div class="hub-bar"><div class="hub-bar-fill" style="width:' + pct + '%;background:hsl(' + hue + ',75%,55%)"></div></div>';
-  }
-  function _hubProfLabel(slug) {
-    var map = { 'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist','nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer','accountant':'Accountant / CA','hr-professional':'HR Professional','talent-acquisition':'Talent Acquisition','business-owner':'Business Owner','government-employee':'Government Employee','student':'Student' };
-    return map[slug] || slug;
-  }
-  function ccRenderHub() {
-    var host = document.getElementById('profession-hub-content'); if (!host) return;
-    var p = CC.profile.init();
-    var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
-    if (!prof || prof === 'everyone') prof = 'student';
-    var hub = (CC.buildHub ? CC.buildHub(prof, p) : null);
-    if (!hub || !hub.impact) {
-      host.innerHTML = '<div class="section-empty">No Hub data for profession <strong>' + _hubEsc(prof) + '</strong> yet. Pick a profession from the dropdown above.</div>';
+  // ── BO8 — Profession Hub renderer ──
+  function renderHub() {
+    const sec = document.getElementById('hub-section');
+    const host = document.getElementById('hub-content');
+    if (!sec || !host) return;
+    const p = _profileInit();
+    if (!p.profession || p.profession === 'everyone' || !window.ChittiCoach || !window.ChittiCoach.buildHub) {
+      sec.style.display = 'none';
       return;
     }
-    var imp = hub.impact, rd = hub.readiness, ms = hub.mission, projects = hub.projects || [], prompts = hub.prompts || [], comps = hub.comparisons || [], fc = hub.forecast || [];
-
-    var html = '';
-
-    // Hub header — 4 numeric scores (L13)
-    html += '<header class="hub-header" data-chitti-response data-chitti-section="Profession Hub header">';
-    html += '<h2 class="hub-title">🏛️ ' + _hubEsc(_hubProfLabel(prof)) + ' Hub</h2>';
-    html += '<p class="hub-sub">COSDF v1.1 · 10 layers, one role · FREE-first · ' + _hubEsc((p.language || 'en').toUpperCase()) + '</p>';
-    // MedUPI-parity: use metric-grid + metric-card pattern (parity with chitti_medupi.html)
-    var riskBand = imp.disruption_risk >= 60 ? 'risk-high' : imp.disruption_risk >= 40 ? 'risk-medium' : 'risk-low';
-    var oppBand  = imp.opportunity_level >= 70 ? 'risk-low' : imp.opportunity_level >= 40 ? 'risk-medium' : 'risk-high';
-    html += '<div class="metric-grid hub-scores">';
-    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Disruption Risk <span class="' + riskBand + '">' + (imp.disruption_risk>=60?'HIGH':imp.disruption_risk>=40?'MED':'LOW') + '</span></div><div class="metric-card-val hub-score-val">' + imp.disruption_risk + '%</div>' + _hubBar(imp.disruption_risk, 100, 0) + '</div>';
-    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Adoption (industry)</div><div class="metric-card-val hub-score-val">' + imp.adoption_level + '</div>' + _hubBar({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50, 100, 200) + '</div>';
-    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">AI Opportunity <span class="' + oppBand + '">' + (imp.opportunity_level>=70?'HIGH':imp.opportunity_level>=40?'MED':'LOW') + '</span></div><div class="metric-card-val hub-score-val">' + imp.opportunity_level + '%</div>' + _hubBar(imp.opportunity_level, 100, 140) + '</div>';
-    html += '  <div class="metric-card hub-score"><div class="metric-card-lbl">Your AI Readiness</div><div class="metric-card-val hub-score-val">' + rd.score + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100 · ' + _hubEsc(rd.band) + '</span></div>' + _hubBar(rd.score, 100, 28) + '</div>';
-    html += '</div>';
-    html += '<div class="hub-verdict">💡 <strong>Chitti\'s verdict:</strong> ' + _hubEsc(imp.verdict) + '</div>';
-    html += '<div class="hub-sourced">📡 ' + _hubEsc(imp.sourced_from) + '</div>';
-    html += '</header>';
-
-    // Sub-section nav (sticky chip row)
-    html += '<nav class="hub-subnav" role="navigation" aria-label="Hub sections">';
-    [
-      ['impact','📊 Impact'],['explains','🔍 Why this matters'],['readiness','🧭 Readiness'],
-      ['mission','🎯 This week\'s mission'],['projects','🛠️ Real projects'],['prompts','💬 Prompts'],
-      ['comparisons','⚖️ Tool comparisons'],['jobs','💼 Jobs Radar'],['forecast','🔮 3-year forecast'],['mentor','🧑‍🏫 Mentor']
-    ].forEach(function (pair) {
-      html += '<a class="hub-chip" href="#hub-sec-' + pair[0] + '">' + pair[1] + '</a>';
-    });
-    html += '</nav>';
-
-    // Section 1 — IMPACT task breakdown (L13) — COLLAPSED by default
-    html += '<section id="hub-sec-impact" class="hub-section" data-chitti-response data-chitti-section="AI Impact — task breakdown">';
-    html += '<details><summary><h3 style="display:inline">📊 AI Impact — task-by-task</h3></summary>';
-    html += '<table class="hub-table"><thead><tr><th>Task</th><th>% automatable</th></tr></thead><tbody>';
-    imp.tasks.forEach(function (t) {
-      html += '<tr><td>' + _hubEsc(t.task) + '</td><td><strong>' + t.automatable + '%</strong> ' + _hubBar(t.automatable, 100, 12) + '</td></tr>';
-    });
-    html += '</tbody></table></details></section>';
-
-    // Section 2 — CHITTI EXPLAINS (L14) — sample relevance verdicts over current feed
-    html += '<section id="hub-sec-explains" class="hub-section" data-chitti-response data-chitti-section="Chitti Explains — relevance to your work">';
-    html += '<h3>🔍 Why this matters to you</h3>';
-    html += '<p class="hub-help">Each news card in your feed now carries a 4-band verdict: <strong>IGNORE · PAY-ATTENTION · VERY-IMPORTANT · CRITICAL</strong>. Open the AI Aaj tab to see them tagged inline.</p>';
-    html += '<div class="hub-band-legend">';
-    html += '<span class="band band-CRITICAL">CRITICAL</span><span class="band band-VERY-IMPORTANT">VERY-IMPORTANT</span><span class="band band-PAY-ATTENTION">PAY-ATTENTION</span><span class="band band-IGNORE">IGNORE</span>';
-    html += '</div></section>';
-
-    // Section 3 — READINESS + Roadmap (L15)
-    html += '<section id="hub-sec-readiness" class="hub-section" data-chitti-response data-chitti-section="Your AI Readiness score + 12-week roadmap">';
-    html += '<h3>🧭 Your AI Readiness — ' + rd.score + ' / 100 · ' + _hubEsc(rd.band) + '</h3>';
-    html += '<p class="hub-help">Based on: AI usage = <strong>' + _hubEsc(rd.inputs.ai_usage) + '</strong>, prompting = <strong>' + _hubEsc(rd.inputs.prompting) + '</strong>, automation = <strong>' + _hubEsc(rd.inputs.automation) + '</strong>, done items = <strong>' + rd.inputs.done_count + '</strong>.</p>';
-    var roadmap = CC.readinessRoadmap ? CC.readinessRoadmap(p, 80) : null;
-    if (roadmap && roadmap.weeks && roadmap.weeks.length) {
-      html += '<details open><summary>📅 Your 12-week roadmap to 80/100</summary><ol class="hub-list">';
-      roadmap.weeks.slice(0,12).forEach(function (w) { html += '<li><strong>Week ' + w.week + ':</strong> ' + _hubEsc(w.action) + '</li>'; });
-      html += '</ol><p class="hub-note">' + _hubEsc(roadmap.note) + '</p></details>';
-    } else if (roadmap) {
-      html += '<p class="hub-note">' + _hubEsc(roadmap.note) + '</p>';
-    }
-    html += '<div class="hub-actions"><button type="button" class="cta-saffron" onclick="ccIntakeOpen()" aria-label="Update my AI readiness inputs">✏️ Update my readiness inputs</button></div>';
-    html += '</section>';
-
-    // Section 4 — THIS WEEK'S MISSION (L16)
-    html += '<section id="hub-sec-mission" class="hub-section" data-chitti-response data-chitti-section="This week\'s 30-minute mission">';
-    html += '<h3>🎯 This week\'s 30-min mission</h3>';
+    sec.style.display = 'block';
+    const hub = window.ChittiCoach.buildHub(p.profession, p);
+    if (!hub || !hub.impact) { host.innerHTML = '<p style="color:var(--muted)">No Hub data yet for ' + _esc(p.profession) + '.</p>'; return; }
+    const imp = hub.impact, rd = hub.readiness, ms = hub.mission, projects = hub.projects || [], fc = hub.forecast || [];
+    const riskBand = imp.disruption_risk >= 60 ? 'risk-high' : imp.disruption_risk >= 40 ? 'risk-medium' : 'risk-low';
+    const oppBand = imp.opportunity_level >= 70 ? 'risk-low' : imp.opportunity_level >= 40 ? 'risk-medium' : 'risk-high';
+    let h = '';
+    h += '<div class="metric-grid">';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Disruption Risk <span class="' + riskBand + '">' + (imp.disruption_risk>=60?'HIGH':imp.disruption_risk>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.disruption_risk + '%</div><div class="bar"><div class="bar-fill" style="width:' + imp.disruption_risk + '%;background:hsl(0,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Adoption</div><div class="metric-val">' + imp.adoption_level + '</div><div class="bar"><div class="bar-fill" style="width:' + ({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50) + '%;background:hsl(200,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Opportunity <span class="' + oppBand + '">' + (imp.opportunity_level>=70?'HIGH':imp.opportunity_level>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.opportunity_level + '%</div><div class="bar"><div class="bar-fill" style="width:' + imp.opportunity_level + '%;background:hsl(140,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">Your Readiness</div><div class="metric-val">' + rd.score + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100 · ' + _esc(rd.band) + '</span></div><div class="bar"><div class="bar-fill" style="width:' + rd.score + '%;background:hsl(28,75%,55%)"></div></div></div>';
+    h += '</div>';
+    h += '<div class="hub-verdict">💡 <strong>Chitti\'s verdict:</strong> ' + _esc(imp.verdict) + '</div>';
+    h += '<div class="hub-source">📡 ' + _esc(imp.sourced_from) + '</div>';
     if (ms) {
-      [['watch','📺 Watch (15 min)','watch'],['read','📖 Read (5 min)','read'],['practice','✍️ Practice (5 min)','practice'],['try','🚀 Try (5 min)','try']].forEach(function (row) {
-        var item = ms[row[2]]; if (!item) return;
-        html += '<div class="hub-mission-step"><div class="hub-mission-step-label">' + row[1] + '</div>';
-        html += '<a class="hub-mission-step-link" href="' + _hubEsc(item.url) + '" target="_blank" rel="noopener">' + _hubEsc(item.title) + ' ↗</a></div>';
+      h += '<div class="hub-sect"><div style="font-weight:800;color:var(--navy);margin-bottom:6px;font-size:14.5px">🎯 This week\'s 30-min mission</div>';
+      ['watch','read','practice','try'].forEach(function (k) {
+        const lbl = { watch:'📺 Watch (15m)', read:'📖 Read (5m)', practice:'✍️ Practice (5m)', try:'🚀 Try (5m)' }[k];
+        if (ms[k]) h += '<div style="padding:4px 0;font-size:13px"><strong>' + lbl + ':</strong> <a href="' + _esc(ms[k].url) + '" target="_blank" rel="noopener" style="color:var(--saffron);font-weight:700">' + _esc(ms[k].title) + ' ↗</a></div>';
       });
-    } else {
-      html += '<p class="section-empty">No mission curated yet for this profession × week.</p>';
+      h += '</div>';
     }
-    html += '</section>';
-
-    // Section 5 — REAL-WORLD PROJECTS (L17)
-    html += '<section id="hub-sec-projects" class="hub-section" data-chitti-response data-chitti-section="Real-world projects you can ship">';
-    html += '<h3>🛠️ Real-world projects (ship one to triple your CV weight)</h3>';
     if (projects.length) {
-      html += '<div class="hub-cards">';
-      projects.forEach(function (pr) {
-        html += '<div class="hub-card">';
-        html += '<div class="hub-card-title">' + _hubEsc(pr.title) + '</div>';
-        html += '<div class="hub-card-meta">⚙️ ' + _hubEsc(pr.stack) + ' · ' + _hubEsc(pr.difficulty) + ' · ~' + pr.hours + ' h</div>';
-        html += '<div class="hub-card-actions"><a class="cc-btn" href="' + _hubEsc(pr.starter) + '" target="_blank" rel="noopener">📦 Starter</a> <a class="cc-btn" href="' + _hubEsc(pr.demo) + '" target="_blank" rel="noopener">👀 Demo</a></div>';
-        html += '</div>';
+      h += '<div class="hub-sect"><div style="font-weight:800;color:var(--navy);margin-bottom:6px;font-size:14.5px">🛠️ Real-world projects</div>';
+      projects.slice(0, 3).forEach(function (pr) {
+        h += '<div style="padding:6px 0;border-bottom:1px dashed var(--border)"><strong>' + _esc(pr.title) + '</strong><div style="font-size:11.5px;color:var(--muted)">⚙️ ' + _esc(pr.stack) + ' · ' + _esc(pr.difficulty) + ' · ~' + pr.hours + ' h</div><div style="margin-top:4px"><a class="cta-saffron" style="font-size:11.5px;padding:6px 10px;min-height:32px" href="' + _esc(pr.starter) + '" target="_blank" rel="noopener">📦 Starter</a> <a class="cta-navy" style="font-size:11.5px;padding:6px 10px;min-height:32px" href="' + _esc(pr.demo) + '" target="_blank" rel="noopener">👀 Demo</a></div></div>';
       });
-      html += '</div>';
-    } else {
-      html += '<p class="section-empty">No projects curated for this role yet.</p>';
+      h += '</div>';
     }
-    html += '</section>';
-
-    // Section 6 — PROMPTS (L17.5) — COLLAPSED
-    html += '<section id="hub-sec-prompts" class="hub-section" data-chitti-response data-chitti-section="Copy-paste prompts for your role">';
-    html += '<details><summary><h3 style="display:inline">💬 Copy-paste prompts for your role</h3></summary>';
-    if (prompts.length) {
-      html += '<ol class="hub-list hub-prompts">';
-      prompts.forEach(function (pmt) {
-        html += '<li><code class="hub-prompt">' + _hubEsc(pmt) + '</code><button class="cc-btn" type="button" onclick="ccHubCopy(this)" data-copy="' + _hubEsc(pmt) + '">📋 Copy</button></li>';
-      });
-      html += '</ol>';
-    } else { html += '<p class="section-empty">No prompts curated yet.</p>'; }
-    html += '</details></section>';
-
-    // Section 7 — TOOL COMPARISONS (L21) — COLLAPSED parent
-    html += '<section id="hub-sec-comparisons" class="hub-section" data-chitti-response data-chitti-section="Tool comparisons for your role">';
-    html += '<details><summary><h3 style="display:inline">⚖️ Tool comparisons — head-to-head</h3></summary>';
-    if (comps.length) {
-      comps.forEach(function (c) {
-        html += '<details><summary><strong>' + _hubEsc(c.title) + '</strong></summary>';
-        html += '<table class="hub-table"><thead><tr><th>Dimension</th><th>' + _hubEsc(c.a) + '</th><th>' + _hubEsc(c.b) + '</th></tr></thead><tbody>';
-        c.dimensions.forEach(function (d) {
-          html += '<tr><td>' + _hubEsc(d.dim) + '</td><td>' + _hubEsc(d.a) + '</td><td>' + _hubEsc(d.b) + '</td></tr>';
-        });
-        html += '</tbody></table>';
-        html += '<p class="hub-verdicts"><strong>Verdict per persona:</strong></p><ul class="hub-list">';
-        Object.keys(c.verdicts).forEach(function (k) { html += '<li><strong>' + _hubEsc(k) + ':</strong> ' + _hubEsc(c.verdicts[k]) + '</li>'; });
-        html += '</ul></details>';
-      });
-    } else { html += '<p class="section-empty">No comparisons curated for this role yet.</p>'; }
-    html += '</details></section>';
-
-    // Section 8 — JOBS RADAR (L18) — sample
-    html += '<section id="hub-sec-jobs" class="hub-section" data-chitti-response data-chitti-section="AI Jobs Radar — news linked to jobs and tools">';
-    html += '<h3>💼 Jobs Radar — news → jobs → certs → tools → projects</h3>';
-    html += '<p class="hub-help">When a news card on AI Aaj matches a radar pattern (e.g. <em>healthcare AI</em>, <em>legal AI</em>, <em>recruiting</em>), it expands to show affected jobs, cert path, recommended tools, and a buildable project.</p>';
-    var sampleArt = { title: prof + ' AI gen AI agents radiology', summary: '', topics: prof + ' ai gen ai agents radiology recruiting legal ai finance ai oncology agritech public sector audit people analytics ai in education' };
-    var radarHits = CC.jobsRadar ? CC.jobsRadar(sampleArt).slice(0, 5) : [];
-    if (radarHits.length) {
-      html += '<div class="hub-cards">';
-      radarHits.forEach(function (r) {
-        html += '<div class="hub-card">';
-        html += '<div class="hub-card-title">🎯 ' + _hubEsc(r.keyword) + '</div>';
-        html += '<div class="hub-card-meta"><strong>Jobs:</strong> ' + _hubEsc((r.jobs||[]).join(' · ')) + '</div>';
-        html += '<div class="hub-card-meta"><strong>Cert:</strong> ' + _hubEsc(r.cert) + '</div>';
-        html += '<div class="hub-card-meta"><strong>Tool:</strong> ' + _hubEsc(r.tool) + '</div>';
-        html += '<div class="hub-card-meta"><strong>Project:</strong> ' + _hubEsc(r.project) + '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-    } else {
-      html += '<p class="section-empty">Open AI Aaj — radar tags will appear inline on matching cards.</p>';
-    }
-    html += '</section>';
-
-    // Section 9 — FORECAST (L22) — COLLAPSED
-    html += '<section id="hub-sec-forecast" class="hub-section" data-chitti-response data-chitti-section="3-year forecast for your role">';
-    html += '<details><summary><h3 style="display:inline">🔮 3-year forecast (2026 · 2027 · 2028)</h3></summary>';
+    // Mentor — single CTA
+    const doneItems = (p.done_items||[]).length;
+    const gap = Math.max(0, 80 - rd.score);
+    const etaMonths = gap === 0 ? 0 : Math.max(1, Math.ceil(gap / 5));
+    h += '<div class="hub-sect"><div style="font-weight:800;color:var(--navy);margin-bottom:6px;font-size:14.5px">🧑‍🏫 Your next move</div>';
+    h += '<p style="margin:0 0 12px;font-size:13.5px">Continue your 28-day AI tour. AI-ready in <strong>~' + etaMonths + ' month' + (etaMonths===1?'':'s') + '</strong> at current pace (' + doneItems + ' tasks done).</p>';
+    h += '<button class="cta-saffron" onclick="window.ccScroll(\'tour-section\')" aria-label="Continue 28-day tour">🎓 Continue tour</button></div>';
+    // Forecast collapsed
     if (fc.length) {
-      html += '<table class="hub-table"><thead><tr><th>Year</th><th>Theme</th><th>Risk</th><th>Opportunity</th></tr></thead><tbody>';
-      fc.forEach(function (yr) {
-        html += '<tr><td><strong>' + yr.year + '</strong></td><td>' + _hubEsc(yr.theme) + '</td><td>' + _hubEsc(yr.risk) + '</td><td>' + _hubEsc(yr.opp) + '</td></tr>';
-      });
-      html += '</tbody></table>';
-    } else { html += '<p class="section-empty">No forecast curated for this role yet.</p>'; }
-    html += '</details></section>';
-
-    // Section 10 — MENTOR (L19) — focused: ONE clear next action; stats minimal
-    html += '<section id="hub-sec-mentor" class="hub-section" data-chitti-response data-chitti-section="Chitti Mentor — next 1 action">';
-    html += '<h3 style="margin:0 0 10px;font-size:16px">🧑‍🏫 Your next move</h3>';
-    var done = (p.done_items||[]).length;
-    var gap = Math.max(0, 80 - rd.score);
-    var etaMonths = gap === 0 ? 0 : Math.max(1, Math.ceil(gap / 5));
-    var nextItem = (ms && ms.watch) ? ms.watch : { title: 'Take the first Coach Pick course this week', url: '#' };
-    html += '<div class="hub-mentor">';
-    html += '<p style="margin:0 0 12px;font-size:15px"><strong>👉 Do this next:</strong><br><a href="' + _hubEsc(nextItem.url) + '" target="_blank" rel="noopener" style="font-size:14px;color:var(--saffron);font-weight:700;text-decoration:underline">' + _hubEsc(nextItem.title) + ' ↗</a></p>';
-    html += '<p style="margin:0 0 12px;font-size:12px;color:var(--muted)">' + done + ' tasks done · AI-ready in ~' + etaMonths + ' month' + (etaMonths === 1 ? '' : 's') + ' at current pace</p>';
-    html += '<div class="hub-actions">';
-    html += '  <button type="button" class="cta-saffron" onclick="showCategory(\'tool-tour\')" aria-label="Open the 28-day tool tour">🎓 Start 28-day tour</button>';
-    html += '</div>';
-    html += '<details style="margin-top:10px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">▸ More actions</summary>';
-    html += '<div class="hub-actions" style="margin-top:8px">';
-    html += '  <button type="button" class="cta-navy" onclick="ccAskOpen()" aria-label="Ask the Coach">💬 Ask the Coach</button>';
-    html += '  <button type="button" class="cta-navy" onclick="ccCvOpen()" aria-label="Generate my AI CV">📋 Generate AI CV</button>';
-    html += '  <button type="button" class="cta-navy" onclick="showCategory(\'my-coach\')" aria-label="Open my 4-week plan">📅 4-week plan</button>';
-    html += '</div></details>';
-    html += '</div></section>';
-
-    host.innerHTML = html;
-    if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.refresh) { try { window.Chitti.a11y.refresh(); } catch (e) {} }
-    CC.speak('Your Profession Hub for ' + _hubProfLabel(prof) + ' is loaded. Ten layers — Impact, Readiness, Mission, Projects, Prompts, Comparisons, Jobs Radar, Forecast, Mentor.');
-  }
-  window.ccRenderHub = ccRenderHub;
-  window.ccHubCopy = function (btn) {
-    try { navigator.clipboard.writeText(btn.getAttribute('data-copy') || ''); btn.textContent = '✓ Copied'; setTimeout(function(){ btn.textContent = '📋 Copy'; }, 1400); } catch (e) {}
-  };
-
-  // ── COSDF v1.1 L16.5 — 28-DAY AI TOOL TOUR renderer (Sire 2026-06-05) ──
-  function _ttEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
-  }); }
-  function _ttDayCard(d, done, locked, nextDay) {
-    var stateCls = done ? 'tt-day-done' : (locked ? 'tt-day-locked' : (d.day === nextDay ? 'tt-day-next' : 'tt-day-open'));
-    var stateBadge = done ? '✅ DONE' : (locked ? '🔒 LOCKED' : (d.day === nextDay ? '👉 DO TODAY' : '⏳ AVAILABLE'));
-    var btn = done
-      ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' completed">✅ Completed</button>'
-      : (locked
-        ? '<button class="cc-btn" type="button" disabled aria-label="Day ' + d.day + ' locked — finish earlier days first">🔒 Locked</button>'
-        : '<button class="cta-saffron" type="button" onclick="ccTourMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done" style="font-size:12px;padding:8px 14px;min-height:36px">✓ Mark Day ' + d.day + ' Done</button>');
-    var html = '<article class="tt-day ' + stateCls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _ttEsc(d.tool) + '">';
-    html += '  <header class="tt-day-head"><span class="tt-day-num">DAY ' + d.day + '</span><span class="tt-day-state">' + stateBadge + '</span></header>';
-    html += '  <h4 class="tt-day-tool">' + _ttEsc(d.tool) + '</h4>';
-    html += '  <p class="tt-day-why">' + _ttEsc(d.why || '') + '</p>';
-    html += '  <ul class="tt-day-links">';
-    if (d.watch) html += '<li>📺 Watch <a href="' + _ttEsc(d.watch.url) + '" target="_blank" rel="noopener">' + _ttEsc(d.watch.title) + ' ↗</a></li>';
-    if (d.read)  html += '<li>📖 Read <a href="' + _ttEsc(d.read.url)  + '" target="_blank" rel="noopener">' + _ttEsc(d.read.title)  + ' ↗</a></li>';
-    if (d.try)   html += '<li>🚀 Try it <a href="' + _ttEsc(d.try.url)  + '" target="_blank" rel="noopener">' + _ttEsc(d.try.title)   + ' ↗</a></li>';
-    html += '  </ul>';
-    html += '  <div class="tt-day-actions"><span class="tt-day-mins">⏱ ' + (d.minutes || 15) + ' min</span>' + btn + '</div>';
-    html += '</article>';
-    return html;
-  }
-  // Active curriculum stored in localStorage so it persists across reloads
-  function _activeCurriculumId() {
-    try { return localStorage.getItem('chitti_tour_curriculum') || '28-day-tour'; } catch (e) { return '28-day-tour'; }
-  }
-  function _setActiveCurriculum(id) {
-    try { localStorage.setItem('chitti_tour_curriculum', id); } catch (e) {}
-  }
-  window.ccTourSwitchCurriculum = function (id) { _setActiveCurriculum(id); ccRenderTour(); };
-
-  function ccRenderTour() {
-    var host = document.getElementById('tool-tour-content'); if (!host) return;
-    var CC = window.ChittiCoach;
-    var p = CC.profile.init();
-    var prof = p.profession || (document.getElementById('pick-profession') || {}).value || 'student';
-    if (!prof || prof === 'everyone') prof = 'student';
-
-    var curricula = CC.curricula();
-    var activeId = _activeCurriculumId();
-    if (!curricula.some(function (c) { return c.id === activeId; })) { activeId = curricula[0].id; _setActiveCurriculum(activeId); }
-    var meta = curricula.filter(function (c) { return c.id === activeId; })[0];
-    var days = CC.curriculumDays(activeId, prof);
-    var prog = CC.curriculumProgress(activeId, p);
-    var pct = meta.days_count > 0 ? Math.round((prog.done_count / meta.days_count) * 100) : 0;
-
-    var html = '';
-
-    // ── Curriculum picker ─────────────────────────────────────────────
-    html += '<nav class="tt-curric-picker" data-chitti-response data-chitti-section="Curriculum picker" role="tablist" aria-label="Choose a curriculum">';
-    html += '<div class="tt-curric-label">📚 Choose your learning path:</div>';
-    html += '<div class="tt-curric-options">';
-    curricula.forEach(function (c) {
-      var active = c.id === activeId;
-      html += '<button class="tt-curric-btn ' + (active ? 'active' : '') + '" type="button" role="tab" aria-selected="' + active + '" onclick="ccTourSwitchCurriculum(\'' + c.id + '\')" aria-label="Switch to ' + _ttEsc(c.name) + ' — ' + c.days_count + ' days">' +
-              '<span class="tt-curric-emoji" aria-hidden="true">' + c.emoji + '</span>' +
-              '<span class="tt-curric-name">' + _ttEsc(c.name) + '</span>' +
-              '<span class="tt-curric-days">' + c.days_count + ' days</span>' +
-              '</button>';
-    });
-    html += '</div></nav>';
-
-    // ── Hero + progress ───────────────────────────────────────────────
-    html += '<header class="tt-hero" data-chitti-response data-chitti-section="' + _ttEsc(meta.name) + ' header">';
-    html += '  <h2 class="tt-title">' + _ttEsc(meta.emoji) + ' ' + _ttEsc(meta.name) + '</h2>';
-    html += '  <p class="tt-promise">' + _ttEsc(meta.promise) + '</p>';
-    html += '  <div class="tt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + meta.days_count + '" aria-valuenow="' + prog.done_count + '" aria-label="' + _ttEsc(meta.name) + ' progress">';
-    html += '    <div class="tt-progress-bar"><div class="tt-progress-fill" style="width:' + pct + '%"></div></div>';
-    html += '    <div class="tt-progress-label">' + prog.done_count + ' / ' + meta.days_count + ' days done · ' + pct + '% · ';
-    html += (prog.certified ? '🏆 CERTIFIED — claim your certificate' : 'Day ' + prog.next_day + ' next');
-    html += '</div></div>';
-    if (prog.certified) {
-      html += '  <div class="tt-cert-cta"><strong>🎉 Curriculum complete.</strong> ' +
-              '<button class="cta-saffron" type="button" onclick="ccTourClaimCert(\'' + meta.id + '\')" aria-label="Claim your Chitti ' + _ttEsc(meta.name) + ' certificate">📜 Claim Chitti Certificate</button></div>';
+      h += '<div class="hub-sect"><details><summary>🔮 3-year forecast (2026 / 2027 / 2028)</summary><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px"><thead><tr><th style="text-align:left;padding:4px;background:#f9fafb">Year</th><th style="text-align:left;padding:4px;background:#f9fafb">Theme</th><th style="text-align:left;padding:4px;background:#f9fafb">Risk</th><th style="text-align:left;padding:4px;background:#f9fafb">Opp</th></tr></thead><tbody>';
+      fc.forEach(function (yr) { h += '<tr><td style="padding:4px;border-bottom:1px dashed var(--border)"><strong>' + yr.year + '</strong></td><td style="padding:4px;border-bottom:1px dashed var(--border)">' + _esc(yr.theme) + '</td><td style="padding:4px;border-bottom:1px dashed var(--border)">' + _esc(yr.risk) + '</td><td style="padding:4px;border-bottom:1px dashed var(--border)">' + _esc(yr.opp) + '</td></tr>'; });
+      h += '</tbody></table></details></div>';
     }
-    html += '</header>';
-
-    // ── Days grid (single section; bands inferred for 28-day) ─────────
-    html += '<section class="tt-band" data-chitti-section="' + _ttEsc(meta.name) + ' days">';
-    html += '<h3 class="tt-band-title">📅 Your ' + meta.days_count + ' days</h3>';
-    html += '<div class="tt-grid">';
-    days.forEach(function (d) {
-      var done = prog.done.indexOf(d.day) >= 0;
-      html += _ttDayCard(d, done, false, prog.next_day);
-    });
-    html += '</div></section>';
-
-    host.innerHTML = html;
-    if (window.Chitti && window.Chitti.a11y && window.Chitti.a11y.refresh) { try { window.Chitti.a11y.refresh(); } catch (e) {} }
-    CC.speak(meta.name + ' for ' + prof.replace(/-/g, ' ') + '. ' +
-             prog.done_count + ' of ' + meta.days_count + ' days done. ' +
-             (prog.certified ? 'Curriculum complete. Claim your certificate.' : 'Day ' + prog.next_day + ' is next.'));
+    host.innerHTML = h;
   }
-  window.ccRenderTour = ccRenderTour;
-  window.ccTourMarkDay = function (day, btn) {
+
+  // ── BO9 — Tour renderer (with 8-curriculum picker) ──
+  function _activeCurric() { try { return localStorage.getItem('chitti_tour_curriculum') || '28-day-tour'; } catch (e) { return '28-day-tour'; } }
+  window.ccSwitchCurric = function (id) { try { localStorage.setItem('chitti_tour_curriculum', id); } catch (e) {} renderTour(); };
+  window.ccMarkDay = function (day, btn) {
     if (!window.ChittiCoach || !window.ChittiCoach.markCurriculumDayDone) return;
-    var id = _activeCurriculumId();
-    window.ChittiCoach.markCurriculumDayDone(id, day);
+    window.ChittiCoach.markCurriculumDayDone(_activeCurric(), day);
     if (btn) { btn.textContent = '✅ Completed'; btn.disabled = true; }
-    setTimeout(ccRenderTour, 600);
+    setTimeout(renderTour, 500);
+    setTimeout(renderHero, 600);
   };
-  window.ccTourClaimCert = function (curriculumId) {
-    var CC = window.ChittiCoach;
-    var p = CC.profile.init();
-    var id = curriculumId || _activeCurriculumId();
-    var meta = CC.curricula().filter(function (c) { return c.id === id; })[0] || { name: 'AI Tool Tour', days_count: 28 };
-    var profname = ({
-      'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist',
-      'nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer',
-      'accountant':'Chartered Accountant','hr-professional':'HR Professional',
-      'talent-acquisition':'Talent Acquisition specialist','business-owner':'Business Owner',
-      'government-employee':'Government Employee','student':'Student'
-    })[p.profession] || 'Professional';
-    var dateStr = new Date().toISOString().slice(0,10);
-    var line = function (s) { return '║  ' + (s + '').padEnd(57) + '║'; };
-    var cert = [
-      '╔═══════════════════════════════════════════════════════════╗',
-      '║                                                           ║',
-      '║                CHITTI AI CAREER COACH                     ║',
-      '║                   CERTIFICATE                             ║',
-      '║                                                           ║',
-      line('This certifies that you have completed'),
-      line(meta.name + ' (' + meta.days_count + ' days x 15 min).'),
-      '║                                                           ║',
-      line('Role: ' + profname),
-      line('Curriculum: ' + meta.name),
-      line('Days completed: ' + meta.days_count + ' / ' + meta.days_count),
-      line('Date: ' + dateStr),
-      '║                                                           ║',
-      line('Issued by Chitti News AI - sahayai.in'),
-      '║                                                           ║',
-      '╚═══════════════════════════════════════════════════════════╝',
-      '',
-      'Share on LinkedIn:',
-      '  "I just completed Chitti\'s ' + meta.name + ' — ' + meta.days_count + ' days',
-      '   x 15 min of hands-on AI training, role-specific for ' + profname + '."',
-      '   #ChittiNewsAI #AICareerCoach',
-    ].join('\n');
-    try {
-      var w = window.open('', '_blank');
-      w.document.write('<pre style="font-family:monospace;font-size:13px;padding:24px;background:#fff;color:#000">' + cert.replace(/</g,'&lt;') + '</pre>');
-      w.document.title = 'Chitti ' + meta.name + ' Certificate';
-    } catch (e) {
-      alert(cert);
+  window.ccClaimCert = function () {
+    const p = _profileInit();
+    const name = (PROF_LABEL[p.profession] || 'Professional').replace(/^[^ ]+ /, '');
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.title = 'Chitti Certificate';
+      w.document.body.innerHTML = '<pre style="font-family:monospace;font-size:13px;padding:24px;background:#fff;color:#000">' +
+        'CHITTI AI TOOL TOUR CERTIFICATE\n\nRole: ' + name + '\nCurriculum: ' + _activeCurric() + '\nDate: ' + new Date().toISOString().slice(0,10) + '\nIssued by Chitti News AI — sahayai.in</pre>';
     }
   };
-
-  // ── Hook into existing showCategory to render coach tabs on demand ──
-  var _origShow = window.showCategory;
-  window.showCategory = function (cat) {
-    if (cat === 'tool-tour') {
-      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      var pgT = document.getElementById('page-tool-tour'); if (pgT) { pgT.style.display = 'block'; pgT.classList.add('active'); }
-      var tbT = document.querySelector('nav.tabs .tab[data-tab="tool-tour"]'); if (tbT) { tbT.classList.add('active'); tbT.setAttribute('aria-selected','true'); }
-      ccRenderTour(); return;
-    }
-    if (cat === 'profession-hub') {
-      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      var pgH = document.getElementById('page-profession-hub'); if (pgH) { pgH.style.display = 'block'; pgH.classList.add('active'); }
-      var tbH = document.querySelector('nav.tabs .tab[data-tab="profession-hub"]'); if (tbH) { tbH.classList.add('active'); tbH.setAttribute('aria-selected','true'); }
-      ccRenderHub(); return;
-    }
-    if (cat === 'my-coach') {
-      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      var pg = document.getElementById('page-my-coach'); if (pg) { pg.style.display = 'block'; pg.classList.add('active'); }
-      var tb = document.querySelector('nav.tabs .tab[data-tab="my-coach"]'); if (tb) { tb.classList.add('active'); tb.setAttribute('aria-selected','true'); }
-      ccRenderMyCoach(); return;
-    }
-    if (cat === 'what-not-to-do') {
-      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      var pg2 = document.getElementById('page-what-not-to-do'); if (pg2) { pg2.style.display = 'block'; pg2.classList.add('active'); }
-      var tb2 = document.querySelector('nav.tabs .tab[data-tab="what-not-to-do"]'); if (tb2) { tb2.classList.add('active'); tb2.setAttribute('aria-selected','true'); }
-      ccRenderSkipList(); return;
-    }
-    if (cat === 'coach-picks') {
-      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-      document.querySelectorAll('nav.tabs .tab').forEach(function (t) { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
-      var pg3 = document.getElementById('page-coach-picks'); if (pg3) { pg3.style.display = 'block'; pg3.classList.add('active'); }
-      var tb3 = document.querySelector('nav.tabs .tab[data-tab="coach-picks"]'); if (tb3) { tb3.classList.add('active'); tb3.setAttribute('aria-selected','true'); }
-      ccRenderCoachPicks(); return;
-    }
-    if (typeof _origShow === 'function') return _origShow(cat);
-  };
-
-  // ── Boot ──
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ccBootstrap);
-  } else {
-    setTimeout(ccBootstrap, 100);
+  function renderTour() {
+    const host = document.getElementById('tour-content'); if (!host) return;
+    if (!window.ChittiCoach || !window.ChittiCoach.curricula) { host.innerHTML = '<p style="color:var(--muted)">Tour engine loading…</p>'; return; }
+    const p = _profileInit();
+    const profSlug = p.profession || 'student';
+    const cs = window.ChittiCoach.curricula();
+    let activeId = _activeCurric();
+    if (!cs.some(c => c.id === activeId)) activeId = cs[0].id;
+    const meta = cs.filter(c => c.id === activeId)[0];
+    const days = window.ChittiCoach.curriculumDays(activeId, profSlug);
+    const prog = window.ChittiCoach.curriculumProgress(activeId, p);
+    const pct = meta.days_count > 0 ? Math.round((prog.done_count / meta.days_count) * 100) : 0;
+    let h = '';
+    // Curric picker
+    h += '<div class="tour-curric-picker" role="tablist" aria-label="Choose a learning curriculum">';
+    cs.forEach(function (c) {
+      const active = c.id === activeId;
+      h += '<button class="tour-curric-btn ' + (active?'active':'') + '" role="tab" aria-selected="' + active + '" onclick="window.ccSwitchCurric(\'' + c.id + '\')" aria-label="Switch to ' + _esc(c.name) + ' (' + c.days_count + ' days)">';
+      h += '<span class="tour-curric-emoji" aria-hidden="true">' + c.emoji + '</span>';
+      h += '<span class="tour-curric-name">' + _esc(c.name) + '</span>';
+      h += '<span class="tour-curric-days">' + c.days_count + ' days</span>';
+      h += '</button>';
+    });
+    h += '</div>';
+    // Hero
+    h += '<div style="background:linear-gradient(135deg,#0E2344,#3b1f5b);color:#fff;padding:14px;border-radius:12px;margin-bottom:14px">';
+    h += '<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5;margin-bottom:10px">' + _esc(meta.promise) + '</div>';
+    h += '<div style="background:rgba(255,255,255,.18);height:8px;border-radius:99px;overflow:hidden;margin-bottom:6px"><div style="height:100%;background:linear-gradient(90deg,#fbbf24,#22c55e);width:' + pct + '%"></div></div>';
+    h += '<div style="font-size:12px;font-weight:700;font-family:JetBrains Mono,Menlo,monospace">' + prog.done_count + ' / ' + meta.days_count + ' days · ' + pct + '% · ' + (prog.certified ? '🏆 CERTIFIED' : 'Day ' + prog.next_day + ' next') + '</div>';
+    if (prog.certified) h += '<button class="cta-saffron" style="margin-top:10px" onclick="window.ccClaimCert()">📜 Claim certificate</button>';
+    h += '</div>';
+    // Days
+    h += '<div class="tour-grid">';
+    days.forEach(function (d) {
+      const done = prog.done.indexOf(d.day) >= 0;
+      const today = d.day === prog.next_day && !done;
+      const cls = done ? 'done' : today ? 'today' : '';
+      const stateBadge = done ? '✅ DONE' : today ? '👉 TODAY' : 'DAY ' + d.day;
+      const btn = done
+        ? '<button class="cta-navy" style="font-size:11.5px;padding:6px 12px;min-height:32px" disabled>✅ Completed</button>'
+        : '<button class="cta-saffron" style="font-size:11.5px;padding:6px 12px;min-height:32px" onclick="window.ccMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Done</button>';
+      h += '<article class="tour-day ' + cls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _esc(d.tool) + '">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="day-num">Day ' + d.day + '</span><span style="font-size:10.5px;font-weight:800;color:' + (today?'#9a3412':done?'#166534':'var(--muted)') + ';background:' + (today?'rgba(232,106,23,.16)':done?'rgba(34,197,94,.14)':'#f3f4f6') + ';border:1px solid currentColor;border-radius:99px;padding:2px 8px;letter-spacing:.04em">' + stateBadge + '</span></div>';
+      h += '<h4>' + _esc(d.tool) + '</h4>';
+      h += '<p class="why">' + _esc(d.why || '') + '</p>';
+      h += '<ul class="lessons">';
+      if (d.watch) h += '<li>📺 <a href="' + _esc(d.watch.url) + '" target="_blank" rel="noopener">' + _esc(d.watch.title) + ' ↗</a></li>';
+      if (d.read)  h += '<li>📖 <a href="' + _esc(d.read.url)  + '" target="_blank" rel="noopener">' + _esc(d.read.title)  + ' ↗</a></li>';
+      if (d.try)   h += '<li>🚀 <a href="' + _esc(d.try.url)   + '" target="_blank" rel="noopener">' + _esc(d.try.title)   + ' ↗</a></li>';
+      h += '</ul>';
+      h += '<div class="day-foot"><span class="mins">⏱ ' + (d.minutes || 15) + ' min</span>' + btn + '</div>';
+      h += '</article>';
+    });
+    h += '</div>';
+    host.innerHTML = h;
   }
 
-  // Hook into profession change so plan updates when user changes profession
-  var origProfChange = window.onProfessionChange;
-  window.onProfessionChange = function () {
-    try { if (typeof origProfChange === 'function') origProfChange(); } catch (e) {}
-    try {
-      var p = CC.profile.init();
-      var pSel = document.getElementById('pick-profession');
-      if (pSel && pSel.value && pSel.value !== 'everyone') {
-        p.profession = pSel.value;
-        if (!p.goal) { CC.profile.set(p); setTimeout(ccIntakeOpen, 600); }
-        else { CC.profile.set(p); ccRenderMyCoach(); ccRenderUrgentStrip(); try { ccRenderHub(); } catch (e2) {} }
+  // ── BO6 — Voice-First mode (auto-activate from disability_profile) ──
+  function initVoiceFirst() {
+    let dp = {}; try { dp = JSON.parse(localStorage.getItem('disability_profile') || '{}'); } catch (e) {}
+    if (dp.blind || dp.illiterate) {
+      const ind = document.getElementById('vf-indicator'); if (ind) ind.classList.add('shown');
+      setTimeout(function () {
+        try {
+          const u = new SpeechSynthesisUtterance('Welcome to Chitti News AI, your A.I. career coach. Say "tour" to start your 28-day tour, "news" to hear today\'s top A.I. story, or "help" for more.');
+          u.rate = .95;
+          window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+        } catch (e) {}
+      }, 1200);
+      // Try to enable SpeechRecognition
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR) {
+        const rec = new SR();
+        rec.continuous = true; rec.interimResults = false;
+        rec.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
+        rec.onresult = function (e) {
+          const heard = ((e.results[e.results.length-1][0].transcript) || '').toLowerCase();
+          if (/tour|28 day/.test(heard))   { window.ccScroll('tour-section'); }
+          else if (/news/.test(heard))     { window.ccScroll('news-section'); }
+          else if (/hub|profession/.test(heard)) { window.ccScroll('hub-section'); }
+          else if (/help/.test(heard))     { try { const u = new SpeechSynthesisUtterance('Commands: tour, news, hub, help, stop.'); u.rate=.95; window.speechSynthesis.speak(u); } catch (e) {} }
+          else if (/stop/.test(heard))     { try { window.speechSynthesis.cancel(); } catch (e) {} }
+        };
+        rec.onend = function () { try { rec.start(); } catch (e) {} };
+        try { rec.start(); } catch (e) {}
       }
-    } catch (e) {}
-  };
-
-  // Maybe-notify on boot (gap #15)
-  setTimeout(function () { try { CC.maybeNotifyUrgent(); } catch (e) {} }, 5000);
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     VOICE-FIRST MODE for BLIND / ILLITERATE users (Sire 2026-06-05 PM)
-     Sire screenshot review surfaced the gap: page passed CTO G1-G5
-     technically (data-chitti-response on every box, chitti_a11y.js
-     loaded, ISL plugin attached) but provided NO usable flow for a
-     blind user. SAHAYAI §7 four-user contract = blind users MUST
-     have full functionality.
-
-     This script reads localStorage.disability_profile (set by
-     chitti_disability_profile.js). If user picked blind OR illiterate,
-     it activates Voice-First mode:
-       1. Auto-announce on page load (welcome + 6 voice commands)
-       2. Speak top news headline + top Hub verdict
-       3. Listen for voice commands via Web SpeechRecognition
-       4. Map commands -> page actions (open tab, pick profession,
-          read content, ask coach, repeat, stop, help)
-       5. Add aria-labels to every Hub control
-     ═══════════════════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  // ── Read disability profile (set by chitti_disability_profile.js) ──
-  function _readProfile() {
-    try { return JSON.parse(localStorage.getItem('disability_profile') || '{}'); }
-    catch (e) { return {}; }
-  }
-  function needsVoiceFirst(p) { return !!(p && (p.blind || p.illiterate)); }
-
-  // ── Aria-label sweep — applies regardless of voice-first mode ──
-  function ariaLabelSweep() {
-    try {
-      var pp = document.getElementById('pick-profession');
-      if (pp) pp.setAttribute('aria-label', 'I am a — pick your profession (Talent Acquisition, Doctor, Farmer, Teacher, Lawyer, and 8 more). Stored on this device only, never sent to backend.');
-      var pe = document.getElementById('pick-experience');
-      if (pe) pe.setAttribute('aria-label', 'Experience — pick your years of experience');
-      var ps = document.getElementById('pick-salary');
-      if (ps) ps.setAttribute('aria-label', 'Current salary — pick your salary band');
-      var pl = document.getElementById('pick-lang');
-      if (pl) pl.setAttribute('aria-label', 'Language — pick your preferred language. 26 Indian languages supported.');
-      // Tabs nav
-      document.querySelectorAll('nav.tabs .tab').forEach(function (b) {
-        if (!b.getAttribute('aria-label')) {
-          b.setAttribute('aria-label', 'Tab — ' + (b.textContent || '').trim());
-        }
-      });
-      // Hub chips + section action buttons
-      document.querySelectorAll('.hub-chip').forEach(function (a) {
-        if (!a.getAttribute('aria-label')) {
-          a.setAttribute('aria-label', 'Jump to ' + (a.textContent || '').trim() + ' section in your Profession Hub');
-        }
-      });
-      document.querySelectorAll('.cc-btn').forEach(function (b) {
-        if (!b.getAttribute('aria-label')) {
-          var t = (b.textContent || '').trim();
-          if (t) b.setAttribute('aria-label', t);
-        }
-      });
-    } catch (e) {}
-  }
-
-  // ── Voice-first speak with chunking + cancel ──
-  function _vfSpeak(text) {
-    try {
-      if (!window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95;
-      u.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
-      window.speechSynthesis.speak(u);
-    } catch (e) {}
-  }
-
-  // ── Voice-first welcome (audible by default; profession-aware) ──
-  function vfWelcome() {
-    var prof = (window.ChittiCoach && window.ChittiCoach.profile && window.ChittiCoach.profile.get && window.ChittiCoach.profile.get()) || {};
-    var name = ({
-      'software-developer':'Software Developer','doctor':'Doctor','oncologist':'Oncologist',
-      'nurse':'Nurse','farmer':'Farmer','teacher':'Teacher','lawyer':'Lawyer',
-      'accountant':'Chartered Accountant','hr-professional':'HR Professional',
-      'talent-acquisition':'Talent Acquisition specialist','business-owner':'Business Owner',
-      'government-employee':'Government Employee','student':'Student'
-    })[prof.profession] || 'professional';
-    var msg = 'Welcome to Chitti News AI, your A.I. career coach. ' +
-              (prof.profession ? 'You are signed in as ' + name + '. ' : 'I do not know your profession yet. Say "profession" to pick one. ') +
-              'Say "news" to hear today\'s top A.I. story. ' +
-              'Say "hub" to hear your Profession Hub. ' +
-              'Say "mission" for this week\'s 30-minute learning mission. ' +
-              'Say "ask coach" to ask a career question. ' +
-              'Say "repeat" any time. Say "help" to hear these options again. Say "stop" to silence me.';
-    _vfSpeak(msg);
-  }
-
-  // ── Voice commands ──
-  var VOICE_CMDS = {
-    'news':            function () { window.showCategory('ai-news'); setTimeout(vfReadCurrentTab, 800); },
-    'ai news':         function () { window.showCategory('ai-news'); setTimeout(vfReadCurrentTab, 800); },
-    'tools':           function () { window.showCategory('stream-tool'); setTimeout(vfReadCurrentTab, 800); },
-    'jobs':            function () { window.showCategory('stream-job'); setTimeout(vfReadCurrentTab, 800); },
-    'courses':         function () { window.showCategory('prashikshan'); setTimeout(vfReadCurrentTab, 800); },
-    'certs':           function () { window.showCategory('stream-cert'); setTimeout(vfReadCurrentTab, 800); },
-    'schemes':         function () { window.showCategory('stream-scheme'); setTimeout(vfReadCurrentTab, 800); },
-    'hub':             function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1000); },
-    'profession hub':  function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1000); },
-    'profession':      function () { vfProfessionPicker(); },
-    'change profession': function () { vfProfessionPicker(); },
-    'mission':         function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-mission'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
-    'projects':        function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-projects'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
-    'prompts':         function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-prompts'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
-    'forecast':        function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-forecast'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
-    'mentor':          function () { window.showCategory('profession-hub'); setTimeout(function () { var el = document.getElementById('hub-sec-mentor'); if (el) el.scrollIntoView(); vfReadElement(el); }, 1000); },
-    'ask coach':       function () { if (window.ccAskOpen) window.ccAskOpen(); },
-    'coach':           function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
-    'my coach':        function () { window.showCategory('my-coach'); setTimeout(vfReadCurrentTab, 800); },
-    'cv':              function () { if (window.ccCvOpen) window.ccCvOpen(); },
-    'tour':            function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '28 day tour':     function () { try { localStorage.setItem('chitti_tour_curriculum', '28-day-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '28 days':         function () { try { localStorage.setItem('chitti_tour_curriculum', '28-day-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '18 day tour':     function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '18 days':         function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'creative tour':   function () { try { localStorage.setItem('chitti_tour_curriculum', '18-day-coursiv-match'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '7 day sprint':    function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'seven day sprint':function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'sprint':          function () { try { localStorage.setItem('chitti_tour_curriculum', '7-day-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '90 day pro':      function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'ninety day pro':  function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'pro tour':        function () { try { localStorage.setItem('chitti_tour_curriculum', '90-day-pro'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'phone only':      function () { try { localStorage.setItem('chitti_tour_curriculum', '5-day-phone-only'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '5 day phone':     function () { try { localStorage.setItem('chitti_tour_curriculum', '5-day-phone-only'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'build sprint':    function () { try { localStorage.setItem('chitti_tour_curriculum', '14-day-build'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    '14 day build':    function () { try { localStorage.setItem('chitti_tour_curriculum', '14-day-build'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'team tour':       function () { try { localStorage.setItem('chitti_tour_curriculum', 'team-tour'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'industry sprint': function () { try { localStorage.setItem('chitti_tour_curriculum', 'industry-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'industry':        function () { try { localStorage.setItem('chitti_tour_curriculum', 'industry-sprint'); } catch(e){} window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'certificate':     function () { window.showCategory('tool-tour'); setTimeout(vfReadTour, 1000); },
-    'mark done':       function () {
-      try {
-        var pr = window.ChittiCoach.tourProgress(window.ChittiCoach.profile.get());
-        if (pr.next_day <= 28) { window.ChittiCoach.markTourDayDone(pr.next_day); _vfSpeak('Day ' + pr.next_day + ' marked done. ' + (pr.next_day === 28 ? 'Tour complete!' : 'Next is Day ' + (pr.next_day + 1) + '.')); }
-      } catch (e) {}
-    },
-    'help':            function () { vfWelcome(); },
-    'repeat':          function () { vfWelcome(); },
-    'stop':            function () { try { window.speechSynthesis.cancel(); } catch (e) {} },
-  };
-  // Profession voice-aliases
-  ['software developer','developer','doctor','oncologist','nurse','farmer','teacher','lawyer','accountant','chartered accountant','ca','hr','human resources','talent acquisition','ta','recruiter','business owner','entrepreneur','government','government employee','student'].forEach(function (a) {
-    VOICE_CMDS[a] = function () { vfSetProfession(a); };
-  });
-
-  function vfProfessionPicker() {
-    _vfSpeak('Pick your profession by saying one of these: software developer, doctor, oncologist, nurse, farmer, teacher, lawyer, chartered accountant, H R professional, talent acquisition, business owner, government employee, or student.');
-  }
-  function vfSetProfession(alias) {
-    var map = {
-      'software developer':'software-developer','developer':'software-developer',
-      'doctor':'doctor','oncologist':'oncologist','nurse':'nurse','farmer':'farmer',
-      'teacher':'teacher','lawyer':'lawyer','accountant':'accountant',
-      'chartered accountant':'accountant','ca':'accountant',
-      'hr':'hr-professional','human resources':'hr-professional',
-      'talent acquisition':'talent-acquisition','ta':'talent-acquisition','recruiter':'talent-acquisition',
-      'business owner':'business-owner','entrepreneur':'business-owner',
-      'government':'government-employee','government employee':'government-employee',
-      'student':'student',
-    };
-    var slug = map[alias]; if (!slug) return;
-    try {
-      var sel = document.getElementById('pick-profession');
-      if (sel) { sel.value = slug; sel.dispatchEvent(new Event('change', { bubbles: true })); }
-      _vfSpeak('Profession set to ' + alias + '. Opening your Profession Hub now.');
-      setTimeout(function () { window.showCategory('profession-hub'); setTimeout(vfReadHub, 1200); }, 600);
-    } catch (e) {}
-  }
-
-  function vfReadCurrentTab() {
-    try {
-      var page = document.querySelector('.page.active') || document.querySelector('main .page[style*="block"]');
-      if (!page) return;
-      var titles = Array.prototype.slice.call(page.querySelectorAll('h2, h3, .art-title')).slice(0, 5);
-      var text = titles.map(function (t) { return (t.textContent || '').trim(); }).filter(Boolean).join('. ');
-      if (text) _vfSpeak('Top items in this tab: ' + text + '. Say "next" to hear more, or "stop" to silence me.');
-      else _vfSpeak('This tab is loading or empty. Say another command.');
-    } catch (e) {}
-  }
-  function vfReadHub() {
-    try {
-      var v = document.querySelector('.hub-verdict');
-      var score = document.querySelector('.hub-scores');
-      var msg = '';
-      if (score) {
-        var vals = Array.prototype.slice.call(score.querySelectorAll('.hub-score'));
-        if (vals.length === 4) {
-          msg += 'Your Profession Hub. ' +
-            'A I Disruption Risk ' + (vals[0].querySelector('.hub-score-val') || {}).textContent + '. ' +
-            'A I Adoption ' + (vals[1].querySelector('.hub-score-val') || {}).textContent + '. ' +
-            'A I Opportunity ' + (vals[2].querySelector('.hub-score-val') || {}).textContent + '. ' +
-            'Your Readiness Score is ' + ((vals[3].querySelector('.hub-score-val') || {}).textContent || '').replace(/\s+/g, ' ').trim() + '. ';
-        }
-      }
-      if (v) msg += 'Chitti\'s verdict: ' + (v.textContent || '').trim() + ' ';
-      msg += 'Say "mission" for this week\'s 30-minute learning mission, "projects" for projects you can ship, "prompts" for copy-paste prompts, "forecast" for the 3-year outlook, "mentor" for your next action, or "stop".';
-      _vfSpeak(msg);
-    } catch (e) {}
-  }
-  function vfReadTour() {
-    try {
-      var CC = window.ChittiCoach; if (!CC || !CC.tourProgress) return;
-      var p = CC.profile.get() || {};
-      var prog = CC.tourProgress(p);
-      var msg = 'Twenty-eight day A I tool tour. ' +
-                prog.done_count + ' of 28 days completed. ' +
-                (prog.certified
-                  ? 'Tour complete. Say "certificate" to claim it.'
-                  : 'Today\'s task is Day ' + prog.next_day + '. Say "mark done" when you have finished it.');
-      _vfSpeak(msg);
-    } catch (e) {}
-  }
-  function vfReadElement(el) {
-    if (!el) return;
-    try {
-      var text = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 1200);
-      _vfSpeak(text);
-    } catch (e) {}
-  }
-
-  // ── SpeechRecognition (Chromium/WebKit) ──
-  var _vfRec = null;
-  function startListening() {
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      _vfSpeak('Voice input is not supported on this browser. Please use Chrome or Edge for full voice commands. You can still listen to Chitti.');
-      return false;
     }
-    if (_vfRec) return true;
-    _vfRec = new SR();
-    _vfRec.continuous = true;
-    _vfRec.interimResults = false;
-    _vfRec.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
-    _vfRec.onresult = function (e) {
-      var heard = ((e.results[e.results.length - 1][0].transcript) || '').trim().toLowerCase();
-      console.log('[voice-first] heard:', heard);
-      // Match longest command first
-      var matched = null;
-      Object.keys(VOICE_CMDS).sort(function (a, b) { return b.length - a.length; }).forEach(function (cmd) {
-        if (!matched && heard.indexOf(cmd) >= 0) matched = cmd;
-      });
-      if (matched) { try { VOICE_CMDS[matched](); } catch (e2) {} }
-    };
-    _vfRec.onerror = function (e) { console.log('[voice-first] error:', e.error); };
-    _vfRec.onend = function () { try { _vfRec && _vfRec.start(); } catch (e) {} };
-    try { _vfRec.start(); return true; } catch (e) { return false; }
   }
 
-  // ── Activate ──
-  function activate(p) {
-    document.documentElement.setAttribute('data-chitti-voice-first', '1');
-    ariaLabelSweep();
-    // Floating "voice mode active" indicator (visible to sighted helpers too)
-    if (!document.getElementById('vf-indicator')) {
-      var ind = document.createElement('div');
-      ind.id = 'vf-indicator';
-      ind.setAttribute('role', 'status');
-      ind.setAttribute('aria-live', 'polite');
-      ind.style.cssText = 'position:fixed;left:8px;bottom:8px;background:#0a3d62;color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.25)';
-      ind.textContent = '🎙️ Voice-First Mode — say "help" for commands';
-      document.body.appendChild(ind);
-    }
-    setTimeout(vfWelcome, 900);
-    setTimeout(startListening, 2200);
+  // ── Orchestrate full render ──
+  function renderAll() {
+    renderHero();
+    renderHub();
+    renderTour();
+    renderNews();
   }
 
   // ── Boot ──
   function boot() {
-    ariaLabelSweep(); // always — even for sighted users this helps screen readers
-    var p = _readProfile();
-    if (needsVoiceFirst(p)) {
-      activate(p);
-    }
-    // React to live profile changes
-    document.addEventListener('chitti:disability_profile', function (e) {
-      var np = (e && e.detail) || _readProfile();
-      if (needsVoiceFirst(np)) activate(np);
-    });
+    document.documentElement.setAttribute('lang', localStorage.getItem('chitti_lang') || 'en');
+    const sel = document.getElementById('lang-select');
+    if (sel) sel.value = localStorage.getItem('chitti_lang') || 'en';
+    renderAll();
+    initVoiceFirst();
+    document.addEventListener('chitti:disability_profile', initVoiceFirst);
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    setTimeout(boot, 200);
-  }
-
-  // Expose aria-sweep so other modules (Hub renderer etc.) can call it
-  // after dynamically-rendered content lands. Otherwise chips/buttons
-  // that don't exist at boot won't get labels.
-  window.ChittiAriaSweep = ariaLabelSweep;
-
-  // MutationObserver — auto-sweep on any DOM change so dynamically
-  // injected Hub chips / cards get aria-labels without each renderer
-  // having to remember to call ChittiAriaSweep. Throttled at 250ms.
-  try {
-    var _sweepTO = null;
-    var mo = new MutationObserver(function () {
-      if (_sweepTO) return;
-      _sweepTO = setTimeout(function () { _sweepTO = null; ariaLabelSweep(); }, 250);
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
-  } catch (e) {}
-
-  // Expose for cert / manual triggering
-  window.ChittiVoiceFirst = {
-    activate: function () { activate({ blind: true }); },
-    speak: _vfSpeak,
-    welcome: vfWelcome,
-    readHub: vfReadHub,
-    readCurrentTab: vfReadCurrentTab,
-    cmds: VOICE_CMDS,
-    sweepAria: ariaLabelSweep,
-  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else setTimeout(boot, 100);
 })();
 </script>
 
