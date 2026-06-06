@@ -14,9 +14,9 @@
 | Product Name | Chitti News (CNOS — Chitti News Operating System) |
 | CEOS Version | v1.0 |
 | Handover Date | 2026-06-06 |
-| Build Commit | `7310aee` |
+| Build Commit | `3379333` |
 | Live URL (frontend) | https://sahayai.in/chitti_news.html |
-| Backend | `chitti-news-api` (Railway) — **production 502 on handover date; code proven healthy locally, see PART 4.9** |
+| Backend | `chitti-news-api` (Railway) — **was 502 on handover date; resilient-boot fix shipped + verified LIVE 200 (see PART 4.9)** |
 | QE Sign-off | Chitti (autonomous QE mode) — 2026-06-06 ✅ |
 | Architect Sign-off | Chitti (autonomous Architect mode) — 2026-06-06 ✅ |
 | Product Owner | Bryan Wilfred Pinto (Sire) — **pending real-iPhone + real-Android sign-off** |
@@ -135,7 +135,7 @@
 | 2 | Slow 3G (CDP 400 Kbps + 400 ms RTT) | DOM=4652ms interactive=4781ms | ✅ PASS |
 | 3 | LocalStorage full/disabled | every `localStorage.*` wrapped in try/catch → in-memory defaults | ✅ PASS by design |
 | 4 | Rapid language switching (all 26 in sequence) | 26/26 clean switches | ✅ PASS |
-| 5 | Backend API down (502) | Honest narration; page still renders shell + filters | ✅ PASS by design (verified — prod IS 502 today) |
+| 5 | Backend API down (502) | Honest narration; page still renders shell + filters. Backend now self-heals (sqlite fallback) so a DB outage no longer 502s the whole service | ✅ PASS by design (502 reproduced + RESOLVED 2026-06-06) |
 | 6 | No LLM key (DeepSeek) | Chitti's Take returns honest `fallback` source; never fabricates | ✅ PASS by design |
 | 7 | Thin-language corpus (kn/as) | coverage payload → "no <lang> sources yet" + switch CTA | ✅ PASS by design |
 | 8 | Cancelled story re-appearing | localStorage cancelled list filters feed; never re-appears | ✅ PASS by design |
@@ -268,9 +268,12 @@ Substrate `chitti_a11y.js` is the canonical language registry, recognising `#pic
 | Local Flask boot `GET /health` | ✅ 200 `{"ok":true}` |
 | Local Flask boot `GET /api/news/feed` | ✅ 200 (227 sources, 6 articles seeded) |
 | Local scheduler | ✅ started (factcheck/insight/rss_poll/daily_breaking/feeds_health) |
-| **Production `GET /health`** | ❌ **502** — DOWN — Application failed to respond (Railway deploy/infra; code proven healthy locally) |
+| **Production `GET /health`** | ✅ **200** — RECOVERED — was 502 (Application failed to respond); resilient-boot fix (commit 95af2b3) shipped + Railway auto-redeployed; verified live 2026-06-06: /health 200, /feed 200, /sources 200 (213 sources). Feed items populate on next RSS poll. |
+| **Production `GET /api/news/feed`** | ✅ **200** (verified live; items populate on next RSS poll) |
+| **Production `GET /api/news/sources`** | ✅ **200** (213 sources loaded) |
+| Fix shipped | `95af2b3` — guarded Base.metadata.create_all + Turso boot smoke-test with loud sqlite fallback in database.make_engine |
 
-> **Backend CODE is GREEN (boots, /health 200, /feed 200, 49/49 unit tests). Railway DEPLOY is RED (502). Fix is infra: redeploy + verify DATABASE_URL libsql:// env (Sire/infra-owned).**
+> **Backend GREEN: code boots, 49/49 unit tests, AND production verified live (502 → 200 after the resilient-boot fix). Remaining permanent task (infra): set DATABASE_URL to the correct libsql:// Turso URL so data survives restarts (QUALITY_STATUS §5); until then the app self-heals to local sqlite + RSS repoll.**
 
 ---
 
@@ -284,14 +287,14 @@ Full review: [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md).
 | External deps + failure behavior | ✅ | Railway · Turso · DeepSeek · 227 RSS publishers — each fail-open (feed renders shell on 502; Take returns `fallback` on no LLM) |
 | 1,000 concurrent users | ✅ | single Railway instance + Turso edge comfortable for read-heavy feed |
 | 100,000 concurrent users | ⚠️ | horizontal scale + feed CDN-cache needed; per-poll RSS ingest is the bottleneck |
-| What breaks first | ✅ | RSS ingest scheduler + cold-start (the current 502 is a deploy/infra crash, not load) |
+| What breaks first | ✅ | RSS ingest scheduler under load. (The 502 was a boot-time DB crash — now fixed via fail-open boot + sqlite fallback, verified live.) |
 | No PII without consent | ✅ | For You / Read Later / Cancelled localStorage-only; anonymous per-device token |
 | No API keys in frontend | ✅ | grep-verified; DeepSeek key stays on Railway env |
 | XSS | ✅ | `esc()` HTML-entity escape on every dynamic insert |
 | Deployment + rollback | ✅ | git push → GitHub Pages (frontend) + Railway (backend); `git revert` rollback |
 | Technical debt log | ✅ | PART 6 + 02_ARCH §B |
 
-**Architecture Verdict: ✅ PASS** (with the production-redeploy action item in PART 6).
+**Architecture Verdict: ✅ PASS** (production 502 resolved + verified live; only the DATABASE_URL persistence follow-up remains, PART 6 #1b).
 
 ---
 
@@ -299,7 +302,8 @@ Full review: [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md).
 
 | # | Issue | Severity | Workaround | Owner |
 |---|---|---|---|---|
-| 1 | **chitti-news-api production 502** ("Application failed to respond" on every endpoint incl. /health). Code boots clean locally (200) + 49/49 unit tests — this is a Railway deploy/infra crash, most likely the `DATABASE_URL` libsql:// env gap noted in QUALITY_STATUS.md §5. | **High (infra)** | Frontend degrades honestly ("pull to refresh — may be cold-starting"); redeploy + set `DATABASE_URL` to `libsql://…` | Sire / infra |
+| 1 | ~~chitti-news-api production 502~~ **RESOLVED 2026-06-06** — root cause: `Base.metadata.create_all` (the one unguarded DB call in `_bootstrap`) crashed every gunicorn worker when Turso was unreachable. Fix `95af2b3`: guarded create_all + boot-time Turso smoke-test with loud sqlite fallback. **Verified live: /health 200, /feed 200, /sources 200.** | ~~High~~ → **Resolved** | Self-heals to local sqlite + RSS repoll on any future DB outage | CTO (done) |
+| 1b | **Permanent infra follow-up:** set Railway `DATABASE_URL` to the correct `libsql://…?authToken=…` so data survives container restarts (QUALITY_STATUS.md §5). Until then the service runs on the self-healing sqlite fallback (ephemeral; RSS re-polls every 30 min). | Medium (infra) | Service is LIVE; data ephemeral until env fixed | Sire / infra |
 | 2 | axe-core: `color-contrast` (27 nodes) — saffron/muted on white across shared substrate | Medium | Cross-Chitti substrate contrast sprint (affects all 23 pages) | CTO substrate team |
 | 3 | axe-core: `nested-interactive` (36 nodes) — art-card is `role=button` (tap-to-hear) with inner 🔊/🤖/👍/👎 buttons | Medium | By-design tradeoff for one-tap blind/illiterate access; refactor to non-interactive card + explicit "hear" button | CTO |
 | 4 | axe-core: `aria-required-children` (7 nodes) — a list/tab container missing required child roles | Medium | Add proper role children to the category tab strip / rails | CTO |
@@ -308,9 +312,9 @@ Full review: [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md).
 | 7 | Vernacular coverage gap (Gujarati = 0 public RSS; mr/or/bn/kn/ur below SLA) | Low (honest) | coverage payload narrates the gap; Sire mitmproxy-captures app APIs (SOP-004) | CTO + Sire |
 | 8 | Career + Action swarm agents (6,7 of 7) not built | Low | Documented honestly as 🔴 NOT BUILT in swarm/; Phase 2 | CTO — backlog |
 
-**Counts:** Critical = 0 · High = 1 (infra deploy, not a code defect) · Medium = 4 · Low = 3
+**Counts:** Critical = 0 · High = 0 (the 502 is RESOLVED + verified live) · Medium = 5 · Low = 3
 
-**Known Issues Verdict: ✅ Acceptable for handover** (0 critical; the 1 High is a Railway redeploy owned by infra; code is proven healthy locally).
+**Known Issues Verdict: ✅ Acceptable for handover** (0 critical, 0 high; the production 502 is fixed + verified live; remaining items are substrate debt + the infra DATABASE_URL follow-up).
 
 ---
 
@@ -324,12 +328,12 @@ Full review: [02_ARCHITECTURE_REVIEW.md](02_ARCHITECTURE_REVIEW.md).
 | 4 | QA Test Report (≥95%) | ✅ 99.3% |
 | 5 | Architecture Review complete | ✅ 02_ARCHITECTURE_REVIEW.md |
 | 6 | Critical bugs = 0 | ✅ 0 |
-| 7 | High bugs = 0 (code) | ✅ 0 code; 1 infra (Railway redeploy) |
+| 7 | High bugs = 0 | ✅ 0 (the 502 is resolved + verified live) |
 | 8 | Known issues documented honestly | ✅ 8 items |
 | 9 | Screenshots saved | ✅ test_screenshots/news/ (375/768/1280 + 3 devices) |
 | 10 | Live demo reproducible via cert script | ✅ 4-command pipeline |
 
-**Handover Gate Verdict: ✅ PASS** (gate 7 carries the honest infra caveat; all code gates green).
+**Handover Gate Verdict: ✅ PASS** (all 10 gates green; production 502 fixed + verified live).
 
 ---
 
@@ -372,7 +376,7 @@ Per Sire's 2026-06-06 PERMANENT rule, this is the ONLY surface that needs Sire's
 | 6 | Real mic voice input (feedback 🎙️) | Tap ✏️ on a card → speak feedback → verify it transcribes | ☐ |
 | 7 | Real speaker voice output (🔊) | Tap a card → verify the story reads aloud on device speaker | ☐ |
 | 8 | Add-to-Home-Screen PWA install | Verify install prompt + home-screen icon (iOS Safari + Android Chrome) | ☐ |
-| 9 | **Post-redeploy live backend** | After infra redeploys chitti-news-api, reload → verify real feed loads (not the honest cold-start message) | ☐ |
+| 9 | **Live backend feed on device** | chitti-news-api is back to 200 (CTO-verified via curl). On your phone, reload → verify the feed fills with real stories once the RSS poll has run (≤30 min after deploy) | ☐ |
 
 Everything outside this list was automated. If Sire finds anything here that doesn't PASS, file as a new bug.
 
@@ -421,10 +425,10 @@ Everything outside this list was automated. If Sire finds anything here that doe
 
 | Field | Value |
 |---|---|
-| Handover Status | ✅ **APPROVED** (pending Sire real-device sign-off + infra redeploy of chitti-news-api) |
+| Handover Status | ✅ **APPROVED** (production live + verified; pending Sire real-device sign-off) |
 | Auto-cert pass rate | 99.3% |
 | Critical bugs | 0 |
-| High bugs | 0 code · 1 infra (Railway 502 redeploy) |
+| High bugs | 0 (production 502 resolved + verified live) |
 | Known issues (all with workaround + owner) | 8 |
 | Real-device items remaining for Sire | 9 (see PART AUTOMATION-LIMITED) |
 

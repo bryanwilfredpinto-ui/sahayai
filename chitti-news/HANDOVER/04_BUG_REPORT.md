@@ -2,22 +2,25 @@
 
 **Build commit:** `65f5aae`
 **Date:** 2026-06-06
-**Summary:** 0 critical functional bugs. 5 logged items: 1 infra, 3 axe (2 code-defect / 1 by-design tradeoff), 1 publisher-side 404.
+**Summary:** 0 critical functional bugs. 5 logged items: BUG-1 (prod 502) **FIXED / CLOSED 2026-06-06 (commit `95af2b3`, verified live)**, 3 axe (2 code-defect / 1 by-design tradeoff), 1 publisher-side 404. Production is LIVE + verified; the only open infra item is the Medium DATABASE_URL persistence follow-up (issue #1b).
 
 ---
 
-## BUG-1 — Production API returns 502 on every endpoint
+## BUG-1 — Production API returns 502 on every endpoint — **FIXED / CLOSED (commit `95af2b3`)**
 
 | Field | Value |
 |---|---|
 | Severity | High |
-| Classification | **Infra / deploy defect** (NOT a code defect) |
+| Classification | **Code defect** (unguarded import-time DB call) — surfaced only under the Railway Turso env gap |
 | Repro | `curl https://<chitti-news-api>/health` → `502 Application failed to respond`; same for `/api/news/feed` and all `/api/news/*`. |
 | Expected | `GET /health` → `200 {"ok":true}` |
 | Actual | 502 on every endpoint |
-| Evidence | Local Flask: `GET /health` → 200 `{"ok":true}`, `GET /api/news/feed` → 200, 227 RSS sources + 6 articles seeded, scheduler started, 49/49 backend tests pass. So the code is healthy; the Railway deploy is not. |
-| Likely cause | `DATABASE_URL` libsql:// env gap (QUALITY_STATUS.md §5). |
-| Status | **OPEN — infra-owned.** Fix = Railway redeploy with correct libsql env. |
+| Evidence | Local Flask: `GET /health` → 200 `{"ok":true}`, `GET /api/news/feed` → 200, 227 RSS sources + 6 articles seeded, scheduler started, 49/49 backend tests pass. The code passed locally because the local DB was reachable; the unguarded call only threw when Railway's Turso `DATABASE_URL` was unreachable. |
+| **Root cause** | `Base.metadata.create_all(bind=engine)` was the ONLY unguarded DB call in `main._bootstrap()`. When Railway's Turso `DATABASE_URL` was unreachable, it threw at import → every gunicorn worker crashed → 502 "Application failed to respond" on EVERY endpoint incl. `/health`. |
+| **Resolution** | Commit `95af2b3` (2026-06-06): (1) guarded `create_all` in try/except so the app boots + `/health` 200 even if DB unreachable; (2) added a boot-time `SELECT 1` smoke-test in `database.make_engine` that falls back to a local sqlite engine (loudly logged, never silent) on a Turso connect failure, so the worker ALWAYS boots and the RSS poller still serves real news. |
+| **Verified** | LIVE 2026-06-06 after Railway auto-redeploy: `GET /health` → 200 `{"ok":true}`; `GET /api/news/feed` → 200; `GET /api/news/sources` → 200 with 213 sources loaded. (Feed items populate on next RSS poll.) |
+| Follow-up | Set Railway `DATABASE_URL` to the correct `libsql://…?authToken=…` so data survives container restarts (QUALITY_STATUS §5) — downgraded to **Medium-infra (NOT High)**, tracked as issue #1b. Until then the service runs on the self-healing sqlite fallback (ephemeral; RSS re-polls every 30 min). Service is LIVE meanwhile. |
+| Status | **FIXED / CLOSED** (commit `95af2b3`, verified live). |
 
 ---
 
@@ -79,7 +82,7 @@
 
 | Bug | Type | Severity | Blocks ship? |
 |---|---|---|---|
-| BUG-1 | Infra | High | Yes (prod) — infra-owned redeploy |
+| BUG-1 | Code defect (import-time DB) | High → **FIXED/CLOSED** (commit `95af2b3`, verified live) | No (production live + verified) |
 | BUG-2 | Code defect | Medium | No |
 | BUG-3 | By-design tradeoff | Medium | No |
 | BUG-4 | Code defect | Medium | No |

@@ -15,7 +15,9 @@
 - Backend 49/49 tests, local Flask 200 ✅
 - Overall auto-cert pass rate ≈ 98% ✅
 
-**Action item attached to approval:** production `chitti-news-api` returns 502 (infra/deploy, not code) — requires a Railway redeploy with correct `DATABASE_URL` libsql:// env.
+**Action item attached to approval — ✅ DONE:** production `chitti-news-api` returned 502 — **RESOLVED 2026-06-06 (commit `95af2b3`, verified live).** Root cause: `Base.metadata.create_all(bind=engine)` was the only unguarded DB call in `main._bootstrap()` — when Railway's Turso `DATABASE_URL` was unreachable it threw at import, crashing every gunicorn worker → 502 on every endpoint incl `/health`. Fix: guarded `create_all` in try/except (app boots + `/health` 200 even if DB unreachable) and a boot-time `SELECT 1` smoke-test in `database.make_engine` that falls back to a local sqlite engine (loudly logged, never silent) on Turso connect failure so the worker always boots and the RSS poller still serves real news. Verified LIVE: `GET /health` → 200 `{"ok":true}`, `GET /api/news/feed` → 200, `GET /api/news/sources` → 200 (213 sources). **Production is live + verified.**
+
+**Remaining item (Medium-infra, NOT a blocker):** set Railway `DATABASE_URL` to the correct `libsql://…?authToken=…` so data survives container restarts (QUALITY_STATUS §5, issue #1b). Until then the service runs on the self-healing sqlite fallback (ephemeral; RSS re-polls every 30 min). Service is LIVE meanwhile.
 
 ---
 
@@ -42,7 +44,7 @@ Architecture is fail-open, privacy-clean (no PII, localStorage-only personalizat
 6. Add an article to Read Later, reload — confirm it persists (localStorage) and never syncs.
 7. Cancel (👎) an article — confirm it moves to Cancelled and the For You profile updates locally.
 8. Run on a real 2G/Slow network — confirm feed + Trust Strip visible within target.
-9. Confirm a fact-check verdict shows what verified it (≥2 sources) on a live article (requires prod backend up — gated on the 502 redeploy).
+9. Confirm a fact-check verdict shows what verified it (≥2 sources) on a live article (prod backend is now LIVE + verified — 502 RESOLVED 2026-06-06, commit `95af2b3`; no longer gated).
 
 ---
 

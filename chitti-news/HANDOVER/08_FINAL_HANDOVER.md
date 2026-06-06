@@ -12,7 +12,7 @@
 
 ## Summary
 
-Chitti News (CNOS) is built, certified, and live on the frontend. It serves 6 category tabs (National/Politics/Business/Sports/Entertainment/Tech) over 6 home rails (36 cards), each carrying a Trust Strip (verified/partial/unverified), a 3-bullet DeepSeek "Chitti's Take", and a fact-check, with For You / Read Later / Cancelled stored localStorage-only. A 7-agent swarm is built through agent 5 (News→Verification→Context→Personalization→Accessibility); Career + Action are Phase 2. Automated certification across engines, viewports, devices, 26 languages, 4 accessibility profiles, performance, samples, and backend lands at **≈ 98% overall pass** — the single automated failure being one axe-core WCAG-AA run (3 violation types), and the single hard blocker being an **infra-owned production 502** (the backend code is healthy: it boots locally to 200 and passes 49/49 tests; the Railway deploy needs a redeploy, likely a `DATABASE_URL` libsql:// env gap).
+Chitti News (CNOS) is built, certified, and live on the frontend. It serves 6 category tabs (National/Politics/Business/Sports/Entertainment/Tech) over 6 home rails (36 cards), each carrying a Trust Strip (verified/partial/unverified), a 3-bullet DeepSeek "Chitti's Take", and a fact-check, with For You / Read Later / Cancelled stored localStorage-only. A 7-agent swarm is built through agent 5 (News→Verification→Context→Personalization→Accessibility); Career + Action are Phase 2. Automated certification across engines, viewports, devices, 26 languages, 4 accessibility profiles, performance, samples, and backend lands at **≈ 98% overall pass** — the single automated failure being one axe-core WCAG-AA run (3 violation types). The former hard blocker — a production 502 — is **RESOLVED 2026-06-06 (commit `95af2b3`, verified live).** Root cause: `Base.metadata.create_all(bind=engine)` was the only unguarded DB call in `main._bootstrap()`; when Railway's Turso `DATABASE_URL` was unreachable it threw at import, crashing every gunicorn worker → 502 on every endpoint incl `/health`. Fix: guarded `create_all` in try/except (app boots + `/health` 200 even if DB unreachable) plus a boot-time `SELECT 1` smoke-test in `database.make_engine` that falls back to a local sqlite engine (loudly logged, never silent) on Turso connect failure so the worker always boots and the RSS poller still serves real news. Verified LIVE: `GET /health` → 200 `{"ok":true}`, `GET /api/news/feed` → 200, `GET /api/news/sources` → 200 (213 sources). **Production is live + verified.** The only open infra item is a **Medium DATABASE_URL persistence follow-up** (issue #1b) so data survives container restarts; the service is LIVE meanwhile on the self-healing sqlite fallback.
 
 ---
 
@@ -29,20 +29,22 @@ Chitti News (CNOS) is built, certified, and live on the frontend. It serves 6 ca
 | 7 | Performance (Slow-3G + @375 + @1280 within targets) | ✅ PASS |
 | 8 | Sample loop 24/25 + backend 49/49 | ✅ PASS |
 | 9 | axe-core WCAG 2.1 AA | ⚠️ 1 fail (3 violation types — contrast/nested-interactive/aria-required-children) |
-| 10 | Production backend reachable | ⚠️ RED — 502 (infra redeploy pending) |
+| 10 | Production backend reachable | ✅ PASS — 502 RESOLVED 2026-06-06 (commit `95af2b3`, verified live: `/health` 200, `/api/news/feed` 200, `/api/news/sources` 200 / 213 sources). Open follow-up: Medium `DATABASE_URL` persistence (#1b), non-blocking. |
 
-Gates 1–8 green. Gate 9 is bounded a11y polish + one by-design tradeoff. Gate 10 is infra-owned.
+Gates 1–8 green. Gate 9 is bounded a11y polish + one by-design tradeoff. Gate 10 is GREEN — production is live + verified; only the Medium `DATABASE_URL` persistence follow-up (#1b) remains, and it does not block (service runs on the self-healing sqlite fallback).
 
 ---
 
 ## Final verdict
 
-✅ **APPROVED** — pending two items:
+✅ **APPROVED** — 0 critical functional bugs, **0 High bugs**, production **live + verified**.
 
-1. **Sire real-device validation** (9 items, see below + `05_SIGN_OFF.md`).
-2. **Infra redeploy** of `chitti-news-api` to clear the production 502.
+- The former High blocker (prod 502) is **RESOLVED 2026-06-06 (commit `95af2b3`, verified live).**
+- Open items:
+  1. **Sire real-device validation** (9 items, see below + `05_SIGN_OFF.md`) — pending real iPhone/Android.
+  2. **Medium `DATABASE_URL` persistence follow-up** (#1b, infra) — non-blocking; service is LIVE on the self-healing sqlite fallback.
 
-No critical functional bugs. The frontend fails open against the 502.
+The canonical, auto-generated source of truth for this handover is **`09_UNIVERSAL_HANDOVER_FILLED.md`**.
 
 ---
 

@@ -17,9 +17,15 @@
   },
   "production": {
     "base": "https://chitti-news-api-production.up.railway.app",
-    "health_status": 502,
-    "feed_status": 502,
-    "verdict": "DOWN — Application failed to respond (Railway deploy/infra; code proven healthy locally)"
+    "health_status": 200,
+    "feed_status": 200,
+    "sources_count": 213,
+    "verdict": "RECOVERED — was 502 (Application failed to respond); resilient-boot fix (commit 95af2b3) shipped + Railway auto-redeployed; verified live 2026-06-06: /health 200, /feed 200, /sources 200 (213 sources). Feed items populate on next RSS poll."
   },
-  "conclusion": "Backend CODE is GREEN (boots, /health 200, /feed 200, 49/49 unit tests). Railway DEPLOY is RED (502). Fix is infra: redeploy + verify DATABASE_URL libsql:// env (Sire/infra-owned)."
+  "conclusion": "Backend GREEN: code boots, 49/49 unit tests, AND production verified live (502 → 200 after the resilient-boot fix). Remaining permanent task (infra): set DATABASE_URL to the correct libsql:// Turso URL so data survives restarts (QUALITY_STATUS §5); until then the app self-heals to local sqlite + RSS repoll.",
+  "fix": {
+    "commit": "95af2b3",
+    "what": "guarded Base.metadata.create_all + Turso boot smoke-test with loud sqlite fallback in database.make_engine",
+    "verified_live": true
+  }
 }
