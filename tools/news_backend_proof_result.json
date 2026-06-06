@@ -1,0 +1,25 @@
+{
+  "product": "chitti-news",
+  "when": "2026-06-06",
+  "backend_logic_tests": {
+    "category_classifier": "31/31",
+    "news_insight": "18/18",
+    "total_pass": 49,
+    "total": 49
+  },
+  "local_boot": {
+    "health_status": 200,
+    "health_body": "{\"ok\":true}",
+    "feed_status": 200,
+    "sources_seeded": 227,
+    "articles_seeded": 6,
+    "scheduler": "started (factcheck/insight/rss_poll/daily_breaking/feeds_health)"
+  },
+  "production": {
+    "base": "https://chitti-news-api-production.up.railway.app",
+    "health_status": 502,
+    "feed_status": 502,
+    "verdict": "DOWN — Application failed to respond (Railway deploy/infra; code proven healthy locally)"
+  },
+  "conclusion": "Backend CODE is GREEN (boots, /health 200, /feed 200, 49/49 unit tests). Railway DEPLOY is RED (502). Fix is infra: redeploy + verify DATABASE_URL libsql:// env (Sire/infra-owned)."
+}
