@@ -122,6 +122,30 @@
     <div class="sw-disclaimer" data-vai-i18n="mb.swarm.disc">⚠️ Chitti mechanic nahi hai — yeh ek confidence-based diagnosis hai (Likely / Possible). Safety red-line par hamesha inspection karwayein. Emergency = family cascade, cops ko auto-dial nahi.</div>
   </div>
 
+  <!-- ════════ Roadside-critical surfaces — ALWAYS visible on landing (BO-SelfFix / BO-Scan /
+       SOS). A stranded user with NO saved vehicle must reach Emergency SOS, the OFFLINE
+       Roadside Self-Fix, the Scanners and the Health Score. Moved out of #mb-summary. ════════ -->
+  <div class="mb-quick-row">
+    <button class="mb-quick mb-quick-sos" onclick="mbSOS()" data-vai-i18n-attr="aria-label|qa.sos.aria" aria-label="Emergency SOS">
+      <span class="ico">🆘</span><span class="lbl" data-vai-i18n="qa.sos">SOS</span><span class="sub" data-vai-i18n="qa.sos.sub">Family cascade</span>
+    </button>
+    <button class="mb-quick mb-quick-trip" onclick="mbTripReady()" data-vai-i18n-attr="aria-label|qa.trip.aria" aria-label="Pre-trip readiness check">
+      <span class="ico">🧳</span><span class="lbl" data-vai-i18n="qa.trip">Trip ready?</span><span class="sub" data-vai-i18n="qa.trip.sub">30-sec sweep</span>
+    </button>
+    <button class="mb-quick mb-quick-mech" onclick="mbTab('ask'); setTimeout(()=>document.getElementById('mb-pin')?.focus(),250)" data-vai-i18n-attr="aria-label|qa.mech.aria" aria-label="Find a trusted mechanic">
+      <span class="ico">🗺️</span><span class="lbl" data-vai-i18n="qa.mech">Find mech</span><span class="sub" data-vai-i18n="qa.mech.sub">Community-rated</span>
+    </button>
+  </div>
+  <div id="mb-selffix-card" data-csf-launch data-csf-vehicle="2w"
+       data-chitti-response="mb-card-selffix" data-chitti-section="🆘 Roadside Self-Fix"
+       class="sds-card chitti-response" style="border:2px solid #FF9933;background:#fff8ef;margin-top:8px"></div>
+  <div id="mb-scanners-card" data-cas-launch data-cas-vehicle="2w"
+       data-chitti-response="mb-card-scanners" data-chitti-section="🔬 AI Scanners"
+       class="sds-card chitti-response" style="border:2px solid #000080;background:#f4f7ff;margin-top:8px"></div>
+  <div id="mb-hscore-card" data-chs-launch data-chs-vehicle="2w"
+       data-chitti-response="mb-card-hscore" data-chitti-section="🩺 Vehicle Health Score"
+       class="sds-card chitti-response" style="border:2px solid #138808;background:#f4fbf4;margin-top:8px"></div>
+
   <div id="mb-empty" class="sds-empty" style="display:none">
     <div class="big">🏍️</div>
     <div class="title" data-vai-i18n="mb.empty.title">अपनी बाइक जोड़ें</div>
@@ -148,37 +172,6 @@
         <div class="mb-hscore-lbl" data-vai-i18n="hs.lbl">Health</div>
       </div>
     </div>
-
-    <!-- ════════ World-class additions on Home — SOS · Trip-readiness · Find Mechanic ════════ -->
-    <div class="mb-quick-row">
-      <button class="mb-quick mb-quick-sos" onclick="mbSOS()" data-vai-i18n-attr="aria-label|qa.sos.aria" aria-label="Emergency SOS">
-        <span class="ico">🆘</span><span class="lbl" data-vai-i18n="qa.sos">SOS</span><span class="sub" data-vai-i18n="qa.sos.sub">Family cascade</span>
-      </button>
-      <button class="mb-quick mb-quick-trip" onclick="mbTripReady()" data-vai-i18n-attr="aria-label|qa.trip.aria" aria-label="Pre-trip readiness check">
-        <span class="ico">🧳</span><span class="lbl" data-vai-i18n="qa.trip">Trip ready?</span><span class="sub" data-vai-i18n="qa.trip.sub">30-sec sweep</span>
-      </button>
-      <button class="mb-quick mb-quick-mech" onclick="mbTab('ask'); setTimeout(()=>document.getElementById('mb-pin')?.focus(),250)" data-vai-i18n-attr="aria-label|qa.mech.aria" aria-label="Find a trusted mechanic">
-        <span class="ico">🗺️</span><span class="lbl" data-vai-i18n="qa.mech">Find mech</span><span class="sub" data-vai-i18n="qa.mech.sub">Community-rated</span>
-      </button>
-    </div>
-
-    <!-- ════════ 🆘 Roadside Self-Fix launch — OFFLINE breakdown wizard (KB-driven, auto-i18n) ════════ -->
-    <div id="mb-selffix-card" data-csf-launch data-csf-vehicle="2w"
-         data-chitti-response="mb-card-selffix" data-chitti-section="🆘 Roadside Self-Fix"
-         class="sds-card chitti-response"
-         style="border:2px solid #FF9933;background:#fff8ef;margin-top:8px"></div>
-
-    <!-- ════════ 🔬 AI Scanners launch — camera & sound diagnosis (honest stubs, auto-i18n) ════════ -->
-    <div id="mb-scanners-card" data-cas-launch data-cas-vehicle="2w"
-         data-chitti-response="mb-card-scanners" data-chitti-section="🔬 AI Scanners"
-         class="sds-card chitti-response"
-         style="border:2px solid #000080;background:#f4f7ff;margin-top:8px"></div>
-
-    <!-- ════════ 🩺 Vehicle Health Score launch — F10 0–100 self-check (offline, auto-i18n) ════════ -->
-    <div id="mb-hscore-card" data-chs-launch data-chs-vehicle="2w"
-         data-chitti-response="mb-card-hscore" data-chitti-section="🩺 Vehicle Health Score"
-         class="sds-card chitti-response"
-         style="border:2px solid #138808;background:#f4fbf4;margin-top:8px"></div>
 
     <div id="mb-trip-result" style="margin-top:8px"></div>
 

@@ -45,7 +45,15 @@ for (const P of PAGES) {
   const blind = await pg.evaluate(() => {
     const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && e.offsetParent !== null; };
     const boxes = Array.from(document.querySelectorAll('[data-chitti-response]')).filter(vis);
-    const boxesWithSpeak = boxes.filter(bx => bx.querySelector('[onclick*="Speak" i], [onclick*="speak" i], .sds-card-toolbar button, [aria-label*="सुन" i], [aria-label*="listen" i]'));
+    // A box "speaks" if it has an inline 🔊 toolbar button OR the per-box feedback-widget
+    // speak control — which is inserted as the box's NEXT SIBLING (feedback-widget.js:585,
+    // so module innerHTML re-renders don't wipe it). So check the box AND its next sibling.
+    const speakSel = '.chitti-fb-bbtn.speak, [data-act="speak"], [data-vote="speak"], [onclick*="Speak" i], [onclick*="speak" i], .sds-card-toolbar button, [aria-label*="aloud" i], [aria-label*="सुन" i], [aria-label*="listen" i]';
+    const boxesWithSpeak = boxes.filter(bx => {
+      if (bx.querySelector(speakSel)) return true;
+      const sib = bx.nextElementSibling;
+      return !!(sib && sib.querySelector && sib.querySelector(speakSel));
+    });
     const mic = document.querySelector('.sw-mic, [onclick*="swMic"]');
     const speakFn = typeof window.speakText === 'function' || typeof window.chittiSpeak === 'function' || !!(window.Chitti && window.Chitti.speak);
     return { boxes: boxes.length, withSpeak: boxesWithSpeak.length, mic: !!mic && vis(mic), speakFn };
