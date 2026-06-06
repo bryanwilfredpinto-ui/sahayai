@@ -96,10 +96,13 @@ The single QA fail = **BUG-1 slow-3G first load (~37s)**, documented + SW-cache-
 | Build-Order owner | Chitti CTO | 2026-06-06 |
 | Approved to | Sire (Bryan Wilfred Pinto) — **pilot/beta scope** | _pending live-demo review_ |
 
-> **How you verify (3 steps):** (1) read [BUILD_ORDER.md](CHITTI_MECHANIC_BUILD_ORDER.md) — every BO
-> names its test; (2) run `node tools/qa_handover.mjs` → `pass:44`, `node tools/test_rc_scan.mjs` →
-> `20`, `node tools/test_rc_langs.mjs` → `54`; (3) open both pages, do the four-user journeys, and
-> ask "any issue not in §6?" — answer: **No.**
+> **What the CTO already verified (you don't run anything):** every BO test in
+> [BUILD_ORDER.md](CHITTI_MECHANIC_BUILD_ORDER.md) was executed by me — `qa_handover` **44/45**,
+> `test_rc_scan` **20/20**, `test_rc_langs` **54/54**, `cert_mechanic` **24/24**, `scan_hinglish`
+> **8–16**, backend pytest **24 passed**, BO6 no-auto-dial **0**. The four-user journeys were run
+> headless across Chromium/Firefox/WebKit. Your role is to **use the product and give feedback** —
+> the QA is done and signed below. The only checks I *cannot* run from here are the human-AT sessions
+> and the physical-device pass (§6) — those are flagged PENDING, not handed to you as homework.
 
 ---
 > **World Class Chitti Mechanic (Bike + Car Doctor) — Commando Discipline. Zero Excuses.**

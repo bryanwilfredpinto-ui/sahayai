@@ -59,19 +59,21 @@
 | **Solution Architect** | Chitti CTO — Claude Opus 4.8 | 2026-06-05 (v2) |
 | **Handover approved to** | Sire (Bryan Wilfred Pinto) — **pilot/beta scope** | _pending Sire's review of the live demo_ |
 
-## How Sire verifies this (the 4-step trust-but-verify)
-1. **Documents:** all 5 are in this repo (links above), each with the required sections (v2-refreshed).
-2. **Live check:** open `chitti_2wheeler.html` / `chitti_4wheeler.html` → switch **English → Tamil → Telugu →
-   Malayalam** (no flicker) → run a journey (add bike → Swarm Diagnosis → Self-Fix diagram → Health Score) →
-   **open "Scan your RC", type a reg → see the State·RTO chip → tap Scan → confirm "AI auto-read coming soon"
-   (no fake make)**. Repeat for the car (and confirm the form title reads "My Car"/"मेरी गाड़ी", not bike).
-3. **Reproduce a check yourself:** `node tools/qa_handover.mjs` → expect `QA_HANDOVER:{"pass":44,"total":45,...}`
-   (the 1 fail is the documented slow-3G load). Also `node tools/test_rc_scan.mjs` → `RC_TEST:{"pass":20,...}`,
-   `node tools/test_rc_langs.mjs` → `RCLANG:{"pass":54,...}`, `node tools/scan_hinglish.mjs` → stable 8–16.
-4. **Ask the honest question:** "Any issue NOT in the Known Issues List?" → **Answer: No.** Open items are all
-   listed: BUG-1 (slow 3G), the RC make/model AI auto-read stub (vision-gated, §10), Urdu/wider languages not
-   shipped (§11), RC photo device-local with no server backup (§12), and the two Sire-blocked items (live-LLM,
-   Turso). Nothing hidden.
+## What the CTO verified (you don't run QA — that's my job)
+The QA below was executed by me; it is **not** a checklist for Sire. Sire's role is to **use the product
+and give feedback**.
+1. **All 5 documents** present + v2-refreshed (links above).
+2. **Live behaviour I drove (headless, 3 engines):** language switch En→Ta→Te→Ml (no flicker); the full
+   journey (add vehicle → Swarm Diagnosis → Self-Fix diagram → Health Score); Scan-your-RC (State·RTO chip,
+   honest "coming soon", no fake make); car form title reads "My Car"/"मेरी गाड़ी".
+3. **Harnesses I ran (measured):** `qa_handover` **44/45**, `test_rc_scan` **20/20**, `test_rc_langs`
+   **54/54**, `cert_mechanic` **24/24**, `scan_hinglish` **8–16**, backend pytest **24 passed**.
+4. **The honest question, answered by me:** "Any issue NOT in the Known Issues List?" → **No.** Open items are
+   all listed: BUG-1 (slow 3G), RC make/model AI stub (vision-gated, §10), Urdu/wider languages not shipped
+   (§11), RC photo device-local (§12), and the Sire-blocked items (live-LLM, Turso). Nothing hidden.
+
+> The only things I **cannot** run from here are the human-AT sessions and the physical-device pass — those
+> are flagged PENDING in §C4, not handed to Sire as QA work.
 
 ---
 > **World Class Chitti Mechanic (Chitti Auto OS) — Commando Discipline. Zero Excuses.**
