@@ -49,7 +49,19 @@ def _bootstrap() -> None:
         ensure_schema()
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_schema skipped: %s", e)
-    Base.metadata.create_all(bind=engine)
+    # GUARDED 2026-06-06: this was the ONLY unguarded DB call in _bootstrap.
+    # When Railway's Turso DATABASE_URL was unreachable, create_all() threw at
+    # import → every gunicorn worker died → production 502 on EVERY endpoint
+    # (incl. /health). Now fail-open: the app boots, /health returns 200, and
+    # feeds serve the honest empty-state until the DB is reachable. The engine
+    # itself also falls back to local sqlite on a Turso connect failure
+    # (see database.make_engine), so a misconfigured DATABASE_URL no longer
+    # takes the whole service down.
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:  # noqa: BLE001
+        log.error("create_all skipped — DB unreachable at boot (%s); app will "
+                  "still serve /health + honest empty feeds", e)
     # Health-monitor column migration (2026-06-02 per Sire's monitoring spec).
     # Idempotent ALTER TABLE — safe on every restart.
     try:

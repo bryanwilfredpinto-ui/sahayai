@@ -72,17 +72,60 @@ def _resolve_url(raw: str) -> str:
     return raw
 
 
+def _sqlite_fallback() -> Engine:
+    """Local-file engine of last resort so a worker ALWAYS boots.
+
+    Data is ephemeral across Railway restarts, but the RSS poller repopulates
+    it every 30 min, so the product still serves real news — strictly better
+    than a hard 502. Loudly logged; never silent.
+    """
+    return create_engine(
+        "sqlite:///./chitti_news_fallback.db",
+        connect_args={"check_same_thread": False},
+    )
+
+
+def _smoke_test(eng: Engine) -> None:
+    """Force one real connection at boot so an unreachable Turso fails HERE
+    (where we can fall back) rather than later inside _bootstrap's create_all."""
+    with eng.connect() as conn:
+        conn.execute(text("SELECT 1"))
+
+
 def make_engine(raw: str) -> Engine:
     if not raw:
-        raise ValueError("make_engine: empty DATABASE_URL")
+        log.error("make_engine: empty DATABASE_URL — falling back to local sqlite")
+        return _sqlite_fallback()
     if raw.startswith("libsql://"):
-        return _build_libsql_engine(raw)
+        # RESILIENCE 2026-06-06: smoke-test the Turso HTTPS path at boot. If the
+        # host/token is unreachable or rejected (the chitti-news-api production
+        # 502 root cause), fall back to local sqlite so the service still boots
+        # and serves RSS news instead of crashing every worker.
+        try:
+            eng = _build_libsql_engine(raw)
+            _smoke_test(eng)
+            return eng
+        except Exception as e:  # noqa: BLE001
+            log.error(
+                "Turso libsql engine UNREACHABLE at boot (%s) — FALLING BACK to "
+                "local sqlite. Production data is EPHEMERAL until DATABASE_URL / "
+                "Turso auth is fixed. This is the honest degrade path, not silent.",
+                e,
+            )
+            return _sqlite_fallback()
 
     url = _resolve_url(raw)
     connect_args: dict = {}
     if url.startswith("sqlite"):
         connect_args = {"check_same_thread": False}
-    return create_engine(url, connect_args=connect_args, pool_pre_ping=True)
+    try:
+        eng = create_engine(url, connect_args=connect_args, pool_pre_ping=True)
+        _smoke_test(eng)
+        return eng
+    except Exception as e:  # noqa: BLE001
+        log.error("DATABASE_URL engine unreachable at boot (%s) — falling back to "
+                  "local sqlite", e)
+        return _sqlite_fallback()
 
 
 engine: Engine = make_engine(settings.DATABASE_URL)
