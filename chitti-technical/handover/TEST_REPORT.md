@@ -19,8 +19,18 @@
 ## Headline
 | Suite | Result |
 |---|---|
-| Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **236 PASS / 0 FAIL** |
-| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **24 PASS / 0 FAIL · 0 page errors** |
+| Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **252 PASS / 0 FAIL** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **27 PASS / 0 FAIL · 0 page errors** |
+
+## Indicator dropdown + BUY · SELL · TARGET · SL (Sire's ask)
+✅ **Indicator dropdown** — `ITEM indicator_dropdown_lists_all — 22 indicators`; check/uncheck filters the
+grid (`none=0 all=22`), with All/None; the engine computes 22 indicators (RSI, MACD, Stochastic,
+Williams %R, Supertrend, EMA50/200, Bollinger, OBV, ADX, CCI, ROC, Momentum, MFI, Aroon, Donchian,
+Awesome Oscillator, Stochastic RSI, VWAP, Keltner, TRIX, Roshan) — each carries BUY/SELL/WAIT.
+✅ **BUY · SELL · TARGET · SL** — `ITEM trade_plan_BUY_SELL_TARGET_SL — HDFCBANK/swing SELL → all 4 present`.
+A four-cell plan sits at the top of every directional signal: 🟢 BUY · 🔴 SELL (entry side highlighted) ·
+🎯 TARGET(s) · 🛑 STOP LOSS; HOLD shows an honest "no trade — wait". Screenshot:
+[tools/cert_screenshots/chitti_technical_plan.png](../../tools/cert_screenshots/chitti_technical_plan.png).
 
 ## All-stocks dropdown (Sire's ask: type REL → RELAXO, RELIANCE, RELIGARE)
 ✅ **PASS** — wired to the repo's `nse_universe.js` (**750 NSE names**, 5 cap-tier buckets).

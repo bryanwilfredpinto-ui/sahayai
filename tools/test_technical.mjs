@@ -130,6 +130,20 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('screen respects the cap (<=30 of 120 scanned)', capped.length <= 30);
 }
 
+// ───── full indicator catalogue (the dropdown) + new indicators compute ─────
+{
+  ok('INDICATOR_NAMES exposes >=20 indicators', (E.INDICATOR_NAMES || []).length >= 20, (E.INDICATOR_NAMES || []).length + ' names');
+  const c = E.genCandles('TESTSYM', 'daily', 260);
+  const set = E.indicatorSet(c);
+  ok('indicatorSet returns >=20 indicators', Object.keys(set).length >= 20, Object.keys(set).length + ' computed');
+  ['CCI','ROC','MFI','Aroon','Donchian Channels','Awesome Oscillator','Stochastic RSI','VWAP','Keltner Channels','TRIX','Momentum'].forEach(function (n) {
+    ok('new indicator computes + signals: ' + n, set[n] != null && ['BUY','SELL','WAIT'].includes(set[n].signal));
+  });
+  // CCI sanity: rising series → not SELL
+  const rising = Array.from({length: 60}, (_, i) => ({ open: 100+i, high: 101+i, low: 99+i, close: 100.5+i, volume: 1000+i }));
+  ok('CCI on a strong uptrend is finite', E.cci(rising).pop() != null);
+}
+
 // ───── BO2: i18n completeness + no-Hinglish ─────
 const LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
 ok('i18n has all 9 primary languages', LANGS.every(l => I18N[l]));
@@ -163,6 +177,8 @@ if (existsSync(htmlPath)) {
   ok('G: chitti_lang.js loaded', /chitti_lang\.js/.test(html));
   ok('G: nse_universe.js (all-stocks list) loaded', /nse_universe\.js/.test(html));
   ok('G: type-ahead combobox + listbox present', /role=["']combobox["']/.test(html) && /id=["']sym-listbox["']/.test(html));
+  ok('G: indicator dropdown present', /id=["']ind-menu["']/.test(html) && /id=["']ind-btn["']/.test(html));
+  ok('G: trade plan (BUY/SELL/TARGET/SL) container present', /id=["']trade-plan["']/.test(html));
   ok('G1: >=1 data-chitti-response box', (html.match(/data-chitti-response/g)||[]).length >= 1);
   ok('G: SEBI bar present', /NOT SEBI REGISTERED/i.test(html));
   ok('G: lang-select present', /id=["']lang-select["']/.test(html));

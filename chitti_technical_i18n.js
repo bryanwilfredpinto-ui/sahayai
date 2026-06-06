@@ -34,7 +34,8 @@
       'vaani': 'Talk to Vaani instead',
       'chart.table': 'Show data table', 'chart.tablehide': 'Hide data table', 'chart.tablecap': 'Chart data — same numbers as the chart, for screen readers',
       'nudge.overtrade': "That's a lot of open trades — quality over quantity.",
-      'search.nomatch': 'No stock found', 'screener.scanned': 'Scanned {0} of {1} stocks'
+      'search.nomatch': 'No stock found', 'screener.scanned': 'Scanned {0} of {1} stocks',
+      'plan.title': 'Trade plan', 'ind.select': 'Choose indicators', 'ind.all': 'All', 'ind.none': 'None'
     },
     hi: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षिक तकनीकी विश्लेषण — सलाह नहीं',
@@ -58,7 +59,8 @@
       'vaani': 'वाणी से बात करें',
       'chart.table': 'डेटा टेबल दिखाएँ', 'chart.tablehide': 'डेटा टेबल छुपाएँ', 'chart.tablecap': 'चार्ट डेटा — चार्ट जैसे ही अंक, स्क्रीन रीडर के लिए',
       'nudge.overtrade': 'बहुत सारे खुले ट्रेड — मात्रा से ज़्यादा गुणवत्ता।',
-      'search.nomatch': 'कोई शेयर नहीं मिला', 'screener.scanned': '{1} में से {0} शेयर जाँचे'
+      'search.nomatch': 'कोई शेयर नहीं मिला', 'screener.scanned': '{1} में से {0} शेयर जाँचे',
+      'plan.title': 'ट्रेड योजना', 'ind.select': 'संकेतक चुनें', 'ind.all': 'सभी', 'ind.none': 'कोई नहीं'
     },
     ta: {
       'app.title': 'சிட்டி டெக்னிக்கல்', 'app.tag': 'கல்வி நுட்ப பகுப்பாய்வு — அறிவுரை அல்ல',
@@ -82,7 +84,8 @@
       'vaani': 'வாணியிடம் பேசு',
       'chart.table': 'தரவு அட்டவணை காட்டு', 'chart.tablehide': 'தரவு அட்டவணை மறை', 'chart.tablecap': 'விளக்கப்பட தரவு — விளக்கப்படத்தின் அதே எண்கள், திரை வாசிப்பாளருக்கு',
       'nudge.overtrade': 'நிறைய திறந்த வர்த்தகங்கள் — எண்ணிக்கையை விட தரம்.',
-      'search.nomatch': 'பங்கு எதுவும் இல்லை', 'screener.scanned': '{1} இல் {0} பங்குகள் பரிசோதிக்கப்பட்டன'
+      'search.nomatch': 'பங்கு எதுவும் இல்லை', 'screener.scanned': '{1} இல் {0} பங்குகள் பரிசோதிக்கப்பட்டன',
+      'plan.title': 'வர்த்தக திட்டம்', 'ind.select': 'குறிகாட்டிகளை தேர்வு செய்', 'ind.all': 'அனைத்தும்', 'ind.none': 'எதுவும் இல்லை'
     },
     te: {
       'app.title': 'చిట్టి టెక్నికల్', 'app.tag': 'విద్యా సాంకేతిక విశ్లేషణ — సలహా కాదు',
@@ -106,7 +109,8 @@
       'vaani': 'వాణితో మాట్లాడు',
       'chart.table': 'డేటా టేబుల్ చూపించు', 'chart.tablehide': 'డేటా టేబుల్ దాచు', 'chart.tablecap': 'చార్ట్ డేటా — చార్ట్ లాంటి అంకెలు, స్క్రీన్ రీడర్ కోసం',
       'nudge.overtrade': 'చాలా తెరిచిన ట్రేడ్లు — పరిమాణం కంటే నాణ్యత.',
-      'search.nomatch': 'షేరు ఏదీ దొరకలేదు', 'screener.scanned': '{1} లో {0} షేర్లు పరిశీలించబడ్డాయి'
+      'search.nomatch': 'షేరు ఏదీ దొరకలేదు', 'screener.scanned': '{1} లో {0} షేర్లు పరిశీలించబడ్డాయి',
+      'plan.title': 'ట్రేడ్ ప్రణాళిక', 'ind.select': 'సూచికలను ఎంచుకోండి', 'ind.all': 'అన్నీ', 'ind.none': 'ఏదీ లేదు'
     },
     bn: {
       'app.title': 'চিট্টি টেকনিক্যাল', 'app.tag': 'শিক্ষামূলক প্রযুক্তিগত বিশ্লেষণ — পরামর্শ নয়',
@@ -130,7 +134,8 @@
       'vaani': 'বাণীর সাথে কথা বলুন',
       'chart.table': 'ডেটা টেবিল দেখান', 'chart.tablehide': 'ডেটা টেবিল লুকান', 'chart.tablecap': 'চার্ট ডেটা — চার্টের মতোই সংখ্যা, স্ক্রিন রিডারের জন্য',
       'nudge.overtrade': 'অনেক খোলা ট্রেড — পরিমাণের চেয়ে গুণমান।',
-      'search.nomatch': 'কোনও শেয়ার পাওয়া যায়নি', 'screener.scanned': '{1} টির মধ্যে {0} টি শেয়ার যাচাই'
+      'search.nomatch': 'কোনও শেয়ার পাওয়া যায়নি', 'screener.scanned': '{1} টির মধ্যে {0} টি শেয়ার যাচাই',
+      'plan.title': 'ট্রেড পরিকল্পনা', 'ind.select': 'নির্দেশক বাছুন', 'ind.all': 'সব', 'ind.none': 'কোনওটি না'
     },
     mr: {
       'app.title': 'चिट्टी टेक्निकल', 'app.tag': 'शैक्षणिक तांत्रिक विश्लेषण — सल्ला नाही',
@@ -154,7 +159,8 @@
       'vaani': 'वाणीशी बोला',
       'chart.table': 'डेटा टेबल दाखवा', 'chart.tablehide': 'डेटा टेबल लपवा', 'chart.tablecap': 'चार्ट डेटा — चार्टसारखेच आकडे, स्क्रीन रीडरसाठी',
       'nudge.overtrade': 'बरेच खुले ट्रेड — संख्येपेक्षा गुणवत्ता.',
-      'search.nomatch': 'कोणताही शेअर सापडला नाही', 'screener.scanned': '{1} पैकी {0} शेअर तपासले'
+      'search.nomatch': 'कोणताही शेअर सापडला नाही', 'screener.scanned': '{1} पैकी {0} शेअर तपासले',
+      'plan.title': 'ट्रेड योजना', 'ind.select': 'निर्देशक निवडा', 'ind.all': 'सर्व', 'ind.none': 'काहीही नाही'
     },
     gu: {
       'app.title': 'ચિટ્ટી ટેક્નિકલ', 'app.tag': 'શૈક્ષણિક ટેક્નિકલ વિશ્લેષણ — સલાહ નહીં',
@@ -178,7 +184,8 @@
       'vaani': 'વાણી સાથે વાત કરો',
       'chart.table': 'ડેટા ટેબલ બતાવો', 'chart.tablehide': 'ડેટા ટેબલ છુપાવો', 'chart.tablecap': 'ચાર્ટ ડેટા — ચાર્ટ જેવા જ આંકડા, સ્ક્રીન રીડર માટે',
       'nudge.overtrade': 'ઘણા ખુલ્લા ટ્રેડ — જથ્થા કરતાં ગુણવત્તા.',
-      'search.nomatch': 'કોઈ શેર મળ્યો નથી', 'screener.scanned': '{1} માંથી {0} શેર તપાસ્યા'
+      'search.nomatch': 'કોઈ શેર મળ્યો નથી', 'screener.scanned': '{1} માંથી {0} શેર તપાસ્યા',
+      'plan.title': 'ટ્રેડ યોજના', 'ind.select': 'સૂચકો પસંદ કરો', 'ind.all': 'બધા', 'ind.none': 'કોઈ નહીં'
     },
     kn: {
       'app.title': 'ಚಿಟ್ಟಿ ಟೆಕ್ನಿಕಲ್', 'app.tag': 'ಶೈಕ್ಷಣಿಕ ತಾಂತ್ರಿಕ ವಿಶ್ಲೇಷಣೆ — ಸಲಹೆ ಅಲ್ಲ',
@@ -202,7 +209,8 @@
       'vaani': 'ವಾಣಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
       'chart.table': 'ಡೇಟಾ ಟೇಬಲ್ ತೋರಿಸಿ', 'chart.tablehide': 'ಡೇಟಾ ಟೇಬಲ್ ಮರೆಮಾಡಿ', 'chart.tablecap': 'ಚಾರ್ಟ್ ಡೇಟಾ — ಚಾರ್ಟ್‌ನಂತೆಯೇ ಸಂಖ್ಯೆಗಳು, ಸ್ಕ್ರೀನ್ ರೀಡರ್‌ಗಾಗಿ',
       'nudge.overtrade': 'ಹಲವು ತೆರೆದ ಟ್ರೇಡ್‌ಗಳು — ಪ್ರಮಾಣಕ್ಕಿಂತ ಗುಣಮಟ್ಟ.',
-      'search.nomatch': 'ಯಾವುದೇ ಷೇರು ಸಿಗಲಿಲ್ಲ', 'screener.scanned': '{1} ರಲ್ಲಿ {0} ಷೇರುಗಳು ಪರಿಶೀಲಿಸಲಾಗಿದೆ'
+      'search.nomatch': 'ಯಾವುದೇ ಷೇರು ಸಿಗಲಿಲ್ಲ', 'screener.scanned': '{1} ರಲ್ಲಿ {0} ಷೇರುಗಳು ಪರಿಶೀಲಿಸಲಾಗಿದೆ',
+      'plan.title': 'ಟ್ರೇಡ್ ಯೋಜನೆ', 'ind.select': 'ಸೂಚಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ', 'ind.all': 'ಎಲ್ಲಾ', 'ind.none': 'ಯಾವುದೂ ಇಲ್ಲ'
     },
     ml: {
       'app.title': 'ചിട്ടി ടെക്നിക്കൽ', 'app.tag': 'വിദ്യാഭ്യാസ സാങ്കേതിക വിശകലനം — ഉപദേശമല്ല',
@@ -226,7 +234,8 @@
       'vaani': 'വാണിയോട് സംസാരിക്കുക',
       'chart.table': 'ഡാറ്റ പട്ടിക കാണിക്കുക', 'chart.tablehide': 'ഡാറ്റ പട്ടിക മറയ്ക്കുക', 'chart.tablecap': 'ചാർട്ട് ഡാറ്റ — ചാർട്ടിലെ അതേ സംഖ്യകൾ, സ്ക്രീൻ റീഡറിന്',
       'nudge.overtrade': 'ധാരാളം തുറന്ന ട്രേഡുകൾ — അളവിനെക്കാൾ ഗുണനിലവാരം.',
-      'search.nomatch': 'ഓഹരി ഒന്നും കണ്ടെത്തിയില്ല', 'screener.scanned': '{1} ൽ {0} ഓഹരികൾ പരിശോധിച്ചു'
+      'search.nomatch': 'ഓഹരി ഒന്നും കണ്ടെത്തിയില്ല', 'screener.scanned': '{1} ൽ {0} ഓഹരികൾ പരിശോധിച്ചു',
+      'plan.title': 'ട്രേഡ് പദ്ധതി', 'ind.select': 'സൂചകങ്ങൾ തിരഞ്ഞെടുക്കുക', 'ind.all': 'എല്ലാം', 'ind.none': 'ഒന്നുമില്ല'
     }
   };
 

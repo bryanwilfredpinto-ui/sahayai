@@ -164,6 +164,43 @@ await p.waitForTimeout(300);
 check('dropdown_select_runs_scan', await p.evaluate(() =>
   document.getElementById('sym').value === 'RELIANCE' && document.getElementById('sig-sym').textContent === 'RELIANCE'));
 
+// ---- ITEM: indicator dropdown (all indicators) ----
+await p.evaluate(() => window.TechUI.toggleIndMenu());
+await p.waitForTimeout(250);
+const indBoxes = await p.$$eval('#ind-menu input[type="checkbox"]', els => els.length);
+check('ITEM indicator_dropdown_lists_all', indBoxes >= 20, indBoxes + ' indicators in dropdown');
+await p.evaluate(() => window.TechUI.indAll(false)); await p.waitForTimeout(200);
+const gridNone = await p.$$eval('#ind-grid .ind', els => els.length);
+await p.evaluate(() => window.TechUI.indAll(true)); await p.waitForTimeout(200);
+const gridAll = await p.$$eval('#ind-grid .ind', els => els.length);
+check('indicator_dropdown_toggle_filters_grid', gridNone === 0 && gridAll >= 20, `none=${gridNone} all=${gridAll}`);
+await p.evaluate(() => window.TechUI.toggleIndMenu());
+
+// ---- ITEM: BUY · SELL · TARGET · SL plan on a directional signal ----
+const dir = await p.evaluate(() => {
+  const E = window.TechEngine;
+  for (const s of E.UNIVERSE) for (const tt of ['longterm','positional','swing','intraday']) {
+    const r = E.scanSymbol(s.sym, tt); if (r.verdict !== 'HOLD') return { sym: s.sym, tt: tt, verdict: r.verdict };
+  }
+  return null;
+});
+if (dir) {
+  await p.selectOption('#tradetype', dir.tt);
+  await p.fill('#sym', dir.sym);
+  await p.evaluate(() => window.TechUI.scan());
+  await p.waitForTimeout(350);
+  await p.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_plan.png') });
+  const plan = await p.evaluate(() => {
+    const b = document.getElementById('trade-plan');
+    return { buy: !!b.querySelector('.pcell.buy .pv'), sell: !!b.querySelector('.pcell.sell .pv'),
+             tgt: !!b.querySelector('.pcell.tgt .pv'), sl: !!b.querySelector('.pcell.sl .pv') };
+  });
+  check('ITEM trade_plan_BUY_SELL_TARGET_SL', plan.buy && plan.sell && plan.tgt && plan.sl,
+    `${dir.sym}/${dir.tt} ${dir.verdict} → ${JSON.stringify(plan)}`);
+} else {
+  check('ITEM trade_plan_BUY_SELL_TARGET_SL', false, 'no directional signal found to test the plan');
+}
+
 // ---- tap targets >= 44px on primary buttons ----
 const smallBtns = await p.$$eval('.btn', els => els.filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.height < 44; }).length);
 check('ITEM tap_targets_44px', smallBtns === 0, smallBtns + ' under 44px');

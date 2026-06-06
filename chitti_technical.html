@@ -129,6 +129,22 @@ tr.click:hover{background:#f7f8fc}
 #confirm .box .q{font-size:16px;font-weight:700;margin-bottom:14px;color:var(--navy)}
 #confirm .acts{display:flex;gap:10px;justify-content:center}
 
+/* Buy / Sell / Target / SL plan */
+.plan{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+@media(min-width:560px){.plan{grid-template-columns:repeat(4,1fr)}}
+.pcell{border:2px solid var(--line);border-radius:12px;padding:10px;text-align:center;background:#fafbff}
+.pcell .pl{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.pcell .pv{font-size:18px;font-weight:900;margin-top:3px;color:var(--navy)}
+.pcell.buy.on{border-color:var(--green);background:#e7f6e7}.pcell.buy.on .pv{color:var(--green)}
+.pcell.sell.on{border-color:var(--red);background:#fdeaea}.pcell.sell.on .pv{color:var(--red)}
+.pcell.tgt .pv{color:var(--green)}.pcell.sl .pv{color:var(--red)}
+.pcell.dim{opacity:.5}
+.plan-hold{padding:10px;border-radius:10px;background:#fff4e0;color:#9a6700;font-weight:700;text-align:center;margin:10px 0}
+/* indicator dropdown menu */
+#ind-menu label{display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:13.5px;border-radius:8px;cursor:pointer;min-height:40px}
+#ind-menu label:hover{background:#eef1ff}
+#ind-menu input{width:18px;height:18px}
+.ind-menu-acts{display:flex;gap:8px;padding:4px 6px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
 /* all-stocks type-ahead dropdown */
 .ac-box{flex:1;min-width:170px;position:relative}
 #sym-listbox{display:none;position:absolute;z-index:80;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;box-shadow:0 10px 28px rgba(0,0,0,.14)}
@@ -220,6 +236,8 @@ tr.click:hover{background:#f7f8fc}
     <div class="card" id="signal-card" data-chitti-response="tech-signal" data-chitti-section="Signal">
       <h2>📊 <span id="sig-sym">—</span> <span class="pill tier" id="sig-tier"></span></h2>
       <div class="verdict" id="verdict-row"></div>
+      <!-- Sire: BUY · SELL · TARGET · SL always shown -->
+      <div id="trade-plan"></div>
       <div class="why" id="why-box"></div>
       <h2 style="font-size:14px;margin-top:14px">🪜 <span data-i18n="ladder.title">Multi-timeframe</span></h2>
       <div class="ladder" id="ladder"></div>
@@ -253,6 +271,12 @@ tr.click:hover{background:#f7f8fc}
     <!-- BO4: indicators -->
     <div class="card col-full" data-chitti-response="tech-indicators" data-chitti-section="Indicators">
       <h2>🧮 <span data-i18n="ind.title">Indicators</span></h2>
+      <div class="ac-box" style="max-width:340px;margin-bottom:10px">
+        <button class="btn ghost" id="ind-btn" onclick="TechUI.toggleIndMenu()" aria-expanded="false" aria-controls="ind-menu" style="width:100%;text-align:left">
+          🧮 <span data-i18n="ind.select">Choose indicators</span> · <b id="ind-count">0</b> ▾</button>
+        <div id="ind-menu" role="group" aria-label="Indicators"
+             style="display:none;position:absolute;z-index:70;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;max-height:320px;overflow:auto;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:8px"></div>
+      </div>
       <div class="ind-grid" id="ind-grid"></div>
     </div>
 
@@ -304,6 +328,7 @@ window.TechUI = (function(){
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
   var ALL_STOCKS=[], acMatches=[], acIndex=-1;
+  var selectedInds=null, lastIndSet={};
   var SCREEN_CAP=60; // browser-perf guard when scanning the full ~800-name NSE universe
   // company names for the well-known symbols (rest show the symbol); honest — search is by symbol too
   var NAMES={RELIANCE:'Reliance Industries',RELAXO:'Relaxo Footwears',RELIGARE:'Religare Enterprises',
@@ -371,6 +396,7 @@ window.TechUI = (function(){
     vr.innerHTML='<div class="big v-'+res.verdict+'">'+icon+' '+T('verdict.'+res.verdict)+'</div>'+
       '<div><div class="conf">'+T('conf.label')+': '+T('conf.'+res.confidence)+'</div>'+
       '<div class="muted">'+(res.confluence_score!=null?('score '+res.confluence_score):'')+'</div></div>';
+    renderPlan(res);
     document.getElementById('why-box').textContent=res.why||'';
     renderLadder(res);
     renderRisk(res);
@@ -436,16 +462,54 @@ window.TechUI = (function(){
       '<div class="invalid">⚠️ '+T('risk.invalid')+': '+res.invalidation.replace('wrong if','').trim()+'</div>';
   }
 
+  // BUY · SELL · TARGET · SL (Sire's explicit ask) — always four labelled cells
+  function renderPlan(res){
+    var box=document.getElementById('trade-plan'); if(!box) return;
+    if(res.verdict==='HOLD'||!res.stop){
+      box.innerHTML='<div class="plan-hold">⏸️ '+T('verdict.HOLD')+' — '+(res.why||'')+'</div>'; return;
+    }
+    var isBuy=res.verdict==='BUY';
+    var entry=res.entry.ideal, t1=res.targets[0].price, sl=res.stop.price;
+    var buy=isBuy?entry:t1, sell=isBuy?t1:entry;
+    var tgts=res.targets.map(function(t){return t.price;}).join(' / ');
+    box.innerHTML='<div class="plan">'+
+      '<div class="pcell buy'+(isBuy?' on':' dim')+'"><div class="pl">🟢 '+T('verdict.BUY')+'</div><div class="pv">'+buy+'</div></div>'+
+      '<div class="pcell sell'+(!isBuy?' on':' dim')+'"><div class="pl">🔴 '+T('verdict.SELL')+'</div><div class="pv">'+sell+'</div></div>'+
+      '<div class="pcell tgt"><div class="pl">🎯 '+T('risk.targets')+'</div><div class="pv">'+tgts+'</div></div>'+
+      '<div class="pcell sl"><div class="pl">🛑 '+T('risk.stop')+'</div><div class="pv">'+sl+'</div></div>'+
+      '</div>';
+  }
+
+  // indicator dropdown (all indicators) — pick which to show; each carries BUY/SELL/WAIT
+  function ensureInds(){ if(!selectedInds){ selectedInds={}; (E.INDICATOR_NAMES||[]).forEach(function(n){selectedInds[n]=true;}); } }
+  function buildIndMenu(){
+    ensureInds(); var menu=document.getElementById('ind-menu'); if(!menu) return;
+    var acts='<div class="ind-menu-acts"><button type="button" class="tog" onmousedown="event.preventDefault();TechUI.indAll(true)">'+T('ind.all')+'</button>'+
+      '<button type="button" class="tog" onmousedown="event.preventDefault();TechUI.indAll(false)">'+T('ind.none')+'</button></div>';
+    var items=(E.INDICATOR_NAMES||[]).map(function(n){
+      return '<label><input type="checkbox" data-ind="'+n+'" '+(selectedInds[n]?'checked':'')+' onchange="TechUI.indToggle(this)"> '+n+'</label>';
+    }).join('');
+    menu.innerHTML=acts+items; updateIndCount();
+  }
+  function updateIndCount(){ ensureInds(); var n=0; for(var k in selectedInds){ if(selectedInds[k]) n++; } var el=document.getElementById('ind-count'); if(el) el.textContent=n; }
+  function indToggle(cb){ ensureInds(); selectedInds[cb.getAttribute('data-ind')]=cb.checked; updateIndCount(); if(lastScan) renderIndicators(lastScan); }
+  function indAll(on){ ensureInds(); (E.INDICATOR_NAMES||[]).forEach(function(n){selectedInds[n]=on;}); buildIndMenu(); if(lastScan) renderIndicators(lastScan); }
+  function toggleIndMenu(){ var m=document.getElementById('ind-menu'),b=document.getElementById('ind-btn'); var show=m.style.display==='none'; m.style.display=show?'block':'none'; b.setAttribute('aria-expanded',show?'true':'false'); if(show) buildIndMenu(); }
+  function closeIndMenu(){ var m=document.getElementById('ind-menu'); if(m) m.style.display='none'; var b=document.getElementById('ind-btn'); if(b) b.setAttribute('aria-expanded','false'); }
+
   function renderIndicators(res){
+    if(!res) return; ensureInds();
     var g=document.getElementById('ind-grid'); g.innerHTML='';
     var tf=getTf(res._sym)[lastTf];
-    var ind=E.indicatorSet(tf);
-    Object.keys(ind).forEach(function(k){
-      var d=ind[k];
+    var ind=E.indicatorSet(tf); lastIndSet=ind;
+    (E.INDICATOR_NAMES||Object.keys(ind)).forEach(function(k){
+      if(!selectedInds[k]) return;
+      var d=ind[k]; if(!d) return;
       g.innerHTML+='<div class="ind"><div class="nm">'+k+'</div>'+
         '<div class="row" style="justify-content:space-between"><span class="val">'+(d.value==null?'—':d.value)+'</span>'+
         '<span class="sig '+d.signal+'">'+d.signal+'</span></div></div>';
     });
+    updateIndCount();
   }
 
   function renderRoshan(res){
@@ -711,9 +775,12 @@ window.TechUI = (function(){
     document.getElementById('eng-ver').textContent=E.VERSION;
     // build the all-stocks list (from nse_universe.js window.NSE — ~800 names; fallback to engine UNIVERSE)
     buildStocks();
-    // close the dropdown on outside click
+    ensureInds();
+    // close the open dropdowns on outside click
     document.addEventListener('click',function(e){
-      var inBox=e.target.closest&&e.target.closest('.ac-box'); if(!inBox) acClose();
+      var t=e.target;
+      if(!(t.closest&&t.closest('#sym-listbox'))&&t.id!=='sym') acClose();
+      if(!(t.closest&&(t.closest('#ind-menu')||t.closest('#ind-btn')))) closeIndMenu();
     });
     // language: saved or browser
     var saved='en'; try{saved=localStorage.getItem('chitti_lang')||localStorage.getItem('lang')||(navigator.language||'en').slice(0,2);}catch(e){}
@@ -733,7 +800,9 @@ window.TechUI = (function(){
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
-    acInput:acInput,acKey:acKey,acPick:acPick,_confirmYes:_confirmYes,_confirmNo:_confirmNo};
+    acInput:acInput,acKey:acKey,acPick:acPick,
+    toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
+    _confirmYes:_confirmYes,_confirmNo:_confirmNo};
 })();
 </script>
 </body>

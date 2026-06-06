@@ -216,6 +216,100 @@
     return { rsi: r, rsiSma: rsiSma, value: round2(vr), avg: round2(vs), signal: sig };
   }
 
+  // ───────────────────────── more indicators (so the dropdown is real) ─────────────────────────
+  function cci(candles, period) {
+    period = period || 20; var out = new Array(candles.length).fill(null);
+    var tp = candles.map(function (c) { return (c.high + c.low + c.close) / 3; });
+    var s = sma(tp, period);
+    for (var i = period - 1; i < candles.length; i++) {
+      var md = 0; for (var j = i - period + 1; j <= i; j++) md += Math.abs(tp[j] - s[i]); md /= period;
+      out[i] = md === 0 ? 0 : (tp[i] - s[i]) / (0.015 * md);
+    }
+    return out;
+  }
+  function roc(values, period) {
+    period = period || 12; var out = new Array(values.length).fill(null);
+    for (var i = period; i < values.length; i++) out[i] = values[i - period] === 0 ? 0 : (values[i] - values[i - period]) / values[i - period] * 100;
+    return out;
+  }
+  function momentum(values, period) {
+    period = period || 10; var out = new Array(values.length).fill(null);
+    for (var i = period; i < values.length; i++) out[i] = values[i] - values[i - period];
+    return out;
+  }
+  function mfi(candles, period) {
+    period = period || 14; var out = new Array(candles.length).fill(null);
+    var tp = candles.map(function (c) { return (c.high + c.low + c.close) / 3; });
+    for (var i = period; i < candles.length; i++) {
+      var pos = 0, neg = 0;
+      for (var j = i - period + 1; j <= i; j++) { var rmf = tp[j] * (candles[j].volume || 0); if (tp[j] > tp[j - 1]) pos += rmf; else if (tp[j] < tp[j - 1]) neg += rmf; }
+      out[i] = neg === 0 ? 100 : 100 - 100 / (1 + pos / neg);
+    }
+    return out;
+  }
+  function aroon(candles, period) {
+    period = period || 25; var out = new Array(candles.length).fill(null);
+    for (var i = period; i < candles.length; i++) {
+      var hh = -Infinity, ll = Infinity, hi = i, li = i;
+      for (var j = i - period; j <= i; j++) { if (candles[j].high >= hh) { hh = candles[j].high; hi = j; } if (candles[j].low <= ll) { ll = candles[j].low; li = j; } }
+      out[i] = { up: ((period - (i - hi)) / period) * 100, down: ((period - (i - li)) / period) * 100 };
+    }
+    return out;
+  }
+  function donchian(candles, period) {
+    period = period || 20; var out = new Array(candles.length).fill(null);
+    for (var i = period - 1; i < candles.length; i++) {
+      var hh = -Infinity, ll = Infinity;
+      for (var j = i - period + 1; j <= i; j++) { if (candles[j].high > hh) hh = candles[j].high; if (candles[j].low < ll) ll = candles[j].low; }
+      out[i] = { upper: hh, lower: ll };
+    }
+    return out;
+  }
+  function awesome(candles) {
+    var med = candles.map(function (c) { return (c.high + c.low) / 2; });
+    var s5 = sma(med, 5), s34 = sma(med, 34);
+    return med.map(function (_, i) { return (s5[i] == null || s34[i] == null) ? null : s5[i] - s34[i]; });
+  }
+  function stochRsi(values, period) {
+    period = period || 14; var r = rsi(values, period); var out = new Array(values.length).fill(null);
+    for (var i = period * 2; i < values.length; i++) {
+      var win = []; for (var j = i - period + 1; j <= i; j++) if (r[j] != null) win.push(r[j]);
+      if (win.length < period) continue;
+      var hh = Math.max.apply(null, win), ll = Math.min.apply(null, win);
+      out[i] = hh === ll ? 50 : ((r[i] - ll) / (hh - ll)) * 100;
+    }
+    return out;
+  }
+  function vwapRolling(candles, period) {
+    period = period || 20; var out = new Array(candles.length).fill(null);
+    for (var i = period - 1; i < candles.length; i++) {
+      var pv = 0, vv = 0;
+      for (var j = i - period + 1; j <= i; j++) { var tp = (candles[j].high + candles[j].low + candles[j].close) / 3; pv += tp * (candles[j].volume || 0); vv += (candles[j].volume || 0); }
+      out[i] = vv === 0 ? null : pv / vv;
+    }
+    return out;
+  }
+  function keltner(candles, period, mult) {
+    period = period || 20; mult = mult || 2; var cl = closes(candles); var mid = ema(cl, period); var a = atr(candles, period);
+    var up = new Array(candles.length).fill(null), lo = new Array(candles.length).fill(null);
+    for (var i = 0; i < candles.length; i++) if (mid[i] != null && a[i] != null) { up[i] = mid[i] + mult * a[i]; lo[i] = mid[i] - mult * a[i]; }
+    return { mid: mid, upper: up, lower: lo };
+  }
+  function trix(values, period) {
+    period = period || 15;
+    var e1 = ema(values, period).filter(function (v) { return v != null; });
+    var e2 = ema(e1, period).filter(function (v) { return v != null; });
+    var e3 = ema(e2, period);
+    var out = new Array(values.length).fill(null); var off = values.length - e3.length;
+    for (var i = 1; i < e3.length; i++) if (e3[i - 1]) out[off + i] = (e3[i] - e3[i - 1]) / e3[i - 1] * 100;
+    return out;
+  }
+
+  // master list — exactly what indicatorSet can produce (drives the indicator dropdown)
+  var INDICATOR_NAMES = ['RSI', 'MACD', 'Stochastic', 'Williams %R', 'Supertrend', 'EMA 50', 'EMA 200',
+    'Bollinger Bands', 'OBV', 'ADX', 'CCI', 'ROC', 'Momentum', 'MFI', 'Aroon', 'Donchian Channels',
+    'Awesome Oscillator', 'Stochastic RSI', 'VWAP', 'Keltner Channels', 'TRIX', 'Roshan Indicator'];
+
   // ───────────────────────── per-indicator signals ─────────────────────────
   function indicatorSet(candles) {
     var cl = closes(candles);
@@ -251,6 +345,20 @@
 
     var ax = last(adx(candles));
     if (ax) add('ADX', ax.adx, ax.adx > 25 ? (ax.pdi > ax.mdi ? 'BUY' : 'SELL') : 'WAIT', 'ADX(14): >25 strong; +DI>-DI buy');
+
+    var p2 = price;
+    var vcci = last(cci(candles)); if (vcci != null) add('CCI', vcci, vcci < -100 ? 'BUY' : (vcci > 100 ? 'SELL' : 'WAIT'), 'CCI(20): <-100 BUY, >100 SELL');
+    var vroc = last(roc(cl)); if (vroc != null) add('ROC', vroc, vroc > 0 ? 'BUY' : (vroc < 0 ? 'SELL' : 'WAIT'), 'ROC(12): >0 BUY');
+    var vmom = last(momentum(cl)); if (vmom != null) add('Momentum', vmom, vmom > 0 ? 'BUY' : (vmom < 0 ? 'SELL' : 'WAIT'), 'Momentum(10)');
+    var vmfi = last(mfi(candles)); if (vmfi != null) add('MFI', vmfi, vmfi < 20 ? 'BUY' : (vmfi > 80 ? 'SELL' : 'WAIT'), 'MFI(14): <20 / >80');
+    var var_ar = last(aroon(candles)); if (var_ar) add('Aroon', Math.round(var_ar.up - var_ar.down), var_ar.up > var_ar.down ? 'BUY' : (var_ar.down > var_ar.up ? 'SELL' : 'WAIT'), 'Aroon(25): up>down BUY');
+    var dc = last(donchian(candles)); if (dc) add('Donchian Channels', dc.upper, p2 >= dc.upper ? 'BUY' : (p2 <= dc.lower ? 'SELL' : 'WAIT'), 'Donchian(20) breakout');
+    var vao = last(awesome(candles)); if (vao != null) add('Awesome Oscillator', vao, vao > 0 ? 'BUY' : (vao < 0 ? 'SELL' : 'WAIT'), 'AO: >0 bullish');
+    var vsr = last(stochRsi(cl)); if (vsr != null) add('Stochastic RSI', vsr, vsr < 20 ? 'BUY' : (vsr > 80 ? 'SELL' : 'WAIT'), 'Stoch RSI: <20 / >80');
+    var vvw = last(vwapRolling(candles)); if (vvw != null) add('VWAP', vvw, p2 > vvw ? 'BUY' : 'SELL', 'VWAP(20): price above BUY');
+    var kc = keltner(candles); var kU = last(kc.upper), kL = last(kc.lower), kM = last(kc.mid);
+    if (kU != null) add('Keltner Channels', kM, p2 >= kU ? 'SELL' : (p2 <= kL ? 'BUY' : 'WAIT'), 'Keltner(20): band touch');
+    var vtx = last(trix(cl)); if (vtx != null) add('TRIX', vtx, vtx > 0 ? 'BUY' : (vtx < 0 ? 'SELL' : 'WAIT'), 'TRIX(15): >0 BUY');
 
     var ro = roshan(cl);
     add('Roshan Indicator', ro.value, ro.signal, 'Roshan: RSI(14) vs SMA20 of RSI (custom)');
@@ -621,7 +729,9 @@
     // indicators
     sma: sma, ema: ema, rsi: rsi, macd: macd, atr: atr, stochastic: stochastic,
     williamsR: williamsR, bollinger: bollinger, obv: obv, supertrend: supertrend, adx: adx,
-    roshan: roshan, indicatorSet: indicatorSet,
+    roshan: roshan, indicatorSet: indicatorSet, INDICATOR_NAMES: INDICATOR_NAMES,
+    cci: cci, roc: roc, momentum: momentum, mfi: mfi, aroon: aroon, donchian: donchian,
+    awesome: awesome, stochRsi: stochRsi, vwapRolling: vwapRolling, keltner: keltner, trix: trix,
     // analysis
     trendOf: trendOf, tfVerdict: tfVerdict, confluence: confluence, riskBlock: riskBlock, scan: scan,
     // data + universe
