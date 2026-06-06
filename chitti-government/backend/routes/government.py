@@ -59,8 +59,11 @@ from services import (
     government_database,
     government_deepseek,
     government_eligibility,
+    government_fraud,
+    government_life_event,
     government_locator,
     government_pib,
+    government_readiness,
     government_scheduler,
 )
 
@@ -377,6 +380,60 @@ def eligibility_scan(db):
         "total_evaluated": len(results),
         "results": top,
     })
+
+
+# ───────────── CEOS engines (deterministic — mirror the frontend) ─────────────
+
+@bp.post("/fraud-check")
+def fraud_check():
+    """Government Fraud Shield (CEOS F6). Body: {"text": "<message>"}.
+    Deterministic — never calls the police, always returns report channels."""
+    body = _json_body()
+    text = body.get("text") or body.get("message") or ""
+    if not isinstance(text, str) or not text.strip():
+        abort(400, description="text (the message to check) is required")
+    return jsonify(government_fraud.classify(text))
+
+
+@bp.get("/life-events")
+def life_events_list():
+    """List the supported life events (CEOS F3)."""
+    return jsonify({"ok": True, "events": government_life_event.list_events()})
+
+
+@bp.post("/life-event")
+def life_event():
+    """Life-Event Engine (CEOS F3). Body: {"event": "<event_id>"} -> action bundle."""
+    body = _json_body()
+    event_id = body.get("event") or body.get("event_id") or ""
+    out = government_life_event.get(event_id)
+    if out is None:
+        return jsonify({"ok": False, "error": "unknown_event",
+                        "events": government_life_event.list_events()}), 404
+    return jsonify(out)
+
+
+@bp.post("/readiness")
+@with_db
+def readiness(db):
+    """Citizen Readiness Score (CEOS F8). Body:
+    {"profile": {...}, "documents": {key:true}, "schemes_claimed": [...]}.
+    Runs an eligible scan internally to count benefits-to-explore."""
+    body = _json_body()
+    profile = _normalise_profile(body.get("profile") or {})
+    documents = body.get("documents") or {}
+    schemes_claimed = body.get("schemes_claimed") or []
+    if not isinstance(documents, dict):
+        abort(400, description="documents must be an object of {key: bool}")
+    eligible_count = None
+    try:
+        state = (profile.get("state_code") or "").strip().upper() or None
+        rows = government_database.list_schemes(db, state_code=state, limit=500)
+        results = government_eligibility.evaluate_many(rows, profile)
+        eligible_count = len([r for r in results if r["verdict"] in ("eligible", "partial")])
+    except Exception:  # noqa: BLE001 — honest degrade; readiness still returns doc+profile
+        eligible_count = None
+    return jsonify(government_readiness.compute(profile, documents, schemes_claimed, eligible_count))
 
 
 # ───────────── alerts ─────────────

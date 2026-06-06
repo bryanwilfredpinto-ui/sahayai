@@ -7,9 +7,34 @@ in [`../CHITTI_GOVERNMENT_MASTER_SPEC.md`](../CHITTI_GOVERNMENT_MASTER_SPEC.md).
 
 ---
 
+## [CEOS v1.0] — 2026-06-06
+
+Elevated from a 30-scheme directory to a full **Citizen Operating System (CEOS)** on
+the chitti-fashion CEOS bar. Doctrine: rules are the product, the LLM is an enhancement.
+
+- **CEOS doc set:** CONSTITUTION · ROLE · PRODUCT_VISION · PERSONAS · SUCCESS_METRICS ·
+  PRD · EVALS · QUALITY · ROADMAP · BUILD_ORDER · RESEARCH_BEST_APPS + subfolders
+  `swarm/` (10 agents) · `guardrails/` (5) · `evals/` (6 + datasets + RESULTS) ·
+  `accessibility/` (4 users) · `observability/` (3) · `memory/` (Citizen Digital Twin) ·
+  `skills/` (8 CEOS skills) · `sop/` (7-step citizen journey).
+- **Catalog 30 → 84 schemes** across 13 categories, each with `source_url` + `status`
+  (`active|closed|verify`) + `last_verified`. Merge tool: `tools/expand_government_schemes.mjs`.
+- **8 features on the page:** added Citizen Readiness Score, Life-Event Engine (12
+  events), Deadline Engine (confirm-gated reminders), Government Fraud Shield —
+  all deterministic / offline-first; voice + icon + word labels; 26-language dropdown
+  (chitti_lang.js) translates the new tabs; per-response widget on every new box.
+- **Backend (deterministic, Vaani-routable):** `services/government_fraud.py`,
+  `government_life_event.py`, `government_readiness.py`; routes `/fraud-check`,
+  `/life-events`, `/life-event`, `/readiness`.
+- **Measured:** Fraud Shield 12/12 exact (100%), 0 genuine false-positives
+  ([evals/RESULTS.md](evals/RESULTS.md)); 84/84 schemes sourced; routes green.
+
 ## [Unreleased]
 
-Nothing committed since `ab8e665`. Open items live in [TODO.md](TODO.md).
+Open items: eligibility gold-set run, per-page Playwright/axe cert
+(`tools/cert_government.mjs`), Family + Business Governance (Phase 2), Universal
+Scanner camera path (funded vision key), DeepSeek verdict phrasing (funding + Vaani
+relevance-rail). See [TODO.md](TODO.md) + [ROADMAP.md](ROADMAP.md).
 
 ---
 

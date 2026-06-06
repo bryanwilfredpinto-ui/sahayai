@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Chitti Government · Voice-first guide to Indian government schemes</title>
-  <meta name="description" content="Chitti Government — voice-first AI guide to PM-Kisan, Ayushman, PMAY, Ujjwala, MGNREGA and 30+ schemes. Built for blind, deaf, mute, illiterate, elderly. No data stored." />
+  <meta name="description" content="Chitti Government — voice-first AI guide to PM-Kisan, Ayushman, PMAY, Ujjwala, MGNREGA and 100+ schemes. Built for blind, deaf, mute, illiterate, elderly. No data stored." />
   <meta name="theme-color" content="#0E2344" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E🏛️%3C/text%3E%3C/svg%3E" />
   <style>
@@ -148,6 +148,37 @@
     .small{font-size:12px;color:var(--muted)}
     .hr{height:1px;background:var(--border);margin:14px 0}
     .err{padding:10px 12px;border:1px solid var(--red);background:rgba(220,38,38,.06);border-radius:8px;color:var(--red);font-size:13px}
+    /* CEOS feature components */
+    .doc-inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+    .doc-chip{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:#fbf8f1;cursor:pointer;font-size:13px;font-weight:600;min-height:44px;user-select:none}
+    .doc-chip .dico{font-size:17px}
+    .doc-chip.have{background:rgba(34,197,94,.12);border-color:var(--green);color:var(--pass)}
+    .doc-chip:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+    .score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+    .score-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--card2);text-align:center}
+    .score-box .num{font-size:26px;font-weight:900;color:var(--navy);line-height:1}
+    .score-box .lbl{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700}
+    .gauge{height:14px;border-radius:999px;background:#eee;overflow:hidden;margin:10px 0}
+    .gauge > i{display:block;height:100%;background:linear-gradient(90deg,#E86A17,#D4AF37)}
+    .readiness-head{font-size:18px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:8px}
+    .action-step{display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff;margin:7px 0;align-items:flex-start}
+    .action-step .anum{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--saffron);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}
+    .action-step .abody{flex:1}
+    .action-step .abody b{color:var(--navy)}
+    .action-step .atag{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:#eef;color:#334;margin-left:6px}
+    .fraud-verdict{padding:14px;border-radius:12px;border:2px solid;margin:4px 0}
+    .fraud-verdict.danger{border-color:var(--red);background:rgba(220,38,38,.07)}
+    .fraud-verdict.warn{border-color:var(--amber);background:rgba(212,175,55,.12)}
+    .fraud-verdict.safe{border-color:var(--green);background:rgba(34,197,94,.08)}
+    .fraud-verdict .fhead{font-size:17px;font-weight:900;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .conf-band{font-size:12.5px;font-weight:800;color:var(--muted)}
+    .report-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .report-row a{font-size:12.5px;font-weight:700;text-decoration:none;background:var(--navy);color:#fff;padding:7px 11px;border-radius:8px}
+    .dl-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff;margin:6px 0;flex-wrap:wrap}
+    .dl-item .days{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px}
+    .dl-item .days.soon{background:rgba(220,38,38,.1);color:var(--red)}
+    .dl-item .days.near{background:rgba(212,175,55,.15);color:var(--warn)}
+    .dl-item .days.ok{background:rgba(34,197,94,.1);color:var(--pass)}
   </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
@@ -191,7 +222,7 @@
         <div class="brand-sub">सरकारी योजनाओं का साथी · sahayai.in</div>
       </div>
     </div>
-    <p class="tagline">Voice-first guide to PM-Kisan, Ayushman Bharat, PMAY, Ujjwala, MGNREGA and 30+ central + state schemes. Built for blind, deaf, mute, illiterate, and elderly Indian users. No data stored on Chitti's servers.</p>
+    <p class="tagline">Voice-first guide to PM-Kisan, Ayushman Bharat, PMAY, Ujjwala, MGNREGA and 100+ central + state schemes. Built for blind, deaf, mute, illiterate, and elderly Indian users. No data stored on Chitti's servers.</p>
     <div class="four-user" aria-label="Four-user contract" data-i18n-aria="four-user-contract">
       <span>👁️‍🗨️ blind</span><span>🦻 deaf</span><span>🤫 mute</span><span>📖 illiterate</span><span>👵 elderly</span>
     </div>
@@ -200,6 +231,10 @@
   <nav class="tabs" role="tablist" aria-label="Chitti Government features" data-i18n-aria="chitti-government-features">
     <button class="tab active" data-panel="checker" role="tab" data-i18n="eligibility">🎯 Eligibility</button>
     <button class="tab" data-panel="catalog" role="tab" data-i18n="schemes">📚 Schemes</button>
+    <button class="tab" data-panel="readiness" role="tab">📊 Readiness Score</button>
+    <button class="tab" data-panel="lifeevent" role="tab">🎉 Life Events</button>
+    <button class="tab" data-panel="deadlines" role="tab">⏰ Deadlines</button>
+    <button class="tab" data-panel="fraud" role="tab">🛡️ Fraud Shield</button>
     <button class="tab" data-panel="checklist" role="tab" data-i18n="checklist">📑 Checklist</button>
     <button class="tab" data-panel="form" role="tab" data-i18n="form-helper">📝 Form Helper</button>
     <button class="tab" data-panel="alerts" role="tab" data-i18n="alerts">🔔 Alerts</button>
@@ -216,7 +251,7 @@
         <h2 data-i18n="am-i-eligible-for-a-scheme">🎯 Am I eligible for a scheme?</h2>
         <p class="small">Speak or type the scheme name (e.g. "PM Kisan", "Ujjwala", "Ayushman"). Chitti checks your saved profile against the scheme rules and tells you yes / no / partial — out loud and on screen.</p>
         <label for="scheme-pick" data-i18n="scheme">Scheme</label>
-        <select id="scheme-pick"><option value="">Loading 30+ schemes…</option></select>
+        <select id="scheme-pick"><option value="">Loading 100+ schemes…</option></select>
         <div class="row" style="margin-top:10px">
           <button id="mic-scheme" class="ghost" aria-label="Speak the scheme name" data-i18n-aria="speak-the-scheme-name" data-i18n="speak-the-scheme-name">🎙️ Speak the scheme name</button>
           <button id="check-elig" class="primary" aria-label="Check my eligibility" data-i18n-aria="check-my-eligibility" data-i18n="check-my-eligibility">✅ Check my eligibility</button>
@@ -228,9 +263,9 @@
     </section>
 
     <!-- ════════════ Catalog ════════════ -->
-    <section class="panel chitti-response" id="panel-catalog" role="tabpanel" data-chitti-section="📚 Browse 30+ government schemes">
-      <div class="card chitti-response" data-chitti-section="📚 Browse 30+ government schemes">
-        <h2 data-i18n="browse-30-government-schemes">📚 Browse 30+ government schemes</h2>
+    <section class="panel chitti-response" id="panel-catalog" role="tabpanel" data-chitti-section="📚 Browse 100+ government schemes">
+      <div class="card chitti-response" data-chitti-section="📚 Browse 100+ government schemes">
+        <h2 data-i18n="browse-30-government-schemes">📚 Browse 100+ government schemes</h2>
         <div class="row">
           <input type="text" id="cat-search" placeholder="Search by name, ministry, short code (e.g. PM-Kisan)" data-i18n-placeholder="search-by-name-ministry-short-code-e-g-pm-kisan" aria-label="Search schemes" data-i18n-aria="search-schemes" />
           <select id="cat-category" aria-label="Filter by category" data-i18n-aria="filter-by-category">
@@ -248,9 +283,81 @@
             <option value="energy">Energy / LPG</option>
             <option value="food">Food / Ration</option>
             <option value="livelihood">Livelihood</option>
+            <option value="business">Business / MSME / Startup</option>
+            <option value="worker">Worker / Labour</option>
+            <option value="financial-inclusion">Financial inclusion</option>
+            <option value="credit">Credit / Loan</option>
+            <option value="savings">Savings</option>
+            <option value="senior">Senior citizen</option>
+            <option value="sanitation">Sanitation</option>
+            <option value="utility">Utility / Water</option>
+            <option value="tribal">Tribal / PVTG</option>
           </select>
         </div>
-        <div id="cat-list" class="scheme-list" data-chitti-response data-chitti-section="Scheme catalog (30+ schemes)" style="margin-top:14px"><div class="empty">Loading…</div></div>
+        <div id="cat-list" class="scheme-list" data-chitti-response data-chitti-section="Scheme catalog (100+ schemes)" style="margin-top:14px"><div class="empty">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Citizen Readiness Score (CEOS F8) ════════════ -->
+    <section class="panel chitti-response" id="panel-readiness" role="tabpanel" data-chitti-section="📊 My Citizen Readiness Score">
+      <div class="card chitti-response" data-chitti-section="📊 My Citizen Readiness Score">
+        <h2>📊 My Citizen Readiness Score</h2>
+        <p class="small">One honest number that shows how government-ready you are — and exactly what is missing. Computed on YOUR device from your profile + the documents you have. Nothing is sent to a server.</p>
+        <h3>📂 Which documents do you already have?</h3>
+        <p class="small">Tap each document you hold. Chitti uses this to find document gaps and the schemes they unlock. (You can also speak — every label is read aloud.)</p>
+        <div id="doc-inventory" class="doc-inv"></div>
+        <div class="row" style="margin-top:12px">
+          <button id="readiness-calc" class="primary" aria-label="Calculate my readiness score">📊 Calculate my Readiness Score</button>
+          <button id="readiness-speak" class="ghost" aria-label="Read my score aloud">🔊 Read aloud</button>
+          <span class="meta-line" id="readiness-status">tap documents, then calculate</span>
+        </div>
+        <div id="readiness-out" role="region" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Citizen Readiness Score result" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Life-Event Engine (CEOS F3 — the moat) ════════════ -->
+    <section class="panel chitti-response" id="panel-lifeevent" role="tabpanel" data-chitti-section="🎉 A life event happened — what now?">
+      <div class="card chitti-response" data-chitti-section="🎉 A life event happened — what now?">
+        <h2>🎉 A life event happened — what should I do?</h2>
+        <p class="small">Tell Chitti what changed in your life. Chitti instantly lists every document, scheme, registration and deadline that event triggers — in order of urgency. No broker needed.</p>
+        <label for="le-pick">Life event</label>
+        <select id="le-pick"><option value="">Pick a life event…</option></select>
+        <div class="row" style="margin-top:10px">
+          <button id="le-mic" class="ghost" aria-label="Speak the life event">🎙️ Speak it</button>
+          <button id="le-go" class="primary" aria-label="Show me what to do">➡️ Show me what to do</button>
+          <span class="meta-line" id="le-status">ready</span>
+        </div>
+        <div id="le-out" role="region" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Life-event action plan" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Deadline Engine (CEOS F7) ════════════ -->
+    <section class="panel chitti-response" id="panel-deadlines" role="tabpanel" data-chitti-section="⏰ My government deadlines">
+      <div class="card chitti-response" data-chitti-section="⏰ My government deadlines">
+        <h2>⏰ My government deadlines</h2>
+        <p class="small">Never miss a date again. Chitti tracks recurring government deadlines and reminds you 90 / 30 / 7 days before. Reminders live on YOUR device. Chitti always asks before setting one.</p>
+        <div class="row">
+          <select id="dl-pick"><option value="">Common deadline…</option></select>
+          <input type="date" id="dl-date" aria-label="Deadline date" />
+          <button id="dl-add" class="primary" aria-label="Add deadline">＋ Add</button>
+        </div>
+        <div id="dl-out" data-chitti-response data-chitti-section="My deadlines list" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ Government Fraud Shield (CEOS F6) ════════════ -->
+    <section class="panel chitti-response" id="panel-fraud" role="tabpanel" data-chitti-section="🛡️ Is this government message a scam?">
+      <div class="card chitti-response" data-chitti-section="🛡️ Is this government message a scam?">
+        <h2>🛡️ Is this a government scam?</h2>
+        <p class="small">Got an SMS, WhatsApp, email or call claiming to be from the government? Paste or speak it. Chitti checks it against known scam patterns and tells you — with the reason and the official place to report. Chitti never calls the police for you.</p>
+        <label for="fraud-text">Paste the message</label>
+        <textarea id="fraud-text" placeholder="e.g. Your PM-Kisan eKYC is pending. Click http://pmkisan-update.in and pay ₹50 to release your installment."></textarea>
+        <div class="row" style="margin-top:10px">
+          <button id="fraud-mic" class="ghost" aria-label="Speak the message">🎙️ Speak it</button>
+          <button id="fraud-check" class="primary" aria-label="Check this message">🛡️ Check this message</button>
+          <span class="meta-line" id="fraud-status">ready</span>
+        </div>
+        <div id="fraud-out" role="region" aria-live="polite" aria-atomic="true" data-chitti-response data-chitti-section="Fraud Shield verdict" style="margin-top:14px"></div>
       </div>
     </section>
 
@@ -590,6 +697,8 @@ const LS = {
   LANG:      "chitti.gov.lang",
   EXPIRY:    "chitti.gov.expiry",
   DOCS:      "chitti.gov.docs",
+  INVENTORY: "chitti.gov.inventory",
+  DEADLINES: "chitti.gov.deadlines",
 };
 
 const STATES = [
@@ -1313,6 +1422,8 @@ async function sendFeedback(verdict){
     checker: "eligibility_checker", catalog: "general", checklist: "checklist",
     form: "form_filler", alerts: "alerts", status: "status_tracker",
     locator: "locator", docs: "digilocker_upload", profile: "general",
+    readiness: "readiness_score", lifeevent: "life_event_engine",
+    deadlines: "deadline_engine", fraud: "fraud_shield",
   };
   try {
     const r = await fetch(API + "/api/government/feedback", {
@@ -1330,6 +1441,368 @@ async function sendFeedback(verdict){
 }
 $("fb-up").addEventListener("click", ()=>sendFeedback("up"));
 $("fb-down").addEventListener("click", ()=>sendFeedback("down"));
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CEOS ENGINES — deterministic, offline-first. Rules are the product;
+   DeepSeek (server) only phrases. These four engines run with the internet
+   down. Doctrine: never guess, never guarantee, always show the next step.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const TT = (en, hi) => (LANG === "hi" ? hi : en);   // tiny bilingual helper for spoken/aria text
+
+/* ── Citizen Golden-Rule confirm gate (tap-or-voice, never auto-yes) ── */
+function confirmAndDo(qEn, qHi, onYes){
+  try { speak(TT(qEn, qHi)); } catch(e){}
+  // tap-safe confirm (mute users); voice users hear the question first.
+  if (window.confirm(TT(qEn, qHi))) onYes();
+}
+
+/* ════════ Document inventory (declare path) — feeds Readiness ════════ */
+const DOC_DEFS = [
+  {key:"aadhaar",     icon:"🆔", en:"Aadhaar",                hi:"आधार"},
+  {key:"pan",         icon:"💳", en:"PAN",                    hi:"पैन"},
+  {key:"voter_id",    icon:"🗳️", en:"Voter ID",               hi:"वोटर आईडी"},
+  {key:"ration",      icon:"🍚", en:"Ration card",            hi:"राशन कार्ड"},
+  {key:"bank",        icon:"🏦", en:"Bank account",           hi:"बैंक खाता"},
+  {key:"jan_dhan",    icon:"💰", en:"Jan Dhan account",       hi:"जन धन खाता"},
+  {key:"income_cert", icon:"📄", en:"Income certificate",     hi:"आय प्रमाणपत्र"},
+  {key:"caste_cert",  icon:"📜", en:"Caste certificate",      hi:"जाति प्रमाणपत्र"},
+  {key:"domicile",    icon:"🏠", en:"Domicile certificate",   hi:"निवास प्रमाणपत्र"},
+  {key:"land_record", icon:"🌾", en:"Land records (7/12)",    hi:"भूमि रिकॉर्ड (7/12)"},
+  {key:"abha",        icon:"⚕️", en:"ABHA health ID",         hi:"आभा हेल्थ आईडी"},
+  {key:"udid",        icon:"♿", en:"UDID (disability)",      hi:"यूडीआईडी (दिव्यांगता)"},
+  {key:"eshram",      icon:"👷", en:"e-Shram card",           hi:"ई-श्रम कार्ड"},
+  {key:"birth_cert",  icon:"👶", en:"Birth certificate",      hi:"जन्म प्रमाणपत्र"},
+  {key:"dl",          icon:"🚗", en:"Driving licence",        hi:"ड्राइविंग लाइसेंस"},
+];
+function renderDocInventory(){
+  const wrap = $("doc-inventory"); if(!wrap) return;
+  const inv = ls_get(LS.INVENTORY, {});
+  wrap.innerHTML = "";
+  DOC_DEFS.forEach(d => {
+    const have = !!inv[d.key];
+    const chip = el("div", {
+      class: "doc-chip" + (have ? " have" : ""),
+      role: "checkbox", tabindex: "0", "aria-checked": have ? "true" : "false",
+      "aria-label": d.en + (have ? " — you have it" : " — tap if you have it"),
+    }, el("span",{class:"dico"}, (have?"✅":d.icon)), el("span",{}, d.en));
+    const toggle = () => {
+      const cur = ls_get(LS.INVENTORY, {}); cur[d.key] = !cur[d.key]; ls_set(LS.INVENTORY, cur);
+      renderDocInventory();
+      try { speak(cur[d.key] ? TT(d.en+" added","आपके पास "+d.hi+" है") : TT(d.en+" removed", d.hi+" हटाया")); } catch(e){}
+    };
+    chip.addEventListener("click", toggle);
+    chip.addEventListener("keydown", e => { if(e.key===" "||e.key==="Enter"){e.preventDefault();toggle();} });
+    wrap.append(chip);
+  });
+}
+
+/* ════════ Citizen Readiness Score (CEOS F8) — deterministic ════════ */
+const CORE_DOCS = ["aadhaar","pan","voter_id","ration","bank","income_cert","land_record","abha"];
+let LAST_READINESS = null;
+async function calcReadiness(){
+  const inv = ls_get(LS.INVENTORY, {});
+  const heldCore = CORE_DOCS.filter(k => inv[k]).length;
+  const docPct = Math.round(100 * heldCore / CORE_DOCS.length);
+
+  // Profile completeness (deterministic, on-device)
+  const p = getProfile();
+  const pf = ["age","gender","income_annual_inr","state_code","occupation","caste","rural_urban"];
+  const filled = pf.filter(k => p[k] !== undefined && p[k] !== null && p[k] !== "").length;
+  const profPct = Math.round(100 * filled / pf.length);
+
+  // Schemes dimension — try a live eligible scan; degrade honestly offline.
+  let eligibleN = null, claimedN = (ls_get(LS.PROFILE,{}).schemes_claimed||[]).length, schemePct = null, online = true;
+  $("readiness-status").textContent = TT("calculating…","गणना हो रही है…");
+  try {
+    const r = await fetch(API + "/api/government/eligibility/scan?eligible_only=true", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ profile: p }),
+    });
+    const j = await r.json();
+    const list = j.results || j.schemes || [];
+    eligibleN = list.length;
+    schemePct = eligibleN > 0 ? Math.round(100 * Math.min(claimedN, eligibleN) / eligibleN) : 0;
+  } catch(e){ online = false; }
+
+  // Headline readiness: documents + profile (+ schemes when known)
+  const parts = [docPct, profPct]; if (schemePct !== null) parts.push(schemePct);
+  const readiness = Math.round(parts.reduce((a,b)=>a+b,0) / parts.length);
+  const benefitsMissed = (eligibleN !== null) ? Math.max(0, eligibleN - claimedN) : null;
+  LAST_READINESS = { readiness, docPct, profPct, schemePct, eligibleN, claimedN, benefitsMissed, online };
+
+  $("readiness-status").textContent = online ? TT("done","हो गया") : TT("offline — document & profile only","ऑफलाइन — केवल दस्तावेज़ व प्रोफ़ाइल");
+  renderReadiness();
+  speakReadiness();
+}
+function renderReadiness(){
+  const o = LAST_READINESS; const out = $("readiness-out"); if(!o||!out) return;
+  const missGap = DOC_DEFS.filter(d => CORE_DOCS.includes(d.key) && !(ls_get(LS.INVENTORY,{})[d.key]));
+  out.innerHTML = "";
+  out.append(
+    el("div",{class:"readiness-head"}, `🇮🇳 Readiness: ${o.readiness}%`),
+    el("div",{class:"gauge"}, el("i",{style:`width:${o.readiness}%`})),
+    el("div",{class:"score-grid"},
+      el("div",{class:"score-box"}, el("div",{class:"num"}, o.docPct+"%"), el("div",{class:"lbl"}, "Documents")),
+      el("div",{class:"score-box"}, el("div",{class:"num"}, o.profPct+"%"), el("div",{class:"lbl"}, "Profile filled")),
+      el("div",{class:"score-box"}, el("div",{class:"num"}, o.schemePct===null?"—":o.schemePct+"%"), el("div",{class:"lbl"}, "Schemes claimed")),
+      el("div",{class:"score-box"}, el("div",{class:"num"}, o.benefitsMissed===null?"?":String(o.benefitsMissed)), el("div",{class:"lbl"}, "Benefits to explore")),
+    ),
+    o.eligibleN!==null
+      ? el("p",{class:"small"}, `You appear eligible for ~${o.eligibleN} schemes. You've marked ${o.claimedN} as claimed. ${o.benefitsMissed>0?`That's ${o.benefitsMissed} you could still explore — open the Eligibility tab → "Scan ALL schemes".`:""}`)
+      : el("p",{class:"small"}, "Connect to the internet and tap Calculate again to see how many schemes you may be eligible for (or use Eligibility → Scan ALL schemes)."),
+  );
+  if (missGap.length){
+    const ul = el("div",{});
+    ul.append(el("h3",{}, "📂 Documents to get next (each unlocks more schemes)"));
+    missGap.forEach((d,i)=> ul.append(el("div",{class:"action-step"},
+      el("div",{class:"anum"}, String(i+1)),
+      el("div",{class:"abody"}, el("b",{}, d.icon+" "+d.en), el("span",{class:"atag"},"document")))));
+    out.append(ul);
+  }
+  out.append(el("p",{class:"small"}, "ℹ️ Computed on your device. Chitti shows what you may qualify for — the government makes the final decision."));
+}
+function speakReadiness(){
+  const o = LAST_READINESS; if(!o) return;
+  speak(TT(
+    `Your readiness is ${o.readiness} percent. Documents ${o.docPct} percent, profile ${o.profPct} percent.` + (o.benefitsMissed>0?` You could explore ${o.benefitsMissed} more schemes.`:""),
+    `आपकी तैयारी ${o.readiness} प्रतिशत है। दस्तावेज़ ${o.docPct} प्रतिशत, प्रोफ़ाइल ${o.profPct} प्रतिशत।` + (o.benefitsMissed>0?` आप ${o.benefitsMissed} और योजनाएं देख सकते हैं।`:"")
+  ));
+}
+
+/* ════════ Life-Event Engine (CEOS F3 — the moat) — deterministic ════════ */
+const LIFE_EVENTS = [
+  { id:"daughter_born", en:"👧 My daughter was born", hi:"मेरी बेटी का जन्म हुआ", actions:[
+      {t:"document", en:"Register the birth within 21 days → Birth Certificate", hi:"21 दिन में जन्म पंजीकरण → जन्म प्रमाणपत्र", url:"https://crsorgi.gov.in/"},
+      {t:"document", en:"Aadhaar enrolment for the newborn", hi:"नवजात का आधार नामांकन", url:"https://uidai.gov.in/"},
+      {t:"scheme",   en:"Open a Sukanya Samriddhi account (before age 10)", hi:"सुकन्या समृद्धि खाता खोलें (10 वर्ष से पहले)", url:"https://www.nsiindia.gov.in/"},
+      {t:"scheme",   en:"PMMVY maternity benefit (₹6,000 for 2nd-child girl)", hi:"पीएमएमवीवाई मातृत्व लाभ (दूसरी बेटी पर ₹6,000)", url:"https://pmmvy.wcd.gov.in/"},
+      {t:"registration", en:"Immunisation (Mission Indradhanush / U-WIN)", hi:"टीकाकरण (मिशन इंद्रधनुष / यू-विन)", url:"https://nhm.gov.in/"},
+      {t:"scheme",   en:"Your state girl-child scheme (Kanyashree/Ladli/Kanya Sumangala)", hi:"आपके राज्य की बालिका योजना", url:"https://www.myscheme.gov.in/"},
+  ]},
+  { id:"child_born", en:"👶 A child was born", hi:"बच्चे का जन्म हुआ", actions:[
+      {t:"document", en:"Birth Certificate within 21 days", hi:"21 दिन में जन्म प्रमाणपत्र", url:"https://crsorgi.gov.in/"},
+      {t:"scheme",   en:"PMMVY (₹5,000 for first child)", hi:"पीएमएमवीवाई (पहले बच्चे पर ₹5,000)", url:"https://pmmvy.wcd.gov.in/"},
+      {t:"scheme",   en:"JSY / JSSK cash for institutional delivery", hi:"संस्थागत प्रसव पर जेएसवाई/जेएसएसके सहायता", url:"https://nhm.gov.in/"},
+      {t:"registration", en:"Immunisation + add child to ration card + ABHA", hi:"टीकाकरण + राशन कार्ड में नाम + आभा", url:"https://abha.abdm.gov.in/"},
+  ]},
+  { id:"marriage", en:"💍 I got married", hi:"मेरी शादी हुई", actions:[
+      {t:"document", en:"Register the marriage → Marriage Certificate", hi:"विवाह पंजीकरण → विवाह प्रमाणपत्र", url:"https://www.myscheme.gov.in/"},
+      {t:"registration", en:"Update Aadhaar / ration card / bank nominee", hi:"आधार/राशन कार्ड/बैंक नॉमिनी अपडेट करें", url:"https://uidai.gov.in/"},
+      {t:"scheme",   en:"State marriage-assistance scheme (if eligible)", hi:"राज्य विवाह सहायता योजना (यदि पात्र)", url:"https://www.myscheme.gov.in/"},
+  ]},
+  { id:"death", en:"🕯️ A death in the family", hi:"परिवार में मृत्यु", actions:[
+      {t:"document", en:"Register the death within 21 days → Death Certificate", hi:"21 दिन में मृत्यु पंजीकरण → मृत्यु प्रमाणपत्र", url:"https://crsorgi.gov.in/"},
+      {t:"document", en:"Legal-heir / succession certificate", hi:"वारिस/उत्तराधिकार प्रमाणपत्र", url:"https://www.myscheme.gov.in/"},
+      {t:"scheme",   en:"Family/widow pension (NSAP) + NFBS ₹20,000 lump sum (BPL)", hi:"पारिवारिक/विधवा पेंशन (एनएसएपी) + एनएफबीएस ₹20,000 (बीपीएल)", url:"https://nsap.nic.in/"},
+      {t:"registration", en:"Claim PMJJBY / PMSBY / LIC; transfer ration card + land mutation", hi:"पीएमजेजेबीवाई/पीएमएसबीवाई/एलआईसी दावा; राशन कार्ड व भूमि नामांतरण", url:"https://www.jansuraksha.gov.in/"},
+  ]},
+  { id:"job_loss", en:"📉 I lost my job", hi:"मेरी नौकरी चली गई", actions:[
+      {t:"registration", en:"Register on e-Shram (unorganised worker)", hi:"ई-श्रम पंजीकरण (असंगठित श्रमिक)", url:"https://eshram.gov.in/"},
+      {t:"scheme",   en:"Skilling (Skill India / PMKVY)", hi:"कौशल प्रशिक्षण (स्किल इंडिया / पीएमकेवीवाई)", url:"https://www.skillindiadigital.gov.in/"},
+      {t:"scheme",   en:"MUDRA / PMEGP for self-employment; PM-SVANidhi if vending", hi:"स्वरोजगार हेतु मुद्रा/पीएमईजीपी; वेंडिंग हेतु पीएम-स्वनिधि", url:"https://www.mudra.org.in/"},
+      {t:"registration", en:"EPFO advance/withdrawal if you had EPF", hi:"ईपीएफ हो तो ईपीएफओ एडवांस/निकासी", url:"https://www.epfindia.gov.in/"},
+  ]},
+  { id:"start_business", en:"💼 I'm starting a business", hi:"मैं व्यवसाय शुरू कर रहा/रही हूं", actions:[
+      {t:"registration", en:"Udyam (MSME) registration — free", hi:"उद्यम (एमएसएमई) पंजीकरण — निःशुल्क", url:"https://udyamregistration.gov.in/"},
+      {t:"scheme",   en:"PM MUDRA / PMEGP / CGTMSE financing", hi:"पीएम मुद्रा/पीएमईजीपी/सीजीटीएमएसई वित्त", url:"https://www.mudra.org.in/"},
+      {t:"scheme",   en:"Startup India (DPIIT) if innovative; PM Vishwakarma if artisan", hi:"नवाचारी हो तो स्टार्टअप इंडिया; शिल्पकार हो तो पीएम विश्वकर्मा", url:"https://www.startupindia.gov.in/"},
+      {t:"registration", en:"GST (if turnover applies) + current account + ONDC", hi:"जीएसटी (यदि लागू) + चालू खाता + ओएनडीसी", url:"https://www.gst.gov.in/"},
+  ]},
+  { id:"buy_house", en:"🏠 I bought land / a house", hi:"मैंने जमीन/घर खरीदा", actions:[
+      {t:"registration", en:"Register the sale deed + mutation in land records", hi:"विक्रय विलेख पंजीकरण + भूमि रिकॉर्ड में नामांतरण", url:"https://www.myscheme.gov.in/"},
+      {t:"scheme",   en:"PMAY home-loan interest benefit (if first home + eligible)", hi:"पीएमएवाई गृह-ऋण ब्याज लाभ (यदि पहला घर व पात्र)", url:"https://pmay-urban.gov.in/"},
+      {t:"scheme",   en:"PM Surya Ghar rooftop solar after possession", hi:"कब्जे के बाद पीएम सूर्य घर छत सौर", url:"https://pmsuryaghar.gov.in/"},
+  ]},
+  { id:"turn_18", en:"🔞 I turned 18", hi:"मैं 18 वर्ष का/की हुआ/हुई", actions:[
+      {t:"document", en:"Voter ID (Form 6) + PAN + (optional) driving licence", hi:"वोटर आईडी (फॉर्म 6) + पैन + (वैकल्पिक) ड्राइविंग लाइसेंस", url:"https://voters.eci.gov.in/"},
+      {t:"registration", en:"Open an independent bank account", hi:"स्वतंत्र बैंक खाता खोलें", url:"https://pmjdy.gov.in/"},
+      {t:"scheme",   en:"e-Shram / APY / PM-SYM eligibility opens; scholarships", hi:"ई-श्रम/एपीवाई/पीएम-एसवाईएम पात्रता; छात्रवृत्तियां", url:"https://eshram.gov.in/"},
+  ]},
+  { id:"turn_60", en:"👴 I turned 60", hi:"मैं 60 वर्ष का/की हुआ/हुई", actions:[
+      {t:"scheme",   en:"Old-age pension (NSAP / state)", hi:"वृद्धावस्था पेंशन (एनएसएपी/राज्य)", url:"https://nsap.nic.in/"},
+      {t:"scheme",   en:"SCSS savings; ensure APY/PM-SYM pension starts", hi:"एससीएसएस बचत; एपीवाई/पीएम-एसवाईएम पेंशन शुरू कराएं", url:"https://www.nsiindia.gov.in/"},
+      {t:"deadline", en:"At 70: Ayushman Vay Vandana ₹5 lakh health cover (Aadhaar only)", hi:"70 पर: आयुष्मान वय वंदना ₹5 लाख स्वास्थ्य कवर (केवल आधार)", url:"https://beneficiary.nha.gov.in/"},
+  ]},
+  { id:"disability", en:"♿ Disability onset", hi:"दिव्यांगता की शुरुआत", actions:[
+      {t:"document", en:"Apply for UDID (the gateway to all PwD benefits)", hi:"यूडीआईडी के लिए आवेदन (सभी दिव्यांग लाभों का द्वार)", url:"https://www.swavlambancard.gov.in/"},
+      {t:"scheme",   en:"ADIP assistive aids + Divyangjan pension (IGNDPS)", hi:"एडीआईपी सहायक उपकरण + दिव्यांगजन पेंशन (आईजीएनडीपीएस)", url:"https://depwd.gov.in/"},
+      {t:"scheme",   en:"PwD scholarships (AICTE Saksham) + reservations + concessions", hi:"दिव्यांग छात्रवृत्ति (सक्षम) + आरक्षण + रियायतें", url:"https://scholarships.gov.in/"},
+  ]},
+  { id:"move_state", en:"🚚 I moved to a new state", hi:"मैं नए राज्य में आया/आई", actions:[
+      {t:"registration", en:"Update Aadhaar address; port ration card (ONORC)", hi:"आधार पता अपडेट; राशन कार्ड पोर्ट करें (वन नेशन वन राशन)", url:"https://nfsa.gov.in/"},
+      {t:"document", en:"New domicile certificate (note state residency periods)", hi:"नया निवास प्रमाणपत्र (राज्य निवास अवधि का ध्यान रखें)", url:"https://www.myscheme.gov.in/"},
+      {t:"registration", en:"Update voter roll + bank + admit children (RTE)", hi:"वोटर सूची + बैंक अपडेट + बच्चों का दाखिला (आरटीई)", url:"https://voters.eci.gov.in/"},
+  ]},
+  { id:"retirement", en:"🧓 I'm retiring", hi:"मैं सेवानिवृत्त हो रहा/रही हूं", actions:[
+      {t:"registration", en:"EPF / EPS / NPS / gratuity claims; commence pension", hi:"ईपीएफ/ईपीएस/एनपीएस/ग्रेच्युटी दावे; पेंशन शुरू कराएं", url:"https://www.epfindia.gov.in/"},
+      {t:"scheme",   en:"SCSS; senior health (Vay Vandana at 70); update nominees", hi:"एससीएसएस; वरिष्ठ स्वास्थ्य (70 पर वय वंदना); नॉमिनी अपडेट", url:"https://www.nsiindia.gov.in/"},
+  ]},
+];
+function fillLifeEvents(){
+  const sel = $("le-pick"); if(!sel) return;
+  sel.innerHTML = '<option value="">'+TT("Pick a life event…","जीवन घटना चुनें…")+'</option>' +
+    LIFE_EVENTS.map(e=>`<option value="${e.id}">${e.en}</option>`).join("");
+}
+function showLifeEvent(){
+  const id = $("le-pick").value; const out = $("le-out");
+  const ev = LIFE_EVENTS.find(e=>e.id===id);
+  if(!ev){ out.innerHTML = '<p class="small">'+TT("Pick a life event above.","ऊपर एक जीवन घटना चुनें।")+'</p>'; return; }
+  const TAG = {document:"document", scheme:"scheme", registration:"register", deadline:"deadline"};
+  out.innerHTML = "";
+  out.append(el("div",{class:"readiness-head"}, ev.en));
+  out.append(el("p",{class:"small"}, TT("Here is what to do — in order of urgency. Chitti prepares you; the government decides.","यह करना है — जरूरी क्रम में। Chitti तैयार करता है; निर्णय सरकार लेती है।")));
+  ev.actions.forEach((a,i)=>{
+    out.append(el("div",{class:"action-step"},
+      el("div",{class:"anum"}, String(i+1)),
+      el("div",{class:"abody"},
+        el("b",{}, a.en),
+        el("span",{class:"atag"}, TAG[a.t]||a.t),
+        el("div",{}, el("a",{href:a.url, target:"_blank", rel:"noopener", class:"pill"}, "🔗 Official link")))));
+  });
+  // speak a short summary (voice-first)
+  speak(TT(`For "${ev.en.replace(/[^\x00-\x7F]/g,'').trim()}", Chitti found ${ev.actions.length} steps. The first is: ${ev.actions[0].en}.`,
+           `इसके लिए Chitti ने ${ev.actions.length} कदम बताए। पहला: ${ev.actions[0].hi}।`));
+}
+
+/* ════════ Deadline Engine (CEOS F7) — deterministic + confirm-gated ════════ */
+const DEADLINE_DEFS = [
+  ["ITR (Income Tax Return)","आयकर रिटर्न (आईटीआर)"],
+  ["GST return","जीएसटी रिटर्न"],
+  ["PM-Kisan e-KYC","पीएम-किसान ई-केवाईसी"],
+  ["Jeevan Pramaan (life certificate)","जीवन प्रमाण (जीवन प्रमाणपत्र)"],
+  ["Scholarship (NSP) last date","छात्रवृत्ति (एनएसपी) अंतिम तिथि"],
+  ["Passport renewal","पासपोर्ट नवीनीकरण"],
+  ["Driving licence renewal","ड्राइविंग लाइसेंस नवीनीकरण"],
+  ["Insurance premium","बीमा प्रीमियम"],
+  ["Income certificate renewal","आय प्रमाणपत्र नवीनीकरण"],
+];
+function fillDeadlineDefs(){
+  const sel = $("dl-pick"); if(!sel) return;
+  sel.innerHTML = '<option value="">'+TT("Common deadline…","सामान्य समय-सीमा…")+'</option>' +
+    DEADLINE_DEFS.map(([en])=>`<option value="${en}">${en}</option>`).join("");
+}
+function daysLeft(iso){ const d=new Date(iso); const now=new Date(); now.setHours(0,0,0,0); return Math.round((d-now)/86400000); }
+function renderDeadlines(){
+  const out = $("dl-out"); if(!out) return;
+  const items = ls_get(LS.DEADLINES, []).slice().sort((a,b)=> new Date(a.date)-new Date(b.date));
+  if(!items.length){ out.innerHTML = '<p class="small">'+TT("No deadlines yet. Add one above and Chitti will remind you 90/30/7 days before.","अभी कोई समय-सीमा नहीं। ऊपर जोड़ें, Chitti 90/30/7 दिन पहले याद दिलाएगा।")+'</p>'; return; }
+  out.innerHTML = "";
+  items.forEach((it)=>{
+    const dl = daysLeft(it.date);
+    const cls = dl<=7?"soon":(dl<=30?"near":"ok");
+    const txt = dl<0?TT(`${-dl} days overdue`,`${-dl} दिन बीत गए`):TT(`${dl} days left`,`${dl} दिन बाकी`);
+    out.append(el("div",{class:"dl-item"},
+      el("div",{}, el("b",{}, it.name), el("div",{class:"small"}, it.date)),
+      el("div",{class:"row"},
+        el("span",{class:"days "+cls}, txt),
+        el("button",{class:"ghost", "aria-label":"Remove "+it.name, onclick:()=>{
+          const cur = ls_get(LS.DEADLINES, []); const k = cur.findIndex(x=>x.name===it.name&&x.date===it.date);
+          if(k>=0){ cur.splice(k,1); ls_set(LS.DEADLINES, cur); renderDeadlines(); }
+        }}, "🗑️"))));
+  });
+}
+
+/* ════════ Government Fraud Shield (CEOS F6) — deterministic ════════ */
+function checkFraud(text){
+  const t = (text||"").toLowerCase();
+  const flags = [];
+  const has = (...words) => words.some(w => t.includes(w));
+  // hard scam signals
+  if (has("otp","pin","cvv","one time password","ओटीपी")) flags.push({sev:3, en:"Asks for OTP / PIN / CVV — government NEVER asks for these.", hi:"ओटीपी/पिन/सीवीवी मांगता है — सरकार कभी नहीं मांगती।"});
+  if (has(".apk","download the app","install the app","anydesk","teamviewer","quicksupport")) flags.push({sev:3, en:"Asks to install an app / APK / remote-access tool — classic account-takeover scam.", hi:"ऐप/एपीके/रिमोट ऐप इंस्टॉल कराता है — खाता हड़पने वाला ठग।"});
+  if (has("digital arrest","arrest","cbi","police case","ed case","customs case")) flags.push({sev:3, en:'Threatens arrest / "digital arrest" — this does NOT exist in Indian law. Police never arrest over a call.', hi:'गिरफ्तारी/"डिजिटल अरेस्ट" की धमकी — ऐसा कानून में नहीं है। पुलिस कॉल पर गिरफ्तार नहीं करती।'});
+  if (has("processing fee","registration fee","release fee","pay ₹","pay rs","pay to release","shulk","फीस","फी")) flags.push({sev:3, en:"Asks for a fee to release a benefit — free government schemes NEVER charge a fee.", hi:"लाभ देने के लिए शुल्क मांगता है — मुफ्त सरकारी योजना कभी शुल्क नहीं लेती।"});
+  if (has("kyc") && has("pending","update","block","suspend","expire")) flags.push({sev:2, en:'"KYC pending / account will be blocked" pressure — a common phishing hook.', hi:'"केवाईसी लंबित / खाता बंद होगा" का दबाव — आम फिशिंग जाल।'});
+  if (has("electricity","bijli","power") && has("disconnect","cut","katne","बंद")) flags.push({sev:2, en:"Electricity-disconnection threat with a pay-now link — known scam.", hi:"बिजली कटने की धमकी व तुरंत भुगतान लिंक — ज्ञात ठगी।"});
+  if (has("customs","courier","parcel","fedex","dtdc","blue dart") && has("fee","hold","held","clear")) flags.push({sev:2, en:"Courier/customs parcel-held fee — common scam, often leads to digital arrest.", hi:"कूरियर/कस्टम पार्सल शुल्क — आम ठगी, अक्सर डिजिटल अरेस्ट तक ले जाती है।"});
+  if (has("lottery","prize","you have won","jeeta","won ₹","lucky")) flags.push({sev:3, en:"Lottery/prize claim — government does not run prize lotteries via SMS.", hi:"लॉटरी/इनाम का दावा — सरकार एसएमएस से इनाम नहीं देती।"});
+  // URL domain check
+  const urls = (text||"").match(/https?:\/\/[^\s]+/gi) || [];
+  let badDomain = false, goodDomain = false;
+  urls.forEach(u => {
+    const host = (u.replace(/^https?:\/\//i,"").split(/[\/?#]/)[0]||"").toLowerCase();
+    if (/\.gov\.in$|\.nic\.in$/.test(host)) goodDomain = true;
+    else badDomain = true;
+  });
+  if (badDomain) flags.push({sev:2, en:"Link is NOT an official .gov.in / .nic.in address — likely a look-alike phishing site.", hi:"लिंक आधिकारिक .gov.in/.nic.in नहीं है — नकली फिशिंग साइट हो सकती है।"});
+
+  const score = flags.reduce((a,f)=>a+f.sev,0);
+  let verdict, conf;
+  if (score >= 3) { verdict = "danger"; conf = Math.min(96, 70 + score*4); }
+  else if (score >= 1) { verdict = "warn"; conf = 60 + score*5; }
+  else if (goodDomain && urls.length) { verdict = "safe"; conf = 75; }
+  else { verdict = "warn"; conf = 50; flags.push({sev:1, en:"Not enough signal to judge. Never share OTP/fees. Confirm only via the official .gov.in portal.", hi:"पक्का कहना मुश्किल। ओटीपी/शुल्क कभी न दें। केवल आधिकारिक .gov.in पर पुष्टि करें।"}); }
+  return { verdict, confidence: conf, flags };
+}
+function renderFraud(){
+  const text = $("fraud-text").value.trim();
+  const out = $("fraud-out");
+  if(!text){ out.innerHTML = '<p class="small">'+TT("Paste the message first.","पहले संदेश पेस्ट करें।")+'</p>'; return; }
+  const r = checkFraud(text);
+  const head = r.verdict==="danger"?TT("⛔ Likely FRAUD","⛔ संभावित धोखाधड़ी"):
+               r.verdict==="warn"?TT("⚠️ Suspicious — be careful","⚠️ संदिग्ध — सावधान रहें"):
+               TT("✅ Looks genuine — still verify","✅ असली लगता है — फिर भी जांचें");
+  out.innerHTML = "";
+  const card = el("div",{class:"fraud-verdict "+(r.verdict)},
+    el("div",{class:"fhead"}, head),
+    el("div",{class:"conf-band"}, TT("Confidence","विश्वास")+": ~"+r.confidence+"%"));
+  const ul = el("div",{});
+  r.flags.forEach(f => ul.append(el("div",{class:"action-step"}, el("div",{class:"anum"},"!"), el("div",{class:"abody"}, TT(f.en,f.hi)))));
+  card.append(ul);
+  card.append(el("p",{class:"small"}, TT("Government NEVER asks for OTP/PIN, never charges a fee for a free scheme, and only uses .gov.in / .nic.in links. Real benefits arrive directly in your Aadhaar-seeded bank account — never via a link.","सरकार कभी ओटीपी/पिन नहीं मांगती, मुफ्त योजना पर शुल्क नहीं लेती, और केवल .gov.in/.nic.in लिंक देती है। असली लाभ सीधे आपके आधार-लिंक बैंक खाते में आता है — किसी लिंक से नहीं।")));
+  card.append(el("div",{class:"report-row"},
+    el("a",{href:"https://www.cybercrime.gov.in/", target:"_blank", rel:"noopener"}, "🚨 cybercrime.gov.in"),
+    el("a",{href:"tel:1930"}, "📞 Call 1930"),
+    el("a",{href:"https://sancharsaathi.gov.in/", target:"_blank", rel:"noopener"}, "🛡️ Sanchar Saathi (Chakshu)")));
+  out.append(card);
+  speak(r.verdict==="danger"?TT("Warning. This looks like fraud. Do not pay or share any code. Report it to 1930.","चेतावनी। यह धोखाधड़ी लगती है। कोई पैसा या कोड साझा न करें। 1930 पर रिपोर्ट करें।"):
+        r.verdict==="warn"?TT("Be careful. This is suspicious. Verify on the official government website.","सावधान रहें। यह संदिग्ध है। आधिकारिक सरकारी वेबसाइट पर जांचें।"):
+        TT("This looks genuine, but always confirm on the official government website.","यह असली लगता है, पर हमेशा आधिकारिक वेबसाइट पर पुष्टि करें।"));
+}
+
+/* ── Wire CEOS engines ── */
+renderDocInventory();
+$("readiness-calc") && $("readiness-calc").addEventListener("click", calcReadiness);
+$("readiness-speak") && $("readiness-speak").addEventListener("click", speakReadiness);
+fillLifeEvents();
+$("le-go") && $("le-go").addEventListener("click", showLifeEvent);
+$("le-pick") && $("le-pick").addEventListener("change", showLifeEvent);
+fillDeadlineDefs();
+$("dl-pick") && $("dl-pick").addEventListener("change", ()=>{ const v=$("dl-pick").value; /* selecting fills the name */ });
+$("dl-add") && $("dl-add").addEventListener("click", ()=>{
+  const name = $("dl-pick").value; const date = $("dl-date").value;
+  if(!name){ speak(TT("Please pick a deadline type.","कृपया समय-सीमा चुनें।")); return; }
+  if(!date){ speak(TT("Please pick a date.","कृपया तारीख चुनें।")); return; }
+  confirmAndDo(`Shall I set a reminder for ${name} on ${date}?`, `क्या मैं ${name} के लिए ${date} को रिमाइंडर लगाऊं?`, ()=>{
+    const items = ls_get(LS.DEADLINES, []); items.push({name, date}); ls_set(LS.DEADLINES, items);
+    renderDeadlines(); speak(TT("Reminder set on your device.","आपके डिवाइस पर रिमाइंडर लग गया।"));
+  });
+});
+renderDeadlines();
+$("fraud-check") && $("fraud-check").addEventListener("click", renderFraud);
+
+/* Voice-in for the new tabs (reuse the page's recogniser if present) */
+function wireMic(btnId, targetId){
+  const b = $(btnId); if(!b) return;
+  b.addEventListener("click", ()=>{
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ speak(TT("Voice input is not available on this browser. Please type or tap.","इस ब्राउज़र में आवाज़ उपलब्ध नहीं। कृपया टाइप या टैप करें।")); return; }
+    const rec = new SR(); rec.lang = LANG==="hi"?"hi-IN":"en-IN"; rec.interimResults=false;
+    rec.onresult = e => { const said = e.results[0][0].transcript; if($(targetId)) $(targetId).value = said; };
+    rec.onerror = ()=>{}; try{ rec.start(); }catch(e){}
+  });
+}
+wireMic("fraud-mic","fraud-text");
+$("le-mic") && $("le-mic").addEventListener("click", ()=>{
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ speak(TT("Voice not available — pick from the list.","आवाज़ उपलब्ध नहीं — सूची से चुनें।")); return; }
+  const rec = new SR(); rec.lang = LANG==="hi"?"hi-IN":"en-IN";
+  rec.onresult = e => { const said = e.results[0][0].transcript.toLowerCase();
+    const m = LIFE_EVENTS.find(ev => said.includes("daughter")&&ev.id==="daughter_born" || said.includes("married")&&ev.id==="marriage" || said.includes("died")&&ev.id==="death" || said.includes("job")&&ev.id==="job_loss" || said.includes("business")&&ev.id==="start_business");
+    if(m){ $("le-pick").value=m.id; showLifeEvent(); } else { speak(TT("Please pick from the list.","कृपया सूची से चुनें।")); } };
+  rec.onerror=()=>{}; try{ rec.start(); }catch(e){}
+});
 
 </script>
 <!-- Chitti Quality v2 trust signals · 2026-05-13 -->

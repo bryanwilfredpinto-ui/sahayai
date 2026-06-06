@@ -2,6 +2,31 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-06 (Chitti Vaani CEOS doc set + Universal Handover — see entry below) · **Auditor:** Claude Opus 4.7 (1M context) ·
 
+## 2026-06-06 — Chitti Government — CEOS v1.0 rebuilt (Citizen Operating System)
+
+**Trigger:** Sire — "Prepare a CEOS skeleton as per Chitti-Fashion … research missing
+schemes + best-practice apps … document CEOS + Build Order … then build the product.
+DON'T FORGET blind/deaf/mute/illiterate — the language dropdown HAS to work."
+
+Chitti Government elevated from a 30-scheme directory to a full **Citizen Operating
+System** on the chitti-fashion CEOS bar. Doctrine applied: **rules are the product,
+the LLM is an enhancement** — every new engine is deterministic and runs offline.
+
+| Proof | Result | Artifact |
+|---|---|---|
+| CEOS doc set (fashion-grade) | 🟢 CONSTITUTION·ROLE·PRODUCT_VISION·PERSONAS·SUCCESS_METRICS·PRD·EVALS·QUALITY·ROADMAP·BUILD_ORDER + swarm/10 · guardrails/5 · evals/6 · accessibility/4 · observability/3 · memory · skills/8 · sop | [chitti-government/](chitti-government/) |
+| Research → catalog | 🟢 **30 → 84 schemes** across 13 categories, each with `source_url`+`status`+`last_verified`; 0 missing source; dedup-clean | [RESEARCH_BEST_APPS.md](chitti-government/RESEARCH_BEST_APPS.md), [tools/expand_government_schemes.mjs](tools/expand_government_schemes.mjs) |
+| 8 CEOS features on the page | 🟢 Eligibility · Schemes · **Readiness Score · Life-Event Engine · Deadline Engine · Fraud Shield** + Checklist/Form/Alerts/Status/Locator/Documents/Profile | [chitti_government.html](chitti_government.html) |
+| Deterministic Fraud Shield | 🟢 **12/12 exact (100%) · 0 genuine false-positives** | [chitti-government/evals/RESULTS.md](chitti-government/evals/RESULTS.md) |
+| Backend routes (deterministic, Vaani-routable) | 🟢 `/fraud-check` `/life-events` `/life-event` `/readiness` 200 + correct; boots, seeds 84 | Flask test client |
+| 5 frontend gates + 26-lang dropdown | 🟢 preserved (chitti_lang.js `#lang-select` auto-translates new tabs); new boxes carry `data-chitti-response` | inline-JS syntax 3/3 clean |
+| Golden-Rule confirm gate | 🟢 deadline-reminder set is confirm-gated (tap-or-voice) | — |
+| Eligibility gold-set · per-page Playwright/axe cert · LLM phrasing | 🟡/⛔ queued / AUTOMATION-LIMITED (DeepSeek funding + Vaani relevance-rail) | honest |
+
+Reproduce: `node tools/expand_government_schemes.mjs` · boot `chitti-government/backend`
++ Flask test client · fraud eval in [evals/RESULTS.md](chitti-government/evals/RESULTS.md).
+Remaining for Sire: real iPhone/Android pass + DeepSeek funding for live verdict phrasing.
+
 ## 2026-06-06 — Chitti Vaani (USER-CANONICAL) — CEOS doc set + omnibus QA + Universal Handover
 
 **Trigger:** Sire — "DO THIS FOR chitti-vaani: CHITTI UNIVERSAL HANDOVER DOCUMENT … run ALL automated tests yourself."
