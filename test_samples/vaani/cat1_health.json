@@ -1,0 +1,11 @@
+{
+  "category": "Health & medicine intents (route → MedUPI / Health-Scanner / Scanner)",
+  "min_required": 5,
+  "samples": [
+    { "utterance": "Crocin 500 ka sasta generic batao",            "lang": "hi", "expected_route": "medupi",         "note": "cheapest same-composition generic lookup" },
+    { "utterance": "What is the Jan Aushadhi price of Pantoprazole 40mg?", "lang": "en", "expected_route": "medupi", "note": "Jan Aushadhi ceiling price" },
+    { "utterance": "Is is dawai ki expiry kab hai, photo bhej raha hoon", "lang": "hi", "expected_route": "medupi",  "note": "strip scan + expiry — camera-confirm gate" },
+    { "utterance": "Meri skin par ek nayi laal jagah aayi hai, dekho", "lang": "hi", "expected_route": "health-scanner", "note": "non-diagnostic visual health — escalates, never diagnoses" },
+    { "utterance": "Scan this food packet for FSSAI compliance",      "lang": "en", "expected_route": "scanner",        "note": "packaged-food / fake-product scan" }
+  ]
+}

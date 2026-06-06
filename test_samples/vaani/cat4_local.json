@@ -1,0 +1,11 @@
+{
+  "category": "Order & book intents (route → local-Chitti directory first, external-app fallback)",
+  "min_required": 5,
+  "samples": [
+    { "utterance": "Sharma kirana se aata mangwa do",                 "lang": "hi", "expected_route": "order_groceries", "note": "local chittikirana first, Blinkit/BigBasket fallback" },
+    { "utterance": "Order food from a nearby restaurant",             "lang": "en", "expected_route": "order_food",      "note": "chittirestaurant first, Zomato/Swiggy fallback" },
+    { "utterance": "pass ka chemist dhoondo jo abhi khula ho",        "lang": "hi", "expected_route": "nearest_chemist", "note": "maps category search, open-now toggle" },
+    { "utterance": "Book a salon appointment near me",                "lang": "en", "expected_route": "book_salon",      "note": "chittisalon — bookings stay local" },
+    { "utterance": "mujhe cab chahiye station tak",                   "lang": "hi", "expected_route": "book_cab",        "note": "no Chitti substrate yet → honest external fallback (Ola/Uber/Rapido)" }
+  ]
+}

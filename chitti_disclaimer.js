@@ -88,7 +88,7 @@
         <button onclick="chitti.speak('${pageDescription}', '${lang}')"
           aria-label="Hear page description"
           style="
-            background:#3b82f6;border:none;border-radius:5px;
+            background:#1d4ed8;border:none;border-radius:5px;
             padding:5px 12px;font-size:12px;cursor:pointer;
             color:#fff;font-weight:700;flex-shrink:0;
           ">

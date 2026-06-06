@@ -1,6 +1,36 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-06-03 (chitti-news-ai v0.3 Intelligence Aggregator shipped — rules-only classifier passes 12/13 professions, 7 streams live, 6/6 fail-open tests, boot-time ingest serves real data from a cold container in ~60s) · **Auditor:** Claude Opus 4.7 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-06-06 (Chitti Vaani CEOS doc set + Universal Handover — see entry below) · **Auditor:** Claude Opus 4.7 (1M context) ·
+
+## 2026-06-06 — Chitti Vaani (USER-CANONICAL) — CEOS doc set + omnibus QA + Universal Handover
+
+**Trigger:** Sire — "DO THIS FOR chitti-vaani: CHITTI UNIVERSAL HANDOVER DOCUMENT … run ALL automated tests yourself."
+
+Vaani — the sole user-facing surface (SAHAYAI_MASTER §2 row 1) — finally got the full
+**chitti-fashion-grade CEOS doc set** (it had only the legacy README/SKILLS/SOP set before).
+Built + auto-certified end-to-end. Filled handover (0 placeholders):
+[chitti-vaani/HANDOVER/09_UNIVERSAL_HANDOVER_FILLED.md](chitti-vaani/HANDOVER/09_UNIVERSAL_HANDOVER_FILLED.md).
+
+| Proof | Result | Artifact |
+|---|---|---|
+| CEOS L0–L12 compliance | 🟢 **29/29 PASS** | [tools/verify_ceos_compliance_vaani.mjs](tools/verify_ceos_compliance_vaani.mjs) → ceos_vaani_result.json (CONSTITUTION·VISION·PERSONAS·SUCCESS_METRICS·PRD·SKILLS·swarm/7·sop/5·guardrails/3·memory·observability/2·evals/2·accessibility/4 + QUALITY·ROADMAP) |
+| 26-language battery | 🟢 **26/26** | langAttr + no raw-key + no Eng-leak + 0 console errors per lang (poll for lazy-pack settle) |
+| 8 a11y profiles × axe-core (primary surface) | 🟢 **8/8 · 0 serious · 0 sub-44px tap targets** | [tools/qa_full_vaani.mjs](tools/qa_full_vaani.mjs) → qa_full_vaani_result.json |
+| Functional journeys · edge cases · cross-platform · perf · samples | 🟢 15/15 · 4/4 · 7/7 (3 engines + 4 viewports) · 2/2 · 5 files/25 intents | same harness |
+| **Deep per-tab axe** (each tab scanned while active) | 🟡 **28 nested-interactive on Act tab** | Sev-3 cross-Chitti substrate (chitti_card_widget.js attaches feedback bar inside clickable cards); documented in [03_KNOWN_ISSUES](chitti-vaani/HANDOVER/03_KNOWN_ISSUES.md), NOT hidden |
+| Overall auto-gate pass rate | 🟢 **100.0%** | rollup of 8 sections |
+
+**4 real WCAG bugs found + fixed this pass** (caught only because the per-tab axe sweep is more
+rigorous than the old source-grep cert): stray `role="tablist"` on `#vai-bnav` + `.mode-row`
+(aria-required-children); 3 Settings selects missing accessible name (select-name); white-on-saffron
+contrast on `.pbadge.live` / Settings header / `.device-actions .next` / active-tab label →
+navy `#002366` / dark-saffron `#B34700`; **fleet-wide** `chitti_disclaimer.js` "Read page" button
+`#3b82f6 → #1d4ed8` (benefits all 23 pages). Live DeepSeek route-accuracy stays **AUTOMATION-LIMITED**
+(gated on funding + Vaani relevance-rail). Reproduce:
+`node tools/qa_full_vaani.mjs && node tools/verify_ceos_compliance_vaani.mjs && node tools/fill_vaani_handover.mjs`.
+Remaining for Sire: 9 real-device items (iPhone/Android) in PART AUTOMATION-LIMITED.
+
+
 
 ## 2026-06-04 PM — Chitti Mechanic — full QA pass: 2 real bugs found + fixed → 0 issues
 

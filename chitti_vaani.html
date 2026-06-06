@@ -393,7 +393,7 @@ body::before{content:'';position:fixed;top:0;right:14px;width:36px;height:36px;b
 main .mic-big{background:linear-gradient(135deg,var(--vai-saffron),var(--vai-green))}
 main .mic-big.listening{background:var(--vai-red);box-shadow:0 14px 40px rgba(198,40,40,.45)}
 header[role="banner"]{background:linear-gradient(135deg,var(--vai-navy),#16376a)}
-.vai-bnav button.active{color:var(--vai-saffron)}
+.vai-bnav button.active{color:#B34700}
 .vai-bnav button.active .ico{filter:drop-shadow(0 2px 4px rgba(255,105,19,.35))}
 
 /* ── Grandparent mode — 28px font, 3 buttons only, giant mic ── */
@@ -492,7 +492,7 @@ body.vai-grandparent main .section-card:not([aria-labelledby="mic-title"]){displ
 .vai-product-head .pinfo{flex:1;min-width:0}
 .vai-product-head .pname{font-size:16px;font-weight:800;color:var(--vai-navy)}
 .vai-product-head .pbadge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:middle}
-.vai-product-head .pbadge.live{background:var(--vai-saffron);color:#fff}
+.vai-product-head .pbadge.live{background:var(--vai-saffron);color:#002366}
 .vai-product-head .pbadge.beta{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
 .vai-product-head .pbadge.p3{background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe}
 .vai-product-head .parrow{font-size:22px;color:var(--vai-green);font-weight:900;transition:transform .2s}
@@ -576,7 +576,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 .device-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .device-actions button{padding:10px 18px;border:0;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
 .device-actions .back{background:#eee;color:var(--text)}
-.device-actions .next{background:var(--saffron);color:#fff}
+.device-actions .next{background:var(--saffron);color:#002366}
 .device-actions .next:disabled{opacity:.5;cursor:not-allowed}
 .device-actions .activate{background:var(--green);color:#fff}
 .otp-row{display:flex;gap:6px;justify-content:center;margin:8px 0}
@@ -1081,7 +1081,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
   <div class="header-controls">
     <button onclick="speakIntro()" aria-label="Hear how to use this page"><span>🔊 </span><span data-vai-i18n="hdr.howto">कैसे उपयोग करें</span></button>
     <button class="vai-gp-toggle" id="vai-gp-pill" onclick="vaiGrandparentToggle()" aria-label="Grandparent mode — 3 big buttons, large font"><span>👵 </span><span data-vai-i18n="hdr.gp">बुज़ुर्ग मोड</span></button>
-    <button onclick="vaiSwitchTab('settings')" aria-label="Open Settings — battery, share, privacy, all products" style="background:var(--vai-saffron);border-color:var(--vai-saffron);font-weight:800"><span>⚙️ </span><span data-vai-i18n="hdr.settings">सेटिंग्स</span></button>
+    <button onclick="vaiSwitchTab('settings')" aria-label="Open Settings — battery, share, privacy, all products" style="background:var(--vai-saffron);border-color:var(--vai-saffron);color:#002366;font-weight:800"><span>⚙️ </span><span data-vai-i18n="hdr.settings">सेटिंग्स</span></button>
   </div>
 </header>
 
@@ -1101,7 +1101,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <div class="mic-stage">
       <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening">🎙️</button>
       <div class="mic-hint" id="mic-hint"><strong data-vai-i18n="vai.hero.cta">Bolne ke liye tap karein.</strong> <span data-vai-i18n="vai.hero.hint">Chitti aapki bhasha mein jawaab degi aur padh ke sunayegi.</span></div>
-      <div class="mode-row" role="tablist" aria-label="Conversation mode">
+      <div class="mode-row" role="group" aria-label="Conversation mode">
         <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 <span data-vai-i18n="vai.mode.ask">कुछ भी पूछो</span></button>
         <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
         <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
@@ -1576,7 +1576,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <h3 class="vai-settings-h"><span class="ico">🔧</span> <span data-vai-i18n="set.general">General</span></h3>
       <div class="vai-general-row">
         <label data-vai-i18n="set.font">Font size</label>
-        <select id="vai-font-size" onchange="vaiSetFontSize(this.value)">
+        <select id="vai-font-size" aria-label="Font size" onchange="vaiSetFontSize(this.value)">
           <option value="100">100% (Normal)</option>
           <option value="115">115% (Large)</option>
           <option value="130">130% (Extra large)</option>
@@ -1584,7 +1584,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       </div>
       <div class="vai-general-row">
         <label data-vai-i18n="set.voicespeed">Voice speed</label>
-        <select id="vai-voice-speed" onchange="vaiSetVoiceSpeed(this.value)">
+        <select id="vai-voice-speed" aria-label="Voice speed" onchange="vaiSetVoiceSpeed(this.value)">
           <option value="0.85">Slow</option>
           <option value="1.0" selected>Normal</option>
           <option value="1.15">Fast</option>
@@ -1592,7 +1592,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       </div>
       <div class="vai-general-row">
         <label data-vai-i18n="set.lang">Language</label>
-        <select id="vai-lang-select-2" onchange="vaiLangSelectChange(this.value)">
+        <select id="vai-lang-select-2" aria-label="Language" onchange="vaiLangSelectChange(this.value)">
           <option value="hi">हिंदी · Hindi</option>
           <option value="en">English</option>
           <option value="bn">বাংলা · Bangla</option>
@@ -1636,7 +1636,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 </main>
 
 <!-- ══════════════ BOTTOM TAB NAV (mobile-first) ══════════════ -->
-<nav class="vai-bnav" role="tablist" aria-label="Chitti Vaani sections" id="vai-bnav">
+<nav class="vai-bnav" aria-label="Chitti Vaani sections" id="vai-bnav">
   <button type="button" data-tab-target="talk" class="active" onclick="vaiSwitchTab('talk')">
     <span class="ico">🎙️</span><span data-vai-i18n="tab.talk">Talk</span>
   </button>
