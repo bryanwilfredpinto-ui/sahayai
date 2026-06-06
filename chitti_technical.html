@@ -361,7 +361,10 @@ window.TechUI = (function(){
 
   // ---------- data: LIVE Angel candles on Refresh; DEMO only as honest offline fallback ----------
   var candleCache={}, liveSymbols={}, dataSource='DEMO';
-  var SHARES_API=(window.CHITTI_SHARES_API||'https://chitti-shares-api-production.up.railway.app').replace(/\/$/,'');
+  // try each backend host in order until one serves (Railway → Render), then DEMO fallback
+  var SHARES_APIS=(window.CHITTI_SHARES_API?[window.CHITTI_SHARES_API]:[])
+    .concat(['https://chitti-shares-api-production.up.railway.app','https://chitti-shares-api.onrender.com'])
+    .map(function(s){return s.replace(/\/$/,'');});
   function getTf(sym){ if(!candleCache[sym]) candleCache[sym]=E.genAllTf(sym); return candleCache[sym]; }
   function resampleEvery(arr,k){
     var out=[];
@@ -373,9 +376,9 @@ window.TechUI = (function(){
     }
     return out;
   }
-  function fetchCandles(sym,interval){
-    var url=SHARES_API+'/api/technical/'+encodeURIComponent(sym)+'/candles?interval='+interval;
-    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},9000);
+  function fetchCandles(base,sym,interval){
+    var url=base+'/api/technical/'+encodeURIComponent(sym)+'/candles?interval='+interval;
+    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},10000);
     return fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}}).then(function(r){
       clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.json();
     }).then(function(j){
@@ -383,9 +386,15 @@ window.TechUI = (function(){
       return j.candles.map(function(c,i){return {open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:(+c.volume)||0,t:i,date:c.date};});
     });
   }
-  function loadLive(sym){
-    return Promise.all([fetchCandles(sym,'month'),fetchCandles(sym,'week'),fetchCandles(sym,'day'),fetchCandles(sym,'hour')])
+  function loadLiveFrom(base,sym){
+    return Promise.all([fetchCandles(base,sym,'month'),fetchCandles(base,sym,'week'),fetchCandles(base,sym,'day'),fetchCandles(base,sym,'hour')])
       .then(function(res){ var hour=res[3]; return { monthly:res[0], weekly:res[1], daily:res[2], '1h':hour, '4h':resampleEvery(hour,4) }; });
+  }
+  function loadLive(sym){
+    // sequential: first host that serves all timeframes wins; else reject → DEMO
+    return SHARES_APIS.reduce(function(p,base){
+      return p.catch(function(){ return loadLiveFrom(base,sym); });
+    }, Promise.reject(new Error('no host')));
   }
   function updateDataFlag(sym){
     var el=document.getElementById('demo-flag'); if(!el) return;
