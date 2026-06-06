@@ -60,6 +60,7 @@ for (const v of viewports) {
 const c = await b.newContext({ viewport:{ width:1280, height:900 } });
 const p = await c.newPage();
 p.on('pageerror', e => pageErrors.push('fn: ' + e.message));
+p.on('dialog', d => d.dismiss().catch(() => {}));
 await p.goto(URL, { waitUntil:'domcontentloaded' });
 await p.waitForTimeout(1800);
 
@@ -174,6 +175,9 @@ const gridNone = await p.$$eval('#ind-grid .ind', els => els.length);
 await p.evaluate(() => window.TechUI.indAll(true)); await p.waitForTimeout(250);
 const gridAll = await p.$$eval('#ind-grid .ind', els => els.length);
 check('indicator_dropdown_toggle_filters_grid', gridNone === 0 && gridAll >= 38, `none=${gridNone} all=${gridAll}`);
+// rates populate: indicator cells carry numeric values (not all dashes)
+const numericVals = await p.$$eval('#ind-grid .ind .val', els => els.filter(e => /[0-9]/.test(e.textContent)).length);
+check('ITEM rates_indicators_populate', numericVals >= 30, numericVals + ' indicators show numeric values');
 await p.evaluate(() => window.TechUI.toggleIndMenu());
 
 // ---- ITEM: BUY · SELL · TARGET · SL plan on a directional signal ----
@@ -197,8 +201,30 @@ if (dir) {
   });
   check('ITEM trade_plan_BUY_SELL_TARGET_SL', plan.buy && plan.sell && plan.tgt && plan.sl,
     `${dir.sym}/${dir.tt} ${dir.verdict} → ${JSON.stringify(plan)}`);
+
+  // ---- ITEM: portfolio log → close → PnL (real UI roundtrip, Golden-Rule confirm) ----
+  await p.evaluate(() => { try { localStorage.removeItem('chitti_tech_pf_v1'); } catch (e) {} });
+  await p.evaluate(() => window.TechUI.logTrade());            // opens confirm modal
+  await p.waitForTimeout(150);
+  const confirmShown = await p.evaluate(() => document.getElementById('confirm').classList.contains('show'));
+  await p.evaluate(() => window.TechUI._confirmYes());          // accept (Golden-Rule Yes)
+  await p.waitForTimeout(200);
+  const openN = await p.evaluate(() => document.getElementById('pf-open').textContent);
+  const tid = await p.evaluate(() => { const l = JSON.parse(localStorage.getItem('chitti_tech_pf_v1') || '[]'); return l.length ? l[0].id : null; });
+  await p.evaluate(id => window.TechUI.closeTrade(id), tid);    // opens confirm modal
+  await p.waitForTimeout(150);
+  await p.evaluate(() => window.TechUI._confirmYes());          // accept close
+  await p.waitForTimeout(200);
+  const closedN = await p.evaluate(() => document.getElementById('pf-closed').textContent);
+  const pnl = await p.evaluate(() => document.getElementById('pf-pnl').textContent);
+  await p.evaluate(() => { const el = document.getElementById('pf-list'); if (el) el.scrollIntoView(); });
+  await p.waitForTimeout(150);
+  await p.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_portfolio.png'), fullPage: true });
+  check('ITEM portfolio_log_close_pnl', confirmShown && openN === '1' && closedN === '1' && /[₹0-9]/.test(pnl),
+    `confirm=${confirmShown} open=${openN} closed=${closedN} pnl=${pnl}`);
 } else {
   check('ITEM trade_plan_BUY_SELL_TARGET_SL', false, 'no directional signal found to test the plan');
+  check('ITEM portfolio_log_close_pnl', false, 'no directional signal to log');
 }
 
 // ---- tap targets >= 44px on primary buttons ----

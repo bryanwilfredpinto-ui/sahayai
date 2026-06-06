@@ -752,13 +752,15 @@
     // per-symbol structural bias so different stocks show different setups
     var biasPick = strHash(symbol) % 5; // 0..4
     var tfBias = { monthly: 1.0, weekly: 0.8, daily: 0.5, '4h': 0.3, '1h': 0.15 }[timeframe] || 0.5;
-    var drift = ((biasPick - 2) / 2) * 0.0018 * tfBias; // -0.0018..+0.0018 scaled
+    // realistic stock model = drift (trend) + slow wave + bounded noise (geometric-Brownian-ish),
+    // so trending names trend and choppy names chop — far more honest than pure noise.
+    var drift = ((biasPick - 2) / 2) * 0.0042 * tfBias; // up to ±0.42%/bar (daily) — a visible trend
     var price = basePrice || (50 + (strHash(symbol) % 4000));
     var vol0 = 100000 + (strHash(symbol + 'v') % 900000);
     var candles = [];
     for (var i = 0; i < n; i++) {
-      var shock = (rnd() - 0.5) * 0.03;
-      var wave = Math.sin(i / 9 + biasPick) * 0.004;
+      var shock = (rnd() - 0.5) * 0.018;            // ±0.9% bounded noise
+      var wave = Math.sin(i / 11 + biasPick) * 0.006; // ±0.6% slow cycle
       var ret = drift + wave + shock;
       var open = price;
       var close = Math.max(1, open * (1 + ret));

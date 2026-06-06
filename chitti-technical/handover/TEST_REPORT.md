@@ -20,7 +20,26 @@
 | Suite | Result |
 |---|---|
 | Node logic test ([tools/test_technical.mjs](../../tools/test_technical.mjs)) | **270 PASS / 0 FAIL** |
-| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **27 PASS / 0 FAIL · 0 page errors** |
+| Playwright cert ([tools/cert_technical.mjs](../../tools/cert_technical.mjs)) | **29 PASS / 0 FAIL · 0 page errors** |
+| Functional verification ([tools/verify_technical.mjs](../../tools/verify_technical.mjs)) | **all sections ✅** → [FUNCTIONAL_VERIFICATION.md](FUNCTIONAL_VERIFICATION.md) |
+
+## Functional verification (Sire's ask: rates? indicators? BUY/SELL/SL/Target? 2-month sample? portfolio?)
+Run `node tools/verify_technical.mjs` → full report at [FUNCTIONAL_VERIFICATION.md](FUNCTIONAL_VERIFICATION.md):
+1. **Rates populate** ✅ — 260 OHLCV bars per symbol, last close non-null (e.g. RELIANCE). Cert also asserts
+   `rates_indicators_populate — 38 indicators show numeric values` on the live page.
+2. **Every indicator works** ✅ — all **39 compute, 0 missing**, each with a value + BUY/SELL/WAIT.
+3. **BUY/SELL/SL/Target fire** ✅ — worked examples print Entry, Stop (correct side), Targets 1/2/3 + RR,
+   position size, invalidation; guardrail re-checked per example.
+4. **2-month sample of BUY & SELL** ✅ — walk-forward over ~44 trading days/symbol; trades resolve to
+   WIN (target hit first) / LOSS (stop first) / OPEN. Sample: **4 signals → 1 WIN, 1 LOSS, 2 OPEN, +1R**
+   on DEMO data (mechanics proven; **not** a market claim — needs live candles + elapsed time).
+5. **Portfolio works** ✅ — real UI roundtrip in the cert: `portfolio_log_close_pnl — confirm=true open=1
+   closed=1 pnl=₹4,775` (Golden-Rule confirm → Yes → close → PnL). Screenshot
+   [tools/cert_screenshots/chitti_technical_portfolio.png](../../tools/cert_screenshots/chitti_technical_portfolio.png).
+
+> **Honesty:** prices are the deterministic DEMO feed (realistic drift+noise) until live `chitti-shares-api`
+> candles are wired. This verifies the **mechanics** end-to-end; the ≥70% directional accuracy gate stays
+> NOT-YET-MEASURED until live data elapses.
 
 ## Indicator dropdown + BUY · SELL · TARGET · SL (Sire's ask)
 ✅ **Indicator dropdown — FULL 39-indicator catalogue** (matching the legacy scanner; Sire: "include ALL").
