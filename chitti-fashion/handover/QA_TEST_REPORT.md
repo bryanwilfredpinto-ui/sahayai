@@ -100,8 +100,14 @@ Playwright drives the three real rendering engines. **WebKit is the exact engine
 > **0 violations** across critical/serious/moderate/minor (36 rule-groups pass). It initially found 3 real
 > WCAG issues (tablist children, contrast, missing h1) that the selector suite missed — all fixed (BUG-F5/F6/F7).
 >
+### A4.1 — ALL 4 disability profiles (scripted, 2026-06-06)
+`tools/fashion_a11y_profiles.mjs` sets **each** profile, seeds a wardrobe, generates an outfit + review by
+**tap** (no voice/typing), asserts each contract on the live DOM. **Result: 4/4 PASS** — Blind (aria-live +
+spoken + 🔊) · Deaf (text + symbol, never audio-only) · Mute (tap path ≥44px, no voice) · Illiterate
+(icon chips + 🔊 + spoken). ⚠️ ISL panel hook **not detected** by automation — needs a manual visual check (logged).
+
 > **STILL NOT TESTED (requires a human):** real screen-reader pass with NVDA (Windows) / VoiceOver (iOS) /
-> TalkBack (Android). The 107/107 + axe-0 are automated; they are not a substitute for a human screen-reader session (KI-04).
+> TalkBack (Android). The 107/107 + axe-0 + 4/4-profiles are automated; they are not a substitute for a human screen-reader session (KI-04).
 
 ## A5. Language Testing — all 9 primary languages + flicker check
 
@@ -121,6 +127,15 @@ Switched into each language, measured raw-key leakage + blank dropdown labels at
 
 **Finding: NO flicker observed in any language, including Tamil/Telugu/Malayalam.** The MutationObserver
 guard + self-contained i18n bundle (`chitti_fashion_i18n.js`) hold every label stable through the settle window.
+
+### A5.1 — ALL 26 Voice-Factory languages (scripted, 2026-06-06)
+
+`tools/fashion_lang_all26.mjs` selects **each of the 26 languages** via the real dropdown, generates a live
+outfit, and asserts: dropdown switched · outfit renders · 0 raw keys at 150 ms AND 1550 ms · 0 page errors.
+
+**Result: 26/26 PASS.** en/hi/ta/te/bn/mr/gu/kn/ml (native UI + outfit incl. localized piece labels) +
+pa/or/as/ur/sa/mai/kok/doi/ks/ne/sd/mni/sat/bho/raj/kru/hoc (English-baseline UI + outfit, per locked policy;
+in-language voice via Voice Factory). 0 raw keys, 0 flicker, 0 errors across all 26.
 
 > **Note on the 9th language:** this product's 9 **primary native-UI** languages are
 > en/hi/ta/te/bn/mr/gu/kn/ml (per CTO §5, anchored to Chitti Vaani). **Urdu is NOT a primary**
