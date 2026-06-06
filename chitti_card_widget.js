@@ -165,6 +165,19 @@
     document.head.appendChild(st);
   }
 
+  // True when `el` is itself a focusable/interactive control — we must not nest
+  // the widget's role="button" spans inside it (WCAG nested-interactive). 2026-06-06.
+  function isInteractiveEl(el){
+    if (!el || !el.tagName) return false;
+    var tag = el.tagName;
+    if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return true;
+    if (tag === 'A' && el.hasAttribute && el.hasAttribute('href')) return true;
+    var role = (el.getAttribute && el.getAttribute('role')) || '';
+    if (/^(button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option)$/.test(role)) return true;
+    if (el.hasAttribute && (el.getAttribute('contenteditable') === 'true')) return true;
+    return false;
+  }
+
   function icon(emoji, label){
     var s = document.createElement('span');
     s.setAttribute('role','button');
@@ -241,6 +254,13 @@
     // boxes, this substrate for implicit patterns (.scan-action etc).
     if (card.hasAttribute && card.hasAttribute('data-chitti-response')) return;
     if (card.classList && card.classList.contains('chitti-response')) return;
+    // WCAG fix 2026-06-06 — NEVER attach inside an interactive element. The
+    // widget bar contains role="button" tabindex="0" spans; nesting them inside
+    // a <button>/<a>/[role=button] (e.g. MedUPI's .scan-action camera/upload/
+    // voice/QR buttons) produces an axe "nested-interactive" serious violation
+    // AND is wrong by contract: feedback belongs on RESPONSE cards, not on
+    // action triggers. Skip any card that is itself an interactive control.
+    if (isInteractiveEl(card)) return;
     // Need SOME identifier for box_id. Accept any of:
     //   - label-like child (.lbl/.label/.name/.title/h1-h6)
     //   - data-chitti-section attribute (set on news-ai art-card, etc.)

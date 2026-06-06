@@ -446,7 +446,10 @@ html[dir="rtl"] .chitti-langbar { right: auto; left: 8px; }
 }
 .chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.demo {
   background: rgba(255, 153, 51, 0.10) !important;   /* saffron tint */
-  color: var(--chitti-saffron-deep) !important;
+  /* WCAG AA fix 2026-06-06: #E07B1D saffron on the cream bar was 2.77:1 (axe
+     serious). #9a4a07 is a deeper saffron that keeps brand warmth and clears
+     4.5:1 (measured 5.8:1) for the small-bold "Chitti" label. */
+  color: #9a4a07 !important;
   border-color: rgba(255, 153, 51, 0.35) !important;
 }
 .chitti-response + .chitti-fb-box-bar .chitti-fb-bbtn.up:hover {

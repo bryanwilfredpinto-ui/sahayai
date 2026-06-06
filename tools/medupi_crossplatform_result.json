@@ -1,0 +1,202 @@
+{
+  "url": "http://127.0.0.1:8765/chitti_medupi.html",
+  "crossPlatform": [
+    {
+      "engine": "chromium",
+      "viewport": "375 mobile",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": "768 tablet",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": "1440 desktop",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "viewport": "375 mobile",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "viewport": "768 tablet",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "firefox",
+      "viewport": "1440 desktop",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": "375 mobile",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": "768 tablet",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": "1440 desktop",
+      "title": "Chitti MedUPI — UPI ",
+      "overflow": false,
+      "boxes": 74,
+      "tabs": 9,
+      "gates": true,
+      "realErrors": 0,
+      "pass": true
+    }
+  ],
+  "performance": [
+    {
+      "metric": "DOMContentLoaded (gotoMs)",
+      "target": "< 3000ms",
+      "measured": "1032ms",
+      "pass": true
+    },
+    {
+      "metric": "First Contentful Paint",
+      "target": "< 3000ms",
+      "measured": "648ms",
+      "pass": true
+    },
+    {
+      "metric": "Load event",
+      "target": "< 5000ms",
+      "measured": "1547ms",
+      "pass": true
+    },
+    {
+      "metric": "Language switch (warm, avg of 2)",
+      "target": "< 1500ms",
+      "measured": "1732ms",
+      "pass": false
+    },
+    {
+      "metric": "JS heap (idle)",
+      "target": "< 100MB",
+      "measured": "10MB",
+      "pass": true
+    }
+  ],
+  "edgeCases": [
+    {
+      "name": "1 No internet (offline, deterministic UI still renders)",
+      "ok": false,
+      "note": "offline render: 0 tabs, 0 chars of UI (static page works offline)",
+      "realErrors": 0,
+      "pass": false
+    },
+    {
+      "name": "2 Slow 3G (load within 10s)",
+      "ok": false,
+      "note": "domcontentloaded in 12432ms on emulated Slow-3G",
+      "realErrors": 0,
+      "pass": false
+    },
+    {
+      "name": "3 localStorage full (graceful, no crash)",
+      "ok": true,
+      "note": "page renders 9 tabs even when every localStorage.setItem throws",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "4 Rapid language switching (10 switches in <5s, final correct)",
+      "ok": true,
+      "note": "final lang=en, html lang=en (last write wins, no crash)",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "5 Backend API down (honest, no uncaught error)",
+      "ok": true,
+      "note": "all backend calls aborted; page still renders 9 tabs (failures caught, not fatal)",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "6 No API key (LLM-bearing flows degrade honestly)",
+      "ok": true,
+      "limited": true,
+      "note": "AUTOMATION-LIMITED: vision /analyze returns honest \"unavailable\" until DeepSeek key funded (server-side, per QUALITY_STATUS §1). Deterministic Jan-Aushadhi match needs no key.",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "7 Corrupted disability_profile JSON (graceful)",
+      "ok": true,
+      "note": "corrupted profile JSON tolerated; 9 tabs render (no parse crash)",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "8 Invalid medicine input (empty / junk handled)",
+      "ok": true,
+      "note": "junk input \"@@@###\" entered, no crash; 9 tabs intact",
+      "realErrors": 0,
+      "pass": true
+    },
+    {
+      "name": "9 Concurrent rapid taps (no double-render crash)",
+      "ok": true,
+      "note": "20 rapid tab clicks fired; no crash, 9 tabs stable",
+      "realErrors": 0,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "url": "http://127.0.0.1:8765/chitti_medupi.html",
+  "profiles": [
+    {
+      "profile": "blind",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "deaf",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "mute",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "isl",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "illiterate",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "elderly",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "limitedMobility",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "cognitive",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    },
+    {
+      "profile": "rural",
+      "pageErrors": 0,
+      "axeViolations": 0,
+      "axeSerious": 0,
+      "top": []
+    }
+  ],
+  "matrix": [
+    {
+      "n": 1,
+      "test": "Blind — complete flow by voice (speak buttons + a11y.speak API present)",
+      "status": "PASS",
+      "evidence": "145 speak buttons, Chitti.a11y.speak=true"
+    },
+    {
+      "n": 2,
+      "test": "Blind — voice-guided navigation (aria-live regions present)",
+      "status": "PASS",
+      "evidence": "11 aria-live regions"
+    },
+    {
+      "n": 3,
+      "test": "Blind — errors spoken (aria-live + speak API; actual TTS audio is browser-rendered)",
+      "status": "PASS (structural)",
+      "evidence": "aria-live=11, speakApi=true; real TTS audio = real-device"
+    },
+    {
+      "n": 4,
+      "test": "Deaf — caption + word/symbol on every result (not colour-only)",
+      "status": "PASS",
+      "evidence": "2 word/symbol labels"
+    },
+    {
+      "n": 5,
+      "test": "Deaf — ISL panel renders (chitti_isl substrate loaded)",
+      "status": "PASS",
+      "evidence": "ISL substrate=true"
+    },
+    {
+      "n": 6,
+      "test": "Deaf — never audio-only (every speakable surface also has text)",
+      "status": "PASS",
+      "evidence": "74 text response boxes carry widget"
+    },
+    {
+      "n": 7,
+      "test": "Mute — full flow by tap/camera (file inputs + selects, voice optional)",
+      "status": "PASS",
+      "evidence": "3 file inputs, 7 selects"
+    },
+    {
+      "n": 8,
+      "test": "Mute — confirm modal has Yes/No buttons (Golden Rule gate, mute-safe)",
+      "status": "AUTOMATION-LIMITED",
+      "evidence": "Golden-Rule confirm gate lives in chitti_vaani.html (sole-interface). MedUPI page is a routed service; confirm modal is verified in the Vaani cert, not on this standalone page."
+    },
+    {
+      "n": 9,
+      "test": "Illiterate — picture/icon menu for picks (emoji-glyph tabs/buttons)",
+      "status": "PASS",
+      "evidence": "413 buttons, emoji-glyph tabs (scan/compare/health icons)"
+    },
+    {
+      "n": 10,
+      "test": "Illiterate — every label spoken (aria-label coverage + speak API)",
+      "status": "PASS",
+      "evidence": "100% buttons labelled, speakApi=true"
+    },
+    {
+      "n": 11,
+      "test": "All — tap targets >=44px",
+      "status": "PASS",
+      "evidence": "0 of 41 measured visible buttons under 44px"
+    },
+    {
+      "n": 12,
+      "test": "All — colour not the sole indicator (word labels accompany colour)",
+      "status": "PASS",
+      "evidence": "2 word/symbol labels accompany status colours"
+    },
+    {
+      "n": 13,
+      "test": "All — axe-core WCAG2A/AA = 0 serious/critical violations",
+      "status": "PASS",
+      "evidence": "max serious/critical across 9 profiles=0; total incl. minor/moderate=0"
+    }
+  ],
+  "axeAA": {
+    "violations": 0,
+    "serious": 0,
+    "ids": []
+  }
+}
