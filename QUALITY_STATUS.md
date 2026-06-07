@@ -17,14 +17,17 @@ the LLM is an enhancement* (Fashion/News-AI doctrine applied to money math).
 | Step 2 research (what's MISSING) | 🟢 12 user-benefit gaps | [ceos/RESEARCH_BEST_APPS.md §C](chitti-ca/ceos/RESEARCH_BEST_APPS.md) — voice-first a11y for finance, Govt-Benefits "money owed", Scheme-Opportunity, Compliance-Prediction, Notice Decoder, Fraud Shield, Financial Twin, health scores, explain-before-recommend, farmer→enterprise, 45-day MSME rule, cost-honesty |
 | Deterministic engine (11 modules) | 🟢 **38/38 gold assertions PASS** | `node tools/ca_os_engine_test.mjs` → [chitti_ca_os_engine.js](chitti_ca_os_engine.js): incomeTax (old/new FY25-26 to the rupee), capitalGains, gstHealth/itc, complianceCalendar/penalty, businessDoctor, **govtBenefits + schemeOpportunity (the moat)**, **fraudShield (GSTIN checksum)**, cfoDashboard, on-device Twin. Every result carries confidence/risks[]/sources[] |
 | Accessible page (BO1–BO9) | 🟢 built | [chitti_ca_os.html](chitti_ca_os.html): skip-link + single h1 + 8 `role=tab` + **11 aria-live result hosts** + visible focus ring + symbol+word status (never colour-only) + ≥48px tap targets + reduced-motion/contrast/forced-colors + base 17px |
-| **Vaani-canonical language dropdown** | 🟢 `#lang-select` wired by `chitti_lang.js` (26 langs, auto-translate, RTL) | inline-JS syntax clean; 4 substrate files present |
-| 5 frontend gates (G1–G5) | 🟢 inherited via `chitti_a11y.js` substrate + 11 `data-chitti-response` boxes (G1) | substrate parity with the 23 cert-green pages |
+| **Vaani-canonical language dropdown — PROVEN LIVE** | 🟢 `#lang-select` → 26 options · switch en→hi sets `html[lang]=hi` + persists + **20 text nodes translated** + returns to en stably | `tools/cert_ca_os.mjs` |
+| 5 frontend gates (G1–G5) | 🟢 live-verified + 11 `data-chitti-response` boxes (G1) | `tools/cert_ca_os.mjs` |
+| **Live Playwright cert (BO10)** | 🟢 **26/26 GREEN** — axe-core 0 serious/critical, responsive 375/768/1280, four-user journeys, tap targets ≥44px | `node tools/cert_ca_os.mjs` (self-serving + axe-core) |
+| **2 real WCAG defects found + fixed this pass** | 🟢 fixed | speak-btn tap target 40→44px; `.prov` + footer contrast #777→#5a5a5a (was sub-4.5:1) |
 
-**Honest status:** BO1–BO9 built + engine-tested this pass. **BO10** (live axe-core CTO Playwright)
-🟡 and **BO11** (notice/bill/bank-statement OCR · DeepSeek-explain · live scheme/portal/lender APIs ·
-Vaani routing) 🔵 are blocked on Sire's DeepSeek/vision key + Vaani relevance-rail allowlist — same
-standing fleet blocker as Fashion/Mechanic. No rupee figure is LLM-generated; honest stub on 429.
-Remaining for Sire: real iPhone/Android device pass. Reproduce: `node tools/ca_os_engine_test.mjs`.
+**Honest status:** BO1–BO10 built, engine-tested (`ca_os_engine_test.mjs` 38/38) **and live-Playwright-
+certified** (`cert_ca_os.mjs` 26/26) this pass. **BO11** (notice/bill/bank-statement OCR · DeepSeek-explain ·
+live scheme/portal/lender APIs · Vaani routing) 🔵 is blocked on Sire's DeepSeek/vision key + Vaani
+relevance-rail allowlist — same standing fleet blocker as Fashion/Mechanic. No rupee figure is LLM-generated;
+honest stub on 429. Substrate cross-origin (CORS) console noise is shared-fleet, filtered + noted. Remaining
+for Sire: real iPhone/Android device pass. Reproduce: `node tools/ca_os_engine_test.mjs && node tools/cert_ca_os.mjs`.
 
 ## 2026-06-06 — Chitti Government — CEOS v1.0 rebuilt (Citizen Operating System)
 
