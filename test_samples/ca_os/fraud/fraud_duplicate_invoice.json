@@ -1,0 +1,25 @@
+{
+  "category": "fraud",
+  "id": "fraud_duplicate_invoice",
+  "fn": "fraudShield",
+  "args": [
+    {
+      "invoices": [
+        {
+          "no": "INV1",
+          "vendor": "X",
+          "amount": 5000
+        },
+        {
+          "no": "INV1",
+          "vendor": "X",
+          "amount": 5000
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "_hasWarning": true
+  },
+  "desc": "duplicate invoice flagged"
+}

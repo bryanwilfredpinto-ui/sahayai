@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!-- Chitti Legal OS — Frontend for chitti-legal/ceos/  (CEOS v1.0, built 2026-06-07)
+     Accessibility-first (blind/deaf/mute/illiterate). Language dropdown is Vaani-canonical:
+     chitti_lang.js owns #lang-select. Deterministic engine: chitti_legal_os_engine.js.
+     Spec: chitti-legal/ceos/BUILD_ORDER.md + RESEARCH_BEST_APPS.md + PRD.md
+     NOT legal advice. Chitti never files, signs or appears for you. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Legal OS — know your rights, deadlines & free legal help</title>
+<meta name="description" content="Chitti Legal OS — India's Legal Operating System for every citizen. Know your rights, decode any notice, never miss a legal deadline, check a contract, find the free legal help you are owed, and catch scams — by voice, in your language, for free. Built for the blind, deaf, mute and illiterate too. Not legal advice.">
+<meta name="chitti-page-desc" content="Chitti Legal OS. Apne adhikaar jaano, kisi bhi notice ko samjho, legal deadline kabhi miss mat karo, muft kanooni madad paao. Yeh legal salah nahi hai.">
+<meta name="chitti-features" content="chitti-legal/ceos/skills/FEATURES.md">
+<style>
+  :root{ --saffron:#FF9933; --navy:#000080; --green:#138808; --line:#e5e7eb; --ink:#1a1a2e; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.55;margin:0;color:var(--ink);background:#F7F7F4}
+  .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 14px;z-index:1000;border-radius:0 0 8px 0}
+  .skip:focus{left:0}
+  a{color:#1d4ed8}
+  .disc{position:sticky;top:0;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:13px;padding:7px 12px;text-align:center;font-weight:600}
+  header{background:linear-gradient(135deg,#fff7e6,#fff,#eafbe7);border-bottom:2px solid var(--saffron);padding:14px 16px}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 2px;display:flex;align-items:center;gap:8px}
+  .tagline{font-size:14px;color:#444;margin:0 0 10px}
+  .a11y-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .a11y-bar label{font-size:13px;font-weight:700;color:var(--navy)}
+  #lang-select{min-height:44px;font-size:15px;padding:6px 10px;border:2px solid var(--saffron);border-radius:10px;background:#fff;color:var(--navy);font-weight:700}
+  .btn{min-height:48px;font-size:15px;font-weight:800;font-family:inherit;border:2px solid var(--line);background:#fff;color:var(--navy);border-radius:12px;padding:10px 14px;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--saffron),#E07B1D);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(255,153,51,.3)}
+  .btn:focus-visible,.tab:focus-visible,#lang-select:focus-visible,a:focus-visible,.chip:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+  .btn.read{border-color:#1d4ed8;color:#1d4ed8}
+  main{max-width:760px;margin:0 auto;padding:14px 16px 80px}
+  .hero{background:#fff;border:1.5px solid #FFD9B0;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 22px rgba(255,153,51,.12)}
+  .hero h2{font-size:20px;color:var(--navy);margin:0 0 6px}
+  .hero p{font-size:14.5px;color:#333;margin:0 0 12px}
+  .free{display:inline-block;background:var(--green);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;margin-bottom:6px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+  .tab{flex:0 0 auto;min-height:48px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12.5px;font-weight:800;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
+  .tab .em{font-size:22px}
+  .tab[aria-selected="true"]{background:linear-gradient(180deg,#fff,#fff3e0);border-color:var(--saffron)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:17px;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .card .sub{font-size:13.5px;color:#666;margin:0 0 10px;line-height:1.5}
+  label.fl{display:block;font-size:13px;font-weight:700;color:#333;margin:8px 0 4px}
+  input.fi,select.fs,textarea.ft{width:100%;min-height:48px;font-size:16px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-family:inherit;background:#fff}
+  textarea.ft{min-height:88px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:130px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .chip{min-height:44px;font-size:14px;font-weight:700;border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--navy)}
+  .chip[aria-pressed="true"]{background:#fff3e0;border-color:var(--saffron)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .result{margin-top:12px}
+  .res-box{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:#fafafa}
+  .res-box.ok{border-color:var(--green);background:#f0faf0}
+  .res-box.warning{border-color:#f0a000;background:#fff8ec}
+  .res-box.info{border-color:#1d4ed8;background:#eff4ff}
+  .res-status{font-weight:900;font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .res-box .big{font-size:20px;font-weight:900;color:var(--navy)}
+  .res-box ul{margin:6px 0 0;padding-left:20px;font-size:14px}
+  .res-box .sp{margin-top:8px;display:flex;gap:8px}
+  .speak-btn{min-height:44px;border:2px solid #1d4ed8;color:#1d4ed8;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;padding:8px 12px;font-size:13px}
+  .prov{font-size:11.5px;color:#5a5a5a;margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+  footer{max-width:760px;margin:0 auto;padding:16px;color:#5a5a5a;font-size:12.5px;text-align:center}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  @media (prefers-contrast: more){.card,.res-box{border-width:2.5px}.tab[aria-selected="true"]{outline:2px solid var(--navy)}}
+  @media (forced-colors: active){.btn.primary{border:2px solid}.tab[aria-selected="true"]{border:3px solid}}
+</style>
+<!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate). -->
+<script src="chitti_lang.js" defer></script>
+<!-- A11Y SUBSTRATE: injects ISL, feedback-widget, disability profile, features, etc. on every page. -->
+<script src="chitti_a11y.js" defer></script>
+<script src="feedback-widget.js" data-page="chitti_legal_os" defer></script>
+<!-- DETERMINISTIC ENGINE: rules are the product. -->
+<script src="chitti_legal_os_engine.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<div class="disc" role="note">⚖️ Chitti Legal OS explains your rights, deadlines & options in plain language — it is <b>legal education, NOT legal advice</b>, and Chitti never files, signs or appears for you. For serious matters, see a lawyer or call free legal aid <b>NALSA 15100</b>.</div>
+
+<header>
+  <div class="wrap">
+    <h1>⚖️ Chitti Legal OS</h1>
+    <p class="tagline">India's Legal Operating System — know your rights, decode any notice, never miss a deadline, find free legal help — in one Chitti, in your language, for free.</p>
+    <div class="a11y-bar">
+      <label for="lang-select">🌐 Language</label>
+      <select id="lang-select" aria-label="Choose language"></select>
+      <button class="btn read" type="button" onclick="legalReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" role="main">
+
+  <section class="hero" aria-labelledby="hero-h">
+    <span class="free">100% FREE · works offline · your details stay on your device</span>
+    <h2 id="hero-h">“Chitti, help me.”</h2>
+    <p>You don't need a lawyer just to <i>understand</i> your situation. Pick what you need below. Chitti explains your rights <b>before</b> any action, shows you the <b>free</b> legal help you are owed, and never predicts who will win or guarantees an outcome. Education before fear. Prevention before penalty.</p>
+  </section>
+
+  <!-- TABS -->
+  <div class="tabs" role="tablist" aria-label="Chitti Legal OS modules">
+    <button class="tab" role="tab" id="tab-rights" aria-controls="panel-rights" aria-selected="true" onclick="legalTab('rights')"><span class="em" aria-hidden="true">⚖️</span>Rights</button>
+    <button class="tab" role="tab" id="tab-dead" aria-controls="panel-dead" aria-selected="false" onclick="legalTab('dead')"><span class="em" aria-hidden="true">⏰</span>Deadlines</button>
+    <button class="tab" role="tab" id="tab-decode" aria-controls="panel-decode" aria-selected="false" onclick="legalTab('decode')"><span class="em" aria-hidden="true">📄</span>Decode notice</button>
+    <button class="tab" role="tab" id="tab-contract" aria-controls="panel-contract" aria-selected="false" onclick="legalTab('contract')"><span class="em" aria-hidden="true">📝</span>Contract</button>
+    <button class="tab" role="tab" id="tab-consumer" aria-controls="panel-consumer" aria-selected="false" onclick="legalTab('consumer')"><span class="em" aria-hidden="true">🛒</span>Consumer</button>
+    <button class="tab" role="tab" id="tab-help" aria-controls="panel-help" aria-selected="false" onclick="legalTab('help')"><span class="em" aria-hidden="true">🏛️</span>Free help</button>
+    <button class="tab" role="tab" id="tab-scam" aria-controls="panel-scam" aria-selected="false" onclick="legalTab('scam')"><span class="em" aria-hidden="true">🛡️</span>Scam shield</button>
+    <button class="tab" role="tab" id="tab-twin" aria-controls="panel-twin" aria-selected="false" onclick="legalTab('twin')"><span class="em" aria-hidden="true">🧬</span>My Twin</button>
+  </div>
+
+  <!-- RIGHTS -->
+  <section class="panel active" id="panel-rights" role="tabpanel" aria-labelledby="tab-rights">
+    <div class="card chitti-response" data-chitti-response="legal-rights" data-chitti-section="Know your rights">
+      <h2><span aria-hidden="true">⚖️</span> Know your rights</h2>
+      <p class="sub">Pick a situation. Chitti tells you your rights in plain language, with the law behind them and the first 3 steps.</p>
+      <div class="chips" role="group" aria-label="Pick your situation">
+        <button class="chip" id="rt-arrest" aria-pressed="true" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-arrest')">👮 Police / arrest</button>
+        <button class="chip" id="rt-employee" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-employee')">💼 Employee</button>
+        <button class="chip" id="rt-tenant" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-tenant')">🏠 Tenant</button>
+        <button class="chip" id="rt-women" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-women')">👩 Women</button>
+        <button class="chip" id="rt-senior" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-senior')">🧓 Senior citizen</button>
+        <button class="chip" id="rt-consumer" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-consumer')">🛒 Consumer</button>
+        <button class="chip" id="rt-cyber" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-cyber')">💻 Cyber / online</button>
+        <button class="chip" id="rt-student" aria-pressed="false" onclick="legalRadio('rt',['rt-arrest','rt-employee','rt-tenant','rt-women','rt-senior','rt-consumer','rt-cyber','rt-student'],'rt-student')">🎓 Student</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglRights()">⚖️ Tell me my rights</button></div>
+      <div class="result" id="r-rights" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="legal-case" data-chitti-section="Court companion">
+      <h2><span aria-hidden="true">🏛️</span> Court companion — what happens next?</h2>
+      <p class="sub">Going to court? Chitti explains the stages, the documents you need and what to expect. It never predicts who will win.</p>
+      <div class="chips" role="group" aria-label="Type of case">
+        <button class="chip" id="cs-civil" aria-pressed="true" onclick="legalRadio('cs',['cs-civil','cs-criminal','cs-consumer','cs-cheque','cs-family'],'cs-civil')">📜 Civil</button>
+        <button class="chip" id="cs-criminal" aria-pressed="false" onclick="legalRadio('cs',['cs-civil','cs-criminal','cs-consumer','cs-cheque','cs-family'],'cs-criminal')">⚖️ Criminal</button>
+        <button class="chip" id="cs-consumer" aria-pressed="false" onclick="legalRadio('cs',['cs-civil','cs-criminal','cs-consumer','cs-cheque','cs-family'],'cs-consumer')">🛒 Consumer</button>
+        <button class="chip" id="cs-cheque" aria-pressed="false" onclick="legalRadio('cs',['cs-civil','cs-criminal','cs-consumer','cs-cheque','cs-family'],'cs-cheque')">💳 Cheque bounce</button>
+        <button class="chip" id="cs-family" aria-pressed="false" onclick="legalRadio('cs',['cs-civil','cs-criminal','cs-consumer','cs-cheque','cs-family'],'cs-family')">👪 Family</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglCase()">🏛️ Explain the process</button></div>
+      <div class="result" id="r-case" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- DEADLINES -->
+  <section class="panel" id="panel-dead" role="tabpanel" aria-labelledby="tab-dead">
+    <div class="card chitti-response" data-chitti-response="legal-limit" data-chitti-section="Legal deadline checker">
+      <h2><span aria-hidden="true">⏰</span> Will I run out of time? (limitation)</h2>
+      <p class="sub">Every legal matter has a time limit. Pick the matter and the date the problem started — Chitti tells you the deadline and whether you still have time. Prevention &gt; Penalty.</p>
+      <label class="fl" for="lm-matter">What is the matter?</label>
+      <select class="fs" id="lm-matter" aria-label="Type of legal matter">
+        <option value="money_recovery">Money / debt to recover</option>
+        <option value="breach_contract">Breach of contract</option>
+        <option value="recover_movable">Recover goods / movable property</option>
+        <option value="immovable_possession">Possession of land / house</option>
+        <option value="partition">Partition of joint property</option>
+        <option value="consumer_complaint">Consumer complaint</option>
+        <option value="tort_compensation">Compensation / accident</option>
+        <option value="tort_defamation">Defamation</option>
+        <option value="wages_claim">Unpaid wages</option>
+        <option value="posh_complaint">Workplace harassment (POSH)</option>
+        <option value="rti_first_appeal">RTI first appeal</option>
+        <option value="rti_second_appeal">RTI second appeal</option>
+        <option value="arbitration_setaside">Set aside arbitration award</option>
+        <option value="civil_appeal_hc">Appeal to High Court</option>
+        <option value="civil_appeal_dc">Appeal to District Court</option>
+        <option value="cheque_138">Cheque bounce (special — see below)</option>
+        <option value="eviction_notice">Eviction (state-specific)</option>
+        <option value="domestic_violence">Domestic violence (no time bar)</option>
+      </select>
+      <label class="fl" for="lm-date">When did the problem start? (date)</label>
+      <input class="fi" id="lm-date" type="date" aria-label="Cause of action date">
+      <div class="actions"><button class="btn primary" type="button" onclick="lglLimit()">⏰ Check my deadline</button></div>
+      <div class="result" id="r-limit" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="legal-cheque" data-chitti-section="Cheque bounce timeline">
+      <h2><span aria-hidden="true">💳</span> Cheque bounce timeline (s.138)</h2>
+      <p class="sub">A bounced cheque has strict dates. Enter the date your bank returned the cheque and Chitti gives you the exact send-notice and file-complaint dates.</p>
+      <label class="fl" for="ch-date">Date the cheque bounced (bank memo)</label>
+      <input class="fi" id="ch-date" type="date" aria-label="Cheque dishonour date">
+      <div class="actions"><button class="btn primary" type="button" onclick="lglCheque()">💳 Show my cheque dates</button></div>
+      <div class="result" id="r-cheque" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- DECODE NOTICE -->
+  <section class="panel" id="panel-decode" role="tabpanel" aria-labelledby="tab-decode">
+    <div class="card chitti-response" data-chitti-response="legal-decode" data-chitti-section="Notice decoder">
+      <h2><span aria-hidden="true">📄</span> Decode my notice (panic → plan)</h2>
+      <p class="sub">Got a scary notice? Pick the type (or paste the text). Chitti tells you what it is, who sent it, what it means, the deadline, the worst case, and the next 3 steps.</p>
+      <div class="chips" role="group" aria-label="Type of notice">
+        <button class="chip" id="nd-cheque138" aria-pressed="true" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-cheque138')">💳 Cheque (138)</button>
+        <button class="chip" id="nd-incometax" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-incometax')">💰 Income-tax</button>
+        <button class="chip" id="nd-gst" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-gst')">🧾 GST</button>
+        <button class="chip" id="nd-demand" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-demand')">📨 Legal demand</button>
+        <button class="chip" id="nd-eviction" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-eviction')">🏠 Eviction</button>
+        <button class="chip" id="nd-police35" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-police35')">👮 Police notice</button>
+        <button class="chip" id="nd-summons" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-summons')">🏛️ Court summons</button>
+        <button class="chip" id="nd-consumer" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-consumer')">🛒 Consumer</button>
+        <button class="chip" id="nd-loanrecovery" aria-pressed="false" onclick="legalRadio('nd',['nd-cheque138','nd-incometax','nd-gst','nd-demand','nd-eviction','nd-police35','nd-summons','nd-consumer','nd-loanrecovery'],'nd-loanrecovery')">🏦 Loan recovery</button>
+      </div>
+      <label class="fl" for="nd-text">…or paste the notice text (optional)</label>
+      <textarea class="ft" id="nd-text" placeholder="Paste a line or two from the notice and Chitti will try to recognise it."></textarea>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglDecode()">📄 Decode this notice</button></div>
+      <div class="result" id="r-decode" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- CONTRACT -->
+  <section class="panel" id="panel-contract" role="tabpanel" aria-labelledby="tab-contract">
+    <div class="card chitti-response" data-chitti-response="legal-contract" data-chitti-section="Contract risk checker">
+      <h2><span aria-hidden="true">📝</span> Is this contract fair? (red-flag check)</h2>
+      <p class="sub">Before you sign anything — job, rent, loan, vendor — tap every clause that is true. Chitti gives a risk score and what to negotiate. Read before you sign.</p>
+      <div class="chips" role="group" aria-label="Tap every clause that applies">
+        <button class="chip" id="ct-oneSidedTermination" aria-pressed="false" onclick="legalToggle('ct-oneSidedTermination')">⚖️ Only they can cancel</button>
+        <button class="chip" id="ct-heavyPenalty" aria-pressed="false" onclick="legalToggle('ct-heavyPenalty')">💸 Heavy penalty on me</button>
+        <button class="chip" id="ct-indemnity" aria-pressed="false" onclick="legalToggle('ct-indemnity')">🛡️ I cover all their losses</button>
+        <button class="chip" id="ct-lockIn" aria-pressed="false" onclick="legalToggle('ct-lockIn')">🔒 Long lock-in</button>
+        <button class="chip" id="ct-noExit" aria-pressed="false" onclick="legalToggle('ct-noExit')">🚪 No exit / refund</button>
+        <button class="chip" id="ct-depositOverCap" aria-pressed="false" onclick="legalToggle('ct-depositOverCap')">🏠 Big deposit</button>
+        <button class="chip" id="ct-autoRenew" aria-pressed="false" onclick="legalToggle('ct-autoRenew')">🔁 Auto-renews</button>
+        <button class="chip" id="ct-jurisdictionFar" aria-pressed="false" onclick="legalToggle('ct-jurisdictionFar')">🗺️ Far-away court</button>
+        <button class="chip" id="ct-blankSpaces" aria-pressed="false" onclick="legalToggle('ct-blankSpaces')">⬜ Blank spaces</button>
+        <button class="chip" id="ct-noCopy" aria-pressed="false" onclick="legalToggle('ct-noCopy')">📄 No signed copy given</button>
+      </div>
+      <label class="fl" for="ct-type">What kind of contract? (optional)</label>
+      <input class="fi" id="ct-type" type="text" placeholder="e.g. rent / job / loan / vendor">
+      <div class="actions"><button class="btn primary" type="button" onclick="lglContract()">📝 Check my contract</button></div>
+      <div class="result" id="r-contract" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- CONSUMER -->
+  <section class="panel" id="panel-consumer" role="tabpanel" aria-labelledby="tab-consumer">
+    <div class="card chitti-response" data-chitti-response="legal-consumer" data-chitti-section="Consumer complaint router">
+      <h2><span aria-hidden="true">🛒</span> Cheated as a consumer? Where do I complain?</h2>
+      <p class="sub">Enter the value of the goods/service. Chitti tells you the right consumer forum, the 2-year deadline, and how to file online for free.</p>
+      <label class="fl" for="cn-value">Value paid (₹)</label>
+      <input class="fi" id="cn-value" type="number" min="0" inputmode="numeric" placeholder="e.g. 40000">
+      <div class="actions"><button class="btn primary" type="button" onclick="lglConsumer()">🛒 Where do I file?</button></div>
+      <div class="result" id="r-consumer" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="legal-checklist" data-chitti-section="Document checklist">
+      <h2><span aria-hidden="true">📋</span> What documents do I need?</h2>
+      <p class="sub">Pick a task. Chitti lists the exact documents, where to go, and the cost — so you go prepared and don't get overcharged.</p>
+      <label class="fl" for="dc-task">What do you want to do?</label>
+      <select class="fs" id="dc-task" aria-label="Legal task">
+        <option value="fir">File an FIR (police complaint)</option>
+        <option value="rti">File an RTI application</option>
+        <option value="consumer_complaint">File a consumer complaint</option>
+        <option value="rent_agreement">Make a rent agreement</option>
+        <option value="will">Make a Will</option>
+        <option value="succession">Succession / legal-heir certificate</option>
+        <option value="name_change">Change my name legally</option>
+        <option value="cyber_complaint">Report a cyber-fraud</option>
+      </select>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglChecklist()">📋 Show my checklist</button></div>
+      <div class="result" id="r-checklist" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- FREE HELP (the moat) -->
+  <section class="panel" id="panel-help" role="tabpanel" aria-labelledby="tab-help">
+    <div class="card chitti-response" data-chitti-response="legal-aid" data-chitti-section="Free legal aid eligibility">
+      <h2><span aria-hidden="true">🏛️</span> Am I owed FREE legal aid?</h2>
+      <p class="sub">A lawyer can be free for crores of Indians and most don't know it. Tap what applies — Chitti tells you if you qualify under the law, and how to get it.</p>
+      <div class="chips" role="group" aria-label="Tap what applies to you">
+        <button class="chip" id="aid-woman" aria-pressed="false" onclick="legalToggle('aid-woman')">👩 Woman</button>
+        <button class="chip" id="aid-child" aria-pressed="false" onclick="legalToggle('aid-child')">🧒 Child (under 18)</button>
+        <button class="chip" id="aid-scst" aria-pressed="false" onclick="legalToggle('aid-scst')">🧑 SC / ST</button>
+        <button class="chip" id="aid-disabled" aria-pressed="false" onclick="legalToggle('aid-disabled')">♿ Disability</button>
+        <button class="chip" id="aid-senior" aria-pressed="false" onclick="legalToggle('aid-senior')">🧓 Senior citizen</button>
+        <button class="chip" id="aid-custody" aria-pressed="false" onclick="legalToggle('aid-custody')">🔒 In custody</button>
+        <button class="chip" id="aid-disaster" aria-pressed="false" onclick="legalToggle('aid-disaster')">🌊 Disaster victim</button>
+        <button class="chip" id="aid-industrial" aria-pressed="false" onclick="legalToggle('aid-industrial')">🏭 Worker</button>
+      </div>
+      <label class="fl" for="aid-income">Yearly income (₹) — optional</label>
+      <input class="fi" id="aid-income" type="number" min="0" inputmode="numeric" placeholder="e.g. 200000">
+      <div class="actions"><button class="btn primary" type="button" onclick="lglAid()">🏛️ Check free legal aid</button></div>
+      <div class="result" id="r-aid" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="legal-govt" data-chitti-section="Free government legal help">
+      <h2><span aria-hidden="true">📞</span> Free government help & helplines</h2>
+      <p class="sub">Pick who needs help. Chitti gives the official, free helplines and services for that situation.</p>
+      <div class="chips" role="group" aria-label="Who needs help">
+        <button class="chip" id="gv-general" aria-pressed="true" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-general')">📌 General</button>
+        <button class="chip" id="gv-women" aria-pressed="false" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-women')">👩 Women</button>
+        <button class="chip" id="gv-senior" aria-pressed="false" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-senior')">🧓 Senior</button>
+        <button class="chip" id="gv-cyber" aria-pressed="false" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-cyber')">💻 Cyber</button>
+        <button class="chip" id="gv-child" aria-pressed="false" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-child')">🧒 Child</button>
+        <button class="chip" id="gv-consumer" aria-pressed="false" onclick="legalRadio('gv',['gv-general','gv-women','gv-senior','gv-cyber','gv-child','gv-consumer'],'gv-consumer')">🛒 Consumer</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglGovt()">📞 Show free help</button></div>
+      <div class="result" id="r-govt" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- SCAM SHIELD -->
+  <section class="panel" id="panel-scam" role="tabpanel" aria-labelledby="tab-scam">
+    <div class="card chitti-response" data-chitti-response="legal-scam" data-chitti-section="Scam shield">
+      <h2><span aria-hidden="true">🛡️</span> Is this a scam? (cyber & legal)</h2>
+      <p class="sub">Worried about a call, message or "police case"? Tap everything that's happening. Chitti tells you the risk and exactly what to do — and to call 1930 if money was sent.</p>
+      <div class="chips" role="group" aria-label="Tap everything that is happening">
+        <button class="chip" id="sc-threatensArrest" aria-pressed="false" onclick="legalToggle('sc-threatensArrest')">👮 "Digital arrest" / police video call</button>
+        <button class="chip" id="sc-asksOtpOrPin" aria-pressed="false" onclick="legalToggle('sc-asksOtpOrPin')">🔢 Asks for OTP / PIN</button>
+        <button class="chip" id="sc-fakeCourtSummons" aria-pressed="false" onclick="legalToggle('sc-fakeCourtSummons')">🏛️ "Court summons" wants a fee</button>
+        <button class="chip" id="sc-advanceFee" aria-pressed="false" onclick="legalToggle('sc-advanceFee')">🎁 Pay first to get prize/loan</button>
+        <button class="chip" id="sc-payToReceive" aria-pressed="false" onclick="legalToggle('sc-payToReceive')">💱 Pay to receive money</button>
+        <button class="chip" id="sc-loanAppHarass" aria-pressed="false" onclick="legalToggle('sc-loanAppHarass')">📱 Loan-app harassment</button>
+        <button class="chip" id="sc-fakeJob" aria-pressed="false" onclick="legalToggle('sc-fakeJob')">💼 Job asks for a deposit</button>
+        <button class="chip" id="sc-urgency" aria-pressed="false" onclick="legalToggle('sc-urgency')">⏱️ "Do it NOW or else"</button>
+        <button class="chip" id="sc-linkClick" aria-pressed="false" onclick="legalToggle('sc-linkClick')">🔗 Unknown link / app to install</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="lglScam()">🛡️ Check for a scam</button></div>
+      <div class="result" id="r-scam" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- TWIN -->
+  <section class="panel" id="panel-twin" role="tabpanel" aria-labelledby="tab-twin">
+    <div class="card chitti-response" data-chitti-response="legal-twin" data-chitti-section="Legal memory twin">
+      <h2><span aria-hidden="true">🧬</span> My Legal Twin (stays on this device)</h2>
+      <p class="sub">Chitti remembers your matters & deadlines so it can warn you in time. Nothing leaves your phone. Tap “Chitti forget” to wipe it all.</p>
+      <label class="fl" for="tw-name">Your name (optional)</label>
+      <input class="fi" id="tw-name" type="text" placeholder="optional — stays on device">
+      <label class="fl" for="tw-matter">A matter to remember</label>
+      <input class="fi" id="tw-matter" type="text" placeholder="e.g. Rent agreement renewal / cheque case">
+      <label class="fl" for="tw-deadline">Its deadline (date)</label>
+      <input class="fi" id="tw-deadline" type="date" aria-label="Matter deadline">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="lglTwinSave()">💾 Save to my Twin</button>
+        <button class="btn" type="button" onclick="lglTwinForget()">🗑️ Chitti, forget everything</button>
+      </div>
+      <div class="result" id="r-twin" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Chitti Legal OS · part of <a href="index.html">sahay.ai</a> · Bharat Premium AI · DeepSeek-only · Turso · voice-first · 26 languages.
+  Legal education, computed on your device — <b>not legal advice</b>. Free legal aid: NALSA 15100. <a href="chitti-legal/ceos/README.md">CEOS docs</a>.
+</footer>
+
+<script>
+/* ── Chitti Legal OS controller — wires accessible UI → deterministic engine ──
+   No legal conclusion is produced here; every right/deadline/verdict comes from
+   ChittiLegalOS (the engine). Chitti explains; it never files, signs or appears. */
+(function(){
+  'use strict';
+  function E(){ return window.ChittiLegalOS; }
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var e=$(id); return e?e.value:''; }
+  function num(id){ return Number(val(id))||0; }
+  function pressed(id){ var e=$(id); return e && e.getAttribute('aria-pressed')==='true'; }
+
+  // tabs
+  window.legalTab=function(key){
+    ['rights','dead','decode','contract','consumer','help','scam','twin'].forEach(function(k){
+      var t=$('tab-'+k), p=$('panel-'+k); var on=(k===key);
+      if(t) t.setAttribute('aria-selected', on?'true':'false');
+      if(p) p.classList.toggle('active', on);
+    });
+    var p=$('panel-'+key); if(p){ var h=p.querySelector('h2'); if(h){ h.setAttribute('tabindex','-1'); h.focus(); } }
+  };
+  window.legalToggle=function(id){ var e=$(id); if(!e)return; e.setAttribute('aria-pressed', e.getAttribute('aria-pressed')==='true'?'false':'true'); };
+  window.legalRadio=function(group,ids,sel){ ids.forEach(function(i){ var e=$(i); if(e) e.setAttribute('aria-pressed', i===sel?'true':'false'); }); };
+
+  // speak helper (blind-first)
+  function speak(text){
+    try{
+      if(window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak==='function'){ window.Chitti.a11y.speak(text); return; }
+      if(window.speechSynthesis){ var u=new SpeechSynthesisUtterance(text); var lang=(window.Chitti&&window.Chitti.lang&&window.Chitti.lang.current&&window.Chitti.lang.current())||'en'; u.lang=lang==='en'?'en-IN':lang; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+    }catch(e){}
+  }
+  function isBlind(){
+    try{ var p=JSON.parse(localStorage.getItem('disability_profile')||localStorage.getItem('chitti_disability_profile')||'{}'); return !!(p&&(p.blind||p.illiterate||(p.profiles&&(p.profiles.indexOf&&p.profiles.indexOf('blind')>-1)))); }catch(e){ return false; }
+  }
+
+  // status word+symbol (never colour alone — deaf user)
+  var STAT={ ok:{sym:'✅',word:'Good'}, warning:{sym:'⚠️',word:'Check this'}, info:{sym:'ℹ️',word:'Note'} };
+
+  // generic renderer → accessible result box; auto-reads for blind users
+  function render(hostId, opts){
+    var host=$(hostId); if(!host)return;
+    var st=STAT[opts.status||'info'];
+    var box=document.createElement('div');
+    box.className='res-box '+(opts.status||'info');
+    var html='<div class="res-status"><span aria-hidden="true">'+st.sym+'</span> '+st.word+'</div>';
+    if(opts.big) html+='<div class="big">'+opts.big+'</div>';
+    if(opts.text) html+='<p style="margin:6px 0 0;font-size:14.5px">'+opts.text+'</p>';
+    if(opts.lines&&opts.lines.length){ html+='<ul>'+opts.lines.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>'; }
+    if(opts.sources) html+='<div class="prov">Source: '+opts.sources.join(' · ')+(opts.confidence?(' · Confidence: '+opts.confidence):'')+'</div>';
+    box.innerHTML=html;
+    var sp=document.createElement('div'); sp.className='sp';
+    var b=document.createElement('button'); b.className='speak-btn'; b.type='button'; b.textContent='🔊 Read this aloud';
+    var spoken=opts.speak||((opts.big?opts.big+'. ':'')+(opts.text||'')+' '+(opts.lines||[]).join('. '));
+    b.onclick=function(){ speak(spoken); };
+    sp.appendChild(b); box.appendChild(sp);
+    host.innerHTML=''; host.appendChild(box);
+    if(isBlind()) speak(spoken);
+  }
+  function risksLines(r){ return (r.risks||[]).map(function(x){return '⚠️ '+x;}); }
+  function firstPressed(map){ for(var k in map){ if(pressed(map[k])) return k; } return null; }
+
+  // ── RIGHTS ──
+  window.lglRights=function(){
+    var topic=firstPressed({arrest:'rt-arrest',employee:'rt-employee',tenant:'rt-tenant',women:'rt-women',senior:'rt-senior',consumer:'rt-consumer',cyber:'rt-cyber',student:'rt-student'})||'arrest';
+    var r=E().rightsCoach(topic);
+    render('r-rights',{ status:'info', big:r.title,
+      lines:r.rights.concat(['📞 Help: '+r.helpline]).concat(['👉 First steps: '+r.firstSteps.join(' → ')]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.lglCase=function(){
+    var ct=firstPressed({civil:'cs-civil',criminal:'cs-criminal',consumer:'cs-consumer',cheque:'cs-cheque',family:'cs-family'})||'civil';
+    var r=E().caseCompanion({caseType:ct});
+    render('r-case',{ status:'info', big:r.label+' — what to expect', text:r.expect,
+      lines:r.stages.map(function(s,i){return (i+1)+'. '+s;}).concat(['📄 Documents: '+r.documents.join(', ')]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── DEADLINES ──
+  window.lglLimit=function(){
+    var r=E().limitationCheck({ matter:val('lm-matter'), causeDateISO:val('lm-date') });
+    var status=r.status==='likely-time-barred'?'warning':(r.status==='closing-soon'?'warning':'ok');
+    render('r-limit',{ status:status, big:r.label+(r.periodHuman?(' — '+r.periodHuman):''), text:r.summary,
+      lines:['📜 Legal basis: '+r.basis].concat(r.deadline?['📅 Deadline: '+r.deadline+(r.daysRemaining!=null?(' ('+r.daysRemaining+' days from start date)'):'')]:[]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.lglCheque=function(){
+    var r=E().chequeTimeline({ dishonourDateISO:val('ch-date') });
+    render('r-cheque',{ status:'info', big:'Cheque bounce timeline', text:r.summary,
+      lines:(r.sendNoticeBy?['📨 Send demand notice by: '+r.sendNoticeBy,'⏳ Drawer must pay by: '+r.drawerPayBy,'🏛️ File complaint between: '+r.fileComplaintBetween]:['📨 Notice within 30 days → 15 days to pay → file complaint within 30 days']).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── DECODE ──
+  window.lglDecode=function(){
+    var text=val('nd-text');
+    var inp = text && text.trim() ? { text:text } : { type:firstPressed({cheque138:'nd-cheque138',incometax:'nd-incometax',gst:'nd-gst',demand:'nd-demand',eviction:'nd-eviction',police35:'nd-police35',summons:'nd-summons',consumer:'nd-consumer',loanrecovery:'nd-loanrecovery'})||'cheque138' };
+    var r=E().decodeNotice(inp);
+    if(!r.found){ render('r-decode',{ status:'warning', big:'Could not recognise it', text:r.summary, lines:risksLines(r), confidence:r.confidence, sources:r.sources }); return; }
+    render('r-decode',{ status:'info', big:r.label, text:r.meaning,
+      lines:['🖋️ Who sent it: '+r.issuer,'⏰ Deadline: '+r.deadline,'⚠️ Worst case: '+r.worstCase,'👉 Next steps: '+r.nextSteps.join(' → ')].concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── CONTRACT ──
+  window.lglContract=function(){
+    var flags={ oneSidedTermination:pressed('ct-oneSidedTermination'), heavyPenalty:pressed('ct-heavyPenalty'), indemnity:pressed('ct-indemnity'), lockIn:pressed('ct-lockIn'), noExit:pressed('ct-noExit'), depositOverCap:pressed('ct-depositOverCap'), autoRenew:pressed('ct-autoRenew'), jurisdictionFar:pressed('ct-jurisdictionFar'), blankSpaces:pressed('ct-blankSpaces'), noCopy:pressed('ct-noCopy') };
+    var r=E().contractRisk({ type:val('ct-type'), flags:flags });
+    render('r-contract',{ status:r.band==='low-risk'?'ok':'warning', big:'Contract risk: '+r.riskScore+'/100 ('+r.band+')',
+      lines:r.redFlags.map(function(f){return '⚠️ '+f;}).concat(r.negotiation.map(function(t){return '➕ '+t;})).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── CONSUMER ──
+  window.lglConsumer=function(){
+    var r=E().consumerRouter({ claimValue:num('cn-value') });
+    render('r-consumer',{ status:'info', big:'File in: '+r.forum, text:r.summary,
+      lines:['📅 Deadline: 2 years from the problem','🌐 '+r.portal,'📞 '+r.helpline,'👉 Steps: '+r.steps.join(' → ')].concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.lglChecklist=function(){
+    var r=E().docChecklist({ task:val('dc-task') });
+    render('r-checklist',{ status:'info', big:r.label, text:r.tip,
+      lines:r.documents.map(function(d){return '📄 '+d;}).concat(['📍 Where: '+r.where,'💰 Cost: '+r.cost]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── FREE HELP (the moat) ──
+  window.lglAid=function(){
+    var profile={ woman:pressed('aid-woman'), child:pressed('aid-child'), scst:pressed('aid-scst'), disabled:pressed('aid-disabled'), senior:pressed('aid-senior'), custody:pressed('aid-custody'), disaster:pressed('aid-disaster'), industrial:pressed('aid-industrial'), annualIncome:num('aid-income') };
+    var r=E().legalAid(profile);
+    render('r-aid',{ status:r.eligible?'ok':'info', big:r.eligible?'✅ You appear eligible for FREE legal aid':'You can still get free advice',
+      text:r.summary,
+      lines:(r.categories||[]).map(function(c){return '🏛️ '+c.label+' — '+c.note;}).concat(['📞 '+r.helpline]).concat(['👉 How: '+r.how.join(' → ')]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.lglGovt=function(){
+    var topic=firstPressed({general:'gv-general',women:'gv-women',senior:'gv-senior',cyber:'gv-cyber',child:'gv-child',consumer:'gv-consumer'})||'general';
+    var r=E().govtLegalLayer(topic);
+    render('r-govt',{ status:'info', big:'Free help for: '+topic,
+      lines:r.services.map(function(s){return '📞 '+s;}).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── SCAM SHIELD ──
+  window.lglScam=function(){
+    var flags={ threatensArrest:pressed('sc-threatensArrest'), asksOtpOrPin:pressed('sc-asksOtpOrPin'), fakeCourtSummons:pressed('sc-fakeCourtSummons'), advanceFee:pressed('sc-advanceFee'), payToReceive:pressed('sc-payToReceive'), loanAppHarass:pressed('sc-loanAppHarass'), fakeJob:pressed('sc-fakeJob'), urgency:pressed('sc-urgency'), linkClick:pressed('sc-linkClick') };
+    var r=E().scamShield({ flags:flags });
+    render('r-scam',{ status:r.band==='low-risk'?'ok':'warning', big:'Scam risk: '+r.riskScore+'/100 ('+r.band+')', text:r.summary,
+      lines:r.signals.map(function(s){return '⚠️ '+s;}).concat(r.whatToDo.map(function(a){return '👉 '+a;})).concat(['📞 '+r.helpline]).concat(risksLines(r)),
+      confidence:r.confidence, sources:r.sources });
+  };
+
+  // ── TWIN ──
+  window.lglTwinSave=function(){
+    var t=E().twin.load();
+    t.name=val('tw-name');
+    if(val('tw-matter')){ t.matters=t.matters||[]; t.matters.push({ label:val('tw-matter'), deadline:val('tw-deadline') }); }
+    var okq=E().twin.save(t);
+    render('r-twin',{ status:okq?'ok':'warning', big:okq?'Saved to your device ✅':'Could not save',
+      text:okq?'Chitti will remember this — only on this device. Nothing was sent anywhere.':'Storage is blocked in this browser.',
+      lines:['🔒 Your details never leave this device.','🗑️ “Chitti, forget everything” wipes it all.'].concat(t.matters&&t.matters.length?['📌 You have '+t.matters.length+' saved matter(s).']:[]),
+      confidence:'high', sources:['on-device localStorage'] });
+  };
+  window.lglTwinForget=function(){
+    E().twin.forget();
+    render('r-twin',{ status:'ok', big:'Forgotten ✅', text:'Chitti has wiped your Legal Twin from this device.',
+      confidence:'high', sources:['on-device localStorage'] });
+  };
+
+  // ── read whole page aloud ──
+  window.legalReadPage=function(){
+    var active=document.querySelector('.panel.active'); var t='Chitti Legal OS. ';
+    var h1=document.querySelector('h1'); if(h1) t+=h1.textContent+'. ';
+    if(active){ active.querySelectorAll('h2,.sub').forEach(function(e){ t+=e.textContent+'. '; }); }
+    speak(t);
+  };
+
+  // prefill name from twin if present
+  document.addEventListener('DOMContentLoaded',function(){
+    try{ var t=E&&E()&&E().twin.load(); if(t&&t.name&&$('tw-name'))$('tw-name').value=t.name; }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

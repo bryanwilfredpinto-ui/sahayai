@@ -1,6 +1,38 @@
 # QUALITY_STATUS.md — Enterprise Quality Audit (final baseline)
 
-**Generated:** 2026-05-14 · **Updated:** 2026-06-06 (Chitti CA OS — CEOS v1.0 built; see entry below) · **Auditor:** Claude Opus 4.8 (1M context) ·
+**Generated:** 2026-05-14 · **Updated:** 2026-06-07 (Chitti Legal OS — CEOS v1.0 built; see entry below) · **Auditor:** Claude Opus 4.8 (1M context) ·
+
+## 2026-06-07 — Chitti Legal OS — CEOS v1.0 built (Legal Operating System)
+
+**Trigger:** Sire — "CEOS for Chitti Legal: prepare a skeleton as per Chitti-Fashion · research
+legal best practices for the common man not in the CEOS doc + best legal-AI apps · document CEOS +
+Build Order · then build the product. Don't forget blind/deaf/mute/illiterate — the language
+dropdown HAS to work (refer Vaani)."
+
+Elevated Chitti Legal from the legacy assistant doc set to the full **chitti-fashion / CA-OS-grade
+CEOS** (~33 docs under [chitti-legal/ceos/](chitti-legal/ceos/)) + a **deterministic Legal OS** that
+is, in one dost: Rights Navigator → Notice Decoder → Limitation/Deadline engine → Contract Risk →
+Consumer Router → Free-Legal-Aid Navigator → Scam Shield → Legal Memory Twin. *Rules are the product;
+the LLM is an enhancement* (in law, a DEADLINE is the money-math — exact, never hallucinated).
+
+| Proof | Result | Artifact |
+|---|---|---|
+| CEOS doc set (chitti-fashion structure) | 🟢 ~33 docs | CONSTITUTION·ROLE·PRODUCT_VISION·PERSONAS·SUCCESS_METRICS·RESEARCH_BEST_APPS·PRD·ARCHITECTURE·SKILLS·EVALS·QUALITY·OBSERVABILITY·ROADMAP·README·BUILD_ORDER + swarm/guardrails(3)/accessibility(4)/sop(3)/memory(2)/evals(5)/observability(2)/skills/FEATURES.md/handover |
+| Step 2 research (gaps the brief MISSED) | 🟢 12 user-benefit gaps | [ceos/RESEARCH_BEST_APPS.md §C](chitti-legal/ceos/RESEARCH_BEST_APPS.md) — limitation/time-bar engine, cheque-138 cascade, NALSA free legal aid (s.12), digital-arrest/cyber golden-hour 1930, notice decoder, BNS/BNSS/BSA-2023 police rights, CPA-2019 jurisdiction router, contract red-flags, senior Maintenance Tribunal, women Zero-FIR, RTI weapon, Lok Adalat |
+| Deterministic engine (L1–L10) | 🟢 **60/60 gold assertions PASS** | `node tools/legal_os_engine_test.mjs` → [chitti_legal_os_engine.js](chitti_legal_os_engine.js): rightsCoach·limitationCheck (calendar-year UTC, leap-safe)·chequeTimeline (s.138 exact dates)·decodeNotice/classifyNotice·contractRisk·consumerRouter (CPA-2021 thresholds)·caseCompanion·docChecklist·**legalAid + govtLegalLayer (the moat)**·scamShield·twin. Every result carries confidence/risks[]/sources[] |
+| Accessible page (BO1–BO9) | 🟢 built | [chitti_legal_os.html](chitti_legal_os.html): skip-link + single h1 + 8 `role=tab` + **12 aria-live result hosts** + visible focus ring + symbol+word status (never colour-only) + ≥44px tap targets + reduced-motion/contrast/forced-colors + base 17px |
+| **Vaani-canonical language dropdown — PROVEN LIVE** | 🟢 `#lang-select` → 26 options · en→hi sets `html[lang]=hi` + persists + **33 text nodes translated** + returns to en stably | `tools/cert_legal_os.mjs` |
+| 5 frontend gates (G1–G5) | 🟢 live-verified + 12 `data-chitti-response` boxes (G1) | `tools/cert_legal_os.mjs` |
+| **Live Playwright cert (BO10)** | 🟢 **27/27 GREEN** — axe-core 0 serious/critical, responsive 375/768/1280, four-user journeys, tap targets ≥44px | `node tools/cert_legal_os.mjs` (self-serving + axe-core) |
+| 3 real engine bugs found + fixed this pass | 🟢 fixed | leap-day+timezone off-by-one in limitation dates (→ UTC calendar-year math); `/emi/` matched "pr-EMI-ses" in the notice classifier (→ word boundaries); `humanPeriod` day-count → unit/n |
+
+**Honest status:** BO1–BO10 built, engine-tested (`legal_os_engine_test.mjs` 60/60) **and**
+live-Playwright-certified (`cert_legal_os.mjs` 27/27) this pass. **BO11** (notice/contract OCR ·
+DeepSeek plain-language drafting · live legal-aid / e-Daakhil / cybercrime portal APIs · Vaani
+routing) 🔵 is blocked on Sire's DeepSeek/vision key + Vaani relevance-rail allowlist — same standing
+fleet blocker as Fashion/CA/Mechanic. No deadline, jurisdiction or section is LLM-generated; honest
+stub on 429. Remaining for Sire: real iPhone/Android device pass. Reproduce:
+`node tools/legal_os_engine_test.mjs && node tools/cert_legal_os.mjs`.
 
 ## 2026-06-06 — Chitti CA OS — CEOS v1.0 built (Financial Operating System)
 
@@ -28,6 +60,30 @@ live scheme/portal/lender APIs · Vaani routing) 🔵 is blocked on Sire's DeepS
 relevance-rail allowlist — same standing fleet blocker as Fashion/Mechanic. No rupee figure is LLM-generated;
 honest stub on 429. Substrate cross-origin (CORS) console noise is shared-fleet, filtered + noted. Remaining
 for Sire: real iPhone/Android device pass. Reproduce: `node tools/ca_os_engine_test.mjs && node tools/cert_ca_os.mjs`.
+
+### 2026-06-07 — Chitti CA OS — Universal Handover filled (0 placeholders) · automated QA 100%
+
+Ran the FULL Universal Handover pipeline myself (CTO QA; Sire only signs off on real hardware).
+Filled doc: [chitti-ca/ceos/HANDOVER/08_FINAL_HANDOVER.md](chitti-ca/ceos/HANDOVER/08_FINAL_HANDOVER.md) — **0 placeholders** (scanned).
+
+| Proof | Result | Harness |
+|---|---|---|
+| CEOS L0–L12 compliance | 🟢 **12/12 PASS** (added swarm/README, SOPs→5, guardrails/safety, observability/logs, evals/accessibility_eval) | `fill_ca_os_handover.mjs` |
+| Sample fixtures (5 cats × 5, glob, no hardcoded list) | 🟢 **25/25** | `gen_ca_os_samples.mjs` + `test_ca_os_samples.mjs` |
+| Functional journeys | 🟢 **20/20** | `qa_ca_os.mjs` |
+| Edge cases | 🟢 **9/9** (offline · slow-3G 5.9s · localStorage-full · rapid-lang · backend-down · no-key · corrupt · invalid · concurrent) | same |
+| Cross-platform (3 real engines) | 🟢 **3/3 Chromium·Firefox·WebKit** | same |
+| Accessibility | 🟢 **13/13** (axe-core 0 authored serious/critical) | same |
+| **26 languages** | 🟢 **26/26** render + no-raw-keys + no-flicker (Vaani `chitti_lang.js`); voice = AUTOMATION-LIMITED | same |
+| **Per-response widget (Sire's 5-element rule)** | 🟢 **11/11 boxes** carry 🔊 · 🤖 · 👍 · 👎 (→ ✏️ write + 🎙️ mic) | same |
+| Regression (engine 38/38 + samples 25/25) | 🟢 PASS | same |
+| Performance | 🟢 **5/5** (FCP 68ms · 3G 5.9s · lang 164ms · primary 2.05s · heap 51MB) | same |
+| **Overall automated QA** | 🟢 **82/82 = 100%** | rollup |
+
+**4 defects found+fixed by this pass** (2 real WCAG from cert + 2 harness): speak-btn 40→44px;
+`.prov`/footer #777→#5a5a5a; sample provenance skip-list; QA slow-3G throttle isolation. HANDOVER/01–08
+all written. **Only Sire's real-device + voice + DeepSeek/vision-key (BO11) remain.** Reproduce:
+`node tools/qa_ca_os.mjs && node tools/fill_ca_os_handover.mjs`.
 
 ## 2026-06-06 — Chitti Government — CEOS v1.0 rebuilt (Citizen Operating System)
 

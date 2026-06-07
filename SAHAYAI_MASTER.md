@@ -377,7 +377,7 @@ See [[project_chitti_golden_rule_locked]].
 | 6 | Chitti UPI Fraud Guard | `chitti_upi.html` | fraud classifier | LIVE — HIGH/MED/LOW grading, RBI 2026 rule cards |
 | 7 | Chitti Product Scanner | `chitti_scanner.html` | DeepSeek vision | LIVE — FSSAI, MedUPI deep-link |
 | 8 | Chitti CA | `chitti_ca.html` | `chitti-ca-api` | LIVE — ITR/GST/TDS, DeepSeek + server-enforced disclaimer |
-| 9 | Chitti Legal | `chitti_legal.html` | `chitti-legal-api` | LIVE — notices/NDAs/rent agreements, plain EN/HI |
+| 9 | Chitti Legal | `chitti_legal.html` · `chitti_legal_os.html` | `chitti-legal-api` | LIVE — **CEOS v1.0 (2026-06-07): Legal Operating System.** ~33 CEOS docs ([chitti-legal/ceos/](chitti-legal/ceos/)) + deterministic engine (Rights · Limitation/Deadline · Cheque-138 timeline · Notice Decoder · Contract Risk · Consumer Router · Free-Legal-Aid moat · Scam Shield · Legal Twin) on `chitti_legal_os.html`, 26-lang dropdown, four-user a11y. Engine 60/60 + live cert 27/27 (axe clean). Legacy notices/NDAs/rent agreements on `chitti_legal.html`. |
 | 10 | Chitti Logo & Video | `chitti_logo_video.html` | stub | **BETA** — SVG monogram + mock video queue (intentional honest stub) |
 | 11 | Chitti Government | `chitti_government.html` | `chitti-government-api` | LIVE — **CEOS v1.0 (2026-06-06): Citizen Operating System.** 84 schemes (13 categories, sourced), 8 features (Eligibility · Readiness Score · Life-Event Engine · Deadline Engine · Fraud Shield + catalog/checklist/form/alerts/status/locator/docs/profile), deterministic engines (offline-first), 26-lang dropdown, PIB poll 6h, DigiLocker partner-only. Fraud Shield 12/12 measured. Full CEOS doc set + `CHITTI_GOVERNMENT_MASTER_SPEC.md`. |
 | 12 | Chitti Voice Factory | `chitti_voice_factory.html` | `chitti-voice-factory` | LIVE — 26 langs, honest ledger, YouTube fluency pipeline |
@@ -417,6 +417,7 @@ These two docs are the **single source of truth** for their respective products.
 | `chitti_scanner.html` | `chitti-scanner/` |
 | `chitti_ca.html` | `chitti-ca/` |
 | `chitti_legal.html` | `chitti-legal/` |
+| `chitti_legal_os.html` | `chitti-legal/ceos/` — full Legal OS (CEOS v1.0, 2026-06-07); engine `chitti_legal_os_engine.js`; backend: shared `chitti-legal-api` / Vaani |
 | `chitti_logo_video.html` | `chitti-logo-video/` |
 | `chitti_voice_factory.html` | `chitti-voice-factory/` |
 | `chitti_fashion.html` | `chitti-fashion/` — full CFOS operating system (2026-06-03); backend: shared `chitti-vaani-api` (Vaani-sole-interface) |
