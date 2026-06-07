@@ -45,10 +45,13 @@ the LLM is an enhancement** — every new engine is deterministic and runs offli
 | Research → catalog | 🟢 **30 → 84 schemes** across 13 categories, each with `source_url`+`status`+`last_verified`; 0 missing source; dedup-clean | [RESEARCH_BEST_APPS.md](chitti-government/RESEARCH_BEST_APPS.md), [tools/expand_government_schemes.mjs](tools/expand_government_schemes.mjs) |
 | 8 CEOS features on the page | 🟢 Eligibility · Schemes · **Readiness Score · Life-Event Engine · Deadline Engine · Fraud Shield** + Checklist/Form/Alerts/Status/Locator/Documents/Profile | [chitti_government.html](chitti_government.html) |
 | Deterministic Fraud Shield | 🟢 **12/12 exact (100%) · 0 genuine false-positives** | [chitti-government/evals/RESULTS.md](chitti-government/evals/RESULTS.md) |
+| Deterministic Eligibility engine | 🟢 **23/23 exact (100%) · 0 guess-to-eligible** — cross-validated Python engine + JS port | [tools/eval_government_eligibility.mjs](tools/eval_government_eligibility.mjs) |
+| **Playwright + axe cert** | 🟢 **24/24 GREEN** — 5 gates · #lang-select fires (en→hi→ta→en, 381 nodes translate) · 13 tabs · 4 engines render tap-only · tap≥44px · **axe 0 serious** · console clean | [tools/cert_government.mjs](tools/cert_government.mjs) |
 | Backend routes (deterministic, Vaani-routable) | 🟢 `/fraud-check` `/life-events` `/life-event` `/readiness` 200 + correct; boots, seeds 84 | Flask test client |
-| 5 frontend gates + 26-lang dropdown | 🟢 preserved (chitti_lang.js `#lang-select` auto-translates new tabs); new boxes carry `data-chitti-response` | inline-JS syntax 3/3 clean |
-| Golden-Rule confirm gate | 🟢 deadline-reminder set is confirm-gated (tap-or-voice) | — |
-| Eligibility gold-set · per-page Playwright/axe cert · LLM phrasing | 🟡/⛔ queued / AUTOMATION-LIMITED (DeepSeek funding + Vaani relevance-rail) | honest |
+| 5 frontend gates + 26-lang dropdown | 🟢 cert-verified (chitti_lang.js `#lang-select` auto-translates new tabs); new boxes carry `data-chitti-response` | cert-verified |
+| Golden-Rule confirm gate | 🟢 deadline-reminder set is confirm-gated (tap-or-voice) | cert-verified |
+| a11y contrast fixes | 🟢 `.primary`→dark-saffron #B34700 (AA), active-tab→navy, footer; **fleet-wide** obs-pill.degraded #CC5500→#8A3A00 | axe 0 serious |
+| LLM verdict phrasing | ⛔ AUTOMATION-LIMITED (DeepSeek funding + Vaani relevance-rail) | honest |
 
 Reproduce: `node tools/expand_government_schemes.mjs` · boot `chitti-government/backend`
 + Flask test client · fraud eval in [evals/RESULTS.md](chitti-government/evals/RESULTS.md).
