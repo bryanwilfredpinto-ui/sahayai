@@ -46,6 +46,48 @@ ALWAYS:
 
 CA_DISCLAIMER = "This is AI-generated guidance. Consult a registered CA for your actual filings."
 
+# ── RAG (retrieval-augmented) — answer ONLY from official documents, always cite ──
+CHITTI_CA_RAG_PROMPT = """You are Chitti CA. You must answer the user's question USING ONLY the official
+document excerpts provided in CONTEXT below. These come from the Income-tax Act, the
+GST Acts, and ICAI study material.
+
+HARD RULES:
+- Use ONLY facts found in the CONTEXT. Do NOT use outside knowledge, do NOT guess, and
+  do NOT invent any section number, rate, threshold, or date.
+- Cite the source inline after each fact using the bracket tags shown (e.g. [S1], [S2]).
+- If the CONTEXT does not contain the answer, reply EXACTLY:
+  "I cannot find this in the official documents I have. Please consult a registered CA or the official portal."
+  and nothing else.
+- Be concise and plain. Match the user's language. Define any technical term in the same sentence.
+- Never give a final binding number ("you owe Rs.X") — explain the rule and point to verification.
+"""
+
+RAG_REFUSAL = ("I cannot find this in the official documents I have (Income-tax Act, GST Acts, "
+               "ICAI material). Please consult a registered CA or the official portal.")
+
+
+def _format_context(results: list[dict]) -> tuple[str, list[dict]]:
+    """Build the numbered CONTEXT block + the citation list shown to the user."""
+    blocks, citations = [], []
+    for i, r in enumerate(results, start=1):
+        tag = f"S{i}"
+        blocks.append(f"[{tag}] ({r.get('ref') or r.get('source') or 'official document'})\n{r['text']}")
+        citations.append({
+            "tag": tag, "ref": r.get("ref"), "doc": r.get("doc"), "source": r.get("source"),
+            "section": r.get("section"), "page": r.get("page"), "url": r.get("url"),
+            "score": r.get("score"),
+        })
+    return "\n\n".join(blocks), citations
+
+
+def _sources_footer(citations: list[dict]) -> str:
+    lines = ["", "Sources:"]
+    for c in citations:
+        loc = c.get("ref") or c.get("source") or "official document"
+        url = (" — " + c["url"]) if c.get("url") else ""
+        lines.append(f"  [{c['tag']}] {loc}{url}")
+    return "\n".join(lines)
+
 
 _LANG_NAMES = {
     "hi": "Hindi", "en": "English", "ta": "Tamil", "te": "Telugu",
@@ -75,12 +117,11 @@ def _fallback(text_in: str, language: str) -> dict:
     }
 
 
-def _raw_deepseek(topic_line: str, lang_name: str, safe_text: str) -> tuple[str, dict]:
-    user_msg = f"(Reply in {lang_name})\n{topic_line}{safe_text}"
+def _deepseek(system_prompt: str, user_msg: str) -> tuple[str, dict]:
     body = {
         "model": settings.DEEPSEEK_MODEL,
         "messages": [
-            {"role": "system", "content": CHITTI_CA_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_msg},
         ],
         "max_tokens": settings.MAX_TOKENS,
@@ -97,10 +138,119 @@ def _raw_deepseek(topic_line: str, lang_name: str, safe_text: str) -> tuple[str,
     return data["choices"][0]["message"]["content"], (data.get("usage") or {})
 
 
-def ask(text: str, language: str = "en", topic: str | None = None) -> dict:
+def _raw_deepseek(topic_line: str, lang_name: str, safe_text: str) -> tuple[str, dict]:
+    return _deepseek(CHITTI_CA_PROMPT, f"(Reply in {lang_name})\n{topic_line}{safe_text}")
+
+
+def _rag_answer(text: str, language: str, retrieval: dict) -> dict:
+    """Grounded answer from official documents only, with citations.
+
+    Caller has confirmed retrieval['grounded'] is True. Builds a CONTEXT block from
+    the retrieved official chunks, asks DeepSeek to answer ONLY from it and cite
+    [S1]/[S2]…, and appends a Sources footer. If DeepSeek is unavailable, returns an
+    honest EXTRACTIVE answer (the top official excerpt) — still cited, never invented.
+    """
+    lang_name = _LANG_NAMES.get(language, language or "English")
+    results = retrieval["results"]
+    context, citations = _format_context(results)
+    base = {
+        "ok": True, "language": language, "grounded": True,
+        "citations": citations,
+        "rag": {"embedder": retrieval.get("embedder"), "semantic": retrieval.get("semantic"),
+                "store": retrieval.get("store"), "chunks": retrieval.get("count"),
+                "top_score": results[0].get("score") if results else None},
+    }
+
+    # No LLM key → honest extractive answer straight from the official text (still cited).
+    if not settings.DEEPSEEK_API_KEY:
+        top = results[0]
+        extract = (f"From {top.get('ref') or top.get('source')}:\n\n{top['text']}").strip()
+        reply = extract + "\n" + _sources_footer(citations)
+        return {**base, "source": "rag_extractive", "model": None,
+                "reply": _enforce_disclaimer(reply)}
+
+    user_msg = (f"(Reply in {lang_name})\n\nCONTEXT (official documents — use ONLY this):\n"
+                f"{context}\n\nQUESTION: {text}")
+
+    try:
+        from flask import current_app
+        hooks = current_app.config.get("CHITTI_HOOKS")
+    except Exception:  # noqa: BLE001
+        hooks = None
+
+    usage_capture: dict = {}
+
+    def _call(_safe_text: str) -> str:
+        reply, usage = _deepseek(CHITTI_CA_RAG_PROMPT, user_msg)
+        usage_capture.update(usage)
+        return reply
+
+    try:
+        if hooks is not None:
+            wrapped = hooks.wrap_llm(_call, user_text=text, ctx={"rag": True})
+            if wrapped.get("blocked"):
+                return {**base, "ok": False, "source": "blocked", "grounded": True,
+                        "reply": wrapped["reply"], "rail": wrapped.get("rail"),
+                        "reason": wrapped.get("reason"), "request_id": wrapped.get("request_id")}
+            reply = wrapped["reply"]
+            extra = {"request_id": wrapped.get("request_id"), "latency_ms": wrapped.get("latency_ms")}
+        else:
+            reply, _ = _deepseek(CHITTI_CA_RAG_PROMPT, user_msg)
+            extra = {}
+    except httpx.HTTPStatusError as e:
+        log.error("DeepSeek RAG HTTP %s: %s", e.response.status_code, e.response.text[:200])
+        # honest extractive fallback so the user still gets the official text + citation
+        top = results[0]
+        reply = f"From {top.get('ref') or top.get('source')}:\n\n{top['text']}"
+        return {**base, "source": "rag_extractive", "model": None,
+                "error": f"deepseek_http_{e.response.status_code}",
+                "reply": _enforce_disclaimer(reply + "\n" + _sources_footer(citations))}
+    except (httpx.RequestError, KeyError, ValueError) as e:
+        log.exception("DeepSeek RAG call failed: %s", e)
+        top = results[0]
+        reply = f"From {top.get('ref') or top.get('source')}:\n\n{top['text']}"
+        return {**base, "source": "rag_extractive", "model": None, "error": str(e)[:200],
+                "reply": _enforce_disclaimer(reply + "\n" + _sources_footer(citations))}
+
+    # If the model itself said it cannot find it, surface the refusal honestly.
+    if "cannot find this in the official documents" in (reply or "").lower():
+        return {**base, "ok": True, "grounded": False, "source": "rag_no_context",
+                "citations": [], "reply": _enforce_disclaimer(RAG_REFUSAL)}
+
+    full = (reply or "").rstrip() + "\n" + _sources_footer(citations)
+    return {**base, "source": "rag_deepseek", "model": settings.DEEPSEEK_MODEL,
+            "reply": _enforce_disclaimer(full),
+            "tokens": {"input": usage_capture.get("prompt_tokens"),
+                       "output": usage_capture.get("completion_tokens")},
+            **extra}
+
+
+def ask(text: str, language: str = "en", topic: str | None = None, use_rag: bool = True) -> dict:
     text = (text or "").strip()
     if not text:
         return {"ok": False, "error": "text is required"}
+
+    # ── RAG FIRST: answer from official documents, or refuse. (use_rag default True) ──
+    if use_rag:
+        try:
+            from rag.retriever import retrieve
+            retrieval = retrieve(text)
+        except Exception as e:  # noqa: BLE001 — never let RAG infra break /ask
+            log.warning("RAG retrieve failed (%s) — falling back to ungrounded answer.", type(e).__name__)
+            retrieval = None
+        if retrieval is not None:
+            if not retrieval.get("grounded"):
+                return {
+                    "ok": True, "source": "rag_no_context", "grounded": False,
+                    "language": language, "citations": [],
+                    "reply": _enforce_disclaimer(RAG_REFUSAL),
+                    "rag": {"embedder": retrieval.get("embedder"), "store": retrieval.get("store"),
+                            "chunks": retrieval.get("count"),
+                            "top_score": (retrieval["results"][0]["score"]
+                                          if retrieval.get("results") else None),
+                            "min_score": retrieval.get("min_score")},
+                }
+            return _rag_answer(text, language, retrieval)
 
     if not settings.DEEPSEEK_API_KEY:
         return _fallback(text, language)

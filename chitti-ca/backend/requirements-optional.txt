@@ -1,0 +1,14 @@
+# Chitti CA — RAG (vector DB) optional dependencies.
+# Kept OUT of requirements.txt so the base Flask app stays OOM-safe on Railway free
+# tier (same lazy-import pattern as Voice Factory). The RAG code lazy-imports these;
+# when absent it falls back to a pure-python lexical embedder + JSONL store (honest,
+# lower quality) so the retrieve→cite→refuse contract still works.
+#
+# Install where you BUILD the index and run production retrieval:
+#   pip install -r requirements-optional.txt
+#   python -m rag.ingest --download        # fetch official PDFs + build the vector DB
+#
+# Free, local, no API keys.
+chromadb==0.5.5
+sentence-transformers==3.0.1
+pypdf==4.3.1

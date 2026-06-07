@@ -36,11 +36,48 @@ def ask():
     text = (body.get("text") or "").strip()
     language = (body.get("language") or "en").strip()
     topic = (body.get("topic") or "").strip() or None
+    # RAG (answer from official documents + cite) is ON by default; pass rag:false to bypass.
+    use_rag = body.get("rag", True) is not False
     if not text:
         return jsonify({"ok": False, "error": "missing_text"}), 400
     if len(text) > 4000:
         return jsonify({"ok": False, "error": "text_too_long", "max_chars": 4000}), 413
-    return jsonify(ca_service.ask(text, language=language, topic=topic))
+    return jsonify(ca_service.ask(text, language=language, topic=topic, use_rag=use_rag))
+
+
+# ───────────── RAG (retrieval over official tax/GST documents) ─────────────
+
+@bp.get("/rag/health")
+def rag_health():
+    """Status of the official-document vector DB (chunk count, embedder, store)."""
+    try:
+        from rag.retriever import rag_status
+        return jsonify({"ok": True, **rag_status()})
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"ok": False, "ready": False, "error": str(e)[:200]})
+
+
+@bp.post("/rag/search")
+def rag_search():
+    """Raw retrieval — returns the official excerpts + citations (no LLM). Useful for
+    debugging and for an extractive 'show me the official text' view."""
+    body = request.get_json(silent=True) or {}
+    query = (body.get("query") or body.get("text") or "").strip()
+    if not query:
+        return jsonify({"ok": False, "error": "missing_query"}), 400
+    try:
+        from rag.retriever import retrieve
+        r = retrieve(query)
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"ok": False, "error": str(e)[:200]}), 200
+    return jsonify({
+        "ok": True, "grounded": r.get("grounded"),
+        "results": [{k: v for k, v in res.items() if k != "text"} | {"excerpt": res["text"][:500]}
+                    for res in r.get("results", [])],
+        "embedder": r.get("embedder"), "store": r.get("store"),
+        "chunks": r.get("count"), "min_score": r.get("min_score"),
+        "refusal": None if r.get("grounded") else ca_service.RAG_REFUSAL,
+    })
 
 
 # ───────────── deadlines (P1 — reminder + calendar) ─────────────
