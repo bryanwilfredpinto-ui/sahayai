@@ -1,0 +1,9 @@
+# Chitti Legal — OPTIONAL RAG dependencies (lazy-imported; base app runs without them).
+# Install for semantic embeddings + ChromaDB vector store + PDF ingestion:
+#   pip install -r requirements-optional.txt
+# Without these, the RAG pipeline degrades honestly to a pure-python lexical embedder
+# + JSONL store (the retrieve→cite→refuse contract still works, lower quality, labelled).
+numpy>=1.26,<2.0
+pypdf>=4.0.0
+sentence-transformers==3.0.1
+chromadb>=0.4.0

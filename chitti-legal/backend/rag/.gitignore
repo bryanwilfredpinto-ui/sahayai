@@ -1,0 +1,10 @@
+# Downloaded official Act PDFs are large + republished often — fetch with
+# `python -m rag.ingest --download`, don't commit them.
+corpus/*.pdf
+
+# ChromaDB binary store (built locally / on deploy with the semantic embedder). The
+# small pure-python fallback index (index/fallback.jsonl) IS committed so the app
+# works out-of-the-box (lexical fallback) even before requirements-optional.txt is installed.
+index/chroma.sqlite3
+index/*/
+!index/fallback.jsonl

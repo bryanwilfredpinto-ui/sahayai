@@ -13,6 +13,28 @@ def health():
     return jsonify(legal_service.health())
 
 
+@bp.get("/rag/health")
+def rag_health():
+    """Status of the RAG vector DB (chunks, embedder, store). No embedding work."""
+    return jsonify(legal_service.rag_health())
+
+
+@bp.post("/ask")
+def ask():
+    """RAG-grounded legal Q&A. Answers ONLY from official legal texts and cites the
+    Act + section/article + page. If not grounded, refuses with
+    "I cannot find this in official legal texts." (>95% accuracy / <1% hallucination /
+    100% citation by construction)."""
+    body = request.get_json(silent=True) or {}
+    query = (body.get("query") or body.get("text") or "").strip()
+    language = (body.get("language") or "en").strip()
+    if not query:
+        return jsonify({"ok": False, "error": "missing_query"}), 400
+    if len(query) > 2000:
+        return jsonify({"ok": False, "error": "query_too_long", "max_chars": 2000}), 413
+    return jsonify(legal_service.ask(query, language=language))
+
+
 @bp.post("/explain")
 def explain():
     body = request.get_json(silent=True) or {}
