@@ -751,7 +751,7 @@
     var rnd = mulberry32(seed);
     // per-symbol structural bias so different stocks show different setups
     var biasPick = strHash(symbol) % 5; // 0..4
-    var tfBias = { monthly: 1.0, weekly: 0.8, daily: 0.5, '4h': 0.3, '1h': 0.15 }[timeframe] || 0.5;
+    var tfBias = { monthly: 1.0, weekly: 0.8, daily: 0.5, '4h': 0.3, '1h': 0.15, '15m': 0.1, '5m': 0.06, '1m': 0.03 }[timeframe] || 0.5;
     // realistic stock model = drift (trend) + slow wave + bounded noise (geometric-Brownian-ish),
     // so trending names trend and choppy names chop — far more honest than pure noise.
     var drift = ((biasPick - 2) / 2) * 0.0042 * tfBias; // up to ±0.42%/bar (daily) — a visible trend
@@ -779,7 +779,10 @@
       weekly: genCandles(symbol, 'weekly', 220, basePrice),
       daily: genCandles(symbol, 'daily', 260, basePrice),
       '4h': genCandles(symbol, '4h', 260, basePrice),
-      '1h': genCandles(symbol, '1h', 260, basePrice)
+      '1h': genCandles(symbol, '1h', 260, basePrice),
+      '15m': genCandles(symbol, '15m', 260, basePrice),
+      '5m': genCandles(symbol, '5m', 260, basePrice),
+      '1m': genCandles(symbol, '1m', 260, basePrice)
     };
   }
 
@@ -865,7 +868,8 @@
   }
 
   // ───────────────────────── Chitti Explain (deterministic template) ─────────────────────────
-  var BANNED = ['guaranteed', 'sure-shot', 'sureshot', 'sure shot', '100% accurate', '100%',
+  // NB: a bare "100%" is legitimate (confluence can be 100%); only certainty/accuracy claims are banned.
+  var BANNED = ['guaranteed', 'sure-shot', 'sureshot', 'sure shot', '100% accurate', '100% accuracy',
     'cannot lose', "can't lose", 'risk-free', 'risk free', 'multibagger guaranteed', 'definitely will',
     'no stop loss needed', 'no need for a stop'];
 
@@ -893,6 +897,437 @@
     return null;
   }
 
+  // ═══════════════════ CEOS FINAL v1.0 LAYER (on top of the 39 indicators) ═══════════════════
+  // Classic floor-trader pivots from the PREVIOUS completed period's H/L/C (PDF §5.4).
+  function classicPivots(ph, pl, pc) {
+    var pp = (ph + pl + pc) / 3;
+    return { pp: round2(pp),
+      r1: round2(2 * pp - pl), r2: round2(pp + (ph - pl)), r3: round2(ph + 2 * (pp - pl)),
+      s1: round2(2 * pp - ph), s2: round2(pp - (ph - pl)), s3: round2(pl - 2 * (ph - pp)) };
+  }
+  // Camarilla pivots — simplified gravity grid Close ± (H-L)×{0.25..1.25} (PDF §5.3).
+  function camarillaPivots(ph, pl, pc) {
+    var r = ph - pl;
+    return {
+      h5: round2(pc + r * 1.25), h4: round2(pc + r * 1.00), h3: round2(pc + r * 0.75),
+      h2: round2(pc + r * 0.50), h1: round2(pc + r * 0.25),
+      l1: round2(pc - r * 0.25), l2: round2(pc - r * 0.50), l3: round2(pc - r * 0.75),
+      l4: round2(pc - r * 1.00), l5: round2(pc - r * 1.25)
+    };
+  }
+  function pivotsFor(candles) {
+    if (!candles || candles.length < 2) return null;
+    var p = candles[candles.length - 2]; // previous completed period
+    return { classic: classicPivots(p.high, p.low, p.close), camarilla: camarillaPivots(p.high, p.low, p.close) };
+  }
+  // Swing pivots: a bar that is the local extreme over ±2 bars.
+  function swingLevels(candles) {
+    var hi = [], lo = [], n = candles.length;
+    for (var i = 2; i < n - 2; i++) {
+      var c = candles[i];
+      if (c.high > candles[i-1].high && c.high > candles[i-2].high && c.high > candles[i+1].high && c.high > candles[i+2].high) hi.push(c.high);
+      if (c.low  < candles[i-1].low  && c.low  < candles[i-2].low  && c.low  < candles[i+1].low  && c.low  < candles[i+2].low ) lo.push(c.low);
+    }
+    return { highs: hi.slice(-60), lows: lo.slice(-60) };
+  }
+  // MTF S/R confluence zones — aggregate swing levels across Daily/4H/1H, group ≤0.5%, score (PDF §7.1).
+  function srConfluence(candlesByTf) {
+    var tfWeight = { daily: 3, '4h': 2, '1h': 1 }, levels = [];
+    Object.keys(tfWeight).forEach(function (tf) {
+      if (!candlesByTf[tf] || candlesByTf[tf].length < 10) return;
+      var sw = swingLevels(candlesByTf[tf]);
+      sw.highs.forEach(function (p) { levels.push({ price: p, type: 'R', w: tfWeight[tf], tf: tf }); });
+      sw.lows.forEach(function (p) { levels.push({ price: p, type: 'S', w: tfWeight[tf], tf: tf }); });
+    });
+    if (!levels.length) return [];
+    levels.sort(function (a, b) { return a.price - b.price; });
+    var zones = [], cur = null;
+    levels.forEach(function (l) {
+      if (cur && Math.abs(l.price - cur.center) / cur.center <= 0.005) {
+        cur.members.push(l); cur.score += l.w; cur.tfs[l.tf] = true;
+        cur.center = cur.members.reduce(function (a, m) { return a + m.price; }, 0) / cur.members.length;
+      } else { cur = { center: l.price, members: [l], score: l.w, tfs: {}, type: l.type }; cur.tfs[l.tf] = true; zones.push(cur); }
+    });
+    return zones.map(function (z) {
+      var sc = Math.min(10, z.score + (z.members.length - 1) * 2);
+      return { price: round2(z.center), score: sc, type: z.type, timeframes: Object.keys(z.tfs),
+        touches: z.members.length, strength: (sc >= 8 ? 'STRONG' : (sc >= 5 ? 'MODERATE' : 'WEAK')) };
+    }).filter(function (z) { return z.score >= 3; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 8);
+  }
+
+  // ATR-based risk: SL = Entry ∓ ATR×2 · T1 = ±ATR×1.5 · T2 = ±ATR×3 + position sizing (PDF §8, §8.3).
+  function atrRiskBlock(dailyCandles, side, opts) {
+    opts = opts || {};
+    var capital = opts.capital || 100000, riskPct = opts.riskPercent || 2;
+    var price = last(closes(dailyCandles));
+    var a = last(atr(dailyCandles, 14)); if (a == null || a <= 0) a = price * 0.01;
+    var sl, t1, t2;
+    if (side === 'BUY') { sl = price - a * 2; t1 = price + a * 1.5; t2 = price + a * 3; }
+    else { sl = price + a * 2; t1 = price - a * 1.5; t2 = price - a * 3; }
+    var rps = Math.abs(price - sl), rrr = rps ? Math.abs(t1 - price) / rps : 0;
+    var riskAmt = capital * (riskPct / 100), shares = rps ? Math.floor(riskAmt / rps) : 0;
+    return {
+      entry: round2(price), atr: round2(a),
+      stop_loss: { price: round2(sl), percentage: round2((sl - price) / price * 100), calculation: 'Entry ' + (side === 'BUY' ? '-' : '+') + ' (ATR × 2), ATR=' + round2(a) },
+      target_1: { price: round2(t1), percentage: round2((t1 - price) / price * 100), action: 'Book 50% here' },
+      target_2: { price: round2(t2), percentage: round2((t2 - price) / price * 100), action: 'Book remaining 50% here' },
+      risk_reward_ratio: '1:' + round2(rrr),
+      position_size: { capital: capital, risk_percent: riskPct, risk_amount: round2(riskAmt), risk_per_share: round2(rps), shares: shares, investment: round2(shares * price) }
+    };
+  }
+
+  // 4 preset confluence modes (PDF §6.4): trend TFs set direction, entry TF triggers.
+  var CONFLUENCE_MODES = {
+    longterm:  { label: 'Long-Term Investor', trend: ['monthly', 'weekly'], entry: 'daily' },
+    swing:     { label: 'Aggressive Swing',   trend: ['weekly', 'daily'],   entry: '4h' },
+    daytrader: { label: 'Day Trader',         trend: ['daily', '4h'],       entry: '1h' },
+    scalper:   { label: 'Scalper',            trend: ['4h', '1h'],          entry: '15m' }
+  };
+  // Per-timeframe BULL/BEAR/NEUTRAL per the CEOS conditions table (PDF §6.2).
+  function tfBias(tf, candles) {
+    if (!candles || candles.length < 30) return 'NEUTRAL';
+    var cl = closes(candles), price = last(cl);
+    var e200 = last(ema(cl, 200)), e50 = last(ema(cl, 50)), e21 = last(ema(cl, 21)), e9 = last(ema(cl, 9));
+    var r = last(rsi(cl, 14)), ax = last(adx(candles)), adxV = ax ? ax.adx : 0;
+    var hist = last(macd(cl).hist), vw = last(vwapRolling(candles));
+    switch (tf) {
+      case 'monthly': if (e200 != null) return price > e200 ? 'BULL' : (price < e200 ? 'BEAR' : 'NEUTRAL'); break;
+      case 'weekly':  if (e50 != null)  return price > e50 ? 'BULL' : (price < e50 ? 'BEAR' : 'NEUTRAL'); break;
+      case 'daily':   if (e21 != null) { if (price > e21 && r > 50 && adxV > 25) return 'BULL'; if (price < e21 && r < 50 && adxV > 25) return 'BEAR'; return price > e21 ? 'BULL' : (price < e21 ? 'BEAR' : 'NEUTRAL'); } break;
+      case '4h':      if (vw != null)   return price > vw ? 'BULL' : (price < vw ? 'BEAR' : 'NEUTRAL'); break;
+      case '1h':      if (e200 != null) { var mb = hist != null && hist > 0; return (price > e200 && mb) ? 'BULL' : ((price < e200 && !mb) ? 'BEAR' : (price > e200 ? 'BULL' : 'BEAR')); } break;
+      case '15m':     if (e9 != null && e21 != null) return e9 > e21 ? 'BULL' : 'BEAR'; break;
+      case '5m':      var c = candles[candles.length - 1]; return c.close > c.open ? 'BULL' : 'BEAR';
+    }
+    return 'NEUTRAL';
+  }
+  function confluenceScore(candlesByTf, tfs) {
+    var perTf = {}, bull = 0, bear = 0;
+    tfs.forEach(function (tf) { var b = tfBias(tf, candlesByTf[tf]); perTf[tf] = b; if (b === 'BULL') bull++; else if (b === 'BEAR') bear++; });
+    var total = tfs.length, dominant = Math.max(bull, bear);
+    var bias = bull > bear ? 'BULLISH' : (bear > bull ? 'BEARISH' : 'NEUTRAL');
+    var pct = total ? Math.round(dominant / total * 100) : 0;
+    var quality = pct >= 100 ? 'PERFECT' : (pct >= 80 ? 'STRONG' : (pct >= 60 ? 'MODERATE' : (pct >= 40 ? 'WEAK' : 'NONE')));
+    return { score: dominant, total: total, percent: pct, bias: bias, quality: quality, per_tf: perTf, bull: bull, bear: bear };
+  }
+
+  // The CEOS signal — confluence (mode) → direction (≥60%) → ATR SL/T1/T2 + sizing → full JSON (PDF §8.2).
+  var TF_ORDER = ['monthly', 'weekly', 'daily', '4h', '1h', '15m', '5m', '1m'];
+  function generateSignal(candlesByTf, opts) {
+    opts = opts || {};
+    var mode = CONFLUENCE_MODES[opts.mode || 'swing'] || CONFLUENCE_MODES.swing;
+    // User-picked timeframes (R-BO1/R-BO2) take precedence over a preset mode.
+    var tfs = (opts.tfs && opts.tfs.length) ? opts.tfs.slice() : mode.trend.concat([mode.entry]);
+    var conf = confluenceScore(candlesByTf, tfs);
+    // Price anchor = the lowest (fastest) selected TF with data — that's where you actually enter.
+    var anchorTf = null;
+    for (var ai = TF_ORDER.length - 1; ai >= 0; ai--) { if (tfs.indexOf(TF_ORDER[ai]) >= 0 && candlesByTf[TF_ORDER[ai]] && candlesByTf[TF_ORDER[ai]].length) { anchorTf = TF_ORDER[ai]; break; } }
+    var daily = candlesByTf.daily || (anchorTf ? candlesByTf[anchorTf] : null) || candlesByTf.weekly;
+    var price = daily ? last(closes(daily)) : null;
+    var verdict = 'HOLD';
+    if (conf.percent >= 60 && conf.bias === 'BULLISH') verdict = 'BUY';
+    else if (conf.percent >= 60 && conf.bias === 'BEARISH') verdict = 'SELL';
+    var out = {
+      mode: opts.mode || (opts.tfs ? 'custom' : 'swing'), mode_label: (opts.tfs && opts.tfs.length) ? ('Custom: ' + tfs.join(', ')) : mode.label, timeframes: tfs,
+      confluence_score: conf.score + '/' + conf.total + ' (' + conf.percent + '%)',
+      confluence_quality: conf.quality, confluence: conf,
+      signal: verdict, confidence: Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95)),
+      entry_price: price != null ? round2(price) : null,
+      pivots: daily ? pivotsFor(daily) : null, sr_zones: srConfluence(candlesByTf),
+      indicators: daily ? indicatorSet(daily) : {},
+      disclaimer: 'Past performance does not guarantee future results. Trading involves risk of loss. NOT SEBI REGISTERED — not financial advice.'
+    };
+    if (verdict === 'BUY' || verdict === 'SELL') {
+      var rb = atrRiskBlock(daily, verdict, opts);
+      if (!rb || rb.position_size.risk_per_share <= 0) { out.signal = 'HOLD'; out.why = 'no valid ATR stop — skip'; }
+      else {
+        out.atr = rb.atr; out.stop_loss = rb.stop_loss; out.target_1 = rb.target_1; out.target_2 = rb.target_2;
+        out.risk_reward_ratio = rb.risk_reward_ratio; out.position_size = rb.position_size;
+        out.invalidation = (verdict === 'BUY' ? 'wrong if price closes below ' : 'wrong if price closes above ') + rb.stop_loss.price;
+      }
+    } else { out.why = conf.percent < 40 ? 'no alignment — NO TRADE' : 'weak confluence — wait for alignment'; }
+    return out;
+  }
+
+  // ─────────────── Safety guardrails (deterministic, NO LLM) — PDF §13 ───────────────
+  var CRISIS_KEYWORDS = ['suicide', 'kill myself', 'kill my self', 'end my life', 'want to die',
+    'end it all', 'self harm', 'self-harm', 'no reason to live', 'better off dead',
+    'khudkushi', 'marna chahta', 'jaan dena', 'help me die'];
+  function detectCrisis(text) { if (!text) return false; var t = String(text).toLowerCase(); return CRISIS_KEYWORDS.some(function (k) { return t.indexOf(k) >= 0; }); }
+  function crisisResponse() {
+    return { visual: '🆘 CRISIS SUPPORT: Tele-MANAS 14416 — free, confidential, 24/7',
+      audio: 'This sounds very difficult. Please call Tele dash MANAS at 1 4 4 1 6. They are available 24 by 7 and can help.',
+      haptic: 'WARNING', number: '14416' };
+  }
+  // Loss spiral: 3 consecutive losers summing > 5% of capital → mandatory cool-down (PDF §13.4).
+  function detectLossSpiral(trades, capital) {
+    if (!trades || trades.length < 3) return { isSpiral: false };
+    var last3 = trades.slice(-3);
+    if (!last3.every(function (t) { return (t.pnl || 0) < 0; })) return { isSpiral: false };
+    var loss = Math.abs(last3.reduce(function (s, t) { return s + (t.pnl || 0); }, 0));
+    var pct = capital ? loss / capital * 100 : 0;
+    if (pct > 5) return { isSpiral: true, lossPercent: round2(pct), coolDownMinutes: 30,
+      message: 'You lost ' + round2(pct) + '% over your last 3 trades. Mandatory 30-minute cool-down — review your strategy before trading again.' };
+    return { isSpiral: false };
+  }
+  // AI insights after ≥10 trades (PDF §9.3) — deterministic pattern detection, no LLM.
+  function aiInsights(trades) {
+    var out = []; if (!trades || trades.length < 10) return out;
+    var wins = trades.filter(function (t) { return (t.pnl || 0) > 0; }), losses = trades.filter(function (t) { return (t.pnl || 0) < 0; });
+    out.push('Across ' + trades.length + ' trades your win rate is ' + Math.round(wins.length / trades.length * 100) + '% (' + wins.length + ' wins / ' + losses.length + ' losses).');
+    if (trades.length > 40) out.push('High activity (' + trades.length + ' trades) — fewer, higher-confluence setups usually beat over-trading.');
+    var byMode = {};
+    trades.forEach(function (t) { var m = t.mode || '?'; byMode[m] = byMode[m] || { w: 0, n: 0 }; byMode[m].n++; if ((t.pnl || 0) > 0) byMode[m].w++; });
+    var modes = Object.keys(byMode).filter(function (m) { return byMode[m].n >= 3; });
+    if (modes.length) {
+      modes.sort(function (a, b) { return (byMode[b].w / byMode[b].n) - (byMode[a].w / byMode[a].n); });
+      var best = modes[0], worst = modes[modes.length - 1];
+      out.push('Best mode: ' + best + ' (' + Math.round(byMode[best].w / byMode[best].n * 100) + '% win over ' + byMode[best].n + ' trades).');
+      if (worst !== best) out.push('Weakest mode: ' + worst + ' (' + Math.round(byMode[worst].w / byMode[worst].n * 100) + '% win) — tighten the rules or avoid it.');
+    }
+    var emo = 0; for (var i = 1; i < trades.length; i++) if ((trades[i - 1].pnl || 0) < 0 && (trades[i].quantity || 0) > (trades[i - 1].quantity || 0)) emo++;
+    if (emo >= 2) out.push('You increased size right after a loss ' + emo + ' times — that is revenge trading. Pause instead.');
+    return out;
+  }
+
+  // ═══════════════ BO-NEXT: Signal Outcome Tracking & Accuracy Scorecard (deterministic) ═══════════════
+  // Walk forward from a signal and resolve its outcome. SL/T1 same-bar ambiguity → assume SL first
+  // (conservative; never inflates win rate). Returns outcome + R-multiple + MFE/MAE (in R) + bars.
+  function evaluateSignal(sig, future) {
+    var out = { outcome: 'PENDING', barsToOutcome: null, rMultiple: 0, mfe: 0, mae: 0 };
+    if (!sig || !sig.stop_loss || !future || !future.length) return out;
+    var side = sig.signal, entry = sig.entry_price, sl = sig.stop_loss.price;
+    var t1 = sig.target_1 ? sig.target_1.price : null, t2 = sig.target_2 ? sig.target_2.price : null;
+    var risk = Math.abs(entry - sl) || 1;
+    for (var i = 0; i < future.length; i++) {
+      var hi = future[i].high, lo = future[i].low;
+      if (side === 'BUY') {
+        out.mfe = Math.max(out.mfe, (hi - entry) / risk); out.mae = Math.min(out.mae, (lo - entry) / risk);
+        if (lo <= sl) { out.outcome = 'SL_HIT'; out.rMultiple = round2((sl - entry) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t2 != null && hi >= t2) { out.outcome = 'T2_HIT'; out.rMultiple = round2((t2 - entry) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t1 != null && hi >= t1) { out.outcome = 'T1_HIT'; out.rMultiple = round2((t1 - entry) / risk); out.barsToOutcome = i + 1; return out; }
+      } else {
+        out.mfe = Math.max(out.mfe, (entry - lo) / risk); out.mae = Math.min(out.mae, (entry - hi) / risk);
+        if (hi >= sl) { out.outcome = 'SL_HIT'; out.rMultiple = round2((entry - sl) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t2 != null && lo <= t2) { out.outcome = 'T2_HIT'; out.rMultiple = round2((entry - t2) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t1 != null && lo <= t1) { out.outcome = 'T1_HIT'; out.rMultiple = round2((entry - t1) / risk); out.barsToOutcome = i + 1; return out; }
+      }
+    }
+    out.mfe = round2(out.mfe); out.mae = round2(out.mae);
+    return out; // never resolved within the window → PENDING
+  }
+
+  // Accuracy scorecard from evaluated signals (TradingView/TrendSpider KPI set + Go/No-Go flag).
+  function scorecard(evals) {
+    var resolved = (evals || []).filter(function (e) { return e.outcome !== 'PENDING'; });
+    var n = resolved.length;
+    var wins = resolved.filter(function (e) { return e.outcome === 'T1_HIT' || e.outcome === 'T2_HIT'; });
+    var losses = resolved.filter(function (e) { return e.outcome === 'SL_HIT'; });
+    var grossWin = wins.reduce(function (a, e) { return a + Math.max(0, e.rMultiple); }, 0);
+    var grossLoss = Math.abs(losses.reduce(function (a, e) { return a + Math.min(0, e.rMultiple); }, 0));
+    var cum = 0, peak = 0, maxDD = 0, curve = [];
+    resolved.forEach(function (e) { cum += e.rMultiple; curve.push(round2(cum)); peak = Math.max(peak, cum); maxDD = Math.min(maxDD, cum - peak); });
+    return {
+      sample: n, wins: wins.length, losses: losses.length,
+      winRate: n ? Math.round(wins.length / n * 100) : 0,
+      profitFactor: grossLoss > 0 ? round2(grossWin / grossLoss) : (grossWin > 0 ? '∞' : 0),
+      expectancy: n ? round2(resolved.reduce(function (a, e) { return a + e.rMultiple; }, 0) / n) : 0,
+      avgWin: wins.length ? round2(grossWin / wins.length) : 0,
+      avgLoss: losses.length ? round2(-grossLoss / losses.length) : 0,
+      maxDrawdownR: round2(maxDD), equityCurve: curve,
+      goNoGo: n >= 10 ? 'GO' : 'NO-GO', note: n < 10 ? ('Only ' + n + ' resolved — need ≥10 for a reliable read.') : ''
+    };
+  }
+
+  // Calibration (the AI-app differentiator): is a 90%-confidence call actually right ~90% of the time?
+  function calibration(evals) {
+    var resolved = (evals || []).filter(function (e) { return e.outcome !== 'PENDING' && e.confidence != null; });
+    var bins = [[60, 70], [70, 80], [80, 90], [90, 101]];
+    var buckets = bins.map(function (b) {
+      var inb = resolved.filter(function (e) { return e.confidence >= b[0] && e.confidence < b[1]; });
+      var w = inb.filter(function (e) { return e.outcome === 'T1_HIT' || e.outcome === 'T2_HIT'; }).length;
+      return { range: b[0] + '-' + Math.min(b[1], 100) + '%', count: inb.length, predicted: (b[0] + Math.min(b[1], 100)) / 2, actual: inb.length ? Math.round(w / inb.length * 100) : null };
+    });
+    var tot = resolved.length, ece = 0;
+    buckets.forEach(function (bk) { if (bk.count && bk.actual != null) ece += (bk.count / tot) * Math.abs(bk.predicted - bk.actual); });
+    return { buckets: buckets, ece: tot ? round2(ece) : null, sample: tot, verdict: tot < 10 ? 'insufficient sample' : (ece <= 10 ? 'well-calibrated' : ece <= 20 ? 'fairly calibrated' : 'over-confident') };
+  }
+
+  // confidence proxy for a historical bar = % of indicators that agree with the side (varies → calibratable)
+  function confFromIndicators(candles, side) {
+    var ind = indicatorSet(candles), keys = Object.keys(ind), agree = 0, tot = 0;
+    keys.forEach(function (k) { var s = ind[k] && ind[k].signal; if (s === 'BUY' || s === 'SELL') { tot++; if (s === side) agree++; } });
+    return tot ? Math.max(55, Math.min(99, Math.round(agree / tot * 100))) : 65;
+  }
+  // Walk the symbol's history, generate a signal at each bar on data-up-to-that-bar (NO lookahead bias),
+  // resolve it forward → a real sample of outcomes for the scorecard + calibration.
+  function backtest(candles, opts) {
+    opts = opts || {}; var look = opts.lookahead || 40, start = opts.start || 60, results = [];
+    if (!candles || candles.length < start + 10) return results;
+    for (var i = start; i < candles.length - 2; i++) {
+      var win = candles.slice(0, i + 1), v = tfVerdict(win);
+      if (!v || v.verdict === 'HOLD') continue;
+      var entry = last(closes(win)), a = last(atr(win, 14)); if (!a || a <= 0) a = entry * 0.01;
+      var side = v.verdict;
+      var sig = { signal: side, entry_price: round2(entry),
+        stop_loss: { price: round2(side === 'BUY' ? entry - 2 * a : entry + 2 * a) },
+        target_1: { price: round2(side === 'BUY' ? entry + 1.5 * a : entry - 1.5 * a) },
+        target_2: { price: round2(side === 'BUY' ? entry + 3 * a : entry - 3 * a) },
+        confidence: confFromIndicators(win, side) };
+      var ev = evaluateSignal(sig, candles.slice(i + 1, i + 1 + look));
+      if (ev.outcome !== 'PENDING') { results.push({ confidence: sig.confidence, side: side, bar: i, outcome: ev.outcome, rMultiple: ev.rMultiple, barsToOutcome: ev.barsToOutcome, mfe: ev.mfe, mae: ev.mae }); i += 4; }
+    }
+    return results;
+  }
+
+  // ═══════════════ BO: Chart & Candlestick Pattern Recognition (deterministic, NO LLM) ═══════════════
+  // Historical edge per pattern (Bulkowski-style literature), as a reliability %.
+  var PATTERN_RELIABILITY = {
+    'Bullish Engulfing': 63, 'Bearish Engulfing': 63, 'Hammer': 60, 'Inverted Hammer': 57, 'Shooting Star': 59,
+    'Bullish Harami': 53, 'Bearish Harami': 53, 'Morning Star': 65, 'Evening Star': 65, 'Three White Soldiers': 70,
+    'Three Black Crows': 70, 'Piercing Line': 64, 'Dark Cloud Cover': 60, 'Doji': 50, 'Bullish Marubozu': 58, 'Bearish Marubozu': 58,
+    'Double Top': 65, 'Double Bottom': 66, 'Head & Shoulders': 66, 'Inverse Head & Shoulders': 66,
+    'Ascending Triangle': 62, 'Descending Triangle': 62, 'Symmetrical Triangle': 54
+  };
+  function _cs(c) {
+    var body = Math.abs(c.close - c.open), range = (c.high - c.low) || 1e-9;
+    return { body: body, range: range, up: c.close > c.open, uw: c.high - Math.max(c.open, c.close), lw: Math.min(c.open, c.close) - c.low, bodyPct: body / range, mid: (c.open + c.close) / 2 };
+  }
+  // Candlestick patterns on the last 1-3 bars (actionable). Each → {name, dir, reliability, kind}.
+  function detectCandles(candles) {
+    var out = [], n = candles ? candles.length : 0; if (n < 3) return out;
+    var c = candles[n - 1], p = candles[n - 2], p2 = candles[n - 3], C = _cs(c), P = _cs(p), P2 = _cs(p2);
+    function add(name, dir) { out.push({ name: name, dir: dir, reliability: PATTERN_RELIABILITY[name] || 50, kind: 'candlestick' }); }
+    if (C.bodyPct <= 0.1) add('Doji', 'neutral');
+    if (C.bodyPct >= 0.95) add(C.up ? 'Bullish Marubozu' : 'Bearish Marubozu', C.up ? 'bullish' : 'bearish');
+    if (C.body > 0 && C.lw >= 2 * C.body && C.uw <= C.body) add('Hammer', 'bullish');
+    if (C.body > 0 && C.uw >= 2 * C.body && C.lw <= C.body) add(C.up ? 'Inverted Hammer' : 'Shooting Star', C.up ? 'bullish' : 'bearish');
+    if (!P.up && C.up && c.close >= p.open && c.open <= p.close) add('Bullish Engulfing', 'bullish');
+    if (P.up && !C.up && c.open >= p.close && c.close <= p.open) add('Bearish Engulfing', 'bearish');
+    if (!P.up && C.up && c.open > p.close && c.close < p.open) add('Bullish Harami', 'bullish');
+    if (P.up && !C.up && c.open < p.close && c.close > p.open) add('Bearish Harami', 'bearish');
+    if (!P.up && C.up && c.open < p.low && c.close > P.mid && c.close < p.open) add('Piercing Line', 'bullish');
+    if (P.up && !C.up && c.open > p.high && c.close < P.mid && c.close > p.open) add('Dark Cloud Cover', 'bearish');
+    if (!P2.up && P.bodyPct < 0.4 && C.up && c.close > P2.mid) add('Morning Star', 'bullish');
+    if (P2.up && P.bodyPct < 0.4 && !C.up && c.close < P2.mid) add('Evening Star', 'bearish');
+    if (C.up && P.up && P2.up && c.close > p.close && p.close > p2.close) add('Three White Soldiers', 'bullish');
+    if (!C.up && !P.up && !P2.up && c.close < p.close && p.close < p2.close) add('Three Black Crows', 'bearish');
+    return out;
+  }
+  // ordered swing pivots (local extreme over ±2 bars)
+  function swingPivots(candles) {
+    var piv = [], n = candles.length;
+    for (var i = 2; i < n - 2; i++) {
+      var c = candles[i];
+      if (c.high > candles[i - 1].high && c.high > candles[i - 2].high && c.high > candles[i + 1].high && c.high > candles[i + 2].high) piv.push({ idx: i, price: c.high, type: 'H' });
+      if (c.low < candles[i - 1].low && c.low < candles[i - 2].low && c.low < candles[i + 1].low && c.low < candles[i + 2].low) piv.push({ idx: i, price: c.low, type: 'L' });
+    }
+    return piv;
+  }
+  // Structural patterns via pivots — Double Top/Bottom, H&S (+inverse), Triangles. Actionable-only (fresh).
+  function detectChartPatterns(candles) {
+    var out = [], n = candles ? candles.length : 0; if (n < 20) return out;
+    var piv = swingPivots(candles), recent = n - 1;
+    var near = function (a, b, tol) { return Math.abs(a - b) / ((a + b) / 2) <= (tol || 0.02); };
+    var fresh = function (idx) { return (recent - idx) <= 12; };
+    var highs = piv.filter(function (p) { return p.type === 'H'; }), lows = piv.filter(function (p) { return p.type === 'L'; });
+    function push(name, dir, level) { out.push({ name: name, dir: dir, level: level != null ? round2(level) : null, reliability: PATTERN_RELIABILITY[name] || 50, kind: 'chart' }); }
+    if (highs.length >= 2) { var h1 = highs[highs.length - 2], h2 = highs[highs.length - 1]; if (near(h1.price, h2.price, 0.02) && fresh(h2.idx)) push('Double Top', 'bearish', (h1.price + h2.price) / 2); }
+    if (lows.length >= 2) { var l1 = lows[lows.length - 2], l2 = lows[lows.length - 1]; if (near(l1.price, l2.price, 0.02) && fresh(l2.idx)) push('Double Bottom', 'bullish', (l1.price + l2.price) / 2); }
+    if (highs.length >= 3) { var a = highs[highs.length - 3], b = highs[highs.length - 2], c2 = highs[highs.length - 1]; if (b.price > a.price && b.price > c2.price && near(a.price, c2.price, 0.03) && fresh(c2.idx)) push('Head & Shoulders', 'bearish', Math.min(a.price, c2.price)); }
+    if (lows.length >= 3) { var la = lows[lows.length - 3], lb = lows[lows.length - 2], lc = lows[lows.length - 1]; if (lb.price < la.price && lb.price < lc.price && near(la.price, lc.price, 0.03) && fresh(lc.idx)) push('Inverse Head & Shoulders', 'bullish', Math.max(la.price, lc.price)); }
+    if (highs.length >= 3 && lows.length >= 3) {
+      var hs = highs.slice(-3), ls = lows.slice(-3);
+      var hSlope = (hs[2].price - hs[0].price) / Math.max(1, hs[2].idx - hs[0].idx), lSlope = (ls[2].price - ls[0].price) / Math.max(1, ls[2].idx - ls[0].idx);
+      var flatH = Math.abs(hSlope) < 0.0006 * hs[2].price, flatL = Math.abs(lSlope) < 0.0006 * ls[2].price, fr = fresh(Math.max(hs[2].idx, ls[2].idx));
+      if (fr && flatH && lSlope > 0) push('Ascending Triangle', 'bullish', hs[2].price);
+      else if (fr && flatL && hSlope < 0) push('Descending Triangle', 'bearish', ls[2].price);
+      else if (fr && hSlope < 0 && lSlope > 0) push('Symmetrical Triangle', 'neutral', null);
+    }
+    return out;
+  }
+  // Combine → the single strongest FRESH pattern + the full list (structural breaks reliability ties).
+  function detectPatterns(candles) {
+    var cs = detectCandles(candles), ch = detectChartPatterns(candles), all = cs.concat(ch);
+    all.sort(function (a, b) { return (b.reliability || 0) - (a.reliability || 0) || ((b.kind === 'chart' ? 1 : 0) - (a.kind === 'chart' ? 1 : 0)); });
+    return { top: all[0] || null, candlesticks: cs, structural: ch, all: all };
+  }
+
+  // ═══════════════ BO: Backtest Journal (user-ticked TF · ₹1 lakh/trade · batch Nifty 50) ═══════════════
+  // Walk the FASTEST ticked TF (trigger); higher ticked TFs are time-aligned (proportional, NO look-ahead)
+  // and must concur (confluence ≥60%). Each trade deploys a fixed capital. Returns per-trade journal rows.
+  function backtestJournal(candlesByTf, opts) {
+    opts = opts || {};
+    var capital = opts.capital || 100000, look = opts.lookahead || 40;
+    var tfs = (opts.tfs && opts.tfs.length) ? opts.tfs.slice() : ['daily'];
+    var trig = null;
+    for (var ti = TF_ORDER.length - 1; ti >= 0; ti--) { var t = TF_ORDER[ti]; if (tfs.indexOf(t) >= 0 && candlesByTf[t] && candlesByTf[t].length) { trig = t; break; } }
+    if (!trig) return [];
+    var tc = candlesByTf[trig], n = tc.length, rows = [], higher = tfs.filter(function (x) { return x !== trig; });
+    var start = 60; if (opts.lastN && opts.lastN < n) start = Math.max(start, n - opts.lastN);
+    for (var i = start; i < n - 2; i++) {
+      var win = tc.slice(0, i + 1), tv = tfVerdict(win);
+      if (!tv || tv.verdict === 'HOLD') continue;
+      var bull = tv.verdict === 'BUY' ? 1 : 0, bear = tv.verdict === 'SELL' ? 1 : 0;
+      for (var hi = 0; hi < higher.length; hi++) {
+        var hc = candlesByTf[higher[hi]]; if (!hc || !hc.length) continue;
+        var hIdx = Math.max(30, Math.floor((i + 1) / n * hc.length)), hb = tfBias(higher[hi], hc.slice(0, hIdx));
+        if (hb === 'BULL') bull++; else if (hb === 'BEAR') bear++;
+      }
+      var total = tfs.length, dom = Math.max(bull, bear);
+      if (dom / total * 100 < 60) continue;
+      var side = bull >= bear ? 'BUY' : 'SELL';
+      if ((side === 'BUY' && tv.verdict !== 'BUY') || (side === 'SELL' && tv.verdict !== 'SELL')) continue;
+      var entry = last(closes(win)), a = last(atr(win, 14)); if (!a || a <= 0) a = entry * 0.01;
+      var sl = side === 'BUY' ? entry - 2 * a : entry + 2 * a, t1 = side === 'BUY' ? entry + 1.5 * a : entry - 1.5 * a, t2 = side === 'BUY' ? entry + 3 * a : entry - 3 * a;
+      var sig = { signal: side, entry_price: round2(entry), stop_loss: { price: round2(sl) }, target_1: { price: round2(t1) }, target_2: { price: round2(t2) } };
+      var ev = evaluateSignal(sig, tc.slice(i + 1, i + 1 + look));
+      var exit = ev.outcome === 'SL_HIT' ? sl : ev.outcome === 'T2_HIT' ? t2 : ev.outcome === 'T1_HIT' ? t1 : last(closes(tc.slice(0, Math.min(n, i + 1 + look))));
+      var shares = Math.floor(capital / entry);
+      var pnl = Math.round(shares * (side === 'BUY' ? (exit - entry) : (entry - exit)));
+      rows.push({ date: tc[i].date || ('P' + (i + 1)), side: side, entry: round2(entry), target: round2(t1), sl: round2(sl), exit: round2(exit), outcome: ev.outcome, shares: shares, pnl: pnl, rMultiple: ev.rMultiple, tf: trig });
+      i += 2;
+    }
+    return rows;
+  }
+  // Aggregate journal rows → win rate, profit factor, total P&L ₹, return % on the deployed capital, max DD ₹.
+  function aggregateBacktest(rows, deployed) {
+    deployed = deployed || 100000;
+    var n = (rows || []).length, wins = rows.filter(function (r) { return r.pnl > 0; }), losses = rows.filter(function (r) { return r.pnl < 0; });
+    var gw = wins.reduce(function (a, r) { return a + r.pnl; }, 0), gl = Math.abs(losses.reduce(function (a, r) { return a + r.pnl; }, 0));
+    var totalPnl = rows.reduce(function (a, r) { return a + r.pnl; }, 0), cum = 0, peak = 0, maxDD = 0;
+    rows.forEach(function (r) { cum += r.pnl; peak = Math.max(peak, cum); maxDD = Math.min(maxDD, cum - peak); });
+    return { trades: n, wins: wins.length, losses: losses.length, winRate: n ? Math.round(wins.length / n * 100) : 0,
+      profitFactor: gl > 0 ? round2(gw / gl) : (gw > 0 ? '∞' : 0), totalPnl: totalPnl, deployed: deployed,
+      returnPct: deployed ? round2(totalPnl / deployed * 100) : 0, maxDrawdown: Math.round(maxDD), avgPnl: n ? Math.round(totalPnl / n) : 0 };
+  }
+  // Batch runner — one backtest per stock (e.g. Nifty 50), aggregated on (capital × N stocks) deployed.
+  function batchBacktest(map, opts) {
+    opts = opts || {}; var capital = opts.capital || 100000, syms = Object.keys(map), per = [], allRows = [];
+    syms.forEach(function (s) { var rows = backtestJournal(map[s], opts); per.push({ sym: s, agg: aggregateBacktest(rows, capital), trades: rows.length }); allRows = allRows.concat(rows); });
+    var aggregate = aggregateBacktest(allRows, capital * syms.length); aggregate.stocks = syms.length;
+    return { perStock: per, aggregate: aggregate, rows: allRows };
+  }
+
+  // ═══════════════ BO14: Opportunity Scanner — rank the best BUY/SELL setups across a universe ═══════════════
+  // Run the deterministic multi-TF signal on every symbol; keep directional ones; rank by confidence;
+  // surface only the top few (decluttered). Reuses generateSignal — no LLM, no look-ahead.
+  function scanUniverse(map, opts) {
+    opts = opts || {}; var top = opts.top || 5, tfs = opts.tfs, buys = [], sells = [], scanned = 0;
+    Object.keys(map).forEach(function (sym) {
+      var sig; try { sig = generateSignal(map[sym], { tfs: tfs }); } catch (e) { return; }
+      scanned++;
+      if (!sig || sig.signal === 'HOLD' || !sig.stop_loss) return;
+      var row = { sym: sym, signal: sig.signal, confidence: sig.confidence, confluence: sig.confluence_score,
+        quality: sig.confluence_quality, entry: sig.entry_price, sl: sig.stop_loss.price,
+        t1: sig.target_1 ? sig.target_1.price : null, rr: sig.risk_reward_ratio || null };
+      (sig.signal === 'BUY' ? buys : sells).push(row);
+    });
+    function rank(a, b) { return (b.confidence - a.confidence) || (('' + b.confluence).localeCompare('' + a.confluence)); }
+    buys.sort(rank); sells.sort(rank);
+    return { buys: buys.slice(0, top), sells: sells.slice(0, top), scanned: scanned, totalBuys: buys.length, totalSells: sells.length };
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -908,7 +1343,22 @@
     neededTfs: neededTfs, scanSymbol: scanSymbol,
     // explain + guardrails
     explain: explain, hasBannedPhrase: hasBannedPhrase, BANNED: BANNED, LADDERS: LADDERS,
-    VERSION: '1.0.0'
+    // CEOS FINAL v1.0 layer
+    classicPivots: classicPivots, camarillaPivots: camarillaPivots, pivotsFor: pivotsFor,
+    srConfluence: srConfluence, atrRiskBlock: atrRiskBlock, CONFLUENCE_MODES: CONFLUENCE_MODES,
+    tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
+    // CEOS safety + journal intelligence
+    detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
+    // BO-NEXT: outcome tracking + accuracy scorecard + calibration
+    evaluateSignal: evaluateSignal, scorecard: scorecard, calibration: calibration, backtest: backtest,
+    // BO: pattern recognition
+    detectCandles: detectCandles, detectChartPatterns: detectChartPatterns, detectPatterns: detectPatterns,
+    swingPivots: swingPivots, PATTERN_RELIABILITY: PATTERN_RELIABILITY,
+    // BO: backtest journal
+    backtestJournal: backtestJournal, aggregateBacktest: aggregateBacktest, batchBacktest: batchBacktest,
+    // BO14: opportunity scanner
+    scanUniverse: scanUniverse,
+    TF_ORDER: TF_ORDER, VERSION: '2.6.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

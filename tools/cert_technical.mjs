@@ -21,6 +21,7 @@ mkdirSync(SHOT_DIR, { recursive: true });
 const PORT = 8771;
 const BASE = 'http://127.0.0.1:' + PORT;
 const URL = BASE + '/chitti_technical.html';
+const AXE = readFileSync(join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8'); // BO5.6
 
 const MIME = { '.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml' };
 const server = createServer((req, res) => {
@@ -42,6 +43,7 @@ const pageErrors = [];
 const viewports = [{ n:'375', w:375, h:812, d:2 }, { n:'768', w:768, h:1024, d:2 }, { n:'1280', w:1280, h:900, d:1 }];
 for (const v of viewports) {
   const c = await b.newContext({ viewport:{ width:v.w, height:v.h }, deviceScaleFactor:v.d });
+  await c.route('**/api/candles/**', r => r.abort());  // offline → init's auto-load fails fast → DEMO
   const p = await c.newPage();
   p.on('pageerror', e => pageErrors.push(v.n + ': ' + e.message));
   await p.goto(URL, { waitUntil:'domcontentloaded', timeout:30000 });
@@ -52,12 +54,20 @@ for (const v of viewports) {
   if (v.n === '375') {
     const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
     check('no_horizontal_overflow_375', !overflow, overflow ? 'scrollWidth>vw' : 'clean');
+    // BO5.6: axe-core WCAG 2.0/2.1 A+AA scan — gate on 0 serious/critical violations
+    try {
+      await p.addScriptTag({ content: AXE });
+      const axeRes = await p.evaluate(async () => await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }));
+      const bad = axeRes.violations.filter(x => x.impact === 'serious' || x.impact === 'critical');
+      check('axe_core_no_serious_violations', bad.length === 0, bad.length ? bad.map(x => x.id + '(' + x.impact + ')').join(', ') : '0 serious/critical across ' + axeRes.passes.length + ' passes');
+    } catch (e) { check('axe_core_no_serious_violations', false, 'axe run error: ' + e.message); }
   }
   await c.close();
 }
 
 // ---- functional gates on 1280 ----
 const c = await b.newContext({ viewport:{ width:1280, height:900 } });
+await c.route('**/api/candles/**', r => r.abort());  // functional gates run on DEMO (deterministic)
 const p = await c.newPage();
 p.on('pageerror', e => pageErrors.push('fn: ' + e.message));
 p.on('dialog', d => d.dismiss().catch(() => {}));
@@ -271,8 +281,10 @@ await liveP.goto(URL, { waitUntil: 'domcontentloaded' });
 await liveP.waitForTimeout(1400);
 await liveP.evaluate(() => { const m = document.getElementById('chitti-disability-profile-modal'); if (m) m.remove(); });
 await liveP.evaluate(() => window.TechUI.refresh());     // fetches the mocked Angel candles
-await liveP.waitForTimeout(1500);
-const liveSrc = await liveP.evaluate(() => document.documentElement.getAttribute('data-tech-source'));
+let liveSrc = 'DEMO';
+try { await liveP.waitForFunction(() => document.documentElement.getAttribute('data-tech-source') === 'LIVE', { timeout: 8000 }); liveSrc = 'LIVE'; }
+catch (e) { liveSrc = await liveP.evaluate(() => document.documentElement.getAttribute('data-tech-source')); }
+await liveP.waitForTimeout(300);
 const liveFlag = await liveP.evaluate(() => document.getElementById('demo-flag').textContent);
 const liveAsof = await liveP.evaluate(() => document.getElementById('asof-val').textContent);
 await liveP.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_live.png') });

@@ -149,6 +149,144 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('CCI on a strong uptrend is finite', E.cci(rising).pop() != null);
 }
 
+// ───── CEOS FINAL layer: pivots, S/R, ATR risk, confluence modes, signal ─────
+{
+  // Classic pivots from H=110, L=90, C=100 → PP=100, R1=110, S1=90
+  const cp = E.classicPivots(110, 90, 100);
+  ok('classic pivot PP=(H+L+C)/3', approx(cp.pp, 100));
+  ok('classic R1 = 2PP-L', approx(cp.r1, 110));
+  ok('classic S1 = 2PP-H', approx(cp.s1, 90));
+  ok('classic R2 = PP+(H-L)', approx(cp.r2, 120));
+  // Camarilla: H3 = C + (H-L)*0.75, L3 = C - (H-L)*0.75
+  const cam = E.camarillaPivots(110, 90, 100);
+  ok('camarilla H3 = C + range*0.75', approx(cam.h3, 115));
+  ok('camarilla L3 = C - range*0.75', approx(cam.l3, 85));
+  ok('camarilla H5 = C + range*1.25', approx(cam.h5, 125));
+  ok('camarilla levels ordered H5>H4>...>L5', cam.h5>cam.h4 && cam.h4>cam.h3 && cam.l3>cam.l4 && cam.l4>cam.l5);
+
+  // ATR risk: SL on correct side, T1/T2 ATR multiples, position sizing
+  const upC = Array.from({length:120},(_,i)=>({open:100+i*0.5,high:101+i*0.5,low:99+i*0.5,close:100.5+i*0.5,volume:1e5}));
+  const rbB = E.atrRiskBlock(upC,'BUY',{capital:100000,riskPercent:2});
+  ok('ATR BUY stop below entry', rbB.stop_loss.price < rbB.entry);
+  ok('ATR BUY T1 above entry, T2 above T1', rbB.target_1.price > rbB.entry && rbB.target_2.price > rbB.target_1.price);
+  ok('ATR T2 distance ≈ 2× T1 distance (3ATR vs 1.5ATR)', approx(Math.abs(rbB.target_2.price-rbB.entry), 2*Math.abs(rbB.target_1.price-rbB.entry), 0.2));
+  ok('position sizing: shares = floor(riskAmt/riskPerShare)', rbB.position_size.shares === Math.floor((100000*0.02)/rbB.position_size.risk_per_share));
+  const rbS = E.atrRiskBlock(upC,'SELL',{});
+  ok('ATR SELL stop above entry', rbS.stop_loss.price > rbS.entry);
+
+  // confluence modes resolve the right TFs
+  ok('mode longterm = Monthly+Weekly→Daily', JSON.stringify(E.CONFLUENCE_MODES.longterm.trend.concat([E.CONFLUENCE_MODES.longterm.entry]))===JSON.stringify(['monthly','weekly','daily']));
+  ok('mode scalper entry = 5m', E.CONFLUENCE_MODES.scalper.entry === '15m' || E.CONFLUENCE_MODES.scalper.entry === '5m');
+
+  // confluence score + tfBias on a clean uptrend daily → BULL
+  ok('tfBias daily uptrend = BULL', E.tfBias('daily', upC) === 'BULL');
+  const dnC = Array.from({length:120},(_,i)=>({open:200-i*0.4,high:201-i*0.4,low:199-i*0.4,close:199.5-i*0.4,volume:1e5}));
+  ok('tfBias daily downtrend = BEAR', E.tfBias('daily', dnC) === 'BEAR');
+  const tfsUp = { monthly: upC, weekly: upC, daily: upC, '4h': upC, '1h': upC };
+  const cs = E.confluenceScore(tfsUp, ['weekly','daily','4h']);
+  ok('confluenceScore all-bull → BULLISH 100%', cs.bias==='BULLISH' && cs.percent===100 && cs.quality==='PERFECT');
+
+  // generateSignal: directional → SL/T1/T2 present; opposed → HOLD; HOLD has no SL
+  const sigUp = E.generateSignal(tfsUp, { mode:'swing', capital:100000, riskPercent:2 });
+  ok('generateSignal all-bull swing → BUY', sigUp.signal === 'BUY');
+  ok('BUY signal carries ATR stop_loss + T1 + T2 + RR + position size', !!(sigUp.stop_loss && sigUp.target_1 && sigUp.target_2 && sigUp.risk_reward_ratio && sigUp.position_size));
+  ok('BUY stop on correct side', sigUp.stop_loss.price < sigUp.entry_price);
+  ok('signal includes confluence % + quality', /%/.test(sigUp.confluence_score) && sigUp.confluence_quality);
+  ok('signal includes pivots (classic + camarilla)', !!(sigUp.pivots && sigUp.pivots.classic && sigUp.pivots.camarilla));
+  const tfsOpp = { weekly: upC, daily: upC, '4h': dnC };
+  const sigOpp = E.generateSignal(tfsOpp, { mode:'swing' });
+  ok('generateSignal opposed TFs → not a full-confidence directional (HOLD or <100%)', sigOpp.signal==='HOLD' || sigOpp.confluence.percent<100);
+  ok('HOLD signal carries NO stop_loss', sigOpp.signal!=='HOLD' || !sigOpp.stop_loss);
+  ok('generateSignal no banned phrase', E.hasBannedPhrase(JSON.stringify(sigUp)) === null);
+  // R-BO2: explicit user-picked timeframes drive the signal (not just preset modes)
+  const sigTfs = E.generateSignal({weekly:upC,daily:upC,'4h':upC,'1h':upC},{tfs:['daily','4h','1h'],capital:100000,riskPercent:2});
+  ok('generateSignal honours explicit ticked TFs → confluence /3', sigTfs.confluence.total===3);
+  ok('explicit-tfs all-bull → BUY with ATR stop', sigTfs.signal==='BUY' && !!sigTfs.stop_loss);
+  ok('explicit-tfs label is Custom + per-TF biases present', /Custom/.test(sigTfs.mode_label) && Object.keys(sigTfs.confluence.per_tf).length===3);
+
+  // S/R confluence zones
+  const zones = E.srConfluence({ daily: upC, '4h': upC, '1h': upC });
+  ok('srConfluence returns scored zones (array)', Array.isArray(zones));
+
+  // ── CEOS safety guardrails (deterministic, NO LLM) ──
+  ok('detectCrisis flags self-harm text', E.detectCrisis('I want to die') === true && E.detectCrisis('end my life') === true);
+  ok('detectCrisis ignores normal trading text', E.detectCrisis('should I buy reliance') === false && E.detectCrisis('') === false);
+  ok('crisisResponse points to Tele-MANAS 14416', E.crisisResponse().number === '14416' && /14416/.test(E.crisisResponse().visual));
+  const spiralTrades = [{pnl:-2500},{pnl:-2000},{pnl:-2000}];
+  ok('detectLossSpiral fires on 3 losers >5%', E.detectLossSpiral(spiralTrades, 100000).isSpiral === true);
+  ok('detectLossSpiral cool-down is 30 min', E.detectLossSpiral(spiralTrades, 100000).coolDownMinutes === 30);
+  ok('detectLossSpiral quiet on a win in the mix', E.detectLossSpiral([{pnl:-2500},{pnl:3000},{pnl:-2000}], 100000).isSpiral === false);
+  ok('detectLossSpiral quiet under 3 trades', E.detectLossSpiral([{pnl:-9000}], 100000).isSpiral === false);
+  ok('aiInsights silent before 10 trades', E.aiInsights([{pnl:1},{pnl:-1}]).length === 0);
+  const tr10 = Array.from({length:12},(_,i)=>({pnl:i%3?100:-100, mode:'swing', quantity:10}));
+  const ins = E.aiInsights(tr10);
+  ok('aiInsights produces a win-rate insight after ≥10 trades', ins.length>0 && /win rate/i.test(ins[0]));
+
+  // ── BO-NEXT: outcome tracking + scorecard + calibration ──
+  const buySig={signal:'BUY',entry_price:100,stop_loss:{price:98},target_1:{price:103},target_2:{price:106}};
+  ok('evaluateSignal → T1_HIT when price reaches T1', E.evaluateSignal(buySig,[{high:101,low:99.5},{high:103.2,low:100}]).outcome==='T1_HIT');
+  ok('evaluateSignal → SL_HIT when price hits stop', E.evaluateSignal(buySig,[{high:100.5,low:97.5}]).outcome==='SL_HIT');
+  ok('evaluateSignal → T2_HIT reaches 2nd target', E.evaluateSignal(buySig,[{high:107,low:100}]).outcome==='T2_HIT');
+  ok('evaluateSignal → PENDING when neither hit', E.evaluateSignal(buySig,[{high:101,low:99}]).outcome==='PENDING');
+  ok('evaluateSignal conservative on same-bar SL+T1 → SL_HIT', E.evaluateSignal(buySig,[{high:103.5,low:97.9}]).outcome==='SL_HIT');
+  ok('evaluateSignal T1 R-multiple ≈ +1.5R', Math.abs(E.evaluateSignal(buySig,[{high:103.1,low:100}]).rMultiple-1.5)<0.01);
+  const sellSig={signal:'SELL',entry_price:100,stop_loss:{price:102},target_1:{price:97},target_2:{price:94}};
+  ok('evaluateSignal SELL → T1_HIT when price falls', E.evaluateSignal(sellSig,[{high:100.5,low:96.9}]).outcome==='T1_HIT');
+  ok('evaluateSignal SELL → SL_HIT when price rises', E.evaluateSignal(sellSig,[{high:102.5,low:100}]).outcome==='SL_HIT');
+  const evs=[{outcome:'T1_HIT',rMultiple:1.5,confidence:85},{outcome:'T1_HIT',rMultiple:1.5,confidence:75},{outcome:'SL_HIT',rMultiple:-1,confidence:65},{outcome:'PENDING',rMultiple:0,confidence:90}];
+  const sc=E.scorecard(evs);
+  ok('scorecard ignores PENDING (sample=3)', sc.sample===3);
+  ok('scorecard win rate 2/3 = 67%', sc.winRate===67);
+  ok('scorecard profit factor 3/1 = 3', sc.profitFactor===3);
+  ok('scorecard expectancy ≈ 0.67R', Math.abs(sc.expectancy-0.67)<0.01);
+  ok('scorecard Go/No-Go = NO-GO under 10 resolved', sc.goNoGo==='NO-GO');
+  const cal=E.calibration(evs);
+  ok('calibration returns 4 confidence buckets', cal.buckets.length===4);
+  ok('calibration computes ECE when sample present', cal.ece!=null);
+  const bt=E.backtest(upC,{lookahead:30});
+  ok('backtest returns a resolved-outcome array', Array.isArray(bt));
+  ok('backtest entries carry outcome + confidence', !bt.length || (!!bt[0].outcome && bt[0].confidence!=null));
+
+  // ── BO: pattern recognition ──
+  const beC=[{open:11,high:11.2,low:10.4,close:10.5},{open:10.5,high:10.6,low:9.8,close:9.9},{open:9.7,high:10.7,low:9.6,close:10.6}];
+  ok('detectCandles → Bullish Engulfing', E.detectCandles(beC).some(p=>p.name==='Bullish Engulfing'&&p.dir==='bullish'));
+  const dojiC=[{open:10,high:10.5,low:9.5,close:10},{open:10,high:10.4,low:9.6,close:10},{open:10,high:10.6,low:9.4,close:10.02}];
+  ok('detectCandles → Doji on a tiny body', E.detectCandles(dojiC).some(p=>p.name==='Doji'));
+  const tws=[{open:10,high:10.6,low:9.9,close:10.5},{open:10.4,high:11.1,low:10.3,close:11.0},{open:10.9,high:11.6,low:10.8,close:11.5}];
+  ok('detectCandles → Three White Soldiers', E.detectCandles(tws).some(p=>p.name==='Three White Soldiers'&&p.dir==='bullish'));
+  const ham=[{open:10,high:10.2,low:9,close:9.9},{open:9.9,high:10,low:9,close:9.5},{open:9.5,high:9.7,low:8.5,close:9.6}];
+  ok('detectCandles → Hammer (long lower wick)', E.detectCandles(ham).some(p=>p.name==='Hammer'&&p.dir==='bullish'));
+  const dblPath=[100,99,97,96,95,96,97,99,100,99,98,97,96,95,96,97,98,99,100,101,102,103];
+  const dbl=dblPath.map(p=>({open:p,high:p+0.6,low:p-0.6,close:p}));
+  ok('detectChartPatterns → Double Bottom (W shape)', E.detectChartPatterns(dbl).some(p=>p.name==='Double Bottom'&&p.dir==='bullish'));
+  ok('detectPatterns returns a top pattern with reliability', !!(E.detectPatterns(tws).top && E.detectPatterns(tws).top.name && E.detectPatterns(tws).top.reliability>0));
+  ok('detectPatterns no banned phrase / clean names', E.hasBannedPhrase(JSON.stringify(E.detectPatterns(beC)))===null);
+
+  // ── BO: backtest journal ──
+  const bj=E.backtestJournal({daily:upC},{tfs:['daily'],capital:100000,lookahead:30});
+  ok('backtestJournal returns rows with ₹ P&L + shares', Array.isArray(bj) && (!bj.length || (bj[0].pnl!=null && bj[0].shares>0 && bj[0].entry>0)));
+  ok('backtestJournal row has date/side/entry/target/sl/exit', !bj.length || (bj[0].date!=null&&!!bj[0].side&&bj[0].entry!=null&&bj[0].target!=null&&bj[0].sl!=null&&bj[0].exit!=null));
+  ok('backtestJournal shares = floor(100000/entry)', !bj.length || bj[0].shares===Math.floor(100000/bj[0].entry));
+  const agg=E.aggregateBacktest([{pnl:5000},{pnl:5000},{pnl:-2000}],100000);
+  ok('aggregateBacktest total P&L = 8000', agg.totalPnl===8000);
+  ok('aggregateBacktest return % = 8 on ₹1 lakh', agg.returnPct===8);
+  ok('aggregateBacktest win rate = 2/3 = 67%', agg.winRate===67);
+  ok('aggregateBacktest profit factor = 10000/2000 = 5', agg.profitFactor===5);
+  const batch=E.batchBacktest({TCS:{daily:upC}, RELI:{daily:dnC}},{tfs:['daily'],capital:100000,lookahead:30});
+  ok('batchBacktest deployed = ₹1L × 2 stocks (₹2L)', batch.aggregate.deployed===200000 && batch.aggregate.stocks===2);
+  ok('batchBacktest has per-stock summaries', batch.perStock.length===2 && !!batch.perStock[0].sym && !!batch.perStock[0].agg);
+
+  // ── BO14: opportunity scanner ──
+  const upTf={weekly:upC,daily:upC,'4h':upC}, dnTf={weekly:dnC,daily:dnC,'4h':dnC};
+  const su=E.scanUniverse({A:upTf,B:upTf,C:dnTf,D:dnTf},{tfs:['weekly','daily','4h'],top:5});
+  ok('scanUniverse separates BUY and SELL setups', su.buys.length===2 && su.sells.length===2);
+  ok('scanUniverse scanned all 4 symbols', su.scanned===4);
+  ok('scanUniverse rows carry entry/sl/t1 + confidence', su.buys[0].entry!=null && su.buys[0].sl!=null && su.buys[0].t1!=null && su.buys[0].confidence>0);
+  ok('scanUniverse ranks by confidence desc', su.buys.length<2 || su.buys[0].confidence>=su.buys[1].confidence);
+  ok('scanUniverse respects top-N cap', E.scanUniverse({A:upTf,B:upTf,C:upTf},{tfs:['weekly','daily','4h'],top:2}).buys.length<=2);
+  ok('scanUniverse only surfaces directional (no HOLD rows)', su.buys.concat(su.sells).every(r=>r.signal==='BUY'||r.signal==='SELL'));
+}
+
 // ───── BO2: i18n completeness + no-Hinglish ─────
 const LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
 ok('i18n has all 9 primary languages', LANGS.every(l => I18N[l]));
