@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260608" defer></script>
-<script src="nse_universe.js?v=20260608" defer></script>
-<script src="chitti_technical_i18n.js?v=20260608" defer></script>
-<script src="chitti_technical_engine.js?v=20260608" defer></script>
-<script src="chitti_technical_a11y.js?v=20260608" defer></script>
-<script src="chitti_a11y.js?v=20260608" defer></script>
+<script src="chitti_lang.js?v=20260609" defer></script>
+<script src="nse_universe.js?v=20260609" defer></script>
+<script src="chitti_technical_i18n.js?v=20260609" defer></script>
+<script src="chitti_technical_engine.js?v=20260609" defer></script>
+<script src="chitti_technical_a11y.js?v=20260609" defer></script>
+<script src="chitti_a11y.js?v=20260609" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260608" defer></script>
+<script src="chitti_isl.js?v=20260609" defer></script>
 
 <style>
 :root{
@@ -528,7 +528,7 @@ window.TechUI = (function(){
     // SEQUENTIAL (one timeframe at a time) to respect Angel's rate limit — parallel bursts were
     // returning empties/500s. ONLY Daily is required (price + anchor) and gets 2 retries; the rest
     // are best-effort. The backend caches non-empty results 5 min, so repeat loads are instant.
-    return fetchCandlesRetry(base,sym,'Daily',2).then(function(daily){
+    return fetchCandlesRetry(base,sym,'Daily',3).then(function(daily){
       var tf={daily:daily};
       return fetchOpt(base,sym,'Weekly').then(function(w){if(w)tf.weekly=w; return fetchOpt(base,sym,'4H');})
         .then(function(f){if(f)tf['4h']=f; return fetchOpt(base,sym,'1H');})
@@ -562,11 +562,12 @@ window.TechUI = (function(){
       document.documentElement.setAttribute('data-tech-source','DEMO');
     }
   }
+  var _liveRetries=0;
   function refresh(){
     var sym=(document.getElementById('sym').value||'RELIANCE').trim().toUpperCase();
     var btn=document.getElementById('tech-refresh'); if(btn) btn.disabled=true;
-    loadLive(sym).then(function(tf){
-      window.__techLiveErr='';
+    return loadLive(sym).then(function(tf){
+      window.__techLiveErr=''; _liveRetries=0;
       candleCache[sym]=tf;
       var ld=(tf.daily&&tf.daily.length)?tf.daily[tf.daily.length-1].date:true;
       liveSymbols[sym]=ld; dataSource='LIVE';
@@ -575,6 +576,9 @@ window.TechUI = (function(){
       window.__techLiveErr=(e&&e.message)||'unreachable';
       delete candleCache[sym]; delete liveSymbols[sym]; dataSource='DEMO';
       scan();
+      // self-heal: Angel's historical API is intermittently rate-limited; auto-retry twice (5s, 9s)
+      // so a transient hiccup recovers without the user tapping. Never leaves a fake price showing.
+      if(_liveRetries<2){ _liveRetries++; setTimeout(refresh, 4000+_liveRetries*4000); }
     }).finally(function(){ if(btn) btn.disabled=false; });
   }
 
@@ -599,15 +603,17 @@ window.TechUI = (function(){
     document.getElementById('sig-sym').textContent=res._sym;
     var tierEl=document.getElementById('sig-tier');
     tierEl.textContent=T('tier.'+(res._stock.tier))||res._stock.tier;
-    // current price + day change (always shown — live close when LIVE, demo close otherwise)
-    var dly=getTf(res._sym).daily, pe=document.getElementById('sig-price');
+    // current price — show ₹ ONLY when this symbol is LIVE. Never show a fake DEMO price as if real.
+    var dly=getTf(res._sym).daily, pe=document.getElementById('sig-price'), isLive=!!liveSymbols[res._sym];
     if(pe){
-      if(dly&&dly.length){
+      if(isLive&&dly&&dly.length){
         var px=dly[dly.length-1].close, prev=dly.length>1?dly[dly.length-2].close:px;
         var chg=prev?((px-prev)/prev*100):0, up=chg>=0;
         pe.innerHTML='₹'+Number(px).toLocaleString('en-IN',{maximumFractionDigits:2})+
           ' <span class="chg" style="color:'+(up?'var(--green)':'var(--red)')+'">'+(up?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</span>';
-      } else pe.textContent='';
+      } else {
+        pe.innerHTML='<span style="font-size:13px;color:#7a4d00;font-weight:700">'+(window.__techLiveErr?'⚠️ live price unavailable — tap 🔄 Refresh':'⏳ loading live price…')+'</span>';
+      }
     }
     // verdict
     var vr=document.getElementById('verdict-row');
