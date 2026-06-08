@@ -202,6 +202,20 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   // S/R confluence zones
   const zones = E.srConfluence({ daily: upC, '4h': upC, '1h': upC });
   ok('srConfluence returns scored zones (array)', Array.isArray(zones));
+
+  // ── CEOS safety guardrails (deterministic, NO LLM) ──
+  ok('detectCrisis flags self-harm text', E.detectCrisis('I want to die') === true && E.detectCrisis('end my life') === true);
+  ok('detectCrisis ignores normal trading text', E.detectCrisis('should I buy reliance') === false && E.detectCrisis('') === false);
+  ok('crisisResponse points to Tele-MANAS 14416', E.crisisResponse().number === '14416' && /14416/.test(E.crisisResponse().visual));
+  const spiralTrades = [{pnl:-2500},{pnl:-2000},{pnl:-2000}];
+  ok('detectLossSpiral fires on 3 losers >5%', E.detectLossSpiral(spiralTrades, 100000).isSpiral === true);
+  ok('detectLossSpiral cool-down is 30 min', E.detectLossSpiral(spiralTrades, 100000).coolDownMinutes === 30);
+  ok('detectLossSpiral quiet on a win in the mix', E.detectLossSpiral([{pnl:-2500},{pnl:3000},{pnl:-2000}], 100000).isSpiral === false);
+  ok('detectLossSpiral quiet under 3 trades', E.detectLossSpiral([{pnl:-9000}], 100000).isSpiral === false);
+  ok('aiInsights silent before 10 trades', E.aiInsights([{pnl:1},{pnl:-1}]).length === 0);
+  const tr10 = Array.from({length:12},(_,i)=>({pnl:i%3?100:-100, mode:'swing', quantity:10}));
+  const ins = E.aiInsights(tr10);
+  ok('aiInsights produces a win-rate insight after ≥10 trades', ins.length>0 && /win rate/i.test(ins[0]));
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────

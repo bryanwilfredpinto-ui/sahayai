@@ -159,6 +159,11 @@ tr.click:hover{background:#f7f8fc}
 .muted{color:var(--muted);font-size:12.5px}
 .demo-flag{font-size:11.5px;color:#9a6700;background:#fff7ec;border-radius:6px;padding:3px 8px;display:inline-block}
 @media(max-width:380px){.brand h1{font-size:18px}.verdict .big{font-size:24px;padding:6px 12px}}
+/* BO5: icon-only mode — strip text-heavy cards, keep the signal + CEOS board for non-readers */
+body.icon-only .card{display:none}
+body.icon-only #signal-card,body.icon-only [data-chitti-response="tech-ceos"]{display:block}
+body.icon-only #ceos-board .big{font-size:34px;padding:12px 22px}
+body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 </style>
 </head>
 <body>
@@ -203,6 +208,7 @@ tr.click:hover{background:#f7f8fc}
         <option value="ml">മലയാളം</option>
       </select>
       <button class="btn" id="tech-refresh" onclick="TechUI.refresh()">🔄 <span data-i18n="refresh">Refresh</span></button>
+      <button class="btn ghost" id="icon-mode-btn" onclick="TechUI.toggleIconMode()" aria-label="Icon-only mode for non-readers" title="Icon-only mode">🔣</button>
     </div>
   </header>
 
@@ -311,16 +317,20 @@ tr.click:hover{background:#f7f8fc}
     </div>
 
     <!-- BO10: portfolio -->
-    <div class="card col-full" data-chitti-response="tech-portfolio" data-chitti-section="Portfolio">
-      <h2>📒 <span data-i18n="portfolio.title">My trades</span></h2>
+    <div class="card col-full" data-chitti-response="tech-portfolio" data-chitti-section="Journal">
+      <h2>📒 <span data-i18n="portfolio.title">My trades</span> — Dual Journal</h2>
+      <div id="paper-banner" class="invalid" role="status" style="margin-bottom:8px">📝 Paper trading first — practice <b id="paper-count">0</b>/10 before going live. Simulated money, no real risk.</div>
       <div class="row" style="margin-bottom:8px">
         <span class="pill"><span data-i18n="portfolio.open">Open</span>: <b id="pf-open">0</b></span>
         <span class="pill"><span data-i18n="portfolio.closed">Closed</span>: <b id="pf-closed">0</b></span>
         <span class="pill"><span data-i18n="portfolio.pnl">Profit / Loss</span>: <b id="pf-pnl">₹0</b></span>
         <span class="pill"><span data-i18n="portfolio.risk">Open risk</span>: <b id="pf-risk">₹0</b></span>
+        <span class="pill">🤖 System signals logged: <b id="sysj-count">0</b></span>
       </div>
       <button class="btn ghost" onclick="TechUI.logTrade()">➕ <span data-i18n="portfolio.log">Log this trade</span></button>
+      <div id="spiral-banner" class="invalid" role="alert" style="display:none;margin-top:10px"></div>
       <div id="pf-nudge" class="invalid" role="status" style="display:none;margin-top:10px"></div>
+      <div id="ai-insights" style="margin-top:10px"></div>
       <div id="pf-list" style="margin-top:10px"></div>
     </div>
   </div>
@@ -429,7 +439,8 @@ window.TechUI = (function(){
       return fetchOpt(base,sym,'Weekly').then(function(w){if(w)tf.weekly=w; return fetchOpt(base,sym,'4H');})
         .then(function(f){if(f)tf['4h']=f; return fetchOpt(base,sym,'1H');})
         .then(function(h){if(h)tf['1h']=h; return fetchOpt(base,sym,'Monthly');})
-        .then(function(m){if(m)tf.monthly=m; return tf;});
+        .then(function(m){if(m)tf.monthly=m; return fetchOpt(base,sym,'15min');})  // Scalper entry TF
+        .then(function(q){if(q)tf['15m']=q; return tf;});
     });
   }
   function loadLive(sym){
@@ -551,7 +562,8 @@ window.TechUI = (function(){
     if(!lastScan||!E.generateSignal) return;
     var sym=lastScan._sym, modeEl=document.getElementById('ceos-mode'), mode=modeEl?modeEl.value:'swing';
     var sig=E.generateSignal(getTf(sym),{mode:mode,capital:100000,riskPercent:2});
-    lastCEOS=sig;
+    sig.__sym=sym; lastCEOS=sig;
+    logSystemSignal(sig);   // BO4: auto-log every directional signal to the System Signal Journal
     var ic=(window.TechA11y?TechA11y.icon(sig.signal):({BUY:'🟢',SELL:'🔴',HOLD:'🟡'}[sig.signal]||'⏸️'));
     var board=document.getElementById('ceos-board');
     if(board) board.innerHTML='<div class="big v-'+sig.signal+'" style="font-size:26px;font-weight:900;padding:6px 16px;border-radius:12px">'+ic+' '+T('verdict.'+sig.signal)+'</div>'+
@@ -785,7 +797,10 @@ window.TechUI = (function(){
     }
   }
   function acInput(){
-    var q=(document.getElementById('sym').value||'').trim().toUpperCase();
+    var raw=(document.getElementById('sym').value||'');
+    // PDF §13.3 crisis path — deterministic, NEVER routes through an LLM
+    if(E&&E.detectCrisis&&E.detectCrisis(raw)){ showCrisis(); return; }
+    var q=raw.trim().toUpperCase();
     var box=document.getElementById('sym-listbox');
     if(!q){ acClose(); return; }
     var pre=[], con=[];
@@ -866,23 +881,38 @@ window.TechUI = (function(){
   }
   function pick(sym){document.getElementById('sym').value=sym;scan();window.scrollTo({top:0,behavior:'smooth'});}
 
-  // ---------- portfolio (BO10) ----------
+  // ---------- BO4: dual journal (user trades + system signals) ----------
   function pf(){try{return JSON.parse(localStorage.getItem('chitti_tech_pf_v1')||'[]');}catch(e){return [];}}
   function savePf(a){try{localStorage.setItem('chitti_tech_pf_v1',JSON.stringify(a));}catch(e){}}
+  function sysj(){try{return JSON.parse(localStorage.getItem('chitti_tech_sysj_v1')||'[]');}catch(e){return [];}}
+  function saveSysj(a){try{localStorage.setItem('chitti_tech_sysj_v1',JSON.stringify(a.slice(-200)));}catch(e){}}
+  // System Signal Journal — auto-log every directional CEOS signal (dedupe by sym+mode+verdict+day).
+  function logSystemSignal(sig){
+    if(!sig||sig.signal==='HOLD'||!sig.__sym) return;
+    var list=sysj(), day=new Date().toISOString().slice(0,10);
+    var key=sig.__sym+'|'+sig.mode+'|'+sig.signal+'|'+day;
+    if(list.some(function(s){return s.key===key;})) return;
+    list.push({key:key,id:'s'+Date.now(),sym:sig.__sym,mode:sig.mode,signal:sig.signal,confidence:sig.confidence,
+      confluence:sig.confluence_score,entry:sig.entry_price,sl:sig.stop_loss?sig.stop_loss.price:null,
+      t1:sig.target_1?sig.target_1.price:null,t2:sig.target_2?sig.target_2.price:null,ts:Date.now()});
+    saveSysj(list);
+    var c=document.getElementById('sysj-count'); if(c) c.textContent=sysj().length;
+  }
   function logTrade(){
-    if(!lastScan||lastScan.verdict==='HOLD'){ speak(T('verdict.HOLD')); alert(T('screener.nomatch')); return; }
-    var s=lastScan;
-    confirmGate(T('verdict.'+s.verdict)+' '+s._sym+' — '+T('risk.entry')+' '+s.entry.ideal+', '+T('risk.stop')+' '+s.stop.price+'?',function(){
+    var c=lastCEOS;
+    if(!c||c.signal==='HOLD'||!c.stop_loss){ speak(T('verdict.HOLD')); alert(T('screener.nomatch')); return; }
+    confirmGate(T('verdict.'+c.signal)+' '+lastScan._sym+' — '+T('risk.entry')+' '+c.entry_price+', '+T('risk.stop')+' '+c.stop_loss.price+' (PAPER)?',function(){
       var list=pf();
-      list.push({id:'t'+Date.now(),sym:s._sym,side:s.verdict,entry:s.entry.ideal,stop:s.stop.price,
-        target:s.targets[0].price,qty:s.position_size.qty,risk:s.position_size.rupee_risk,status:'open',pnl:0});
-      savePf(list);renderPf();
+      list.push({id:'t'+Date.now(),sym:lastScan._sym,side:c.signal,mode:c.mode,entry:c.entry_price,stop:c.stop_loss.price,
+        target:c.target_1.price,target2:c.target_2.price,qty:c.position_size.shares,risk:c.position_size.risk_amount,
+        paper:true,status:'open',pnl:0});
+      savePf(list);renderPf();speak('Paper trade logged.');
     });
   }
   function closeTrade(id){
     var list=pf();var t=list.filter(function(x){return x.id===id;})[0];if(!t)return;
-    confirmGate('Close '+t.sym+' at target '+t.target+'?',function(){
-      t.status='closed';t.pnl=Math.round((t.side==='BUY'?(t.target-t.entry):(t.entry-t.target))*t.qty);savePf(list);renderPf();
+    confirmGate('Close '+t.sym+' at '+t.target+'?',function(){
+      t.status='closed';t.pnl=Math.round((t.side==='BUY'?(t.target-t.entry):(t.entry-t.target))*(t.qty||0));savePf(list);renderPf();
     });
   }
   function renderPf(){
@@ -892,14 +922,26 @@ window.TechUI = (function(){
     document.getElementById('pf-closed').textContent=closed.length;
     document.getElementById('pf-pnl').textContent=fmt(closed.reduce(function(a,t){return a+t.pnl;},0));
     document.getElementById('pf-risk').textContent=fmt(open.reduce(function(a,t){return a+(t.risk||0);},0));
-    // research-driven behaviour brake: over-trading nudge (openwebsolutions pattern #6/#7)
+    var sc=document.getElementById('sysj-count'); if(sc) sc.textContent=sysj().length;
+    // paper-trading-first gate (PDF Article 3 / §13.1)
+    var paper=closed.length, pc=document.getElementById('paper-count'); if(pc) pc.textContent=Math.min(10,paper);
+    var pb=document.getElementById('paper-banner');
+    if(pb) pb.innerHTML=(paper>=10)?'✅ 10 paper trades done — you understand the risk flow. Keep journaling every trade.'
+      :'📝 Paper trading first — practice <b>'+paper+'</b>/10 before going live. Simulated money, no real risk.';
+    // loss-spiral cool-down (PDF §13.4)
+    var spiral=E.detectLossSpiral?E.detectLossSpiral(closed,100000):{isSpiral:false};
+    var sb=document.getElementById('spiral-banner');
+    if(sb){ if(spiral.isSpiral){ sb.textContent='🛑 '+spiral.message; sb.style.display='block'; } else sb.style.display='none'; }
+    // over-trading nudge
     var nudge=document.getElementById('pf-nudge');
-    if(open.length>=3){ nudge.textContent='⚠️ '+T('nudge.overtrade'); nudge.style.display='block'; }
-    else nudge.style.display='none';
+    if(open.length>=3){ nudge.textContent='⚠️ '+T('nudge.overtrade'); nudge.style.display='block'; } else nudge.style.display='none';
+    // AI insights after >=10 closed trades (PDF §9.3)
+    var ai=document.getElementById('ai-insights');
+    if(ai){ var ins=E.aiInsights?E.aiInsights(closed):[]; ai.innerHTML=ins.length?('<div style="background:rgba(0,0,0,.04);border-radius:10px;padding:10px"><b>🤖 AI insights</b><ul style="margin:6px 0 0 18px;padding:0">'+ins.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul></div>'):''; }
     var el=document.getElementById('pf-list');el.innerHTML='';
     list.slice().reverse().forEach(function(t){
       var icon={BUY:'📈',SELL:'🛑'}[t.side]||'';
-      el.innerHTML+='<div class="trade"><b>'+icon+' '+t.sym+'</b> · '+T('risk.entry')+' '+t.entry+' · '+T('risk.stop')+' '+t.stop+
+      el.innerHTML+='<div class="trade"><b>'+icon+' '+t.sym+'</b> <span class="muted">'+(t.mode||'')+(t.paper?' · paper':'')+'</span> · '+T('risk.entry')+' '+t.entry+' · '+T('risk.stop')+' '+t.stop+
         ' · '+(t.status==='open'?('<button class="btn ghost" style="padding:4px 10px;min-height:32px" onclick="TechUI.closeTrade(\''+t.id+'\')">'+T('portfolio.closed')+'</button>')
         :('<b style="color:'+(t.pnl>=0?'var(--green)':'var(--red)')+'">'+fmt(t.pnl)+'</b>'))+'</div>';
     });
@@ -925,6 +967,25 @@ window.TechUI = (function(){
     } else parts.push(s.why);
     parts.push('NOT SEBI REGISTERED');
     speak(parts.join('. '));
+  }
+
+  // ---------- BO5 safety: crisis path (Tele-MANAS, deterministic) + icon-only mode ----------
+  function showCrisis(){
+    var r=(E&&E.crisisResponse)?E.crisisResponse():{visual:'🆘 Tele-MANAS 14416 — free, confidential, 24/7',audio:'Please call Tele-MANAS at 14416.',number:'14416'};
+    var b=document.getElementById('crisis-banner');
+    if(!b){ b=document.createElement('div'); b.id='crisis-banner'; b.setAttribute('role','alert');
+      b.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#b00020;color:#fff;padding:14px;text-align:center;font-weight:800;font-size:16px';
+      document.body.appendChild(b); }
+    b.innerHTML=r.visual+' &nbsp; <a href="tel:14416" style="color:#fff;text-decoration:underline">Call 14416</a> &nbsp; <button onclick="document.getElementById(\'crisis-banner\').style.display=\'none\'" style="background:#fff;color:#b00020;border:0;border-radius:6px;padding:4px 12px;min-height:36px;font-weight:800">Close</button>';
+    b.style.display='block';
+    if(window.TechA11y) TechA11y.vibrate('WARNING');
+    speak(r.audio);
+  }
+  function toggleIconMode(){
+    var on=document.body.classList.toggle('icon-only');
+    try{localStorage.setItem('chitti_tech_iconmode',on?'1':'0');}catch(e){}
+    speak(on?'Icon mode on. Showing only the signal.':'Icon mode off.');
+    if(on&&lastCEOS&&window.TechA11y) TechA11y.tone(lastCEOS.signal);
   }
 
   // ---------- init ----------
@@ -959,7 +1020,7 @@ window.TechUI = (function(){
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
-    renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,
+    renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,

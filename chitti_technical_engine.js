@@ -1041,6 +1041,47 @@
     return out;
   }
 
+  // ─────────────── Safety guardrails (deterministic, NO LLM) — PDF §13 ───────────────
+  var CRISIS_KEYWORDS = ['suicide', 'kill myself', 'kill my self', 'end my life', 'want to die',
+    'end it all', 'self harm', 'self-harm', 'no reason to live', 'better off dead',
+    'khudkushi', 'marna chahta', 'jaan dena', 'help me die'];
+  function detectCrisis(text) { if (!text) return false; var t = String(text).toLowerCase(); return CRISIS_KEYWORDS.some(function (k) { return t.indexOf(k) >= 0; }); }
+  function crisisResponse() {
+    return { visual: '🆘 CRISIS SUPPORT: Tele-MANAS 14416 — free, confidential, 24/7',
+      audio: 'This sounds very difficult. Please call Tele dash MANAS at 1 4 4 1 6. They are available 24 by 7 and can help.',
+      haptic: 'WARNING', number: '14416' };
+  }
+  // Loss spiral: 3 consecutive losers summing > 5% of capital → mandatory cool-down (PDF §13.4).
+  function detectLossSpiral(trades, capital) {
+    if (!trades || trades.length < 3) return { isSpiral: false };
+    var last3 = trades.slice(-3);
+    if (!last3.every(function (t) { return (t.pnl || 0) < 0; })) return { isSpiral: false };
+    var loss = Math.abs(last3.reduce(function (s, t) { return s + (t.pnl || 0); }, 0));
+    var pct = capital ? loss / capital * 100 : 0;
+    if (pct > 5) return { isSpiral: true, lossPercent: round2(pct), coolDownMinutes: 30,
+      message: 'You lost ' + round2(pct) + '% over your last 3 trades. Mandatory 30-minute cool-down — review your strategy before trading again.' };
+    return { isSpiral: false };
+  }
+  // AI insights after ≥10 trades (PDF §9.3) — deterministic pattern detection, no LLM.
+  function aiInsights(trades) {
+    var out = []; if (!trades || trades.length < 10) return out;
+    var wins = trades.filter(function (t) { return (t.pnl || 0) > 0; }), losses = trades.filter(function (t) { return (t.pnl || 0) < 0; });
+    out.push('Across ' + trades.length + ' trades your win rate is ' + Math.round(wins.length / trades.length * 100) + '% (' + wins.length + ' wins / ' + losses.length + ' losses).');
+    if (trades.length > 40) out.push('High activity (' + trades.length + ' trades) — fewer, higher-confluence setups usually beat over-trading.');
+    var byMode = {};
+    trades.forEach(function (t) { var m = t.mode || '?'; byMode[m] = byMode[m] || { w: 0, n: 0 }; byMode[m].n++; if ((t.pnl || 0) > 0) byMode[m].w++; });
+    var modes = Object.keys(byMode).filter(function (m) { return byMode[m].n >= 3; });
+    if (modes.length) {
+      modes.sort(function (a, b) { return (byMode[b].w / byMode[b].n) - (byMode[a].w / byMode[a].n); });
+      var best = modes[0], worst = modes[modes.length - 1];
+      out.push('Best mode: ' + best + ' (' + Math.round(byMode[best].w / byMode[best].n * 100) + '% win over ' + byMode[best].n + ' trades).');
+      if (worst !== best) out.push('Weakest mode: ' + worst + ' (' + Math.round(byMode[worst].w / byMode[worst].n * 100) + '% win) — tighten the rules or avoid it.');
+    }
+    var emo = 0; for (var i = 1; i < trades.length; i++) if ((trades[i - 1].pnl || 0) < 0 && (trades[i].quantity || 0) > (trades[i - 1].quantity || 0)) emo++;
+    if (emo >= 2) out.push('You increased size right after a loss ' + emo + ' times — that is revenge trading. Pause instead.');
+    return out;
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1060,7 +1101,9 @@
     classicPivots: classicPivots, camarillaPivots: camarillaPivots, pivotsFor: pivotsFor,
     srConfluence: srConfluence, atrRiskBlock: atrRiskBlock, CONFLUENCE_MODES: CONFLUENCE_MODES,
     tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
-    VERSION: '2.0.0'
+    // CEOS safety + journal intelligence
+    detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
+    VERSION: '2.1.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
