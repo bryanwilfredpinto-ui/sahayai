@@ -57,7 +57,7 @@ ok('ramp:last-advanced', py.stages[py.stages.length - 1].difficulty_band === 'ad
 const spkEn = RM.speakable(py, 'en');
 const spkHi = RM.speakable(py, 'hi');
 ok('speakable:en-mentions-stages', /Stage 1 of/.test(spkEn) && /Search YouTube for/.test(spkEn), spkEn.length + ' chars');
-ok('speakable:hi-differs', spkHi !== spkEn && /Charan/.test(spkHi));
+ok('speakable:hi-differs', spkHi !== spkEn && spkHi.length > 20 && /चरण|Charan/.test(spkHi));
 ok('speakable:covers-all-stages', py.stages.every(s => spkEn.includes(s.name)));
 
 // 7. est-hours are summed correctly per stage and overall.
