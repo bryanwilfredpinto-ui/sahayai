@@ -245,6 +245,24 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     <h2 class="section-title">🎓 28-Day AI Tool Tour</h2>
     <div id="tour-content"></div>
   </section>
+
+  <!-- Path 1 — Learn-Anything Roadmap (BO1, deterministic engine) -->
+  <section class="section" id="roadmap-section" data-chitti-response data-chitti-section="Learn anything - step by step roadmap">
+    <h2 class="section-title">🗺️ Learn Anything — Your Roadmap</h2>
+    <p class="section-sub" id="roadmap-sub">Tell Chitti what you want to learn. Any skill, any profession. Chitti builds a step-by-step path with free YouTube videos — in the right order, foundations first.</p>
+    <form id="roadmap-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiRoadmapGo(event)">
+      <label for="roadmap-input" class="sr-only">What do you want to learn?</label>
+      <input id="roadmap-input" type="text" placeholder="e.g. Python, Agentic AI, pig farming, tailoring…"
+             aria-label="What do you want to learn? Type any skill or profession."
+             style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
+      <button type="button" id="roadmap-mic" aria-label="Speak what you want to learn" onclick="cnaiRoadmapMic()"
+              style="min-width:48px;min-height:48px;font-size:20px;border-radius:10px;border:2px solid #888;background:#fff">🎙️</button>
+      <button type="submit" id="roadmap-go" aria-label="Build my roadmap"
+              style="min-width:48px;min-height:48px;padding:0 18px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Build my roadmap →</button>
+    </form>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="roadmap-chips" aria-label="Popular goals"></div>
+    <div id="roadmap-content" aria-live="polite"></div>
+  </section>
 </main>
 
 <footer>
@@ -260,6 +278,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="chitti_a11y.js?v=20260606.1"></script>
 <script src="feedback-widget.js?v=20260606.1"></script>
 <script src="chitti_coach.js?v=20260606.1"></script>
+<script src="cnai_roadmap_engine.js?v=20260609.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -641,5 +660,110 @@ function speakPage() {
 })();
 </script>
 
+<!-- Path 1 — Roadmap UI render (BO1). Uses window.ChittiRoadmap (deterministic). -->
+<script>
+(function () {
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function lang() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function speak(text) {
+    try {
+      var u = new SpeechSynthesisUtterance(text); u.rate = 0.95;
+      u.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN';
+      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  // Popular-goal chips (picture+word, ≥48px taps) so non-readers can tap a goal.
+  var CHIPS = [['python', '🐍 Python'], ['agentic ai', '🤖 Agentic AI'], ['data analysis', '📊 Data Analysis'], ['web development', '🌐 Web Dev'], ['prompt engineering', '✍️ Prompting']];
+  function renderChips() {
+    var host = document.getElementById('roadmap-chips'); if (!host) return;
+    host.innerHTML = CHIPS.map(function (c) {
+      return '<button type="button" class="rm-chip" aria-label="Build a roadmap for ' + esc(c[1]) + '" onclick="cnaiRoadmapBuild(\'' + c[0] + '\')" ' +
+        'style="min-height:48px;padding:0 14px;font-size:15px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;cursor:pointer">' + esc(c[1]) + '</button>';
+    }).join('');
+  }
+
+  function ytUrl(term) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(term); }
+
+  function render(rm) {
+    var host = document.getElementById('roadmap-content'); if (!host) return;
+    var L = lang();
+    var head = '<div class="rm-head" style="margin:6px 0 12px"><strong style="font-size:18px">' + esc(rm.title) + '</strong>' +
+      '<div style="color:#555;font-size:14px;margin-top:4px">' + rm.total_stages + ' stages · ' + rm.total_topics + ' topics · about ' + rm.total_est_hours + ' hours' +
+      (rm.generic ? ' · <em>auto-built for your goal</em>' : '') + '</div>' +
+      '<button type="button" aria-label="Read my whole roadmap aloud" onclick="cnaiRoadmapSpeak()" ' +
+      'style="margin-top:8px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read my whole roadmap aloud</button></div>';
+
+    var body = rm.stages.map(function (s) {
+      var topics = s.topics.map(function (t) {
+        return '<li style="margin:8px 0">' +
+          '<div><strong>' + esc(t.name) + '</strong> <span title="' + esc(t.difficulty_band) + '" aria-label="Level ' + esc(t.difficulty_band) + '">' + esc(t.difficulty_dots) + '</span> ' +
+          '<span style="color:#777;font-size:13px">(' + esc(t.difficulty_band) + ', ~' + t.est_hours + 'h)</span></div>' +
+          '<div style="color:#555;font-size:14px">' + esc(t.why_it_matters) + '</div>' +
+          '<div style="font-size:14px;margin-top:2px">📺 <a href="' + ytUrl(t.youtube_search_term) + '" target="_blank" rel="noopener" ' +
+          'aria-label="Search YouTube for ' + esc(t.youtube_search_term) + '">Search YouTube: "' + esc(t.youtube_search_term) + '"</a></div>' +
+          '<div style="font-size:13px;color:#138808;margin-top:2px">✅ Try it: ' + esc(t.check) + '</div></li>';
+      }).join('');
+      return '<div class="rm-stage" data-chitti-response data-chitti-section="Stage ' + s.order + ' - ' + esc(s.name) + '" ' +
+        'style="border:1px solid #ddd;border-radius:12px;padding:12px;margin:10px 0">' +
+        '<div style="font-weight:700;font-size:16px">Stage ' + s.order + ' of ' + rm.total_stages + ': ' + esc(s.name) + ' ' +
+        '<span aria-label="Level ' + esc(s.difficulty_band) + '">' + esc(s.difficulty_dots) + '</span></div>' +
+        '<div style="color:#555;font-size:14px;margin:2px 0 6px">' + esc(s.why_it_matters) + '</div>' +
+        '<ul style="margin:0;padding-left:18px;list-style:none">' + topics + '</ul>' +
+        '<div style="margin-top:8px;background:#f3faf3;border-radius:8px;padding:8px;font-size:14px">🎯 <strong>Milestone:</strong> ' + esc(s.milestone) + '</div>' +
+        '</div>';
+    }).join('');
+
+    host.innerHTML = head + body;
+    // Re-attach the per-response widget to the new stage boxes.
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
+    var rm_sum = window.ChittiRoadmap.speakable(rm, L);
+    host.setAttribute('data-roadmap-speak', rm_sum);
+    // Audio-first: for blind/illiterate users, announce the title immediately.
+    speak('Your roadmap for ' + rm.title + ' is ready. It has ' + rm.total_stages + ' stages. Press read aloud to hear it all.');
+  }
+
+  window.cnaiRoadmapBuild = function (goal) {
+    var input = document.getElementById('roadmap-input'); if (input) input.value = goal;
+    try {
+      var rm = window.ChittiRoadmap.generate(goal);
+      render(rm);
+    } catch (e) {
+      var host = document.getElementById('roadmap-content');
+      if (host) host.innerHTML = '<div style="color:#b00">Could not build a roadmap right now. Please try again.</div>';
+    }
+  };
+  window.cnaiRoadmapGo = function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var input = document.getElementById('roadmap-input');
+    var goal = (input && input.value || '').trim();
+    if (!goal) { speak('Please tell Chitti what you want to learn.'); if (input) input.focus(); return false; }
+    window.cnaiRoadmapBuild(goal);
+    return false;
+  };
+  window.cnaiRoadmapSpeak = function () {
+    var host = document.getElementById('roadmap-content');
+    var txt = host && host.getAttribute('data-roadmap-speak');
+    if (txt) speak(txt);
+  };
+  window.cnaiRoadmapMic = function () {
+    try {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { speak('Voice input is not supported on this browser. Please type your goal.'); return; }
+      var r = new SR(); r.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN'; r.interimResults = false; r.maxAlternatives = 1;
+      speak('Listening. Say what you want to learn.');
+      r.onresult = function (e) {
+        var said = e.results[0][0].transcript;
+        var input = document.getElementById('roadmap-input'); if (input) input.value = said;
+        window.cnaiRoadmapBuild(said);
+      };
+      r.start();
+    } catch (e) { speak('Voice input failed. Please type your goal.'); }
+  };
+
+  function init() { try { renderChips(); } catch (e) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>
