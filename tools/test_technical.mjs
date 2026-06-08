@@ -246,6 +246,21 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   const bt=E.backtest(upC,{lookahead:30});
   ok('backtest returns a resolved-outcome array', Array.isArray(bt));
   ok('backtest entries carry outcome + confidence', !bt.length || (!!bt[0].outcome && bt[0].confidence!=null));
+
+  // ── BO: pattern recognition ──
+  const beC=[{open:11,high:11.2,low:10.4,close:10.5},{open:10.5,high:10.6,low:9.8,close:9.9},{open:9.7,high:10.7,low:9.6,close:10.6}];
+  ok('detectCandles → Bullish Engulfing', E.detectCandles(beC).some(p=>p.name==='Bullish Engulfing'&&p.dir==='bullish'));
+  const dojiC=[{open:10,high:10.5,low:9.5,close:10},{open:10,high:10.4,low:9.6,close:10},{open:10,high:10.6,low:9.4,close:10.02}];
+  ok('detectCandles → Doji on a tiny body', E.detectCandles(dojiC).some(p=>p.name==='Doji'));
+  const tws=[{open:10,high:10.6,low:9.9,close:10.5},{open:10.4,high:11.1,low:10.3,close:11.0},{open:10.9,high:11.6,low:10.8,close:11.5}];
+  ok('detectCandles → Three White Soldiers', E.detectCandles(tws).some(p=>p.name==='Three White Soldiers'&&p.dir==='bullish'));
+  const ham=[{open:10,high:10.2,low:9,close:9.9},{open:9.9,high:10,low:9,close:9.5},{open:9.5,high:9.7,low:8.5,close:9.6}];
+  ok('detectCandles → Hammer (long lower wick)', E.detectCandles(ham).some(p=>p.name==='Hammer'&&p.dir==='bullish'));
+  const dblPath=[100,99,97,96,95,96,97,99,100,99,98,97,96,95,96,97,98,99,100,101,102,103];
+  const dbl=dblPath.map(p=>({open:p,high:p+0.6,low:p-0.6,close:p}));
+  ok('detectChartPatterns → Double Bottom (W shape)', E.detectChartPatterns(dbl).some(p=>p.name==='Double Bottom'&&p.dir==='bullish'));
+  ok('detectPatterns returns a top pattern with reliability', !!(E.detectPatterns(tws).top && E.detectPatterns(tws).top.name && E.detectPatterns(tws).top.reliability>0));
+  ok('detectPatterns no banned phrase / clean names', E.hasBannedPhrase(JSON.stringify(E.detectPatterns(beC)))===null);
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────

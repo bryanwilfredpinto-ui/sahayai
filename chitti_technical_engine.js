@@ -1180,6 +1180,79 @@
     return results;
   }
 
+  // ═══════════════ BO: Chart & Candlestick Pattern Recognition (deterministic, NO LLM) ═══════════════
+  // Historical edge per pattern (Bulkowski-style literature), as a reliability %.
+  var PATTERN_RELIABILITY = {
+    'Bullish Engulfing': 63, 'Bearish Engulfing': 63, 'Hammer': 60, 'Inverted Hammer': 57, 'Shooting Star': 59,
+    'Bullish Harami': 53, 'Bearish Harami': 53, 'Morning Star': 65, 'Evening Star': 65, 'Three White Soldiers': 70,
+    'Three Black Crows': 70, 'Piercing Line': 64, 'Dark Cloud Cover': 60, 'Doji': 50, 'Bullish Marubozu': 58, 'Bearish Marubozu': 58,
+    'Double Top': 65, 'Double Bottom': 66, 'Head & Shoulders': 66, 'Inverse Head & Shoulders': 66,
+    'Ascending Triangle': 62, 'Descending Triangle': 62, 'Symmetrical Triangle': 54
+  };
+  function _cs(c) {
+    var body = Math.abs(c.close - c.open), range = (c.high - c.low) || 1e-9;
+    return { body: body, range: range, up: c.close > c.open, uw: c.high - Math.max(c.open, c.close), lw: Math.min(c.open, c.close) - c.low, bodyPct: body / range, mid: (c.open + c.close) / 2 };
+  }
+  // Candlestick patterns on the last 1-3 bars (actionable). Each → {name, dir, reliability, kind}.
+  function detectCandles(candles) {
+    var out = [], n = candles ? candles.length : 0; if (n < 3) return out;
+    var c = candles[n - 1], p = candles[n - 2], p2 = candles[n - 3], C = _cs(c), P = _cs(p), P2 = _cs(p2);
+    function add(name, dir) { out.push({ name: name, dir: dir, reliability: PATTERN_RELIABILITY[name] || 50, kind: 'candlestick' }); }
+    if (C.bodyPct <= 0.1) add('Doji', 'neutral');
+    if (C.bodyPct >= 0.95) add(C.up ? 'Bullish Marubozu' : 'Bearish Marubozu', C.up ? 'bullish' : 'bearish');
+    if (C.body > 0 && C.lw >= 2 * C.body && C.uw <= C.body) add('Hammer', 'bullish');
+    if (C.body > 0 && C.uw >= 2 * C.body && C.lw <= C.body) add(C.up ? 'Inverted Hammer' : 'Shooting Star', C.up ? 'bullish' : 'bearish');
+    if (!P.up && C.up && c.close >= p.open && c.open <= p.close) add('Bullish Engulfing', 'bullish');
+    if (P.up && !C.up && c.open >= p.close && c.close <= p.open) add('Bearish Engulfing', 'bearish');
+    if (!P.up && C.up && c.open > p.close && c.close < p.open) add('Bullish Harami', 'bullish');
+    if (P.up && !C.up && c.open < p.close && c.close > p.open) add('Bearish Harami', 'bearish');
+    if (!P.up && C.up && c.open < p.low && c.close > P.mid && c.close < p.open) add('Piercing Line', 'bullish');
+    if (P.up && !C.up && c.open > p.high && c.close < P.mid && c.close > p.open) add('Dark Cloud Cover', 'bearish');
+    if (!P2.up && P.bodyPct < 0.4 && C.up && c.close > P2.mid) add('Morning Star', 'bullish');
+    if (P2.up && P.bodyPct < 0.4 && !C.up && c.close < P2.mid) add('Evening Star', 'bearish');
+    if (C.up && P.up && P2.up && c.close > p.close && p.close > p2.close) add('Three White Soldiers', 'bullish');
+    if (!C.up && !P.up && !P2.up && c.close < p.close && p.close < p2.close) add('Three Black Crows', 'bearish');
+    return out;
+  }
+  // ordered swing pivots (local extreme over ±2 bars)
+  function swingPivots(candles) {
+    var piv = [], n = candles.length;
+    for (var i = 2; i < n - 2; i++) {
+      var c = candles[i];
+      if (c.high > candles[i - 1].high && c.high > candles[i - 2].high && c.high > candles[i + 1].high && c.high > candles[i + 2].high) piv.push({ idx: i, price: c.high, type: 'H' });
+      if (c.low < candles[i - 1].low && c.low < candles[i - 2].low && c.low < candles[i + 1].low && c.low < candles[i + 2].low) piv.push({ idx: i, price: c.low, type: 'L' });
+    }
+    return piv;
+  }
+  // Structural patterns via pivots — Double Top/Bottom, H&S (+inverse), Triangles. Actionable-only (fresh).
+  function detectChartPatterns(candles) {
+    var out = [], n = candles ? candles.length : 0; if (n < 20) return out;
+    var piv = swingPivots(candles), recent = n - 1;
+    var near = function (a, b, tol) { return Math.abs(a - b) / ((a + b) / 2) <= (tol || 0.02); };
+    var fresh = function (idx) { return (recent - idx) <= 12; };
+    var highs = piv.filter(function (p) { return p.type === 'H'; }), lows = piv.filter(function (p) { return p.type === 'L'; });
+    function push(name, dir, level) { out.push({ name: name, dir: dir, level: level != null ? round2(level) : null, reliability: PATTERN_RELIABILITY[name] || 50, kind: 'chart' }); }
+    if (highs.length >= 2) { var h1 = highs[highs.length - 2], h2 = highs[highs.length - 1]; if (near(h1.price, h2.price, 0.02) && fresh(h2.idx)) push('Double Top', 'bearish', (h1.price + h2.price) / 2); }
+    if (lows.length >= 2) { var l1 = lows[lows.length - 2], l2 = lows[lows.length - 1]; if (near(l1.price, l2.price, 0.02) && fresh(l2.idx)) push('Double Bottom', 'bullish', (l1.price + l2.price) / 2); }
+    if (highs.length >= 3) { var a = highs[highs.length - 3], b = highs[highs.length - 2], c2 = highs[highs.length - 1]; if (b.price > a.price && b.price > c2.price && near(a.price, c2.price, 0.03) && fresh(c2.idx)) push('Head & Shoulders', 'bearish', Math.min(a.price, c2.price)); }
+    if (lows.length >= 3) { var la = lows[lows.length - 3], lb = lows[lows.length - 2], lc = lows[lows.length - 1]; if (lb.price < la.price && lb.price < lc.price && near(la.price, lc.price, 0.03) && fresh(lc.idx)) push('Inverse Head & Shoulders', 'bullish', Math.max(la.price, lc.price)); }
+    if (highs.length >= 3 && lows.length >= 3) {
+      var hs = highs.slice(-3), ls = lows.slice(-3);
+      var hSlope = (hs[2].price - hs[0].price) / Math.max(1, hs[2].idx - hs[0].idx), lSlope = (ls[2].price - ls[0].price) / Math.max(1, ls[2].idx - ls[0].idx);
+      var flatH = Math.abs(hSlope) < 0.0006 * hs[2].price, flatL = Math.abs(lSlope) < 0.0006 * ls[2].price, fr = fresh(Math.max(hs[2].idx, ls[2].idx));
+      if (fr && flatH && lSlope > 0) push('Ascending Triangle', 'bullish', hs[2].price);
+      else if (fr && flatL && hSlope < 0) push('Descending Triangle', 'bearish', ls[2].price);
+      else if (fr && hSlope < 0 && lSlope > 0) push('Symmetrical Triangle', 'neutral', null);
+    }
+    return out;
+  }
+  // Combine → the single strongest FRESH pattern + the full list (structural breaks reliability ties).
+  function detectPatterns(candles) {
+    var cs = detectCandles(candles), ch = detectChartPatterns(candles), all = cs.concat(ch);
+    all.sort(function (a, b) { return (b.reliability || 0) - (a.reliability || 0) || ((b.kind === 'chart' ? 1 : 0) - (a.kind === 'chart' ? 1 : 0)); });
+    return { top: all[0] || null, candlesticks: cs, structural: ch, all: all };
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1203,7 +1276,10 @@
     detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
     // BO-NEXT: outcome tracking + accuracy scorecard + calibration
     evaluateSignal: evaluateSignal, scorecard: scorecard, calibration: calibration, backtest: backtest,
-    TF_ORDER: TF_ORDER, VERSION: '2.3.0'
+    // BO: pattern recognition
+    detectCandles: detectCandles, detectChartPatterns: detectChartPatterns, detectPatterns: detectPatterns,
+    swingPivots: swingPivots, PATTERN_RELIABILITY: PATTERN_RELIABILITY,
+    TF_ORDER: TF_ORDER, VERSION: '2.4.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

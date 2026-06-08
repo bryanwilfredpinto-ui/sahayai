@@ -253,6 +253,20 @@
   };
   Object.keys(SCORE).forEach(function (l) { if (T[l]) Object.keys(SCORE[l]).forEach(function (k) { T[l][k] = SCORE[l][k]; }); });
 
+  // BO: Pattern Recognition — direction + meaning labels in all 9 languages (pattern NAMES stay English).
+  var PAT = {
+    en: { 'pat.title': 'Pattern', 'pat.rel': 'Reliability', 'pat.hear': 'Hear pattern', 'pat.none': 'No clear pattern right now', 'pat.bull': 'Bullish — possible move up', 'pat.bear': 'Bearish — possible move down', 'pat.neutral': 'Indecision — wait', 'pat.agree': 'Agrees with the signal', 'pat.disagree': 'Disagrees with the signal — caution' },
+    hi: { 'pat.title': 'पैटर्न', 'pat.rel': 'विश्वसनीयता', 'pat.hear': 'पैटर्न सुनें', 'pat.none': 'अभी कोई स्पष्ट पैटर्न नहीं', 'pat.bull': 'तेज़ी — ऊपर जाने की संभावना', 'pat.bear': 'मंदी — नीचे जाने की संभावना', 'pat.neutral': 'अनिश्चय — रुकें', 'pat.agree': 'संकेत से सहमत', 'pat.disagree': 'संकेत से असहमत — सावधान' },
+    ta: { 'pat.title': 'வடிவம்', 'pat.rel': 'நம்பகத்தன்மை', 'pat.hear': 'வடிவத்தைக் கேள்', 'pat.none': 'இப்போது தெளிவான வடிவம் இல்லை', 'pat.bull': 'ஏற்றம் — மேலே செல்ல வாய்ப்பு', 'pat.bear': 'இறக்கம் — கீழே செல்ல வாய்ப்பு', 'pat.neutral': 'நிச்சயமின்மை — பொறு', 'pat.agree': 'சமிக்ஞையுடன் ஒத்துப்போகிறது', 'pat.disagree': 'சமிக்ஞையுடன் ஒத்துப்போகவில்லை — கவனம்' },
+    te: { 'pat.title': 'నమూనా', 'pat.rel': 'విశ్వసనీయత', 'pat.hear': 'నమూనాను వినండి', 'pat.none': 'ఇప్పుడు స్పష్టమైన నమూనా లేదు', 'pat.bull': 'పెరుగుదల — పైకి వెళ్లే అవకాశం', 'pat.bear': 'తగ్గుదల — కిందికి వెళ్లే అవకాశం', 'pat.neutral': 'అనిశ్చితి — ఆగండి', 'pat.agree': 'సంకేతంతో ఏకీభవిస్తుంది', 'pat.disagree': 'సంకేతంతో ఏకీభవించదు — జాగ్రత్త' },
+    bn: { 'pat.title': 'প্যাটার্ন', 'pat.rel': 'নির্ভরযোগ্যতা', 'pat.hear': 'প্যাটার্ন শুনুন', 'pat.none': 'এখন স্পষ্ট প্যাটার্ন নেই', 'pat.bull': 'বৃদ্ধি — উপরে ওঠার সম্ভাবনা', 'pat.bear': 'পতন — নিচে নামার সম্ভাবনা', 'pat.neutral': 'অনিশ্চয়তা — অপেক্ষা করুন', 'pat.agree': 'সংকেতের সাথে একমত', 'pat.disagree': 'সংকেতের সাথে অমিল — সতর্ক' },
+    mr: { 'pat.title': 'पॅटर्न', 'pat.rel': 'विश्वासार्हता', 'pat.hear': 'पॅटर्न ऐका', 'pat.none': 'आता स्पष्ट पॅटर्न नाही', 'pat.bull': 'तेजी — वर जाण्याची शक्यता', 'pat.bear': 'मंदी — खाली जाण्याची शक्यता', 'pat.neutral': 'अनिश्चितता — थांबा', 'pat.agree': 'संकेताशी सहमत', 'pat.disagree': 'संकेताशी असहमत — सावध' },
+    gu: { 'pat.title': 'પેટર્ન', 'pat.rel': 'વિશ્વસનીયતા', 'pat.hear': 'પેટર્ન સાંભળો', 'pat.none': 'અત્યારે સ્પષ્ટ પેટર્ન નથી', 'pat.bull': 'તેજી — ઉપર જવાની શક્યતા', 'pat.bear': 'મંદી — નીચે જવાની શક્યતા', 'pat.neutral': 'અનિશ્ચિતતા — રાહ જુઓ', 'pat.agree': 'સંકેત સાથે સંમત', 'pat.disagree': 'સંકેત સાથે અસંમત — સાવધાન' },
+    kn: { 'pat.title': 'ನಮೂನೆ', 'pat.rel': 'ವಿಶ್ವಾಸಾರ್ಹತೆ', 'pat.hear': 'ನಮೂನೆ ಕೇಳಿ', 'pat.none': 'ಈಗ ಸ್ಪಷ್ಟ ನಮೂನೆ ಇಲ್ಲ', 'pat.bull': 'ಏರಿಕೆ — ಮೇಲೆ ಹೋಗುವ ಸಾಧ್ಯತೆ', 'pat.bear': 'ಇಳಿಕೆ — ಕೆಳಗೆ ಹೋಗುವ ಸಾಧ್ಯತೆ', 'pat.neutral': 'ಅನಿಶ್ಚಿತತೆ — ಕಾಯಿರಿ', 'pat.agree': 'ಸಂಕೇತದೊಂದಿಗೆ ಸಮ್ಮತಿಸುತ್ತದೆ', 'pat.disagree': 'ಸಂಕೇತದೊಂದಿಗೆ ಸಮ್ಮತಿಸುವುದಿಲ್ಲ — ಎಚ್ಚರಿಕೆ' },
+    ml: { 'pat.title': 'പാറ്റേൺ', 'pat.rel': 'വിശ്വാസ്യത', 'pat.hear': 'പാറ്റേൺ കേൾക്കുക', 'pat.none': 'ഇപ്പോൾ വ്യക്തമായ പാറ്റേൺ ഇല്ല', 'pat.bull': 'ഉയർച്ച — മുകളിലേക്ക് പോകാൻ സാധ്യത', 'pat.bear': 'താഴ്ച — താഴേക്ക് പോകാൻ സാധ്യത', 'pat.neutral': 'അനിശ്ചിതത്വം — കാത്തിരിക്കുക', 'pat.agree': 'സിഗ്നലുമായി യോജിക്കുന്നു', 'pat.disagree': 'സിഗ്നലുമായി യോജിക്കുന്നില്ല — ജാഗ്രത' }
+  };
+  Object.keys(PAT).forEach(function (l) { if (T[l]) Object.keys(PAT[l]).forEach(function (k) { T[l][k] = PAT[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);

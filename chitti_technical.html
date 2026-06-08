@@ -307,6 +307,15 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="ceos-pivots" style="margin-top:10px"></div>
     </div>
 
+    <!-- BO: Pattern Recognition (candlestick + structural, actionable-only) -->
+    <div class="card col-full" data-chitti-response="tech-patterns" data-chitti-section="Pattern">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>🔺 <span data-i18n="pat.title">Pattern</span></span>
+        <button class="btn ghost" style="margin-left:auto;min-height:44px" onclick="TechUI.hearPattern()">🔊 <span data-i18n="pat.hear">Hear pattern</span></button>
+      </h2>
+      <div id="pat-main"></div>
+      <div id="pat-list" style="margin-top:8px"></div>
+    </div>
+
     <!-- BO8: chart -->
     <div class="card col-full" data-chitti-response="tech-chart" data-chitti-section="Chart">
       <h2>📈 <span data-i18n="chart.title">Chart</span> <span class="muted" id="chart-tf"></span></h2>
@@ -391,7 +400,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null;
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -562,6 +571,7 @@ window.TechUI = (function(){
     renderLadder(res);
     renderRisk(res);
     renderCEOS();
+    renderPatterns();
     renderScorecard();
     renderIndicators(res);
     renderRoshan(res);
@@ -663,6 +673,38 @@ window.TechUI = (function(){
     speak(lastScan._sym+' — '+tw+'. '+(lastCEOS?(T('verdict.'+lastCEOS.signal)+', confidence '+lastCEOS.confidence+' percent'):''));
   }
   function hapticDemo(){ if(window.TechA11y&&lastCEOS){ TechA11y.vibrate(lastCEOS.signal); speak(T('verdict.'+lastCEOS.signal)); } }
+
+  // ───── BO: Pattern Recognition — detect freshest pattern + confluence hook + spoken meaning ─────
+  function patIcon(d){ return d==='bullish'?'📈':d==='bearish'?'📉':'➡️'; }
+  function patKey(d){ return d==='bullish'?'pat.bull':d==='bearish'?'pat.bear':'pat.neutral'; }
+  function patCls(d){ return d==='bullish'?'bull':d==='bearish'?'bear':'neutral'; }
+  function renderPatterns(){
+    if(!lastScan||!E.detectPatterns) return;
+    var daily=getTf(lastScan._sym).daily, res=E.detectPatterns(daily); lastPattern=res.top;
+    var main=document.getElementById('pat-main');
+    if(main){
+      if(!res.top){ main.innerHTML='<div class="muted">'+T('pat.none')+'</div>'; }
+      else {
+        var p=res.top, conf='';
+        if(lastCEOS&&lastCEOS.signal!=='HOLD'){
+          var sigDir=lastCEOS.signal==='BUY'?'bullish':'bearish';
+          conf = p.dir===sigDir ? '<div class="tfrow bull"><span>🤝</span><span>'+T('pat.agree')+'</span></div>'
+               : (p.dir==='neutral'?'':'<div class="tfrow bear"><span>⚠️</span><span>'+T('pat.disagree')+'</span></div>');
+        }
+        main.innerHTML='<div class="tfrow '+patCls(p.dir)+'" style="font-size:16px"><span>'+patIcon(p.dir)+' <b>'+p.name+'</b></span><span>'+T(patKey(p.dir))+'</span></div>'+
+          '<div class="muted" style="margin:4px 0">'+T('pat.rel')+': '+p.reliability+'%'+(p.level!=null?(' · '+p.level):'')+'</div>'+conf;
+      }
+    }
+    var list=document.getElementById('pat-list');
+    if(list){ list.innerHTML=res.all.filter(function(x){return x!==res.top;}).slice(0,4).map(function(p){
+      return '<div class="tfrow '+patCls(p.dir)+'"><span>'+patIcon(p.dir)+' '+p.name+'</span><span>'+p.reliability+'%</span></div>'; }).join(''); }
+  }
+  function hearPattern(){
+    if(!lastPattern){ speak(T('pat.none')); return; }
+    var p=lastPattern;
+    speak(p.name+'. '+T(patKey(p.dir))+'. '+T('pat.rel')+' '+p.reliability+' percent.');
+    if(window.TechA11y) TechA11y.vibrate(p.dir==='bullish'?'BUY':p.dir==='bearish'?'SELL':'HOLD');
+  }
 
   // ───── BO-NEXT: Accuracy Scorecard — backtest → win rate / PF / expectancy + calibration ─────
   function renderScorecard(){
@@ -1155,7 +1197,7 @@ window.TechUI = (function(){
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
-    preset:preset,generate:generate,readScorecard:readScorecard,
+    preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
