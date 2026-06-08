@@ -77,17 +77,24 @@ def fetch_candles(symbol: str, timeframe: str) -> pd.DataFrame:
 
 
 def _resample_ohlc(df: pd.DataFrame, rule: str) -> pd.DataFrame:
-    """Standard OHLC resampling."""
+    """Standard OHLC resampling. Resilient across pandas versions (the 'ME'/'4h'
+    frequency aliases changed in 2.2) and keeps partial bins so Monthly never comes
+    back empty (the prior dropna(how='any') + a single alias could wipe it out)."""
     if df.empty:
         return df
-    out = df.resample(rule).agg({
-        "open":   "first",
-        "high":   "max",
-        "low":    "min",
-        "close":  "last",
-        "volume": "sum",
-    }).dropna(how="any")
-    return out
+    agg = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
+    candidates = [rule]
+    legacy = {"ME": "M", "M": "ME", "4h": "4H", "4H": "4h"}.get(rule)
+    if legacy and legacy != rule:
+        candidates.append(legacy)
+    for r in candidates:
+        try:
+            out = df.resample(r).agg(agg).dropna(how="all")
+            if not out.empty:
+                return out
+        except (ValueError, KeyError):
+            continue
+    return pd.DataFrame()
 
 
 # ============================================================

@@ -394,10 +394,13 @@ window.TechUI = (function(){
   }
   function fetchOpt(base,sym,tf){ return fetchCandles(base,sym,tf).catch(function(){return null;}); }
   function loadLiveFrom(base,sym){
-    // Monthly/Weekly/Daily required; 4H/1H best-effort (intraday may be thin) — engine HOLDs if a trigger TF is absent
-    return Promise.all([fetchCandles(base,sym,'Monthly'),fetchCandles(base,sym,'Weekly'),fetchCandles(base,sym,'Daily'),
-                        fetchOpt(base,sym,'4H'),fetchOpt(base,sym,'1H')])
-      .then(function(res){ var tf={monthly:res[0],weekly:res[1],daily:res[2]}; if(res[3])tf['4h']=res[3]; if(res[4])tf['1h']=res[4]; return tf; });
+    // ONLY Daily is required (it's the price + swing/positional anchor). Monthly/Weekly/4H/1H are
+    // best-effort so one empty timeframe (e.g. Monthly) never blocks live — the engine HOLDs any
+    // trade type whose timeframe is missing, but live rates + price still show.
+    return fetchCandles(base,sym,'Daily').then(function(daily){
+      return Promise.all([fetchOpt(base,sym,'Monthly'),fetchOpt(base,sym,'Weekly'),fetchOpt(base,sym,'4H'),fetchOpt(base,sym,'1H')])
+        .then(function(r){ var tf={daily:daily}; if(r[0])tf.monthly=r[0]; if(r[1])tf.weekly=r[1]; if(r[2])tf['4h']=r[2]; if(r[3])tf['1h']=r[3]; return tf; });
+    });
   }
   function loadLive(sym){
     // sequential: first host that serves all timeframes wins; else reject → DEMO
