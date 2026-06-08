@@ -78,3 +78,12 @@ only), caveats with ⚠ + words. Every card carries data-chitti-response.
 cnai_career_coach.js (parse/map/report/speakable) DONE · 7 buckets + lexicon
 (no job hardcoded) DONE · sensitive caveats DONE · BO1 roadmap hand-off DONE ·
 UI section DONE · tools/test_cnai_career.mjs 24/24.
+
+## REAL WEB RESEARCH — verified June 2026 (sources)
+
+Verified current AI tools by field (the capability-bucket design holds; caveats reaffirmed):
+- [Analytics Vidhya — Top AI Tools 2026](https://www.analyticsvidhya.com/blog/2026/03/top-ai-tools-to-use/) · [10 AI tools every professional should know 2026](https://medium.com/@jt.kp100/10-ai-tools-every-professional-should-know-in-2026-dbd5024c4edd)
+- HR/recruiting: [Humanly — Best AI recruiting software 2026](https://www.humanly.io/blog/best-ai-recruiting-software-tools-2026), [Best AI tools for HR 2026](https://www.testtrick.com/blogs/best-ai-tools-for-hr-teams-and-professionals) (HireVue/Testlify) — bias-audit caveat reaffirmed.
+- Accounting: AI bookkeeping (Kick) cuts reconciliation ~12h->1h/mo — "don't auto-file" caveat reaffirmed. Legal: AI contract review 3 days->3 hours — "verify citations" caveat reaffirmed. Clinical: AI radiology assist (3x more scans) — human-in-loop caveat reaffirmed.
+
+Conclusion: profession->task-type->capability mapping (no hardcoded jobs) is the durable design; specific tools change quarterly and are surfaced by capability, not pinned. 24/24.

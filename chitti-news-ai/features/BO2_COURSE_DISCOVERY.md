@@ -88,3 +88,14 @@ survives screen-reader linearisation.
 cnai_course_discovery.js DONE · seed catalog DONE · free-first ladder DONE ·
 synonym matching DONE · consent-gated registrationPlan DONE · speakable DONE ·
 UI section DONE · tools/test_cnai_courses.mjs 30/30.
+
+## REAL WEB RESEARCH — verified June 2026 (sources)
+
+The free-first catalog was reconciled against live sources (not training memory):
+- [DataCamp — Best Free AI Courses 2026](https://www.datacamp.com/blog/best-free-ai-courses) (Anthropic Academy, HF, fast.ai, Kaggle all free+cert)
+- [IIT Madras — SWAYAM Plus free AI courses](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-swayam-plus-launches-free-ai-courses-students) · [AI for All](https://swayam-plus.swayam2.ac.in/ai-for-all-courses) — ADDED (govt, NCrF-aligned, free, nominal exam fee)
+- [NPTEL — Machine Learning (IIT)](https://onlinecourses.nptel.ac.in/noc26_cs77/preview) — real course URL wired
+- [Anthropic Academy](https://www.anthropic.com/learn) — issues a certificate per completed course -> upgraded to corp_free_cert tier
+- [Kaggle Learn](https://www.kaggle.com/learn) (Intro to ML/DL/AI Ethics/Computer Vision) · [Microsoft GenAI for Beginners](https://microsoft.github.io/generative-ai-for-beginners/) · [IBM SkillsBuild](https://skillsbuild.org/)
+
+Catalog change-log (this pass): +IIT Madras SWAYAM Plus; NPTEL ML real URL; Anthropic Academy -> free+certificate tier. test_cnai_courses.mjs 30/30.

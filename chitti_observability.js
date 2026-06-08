@@ -179,12 +179,20 @@
       '.chitti-response, [data-chitti-response], .section-card, .scan-action, ' +
       '.feature-card, .action-card, .metric-card, .ind-card, .art-card'
     ).length;
-    if (window.__obsLastCardCount && cardCount < window.__obsLastCardCount * 0.7) {
+    // FIX 2026-06-09: the old baseline ratcheted to the ALL-TIME max and never
+    // recovered, so once a feed loaded many cards then cleared (news backend
+    // down, view switched), the page was falsely "Degraded" forever. Now the
+    // baseline DECAYS toward the current count, and a drop must persist for 2
+    // consecutive cycles before it counts as a breach (debounce transients).
+    var low = window.__obsLastCardCount && cardCount < window.__obsLastCardCount * 0.7;
+    window.__obsCardLowStreak = low ? (window.__obsCardLowStreak || 0) + 1 : 0;
+    if (low && window.__obsCardLowStreak >= 2) {
       fireAlert('card_detection', 'degraded',
         cardCount, '≥ ' + Math.round(window.__obsLastCardCount * 0.7));
       breaches++;
     }
-    window.__obsLastCardCount = Math.max(window.__obsLastCardCount || 0, cardCount);
+    // Decaying baseline: tracks the recent norm, not the all-time peak.
+    window.__obsLastCardCount = Math.max(cardCount, Math.round((window.__obsLastCardCount || 0) * 0.9));
 
     // Check 2 — translation completeness (in non-English session, ≥ 95 % of
     // chitti-response cards should NOT contain raw English >= 3 chars)

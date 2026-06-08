@@ -72,3 +72,12 @@ taps; per-response widget on every card.
 cnai_analogy_engine.js (98 cells, all with breaks-down) DONE · domain detection
 DONE · switchDomain DONE · cnai_learns.js (plan/teach/practice/honestStatus)
 DONE · UI section DONE · tools/test_cnai_analogy.mjs 119/119.
+
+## REAL WEB RESEARCH — verified June 2026 (sources)
+
+The peer-reviewed literature CONFIRMS the engine's core design — every analogy must state where it BREAKS DOWN, and multiple analogies prevent misconceptions:
+- [CBE—Life Sciences Education (PMC10228267) — Improving instruction with analogies](https://pmc.ncbi.nlm.nih.gov/articles/PMC10228267/): "an incompletely-representing analogy often remains as the ONLY representation of the target concept" -> name the limit.
+- [Psychology in Action — Analogy-Based Learning](https://www.psychologyinaction.org/analogy-based-learning-in-the-classroom-implementing-strategies-to-promote-conceptual-understanding-and-performance/): clarifying the familiar domain + USING MULTIPLE ANALOGIES prevents misconceptions (= our 7 domains).
+- [Effective Learning through Analogies in CS (ResearchGate)](https://www.researchgate.net/publication/372800159) · [The eLearning Coach — Writing analogies](https://theelearningcoach.com/learning/analogies-for-learning/).
+
+Conclusion: the 98-cell  caveat + 7 analogy domains are exactly the research-backed anti-leaky-analogy practice. No engine change needed; provenance now real.

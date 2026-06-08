@@ -77,3 +77,12 @@ cnai_swarm.js: fanOut (course+concept bound agents) DONE · consolidate (BO1
 roadmap + dedupe + coverage) DONE · crossDomain (10 adjacency rules) DONE ·
 graceful degradation DONE · proposeToCatalog privacy/threshold gate DONE ·
 speakable DONE · UI section DONE · tools/test_cnai_swarm.mjs 21/21.
+
+## REAL WEB RESEARCH — verified June 2026 (sources + 2026 updates)
+
+Verified the orchestration landscape (engine patterns unchanged; doc refreshed):
+- [AliceLabs — Best AI Agent Frameworks 2026 (ranked)](https://alicelabs.ai/en/insights/best-ai-agent-frameworks-2026): #1 LangGraph, #2 **Claude Agent SDK**, #3 CrewAI, AutoGen.
+- [JetBrains/PyCharm — Top Agentic Frameworks 2026](https://blog.jetbrains.com/pycharm/2026/06/top-agentic-frameworks-for-building-applications-2026/): **Microsoft Agent Framework reached 1.0 GA (April 2026), consolidating Semantic Kernel + AutoGen**.
+- [Rasa — AI Agent Orchestration Tools](https://rasa.com/blog/agent-orchestration-tools) · [GetStream — Best AI Orchestration Tools 2026](https://getstream.io/blog/best-ai-orchestration-tools/): the SUPERVISOR pattern (route to specialist, escalate) is the default in MS Agent Framework, OpenAI Agents SDK and Rasa — matches our coordinator design.
+
+Update: the swarm's single-writer state + supervisor coordinator + graceful degradation mirror the 2026 production consensus (LangGraph state-graph, supervisor routing). 21/21.

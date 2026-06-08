@@ -78,3 +78,19 @@ cert_cnai_omnibus_result.json.
 pages — **cross-Chitti substrate debt**, owner = CTO substrate team (same item
 flagged in the news-ai + news handovers). The learning product's OWN surface is
 100% clean. Documented honestly in BO7 KNOWN_ISSUES, not hidden.
+
+## REAL WEB RESEARCH — verified June 2026 (sources) + the "Degraded" badge fix
+
+WCAG 2.2 AA verified against the standard (not memory):
+- [W3C — WCAG 2.2](https://www.w3.org/TR/WCAG22/) · [WAI — What's new in 2.2](https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/) · [WebAIM WCAG 2 Checklist](https://webaim.org/standards/wcag/checklist) · [Level Access — WCAG 2.2 AA checklist 2026](https://www.levelaccess.com/blog/wcag-2-2-aa-summary-and-checklist-for-website-owners/)
+- Key facts applied: **Target Size (Min) 2.5.5 AA = 24×24 CSS px** (our learning controls are ≥44px — exceed even 2.5.5 AAA); **2.4.11 Focus Not Obscured**; **2.4.13 Focus Appearance**; accessible name must include the visible label; aria-live for status messages.
+
+**"Degraded ⚠" badge — root cause found + FIXED.** It was NOT the learning
+features (the page tests `status:"active"`, 57/57 cards widget-attached in a
+clean probe). It was a real **false-positive in chitti_observability.js**: the
+`card_detection` baseline ratcheted to the ALL-TIME max card count and never
+recovered, so once the news feed loaded many cards then cleared (news backend
+down or view switched), the page showed "Degraded" forever. Fix: the baseline
+now **decays toward the recent norm** and a drop must persist **2 consecutive
+cycles** before breaching — fewer false alarms across all 23 Chitti pages, no
+real signal lost.

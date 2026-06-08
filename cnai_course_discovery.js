@@ -58,7 +58,8 @@
   const CATALOG = [
     // Government, free, recognised certificate
     c('Skill India Digital (NSDC)', 'AI & Emerging-Tech (NSQF)', ['ai', 'ai-literacy', 'employability', 'data'], 'FREE', true, 'govt_free_cert', 'https://www.skillindiadigital.gov.in/'),
-    c('SWAYAM / NPTEL (IIT)', 'Introduction to Machine Learning', ['ml', 'ai', 'data', 'python'], 'FREE to learn · ~₹1000 optional exam fee', true, 'govt_free_cert', 'https://nptel.ac.in/'),
+    c('IIT Madras · SWAYAM Plus', 'AI for All (5 free AI courses, NCrF-aligned)', ['ai', 'ai-literacy', 'ml', 'data', 'machine learning'], 'FREE · nominal exam fee', true, 'govt_free_cert', 'https://swayam-plus.swayam2.ac.in/ai-for-all-courses'),
+    c('SWAYAM / NPTEL (IIT)', 'Machine Learning (IIT, NPTEL)', ['ml', 'ai', 'data', 'python', 'machine learning'], 'FREE to learn · ~₹1000 optional exam fee', true, 'govt_free_cert', 'https://onlinecourses.nptel.ac.in/noc26_cs77/preview'),
     c('SWAYAM / NPTEL (IIT)', 'Deep Learning', ['deep-learning', 'ml', 'ai'], 'FREE to learn · ~₹1000 optional exam fee', true, 'govt_free_cert', 'https://nptel.ac.in/'),
     // Corporate, free, with certificate / badge
     c('Google Cloud Skills Boost', 'Generative AI Learning Path', ['genai', 'llm', 'ai', 'cloud', 'prompting'], 'FREE', true, 'corp_free_cert', 'https://www.cloudskillsboost.google/'),
@@ -74,7 +75,7 @@
     c('AWS Skill Builder', 'Foundations of Prompt Engineering', ['prompting', 'prompt engineering', 'genai', 'llm'], 'FREE (some exams paid)', true, 'corp_free_cert', 'https://skillbuilder.aws/'),
     // Corporate / university, free, no cert
     c('DeepLearning.AI', 'Short Courses (LangChain, Prompting, Agents)', ['llm', 'prompting', 'agents', 'rag'], 'FREE', false, 'corp_free', 'https://www.deeplearning.ai/short-courses/'),
-    c('Anthropic', 'Prompt Engineering tutorial & docs', ['prompting', 'prompt engineering', 'llm'], 'FREE', false, 'corp_free', 'https://docs.anthropic.com/'),
+    c('Anthropic Academy', 'AI Fluency / Prompt Engineering (free + certificate)', ['prompting', 'prompt engineering', 'llm', 'ai'], 'FREE', true, 'corp_free_cert', 'https://www.anthropic.com/learn'),
     c('Harvard CS50 (edX)', "CS50's Introduction to AI with Python", ['ai', 'python', 'ml'], 'FREE to audit (paid verified cert)', false, 'uni_free', 'https://cs50.harvard.edu/ai/'),
     c('MIT OpenCourseWare', 'Deep Learning / AI lectures', ['ai', 'deep-learning', 'ml'], 'FREE', false, 'uni_free', 'https://ocw.mit.edu/'),
     c('OpenLearn (Open University)', 'Data science & AI intro modules', ['data', 'ai', 'data analysis'], 'FREE', true, 'uni_free', 'https://www.open.edu/openlearn/'),
