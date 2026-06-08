@@ -21,6 +21,7 @@ mkdirSync(SHOT_DIR, { recursive: true });
 const PORT = 8771;
 const BASE = 'http://127.0.0.1:' + PORT;
 const URL = BASE + '/chitti_technical.html';
+const AXE = readFileSync(join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8'); // BO5.6
 
 const MIME = { '.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.svg':'image/svg+xml' };
 const server = createServer((req, res) => {
@@ -53,6 +54,13 @@ for (const v of viewports) {
   if (v.n === '375') {
     const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
     check('no_horizontal_overflow_375', !overflow, overflow ? 'scrollWidth>vw' : 'clean');
+    // BO5.6: axe-core WCAG 2.0/2.1 A+AA scan — gate on 0 serious/critical violations
+    try {
+      await p.addScriptTag({ content: AXE });
+      const axeRes = await p.evaluate(async () => await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }));
+      const bad = axeRes.violations.filter(x => x.impact === 'serious' || x.impact === 'critical');
+      check('axe_core_no_serious_violations', bad.length === 0, bad.length ? bad.map(x => x.id + '(' + x.impact + ')').join(', ') : '0 serious/critical across ' + axeRes.passes.length + ' passes');
+    } catch (e) { check('axe_core_no_serious_violations', false, 'axe run error: ' + e.message); }
   }
   await c.close();
 }

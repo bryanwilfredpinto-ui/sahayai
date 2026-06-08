@@ -21,7 +21,7 @@
 
 <style>
 :root{
-  --saffron:#FF9933; --navy:#000080; --green:#138808; --red:#C62828;
+  --saffron:#FF9933; --navy:#000080; --green:#0a6e00; --red:#C62828;
   --ink:#1A1A1A; --bg:#F6F7FB; --card:#FFFFFF; --line:#E3E6EF; --muted:#5b637a;
 }
 *{box-sizing:border-box}
@@ -72,7 +72,7 @@ select{padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;backgr
 .verdict .big{font-size:30px;font-weight:900;padding:8px 18px;border-radius:12px;display:flex;gap:10px;align-items:center}
 .v-BUY{background:#e7f6e7;color:var(--green)}
 .v-SELL{background:#fdeaea;color:var(--red)}
-.v-HOLD{background:#fff4e0;color:#9a6700}
+.v-HOLD{background:#fff4e0;color:#7a4d00}
 .conf{font-size:13px;font-weight:800}
 .why{font-size:14px;color:var(--ink);background:#f7f8fc;border-left:4px solid var(--saffron);padding:10px 12px;border-radius:8px;margin:8px 0}
 
@@ -142,7 +142,7 @@ tr.click:hover{background:#f7f8fc}
 .pcell.sell.on{border-color:var(--red);background:#fdeaea}.pcell.sell.on .pv{color:var(--red)}
 .pcell.tgt .pv{color:var(--green)}.pcell.sl .pv{color:var(--red)}
 .pcell.dim{opacity:.5}
-.plan-hold{padding:10px;border-radius:10px;background:#fff4e0;color:#9a6700;font-weight:700;text-align:center;margin:10px 0}
+.plan-hold{padding:10px;border-radius:10px;background:#fff4e0;color:#7a4d00;font-weight:700;text-align:center;margin:10px 0}
 /* indicator dropdown menu */
 #ind-menu label{display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:13.5px;border-radius:8px;cursor:pointer;min-height:40px}
 #ind-menu label:hover{background:#eef1ff}
@@ -157,7 +157,7 @@ tr.click:hover{background:#f7f8fc}
 .ac-opt .s{font-weight:800;color:var(--navy);min-width:88px}
 .ac-opt .n{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .muted{color:var(--muted);font-size:12.5px}
-.demo-flag{font-size:11.5px;color:#9a6700;background:#fff7ec;border-radius:6px;padding:3px 8px;display:inline-block}
+.demo-flag{font-size:11.5px;color:#7a4d00;background:#fff7ec;border-radius:6px;padding:3px 8px;display:inline-block}
 @media(max-width:380px){.brand h1{font-size:18px}.verdict .big{font-size:24px;padding:6px 12px}}
 /* BO5: icon-only mode — strip text-heavy cards, keep the signal + CEOS board for non-readers */
 body.icon-only .card{display:none}
@@ -439,9 +439,15 @@ window.TechUI = (function(){
       return fetchOpt(base,sym,'Weekly').then(function(w){if(w)tf.weekly=w; return fetchOpt(base,sym,'4H');})
         .then(function(f){if(f)tf['4h']=f; return fetchOpt(base,sym,'1H');})
         .then(function(h){if(h)tf['1h']=h; return fetchOpt(base,sym,'Monthly');})
-        .then(function(m){if(m)tf.monthly=m; return fetchOpt(base,sym,'15min');})  // Scalper entry TF
-        .then(function(q){if(q)tf['15m']=q; return tf;});
+        .then(function(m){if(m)tf.monthly=m; return tf;});
     });
+  }
+  // Scalper entry TF (15m) is fetched lazily — only when Scalper mode is active — so it never
+  // delays or destabilises the core live load. Populates the cache then re-renders the CEOS card.
+  function ensureScalperTf(sym){
+    if(dataSource!=='LIVE'||!candleCache[sym]||candleCache[sym]['15m']) return;
+    var base=(SHARES_APIS||[])[0]; if(!base) return;
+    fetchOpt(base,sym,'15min').then(function(q){ if(q&&candleCache[sym]){ candleCache[sym]['15m']=q; if(lastCEOS&&lastCEOS.__sym===sym) renderCEOS(); } });
   }
   function loadLive(sym){
     // sequential: first host that serves all timeframes wins; else reject → DEMO
@@ -561,6 +567,7 @@ window.TechUI = (function(){
   function renderCEOS(){
     if(!lastScan||!E.generateSignal) return;
     var sym=lastScan._sym, modeEl=document.getElementById('ceos-mode'), mode=modeEl?modeEl.value:'swing';
+    if(mode==='scalper') ensureScalperTf(sym);   // lazily pull 15m only when Scalper is chosen
     var sig=E.generateSignal(getTf(sym),{mode:mode,capital:100000,riskPercent:2});
     sig.__sym=sym; lastCEOS=sig;
     logSystemSignal(sig);   // BO4: auto-log every directional signal to the System Signal Journal
@@ -617,7 +624,7 @@ window.TechUI = (function(){
       var arrow=v.trend==='up'?'▲':(v.trend==='down'?'▼':'▬');
       L.innerHTML+='<div class="rung '+cls+'"><span class="tf">'+(T('tf.'+tf)||tf)+'</span>'+
         '<span class="bar"><span></span><span class="fill" style="width:42%"></span></span>'+
-        '<span class="word" style="color:'+(v.trend==='up'?'var(--green)':v.trend==='down'?'var(--red)':'#888')+'">'+arrow+' '+word+'</span></div>';
+        '<span class="word" style="color:'+(v.trend==='up'?'var(--green)':v.trend==='down'?'var(--red)':'var(--muted)')+'">'+arrow+' '+word+'</span></div>';
     });
   }
 
@@ -992,6 +999,13 @@ window.TechUI = (function(){
   function init(){
     E=window.TechEngine; I18N=window.TECH_I18N;
     if(!E||!I18N){ setTimeout(init,60); return; }
+    // BO6.4: offline cache for rural / low-bandwidth users (network-first HTML, so never stale).
+    // Skip on localhost/127.0.0.1 so the SW never sits between the cert and its route mocks.
+    if('serviceWorker' in navigator && location.hostname!=='127.0.0.1' && location.hostname!=='localhost'){
+      try{ navigator.serviceWorker.register('chitti_technical_sw.js').catch(function(){}); }catch(e){}
+    }
+    // restore icon-only mode preference
+    try{ if(localStorage.getItem('chitti_tech_iconmode')==='1') document.body.classList.add('icon-only'); }catch(e){}
     document.getElementById('eng-ver').textContent=E.VERSION;
     // build the all-stocks list (from nse_universe.js window.NSE — ~800 names; fallback to engine UNIVERSE)
     buildStocks();
