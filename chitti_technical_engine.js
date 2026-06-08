@@ -865,7 +865,8 @@
   }
 
   // ───────────────────────── Chitti Explain (deterministic template) ─────────────────────────
-  var BANNED = ['guaranteed', 'sure-shot', 'sureshot', 'sure shot', '100% accurate', '100%',
+  // NB: a bare "100%" is legitimate (confluence can be 100%); only certainty/accuracy claims are banned.
+  var BANNED = ['guaranteed', 'sure-shot', 'sureshot', 'sure shot', '100% accurate', '100% accuracy',
     'cannot lose', "can't lose", 'risk-free', 'risk free', 'multibagger guaranteed', 'definitely will',
     'no stop loss needed', 'no need for a stop'];
 
@@ -893,6 +894,153 @@
     return null;
   }
 
+  // ═══════════════════ CEOS FINAL v1.0 LAYER (on top of the 39 indicators) ═══════════════════
+  // Classic floor-trader pivots from the PREVIOUS completed period's H/L/C (PDF §5.4).
+  function classicPivots(ph, pl, pc) {
+    var pp = (ph + pl + pc) / 3;
+    return { pp: round2(pp),
+      r1: round2(2 * pp - pl), r2: round2(pp + (ph - pl)), r3: round2(ph + 2 * (pp - pl)),
+      s1: round2(2 * pp - ph), s2: round2(pp - (ph - pl)), s3: round2(pl - 2 * (ph - pp)) };
+  }
+  // Camarilla pivots — simplified gravity grid Close ± (H-L)×{0.25..1.25} (PDF §5.3).
+  function camarillaPivots(ph, pl, pc) {
+    var r = ph - pl;
+    return {
+      h5: round2(pc + r * 1.25), h4: round2(pc + r * 1.00), h3: round2(pc + r * 0.75),
+      h2: round2(pc + r * 0.50), h1: round2(pc + r * 0.25),
+      l1: round2(pc - r * 0.25), l2: round2(pc - r * 0.50), l3: round2(pc - r * 0.75),
+      l4: round2(pc - r * 1.00), l5: round2(pc - r * 1.25)
+    };
+  }
+  function pivotsFor(candles) {
+    if (!candles || candles.length < 2) return null;
+    var p = candles[candles.length - 2]; // previous completed period
+    return { classic: classicPivots(p.high, p.low, p.close), camarilla: camarillaPivots(p.high, p.low, p.close) };
+  }
+  // Swing pivots: a bar that is the local extreme over ±2 bars.
+  function swingLevels(candles) {
+    var hi = [], lo = [], n = candles.length;
+    for (var i = 2; i < n - 2; i++) {
+      var c = candles[i];
+      if (c.high > candles[i-1].high && c.high > candles[i-2].high && c.high > candles[i+1].high && c.high > candles[i+2].high) hi.push(c.high);
+      if (c.low  < candles[i-1].low  && c.low  < candles[i-2].low  && c.low  < candles[i+1].low  && c.low  < candles[i+2].low ) lo.push(c.low);
+    }
+    return { highs: hi.slice(-60), lows: lo.slice(-60) };
+  }
+  // MTF S/R confluence zones — aggregate swing levels across Daily/4H/1H, group ≤0.5%, score (PDF §7.1).
+  function srConfluence(candlesByTf) {
+    var tfWeight = { daily: 3, '4h': 2, '1h': 1 }, levels = [];
+    Object.keys(tfWeight).forEach(function (tf) {
+      if (!candlesByTf[tf] || candlesByTf[tf].length < 10) return;
+      var sw = swingLevels(candlesByTf[tf]);
+      sw.highs.forEach(function (p) { levels.push({ price: p, type: 'R', w: tfWeight[tf], tf: tf }); });
+      sw.lows.forEach(function (p) { levels.push({ price: p, type: 'S', w: tfWeight[tf], tf: tf }); });
+    });
+    if (!levels.length) return [];
+    levels.sort(function (a, b) { return a.price - b.price; });
+    var zones = [], cur = null;
+    levels.forEach(function (l) {
+      if (cur && Math.abs(l.price - cur.center) / cur.center <= 0.005) {
+        cur.members.push(l); cur.score += l.w; cur.tfs[l.tf] = true;
+        cur.center = cur.members.reduce(function (a, m) { return a + m.price; }, 0) / cur.members.length;
+      } else { cur = { center: l.price, members: [l], score: l.w, tfs: {}, type: l.type }; cur.tfs[l.tf] = true; zones.push(cur); }
+    });
+    return zones.map(function (z) {
+      var sc = Math.min(10, z.score + (z.members.length - 1) * 2);
+      return { price: round2(z.center), score: sc, type: z.type, timeframes: Object.keys(z.tfs),
+        touches: z.members.length, strength: (sc >= 8 ? 'STRONG' : (sc >= 5 ? 'MODERATE' : 'WEAK')) };
+    }).filter(function (z) { return z.score >= 3; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 8);
+  }
+
+  // ATR-based risk: SL = Entry ∓ ATR×2 · T1 = ±ATR×1.5 · T2 = ±ATR×3 + position sizing (PDF §8, §8.3).
+  function atrRiskBlock(dailyCandles, side, opts) {
+    opts = opts || {};
+    var capital = opts.capital || 100000, riskPct = opts.riskPercent || 2;
+    var price = last(closes(dailyCandles));
+    var a = last(atr(dailyCandles, 14)); if (a == null || a <= 0) a = price * 0.01;
+    var sl, t1, t2;
+    if (side === 'BUY') { sl = price - a * 2; t1 = price + a * 1.5; t2 = price + a * 3; }
+    else { sl = price + a * 2; t1 = price - a * 1.5; t2 = price - a * 3; }
+    var rps = Math.abs(price - sl), rrr = rps ? Math.abs(t1 - price) / rps : 0;
+    var riskAmt = capital * (riskPct / 100), shares = rps ? Math.floor(riskAmt / rps) : 0;
+    return {
+      entry: round2(price), atr: round2(a),
+      stop_loss: { price: round2(sl), percentage: round2((sl - price) / price * 100), calculation: 'Entry ' + (side === 'BUY' ? '-' : '+') + ' (ATR × 2), ATR=' + round2(a) },
+      target_1: { price: round2(t1), percentage: round2((t1 - price) / price * 100), action: 'Book 50% here' },
+      target_2: { price: round2(t2), percentage: round2((t2 - price) / price * 100), action: 'Book remaining 50% here' },
+      risk_reward_ratio: '1:' + round2(rrr),
+      position_size: { capital: capital, risk_percent: riskPct, risk_amount: round2(riskAmt), risk_per_share: round2(rps), shares: shares, investment: round2(shares * price) }
+    };
+  }
+
+  // 4 preset confluence modes (PDF §6.4): trend TFs set direction, entry TF triggers.
+  var CONFLUENCE_MODES = {
+    longterm:  { label: 'Long-Term Investor', trend: ['monthly', 'weekly'], entry: 'daily' },
+    swing:     { label: 'Aggressive Swing',   trend: ['weekly', 'daily'],   entry: '4h' },
+    daytrader: { label: 'Day Trader',         trend: ['daily', '4h'],       entry: '1h' },
+    scalper:   { label: 'Scalper',            trend: ['4h', '1h'],          entry: '15m' }
+  };
+  // Per-timeframe BULL/BEAR/NEUTRAL per the CEOS conditions table (PDF §6.2).
+  function tfBias(tf, candles) {
+    if (!candles || candles.length < 30) return 'NEUTRAL';
+    var cl = closes(candles), price = last(cl);
+    var e200 = last(ema(cl, 200)), e50 = last(ema(cl, 50)), e21 = last(ema(cl, 21)), e9 = last(ema(cl, 9));
+    var r = last(rsi(cl, 14)), ax = last(adx(candles)), adxV = ax ? ax.adx : 0;
+    var hist = last(macd(cl).hist), vw = last(vwapRolling(candles));
+    switch (tf) {
+      case 'monthly': if (e200 != null) return price > e200 ? 'BULL' : (price < e200 ? 'BEAR' : 'NEUTRAL'); break;
+      case 'weekly':  if (e50 != null)  return price > e50 ? 'BULL' : (price < e50 ? 'BEAR' : 'NEUTRAL'); break;
+      case 'daily':   if (e21 != null) { if (price > e21 && r > 50 && adxV > 25) return 'BULL'; if (price < e21 && r < 50 && adxV > 25) return 'BEAR'; return price > e21 ? 'BULL' : (price < e21 ? 'BEAR' : 'NEUTRAL'); } break;
+      case '4h':      if (vw != null)   return price > vw ? 'BULL' : (price < vw ? 'BEAR' : 'NEUTRAL'); break;
+      case '1h':      if (e200 != null) { var mb = hist != null && hist > 0; return (price > e200 && mb) ? 'BULL' : ((price < e200 && !mb) ? 'BEAR' : (price > e200 ? 'BULL' : 'BEAR')); } break;
+      case '15m':     if (e9 != null && e21 != null) return e9 > e21 ? 'BULL' : 'BEAR'; break;
+      case '5m':      var c = candles[candles.length - 1]; return c.close > c.open ? 'BULL' : 'BEAR';
+    }
+    return 'NEUTRAL';
+  }
+  function confluenceScore(candlesByTf, tfs) {
+    var perTf = {}, bull = 0, bear = 0;
+    tfs.forEach(function (tf) { var b = tfBias(tf, candlesByTf[tf]); perTf[tf] = b; if (b === 'BULL') bull++; else if (b === 'BEAR') bear++; });
+    var total = tfs.length, dominant = Math.max(bull, bear);
+    var bias = bull > bear ? 'BULLISH' : (bear > bull ? 'BEARISH' : 'NEUTRAL');
+    var pct = total ? Math.round(dominant / total * 100) : 0;
+    var quality = pct >= 100 ? 'PERFECT' : (pct >= 80 ? 'STRONG' : (pct >= 60 ? 'MODERATE' : (pct >= 40 ? 'WEAK' : 'NONE')));
+    return { score: dominant, total: total, percent: pct, bias: bias, quality: quality, per_tf: perTf, bull: bull, bear: bear };
+  }
+
+  // The CEOS signal — confluence (mode) → direction (≥60%) → ATR SL/T1/T2 + sizing → full JSON (PDF §8.2).
+  function generateSignal(candlesByTf, opts) {
+    opts = opts || {};
+    var mode = CONFLUENCE_MODES[opts.mode || 'swing'] || CONFLUENCE_MODES.swing;
+    var tfs = mode.trend.concat([mode.entry]);
+    var conf = confluenceScore(candlesByTf, tfs);
+    var daily = candlesByTf.daily || candlesByTf[mode.entry] || candlesByTf.weekly;
+    var price = daily ? last(closes(daily)) : null;
+    var verdict = 'HOLD';
+    if (conf.percent >= 60 && conf.bias === 'BULLISH') verdict = 'BUY';
+    else if (conf.percent >= 60 && conf.bias === 'BEARISH') verdict = 'SELL';
+    var out = {
+      mode: opts.mode || 'swing', mode_label: mode.label, timeframes: tfs,
+      confluence_score: conf.score + '/' + conf.total + ' (' + conf.percent + '%)',
+      confluence_quality: conf.quality, confluence: conf,
+      signal: verdict, confidence: Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95)),
+      entry_price: price != null ? round2(price) : null,
+      pivots: daily ? pivotsFor(daily) : null, sr_zones: srConfluence(candlesByTf),
+      indicators: daily ? indicatorSet(daily) : {},
+      disclaimer: 'Past performance does not guarantee future results. Trading involves risk of loss. NOT SEBI REGISTERED — not financial advice.'
+    };
+    if (verdict === 'BUY' || verdict === 'SELL') {
+      var rb = atrRiskBlock(daily, verdict, opts);
+      if (!rb || rb.position_size.risk_per_share <= 0) { out.signal = 'HOLD'; out.why = 'no valid ATR stop — skip'; }
+      else {
+        out.atr = rb.atr; out.stop_loss = rb.stop_loss; out.target_1 = rb.target_1; out.target_2 = rb.target_2;
+        out.risk_reward_ratio = rb.risk_reward_ratio; out.position_size = rb.position_size;
+        out.invalidation = (verdict === 'BUY' ? 'wrong if price closes below ' : 'wrong if price closes above ') + rb.stop_loss.price;
+      }
+    } else { out.why = conf.percent < 40 ? 'no alignment — NO TRADE' : 'weak confluence — wait for alignment'; }
+    return out;
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -908,7 +1056,11 @@
     neededTfs: neededTfs, scanSymbol: scanSymbol,
     // explain + guardrails
     explain: explain, hasBannedPhrase: hasBannedPhrase, BANNED: BANNED, LADDERS: LADDERS,
-    VERSION: '1.0.0'
+    // CEOS FINAL v1.0 layer
+    classicPivots: classicPivots, camarillaPivots: camarillaPivots, pivotsFor: pivotsFor,
+    srConfluence: srConfluence, atrRiskBlock: atrRiskBlock, CONFLUENCE_MODES: CONFLUENCE_MODES,
+    tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
+    VERSION: '2.0.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

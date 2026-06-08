@@ -14,6 +14,7 @@
 <script src="nse_universe.js?v=20260608" defer></script>
 <script src="chitti_technical_i18n.js?v=20260608" defer></script>
 <script src="chitti_technical_engine.js?v=20260608" defer></script>
+<script src="chitti_technical_a11y.js?v=20260608" defer></script>
 <script src="chitti_a11y.js?v=20260608" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
 <script src="chitti_isl.js?v=20260608" defer></script>
@@ -259,6 +260,25 @@ tr.click:hover{background:#f7f8fc}
       </div>
     </div>
 
+    <!-- CEOS FINAL: confluence-mode trade plan (ATR SL/T1/T2 + position size + pivots + multi-modal) -->
+    <div class="card col-full" data-chitti-response="tech-ceos" data-chitti-section="CEOS Trade Plan">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>🎯 CEOS Trade Plan</span>
+        <select id="ceos-mode" aria-label="Confluence mode" style="margin-left:auto;min-height:40px;max-width:62%;font-size:12px" onchange="TechUI.renderCEOS()">
+          <option value="longterm">Long-Term (M+W→D)</option>
+          <option value="swing" selected>Swing (W+D→4H)</option>
+          <option value="daytrader">Day Trader (D+4H→1H)</option>
+          <option value="scalper">Scalper (4H+1H→15m)</option>
+        </select>
+      </h2>
+      <div id="ceos-board" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px"></div>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <button class="btn ghost" onclick="TechUI.playAudio()">🔊 Hear chart (audio graph)</button>
+        <button class="btn ghost" onclick="TechUI.hapticDemo()">📳 Vibrate signal</button>
+      </div>
+      <div id="ceos-risk"></div>
+      <div id="ceos-pivots" style="margin-top:10px"></div>
+    </div>
+
     <!-- BO8: chart -->
     <div class="card col-full" data-chitti-response="tech-chart" data-chitti-section="Chart">
       <h2>📈 <span data-i18n="chart.title">Chart</span> <span class="muted" id="chart-tf"></span></h2>
@@ -325,7 +345,7 @@ tr.click:hover{background:#f7f8fc}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily';
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -488,6 +508,7 @@ window.TechUI = (function(){
     document.getElementById('why-box').textContent=res.why||'';
     renderLadder(res);
     renderRisk(res);
+    renderCEOS();
     renderIndicators(res);
     renderRoshan(res);
     renderExplain(res);
@@ -524,6 +545,56 @@ window.TechUI = (function(){
       '<tr><th scope="col">#</th><th scope="col">O</th><th scope="col">H</th><th scope="col">L</th><th scope="col">C</th><th scope="col">RSI</th></tr>'+
       rows+risk+'</table>';
   }
+
+  // ───── CEOS FINAL: confluence-mode signal (ATR SL/T1/T2 + position size + pivots + multi-modal) ─────
+  function renderCEOS(){
+    if(!lastScan||!E.generateSignal) return;
+    var sym=lastScan._sym, modeEl=document.getElementById('ceos-mode'), mode=modeEl?modeEl.value:'swing';
+    var sig=E.generateSignal(getTf(sym),{mode:mode,capital:100000,riskPercent:2});
+    lastCEOS=sig;
+    var ic=(window.TechA11y?TechA11y.icon(sig.signal):({BUY:'🟢',SELL:'🔴',HOLD:'🟡'}[sig.signal]||'⏸️'));
+    var board=document.getElementById('ceos-board');
+    if(board) board.innerHTML='<div class="big v-'+sig.signal+'" style="font-size:26px;font-weight:900;padding:6px 16px;border-radius:12px">'+ic+' '+T('verdict.'+sig.signal)+'</div>'+
+      '<div><div style="font-weight:800">'+T('conf.label')+': '+sig.confidence+'%</div>'+
+      '<div class="muted">'+sig.mode_label+' · confluence '+sig.confluence_score+' ('+sig.confluence_quality+')</div></div>';
+    var rb=document.getElementById('ceos-risk');
+    if(rb){
+      if(sig.signal!=='HOLD'&&sig.stop_loss){
+        rb.innerHTML='<div class="risk">'+
+          '<div class="kv"><div class="k">'+T('risk.entry')+'</div><div class="v">'+sig.entry_price+'</div></div>'+
+          '<div class="kv"><div class="k">🛑 '+T('risk.stop')+' ('+sig.stop_loss.percentage+'%)</div><div class="v stop">'+sig.stop_loss.price+'</div></div>'+
+          '<div class="kv"><div class="k">🎯 Target 1 ('+sig.risk_reward_ratio+')</div><div class="v tgt">'+sig.target_1.price+'</div></div>'+
+          '<div class="kv"><div class="k">🎯 Target 2</div><div class="v tgt">'+sig.target_2.price+'</div></div>'+
+          '<div class="kv"><div class="k">'+T('risk.size')+'</div><div class="v">'+sig.position_size.shares+' sh</div></div>'+
+          '<div class="kv"><div class="k">ATR</div><div class="v">'+sig.atr+'</div></div>'+
+          '</div><div class="invalid">⚠️ '+sig.invalidation+' · ₹'+Number(sig.position_size.investment).toLocaleString('en-IN')+' invested, ₹'+Number(sig.position_size.risk_amount).toLocaleString('en-IN')+' at risk</div>';
+      } else rb.innerHTML='<div class="plan-hold">⏸️ '+T('verdict.HOLD')+' — '+(sig.why||'')+'</div>';
+    }
+    var pv=document.getElementById('ceos-pivots');
+    if(pv){
+      if(sig.pivots){
+        var c=sig.pivots.classic, cam=sig.pivots.camarilla;
+        pv.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">Pivot levels — Classic + Camarilla (H3/L3 = reversal zones)</caption>'+
+          '<tr><th>Level</th><th>Classic</th><th>Level</th><th>Camarilla</th></tr>'+
+          '<tr><td>R3</td><td>'+c.r3+'</td><td>H5</td><td>'+cam.h5+'</td></tr>'+
+          '<tr><td>R2</td><td>'+c.r2+'</td><td>H4</td><td>'+cam.h4+'</td></tr>'+
+          '<tr><td>R1</td><td>'+c.r1+'</td><td>H3 ⚠️</td><td>'+cam.h3+'</td></tr>'+
+          '<tr><td><b>PP</b></td><td><b>'+c.pp+'</b></td><td>H1</td><td>'+cam.h1+'</td></tr>'+
+          '<tr><td>S1</td><td>'+c.s1+'</td><td>L3 ⚠️</td><td>'+cam.l3+'</td></tr>'+
+          '<tr><td>S2</td><td>'+c.s2+'</td><td>L4</td><td>'+cam.l4+'</td></tr>'+
+          '<tr><td>S3</td><td>'+c.s3+'</td><td>L5</td><td>'+cam.l5+'</td></tr></table>';
+      } else pv.innerHTML='';
+    }
+  }
+  function playAudio(){
+    if(!lastScan) return;
+    var dly=getTf(lastScan._sym).daily; if(!dly||!dly.length) return;
+    var prices=dly.slice(-20).map(function(c){return c.close;});
+    if(window.TechA11y){ TechA11y.playAudioGraph(prices); if(lastCEOS) TechA11y.tone(lastCEOS.signal); }
+    var tw=window.TechA11y?TechA11y.trendWord(prices):'';
+    speak(lastScan._sym+' — '+tw+'. '+(lastCEOS?(T('verdict.'+lastCEOS.signal)+', confidence '+lastCEOS.confidence+' percent'):''));
+  }
+  function hapticDemo(){ if(window.TechA11y&&lastCEOS){ TechA11y.vibrate(lastCEOS.signal); speak(T('verdict.'+lastCEOS.signal)); } }
 
   function renderLadder(res){
     var L=document.getElementById('ladder'); L.innerHTML='';
@@ -888,6 +959,7 @@ window.TechUI = (function(){
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
+    renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,

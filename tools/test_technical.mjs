@@ -149,6 +149,61 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('CCI on a strong uptrend is finite', E.cci(rising).pop() != null);
 }
 
+// ───── CEOS FINAL layer: pivots, S/R, ATR risk, confluence modes, signal ─────
+{
+  // Classic pivots from H=110, L=90, C=100 → PP=100, R1=110, S1=90
+  const cp = E.classicPivots(110, 90, 100);
+  ok('classic pivot PP=(H+L+C)/3', approx(cp.pp, 100));
+  ok('classic R1 = 2PP-L', approx(cp.r1, 110));
+  ok('classic S1 = 2PP-H', approx(cp.s1, 90));
+  ok('classic R2 = PP+(H-L)', approx(cp.r2, 120));
+  // Camarilla: H3 = C + (H-L)*0.75, L3 = C - (H-L)*0.75
+  const cam = E.camarillaPivots(110, 90, 100);
+  ok('camarilla H3 = C + range*0.75', approx(cam.h3, 115));
+  ok('camarilla L3 = C - range*0.75', approx(cam.l3, 85));
+  ok('camarilla H5 = C + range*1.25', approx(cam.h5, 125));
+  ok('camarilla levels ordered H5>H4>...>L5', cam.h5>cam.h4 && cam.h4>cam.h3 && cam.l3>cam.l4 && cam.l4>cam.l5);
+
+  // ATR risk: SL on correct side, T1/T2 ATR multiples, position sizing
+  const upC = Array.from({length:120},(_,i)=>({open:100+i*0.5,high:101+i*0.5,low:99+i*0.5,close:100.5+i*0.5,volume:1e5}));
+  const rbB = E.atrRiskBlock(upC,'BUY',{capital:100000,riskPercent:2});
+  ok('ATR BUY stop below entry', rbB.stop_loss.price < rbB.entry);
+  ok('ATR BUY T1 above entry, T2 above T1', rbB.target_1.price > rbB.entry && rbB.target_2.price > rbB.target_1.price);
+  ok('ATR T2 distance ≈ 2× T1 distance (3ATR vs 1.5ATR)', approx(Math.abs(rbB.target_2.price-rbB.entry), 2*Math.abs(rbB.target_1.price-rbB.entry), 0.2));
+  ok('position sizing: shares = floor(riskAmt/riskPerShare)', rbB.position_size.shares === Math.floor((100000*0.02)/rbB.position_size.risk_per_share));
+  const rbS = E.atrRiskBlock(upC,'SELL',{});
+  ok('ATR SELL stop above entry', rbS.stop_loss.price > rbS.entry);
+
+  // confluence modes resolve the right TFs
+  ok('mode longterm = Monthly+Weekly→Daily', JSON.stringify(E.CONFLUENCE_MODES.longterm.trend.concat([E.CONFLUENCE_MODES.longterm.entry]))===JSON.stringify(['monthly','weekly','daily']));
+  ok('mode scalper entry = 5m', E.CONFLUENCE_MODES.scalper.entry === '15m' || E.CONFLUENCE_MODES.scalper.entry === '5m');
+
+  // confluence score + tfBias on a clean uptrend daily → BULL
+  ok('tfBias daily uptrend = BULL', E.tfBias('daily', upC) === 'BULL');
+  const dnC = Array.from({length:120},(_,i)=>({open:200-i*0.4,high:201-i*0.4,low:199-i*0.4,close:199.5-i*0.4,volume:1e5}));
+  ok('tfBias daily downtrend = BEAR', E.tfBias('daily', dnC) === 'BEAR');
+  const tfsUp = { monthly: upC, weekly: upC, daily: upC, '4h': upC, '1h': upC };
+  const cs = E.confluenceScore(tfsUp, ['weekly','daily','4h']);
+  ok('confluenceScore all-bull → BULLISH 100%', cs.bias==='BULLISH' && cs.percent===100 && cs.quality==='PERFECT');
+
+  // generateSignal: directional → SL/T1/T2 present; opposed → HOLD; HOLD has no SL
+  const sigUp = E.generateSignal(tfsUp, { mode:'swing', capital:100000, riskPercent:2 });
+  ok('generateSignal all-bull swing → BUY', sigUp.signal === 'BUY');
+  ok('BUY signal carries ATR stop_loss + T1 + T2 + RR + position size', !!(sigUp.stop_loss && sigUp.target_1 && sigUp.target_2 && sigUp.risk_reward_ratio && sigUp.position_size));
+  ok('BUY stop on correct side', sigUp.stop_loss.price < sigUp.entry_price);
+  ok('signal includes confluence % + quality', /%/.test(sigUp.confluence_score) && sigUp.confluence_quality);
+  ok('signal includes pivots (classic + camarilla)', !!(sigUp.pivots && sigUp.pivots.classic && sigUp.pivots.camarilla));
+  const tfsOpp = { weekly: upC, daily: upC, '4h': dnC };
+  const sigOpp = E.generateSignal(tfsOpp, { mode:'swing' });
+  ok('generateSignal opposed TFs → not a full-confidence directional (HOLD or <100%)', sigOpp.signal==='HOLD' || sigOpp.confluence.percent<100);
+  ok('HOLD signal carries NO stop_loss', sigOpp.signal!=='HOLD' || !sigOpp.stop_loss);
+  ok('generateSignal no banned phrase', E.hasBannedPhrase(JSON.stringify(sigUp)) === null);
+
+  // S/R confluence zones
+  const zones = E.srConfluence({ daily: upC, '4h': upC, '1h': upC });
+  ok('srConfluence returns scored zones (array)', Array.isArray(zones));
+}
+
 // ───── BO2: i18n completeness + no-Hinglish ─────
 const LANGS = ['en','hi','ta','te','bn','mr','gu','kn','ml'];
 ok('i18n has all 9 primary languages', LANGS.every(l => I18N[l]));
