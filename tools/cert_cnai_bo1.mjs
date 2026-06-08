@@ -89,6 +89,24 @@ const after = await p.locator('#analogy-content').innerText();
 rec('bo3_switch_domain', after !== analogyTxt && /token/i.test(after.toLowerCase()), 'domain switched, same concept');
 rec('bo3_speakable', (await p.evaluate(() => { const h = document.getElementById('analogy-content'); return (h && h.getAttribute('data-analogy-speak')) || ''; })).length > 20);
 
+// ---- BO4: Career Coach ----
+rec('bo4_engine_present', await p.evaluate(() => !!(window.ChittiCareer && window.ChittiCareer.buildReport)));
+await p.fill('#career-input', 'I am a doctor with 15 years');
+await p.evaluate(() => window.cnaiCareerOneLiner({ preventDefault() {} }));
+await p.waitForTimeout(400);
+const careerTxt = await p.locator('#career-content').innerText();
+rec('bo4_report_renders', (await p.$$('#career-content .career-card')).length === 1);
+rec('bo4_report_chitti_response', (await p.$$('#career-content [data-chitti-response]')).length >= 1);
+rec('bo4_shows_free_tools', /free/i.test(careerTxt) && /AI tools for your field/i.test(careerTxt));
+rec('bo4_shows_free_certs', /Free certifications/i.test(careerTxt));
+rec('bo4_clinical_caveat', /human|diagnos|clinical/i.test(careerTxt), 'doctor caveat shown');
+rec('bo4_roadmap_handoff', /30-day roadmap/i.test(careerTxt));
+rec('bo4_privacy_stored_local', await p.evaluate(() => { try { return !!JSON.parse(localStorage.getItem('cnai_profile')).role; } catch (e) { return false; } }), 'profile in localStorage only');
+// Chitti forget wipes it
+await p.evaluate(() => window.cnaiCareerForget());
+await p.waitForTimeout(200);
+rec('bo4_chitti_forget', await p.evaluate(() => !localStorage.getItem('cnai_profile')), 'forget clears localStorage');
+
 await b.close(); server.close();
 const pass = R.filter(r => r.ok).length;
 console.log('\nBO1 UI cert: ' + pass + ' / ' + R.length + ' PASS');
