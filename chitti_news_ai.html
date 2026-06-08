@@ -280,6 +280,23 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     </form>
     <div id="courses-content" aria-live="polite"></div>
   </section>
+
+  <!-- Path 2 — Teach me in MY analogy (BO3, signature feature) -->
+  <section class="section" id="analogy-section" data-chitti-response data-chitti-section="Teach me using my analogy">
+    <h2 class="section-title">🧠 Teach Me — In My Own Words</h2>
+    <p class="section-sub">Pick a concept and an analogy you love. Chitti explains it your way — cricket, share market, farming, cooking, Bollywood — and always tells you where the analogy breaks down, so you never learn it wrong.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <label for="analogy-concept" class="sr-only">Concept</label>
+      <select id="analogy-concept" aria-label="Which concept should Chitti explain?" onchange="cnaiAnalogyGo()"
+              style="min-height:48px;padding:0 12px;font-size:16px;border:2px solid #888;border-radius:10px"></select>
+      <label for="analogy-domain" class="sr-only">Analogy</label>
+      <select id="analogy-domain" aria-label="Which analogy do you understand best?" onchange="cnaiAnalogyGo()"
+              style="min-height:48px;padding:0 12px;font-size:16px;border:2px solid #888;border-radius:10px"></select>
+      <button type="button" aria-label="Explain it another way" onclick="cnaiAnalogyAnother()"
+              style="min-height:48px;padding:0 14px;font-size:15px;border-radius:10px;border:2px solid #444;background:#fff">🔄 Say it another way</button>
+    </div>
+    <div id="analogy-content" aria-live="polite"></div>
+  </section>
 </main>
 
 <footer>
@@ -297,6 +314,8 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="chitti_coach.js?v=20260606.1"></script>
 <script src="cnai_roadmap_engine.js?v=20260609.1"></script>
 <script src="cnai_course_discovery.js?v=20260609.1"></script>
+<script src="cnai_analogy_engine.js?v=20260609.1"></script>
+<script src="cnai_learns.js?v=20260609.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -848,6 +867,56 @@ function speakPage() {
       r.start();
     } catch (e) {}
   };
+})();
+</script>
+
+<!-- Path 2 — Analogy teaching render (BO3). Uses ChittiAnalogy + ChittiLearns. -->
+<script>
+(function () {
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function lang() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function speak(t) { try { var u = new SpeechSynthesisUtterance(t); u.rate = 0.95; u.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {} }
+
+  function fillSelects() {
+    var cs = document.getElementById('analogy-concept'); var ds = document.getElementById('analogy-domain');
+    if (!cs || !ds || !window.ChittiAnalogy) return;
+    cs.innerHTML = window.ChittiAnalogy.listConcepts().map(function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
+    ds.innerHTML = window.ChittiAnalogy.listDomains().map(function (d) { return '<option value="' + d.id + '">' + d.emoji + ' ' + esc(d.label) + '</option>'; }).join('');
+    // Default to the user's profession-friendly analogy if blank.
+    cs.value = 'agent'; ds.value = 'cricket';
+  }
+
+  function render(card) {
+    var host = document.getElementById('analogy-content'); if (!host) return;
+    host.innerHTML =
+      '<div class="analogy-card" data-chitti-response data-chitti-section="' + esc(card.concept + ' in ' + card.domain_label + ' terms') + '" ' +
+      'style="border:1px solid #ddd;border-radius:12px;padding:14px;margin:8px 0">' +
+      '<div style="font-weight:700;font-size:17px">' + esc(card.concept) + ' — in ' + esc(card.domain_label) + ' terms</div>' +
+      '<div style="font-size:16px;margin:8px 0">' + esc(card.analogy) + '</div>' +
+      '<div style="background:#fff7e6;border-left:4px solid #e08a00;padding:8px;border-radius:6px;font-size:14px">⚠️ <strong>Where this breaks down:</strong> ' + esc(card.breaks_down) + '</div>' +
+      '<div style="background:#eef6ff;border-radius:6px;padding:8px;margin-top:8px;font-size:14px">📝 <strong>Practice (not a graded exam):</strong> ' + esc(card.practice) + '</div>' +
+      '<button type="button" aria-label="Read this explanation aloud" onclick="cnaiAnalogySpeak()" style="margin-top:8px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read aloud</button>' +
+      '</div>';
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
+    host.setAttribute('data-analogy-speak', card.speak + ' Practice: ' + card.practice);
+    speak(card.speak);
+  }
+
+  window.cnaiAnalogyGo = function () {
+    var cs = document.getElementById('analogy-concept'); var ds = document.getElementById('analogy-domain');
+    if (!cs || !ds) return;
+    try { render(window.ChittiLearns.teach(cs.value, ds.value)); } catch (e) {}
+  };
+  window.cnaiAnalogyAnother = function () {
+    var ds = document.getElementById('analogy-domain'); if (!ds) return;
+    var ids = window.ChittiAnalogy.listDomains().map(function (d) { return d.id; });
+    var i = ids.indexOf(ds.value); ds.value = ids[(i + 1) % ids.length];
+    window.cnaiAnalogyGo();
+  };
+  window.cnaiAnalogySpeak = function () { var h = document.getElementById('analogy-content'); var t = h && h.getAttribute('data-analogy-speak'); if (t) speak(t); };
+
+  function init() { try { fillSelects(); } catch (e) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>

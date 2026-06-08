@@ -71,6 +71,24 @@ rec('bo2_free_first', /FREE/.test(firstCard) && !/PAID/.test(firstCard.split('\n
 rec('bo2_open_links', (await p.$$('#courses-content a[href^="http"]')).length >= 5);
 rec('bo2_speakable', (await p.evaluate(() => { const h = document.getElementById('courses-content'); return (h && h.getAttribute('data-courses-speak')) || ''; })).toLowerCase().includes('free'));
 
+// ---- BO3: Analogy teaching ----
+rec('bo3_engines_present', await p.evaluate(() => !!(window.ChittiAnalogy && window.ChittiLearns)));
+rec('bo3_selects_filled', (await p.$$('#analogy-concept option')).length >= 14 && (await p.$$('#analogy-domain option')).length === 7,
+  (await p.$$('#analogy-concept option')).length + ' concepts × ' + (await p.$$('#analogy-domain option')).length + ' domains');
+await p.evaluate(() => { document.getElementById('analogy-concept').value = 'token'; document.getElementById('analogy-domain').value = 'cricket'; window.cnaiAnalogyGo(); });
+await p.waitForTimeout(400);
+const analogyTxt = await p.locator('#analogy-content').innerText();
+rec('bo3_card_renders', (await p.$$('#analogy-content .analogy-card')).length === 1);
+rec('bo3_card_chitti_response', (await p.$$('#analogy-content [data-chitti-response]')).length >= 1);
+rec('bo3_breaks_down_shown', /Where this breaks down/i.test(analogyTxt), 'leaky-analogy guard visible');
+rec('bo3_practice_not_graded', /not a graded exam/i.test(analogyTxt));
+// "Say it another way" switches domain (same concept)
+await p.evaluate(() => window.cnaiAnalogyAnother());
+await p.waitForTimeout(300);
+const after = await p.locator('#analogy-content').innerText();
+rec('bo3_switch_domain', after !== analogyTxt && /token/i.test(after.toLowerCase()), 'domain switched, same concept');
+rec('bo3_speakable', (await p.evaluate(() => { const h = document.getElementById('analogy-content'); return (h && h.getAttribute('data-analogy-speak')) || ''; })).length > 20);
+
 await b.close(); server.close();
 const pass = R.filter(r => r.ok).length;
 console.log('\nBO1 UI cert: ' + pass + ' / ' + R.length + ' PASS');
