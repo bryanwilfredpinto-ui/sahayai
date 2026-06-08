@@ -281,6 +281,20 @@
   };
   Object.keys(BT).forEach(function (l) { if (T[l]) Object.keys(BT[l]).forEach(function (k) { T[l][k] = BT[l][k]; }); });
 
+  // BO14: Opportunity Scanner — UI labels in all 9 languages (stock names + Nifty 50 stay English).
+  var OPP = {
+    en: { 'opp.title': 'Opportunity Scanner', 'opp.scan': 'Scan now', 'opp.tier': 'Universe', 'opp.buys': 'Top BUY setups', 'opp.sells': 'Top SELL setups', 'opp.none': 'No strong setups right now', 'opp.read': 'Read setups', 'opp.scanned': 'scanned' },
+    hi: { 'opp.title': 'अवसर स्कैनर', 'opp.scan': 'अभी स्कैन करें', 'opp.tier': 'समूह', 'opp.buys': 'श्रेष्ठ ख़रीद सेटअप', 'opp.sells': 'श्रेष्ठ बिक्री सेटअप', 'opp.none': 'अभी कोई मज़बूत सेटअप नहीं', 'opp.read': 'सेटअप सुनें', 'opp.scanned': 'जाँचे' },
+    ta: { 'opp.title': 'வாய்ப்பு ஸ்கேனர்', 'opp.scan': 'இப்போது ஸ்கேன் செய்', 'opp.tier': 'குழு', 'opp.buys': 'சிறந்த வாங்கும் அமைப்புகள்', 'opp.sells': 'சிறந்த விற்கும் அமைப்புகள்', 'opp.none': 'இப்போது வலுவான அமைப்பு இல்லை', 'opp.read': 'அமைப்புகளைக் கேள்', 'opp.scanned': 'பரிசோதிக்கப்பட்டது' },
+    te: { 'opp.title': 'అవకాశ స్కానర్', 'opp.scan': 'ఇప్పుడు స్కాన్ చేయండి', 'opp.tier': 'సమూహం', 'opp.buys': 'ఉత్తమ కొనుగోలు సెటప్‌లు', 'opp.sells': 'ఉత్తమ అమ్మకం సెటప్‌లు', 'opp.none': 'ఇప్పుడు బలమైన సెటప్ లేదు', 'opp.read': 'సెటప్‌లను వినండి', 'opp.scanned': 'పరిశీలించబడింది' },
+    bn: { 'opp.title': 'সুযোগ স্ক্যানার', 'opp.scan': 'এখন স্ক্যান করুন', 'opp.tier': 'গোষ্ঠী', 'opp.buys': 'সেরা কেনার সেটআপ', 'opp.sells': 'সেরা বিক্রির সেটআপ', 'opp.none': 'এখন শক্তিশালী সেটআপ নেই', 'opp.read': 'সেটআপ শুনুন', 'opp.scanned': 'যাচাই করা হয়েছে' },
+    mr: { 'opp.title': 'संधी स्कॅनर', 'opp.scan': 'आता स्कॅन करा', 'opp.tier': 'गट', 'opp.buys': 'सर्वोत्तम खरेदी सेटअप', 'opp.sells': 'सर्वोत्तम विक्री सेटअप', 'opp.none': 'आता मजबूत सेटअप नाही', 'opp.read': 'सेटअप ऐका', 'opp.scanned': 'तपासले' },
+    gu: { 'opp.title': 'તક સ્કેનર', 'opp.scan': 'હમણાં સ્કેન કરો', 'opp.tier': 'જૂથ', 'opp.buys': 'શ્રેષ્ઠ ખરીદી સેટઅપ', 'opp.sells': 'શ્રેષ્ઠ વેચાણ સેટઅપ', 'opp.none': 'અત્યારે મજબૂત સેટઅપ નથી', 'opp.read': 'સેટઅપ સાંભળો', 'opp.scanned': 'તપાસ્યું' },
+    kn: { 'opp.title': 'ಅವಕಾಶ ಸ್ಕ್ಯಾನರ್', 'opp.scan': 'ಈಗ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ', 'opp.tier': 'ಗುಂಪು', 'opp.buys': 'ಅತ್ಯುತ್ತಮ ಖರೀದಿ ಸೆಟಪ್‌ಗಳು', 'opp.sells': 'ಅತ್ಯುತ್ತಮ ಮಾರಾಟ ಸೆಟಪ್‌ಗಳು', 'opp.none': 'ಈಗ ಬಲವಾದ ಸೆಟಪ್ ಇಲ್ಲ', 'opp.read': 'ಸೆಟಪ್‌ಗಳನ್ನು ಕೇಳಿ', 'opp.scanned': 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ' },
+    ml: { 'opp.title': 'അവസര സ്കാനർ', 'opp.scan': 'ഇപ്പോൾ സ്കാൻ ചെയ്യുക', 'opp.tier': 'ഗ്രൂപ്പ്', 'opp.buys': 'മികച്ച വാങ്ങൽ സെറ്റപ്പുകൾ', 'opp.sells': 'മികച്ച വിൽപന സെറ്റപ്പുകൾ', 'opp.none': 'ഇപ്പോൾ ശക്തമായ സെറ്റപ്പ് ഇല്ല', 'opp.read': 'സെറ്റപ്പുകൾ കേൾക്കുക', 'opp.scanned': 'പരിശോധിച്ചു' }
+  };
+  Object.keys(OPP).forEach(function (l) { if (T[l]) Object.keys(OPP[l]).forEach(function (k) { T[l][k] = OPP[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);

@@ -1309,6 +1309,25 @@
     return { perStock: per, aggregate: aggregate, rows: allRows };
   }
 
+  // ═══════════════ BO14: Opportunity Scanner — rank the best BUY/SELL setups across a universe ═══════════════
+  // Run the deterministic multi-TF signal on every symbol; keep directional ones; rank by confidence;
+  // surface only the top few (decluttered). Reuses generateSignal — no LLM, no look-ahead.
+  function scanUniverse(map, opts) {
+    opts = opts || {}; var top = opts.top || 5, tfs = opts.tfs, buys = [], sells = [], scanned = 0;
+    Object.keys(map).forEach(function (sym) {
+      var sig; try { sig = generateSignal(map[sym], { tfs: tfs }); } catch (e) { return; }
+      scanned++;
+      if (!sig || sig.signal === 'HOLD' || !sig.stop_loss) return;
+      var row = { sym: sym, signal: sig.signal, confidence: sig.confidence, confluence: sig.confluence_score,
+        quality: sig.confluence_quality, entry: sig.entry_price, sl: sig.stop_loss.price,
+        t1: sig.target_1 ? sig.target_1.price : null, rr: sig.risk_reward_ratio || null };
+      (sig.signal === 'BUY' ? buys : sells).push(row);
+    });
+    function rank(a, b) { return (b.confidence - a.confidence) || (('' + b.confluence).localeCompare('' + a.confluence)); }
+    buys.sort(rank); sells.sort(rank);
+    return { buys: buys.slice(0, top), sells: sells.slice(0, top), scanned: scanned, totalBuys: buys.length, totalSells: sells.length };
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1337,7 +1356,9 @@
     swingPivots: swingPivots, PATTERN_RELIABILITY: PATTERN_RELIABILITY,
     // BO: backtest journal
     backtestJournal: backtestJournal, aggregateBacktest: aggregateBacktest, batchBacktest: batchBacktest,
-    TF_ORDER: TF_ORDER, VERSION: '2.5.0'
+    // BO14: opportunity scanner
+    scanUniverse: scanUniverse,
+    TF_ORDER: TF_ORDER, VERSION: '2.6.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

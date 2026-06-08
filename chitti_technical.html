@@ -347,6 +347,25 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="screener-results" style="margin-top:10px"></div>
     </div>
 
+    <!-- BO14: Opportunity Scanner — rank the best BUY/SELL setups across a cap tier -->
+    <div class="card col-full" data-chitti-response="tech-opp" data-chitti-section="Opportunity Scanner">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>🧭 <span data-i18n="opp.title">Opportunity Scanner</span></span>
+        <button class="btn ghost" style="margin-left:auto;min-height:44px" onclick="TechUI.readOppScan()">🔊 <span data-i18n="opp.read">Read setups</span></button>
+      </h2>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="muted" data-i18n="opp.tier">Universe</span>:
+        <select id="opp-tier" aria-label="Universe" style="min-height:40px">
+          <option value="NIFTY50" selected>Nifty 50</option>
+          <option value="LARGECAP">Large Cap</option>
+          <option value="MIDCAP">Mid Cap</option>
+          <option value="SMALLCAP">Small Cap</option>
+          <option value="MICROCAP">Micro Cap</option>
+        </select>
+        <button class="btn nav" onclick="TechUI.runOppScan()">🔍 <span data-i18n="opp.scan">Scan now</span></button>
+      </div>
+      <div id="opp-results"></div>
+    </div>
+
     <!-- BO: Backtest Journal (user-ticked TF · ₹1 lakh/trade · batch Nifty 50) -->
     <div class="card col-full" data-chitti-response="tech-backtest" data-chitti-section="Backtest">
       <h2 style="flex-wrap:wrap;gap:6px"><span>📜 <span data-i18n="bt.title">Backtest Journal</span></span>
@@ -418,7 +437,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null, lastBacktest=null;
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null, lastBacktest=null, lastOppScan=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -767,6 +786,39 @@ window.TechUI = (function(){
   function hearBacktest(){
     if(!lastBacktest){ speak(T('bt.none')); return; } var a=lastBacktest.agg;
     speak(lastBacktest.sym+'. '+T('bt.trades')+' '+a.trades+'. '+T('sc.winrate')+' '+a.winRate+' percent. '+T('sc.pf')+' '+a.profitFactor+'. '+T('bt.return')+' '+a.returnPct+' percent on '+Math.round(a.deployed/100000)+' lakh.');
+  }
+
+  // ───── BO14: Opportunity Scanner — rank the best BUY/SELL setups across a cap tier ─────
+  function oppSymbols(tier){
+    var N=window.NSE; if(!N) return ['RELIANCE','TCS','INFY','HDFCBANK','ICICIBANK','SBIN','ITC','LT'];
+    var m={NIFTY50:N.NIFTY50,LARGECAP:N.LARGECAP,MIDCAP:N.MIDCAP150,SMALLCAP:N.SMALLCAP250,MICROCAP:N.MICROCAP250,ALL:N.ALL};
+    var arr=m[tier]||N.NIFTY50||[]; return arr.slice(0, tier==='NIFTY50'?50:40);
+  }
+  function runOppScan(){
+    if(!E.scanUniverse) return;
+    var el=document.getElementById('opp-results'); if(el) el.innerHTML='<div class="muted">…</div>';
+    var tier=(document.getElementById('opp-tier')||{}).value||'NIFTY50';
+    setTimeout(function(){
+      var map={}; oppSymbols(tier).forEach(function(s){ map[s]=getTf(s); });
+      lastOppScan=E.scanUniverse(map,{tfs:tickedTfs(),top:5}); renderOppScan();
+      speak(T('opp.title')+'. '+(lastOppScan.buys.length+lastOppScan.sells.length)+' setups.');
+    },20);
+  }
+  function renderOppScan(){
+    var el=document.getElementById('opp-results'); if(!el||!lastOppScan) return; var r=lastOppScan;
+    if(!r.buys.length&&!r.sells.length){ el.innerHTML='<div class="invalid">⏸️ '+T('opp.none')+'</div>'; return; }
+    function rows(list,ic){ return list.length?list.map(function(s){
+      return '<div class="tfrow '+(s.signal==='BUY'?'bull':'bear')+'" onclick="TechUI.pick(\''+s.sym+'\')" style="cursor:pointer"><span>'+ic+' <b>'+s.sym+'</b> · '+s.confidence+'%</span><span>'+s.entry+' · 🛑'+s.sl+' · 🎯'+s.t1+'</span></div>'; }).join(''):'<div class="muted">—</div>'; }
+    el.innerHTML='<div style="font-weight:800;margin:6px 0 4px">🟢 '+T('opp.buys')+'</div>'+rows(r.buys,'🟢')+
+      '<div style="font-weight:800;margin:10px 0 4px">🔴 '+T('opp.sells')+'</div>'+rows(r.sells,'🔴')+
+      '<div class="muted" style="margin-top:6px">'+r.scanned+' '+T('opp.scanned')+' · '+r.totalBuys+' BUY · '+r.totalSells+' SELL</div>';
+  }
+  function readOppScan(){
+    if(!lastOppScan){ speak(T('opp.none')); return; } var r=lastOppScan;
+    if(!r.buys.length&&!r.sells.length){ speak(T('opp.none')); return; }
+    var b=r.buys.length?r.buys.map(function(s){return s.sym+' '+s.confidence+' percent';}).join(', '):'none';
+    var sl=r.sells.length?r.sells.map(function(s){return s.sym+' '+s.confidence+' percent';}).join(', '):'none';
+    speak(T('opp.buys')+': '+b+'. '+T('opp.sells')+': '+sl+'.');
   }
 
   // ───── BO-NEXT: Accuracy Scorecard — backtest → win rate / PF / expectancy + calibration ─────
@@ -1262,6 +1314,7 @@ window.TechUI = (function(){
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
+    runOppScan:runOppScan,readOppScan:readOppScan,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,

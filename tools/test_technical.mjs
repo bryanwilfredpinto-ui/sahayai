@@ -275,6 +275,16 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   const batch=E.batchBacktest({TCS:{daily:upC}, RELI:{daily:dnC}},{tfs:['daily'],capital:100000,lookahead:30});
   ok('batchBacktest deployed = ₹1L × 2 stocks (₹2L)', batch.aggregate.deployed===200000 && batch.aggregate.stocks===2);
   ok('batchBacktest has per-stock summaries', batch.perStock.length===2 && !!batch.perStock[0].sym && !!batch.perStock[0].agg);
+
+  // ── BO14: opportunity scanner ──
+  const upTf={weekly:upC,daily:upC,'4h':upC}, dnTf={weekly:dnC,daily:dnC,'4h':dnC};
+  const su=E.scanUniverse({A:upTf,B:upTf,C:dnTf,D:dnTf},{tfs:['weekly','daily','4h'],top:5});
+  ok('scanUniverse separates BUY and SELL setups', su.buys.length===2 && su.sells.length===2);
+  ok('scanUniverse scanned all 4 symbols', su.scanned===4);
+  ok('scanUniverse rows carry entry/sl/t1 + confidence', su.buys[0].entry!=null && su.buys[0].sl!=null && su.buys[0].t1!=null && su.buys[0].confidence>0);
+  ok('scanUniverse ranks by confidence desc', su.buys.length<2 || su.buys[0].confidence>=su.buys[1].confidence);
+  ok('scanUniverse respects top-N cap', E.scanUniverse({A:upTf,B:upTf,C:upTf},{tfs:['weekly','daily','4h'],top:2}).buys.length<=2);
+  ok('scanUniverse only surfaces directional (no HOLD rows)', su.buys.concat(su.sells).every(r=>r.signal==='BUY'||r.signal==='SELL'));
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────
