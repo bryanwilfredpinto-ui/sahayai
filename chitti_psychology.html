@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chitti Psychology — मन की बात · Human Understanding Companion</title>
+<meta name="description" content="Chitti Psychology — a voice-first, accessible companion for emotions, relationships and life. Not a therapist. Crisis-aware: Tele-MANAS 14416." />
+<!-- LANGUAGE: chitti_lang.js owns #lang-select (Vaani-canonical, 26 languages). Controller = chitti_psychology_app.js -->
+<style>
+  :root{--navy:#0E2344;--gold:#D4AF37;--bg:#F7F5F0;--card:#fff;--ink:#16243b;--muted:#475569;--soft:#eef1f6;--danger:#b3261e;--ok:#1b7f4d}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  a{color:var(--navy)}
+  .wrap{max-width:920px;margin:0 auto;padding:14px 14px 90px}
+  header.top{background:var(--navy);color:#fff;padding:54px 14px 18px;text-align:center}
+  header.top h1{margin:.2em 0;font-size:24px}
+  header.top p{margin:.2em 0;opacity:.92;font-size:14px}
+  .disclosure{background:#fff7e0;border:1px solid var(--gold);color:#5a4a10;border-radius:10px;padding:10px 12px;margin:14px 0;font-size:13.5px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+  .card{background:var(--card);border:1px solid #e6e2d8;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(14,35,68,.05)}
+  .card h2{margin:.1em 0 .4em;font-size:17px}
+  .card p.sub{margin:.1em 0 .7em;color:#475569;font-size:13.5px}
+  label{display:block;font-weight:600;font-size:13px;margin:.5em 0 .25em}
+  input[type=text],textarea,select{width:100%;padding:10px;border:1px solid #cfd6e0;border-radius:9px;font:inherit;background:#fff}
+  textarea{min-height:64px;resize:vertical}
+  button{cursor:pointer;border:0;border-radius:9px;padding:10px 14px;font:inherit;font-weight:700}
+  .btn{background:var(--navy);color:#fff}
+  .btn.gold{background:var(--gold);color:#1c1606}
+  .btn.ghost{background:var(--soft);color:var(--navy)}
+  .out{margin-top:10px;background:#f4f7fb;border:1px solid #e1e8f2;border-radius:10px;padding:12px;font-size:14px;min-height:8px}
+  .out .em{display:inline-block;background:#e8eefc;border:1px solid #c9d6f5;border-radius:999px;padding:2px 10px;margin:2px 4px 2px 0;font-size:12.5px}
+  .out ul{margin:.4em 0 .2em 1.1em;padding:0}
+  .pill{display:inline-block;background:var(--soft);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--navy);margin-bottom:6px}
+  /* sticky crisis button — always visible (every screen) */
+  .crisis-fab{position:fixed;left:12px;bottom:12px;z-index:9000;background:var(--danger);color:#fff;border-radius:999px;padding:12px 16px;font-weight:800;box-shadow:0 4px 16px rgba(179,38,30,.4)}
+  #crisis-card{border:2px solid var(--danger)}
+  #crisis-card h2{color:var(--danger)}
+  .help{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#fff;border:1px solid #f0c9c6;border-radius:9px;padding:9px 10px;margin:6px 0}
+  .help a{font-weight:800;text-decoration:none;background:var(--danger);color:#fff;border-radius:8px;padding:6px 12px;white-space:nowrap}
+  .help small{display:block;color:#7a5b58}
+  footer{color:#475569;font-size:12px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+
+<!-- Chitti language selector (auto-injected) — chitti_lang.js wires #lang-select to all 26 languages -->
+<div data-chitti-lang-select="auto" style="position:fixed;top:8px;right:8px;z-index:9001;display:inline-flex;align-items:center;gap:6px;background:#0E2344;color:#fff;border:1px solid #D4AF37;border-radius:8px;padding:5px 9px;font-size:12px;box-shadow:0 2px 10px rgba(14,35,68,.18)">
+  <label for="lang-select" style="font-weight:600;margin:0">🌐</label>
+  <select id="lang-select" aria-label="भाषा बदलें / Change language" style="background:#fff;color:#0E2344;border:1px solid #D4AF37;border-radius:6px;padding:9px 10px;min-height:42px;font-weight:600;font-size:13px;cursor:pointer"></select>
+</div>
+
+<header class="top">
+  <h1>🧠 Chitti Psychology</h1>
+  <p>मन की बात · आपका साथी जो सुनता है · Human Understanding Companion</p>
+</header>
+
+<div class="wrap">
+
+  <div class="disclosure" data-chitti-response="ps-disclosure" data-chitti-section="Disclosure — not a therapist">
+    🪪 <strong>I'm Chitti, an AI friend who listens — not a doctor, not a therapist.</strong>
+    मैं डॉक्टर या therapist नहीं हूँ। अगर आप ख़तरे में हैं या ख़ुद को नुक़सान पहुँचाने का सोच रहे हैं,
+    तो मैं अभी आपको एक इंसान से जोड़ सकती हूँ — <strong>Tele-MANAS 14416</strong> (मुफ़्त, 24×7).
+  </div>
+
+  <div class="grid">
+
+    <!-- F1 Emotional Mirror -->
+    <div class="card" data-chitti-response="ps-mirror" data-chitti-section="🪞 Emotional Mirror — मैं क्या महसूस कर रहा/रही हूँ">
+      <span class="pill">🪞 Emotional Mirror</span>
+      <h2>मैं क्या महसूस कर रहा/रही हूँ?</h2>
+      <p class="sub">जो हुआ वो बताइए — मैं धीरे से बताऊँगी कि शायद कौन-से भाव हैं। (मैं कभी तय करके नहीं कहती।)</p>
+      <label for="mirror-in">क्या हुआ? / What happened?</label>
+      <textarea id="mirror-in" placeholder="जैसे: मेरे दोस्त ने मुझे ignore किया…"></textarea>
+      <button class="btn" id="mirror-go">सुनिए / Reflect</button>
+      <div class="out" id="mirror-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- Calm Me Now -->
+    <div class="card" data-chitti-response="ps-calm" data-chitti-section="🌬️ Calm Me Now — साँस और grounding">
+      <span class="pill">🌬️ Calm Me Now</span>
+      <h2>मुझे शांत कीजिए</h2>
+      <p class="sub">30 सेकंड की साँस या grounding — आँखें बंद करके भी चलती है (blind users के लिए)।</p>
+      <button class="btn gold" id="calm-sigh">Physiological Sigh</button>
+      <button class="btn ghost" id="calm-box">Box Breathing</button>
+      <button class="btn ghost" id="calm-ground">5-4-3-2-1 Grounding</button>
+      <div class="out" id="calm-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- Coping by feeling -->
+    <div class="card" data-chitti-response="ps-coping" data-chitti-section="🧰 Coping by feeling — इस भाव में क्या करूँ">
+      <span class="pill">🧰 Coping by feeling</span>
+      <h2>इस भाव में क्या करूँ?</h2>
+      <p class="sub">अपना भाव चुनिए — छोटे कदम जो मदद करते हैं (इलाज नहीं)।</p>
+      <label for="coping-sel">भाव / Feeling</label>
+      <select id="coping-sel">
+        <option value="anxiety">anxiety / घबराहट</option>
+        <option value="anger">anger / ग़ुस्सा</option>
+        <option value="sadness">sadness / उदासी</option>
+        <option value="grief">grief / शोक</option>
+        <option value="loneliness">loneliness / अकेलापन</option>
+        <option value="guilt">guilt / अपराध-बोध</option>
+        <option value="stress">stress / तनाव</option>
+      </select>
+      <button class="btn" id="coping-go">दिखाइए / Show steps</button>
+      <div class="out" id="coping-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- Understand a feeling (psychoeducation) -->
+    <div class="card" data-chitti-response="ps-edu" data-chitti-section="📖 Understand a feeling — psychoeducation">
+      <span class="pill">📖 Understand a feeling</span>
+      <h2>इस भाव को समझिए</h2>
+      <p class="sub">सरल भाषा में — यह भाव क्या है, क्यों आता है। (शिक्षा, diagnosis नहीं।)</p>
+      <label for="edu-sel">विषय / Topic</label>
+      <select id="edu-sel">
+        <option value="anger">anger / ग़ुस्सा</option>
+        <option value="anxiety">anxiety / घबराहट</option>
+        <option value="grief">grief / शोक</option>
+        <option value="sleep">sleep / नींद</option>
+        <option value="burnout">burnout / थकान</option>
+      </select>
+      <button class="btn" id="edu-go">समझाइए / Explain</button>
+      <div class="out" id="edu-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- Say it without a fight (NVC) -->
+    <div class="card" data-chitti-response="ps-nvc" data-chitti-section="💬 Say it without a fight — NVC composer">
+      <span class="pill">💬 Say it without a fight</span>
+      <h2>बिना झगड़े के कहिए</h2>
+      <p class="sub">मैं आपकी बात प्यार से शब्दों में रखूँगी (NVC: observation · feeling · need · request)।</p>
+      <label for="nvc-obs">क्या हुआ (observation)</label>
+      <input type="text" id="nvc-obs" placeholder="जैसे: आप देर से आए" />
+      <label for="nvc-feel">आपको कैसा लगा (feeling)</label>
+      <input type="text" id="nvc-feel" placeholder="जैसे: चिंतित" />
+      <label for="nvc-need">आपको क्या चाहिए (need)</label>
+      <input type="text" id="nvc-need" placeholder="जैसे: भरोसा" />
+      <button class="btn" id="nvc-go">शब्द दीजिए / Compose</button>
+      <div class="out" id="nvc-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <!-- Parenting -->
+    <div class="card" data-chitti-response="ps-parent" data-chitti-section="👨‍👩‍👧 Parenting Coach — उम्र के हिसाब से">
+      <span class="pill">👨‍👩‍👧 Parenting Coach</span>
+      <h2>परवरिश में मदद</h2>
+      <p class="sub">बच्चे की उम्र + व्यवहार बताइए — उम्र के अनुसार मार्गदर्शन (बच्चे पर कोई label नहीं)।</p>
+      <label for="par-age">उम्र / Age</label>
+      <input type="text" id="par-age" placeholder="जैसे: 14" />
+      <label for="par-beh">व्यवहार / Behaviour</label>
+      <input type="text" id="par-beh" placeholder="जैसे: पढ़ाई नहीं कर रहा" />
+      <button class="btn" id="par-go">मार्गदर्शन / Guide</button>
+      <div class="out" id="par-out" role="region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+  </div>
+
+  <!-- Crisis card (also reachable from the sticky button) -->
+  <div class="card" id="crisis-card" data-chitti-response="ps-crisis" data-chitti-section="🆘 Crisis — Tele-MANAS 14416 + helplines" style="margin-top:14px">
+    <span class="pill" style="background:#fde7e5;color:#8e1d17">🆘 You are not alone</span>
+    <h2>अगर मन बहुत भारी है</h2>
+    <p class="sub">आप अकेले नहीं हैं। ये असली इंसान मदद करेंगे — मैं तब तक आपके साथ हूँ जब तक फ़ोन न लग जाए।
+      मैं कभी ख़ुद से पुलिस को कॉल नहीं करती।</p>
+    <div id="crisis-helplines"></div>
+  </div>
+
+  <footer>
+    Chitti Psychology · CEOS v1.0 · रूट किया गया <a href="chitti_vaani.html">Chitti Vaani</a> से ·
+    AI support, not a substitute for a professional · Tele-MANAS 14416
+  </footer>
+</div>
+
+<button class="crisis-fab" id="crisis-fab" aria-label="Crisis help — Tele-MANAS 14416">🆘 मदद / Help</button>
+
+<!-- ════ Chitti substrate (5 frontend gates inherited) ════ -->
+<script src="chitti_psychology_os_engine.js?v=20260608"></script><!-- BO1 deterministic brain: 20/20 gold, crisis 100% -->
+<script src="chitti_psychology_i18n.js?v=20260608" defer></script>
+<script src="feedback-widget.js" data-page="chitti_psychology" defer></script><!-- per-response 🔊/🤖/👍/👎 -->
+<script src="chitti_a11y.js?v=20260608"></script><!-- Disability Profile, ISL, voice, braille -->
+<script>if(window.Chitti&&Chitti.a11y){try{Chitti.a11y.init({});}catch(e){console.warn('a11y init',e);}}</script>
+<script src="chitti_isl.js" defer></script>
+<script src="chitti_features.js" defer></script><!-- Feature Discovery reads skills/FEATURES.md -->
+<script src="chitti_psychology_app.js?v=20260608"></script>
+<script src="chitti_lang.js?v=20260608"></script><!-- owns #lang-select (Vaani 26-lang) -->
+</body>
+</html>
