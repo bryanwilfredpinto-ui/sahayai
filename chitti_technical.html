@@ -347,6 +347,18 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="screener-results" style="margin-top:10px"></div>
     </div>
 
+    <!-- BO15: Watchlist & Alerts — meaningful, spoken, never auto-acting -->
+    <div class="card col-full" data-chitti-response="tech-watchlist" data-chitti-section="Watchlist">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>⭐ <span data-i18n="wl.title">Watchlist & Alerts</span></span>
+        <button class="btn ghost" style="margin-left:auto;min-height:44px" onclick="TechUI.readWatchlist()">🔊 <span data-i18n="wl.read">Read alerts</span></button>
+      </h2>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <input id="wl-level" type="number" inputmode="decimal" placeholder="Price level (optional)" data-i18n-ph="wl.level" style="max-width:200px;padding:9px;border:1.5px solid var(--line);border-radius:10px;min-height:44px">
+        <button class="btn nav" onclick="TechUI.addWatch()">➕ <span data-i18n="wl.add">Add to watchlist</span></button>
+      </div>
+      <div id="wl-list"></div>
+    </div>
+
     <!-- BO14: Opportunity Scanner — rank the best BUY/SELL setups across a cap tier -->
     <div class="card col-full" data-chitti-response="tech-opp" data-chitti-section="Opportunity Scanner">
       <h2 style="flex-wrap:wrap;gap:6px"><span>🧭 <span data-i18n="opp.title">Opportunity Scanner</span></span>
@@ -437,7 +449,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null, lastBacktest=null, lastOppScan=null;
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null, lastBacktest=null, lastOppScan=null, lastWatch=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -611,6 +623,7 @@ window.TechUI = (function(){
     renderPatterns();
     renderScorecard();
     runBacktest();
+    renderWatchlist();
     renderIndicators(res);
     renderRoshan(res);
     renderExplain(res);
@@ -819,6 +832,39 @@ window.TechUI = (function(){
     var b=r.buys.length?r.buys.map(function(s){return s.sym+' '+s.confidence+' percent';}).join(', '):'none';
     var sl=r.sells.length?r.sells.map(function(s){return s.sym+' '+s.confidence+' percent';}).join(', '):'none';
     speak(T('opp.buys')+': '+b+'. '+T('opp.sells')+': '+sl+'.');
+  }
+
+  // ───── BO15: Watchlist & Alerts (private, on-device, spoken, never auto-acts) ─────
+  function wlGet(){ try{ return JSON.parse(localStorage.getItem('chitti_tech_wl_v1')||'[]'); }catch(e){ return []; } }
+  function wlSave(a){ try{ localStorage.setItem('chitti_tech_wl_v1', JSON.stringify(a)); }catch(e){} }
+  function addWatch(){
+    if(!lastScan) return; var sym=lastScan._sym;
+    var levEl=document.getElementById('wl-level'), lev=(levEl&&levEl.value)?Number(levEl.value):null;
+    var list=wlGet(); if(!list.some(function(x){return x.sym===sym;})) list.push({sym:sym,level:lev,dir:'above'});
+    wlSave(list); if(levEl) levEl.value=''; renderWatchlist(); speak(sym+' '+T('wl.add'));
+  }
+  function removeWatch(sym){ wlSave(wlGet().filter(function(x){return x.sym!==sym;})); renderWatchlist(); }
+  function alertText(a){ return a.type==='signal'?(T('verdict.'+a.dir)+' '+a.confidence+'%') : a.type==='level'?(T(a.dir==='above'?'wl.above':'wl.below')+' '+a.level) : a.type==='pattern'?a.name : ''; }
+  function renderWatchlist(){
+    var el=document.getElementById('wl-list'); if(!el||!E.scanWatchlist) return;
+    var items=wlGet();
+    if(!items.length){ el.innerHTML='<div class="muted">'+T('wl.empty')+'</div>'; lastWatch=null; return; }
+    var map={}; items.forEach(function(it){ map[it.sym]=getTf(it.sym); });
+    var res=E.scanWatchlist(items,map,{tfs:tickedTfs()}); lastWatch=res;
+    el.innerHTML=res.map(function(w){
+      var it=items.filter(function(x){return x.sym===w.sym;})[0]||{};
+      var badge=w.signal==='BUY'?'🟢 '+T('verdict.BUY'):w.signal==='SELL'?'🔴 '+T('verdict.SELL'):'⏸️';
+      var chg=(w.dayChangePct>=0?'▲':'▼')+' '+Math.abs(w.dayChangePct||0)+'%';
+      var at=w.alerts.map(alertText).filter(Boolean).join(' · ');
+      var cls=w.signal==='BUY'?'bull':w.signal==='SELL'?'bear':'neutral';
+      return '<div class="tfrow '+cls+'"><span onclick="TechUI.pick(\''+w.sym+'\')" style="cursor:pointer"><b>'+w.sym+'</b> '+(w.price!=null?('₹'+w.price):'')+' '+chg+(it.level?(' · @'+it.level):'')+'</span>'+
+        '<span>'+badge+(at?(' · '+at):'')+' <button class="btn ghost" style="padding:2px 8px;min-height:32px" aria-label="Remove '+w.sym+'" onclick="TechUI.removeWatch(\''+w.sym+'\')">✖</button></span></div>';
+    }).join('');
+  }
+  function readWatchlist(){
+    if(!lastWatch||!lastWatch.length){ speak(T('wl.empty')); return; }
+    var parts=lastWatch.map(function(w){ var a=w.alerts.map(alertText).filter(Boolean).join(', '); return w.sym+(w.signal!=='HOLD'?(' '+T('verdict.'+w.signal)):'')+(a?(', '+a):''); });
+    speak(T('wl.title')+'. '+parts.join('. '));
   }
 
   // ───── BO-NEXT: Accuracy Scorecard — backtest → win rate / PF / expectancy + calibration ─────
@@ -1304,6 +1350,7 @@ window.TechUI = (function(){
     document.getElementById('asof-val').textContent=new Date().toLocaleString('en-IN',{hour12:false});
     renderScreenerFilters();
     renderPf();
+    renderWatchlist();
     scan();            // instant DEMO render so the page is never blank
     refresh();         // then auto-fetch LIVE Angel data on open (single load, not polling)
     window.addEventListener('resize',function(){if(lastScan)drawChart(lastScan);});
@@ -1314,7 +1361,7 @@ window.TechUI = (function(){
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
-    runOppScan:runOppScan,readOppScan:readOppScan,
+    runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,

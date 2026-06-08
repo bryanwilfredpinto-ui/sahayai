@@ -285,6 +285,18 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('scanUniverse ranks by confidence desc', su.buys.length<2 || su.buys[0].confidence>=su.buys[1].confidence);
   ok('scanUniverse respects top-N cap', E.scanUniverse({A:upTf,B:upTf,C:upTf},{tfs:['weekly','daily','4h'],top:2}).buys.length<=2);
   ok('scanUniverse only surfaces directional (no HOLD rows)', su.buys.concat(su.sells).every(r=>r.signal==='BUY'||r.signal==='SELL'));
+
+  // ── BO15: alerts + watchlist ──
+  ok('evaluateWatch directional → signal alert', E.evaluateWatch({sym:'A'},upTf,{tfs:['weekly','daily','4h']}).alerts.some(a=>a.type==='signal'));
+  const wEval=E.evaluateWatch({sym:'A'},upTf,{tfs:['daily']});
+  ok('evaluateWatch returns price + signal + dayChange', wEval.price!=null && !!wEval.signal && wEval.dayChangePct!=null);
+  // price-level cross: build daily where prev<100<=last
+  const wlDaily=[]; for(let i=0;i<40;i++){ const c= i<38?98 : (i===38?99.5:100.5); wlDaily.push({open:c-0.2,high:c+0.3,low:c-0.3,close:c,volume:1e5}); }
+  const lvlAlert=E.evaluateWatch({sym:'X',level:100,dir:'above'},{daily:wlDaily,weekly:wlDaily,'4h':wlDaily},{tfs:['daily']});
+  ok('evaluateWatch fires a price-level cross (above)', lvlAlert.alerts.some(a=>a.type==='level'&&a.dir==='above'&&a.level===100));
+  ok('evaluateWatch no false level cross when far away', !E.evaluateWatch({sym:'X',level:50,dir:'above'},{daily:wlDaily,weekly:wlDaily,'4h':wlDaily},{tfs:['daily']}).alerts.some(a=>a.type==='level'));
+  ok('scanWatchlist maps every item', E.scanWatchlist([{sym:'A'},{sym:'B'}],{A:upTf,B:upTf},{tfs:['daily']}).length===2);
+  ok('scanWatchlist tolerates a missing symbol', E.scanWatchlist([{sym:'Z'}],{},{tfs:['daily']})[0].alerts.length===0);
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────

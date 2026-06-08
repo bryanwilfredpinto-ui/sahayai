@@ -295,6 +295,20 @@
   };
   Object.keys(OPP).forEach(function (l) { if (T[l]) Object.keys(OPP[l]).forEach(function (k) { T[l][k] = OPP[l][k]; }); });
 
+  // BO15: Watchlist & Alerts — UI labels in all 9 languages (stock names stay English).
+  var WL = {
+    en: { 'wl.title': 'Watchlist & Alerts', 'wl.add': 'Add to watchlist', 'wl.level': 'Price level (optional)', 'wl.empty': 'Add stocks to watch — alerts will be spoken', 'wl.read': 'Read alerts', 'wl.above': 'crossed above', 'wl.below': 'fell below' },
+    hi: { 'wl.title': 'वॉचलिस्ट और अलर्ट', 'wl.add': 'वॉचलिस्ट में जोड़ें', 'wl.level': 'मूल्य स्तर (वैकल्पिक)', 'wl.empty': 'देखने के लिए शेयर जोड़ें — अलर्ट बोलकर सुनाए जाएँगे', 'wl.read': 'अलर्ट सुनें', 'wl.above': 'के ऊपर गया', 'wl.below': 'के नीचे गिरा' },
+    ta: { 'wl.title': 'கண்காணிப்பு & எச்சரிக்கைகள்', 'wl.add': 'பட்டியலில் சேர்', 'wl.level': 'விலை நிலை (விருப்பம்)', 'wl.empty': 'கண்காணிக்க பங்குகளைச் சேர் — எச்சரிக்கைகள் பேசப்படும்', 'wl.read': 'எச்சரிக்கைகளைக் கேள்', 'wl.above': 'மேலே சென்றது', 'wl.below': 'கீழே விழுந்தது' },
+    te: { 'wl.title': 'వాచ్‌లిస్ట్ & హెచ్చరికలు', 'wl.add': 'వాచ్‌లిస్ట్‌కు జోడించు', 'wl.level': 'ధర స్థాయి (ఐచ్ఛికం)', 'wl.empty': 'చూడటానికి స్టాక్‌లను జోడించండి — హెచ్చరికలు చదవబడతాయి', 'wl.read': 'హెచ్చరికలను వినండి', 'wl.above': 'పైకి దాటింది', 'wl.below': 'కిందికి పడింది' },
+    bn: { 'wl.title': 'ওয়াচলিস্ট ও সতর্কতা', 'wl.add': 'ওয়াচলিস্টে যোগ করুন', 'wl.level': 'মূল্য স্তর (ঐচ্ছিক)', 'wl.empty': 'দেখার জন্য শেয়ার যোগ করুন — সতর্কতা বলা হবে', 'wl.read': 'সতর্কতা শুনুন', 'wl.above': 'উপরে গেছে', 'wl.below': 'নিচে নেমেছে' },
+    mr: { 'wl.title': 'वॉचलिस्ट आणि सूचना', 'wl.add': 'वॉचलिस्टमध्ये जोडा', 'wl.level': 'किंमत पातळी (पर्यायी)', 'wl.empty': 'पाहण्यासाठी शेअर जोडा — सूचना बोलून सांगितल्या जातील', 'wl.read': 'सूचना ऐका', 'wl.above': 'वर गेला', 'wl.below': 'खाली आला' },
+    gu: { 'wl.title': 'વોચલિસ્ટ અને એલર્ટ', 'wl.add': 'વોચલિસ્ટમાં ઉમેરો', 'wl.level': 'ભાવ સ્તર (વૈકલ્પિક)', 'wl.empty': 'જોવા માટે શેર ઉમેરો — એલર્ટ બોલીને કહેવાશે', 'wl.read': 'એલર્ટ સાંભળો', 'wl.above': 'ઉપર ગયો', 'wl.below': 'નીચે આવ્યો' },
+    kn: { 'wl.title': 'ವಾಚ್‌ಲಿಸ್ಟ್ ಮತ್ತು ಎಚ್ಚರಿಕೆಗಳು', 'wl.add': 'ವಾಚ್‌ಲಿಸ್ಟ್‌ಗೆ ಸೇರಿಸಿ', 'wl.level': 'ಬೆಲೆ ಮಟ್ಟ (ಐಚ್ಛಿಕ)', 'wl.empty': 'ವೀಕ್ಷಿಸಲು ಷೇರುಗಳನ್ನು ಸೇರಿಸಿ — ಎಚ್ಚರಿಕೆಗಳು ಓದಲಾಗುತ್ತದೆ', 'wl.read': 'ಎಚ್ಚರಿಕೆಗಳನ್ನು ಕೇಳಿ', 'wl.above': 'ಮೇಲೆ ಹೋಯಿತು', 'wl.below': 'ಕೆಳಗೆ ಬಿದ್ದಿತು' },
+    ml: { 'wl.title': 'വാച്ച്‌ലിസ്റ്റ് & അലേർട്ടുകൾ', 'wl.add': 'വാച്ച്‌ലിസ്റ്റിൽ ചേർക്കുക', 'wl.level': 'വില നില (ഓപ്ഷണൽ)', 'wl.empty': 'കാണാൻ ഓഹരികൾ ചേർക്കുക — അലേർട്ടുകൾ വായിക്കും', 'wl.read': 'അലേർട്ടുകൾ കേൾക്കുക', 'wl.above': 'മുകളിലേക്ക് കടന്നു', 'wl.below': 'താഴേക്ക് വീണു' }
+  };
+  Object.keys(WL).forEach(function (l) { if (T[l]) Object.keys(WL[l]).forEach(function (k) { T[l][k] = WL[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);

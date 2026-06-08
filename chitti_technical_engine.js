@@ -1328,6 +1328,28 @@
     return { buys: buys.slice(0, top), sells: sells.slice(0, top), scanned: scanned, totalBuys: buys.length, totalSells: sells.length };
   }
 
+  // ═══════════════ BO15: Live Alerts & Watchlist — meaningful, spoken, never auto-acting ═══════════════
+  function evaluateWatch(item, candlesByTf, opts) {
+    opts = opts || {};
+    var daily = candlesByTf.daily || candlesByTf.weekly || candlesByTf['4h'];
+    var price = daily && daily.length ? last(closes(daily)) : null;
+    var prev = daily && daily.length > 1 ? daily[daily.length - 2].close : price;
+    var dayChangePct = (prev && price != null) ? round2((price - prev) / prev * 100) : 0;
+    var sig = generateSignal(candlesByTf, { tfs: opts.tfs });
+    var alerts = [];
+    if (sig.signal !== 'HOLD' && sig.stop_loss) alerts.push({ type: 'signal', dir: sig.signal, confidence: sig.confidence, entry: sig.entry_price, sl: sig.stop_loss.price, t1: sig.target_1 ? sig.target_1.price : null });
+    if (item.level != null && price != null && prev != null) {
+      var lvl = Number(item.level);
+      if ((item.dir === 'above' || !item.dir) && prev < lvl && price >= lvl) alerts.push({ type: 'level', dir: 'above', level: round2(lvl), price: round2(price) });
+      if ((item.dir === 'below' || !item.dir) && prev > lvl && price <= lvl) alerts.push({ type: 'level', dir: 'below', level: round2(lvl), price: round2(price) });
+    }
+    if (daily) { var pat = detectPatterns(daily).top; if (pat && pat.kind === 'chart') alerts.push({ type: 'pattern', name: pat.name, dir: pat.dir, reliability: pat.reliability }); }
+    return { sym: item.sym, price: price != null ? round2(price) : null, dayChangePct: dayChangePct, signal: sig.signal, confidence: sig.confidence, alerts: alerts };
+  }
+  function scanWatchlist(items, map, opts) {
+    return (items || []).map(function (it) { var c = map[it.sym]; if (!c) return { sym: it.sym, price: null, signal: 'HOLD', confidence: 0, alerts: [] }; return evaluateWatch(it, c, opts); });
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1358,7 +1380,9 @@
     backtestJournal: backtestJournal, aggregateBacktest: aggregateBacktest, batchBacktest: batchBacktest,
     // BO14: opportunity scanner
     scanUniverse: scanUniverse,
-    TF_ORDER: TF_ORDER, VERSION: '2.6.0'
+    // BO15: alerts + watchlist
+    evaluateWatch: evaluateWatch, scanWatchlist: scanWatchlist,
+    TF_ORDER: TF_ORDER, VERSION: '2.7.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
