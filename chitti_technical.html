@@ -10,13 +10,13 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260606" defer></script>
-<script src="nse_universe.js?v=20260606" defer></script>
-<script src="chitti_technical_i18n.js?v=20260606" defer></script>
-<script src="chitti_technical_engine.js?v=20260606" defer></script>
-<script src="chitti_a11y.js?v=20260606" defer></script>
+<script src="chitti_lang.js?v=20260608" defer></script>
+<script src="nse_universe.js?v=20260608" defer></script>
+<script src="chitti_technical_i18n.js?v=20260608" defer></script>
+<script src="chitti_technical_engine.js?v=20260608" defer></script>
+<script src="chitti_a11y.js?v=20260608" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260606" defer></script>
+<script src="chitti_isl.js?v=20260608" defer></script>
 
 <style>
 :root{
@@ -63,6 +63,8 @@ select{padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;backgr
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .pill{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:700;border:1px solid var(--line)}
 .tier{background:#eef1ff;color:var(--navy)}
+.sig-price{font-size:19px;font-weight:900;color:var(--navy);margin-left:4px}
+.sig-price .chg{font-size:14px;font-weight:800;margin-left:4px}
 
 /* verdict */
 .verdict{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:6px 0 12px}
@@ -234,7 +236,7 @@ tr.click:hover{background:#f7f8fc}
   <div class="grid">
     <!-- BO5/BO6: signal card (left) -->
     <div class="card" id="signal-card" data-chitti-response="tech-signal" data-chitti-section="Signal">
-      <h2>📊 <span id="sig-sym">—</span> <span class="pill tier" id="sig-tier"></span></h2>
+      <h2>📊 <span id="sig-sym">—</span> <span class="pill tier" id="sig-tier"></span> <span id="sig-price" class="sig-price"></span></h2>
       <div class="verdict" id="verdict-row"></div>
       <!-- Sire: BUY · SELL · TARGET · SL always shown -->
       <div id="trade-plan"></div>
@@ -453,6 +455,16 @@ window.TechUI = (function(){
     document.getElementById('sig-sym').textContent=res._sym;
     var tierEl=document.getElementById('sig-tier');
     tierEl.textContent=T('tier.'+(res._stock.tier))||res._stock.tier;
+    // current price + day change (always shown — live close when LIVE, demo close otherwise)
+    var dly=getTf(res._sym).daily, pe=document.getElementById('sig-price');
+    if(pe){
+      if(dly&&dly.length){
+        var px=dly[dly.length-1].close, prev=dly.length>1?dly[dly.length-2].close:px;
+        var chg=prev?((px-prev)/prev*100):0, up=chg>=0;
+        pe.innerHTML='₹'+Number(px).toLocaleString('en-IN',{maximumFractionDigits:2})+
+          ' <span class="chg" style="color:'+(up?'var(--green)':'var(--red)')+'">'+(up?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</span>';
+      } else pe.textContent='';
+    }
     // verdict
     var vr=document.getElementById('verdict-row');
     var icon={BUY:'📈',SELL:'🛑',HOLD:'⏸️'}[res.verdict];
