@@ -411,7 +411,7 @@ window.TechUI = (function(){
       el.style.color='#0a6b1e'; el.style.background='#e7f6e7';
       document.documentElement.setAttribute('data-tech-source','LIVE');
     } else {
-      el.setAttribute('data-i18n','demoData'); el.textContent=T('demoData');
+      el.setAttribute('data-i18n','demoData'); el.textContent=T('demoData')+(window.__techLiveErr?(' · live unavailable: '+window.__techLiveErr):'');
       el.style.color=''; el.style.background='';
       document.documentElement.setAttribute('data-tech-source','DEMO');
     }
@@ -420,13 +420,15 @@ window.TechUI = (function(){
     var sym=(document.getElementById('sym').value||'RELIANCE').trim().toUpperCase();
     var btn=document.getElementById('tech-refresh'); if(btn) btn.disabled=true;
     loadLive(sym).then(function(tf){
+      window.__techLiveErr='';
       candleCache[sym]=tf;
       var ld=(tf.daily&&tf.daily.length)?tf.daily[tf.daily.length-1].date:true;
       liveSymbols[sym]=ld; dataSource='LIVE';
       scan(); speak('LIVE Angel');
-    }).catch(function(){
+    }).catch(function(e){
+      window.__techLiveErr=(e&&e.message)||'unreachable';
       delete candleCache[sym]; delete liveSymbols[sym]; dataSource='DEMO';
-      scan(); speak(T('refresh'));
+      scan();
     }).finally(function(){ if(btn) btn.disabled=false; });
   }
 
@@ -854,7 +856,8 @@ window.TechUI = (function(){
     document.getElementById('asof-val').textContent=new Date().toLocaleString('en-IN',{hour12:false});
     renderScreenerFilters();
     renderPf();
-    scan();
+    scan();            // instant DEMO render so the page is never blank
+    refresh();         // then auto-fetch LIVE Angel data on open (single load, not polling)
     window.addEventListener('resize',function(){if(lastScan)drawChart(lastScan);});
   }
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);

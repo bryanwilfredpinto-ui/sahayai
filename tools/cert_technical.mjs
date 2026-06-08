@@ -42,6 +42,7 @@ const pageErrors = [];
 const viewports = [{ n:'375', w:375, h:812, d:2 }, { n:'768', w:768, h:1024, d:2 }, { n:'1280', w:1280, h:900, d:1 }];
 for (const v of viewports) {
   const c = await b.newContext({ viewport:{ width:v.w, height:v.h }, deviceScaleFactor:v.d });
+  await c.route('**/api/candles/**', r => r.abort());  // offline → init's auto-load fails fast → DEMO
   const p = await c.newPage();
   p.on('pageerror', e => pageErrors.push(v.n + ': ' + e.message));
   await p.goto(URL, { waitUntil:'domcontentloaded', timeout:30000 });
@@ -58,6 +59,7 @@ for (const v of viewports) {
 
 // ---- functional gates on 1280 ----
 const c = await b.newContext({ viewport:{ width:1280, height:900 } });
+await c.route('**/api/candles/**', r => r.abort());  // functional gates run on DEMO (deterministic)
 const p = await c.newPage();
 p.on('pageerror', e => pageErrors.push('fn: ' + e.message));
 p.on('dialog', d => d.dismiss().catch(() => {}));
