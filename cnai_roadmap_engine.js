@@ -1,28 +1,33 @@
 /* ============================================================================
- * cnai_roadmap_engine.js — Chitti News AI · Build Order 1 · Roadmap Engine
+ * cnai_roadmap_engine.js — Chitti News AI · BO1 Roadmap Engine (v2, REBUILT)
  * ----------------------------------------------------------------------------
- * Deterministic, offline, LLM-free roadmap generator. Given ANY learning goal
- * (a known skill OR a free-text profession/goal), it returns a step-by-step
- * ordered roadmap: Stages -> Topics -> a YouTube SEARCH TERM per topic (never a
- * hardcoded URL - survives dead links) + a verifiable milestone per stage.
+ * REBUILD (2026-06-09) after Sire's correct critique: the old engine skipped
+ * the real knowledge tree. This version encodes the ACTUAL AI curriculum as a
+ * PREREQUISITE KNOWLEDGE GRAPH and attaches a REAL FREE COURSE to every stage
+ * (not just a YouTube search).
  *
- * Doctrine (per chitti-news-ai): rules are the product, the LLM is an
- * enhancement. This engine works with every LLM provider offline.
+ * The tree (web-verified June 2026 — DataCamp, KDnuggets, Google ML, fast.ai,
+ * Andrew Ng, Hugging Face Agents Course):
  *
- * Research (see chitti-news-ai/features/BO1_ROADMAP_ENGINE.md):
- *   - roadmap.sh / MathAcademy  -> model topics as a prerequisite DAG; order =
- *     topological sort; REFUSE to place advanced stages before foundations.
- *   - freeCodeCamp              -> milestone = a BUILT artifact, not "watched".
- *   - Khan Academy / Duolingo   -> foundations first; gate whole stage-rows.
- *   - DataCamp / Brilliant      -> one concept per topic, gentle difficulty ramp.
- *   - roadmap.sh AI / Coursera Coach -> free-text goal -> generated ordered path.
- *   - Accessibility             -> every roadmap is fully SPEAKABLE top-to-bottom.
+ *   Python + Math(Stats->LinAlg->Calculus)
+ *        -> Data handling (NumPy/Pandas)
+ *        -> CORE ML  (supervised/unsupervised — Andrew Ng ML Spec)
+ *        -> DEEP LEARNING (NN/CNN/RNN/Transformers — fast.ai, Ng DL Spec)
+ *        -> GENERATIVE AI / LLMs (transformers, RAG — MS GenAI, HF NLP)
+ *        -> AGENTIC AI (tools, LangGraph/CrewAI, multi-agent — HF Agents)
+ *   Data Analytics branch: Python -> Stats -> SQL -> Viz/BI -> Analytics
+ *   Data Science = Data handling + Core ML + Deep Learning + Stats
  *
- * Public API (window.ChittiRoadmap / module.exports):
- *   generate(goal, opts)     -> roadmap object (schema below)
- *   validate(roadmap)        -> { ok, errors[] }
- *   speakable(roadmap, lang) -> string, audio-first
- *   listKnownGoals()         -> string[]
+ * So "Agentic AI" now expands to the FULL 8-stage ladder THROUGH ML and DL —
+ * because you cannot build agents well without the stack beneath them.
+ *
+ * Sources: DeepLearning.AI Math-for-ML, Andrew Ng ML/DL Specializations,
+ * fast.ai Practical Deep Learning, Microsoft "Generative AI for Beginners",
+ * Hugging Face "AI Agents Course", Google "Data Analytics", roadmap.sh.
+ *
+ * API (window.ChittiRoadmap / module.exports) — unchanged public surface:
+ *   generate(goal, opts) · validate(roadmap) · speakable(roadmap, lang) ·
+ *   listKnownGoals() · listTree()
  * ==========================================================================*/
 (function (root, factory) {
   const api = factory();
@@ -31,287 +36,348 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const BANDS = ['beginner', 'intermediate', 'advanced'];
   const BAND_DOTS = { beginner: '●○○', intermediate: '●●○', advanced: '●●●' };
+  const BANDS = ['beginner', 'intermediate', 'advanced'];
 
-  function topic(name, why, hours, yt, check, band) {
-    return { name, why_it_matters: why, est_hours: hours, youtube_search_term: yt, check, difficulty_band: band || 'beginner' };
-  }
-  function stage(name, why, milestone, band, topics, prereqIdx) {
-    return { name, why_it_matters: why, milestone, difficulty_band: band, topics, _prereq: prereqIdx || [] };
-  }
+  // Real free courses (verified June 2026). free:true = free to learn (cert may
+  // be free or paid-audit; noted in `note`).
+  const CRS = {
+    fcc_python: { provider: 'freeCodeCamp', name: 'Scientific Computing with Python', url: 'https://www.freecodecamp.org/learn/scientific-computing-with-python/', free: true, cert: true },
+    kaggle_python: { provider: 'Kaggle Learn', name: 'Python', url: 'https://www.kaggle.com/learn/python', free: true, cert: true },
+    math4ml: { provider: 'DeepLearning.AI (Coursera)', name: 'Mathematics for Machine Learning & Data Science', url: 'https://www.coursera.org/specializations/mathematics-for-machine-learning-and-data-science', free: true, cert: false, note: 'free to audit' },
+    khan_stats: { provider: 'Khan Academy', name: 'Statistics & Probability', url: 'https://www.khanacademy.org/math/statistics-probability', free: true, cert: false },
+    kaggle_pandas: { provider: 'Kaggle Learn', name: 'Pandas + Data Cleaning', url: 'https://www.kaggle.com/learn/pandas', free: true, cert: true },
+    elements_ai: { provider: 'Elements of AI (U. Helsinki)', name: 'Introduction to AI', url: 'https://www.elementsofai.com/', free: true, cert: true },
+    ng_ml: { provider: 'Andrew Ng / DeepLearning.AI (Coursera)', name: 'Machine Learning Specialization', url: 'https://www.coursera.org/specializations/machine-learning-introduction', free: true, cert: false, note: 'free to audit' },
+    google_mlcc: { provider: 'Google', name: 'Machine Learning Crash Course', url: 'https://developers.google.com/machine-learning/crash-course', free: true, cert: false },
+    kaggle_ml: { provider: 'Kaggle Learn', name: 'Intro to Machine Learning', url: 'https://www.kaggle.com/learn/intro-to-machine-learning', free: true, cert: true },
+    fastai_dl: { provider: 'fast.ai', name: 'Practical Deep Learning for Coders', url: 'https://course.fast.ai/', free: true, cert: false, note: '100% free' },
+    ng_dl: { provider: 'Andrew Ng / DeepLearning.AI (Coursera)', name: 'Deep Learning Specialization', url: 'https://www.coursera.org/specializations/deep-learning', free: true, cert: false, note: 'free to audit' },
+    ms_genai: { provider: 'Microsoft', name: 'Generative AI for Beginners', url: 'https://microsoft.github.io/generative-ai-for-beginners/', free: true, cert: false },
+    hf_nlp: { provider: 'Hugging Face', name: 'LLM / NLP Course', url: 'https://huggingface.co/learn/nlp-course', free: true, cert: true },
+    anthropic_prompt: { provider: 'Anthropic Academy', name: 'Prompt Engineering', url: 'https://www.anthropic.com/learn', free: true, cert: false },
+    hf_agents: { provider: 'Hugging Face', name: 'AI Agents Course', url: 'https://huggingface.co/learn/agents-course', free: true, cert: true },
+    dlai_langgraph: { provider: 'DeepLearning.AI (Coursera)', name: 'AI Agents in LangGraph', url: 'https://www.coursera.org/projects/ai-agents-in-langgraph', free: true, cert: false, note: 'free to audit' },
+    kaggle_sql: { provider: 'Kaggle Learn', name: 'Intro to SQL', url: 'https://www.kaggle.com/learn/intro-to-sql', free: true, cert: true },
+    ms_powerbi: { provider: 'Microsoft Learn', name: 'Power BI data analyst path', url: 'https://learn.microsoft.com/training/powerplatform/power-bi', free: true, cert: false },
+    google_da: { provider: 'Google (Coursera)', name: 'Google Data Analytics Certificate', url: 'https://www.coursera.org/professional-certificates/google-data-analytics', free: true, cert: false, note: 'free to audit' },
+    ibm_ds: { provider: 'IBM (Coursera)', name: 'IBM Data Science Professional Certificate', url: 'https://www.coursera.org/professional-certificates/ibm-data-science', free: true, cert: false, note: 'free to audit' },
+    fcc_web: { provider: 'freeCodeCamp', name: 'Responsive Web Design + JavaScript', url: 'https://www.freecodecamp.org/learn/', free: true, cert: true },
+    odin: { provider: 'The Odin Project', name: 'Full Stack Path', url: 'https://www.theodinproject.com/', free: true, cert: false },
+  };
 
-  const KB = {
-    'python': {
-      title: 'Python Developer - Zero to Advanced',
-      stages: [
-        stage('Foundations', 'Every AI and data tool is built on Python basics.', 'Build a command-line calculator from scratch', 'beginner', [
-          topic('Syntax, variables & data types', 'The vocabulary of all code.', 4, 'python full course for beginners 2026', 'Write a program that swaps two variables', 'beginner'),
-          topic('Control flow (if / loops)', 'How a program makes decisions and repeats work.', 4, 'python if else loops tutorial', 'Print the FizzBuzz sequence 1-100', 'beginner'),
-          topic('Functions & scope', 'Reusable building blocks; the foundation of clean code.', 4, 'python functions tutorial beginners', 'Write a function that returns the factorial of n', 'beginner'),
-        ], []),
-        stage('Core Programming', 'Structure real programs and reuse other code.', 'Build a contacts app that saves to a file', 'beginner', [
-          topic('Data structures (list/dict/set)', 'How real data is stored and looked up fast.', 5, 'python data structures list dict set', 'Count word frequency in a paragraph using a dict', 'beginner'),
-          topic('OOP (classes & objects)', 'Model real-world things in code.', 6, 'python OOP tutorial classes objects', 'Model a BankAccount class with deposit/withdraw', 'intermediate'),
-          topic('Modules, pip & virtualenv', 'Use the millions of free packages others built.', 4, 'python pip virtualenv tutorial', 'Install requests and fetch a web page', 'intermediate'),
-        ], [0]),
-        stage('Working with Data & APIs', 'Connect Python to the real world: files, web, data.', 'Build a weather CLI that calls a public API', 'intermediate', [
-          topic('Files & exceptions', 'Read/write data and handle errors gracefully.', 4, 'python file handling exceptions tutorial', 'Read a CSV and print the average of a column', 'intermediate'),
-          topic('REST APIs with requests', 'Talk to any web service.', 5, 'python REST API requests tutorial', 'Fetch and print weather from a free API', 'intermediate'),
-          topic('Pandas & NumPy basics', 'The workhorses of data analysis and AI prep.', 8, 'pandas numpy data analysis tutorial', 'Load a dataset and compute group-by summaries', 'intermediate'),
-        ], [1]),
-        stage('Professional Python', 'Ship code others can trust and run.', 'Publish a small package with tests on GitHub', 'advanced', [
-          topic('Git & GitHub', 'Version control - the universal team workflow.', 4, 'git and github tutorial for beginners', 'Push a project with a clean commit history', 'intermediate'),
-          topic('Testing (pytest)', 'Prove your code works and keep it working.', 5, 'python pytest tutorial', 'Write 5 passing tests for your calculator', 'advanced'),
-          topic('Packaging & deployment', 'Get your code running for real users.', 5, 'python packaging deployment tutorial', 'Deploy a Flask app to a free host', 'advanced'),
-        ], [2]),
+  function t(name, why, hours, yt, check, band) { return { name, why_it_matters: why, est_hours: hours, youtube_search_term: yt, check, difficulty_band: band }; }
+
+  // ── The knowledge graph: each module is a stage; prereq[] are module ids. ──
+  const M = {
+    python_basics: {
+      name: 'Python Programming', band: 'beginner', prereq: [], course: CRS.fcc_python,
+      why: 'Python is the language of all AI, ML and data work — everything below is built on it.',
+      milestone: 'Build a small Python program (e.g. a calculator) and run it',
+      topics: [
+        t('Syntax, variables, data types', 'The vocabulary of all code.', 6, 'python full course for beginners 2026', 'Write a program that swaps two variables', 'beginner'),
+        t('Control flow & functions', 'How programs decide, repeat, and reuse logic.', 6, 'python functions loops tutorial', 'Write a function that returns factorial of n', 'beginner'),
+        t('Lists, dicts & files', 'Store and read real data.', 6, 'python data structures files tutorial', 'Read a CSV and print a summary', 'beginner'),
       ],
     },
-    'agentic ai': {
-      title: 'Agentic AI - Build AI Agents',
-      stages: [
-        stage('Python & AI Foundations', 'You cannot build agents without Python and basic AI literacy.', 'Call an LLM API from a Python script', 'beginner', [
-          topic('Python essentials', 'The language every agent framework uses.', 8, 'python full course for beginners 2026', 'Write a script that loops over a list of prompts', 'beginner'),
-          topic('What is an LLM (intuition)', 'Understand what the model can and cannot do.', 3, 'how large language models work explained', 'Explain in 3 lines what a token is', 'beginner'),
-          topic('Calling an LLM API', 'The single most important agent skill.', 4, 'call openai api python tutorial', 'Get a JSON answer back from an LLM call', 'beginner'),
-        ], []),
-        stage('Prompting & RAG', 'Agents are only as good as their prompts and their memory.', 'Build a Q&A bot over your own documents', 'intermediate', [
-          topic('Prompt engineering', 'Steer the model reliably.', 5, 'prompt engineering tutorial 2026', 'Write a prompt that always returns valid JSON', 'intermediate'),
-          topic('Embeddings & vector search', 'How agents recall the right facts.', 6, 'embeddings vector database tutorial', 'Store 10 docs and retrieve the most similar one', 'intermediate'),
-          topic('RAG (retrieval augmented generation)', 'Ground answers in real sources, not hallucination.', 6, 'RAG retrieval augmented generation tutorial', 'Answer a question using a retrieved document', 'intermediate'),
-        ], [0]),
-        stage('Tools & Single Agents', 'An agent that can DO things, not just talk.', 'Build an agent that uses a calculator + web tool', 'intermediate', [
-          topic('Tool / function calling', 'Let the model take real actions.', 5, 'llm function calling tools tutorial', 'Make the model call a weather function', 'intermediate'),
-          topic('Agent loop (reason-act-observe)', 'The heartbeat of every agent.', 6, 'AI agent reasoning loop ReAct tutorial', 'Build a loop that retries on a failed tool call', 'advanced'),
-          topic('Frameworks (LangGraph / LangChain)', 'Do not reinvent the plumbing.', 6, 'langgraph tutorial build agent', 'Recreate your loop using a framework', 'advanced'),
-        ], [1]),
-        stage('Multi-Agent & Production', 'Orchestrate a TEAM of agents and ship safely.', 'Ship a multi-agent app with guardrails + evals', 'advanced', [
-          topic('Orchestration (multi-agent)', 'A captain coordinating specialist agents.', 7, 'multi agent orchestration tutorial', 'Route a task between a planner and a worker agent', 'advanced'),
-          topic('Guardrails & safety', 'Stop agents doing harmful or wrong actions.', 5, 'ai agent guardrails safety tutorial', 'Block an agent from a forbidden action', 'advanced'),
-          topic('Evals & observability', 'Measure if your agent actually works.', 5, 'llm evals observability tutorial', 'Score your agent on 10 test tasks', 'advanced'),
-        ], [2]),
+    math_for_ml: {
+      name: 'Math for ML (Stats → Linear Algebra → Calculus)', band: 'beginner', prereq: [], course: CRS.math4ml,
+      why: 'ML is applied math. Statistics first (evaluate models), then linear algebra (data = matrices), then calculus (how models learn).',
+      milestone: 'Explain mean/variance, a matrix, and gradient descent in your own words',
+      topics: [
+        t('Statistics & probability', 'The first math of ML — describe data and judge results.', 10, 'statistics for machine learning tutorial', 'Compute mean, variance and a probability by hand', 'beginner'),
+        t('Linear algebra (vectors & matrices)', 'Data and models ARE matrices.', 8, 'linear algebra for machine learning', 'Multiply two matrices on paper', 'intermediate'),
+        t('Calculus & gradient descent (intuition)', 'How a model "learns" by minimising error.', 6, 'gradient descent explained intuition', 'Explain why the gradient points downhill', 'intermediate'),
       ],
     },
-    'data analysis': {
-      title: 'Data Analysis - Spreadsheet to Insight',
-      stages: [
-        stage('Data Foundations', 'You must read data before you can analyse it.', 'Clean a messy spreadsheet into a tidy table', 'beginner', [
-          topic('Spreadsheets (Excel / Sheets)', 'Where most real-world data lives.', 5, 'excel for data analysis beginners', 'Build a pivot table from sales data', 'beginner'),
-          topic('Descriptive statistics', 'Mean, median, spread - the language of data.', 4, 'statistics for data analysis basics', 'Describe a dataset in 3 numbers', 'beginner'),
-          topic('Data cleaning', 'Real data is messy; clean it first.', 4, 'data cleaning tutorial beginners', 'Remove duplicates and fix missing values', 'beginner'),
-        ], []),
-        stage('SQL & Querying', 'Answer questions from databases directly.', 'Answer 5 business questions with SQL', 'intermediate', [
-          topic('SQL SELECT & filters', 'Pull exactly the rows you need.', 5, 'SQL tutorial for beginners', 'Find the top 10 customers by spend', 'intermediate'),
-          topic('Joins & aggregation', 'Combine tables and summarise.', 5, 'SQL joins group by tutorial', 'Join orders + customers and total by region', 'intermediate'),
-        ], [0]),
-        stage('Python for Data', 'Scale beyond what a spreadsheet can do.', 'Analyse a 100k-row dataset in Pandas', 'intermediate', [
-          topic('Pandas', 'The spreadsheet, supercharged.', 8, 'pandas data analysis tutorial', 'Group-by and aggregate a real dataset', 'intermediate'),
-          topic('Visualisation (Matplotlib)', 'A picture answers faster than a table.', 5, 'matplotlib data visualization tutorial', 'Plot a trend line with labels', 'intermediate'),
-        ], [1]),
-        stage('Insight & Storytelling', 'Data is useless until someone acts on it.', 'Present a dashboard that drives one decision', 'advanced', [
-          topic('Dashboards (Power BI / Looker)', 'Put insight in front of decision-makers.', 6, 'power bi dashboard tutorial', 'Build a 1-page KPI dashboard', 'advanced'),
-          topic('Data storytelling', 'Turn numbers into a decision.', 4, 'data storytelling tutorial', 'Write a 3-bullet so-what from your dashboard', 'advanced'),
-        ], [2]),
+    data_handling: {
+      name: 'Data Handling (NumPy & Pandas)', band: 'beginner', prereq: ['python_basics'], course: CRS.kaggle_pandas,
+      why: 'Real data is messy. Before any ML you must load, clean and explore it.',
+      milestone: 'Clean a messy real dataset into a tidy table',
+      topics: [
+        t('NumPy arrays', 'Fast numeric computation — the base of every ML library.', 5, 'numpy tutorial for beginners', 'Create and reshape a NumPy array', 'beginner'),
+        t('Pandas (load, filter, group)', 'The spreadsheet, supercharged.', 7, 'pandas data analysis tutorial', 'Group-by and aggregate a real dataset', 'intermediate'),
+        t('Data cleaning & EDA', 'Garbage in, garbage out — clean first.', 6, 'data cleaning exploratory data analysis tutorial', 'Handle missing values + plot a distribution', 'intermediate'),
       ],
     },
-    'web development': {
-      title: 'Web Development - Zero to Full-Stack',
-      stages: [
-        stage('The Web Basics', 'Every site is HTML, CSS, and JavaScript underneath.', 'Build and style a personal homepage', 'beginner', [
-          topic('HTML', 'The skeleton of every page.', 4, 'HTML full course beginners', 'Build a page with headings, links and an image', 'beginner'),
-          topic('CSS & layout', 'Make it look good and work on mobile.', 6, 'CSS flexbox grid tutorial', 'Make your page responsive at 375px', 'beginner'),
-          topic('JavaScript basics', 'Make pages interactive.', 8, 'javascript full course beginners', 'Build a button that counts clicks', 'beginner'),
-        ], []),
-        stage('Frontend', 'Build modern, app-like interfaces.', 'Build a to-do app with a framework', 'intermediate', [
-          topic('DOM & events', 'How JS talks to the page.', 5, 'javascript DOM manipulation tutorial', 'Add and remove list items on click', 'intermediate'),
-          topic('A framework (React)', 'Build UIs without spaghetti.', 8, 'react tutorial for beginners 2026', 'Build a to-do app with components', 'intermediate'),
-        ], [0]),
-        stage('Backend & Data', 'Store data and serve it to your app.', 'Build a REST API with a database', 'intermediate', [
-          topic('Node / Flask server', 'Run code on a server, not just the browser.', 6, 'build REST API tutorial', 'Serve a /health endpoint that returns JSON', 'intermediate'),
-          topic('Databases', 'Remember data between visits.', 6, 'SQL database tutorial web app', 'Save and read users from a database', 'intermediate'),
-        ], [1]),
-        stage('Ship It', 'A real app others can use.', 'Deploy a full-stack app to the internet', 'advanced', [
-          topic('Auth & security basics', 'Protect users and their data.', 5, 'web authentication tutorial', 'Add login to your app', 'advanced'),
-          topic('Deployment', 'Put it online for free.', 4, 'deploy web app free tutorial', 'Deploy front + back end to a free host', 'advanced'),
-        ], [2]),
+    ai_literacy: {
+      name: 'AI Literacy (what AI is & is not)', band: 'beginner', prereq: [], course: CRS.elements_ai,
+      why: 'A clear mental model of AI/ML/DL/GenAI prevents wrong turns later.',
+      milestone: 'Draw the AI > ML > Deep Learning > GenAI/Agentic tree from memory',
+      topics: [
+        t('AI vs ML vs Deep Learning vs GenAI', 'The hierarchy: every layer sits inside the one above.', 4, 'AI vs ML vs deep learning vs generative AI explained', 'Explain how the four nest inside each other', 'beginner'),
+        t('What AI can and cannot do', 'Set honest expectations; spot hype.', 3, 'what AI can and cannot do 2026', 'List 3 things AI is bad at', 'beginner'),
       ],
     },
-    'prompt engineering': {
-      title: 'Prompt Engineering - Talk to AI Like a Pro',
-      stages: [
-        stage('Foundations', 'Understand what a prompt actually does.', 'Write 5 prompts that get reliable answers', 'beginner', [
-          topic('How LLMs read prompts', 'Know why phrasing changes the answer.', 3, 'how large language models work explained', 'Explain what a token is in one line', 'beginner'),
-          topic('Clear instructions & roles', 'The number-one lever for better output.', 4, 'prompt engineering basics tutorial', 'Rewrite a vague prompt to be specific', 'beginner'),
-        ], []),
-        stage('Techniques', 'The proven patterns that lift quality.', 'Solve a hard task with few-shot + chain-of-thought', 'intermediate', [
-          topic('Few-shot examples', 'Show, do not just tell.', 4, 'few shot prompting tutorial', 'Add 2 examples to steer the format', 'intermediate'),
-          topic('Chain-of-thought & structure', 'Make the model reason step by step.', 4, 'chain of thought prompting tutorial', 'Force step-by-step reasoning on a word problem', 'intermediate'),
-          topic('Structured output (JSON)', 'Make AI output a program can use.', 4, 'prompt structured json output tutorial', 'Get the model to always return valid JSON', 'intermediate'),
-        ], [0]),
-        stage('Applied', 'Use prompting inside real workflows.', 'Build a reusable prompt template for a real task', 'advanced', [
-          topic('Prompt templates & variables', 'Reuse prompts at scale.', 4, 'prompt template variables tutorial', 'Template a prompt with 3 fill-in fields', 'advanced'),
-          topic('Evaluating prompts', 'Know which prompt is actually better.', 4, 'evaluate prompts ab testing llm', 'A/B test two prompts on 10 inputs', 'advanced'),
-        ], [1]),
+    prompting: {
+      name: 'Prompt Engineering', band: 'beginner', prereq: ['ai_literacy'], course: CRS.anthropic_prompt,
+      why: 'The fastest-payback AI skill, and the steering wheel for every LLM and agent.',
+      milestone: 'Write a prompt that reliably returns valid JSON',
+      topics: [
+        t('Clear instructions, roles, examples', 'The #1 lever for better output.', 4, 'prompt engineering tutorial 2026', 'Rewrite a vague prompt to be specific', 'beginner'),
+        t('Few-shot & chain-of-thought', 'Show, and make the model reason step by step.', 4, 'few shot chain of thought prompting', 'Force step-by-step reasoning on a problem', 'intermediate'),
+        t('Structured output (JSON)', 'Make AI output a program can use.', 3, 'prompt structured json output tutorial', 'Get the model to always return valid JSON', 'intermediate'),
+      ],
+    },
+    core_ml: {
+      name: 'Core Machine Learning', band: 'intermediate', prereq: ['python_basics', 'math_for_ml', 'data_handling'], course: CRS.ng_ml,
+      why: 'The heart of AI: teach a computer from data. You CANNOT skip this on the way to deep learning or agents.',
+      milestone: 'Train and evaluate a model on a real dataset (e.g. Titanic)',
+      topics: [
+        t('Supervised learning (regression, classification)', 'Predict a number or a label from examples.', 10, 'supervised learning machine learning tutorial', 'Train a classifier and report its accuracy', 'intermediate'),
+        t('Unsupervised learning (clustering)', 'Find structure with no labels.', 6, 'kmeans clustering tutorial', 'Cluster a dataset and interpret the groups', 'intermediate'),
+        t('Model evaluation & overfitting', 'Know if your model actually works.', 6, 'overfitting train test split cross validation', 'Use a train/test split + explain overfitting', 'intermediate'),
+        t('Feature engineering', 'Better inputs beat fancier models.', 5, 'feature engineering tutorial', 'Create 2 new features and measure the lift', 'advanced'),
+      ],
+    },
+    deep_learning: {
+      name: 'Deep Learning (Neural Networks)', band: 'advanced', prereq: ['core_ml'], course: CRS.fastai_dl,
+      why: 'The backbone of all modern Generative and Agentic AI — neural networks, CNNs, RNNs and Transformers.',
+      milestone: 'Train a neural network (e.g. an image classifier) end-to-end',
+      topics: [
+        t('Neural networks & backprop', 'How deep models learn.', 8, 'neural network backpropagation explained', 'Train a small NN on a toy dataset', 'advanced'),
+        t('CNNs (vision)', 'How computers see images.', 7, 'convolutional neural network tutorial', 'Train an image classifier with fast.ai', 'advanced'),
+        t('RNNs / sequences', 'Handling sequences before Transformers.', 6, 'recurrent neural network LSTM tutorial', 'Build a simple sequence model', 'advanced'),
+        t('Transformers (the big one)', 'The architecture behind every LLM.', 8, 'transformer architecture explained attention', 'Explain self-attention in plain words', 'advanced'),
+      ],
+    },
+    genai_llms: {
+      name: 'Generative AI & LLMs', band: 'advanced', prereq: ['deep_learning'], course: CRS.ms_genai,
+      why: 'Built on Transformers: large language models, embeddings, retrieval (RAG) and diffusion — the layer most "AI" products live in.',
+      milestone: 'Build a Q&A bot over your own documents (RAG)',
+      topics: [
+        t('LLMs & tokenisation', 'How models read and generate text.', 5, 'how large language models work explained', 'Explain what a token is + why context limits exist', 'advanced'),
+        t('Embeddings & vector search', 'How AI recalls the right facts by meaning.', 6, 'embeddings vector database tutorial', 'Store docs + retrieve the most similar one', 'advanced'),
+        t('RAG (retrieval augmented generation)', 'Ground answers in real sources, cut hallucination.', 6, 'RAG retrieval augmented generation tutorial', 'Answer a question from a retrieved document', 'advanced'),
+        t('Fine-tuning vs prompting vs RAG', 'Know which tool to reach for.', 4, 'fine tuning vs rag vs prompting', 'Pick the right approach for a given task', 'advanced'),
+      ],
+    },
+    agentic_ai: {
+      name: 'Agentic AI (AI Agents)', band: 'advanced', prereq: ['genai_llms', 'prompting'], course: CRS.hf_agents,
+      why: 'The 2026 frontier: LLMs that plan, use tools and act in a loop — and teams of them. Built ON TOP of everything above.',
+      milestone: 'Ship a multi-agent app with tools + guardrails',
+      topics: [
+        t('Tool / function calling', 'Let the model take real actions.', 5, 'llm function calling tools tutorial', 'Make the model call a function', 'advanced'),
+        t('Agent loop (reason → act → observe)', 'The heartbeat of every agent (ReAct).', 6, 'AI agent ReAct loop tutorial', 'Build a loop that retries on a failed tool', 'advanced'),
+        t('Frameworks (LangGraph / CrewAI / smolagents)', 'Do not reinvent the plumbing.', 7, 'langgraph crewai agents tutorial', 'Recreate your loop in a framework', 'advanced'),
+        t('Multi-agent orchestration + guardrails', 'A team of agents — safely (confirm before acting).', 7, 'multi agent orchestration guardrails tutorial', 'Route a task between two agents with a safety check', 'advanced'),
+      ],
+    },
+    sql: {
+      name: 'SQL & Databases', band: 'beginner', prereq: [], course: CRS.kaggle_sql,
+      why: 'Almost all real-world data lives in databases; SQL is how you get it.',
+      milestone: 'Answer 5 business questions with SQL queries',
+      topics: [
+        t('SELECT, filter, sort', 'Pull exactly the rows you need.', 5, 'SQL tutorial for beginners', 'Find the top 10 customers by spend', 'beginner'),
+        t('Joins & aggregation', 'Combine tables and summarise.', 5, 'SQL joins group by tutorial', 'Join two tables and total by group', 'intermediate'),
+      ],
+    },
+    viz_bi: {
+      name: 'Visualisation & BI', band: 'intermediate', prereq: ['data_handling'], course: CRS.ms_powerbi,
+      why: 'Insight is useless until a decision-maker can see it.',
+      milestone: 'Build a 1-page KPI dashboard',
+      topics: [
+        t('Charts that tell the truth', 'Pick the right chart; avoid misleading ones.', 4, 'data visualization best practices tutorial', 'Plot a trend with clear labels', 'beginner'),
+        t('Dashboards (Power BI / Looker)', 'Put insight in front of people.', 6, 'power bi dashboard tutorial', 'Build a 1-page dashboard', 'intermediate'),
+      ],
+    },
+    data_analytics: {
+      name: 'Data Analytics (end-to-end)', band: 'intermediate', prereq: ['math_for_ml', 'data_handling', 'sql', 'viz_bi'], course: CRS.google_da,
+      why: 'Turn raw data into decisions: the analyst track (lighter math than data science).',
+      milestone: 'Deliver an analysis that drives one real decision',
+      topics: [
+        t('The analytics workflow', 'Ask → get → clean → analyse → communicate.', 5, 'data analytics process tutorial', 'Run one question end-to-end', 'intermediate'),
+        t('Data storytelling', 'Turn numbers into a "so what".', 4, 'data storytelling tutorial', 'Write a 3-bullet insight from your analysis', 'intermediate'),
+      ],
+    },
+    data_science: {
+      name: 'Data Science (capstone)', band: 'advanced', prereq: ['core_ml', 'deep_learning'], course: CRS.ibm_ds,
+      why: 'The full scientist track: statistics + ML + deep learning applied to real problems.',
+      milestone: 'Ship an end-to-end data-science project with a model + write-up',
+      topics: [
+        t('End-to-end ML project', 'From raw data to a deployed prediction.', 10, 'end to end machine learning project tutorial', 'Build + evaluate a full project', 'advanced'),
+        t('Communicating results', 'A model nobody understands is useless.', 4, 'communicate data science results', 'Present your project in 3 slides', 'advanced'),
+      ],
+    },
+    // Non-AI track: web development
+    web_basics: {
+      name: 'Web Basics (HTML/CSS/JS)', band: 'beginner', prereq: [], course: CRS.fcc_web,
+      why: 'Every website is HTML, CSS and JavaScript underneath.',
+      milestone: 'Build and style a responsive personal homepage',
+      topics: [
+        t('HTML & CSS', 'Structure and style.', 8, 'HTML CSS full course beginners', 'Build a responsive page at 375px', 'beginner'),
+        t('JavaScript', 'Make pages interactive.', 10, 'javascript full course beginners', 'Build a button that counts clicks', 'beginner'),
+      ],
+    },
+    web_fullstack: {
+      name: 'Full-Stack Web', band: 'intermediate', prereq: ['web_basics'], course: CRS.odin,
+      why: 'A real app: front end, back end and a database.',
+      milestone: 'Deploy a full-stack app to the internet',
+      topics: [
+        t('Frontend framework (React)', 'Build app-like UIs.', 10, 'react tutorial for beginners 2026', 'Build a to-do app with components', 'intermediate'),
+        t('Backend + database + deploy', 'Store data and ship it.', 10, 'build deploy full stack app tutorial', 'Deploy front + back end to a free host', 'intermediate'),
       ],
     },
   };
 
-  const ALIASES = {
-    'python': 'python', 'python programming': 'python', 'learn python': 'python', 'python developer': 'python',
-    'agentic ai': 'agentic ai', 'ai agents': 'agentic ai', 'agent': 'agentic ai', 'ai agent': 'agentic ai', 'agents': 'agentic ai',
-    'data analysis': 'data analysis', 'data analyst': 'data analysis', 'analytics': 'data analysis', 'data analytics': 'data analysis',
-    'web development': 'web development', 'web dev': 'web development', 'full stack': 'web development', 'frontend': 'web development', 'website': 'web development',
-    'prompt engineering': 'prompt engineering', 'prompting': 'prompt engineering', 'prompts': 'prompt engineering',
+  // Goal → target module id (the destination; prerequisites are auto-included).
+  const TARGET = {
+    'ai': 'genai_llms', 'artificial intelligence': 'genai_llms', 'learn ai': 'genai_llms',
+    'machine learning': 'core_ml', 'ml': 'core_ml',
+    'deep learning': 'deep_learning', 'dl': 'deep_learning', 'neural networks': 'deep_learning',
+    'generative ai': 'genai_llms', 'genai': 'genai_llms', 'gen ai': 'genai_llms', 'llm': 'genai_llms', 'llms': 'genai_llms', 'large language models': 'genai_llms',
+    'agentic ai': 'agentic_ai', 'ai agents': 'agentic_ai', 'agents': 'agentic_ai', 'ai agent': 'agentic_ai', 'agent': 'agentic_ai',
+    'data analysis': 'data_analytics', 'data analytics': 'data_analytics', 'analytics': 'data_analytics', 'data analyst': 'data_analytics',
+    'data science': 'data_science', 'data scientist': 'data_science',
+    'python': 'data_handling', 'python programming': 'data_handling', 'learn python': 'data_handling', 'python developer': 'python_basics',
+    'prompt engineering': 'prompting', 'prompting': 'prompting', 'prompts': 'prompting',
+    'sql': 'sql', 'databases': 'sql',
+    'web development': 'web_fullstack', 'web dev': 'web_fullstack', 'full stack': 'web_fullstack', 'frontend': 'web_basics', 'website': 'web_fullstack',
+  };
+  const TITLE = {
+    genai_llms: 'Generative AI & LLMs — Full Path', core_ml: 'Machine Learning — Full Path',
+    deep_learning: 'Deep Learning — Full Path', agentic_ai: 'Agentic AI — Full Path (through ML & Deep Learning)',
+    data_analytics: 'Data Analytics — Full Path', data_science: 'Data Science — Full Path',
+    data_handling: 'Python for Data & AI', python_basics: 'Python Developer', prompting: 'Prompt Engineering',
+    sql: 'SQL & Databases', web_fullstack: 'Full-Stack Web Development', web_basics: 'Web Development Basics',
   };
 
   function norm(s) { return String(s == null ? '' : s).toLowerCase().trim().replace(/\s+/g, ' '); }
-
-  function resolveKey(goal) {
+  function resolveTarget(goal) {
     const g = norm(goal);
-    if (ALIASES[g]) return ALIASES[g];
-    const keys = Object.keys(ALIASES).sort((a, b) => b.length - a.length);
-    for (const k of keys) { if (g.includes(k)) return ALIASES[k]; }
+    if (TARGET[g]) return TARGET[g];
+    // Word-boundary match (longest key first) so short keys like "ai" never
+    // match "rAIse" / "tAIloring". Only whole-word/phrase hits count.
+    const keys = Object.keys(TARGET).sort((a, b) => b.length - a.length);
+    for (const k of keys) {
+      const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (new RegExp('\\b' + esc + '\\b').test(g)) return TARGET[k];
+    }
     return null;
   }
 
-  function titleCase(s) { return norm(s).replace(/\b\w/g, c => c.toUpperCase()); }
-
-  function genericRoadmap(goal) {
-    const g = norm(goal) || 'your goal';
-    const T = titleCase(g);
-    const yt = (suffix) => (g + ' ' + suffix).trim();
-    return {
-      title: T + ' - A Beginner-to-Confident Roadmap',
-      _generic: true,
-      stages: [
-        stage('Understand the Basics', 'You need the core vocabulary of ' + T + ' before anything else.', 'Explain ' + T + ' in your own words to someone else', 'beginner', [
-          topic('What is ' + T + '? (overview)', 'A clear mental model prevents wrong turns later.', 3, yt('explained for beginners'), 'Write 3 sentences describing what ' + T + ' is', 'beginner'),
-          topic('Key terms in ' + T, 'Every field has its own words; learn them first.', 3, yt('basics terms glossary'), 'List 5 important terms and what they mean', 'beginner'),
-          topic('Who uses ' + T + ' and why', 'Knowing the why keeps you motivated.', 2, yt('real world uses examples'), 'Name 2 real situations where ' + T + ' helps', 'beginner'),
-        ], []),
-        stage('Learn the Core Skills', 'These are the hands-on skills at the heart of ' + T + '.', 'Complete one guided ' + T + ' exercise end-to-end', 'beginner', [
-          topic('Core technique 1', 'The most-used skill; practise it first.', 5, yt('tutorial step by step'), 'Follow along and reproduce one full example', 'beginner'),
-          topic('Core technique 2', 'The second pillar; builds on the first.', 5, yt('intermediate tutorial'), 'Do the example again without looking', 'intermediate'),
-          topic('Common tools for ' + T, 'Use the tools the experts use.', 4, yt('best free tools'), 'Try one free tool and note what it does', 'intermediate'),
-        ], [0]),
-        stage('Practise on Real Examples', 'Practice turns knowledge into skill.', 'Solve 3 real ' + T + ' problems on your own', 'intermediate', [
-          topic('Worked examples', 'See how experts approach real problems.', 5, yt('worked examples walkthrough'), 'Re-solve one example with a small change', 'intermediate'),
-          topic('Common mistakes & fixes', 'Avoiding mistakes is half the skill.', 4, yt('common mistakes beginners'), 'List 3 mistakes and how to avoid them', 'intermediate'),
-        ], [1]),
-        stage('Build Your Own Project', 'Building something real proves you have learned ' + T + '.', 'Ship one small ' + T + ' project you are proud of', 'advanced', [
-          topic('Plan a small project', 'Scope it small so you actually finish.', 3, yt('beginner project ideas'), 'Write down what your project will do', 'advanced'),
-          topic('Build and improve it', 'Iteration is where real learning happens.', 8, yt('full project tutorial'), 'Finish version 1, then improve one thing', 'advanced'),
-          topic('Share & get feedback', 'Feedback accelerates the next loop.', 2, yt('how to get feedback on project'), 'Show it to one person and note their feedback', 'advanced'),
-        ], [2]),
-      ],
-    };
+  // Transitive prerequisite closure + topological (Kahn) order.
+  function orderedModules(targetId) {
+    const need = new Set();
+    (function collect(id) { if (need.has(id)) return; need.add(id); (M[id].prereq || []).forEach(collect); })(targetId);
+    const ids = [...need];
+    const order = [];
+    const indeg = {};
+    ids.forEach(id => { indeg[id] = (M[id].prereq || []).filter(p => need.has(p)).length; });
+    // stable Kahn: repeatedly take zero-indegree in a fixed canonical order
+    const CANON = ['ai_literacy', 'python_basics', 'math_for_ml', 'sql', 'web_basics', 'data_handling', 'prompting', 'viz_bi', 'core_ml', 'deep_learning', 'data_analytics', 'genai_llms', 'data_science', 'agentic_ai', 'web_fullstack'];
+    const remaining = new Set(ids);
+    while (remaining.size) {
+      const ready = CANON.filter(id => remaining.has(id) && (M[id].prereq || []).filter(p => remaining.has(p)).length === 0);
+      const next = ready.length ? ready : [...remaining];
+      for (const id of next) { order.push(id); remaining.delete(id); }
+    }
+    return order;
   }
 
-  function assemble(goal, raw) {
-    const stages = raw.stages.map((s, i) => {
-      const topics = s.topics.map((t, j) => ({
-        id: 's' + (i + 1) + '-t' + (j + 1),
-        order: j + 1,
-        name: t.name,
-        why_it_matters: t.why_it_matters,
-        difficulty_band: t.difficulty_band,
-        difficulty_dots: BAND_DOTS[t.difficulty_band] || BAND_DOTS.beginner,
-        est_hours: t.est_hours,
-        youtube_search_term: t.youtube_search_term,
-        check: t.check,
+  function assemble(goal, targetId) {
+    const ids = orderedModules(targetId);
+    const idToStage = {}; ids.forEach((id, i) => { idToStage[id] = 'stage-' + (i + 1); });
+    const stages = ids.map((id, i) => {
+      const m = M[id];
+      const topics = m.topics.map((tp, j) => ({
+        id: 's' + (i + 1) + '-t' + (j + 1), order: j + 1, name: tp.name, why_it_matters: tp.why_it_matters,
+        difficulty_band: tp.difficulty_band, difficulty_dots: BAND_DOTS[tp.difficulty_band] || BAND_DOTS.beginner,
+        est_hours: tp.est_hours, youtube_search_term: tp.youtube_search_term, check: tp.check,
       }));
       return {
-        id: 'stage-' + (i + 1),
-        order: i + 1,
-        name: s.name,
-        why_it_matters: s.why_it_matters,
-        difficulty_band: s.difficulty_band,
-        difficulty_dots: BAND_DOTS[s.difficulty_band] || BAND_DOTS.beginner,
-        milestone: s.milestone,
-        prerequisites: (s._prereq || []).map(idx => 'stage-' + (idx + 1)),
-        est_hours: topics.reduce((a, t) => a + (t.est_hours || 0), 0),
-        topics,
+        id: 'stage-' + (i + 1), order: i + 1, module_id: id, name: m.name, why_it_matters: m.why,
+        difficulty_band: m.band, difficulty_dots: BAND_DOTS[m.band] || BAND_DOTS.beginner, milestone: m.milestone,
+        prerequisites: (m.prereq || []).filter(p => idToStage[p]).map(p => idToStage[p]),
+        course: { provider: m.course.provider, name: m.course.name, url: m.course.url, free: m.course.free, cert: !!m.course.cert, note: m.course.note || '' },
+        est_hours: topics.reduce((a, x) => a + x.est_hours, 0), topics,
       };
     });
     const total = stages.reduce((a, s) => a + s.est_hours, 0);
     return {
-      goal: String(goal),
-      title: raw.title,
-      generic: !!raw._generic,
-      total_est_hours: total,
-      total_stages: stages.length,
-      total_topics: stages.reduce((a, s) => a + s.topics.length, 0),
-      difficulty_band: 'beginner',
-      stages,
-      generated_by: 'cnai_roadmap_engine (deterministic, no LLM)',
+      goal: String(goal), title: (TITLE[targetId] || M[targetId].name), target: targetId, generic: false,
+      total_est_hours: total, total_stages: stages.length, total_topics: stages.reduce((a, s) => a + s.topics.length, 0),
+      total_courses: stages.length, difficulty_band: stages[0] ? stages[0].difficulty_band : 'beginner',
+      tree_note: targetId === 'agentic_ai' ? 'Agentic AI sits inside GenAI ⊂ Deep Learning ⊂ Machine Learning ⊂ AI — so this path takes you through the whole stack.' : '',
+      stages, generated_by: 'cnai_roadmap_engine v2 (knowledge-graph; real free course per stage)',
     };
   }
 
+  // ── Generic generator for ANY non-graph goal (improved; still real course-ish) ──
+  function titleCase(s) { return norm(s).replace(/\b\w/g, c => c.toUpperCase()); }
+  function genericRoadmap(goal) {
+    const g = norm(goal) || 'your goal'; const T = titleCase(g); const yt = (x) => (g + ' ' + x).trim();
+    const generic = (name, why, milestone, band, prereqIdx, topics) => ({ name, why, milestone, band, prereqIdx, topics });
+    const raw = [
+      generic('Understand the Basics', 'Learn the core vocabulary of ' + T + ' first.', 'Explain ' + T + ' to someone else', 'beginner', [], [
+        t('What is ' + T + '?', 'A clear mental model prevents wrong turns.', 3, yt('explained for beginners'), 'Write 3 sentences on what ' + T + ' is', 'beginner'),
+        t('Key terms', 'Every field has its own words.', 3, yt('basics terms glossary'), 'List 5 key terms', 'beginner'),
+      ]),
+      generic('Core Skills', 'The hands-on skills at the heart of ' + T + '.', 'Complete one guided ' + T + ' exercise', 'beginner', [0], [
+        t('Core technique 1', 'The most-used skill.', 5, yt('tutorial step by step'), 'Reproduce one full example', 'beginner'),
+        t('Common free tools', 'Use what the experts use.', 4, yt('best free tools'), 'Try one free tool', 'intermediate'),
+      ]),
+      generic('Practise', 'Practice turns knowledge into skill.', 'Solve 3 real ' + T + ' problems', 'intermediate', [1], [
+        t('Worked examples', 'See how experts work.', 5, yt('worked examples walkthrough'), 'Re-solve one with a change', 'intermediate'),
+      ]),
+      generic('Build a Project', 'Building proves you learned ' + T + '.', 'Ship one small ' + T + ' project', 'advanced', [2], [
+        t('Plan & build', 'Scope small, finish it.', 8, yt('full project tutorial'), 'Finish version 1', 'advanced'),
+      ]),
+    ];
+    const stages = raw.map((s, i) => ({
+      id: 'stage-' + (i + 1), order: i + 1, module_id: 'generic-' + (i + 1), name: s.name, why_it_matters: s.why,
+      difficulty_band: s.band, difficulty_dots: BAND_DOTS[s.band], milestone: s.milestone,
+      prerequisites: s.prereqIdx.map(x => 'stage-' + (x + 1)),
+      course: { provider: 'YouTube + free web', name: 'Search "' + g + ' free course"', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(g + ' free course'), free: true, cert: false, note: 'no curated course yet for this goal' },
+      est_hours: s.topics.reduce((a, x) => a + x.est_hours, 0),
+      topics: s.topics.map((tp, j) => ({ id: 's' + (i + 1) + '-t' + (j + 1), order: j + 1, name: tp.name, why_it_matters: tp.why_it_matters, difficulty_band: tp.difficulty_band, difficulty_dots: BAND_DOTS[tp.difficulty_band], est_hours: tp.est_hours, youtube_search_term: tp.youtube_search_term, check: tp.check })),
+    }));
+    return { goal: String(goal), title: T + ' — A Beginner-to-Confident Roadmap', target: null, generic: true, total_est_hours: stages.reduce((a, s) => a + s.est_hours, 0), total_stages: stages.length, total_topics: stages.reduce((a, s) => a + s.topics.length, 0), total_courses: stages.length, difficulty_band: 'beginner', tree_note: '', stages, generated_by: 'cnai_roadmap_engine v2 (generic)' };
+  }
+
   function generate(goal, opts) {
-    opts = opts || {};
-    const key = resolveKey(goal);
-    const raw = key ? KB[key] : genericRoadmap(goal);
-    return assemble(goal, raw);
+    const targetId = resolveTarget(goal);
+    return targetId ? assemble(goal, targetId) : genericRoadmap(goal);
   }
 
   function validate(rm) {
     const errors = [];
-    if (!rm || !Array.isArray(rm.stages) || rm.stages.length < 2) {
-      errors.push('roadmap must have at least 2 stages');
-      return { ok: false, errors };
-    }
-    const orders = rm.stages.map(s => s.order);
-    orders.forEach((o, i) => { if (o !== i + 1) errors.push('stage order not contiguous at index ' + i + ' (got ' + o + ')'); });
-    const idToOrder = {};
-    rm.stages.forEach(s => { idToOrder[s.id] = s.order; });
+    if (!rm || !Array.isArray(rm.stages) || rm.stages.length < 1) { errors.push('roadmap must have at least 1 stage'); return { ok: false, errors }; }
+    rm.stages.forEach((s, i) => { if (s.order !== i + 1) errors.push('stage order not contiguous at ' + i); });
+    const ord = {}; rm.stages.forEach(s => { ord[s.id] = s.order; });
     rm.stages.forEach(s => {
       (s.prerequisites || []).forEach(p => {
-        if (!(p in idToOrder)) errors.push(s.id + ' has unknown prerequisite ' + p);
-        else if (idToOrder[p] >= s.order) errors.push(s.id + ' depends on ' + p + ' which is not earlier (foundations-first violated)');
+        if (!(p in ord)) errors.push(s.id + ' unknown prereq ' + p);
+        else if (ord[p] >= s.order) errors.push(s.id + ' depends on ' + p + ' which is not earlier (foundations-first violated)');
       });
       if (!s.name) errors.push(s.id + ' missing name');
-      if (!s.milestone) errors.push(s.id + ' missing milestone (must be a built artifact)');
-      if (!s.why_it_matters) errors.push(s.id + ' missing why_it_matters');
-      if (!Array.isArray(s.topics) || s.topics.length < 1) errors.push(s.id + ' has no topics');
-      (s.topics || []).forEach(t => {
-        if (!t.name) errors.push(s.id + '/' + t.id + ' missing name');
-        if (!t.youtube_search_term) errors.push(s.id + '/' + t.id + ' missing youtube_search_term');
-        if (!t.check) errors.push(s.id + '/' + t.id + ' missing check');
-        if (!BANDS.includes(t.difficulty_band)) errors.push(s.id + '/' + t.id + ' bad difficulty_band ' + t.difficulty_band);
-      });
+      if (!s.milestone) errors.push(s.id + ' missing milestone');
+      if (!s.course || !s.course.url) errors.push(s.id + ' missing course');
+      if (!Array.isArray(s.topics) || !s.topics.length) errors.push(s.id + ' no topics');
+      (s.topics || []).forEach(tp => { if (!tp.youtube_search_term) errors.push(s.id + '/' + tp.id + ' no youtube'); if (!BANDS.includes(tp.difficulty_band)) errors.push(s.id + '/' + tp.id + ' bad band'); });
     });
-    if ((rm.stages[0].prerequisites || []).length) errors.push('first stage must have no prerequisites (foundations entry point)');
+    if ((rm.stages[0].prerequisites || []).length) errors.push('first stage must have no prerequisites');
     return { ok: errors.length === 0, errors };
   }
 
-  // Audio-first narration labels in 9 native-script languages (no Hinglish; proper nouns like
-  // YouTube stay English). Missing language → English fallback.
   const SPK = {
-    en: { intro: 'Here is your roadmap for', stages: 'It has', stagesWord: 'stages', about: 'about', hours: 'hours total', stage: 'Stage', of: 'of', why: 'Why it matters', topic: 'Topic', search: 'Search YouTube for', milestone: 'Your milestone', band: 'Level' },
-    hi: { intro: 'यह आपका रोडमैप है', stages: 'इसमें', stagesWord: 'चरण हैं', about: 'लगभग', hours: 'घंटे कुल', stage: 'चरण', of: 'में से', why: 'यह क्यों ज़रूरी है', topic: 'विषय', search: 'YouTube पर खोजें', milestone: 'आपका लक्ष्य', band: 'स्तर' },
-    ta: { intro: 'இது உங்கள் வழித்தடம்', stages: 'இதில்', stagesWord: 'நிலைகள் உள்ளன', about: 'சுமார்', hours: 'மணிநேரம் மொத்தம்', stage: 'நிலை', of: 'இல்', why: 'இது ஏன் முக்கியம்', topic: 'தலைப்பு', search: 'YouTube இல் தேடு', milestone: 'உங்கள் இலக்கு', band: 'நிலை' },
-    te: { intro: 'ఇది మీ రోడ్‌మ్యాప్', stages: 'దీనిలో', stagesWord: 'దశలు ఉన్నాయి', about: 'సుమారు', hours: 'గంటలు మొత్తం', stage: 'దశ', of: 'లో', why: 'ఇది ఎందుకు ముఖ్యం', topic: 'అంశం', search: 'YouTube లో వెతకండి', milestone: 'మీ లక్ష్యం', band: 'స్థాయి' },
-    bn: { intro: 'এটি আপনার রোডম্যাপ', stages: 'এতে', stagesWord: 'টি ধাপ আছে', about: 'প্রায়', hours: 'ঘণ্টা মোট', stage: 'ধাপ', of: 'এর', why: 'এটি কেন গুরুত্বপূর্ণ', topic: 'বিষয়', search: 'YouTube এ খুঁজুন', milestone: 'আপনার লক্ষ্য', band: 'স্তর' },
-    mr: { intro: 'हा तुमचा रोडमॅप आहे', stages: 'यात', stagesWord: 'टप्पे आहेत', about: 'सुमारे', hours: 'तास एकूण', stage: 'टप्पा', of: 'पैकी', why: 'हे का महत्त्वाचे', topic: 'विषय', search: 'YouTube वर शोधा', milestone: 'तुमचे ध्येय', band: 'पातळी' },
-    gu: { intro: 'આ તમારો રોડમેપ છે', stages: 'આમાં', stagesWord: 'તબક્કા છે', about: 'આશરે', hours: 'કલાક કુલ', stage: 'તબક્કો', of: 'માંથી', why: 'આ કેમ મહત્વનું', topic: 'વિષય', search: 'YouTube પર શોધો', milestone: 'તમારું લક્ષ્ય', band: 'સ્તર' },
-    kn: { intro: 'ಇದು ನಿಮ್ಮ ರೋಡ್‌ಮ್ಯಾಪ್', stages: 'ಇದರಲ್ಲಿ', stagesWord: 'ಹಂತಗಳಿವೆ', about: 'ಸುಮಾರು', hours: 'ಗಂಟೆಗಳು ಒಟ್ಟು', stage: 'ಹಂತ', of: 'ರಲ್ಲಿ', why: 'ಇದು ಏಕೆ ಮುಖ್ಯ', topic: 'ವಿಷಯ', search: 'YouTube ನಲ್ಲಿ ಹುಡುಕಿ', milestone: 'ನಿಮ್ಮ ಗುರಿ', band: 'ಮಟ್ಟ' },
-    ml: { intro: 'ഇത് നിങ്ങളുടെ റോഡ്‌മാപ്പ്', stages: 'ഇതിൽ', stagesWord: 'ഘട്ടങ്ങളുണ്ട്', about: 'ഏകദേശം', hours: 'മണിക്കൂർ ആകെ', stage: 'ഘട്ടം', of: 'ൽ', why: 'ഇത് എന്തുകൊണ്ട് പ്രധാനം', topic: 'വിഷയം', search: 'YouTube ൽ തിരയുക', milestone: 'നിങ്ങളുടെ ലക്ഷ്യം', band: 'നില' },
+    en: { intro: 'Here is your roadmap for', stages: 'It has', sw: 'stages', about: 'about', hours: 'hours total', stage: 'Stage', of: 'of', why: 'Why', course: 'Free course', from: 'from', milestone: 'Milestone' },
+    hi: { intro: 'यह आपका रोडमैप है', stages: 'इसमें', sw: 'चरण', about: 'लगभग', hours: 'घंटे', stage: 'चरण', of: 'में से', why: 'क्यों', course: 'मुफ़्त कोर्स', from: 'से', milestone: 'लक्ष्य' },
   };
   function speakable(rm, lang) {
-    const L = SPK[lang] || SPK.en;
-    const out = [];
-    out.push(L.intro + ' ' + rm.title + '. ' + L.stages + ' ' + rm.total_stages + ' ' + L.stagesWord + ', ' + L.about + ' ' + rm.total_est_hours + ' ' + L.hours + '.');
+    const L = SPK[lang] || SPK.en; const out = [];
+    out.push(L.intro + ' ' + rm.title + '. ' + L.stages + ' ' + rm.total_stages + ' ' + L.sw + ', ' + L.about + ' ' + rm.total_est_hours + ' ' + L.hours + '.');
+    if (rm.tree_note) out.push(rm.tree_note);
     rm.stages.forEach(s => {
-      out.push(L.stage + ' ' + s.order + ' ' + L.of + ' ' + rm.total_stages + ': ' + s.name + '. ' + L.band + ': ' + s.difficulty_band + '. ' + L.why + ': ' + s.why_it_matters);
-      s.topics.forEach(t => {
-        out.push(L.topic + ': ' + t.name + '. ' + t.why_it_matters + ' ' + L.search + ': ' + t.youtube_search_term + '.');
-      });
-      out.push(L.milestone + ': ' + s.milestone + '.');
+      out.push(L.stage + ' ' + s.order + ' ' + L.of + ' ' + rm.total_stages + ': ' + s.name + '. ' + L.why + ': ' + s.why_it_matters + ' ' + L.course + ': ' + s.course.name + ' ' + L.from + ' ' + s.course.provider + '. ' + L.milestone + ': ' + s.milestone + '.');
     });
     return out.join(' ');
   }
 
-  function listKnownGoals() { return Object.keys(KB); }
+  function listKnownGoals() { return Object.keys(TARGET); }
+  function listTree() {
+    return Object.keys(M).map(id => ({ id, name: M[id].name, prereq: M[id].prereq, course: M[id].course.provider + ' — ' + M[id].course.name }));
+  }
 
-  return { generate, validate, speakable, listKnownGoals, BANDS, _KB: KB };
+  return { generate, validate, speakable, listKnownGoals, listTree, BANDS, _M: M, _CRS: CRS };
 });

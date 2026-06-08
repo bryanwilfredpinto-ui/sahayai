@@ -1,78 +1,78 @@
-# BO1 — Roadmap Engine (Path 1: Direct Roadmap)
+# BO1 — Roadmap Engine (v2, REBUILT 2026-06-09)
 
-> Chitti News AI · Build Order 1 of 7. Research -> Document -> Code -> Test.
-> Deliverable: cnai_roadmap_engine.js + tools/test_cnai_roadmap.mjs + a roadmap
-> UI section on chitti_news_ai.html. Doctrine: rules are the product, the LLM
-> is an enhancement; the engine is fully deterministic and works offline.
+> REBUILT after Sire's correct critique: the v1 roadmap skipped the real AI
+> knowledge tree (it jumped to "Agentic AI" without ML or Deep Learning) and
+> showed YouTube searches instead of real courses. v2 encodes the **actual AI
+> curriculum as a prerequisite knowledge graph** and attaches a **real free
+> course to every stage**. Deterministic, offline.
 
-## 1. Research — Top 20 learning/roadmap apps (best practice copied)
+## 1. REAL web research (June 2026 — this was actually searched, with sources)
 
-| App | Strength | Best practice copied |
-|---|---|---|
-| roadmap.sh | Flowchart DAG, foundations first | Topics as a prerequisite DAG; order = topological sort |
-| freeCodeCamp | Project gates next step | Milestone = a BUILT artifact, not "watched" |
-| Khan Academy | Mastery map | Foundations-first gating |
-| Coursera | Ordered series + capstone | Named arc with a capstone milestone |
-| Udemy | Sections -> lectures | Two-level Stage -> Topic hierarchy |
-| edX | Intro -> advanced stackable | Each stage independently completable |
-| Brilliant | One concept per screen | One concept per Topic |
-| Duolingo | Skill tree row gating | Gate whole stage-rows; basics first |
-| Codecademy | Skill/Career paths | Skill vs career granularity |
-| Scrimba | Interactive screencasts | Embed doing in the step (our check) |
-| DataCamp | 5-min one-concept lessons | Short single-concept topics + est-hours |
-| Class Central | Ranks across providers | Multiple ranked sources per topic |
-| Great Learning / upGrad | Career-outcome programs | Frame around a job outcome |
-| SWAYAM / NPTEL | Week-by-week syllabus | Time-boxed (est-hours per stage) |
-| Skill India | NSQF graded | Explicit difficulty bands |
-| Google Career Certs | Zero-to-job sequence | End-to-end zero->job arc |
-| LinkedIn Learning Paths | Role paths | Role-tagged paths |
-| Coursera Career Academy | Goal -> role -> path | Map goal -> ordered path automatically |
-| Sololearn | Bite-size + streaks | Micro-steps + momentum |
+**The taxonomy (your point, confirmed):** AI ⊃ ML ⊃ Deep Learning ⊃ {Generative
+AI, Agentic AI}. **Data Science** (needs full math + ML + DL) vs **Data
+Analytics** (Excel → Stats → SQL → Viz, lighter math) is a sibling branch.
 
-## 2. Research — Top 20 AI/LLM learning apps (personalization copied)
+**The order is non-negotiable** (DataCamp AI roadmap, KDnuggets 2026 starter kit,
+Google ML prereqs, Scaler): Python + Math (**Statistics → Linear Algebra →
+Calculus**) → **Core ML** → **Deep Learning** (NN/CNN/RNN/Transformers) →
+**Generative AI / LLMs** (transformers, RAG, diffusion) → **Agentic AI** (tools,
+function-calling, LangGraph/CrewAI/smolagents, multi-agent).
 
-| App | AI approach | Best practice copied |
-|---|---|---|
-| roadmap.sh AI | LLM roadmap from any goal | Free-text goal -> generated ordered roadmap |
-| Khanmigo | Guides not answers | Socratic framing in why_it_matters |
-| Coursera Coach | Next step from goal + level | Recommend the next step |
-| ChatGPT Study Mode | Step-by-step + checks | Per-topic check |
-| Google Learn About | Adaptive depth | Difficulty bands per topic |
-| Maven / Sana / Section | Skills-graph paths | Outcome-first framing |
-| Uplimit / Quizlet AI | Auto practice/quiz | check per topic |
-| Perplexity tutor | Cited answers | A search term per topic |
-| Synthesis / MathAcademy | Knowledge graph + spacing | Strict prerequisite graph |
-| Santa AI / Riiid / Cerego | Knowledge tracing | Foundations-first refusal |
-| Duolingo Max | Explain-my-mistake | Chitti-icon explain on every box |
-| Sololearn AI / MagicSchool | Inline explain | Audio-first speakable rendering |
+Sources:
+- [DataCamp — AI Learning Roadmap 2026](https://www.datacamp.com/blog/ai-roadmap)
+- [KDnuggets — 2026 Data Science Starter Kit](https://www.kdnuggets.com/the-2026-data-science-starter-kit-what-to-learn-first-and-what-to-ignore)
+- [MachineLearningMastery — Roadmap for Mastering Agentic AI 2026](https://machinelearningmastery.com/the-roadmap-for-mastering-agentic-ai-in-2026/)
+- [Google ML — Prerequisites](https://developers.google.com/machine-learning/crash-course/prereqs-and-prework)
+- [fast.ai — Practical Deep Learning](https://course.fast.ai/)
+- [Hugging Face — AI Agents Course](https://huggingface.co/learn/agents-course)
+- [roadmap.sh — AI/Data Scientist + Data Analyst](https://roadmap.sh/ai-data-scientist)
 
-## 3. Best practices enforced by the engine
+## 2. Real free courses wired into the graph (one per stage)
 
-1. Roadmap as a DAG; order = topological sort. validate() refuses any forward
-   prerequisite -> prevents "Machine Learning before Python basics".
-2. Foundations first: stage 1 has zero prerequisites.
-3. Milestone = built artifact; every topic has a check.
-4. One concept per topic; difficulty as colour-independent dots + WORD.
-5. YouTube SEARCH TERM not URL (survives dead links); spoken aloud.
-6. Works for ANY goal: unknown goals route to a generic generator
-   (Understand -> Core -> Practise -> Build).
+| Stage / module | Real free course (verified) |
+|---|---|
+| AI Literacy | Elements of AI (U. Helsinki) — free cert |
+| Python | freeCodeCamp Scientific Computing with Python · Kaggle Python |
+| Math for ML | DeepLearning.AI *Mathematics for ML & Data Science* (free audit) |
+| Data Handling | Kaggle *Pandas + Data Cleaning* |
+| Prompt Engineering | Anthropic Academy · DeepLearning.AI prompt courses |
+| Core ML | **Andrew Ng *Machine Learning Specialization*** · Google ML Crash Course |
+| Deep Learning | **fast.ai *Practical Deep Learning*** (100% free) · Ng *DL Specialization* |
+| Generative AI & LLMs | Microsoft *Generative AI for Beginners* · Hugging Face *NLP/LLM* |
+| Agentic AI | **Hugging Face *AI Agents Course*** (free+cert) · DeepLearning.AI *AI Agents in LangGraph* |
+| SQL / Viz / Data Analytics | Kaggle SQL · Microsoft Power BI · Google Data Analytics |
+| Data Science | IBM *Data Science Professional Certificate* (free audit) |
+| Web | freeCodeCamp · The Odin Project |
 
-## 4. Schema
+## 3. The engine (knowledge graph)
 
-stage: id, order, name, why_it_matters, difficulty_band, difficulty_dots,
-milestone, prerequisites[], est_hours, topics[].
-topic: id, order, name, why_it_matters, difficulty_band, est_hours,
-youtube_search_term, check.
+15 modules; each has `prereq[]`, a real `course`, topics (YouTube term + check),
+a built-artifact `milestone`. A goal resolves to a **target module**; the engine
+computes the **transitive prerequisite closure** + a **topological (Kahn) order**
+→ stages. So:
 
-## 5. Accessibility (four-user contract)
+- **"Agentic AI" → 9 stages**: AI Literacy → Python → Math → Data Handling →
+  Prompt Engineering → **Core ML → Deep Learning → Generative AI** → Agentic AI
+  (~180h), each with its real course, + a tree note: *"Agentic AI sits inside
+  GenAI ⊂ Deep Learning ⊂ Machine Learning ⊂ AI."*
+- **"Machine Learning" → 4**, **"Deep Learning" → 5**, **"Generative AI" → 6**
+  (proper nesting: broader-but-lower goals are shorter prefixes of the same path).
+- **"Data Analytics"** includes SQL, NOT forced Deep Learning; **"Data Science"**
+  DOES include Deep Learning.
+- Word-boundary goal matching (so "tailoring"/"raise" never match the `ai` target).
+- ANY other goal → generic 4-stage generator (still a course-ish + milestone per
+  stage).
 
-- Blind/illiterate: speakable(roadmap, lang) reads the whole roadmap aloud; card
-  carries data-chitti-response (speaker/Chitti/thumbs/pencil-mic).
-- Deaf: difficulty as dots + WORD (never colour alone).
-- Low literacy: plain-language why/milestone/check.
-- Language: page lang-select (26 langs) + Hindi speakable bag.
+## 4. Accessibility (four-user contract)
 
-## 6. Status
+`speakable()` reads the whole path aloud incl. the course per stage + the tree
+note (en + hi Devanagari). Every stage card carries `data-chitti-response`
+(speaker/Chitti/thumbs/pencil-mic), difficulty as dots + WORD, course links
+≥44px, "Read my whole roadmap aloud".
 
-1.1 Goal parser DONE · 1.2 Curated KB + generic DONE · 1.3 Topic generator DONE ·
-1.4 YouTube search per topic DONE · 1.5 Accessible UI DONE · Tests DONE.
+## 5. Status / tests
+
+`cnai_roadmap_engine.js` v2 (knowledge graph + 21 real courses) · UI shows
+course + tree note per stage · `tools/test_cnai_roadmap.mjs` **142/142**
+(asserts ML before DL before GenAI before Agentic; fast.ai + HF + Ng courses
+present; analytics≠data-science) · UI cert 48/48 · a11y omnibus contrast 0.

@@ -45,10 +45,16 @@ const stageBoxes = await p.$$('#roadmap-content .rm-stage');
 rec('roadmap_renders_stages', stageBoxes.length >= 4, stageBoxes.length + ' stage boxes');
 rec('stages_have_chitti_response', (await p.$$('#roadmap-content [data-chitti-response]')).length >= 4);
 rec('youtube_links_present', (await p.$$('#roadmap-content a[href*="youtube.com"]')).length >= 6, (await p.$$('#roadmap-content a[href*="youtube.com"]')).length + ' yt links');
-rec('milestone_present', (await p.locator('#roadmap-content').innerText()).includes('Milestone'));
+const rmTxt = await p.locator('#roadmap-content').innerText();
+rec('milestone_present', rmTxt.includes('Milestone'));
+// v2: real courses per stage + the AI knowledge-tree note + goes through ML/DL
+rec('bo1_real_courses', (await p.$$('#roadmap-content a[aria-label^="Open free course"]')).length >= 6, (await p.$$('#roadmap-content a[aria-label^="Open free course"]')).length + ' real course links');
+rec('bo1_tree_note', /inside|⊂|sits inside/i.test(rmTxt), 'AI taxonomy note shown');
+rec('bo1_through_ML_DL', /Machine Learning/i.test(rmTxt) && /Deep Learning/i.test(rmTxt) && /Generative AI/i.test(rmTxt), 'Agentic path goes through ML→DL→GenAI');
+rec('bo1_fastai_or_hf', /fast\.?ai/i.test(rmTxt) && /Hugging Face/i.test(rmTxt), 'real courses (fast.ai + HF) named');
 rec('read-aloud_button', !!(await p.$('#roadmap-content button[aria-label="Read my whole roadmap aloud"]')));
 const speakAttr = await p.evaluate(() => { const h = document.getElementById('roadmap-content'); return (h && h.getAttribute('data-roadmap-speak')) || ''; });
-rec('speakable_payload', speakAttr.includes('Stage 1 of') && speakAttr.includes('Search YouTube'));
+rec('speakable_payload', speakAttr.includes('Stage 1 of') && /Free course/i.test(speakAttr));
 
 // Generic goal (ANY profession)
 await p.evaluate(() => window.cnaiRoadmapBuild('I raise pigs'));

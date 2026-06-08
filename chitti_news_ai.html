@@ -756,7 +756,7 @@ function speakPage() {
     var host = document.getElementById('roadmap-chips'); if (!host) return;
     host.innerHTML = CHIPS.map(function (c) {
       return '<button type="button" class="rm-chip" aria-label="Build a roadmap for ' + esc(c[1]) + '" onclick="cnaiRoadmapBuild(\'' + c[0] + '\')" ' +
-        'style="min-height:48px;padding:0 14px;font-size:15px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;cursor:pointer">' + esc(c[1]) + '</button>';
+        'style="min-height:48px;padding:0 14px;font-size:15px;border-radius:999px;border:2px solid #138808;background:#fff;color:#0a7a37;cursor:pointer">' + esc(c[1]) + '</button>';
     }).join('');
   }
 
@@ -767,7 +767,8 @@ function speakPage() {
     var L = lang();
     var head = '<div class="rm-head" style="margin:6px 0 12px"><strong style="font-size:18px">' + esc(rm.title) + '</strong>' +
       '<div style="color:#555;font-size:14px;margin-top:4px">' + rm.total_stages + ' stages · ' + rm.total_topics + ' topics · about ' + rm.total_est_hours + ' hours' +
-      (rm.generic ? ' · <em>auto-built for your goal</em>' : '') + '</div>' +
+      (rm.generic ? ' · <em>auto-built for your goal</em>' : ' · ' + rm.total_courses + ' free courses') + '</div>' +
+      (rm.tree_note ? '<div style="margin-top:6px;background:#eef6ff;border-left:4px solid #138808;border-radius:6px;padding:8px;font-size:13px">🌳 ' + esc(rm.tree_note) + '</div>' : '') +
       '<button type="button" aria-label="Read my whole roadmap aloud" onclick="cnaiRoadmapSpeak()" ' +
       'style="margin-top:8px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read my whole roadmap aloud</button></div>';
 
@@ -779,15 +780,18 @@ function speakPage() {
           '<div style="color:#555;font-size:14px">' + esc(t.why_it_matters) + '</div>' +
           '<div style="font-size:14px;margin-top:2px">📺 <a href="' + ytUrl(t.youtube_search_term) + '" target="_blank" rel="noopener" ' +
           'aria-label="Search YouTube for ' + esc(t.youtube_search_term) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:2px 6px">Search YouTube: "' + esc(t.youtube_search_term) + '"</a></div>' +
-          '<div style="font-size:13px;color:#138808;margin-top:2px">✅ Try it: ' + esc(t.check) + '</div></li>';
+          '<div style="font-size:13px;color:#0a7a37;margin-top:2px">✅ Try it: ' + esc(t.check) + '</div></li>';
       }).join('');
       return '<div class="rm-stage" data-chitti-response data-chitti-section="Stage ' + s.order + ' - ' + esc(s.name) + '" ' +
         'style="border:1px solid #ddd;border-radius:12px;padding:12px;margin:10px 0">' +
         '<div style="font-weight:700;font-size:16px">Stage ' + s.order + ' of ' + rm.total_stages + ': ' + esc(s.name) + ' ' +
         '<span aria-label="Level ' + esc(s.difficulty_band) + '">' + esc(s.difficulty_dots) + '</span></div>' +
         '<div style="color:#555;font-size:14px;margin:2px 0 6px">' + esc(s.why_it_matters) + '</div>' +
+        (s.course ? '<div style="margin:6px 0;background:#f3faf3;border-radius:8px;padding:8px;font-size:14px">📚 <strong>Free course:</strong> ' +
+          '<a href="' + esc(s.course.url) + '" target="_blank" rel="noopener" aria-label="Open free course ' + esc(s.course.name) + ' from ' + esc(s.course.provider) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:2px 6px">' + esc(s.course.name) + ' — ' + esc(s.course.provider) + '</a>' +
+          ' <span style="font-size:12px;color:#0a7a37">🆓 free' + (s.course.cert ? ' + certificate' : '') + (s.course.note ? ' (' + esc(s.course.note) + ')' : '') + '</span></div>' : '') +
         '<ul style="margin:0;padding-left:18px;list-style:none">' + topics + '</ul>' +
-        '<div style="margin-top:8px;background:#f3faf3;border-radius:8px;padding:8px;font-size:14px">🎯 <strong>Milestone:</strong> ' + esc(s.milestone) + '</div>' +
+        '<div style="margin-top:8px;background:#fff7e6;border-radius:8px;padding:8px;font-size:14px">🎯 <strong>Milestone:</strong> ' + esc(s.milestone) + '</div>' +
         '</div>';
     }).join('');
 
