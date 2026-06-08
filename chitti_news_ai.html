@@ -263,6 +263,23 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="roadmap-chips" aria-label="Popular goals"></div>
     <div id="roadmap-content" aria-live="polite"></div>
   </section>
+
+  <!-- Path 1b — Free-first Course Finder (BO2, deterministic catalog) -->
+  <section class="section" id="courses-section" data-chitti-response data-chitti-section="Find a free course">
+    <h2 class="section-title">🆓 Find a Free Course</h2>
+    <p class="section-sub">Chitti finds FREE courses first — Government of India, Google, Microsoft, NVIDIA, Hugging Face, freeCodeCamp. Paid only if nothing free covers it, and Chitti tells you why.</p>
+    <form id="courses-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiCoursesGo(event)">
+      <label for="courses-input" class="sr-only">What course topic?</label>
+      <input id="courses-input" type="text" placeholder="e.g. machine learning, prompt engineering, web dev…"
+             aria-label="What do you want a course on?"
+             style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
+      <button type="button" aria-label="Speak the course topic" onclick="cnaiCoursesMic()"
+              style="min-width:48px;min-height:48px;font-size:20px;border-radius:10px;border:2px solid #888;background:#fff">🎙️</button>
+      <button type="submit" aria-label="Find free courses"
+              style="min-width:48px;min-height:48px;padding:0 18px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Find free courses →</button>
+    </form>
+    <div id="courses-content" aria-live="polite"></div>
+  </section>
 </main>
 
 <footer>
@@ -279,6 +296,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="feedback-widget.js?v=20260606.1"></script>
 <script src="chitti_coach.js?v=20260606.1"></script>
 <script src="cnai_roadmap_engine.js?v=20260609.1"></script>
+<script src="cnai_course_discovery.js?v=20260609.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -763,6 +781,73 @@ function speakPage() {
 
   function init() { try { renderChips(); } catch (e) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- Path 1b — Free-first Course Finder render (BO2). -->
+<script>
+(function () {
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function lang() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function speak(t) { try { var u = new SpeechSynthesisUtterance(t); u.rate = 0.95; u.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {} }
+
+  function render(res) {
+    var host = document.getElementById('courses-content'); if (!host) return;
+    if (!res.results.length) { host.innerHTML = '<div>No course found yet — try another topic.</div>'; return; }
+    var head = '<div style="margin:6px 0"><strong>' + res.free_count + ' free</strong> course' + (res.free_count === 1 ? '' : 's') + ' for "' + esc(res.topic) + '"' +
+      (res.paid_shown ? ' · 1 paid (shown last, with reason)' : '') +
+      ' <button type="button" aria-label="Read these courses aloud" onclick="cnaiCoursesSpeak()" style="min-height:44px;padding:0 10px;border-radius:8px;border:2px solid #444;background:#fff">🔊</button></div>';
+    var body = res.results.map(function (r) {
+      var badge = r.is_free
+        ? '<span style="background:#138808;color:#fff;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700">🆓 ' + esc(r.cert ? 'FREE + certificate' : 'FREE') + '</span>'
+        : '<span style="background:#b00;color:#fff;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700">💳 PAID</span>';
+      return '<div class="course-card" data-chitti-response data-chitti-section="' + esc(r.provider + ' - ' + r.course + ' - ' + (r.is_free ? 'free' : 'paid')) + '" ' +
+        'style="border:1px solid #ddd;border-radius:12px;padding:12px;margin:8px 0">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">' +
+        '<strong>' + esc(r.course) + '</strong>' + badge + '</div>' +
+        '<div style="color:#555;font-size:14px;margin:2px 0">' + esc(r.provider) + ' · ' + esc(r.tier_label) + ' · ' + esc(r.cost) + '</div>' +
+        (r.why_no_free ? '<div style="font-size:13px;color:#b00;margin:2px 0">ℹ️ ' + esc(r.why_no_free) + '</div>' : '') +
+        '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<a href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(r.provider) + ' course page" style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:8px;background:#0b5;color:#fff;text-decoration:none">Open course →</a>' +
+        '<button type="button" onclick=\'cnaiCoursesPlan(' + esc(JSON.stringify({ provider: r.provider, course: r.course, url: r.url })) + ')\' aria-label="How Chitti can help me enrol" style="min-height:44px;padding:0 12px;border-radius:8px;border:2px solid #444;background:#fff">How Chitti helps →</button>' +
+        '</div></div>';
+    }).join('');
+    host.innerHTML = head + body;
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
+    host.setAttribute('data-courses-speak', window.ChittiCourses.speakable(res, lang()));
+    speak(res.free_count + ' free courses found for ' + res.topic + '.');
+  }
+
+  window.cnaiCoursesBuild = function (topic) {
+    try { render(window.ChittiCourses.find(topic)); }
+    catch (e) { var h = document.getElementById('courses-content'); if (h) h.innerHTML = '<div style="color:#b00">Could not search right now.</div>'; }
+  };
+  window.cnaiCoursesGo = function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var input = document.getElementById('courses-input');
+    var topic = (input && input.value || '').trim();
+    if (!topic) { speak('Please tell Chitti what course topic you want.'); if (input) input.focus(); return false; }
+    window.cnaiCoursesBuild(topic); return false;
+  };
+  window.cnaiCoursesSpeak = function () { var h = document.getElementById('courses-content'); var t = h && h.getAttribute('data-courses-speak'); if (t) speak(t); };
+  window.cnaiCoursesPlan = function (course) {
+    try {
+      var plan = window.ChittiCourses.registrationPlan(course, {});
+      var msg = plan.ethics + ' Steps: ' + plan.steps.map(function (s) { return s.label; }).join(' -> ') + '.';
+      speak(plan.ethics);
+      alert('How Chitti helps you enrol:\n\n' + plan.ethics + '\n\n' + plan.steps.map(function (s, i) { return (i + 1) + '. ' + s.label; }).join('\n') + '\n\nChitti will NOT:\n- ' + plan.refusals.join('\n- '));
+    } catch (e) {}
+  };
+  window.cnaiCoursesMic = function () {
+    try {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { speak('Voice input not supported. Please type.'); return; }
+      var r = new SR(); r.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN'; r.interimResults = false;
+      speak('Listening. Say the course topic.');
+      r.onresult = function (e) { var said = e.results[0][0].transcript; var inp = document.getElementById('courses-input'); if (inp) inp.value = said; window.cnaiCoursesBuild(said); };
+      r.start();
+    } catch (e) {}
+  };
 })();
 </script>
 </body>

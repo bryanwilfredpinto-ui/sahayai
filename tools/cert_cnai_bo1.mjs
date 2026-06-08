@@ -58,6 +58,19 @@ rec('generic_goal_renders', (await p.$$('#roadmap-content .rm-stage')).length >=
 // 375px no horizontal scroll
 rec('no_hscroll_375', !(await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2)));
 
+// ---- BO2: Free-first Course Finder ----
+rec('bo2_engine_present', await p.evaluate(() => !!(window.ChittiCourses && window.ChittiCourses.find)));
+await p.evaluate(() => window.cnaiCoursesBuild('machine learning'));
+await p.waitForTimeout(500);
+const courseCards = await p.$$('#courses-content .course-card');
+rec('bo2_courses_render', courseCards.length >= 5, courseCards.length + ' course cards');
+rec('bo2_cards_chitti_response', (await p.$$('#courses-content [data-chitti-response]')).length >= 5);
+rec('bo2_free_badge', (await p.locator('#courses-content').innerText()).includes('FREE'));
+const firstCard = (await p.locator('#courses-content .course-card').first().innerText());
+rec('bo2_free_first', /FREE/.test(firstCard) && !/PAID/.test(firstCard.split('\n')[1] || firstCard), 'top card is free');
+rec('bo2_open_links', (await p.$$('#courses-content a[href^="http"]')).length >= 5);
+rec('bo2_speakable', (await p.evaluate(() => { const h = document.getElementById('courses-content'); return (h && h.getAttribute('data-courses-speak')) || ''; })).toLowerCase().includes('free'));
+
 await b.close(); server.close();
 const pass = R.filter(r => r.ok).length;
 console.log('\nBO1 UI cert: ' + pass + ' / ' + R.length + ' PASS');
