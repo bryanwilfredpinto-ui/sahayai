@@ -267,6 +267,20 @@
   };
   Object.keys(PAT).forEach(function (l) { if (T[l]) Object.keys(PAT[l]).forEach(function (k) { T[l][k] = PAT[l][k]; }); });
 
+  // BO: Backtest Journal — UI labels in all 9 languages (stock names + "Nifty 50" stay English, set in JS).
+  var BT = {
+    en: { 'bt.title': 'Backtest Journal', 'bt.run': 'Run Backtest', 'bt.runBatch': 'Run all stocks', 'bt.range': 'Range', 'bt.date': 'Date', 'bt.return': 'Total return', 'bt.deployed': 'Deployed', 'bt.trades': 'Trades', 'bt.hear': 'Hear results', 'bt.none': 'Tick timeframes, then Run Backtest', 'bt.running': 'Running…' },
+    hi: { 'bt.title': 'ऐतिहासिक प्रदर्शन', 'bt.run': 'बैकटेस्ट चलाएँ', 'bt.runBatch': 'सभी शेयर चलाएँ', 'bt.range': 'अवधि', 'bt.date': 'तारीख', 'bt.return': 'कुल रिटर्न', 'bt.deployed': 'लगाई गई पूँजी', 'bt.trades': 'ट्रेड', 'bt.hear': 'परिणाम सुनें', 'bt.none': 'समयसीमा चुनें, फिर बैकटेस्ट चलाएँ', 'bt.running': 'चल रहा है…' },
+    ta: { 'bt.title': 'வரலாற்று செயல்திறன்', 'bt.run': 'பின்னோக்கு சோதனை இயக்கு', 'bt.runBatch': 'அனைத்து பங்குகளையும் இயக்கு', 'bt.range': 'காலம்', 'bt.date': 'தேதி', 'bt.return': 'மொத்த வருவாய்', 'bt.deployed': 'பயன்படுத்திய மூலதனம்', 'bt.trades': 'வர்த்தகங்கள்', 'bt.hear': 'முடிவுகளைக் கேள்', 'bt.none': 'காலஅளவுகளைத் தேர்ந்து, சோதனை இயக்கு', 'bt.running': 'இயங்குகிறது…' },
+    te: { 'bt.title': 'చారిత్రక పనితీరు', 'bt.run': 'బ్యాక్‌టెస్ట్ అమలు చేయండి', 'bt.runBatch': 'అన్ని స్టాక్‌లను అమలు చేయండి', 'bt.range': 'పరిధి', 'bt.date': 'తేదీ', 'bt.return': 'మొత్తం రాబడి', 'bt.deployed': 'వినియోగించిన పెట్టుబడి', 'bt.trades': 'ట్రేడ్‌లు', 'bt.hear': 'ఫలితాలను వినండి', 'bt.none': 'కాలవ్యవధులను ఎంచుకుని, అమలు చేయండి', 'bt.running': 'అమలవుతోంది…' },
+    bn: { 'bt.title': 'ঐতিহাসিক কর্মক্ষমতা', 'bt.run': 'ব্যাকটেস্ট চালান', 'bt.runBatch': 'সব শেয়ার চালান', 'bt.range': 'সময়সীমা', 'bt.date': 'তারিখ', 'bt.return': 'মোট রিটার্ন', 'bt.deployed': 'নিয়োজিত মূলধন', 'bt.trades': 'ট্রেড', 'bt.hear': 'ফলাফল শুনুন', 'bt.none': 'সময়সীমা বাছুন, তারপর চালান', 'bt.running': 'চলছে…' },
+    mr: { 'bt.title': 'ऐतिहासिक कामगिरी', 'bt.run': 'बॅकटेस्ट चालवा', 'bt.runBatch': 'सर्व शेअर चालवा', 'bt.range': 'कालावधी', 'bt.date': 'तारीख', 'bt.return': 'एकूण परतावा', 'bt.deployed': 'गुंतवलेले भांडवल', 'bt.trades': 'ट्रेड', 'bt.hear': 'निकाल ऐका', 'bt.none': 'कालमर्यादा निवडा, मग चालवा', 'bt.running': 'चालू आहे…' },
+    gu: { 'bt.title': 'ઐતિહાસિક દેખાવ', 'bt.run': 'બેકટેસ્ટ ચલાવો', 'bt.runBatch': 'બધા શેર ચલાવો', 'bt.range': 'અવધિ', 'bt.date': 'તારીખ', 'bt.return': 'કુલ વળતર', 'bt.deployed': 'રોકાયેલ મૂડી', 'bt.trades': 'ટ્રેડ', 'bt.hear': 'પરિણામ સાંભળો', 'bt.none': 'સમયમર્યાદા પસંદ કરો, પછી ચલાવો', 'bt.running': 'ચાલી રહ્યું છે…' },
+    kn: { 'bt.title': 'ಐತಿಹಾಸಿಕ ಕಾರ್ಯಕ್ಷಮತೆ', 'bt.run': 'ಬ್ಯಾಕ್‌ಟೆಸ್ಟ್ ಚಲಾಯಿಸಿ', 'bt.runBatch': 'ಎಲ್ಲಾ ಷೇರುಗಳನ್ನು ಚಲಾಯಿಸಿ', 'bt.range': 'ಅವಧಿ', 'bt.date': 'ದಿನಾಂಕ', 'bt.return': 'ಒಟ್ಟು ಲಾಭ', 'bt.deployed': 'ಹೂಡಿದ ಬಂಡವಾಳ', 'bt.trades': 'ಟ್ರೇಡ್‌ಗಳು', 'bt.hear': 'ಫಲಿತಾಂಶ ಕೇಳಿ', 'bt.none': 'ಸಮಯಾವಧಿ ಆಯ್ಕೆಮಾಡಿ, ನಂತರ ಚಲಾಯಿಸಿ', 'bt.running': 'ಚಾಲನೆಯಲ್ಲಿದೆ…' },
+    ml: { 'bt.title': 'ചരിത്രപരമായ പ്രകടനം', 'bt.run': 'ബാക്ക്ടെസ്റ്റ് പ്രവർത്തിപ്പിക്കുക', 'bt.runBatch': 'എല്ലാ ഓഹരികളും പ്രവർത്തിപ്പിക്കുക', 'bt.range': 'കാലയളവ്', 'bt.date': 'തീയതി', 'bt.return': 'ആകെ വരുമാനം', 'bt.deployed': 'വിന്യസിച്ച മൂലധനം', 'bt.trades': 'ട്രേഡുകൾ', 'bt.hear': 'ഫലങ്ങൾ കേൾക്കുക', 'bt.none': 'സമയപരിധികൾ തിരഞ്ഞെടുത്ത് പ്രവർത്തിപ്പിക്കുക', 'bt.running': 'പ്രവർത്തിക്കുന്നു…' }
+  };
+  Object.keys(BT).forEach(function (l) { if (T[l]) Object.keys(BT[l]).forEach(function (k) { T[l][k] = BT[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);

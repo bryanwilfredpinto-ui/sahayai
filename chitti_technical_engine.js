@@ -1253,6 +1253,62 @@
     return { top: all[0] || null, candlesticks: cs, structural: ch, all: all };
   }
 
+  // ═══════════════ BO: Backtest Journal (user-ticked TF · ₹1 lakh/trade · batch Nifty 50) ═══════════════
+  // Walk the FASTEST ticked TF (trigger); higher ticked TFs are time-aligned (proportional, NO look-ahead)
+  // and must concur (confluence ≥60%). Each trade deploys a fixed capital. Returns per-trade journal rows.
+  function backtestJournal(candlesByTf, opts) {
+    opts = opts || {};
+    var capital = opts.capital || 100000, look = opts.lookahead || 40;
+    var tfs = (opts.tfs && opts.tfs.length) ? opts.tfs.slice() : ['daily'];
+    var trig = null;
+    for (var ti = TF_ORDER.length - 1; ti >= 0; ti--) { var t = TF_ORDER[ti]; if (tfs.indexOf(t) >= 0 && candlesByTf[t] && candlesByTf[t].length) { trig = t; break; } }
+    if (!trig) return [];
+    var tc = candlesByTf[trig], n = tc.length, rows = [], higher = tfs.filter(function (x) { return x !== trig; });
+    var start = 60; if (opts.lastN && opts.lastN < n) start = Math.max(start, n - opts.lastN);
+    for (var i = start; i < n - 2; i++) {
+      var win = tc.slice(0, i + 1), tv = tfVerdict(win);
+      if (!tv || tv.verdict === 'HOLD') continue;
+      var bull = tv.verdict === 'BUY' ? 1 : 0, bear = tv.verdict === 'SELL' ? 1 : 0;
+      for (var hi = 0; hi < higher.length; hi++) {
+        var hc = candlesByTf[higher[hi]]; if (!hc || !hc.length) continue;
+        var hIdx = Math.max(30, Math.floor((i + 1) / n * hc.length)), hb = tfBias(higher[hi], hc.slice(0, hIdx));
+        if (hb === 'BULL') bull++; else if (hb === 'BEAR') bear++;
+      }
+      var total = tfs.length, dom = Math.max(bull, bear);
+      if (dom / total * 100 < 60) continue;
+      var side = bull >= bear ? 'BUY' : 'SELL';
+      if ((side === 'BUY' && tv.verdict !== 'BUY') || (side === 'SELL' && tv.verdict !== 'SELL')) continue;
+      var entry = last(closes(win)), a = last(atr(win, 14)); if (!a || a <= 0) a = entry * 0.01;
+      var sl = side === 'BUY' ? entry - 2 * a : entry + 2 * a, t1 = side === 'BUY' ? entry + 1.5 * a : entry - 1.5 * a, t2 = side === 'BUY' ? entry + 3 * a : entry - 3 * a;
+      var sig = { signal: side, entry_price: round2(entry), stop_loss: { price: round2(sl) }, target_1: { price: round2(t1) }, target_2: { price: round2(t2) } };
+      var ev = evaluateSignal(sig, tc.slice(i + 1, i + 1 + look));
+      var exit = ev.outcome === 'SL_HIT' ? sl : ev.outcome === 'T2_HIT' ? t2 : ev.outcome === 'T1_HIT' ? t1 : last(closes(tc.slice(0, Math.min(n, i + 1 + look))));
+      var shares = Math.floor(capital / entry);
+      var pnl = Math.round(shares * (side === 'BUY' ? (exit - entry) : (entry - exit)));
+      rows.push({ date: tc[i].date || ('P' + (i + 1)), side: side, entry: round2(entry), target: round2(t1), sl: round2(sl), exit: round2(exit), outcome: ev.outcome, shares: shares, pnl: pnl, rMultiple: ev.rMultiple, tf: trig });
+      i += 2;
+    }
+    return rows;
+  }
+  // Aggregate journal rows → win rate, profit factor, total P&L ₹, return % on the deployed capital, max DD ₹.
+  function aggregateBacktest(rows, deployed) {
+    deployed = deployed || 100000;
+    var n = (rows || []).length, wins = rows.filter(function (r) { return r.pnl > 0; }), losses = rows.filter(function (r) { return r.pnl < 0; });
+    var gw = wins.reduce(function (a, r) { return a + r.pnl; }, 0), gl = Math.abs(losses.reduce(function (a, r) { return a + r.pnl; }, 0));
+    var totalPnl = rows.reduce(function (a, r) { return a + r.pnl; }, 0), cum = 0, peak = 0, maxDD = 0;
+    rows.forEach(function (r) { cum += r.pnl; peak = Math.max(peak, cum); maxDD = Math.min(maxDD, cum - peak); });
+    return { trades: n, wins: wins.length, losses: losses.length, winRate: n ? Math.round(wins.length / n * 100) : 0,
+      profitFactor: gl > 0 ? round2(gw / gl) : (gw > 0 ? '∞' : 0), totalPnl: totalPnl, deployed: deployed,
+      returnPct: deployed ? round2(totalPnl / deployed * 100) : 0, maxDrawdown: Math.round(maxDD), avgPnl: n ? Math.round(totalPnl / n) : 0 };
+  }
+  // Batch runner — one backtest per stock (e.g. Nifty 50), aggregated on (capital × N stocks) deployed.
+  function batchBacktest(map, opts) {
+    opts = opts || {}; var capital = opts.capital || 100000, syms = Object.keys(map), per = [], allRows = [];
+    syms.forEach(function (s) { var rows = backtestJournal(map[s], opts); per.push({ sym: s, agg: aggregateBacktest(rows, capital), trades: rows.length }); allRows = allRows.concat(rows); });
+    var aggregate = aggregateBacktest(allRows, capital * syms.length); aggregate.stocks = syms.length;
+    return { perStock: per, aggregate: aggregate, rows: allRows };
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1279,7 +1335,9 @@
     // BO: pattern recognition
     detectCandles: detectCandles, detectChartPatterns: detectChartPatterns, detectPatterns: detectPatterns,
     swingPivots: swingPivots, PATTERN_RELIABILITY: PATTERN_RELIABILITY,
-    TF_ORDER: TF_ORDER, VERSION: '2.4.0'
+    // BO: backtest journal
+    backtestJournal: backtestJournal, aggregateBacktest: aggregateBacktest, batchBacktest: batchBacktest,
+    TF_ORDER: TF_ORDER, VERSION: '2.5.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

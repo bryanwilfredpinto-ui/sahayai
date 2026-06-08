@@ -261,6 +261,20 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('detectChartPatterns → Double Bottom (W shape)', E.detectChartPatterns(dbl).some(p=>p.name==='Double Bottom'&&p.dir==='bullish'));
   ok('detectPatterns returns a top pattern with reliability', !!(E.detectPatterns(tws).top && E.detectPatterns(tws).top.name && E.detectPatterns(tws).top.reliability>0));
   ok('detectPatterns no banned phrase / clean names', E.hasBannedPhrase(JSON.stringify(E.detectPatterns(beC)))===null);
+
+  // ── BO: backtest journal ──
+  const bj=E.backtestJournal({daily:upC},{tfs:['daily'],capital:100000,lookahead:30});
+  ok('backtestJournal returns rows with ₹ P&L + shares', Array.isArray(bj) && (!bj.length || (bj[0].pnl!=null && bj[0].shares>0 && bj[0].entry>0)));
+  ok('backtestJournal row has date/side/entry/target/sl/exit', !bj.length || (bj[0].date!=null&&!!bj[0].side&&bj[0].entry!=null&&bj[0].target!=null&&bj[0].sl!=null&&bj[0].exit!=null));
+  ok('backtestJournal shares = floor(100000/entry)', !bj.length || bj[0].shares===Math.floor(100000/bj[0].entry));
+  const agg=E.aggregateBacktest([{pnl:5000},{pnl:5000},{pnl:-2000}],100000);
+  ok('aggregateBacktest total P&L = 8000', agg.totalPnl===8000);
+  ok('aggregateBacktest return % = 8 on ₹1 lakh', agg.returnPct===8);
+  ok('aggregateBacktest win rate = 2/3 = 67%', agg.winRate===67);
+  ok('aggregateBacktest profit factor = 10000/2000 = 5', agg.profitFactor===5);
+  const batch=E.batchBacktest({TCS:{daily:upC}, RELI:{daily:dnC}},{tfs:['daily'],capital:100000,lookahead:30});
+  ok('batchBacktest deployed = ₹1L × 2 stocks (₹2L)', batch.aggregate.deployed===200000 && batch.aggregate.stocks===2);
+  ok('batchBacktest has per-stock summaries', batch.perStock.length===2 && !!batch.perStock[0].sym && !!batch.perStock[0].agg);
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────

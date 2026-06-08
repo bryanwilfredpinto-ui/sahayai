@@ -347,6 +347,24 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="screener-results" style="margin-top:10px"></div>
     </div>
 
+    <!-- BO: Backtest Journal (user-ticked TF · ₹1 lakh/trade · batch Nifty 50) -->
+    <div class="card col-full" data-chitti-response="tech-backtest" data-chitti-section="Backtest">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>📜 <span data-i18n="bt.title">Backtest Journal</span></span>
+        <button class="btn ghost" style="margin-left:auto;min-height:44px" onclick="TechUI.hearBacktest()">🔊 <span data-i18n="bt.hear">Hear results</span></button>
+      </h2>
+      <div class="muted" style="margin-bottom:8px">₹1,00,000 / trade · <span data-i18n="bt.range">Range</span>:
+        <select id="bt-range" aria-label="Backtest range" style="min-height:40px" onchange="TechUI.runBacktest()">
+          <option value="120">120</option><option value="250" selected>250</option><option value="0">All</option>
+        </select>
+      </div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn nav" onclick="TechUI.runBacktest()">▶ <span data-i18n="bt.run">Run Backtest</span></button>
+        <button class="btn ghost" onclick="TechUI.runNifty50()">📊 <span data-i18n="bt.runBatch">Run all stocks</span> · Nifty 50</button>
+      </div>
+      <div id="bt-agg" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      <div id="bt-journal" style="margin-top:10px"></div>
+    </div>
+
     <!-- BO-NEXT: Accuracy Scorecard (outcome tracking + calibration) -->
     <div class="card col-full" data-chitti-response="tech-scorecard" data-chitti-section="Scorecard">
       <h2 style="flex-wrap:wrap;gap:6px"><span>🎯 <span data-i18n="sc.title">Accuracy Scorecard</span></span>
@@ -400,7 +418,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null;
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null, lastPattern=null, lastBacktest=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -573,6 +591,7 @@ window.TechUI = (function(){
     renderCEOS();
     renderPatterns();
     renderScorecard();
+    runBacktest();
     renderIndicators(res);
     renderRoshan(res);
     renderExplain(res);
@@ -704,6 +723,50 @@ window.TechUI = (function(){
     var p=lastPattern;
     speak(p.name+'. '+T(patKey(p.dir))+'. '+T('pat.rel')+' '+p.reliability+' percent.');
     if(window.TechA11y) TechA11y.vibrate(p.dir==='bullish'?'BUY':p.dir==='bearish'?'SELL':'HOLD');
+  }
+
+  // ───── BO: Backtest Journal — historical sim on ticked TF, ₹1 lakh/trade, batch Nifty 50 ─────
+  function btRange(){ var e=document.getElementById('bt-range'); return e?parseInt(e.value||'250',10):250; }
+  function runBacktest(){
+    if(!lastScan||!E.backtestJournal) return;
+    var sym=lastScan._sym, rows=E.backtestJournal(getTf(sym),{tfs:tickedTfs(),capital:100000,lastN:btRange()});
+    lastBacktest={rows:rows,agg:E.aggregateBacktest(rows,100000),sym:sym,batch:false};
+    renderBacktest();
+  }
+  function runNifty50(){
+    if(!E.batchBacktest) return;
+    var j=document.getElementById('bt-journal'); if(j) j.innerHTML='<div class="muted">'+T('bt.running')+'</div>';
+    setTimeout(function(){
+      var syms=(window.NSE&&window.NSE.NIFTY50)?window.NSE.NIFTY50:['RELIANCE','TCS','INFY','HDFCBANK','ICICIBANK'];
+      var map={}; syms.forEach(function(s){ map[s]=getTf(s); });
+      var res=E.batchBacktest(map,{tfs:tickedTfs(),capital:100000,lastN:btRange()});
+      lastBacktest={rows:res.rows.slice(-60),agg:res.aggregate,perStock:res.perStock,sym:'Nifty 50',batch:true};
+      renderBacktest(); speak('Nifty 50. '+T('bt.return')+' '+res.aggregate.returnPct+' percent.');
+    },20);
+  }
+  function renderBacktest(){
+    if(!lastBacktest) return; var b=lastBacktest, agg=b.agg;
+    function kpi(icon,label,val,cls){ return '<div class="kv" style="min-width:118px"><div class="k">'+icon+' '+label+'</div><div class="v '+(cls||'')+'">'+val+'</div></div>'; }
+    var k=document.getElementById('bt-agg');
+    if(k) k.innerHTML=kpi('🎯',T('sc.winrate'),agg.winRate+'%','')+kpi('💹',T('sc.pf'),agg.profitFactor,'')+
+      kpi('📈',T('bt.return'),(agg.returnPct>=0?'+':'')+agg.returnPct+'%',agg.returnPct>=0?'tgt':'stop')+
+      kpi('💰',T('portfolio.pnl'),(agg.totalPnl>=0?'+':'')+'₹'+Number(agg.totalPnl).toLocaleString('en-IN'),agg.totalPnl>=0?'tgt':'stop')+
+      kpi('🏦',T('bt.deployed'),'₹'+Number(agg.deployed).toLocaleString('en-IN'),'')+
+      kpi('🔢',T('bt.trades'),agg.trades+(b.batch?(' · '+agg.stocks+'⨯'):''),'');
+    var j=document.getElementById('bt-journal');
+    if(j){
+      if(!b.rows.length){ j.innerHTML='<div class="muted">'+T('bt.none')+'</div>'; }
+      else {
+        var rows=b.rows.slice(-30).reverse().map(function(r){ var ic=r.pnl>=0?'✅':'🛑';
+          return '<tr><th scope="row">'+r.date+'</th><td>'+(r.side==='BUY'?'🟢':'🔴')+'</td><td>'+r.entry+'</td><td>'+r.target+'</td><td>'+r.sl+'</td><td style="color:'+(r.pnl>=0?'var(--green)':'var(--red)')+'">'+ic+' '+(r.pnl>=0?'+':'')+'₹'+Number(r.pnl).toLocaleString('en-IN')+'</td></tr>'; }).join('');
+        j.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('bt.title')+' — '+b.sym+' · '+((b.rows[0]&&b.rows[0].tf)||'')+' · ₹1,00,000/trade'+(b.batch?' · model data':'')+'</caption>'+
+          '<tr><th scope="col">'+T('bt.date')+'</th><th scope="col">↕</th><th scope="col">'+T('risk.entry')+'</th><th scope="col">'+T('risk.targets')+'</th><th scope="col">'+T('risk.stop')+'</th><th scope="col">'+T('portfolio.pnl')+'</th></tr>'+rows+'</table>';
+      }
+    }
+  }
+  function hearBacktest(){
+    if(!lastBacktest){ speak(T('bt.none')); return; } var a=lastBacktest.agg;
+    speak(lastBacktest.sym+'. '+T('bt.trades')+' '+a.trades+'. '+T('sc.winrate')+' '+a.winRate+' percent. '+T('sc.pf')+' '+a.profitFactor+'. '+T('bt.return')+' '+a.returnPct+' percent on '+Math.round(a.deployed/100000)+' lakh.');
   }
 
   // ───── BO-NEXT: Accuracy Scorecard — backtest → win rate / PF / expectancy + calibration ─────
@@ -1198,6 +1261,7 @@ window.TechUI = (function(){
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
+    runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
