@@ -107,6 +107,23 @@ await p.evaluate(() => window.cnaiCareerForget());
 await p.waitForTimeout(200);
 rec('bo4_chitti_forget', await p.evaluate(() => !localStorage.getItem('cnai_profile')), 'forget clears localStorage');
 
+// ---- BO5: Swarm ----
+rec('bo5_engine_present', await p.evaluate(() => !!(window.ChittiSwarm && window.ChittiSwarm.run)));
+await p.fill('#swarm-input', 'Agentic AI');
+await p.evaluate(() => window.cnaiSwarmGo({ preventDefault() {} }));
+await p.waitForTimeout(500);
+const swarmTxt = await p.locator('#swarm-content').innerText();
+rec('bo5_card_renders', (await p.$$('#swarm-content .swarm-card')).length === 1);
+rec('bo5_card_chitti_response', (await p.$$('#swarm-content [data-chitti-response]')).length >= 1);
+rec('bo5_shows_helpers', /helpers reported/i.test(swarmTxt) && /agent-1/i.test(swarmTxt.toLowerCase()));
+rec('bo5_shows_insights', /Connections they found/i.test(swarmTxt));
+rec('bo5_shows_roadmap', /Combined roadmap/i.test(swarmTxt));
+rec('bo5_speakable', (await p.evaluate(() => { const h = document.getElementById('swarm-content'); return (h && h.getAttribute('data-swarm-speak')) || ''; })).toLowerCase().includes('helpers learned'));
+
+// Final: no console errors across all 5 BOs, no h-scroll
+rec('all_bo_no_console_errors', errs.length === 0, errs[0] || 'clean across BO1-5');
+rec('all_bo_no_hscroll', !(await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2)));
+
 await b.close(); server.close();
 const pass = R.filter(r => r.ok).length;
 console.log('\nBO1 UI cert: ' + pass + ' / ' + R.length + ' PASS');

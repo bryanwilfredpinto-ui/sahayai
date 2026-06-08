@@ -320,6 +320,21 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     </details>
     <div id="career-content" aria-live="polite"></div>
   </section>
+
+  <!-- Swarm — many helpers learn together (BO5) -->
+  <section class="section" id="swarm-section" data-chitti-response data-chitti-section="Chitti Swarm - many helpers learn together">
+    <h2 class="section-title">🐝 Chitti Swarm — Learn Faster, Together</h2>
+    <p class="section-sub">Give Chitti a big goal. Many helpers each learn one part — courses, concepts, top practitioners — then combine into one roadmap and find connections you'd miss alone.</p>
+    <form id="swarm-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiSwarmGo(event)">
+      <label for="swarm-input" class="sr-only">Big learning goal</label>
+      <input id="swarm-input" type="text" value="Agentic AI" placeholder="e.g. Agentic AI, Data Analysis…"
+             aria-label="What big topic should the swarm learn?"
+             style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
+      <button type="submit" aria-label="Send the Chitti swarm to learn"
+              style="min-width:48px;min-height:48px;padding:0 16px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Send the swarm 🐝</button>
+    </form>
+    <div id="swarm-content" aria-live="polite"></div>
+  </section>
 </main>
 
 <footer>
@@ -340,6 +355,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="cnai_analogy_engine.js?v=20260609.1"></script>
 <script src="cnai_learns.js?v=20260609.1"></script>
 <script src="cnai_career_coach.js?v=20260609.1"></script>
+<script src="cnai_swarm.js?v=20260609.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -1007,6 +1023,50 @@ function speakPage() {
       r.start();
     } catch (e) {}
   };
+})();
+</script>
+
+<!-- Swarm render (BO5). Uses ChittiSwarm (composes BO1/BO2/BO3). -->
+<script>
+(function () {
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function lang() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function speak(t) { try { var u = new SpeechSynthesisUtterance(t); u.rate = 0.95; u.lang = (lang() === 'hi') ? 'hi-IN' : 'en-IN'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {} }
+
+  function render(res) {
+    var host = document.getElementById('swarm-content'); if (!host) return;
+    var agentRows = res.agents.map(function (a) {
+      var icon = a.status === 'failed' ? '⛔' : (a.status === 'empty' ? '○' : '✅');
+      return '<li style="margin:4px 0">' + icon + ' <strong>' + esc(a.id) + '</strong>: ' + esc(a.learned) +
+        (a.concepts.length ? ' <span style="color:#777;font-size:13px">[' + esc(a.concepts.join(', ')) + ']</span>' : '') + '</li>';
+    }).join('');
+    var insightRows = res.insights.map(function (i) {
+      return '<li style="margin:4px 0">🔗 ' + esc(i.insight) + ' <span style="color:#777;font-size:12px">(' + esc(i.agents.join('+')) + ')</span></li>';
+    }).join('') || '<li style="color:#777">No cross-topic links for this goal yet.</li>';
+    var certRows = res.certs.map(function (c) { return '<li>🎓 ' + esc(c.name) + ' (' + esc(c.provider) + ', free)</li>'; }).join('');
+    host.innerHTML =
+      '<div class="swarm-card" data-chitti-response data-chitti-section="Swarm result for ' + esc(res.goal) + '" style="border:1px solid #ddd;border-radius:12px;padding:14px;margin:8px 0">' +
+      '<div style="font-weight:700;font-size:16px">🐝 ' + esc(res.coverage) + '</div>' +
+      '<button type="button" aria-label="Read the swarm result aloud" onclick="cnaiSwarmSpeak()" style="margin:8px 0;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read aloud</button>' +
+      '<h3 style="font-size:15px;margin:8px 0 4px">Helpers</h3><ul style="margin:0;padding-left:18px;list-style:none">' + agentRows + '</ul>' +
+      '<h3 style="font-size:15px;margin:10px 0 4px">🔗 Connections they found</h3><ul style="margin:0;padding-left:18px;list-style:none">' + insightRows + '</ul>' +
+      (res.roadmap ? '<h3 style="font-size:15px;margin:10px 0 4px">🗺️ Combined roadmap</h3><div style="font-size:14px">' + esc(res.roadmap.title) + ' — ' + res.roadmap.total_stages + ' stages, ~' + res.roadmap.total_est_hours + ' hours. <a href="#roadmap-section" onclick="(function(){var i=document.getElementById(\'roadmap-input\');if(i){i.value=\'' + esc(res.goal) + '\';window.cnaiRoadmapBuild(i.value);}})();return true;">open full roadmap →</a></div>' : '') +
+      (certRows ? '<h3 style="font-size:15px;margin:10px 0 4px">🎓 Free certifications</h3><ul style="margin:0;padding-left:18px;list-style:none">' + certRows + '</ul>' : '') +
+      '</div>';
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
+    host.setAttribute('data-swarm-speak', window.ChittiSwarm.speakable(res, lang()));
+    speak(window.ChittiSwarm.speakable(res, lang()));
+  }
+
+  window.cnaiSwarmGo = function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var goal = (document.getElementById('swarm-input').value || '').trim();
+    if (!goal) { speak('Please give the swarm a goal.'); return false; }
+    speak('Sending ' + 5 + ' helpers to learn about ' + goal + '.');
+    try { render(window.ChittiSwarm.run(goal)); } catch (e) { var h = document.getElementById('swarm-content'); if (h) h.innerHTML = '<div style="color:#b00">Swarm could not run right now.</div>'; }
+    return false;
+  };
+  window.cnaiSwarmSpeak = function () { var h = document.getElementById('swarm-content'); var t = h && h.getAttribute('data-swarm-speak'); if (t) speak(t); };
 })();
 </script>
 </body>
