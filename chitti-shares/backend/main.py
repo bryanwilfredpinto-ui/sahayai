@@ -258,24 +258,41 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
     for direct Angel One fetches; everything else uses services.technical.
     """
     from services import technical, intraday_candles
-    try:
+    from services.cache import cache
+    import time as _time
+    key = f"candles:{symbol}:{timeframe}:{days_back}"
+    hit = cache.get(key)
+    if hit is not None:
+        return hit  # served from cache — protects the Angel rate limit, makes the page reliable
+
+    def _one():
         if intraday_candles.is_intraday_timeframe(timeframe):
             df = intraday_candles.fetch_intraday_candles(symbol, timeframe).tail(days_back)
         else:
             df = technical.fetch_candles(symbol, timeframe).tail(days_back)
         return [
-            {
-                "time": int(t.timestamp()),
-                "open": float(row.open),
-                "high": float(row.high),
-                "low": float(row.low),
-                "close": float(row.close),
-                "volume": float(row.volume) if hasattr(row, "volume") else 0.0,
-            }
+            {"time": int(t.timestamp()), "open": float(row.open), "high": float(row.high),
+             "low": float(row.low), "close": float(row.close),
+             "volume": float(row.volume) if hasattr(row, "volume") else 0.0}
             for t, row in df.iterrows()
         ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
+    # Angel's historical API is rate-limited and occasionally returns empty/errors under
+    # parallel load — retry a couple of times, then cache ONLY a non-empty result (5 min).
+    out, last_err = [], None
+    for attempt in range(3):
+        try:
+            out = _one()
+            if out:
+                break
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+        _time.sleep(0.7)
+    if out:
+        cache.set(key, out, 5 * 60)
+        return out
+    log.warning("[candles] %s %s empty after retries (%s)", symbol, timeframe, last_err)
+    return []  # graceful empty — never 500 the page; frontend falls back per-timeframe
 
 
 @app.get("/api/fundamentals/{symbol:path}")

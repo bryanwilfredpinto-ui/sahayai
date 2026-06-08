@@ -392,14 +392,24 @@ window.TechUI = (function(){
         date:(c.time?new Date(c.time*1000).toISOString().slice(0,10):'')};});
     });
   }
-  function fetchOpt(base,sym,tf){ return fetchCandles(base,sym,tf).catch(function(){return null;}); }
+  function delay(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
+  function fetchCandlesRetry(base,sym,tf,retries){
+    return fetchCandles(base,sym,tf).catch(function(e){
+      if(retries>0) return delay(900).then(function(){return fetchCandlesRetry(base,sym,tf,retries-1);});
+      throw e;
+    });
+  }
+  function fetchOpt(base,sym,tf){ return fetchCandlesRetry(base,sym,tf,1).catch(function(){return null;}); }
   function loadLiveFrom(base,sym){
-    // ONLY Daily is required (it's the price + swing/positional anchor). Monthly/Weekly/4H/1H are
-    // best-effort so one empty timeframe (e.g. Monthly) never blocks live — the engine HOLDs any
-    // trade type whose timeframe is missing, but live rates + price still show.
-    return fetchCandles(base,sym,'Daily').then(function(daily){
-      return Promise.all([fetchOpt(base,sym,'Monthly'),fetchOpt(base,sym,'Weekly'),fetchOpt(base,sym,'4H'),fetchOpt(base,sym,'1H')])
-        .then(function(r){ var tf={daily:daily}; if(r[0])tf.monthly=r[0]; if(r[1])tf.weekly=r[1]; if(r[2])tf['4h']=r[2]; if(r[3])tf['1h']=r[3]; return tf; });
+    // SEQUENTIAL (one timeframe at a time) to respect Angel's rate limit — parallel bursts were
+    // returning empties/500s. ONLY Daily is required (price + anchor) and gets 2 retries; the rest
+    // are best-effort. The backend caches non-empty results 5 min, so repeat loads are instant.
+    return fetchCandlesRetry(base,sym,'Daily',2).then(function(daily){
+      var tf={daily:daily};
+      return fetchOpt(base,sym,'Weekly').then(function(w){if(w)tf.weekly=w; return fetchOpt(base,sym,'4H');})
+        .then(function(f){if(f)tf['4h']=f; return fetchOpt(base,sym,'1H');})
+        .then(function(h){if(h)tf['1h']=h; return fetchOpt(base,sym,'Monthly');})
+        .then(function(m){if(m)tf.monthly=m; return tf;});
     });
   }
   function loadLive(sym){
