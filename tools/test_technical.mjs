@@ -198,6 +198,11 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('generateSignal opposed TFs → not a full-confidence directional (HOLD or <100%)', sigOpp.signal==='HOLD' || sigOpp.confluence.percent<100);
   ok('HOLD signal carries NO stop_loss', sigOpp.signal!=='HOLD' || !sigOpp.stop_loss);
   ok('generateSignal no banned phrase', E.hasBannedPhrase(JSON.stringify(sigUp)) === null);
+  // R-BO2: explicit user-picked timeframes drive the signal (not just preset modes)
+  const sigTfs = E.generateSignal({weekly:upC,daily:upC,'4h':upC,'1h':upC},{tfs:['daily','4h','1h'],capital:100000,riskPercent:2});
+  ok('generateSignal honours explicit ticked TFs → confluence /3', sigTfs.confluence.total===3);
+  ok('explicit-tfs all-bull → BUY with ATR stop', sigTfs.signal==='BUY' && !!sigTfs.stop_loss);
+  ok('explicit-tfs label is Custom + per-TF biases present', /Custom/.test(sigTfs.mode_label) && Object.keys(sigTfs.confluence.per_tf).length===3);
 
   // S/R confluence zones
   const zones = E.srConfluence({ daily: upC, '4h': upC, '1h': upC });

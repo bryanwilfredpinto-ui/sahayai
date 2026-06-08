@@ -751,7 +751,7 @@
     var rnd = mulberry32(seed);
     // per-symbol structural bias so different stocks show different setups
     var biasPick = strHash(symbol) % 5; // 0..4
-    var tfBias = { monthly: 1.0, weekly: 0.8, daily: 0.5, '4h': 0.3, '1h': 0.15 }[timeframe] || 0.5;
+    var tfBias = { monthly: 1.0, weekly: 0.8, daily: 0.5, '4h': 0.3, '1h': 0.15, '15m': 0.1, '5m': 0.06, '1m': 0.03 }[timeframe] || 0.5;
     // realistic stock model = drift (trend) + slow wave + bounded noise (geometric-Brownian-ish),
     // so trending names trend and choppy names chop — far more honest than pure noise.
     var drift = ((biasPick - 2) / 2) * 0.0042 * tfBias; // up to ±0.42%/bar (daily) — a visible trend
@@ -779,7 +779,10 @@
       weekly: genCandles(symbol, 'weekly', 220, basePrice),
       daily: genCandles(symbol, 'daily', 260, basePrice),
       '4h': genCandles(symbol, '4h', 260, basePrice),
-      '1h': genCandles(symbol, '1h', 260, basePrice)
+      '1h': genCandles(symbol, '1h', 260, basePrice),
+      '15m': genCandles(symbol, '15m', 260, basePrice),
+      '5m': genCandles(symbol, '5m', 260, basePrice),
+      '1m': genCandles(symbol, '1m', 260, basePrice)
     };
   }
 
@@ -1009,18 +1012,23 @@
   }
 
   // The CEOS signal — confluence (mode) → direction (≥60%) → ATR SL/T1/T2 + sizing → full JSON (PDF §8.2).
+  var TF_ORDER = ['monthly', 'weekly', 'daily', '4h', '1h', '15m', '5m', '1m'];
   function generateSignal(candlesByTf, opts) {
     opts = opts || {};
     var mode = CONFLUENCE_MODES[opts.mode || 'swing'] || CONFLUENCE_MODES.swing;
-    var tfs = mode.trend.concat([mode.entry]);
+    // User-picked timeframes (R-BO1/R-BO2) take precedence over a preset mode.
+    var tfs = (opts.tfs && opts.tfs.length) ? opts.tfs.slice() : mode.trend.concat([mode.entry]);
     var conf = confluenceScore(candlesByTf, tfs);
-    var daily = candlesByTf.daily || candlesByTf[mode.entry] || candlesByTf.weekly;
+    // Price anchor = the lowest (fastest) selected TF with data — that's where you actually enter.
+    var anchorTf = null;
+    for (var ai = TF_ORDER.length - 1; ai >= 0; ai--) { if (tfs.indexOf(TF_ORDER[ai]) >= 0 && candlesByTf[TF_ORDER[ai]] && candlesByTf[TF_ORDER[ai]].length) { anchorTf = TF_ORDER[ai]; break; } }
+    var daily = candlesByTf.daily || (anchorTf ? candlesByTf[anchorTf] : null) || candlesByTf.weekly;
     var price = daily ? last(closes(daily)) : null;
     var verdict = 'HOLD';
     if (conf.percent >= 60 && conf.bias === 'BULLISH') verdict = 'BUY';
     else if (conf.percent >= 60 && conf.bias === 'BEARISH') verdict = 'SELL';
     var out = {
-      mode: opts.mode || 'swing', mode_label: mode.label, timeframes: tfs,
+      mode: opts.mode || (opts.tfs ? 'custom' : 'swing'), mode_label: (opts.tfs && opts.tfs.length) ? ('Custom: ' + tfs.join(', ')) : mode.label, timeframes: tfs,
       confluence_score: conf.score + '/' + conf.total + ' (' + conf.percent + '%)',
       confluence_quality: conf.quality, confluence: conf,
       signal: verdict, confidence: Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95)),
@@ -1103,7 +1111,7 @@
     tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
     // CEOS safety + journal intelligence
     detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
-    VERSION: '2.1.0'
+    TF_ORDER: TF_ORDER, VERSION: '2.2.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

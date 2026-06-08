@@ -164,6 +164,13 @@ body.icon-only .card{display:none}
 body.icon-only #signal-card,body.icon-only [data-chitti-response="tech-ceos"]{display:block}
 body.icon-only #ceos-board .big{font-size:34px;padding:12px 22px}
 body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
+/* R-BO1: timeframe-selector chips */
+.tf-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;font-weight:700;cursor:pointer;user-select:none;font-size:13.5px}
+.tf-chip input{width:18px;height:18px}
+.tf-chip:has(input:checked){border-color:var(--navy);background:#eef1ff;color:var(--navy)}
+/* R-BO3: per-timeframe consensus rows */
+.tfrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;font-weight:700}
+.tfrow.bull{background:#e7f6e7;color:#0a6e00}.tfrow.bear{background:#fdeaea;color:var(--red)}.tfrow.neutral{background:#eef0f6;color:#5b637a}
 </style>
 </head>
 <body>
@@ -238,6 +245,27 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       </select>
       <button class="btn nav" onclick="TechUI.scan()">🔍 <span data-i18n="scan.btn">Scan</span></button>
     </div>
+    <!-- R-BO1: timeframe selector (1m → Monthly) + preset quick-picks + Generate Signal -->
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+      <div class="muted" style="margin-bottom:8px">✅ Tick the timeframes to combine, then <b>Generate</b> — the signal fires only when they agree:</div>
+      <div id="tf-selector" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <label class="tf-chip"><input type="checkbox" value="1m"> 1 min</label>
+        <label class="tf-chip"><input type="checkbox" value="5m"> 5 min</label>
+        <label class="tf-chip"><input type="checkbox" value="15m"> 15 min</label>
+        <label class="tf-chip"><input type="checkbox" value="1h"> 1 H</label>
+        <label class="tf-chip"><input type="checkbox" value="4h" checked> 4 H</label>
+        <label class="tf-chip"><input type="checkbox" value="daily" checked> Daily</label>
+        <label class="tf-chip"><input type="checkbox" value="weekly" checked> Weekly</label>
+        <label class="tf-chip"><input type="checkbox" value="monthly"> Monthly</label>
+      </div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn ghost" onclick="TechUI.preset('longterm')">Long-Term · M·W·D</button>
+        <button class="btn ghost" onclick="TechUI.preset('swing')">Swing · W·D·4H</button>
+        <button class="btn ghost" onclick="TechUI.preset('daytrader')">Day · D·4H·1H</button>
+        <button class="btn ghost" onclick="TechUI.preset('scalper')">Scalper · 4H·1H·15m·5m</button>
+      </div>
+      <button class="btn nav" style="width:100%;font-size:16px;min-height:48px" onclick="TechUI.generate()">🎯 Generate Signal</button>
+    </div>
   </div>
 
   <div class="grid">
@@ -268,15 +296,9 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 
     <!-- CEOS FINAL: confluence-mode trade plan (ATR SL/T1/T2 + position size + pivots + multi-modal) -->
     <div class="card col-full" data-chitti-response="tech-ceos" data-chitti-section="CEOS Trade Plan">
-      <h2 style="flex-wrap:wrap;gap:6px"><span>🎯 CEOS Trade Plan</span>
-        <select id="ceos-mode" aria-label="Confluence mode" style="margin-left:auto;min-height:40px;max-width:62%;font-size:12px" onchange="TechUI.renderCEOS()">
-          <option value="longterm">Long-Term (M+W→D)</option>
-          <option value="swing" selected>Swing (W+D→4H)</option>
-          <option value="daytrader">Day Trader (D+4H→1H)</option>
-          <option value="scalper">Scalper (4H+1H→15m)</option>
-        </select>
-      </h2>
+      <h2 style="flex-wrap:wrap;gap:6px"><span>🎯 Trade Plan — multi-timeframe confluence</span></h2>
       <div id="ceos-board" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px"></div>
+      <div id="ceos-tfrows" style="margin-bottom:8px"></div>
       <div class="row" style="gap:8px;margin-bottom:8px">
         <button class="btn ghost" onclick="TechUI.playAudio()">🔊 Hear chart (audio graph)</button>
         <button class="btn ghost" onclick="TechUI.hapticDemo()">📳 Vibrate signal</button>
@@ -331,7 +353,10 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="spiral-banner" class="invalid" role="alert" style="display:none;margin-top:10px"></div>
       <div id="pf-nudge" class="invalid" role="status" style="display:none;margin-top:10px"></div>
       <div id="ai-insights" style="margin-top:10px"></div>
-      <div id="pf-list" style="margin-top:10px"></div>
+      <div style="font-weight:800;margin:12px 0 4px">🤖 System Signal Journal <span class="muted" style="font-weight:600">— every call given, auto-logged</span></div>
+      <div id="sysj-list" style="margin-top:4px"></div>
+      <div style="font-weight:800;margin:12px 0 4px">📒 My Trades</div>
+      <div id="pf-list" style="margin-top:4px"></div>
     </div>
   </div>
 
@@ -563,19 +588,31 @@ window.TechUI = (function(){
       rows+risk+'</table>';
   }
 
-  // ───── CEOS FINAL: confluence-mode signal (ATR SL/T1/T2 + position size + pivots + multi-modal) ─────
+  // ───── R-BO1/2/3: multi-TF confluence signal on the USER-TICKED timeframes ─────
+  var TF_LABEL={'1m':'1 min','5m':'5 min','15m':'15 min','1h':'1 H','4h':'4 H',daily:'Daily',weekly:'Weekly',monthly:'Monthly'};
+  function tickedTfs(){
+    var els=document.querySelectorAll('#tf-selector input:checked');
+    var a=Array.prototype.map.call(els,function(e){return e.value;});
+    return a.length?a:['weekly','daily','4h'];
+  }
   function renderCEOS(){
     if(!lastScan||!E.generateSignal) return;
-    var sym=lastScan._sym, modeEl=document.getElementById('ceos-mode'), mode=modeEl?modeEl.value:'swing';
-    if(mode==='scalper') ensureScalperTf(sym);   // lazily pull 15m only when Scalper is chosen
-    var sig=E.generateSignal(getTf(sym),{mode:mode,capital:100000,riskPercent:2});
+    var sym=lastScan._sym, tfs=tickedTfs();
+    var sig=E.generateSignal(getTf(sym),{tfs:tfs,capital:100000,riskPercent:2});
     sig.__sym=sym; lastCEOS=sig;
-    logSystemSignal(sig);   // BO4: auto-log every directional signal to the System Signal Journal
+    logSystemSignal(sig);   // auto-log every directional call to the System Signal Journal
     var ic=(window.TechA11y?TechA11y.icon(sig.signal):({BUY:'🟢',SELL:'🔴',HOLD:'🟡'}[sig.signal]||'⏸️'));
+    var cf=sig.confluence;
     var board=document.getElementById('ceos-board');
-    if(board) board.innerHTML='<div class="big v-'+sig.signal+'" style="font-size:26px;font-weight:900;padding:6px 16px;border-radius:12px">'+ic+' '+T('verdict.'+sig.signal)+'</div>'+
-      '<div><div style="font-weight:800">'+T('conf.label')+': '+sig.confidence+'%</div>'+
-      '<div class="muted">'+sig.mode_label+' · confluence '+sig.confluence_score+' ('+sig.confluence_quality+')</div></div>';
+    if(board) board.innerHTML='<div class="big v-'+sig.signal+'" style="font-size:26px;font-weight:900;padding:6px 16px;border-radius:12px">'+ic+' '+sym+' '+T('verdict.'+sig.signal)+'</div>'+
+      '<div><div style="font-weight:800">'+T('conf.label')+': '+sig.confidence+'% · '+(sig.entry_price!=null?('₹'+sig.entry_price):'')+'</div>'+
+      '<div class="muted"><b>'+Math.max(cf.bull,cf.bear)+'/'+cf.total+'</b> timeframes '+(cf.bias==='BEARISH'?'bearish':cf.bias==='BULLISH'?'bullish':'mixed')+' ('+sig.confluence_quality+')</div></div>';
+    // per-timeframe consensus rows with arrows (⬆ / ➡ / ⬇)
+    var trEl=document.getElementById('ceos-tfrows');
+    if(trEl){ trEl.innerHTML=tfs.map(function(tf){
+      var b=(cf.per_tf||{})[tf]||'NEUTRAL', arrow=b==='BULL'?'⬆':b==='BEAR'?'⬇':'➡', cls=b==='BULL'?'bull':b==='BEAR'?'bear':'neutral', word=b==='BULL'?'Bullish':b==='BEAR'?'Bearish':'Neutral / no data';
+      return '<div class="tfrow '+cls+'"><span>'+(TF_LABEL[tf]||tf)+'</span><span>'+arrow+' '+word+'</span></div>';
+    }).join(''); }
     var rb=document.getElementById('ceos-risk');
     if(rb){
       if(sig.signal!=='HOLD'&&sig.stop_loss){
@@ -614,6 +651,30 @@ window.TechUI = (function(){
     speak(lastScan._sym+' — '+tw+'. '+(lastCEOS?(T('verdict.'+lastCEOS.signal)+', confidence '+lastCEOS.confidence+' percent'):''));
   }
   function hapticDemo(){ if(window.TechA11y&&lastCEOS){ TechA11y.vibrate(lastCEOS.signal); speak(T('verdict.'+lastCEOS.signal)); } }
+
+  // R-BO1: preset quick-pick ticks the right timeframe boxes, then generates
+  function preset(mode){
+    var sets={longterm:['monthly','weekly','daily'],swing:['weekly','daily','4h'],daytrader:['daily','4h','1h'],scalper:['4h','1h','15m','5m']};
+    var want=sets[mode]||sets.swing;
+    Array.prototype.forEach.call(document.querySelectorAll('#tf-selector input'),function(cb){ cb.checked=want.indexOf(cb.value)>=0; });
+    generate();
+  }
+  // R-BO4: fetch any ticked intraday TFs (1m/5m/15m) not yet cached, then scan + render
+  function ensureTfs(sym,tfs){
+    if(dataSource!=='LIVE'||!candleCache[sym]) return Promise.resolve();
+    var base=(SHARES_APIS||[])[0]; if(!base) return Promise.resolve();
+    var map={'1m':'1min','5m':'5min','15m':'15min'};
+    var need=tfs.filter(function(tf){ return map[tf]&&!candleCache[sym][tf]; });
+    if(!need.length) return Promise.resolve();
+    return need.reduce(function(p,tf){ return p.then(function(){ return fetchOpt(base,sym,map[tf]).then(function(q){ if(q&&candleCache[sym]) candleCache[sym][tf]=q; }); }); },Promise.resolve());
+  }
+  function generate(){
+    var raw=document.getElementById('sym').value||'';
+    if(E&&E.detectCrisis&&E.detectCrisis(raw)){ showCrisis(); return; }
+    var sym=raw.trim().toUpperCase()||'RELIANCE'; document.getElementById('sym').value=sym;
+    var btn=event&&event.target?event.target.closest('button'):null; if(btn) btn.disabled=true;
+    ensureTfs(sym,tickedTfs()).then(function(){ scan(); speak(sym+' '+(lastCEOS?T('verdict.'+lastCEOS.signal):'')); }).finally(function(){ if(btn) btn.disabled=false; });
+  }
 
   function renderLadder(res){
     var L=document.getElementById('ladder'); L.innerHTML='';
@@ -897,13 +958,26 @@ window.TechUI = (function(){
   function logSystemSignal(sig){
     if(!sig||sig.signal==='HOLD'||!sig.__sym) return;
     var list=sysj(), day=new Date().toISOString().slice(0,10);
-    var key=sig.__sym+'|'+sig.mode+'|'+sig.signal+'|'+day;
+    var tfs=(sig.timeframes||[]).join(',');
+    var key=sig.__sym+'|'+tfs+'|'+sig.signal+'|'+day;
     if(list.some(function(s){return s.key===key;})) return;
-    list.push({key:key,id:'s'+Date.now(),sym:sig.__sym,mode:sig.mode,signal:sig.signal,confidence:sig.confidence,
+    list.push({key:key,id:'SIG-'+(list.length+1),sym:sig.__sym,tfs:tfs,signal:sig.signal,confidence:sig.confidence,
       confluence:sig.confluence_score,entry:sig.entry_price,sl:sig.stop_loss?sig.stop_loss.price:null,
-      t1:sig.target_1?sig.target_1.price:null,t2:sig.target_2?sig.target_2.price:null,ts:Date.now()});
+      t1:sig.target_1?sig.target_1.price:null,t2:sig.target_2?sig.target_2.price:null,outcome:'PENDING',ts:Date.now()});
     saveSysj(list);
     var c=document.getElementById('sysj-count'); if(c) c.textContent=sysj().length;
+    renderSysj();
+  }
+  function renderSysj(){
+    var el=document.getElementById('sysj-list'); if(!el) return;
+    var sj=sysj().slice().reverse().slice(0,25);
+    el.innerHTML=sj.length?sj.map(function(s){
+      var ic={BUY:'🟢',SELL:'🔴'}[s.signal]||'🟡';
+      var t=new Date(s.ts||Date.now()), hh=('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2);
+      return '<div class="trade"><b>'+s.id+' · '+ic+' '+s.sym+' '+s.signal+'</b> <span class="muted">'+hh+'</span><br>'+
+        '<span class="muted">TF '+(s.tfs||'—')+' · conf '+(s.confluence||'')+'</span> · Entry '+(s.entry!=null?s.entry:'—')+
+        ' · 🛑 SL '+(s.sl!=null?s.sl:'—')+' · 🎯 T1 '+(s.t1!=null?s.t1:'—')+' · '+(s.outcome||'PENDING')+'</div>';
+    }).join(''):'<div class="muted">No directional calls yet — tick timeframes and tap Generate Signal.</div>';
   }
   function logTrade(){
     var c=lastCEOS;
@@ -930,6 +1004,7 @@ window.TechUI = (function(){
     document.getElementById('pf-pnl').textContent=fmt(closed.reduce(function(a,t){return a+t.pnl;},0));
     document.getElementById('pf-risk').textContent=fmt(open.reduce(function(a,t){return a+(t.risk||0);},0));
     var sc=document.getElementById('sysj-count'); if(sc) sc.textContent=sysj().length;
+    renderSysj();
     // paper-trading-first gate (PDF Article 3 / §13.1)
     var paper=closed.length, pc=document.getElementById('paper-count'); if(pc) pc.textContent=Math.min(10,paper);
     var pb=document.getElementById('paper-banner');
@@ -1035,6 +1110,7 @@ window.TechUI = (function(){
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
+    preset:preset,generate:generate,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,

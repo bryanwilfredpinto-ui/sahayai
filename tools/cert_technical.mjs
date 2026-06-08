@@ -281,8 +281,10 @@ await liveP.goto(URL, { waitUntil: 'domcontentloaded' });
 await liveP.waitForTimeout(1400);
 await liveP.evaluate(() => { const m = document.getElementById('chitti-disability-profile-modal'); if (m) m.remove(); });
 await liveP.evaluate(() => window.TechUI.refresh());     // fetches the mocked Angel candles
-await liveP.waitForTimeout(1500);
-const liveSrc = await liveP.evaluate(() => document.documentElement.getAttribute('data-tech-source'));
+let liveSrc = 'DEMO';
+try { await liveP.waitForFunction(() => document.documentElement.getAttribute('data-tech-source') === 'LIVE', { timeout: 8000 }); liveSrc = 'LIVE'; }
+catch (e) { liveSrc = await liveP.evaluate(() => document.documentElement.getAttribute('data-tech-source')); }
+await liveP.waitForTimeout(300);
 const liveFlag = await liveP.evaluate(() => document.getElementById('demo-flag').textContent);
 const liveAsof = await liveP.evaluate(() => document.getElementById('asof-val').textContent);
 await liveP.screenshot({ path: resolve(SHOT_DIR, 'chitti_technical_live.png') });
