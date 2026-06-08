@@ -315,7 +315,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     <details style="margin:6px 0">
       <summary style="min-height:44px;cursor:pointer">📄 Or paste your resume text (stays on your phone)</summary>
       <textarea id="career-resume" aria-label="Paste your resume text" rows="5" placeholder="Paste resume text here…" style="width:100%;margin-top:6px;padding:10px;font-size:15px;border:2px solid #888;border-radius:10px"></textarea>
-      <button type="button" onclick="cnaiCareerResume()" aria-label="Analyse my resume" style="min-height:48px;margin-top:6px;padding:0 16px;border-radius:10px;border:0;background:#0b5;color:#fff;font-weight:700">Analyse resume →</button>
+      <button type="button" onclick="cnaiCareerResume()" aria-label="Analyse my resume" style="min-height:48px;margin-top:6px;padding:0 16px;border-radius:10px;border:0;background:#0a7a37;color:#fff;font-weight:700">Analyse resume →</button>
       <button type="button" onclick="cnaiCareerForget()" aria-label="Chitti forget my resume" style="min-height:48px;margin-top:6px;padding:0 12px;border-radius:10px;border:2px solid #b00;background:#fff;color:#b00">🗑 Chitti forget</button>
     </details>
     <div id="career-content" aria-live="polite"></div>
@@ -775,10 +775,10 @@ function speakPage() {
       var topics = s.topics.map(function (t) {
         return '<li style="margin:8px 0">' +
           '<div><strong>' + esc(t.name) + '</strong> <span title="' + esc(t.difficulty_band) + '" aria-label="Level ' + esc(t.difficulty_band) + '">' + esc(t.difficulty_dots) + '</span> ' +
-          '<span style="color:#777;font-size:13px">(' + esc(t.difficulty_band) + ', ~' + t.est_hours + 'h)</span></div>' +
+          '<span style="color:#595959;font-size:13px">(' + esc(t.difficulty_band) + ', ~' + t.est_hours + 'h)</span></div>' +
           '<div style="color:#555;font-size:14px">' + esc(t.why_it_matters) + '</div>' +
           '<div style="font-size:14px;margin-top:2px">📺 <a href="' + ytUrl(t.youtube_search_term) + '" target="_blank" rel="noopener" ' +
-          'aria-label="Search YouTube for ' + esc(t.youtube_search_term) + '">Search YouTube: "' + esc(t.youtube_search_term) + '"</a></div>' +
+          'aria-label="Search YouTube for ' + esc(t.youtube_search_term) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:2px 6px">Search YouTube: "' + esc(t.youtube_search_term) + '"</a></div>' +
           '<div style="font-size:13px;color:#138808;margin-top:2px">✅ Try it: ' + esc(t.check) + '</div></li>';
       }).join('');
       return '<div class="rm-stage" data-chitti-response data-chitti-section="Stage ' + s.order + ' - ' + esc(s.name) + '" ' +
@@ -867,7 +867,7 @@ function speakPage() {
         '<div style="color:#555;font-size:14px;margin:2px 0">' + esc(r.provider) + ' · ' + esc(r.tier_label) + ' · ' + esc(r.cost) + '</div>' +
         (r.why_no_free ? '<div style="font-size:13px;color:#b00;margin:2px 0">ℹ️ ' + esc(r.why_no_free) + '</div>' : '') +
         '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">' +
-        '<a href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(r.provider) + ' course page" style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:8px;background:#0b5;color:#fff;text-decoration:none">Open course →</a>' +
+        '<a href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(r.provider) + ' course page" style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border-radius:8px;background:#0a7a37;color:#fff;text-decoration:none">Open course →</a>' +
         '<button type="button" onclick=\'cnaiCoursesPlan(' + esc(JSON.stringify({ provider: r.provider, course: r.course, url: r.url })) + ')\' aria-label="How Chitti can help me enrol" style="min-height:44px;padding:0 12px;border-radius:8px;border:2px solid #444;background:#fff">How Chitti helps →</button>' +
         '</div></div>';
     }).join('');
@@ -973,10 +973,10 @@ function speakPage() {
     var host = document.getElementById('career-content'); if (!host) return;
     var s = report.sections;
     var toolRows = s.ai_tools.map(function (t) {
-      return '<li style="margin:4px 0">' + (t.free ? '🆓' : '💲') + ' <strong>' + esc(t.name) + '</strong> <span style="color:#777;font-size:13px">(' + esc(t.category) + (t.free ? ', free' : ', paid') + ')</span></li>';
+      return '<li style="margin:4px 0">' + (t.free ? '🆓' : '💲') + ' <strong>' + esc(t.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(t.category) + (t.free ? ', free' : ', paid') + ')</span></li>';
     }).join('');
     var certRows = s.certifications.map(function (cc) {
-      return '<li style="margin:4px 0">🎓 <strong>' + esc(cc.name) + '</strong> <span style="color:#777;font-size:13px">(' + esc(cc.provider) + ', free)</span></li>';
+      return '<li style="margin:4px 0">🎓 <strong>' + esc(cc.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(cc.provider) + ', free)</span></li>';
     }).join('');
     var caveatRows = s.caveats.map(function (c) { return '<li style="margin:4px 0">⚠️ ' + esc(c) + '</li>'; }).join('');
     host.innerHTML =
@@ -986,7 +986,7 @@ function speakPage() {
       '<div style="background:#f6f6f6;border-radius:8px;padding:8px;font-size:14px"><strong>Your profile:</strong> ' + esc(s.your_profile.role) + ' · ' + s.your_profile.years + ' yrs · ' + esc(s.your_profile.seniority) + ' · ' + esc(s.your_profile.domain) + '</div>' +
       '<h3 style="font-size:15px;margin:10px 0 4px">🛠️ AI tools for your field (' + report.free_tools_count + ' free)</h3><ul style="margin:0;padding-left:18px;list-style:none">' + toolRows + '</ul>' +
       '<h3 style="font-size:15px;margin:10px 0 4px">🎓 Free certifications</h3><ul style="margin:0;padding-left:18px;list-style:none">' + certRows + '</ul>' +
-      '<h3 style="font-size:15px;margin:10px 0 4px">🗺️ Next step</h3><div style="font-size:14px">' + esc(s.roadmap_handoff.learn_goal) + ' — <a href="#roadmap-section" onclick="(function(){var i=document.getElementById(\'roadmap-input\');if(i){i.value=\'' + esc(s.roadmap_handoff.learn_goal) + '\';window.cnaiRoadmapBuild(i.value);}})();return true;">build my 30-day roadmap →</a></div>' +
+      '<h3 style="font-size:15px;margin:10px 0 4px">🗺️ Next step</h3><div style="font-size:14px">' + esc(s.roadmap_handoff.learn_goal) + ' — <a href="#roadmap-section" onclick="(function(){var i=document.getElementById(\'roadmap-input\');if(i){i.value=\'' + esc(s.roadmap_handoff.learn_goal) + '\';window.cnaiRoadmapBuild(i.value);}})();return true;"  style="display:inline-flex;align-items:center;min-height:44px">build my 30-day roadmap →</a></div>' +
       '<div style="background:#fff7e6;border-left:4px solid #e08a00;border-radius:6px;padding:8px;margin-top:10px;font-size:13px"><strong>Honest caveats:</strong><ul style="margin:4px 0;padding-left:18px;list-style:none">' + caveatRows + '</ul></div>' +
       '</div>';
     try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
@@ -1038,11 +1038,11 @@ function speakPage() {
     var agentRows = res.agents.map(function (a) {
       var icon = a.status === 'failed' ? '⛔' : (a.status === 'empty' ? '○' : '✅');
       return '<li style="margin:4px 0">' + icon + ' <strong>' + esc(a.id) + '</strong>: ' + esc(a.learned) +
-        (a.concepts.length ? ' <span style="color:#777;font-size:13px">[' + esc(a.concepts.join(', ')) + ']</span>' : '') + '</li>';
+        (a.concepts.length ? ' <span style="color:#595959;font-size:13px">[' + esc(a.concepts.join(', ')) + ']</span>' : '') + '</li>';
     }).join('');
     var insightRows = res.insights.map(function (i) {
-      return '<li style="margin:4px 0">🔗 ' + esc(i.insight) + ' <span style="color:#777;font-size:12px">(' + esc(i.agents.join('+')) + ')</span></li>';
-    }).join('') || '<li style="color:#777">No cross-topic links for this goal yet.</li>';
+      return '<li style="margin:4px 0">🔗 ' + esc(i.insight) + ' <span style="color:#595959;font-size:12px">(' + esc(i.agents.join('+')) + ')</span></li>';
+    }).join('') || '<li style="color:#595959">No cross-topic links for this goal yet.</li>';
     var certRows = res.certs.map(function (c) { return '<li>🎓 ' + esc(c.name) + ' (' + esc(c.provider) + ', free)</li>'; }).join('');
     host.innerHTML =
       '<div class="swarm-card" data-chitti-response data-chitti-section="Swarm result for ' + esc(res.goal) + '" style="border:1px solid #ddd;border-radius:12px;padding:14px;margin:8px 0">' +
@@ -1050,7 +1050,7 @@ function speakPage() {
       '<button type="button" aria-label="Read the swarm result aloud" onclick="cnaiSwarmSpeak()" style="margin:8px 0;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read aloud</button>' +
       '<h3 style="font-size:15px;margin:8px 0 4px">Helpers</h3><ul style="margin:0;padding-left:18px;list-style:none">' + agentRows + '</ul>' +
       '<h3 style="font-size:15px;margin:10px 0 4px">🔗 Connections they found</h3><ul style="margin:0;padding-left:18px;list-style:none">' + insightRows + '</ul>' +
-      (res.roadmap ? '<h3 style="font-size:15px;margin:10px 0 4px">🗺️ Combined roadmap</h3><div style="font-size:14px">' + esc(res.roadmap.title) + ' — ' + res.roadmap.total_stages + ' stages, ~' + res.roadmap.total_est_hours + ' hours. <a href="#roadmap-section" onclick="(function(){var i=document.getElementById(\'roadmap-input\');if(i){i.value=\'' + esc(res.goal) + '\';window.cnaiRoadmapBuild(i.value);}})();return true;">open full roadmap →</a></div>' : '') +
+      (res.roadmap ? '<h3 style="font-size:15px;margin:10px 0 4px">🗺️ Combined roadmap</h3><div style="font-size:14px">' + esc(res.roadmap.title) + ' — ' + res.roadmap.total_stages + ' stages, ~' + res.roadmap.total_est_hours + ' hours. <a href="#roadmap-section" onclick="(function(){var i=document.getElementById(\'roadmap-input\');if(i){i.value=\'' + esc(res.goal) + '\';window.cnaiRoadmapBuild(i.value);}})();return true;"  style="display:inline-flex;align-items:center;min-height:44px">open full roadmap →</a></div>' : '') +
       (certRows ? '<h3 style="font-size:15px;margin:10px 0 4px">🎓 Free certifications</h3><ul style="margin:0;padding-left:18px;list-style:none">' + certRows + '</ul>' : '') +
       '</div>';
     try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
@@ -1067,6 +1067,51 @@ function speakPage() {
     return false;
   };
   window.cnaiSwarmSpeak = function () { var h = document.getElementById('swarm-content'); var t = h && h.getAttribute('data-swarm-speak'); if (t) speak(t); };
+})();
+</script>
+
+<!-- BO6 — Accessibility & Languages: title i18n (en+hi) + RTL, layered on the
+     chitti_lang.js substrate (proper nouns stay English; substrate fills 24 langs). -->
+<script>
+(function () {
+  var RTL = { ur: 1, ks: 1, sd: 1 };
+  // Page-owned strings for the 5 learning sections (en + hi). The substrate
+  // (chitti_lang.js) handles the shared chrome + the other 24 languages.
+  var CNAI_I18N = {
+    en: {
+      'roadmap-section': ['🗺️ Learn Anything — Your Roadmap', 'Tell Chitti what you want to learn. Any skill, any profession. Chitti builds a step-by-step path with free YouTube videos — foundations first.'],
+      'courses-section': ['🆓 Find a Free Course', 'Chitti finds FREE courses first — Government of India, Google, Microsoft, NVIDIA, Hugging Face, freeCodeCamp. Paid only if nothing free covers it.'],
+      'analogy-section': ['🧠 Teach Me — In My Own Words', 'Pick a concept and an analogy you love. Chitti explains it your way — and always tells you where the analogy breaks down.'],
+      'career-section': ['💼 Your AI Career Coach', 'Tell Chitti your profession. Chitti finds the AI tools and FREE certificates for YOUR field. Your resume never leaves your phone.'],
+      'swarm-section': ['🐝 Chitti Swarm — Learn Faster, Together', 'Give Chitti a big goal. Many helpers each learn one part, then combine into one roadmap.'],
+    },
+    hi: {
+      'roadmap-section': ['🗺️ कुछ भी सीखें — आपका रोडमैप', 'Chitti को बताएं आप क्या सीखना चाहते हैं। कोई भी कौशल, कोई भी पेशा। Chitti मुफ़्त YouTube वीडियो के साथ कदम-दर-कदम रास्ता बनाता है।'],
+      'courses-section': ['🆓 मुफ़्त कोर्स खोजें', 'Chitti पहले मुफ़्त कोर्स ढूँढता है — भारत सरकार, Google, Microsoft, NVIDIA, Hugging Face। पैसा तभी जब कोई मुफ़्त विकल्प न हो।'],
+      'analogy-section': ['🧠 मुझे समझाएं — मेरी भाषा में', 'एक concept और अपनी पसंद की उपमा चुनें। Chitti आपके तरीके से समझाता है — और बताता है कि उपमा कहाँ टूटती है।'],
+      'career-section': ['💼 आपका AI करियर कोच', 'Chitti को अपना पेशा बताएं। Chitti आपके क्षेत्र के लिए AI टूल और मुफ़्त सर्टिफिकेट ढूँढता है। आपका रिज़्यूमे फ़ोन से बाहर नहीं जाता।'],
+      'swarm-section': ['🐝 Chitti स्वार्म — मिलकर तेज़ी से सीखें', 'Chitti को एक बड़ा लक्ष्य दें। कई सहायक एक-एक हिस्सा सीखते हैं, फिर एक रोडमैप में जोड़ते हैं।'],
+    },
+  };
+  function apply(code) {
+    var bag = CNAI_I18N[code] || CNAI_I18N.en;
+    try { document.documentElement.setAttribute('dir', RTL[code] ? 'rtl' : 'ltr'); } catch (e) {}
+    Object.keys(CNAI_I18N.en).forEach(function (sid) {
+      var sec = document.getElementById(sid); if (!sec) return;
+      var t = (bag[sid] || CNAI_I18N.en[sid]);
+      var h2 = sec.querySelector('.section-title'); if (h2) h2.textContent = t[0];
+      var sub = sec.querySelector('.section-sub'); if (sub) sub.textContent = t[1];
+    });
+  }
+  function current() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function init() {
+    apply(current());
+    var sel = document.getElementById('lang-select');
+    if (sel) sel.addEventListener('change', function () { setTimeout(function () { apply(current()); }, 60); });
+    // expose for the cert + other callers
+    window.cnaiApplyLang = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 </body>
