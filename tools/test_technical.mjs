@@ -221,6 +221,31 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   const tr10 = Array.from({length:12},(_,i)=>({pnl:i%3?100:-100, mode:'swing', quantity:10}));
   const ins = E.aiInsights(tr10);
   ok('aiInsights produces a win-rate insight after ≥10 trades', ins.length>0 && /win rate/i.test(ins[0]));
+
+  // ── BO-NEXT: outcome tracking + scorecard + calibration ──
+  const buySig={signal:'BUY',entry_price:100,stop_loss:{price:98},target_1:{price:103},target_2:{price:106}};
+  ok('evaluateSignal → T1_HIT when price reaches T1', E.evaluateSignal(buySig,[{high:101,low:99.5},{high:103.2,low:100}]).outcome==='T1_HIT');
+  ok('evaluateSignal → SL_HIT when price hits stop', E.evaluateSignal(buySig,[{high:100.5,low:97.5}]).outcome==='SL_HIT');
+  ok('evaluateSignal → T2_HIT reaches 2nd target', E.evaluateSignal(buySig,[{high:107,low:100}]).outcome==='T2_HIT');
+  ok('evaluateSignal → PENDING when neither hit', E.evaluateSignal(buySig,[{high:101,low:99}]).outcome==='PENDING');
+  ok('evaluateSignal conservative on same-bar SL+T1 → SL_HIT', E.evaluateSignal(buySig,[{high:103.5,low:97.9}]).outcome==='SL_HIT');
+  ok('evaluateSignal T1 R-multiple ≈ +1.5R', Math.abs(E.evaluateSignal(buySig,[{high:103.1,low:100}]).rMultiple-1.5)<0.01);
+  const sellSig={signal:'SELL',entry_price:100,stop_loss:{price:102},target_1:{price:97},target_2:{price:94}};
+  ok('evaluateSignal SELL → T1_HIT when price falls', E.evaluateSignal(sellSig,[{high:100.5,low:96.9}]).outcome==='T1_HIT');
+  ok('evaluateSignal SELL → SL_HIT when price rises', E.evaluateSignal(sellSig,[{high:102.5,low:100}]).outcome==='SL_HIT');
+  const evs=[{outcome:'T1_HIT',rMultiple:1.5,confidence:85},{outcome:'T1_HIT',rMultiple:1.5,confidence:75},{outcome:'SL_HIT',rMultiple:-1,confidence:65},{outcome:'PENDING',rMultiple:0,confidence:90}];
+  const sc=E.scorecard(evs);
+  ok('scorecard ignores PENDING (sample=3)', sc.sample===3);
+  ok('scorecard win rate 2/3 = 67%', sc.winRate===67);
+  ok('scorecard profit factor 3/1 = 3', sc.profitFactor===3);
+  ok('scorecard expectancy ≈ 0.67R', Math.abs(sc.expectancy-0.67)<0.01);
+  ok('scorecard Go/No-Go = NO-GO under 10 resolved', sc.goNoGo==='NO-GO');
+  const cal=E.calibration(evs);
+  ok('calibration returns 4 confidence buckets', cal.buckets.length===4);
+  ok('calibration computes ECE when sample present', cal.ece!=null);
+  const bt=E.backtest(upC,{lookahead:30});
+  ok('backtest returns a resolved-outcome array', Array.isArray(bt));
+  ok('backtest entries carry outcome + confidence', !bt.length || (!!bt[0].outcome && bt[0].confidence!=null));
 }
 
 // ───── BO2: i18n completeness + no-Hinglish ─────

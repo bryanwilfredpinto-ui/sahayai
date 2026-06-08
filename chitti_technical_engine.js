@@ -1090,6 +1090,96 @@
     return out;
   }
 
+  // ═══════════════ BO-NEXT: Signal Outcome Tracking & Accuracy Scorecard (deterministic) ═══════════════
+  // Walk forward from a signal and resolve its outcome. SL/T1 same-bar ambiguity → assume SL first
+  // (conservative; never inflates win rate). Returns outcome + R-multiple + MFE/MAE (in R) + bars.
+  function evaluateSignal(sig, future) {
+    var out = { outcome: 'PENDING', barsToOutcome: null, rMultiple: 0, mfe: 0, mae: 0 };
+    if (!sig || !sig.stop_loss || !future || !future.length) return out;
+    var side = sig.signal, entry = sig.entry_price, sl = sig.stop_loss.price;
+    var t1 = sig.target_1 ? sig.target_1.price : null, t2 = sig.target_2 ? sig.target_2.price : null;
+    var risk = Math.abs(entry - sl) || 1;
+    for (var i = 0; i < future.length; i++) {
+      var hi = future[i].high, lo = future[i].low;
+      if (side === 'BUY') {
+        out.mfe = Math.max(out.mfe, (hi - entry) / risk); out.mae = Math.min(out.mae, (lo - entry) / risk);
+        if (lo <= sl) { out.outcome = 'SL_HIT'; out.rMultiple = round2((sl - entry) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t2 != null && hi >= t2) { out.outcome = 'T2_HIT'; out.rMultiple = round2((t2 - entry) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t1 != null && hi >= t1) { out.outcome = 'T1_HIT'; out.rMultiple = round2((t1 - entry) / risk); out.barsToOutcome = i + 1; return out; }
+      } else {
+        out.mfe = Math.max(out.mfe, (entry - lo) / risk); out.mae = Math.min(out.mae, (entry - hi) / risk);
+        if (hi >= sl) { out.outcome = 'SL_HIT'; out.rMultiple = round2((entry - sl) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t2 != null && lo <= t2) { out.outcome = 'T2_HIT'; out.rMultiple = round2((entry - t2) / risk); out.barsToOutcome = i + 1; return out; }
+        if (t1 != null && lo <= t1) { out.outcome = 'T1_HIT'; out.rMultiple = round2((entry - t1) / risk); out.barsToOutcome = i + 1; return out; }
+      }
+    }
+    out.mfe = round2(out.mfe); out.mae = round2(out.mae);
+    return out; // never resolved within the window → PENDING
+  }
+
+  // Accuracy scorecard from evaluated signals (TradingView/TrendSpider KPI set + Go/No-Go flag).
+  function scorecard(evals) {
+    var resolved = (evals || []).filter(function (e) { return e.outcome !== 'PENDING'; });
+    var n = resolved.length;
+    var wins = resolved.filter(function (e) { return e.outcome === 'T1_HIT' || e.outcome === 'T2_HIT'; });
+    var losses = resolved.filter(function (e) { return e.outcome === 'SL_HIT'; });
+    var grossWin = wins.reduce(function (a, e) { return a + Math.max(0, e.rMultiple); }, 0);
+    var grossLoss = Math.abs(losses.reduce(function (a, e) { return a + Math.min(0, e.rMultiple); }, 0));
+    var cum = 0, peak = 0, maxDD = 0, curve = [];
+    resolved.forEach(function (e) { cum += e.rMultiple; curve.push(round2(cum)); peak = Math.max(peak, cum); maxDD = Math.min(maxDD, cum - peak); });
+    return {
+      sample: n, wins: wins.length, losses: losses.length,
+      winRate: n ? Math.round(wins.length / n * 100) : 0,
+      profitFactor: grossLoss > 0 ? round2(grossWin / grossLoss) : (grossWin > 0 ? '∞' : 0),
+      expectancy: n ? round2(resolved.reduce(function (a, e) { return a + e.rMultiple; }, 0) / n) : 0,
+      avgWin: wins.length ? round2(grossWin / wins.length) : 0,
+      avgLoss: losses.length ? round2(-grossLoss / losses.length) : 0,
+      maxDrawdownR: round2(maxDD), equityCurve: curve,
+      goNoGo: n >= 10 ? 'GO' : 'NO-GO', note: n < 10 ? ('Only ' + n + ' resolved — need ≥10 for a reliable read.') : ''
+    };
+  }
+
+  // Calibration (the AI-app differentiator): is a 90%-confidence call actually right ~90% of the time?
+  function calibration(evals) {
+    var resolved = (evals || []).filter(function (e) { return e.outcome !== 'PENDING' && e.confidence != null; });
+    var bins = [[60, 70], [70, 80], [80, 90], [90, 101]];
+    var buckets = bins.map(function (b) {
+      var inb = resolved.filter(function (e) { return e.confidence >= b[0] && e.confidence < b[1]; });
+      var w = inb.filter(function (e) { return e.outcome === 'T1_HIT' || e.outcome === 'T2_HIT'; }).length;
+      return { range: b[0] + '-' + Math.min(b[1], 100) + '%', count: inb.length, predicted: (b[0] + Math.min(b[1], 100)) / 2, actual: inb.length ? Math.round(w / inb.length * 100) : null };
+    });
+    var tot = resolved.length, ece = 0;
+    buckets.forEach(function (bk) { if (bk.count && bk.actual != null) ece += (bk.count / tot) * Math.abs(bk.predicted - bk.actual); });
+    return { buckets: buckets, ece: tot ? round2(ece) : null, sample: tot, verdict: tot < 10 ? 'insufficient sample' : (ece <= 10 ? 'well-calibrated' : ece <= 20 ? 'fairly calibrated' : 'over-confident') };
+  }
+
+  // confidence proxy for a historical bar = % of indicators that agree with the side (varies → calibratable)
+  function confFromIndicators(candles, side) {
+    var ind = indicatorSet(candles), keys = Object.keys(ind), agree = 0, tot = 0;
+    keys.forEach(function (k) { var s = ind[k] && ind[k].signal; if (s === 'BUY' || s === 'SELL') { tot++; if (s === side) agree++; } });
+    return tot ? Math.max(55, Math.min(99, Math.round(agree / tot * 100))) : 65;
+  }
+  // Walk the symbol's history, generate a signal at each bar on data-up-to-that-bar (NO lookahead bias),
+  // resolve it forward → a real sample of outcomes for the scorecard + calibration.
+  function backtest(candles, opts) {
+    opts = opts || {}; var look = opts.lookahead || 40, start = opts.start || 60, results = [];
+    if (!candles || candles.length < start + 10) return results;
+    for (var i = start; i < candles.length - 2; i++) {
+      var win = candles.slice(0, i + 1), v = tfVerdict(win);
+      if (!v || v.verdict === 'HOLD') continue;
+      var entry = last(closes(win)), a = last(atr(win, 14)); if (!a || a <= 0) a = entry * 0.01;
+      var side = v.verdict;
+      var sig = { signal: side, entry_price: round2(entry),
+        stop_loss: { price: round2(side === 'BUY' ? entry - 2 * a : entry + 2 * a) },
+        target_1: { price: round2(side === 'BUY' ? entry + 1.5 * a : entry - 1.5 * a) },
+        target_2: { price: round2(side === 'BUY' ? entry + 3 * a : entry - 3 * a) },
+        confidence: confFromIndicators(win, side) };
+      var ev = evaluateSignal(sig, candles.slice(i + 1, i + 1 + look));
+      if (ev.outcome !== 'PENDING') { results.push({ confidence: sig.confidence, side: side, bar: i, outcome: ev.outcome, rMultiple: ev.rMultiple, barsToOutcome: ev.barsToOutcome, mfe: ev.mfe, mae: ev.mae }); i += 4; }
+    }
+    return results;
+  }
+
   // ───────────────────────── exports ─────────────────────────
   var API = {
     // indicators
@@ -1111,7 +1201,9 @@
     tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
     // CEOS safety + journal intelligence
     detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
-    TF_ORDER: TF_ORDER, VERSION: '2.2.0'
+    // BO-NEXT: outcome tracking + accuracy scorecard + calibration
+    evaluateSignal: evaluateSignal, scorecard: scorecard, calibration: calibration, backtest: backtest,
+    TF_ORDER: TF_ORDER, VERSION: '2.3.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

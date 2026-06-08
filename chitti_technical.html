@@ -338,6 +338,17 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <div id="screener-results" style="margin-top:10px"></div>
     </div>
 
+    <!-- BO-NEXT: Accuracy Scorecard (outcome tracking + calibration) -->
+    <div class="card col-full" data-chitti-response="tech-scorecard" data-chitti-section="Scorecard">
+      <h2 style="flex-wrap:wrap;gap:6px"><span>🎯 <span data-i18n="sc.title">Accuracy Scorecard</span></span>
+        <button class="btn ghost" style="margin-left:auto;min-height:44px" onclick="TechUI.readScorecard()">🔊 <span data-i18n="sc.read">Read scorecard</span></button>
+      </h2>
+      <div class="muted" data-i18n="sc.honest" style="margin-bottom:8px">Are our confident calls really right that often?</div>
+      <div id="sc-kpis" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      <div id="sc-cal" style="margin-top:10px"></div>
+      <div id="sc-recent" style="margin-top:10px"></div>
+    </div>
+
     <!-- BO10: portfolio -->
     <div class="card col-full" data-chitti-response="tech-portfolio" data-chitti-section="Journal">
       <h2>📒 <span data-i18n="portfolio.title">My trades</span> — Dual Journal</h2>
@@ -380,7 +391,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
 /* 🎖️ Chitti Technical UI controller — deterministic, accessible, multilingual.
    Engine = window.TechEngine (chitti_technical_engine.js). i18n = window.TECH_I18N. */
 window.TechUI = (function(){
-  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null;
+  var E, I18N, lang='en', lastScan=null, lastSym='RELIANCE', lastTf='daily', lastCEOS=null, lastScorecard=null;
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
@@ -551,6 +562,7 @@ window.TechUI = (function(){
     renderLadder(res);
     renderRisk(res);
     renderCEOS();
+    renderScorecard();
     renderIndicators(res);
     renderRoshan(res);
     renderExplain(res);
@@ -651,6 +663,39 @@ window.TechUI = (function(){
     speak(lastScan._sym+' — '+tw+'. '+(lastCEOS?(T('verdict.'+lastCEOS.signal)+', confidence '+lastCEOS.confidence+' percent'):''));
   }
   function hapticDemo(){ if(window.TechA11y&&lastCEOS){ TechA11y.vibrate(lastCEOS.signal); speak(T('verdict.'+lastCEOS.signal)); } }
+
+  // ───── BO-NEXT: Accuracy Scorecard — backtest → win rate / PF / expectancy + calibration ─────
+  function renderScorecard(){
+    if(!lastScan||!E.backtest) return;
+    var sym=lastScan._sym, daily=getTf(sym).daily;
+    var evs=E.backtest(daily,{lookahead:40}), sc=E.scorecard(evs), cal=E.calibration(evs);
+    lastScorecard={sc:sc,cal:cal,sym:sym};
+    function kpi(icon,label,val,cls){ return '<div class="kv" style="min-width:118px"><div class="k">'+icon+' '+label+'</div><div class="v '+(cls||'')+'">'+val+'</div></div>'; }
+    var k=document.getElementById('sc-kpis');
+    if(k) k.innerHTML=kpi('🎯',T('sc.winrate'),sc.winRate+'%',sc.winRate>=50?'tgt':'')+
+      kpi('💹',T('sc.pf'),sc.profitFactor,'')+
+      kpi('📈',T('sc.exp'),(sc.expectancy>=0?'+':'')+sc.expectancy+'R',sc.expectancy>=0?'tgt':'stop')+
+      kpi(sc.goNoGo==='GO'?'✅':'⚠️',T('sc.sample'),sc.sample+' · '+sc.goNoGo,'');
+    var c=document.getElementById('sc-cal');
+    if(c){
+      var rows=cal.buckets.map(function(b){ var ok=b.actual==null?'⏳':(Math.abs(b.predicted-b.actual)<=10?'✅':'❌');
+        return '<tr><th scope="row">'+b.range+'</th><td>'+b.count+'</td><td>'+b.predicted+'%</td><td>'+(b.actual==null?'—':b.actual+'%')+'</td><td>'+ok+'</td></tr>'; }).join('');
+      c.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('sc.cal')+' — ECE '+(cal.ece==null?'—':cal.ece)+' · '+cal.verdict+'</caption>'+
+        '<tr><th scope="col">'+T('conf.label')+'</th><th scope="col">#</th><th scope="col">'+T('sc.said')+'</th><th scope="col">'+T('sc.real')+'</th><th scope="col">✓</th></tr>'+rows+'</table>';
+    }
+    var r=document.getElementById('sc-recent');
+    if(r){
+      if(sc.sample<10){ r.innerHTML='<div class="invalid">⚠️ '+T('sc.nogo')+'</div>'; }
+      else { r.innerHTML='<div style="font-weight:800;margin-bottom:4px">'+T('sc.recent')+'</div>'+evs.slice(-12).reverse().map(function(e){
+        var ic=e.outcome==='SL_HIT'?'🛑':(e.outcome==='T2_HIT'?'✅✅':'✅'), cls=e.outcome==='SL_HIT'?'bear':'bull';
+        return '<div class="tfrow '+cls+'"><span>'+(e.side==='BUY'?'🟢 BUY':'🔴 SELL')+' · '+e.confidence+'%</span><span>'+ic+' '+e.outcome+' · '+(e.rMultiple>0?'+':'')+e.rMultiple+'R</span></div>';
+      }).join(''); }
+    }
+  }
+  function readScorecard(){
+    if(!lastScorecard){ return; } var s=lastScorecard.sc, c=lastScorecard.cal;
+    speak(lastScorecard.sym+'. '+T('sc.winrate')+' '+s.winRate+' percent. '+T('sc.pf')+' '+s.profitFactor+'. '+T('sc.exp')+' '+s.expectancy+' R. '+T('sc.sample')+' '+s.sample+'. '+(s.goNoGo==='NO-GO'?T('sc.nogo'):('Calibration '+c.verdict)));
+  }
 
   // R-BO1: preset quick-pick ticks the right timeframe boxes, then generates
   function preset(mode){
@@ -1110,7 +1155,7 @@ window.TechUI = (function(){
 
   return {refresh:refresh,scan:scan,pick:pick,runScreen:runScreen,logTrade:logTrade,closeTrade:closeTrade,
     renderCEOS:renderCEOS,playAudio:playAudio,hapticDemo:hapticDemo,showCrisis:showCrisis,toggleIconMode:toggleIconMode,
-    preset:preset,generate:generate,
+    preset:preset,generate:generate,readScorecard:readScorecard,
     audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
