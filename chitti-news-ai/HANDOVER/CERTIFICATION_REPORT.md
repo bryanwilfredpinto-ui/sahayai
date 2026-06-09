@@ -97,3 +97,41 @@ flagged in weaknesses #15.
 **CONDITIONAL CERTIFIED 🟡** per [CERTIFICATION.md](../CERTIFICATION.md): all 10 code/accessibility gates GREEN with evidence; the hallucination was found + fixed before reporting green. **Blockers to FULL certification (not code — system/maturity):** verify the live backend serves fresh news; Sire's real-device + screen-reader sign-off; close the top weaknesses (#2 backend, #8 retention, #11 ISL, #14 manual AT).
 
 *No claims. Every cell above maps to a measured check in `cert_cnai_production_result.json` or a cited URL.*
+
+---
+
+## BACKEND VERIFICATION + NEWS-FEED FIX (2026-06-09) — blocker #1 closed
+
+**Backend is LIVE** (verified by curl, not claimed):
+- `GET /health` → **200** `{ok:true, rss_poll_minutes:360, ...}`
+- `GET /` → **200** (`service: chitti-news-ai-api`)
+- `GET /api/news-ai/feed?tab=ai-news&language=en&limit=10` → **200**, **10 real AI-news items** (titles + sources + URLs).
+
+**End-to-end (page + live data):** the news section renders **10 real cards**, each
+with source + free/paid + working "↗ Open at source" link, **0 console errors**,
+not stuck on "Loading". Evidence: `test_screenshots/news-ai-cert/live_news_accountant.png`.
+
+**Real bug found + fixed — the actual blocker:** the per-profession relevance
+flag ("🔥 Critical for you" / "⚡ Important for you") was **broken** —
+`_topicMatchScore` only scanned classifier keywords (empty for live news) and
+referenced an undefined `CC.vocab.skills`, so **every article scored 0 = IGNORE**.
+The feed loaded but delivered no *professional intelligence*. Fix (`chitti_coach.js`):
+scan the headline + summary text for the profession's skill keywords (icai/gst/
+tds/audit/tally/...), reference `SKILL_VOCAB` correctly. Now:
+- "New LLM cuts audit time with Tally" → accountant = **CRITICAL**
+- "AI bookkeeping automates GST reconciliation" → **PAY-ATTENTION**
+- "Mercor calls out Sequoia valuation" → **IGNORE** (correct)
+End-to-end: with accounting news in the feed, the page renders **2 "🔥 Critical
+for you" flags** (`live_news_flags_accountant.png`). Production cert re-run: **10/10**.
+
+**Honest residual gaps (not blockers, tracked):**
+- **Vernacular news**: `language=hi` returns English items — news isn't translated
+  (sources are English RSS). The feed *works*; localisation of news content is a
+  separate feature (weakness #9). Profession-relevance now works in any language.
+- **Freshness** depends on the backend RSS poller (every 6h); profession ranking
+  on the backend is weak (page does relevance client-side, which is now fixed).
+
+**Readiness update:** the "Live system" dimension moves from 40% (unverified) →
+**~80%** (backend up, feed + relevance verified end-to-end; −20 for vernacular news
++ poller cadence). **Composite Production Readiness: CONDITIONAL 🟡 → ~88/100.**
+Remaining for FULL: Sire's real-device + screen-reader sign-off; vernacular news.

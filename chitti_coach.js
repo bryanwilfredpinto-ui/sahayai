@@ -800,17 +800,22 @@
   // 4 bands: IGNORE · PAY-ATTENTION · VERY-IMPORTANT · CRITICAL.
   // Computed from article.topics × profession's task-vulnerability vector.
   function _topicMatchScore(article, professionSlug) {
-    var topics = (article && (article.topics || article.classification && article.classification.matched_keywords)) || [];
+    var imp = IMPACT[professionSlug]; if (!imp) return 0;
+    var profTopics = (SKILL_VOCAB[professionSlug] || []).concat([professionSlug.split('-')[0]]);
+    // 1) explicit classifier topics / matched_keywords (when present)
+    var topics = (article && (article.topics || (article.classification && article.classification.matched_keywords))) || [];
     if (typeof topics === 'string') topics = topics.split(',').map(function(s){return s.trim().toLowerCase();});
     else topics = (topics || []).map(function(t){return String(t).toLowerCase();});
-    if (!topics.length) return 0;
-    var imp = IMPACT[professionSlug]; if (!imp) return 0;
-    var profTopics = (CC.vocab.skills[professionSlug] || []).concat([professionSlug.split('-')[0]]);
+    // 2) FIX 2026-06-09: real news has rich TITLES but empty keywords, so ALSO
+    //    scan the headline + summary text. Count each profession keyword once
+    //    (in topics OR text). Without this, every live article scored 0 = IGNORE.
+    var text = (((article && article.title) || '') + ' ' + ((article && article.summary) || '')).toLowerCase();
     var hits = 0;
-    topics.forEach(function (t) {
-      profTopics.forEach(function (p) {
-        if (t.indexOf(p) >= 0 || p.indexOf(t) >= 0) hits += 1;
-      });
+    profTopics.forEach(function (p) {
+      if (!p || p.length < 3) return;            // skip 1-2 char keywords (noise)
+      var inTopics = topics.some(function (t) { return t && (t.indexOf(p) >= 0 || p.indexOf(t) >= 0); });
+      var inText = text.indexOf(p) >= 0;
+      if (inTopics || inText) hits += 1;
     });
     return hits;
   }
