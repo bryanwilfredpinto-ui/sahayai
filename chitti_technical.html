@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260613" defer></script>
-<script src="nse_universe.js?v=20260613" defer></script>
-<script src="chitti_technical_i18n.js?v=20260613" defer></script>
-<script src="chitti_technical_engine.js?v=20260613" defer></script>
-<script src="chitti_technical_a11y.js?v=20260613" defer></script>
-<script src="chitti_a11y.js?v=20260613" defer></script>
+<script src="chitti_lang.js?v=20260614" defer></script>
+<script src="nse_universe.js?v=20260614" defer></script>
+<script src="chitti_technical_i18n.js?v=20260614" defer></script>
+<script src="chitti_technical_engine.js?v=20260614" defer></script>
+<script src="chitti_technical_a11y.js?v=20260614" defer></script>
+<script src="chitti_a11y.js?v=20260614" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260613" defer></script>
+<script src="chitti_isl.js?v=20260614" defer></script>
 
 <style>
 :root{
@@ -111,6 +111,11 @@ canvas{display:block;width:100%}
 /* WCAG 2.2 (2.5.8 target-size): keep the substrate-injected bottom nav at 48px tap targets even when
    the shared theme CSS is not loaded on this page. */
 .chitti-bharat-bottom-nav a,.chitti-bharat-bottom-nav button{min-height:48px;min-width:48px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 8px;box-sizing:border-box}
+/* Tagline + Simple view (default for the common man — one decision, one Listen, no jargon) */
+.claude-gift{text-align:center;font-size:12.5px;color:#5b637a;font-weight:700;margin:4px 0 2px;letter-spacing:.02em}
+body.simple-mode #advanced-controls{display:none}
+body.simple-mode .grid{display:none}
+body:not(.simple-mode) #simple-ask-btn{display:none}
 .pane-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .tog{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
 .tog.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -245,6 +250,8 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
     </div>
   </header>
 
+  <div class="claude-gift">🇮🇳 <span data-i18n="gift">A gift from Claude to all Indians</span></div>
+
   <div class="vaani-banner">🗣️ <span data-i18n="vaani">Talk to Vaani instead</span>
     — <a href="chitti_vaani.html" style="color:#7a4a00;font-weight:700">Vaani</a></div>
 
@@ -271,8 +278,13 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       </select>
       <button class="btn nav" onclick="TechUI.scan()">🔍 <span data-i18n="scan.btn">Scan</span></button>
     </div>
+    <!-- Simple view: one big button for the common man + a toggle to the full analyst surface -->
+    <div class="row" id="simple-actions" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+      <button class="btn nav" id="simple-ask-btn" style="flex:1;min-width:180px;font-size:18px;min-height:54px;font-weight:900" onclick="TechUI.generate()">🎯 <span data-i18n="ask.chitti">Ask Chitti</span></button>
+      <button class="btn ghost" id="mode-toggle" onclick="TechUI.toggleMode()" style="min-height:54px;font-weight:800"></button>
+    </div>
     <!-- R-BO1: timeframe selector (1m → Monthly) + preset quick-picks + Generate Signal -->
-    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+    <div id="advanced-controls" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
       <div class="muted" style="margin-bottom:8px">✅ Tick the timeframes to combine, then <b>Generate</b> — the signal fires only when they agree:</div>
       <div id="tf-selector" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
         <label class="tf-chip"><input type="checkbox" value="1m"> 1 min</label>
@@ -742,6 +754,15 @@ window.TechUI = (function(){
     document.getElementById('vh-risk').innerHTML=TT('vh.risk','Risk')+': <span class="badge '+v.risk+'">'+TT('risk.'+v.risk,v.risk)+'</span>';
   }
   function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
+
+  // Simple view = the common man's default: voice search → one big decision → Listen. Full = analyst surface.
+  var simpleMode=true; try{ var _sm=localStorage.getItem('tech_simple'); if(_sm!==null) simpleMode=(_sm==='1'); }catch(e){}
+  function applyMode(){
+    document.body.classList.toggle('simple-mode', simpleMode);
+    var t=document.getElementById('mode-toggle');
+    if(t) t.innerHTML = simpleMode ? ('📊 '+TT('mode.full','Full analysis')) : ('🔰 '+TT('mode.simple','Simple view'));
+  }
+  function toggleMode(){ simpleMode=!simpleMode; try{localStorage.setItem('tech_simple',simpleMode?'1':'0');}catch(e){} applyMode(); if(lastScan) renderCEOS(); }
 
   function renderCEOS(){
     if(!lastScan||!E.generateSignal) return;
@@ -1448,6 +1469,7 @@ window.TechUI = (function(){
     renderScreenerFilters();
     renderPf();
     renderWatchlist();
+    applyMode();       // Simple view is the common-man default
     scan();            // instant DEMO render so the page is never blank
     refresh();         // then auto-fetch LIVE Angel data on open (single load, not polling)
     window.addEventListener('resize',function(){if(lastScan)drawChart(lastScan);});
@@ -1459,7 +1481,7 @@ window.TechUI = (function(){
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
-    audioSummary:audioSummary,hearVerdict:hearVerdict,applyLang:applyLang,toggleTable:toggleTable,
+    audioSummary:audioSummary,hearVerdict:hearVerdict,toggleMode:toggleMode,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,acPickFree:acPickFree,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
     _confirmYes:_confirmYes,_confirmNo:_confirmNo};

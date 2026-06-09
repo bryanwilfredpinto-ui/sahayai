@@ -17,7 +17,7 @@ await new Promise(r => server.listen(PORT, r));
 
 // realistic candle mock so screenshots show live data
 function candles() { let px = 1260, t0 = 1700000000, a = []; for (let i = 0; i < 220; i++) { px *= 1 + (((i % 11) - 5) / 800); const o = px, c = px * 1.001, h = Math.max(o, c) * 1.004, l = Math.min(o, c) * 0.996; a.push({ time: t0 + i * 86400, open: +o.toFixed(2), high: +h.toFixed(2), low: +l.toFixed(2), close: +c.toFixed(2), volume: 1e6 + i }); } return a; }
-async function liveCtx(b, w, h, d) { const c = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: d || 1 }); await c.route('**/api/candles/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(candles()) })); return c; }
+async function liveCtx(b, w, h, d) { const c = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: d || 1 }); await c.addInitScript(() => { try { localStorage.setItem('tech_simple', '0'); } catch (e) {} }); await c.route('**/api/candles/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(candles()) })); return c; }
 
 const b = await chromium.launch({ headless: true });
 const ev = { screenshots: [], axe: [], buttons: [], pageErrors: [] };

@@ -23,7 +23,7 @@ const b = await chromium.launch({ headless: true }); const out = [];
 for (const v of DEVS) {
   const c = await b.newContext({ viewport: { width: v.w, height: v.h }, deviceScaleFactor: v.d });
   await c.route('**/api/candles/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(candles()) }));
-  await c.addInitScript(() => { try { localStorage.setItem('disability_profile', '{"done":true}'); } catch (e) {} });
+  await c.addInitScript(() => { try { localStorage.setItem('disability_profile', '{"done":true}'); localStorage.setItem('tech_simple', '0'); } catch (e) {} });
   const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto('http://127.0.0.1:8807/chitti_technical.html', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(1500);
