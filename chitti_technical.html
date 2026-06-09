@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260611" defer></script>
-<script src="nse_universe.js?v=20260611" defer></script>
-<script src="chitti_technical_i18n.js?v=20260611" defer></script>
-<script src="chitti_technical_engine.js?v=20260611" defer></script>
-<script src="chitti_technical_a11y.js?v=20260611" defer></script>
-<script src="chitti_a11y.js?v=20260611" defer></script>
+<script src="chitti_lang.js?v=20260612" defer></script>
+<script src="nse_universe.js?v=20260612" defer></script>
+<script src="chitti_technical_i18n.js?v=20260612" defer></script>
+<script src="chitti_technical_engine.js?v=20260612" defer></script>
+<script src="chitti_technical_a11y.js?v=20260612" defer></script>
+<script src="chitti_a11y.js?v=20260612" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260611" defer></script>
+<script src="chitti_isl.js?v=20260612" defer></script>
 
 <style>
 :root{
@@ -1108,39 +1108,50 @@ window.TechUI = (function(){
   function drawChart(res){
     if(!res) return;
     var candles=getTf(res._sym)[lastTf].slice(-70);
+    if(!candles||!candles.length) return;
     var cv=document.getElementById('price-canvas');
-    var W=cv.clientWidth||cv.parentElement.clientWidth||600; cv.width=W; var H=cv.height;
-    var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-    var hi=Math.max.apply(null,candles.map(function(c){return c.high;}));
-    var lo=Math.min.apply(null,candles.map(function(c){return c.low;}));
-    // include stop/target lines in range
-    if(res.stop){hi=Math.max(hi,res.stop.price);lo=Math.min(lo,res.stop.price);}
-    if(res.targets)res.targets.forEach(function(t){hi=Math.max(hi,t.price);lo=Math.min(lo,t.price);});
-    var pad=18, cw=(W-pad*2)/candles.length;
-    function y(v){return pad+(H-pad*2)*(1-(v-lo)/((hi-lo)||1));}
-    // EMA overlay
-    var ema=E.ema(candles.map(function(c){return c.close;}),20);
-    // candles
-    candles.forEach(function(c,i){
-      var x=pad+i*cw+cw/2;
-      var up=c.close>=c.open;
-      ctx.strokeStyle=up?'#138808':'#C62828'; ctx.fillStyle=up?'#138808':'#C62828';
-      ctx.beginPath();ctx.moveTo(x,y(c.high));ctx.lineTo(x,y(c.low));ctx.stroke();
-      var bt=y(Math.max(c.open,c.close)),bb=y(Math.min(c.open,c.close));
-      ctx.fillRect(x-cw*0.3,bt,cw*0.6,Math.max(1,bb-bt));
-    });
-    // EMA line
-    ctx.strokeStyle='#000080';ctx.lineWidth=1.5;ctx.beginPath();var started=false;
-    candles.forEach(function(c,i){var v=ema[i];if(v==null)return;var x=pad+i*cw+cw/2;if(!started){ctx.moveTo(x,y(v));started=true;}else ctx.lineTo(x,y(v));});
-    ctx.stroke();ctx.lineWidth=1;
-    // entry/stop/target lines (word + colour, never colour alone)
-    function hline(val,color,label){if(val==null)return;ctx.strokeStyle=color;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pad,y(val));ctx.lineTo(W-pad,y(val));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=color;ctx.font='10px system-ui';ctx.fillText(label+' '+val,pad+2,y(val)-2);}
+    var dpr=window.devicePixelRatio||1;
+    var W=cv.clientWidth||cv.parentElement.clientWidth||600, H=cv.height;
+    cv.width=W*dpr; cv.style.width=W+'px';
+    var ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    ctx.textBaseline='middle'; ctx.font='11px system-ui';
+    function fmt(v){return v>=1000?Math.round(v):Math.round(v*100)/100;}
+    var AX=62, PAD=8, PT=10, PB=14, x0=PAD;
+    var plotW=W-AX-PAD, plotH=H-PT-PB;
+    var hi=-Infinity, lo=Infinity;
+    candles.forEach(function(c){ if(c.high>hi)hi=c.high; if(c.low<lo)lo=c.low; });
+    // price tags: last price + entry/SL/T1-T3 (word + colour, never colour alone)
+    var lastP=candles[candles.length-1].close, tags=[{v:lastP,c:'#1A1A1A',label:'₹'+fmt(lastP),last:true}];
     if(res.verdict!=='HOLD'&&res.stop){
-      hline(res.entry.ideal,'#000080','▶ '+T('risk.entry'));
-      hline(res.stop.price,'#C62828','🛑 '+T('risk.stop'));
-      hline(res.targets[0].price,'#138808','🎯 '+T('risk.targets'));
+      if(res.entry&&res.entry.ideal!=null) tags.push({v:res.entry.ideal,c:'#000080',label:'Entry '+fmt(res.entry.ideal)});
+      tags.push({v:res.stop.price,c:'#C62828',label:'SL '+fmt(res.stop.price)});
+      (res.targets||[]).slice(0,3).forEach(function(t,i){ tags.push({v:t.price,c:'#0a6e00',label:'T'+(i+1)+' '+fmt(t.price)}); });
     }
-    // oscillator pane (separate) or overlay
+    tags.forEach(function(t){ if(t.v>hi)hi=t.v; if(t.v<lo)lo=t.v; });
+    var rng=(hi-lo)||1; hi+=rng*0.05; lo-=rng*0.05; rng=hi-lo;
+    function y(v){return PT+plotH*(1-(v-lo)/rng);}
+    var cw=plotW/candles.length; function cx(i){return x0+i*cw+cw/2;}
+    // horizontal gridlines + right price axis labels
+    for(var g=0;g<=4;g++){ var gy=PT+plotH*g/4;
+      ctx.strokeStyle='#eef0f5'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,gy); ctx.lineTo(x0+plotW,gy); ctx.stroke();
+      ctx.fillStyle='#aeb4c2'; ctx.textAlign='right'; ctx.fillText('₹'+fmt(hi-rng*g/4), W-3, gy); }
+    // candlesticks
+    candles.forEach(function(c,i){ var X=cx(i), up=c.close>=c.open, col=up?'#0a6e00':'#C62828';
+      ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(X,y(c.high)); ctx.lineTo(X,y(c.low)); ctx.stroke();
+      var bt=y(Math.max(c.open,c.close)), bb=y(Math.min(c.open,c.close)), bw=Math.max(2,cw*0.6);
+      ctx.fillRect(X-bw/2,bt,bw,Math.max(1.5,bb-bt)); });
+    // EMA 20 overlay
+    var ema=E.ema(candles.map(function(c){return c.close;}),20);
+    ctx.strokeStyle='#1565c0'; ctx.lineWidth=1.6; ctx.beginPath(); var st=false;
+    candles.forEach(function(c,i){ var v=ema[i]; if(v==null)return; if(!st){ctx.moveTo(cx(i),y(v));st=true;}else ctx.lineTo(cx(i),y(v)); });
+    ctx.stroke(); ctx.lineWidth=1;
+    // dashed level + last-price lines across the plot
+    tags.forEach(function(t){ ctx.strokeStyle=t.last?'#9aa1b0':t.c; ctx.setLineDash(t.last?[2,3]:[5,4]); ctx.beginPath(); ctx.moveTo(x0,y(t.v)); ctx.lineTo(x0+plotW,y(t.v)); ctx.stroke(); ctx.setLineDash([]); });
+    // right-edge price pills — nudged apart so labels never overlap
+    tags.forEach(function(t){ t.ty=y(t.v); }); tags.sort(function(a,b){return a.ty-b.ty;});
+    for(var k=1;k<tags.length;k++){ if(tags[k].ty-tags[k-1].ty<15) tags[k].ty=tags[k-1].ty+15; }
+    tags.forEach(function(t){ ctx.fillStyle=t.c; ctx.fillRect(x0+plotW, t.ty-7.5, AX, 15); ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.fillText(t.label, x0+plotW+4, t.ty); });
     drawOsc(candles);
   }
 
@@ -1151,8 +1162,8 @@ window.TechUI = (function(){
     if(sep.length===0){wrap.style.display='none';return;}
     wrap.style.display='block';
     var name=sep[0];
-    var cv=document.getElementById('osc-canvas');var W=cv.clientWidth||600;cv.width=W;var H=cv.height;
-    var ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    var cv=document.getElementById('osc-canvas');var dpr=window.devicePixelRatio||1;var W=cv.clientWidth||600;var H=cv.height;cv.width=W*dpr;cv.style.width=W+'px';
+    var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
     var series,lo=0,hi=100;
     if(name==='RSI'){series=E.rsi(candles.map(function(c){return c.close;}),14);}
     else if(name==='Williams %R'){series=E.williamsR(candles,14);lo=-100;hi=0;}
