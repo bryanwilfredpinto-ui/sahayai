@@ -227,7 +227,14 @@
       // chitti_card_widget.js inner bar
       if (el.querySelector('.chitti-card-widget, .pro-card-widget')) { attached++; return; }
     });
-    if (withBox.length > 5 && attached / withBox.length < 0.95) {
+    // FIX 2026-06-09: debounce like card_detection. feedback-widget.js attaches
+    // bars asynchronously (MutationObserver), so on the FIRST tick after load
+    // attachment is briefly < 95% and the badge flashed "Degraded" for a second
+    // before settling to Active. Require 2 consecutive low cycles (~10s) so a
+    // load transient never flips the badge; a genuine gap still degrades.
+    var lowWidget = withBox.length > 5 && (attached / withBox.length) < 0.95;
+    window.__obsWidgetLowStreak = lowWidget ? (window.__obsWidgetLowStreak || 0) + 1 : 0;
+    if (lowWidget && window.__obsWidgetLowStreak >= 2) {
       fireAlert('widget_attachment', 'degraded',
         Math.round(100 * attached / withBox.length) + '% attached',
         '≥ 95%');

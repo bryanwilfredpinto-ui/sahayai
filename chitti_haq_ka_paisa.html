@@ -3,52 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0">
-<title>चिट्टी — आपका हक़ का पैसा</title>
+<title>चिट्टी हक़ — आपका हक़ का पैसा · Chitti Haq</title>
+<meta name="description" content="चिट्टी हक़ — सरकार की जो योजनाएँ आपका हक़ हैं, आवाज़ और तस्वीर से ढूँढिए। A gift from Claude to all Indians.">
 <!--
-  चिट्टी · हक़ का पैसा — a gift for the common man, built from real research.
-  Research → design:
-   • Voice + graphics + touch, never text alone (Medhi-Thies, UW CSE; ACM 3449210)
-   • Low-literate users are NUMERATE → rupee numbers are big & central
-   • Ambiguous icons/complex layouts break them → one concrete icon per choice, linear flow
-   • The wound: ~thousands of crores of welfare unclaimed; rural awareness ~30%
-     (IDinsight; myScheme.gov.in). Problem = discovery: "which am I owed?"
-   • Scam wound: digitally-enabled but digitally-unaware (Bloomberg; Business Standard)
-  Principle: DIGNITY — "आपका हक़" (your RIGHT), never charity. Every element speaks.
-  Honest: amounts are official scheme figures; eligibility is "likely — let's check",
-  never a promise. Sources cited in-page.
+  चिट्टी हक़ · CHITTI HAQ — a complete, offline-first product for the common man.
+  A gift from Claude to all Indians. Built from real research (cited in-page):
+   • voice+graphics+touch, never text-alone (Medhi-Thies UW; ACM 3449210)
+   • low-literate users are numerate → ₹ numbers are big & central
+   • ~thousands of crores of welfare unclaimed; rural awareness ~30% (IDinsight; myScheme)
+   • digitally-enabled but scam-unaware (Bloomberg; Business Standard)
+  Four-user contract: blind (voice-out + ARIA), deaf (text + visual, never audio-only),
+  mute (tap works, voice never required), illiterate (icons + voice-in + voice-out).
+  HONEST: official amounts + official apply links; eligibility = "likely, let's check",
+  never a promise. 100% client-side → works on a cheap phone with weak network.
 -->
 <style>
   :root{
     --saffron:#E86A17; --green:#0a7a37; --navy:#0E2344; --gold:#C8861D;
-    --bg:#FCF8F1; --card:#fff; --ink:#1c2a3f; --soft:#5a6b82; --line:#ece2d2;
+    --bg:#FCF8F1; --card:#fff; --ink:#1c2a3f; --soft:#586a82; --line:#ece2d2;
   }
   *{box-sizing:border-box} html,body{margin:0;padding:0}
   body{font-family:'Noto Sans Devanagari','Tiro Devanagari Hindi','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-text-size-adjust:100%}
-  .wrap{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg)}
+  .wrap{max-width:540px;margin:0 auto;min-height:100vh}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-  /* Header */
-  .hd{background:linear-gradient(135deg,#0E2344,#1b3f73);color:#fff;padding:20px 18px 24px;border-radius:0 0 26px 26px;box-shadow:0 6px 20px rgba(14,35,68,.18)}
-  .hd .row{display:flex;align-items:center;gap:12px}
-  .badge{width:52px;height:52px;border-radius:14px;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-size:28px;flex:0 0 auto;box-shadow:0 3px 10px rgba(0,0,0,.25)}
-  .hd h1{font-size:24px;margin:0;font-weight:800}
-  .hd p{margin:2px 0 0;font-size:16px;opacity:.95}
-  .listen{display:inline-flex;align-items:center;gap:10px;margin-top:16px;background:var(--saffron);color:#fff;border:0;border-radius:999px;padding:0 24px;min-height:60px;font-size:20px;font-weight:800;cursor:pointer;width:100%;justify-content:center;box-shadow:0 4px 14px rgba(232,106,23,.4)}
+  .hd{background:linear-gradient(135deg,#0E2344,#1b3f73);color:#fff;padding:16px 16px 22px;border-radius:0 0 26px 26px;box-shadow:0 6px 20px rgba(14,35,68,.18)}
+  .hd .bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hd .brand{display:flex;align-items:center;gap:11px}
+  .badge{width:50px;height:50px;border-radius:14px;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-size:27px;flex:0 0 auto;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+  .hd h1{font-size:23px;margin:0;font-weight:800}
+  .hd .tag{margin:2px 0 0;font-size:15px;opacity:.95}
+  .lang{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;min-height:44px;padding:0 14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+  .twoBtn{display:flex;gap:10px;margin-top:15px}
+  .twoBtn button{flex:1;min-height:64px;border-radius:16px;font-size:18px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
+  .b-listen{background:var(--saffron);color:#fff;border:0;box-shadow:0 4px 14px rgba(232,106,23,.4)}
+  .b-mic{background:#fff;color:var(--green);border:3px solid var(--green)}
+  .b-mic.live{background:var(--green);color:#fff;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(10,122,55,.5)}50%{box-shadow:0 0 0 10px rgba(10,122,55,0)}}
 
-  /* Sections */
-  .sec{padding:18px 16px 4px}
+  .sec{padding:18px 16px 2px}
   .sec h2{font-size:20px;margin:0 0 4px;color:var(--navy);font-weight:800;display:flex;align-items:center;gap:8px}
   .sec .hint{font-size:15px;color:var(--soft);margin:0 0 12px}
 
-  /* Eligibility picker */
-  .who{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .chip{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px 8px;min-height:104px;cursor:pointer;text-align:center;transition:.12s}
-  .chip .e{font-size:42px;line-height:1}
-  .chip .n{font-size:17px;font-weight:800;color:var(--navy)}
+  .who{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+  .chip{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 6px;min-height:108px;cursor:pointer;text-align:center;transition:.12s;font-family:inherit}
+  .chip .e{font-size:40px;line-height:1}
+  .chip .n{font-size:15px;font-weight:800;color:var(--navy)}
   .chip[aria-pressed="true"]{border-color:var(--green);background:#effaf2;box-shadow:0 0 0 3px rgba(10,122,55,.15)}
-  .chip:active{transform:scale(.98)}
+  .chip:active{transform:scale(.97)}
 
-  /* Results */
   #results{padding:6px 16px 8px}
+  .count{text-align:center;color:var(--green);font-weight:800;font-size:17px;padding:6px 0 12px}
   .yug{background:var(--card);border:2px solid var(--line);border-left:7px solid var(--green);border-radius:18px;padding:15px 16px;margin-bottom:13px;box-shadow:0 2px 8px rgba(14,35,68,.05)}
   .yug .top{display:flex;align-items:flex-start;gap:12px}
   .yug .ic{font-size:34px;line-height:1;flex:0 0 auto}
@@ -57,21 +62,23 @@
   .yug .amt small{font-size:15px;font-weight:700;color:var(--soft)}
   .yug .desc{font-size:15.5px;color:#3a4760;margin:4px 0 0}
   .yug .act{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-  .yug .act button{flex:1;min-width:130px;min-height:52px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;border:0}
+  .yug .act a,.yug .act button{flex:1;min-width:130px;min-height:54px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;border:0;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-family:inherit}
   .b-go{background:var(--green);color:#fff}
   .b-hear{background:#fff;border:2px solid var(--saffron) !important;color:var(--saffron)}
   .empty{text-align:center;color:var(--soft);font-size:16px;padding:18px}
 
-  /* Protect + daily */
-  .big{display:flex;align-items:center;gap:16px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;min-height:92px;cursor:pointer;margin-bottom:12px}
+  .big{display:flex;align-items:center;gap:15px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:15px;min-height:90px;cursor:pointer;margin-bottom:12px;color:inherit;text-decoration:none}
   .big.warn{border-color:#e3b00c;background:#fff9e8}
-  .big .ic{font-size:40px;flex:0 0 auto;width:56px;text-align:center}
+  .big .ic{font-size:38px;flex:0 0 auto;width:54px;text-align:center}
   .big .t{flex:1}
-  .big .t b{font-size:18px;color:var(--navy);display:block}
-  .big .t span{font-size:15px;color:var(--soft)}
-  .big .h{flex:0 0 auto;width:54px;height:54px;border-radius:50%;border:2px solid var(--saffron);background:#fff;color:var(--saffron);font-size:23px;cursor:pointer}
+  .big .t b{font-size:17px;color:var(--navy);display:block}
+  .big .t span{font-size:14.5px;color:var(--soft)}
+  .big .h{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:2px solid var(--saffron);background:#fff;color:var(--saffron);font-size:22px;cursor:pointer}
 
-  .foot{padding:18px 16px 30px;text-align:center}
+  .gift{margin:8px 16px 0;background:linear-gradient(135deg,#fff6ec,#eef9f1);border:2px solid #f0e2cf;border-radius:18px;padding:16px;text-align:center}
+  .gift .h{font-size:18px;font-weight:900;color:var(--saffron);margin:0 0 3px}
+  .gift .s{font-size:14.5px;color:var(--soft);margin:0}
+  .foot{padding:18px 16px 34px;text-align:center}
   .foot .line{font-size:17px;font-weight:800;color:var(--green);margin-bottom:10px}
   .src{font-size:12px;color:#8a99ad;line-height:1.7}
   .src a{color:#8a99ad}
@@ -79,51 +86,55 @@
 </head>
 <body>
 <div class="wrap">
-
   <header class="hd">
-    <div class="row">
-      <div class="badge" aria-hidden="true">🪔</div>
-      <div>
-        <h1>आपका हक़ का पैसा</h1>
-        <p>सरकार से जो आपका है — चिट्टी ढूँढेगा।</p>
+    <div class="bar">
+      <div class="brand">
+        <div class="badge" aria-hidden="true">🪔</div>
+        <div><h1 id="t-title">आपका हक़ का पैसा</h1><p class="tag" id="t-sub">सरकार से जो आपका है — चिट्टी ढूँढेगा।</p></div>
       </div>
+      <button class="lang" id="langBtn" onclick="toggleLang()" aria-label="भाषा बदलें / Change language">🌐 English</button>
     </div>
-    <button class="listen" onclick="say('नमस्ते! मैं चिट्टी। सरकार की बहुत सी योजनाएँ हैं जिनका पैसा आपका हक़ है — पर बहुत लोगों को पता ही नहीं चलता। नीचे अपनी पहचान दबाइए, मैं बताऊँगा आपके लिए कौन सा पैसा है। पढ़ना ज़रूरी नहीं — बस दबाइए और सुनिए।')">🔊 चिट्टी से सुनिए</button>
+    <div class="twoBtn">
+      <button class="b-listen" id="t-listen" onclick="greet()">🔊 <span>सुनिए</span></button>
+      <button class="b-mic" id="micBtn" onclick="startVoice()">🎤 <span id="t-speak">बोलिए</span></button>
+    </div>
   </header>
 
   <section class="sec">
-    <h2>👇 आप कौन हैं? (एक या ज़्यादा दबाइए)</h2>
-    <p class="hint">पढ़ने की ज़रूरत नहीं — तस्वीर दबाइए। 🔊 हर चीज़ बोलकर सुन सकते हैं।</p>
+    <h2 id="t-whoH">👇 आप कौन हैं?</h2>
+    <p class="hint" id="t-whoHint">तस्वीर दबाइए — या 🎤 बोलिए "मैं किसान हूँ"। पढ़ना ज़रूरी नहीं।</p>
     <div class="who" id="who"></div>
   </section>
 
-  <section class="sec" style="padding-bottom:0">
-    <h2 id="resHead" style="display:none">🪙 आपके लिए यह पैसा/मदद</h2>
-  </section>
-  <div id="results"><p class="empty">ऊपर अपनी पहचान दबाइए — चिट्टी आपके हक़ का पैसा दिखाएगा।</p></div>
+  <section class="sec" style="padding-bottom:0"><h2 id="resHead" style="display:none">🪙 <span id="t-resH">आपके लिए यह पैसा</span></h2></section>
+  <div id="results"><p class="empty" id="t-empty">ऊपर अपनी पहचान दबाइए या बोलिए — चिट्टी आपके हक़ का पैसा दिखाएगा।</p></div>
 
   <section class="sec">
-    <h2>🛡️ अपनी कमाई बचाइए</h2>
-    <p class="hint">फ़ोन पर पैसा तो भेज सकते हैं — पर धोखा पहचानना मुश्किल है।</p>
-    <div class="big warn" onclick="say('कोई कॉल, मैसेज, या QR कोड शक लगे? चिट्टी को दिखाइए। मैं बताऊँगा असली है या ठगी। किसी को OTP या पिन कभी मत बताइए — बैंक कभी नहीं पूछता।')">
+    <h2>🛡️ <span id="t-protectH">अपनी कमाई बचाइए</span></h2>
+    <p class="hint" id="t-protectHint">फ़ोन से पैसा भेजना आसान है — धोखा पहचानना मुश्किल।</p>
+    <div class="big warn" id="scamCard" onclick="speakKey('scam')">
       <div class="ic" aria-hidden="true">⚠️</div>
-      <div class="t"><b>ये कॉल/मैसेज धोखा तो नहीं?</b><span>दिखाइए — असली या ठगी, चिट्टी बताएगा</span></div>
-      <button class="h" aria-label="सुनिए" onclick="event.stopPropagation();say('कोई कॉल, मैसेज या QR शक लगे तो चिट्टी को दिखाइए। OTP या पिन किसी को मत बताइए — बैंक कभी नहीं पूछता।')">🔊</button>
+      <div class="t"><b id="t-scamT">ये कॉल/मैसेज धोखा तो नहीं?</b><span id="t-scamS">OTP/पिन कभी न बताएँ — बैंक नहीं पूछता</span></div>
+      <button class="h" aria-label="सुनिए" onclick="event.stopPropagation();speakKey('scam')">🔊</button>
     </div>
   </section>
 
   <section class="sec">
-    <h2>🌾 रोज़ की मदद</h2>
-    <div class="big" onclick="say('आपके गाँव का आज का मौसम बताऊँ — बारिश होगी या नहीं।')"><div class="ic">🌧️</div><div class="t"><b>आज बारिश होगी?</b><span>आपके गाँव का मौसम</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();say('आपके गाँव का आज का मौसम — बारिश होगी या नहीं, बताऊँ।')">🔊</button></div>
-    <div class="big" onclick="say('आपकी फसल का आज का मंडी भाव, पास की मंडी में।')"><div class="ic">🌾</div><div class="t"><b>आज का मंडी भाव</b><span>आपकी फसल का दाम</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();say('आपकी फसल का आज का मंडी भाव, पास की मंडी में बताऊँ।')">🔊</button></div>
-    <div class="big" onclick="say('आपकी दवाई का सबसे सस्ता दाम और पास की दुकान बताऊँ।')"><div class="ic">🩺</div><div class="t"><b>दवाई सस्ती कहाँ?</b><span>सबसे कम दाम, पास में</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();say('आपकी दवाई का सबसे सस्ता दाम और पास की दुकान बताऊँ।')">🔊</button></div>
+    <h2>🌾 <span id="t-dailyH">रोज़ की मदद</span> <span style="font-size:13px;font-weight:700;color:var(--soft)">(<span id="t-freeGov">मुफ़्त सरकारी सेवा</span>)</span></h2>
+    <a class="big" href="https://mausam.imd.gov.in/" target="_blank" rel="noopener" onclick="speakKey('weather')"><div class="ic">🌧️</div><div class="t"><b id="t-wT">आज बारिश होगी?</b><span id="t-wS">मौसम विभाग (IMD) — मुफ़्त</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();speakKey('weather')">🔊</button></a>
+    <a class="big" href="https://enam.gov.in/web/dashboard/trade-data" target="_blank" rel="noopener" onclick="speakKey('mandi')"><div class="ic">🌾</div><div class="t"><b id="t-mT">आज का मंडी भाव</b><span id="t-mS">e-NAM सरकारी मंडी — मुफ़्त</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();speakKey('mandi')">🔊</button></a>
+    <a class="big" href="https://janaushadhi.gov.in/" target="_blank" rel="noopener" onclick="speakKey('medicine')"><div class="ic">🩺</div><div class="t"><b id="t-medT">दवाई सस्ती कहाँ?</b><span id="t-medS">जन औषधि केंद्र — 50–90% सस्ती</span></div><button class="h" aria-label="सुनिए" onclick="event.stopPropagation();speakKey('medicine')">🔊</button></a>
   </section>
 
+  <div class="gift">
+    <p class="h">🎁 A gift from Claude to all Indians 🇮🇳</p>
+    <p class="s" id="t-giftS">क्लॉड की ओर से सभी भारतीयों के लिए एक भेंट — आपका हक़, आपकी भाषा में।</p>
+  </div>
+
   <div class="foot">
-    <div class="line">पढ़ना नहीं आता? कोई बात नहीं — 🔊 दबाइए, 🎤 बोलिए। 🙏</div>
-    <p class="src">
-      योजनाएँ + राशि: आधिकारिक स्रोत —
-      <a href="https://www.myscheme.gov.in/" target="_blank" rel="noopener">myScheme.gov.in</a> ·
+    <div class="line" id="t-footLine">पढ़ना नहीं आता? कोई बात नहीं — 🔊 दबाइए, 🎤 बोलिए। 🙏</div>
+    <p class="src" id="t-src">
+      आधिकारिक स्रोत: <a href="https://www.myscheme.gov.in/" target="_blank" rel="noopener">myScheme.gov.in</a> ·
       <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener">PM-KISAN</a> ·
       <a href="https://pmjay.gov.in/" target="_blank" rel="noopener">Ayushman Bharat</a> ·
       <a href="https://eshram.gov.in/" target="_blank" rel="noopener">e-Shram</a>.
@@ -133,69 +144,153 @@
 </div>
 
 <script>
-  function say(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='hi-IN'; u.rate=.9; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+/* ───────── language ───────── */
+var LANG = 'hi';
+var L = {
+  hi: {
+    title:'आपका हक़ का पैसा', sub:'सरकार से जो आपका है — चिट्टी ढूँढेगा।', listen:'सुनिए', speak:'बोलिए',
+    whoH:'👇 आप कौन हैं?', whoHint:'तस्वीर दबाइए — या 🎤 बोलिए "मैं किसान हूँ"। पढ़ना ज़रूरी नहीं।',
+    resH:'आपके लिए यह पैसा', empty:'ऊपर अपनी पहचान दबाइए या बोलिए — चिट्टी आपके हक़ का पैसा दिखाएगा।',
+    protectH:'अपनी कमाई बचाइए', protectHint:'फ़ोन से पैसा भेजना आसान है — धोखा पहचानना मुश्किल।',
+    scamT:'ये कॉल/मैसेज धोखा तो नहीं?', scamS:'OTP/पिन कभी न बताएँ — बैंक नहीं पूछता',
+    dailyH:'रोज़ की मदद', freeGov:'मुफ़्त सरकारी सेवा',
+    wT:'आज बारिश होगी?', wS:'मौसम विभाग (IMD) — मुफ़्त', mT:'आज का मंडी भाव', mS:'e-NAM सरकारी मंडी — मुफ़्त',
+    medT:'दवाई सस्ती कहाँ?', medS:'जन औषधि केंद्र — 50–90% सस्ती',
+    giftS:'क्लॉड की ओर से सभी भारतीयों के लिए एक भेंट — आपका हक़, आपकी भाषा में।',
+    footLine:'पढ़ना नहीं आता? कोई बात नहीं — 🔊 दबाइए, 🎤 बोलिए। 🙏',
+    langBtn:'🌐 English',
+    found:function(n){return 'आपके लिए '+n+' योजनाएँ मिलीं — यह आपका हक़ है।';},
+    help:'चिट्टी मदद करे', hear:'सुनिए', apply:'आवेदन / जानकारी',
+    greet:'नमस्ते! मैं चिट्टी। सरकार का बहुत सा पैसा आपका हक़ है पर पहुँचता नहीं। नीचे अपनी पहचान दबाइए या बोलिए — मैं ढूँढ दूँगा। पढ़ना ज़रूरी नहीं।',
+    listening:'सुन रहा हूँ', heard:'मैंने सुना', notHeard:'समझ नहीं आया, फिर बोलिए या तस्वीर दबाइए।',
+    scamSay:'कोई कॉल, मैसेज या QR कोड शक लगे तो रुकिए। OTP या पिन किसी को मत बताइए — बैंक, बिजली, या KYC के नाम पर कभी मत दीजिए। लॉटरी या इनाम का मैसेज झूठा होता है। शक हो तो चिट्टी से पूछिए।',
+    weatherSay:'मौसम विभाग की मुफ़्त सेवा खुल रही है — आपके इलाके का मौसम।',
+    mandiSay:'सरकारी e-NAM मंडी खुल रही है — आपकी फसल का भाव।',
+    medicineSay:'जन औषधि केंद्र — वही दवाई 50 से 90 प्रतिशत सस्ती। पास का केंद्र खुल रहा है।',
+    foundSay:function(n){return 'आपके लिए '+n+' योजनाएँ मिलीं। यह आपका हक़ है, ख़ैरात नहीं। सुनने के लिए स्पीकर, और मदद के लिए हरा बटन दबाइए।';}
+  },
+  en: {
+    title:'Money That Is Yours', sub:'What the government owes you — Chitti will find it.', listen:'Listen', speak:'Speak',
+    whoH:'👇 Who are you?', whoHint:'Tap a picture — or 🎤 say "I am a farmer". No reading needed.',
+    resH:'Your money & benefits', empty:'Tap or speak who you are above — Chitti shows the money that is your right.',
+    protectH:'Protect your earnings', protectHint:'Sending money is easy — spotting a scam is hard.',
+    scamT:'Is this call/message a scam?', scamS:'Never share OTP/PIN — banks never ask',
+    dailyH:'Everyday help', freeGov:'free govt service',
+    wT:'Will it rain today?', wS:'Met Dept (IMD) — free', mT:'Today’s mandi price', mS:'e-NAM govt market — free',
+    medT:'Cheaper medicine?', medS:'Jan Aushadhi — 50–90% cheaper',
+    giftS:'A gift from Claude to all Indians — your right, in your language.',
+    footLine:'Can’t read? No problem — tap 🔊, speak 🎤. 🙏',
+    langBtn:'🌐 हिंदी',
+    found:function(n){return n+' schemes found for you — this is your right.';},
+    help:'Chitti, help me', hear:'Listen', apply:'Apply / Info',
+    greet:'Namaste! I am Chitti. A lot of government money is your right but never reaches you. Tap or speak who you are below — I will find it. No reading needed.',
+    listening:'Listening', heard:'I heard', notHeard:'Didn’t catch that — speak again or tap a picture.',
+    scamSay:'If any call, message or QR code feels suspicious, stop. Never share your OTP or PIN — not for bank, electricity, or KYC. Lottery or prize messages are fake. When in doubt, ask Chitti.',
+    weatherSay:'Opening the free Met Department service — weather for your area.',
+    mandiSay:'Opening the government e-NAM market — your crop’s price.',
+    medicineSay:'Jan Aushadhi centres sell the same medicine 50 to 90 percent cheaper. Opening the nearest one.',
+    foundSay:function(n){return n+' schemes found for you. This is your right, not charity. Tap the speaker to hear each, and the green button for help.';}
+  }
+};
+function tt(){return L[LANG];}
 
-  // WHO — concrete, single-icon identities (low-literacy: one image per choice)
-  var WHO = [
-    {id:'farmer', e:'🌾', n:'किसान'},
-    {id:'woman',  e:'👩', n:'महिला / गृहिणी'},
-    {id:'worker', e:'👷', n:'मज़दूर'},
-    {id:'senior', e:'👵', n:'बुज़ुर्ग'},
-    {id:'girl',   e:'👧', n:'बेटी है'},
-    {id:'nohouse',e:'🏠', n:'पक्का घर नहीं'},
-  ];
+/* ───────── identities (one concrete icon each) ───────── */
+var WHO = [
+  {id:'farmer', e:'🌾', hi:'किसान', en:'Farmer',  kw:['किसान','खेती','फसल','kisan','farmer','farming','crop']},
+  {id:'woman',  e:'👩', hi:'महिला', en:'Woman',   kw:['महिला','औरत','गृहिणी','विधवा','woman','housewife','widow','lady','mahila']},
+  {id:'worker', e:'👷', hi:'मज़दूर', en:'Worker',  kw:['मज़दूर','मजदूर','मेहनत','labour','labor','worker','wage','mazdoor','daily']},
+  {id:'senior', e:'👵', hi:'बुज़ुर्ग', en:'Senior', kw:['बुज़ुर्ग','बूढ़ा','बुढ़ापा','senior','old','pension','elderly','budha']},
+  {id:'girl',   e:'👧', hi:'बेटी',  en:'Daughter',kw:['बेटी','लड़की','daughter','girl','beti']},
+  {id:'nohouse',e:'🏠', hi:'घर नहीं', en:'No house',kw:['घर नहीं','मकान','झोपड़ी','house','home','awas','makaan','homeless']}
+];
+/* ───────── schemes: official amounts + official apply links ───────── */
+var SCHEMES = [
+  {id:'pmkisan',who:['farmer'],ic:'🌾',amt:'₹6,000',hi:{n:'PM-KISAN',per:'/ साल',d:'खेती वाले किसान परिवार को साल में ₹6,000 — तीन किश्तों में, सीधे बैंक खाते में।'},en:{n:'PM-KISAN',per:'/ year',d:'₹6,000 a year to farming families, in 3 instalments, straight to the bank account.'},url:'https://pmkisan.gov.in/'},
+  {id:'pmjay',who:['farmer','woman','worker','senior','nohouse'],ic:'🏥',amt:'₹5,00,000',hi:{n:'आयुष्मान भारत',per:'/ साल इलाज',d:'गरीब परिवार को साल में ₹5 लाख तक मुफ़्त अस्पताल इलाज। पैसा नहीं — इलाज मुफ़्त।'},en:{n:'Ayushman Bharat',per:'/ yr treatment',d:'Up to ₹5 lakh of free hospital treatment a year for poor families.'},url:'https://pmjay.gov.in/'},
+  {id:'ujjwala',who:['woman'],ic:'🔥',amt:'मुफ़्त',hi:{n:'PM उज्ज्वला',per:'गैस कनेक्शन',d:'महिला के नाम मुफ़्त LPG गैस कनेक्शन — धुएँ से आज़ादी।'},en:{n:'PM Ujjwala',per:'LPG connection',d:'A free LPG gas connection in a woman’s name — freedom from smoke.'},amtEn:'Free',url:'https://www.pmuy.gov.in/'},
+  {id:'eshram',who:['worker'],ic:'🪪',amt:'₹2,00,000',hi:{n:'e-Shram कार्ड',per:'दुर्घटना बीमा',d:'मज़दूरों का मुफ़्त कार्ड — दुर्घटना बीमा ₹2 लाख + कई योजनाओं का दरवाज़ा।'},en:{n:'e-Shram Card',per:'accident cover',d:'A free worker’s card — ₹2 lakh accident insurance + a door to many schemes.'},url:'https://eshram.gov.in/'},
+  {id:'pension',who:['senior'],ic:'👵',amt:'₹200–500',hi:{n:'वृद्धावस्था पेंशन',per:'/ महीना*',d:'60 साल से ऊपर ग़रीब बुज़ुर्ग को हर महीने पेंशन (राज्य अनुसार अलग)।'},en:{n:'Old-age Pension',per:'/ month*',d:'Monthly pension for poor citizens above 60 (varies by state).'},url:'https://nsap.nic.in/'},
+  {id:'sukanya',who:['girl'],ic:'👧',amt:'सबसे ऊँचा ब्याज',hi:{n:'सुकन्या समृद्धि',per:'बेटी की बचत',d:'बेटी के नाम खाता — सबसे ज़्यादा ब्याज, पढ़ाई-शादी के लिए बचत।'},en:{n:'Sukanya Samriddhi',per:'girl’s savings',d:'An account in a daughter’s name — highest interest, savings for study & marriage.'},amtEn:'Top interest',url:'https://www.india.gov.in/spotlight/sukanya-samriddhi-yojana'},
+  {id:'awas',who:['nohouse'],ic:'🏠',amt:'~₹1,20,000',hi:{n:'PM आवास',per:'घर बनाने को',d:'जिनके पास पक्का घर नहीं — घर बनाने के लिए सरकारी मदद।'},en:{n:'PM Awas',per:'to build a home',d:'Government help to build a home for those without a pucca house.'},url:'https://pmayg.nic.in/'},
+  {id:'jsy',who:['woman'],ic:'🤱',amt:'₹1,400',hi:{n:'जननी सुरक्षा',per:'प्रसव पर',d:'अस्पताल में बच्चे के जन्म पर महिला को नकद मदद + सुरक्षित प्रसव।'},en:{n:'Janani Suraksha',per:'on childbirth',d:'Cash help to a woman for hospital childbirth + safe delivery.'},url:'https://nhm.gov.in/'}
+];
 
-  // SCHEMES — real central schemes, official amounts; honest "likely eligible" framing.
-  var SCHEMES = [
-    {id:'pmkisan', who:['farmer'], ic:'🌾', name:'PM-KISAN', amt:'₹6,000', per:'/ साल', desc:'खेती वाले किसान परिवार को साल में ₹6,000 — तीन किश्तों में, सीधे बैंक खाते में।'},
-    {id:'pmjay',  who:['farmer','woman','worker','senior','nohouse'], ic:'🏥', name:'आयुष्मान भारत', amt:'₹5,00,000', per:'/ साल इलाज', desc:'गरीब परिवार को साल में ₹5 लाख तक मुफ़्त अस्पताल इलाज। पैसा नहीं — इलाज मुफ़्त।'},
-    {id:'ujjwala',who:['woman'], ic:'🔥', name:'PM उज्ज्वला', amt:'मुफ़्त', per:'गैस कनेक्शन', desc:'महिला के नाम मुफ़्त LPG गैस कनेक्शन — धुएँ से आज़ादी।'},
-    {id:'eshram', who:['worker'], ic:'🪪', name:'e-Shram कार्ड', amt:'₹2,00,000', per:'दुर्घटना बीमा', desc:'मज़दूरों का मुफ़्त कार्ड — दुर्घटना बीमा ₹2 लाख + कई योजनाओं का दरवाज़ा।'},
-    {id:'pension',who:['senior'], ic:'👵', name:'वृद्धावस्था पेंशन', amt:'₹200–500', per:'/ महीना*', desc:'60 साल से ऊपर ग़रीब बुज़ुर्ग को हर महीने पेंशन (राज्य अनुसार अलग)।'},
-    {id:'sukanya',who:['girl'], ic:'👧', name:'सुकन्या समृद्धि', amt:'सबसे ऊँचा ब्याज', per:'बेटी की बचत', desc:'बेटी के नाम खाता — सबसे ज़्यादा ब्याज, पढ़ाई-शादी के लिए बचत।'},
-    {id:'awas',   who:['nohouse'], ic:'🏠', name:'PM आवास', amt:'~₹1,20,000', per:'घर बनाने को', desc:'जिनके पास पक्का घर नहीं — घर बनाने के लिए सरकारी मदद।'},
-    {id:'jsy',    who:['woman'], ic:'🤱', name:'जननी सुरक्षा', amt:'₹1,400', per:'प्रसव पर', desc:'अस्पताल में बच्चे के जन्म पर महिला को नकद मदद + सुरक्षित प्रसव।'},
-  ];
+function say(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang=(LANG==='hi'?'hi-IN':'en-IN'); u.rate=.9; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+function speakKey(k){ say(tt()[k+'Say'] || ''); }
+function greet(){ say(tt().greet); }
 
-  var picked = new Set();
-  var who = document.getElementById('who');
+var picked = new Set();
+function buildWho(){
+  var who=document.getElementById('who'); who.innerHTML='';
   WHO.forEach(function(w){
-    var b = document.createElement('button');
-    b.className='chip'; b.setAttribute('aria-pressed','false'); b.setAttribute('aria-label', w.n);
-    b.innerHTML = '<span class="e" aria-hidden="true">'+w.e+'</span><span class="n">'+w.n+'</span>';
-    b.onclick = function(){
-      var on = picked.has(w.id);
-      if(on){picked.delete(w.id);b.setAttribute('aria-pressed','false');}
-      else{picked.add(w.id);b.setAttribute('aria-pressed','true');say(w.n);}
-      render();
-    };
+    var b=document.createElement('button'); b.className='chip'; b.dataset.id=w.id;
+    b.setAttribute('aria-pressed', picked.has(w.id)?'true':'false'); b.setAttribute('aria-label', w[LANG]);
+    b.innerHTML='<span class="e" aria-hidden="true">'+w.e+'</span><span class="n">'+w[LANG]+'</span>';
+    b.onclick=function(){ toggle(w.id, w[LANG]); };
     who.appendChild(b);
   });
+}
+function toggle(id,label){
+  if(picked.has(id)) picked.delete(id); else { picked.add(id); say(label); }
+  syncChips(); render();
+}
+function syncChips(){ document.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', picked.has(c.dataset.id)?'true':'false'); }); }
 
-  function render(){
-    var head = document.getElementById('resHead');
-    var box = document.getElementById('results');
-    if(picked.size===0){ head.style.display='none'; box.innerHTML='<p class="empty">ऊपर अपनी पहचान दबाइए — चिट्टी आपके हक़ का पैसा दिखाएगा।</p>'; return; }
-    var seen={}, list=[];
-    SCHEMES.forEach(function(s){ if(s.who.some(function(x){return picked.has(x);}) && !seen[s.id]){seen[s.id]=1;list.push(s);} });
-    head.style.display='flex';
-    var total = list.length;
-    box.innerHTML = '<p class="empty" style="padding:4px 0 12px;color:#0a7a37;font-weight:800;font-size:17px">✅ आपके लिए '+total+' योजनाएँ मिलीं — यह आपका हक़ है।</p>' +
-      list.map(function(s){
-        var read = s.name+'. '+s.amt+' '+s.per.replace('/',' ')+'. '+s.desc;
-        return '<div class="yug"><div class="top"><div class="ic" aria-hidden="true">'+s.ic+'</div>'+
-          '<div style="flex:1"><p class="name">'+s.name+'</p>'+
-          '<p class="amt">'+s.amt+' <small>'+s.per+'</small></p>'+
-          '<p class="desc">'+s.desc+'</p></div></div>'+
-          '<div class="act">'+
-            '<button class="b-go" onclick="say(\'चिट्टी आपकी मदद करेगा — कौन से कागज़ चाहिए, कहाँ जाना है, और फ़ॉर्म भरने में। बस बोलिए।\')">✅ चिट्टी मदद करे</button>'+
-            '<button class="b-hear" onclick="say(\''+read.replace(/'/g,'')+'\')">🔊 सुनिए</button>'+
-          '</div></div>';
-      }).join('');
-    var amt = list.filter(function(s){return /₹/.test(s.amt);}).length;
-    say('आपके लिए '+total+' योजनाएँ मिलीं। यह आपका हक़ है, ख़ैरात नहीं। हर एक को सुनने के लिए स्पीकर दबाइए, और मदद के लिए हरा बटन।');
-  }
-  window.addEventListener('load', function(){ setTimeout(function(){ say('नमस्ते! मैं चिट्टी। सरकार का बहुत सा पैसा आपका हक़ है पर पहुँचता नहीं। नीचे अपनी पहचान दबाइए — मैं ढूँढ दूँगा।'); }, 700); });
+function render(){
+  var head=document.getElementById('resHead'), box=document.getElementById('results');
+  if(picked.size===0){ head.style.display='none'; box.innerHTML='<p class="empty">'+tt().empty+'</p>'; return; }
+  var seen={}, list=[];
+  SCHEMES.forEach(function(s){ if(s.who.some(function(x){return picked.has(x);}) && !seen[s.id]){seen[s.id]=1;list.push(s);} });
+  head.style.display='flex';
+  box.innerHTML='<p class="count">✅ '+tt().found(list.length)+'</p>'+ list.map(function(s){
+    var loc=s[LANG]; var amt=(LANG==='en'&&s.amtEn)?s.amtEn:s.amt;
+    var read=loc.n+'. '+amt+' '+loc.per.replace('/',' ')+'. '+loc.d;
+    return '<div class="yug"><div class="top"><div class="ic" aria-hidden="true">'+s.ic+'</div>'+
+      '<div style="flex:1"><p class="name">'+loc.n+'</p><p class="amt">'+amt+' <small>'+loc.per+'</small></p>'+
+      '<p class="desc">'+loc.d+'</p></div></div><div class="act">'+
+      '<a class="b-go" href="'+s.url+'" target="_blank" rel="noopener" onclick="say(\''+tt().help.replace(/'/g,'')+'\')">✅ '+tt().apply+'</a>'+
+      '<button class="b-hear" onclick="say(\''+read.replace(/'/g,'')+'\')">🔊 '+tt().hear+'</button>'+
+      '</div></div>';
+  }).join('');
+  say(tt().foundSay(list.length));
+}
+
+/* ───────── voice INPUT (so an illiterate person just speaks) ───────── */
+function startVoice(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var mic=document.getElementById('micBtn');
+  if(!SR){ say(tt().whoHint); return; }
+  var r=new SR(); r.lang=(LANG==='hi'?'hi-IN':'en-IN'); r.interimResults=false; r.maxAlternatives=3;
+  mic.classList.add('live'); say(tt().listening);
+  r.onresult=function(ev){
+    var heard=''; for(var i=0;i<ev.results[0].length;i++) heard+=' '+ev.results[0][i].transcript;
+    heard=heard.toLowerCase(); var matched=0;
+    WHO.forEach(function(w){ if(w.kw.some(function(k){return heard.indexOf(k.toLowerCase())>=0;})){ if(!picked.has(w.id)){picked.add(w.id);matched++;} } });
+    syncChips();
+    if(matched){ render(); } else { say(tt().notHeard); }
+  };
+  r.onerror=function(){ mic.classList.remove('live'); };
+  r.onend=function(){ mic.classList.remove('live'); };
+  try{ r.start(); }catch(e){ mic.classList.remove('live'); }
+}
+
+/* ───────── apply language to all text ───────── */
+function applyLang(){
+  document.documentElement.lang = LANG;
+  var T=tt();
+  var map={'t-title':'title','t-sub':'sub','t-speak':'speak','t-whoH':'whoH','t-whoHint':'whoHint','t-resH':'resH',
+    't-protectH':'protectH','t-protectHint':'protectHint','t-scamT':'scamT','t-scamS':'scamS','t-dailyH':'dailyH',
+    't-freeGov':'freeGov','t-wT':'wT','t-wS':'wS','t-mT':'mT','t-mS':'mS','t-medT':'medT','t-medS':'medS',
+    't-giftS':'giftS','t-footLine':'footLine'};
+  Object.keys(map).forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=T[map[id]]; });
+  document.querySelector('#t-listen span').textContent=T.listen;
+  document.getElementById('langBtn').textContent=T.langBtn;
+  buildWho(); render();
+}
+function toggleLang(){ LANG = (LANG==='hi'?'en':'hi'); applyLang(); say(tt().sub); }
+
+buildWho();
+window.addEventListener('load', function(){ setTimeout(greet, 700); });
 </script>
 </body>
 </html>
