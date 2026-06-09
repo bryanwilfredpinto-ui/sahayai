@@ -138,4 +138,72 @@ fetch is wired) and the DeepSeek-enhanced Chitti Explain (deterministic template
 funded key). Directional accuracy ≥70% is therefore **NOT YET MEASURED** — see [evals/RESULTS.md](evals/RESULTS.md).
 
 ---
+
+## AMENDMENTS — Sire's requirements + official CEOS (2026-06-10)
+
+> Grounds: Sire's call-engine spec + the official **CEOS — Chitti Technical v1.0 FINAL** (Sections 5–13).
+> Each BO still ships with the exact TEST that flips it GREEN; the four-user contract gates every BO.
+> *(P) = partially built in BO8/BO5 — EXTEND, do not rebuild.*
+
+## BO14 — Chart timeframe selector ON the chart (all 8 TFs) **(P)**
+**Build:** a TF tab row on the chart — **1m · 5m · 15m · 1H · 4H · Daily · Weekly · Monthly** (CEOS §6.1);
+tap one → redraw at that TF; unavailable TFs dimmed (intraday data shallow — label honestly); live TFs
+fetch on demand. DPR-crisp; label syncs.
+**TEST (BO14):** 8 tabs render; clicking Weekly/Monthly switches candles + the header label; 0 console errors.
+
+## BO15 — Multi-timeframe SELECTION (triple-screen) **(P)**
+**Build:** user picks **trend timeframes + the entry/trigger frame** — 4 presets (CEOS §6.4: Long-Term M+W→D ·
+Swing W+D→4H · Day D+4H→1H · Scalper 4H+1H→5m) **+ Custom (any combo).** Higher TF = direction, entry = trigger,
+disagreement → **WAIT** (CEOS §6.2/6.3). The chosen config drives the call, the journal and the backtest.
+**TEST (BO15):** preset + custom selection both produce a call from exactly the chosen TFs; opposed trend
+frames → WAIT; confluence score = agreeing/total per §6.3.
+
+## BO16 — 39-indicator dropdown ON the chart OR below it **(P)**
+**Build:** a **"➕ Indicators"** menu listing **all 39 indicators** (extend the current 16) grouped *On the chart*
+(overlays: MAs, Bollinger, VWAP, Supertrend, Donchian, Keltner, pivots, Camarilla, S/R zones …) vs *Below the
+chart* (oscillators: RSI, MACD, Stochastic, Williams %R, CCI, ADX, MFI, ROC, Momentum, Awesome, StochRSI, TRIX …).
+Each is a removable chip; oscillators stack as DPR-crisp panes (CEOS §5 indicator suite, accessibility format each).
+**TEST (BO16):** menu lists ≥39 indicators; adding an overlay draws on price, adding an oscillator adds a pane
+below; every indicator's audio/visual/haptic mapping present (CEOS §5 tables); 0 console errors.
+
+## BO17 — Dual Journal (user trades + system signals, with outcome) — CEOS §10
+**Build:** **User Trade Journal** (entry/SL/T1/T2/exit/PnL/exit-reason) **+ System Signal Journal** (every call:
+TFs, confluence, dir, confidence, entry/SL/targets) with **outcome tracking** (SL_HIT / T1_HIT / T2_HIT /
+PENDING, `accurate` flag). On-device; Golden-Rule confirm to log; narratable rows + 5-element box.
+**TEST (BO17):** log→close roundtrip persists; system journal auto-logs every call; outcome + `accurate`
+computed on close; "log trade" opens a Yes/No confirm (never auto-acts).
+
+## BO18 — Backtest: 3-year, NET of costs, both directions — Sire's spec
+**Build:** backtest the user's **exact TF + indicator config**; **net of brokerage + STT + slippage**; a call is a
+win if **target hits before stop**; **long AND short**; ~3-yr on Daily/Weekly/Monthly (intraday = whatever history
+exists, **labelled honestly**); no look-ahead. Output: trades · win% · profit factor · net P&L · max drawdown.
+**TEST (BO18):** walk-forward, SL-first-conservative; net result < gross (costs applied); short trades counted;
+intraday window labelled with its true span; numbers reproduce on a fixture.
+
+## BO19 — Glass-box track record + AI insights (after 10 trades) — CEOS §9.3 (Tickeron best-practice)
+**Build:** show the call's **success-probability + historical track record** right next to the verdict (glass-box);
+after ≥10 logged trades, deterministic insights: overtrading · cutting-winners-short · best/worst setup ·
+emotional-trading (CEOS §9.3).
+**TEST (BO19):** track-record surfaces from the journal/backtest; insights fire only after 10 trades; **win-rate
+labelled "estimate, not advice"**; 0 banned phrases.
+
+## BO20 — Paper-first + confirmation + audio summary + 6-agent orchestrator — CEOS Articles 3-4, §9.1, §11
+**Build:** **10 paper trades before live signals** (CEOS Art.3) with accessible risk-acknowledgment; **confirmation
+required** for every trade (voice "confirm" OR double-tap, CEOS Art.4) — never autonomous; Audio Trade Summary in
+order **Trend→Entry→Stop→Target→Confidence** (P5); align the engine to the named 6 agents (Data·Technical·Confluence·
+Risk·Signal·Journal, CEOS §9.1).
+**TEST (BO20):** live signals gated until 10 paper trades done; trade needs explicit confirm; audio-summary order
+correct; crisis path → Tele-MANAS 14416 (no LLM); loss-spiral >5%/day → cool-down (CEOS Art.8, §13.4).
+
+## BO21 — Pattern-learning v1 (remember my style, on-device) — Sire's spec (staged)
+**Build:** remember the user's preferred timeframes, watched stocks, and the calls they 👍/act on; tilt toward
+their style; on-device, no PII to server. (Stage 2 — results-based tuning — deferred until the journal is rich.)
+**TEST (BO21):** preferences persist + bias the defaults; nothing leaves the device (no network call carries the profile).
+
+> **Build-order note for the coder:** BO14/BO15/BO16 EXTEND what already exists (chart TF tabs + 16-indicator
+> picker are live) — finish to 8 TFs, the triple-screen selector, and all 39 indicators. BO17–BO21 are new.
+> Honour every existing gate: 5-element box (now incl. ✏️), 9 languages, axe 0 WCAG 2.2 AA on 5 devices,
+> no-stop→no-call, NOT-SEBI bar, decision-first primary (CEOS §3 personas; advanced = P9, one tap).
+
+---
 > **World Class Chitti Technical — Commando Discipline. Zero Excuses.**
