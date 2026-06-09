@@ -39,7 +39,7 @@
   // a few entries in PAGE_TO_FOLDER are substrates / internal pages
   // — chitti-isl, chitti-quality, chitti-kirana — not user products).
   const ALL_CHITTIS = [
-    { slug: 'chitti_complete_technical', folder: 'chitti-fundamentals',         emoji: '📈', label: 'Chitti Technical' },
+    { slug: 'chitti_technical',          folder: 'chitti-technical',            emoji: '📈', label: 'Chitti Technical' },
     { slug: 'chitti_fundamentals',       folder: 'chitti-fundamentals',         emoji: '📊', label: 'Chitti Fundamentals' },
     { slug: 'chitti_medupi',             folder: 'chitti-medupi',               emoji: '💊', label: 'Chitti MedUPI' },
     { slug: 'chitti_news',               folder: 'chitti-news',                 emoji: '📰', label: 'Chitti News' },
@@ -76,7 +76,11 @@
     // so Discovery shows the right list per page. (SAHAYAI_MASTER §4a
     // still maps both pages to chitti-shares for backend purposes.)
     'chitti_fundamentals': 'chitti-fundamentals',
-    'chitti_complete_technical': 'chitti-complete-technical',
+    // chitti_technical.html is the live CEOS product (chitti-technical/). The old
+    // chitti_complete_technical.html now just redirects here — map both slugs to the
+    // real folder so Discovery never reads the retired page's features.
+    'chitti_technical': 'chitti-technical',
+    'chitti_complete_technical': 'chitti-technical',
     'chitti_isl': 'chitti-isl',
     'chitti_kirana': 'chitti-kirana',
     'chitti_health_scanner': 'chitti-health-scanner',
