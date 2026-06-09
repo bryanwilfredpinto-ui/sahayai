@@ -579,7 +579,9 @@
       '<button type="button" class="chitti-fb-bbtn demo"  data-act="demo"  aria-label="Play voice demo of ' + escAttr(section) + '"><span aria-hidden="true">▶</span> <span class="chitti-fb-bbtn-text">Chitti</span></button>' +
       '<button type="button" class="chitti-fb-bbtn speak" data-act="speak" aria-label="Read ' + escAttr(section) + ' aloud"><span aria-hidden="true">🔊</span> <span class="chitti-fb-bbtn-text" data-vai-i18n="ui.suno">' + escAttr(sunoLbl) + '</span></button>' +
       '<button type="button" class="chitti-fb-bbtn up"    data-act="up"    aria-label="' + escAttr(section) + ' was helpful">👍</button>' +
-      '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>';
+      '<button type="button" class="chitti-fb-bbtn down"  data-act="down"  aria-label="Something was wrong with ' + escAttr(section) + '">👎</button>' +
+      // ✏️ pencil — Sire's 5th element: write OR speak feedback directly (not only after 👎).
+      '<button type="button" class="chitti-fb-bbtn edit"  data-act="edit"  aria-label="Write or speak feedback about ' + escAttr(section) + '"><span aria-hidden="true">✏️</span></button>';
     // Insert as a SIBLING after the box, not inside, so page re-renders
     // that set box.innerHTML don't wipe the bar.
     box.parentNode.insertBefore(bar, box.nextSibling);
@@ -700,6 +702,13 @@
       // modal). Voice + DeepSeek transcribe + readback flow works for
       // blind / mute / illiterate users.
       var q = '?product=' + encodeURIComponent(page) + '&card=' + encodeURIComponent(boxId) + '&section=' + encodeURIComponent(section);
+      window.location.href = 'feedback.html' + q;
+    });
+
+    // ✏️ pencil — write OR speak feedback directly (Sire's 5th element), same accessible feedback page.
+    var editBtn = bar.querySelector('[data-act="edit"]');
+    if (editBtn) editBtn.addEventListener('click', function () {
+      var q = '?product=' + encodeURIComponent(page) + '&card=' + encodeURIComponent(boxId) + '&section=' + encodeURIComponent(section) + '&mode=write';
       window.location.href = 'feedback.html' + q;
     });
   }
