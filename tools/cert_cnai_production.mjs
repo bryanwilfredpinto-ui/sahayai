@@ -211,6 +211,17 @@ for (const [lbl, dev] of [['iPhone 13', 'iPhone 13'], ['Pixel 5', 'Pixel 5']]) {
   const obs = await p2.evaluate(() => { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf('chitti_xlate_v') === 0) ks.push(k); } return { status: (window._chittiObs || {}).status, stale: ks }; });
   chk('G11', 'Live experience', 'Returning user (stale cache) stays "active", not false-Degraded', obs.status === 'active' && obs.stale.length === 0, 'status=' + obs.status + ' stale-remaining=' + obs.stale.length);
   await c2.close();
+  // 11c — opened menus/dropdowns must stay WITHIN the viewport (no off-screen clip)
+  let menuOk = 0; const menuW = [360, 768, 1366, 1920];
+  for (const w of menuW) {
+    const c3 = await ctx(browser, { viewport: { width: w, height: 820 } }); const p3 = await c3.newPage();
+    await p3.addInitScript(() => { try { localStorage.setItem('disability_profile', '{}'); localStorage.setItem('chitti_lang', 'en'); } catch (e) {} });
+    await p3.goto(URL, { waitUntil: 'domcontentloaded' }); await p3.waitForTimeout(1500);
+    const r = await p3.evaluate(() => { const d = document.querySelector('.hdr-more'); if (d) d.setAttribute('open', ''); const m = document.querySelector('.hdr-more-menu'); if (!m) return null; const b = m.getBoundingClientRect(); return { inView: b.left >= -1 && b.right <= window.innerWidth + 1, items: m.querySelectorAll('a,button').length }; });
+    if (r && r.inView && r.items >= 3) menuOk++;
+    await c3.close();
+  }
+  chk('G11', 'Live experience', '"⋯ More" menu opens fully on-screen at 360/768/1366/1920', menuOk === menuW.length, menuOk + '/' + menuW.length + ' widths in-viewport');
 }
 
 await browser.close(); srv.close();
