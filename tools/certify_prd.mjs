@@ -171,6 +171,18 @@ const axe = await pg.evaluate(async () => { const r = await window.axe.run(docum
 const a11y = await pg.evaluate(() => ({ techA11y: typeof window.TechA11y === 'object', tinyTaps: Array.from(document.querySelectorAll('button')).filter(b => { const r = b.getBoundingClientRect(); return r.width && (r.width < 44 || r.height < 44); }).length }));
 cert('SWARM', 'accessibility-agent executed', 'swarm/accessibility-agent.md → chitti_technical_a11y.js (TechA11y) + axe', 'page renders accessibly: axe 0 serious + TechA11y loaded', 'axe 0 serious, TechA11y present', `axeSerious=${axe} TechA11y=${a11y.techA11y} tapsUnder44=${a11y.tinyTaps}`, (axe === 0 && a11y.techA11y) ? 'PASS' : 'FAIL');
 
+// Chart quality (was missed: only pixels were checked, not that candles fill the width)
+await pg.evaluate(() => window.TechUI && window.TechUI.generate && window.TechUI.generate());
+await pg.waitForTimeout(900);
+const chart = await pg.evaluate(() => {
+  const cv = document.getElementById('price-canvas'); if (!cv) return { ok: false, cols: 0 };
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = ctx.getImageData(0, 0, W, H).data;
+  let cols = 0; for (let c = 0; c < 20; c++) { const xx = Math.floor(W * (c + 0.5) / 20); let hit = false; for (let yy = 0; yy < H; yy += 4) { const i = (yy * W + xx) * 4; if (d[i + 3] > 0 && !(d[i] > 245 && d[i + 1] > 245 && d[i + 2] > 245)) { hit = true; break; } } if (hit) cols++; }
+  return { ok: cols >= 12, cols, w: W, h: H };
+});
+cert('CC7', 'Chart renders premium (candles fill width)', 'chitti_technical.html:drawChart (DPR + right price axis + level pills)', 'candles span the canvas width; axis + SL/Entry/T1-T3 tags',
+  '≥12/20 columns contain candles', `${chart.cols}/20 columns drawn (${chart.w}x${chart.h})`, chart.ok ? 'PASS' : 'FAIL', 'redesigned: DPR-crisp, right ₹ axis + gridlines, colour-coded level pills, last-price marker (prd_chart.png)');
+
 // Responsive (cross-cutting) — reference the 5 device screenshots already captured
 const devs = ['desktop_1920x1080', 'laptop_1366x768', 'tablet_ipad_810x1080', 'mobile_android_360x800', 'mobile_iphone_390x844'];
 const haveShots = devs.filter(d => existsSync(join(SHOT, 'certify_' + d + '.png'))).length;

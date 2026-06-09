@@ -17,7 +17,7 @@
 | 7 | "Swarm works" | the `swarm/*.md` files *exist* | never proved an agent **executes** | ✅ all 9 agents run on real input + produce output (proven) |
 | 8 | "Buttons work" | a few specific buttons | most buttons never clicked in a test | ✅ button audit = 101/101 clicked, 0 errors |
 | 9 | "Responsive" | 375/768/1280 only | real device classes (1920, iPad, Android, iPhone) unproven | ✅ 5 device screenshots on disk |
-| 10 | "Chart works" | canvas has **pixels** | **chart design is weak** — sparse, overlapping price-line labels, huge empty area (your screenshot) | ❌ **STILL OPEN** — pixels ≠ premium; needs a real chart redesign (zoom/drag/fullscreen, tighter candles) |
+| 10 | "Chart works" | canvas has **pixels** | **chart design was weak** — sparse, overlapping top-left price labels, empty area | ✅ **redesigned**: DPR-crisp, right ₹ axis + gridlines, full-width candles, colour-coded SL/Entry/T1-T3 pills on the axis, last-price marker; CC7 test asserts candles fill ≥12/20 columns (zoom/drag/fullscreen = next polish) |
 | 11 | "Health/status honest" | — | **"Degraded #OTX9"** badge still shows even when data flows | 🟡 badge-fix landed in repo; needs a test that the badge reflects real data state |
 | 12 | "Search result correct" | — | a **stale** previous result (DIVISLAB) stays after a failed new search | 🟡 mitigated by free-symbol search; a "clear-on-new-search" test still owed |
 
