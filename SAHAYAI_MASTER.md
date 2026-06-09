@@ -384,7 +384,6 @@ See [[project_chitti_golden_rule_locked]].
 | 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
 | 14 | Chitti News AI | `chitti_news_ai.html` | `chitti-news-ai-api` | SKELETON 2026-05-14 — AI-only tool & model discovery. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers, Inshorts, Ground News, Artifact). 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), 14 skill files. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md). |
 
-**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_NEWS_AI_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`, `CHITTI_MECHANIC_MASTER_SPEC.md` (Chitti Auto OS — Bike + Car Doctor, CEOS + CQOS).
 
 ### Founder master product docs — single source of truth
 
@@ -720,7 +719,6 @@ Per the new §2 row "Vaani is the only user interface" (`project_chitti_vaani_so
 
 1. **Vaani intent router covers every Chitti service.** Today Vaani's DeepSeek-classified router covers a subset. Extend it so a single voice / typed query from inside Vaani can reach every one of the 14 Chittis (technical, fundamentals, medupi, news, news-ai, upi, scanner, ca, legal, government, logo-video, voice-factory, kirana, vaani-own) — and every future Chitti — by reading each Chitti's `skills/FEATURES.md` capability surface. The router is the **only** code path that the user touches; the routed-to Chitti's UI is never presented.
 2. **Homepage `index.html` becomes a Vaani entry, not a Chitti menu.** sahayai.in currently lists product cards as parallel entry points; replace with a Vaani-first landing — one prominent CTA into `chitti_vaani.html` + the 14 Chittis surfaced only as "Vaani can also help with…" cards that themselves open Vaani with the relevant intent pre-filled, not the standalone HTML. `chitti_a11y.js` + `feedback-widget.js` still need wiring into the new index.
-3. **Standalone Chitti pages add a "Talk to Vaani instead" banner.** Users who land on `chitti_medupi.html` / `chitti_technical.html` / `chitti_fundamentals.html` / etc. via search engines or old links should see a sticky top banner — "Your dost Vaani can do this for you — tap to open Vaani." Pages stay as dev / debug surface; they are no longer marketed as the user entry. Substrates (`chitti_a11y.js`, `feedback-widget.js`, `chitti_camera.js`, `chitti_features.js`, `chitti_share.js`) keep loading on these pages for parity testing.
 4. **"Explain simply" button inside Vaani.** Required on every Vaani response (the canonical surface), via the per-response widget. The substrate persists on standalone pages for testing parity but its user-canonical role is inside Vaani — re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud.
 
 ### ✅ Geo on the local-business lookup — SHIPPED 2026-05-13
@@ -787,7 +785,6 @@ politics → business → tech → entertainment → sports → factcheck (post-
 ## 9. Where to find more
 
 - **`MEMORY.md`** at `~/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/` — index of all auto-memory notes, loaded into every Claude session.
-- **Spec files at repo root:** `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
 - **Skills:** `chitti-news/skills/`, `chitti-vaani/skills/`, `chitti-medupi/skills/`, etc.
 - **Live backends:** see footer of `index.html` for `/health` endpoints — curl before claiming "live".
 - **Founder contact:** bryanderrylpinto@gmail.com.
