@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260622" defer></script>
-<script src="nse_universe.js?v=20260622" defer></script>
-<script src="chitti_technical_i18n.js?v=20260622" defer></script>
-<script src="chitti_technical_engine.js?v=20260622" defer></script>
-<script src="chitti_technical_a11y.js?v=20260622" defer></script>
-<script src="chitti_a11y.js?v=20260622" defer></script>
+<script src="chitti_lang.js?v=20260623" defer></script>
+<script src="nse_universe.js?v=20260623" defer></script>
+<script src="chitti_technical_i18n.js?v=20260623" defer></script>
+<script src="chitti_technical_engine.js?v=20260623" defer></script>
+<script src="chitti_technical_a11y.js?v=20260623" defer></script>
+<script src="chitti_a11y.js?v=20260623" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260622" defer></script>
+<script src="chitti_isl.js?v=20260623" defer></script>
 
 <style>
 :root{
@@ -342,6 +342,7 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
     </div>
     <div class="vh-head" id="vh-head">🤖 <span data-i18n="vh.title">Chitti Verdict</span></div>
     <button class="vh-listen" onclick="TechUI.hearVerdict()">🔊 <span data-i18n="vh.listen">Listen to Chitti</span></button>
+    <button class="vh-listen" style="background:#5e35b1;border-color:#5e35b1" onclick="TechUI.sonifyChart()">🎵 <span data-i18n="vh.hearchart">Hear the chart</span></button>
     <div class="vh-reasons" id="vh-reasons"></div>
     <div class="vh-plan" id="vh-plan"></div>
     <div class="vh-risk" id="vh-risk"></div>
@@ -786,6 +787,34 @@ window.TechUI = (function(){
     return '<span class="vh-paper">📝 '+TT('paper.mode','Practice first')+' '+n+'/'+PAPER_GOAL+'</span>'+
       '<button type="button" class="vh-paper-btn" onclick="TechUI.paperLogTrade()">📝 '+TT('paper.trade','Paper trade')+'</button>'; }
 
+  // ───── Accessibility OS: SONIFICATION (CEOS §11.1) — a blind user HEARS the chart shape ─────
+  // Maps each candle's close to a pitch (low price = low note, high price = high note), 220–880 Hz,
+  // then speaks the trend. The only accessible price chart in Indian markets.
+  var _audioCtx=null;
+  function sonifyChart(){
+    if(!lastScan){ return; }
+    var sym=lastScan._sym, series=(getTf(sym)[chartTf]||getTf(sym).daily||[]);
+    var candles=series.slice(-40), closes=candles.map(function(c){return c.close;}).filter(function(x){return x!=null;});
+    if(closes.length<2){ speak(TT('sonify.none','No chart data to play yet.')); return; }
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC){ speak(TT('sonify.unavail','Audio chart is not available on this device.')); return; }
+    try{ _audioCtx=_audioCtx||new AC(); if(_audioCtx.state==='suspended') _audioCtx.resume(); }catch(e){ return; }
+    var ctx=_audioCtx, lo=Math.min.apply(null,closes), hi=Math.max.apply(null,closes), t0=ctx.currentTime, step=0.16;
+    closes.forEach(function(px,i){
+      var norm=(hi>lo)?(px-lo)/(hi-lo):0.5, freq=220+norm*660, at=t0+i*step;
+      var o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,at); g.gain.linearRampToValueAtTime(0.16,at+0.02); g.gain.exponentialRampToValueAtTime(0.0001,at+step);
+      o.connect(g); g.connect(ctx.destination); o.start(at); o.stop(at+step);
+    });
+    var first=closes[0], last=closes[closes.length-1], chg=(last-first)/first*100;
+    var trend=chg>2?TT('sonify.upStrong','rising strongly'):chg>0.5?TT('sonify.up','rising'):chg<-2?TT('sonify.downStrong','falling strongly'):chg<-0.5?TT('sonify.down','falling'):TT('sonify.flat','sideways');
+    setTimeout(function(){ speak(sym+'. '+closes.length+' '+TT('sonify.candles','candles')+'. '+TT('sonify.trendIs','Price is')+' '+trend+'.'); }, Math.round(closes.length*step*1000)+150);
+  }
+
+  // ───── Accessibility OS: HAPTICS (CEOS §11.3) — a deaf-blind user FEELS the call ─────
+  function haptic(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
+  function hapticForDecision(d){ haptic(d==='BUY'?[200,100,200]:d==='SELL'?[400,120,400]:[120]); }
+
   function renderVerdict(v, sym){
     lastVerdict=v;
     var hero=document.getElementById('verdict-hero'); if(!hero) return;
@@ -814,6 +843,7 @@ window.TechUI = (function(){
     if(meta){ var ls=learnSummary();
       var chip=ls?('<span class="vh-learn">🧠 '+TT('learn.style','Chitti is learning you')+': '+ls.count+' '+TT('learn.calls','calls')+(ls.topTf?(' · '+ls.topTf.toUpperCase()):'')+'</span>'):'';
       meta.innerHTML=(v.decision!=='WAIT'?paperBadge():'')+chip; }
+    hapticForDecision(v.decision);   // CEOS §11.3 — deaf-blind user feels the call (BUY/SELL/WAIT distinct)
   }
   function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
 
@@ -1638,7 +1668,7 @@ window.TechUI = (function(){
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
-    audioSummary:audioSummary,hearVerdict:hearVerdict,toggleMode:toggleMode,setChartTf:setChartTf,toggleChartInd:toggleChartInd,toggleChartIndMenu:toggleChartIndMenu,applyLang:applyLang,toggleTable:toggleTable,paperLogTrade:paperLogTrade,
+    audioSummary:audioSummary,hearVerdict:hearVerdict,toggleMode:toggleMode,setChartTf:setChartTf,toggleChartInd:toggleChartInd,toggleChartIndMenu:toggleChartIndMenu,applyLang:applyLang,toggleTable:toggleTable,paperLogTrade:paperLogTrade,sonifyChart:sonifyChart,
     acInput:acInput,acKey:acKey,acPick:acPick,acPickFree:acPickFree,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
     _confirmYes:_confirmYes,_confirmNo:_confirmNo};
