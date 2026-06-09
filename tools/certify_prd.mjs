@@ -120,9 +120,16 @@ await pg.goto('http://127.0.0.1:8799/chitti_technical.html', { waitUntil: 'domco
 await pg.waitForTimeout(1600);
 await pg.evaluate(() => { const m = document.getElementById('chitti-disability-profile-modal'); if (m) m.remove(); });
 
-// F0 — Stock Search
-const f0 = await pg.evaluate(() => { const s = document.getElementById('sym'); return { exists: !!s, value: s ? s.value : null }; });
-cert('F0', 'Stock Search', 'chitti_technical.html #sym + nse_universe.js', 'symbol input present + resolves a default instrument', 'search input exists with a resolved symbol', `#sym exists=${f0.exists} value=${f0.value}`, f0.exists ? 'PASS' : 'FAIL');
+// F0 — Stock Search (REAL: a popular stock DIXON must resolve + any NSE symbol scannable)
+const f0 = await pg.evaluate(() => {
+  const out = { exists: !!document.getElementById('sym'), size: window.NSE ? window.NSE.ALL.length : 0, dixon: !!(window.NSE && window.NSE.ALL.indexOf('DIXON') >= 0) };
+  try { document.getElementById('sym').value = 'DIX'; window.TechUI.acInput(); out.acDixon = /DIXON/.test(document.getElementById('sym-listbox').innerText); } catch (e) { out.acDixon = false; }
+  try { document.getElementById('sym').value = 'ZXCVB'; window.TechUI.acInput(); out.free = document.getElementById('ac-free') != null; } catch (e) { out.free = false; }
+  return out;
+});
+cert('F0', 'Stock Search', 'chitti_technical.html:acInput + nse_universe.js (768) + free-symbol fallback', 'real stock DIXON resolves + autocomplete + any NSE symbol scannable',
+  'DIXON in universe + autocomplete + free-symbol option', `size=${f0.size} DIXON=${f0.dixon} autocompleteDIX→DIXON=${f0.acDixon} freeSymbol=${f0.free}`,
+  (f0.exists && f0.dixon && f0.acDixon && f0.free) ? 'PASS' : 'FAIL');
 
 // 5-element box (cross-cutting)
 const boxes = await pg.evaluate(() => Array.from(document.querySelectorAll('[data-chitti-response]')).length);

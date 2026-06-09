@@ -316,6 +316,10 @@
   SMALLCAP250  = removeAny(dedupe(SMALLCAP250),  [LARGECAP, MIDCAP150]).slice(0, 250);
   MICROCAP250  = removeAny(dedupe(MICROCAP250),  [LARGECAP, MIDCAP150, SMALLCAP250]).slice(0, 250);
 
+  // Recently-listed / renamed popular names that were missing from the static buckets (verified NSE, 2026).
+  var RECENT_ADDS = ['DIXON','ICICIPRU','ETERNAL','PAYTM','NYKAA','POLICYBZR','MAZDOCK','IREDA','OLAELEC','SWIGGY','HYUNDAI','NTPCGREEN','PREMIERENE','WAAREEENER','KALYANKJIL','BAJAJHFL','PGEL','KAYNES','NETWEB'];
+  MIDCAP150 = dedupe(MIDCAP150.concat(removeAny(RECENT_ADDS, [LARGECAP])));
+
   // Flat universe — union of all buckets, deduped
   var ALL = dedupe([].concat(NIFTY50, LARGECAP, MIDCAP150, SMALLCAP250, MICROCAP250));
 
