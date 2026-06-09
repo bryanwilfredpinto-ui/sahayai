@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260609" defer></script>
-<script src="nse_universe.js?v=20260609" defer></script>
-<script src="chitti_technical_i18n.js?v=20260609" defer></script>
-<script src="chitti_technical_engine.js?v=20260609" defer></script>
-<script src="chitti_technical_a11y.js?v=20260609" defer></script>
-<script src="chitti_a11y.js?v=20260609" defer></script>
+<script src="chitti_lang.js?v=20260610" defer></script>
+<script src="nse_universe.js?v=20260610" defer></script>
+<script src="chitti_technical_i18n.js?v=20260610" defer></script>
+<script src="chitti_technical_engine.js?v=20260610" defer></script>
+<script src="chitti_technical_a11y.js?v=20260610" defer></script>
+<script src="chitti_a11y.js?v=20260610" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260609" defer></script>
+<script src="chitti_isl.js?v=20260610" defer></script>
 
 <style>
 :root{
@@ -142,6 +142,29 @@ tr.click:hover{background:#f7f8fc}
 .pcell.sell.on{border-color:var(--red);background:#fdeaea}.pcell.sell.on .pv{color:var(--red)}
 .pcell.tgt .pv{color:var(--green)}.pcell.sl .pv{color:var(--red)}
 .pcell.dim{opacity:1;background:#eef0f6}.pcell.dim .pl{color:#4a5163}.pcell.dim .pv{color:#33384a}
+/* 🤖 CHITTI VERDICT hero — decision dominates the screen */
+.verdict-hero{border-radius:18px;padding:18px 18px 20px;margin-bottom:16px;border:3px solid;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+.verdict-hero.buy{background:linear-gradient(135deg,#e7f6e7,#f4fbf4);border-color:#0a6e00}
+.verdict-hero.sell{background:linear-gradient(135deg,#fdeaea,#fef5f5);border-color:#C62828}
+.verdict-hero.wait{background:linear-gradient(135deg,#fff7e6,#fffdf5);border-color:#9a6700}
+.vh-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.vh-decision{font-size:44px;font-weight:900;line-height:1.05;letter-spacing:-.5px}
+.verdict-hero.buy .vh-decision{color:#0a6e00}.verdict-hero.sell .vh-decision{color:#C62828}.verdict-hero.wait .vh-decision{color:#7a4d00}
+.vh-conf{font-size:38px;font-weight:900;color:#1A1A1A;text-align:right}.vh-conf small{font-size:14px;font-weight:700;color:#5b637a}
+.vh-head{font-size:17px;font-weight:800;margin:6px 0 10px;color:#1A1A1A}
+.vh-listen{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;font-size:19px;font-weight:900;color:#fff;background:#000080;border:none;border-radius:14px;cursor:pointer;margin:4px 0 14px}
+.vh-listen:hover{background:#0000a8}
+.vh-reasons{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.vh-reason{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:#1A1A1A}
+.vh-reason .mk{font-size:17px;width:22px;text-align:center}
+.vh-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:8px;margin-bottom:10px}
+.vh-cell{background:rgba(255,255,255,.75);border:1.5px solid #E3E6EF;border-radius:10px;padding:8px 6px;text-align:center}
+.vh-cell .l{font-size:11px;font-weight:800;text-transform:uppercase;color:#4a5163;letter-spacing:.02em}
+.vh-cell .v{font-size:18px;font-weight:900;color:#000080;margin-top:2px}
+.vh-risk{font-size:15px;font-weight:800;color:#1A1A1A}
+.vh-risk .badge{display:inline-block;padding:3px 12px;border-radius:20px;color:#fff;margin-left:6px}
+.vh-risk .Low{background:#0a6e00}.vh-risk .Medium{background:#9a6700}.vh-risk .High{background:#C62828}
+@media(max-width:480px){.vh-decision{font-size:36px}.vh-conf{font-size:30px}}
 .plan-hold{padding:10px;border-radius:10px;background:#fff4e0;color:#7a4d00;font-weight:700;text-align:center;margin:10px 0}
 /* indicator dropdown menu */
 #ind-menu label{display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:13.5px;border-radius:8px;cursor:pointer;min-height:40px}
@@ -267,6 +290,19 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
       <button class="btn nav" style="width:100%;font-size:16px;min-height:48px" onclick="TechUI.generate()">🎯 Generate Signal</button>
     </div>
   </div>
+
+  <!-- 🤖 CHITTI VERDICT — decision-intelligence hero. Dominates the screen: decision + why + plan + Listen. -->
+  <section class="verdict-hero wait" id="verdict-hero" data-chitti-response="tech-verdict" data-chitti-section="Chitti Verdict" hidden aria-live="polite">
+    <div class="vh-top">
+      <div class="vh-decision" id="vh-decision">🟡 WAIT</div>
+      <div class="vh-conf"><span id="vh-conf">0</span><small>% <span data-i18n="vh.confidence">confidence</span></small></div>
+    </div>
+    <div class="vh-head" id="vh-head">🤖 <span data-i18n="vh.title">Chitti Verdict</span></div>
+    <button class="vh-listen" onclick="TechUI.hearVerdict()">🔊 <span data-i18n="vh.listen">Listen to Chitti</span></button>
+    <div class="vh-reasons" id="vh-reasons"></div>
+    <div class="vh-plan" id="vh-plan"></div>
+    <div class="vh-risk" id="vh-risk"></div>
+  </section>
 
   <div class="grid">
     <!-- BO5/BO6: signal card (left) -->
@@ -674,12 +710,43 @@ window.TechUI = (function(){
     var a=Array.prototype.map.call(els,function(e){return e.value;});
     return a.length?a:['weekly','daily','4h'];
   }
+  // 🤖 Chitti Verdict hero — the decision-intelligence layer made visible
+  var lastVerdict=null;
+  function TT(k,f){ var s=T(k); return (s&&s!==k)?s:f; }   // i18n with English fallback (no raw key leaks)
+  function renderVerdict(v, sym){
+    lastVerdict=v;
+    var hero=document.getElementById('verdict-hero'); if(!hero) return;
+    hero.hidden=false;
+    hero.className='verdict-hero '+(v.decision==='BUY'?'buy':v.decision==='SELL'?'sell':'wait');
+    var word=v.decision==='BUY'?T('verdict.BUY'):v.decision==='SELL'?T('verdict.SELL'):T('verdict.HOLD');
+    document.getElementById('vh-decision').textContent=v.icon+' '+(sym?sym+' ':'')+word;
+    document.getElementById('vh-conf').textContent=v.confidence;
+    document.getElementById('vh-head').innerHTML='🤖 <b>'+(v.decision==='BUY'?TT('vh.wouldBuy','Would I buy? YES'):v.decision==='SELL'?TT('vh.wouldSell','Would I sell? YES'):TT('vh.wouldTrade','Would I trade now? Not yet — WAIT'))+'</b>';
+    document.getElementById('vh-reasons').innerHTML=(v.reasons||[]).map(function(r){
+      var mk=r.ok?'✅':r.neutral?'➖':'❌'; return '<div class="vh-reason"><span class="mk">'+mk+'</span>'+r.text+'</div>'; }).join('');
+    function cell(l,val){ return '<div class="vh-cell"><div class="l">'+l+'</div><div class="v">'+val+'</div></div>'; }
+    var cells='';
+    if(v.decision!=='WAIT'){
+      cells+=cell(TT('risk.entry','Entry'), v.entry!=null?'₹'+v.entry:'—');
+      cells+=cell(TT('risk.stop','Stop'), v.stop!=null?'₹'+v.stop:'—');
+      (v.targets||[]).forEach(function(t,i){ cells+=cell('T'+(i+1), '₹'+t.price); });
+      if(v.rr) cells+=cell('R:R', v.rr);
+    } else {
+      cells+=cell(TT('conf.label','Confidence'), v.confidence+'%');
+      if(v.betterEntry!=null) cells+=cell(TT('vh.betterEntry','Better entry'),'₹'+v.betterEntry);
+    }
+    document.getElementById('vh-plan').innerHTML=cells;
+    document.getElementById('vh-risk').innerHTML=TT('vh.risk','Risk')+': <span class="badge '+v.risk+'">'+TT('risk.'+v.risk,v.risk)+'</span>';
+  }
+  function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
+
   function renderCEOS(){
     if(!lastScan||!E.generateSignal) return;
     var sym=lastScan._sym, tfs=tickedTfs();
     var sig=E.generateSignal(getTf(sym),{tfs:tfs,capital:100000,riskPercent:2});
     sig.__sym=sym; lastCEOS=sig;
     logSystemSignal(sig);   // auto-log every directional call to the System Signal Journal
+    try{ renderVerdict(E.chittiVerdict(sig), sym); }catch(e){}   // 🤖 Chitti Verdict decision hero
     var ic=(window.TechA11y?TechA11y.icon(sig.signal):({BUY:'🟢',SELL:'🔴',HOLD:'🟡'}[sig.signal]||'⏸️'));
     var cf=sig.confluence;
     var board=document.getElementById('ceos-board');
@@ -1368,7 +1435,7 @@ window.TechUI = (function(){
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
-    audioSummary:audioSummary,applyLang:applyLang,toggleTable:toggleTable,
+    audioSummary:audioSummary,hearVerdict:hearVerdict,applyLang:applyLang,toggleTable:toggleTable,
     acInput:acInput,acKey:acKey,acPick:acPick,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
     _confirmYes:_confirmYes,_confirmNo:_confirmNo};

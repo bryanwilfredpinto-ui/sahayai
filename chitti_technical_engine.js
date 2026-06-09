@@ -964,13 +964,22 @@
     var sl, t1, t2;
     if (side === 'BUY') { sl = price - a * 2; t1 = price + a * 1.5; t2 = price + a * 3; }
     else { sl = price + a * 2; t1 = price - a * 1.5; t2 = price - a * 3; }
+    var t3 = side === 'BUY' ? price + a * 4.5 : price - a * 4.5;   // F5: third target (next structure leg)
     var rps = Math.abs(price - sl), rrr = rps ? Math.abs(t1 - price) / rps : 0;
     var riskAmt = capital * (riskPct / 100), shares = rps ? Math.floor(riskAmt / rps) : 0;
+    // F3: entry band — conservative (wait for a better price) · ideal (best R/R) · aggressive (enter now, wider risk).
+    var ideal = price, aggressive = side === 'BUY' ? price + a * 0.3 : price - a * 0.3, conservative = side === 'BUY' ? price - a * 0.5 : price + a * 0.5;
     return {
       entry: round2(price), atr: round2(a),
+      entry_zone: {
+        ideal: round2(ideal), aggressive: round2(aggressive), conservative: round2(conservative),
+        low: round2(Math.min(ideal, aggressive, conservative)), high: round2(Math.max(ideal, aggressive, conservative)),
+        note: 'Conservative = wait for a better price (smaller reward). Aggressive = enter now (wider risk).'
+      },
       stop_loss: { price: round2(sl), percentage: round2((sl - price) / price * 100), calculation: 'Entry ' + (side === 'BUY' ? '-' : '+') + ' (ATR × 2), ATR=' + round2(a) },
-      target_1: { price: round2(t1), percentage: round2((t1 - price) / price * 100), action: 'Book 50% here' },
-      target_2: { price: round2(t2), percentage: round2((t2 - price) / price * 100), action: 'Book remaining 50% here' },
+      target_1: { price: round2(t1), percentage: round2((t1 - price) / price * 100), rr: '1:' + round2(rps ? Math.abs(t1 - price) / rps : 0), action: 'Book 50% here' },
+      target_2: { price: round2(t2), percentage: round2((t2 - price) / price * 100), rr: '1:' + round2(rps ? Math.abs(t2 - price) / rps : 0), action: 'Book 30% here' },
+      target_3: { price: round2(t3), percentage: round2((t3 - price) / price * 100), rr: '1:' + round2(rps ? Math.abs(t3 - price) / rps : 0), action: 'Book the rest (let winners run)' },
       risk_reward_ratio: '1:' + round2(rrr),
       position_size: { capital: capital, risk_percent: riskPct, risk_amount: round2(riskAmt), risk_per_share: round2(rps), shares: shares, investment: round2(shares * price) }
     };
@@ -1041,12 +1050,45 @@
       var rb = atrRiskBlock(daily, verdict, opts);
       if (!rb || rb.position_size.risk_per_share <= 0) { out.signal = 'HOLD'; out.why = 'no valid ATR stop — skip'; }
       else {
-        out.atr = rb.atr; out.stop_loss = rb.stop_loss; out.target_1 = rb.target_1; out.target_2 = rb.target_2;
-        out.risk_reward_ratio = rb.risk_reward_ratio; out.position_size = rb.position_size;
+        out.atr = rb.atr; out.stop_loss = rb.stop_loss; out.target_1 = rb.target_1; out.target_2 = rb.target_2; out.target_3 = rb.target_3;
+        out.entry_zone = rb.entry_zone; out.risk_reward_ratio = rb.risk_reward_ratio; out.position_size = rb.position_size;
         out.invalidation = (verdict === 'BUY' ? 'wrong if price closes below ' : 'wrong if price closes above ') + rb.stop_loss.price;
       }
     } else { out.why = conf.percent < 40 ? 'no alignment — NO TRADE' : 'weak confluence — wait for alignment'; }
     return out;
+  }
+
+  // ─────────────── CHITTI VERDICT — the decision-intelligence layer (mentor, not scanner) ───────────────
+  // Turns the deterministic signal into a human decision: Would I trade? Why (✓/✗)? How much risk? Better entry?
+  var TFLABEL = { monthly: 'Monthly', weekly: 'Weekly', daily: 'Daily', '4h': '4-Hour', '1h': '1-Hour', '15m': '15-Min', '5m': '5-Min', '1m': '1-Min' };
+  function chittiVerdict(sig) {
+    sig = sig || {};
+    var v = sig.signal || 'HOLD', decision = v === 'BUY' ? 'BUY' : (v === 'SELL' ? 'SELL' : 'WAIT');
+    var conf = sig.confidence || 0, ind = sig.indicators || {}, perTf = (sig.confluence && sig.confluence.per_tf) || {};
+    var wantBull = decision === 'BUY', reasons = [];
+    Object.keys(perTf).forEach(function (tf) {
+      var b = perTf[tf], aligns = decision === 'WAIT' ? null : ((wantBull && b === 'BULL') || (!wantBull && b === 'BEAR'));
+      reasons.push({ ok: aligns === true, neutral: b === 'NEUTRAL', text: (TFLABEL[tf] || tf) + ' trend ' + (b === 'BULL' ? 'bullish' : b === 'BEAR' ? 'bearish' : 'neutral') });
+    });
+    var rosh = ind.Roshan ? ind.Roshan.signal : null;
+    if (rosh) reasons.push({ ok: decision !== 'WAIT' && ((wantBull && rosh === 'BUY') || (!wantBull && rosh === 'SELL')), text: 'Roshan ' + rosh });
+    if (ind.RSI && ind.RSI.value != null) { var rv = ind.RSI.value; reasons.push({ ok: decision !== 'WAIT' && ((wantBull && rv < 70) || (!wantBull && rv > 30)), text: 'RSI ' + Math.round(rv) + (rv > 70 ? ' overbought' : rv < 30 ? ' oversold' : ' neutral') }); }
+    var rrNum = sig.risk_reward_ratio ? parseFloat(String(sig.risk_reward_ratio).split(':')[1]) || 0 : 0;
+    var risk = (conf >= 75 && rrNum >= 2) ? 'Low' : (conf >= 55 ? 'Medium' : 'High');
+    var betterEntry = (decision === 'WAIT' && sig.entry_price != null) ? round2(sig.entry_price * (sig.confluence && sig.confluence.bias === 'BEARISH' ? 1.01 : 0.99)) : null;
+    var headline = decision === 'BUY' ? 'Would I buy? YES' : decision === 'SELL' ? 'Would I sell? YES' : 'Would I trade now? NO — WAIT';
+    var spoken = 'Chitti says: ' + (decision === 'WAIT' ? 'I would wait. ' : 'I would ' + decision.toLowerCase() + '. ');
+    if (sig.confluence) spoken += sig.confluence.bias.toLowerCase() + ' confluence at ' + conf + ' percent confidence. ';
+    if (decision !== 'WAIT' && sig.stop_loss) spoken += 'Entry near ' + sig.entry_price + ', stop at ' + sig.stop_loss.price + ', first target ' + (sig.target_1 ? sig.target_1.price : '') + '. Risk is ' + risk.toLowerCase() + '. ';
+    if (decision === 'WAIT') spoken += (sig.why || '') + '. ' + (betterEntry ? ('A better entry may be near ' + betterEntry + '. ') : '');
+    spoken += 'This is education, not advice. Not SEBI registered.';
+    return {
+      decision: decision, icon: decision === 'BUY' ? '🟢' : decision === 'SELL' ? '🔴' : '🟡', headline: headline,
+      confidence: conf, risk: risk, reasons: reasons, entry: sig.entry_price != null ? sig.entry_price : null,
+      stop: sig.stop_loss ? sig.stop_loss.price : null, entry_zone: sig.entry_zone || null,
+      targets: [sig.target_1, sig.target_2, sig.target_3].filter(Boolean).map(function (t) { return { price: t.price, rr: t.rr || null }; }),
+      rr: sig.risk_reward_ratio || null, betterEntry: betterEntry, spoken: spoken
+    };
   }
 
   // ─────────────── Safety guardrails (deterministic, NO LLM) — PDF §13 ───────────────
@@ -1368,7 +1410,7 @@
     // CEOS FINAL v1.0 layer
     classicPivots: classicPivots, camarillaPivots: camarillaPivots, pivotsFor: pivotsFor,
     srConfluence: srConfluence, atrRiskBlock: atrRiskBlock, CONFLUENCE_MODES: CONFLUENCE_MODES,
-    tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal,
+    tfBias: tfBias, confluenceScore: confluenceScore, generateSignal: generateSignal, chittiVerdict: chittiVerdict,
     // CEOS safety + journal intelligence
     detectCrisis: detectCrisis, crisisResponse: crisisResponse, detectLossSpiral: detectLossSpiral, aiInsights: aiInsights,
     // BO-NEXT: outcome tracking + accuracy scorecard + calibration
@@ -1382,7 +1424,7 @@
     scanUniverse: scanUniverse,
     // BO15: alerts + watchlist
     evaluateWatch: evaluateWatch, scanWatchlist: scanWatchlist,
-    TF_ORDER: TF_ORDER, VERSION: '2.7.0'
+    TF_ORDER: TF_ORDER, VERSION: '2.8.0'
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
