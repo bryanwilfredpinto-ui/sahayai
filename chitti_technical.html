@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260617" defer></script>
-<script src="nse_universe.js?v=20260617" defer></script>
-<script src="chitti_technical_i18n.js?v=20260617" defer></script>
-<script src="chitti_technical_engine.js?v=20260617" defer></script>
-<script src="chitti_technical_a11y.js?v=20260617" defer></script>
-<script src="chitti_a11y.js?v=20260617" defer></script>
+<script src="chitti_lang.js?v=20260618" defer></script>
+<script src="nse_universe.js?v=20260618" defer></script>
+<script src="chitti_technical_i18n.js?v=20260618" defer></script>
+<script src="chitti_technical_engine.js?v=20260618" defer></script>
+<script src="chitti_technical_a11y.js?v=20260618" defer></script>
+<script src="chitti_a11y.js?v=20260618" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260617" defer></script>
+<script src="chitti_isl.js?v=20260618" defer></script>
 
 <style>
 :root{
@@ -775,14 +775,11 @@ window.TechUI = (function(){
   }
   function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
 
-  // Simple view = the common man's default: voice search → one big decision → Listen. Full = analyst surface.
-  // Default = Full (literate users see charts, indicators, journal, backtest). Auto-Simple only for
-  // blind/illiterate/elderly profiles, or whatever the user last chose.
-  var simpleMode=false;
-  try{ var _sm=localStorage.getItem('tech_simple');
-    if(_sm!==null) simpleMode=(_sm==='1');
-    else { var _pf=localStorage.getItem('disability_profile')||''; if(/blind|illiterate|elderly|cognitive|low.?vision/i.test(_pf)) simpleMode=true; }
-  }catch(e){}
+  // CEOS PERSONAS rule: accessibility (P5/P7/P8) is the floor every persona inherits; P9's advanced surface
+  // must NOT break the primary's experience. So the DEFAULT is the decision-first primary view; the full
+  // analyst surface (charts, 16 indicators, screener, backtest) is P9, one tap away ("📊 Full analysis").
+  var simpleMode=true;
+  try{ var _sm=localStorage.getItem('tech_simple'); if(_sm!==null) simpleMode=(_sm==='1'); }catch(e){}
   function applyMode(){
     document.body.classList.toggle('simple-mode', simpleMode);
     var t=document.getElementById('mode-toggle');
