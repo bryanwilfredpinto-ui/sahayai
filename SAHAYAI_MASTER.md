@@ -369,7 +369,7 @@ See [[project_chitti_golden_rule_locked]].
 
 | # | Product | Frontend | Backend | Status |
 |---|---|---|---|---|
-| 1 | Chitti Technical | `chitti_complete_technical.html` | `chitti-shares-api` | LIVE — NSE/BSE candles + 43 indicators, Roshan composite, Story Mode |
+| 1 | Chitti Technical | _(page + code deleted 2026-06-10 — **name reserved**)_ | `chitti-shares-api` (Railway, left **as-is**, shared with Fundamentals) | NAME ONLY — implementation removed per Sire; to be rebuilt from scratch when revisited |
 | 2 | Chitti Fundamentals | `chitti_fundamentals.html` | screener.in scraper | LIVE — Buffett/Munger/Graham/Kedia/RKD, 25+ filters, Nifty 500 |
 | 3 | Chitti MedUPI | `chitti_medupi.html` | `chitti-medupi-api` | LIVE — Jan Aushadhi same-composition match, NPPA prices, Family Wallet |
 | 4 | Chitti News | `chitti_news.html` | `chitti-news-api` | LIVE — 26+ RSS, 5 langs, Chitti's Take, fact-check verdicts |
