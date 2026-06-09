@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260614" defer></script>
-<script src="nse_universe.js?v=20260614" defer></script>
-<script src="chitti_technical_i18n.js?v=20260614" defer></script>
-<script src="chitti_technical_engine.js?v=20260614" defer></script>
-<script src="chitti_technical_a11y.js?v=20260614" defer></script>
-<script src="chitti_a11y.js?v=20260614" defer></script>
+<script src="chitti_lang.js?v=20260615" defer></script>
+<script src="nse_universe.js?v=20260615" defer></script>
+<script src="chitti_technical_i18n.js?v=20260615" defer></script>
+<script src="chitti_technical_engine.js?v=20260615" defer></script>
+<script src="chitti_technical_a11y.js?v=20260615" defer></script>
+<script src="chitti_a11y.js?v=20260615" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260614" defer></script>
+<script src="chitti_isl.js?v=20260615" defer></script>
 
 <style>
 :root{
@@ -114,7 +114,8 @@ canvas{display:block;width:100%}
 /* Tagline + Simple view (default for the common man — one decision, one Listen, no jargon) */
 .claude-gift{text-align:center;font-size:12.5px;color:#5b637a;font-weight:700;margin:4px 0 2px;letter-spacing:.02em}
 body.simple-mode #advanced-controls{display:none}
-body.simple-mode .grid{display:none}
+body.simple-mode .grid > *{display:none}
+body.simple-mode .grid > [data-chitti-response="tech-chart"]{display:block}  /* Simple keeps the visual chart */
 body:not(.simple-mode) #simple-ask-btn{display:none}
 .pane-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .tog{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
@@ -756,7 +757,13 @@ window.TechUI = (function(){
   function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
 
   // Simple view = the common man's default: voice search → one big decision → Listen. Full = analyst surface.
-  var simpleMode=true; try{ var _sm=localStorage.getItem('tech_simple'); if(_sm!==null) simpleMode=(_sm==='1'); }catch(e){}
+  // Default = Full (literate users see charts, indicators, journal, backtest). Auto-Simple only for
+  // blind/illiterate/elderly profiles, or whatever the user last chose.
+  var simpleMode=false;
+  try{ var _sm=localStorage.getItem('tech_simple');
+    if(_sm!==null) simpleMode=(_sm==='1');
+    else { var _pf=localStorage.getItem('disability_profile')||''; if(/blind|illiterate|elderly|cognitive|low.?vision/i.test(_pf)) simpleMode=true; }
+  }catch(e){}
   function applyMode(){
     document.body.classList.toggle('simple-mode', simpleMode);
     var t=document.getElementById('mode-toggle');
