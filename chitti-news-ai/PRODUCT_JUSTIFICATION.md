@@ -130,3 +130,58 @@ Because **every incumbent is paywalled, English-first and engagement-driven, lea
 **Do NOT build "another learning app" (score 75 → STOP).** Build it **only** as the scoped, Vaani-routed, accessibility-first, free-first learning capability (score 82) — and only after the four conditions above have a concrete plan. Proceeding to Phase 6 CEOS is justified **for the scoped version**, not the standalone one.
 
 *This validation used real web research (sources linked inline) per the Master Product Creation Rule. The score was computed on a transparent rubric and was allowed to fail.*
+
+---
+
+## CORRECTED POSITIONING & RE-SCORE (Sire, 2026-06-09)
+
+**The lesson: define the category BEFORE scoring.** My first pass evaluated this
+as a *learning platform / LMS* (→ 75, STOP). That was the wrong category. Sire's
+correction: it is a **PROFESSIONAL INTELLIGENCE PLATFORM** — and a standalone
+product AND a Vaani capability can both be true at once (cf. Google Maps,
+ChatGPT, YouTube).
+
+- **Primary:** profession-specific AI news (a CA gets GST + AI-accounting; a
+  doctor gets clinical-AI; a farmer gets agri-AI).
+- **Secondary:** explain the IMPACT on the user's profession.
+- **Tertiary:** recommend tools · certs · prompts · learning (the cnai_* engines).
+- **Competes with:** AI newsletters, professional research portals, career-
+  intelligence platforms, AI-adoption advisors — **NOT** Coursera/Udemy/BYJU'S/LMS.
+
+### Real research on the CORRECT competitive set (sourced)
+- **AI newsletters:** The Rundown AI (2M+ subs, 50% open), Superhuman AI (1.5M+),
+  TLDR AI (1.25M+), Ben's Bites (166K), Import AI. Subs grew **340% (2023-25)**;
+  market **$2.53B (2026) → $6.74B (2030)** ([Readless](https://www.readless.app/blog/best-ai-newsletters-to-subscribe), [Dupple](https://dupple.com/learn/best-ai-newsletters-2026)). **Gap:** on a big-news
+  morning they overlap **~80% on the lead story** — generic, English, US-centric,
+  paid/sponsored, NOT profession-specific, NOT accessible, NOT vernacular.
+- **Professional-services AI adoption:** org usage **doubled to 40% in 2026**;
+  lawyers — legal research 80%, doc review 74%; accountants — tax research 69%;
+  50% of lawyers see AI as a threat to the profession ([Thomson Reuters 2026 AI in Professional Services](https://www.thomsonreuters.com/en-us/posts/technology/ai-in-professional-services-report-2026/)). Professionals are anxious about **what AI means for THEIR job** — no generic newsletter answers that.
+- **Career/talent intelligence:** $4.31B (2026) → $11.76B (2034), 13.2% CAGR
+  ([IntelMarketResearch](https://www.intelmarketresearch.com/ai-talent-intelligence-market-46902)) — but B2B/enterprise (Gloat, SeekOut, Retrain.ai), not the individual Indian professional.
+
+### What nobody else does (under this positioning)
+Profession-specific (vs 80%-overlap generic) · impact-on-YOUR-job translation
+(vs raw news) · accessibility-first + 26-language (vs inbox-text email) · free
+(vs paid/sponsored) · actionable tools/certs/prompts tertiary layer · routed
+through one dost (Vaani) — ask in your language, no inbox.
+
+### Re-scored rubric (same rubric, honest — only the category changed)
+| Dimension | LMS | **Professional Intelligence** | Why it moved |
+|---|---:|---:|---|
+| Problem severity & reach | 15 | 17 | 40% org adoption; profession-impact anxiety |
+| Market size & growth | 9 | 9 | newsletter $2.53B + talent-intel $4.31B |
+| Differentiation | 15 | 18 | profession-specific + impact vs 80% overlap |
+| Accessibility need | 14 | 14 | newsletters fully exclude blind/illiterate/vernacular |
+| Trust advantage | 8 | 8 | free, cited vs sponsored hype |
+| Moat / defensibility | 5 | 7 | profession-classifier + swarm + a11y + Vaani |
+| Feasibility / **retention** | 6 | 8 | **news recurs daily/weekly — one-shot weakness gone** |
+| Devil's-advocate survival | 3 | 4 | beatable newsletters, not funded edtech giants |
+| **BUILD SCORE** | **75 → STOP** | **85 / 100 → BUILD** | |
+
+### Verdict (corrected)
+**BUILD — 85/100**, as a **Professional Intelligence Platform** (standalone
+product AND Vaani capability). Lead with profession-specific AI news + impact;
+keep the learning/course/roadmap engines as the **tertiary** action layer, not
+the headline. Do NOT position or build it as a course marketplace. Phase 6 CEOS
+is justified under THIS positioning.
