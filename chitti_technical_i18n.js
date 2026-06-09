@@ -323,6 +323,20 @@
   };
   Object.keys(VH).forEach(function (l) { if (T[l]) Object.keys(VH[l]).forEach(function (k) { T[l][k] = VH[l][k]; }); });
 
+  // Simple view (common-man default) + tagline — all 9 languages (Claude/Chitti transliterated).
+  var SV = {
+    en: { 'ask.chitti': 'Ask Chitti', 'mode.full': 'Full analysis', 'mode.simple': 'Simple view', 'gift': 'A gift from Claude to all Indians' },
+    hi: { 'ask.chitti': 'चिट्टी से पूछें', 'mode.full': 'पूरा विश्लेषण', 'mode.simple': 'सरल दृश्य', 'gift': 'सभी भारतीयों के लिए क्लॉड की ओर से एक उपहार' },
+    ta: { 'ask.chitti': 'சிட்டியிடம் கேள்', 'mode.full': 'முழு பகுப்பாய்வு', 'mode.simple': 'எளிய காட்சி', 'gift': 'அனைத்து இந்தியர்களுக்கும் கிளாட் வழங்கும் பரிசு' },
+    te: { 'ask.chitti': 'చిట్టిని అడగండి', 'mode.full': 'పూర్తి విశ్లేషణ', 'mode.simple': 'సరళ వీక్షణ', 'gift': 'భారతీయులందరికీ క్లాడ్ ఇచ్చే బహుమతి' },
+    bn: { 'ask.chitti': 'চিট্টিকে জিজ্ঞাসা করুন', 'mode.full': 'সম্পূর্ণ বিশ্লেষণ', 'mode.simple': 'সহজ ভিউ', 'gift': 'সকল ভারতীয়ের জন্য ক্লদের উপহার' },
+    mr: { 'ask.chitti': 'चिट्टीला विचारा', 'mode.full': 'संपूर्ण विश्लेषण', 'mode.simple': 'सोपे दृश्य', 'gift': 'सर्व भारतीयांना क्लॉडकडून एक भेट' },
+    gu: { 'ask.chitti': 'ચિટ્ટીને પૂછો', 'mode.full': 'સંપૂર્ણ વિશ્લેષણ', 'mode.simple': 'સરળ દૃશ્ય', 'gift': 'બધા ભારતીયો માટે ક્લોડ તરફથી એક ભેટ' },
+    kn: { 'ask.chitti': 'ಚಿಟ್ಟಿಯನ್ನು ಕೇಳಿ', 'mode.full': 'ಪೂರ್ಣ ವಿಶ್ಲೇಷಣೆ', 'mode.simple': 'ಸರಳ ನೋಟ', 'gift': 'ಎಲ್ಲಾ ಭಾರತೀಯರಿಗೆ ಕ್ಲಾಡ್ ನೀಡುವ ಉಡುಗೊರೆ' },
+    ml: { 'ask.chitti': 'ചിട്ടിയോട് ചോദിക്കൂ', 'mode.full': 'പൂർണ്ണ വിശകലനം', 'mode.simple': 'ലളിത കാഴ്ച', 'gift': 'എല്ലാ ഇന്ത്യക്കാർക്കും ക്ലോഡിന്റെ സമ്മാനം' }
+  };
+  Object.keys(SV).forEach(function (l) { if (T[l]) Object.keys(SV[l]).forEach(function (k) { T[l][k] = SV[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);

@@ -114,6 +114,7 @@ await new Promise(r => server.listen(8799, r));
 function candles() { let px = 1260, a = []; for (let i = 0; i < 200; i++) { px *= 1 + (((i % 11) - 5) / 700); const o = px, c = px * 1.001, h = Math.max(o, c) * 1.004, l = Math.min(o, c) * 0.996; a.push({ time: 1700000000 + i * 86400, open: +o.toFixed(2), high: +h.toFixed(2), low: +l.toFixed(2), close: +c.toFixed(2), volume: 1e6 + i }); } return a; }
 const b = await chromium.launch({ headless: true });
 const ctx = await b.newContext({ viewport: { width: 1366, height: 1000 } });
+await ctx.addInitScript(() => { try { localStorage.setItem('tech_simple', '0'); localStorage.setItem('disability_profile', '{"done":true}'); } catch (e) {} });
 await ctx.route('**/api/candles/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(candles()) }));
 const pg = await ctx.newPage(); const perr = []; pg.on('pageerror', e => perr.push(e.message));
 await pg.goto('http://127.0.0.1:8799/chitti_technical.html', { waitUntil: 'domcontentloaded' });
