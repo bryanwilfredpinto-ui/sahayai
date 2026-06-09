@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>चिट्टी — आम आदमी के लिए</title>
+<!--
+  DEMONSTRATION (not a shipped product) — the BAR for a common-man surface.
+  Contrast with chitti_news_ai.html (English jargon + abstract scores).
+  Principles: plain spoken Hindi · icon-first (illiterate-friendly) · voice in +
+  voice out · zero text dependency · big taps · concrete FREE local help that
+  answers a farmer's REAL daily questions. No scores. No jargon. No VC news.
+-->
+<style>
+  :root{ --saffron:#E86A17; --green:#0a7a37; --navy:#0E2344; --ink:#15233a; --bg:#FBF7F0; --card:#fff; }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:'Noto Sans Devanagari','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .top{background:linear-gradient(135deg,var(--navy),#16345f);color:#fff;padding:18px 16px 22px;text-align:center}
+  .namaste{font-size:30px;font-weight:800;margin:0 0 4px}
+  .sub{font-size:17px;opacity:.95;margin:0}
+  .speak-hero{display:inline-flex;align-items:center;gap:10px;margin-top:14px;background:var(--saffron);color:#fff;border:0;border-radius:999px;padding:0 22px;min-height:60px;font-size:19px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .mic{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px;background:#fff;border:3px solid var(--green);border-radius:18px;min-height:84px;font-size:22px;font-weight:800;color:var(--green);width:calc(100% - 32px);cursor:pointer}
+  .mic .dot{font-size:34px}
+  .grid{display:flex;flex-direction:column;gap:14px;padding:4px 16px 24px}
+  .card{display:flex;align-items:center;gap:16px;background:var(--card);border:2px solid #ece3d6;border-radius:20px;padding:16px;min-height:96px;cursor:pointer;box-shadow:0 2px 8px rgba(14,35,68,.06)}
+  .card:active{transform:scale(.99)}
+  .ico{font-size:46px;line-height:1;flex:0 0 auto;width:64px;text-align:center}
+  .txt{flex:1}
+  .q{font-size:21px;font-weight:800;margin:0 0 2px;color:var(--navy)}
+  .a{font-size:16px;margin:0;color:#444}
+  .hear{flex:0 0 auto;width:56px;height:56px;border-radius:50%;border:2px solid var(--saffron);background:#fff;color:var(--saffron);font-size:24px;cursor:pointer}
+  .foot{background:#fff;border-top:2px dashed #e6dccd;padding:18px 16px;text-align:center;font-size:17px;font-weight:700;color:var(--green)}
+  .free{display:inline-block;background:#e8f7ee;color:var(--green);font-weight:800;font-size:13px;padding:3px 10px;border-radius:999px;margin-top:6px}
+</style>
+</head>
+<body>
+  <div class="top">
+    <p class="namaste">नमस्ते 🙏</p>
+    <p class="sub">मैं चिट्टी। बताइए, क्या मदद चाहिए?</p>
+    <button class="speak-hero" onclick="say('नमस्ते! मैं चिट्टी। बताइए, क्या मदद चाहिए? आप बोल सकते हैं, या नीचे दबा सकते हैं।')">🔊 सुनिए</button>
+  </div>
+
+  <button class="mic" onclick="say('बोलिए, मैं सुन रहा हूँ।')" aria-label="बोलिए, चिट्टी सुनेगा">
+    <span class="dot">🎤</span> बोलिए — मैं सुनूँगा
+  </button>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="foot">पढ़ना नहीं आता? कोई बात नहीं — 🔊 दबाइए या 🎤 बोलिए।</div>
+
+<script>
+  function say(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='hi-IN'; u.rate=.92; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+  // A common man's REAL questions — concrete, free, local. No scores, no jargon.
+  var CARDS = [
+    { ico:'🌧️', q:'आज बारिश होगी?', a:'आपके गाँव का मौसम — अभी बताऊँ।', free:'मुफ़्त' },
+    { ico:'🌾', q:'आज का मंडी भाव', a:'आपकी फसल का आज का दाम, पास की मंडी में।', free:'मुफ़्त' },
+    { ico:'📷', q:'फसल बीमार लग रही है?', a:'पत्ती की फोटो दिखाइए — कौन सा रोग है, बताऊँगा।', free:'मुफ़्त' },
+    { ico:'💰', q:'सरकार से पैसा मिलेगा?', a:'PM-KISAN ₹6000/साल — आप पात्र हैं या नहीं, जाँचूँ।', free:'मुफ़्त' },
+    { ico:'⚠️', q:'ये कॉल/मैसेज धोखा तो नहीं?', a:'नंबर या मैसेज दिखाइए — असली है या ठगी, बताऊँगा।', free:'मुफ़्त' },
+    { ico:'🩺', q:'दवाई सस्ती कहाँ?', a:'आपकी दवाई का सबसे सस्ता दाम, पास की दुकान।', free:'मुफ़्त' },
+  ];
+  var g = document.getElementById('grid');
+  CARDS.forEach(function(c){
+    var d = document.createElement('div'); d.className='card';
+    d.onclick = function(){ say(c.q + '. ' + c.a); };
+    d.innerHTML =
+      '<div class="ico" aria-hidden="true">'+c.ico+'</div>'+
+      '<div class="txt"><p class="q">'+c.q+'</p><p class="a">'+c.a+'</p><span class="free">✓ '+c.free+'</span></div>'+
+      '<button class="hear" aria-label="सुनिए: '+c.q+'" onclick="event.stopPropagation();say(\''+c.q+'. '+c.a+'\')">🔊</button>';
+    g.appendChild(d);
+  });
+  // Auto-greet by voice on first load (blind/illiterate-first)
+  window.addEventListener('load', function(){ setTimeout(function(){ say('नमस्ते! मैं चिट्टी। बताइए, क्या मदद चाहिए?'); }, 600); });
+</script>
+</body>
+</html>
