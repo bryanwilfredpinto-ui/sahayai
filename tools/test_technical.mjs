@@ -267,6 +267,17 @@ console.log('   · scan coverage: '+directional+' directional, '+holds+' HOLD ac
   ok('backtestJournal returns rows with ₹ P&L + shares', Array.isArray(bj) && (!bj.length || (bj[0].pnl!=null && bj[0].shares>0 && bj[0].entry>0)));
   ok('backtestJournal row has date/side/entry/target/sl/exit', !bj.length || (bj[0].date!=null&&!!bj[0].side&&bj[0].entry!=null&&bj[0].target!=null&&bj[0].sl!=null&&bj[0].exit!=null));
   ok('backtestJournal shares = floor(100000/entry)', !bj.length || bj[0].shares===Math.floor(100000/bj[0].entry));
+  // ── BO18: net-of-cost backtest (brokerage + STT + slippage), both directions ──
+  const mixC=[]; { let mp=1000; for(let i=0;i<400;i++){ mp*= 1+(i<200?0.004:-0.004)+(((i%6)-3)/1500); mixC.push({open:+mp.toFixed(2),high:+(mp*1.005).toFixed(2),low:+(mp*0.996).toFixed(2),close:+(mp*1.002).toFixed(2),volume:1e6}); } }
+  const bjN=E.backtestJournal({daily:mixC,weekly:mixC},{tfs:['weekly','daily'],capital:100000,lookahead:30});
+  const bjG=E.backtestJournal({daily:mixC,weekly:mixC},{tfs:['weekly','daily'],capital:100000,lookahead:30,costPct:0});
+  ok('BO18 backtest produced trades on mixed fixture', bjN.length>0, bjN.length+' trades');
+  ok('BO18 row carries grossPnl + cost + net pnl', !bjN.length || (bjN[0].grossPnl!=null && bjN[0].cost!=null && bjN[0].pnl!=null));
+  ok('BO18 net pnl = grossPnl − cost (per row)', !bjN.length || bjN[0].pnl===bjN[0].grossPnl-bjN[0].cost);
+  ok('BO18 default cost > 0 (costs applied)', !bjN.length || bjN[0].cost>0);
+  ok('BO18 costPct=0 → cost 0, net=gross (gross mode honoured)', !bjG.length || (bjG[0].cost===0 && bjG[0].pnl===bjG[0].grossPnl));
+  ok('BO18 NET total < GROSS total (costs reduce result)', E.aggregateBacktest(bjN,100000).totalPnl < E.aggregateBacktest(bjG,100000).totalPnl);
+  ok('BO18 both directions present (long & short)', bjN.some(r=>r.side==='BUY') && bjN.some(r=>r.side==='SELL'));
   const agg=E.aggregateBacktest([{pnl:5000},{pnl:5000},{pnl:-2000}],100000);
   ok('aggregateBacktest total P&L = 8000', agg.totalPnl===8000);
   ok('aggregateBacktest return % = 8 on ₹1 lakh', agg.returnPct===8);
