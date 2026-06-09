@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260610" defer></script>
-<script src="nse_universe.js?v=20260610" defer></script>
-<script src="chitti_technical_i18n.js?v=20260610" defer></script>
-<script src="chitti_technical_engine.js?v=20260610" defer></script>
-<script src="chitti_technical_a11y.js?v=20260610" defer></script>
-<script src="chitti_a11y.js?v=20260610" defer></script>
+<script src="chitti_lang.js?v=20260611" defer></script>
+<script src="nse_universe.js?v=20260611" defer></script>
+<script src="chitti_technical_i18n.js?v=20260611" defer></script>
+<script src="chitti_technical_engine.js?v=20260611" defer></script>
+<script src="chitti_technical_a11y.js?v=20260611" defer></script>
+<script src="chitti_a11y.js?v=20260611" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260610" defer></script>
+<script src="chitti_isl.js?v=20260611" defer></script>
 
 <style>
 :root{
@@ -489,7 +489,7 @@ window.TechUI = (function(){
   var oscMode={}, activeOsc='RSI', confirmCb=null;
   var SCREEN_TIERS=['Nifty 50','Large Cap','Mid Cap','Small Cap','Micro Cap'];
   var screenFilters={tiers:[],roshan:null,verdict:null};
-  var ALL_STOCKS=[], acMatches=[], acIndex=-1;
+  var ALL_STOCKS=[], acMatches=[], acIndex=-1, acQuery='';
   var selectedInds=null, lastIndSet={};
   var SCREEN_CAP=60; // browser-perf guard when scanning the full ~800-name NSE universe
   // company names for the well-known symbols (rest show the symbol); honest — search is by symbol too
@@ -1200,12 +1200,21 @@ window.TechUI = (function(){
       if(pre.length>=30) break;
     }
     acMatches=pre.concat(con).slice(0,30); acIndex=-1;
+    acQuery=q;
     renderAc();
   }
+  // Any valid-looking NSE symbol can be analysed even if it is not in the curated list — the backend
+  // fetches candles for any NSE symbol. So a missing name (e.g. DIXON) is never a dead end.
+  function isSymbolLike(q){ return /^[A-Z][A-Z0-9&-]{1,14}$/.test(q); }
   function renderAc(){
     var box=document.getElementById('sym-listbox');
     if(!acMatches.length){
-      box.innerHTML='<div class="ac-opt" style="cursor:default"><span class="n">'+T('search.nomatch')+'</span></div>';
+      if(isSymbolLike(acQuery)){
+        box.innerHTML='<div class="ac-opt" role="option" id="ac-free" onmousedown="event.preventDefault();TechUI.acPickFree()">'+
+          '<span class="s">🔍 '+acQuery+'</span><span class="n">'+(T('search.analyze')||'Analyze this symbol')+' →</span></div>';
+      } else {
+        box.innerHTML='<div class="ac-opt" style="cursor:default"><span class="n">'+T('search.nomatch')+'</span></div>';
+      }
       box.style.display='block'; return;
     }
     box.innerHTML=acMatches.map(function(s,i){
@@ -1223,10 +1232,11 @@ window.TechUI = (function(){
     if(box.style.display==='none'){ if(e.key==='Enter'){ acClose(); scan(); } return; }
     if(e.key==='ArrowDown'){ e.preventDefault(); acIndex=Math.min(acMatches.length-1,acIndex+1); renderAc(); setActiveDesc(); }
     else if(e.key==='ArrowUp'){ e.preventDefault(); acIndex=Math.max(0,acIndex-1); renderAc(); setActiveDesc(); }
-    else if(e.key==='Enter'){ if(acIndex>=0){ e.preventDefault(); acPick(acIndex); } else { acClose(); scan(); } }
+    else if(e.key==='Enter'){ if(acIndex>=0){ e.preventDefault(); acPick(acIndex); } else if(!acMatches.length && isSymbolLike(acQuery)){ e.preventDefault(); acPickFree(); } else { acClose(); scan(); } }
     else if(e.key==='Escape'){ acClose(); }
   }
   function acPick(i){ var s=acMatches[i]; if(!s) return; document.getElementById('sym').value=s.sym; acClose(); scan(); speak(s.sym); }
+  function acPickFree(){ if(!acQuery) return; document.getElementById('sym').value=acQuery; acClose(); scan(); speak(acQuery); }
   function acClose(){ var box=document.getElementById('sym-listbox'); box.style.display='none'; document.getElementById('sym').setAttribute('aria-expanded','false'); acIndex=-1; }
 
   // ---------- screener (BO9) ----------
@@ -1436,7 +1446,7 @@ window.TechUI = (function(){
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
     audioSummary:audioSummary,hearVerdict:hearVerdict,applyLang:applyLang,toggleTable:toggleTable,
-    acInput:acInput,acKey:acKey,acPick:acPick,
+    acInput:acInput,acKey:acKey,acPick:acPick,acPickFree:acPickFree,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
     _confirmYes:_confirmYes,_confirmNo:_confirmNo};
 })();

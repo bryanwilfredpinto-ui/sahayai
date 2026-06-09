@@ -5,7 +5,7 @@
  * IMPORTANT: the HTML document is NETWORK-FIRST so a deploy is never trapped behind a stale cache;
  * static JS assets are cache-first (fast, offline-capable); /api/ is network-first (live data).
  */
-var CACHE = 'chitti-tech-v3';
+var CACHE = 'chitti-tech-v4';
 var ASSETS = [
   'chitti_technical.html', 'chitti_technical_engine.js', 'chitti_technical_a11y.js',
   'chitti_technical_i18n.js', 'nse_universe.js', 'chitti_a11y.js', 'feedback-widget.js',
