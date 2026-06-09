@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "title": "Chitti Technicals — indicator accuracy gold cases (skeleton stub)",
+    "honesty": "Expected values below are illustrative skeleton fixtures. They MUST be recomputed/verified by hand against the engine when tools/test_technical_engine.mjs runs (BO6). No PASS is claimed here.",
+    "harness": "tools/test_technical_engine.mjs",
+    "status": "PENDING",
+    "fields": {
+      "candles": "array of {o,h,l,c} closes used to derive indicators",
+      "expect": "expected deterministic engine output — verify before asserting"
+    }
+  },
+  "cases": [
+    {
+      "id": "rsi_uptrend_strong",
+      "desc": "Clean uptrend — RSI rising, Roshan Strong (RSI14 > SMA20)",
+      "candles": [
+        {"o": 100, "h": 102, "l": 99, "c": 101},
+        {"o": 101, "h": 104, "l": 101, "c": 103},
+        {"o": 103, "h": 106, "l": 102, "c": 105},
+        {"o": 105, "h": 109, "l": 105, "c": 108},
+        {"o": 108, "h": 112, "l": 107, "c": 111}
+      ],
+      "expect": {"rsi_band": "rising", "roshan": "Strong", "atr_present": true}
+    },
+    {
+      "id": "rsi_downtrend_weak",
+      "desc": "Clean downtrend — RSI falling, Roshan Weak",
+      "candles": [
+        {"o": 120, "h": 121, "l": 117, "c": 118},
+        {"o": 118, "h": 119, "l": 114, "c": 115},
+        {"o": 115, "h": 116, "l": 111, "c": 112},
+        {"o": 112, "h": 113, "l": 108, "c": 109},
+        {"o": 109, "h": 110, "l": 105, "c": 106}
+      ],
+      "expect": {"rsi_band": "falling", "roshan": "Weak", "atr_present": true}
+    },
+    {
+      "id": "rsi_flat_neutral",
+      "desc": "Choppy/flat — RSI near 50, Roshan Neutral",
+      "candles": [
+        {"o": 100, "h": 101, "l": 99, "c": 100},
+        {"o": 100, "h": 101, "l": 99, "c": 101},
+        {"o": 101, "h": 102, "l": 99, "c": 100},
+        {"o": 100, "h": 101, "l": 98, "c": 99},
+        {"o": 99, "h": 101, "l": 98, "c": 100}
+      ],
+      "expect": {"rsi_band": "neutral", "roshan": "Neutral", "atr_present": true}
+    },
+    {
+      "id": "rsi_oversold_extreme",
+      "desc": "Oversold extreme — RSI <= 30 (blind earcon trigger, BO2)",
+      "candles": [
+        {"o": 100, "h": 100, "l": 92, "c": 93},
+        {"o": 93, "h": 93, "l": 86, "c": 87},
+        {"o": 87, "h": 87, "l": 80, "c": 81},
+        {"o": 81, "h": 81, "l": 74, "c": 75},
+        {"o": 75, "h": 75, "l": 69, "c": 70}
+      ],
+      "expect": {"rsi_band": "oversold", "earcon": "rsi_30", "atr_present": true}
+    },
+    {
+      "id": "rsi_overbought_extreme",
+      "desc": "Overbought extreme — RSI >= 70 (blind earcon trigger, BO2)",
+      "candles": [
+        {"o": 70, "h": 78, "l": 70, "c": 77},
+        {"o": 77, "h": 85, "l": 77, "c": 84},
+        {"o": 84, "h": 92, "l": 84, "c": 91},
+        {"o": 91, "h": 99, "l": 91, "c": 98},
+        {"o": 98, "h": 106, "l": 98, "c": 105}
+      ],
+      "expect": {"rsi_band": "overbought", "earcon": "rsi_70", "atr_present": true}
+    }
+  ]
+}

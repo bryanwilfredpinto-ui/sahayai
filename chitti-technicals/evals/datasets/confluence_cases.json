@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "title": "Chitti Technicals — confluence accuracy gold cases (skeleton stub)",
+    "honesty": "Expected verdicts are illustrative skeleton fixtures. Verify against the confluence engine when tools/test_confluence.mjs runs (BO6). No PASS is claimed here.",
+    "harness": "tools/test_confluence.mjs",
+    "status": "PENDING",
+    "timeframes": ["15m", "1h", "1D", "1W"],
+    "vote_scale": "+1 = up, 0 = neutral, -1 = down per timeframe",
+    "verdicts": ["Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell"],
+    "icons": {"Strong Buy": "▲▲", "Buy": "▲", "Neutral": "■", "Sell": "▼", "Strong Sell": "▼▼"}
+  },
+  "cases": [
+    {
+      "id": "unanimous_up",
+      "desc": "All timeframes up -> Strong Buy",
+      "votes": {"15m": 1, "1h": 1, "1D": 1, "1W": 1},
+      "expect": {"verdict": "Strong Buy", "icon": "▲▲", "confluence_score": 4, "stop_required": true}
+    },
+    {
+      "id": "net_up",
+      "desc": "3 up / 1 down -> Buy (net)",
+      "votes": {"15m": 1, "1h": 1, "1D": 1, "1W": -1},
+      "expect": {"verdict": "Buy", "icon": "▲", "confluence_score": 3, "stop_required": true}
+    },
+    {
+      "id": "split_neutral",
+      "desc": "2 up / 2 down -> Neutral (no edge)",
+      "votes": {"15m": 1, "1h": -1, "1D": 1, "1W": -1},
+      "expect": {"verdict": "Neutral", "icon": "■", "confluence_score": 0, "stop_required": false}
+    },
+    {
+      "id": "net_down",
+      "desc": "1 up / 3 down -> Sell (net)",
+      "votes": {"15m": -1, "1h": -1, "1D": 1, "1W": -1},
+      "expect": {"verdict": "Sell", "icon": "▼", "confluence_score": 3, "stop_required": true}
+    },
+    {
+      "id": "unanimous_down",
+      "desc": "All timeframes down -> Strong Sell",
+      "votes": {"15m": -1, "1h": -1, "1D": -1, "1W": -1},
+      "expect": {"verdict": "Strong Sell", "icon": "▼▼", "confluence_score": 4, "stop_required": true}
+    },
+    {
+      "id": "mostly_neutral",
+      "desc": "Neutrals dominate, one up -> Neutral/weak Buy boundary case",
+      "votes": {"15m": 0, "1h": 0, "1D": 1, "1W": 0},
+      "expect": {"verdict": "Neutral", "icon": "■", "confluence_score": 1, "stop_required": false}
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "title": "Chitti Technicals — Tip Shield scam gold cases (skeleton stub)",
+    "honesty": "Expected verdicts are illustrative skeleton fixtures. Verify against the Tip Shield engine when tools/test_tip_shield.mjs runs (BO8). No PASS is claimed here.",
+    "harness": "tools/test_tip_shield.mjs",
+    "status": "PENDING",
+    "verdicts": ["SCAM", "LIKELY_SCAM", "CLEAN"],
+    "patterns": ["guaranteed_returns", "pump_language", "unregistered_advisor", "urgency_fomo", "target_without_risk", "authority_spoof"]
+  },
+  "cases": [
+    {
+      "id": "guaranteed_returns",
+      "tip": "Bro buy XYZ now, 100% guaranteed 3x in one week, no loss fixed profit!",
+      "expect": {"verdict": "SCAM", "patterns": ["guaranteed_returns", "pump_language"]}
+    },
+    {
+      "id": "pump_multibagger",
+      "tip": "This penny stock is going to the moon, guaranteed multibagger, act before it's gone!!",
+      "expect": {"verdict": "SCAM", "patterns": ["pump_language", "urgency_fomo"]}
+    },
+    {
+      "id": "unregistered_paid_group",
+      "tip": "Join my paid Telegram for daily sure-shot calls, DM for tips, 95% accuracy.",
+      "expect": {"verdict": "SCAM", "patterns": ["unregistered_advisor", "guaranteed_returns"]}
+    },
+    {
+      "id": "urgency_fomo",
+      "tip": "Only today! Last chance to buy ABC before it doubles, buy in next 10 minutes.",
+      "expect": {"verdict": "LIKELY_SCAM", "patterns": ["urgency_fomo"]}
+    },
+    {
+      "id": "authority_spoof",
+      "tip": "RBI approved insider leak, SEBI insider says this fund manager pick will triple.",
+      "expect": {"verdict": "SCAM", "patterns": ["authority_spoof", "guaranteed_returns"]}
+    },
+    {
+      "id": "benign_neutral",
+      "tip": "I read the company posted good quarterly results, planning to study the chart.",
+      "expect": {"verdict": "CLEAN", "patterns": []}
+    },
+    {
+      "id": "target_without_risk",
+      "tip": "Target 500 on this stock, sure to hit, don't worry about downside.",
+      "expect": {"verdict": "LIKELY_SCAM", "patterns": ["target_without_risk", "guaranteed_returns"]}
+    }
+  ]
+}

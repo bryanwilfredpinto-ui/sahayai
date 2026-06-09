@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260614" defer></script>
-<script src="nse_universe.js?v=20260614" defer></script>
-<script src="chitti_technical_i18n.js?v=20260614" defer></script>
-<script src="chitti_technical_engine.js?v=20260614" defer></script>
-<script src="chitti_technical_a11y.js?v=20260614" defer></script>
-<script src="chitti_a11y.js?v=20260614" defer></script>
+<script src="chitti_lang.js?v=20260623" defer></script>
+<script src="nse_universe.js?v=20260623" defer></script>
+<script src="chitti_technical_i18n.js?v=20260623" defer></script>
+<script src="chitti_technical_engine.js?v=20260623" defer></script>
+<script src="chitti_technical_a11y.js?v=20260623" defer></script>
+<script src="chitti_a11y.js?v=20260623" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260614" defer></script>
+<script src="chitti_isl.js?v=20260623" defer></script>
 
 <style>
 :root{
@@ -114,8 +114,30 @@ canvas{display:block;width:100%}
 /* Tagline + Simple view (default for the common man — one decision, one Listen, no jargon) */
 .claude-gift{text-align:center;font-size:12.5px;color:#5b637a;font-weight:700;margin:4px 0 2px;letter-spacing:.02em}
 body.simple-mode #advanced-controls{display:none}
-body.simple-mode .grid{display:none}
+body.simple-mode .grid > *{display:none}
+body.simple-mode .grid > [data-chitti-response="tech-chart"]{display:block}  /* Simple keeps the visual chart */
 body:not(.simple-mode) #simple-ask-btn{display:none}
+/* Retire the legacy E.scan signal card — it contradicted the verdict hero + CEOS (generateSignal).
+   The Verdict hero is the decision; the "Trade Plan — multi-timeframe confluence" card is the detail. */
+#signal-card{display:none}
+/* TradingView-style timeframe tabs on the chart */
+.chart-tf-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 8px}
+.chart-tf-tabs button{min-height:36px;min-width:44px;padding:6px 12px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-weight:800;font-size:13px;color:#1A1A1A;cursor:pointer}
+.chart-tf-tabs button.on{background:#000080;color:#fff;border-color:#000080}
+.chart-tf-tabs button:hover{border-color:#000080}
+/* Indicator picker (➕ Indicators → overlays on price + oscillators below) */
+.pane-toggles{position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.pane-toggles .ind-add{min-height:36px;padding:6px 12px;border:1.5px solid #000080;background:#000080;color:#fff;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer}
+.pane-toggles .tog{min-height:36px;padding:6px 10px;border:1.5px solid var(--line);background:#fff;border-radius:8px;font-weight:700;font-size:12.5px;color:#1A1A1A;cursor:pointer}
+.chart-ind-menu{position:absolute;z-index:75;top:100%;left:0;margin-top:4px;background:#fff;border:1.5px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:8px;max-height:320px;overflow:auto;min-width:230px}
+.chart-ind-menu .ind-sect{font-weight:800;font-size:12px;color:#5b637a;margin:6px 4px 4px;text-transform:uppercase;letter-spacing:.03em}
+.chart-ind-menu .ind-opt{display:flex;align-items:center;gap:8px;min-height:40px;padding:4px 6px;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px}
+.chart-ind-menu .ind-opt:hover{background:#f3f4f8}
+.chart-ind-menu .ind-opt input{width:18px;height:18px}
+.ind-readout{display:flex;align-items:center;gap:10px;padding:9px 11px;margin-top:6px;border:1.5px solid var(--line);border-radius:8px;background:#fafbfd;font-size:14px;min-height:44px;box-sizing:border-box}
+.ind-readout b{flex:1;font-weight:800;color:#1A1A1A}
+.ind-readout .rv{font-weight:800;color:#000080}
+.ind-readout .rs{font-weight:800;min-width:74px;text-align:right}
 .pane-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .tog{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
 .tog.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -158,6 +180,12 @@ tr.click:hover{background:#f7f8fc}
 .vh-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .vh-decision{font-size:44px;font-weight:900;line-height:1.05;letter-spacing:-.5px}
 .verdict-hero.buy .vh-decision{color:#0a6e00}.verdict-hero.sell .vh-decision{color:#C62828}.verdict-hero.wait .vh-decision{color:#7a4d00}
+.vh-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.vh-paper,.vh-learn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:9px;font-size:12.5px;font-weight:700;border:1.5px solid}
+.vh-paper{background:#fff7e6;border-color:#9a6700;color:#7a4d00}
+.vh-paper.done{background:#e7f6e7;border-color:#0a6e00;color:#0a6e00}
+.vh-learn{background:#eef2ff;border-color:#000080;color:#000080}
+.vh-paper-btn{min-height:44px;padding:8px 14px;border-radius:10px;border:2px solid #000080;background:#000080;color:#fff;font-weight:800;font-size:13px;cursor:pointer}
 .vh-conf{font-size:38px;font-weight:900;color:#1A1A1A;text-align:right}.vh-conf small{font-size:14px;font-weight:700;color:#5b637a}
 .vh-head{font-size:17px;font-weight:800;margin:6px 0 10px;color:#1A1A1A}
 .vh-listen{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;font-size:19px;font-weight:900;color:#fff;background:#000080;border:none;border-radius:14px;cursor:pointer;margin:4px 0 14px}
@@ -314,9 +342,11 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
     </div>
     <div class="vh-head" id="vh-head">🤖 <span data-i18n="vh.title">Chitti Verdict</span></div>
     <button class="vh-listen" onclick="TechUI.hearVerdict()">🔊 <span data-i18n="vh.listen">Listen to Chitti</span></button>
+    <button class="vh-listen" style="background:#5e35b1;border-color:#5e35b1" onclick="TechUI.sonifyChart()">🎵 <span data-i18n="vh.hearchart">Hear the chart</span></button>
     <div class="vh-reasons" id="vh-reasons"></div>
     <div class="vh-plan" id="vh-plan"></div>
     <div class="vh-risk" id="vh-risk"></div>
+    <div class="vh-meta" id="vh-meta"></div>
   </section>
 
   <div class="grid">
@@ -370,9 +400,11 @@ body.icon-only #icon-mode-btn{outline:3px solid var(--blue)}
     <!-- BO8: chart -->
     <div class="card col-full" data-chitti-response="tech-chart" data-chitti-section="Chart">
       <h2>📈 <span data-i18n="chart.title">Chart</span> <span class="muted" id="chart-tf"></span></h2>
+      <!-- TradingView-style timeframe selector ON the chart: 1min → Monthly -->
+      <div class="chart-tf-tabs" id="chart-tf-tabs" role="tablist" aria-label="Chart timeframe"></div>
       <div class="pane-toggles" id="pane-toggles"></div>
       <div class="chart-wrap"><canvas id="price-canvas" height="280" role="img" aria-label="Price candlestick chart"></canvas></div>
-      <div class="chart-wrap" id="osc-wrap" style="margin-top:6px"><canvas id="osc-canvas" height="130" role="img" aria-label="Oscillator pane"></canvas></div>
+      <div id="osc-stack" style="margin-top:6px"></div>
       <!-- research-driven: accessible data-table alternative to the canvas (Deque/accessiBe best practice) -->
       <button class="btn ghost" id="table-toggle" onclick="TechUI.toggleTable()" style="margin-top:8px" aria-expanded="false" aria-controls="chart-table">📋 <span data-i18n="chart.table">Show data table</span></button>
       <div id="chart-table" role="region" aria-label="Chart data table" style="display:none;margin-top:8px;overflow:auto"></div>
@@ -728,6 +760,61 @@ window.TechUI = (function(){
   // 🤖 Chitti Verdict hero — the decision-intelligence layer made visible
   var lastVerdict=null;
   function TT(k,f){ var s=T(k); return (s&&s!==k)?s:f; }   // i18n with English fallback (no raw key leaks)
+  // ───── BO21: pattern-learning v1 — remember my style on-device (no PII leaves the device) ─────
+  var LEARN_KEY='tech_learn_v1';
+  function learnGet(){ try{ return JSON.parse(localStorage.getItem(LEARN_KEY))||{}; }catch(e){ return {}; } }
+  function learnSet(o){ try{ localStorage.setItem(LEARN_KEY,JSON.stringify(o)); }catch(e){} }
+  var _lastLearn='';
+  function learnRecord(sym,tfs,dir){ var key=sym+'|'+(tfs||[]).join(',')+'|'+dir; if(key===_lastLearn) return; _lastLearn=key;  // one distinct call = one count (pipeline re-renders don't inflate)
+    var L=learnGet(); L.tfs=L.tfs||{}; L.symbols=L.symbols||{}; L.dirs=L.dirs||{}; L.count=(L.count||0)+1;
+    if(sym){ L.symbols[sym]=(L.symbols[sym]||0)+1; L.last=sym; }
+    (tfs||[]).forEach(function(t){ L.tfs[t]=(L.tfs[t]||0)+1; });
+    if(dir){ L.dirs[dir]=(L.dirs[dir]||0)+1; } learnSet(L); }
+  function learnTopTf(){ var L=learnGet(),t=L.tfs||{},k=Object.keys(t); if(!k.length)return null; k.sort(function(a,b){return t[b]-t[a];}); return k[0]; }
+  function learnSummary(){ var L=learnGet(); if(!L.count) return null; return {count:L.count, topTf:learnTopTf()}; }
+
+  // ───── BO20: paper-trading first (CEOS Article 3) — practise before you trade live ─────
+  var PAPER_KEY='tech_paper_v1', PAPER_GOAL=10;
+  function paperGet(){ try{ return JSON.parse(localStorage.getItem(PAPER_KEY))||{n:0,trades:[]}; }catch(e){ return {n:0,trades:[]}; } }
+  function paperSet(o){ try{ localStorage.setItem(PAPER_KEY,JSON.stringify(o)); }catch(e){} }
+  function paperLogTrade(){ var v=lastVerdict; if(!v||v.decision==='WAIT'){ speak(TT('paper.needcall','No live call to practise right now.')); return; }
+    var sym=(lastCEOS&&lastCEOS.__sym)||''; var msg=TT('paper.confirm','Log a paper (practice) trade for ')+sym+' '+v.decision+'? '+TT('paper.norisk','No real money — practice only.');
+    function commit(){ var P=paperGet(); P.n=(P.n||0)+1; P.trades=(P.trades||[]); P.trades.push({sym:sym,dir:v.decision,entry:v.entry,stop:v.stop,t:P.n}); paperSet(P);
+      speak(TT('paper.logged','Paper trade logged. ')+P.n+' '+TT('paper.of','of')+' '+PAPER_GOAL+'.'); renderVerdict(lastVerdict,sym); }
+    if(window.chittiConfirmAndDo){ chittiConfirmAndDo(msg,commit); } else if(window.confirm(msg)){ commit(); } }
+  function paperBadge(){ var n=(paperGet().n)||0;
+    if(n>=PAPER_GOAL) return '<span class="vh-paper done">✅ '+TT('paper.done','Practised — ready')+' ('+n+'/'+PAPER_GOAL+')</span>';
+    return '<span class="vh-paper">📝 '+TT('paper.mode','Practice first')+' '+n+'/'+PAPER_GOAL+'</span>'+
+      '<button type="button" class="vh-paper-btn" onclick="TechUI.paperLogTrade()">📝 '+TT('paper.trade','Paper trade')+'</button>'; }
+
+  // ───── Accessibility OS: SONIFICATION (CEOS §11.1) — a blind user HEARS the chart shape ─────
+  // Maps each candle's close to a pitch (low price = low note, high price = high note), 220–880 Hz,
+  // then speaks the trend. The only accessible price chart in Indian markets.
+  var _audioCtx=null;
+  function sonifyChart(){
+    if(!lastScan){ return; }
+    var sym=lastScan._sym, series=(getTf(sym)[chartTf]||getTf(sym).daily||[]);
+    var candles=series.slice(-40), closes=candles.map(function(c){return c.close;}).filter(function(x){return x!=null;});
+    if(closes.length<2){ speak(TT('sonify.none','No chart data to play yet.')); return; }
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC){ speak(TT('sonify.unavail','Audio chart is not available on this device.')); return; }
+    try{ _audioCtx=_audioCtx||new AC(); if(_audioCtx.state==='suspended') _audioCtx.resume(); }catch(e){ return; }
+    var ctx=_audioCtx, lo=Math.min.apply(null,closes), hi=Math.max.apply(null,closes), t0=ctx.currentTime, step=0.16;
+    closes.forEach(function(px,i){
+      var norm=(hi>lo)?(px-lo)/(hi-lo):0.5, freq=220+norm*660, at=t0+i*step;
+      var o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,at); g.gain.linearRampToValueAtTime(0.16,at+0.02); g.gain.exponentialRampToValueAtTime(0.0001,at+step);
+      o.connect(g); g.connect(ctx.destination); o.start(at); o.stop(at+step);
+    });
+    var first=closes[0], last=closes[closes.length-1], chg=(last-first)/first*100;
+    var trend=chg>2?TT('sonify.upStrong','rising strongly'):chg>0.5?TT('sonify.up','rising'):chg<-2?TT('sonify.downStrong','falling strongly'):chg<-0.5?TT('sonify.down','falling'):TT('sonify.flat','sideways');
+    setTimeout(function(){ speak(sym+'. '+closes.length+' '+TT('sonify.candles','candles')+'. '+TT('sonify.trendIs','Price is')+' '+trend+'.'); }, Math.round(closes.length*step*1000)+150);
+  }
+
+  // ───── Accessibility OS: HAPTICS (CEOS §11.3) — a deaf-blind user FEELS the call ─────
+  function haptic(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
+  function hapticForDecision(d){ haptic(d==='BUY'?[200,100,200]:d==='SELL'?[400,120,400]:[120]); }
+
   function renderVerdict(v, sym){
     lastVerdict=v;
     var hero=document.getElementById('verdict-hero'); if(!hero) return;
@@ -752,11 +839,19 @@ window.TechUI = (function(){
     }
     document.getElementById('vh-plan').innerHTML=cells;
     document.getElementById('vh-risk').innerHTML=TT('vh.risk','Risk')+': <span class="badge '+v.risk+'">'+TT('risk.'+v.risk,v.risk)+'</span>';
+    var meta=document.getElementById('vh-meta');
+    if(meta){ var ls=learnSummary();
+      var chip=ls?('<span class="vh-learn">🧠 '+TT('learn.style','Chitti is learning you')+': '+ls.count+' '+TT('learn.calls','calls')+(ls.topTf?(' · '+ls.topTf.toUpperCase()):'')+'</span>'):'';
+      meta.innerHTML=(v.decision!=='WAIT'?paperBadge():'')+chip; }
+    hapticForDecision(v.decision);   // CEOS §11.3 — deaf-blind user feels the call (BUY/SELL/WAIT distinct)
   }
   function hearVerdict(){ if(lastVerdict&&lastVerdict.spoken) speak(lastVerdict.spoken); }
 
-  // Simple view = the common man's default: voice search → one big decision → Listen. Full = analyst surface.
-  var simpleMode=true; try{ var _sm=localStorage.getItem('tech_simple'); if(_sm!==null) simpleMode=(_sm==='1'); }catch(e){}
+  // CEOS PERSONAS rule: accessibility (P5/P7/P8) is the floor every persona inherits; P9's advanced surface
+  // must NOT break the primary's experience. So the DEFAULT is the decision-first primary view; the full
+  // analyst surface (charts, 16 indicators, screener, backtest) is P9, one tap away ("📊 Full analysis").
+  var simpleMode=true;
+  try{ var _sm=localStorage.getItem('tech_simple'); if(_sm!==null) simpleMode=(_sm==='1'); }catch(e){}
   function applyMode(){
     document.body.classList.toggle('simple-mode', simpleMode);
     var t=document.getElementById('mode-toggle');
@@ -770,6 +865,7 @@ window.TechUI = (function(){
     var sig=E.generateSignal(getTf(sym),{tfs:tfs,capital:100000,riskPercent:2});
     sig.__sym=sym; lastCEOS=sig;
     logSystemSignal(sig);   // auto-log every directional call to the System Signal Journal
+    try{ learnRecord(sym, tfs, sig.signal); }catch(e){}   // BO21: learn the user's style on-device
     try{ renderVerdict(E.chittiVerdict(sig), sym); }catch(e){}   // 🤖 Chitti Verdict decision hero
     var ic=(window.TechA11y?TechA11y.icon(sig.signal):({BUY:'🟢',SELL:'🔴',HOLD:'🟡'}[sig.signal]||'⏸️'));
     var cf=sig.confluence;
@@ -888,7 +984,7 @@ window.TechUI = (function(){
       else {
         var rows=b.rows.slice(-30).reverse().map(function(r){ var ic=r.pnl>=0?'✅':'🛑';
           return '<tr><th scope="row">'+r.date+'</th><td>'+(r.side==='BUY'?'🟢':'🔴')+'</td><td>'+r.entry+'</td><td>'+r.target+'</td><td>'+r.sl+'</td><td style="color:'+(r.pnl>=0?'var(--green)':'var(--red)')+'">'+ic+' '+(r.pnl>=0?'+':'')+'₹'+Number(r.pnl).toLocaleString('en-IN')+'</td></tr>'; }).join('');
-        j.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('bt.title')+' — '+b.sym+' · '+((b.rows[0]&&b.rows[0].tf)||'')+' · ₹1,00,000/trade'+(b.batch?' · model data':'')+'</caption>'+
+        j.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('bt.title')+' — '+b.sym+' · '+((b.rows[0]&&b.rows[0].tf)||'')+' · ₹1,00,000/trade · '+(T('bt.netcosts')||'NET of brokerage + STT + slippage')+' · '+(T('bt.bothdir')||'long & short')+(b.batch?' · model data':'')+'</caption>'+
           '<tr><th scope="col">'+T('bt.date')+'</th><th scope="col">↕</th><th scope="col">'+T('risk.entry')+'</th><th scope="col">'+T('risk.targets')+'</th><th scope="col">'+T('risk.stop')+'</th><th scope="col">'+T('portfolio.pnl')+'</th></tr>'+rows+'</table>';
       }
     }
@@ -1018,7 +1114,14 @@ window.TechUI = (function(){
     if(E&&E.detectCrisis&&E.detectCrisis(raw)){ showCrisis(); return; }
     var sym=raw.trim().toUpperCase()||'RELIANCE'; document.getElementById('sym').value=sym;
     var btn=event&&event.target?event.target.closest('button'):null; if(btn) btn.disabled=true;
-    ensureTfs(sym,tickedTfs()).then(function(){ scan(); speak(sym+' '+(lastCEOS?T('verdict.'+lastCEOS.signal):'')); }).finally(function(){ if(btn) btn.disabled=false; });
+    // Ask Chitti = fetch THIS stock's REAL Angel candles, then give the call. A searched stock is never
+    // synthesised — if it's not live yet, load it live now; DEMO only if the feed is genuinely unreachable.
+    var pre = liveSymbols[sym] ? ensureTfs(sym,tickedTfs()) : loadLive(sym).then(function(tf){
+      window.__techLiveErr=''; candleCache[sym]=tf;
+      liveSymbols[sym]=(tf.daily&&tf.daily.length)?tf.daily[tf.daily.length-1].date:true; dataSource='LIVE';
+      return ensureTfs(sym,tickedTfs());
+    }).catch(function(e){ window.__techLiveErr=(e&&e.message)||'unreachable'; delete liveSymbols[sym]; });
+    pre.then(function(){ scan(); speak(sym+' '+(lastCEOS?T('verdict.'+lastCEOS.signal):'')); }).finally(function(){ if(btn) btn.disabled=false; });
   }
 
   function renderLadder(res){
@@ -1112,26 +1215,67 @@ window.TechUI = (function(){
 
   // ---------- chart (BO8) ----------
   function buildPaneToggles(){
-    var oscs=['RSI','Williams %R','Stochastic'];
-    var c=document.getElementById('pane-toggles'); c.innerHTML='';
-    oscs.forEach(function(o){
-      var mode=oscMode[o]||(o==='RSI'?'separate':'off');
-      oscMode[o]=mode;
-      var btn=document.createElement('button'); btn.className='tog'+(mode!=='off'?' on':'');
-      btn.textContent=o+' · '+(mode==='separate'?T('chart.separate'):mode==='overlay'?T('chart.overlay'):'—');
-      btn.onclick=function(){
-        oscMode[o]= mode==='off'?'separate':(mode==='separate'?'overlay':'off');
-        if(oscMode[o]!=='off'&&mode==='off') activeOsc=o;
-        drawChart(lastScan); buildPaneToggles();
-      };
-      c.appendChild(btn);
-    });
-    document.getElementById('chart-tf').textContent='· '+(T('tf.'+lastTf)||lastTf);
+    buildChartIndicators();
+    var lab=document.getElementById('chart-tf'); if(lab) lab.textContent='· '+chartTfLabel(chartTf||lastTf);
   }
+
+  // TradingView-style chart timeframe selector (1min → Monthly), independent of the signal timeframes.
+  var CHART_TFS=[['1m','1m'],['5m','5m'],['15m','15m'],['1h','1H'],['4h','4H'],['daily','Daily'],['weekly','Weekly'],['monthly','Monthly']];
+  var chartTf=null;
+  function chartTfLabel(tf){ for(var i=0;i<CHART_TFS.length;i++) if(CHART_TFS[i][0]===tf) return CHART_TFS[i][1]; return tf; }
+  function buildChartTfTabs(){
+    var box=document.getElementById('chart-tf-tabs'); if(!box||!lastScan) return;
+    var tfs=getTf(lastScan._sym), cur=chartTf||lastTf||'daily';
+    box.innerHTML=CHART_TFS.map(function(p){
+      var has=tfs[p[0]]&&tfs[p[0]].length>=2;
+      return '<button role="tab" aria-selected="'+(p[0]===cur)+'" class="'+(p[0]===cur?'on':'')+'"'+(has?'':' disabled style="opacity:.4"')+
+        ' onclick="TechUI.setChartTf(\''+p[0]+'\')">'+p[1]+'</button>';
+    }).join('');
+  }
+  function setChartTf(tf){ chartTf=tf; if(lastScan){ ensureTfs(lastScan._sym,[tf]).then(function(){ drawChart(lastScan); }); } }
+
+  // ── Chart indicators: add ANY indicator — overlays drawn ON price, oscillators in panes BELOW ──
+  function _cl(cd){ return cd.map(function(c){return c.close;}); }
+  var OVERLAYS=[
+    {key:'ema20',label:'EMA 20',color:'#1565c0',get:function(cd){return [{vals:E.ema(_cl(cd),20)}];}},
+    {key:'ema50',label:'EMA 50',color:'#8e24aa',get:function(cd){return [{vals:E.ema(_cl(cd),50)}];}},
+    {key:'ema200',label:'EMA 200',color:'#5d4037',get:function(cd){return [{vals:E.ema(_cl(cd),200)}];}},
+    {key:'sma20',label:'SMA 20',color:'#00897b',get:function(cd){return [{vals:E.sma(_cl(cd),20)}];}},
+    {key:'boll',label:'Bollinger Bands',color:'#9a6700',get:function(cd){var b=E.bollinger(_cl(cd),20,2);return [{vals:b.upper},{vals:b.mid,dash:true},{vals:b.lower}];}},
+    {key:'keltner',label:'Keltner Channels',color:'#00695c',get:function(cd){var k=E.keltner(cd)||{};return [{vals:k.upper||[]},{vals:k.mid||[],dash:true},{vals:k.lower||[]}];}},
+    {key:'vwap',label:'VWAP',color:'#5e35b1',get:function(cd){return [{vals:E.vwapRolling(cd)}];}},
+    {key:'supertrend',label:'Supertrend',color:'#0a6e00',get:function(cd){var s=E.supertrend(cd);return [{vals:(s&&s.value)?s.value:s}];}}
+  ];
+  var OSCILLATORS=[
+    {key:'rsi',label:'RSI',color:'#FF9933',get:function(cd){return {vals:E.rsi(_cl(cd),14),lo:0,hi:100,bands:[30,70]};}},
+    {key:'macd',label:'MACD',color:'#1565c0',get:function(cd){var m=E.macd(_cl(cd));return {vals:m.line||m.macd,extra:m.signal,bands:[0]};}},
+    {key:'stoch',label:'Stochastic',color:'#8e24aa',get:function(cd){return {vals:E.stochastic(cd).k,lo:0,hi:100,bands:[20,80]};}},
+    {key:'stochrsi',label:'Stochastic RSI',color:'#6a1b9a',get:function(cd){return {vals:E.stochRsi(_cl(cd)),bands:[20,80]};}},
+    {key:'williams',label:'Williams %R',color:'#00897b',get:function(cd){return {vals:E.williamsR(cd,14),lo:-100,hi:0,bands:[-80,-20]};}},
+    {key:'cci',label:'CCI',color:'#5e35b1',get:function(cd){return {vals:E.cci(cd),bands:[-100,0,100]};}},
+    {key:'adx',label:'ADX',color:'#c62828',get:function(cd){return {vals:(E.adx(cd)||[]).map(function(x){return x?x.adx:null;}),lo:0,hi:100,bands:[25]};}},
+    {key:'aroon',label:'Aroon',color:'#ad1457',get:function(cd){return {vals:(E.aroon(cd)||[]).map(function(x){return x?x.up:null;}),lo:0,hi:100,bands:[30,70]};}},
+    {key:'mfi',label:'MFI',color:'#00838f',get:function(cd){return {vals:E.mfi(cd),lo:0,hi:100,bands:[20,80]};}},
+    {key:'roc',label:'ROC',color:'#6d4c41',get:function(cd){return {vals:E.roc(_cl(cd)),bands:[0]};}},
+    {key:'mom',label:'Momentum',color:'#ad1457',get:function(cd){return {vals:E.momentum(_cl(cd)),bands:[0]};}},
+    {key:'trix',label:'TRIX',color:'#455a64',get:function(cd){return {vals:E.trix(_cl(cd)),bands:[0]};}},
+    {key:'ao',label:'Awesome Oscillator',color:'#2e7d32',get:function(cd){return {vals:E.awesome(cd),bands:[0]};}},
+    {key:'atr',label:'ATR',color:'#8d6e63',get:function(cd){return {vals:E.atr(cd,14)};}},
+    {key:'obv',label:'OBV',color:'#283593',get:function(cd){return {vals:E.obv(cd)};}}
+  ];
+  // Every remaining indicator from the engine's 39 is selectable as a value+signal READOUT (honest, from indicatorSet).
+  var _PLOTTED={'EMA 50':1,'EMA 200':1,'Bollinger Bands':1,'Keltner Channels':1,'VWAP':1,'Supertrend':1,'RSI':1,'MACD':1,'Stochastic':1,'Stochastic RSI':1,'Williams %R':1,'CCI':1,'ADX':1,'Aroon':1,'MFI':1,'ROC':1,'Momentum':1,'TRIX':1,'Awesome Oscillator':1,'ATR':1,'OBV':1,'Roshan Indicator':1};
+  var READOUTS=[];  // populated lazily once the engine (E) is loaded — E is undefined at parse time
+  function ensureReadouts(){ if(READOUTS.length || !E || !E.INDICATOR_NAMES) return; READOUTS=E.INDICATOR_NAMES.filter(function(n){return !_PLOTTED[n];}).map(function(n){return {key:'ro_'+n.replace(/[^a-z0-9]/gi,''),label:n};}); }
+  var chartOverlays={ema20:true}, chartOscillators={rsi:true}, chartReadouts={};
 
   function drawChart(res){
     if(!res) return;
-    var candles=getTf(res._sym)[lastTf].slice(-70);
+    var tf=chartTf||lastTf||'daily', tfd=getTf(res._sym);
+    if(!tfd[tf]||tfd[tf].length<2){ tf=(tfd.daily&&tfd.daily.length)?'daily':(tfd.weekly?'weekly':lastTf); }
+    chartTf=tf; buildChartTfTabs();
+    var lab=document.getElementById('chart-tf'); if(lab) lab.textContent='· '+chartTfLabel(tf);
+    var candles=(tfd[tf]||[]).slice(-70);
     if(!candles||!candles.length) return;
     var cv=document.getElementById('price-canvas');
     var dpr=window.devicePixelRatio||1;
@@ -1152,6 +1296,8 @@ window.TechUI = (function(){
       (res.targets||[]).slice(0,3).forEach(function(t,i){ tags.push({v:t.price,c:'#0a6e00',label:'T'+(i+1)+' '+fmt(t.price)}); });
     }
     tags.forEach(function(t){ if(t.v>hi)hi=t.v; if(t.v<lo)lo=t.v; });
+    // include active overlays in the price range so Bollinger/MA lines never clip
+    OVERLAYS.forEach(function(ov){ if(!chartOverlays[ov.key])return; try{ ov.get(candles).forEach(function(ln){ (ln.vals||[]).forEach(function(v){ if(v==null)return; if(v>hi)hi=v; if(v<lo)lo=v; }); }); }catch(e){} });
     var rng=(hi-lo)||1; hi+=rng*0.05; lo-=rng*0.05; rng=hi-lo;
     function y(v){return PT+plotH*(1-(v-lo)/rng);}
     var cw=plotW/candles.length; function cx(i){return x0+i*cw+cw/2;}
@@ -1165,42 +1311,83 @@ window.TechUI = (function(){
       ctx.beginPath(); ctx.moveTo(X,y(c.high)); ctx.lineTo(X,y(c.low)); ctx.stroke();
       var bt=y(Math.max(c.open,c.close)), bb=y(Math.min(c.open,c.close)), bw=Math.max(2,cw*0.6);
       ctx.fillRect(X-bw/2,bt,bw,Math.max(1.5,bb-bt)); });
-    // EMA 20 overlay
-    var ema=E.ema(candles.map(function(c){return c.close;}),20);
-    ctx.strokeStyle='#1565c0'; ctx.lineWidth=1.6; ctx.beginPath(); var st=false;
-    candles.forEach(function(c,i){ var v=ema[i]; if(v==null)return; if(!st){ctx.moveTo(cx(i),y(v));st=true;}else ctx.lineTo(cx(i),y(v)); });
-    ctx.stroke(); ctx.lineWidth=1;
+    // active overlays drawn ON price (EMA/SMA/Bollinger/VWAP/Supertrend)
+    OVERLAYS.forEach(function(ov){ if(!chartOverlays[ov.key])return; try{ ov.get(candles).forEach(function(ln){
+      ctx.strokeStyle=ov.color; ctx.lineWidth=1.6; if(ln.dash)ctx.setLineDash([4,3]); ctx.beginPath(); var st=false;
+      candles.forEach(function(c,i){ var v=ln.vals[i]; if(v==null)return; if(!st){ctx.moveTo(cx(i),y(v));st=true;}else ctx.lineTo(cx(i),y(v)); });
+      ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth=1;
+    }); }catch(e){} });
     // dashed level + last-price lines across the plot
     tags.forEach(function(t){ ctx.strokeStyle=t.last?'#9aa1b0':t.c; ctx.setLineDash(t.last?[2,3]:[5,4]); ctx.beginPath(); ctx.moveTo(x0,y(t.v)); ctx.lineTo(x0+plotW,y(t.v)); ctx.stroke(); ctx.setLineDash([]); });
     // right-edge price pills — nudged apart so labels never overlap
     tags.forEach(function(t){ t.ty=y(t.v); }); tags.sort(function(a,b){return a.ty-b.ty;});
     for(var k=1;k<tags.length;k++){ if(tags[k].ty-tags[k-1].ty<15) tags[k].ty=tags[k-1].ty+15; }
     tags.forEach(function(t){ ctx.fillStyle=t.c; ctx.fillRect(x0+plotW, t.ty-7.5, AX, 15); ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.fillText(t.label, x0+plotW+4, t.ty); });
-    drawOsc(candles);
+    drawOscStack(candles); renderReadouts(candles);
   }
 
-  function drawOsc(candles){
-    var wrap=document.getElementById('osc-wrap');
-    // find a separate-pane oscillator
-    var sep=Object.keys(oscMode).filter(function(o){return oscMode[o]==='separate';});
-    if(sep.length===0){wrap.style.display='none';return;}
-    wrap.style.display='block';
-    var name=sep[0];
-    var cv=document.getElementById('osc-canvas');var dpr=window.devicePixelRatio||1;var W=cv.clientWidth||600;var H=cv.height;cv.width=W*dpr;cv.style.width=W+'px';
-    var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
-    var series,lo=0,hi=100;
-    if(name==='RSI'){series=E.rsi(candles.map(function(c){return c.close;}),14);}
-    else if(name==='Williams %R'){series=E.williamsR(candles,14);lo=-100;hi=0;}
-    else{var st=E.stochastic(candles);series=st.k;}
-    var pad=14,cw=(W-pad*2)/candles.length;
-    function y(v){return pad+(H-pad*2)*(1-(v-lo)/((hi-lo)||1));}
-    // guide lines
-    ctx.strokeStyle='#e3e6ef';[lo+(hi-lo)*0.2,lo+(hi-lo)*0.8].forEach(function(g){ctx.beginPath();ctx.moveTo(pad,y(g));ctx.lineTo(W-pad,y(g));ctx.stroke();});
-    ctx.strokeStyle='#FF9933';ctx.lineWidth=1.6;ctx.beginPath();var s=false;
-    series.forEach(function(v,i){if(v==null)return;var x=pad+i*cw+cw/2;if(!s){ctx.moveTo(x,y(v));s=true;}else ctx.lineTo(x,y(v));});
-    ctx.stroke();ctx.lineWidth=1;
-    ctx.fillStyle='#000080';ctx.font='11px system-ui';ctx.fillText(name,pad,12);
+  // Any of the engine's 39 indicators not plotted above → an honest value+signal READING row below the chart.
+  function renderReadouts(candles){
+    var stack=document.getElementById('osc-stack'); if(!stack) return; ensureReadouts();
+    var active=READOUTS.filter(function(o){return chartReadouts[o.key];}); if(!active.length) return;
+    var iset; try{ iset=E.indicatorSet(candles)||{}; }catch(e){ iset={}; }
+    active.forEach(function(o){
+      var d=iset[o.label]||{}, sig=d.signal||'WAIT';
+      var col=sig==='BUY'?'#0a6e00':sig==='SELL'?'#C62828':'#7a4d00', ic=sig==='BUY'?'🟢':sig==='SELL'?'🔴':'🟡';
+      var row=document.createElement('div'); row.className='ind-readout';
+      row.innerHTML='<b>'+o.label+'</b><span class="rv">'+(d.value!=null?d.value:'—')+'</span><span class="rs" style="color:'+col+'">'+ic+' '+sig+'</span>';
+      if(d.note){ row.setAttribute('title',d.note); row.setAttribute('aria-label',o.label+' '+(d.value!=null?d.value:'')+' '+sig+'. '+d.note); }
+      stack.appendChild(row);
+    });
   }
+
+  // Stacked oscillator panes below the chart — one per active oscillator (RSI/MACD/Stoch/CCI/ADX/…)
+  function drawOscStack(candles){
+    var stack=document.getElementById('osc-stack'); if(!stack) return;
+    stack.innerHTML='';
+    var active=OSCILLATORS.filter(function(o){return chartOscillators[o.key];});
+    if(!active.length) return;
+    var dpr=window.devicePixelRatio||1, W=stack.clientWidth||stack.parentElement.clientWidth||600;
+    active.forEach(function(osc){
+      var d; try{ d=osc.get(candles)||{}; }catch(e){ return; }
+      var vals=d.vals||[]; if(!vals.some(function(v){return v!=null;})) return;
+      var cv=document.createElement('canvas'); cv.height=104; cv.width=W*dpr; cv.style.width='100%'; cv.style.height='104px'; cv.style.marginTop='6px';
+      cv.setAttribute('role','img'); cv.setAttribute('aria-label',osc.label+' indicator pane');
+      stack.appendChild(cv);
+      var ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); var H=104, P=12, AX=42, x0=4, plotH=H-P*2, plotW=W-AX-x0;
+      var lo=d.lo, hi=d.hi;
+      if(lo==null||hi==null){ lo=Infinity;hi=-Infinity; vals.forEach(function(v){if(v==null)return;if(v<lo)lo=v;if(v>hi)hi=v;}); if(d.extra)d.extra.forEach(function(v){if(v==null)return;if(v<lo)lo=v;if(v>hi)hi=v;}); var pd=(hi-lo)*0.12||1; lo-=pd;hi+=pd; }
+      function yy(v){return P+plotH*(1-(v-lo)/((hi-lo)||1));}
+      function xx(i){return x0+i*(plotW/candles.length)+(plotW/candles.length)/2;}
+      ctx.font='11px system-ui'; ctx.textBaseline='middle';
+      (d.bands||[]).forEach(function(bv){ if(bv<lo||bv>hi)return; ctx.strokeStyle='#eef0f5'; ctx.beginPath(); ctx.moveTo(x0,yy(bv)); ctx.lineTo(x0+plotW,yy(bv)); ctx.stroke(); ctx.fillStyle='#aeb4c2'; ctx.textAlign='right'; ctx.fillText(''+Math.round(bv), W-3, yy(bv)); });
+      if(d.extra){ ctx.strokeStyle='#c62828'; ctx.lineWidth=1.2; ctx.beginPath(); var s2=false; d.extra.forEach(function(v,i){if(v==null)return;if(!s2){ctx.moveTo(xx(i),yy(v));s2=true;}else ctx.lineTo(xx(i),yy(v));}); ctx.stroke(); }
+      ctx.strokeStyle=osc.color; ctx.lineWidth=1.6; ctx.beginPath(); var s=false;
+      vals.forEach(function(v,i){if(v==null)return;if(!s){ctx.moveTo(xx(i),yy(v));s=true;}else ctx.lineTo(xx(i),yy(v));});
+      ctx.stroke(); ctx.lineWidth=1;
+      ctx.fillStyle=osc.color; ctx.textAlign='left'; ctx.fillText(osc.label, 6, 9);
+    });
+  }
+
+  // "➕ Indicators" picker — add ANY overlay (on price) or oscillator (pane below)
+  function buildChartIndicators(){
+    var box=document.getElementById('pane-toggles'); if(!box) return; ensureReadouts();
+    function chip(o,type){ return '<button class="tog on" onclick="TechUI.toggleChartInd(\''+type+'\',\''+o.key+'\')"><span style="color:'+o.color+'">●</span> '+o.label+' ✕</button>'; }
+    var chips=OVERLAYS.filter(function(o){return chartOverlays[o.key];}).map(function(o){return chip(o,'ov');})
+      .concat(OSCILLATORS.filter(function(o){return chartOscillators[o.key];}).map(function(o){return chip(o,'os');}))
+      .concat(READOUTS.filter(function(o){return chartReadouts[o.key];}).map(function(o){return '<button class="tog on" onclick="TechUI.toggleChartInd(\'ro\',\''+o.key+'\')">📋 '+o.label+' ✕</button>';}));
+    box.innerHTML='<button class="ind-add" onclick="TechUI.toggleChartIndMenu()">➕ '+TT('chart.addInd','Indicators')+' ('+(OVERLAYS.length+OSCILLATORS.length+READOUTS.length)+')</button>'+chips.join('')+'<div id="chart-ind-menu" class="chart-ind-menu" style="display:none"></div>';
+  }
+  function buildChartIndMenu(){
+    var m=document.getElementById('chart-ind-menu'); if(!m) return; ensureReadouts();
+    function sect(title,arr,state,type){ return '<div class="ind-sect">'+title+'</div>'+arr.map(function(o){
+      return '<label class="ind-opt"><input type="checkbox" '+(state[o.key]?'checked':'')+' onchange="TechUI.toggleChartInd(\''+type+'\',\''+o.key+'\')"> <span style="color:'+(o.color||'#5b637a')+'">●</span> '+o.label+'</label>'; }).join(''); }
+    m.innerHTML=sect('📈 '+TT('chart.onPrice','On the chart'),OVERLAYS,chartOverlays,'ov')
+      +sect('📊 '+TT('chart.belowChart','Below the chart'),OSCILLATORS,chartOscillators,'os')
+      +sect('📋 '+TT('chart.reading','All indicators (reading)'),READOUTS,chartReadouts,'ro');
+  }
+  function toggleChartIndMenu(){ var m=document.getElementById('chart-ind-menu'); if(!m)return; if(m.style.display==='none'){ buildChartIndMenu(); m.style.display='block'; } else m.style.display='none'; }
+  function toggleChartInd(type,key){ var st=type==='ov'?chartOverlays:(type==='os'?chartOscillators:chartReadouts); st[key]=!st[key]; if(lastScan) drawChart(lastScan); buildChartIndicators(); var m=document.getElementById('chart-ind-menu'); if(m){m.style.display='block'; buildChartIndMenu();} }
 
   // ---------- all-stocks type-ahead dropdown (Sire: type REL → RELAXO, RELIANCE, RELIGARE) ----------
   function tierFromNSE(sym){
@@ -1481,7 +1668,7 @@ window.TechUI = (function(){
     preset:preset,generate:generate,readScorecard:readScorecard,hearPattern:hearPattern,
     runBacktest:runBacktest,runNifty50:runNifty50,hearBacktest:hearBacktest,
     runOppScan:runOppScan,readOppScan:readOppScan,addWatch:addWatch,removeWatch:removeWatch,readWatchlist:readWatchlist,
-    audioSummary:audioSummary,hearVerdict:hearVerdict,toggleMode:toggleMode,applyLang:applyLang,toggleTable:toggleTable,
+    audioSummary:audioSummary,hearVerdict:hearVerdict,toggleMode:toggleMode,setChartTf:setChartTf,toggleChartInd:toggleChartInd,toggleChartIndMenu:toggleChartIndMenu,applyLang:applyLang,toggleTable:toggleTable,paperLogTrade:paperLogTrade,sonifyChart:sonifyChart,
     acInput:acInput,acKey:acKey,acPick:acPick,acPickFree:acPickFree,
     toggleIndMenu:toggleIndMenu,indToggle:indToggle,indAll:indAll,
     _confirmYes:_confirmYes,_confirmNo:_confirmNo};
