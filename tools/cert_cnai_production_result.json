@@ -1,7 +1,7 @@
 {
   "product": "chitti-news-ai",
   "when": "2026-06-09",
-  "page": "http://127.0.0.1:57503/chitti_news_ai.html",
+  "page": "http://127.0.0.1:58694/chitti_news_ai.html",
   "gates": [
     {
       "gate": "G1",
@@ -13,6 +13,13 @@
     {
       "gate": "G10",
       "name": "Trust / no-hallucination surface",
+      "pass": 2,
+      "total": 2,
+      "green": true
+    },
+    {
+      "gate": "G11",
+      "name": "Live experience",
       "pass": 2,
       "total": 2,
       "green": true
@@ -74,10 +81,10 @@
       "green": true
     }
   ],
-  "gates_green": 10,
-  "gates_total": 10,
-  "checks_pass": 31,
-  "checks_total": 31,
+  "gates_green": 11,
+  "gates_total": 11,
+  "checks_pass": 33,
+  "checks_total": 33,
   "pass_pct": 100,
   "GATES": {
     "G1": {
@@ -310,6 +317,24 @@
           "label": "Course links are real https URLs",
           "ok": true,
           "detail": "11 https course links"
+        }
+      ],
+      "pass": 2,
+      "fail": 0
+    },
+    "G11": {
+      "id": "G11",
+      "name": "Live experience",
+      "checks": [
+        {
+          "label": "Feature Discovery Box wired to a FEATURES.md",
+          "ok": true,
+          "detail": "chitti-news-ai/skills/FEATURES.md"
+        },
+        {
+          "label": "Returning user (stale cache) stays \"active\", not false-Degraded",
+          "ok": true,
+          "detail": "status=active stale-remaining=0"
         }
       ],
       "pass": 2,

@@ -243,21 +243,22 @@
       breaches++;
     }
 
-    // Check 5 — cache integrity (cache prefix matches expected)
+    // Check 5 — cache hygiene (PRUNE stale old-version keys; do NOT degrade).
+    // FIX 2026-06-09: the old check fired "degraded" whenever ANY older
+    // chitti_xlate_v* key lingered in localStorage. But stale translation
+    // caches are NORMAL for any returning user (they accumulate across deploys)
+    // — a fresh browser was "active", a returning user was falsely "Degraded"
+    // forever. Old caches are not corruption; just garbage-collect them and
+    // stay healthy. (Reproduced: stale key -> degraded; prune -> active.)
     var expectedPrefix = 'chitti_xlate_v2_20260529';
-    var corrupted = false;
     try {
+      var staleKeys = [];
       for (var i = 0; i < localStorage.length; i++) {
         var k = localStorage.key(i);
-        if (k && k.indexOf('chitti_xlate_v') === 0 && k.indexOf(expectedPrefix) !== 0) {
-          corrupted = true; break;
-        }
+        if (k && k.indexOf('chitti_xlate_v') === 0 && k.indexOf(expectedPrefix) !== 0) staleKeys.push(k);
       }
+      staleKeys.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
     } catch (e) {}
-    if (corrupted) {
-      fireAlert('cache_integrity', 'degraded', 'mixed-version cache keys', 'all keys match ' + expectedPrefix);
-      breaches++;
-    }
 
     if (status !== 'failed') {
       status = breaches === 0 ? 'active' : 'degraded';

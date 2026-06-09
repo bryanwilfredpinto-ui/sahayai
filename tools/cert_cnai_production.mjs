@@ -196,6 +196,23 @@ for (const [lbl, dev] of [['iPhone 13', 'iPhone 13'], ['Pixel 5', 'Pixel 5']]) {
   await c.close();
 }
 
+// ───── GATE 11 — Live experience (the gaps the local-only cert missed) ─────
+{
+  // 11a — Feature Discovery Box wired to FEATURES.md (locked gate)
+  const { c, p } = await fresh(browser, { viewport: { width: 1024, height: 800 } });
+  const meta = await p.evaluate(() => { const m = document.querySelector('meta[name="chitti-features"]'); return m ? m.getAttribute('content') : ''; });
+  chk('G11', 'Live experience', 'Feature Discovery Box wired to a FEATURES.md', /skills\/FEATURES\.md/.test(meta), meta || '(no meta)');
+  await c.close();
+  // 11b — returning user (stale xlate cache keys) must NOT show false "Degraded"
+  const c2 = await ctx(browser, { viewport: { width: 375, height: 812 } });
+  const p2 = await c2.newPage();
+  await p2.addInitScript(() => { try { localStorage.setItem('disability_profile', '{}'); localStorage.setItem('chitti_lang', 'en'); localStorage.setItem('chitti_xlate_v2_20260512_en_old', '{"a":1}'); localStorage.setItem('chitti_xlate_v1_legacy', '{"b":2}'); } catch (e) {} });
+  await p2.goto(URL, { waitUntil: 'domcontentloaded' }); await p2.waitForTimeout(13000);
+  const obs = await p2.evaluate(() => { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf('chitti_xlate_v') === 0) ks.push(k); } return { status: (window._chittiObs || {}).status, stale: ks }; });
+  chk('G11', 'Live experience', 'Returning user (stale cache) stays "active", not false-Degraded', obs.status === 'active' && obs.stale.length === 0, 'status=' + obs.status + ' stale-remaining=' + obs.stale.length);
+  await c2.close();
+}
+
 await browser.close(); srv.close();
 
 // ───── score ─────
