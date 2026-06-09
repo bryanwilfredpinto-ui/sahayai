@@ -784,7 +784,14 @@
       readiness_score: imp.readiness,
       tasks: imp.tasks.slice(),
       verdict: imp.verdict,
-      sourced_from: 'McKinsey GenAI Outlook 2025 · NASSCOM AI Skills Premium · WEF Future of Jobs 2025',
+      // HONESTY (2026-06-09): these 0-100 scores are Chitti's DIRECTIONAL
+      // estimates, INFORMED BY (not extracted from) public reports — they are
+      // not verbatim figures. e.g. WEF Future of Jobs 2025 reports declines as
+      // ~5-20% for accounting roles, on a different scale; "disruption_risk" here
+      // is a task-exposure index, not a job-loss percentage. Direction is
+      // evidence-aligned; precision is an estimate.
+      sourced_from: "Chitti's directional estimate — informed by WEF Future of Jobs 2025, McKinsey & NASSCOM. Not exact report figures.",
+      sourced_url: 'https://www.weforum.org/publications/the-future-of-jobs-report-2025/',
     };
   }
 

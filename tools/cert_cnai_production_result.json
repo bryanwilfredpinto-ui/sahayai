@@ -1,0 +1,319 @@
+{
+  "product": "chitti-news-ai",
+  "when": "2026-06-09",
+  "page": "http://127.0.0.1:57503/chitti_news_ai.html",
+  "gates": [
+    {
+      "gate": "G1",
+      "name": "Load & engines",
+      "pass": 3,
+      "total": 3,
+      "green": true
+    },
+    {
+      "gate": "G10",
+      "name": "Trust / no-hallucination surface",
+      "pass": 2,
+      "total": 2,
+      "green": true
+    },
+    {
+      "gate": "G2",
+      "name": "Profession routing",
+      "pass": 3,
+      "total": 3,
+      "green": true
+    },
+    {
+      "gate": "G3",
+      "name": "Button audit",
+      "pass": 2,
+      "total": 2,
+      "green": true
+    },
+    {
+      "gate": "G4",
+      "name": "User journeys",
+      "pass": 7,
+      "total": 7,
+      "green": true
+    },
+    {
+      "gate": "G5",
+      "name": "Accessibility — axe WCAG AA",
+      "pass": 1,
+      "total": 1,
+      "green": true
+    },
+    {
+      "gate": "G6",
+      "name": "Accessibility — 4 profiles",
+      "pass": 4,
+      "total": 4,
+      "green": true
+    },
+    {
+      "gate": "G7",
+      "name": "26 languages + RTL",
+      "pass": 1,
+      "total": 1,
+      "green": true
+    },
+    {
+      "gate": "G8",
+      "name": "Tap targets + widget",
+      "pass": 2,
+      "total": 2,
+      "green": true
+    },
+    {
+      "gate": "G9",
+      "name": "Cross-platform",
+      "pass": 6,
+      "total": 6,
+      "green": true
+    }
+  ],
+  "gates_green": 10,
+  "gates_total": 10,
+  "checks_pass": 31,
+  "checks_total": 31,
+  "pass_pct": 100,
+  "GATES": {
+    "G1": {
+      "id": "G1",
+      "name": "Load & engines",
+      "checks": [
+        {
+          "label": "chromium",
+          "ok": true,
+          "detail": "window.Chitti+Coach=true errs=0"
+        },
+        {
+          "label": "firefox",
+          "ok": true,
+          "detail": "window.Chitti+Coach=true errs=0"
+        },
+        {
+          "label": "webkit",
+          "ok": true,
+          "detail": "window.Chitti+Coach=true errs=0"
+        }
+      ],
+      "pass": 3,
+      "fail": 0
+    },
+    "G2": {
+      "id": "G2",
+      "name": "Profession routing",
+      "checks": [
+        {
+          "label": "12 canonical professions render a Hub with scores + verdict",
+          "ok": true,
+          "detail": "12/12"
+        },
+        {
+          "label": "Scores labelled \"Task-Exposure (est.) /100\" not a cited %",
+          "ok": true,
+          "detail": "{\"exposure\":true,\"est\":true,\"notExact\":true,\"wefLink\":true}"
+        },
+        {
+          "label": "Honest provenance: \"Not exact report figures\" + real WEF link",
+          "ok": true,
+          "detail": "notExact=true wefLink=true"
+        }
+      ],
+      "pass": 3,
+      "fail": 0
+    },
+    "G3": {
+      "id": "G3",
+      "name": "Button audit",
+      "checks": [
+        {
+          "label": "Every visible button/tab clicked with 0 page errors",
+          "ok": true,
+          "detail": "5 buttons clicked · 0 errors"
+        },
+        {
+          "label": "Every link has a non-empty href (no dead links)",
+          "ok": true,
+          "detail": "56 links · 0 empty"
+        }
+      ],
+      "pass": 2,
+      "fail": 0
+    },
+    "G4": {
+      "id": "G4",
+      "name": "User journeys",
+      "checks": [
+        {
+          "label": "J1 pick CA → Hub scores+verdict",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J2 Learn→Roadmap → Agentic AI → ML→DL→GenAI stages",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J3 Courses tab → free-first results",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J4 Teach-me tab → analogy + breaks-down",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J5 Career tab → report + caveats",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J6 Swarm tab → helpers + roadmap",
+          "ok": true,
+          "detail": "ok"
+        },
+        {
+          "label": "J7 language → Hindi titles",
+          "ok": true,
+          "detail": "ok"
+        }
+      ],
+      "pass": 7,
+      "fail": 0
+    },
+    "G5": {
+      "id": "G5",
+      "name": "Accessibility — axe WCAG AA",
+      "checks": [
+        {
+          "label": "0 serious/critical on product own surface",
+          "ok": true,
+          "detail": "1 total · 1 serious (0 own-surface, 1 shared-substrate) :: target-size"
+        }
+      ],
+      "pass": 1,
+      "fail": 0
+    },
+    "G6": {
+      "id": "G6",
+      "name": "Accessibility — 4 profiles",
+      "checks": [
+        {
+          "label": "blind",
+          "ok": true,
+          "detail": "aria-live=9 cr=38 read-aloud=39 errs=0"
+        },
+        {
+          "label": "deaf",
+          "ok": true,
+          "detail": "aria-live=9 cr=38 read-aloud=39 errs=0"
+        },
+        {
+          "label": "mute",
+          "ok": true,
+          "detail": "aria-live=9 cr=38 read-aloud=39 errs=0"
+        },
+        {
+          "label": "illiterate",
+          "ok": true,
+          "detail": "aria-live=9 cr=38 read-aloud=39 errs=0"
+        }
+      ],
+      "pass": 4,
+      "fail": 0
+    },
+    "G7": {
+      "id": "G7",
+      "name": "26 languages + RTL",
+      "checks": [
+        {
+          "label": "all switch clean (html[lang] + RTL ur/ks/sd), 0 errors",
+          "ok": true,
+          "detail": "26/26"
+        }
+      ],
+      "pass": 1,
+      "fail": 0
+    },
+    "G8": {
+      "id": "G8",
+      "name": "Tap targets + widget",
+      "checks": [
+        {
+          "label": "learning + hub controls ≥44px",
+          "ok": true,
+          "detail": "0 under-44px of 121"
+        },
+        {
+          "label": "every response card has the 4-icon widget",
+          "ok": true,
+          "detail": "47/47 cards attached"
+        }
+      ],
+      "pass": 2,
+      "fail": 0
+    },
+    "G9": {
+      "id": "G9",
+      "name": "Cross-platform",
+      "checks": [
+        {
+          "label": "375px no horizontal scroll",
+          "ok": true,
+          "detail": "h-scroll=false"
+        },
+        {
+          "label": "768px no horizontal scroll",
+          "ok": true,
+          "detail": "h-scroll=false"
+        },
+        {
+          "label": "1280px no horizontal scroll",
+          "ok": true,
+          "detail": "h-scroll=false"
+        },
+        {
+          "label": "1920px no horizontal scroll",
+          "ok": true,
+          "detail": "h-scroll=false"
+        },
+        {
+          "label": "iPhone 13 emu",
+          "ok": true,
+          "detail": "h-scroll=false errs=0"
+        },
+        {
+          "label": "Pixel 5 emu",
+          "ok": true,
+          "detail": "h-scroll=false errs=0"
+        }
+      ],
+      "pass": 6,
+      "fail": 0
+    },
+    "G10": {
+      "id": "G10",
+      "name": "Trust / no-hallucination surface",
+      "checks": [
+        {
+          "label": "Hub scores shown as estimates, not cited statistics",
+          "ok": true,
+          "detail": "{\"estLabel\":true,\"notExact\":true}"
+        },
+        {
+          "label": "Course links are real https URLs",
+          "ok": true,
+          "detail": "11 https course links"
+        }
+      ],
+      "pass": 2,
+      "fail": 0
+    }
+  }
+}

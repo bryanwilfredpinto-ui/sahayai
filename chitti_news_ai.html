@@ -581,25 +581,25 @@ function speakPage() {
     const oppBand = imp.opportunity_level >= 70 ? 'risk-low' : imp.opportunity_level >= 40 ? 'risk-medium' : 'risk-high';
     let h = '';
     h += '<div class="metric-grid">';
-    h += '<div class="metric-card"><div class="metric-lbl">AI Disruption Risk <span class="' + riskBand + '">' + (imp.disruption_risk>=60?'HIGH':imp.disruption_risk>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.disruption_risk + '%</div><div class="bar"><div class="bar-fill" style="width:' + imp.disruption_risk + '%;background:hsl(0,75%,55%)"></div></div></div>';
-    h += '<div class="metric-card"><div class="metric-lbl">AI Adoption</div><div class="metric-val">' + imp.adoption_level + '</div><div class="bar"><div class="bar-fill" style="width:' + ({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50) + '%;background:hsl(200,75%,55%)"></div></div></div>';
-    h += '<div class="metric-card"><div class="metric-lbl">AI Opportunity <span class="' + oppBand + '">' + (imp.opportunity_level>=70?'HIGH':imp.opportunity_level>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.opportunity_level + '%</div><div class="bar"><div class="bar-fill" style="width:' + imp.opportunity_level + '%;background:hsl(140,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Task-Exposure <span style="font-size:.7em;color:#595959;font-weight:400">(est.)</span> <span class="' + riskBand + '">' + (imp.disruption_risk>=60?'HIGH':imp.disruption_risk>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.disruption_risk + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100</span></div><div class="bar"><div class="bar-fill" style="width:' + imp.disruption_risk + '%;background:hsl(0,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Adoption <span style="font-size:.7em;color:#595959;font-weight:400">(est.)</span></div><div class="metric-val">' + imp.adoption_level + '</div><div class="bar"><div class="bar-fill" style="width:' + ({LOW:30,MED:60,HIGH:90,'VERY HIGH':100}[imp.adoption_level]||50) + '%;background:hsl(200,75%,55%)"></div></div></div>';
+    h += '<div class="metric-card"><div class="metric-lbl">AI Opportunity <span style="font-size:.7em;color:#595959;font-weight:400">(est.)</span> <span class="' + oppBand + '">' + (imp.opportunity_level>=70?'HIGH':imp.opportunity_level>=40?'MED':'LOW') + '</span></div><div class="metric-val">' + imp.opportunity_level + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100</span></div><div class="bar"><div class="bar-fill" style="width:' + imp.opportunity_level + '%;background:hsl(140,75%,55%)"></div></div></div>';
     h += '<div class="metric-card"><div class="metric-lbl">Your Readiness</div><div class="metric-val">' + rd.score + '<span style="font-size:.55em;color:#666;font-family:Inter,sans-serif"> /100 · ' + _esc(rd.band) + '</span></div><div class="bar"><div class="bar-fill" style="width:' + rd.score + '%;background:hsl(28,75%,55%)"></div></div></div>';
     h += '</div>';
     h += '<div class="hub-verdict">💡 <strong>Chitti\'s verdict:</strong> ' + _esc(imp.verdict) + '</div>';
-    h += '<div class="hub-source">📡 ' + _esc(imp.sourced_from) + '</div>';
+    h += '<div class="hub-source">📡 <em>' + _esc(imp.sourced_from) + '</em>' + (imp.sourced_url ? ' <a href="' + _esc(imp.sourced_url) + '" target="_blank" rel="noopener" style="color:var(--saffron-text);font-weight:700;display:inline-flex;align-items:center;min-height:44px">WEF report ↗</a>' : '') + '</div>';
     if (ms) {
       h += '<div class="hub-sect"><div style="font-weight:800;color:var(--navy);margin-bottom:6px;font-size:14.5px">🎯 This week\'s 30-min mission</div>';
       ['watch','read','practice','try'].forEach(function (k) {
         const lbl = { watch:'📺 Watch (15m)', read:'📖 Read (5m)', practice:'✍️ Practice (5m)', try:'🚀 Try (5m)' }[k];
-        if (ms[k]) h += '<div style="padding:4px 0;font-size:13px"><strong>' + lbl + ':</strong> <a href="' + _esc(ms[k].url) + '" target="_blank" rel="noopener" style="color:var(--saffron-text);font-weight:700">' + _esc(ms[k].title) + ' ↗</a></div>';
+        if (ms[k]) h += '<div style="padding:4px 0;font-size:13px"><strong>' + lbl + ':</strong> <a href="' + _esc(ms[k].url) + '" target="_blank" rel="noopener" style="color:var(--saffron-text);font-weight:700;display:inline-flex;align-items:center;min-height:44px">' + _esc(ms[k].title) + ' ↗</a></div>';
       });
       h += '</div>';
     }
     if (projects.length) {
       h += '<div class="hub-sect"><div style="font-weight:800;color:var(--navy);margin-bottom:6px;font-size:14.5px">🛠️ Real-world projects</div>';
       projects.slice(0, 3).forEach(function (pr) {
-        h += '<div style="padding:6px 0;border-bottom:1px dashed var(--border)"><strong>' + _esc(pr.title) + '</strong><div style="font-size:11.5px;color:var(--muted)">⚙️ ' + _esc(pr.stack) + ' · ' + _esc(pr.difficulty) + ' · ~' + pr.hours + ' h</div><div style="margin-top:4px"><a class="cta-saffron" style="font-size:11.5px;padding:6px 10px;min-height:32px" href="' + _esc(pr.starter) + '" target="_blank" rel="noopener">📦 Starter</a> <a class="cta-navy" style="font-size:11.5px;padding:6px 10px;min-height:32px" href="' + _esc(pr.demo) + '" target="_blank" rel="noopener">👀 Demo</a></div></div>';
+        h += '<div style="padding:6px 0;border-bottom:1px dashed var(--border)"><strong>' + _esc(pr.title) + '</strong><div style="font-size:11.5px;color:var(--muted)">⚙️ ' + _esc(pr.stack) + ' · ' + _esc(pr.difficulty) + ' · ~' + pr.hours + ' h</div><div style="margin-top:4px"><a class="cta-saffron" style="font-size:11.5px;padding:6px 10px;min-height:44px;display:inline-flex;align-items:center" href="' + _esc(pr.starter) + '" target="_blank" rel="noopener">📦 Starter</a> <a class="cta-navy" style="font-size:11.5px;padding:6px 10px;min-height:44px;display:inline-flex;align-items:center" href="' + _esc(pr.demo) + '" target="_blank" rel="noopener">👀 Demo</a></div></div>';
       });
       h += '</div>';
     }
@@ -678,8 +678,8 @@ function speakPage() {
       const cls = done ? 'done' : today ? 'today' : '';
       const stateBadge = done ? '✅ DONE' : today ? '👉 TODAY' : 'DAY ' + d.day;
       const btn = done
-        ? '<button class="cta-navy" style="font-size:11.5px;padding:6px 12px;min-height:32px" disabled>✅ Completed</button>'
-        : '<button class="cta-saffron" style="font-size:11.5px;padding:6px 12px;min-height:32px" onclick="window.ccMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Done</button>';
+        ? '<button class="cta-navy" style="font-size:11.5px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center" disabled>✅ Completed</button>'
+        : '<button class="cta-saffron" style="font-size:11.5px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center" onclick="window.ccMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Done</button>';
       h += '<article class="tour-day ' + cls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _esc(d.tool) + '">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="day-num">Day ' + d.day + '</span><span style="font-size:10.5px;font-weight:800;color:' + (today?'#9a3412':done?'#166534':'var(--muted)') + ';background:' + (today?'rgba(232,106,23,.16)':done?'rgba(34,197,94,.14)':'#f3f4f6') + ';border:1px solid currentColor;border-radius:99px;padding:2px 8px;letter-spacing:.04em">' + stateBadge + '</span></div>';
       h += '<h4>' + _esc(d.tool) + '</h4>';
