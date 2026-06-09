@@ -504,6 +504,16 @@ html[dir="rtl"] .chitti-langbar { right: auto; left: 8px; }
 }
 .chitti-bharat-bottom-nav .ico { font-size: 20px; line-height: 1; }
 
+/* When the bottom nav is present, lift floating bottom-corner CTAs above it so
+   they don't OBSCURE the nav tap targets (WCAG 2.2 target-size). FIX 2026-06-09:
+   the "What can Chitti do for you?" pill (chitti-features-cta) sat at bottom:18px
+   and partially obscured 4 nav links down to ~15px wide. */
+body.chitti-has-bottom-nav .chitti-features-cta,
+body.chitti-has-bottom-nav .chitti-camera-fab,
+body.chitti-has-bottom-nav #chitti-mic-fab {
+  bottom: 66px !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    BHARAT HERO GRADIENT (opt-in per page)
    .chitti-bharat-hero adds the flag gradient hero. Section titles
