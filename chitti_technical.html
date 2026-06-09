@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260612" defer></script>
-<script src="nse_universe.js?v=20260612" defer></script>
-<script src="chitti_technical_i18n.js?v=20260612" defer></script>
-<script src="chitti_technical_engine.js?v=20260612" defer></script>
-<script src="chitti_technical_a11y.js?v=20260612" defer></script>
-<script src="chitti_a11y.js?v=20260612" defer></script>
+<script src="chitti_lang.js?v=20260613" defer></script>
+<script src="nse_universe.js?v=20260613" defer></script>
+<script src="chitti_technical_i18n.js?v=20260613" defer></script>
+<script src="chitti_technical_engine.js?v=20260613" defer></script>
+<script src="chitti_technical_a11y.js?v=20260613" defer></script>
+<script src="chitti_a11y.js?v=20260613" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260612" defer></script>
+<script src="chitti_isl.js?v=20260613" defer></script>
 
 <style>
 :root{
@@ -108,6 +108,9 @@ select{padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;backgr
 /* chart */
 .chart-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
 canvas{display:block;width:100%}
+/* WCAG 2.2 (2.5.8 target-size): keep the substrate-injected bottom nav at 48px tap targets even when
+   the shared theme CSS is not loaded on this page. */
+.chitti-bharat-bottom-nav a,.chitti-bharat-bottom-nav button{min-height:48px;min-width:48px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 8px;box-sizing:border-box}
 .pane-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .tog{font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;min-height:36px}
 .tog.on{background:var(--navy);color:#fff;border-color:var(--navy)}
