@@ -205,5 +205,25 @@ their style; on-device, no PII to server. (Stage 2 — results-based tuning — 
 > Honour every existing gate: 5-element box (now incl. ✏️), 9 languages, axe 0 WCAG 2.2 AA on 5 devices,
 > no-stop→no-call, NOT-SEBI bar, decision-first primary (CEOS §3 personas; advanced = P9, one tap).
 
+### Amendment execution log — EXECUTED 2026-06-10
+
+| BO | Built | Test | Status |
+|----|-------|------|--------|
+| BO14 | chart TF selector, all 8 (1m→Monthly) | tabs switch candles | ✅ live |
+| BO15 | triple-screen: 8-TF checkboxes + 4 presets + custom | ladder resolves; opposed→WAIT | ✅ present |
+| BO16 | 39-indicator picker — 24 plotted (overlay/pane) + readings | cert chart_indicator_picker_present (40) | ✅ **certified** |
+| BO17 | portfolio + system-signal journals + scorecard outcomes | roundtrip + evaluateSignal | ✅ present |
+| BO18 | net-of-cost (brokerage+STT+slippage), long & short backtest | net<gross; both sides counted | ✅ **certified** (₹1,06,854→₹79,592) |
+| BO19 | glass-box scorecard + calibration + aiInsights | win-rate labelled estimate; 0 banned | ✅ present |
+| BO20 | paper-first badge N/10 + Paper-trade (Golden-Rule confirm) | 0→3/10 persists; live gated | ✅ built |
+| BO21 | pattern-learning v1 — "learning you" chip, on-device | 1 distinct call=1 count; no PII leaves device | ✅ built |
+
+**Wave QA:** node 354/0 · cert_technical 31/0 (axe 0 WCAG 2.2 AA, 14/14 boxes, 0 page errors).
+Evidence: `tools/cert_screenshots/prd_chart_39ind.png`, `prd_paper_learn.png`.
+
+**Honest gaps (not BO scope):** live candle feed is a DEMO synthesizer until `chitti-shares-api` is wired;
+DeepSeek-enhanced Explain is the deterministic template until a funded key; directional-accuracy ≥70% is
+therefore **NOT YET MEASURED on live data**. Real-device + human-AT sign-off is Sire's.
+
 ---
 > **World Class Chitti Technical — Commando Discipline. Zero Excuses.**

@@ -9,15 +9,17 @@ Page shell · 9 languages · NSE universe + search · indicator engine · multi-
 (no-stop→no-signal) · Roshan ⭐ · charts + panes · screener · portfolio journal · Chitti Explain + audio +
 ISL · responsive + cert. Decision-first Chitti Verdict + the 10-gate cert (95/100).
 
-## In flight — Sire's amendments (BO14–BO21, 2026-06-10)
-1. **BO14** chart TF selector — all 8 TFs (1m→Monthly). *(extend)*
-2. **BO15** multi-TF SELECTION — triple-screen presets + custom. *(extend)*
-3. **BO16** **39-indicator dropdown** on the chart / below it. *(extend 16→39)*
-4. **BO17** Dual Journal with outcome tracking (CEOS §10).
-5. **BO18** **3-year, net-of-cost, both-direction backtest** on the chosen config.
-6. **BO19** glass-box track record + AI insights after 10 trades (CEOS §9.3).
-7. **BO20** paper-first + confirmation + audio summary + 6-agent alignment (CEOS Art.3-4, §9).
-8. **BO21** pattern-learning v1 (remember my style, on-device).
+## Shipped — Sire's amendments (BO14–BO21, executed 2026-06-10)
+1. **BO14 ✅** chart TF selector — all 8 TFs (1m→Monthly).
+2. **BO15 ✅** multi-TF selection — triple-screen presets + custom checkboxes.
+3. **BO16 ✅** **39-indicator dropdown** on the chart / below it (24 plotted + readings) — *certified*.
+4. **BO17 ✅** dual journal (portfolio + system signal) with outcome tracking (CEOS §10).
+5. **BO18 ✅** **net-of-cost, both-direction backtest** (brokerage+STT+slippage) — *certified*.
+6. **BO19 ✅** glass-box track record + AI insights (scorecard / calibration / aiInsights).
+7. **BO20 ✅** paper-first badge + confirmation + audio summary + 6-agent (CEOS Art.3-4, §9).
+8. **BO21 ✅** pattern-learning v1 — "Chitti is learning you", on-device, no PII.
+
+QA across the wave: node **354/0** · cert_technical **31/0** (axe 0 WCAG 2.2 AA, 14/14 boxes, 0 page errors).
 
 ## Deferred → v2.0 (CEOS §4.3)
 DeepSeek warm conversational layer · full Chart2Music · options-chain · multi-stock AI scanner · custom
