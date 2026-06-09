@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260621" defer></script>
-<script src="nse_universe.js?v=20260621" defer></script>
-<script src="chitti_technical_i18n.js?v=20260621" defer></script>
-<script src="chitti_technical_engine.js?v=20260621" defer></script>
-<script src="chitti_technical_a11y.js?v=20260621" defer></script>
-<script src="chitti_a11y.js?v=20260621" defer></script>
+<script src="chitti_lang.js?v=20260622" defer></script>
+<script src="nse_universe.js?v=20260622" defer></script>
+<script src="chitti_technical_i18n.js?v=20260622" defer></script>
+<script src="chitti_technical_engine.js?v=20260622" defer></script>
+<script src="chitti_technical_a11y.js?v=20260622" defer></script>
+<script src="chitti_a11y.js?v=20260622" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260621" defer></script>
+<script src="chitti_isl.js?v=20260622" defer></script>
 
 <style>
 :root{
@@ -1084,7 +1084,14 @@ window.TechUI = (function(){
     if(E&&E.detectCrisis&&E.detectCrisis(raw)){ showCrisis(); return; }
     var sym=raw.trim().toUpperCase()||'RELIANCE'; document.getElementById('sym').value=sym;
     var btn=event&&event.target?event.target.closest('button'):null; if(btn) btn.disabled=true;
-    ensureTfs(sym,tickedTfs()).then(function(){ scan(); speak(sym+' '+(lastCEOS?T('verdict.'+lastCEOS.signal):'')); }).finally(function(){ if(btn) btn.disabled=false; });
+    // Ask Chitti = fetch THIS stock's REAL Angel candles, then give the call. A searched stock is never
+    // synthesised — if it's not live yet, load it live now; DEMO only if the feed is genuinely unreachable.
+    var pre = liveSymbols[sym] ? ensureTfs(sym,tickedTfs()) : loadLive(sym).then(function(tf){
+      window.__techLiveErr=''; candleCache[sym]=tf;
+      liveSymbols[sym]=(tf.daily&&tf.daily.length)?tf.daily[tf.daily.length-1].date:true; dataSource='LIVE';
+      return ensureTfs(sym,tickedTfs());
+    }).catch(function(e){ window.__techLiveErr=(e&&e.message)||'unreachable'; delete liveSymbols[sym]; });
+    pre.then(function(){ scan(); speak(sym+' '+(lastCEOS?T('verdict.'+lastCEOS.signal):'')); }).finally(function(){ if(btn) btn.disabled=false; });
   }
 
   function renderLadder(res){
