@@ -1301,6 +1301,9 @@
   function backtestJournal(candlesByTf, opts) {
     opts = opts || {};
     var capital = opts.capital || 100000, look = opts.lookahead || 40;
+    // Honest cost model: per-leg % covering brokerage + STT + slippage + exchange/GST/stamp (Indian equity).
+    // 0.15%/leg ≈ 0.30% round-trip — what a real retail trade actually keeps. Set opts.costPct=0 for gross.
+    var costPct = (opts.costPct != null) ? opts.costPct : 0.15;
     var tfs = (opts.tfs && opts.tfs.length) ? opts.tfs.slice() : ['daily'];
     var trig = null;
     for (var ti = TF_ORDER.length - 1; ti >= 0; ti--) { var t = TF_ORDER[ti]; if (tfs.indexOf(t) >= 0 && candlesByTf[t] && candlesByTf[t].length) { trig = t; break; } }
@@ -1326,8 +1329,10 @@
       var ev = evaluateSignal(sig, tc.slice(i + 1, i + 1 + look));
       var exit = ev.outcome === 'SL_HIT' ? sl : ev.outcome === 'T2_HIT' ? t2 : ev.outcome === 'T1_HIT' ? t1 : last(closes(tc.slice(0, Math.min(n, i + 1 + look))));
       var shares = Math.floor(capital / entry);
-      var pnl = Math.round(shares * (side === 'BUY' ? (exit - entry) : (entry - exit)));
-      rows.push({ date: tc[i].date || ('P' + (i + 1)), side: side, entry: round2(entry), target: round2(t1), sl: round2(sl), exit: round2(exit), outcome: ev.outcome, shares: shares, pnl: pnl, rMultiple: ev.rMultiple, tf: trig });
+      var grossPnl = Math.round(shares * (side === 'BUY' ? (exit - entry) : (entry - exit)));
+      var cost = Math.round((entry + exit) * shares * costPct / 100);  // both legs
+      var pnl = grossPnl - cost;
+      rows.push({ date: tc[i].date || ('P' + (i + 1)), side: side, entry: round2(entry), target: round2(t1), sl: round2(sl), exit: round2(exit), outcome: ev.outcome, shares: shares, grossPnl: grossPnl, cost: cost, pnl: pnl, rMultiple: ev.rMultiple, tf: trig });
       i += 2;
     }
     return rows;

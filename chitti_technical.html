@@ -10,14 +10,14 @@
 <title>Chitti Technical — explainable NSE analysis</title>
 
 <!-- substrate: lang + engine before paint; a11y + widgets deferred -->
-<script src="chitti_lang.js?v=20260619" defer></script>
-<script src="nse_universe.js?v=20260619" defer></script>
-<script src="chitti_technical_i18n.js?v=20260619" defer></script>
-<script src="chitti_technical_engine.js?v=20260619" defer></script>
-<script src="chitti_technical_a11y.js?v=20260619" defer></script>
-<script src="chitti_a11y.js?v=20260619" defer></script>
+<script src="chitti_lang.js?v=20260620" defer></script>
+<script src="nse_universe.js?v=20260620" defer></script>
+<script src="chitti_technical_i18n.js?v=20260620" defer></script>
+<script src="chitti_technical_engine.js?v=20260620" defer></script>
+<script src="chitti_technical_a11y.js?v=20260620" defer></script>
+<script src="chitti_a11y.js?v=20260620" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical" defer></script>
-<script src="chitti_isl.js?v=20260619" defer></script>
+<script src="chitti_isl.js?v=20260620" defer></script>
 
 <style>
 :root{
@@ -915,7 +915,7 @@ window.TechUI = (function(){
       else {
         var rows=b.rows.slice(-30).reverse().map(function(r){ var ic=r.pnl>=0?'✅':'🛑';
           return '<tr><th scope="row">'+r.date+'</th><td>'+(r.side==='BUY'?'🟢':'🔴')+'</td><td>'+r.entry+'</td><td>'+r.target+'</td><td>'+r.sl+'</td><td style="color:'+(r.pnl>=0?'var(--green)':'var(--red)')+'">'+ic+' '+(r.pnl>=0?'+':'')+'₹'+Number(r.pnl).toLocaleString('en-IN')+'</td></tr>'; }).join('');
-        j.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('bt.title')+' — '+b.sym+' · '+((b.rows[0]&&b.rows[0].tf)||'')+' · ₹1,00,000/trade'+(b.batch?' · model data':'')+'</caption>'+
+        j.innerHTML='<table><caption style="text-align:left;font-size:12px;color:var(--muted);padding:4px 0">'+T('bt.title')+' — '+b.sym+' · '+((b.rows[0]&&b.rows[0].tf)||'')+' · ₹1,00,000/trade · '+(T('bt.netcosts')||'NET of brokerage + STT + slippage')+' · '+(T('bt.bothdir')||'long & short')+(b.batch?' · model data':'')+'</caption>'+
           '<tr><th scope="col">'+T('bt.date')+'</th><th scope="col">↕</th><th scope="col">'+T('risk.entry')+'</th><th scope="col">'+T('risk.targets')+'</th><th scope="col">'+T('risk.stop')+'</th><th scope="col">'+T('portfolio.pnl')+'</th></tr>'+rows+'</table>';
       }
     }
