@@ -309,6 +309,20 @@
   };
   Object.keys(WL).forEach(function (l) { if (T[l]) Object.keys(WL[l]).forEach(function (k) { T[l][k] = WL[l][k]; }); });
 
+  // Chitti Verdict hero — decision-intelligence labels in all 9 languages (Chitti transliterated, no Hinglish).
+  var VH = {
+    en: { 'vh.title': 'Chitti Verdict', 'vh.confidence': 'confidence', 'vh.listen': 'Listen to Chitti', 'vh.wouldBuy': 'Would I buy? Yes', 'vh.wouldSell': 'Would I sell? Yes', 'vh.wouldTrade': 'Would I trade now? Not yet — wait', 'vh.betterEntry': 'Better entry', 'vh.risk': 'Risk', 'risk.entry': 'Entry', 'risk.Low': 'Low', 'risk.Medium': 'Medium', 'risk.High': 'High' },
+    hi: { 'vh.title': 'चिट्टी का फैसला', 'vh.confidence': 'विश्वास', 'vh.listen': 'चिट्टी को सुनें', 'vh.wouldBuy': 'क्या मैं खरीदूँ? हाँ', 'vh.wouldSell': 'क्या मैं बेचूँ? हाँ', 'vh.wouldTrade': 'क्या अभी ट्रेड करूँ? अभी नहीं — रुकें', 'vh.betterEntry': 'बेहतर एंट्री', 'vh.risk': 'जोखिम', 'risk.entry': 'एंट्री', 'risk.Low': 'कम', 'risk.Medium': 'मध्यम', 'risk.High': 'अधिक' },
+    ta: { 'vh.title': 'சிட்டி தீர்ப்பு', 'vh.confidence': 'நம்பிக்கை', 'vh.listen': 'சிட்டியைக் கேள்', 'vh.wouldBuy': 'நான் வாங்கவா? ஆம்', 'vh.wouldSell': 'நான் விற்கவா? ஆம்', 'vh.wouldTrade': 'இப்போது வர்த்தகம் செய்யவா? இன்னும் இல்லை — காத்திரு', 'vh.betterEntry': 'சிறந்த நுழைவு', 'vh.risk': 'ஆபத்து', 'risk.entry': 'நுழைவு', 'risk.Low': 'குறைவு', 'risk.Medium': 'நடுத்தரம்', 'risk.High': 'அதிகம்' },
+    te: { 'vh.title': 'చిట్టి తీర్పు', 'vh.confidence': 'నమ్మకం', 'vh.listen': 'చిట్టిని వినండి', 'vh.wouldBuy': 'నేను కొనాలా? అవును', 'vh.wouldSell': 'నేను అమ్మాలా? అవును', 'vh.wouldTrade': 'ఇప్పుడు ట్రేడ్ చేయాలా? ఇంకా కాదు — ఆగండి', 'vh.betterEntry': 'మంచి ఎంట్రీ', 'vh.risk': 'ప్రమాదం', 'risk.entry': 'ఎంట్రీ', 'risk.Low': 'తక్కువ', 'risk.Medium': 'మధ్యమం', 'risk.High': 'ఎక్కువ' },
+    bn: { 'vh.title': 'চিট্টির রায়', 'vh.confidence': 'আস্থা', 'vh.listen': 'চিট্টিকে শুনুন', 'vh.wouldBuy': 'আমি কি কিনব? হ্যাঁ', 'vh.wouldSell': 'আমি কি বিক্রি করব? হ্যাঁ', 'vh.wouldTrade': 'এখন কি ট্রেড করব? এখনই নয় — অপেক্ষা করুন', 'vh.betterEntry': 'ভালো এন্ট্রি', 'vh.risk': 'ঝুঁকি', 'risk.entry': 'এন্ট্রি', 'risk.Low': 'কম', 'risk.Medium': 'মাঝারি', 'risk.High': 'বেশি' },
+    mr: { 'vh.title': 'चिट्टीचा निर्णय', 'vh.confidence': 'विश्वास', 'vh.listen': 'चिट्टीचे ऐका', 'vh.wouldBuy': 'मी खरेदी करू का? होय', 'vh.wouldSell': 'मी विकू का? होय', 'vh.wouldTrade': 'आता ट्रेड करू का? अजून नाही — थांबा', 'vh.betterEntry': 'चांगली एंट्री', 'vh.risk': 'धोका', 'risk.entry': 'एंट्री', 'risk.Low': 'कमी', 'risk.Medium': 'मध्यम', 'risk.High': 'जास्त' },
+    gu: { 'vh.title': 'ચિટ્ટીનો ચુકાદો', 'vh.confidence': 'વિશ્વાસ', 'vh.listen': 'ચિટ્ટીને સાંભળો', 'vh.wouldBuy': 'હું ખરીદું? હા', 'vh.wouldSell': 'હું વેચું? હા', 'vh.wouldTrade': 'હમણાં ટ્રેડ કરું? હજી નહીં — રાહ જુઓ', 'vh.betterEntry': 'સારી એન્ટ્રી', 'vh.risk': 'જોખમ', 'risk.entry': 'એન્ટ્રી', 'risk.Low': 'ઓછું', 'risk.Medium': 'મધ્યમ', 'risk.High': 'વધુ' },
+    kn: { 'vh.title': 'ಚಿಟ್ಟಿ ತೀರ್ಪು', 'vh.confidence': 'ವಿಶ್ವಾಸ', 'vh.listen': 'ಚಿಟ್ಟಿಯನ್ನು ಕೇಳಿ', 'vh.wouldBuy': 'ನಾನು ಖರೀದಿಸಲೇ? ಹೌದು', 'vh.wouldSell': 'ನಾನು ಮಾರಲೇ? ಹೌದು', 'vh.wouldTrade': 'ಈಗ ಟ್ರೇಡ್ ಮಾಡಲೇ? ಇನ್ನೂ ಇಲ್ಲ — ಕಾಯಿರಿ', 'vh.betterEntry': 'ಉತ್ತಮ ಎಂಟ್ರಿ', 'vh.risk': 'ಅಪಾಯ', 'risk.entry': 'ಎಂಟ್ರಿ', 'risk.Low': 'ಕಡಿಮೆ', 'risk.Medium': 'ಮಧ್ಯಮ', 'risk.High': 'ಹೆಚ್ಚು' },
+    ml: { 'vh.title': 'ചിട്ടി വിധി', 'vh.confidence': 'വിശ്വാസം', 'vh.listen': 'ചിട്ടിയെ കേൾക്കുക', 'vh.wouldBuy': 'ഞാൻ വാങ്ങണോ? അതെ', 'vh.wouldSell': 'ഞാൻ വിൽക്കണോ? അതെ', 'vh.wouldTrade': 'ഇപ്പോൾ ട്രേഡ് ചെയ്യണോ? ഇപ്പോൾ വേണ്ട — കാത്തിരിക്കൂ', 'vh.betterEntry': 'മികച്ച എൻട്രി', 'vh.risk': 'അപകടം', 'risk.entry': 'എൻട്രി', 'risk.Low': 'കുറവ്', 'risk.Medium': 'ഇടത്തരം', 'risk.High': 'കൂടുതൽ' }
+  };
+  Object.keys(VH).forEach(function (l) { if (T[l]) Object.keys(VH[l]).forEach(function (k) { T[l][k] = VH[l][k]; }); });
+
   if (typeof module !== 'undefined' && module.exports) module.exports = T;
   if (root) root.TECH_I18N = T;
 })(typeof window !== 'undefined' ? window : null);
