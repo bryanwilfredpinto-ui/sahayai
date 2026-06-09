@@ -261,9 +261,10 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
     from services.cache import cache
     import time as _time
     key = f"candles:{symbol}:{timeframe}:{days_back}"
+    lastgood_key = f"candleslast:{symbol}:{timeframe}:{days_back}"
     hit = cache.get(key)
     if hit is not None:
-        return hit  # served from cache — protects the Angel rate limit, makes the page reliable
+        return hit  # fresh (5 min) cache — protects the Angel rate limit, makes the page reliable
 
     def _one():
         if intraday_candles.is_intraday_timeframe(timeframe):
@@ -278,7 +279,7 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
         ]
 
     # Angel's historical API is rate-limited and occasionally returns empty/errors under
-    # parallel load — retry a couple of times, then cache ONLY a non-empty result (5 min).
+    # parallel load — retry a few times, cache a non-empty result (fresh 5 min + last-good 12 h).
     out, last_err = [], None
     for attempt in range(3):
         try:
@@ -290,9 +291,16 @@ def api_candles(symbol: str, timeframe: str = "Daily", days_back: int = 180):
         _time.sleep(0.7)
     if out:
         cache.set(key, out, 5 * 60)
+        cache.set(lastgood_key, out, 12 * 60 * 60)  # last-known-good for serve-stale-on-error
         return out
-    log.warning("[candles] %s %s empty after retries (%s)", symbol, timeframe, last_err)
-    return []  # graceful empty — never 500 the page; frontend falls back per-timeframe
+    # SERVE LAST-KNOWN-GOOD: if Angel is rate-limiting right now, return the last successful
+    # candles (minutes old) so the user always sees a REAL price — never empty, never a fake DEMO price.
+    stale = cache.get(lastgood_key)
+    if stale:
+        log.warning("[candles] %s %s empty — serving last-good (%s bars)", symbol, timeframe, len(stale))
+        return stale
+    log.warning("[candles] %s %s empty after retries, no last-good (%s)", symbol, timeframe, last_err)
+    return []  # truly nothing yet — frontend shows "loading live price", never a fake number
 
 
 @app.get("/api/fundamentals/{symbol:path}")
