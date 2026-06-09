@@ -227,27 +227,39 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <section class="hero" id="hero" data-chitti-response data-chitti-section="Hero — what do you want today" aria-live="polite"></section>
 
 <main>
-  <!-- BO7 — News feed (default visible after hero) -->
+  <!-- HEADLINE — Profession Hub (Professional Intelligence: your role's AI scores + impact). Shown once a profession is set. -->
+  <section class="section" id="hub-section" data-chitti-response data-chitti-section="Your Profession Hub" style="display:none">
+    <h2 class="section-title">🏛️ Your Profession Hub</h2>
+    <div id="hub-content"></div>
+  </section>
+
+  <!-- AI news affecting your role -->
   <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
     <h2 class="section-title">📰 Top AI news for you</h2>
     <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
     <div class="feed" id="news-feed" aria-live="polite"></div>
   </section>
 
-  <!-- BO8 — Profession Hub (rendered when profession is set) -->
-  <section class="section" id="hub-section" data-chitti-response data-chitti-section="Your Profession Hub" style="display:none">
-    <h2 class="section-title">🏛️ Your Profession Hub</h2>
-    <div id="hub-content"></div>
-  </section>
-
-  <!-- BO9 — 28-Day AI Tool Tour -->
+  <!-- 28-Day AI Tool Tour -->
   <section class="section" id="tour-section" data-chitti-response data-chitti-section="28-Day AI Tool Tour">
     <h2 class="section-title">🎓 28-Day AI Tool Tour</h2>
     <div id="tour-content"></div>
   </section>
 
-  <!-- Path 1 — Learn-Anything Roadmap (BO1, deterministic engine) -->
-  <section class="section" id="roadmap-section" data-chitti-response data-chitti-section="Learn anything - step by step roadmap">
+  <!-- TERTIARY — Grow your AI skills (Learn · Courses · Teach-me · Career · Swarm demoted to tabs inside one card) -->
+  <section class="section" id="learn-hub" data-chitti-response data-chitti-section="Grow your AI skills">
+    <h2 class="section-title">🎓 Grow your AI skills</h2>
+    <p class="section-sub">Your role's action layer — Learn · Courses · Teach-me · Career · Swarm. Pick a tab.</p>
+    <div role="tablist" aria-label="Learn tabs" id="learn-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
+      <button type="button" role="tab" class="learn-tab" data-tab="roadmap" aria-selected="true" onclick="cnaiLearnTab('roadmap')" style="min-height:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#138808;color:#fff;font-weight:700;cursor:pointer">🗺️ Roadmap</button>
+      <button type="button" role="tab" class="learn-tab" data-tab="courses" aria-selected="false" onclick="cnaiLearnTab('courses')" style="min-height:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700;cursor:pointer">🆓 Free Courses</button>
+      <button type="button" role="tab" class="learn-tab" data-tab="analogy" aria-selected="false" onclick="cnaiLearnTab('analogy')" style="min-height:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700;cursor:pointer">🧠 Teach Me</button>
+      <button type="button" role="tab" class="learn-tab" data-tab="career" aria-selected="false" onclick="cnaiLearnTab('career')" style="min-height:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700;cursor:pointer">💼 Career</button>
+      <button type="button" role="tab" class="learn-tab" data-tab="swarm" aria-selected="false" onclick="cnaiLearnTab('swarm')" style="min-height:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700;cursor:pointer">🐝 Swarm</button>
+    </div>
+
+  <!-- Path 1 — Learn-Anything Roadmap (BO1, deterministic engine) — now a tab panel -->
+  <section class="learn-panel" id="roadmap-section" data-chitti-response data-chitti-section="Learn anything - step by step roadmap">
     <h2 class="section-title">🗺️ Learn Anything — Your Roadmap</h2>
     <p class="section-sub" id="roadmap-sub">Tell Chitti what you want to learn. Any skill, any profession. Chitti builds a step-by-step path with free YouTube videos — in the right order, foundations first.</p>
     <form id="roadmap-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiRoadmapGo(event)">
@@ -265,7 +277,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   </section>
 
   <!-- Path 1b — Free-first Course Finder (BO2, deterministic catalog) -->
-  <section class="section" id="courses-section" data-chitti-response data-chitti-section="Find a free course">
+  <section class="learn-panel" id="courses-section" data-chitti-response data-chitti-section="Find a free course" style="display:none">
     <h2 class="section-title">🆓 Find a Free Course</h2>
     <p class="section-sub">Chitti finds FREE courses first — Government of India, Google, Microsoft, NVIDIA, Hugging Face, freeCodeCamp. Paid only if nothing free covers it, and Chitti tells you why.</p>
     <form id="courses-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiCoursesGo(event)">
@@ -282,7 +294,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   </section>
 
   <!-- Path 2 — Teach me in MY analogy (BO3, signature feature) -->
-  <section class="section" id="analogy-section" data-chitti-response data-chitti-section="Teach me using my analogy">
+  <section class="learn-panel" id="analogy-section" data-chitti-response data-chitti-section="Teach me using my analogy" style="display:none">
     <h2 class="section-title">🧠 Teach Me — In My Own Words</h2>
     <p class="section-sub">Pick a concept and an analogy you love. Chitti explains it your way — cricket, share market, farming, cooking, Bollywood — and always tells you where the analogy breaks down, so you never learn it wrong.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
@@ -299,7 +311,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   </section>
 
   <!-- Path 3 — Professional AI Career Coach (BO4) -->
-  <section class="section" id="career-section" data-chitti-response data-chitti-section="AI career coach - resume to tools and certificates">
+  <section class="learn-panel" id="career-section" data-chitti-response data-chitti-section="AI career coach - resume to tools and certificates" style="display:none">
     <h2 class="section-title">💼 Your AI Career Coach</h2>
     <p class="section-sub">Tell Chitti your profession (or paste your resume). Chitti finds the AI tools and FREE certificates that fit YOUR field — works for any job: HR, doctor, farmer, tailor, anyone. Your resume never leaves your phone.</p>
     <form id="career-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiCareerOneLiner(event)">
@@ -322,7 +334,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   </section>
 
   <!-- Swarm — many helpers learn together (BO5) -->
-  <section class="section" id="swarm-section" data-chitti-response data-chitti-section="Chitti Swarm - many helpers learn together">
+  <section class="learn-panel" id="swarm-section" data-chitti-response data-chitti-section="Chitti Swarm - many helpers learn together" style="display:none">
     <h2 class="section-title">🐝 Chitti Swarm — Learn Faster, Together</h2>
     <p class="section-sub">Give Chitti a big goal. Many helpers each learn one part — courses, concepts, top practitioners — then combine into one roadmap and find connections you'd miss alone.</p>
     <form id="swarm-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiSwarmGo(event)">
@@ -335,6 +347,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
     </form>
     <div id="swarm-content" aria-live="polite"></div>
   </section>
+  </section><!-- /learn-hub (tertiary tab card) -->
 </main>
 
 <footer>
@@ -1117,6 +1130,19 @@ function speakPage() {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+</script>
+<!-- Re-scope: Learn-tab toggle (layout glue — shows one demoted learning panel at a time). -->
+<script>
+window.cnaiLearnTab = function (name) {
+  var ids = ["roadmap","courses","analogy","career","swarm"];
+  ids.forEach(function (n) {
+    var sec = document.getElementById(n + "-section");
+    if (sec) sec.style.display = (n === name) ? "" : "none";
+    var tab = document.querySelector(".learn-tab[data-tab=\"" + n + "\"]");
+    if (tab) { var on = (n === name); tab.setAttribute("aria-selected", on ? "true" : "false"); tab.style.background = on ? "#138808" : "#fff"; tab.style.color = on ? "#fff" : "#138808"; }
+  });
+  try { var t = document.querySelector(".learn-tab[data-tab=\"" + name + "\"]"); if (t) { var u = new SpeechSynthesisUtterance(t.textContent); u.rate = .95; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } } catch (e) {}
+};
 </script>
 </body>
 </html>
