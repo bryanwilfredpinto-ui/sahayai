@@ -22,7 +22,7 @@
     if (!spec || typeof fetch === 'undefined') return Promise.resolve(null); // 4h/1h unsupported → DEMO
     var url = apiBase() + '/api/candles/' + encodeURIComponent(plain(symbol)) + '?timeframe=' + encodeURIComponent(spec.tf) + '&days_back=' + spec.days;
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 7000) : null;
+    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 12000) : null;
     return fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { if (to) clearTimeout(to); return r.ok ? r.json() : null; })
       .then(function (arr) {
@@ -59,7 +59,7 @@
     if (typeof fetch === 'undefined') return Promise.resolve({ candles: demoTf(symbol, 'daily'), source: 'demo' });
     var url = apiBase() + '/api/candles/' + encodeURIComponent(plain(symbol)) + '?timeframe=Daily&days_back=' + spec.days;
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 7000) : null;
+    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 12000) : null;
     return fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { if (to) clearTimeout(to); return r.ok ? r.json() : null; })
       .then(function (arr) {
