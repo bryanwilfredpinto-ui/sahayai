@@ -46,6 +46,7 @@ It is **not** a day-trading signal machine. It is an **honest read + a guardian*
 
 | Layer | Docs |
 |---|---|
+| **Identity** | **[CHITTI_TECHNICAL.md](CHITTI_TECHNICAL.md) — who Chitti is: founder's Role · 12 Skills · 13 SOP (read this first)** |
 | **Law** | [CONSTITUTION.md](CONSTITUTION.md) · [PRODUCT_JUSTIFICATION.md](PRODUCT_JUSTIFICATION.md) (Build Score 82/100) |
 | **Vision** | [ROLE.md](ROLE.md) · [PRODUCT_VISION.md](PRODUCT_VISION.md) · [VISION.md](VISION.md) · [SUCCESS_METRICS.md](SUCCESS_METRICS.md) |
 | **Users** | [PERSONAS.md](PERSONAS.md) · [accessibility/](accessibility/) (blind/deaf/mute/illiterate/elderly/low-vision/cognitive/motor/rural) |
