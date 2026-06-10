@@ -91,6 +91,26 @@
   .crisis{background:var(--navy);color:#fff;padding:16px;border-radius:12px;font-weight:700}
   .cooldown{background:#e8f0ff;border:2px solid var(--navy);border-radius:12px;padding:14px;font-weight:700;margin:10px 0}
   .insights li{margin:4px 0}
+  /* onboarding */
+  .ob{background:#fff;border:2px solid var(--saffron);border-radius:16px;padding:16px;margin:6px 0 14px}
+  .ob-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ob-head h2{margin:0;color:var(--navy);font-size:1.2rem}.ob-head h2 span{font-weight:400;color:var(--muted);font-size:.9rem}
+  .ob-head-btns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .ob-intro{color:var(--ink);margin:8px 0 12px}
+  .ob-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .ob-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);display:flex;flex-direction:column}
+  .ob-card-h{display:flex;align-items:center;gap:8px}.ob-card-h h4{margin:0;color:var(--navy);font-size:1.02rem;flex:1}
+  .ob-emoji{font-size:1.4rem}
+  .ob-listen{min-height:40px;padding:6px 10px;background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:10px}
+  .ob-what{margin:8px 0;font-size:.92rem}.ob-bul{margin:0 0 8px;padding-left:18px;font-size:.88rem;color:#333}.ob-bul li{margin:2px 0}
+  .ob-steps{font-size:.85rem;background:#fff;border-left:4px solid var(--green);padding:6px 8px;border-radius:6px;margin:0 0 10px}
+  .ob-try{margin-top:auto;background:var(--green);border-color:var(--green-dk)}
+  .ob-legend{margin-top:14px;background:#eef;border-radius:12px;padding:12px}
+  .ob-legend h3,.ob-personas h3{margin:0 0 8px;color:var(--navy);font-size:1.02rem}
+  .ob-legend table{width:auto}.ob-legend td{border:0;padding:4px 10px 4px 0}.ob-ic{font-size:1.2rem;white-space:nowrap}
+  .ob-personas{margin-top:14px;background:#fff3e0;border-radius:12px;padding:12px}
+  .ob-persona-row{display:flex;gap:8px;flex-wrap:wrap}
+  .ob-persona{background:#fff;color:var(--navy);border:2px solid var(--saffron-dk);font-weight:700}
   footer{padding:20px 16px;color:var(--muted);font-size:.82rem;text-align:center}
   @media (max-width:520px){.reasons,.votes{grid-template-columns:1fr}html{font-size:16px}.vh-word{font-size:1.4rem}}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -122,6 +142,8 @@
 
 <main id="main" class="wrap">
   <p style="color:var(--muted);margin-top:4px">An honest read of any Indian stock — spoken in your language, for everyone. <b>Chitti coaches; it never gambles for you.</b></p>
+  <div style="margin:8px 0"><button type="button" id="ob-open" class="ghost">🎓 How to use Chitti Technical</button></div>
+  <div id="onboarding-host"></div>
 
   <div class="tablist" role="tablist" aria-label="Sections">
     <button role="tab" id="tab-read" aria-selected="true" aria-controls="panel-read">📊 Read a stock</button>
@@ -239,6 +261,7 @@
 <script src="chitti_technical_ai_journal.js" defer></script>
 <script src="chitti_technical_ai_data.js" defer></script>
 <script src="chitti_technical_ai_app.js" defer></script>
+<script src="chitti_technical_ai_onboarding.js" defer></script>
 <script src="chitti_a11y.js" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical_ai" defer></script>
 </body>
