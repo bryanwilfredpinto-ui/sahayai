@@ -1020,6 +1020,46 @@
     return { score: dominant, total: total, percent: pct, bias: bias, quality: quality, per_tf: perTf, bull: bull, bear: bear };
   }
 
+  // SOP 1 — VOLUME is a mandatory pre-signal validation. Absent confirmation REDUCES confidence.
+  // Confirmed = the latest bar trades at/above its 20-bar average volume (real participation behind the move).
+  function volumeConfirm(candles) {
+    if (!candles || candles.length < 21) return { confirmed: null, ratio: null, note: 'Not enough bars to validate volume.' };
+    var vols = candles.map(function (c) { return +(c.volume || 0); });
+    var lastV = vols[vols.length - 1];
+    var avgArr = sma(vols, 20), avg = last(avgArr);
+    if (!avg || avg <= 0 || !lastV) return { confirmed: null, ratio: null, avg: avg ? round2(avg) : null, last: lastV || 0, note: 'No usable volume data — treat the read with extra caution.' };
+    var ratio = lastV / avg, confirmed = ratio >= 1.0;
+    return { confirmed: confirmed, ratio: round2(ratio), avg: Math.round(avg), last: Math.round(lastV),
+      note: confirmed ? ('Volume CONFIRMS — latest bar is ' + round2(ratio) + '× the 20-bar average.')
+        : ('Volume does NOT confirm — latest bar is only ' + round2(ratio) + '× the 20-bar average; confidence reduced.') };
+  }
+
+  // SOP 5 — every verdict carries a Primary view, an Alternative view, and the Invalidation conditions.
+  function buildViews(verdict, conf, price, srZones, stop, volc) {
+    var res = null, sup = null;
+    (srZones || []).forEach(function (z) {
+      if (z.type === 'R' && z.price > price && (res == null || z.price < res)) res = z.price;
+      if (z.type === 'S' && z.price < price && (sup == null || z.price > sup)) sup = z.price;
+    });
+    var pct = conf ? conf.percent : 0, volTxt = volc && volc.confirmed === true ? ', and volume confirms' : (volc && volc.confirmed === false ? ', but volume is light' : '');
+    var floor = stop != null ? stop : sup, ceil = stop != null ? stop : res;
+    var primary, alternative, invalidation;
+    if (verdict === 'BUY') {
+      primary = 'Bullish — ' + pct + '% of the checked timeframes point up' + volTxt + '. Buyers are in control while price holds above ' + (sup != null ? sup : (stop != null ? stop : price)) + '.';
+      alternative = 'If price loses ' + (floor != null ? floor : 'the support') + ', the buyers fail and this can turn into a fall toward the next support. Not every bullish read plays out.';
+      invalidation = 'This BUY is INVALID if price closes below ' + (stop != null ? stop : (sup != null ? sup : 'the support')) + (volc && volc.confirmed === false ? ', or if a bounce comes on weak volume.' : '.');
+    } else if (verdict === 'SELL') {
+      primary = 'Bearish — ' + pct + '% of the checked timeframes point down' + volTxt + '. Sellers are in control while price stays below ' + (res != null ? res : (stop != null ? stop : price)) + '.';
+      alternative = 'If price reclaims ' + (ceil != null ? ceil : 'the resistance') + ', the down-move fails and a bounce toward the next resistance is possible.';
+      invalidation = 'This SELL is INVALID if price closes above ' + (stop != null ? stop : (res != null ? res : 'the resistance')) + '.';
+    } else {
+      primary = 'No clear edge — the timeframes disagree (' + pct + '% alignment)' + volTxt + '. Chitti would not trade this now.';
+      alternative = 'A decisive close above ' + (res != null ? res : 'resistance') + ' would favour buyers; a close below ' + (sup != null ? sup : 'support') + ' would favour sellers.';
+      invalidation = 'Wait until one side confirms with a close beyond ' + (res != null ? res : 'resistance') + ' or ' + (sup != null ? sup : 'support') + ', ideally on rising volume.';
+    }
+    return { primary: primary, alternative: alternative, invalidation: invalidation };
+  }
+
   // The CEOS signal — confluence (mode) → direction (≥60%) → ATR SL/T1/T2 + sizing → full JSON (PDF §8.2).
   var TF_ORDER = ['monthly', 'weekly', 'daily', '4h', '1h', '15m', '5m', '1m'];
   function generateSignal(candlesByTf, opts) {
@@ -1036,11 +1076,17 @@
     var verdict = 'HOLD';
     if (conf.percent >= 60 && conf.bias === 'BULLISH') verdict = 'BUY';
     else if (conf.percent >= 60 && conf.bias === 'BEARISH') verdict = 'SELL';
+    // SOP 1 — mandatory volume validation on the entry/anchor timeframe; absent confirmation cuts confidence.
+    var volc = volumeConfirm(candlesByTf[anchorTf] || daily);
+    var baseConf = Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95));
+    if (volc.confirmed === false) baseConf = Math.round(baseConf * 0.8);      // −20% when volume does not back the move
+    else if (volc.confirmed == null) baseConf = Math.round(baseConf * 0.9);   // −10% when volume cannot be validated
     var out = {
       mode: opts.mode || (opts.tfs ? 'custom' : 'swing'), mode_label: (opts.tfs && opts.tfs.length) ? ('Custom: ' + tfs.join(', ')) : mode.label, timeframes: tfs,
       confluence_score: conf.score + '/' + conf.total + ' (' + conf.percent + '%)',
       confluence_quality: conf.quality, confluence: conf,
-      signal: verdict, confidence: Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95)),
+      signal: verdict, confidence: baseConf, confidence_before_volume: Math.round(conf.percent * (verdict === 'HOLD' ? 0.5 : 0.95)),
+      volume: volc, volume_confirmed: volc.confirmed,
       entry_price: price != null ? round2(price) : null,
       pivots: daily ? pivotsFor(daily) : null, sr_zones: srConfluence(candlesByTf),
       indicators: daily ? indicatorSet(daily) : {},
@@ -1052,9 +1098,11 @@
       else {
         out.atr = rb.atr; out.stop_loss = rb.stop_loss; out.target_1 = rb.target_1; out.target_2 = rb.target_2; out.target_3 = rb.target_3;
         out.entry_zone = rb.entry_zone; out.risk_reward_ratio = rb.risk_reward_ratio; out.position_size = rb.position_size;
-        out.invalidation = (verdict === 'BUY' ? 'wrong if price closes below ' : 'wrong if price closes above ') + rb.stop_loss.price;
       }
     } else { out.why = conf.percent < 40 ? 'no alignment — NO TRADE' : 'weak confluence — wait for alignment'; }
+    // SOP 5 — Primary view · Alternative view · Invalidation (built on the FINAL signal, which may be HOLD).
+    out.views = buildViews(out.signal, conf, price, out.sr_zones, out.stop_loss ? out.stop_loss.price : null, volc);
+    out.invalidation = out.views.invalidation; // back-compat
     return out;
   }
 
@@ -1081,13 +1129,17 @@
     if (sig.confluence) spoken += sig.confluence.bias.toLowerCase() + ' confluence at ' + conf + ' percent confidence. ';
     if (decision !== 'WAIT' && sig.stop_loss) spoken += 'Entry near ' + sig.entry_price + ', stop at ' + sig.stop_loss.price + ', first target ' + (sig.target_1 ? sig.target_1.price : '') + '. Risk is ' + risk.toLowerCase() + '. ';
     if (decision === 'WAIT') spoken += (sig.why || '') + '. ' + (betterEntry ? ('A better entry may be near ' + betterEntry + '. ') : '');
+    if (sig.volume && sig.volume.note) spoken += sig.volume.note + ' ';
+    if (sig.views) spoken += 'Alternative view: ' + sig.views.alternative + ' ' + sig.views.invalidation + ' ';
     spoken += 'This is education, not advice. Not SEBI registered.';
     return {
       decision: decision, icon: decision === 'BUY' ? '🟢' : decision === 'SELL' ? '🔴' : '🟡', headline: headline,
       confidence: conf, risk: risk, reasons: reasons, entry: sig.entry_price != null ? sig.entry_price : null,
       stop: sig.stop_loss ? sig.stop_loss.price : null, entry_zone: sig.entry_zone || null,
       targets: [sig.target_1, sig.target_2, sig.target_3].filter(Boolean).map(function (t) { return { price: t.price, rr: t.rr || null }; }),
-      rr: sig.risk_reward_ratio || null, betterEntry: betterEntry, spoken: spoken
+      rr: sig.risk_reward_ratio || null, betterEntry: betterEntry,
+      views: sig.views || null, volume: sig.volume || null, primaryView: sig.views ? sig.views.primary : null,
+      spoken: spoken
     };
   }
 
