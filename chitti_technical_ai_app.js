@@ -14,7 +14,8 @@
       TS = root.ChittiTipShield, J = root.ChittiTechJournal, CH = root.ChittiTechChart;
   var DEFAULT_INDS = ['Roshan Indicator', 'RSI', 'MACD', 'Stochastic', 'Williams %R', 'Bollinger Bands', 'Supertrend', 'EMA 200', 'ADX', 'VWAP'];
   var ALL_TFS = ['monthly', 'weekly', 'daily', '4h', '1h', '15m'];
-  var state = { symbol: 'RELIANCE', mode: 'longterm', data: null, sig: null, cv: null, inds: DEFAULT_INDS.slice(), tfs: [], watch: [] };
+  var state = { symbol: 'RELIANCE', mode: 'longterm', data: null, sig: null, cv: null, inds: DEFAULT_INDS.slice(), tfs: [], watch: [], chartTf: 'daily' };
+  var CHART_TFS = [['monthly', 'Monthly'], ['weekly', 'Weekly'], ['daily', 'Daily'], ['4h', '4 Hour'], ['1h', '1 Hour'], ['15m', '15 Min'], ['5m', '5 Min'], ['1m', '1 Min']];
 
   function $(id) { return doc.getElementById(id); }
   function set(id, html) { var el = $(id); if (el) el.innerHTML = html; }
@@ -63,16 +64,37 @@
   }
 
   // ───────── READ: CHART (TradingView heart) + indicator picker + depth ─────────
-  function renderChart() {
-    var daily = state.data && (state.data.byTf.daily || state.data.byTf.weekly); var s = state.sig;
-    if (!CH || !daily) return;
-    var levels = [];
+  function chartLevels() {
+    var s = state.sig, levels = []; if (!s) return levels;
     (s.sr_zones || []).slice(0, 4).forEach(function (z) { levels.push({ price: z.price, color: z.type === 'R' ? '#C0341D' : '#138808', label: (z.type === 'R' ? 'R ' : 'S ') + z.price }); });
     if (s.stop_loss) levels.push({ price: s.stop_loss.price, color: '#C0341D', dash: [2, 2], label: 'SL ' + s.stop_loss.price });
     if (s.entry_price) levels.push({ price: s.entry_price, color: '#000080', dash: [], label: 'Entry ' + s.entry_price });
     if (s.target_1) levels.push({ price: s.target_1.price, color: '#0c5e06', dash: [2, 2], label: 'T1 ' + s.target_1.price });
-    var cv = $('tech-canvas'); if (cv) CH.draw(cv, daily, { symbol: state.symbol, levels: levels });
+    return levels;
   }
+  function drawChartCandles(candles, source, tf, note) {
+    var cv = $('tech-canvas'); if (!cv || !CH) return;
+    if (!candles || !candles.length) { set('chart-tf-src', '<span class="src src-demo">⚠️ ' + (note || (tf + ' not available')) + '</span>'); return; }
+    CH.draw(cv, candles, { symbol: state.symbol + ' · ' + tf, levels: tf === 'daily' ? chartLevels() : [] });
+    set('chart-tf-src', '<span class="src src-' + (source === 'demo' ? 'demo' : 'live') + '">' + (note || (source + ' ' + tf)) + ' · ' + candles.length + ' bars</span>');
+  }
+  function drawChartTf(tf) {
+    state.chartTf = tf; var sel = $('chart-tf'); if (sel && sel.value !== tf) sel.value = tf;
+    if (!CH) return;
+    // already-fetched TFs from the analyze call (monthly/weekly/daily) → draw instantly
+    if (state.data && state.data.byTf[tf] && (tf === 'monthly' || tf === 'weekly' || tf === 'daily')) {
+      var isLive = state.data.liveTfs.indexOf(tf) >= 0;
+      drawChartCandles(state.data.byTf[tf], isLive ? 'live' : 'demo', tf, (isLive ? '🟢 LIVE ' : '🟠 DEMO ') + tf); return;
+    }
+    set('chart-tf-src', '<span class="loading">loading ' + tf + ' …</span>');
+    D.getChartTf(state.symbol, tf).then(function (res) { drawChartCandles(res.candles, res.source, tf, res.note); });
+  }
+  function populateChartTf() {
+    var sel = $('chart-tf'); if (!sel) return;
+    if (!sel.options.length) { sel.innerHTML = CHART_TFS.map(function (t) { return '<option value="' + t[0] + '">' + t[1] + '</option>'; }).join(''); sel.onchange = function () { drawChartTf(sel.value); }; }
+    sel.value = 'daily';
+  }
+  function renderChart() { populateChartTf(); drawChartTf('daily'); }
   function renderIndicatorPicker() {
     if (!T.INDICATOR_NAMES) return;
     var html = '<details class="ind-picker"><summary>⚙️ Choose indicators (' + state.inds.length + ' of ' + T.INDICATOR_NAMES.length + ')</summary><div class="ind-grid">' +

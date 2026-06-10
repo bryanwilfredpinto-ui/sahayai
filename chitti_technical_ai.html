@@ -71,6 +71,10 @@
   .sig-buy{color:var(--green-dk);font-weight:700}.sig-sell{color:var(--red);font-weight:700}.sig-wait{color:var(--muted)}
   .paper-btn{margin-top:10px;background:#fff;color:var(--green-dk);border-color:var(--green)}
   canvas#tech-canvas{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block}
+  .chart-tf-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .chart-tf-bar label{margin:0}
+  .chart-tf-bar select{width:auto;min-width:120px}
+  .chart-tf-src{font-size:.78rem;font-weight:700}
   .ind-picker,.tf-picker{margin:8px 0}
   .ind-grid,.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;margin-top:8px}
   .ind-grid label,.tf-grid label{font-weight:400;font-size:.85rem;display:flex;align-items:center;gap:6px;margin:0}
@@ -143,7 +147,9 @@
     </div>
     <div id="result-area" style="display:none">
       <div class="card" data-chitti-response data-chitti-section="Verdict"><h3>Chitti's read</h3><div id="verdict-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3><canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3>
+        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select><span id="chart-tf-src" class="chart-tf-src"></span></div>
+        <canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Market mood"><h3>Mood</h3><div id="mood-host"></div></div>

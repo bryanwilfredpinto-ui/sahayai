@@ -70,5 +70,46 @@
       .catch(function () { if (to) clearTimeout(to); return { candles: demoTf(symbol, 'daily'), source: 'demo' }; });
   }
 
-  root.ChittiTechData = { getCandles: getCandles, getDaily: getDaily, TF_MAP: TF_MAP, apiBase: apiBase };
+  // ───────── chart timeframe dropdown (M/W/D/4h/1h/15m/5m/1m) ─────────
+  // Backend serves Monthly/Weekly/Daily/15min/5min LIVE. 4h/1h are DERIVED by resampling 15min
+  // (×16, ×4). 1min is not served by the backend and cannot be derived → honest "unavailable".
+  var CHART_TF = {
+    monthly: { tf: 'Monthly', days: 36 }, weekly: { tf: 'Weekly', days: 160 }, daily: { tf: 'Daily', days: 260 },
+    '15m': { tf: '15min', days: 200 }, '5m': { tf: '5min', days: 200 },
+    '4h': { from: '15min', days: 200, group: 16 }, '1h': { from: '15min', days: 200, group: 4 }
+  };
+  function parseCandles(arr) {
+    if (!Array.isArray(arr)) return null;
+    return arr.map(function (c) { var t = c.time || c.t || c.date; return { date: (typeof t === 'number' ? new Date(t * 1000).toISOString().slice(0, 10) : t) || null, open: +c.open, high: +c.high, low: +c.low, close: +c.close, volume: +(c.volume || 0), t: t }; }).filter(function (c) { return isFinite(c.close) && c.close > 0; });
+  }
+  function fetchRaw(symbol, backendTf, days) {
+    if (typeof fetch === 'undefined') return Promise.resolve(null);
+    var url = apiBase() + '/api/candles/' + encodeURIComponent(plain(symbol)) + '?timeframe=' + encodeURIComponent(backendTf) + '&days_back=' + days;
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 12000) : null;
+    return fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { if (to) clearTimeout(to); return r.ok ? r.json() : null; })
+      .then(function (arr) { var c = parseCandles(arr); return (c && c.length >= 8) ? c : null; })
+      .catch(function () { if (to) clearTimeout(to); return null; });
+  }
+  function resample(candles, group) {
+    var out = []; if (!candles) return out;
+    for (var i = 0; i < candles.length; i += group) {
+      var slice = candles.slice(i, i + group); if (!slice.length) continue;
+      var hi = -Infinity, lo = Infinity, vol = 0;
+      slice.forEach(function (c) { if (c.high > hi) hi = c.high; if (c.low < lo) lo = c.low; vol += c.volume || 0; });
+      out.push({ date: slice[slice.length - 1].date, open: slice[0].open, high: hi, low: lo, close: slice[slice.length - 1].close, volume: vol, t: slice[slice.length - 1].t });
+    }
+    return out;
+  }
+  // chartTf ∈ monthly/weekly/daily/4h/1h/15m/5m/1m → { candles, source: 'live'|'live-derived'|'demo'|'unavailable', note }
+  function getChartTf(symbol, chartTf) {
+    if (chartTf === '1m') return Promise.resolve({ candles: null, source: 'unavailable', note: '1-minute not served by the data feed' });
+    var spec = CHART_TF[chartTf];
+    if (!spec) return Promise.resolve({ candles: null, source: 'unavailable', note: chartTf + ' unavailable' });
+    if (spec.tf) return fetchRaw(symbol, spec.tf, spec.days).then(function (c) { return c ? { candles: c, source: 'live', note: '🟢 LIVE ' + chartTf } : { candles: demoTf(symbol, chartTf === 'daily' ? 'daily' : '15m'), source: 'demo', note: '🟠 DEMO ' + chartTf }; });
+    return fetchRaw(symbol, spec.from, spec.days).then(function (c) { return c ? { candles: resample(c, spec.group), source: 'live-derived', note: '🟢 LIVE ' + chartTf + ' (from 15min)' } : { candles: demoTf(symbol, '15m'), source: 'demo', note: '🟠 DEMO ' + chartTf }; });
+  }
+
+  root.ChittiTechData = { getCandles: getCandles, getDaily: getDaily, getChartTf: getChartTf, resample: resample, CHART_TF: CHART_TF, TF_MAP: TF_MAP, apiBase: apiBase };
 })(typeof window !== 'undefined' ? window : this);
