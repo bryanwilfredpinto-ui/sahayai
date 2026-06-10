@@ -93,19 +93,21 @@
 
 ---
 
-## Section 8 — Language Audit  ⚠️ honest PARTIAL
+## Section 8 — Language Audit  ✅ FIXED (was PARTIAL)
 
-Screenshots: `tools/cert_screenshots/lang_{hi,te,ta,bn,mr}.png`. Measured per language:
+Per Sire's direction — **technical terms (RSI/MACD/Bollinger/NSE) stay English; the rest of the UI changes.** Built `chitti_technical_ai_i18n.js`. Re-measured (`cap_langs.mjs`), screenshots `tools/cert_screenshots/lang_{hi,te,ta,bn,mr}.png`:
 
-| Language | `html lang` set | Non-Latin script present | Technical terms (RSI/MACD) stay English | **English section labels remain?** |
-|---|---|---|---|---|
-| Hindi | ✅ | ✅ | ✅ | **YES (still English)** |
-| Telugu | ✅ | ✅ | ✅ | **YES** |
-| Tamil | ✅ | ✅ | ✅ | **YES** |
-| Bengali | ✅ | ✅ | ✅ | **YES** |
-| Marathi | ✅ | ✅ | ✅ | **YES** |
+| Language | `html lang` set | UI chrome translated (tabs/headings/buttons/labels) | Technical terms (RSI/MACD) stay English |
+|---|---|---|---|
+| Hindi | ✅ | ✅ (शेयर पढ़ें · चिट्टी का विश्लेषण · मूल्य चार्ट · पढ़ें · सुनो …) | ✅ |
+| Telugu | ✅ | ✅ | ✅ |
+| Tamil | ✅ | ✅ | ✅ |
+| Bengali | ✅ | ✅ | ✅ |
+| Marathi | ✅ | ✅ | ✅ |
 
-**Any English left? YES → this section is PARTIAL, not a full pass.** The language *switch* works, the spoken verdict + substrate chrome translate, and technical terms correctly stay English — **but the page's bespoke section labels ("Price chart", "Technical rating", "Indicators", "Read a stock") are NOT translated.** Full content translation needs the Gemini runtime translator (Sire's key) or per-string i18n tagging. **Honest Pass/Fail: PARTIAL.**
+**Measured: `English-section-labels-remain = FALSE` and `technical-terms-English = true` in all 5.** The UI chrome (tabs · section headings · buttons · labels · Style dropdown) now translates across 12 primary Indian languages (hi/bn/te/ta/mr/gu/kn/ml/pa/or/as/ur), with honest English fallback for unsupported cousin languages. **Pass.**
+
+**Honest remainder:** the dynamic verdict **narration** ("Chitti says: I would buy… bullish confluence at 64 percent…") is the engine's English explain-text and stays English until DeepSeek (BO12) phrases it in-language — translating generated sentences word-by-word is the LLM's job, not a string table.
 
 ---
 
