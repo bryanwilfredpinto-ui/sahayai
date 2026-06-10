@@ -26,7 +26,7 @@
 | 6 | Research real (competitor + URL + finding) | 🟢 40 apps, URLs cited (§6) |
 | 7 | No hallucinated metrics | 🟢 every number is deterministic-computed or SEBI-cited (§7) |
 | 8 | Founder ₹50L audit | 🟡 **Qualified YES** — as a Sahayai public-good capability, not a standalone VC bet (§8) |
-| 9 | Production readiness ≥90 | 🟡 **Composite 89/100 → CONDITIONAL** (offline/dev-ready; live-prod needs BO12 keys) |
+| 9 | Production readiness ≥90 | 🔴 **CORRECTED: ≈48/100 → NOT READY** (face ~42% complete; live data 404). Earlier "89" was inflated — see §9 |
 | 10 | Real-device sign-off | 🟡 **Reserved for Sire** (iPhone/Android + VoiceOver/TalkBack + 3G) |
 
 ---
@@ -159,20 +159,20 @@ Every number the product emits is **deterministic-computed or cited** — none f
 
 ---
 
-## Gate 9 — Production readiness score
+## Gate 9 — Production readiness score (CORRECTED 2026-06-10, honest)
 
-| Category | Score | Basis |
+> **The earlier 89/100 was inflated** — it scored the *quality of what exists* + the docs/engine, not the **completeness of the product vs the CEOS**. A product missing live data + Screener + Backtest + Alerts + Watchlist + Chart + Indicator/TF pickers is not 89%. Corrected below, weighting feature-completeness and live usability honestly.
+
+| Axis | Score | Basis |
 |---|---|---|
-| Research | 95 | 40 apps, URLs, doctrine validated |
-| UI | 88 | complete + accessible + tricolour; no live chart canvas yet; Chromium-only cert |
-| Accessibility | 90 | 4-channel, axe 0 serious, 11/11 widget; pending real SR + 26-lang + multi-engine |
-| Testing | 86 | 58/58 + 30/30 + gate harness; pending full multi-engine + real device |
-| CEOS | 95 | 86 docs, 16/16 mapped to code |
-| Performance | 80 | static + offline-capable + fast; not formally Lighthouse-scored; live-data latency unmeasured |
-| Documentation | 95 | exhaustive CEOS + honest handover + this audit |
-| **Composite** | **89 / 100** | **CONDITIONAL — below the 90 line by design** |
+| Engine / determinism | 90 | reusable brain, 58/58; computes screener/backtest/alerts/39-indicators |
+| CEOS docs + research | 93 | 86 docs + 40-app research (docs are not a product) |
+| Accessibility of what exists | 85 | axe 0 serious + 4-channel — but covers a thin feature slice |
+| **Product feature-completeness vs CEOS** | **~42** | ~10 built of ~22 CEOS user-facing features |
+| **Live / production usability** | **~15** | backend `/api/historical` = **HTTP 404** → DEMO-only |
+| **HONEST COMPOSITE (shippable CEOS product)** | **≈ 48 / 100** | **NOT READY** |
 
-**Verdict: production-ready as an offline-capable dev/cert surface; NOT yet live-production-ready.** The 1-point gap to 90 and the path to live-prod are the **BO12 Sire-blocked** items: DeepSeek funding · live Angel One keys · Vaani `technical` allowlist · Firefox/WebKit · 26-lang render. None are code defects; all need keys/hardware.
+**Corrected verdict: a high-quality v0.4 FOUNDATION, not a feature-complete product.** Built = accessible read + Tip Shield + paper journal on a strong engine. **NOT built (12):** live data (404) · Screener UI · Backtest UI · Alerts UI · Watchlist UI · Indicator picker · Timeframe picker · Candlestick chart · Vaani · DeepSeek · Refresh · verified 26-lang. The brain is ~90%; the **face is ~42%**. P0 blocker = the live-data 404. Full breakdown: [handover/CEOS_COMPLIANCE_REPORT.md](handover/CEOS_COMPLIANCE_REPORT.md).
 
 ---
 
