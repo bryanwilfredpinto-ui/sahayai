@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-technicals/ — Chitti Technicals (CEOS v1.0, 2026-06-10).
+     Accessibility-first (blind/deaf/mute/illiterate). Vaani is the canonical surface;
+     this page is the dev/cert + four-user UI. Engine: chitti_technical_engine.js (reused,
+     deterministic). Faces: Read (verdict+chart+pickers) · Screener · Watchlist · Backtest ·
+     Tip Shield · Paper journal. Language dropdown is Vaani-canonical: chitti_lang.js owns
+     #lang-select. Spec: chitti-technicals/BUILD_ORDER.md. NOT SEBI REGISTERED. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="chitti-features" content="chitti-technicals/skills/FEATURES.md">
+<meta name="chitti-page-desc" content="शेयर का ईमानदार तकनीकी विश्लेषण — आवाज़ में, हर भारतीय के लिए। सलाह नहीं, शिक्षा।">
+<title>Chitti Technicals — Honest market read for every Indian</title>
+<style>
+  :root{--saffron:#FF9933;--saffron-dk:#B34700;--navy:#000080;--green:#138808;--green-dk:#0c5e06;--red:#C0341D;--canvas:#fff;--ink:#1A1A1A;--muted:#5a5a5a;--line:#d9d9d9;--card:#f7f7f9;}
+  *{box-sizing:border-box}
+  html{font-size:17px}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--canvas);line-height:1.5}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  a{color:var(--navy)}
+  .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 14px;z-index:200}
+  .skip:focus{left:8px;top:8px}
+  :focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+  button,select,textarea,input{font:inherit;min-height:48px}
+  button{cursor:pointer;border:2px solid var(--navy);background:var(--navy);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700}
+  button.ghost{background:#fff;color:var(--navy)}
+  select,textarea,input{border:2px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);width:100%}
+  #sebi-bar{position:sticky;top:0;z-index:60;background:var(--navy);color:#fff;font-weight:700;font-size:.85rem;padding:9px 12px;cursor:pointer;text-align:center}
+  #sebi-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:120;align-items:center;justify-content:center;padding:16px}
+  #sebi-modal.show{display:flex}
+  #sebi-modal .box{background:#fff;max-width:560px;border-radius:14px;padding:22px;border-top:6px solid var(--saffron)}
+  header.app{padding:14px 16px;border-bottom:3px solid var(--saffron)}
+  .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .brand h1{font-size:1.3rem;margin:0;color:var(--navy)}
+  .brand .badge{font-size:.62rem;background:var(--navy);color:#fff;padding:3px 7px;border-radius:6px;letter-spacing:.3px}
+  .langwrap{margin-left:auto;min-width:160px}
+  .wrap{max-width:900px;margin:0 auto;padding:16px}
+  .tablist{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .tablist [role=tab]{background:#fff;color:var(--navy);border:2px solid var(--navy);font-size:.92rem}
+  .tablist [role=tab][aria-selected=true]{background:var(--navy);color:#fff}
+  .panel{display:none}.panel.active{display:block}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+  .controls .fld{flex:1;min-width:150px}
+  label{display:block;font-weight:700;margin-bottom:4px;font-size:.9rem}
+  .src{display:inline-block;font-size:.78rem;padding:4px 10px;border-radius:20px;margin:8px 0;font-weight:700}
+  .src-live{background:#e7f6e6;color:var(--green-dk)}.src-demo{background:#fff3e0;color:var(--saffron-dk)}.src-mixed{background:#eef;color:var(--navy)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+  .card h3{margin:0 0 10px;color:var(--navy);font-size:1.05rem}
+  .verdict-hero{display:flex;align-items:center;gap:14px;border-radius:14px;padding:18px;border:3px solid var(--navy);background:#fff}
+  .verdict-hero.v-buy{border-color:var(--green)}.verdict-hero.v-sell{border-color:var(--red)}.verdict-hero.v-wait{border-color:var(--saffron-dk)}
+  .vh-shape{font-size:2.2rem;line-height:1}.vh-word{font-size:1.7rem;font-weight:800;color:var(--navy)}.vh-sub{font-size:.9rem;color:var(--muted)}.vh-listen{margin-left:auto}
+  .vh-spoken{font-size:1.02rem;margin:10px 2px}
+  .tech-rail{background:#fff3e0;border-left:5px solid var(--saffron-dk);padding:10px 12px;border-radius:8px;font-size:.9rem}
+  .tech-sebi-mini{font-weight:800;color:var(--navy)}
+  .gauge-scale{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted)}
+  .gauge-track{position:relative;height:14px;border-radius:8px;background:linear-gradient(90deg,#C0341D,#FF9933,#138808);margin:4px 0}
+  .gauge-needle{position:absolute;top:-4px;width:6px;height:22px;background:var(--navy);border-radius:3px;transform:translateX(-50%)}
+  .gauge-label{font-weight:800;text-align:center;color:var(--navy)}
+  .votes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+  .vote{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px}
+  .vote b{display:block;font-size:1.5rem}.vote span{font-size:.78rem;color:var(--muted)}
+  .v-buy b{color:var(--green-dk)}.v-sell b{color:var(--red)}.votes-line{grid-column:1/-1;margin:6px 0 0;font-weight:700}
+  .mood-word{font-size:1.3rem;font-weight:800;color:var(--navy)}.mood-sub{color:var(--muted);font-size:.85rem}
+  .reasons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .reasons h4{margin:0 0 6px}.reasons ul{margin:0;padding-left:18px}.reasons li{margin:3px 0}
+  .pros h4{color:var(--green-dk)}.cons h4{color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .plan-risk th,.plan-risk td{background:#fdecec}
+  .sig-buy{color:var(--green-dk);font-weight:700}.sig-sell{color:var(--red);font-weight:700}.sig-wait{color:var(--muted)}
+  .paper-btn{margin-top:10px;background:#fff;color:var(--green-dk);border-color:var(--green)}
+  canvas#tech-canvas{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block}
+  .ind-picker,.tf-picker{margin:8px 0}
+  .ind-grid,.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;margin-top:8px}
+  .ind-grid label,.tf-grid label{font-weight:400;font-size:.85rem;display:flex;align-items:center;gap:6px;margin:0}
+  .ind-grid input,.tf-grid input{width:auto;min-height:auto}
+  .tf-hint{grid-column:1/-1;font-size:.8rem;color:var(--muted);margin:4px 0 0}
+  details.data-table-wrap,details.ind-picker,details.tf-picker{margin-top:8px}
+  .scr-pick,.wl-pick{background:#fff;color:var(--navy);border:1px solid var(--navy);padding:4px 8px;min-height:auto;font-weight:700;border-radius:6px}
+  .wl-del{background:#fff;color:var(--red);border:1px solid var(--red);min-height:auto;padding:2px 8px;border-radius:6px}
+  .scr-count,.tf-hint{font-size:.85rem}
+  .bt-card h4{margin:0 0 8px;color:var(--navy)}
+  .tipres{border-radius:12px;padding:14px;border:3px solid}
+  .tip-high{border-color:var(--red);background:#fdecec}.tip-medium{border-color:var(--saffron-dk);background:#fff3e0}.tip-low{border-color:var(--green);background:#eaf6ea}
+  .tip-verdict{font-weight:700}.tip-flags{margin:8px 0 0;padding-left:18px}.tip-ev{color:var(--muted);font-size:.82rem}
+  .crisis{background:var(--navy);color:#fff;padding:16px;border-radius:12px;font-weight:700}
+  .cooldown{background:#e8f0ff;border:2px solid var(--navy);border-radius:12px;padding:14px;font-weight:700;margin:10px 0}
+  .insights li{margin:4px 0}
+  footer{padding:20px 16px;color:var(--muted);font-size:.82rem;text-align:center}
+  @media (max-width:520px){.reasons,.votes{grid-template-columns:1fr}html{font-size:16px}.vh-word{font-size:1.4rem}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media (prefers-contrast:more){body{--muted:#333}.card{border-color:#333}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div id="sebi-bar" role="button" tabindex="0" onclick="document.getElementById('sebi-modal').classList.add('show')" onkeydown="if(event.key==='Enter'||event.key===' '){document.getElementById('sebi-modal').classList.add('show')}">⚠️ NOT SEBI REGISTERED · Educational analysis, not advice · Tap for details</div>
+<div id="sebi-modal" onclick="if(event.target.id==='sebi-modal')this.classList.remove('show')">
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="sebi-title">
+    <h3 id="sebi-title">⚠️ Legal Disclaimer</h3>
+    <p><b>NOT SEBI REGISTERED.</b> Chitti Technicals is an <b>educational tool only</b> — <b>not investment advice</b>. Chitti shows what the chart says; it never tells you to buy or sell, and it <b>never places an order</b>.</p>
+    <p><b>Most short-term traders lose money</b> (SEBI studies). Past performance does not guarantee future results. Never invest money you cannot afford to lose. Always consult a SEBI-registered advisor.</p>
+    <button onclick="document.getElementById('sebi-modal').classList.remove('show')">I understand</button>
+  </div>
+</div>
+
+<header class="app">
+  <div class="brand wrap" style="padding-top:0;padding-bottom:0">
+    <span aria-hidden="true" style="font-size:1.6rem">📈</span>
+    <h1>Chitti Technicals</h1>
+    <span class="badge">World Class · Zero Excuses</span>
+    <div class="langwrap"><label for="lang-select" class="sr-only">Language</label><select id="lang-select" aria-label="Language"></select></div>
+  </div>
+</header>
+
+<div id="tech-live" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+<main id="main" class="wrap">
+  <p style="color:var(--muted);margin-top:4px">An honest read of any Indian stock — spoken in your language, for everyone. <b>Chitti coaches; it never gambles for you.</b></p>
+
+  <div class="tablist" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-read" aria-selected="true" aria-controls="panel-read">📊 Read a stock</button>
+    <button role="tab" id="tab-screener" aria-selected="false" aria-controls="panel-screener">🔭 Screener</button>
+    <button role="tab" id="tab-watchlist" aria-selected="false" aria-controls="panel-watchlist">👁 Watchlist</button>
+    <button role="tab" id="tab-backtest" aria-selected="false" aria-controls="panel-backtest">📈 Backtest</button>
+    <button role="tab" id="tab-tip" aria-selected="false" aria-controls="panel-tip">🛡️ Check a tip</button>
+    <button role="tab" id="tab-journal" aria-selected="false" aria-controls="panel-journal">📓 Journal</button>
+  </div>
+
+  <!-- READ -->
+  <section id="panel-read" class="panel active" role="tabpanel" aria-labelledby="tab-read">
+    <div class="card">
+      <h3>What shall Chitti read for you?</h3>
+      <div class="controls">
+        <div class="fld"><label for="tech-symbol">Stock (NSE)</label><select id="tech-symbol"></select></div>
+        <div class="fld"><label for="tech-mode">Style</label><select id="tech-mode"></select></div>
+        <div><button id="tech-analyze" type="button">🔎 Read it</button></div>
+        <div><button id="tech-refresh" class="ghost" type="button">🔄 Refresh</button></div>
+      </div>
+      <div id="tf-picker-host"></div>
+      <div id="source-badge"></div>
+    </div>
+    <div id="result-area" style="display:none">
+      <div class="card" data-chitti-response data-chitti-section="Verdict"><h3>Chitti's read</h3><div id="verdict-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3><canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Market mood"><h3>Mood</h3><div id="mood-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Reasons for and against"><h3>Why — for &amp; against</h3><div id="reasons-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Trade plan"><h3>If you were to act — risk first</h3><div id="plan-host"></div></div>
+      <div id="cooldown-host"></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicators detail"><h3>Indicators</h3><div id="indicator-picker-host"></div><div id="indicators-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Support and resistance"><h3>Support &amp; resistance</h3><div id="sr-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Chart pattern"><h3>Chart pattern</h3><div id="patterns-host"></div></div>
+    </div>
+  </section>
+
+  <!-- SCREENER -->
+  <section id="panel-screener" class="panel" role="tabpanel" aria-labelledby="tab-screener" hidden>
+    <div class="card">
+      <h3>🔭 Screener — find setups across the market</h3>
+      <div class="controls">
+        <div class="fld"><label for="scr-verdict">Show</label><select id="scr-verdict"><option value="">All</option><option value="BUY">BUY only</option><option value="SELL">SELL only</option><option value="HOLD">HOLD only</option></select></div>
+        <div class="fld"><label for="scr-tier">Cap tier</label><select id="scr-tier"><option value="">All tiers</option><option>Nifty 50</option><option>Large Cap</option><option>Mid Cap</option><option>Small Cap</option><option>Micro Cap</option></select></div>
+        <div class="fld"><label for="scr-mode">Style</label><select id="scr-mode"></select></div>
+        <div><button id="scr-run" type="button">🔭 Scan</button></div>
+      </div>
+      <div id="screener-host" data-chitti-response data-chitti-section="Screener results"><p>Tap Scan to rank setups. A list is <b>not</b> a buy recommendation — most traders lose.</p></div>
+    </div>
+  </section>
+
+  <!-- WATCHLIST -->
+  <section id="panel-watchlist" class="panel" role="tabpanel" aria-labelledby="tab-watchlist" hidden>
+    <div class="card">
+      <h3>👁 Watchlist &amp; alerts <span style="font-weight:400;color:var(--muted)">— Chitti informs, never acts</span></h3>
+      <div class="controls">
+        <div class="fld"><label for="watch-sym">Add stock</label><select id="watch-sym"></select></div>
+        <div class="fld"><label for="watch-level">Alert me at ₹ (optional)</label><input id="watch-level" type="number" inputmode="decimal" placeholder="e.g. 1300"></div>
+        <div><button id="watch-add" type="button">➕ Add</button></div>
+      </div>
+      <div id="watchlist-host" data-chitti-response data-chitti-section="Watchlist"></div>
+    </div>
+  </section>
+
+  <!-- BACKTEST -->
+  <section id="panel-backtest" class="panel" role="tabpanel" aria-labelledby="tab-backtest" hidden>
+    <div class="card">
+      <h3>📈 Backtest &amp; honesty scorecard</h3>
+      <div class="controls">
+        <div class="fld"><label for="bt-symbol">Stock</label><select id="bt-symbol"></select></div>
+        <div><button id="bt-run" type="button">📈 Run backtest</button></div>
+      </div>
+      <p style="color:var(--muted);font-size:.85rem">Walks history with NO look-ahead, then shows win-rate, profit factor, expectancy and <b>confidence calibration</b> — including whether Chitti is over-confident. DEMO data until live feed lands.</p>
+      <div id="backtest-host" data-chitti-response data-chitti-section="Backtest scorecard"></div>
+    </div>
+  </section>
+
+  <!-- TIP SHIELD -->
+  <section id="panel-tip" class="panel" role="tabpanel" aria-labelledby="tab-tip" hidden>
+    <div class="card">
+      <h3>🛡️ Got a "stock tip" on WhatsApp? Paste it — Chitti checks it for scams.</h3>
+      <label for="tip-input">Paste the message</label>
+      <textarea id="tip-input" rows="4" placeholder="e.g. 'Buy XYZ now, guaranteed double in 2 days, sure-shot, join our VIP telegram'"></textarea>
+      <div style="margin-top:10px"><button id="tip-check" type="button">🛡️ Check this tip</button></div>
+      <div id="tip-host" style="margin-top:12px"></div>
+      <p style="color:var(--muted);font-size:.85rem">Chitti never amplifies a tip and never tells you to buy. If something feels urgent or "guaranteed", it's usually a scam.</p>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section id="panel-journal" class="panel" role="tabpanel" aria-labelledby="tab-journal" hidden>
+    <div class="card" data-chitti-response data-chitti-section="Paper journal">
+      <h3>📓 Your paper journal <span style="font-weight:400;color:var(--muted)">— practice only, no real money</span></h3>
+      <div id="journal-host"></div>
+      <h3 style="margin-top:14px">💡 Honest insights</h3>
+      <div id="insights-host"></div>
+      <div style="margin-top:12px"><button id="journal-forget" class="ghost" type="button">🧽 Chitti forget my journal</button></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  🎖️ World Class Chitti Technicals — Commando Discipline. Zero Excuses.<br>
+  Engine is deterministic; AI only phrases. Chitti never places an order. NOT SEBI REGISTERED — education, not advice.
+</footer>
+
+<script src="chitti_lang.js" defer></script>
+<script src="chitti_technical_engine.js" defer></script>
+<script src="chitti_technical_ai_chart.js" defer></script>
+<script src="chitti_technical_ai_audio.js" defer></script>
+<script src="chitti_technical_ai_tipshield.js" defer></script>
+<script src="chitti_technical_ai_journal.js" defer></script>
+<script src="chitti_technical_ai_data.js" defer></script>
+<script src="chitti_technical_ai_app.js" defer></script>
+<script src="chitti_a11y.js" defer></script>
+<script src="feedback-widget.js" data-page="chitti_technical_ai" defer></script>
+</body>
+</html>
