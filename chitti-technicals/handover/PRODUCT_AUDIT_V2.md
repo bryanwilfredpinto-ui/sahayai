@@ -14,7 +14,7 @@ Columns: Feature · Exists in UI · Works · Live Data · Screenshot · Video ·
 | Feature | Exists UI | Works | Live Data | Screenshot | Video | Test |
 |---|---|---|---|---|---|---|
 | **Chart** (candlesticks + EMA20/50 + S/R + entry/stop/target overlays) | YES | YES | YES (Daily) | `liveurl_read_TCS.png`, `shot_chart.png` | `chitti_technicals_LIVE_url.webm` | `cert_technicals_faces.mjs` → canvas drew 34050 bytes of pixels @362px |
-| **Chart multi-timeframe dropdown** (Monthly/Weekly/Daily/4h/1h/15m/5m/1m switch on the chart) | **NO** | **NO** | — | — | — | — *(chart renders **Daily only**; no chart-level TF switch — see §C gap)* |
+| **Chart multi-timeframe dropdown** (Monthly/Weekly/Daily/4h/1h/15m/5m/1m switch on the chart) | **YES** (added 2026-06-10) | **YES** (7 of 8 TFs redraw) | **YES** — M/W/D/15m/5m live · 4h/1h live-derived from 15min · **1m honestly "not served"** | `charttf_{daily,weekly,4h,5m}.png` | `chitti_technicals_LIVE_url.webm` | `test_chart_tf.mjs` → 9/9: Monthly 13 · Weekly 53 · Daily 247 · 4h(from 15min) 13 · 1h(from 15min) 50 · 15m 200 · 5m 200 bars, each 🟢 LIVE; 1m → "not served by the data feed" |
 | **Screener** (rank setups, tap→read) | YES | YES | YES | `liveurl_screener.png` | `…LIVE_url.webm` | `cert_live_url.mjs` → "SCREENER LIVE" PASS |
 | **Watchlist** (price/day/signal per symbol) | YES | YES | YES | `liveurl_watchlist.png` | `…LIVE_url.webm` | `cert_live_url.mjs` → "WATCHLIST LIVE" PASS |
 | **Backtest** (win/loss, profit factor, expectancy, calibration, Go/No-Go) | YES | YES | YES | `liveurl_backtest.png` | `…LIVE_url.webm` | `cert_live_url.mjs` → "BACKTEST LIVE" PASS |
@@ -69,7 +69,7 @@ Result printed: **39 of 39 indicators produced a value + signal on LIVE data.**
 | Capability | Tickertape / TradingView | Chitti Technicals | At par? |
 |---|---|---|---|
 | Candlestick chart + MAs + key levels | Yes | Yes (Daily, with EMA20/50 + S/R + entry/stop/target) | **Close** |
-| **Chart timeframe switch (M/W/D/4h/1h/15m/5m/1m)** | **Yes** | **No — Daily only on the chart** | **❌ NO — the gap you flagged** |
+| **Chart timeframe switch (M/W/D/4h/1h/15m/5m/1m)** | **Yes** | **Yes** — 7 of 8 live (M/W/D/15m/5m live · 4h/1h derived · 1m not served) | **At par** (1m the only miss) |
 | Technical-rating gauge / scorecard | Yes (TradingView gauge / Tickertape scorecard) | Yes (gauge + vote tally + mood) | At par |
 | Indicator suite | TradingView many; Tickertape ~6 scorecard | **39 indicators**, each tested live | At par / ahead |
 | Screener | Yes | Yes (live) | At par (smaller universe) |
@@ -89,9 +89,9 @@ Result printed: **39 of 39 indicators produced a value + signal on LIVE data.**
 
 ## D. The honest gaps (what is NO / PARTIAL above)
 
-1. **Chart multi-timeframe dropdown** — does NOT exist. The chart canvas always draws Daily. The Timeframe Picker changes which TFs the *signal* uses, not the chart's drawn candles. To match Tickertape/TradingView this needs a chart-level TF selector (M/W/D/15m are available live; 4h/1h/5m/1m are not served by the backend).
-2. **Intraday 4h / 1h / 5m / 1m live data** — backend serves Monthly/Weekly/Daily/15min only. 4h/1h fall back to DEMO (badged 🟡 MIXED).
-3. **Alerts** — informational only (shown in Watchlist); no push/notification.
+1. ~~Chart multi-timeframe dropdown~~ — **BUILT 2026-06-10.** Chart-level TF selector (M/W/D/15m/5m live · 4h/1h live-derived from 15min · 1m honest "not served"). `test_chart_tf.mjs` 9/9.
+2. **1-minute live data** — backend does not serve 1min (or 4h/1h directly); 1m shows "not served by the data feed" honestly. (4h/1h are derived live from 15min.)
+3. **Alerts** — informational only (shown in Watchlist); no push/notification (by design — Chitti never auto-acts).
 4. **Language** — switch works; page section labels not yet translated (substrate chrome + spoken verdict are).
 5. **Real-time streaming, drawing tools** — not built.
 
