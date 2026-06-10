@@ -75,6 +75,11 @@
   .chart-tf-bar label{margin:0}
   .chart-tf-bar select{width:auto;min-width:120px}
   .chart-tf-src{font-size:.78rem;font-weight:700}
+  .chart-ind-pick summary{cursor:pointer;font-weight:700;color:var(--navy);padding:6px 0}
+  #chart-ind-host{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:2px 10px;margin:6px 0;max-width:560px}
+  #chart-ind-host .ob-grp{grid-column:1/-1;font-weight:700;color:var(--muted);font-size:.8rem;margin-top:4px}
+  #chart-ind-host label{font-weight:400;font-size:.84rem;display:flex;align-items:center;gap:6px;margin:0}
+  #chart-ind-host input{width:auto;min-height:auto}
   .ind-picker,.tf-picker{margin:8px 0}
   .ind-grid,.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;margin-top:8px}
   .ind-grid label,.tf-grid label{font-weight:400;font-size:.85rem;display:flex;align-items:center;gap:6px;margin:0}
@@ -170,7 +175,9 @@
     <div id="result-area" style="display:none">
       <div class="card" data-chitti-response data-chitti-section="Verdict"><h3>Chitti's read</h3><div id="verdict-host"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3>
-        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select><span id="chart-tf-src" translate="no" class="chart-tf-src"></span></div>
+        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select>
+          <details class="chart-ind-pick"><summary>📊 Indicators</summary><div id="chart-ind-host"></div></details>
+          <span id="chart-tf-src" translate="no" class="chart-tf-src"></span></div>
         <canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host" translate="no"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host" translate="no"></div></div>

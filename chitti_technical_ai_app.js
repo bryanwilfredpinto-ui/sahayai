@@ -14,7 +14,7 @@
       TS = root.ChittiTipShield, J = root.ChittiTechJournal, CH = root.ChittiTechChart;
   var DEFAULT_INDS = ['Roshan Indicator', 'RSI', 'MACD', 'Stochastic', 'Williams %R', 'Bollinger Bands', 'Supertrend', 'EMA 200', 'ADX', 'VWAP'];
   var ALL_TFS = ['monthly', 'weekly', 'daily', '4h', '1h', '15m'];
-  var state = { symbol: 'RELIANCE', mode: 'longterm', data: null, sig: null, cv: null, inds: DEFAULT_INDS.slice(), tfs: [], watch: [], chartTf: 'daily' };
+  var state = { symbol: 'RELIANCE', mode: 'longterm', data: null, sig: null, cv: null, inds: DEFAULT_INDS.slice(), tfs: [], watch: [], chartTf: 'daily', chartInds: ['EMA 20', 'EMA 50', 'RSI'] };
   var CHART_TFS = [['monthly', 'Monthly'], ['weekly', 'Weekly'], ['daily', 'Daily'], ['4h', '4 Hour'], ['1h', '1 Hour'], ['15m', '15 Min'], ['5m', '5 Min'], ['1m', '1 Min']];
 
   function $(id) { return doc.getElementById(id); }
@@ -75,8 +75,20 @@
   function drawChartCandles(candles, source, tf, note) {
     var cv = $('tech-canvas'); if (!cv || !CH) return;
     if (!candles || !candles.length) { set('chart-tf-src', '<span class="src src-demo">⚠️ ' + (note || (tf + ' not available')) + '</span>'); return; }
-    CH.draw(cv, candles, { symbol: state.symbol + ' · ' + tf, levels: tf === 'daily' ? chartLevels() : [] });
+    state._chartCandles = candles; state._chartSrc = source; state._chartTfNote = note;
+    CH.draw(cv, candles, { symbol: state.symbol + ' · ' + tf, levels: tf === 'daily' ? chartLevels() : [], indicators: state.chartInds });
     set('chart-tf-src', '<span class="src src-' + (source === 'demo' ? 'demo' : 'live') + '">' + (note || (source + ' ' + tf)) + ' · ' + candles.length + ' bars</span>');
+  }
+  function redrawChart() { if (state._chartCandles) drawChartCandles(state._chartCandles, state._chartSrc, state.chartTf, state._chartTfNote); }
+  function populateChartInds() {
+    var host = $('chart-ind-host'); if (!host || !CH) return;
+    if (host.childNodes.length) return; // build once
+    var html = '<div class="ob-grp">On the price</div>' + CH.OVERLAY_KEYS.map(function (k) { var on = state.chartInds.indexOf(k) >= 0; return '<label><input type="checkbox" data-ci="' + k + '"' + (on ? ' checked' : '') + '> ' + k + '</label>'; }).join('') +
+      '<div class="ob-grp">Separate pane</div>' + CH.PANE_KEYS.map(function (k) { var on = state.chartInds.indexOf(k) >= 0; return '<label><input type="checkbox" data-ci="' + k + '"' + (on ? ' checked' : '') + '> ' + k + '</label>'; }).join('');
+    host.innerHTML = html;
+    Array.prototype.forEach.call(host.querySelectorAll('input[data-ci]'), function (cb) {
+      cb.onchange = function () { var k = cb.getAttribute('data-ci'); if (cb.checked) { if (state.chartInds.indexOf(k) < 0) state.chartInds.push(k); } else state.chartInds = state.chartInds.filter(function (x) { return x !== k; }); redrawChart(); };
+    });
   }
   function drawChartTf(tf) {
     state.chartTf = tf; var sel = $('chart-tf'); if (sel && sel.value !== tf) sel.value = tf;
@@ -94,7 +106,7 @@
     if (!sel.options.length) { sel.innerHTML = CHART_TFS.map(function (t) { return '<option value="' + t[0] + '">' + t[1] + '</option>'; }).join(''); sel.onchange = function () { drawChartTf(sel.value); }; }
     sel.value = 'daily';
   }
-  function renderChart() { populateChartTf(); drawChartTf('daily'); }
+  function renderChart() { populateChartTf(); populateChartInds(); drawChartTf('daily'); }
   function renderIndicatorPicker() {
     if (!T.INDICATOR_NAMES) return;
     var html = '<details class="ind-picker"><summary>⚙️ Choose indicators (' + state.inds.length + ' of ' + T.INDICATOR_NAMES.length + ')</summary><div class="ind-grid">' +
