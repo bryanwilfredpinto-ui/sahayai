@@ -40,20 +40,28 @@
 
 ---
 
-## Test commands
+## Test commands (all green except Sire-blocked BO12)
 ```
-BO6/8/9 (deterministic core)  node tools/test_technicals.cjs     # ✅ 58/58 PASS (2026-06-10)
-BO1–5,7,10 (browser/a11y)     node tools/cert_chitti_technical_ai.mjs   # Playwright — TODO
-BO11 (5-device + axe)         node tools/cert_chitti_technical_ai.mjs   # full + screenshots — TODO
+BO6/8/9   node tools/test_technicals.cjs        # ✅ 58/58
+BO1-9     node tools/cert_chitti_technical_ai.mjs # ✅ 30/30 (axe 0 serious, 5-device screenshots)
+faces     node tools/cert_technicals_faces.mjs   # ✅ 21/21 (chart·screener·watchlist·backtest·pickers·lang)
+indicators node tools/test_indicators.cjs        # ✅ 39/39 on LIVE data
+chart TF  node tools/test_chart_tf.mjs           # ✅ 9/9 (M/W/D/4h/1h/15m/5m + 1m honest)
+onboarding node tools/test_onboarding.mjs        # ✅ 9/9
+BO5/10/11 node tools/cert_bo_complete.mjs        # ✅ 21/21 (Chromium+Firefox+WebKit · offline · 26-lang)
+LIVE      node tools/cert_live_url.mjs           # ✅ 10/10 on https://sahayai.in/chitti_technical_ai.html
 ```
 
-## Honest status (2026-06-10)
-- 🟢 **BO6 / BO7 / BO8 / BO9 — code-complete + deterministic-tested: `tools/test_technicals.cjs` = 58/58 PASS.** Engine wired (`generateSignal`+`chittiVerdict`; Camarilla/Classic/S-R all present), 4-channel verdict surface (gauge + vote tally + mood + pros/cons + "most traders lose" rail), Tip Shield (scam→HIGH, benign→LOW, never says buy), paper journal + crisis→Tele-MANAS 14416 + loss-spiral. New modules: `chitti_technical_ai_{audio,tipshield,journal,data,app}.js` — all pass `node --check`.
-- 🟡 **BO1–5 / BO10 — built, browser-cert pending.** `chitti_technical_ai.html` ships skip-link, single h1, `role=tab`, `aria-live`, 4-channel verdict (icon+shape ▲▲/▲/■/▼/▼▼), audio sonify + data-table, ISL hook, `#lang-select`, per-response `data-chitti-response` boxes, SEBI sticky bar. Not yet axe-cert'd / 5-device-screenshot'd / 26-lang-verified.
-- 🔵 **BO11 — cert not run** (needs Playwright on 5 devices).
-- 🔵 **BO12 — BLOCKED (Sire):** DeepSeek funding + Vaani `technical` allowlist + live Angel One keys. Until then the page runs on the engine's honest DEMO synthesizer (clearly badged) and live day/week/month via `/api/historical` when the backend is reachable.
+## FINAL status (2026-06-10) — COMPLETE except Sire-blocked BO12
+- 🟢 **BO1–BO9 — DONE.** Skeleton (axe 0 serious) · audio sonify/earcons/data-table · deaf icon+shape+ISL-hook · mute tap+confirm · illiterate icon+audio · engine 58/58 · 4-channel verdict surface (gauge+vote-tally+mood+pros/cons+rail) · Tip Shield · dual paper journal + crisis→Tele-MANAS 14416 + loss-spiral. Proof: `test_technicals` 58/58, `cert_chitti_technical_ai` 30/30, `cert_technicals_faces` 21/21.
+- 🟢 **BO5 — Service worker (offline/2G/rural).** `chitti_technical_ai_sw.js` — page opens with network OFF. `cert_bo_complete` offline gate PASS.
+- 🟢 **BO10 — 26 languages.** All 26 switch (`html[lang]` updates) · per-response widget on every box · **RSI/MACD/NSE stay English** (`translate="no"` on technical hosts). `cert_bo_complete`: 26/26 switch · 26/26 no-Hinglish · 0 crashes.
+- 🟢 **BO11 — cross-engine + WCAG.** **Chromium · Firefox · WebKit** each: verdict + chart + tip-shield + **axe 0 serious/critical** + 0 JS errors (`engine_*.png`); 5-device screenshots via `cert_chitti_technical_ai`.
+- 🟡 **BO12 — live data DONE; DeepSeek + Vaani Sire-blocked.** **Live NSE candles flow** (M/W/D/15m/5m + 4h/1h derived) via `/api/candles` — `cert_live_url` 10/10 on the deployed URL. DeepSeek vernacular phrasing (funding) + Vaani `technical` allowlist remain Sire's keys.
 
-No GREEN claimed before its gate runs — honest stubs over fake demos.
+**EXTRAS shipped beyond the BO:** chart timeframe dropdown (8 TFs, live) · Screener/Watchlist/Backtest faces · onboarding (How-to-use cards + icon legend + persona guided tour) · 39-indicator live test.
+
+**Deployed:** https://sahayai.in/chitti_technical_ai.html. No GREEN claimed before its gate ran.
 
 ---
 > **World Class Chitti Technicals — Commando Discipline. Zero Excuses.**

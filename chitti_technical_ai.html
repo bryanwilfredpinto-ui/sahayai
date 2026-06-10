@@ -170,16 +170,16 @@
     <div id="result-area" style="display:none">
       <div class="card" data-chitti-response data-chitti-section="Verdict"><h3>Chitti's read</h3><div id="verdict-host"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3>
-        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select><span id="chart-tf-src" class="chart-tf-src"></span></div>
+        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select><span id="chart-tf-src" translate="no" class="chart-tf-src"></span></div>
         <canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host" translate="no"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Market mood"><h3>Mood</h3><div id="mood-host"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Reasons for and against"><h3>Why — for &amp; against</h3><div id="reasons-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Trade plan"><h3>If you were to act — risk first</h3><div id="plan-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Trade plan"><h3>If you were to act — risk first</h3><div id="plan-host" translate="no"></div></div>
       <div id="cooldown-host"></div>
-      <div class="card" data-chitti-response data-chitti-section="Indicators detail"><h3>Indicators</h3><div id="indicator-picker-host"></div><div id="indicators-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Support and resistance"><h3>Support &amp; resistance</h3><div id="sr-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicators detail"><h3>Indicators</h3><div id="indicator-picker-host" translate="no"></div><div id="indicators-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Support and resistance"><h3>Support &amp; resistance</h3><div id="sr-host" translate="no"></div></div>
       <div class="card" data-chitti-response data-chitti-section="Chart pattern"><h3>Chart pattern</h3><div id="patterns-host"></div></div>
     </div>
   </section>
@@ -194,7 +194,7 @@
         <div class="fld"><label for="scr-mode">Style</label><select id="scr-mode"></select></div>
         <div><button id="scr-run" type="button">🔭 Scan</button></div>
       </div>
-      <div id="screener-host" data-chitti-response data-chitti-section="Screener results"><p>Tap Scan to rank setups. A list is <b>not</b> a buy recommendation — most traders lose.</p></div>
+      <div id="screener-host" translate="no" data-chitti-response data-chitti-section="Screener results"><p>Tap Scan to rank setups. A list is <b>not</b> a buy recommendation — most traders lose.</p></div>
     </div>
   </section>
 
@@ -207,7 +207,7 @@
         <div class="fld"><label for="watch-level">Alert me at ₹ (optional)</label><input id="watch-level" type="number" inputmode="decimal" placeholder="e.g. 1300"></div>
         <div><button id="watch-add" type="button">➕ Add</button></div>
       </div>
-      <div id="watchlist-host" data-chitti-response data-chitti-section="Watchlist"></div>
+      <div id="watchlist-host" translate="no" data-chitti-response data-chitti-section="Watchlist"></div>
     </div>
   </section>
 
@@ -220,7 +220,7 @@
         <div><button id="bt-run" type="button">📈 Run backtest</button></div>
       </div>
       <p style="color:var(--muted);font-size:.85rem">Walks history with NO look-ahead, then shows win-rate, profit factor, expectancy and <b>confidence calibration</b> — including whether Chitti is over-confident. DEMO data until live feed lands.</p>
-      <div id="backtest-host" data-chitti-response data-chitti-section="Backtest scorecard"></div>
+      <div id="backtest-host" translate="no" data-chitti-response data-chitti-section="Backtest scorecard"></div>
     </div>
   </section>
 
@@ -264,5 +264,9 @@
 <script src="chitti_technical_ai_onboarding.js" defer></script>
 <script src="chitti_a11y.js" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical_ai" defer></script>
+<script>
+// BO5 — register the service worker so the app opens offline / on 2G (rural). Honest no-op if unsupported.
+if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('chitti_technical_ai_sw.js').catch(function () {}); }); }
+</script>
 </body>
 </html>
