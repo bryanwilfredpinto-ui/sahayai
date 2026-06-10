@@ -135,19 +135,26 @@
   function runScreener() {
     var verdict = $('scr-verdict') ? $('scr-verdict').value : '';
     var tier = $('scr-tier') ? $('scr-tier').value : '';
-    var mode = $('scr-mode') ? $('scr-mode').value : 'swing';
-    var filters = {}; if (verdict) filters.verdict = verdict; if (tier) filters.tiers = [tier];
-    set('screener-host', '<p class="loading">Scanning the universe …</p>');
-    setTimeout(function () {
-      var rows = T.screen(filters, mode, T.UNIVERSE, 24).slice(0, 20);
+    var universe = T.UNIVERSE.filter(function (s) { return !tier || s.tier === tier; }).slice(0, 12); // cap for live perf
+    set('screener-host', '<p class="loading">Scanning ' + universe.length + ' stocks with LIVE NSE data … (a few seconds)</p>');
+    Promise.all(universe.map(function (stock) {
+      return D.getDaily(stock.sym, 200).then(function (d) {
+        var v = T.tfVerdict(d.candles); var rosh = (v.indicators && v.indicators['Roshan Indicator']) ? v.indicators['Roshan Indicator'].signal : null;
+        return { stock: stock, verdict: v.verdict, trend: v.trend, conf: Math.round(Math.min(1, Math.abs(v.lean) + v.strength) * 100), roshan: rosh, source: d.source };
+      }).catch(function () { return null; });
+    })).then(function (rows) {
+      rows = rows.filter(Boolean);
+      if (verdict) rows = rows.filter(function (r) { return r.verdict === verdict; });
+      rows.sort(function (a, b) { return b.conf - a.conf; });
+      var liveN = rows.filter(function (r) { return r.source === 'live'; }).length;
       var body = rows.map(function (r) {
         var g = r.verdict === 'BUY' ? '▲' : r.verdict === 'SELL' ? '▼' : '■';
-        return '<tr><td><button type="button" class="scr-pick" data-sym="' + r.stock.sym + '">' + r.stock.sym + '</button></td><td>' + r.stock.tier + '</td><td class="sig-' + r.verdict.toLowerCase() + '">' + g + ' ' + r.verdict + '</td><td>' + r.confidence + '</td><td>' + (r.score != null ? r.score : '') + '</td><td>' + (r.roshan || '') + '</td></tr>';
+        return '<tr><td><button type="button" class="scr-pick" data-sym="' + r.stock.sym + '">' + r.stock.sym + '</button></td><td>' + r.stock.tier + '</td><td class="sig-' + r.verdict.toLowerCase() + '">' + g + ' ' + r.verdict + '</td><td>' + r.conf + '</td><td>' + r.trend + '</td><td>' + (r.source === 'live' ? '🟢' : '🟠') + '</td></tr>';
       }).join('');
-      set('screener-host', '<p class="scr-count">' + rows.length + ' setups (DEMO universe). Tap a stock to read it. <b>Not a buy list</b> — most traders lose.</p><table class="scr-table"><thead><tr><th>Stock</th><th>Tier</th><th>Read</th><th>Conf</th><th>Score</th><th>Roshan</th></tr></thead><tbody>' + (body || '<tr><td colspan="6">No setups match.</td></tr>') + '</tbody></table>');
+      set('screener-host', '<p class="scr-count"><span class="src src-' + (liveN === rows.length ? 'live' : liveN ? 'mixed' : 'demo') + '">' + liveN + '/' + rows.length + ' LIVE</span> setups, ranked by alignment. Tap a stock to read it. <b>Not a buy list</b> — most traders lose.</p><table class="scr-table"><thead><tr><th>Stock</th><th>Tier</th><th>Read</th><th>Conf</th><th>Trend</th><th>Data</th></tr></thead><tbody>' + (body || '<tr><td colspan="6">No setups match.</td></tr>') + '</tbody></table>');
       Array.prototype.forEach.call(doc.querySelectorAll('.scr-pick'), function (b) { b.onclick = function () { state.symbol = b.getAttribute('data-sym'); var ss = $('tech-symbol'); if (ss) ss.value = state.symbol; selectTab('tab-read'); analyze(); }; });
-      live(rows.length + ' setups found in the screener.');
-    }, 20);
+      live(rows.length + ' setups scanned with live data.');
+    });
   }
 
   // ───────── WATCHLIST + ALERTS (TechEngine.evaluateWatch) ─────────
@@ -156,27 +163,31 @@
   function addWatch() { var sym = $('watch-sym') ? $('watch-sym').value : ''; var lvl = $('watch-level') ? parseFloat($('watch-level').value) : null; if (!sym) return; if (!state.watch.some(function (w) { return w.sym === sym; })) state.watch.push({ sym: sym, level: isFinite(lvl) ? lvl : null, dir: 'above' }); saveWatch(); renderWatchlist(); }
   function renderWatchlist() {
     if (!state.watch.length) { set('watchlist-host', '<p>No stocks watched yet. Add one above. Alerts inform you — Chitti never acts on its own.</p>'); return; }
-    var rows = state.watch.map(function (w) {
-      var byTf = T.genAllTf(w.sym);
-      var r = T.evaluateWatch(w, byTf, {});
-      var g = r.signal === 'BUY' ? '▲' : r.signal === 'SELL' ? '▼' : '■';
-      var al = (r.alerts || []).map(function (a) { return a.type === 'signal' ? (a.dir + ' signal') : a.type === 'level' ? ('crossed ' + a.dir + ' ' + a.level) : a.type === 'pattern' ? a.name : a.type; }).join(', ');
-      return '<tr><td><button type="button" class="wl-pick" data-sym="' + w.sym + '">' + w.sym + '</button></td><td>₹' + (r.price != null ? r.price : '—') + '</td><td>' + r.dayChangePct + '%</td><td class="sig-' + r.signal.toLowerCase() + '">' + g + ' ' + r.signal + ' (' + r.confidence + ')</td><td>' + (al || '—') + '</td><td><button type="button" class="wl-del" data-sym="' + w.sym + '">✕</button></td></tr>';
-    }).join('');
-    set('watchlist-host', '<table class="wl-table"><thead><tr><th>Stock</th><th>Price</th><th>Day</th><th>Signal</th><th>Alerts</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>');
-    Array.prototype.forEach.call(doc.querySelectorAll('.wl-pick'), function (b) { b.onclick = function () { state.symbol = b.getAttribute('data-sym'); var ss = $('tech-symbol'); if (ss) ss.value = state.symbol; selectTab('tab-read'); analyze(); }; });
-    Array.prototype.forEach.call(doc.querySelectorAll('.wl-del'), function (b) { b.onclick = function () { var s = b.getAttribute('data-sym'); state.watch = state.watch.filter(function (w) { return w.sym !== s; }); saveWatch(); renderWatchlist(); }; });
+    set('watchlist-host', '<p class="loading">Fetching LIVE prices …</p>');
+    Promise.all(state.watch.map(function (w) {
+      return D.getCandles(w.sym, ['monthly', 'weekly', 'daily']).then(function (d) { return { w: w, r: T.evaluateWatch(w, d.byTf, {}), source: d.source }; }).catch(function () { return { w: w, r: T.evaluateWatch(w, T.genAllTf(w.sym), {}), source: 'demo' }; });
+    })).then(function (list) {
+      var liveN = list.filter(function (x) { return x.source === 'live'; }).length;
+      var rows = list.map(function (x) {
+        var w = x.w, r = x.r, g = r.signal === 'BUY' ? '▲' : r.signal === 'SELL' ? '▼' : '■';
+        var al = (r.alerts || []).map(function (a) { return a.type === 'signal' ? (a.dir + ' signal') : a.type === 'level' ? ('crossed ' + a.dir + ' ' + a.level) : a.type === 'pattern' ? a.name : a.type; }).join(', ');
+        return '<tr><td><button type="button" class="wl-pick" data-sym="' + w.sym + '">' + w.sym + '</button></td><td>₹' + (r.price != null ? r.price : '—') + ' ' + (x.source === 'live' ? '🟢' : '🟠') + '</td><td>' + r.dayChangePct + '%</td><td class="sig-' + r.signal.toLowerCase() + '">' + g + ' ' + r.signal + ' (' + r.confidence + ')</td><td>' + (al || '—') + '</td><td><button type="button" class="wl-del" data-sym="' + w.sym + '">✕</button></td></tr>';
+      }).join('');
+      set('watchlist-host', '<p class="scr-count"><span class="src src-' + (liveN === list.length ? 'live' : liveN ? 'mixed' : 'demo') + '">' + liveN + '/' + list.length + ' LIVE</span></p><table class="wl-table"><thead><tr><th>Stock</th><th>Price</th><th>Day</th><th>Signal</th><th>Alerts</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>');
+      Array.prototype.forEach.call(doc.querySelectorAll('.wl-pick'), function (b) { b.onclick = function () { state.symbol = b.getAttribute('data-sym'); var ss = $('tech-symbol'); if (ss) ss.value = state.symbol; selectTab('tab-read'); analyze(); }; });
+      Array.prototype.forEach.call(doc.querySelectorAll('.wl-del'), function (b) { b.onclick = function () { var s = b.getAttribute('data-sym'); state.watch = state.watch.filter(function (w) { return w.sym !== s; }); saveWatch(); renderWatchlist(); }; });
+    });
   }
 
   // ───────── BACKTEST / SCORECARD (TechEngine.backtest + scorecard + calibration) ─────────
   function runBacktest() {
     var sym = $('bt-symbol') ? $('bt-symbol').value : state.symbol;
-    set('backtest-host', '<p class="loading">Walking history (no look-ahead) …</p>');
-    setTimeout(function () {
-      var daily = T.genCandles(sym, 'daily', 320);
+    set('backtest-host', '<p class="loading">Fetching LIVE history, then walking it (no look-ahead) …</p>');
+    D.getDaily(sym, 320).then(function (dd) {
+      var daily = dd.candles, srcBadge = dd.source === 'live' ? '🟢 LIVE NSE' : '🟠 DEMO data';
       var results = T.backtest(daily, { lookahead: 40, start: 60 });
       var sc = T.scorecard(results), cal = T.calibration(results);
-      set('backtest-host', '<div class="bt-card"><h4>' + sym + " — deterministic backtest <span class='src src-demo'>DEMO data</span></h4>" +
+      set('backtest-host', '<div class="bt-card"><h4>' + sym + ' — deterministic backtest <span class="src src-' + (dd.source === 'live' ? 'live' : 'demo') + '">' + srcBadge + '</span></h4>' +
         '<table class="bt-table"><tbody>' +
         '<tr><th>Resolved trades</th><td>' + sc.sample + '</td></tr>' +
         '<tr><th>Win rate</th><td>' + sc.winRate + '%</td></tr>' +
@@ -188,7 +199,7 @@
         '</tbody></table>' +
         '<p class="tech-rail">⚠️ Backtest on DEMO data, no costs of emotion. <b>Past performance does not predict the future. Most short-term traders lose money.</b> Not advice. NOT SEBI REGISTERED.</p></div>');
       speak(sym + ' backtest: win rate ' + sc.winRate + ' percent over ' + sc.sample + ' trades. ' + sc.goNoGo + '. Remember, past performance does not predict the future.');
-    }, 20);
+    });
   }
 
   // ───────── TIP SHIELD ─────────
