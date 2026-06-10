@@ -32,8 +32,11 @@
     if (!spec || typeof fetch === 'undefined') return Promise.resolve(null);
     var url = apiBase() + '/api/historical?symbol=' + encodeURIComponent(nseSym(symbol)) +
       '&days=' + spec.days + '&interval=' + spec.interval;
-    return fetch(url, { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : null; })
+    // 6s hard timeout — a slow/hanging backend must NEVER freeze the read; fall back to DEMO
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 6000) : null;
+    return fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { if (to) clearTimeout(to); return r.ok ? r.json() : null; })
       .then(function (j) {
         var arr = Array.isArray(j) ? j : (j && Array.isArray(j.candles) ? j.candles : null);
         if (!arr || arr.length < 30) return null;
@@ -41,7 +44,7 @@
           return { date: c.date || c.t || null, open: +c.open, high: +c.high, low: +c.low, close: +c.close, volume: +(c.volume || 0) };
         }).filter(function (c) { return isFinite(c.close) && c.close > 0; });
       })
-      .catch(function () { return null; });
+      .catch(function () { if (to) clearTimeout(to); return null; });
   }
 
   function demoTf(symbol, tf) {
