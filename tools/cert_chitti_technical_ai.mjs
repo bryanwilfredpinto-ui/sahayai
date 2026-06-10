@@ -61,7 +61,7 @@ const run = async () => {
   ok('skip link', await page.locator('a.skip').count() === 1);
   ok('single <h1>', await page.locator('h1').count() === 1);
   ok('role=main', await page.locator('main#main').count() === 1);
-  ok('3 tabs', await page.locator('[role=tab]').count() === 3);
+  ok('6 tabs (read/screener/watchlist/backtest/tip/journal)', await page.locator('[role=tab]').count() === 6);
   ok('SEBI sticky bar present', await page.locator('#sebi-bar').count() === 1);
   ok('aria-live region', await page.locator('#tech-live[aria-live=polite]').count() === 1);
   ok('language #lang-select present', await page.locator('#lang-select').count() === 1);

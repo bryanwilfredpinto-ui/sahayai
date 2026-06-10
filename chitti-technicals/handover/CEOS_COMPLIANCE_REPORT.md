@@ -6,7 +6,26 @@
 
 ---
 
-## TL;DR — the honest shape of v1
+## ⬆️ UPDATE 2026-06-10 PM — the missing faces are now BUILT + certified
+
+After the honest audit, the engine's hidden capabilities were surfaced as real UI. **`node tools/cert_technicals_faces.mjs` = 21/21 PASS** (axe 0 serious, 0 JS crashes), screenshots in `tools/cert_screenshots/face_*.png`:
+
+| Now built | Evidence |
+|---|---|
+| **Candlestick Chart** (canvas, EMA20/50 + S/R + entry/stop/target overlays, role=img) | chart drew 34 KB pixels @362px (`face_read.png`) |
+| **Indicator picker** (all 39, filters the table) | cert: "indicator picker filters table" ✓ |
+| **Timeframe picker** (raw TF override) | cert ✓ |
+| **Refresh button** | cert ✓ (re-renders) |
+| **Screener tab** (rank setups, tap→read) | `face_screener.png`, `.scr-table` rows ✓ |
+| **Watchlist + Alerts tab** | `face_watchlist.png`, signal + alerts ✓ |
+| **Backtest + Scorecard + Calibration tab** | `face_backtest.png` (win-rate, profit factor, **ECE calibration**, Go/No-Go) ✓ |
+| **26-language switch** | `#lang-select` 26 opts; en→hi→ta sets `html[lang]` ✓ (`face_language_tamil.png`) |
+
+**Still genuinely missing (Sire/backend-blocked):** live data (`/api/historical` **404**) · DeepSeek vernacular coach · Vaani routing · full bespoke-string 26-lang *content* render (switch works; my page strings aren't `data-vai-i18n` tagged yet) · ISL animation (hook only). The §8/§9/§10 below are the *pre-update* honest baseline; this banner supersedes the "no UI" rows for the 8 items above.
+
+---
+
+## TL;DR — the honest shape of v1 (pre-update baseline)
 
 The v1 page is an **accessibility-first READ + Tip Shield + paper journal**. It does **not** yet surface several things the engine *already computes* and the founder CEOS PDF describes. The biggest real gap: **live data is down** — the backend `/api/historical` returns **HTTP 404** (probed 2026-06-10), so the page runs on the engine's honest DEMO data today.
 
