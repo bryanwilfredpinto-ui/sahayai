@@ -146,48 +146,48 @@
 <div id="tech-live" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
 <main id="main" class="wrap">
-  <p style="color:var(--muted);margin-top:4px">An honest read of any Indian stock — spoken in your language, for everyone. <b>Chitti coaches; it never gambles for you.</b></p>
-  <div style="margin:8px 0"><button type="button" id="ob-open" class="ghost">🎓 How to use Chitti Technical</button></div>
+  <p style="color:var(--muted);margin-top:4px"><span data-i18n="intro">An honest read of any Indian stock — spoken in your language, for everyone.</span> <b>Chitti coaches; it never gambles for you.</b></p>
+  <div style="margin:8px 0"><button type="button" id="ob-open" class="ghost">🎓 <span data-i18n="btn_howto">How to use Chitti Technical</span></button></div>
   <div id="onboarding-host"></div>
 
   <div class="tablist" role="tablist" aria-label="Sections">
-    <button role="tab" id="tab-read" aria-selected="true" aria-controls="panel-read">📊 Read a stock</button>
-    <button role="tab" id="tab-screener" aria-selected="false" aria-controls="panel-screener">🔭 Screener</button>
-    <button role="tab" id="tab-watchlist" aria-selected="false" aria-controls="panel-watchlist">👁 Watchlist</button>
-    <button role="tab" id="tab-backtest" aria-selected="false" aria-controls="panel-backtest">📈 Backtest</button>
-    <button role="tab" id="tab-tip" aria-selected="false" aria-controls="panel-tip">🛡️ Check a tip</button>
-    <button role="tab" id="tab-journal" aria-selected="false" aria-controls="panel-journal">📓 Journal</button>
+    <button role="tab" id="tab-read" aria-selected="true" aria-controls="panel-read">📊 <span data-i18n="tab_read">Read a stock</span></button>
+    <button role="tab" id="tab-screener" aria-selected="false" aria-controls="panel-screener">🔭 <span data-i18n="tab_screener">Screener</span></button>
+    <button role="tab" id="tab-watchlist" aria-selected="false" aria-controls="panel-watchlist">👁 <span data-i18n="tab_watchlist">Watchlist</span></button>
+    <button role="tab" id="tab-backtest" aria-selected="false" aria-controls="panel-backtest">📈 <span data-i18n="tab_backtest">Backtest</span></button>
+    <button role="tab" id="tab-tip" aria-selected="false" aria-controls="panel-tip">🛡️ <span data-i18n="tab_tip">Check a tip</span></button>
+    <button role="tab" id="tab-journal" aria-selected="false" aria-controls="panel-journal">📓 <span data-i18n="tab_journal">Journal</span></button>
   </div>
 
   <!-- READ -->
   <section id="panel-read" class="panel active" role="tabpanel" aria-labelledby="tab-read">
     <div class="card">
-      <h3>What shall Chitti read for you?</h3>
+      <h3 data-i18n="h_ask">What shall Chitti read for you?</h3>
       <div class="controls">
-        <div class="fld"><label for="tech-symbol">Stock (NSE)</label><select id="tech-symbol"></select></div>
-        <div class="fld"><label for="tech-mode">Style</label><select id="tech-mode"></select></div>
-        <div><button id="tech-analyze" type="button">🔎 Read it</button></div>
-        <div><button id="tech-refresh" class="ghost" type="button">🔄 Refresh</button></div>
+        <div class="fld"><label for="tech-symbol" data-i18n="lbl_stock">Stock (NSE)</label><select id="tech-symbol"></select></div>
+        <div class="fld"><label for="tech-mode" data-i18n="lbl_style">Style</label><select id="tech-mode"></select></div>
+        <div><button id="tech-analyze" type="button">🔎 <span data-i18n="btn_readit">Read it</span></button></div>
+        <div><button id="tech-refresh" class="ghost" type="button">🔄 <span data-i18n="btn_refresh">Refresh</span></button></div>
       </div>
       <div id="tf-picker-host"></div>
       <div id="source-badge"></div>
     </div>
     <div id="result-area" style="display:none">
-      <div class="card" data-chitti-response data-chitti-section="Verdict"><h3>Chitti's read</h3><div id="verdict-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Price chart"><h3>Price chart</h3>
-        <div class="chart-tf-bar"><label for="chart-tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select>
+      <div class="card" data-chitti-response data-chitti-section="Verdict"><h3 data-i18n="h_chitti_read">Chitti's read</h3><div id="verdict-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Price chart"><h3 data-i18n="h_chart">Price chart</h3>
+        <div class="chart-tf-bar"><label for="chart-tf" data-i18n="lbl_tf">Timeframe</label><select id="chart-tf" aria-label="Chart timeframe"></select>
           <details class="chart-ind-pick"><summary>📊 Indicators</summary><div id="chart-ind-host"></div></details>
           <span id="chart-tf-src" translate="no" class="chart-tf-src"></span></div>
         <canvas id="tech-canvas" height="240" aria-label="Price chart"></canvas><div id="chart-tools-host" style="margin-top:8px"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3>Technical rating</h3><div id="gauge-host" translate="no"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3>What the indicators say</h3><div id="votes-host" translate="no"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Market mood"><h3>Mood</h3><div id="mood-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Reasons for and against"><h3>Why — for &amp; against</h3><div id="reasons-host"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Trade plan"><h3>If you were to act — risk first</h3><div id="plan-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Technical rating gauge"><h3 data-i18n="h_rating">Technical rating</h3><div id="gauge-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicator vote tally"><h3 data-i18n="h_ind_say">What the indicators say</h3><div id="votes-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Market mood"><h3 data-i18n="h_mood">Mood</h3><div id="mood-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Reasons for and against"><h3 data-i18n="h_why">Why — for &amp; against</h3><div id="reasons-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Trade plan"><h3 data-i18n="h_plan">If you were to act — risk first</h3><div id="plan-host" translate="no"></div></div>
       <div id="cooldown-host"></div>
-      <div class="card" data-chitti-response data-chitti-section="Indicators detail"><h3>Indicators</h3><div id="indicator-picker-host" translate="no"></div><div id="indicators-host" translate="no"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Support and resistance"><h3>Support &amp; resistance</h3><div id="sr-host" translate="no"></div></div>
-      <div class="card" data-chitti-response data-chitti-section="Chart pattern"><h3>Chart pattern</h3><div id="patterns-host"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Indicators detail"><h3 data-i18n="h_indicators">Indicators</h3><div id="indicator-picker-host" translate="no"></div><div id="indicators-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Support and resistance"><h3 data-i18n="h_sr">Support &amp; resistance</h3><div id="sr-host" translate="no"></div></div>
+      <div class="card" data-chitti-response data-chitti-section="Chart pattern"><h3 data-i18n="h_pattern">Chart pattern</h3><div id="patterns-host"></div></div>
     </div>
   </section>
 
@@ -246,9 +246,9 @@
   <!-- JOURNAL -->
   <section id="panel-journal" class="panel" role="tabpanel" aria-labelledby="tab-journal" hidden>
     <div class="card" data-chitti-response data-chitti-section="Paper journal">
-      <h3>📓 Your paper journal <span style="font-weight:400;color:var(--muted)">— practice only, no real money</span></h3>
+      <h3>📓 <span data-i18n="h_journal">Your paper journal</span> <span style="font-weight:400;color:var(--muted)">— practice only, no real money</span></h3>
       <div id="journal-host"></div>
-      <h3 style="margin-top:14px">💡 Honest insights</h3>
+      <h3 style="margin-top:14px">💡 <span data-i18n="h_insights">Honest insights</span></h3>
       <div id="insights-host"></div>
       <div style="margin-top:12px"><button id="journal-forget" class="ghost" type="button">🧽 Chitti forget my journal</button></div>
     </div>
@@ -269,6 +269,7 @@
 <script src="chitti_technical_ai_data.js" defer></script>
 <script src="chitti_technical_ai_app.js" defer></script>
 <script src="chitti_technical_ai_onboarding.js" defer></script>
+<script src="chitti_technical_ai_i18n.js" defer></script>
 <script src="chitti_a11y.js" defer></script>
 <script src="feedback-widget.js" data-page="chitti_technical_ai" defer></script>
 <script>
