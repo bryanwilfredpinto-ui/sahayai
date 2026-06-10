@@ -34,6 +34,12 @@
     return rows[rows.length - 1].signal_id;
   }
 
+  // SOP 8 — reflection vocabulary for Mistake Category + Emotional State (deterministic dropdowns)
+  var MISTAKE_CATEGORIES = ['None — followed the plan', 'No stop-loss', 'Moved/ignored my stop', 'Chased the entry (FOMO)',
+    'Oversized position', 'Revenge trade', 'Ignored the trend / higher timeframe', 'Cut a winner too early',
+    'Held a loser too long', 'No volume confirmation', 'Acted on a tip'];
+  var EMOTIONS = ['Calm / disciplined', 'FOMO', 'Fear', 'Greed', 'Revenge', 'Anxious', 'Overconfident', 'Bored'];
+
   // USER journal — a PAPER trade the user chose to log (never a real order)
   function logPaperTrade(t) {
     var rows = read(TKEY);
@@ -41,12 +47,36 @@
       symbol: t.symbol || '', mode: t.mode || '', side: t.side || t.direction || 'BUY',
       entry: Number(t.entry) || null, quantity: Number(t.quantity) || 0,
       stop: t.stop != null ? Number(t.stop) : null, target: t.target != null ? Number(t.target) : null,
-      exit: null, exit_reason: null, pnl: null, status: 'OPEN', paper: true });
+      exit: null, exit_reason: null, pnl: null, status: 'OPEN', paper: true,
+      // SOP 8 reflection fields (filled on close/reflect)
+      emotion: t.emotion || null, lesson: null, mistake_category: null, improvement: null });
     write(TKEY, rows);
     return rows[rows.length - 1].trade_id;
   }
 
-  function closePaperTrade(trade_id, exit, reason) {
+  // SOP 8 — capture Lesson Learned · Mistake Category · Emotional State · Improvement Action
+  function reflect(trade_id, fields) {
+    fields = fields || {}; var rows = read(TKEY), changed = false;
+    rows.forEach(function (r) {
+      if (r.trade_id === trade_id) {
+        if (fields.lesson != null) r.lesson = String(fields.lesson);
+        if (fields.mistake_category != null) r.mistake_category = String(fields.mistake_category);
+        if (fields.emotion != null) r.emotion = String(fields.emotion);
+        if (fields.improvement != null) r.improvement = String(fields.improvement);
+        r.reflected_at = nowISO(); changed = true;
+      }
+    });
+    if (changed) write(TKEY, rows);
+    return changed;
+  }
+
+  // honest roll-up of the mistakes the user keeps repeating (deterministic, from the reflections)
+  function mistakeSummary() {
+    var counts = {}; read(TKEY).forEach(function (r) { if (r.mistake_category && !/^None/.test(r.mistake_category)) counts[r.mistake_category] = (counts[r.mistake_category] || 0) + 1; });
+    return Object.keys(counts).map(function (k) { return { category: k, count: counts[k] }; }).sort(function (a, b) { return b.count - a.count; });
+  }
+
+  function closePaperTrade(trade_id, exit, reason, reflectFields) {
     var rows = read(TKEY), changed = false;
     rows.forEach(function (r) {
       if (r.trade_id === trade_id && r.status === 'OPEN') {
@@ -54,6 +84,7 @@
         var dir = r.side === 'SELL' ? -1 : 1;
         r.pnl = Math.round((r.exit - r.entry) * dir * (r.quantity || 0));
         r.status = 'CLOSED'; changed = true;
+        if (reflectFields) { var f = reflectFields; if (f.lesson != null) r.lesson = String(f.lesson); if (f.mistake_category != null) r.mistake_category = String(f.mistake_category); if (f.emotion != null) r.emotion = String(f.emotion); if (f.improvement != null) r.improvement = String(f.improvement); r.reflected_at = nowISO(); }
       }
     });
     if (changed) write(TKEY, rows);
@@ -81,6 +112,8 @@
 
   root.ChittiTechJournal = {
     logSignal: logSignal, logPaperTrade: logPaperTrade, closePaperTrade: closePaperTrade,
+    reflect: reflect, mistakeSummary: mistakeSummary,
+    MISTAKE_CATEGORIES: MISTAKE_CATEGORIES, EMOTIONS: EMOTIONS,
     trades: trades, signals: signals, closedTrades: closedTrades,
     insights: insights, lossSpiral: lossSpiral, forget: forget,
     capital: capital, setCapital: setCapital

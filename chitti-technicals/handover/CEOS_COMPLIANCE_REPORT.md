@@ -107,7 +107,19 @@ These all work in `chitti_technical_engine.js` (proven by `test_technicals.cjs`)
 | Refresh button | 🔴 No (bug: badge references it) | — | not in UI |
 | Real device + human AT | 🟡 Sire (Gate 10) | — | reserved |
 
-**Tally:** 🟢 Implemented + tested **≈ 21** · 🟡 Partial **≈ 6** · 🔴 Not in product **≈ 11** (of which 7 are *engine-ready, UI-missing* and 4 are Sire-blocked BO12).
+**Tally:** 🟢 Implemented + tested **≈ 24** · 🟡 Partial **≈ 3** · 🔴 Not in product **≈ 11** (of which 7 are *engine-ready, UI-missing* and 4 are Sire-blocked BO12).
+
+---
+
+## SOP 1 · SOP 5 · SOP 8 — closed gaps (2026-06-10), evidence-backed
+
+| SOP | Requirement | Implementation | Test | UI screenshot | Status |
+|---|---|---|---|---|---|
+| **SOP 1** | Volume = **mandatory** pre-signal validation; absent confirmation **reduces confidence** | `volumeConfirm()` (latest bar vs 20-bar avg) wired into `generateSignal`; **−20%** confidence when not confirmed, **−10%** when unverifiable; exposes `volume`, `volume_confirmed`, `confidence_before_volume` | `test_sop_gaps.cjs` (low-vol 64%→51%; high-vol confirmed, no cut) · `test_sop_ui.mjs` (Volume check shown) | `sop5_views.png` (green "Volume CONFIRMS — 1.46× the 20-bar average") | 🟢 |
+| **SOP 5** | Every verdict shows **Primary View · Alternative View · Invalidation conditions** | `buildViews()` → `out.views {primary, alternative, invalidation}` on **every** signal (BUY/SELL/HOLD); surfaced via `renderViews()` card + spoken narration | `test_sop_gaps.cjs` (all 3 fields × 3 modes + chittiVerdict + spoken) · `test_sop_ui.mjs` (`.view-primary/.view-alt/.view-inval`) | `sop5_views.png` (📌 Primary · 🔄 Alternative · 🛑 What would make this wrong) | 🟢 |
+| **SOP 8** | Journal captures **Lesson Learned · Mistake Category · Emotional State · Improvement Action** | `reflect()` + `closePaperTrade(…, reflectFields)`; `MISTAKE_CATEGORIES` (11) + `EMOTIONS` (8) dropdowns; `mistakeSummary()` aggregates repeats; reflection form in the Journal tab | `test_sop_gaps.cjs` (all 4 stored + reflected_at + summary + close-path) · `test_sop_ui.mjs` (form has 4 fields, persists, displays) | `sop8_reflect_form.png`, `sop8_journal_saved.png` | 🟢 |
+
+**Run-it-yourself:** `node tools/test_sop_gaps.cjs` (31/31) · `node tools/test_sop_ui.mjs` (12/12) · regression `node tools/test_technicals.cjs` (58/58) + `node tools/cert_chitti_technical_ai.mjs` (30/30, axe 0 serious).
 
 ---
 > **World Class Chitti Technicals — Commando Discipline. Zero Excuses.**

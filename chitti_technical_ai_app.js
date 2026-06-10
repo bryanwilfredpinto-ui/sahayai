@@ -55,6 +55,21 @@
 
   function renderReasons() { var rs = (state.cv && state.cv.reasons) || []; var pros = rs.filter(function (r) { return r.ok; }), cons = rs.filter(function (r) { return !r.ok && !r.neutral; }); function li(r) { return '<li>' + (r.ok ? '✓ ' : '✗ ') + r.text + '</li>'; } set('reasons-host', '<div class="reasons"><div class="pros"><h4>✓ For this read</h4><ul>' + (pros.length ? pros.map(li).join('') : '<li>—</li>') + '</ul></div><div class="cons"><h4>✗ Against / watch</h4><ul>' + (cons.length ? cons.map(li).join('') : '<li>—</li>') + '</ul></div></div>'); }
 
+  // SOP 5 — Primary view · Alternative view · Invalidation. SOP 1 — show the volume check + its confidence effect.
+  function renderViews() {
+    var cv = state.cv, s = state.sig; if (!cv || !cv.views) { set('views-host', ''); return; }
+    var vw = cv.views, vol = cv.volume || {};
+    var volCls = vol.confirmed === true ? 'vol-ok' : (vol.confirmed === false ? 'vol-no' : 'vol-na');
+    var volIcon = vol.confirmed === true ? '✅' : (vol.confirmed === false ? '⚠️' : '➖');
+    var cut = (s && s.confidence_before_volume != null && cv.confidence != null && s.confidence_before_volume !== cv.confidence) ? ' <i>(confidence ' + s.confidence_before_volume + '% → ' + cv.confidence + '% on volume)</i>' : '';
+    set('views-host', '<div class="views">' +
+      '<div class="view-row view-primary"><b>📌 Primary view</b><p>' + vw.primary + '</p></div>' +
+      '<div class="view-row view-alt"><b>🔄 Alternative view</b><p>' + vw.alternative + '</p></div>' +
+      '<div class="view-row view-inval"><b>🛑 What would make this view wrong</b><p>' + vw.invalidation + '</p></div>' +
+      '<div class="view-vol ' + volCls + '">' + volIcon + ' <b>Volume check:</b> ' + (vol.note || 'not available') + cut + '</div>' +
+      '</div>');
+  }
+
   function renderPlan() {
     var s = state.sig;
     if (!s.stop_loss || s.signal === 'HOLD') { set('plan-host', '<p class="plan-none">No clean trade plan right now — ' + (s.why || 'wait for alignment') + '. Waiting is a valid decision.</p>'); return; }
@@ -161,7 +176,7 @@
       if (T.hasBannedPhrase && T.hasBannedPhrase(cv.spoken)) cv.spoken = cv.spoken.replace(/[^.]*guarantee[^.]*\./gi, '');
       state.sig = sig; state.cv = cv;
       if (J) J.logSignal(sig);
-      renderVerdict(); renderGauge(); renderVotes(); renderMood(); renderReasons(); renderPlan(); renderDepth(); checkCoolDown();
+      renderVerdict(); renderGauge(); renderVotes(); renderMood(); renderReasons(); renderViews(); renderPlan(); renderDepth(); checkCoolDown();
     });
   }
 
@@ -254,10 +269,37 @@
   }
   function renderJournal() {
     if (!J) return; var trades = J.trades();
-    var rows = trades.slice(-8).reverse().map(function (t) { return '<tr><td>' + t.symbol + '</td><td>' + t.side + '</td><td>₹' + t.entry + '</td><td>' + t.quantity + '</td><td>' + t.status + (t.pnl != null ? ' (₹' + t.pnl + ')' : '') + '</td></tr>'; }).join('');
-    set('journal-host', trades.length ? '<table class="jrnl"><caption class="sr-only">Your paper trades</caption><thead><tr><th>Stock</th><th>Side</th><th>Entry</th><th>Qty</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p>No paper trades yet. Every trade here is practice — no real money, ever.</p>');
-    var ins = J.insights();
-    set('insights-host', ins.length ? '<ul class="insights">' + ins.map(function (i) { return '<li>💡 ' + i + '</li>'; }).join('') + '</ul>' : '<p class="insights-hint">Log 10+ paper trades and Chitti will show honest patterns (over-trading, best/worst setups, revenge-trading).</p>');
+    var rows = trades.slice(-8).reverse().map(function (t) {
+      var reflected = t.lesson || t.mistake_category || t.emotion || t.improvement;
+      var refl = reflected ? '<tr class="jrnl-refl-row"><td colspan="6"><div class="jrnl-refl"><b>🧠 Emotion:</b> ' + (t.emotion || '—') + ' · <b>⚠️ Mistake:</b> ' + (t.mistake_category || '—') + '<br><b>📖 Lesson:</b> ' + (t.lesson || '—') + '<br><b>🎯 Improve:</b> ' + (t.improvement || '—') + '</div></td></tr>' : '';
+      return '<tr><td>' + t.symbol + '</td><td>' + t.side + '</td><td>₹' + t.entry + '</td><td>' + t.quantity + '</td><td>' + t.status + (t.pnl != null ? ' (₹' + t.pnl + ')' : '') + '</td><td><button type="button" class="jrnl-reflect" data-tid="' + t.trade_id + '">📝 ' + (reflected ? 'Edit' : 'Reflect') + '</button></td></tr>' + refl;
+    }).join('');
+    set('journal-host', trades.length ? '<table class="jrnl"><caption class="sr-only">Your paper trades</caption><thead><tr><th>Stock</th><th>Side</th><th>Entry</th><th>Qty</th><th>Status</th><th>SOP 8</th></tr></thead><tbody>' + rows + '</tbody></table><div id="reflect-host"></div>' : '<p>No paper trades yet. Every trade here is practice — no real money, ever.</p>');
+    var jh = $('journal-host'); if (jh) Array.prototype.forEach.call(jh.querySelectorAll('.jrnl-reflect'), function (b) { b.onclick = function () { openReflect(b.getAttribute('data-tid')); }; });
+    var ins = J.insights(), ms = J.mistakeSummary ? J.mistakeSummary() : [];
+    var msHtml = ms.length ? '<p class="insights-hint">🔁 Repeated mistakes: ' + ms.map(function (m) { return m.category + ' ×' + m.count; }).join(' · ') + '</p>' : '';
+    set('insights-host', (ins.length ? '<ul class="insights">' + ins.map(function (i) { return '<li>💡 ' + i + '</li>'; }).join('') + '</ul>' : '<p class="insights-hint">Log 10+ paper trades and Chitti will show honest patterns (over-trading, best/worst setups, revenge-trading).</p>') + msHtml);
+  }
+  // SOP 8 — reflection form: Lesson Learned · Mistake Category · Emotional State · Improvement Action
+  function openReflect(tid) {
+    var t = (J.trades().filter(function (x) { return x.trade_id === tid; })[0]) || {};
+    var mc = (J.MISTAKE_CATEGORIES || []).map(function (m) { return '<option' + (t.mistake_category === m ? ' selected' : '') + '>' + m + '</option>'; }).join('');
+    var em = (J.EMOTIONS || []).map(function (e) { return '<option' + (t.emotion === e ? ' selected' : '') + '>' + e + '</option>'; }).join('');
+    set('reflect-host', '<div class="reflect-form" role="group" aria-label="Reflect on this trade">' +
+      '<h4>📝 Reflect — ' + (t.symbol || '') + ' ' + (t.side || '') + ' (no real money)</h4>' +
+      '<label for="rf-emotion">🧠 Emotional state</label><select id="rf-emotion">' + em + '</select>' +
+      '<label for="rf-mistake">⚠️ Mistake category</label><select id="rf-mistake">' + mc + '</select>' +
+      '<label for="rf-lesson">📖 Lesson learned</label><textarea id="rf-lesson" rows="2">' + (t.lesson || '') + '</textarea>' +
+      '<label for="rf-improve">🎯 Improvement action (what I will do next time)</label><textarea id="rf-improve" rows="2">' + (t.improvement || '') + '</textarea>' +
+      '<button type="button" id="rf-save">✓ Save reflection</button></div>');
+    var sb = $('rf-save'); if (sb) sb.onclick = function () { saveReflect(tid); };
+  }
+  function saveReflect(tid) {
+    if (!J || !J.reflect) return;
+    J.reflect(tid, { emotion: ($('rf-emotion') || {}).value || '', mistake_category: ($('rf-mistake') || {}).value || '', lesson: ($('rf-lesson') || {}).value || '', improvement: ($('rf-improve') || {}).value || '' });
+    set('reflect-host', ''); renderJournal();
+    speak('Reflection saved. Lesson and mistake recorded for this paper trade.');
+    live('Reflection saved.');
   }
   function checkCoolDown() { if (!J) return; var ls = J.lossSpiral(); if (ls.isSpiral) { set('cooldown-host', '<div class="cooldown">🧊 ' + ls.message + '</div>'); speak(ls.message); if (A) A.haptic('WARNING'); } else set('cooldown-host', ''); }
 
@@ -286,6 +328,6 @@
     [['tab-read'], ['tab-screener'], ['tab-watchlist'], ['tab-backtest'], ['tab-tip'], ['tab-journal']].forEach(function (t) { var el = $(t[0]); if (el) el.onclick = function () { selectTab(t[0]); if (t[0] === 'tab-watchlist') renderWatchlist(); }; });
     loadWatch(); renderJournal();
   }
-  root.ChittiTechApp = { init: init, analyze: analyze, runScreener: runScreener, runBacktest: runBacktest, selectTab: selectTab, state: state };
+  root.ChittiTechApp = { init: init, analyze: analyze, runScreener: runScreener, runBacktest: runBacktest, selectTab: selectTab, renderJournal: renderJournal, openReflect: openReflect, state: state };
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', init); else init();
 })(typeof window !== 'undefined' ? window : this, typeof document !== 'undefined' ? document : null);

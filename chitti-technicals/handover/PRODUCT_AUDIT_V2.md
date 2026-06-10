@@ -107,4 +107,21 @@ node tools/cert_technicals_faces.mjs  # chart · screener · watchlist · backte
 Open: `tools/cert_screenshots/liveurl_read_TCS.png`, `liveurl_screener.png`, `liveurl_watchlist.png`, `liveurl_backtest.png`, `chitti_technicals_LIVE_url.webm`.
 
 ---
+
+## SOP 1 · SOP 5 · SOP 8 — founder-spec gaps now closed (evidence only)
+
+| Requirement | Exists in UI | Works | Test | Screenshot |
+|---|---|---|---|---|
+| **SOP 1 — Volume is a mandatory pre-signal check and cuts confidence when absent** | YES (Volume check line on the verdict) | YES — low volume drops confidence (e.g. **64% → 51%**), high volume confirms with no cut | `test_sop_gaps.cjs` 31/31 · `test_sop_ui.mjs` 12/12 | `sop5_views.png` |
+| **SOP 5 — Primary View** | YES | YES | `test_sop_gaps` / `test_sop_ui` (`.view-primary`) | `sop5_views.png` |
+| **SOP 5 — Alternative View** | YES | YES | `test_sop_gaps` / `test_sop_ui` (`.view-alt`) | `sop5_views.png` |
+| **SOP 5 — Invalidation conditions** | YES | YES | `test_sop_gaps` / `test_sop_ui` (`.view-inval`) | `sop5_views.png` |
+| **SOP 8 — Lesson Learned** | YES (journal reflection form) | YES — persists + displays | `test_sop_gaps` / `test_sop_ui` | `sop8_reflect_form.png`, `sop8_journal_saved.png` |
+| **SOP 8 — Mistake Category** | YES (11-option dropdown) | YES | `test_sop_gaps` / `test_sop_ui` | `sop8_reflect_form.png` |
+| **SOP 8 — Emotional State** | YES (8-option dropdown) | YES | `test_sop_gaps` / `test_sop_ui` | `sop8_reflect_form.png` |
+| **SOP 8 — Improvement Action** | YES | YES | `test_sop_gaps` / `test_sop_ui` | `sop8_reflect_form.png` |
+
+Run: `node tools/test_sop_gaps.cjs` · `node tools/test_sop_ui.mjs`. Regression unbroken: `test_technicals.cjs` 58/58 · `cert_chitti_technical_ai.mjs` 30/30 (axe 0 serious).
+
+---
 > **World Class Chitti Technicals — Commando Discipline. Zero Excuses.**

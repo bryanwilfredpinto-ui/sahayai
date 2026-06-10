@@ -104,20 +104,22 @@ A successful user is **not** someone who made profit today. A successful user is
 |---|---|---|
 | Not a tip seller · paper-only · SEBI | Sticky `NOT SEBI REGISTERED` bar + modal; paper journal only; never places an order | 🟢 |
 | Never guarantee (SOP12) | Banned-phrase guard ("guaranteed/sure-shot") + High/Medium/Low confidence bands | 🟢 `test_technicals` |
-| Teach before recommending (Why/Benefits/Risks/Alternatives) | "Why — for & against" pros/cons + risks rail | 🟡 Why/Benefits/Risks ✓; explicit **Alternatives** = better-entry/Wait note (partial) |
+| Teach before recommending (Why/Benefits/Risks/Alternatives) | "Why — for & against" pros/cons + **Primary/Alternative/Invalidation views card** (SOP 5) | 🟢 `test_sop_gaps`/`test_sop_ui` · `sop5_views.png` |
 | Risk first — Entry/SL/Risk%/Position Size/Reward/RRR (SOP2, SOP4) | Trade-plan card shows Entry · Stop · **T1/T2/T3** (with RR + book-action) · Risk-Reward Ratio · **position size (shares, ₹ risk)** — risk shown before reward | 🟢 engine + UI |
-| Pre-signal checks (SOP1) | Confluence engine checks trend · momentum · S/R · indicator confirmation per timeframe | 🟡 Volume confirmation = partial |
+| Pre-signal checks (SOP1) | Confluence checks trend · momentum · S/R · indicators **+ mandatory Volume validation** (absent → −20% confidence) | 🟢 `test_sop_gaps` (64%→51%) · `sop5_views.png` |
 | MTF validation (SOP3) | Mode ladders: Long-Term M→W→D · Swing W→D→4h · Intraday D→4h→1h; conflict lowers confidence | 🟢 |
 | Certification gate (SOP11) | No valid ATR stop → **HOLD / no signal** (risk must compute first) | 🟢 `test_technicals` |
 | Accessibility box (SOP6/7) | `feedback-widget.js` puts 🔊 🤖 👍 👎 ✏️ on every `data-chitti-response` box | 🟢 cert 30/30 |
 | Accessibility-first users | 4-channel verdict (voice·text·icon+shape·ISL), axe 0 serious, offline SW | 🟢 |
 | Scam detection (SOP10, Skill 11) | Tip Shield — paste a tip → scam-pattern check → "Chitti is not telling you to buy" | 🟢 |
 | Psychology protection (SOP9) | Loss-spiral cool-down after consecutive losses + journal insights (overtrading/best-worst) | 🟢 |
-| Journal (SOP8) | Stores entry/exit/reason/outcome | 🟡 "Lesson Learned" capture = partial |
+| Journal (SOP8) | Stores entry/exit/reason/outcome **+ Lesson Learned · Mistake Category · Emotional State · Improvement Action** (reflection form) | 🟢 `test_sop_gaps`/`test_sop_ui` · `sop8_reflect_form.png` |
 | 12 skills / 18 named indicators | 39-indicator engine (all 18 named + Roshan), MTF, S/R, patterns, backtest, education onboarding | 🟢 `test_indicators` 39/39 |
 | In-language coaching (Education/Accessibility) | UI chrome translates (26 langs); technical terms stay English | 🟡 verdict **narration** in-language needs DeepSeek (BO12, Sire-keyed) |
 
-**Open items to fully satisfy this identity:** (1) explicit **Volume** confirmation in the pre-signal check, (2) an **Alternative View** line on every verdict, (3) **Lesson Learned** prompt in the journal, (4) in-language verdict **narration** (DeepSeek). Everything else is live.
+**Closed 2026-06-10:** Volume validation (SOP 1) · Primary/Alternative/Invalidation views (SOP 5) · journal reflection — Lesson/Mistake/Emotion/Improvement (SOP 8). Evidence: `tools/test_sop_gaps.cjs` 31/31, `tools/test_sop_ui.mjs` 12/12, screenshots `sop5_views.png` · `sop8_reflect_form.png` · `sop8_journal_saved.png`.
+
+**Open item:** in-language verdict **narration** (DeepSeek, BO12 — Sire-keyed). Everything else is live.
 
 ---
 > **World Class Chitti Technicals — Commando Discipline. Zero Excuses.**
