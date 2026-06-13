@@ -1453,7 +1453,7 @@
   var API = {
     // indicators
     sma: sma, ema: ema, rsi: rsi, macd: macd, atr: atr, stochastic: stochastic,
-    williamsR: williamsR, bollinger: bollinger, obv: obv, supertrend: supertrend, adx: adx,
+    williamsR: williamsR, bollinger: bollinger, obv: obv, supertrend: supertrend, adx: adx, psar: psar,
     roshan: roshan, indicatorSet: indicatorSet, INDICATOR_NAMES: INDICATOR_NAMES,
     cci: cci, roc: roc, momentum: momentum, mfi: mfi, aroon: aroon, donchian: donchian,
     awesome: awesome, stochRsi: stochRsi, vwapRolling: vwapRolling, keltner: keltner, trix: trix,

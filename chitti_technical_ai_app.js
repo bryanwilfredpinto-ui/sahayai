@@ -176,7 +176,18 @@
       T.INDICATOR_NAMES.map(function (nm) { var on = state.inds.indexOf(nm) >= 0; return '<label><input type="checkbox" data-ind="' + nm + '"' + (on ? ' checked' : '') + '> ' + nm + '</label>'; }).join('') + '</div></details>';
     set('indicator-picker-host', html);
     Array.prototype.forEach.call(doc.querySelectorAll('#indicator-picker-host input[data-ind]'), function (cb) {
-      cb.onchange = function () { var nm = cb.getAttribute('data-ind'); if (cb.checked) { if (state.inds.indexOf(nm) < 0) state.inds.push(nm); } else state.inds = state.inds.filter(function (x) { return x !== nm; }); renderIndicators(); renderIndicatorPicker(); };
+      // Update the table + the summary count in place. Do NOT rebuild the whole
+      // picker — re-setting innerHTML recreates the <details> closed, which on a
+      // phone slams the list shut on every tap (looked like "tap does nothing"
+      // and made the other ~29 indicators unreachable).
+      cb.onchange = function () {
+        var nm = cb.getAttribute('data-ind');
+        if (cb.checked) { if (state.inds.indexOf(nm) < 0) state.inds.push(nm); }
+        else state.inds = state.inds.filter(function (x) { return x !== nm; });
+        renderIndicators();
+        var sum = doc.querySelector('#indicator-picker-host .ind-picker > summary');
+        if (sum) sum.textContent = '⚙️ Choose indicators (' + state.inds.length + ' of ' + T.INDICATOR_NAMES.length + ')';
+      };
     });
   }
   function renderTfPicker() {
