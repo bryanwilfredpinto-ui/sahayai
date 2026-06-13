@@ -226,7 +226,8 @@ def compute_slice(chitti: str, engine, *, window_hours: int = 24,
 
 def render_email_html(slices: list[ChittiDailySlice],
                       prev_slices: list[ChittiDailySlice] | None = None,
-                      defects: list | None = None) -> tuple[str, str]:
+                      defects: list | None = None,
+                      uptime: dict | None = None) -> tuple[str, str]:
     """Return (subject, html_body) for the consolidated daily Chitti Quality
     email — 07:00 IST. Includes the Part 2 horizontal quality table, the
     Part 3 defect-rate table, the Critical/Warning/Healthy panels, and the
@@ -402,6 +403,28 @@ def render_email_html(slices: list[ChittiDailySlice],
       </p>
     </body></html>
     """.strip()
+
+    # ── BCP Layer 1 — self-ping uptime (24h), appended when provided ──────
+    if uptime and uptime.get("by_chitti"):
+        u_rows = []
+        for name, slot in sorted(uptime["by_chitti"].items()):
+            pct = slot.get("uptime_pct")
+            u_rows.append(
+                f"<tr><td><b>{_html(name)}</b></td>"
+                f"<td style='text-align:right'>{slot.get('checks', 0)}</td>"
+                f"<td style='text-align:right'>{slot.get('fails', 0)}</td>"
+                f"<td style='text-align:right'>{'—' if pct is None else f'{pct}%'}</td></tr>"
+            )
+        uptime_html = (
+            f"<h3 style='margin-top:18px'>BCP self-ping uptime · last "
+            f"{uptime.get('window_hours', 24)}h (every {uptime.get('interval_min', '?')} min)</h3>"
+            "<table border='1' cellpadding='6' style='border-collapse:collapse;font-size:13px;width:100%'>"
+            "<thead style='background:#f0f0f0'><tr><th>Chitti</th><th>Checks</th>"
+            "<th>Fails</th><th>Uptime</th></tr></thead>"
+            f"<tbody>{''.join(u_rows)}</tbody></table>"
+        )
+        html = html.replace("</body>", uptime_html + "</body>", 1)
+
     return subject, html
 
 
