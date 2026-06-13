@@ -373,6 +373,17 @@
     return { module: 'nearest', kind: kind, url: RULES.maps_base + q, label: 'Open Maps: ' + what,
       summary: 'Tap to find the nearest ' + what + ' on Maps.', confidence: 'high', risks: ['Opens your maps app — Chitti does not share your location anywhere.'], sources: src() };
   }
+  // Real outbound deep-links (work on any device, no API key) — Buy Now / Find deals /
+  // Watch video / List for sale. Chitti opens them on a tap; it never transacts itself.
+  function links() {
+    return {
+      insurer: function (name) { return 'https://www.google.com/search?q=' + encodeURIComponent('buy ' + (name || '') + ' two wheeler insurance renew online'); },
+      tyreDeals: RULES.maps_base + encodeURIComponent('two wheeler tyre shop near me'),
+      mechanic: RULES.maps_base + encodeURIComponent('2 wheeler mechanic near me'),
+      video: function (q) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent((q || 'two wheeler') + ' two wheeler DIY how to'); },
+      sell: function (make) { return 'https://www.olx.in/items/q-' + encodeURIComponent(make || 'bike'); }
+    };
+  }
   // Real .ics calendar file for a reminder — a working, offline reminder mechanism
   // (no SMS gateway needed). Dates are computed from the vault; user taps to add to their calendar.
   function icsForReminder(title, isoDate) {
@@ -655,7 +666,7 @@
     batteryStatus: batteryStatus,
     fuelEvRoi: fuelEvRoi,
     educationList: educationList, educationSteps: educationSteps,
-    nearestQuery: nearestQuery, icsForReminder: icsForReminder,
+    nearestQuery: nearestQuery, icsForReminder: icsForReminder, links: links,
     obdLookup: obdLookup,
     scamCheck: scamCheck,
     triage: triage,

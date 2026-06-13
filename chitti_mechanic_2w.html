@@ -105,6 +105,11 @@
     <div class="triage-leg" aria-hidden="false">
       <span>🟢 Safe DIY</span><span>🟡 Caution</span><span>🔴 Mechanic only</span>
     </div>
+    <div class="actions">
+      <button class="btn primary" type="button" onclick="mechTour()">▶️ How it works (30-sec tour)</button>
+      <button class="btn" type="button" onclick="mechTab('bike')">🏍️ Start — add my bike</button>
+    </div>
+    <div class="result" id="r-tour" aria-live="polite"></div>
   </section>
 
   <div class="tabs" role="tablist" aria-label="Chitti Mechanic modules">
@@ -186,7 +191,11 @@
       <p class="sub">Pick what is happening. Chitti gives the likely cause, whether it is safe to ride, and whether you can fix it or must see a mechanic. This is a starting point, not a final diagnosis.</p>
       <label class="fl" for="dr-sym">Symptom</label>
       <select class="fs" id="dr-sym" aria-label="Choose a symptom"></select>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechCoach()">🩺 Diagnose</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechCoach()">🩺 Diagnose</button>
+        <button class="btn" type="button" onclick="mechCoachVideo()">▶️ Watch DIY video</button>
+        <button class="btn" type="button" onclick="mechNearest('mechanic')">📍 Find mechanic</button>
+      </div>
       <div class="result" id="r-coach" aria-live="polite"></div>
     </div>
     <div class="card" data-chitti-response="mech-obd" data-chitti-section="OBD code doctor">
@@ -239,7 +248,10 @@
         <button class="chip" id="sl-iv" type="button" aria-pressed="false" onclick="mechToggle('sl-iv')">🛡️ Insurance valid</button>
         <button class="chip" id="sl-pv" type="button" aria-pressed="false" onclick="mechToggle('sl-pv')">🌿 PUC valid</button>
       </div>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechSell()">💰 Suggest price</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechSell()">💰 Suggest price</button>
+        <button class="btn" type="button" onclick="mechListOlx()">📣 List on OLX</button>
+      </div>
       <div class="result" id="r-sell" aria-live="polite"></div>
     </div>
   </section>
@@ -257,7 +269,10 @@
         <div><label class="fl" for="in-idv">Bike value / IDV (₹)</label><input class="fi" id="in-idv" type="number" inputmode="numeric" placeholder="60000"></div>
         <div><label class="fl" for="in-age">Bike age (years)</label><input class="fi" id="in-age" type="number" inputmode="numeric" placeholder="3"></div>
       </div>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechInsure()">🛡️ Compare insurers</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechInsure()">🛡️ Compare insurers</button>
+        <button class="btn" type="button" onclick="mechBuyInsurance()">🛒 Buy / renew now</button>
+      </div>
       <div class="result" id="r-insure" aria-live="polite"></div>
     </div>
   </section>
@@ -282,6 +297,7 @@
       <p class="sub">From your saved odometer + bike type, Chitti lists what is due (km OR months) and the exact oil grade. Always confirm the grade in your owner's manual.</p>
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechService()">🔧 Service &amp; oil plan</button>
+        <button class="btn" type="button" onclick="mechScheduleService()">📅 Schedule service</button>
         <button class="btn" type="button" onclick="mechNearest('service')">📍 Nearest service centre</button>
       </div>
       <div class="result" id="r-service" aria-live="polite"></div>
@@ -298,6 +314,8 @@
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechTyreStatus()">🛞 Are mine worn?</button>
         <button class="btn" type="button" onclick="mechTyreReco()">🔎 Recommend tyres</button>
+        <button class="btn" type="button" onclick="mechTyreDeals()">🛒 Find tyre deals</button>
+        <button class="btn" type="button" onclick="mechLogReplace('tyre')">✅ Log replacement</button>
       </div>
       <div class="result" id="r-tyre" aria-live="polite"></div>
     </div>
@@ -308,7 +326,10 @@
     <div class="card" data-chitti-response="mech-battery" data-chitti-section="Battery intelligence">
       <h2><span aria-hidden="true">🔋</span> How is my battery?</h2>
       <p class="sub">From your saved battery age + bike type, Chitti tells you if it is near end of life. Heat and short trips shorten battery life.</p>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechBattery()">🔋 Check battery</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechBattery()">🔋 Check battery</button>
+        <button class="btn" type="button" onclick="mechLogReplace('battery')">✅ Log replacement</button>
+      </div>
       <div class="result" id="r-battery" aria-live="polite"></div>
     </div>
   </section>
@@ -355,6 +376,7 @@
       <select class="fs" id="ln-mod" aria-label="Choose a guide"></select>
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechLearnSteps()">🎓 Show the steps</button>
+        <button class="btn" type="button" onclick="mechLearnVideo()">▶️ Watch DIY video</button>
         <button class="btn" type="button" onclick="mechLearn()">📋 All guides</button>
       </div>
       <div class="result" id="r-learn" aria-live="polite"></div>
@@ -533,14 +555,55 @@
     host.appendChild(box);
     if(isBlind()) speak(r.summary+' '+r.items.map(function(i){return i.kind+': '+i.msg;}).join('. '));
   };
+  function linkBox(hostId, emoji, label, url, note){
+    var host=$(hostId); host.innerHTML='';
+    var box=document.createElement('div'); box.className='res-box info';
+    box.innerHTML='<div class="res-status"><span aria-hidden="true">'+emoji+'</span> '+label+'</div>';
+    var a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener'; a.textContent='🔗 '+label; a.style.fontWeight='800';
+    box.appendChild(a); if(note){ var p=document.createElement('p'); p.style.fontSize='13px'; p.textContent=note; box.appendChild(p); }
+    host.appendChild(box);
+  }
+  var NEAR_HOST={ puc:'r-puc', service:'r-service', mechanic:'r-coach', tyre:'r-tyre' };
   window.mechNearest=function(kind){
     var r=E().nearestQuery(kind);
-    var host=(kind==='puc')?$('r-puc'):$('r-service'); host.innerHTML='';
-    var box=document.createElement('div'); box.className='res-box info';
-    box.innerHTML='<div class="res-status"><span aria-hidden="true">📍</span> Nearest centre</div>';
-    var a=document.createElement('a'); a.href=r.url; a.target='_blank'; a.rel='noopener'; a.textContent='🗺️ '+r.label; a.style.fontWeight='800';
-    box.appendChild(a); var p=document.createElement('p'); p.style.fontSize='13px'; p.textContent=r.risks[0]; box.appendChild(p);
-    host.appendChild(box);
+    linkBox(NEAR_HOST[kind]||'r-bike','📍',r.label,r.url,r.risks[0]);
+  };
+  window.mechBuyInsurance=function(){
+    var r=E().insuranceCompare({ current:{name:val('in-name'), premium:num('in-prem')}, idv:num('in-idv'), vehicleAgeYears:num('in-age') });
+    var name=(r.best&&r.best.name)||'';
+    linkBox('r-insure','🛒','Buy / renew '+name+' (opens insurer site)', E().links().insurer(name), 'Chitti never buys for you — you complete it on the insurer site (Golden Rule).');
+  };
+  window.mechScheduleService=function(){
+    var v=E().vault.load();
+    var base=v.lastServiceDate? new Date(v.lastServiceDate): new Date();
+    base.setMonth(base.getMonth()+6); var iso=base.toISOString().slice(0,10);
+    icsDownload('Chitti: 2-wheeler service due', iso);
+    render('r-service',{status:'ok',big:'Service reminder added 📅',text:'A calendar reminder for your next service (~'+iso+') has been downloaded. Open it to add to your calendar.',confidence:'high',sources:['Local .ics calendar']});
+  };
+  window.mechTyreDeals=function(){ linkBox('r-tyre','🛒','Find tyre deals near you', E().links().tyreDeals, 'Opens Maps for nearby tyre shops.'); };
+  window.mechLogReplace=function(kind){
+    var v=E().vault.load();
+    if(kind==='tyre'){ v.tyreKm=0; v.tyreYears=0; } else { v.batteryMonths=0; }
+    E().vault.save(v); if(kind==='tyre'){$('bk-tyrekm')&&($('bk-tyrekm').value='');} else {$('bk-batt')&&($('bk-batt').value='');}
+    var host=kind==='tyre'?'r-tyre':'r-battery';
+    render(host,{status:'ok',big:(kind==='tyre'?'Tyre':'Battery')+' replacement logged ✅',text:'Chitti reset the '+kind+' age. Your Vehicle Twin + reminders are updated.',confidence:'high',sources:['Local Vehicle Twin']});
+  };
+  window.mechCoachVideo=function(){
+    var sel=$('dr-sym'); var q=(sel&&sel.options[sel.selectedIndex])?sel.options[sel.selectedIndex].textContent:'two wheeler repair';
+    linkBox('r-coach','▶️','Watch DIY videos: '+q, E().links().video(q), 'Opens YouTube. For safety-critical issues, see a mechanic.');
+  };
+  window.mechLearnVideo=function(){
+    var sel=$('ln-mod'); var q=(sel&&sel.options[sel.selectedIndex])?sel.options[sel.selectedIndex].textContent.replace(/^[🟢🟡🔴]\s*/,''):'two wheeler maintenance';
+    linkBox('r-learn','▶️','Watch DIY video: '+q, E().links().video(q), 'Opens YouTube.');
+  };
+  window.mechListOlx=function(){ var v=E().vault.load(); linkBox('r-sell','📣','List '+(v.make||'my bike')+' on OLX', E().links().sell(v.make||'bike'), 'Opens OLX. Transfer the RC + insurance after sale or you stay liable.'); };
+  window.mechTour=function(){
+    var steps=['1) Add your bike once in My Bike — make, odometer, insurance & PUC dates.',
+      '2) Chitti watches it 24×7 and shows reminders before anything expires.',
+      '3) Bike trouble? Open Doctor — pick the symptom, get a safe-to-ride verdict.',
+      '4) Buying or selling used? Buy/Sell give a fair price + risk flags.',
+      '5) Everything works by voice, in your language, free — tap 🔊 on any card.'];
+    render('r-tour',{status:'info',big:'How Chitti Mechanic works',lines:steps,confidence:'high',sources:['Guided tour'],speak:'How Chitti Mechanic works. '+steps.join(' ')});
   };
 
   window.mechCoach=function(){
@@ -613,6 +676,8 @@
     fillBikeForm(E().vault.load());
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  // Offline support for rural / 3G users (CEOS §33). Honest no-op if unsupported.
+  if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('chitti_mechanic_2w_sw.js').catch(function(){}); }); }
 })();
 </script>
 </body>
