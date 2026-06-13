@@ -43,7 +43,7 @@ Tests = [`../tools/test_car_mechanic.mjs`](../tools/test_car_mechanic.mjs) (T). 
 | 35 | Quality Gates (G0–G10) | [QUALITY_GATES.md](QUALITY_GATES.md) | C |
 | 36 | Quality Metrics | [EVALS.md](EVALS.md) thresholds | T/C |
 | 37 | Product Audit Questionnaire | [CERTIFICATION.md](CERTIFICATION.md) §audit | doc |
-| 38 | Certification Criteria | [CERTIFICATION.md](CERTIFICATION.md) | C 35/35 |
+| 38 | Certification Criteria | [CERTIFICATION.md](CERTIFICATION.md) | C 37/37 |
 | 39 | Deliverables | this folder + 4 root artifacts (engine/page/test/cert) | repo |
 | 40 | Success Metrics | [SUCCESS_METRICS.md](SUCCESS_METRICS.md) | doc |
 | 41 | Risk Disclosure & Legal | P sticky `.disc` bar + footer | C: disclaimer present |

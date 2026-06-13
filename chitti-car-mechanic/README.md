@@ -46,7 +46,7 @@ vernacular family. Free. No sign-up. Works offline. 26 languages.
 ## Reproduce the proof
 ```
 node tools/test_car_mechanic.mjs     # → PASS 79 · FAIL 0
-node tools/cert_car_mechanic.mjs      # → 35/35 GREEN  (writes 5 device screenshots)
+node tools/cert_car_mechanic.mjs      # → 37/37 GREEN  (writes 5 device screenshots)
 ```
 
 ## Honest status (no fake "done")

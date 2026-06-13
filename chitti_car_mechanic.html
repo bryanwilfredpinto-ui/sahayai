@@ -161,6 +161,16 @@
       <div class="actions"><button class="btn primary" type="button" onclick="cmTriage()">⚖️ Check DIY safety</button></div>
       <div id="r-triage" class="result" aria-live="polite"></div>
     </div>
+
+    <div class="card chitti-response" data-chitti-response="cm-edu" data-chitti-section="Learn about my car">
+      <h2><span aria-hidden="true">🎓</span> Understand my car (no jargon)</h2>
+      <p class="sub">Short, plain explanations of every part — engine, brakes, tyres, battery, warning lights — and whether you can touch it safely.</p>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cmEducation()">🎓 Teach me</button>
+        <button class="btn" type="button" onclick="cmNearest('mechanic')">📍 Find a mechanic near me</button>
+      </div>
+      <div id="r-edu" class="result" aria-live="polite"></div>
+    </div>
   </section>
 
   <!-- ── FAIR PRICE / SCAM ── -->
@@ -211,6 +221,13 @@
       <div id="r-buy" class="result" aria-live="polite"></div>
     </div>
 
+    <div class="card chitti-response" data-chitti-response="cm-inspect" data-chitti-section="50-point inspection">
+      <h2><span aria-hidden="true">📋</span> Full 50-point inspection checklist</h2>
+      <p class="sub">Walk the car with Chitti. Each point shows who can check it (you 🟢 or a mechanic 🔧) and whether it's <b>critical</b> (a fail = walk away).</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="cmInspection()">📋 Show the checklist</button></div>
+      <div id="r-inspect" class="result" aria-live="polite"></div>
+    </div>
+
     <div class="card chitti-response" data-chitti-response="cm-sell" data-chitti-section="Sell assistant">
       <h2><span aria-hidden="true">💸</span> Selling your car?</h2>
       <p class="sub">Enter the market value. Chitti gives a listing price, a realistic selling price, and tips to get more.</p>
@@ -255,7 +272,10 @@
       <p class="sub">Enter your PUC expiry date. Chitti tells you if it’s valid and the fine risk if expired.</p>
       <label class="fl" for="p-exp">PUC expiry date</label>
       <input class="fi" id="p-exp" type="date">
-      <div class="actions"><button class="btn primary" type="button" onclick="cmPuc()">🌫️ Check PUC</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cmPuc()">🌫️ Check PUC</button>
+        <button class="btn" type="button" onclick="cmNearest('puc')">📍 Nearest PUC centre</button>
+      </div>
       <div id="r-puc" class="result" aria-live="polite"></div>
     </div>
   </section>
@@ -274,6 +294,7 @@
       <div class="actions">
         <button class="btn primary" type="button" onclick="cmOil()">🛢️ Recommend oil</button>
         <button class="btn" type="button" onclick="cmMechanic()">🔧 Mechanic options</button>
+        <button class="btn" type="button" onclick="cmNearest('service')">📍 Nearest service centre</button>
       </div>
       <div id="r-oil" class="result" aria-live="polite"></div>
     </div>
@@ -336,6 +357,14 @@
       <div class="row">
         <div><label class="fl" for="v-ins">Insurance expiry</label><input class="fi" id="v-ins" type="date"></div>
         <div><label class="fl" for="v-puc">PUC expiry</label><input class="fi" id="v-puc" type="date"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="v-rc">RC valid until</label><input class="fi" id="v-rc" type="date"></div>
+        <div><label class="fl" for="v-warranty">Warranty expiry</label><input class="fi" id="v-warranty" type="date"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="v-emi">Next EMI due</label><input class="fi" id="v-emi" type="date"></div>
+        <div><label class="fl" for="v-batt">Battery installed on</label><input class="fi" id="v-batt" type="date"></div>
       </div>
       <div class="row">
         <div><label class="fl" for="v-oilkm">Last oil change (km)</label><input class="fi" id="v-oilkm" type="number" min="0" inputmode="numeric" placeholder="e.g. 32000"></div>
@@ -475,6 +504,42 @@
       confidence:r.confidence, risks:r.risks, sources:r.sources
     });
   };
+  window.cmInspection = function(){
+    var r = E().inspectionChecklist();
+    var host = $('r-inspect'); if(!host) return;
+    var html = '<div class="res-box info" data-chitti-response="r-inspect-out" data-chitti-section="50-point inspection">';
+    html += '<div class="res-status">📋 '+r.totalPoints+'-point inspection ('+r.criticalPoints+' critical)</div>';
+    r.groups.forEach(function(g){
+      html += '<div style="margin-top:8px"><b>'+esc(g.group)+'</b><ul>';
+      g.items.forEach(function(i){ html += '<li>'+(i.who==='Mechanic'?'🔧 ':i.who==='Read docs'?'📄 ':'🟢 ')+esc(i.p)+(i.critical?' <b>(critical)</b>':'')+'</li>'; });
+      html += '</ul></div>';
+    });
+    html += '<div class="conf">🎯 Confidence: <b>'+r.confidence+'</b></div>';
+    html += '<div class="conf">⚠️ '+r.risks.map(esc).join(' · ')+'</div>';
+    html += '<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
+    html += '<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
+    host.innerHTML = html;
+  };
+  window.cmEducation = function(){
+    var r = E().educationModules();
+    render('r-edu',{ tone:'info', title:'Learn', status:'🎓 '+r.count+' lessons',
+      list: r.modules.map(function(m){ return m.topic+' — '+m.plain+' ['+m.diy+']'; }),
+      confidence:r.confidence, sources:r.sources });
+  };
+  window.cmNearest = function(kind){
+    function go(geo){
+      var r = E().nearestCentre(kind, geo);
+      var host = $(kind==='puc'?'r-puc':kind==='mechanic'?'r-edu':'r-oil');
+      render(host.id,{ tone:'info', title:'Nearest', status:'📍 '+r.label,
+        body:'<a href="'+r.mapsUrl+'" target="_blank" rel="noopener">Open map of nearby '+esc(r.label)+'</a>',
+        confidence:r.confidence, risks:r.risks, sources:r.sources });
+    }
+    if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(
+      function(p){ go({ geo:{ lat:p.coords.latitude, lng:p.coords.longitude } }); },
+      function(){ go({}); }, { timeout:4000 }); }
+    else go({});
+  };
+
   window.cmSell = function(){
     var r = E().sellAssistant({ marketValue:Number($('sl-market').value||0), fullServiceHistory:pressed('sl-history'), tyresWorn:pressed('sl-tyres') });
     render('r-sell',{ tone:'info', title:'Sell', status:'Sell guidance',
@@ -487,7 +552,13 @@
   window.cmRemind = function(){
     var twin = E().twin.load();
     var veh = {
-      docs: { insurance: twin.insuranceExpiry?{expiry:twin.insuranceExpiry}:null, puc: twin.pucExpiry?{expiry:twin.pucExpiry}:null },
+      docs: {
+        insurance: twin.insuranceExpiry?{expiry:twin.insuranceExpiry}:null,
+        puc: twin.pucExpiry?{expiry:twin.pucExpiry}:null,
+        rc: twin.rcExpiry?{expiry:twin.rcExpiry}:null,
+        warranty: twin.warrantyExpiry?{expiry:twin.warrantyExpiry}:null,
+        loan: twin.emiDue?{expiry:twin.emiDue}:null
+      },
       odometerKm: twin.odometerKm||0, kmPerMonth: 1000,
       service: { engine_oil: twin.oilLastKm!=null?{lastKm:twin.oilLastKm}:{}, timing_belt: twin.tbeltLastKm!=null?{lastKm:twin.tbeltLastKm}:{} }
     };
@@ -565,6 +636,7 @@
     var t = E().twin.load();
     t.model=$('v-model').value; t.odometerKm=Number($('v-odo').value||0);
     t.insuranceExpiry=$('v-ins').value; t.pucExpiry=$('v-puc').value;
+    t.rcExpiry=$('v-rc').value; t.warrantyExpiry=$('v-warranty').value; t.emiDue=$('v-emi').value; t.batteryDate=$('v-batt').value;
     t.oilLastKm = $('v-oilkm').value!==''?Number($('v-oilkm').value):null;
     t.tbeltLastKm = $('v-tbeltkm').value!==''?Number($('v-tbeltkm').value):null;
     E().twin.save(t);
@@ -599,6 +671,8 @@
       var t = E() && E().twin.load();
       if(t){ if(t.model)$('v-model').value=t.model; if(t.odometerKm)$('v-odo').value=t.odometerKm;
         if(t.insuranceExpiry)$('v-ins').value=t.insuranceExpiry; if(t.pucExpiry)$('v-puc').value=t.pucExpiry;
+        if(t.rcExpiry)$('v-rc').value=t.rcExpiry; if(t.warrantyExpiry)$('v-warranty').value=t.warrantyExpiry;
+        if(t.emiDue)$('v-emi').value=t.emiDue; if(t.batteryDate)$('v-batt').value=t.batteryDate;
         if(t.oilLastKm!=null)$('v-oilkm').value=t.oilLastKm; if(t.tbeltLastKm!=null)$('v-tbeltkm').value=t.tbeltLastKm; }
     }catch(e){}
   });

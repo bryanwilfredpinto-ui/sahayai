@@ -184,6 +184,19 @@ await safe('ENGINE reminders renders', async () => {
   await page.waitForTimeout(400);
   check('reminders renders a result', (await page.locator('#r-remind').innerText()).trim().length > 0);
 });
+await safe('ENGINE 50-point inspection renders', async () => {
+  await page.click('#tab-buy');
+  await page.click('button[onclick="cmInspection()"]');
+  await page.waitForTimeout(400);
+  const txt = await page.locator('#r-inspect').innerText();
+  check('inspection shows ≥50-point + critical', /point inspection/i.test(txt) && /critical/i.test(txt), txt.split('\n')[0]);
+});
+await safe('ENGINE vehicle education renders', async () => {
+  await page.click('#tab-diag');
+  await page.click('button[onclick="cmEducation()"]');
+  await page.waitForTimeout(400);
+  check('education lists lessons', /lessons/i.test(await page.locator('#r-edu').innerText()));
+});
 
 // ── 6. tap targets ≥44px (authored controls) ──
 await safe('TAP targets ≥44px', async () => {

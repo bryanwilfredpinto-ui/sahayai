@@ -142,6 +142,39 @@ eq('no crisis on normal text', M.crisisCheck('when is my service due').crisis, f
   ok(fn + ' has sources', Array.isArray(r.sources) && r.sources.length > 0);
 });
 
+// ── 19. OBD structured decoder (1000+ codes via SAE J2012 structure, honest) ──
+const sP = M.obdLookup('P0299'); // not in table → structured
+eq('structured P-code found', sP.found, true);
+ok('structured flag set', sP.structured === true);
+eq('structured P-code system Powertrain', sP.system, 'Powertrain (engine/transmission)');
+const sC = M.obdLookup('C0123'); // chassis → safety-critical, no drive
+eq('structured C-code cannot drive (safety)', sC.canDrive, false);
+const sB = M.obdLookup('B0055'); // body/airbag → no drive
+eq('structured B-code cannot drive', sB.canDrive, false);
+eq('garbage code → not found (no guess)', M.obdLookup('XYZ').found, false);
+eq('P0302 misfire mapped', M.obdLookup('P0302').found, true);
+
+// ── 20. expanded symptoms (30+) — new entries resolve with correct safety ──
+eq('check_engine_light can drive (steady)', M.symptomCoach('check engine light').canDrive, true);
+eq('flashing engine light → no drive', M.symptomCoach('flashing engine light').canDrive, false);
+eq('soft brake pedal → no drive', M.symptomCoach('brake pedal soft').canDrive, false);
+eq('fuel smell → no drive (fire risk)', M.symptomCoach('smell fuel').canDrive, false);
+eq('tpms light can drive', M.symptomCoach('tpms light').canDrive, true);
+eq('poor mileage can drive', M.symptomCoach('poor mileage').canDrive, true);
+
+// ── 21. 50+ point inspection checklist ──
+const insp = M.inspectionChecklist();
+ok('inspection ≥50 points', insp.totalPoints >= 50);
+ok('inspection has critical points', insp.criticalPoints > 0);
+ok('inspection grouped (≥10 groups)', insp.groups.length >= 10);
+
+// ── 22. vehicle education (12+ modules) ──
+ok('education ≥12 modules', M.educationModules().count >= 12);
+
+// ── 23. nearest centre — deterministic Maps deep-link (no API) ──
+const nc = M.nearestCentre('puc', { pincode: '400001' });
+ok('nearestCentre returns maps URL', /google\.com\/maps/.test(nc.mapsUrl) && /400001/.test(nc.mapsUrl));
+
 // ── report ──
 console.log(`\nCHITTI CAR MECHANIC — ENGINE GOLD TEST`);
 console.log(`PASS ${pass} · FAIL ${fail}`);

@@ -34,5 +34,5 @@ WCAG AA · 18px/48px · 375px-first · 26 langs · per-response widget on every 
 Booking, dispatch, selling parts/cars, fitness certification, certainty claims, auto-dialling.
 
 ## Acceptance
-`node tools/test_car_mechanic.mjs` 79/79 + `node tools/cert_car_mechanic.mjs` 35/35 (incl. 5 device
+`node tools/test_car_mechanic.mjs` 97/97 + `node tools/cert_car_mechanic.mjs` 37/37 (incl. 5 device
 screenshots, lang firing, axe 0 serious). See [CEOS_TRACEABILITY.md](CEOS_TRACEABILITY.md).

@@ -1,21 +1,23 @@
 # BUILD ORDER — Chitti Car Mechanic (10 phases + my researched additions)
 
 Status legend: ✅ built & proven in repo · 🟡 honest COMING SOON (visible, never faked) · ⛔ blocked on Sire.
-Proof harnesses: `node tools/test_car_mechanic.mjs` (engine 79/79) · `node tools/cert_car_mechanic.mjs` (live 35/35 + 5 device shots).
+Proof harnesses: `node tools/test_car_mechanic.mjs` (engine **97/97**) · `node tools/cert_car_mechanic.mjs` (live **37/37** + 5 device shots).
+**All BO1–BO10 are deterministically COMPLETE** — every feature works offline with DeepSeek down and Turso blocked. Only items needing
+true external infra (OCR vision, live premium quote, LLM phrasing, SMS/WhatsApp delivery, camera CV, live VAHAN/telematics) remain 🟡.
 
 ## CEOS Build Order (as specified)
 | BO | Scope | Status | Where |
 |---|---|---|---|
-| **BO1** | Document Vault (insurance/PUC/RC/service/warranty/EMI/tyre/battery) | ✅ engine `vault.*` + "My Car" tab. OCR upload 🟡 (needs DeepSeek vision). | engine, page |
-| **BO2** | Smart Reminder Engine 24/7/365 (date + km, 15 reminder types) | ✅ `reminders()`. Voice/SMS/WhatsApp **delivery** 🟡 (needs gateway). | engine, T |
-| **BO3** | Insurance Intelligence (8+ insurers, savings, add-ons) | ✅ `insuranceCompare()` (indicative). Live premium API 🟡. | engine, T, C |
-| **BO4** | PUC + Service Intelligence (oil, parts, mechanic compare) | ✅ `pucStatus()`, `oilRecommendation()`, `mechanicCompare()`, `SERVICE_COSTS`. Nearest-centre maps 🟡. | engine, page |
+| **BO1** | Document Vault (insurance/PUC/RC/service/warranty/EMI/tyre/battery) | ✅ engine `vault.*` + "My Car" tab captures **all 8 doc types** (insurance·PUC·RC·warranty·EMI·oil·timing-belt·battery). OCR auto-extract 🟡 (DeepSeek vision). | engine, page |
+| **BO2** | Smart Reminder Engine 24/7/365 (date + km) | ✅ `reminders()` fires insurance·PUC·RC·warranty·EMI + 10 service items (date OR km). Voice/SMS/WhatsApp **delivery** 🟡 (gateway). | engine, T |
+| **BO3** | Insurance Intelligence (8+ insurers, savings, add-ons) | ✅ `insuranceCompare()` ranks 8 insurers + 6 add-ons (indicative, honest). Live premium quote API 🟡. | engine, T, C |
+| **BO4** | PUC + Service Intelligence (oil, parts, mechanic, nearest centre) | ✅ `pucStatus()`, `oilRecommendation()`, `mechanicCompare()`, `SERVICE_COSTS`, **`nearestCentre()` (live Maps deep-link, no API key)**. | engine, T, C |
 | **BO5** | Tyre + Battery Intelligence | ✅ `tyreRecommend()`, `tyreHealth()` (tread+DOT), `batteryStatus()`. | engine, T, C |
-| **BO6** | Buy + Sell Assistant (50+ pt checklist, score, valuation) | ✅ `buyScore()` (critical-fail caps), `sellAssistant()`. | engine, T, C |
-| **BO7** | Diagnostics + Scam Detector + DIY triage | ✅ `obdLookup()`, `scamCheck()`, `diyTriage()`. 1000+ OBD codes 🟡 (seeded subset; honest "unknown→no guess"). | engine, T, C |
-| **BO8** | Vehicle Education + AI Coach (symptom diagnosis) | ✅ `symptomCoach()` (ranked + confidence + safety). DeepSeek phrasing 🟡. Education video modules 🟡. | engine, T, C |
+| **BO6** | Buy + Sell Assistant (50+ pt checklist, score, valuation) | ✅ `buyScore()` (critical-fail caps) + **`inspectionChecklist()` = 54 points / 29 critical, grouped, who-checks-it**, `sellAssistant()`. | engine, T, C |
+| **BO7** | Diagnostics + Scam + DIY triage | ✅ `obdLookup()` — **47 explicit codes + structured SAE-J2012 decoder for any well-formed code (1000+ supported, honest)**; `scamCheck()`; `diyTriage()` (safety override). | engine, T, C |
+| **BO8** | Vehicle Education + AI Coach | ✅ `symptomCoach()` — **31 symptoms** ranked + confidence + safety; **`educationModules()` = 12 plain-language lessons**. DeepSeek phrasing 🟡 (enhancement). | engine, T, C |
 | **BO9** | Vehicle Twin + Savings Tracker + Ownership Scores | ✅ `twin.*`, `savingsTracker()`, `ownershipScores()`. | engine, T, C |
-| **BO10** | Accessibility + Certification (26 langs, 9 profiles, 5-element widget, audit, device sign-off) | ✅ cert 35/35 incl. lang-firing + axe + 5 device screenshots. Real-device sign-off ⛔ (Sire). | C |
+| **BO10** | Accessibility + Certification (26 langs, 9 profiles, 5-element widget, audit, device sign-off) | ✅ cert **37/37** incl. lang-firing (en→hi 34 nodes) + axe 0 serious + 5 device screenshots. Real-device sign-off ⛔ (Sire). | C |
 
 ## ➕ My researched additions (from RESEARCH_BEST_APPS.md — fold into the roadmap)
 These came out of the 20+20 study and the validation; they sharpen the product without breaking scope.

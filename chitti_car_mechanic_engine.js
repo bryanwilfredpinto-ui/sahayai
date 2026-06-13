@@ -389,15 +389,83 @@
     P0128: { system: 'Cooling', meaning: 'Coolant thermostat below regulating temp', severity: 'warn', diy: false, canDrive: true, cost: band(1500, 4000), steps: ['Usually a stuck-open thermostat.', 'Hurts mileage; not an emergency.'] },
     P0301: { system: 'Engine', meaning: 'Cylinder 1 misfire', severity: 'warn', diy: false, canDrive: true, cost: band(2000, 6000), steps: ['Plug/coil/injector on cylinder 1.', 'Avoid hard acceleration until fixed.'] }
   };
+  // Expanded explicit library (common Indian-market codes). Cyl-misfire P0302–P0306 share P0301's profile.
+  Object.assign(OBD, {
+    P0302: OBD.P0301, P0303: OBD.P0301, P0304: OBD.P0301, P0305: OBD.P0301, P0306: OBD.P0301,
+    P0172: { system: 'Fuel/Engine', meaning: 'System too rich (Bank 1)', severity: 'warn', diy: false, canDrive: true, cost: band(2000, 6000), steps: ['Often a leaking injector or faulty MAF/O2 sensor.', 'Hurts mileage; get it checked.'] },
+    P0101: { system: 'Air intake', meaning: 'MAF sensor range/performance', severity: 'warn', diy: true, canDrive: true, cost: band(800, 4000), steps: ['Try cleaning the MAF sensor with MAF cleaner (DIY).', 'If it returns, replace the sensor (mechanic).'] },
+    P0113: { system: 'Air intake', meaning: 'Intake air temp sensor high', severity: 'info', diy: true, canDrive: true, cost: band(800, 2500), steps: ['Usually the IAT sensor or wiring.', 'Low urgency.'] },
+    P0102: { system: 'Air intake', meaning: 'MAF sensor circuit low', severity: 'warn', diy: false, canDrive: true, cost: band(2000, 5000), steps: ['Check MAF wiring/connector.', 'Replace MAF if faulty.'] },
+    P0133: { system: 'O2 sensor', meaning: 'O2 sensor slow response (Bank1 S1)', severity: 'warn', diy: false, canDrive: true, cost: band(3000, 7000), steps: ['Ageing oxygen sensor.', 'Replace to restore mileage.'] },
+    P0137: { system: 'O2 sensor', meaning: 'O2 sensor low voltage (Bank1 S2)', severity: 'info', diy: false, canDrive: true, cost: band(3000, 7000), steps: ['Downstream O2 sensor.', 'Low urgency.'] },
+    P0401: { system: 'Emissions', meaning: 'EGR flow insufficient', severity: 'warn', diy: false, canDrive: true, cost: band(2500, 8000), steps: ['Carbon-clogged EGR valve is common.', 'Clean or replace EGR.'] },
+    P0430: { system: 'Emissions', meaning: 'Catalyst efficiency below threshold (Bank 2)', severity: 'warn', diy: false, canDrive: true, cost: band(5000, 15000), steps: ['Catalytic converter or O2 sensor.', 'Will fail PUC.'] },
+    P0440: { system: 'Emissions', meaning: 'EVAP system fault', severity: 'info', diy: true, canDrive: true, cost: band(500, 4000), steps: ['Check the fuel cap is tight first (free DIY fix).', 'If it returns, EVAP leak — mechanic.'] },
+    P0455: { system: 'Emissions', meaning: 'EVAP large leak (loose fuel cap)', severity: 'info', diy: true, canDrive: true, cost: band(0, 3000), steps: ['Tighten/replace the fuel cap — often fixes it free.', 'Clear code and recheck.'] },
+    P0500: { system: 'Speed sensor', meaning: 'Vehicle speed sensor fault', severity: 'warn', diy: false, canDrive: true, cost: band(2000, 6000), steps: ['Speedo/ABS may misbehave.', 'Get the VSS checked.'] },
+    P0505: { system: 'Idle control', meaning: 'Idle air control fault', severity: 'warn', diy: false, canDrive: true, cost: band(2000, 6000), steps: ['Rough/stalling idle.', 'Clean throttle body / IAC valve.'] },
+    P0011: { system: 'Engine timing', meaning: 'Camshaft timing over-advanced (Bank1)', severity: 'warn', diy: false, canDrive: true, cost: band(3000, 12000), steps: ['VVT/oil-control valve or low oil.', 'Check oil level; see a mechanic.'] },
+    P0016: { system: 'Engine timing', meaning: 'Crank/cam correlation', severity: 'critical', diy: false, canDrive: false, cost: band(5000, 20000), steps: ['Timing chain/belt issue possible — risky.', 'Do not drive hard; see a mechanic.'] },
+    P0217: { system: 'Cooling', meaning: 'Engine over-temperature', severity: 'critical', diy: false, canDrive: false, cost: band(2000, 15000), steps: ['STOP — overheating destroys engines.', 'Let it cool; check coolant; see a mechanic.'] },
+    P0480: { system: 'Cooling', meaning: 'Cooling fan relay 1 fault', severity: 'warn', diy: false, canDrive: true, cost: band(1500, 6000), steps: ['Fan may not run in traffic → overheating risk.', 'Get it checked soon.'] },
+    P0606: { system: 'ECU', meaning: 'ECM/PCM processor fault', severity: 'critical', diy: false, canDrive: false, cost: band(8000, 30000), steps: ['Engine computer fault.', 'See a mechanic — do not rely on the car.'] },
+    P0715: { system: 'Transmission', meaning: 'Input/turbine speed sensor', severity: 'critical', diy: false, canDrive: false, cost: band(4000, 15000), steps: ['Automatic gearbox sensor fault.', 'Avoid driving; transmission specialist.'] },
+    P0730: { system: 'Transmission', meaning: 'Incorrect gear ratio', severity: 'critical', diy: false, canDrive: false, cost: band(8000, 40000), steps: ['Transmission slipping/internal fault.', 'Stop driving; specialist.'] },
+    C0035: { system: 'ABS', meaning: 'Left front wheel speed sensor', severity: 'critical', diy: false, canDrive: false, cost: band(3000, 8000), steps: ['ABS affected — braking distance changes.', 'Safety-critical; mechanic.'] },
+    C0040: { system: 'ABS', meaning: 'Right front wheel speed sensor', severity: 'critical', diy: false, canDrive: false, cost: band(3000, 8000), steps: ['ABS affected.', 'Safety-critical; mechanic.'] },
+    C0110: { system: 'ABS', meaning: 'ABS pump motor fault', severity: 'critical', diy: false, canDrive: false, cost: band(8000, 30000), steps: ['ABS may be disabled.', 'Safety-critical; mechanic now.'] },
+    B0010: { system: 'Airbag/SRS', meaning: 'Driver airbag deployment loop', severity: 'critical', diy: false, canDrive: false, cost: band(5000, 20000), steps: ['Airbag may not deploy.', 'Urgent; never DIY airbag.'] },
+    B0020: { system: 'Airbag/SRS', meaning: 'Passenger airbag loop', severity: 'critical', diy: false, canDrive: false, cost: band(5000, 20000), steps: ['Airbag may not deploy.', 'Urgent; never DIY.'] },
+    U0100: { system: 'Network', meaning: 'Lost communication with ECM/PCM', severity: 'critical', diy: false, canDrive: false, cost: band(3000, 20000), steps: ['Wiring/module communication fault.', 'See a mechanic.'] },
+    U0121: { system: 'Network', meaning: 'Lost communication with ABS module', severity: 'critical', diy: false, canDrive: false, cost: band(3000, 15000), steps: ['ABS comms lost — safety affected.', 'Mechanic.'] },
+    P0234: { system: 'Turbo', meaning: 'Turbo/super-charger overboost', severity: 'warn', diy: false, canDrive: false, cost: band(5000, 30000), steps: ['Boost control fault — can damage engine.', 'Drive gently to a mechanic.'] },
+    P2002: { system: 'Emissions', meaning: 'DPF efficiency below threshold (diesel)', severity: 'warn', diy: false, canDrive: true, cost: band(5000, 40000), steps: ['Clogged diesel particulate filter.', 'A long highway run may regenerate it; else mechanic.'] },
+    P0087: { system: 'Fuel', meaning: 'Fuel rail pressure too low', severity: 'warn', diy: false, canDrive: true, cost: band(3000, 20000), steps: ['Fuel filter/pump/regulator.', 'Never DIY the fuel rail.'] },
+    P0191: { system: 'Fuel', meaning: 'Fuel rail pressure sensor', severity: 'warn', diy: false, canDrive: true, cost: band(2500, 8000), steps: ['Sensor or wiring.', 'Mechanic.'] }
+  });
+  // Structured SAE-J2012 decoder — for ANY well-formed code not in the explicit table.
+  // Honest: gives the SYSTEM + generic category from the code STRUCTURE; never invents the exact fault.
+  function decodeStructure(code) {
+    if (!/^[PBCU][0-3][0-9A-F]{2,3}$/.test(code)) return null;
+    var L = { P: 'Powertrain (engine/transmission)', B: 'Body (interior/comfort/airbag)', C: 'Chassis (brakes/ABS/steering/suspension)', U: 'Network (modules/wiring)' };
+    var first = code[0];
+    // P-code subsystem by 3rd char
+    var pSys = { '0': 'fuel & air metering', '1': 'fuel & air metering', '2': 'fuel & air (injector circuit)', '3': 'ignition / misfire', '4': 'emissions / auxiliary', '5': 'vehicle speed / idle control', '6': 'computer / output circuit', '7': 'transmission', '8': 'transmission', '9': 'transmission', 'A': 'hybrid/EV propulsion', 'B': 'hybrid/EV propulsion', 'C': 'hybrid/EV propulsion' };
+    var subsystem = first === 'P' ? (pSys[code[2]] || 'powertrain') : L[first];
+    // safety systems → conservative no-drive; misfire/ignition → caution; else unknown severity
+    var safetyFirst = (first === 'C') || (first === 'B' && /airbag|srs/i.test('')) || (first === 'B');
+    var ignition = first === 'P' && code[2] === '3';
+    var canDrive = safetyFirst ? false : (ignition ? false : null);
+    var manufacturer = code[1] === '1' || code[1] === '2';
+    return {
+      code: code, found: true, structured: true, system: L[first], subsystem: subsystem,
+      meaning: (manufacturer ? 'Manufacturer-specific ' : 'Generic ') + L[first].toLowerCase() + ' code — ' + subsystem + ' area',
+      severity: safetyFirst ? 'critical' : (ignition ? 'warn' : 'unknown'),
+      canDrive: canDrive, diy: false, cost: null,
+      steps: [
+        'I can read the SYSTEM from the code structure, but not the exact fault for this specific code.',
+        first === 'C' ? 'This is a CHASSIS/brakes/ABS area code — treat as safety-critical; do not drive hard.' :
+          first === 'B' ? 'This is a BODY/airbag area code — if it touches airbags, never DIY.' :
+            ignition ? 'Ignition/misfire area — avoid hard acceleration until checked.' :
+              'Get it read by a mechanic or a full OBD scanner for the exact fault.'
+      ],
+      message: (manufacturer ? 'Manufacturer-specific ' : 'Generic ') + 'code in the ' + subsystem + ' area' + (canDrive === false ? ' — do NOT keep driving; treat as safety-critical.' : ' — get it checked; I won\'t guess the exact fault.'),
+      confidence: 'medium',
+      risks: canDrive === false ? ['Decoded from code structure only; treat conservatively as safety-critical.'] : ['Decoded from code structure only — exact fault needs a scan. Do not assume it is minor.'],
+      sources: ['SAE J2012 DTC structure (deterministic decode)', 'CEOS §16 OBD Doctor']
+    };
+  }
   function obdLookup(codeRaw, opts) {
     opts = opts || {};
     var code = ('' + codeRaw).toUpperCase().replace(/\s+/g, '');
     var e = OBD[code];
     if (!e) {
+      var s = decodeStructure(code);
+      if (s) return s;
       return {
         code: code, found: false, severity: 'unknown', canDrive: null,
-        message: "I don't have this exact code in my offline library yet. I won't guess — get it read by a mechanic or an OBD scanner.",
-        confidence: 'low', risks: ['Unknown code — do not assume it is minor.'], sources: ['CEOS §16', 'SAE J2012 DTC standard']
+        message: "That doesn't look like a valid OBD code (expected like P0300, C0035, B0010, U0100). I won't guess — get it read by an OBD scanner.",
+        confidence: 'low', risks: ['Unrecognised code format.'], sources: ['CEOS §16', 'SAE J2012 DTC standard']
       };
     }
     return {
@@ -540,6 +608,30 @@
     vibration_at_speed: { causes: ['Wheel balancing', 'Bent rim', 'Worn suspension'], confidence: 65, diy: 'Mechanic', canDrive: true, cost: band(500, 5000), first: ['Usually wheel balancing.', 'If it worsens, check suspension.'] },
     battery_warning_light: { causes: ['Alternator not charging', 'Loose/worn belt'], confidence: 75, diy: 'Belt check = visual; rest = mechanic', canDrive: false, cost: band(4000, 15000), first: ['Charging fault — battery is running down.', 'Reduce electrical load; get to a mechanic soon.'] }
   };
+  Object.assign(SYMPTOMS, {
+    check_engine_light: { causes: ['Many — needs OBD scan', 'Loose fuel cap', 'O2/MAF sensor', 'Misfire'], confidence: 55, diy: 'Tighten fuel cap = DIY; rest = scan', canDrive: true, cost: band(0, 15000), first: ['If steady (not flashing) you can usually drive gently.', 'A FLASHING light = misfire → stop, do not drive.', 'Get the OBD code read (use the OBD tab).'] },
+    flashing_engine_light: { causes: ['Active misfire (damaging the catalytic converter)'], confidence: 80, diy: 'Mechanic only', canDrive: false, cost: band(2000, 15000), first: ['A flashing engine light = serious misfire.', 'Stop driving; do not accelerate hard.'] },
+    brake_pedal_soft: { causes: ['Air in brake lines', 'Brake fluid leak', 'Worn pads'], confidence: 80, diy: 'Mechanic only — safety-critical', canDrive: false, cost: band(2000, 10000), first: ['A soft/spongy pedal = unsafe. Do not drive.', 'Brakes are never DIY here — mechanic now.'] },
+    brake_pedal_vibrates: { causes: ['Warped brake disc', 'ABS engaging'], confidence: 70, diy: 'Mechanic only', canDrive: true, cost: band(2000, 8000), first: ['Often warped discs.', 'Get brakes inspected soon.'] },
+    steering_hard: { causes: ['Low power-steering fluid', 'Pump/belt fault', 'EPS fault'], confidence: 65, diy: 'Fluid check = DIY (hydraulic); EPS = mechanic', canDrive: true, cost: band(500, 12000), first: ['Check power-steering fluid if hydraulic.', 'If electric (EPS), see a mechanic.'] },
+    steering_vibration: { causes: ['Wheel imbalance', 'Worn tie-rod/ball joint'], confidence: 65, diy: 'Mechanic', canDrive: true, cost: band(500, 6000), first: ['Start with wheel balancing.', 'If loose-feeling, suspension check.'] },
+    clutch_slipping: { causes: ['Worn clutch plate'], confidence: 75, diy: 'Mechanic only', canDrive: true, cost: band(8000, 20000), first: ['Revs rise but speed lags = slipping clutch.', 'Avoid heavy loads; plan a clutch job.'] },
+    gear_hard_to_shift: { causes: ['Clutch not disengaging', 'Low gearbox oil', 'Linkage'], confidence: 60, diy: 'Mechanic', canDrive: true, cost: band(2000, 15000), first: ['Manual: clutch/linkage. Auto: fluid/TCM.', 'Get it checked.'] },
+    jerking_acceleration: { causes: ['Misfire', 'Dirty injectors/MAF', 'Transmission'], confidence: 60, diy: 'Mechanic', canDrive: true, cost: band(2000, 15000), first: ['Could be ignition or fuel.', 'Scan for codes (OBD tab).'] },
+    rough_idle: { causes: ['Dirty throttle body/IAC', 'Vacuum leak', 'Spark plugs'], confidence: 65, diy: 'Throttle clean = caution-DIY; rest = mechanic', canDrive: true, cost: band(1000, 6000), first: ['Try a throttle-body clean.', 'Check for vacuum leaks.'] },
+    stalling: { causes: ['Idle control', 'Fuel delivery', 'Sensor fault'], confidence: 55, diy: 'Mechanic', canDrive: false, cost: band(2000, 10000), first: ['Stalling in traffic is unsafe.', 'Get it diagnosed before relying on the car.'] },
+    poor_mileage: { causes: ['Under-inflated tyres', 'Dirty air filter', 'O2 sensor', 'Dragging brakes'], confidence: 60, diy: 'Tyre pressure + air filter = DIY', canDrive: true, cost: band(500, 7000), first: ['Check tyre pressure (free).', 'Replace a dirty air filter.', 'Then scan for sensor codes.'] },
+    smell_burning: { causes: ['Slipping clutch/belt', 'Oil on hot exhaust', 'Electrical short'], confidence: 50, diy: 'Mechanic — investigate', canDrive: false, cost: band(1000, 15000), first: ['A burning smell can mean fire risk.', 'Stop, switch off, and investigate before driving.'] },
+    smell_fuel: { causes: ['Fuel leak'], confidence: 70, diy: 'Mechanic only — fire risk', canDrive: false, cost: band(1000, 15000), first: ['A fuel smell = fire hazard. Stop driving.', 'Never DIY the fuel system — mechanic now.'] },
+    smell_sweet: { causes: ['Coolant leak'], confidence: 70, diy: 'Mechanic', canDrive: false, cost: band(1000, 10000), first: ['A sweet smell = coolant leak → overheating risk.', 'Check coolant; see a mechanic.'] },
+    knocking_noise: { causes: ['Worn bearings / pre-ignition (knock)'], confidence: 60, diy: 'Mechanic only', canDrive: false, cost: band(8000, 60000), first: ['Deep engine knock can be serious.', 'Stop hard driving; mechanic.'] },
+    squealing_belt: { causes: ['Worn/loose drive belt'], confidence: 75, diy: 'Mechanic (belt)', canDrive: true, cost: band(800, 4000), first: ['Squeal on start = belt.', 'Replace before it snaps.'] },
+    smoke_black: { causes: ['Running rich (air/fuel)', 'Dirty air filter', 'Injector'], confidence: 65, diy: 'Air filter = DIY; rest = mechanic', canDrive: true, cost: band(500, 8000), first: ['Black smoke = too much fuel.', 'Check air filter; scan for codes.'] },
+    ac_smell: { causes: ['Mould in evaporator/cabin filter'], confidence: 75, diy: 'Cabin filter = DIY', canDrive: true, cost: band(500, 3000), first: ['Replace the cabin filter.', 'Run AC on fresh air to dry it.'] },
+    headlight_dim: { causes: ['Weak battery/alternator', 'Oxidised lens', 'Bad earth'], confidence: 60, diy: 'Lens clean/bulb = DIY', canDrive: true, cost: band(200, 6000), first: ['Clean the lens; check the bulb.', 'If dimming with revs, charging fault.'] },
+    wipers_not_working: { causes: ['Blown fuse', 'Wiper motor', 'Linkage'], confidence: 70, diy: 'Fuse/blade = DIY', canDrive: true, cost: band(100, 4000), first: ['Check the wiper fuse (DIY).', 'Replace blades; else motor (mechanic).'] },
+    tpms_light: { causes: ['Low tyre pressure', 'TPMS sensor'], confidence: 80, diy: 'Pressure check = DIY', canDrive: true, cost: band(0, 3000), first: ['Check & set all tyre pressures (free).', 'Light persists → TPMS sensor.'] }
+  });
   function symptomCoach(symptomRaw) {
     var key = ('' + symptomRaw).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_+|_+$/g, '');
     // light alias matching
@@ -619,6 +711,89 @@
     };
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 18. PRE-PURCHASE INSPECTION CHECKLIST (BO6/§8) — full 50+ point, grouped.
+  // Voice-guided DIY where safe; flags which points NEED a mechanic + which are CRITICAL.
+  // ═══════════════════════════════════════════════════════════════════════════
+  var INSPECTION = [
+    { group: 'Engine', items: [
+      { p: 'Cold-start (no rattle/long crank)', who: 'DIY', critical: true }, { p: 'Idle smooth, no surging', who: 'DIY', critical: false },
+      { p: 'Exhaust smoke (blue/white/black)', who: 'DIY', critical: true }, { p: 'Oil condition & level (dipstick)', who: 'DIY', critical: false },
+      { p: 'Oil leaks under engine', who: 'Mechanic', critical: true }, { p: 'Coolant clean, no oil mix', who: 'Mechanic', critical: true },
+      { p: 'Engine bay wiring intact', who: 'DIY', critical: false }, { p: 'Timing belt/chain history', who: 'Read docs', critical: true } ] },
+    { group: 'Transmission', items: [
+      { p: 'Gear shifts smooth (manual/auto)', who: 'DIY', critical: true }, { p: 'Clutch bite point not too high', who: 'DIY', critical: false },
+      { p: 'No slipping on acceleration', who: 'DIY', critical: true }, { p: 'No fluid leaks', who: 'Mechanic', critical: true } ] },
+    { group: 'Brakes', items: [
+      { p: 'Pedal firm, not spongy', who: 'DIY', critical: true }, { p: 'No pulling under braking', who: 'DIY', critical: true },
+      { p: 'Pad thickness & disc condition', who: 'Mechanic', critical: true }, { p: 'Handbrake holds on slope', who: 'DIY', critical: true } ] },
+    { group: 'Suspension & steering', items: [
+      { p: 'Bounce test (no continued bounce)', who: 'DIY', critical: false }, { p: 'No clunks over bumps', who: 'DIY', critical: false },
+      { p: 'Steering centred, no vibration', who: 'DIY', critical: true }, { p: 'No power-steering leak/noise', who: 'Mechanic', critical: false } ] },
+    { group: 'Tyres & wheels', items: [
+      { p: 'Tread ≥ 3mm all four + spare', who: 'DIY', critical: false }, { p: 'Even wear (no alignment issue)', who: 'DIY', critical: false },
+      { p: 'Tyre age (DOT < 5 yrs)', who: 'DIY', critical: false }, { p: 'No alloy cracks/bends', who: 'DIY', critical: false } ] },
+    { group: 'Electrical & AC', items: [
+      { p: 'All lights/indicators work', who: 'DIY', critical: false }, { p: 'Windows/mirrors/wipers work', who: 'DIY', critical: false },
+      { p: 'Infotainment & sensors', who: 'DIY', critical: false }, { p: 'AC cools fast, no smell', who: 'DIY', critical: false },
+      { p: 'Battery age & terminals', who: 'DIY', critical: false }, { p: 'No dashboard warning lights', who: 'DIY', critical: true } ] },
+    { group: 'Body & structure', items: [
+      { p: 'Panel gaps even (accident sign)', who: 'DIY', critical: true }, { p: 'Paint match across panels', who: 'DIY', critical: true },
+      { p: 'No rust (doors, sills, boot)', who: 'DIY', critical: false }, { p: 'Boot floor/spare well not repaired', who: 'DIY', critical: true },
+      { p: 'Welding marks under bonnet/boot', who: 'Mechanic', critical: true }, { p: 'Doors/boot/bonnet close flush', who: 'DIY', critical: false } ] },
+    { group: 'Underbody', items: [
+      { p: 'No frame/chassis damage (lift)', who: 'Mechanic', critical: true }, { p: 'No fresh undercoat hiding rust', who: 'Mechanic', critical: false },
+      { p: 'Exhaust intact, no leaks', who: 'Mechanic', critical: false } ] },
+    { group: 'Interior', items: [
+      { p: 'Odometer wear matches km', who: 'DIY', critical: true }, { p: 'Seats/pedals wear matches age', who: 'DIY', critical: false },
+      { p: 'All keys present (incl. spare)', who: 'DIY', critical: false }, { p: 'Seatbelts retract & lock', who: 'DIY', critical: true } ] },
+    { group: 'Documents (the trust core)', items: [
+      { p: 'RC matches engine/chassis number', who: 'Read docs', critical: true }, { p: 'No pending loan / hypothecation', who: 'Read docs', critical: true },
+      { p: 'Insurance + NCB history', who: 'Read docs', critical: false }, { p: 'Valid PUC', who: 'Read docs', critical: false },
+      { p: 'Service history complete', who: 'Read docs', critical: false }, { p: 'No pending challans/court cases (VAHAN)', who: 'Read docs', critical: true },
+      { p: 'Accident/insurance-claim history', who: 'Read docs', critical: true } ] },
+    { group: 'Test drive', items: [
+      { p: 'Pulls straight hands-off (safe road)', who: 'DIY', critical: true }, { p: 'Brakes straight, no noise', who: 'DIY', critical: true },
+      { p: 'No warning lights after drive', who: 'DIY', critical: true }, { p: 'Gearbox/clutch fine when hot', who: 'DIY', critical: true } ] }
+  ];
+  function inspectionChecklist() {
+    var total = 0, critical = 0;
+    INSPECTION.forEach(function (g) { g.items.forEach(function (i) { total++; if (i.critical) critical++; }); });
+    return { groups: INSPECTION, totalPoints: total, criticalPoints: critical, confidence: 'high', risks: ['A checklist is not a substitute for a trusted mechanic + a VAHAN/RTO history check before paying.'], sources: ['CEOS §8 Pre-Purchase Inspection (50+ points)'] };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 19. VEHICLE EDUCATION (BO8/§15) — 12 plain-language modules.
+  // ═══════════════════════════════════════════════════════════════════════════
+  var EDUCATION = [
+    { topic: 'Engine', diy: 'Understand only', a11y: 'Voice + animation', plain: 'The engine burns fuel to turn the wheels. Strange noise, smoke or warning light = get it checked early.' },
+    { topic: 'Engine oil', diy: 'Check level (DIY); change = mechanic', a11y: 'Voice + video', plain: 'Oil keeps the engine smooth. Check the dipstick monthly; change at the interval for your fuel type.' },
+    { topic: 'Cooling system', diy: 'Check coolant (DIY, COLD); flush = mechanic', a11y: 'Voice + pictures', plain: 'Coolant stops the engine overheating. Never open the cap when hot. Low coolant or steam = stop.' },
+    { topic: 'AC system', diy: 'Cabin filter (DIY); gas = mechanic', a11y: 'Voice + animation', plain: 'Weak cooling is often a dirty filter or low gas. A smell usually means the cabin filter.' },
+    { topic: 'Transmission', diy: 'Understand only', a11y: 'Voice + animation', plain: 'Sends engine power to the wheels. Slipping or hard shifts = see a mechanic.' },
+    { topic: 'Brakes', diy: 'Check pad wear (DIY); replace = mechanic', a11y: 'Voice + pictures', plain: 'Grinding or a soft pedal is unsafe — brakes are never a DIY repair.' },
+    { topic: 'Tyres', diy: 'Pressure + tread (DIY)', a11y: 'Voice + video', plain: 'Check pressure monthly. Replace below 1.6mm tread or above 5–6 years. Worn tyres triple wet-road risk.' },
+    { topic: 'Battery', diy: 'Terminals + voltage (DIY)', a11y: 'Voice + pictures', plain: 'Most last 3–4 years. Slow cranking or dim lights = get it tested.' },
+    { topic: 'Lights & fuses', diy: 'Bulb/fuse swap (DIY)', a11y: 'Voice + video', plain: 'A dead light is often a bulb or fuse — a cheap DIY fix.' },
+    { topic: 'Wipers', diy: 'Replace blades (DIY, 2 min)', a11y: 'Voice + video', plain: 'Streaky wipers = worn blades. Easy to swap yourself.' },
+    { topic: 'Warning lights', diy: 'Understand only', a11y: 'Voice + images', plain: 'Red = stop now. Amber = get it checked soon. A flashing engine light = stop, do not drive.' },
+    { topic: 'Fuel types', diy: 'Understand only', a11y: 'Voice + bar chart', plain: 'Petrol/diesel/CNG/EV/hybrid differ in running cost. Use the Fuel tab to see what suits your km.' }
+  ];
+  function educationModules() { return { modules: EDUCATION, count: EDUCATION.length, confidence: 'high', risks: [], sources: ['CEOS §15 Vehicle Education'] }; }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 20. NEAREST CENTRE (BO4/§10) — deterministic Google-Maps deep-link (no API key).
+  // Honest: opens a Maps search; Chitti does not fake a list of named shops.
+  // ═══════════════════════════════════════════════════════════════════════════
+  function nearestCentre(kind, opts) {
+    opts = opts || {};
+    var label = { puc: 'PUC pollution check centre', service: 'car service centre', tyre: 'tyre shop', mechanic: 'car mechanic', insurance: 'motor insurance office', rsa: 'roadside assistance' }[kind] || 'car service centre';
+    var near = opts.pincode ? (' near ' + opts.pincode) : (opts.geo ? '' : ' near me');
+    var q = encodeURIComponent(label + near);
+    var url = (opts.geo && opts.geo.lat != null) ? ('https://www.google.com/maps/search/' + q + '/@' + opts.geo.lat + ',' + opts.geo.lng + ',14z') : ('https://www.google.com/maps/search/' + q);
+    return { kind: kind, label: label, mapsUrl: url, voice: 'Opening a map of the nearest ' + label + '.', confidence: 'high', risks: ['Chitti opens a live map — it does not pre-judge which shop is best or honest.'], sources: ['CEOS §10 (nearest centre)', 'user-initiated map search'] };
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // PUBLIC API
   // ─────────────────────────────────────────────────────────────────────────
@@ -640,8 +815,8 @@
     obdLookup: obdLookup,
     scamCheck: scamCheck,
     diyTriage: diyTriage,
-    buyScore: buyScore, sellAssistant: sellAssistant,
-    symptomCoach: symptomCoach,
+    buyScore: buyScore, sellAssistant: sellAssistant, inspectionChecklist: inspectionChecklist,
+    symptomCoach: symptomCoach, educationModules: educationModules, nearestCentre: nearestCentre,
     savingsTracker: savingsTracker,
     ownershipScores: ownershipScores,
     crisisCheck: crisisCheck,
