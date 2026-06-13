@@ -62,7 +62,17 @@ def _bootstrap() -> None:
         medupi_migrations.ensure_schema()
     except Exception as e:  # noqa: BLE001
         log.warning("ensure_schema skipped: %s", e)
-    Base.metadata.create_all(bind=engine)
+    # NOTE (2026-06-13): create_all forces the engine's first connection, which
+    # runs `PRAGMA read_uncommitted` during dialect.initialize. When the Turso
+    # backend is degraded (e.g. reads blocked on quota), that bare call raised
+    # OperationalError and crash-looped every gunicorn worker at boot. Guard it
+    # like every other boot-time DB call so a degraded DB no longer takes the
+    # whole service down — the worker boots, health endpoints respond, and
+    # DB-backed routes fail per-request instead of killing the process.
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:  # noqa: BLE001
+        log.warning("create_all skipped (DB unavailable at boot): %s", e)
     try:
         result = medupi_migrations.run_all()
         log.info("migrations: %s", result)
