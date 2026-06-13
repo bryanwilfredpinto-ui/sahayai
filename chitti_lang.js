@@ -294,12 +294,58 @@
     }
   }
 
+  // ── G2 — Verdict NLG (vernacular content templates) ──────────────────
+  // Template-based vernacular verdict for when DeepSeek (BO12) is Sire-blocked.
+  // Each entry is a set of SHORT, hand-verified phrases (no Hinglish). Proper
+  // nouns (symbol · RSI · ₹ · %) are interpolated as translate="no" spans and
+  // NEVER translated. Languages not in this table fall back to English
+  // honestly (filled by DeepSeek / community packs when unlocked) — we never
+  // ship a fabricated or Hinglish translation. Swappable by design: when
+  // BO12 lands, app.js prefers DeepSeek's fluent narration over these.
+  var VERDICT_NLG = {
+    en: { strongBuy: 'strong buy signal', buy: 'buy signal', sell: 'sell signal', strongSell: 'strong sell signal', wait: 'no clear signal — wait', trendUp: 'trend is up', trendDown: 'trend is down', trendFlat: 'trend is sideways', stop: 'Stop-loss', advice: 'This is technical analysis, not advice.', demo: 'DEMO data — live data coming soon.' },
+    hi: { strongBuy: 'मज़बूत ख़रीद संकेत', buy: 'ख़रीद संकेत', sell: 'बिक्री संकेत', strongSell: 'मज़बूत बिक्री संकेत', wait: 'कोई स्पष्ट संकेत नहीं — प्रतीक्षा करें', trendUp: 'रुझान ऊपर है', trendDown: 'रुझान नीचे है', trendFlat: 'रुझान सपाट है', stop: 'स्टॉप-लॉस', advice: 'यह तकनीकी विश्लेषण है, सलाह नहीं।', demo: 'डेमो डेटा — लाइव डेटा जल्द आएगा।' },
+    bn: { strongBuy: 'শক্তিশালী কেনার সংকেত', buy: 'কেনার সংকেত', sell: 'বিক্রির সংকেত', strongSell: 'শক্তিশালী বিক্রির সংকেত', wait: 'স্পষ্ট সংকেত নেই — অপেক্ষা করুন', trendUp: 'প্রবণতা ঊর্ধ্বমুখী', trendDown: 'প্রবণতা নিম্নমুখী', trendFlat: 'প্রবণতা স্থির', stop: 'স্টপ-লস', advice: 'এটি প্রযুক্তিগত বিশ্লেষণ, পরামর্শ নয়।', demo: 'ডেমো ডেটা — লাইভ ডেটা শীঘ্রই আসছে।' },
+    te: { strongBuy: 'బలమైన కొనుగోలు సంకేతం', buy: 'కొనుగోలు సంకేతం', sell: 'అమ్మకం సంకేతం', strongSell: 'బలమైన అమ్మకం సంకేతం', wait: 'స్పష్టమైన సంకేతం లేదు — వేచి ఉండండి', trendUp: 'ధోరణి పైకి ఉంది', trendDown: 'ధోరణి కిందికి ఉంది', trendFlat: 'ధోరణి సమతలంగా ఉంది', stop: 'స్టాప్-లాస్', advice: 'ఇది సాంకేతిక విశ్లేషణ, సలహా కాదు.', demo: 'డెమో డేటా — లైవ్ డేటా త్వరలో వస్తుంది.' },
+    ta: { strongBuy: 'வலுவான வாங்கல் சமிக்ஞை', buy: 'வாங்கல் சமிக்ஞை', sell: 'விற்பனை சமிக்ஞை', strongSell: 'வலுவான விற்பனை சமிக்ஞை', wait: 'தெளிவான சமிக்ஞை இல்லை — காத்திருங்கள்', trendUp: 'போக்கு மேல்நோக்கி உள்ளது', trendDown: 'போக்கு கீழ்நோக்கி உள்ளது', trendFlat: 'போக்கு பக்கவாட்டில் உள்ளது', stop: 'ஸ்டாப்-லாஸ்', advice: 'இது தொழில்நுட்ப பகுப்பாய்வு, ஆலோசனை அல்ல.', demo: 'டெமோ தரவு — நேரடி தரவு விரைவில் வரும்.' },
+    mr: { strongBuy: 'मजबूत खरेदी संकेत', buy: 'खरेदी संकेत', sell: 'विक्री संकेत', strongSell: 'मजबूत विक्री संकेत', wait: 'स्पष्ट संकेत नाही — प्रतीक्षा करा', trendUp: 'कल वरच्या दिशेने आहे', trendDown: 'कल खालच्या दिशेने आहे', trendFlat: 'कल स्थिर आहे', stop: 'स्टॉप-लॉस', advice: 'हे तांत्रिक विश्लेषण आहे, सल्ला नाही.', demo: 'डेमो डेटा — थेट डेटा लवकरच येईल.' },
+    gu: { strongBuy: 'મજબૂત ખરીદ સંકેત', buy: 'ખરીદ સંકેત', sell: 'વેચાણ સંકેત', strongSell: 'મજબૂત વેચાણ સંકેત', wait: 'સ્પષ્ટ સંકેત નથી — રાહ જુઓ', trendUp: 'વલણ ઉપર તરફ છે', trendDown: 'વલણ નીચે તરફ છે', trendFlat: 'વલણ સ્થિર છે', stop: 'સ્ટોપ-લોસ', advice: 'આ ટેકનિકલ વિશ્લેષણ છે, સલાહ નથી.', demo: 'ડેમો ડેટા — લાઇવ ડેટા જલ્દી આવશે.' },
+    kn: { strongBuy: 'ಬಲವಾದ ಖರೀದಿ ಸಂಕೇತ', buy: 'ಖರೀದಿ ಸಂಕೇತ', sell: 'ಮಾರಾಟ ಸಂಕೇತ', strongSell: 'ಬಲವಾದ ಮಾರಾಟ ಸಂಕೇತ', wait: 'ಸ್ಪಷ್ಟ ಸಂಕೇತವಿಲ್ಲ — ಕಾಯಿರಿ', trendUp: 'ಪ್ರವೃತ್ತಿ ಮೇಲ್ಮುಖವಾಗಿದೆ', trendDown: 'ಪ್ರವೃತ್ತಿ ಕೆಳಮುಖವಾಗಿದೆ', trendFlat: 'ಪ್ರವೃತ್ತಿ ಸಮತಲವಾಗಿದೆ', stop: 'ಸ್ಟಾಪ್-ಲಾಸ್', advice: 'ಇದು ತಾಂತ್ರಿಕ ವಿಶ್ಲೇಷಣೆ, ಸಲಹೆ ಅಲ್ಲ.', demo: 'ಡೆಮೋ ಡೇಟಾ — ಲೈವ್ ಡೇಟಾ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ.' },
+    ml: { strongBuy: 'ശക്തമായ വാങ്ങൽ സൂചന', buy: 'വാങ്ങൽ സൂചന', sell: 'വിൽപന സൂചന', strongSell: 'ശക്തമായ വിൽപന സൂചന', wait: 'വ്യക്തമായ സൂചനയില്ല — കാത്തിരിക്കുക', trendUp: 'പ്രവണത മുകളിലേക്കാണ്', trendDown: 'പ്രവണത താഴേക്കാണ്', trendFlat: 'പ്രവണത സ്ഥിരമാണ്', stop: 'സ്റ്റോപ്പ്-ലോസ്', advice: 'ഇത് സാങ്കേതിക വിശകലനമാണ്, ഉപദേശമല്ല.', demo: 'ഡെമോ ഡാറ്റ — ലൈവ് ഡാറ്റ ഉടൻ വരും.' },
+    pa: { strongBuy: 'ਮਜ਼ਬੂਤ ਖਰੀਦ ਸੰਕੇਤ', buy: 'ਖਰੀਦ ਸੰਕੇਤ', sell: 'ਵਿਕਰੀ ਸੰਕੇਤ', strongSell: 'ਮਜ਼ਬੂਤ ਵਿਕਰੀ ਸੰਕੇਤ', wait: 'ਕੋਈ ਸਪਸ਼ਟ ਸੰਕੇਤ ਨਹੀਂ — ਉਡੀਕ ਕਰੋ', trendUp: 'ਰੁਝਾਨ ਉੱਪਰ ਵੱਲ ਹੈ', trendDown: 'ਰੁਝਾਨ ਹੇਠਾਂ ਵੱਲ ਹੈ', trendFlat: 'ਰੁਝਾਨ ਸਥਿਰ ਹੈ', stop: 'ਸਟਾਪ-ਲਾਸ', advice: 'ਇਹ ਤਕਨੀਕੀ ਵਿਸ਼ਲੇਸ਼ਣ ਹੈ, ਸਲਾਹ ਨਹੀਂ।', demo: 'ਡੈਮੋ ਡਾਟਾ — ਲਾਈਵ ਡਾਟਾ ਜਲਦੀ ਆਵੇਗਾ।' },
+    or: { strongBuy: 'ଶକ୍ତିଶାଳୀ କିଣିବା ସଙ୍କେତ', buy: 'କିଣିବା ସଙ୍କେତ', sell: 'ବିକ୍ରି ସଙ୍କେତ', strongSell: 'ଶକ୍ତିଶାଳୀ ବିକ୍ରି ସଙ୍କେତ', wait: 'ସ୍ପଷ୍ଟ ସଙ୍କେତ ନାହିଁ — ଅପେକ୍ଷା କରନ୍ତୁ', trendUp: 'ଧାରା ଉପରକୁ ଅଛି', trendDown: 'ଧାରା ତଳକୁ ଅଛି', trendFlat: 'ଧାରା ସ୍ଥିର ଅଛି', stop: 'ଷ୍ଟପ୍-ଲସ୍', advice: 'ଏହା ଯାନ୍ତ୍ରିକ ବିଶ୍ଳେଷଣ, ପରାମର୍ଶ ନୁହେଁ।', demo: 'ଡେମୋ ଡାଟା — ଲାଇଭ୍ ଡାଟା ଶୀଘ୍ର ଆସିବ।' },
+    as: { strongBuy: 'শক্তিশালী ক্ৰয় সংকেত', buy: 'ক্ৰয় সংকেত', sell: 'বিক্ৰী সংকেত', strongSell: 'শক্তিশালী বিক্ৰী সংকেত', wait: 'স্পষ্ট সংকেত নাই — অপেক্ষা কৰক', trendUp: 'ধাৰা ওপৰমুৱা', trendDown: 'ধাৰা তলমুৱা', trendFlat: 'ধাৰা স্থিৰ', stop: 'ষ্টপ-লছ', advice: 'এইটো কাৰিকৰী বিশ্লেষণ, পৰামৰ্শ নহয়।', demo: 'ডেমো ডেটা — লাইভ ডেটা সোনকালে আহিব।' },
+    ur: { strongBuy: 'مضبوط خریداری کا اشارہ', buy: 'خریداری کا اشارہ', sell: 'فروخت کا اشارہ', strongSell: 'مضبوط فروخت کا اشارہ', wait: 'کوئی واضح اشارہ نہیں — انتظار کریں', trendUp: 'رجحان اوپر کی طرف ہے', trendDown: 'رجحان نیچے کی طرف ہے', trendFlat: 'رجحان مستحکم ہے', stop: 'اسٹاپ لاس', advice: 'یہ تکنیکی تجزیہ ہے، مشورہ نہیں۔', demo: 'ڈیمو ڈیٹا — لائیو ڈیٹا جلد آئے گا۔' },
+    ne: { strongBuy: 'बलियो किन्ने संकेत', buy: 'किन्ने संकेत', sell: 'बेच्ने संकेत', strongSell: 'बलियो बेच्ने संकेत', wait: 'स्पष्ट संकेत छैन — पर्खनुहोस्', trendUp: 'प्रवृत्ति माथितिर छ', trendDown: 'प्रवृत्ति तलतिर छ', trendFlat: 'प्रवृत्ति स्थिर छ', stop: 'स्टप-लस', advice: 'यो प्राविधिक विश्लेषण हो, सल्लाह होइन।', demo: 'डेमो डाटा — लाइभ डाटा चाँडै आउँछ।' },
+    sa: { strongBuy: 'दृढः क्रयसङ्केतः', buy: 'क्रयसङ्केतः', sell: 'विक्रयसङ्केतः', strongSell: 'दृढः विक्रयसङ्केतः', wait: 'स्पष्टः सङ्केतः नास्ति — प्रतीक्षस्व', trendUp: 'प्रवृत्तिः ऊर्ध्वगा', trendDown: 'प्रवृत्तिः अधोगा', trendFlat: 'प्रवृत्तिः समा', stop: 'स्टॉप्-लॉस्', advice: 'इदं प्राविधिकविश्लेषणम्, न तु परामर्शः।', demo: 'डेमो-दत्तांशः — सद्यः सजीवदत्तांशः आगमिष्यति।' }
+  };
+  function _tno(s) { return '<span translate="no" class="tno">' + s + '</span>'; }
+  function verdictNLG(o) {
+    o = o || {};
+    var lang = o.lang || currentLang || 'en';
+    var t = VERDICT_NLG[lang] || VERDICT_NLG.en;
+    var dec = o.decision, strong = !!o.strong;
+    var sigP = dec === 'BUY' ? (strong ? t.strongBuy : t.buy)
+      : dec === 'SELL' ? (strong ? t.strongSell : t.sell) : t.wait;
+    var parts = [_tno(o.symbol || '') + ': ' + sigP + '.'];
+    if (dec !== 'WAIT' && o.trend) parts.push((o.trend === 'up' ? t.trendUp : o.trend === 'down' ? t.trendDown : t.trendFlat) + '.');
+    if (o.rsi != null) parts.push(_tno('RSI') + ' ' + _tno(o.rsi) + '.');
+    if (dec !== 'WAIT' && o.stopPrice != null) parts.push(t.stop + ': ' + _tno('₹' + o.stopPrice) + (o.stopPct != null ? ' (' + _tno(o.stopPct + '%') + ')' : '') + '.');
+    var body = parts.join(' ');
+    if (o.demo) body = _tno('DEMO') + ' — ' + t.demo + ' ' + body;
+    return body + ' ' + t.advice;
+  }
+
   window.Chitti = window.Chitti || {};
   window.Chitti.lang = {
     set: translateAll,
     current: function () { return currentLang; },
     list: LANGS.slice(),
     theme: THEME,
+    // G2: vernacular verdict NLG. opts {decision,strong,symbol,rsi,trend,stopPrice,stopPct,demo,lang}.
+    verdictNLG: verdictNLG,
+    // Languages with hand-verified verdict templates (others fall back to English).
+    verdictCovered: Object.keys(VERDICT_NLG),
     // Single-string lookup. Returns null if the active-lang pack lacks the key
     // (or isn't loaded yet). Used by chitti_a11y.js for dynamic section names.
     lookupText: function (text, lang) { return lookup(text, lang || currentLang); },
