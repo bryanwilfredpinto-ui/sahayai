@@ -1203,7 +1203,10 @@ function speakPage() {
   };
   window.cnaiAnalogySpeak = function () { var h = document.getElementById('analogy-content'); var t = h && h.getAttribute('data-analogy-speak'); if (t) speak(t); };
 
-  function init() { try { fillSelects(); } catch (e) {} }
+  // Auto-explain on open so "pick an analogy → Chitti explains an AI concept in it"
+  // works immediately (default concept in the Cricket analogy); changing the
+  // analogy dropdown (Share market / Cricket / Farming …) re-explains via onchange.
+  function init() { try { fillSelects(); window.cnaiAnalogyGo(); } catch (e) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
@@ -1224,7 +1227,8 @@ function speakPage() {
       return '<li style="margin:4px 0">' + (t.free ? '🆓' : '💲') + ' <strong>' + esc(t.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(t.category) + (t.free ? ', free' : ', paid') + ')</span></li>';
     }).join('');
     var certRows = s.certifications.map(function (cc) {
-      return '<li style="margin:4px 0">🎓 <strong>' + esc(cc.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(cc.provider) + ', free)</span></li>';
+      var yt = '<a href="' + esc(ytLearn(cc.name)) + '" target="_blank" rel="noopener" aria-label="Watch a free YouTube video that teaches ' + esc(cc.name) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:0 8px;margin-left:6px;color:#b8500e">📺 YouTube</a>';
+      return '<li style="margin:4px 0">🎓 <strong>' + esc(cc.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(cc.provider) + ', free)</span>' + yt + '</li>';
     }).join('');
     var caveatRows = s.caveats.map(function (c) { return '<li style="margin:4px 0">⚠️ ' + esc(c) + '</li>'; }).join('');
     host.innerHTML =
@@ -1334,6 +1338,12 @@ function speakPage() {
   }
   var LAST_UP = null;
   function medal(i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🎓'; }
+  // One free YouTube video per certificate — a search link (always resolves, never a
+  // fabricated/dead video id) tuned so the top result teaches the cert's core concept.
+  function ytLearn(name) {
+    var q = String(name || 'AI').replace(/\s*\(.*?\)\s*/g, ' ').replace(/[—–·|].*$/, '').trim();
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q + ' full course for beginners');
+  }
   window.cnaiCareerUpgrade = function () {
     initToolChips();
     var tools = selectedTools();
@@ -1358,7 +1368,8 @@ function speakPage() {
     }).join('');
     var certRows = (up.certs || []).map(function (c, i) {
       var startBtn = c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener" aria-label="Start the certificate ' + esc(c.name) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:0 10px;margin-left:6px;color:#0a55c8">▶ Start this cert</a>' : '';
-      return '<li style="margin:6px 0;line-height:1.5">' + (c.free ? medal(i) : '🎓') + ' <strong>' + esc(c.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(c.provider) + (c.hours ? ' · ' + hoursLabel(c.hours) : '') + (c.cost ? ' · ' + esc(c.cost) : '') + ')</span>' + badge(c.free) + startBtn + '</li>';
+      var ytBtn = '<a href="' + esc(ytLearn(c.name)) + '" target="_blank" rel="noopener" aria-label="Watch a free YouTube video that teaches ' + esc(c.name) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:0 10px;margin-left:6px;color:#b8500e">📺 Learn free on YouTube</a>';
+      return '<li style="margin:6px 0;line-height:1.5">' + (c.free ? medal(i) : '🎓') + ' <strong>' + esc(c.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(c.provider) + (c.hours ? ' · ' + hoursLabel(c.hours) : '') + (c.cost ? ' · ' + esc(c.cost) : '') + ')</span>' + badge(c.free) + startBtn + ytBtn + '</li>';
     }).join('');
     host.innerHTML =
       '<div class="career-upgrade-card" style="border:2px solid #138808;border-radius:12px;padding:14px;margin:10px 0">' +
