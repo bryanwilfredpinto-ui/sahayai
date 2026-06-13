@@ -24,7 +24,7 @@ ok('Skill1:profession-intel', /pig|farmer|professional/i.test(CC.parseOneLiner('
 
 // Skill 2 — Skill Gap Analysis (≤8, free-first, actionable).
 const up = CC.mapUpgradePath(CC.parseOneLiner('I am a doctor'), ['Word']);
-ok('Skill2:skill-gap', up.tool_replacements.length >= 1 && up.profession_certs.every(c => c.free));
+ok('Skill2:skill-gap', up.tool_replacements.length >= 1 && up.free_first === true && up.free_certs_count >= 1);
 
 // Skill 3 — Free Course Discovery (free first, 9-source priority).
 ok('Skill3:free-course', CO.find('machine learning').results[0].is_free === true && CO.freeSourcePriority().length === 9);

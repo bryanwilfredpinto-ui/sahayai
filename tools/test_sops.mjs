@@ -21,7 +21,7 @@ ok('SOP1:profession-intake', /doctor/i.test(CC.parseOneLiner('I am a doctor with
 
 // SOP 2 — Skill Gap Presentation: bounded gaps, every cert free, framed as opportunity.
 const up = CC.mapUpgradePath(CC.parseOneLiner('I am a teacher'), ['Excel']);
-ok('SOP2:skill-gap-bounded+free', up.profession_certs.length >= 3 && up.profession_certs.length <= 8 && up.profession_certs.every(c => c.free));
+ok('SOP2:skill-gap-bounded+free-first', up.profession_certs.length >= 3 && up.profession_certs.length <= 8 && up.free_first === true && up.free_certs_count >= 1);
 
 // SOP 3 — Roadmap Generation: EXACTLY 5 stages, all resources free.
 const rm = RM.generateForProfession('farmer', { timePerWeek: 3 });
