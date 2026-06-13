@@ -8,7 +8,7 @@
 | BO | Title | Research | Document | Code | Test | Self-Check | Status |
 |----|-------|:--:|:--:|:--:|:--:|:--:|--------|
 | 1 | Roadmap Engine | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
-| 2 | Course Discovery & Registration | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
+| 2 | Course Discovery & Registration | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 3 | Chitti Learns & Coaches | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
 | 4 | Professional Career Coach | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
 | 5 | Swarm Learning | ☐ | ☐ | ☐ | ☐ | ☐ | pending |

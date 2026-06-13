@@ -205,5 +205,115 @@
 
   function tierLadder() { return TIERS.slice(); }
 
-  return { find, registrationPlan, speakable, tierLadder, TIER_LABEL, _CATALOG: CATALOG };
+  // ══════════════════════════════════════════════════════════════════════════
+  // BO2 (2026-06-13): SCAM DETECTION (Skill 10 / SOP 10) + CERTIFICATION GATE
+  // (SOP 11). Additive — original API unchanged. Deterministic, no LLM.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // The 9-source free priority (Skill 3 / SOP 5), as a public ordered list.
+  const FREE_SOURCE_PRIORITY = [
+    { rank: 1, source: 'NIELIT / Digital India (Govt)', url: 'https://www.nielit.gov.in/', free: 'Government-backed, free, Hindi + English' },
+    { rank: 2, source: 'Google (Skillshop / Google AI / Grow)', url: 'https://grow.google/', free: 'Free, globally trusted' },
+    { rank: 3, source: 'IBM SkillsBuild', url: 'https://skillsbuild.org/', free: 'Free AI + data tracks' },
+    { rank: 4, source: 'NVIDIA Deep Learning Institute', url: 'https://www.nvidia.com/en-us/training/', free: 'Select free DL courses' },
+    { rank: 5, source: 'Hugging Face', url: 'https://huggingface.co/learn', free: 'Free NLP / agents, with certificate' },
+    { rank: 6, source: 'SWAYAM / NPTEL (IIT)', url: 'https://swayam.gov.in/', free: 'IIT/IIM quality, free to learn (optional exam fee)' },
+    { rank: 7, source: 'Microsoft Learn', url: 'https://learn.microsoft.com/training/', free: 'Free Azure AI / Copilot' },
+    { rank: 8, source: 'YouTube (curated: 3Blue1Brown, Krish Naik, StatQuest, Sentdex)', url: 'https://www.youtube.com/', free: 'Free, no certificate' },
+    { rank: 9, source: 'Coursera Audit Mode', url: 'https://www.coursera.org/', free: 'Videos + exercises free — NO certificate in audit mode' },
+  ];
+  function freeSourcePriority() { return FREE_SOURCE_PRIORITY.slice(); }
+
+  // The 7 scam patterns (Skill 10). Each: id, name, test(text) -> evidence|null.
+  function money(t) { return /(?:₹|rs\.?|inr|\$)\s?\d|\d+\s?(?:k|lakh|thousand|rupees)/i.test(t); }
+  const SCAM_PATTERNS = [
+    { id: 'unrealistic_income', name: 'Unrealistic income promise',
+      test: t => (/(earn|income|salary|kamao|kamai)/i.test(t) && (money(t) || /\d/.test(t)) && /(per (day|week|month)|\/(day|week|month)|in \d+\s?(day|days|week|hour)|guarant)/i.test(t)) ? 'Promises income from learning AI ("' + snippet(t, /earn[^.]*|₹[^.]*|\d+\s?(?:k|lakh)[^.]*/i) + '") — no genuine course guarantees earnings.' : null },
+    { id: 'fake_govt_cert', name: 'Fake government certification (paid)',
+      test: t => (/(govt|government|sarkari|ministry|national)/i.test(t) && /(certif|certified)/i.test(t) && money(t)) ? 'Charges money for a "government" certificate — real govt AI courses (NIELIT) are free.' : null },
+    { id: 'unrealistic_timeline', name: 'Unrealistic timeline',
+      test: t => (/\b\d+\s?(hour|hr|day)s?\b/i.test(t) && /(certif|expert|master|pro|complete)/i.test(t) && /\b([1-9]|1\d)\s?(hour|hr|day)s?\b/i.test(t)) ? 'Claims expert/certified in hours or a few days ("' + snippet(t, /\d+\s?(hour|hr|day)s?[^.]*/i) + '") — genuine AI certs need 20–100+ hours.' : null },
+    { id: 'pressure_tactics', name: 'Pressure / false urgency',
+      test: t => /(only \d+ seats?|limited seats?|hurry|last chance|offer ends|ends (tonight|today|midnight)|enroll now or|today only|fast filling)/i.test(t) ? 'Uses artificial urgency ("' + snippet(t, /(only \d+ seats?|limited seats?|offer ends[^.]*|ends (tonight|today|midnight)|today only)/i) + '") — reputable providers do not pressure you.' : null },
+    { id: 'job_guarantee_fee', name: 'Job guarantee + upfront fee',
+      test: t => ((/100\s?%/.test(t) || /guarantee/i.test(t)) && /(placement|job|naukri)/i.test(t)) ? 'Claims a job/placement guarantee' + (money(t) || /(pay|fee|register|deposit)/i.test(t) ? ' and asks for a fee' : '') + ' — legitimate employers never charge to apply, and no one can guarantee a job.' : null },
+    { id: 'no_transparency', name: 'No transparency',
+      test: t => /(no curriculum|syllabus not|no details|no instructor|secret method|trust me)/i.test(t) ? 'No curriculum / instructor / verifiable details shown — real MOOCs publish all of this.' : null },
+    { id: 'social_media_only', name: 'Social-media-only / no real website',
+      test: t => /(whatsapp|telegram|instagram|insta\b|dm me|dm for|reel|forwarded)/i.test(t) ? 'Sold only via WhatsApp/Telegram/Instagram DM — legitimate courses have a stable, verifiable website.' : null },
+  ];
+  function snippet(t, re) { const m = String(t).match(re); return m ? m[0].trim().slice(0, 60) : ''; }
+
+  // scamCheck(text[, topic]) — never definitively accuses; offers a free alternative + 1930.
+  function scamCheck(text, topic) {
+    const t = String(text || '');
+    const hits = SCAM_PATTERNS.map(p => { const ev = p.test(t); return ev ? { id: p.id, name: p.name, evidence: ev } : null; }).filter(Boolean);
+    const isSuspicious = hits.length > 0;
+    // a verified free alternative (free-first), from the catalog
+    let alt = null;
+    if (isSuspicious) {
+      const f = find(topic || (/(\bai\b|machine learning|data|python|llm|genai)/i.test(t) ? 'ai' : 'ai'));
+      const firstFree = f.results.find(r => r.is_free);
+      if (firstFree) alt = { provider: firstFree.provider, course: firstFree.course, url: firstFree.url, tier_label: firstFree.tier_label };
+    }
+    const lines = [];
+    if (isSuspicious) {
+      lines.push('⚠️ This shows ' + hits.length + ' warning sign' + (hits.length > 1 ? 's' : '') + ' of a scam (Chitti is not saying it definitely is one — please decide for yourself):');
+      hits.forEach((h, i) => lines.push((i + 1) + '. ' + h.evidence));
+      if (alt) lines.push('Verified free alternative: ' + alt.provider + ' — ' + alt.course + ' (' + alt.tier_label + ').');
+      lines.push('To report a scam: cybercrime.gov.in or call 1930 (Cyber Crime Helpline).');
+    }
+    return {
+      input_excerpt: t.slice(0, 140),
+      is_suspicious: isSuspicious,
+      patterns_checked: SCAM_PATTERNS.length,
+      patterns_detected: hits,
+      free_alternative: alt,
+      report_to: { website: 'cybercrime.gov.in', helpline: '1930' }, // plain text only — never a tel: link (COP_DENYLIST)
+      warning: lines.join(' '),
+      disclaimer: 'Chitti flags warning signs with evidence — it never definitively accuses a provider.',
+      generated_by: 'cnai_course_discovery.scamCheck (7-pattern, deterministic)',
+    };
+  }
+
+  // certificationGate(course[, opts]) — SOP 11: 4 checks before any cert is shown.
+  function certificationGate(course, opts) {
+    opts = opts || {};
+    course = course || {};
+    const tags = course.tags && !course.tags.includes('*') ? course.tags : ['ai'];
+    // Check 1 — free alternative checked
+    const f = find((opts.topic || tags[0] || 'ai'));
+    const freeAlts = f.results.filter(r => r.is_free && r.provider !== course.provider).slice(0, 2);
+    const isFree = course.tier ? course.tier !== 'paid' : (String(course.cost || '').toUpperCase().includes('FREE'));
+    const check1 = { id: 'free_alternative', label: 'Free alternative checked',
+      pass: isFree || freeAlts.length > 0,
+      detail: isFree ? 'This course itself is free to learn.' : (freeAlts.length ? 'Free options that cover this: ' + freeAlts.map(a => a.provider).join(', ') + '.' : 'No free alternative found yet — Chitti will keep looking.') };
+    // Check 2 — cost disclosed (exact)
+    const cost = course.cost || (isFree ? 'FREE' : '');
+    const check2 = { id: 'cost_disclosed', label: 'Cost disclosed', pass: !!cost,
+      detail: cost ? ('Cost: ' + cost) : 'Cost not disclosed — do not proceed until it is.' };
+    // Check 3 — time estimated
+    const time = course.est_time || opts.est_time || (isFree ? 'Typically 10–40 hours, self-paced' : '');
+    const check3 = { id: 'time_estimated', label: 'Time estimated', pass: !!time,
+      detail: time ? ('Time: ' + time) : 'Time commitment not estimated.' };
+    // Check 4 — provider verified (named + URL)
+    const check4 = { id: 'provider_verified', label: 'Provider + verify URL', pass: !!(course.provider && course.url),
+      detail: (course.provider && course.url) ? (course.provider + ' — verify at ' + course.url) : 'Provider or verification URL missing.' };
+    const checks = [check1, check2, check3, check4];
+    const passes = checks.every(c => c.pass);
+    return {
+      course: (course.provider || 'Course') + (course.course ? ' — ' + course.course : ''),
+      checks,
+      passes,
+      blocked: !passes,
+      block_reason: passes ? '' : 'SOP 11: a certification may NOT be shown until all 4 checks pass. Missing: ' + checks.filter(c => !c.pass).map(c => c.label).join(', ') + '.',
+      generated_by: 'cnai_course_discovery.certificationGate (SOP 11, 4 checks)',
+    };
+  }
+
+  return {
+    find, registrationPlan, speakable, tierLadder, TIER_LABEL, _CATALOG: CATALOG,
+    // BO2 additions (backward-compatible):
+    scamCheck, certificationGate, freeSourcePriority, _SCAM_PATTERNS: SCAM_PATTERNS,
+  };
 });
