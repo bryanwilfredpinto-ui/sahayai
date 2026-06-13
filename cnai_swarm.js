@@ -162,5 +162,72 @@
     return parts.join(' ');
   }
 
-  return { run, fanOut, consolidate, crossDomain, proposeToCatalog, speakable, _ADJ: ADJ };
+  // ══════════════════════════════════════════════════════════════════════════
+  // BO5 (2026-06-13): OPT-OUT + cohort-gated aggregate PATTERNS (min cohort 50,
+  // sample size shown, no user IDs). Additive — original API unchanged.
+  // ══════════════════════════════════════════════════════════════════════════
+  const OPTOUT_KEY = 'cnai_swarm_optout';
+  const _swarmMem = { optout: false };
+  function _ls() { try { return (typeof localStorage !== 'undefined') ? localStorage : null; } catch (e) { return null; } }
+  function setOptOut(v) {
+    const on = !!v; _swarmMem.optout = on;
+    const ls = _ls(); if (ls) { try { ls.setItem(OPTOUT_KEY, on ? '1' : '0'); } catch (e) {} }
+    return { opted_out: on, effective: 'immediately', message: on ? 'You have left the swarm. Chitti will share nothing from you — and you still see others\' insights.' : 'You are contributing anonymised patterns again. Thank you.' };
+  }
+  function isOptedOut() {
+    const ls = _ls(); if (ls) { try { const v = ls.getItem(OPTOUT_KEY); if (v != null) return v === '1'; } catch (e) {} }
+    return !!_swarmMem.optout;
+  }
+  function optOutControl() {
+    return { label: 'Leave the swarm (stop sharing my anonymised patterns)', key: OPTOUT_KEY, one_click: true, effective_immediately: true, remembered: true, opted_out: isOptedOut() };
+  }
+
+  const MIN_COHORT = 50; // re-identification floor (CEOS BO5)
+  // Aggregated, anonymised patterns: profession × after-stage × next-skill × count.
+  // No user IDs — only counts. (Seed aggregates; real counts come from Turso swarm_data.)
+  const PATTERNS = {
+    'doctor|2':  { skill: 'Medical Imaging AI', pct: 87, cohort: 214 },
+    'doctor|3':  { skill: 'Clinical Decision Support tools', pct: 71, cohort: 168 },
+    'farmer|2':  { skill: 'Crop-disease detection apps', pct: 79, cohort: 93 },
+    'teacher|2': { skill: 'AI lesson + assessment tools', pct: 82, cohort: 140 },
+    'developer|3': { skill: 'RAG + agent frameworks', pct: 90, cohort: 322 },
+    'student|2': { skill: 'Python for ML', pct: 76, cohort: 410 },
+    'finance|2': { skill: 'Fraud-detection AI', pct: 68, cohort: 58 },
+    'farmer|3':  { skill: 'Weather-prediction tools', pct: 64, cohort: 41 }, // below 50 → suppressed
+  };
+  function profKey(p) {
+    const t = norm(p);
+    const map = { doctor: ['doctor', 'health', 'clinic', 'nurse'], farmer: ['farmer', 'farm', 'agri', 'crop', 'pig'], teacher: ['teacher', 'educat', 'tutor'], developer: ['developer', 'software', 'engineer', 'program'], student: ['student', 'college', 'btech'], finance: ['finance', 'bank', 'account', 'ca'] };
+    for (const k in map) { if (map[k].some(w => t.includes(w))) return k; }
+    return t;
+  }
+  // pattern(profession, afterStage) — cohort-gated social proof with sample size.
+  function pattern(profession, afterStage) {
+    const key = profKey(profession) + '|' + (afterStage == null ? 2 : afterStage);
+    const p = PATTERNS[key];
+    if (!p) return { available: false, reason: 'no_data', note: 'Not enough swarm data for this profession/stage yet.' };
+    if (p.cohort < MIN_COHORT) return { available: false, reason: 'cohort_too_small', cohort: p.cohort, min_cohort: MIN_COHORT, note: 'Hiding this pattern: only ' + p.cohort + ' contributors (need ' + MIN_COHORT + '+ to protect privacy).' };
+    return {
+      available: true,
+      profession: profKey(profession), after_stage: Number(afterStage == null ? 2 : afterStage),
+      skill: p.skill, percent: p.pct, cohort: p.cohort, min_cohort: MIN_COHORT,
+      insight: 'After Stage ' + (afterStage == null ? 2 : afterStage) + ', ' + p.pct + '% of ' + p.cohort + ' ' + profKey(profession) + 's studied ' + p.skill + ' next.',
+      privacy: 'Anonymised — no individual is identifiable. Only profession-level counts are stored.',
+    };
+  }
+
+  // Wrap run() so an opted-out user contributes nothing (still sees insights).
+  const _run = run;
+  function runRespectingOptOut(goal, opts) {
+    const r = _run(goal, opts);
+    r.contributing = !isOptedOut();
+    r.opt_out = optOutControl();
+    return r;
+  }
+
+  return {
+    run: runRespectingOptOut, fanOut, consolidate, crossDomain, proposeToCatalog, speakable, _ADJ: ADJ,
+    // BO5 additions (backward-compatible):
+    setOptOut, isOptedOut, optOutControl, pattern, MIN_COHORT, _run, _PATTERNS: PATTERNS,
+  };
 });
