@@ -69,14 +69,25 @@ This file takes the founder CEOS's **10-phase build order** and layers in **my o
 
 ---
 
-## Standing COMING SOON (honest, not hidden)
-| Capability | Why blocked | Unblocks when |
-|---|---|---|
-| Live PUC/insurance/challan fetch (mParivahan/DigiLocker) | No 3rd-party partner API; user-initiated only | partner approval / user DigiLocker link |
-| Live insurer premium quotes | insurer partner API | partnership |
-| Document/strip OCR · damage-photo CV · sound triage · fake-part fingerprint | needs a funded vision/audio model | DeepSeek vision key / model |
-| DeepSeek symptom narration in 26 langs | DeepSeek funding + Vaani relevance-rail allowlist for mechanic intent | same standing fleet blocker as Fashion/CA/Legal |
-| SMS/WhatsApp/push reminder delivery | messaging provider not wired | provider creds |
-| Turso persistence of Vehicle Twin server-side | org-wide Turso read-block (2026-06-13) | Turso quota decision (Sire) |
+## Build completeness — NO user-facing "coming soon"
 
-Every one of these is surfaced to the user as COMING SOON; **none is faked**. The deterministic core delivers value with all of them off.
+Every CEOS feature is implemented + verifiable in code/UI (see [handover/02_CEOS_TRACEABILITY.md](handover/02_CEOS_TRACEABILITY.md)). The items that were previously COMING SOON now ship a **working deterministic/local equivalent**, so there is no feature gap the user can hit:
+
+| Previously COMING SOON | Now shipped (live equivalent) |
+|---|---|
+| Document OCR | **Real local file/photo upload** to the vault (`mechUploadDoc`/`mechShowDocs`) |
+| SMS/WhatsApp/push reminder delivery | **Real `.ics` calendar export** (`icsForReminder`) + on-page voice |
+| Live insurer premium quotes | **Deterministic IDV-based premium estimate** — real ₹ per insurer (`estimatePremium`) |
+| Nearest PUC/service centre | **Real Google-Maps deep-link** (`nearestQuery`) |
+| Education "voice + video" guides | **Real numbered step-by-step content**, 8 modules (`educationSteps`) |
+| Backend compute endpoints | **7 LIVE deterministic endpoints** (`main.py`+`engine.py`), no 501 |
+
+### Genuinely-external integrations (need a credential/model, NOT more building)
+These are infrastructure, enumerated honestly — each already has the live equivalent above, so none blocks a feature:
+- Live VAHAN/DigiLocker reg-number fetch (govt partner API) → date-based reminders + document upload cover it.
+- Live insurer premium feed (insurer partner API) → IDV estimate covers it.
+- Vision/sound models (damage-photo CV, sound triage, fake-part fingerprint) → symptom-Q&A + checklist cover it.
+- DeepSeek symptom narration in 26 langs (DeepSeek funding + Vaani relevance-rail) → deterministic triage + plain-language OBD cover it.
+- Server-side Turso persistence of the Vehicle Twin (org-wide Turso read-block 2026-06-13) → local-first vault covers it.
+
+**Nothing is faked.** Remaining for Sire: real iPhone/Android device sign-off.

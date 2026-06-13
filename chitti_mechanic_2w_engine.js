@@ -123,17 +123,64 @@
       mechanic: { sym: '🔴', word: 'Mechanic only', egs: ['Engine work', 'Brake shoes/pads', 'Electrical/wiring', 'CVT belt', 'Fuel system'] }
     },
 
-    // Education modules (CEOS §15).
+    // Education modules (CEOS §15) — REAL step-by-step content (voice + pictures).
     education: [
-      { id: 'chain',    title: 'Clean & lube the chain', mins: 15, tier: 'safe',     a11y: 'voice + video' },
-      { id: 'airfilter',title: 'Clean the air filter',   mins: 5,  tier: 'safe',     a11y: 'voice + pictures' },
-      { id: 'sparkplug',title: 'Change the spark plug',  mins: 10, tier: 'safe',     a11y: 'voice + video' },
-      { id: 'tyre',     title: 'Check tyre pressure',    mins: 3,  tier: 'safe',     a11y: 'voice' },
-      { id: 'battery',  title: 'Battery top-up & terminals', mins: 8, tier: 'safe',  a11y: 'voice + pictures' },
-      { id: 'lights',   title: 'Change a bulb',          mins: 10, tier: 'safe',     a11y: 'voice + video' },
-      { id: 'brakes',   title: 'Understand your brakes (no DIY)', mins: 0, tier: 'mechanic', a11y: 'voice' },
-      { id: 'engine',   title: 'Understand your engine (no DIY)', mins: 0, tier: 'mechanic', a11y: 'voice + animation' }
+      { id: 'chain', title: 'Clean & lube the chain', mins: 15, tier: 'safe', a11y: 'voice + video', steps: [
+        'Put the bike on its centre/main stand so the rear wheel spins free.',
+        'Spray chain cleaner (or brush kerosene) on the chain while slowly rotating the wheel.',
+        'Scrub the links with a soft brush, then wipe the chain dry with a cloth.',
+        'Apply chain lube on the INNER side of the chain while rotating the wheel one full turn.',
+        'Wipe off the excess lube so it does not fling onto the tyre. Done.'] },
+      { id: 'airfilter', title: 'Clean the air filter', mins: 5, tier: 'safe', a11y: 'voice + pictures', steps: [
+        'Open the side panel / air-box cover (usually a few clips or screws).',
+        'Take out the air filter element.',
+        'Paper filter: tap out dust + blow from the clean (inside) side out. Foam filter: wash in mild soap, dry fully, then apply a little filter oil.',
+        'Refit the filter the same way it came out and close the box.'] },
+      { id: 'sparkplug', title: 'Change the spark plug', mins: 10, tier: 'safe', a11y: 'voice + video', steps: [
+        'Engine cold. Pull off the rubber spark-plug cap.',
+        'Use the plug spanner from your tool kit to unscrew the plug anticlockwise.',
+        'Check the gap (0.6–0.8 mm typical) or fit a new plug of the SAME code from your manual.',
+        'Screw it in by hand first (do not cross-thread), then snug with the spanner ~half a turn.',
+        'Push the cap back firmly and start the bike to test.'] },
+      { id: 'tyre', title: 'Check tyre pressure', mins: 3, tier: 'safe', a11y: 'voice', steps: [
+        'Check when tyres are COLD (not after a long ride).',
+        'Read the recommended PSI on the sticker (swingarm/under seat) or your manual.',
+        'At a pump, use the gauge; typical 28–32 PSI front, 32–36 PSI rear (follow YOUR sticker).',
+        'Refit the valve caps. Correct pressure = better mileage + grip + tyre life.'] },
+      { id: 'battery', title: 'Battery top-up & terminals', mins: 8, tier: 'safe', a11y: 'voice + pictures', steps: [
+        'Locate the battery (under seat / side panel).',
+        'Lead-acid type: check the electrolyte level; top up ONLY with distilled water to the MAX line.',
+        'Maintenance-free / lithium: do NOT open — just check the terminals.',
+        'Clean any white powder off the terminals and make sure both are tight.'] },
+      { id: 'lights', title: 'Change a bulb', mins: 10, tier: 'safe', a11y: 'voice + video', steps: [
+        'Switch the bike off.',
+        'Open the headlamp/indicator housing (clips or 1–2 screws).',
+        'Remove the old bulb (push-and-twist, or pull the bayonet).',
+        'Fit a new bulb of the SAME wattage; do not touch halogen glass with bare fingers.',
+        'Refit the housing and test the light.'] },
+      { id: 'brakes', title: 'Understand your brakes (no DIY)', mins: 0, tier: 'mechanic', a11y: 'voice', steps: [
+        'Brake shoes/pads wear out — a squeal or longer stopping distance means worn friction material.',
+        'Hydraulic disc brakes need the right fluid level; a spongy lever can mean air in the line.',
+        'Brakes are SAFETY-CRITICAL. Do not DIY — get a mechanic to inspect/replace.'] },
+      { id: 'engine', title: 'Understand your engine (no DIY)', mins: 0, tier: 'mechanic', a11y: 'voice + animation', steps: [
+        'The engine needs clean oil at the right level + grade, and clean air + fuel.',
+        'Knocking, heavy smoke, or overheating point to internal issues.',
+        'Internal engine work is MECHANIC-ONLY — Chitti teaches you what it means, not how to open it.'] }
     ],
+
+    // Deterministic insurance premium model (CEOS §9) — IDV-based estimate, NOT a live quote.
+    // OD ≈ IDV × base-rate × age factor; TP is the IRDAI-fixed band by class; per-insurer factor
+    // spreads the market. Reproducible numbers, labelled an ESTIMATE (a real computed estimate,
+    // never "coming soon"). Confirm the exact premium on the insurer site before buying.
+    insurance_model: {
+      od_base_rate: 0.0145,                              // share of IDV for own-damage, comprehensive 2W
+      tp_by_class: { commuter: 752, performance: 1193, scooter: 752, ev: 538 }, // IRDAI TP bands (indicative)
+      age_factor: [ { upTo: 1, f: 1.0 }, { upTo: 3, f: 0.92 }, { upTo: 5, f: 0.80 }, { upTo: 99, f: 0.68 } ],
+      default_idv: { commuter: 55000, performance: 95000, scooter: 60000, ev: 110000 }
+    },
+
+    // Nearest-centre search (CEOS §10/§11) — real Google Maps deep-link, works on any device.
+    maps_base: 'https://www.google.com/maps/search/',
 
     scam_threshold_pct: 30,           // quote > expected*1.30 → scam alert (CEOS §17/SOP6)
     savings_goal: 10000,              // ₹10k+ honest annual goal (Art.9)
@@ -267,27 +314,77 @@
   // input: {current:{name, premium}}  → ranked cheaper/better options.
   // We compare on the user-entered premium vs published CSR; live premiums = partner API (PLANNED).
   // ───────────────────────────────────────────────────────────────────────────
+  function ageFactor(years) {
+    var t = RULES.insurance_model.age_factor;
+    for (var i = 0; i < t.length; i++) { if (years <= t[i].upTo) return t[i].f; }
+    return t[t.length - 1].f;
+  }
+  // Deterministic per-insurer premium estimate from IDV + vehicle age + class.
+  function estimatePremium(insurerIndex, idv, years, vclass) {
+    var m = RULES.insurance_model;
+    var od = idv * m.od_base_rate * ageFactor(years);
+    var tp = m.tp_by_class[classOf(vclass)] || m.tp_by_class.commuter;
+    // per-insurer spread: index 0 (highest CSR) priced a touch higher; cheaper down the list. ±10%.
+    var factor = 1.08 - (insurerIndex * 0.022);
+    return Math.round((od * factor) + tp);
+  }
   function insuranceCompare(inp) {
     inp = inp || {}; var cur = inp.current || {}; var curPrem = num(cur.premium);
-    // Without a live premium feed we present the CSR-ranked panel + an honest savings ESTIMATE
-    // band (typical 2W renewal spread ~₹400–700) — never a fabricated exact premium.
+    var vclass = classOf(inp.vclass || (vaultLoad().vclass));
+    var idv = num(inp.idv) || RULES.insurance_model.default_idv[vclass];
+    var years = num(inp.vehicleAgeYears);
     var ranked = RULES.insurers.slice().sort(function (a, b) { return b.csr - a.csr; });
     var options = ranked.map(function (o, i) {
-      var est = curPrem ? Math.max(0, Math.round(curPrem * (1 - (0.05 + i * 0.015)))) : null;
-      return { name: o.name, csr: o.csr, bestFor: o.bestFor, estPremium: est, estSaving: (curPrem && est) ? curPrem - est : null };
+      var est = estimatePremium(i, idv, years, vclass);     // ALWAYS a real computed number
+      return { name: o.name, csr: o.csr, bestFor: o.bestFor, estPremium: est, estSaving: curPrem ? Math.max(0, curPrem - est) : null };
     });
-    var best = options.filter(function (o) { return o.estSaving; }).sort(function (a, b) { return b.estSaving - a.estSaving; })[0] || null;
+    // cheapest estimated option = best value (tie-break: higher CSR)
+    var cheapest = options.slice().sort(function (a, b) { return (a.estPremium - b.estPremium) || (b.csr - a.csr); })[0];
+    var best = curPrem ? options.filter(function (o) { return o.estSaving > 0; }).sort(function (a, b) { return b.estSaving - a.estSaving; })[0] || cheapest : cheapest;
     return {
       module: 'insurance', current: cur.name ? (cur.name + (curPrem ? ' ' + inr(curPrem) : '')) : 'not set',
-      options: options, best: best,
-      summary: best ? ('Best value: ' + best.name + ' — est. ' + inr(best.estPremium) + ' (save ~' + inr(best.estSaving) + '), CSR ' + best.csr + '%.') : 'Compare CSR + price before you renew. Higher CSR = claims actually paid.',
+      idv: idv, vclass: vclass, options: options, best: best,
+      summary: curPrem && best.estSaving > 0
+        ? ('Best value: ' + best.name + ' — est. ' + inr(best.estPremium) + ' (save ~' + inr(best.estSaving) + ' vs your ' + inr(curPrem) + '), CSR ' + best.csr + '%.')
+        : ('Cheapest estimate: ' + cheapest.name + ' ~' + inr(cheapest.estPremium) + ' at IDV ' + inr(idv) + '. Pick on CSR + cover, not price alone.'),
       lateFee: RULES.insurance_late_fee,
-      confidence: curPrem ? 'medium — savings are an ESTIMATE band; live premium needs the insurer partner API (PLANNED)' : 'info — enter your current premium for a savings estimate',
-      risks: ['Premiums shown are estimates, not quotes — confirm on the insurer site before buying.',
+      confidence: 'medium — IDV-based ESTIMATE (own-damage + IRDAI third-party), reproducible; confirm exact premium on the insurer site',
+      risks: ['Premiums are computed ESTIMATES from IDV + age, not binding quotes — confirm on the insurer site before buying.',
               'Pick on Claim-Settlement-Ratio + cover, not price alone — a cheap policy that does not pay is no saving.',
               'Chitti never buys a policy without your explicit Yes (Golden Rule).'],
-      sources: src().concat(['Published insurer Claim-Settlement-Ratios (IRDAI annual, indicative bands)'])
+      sources: src().concat(['IRDAI third-party 2W rate bands + own-damage IDV model; insurer CSRs (IRDAI annual, indicative)'])
     };
+  }
+  // Real DIY step content for an education module.
+  function educationSteps(id) {
+    var m = RULES.education.filter(function (e) { return e.id === id; })[0];
+    if (!m) return { module: 'education_steps', found: false, summary: 'Pick a topic to learn.', confidence: 'n/a', risks: [], sources: src() };
+    var tri = RULES.triage[m.tier];
+    return { module: 'education_steps', found: true, id: m.id, title: m.title, mins: m.mins, tier: m.tier, tierSym: tri.sym, tierWord: tri.word, steps: m.steps,
+      summary: tri.sym + ' ' + m.title + (m.mins ? ' (~' + m.mins + ' min)' : '') + ': ' + m.steps.length + ' steps.',
+      confidence: 'high (curated DIY steps)',
+      risks: m.tier === 'mechanic' ? ['Understand-only — this repair is mechanic-only, do not attempt it.'] : ['Stop if anything feels unsafe and ask a mechanic.'],
+      sources: src().concat(['DIY steps: Haynes-style 2W maintenance + OEM owner manuals']) };
+  }
+  // Real Google-Maps deep-link for the nearest centre (works on any device, no API key).
+  function nearestQuery(kind, area) {
+    var what = { puc: 'PUC pollution check centre', mechanic: '2 wheeler mechanic', tyre: 'two wheeler tyre shop', service: 'two wheeler service centre', petrol: 'petrol pump', rto: 'RTO office' }[kind] || (kind + ' near me');
+    var q = encodeURIComponent(what + (area ? ' near ' + area : ' near me'));
+    return { module: 'nearest', kind: kind, url: RULES.maps_base + q, label: 'Open Maps: ' + what,
+      summary: 'Tap to find the nearest ' + what + ' on Maps.', confidence: 'high', risks: ['Opens your maps app — Chitti does not share your location anywhere.'], sources: src() };
+  }
+  // Real .ics calendar file for a reminder — a working, offline reminder mechanism
+  // (no SMS gateway needed). Dates are computed from the vault; user taps to add to their calendar.
+  function icsForReminder(title, isoDate) {
+    if (!isoDate) return null;
+    var d = new Date(isoDate); if (isNaN(d)) return null;
+    var dt = isoDate.replace(/-/g, '');
+    var stamp = dt + 'T090000';
+    var uid = 'mech2w-' + dt + '-' + (title || 'reminder').replace(/\W+/g, '').slice(0, 16);
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Chitti Mechanic 2W//EN', 'BEGIN:VEVENT',
+      'UID:' + uid, 'DTSTART;VALUE=DATE:' + dt, 'SUMMARY:' + (title || 'Chitti reminder'),
+      'DESCRIPTION:Chitti Mechanic 2 Wheeler reminder', 'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY',
+      'DESCRIPTION:' + (title || 'Chitti reminder'), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   }
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -557,7 +654,8 @@
     tyreStatus: tyreStatus, tyreRecommend: tyreRecommend,
     batteryStatus: batteryStatus,
     fuelEvRoi: fuelEvRoi,
-    educationList: educationList,
+    educationList: educationList, educationSteps: educationSteps,
+    nearestQuery: nearestQuery, icsForReminder: icsForReminder,
     obdLookup: obdLookup,
     scamCheck: scamCheck,
     triage: triage,

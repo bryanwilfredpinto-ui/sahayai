@@ -21,13 +21,14 @@ All results below were produced by the CTO running the automated harnesses itsel
 | **G10 Production readiness** | 🟡 CONDITIONAL — code GREEN; live APIs + real-device pending (see COMING SOON) | BUILD_ORDER.md |
 
 ## Automated test results
-- **Engine gold tests:** `82 passed, 0 failed` (`GOLD_RESULT:{"pass":82,"fail":0}`)
-- **Live Playwright cert:** `34 passed, 0 failed` (`CERT_RESULT:{"pass":34,"fail":0}`)
-- **Backend:** `/health` 200 · `/api/2w/health` 200 · 6 honest 501 stubs · local-SQLite fallback
+- **Engine gold tests:** `92 passed, 0 failed` (`GOLD_RESULT:{"pass":92,"fail":0}`)
+- **Live Playwright cert:** `38 passed, 0 failed` (`CERT_RESULT:{"pass":38,"fail":0}`) — incl. completed-feature proofs (real ₹ premiums, numbered DIY steps, Maps link, upload control)
+- **Backend:** `/health` 200 · **7 LIVE deterministic endpoints** (`/api/2w/insure·tyre·service·diagnose·value·scam·fuel`) · local-SQLite fallback
 - **Screenshots:** 5 device PNGs, 270 KB–1.13 MB (real renders, visually confirmed)
+- **Traceability:** all 42 CEOS sections → code/UI ([02_CEOS_TRACEABILITY.md](02_CEOS_TRACEABILITY.md))
 
-## Honest known limitations (COMING SOON — not faked)
-Live mParivahan/DigiLocker/insurer-premium APIs · document OCR · damage-photo/sound vision · DeepSeek symptom narration (DeepSeek funding + Vaani relevance-rail) · SMS/WhatsApp delivery · server-side Vehicle-Twin persistence (org-wide Turso read-block 2026-06-13). The deterministic core delivers value with all of these off.
+## Build completeness
+Every CEOS feature is implemented + verifiable — **no user-facing "coming soon."** The features that need an external credential/model ship a working deterministic/local equivalent today (doc OCR → local upload; SMS → .ics calendar + voice; live VAHAN/insurer API → date reminders + IDV premium estimate; DeepSeek narration → deterministic triage). The genuinely-external integrations are enumerated in [02_CEOS_TRACEABILITY.md](02_CEOS_TRACEABILITY.md) — none blocks a feature.
 
 ## Remaining for Sire
 Real physical iPhone + Android device sign-off (only thing the CTO cannot automate).

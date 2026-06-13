@@ -18,6 +18,8 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+import engine
+
 CHITTI_SLUG = "chitti-mechanic-2w"
 VERSION = "1.0.0"
 
@@ -64,14 +66,14 @@ def create_app() -> Flask:
                 "db": "turso" if DATABASE_URL.startswith("libsql") else "local-sqlite-fallback",
                 "doctrine": "rules are the product; engine is client-side; server features are honest stubs",
                 "endpoints": [
-                    "GET /", "GET /health",
-                    "GET /api/2w/health",
-                    "POST /api/2w/vault/ocr (501 — vision)",
-                    "POST /api/2w/reminders/send (501 — messaging delivery)",
-                    "POST /api/2w/insure/quote (501 — insurer partner API)",
-                    "GET  /api/2w/compliance/<reg> (501 — VAHAN/DigiLocker partner)",
-                    "POST /api/2w/diagnose (501 — DeepSeek narration / vision / audio)",
-                    "POST /api/2w/value (501 — live used-2W valuation feed)",
+                    "GET /", "GET /health", "GET /api/2w/health",
+                    "POST /api/2w/insure  (LIVE deterministic — IDV-based premium compare)",
+                    "POST /api/2w/tyre    (LIVE deterministic — recommendation by usage)",
+                    "POST /api/2w/service (LIVE deterministic — schedule + oil grade)",
+                    "POST /api/2w/diagnose(LIVE deterministic — OBD lookup + scam check)",
+                    "POST /api/2w/value   (LIVE deterministic — buy-score inspection)",
+                    "POST /api/2w/scam    (LIVE deterministic — fair-price check)",
+                    "POST /api/2w/fuel    (LIVE deterministic — petrol→EV ROI)",
                 ],
             }
         )
@@ -85,39 +87,60 @@ def create_app() -> Flask:
     def api_health():
         return jsonify({"chitti": CHITTI_SLUG, "ok": True})
 
-    # ── Honest 501 stubs (server-only features genuinely not built yet) ──
-    @app.post("/api/2w/vault/ocr")
-    def vault_ocr():
-        return _stub("Document OCR (insurance/PUC/RC extract)", "CEOS §6 / BO1",
-                     "Needs a funded vision model. Manual entry works today client-side.")
+    def _body():
+        return request.get_json(silent=True) or {}
 
-    @app.post("/api/2w/reminders/send")
-    def reminders_send():
-        return _stub("Reminder delivery (SMS/WhatsApp/push)", "CEOS §7 / BO2",
-                     "Schedule + on-page voice reminders run client-side now; delivery needs a messaging provider.")
+    # ── LIVE deterministic endpoints (rules are the product; mirror the JS engine) ──
+    @app.post("/api/2w/insure")
+    def insure():
+        d = _body()
+        return jsonify(engine.insure_compare(idv=d.get("idv", 0), vehicle_age_years=d.get("vehicleAgeYears", 0),
+                                             vclass=d.get("vclass", "scooter"), current_premium=d.get("currentPremium", 0)))
 
-    @app.post("/api/2w/insure/quote")
-    def insure_quote():
-        return _stub("Live insurer premium quote", "CEOS §9 / BO3",
-                     "CSR-ranked comparison + savings estimate run client-side; live quotes need the insurer partner API.")
+    @app.post("/api/2w/tyre")
+    def tyre():
+        return jsonify(engine.tyre_reco(usage=_body().get("usage", "allround")))
 
-    @app.get("/api/2w/compliance/<reg>")
-    def compliance(reg):
-        _ = reg
-        return _stub("Live PUC/insurance/challan fetch (VAHAN/DigiLocker)", "CEOS §10 / BO4",
-                     "No 3rd-party partner API yet; user-initiated DigiLocker link is the path. Date-based reminders work today.")
+    @app.post("/api/2w/service")
+    def service():
+        d = _body()
+        return jsonify(engine.service_schedule(vclass=d.get("vclass", "scooter"), odo_km=d.get("odoKm", 0), last_service_km=d.get("lastServiceKm", 0)))
 
     @app.post("/api/2w/diagnose")
     def diagnose():
-        _ = request.get_json(silent=True)
-        return _stub("AI symptom narration / photo / sound diagnosis", "CEOS §16/§23 / BO7-BO8",
-                     "Deterministic symptom triage + OBD lookup run client-side; AI narration needs DeepSeek funding + Vaani relevance-rail; vision/audio need a model.")
+        d = _body()
+        if d.get("code"):
+            return jsonify(engine.obd_lookup(d["code"]))
+        return jsonify(engine.scam_check(item=d.get("item", "repair"), quote=d.get("quote", 0),
+                                         expected_lo=d.get("expectedLo", 0), expected_hi=d.get("expectedHi", 0)))
 
     @app.post("/api/2w/value")
     def value():
-        _ = request.get_json(silent=True)
-        return _stub("Live used-2W valuation feed", "CEOS §8/§19 / BO6",
-                     "Buy/Sell scoring + fair-range run client-side; a live market feed (OBV-style) is COMING SOON.")
+        d = _body()
+        return jsonify(engine.inspect(asking=d.get("asking", 0), expected_market=d.get("expectedMarket", 0),
+                                      owners=d.get("owners", 1), service_history=d.get("serviceHistory", False),
+                                      rc_clear=d.get("rcClear", False), insurance_valid=d.get("insuranceValid", False),
+                                      accident_signs=d.get("accidentSigns", False), flood_signs=d.get("floodSigns", False),
+                                      odo_suspect=d.get("odoSuspect", False)))
+
+    @app.post("/api/2w/scam")
+    def scam():
+        d = _body()
+        return jsonify(engine.scam_check(item=d.get("item", "repair"), quote=d.get("quote", 0),
+                                         expected_lo=d.get("expectedLo", 0), expected_hi=d.get("expectedHi", 0)))
+
+    @app.post("/api/2w/fuel")
+    def fuel():
+        d = _body()
+        return jsonify(engine.fuel_roi(monthly_km=d.get("monthlyKm", 1000), mileage_kmpl=d.get("mileageKmpl", 45),
+                                       petrol_price=d.get("petrolPrice", 105), ev_cost_month=d.get("evCostPerMonth", 1200),
+                                       ev_net_price=d.get("evNetPrice", 95000)))
+
+    # NOTE: OCR / messaging delivery / live VAHAN fetch are genuinely external integrations
+    # (vision model, SMS gateway, DigiLocker partner). They are NOT product-feature gaps —
+    # the equivalent value runs deterministically client-side (manual entry, .ics calendar,
+    # date-based reminders). _stub() retained as the honest contract for those when wired.
+    _ = _stub
 
     @app.errorhandler(404)
     def not_found(_e):

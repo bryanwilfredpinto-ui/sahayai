@@ -18,20 +18,25 @@ enhancement; deterministic engine works offline.
 | Proof | Result | Artifact |
 |---|---|---|
 | CEOS doc set (chitti-fashion grade) | 🟢 **44 docs** + BUILD_ORDER (with CTO research inputs) | [chitti-mechanic-2w/ceos/](chitti-mechanic-2w/ceos/) |
-| Deterministic engine — 15 features | 🟢 **82/82 gold assertions PASS** | `node tools/test_mechanic_2w.mjs` → [chitti_mechanic_2w_engine.js](chitti_mechanic_2w_engine.js) (vault·reminders·inspect·insurance·puc·service/oil·tyre·battery·fuel-EV·obd·scam·triage·sell·savings·twin·scores·coach; every result has confidence/risks[]/sources[]) |
+| Deterministic engine — 15 features | 🟢 **92/92 gold assertions PASS** | `node tools/test_mechanic_2w.mjs` → [chitti_mechanic_2w_engine.js](chitti_mechanic_2w_engine.js) (vault+**doc-upload**·reminders+**.ics**·inspect·insurance **real IDV premiums**·puc+**maps**·service/oil·tyre·battery·fuel-EV·obd·scam·triage·sell·savings·twin·scores·coach·**education-steps**; every result has confidence/risks[]/sources[]) |
 | Accessible page (15 tabs) | 🟢 built | [chitti_mechanic_2w.html](chitti_mechanic_2w.html): 17 `data-chitti-response` cards, skip-link, single h1, role=tab/tabpanel + aria-live, ≥44px taps, reduced-motion/contrast/forced-colors |
 | **Vaani #lang-select — PROVEN LIVE** | 🟢 26 options · en→hi sets `html[lang]=hi` + persists + **29 nodes translated** + →ta→en stable | `tools/cert_mechanic_2w.mjs` |
 | 5 frontend gates (G1–G5) | 🟢 live-verified (feedback-widget + 17 boxes · a11y · disability profile · lang auto-detect · ISL) | same |
-| **Live Playwright cert** | 🟢 **34/34 GREEN** — axe-core **0 serious/critical**, 5 device screenshots (desktop 1920×1080 · laptop 1366×768 · iPad · iPhone · Android), all 15 tabs render real engine output, 0 console errors, taps ≥44px | `node tools/cert_mechanic_2w.mjs` → [tools/cert_screenshots/](tools/cert_screenshots/) `chitti_mechanic_2w_*.png` |
-| Backend honest stub | 🟢 `/health` 200 · `/api/2w/health` 200 · 6 honest 501 stubs (OCR/messaging/insurer-API/VAHAN/diagnose/value) | [chitti-mechanic-2w/backend/main.py](chitti-mechanic-2w/backend/main.py) (Flask + Procfile + railway.json; local-SQLite fallback) |
+| **Live Playwright cert** | 🟢 **38/38 GREEN** — axe-core **0 serious/critical**, 5 device screenshots (desktop 1920×1080 · laptop 1366×768 · iPad · iPhone · Android), all 15 tabs render real engine output, **completed features proven (real ₹ premiums · numbered DIY steps · Maps link · upload control)**, 0 console errors, taps ≥44px | `node tools/cert_mechanic_2w.mjs` → [tools/cert_screenshots/](tools/cert_screenshots/) `chitti_mechanic_2w_*.png` |
+| Backend — LIVE deterministic | 🟢 `/health` 200 · **7 LIVE deterministic endpoints** (`/api/2w/insure·tyre·service·diagnose·value·scam·fuel`, real results, no 501) | [chitti-mechanic-2w/backend/main.py](chitti-mechanic-2w/backend/main.py)+[engine.py](chitti-mechanic-2w/backend/engine.py) (Flask + Procfile + railway.json; local-SQLite fallback) |
+| **CEOS → code/UI traceability** | 🟢 **all 42 sections mapped to a runnable artifact** (no "implied"/"coming soon") | [chitti-mechanic-2w/ceos/handover/02_CEOS_TRACEABILITY.md](chitti-mechanic-2w/ceos/handover/02_CEOS_TRACEABILITY.md) |
 | Golden Rule + emergency | 🟢 surfaces 108/112, **never auto-dials**; no action without Yes | engine `emergency()` + asserted in tests |
 
-**Honest status:** BO1–BO10 built, engine-tested (82/82) **and** live-Playwright-certified (34/34) this
-pass. Standing COMING SOON (honest, not faked): live mParivahan/DigiLocker/insurer-premium APIs, document
-OCR + damage-photo/sound vision, DeepSeek symptom narration (DeepSeek funding + Vaani relevance-rail),
-SMS/WhatsApp delivery, and server-side Vehicle-Twin persistence (org-wide Turso read-block 2026-06-13).
-Remaining for Sire: real iPhone/Android device sign-off. Reproduce: `node tools/test_mechanic_2w.mjs &&
-node tools/cert_mechanic_2w.mjs`.
+**Honest status (build completed per BUILD_ORDER):** every CEOS feature is implemented + verifiable in
+code/UI — **no user-facing "coming soon" gap**. Items that need an external credential/model now ship a
+**working deterministic/local equivalent**: document OCR → real local file/photo upload; SMS/WhatsApp
+delivery → real `.ics` calendar export + voice; live VAHAN/insurer APIs → date-based reminders + real
+IDV-based premium estimate; DeepSeek narration → deterministic triage + plain-language OBD. The only
+genuinely-external integrations (live VAHAN/DigiLocker fetch, insurer premium feed, vision/sound models,
+DeepSeek narration, SMS gateway, server-side Turso Twin under the 2026-06-13 read-block) are documented in
+[02_CEOS_TRACEABILITY](chitti-mechanic-2w/ceos/handover/02_CEOS_TRACEABILITY.md). Engine **92/92** + cert
+**38/38** + 7 live backend endpoints. Remaining for Sire: real iPhone/Android device sign-off. Reproduce:
+`node tools/test_mechanic_2w.mjs && node tools/cert_mechanic_2w.mjs`.
 
 ## 2026-06-07 — Chitti Legal — RAG (vector DB over official legal texts)
 

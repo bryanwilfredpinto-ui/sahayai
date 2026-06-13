@@ -151,6 +151,15 @@
         <div><label class="fl" for="bk-tyrekm">Tyre km done</label><input class="fi" id="bk-tyrekm" type="number" inputmode="numeric" placeholder="8000"></div>
         <div><label class="fl" for="bk-batt">Battery age (months)</label><input class="fi" id="bk-batt" type="number" inputmode="numeric" placeholder="18"></div>
       </div>
+      <label class="fl" for="bk-doc">📎 Attach a document photo (insurance / PUC / RC) — stored on this device only</label>
+      <div class="row">
+        <div><select class="fs" id="bk-doctype" aria-label="Document type"><option value="Insurance">Insurance</option><option value="PUC">PUC</option><option value="RC">RC</option><option value="Service bill">Service bill</option></select></div>
+        <div><input class="fi" id="bk-doc" type="file" accept="image/*,application/pdf" aria-label="Choose document photo"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" onclick="mechUploadDoc()">📎 Save document</button>
+        <button class="btn" type="button" onclick="mechShowDocs()">🗂️ My documents</button>
+      </div>
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechSaveBike()">💾 Save my bike</button>
         <button class="btn" type="button" onclick="mechScores()">📊 My scores</button>
@@ -244,6 +253,10 @@
         <div><label class="fl" for="in-name">Current insurer</label><input class="fi" id="in-name" placeholder="e.g. ACKO"></div>
         <div><label class="fl" for="in-prem">Current premium (₹/yr)</label><input class="fi" id="in-prem" type="number" inputmode="numeric" placeholder="2800"></div>
       </div>
+      <div class="row">
+        <div><label class="fl" for="in-idv">Bike value / IDV (₹)</label><input class="fi" id="in-idv" type="number" inputmode="numeric" placeholder="60000"></div>
+        <div><label class="fl" for="in-age">Bike age (years)</label><input class="fi" id="in-age" type="number" inputmode="numeric" placeholder="3"></div>
+      </div>
       <div class="actions"><button class="btn primary" type="button" onclick="mechInsure()">🛡️ Compare insurers</button></div>
       <div class="result" id="r-insure" aria-live="polite"></div>
     </div>
@@ -254,7 +267,10 @@
     <div class="card" data-chitti-response="mech-puc" data-chitti-section="PUC intelligence">
       <h2><span aria-hidden="true">🌿</span> Is my PUC valid?</h2>
       <p class="sub">Riding without a valid PUC is a fine. Chitti tracks expiry from your saved bike and reminds you in time.</p>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechPuc()">🌿 Check PUC</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechPuc()">🌿 Check PUC</button>
+        <button class="btn" type="button" onclick="mechNearest('puc')">📍 Nearest PUC centre</button>
+      </div>
       <div class="result" id="r-puc" aria-live="polite"></div>
     </div>
   </section>
@@ -264,7 +280,10 @@
     <div class="card" data-chitti-response="mech-service" data-chitti-section="Service & oil intelligence">
       <h2><span aria-hidden="true">🔧</span> When is my service due — and which oil?</h2>
       <p class="sub">From your saved odometer + bike type, Chitti lists what is due (km OR months) and the exact oil grade. Always confirm the grade in your owner's manual.</p>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechService()">🔧 Service &amp; oil plan</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechService()">🔧 Service &amp; oil plan</button>
+        <button class="btn" type="button" onclick="mechNearest('service')">📍 Nearest service centre</button>
+      </div>
       <div class="result" id="r-service" aria-live="polite"></div>
     </div>
   </section>
@@ -331,8 +350,13 @@
   <section class="panel" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn">
     <div class="card" data-chitti-response="mech-learn" data-chitti-section="Vehicle education">
       <h2><span aria-hidden="true">🎓</span> Learn to do it yourself (safely)</h2>
-      <p class="sub">Short voice + picture guides for safe DIY jobs. "Understand only" topics (engine, brakes) are knowledge — those repairs stay mechanic-only.</p>
-      <div class="actions"><button class="btn primary" type="button" onclick="mechLearn()">🎓 Show me what I can learn</button></div>
+      <p class="sub">Short voice + picture guides for safe DIY jobs, with real step-by-step instructions. "Understand only" topics (engine, brakes) are knowledge — those repairs stay mechanic-only.</p>
+      <label class="fl" for="ln-mod">Pick a guide</label>
+      <select class="fs" id="ln-mod" aria-label="Choose a guide"></select>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechLearnSteps()">🎓 Show the steps</button>
+        <button class="btn" type="button" onclick="mechLearn()">📋 All guides</button>
+      </div>
       <div class="result" id="r-learn" aria-live="polite"></div>
     </div>
   </section>
@@ -451,10 +475,72 @@
   };
   window.mechScores=function(){ var r=E().scores(); render('r-bike',{status:'info',big:r.summary,lines:risks(r),confidence:r.confidence,sources:r.sources}); };
 
+  // Real document upload — stored locally only (base64), size-guarded. No server, no OCR needed.
+  window.mechUploadDoc=function(){
+    var f=$('bk-doc'); var type=val('bk-doctype')||'Document';
+    if(!f||!f.files||!f.files[0]){ render('r-bike',{status:'info',big:'Choose a file first',text:'Pick a photo or PDF of your '+type+' to save it on this device.',confidence:'high',sources:['Local device storage']}); return; }
+    var file=f.files[0];
+    if(file.size>3*1024*1024){ render('r-bike',{status:'warning',big:'File too big',text:'Please use a photo under 3 MB (it is stored on your device).',confidence:'high',sources:['Local device storage']}); return; }
+    var reader=new FileReader();
+    reader.onload=function(){
+      var v=E().vault.load(); v.docs=v.docs||[];
+      v.docs.push({type:type, name:file.name, size:file.size, data:reader.result, savedAt:new Date().toISOString().slice(0,10)});
+      E().vault.save(v); f.value='';
+      render('r-bike',{status:'ok',big:type+' saved ✅',text:'Stored on THIS device only. Tap "My documents" to view, or "Chitti forget" to erase everything.',
+        lines:['Document: '+file.name+' ('+Math.round(file.size/1024)+' KB)'],confidence:'high',sources:['Local device storage']});
+    };
+    reader.readAsDataURL(file);
+  };
+  window.mechShowDocs=function(){
+    var v=E().vault.load(); var docs=v.docs||[];
+    if(!docs.length){ render('r-bike',{status:'info',big:'No documents yet',text:'Attach a photo of your insurance, PUC or RC above.',confidence:'high',sources:['Local device storage']}); return; }
+    var host=$('r-bike'); host.innerHTML='';
+    var box=document.createElement('div'); box.className='res-box info';
+    box.innerHTML='<div class="res-status"><span aria-hidden="true">🗂️</span> '+docs.length+' document(s) on this device</div>';
+    docs.forEach(function(d,i){
+      var row=document.createElement('div'); row.style.margin='6px 0';
+      var a=document.createElement('a'); a.href=d.data; a.target='_blank'; a.textContent='📎 '+d.type+' — '+d.name; a.style.fontWeight='700';
+      var del=document.createElement('button'); del.className='speak-btn'; del.style.marginLeft='8px'; del.textContent='🗑️ Remove'; del.type='button';
+      del.onclick=function(){ var vv=E().vault.load(); vv.docs.splice(i,1); E().vault.save(vv); mechShowDocs(); };
+      row.appendChild(a); row.appendChild(del); box.appendChild(row);
+    });
+    host.appendChild(box);
+  };
+
+  function icsDownload(title, iso){
+    var ics=E().icsForReminder(title, iso); if(!ics) return;
+    var blob=new Blob([ics],{type:'text/calendar'}); var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=(title||'reminder').replace(/\W+/g,'_')+'.ics'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  }
   window.mechReminders=function(){
-    var r=E().reminders(E().vault.load());
-    var lines=r.items.length? r.items.map(function(x){return (x.urgent?'🔴 ':'🟡 ')+x.kind+': '+x.msg;}) : ['Nothing urgent — Chitti is watching.'];
-    render('r-remind',{status:r.urgentCount? 'warning':'ok', big:r.summary, lines:lines.concat(risks(r)), confidence:r.confidence, sources:r.sources});
+    var v=E().vault.load(); var r=E().reminders(v);
+    var host=$('r-remind'); host.innerHTML='';
+    var box=document.createElement('div'); box.className='res-box '+(r.urgentCount?'warning':'ok');
+    var st=r.urgentCount?'⚠️ Check this':'✅ Good';
+    box.innerHTML='<div class="res-status">'+st+'</div><div class="big">'+r.summary+'</div>';
+    var ul=document.createElement('ul');
+    var dateMap={ Insurance:v.insuranceExpiry, PUC:v.pucExpiry, RC:v.rcExpiry };
+    r.items.forEach(function(x){
+      var li=document.createElement('li'); li.textContent=(x.urgent?'🔴 ':'🟡 ')+x.kind+': '+x.msg+' ';
+      if(dateMap[x.kind]){ var b=document.createElement('button'); b.className='speak-btn'; b.type='button'; b.textContent='📅 Add to calendar'; b.onclick=function(){ icsDownload('Chitti: '+x.kind+' renewal', dateMap[x.kind]); }; li.appendChild(b); }
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+    risks(r).forEach(function(rk){ var p=document.createElement('div'); p.style.fontSize='13px'; p.style.marginTop='4px'; p.textContent=rk; box.appendChild(p); });
+    var sp=document.createElement('div'); sp.className='sp'; var sb=document.createElement('button'); sb.className='speak-btn'; sb.type='button'; sb.textContent='🔊 Read this aloud';
+    sb.onclick=function(){ speak(r.summary+' '+r.items.map(function(i){return i.kind+': '+i.msg;}).join('. ')); }; sp.appendChild(sb); box.appendChild(sp);
+    host.appendChild(box);
+    if(isBlind()) speak(r.summary+' '+r.items.map(function(i){return i.kind+': '+i.msg;}).join('. '));
+  };
+  window.mechNearest=function(kind){
+    var r=E().nearestQuery(kind);
+    var host=(kind==='puc')?$('r-puc'):$('r-service'); host.innerHTML='';
+    var box=document.createElement('div'); box.className='res-box info';
+    box.innerHTML='<div class="res-status"><span aria-hidden="true">📍</span> Nearest centre</div>';
+    var a=document.createElement('a'); a.href=r.url; a.target='_blank'; a.rel='noopener'; a.textContent='🗺️ '+r.label; a.style.fontWeight='800';
+    box.appendChild(a); var p=document.createElement('p'); p.style.fontSize='13px'; p.textContent=r.risks[0]; box.appendChild(p);
+    host.appendChild(box);
   };
 
   window.mechCoach=function(){
@@ -479,9 +565,9 @@
     render('r-sell',{status:'info', big:r.summary, lines:r.checklist.concat(risks(r)), confidence:r.confidence, sources:r.sources});
   };
   window.mechInsure=function(){
-    var r=E().insuranceCompare({ current:{name:val('in-name'), premium:num('in-prem')} });
-    var lines=r.options.slice(0,6).map(function(o){ return '🛡️ '+o.name+' — CSR '+o.csr+'%'+(o.estPremium?(', est. ₹'+o.estPremium.toLocaleString('en-IN')+(o.estSaving?(' (save ₹'+o.estSaving.toLocaleString('en-IN')+')'):'')):'')+' · '+o.bestFor; });
-    render('r-insure',{status: r.best?'ok':'info', big:r.summary, lines:lines.concat(['⚠️ Late renewal fee ~₹'+r.lateFee]).concat(risks(r)), confidence:r.confidence, sources:r.sources});
+    var r=E().insuranceCompare({ current:{name:val('in-name'), premium:num('in-prem')}, idv:num('in-idv'), vehicleAgeYears:num('in-age') });
+    var lines=r.options.slice(0,8).map(function(o){ return '🛡️ '+o.name+' — est. ₹'+o.estPremium.toLocaleString('en-IN')+(o.estSaving?(' (save ₹'+o.estSaving.toLocaleString('en-IN')+')'):'')+' · CSR '+o.csr+'% · '+o.bestFor; });
+    render('r-insure',{status: 'ok', big:r.summary, lines:['At IDV ₹'+r.idv.toLocaleString('en-IN')+' ('+r.vclass+')'].concat(lines).concat(['⚠️ Late renewal fee ~₹'+r.lateFee]).concat(risks(r)), confidence:r.confidence, sources:r.sources});
   };
   window.mechPuc=function(){ var r=E().pucStatus(E().vault.load()); render('r-puc',{status:statusOf(r), big:r.summary, lines:[r.nearest].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
   window.mechService=function(){
@@ -503,6 +589,13 @@
     var r=E().educationList();
     render('r-learn',{status:'info', big:'Guides you can follow', lines:r.modules.map(function(m){var s=E().RULES.triage[m.tier].sym; return s+' '+m.title+(m.mins?(' — '+m.mins+' min'):'')+' ('+m.a11y+')';}).concat(risks(r)), confidence:r.confidence, sources:r.sources});
   };
+  window.mechLearnSteps=function(){
+    var r=E().educationSteps(val('ln-mod'));
+    if(!r.found){ render('r-learn',{status:'info',big:'Pick a guide',confidence:r.confidence,sources:r.sources}); return; }
+    var lines=r.steps.map(function(s,i){return (i+1)+'. '+s;}).concat(risks(r));
+    render('r-learn',{status:r.tier==='mechanic'?'warning':'ok', big:r.tierSym+' '+r.title+(r.mins?(' (~'+r.mins+' min)'):''), lines:lines, confidence:r.confidence, sources:r.sources,
+      speak:r.title+'. '+r.steps.join('. ')});
+  };
   window.mechAddSaving=function(){
     var v=E().vault.load(); v.savings=v.savings||[]; var amt=num('sv-amt'); var cat=val('sv-cat')||'Saving';
     if(amt>0){ v.savings.push({category:cat,amount:amt}); E().vault.save(v); }
@@ -516,6 +609,7 @@
   function boot(){
     if(!E()){ setTimeout(boot,60); return; }
     var sel=$('dr-sym'); if(sel && !sel.options.length){ E().RULES.symptoms.forEach(function(s){ var o=document.createElement('option'); o.value=s.id; o.textContent=s.q; sel.appendChild(o); }); }
+    var lsel=$('ln-mod'); if(lsel && !lsel.options.length){ E().RULES.education.forEach(function(m){ var o=document.createElement('option'); o.value=m.id; o.textContent=E().RULES.triage[m.tier].sym+' '+m.title; lsel.appendChild(o); }); }
     fillBikeForm(E().vault.load());
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();

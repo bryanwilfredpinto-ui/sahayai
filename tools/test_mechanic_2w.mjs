@@ -106,6 +106,28 @@ ok('emergency never auto-dials', sos.note.toLowerCase().includes('never auto-dia
 // ── 13. Vault forget contract exists ──
 ok('vault has forget()', typeof E.vault.forget === 'function');
 
+// ── 14. Insurance: REAL per-insurer premiums from IDV (no "enter your premium" gap) ──
+const insIdv = E.insuranceCompare({ idv: 60000, vehicleAgeYears: 3, vclass: 'scooter' });
+ok('insurance computes a real premium per insurer (no input premium needed)', insIdv.options.every(o => o.estPremium > 0));
+ok('insurance older bike cheaper than new (age factor)', E.insuranceCompare({ idv: 60000, vehicleAgeYears: 6, vclass: 'scooter' }).options[0].estPremium < E.insuranceCompare({ idv: 60000, vehicleAgeYears: 0, vclass: 'scooter' }).options[0].estPremium);
+ok('insurance higher IDV → higher premium', E.insuranceCompare({ idv: 100000, vclass: 'scooter' }).options[0].estPremium > E.insuranceCompare({ idv: 40000, vclass: 'scooter' }).options[0].estPremium);
+
+// ── 15. Education: REAL step-by-step content per module ──
+const edu = E.educationSteps('chain');
+ok('education chain has ≥3 real steps', edu.found && edu.steps.length >= 3);
+ok('education brakes is mechanic-only (no DIY)', E.educationSteps('brakes').tier === 'mechanic');
+ok('every education module has steps', E.educationList().modules.every(m => E.educationSteps(m.id).steps.length >= 2));
+
+// ── 16. Nearest-centre: real Maps deep-link ──
+const near = E.nearestQuery('puc');
+ok('nearest puc returns a google maps url', /google\.com\/maps/.test(near.url));
+ok('nearest service returns a url', /google\.com\/maps/.test(E.nearestQuery('service').url));
+
+// ── 17. Calendar (.ics) reminder: real, valid VCALENDAR ──
+const ics = E.icsForReminder('Insurance renewal', '2026-07-15');
+ok('ics is a valid VCALENDAR', ics && ics.includes('BEGIN:VCALENDAR') && ics.includes('DTSTART') && ics.includes('END:VCALENDAR'));
+ok('ics null for no date (honest)', E.icsForReminder('x', '') === null);
+
 console.log(`\nChitti Mechanic 2W engine gold tests: ${pass} passed, ${fail} failed`);
 if (fail) { console.log('FAILURES:\n - ' + fails.join('\n - ')); process.exit(1); }
 console.log('GOLD_RESULT:{"pass":' + pass + ',"fail":0}');

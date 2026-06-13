@@ -143,6 +143,27 @@ await safe('all 15 feature tabs render engine output', async () => {
   }
 });
 
+// ── 4b. Newly-completed features prove out (no "coming soon" gaps) ──
+await safe('completed features verifiable', async () => {
+  // Insurance shows REAL computed per-insurer premiums (not "enter your premium")
+  await page.click('#tab-insure'); await page.fill('#in-idv', '60000'); await page.fill('#in-age', '3');
+  await page.evaluate(() => window.mechInsure());
+  await page.waitForTimeout(150);
+  const insTxt = await page.locator('#r-insure').innerText();
+  check('insurance shows ≥3 real ₹ premiums', (insTxt.match(/est\. ₹[\d,]+/g) || []).length >= 3, (insTxt.match(/est\. ₹[\d,]+/g) || []).slice(0, 2).join(' '));
+  // Education renders real numbered steps
+  await page.click('#tab-learn'); await page.selectOption('#ln-mod', 'chain');
+  await page.evaluate(() => window.mechLearnSteps()); await page.waitForTimeout(120);
+  const eduTxt = await page.locator('#r-learn').innerText();
+  check('education renders real numbered steps', /1\.\s/.test(eduTxt) && /2\.\s/.test(eduTxt));
+  // Nearest-centre produces a real Maps link
+  await page.click('#tab-puc'); await page.evaluate(() => window.mechNearest('puc')); await page.waitForTimeout(120);
+  const href = await page.locator('#r-puc a').first().getAttribute('href').catch(() => '');
+  check('nearest centre = real google maps link', /google\.com\/maps/.test(href || ''), href);
+  // Document upload control exists (real local file input)
+  check('document upload control present', (await page.locator('#bk-doc[type=file]').count()) === 1);
+});
+
 // ── 5. No authored console errors ──
 check('no authored console errors', consoleErrors.length === 0, consoleErrors.slice(0, 2).join(' | ') || 'clean');
 
