@@ -16,7 +16,7 @@
 | G10 | Production readiness ≥90 | 🟡 | core GREEN; live-data/DeepSeek/Turso pending (BO11–BO15) |
 
 ## Certification status
-**CONDITIONAL CERTIFIED** — engine 97/97, live cert 37/37, 5 device screenshots, axe-clean, lang firing.
+**CONDITIONAL CERTIFIED** — engine 106/106, live cert 41/41, 5 device screenshots, axe-clean, lang firing.
 All deterministic value works offline with DeepSeek down and Turso blocked.
 
 **FULLY CERTIFIED** pending (Sire-owned): real iPhone + Android hardware sign-off; DeepSeek funding
@@ -33,5 +33,5 @@ Turso quota for cross-device Twin sync. None of these block today's product.
 ## Sign-off (CEOS §42)
 | Role | Name | Status | Date |
 |---|---|---|---|
-| AI Architect / CTO (Claude) | Claude Opus 4.8 | ✅ Built + self-certified (97/97 + 37/37) | 2026-06-13 |
+| AI Architect / CTO (Claude) | Claude Opus 4.8 | ✅ Built + self-certified (106/106 + 41/41) | 2026-06-13 |
 | Sire (Product Owner) | Bryan Wilfred Pinto | ☐ real-device sign-off pending | — |

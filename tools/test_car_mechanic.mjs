@@ -175,6 +175,26 @@ ok('education ≥12 modules', M.educationModules().count >= 12);
 const nc = M.nearestCentre('puc', { pincode: '400001' });
 ok('nearestCentre returns maps URL', /google\.com\/maps/.test(nc.mapsUrl) && /400001/.test(nc.mapsUrl));
 
+// ── 24. health dashboard (one snapshot, symbol+word per system) ──
+const hd = M.healthDashboard({ insuranceExpiry: '2026-06-01', odometerKm: 50000, oilLastKm: 30000, segment: 'small', batteryDate: '2022-01-01' }, ASOF);
+ok('dashboard lists ≥5 systems', hd.systems.length >= 5);
+ok('dashboard system has symbol+word (not colour-only)', !!hd.systems[0].status.sym && !!hd.systems[0].status.word);
+ok('dashboard carries scores', hd.scores && hd.scores.safety >= 0);
+
+// ── 25. EMI calculator (deterministic reducing-balance) ──
+const emi = M.emiCalculator({ principal: 500000, annualRatePct: 9.5, months: 60 });
+ok('EMI ~₹10,500/month for 5L@9.5%/60m', emi.emi >= 10000 && emi.emi <= 11000);
+ok('EMI total > principal (interest)', emi.totalPayable > 500000 && emi.totalInterest > 0);
+
+// ── 26. vehicle history guide (honest, never fabricates) ──
+const vh = M.vehicleHistoryGuide('MH02AB1234');
+eq('history live-fetch honest false', vh.live, false);
+ok('history lists checks + portals', vh.checks.length >= 5 && vh.portals.length >= 2);
+
+// ── 27. DIY video + EV charging locator (deterministic deep-links) ──
+ok('DIY video link builds YouTube search', /youtube\.com/.test(M.diyVideoLink('change a bulb').url));
+ok('charging locator maps link', /google\.com\/maps/.test(M.nearestCentre('charging', { pincode: '560001' }).mapsUrl));
+
 // ── report ──
 console.log(`\nCHITTI CAR MECHANIC — ENGINE GOLD TEST`);
 console.log(`PASS ${pass} · FAIL ${fail}`);

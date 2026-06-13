@@ -111,6 +111,10 @@
     <span class="free">100% FREE · works offline · your car data stays on your device</span>
     <h2 id="hero-h">“Chitti, is this serious — and am I being charged a fair price?”</h2>
     <p>You don’t need to know car words. Tell Chitti what’s happening — by voice or tap — and get an honest answer: <b>what it likely is</b>, <b>can you keep driving</b>, <b>can you fix it yourself or must you see a mechanic</b>, and <b>what a fair price is</b>. Chitti never guesses on your safety.</p>
+    <div class="actions">
+      <button class="btn primary" type="button" onclick="cmDemo()">🎬 Try a demo car (see it working)</button>
+    </div>
+    <div id="r-demo" class="result" aria-live="polite"></div>
   </section>
 
   <details class="how">
@@ -221,6 +225,27 @@
       <div id="r-buy" class="result" aria-live="polite"></div>
     </div>
 
+    <div class="card chitti-response" data-chitti-response="cm-history" data-chitti-section="Used-car history">
+      <h2><span aria-hidden="true">📜</span> Check the car's history before you pay</h2>
+      <p class="sub">Enter the registration number. Chitti tells you exactly what to verify (accident, odometer, loan, challan) and opens the official portals. Chitti never invents a history.</p>
+      <label class="fl" for="h-reg">Registration number</label>
+      <input class="fi" id="h-reg" type="text" placeholder="e.g. MH02AB1234" style="text-transform:uppercase">
+      <div class="actions"><button class="btn primary" type="button" onclick="cmHistory()">📜 What to check</button></div>
+      <div id="r-history" class="result" aria-live="polite"></div>
+    </div>
+
+    <div class="card chitti-response" data-chitti-response="cm-emi" data-chitti-section="EMI calculator">
+      <h2><span aria-hidden="true">🧮</span> EMI calculator</h2>
+      <p class="sub">See your monthly EMI and the true total you'll pay, before you sign a car loan.</p>
+      <div class="row">
+        <div><label class="fl" for="e-p">Loan amount (₹)</label><input class="fi" id="e-p" type="number" min="0" inputmode="numeric" placeholder="e.g. 500000"></div>
+        <div><label class="fl" for="e-r">Interest %/yr</label><input class="fi" id="e-r" type="number" min="0" step="0.1" inputmode="decimal" placeholder="9.5"></div>
+        <div><label class="fl" for="e-m">Months</label><input class="fi" id="e-m" type="number" min="1" inputmode="numeric" placeholder="60"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="cmEmi()">🧮 Calculate EMI</button></div>
+      <div id="r-emi" class="result" aria-live="polite"></div>
+    </div>
+
     <div class="card chitti-response" data-chitti-response="cm-inspect" data-chitti-section="50-point inspection">
       <h2><span aria-hidden="true">📋</span> Full 50-point inspection checklist</h2>
       <p class="sub">Walk the car with Chitti. Each point shows who can check it (you 🟢 or a mechanic 🔧) and whether it's <b>critical</b> (a fail = walk away).</p>
@@ -311,7 +336,10 @@
       </div>
       <label class="fl" for="t-use">Use</label>
       <select class="fs" id="t-use"><option value="all">All-round</option><option value="wet">Wet / monsoon</option><option value="value">Best value</option><option value="durability">Long life</option><option value="comfort">Comfort</option><option value="mileage">Fuel economy</option></select>
-      <div class="actions"><button class="btn primary" type="button" onclick="cmTyre()">🛞 Check my tyres</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cmTyre()">🛞 Check my tyres</button>
+        <button class="btn" type="button" onclick="cmNearest('tyre')">📍 Nearest tyre shop</button>
+      </div>
       <div id="r-tyre" class="result" aria-live="polite"></div>
     </div>
     <div class="card chitti-response" data-chitti-response="cm-battery" data-chitti-section="Battery check">
@@ -340,6 +368,7 @@
       <div class="actions">
         <button class="btn primary" type="button" onclick="cmFuelRoi()">⛽ Calculate payback</button>
         <button class="btn" type="button" onclick="cmFuelTable()">📊 Compare fuels</button>
+        <button class="btn" type="button" onclick="cmNearest('charging')">🔌 EV charging near me</button>
       </div>
       <div id="r-fuel" class="result" aria-live="polite"></div>
     </div>
@@ -377,6 +406,13 @@
       </div>
       <div id="r-twin" class="result" aria-live="polite"></div>
     </div>
+    <div class="card chitti-response" data-chitti-response="cm-dash" data-chitti-section="Vehicle health dashboard">
+      <h2><span aria-hidden="true">🩺</span> My car — health dashboard</h2>
+      <p class="sub">One snapshot of every system (documents, service, battery, tyres, engine) from your saved car. Each shows a 🟢/🟡/🔴 with a word.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="cmDashboard()">🩺 Show health dashboard</button></div>
+      <div id="r-dash" class="result" aria-live="polite"></div>
+    </div>
+
     <div class="card chitti-response" data-chitti-response="cm-savings" data-chitti-section="Savings tracker">
       <h2><span aria-hidden="true">🪙</span> My savings this year</h2>
       <p class="sub">Chitti logs every rupee it helps you save (caught a scam, switched insurance…) toward the ₹10,000 goal.</p>
@@ -457,7 +493,7 @@
       tone: toneFor(r.canDrive), title:'Diagnose',
       status: r.canDrive ? 'Likely cause found' : 'Do NOT keep driving',
       big: r.causes[0],
-      body: '<b>Other possible causes:</b> '+esc(r.causes.slice(1).join(', ')||'—')+'<br><b>Can you drive?</b> '+(r.canDrive?'Yes, gently':'No — unsafe')+'<br><b>DIY?</b> '+esc(r.diy)+'<br><b>Likely cost:</b> '+bandStr(r.cost),
+      body: '<b>Other possible causes:</b> '+esc(r.causes.slice(1).join(', ')||'—')+'<br><b>Can you drive?</b> '+(r.canDrive?'Yes, gently':'No — unsafe')+'<br><b>DIY?</b> '+esc(r.diy)+'<br><b>Likely cost:</b> '+bandStr(r.cost)+'<br><a href="'+E().diyVideoLink($('d-sym').value||r.causes[0]).url+'" target="_blank" rel="noopener">📺 Watch a DIY video</a>',
       list: r.firstSteps, confidence: r.confidence+' ('+r.confidencePct+'%)', risks: r.risks, sources: r.sources
     });
   };
@@ -526,11 +562,12 @@
       list: r.modules.map(function(m){ return m.topic+' — '+m.plain+' ['+m.diy+']'; }),
       confidence:r.confidence, sources:r.sources });
   };
+  var NEAREST_HOST = { puc:'r-puc', mechanic:'r-edu', tyre:'r-tyre', charging:'r-fuel', service:'r-oil' };
   window.cmNearest = function(kind){
     function go(geo){
       var r = E().nearestCentre(kind, geo);
-      var host = $(kind==='puc'?'r-puc':kind==='mechanic'?'r-edu':'r-oil');
-      render(host.id,{ tone:'info', title:'Nearest', status:'📍 '+r.label,
+      var hostId = NEAREST_HOST[kind] || 'r-oil';
+      render(hostId,{ tone:'info', title:'Nearest', status:'📍 '+r.label,
         body:'<a href="'+r.mapsUrl+'" target="_blank" rel="noopener">Open map of nearby '+esc(r.label)+'</a>',
         confidence:r.confidence, risks:r.risks, sources:r.sources });
     }
@@ -538,6 +575,41 @@
       function(p){ go({ geo:{ lat:p.coords.latitude, lng:p.coords.longitude } }); },
       function(){ go({}); }, { timeout:4000 }); }
     else go({});
+  };
+  window.cmDemo = function(){
+    var t = E().twin.load();
+    t.model='Maruti Suzuki Swift 2022'; t.odometerKm=42000; t.segment='small';
+    t.insuranceExpiry='2026-12-31'; t.pucExpiry='2026-07-15'; t.rcExpiry='2042-01-01';
+    t.warrantyExpiry='2028-01-10'; t.oilLastKm=38000; t.tbeltLastKm=0; t.batteryDate='2022-01-01';
+    E().twin.save(t);
+    try{ if($('v-model')){ $('v-model').value=t.model; $('v-odo').value=t.odometerKm; $('v-ins').value=t.insuranceExpiry; $('v-puc').value=t.pucExpiry; if($('v-rc'))$('v-rc').value=t.rcExpiry; if($('v-warranty'))$('v-warranty').value=t.warrantyExpiry; $('v-oilkm').value=t.oilLastKm; $('v-tbeltkm').value=t.tbeltLastKm; if($('v-batt'))$('v-batt').value=t.batteryDate; } }catch(e){}
+    render('r-demo',{ tone:'ok', title:'Demo', status:'🎬 Demo car loaded — Maruti Swift 2022',
+      body:'A sample car is saved. Now tap <b>My Car → 🩺 health dashboard</b>, or <b>Reminders</b>, to see Chitti working. Tap 🗑️ Chitti forget in My Car to clear it.',
+      confidence:'high', sources:['Demo data (on-device)'] });
+  };
+  window.cmDashboard = function(){
+    var r = E().healthDashboard(E().twin.load());
+    var host=$('r-dash'); if(!host) return;
+    var html='<div class="res-box info" data-chitti-response="r-dash-out" data-chitti-section="Health dashboard">';
+    html+='<div class="res-status">🩺 Health dashboard ('+r.remindersDue+' due)</div><ul>';
+    r.systems.forEach(function(s){ html+='<li>'+s.status.sym+' <b>'+esc(s.name)+'</b>: '+esc(s.status.word)+' — '+esc(s.note)+'</li>'; });
+    html+='</ul><div class="conf">Scores — Safety '+r.scores.safety+'/100 · Maintenance '+r.scores.maintenance+'/100 · Resale '+r.scores.resale+'/100</div>';
+    html+='<div class="conf">🎯 Confidence: <b>'+r.confidence+'</b></div>';
+    html+='<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
+    html+='<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
+    host.innerHTML=html;
+  };
+  window.cmEmi = function(){
+    var r = E().emiCalculator({ principal:Number($('e-p').value||0), annualRatePct:Number($('e-r').value||9.5), months:Number($('e-m').value||60) });
+    render('r-emi',{ tone:'info', title:'EMI', status:'🧮 Your EMI', big: rs(r.emi)+' / month',
+      body:'<b>Total payable:</b> '+rs(r.totalPayable)+'<br><b>Total interest:</b> '+rs(r.totalInterest)+' over '+r.months+' months',
+      confidence:r.confidence, risks:r.risks, sources:r.sources });
+  };
+  window.cmHistory = function(){
+    var r = E().vehicleHistoryGuide($('h-reg').value||'');
+    render('r-history',{ tone:'warning', title:'History', status:'📜 Verify before you pay',
+      body: esc(r.message)+'<br>'+r.portals.map(function(p){ return '<a href="'+p.url+'" target="_blank" rel="noopener">'+esc(p.name)+'</a>'; }).join(' · '),
+      list: r.checks, confidence:r.confidence, risks:r.risks, sources:r.sources });
   };
 
   window.cmSell = function(){

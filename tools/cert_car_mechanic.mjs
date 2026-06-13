@@ -197,6 +197,31 @@ await safe('ENGINE vehicle education renders', async () => {
   await page.waitForTimeout(400);
   check('education lists lessons', /lessons/i.test(await page.locator('#r-edu').innerText()));
 });
+await safe('ENGINE demo mode loads sample car', async () => {
+  await page.click('button[onclick="cmDemo()"]');
+  await page.waitForTimeout(400);
+  check('demo car loaded', /Demo car loaded|Swift/i.test(await page.locator('#r-demo').innerText()));
+});
+await safe('ENGINE health dashboard renders systems', async () => {
+  await page.click('#tab-twin');
+  await page.click('button[onclick="cmDashboard()"]');
+  await page.waitForTimeout(400);
+  const txt = await page.locator('#r-dash').innerText();
+  check('dashboard shows systems + scores', /dashboard/i.test(txt) && /Safety/i.test(txt), txt.split('\n')[0]);
+});
+await safe('ENGINE EMI calculator renders', async () => {
+  await page.click('#tab-buy');
+  await page.fill('#e-p', '500000'); await page.fill('#e-m', '60');
+  await page.click('button[onclick="cmEmi()"]');
+  await page.waitForTimeout(400);
+  check('EMI shows ₹/month + total', /month/i.test(await page.locator('#r-emi').innerText()));
+});
+await safe('ENGINE vehicle-history honest guide', async () => {
+  await page.fill('#h-reg', 'MH02AB1234');
+  await page.click('button[onclick="cmHistory()"]');
+  await page.waitForTimeout(400);
+  check('history shows what to verify (never invents)', /verify|invent/i.test(await page.locator('#r-history').innerText()));
+});
 
 // ── 6. tap targets ≥44px (authored controls) ──
 await safe('TAP targets ≥44px', async () => {

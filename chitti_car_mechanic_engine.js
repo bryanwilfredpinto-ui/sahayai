@@ -787,12 +787,63 @@
   // ═══════════════════════════════════════════════════════════════════════════
   function nearestCentre(kind, opts) {
     opts = opts || {};
-    var label = { puc: 'PUC pollution check centre', service: 'car service centre', tyre: 'tyre shop', mechanic: 'car mechanic', insurance: 'motor insurance office', rsa: 'roadside assistance' }[kind] || 'car service centre';
+    var label = { puc: 'PUC pollution check centre', service: 'car service centre', tyre: 'tyre shop', mechanic: 'car mechanic', insurance: 'motor insurance office', rsa: 'roadside assistance', charging: 'EV charging station' }[kind] || 'car service centre';
     var near = opts.pincode ? (' near ' + opts.pincode) : (opts.geo ? '' : ' near me');
     var q = encodeURIComponent(label + near);
     var url = (opts.geo && opts.geo.lat != null) ? ('https://www.google.com/maps/search/' + q + '/@' + opts.geo.lat + ',' + opts.geo.lng + ',14z') : ('https://www.google.com/maps/search/' + q);
     return { kind: kind, label: label, mapsUrl: url, voice: 'Opening a map of the nearest ' + label + '.', confidence: 'high', risks: ['Chitti opens a live map — it does not pre-judge which shop is best or honest.'], sources: ['CEOS §10 (nearest centre)', 'user-initiated map search'] };
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 21. HEALTH DASHBOARD (§1/§4) — one snapshot of every system from the Twin.
+  // Deterministic; symbol+word per system (never colour-only).
+  // ═══════════════════════════════════════════════════════════════════════════
+  function healthDashboard(twin, asOf) {
+    twin = twin || {};
+    function st(ok, warn) { return ok ? { sym: '🟢', word: 'OK' } : (warn ? { sym: '🟡', word: 'Check soon' } : { sym: '🔴', word: 'Attention' }); }
+    var rem = reminders({ docs: { insurance: twin.insuranceExpiry ? { expiry: twin.insuranceExpiry } : null, puc: twin.pucExpiry ? { expiry: twin.pucExpiry } : null, rc: twin.rcExpiry ? { expiry: twin.rcExpiry } : null, warranty: twin.warrantyExpiry ? { expiry: twin.warrantyExpiry } : null, loan: twin.emiDue ? { expiry: twin.emiDue } : null }, odometerKm: twin.odometerKm || 0, kmPerMonth: 1000, service: { engine_oil: twin.oilLastKm != null ? { lastKm: twin.oilLastKm } : {}, timing_belt: twin.tbeltLastKm != null ? { lastKm: twin.tbeltLastKm } : {} } }, asOf);
+    var batt = batteryStatus({ segment: twin.segment || 'small', installedDate: twin.batteryDate || null, asOf: asOf });
+    var overdue = rem.reminders.filter(function (r) { return r.status === 'overdue'; });
+    var systems = [
+      { name: 'Documents (insurance/PUC/RC)', status: overdue.length ? st(false, false) : (rem.count ? st(false, true) : st(true)), note: overdue.length ? (overdue.length + ' overdue') : (rem.count ? (rem.count + ' due soon') : 'all valid/known') },
+      { name: 'Service (oil/timing belt)', status: rem.reminders.some(function (r) { return /service/.test(r.type) && r.status === 'overdue'; }) ? st(false, false) : st(true, true), note: 'from your last-service km' },
+      { name: 'Battery', status: batt.status === 'ok' ? st(true) : (batt.status === 'unknown' ? st(true, true) : st(false, true)), note: batt.message },
+      { name: 'Tyres', status: st(true, true), note: 'check tread/age in the Tyre tab' },
+      { name: 'Engine / brakes / AC', status: st(true, true), note: 'tell Chitti any noise/warning in the Diagnose tab' }
+    ];
+    return { systems: systems, remindersDue: rem.count, scores: ownershipScores({ service: { oil: twin.oilLastKm != null ? 1 : undefined }, docs: { insurance: twin.insuranceExpiry ? { expiry: 1 } : null, puc: twin.pucExpiry ? { expiry: 1 } : null }, accidentFree: true, fullServiceHistory: !!twin.oilLastKm, loanClosed: !twin.emiDue }), confidence: 'high', risks: ['A dashboard reflects only what you have saved + told Chitti.'], sources: ['CEOS §1/§4 vehicle health dashboard'] };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 22. EMI CALCULATOR (§ Buy/first-time-buyer) — deterministic reducing-balance EMI.
+  // ═══════════════════════════════════════════════════════════════════════════
+  function emiCalculator(opts) {
+    opts = opts || {};
+    var P = num(opts.principal), annual = num(opts.annualRatePct) || 9.5, n = num(opts.months) || 60;
+    var r = annual / 12 / 100;
+    var emi = r > 0 ? (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : (n ? P / n : 0);
+    emi = round(emi);
+    var total = emi * n, interest = total - P;
+    return { principal: P, annualRatePct: annual, months: n, emi: emi, totalPayable: total, totalInterest: interest, confidence: 'high', risks: ['Indicative — your bank rate/processing fees change the exact figure.', 'Never guaranteed.'], sources: ['Reducing-balance EMI formula'] };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 23. VEHICLE HISTORY GUIDE (§9 used-car) — honest: what to verify + where.
+  // Live VAHAN/insurance fetch is COMING SOON; Chitti never fabricates a history.
+  // ═══════════════════════════════════════════════════════════════════════════
+  function vehicleHistoryGuide(regNo) {
+    var reg = ('' + (regNo || '')).toUpperCase().replace(/\s+/g, '');
+    return {
+      regNo: reg || null,
+      checks: ['Accident / insurance-claim history', 'Odometer-rollback (wear vs km)', 'Pending loan / hypothecation', 'Pending challans / court cases', 'Owner count & RC details', 'Service-record gaps'],
+      portals: [ { name: 'mParivahan / VAHAN (RC, fitness, PUC)', url: 'https://parivahan.gov.in/' }, { name: 'Echallan (pending challans)', url: 'https://echallan.parivahan.gov.in/' } ],
+      live: false,
+      message: 'India has no single CARFAX yet. Chitti will NOT invent a history. Verify these on the official portals + a mechanic inspection before paying. (Live auto-fetch is coming soon.)',
+      confidence: 'high', risks: ['1 in 4 used cars has accident history — physical + record verification is essential.'], sources: ['CEOS §8/§9', 'mParivahan/VAHAN']
+    };
+  }
+
+  function diyVideoLink(query) { return { query: query, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent('how to ' + (query || 'car repair') + ' car DIY India'), note: 'Opens a video search — Chitti does not host videos.', sources: ['user-initiated video search'] }; }
 
   // ─────────────────────────────────────────────────────────────────────────
   // PUBLIC API
@@ -818,7 +869,8 @@
     buyScore: buyScore, sellAssistant: sellAssistant, inspectionChecklist: inspectionChecklist,
     symptomCoach: symptomCoach, educationModules: educationModules, nearestCentre: nearestCentre,
     savingsTracker: savingsTracker,
-    ownershipScores: ownershipScores,
+    ownershipScores: ownershipScores, healthDashboard: healthDashboard,
+    emiCalculator: emiCalculator, vehicleHistoryGuide: vehicleHistoryGuide, diyVideoLink: diyVideoLink,
     crisisCheck: crisisCheck,
     twin: { load: twinLoad, save: twinSave, set: twinSet, forget: twinForget, KEY: TWIN_KEY }
   };

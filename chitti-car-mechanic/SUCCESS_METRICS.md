@@ -13,4 +13,4 @@
 | 30-day retention | >60% | analytics | ⛔ post-launch |
 
 **Honesty rule:** no accuracy/saving number is *claimed* before it is *measured*. Engine-side
-correctness is proven (97/97); field/behavioural metrics need real users and are marked AUTOMATION-LIMITED.
+correctness is proven (106/106); field/behavioural metrics need real users and are marked AUTOMATION-LIMITED.

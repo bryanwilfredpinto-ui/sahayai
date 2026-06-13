@@ -1,7 +1,7 @@
 # BUILD ORDER — Chitti Car Mechanic (10 phases + my researched additions)
 
 Status legend: ✅ built & proven in repo · 🟡 honest COMING SOON (visible, never faked) · ⛔ blocked on Sire.
-Proof harnesses: `node tools/test_car_mechanic.mjs` (engine **97/97**) · `node tools/cert_car_mechanic.mjs` (live **37/37** + 5 device shots).
+Proof harnesses: `node tools/test_car_mechanic.mjs` (engine **106/106**) · `node tools/cert_car_mechanic.mjs` (live **41/41** + 5 device shots).
 **All BO1–BO10 are deterministically COMPLETE** — every feature works offline with DeepSeek down and Turso blocked. Only items needing
 true external infra (OCR vision, live premium quote, LLM phrasing, SMS/WhatsApp delivery, camera CV, live VAHAN/telematics) remain 🟡.
 
@@ -17,7 +17,7 @@ true external infra (OCR vision, live premium quote, LLM phrasing, SMS/WhatsApp 
 | **BO7** | Diagnostics + Scam + DIY triage | ✅ `obdLookup()` — **47 explicit codes + structured SAE-J2012 decoder for any well-formed code (1000+ supported, honest)**; `scamCheck()`; `diyTriage()` (safety override). | engine, T, C |
 | **BO8** | Vehicle Education + AI Coach | ✅ `symptomCoach()` — **31 symptoms** ranked + confidence + safety; **`educationModules()` = 12 plain-language lessons**. DeepSeek phrasing 🟡 (enhancement). | engine, T, C |
 | **BO9** | Vehicle Twin + Savings Tracker + Ownership Scores | ✅ `twin.*`, `savingsTracker()`, `ownershipScores()`. | engine, T, C |
-| **BO10** | Accessibility + Certification (26 langs, 9 profiles, 5-element widget, audit, device sign-off) | ✅ cert **37/37** incl. lang-firing (en→hi 34 nodes) + axe 0 serious + 5 device screenshots. Real-device sign-off ⛔ (Sire). | C |
+| **BO10** | Accessibility + Certification (26 langs, 9 profiles, 5-element widget, audit, device sign-off) | ✅ cert **41/41** incl. lang-firing (en→hi 34 nodes) + axe 0 serious + 5 device screenshots. Real-device sign-off ⛔ (Sire). | C |
 
 ## ➕ My researched additions (from RESEARCH_BEST_APPS.md — fold into the roadmap)
 These came out of the 20+20 study and the validation; they sharpen the product without breaking scope.
