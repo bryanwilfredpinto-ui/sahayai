@@ -291,6 +291,31 @@
       </details>
     </section>
 
+    <section aria-labelledby="agents-h">
+      <h2 id="agents-h">Four quality agents — automated, every day</h2>
+      <p>Chitti Quality runs four agents on a schedule. Each reports into the daily 07:00 IST founder email <em>and</em> onto this page. They reuse the existing CTO 10-gate check and Railway health rails — no separate infrastructure was built.</p>
+      <table id="agents-table">
+        <thead>
+          <tr>
+            <th scope="col">Agent</th>
+            <th scope="col">Status</th>
+            <th scope="col">What it did (latest run)</th>
+            <th scope="col">Schedule</th>
+            <th scope="col">Last run (IST)</th>
+          </tr>
+        </thead>
+        <tbody id="agents-body">
+          <!-- Filled by loadAgents() from /api/quality/agents. Honest stub shown until then. -->
+        </tbody>
+      </table>
+      <div id="agents-detail"></div>
+      <p class="meta-line" id="agents-source">
+        Source: <a href="chitti-founder/backend/lib/quality_agents.py"><code>lib/quality_agents.py</code></a> via <code>/api/quality/agents</code>.
+        Crons: <code>run_agents_morning_job</code> (06:00 — DevOps → QA → Developer) + <code>run_ui_agent_job</code> (Sun 06:30 — UI) in <code>chitti-founder/backend/main.py</code>.
+        <span id="agents-mode-tag" class="badge grey">data: stub</span>
+      </p>
+    </section>
+
     <section aria-labelledby="global-h">
       <h2 id="global-h">Global standards followed</h2>
       <p>What we adopt — and what we deliberately refuse — is recorded in full at <a href="GLOBAL_BEST_PRACTICES.md">GLOBAL_BEST_PRACTICES.md</a>. Headlines:</p>
@@ -524,6 +549,93 @@
     }
 
     loadCompliance();
+
+    // ── Four quality agents ────────────────────────────────────────────────
+    // chitti_quality.html is a static GitHub Pages page; the agents JSON lives
+    // on the chitti-founder Railway service. Try the live endpoint, fall back
+    // to an honest description of the four agents (never a fake "all green").
+    const FOUNDER_API = (window.CHITTI_FOUNDER_API || 'https://chitti-founder-api-production.up.railway.app').replace(/\/+$/, '');
+    const AGENT_ORDER = ['devops', 'qa', 'developer', 'ui'];
+    const AGENT_STUB = {
+      devops:    { title: '🚂 DevOps Agent',    schedule: '06:00 IST daily',                 headline: 'Checks every Railway service; redeploys crashed ones; reports to founder.' },
+      qa:        { title: '🧪 QA Agent',        schedule: 'after DevOps confirms online',     headline: 'Runs the 10-gate “How To Use” test on every product; reports Pass / Fail.' },
+      developer: { title: '🛠️ Developer Agent',  schedule: 'triggered when QA finds bugs',     headline: 'Clusters QA bugs into a fix list and files tickets; reports what was fixed.' },
+      ui:        { title: '🎨 UI Agent',        schedule: 'Sundays 06:30 IST',                headline: 'Checks design consistency against sahayai_design_system.css; reports drift.' },
+    };
+
+    function agentDot(status) {
+      return status === 'green' ? '🟢' : status === 'amber' ? '🟡' : status === 'red' ? '🔴' : '⚪';
+    }
+
+    function renderAgents(state, isStub) {
+      const tb = document.getElementById('agents-body');
+      const agents = (state && state.agents) || {};
+      tb.innerHTML = AGENT_ORDER.map(key => {
+        const live = agents[key];
+        const stub = AGENT_STUB[key];
+        const title = (live && live.title) || stub.title;
+        const status = live ? live.status : '';
+        const headline = live ? live.headline : stub.headline;
+        const schedule = (live && live.schedule) || stub.schedule;
+        const ts = live ? (live.ts || '—') : '—';
+        return `
+          <tr>
+            <td class="chitti-name">${escape(title)}</td>
+            <td>${live ? agentDot(status) + ' ' + badge(status) : '<span class="badge grey">not yet run</span>'}</td>
+            <td class="reason">${escape(headline)}</td>
+            <td>${escape(schedule)}</td>
+            <td>${escape(ts)}</td>
+          </tr>`;
+      }).join('');
+      const tag = document.getElementById('agents-mode-tag');
+      if (tag) {
+        tag.className = isStub ? 'badge grey' : 'badge green';
+        tag.textContent = isStub ? 'data: stub' : 'data: live';
+      }
+      // QA per-product + UI drift detail, when live.
+      const detail = document.getElementById('agents-detail');
+      if (detail) {
+        let html = '';
+        const qa = agents.qa, ui = agents.ui, dev = agents.developer;
+        if (qa && qa.detail && Array.isArray(qa.detail.products)) {
+          const bad = qa.detail.products.filter(p => p.verdict !== 'PASS');
+          if (bad.length) {
+            html += '<details class="panel"><summary>🧪 QA — products needing attention (' + bad.length + ')</summary><ul>'
+              + bad.map(p => '<li><b>' + escape(p.product) + '</b> — ' + escape(p.verdict) + ': '
+                  + escape(((p.failed_gates || []).concat(p.needs_human_gates || [])).map(g => g.gate).join('; ')) + '</li>').join('')
+              + '</ul></details>';
+          }
+        }
+        if (dev && dev.detail && Array.isArray(dev.detail.fix_list) && dev.detail.fix_list.length) {
+          html += '<details class="panel"><summary>🛠️ Developer — fix list (' + dev.detail.fix_list.length + ')</summary><ol>'
+            + dev.detail.fix_list.map(f => '<li><b>' + escape(f.gate) + '</b> · ' + escape(String(f.count)) + ' hit(s) · ['
+                + escape(f.effort) + '] ' + escape(f.fix) + ' <i>(' + escape(f.status) + ')</i></li>').join('')
+            + '</ol></details>';
+        }
+        if (ui && ui.detail && Array.isArray(ui.detail.failures) && ui.detail.failures.length) {
+          html += '<details class="panel"><summary>🎨 UI — design drift (' + ui.detail.failures.length + ')</summary><ul>'
+            + ui.detail.failures.map(f => '<li><b>' + escape(f.product) + '</b> — ' + escape(f.problem)
+                + (f.off_palette && f.off_palette.length ? ' · ' + escape(f.off_palette.join(', ')) : '') + '</li>').join('')
+            + '</ul></details>';
+        }
+        detail.innerHTML = html;
+      }
+      Chitti.a11y.announce('Quality agents refreshed.');
+    }
+
+    async function loadAgents() {
+      try {
+        const r = await fetch(FOUNDER_API + '/api/quality/agents', { headers: { 'Accept': 'application/json' } });
+        if (!r.ok) throw new Error('not-wired');
+        const data = await r.json();
+        if (!data || !data.agents) throw new Error('empty');
+        renderAgents(data, false);
+      } catch (e) {
+        renderAgents({ agents: {} }, true);
+      }
+    }
+
+    loadAgents();
   </script>
 
 <script src="chitti_isl.js"></script>

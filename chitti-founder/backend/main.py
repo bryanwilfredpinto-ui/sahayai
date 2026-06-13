@@ -14,6 +14,11 @@ Crons (timezone Asia/Kolkata):
                           Chitti-to-Chitti — per SAHAYAI_MASTER.md §2f).
   • HOURLY · :15    ─ Escalator pass (low thumbs → SMS, defect repeat → GH issue,
                       carbon > 0.5g → GH issue)
+  • DAILY · 06:00   ─ Chitti Quality agents: DevOps → QA → Developer chain
+                      (Railway health + 10-gate product test + fix-list). Feeds
+                      the 07:00 email + chitti_quality.html.
+  • WEEKLY · Sun 06:30 ─ Chitti Quality UI agent: design consistency vs
+                      sahayai_design_system.css.
 
 Endpoints (all /admin/founder/* require header auth — never URL):
   • GET  /health
@@ -25,6 +30,8 @@ Endpoints (all /admin/founder/* require header auth — never URL):
   • POST /admin/founder/send-weekly — manual trigger: weekly report
   • POST /admin/founder/escalate    — manual trigger: escalator pass
   • POST /admin/founder/self-ping   — manual trigger: BCP self-ping
+  • GET  /api/quality/agents        — public: four-agent latest state (page poll)
+  • POST /admin/founder/agents/run  — manual trigger: agents ({"which":all|morning|ui})
   • POST /api/feedback/collect      — pubic shim that forwards to the
                                        originating Chitti's /api/feedback
                                        (so the widget only needs ONE host).
@@ -89,6 +96,10 @@ from lib.cto_certify import (
     vaani_pending, vaani_ack, cto_oath_text,
     notify_sire_via_vaani,
 )
+from lib.quality_agents import (
+    run_devops_qa_developer, run_ui_agent,
+    agents_public_state, render_agents_email_section,
+)
 
 
 logging.basicConfig(
@@ -123,6 +134,16 @@ CTO_HOURLY_MINUTE_IST = int(os.environ.get("CTO_HOURLY_MINUTE_IST", "30"))
 # Cooldown so the same RED page doesn't WhatsApp Sire every hour while the fix
 # is in flight. Default 4h; first detection + every 4h until cleared.
 CTO_HOURLY_ALERT_COOLDOWN_S = int(os.environ.get("CTO_HOURLY_ALERT_COOLDOWN_S", "14400"))
+
+# Chitti Quality four-agent orchestration (2026-06-13).
+# DevOps 06:00 IST daily → (confirms online) → QA → (on bugs) → Developer.
+# UI agent every Sunday 06:30 IST. All four report into the 07:00 founder email
+# and the public chitti_quality.html page. No new infra — reuses the CTO 10-gate
+# + Railway health rails. On-demand: POST /admin/founder/agents/run.
+AGENTS_DEVOPS_HOUR_IST = int(os.environ.get("AGENTS_DEVOPS_HOUR_IST", "6"))
+AGENTS_DEVOPS_MINUTE_IST = int(os.environ.get("AGENTS_DEVOPS_MINUTE_IST", "0"))
+AGENTS_UI_HOUR_IST = int(os.environ.get("AGENTS_UI_HOUR_IST", "6"))
+AGENTS_UI_MINUTE_IST = int(os.environ.get("AGENTS_UI_MINUTE_IST", "30"))
 
 # Swarm Intelligence (SAHAYAI_MASTER.md §2f) — weekly pattern extraction.
 # Runs INLINE inside run_weekly_report (Sunday 08:00 IST) since 2026-05-15.
@@ -269,6 +290,15 @@ def run_daily_report() -> dict:
     subject, html = render_email_html(
         slices, prev_slices=_YESTERDAY_SLICES, defects=defects, uptime=uptime,
     )
+    # Fold in the four Chitti Quality agents' latest results (DevOps / QA /
+    # Developer ran at 06:00; UI on Sundays). Non-invasive: appended before
+    # </body> so we don't thread a new kwarg through render_email_html.
+    try:
+        agents_html = render_agents_email_section()
+        if agents_html:
+            html = html.replace("</body>", agents_html + "</body>", 1)
+    except Exception as e:  # noqa: BLE001
+        log.warning("[daily] agents section render failed: %s", e)
     ok = send_report_email(subject, html, recipient=FOUNDER_EMAIL)
 
     _record_history(slices)
@@ -537,6 +567,62 @@ def run_cto_daily_job() -> dict:
         "vaani": notify_result,
         "report": rep.to_dict(),
     }
+
+
+def run_agents_morning_job() -> dict:
+    """06:00 IST cron — Chitti Quality's DevOps → QA → Developer chain.
+
+    DevOps checks every Railway service (and redeploys crashed ones when a
+    Railway token is configured). Once at least one service is online, QA runs
+    the 10-gate 'How To Use' test on every product; any failed gate becomes a
+    bug the Developer agent triages into a fix list + GitHub tickets.
+
+    Results are stored in lib.quality_agents and surface in (a) the 07:00
+    founder email and (b) chitti_quality.html. Vaani is pinged only on RED."""
+    out = run_devops_qa_developer()
+    devops, qa, dev = out["devops"], out.get("qa"), out.get("developer")
+
+    # Vaani notify only when something is RED (DevOps service down, or QA fail).
+    reds = []
+    if devops["status"] == "red":
+        reds.append(f"DevOps: {devops['headline']}")
+    if qa and qa["status"] == "red":
+        reds.append(f"QA: {qa['headline']}")
+    notify_result = None
+    if reds:
+        spoken = "Sire, Chitti Quality 6am check found a problem. " + reds[0]
+        written = "🛡 *Chitti Quality — 6am agents*\n" + "\n".join(f"🔴 {r}" for r in reds)
+        if dev and dev["detail"].get("fix_list"):
+            written += f"\n🛠️ {len(dev['detail']['fix_list'])} fix item(s) queued."
+        notify_result = notify_sire_via_vaani(
+            kind="quality_agents_red", message=written, spoken_text=spoken,
+        )
+
+    log.info(
+        "[agents-06] devops=%s qa=%s dev=%s vaani=%s",
+        devops["status"], (qa or {}).get("status"), (dev or {}).get("status"),
+        (notify_result or {}).get("ok"),
+    )
+    return {"ok": True, "agents": out, "vaani": notify_result}
+
+
+def run_ui_agent_job() -> dict:
+    """Sunday 06:30 IST cron — UI Agent. Audits every product page for design
+    consistency against sahayai_design_system.css. Stored for the 07:00 email +
+    chitti_quality.html. Vaani pinged only when a page is missing the design
+    system (RED)."""
+    run = run_ui_agent()
+    notify_result = None
+    if run.status == "red":
+        spoken = "Sire, Chitti Quality UI check found pages off the design system."
+        written = (f"🎨 *Chitti Quality — UI Agent*\n🔴 {run.headline}\n"
+                   + "\n".join(f"• {f['product']}: {f['problem']}"
+                               for f in run.detail.get("failures", [])[:6]))
+        notify_result = notify_sire_via_vaani(
+            kind="ui_agent_red", message=written, spoken_text=spoken,
+        )
+    log.info("[agents-ui] status=%s · %s", run.status, run.headline)
+    return {"ok": True, "ui": run.to_dict(), "vaani": notify_result}
 
 
 # Per-URL last-alert timestamps so we don't WhatsApp Sire every hour about the
@@ -1259,6 +1345,30 @@ def _create_app() -> Flask:
             return jsonify({"ok": False, "error": "ids required"}), 400
         return jsonify(vaani_ack(ids))
 
+    # ---- Chitti Quality four-agent surface ---------------------------------
+    # Public read — chitti_quality.html (static page, no server-side auth) polls
+    # this to render the four agents. Only data the agents already decided to
+    # publish; same unauthenticated posture as /api/cto/notifications/pending.
+    @app.get("/api/quality/agents")
+    def api_quality_agents():
+        resp = jsonify(agents_public_state())
+        resp.headers["Cache-Control"] = "public, max-age=60"
+        return resp
+
+    @app.post("/admin/founder/agents/run")
+    def admin_agents_run():
+        """Manual trigger. Body: {"which": "all" | "morning" | "ui"} (default all).
+        'morning' = DevOps→QA→Developer; 'ui' = UI agent; 'all' = both."""
+        auth = _require_admin()
+        if auth: return auth
+        which = ((request.get_json(silent=True) or {}).get("which") or "all").lower()
+        out: dict[str, Any] = {"ok": True, "which": which}
+        if which in ("all", "morning"):
+            out["morning"] = run_agents_morning_job()
+        if which in ("all", "ui"):
+            out["ui"] = run_ui_agent_job()
+        return jsonify(out)
+
     @app.get("/admin/founder/cto-daily")
     def admin_cto_daily_html():
         """Render the CTO daily report in-browser for visual review.
@@ -1405,6 +1515,19 @@ def _start_scheduler() -> None:
         minute=CTO_HOURLY_MINUTE_IST,
         timezone=_IST, id="cto_hourly_health", replace_existing=True,
     )
+    # Chitti Quality four-agent orchestration (2026-06-13).
+    # DevOps→QA→Developer at 06:00 IST daily; UI agent Sundays 06:30 IST.
+    # Both land in the 07:00 founder email + chitti_quality.html.
+    _sched.add_job(
+        run_agents_morning_job, "cron",
+        hour=AGENTS_DEVOPS_HOUR_IST, minute=AGENTS_DEVOPS_MINUTE_IST,
+        timezone=_IST, id="quality_agents_morning", replace_existing=True,
+    )
+    _sched.add_job(
+        run_ui_agent_job, "cron",
+        day_of_week="sun", hour=AGENTS_UI_HOUR_IST, minute=AGENTS_UI_MINUTE_IST,
+        timezone=_IST, id="quality_agents_ui", replace_existing=True,
+    )
     if SELF_PING_ENABLED:
         _sched.add_job(
             run_self_ping, "interval",
@@ -1425,7 +1548,8 @@ def _start_scheduler() -> None:
     _sched.start()
     log.info(
         "scheduler started · daily %02d:%02d IST · weekly Sun %02d:%02d IST · "
-        "escalator :15 · bcp self-ping %s · swarm inline in weekly",
+        "escalator :15 · bcp self-ping %s · swarm inline in weekly · "
+        "quality-agents 06:00 (devops→qa→dev) + UI Sun 06:30",
         REPORT_HOUR_IST, REPORT_MINUTE_IST, WEEKLY_HOUR_IST, WEEKLY_MINUTE_IST,
         f"every {SELF_PING_INTERVAL_MIN} min" if SELF_PING_ENABLED else "DISABLED (SELF_PING_ENABLED=false)",
     )

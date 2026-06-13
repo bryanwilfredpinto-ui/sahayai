@@ -275,13 +275,30 @@ Currently triggered manually (`POST /admin/founder/escalate` with `Authorization
 
 ---
 
+### Part 9 — Four orchestrated agents (2026-06-13)
+
+Chitti Quality runs four named agents on a schedule. They are **orchestration over the rails that already exist** — the CTO 10-gate check ([../chitti-founder/backend/lib/cto_verifier.py](../chitti-founder/backend/lib/cto_verifier.py)), the Railway `/health` sweep, and the GitHub-issue escalator ([../lib/chitti_quality.py](../lib/chitti_quality.py)). **No new service, database, scheduler, or deploy target was added.** All four report into the **07:00 IST founder email** (folded into `render_email_html`'s output) and onto the **public [../chitti_quality.html](../chitti_quality.html)** page.
+
+| Agent | Cadence | What it does | Reuses |
+|---|---|---|---|
+| 🚂 **DevOps** | 06:00 IST daily | Checks every Railway service; redeploys crashed ones (Railway GraphQL when `RAILWAY_API_TOKEN`+`RAILWAY_SERVICE_IDS` are set, honest no-op otherwise); reports online/down. | `cto_verifier.check_backend`, `RAILWAY_HEALTH_URLS` |
+| 🧪 **QA** | after DevOps confirms ≥1 service online | Runs the 10-gate "How To Use" test on **every product page**; reports PASS / PARTIAL / FAIL; failed gates become bugs. | `cto_verifier.verify_url`, `FRONTEND_PAGES_TO_WATCH` |
+| 🛠️ **Developer** | when QA finds bugs | Clusters bugs by failing gate, proposes a fix + effort (S/M/L) per cluster, files one GitHub ticket per cluster. **Triages only — never claims code it didn't write.** | `chitti_quality.open_github_issue` |
+| 🎨 **UI** | Sundays 06:30 IST | Audits every page against [../sahayai_design_system.css](../sahayai_design_system.css): hard-fails on a missing stylesheet, flags off-palette colour as drift (amber). | `cto_verifier._fetch`, locked `:root` palette |
+
+Orchestration: DevOps → (online?) → QA → (bugs?) → Developer runs as one 06:00 chain (`run_agents_morning_job`); UI is a separate Sunday cron (`run_ui_agent_job`). Vaani is pinged **only on RED** (service down / QA fail / page missing the design system), consistent with the CTO-hourly rail. On-demand: `POST /admin/founder/agents/run` (`{"which":"all"|"morning"|"ui"}`, header auth). Public read: `GET /api/quality/agents` (unauthenticated, same posture as the Vaani notification rail). Honest empty state until the first 06:00 pass — never a fake "all green".
+
+---
+
 ## Where this lives in the code
 
 | Concern | File |
 |---|---|
 | Risk levels, agentic rules, safeguards, carbon, incident, defects, weekly, escalator | [../lib/chitti_quality.py](../lib/chitti_quality.py) |
-| Daily email renderer | [../lib/founder_report.py](../lib/founder_report.py) `render_email_html` |
-| Daily + weekly + escalator crons | [../chitti-founder/backend/main.py](../chitti-founder/backend/main.py) |
+| Four orchestrated agents (DevOps / QA / Developer / UI) | [../chitti-founder/backend/lib/quality_agents.py](../chitti-founder/backend/lib/quality_agents.py) |
+| 10-gate "How To Use" check + Railway health | [../chitti-founder/backend/lib/cto_verifier.py](../chitti-founder/backend/lib/cto_verifier.py) |
+| Daily email renderer (+ agents section) | [../lib/founder_report.py](../lib/founder_report.py) `render_email_html` |
+| Daily + weekly + escalator + agents crons | [../chitti-founder/backend/main.py](../chitti-founder/backend/main.py) |
 | 4-icon feedback widget + trust strip | [../feedback-widget.js](../feedback-widget.js) |
 | Public trust page | [../chitti_quality.html](../chitti_quality.html) |
 | Thumbs storage + blueprint per Chitti | [../lib/feedback.py](../lib/feedback.py) |
