@@ -2,6 +2,37 @@
 
 **Generated:** 2026-05-14 · **Updated:** 2026-06-07 (Chitti Legal RAG + CEOS v1.0 built; see entries below) · **Auditor:** Claude Opus 4.8 (1M context) ·
 
+## 2026-06-13 — Chitti Mechanic 2 Wheeler — CEOS v1.0 ground-up rebuild (new product)
+
+**Trigger:** Sire — "Rebuild Chitti 2-Wheeler Mechanic completely … research 20 apps + 20 AI apps
+… answer the BEFORE-CEOS gate … build it, no questions asked, I'll only reply once you say Product
+completed." Built in the **fresh** folder [chitti-mechanic-2w/](chitti-mechanic-2w/); legacy
+`chitti-2wheeler/` kept untouched until retired.
+
+Process honoured the BEFORE-CEOS Master Product Creation Rule first: 20+20 app research
+([CHITTI_2W_MECHANIC_RESEARCH.md](CHITTI_2W_MECHANIC_RESEARCH.md)) → product justification
+([CHITTI_2W_MECHANIC_PRODUCT_JUSTIFICATION.md](CHITTI_2W_MECHANIC_PRODUCT_JUSTIFICATION.md),
+**Build Score 87/100 = BUILD**) → CEOS → build. Doctrine: rules are the product, DeepSeek is an
+enhancement; deterministic engine works offline.
+
+| Proof | Result | Artifact |
+|---|---|---|
+| CEOS doc set (chitti-fashion grade) | 🟢 **44 docs** + BUILD_ORDER (with CTO research inputs) | [chitti-mechanic-2w/ceos/](chitti-mechanic-2w/ceos/) |
+| Deterministic engine — 15 features | 🟢 **82/82 gold assertions PASS** | `node tools/test_mechanic_2w.mjs` → [chitti_mechanic_2w_engine.js](chitti_mechanic_2w_engine.js) (vault·reminders·inspect·insurance·puc·service/oil·tyre·battery·fuel-EV·obd·scam·triage·sell·savings·twin·scores·coach; every result has confidence/risks[]/sources[]) |
+| Accessible page (15 tabs) | 🟢 built | [chitti_mechanic_2w.html](chitti_mechanic_2w.html): 17 `data-chitti-response` cards, skip-link, single h1, role=tab/tabpanel + aria-live, ≥44px taps, reduced-motion/contrast/forced-colors |
+| **Vaani #lang-select — PROVEN LIVE** | 🟢 26 options · en→hi sets `html[lang]=hi` + persists + **29 nodes translated** + →ta→en stable | `tools/cert_mechanic_2w.mjs` |
+| 5 frontend gates (G1–G5) | 🟢 live-verified (feedback-widget + 17 boxes · a11y · disability profile · lang auto-detect · ISL) | same |
+| **Live Playwright cert** | 🟢 **34/34 GREEN** — axe-core **0 serious/critical**, 5 device screenshots (desktop 1920×1080 · laptop 1366×768 · iPad · iPhone · Android), all 15 tabs render real engine output, 0 console errors, taps ≥44px | `node tools/cert_mechanic_2w.mjs` → [tools/cert_screenshots/](tools/cert_screenshots/) `chitti_mechanic_2w_*.png` |
+| Backend honest stub | 🟢 `/health` 200 · `/api/2w/health` 200 · 6 honest 501 stubs (OCR/messaging/insurer-API/VAHAN/diagnose/value) | [chitti-mechanic-2w/backend/main.py](chitti-mechanic-2w/backend/main.py) (Flask + Procfile + railway.json; local-SQLite fallback) |
+| Golden Rule + emergency | 🟢 surfaces 108/112, **never auto-dials**; no action without Yes | engine `emergency()` + asserted in tests |
+
+**Honest status:** BO1–BO10 built, engine-tested (82/82) **and** live-Playwright-certified (34/34) this
+pass. Standing COMING SOON (honest, not faked): live mParivahan/DigiLocker/insurer-premium APIs, document
+OCR + damage-photo/sound vision, DeepSeek symptom narration (DeepSeek funding + Vaani relevance-rail),
+SMS/WhatsApp delivery, and server-side Vehicle-Twin persistence (org-wide Turso read-block 2026-06-13).
+Remaining for Sire: real iPhone/Android device sign-off. Reproduce: `node tools/test_mechanic_2w.mjs &&
+node tools/cert_mechanic_2w.mjs`.
+
 ## 2026-06-07 — Chitti Legal — RAG (vector DB over official legal texts)
 
 **Trigger:** Sire — "Build RAG (vector database) for Chitti Legal using the free PDFs. Do

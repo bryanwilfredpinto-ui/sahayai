@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<!-- Chitti Mechanic 2 Wheeler — Frontend for chitti-mechanic-2w/  (CEOS v1.0, built 2026-06-13)
+     Zero-exclusion 2-wheeler ownership OS (blind/deaf/mute/illiterate + 9 archetypes).
+     Language dropdown is Vaani-canonical: chitti_lang.js owns #lang-select (26 langs).
+     Deterministic engine: chitti_mechanic_2w_engine.js (window.ChittiMech2W) — rules are the product.
+     Spec: chitti-mechanic-2w/ceos/BUILD_ORDER.md + PRD.md + ../CHITTI_2W_MECHANIC_RESEARCH.md -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chitti Mechanic 2 Wheeler — your bike mechanic, 24×7, in your language</title>
+<meta name="description" content="Chitti Mechanic 2 Wheeler — a trusted bike/scooter mechanic with you 24×7×365. Fix small problems yourself, check a used bike before you buy, never miss insurance/PUC/service, find the right oil & tyres, spot fake parts and unfair quotes — by voice, in 26 Indian languages, free. Built for blind, deaf, mute and illiterate riders too.">
+<meta name="chitti-page-desc" content="Chitti Mechanic 2 Wheeler. Aapka bike mechanic, 24x7. Chhoti dikkat khud theek karo, purani gaadi kharidne se pehle jaanch, insurance/PUC/service ka reminder, sahi oil aur tyre, nakli parts aur zyada quote se bacho.">
+<meta name="chitti-features" content="chitti-mechanic-2w/ceos/skills/FEATURES.md">
+<style>
+  :root{ --saffron:#FF9933; --navy:#000080; --green:#138808; --line:#e5e7eb; --ink:#1a1a2e; --red:#b00020; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.55;margin:0;color:var(--ink);background:#F7F7F4}
+  .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 14px;z-index:1000;border-radius:0 0 8px 0}
+  .skip:focus{left:0}
+  a{color:#1d4ed8}
+  .disc{position:sticky;top:0;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:13px;padding:7px 12px;text-align:center;font-weight:600}
+  header{background:linear-gradient(135deg,#fff7e6,#fff,#eafbe7);border-bottom:2px solid var(--saffron);padding:14px 16px}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 2px;display:flex;align-items:center;gap:8px}
+  .tagline{font-size:14px;color:#444;margin:0 0 10px}
+  .a11y-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .a11y-bar label{font-size:13px;font-weight:700;color:var(--navy)}
+  #lang-select{min-height:44px;font-size:15px;padding:6px 10px;border:2px solid var(--saffron);border-radius:10px;background:#fff;color:var(--navy);font-weight:700}
+  .btn{min-height:48px;font-size:15px;font-weight:800;font-family:inherit;border:2px solid var(--line);background:#fff;color:var(--navy);border-radius:12px;padding:10px 14px;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--saffron),#E07B1D);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(255,153,51,.3)}
+  .btn.read{border-color:#1d4ed8;color:#1d4ed8}
+  .btn:focus-visible,.tab:focus-visible,.chip:focus-visible,#lang-select:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+  main{max-width:820px;margin:0 auto;padding:14px 16px 90px}
+  .hero{background:#fff;border:1.5px solid #FFD9B0;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 22px rgba(255,153,51,.12)}
+  .hero h2{font-size:20px;color:var(--navy);margin:0 0 6px}
+  .hero p{font-size:14.5px;color:#333;margin:0 0 8px}
+  .free{display:inline-block;background:var(--green);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;margin-bottom:6px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+  .tab{flex:0 0 auto;min-height:48px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:800;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer}
+  .tab .em{font-size:20px}
+  .tab[aria-selected="true"]{background:linear-gradient(180deg,#fff,#fff3e0);border-color:var(--saffron)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:17px;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .card .sub{font-size:13.5px;color:#555;margin:0 0 10px;line-height:1.5}
+  label.fl{display:block;font-size:13px;font-weight:700;color:#333;margin:8px 0 4px}
+  input.fi,select.fs{width:100%;min-height:48px;font-size:16px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-family:inherit;background:#fff}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:140px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .chip{min-height:44px;font-size:14px;font-weight:700;border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--navy)}
+  .chip[aria-pressed="true"]{background:#fff3e0;border-color:var(--saffron)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .result{margin-top:12px}
+  .res-box{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:#fafafa}
+  .res-box.ok{border-color:var(--green);background:#f0faf0}
+  .res-box.warning{border-color:#c97a00;background:#fff8ec}
+  .res-box.bad{border-color:var(--red);background:#fdf0f0}
+  .res-box.info{border-color:#1d4ed8;background:#eff4ff}
+  .res-status{font-weight:900;font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .res-box .big{font-size:19px;font-weight:900;color:var(--navy)}
+  .res-box ul{margin:6px 0 0;padding-left:20px;font-size:14px}
+  .res-box .sp{margin-top:8px;display:flex;gap:8px}
+  .speak-btn{min-height:44px;border:2px solid #1d4ed8;color:#1d4ed8;background:#fff;border-radius:10px;font-weight:800;cursor:pointer;padding:8px 12px;font-size:13px}
+  .prov{font-size:11.5px;color:#5a5a5a;margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+  .triage-leg{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;margin:6px 0}
+  footer{max-width:820px;margin:0 auto;padding:16px;color:#5a5a5a;font-size:12.5px;text-align:center}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  @media (prefers-contrast: more){.card,.res-box{border-width:2.5px}.tab[aria-selected="true"]{outline:2px solid var(--navy)}}
+  @media (forced-colors: active){.btn.primary{border:2px solid}.tab[aria-selected="true"]{border:3px solid}}
+</style>
+<!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
+<script src="chitti_lang.js" defer></script>
+<!-- A11Y SUBSTRATE: disability profile, ISL, features, read-page, voice. -->
+<script src="chitti_a11y.js" defer></script>
+<!-- PER-RESPONSE 5-ELEMENT WIDGET: 🔊 / 🤖 / 👍 / 👎 / ✏️ on every [data-chitti-response] card. -->
+<script src="feedback-widget.js" data-page="chitti_mechanic_2w" defer></script>
+<!-- DETERMINISTIC ENGINE: rules are the product. -->
+<script src="chitti_mechanic_2w_engine.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<div class="disc" role="note">🛵 Chitti Mechanic gives AI-assisted guidance, estimates &amp; coaching for information only — it is <b>not</b> a substitute for a qualified mechanic, and never books, pays or calls without your Yes. DIY is at your own risk; safety-critical work (brakes, electrical, engine) is mechanic-only.</div>
+
+<header>
+  <div class="wrap">
+    <h1>🛵 Chitti Mechanic 2 Wheeler</h1>
+    <p class="tagline">Your trusted bike &amp; scooter mechanic — with you 24×7×365, by voice, in your language. Fix small things yourself, buy/sell smart, never miss a renewal, save ₹10,000+ a year.</p>
+    <div class="a11y-bar">
+      <label for="lang-select">🌐 Language</label>
+      <select id="lang-select" aria-label="Choose language"></select>
+      <button class="btn read" type="button" onclick="mechReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" role="main">
+  <section class="hero" data-chitti-response="mech-hero" data-chitti-section="Welcome">
+    <span class="free">FREE · NO SIGN-UP · 26 LANGUAGES</span>
+    <h2>One mechanic for your whole bike life</h2>
+    <p>Tell Chitti about your bike once. It then watches your insurance, PUC, service, tyres &amp; battery — reminds you in time, coaches small repairs you can safely do, checks if a quote is fair, and helps you buy or sell without getting cheated.</p>
+    <div class="triage-leg" aria-hidden="false">
+      <span>🟢 Safe DIY</span><span>🟡 Caution</span><span>🔴 Mechanic only</span>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="Chitti Mechanic modules">
+    <button class="tab" role="tab" id="tab-bike" aria-controls="panel-bike" aria-selected="true" onclick="mechTab('bike')"><span class="em" aria-hidden="true">🏍️</span>My Bike</button>
+    <button class="tab" role="tab" id="tab-remind" aria-controls="panel-remind" aria-selected="false" onclick="mechTab('remind')"><span class="em" aria-hidden="true">🔔</span>Reminders</button>
+    <button class="tab" role="tab" id="tab-doctor" aria-controls="panel-doctor" aria-selected="false" onclick="mechTab('doctor')"><span class="em" aria-hidden="true">🩺</span>Doctor</button>
+    <button class="tab" role="tab" id="tab-buy" aria-controls="panel-buy" aria-selected="false" onclick="mechTab('buy')"><span class="em" aria-hidden="true">🛒</span>Buy</button>
+    <button class="tab" role="tab" id="tab-sell" aria-controls="panel-sell" aria-selected="false" onclick="mechTab('sell')"><span class="em" aria-hidden="true">💰</span>Sell</button>
+    <button class="tab" role="tab" id="tab-insure" aria-controls="panel-insure" aria-selected="false" onclick="mechTab('insure')"><span class="em" aria-hidden="true">🛡️</span>Insurance</button>
+    <button class="tab" role="tab" id="tab-puc" aria-controls="panel-puc" aria-selected="false" onclick="mechTab('puc')"><span class="em" aria-hidden="true">🌿</span>PUC</button>
+    <button class="tab" role="tab" id="tab-service" aria-controls="panel-service" aria-selected="false" onclick="mechTab('service')"><span class="em" aria-hidden="true">🔧</span>Service &amp; Oil</button>
+    <button class="tab" role="tab" id="tab-tyre" aria-controls="panel-tyre" aria-selected="false" onclick="mechTab('tyre')"><span class="em" aria-hidden="true">🛞</span>Tyres</button>
+    <button class="tab" role="tab" id="tab-battery" aria-controls="panel-battery" aria-selected="false" onclick="mechTab('battery')"><span class="em" aria-hidden="true">🔋</span>Battery</button>
+    <button class="tab" role="tab" id="tab-fuel" aria-controls="panel-fuel" aria-selected="false" onclick="mechTab('fuel')"><span class="em" aria-hidden="true">⚡</span>Fuel / EV</button>
+    <button class="tab" role="tab" id="tab-scam" aria-controls="panel-scam" aria-selected="false" onclick="mechTab('scam')"><span class="em" aria-hidden="true">💸</span>Scam check</button>
+    <button class="tab" role="tab" id="tab-learn" aria-controls="panel-learn" aria-selected="false" onclick="mechTab('learn')"><span class="em" aria-hidden="true">🎓</span>Learn</button>
+    <button class="tab" role="tab" id="tab-savings" aria-controls="panel-savings" aria-selected="false" onclick="mechTab('savings')"><span class="em" aria-hidden="true">📊</span>Savings</button>
+    <button class="tab" role="tab" id="tab-sos" aria-controls="panel-sos" aria-selected="false" onclick="mechTab('sos')"><span class="em" aria-hidden="true">🆘</span>Emergency</button>
+  </div>
+
+  <!-- 1. MY BIKE (Document Vault + Vehicle Twin + Scores) -->
+  <section class="panel active" id="panel-bike" role="tabpanel" aria-labelledby="tab-bike">
+    <div class="card" data-chitti-response="mech-vault" data-chitti-section="My Bike — document vault">
+      <h2><span aria-hidden="true">🏍️</span> Tell Chitti about your bike</h2>
+      <p class="sub">Saved on THIS device only (privacy-first). "Chitti forget" wipes everything. Chitti uses this to remind you in time, score your bike, and help you sell later.</p>
+      <div class="row">
+        <div><label class="fl" for="bk-make">Make &amp; model</label><input class="fi" id="bk-make" placeholder="e.g. Honda Activa 2022"></div>
+        <div><label class="fl" for="bk-class">Type</label>
+          <select class="fs" id="bk-class"><option value="commuter">Commuter motorcycle</option><option value="performance">Performance motorcycle</option><option value="scooter" selected>Scooter</option><option value="ev">Electric (EV)</option></select></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bk-odo">Odometer (km)</label><input class="fi" id="bk-odo" type="number" inputmode="numeric" placeholder="12500"></div>
+        <div><label class="fl" for="bk-daily">Daily km (approx)</label><input class="fi" id="bk-daily" type="number" inputmode="numeric" placeholder="40"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bk-ins">Insurance expiry</label><input class="fi" id="bk-ins" type="date"></div>
+        <div><label class="fl" for="bk-puc">PUC expiry</label><input class="fi" id="bk-puc" type="date"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bk-rc">RC expiry</label><input class="fi" id="bk-rc" type="date"></div>
+        <div><label class="fl" for="bk-lastkm">Last service (km)</label><input class="fi" id="bk-lastkm" type="number" inputmode="numeric" placeholder="9000"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="bk-tyrekm">Tyre km done</label><input class="fi" id="bk-tyrekm" type="number" inputmode="numeric" placeholder="8000"></div>
+        <div><label class="fl" for="bk-batt">Battery age (months)</label><input class="fi" id="bk-batt" type="number" inputmode="numeric" placeholder="18"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechSaveBike()">💾 Save my bike</button>
+        <button class="btn" type="button" onclick="mechScores()">📊 My scores</button>
+        <button class="btn" type="button" onclick="mechForget()">🗑️ Chitti forget</button>
+      </div>
+      <div class="result" id="r-bike" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 2. REMINDERS -->
+  <section class="panel" id="panel-remind" role="tabpanel" aria-labelledby="tab-remind">
+    <div class="card" data-chitti-response="mech-remind" data-chitti-section="Smart reminders">
+      <h2><span aria-hidden="true">🔔</span> What needs attention now?</h2>
+      <p class="sub">24/7/365 reminders from your saved bike — insurance, PUC, service, RC, tyre, battery, chain — date OR km, whichever comes first. Chitti tells you; it never renews or pays on its own.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechReminders()">🔔 Check my reminders</button></div>
+      <div class="result" id="r-remind" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 3. DOCTOR (AI Coach symptom + OBD + triage) -->
+  <section class="panel" id="panel-doctor" role="tabpanel" aria-labelledby="tab-doctor">
+    <div class="card" data-chitti-response="mech-coach" data-chitti-section="Breakdown doctor">
+      <h2><span aria-hidden="true">🩺</span> What is wrong with my bike?</h2>
+      <p class="sub">Pick what is happening. Chitti gives the likely cause, whether it is safe to ride, and whether you can fix it or must see a mechanic. This is a starting point, not a final diagnosis.</p>
+      <label class="fl" for="dr-sym">Symptom</label>
+      <select class="fs" id="dr-sym" aria-label="Choose a symptom"></select>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechCoach()">🩺 Diagnose</button></div>
+      <div class="result" id="r-coach" aria-live="polite"></div>
+    </div>
+    <div class="card" data-chitti-response="mech-obd" data-chitti-section="OBD code doctor">
+      <h2><span aria-hidden="true">🔌</span> OBD fault code (if you have a scanner)</h2>
+      <p class="sub">Most Indian bikes have no OBD2 — use the symptom box above. If you do have a code (e.g. P0300), Chitti explains it in plain language. It never invents a meaning it does not know.</p>
+      <label class="fl" for="dr-code">Code</label><input class="fi" id="dr-code" placeholder="P0300" style="text-transform:uppercase">
+      <div class="actions"><button class="btn primary" type="button" onclick="mechObd()">🔌 Explain code</button></div>
+      <div class="result" id="r-obd" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 4. BUY -->
+  <section class="panel" id="panel-buy" role="tabpanel" aria-labelledby="tab-buy">
+    <div class="card" data-chitti-response="mech-buy" data-chitti-section="Pre-purchase inspection">
+      <h2><span aria-hidden="true">🛒</span> Checking a used bike before you buy?</h2>
+      <p class="sub">Chitti gives a Buy Score and a fair-price range, and flags accident / flood / odometer risks. A high score is <b>not</b> a guarantee and a low one is <b>not</b> proof — always road-test and get a mechanic to inspect.</p>
+      <div class="row">
+        <div><label class="fl" for="by-ask">Seller asking (₹)</label><input class="fi" id="by-ask" type="number" inputmode="numeric" placeholder="45000"></div>
+        <div><label class="fl" for="by-mkt">Expected market (₹)</label><input class="fi" id="by-mkt" type="number" inputmode="numeric" placeholder="42000"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="by-own">Previous owners</label><input class="fi" id="by-own" type="number" inputmode="numeric" placeholder="1"></div>
+        <div><label class="fl" for="by-tyre">Tyre km done</label><input class="fi" id="by-tyre" type="number" inputmode="numeric" placeholder="9000"></div>
+      </div>
+      <div class="chips" role="group" aria-label="Bike condition flags">
+        <button class="chip" id="by-sh" type="button" aria-pressed="false" onclick="mechToggle('by-sh')">📄 Service history</button>
+        <button class="chip" id="by-rc" type="button" aria-pressed="false" onclick="mechToggle('by-rc')">🪪 RC clear</button>
+        <button class="chip" id="by-iv" type="button" aria-pressed="false" onclick="mechToggle('by-iv')">🛡️ Insurance valid</button>
+        <button class="chip" id="by-acc" type="button" aria-pressed="false" onclick="mechToggle('by-acc')">💥 Accident signs</button>
+        <button class="chip" id="by-fld" type="button" aria-pressed="false" onclick="mechToggle('by-fld')">🌊 Flood signs</button>
+        <button class="chip" id="by-odo" type="button" aria-pressed="false" onclick="mechToggle('by-odo')">⏱️ Odometer suspect</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechInspect()">🛒 Get Buy Score</button></div>
+      <div class="result" id="r-buy" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 5. SELL -->
+  <section class="panel" id="panel-sell" role="tabpanel" aria-labelledby="tab-sell">
+    <div class="card" data-chitti-response="mech-sell" data-chitti-section="Sell assistant">
+      <h2><span aria-hidden="true">💰</span> Selling your bike?</h2>
+      <p class="sub">Chitti suggests a fair listing price and what to fix first. Transfer the RC and insurance after sale or you stay liable.</p>
+      <div class="row">
+        <div><label class="fl" for="sl-mkt">Expected market value (₹)</label><input class="fi" id="sl-mkt" type="number" inputmode="numeric" placeholder="68000"></div>
+        <div><label class="fl" for="sl-cond">Condition</label>
+          <select class="fs" id="sl-cond"><option value="excellent">Excellent</option><option value="good" selected>Good</option><option value="fair">Fair</option></select></div>
+      </div>
+      <div class="chips" role="group" aria-label="Papers ready">
+        <button class="chip" id="sl-sh" type="button" aria-pressed="false" onclick="mechToggle('sl-sh')">📄 Service history</button>
+        <button class="chip" id="sl-iv" type="button" aria-pressed="false" onclick="mechToggle('sl-iv')">🛡️ Insurance valid</button>
+        <button class="chip" id="sl-pv" type="button" aria-pressed="false" onclick="mechToggle('sl-pv')">🌿 PUC valid</button>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechSell()">💰 Suggest price</button></div>
+      <div class="result" id="r-sell" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 6. INSURANCE -->
+  <section class="panel" id="panel-insure" role="tabpanel" aria-labelledby="tab-insure">
+    <div class="card" data-chitti-response="mech-insure" data-chitti-section="Insurance intelligence">
+      <h2><span aria-hidden="true">🛡️</span> Are you overpaying for insurance?</h2>
+      <p class="sub">Chitti ranks insurers by Claim-Settlement-Ratio (claims actually paid) and estimates your saving. Pick on CSR + cover, not price alone. Live premiums need the insurer partner API (coming soon) — confirm on the insurer site before buying.</p>
+      <div class="row">
+        <div><label class="fl" for="in-name">Current insurer</label><input class="fi" id="in-name" placeholder="e.g. ACKO"></div>
+        <div><label class="fl" for="in-prem">Current premium (₹/yr)</label><input class="fi" id="in-prem" type="number" inputmode="numeric" placeholder="2800"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechInsure()">🛡️ Compare insurers</button></div>
+      <div class="result" id="r-insure" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 7. PUC -->
+  <section class="panel" id="panel-puc" role="tabpanel" aria-labelledby="tab-puc">
+    <div class="card" data-chitti-response="mech-puc" data-chitti-section="PUC intelligence">
+      <h2><span aria-hidden="true">🌿</span> Is my PUC valid?</h2>
+      <p class="sub">Riding without a valid PUC is a fine. Chitti tracks expiry from your saved bike and reminds you in time.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechPuc()">🌿 Check PUC</button></div>
+      <div class="result" id="r-puc" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 8. SERVICE & OIL -->
+  <section class="panel" id="panel-service" role="tabpanel" aria-labelledby="tab-service">
+    <div class="card" data-chitti-response="mech-service" data-chitti-section="Service & oil intelligence">
+      <h2><span aria-hidden="true">🔧</span> When is my service due — and which oil?</h2>
+      <p class="sub">From your saved odometer + bike type, Chitti lists what is due (km OR months) and the exact oil grade. Always confirm the grade in your owner's manual.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechService()">🔧 Service &amp; oil plan</button></div>
+      <div class="result" id="r-service" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 9. TYRES -->
+  <section class="panel" id="panel-tyre" role="tabpanel" aria-labelledby="tab-tyre">
+    <div class="card" data-chitti-response="mech-tyre" data-chitti-section="Tyre intelligence">
+      <h2><span aria-hidden="true">🛞</span> Do my tyres need changing — and which?</h2>
+      <p class="sub">Tyres wear by km (~20,000) AND age (~3 yrs) — also replace on cracks or low tread. Worn tyres raise accident risk ~3×.</p>
+      <label class="fl" for="ty-use">What matters most?</label>
+      <select class="fs" id="ty-use"><option value="allround">All-round grip</option><option value="mileage">Mileage / value</option><option value="durability">Durability / long life</option><option value="ev">EV scooter (range)</option><option value="performance">Performance</option></select>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechTyreStatus()">🛞 Are mine worn?</button>
+        <button class="btn" type="button" onclick="mechTyreReco()">🔎 Recommend tyres</button>
+      </div>
+      <div class="result" id="r-tyre" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 10. BATTERY -->
+  <section class="panel" id="panel-battery" role="tabpanel" aria-labelledby="tab-battery">
+    <div class="card" data-chitti-response="mech-battery" data-chitti-section="Battery intelligence">
+      <h2><span aria-hidden="true">🔋</span> How is my battery?</h2>
+      <p class="sub">From your saved battery age + bike type, Chitti tells you if it is near end of life. Heat and short trips shorten battery life.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechBattery()">🔋 Check battery</button></div>
+      <div class="result" id="r-battery" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 11. FUEL / EV -->
+  <section class="panel" id="panel-fuel" role="tabpanel" aria-labelledby="tab-fuel">
+    <div class="card" data-chitti-response="mech-fuel" data-chitti-section="Fuel / EV ROI">
+      <h2><span aria-hidden="true">⚡</span> Should I switch to an EV?</h2>
+      <p class="sub">Chitti compares your petrol cost with an EV and shows the payback time — from your real usage. Battery cost, charging access &amp; resale affect real ROI.</p>
+      <div class="row">
+        <div><label class="fl" for="fu-km">Monthly km</label><input class="fi" id="fu-km" type="number" inputmode="numeric" placeholder="1000"></div>
+        <div><label class="fl" for="fu-mil">Mileage (km/l)</label><input class="fi" id="fu-mil" type="number" inputmode="numeric" placeholder="45"></div>
+      </div>
+      <div class="row">
+        <div><label class="fl" for="fu-pet">Petrol price (₹/l)</label><input class="fi" id="fu-pet" type="number" inputmode="numeric" placeholder="105"></div>
+        <div><label class="fl" for="fu-evm">EV charging (₹/mo)</label><input class="fi" id="fu-evm" type="number" inputmode="numeric" placeholder="1200"></div>
+      </div>
+      <div><label class="fl" for="fu-net">EV net cost after exchange (₹)</label><input class="fi" id="fu-net" type="number" inputmode="numeric" placeholder="95000"></div>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechFuel()">⚡ Calculate ROI</button></div>
+      <div class="result" id="r-fuel" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 12. SCAM CHECK -->
+  <section class="panel" id="panel-scam" role="tabpanel" aria-labelledby="tab-scam">
+    <div class="card" data-chitti-response="mech-scam" data-chitti-section="Scam detector">
+      <h2><span aria-hidden="true">💸</span> Is this quote fair?</h2>
+      <p class="sub">Type the repair and the quote. Chitti compares it with the fair range and warns if it is more than 30% above. Always ask for the old part back + a GST bill.</p>
+      <div class="row">
+        <div><label class="fl" for="sc-item">Repair / part</label><input class="fi" id="sc-item" placeholder="e.g. battery replacement"></div>
+        <div><label class="fl" for="sc-quote">Quoted (₹)</label><input class="fi" id="sc-quote" type="number" inputmode="numeric" placeholder="3500"></div>
+      </div>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechScam()">💸 Check the quote</button></div>
+      <div class="result" id="r-scam" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 13. LEARN -->
+  <section class="panel" id="panel-learn" role="tabpanel" aria-labelledby="tab-learn">
+    <div class="card" data-chitti-response="mech-learn" data-chitti-section="Vehicle education">
+      <h2><span aria-hidden="true">🎓</span> Learn to do it yourself (safely)</h2>
+      <p class="sub">Short voice + picture guides for safe DIY jobs. "Understand only" topics (engine, brakes) are knowledge — those repairs stay mechanic-only.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechLearn()">🎓 Show me what I can learn</button></div>
+      <div class="result" id="r-learn" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 14. SAVINGS + TWIN -->
+  <section class="panel" id="panel-savings" role="tabpanel" aria-labelledby="tab-savings">
+    <div class="card" data-chitti-response="mech-savings" data-chitti-section="Savings tracker">
+      <h2><span aria-hidden="true">📊</span> How much has Chitti saved you?</h2>
+      <p class="sub">Every confirmed saving (cheaper insurer, scam avoided, DIY done, fair tyre deal) is logged transparently toward the ₹10,000/year goal. This is a tracker, not a guarantee.</p>
+      <div class="row">
+        <div><label class="fl" for="sv-cat">Saving from</label><input class="fi" id="sv-cat" placeholder="e.g. Scam avoided"></div>
+        <div><label class="fl" for="sv-amt">Amount (₹)</label><input class="fi" id="sv-amt" type="number" inputmode="numeric" placeholder="1700"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechAddSaving()">➕ Log a saving</button>
+        <button class="btn" type="button" onclick="mechSavings()">📊 Show total</button>
+        <button class="btn" type="button" onclick="mechTwin()">🚲 Vehicle Twin</button>
+      </div>
+      <div class="result" id="r-savings" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 15. EMERGENCY -->
+  <section class="panel" id="panel-sos" role="tabpanel" aria-labelledby="tab-sos">
+    <div class="card" data-chitti-response="mech-sos" data-chitti-section="Emergency">
+      <h2><span aria-hidden="true">🆘</span> Accident or breakdown</h2>
+      <p class="sub">Chitti shows the emergency numbers and asks before it does anything — it never auto-dials (Golden Rule).</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechSos()">🆘 Show emergency help</button></div>
+      <div class="result" id="r-sos" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  Chitti Mechanic 2 Wheeler · Part of the sahayai.in family · Free, voice-first, 26 Indian languages.<br>
+  AI-assisted guidance for information only — not a substitute for a qualified mechanic. DIY at your own risk. No price/saving is guaranteed.
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  function E(){ return window.ChittiMech2W; }
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var e=$(id); return e?e.value:''; }
+  function num(id){ return Number(val(id))||0; }
+  function pressed(id){ var e=$(id); return e && e.getAttribute('aria-pressed')==='true'; }
+
+  window.mechTab=function(key){
+    var tabs=document.querySelectorAll('.tab');
+    tabs.forEach(function(t){ var on=t.id==='tab-'+key; t.setAttribute('aria-selected', on?'true':'false'); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', p.id==='panel-'+key); });
+    var p=$('panel-'+key); if(p){ var h=p.querySelector('h2'); if(h){ h.setAttribute('tabindex','-1'); h.focus(); } }
+  };
+  window.mechToggle=function(id){ var e=$(id); if(!e)return; e.setAttribute('aria-pressed', e.getAttribute('aria-pressed')==='true'?'false':'true'); };
+
+  function speak(text){
+    try{
+      if(window.Chitti && window.Chitti.a11y && typeof window.Chitti.a11y.speak==='function'){ window.Chitti.a11y.speak(text); return; }
+      if(window.speechSynthesis){ var u=new SpeechSynthesisUtterance(text); var lang=(window.Chitti&&window.Chitti.lang&&window.Chitti.lang.current())||'en'; u.lang=lang==='en'?'en-IN':lang; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+    }catch(e){}
+  }
+  window.mechReadPage=function(){
+    var t=(document.querySelector('.panel.active h2')||{}).textContent||'Chitti Mechanic 2 Wheeler';
+    speak('Chitti Mechanic 2 Wheeler. '+t+'. '+(document.querySelector('.panel.active .sub')||{}).textContent);
+  };
+  function isBlind(){
+    try{ var p=JSON.parse(localStorage.getItem('disability_profile')||localStorage.getItem('chitti_disability_profile')||'{}'); return !!(p&&(p.blind||p.illiterate||(p.profiles&&p.profiles.indexOf&&(p.profiles.indexOf('blind')>-1||p.profiles.indexOf('illiterate')>-1)))); }catch(e){ return false; }
+  }
+  var STAT={ ok:{sym:'✅',word:'Good'}, warning:{sym:'⚠️',word:'Check this'}, bad:{sym:'🔴',word:'Act now'}, info:{sym:'ℹ️',word:'Note'} };
+
+  // generic accessible result renderer (word+symbol, never colour alone; auto-reads for blind/illiterate)
+  function render(hostId, o){
+    var host=$(hostId); if(!host)return;
+    var st=STAT[o.status||'info'];
+    var box=document.createElement('div'); box.className='res-box '+(o.status||'info');
+    var html='<div class="res-status"><span aria-hidden="true">'+st.sym+'</span> '+st.word+'</div>';
+    if(o.big) html+='<div class="big">'+o.big+'</div>';
+    if(o.text) html+='<p style="margin:6px 0 0;font-size:14.5px">'+o.text+'</p>';
+    if(o.lines&&o.lines.length){ html+='<ul>'+o.lines.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>'; }
+    if(o.sources) html+='<div class="prov">Source: '+o.sources.join(' · ')+(o.confidence?(' · Confidence: '+o.confidence):'')+'</div>';
+    box.innerHTML=html;
+    var sp=document.createElement('div'); sp.className='sp';
+    var b=document.createElement('button'); b.className='speak-btn'; b.type='button'; b.textContent='🔊 Read this aloud';
+    var spoken=o.speak||((o.big?o.big+'. ':'')+(o.text||'')+' '+(o.lines||[]).join('. '));
+    b.onclick=function(){ speak(spoken); };
+    sp.appendChild(b); box.appendChild(sp);
+    host.innerHTML=''; host.appendChild(box);
+    if(isBlind()) speak(spoken);
+  }
+  function risks(r){ return (r.risks||[]).map(function(x){return '⚠️ '+x;}); }
+  function statusOf(r){ return r.status || 'info'; }
+
+  // ── vault read/write from the My Bike form ──
+  function readBikeForm(){
+    return { make:val('bk-make'), vclass:val('bk-class'), odoKm:num('bk-odo'), dailyKm:num('bk-daily'),
+      insuranceExpiry:val('bk-ins'), pucExpiry:val('bk-puc'), rcExpiry:val('bk-rc'),
+      lastServiceKm:num('bk-lastkm'), tyreKm:num('bk-tyrekm'), batteryMonths:num('bk-batt') };
+  }
+  function fillBikeForm(v){
+    if(!v) return;
+    if(v.make)$('bk-make').value=v.make; if(v.vclass)$('bk-class').value=v.vclass;
+    if(v.odoKm)$('bk-odo').value=v.odoKm; if(v.dailyKm)$('bk-daily').value=v.dailyKm;
+    if(v.insuranceExpiry)$('bk-ins').value=v.insuranceExpiry; if(v.pucExpiry)$('bk-puc').value=v.pucExpiry;
+    if(v.rcExpiry)$('bk-rc').value=v.rcExpiry; if(v.lastServiceKm)$('bk-lastkm').value=v.lastServiceKm;
+    if(v.tyreKm)$('bk-tyrekm').value=v.tyreKm; if(v.batteryMonths)$('bk-batt').value=v.batteryMonths;
+  }
+  window.mechSaveBike=function(){
+    var cur=E().vault.load(); var patch=readBikeForm(); for(var k in patch) cur[k]=patch[k]; E().vault.save(cur);
+    render('r-bike',{status:'ok',big:'Saved on this device ✅',text:'Chitti will now watch '+(patch.make||'your bike')+' and remind you in time. Open the Reminders tab anytime.',
+      lines:['Stored locally only — nothing is uploaded.','Tap "Chitti forget" to erase everything.'], confidence:'high', sources:['Local device storage']});
+  };
+  window.mechForget=function(){
+    E().vault.forget(); fillBikeForm({make:'',vclass:'scooter'});
+    ['bk-make','bk-odo','bk-daily','bk-ins','bk-puc','bk-rc','bk-lastkm','bk-tyrekm','bk-batt'].forEach(function(i){var e=$(i); if(e)e.value='';});
+    render('r-bike',{status:'info',big:'Forgotten 🗑️',text:'Every saved detail has been erased from this device.',confidence:'high',sources:['Local device storage']});
+  };
+  window.mechScores=function(){ var r=E().scores(); render('r-bike',{status:'info',big:r.summary,lines:risks(r),confidence:r.confidence,sources:r.sources}); };
+
+  window.mechReminders=function(){
+    var r=E().reminders(E().vault.load());
+    var lines=r.items.length? r.items.map(function(x){return (x.urgent?'🔴 ':'🟡 ')+x.kind+': '+x.msg;}) : ['Nothing urgent — Chitti is watching.'];
+    render('r-remind',{status:r.urgentCount? 'warning':'ok', big:r.summary, lines:lines.concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+
+  window.mechCoach=function(){
+    var r=E().coach(val('dr-sym'));
+    render('r-coach',{status: r.found?(r.tier==='mechanic'?'bad':r.tier==='caution'?'warning':'ok'):'info',
+      big:r.found? (r.tierSym+' '+r.tierWord):'Pick a symptom', text:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechObd=function(){
+    var r=E().obdLookup(val('dr-code'));
+    render('r-obd',{status:r.found?(r.tier==='mechanic'?'bad':r.tier==='caution'?'warning':'ok'):'info', big:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources});
+  };
+
+  window.mechInspect=function(){
+    var r=E().inspect({ asking:num('by-ask'), expectedMarket:num('by-mkt'), owners:num('by-own'), tyreKm:num('by-tyre'),
+      serviceHistory:pressed('by-sh'), rcClear:pressed('by-rc'), insuranceValid:pressed('by-iv'),
+      accidentSigns:pressed('by-acc'), floodSigns:pressed('by-fld'), odoSuspect:pressed('by-odo') });
+    var lines=[].concat(r.good.map(function(g){return '✅ '+g;}), r.check.map(function(c){return '🟡 '+c;}), r.risk.map(function(x){return '🔴 '+x;}), risks(r));
+    render('r-buy',{status:r.status, big:'Buy Score '+r.score+'/100 — '+r.verdict, text:r.summary, lines:lines, confidence:r.confidence, sources:r.sources});
+  };
+  window.mechSell=function(){
+    var r=E().sellAssistant({ expectedMarket:num('sl-mkt'), condition:val('sl-cond'), serviceHistory:pressed('sl-sh'), insuranceValid:pressed('sl-iv'), pucValid:pressed('sl-pv') });
+    render('r-sell',{status:'info', big:r.summary, lines:r.checklist.concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechInsure=function(){
+    var r=E().insuranceCompare({ current:{name:val('in-name'), premium:num('in-prem')} });
+    var lines=r.options.slice(0,6).map(function(o){ return '🛡️ '+o.name+' — CSR '+o.csr+'%'+(o.estPremium?(', est. ₹'+o.estPremium.toLocaleString('en-IN')+(o.estSaving?(' (save ₹'+o.estSaving.toLocaleString('en-IN')+')'):'')):'')+' · '+o.bestFor; });
+    render('r-insure',{status: r.best?'ok':'info', big:r.summary, lines:lines.concat(['⚠️ Late renewal fee ~₹'+r.lateFee]).concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechPuc=function(){ var r=E().pucStatus(E().vault.load()); render('r-puc',{status:statusOf(r), big:r.summary, lines:[r.nearest].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechService=function(){
+    var r=E().serviceSchedule(E().vault.load());
+    render('r-service',{status:'info', big:r.summary, lines:r.dueItems.concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechTyreStatus=function(){ var r=E().tyreStatus(E().vault.load()); render('r-tyre',{status:statusOf(r), big:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources}); };
+  window.mechTyreReco=function(){ var r=E().tyreRecommend(val('ty-use')); render('r-tyre',{status:'info', big:r.summary, lines:r.options.map(function(o){return '🛞 '+o.name+' — '+o.best+' ('+o.price+')';}).concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechBattery=function(){ var v=E().vault.load(); var r=E().batteryStatus(v); render('r-battery',{status:statusOf(r), big:r.summary, lines:['Type: '+r.spec+' · typical life '+r.expectedLifeMonths+' mo · '+r.cost].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechFuel=function(){
+    var r=E().fuelEvRoi({ monthlyKm:num('fu-km'), mileageKmpl:num('fu-mil'), petrolPrice:num('fu-pet'), evCostPerMonth:num('fu-evm'), evNetPrice:num('fu-net') });
+    render('r-fuel',{status: r.monthlySaving>0?'ok':'info', big:r.summary, lines:['Petrol ~₹'+r.petrolMonthly.toLocaleString('en-IN')+'/mo · EV ~₹'+r.evMonthly.toLocaleString('en-IN')+'/mo', r.paybackMonths?('Payback ≈ '+r.paybackMonths+' months'):'No clear payback yet'].concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechScam=function(){
+    var r=E().scamCheck({ item:val('sc-item'), quote:num('sc-quote') });
+    render('r-scam',{status:statusOf(r), big:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechLearn=function(){
+    var r=E().educationList();
+    render('r-learn',{status:'info', big:'Guides you can follow', lines:r.modules.map(function(m){var s=E().RULES.triage[m.tier].sym; return s+' '+m.title+(m.mins?(' — '+m.mins+' min'):'')+' ('+m.a11y+')';}).concat(risks(r)), confidence:r.confidence, sources:r.sources});
+  };
+  window.mechAddSaving=function(){
+    var v=E().vault.load(); v.savings=v.savings||[]; var amt=num('sv-amt'); var cat=val('sv-cat')||'Saving';
+    if(amt>0){ v.savings.push({category:cat,amount:amt}); E().vault.save(v); }
+    mechSavings();
+  };
+  window.mechSavings=function(){ var v=E().vault.load(); var r=E().savings(v.savings||[]); render('r-savings',{status:'ok', big:r.summary, lines:(r.entries||[]).map(function(e){return '💸 '+e.category+': ₹'+Number(e.amount).toLocaleString('en-IN');}).concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechTwin=function(){ var r=E().twin(E().vault.load()); render('r-savings',{status:'info', big:r.summary, lines:['Timeline: '+r.timeline.join(' → ')].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechSos=function(){ var r=E().emergency(); render('r-sos',{status:'bad', big:'🆘 '+r.numbers.join(' · '), text:r.note, lines:risks(r), confidence:r.confidence, sources:r.sources}); };
+
+  // boot — populate symptom dropdown + restore saved bike
+  function boot(){
+    if(!E()){ setTimeout(boot,60); return; }
+    var sel=$('dr-sym'); if(sel && !sel.options.length){ E().RULES.symptoms.forEach(function(s){ var o=document.createElement('option'); o.value=s.id; o.textContent=s.q; sel.appendChild(o); }); }
+    fillBikeForm(E().vault.load());
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+</body>
+</html>
