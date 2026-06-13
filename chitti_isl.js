@@ -110,7 +110,13 @@
       '.chitti-isl-ctrls{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:.5rem}' +
       '.chitti-isl-ctrls button{min-height:48px;min-width:48px;padding:.5rem 1rem;border:2px solid #15233b;border-radius:10px;background:#fff;color:#15233b;font-size:1rem;font-weight:700;cursor:pointer}' +
       '.chitti-isl-ctrls button:focus-visible{outline:3px solid #1a73e8;outline-offset:2px}' +
-      '.chitti-isl-note{margin:.5rem 0 0;font-size:.8rem;color:#3a4a63;line-height:1.35}';
+      '.chitti-isl-note{margin:.5rem 0 0;font-size:.8rem;color:#3a4a63;line-height:1.35}' +
+      // compact variant for per-box auto-attached panels (chitti_a11y.js)
+      '.chitti-isl-compact{max-width:none;margin:.5rem 0 0;padding:.6rem .75rem}' +
+      '.chitti-isl-compact .chitti-isl-stage{min-height:96px}' +
+      '.chitti-isl-compact .chitti-isl-hand{font-size:3rem}' +
+      '.chitti-isl-compact .chitti-isl-letter{font-size:1.8rem}' +
+      '.chitti-isl-compact h3{font-size:.95rem}';
     (document.head || document.documentElement).appendChild(s);
   }
 
@@ -147,7 +153,7 @@
     if (!words.length) words = ['CHITTI'];
     const title = opts.title || 'Indian Sign Language — fingerspelling';
     target.innerHTML =
-      '<div class="chitti-isl-panel" role="region" aria-label="Indian Sign Language fingerspelling">' +
+      '<div class="chitti-isl-panel' + (opts.compact ? ' chitti-isl-compact' : '') + '" role="region" aria-label="Indian Sign Language fingerspelling">' +
       '<h3>🤟 ' + title + '</h3>' +
       '<div class="chitti-isl-stage">' +
       '<div class="chitti-isl-hand" aria-hidden="true">🤟</div>' +
@@ -182,7 +188,12 @@
       });
     }
     if (replay) replay.addEventListener('click', playAll);
-    playAll();
+    // autoplay defaults ON (verdict button); auto-attached per-box panels pass
+    // autoplay:false so 11 panels don't all fingerspell at once — user taps ▶ Replay.
+    if (opts.autoplay !== false) playAll();
+    else { // paint a static first frame so the panel is clearly "an ISL panel"
+      _loadAlpha().then(alpha => { const w0 = words[0]; if (fallback) fallback.textContent = 'ISL: ' + _spaced(w0); const hand = stage.querySelector('.chitti-isl-hand'), letterEl = stage.querySelector('.chitti-isl-letter'); if (hand) hand.textContent = _shape(alpha, w0[0]); if (letterEl) letterEl.textContent = w0[0].toUpperCase(); if (wordLine) wordLine.textContent = w0; });
+    }
     return { available: true, words: words, replay: playAll };
   }
 

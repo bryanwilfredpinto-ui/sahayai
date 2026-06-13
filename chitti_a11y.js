@@ -1552,17 +1552,92 @@
   // so both pages threw pageerrors on load. Add no-op shims that do the
   // honest minimal behaviour so the call-sites stop erroring; richer
   // behaviour can be added later without page-side changes.
-  if (typeof window.Chitti.a11y.setIslMode !== 'function') {
-    window.Chitti.a11y.setIslMode = function (enabled) {
-      try {
-        if (window.Chitti.isl && typeof window.Chitti.isl.setEnabled === 'function') {
-          window.Chitti.isl.setEnabled(!!enabled);
-        }
-        document.documentElement.setAttribute('data-chitti-isl', enabled ? 'on' : 'off');
-      } catch (e) {}
-      return !!enabled;
-    };
-  }
+  // ── ISL auto-attach (SAHAYAI_MASTER.md §7 — "Every Chitti response shows an
+  //    ISL animation panel alongside the text. Auto-attached by chitti_a11y.js
+  //    to any element marked data-chitti-response via MutationObserver").
+  //    Default OFF → zero behaviour/visual change for non-ISL users on ANY
+  //    product. Turns ON via: the Disability Profile ISL flag (auto), the 🤟
+  //    toggle, or Chitti.a11y.setIslMode(true). Uses the self-contained
+  //    fingerspell engine in chitti_isl.js. Panels render INSIDE each box
+  //    (not as a sibling) so feedback-widget's box-bar sibling logic is
+  //    untouched, and carry translate="no" so chitti_lang.js skips them. ──
+  (function () {
+    var ISL_ON = false, islObs = null;
+    function boxWords(box) {
+      var sec = box.getAttribute('data-chitti-section');
+      if (!sec) { var h = box.querySelector('h1,h2,h3,h4'); sec = h ? h.textContent : 'Chitti'; }
+      sec = String(sec).replace(/[^A-Za-z0-9 ]/g, ' ').trim();
+      var words = sec.split(/\s+/).filter(Boolean).slice(0, 4);
+      return words.length ? words : ['CHITTI'];
+    }
+    function attachOne(box) {
+      if (box.getAttribute('data-chitti-isl-attached') === '1') return;
+      if (!window.Chitti || !window.Chitti.isl || typeof window.Chitti.isl.spellWords !== 'function') return;
+      var panel = document.createElement('div');
+      panel.className = 'chitti-isl-autobox';
+      panel.setAttribute('data-chitti-isl-autobox', '1');
+      panel.setAttribute('translate', 'no');
+      // Build the panel content WHILE DETACHED, then append once fully formed —
+      // appending an empty node then filling it let another substrate's observer
+      // re-process the box mid-build and wipe the panel.
+      try { window.Chitti.isl.spellWords(panel, boxWords(box), { autoplay: false, compact: true, title: 'ISL — ' + (box.getAttribute('data-chitti-section') || 'section') }); } catch (e) {}
+      box.appendChild(panel);
+      box.setAttribute('data-chitti-isl-attached', '1');
+    }
+    function islAttachAll() {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-chitti-response], .chitti-response'), attachOne);
+    }
+    function islDetachAll() {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-chitti-isl-autobox]'), function (p) { if (p.parentNode) p.parentNode.removeChild(p); });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-chitti-isl-attached]'), function (b) { b.removeAttribute('data-chitti-isl-attached'); });
+    }
+    function startObs() {
+      if (islObs || typeof MutationObserver !== 'function') return;
+      var pend = false;
+      islObs = new MutationObserver(function () {
+        if (pend || !ISL_ON) return; pend = true;
+        (window.requestAnimationFrame || function (f) { setTimeout(f, 40); })(function () { pend = false; if (ISL_ON) islAttachAll(); });
+      });
+      islObs.observe(document.body, { childList: true, subtree: true });
+    }
+    function setMode(enabled) {
+      ISL_ON = !!enabled;
+      try { document.documentElement.setAttribute('data-chitti-isl', ISL_ON ? 'on' : 'off'); } catch (e) {}
+      try { localStorage.setItem('chitti_isl_mode', ISL_ON ? '1' : '0'); } catch (e) {}
+      var btn = document.getElementById('chitti-isl-toggle');
+      if (btn) { btn.setAttribute('aria-pressed', ISL_ON ? 'true' : 'false'); btn.classList.toggle('on', ISL_ON); btn.textContent = ISL_ON ? '🤟 ISL on' : '🤟 ISL'; }
+      if (ISL_ON) { islAttachAll(); startObs(); } else { islDetachAll(); }
+      return ISL_ON;
+    }
+    window.Chitti = window.Chitti || {}; window.Chitti.a11y = window.Chitti.a11y || {};
+    window.Chitti.a11y.setIslMode = setMode;
+    window.Chitti.a11y.islAttachAll = islAttachAll;
+
+    function injectToggle() {
+      if (!document.body || document.getElementById('chitti-isl-toggle')) return;
+      if (!document.getElementById('chitti-isl-toggle-style')) {
+        var st = document.createElement('style'); st.id = 'chitti-isl-toggle-style';
+        st.textContent = '#chitti-isl-toggle{position:fixed;left:14px;bottom:14px;z-index:9001;min-height:48px;min-width:48px;padding:8px 12px;border:2px solid var(--saffron,#FF9933);border-radius:12px;background:var(--navy,#000080);color:#fff;font:700 14px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,128,.3)}#chitti-isl-toggle.on{background:#138808;border-color:#0c5e06}#chitti-isl-toggle:focus-visible{outline:3px solid #D4AF37;outline-offset:2px}@media(max-width:640px){#chitti-isl-toggle{left:auto;right:14px;bottom:64px}}';
+        document.head.appendChild(st);
+      }
+      var b = document.createElement('button');
+      b.id = 'chitti-isl-toggle'; b.type = 'button';
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', 'Toggle Indian Sign Language panels on every section');
+      b.title = 'Indian Sign Language'; b.textContent = '🤟 ISL';
+      b.addEventListener('click', function () { setMode(!ISL_ON); });
+      document.body.appendChild(b);
+    }
+    function profileHasIsl() {
+      try { var p = JSON.parse(localStorage.getItem('disability_profile') || 'null'); return !!(p && p.isl); } catch (e) { return false; }
+    }
+    function boot() {
+      injectToggle();
+      var saved = null; try { saved = localStorage.getItem('chitti_isl_mode'); } catch (e) {}
+      if (saved === '1' || (saved !== '0' && profileHasIsl())) setMode(true);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot, 0);
+  })();
   if (typeof window.Chitti.a11y.announce !== 'function') {
     window.Chitti.a11y.announce = function (message, priority) {
       try {
