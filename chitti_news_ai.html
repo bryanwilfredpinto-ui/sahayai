@@ -235,17 +235,20 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 
 <main>
 
-  <!-- HEADLINE — Profession Hub (Professional Intelligence: your role's AI scores + impact). Shown once a profession is set. -->
+  <!-- PRIMARY — AI news feed. Loads immediately for everyone; profession filter applied when set. -->
+  <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
+    <h2 class="section-title">📰 Top AI news for you
+      <button type="button" onclick="window.renderNews()" aria-label="Refresh AI news"
+        style="margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;font-weight:700;min-height:32px">🔄 Refresh</button>
+    </h2>
+    <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
+    <div class="feed" id="news-feed" aria-live="polite"></div>
+  </section>
+
+  <!-- SECONDARY — Profession Hub (AI scores + impact). Shown once a profession is set. -->
   <section class="section" id="hub-section" data-chitti-response data-chitti-section="Your Profession Hub" style="display:none">
     <h2 class="section-title">🏛️ Your Profession Hub</h2>
     <div id="hub-content"></div>
-  </section>
-
-  <!-- AI news affecting your role -->
-  <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
-    <h2 class="section-title">📰 Top AI news for you</h2>
-    <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
-    <div class="feed" id="news-feed" aria-live="polite"></div>
   </section>
 
   <!-- 28-Day AI Tool Tour -->
@@ -277,7 +280,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
              style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
       <button type="button" id="roadmap-mic" aria-label="Speak what you want to learn" onclick="cnaiRoadmapMic()"
               style="min-width:48px;min-height:48px;font-size:20px;border-radius:10px;border:2px solid #888;background:#fff">🎙️</button>
-      <button type="submit" id="roadmap-go" aria-label="Build my roadmap"
+      <button type="submit" id="roadmap-go" aria-label="Build my roadmap" data-i18n="roadmap_cta" data-i18n-aria="roadmap_cta"
               style="min-width:48px;min-height:48px;padding:0 18px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Build my roadmap →</button>
     </form>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="roadmap-chips" aria-label="Popular goals"></div>
@@ -336,7 +339,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
       <summary style="min-height:44px;cursor:pointer">📄 Or paste your resume text (stays on your phone)</summary>
       <textarea id="career-resume" aria-label="Paste your resume text" rows="5" placeholder="Paste resume text here…" style="width:100%;margin-top:6px;padding:10px;font-size:15px;border:2px solid #888;border-radius:10px"></textarea>
       <button type="button" onclick="cnaiCareerResume()" aria-label="Analyse my resume" style="min-height:48px;margin-top:6px;padding:0 16px;border-radius:10px;border:0;background:#0a7a37;color:#fff;font-weight:700">Analyse resume →</button>
-      <button type="button" onclick="cnaiCareerForget()" aria-label="Chitti forget my resume" style="min-height:48px;margin-top:6px;padding:0 12px;border-radius:10px;border:2px solid #b00;background:#fff;color:#b00">🗑 Chitti forget</button>
+      <button type="button" onclick="cnaiCareerForget()" aria-label="Chitti forget my resume" data-i18n="chitti_forget" data-i18n-aria="chitti_forget" style="min-height:48px;margin-top:6px;padding:0 12px;border-radius:10px;border:2px solid #b00;background:#fff;color:#b00">🗑 Chitti forget</button>
     </details>
     <div id="career-content" aria-live="polite"></div>
   </section>
@@ -378,6 +381,9 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="cnai_learns.js?v=20260609.1"></script>
 <script src="cnai_career_coach.js?v=20260609.1"></script>
 <script src="cnai_swarm.js?v=20260609.1"></script>
+<!-- BO6 — full-UI i18n (11 languages) + accessibility layer -->
+<script src="cnai_i18n.js?v=20260613.1"></script>
+<script src="cnai_accessibility.js?v=20260613.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -514,6 +520,7 @@ function speakPage() {
     el.innerHTML = html;
   }
   window.ccPick = pickProfession;
+  window.renderNews = renderNews;   // exposed for the Refresh button in #news-section
   window.ccScroll = function (id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); };
   window.ccClearProf = function () { const p = _profileInit(); p.profession = 'everyone'; _profileSet(p); renderAll(); };
   window.speakProfessionHint = function () {
@@ -531,7 +538,7 @@ function speakPage() {
     feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">' + _t('news_loading') + '</div>';
     try {
       const lang = localStorage.getItem('chitti_lang') || 'en';
-      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10');
+      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10&profession=' + encodeURIComponent(profSlug));
       const j = await r.json();
       const items = (j && j.items) || [];
       if (!items.length) { feed.innerHTML = '<p style="color:var(--muted);text-align:center;padding:16px">No AI news yet. Try Refresh in a minute.</p>'; return; }
@@ -740,9 +747,9 @@ function speakPage() {
   // ── Orchestrate full render ──
   function renderAll() {
     renderHero();
-    renderHub();
+    renderNews();   // news first — primary daily hook
+    renderHub();    // profession intelligence — secondary (only visible once profession set)
     renderTour();
-    renderNews();
   }
 
   // ── Boot ──

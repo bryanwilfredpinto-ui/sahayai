@@ -12,7 +12,7 @@
 | 3 | Chitti Learns & Coaches | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 4 | Professional Career Coach | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 5 | Swarm Learning | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
-| 6 | Accessibility & Languages (i18n) | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
+| 6 | Accessibility & Languages (i18n) | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 7 | Certification, Tests & Handover | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
 
 ### BO1 — Roadmap Engine — completion record
