@@ -1,6 +1,12 @@
 # SAHAYAI MASTER
 
-**Read this first on every new Claude session.** Single source of truth for what sahayai.in is, what has been decided, what is built, and what to work on next. Last updated: **2026-05-13**.
+**Read this first on every new Claude session.** Single source of truth for what sahayai.in is, what has been decided, what is built, and what to work on next. Last updated: **2026-06-13**.
+
+**After reading this file, also read:**
+- `CTO_OATH.md` — your roles (CTO, PM, BA, Solution Architect, DevOps, UI/UX, QA, Release Manager — 20 years each), quality gates, live URL testing rules, language UI rules, pencil feedback widget rules
+- `CHITTI_SOP.md` — per-product standards and Golden Rule
+- `chitti-[product]/SOP.md` — exact build steps for the product you are working on today
+- `chitti-[product]/skills/FEATURES.md` — capability surface for the product you are working on today
 
 Cross-references throughout point to auto-memory entries under `~/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/` and to spec files at this repo's root.
 
@@ -369,7 +375,7 @@ See [[project_chitti_golden_rule_locked]].
 
 | # | Product | Frontend | Backend | Status |
 |---|---|---|---|---|
-| 1 | Chitti Technical | `chitti_complete_technical.html` | `chitti-shares-api` | LIVE — NSE/BSE candles + 43 indicators, Roshan composite, Story Mode |
+| 1 | Chitti Technical | _(page + code deleted 2026-06-10 — **name reserved**)_ | `chitti-shares-api` (Railway, left **as-is**, shared with Fundamentals) | NAME ONLY — implementation removed per Sire; to be rebuilt from scratch when revisited |
 | 2 | Chitti Fundamentals | `chitti_fundamentals.html` | screener.in scraper | LIVE — Buffett/Munger/Graham/Kedia/RKD, 25+ filters, Nifty 500 |
 | 3 | Chitti MedUPI | `chitti_medupi.html` | `chitti-medupi-api` | LIVE — Jan Aushadhi same-composition match, NPPA prices, Family Wallet |
 | 4 | Chitti News | `chitti_news.html` | `chitti-news-api` | LIVE — 26+ RSS, 5 langs, Chitti's Take, fact-check verdicts |
@@ -384,7 +390,6 @@ See [[project_chitti_golden_rule_locked]].
 | 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
 | 14 | Chitti News AI | `chitti_news_ai.html` | `chitti-news-ai-api` | SKELETON 2026-05-14 — AI-only tool & model discovery. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers, Inshorts, Ground News, Artifact). 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), 14 skill files. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md). |
 
-**Specs** at repo root: `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_NEWS_AI_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`, `CHITTI_MECHANIC_MASTER_SPEC.md` (Chitti Auto OS — Bike + Car Doctor, CEOS + CQOS).
 
 ### Founder master product docs — single source of truth
 
@@ -720,7 +725,6 @@ Per the new §2 row "Vaani is the only user interface" (`project_chitti_vaani_so
 
 1. **Vaani intent router covers every Chitti service.** Today Vaani's DeepSeek-classified router covers a subset. Extend it so a single voice / typed query from inside Vaani can reach every one of the 14 Chittis (technical, fundamentals, medupi, news, news-ai, upi, scanner, ca, legal, government, logo-video, voice-factory, kirana, vaani-own) — and every future Chitti — by reading each Chitti's `skills/FEATURES.md` capability surface. The router is the **only** code path that the user touches; the routed-to Chitti's UI is never presented.
 2. **Homepage `index.html` becomes a Vaani entry, not a Chitti menu.** sahayai.in currently lists product cards as parallel entry points; replace with a Vaani-first landing — one prominent CTA into `chitti_vaani.html` + the 14 Chittis surfaced only as "Vaani can also help with…" cards that themselves open Vaani with the relevant intent pre-filled, not the standalone HTML. `chitti_a11y.js` + `feedback-widget.js` still need wiring into the new index.
-3. **Standalone Chitti pages add a "Talk to Vaani instead" banner.** Users who land on `chitti_medupi.html` / `chitti_technical.html` / `chitti_fundamentals.html` / etc. via search engines or old links should see a sticky top banner — "Your dost Vaani can do this for you — tap to open Vaani." Pages stay as dev / debug surface; they are no longer marketed as the user entry. Substrates (`chitti_a11y.js`, `feedback-widget.js`, `chitti_camera.js`, `chitti_features.js`, `chitti_share.js`) keep loading on these pages for parity testing.
 4. **"Explain simply" button inside Vaani.** Required on every Vaani response (the canonical surface), via the per-response widget. The substrate persists on standalone pages for testing parity but its user-canonical role is inside Vaani — re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud.
 
 ### ✅ Geo on the local-business lookup — SHIPPED 2026-05-13
@@ -787,7 +791,6 @@ politics → business → tech → entertainment → sports → factcheck (post-
 ## 9. Where to find more
 
 - **`MEMORY.md`** at `~/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/` — index of all auto-memory notes, loaded into every Claude session.
-- **Spec files at repo root:** `CHITTI_TECHNICAL_MASTER_SPEC.md`, `CHITTI_MEDUPI_MASTER_SPEC.md`, `CHITTI_NEWS_MASTER_SPEC.md`, `CHITTI_VOICE_FACTORY_MASTER_SPEC.md`, `CHITTI_GOVERNMENT_MASTER_SPEC.md`.
 - **Skills:** `chitti-news/skills/`, `chitti-vaani/skills/`, `chitti-medupi/skills/`, etc.
 - **Live backends:** see footer of `index.html` for `/health` endpoints — curl before claiming "live".
 - **Founder contact:** bryanderrylpinto@gmail.com.
@@ -795,3 +798,196 @@ politics → business → tech → entertainment → sports → factcheck (post-
 ---
 
 *This file is the entry point for every new Claude session. If a decision changes, update this file first, then the relevant memory note. If a decision is missing here but appears in chat, ask whether to lock it in.*
+
+---
+
+## Quality & UI/UX Guidelines (LOCKED — June 2026)
+
+### Quality Files — read before every session:
+- `chitti-quality/STANDARDS.md` — Quadrails, hooks, observability, disclaimer rules for every Chitti
+- `chitti-quality/CHECKLIST.md` — Daily quality audit checklist — every Chitti must pass sections A, B, C, D
+- `chitti-quality/ACCOUNTABILITY.md` — Which Chitti owns what quality metric
+- `chitti-[product]/QUALITY.md` — Per-product quality rules
+
+### UI/UX Design System — mandatory for every page:
+- `sahayai_design_system.css` — The ONE stylesheet for every Chitti page. Load it. Never override it. Never write custom CSS that conflicts with it.
+
+**Design rules locked:**
+- Navy `#002366` header on every page
+- Tricolour stripe (saffron / white / green) at top of every page
+- Background `#F7F7F4` — never white, never grey
+- Minimum font size 18px — never smaller
+- Minimum tap target 48px — never smaller
+- Mobile 375px first — always
+- Cards: 14px radius, 1.5px border, white background
+- Per-response widget on every card: 🔊 🤖 👍 👎 ✏️
+- ✏️ pencil opens feedback panel with BOTH type AND mic options
+
+### How Code must use these files:
+1. Before building any UI — read `sahayai_design_system.css` and use `.sds-*` classes
+2. Before declaring done — run `chitti-quality/CHECKLIST.md` sections A and B against the live URL
+3. Any new page must load `sahayai_design_system.css` as the first stylesheet
+4. Any new page must pass the How To Use test on the live URL
+
+*One design system. One quality standard. Every Chitti. No exceptions.*
+
+---
+
+## UI/UX Strict Compliance & Commando Principle (LOCKED — June 2026)
+
+### Strict Compliance — Non-Negotiable
+
+These are not guidelines. These are laws. Every single one must pass before any page is declared done.
+
+| Rule | Standard | Violation = |
+|------|----------|-------------|
+| Design system | `sahayai_design_system.css` loaded on every page | REBUILD |
+| Font size | Minimum 18px everywhere | FAIL |
+| Tap target | Minimum 48px every button, every icon | FAIL |
+| Colour contrast | WCAG 4.5:1 minimum | FAIL |
+| Mobile first | 375px viewport — no horizontal scroll | FAIL |
+| Per-response widget | 🔊 🤖 👍 👎 ✏️ on every card | FAIL |
+| Pencil feedback | Both type AND mic in feedback panel | FAIL |
+| Language switch | Entire UI switches — no English left except proper nouns | FAIL |
+| RTL support | Urdu, Sindhi, Kashmiri flip layout right to left | FAIL |
+| Tricolour stripe | Saffron / White / Green at top of every page | FAIL |
+| Navy header | `#002366` on every page | FAIL |
+| Disclaimer | Per-product disclaimer on every AI response — server enforced | REBUILD |
+| Accessibility | Blind / Deaf / Mute / Illiterate — all four must work | REBUILD |
+| How To Use | Must exist on every product page | FAIL |
+
+**A page with even ONE FAIL does not ship. No exceptions. No "we'll fix it later."**
+
+---
+
+### Commando Principle — Zero Excuses
+
+Commandos do not make excuses. They complete the mission or they report honestly that they could not.
+
+Applied to every Claude Code session:
+
+**Rule 1 — One task. Complete it fully.**
+A commando does not start 5 missions and finish none. Pick one task. Complete it to 100%. Then move to the next.
+
+**Rule 2 — No fake done.**
+A commando never reports mission complete when the target is still standing. "Tests pass" is not done. "Live URL works" is done.
+
+**Rule 3 — Honest failure over fake success.**
+If something cannot be fixed — say so immediately. "I cannot fix the Railway crash — here is the exact error" is acceptable. "Done ✅" when the server is still crashing is not acceptable.
+
+**Rule 4 — Fix regressions before moving forward.**
+A commando does not leave a wounded soldier behind. If your change broke something that was working — stop. Fix the regression. Then continue.
+
+**Rule 5 — No collateral damage.**
+A commando hits only the target. If you are fixing MedUPI — do not touch Chitti News. Do not touch Chitti Technicals. Touch only what you were asked to fix.
+
+**Rule 6 — Report to Sire in plain language.**
+No jargon. No test scores. No commit hashes. Tell Sire:
+- What you did
+- What works now
+- What still needs fixing
+- What Sire should check on his phone
+
+**Rule 7 — Sire's phone is the final arbiter.**
+No amount of passing tests overrides Sire opening the product on his phone and finding it broken. If Sire says it is broken — it is broken. No arguing. Fix it.
+
+---
+
+### The Commando Standard for Every Session
+
+Before starting: **"What is the one thing Sire needs working today?"**
+
+During the session: **"Am I touching only what I was asked to touch?"**
+
+Before saying done: **"Can Sire open this on his phone right now and use it?"**
+
+If the answer to the last question is No — you are not done. You are never done until Sire can use it.
+
+*Zero excuses. World class. Commando discipline.*
+*— Bryan Wilfred Pinto, Sire, June 2026*
+
+---
+
+## UI Consistency Fix — CRITICAL (June 2026)
+
+### The Problem
+Every Chitti product currently has its own inline CSS with different colours, fonts, and styles. This is why Sire sees different UI themes across products. This must be fixed.
+
+### The Single Source of Truth for UI
+`sahayai_design_system.css` is the ONE stylesheet. Every product must load it. No exceptions.
+
+### Locked Colour Values — Use These. No Others.
+| Token | Value | Use |
+|-------|-------|-----|
+| Navy | `#002366` | Headers, primary buttons, links |
+| Saffron | `#FF6913` | Accents, highlights, CTAs |
+| Green | `#046A38` | Success, positive signals |
+| Background | `#F7F7F4` | Page background — never white, never grey |
+| Dark text | `#212121` | Body text |
+| Muted | `#555555` | Secondary text |
+| Line | `#E0E0E0` | Borders, dividers |
+
+### Locked Font Sizes — Use These. No Others.
+| Element | Size |
+|---------|------|
+| Body text | 18px minimum |
+| Secondary text | 15px minimum |
+| Labels | 13px minimum — never smaller |
+| Headings | 22px minimum |
+
+### What Code Must Do For Every Product
+When working on any Chitti page:
+1. Add `<link rel="stylesheet" href="/sahayai_design_system.css">` as the FIRST stylesheet
+2. Replace ALL inline `:root` colour variables with the locked values above
+3. Remove any custom font-size declarations below 18px
+4. Use `.sds-*` classes from the design system instead of custom CSS
+5. Test at 375px — no horizontal scroll
+6. Test colour contrast — minimum WCAG 4.5:1
+
+### Products That Need This Fix Right Now
+- ❌ chitti_medupi.html — navy `#0E2344`, font 14px
+- ❌ chitti_news_ai.html — navy `#0E2344`, font 15px
+- ❌ chitti_technical_ai.html — navy `#000080`, font 17px
+- ❌ chitti_vaani.html — navy `#0E2344`, font 14px
+- ❌ chitti_news.html — navy `#000080`
+- ❌ chitti_ca.html — navy `#0E2344`, font 14.5px
+- ❌ chitti_legal.html — navy `#0E2344`, font 14.5px
+- ❌ chitti_government.html — navy `#0E2344`, font 15px
+- ❌ chitti_scanner.html — navy `#0E2344`, font 14px
+
+Fix one product at a time. Never all at once.
+
+### UX Rules — How Every Product Must Behave
+These are not design preferences. These are laws.
+
+**Navigation:**
+- Every page has bottom navigation with 5 tabs maximum
+- Back button always works — never traps the user
+- Loading states always show — never blank screen while waiting
+
+**Forms and Inputs:**
+- Every input has a visible label — never placeholder-only
+- Error messages appear below the field — never as alerts
+- Success messages are spoken aloud for blind users
+
+**Voice and Audio:**
+- Every page reads itself aloud when user taps 🔊
+- Voice responses play automatically for blind users on first visit
+- Never autoplay audio without user action — except for blind users who opted in
+
+**Empty States:**
+- Never show a blank white screen
+- Always show a friendly message explaining what to do next
+- Empty state must have a clear call to action
+
+**Loading:**
+- Every API call shows a loading indicator
+- Loading indicator disappears when result arrives
+- If API fails — show honest error in user's language — never blank screen
+
+**Feedback:**
+- Every card has 🔊 🤖 👍 👎 ✏️
+- ✏️ opens panel with BOTH type AND mic
+- 👎 asks "what was wrong?" — never just logs silently
+
+*One UI. One UX. Every Chitti. Commando discipline. Zero excuses.*

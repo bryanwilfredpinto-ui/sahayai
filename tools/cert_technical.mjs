@@ -141,10 +141,11 @@ check('lang_switch_tamil', taOk);
 // ---- pane toggle (BO8): RSI overlay<->separate ----
 await p.selectOption('#lang-select', 'en'); await p.waitForTimeout(300);
 const toggleWorks = await p.evaluate(() => {
-  const togs = [...document.querySelectorAll('#pane-toggles .tog')];
-  return togs.length >= 3; // RSI / Williams %R / Stochastic
+  const add = document.querySelector('#pane-toggles .ind-add'); if (!add) return false; // "➕ Indicators"
+  add.click();
+  return document.querySelectorAll('.chart-ind-menu .ind-opt').length >= 12; // 6 overlays + 10 oscillators
 });
-check('chart_pane_toggles_present', toggleWorks);
+check('chart_indicator_picker_present', toggleWorks);
 
 // ---- ITEM (research-driven): accessible chart DATA TABLE (canvas alternative for blind users) ----
 await p.evaluate(() => window.TechUI.toggleTable());
