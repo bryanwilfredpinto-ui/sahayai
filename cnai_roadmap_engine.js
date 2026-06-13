@@ -335,7 +335,225 @@
     return { goal: String(goal), title: T + ' — A Beginner-to-Confident Roadmap', target: null, generic: true, total_est_hours: stages.reduce((a, s) => a + s.est_hours, 0), total_stages: stages.length, total_topics: stages.reduce((a, s) => a + s.topics.length, 0), total_courses: stages.length, difficulty_band: 'beginner', tree_note: '', stages, generated_by: 'cnai_roadmap_engine v2 (generic)' };
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // BO1 (2026-06-13): PROFESSION PATH — canonical 5-stage roadmap.
+  // Skill 4 / SOP 3 / CEOS BO1 self-check #1 require EXACTLY 5 named stages per
+  // profession (FOUNDATIONS → CORE CONCEPTS → HANDS-ON → ADVANCED → CERT+PORTFOLIO),
+  // time-adjusted to the user's weekly hours, each with why + topics + free course
+  // + cheat sheet + milestone + checkpoint. Added WITHOUT breaking generate(goal).
+  // The 13 professions are SEEDS, not a ceiling — any profession string resolves,
+  // and unknown professions ("I raise pigs") still get a valid 5-stage roadmap.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Extra verified-free courses used by the profession path (free to learn).
+  const PCRS = {
+    nielit_ai:   { provider: 'NIELIT / Digital India (Govt)', name: 'Introduction to AI (Hindi + English)', url: 'https://www.nielit.gov.in/', free: true, cert: true },
+    google_ai:   { provider: 'Google', name: 'Google AI Essentials', url: 'https://grow.google/ai-essentials/', free: true, cert: false, note: 'free to audit' },
+    ibm_ai:      { provider: 'IBM SkillsBuild', name: 'AI Fundamentals', url: 'https://skillsbuild.org/', free: true, cert: true },
+    ms_ai:       { provider: 'Microsoft Learn', name: 'AI for Beginners', url: 'https://learn.microsoft.com/training/', free: true, cert: false },
+    who_health:  { provider: 'WHO Academy', name: 'Digital Health & AI', url: 'https://www.who.int/', free: true, cert: false },
+    swayam_gen:  { provider: 'SWAYAM / NPTEL (Govt, IIT)', name: 'Free profession-relevant AI course', url: 'https://swayam.gov.in/', free: true, cert: true, note: 'NPTEL exam fee ~₹1,000 is OPTIONAL — learning is free' },
+  };
+
+  // PROFESSIONS registry — 13 seeds (CEOS C.4). Each: aliases, AI-impact, the
+  // course for the profession-specific CORE + ADVANCED stages, a one-line
+  // "AI for <you>" framing, and a HANDS-ON project idea. Seeds, not a ceiling.
+  const PROFESSIONS = {
+    developer:    { label: 'Software Developer', aliases: ['developer','software','programmer','coder','engineer','react','python developer','full stack','backend','frontend','sde'], impact: 'AI writes, reviews and tests code with you (Copilot, RAG, agents).', core_course: PCRS.google_ai, adv_course: CRS.hf_agents, project: 'an AI-assisted code helper or RAG chatbot', cert_course: CRS.hf_nlp },
+    data_sci:     { label: 'Data Scientist', aliases: ['data scientist','data science','analyst','ml engineer','mlops','statistician'], impact: 'AI scales your modelling, MLOps and evaluation work.', core_course: CRS.google_mlcc, adv_course: CRS.ibm_ds, project: 'an end-to-end ML model on a real dataset', cert_course: CRS.ibm_ds },
+    doctor:       { label: 'Doctor / Healthcare', aliases: ['doctor','healthcare','nurse','physician','medical','clinician','asha','health worker'], impact: 'AI assists diagnosis & records — you stay the decision-maker (CDSCO, DPDP).', core_course: PCRS.who_health, adv_course: PCRS.ibm_ai, project: 'evaluating one AI diagnostic tool for your practice', cert_course: PCRS.ibm_ai },
+    teacher:      { label: 'Teacher / Educator', aliases: ['teacher','educator','tutor','lecturer','professor','faculty','school'], impact: 'AI helps you create lessons, assess fairly and tutor at scale.', core_course: PCRS.google_ai, adv_course: PCRS.ms_ai, project: 'an AI-made lesson plan or quiz for your class', cert_course: PCRS.google_ai },
+    farmer:       { label: 'Farmer / Agriculture', aliases: ['farmer','agriculture','agri','crop','kisan','farming','pig','poultry','dairy','fish','livestock'], impact: 'AI predicts weather, spots crop disease and finds the best mandi price.', core_course: PCRS.nielit_ai, adv_course: PCRS.swayam_gen, project: 'using one Kisan AI app on your own crop/animal data', cert_course: PCRS.nielit_ai },
+    business:     { label: 'Business Owner', aliases: ['business','owner','entrepreneur','shop','retail','startup','founder','trader'], impact: 'AI runs your chat support, analytics and marketing cheaper.', core_course: PCRS.google_ai, adv_course: PCRS.ms_ai, project: 'a free AI chatbot for your customers', cert_course: PCRS.google_ai },
+    student:      { label: 'Student', aliases: ['student','b.tech','btech','college','school student','intern','fresher','undergraduate'], impact: 'AI skills + a project portfolio make you placement-ready.', core_course: CRS.google_mlcc, adv_course: CRS.fastai_dl, project: 'one AI project on GitHub for your portfolio', cert_course: CRS.kaggle_ml },
+    journalist:   { label: 'Journalist / Media', aliases: ['journalist','media','reporter','writer','editor','content'], impact: 'AI speeds research and content — and you must spot deepfakes.', core_course: PCRS.google_ai, adv_course: PCRS.ms_ai, project: 'fact-checking one story with AI + verifying sources', cert_course: PCRS.google_ai },
+    legal:        { label: 'Legal Professional', aliases: ['lawyer','legal','advocate','law','attorney','paralegal'], impact: 'AI speeds contract review and legal research; you verify every cite.', core_course: PCRS.ibm_ai, adv_course: PCRS.ms_ai, project: 'summarising one contract with AI and checking it', cert_course: PCRS.ibm_ai },
+    finance:      { label: 'Finance / Banking', aliases: ['finance','banking','banker','accountant','ca','cfo','fintech','loan','insurance'], impact: 'AI powers fraud detection, KYC and advisory (RBI guidelines apply).', core_course: PCRS.ibm_ai, adv_course: CRS.google_mlcc, project: 'a simple fraud-flag rule or analysis with AI', cert_course: PCRS.ibm_ai },
+    govt:         { label: 'Government Employee', aliases: ['government','govt','civil','public sector','clerk','officer','administration','bureaucrat'], impact: 'AI runs eGovernance and citizen services (Digital India).', core_course: PCRS.nielit_ai, adv_course: PCRS.ms_ai, project: 'mapping one citizen service that AI could speed up', cert_course: PCRS.nielit_ai },
+    manufacturing:{ label: 'Manufacturing / Industry', aliases: ['manufacturing','industry','factory','production','supervisor','quality','supply chain','iot'], impact: 'AI enables predictive maintenance and quality control.', core_course: PCRS.ibm_ai, adv_course: PCRS.ms_ai, project: 'spotting one line task AI could monitor', cert_course: PCRS.ibm_ai },
+    homemaker:    { label: 'Homemaker / Caregiver', aliases: ['homemaker','caregiver','housewife','parent','re-entry','household'], impact: 'AI on your phone helps budgeting, learning and re-entering work.', core_course: PCRS.nielit_ai, adv_course: PCRS.google_ai, project: 'using one free AI tool to plan your week', cert_course: PCRS.nielit_ai },
+  };
+
+  function resolveProfession(input) {
+    const g = norm(input);
+    if (!g) return null;
+    if (PROFESSIONS[g]) return { key: g, label: PROFESSIONS[g].label, prof: PROFESSIONS[g], known: true };
+    let best = null;
+    for (const key of Object.keys(PROFESSIONS)) {
+      for (const a of PROFESSIONS[key].aliases) {
+        const esc = a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Whole word, tolerant of a simple English plural (pig→pigs, crop→crops).
+        if (new RegExp('\\b' + esc + '(?:s|es)?\\b').test(g)) { best = { key, label: PROFESSIONS[key].label, prof: PROFESSIONS[key], known: true }; break; }
+      }
+      if (best) break;
+    }
+    return best; // null => unknown profession (caller builds generic 5-stage)
+  }
+
+  // Cheat-sheet text per stage (text-first so screen readers + low-bandwidth work).
+  function cheat(stageKey, profLabel) {
+    const C = {
+      foundations: 'AI ⊃ ML ⊃ Deep Learning ⊃ GenAI/Agentic. AI learns patterns from examples — it does not "understand". Free first, always.',
+      core:        'For ' + profLabel + ': name the AI tools in your field, what each does, and one free way to try it.',
+      handson:     'Prompt recipe: Role + clear task + an example + the format you want. Try → check → fix → repeat.',
+      advanced:    'Before trusting any AI tool, ask: who made it? what data? can I verify the output? what does it get wrong?',
+      cert:        'Free to LEARN first (NIELIT/Google/IBM/SWAYAM). A cert proves learning — a project proves skill. Build both.',
+    };
+    return C[stageKey] || '';
+  }
+
+  // Build the canonical 5 stages for a profession (known or generic).
+  function buildFiveStage(professionLabel, prof) {
+    const P = professionLabel;
+    const impact = prof ? prof.impact : ('AI is starting to change ' + P + ' — here is how to use it, free.');
+    const coreCourse = prof ? prof.core_course : PCRS.google_ai;
+    const advCourse  = prof ? prof.adv_course  : PCRS.ms_ai;
+    const certCourse = prof ? prof.cert_course : PCRS.nielit_ai;
+    const project    = prof ? prof.project     : ('one small AI task from your work as ' + P);
+
+    const S = [
+      {
+        key: 'foundations', name: 'Stage 1 — FOUNDATIONS', band: 'beginner', course: PCRS.nielit_ai,
+        why: 'Understand what AI is (and is not) before anything else. No coding, no jargon.',
+        milestone: 'You can explain AI to a colleague using an everyday analogy',
+        checkpoint: 'Can you explain AI to a friend in 2 minutes, with one example? If yes → Stage 2.',
+        topics: [
+          t('AI vs ML vs Deep Learning vs GenAI', 'A clear mental model stops wrong turns later.', 2, 'AI vs ML vs deep learning vs generative AI explained', 'Draw how the four nest inside each other', 'beginner'),
+          t('What AI can and cannot do', 'Set honest expectations; spot the hype and scams.', 2, 'what AI can and cannot do 2026', 'List 3 things AI is bad at', 'beginner'),
+          t('AI for ' + P, impact, 2, 'how AI is changing ' + P, 'Name one way AI touches your work', 'beginner'),
+        ],
+      },
+      {
+        key: 'core', name: 'Stage 2 — CORE CONCEPTS', band: 'beginner', course: coreCourse,
+        why: 'Learn the AI tools and ideas that matter specifically for ' + P + '.',
+        milestone: 'You can describe exactly how AI impacts ' + P,
+        checkpoint: 'Can you name 3 AI tools for your field and what each does? If yes → Stage 3.',
+        topics: [
+          t('AI tools in your field', 'Know the tools experts in ' + P + ' actually use.', 3, 'best free AI tools for ' + P, 'List 3 AI tools for your work + what each does', 'beginner'),
+          t('How these tools work (simply)', 'Understand enough to judge a tool, not just use it.', 3, 'how AI tools work explained simply', 'Explain one tool to a colleague', 'intermediate'),
+          t('Data & privacy basics (DPDP)', 'Use AI without leaking private data.', 2, 'data privacy DPDP AI India explained', 'Name one thing you should never paste into AI', 'intermediate'),
+        ],
+      },
+      {
+        key: 'handson', name: 'Stage 3 — HANDS-ON PRACTICE', band: 'intermediate', course: PCRS.google_ai,
+        why: 'Knowledge becomes skill only by doing. Build ' + project + ' with free tools.',
+        milestone: 'One working result you produced yourself with an AI tool',
+        checkpoint: 'Did you produce one real output with a free AI tool? If yes → Stage 4.',
+        topics: [
+          t('Prompting basics', 'The fastest-payback AI skill — steer any AI tool.', 3, 'prompt engineering tutorial for beginners 2026', 'Rewrite a vague prompt to be specific', 'beginner'),
+          t('Do ' + project, 'Doing it once teaches more than ten videos.', 3, project + ' tutorial free', 'Finish version 1 of your task', 'intermediate'),
+          t('Check the output', 'AI is confidently wrong sometimes — always verify.', 2, 'how to fact check AI output', 'Find one mistake in an AI answer', 'intermediate'),
+        ],
+      },
+      {
+        key: 'advanced', name: 'Stage 4 — ADVANCED', band: 'advanced', course: advCourse,
+        why: 'Go deeper into AI for ' + P + ' and learn to judge any tool critically.',
+        milestone: 'You can critically evaluate any AI tool for your use case',
+        checkpoint: 'Can you list what an AI tool gets wrong before you trust it? If yes → Stage 5.',
+        topics: [
+          t('Deeper AI for ' + P, 'The advanced applications that set experts apart.', 4, 'advanced AI applications for ' + P, 'Try one advanced tool or workflow', 'advanced'),
+          t('Evaluate AI tools critically', 'Avoid hype and harm — verify before you rely.', 3, 'how to evaluate AI tools critically', 'Score one tool on accuracy, privacy, cost', 'advanced'),
+        ],
+      },
+      {
+        key: 'cert', name: 'Stage 5 — CERTIFICATION & PORTFOLIO', band: 'advanced', course: certCourse,
+        why: 'Free certificate FIRST, then a portfolio. A cert proves learning; a project proves skill.',
+        milestone: 'A career-ready AI profile: one free cert + one project',
+        checkpoint: 'Do you have one free cert AND one project to show? Then you are AI-ready.',
+        topics: [
+          t('Earn a free certificate', 'Free, government/industry-backed credentials exist — use them.', 4, 'free AI certification ' + P + ' NIELIT IBM Google', 'Enrol in one free cert course', 'intermediate'),
+          t('Build your portfolio', 'Hiring managers trust what you built over what you collected.', 4, 'how to build an AI portfolio', 'Publish one project or write-up', 'advanced'),
+        ],
+      },
+    ];
+    return S;
+  }
+
+  // Time-adjustment (Skill 4): <5h → ×2, 5–10h → ×1.5, 10h+ → ×1. Adds week_range.
+  function paceFactor(hoursPerWeek) { const h = Number(hoursPerWeek) || 0; return h >= 10 ? 1 : h >= 5 ? 1.5 : 2; }
+  function paceRoadmap(rm, hoursPerWeek) {
+    const hpw = Math.max(1, Number(hoursPerWeek) || 5);
+    const f = paceFactor(hpw);
+    let weekCursor = 1;
+    rm.stages.forEach(s => {
+      const adj = Math.max(1, Math.round(s.est_hours * f));
+      s.est_hours_adjusted = adj;
+      const weeks = Math.max(1, Math.ceil(adj / hpw));
+      const start = weekCursor, end = weekCursor + weeks - 1;
+      s.week_range = start === end ? ('Week ' + start) : ('Weeks ' + start + '–' + end);
+      s.weeks = weeks;
+      weekCursor = end + 1;
+    });
+    rm.hours_per_week = hpw;
+    rm.pace_factor = f;
+    rm.total_weeks = weekCursor - 1;
+    rm.total_est_hours_adjusted = rm.stages.reduce((a, s) => a + (s.est_hours_adjusted || 0), 0);
+    return rm;
+  }
+
+  // Profession path → canonical 5-stage roadmap, time-adjusted, with CTA.
+  function generateForProfession(profession, opts) {
+    opts = opts || {};
+    const resolved = resolveProfession(profession);
+    const label = resolved ? resolved.label : (titleCase(profession) || 'your profession');
+    const prof = resolved ? resolved.prof : null;
+    const raw = buildFiveStage(label, prof);
+    const stages = raw.map((s, i) => {
+      const topics = s.topics.map((tp, j) => ({
+        id: 's' + (i + 1) + '-t' + (j + 1), order: j + 1, name: tp.name, why_it_matters: tp.why_it_matters,
+        difficulty_band: tp.difficulty_band, difficulty_dots: BAND_DOTS[tp.difficulty_band] || BAND_DOTS.beginner,
+        est_hours: tp.est_hours, youtube_search_term: tp.youtube_search_term, check: tp.check,
+      }));
+      return {
+        id: 'stage-' + (i + 1), order: i + 1, module_id: 'prof-' + s.key, name: s.name, stage_label: s.key,
+        why_it_matters: s.why, difficulty_band: s.band, difficulty_dots: BAND_DOTS[s.band] || BAND_DOTS.beginner,
+        milestone: s.milestone, checkpoint: s.checkpoint, cheat_sheet: cheat(s.key, label),
+        prerequisites: i === 0 ? [] : ['stage-' + i],
+        course: { provider: s.course.provider, name: s.course.name, url: s.course.url, free: s.course.free, cert: !!s.course.cert, note: s.course.note || '' },
+        est_hours: topics.reduce((a, x) => a + x.est_hours, 0), topics,
+      };
+    });
+    const rm = {
+      goal: String(profession), profession: label, profession_known: !!resolved,
+      title: 'AI Roadmap for ' + label, target: null, generic: !resolved, is_profession_path: true,
+      total_est_hours: stages.reduce((a, s) => a + s.est_hours, 0), total_stages: stages.length,
+      total_topics: stages.reduce((a, s) => a + s.topics.length, 0), total_courses: stages.length,
+      difficulty_band: 'beginner', ai_impact: prof ? prof.impact : impactFallback(label),
+      tree_note: '', stages,
+      cta: 'Ready to start Stage 1? I can find you the first free course right now.',
+      generated_by: 'cnai_roadmap_engine v2 (profession 5-stage; free-first; time-adjusted)',
+    };
+    paceRoadmap(rm, opts.timePerWeek != null ? opts.timePerWeek : (opts.hoursPerWeek != null ? opts.hoursPerWeek : 5));
+    return rm;
+  }
+  function impactFallback(label) { return 'AI is beginning to change ' + label + ' — this free path shows you how to use it safely.'; }
+
+  // Compact share serialization (CEOS BO1 #7: share URL < 2048 chars).
+  function toShareParams(rm) {
+    const o = rm.is_profession_path
+      ? { p: rm.profession || rm.goal, h: rm.hours_per_week || 5 }
+      : { g: rm.goal };
+    const json = JSON.stringify(o);
+    try { return (typeof btoa !== 'undefined') ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64'); }
+    catch (e) { return encodeURIComponent(json); }
+  }
+  function fromShareParams(param, opts) {
+    let json;
+    try { json = (typeof atob !== 'undefined') ? decodeURIComponent(escape(atob(param))) : Buffer.from(param, 'base64').toString('utf8'); }
+    catch (e) { try { json = decodeURIComponent(param); } catch (e2) { return null; } }
+    let o; try { o = JSON.parse(json); } catch (e) { return null; }
+    if (o && o.p) return generateForProfession(o.p, Object.assign({ timePerWeek: o.h || 5 }, opts || {}));
+    if (o && o.g) return generate(o.g, opts);
+    return null;
+  }
+
+  function listProfessions() { return Object.keys(PROFESSIONS).map(k => ({ key: k, label: PROFESSIONS[k].label, impact: PROFESSIONS[k].impact })); }
+
   function generate(goal, opts) {
+    opts = opts || {};
+    // Route to the canonical 5-stage profession path when a profession is given.
+    if (opts.profession) return generateForProfession(opts.profession, opts);
+    if (opts.as_profession) return generateForProfession(goal, opts);
     const targetId = resolveTarget(goal);
     return targetId ? assemble(goal, targetId) : genericRoadmap(goal);
   }
@@ -366,11 +584,13 @@
   };
   function speakable(rm, lang) {
     const L = SPK[lang] || SPK.en; const out = [];
-    out.push(L.intro + ' ' + rm.title + '. ' + L.stages + ' ' + rm.total_stages + ' ' + L.sw + ', ' + L.about + ' ' + rm.total_est_hours + ' ' + L.hours + '.');
+    out.push(L.intro + ' ' + rm.title + '. ' + L.stages + ' ' + rm.total_stages + ' ' + L.sw + ', ' + L.about + ' ' + (rm.total_est_hours_adjusted || rm.total_est_hours) + ' ' + L.hours + '.');
     if (rm.tree_note) out.push(rm.tree_note);
     rm.stages.forEach(s => {
-      out.push(L.stage + ' ' + s.order + ' ' + L.of + ' ' + rm.total_stages + ': ' + s.name + '. ' + L.why + ': ' + s.why_it_matters + ' ' + L.course + ': ' + s.course.name + ' ' + L.from + ' ' + s.course.provider + '. ' + L.milestone + ': ' + s.milestone + '.');
+      const wk = s.week_range ? (s.week_range + '. ') : '';
+      out.push(L.stage + ' ' + s.order + ' ' + L.of + ' ' + rm.total_stages + ': ' + s.name + '. ' + wk + L.why + ': ' + s.why_it_matters + ' ' + L.course + ': ' + s.course.name + ' ' + L.from + ' ' + s.course.provider + '. ' + L.milestone + ': ' + s.milestone + '.');
     });
+    if (rm.cta) out.push(rm.cta);
     return out.join(' ');
   }
 
@@ -379,5 +599,10 @@
     return Object.keys(M).map(id => ({ id, name: M[id].name, prereq: M[id].prereq, course: M[id].course.provider + ' — ' + M[id].course.name }));
   }
 
-  return { generate, validate, speakable, listKnownGoals, listTree, BANDS, _M: M, _CRS: CRS };
+  return {
+    generate, validate, speakable, listKnownGoals, listTree, BANDS, _M: M, _CRS: CRS,
+    // BO1 additions (backward-compatible — original surface above is unchanged):
+    generateForProfession, paceRoadmap, resolveProfession, listProfessions,
+    toShareParams, fromShareParams, _PROFESSIONS: PROFESSIONS, _PCRS: PCRS,
+  };
 });

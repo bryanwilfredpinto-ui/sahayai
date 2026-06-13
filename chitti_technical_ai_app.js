@@ -36,14 +36,62 @@
       '<div class="vh-shape" aria-hidden="true">' + SHAPE[dec] + '</div>' +
       '<div class="vh-main"><div class="vh-word">' + WORD[dec] + '</div>' +
       '<div class="vh-sub">' + cv.headline + ' · confidence <b>' + cv.confidence + '%</b> · risk <b>' + cv.risk + '</b></div></div>' +
-      '<button type="button" class="vh-listen" id="vh-listen">🔊 Listen</button></div>' +
-      '<p class="vh-spoken" id="vh-spoken-text">' + cv.spoken + '</p>' + rail());
+      '<button type="button" class="vh-listen" id="vh-listen">🔊 Listen</button>' +
+      '<button type="button" class="vh-isl" id="vh-isl" aria-expanded="false" aria-controls="isl-panel-host" ' +
+        'aria-label="Show Indian Sign Language translation" title="Indian Sign Language">🤟 ISL</button></div>' +
+      '<p class="vh-spoken" id="vh-spoken-text">' + cv.spoken + '</p>' +
+      '<p class="vh-vernacular" id="vh-vernacular" translate="no" hidden></p>' +
+      '<div id="isl-panel-host" hidden></div>' + rail());
     var btn = $('vh-listen'); if (btn) btn.onclick = speakVerdict;
+    var islBtn = $('vh-isl'); if (islBtn) islBtn.onclick = toggleIsl;
+    renderVernacular();
+    wireLangRerender();
     speakVerdict();
-    try { if (root.Chitti && root.Chitti.isl && root.Chitti.isl.attach) root.Chitti.isl.attach($('verdict-host')); } catch (e) {}
     live('Verdict for ' + state.symbol + ': ' + WORD[dec] + ', confidence ' + cv.confidence + ' percent.');
   }
   function speakVerdict() { var cv = state.cv; if (!cv) return; if (A) { A.verdictTone(cv.decision); A.haptic(cv.decision === 'BUY' ? 'BUY_STRONG' : cv.decision === 'SELL' ? 'SELL_STRONG' : 'HOLD'); } speak(cv.spoken); }
+
+  // G2 — vernacular verdict NLG. When the UI language is not English and
+  // DeepSeek (BO12) is Sire-blocked, render a template-based in-language
+  // verdict from the engine's structured fields. Proper nouns stay English.
+  function renderVernacular() {
+    var host = $('vh-vernacular'); if (!host) return;
+    var L = root.Chitti && root.Chitti.lang, cv = state.cv, s = state.sig;
+    var lang = (L && L.current && L.current()) || 'en';
+    if (!cv || !L || typeof L.verdictNLG !== 'function' || lang === 'en') { host.innerHTML = ''; host.hidden = true; return; }
+    var rsi = (s && s.indicators && s.indicators.RSI && s.indicators.RSI.value != null) ? s.indicators.RSI.value : null;
+    host.innerHTML = L.verdictNLG({
+      decision: cv.decision, strong: cv.confidence >= 80, symbol: state.symbol, rsi: rsi,
+      trend: s ? s.trend : null,
+      stopPrice: (s && s.stop_loss) ? s.stop_loss.price : null,
+      stopPct: (s && s.stop_loss) ? s.stop_loss.percentage : null,
+      demo: !!(state.data && state.data.source === 'demo'), lang: lang
+    });
+    host.hidden = false;
+  }
+  var _langReWired = false;
+  function wireLangRerender() {
+    if (_langReWired) return; var sel = $('lang-select'); if (!sel) return;
+    // addEventListener does not clobber chitti_lang.js's own onchange handler.
+    sel.addEventListener('change', function () { setTimeout(renderVernacular, 60); });
+    _langReWired = true;
+  }
+
+  // ISL four-channel: fingerspell the symbol + verdict + key indicator names.
+  // Fingerspell only — compound terms (RSI/MACD/EMA) are spelled, never signed.
+  function toggleIsl() {
+    var host = $('isl-panel-host'), b = $('vh-isl'); if (!host) return;
+    var open = host.hidden;
+    host.hidden = !open;
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) { host.innerHTML = ''; return; }
+    var dec = (state.cv && state.cv.decision) || 'WAIT';
+    var words = [state.symbol, dec, 'RSI', 'MACD', 'EMA'];
+    try {
+      if (root.Chitti && root.Chitti.isl && root.Chitti.isl.spellWords) root.Chitti.isl.spellWords(host, words, { title: 'ISL — ' + state.symbol + ' verdict' });
+      else host.innerHTML = '<p>ISL: ' + words.join(' · ').toUpperCase().split('').join(' ') + '</p>';
+    } catch (e) { host.innerHTML = '<p>ISL unavailable.</p>'; }
+  }
 
   function gaugeBand(cv) { var c = cv.confidence, d = cv.decision; if (d === 'WAIT') return { label: 'NEUTRAL', pos: 50 }; if (d === 'BUY') return c >= 80 ? { label: 'STRONG BUY', pos: 92 } : { label: 'BUY', pos: 70 }; return c >= 80 ? { label: 'STRONG SELL', pos: 8 } : { label: 'SELL', pos: 30 }; }
   function renderGauge() { var b = gaugeBand(state.cv); set('gauge-host', '<div class="gauge" role="img" aria-label="Technical rating ' + b.label + '"><div class="gauge-scale"><span>Strong Sell</span><span>Neutral</span><span>Strong Buy</span></div><div class="gauge-track"><div class="gauge-needle" style="left:' + b.pos + '%"></div></div><div class="gauge-label">' + b.label + '</div></div>'); }

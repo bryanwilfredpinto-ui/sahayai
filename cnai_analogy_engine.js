@@ -170,6 +170,35 @@
     general: ['A confident answer that is actually made up.', 'The danger: it SOUNDS right. Always check important facts.'],
   });
 
+  // ── BO3 (2026-06-13): complete the required matrix — Loop, Database, Neural Network ──
+  concept('loop', 'Loop', {
+    cricket: ['Bowling six balls in an over — the same action repeated until the over ends.', 'But an over is always six balls; a loop repeats until ITS condition is met, which could be once or a million times.'],
+    share_market: ['Checking a stock price every minute until it hits your target.', 'But you might stop early; a loop only stops when its exact condition says so.'],
+    farming: ['Watering each row of the field, one after another, until all rows are done.', 'But you can skip a row by choice; a loop follows its rule precisely.'],
+    cooking: ['Stirring the pot every 2 minutes until the dish is cooked.', 'But you judge "cooked" by taste; a loop needs an exact stopping condition.'],
+    bollywood: ['Re-shooting a scene take after take until the director is happy.', 'But "happy" is a feeling; a loop needs a precise, testable stop.'],
+    code: ['Repeat a block of instructions while a condition stays true.', 'It is exactly that — and a wrong condition causes an infinite loop.'],
+    general: ['Doing the same step again and again until a rule says stop.', 'But if the stop-rule is wrong, it never stops (an infinite loop).'],
+  });
+  concept('database', 'Database', {
+    cricket: ['The full scorebook holding every player\'s record, searchable any time.', 'But a scorebook is read by hand; a database answers exact queries in milliseconds.'],
+    share_market: ['The exchange ledger of every trade ever made.', 'But a ledger is just a list; a database can be queried, joined and indexed.'],
+    farming: ['A register of every field, crop and yield across seasons.', 'But a register is paper; a database lets you ask "which field gave the best yield?" instantly.'],
+    cooking: ['A recipe box organised so you can find any dish at once.', 'But a box holds cards; a database links data and answers complex questions.'],
+    bollywood: ['A studio archive of every film, cast and box-office number.', 'But an archive is browsed; a database is queried precisely.'],
+    code: ['Organised storage you can query, update and relate (tables, rows, keys).', 'It is exactly that — SQL is how you ask it questions.'],
+    general: ['An organised store of information you can search and update reliably.', 'But unlike a notebook, it answers exact questions fast and keeps data consistent.'],
+  });
+  concept('neural_network', 'Neural network', {
+    cricket: ['A team where each layer of players passes the ball forward — slips feed bowlers feed the captain — to reach a decision.', 'But players understand the game; a neural network\'s layers are just numbers, with no real understanding.'],
+    share_market: ['Many analysts in tiers, each spotting one signal, combining into a final call.', 'But analysts can explain their reasoning; a network\'s inner layers are hard to interpret (black box).'],
+    farming: ['Sorting produce through sieves of finer and finer mesh until the right grade falls out.', 'But sieves are simple and visible; a network has many hidden layers tuned by training.'],
+    cooking: ['Layered cooking — prep, then base, then spices, then garnish — each layer building the dish.', 'But a cook knows why each step matters; a network just adjusts numbers to reduce error.'],
+    bollywood: ['A film crew in departments, each refining the work, producing the final cut.', 'But crew have intent; a network has no intent — only weights learned from data.'],
+    code: ['Layers of nodes; each node weights its inputs and passes a signal on; training tunes the weights.', 'It is exactly that — and deep = many such layers (deep learning).'],
+    general: ['Layers that each pick out a little more meaning, building up to an answer.', 'But the middle layers are not human-readable — we cannot always say WHY it decided.'],
+  });
+
   const DETECT = {
     cricket: ['cricket', 'cricketer', 'batsman', 'bowler', 'ipl'],
     share_market: ['share market', 'stock market', 'stock', 'share', 'trading', 'trader', 'sensex', 'nifty'],

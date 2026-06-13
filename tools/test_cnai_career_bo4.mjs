@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+/* tools/test_cnai_career_bo4.mjs — BO4 v2: TOOL_REPLACEMENT_MAP, mapUpgradePath,
+ * detectPsychology (Skill11/SOP9), honesty (SOP12). Deterministic. */
+import { createRequire } from 'node:module';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const CC = require(resolve(ROOT, 'cnai_career_coach.js'));
+let pass = 0, fail = 0; const fails = [];
+const ok = (n, c, d) => { if (c) { pass++; console.log('PASS ' + n + (d ? ' - ' + d : '')); } else { fail++; fails.push(n); console.log('FAIL ' + n + (d ? ' - ' + d : '')); } };
+
+console.log('\n=== BO4 — UPGRADE PATH + TOOL MAP + PSYCHOLOGY ===\n');
+
+// 1. mapUpgradePath: STOP X -> START Y(free) for Excel/Word/PPT/Email.
+const prof = CC.parseOneLiner('I am a Talent Acquisition professional with 15 years');
+const up = CC.mapUpgradePath(prof, ['Excel', 'Word', 'PPT', 'Email', 'WhatsApp', 'Google Search']);
+ok('upgrade:has-replacements', up.tool_replacements.length === 6);
+ok('upgrade:excel→free', up.tool_replacements[0].to[0].free === true && /STOP.*Excel.*START/.test(up.tool_replacements[0].message), up.tool_replacements[0].to[0].name);
+ok('upgrade:ppt→gamma/canva', /gamma|canva/i.test(up.tool_replacements[2].to.map(t => t.name).join(' ')));
+ok('upgrade:email→gmail/outlook', /gemini|copilot/i.test(up.tool_replacements[3].to.map(t => t.name).join(' ')));
+ok('upgrade:mentor-voice', /15 years/.test(up.mentor_voice) && /unfair advantage/i.test(up.mentor_voice));
+ok('upgrade:30-day-plan', up.first_30_days_plan.length === 4 && up.first_30_days_plan[0].week === 1);
+// free-first ORDERING (free certs before paid), tagged FREE/PAID, both present.
+ok('upgrade:certs-free-first-order', up.free_first === true && up.free_certs_count >= 3, up.free_certs_count + ' free / ' + up.paid_certs_count + ' paid');
+ok('upgrade:certs-FREE-PAID-tags', up.profession_certs.every(c => c.tag === (c.free ? 'FREE' : 'PAID')));
+ok('upgrade:paid-after-free', (() => { const fp = up.profession_certs.findIndex(c => !c.free); const lf = up.profession_certs.reduce((a, c, i) => c.free ? i : a, -1); return fp === -1 || lf < fp; })());
+ok('upgrade:honesty-no-guarantee', !/guarantee|will get you a job|100% placement/i.test(JSON.stringify(up)));
+
+// 1b. SPEC SIGNATURE — mapUpgradePath accepts a PROFESSION STRING (not just a profile).
+const upStr = CC.mapUpgradePath('teacher', ['Excel', 'PPT']);
+ok('upgrade:string-signature', upStr.tool_replacements.length === 2 && /teacher/i.test(upStr.profile.role) && upStr.profession_certs.length >= 3);
+ok('upgrade:string=profile-parity', JSON.stringify(CC.mapUpgradePath('I am a teacher', ['Excel']).tool_replacements) === JSON.stringify(CC.mapUpgradePath(CC.parseOneLiner('I am a teacher'), ['Excel']).tool_replacements));
+
+// 1c. CNAI_UI_UX.md §10 conformance — 12-tool map, spec shape, aliases, oneLineSummary.
+ok('spec:12-tool-map', Object.keys(CC._TOOL_REPLACEMENT_MAP).length === 12);
+const upSpec = CC.mapUpgradePath('teacher', ['excel', 'powerpoint', 'tally', 'none']);
+ok('spec:excel→gemini-sheets', upSpec.replacements[0].aiReplacement === 'Gemini in Sheets' && upSpec.replacements[0].provider === 'Google' && upSpec.replacements[0].hours === 1);
+ok('spec:shape-fields', ['tool', 'aiReplacement', 'provider', 'free', 'hours', 'why', 'cost_tag'].every(k => k in upSpec.replacements[0]));
+ok('spec:tally-PAID', upSpec.replacements.find(r => /Tally/.test(r.tool)).free === false);
+ok('spec:none-filtered', upSpec.replacements.length === 3, upSpec.replacements.length + ' (none removed)');
+ok('spec:aliases', Array.isArray(upSpec.replacements) && Array.isArray(upSpec.certs) && typeof upSpec.oneLineSummary === 'string' && /teacher/i.test(upSpec.oneLineSummary));
+ok('spec:disclaimer', /ASSIST.*don.t replace|Results depend/i.test(upSpec.disclaimer));
+ok('spec:cert-url+hours', upSpec.certs.every(c => 'url' in c && 'hours' in c) && upSpec.certs.some(c => /^https?:/.test(c.url)));
+
+// 2. Unknown legacy tool → still a free-first suggestion (no hardcoded ceiling).
+const up2 = CC.mapUpgradePath(prof, ['MyNicheSoftware']);
+ok('upgrade:unknown-tool-safe', up2.tool_replacements[0].to[0].free === true);
+
+// 3. Profession certs adapt to domain (free-first ORDER, tagged), seeds not ceiling.
+const hc = CC.certsForDomain('Healthcare');
+ok('certs:healthcare', hc.some(c => /health/i.test(c.name)) && hc.filter(c => c.free).length >= 3 && hc.some(c => !c.free));
+ok('certs:agri', CC.certsForDomain('Agriculture').some(c => /agri/i.test(c.name)));
+ok('certs:general-fallback', CC.certsForDomain('Puppetry').length >= 5);
+
+// 4. detectPsychology — overwhelm / imposter / cert-chasing (Skill 11 / SOP 9).
+const ov = CC.detectPsychology('There is too much to learn, I don\'t know where to start');
+ok('psy:overwhelm', ov.state === 'overwhelm' && ov.options.length <= 3 && /one/i.test(ov.response));
+const im = CC.detectPsychology('I am too old to learn AI, everyone knows more than me');
+ok('psy:imposter', im.state === 'imposter' && /unfair advantage/i.test(im.response) && !/you are great/i.test(im.response));
+const cc = CC.detectPsychology('which certificate will get me a job?');
+ok('psy:cert-chasing', cc.state === 'cert_chasing' && /portfolio/i.test(cc.response));
+ok('psy:none', CC.detectPsychology('how does RAG work?').detected === false);
+
+// 5. SOP 12 honesty — buildReport never uses forbidden phrases.
+const rep = CC.buildReport(prof);
+ok('honesty:report-clean', !/guaranteed|100% placement|you will earn/i.test(JSON.stringify(rep)));
+
+// 6. Regression: original API unchanged.
+ok('regression:parse+map', CC.mapProfession(prof).tools.length > 0 && rep.free_first === true);
+ok('regression:no-hardcoded-profession', CC.mapUpgradePath(CC.parseOneLiner('I raise pigs'), ['Excel']).profession_certs.length >= 5);
+
+console.log('\n----------------------------------------');
+console.log('BO4 Career v2: ' + pass + ' / ' + (pass + fail) + ' PASS' + (fail ? ' · FAILS: ' + fails.join(', ') : ''));
+process.exit(fail ? 1 : 0);

@@ -235,17 +235,20 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 
 <main>
 
-  <!-- HEADLINE — Profession Hub (Professional Intelligence: your role's AI scores + impact). Shown once a profession is set. -->
+  <!-- PRIMARY — AI news feed. Loads immediately for everyone; profession filter applied when set. -->
+  <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
+    <h2 class="section-title">📰 Top AI news for you
+      <button type="button" onclick="window.renderNews()" aria-label="Refresh AI news"
+        style="margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;font-weight:700;min-height:32px">🔄 Refresh</button>
+    </h2>
+    <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
+    <div class="feed" id="news-feed" aria-live="polite"></div>
+  </section>
+
+  <!-- SECONDARY — Profession Hub (AI scores + impact). Shown once a profession is set. -->
   <section class="section" id="hub-section" data-chitti-response data-chitti-section="Your Profession Hub" style="display:none">
     <h2 class="section-title">🏛️ Your Profession Hub</h2>
     <div id="hub-content"></div>
-  </section>
-
-  <!-- AI news affecting your role -->
-  <section class="section" id="news-section" data-chitti-response data-chitti-section="Top AI news for your role">
-    <h2 class="section-title">📰 Top AI news for you</h2>
-    <p class="section-sub" id="news-sub">Loading the latest AI stories…</p>
-    <div class="feed" id="news-feed" aria-live="polite"></div>
   </section>
 
   <!-- 28-Day AI Tool Tour -->
@@ -277,7 +280,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
              style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px" />
       <button type="button" id="roadmap-mic" aria-label="Speak what you want to learn" onclick="cnaiRoadmapMic()"
               style="min-width:48px;min-height:48px;font-size:20px;border-radius:10px;border:2px solid #888;background:#fff">🎙️</button>
-      <button type="submit" id="roadmap-go" aria-label="Build my roadmap"
+      <button type="submit" id="roadmap-go" aria-label="Build my roadmap" data-i18n="roadmap_cta" data-i18n-aria="roadmap_cta"
               style="min-width:48px;min-height:48px;padding:0 18px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">Build my roadmap →</button>
     </form>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="roadmap-chips" aria-label="Popular goals"></div>
@@ -322,6 +325,7 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
   <section class="learn-panel" id="career-section" data-chitti-response data-chitti-section="AI career coach - resume to tools and certificates" style="display:none">
     <h2 class="section-title">💼 Your AI Career Coach</h2>
     <p class="section-sub">Tell Chitti your profession (or paste your resume). Chitti finds the AI tools and FREE certificates that fit YOUR field — works for any job: HR, doctor, farmer, tailor, anyone. Your resume never leaves your phone.</p>
+    <div style="font-weight:700;font-size:14px;margin-bottom:6px">STEP 1 — Your profession:</div>
     <form id="career-form" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" onsubmit="return cnaiCareerOneLiner(event)">
       <label for="career-input" class="sr-only">Your profession</label>
       <input id="career-input" type="text" placeholder="e.g. I am a teacher with 8 years"
@@ -332,11 +336,20 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
       <button type="submit" aria-label="Build my AI career report"
               style="min-width:48px;min-height:48px;padding:0 16px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">My AI report →</button>
     </form>
+    <!-- TASK #26/#27 — current-tools chip picker → AI upgrade path. Spec: CNAI_UI_UX.md §10 -->
+    <div id="career-tools" style="margin:12px 0">
+      <div data-i18n="tools_label" style="font-weight:700;font-size:14px;margin-bottom:6px">STEP 2 — Tools you use TODAY (tap all that apply):</div>
+      <div role="group" aria-label="Tools you use today — select all that apply" id="career-tool-chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <button type="button" id="career-upgrade-go" onclick="cnaiCareerUpgrade()" aria-label="Build my AI upgrade path"
+              style="min-height:48px;min-width:48px;margin-top:12px;padding:0 18px;font-size:16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700">🔍 Build my AI upgrade path →</button>
+    </div>
+    <div id="career-upgrade-content" aria-live="polite" data-chitti-response data-chitti-section="Your AI upgrade path"></div>
+
     <details style="margin:6px 0">
-      <summary style="min-height:44px;cursor:pointer">📄 Or paste your resume text (stays on your phone)</summary>
+      <summary style="min-height:44px;cursor:pointer">STEP 3 — 📄 Resume (optional) — paste your resume text (stays on your phone)</summary>
       <textarea id="career-resume" aria-label="Paste your resume text" rows="5" placeholder="Paste resume text here…" style="width:100%;margin-top:6px;padding:10px;font-size:15px;border:2px solid #888;border-radius:10px"></textarea>
       <button type="button" onclick="cnaiCareerResume()" aria-label="Analyse my resume" style="min-height:48px;margin-top:6px;padding:0 16px;border-radius:10px;border:0;background:#0a7a37;color:#fff;font-weight:700">Analyse resume →</button>
-      <button type="button" onclick="cnaiCareerForget()" aria-label="Chitti forget my resume" style="min-height:48px;margin-top:6px;padding:0 12px;border-radius:10px;border:2px solid #b00;background:#fff;color:#b00">🗑 Chitti forget</button>
+      <button type="button" onclick="cnaiCareerForget()" aria-label="Chitti forget my resume" data-i18n="chitti_forget" data-i18n-aria="chitti_forget" style="min-height:48px;margin-top:6px;padding:0 12px;border-radius:10px;border:2px solid #b00;background:#fff;color:#b00">🗑 Chitti forget</button>
     </details>
     <div id="career-content" aria-live="polite"></div>
   </section>
@@ -378,6 +391,9 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 <script src="cnai_learns.js?v=20260609.1"></script>
 <script src="cnai_career_coach.js?v=20260609.1"></script>
 <script src="cnai_swarm.js?v=20260609.1"></script>
+<!-- BO6 — full-UI i18n (11 languages) + accessibility layer -->
+<script src="cnai_i18n.js?v=20260613.1"></script>
+<script src="cnai_accessibility.js?v=20260613.1"></script>
 
 <!-- BO3 — Language pipeline -->
 <script>
@@ -514,6 +530,7 @@ function speakPage() {
     el.innerHTML = html;
   }
   window.ccPick = pickProfession;
+  window.renderNews = renderNews;   // exposed for the Refresh button in #news-section
   window.ccScroll = function (id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); };
   window.ccClearProf = function () { const p = _profileInit(); p.profession = 'everyone'; _profileSet(p); renderAll(); };
   window.speakProfessionHint = function () {
@@ -531,7 +548,7 @@ function speakPage() {
     feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">' + _t('news_loading') + '</div>';
     try {
       const lang = localStorage.getItem('chitti_lang') || 'en';
-      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10');
+      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10&profession=' + encodeURIComponent(profSlug));
       const j = await r.json();
       const items = (j && j.items) || [];
       if (!items.length) { feed.innerHTML = '<p style="color:var(--muted);text-align:center;padding:16px">No AI news yet. Try Refresh in a minute.</p>'; return; }
@@ -740,9 +757,9 @@ function speakPage() {
   // ── Orchestrate full render ──
   function renderAll() {
     renderHero();
-    renderHub();
+    renderNews();   // news first — primary daily hook
+    renderHub();    // profession intelligence — secondary (only visible once profession set)
     renderTour();
-    renderNews();
   }
 
   // ── Boot ──
@@ -1049,6 +1066,135 @@ function speakPage() {
       r.start();
     } catch (e) {}
   };
+
+  // ── TASK #26/#27 — current-tools chip picker → AI upgrade path. Spec: CNAI_UI_UX.md §10 ──
+  function tstr(key, fallback) { try { if (window.CNAIi18n && window.CNAIi18n.t) return window.CNAIi18n.t(key, lang()); } catch (e) {} return fallback; }
+  // 12 tools + "None of the above"; data-tool matches TOOL_REPLACEMENT_MAP keys (English).
+  var CAREER_TOOLS = [
+    { v: 'excel', icon: '📊', label: 'Excel' }, { v: 'word', icon: '📝', label: 'Word' }, { v: 'powerpoint', icon: '📽️', label: 'PowerPoint' },
+    { v: 'email', icon: '📧', label: 'Email' }, { v: 'whatsapp', icon: '💬', label: 'WhatsApp' }, { v: 'google search', icon: '🔍', label: 'Google Search' },
+    { v: 'google drive', icon: '📁', label: 'Google Drive' }, { v: 'phone calls', icon: '📞', label: 'Phone calls' }, { v: 'paper forms', icon: '📄', label: 'Paper forms' },
+    { v: 'calculator', icon: '🧮', label: 'Calculator' }, { v: 'tally', icon: '📊', label: 'Tally' }, { v: 'web browsing', icon: '🌐', label: 'Web browsing' },
+    { v: 'none', icon: '', label: 'None of the above' }
+  ];
+  function paintChip(b) {
+    var on = b.getAttribute('aria-pressed') === 'true';
+    b.style.background = on ? '#138808' : '#fff'; b.style.color = on ? '#fff' : '#138808';
+    var base = b.getAttribute('data-label') || '';
+    b.textContent = (on ? '✓ ' : '') + base; // ✓ icon, not colour-alone
+  }
+  function initToolChips() {
+    var host = document.getElementById('career-tool-chips'); if (!host || host.childNodes.length) return;
+    CAREER_TOOLS.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'career-tool-chip'; b.setAttribute('data-tool', t.v);
+      b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', t.label);
+      b.setAttribute('data-label', (t.icon ? t.icon + ' ' : '') + t.label);
+      b.style.cssText = 'min-height:48px;min-width:48px;padding:0 14px;border-radius:999px;border:2px solid #138808;background:#fff;color:#138808;font-weight:700;font-size:15px;cursor:pointer';
+      paintChip(b);
+      b.addEventListener('click', function () {
+        var on = b.getAttribute('aria-pressed') !== 'true';
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (t.v === 'none' && on) { // "None of the above" deselects all others
+          host.querySelectorAll('.career-tool-chip').forEach(function (o) { if (o !== b) { o.setAttribute('aria-pressed', 'false'); paintChip(o); } });
+        } else if (on) { // selecting any real tool clears "None"
+          var none = host.querySelector('.career-tool-chip[data-tool="none"]'); if (none) { none.setAttribute('aria-pressed', 'false'); paintChip(none); }
+        }
+        paintChip(b);
+      });
+      host.appendChild(b);
+    });
+  }
+  function selectedTools() {
+    return Array.prototype.slice.call(document.querySelectorAll('#career-tool-chips .career-tool-chip[aria-pressed="true"]'))
+      .map(function (b) { return b.getAttribute('data-tool'); }).filter(function (v) { return v !== 'none'; });
+  }
+  function badge(isFree) {
+    var label = isFree ? tstr('free_badge', 'FREE') : tstr('paid_badge', 'PAID');
+    var bg = isFree ? '#138808' : '#FF9800', fg = isFree ? '#fff' : '#000'; // spec colours
+    return '<span data-i18n="' + (isFree ? 'free_badge' : 'paid_badge') + '" style="display:inline-block;background:' + bg + ';color:' + fg + ';border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700;margin-left:6px">' + esc(label) + '</span>';
+  }
+  function hoursLabel(h) { if (h == null) return ''; return h < 1 ? Math.round(h * 60) + ' min' : (h + ' hr' + (h > 1 ? 's' : '')); }
+  function upgradeSpeak(up) {
+    var parts = [up.oneLineSummary || ''];
+    (up.replacements || []).forEach(function (r) { parts.push('Instead of ' + (r.tool || '') + ', use ' + (r.aiReplacement || '') + ', ' + (r.free ? 'free' : 'paid') + '.'); });
+    var freeCert = (up.certs || []).filter(function (c) { return c.free; })[0];
+    if (freeCert) parts.push('A free certificate for you: ' + freeCert.name + ' from ' + freeCert.provider + '.');
+    if (up.mentor_voice) parts.push(up.mentor_voice);
+    if (up.disclaimer) parts.push(up.disclaimer);
+    return parts.join(' ');
+  }
+  var LAST_UP = null;
+  function medal(i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🎓'; }
+  window.cnaiCareerUpgrade = function () {
+    initToolChips();
+    var tools = selectedTools();
+    var prof = (document.getElementById('career-input') && document.getElementById('career-input').value || '').trim();
+    if (!prof) { try { var sp = JSON.parse(localStorage.getItem('cnai_profile') || '{}'); prof = sp.role || ''; } catch (e) {} }
+    if (!prof) prof = 'professional';
+    var host = document.getElementById('career-upgrade-content'); if (!host) return;
+    if (!tools.length) { speak('Tap at least one tool you use, then press build my AI upgrade path.'); host.innerHTML = '<div style="font-size:14px;color:#8a5a00">👆 Tap the tools you use above, then press the button.</div>'; return; }
+    var up; try { up = window.ChittiCareer.mapUpgradePath(prof, tools); } catch (e) { return; }
+    LAST_UP = up;
+    var stopL = tstr('stop_using', 'STOP using'), startL = tstr('start_using', 'START using');
+    // Tool-replacement TABLE: What you use | AI upgrade | Cost | Time
+    var tableRows = up.replacements.map(function (r) {
+      return '<tr>' +
+        '<td style="padding:6px 8px;border-bottom:1px solid #eee"><span aria-hidden="true">' + esc((CAREER_TOOLS.find(function (t) { return t.label === r.tool || t.v === (r.tool || '').toLowerCase(); }) || {}).icon || '') + '</span> ' + esc(r.tool || '') + '</td>' +
+        '<td style="padding:6px 8px;border-bottom:1px solid #eee"><strong>' + esc(r.aiReplacement || '') + '</strong><div style="font-size:12px;color:#595959">' + esc(r.why || '') + '</div></td>' +
+        '<td style="padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap">' + badge(r.free !== false) + '</td>' +
+        '<td style="padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap">' + esc(hoursLabel(r.hours)) + '</td></tr>';
+    }).join('');
+    var certRows = (up.certs || []).map(function (c, i) {
+      var startBtn = c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener" aria-label="Start the certificate ' + esc(c.name) + '" style="display:inline-flex;align-items:center;min-height:44px;padding:0 10px;margin-left:6px;color:#0a55c8">▶ Start this cert</a>' : '';
+      return '<li style="margin:6px 0;line-height:1.5">' + (c.free ? medal(i) : '🎓') + ' <strong>' + esc(c.name) + '</strong> <span style="color:#595959;font-size:13px">(' + esc(c.provider) + (c.hours ? ' · ' + hoursLabel(c.hours) : '') + (c.cost ? ' · ' + esc(c.cost) : '') + ')</span>' + badge(c.free) + startBtn + '</li>';
+    }).join('');
+    host.innerHTML =
+      '<div class="career-upgrade-card" style="border:2px solid #138808;border-radius:12px;padding:14px;margin:10px 0">' +
+      '<div style="font-weight:700;font-size:17px">Your AI Upgrade Path — ' + esc(up.profile.role || prof) + '</div>' +
+      '<div style="font-size:13px;color:#595959;margin:2px 0 8px">' + esc(up.oneLineSummary || '') + '</div>' +
+      '<h3 style="font-size:15px;margin:8px 0 4px">🔧 Tool replacements</h3>' +
+      '<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:14px"><thead><tr>' +
+      '<th scope="col" style="text-align:left;padding:6px 8px;border-bottom:2px solid #138808">What you use</th>' +
+      '<th scope="col" style="text-align:left;padding:6px 8px;border-bottom:2px solid #138808">AI upgrade</th>' +
+      '<th scope="col" style="text-align:left;padding:6px 8px;border-bottom:2px solid #138808">Cost</th>' +
+      '<th scope="col" style="text-align:left;padding:6px 8px;border-bottom:2px solid #138808">Time</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>' +
+      '<h3 style="font-size:15px;margin:12px 0 4px">🎓 Free certificates first <span style="font-weight:400;font-size:13px;color:#595959">(' + (up.free_certs_count || 0) + ' free' + (up.paid_certs_count ? ', ' + up.paid_certs_count + ' paid' : '') + ')</span></h3>' +
+      '<ul style="margin:0;padding-left:18px;list-style:none">' + certRows + '</ul>' +
+      '<div style="background:#f6f6f6;border-radius:8px;padding:8px;font-size:13px;margin-top:8px">🧑‍🏫 ' + esc(up.mentor_voice || '') + '</div>' +
+      '<div style="background:#fff7e6;border-left:4px solid #FF9800;border-radius:6px;padding:8px;margin-top:8px;font-size:13px">⚠️ ' + esc(up.disclaimer || '') + '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+      '<button type="button" aria-label="Listen to my upgrade path" onclick="cnaiCareerUpgradeSpeak()" style="min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Listen</button>' +
+      '<button type="button" aria-label="Download my upgrade path as a text file" onclick="cnaiCareerUpgradeDownload()" style="min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">📥 Download</button>' +
+      '<button type="button" aria-label="Try a different profession" onclick="cnaiCareerUpgradeReset()" style="min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔁 Try different profession</button>' +
+      '</div></div>';
+    host.setAttribute('data-upgrade-speak', upgradeSpeak(up));
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host.parentNode || host); } catch (e) {}
+    try { if (window.CNAIi18n && window.CNAIi18n.applyLanguage) window.CNAIi18n.applyLanguage(lang()); } catch (e) {}
+    speak(upgradeSpeak(up));
+  };
+  window.cnaiCareerUpgradeSpeak = function () { var h = document.getElementById('career-upgrade-content'); var t = h && h.getAttribute('data-upgrade-speak'); if (t) speak(t); };
+  window.cnaiCareerUpgradeReset = function () {
+    document.querySelectorAll('#career-tool-chips .career-tool-chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); paintChip(b); });
+    var i = document.getElementById('career-input'); if (i) { i.value = ''; i.focus(); }
+    var h = document.getElementById('career-upgrade-content'); if (h) h.innerHTML = '';
+    speak('Cleared. Enter a different profession and tap your tools.');
+  };
+  window.cnaiCareerUpgradeDownload = function () {
+    if (!LAST_UP) return;
+    var L = ['MY AI UPGRADE PATH — ' + (LAST_UP.profile.role || ''), '', LAST_UP.oneLineSummary || '', '', 'TOOL REPLACEMENTS:'];
+    (LAST_UP.replacements || []).forEach(function (r) { L.push('- ' + r.tool + ' -> ' + r.aiReplacement + ' (' + (r.free ? 'FREE' : 'PAID') + ', ~' + hoursLabel(r.hours) + ') — ' + r.why); });
+    L.push('', 'CERTIFICATES (free first):');
+    (LAST_UP.certs || []).forEach(function (c) { L.push('- ' + c.name + ' (' + c.provider + ') [' + (c.free ? 'FREE' : 'PAID') + ']' + (c.url ? ' ' + c.url : '')); });
+    L.push('', LAST_UP.disclaimer || '', LAST_UP.honesty_note || '', '', 'Your data stayed on your device only.');
+    try {
+      var blob = new Blob([L.join('\n')], { type: 'text/plain' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'chitti_ai_upgrade_path.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      speak('Downloaded your upgrade path.');
+    } catch (e) {}
+  };
+  try { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initToolChips); else initToolChips(); } catch (e) {}
 })();
 </script>
 
