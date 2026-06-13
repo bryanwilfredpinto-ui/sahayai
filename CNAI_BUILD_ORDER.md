@@ -10,7 +10,7 @@
 | 1 | Roadmap Engine | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 2 | Course Discovery & Registration | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 3 | Chitti Learns & Coaches | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
-| 4 | Professional Career Coach | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
+| 4 | Professional Career Coach | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** |
 | 5 | Swarm Learning | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
 | 6 | Accessibility & Languages (i18n) | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
 | 7 | Certification, Tests & Handover | ☐ | ☐ | ☐ | ☐ | ☐ | pending |
