@@ -410,6 +410,27 @@
     // tab wiring
     [['tab-read'], ['tab-screener'], ['tab-watchlist'], ['tab-backtest'], ['tab-tip'], ['tab-journal']].forEach(function (t) { var el = $(t[0]); if (el) el.onclick = function () { selectTab(t[0]); if (t[0] === 'tab-watchlist') renderWatchlist(); }; });
     loadWatch(); renderJournal();
+    ensureResultBoxWidgets();
+  }
+
+  // §11 / SOP6 — per-response widget on EVERY [data-chitti-response] box.
+  // feedback-widget.js skips boxes whose text is empty; the Screener / Watchlist /
+  // Backtest result boxes live in hidden tabs and start empty, so they were the
+  // 3 boxes missing the 🔊🤖👍👎✏️ bar (12/15). Give them a default empty-state
+  // (non-empty), then nudge the widget's MutationObserver to rescan once it has
+  // loaded (feedback-widget.js loads after this script) — it then attaches to all
+  // three. Scoped to Chitti Technical; the shared widget is untouched.
+  function ensureResultBoxWidgets() {
+    var wl = $('watchlist-host');
+    if (wl && !wl.textContent.trim()) set('watchlist-host', '<p>No stocks watched yet. Add one above. Alerts inform you — Chitti never acts on its own.</p>');
+    var bt = $('backtest-host');
+    if (bt && !bt.textContent.trim()) set('backtest-host', '<p>No backtest yet. Pick a symbol and timeframe, then “Run backtest”. Past results never guarantee future ones.</p>');
+    // Nudge the feedback-widget observer to (re)scan after it has loaded.
+    setTimeout(function () {
+      ['screener-host', 'watchlist-host', 'backtest-host'].forEach(function (id) {
+        var el = $(id); if (el && el.textContent.trim()) el.appendChild(doc.createComment('fb-rescan'));
+      });
+    }, 900);
   }
   root.ChittiTechApp = { init: init, analyze: analyze, runScreener: runScreener, runBacktest: runBacktest, selectTab: selectTab, renderJournal: renderJournal, openReflect: openReflect, state: state };
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', init); else init();
