@@ -17,6 +17,7 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import `in`.sahayai.chitti.vaani.MainActivity
 import `in`.sahayai.chitti.vaani.util.AuditLog
 
 /**

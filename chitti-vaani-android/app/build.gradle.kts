@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -86,6 +87,19 @@ dependencies {
     // setUserAuthenticationRequired(true) +
     // setInvalidatedByBiometricEnrollment(true). Added 2026-05-23.
     implementation("androidx.biometric:biometric:1.1.0")
+    // Firebase Cloud Messaging — powers ChittiFcmService (inbound paired-Chitti
+    // emergency relay). The dependency is required to COMPILE the service
+    // (resolves FirebaseMessagingService / RemoteMessage). Runtime delivery
+    // additionally needs google-services.json + the google-services plugin —
+    // see FCM_SETUP.md — but those are NOT required to build the APK.
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    // Room — on-device queue for federated voice-sample upload
+    // (db/QueuedVoiceSample, VaaniDatabase, VoiceSampleDao). KSP generates
+    // the VaaniDatabase_Impl at build time.
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
     // On-device speech recognition for emergency keyword spotting
     // (Vosk wraps Kaldi; small offline models per language)
     // Drop the .aar into app/libs/ when wiring Vosk; the dependency is
