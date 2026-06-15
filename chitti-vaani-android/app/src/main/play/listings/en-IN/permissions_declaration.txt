@@ -1,0 +1,92 @@
+CHITTI VAANI — PERMISSIONS DECLARATION
+Play Store Permissions Form · Sahay AI · bryanderrylpinto@gmail.com
+======================================================================
+
+RECORD_AUDIO
+------------
+Core function of the app. Chitti Vaani is a voice-first AI assistant
+designed for users who cannot read, type, or tap — including blind,
+mute, illiterate, and elderly users. Every user interaction is
+voice-driven. RECORD_AUDIO enables:
+  1. Wake-word detection ("Hey Chitti") via VaaniBootService foreground
+     service so the user can activate the assistant hands-free.
+  2. Voice commands that drive every feature: call, SMS, WhatsApp,
+     UPI, maps, alarm, emergency alert.
+  3. Night-mode 10-second answer window — the user speaks "haan" or
+     stays silent; Chitti acts only on explicit voice confirmation.
+Audio is processed on-device. Partial transcripts are held in RAM only
+and are never recorded to disk or transmitted to our servers.
+
+READ_PHONE_STATE / READ_CALL_LOG
+---------------------------------
+Required for two features only:
+  1. Night mode: detecting an incoming call so VaaniCallScreeningService
+     can display the caller's identity to the user and speak it aloud
+     ("Ramu is calling. Say haan to answer.") — critical for blind
+     and elderly users who cannot read the caller ID on screen.
+  2. Caller identification: providing the user's family member names
+     from contacts so Chitti speaks a recognisable name, not a number.
+Call log data is never uploaded to our servers. It is processed only
+on-device in real time during an incoming call event.
+
+SEND_SMS / RECEIVE_SMS
+-----------------------
+Chitti Vaani allows mute and illiterate users to send SMS messages
+by voice — the user dictates, Chitti transcribes, reads back for
+confirmation, and sends only after an explicit "haan" (yes) voice
+confirmation. No SMS is ever sent without explicit user approval.
+RECEIVE_SMS is used solely to detect OTP messages for account login
+so blind users who cannot read SMS messages can receive OTPs via
+Chitti's voice readout — no OTP data is stored or transmitted.
+
+CALL_PHONE
+----------
+Emergency cascade feature for elderly users. When an emergency keyword
+("ambulance", "hospital", "bachao") is detected from the caller during
+night mode, Chitti wakes the user (alarm + vibration + TTS) and allows
+the user to decide whom to call. Chitti may dial the user's nominated
+emergency family contact after explicit user voice confirmation.
+CRITICAL SAFETY POLICY: Emergency lines 112, 100, 101, 102, 108, 1098,
+1930, and 139 are permanently blocked from auto-dial via hard-coded
+COP_DENYLIST. These numbers can never be dialed by Chitti — only the
+user can dial them manually.
+
+BIND_ACCESSIBILITY_SERVICE
+---------------------------
+Scope: strictly limited to the WhatsApp send button only.
+Chitti allows blind, mute, and illiterate users to dictate a WhatsApp
+message by voice, which Chitti transcribes and reads back for approval.
+When the user says "haan" (yes), Chitti must tap the WhatsApp Send
+button because these users physically cannot tap the button themselves.
+The accessibility service:
+  - Arms for exactly 2 seconds after the user says "haan"
+  - Taps the next send-button-shaped element on screen
+  - Refuses to act if a PIN-shaped sibling element is detected
+    (prevents any accidental payment confirmation)
+  - Immediately disarms after the single tap
+  - Is scoped to known target packages only (KNOWN_TARGETS allowlist)
+No other UI element is ever tapped. No content is ever read from
+other apps. The service does not run continuously — it is arm/disarm
+only, activated by explicit user voice command.
+
+BIND_CALL_SCREENING_SERVICE
+----------------------------
+Required for the night-mode feature (22:00–06:00 IST) for elderly users.
+Incoming calls are silenced immediately so the sleeping user is not
+jarred awake. Chitti mediates: speaks the caller's name aloud, waits
+10 seconds for the user's voice response ("haan" / "nahi"), then acts:
+  - "haan" → call rings normally and user answers
+  - "nahi" or silence → Chitti answers, checks caller for emergency
+  - Emergency keyword detected → alarm wakes user, family notified
+This feature is the primary safety feature for elderly users living
+alone or with family who are deep sleepers.
+
+BIND_INCALL_SERVICE
+--------------------
+"Speak-for-me" mode — for mute users who cannot verbally communicate
+during a phone call. When enabled, Chitti activates the speakerphone
+and plays a TTS introduction: "Namaste, main Chitti hun, ek AI
+assistant. Main aapki taraf se baat kar rahi hun." Chitti then listens
+for the user's typed/spoken instructions and speaks them to the other
+party. This is the only way mute users can conduct a live phone call
+without assistance from another person.

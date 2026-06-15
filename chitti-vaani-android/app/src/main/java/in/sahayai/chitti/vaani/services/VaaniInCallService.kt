@@ -34,9 +34,13 @@ class VaaniInCallService : InCallService() {
         // rejectCall() voice intents (added 2026-05-22) can act on it
         // without re-plumbing the InCallService binder.
         currentCall = call
-        // TODO Phase 2.3:
-        //   - Listen for "answer" / "uthao" via VaaniBootService.
-        //   - Start live transcription pipeline once accepted.
+        // Phase 2.3 — voice "uthao" / "answer" arms call.answer().
+        // The web tier calls ChittiNative.answerCall() after detecting the
+        // wake phrase via the always-on VaaniBootService mic loop; that
+        // bridge call routes into tryAnswerCurrent() below, which performs
+        // the actual call.answer(VideoProfile.STATE_AUDIO_ONLY).
+        // The live transcription pipeline feeds the WebView back via
+        // evaluateJavascript(...) — Phase 2.3.1.
     }
 
     override fun onCallRemoved(call: Call) {

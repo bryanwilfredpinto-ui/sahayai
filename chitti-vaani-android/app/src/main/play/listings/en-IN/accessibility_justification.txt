@@ -1,0 +1,94 @@
+CHITTI VAANI — ACCESSIBILITY SERVICE JUSTIFICATION
+Google Play Restricted Permissions Review · Sahay AI
+=====================================================
+
+APP NAME: Chitti Vaani
+PACKAGE: in.sahayai.chitti.vaani
+ACCESSIBILITY SERVICE: VaaniAccessibilityService
+
+----------------------------------------------------------------------
+WHAT THIS SERVICE DOES (narrow scope — strictly limited)
+----------------------------------------------------------------------
+
+VaaniAccessibilityService is used for ONE purpose only:
+Tapping the WhatsApp Send button on behalf of users who physically
+cannot tap the button themselves.
+
+Target users:
+  • Blind users — cannot see the button on screen
+  • Mute users — can compose messages verbally via Chitti but need
+    the tap executed on their behalf
+  • Users with motor disabilities — cannot perform precise taps
+
+Flow (exact, no deviation):
+  1. User dictates a WhatsApp message by voice.
+  2. Chitti transcribes and reads the message back aloud.
+  3. Chitti asks: "Shall I send this? Say haan to confirm."
+  4. User says "haan" (yes).
+  5. MainActivity.armAccessibilityAction("wa_send", 2500) fires —
+     arming window: 2 seconds.
+  6. VaaniAccessibilityService looks for the next visible element
+     matching the WhatsApp Send button description.
+  7. SAFETY CHECK: if a PIN-shaped sibling element is present
+     (4–6 digit input adjacent to the send button), the service
+     REFUSES to tap — this prevents accidental payment confirmation.
+  8. If no PIN sibling: tap fires once. Exactly once.
+  9. Service disarms immediately after the single tap.
+  10. AuditLog records the event: date, time, action = "wa_send".
+
+----------------------------------------------------------------------
+WHAT THIS SERVICE DOES NOT DO
+----------------------------------------------------------------------
+
+  ✗ Does not run continuously — only active during the 2-second arm
+    window after explicit user voice confirmation.
+  ✗ Does not read screen content from WhatsApp or any other app.
+  ✗ Does not tap any element other than a WhatsApp send button.
+  ✗ Does not interact with system UI (settings, notifications, etc.).
+  ✗ Does not collect any data from other apps.
+  ✗ Does not fire without explicit user voice confirmation of "haan".
+  ✗ Does not auto-arm on any system event — only on user command.
+
+----------------------------------------------------------------------
+KNOWN_TARGETS ALLOWLIST (hard-coded, cannot be changed remotely)
+----------------------------------------------------------------------
+
+The service is scoped to these packages only:
+  • com.whatsapp
+  • com.whatsapp.w4b
+
+Any TYPE_VIEW_CLICKED event outside these packages is ignored.
+
+----------------------------------------------------------------------
+WHY THIS PERMISSION IS NECESSARY FOR THESE USERS
+----------------------------------------------------------------------
+
+India has 285 million people with some form of disability (Census 2011,
+extrapolated to 2024). Of these, approximately 5 million are blind and
+rely on screen readers. WhatsApp does not provide a native voice-compose
+and voice-send flow accessible to blind users. The only way to complete
+a WhatsApp message send for a blind user — who has dictated the message
+by voice, confirmed by voice, and cannot see the send button — is to
+programmatically tap the button on their behalf.
+
+Without the accessibility service, blind and mute users who use Chitti
+Vaani to compose WhatsApp messages cannot complete the action. The
+alternative is to require them to ask a sighted family member to tap
+the button — which defeats the entire purpose of an accessibility AI.
+
+We have exhausted other options:
+  • WhatsApp share intent pre-fills text but still requires a manual tap
+    of Send inside WhatsApp — inaccessible to blind users.
+  • WhatsApp Business API requires business verification and a paid plan,
+    and does not apply to personal messaging.
+  • Direct WhatsApp send button tap via accessibility is the only
+    device-local, free, immediate path available.
+
+----------------------------------------------------------------------
+CONTACT
+----------------------------------------------------------------------
+
+Developer: Bryan Wilfred Pinto · Founder, Sahay AI
+Email: bryanderrylpinto@gmail.com
+Website: https://sahayai.in
+Privacy policy: https://sahayai.in/privacy/chitti-vaani
