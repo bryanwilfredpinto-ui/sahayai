@@ -71,6 +71,45 @@
   @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
   @media (prefers-contrast: more){.card,.res-box{border-width:2.5px}.tab[aria-selected="true"]{outline:2px solid var(--navy)}}
   @media (forced-colors: active){.btn.primary{border:2px solid}.tab[aria-selected="true"]{border:3px solid}}
+  /* ── How-to-use + home grid (QA BUG-1 + tab-grouping) ── */
+  .howto{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .howto-h{font-size:15px;font-weight:900;color:var(--navy);margin:0 0 6px;display:flex;align-items:center;gap:6px}
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 14px}
+  .home-card{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;min-height:64px;padding:12px;border:2px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;font-family:inherit}
+  .home-card .hc-ic{font-size:26px}
+  .home-card .hc-t{font-size:14.5px;font-weight:800;color:var(--navy)}
+  .home-card:hover,.home-card:focus-visible{border-color:var(--saffron);background:#fff7ee}
+  /* ── Vehicle health dashboard (QA: real dashboard visual + pictograms) ── */
+  .vh-grid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .vh-row{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff}
+  .vh-ic{flex:0 0 auto;width:34px;height:34px}
+  .vh-mid{flex:1;min-width:0}
+  .vh-name{font-size:14.5px;font-weight:800;color:var(--navy)}
+  .vh-note{font-size:12px;color:#555}
+  .vh-zone{flex:0 0 auto;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:900;border-radius:999px;padding:5px 10px;min-height:30px}
+  .vh-zone.ok{background:#e7f6e7;color:#0d6b1e;border:1.5px solid var(--green)}
+  .vh-zone.warning{background:#fff3da;color:#8a4b00;border:1.5px solid #c97a00}
+  .vh-zone.bad{background:#fde3e3;color:#9a0010;border:1.5px solid var(--red)}
+  .vh-dot{width:11px;height:11px;border-radius:50%}
+  .vh-dot.ok{background:var(--green)}.vh-dot.warning{background:#c97a00}.vh-dot.bad{background:var(--red)}
+  /* ── Document thumbnail gallery ── */
+  .doc-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .doc-thumb{width:84px;text-align:center;font-size:11px}
+  .doc-thumb img{width:84px;height:84px;object-fit:cover;border:1.5px solid var(--line);border-radius:8px;display:block}
+  .doc-thumb .doc-file{width:84px;height:84px;display:flex;align-items:center;justify-content:center;font-size:30px;border:1.5px solid var(--line);border-radius:8px;background:#f3f4f6}
+  /* ── result render fade (subtle "just updated" cue) ── */
+  .res-box{animation:resin .25s ease}
+  @keyframes resin{from{opacity:.35}to{opacity:1}}
+  @media (prefers-reduced-motion: reduce){.res-box{animation:none}}
+  /* ── Dark mode ── */
+  html[data-theme="dark"]{--ink:#e8e8ea;--line:#3a3a42;--navy:#9db7ff;--saffron:#ff9d4d}
+  html[data-theme="dark"] body{background:#15151a;color:var(--ink)}
+  html[data-theme="dark"] header{background:linear-gradient(135deg,#23211b,#1a1a20,#1a221b);border-bottom-color:#5a3a17}
+  html[data-theme="dark"] .hero,html[data-theme="dark"] .card,html[data-theme="dark"] .tab,html[data-theme="dark"] .home-card,html[data-theme="dark"] .vh-row,html[data-theme="dark"] input.fi,html[data-theme="dark"] select.fs,html[data-theme="dark"] #lang-select,html[data-theme="dark"] .btn{background:#1e1e25;color:var(--ink)}
+  html[data-theme="dark"] .res-box{background:#20202a}
+  html[data-theme="dark"] .res-box.ok{background:#16271a}html[data-theme="dark"] .res-box.warning{background:#2a2212}html[data-theme="dark"] .res-box.bad{background:#2a1618}html[data-theme="dark"] .res-box.info{background:#161f2e}
+  html[data-theme="dark"] .disc{background:#2a2412;color:#ffdf8a;border-bottom-color:#6b5413}
+  html[data-theme="dark"] .card .sub,html[data-theme="dark"] .vh-note,html[data-theme="dark"] .prov,html[data-theme="dark"] footer{color:#b9b9c2}
 </style>
 <!-- LANGUAGE: Vaani-canonical. chitti_lang.js owns #lang-select (26 languages, auto-translate whole UI). -->
 <script src="chitti_lang.js" defer></script>
@@ -80,6 +119,8 @@
 <script src="feedback-widget.js" data-page="chitti_mechanic_2w" defer></script>
 <!-- DETERMINISTIC ENGINE: rules are the product. -->
 <script src="chitti_mechanic_2w_engine.js" defer></script>
+<!-- PAGE i18n: registers this page's static strings with the Vaani substrate (QA BUG-2). -->
+<script src="chitti_mechanic_2w_i18n.js" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">Skip to content</a>
@@ -93,6 +134,7 @@
       <label for="lang-select">🌐 Language</label>
       <select id="lang-select" aria-label="Choose language"></select>
       <button class="btn read" type="button" onclick="mechReadPage()" aria-label="Read this page aloud">🔊 Read page</button>
+      <button class="btn" type="button" id="dark-toggle" onclick="mechDark()" aria-label="Switch dark or light mode" aria-pressed="false">🌗 Dark</button>
     </div>
   </div>
 </header>
@@ -105,11 +147,26 @@
     <div class="triage-leg" aria-hidden="false">
       <span>🟢 Safe DIY</span><span>🟡 Caution</span><span>🔴 Mechanic only</span>
     </div>
-    <div class="actions">
-      <button class="btn primary" type="button" onclick="mechTour()">▶️ How it works (30-sec tour)</button>
-      <button class="btn" type="button" onclick="mechTab('bike')">🏍️ Start — add my bike</button>
+    <div class="howto" id="how-to-use">
+      <h2 class="howto-h"><span aria-hidden="true">📖</span> How to use Chitti</h2>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="mechTour()">▶️ How it works (30-sec tour)</button>
+        <button class="btn" type="button" onclick="mechTab('bike')">🏍️ Start — add my bike</button>
+      </div>
+      <div class="result" id="r-tour" aria-live="polite" data-chitti-no-translate></div>
     </div>
-    <div class="result" id="r-tour" aria-live="polite"></div>
+  </section>
+
+  <!-- Home grid — 5 buckets so the 15 tabs aren't a flat scroller (QA finding) -->
+  <section class="card" data-chitti-response="mech-home" data-chitti-section="What do you need today?">
+    <h2><span aria-hidden="true">🧭</span> What do you need today?</h2>
+    <div class="home-grid">
+      <button class="home-card" type="button" onclick="mechTab('bike')"><span class="hc-ic" aria-hidden="true">🏍️</span><span class="hc-t">My Bike &amp; Health</span></button>
+      <button class="home-card" type="button" onclick="mechTab('doctor')"><span class="hc-ic" aria-hidden="true">🔧</span><span class="hc-t">Fix &amp; Maintain</span></button>
+      <button class="home-card" type="button" onclick="mechTab('buy')"><span class="hc-ic" aria-hidden="true">🛒</span><span class="hc-t">Buy &amp; Sell</span></button>
+      <button class="home-card" type="button" onclick="mechTab('insure')"><span class="hc-ic" aria-hidden="true">💰</span><span class="hc-t">Money &amp; Papers</span></button>
+      <button class="home-card" type="button" onclick="mechTab('learn')"><span class="hc-ic" aria-hidden="true">🎓</span><span class="hc-t">Help &amp; Learn</span></button>
+    </div>
   </section>
 
   <div class="tabs" role="tablist" aria-label="Chitti Mechanic modules">
@@ -171,6 +228,13 @@
         <button class="btn" type="button" onclick="mechForget()">🗑️ Chitti forget</button>
       </div>
       <div class="result" id="r-bike" aria-live="polite"></div>
+    </div>
+
+    <div class="card" data-chitti-response="mech-health" data-chitti-section="Vehicle health at a glance">
+      <h2><span aria-hidden="true">🩺</span> Vehicle health at a glance</h2>
+      <p class="sub">A quick green / amber / red read on the 5 things that keep you safe — engine, battery, tyres, brakes, chain. Each shows an icon + a word, never colour alone.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="mechHealth()">🩺 Show my bike health</button></div>
+      <div class="result" id="r-health" aria-live="polite"></div>
     </div>
   </section>
 
@@ -519,14 +583,70 @@
     var host=$('r-bike'); host.innerHTML='';
     var box=document.createElement('div'); box.className='res-box info';
     box.innerHTML='<div class="res-status"><span aria-hidden="true">🗂️</span> '+docs.length+' document(s) on this device</div>';
+    var gal=document.createElement('div'); gal.className='doc-thumbs';
     docs.forEach(function(d,i){
-      var row=document.createElement('div'); row.style.margin='6px 0';
-      var a=document.createElement('a'); a.href=d.data; a.target='_blank'; a.textContent='📎 '+d.type+' — '+d.name; a.style.fontWeight='700';
-      var del=document.createElement('button'); del.className='speak-btn'; del.style.marginLeft='8px'; del.textContent='🗑️ Remove'; del.type='button';
+      var cell=document.createElement('div'); cell.className='doc-thumb';
+      var a=document.createElement('a'); a.href=d.data; a.target='_blank'; a.rel='noopener'; a.setAttribute('aria-label','Open '+d.type+' '+d.name);
+      if(/^data:image/.test(d.data||'')){ var img=document.createElement('img'); img.src=d.data; img.alt=d.type+' document'; a.appendChild(img); }
+      else { var ph=document.createElement('div'); ph.className='doc-file'; ph.setAttribute('aria-hidden','true'); ph.textContent='📄'; a.appendChild(ph); }
+      cell.appendChild(a);
+      var cap=document.createElement('div'); cap.textContent=d.type; cap.style.fontWeight='700'; cell.appendChild(cap);
+      var del=document.createElement('button'); del.className='speak-btn'; del.style.marginTop='4px'; del.style.minHeight='32px'; del.style.padding='4px 8px'; del.textContent='🗑️'; del.type='button'; del.setAttribute('aria-label','Remove '+d.type);
       del.onclick=function(){ var vv=E().vault.load(); vv.docs.splice(i,1); E().vault.save(vv); mechShowDocs(); };
-      row.appendChild(a); row.appendChild(del); box.appendChild(row);
+      cell.appendChild(del); gal.appendChild(cell);
     });
+    box.appendChild(gal); host.appendChild(box);
+  };
+
+  // ── Vehicle Health dashboard (visual gauges + green/amber/red zones + SVG pictograms) ──
+  var SVG={
+    engine:'<svg class="vh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 9h3l2-2h4v3h3l2 2v4h-2v2h-4l-2-2H7l-2-2V9z"/><circle cx="12" cy="12" r="1.5"/></svg>',
+    battery:'<svg class="vh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="8" width="16" height="9" rx="1.5"/><path d="M19 11h2v3h-2M7 6v2M14 6v2"/></svg>',
+    tyre:'<svg class="vh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>',
+    brake:'<svg class="vh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="12" r="8"/><circle cx="11" cy="12" r="3"/><path d="M17 7l4-2v6l-4 1"/></svg>',
+    chain:'<svg class="vh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="7" cy="12" r="4"/><circle cx="17" cy="12" r="4"/><path d="M10.5 12h3"/></svg>'
+  };
+  var ZONE={ ok:{w:'Good'}, warning:{w:'Check soon'}, bad:{w:'Needs attention'} };
+  window.mechHealth=function(){
+    var v=E().vault.load();
+    var bat=E().batteryStatus(v), ty=E().tyreStatus(v), sc=E().scores(v);
+    var since=(Number(v.odoKm)||0)-(Number(v.lastServiceKm)||0);
+    var eng= since>=3000?'warning':'ok';
+    var brk= since>=2800?'warning':'ok';
+    var chn= (Number(v.chainKmSinceLube)||0)>=500?'warning':'ok';
+    var sys=[
+      {ic:SVG.engine,name:'Engine',st:eng,note: since>=3000?'Oil/service overdue':'Service on track'},
+      {ic:SVG.battery,name:'Battery',st:bat.status,note:bat.spec+' · '+bat.ageMonths+'/'+bat.expectedLifeMonths+' mo'},
+      {ic:SVG.tyre,name:'Tyres',st:ty.status,note: ty.replace?'Replace now':'Within life'},
+      {ic:SVG.brake,name:'Brakes',st:brk,note:'Inspect at every service'},
+      {ic:SVG.chain,name:'Chain',st:chn,note:'Clean + lube every 500 km'}
+    ];
+    var host=$('r-health'); host.innerHTML='';
+    var box=document.createElement('div'); var worst= sys.some(function(s){return s.st==='bad';})?'bad':sys.some(function(s){return s.st==='warning';})?'warning':'ok';
+    box.className='res-box '+worst;
+    var st=STAT[worst];
+    box.innerHTML='<div class="res-status"><span aria-hidden="true">'+st.sym+'</span> '+st.word+' — overall</div>';
+    var grid=document.createElement('div'); grid.className='vh-grid';
+    sys.forEach(function(s){
+      var row=document.createElement('div'); row.className='vh-row';
+      row.innerHTML=s.ic+'<div class="vh-mid"><div class="vh-name">'+s.name+'</div><div class="vh-note">'+s.note+'</div></div>'+
+        '<span class="vh-zone '+s.st+'"><span class="vh-dot '+s.st+'" aria-hidden="true"></span>'+ZONE[s.st].w+'</span>';
+      grid.appendChild(row);
+    });
+    box.appendChild(grid);
+    var spoken='Vehicle health. '+sys.map(function(s){return s.name+': '+ZONE[s.st].w;}).join('. ');
+    var sp=document.createElement('div'); sp.className='sp'; var sb=document.createElement('button'); sb.className='speak-btn'; sb.type='button'; sb.textContent='🔊 Read this aloud'; sb.onclick=function(){ speak(spoken); }; sp.appendChild(sb); box.appendChild(sp);
+    var prov=document.createElement('div'); prov.className='prov'; prov.textContent='Source: '+sc.sources.join(' · ')+' · Add your odometer + dates in My Bike for a sharper read.'; box.appendChild(prov);
     host.appendChild(box);
+    if(isBlind()) speak(spoken);
+  };
+
+  // ── Dark mode (persisted) ──
+  window.mechDark=function(){
+    var on=document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.setAttribute('data-theme', on?'light':'dark');
+    try{ localStorage.setItem('chitti_mech2w_theme', on?'light':'dark'); }catch(e){}
+    var btn=$('dark-toggle'); if(btn){ btn.setAttribute('aria-pressed', on?'false':'true'); btn.textContent= on?'🌗 Dark':'☀️ Light'; }
   };
 
   function icsDownload(title, iso){
@@ -603,7 +723,7 @@
       '3) Bike trouble? Open Doctor — pick the symptom, get a safe-to-ride verdict.',
       '4) Buying or selling used? Buy/Sell give a fair price + risk flags.',
       '5) Everything works by voice, in your language, free — tap 🔊 on any card.'];
-    render('r-tour',{status:'info',big:'How Chitti Mechanic works',lines:steps,confidence:'high',sources:['Guided tour'],speak:'How Chitti Mechanic works. '+steps.join(' ')});
+    render('r-tour',{status:'info',big:'How to use Chitti',lines:steps,confidence:'high',sources:['Guided tour'],speak:'How to use Chitti. '+steps.join(' ')});
   };
 
   window.mechCoach=function(){
@@ -669,8 +789,15 @@
   window.mechSos=function(){ var r=E().emergency(); render('r-sos',{status:'bad', big:'🆘 '+r.numbers.join(' · '), text:r.note, lines:risks(r), confidence:r.confidence, sources:r.sources}); };
 
   // boot — populate symptom dropdown + restore saved bike
+  // page-error guard — record (do not swallow) so MY code never adds a silent error (QA BUG-5)
+  window.addEventListener('error',function(e){ try{ window.__mech2wErrors=(window.__mech2wErrors||[]); window.__mech2wErrors.push(String(e.message||e)); }catch(x){} });
   function boot(){
     if(!E()){ setTimeout(boot,60); return; }
+    // restore dark mode
+    try{ var th=localStorage.getItem('chitti_mech2w_theme'); if(th==='dark'){ document.documentElement.setAttribute('data-theme','dark'); var db=$('dark-toggle'); if(db){db.setAttribute('aria-pressed','true'); db.textContent='☀️ Light';} } }catch(e){}
+    // BUG-4 mitigation: result hosts hold dynamic English output — mark them no-translate so the
+    // chitti_lang MutationObserver skips re-scanning them on every render (less tap jank).
+    Array.prototype.forEach.call(document.querySelectorAll('.result'),function(r){ r.setAttribute('data-chitti-no-translate',''); });
     var sel=$('dr-sym'); if(sel && !sel.options.length){ E().RULES.symptoms.forEach(function(s){ var o=document.createElement('option'); o.value=s.id; o.textContent=s.q; sel.appendChild(o); }); }
     var lsel=$('ln-mod'); if(lsel && !lsel.options.length){ E().RULES.education.forEach(function(m){ var o=document.createElement('option'); o.value=m.id; o.textContent=E().RULES.triage[m.tier].sym+' '+m.title; lsel.appendChild(o); }); }
     fillBikeForm(E().vault.load());

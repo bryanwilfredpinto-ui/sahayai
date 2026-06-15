@@ -43,7 +43,7 @@ const tab = async (k) => { await page.click('#tab-' + k).catch(() => {}); await 
 // ── SECTION 1 — User Understanding (/5) ──
 chk('S1', 'understand in 60s (hero + tagline present)', (await txt('.hero h2')).length > 5 && (await txt('.tagline')).length > 20);
 await page.evaluate(() => window.mechTour && window.mechTour()); await page.waitForTimeout(120);
-chk('S1', 'guided tour exists', (await txt('#r-tour')).toLowerCase().includes('how chitti'));
+chk('S1', 'guided tour exists', (await txt('#r-tour')).toLowerCase().includes('how to use'));
 chk('S1', 'demo mode (no signup/login required)', (await page.locator('input[type=password]').count()) === 0);
 chk('S1', 'every button explains itself (accessible name)', (await page.evaluate(() => { let bad = 0; document.querySelectorAll('button').forEach(b => { const n = (b.innerText || '').trim() || b.getAttribute('aria-label') || ''; if (!n) bad++; }); return bad; })) === 0);
 chk('S1', 'every icon explains itself (emoji aria-hidden + text)', (await page.evaluate(() => { let bad = 0; document.querySelectorAll('.tab').forEach(t => { if (!(t.innerText || '').trim()) bad++; }); return bad; })) === 0);
