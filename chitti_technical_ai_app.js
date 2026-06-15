@@ -37,12 +37,14 @@
       '<div class="vh-main"><div class="vh-word">' + WORD[dec] + '</div>' +
       '<div class="vh-sub">' + cv.headline + ' · confidence <b>' + cv.confidence + '%</b> · risk <b>' + cv.risk + '</b></div></div>' +
       '<button type="button" class="vh-listen" id="vh-listen">🔊 Listen</button>' +
+      '<button type="button" class="vh-listen" id="vh-readpage" aria-label="Read the whole analysis aloud — every section in order">🔊 Read page</button>' +
       '<button type="button" class="vh-isl" id="vh-isl" aria-expanded="false" aria-controls="isl-panel-host" ' +
         'aria-label="Show Indian Sign Language translation" title="Indian Sign Language">🤟 ISL</button></div>' +
       '<p class="vh-spoken" id="vh-spoken-text">' + cv.spoken + '</p>' +
       '<p class="vh-vernacular" id="vh-vernacular" translate="no" hidden></p>' +
       '<div id="isl-panel-host" hidden></div>' + rail());
     var btn = $('vh-listen'); if (btn) btn.onclick = speakVerdict;
+    var rp = $('vh-readpage'); if (rp) rp.onclick = readPage;
     var islBtn = $('vh-isl'); if (islBtn) islBtn.onclick = toggleIsl;
     renderVernacular();
     wireLangRerender();
@@ -50,6 +52,24 @@
     live('Verdict for ' + state.symbol + ': ' + WORD[dec] + ', confidence ' + cv.confidence + ' percent.');
   }
   function speakVerdict() { var cv = state.cv; if (!cv) return; if (A) { A.verdictTone(cv.decision); A.haptic(cv.decision === 'BUY' ? 'BUY_STRONG' : cv.decision === 'SELL' ? 'SELL_STRONG' : 'HOLD'); } speak(cv.spoken); }
+
+  // One-tap whole-page narration for blind users (SAHAYAI_MASTER §7 "Read page").
+  // Reads the verdict + vote tally + mood + pros/cons + trade plan + honesty rail
+  // in order, so the entire analysis is recoverable without tapping box-by-box.
+  function readPage() {
+    var cv = state.cv, s = state.sig;
+    if (!cv) { speak('Please read a stock first — pick a symbol and tap Read it.'); return; }
+    var parts = ['Verdict for ' + state.symbol + '. ' + (cv.spoken || (WORD[cv.decision] + ', confidence ' + cv.confidence + ' percent.'))];
+    if (s && s.indicators) { var t = tally(s.indicators); parts.push(t.buy + ' indicators say buy, ' + t.sell + ' say sell, ' + t.wait + ' neutral.'); }
+    var conf = (s && s.confluence) || {}; if (conf.bias) parts.push('Market mood: ' + conf.bias.toLowerCase() + ', ' + (conf.percent || 0) + ' percent of timeframes agree.');
+    var rs = (cv.reasons || []); var pros = rs.filter(function (r) { return r.ok; }).map(function (r) { return r.text; }); var cons = rs.filter(function (r) { return !r.ok && !r.neutral; }).map(function (r) { return r.text; });
+    if (pros.length) parts.push('For this read: ' + pros.join('; ') + '.');
+    if (cons.length) parts.push('Against, or watch: ' + cons.join('; ') + '.');
+    if (s && s.stop_loss) parts.push('Risk first. Stop loss at ' + s.stop_loss.price + (s.stop_loss.percentage != null ? ', ' + s.stop_loss.percentage + ' percent' : '') + '.');
+    parts.push('Most short-term traders lose money, per SEBI. This is technical analysis, not advice. Chitti is not SEBI registered.');
+    live('Reading the full analysis for ' + state.symbol + ' aloud.');
+    speak(parts.join(' '));
+  }
 
   // G2 — vernacular verdict NLG. When the UI language is not English and
   // DeepSeek (BO12) is Sire-blocked, render a template-based in-language
@@ -162,7 +182,11 @@
       drawChartCandles(state.data.byTf[tf], isLive ? 'live' : 'demo', tf, (isLive ? '🟢 LIVE ' : '🟠 DEMO ') + tf); return;
     }
     set('chart-tf-src', '<span class="loading">loading ' + tf + ' …</span>');
-    D.getChartTf(state.symbol, tf).then(function (res) { drawChartCandles(res.candles, res.source, tf, res.note); });
+    // Guard against the async race: if the user switched timeframe again before
+    // this fetch resolved, a late response would clobber the badge with the wrong
+    // TF (and overwrite 1m's honest "not served" note). Only render if the
+    // requested tf is still the selected one.
+    D.getChartTf(state.symbol, tf).then(function (res) { if (state.chartTf !== tf) return; drawChartCandles(res.candles, res.source, tf, res.note); });
   }
   function populateChartTf() {
     var sel = $('chart-tf'); if (!sel) return;

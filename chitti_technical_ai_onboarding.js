@@ -53,11 +53,11 @@
   ];
 
   var PERSONAS = [
-    { emoji: '🟢', label: 'Beginner Investor', mode: 'longterm', sym: 'RELIANCE', intro: 'Welcome. You are a beginner, so I picked Reliance on the long-term view — the calmest way to start. Tap Listen to hear my read. Green double-up means strength, red double-down means weakness.' },
-    { emoji: '🔵', label: 'Swing Trader', mode: 'swing', sym: 'TCS', intro: 'Swing trader — I set the weekly-and-daily view on TCS. Watch the confidence number and the stop-loss; never trade without one.' },
-    { emoji: '🟠', label: 'Intraday Trader', mode: 'daytrader', sym: 'RELIANCE', intro: 'Intraday — I set the faster timeframes. Remember: most short-term traders lose money. Chitti shows the read; it never tells you to buy.' },
-    { emoji: '🟣', label: 'Long-Term Investor', mode: 'longterm', sym: 'INFY', intro: 'Long-term investor — monthly and weekly trend on Infosys. Look at the big picture, not the daily noise.' },
-    { emoji: '⚫', label: 'Learn Technical Analysis', mode: 'longterm', sym: 'RELIANCE', intro: 'Let us learn. I will read Reliance and show the indicators. Tap any indicator’s 🔊 to hear what RSI, MACD and the Roshan Indicator mean.' }
+    { emoji: '🌱', label: 'Beginner Investor', mode: 'longterm', sym: 'RELIANCE', intro: 'Welcome. You are a beginner, so I picked Reliance on the long-term view — the calmest way to start. Tap Listen to hear my read. A double-up arrow means strength, a double-down arrow means weakness.' },
+    { emoji: '🔁', label: 'Swing Trader', mode: 'swing', sym: 'TCS', intro: 'Swing trader — I set the weekly-and-daily view on TCS. Watch the confidence number and the stop-loss; never trade without one.' },
+    { emoji: '⚡', label: 'Intraday Trader', mode: 'daytrader', sym: 'RELIANCE', intro: 'Intraday — I set the faster timeframes. Remember: most short-term traders lose money. Chitti shows the read; it never tells you to buy.' },
+    { emoji: '🏛️', label: 'Long-Term Investor', mode: 'longterm', sym: 'INFY', intro: 'Long-term investor — monthly and weekly trend on Infosys. Look at the big picture, not the daily noise.' },
+    { emoji: '🎓', label: 'Learn Technical Analysis', mode: 'longterm', sym: 'RELIANCE', intro: 'Let us learn. I will read Reliance and show the indicators. Tap any indicator’s 🔊 to hear what RSI, MACD and the Roshan Indicator mean.' }
   ];
 
   function cardHTML(c) {
