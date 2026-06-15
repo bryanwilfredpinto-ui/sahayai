@@ -497,10 +497,34 @@ const I18N = {
     ask_h:"Namaste 🙏 I'm Chitti — your AI career copilot.", ask_sub:"Tell me one thing and I'll handle the rest — your AI news, free tools, and a step-by-step upgrade path. Any job, any language.", ask_lead1:'I am a', ask_lead2:'for the last', ask_lead3:'years.', ask_cta:'✨ Show me my AI world →', ask_quick:'Or tap a quick pick', chip_youre:"You're a", chip_change:'✏️ Change' },
   hi: { hero_s1_h:'आपका पेशा क्या है?', hero_s1_sub:'अपनी भूमिका चुनें — Chitti आपके लिए AI समाचार, टूल और 28-दिन का दौरा देगा।', hero_s2_h:'AI कौशल बढ़ाने के लिए तैयार?', hero_s2_sub:'दिन में 15 मिनट · 28 दिन · Chitti प्रमाणपत्र।', hero_s2_cta:'अपना 28-दिन AI दौरा शुरू करें —', hero_s3_h:'जारी रखें', hero_s3_sub:'आपका AI दौरा जारी है।', hero_s4_h:'🏆 बधाई हो!', hero_s4_sub:'पाठ्यक्रम पूरा।', hero_s4_cta:'प्रमाणपत्र प्राप्त करें', news_loading:'AI समाचार लोड हो रहे हैं…', news_for:'आपके लिए AI समाचार —', news_everyone:'सभी',
     ask_h:'नमस्ते 🙏 मैं Chitti हूँ — आपका AI करियर साथी।', ask_sub:'मुझे बस एक बात बताइए — बाक़ी मैं सँभाल लूँगा: आपके लिए AI समाचार, मुफ़्त टूल, और कदम-दर-कदम अपग्रेड रास्ता। कोई भी काम, कोई भी भाषा।', ask_lead1:'मैं हूँ एक', ask_lead2:'पिछले', ask_lead3:'साल से।', ask_cta:'✨ मेरी AI दुनिया दिखाओ →', ask_quick:'या एक त्वरित विकल्प चुनें', chip_youre:'आप हैं एक', chip_change:'✏️ बदलें' },
+  // QA Bug 2 close (2026-06-15): The Ask connectors for the 9 other officially-
+  // supported languages. The bigger strings (ask_h/ask_sub/ask_cta) reuse the
+  // existing approved translations in cnai_i18n.js (coach_title/coach_intro/
+  // coach_cta) via aT() below — no fabricated hero copy.
+  te: { ask_lead1:'నేను ఒక', ask_lead2:'గత', ask_lead3:'సంవత్సరాలుగా', ask_quick:'లేదా త్వరిత ఎంపిక నొక్కండి', chip_youre:'మీరు ఒక', chip_change:'✏️ మార్చండి' },
+  kn: { ask_lead1:'ನಾನು ಒಬ್ಬ', ask_lead2:'ಕಳೆದ', ask_lead3:'ವರ್ಷಗಳಿಂದ', ask_quick:'ಅಥವಾ ತ್ವರಿತ ಆಯ್ಕೆ ಮಾಡಿ', chip_youre:'ನೀವು ಒಬ್ಬ', chip_change:'✏️ ಬದಲಾಯಿಸಿ' },
+  ta: { ask_lead1:'நான் ஒரு', ask_lead2:'கடந்த', ask_lead3:'ஆண்டுகளாக', ask_quick:'அல்லது விரைவு தேர்வைத் தட்டவும்', chip_youre:'நீங்கள் ஒரு', chip_change:'✏️ மாற்று' },
+  bn: { ask_lead1:'আমি একজন', ask_lead2:'গত', ask_lead3:'বছর ধরে', ask_quick:'অথবা দ্রুত পছন্দ ট্যাপ করুন', chip_youre:'আপনি একজন', chip_change:'✏️ পরিবর্তন' },
+  mr: { ask_lead1:'मी एक', ask_lead2:'गेल्या', ask_lead3:'वर्षांपासून', ask_quick:'किंवा द्रुत निवड टॅप करा', chip_youre:'तुम्ही एक', chip_change:'✏️ बदला' },
+  gu: { ask_lead1:'હું એક', ask_lead2:'છેલ્લા', ask_lead3:'વર્ષથી', ask_quick:'અથવા ઝડપી પસંદગી ટેપ કરો', chip_youre:'તમે એક', chip_change:'✏️ બદલો' },
+  ml: { ask_lead1:'ഞാൻ ഒരു', ask_lead2:'കഴിഞ്ഞ', ask_lead3:'വർഷമായി', ask_quick:'അല്ലെങ്കിൽ ദ്രുത തിരഞ്ഞെടുപ്പ് ടാപ്പ് ചെയ്യുക', chip_youre:'നിങ്ങൾ ഒരു', chip_change:'✏️ മാറ്റുക' },
+  pa: { ask_lead1:'ਮੈਂ ਇੱਕ', ask_lead2:'ਪਿਛਲੇ', ask_lead3:'ਸਾਲਾਂ ਤੋਂ', ask_quick:'ਜਾਂ ਤੇਜ਼ ਚੋਣ ਟੈਪ ਕਰੋ', chip_youre:'ਤੁਸੀਂ ਇੱਕ', chip_change:'✏️ ਬਦਲੋ' },
+  or: { ask_lead1:'ମୁଁ ଜଣେ', ask_lead2:'ଗତ', ask_lead3:'ବର୍ଷରୁ', ask_quick:'କିମ୍ବା ଶୀଘ୍ର ବାଛନ୍ତୁ', chip_youre:'ଆପଣ ଜଣେ', chip_change:'✏️ ବଦଳାନ୍ତୁ' },
 };
 function _t(key) {
   const lang = (localStorage.getItem('chitti_lang') || 'en');
   return (I18N[lang] && I18N[lang][key]) || (I18N.en[key] || key);
+}
+// The Ask resolver (QA Bug 2 close): page bag first (en/hi full; 9 langs have the
+// short connectors), then REUSE the approved cnai_i18n.js translation for the big
+// strings (heading/sub/CTA → coach_title/coach_intro/coach_cta), then English.
+const ASK_CNAI_KEY = { ask_h: 'coach_title', ask_sub: 'coach_intro', ask_cta: 'coach_cta' };
+function aT(key) {
+  const lang = (localStorage.getItem('chitti_lang') || 'en');
+  if (I18N[lang] && I18N[lang][key] != null) return I18N[lang][key];
+  const ck = ASK_CNAI_KEY[key];
+  if (ck) { try { const v = window.CNAIi18n && window.CNAIi18n.t ? window.CNAIi18n.t(ck, lang) : null; if (v && v !== ck) return v; } catch (e) {} }
+  return (I18N.en[key] != null ? I18N.en[key] : key);
 }
 function changeLanguage(lang) {
   // Authoritative write order: substrate first (it may dispatch events
@@ -697,9 +721,9 @@ function speakPage() {
       const cp = _cnaiProfile() || {}; const role = displayRole() || 'Professional';
       const yrs = cp.years != null ? cp.years : (_profileInit().years || 0);
       const sen = cp.seniority || (yrs >= 8 ? 'senior' : yrs >= 3 ? 'mid' : 'junior');
-      chip.innerHTML = '<span class="who">👤 ' + _t('chip_youre') + ' <strong translate="no">' + _esc(role) + '</strong>' +
+      chip.innerHTML = '<span class="who">👤 ' + aT('chip_youre') + ' <strong translate="no">' + _esc(role) + '</strong>' +
         '<span class="yrs"> · ' + yrs + ' yr' + (yrs === 1 ? '' : 's') + ' · ' + _esc(sen) + '</span></span>' +
-        '<button type="button" class="change" onclick="window.ccClearProf()" aria-label="Change my profession">' + _t('chip_change') + '</button>';
+        '<button type="button" class="change" onclick="window.ccClearProf()" aria-label="Change my profession">' + aT('chip_change') + '</button>';
       chip.style.display = '';
       if (ask) ask.style.display = 'none';
       if (upg) upg.style.display = '';
@@ -713,12 +737,23 @@ function speakPage() {
   // others fall back to en — same coverage model as the rest of this page).
   function applyAskStrings() {
     function setTxt(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
-    setTxt('ask-h', _t('ask_h')); setTxt('ask-sub', _t('ask_sub')); setTxt('ask-go', _t('ask_cta'));
+    setTxt('ask-h', aT('ask_h')); setTxt('ask-sub', aT('ask_sub')); setTxt('ask-go', aT('ask_cta'));
     const leads = document.querySelectorAll('#ask-section .ask-sentence .lead');
-    if (leads[0]) leads[0].textContent = _t('ask_lead1');
-    if (leads[1]) leads[1].textContent = _t('ask_lead2');
-    if (leads[2]) leads[2].textContent = _t('ask_lead3');
-    const ql = document.querySelector('#ask-section .ask-quick-lbl'); if (ql) ql.textContent = _t('ask_quick');
+    if (leads[0]) leads[0].textContent = aT('ask_lead1');
+    if (leads[1]) leads[1].textContent = aT('ask_lead2');
+    if (leads[2]) leads[2].textContent = aT('ask_lead3');
+    const ql = document.querySelector('#ask-section .ask-quick-lbl'); if (ql) ql.textContent = aT('ask_quick');
+    // Localise the role-input placeholder for non-en/hi via the approved
+    // cnai_i18n.js example ("e.g. I am a 10-year farmer"); stop the English
+    // example rotation so it doesn't overwrite the localized hint.
+    const lang = (localStorage.getItem('chitti_lang') || 'en');
+    const r = document.getElementById('ask-role');
+    if (r && lang !== 'en' && lang !== 'hi') {
+      try {
+        const ph = window.CNAIi18n && window.CNAIi18n.t ? window.CNAIi18n.t('coach_placeholder', lang) : null;
+        if (ph && ph !== 'coach_placeholder') { if (_exTimer) { clearInterval(_exTimer); _exTimer = null; } if (!r.value) r.setAttribute('placeholder', ph); }
+      } catch (e) {}
+    }
   }
 
   // ── Upgrade path (promoted) — render baseline from the saved profile ──
