@@ -1,6 +1,5 @@
 package `in`.sahayai.chitti.vaani.services
 
-import android.media.AudioManager
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.os.Build
@@ -51,8 +50,9 @@ class VaaniCallScreeningService : CallScreeningService() {
             return
         }
 
-        // TODO: Phase-2.4 — initiate the 10s "Mom is calling — answer?" loop here.
-        // For now, silence the call and let InCallService decide.
+        // Night mode: silence the ringer, speak caller ID aloud, open a 10s
+        // answer window. VaaniBootService's wake-word loop listens for "haan"
+        // during that window and calls VaaniInCallService.tryAnswerCurrent().
         val resp = CallResponse.Builder()
             .setSilenceCall(true)
             .setSkipCallLog(false)
@@ -60,11 +60,21 @@ class VaaniCallScreeningService : CallScreeningService() {
             .build()
         respondToCall(callDetails, resp)
 
-        // Stub: lower ringer to silent now. Real flow will wake on emergency keyword.
-        try {
-            val am = getSystemService(AUDIO_SERVICE) as AudioManager
-            // Don't actually mutate ringer in the stub — let real flow do it.
-            // am.ringerMode = AudioManager.RINGER_MODE_SILENT
-        } catch (_: SecurityException) { /* needs notification policy access */ }
+        // Speak "<caller> ka call aa raha hai. Uthane ke liye haan bolo." via TTS.
+        val tts = android.speech.tts.TextToSpeech(this, null)
+        val callerDisplay = callDetails.callerDisplayName?.takeIf { it.isNotBlank() } ?: number
+        handler.postDelayed({
+            tts.speak(
+                "$callerDisplay ka call aa raha hai. Uthane ke liye haan bolo.",
+                android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "chitti_night_call",
+            )
+        }, 500)
+
+        // 10-second window: VaaniBootService listens for "haan"/"answer" and
+        // calls VaaniInCallService.tryAnswerCurrent() if detected. After 10s
+        // with no response the call stays silenced.
+        AuditLog.append(this, "night-mode call", "10s answer window opened for $callerDisplay")
     }
+
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
 }

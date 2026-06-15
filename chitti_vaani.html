@@ -8499,5 +8499,59 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<!-- ChittiNative Android bridge detection — auto-activates when running in Chitti Vaani APK.
+     The web tier already routes capabilities through window.ChittiNative via hasNativeBridge()
+     (lock/silent/makeCall/WhatsApp/SMS/UPI). This block additionally binds any declarative
+     data-action hooks present in the markup, so future buttons get the native path for free. -->
+<script>
+(function() {
+  if (!window.ChittiNative) return; // not in Android app — skip
+  console.log('[ChittiNative] Android bridge active');
+
+  // Lock phone
+  document.querySelectorAll('[data-action="lock"], .chitti-lock-btn').forEach(el => {
+    el.addEventListener('click', () => {
+      window.ChittiNative.lockPhone();
+    });
+  });
+
+  // Silent / DND toggle
+  document.querySelectorAll('[data-action="silent"], .chitti-silent-btn').forEach(el => {
+    el.addEventListener('click', () => {
+      const isOn = el.classList.contains('active');
+      window.ChittiNative.setSilentMode(!isOn);
+      el.classList.toggle('active');
+    });
+  });
+
+  // Hey Chitti wake-word toggle
+  const heyBtn = document.getElementById('hey-chitti-toggle');
+  if (heyBtn) {
+    const state = window.ChittiNative.heyChittiState();
+    heyBtn.textContent = state === 'on' ? '🎙️ Hey Chitti: ON' : '🎙️ Hey Chitti: OFF';
+    heyBtn.addEventListener('click', () => {
+      if (window.ChittiNative.heyChittiState() === 'on') {
+        window.ChittiNative.disableHeyChitti();
+        heyBtn.textContent = '🎙️ Hey Chitti: OFF';
+      } else {
+        window.ChittiNative.enableHeyChitti();
+        heyBtn.textContent = '🎙️ Hey Chitti: ON';
+      }
+    });
+  }
+
+  // Answer / reject call buttons
+  document.querySelectorAll('[data-action="answer-call"]').forEach(el =>
+    el.addEventListener('click', () => window.ChittiNative.answerCall()));
+  document.querySelectorAll('[data-action="reject-call"]').forEach(el =>
+    el.addEventListener('click', () => window.ChittiNative.rejectCall()));
+
+  // Emergency alarm
+  document.querySelectorAll('[data-action="emergency"]').forEach(el =>
+    el.addEventListener('click', () => window.ChittiNative.triggerEmergencyAlarm('user_pressed')));
+
+})();
+</script>
+
 </body>
 </html>

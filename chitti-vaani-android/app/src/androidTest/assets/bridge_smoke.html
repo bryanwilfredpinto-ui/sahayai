@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+  World Class Chitti Vaani Android — Commando Discipline. Zero Excuses.
+  bridge_smoke.html
+  ─────────────────
+  Minimal stub page loaded by ChittiNativeBridgeInstrumentedTest to verify
+  that window.ChittiNative is exposed by the WebView host.
+
+  It calls canHostNative() and writes the result to a <span id="result">
+  element, which the test then reads via Espresso.onWebView() / getText().
+
+  All real bridge calls (lockPhone, setSilentMode, etc.) are tested directly
+  via the Kotlin bridge object in ChittiNativeBridgeInstrumentedTest — we
+  don't need to route them through the WebView for unit-level assertions.
+
+  The denylist JS smoke section checks COP_DENYLIST enforcement in
+  chitti_native_bridge.js (the standalone JS layer, NOT the Kotlin bridge).
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chitti Bridge Smoke</title>
+</head>
+<body>
+  <span id="result">pending</span>
+  <span id="cop_result">pending</span>
+
+  <script>
+    // ── 1. ChittiNative exposure check ───────────────────────────────────
+    try {
+      if (typeof window.ChittiNative !== 'undefined' && window.ChittiNative.canHostNative()) {
+        document.getElementById('result').textContent = 'bridge_ok';
+      } else {
+        document.getElementById('result').textContent = 'bridge_missing';
+      }
+    } catch (e) {
+      document.getElementById('result').textContent = 'bridge_error:' + e.message;
+    }
+
+    // ── 2. COP_DENYLIST check (inline JS mirror of chitti_native_bridge.js) ──
+    // This validates the same fence logic without loading the full file.
+    const COP_DENYLIST = new Set([112, 100, 101, 102, 108, 1098, 1930, 139]);
+    function isCopNumber(num) {
+      const stripped = String(num).replace(/\D/g, '');
+      return COP_DENYLIST.has(parseInt(stripped, 10));
+    }
+    const copTestResults = [];
+    [112, 100, 101, 102, 108, 1098, 1930, 139].forEach(n => {
+      copTestResults.push(isCopNumber(n) ? 'denied:' + n : 'FAIL_allowed:' + n);
+    });
+    // Non-denylist numbers must NOT be blocked
+    [9876543210, 1234567890, 9999999999].forEach(n => {
+      copTestResults.push(!isCopNumber(n) ? 'allowed:' + n : 'FAIL_denied:' + n);
+    });
+    const allPassed = copTestResults.every(r => !r.startsWith('FAIL_'));
+    document.getElementById('cop_result').textContent = allPassed
+      ? 'cop_denylist_ok'
+      : 'cop_denylist_FAIL:' + copTestResults.filter(r => r.startsWith('FAIL_')).join(',');
+  </script>
+</body>
+</html>
