@@ -148,6 +148,7 @@
       <input class="fi" id="d-sym" type="text" placeholder="e.g. grinding noise when I brake">
       <div class="actions">
         <button class="btn primary" type="button" onclick="cmSymptom()">🩺 Diagnose</button>
+        <button class="btn" type="button" onclick="cmCrisis()" aria-label="Emergency: accident or breakdown" style="border-color:#c0392b;color:#c0392b">🆘 Accident / Emergency</button>
       </div>
       <div id="r-symptom" class="result" aria-live="polite"></div>
     </div>
@@ -497,8 +498,26 @@
   };
 
   // ── DIAGNOSE ──
+  // SOP8 / CEOS §24 — crisis renderer. FAMILY CASCADE, Chitti NEVER auto-dials (autoDial=false).
+  function renderCrisis(host, cr){
+    render(host,{
+      tone:'danger', title:'Emergency', status:'🆘 Are you safe?',
+      big: 'Emergency — your family first',
+      body: esc(cr.voice) + '<br><b>Chitti will never dial on its own.</b> If you choose, you can call:'
+        + '<br><a href="tel:108">📞 Ambulance 108</a> · <a href="tel:100">📞 Police 100</a>',
+      list: cr.cascade, confidence: cr.confidence, risks: cr.risks, sources: cr.sources
+    });
+  }
+  window.cmCrisis = function(){
+    var cr = E().crisisCheck('accident'); // force the cascade for the explicit 🆘 button
+    renderCrisis('r-symptom', cr);
+  };
   window.cmSymptom = function(){
-    var r = E().symptomCoach($('d-sym').value || '');
+    var input = $('d-sym').value || '';
+    // SOP8: crisis keywords (accident/crash/injured/smoke/fire…) → family-cascade card, never auto-dial
+    var cr = E().crisisCheck(input);
+    if(cr && cr.crisis){ renderCrisis('r-symptom', cr); return; }
+    var r = E().symptomCoach(input);
     if(!r.found){ render('r-symptom',{tone:'info',title:'Diagnose',status:'Not sure — see a mechanic',body:esc(r.message),confidence:'low',sources:r.sources}); return; }
     render('r-symptom',{
       tone: toneFor(r.canDrive), title:'Diagnose',
