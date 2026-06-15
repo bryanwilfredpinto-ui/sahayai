@@ -18,15 +18,16 @@
 <style>
   :root{ --navy:#002366; --saffron:#FF6913; --green:#046A38; --bg:#F7F7F4; --ink:#212121; --muted:#555; --line:#E0E0E0; }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  /* QA Bug#1/#3: keep result answers clear of the sticky disclaimer + sticky tab bar when auto-scrolled */
+  html{scroll-behavior:smooth;scroll-padding-top:calc(var(--disc-h,44px) + 92px)}
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:18px;line-height:1.55;margin:0;color:var(--ink);background:var(--bg)}
   .skip{position:absolute;left:-999px;top:0;background:var(--navy);color:#fff;padding:10px 14px;z-index:1000;border-radius:0 0 8px 0}
   .skip:focus{left:0}
   a{color:#1d4ed8}
   /* tricolour stripe (locked) */
   .stripe{height:6px;background:linear-gradient(90deg,var(--saffron) 0 33.3%,#fff 33.3% 66.6%,var(--green) 66.6% 100%)}
-  /* sticky disclaimer (mandatory, CEOS §41) */
-  .disc{position:sticky;top:0;z-index:50;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:14px;padding:8px 12px;text-align:center;font-weight:700}
+  /* sticky disclaimer (mandatory, CEOS §41) — z-index above the sticky tab bar */
+  .disc{position:sticky;top:0;z-index:60;background:#fff3cd;border-bottom:1.5px solid #f0c000;color:#664d03;font-size:14px;padding:8px 12px;text-align:center;font-weight:700}
   /* navy header (locked) */
   header{background:var(--navy);color:#fff;padding:14px 16px}
   .wrap{max-width:820px;margin:0 auto}
@@ -47,7 +48,8 @@
   .free{display:inline-block;background:var(--green);color:#fff;font-size:13px;font-weight:800;border-radius:999px;padding:3px 12px;margin-bottom:6px}
   details.how{background:#eef4ff;border:1.5px solid #c7d7ff;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:15px}
   details.how summary{font-weight:800;color:var(--navy);cursor:pointer;min-height:44px;display:flex;align-items:center}
-  .tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+  /* QA Bug#1/#3: sticky tab bar BELOW the disclaimer — tabs stay visible + tappable on scroll (no more tap interception) */
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch;position:sticky;top:var(--disc-h,44px);z-index:55;background:var(--bg);box-shadow:0 4px 8px -6px rgba(0,0,0,.35)}
   .tab{flex:0 0 auto;min-height:56px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px;font-weight:800;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer}
   .tab .em{font-size:22px}
   .tab[aria-selected="true"]{background:linear-gradient(180deg,#fff,#fff3e8);border-color:var(--saffron)}
@@ -64,7 +66,9 @@
   .chip{min-height:44px;font-size:14px;font-weight:700;border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--navy)}
   .chip[aria-pressed="true"]{background:#fff3e8;border-color:var(--saffron)}
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .res-box{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:#fafafa}
+  .res-box{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:#fafafa;scroll-margin-top:calc(var(--disc-h,44px) + 96px)}
+  .result{scroll-margin-top:calc(var(--disc-h,44px) + 96px)}
+  .result:focus{outline:none}
   .res-box.ok{border-color:var(--green);background:#f0faf0}
   .res-box.warning{border-color:#c98a00;background:#fff8ec}
   .res-box.danger{border-color:#c0392b;background:#fdeeec}
@@ -464,7 +468,14 @@
     if(opts.sources && opts.sources.length) html += '<div class="prov">Source: '+opts.sources.map(esc).join(' · ')+'</div>';
     html += '</div>';
     host.innerHTML = html;
+    focusResult(host);
   }
+  // QA Bug#3: bring the answer into view (below the sticky bars) + move focus for screen readers
+  function focusResult(host){
+    if(!host) return;
+    try{ host.setAttribute('tabindex','-1'); host.scrollIntoView({behavior:'smooth',block:'start'}); host.focus({preventScroll:true}); }catch(e){}
+  }
+  window.cmFocusResult = focusResult;
   function toneFor(canDrive, level){
     if(level==='red'||canDrive===false) return 'danger';
     if(level==='yellow') return 'warning';
@@ -555,6 +566,7 @@
     html += '<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
     html += '<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
     host.innerHTML = html;
+    focusResult(host);
   };
   window.cmEducation = function(){
     var r = E().educationModules();
@@ -598,6 +610,7 @@
     html+='<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
     html+='<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
     host.innerHTML=html;
+    focusResult(host);
   };
   window.cmEmi = function(){
     var r = E().emiCalculator({ principal:Number($('e-p').value||0), annualRatePct:Number($('e-r').value||9.5), months:Number($('e-m').value||60) });
@@ -737,8 +750,17 @@
       confidence:r.confidence, risks:r.risks, sources:r.sources });
   };
 
+  // QA Bug#1: measure the sticky disclaimer height so the sticky tab bar docks exactly beneath it
+  function syncDiscH(){
+    try{ var d=document.querySelector('.disc'); if(d) document.documentElement.style.setProperty('--disc-h', d.offsetHeight + 'px'); }catch(e){}
+  }
+  window.addEventListener('resize', syncDiscH);
+  window.addEventListener('load', syncDiscH);
+  document.addEventListener('DOMContentLoaded', syncDiscH);
+
   // prefill My Car from saved twin on load
   document.addEventListener('DOMContentLoaded', function(){
+    syncDiscH();
     try{
       var t = E() && E().twin.load();
       if(t){ if(t.model)$('v-model').value=t.model; if(t.odometerKm)$('v-odo').value=t.odometerKm;
