@@ -1079,7 +1079,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     </div>
   </div>
   <div class="header-controls">
-    <button onclick="speakIntro()" aria-label="Hear how to use this page"><span>🔊 </span><span data-vai-i18n="hdr.howto">कैसे उपयोग करें</span></button>
+    <button id="ob-open" onclick="speakIntro()" aria-label="How to use Chitti — open the 60-second guide"><span>🎓 </span><span data-vai-i18n="hdr.howto">कैसे उपयोग करें</span></button>
     <button class="vai-gp-toggle" id="vai-gp-pill" onclick="vaiGrandparentToggle()" aria-label="Grandparent mode — 3 big buttons, large font"><span>👵 </span><span data-vai-i18n="hdr.gp">बुज़ुर्ग मोड</span></button>
     <button onclick="vaiSwitchTab('settings')" aria-label="Open Settings — battery, share, privacy, all products" style="background:var(--vai-saffron);border-color:var(--vai-saffron);color:#002366;font-weight:800"><span>⚙️ </span><span data-vai-i18n="hdr.settings">सेटिंग्स</span></button>
   </div>
@@ -1089,6 +1089,11 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <div id="chitti-speak-bar" class="speak-bar"></div>
 
 <main>
+
+  <!-- "🚀 How to use Chitti — in 60 seconds" onboarding (chitti_vaani_onboarding.js).
+       Mirrors the Chitti Technical how-to pattern. Auto-shows once after consent;
+       reopen via the header 🎓 button (#ob-open). -->
+  <div id="onboarding-host" style="display:none"></div>
 
   <!-- ══════════════ TAB 1 · TALK ══════════════ -->
   <div class="vai-tab-panel active" data-tab="talk" id="vai-panel-talk">
@@ -8284,6 +8289,8 @@ window.addEventListener('DOMContentLoaded', () => {
 <script src="chitti_a11y.js?v=20260529r"></script>
 <!-- chitti_isl.js — Indian Sign Language plugin (G5 frontend gate, SAHAYAI §7) -->
 <script src="chitti_isl.js"></script>
+<!-- "How to use Chitti — in 60 seconds" onboarding (mirrors Chitti Technical) -->
+<script src="chitti_vaani_onboarding.js"></script>
 
 <!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
 <div class="chitti-qr-block" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
