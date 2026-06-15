@@ -59,14 +59,18 @@
       { item: 'CVT belt (scooter)',    km: 15000, months: 36, tier: 'mechanic', who: 'Mechanic',     cost: '₹1,500–2,500' }
     ],
 
-    // Tyre catalogue (CEOS §12) — for recommendation by usage. Prices are bands, not promises.
+    // Tyre catalogue (CEOS §12) — for recommendation by usage + budget. Prices are bands, not
+    // promises. Usage tags are broadened + a 6th tyre added so EVERY usage yields ≥3 priced
+    // options (QA BUG-1). `lo` = lower price band for budget filtering (QA BUG-5).
     tyres: [
-      { name: 'CEAT EnergyRide', best: 'EV scooters, low rolling resistance (range)', usage: ['ev', 'mileage'], price: '₹1,800–2,200' },
-      { name: 'Eurogrip ETORQ',  best: 'Performance EVs / scooters',                   usage: ['ev', 'performance'], price: '₹1,700–2,000' },
-      { name: 'Michelin City Extra', best: 'Durability / long life',                   usage: ['durability', 'highway'], price: '₹2,200–2,800' },
-      { name: 'MRF Zapper',      best: 'All-rounder grip',                             usage: ['allround', 'commuter', 'performance'], price: '₹1,600–2,000' },
-      { name: 'Apollo WAV',      best: 'Value + wet grip',                             usage: ['value', 'commuter', 'mileage'], price: '₹1,500–1,900' }
+      { name: 'CEAT EnergyRide',    best: 'EV scooters, low rolling resistance (range)', usage: ['ev', 'mileage', 'allround'], price: '₹1,800–2,200', lo: 1800 },
+      { name: 'Eurogrip ETORQ',     best: 'Performance scooters / EVs',                  usage: ['ev', 'performance', 'allround'], price: '₹1,700–2,000', lo: 1700 },
+      { name: 'Michelin City Extra', best: 'Durability / long life',                     usage: ['durability', 'highway', 'performance', 'allround'], price: '₹2,200–2,800', lo: 2200 },
+      { name: 'MRF Zapper',         best: 'All-rounder grip',                            usage: ['allround', 'commuter', 'performance', 'mileage'], price: '₹1,600–2,000', lo: 1600 },
+      { name: 'Apollo WAV',         best: 'Value + wet grip',                            usage: ['value', 'commuter', 'mileage', 'durability', 'allround'], price: '₹1,500–1,900', lo: 1500 },
+      { name: 'Maxxis M6302',       best: 'Durability + all-round value',               usage: ['durability', 'ev', 'commuter', 'allround'], price: '₹1,700–2,100', lo: 1700 }
     ],
+    tyre_priority: ['MRF Zapper', 'Apollo WAV', 'CEAT EnergyRide', 'Maxxis M6302', 'Michelin City Extra', 'Eurogrip ETORQ'],
     tyre_life_km: 20000, tyre_life_years: 3,
 
     // Battery (CEOS §13).
@@ -367,11 +371,20 @@
       sources: src().concat(['DIY steps: Haynes-style 2W maintenance + OEM owner manuals']) };
   }
   // Real Google-Maps deep-link for the nearest centre (works on any device, no API key).
-  function nearestQuery(kind, area) {
+  // With the user's coords (opts.lat/lng — from the browser, consent-gated) the link is centred
+  // on the user so Maps shows the centres WITH DISTANCES from where they are (QA BUG-4). On-page
+  // numeric distance to a named centre would need a paid Places API (Sire/infra) — not faked.
+  function nearestQuery(kind, opts) {
+    opts = opts || {};
     var what = { puc: 'PUC pollution check centre', mechanic: '2 wheeler mechanic', tyre: 'two wheeler tyre shop', service: 'two wheeler service centre', petrol: 'petrol pump', rto: 'RTO office' }[kind] || (kind + ' near me');
-    var q = encodeURIComponent(what + (area ? ' near ' + area : ' near me'));
-    return { module: 'nearest', kind: kind, url: RULES.maps_base + q, label: 'Open Maps: ' + what,
-      summary: 'Tap to find the nearest ' + what + ' on Maps.', confidence: 'high', risks: ['Opens your maps app — Chitti does not share your location anywhere.'], sources: src() };
+    var hasGeo = (opts.lat != null && opts.lng != null);
+    var url = hasGeo
+      ? (RULES.maps_base + encodeURIComponent(what) + '/@' + opts.lat + ',' + opts.lng + ',14z')
+      : (RULES.maps_base + encodeURIComponent(what + (opts.area ? ' near ' + opts.area : ' near me')));
+    return { module: 'nearest', kind: kind, url: url, geo: hasGeo,
+      label: 'Open Maps — nearest ' + what + (hasGeo ? ' (distances shown in Maps)' : ''),
+      summary: 'Tap to see the nearest ' + what + ' on Maps' + (hasGeo ? ' with distances from your location.' : ' near you.'),
+      confidence: 'high', risks: ['Opens your maps app; Chitti does not store your location.'], sources: src() };
   }
   // Real outbound deep-links (work on any device, no API key) — Buy Now / Find deals /
   // Watch video / List for sale. Chitti opens them on a tap; it never transacts itself.
@@ -452,17 +465,32 @@
       sources: src()
     };
   }
-  function tyreRecommend(usage) {
+  // Recommends ALWAYS ≥3 priced options (matched-by-usage, topped up by priority) and honours
+  // an optional budget band ('value' <₹1800 · 'mid' ₹1800–2200 · 'premium' >₹2000 · 'any').
+  function tyreRecommend(usage, budget) {
     usage = (usage || 'allround').toLowerCase();
+    budget = (budget || 'any').toLowerCase();
+    var byName = function (nm) { return RULES.tyres.filter(function (t) { return t.name === nm; })[0]; };
     var picks = RULES.tyres.filter(function (t) { return t.usage.indexOf(usage) > -1; });
-    if (!picks.length) picks = RULES.tyres.filter(function (t) { return t.usage.indexOf('allround') > -1; });
+    if (picks.length < 3) {
+      RULES.tyre_priority.forEach(function (nm) { if (picks.length < 3) { var t = byName(nm); if (t && picks.indexOf(t) < 0) picks.push(t); } });
+    }
+    function fits(t) {
+      if (budget === 'any') return true;
+      if (budget === 'value') return t.lo < 1800;
+      if (budget === 'mid') return t.lo >= 1800 && t.lo <= 2200;
+      if (budget === 'premium') return t.lo > 2000;
+      return true;
+    }
+    picks = picks.slice().sort(function (a, b) { return (fits(b) - fits(a)) || (a.lo - b.lo); });
+    var opts = picks.slice(0, 3).map(function (t) { return { name: t.name, best: t.best, price: t.price, fitsBudget: fits(t) }; });
+    var nFit = opts.filter(function (o) { return o.fitsBudget; }).length;
     return {
-      module: 'tyre_reco', usage: usage,
-      options: picks.map(function (t) { return { name: t.name, best: t.best, price: t.price }; }),
-      summary: 'For "' + usage + '": ' + picks.map(function (t) { return t.name + ' (' + t.price + ')'; }).join(', ') + '.',
-      confidence: 'medium — by usage pattern; confirm the correct SIZE on your tyre sidewall',
+      module: 'tyre_reco', usage: usage, budget: budget, options: opts,
+      summary: 'For "' + usage + '"' + (budget !== 'any' ? ' (' + budget + ' budget)' : '') + ': ' + opts.map(function (o) { return o.name + ' (' + o.price + ')'; }).join(', ') + '.' + (budget !== 'any' && nFit < opts.length ? ' Some are above your budget — shown so you can compare.' : ''),
+      confidence: 'medium — by usage' + (budget !== 'any' ? ' + budget' : '') + '; confirm the OEM SIZE on your tyre sidewall',
       risks: ['Fit the OEM size printed on your current tyre sidewall (e.g. 90/90-12). Wrong size affects handling.'],
-      sources: src().concat(['Tyre catalogue: CEAT/Eurogrip/Michelin/MRF/Apollo India 2026'])
+      sources: src().concat(['Tyre catalogue: CEAT/Eurogrip/Michelin/MRF/Apollo/Maxxis India 2026'])
     };
   }
 
