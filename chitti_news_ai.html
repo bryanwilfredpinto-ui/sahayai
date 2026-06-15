@@ -126,6 +126,10 @@ main{padding:14px;max-width:1100px;margin:0 auto}
 .tour-curric-name{font-size:12.5px;font-weight:800;color:var(--navy);line-height:1.3}
 .tour-curric-days{font-size:11px;color:var(--muted);font-weight:700}
 .tour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+/* QA 2026-06-15 (Bug 4): .tour-grid's display:grid overrides the UA rule that
+   hides closed <details> children, so the collapsed days stayed visible. Re-hide
+   the grid when the "See all days" expander is closed. */
+details.tour-all:not([open]) > .tour-grid{display:none}
 .tour-day{border:1.5px solid var(--border);border-radius:12px;padding:12px;background:#fbf8f1}
 .tour-day.done{opacity:.55;background:rgba(34,197,94,.08)}
 .tour-day.today{border-color:var(--saffron);box-shadow:0 4px 14px rgba(232,106,23,.20);background:linear-gradient(135deg,#fff,rgba(232,106,23,.06))}
@@ -900,9 +904,10 @@ function speakPage() {
     h += '<div style="font-size:12px;font-weight:700;font-family:JetBrains Mono,Menlo,monospace">' + prog.done_count + ' / ' + meta.days_count + ' days · ' + pct + '% · ' + (prog.certified ? '🏆 CERTIFIED' : 'Day ' + prog.next_day + ' next') + '</div>';
     if (prog.certified) h += '<button class="cta-saffron" style="margin-top:10px" onclick="window.ccClaimCert()">📜 Claim certificate</button>';
     h += '</div>';
-    // Days
-    h += '<div class="tour-grid">';
-    days.forEach(function (d) {
+    // Days — QA 2026-06-15 fix (Bug 4): collapse the tour. Show only TODAY's card
+    // by default; the remaining days live behind a "See all N days" expander so the
+    // page is not a wall of 28 cards (cuts ~half the page's controls on first paint).
+    function dayCard(d) {
       const done = prog.done.indexOf(d.day) >= 0;
       const today = d.day === prog.next_day && !done;
       const cls = done ? 'done' : today ? 'today' : '';
@@ -910,19 +915,30 @@ function speakPage() {
       const btn = done
         ? '<button class="cta-navy" style="font-size:11.5px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center" disabled>✅ Completed</button>'
         : '<button class="cta-saffron" style="font-size:11.5px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center" onclick="window.ccMarkDay(' + d.day + ', this)" aria-label="Mark Day ' + d.day + ' done">✓ Done</button>';
-      h += '<article class="tour-day ' + cls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _esc(d.tool) + '">';
-      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="day-num">Day ' + d.day + '</span><span style="font-size:10.5px;font-weight:800;color:' + (today?'#9a3412':done?'#166534':'var(--muted)') + ';background:' + (today?'rgba(232,106,23,.16)':done?'rgba(34,197,94,.14)':'#f3f4f6') + ';border:1px solid currentColor;border-radius:99px;padding:2px 8px;letter-spacing:.04em">' + stateBadge + '</span></div>';
-      h += '<h4>' + _esc(d.tool) + '</h4>';
-      h += '<p class="why">' + _esc(d.why || '') + '</p>';
-      h += '<ul class="lessons">';
-      if (d.watch) h += '<li>📺 <a href="' + _esc(d.watch.url) + '" target="_blank" rel="noopener">' + _esc(d.watch.title) + ' ↗</a></li>';
-      if (d.read)  h += '<li>📖 <a href="' + _esc(d.read.url)  + '" target="_blank" rel="noopener">' + _esc(d.read.title)  + ' ↗</a></li>';
-      if (d.try)   h += '<li>🚀 <a href="' + _esc(d.try.url)   + '" target="_blank" rel="noopener">' + _esc(d.try.title)   + ' ↗</a></li>';
-      h += '</ul>';
-      h += '<div class="day-foot"><span class="mins">⏱ ' + (d.minutes || 15) + ' min</span>' + btn + '</div>';
-      h += '</article>';
-    });
-    h += '</div>';
+      let a = '<article class="tour-day ' + cls + '" data-chitti-response data-chitti-section="Day ' + d.day + ' — ' + _esc(d.tool) + '">';
+      a += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="day-num">Day ' + d.day + '</span><span style="font-size:10.5px;font-weight:800;color:' + (today?'#9a3412':done?'#166534':'var(--muted)') + ';background:' + (today?'rgba(232,106,23,.16)':done?'rgba(34,197,94,.14)':'#f3f4f6') + ';border:1px solid currentColor;border-radius:99px;padding:2px 8px;letter-spacing:.04em">' + stateBadge + '</span></div>';
+      a += '<h4>' + _esc(d.tool) + '</h4>';
+      a += '<p class="why">' + _esc(d.why || '') + '</p>';
+      a += '<ul class="lessons">';
+      if (d.watch) a += '<li>📺 <a href="' + _esc(d.watch.url) + '" target="_blank" rel="noopener">' + _esc(d.watch.title) + ' ↗</a></li>';
+      if (d.read)  a += '<li>📖 <a href="' + _esc(d.read.url)  + '" target="_blank" rel="noopener">' + _esc(d.read.title)  + ' ↗</a></li>';
+      if (d.try)   a += '<li>🚀 <a href="' + _esc(d.try.url)   + '" target="_blank" rel="noopener">' + _esc(d.try.title)   + ' ↗</a></li>';
+      a += '</ul>';
+      a += '<div class="day-foot"><span class="mins">⏱ ' + (d.minutes || 15) + ' min</span>' + btn + '</div>';
+      a += '</article>';
+      return a;
+    }
+    const todayDays = days.filter(function (d) { return d.day === prog.next_day; });
+    const featured = (todayDays.length ? todayDays : days.slice(0, 1));
+    const featuredNums = featured.map(function (d) { return d.day; });
+    const rest = days.filter(function (d) { return featuredNums.indexOf(d.day) < 0; });
+    h += '<div class="tour-grid">' + featured.map(dayCard).join('') + '</div>';
+    if (rest.length) {
+      h += '<details class="tour-all" style="margin-top:12px">';
+      h += '<summary style="cursor:pointer;min-height:48px;display:flex;align-items:center;gap:8px;font-weight:800;color:var(--navy)">📅 See all ' + meta.days_count + ' days <span style="font-weight:600;color:var(--muted);font-size:12px">(' + prog.done_count + ' done)</span></summary>';
+      h += '<div class="tour-grid" style="margin-top:10px">' + rest.map(dayCard).join('') + '</div>';
+      h += '</details>';
+    }
     host.innerHTML = h;
   }
 
@@ -968,6 +984,25 @@ function speakPage() {
   }
 
   // ── Boot ──
+  // ── Language change — robust path (QA 2026-06-15 fix) ──
+  // The chitti_lang.js substrate calls `sel.onchange = translateAll` in
+  // wireDropdown(), which OVERWRITES this page's inline onchange="changeLanguage()".
+  // Result: renderAll() never fired on language change, so The Ask hero + news
+  // header stayed English. We attach a DELEGATED listener (capture phase) on the
+  // document — independent of the `onchange` property the substrate overwrites —
+  // so the page always re-renders, then we re-run the substrate translate so its
+  // real 26-language packs (lang/<code>.js) localise the freshly-rendered DOM.
+  function onLangSelectChange(lang) {
+    if (!lang) return;
+    try { localStorage.setItem('chitti_lang', lang); } catch (e) {}
+    document.documentElement.setAttribute('lang', lang);
+    renderAll();                       // The Ask (en/hi authoritative) + news + chip
+    try { if (window.cnaiApplyLang) window.cnaiApplyLang(lang); } catch (e) {}   // learn-section titles
+    // Defer to the substrate's 26-language packs to translate everything else
+    // (and the English source strings we just rendered for non-en/hi langs).
+    try { if (window.Chitti && window.Chitti.lang && window.Chitti.lang.setLang) window.Chitti.lang.setLang(lang); } catch (e) {}
+  }
+
   function boot() {
     document.documentElement.setAttribute('lang', localStorage.getItem('chitti_lang') || 'en');
     const sel = document.getElementById('lang-select');
@@ -975,6 +1010,10 @@ function speakPage() {
     renderAll();
     initVoiceFirst();
     document.addEventListener('chitti:disability_profile', initVoiceFirst);
+    // Delegated, capture-phase — survives the substrate re-wiring #lang-select.
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'lang-select') onLangSelectChange(e.target.value);
+    }, true);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else setTimeout(boot, 100);
@@ -1491,11 +1530,16 @@ function speakPage() {
     },
   };
   function apply(code) {
-    var bag = CNAI_I18N[code] || CNAI_I18N.en;
     try { document.documentElement.setAttribute('dir', RTL[code] ? 'rtl' : 'ltr'); } catch (e) {}
+    // QA 2026-06-15 fix (Bug 2): this page-owned bag only covers en + hi. For any
+    // OTHER language we must NOT overwrite the section titles with English — that
+    // was clobbering the chitti_lang.js substrate's real translations (e.g. Kannada)
+    // back to English. Defer to the substrate for non-en/hi languages.
+    var bag = CNAI_I18N[code];
+    if (!bag) return;
     Object.keys(CNAI_I18N.en).forEach(function (sid) {
       var sec = document.getElementById(sid); if (!sec) return;
-      var t = (bag[sid] || CNAI_I18N.en[sid]);
+      var t = bag[sid]; if (!t) return;
       var h2 = sec.querySelector('.section-title'); if (h2) h2.textContent = t[0];
       var sub = sec.querySelector('.section-sub'); if (sub) sub.textContent = t[1];
     });
