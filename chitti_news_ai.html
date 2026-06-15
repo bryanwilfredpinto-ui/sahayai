@@ -30,6 +30,16 @@ body{min-height:100vh}
 
 .bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
 
+/* QA Bug 2 — mandatory Constitution disclaimer bar (CEOS S2) */
+#cnai-disclaimer-bar{position:sticky;top:0;z-index:120;background:var(--navy);color:#fff;font-weight:700;font-size:12.5px;line-height:1.35;padding:8px 12px;cursor:pointer;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px}
+#cnai-disclaimer-bar:hover{filter:brightness(1.08)}
+#cnai-disclaimer-modal{display:none;position:fixed;inset:0;background:rgba(14,35,68,.55);z-index:130;align-items:center;justify-content:center;padding:16px}
+#cnai-disclaimer-modal.show{display:flex}
+#cnai-disclaimer-modal .box{background:#fff;max-width:560px;max-height:86vh;overflow:auto;border-radius:14px;padding:20px;border-top:6px solid var(--saffron);color:var(--text)}
+#cnai-disclaimer-modal h3{margin:0 0 10px;color:var(--navy)}
+#cnai-disclaimer-modal ul{margin:8px 0;padding-left:20px;font-size:14px;line-height:1.6}
+#cnai-disclaimer-modal button{min-height:48px;margin-top:12px;background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer}
+
 /* BO2 — Header (Vaani-pattern, compact) */
 header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#fff;padding:10px 14px;border-radius:0 0 18px 18px}
 .brand-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -225,6 +235,30 @@ footer a{color:var(--saffron-text);text-decoration:none;font-weight:700}
 </head>
 <body>
 <div class="bharat-stripe"></div>
+
+<!-- QA Bug 2 — mandatory Constitution / disclaimer bar (CEOS S2). Always visible, tap for full modal. -->
+<div id="cnai-disclaimer-bar" role="button" tabindex="0" aria-label="I am an AI tool tracker — information, not advice. Tap for the full disclaimer."
+     onclick="document.getElementById('cnai-disclaimer-modal').classList.add('show')"
+     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('cnai-disclaimer-modal').classList.add('show')}">
+  ⚠️ I'm an AI tool tracker — information, not advice. Rankings are dynamic · <span data-i18n="disc_tap">Tap for details</span>
+</div>
+<div id="cnai-disclaimer-modal" role="dialog" aria-modal="true" aria-labelledby="cnai-disc-title"
+     onclick="if(event.target.id==='cnai-disclaimer-modal')this.classList.remove('show')">
+  <div class="box">
+    <h3 id="cnai-disc-title">⚠️ How to use Chitti News AI honestly</h3>
+    <p style="font-size:14px"><b>Chitti News AI is an AI tool / course / news tracker — not an adviser.</b> Everything here is aggregated from public sources to help you learn. Always verify with the original source link before acting.</p>
+    <ul>
+      <li><b>Free first.</b> Free options are always shown before paid.</li>
+      <li><b>No fabrication.</b> Every course, cert, tool and news item links to its real source — Chitti invents nothing.</li>
+      <li><b>No guarantees.</b> No cert "guarantees a job" or "doubles salary". Results depend on your effort.</li>
+      <li><b>Not professional advice.</b> Chitti never gives medical, legal, or financial advice.</li>
+      <li><b>Your data stays on your device.</b> Your profession/profile is stored locally, never sent to a server.</li>
+      <li><b>Honest when unsure.</b> If Chitti can't verify something, it says so rather than guessing.</li>
+      <li><b>You decide.</b> Chitti never enrolls you or acts on your behalf without asking first.</li>
+    </ul>
+    <button type="button" onclick="document.getElementById('cnai-disclaimer-modal').classList.remove('show')">I understand</button>
+  </div>
+</div>
 
 <header role="banner">
   <div class="brand-row">
@@ -792,11 +826,24 @@ function speakPage() {
     feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">' + _t('news_loading') + '</div>';
     try {
       const lang = localStorage.getItem('chitti_lang') || 'en';
-      const r = await fetch(API + '/api/news-ai/feed?tab=ai-news&language=' + encodeURIComponent(lang) + '&limit=10&profession=' + encodeURIComponent(profSlug));
+      // QA Bug 1 fix: use the CLASSIFIED stream endpoint (/feed/news) which carries
+      // classification {category·confidence·matched_keywords·rule_version} + is_free +
+      // source{} and is AI-scoped + profession-filtered. The legacy ?tab=ai-news
+      // returned EVERYTHING unclassified (generic non-AI news). Known backend
+      // profession slugs filter; anything else → 'everyone' (recent AI news, honest).
+      const BACKEND_PROFS = ['software-developer','talent-acquisition','teacher','doctor','oncologist','nurse','farmer','accountant','hr-professional','lawyer','business-owner','government-employee','student'];
+      const feedProf = BACKEND_PROFS.indexOf(profSlug) >= 0 ? profSlug : 'everyone';
+      const r = await fetch(API + '/api/news-ai/feed/news?profession=' + encodeURIComponent(feedProf) + '&lang=' + encodeURIComponent(lang) + '&n=10');
       const j = await r.json();
-      const items = (j && j.items) || [];
+      let items = (j && j.items) || [];
+      // If a known profession has no classified items yet, fail open to recent AI news.
+      if (!items.length && feedProf !== 'everyone') {
+        try { const r2 = await fetch(API + '/api/news-ai/feed/news?profession=everyone&lang=' + encodeURIComponent(lang) + '&n=10'); const j2 = await r2.json(); items = (j2 && j2.items) || []; } catch (e) {}
+      }
       if (!items.length) { feed.innerHTML = '<p style="color:var(--muted);text-align:center;padding:16px">No AI news yet. Try Refresh in a minute.</p>'; return; }
       feed.innerHTML = items.map(_renderCard).join('');
+      // Bug 3: attach the per-response widget to the freshly-rendered news cards.
+      try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(feed); } catch (e) {}
     } catch (e) {
       feed.innerHTML = '<p style="color:var(--med-red);text-align:center;padding:16px">Could not load news. Check connection and try again.</p>';
     }
@@ -887,6 +934,7 @@ function speakPage() {
       h += '</tbody></table></details></div>';
     }
     host.innerHTML = h;
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {} // Bug 3: widgets on Hub boxes
   }
 
   // ── BO9 — Tour renderer (with 8-curriculum picker) ──
@@ -975,39 +1023,47 @@ function speakPage() {
       h += '</details>';
     }
     host.innerHTML = h;
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {} // Bug 3: widgets on tour day cards
   }
 
   // ── BO6 — Voice-First mode (auto-activate from disability_profile) ──
-  function initVoiceFirst() {
-    let dp = {}; try { dp = JSON.parse(localStorage.getItem('disability_profile') || '{}'); } catch (e) {}
-    if (dp.blind || dp.illiterate) {
-      const ind = document.getElementById('vf-indicator'); if (ind) ind.classList.add('shown');
-      setTimeout(function () {
-        try {
-          const u = new SpeechSynthesisUtterance('Welcome to Chitti News AI, your A.I. career coach. Say "tour" to start your 28-day tour, "news" to hear today\'s top A.I. story, or "help" for more.');
-          u.rate = .95;
-          window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
-        } catch (e) {}
-      }, 1200);
-      // Try to enable SpeechRecognition
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SR) {
-        const rec = new SR();
-        rec.continuous = true; rec.interimResults = false;
-        rec.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
-        rec.onresult = function (e) {
-          const heard = ((e.results[e.results.length-1][0].transcript) || '').toLowerCase();
-          if (/tour|28 day/.test(heard))   { window.ccScroll('tour-section'); }
-          else if (/news/.test(heard))     { window.ccScroll('news-section'); }
-          else if (/hub|profession/.test(heard)) { window.ccScroll('hub-section'); }
-          else if (/help/.test(heard))     { try { const u = new SpeechSynthesisUtterance('Commands: tour, news, hub, help, stop.'); u.rate=.95; window.speechSynthesis.speak(u); } catch (e) {} }
-          else if (/stop/.test(heard))     { try { window.speechSynthesis.cancel(); } catch (e) {} }
-        };
-        rec.onend = function () { try { rec.start(); } catch (e) {} };
-        try { rec.start(); } catch (e) {}
-      }
+  // QA Bug 5: core extracted + exposed as window.ChittiVoiceFirst so the header
+  // "🎙️ Voice-First mode" button (which calls ChittiVoiceFirst.activate()) works,
+  // not just the auto-activation for blind/illiterate users.
+  let _vfOn = false;
+  function activateVoiceFirst() {
+    const ind = document.getElementById('vf-indicator'); if (ind) ind.classList.add('shown');
+    setTimeout(function () {
+      try {
+        const u = new SpeechSynthesisUtterance('Welcome to Chitti News AI, your A.I. career coach. Say "tour" to start your 28-day tour, "news" to hear today\'s top A.I. story, or "help" for more.');
+        u.rate = .95;
+        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }, 1200);
+    if (_vfOn) return; _vfOn = true;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      const rec = new SR();
+      rec.continuous = true; rec.interimResults = false;
+      rec.lang = (localStorage.getItem('chitti_lang') || 'en') === 'hi' ? 'hi-IN' : 'en-IN';
+      rec.onresult = function (e) {
+        const heard = ((e.results[e.results.length-1][0].transcript) || '').toLowerCase();
+        if (/tour|28 day/.test(heard))   { window.ccScroll('tour-section'); }
+        else if (/news/.test(heard))     { window.ccScroll('news-section'); }
+        else if (/hub|profession/.test(heard)) { window.ccScroll('hub-section'); }
+        else if (/help/.test(heard))     { try { const u = new SpeechSynthesisUtterance('Commands: tour, news, hub, help, stop.'); u.rate=.95; window.speechSynthesis.speak(u); } catch (e) {} }
+        else if (/stop/.test(heard))     { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      };
+      rec.onend = function () { try { rec.start(); } catch (e) {} };
+      try { rec.start(); } catch (e) {}
     }
   }
+  function initVoiceFirst() {
+    let dp = {}; try { dp = JSON.parse(localStorage.getItem('disability_profile') || '{}'); } catch (e) {}
+    if (dp.blind || dp.illiterate) activateVoiceFirst();
+  }
+  // BO6 documented global — manual trigger from the header menu + programmatic callers.
+  window.ChittiVoiceFirst = { activate: activateVoiceFirst, isActive: function () { return _vfOn; } };
 
   // ── Orchestrate full render ──
   function renderAll() {
@@ -1036,6 +1092,11 @@ function speakPage() {
     // Defer to the substrate's 26-language packs to translate everything else
     // (and the English source strings we just rendered for non-en/hi langs).
     try { if (window.Chitti && window.Chitti.lang && window.Chitti.lang.setLang) window.Chitti.lang.setLang(lang); } catch (e) {}
+    // QA Bug 4: the substrate translates asynchronously and can re-assert
+    // document.documentElement.lang to a normalised/previous value mid-switch.
+    // Re-assert OUR selected code after it settles so html[lang] always matches
+    // the user's choice (fixes the rapid-switch race where 2/6 reverted).
+    [120, 400, 900].forEach(function (ms) { setTimeout(function () { if ((localStorage.getItem('chitti_lang') || '') === lang) document.documentElement.setAttribute('lang', lang); }, ms); });
   }
 
   function boot() {
