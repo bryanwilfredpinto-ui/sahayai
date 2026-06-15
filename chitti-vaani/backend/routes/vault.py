@@ -108,7 +108,16 @@ def upload_route():
 @bp.get("/list")
 def list_route():
     user_token = _user_token_or_400(request.args.get("user_token") or "")
-    return jsonify({"docs": vault_service.list_docs(user_token)})
+    # Degrade gracefully if the DB read fails (e.g. Turso read-quota block):
+    # return an empty list + degraded flag with HTTP 200 so the frontend
+    # renders a soft "temporarily unavailable" state instead of a hard 500
+    # (which also drops CORS headers and surfaces as a CORS error). (QA 2026-06-15)
+    try:
+        return jsonify({"docs": vault_service.list_docs(user_token)})
+    except Exception:
+        log.exception("vault/list read failed — returning degraded empty list")
+        return jsonify({"docs": [], "degraded": True,
+                        "message": "Vault is temporarily unavailable. Please try again shortly."}), 200
 
 
 @bp.get("/file")
@@ -144,7 +153,12 @@ def expiries_route():
         days = max(1, min(3650, int(request.args.get("days") or "30")))
     except ValueError:
         days = 30
-    return jsonify({"items": vault_service.expiring_within(user_token, days=days), "horizon_days": days})
+    # Same graceful degradation as /list (see note there). (QA 2026-06-15)
+    try:
+        return jsonify({"items": vault_service.expiring_within(user_token, days=days), "horizon_days": days})
+    except Exception:
+        log.exception("vault/expiries read failed — returning degraded empty list")
+        return jsonify({"items": [], "horizon_days": days, "degraded": True}), 200
 
 
 @bp.post("/share")

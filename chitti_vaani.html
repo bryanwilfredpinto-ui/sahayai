@@ -3031,9 +3031,23 @@ function vaiShareWA(){
   const msg = 'Try Chitti — voice-first AI dost for every Indian. Free, no sign-up. ' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
 }
+// Bulletproof clipboard write: feature-detects, and catches BOTH a synchronous
+// throw and an async promise rejection (e.g. "Write permission denied"), so a
+// blocked/absent Clipboard API never raises an uncaught PAGEERROR. (QA 2026-06-15)
+function chittiSafeCopy(text, okMsg){
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) return false;
+    const p = navigator.clipboard.writeText(String(text == null ? '' : text));
+    if (p && typeof p.then === 'function') {
+      p.then(function(){ if (okMsg) { try { speakText(okMsg, CURRENT_LANG); } catch(e){} } })
+       .catch(function(){ /* permission denied / not focused — non-fatal */ });
+    } else if (okMsg) { try { speakText(okMsg, CURRENT_LANG); } catch(e){} }
+    return true;
+  } catch (e) { return false; }
+}
 function vaiShareCopy(){
   const url = 'https://sahayai.in/chitti_vaani.html';
-  try { navigator.clipboard.writeText(url); speakText('Link copy ho gaya.', CURRENT_LANG); } catch(e){}
+  chittiSafeCopy(url, 'Link copy ho gaya.');
 }
 async function vaiShareNative(){
   const url = 'https://sahayai.in/chitti_vaani.html';
@@ -3228,7 +3242,23 @@ window.addEventListener('DOMContentLoaded', () => {
 // If consent acceptance flips the gate later, also open onboarding then.
 const _vaiOrigAccept = (typeof acceptConsent === 'function') ? acceptConsent : null;
 
-let CURRENT_LANG = localStorage.getItem(LANG_KEY) || 'hi';
+// Default language: a stored choice wins; otherwise honor the device language
+// (navigator.language) mapped to one of Vaani's 9 supported UI languages, else
+// fall back to Hindi. This default feeds BOTH the consent gate and the main app
+// (boot calls setConsentLang(CURRENT_LANG)), so the two surfaces never disagree.
+// (QA 2026-06-15)
+function detectInitialVaaniLang(){
+  const SUP = ['hi','en','ta','te','bn','mr','gu','kn','ml'];
+  try {
+    const stored = localStorage.getItem(LANG_KEY);
+    if (stored && SUP.indexOf(stored) !== -1) return stored;
+    const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase();
+    const code = nav.split('-')[0];
+    if (SUP.indexOf(code) !== -1) return code;
+  } catch (e) {}
+  return 'hi';
+}
+let CURRENT_LANG = detectInitialVaaniLang();
 let CONSENT_LANG = CURRENT_LANG;
 let CURRENT_MODE = 'ask';
 let RECOG = null;       // SpeechRecognition instance (lazy)
@@ -3271,11 +3301,16 @@ function setConsentLang(lang){
   document.querySelectorAll('.lang-pick button').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === lang);
   });
-  // Also seed the header selector and main app language
+  // Also seed the header selector, the Vaani UI dropdown, and the main app
+  // language so all three surfaces agree with the auto-detected default.
   CURRENT_LANG = lang;
   localStorage.setItem(LANG_KEY, lang);
   const sel = document.getElementById('lang-select');
   if (sel) sel.value = lang;
+  const ls2 = document.getElementById('vai-lang-select-2');
+  // Only reflect it in the Vaani dropdown if that lang is one of its options
+  // (it carries Vaani's 9 supported UI langs; ignore otherwise). (QA 2026-06-15)
+  if (ls2 && [...ls2.options].some(o => o.value === lang)) ls2.value = lang;
 }
 function speakSection(n, btn){
   stopSpeaking();
@@ -3462,7 +3497,7 @@ function quickAsk(prompt){
 }
 function copyAnswer(){
   if (!LAST_REPLY) return;
-  navigator.clipboard.writeText(LAST_REPLY).catch(()=>{});
+  chittiSafeCopy(LAST_REPLY);
 }
 function sendToScanner(){
   // Cross-product hand-off (Vaani ↔ Scanner): copy reply + open scanner page
@@ -8266,12 +8301,27 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-  if (document.readyState === 'complete' || document.readyState === 'interactive'){
-    startWhenVisible();
-  } else {
-    document.addEventListener('DOMContentLoaded', startWhenVisible);
+  // CTO-only gate: the founder notifications inbox is for Sire, not the public.
+  // Polling chitti-founder for every public visitor produced cross-origin CORS
+  // errors in the console (QA 2026-06-15) and is unnecessary for normal users.
+  // Only poll when the CTO has opted in: localStorage chitti_cto_mode==='1'
+  // OR ?cto=1 in the URL. (The deeper cross-origin fix — chitti-founder's CORS
+  // allowlist — lives in another product and is a separate decision.)
+  function ctoModeOn(){
+    try {
+      if (localStorage.getItem('chitti_cto_mode') === '1') return true;
+      if (/[?&]cto=1\b/.test(location.search)) { localStorage.setItem('chitti_cto_mode', '1'); return true; }
+    } catch(e){}
+    return false;
   }
-  // Expose helpers for testing.
+  if (ctoModeOn()){
+    if (document.readyState === 'complete' || document.readyState === 'interactive'){
+      startWhenVisible();
+    } else {
+      document.addEventListener('DOMContentLoaded', startWhenVisible);
+    }
+  }
+  // Expose helpers for testing (and a manual pollNow for the CTO surface).
   window.ChittiCTONotifications = { pollNow: poll, buildWaUrl, buildSmsUrl, fireDeepLinks };
 })();
 </script>

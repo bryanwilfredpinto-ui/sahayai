@@ -70,6 +70,20 @@ def _create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB body cap
 
     allowed = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
+    # The canonical frontend origins must NEVER be CORS-blocked, even if the
+    # ALLOWED_ORIGINS env var is unset or misconfigured on the host. The web
+    # tier is served from sahayai.in (GitHub Pages custom domain) and the raw
+    # github.io fallback. Merge them in unconditionally. (QA 2026-06-15: vault
+    # calls from sahayai.in were blocked because the env list omitted it.)
+    CANONICAL_ORIGINS = [
+        "https://sahayai.in",
+        "https://www.sahayai.in",
+        "https://bryanwilfredpinto-ui.github.io",
+    ]
+    if allowed:
+        for o in CANONICAL_ORIGINS:
+            if o not in allowed:
+                allowed.append(o)
     CORS(
         app,
         origins=allowed or "*",
