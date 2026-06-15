@@ -67,10 +67,13 @@ current premium, surface IDV/add-on guidance.
 
 ## Feature 5 — PUC Intelligence
 
-PUC expiry tracking + nearest PUC centre (geo).
+PUC expiry tracking + nearest PUC centre.
 
-- **Acceptance:** expiry derived deterministically; nearest-centre list sourced.
-- **Engine fn:** `ChittiMech2W.puc.status(twin)` + `ChittiMech2W.puc.nearest(geo)`.
+- **Acceptance:** expiry derived deterministically (🟢 LIVE). Nearest centre: 🟢 **opens Maps; with
+  the user's location (consent-gated) it centres the map so Maps shows centres WITH distances.**
+  🔵 An **on-page numeric distance to a named centre is COMING SOON** (needs a paid Places API —
+  Sire/infra); not faked.
+- **Engine fn:** `ChittiMech2W.pucStatus(vault)` + `ChittiMech2W.nearestQuery('puc', {lat,lng})`.
 
 ## Feature 6 — Service Intelligence
 

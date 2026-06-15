@@ -66,7 +66,9 @@ ok('EV has no engine oil', E.serviceSchedule({ vclass: 'ev', odoKm: 5000, lastSe
 // ── 6. Tyre + battery thresholds ──
 ok('tyre worn at 20000km', E.tyreStatus({ tyreKm: 20000 }).replace === true);
 ok('tyre worn at 3 years', E.tyreStatus({ tyreKm: 0, tyreYears: 3 }).replace === true);
-ok('tyre reco fits usage', E.tyreRecommend('ev').options.length >= 1);
+ok('tyre reco every usage yields ≥3 priced options (BUG-1)', ['allround', 'mileage', 'durability', 'ev', 'performance'].every(u => { var o = E.tyreRecommend(u).options; return o.length >= 3 && o.every(x => x.price); }), JSON.stringify(['allround', 'mileage', 'durability', 'ev', 'performance'].map(u => E.tyreRecommend(u).options.length)));
+ok('tyre reco honours budget (BUG-5)', E.tyreRecommend('allround', 'value').options.filter(o => o.fitsBudget).length >= 1 && E.tyreRecommend('allround', 'value').options.length === 3);
+ok('nearest with coords → distance-aware Maps link (BUG-4)', /@[\d.]+,[\d.]+/.test(E.nearestQuery('puc', { lat: '19.07', lng: '72.87' }).url) && E.nearestQuery('puc', { lat: '19.07', lng: '72.87' }).geo === true);
 ok('battery bad past life', E.batteryStatus({ vclass: 'scooter', batteryMonths: 30 }).status === 'bad');
 
 // ── 7. Fuel/EV ROI math ──

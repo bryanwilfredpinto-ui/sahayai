@@ -10,8 +10,10 @@ document's dates into a Smart Reminder — without ever fabricating a number.
 
 ## Flow
 1. **Ask what they have** by voice or tap: RC, insurance, PUC, DL, service bill, warranty.
-2. **Capture details** — today by voice/tap (number + dates). 🔵 Photo + OCR auto-fill is
-   COMING SOON; until then never claim a field was "read" from an image.
+2. **Capture details** — today by voice/tap (number + dates). 🟢 You CAN **upload/attach a photo
+   of the document** (stored on-device, shown as a thumbnail). 🔵 **Photo + OCR auto-fill of the
+   fields is COMING SOON** (needs a vision model — Sire/infra); until then fields are entered
+   manually and Chitti never claims a field was "read" from an image.
 3. **Confirm before save** (Golden Rule): read the captured details back aloud, wait for an
    explicit "haan" / tap. Silence = wait, never assume yes.
 4. **Store on device only** (`localStorage`). No paper, number, or image leaves the phone.

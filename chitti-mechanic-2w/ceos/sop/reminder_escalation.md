@@ -21,6 +21,10 @@ Golden Rule.
 3. **T-1 day** — urgent nudge: "expires tomorrow — riding without it is a fine."
 4. **Overdue** — daily reminder until cleared; flag the legal/safety risk.
 
+## Delivery channels — STATUS (re-scoped 2026-06-15, QA round 2)
+- 🟢 **LIVE today:** on-page reminder card + **read-aloud voice** + **`.ics` calendar export** (tap "Schedule service" / "Add to calendar" — works offline, a real notification you keep).
+- 🔵 **COMING SOON (needs a messaging gateway — Sire/infra):** push notifications, **SMS**, **WhatsApp**. The CEOS's "push → SMS → voice" channel ladder is the *target*; until a gateway is wired, the live equivalent above carries the reminder. The escalation ladder above is **date-driven** (T-30 / T-7 / T-1 / overdue), not channel-driven, today.
+
 ## Golden Rule
 Chitti **reminds**; it never auto-books, auto-pays, or auto-renews. Any action (book a
 slot, open insurer, mark done) passes `chittiConfirmAndDo()` — speak the action, wait for

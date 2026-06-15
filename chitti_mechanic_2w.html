@@ -373,8 +373,12 @@
     <div class="card" data-chitti-response="mech-tyre" data-chitti-section="Tyre intelligence">
       <h2><span aria-hidden="true">🛞</span> Do my tyres need changing — and which?</h2>
       <p class="sub">Tyres wear by km (~20,000) AND age (~3 yrs) — also replace on cracks or low tread. Worn tyres raise accident risk ~3×.</p>
-      <label class="fl" for="ty-use">What matters most?</label>
-      <select class="fs" id="ty-use"><option value="allround">All-round grip</option><option value="mileage">Mileage / value</option><option value="durability">Durability / long life</option><option value="ev">EV scooter (range)</option><option value="performance">Performance</option></select>
+      <div class="row">
+        <div><label class="fl" for="ty-use">What matters most?</label>
+          <select class="fs" id="ty-use"><option value="allround">All-round grip</option><option value="mileage">Mileage / value</option><option value="durability">Durability / long life</option><option value="ev">EV scooter (range)</option><option value="performance">Performance</option></select></div>
+        <div><label class="fl" for="ty-budget">Your budget</label>
+          <select class="fs" id="ty-budget"><option value="any">Any budget</option><option value="value">Value (under ₹1,800)</option><option value="mid">Mid (₹1,800–2,200)</option><option value="premium">Premium (₹2,000+)</option></select></div>
+      </div>
       <div class="actions">
         <button class="btn primary" type="button" onclick="mechTyreStatus()">🛞 Are mine worn?</button>
         <button class="btn" type="button" onclick="mechTyreReco()">🔎 Recommend tyres</button>
@@ -685,8 +689,16 @@
   }
   var NEAR_HOST={ puc:'r-puc', service:'r-service', mechanic:'r-coach', tyre:'r-tyre' };
   window.mechNearest=function(kind){
-    var r=E().nearestQuery(kind);
-    linkBox(NEAR_HOST[kind]||'r-bike','📍',r.label,r.url,r.risks[0]);
+    var host=NEAR_HOST[kind]||'r-bike';
+    function show(opts){ var r=E().nearestQuery(kind,opts); linkBox(host,'📍',r.label,r.url,r.risks[0]); }
+    // Use the user's location (consent-gated) so Maps shows centres WITH distances; fall back to "near me".
+    if(navigator.geolocation){
+      var done=false; var fb=setTimeout(function(){ if(!done){done=true; show({});} },4000);
+      navigator.geolocation.getCurrentPosition(
+        function(p){ if(done)return; done=true; clearTimeout(fb); show({lat:p.coords.latitude.toFixed(4), lng:p.coords.longitude.toFixed(4)}); },
+        function(){ if(done)return; done=true; clearTimeout(fb); show({}); },
+        { timeout:3500, maximumAge:600000 });
+    } else { show({}); }
   };
   window.mechBuyInsurance=function(){
     var r=E().insuranceCompare({ current:{name:val('in-name'), premium:num('in-prem')}, idv:num('in-idv'), vehicleAgeYears:num('in-age') });
@@ -758,7 +770,12 @@
     render('r-service',{status:'info', big:r.summary, lines:r.dueItems.concat(risks(r)), confidence:r.confidence, sources:r.sources});
   };
   window.mechTyreStatus=function(){ var r=E().tyreStatus(E().vault.load()); render('r-tyre',{status:statusOf(r), big:r.summary, lines:risks(r), confidence:r.confidence, sources:r.sources}); };
-  window.mechTyreReco=function(){ var r=E().tyreRecommend(val('ty-use')); render('r-tyre',{status:'info', big:r.summary, lines:r.options.map(function(o){return '🛞 '+o.name+' — '+o.best+' ('+o.price+')';}).concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
+  window.mechTyreReco=function(){
+    var v=E().vault.load(); var r=E().tyreRecommend(val('ty-use'), val('ty-budget'));
+    var bike=v.make||({commuter:'commuter motorcycle',performance:'performance motorcycle',scooter:'scooter',ev:'electric scooter'}[v.vclass]||'bike');
+    var lines=['For your '+bike+' · '+r.options.length+' options'].concat(r.options.map(function(o){return '🛞 '+o.name+' — '+o.best+' ('+o.price+')'+(o.fitsBudget?'':' • above budget');})).concat(risks(r));
+    render('r-tyre',{status:'info', big:r.summary, lines:lines, confidence:r.confidence, sources:r.sources});
+  };
   window.mechBattery=function(){ var v=E().vault.load(); var r=E().batteryStatus(v); render('r-battery',{status:statusOf(r), big:r.summary, lines:['Type: '+r.spec+' · typical life '+r.expectedLifeMonths+' mo · '+r.cost].concat(risks(r)), confidence:r.confidence, sources:r.sources}); };
   window.mechFuel=function(){
     var r=E().fuelEvRoi({ monthlyKm:num('fu-km'), mileageKmpl:num('fu-mil'), petrolPrice:num('fu-pet'), evCostPerMonth:num('fu-evm'), evNetPrice:num('fu-net') });
