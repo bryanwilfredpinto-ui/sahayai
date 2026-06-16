@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!-- Frontend for chitti-vaani/ — landing page (mirrors sahayai.in homepage style).
+     Every capability box is data-chitti-response, so feedback-widget.js injects the
+     per-response widget (🔊 speaker · 🤖 Chitti · 👍/👎 thumbs · ✏️ pencil) on each box
+     (SAHAYAI §7 / project_per_response_widget_locked). chitti_a11y.js supplies the other
+     four frontend gates (language auto-detect, ISL, Disability Profile, Feature Discovery). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chitti Vaani — Aapki awaaz, aapka dost</title>
+<meta name="description" content="Chitti Vaani — voice-first AI dost for every Indian family. Speak in your language; Chitti listens, helps, and always asks before it acts.">
+<style>
+  :root{
+    --bg:#f8f4ee; --text:#17202a; --navy:#0E2344; --saffron:#E86A17; --green:#16a34a;
+    --gold:#D4AF37; --muted:#6b7280; --border:#e5e7eb; --green-dk:#0f7a36;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:18px 16px 60px}
+  a{color:var(--saffron)}
+  .saffron-text{color:var(--saffron)} .green-text{color:var(--green)}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .topbar .brand{font-weight:900;color:var(--navy);font-size:20px}
+  .topbar .home{margin-left:auto;font-weight:800;font-size:13px;text-decoration:none}
+
+  /* Hero — mirrors the homepage .bharat-hero */
+  .bharat-hero{margin:10px auto 18px;padding:24px 18px 26px;max-width:980px;text-align:center;
+    background:linear-gradient(135deg,#FFF7EC 0%,#FFFFFF 60%,#FFF7EC 100%);
+    border:1px solid #FFE0BD;border-radius:22px;box-shadow:0 8px 24px rgba(255,153,51,.10)}
+  .bharat-hero h1{margin:0 0 6px;font-size:30px;font-weight:900;color:var(--navy);line-height:1.15}
+  .bharat-hero .sub{margin:8px auto 16px;max-width:640px;font-size:14.5px;color:#374151}
+  .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .cta{display:inline-flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;
+    min-width:180px;min-height:64px;padding:12px 22px;border-radius:16px;font-family:inherit;cursor:pointer;border:0}
+  .cta .ico{font-size:26px} .cta .label{font-size:18px;font-weight:900} .cta .sub-lbl{font-size:11px;opacity:.92}
+  .cta.mic{background:linear-gradient(135deg,var(--green),var(--green-dk));color:#fff}
+  .cta.ghost{background:#fff;color:var(--navy);border:2px solid var(--saffron)}
+  .hero-langs{margin-top:16px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .hero-langs span{font-size:11px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+
+  /* Section heading */
+  .sec-h{margin:22px 4px 12px;color:var(--navy);font-size:18px;font-weight:900}
+  .sec-h small{display:block;font-weight:600;color:var(--muted);font-size:12.5px;margin-top:2px}
+
+  /* Product grid — mirrors the homepage .product-grid / .product-card */
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .product-card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--border);
+    border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(14,35,68,.06)}
+  .product-card .ico{font-size:34px;margin-bottom:6px}
+  .product-card .name{font-size:17px;font-weight:900;color:var(--navy)}
+  .product-card .lede{font-size:13px;color:#374151;margin-top:4px;flex:1}
+  .product-card .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .product-card .pills span{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+    padding:2px 7px;border-radius:5px;background:rgba(34,197,94,.10);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+  .product-card .open{margin-top:12px;align-self:flex-start;text-decoration:none;font-weight:800;font-size:13px;
+    color:#fff;background:var(--green);border:2px solid var(--green-dk);border-radius:10px;padding:8px 14px;min-height:40px;display:inline-flex;align-items:center}
+  .foot{margin-top:30px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="brand">🎙️ Chitti Vaani</span>
+    <a class="home" href="index.html" aria-label="Back to sahayai.in home">← sahayai.in</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="bharat-hero" role="region" aria-label="Chitti Vaani — your voice-first dost">
+    <h1>🎙️ <span class="saffron-text">Chitti</span> <span class="green-text">Vaani</span></h1>
+    <p class="sub"><b>Aapki awaaz, aapka dost.</b> अपनी भाषा में बोलिए — Chitti सुनती है, सोचती है, और ज़ोर से जवाब देती है.
+      पैसा · सेहत · सरकारी योजनाएँ · खबरें · phone — सब एक बातचीत में. <br>Chitti हमेशा पूछती है <b>“करूँ?”</b> — कभी अपने आप कुछ नहीं करती.</p>
+    <div class="hero-actions">
+      <a class="cta mic" href="chitti_vaani.html" aria-label="Launch Chitti Vaani — start talking">
+        <span class="ico" aria-hidden="true">🎤</span><span class="label">Chitti se baat karein</span><span class="sub-lbl">Voice · 26 भाषाएँ</span>
+      </a>
+      <a class="cta ghost" href="chitti_vaani.html?cb=howto#talk" aria-label="See how to use Chitti in 60 seconds">
+        <span class="ico" aria-hidden="true">🎓</span><span class="label">How to use</span><span class="sub-lbl">60 seconds</span>
+      </a>
+    </div>
+    <div class="hero-langs" aria-label="Languages active on Chitti">
+      <span>हिन्दी</span><span>English</span><span>বাংলা</span><span>తెలుగు</span><span>தமிழ்</span><span>मराठी</span><span>ગુજરાતી</span><span>ಕನ್ನಡ</span><span>മലയാളം</span><span>ਪੰਜਾਬੀ</span>
+    </div>
+  </section>
+
+  <!-- CAPABILITY BOXES — each is data-chitti-response so the per-response widget attaches -->
+  <h2 class="sec-h">Chitti kya kar sakti hai? <small>हर बॉक्स पर 🔊 सुनें · 🤖 समझें · 👍/👎 दें · ✏️ बताएँ</small></h2>
+  <div class="product-grid">
+
+    <div class="product-card" data-chitti-response data-chitti-section="Talk to Chitti">
+      <div class="ico" aria-hidden="true">🎙️</div>
+      <div class="name">Talk to Chitti</div>
+      <p class="lede">हरे माइक को टैप करें और अपनी भाषा में बोलें। Chitti सुनती है, सोचती है, और जवाब ज़ोर से पढ़कर सुनाती है।</p>
+      <div class="pills"><span>Voice in + out</span><span>9 languages</span></div>
+      <a class="open" href="chitti_vaani.html#talk">🎤 Baat karein →</a>
+    </div>
+
+    <div class="product-card" data-chitti-response data-chitti-section="Chitti can act for you">
+      <div class="ico" aria-hidden="true">⚡</div>
+      <div class="name">Chitti can act for you</div>
+      <p class="lede">Call · SMS · WhatsApp · UPI · phone lock · camera · maps · reminders — Chitti हमेशा पहले पूछती है “करूँ?”, अपने आप कभी नहीं करती।</p>
+      <div class="pills"><span>Always asks first</span></div>
+      <a class="open" href="chitti_vaani.html#act">⚡ Actions kholein →</a>
+    </div>
+
+    <div class="product-card" data-chitti-response data-chitti-section="Your Circle">
+      <div class="ico" aria-hidden="true">👨‍👩‍👧</div>
+      <div class="name">Your Circle</div>
+      <p class="lede">अपने भरोसेमंद परिवार को जोड़ें। आपात में Chitti आपके परिवार को बुलाती है — पुलिस को कभी अपने आप नहीं।</p>
+      <div class="pills"><span>Family cascade</span></div>
+      <a class="open" href="chitti_vaani.html#circle">👨‍👩‍👧 Circle kholein →</a>
+    </div>
+
+    <div class="product-card" data-chitti-response data-chitti-section="Keys Vault">
+      <div class="ico" aria-hidden="true">🔒</div>
+      <div class="name">Keys Vault</div>
+      <p class="lede">ज़रूरी कागज़ और पासवर्ड अपने ही फ़ोन पर सुरक्षित — फ़िंगरप्रिंट से लॉक। आपकी device से कभी बाहर नहीं जाते।</p>
+      <div class="pills"><span>Biometric lock</span></div>
+      <a class="open" href="chitti_vaani.html#vault">🔒 Vault kholein →</a>
+    </div>
+
+    <div class="product-card" data-chitti-response data-chitti-section="Emergency">
+      <div class="ico" aria-hidden="true">🆘</div>
+      <div class="name">Emergency</div>
+      <p class="lede">“बचाओ” या “मदद” कहें — Chitti silent पर भी अलार्म बजाती है और परिवार को सूचित करती है। 100/112 अपने आप कभी नहीं।</p>
+      <div class="pills"><span>Works on silent</span></div>
+      <a class="open" href="chitti_vaani.html#sos">🆘 Emergency kholein →</a>
+    </div>
+
+    <div class="product-card" data-chitti-response data-chitti-section="Settings and languages">
+      <div class="ico" aria-hidden="true">⚙️</div>
+      <div class="name">Settings & Languages</div>
+      <p class="lede">26 भारतीय भाषाएँ, आवाज़ की गति, text का आकार, और बुज़ुर्ग मोड — तीन बड़े बटन और बड़े अक्षर।</p>
+      <div class="pills"><span>26 languages</span><span>Grandparent mode</span></div>
+      <a class="open" href="chitti_vaani.html#settings">⚙️ Settings kholein →</a>
+    </div>
+
+  </div>
+
+  <p class="foot">sahayai.in · Bharat ka Apna AI · Free · No sign-up · Voice-first · Built for every Indian family.</p>
+</div>
+
+<!-- Shared accessibility substrate: language selector + auto-detect, Braille/Voice marker,
+     Disability Profile prompt, ISL plugin, Feature Discovery — all four remaining §7 gates. -->
+<script src="chitti_a11y.js"></script>
+<!-- Per-response widget: 🔊 / 🤖 / 👍 / 👎 / ✏️ on every [data-chitti-response] box. -->
+<script src="feedback-widget.js" data-page="chitti_vaani_landing"></script>
+<!-- Legal/disclaimer modal (present on every Chitti page). -->
+<script src="chitti_disclaimer.js"></script>
+</body>
+</html>
