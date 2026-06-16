@@ -1457,6 +1457,11 @@
     roshan: roshan, indicatorSet: indicatorSet, INDICATOR_NAMES: INDICATOR_NAMES,
     cci: cci, roc: roc, momentum: momentum, mfi: mfi, aroon: aroon, donchian: donchian,
     awesome: awesome, stochRsi: stochRsi, vwapRolling: vwapRolling, keltner: keltner, trix: trix,
+    // exported so the chart can draw all 39 (existing functions, math unchanged)
+    wma: wma, hma: hma, ultimateOsc: ultimateOsc, ichimoku: ichimoku, forceIndex: forceIndex,
+    adl: adl, cmf: cmf, ttmSqueeze: ttmSqueeze, vortex: vortex, chandelier: chandelier,
+    laguerreRsi: laguerreRsi, heikinTrend: heikinTrend, balanceOfPower: balanceOfPower,
+    chandeKroll: chandeKroll, elderRay: elderRay, elderImpulse: elderImpulse,
     // analysis
     trendOf: trendOf, tfVerdict: tfVerdict, confluence: confluence, riskBlock: riskBlock, scan: scan,
     // data + universe
