@@ -109,6 +109,10 @@ main{padding:14px;max-width:1100px;margin:0 auto}
 .flag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:800;letter-spacing:.04em;margin-right:6px;vertical-align:middle}
 .flag-critical{background:rgba(220,38,38,.12);color:#991b1b;border:1px solid rgba(220,38,38,.5)}
 .flag-important{background:rgba(232,106,23,.14);color:#9a3412;border:1px solid var(--saffron)}
+/* Feature 4 — 4-state urgency labels (colour + shape + text) */
+.flag-attention{background:rgba(245,158,11,.16);color:#92400e;border:1px solid #f59e0b}
+.flag-interesting{background:rgba(34,197,94,.12);color:#166534;border:1px solid #22c55e}
+.flag-ignore{background:#f3f4f6;color:#555;border:1px solid #d1d5db}
 
 /* BO8/BO9 — Metric cards (MedUPI parity) */
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
@@ -852,13 +856,23 @@ function speakPage() {
   function _renderCard(item) {
     const cls = item.classification;
     const p = _profileInit();
+    // Feature 4 — 4-state urgency label on EVERY card (colour + SHAPE + text; never colour alone).
+    // 🔴 CRITICAL(circle) · 🟡 PAY ATTENTION(triangle) · 🟢 INTERESTING(square) · ⚪ IGNORE(dash).
     let flag = '';
     try {
+      let verdict = '', why = '';
       if (p.profession && p.profession !== 'everyone' && window.ChittiCoach && window.ChittiCoach.relevance) {
         const rel = window.ChittiCoach.relevance({ title: item.title || '', summary: item.summary || '', topics: (cls && cls.matched_keywords) ? cls.matched_keywords.join(',') : '' }, p.profession);
-        if (rel && rel.verdict === 'CRITICAL') flag = '<span class="flag flag-critical" title="' + _esc(rel.why) + '">🔥 Critical for you</span>';
-        else if (rel && rel.verdict === 'VERY-IMPORTANT') flag = '<span class="flag flag-important" title="' + _esc(rel.why) + '">⚡ Important for you</span>';
+        verdict = (rel && rel.verdict) || ''; why = (rel && rel.why) || '';
       }
+      // Fallback to classification confidence when no profession verdict.
+      const conf = cls && typeof cls.confidence === 'number' ? cls.confidence : 0;
+      let st;
+      if (verdict === 'CRITICAL' || conf >= 0.85) st = { c: 'critical', i: '🔴', sh: '●', t: 'CRITICAL for you' };
+      else if (verdict === 'VERY-IMPORTANT' || conf >= 0.6) st = { c: 'attention', i: '🟡', sh: '▲', t: 'PAY ATTENTION' };
+      else if (verdict === 'IMPORTANT' || verdict === 'RELEVANT' || conf >= 0.4) st = { c: 'interesting', i: '🟢', sh: '■', t: 'INTERESTING' };
+      else st = { c: 'ignore', i: '⚪', sh: '—', t: 'FYI' };
+      flag = '<span class="flag flag-' + st.c + '" title="' + _esc(why || st.t) + '"><span aria-hidden="true">' + st.i + ' ' + st.sh + '</span> ' + st.t + '</span> ';
     } catch (e) {}
     const src = item.source && item.source.name ? item.source.name : 'Unknown source';
     const free = item.is_free
@@ -1151,6 +1165,18 @@ function speakPage() {
       '<button type="button" aria-label="Read my whole roadmap aloud" onclick="cnaiRoadmapSpeak()" ' +
       'style="margin-top:8px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read my whole roadmap aloud</button></div>';
 
+    // Feature 5 — visual roadmap timeline (horizontal milestone strip; accessible aria-list).
+    var timeline = '<ol class="rm-timeline" aria-label="Your learning path — ' + esc(rm.total_stages) + ' stages in order" ' +
+      'style="display:flex;gap:0;overflow-x:auto;list-style:none;margin:0 0 14px;padding:6px 2px 10px;counter-reset:rmstep">' +
+      rm.stages.map(function (s, i) {
+        var last = i === rm.stages.length - 1;
+        return '<li style="position:relative;flex:0 0 auto;min-width:120px;max-width:150px;text-align:center;padding:0 6px">' +
+          (last ? '' : '<span aria-hidden="true" style="position:absolute;top:15px;left:50%;width:100%;height:3px;background:#cfe6cf"></span>') +
+          '<span aria-hidden="true" style="position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:#138808;color:#fff;font-weight:800;font-size:14px;box-shadow:0 2px 6px rgba(19,136,8,.3)">' + s.order + '</span>' +
+          '<div style="font-size:12px;font-weight:700;color:#0a3d1a;margin-top:6px;line-height:1.25">' + esc(s.name) + '</div>' +
+          '<div style="font-size:11px;color:#777">~' + (s.topics ? s.topics.length : 0) + ' topics</div></li>';
+      }).join('') + '</ol>';
+
     var body = rm.stages.map(function (s) {
       var topics = s.topics.map(function (t) {
         return '<li style="margin:8px 0">' +
@@ -1174,7 +1200,7 @@ function speakPage() {
         '</div>';
     }).join('');
 
-    host.innerHTML = head + body;
+    host.innerHTML = head + timeline + body;
     // Re-attach the per-response widget to the new stage boxes.
     try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
     var rm_sum = window.ChittiRoadmap.speakable(rm, L);
@@ -1305,20 +1331,32 @@ function speakPage() {
     if (!cs || !ds || !window.ChittiAnalogy) return;
     cs.innerHTML = window.ChittiAnalogy.listConcepts().map(function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
     ds.innerHTML = window.ChittiAnalogy.listDomains().map(function (d) { return '<option value="' + d.id + '">' + d.emoji + ' ' + esc(d.label) + '</option>'; }).join('');
-    // Default to the user's profession-friendly analogy if blank.
-    cs.value = 'agent'; ds.value = 'cricket';
+    // Feature 2 — default the analogy to the user's PERSISTENT preference (cnai_analogy),
+    // captured once at The Ask and reused everywhere. Falls back to cricket.
+    var pref = ''; try { pref = localStorage.getItem('cnai_analogy') || ''; } catch (e) {}
+    var domIds = window.ChittiAnalogy.listDomains().map(function (d) { return d.id; });
+    cs.value = 'agent'; ds.value = (pref && domIds.indexOf(pref) >= 0) ? pref : 'cricket';
   }
+  // Feature 3 — complexity level label (Beginner/Intermediate/Advanced), defaulted from years.
+  function levelLabel() { var L = 2; try { L = parseInt(localStorage.getItem('cnai_level') || '2', 10); } catch (e) {} return { 1: '🟢 Beginner', 2: '🟡 Intermediate', 3: '🔴 Advanced' }[L] || '🟡 Intermediate'; }
 
   function render(card) {
     var host = document.getElementById('analogy-content'); if (!host) return;
     host.innerHTML =
       '<div class="analogy-card" data-chitti-response data-chitti-section="' + esc(card.concept + ' in ' + card.domain_label + ' terms') + '" ' +
       'style="border:1px solid #ddd;border-radius:12px;padding:14px;margin:8px 0">' +
-      '<div style="font-weight:700;font-size:17px">' + esc(card.concept) + ' — in ' + esc(card.domain_label) + ' terms</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div style="font-weight:700;font-size:17px">' + esc(card.concept) + ' — in ' + esc(card.domain_label) + ' terms</div>' +
+      '<span style="font-size:12px;font-weight:700;background:#eef;border-radius:999px;padding:3px 10px" title="Depth — change with the slider at the top">' + levelLabel() + '</span></div>' +
       '<div style="font-size:16px;margin:8px 0">' + esc(card.analogy) + '</div>' +
       '<div style="background:#fff7e6;border-left:4px solid #e08a00;padding:8px;border-radius:6px;font-size:14px">⚠️ <strong>Where this breaks down:</strong> ' + esc(card.breaks_down) + '</div>' +
       '<div style="background:#eef6ff;border-radius:6px;padding:8px;margin-top:8px;font-size:14px">📝 <strong>Practice (not a graded exam):</strong> ' + esc(card.practice) + '</div>' +
-      '<button type="button" aria-label="Read this explanation aloud" onclick="cnaiAnalogySpeak()" style="margin-top:8px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read aloud</button>' +
+      // Feature 9 — follow-up suggestions (Perplexity-style), tappable.
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+      '<button type="button" class="cnai-follow" onclick="cnaiAnalogyFollow(\'example\')" aria-label="Give me an example" style="min-height:44px;padding:0 12px;border-radius:999px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700;font-size:14px">💡 Give me an example</button>' +
+      '<button type="button" class="cnai-follow" onclick="cnaiAnalogyFollow(\'simpler\')" aria-label="Explain it simpler" style="min-height:44px;padding:0 12px;border-radius:999px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700;font-size:14px">🪶 Explain simpler</button>' +
+      '<button type="button" class="cnai-follow" onclick="cnaiAnalogyAnother()" aria-label="Try another analogy" style="min-height:44px;padding:0 12px;border-radius:999px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700;font-size:14px">🔁 Another analogy</button>' +
+      '</div>' +
+      '<button type="button" aria-label="Read this explanation aloud" onclick="cnaiAnalogySpeak()" style="margin-top:10px;min-height:48px;padding:0 14px;border-radius:10px;border:2px solid #444;background:#fff;font-size:15px">🔊 Read aloud</button>' +
       '</div>';
     try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
     host.setAttribute('data-analogy-speak', card.speak + ' Practice: ' + card.practice);
@@ -1335,6 +1373,24 @@ function speakPage() {
     var ids = window.ChittiAnalogy.listDomains().map(function (d) { return d.id; });
     var i = ids.indexOf(ds.value); ds.value = ids[(i + 1) % ids.length];
     window.cnaiAnalogyGo();
+  };
+  // Feature 9 — follow-up actions on an explanation.
+  window.cnaiAnalogyFollow = function (kind) {
+    var cs = document.getElementById('analogy-concept'); var ds = document.getElementById('analogy-domain'); if (!cs || !ds) return;
+    var card; try { card = window.ChittiLearns.teach(cs.value, ds.value); } catch (e) { return; }
+    if (kind === 'example') {
+      var ex = card.practice || card.analogy || '';
+      var host = document.getElementById('analogy-content'); var note = document.createElement('div');
+      note.setAttribute('role', 'status'); note.style.cssText = 'background:#eafaf0;border-left:4px solid #138808;border-radius:8px;padding:8px;margin-top:8px;font-size:14px';
+      note.innerHTML = '<strong>💡 Example:</strong> ' + esc(ex);
+      if (host && host.firstElementChild) host.firstElementChild.appendChild(note);
+      speak('For example. ' + ex);
+    } else if (kind === 'simpler') {
+      try { localStorage.setItem('cnai_level', '1'); } catch (e) {}
+      try { window.cnaiSyncLevelSlider && window.cnaiSyncLevelSlider(); } catch (e) {}
+      window.cnaiAnalogyGo();
+      speak('Here it is, simpler. ' + (card.analogy || ''));
+    }
   };
   window.cnaiAnalogySpeak = function () { var h = document.getElementById('analogy-content'); var t = h && h.getAttribute('data-analogy-speak'); if (t) speak(t); };
 
@@ -1663,6 +1719,213 @@ window.cnaiLearnTab = function (name) {
   });
   try { var t = document.querySelector(".learn-tab[data-tab=\"" + name + "\"]"); if (t) { var u = new SpeechSynthesisUtterance(t.textContent); u.rate = .95; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } } catch (e) {}
 };
+</script>
+
+<!-- Chitti Pro features (Dev build 2026-06-16): analogy pref · complexity slider · learn-WITH-you ·
+     My Stack · readiness intake · streak+badges. Self-contained; reuses existing engines. -->
+<script>
+(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function lang() { try { return localStorage.getItem('chitti_lang') || 'en'; } catch (e) { return 'en'; } }
+  function speak(t) { try { var u = new SpeechSynthesisUtterance(t); u.rate = .96; u.lang = lang() === 'hi' ? 'hi-IN' : 'en-IN'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch (e) {} }
+  function ls(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+  function lsj(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function setLs(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function profile() { try { return JSON.parse(localStorage.getItem('cnai_profile') || 'null'); } catch (e) { return null; } }
+  function years() { var p = profile(); return p && typeof p.years === 'number' ? p.years : parseInt((p && p.years) || '0', 10) || 0; }
+
+  var DOMAINS = [['cricket', '🏏 Cricket'], ['share_market', '📈 Share market'], ['farming', '🌾 Farming'], ['cooking', '🍳 Cooking'], ['bollywood', '🎬 Bollywood'], ['code', '💻 Code'], ['general', '💡 Simple']];
+
+  // ── Feature 3 — complexity level (default from years) ──
+  function defaultLevel() { var y = years(); return y >= 8 ? 3 : y >= 3 ? 2 : 1; }
+  function level() { var v = ls('cnai_level', ''); if (!v) { v = String(defaultLevel()); setLs('cnai_level', v); } return parseInt(v, 10) || 2; }
+  window.cnaiSyncLevelSlider = function () { var s = $('cnai-level-slider'); if (s) s.value = String(level()); var lbl = $('cnai-level-lbl'); if (lbl) lbl.textContent = { 1: '🟢 Beginner', 2: '🟡 Intermediate', 3: '🔴 Advanced' }[level()]; };
+
+  // ── Features 2 + 3 — coaching settings bar (analogy preference + complexity), injected atop Teach-Me ──
+  function injectSettings() {
+    var sec = $('analogy-section'); if (!sec || $('cnai-coach-settings')) return;
+    var pref = ls('cnai_analogy', '');
+    var wrap = document.createElement('div'); wrap.id = 'cnai-coach-settings';
+    wrap.style.cssText = 'background:#f7faf7;border:1.5px solid #cfe6cf;border-radius:12px;padding:12px;margin:0 0 12px';
+    wrap.innerHTML =
+      '<div style="font-weight:800;font-size:14px;color:#0a3d1a;margin-bottom:6px">⚙️ How should Chitti explain things to you?</div>' +
+      '<div style="font-size:12px;color:#555;margin-bottom:6px">Your analogy (used everywhere Chitti teaches you):</div>' +
+      '<div id="cnai-analogy-chips" role="group" aria-label="Choose your explanation analogy" style="display:flex;gap:8px;flex-wrap:wrap"></div>' +
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px">' +
+      '<label for="cnai-level-slider" style="font-size:12px;color:#555;font-weight:700">Depth:</label>' +
+      '<input id="cnai-level-slider" type="range" min="1" max="3" step="1" value="' + level() + '" aria-label="Explanation depth — Beginner to Advanced" style="flex:1;min-width:140px;min-height:44px;accent-color:#138808">' +
+      '<span id="cnai-level-lbl" style="font-size:13px;font-weight:800;min-width:120px">' + ({ 1: '🟢 Beginner', 2: '🟡 Intermediate', 3: '🔴 Advanced' }[level()]) + '</span></div>';
+    sec.insertBefore(wrap, sec.firstElementChild ? sec.firstElementChild.nextSibling : null);
+    var chipHost = $('cnai-analogy-chips');
+    chipHost.innerHTML = DOMAINS.map(function (d) {
+      var on = d[0] === pref;
+      return '<button type="button" class="cnai-an-chip" data-dom="' + d[0] + '" aria-pressed="' + on + '" style="min-height:44px;padding:0 12px;border-radius:999px;border:2px solid #138808;background:' + (on ? '#138808' : '#fff') + ';color:' + (on ? '#fff' : '#0a7a37') + ';font-weight:700;font-size:14px;cursor:pointer">' + d[1] + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(chipHost.querySelectorAll('.cnai-an-chip'), function (b) {
+      b.onclick = function () {
+        var dom = b.getAttribute('data-dom'); setLs('cnai_analogy', dom);
+        chipHost.querySelectorAll('.cnai-an-chip').forEach(function (o) { var on = o === b; o.setAttribute('aria-pressed', on); o.style.background = on ? '#138808' : '#fff'; o.style.color = on ? '#fff' : '#0a7a37'; });
+        var ds = $('analogy-domain'); if (ds) { ds.value = dom; try { window.cnaiAnalogyGo && window.cnaiAnalogyGo(); } catch (e) {} }
+        speak('Chitti will now explain using the ' + dom.replace('_', ' ') + ' analogy.');
+      };
+    });
+    var sl = $('cnai-level-slider');
+    sl.oninput = function () { setLs('cnai_level', sl.value); setLs('cnai_level_user', '1'); window.cnaiSyncLevelSlider(); };
+    sl.onchange = function () { try { window.cnaiAnalogyGo && window.cnaiAnalogyGo(); } catch (e) {} };
+  }
+
+  // ── Feature 6 — My Stack (saved courses/certs + progress) ──
+  function stack() { return lsj('cnai_stack', []); }
+  function saveStack(item) { var s = stack(); if (s.some(function (x) { return x.url === item.url && x.name === item.name; })) return false; item.added = 1; item.done = false; s.unshift(item); setLs('cnai_stack', JSON.stringify(s.slice(0, 50))); renderStack(); return true; }
+  window.cnaiSaveStack = function (name, provider, url, kind) { var ok = saveStack({ name: name, provider: provider || '', url: url || '', kind: kind || 'cert' }); speak(ok ? 'Saved ' + name + ' to your stack.' : name + ' is already in your stack.'); return ok; };
+  window.cnaiStackToggle = function (i) { var s = stack(); if (s[i]) { s[i].done = !s[i].done; setLs('cnai_stack', JSON.stringify(s)); renderStack(); updateBadges(); } };
+  window.cnaiStackRemove = function (i) { var s = stack(); s.splice(i, 1); setLs('cnai_stack', JSON.stringify(s)); renderStack(); };
+  function renderStack() {
+    var host = $('cnai-stack-host'); if (!host) return;
+    var s = stack(); var done = s.filter(function (x) { return x.done; }).length;
+    if (!s.length) { host.innerHTML = '<p style="color:#777;font-size:13px;margin:6px 0">Nothing saved yet. Tap <b>⭐ Save</b> on any course or certificate to build your stack.</p>'; return; }
+    host.innerHTML = '<div style="font-size:13px;font-weight:800;color:#0a3d1a;margin:4px 0 8px">📚 ' + done + ' of ' + s.length + ' done</div>' +
+      '<div style="height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-bottom:10px"><div style="height:100%;background:linear-gradient(90deg,#fbbf24,#22c55e);width:' + Math.round(done / s.length * 100) + '%"></div></div>' +
+      s.map(function (x, i) {
+        return '<div data-chitti-response data-chitti-section="My Stack — ' + esc(x.name) + '" style="display:flex;align-items:center;gap:8px;border:1px solid #eee;border-radius:10px;padding:8px 10px;margin:6px 0">' +
+          '<button type="button" onclick="cnaiStackToggle(' + i + ')" aria-label="' + (x.done ? 'Mark not done' : 'Mark done') + ': ' + esc(x.name) + '" style="min-width:44px;min-height:44px;border-radius:8px;border:2px solid #138808;background:' + (x.done ? '#138808' : '#fff') + ';color:' + (x.done ? '#fff' : '#138808') + ';font-size:16px;cursor:pointer">' + (x.done ? '✓' : '○') + '</button>' +
+          '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;' + (x.done ? 'text-decoration:line-through;color:#888' : '') + '">' + esc(x.name) + '</div>' + (x.provider ? '<div style="font-size:12px;color:#777">' + esc(x.provider) + '</div>' : '') + '</div>' +
+          (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(x.name) + '" style="min-height:44px;display:inline-flex;align-items:center;padding:0 8px;color:#0a55c8">↗</a>' : '') +
+          '<button type="button" onclick="cnaiStackRemove(' + i + ')" aria-label="Remove ' + esc(x.name) + '" style="min-width:44px;min-height:44px;border-radius:8px;border:2px solid #b00;background:#fff;color:#b00;cursor:pointer">🗑</button></div>';
+      }).join('');
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(host); } catch (e) {}
+  }
+
+  // ── Feature 1 — "Chitti learns WITH you → YOU get certified" coaching flow ──
+  function injectWithYou() {
+    var sec = $('upgrade-section'); if (!sec || $('cnai-withyou')) return;
+    var box = document.createElement('div'); box.id = 'cnai-withyou';
+    box.setAttribute('data-chitti-response', ''); box.setAttribute('data-chitti-section', 'Chitti learns WITH you');
+    box.style.cssText = 'border:2px solid #138808;border-radius:12px;padding:14px;margin:14px 0 0;background:#f7faf7';
+    box.innerHTML =
+      '<div style="font-weight:800;font-size:16px;color:#0a3d1a">🎓 Chitti learns WITH you — and coaches you to YOUR certificate</div>' +
+      '<p style="font-size:13px;color:#555;margin:6px 0 10px">Chitti masters a free course, then teaches you in your language and analogy. <b>You</b> sit the exam and <b>you</b> earn the certificate — Chitti is your tutor, never a stand-in.</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<label for="cnai-wy-topic" class="sr-only">What do you want to get certified in?</label>' +
+      '<input id="cnai-wy-topic" type="text" placeholder="e.g. Generative AI, Excel, Prompt Engineering" aria-label="What do you want to get certified in?" style="flex:1;min-width:200px;min-height:48px;padding:0 14px;font-size:16px;border:2px solid #888;border-radius:10px">' +
+      '<button type="button" id="cnai-wy-go" style="min-height:48px;padding:0 16px;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:700;font-size:15px">Coach me →</button></div>' +
+      '<div id="cnai-wy-out" aria-live="polite" style="margin-top:10px"></div>' +
+      '<h3 style="font-size:14px;margin:14px 0 4px;color:#0a3d1a">⭐ My Stack</h3><div id="cnai-stack-host"></div>';
+    sec.appendChild(box);
+    $('cnai-wy-go').onclick = runWithYou;
+    $('cnai-wy-topic').addEventListener('keydown', function (e) { if (e.key === 'Enter') runWithYou(); });
+    renderStack();
+  }
+  function runWithYou() {
+    var topic = ($('cnai-wy-topic').value || '').trim(); if (!topic) { speak('Tell Chitti what you want to get certified in.'); $('cnai-wy-topic').focus(); return; }
+    var out = $('cnai-wy-out'); var dom = ls('cnai_analogy', 'cricket');
+    var course = null; try { var res = window.ChittiCourses.find(topic); course = (res.results || []).filter(function (r) { return r.is_free; })[0] || (res.results || [])[0]; } catch (e) {}
+    var teach = null; try { teach = window.ChittiLearns.teach('agent', dom); } catch (e) {}
+    var courseName = course ? course.course : 'a free ' + topic + ' course';
+    var courseUrl = course ? course.url : '';
+    var html = '<div style="background:#fff;border:1px solid #cfe6cf;border-radius:10px;padding:12px">' +
+      '<div style="font-weight:700">Step 1 · Chitti takes the course</div><div style="font-size:14px;color:#444;margin:2px 0 8px">🎓 Chitti will study <b>' + esc(courseName) + '</b>' + (course ? ' (' + esc(course.provider || '') + ', ' + (course.is_free ? 'FREE' : 'paid') + ')' : '') + ' and master it for you.</div>' +
+      '<div style="font-weight:700">Step 2 · Chitti teaches YOU (in your ' + esc(dom.replace('_', ' ')) + ' analogy)</div><div style="font-size:14px;color:#444;margin:2px 0 8px">' + (teach ? esc(teach.analogy) + ' <span style="color:#9a3412">⚠️ Where it breaks down: ' + esc(teach.breaks_down) + '</span>' : 'Chitti explains every concept in your analogy, step by step.') + '</div>' +
+      '<div style="font-weight:700">Step 3 · You practise (not graded)</div><div style="font-size:14px;color:#444;margin:2px 0 8px">📝 ' + (teach ? esc(teach.practice) : 'Chitti checks your understanding with friendly questions — no grades.') + '</div>' +
+      '<div style="font-weight:700">Step 4 · YOU get certified</div><div style="font-size:14px;color:#444;margin:2px 0 8px">✅ When <b>you</b> are ready, <b>you</b> take the exam and <b>you</b> earn the certificate. Chitti never sits it for you.' + (courseUrl ? ' <a href="' + esc(courseUrl) + '" target="_blank" rel="noopener" style="min-height:44px;display:inline-flex;align-items:center">▶ Start the free course</a>' : '') + '</div>' +
+      '<button type="button" onclick="cnaiSaveStack(' + JSON.stringify(courseName).replace(/"/g, '&quot;') + ',' + JSON.stringify(course ? (course.provider || '') : '').replace(/"/g, '&quot;') + ',' + JSON.stringify(courseUrl).replace(/"/g, '&quot;') + ',\'cert\')" style="min-height:44px;padding:0 14px;border-radius:10px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700">⭐ Save to My Stack</button>' +
+      '</div>';
+    out.innerHTML = html;
+    speak('Here is your plan. Chitti will master ' + courseName + ', teach you in your ' + dom.replace('_', ' ') + ' analogy, and coach you. You take the exam and you earn the certificate.');
+    try { if (window.ChittiFeedback && window.ChittiFeedback.scan) window.ChittiFeedback.scan(out); } catch (e) {}
+  }
+
+  // ── Feature 7 — Readiness intake (3 questions → seeds Hub readiness) ──
+  function injectReadiness() {
+    var sec = $('hub-section'); if (!sec || $('cnai-readiness-btn')) return;
+    var h2 = sec.querySelector('.section-title') || sec.firstElementChild;
+    var btn = document.createElement('button'); btn.id = 'cnai-readiness-btn'; btn.type = 'button';
+    btn.setAttribute('aria-label', 'Check my AI readiness — 3 quick questions');
+    btn.style.cssText = 'min-height:44px;margin:0 0 10px;padding:0 14px;border-radius:10px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700;font-size:14px;cursor:pointer';
+    btn.textContent = '📊 Check my AI readiness (3 questions)';
+    btn.onclick = openReadiness;
+    if (h2 && h2.nextSibling) sec.insertBefore(btn, h2.nextSibling); else sec.appendChild(btn);
+  }
+  var RQ = [
+    { k: 'ai_usage', q: 'Do you use AI tools (ChatGPT, Gemini…) at work?', a: [['Never', 0], ['Sometimes', 1], ['Daily', 2]] },
+    { k: 'prompting', q: 'How comfortable are you writing prompts?', a: [['New to it', 0], ['Getting there', 1], ['Confident', 2]] },
+    { k: 'automation', q: 'Have you automated any task with AI?', a: [['Not yet', 0], ['Tried once', 1], ['Yes, regularly', 2]] }
+  ];
+  function openReadiness() {
+    var bg = document.createElement('div'); bg.id = 'cnai-readiness-modal';
+    bg.style.cssText = 'position:fixed;inset:0;background:rgba(14,35,68,.55);z-index:140;display:flex;align-items:center;justify-content:center;padding:16px';
+    var ans = {};
+    bg.innerHTML = '<div role="dialog" aria-modal="true" aria-label="AI readiness check" style="background:#fff;max-width:460px;width:100%;border-radius:14px;padding:18px;border-top:6px solid #138808;max-height:88vh;overflow:auto">' +
+      '<h3 style="margin:0 0 8px;color:#0a3d1a">📊 Your AI readiness</h3>' + RQ.map(function (q, qi) {
+        return '<div style="margin:10px 0"><div style="font-weight:700;font-size:14px">' + esc(q.q) + '</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+          q.a.map(function (a, ai) { return '<button type="button" class="rq" data-q="' + qi + '" data-v="' + a[1] + '" data-k="' + q.k + '" style="min-height:44px;padding:0 12px;border-radius:999px;border:2px solid #138808;background:#fff;color:#0a7a37;font-weight:700;cursor:pointer">' + esc(a[0]) + '</button>'; }).join('') + '</div></div>';
+      }).join('') + '<button type="button" id="cnai-rq-save" style="min-height:48px;margin-top:12px;width:100%;border-radius:10px;border:0;background:#138808;color:#fff;font-weight:800;font-size:16px;cursor:pointer">See my readiness →</button></div>';
+    document.body.appendChild(bg);
+    bg.addEventListener('click', function (e) { if (e.target === bg) bg.remove(); });
+    bg.querySelectorAll('.rq').forEach(function (b) { b.onclick = function () { var qi = b.getAttribute('data-q'); ans[b.getAttribute('data-k')] = parseInt(b.getAttribute('data-v'), 10); bg.querySelectorAll('.rq[data-q="' + qi + '"]').forEach(function (o) { var on = o === b; o.style.background = on ? '#138808' : '#fff'; o.style.color = on ? '#fff' : '#0a7a37'; }); }; });
+    $('cnai-rq-save').onclick = function () {
+      var p = profile() || {}; p.ai_usage = ans.ai_usage || 0; p.prompting = ans.prompting || 0; p.automation = ans.automation || 0;
+      setLs('cnai_profile', JSON.stringify(p));
+      try { if (window.ChittiCoach && window.ChittiCoach.profile && window.ChittiCoach.profile.set) { var cp = window.ChittiCoach.profile.init(); cp.ai_usage = p.ai_usage; cp.prompting = p.prompting; cp.automation = p.automation; window.ChittiCoach.profile.set(cp); } } catch (e) {}
+      bg.remove();
+      try { window.renderAll ? window.renderAll() : (window.cnaiRerenderHub && window.cnaiRerenderHub()); } catch (e) {}
+      speak('Your readiness is updated. Scroll to your Profession Hub to see your score and next steps.');
+      try { window.ccScroll && window.ccScroll('hub-section'); } catch (e) {}
+    };
+  }
+
+  // ── Feature 8 — daily streak + badges ──
+  function todayStr() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  function bumpStreak() {
+    var s = lsj('cnai_streak', { last: '', count: 0 }); var t = todayStr();
+    if (s.last === t) return s;
+    var y = new Date(); y.setDate(y.getDate() - 1); var ystr = y.getFullYear() + '-' + (y.getMonth() + 1) + '-' + y.getDate();
+    s.count = (s.last === ystr) ? (s.count + 1) : 1; s.last = t; setLs('cnai_streak', JSON.stringify(s)); return s;
+  }
+  function injectStreak() {
+    var row = document.querySelector('header .brand-row'); if (!row || $('cnai-streak')) return;
+    var s = bumpStreak();
+    var chip = document.createElement('div'); chip.id = 'cnai-streak'; chip.setAttribute('role', 'status');
+    chip.setAttribute('aria-label', s.count + ' day learning streak');
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;color:#fff;min-height:32px';
+    chip.innerHTML = '🔥 <span id="cnai-streak-n">' + s.count + '</span>d';
+    row.appendChild(chip);
+  }
+  function updateBadges() {
+    var host = $('cnai-badges'); if (!host) { injectBadges(); host = $('cnai-badges'); if (!host) return; }
+    var s = lsj('cnai_streak', { count: 0 }); var done = stack().filter(function (x) { return x.done; }).length;
+    var badges = [];
+    if (s.count >= 1) badges.push(['🔥', s.count + '-day streak']);
+    if (s.count >= 7) badges.push(['🏅', '7-day streak']);
+    if (done >= 1) badges.push(['✅', 'First skill done']);
+    if (done >= 3) badges.push(['🎖️', '3 skills done']);
+    if (!badges.length) badges.push(['🌱', 'Just getting started']);
+    host.innerHTML = badges.map(function (b) { return '<span style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #cfe6cf;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:#0a3d1a">' + b[0] + ' ' + esc(b[1]) + '</span>'; }).join('');
+  }
+  function injectBadges() {
+    var sec = $('upgrade-section'); var box = $('cnai-withyou'); if (!sec || !box || $('cnai-badges')) return;
+    var wrap = document.createElement('div'); wrap.innerHTML = '<h3 style="font-size:14px;margin:14px 0 6px;color:#0a3d1a">🏆 Your badges</h3><div id="cnai-badges" role="list" aria-label="Your badges" style="display:flex;gap:8px;flex-wrap:wrap"></div>';
+    box.appendChild(wrap);
+  }
+
+  // ── boot — inject all (idempotent); hosts are static sections so injection survives re-renders ──
+  function boot() {
+    // Feature 3 — auto-default depth from the user's experience (years) until they
+    // move the slider themselves (cnai_level_user). Re-runs as the profile loads.
+    try { if (ls('cnai_level_user', '') !== '1') setLs('cnai_level', String(defaultLevel())); } catch (e) {}
+    try { injectSettings(); } catch (e) {}
+    try { injectWithYou(); } catch (e) {}
+    try { injectReadiness(); } catch (e) {}
+    try { injectStreak(); } catch (e) {}
+    try { injectBadges(); updateBadges(); } catch (e) {}
+    try { window.cnaiSyncLevelSlider(); } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 600); }); else setTimeout(boot, 600);
+  // Re-inject after the profile-driven sections appear (upgrade/hub toggle on profile set).
+  setTimeout(boot, 1800); setTimeout(boot, 3500);
+})();
 </script>
 </body>
 </html>
