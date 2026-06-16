@@ -214,6 +214,172 @@ def _fallback(text_in: str, language: str, *, error: Optional[str] = None) -> di
     return out
 
 
+# ─────────────────────────────────────────────────────
+# DETERMINISTIC label reader (CUSOS doctrine: "rules are the product,
+# the LLM is an enhancement"). Runs with ZERO external calls so the
+# scanner still READS the label when DeepSeek is unfunded / down
+# (was: "Chitti is offline right now"). QA 2026-06-16 bug #2.
+# ─────────────────────────────────────────────────────
+
+_MOLECULES = (
+    "paracetamol", "acetaminophen", "ibuprofen", "amoxicillin", "azithromycin",
+    "cetirizine", "metformin", "amlodipine", "pantoprazole", "omeprazole",
+    "diclofenac", "aspirin", "domperidone", "ranitidine", "atorvastatin",
+)
+
+_RE_MRP = re.compile(r"(?:mrp|rs\.?|₹|inr)\s*\.?\s*([\d,]+(?:\.\d{1,2})?)", re.IGNORECASE)
+_RE_STRENGTH = re.compile(r"\b(\d+(?:\.\d+)?\s*(?:mg|mcg|ml|g)\b)", re.IGNORECASE)
+_RE_EXP = re.compile(r"\b(?:exp|expiry|expires|use before|best before)\b[:.\s]*([a-z0-9 /\-]{3,12})", re.IGNORECASE)
+_RE_MFG = re.compile(r"\b(?:mfg|mfd|manufactured)\b[:.\s]*([a-z0-9 /\-]{3,12})", re.IGNORECASE)
+_RE_FSSAI = re.compile(r"\bfssai\b[^\d]{0,8}(\d{10,14})", re.IGNORECASE)
+_RE_SECTION = re.compile(r"\bsection\s*(\d+[a-z]?)\b", re.IGNORECASE)
+
+
+def _det_type(low: str) -> str:
+    """Map raw label text to one of the backend _VALID_TYPES, deterministically."""
+    has = lambda *ws: any(w in low for w in ws)  # noqa: E731
+    if has("notice", "summons", "eviction", "agreement", "arbitration",
+           "section 138", "demand notice", "tenant", "clause", "contract"):
+        return "legal_doc"
+    # Food signals checked BEFORE medicine: packaged food also prints "mg"
+    # (sodium 800mg), so a bare "mg" must NOT win medicine over a clear food pack.
+    if has("fssai", "ingredients", "kcal", "calorie", "energy ", "sodium",
+           "preservative", "best before", "nutrition", "noodles", "biscuit",
+           "snack"):
+        return "food"
+    if has("paracetamol", "tablet", "capsule", "syrup", "composition", "dosage",
+           "prescription", "antibiotic", "crocin", " ip ", "schedule h") \
+            or any(m in low for m in _MOLECULES):
+        return "medicine"
+    if has("invoice", "receipt", "bill", "gst", "total amount", "grand total"):
+        return "bill"
+    if has("mrp", "overcharg") or _RE_MRP.search(low):
+        return "mrp"
+    if has("insurance", "premium", "sum assured", "policy number", "idv"):
+        return "insurance"
+    return "other"
+
+
+def _deterministic_read(text_in: str, language: str, *, error: Optional[str] = None) -> dict:
+    """Rules-only reading of the typed/OCR'd label. Always returns ok:True."""
+    text = (text_in or "").strip()
+    if not text or text == "[image input]":
+        # No text to parse (image-only with vision off) — keep the honest offline note.
+        return _fallback(text_in, language, error=error)
+
+    low = text.lower()
+    t = _det_type(low)
+    facts: dict = {}
+    findings: list[str] = []
+    warnings: list[str] = []
+    savings: list[str] = []
+
+    if t == "medicine":
+        m = _RE_STRENGTH.search(text)
+        if m:
+            facts["strength"] = m.group(1).strip()
+        for mol in _MOLECULES:
+            if mol in low:
+                facts["composition"] = mol.capitalize()
+                break
+    elif t == "food":
+        ms_sugar = re.search(r"sugar[:\s]*([\d.]+\s*g)", low)
+        if ms_sugar:
+            facts["sugar"] = ms_sugar.group(1).strip()
+        ms_energy = re.search(r"(?:energy|kcal|calorie)[:\s]*([\d.]+\s*(?:kcal)?)", low)
+        if ms_energy:
+            facts["energy"] = ms_energy.group(1).strip()
+        ms_sodium = re.search(r"sodium[:\s]*([\d.]+\s*mg)", low)
+        if ms_sodium:
+            facts["sodium"] = ms_sodium.group(1).strip()
+    mm = _RE_MRP.search(text)
+    if mm:
+        facts["mrp"] = "₹" + mm.group(1)
+    _date2 = lambda v: " ".join(v.strip().split()[:2])  # keep month + year only  # noqa: E731
+    me = _RE_EXP.search(text)
+    if me:
+        facts["expiry"] = _date2(me.group(1))
+        warnings.append("Check the expiry date is in the future before using.")
+    mf = _RE_MFG.search(text)
+    if mf:
+        facts["mfg"] = _date2(mf.group(1))
+    mfs = _RE_FSSAI.search(text)
+    if mfs:
+        facts["fssai_license"] = mfs.group(1)
+        findings.append("FSSAI licence number is printed — that is a good sign for a food product.")
+    ms = _RE_SECTION.search(text)
+    if ms:
+        facts["section"] = "Section " + ms.group(1)
+
+    if t == "medicine":
+        findings.insert(0, "This looks like a medicine label. Chitti restates the strip — it does not prescribe.")
+        savings.append("A same-composition Jan Aushadhi generic may be much cheaper — check MedUPI.")
+    elif t == "food":
+        findings.insert(0, "This looks like packaged food. Compare sugar / salt / fat with the FSSAI label.")
+    elif t == "legal_doc":
+        findings.insert(0, "This reads like a legal notice/agreement. Read every clause before signing.")
+        warnings.append("Do not sign or pay anything until you understand it — ask a lawyer if unsure.")
+    elif t in ("bill", "mrp"):
+        findings.insert(0, "This looks like a bill / price. If charged above MRP, the consumer helpline is 1800-11-4000.")
+    else:
+        findings.insert(0, "Chitti read the text you gave. Pick a category to send it to the right Chitti.")
+
+    if not findings:
+        findings.append("Chitti read the label text. Tap Send to Vaani to hear it in your language.")
+
+    fact_bits = ", ".join(f"{k}: {v}" for k, v in facts.items())
+    base_en = {
+        "medicine": "I read a medicine label",
+        "food": "I read a packaged-food label",
+        "legal_doc": "I read a legal document",
+        "bill": "I read a bill",
+        "mrp": "I checked the price label",
+        "insurance": "I read an insurance paper",
+        "other": "I read your label",
+    }[t]
+    summary_en = base_en + (". " + fact_bits if fact_bits else ".") + " (Read offline by Chitti's rules.)"
+    summary_hi = {
+        "medicine": "मैंने दवा का लेबल पढ़ा",
+        "food": "मैंने पैकेज्ड खाने का लेबल पढ़ा",
+        "legal_doc": "मैंने एक क़ानूनी दस्तावेज़ पढ़ा",
+        "bill": "मैंने बिल पढ़ा",
+        "mrp": "मैंने दाम का लेबल जाँचा",
+        "insurance": "मैंने बीमा का काग़ज़ पढ़ा",
+        "other": "मैंने आपका लेबल पढ़ा",
+    }[t] + (". " + fact_bits if fact_bits else ".") + " (चिट्टी ने नियमों से पढ़ा।)"
+
+    out = _normalise({
+        "type": t,
+        "summary": summary_hi if language == "hi" else summary_en,
+        "facts": facts,
+        "key_findings": findings,
+        "warnings": warnings,
+        "savings": savings,
+        "speak_hi": summary_hi,
+        "speak_en": summary_en,
+    })
+    out.update({
+        "ok": True,
+        "source": "deterministic",
+        "language": language,
+    })
+    if error:
+        out["error"] = error[:200]
+    return out
+
+
+# Localised soft-redirect copy for the rare case the relevance rail still fires
+# (QA 2026-06-16 bug #3 — was English-only even in hi/kn sessions).
+_REDIRECT_COPY = {
+    "hi": "मैं लेबल, दवा, बिल या दस्तावेज़ पढ़ती हूँ। कृपया लेबल का टेक्स्ट लिखिए — मैं पढ़ दूँगी।",
+    "en": "I read labels, medicines, bills and documents. Please type the label text and I'll read it.",
+}
+
+
+def _localized_redirect(language: str) -> str:
+    return _REDIRECT_COPY.get(language, _REDIRECT_COPY["en"])
+
+
 def _raw_scanner_text_deepseek(language: str, safe_text: str) -> tuple[str, dict]:
     body = {
         "model": settings.DEEPSEEK_MODEL,
@@ -248,7 +414,8 @@ def analyze_text(text: str, language: str = "hi") -> dict:
         return {"ok": False, "error": "text is required"}
 
     if not settings.DEEPSEEK_API_KEY:
-        return _fallback(text, language)
+        # No LLM configured — read it deterministically instead of going dark.
+        return _deterministic_read(text, language)
 
     usage_capture: dict = {}
 
@@ -288,16 +455,16 @@ def analyze_text(text: str, language: str = "hi") -> dict:
                                      compliance_inject=False)
         except httpx.HTTPStatusError as e:
             log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
-            return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")
+            return _deterministic_read(text, language, error=f"deepseek_http_{e.response.status_code}")
         except (httpx.RequestError, KeyError, ValueError) as e:
             log.exception("DeepSeek call failed: %s", e)
-            return _fallback(text, language, error=str(e))
+            return _deterministic_read(text, language, error=str(e))
         if wrapped.get("blocked"):
             return {
                 "ok": False,
                 "source": "blocked",
                 "language": language,
-                "summary": wrapped["reply"],
+                "summary": _localized_redirect(language),
                 "rail": wrapped.get("rail"),
                 "reason": wrapped.get("reason"),
                 "request_id": wrapped.get("request_id"),
@@ -314,10 +481,10 @@ def analyze_text(text: str, language: str = "hi") -> dict:
         return _build_from_raw(raw)
     except httpx.HTTPStatusError as e:
         log.error("DeepSeek HTTP %s: %s", e.response.status_code, e.response.text[:200])
-        return _fallback(text, language, error=f"deepseek_http_{e.response.status_code}")
+        return _deterministic_read(text, language, error=f"deepseek_http_{e.response.status_code}")
     except (httpx.RequestError, KeyError, ValueError) as e:
         log.exception("DeepSeek call failed: %s", e)
-        return _fallback(text, language, error=str(e))
+        return _deterministic_read(text, language, error=str(e))
 
 
 def analyze_image(image_bytes: bytes, content_type: str, language: str = "hi") -> dict:
