@@ -140,7 +140,10 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
   .brand{font-size:18px}
   main{padding:12px 12px 32px}
   nav.tabs .tab{font-size:12px;padding:12px 10px}
+  /* Health File iframe: shorter + guaranteed no horizontal overflow on phones */
+  #hf-iframe{min-height:75vh!important;max-width:100%!important;width:100%!important}
 }
+#hf-iframe{max-width:100%}
 </style>
 <link rel="stylesheet" href="chitti_theme.css"><!-- chitti_theme.css 2026-05-15 unified palette -->
 </head>
@@ -246,6 +249,27 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
   <!-- ════════════════════ SCAN TAB ════════════════════ -->
   <section id="tab-scan" class="page active" role="tabpanel">
+
+    <!-- ════════ HOW TO USE (static · scannable · voice-readable) ════════ -->
+    <div class="section-card chitti-response" id="howto-card" data-chitti-section="How to use Chitti MedUPI">
+      <div class="section-head">
+        <div>
+          <div class="section-title">📖 How to use Chitti MedUPI</div>
+          <div class="section-sub">Six simple steps. Every box can be read aloud — tap the 🔊 on any card. Prefer a guided tour? Tap 🎬 Demo Mode in the header.</div>
+        </div>
+        <button class="metric-spk" onclick="speakHowTo()" aria-label="Read how to use Chitti MedUPI aloud" title="Read aloud">🔊</button>
+      </div>
+      <ol style="margin:6px 0 0;padding-left:0;list-style:none;font-size:13.5px;line-height:1.6">
+        <li style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px;flex-shrink:0">📷</span><span><b>Step 1 — Scan or type.</b> On the Scan tab, point the camera at a medicine strip, upload a photo / prescription, or just type or speak the name.</span></li>
+        <li style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px;flex-shrink:0">💊</span><span><b>Step 2 — Compare &amp; save.</b> The Compare tab shows same-composition equivalents, the Jan Aushadhi price, and how much you save — with a risk colour for every option.</span></li>
+        <li style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px;flex-shrink:0">👨‍👩‍👧</span><span><b>Step 3 — Add your family.</b> In Family Wallet, add Mother, Father, Spouse, Child — one wallet each. Chitti tracks spend and savings per person.</span></li>
+        <li style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px;flex-shrink:0">🔔</span><span><b>Step 4 — Set reminders.</b> Refill before you run out, expiry before you throw away, daily dose pings. For elders, Chitti can phone and speak the reminder aloud.</span></li>
+        <li style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:20px;flex-shrink:0">🏥</span><span><b>Step 5 — Find Jan Aushadhi.</b> On the Jan Aushadhi tab tap “Find near me” for the closest government store — address, hours, phone and a map link.</span></li>
+        <li style="display:flex;gap:10px;padding:7px 0"><span style="font-size:20px;flex-shrink:0">🛡️</span><span><b>Step 6 — Check cover &amp; learn.</b> Check Ayushman / CGHS / ESI coverage on the Insurance tab, and read the plain-English basics on the Learn tab.</span></li>
+      </ol>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6">🌐 Change language any time from the selector at the top-right — the whole page follows. 🎤 Most actions also work hands-free by voice, and every result is read aloud for you.</div>
+    </div>
+
     <div class="section-card chitti-response" data-chitti-section="Section card">
       <div class="section-head">
         <div>
@@ -313,7 +337,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         </div>
       </div>
       <div style="background:#fbf8f1;border:1px dashed var(--border);border-radius:10px;padding:14px;font-family:'JetBrains Mono','Menlo',monospace;font-size:12px;line-height:1.7">
-        <div style="font-weight:800;color:var(--saffron)">Sample output (when wired):</div>
+        <div style="font-weight:800;color:var(--saffron)">Example — this is what you see on every scan:</div>
         <div style="margin-top:10px"><strong>Scanned:</strong> Crocin 650</div>
         <div><strong>Composition:</strong> Paracetamol 650 mg Tablet</div>
         <div style="margin-top:8px"><strong>Equivalent options:</strong></div>
@@ -329,7 +353,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <div class="section-card chitti-response" data-chitti-section="Section card">
       <div class="section-head">
         <div>
-          <div class="section-title">🛡️ Risk Classification <span class="live-badge" data-i18n="badge.live">LIVE skeleton</span></div>
+          <div class="section-title">🛡️ Risk Classification <span class="live-badge" data-i18n="badge.live">LIVE</span></div>
           <div class="section-sub">Every alternative shown is colour-banded by risk. HIGH-risk meds (antibiotics / cardiac / diabetes / BP / psychiatric) trigger a stop-and-think prompt.</div>
         </div>
       </div>
@@ -411,8 +435,23 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         src="chitti_health_file.html?embed=1"
         title="Chitti Health File workspace"
         loading="lazy"
-        style="width:100%;min-height:900px;border:1px solid var(--border);border-radius:10px;background:#fff;display:block"
+        style="width:100%;min-height:900px;max-width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;display:block"
       ></iframe>
+      <script>
+      /* Carry the active language into the embedded Health File so it opens in
+         the same language. (Same-origin localStorage already mirrors chitti_lang,
+         but the explicit ?lang= makes the first paint correct too.) */
+      (function(){
+        function syncHfLang(){
+          var f = document.getElementById('hf-iframe'); if (!f) return;
+          var lang = (window._chittiLang) || (function(){try{return localStorage.getItem('chitti_lang')||'en';}catch(e){return 'en';}})();
+          var base = 'chitti_health_file.html?embed=1&lang=' + encodeURIComponent(lang);
+          if (f.getAttribute('src') !== base) f.setAttribute('src', base);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncHfLang);
+        else syncHfLang();
+      })();
+      </script>
     </div>
   </section>
 
@@ -650,6 +689,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
         <div class="metric-card chitti-response" data-chitti-section="Metric card"><div class="metric-card-lbl"><span>🟢 Bioequivalence</span></div><div class="metric-card-pe">Two medicines work the same way in your body if they have same composition + bioequivalence (≥80%). All Indian generics meet this standard.</div></div>
         <div class="metric-card chitti-response" data-chitti-section="Metric card"><div class="metric-card-lbl"><span>🟢 5 questions to ask your doctor</span></div><div class="metric-card-pe">"Can I switch to a generic?" "Is there a Jan Aushadhi version?" "What's the cheaper alternative?" "How long do I take this?" "What if I miss a dose?"</div></div>
       </div>
+      <div id="learn-demo-target" class="section-empty" aria-live="polite" style="margin-top:10px"></div>
     </div>
 
     <div class="section-card chitti-response" data-chitti-section="Section card">
@@ -911,10 +951,25 @@ function sp(text, lang) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  const useHi = (lang === 'hi') || (lang == null && _chittiLang === 'hi');
-  u.lang = useHi ? 'hi-IN' : 'en-IN';
+  const code = lang || _chittiLang || 'en';
+  // Use the selected language's voice where the platform offers one; honest
+  // en-IN fallback otherwise. (_DEMO_BCP47 is defined later but only read here
+  // at click-time, long after the script has finished executing.)
+  u.lang = (typeof _DEMO_BCP47 !== 'undefined' && _DEMO_BCP47[code]) ? _DEMO_BCP47[code] : (code === 'hi' ? 'hi-IN' : 'en-IN');
   u.rate = 0.88;
   speechSynthesis.speak(u);
+}
+
+// How-to-use, read aloud. Hindi is hand-authored; other languages read the
+// on-screen text (which follows the active language pack — honest fallback to
+// English where a pack lacks the string).
+const HOWTO_HI = 'चिट्टी मेडUPI कैसे इस्तेमाल करें, छह आसान कदम। पहला, स्कैन या टाइप करें — कैमरे से दवा स्कैन करें या नाम बोलें। दूसरा, तुलना करें और बचाएँ — समान संरचना के विकल्प और जन औषधि कीमत देखें। तीसरा, परिवार जोड़ें — हर सदस्य का अलग पर्स। चौथा, रिमाइंडर लगाएँ — रीफिल, एक्सपायरी और खुराक। पाँचवाँ, पास की जन औषधि दुकान खोजें। छठा, बीमा कवर जाँचें और सीखें टैब पढ़ें। ऊपर दाईं ओर से कभी भी भाषा बदलें।';
+function speakHowTo(){
+  if (_chittiLang === 'hi') { sp(HOWTO_HI, 'hi'); return; }
+  const card = document.getElementById('howto-card');
+  let txt = '';
+  if (card) { txt = (card.innerText || card.textContent || '').replace(/🔊/g, ' ').replace(/\s+/g, ' ').trim(); }
+  sp(txt || 'How to use Chitti MedUPI in six steps. Scan or type a medicine. Compare and save. Add your family. Set reminders. Find Jan Aushadhi. Check insurance and learn.');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2281,7 +2336,19 @@ const DEMO_STEPS_MEDUPI = [
   {
     tab: 'compare', step_label: 'Step 2 of 8 · Compare',
     narr_en: 'Step 2. Compare tab. Three risk colours. Red for HIGH RISK — antibiotics, diabetes, heart medicines. I always warn you. Amber for MEDIUM. Green for LOW RISK like vitamins and fever medicines — switch and save.',
-    narr_hi: 'दूसरा कदम। तुलना टैब। तीन रंग। लाल मतलब उच्च जोखिम — एंटीबायोटिक, मधुमेह, हृदय दवा — मैं हमेशा चेतावनी देता हूँ। पीला मध्यम। हरा कम जोखिम जैसे विटामिन और बुखार की दवा — बदलें और बचाएँ।'
+    narr_hi: 'दूसरा कदम। तुलना टैब। तीन रंग। लाल मतलब उच्च जोखिम — एंटीबायोटिक, मधुमेह, हृदय दवा — मैं हमेशा चेतावनी देता हूँ। पीला मध्यम। हरा कम जोखिम जैसे विटामिन और बुखार की दवा — बदलें और बचाएँ।',
+    action: function(){
+      const el = document.getElementById('cart-result');
+      if (el) el.innerHTML =
+        '<div style="text-align:left">' +
+        '<div style="font-weight:800;color:var(--saffron);margin-bottom:6px">Example comparison (Crocin 650)</div>' +
+        '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>Jan Aushadhi Generic</span><span><b style="color:var(--med-green)">₹8</b> &nbsp;<span class="risk-low">LOW RISK</span></span></div>' +
+        '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>Dolo 650</span><span>₹20</span></div>' +
+        '<div style="display:flex;justify-content:space-between;padding:5px 0"><span>Calpol 650 (current)</span><span>₹22</span></div>' +
+        '<div style="margin-top:8px;font-weight:800;color:var(--med-green)">You save up to 76% — same composition.</div>' +
+        '<div style="margin-top:6px;font-size:11px;color:var(--muted)">⚠️ Same composition. Confirm with your doctor / pharmacist before switching.</div>' +
+        '</div>';
+    }
   },
   {
     tab: 'wallet', step_label: 'Step 3 of 8 · Family Wallet',
@@ -2328,7 +2395,15 @@ const DEMO_STEPS_MEDUPI = [
   {
     tab: 'learn', step_label: 'Step 7 of 8 · Learn',
     narr_en: 'Step 7. Learn tab. What is a generic. What is a composition. What is NPPA. What is Schedule H. And five questions to ask your doctor — to walk into appointments informed and confident.',
-    narr_hi: 'सातवाँ कदम। सीखें टैब। जेनेरिक क्या है। संरचना क्या है। NPPA क्या है। शेड्यूल H क्या है। और डॉक्टर से पूछने के 5 ज़रूरी सवाल — ताकि आप जानकार बनकर डॉक्टर के पास जाएँ।'
+    narr_hi: 'सातवाँ कदम। सीखें टैब। जेनेरिक क्या है। संरचना क्या है। NPPA क्या है। शेड्यूल H क्या है। और डॉक्टर से पूछने के 5 ज़रूरी सवाल — ताकि आप जानकार बनकर डॉक्टर के पास जाएँ।',
+    action: function(){
+      const el = document.getElementById('learn-demo-target');
+      if (el) el.innerHTML =
+        '<div style="text-align:left;background:rgba(34,197,94,.10);border:1px solid var(--med-green);border-radius:10px;padding:12px">' +
+        '<div style="font-weight:800;margin-bottom:6px">🟢 Sample: a generic explained</div>' +
+        '<div style="font-size:12.5px;line-height:1.6">Brand <b>Crocin 650</b> and the Jan Aushadhi <b>Paracetamol 650 mg</b> generic share the <b>same composition</b> — same active ingredient, strength and form. Same CDSCO quality, up to 76% cheaper. Ask your doctor: “Is there a Jan Aushadhi version?”</div>' +
+        '</div>';
+    }
   },
   {
     tab: 'settings', step_label: 'Step 8 of 8 · Settings',
@@ -2342,6 +2417,29 @@ let _demoIdx = -1;
 let _demoSpeakTimer = null;
 let _demoAdvanceTimer = null;
 
+// BCP-47 voice tags so demo speech uses the SELECTED language's voice
+// (not just EN/HI). Unmapped langs fall back to the generic India tag.
+const _DEMO_BCP47 = {
+  en:'en-IN', hi:'hi-IN', bn:'bn-IN', te:'te-IN', ta:'ta-IN', mr:'mr-IN',
+  gu:'gu-IN', kn:'kn-IN', ml:'ml-IN', pa:'pa-IN', or:'or-IN', as:'as-IN',
+  ur:'ur-IN', sa:'sa-IN', ne:'ne-NP'
+};
+function _demoLangTag(){ return _DEMO_BCP47[_chittiLang] || 'en-IN'; }
+
+// Resolve demo narration for the active language, routed through the i18n
+// substrate: prefer a hand-authored narr_<lang>, else look the English line
+// up in the active language pack (chitti_lang.js), else fall back honestly
+// to English. This is what makes Kannada/Tamil/etc. speak in-language the
+// moment a pack/community supplies the string — no fabricated translations.
+function _demoNarr(s){
+  const lang = _chittiLang;
+  if (s['narr_' + lang]) return s['narr_' + lang];
+  if (lang !== 'en' && window.Chitti && Chitti.lang && Chitti.lang.lookupText){
+    try { const t = Chitti.lang.lookupText(s.narr_en, lang); if (t && t !== s.narr_en) return t; } catch(e){}
+  }
+  return s.narr_en || s.narr_hi;
+}
+
 function _demoSpeak(text, onDone){
   if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; }
   if (!window.speechSynthesis) {
@@ -2352,7 +2450,7 @@ function _demoSpeak(text, onDone){
   let done = false;
   const finish = function(){ if (done) return; done = true; if (_demoSpeakTimer) { clearTimeout(_demoSpeakTimer); _demoSpeakTimer = null; } if (onDone) onDone(); };
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = (_chittiLang === 'hi') ? 'hi-IN' : 'en-IN';
+  u.lang = _demoLangTag();
   u.rate = 0.88;
   u.onend = finish; u.onerror = finish;
   speechSynthesis.speak(u);
@@ -2374,11 +2472,16 @@ function _runDemoStep(i){
   if (s.tab) showTab(s.tab);
   if (typeof s.action === 'function') { try { s.action(); } catch(e){ /* keep demo flowing */ } }
   const lang = _chittiLang;
-  const narration = (lang === 'hi') ? (s.narr_hi || s.narr_en) : (s.narr_en || s.narr_hi);
-  // Localize step counter ("Step 3 of 8 · Wallet" → "कदम 3/8 · पर्स") — keep simple
-  const stepLabel = (lang === 'hi')
-    ? s.step_label.replace(/Step (\d+) of (\d+)/, 'कदम $1 / $2')
-    : s.step_label;
+  const narration = _demoNarr(s);
+  // Localize step counter: Hindi gets a hand string; other non-English langs
+  // route the "Step N of M" label through the i18n substrate (honest English
+  // fallback if the pack lacks it).
+  let stepLabel = s.step_label;
+  if (lang === 'hi') {
+    stepLabel = s.step_label.replace(/Step (\d+) of (\d+)/, 'कदम $1 / $2');
+  } else if (lang !== 'en' && window.Chitti && Chitti.lang && Chitti.lang.lookupText) {
+    try { const t = Chitti.lang.lookupText(s.step_label, lang); if (t) stepLabel = t; } catch(e){}
+  }
   _setDemoBanner(stepLabel, narration);
   _demoSpeak(narration, function(){
     if (!_demoActive) return;
@@ -2407,8 +2510,11 @@ function startDemoMode(){
   const lang = _chittiLang;
   const welcome_en = 'Welcome to Chitti MedUPI. UPI for your medicine bills. Watch me save your family money in 8 steps.';
   const welcome_hi = 'चिट्टी मेडUPI में आपका स्वागत है। दवाओं के बिल का UPI। 8 कदमों में मैं दिखाता हूँ कैसे आपके परिवार के पैसे बचाने हैं।';
-  _setDemoBanner(lang === 'hi' ? 'स्वागत है' : 'Welcome', lang === 'hi' ? welcome_hi : welcome_en);
-  _demoSpeak(lang === 'hi' ? welcome_hi : welcome_en, function(){
+  const _wlook = function(en){ if (lang==='en') return en; if (window.Chitti&&Chitti.lang&&Chitti.lang.lookupText){ try{ const t=Chitti.lang.lookupText(en,lang); if(t&&t!==en) return t; }catch(e){} } return null; };
+  const welcomeTitle = (lang === 'hi') ? 'स्वागत है' : (_wlook('Welcome') || 'Welcome');
+  const welcomeNarr  = (lang === 'hi') ? welcome_hi : (_wlook(welcome_en) || welcome_en);
+  _setDemoBanner(welcomeTitle, welcomeNarr);
+  _demoSpeak(welcomeNarr, function(){
     if (!_demoActive) return;
     _demoAdvanceTimer = setTimeout(function(){ _runDemoStep(0); }, 500);
   });
