@@ -90,7 +90,7 @@
       flex-shrink: 0;
     }
     .brand-name { font-weight: 800; font-size: 18px; color: var(--navy); letter-spacing: -.01em; }
-    header .filter-mini { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+    header .filter-mini { display: flex; gap: 6px; margin-left: auto; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     header .filter-mini select {
       padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px;
       background: var(--canvas); color: var(--text); font-weight: 600;
@@ -121,6 +121,68 @@
     }
     .cat-tab:hover { color: var(--navy); }
     .cat-tab.active { background: var(--saffron); color: #fff; }
+    .cat-tab .cat-ico { font-size: 14px; margin-right: 4px; line-height: 1; }
+
+    /* ── "How to use Chitti News" onboarding panel ───────────────────
+       Headline gap from QA 2026-06-16: no onboarding existed. Voice-first
+       + icon-led so blind / illiterate users are served. Collapsible;
+       dismissed state persists in localStorage. Auto-reads aloud once for
+       blind users (disability profile). Mirrors §2d Feature Discovery. */
+    .howto {
+      max-width: 720px; margin: 12px auto 0; padding: 0 12px;
+    }
+    .howto-card {
+      border: 1px solid var(--rule); border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,153,51,.06), rgba(19,136,8,.05));
+      padding: 14px 16px;
+    }
+    .howto-head {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .howto-title {
+      font-size: 16px; font-weight: 800; color: var(--navy); margin: 0;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .howto-actions { display: flex; gap: 6px; margin-left: auto; }
+    .howto-actions button {
+      min-height: 40px; padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--rule); background: var(--canvas);
+      color: var(--navy); font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .howto-actions button.primary { background: var(--saffron); color: #fff; border-color: var(--saffron); }
+    .howto-actions button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+    .howto-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+    .howto-steps li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; line-height: 1.45; color: var(--text);
+    }
+    .howto-steps .step-ico {
+      font-size: 18px; line-height: 1.3; flex-shrink: 0; width: 24px; text-align: center;
+    }
+    .howto[hidden] { display: none; }
+
+    /* Reopen pill — shown after the user dismisses the panel, so the
+       onboarding is never permanently lost (esp. for returning users we
+       auto-collapse). */
+    .howto-reopen {
+      max-width: 720px; margin: 8px auto 0; padding: 0 12px; text-align: right;
+    }
+    .howto-reopen button {
+      background: none; border: 0; color: var(--navy); font-weight: 700;
+      font-size: 13px; cursor: pointer; text-decoration: underline;
+      min-height: 40px; padding: 4px 8px;
+    }
+    .howto-reopen[hidden] { display: none; }
+
+    /* Global "Read top stories" button in the header filter strip. */
+    header .readall-btn {
+      padding: 6px 10px; border-radius: 999px; border: 0;
+      background: var(--green); color: #fff; font-weight: 700;
+      cursor: pointer; font-size: 13px; min-height: 36px;
+    }
+    header .readall-btn:hover { filter: brightness(.95); }
+    header .readall-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+    header .readall-btn.speaking { background: var(--red); }
 
     /* ── Main feed ───────────────────────────────────────────────── */
     main {
@@ -667,6 +729,7 @@
            Re-add as <option value="kn">ಕನ್ನಡ</option> + <option
            value="or">ଓଡ଼ିଆ</option> the moment both conditions hold. -->
     </select>
+    <button class="readall-btn" id="readall-btn" type="button" onclick="readTopStories()" aria-label="Read the top stories aloud">🔊 Read top stories</button>
     <button class="refresh-btn" type="button" onclick="loadFeed(true)" aria-label="Refresh news feed">🔄</button>
   </div>
 </header>
@@ -674,17 +737,22 @@
 <!-- MSN-style category tabs (horizontal scroll). The hidden <select>
      #pick-cat backs the picker logic + the LANG_SWITCH_FIRES cert gate,
      while the visible tab buttons are what the user actually taps. -->
+<!-- Each tab carries a leading emoji (aria-hidden, decorative) + the
+     text label + an explicit aria-label so the four-user contract holds:
+     illiterate users get a recognisable icon, screen-reader users get a
+     spoken "National news" label, and chitti_lang.js still translates the
+     visible text node (the emoji span is marked translate="no"). -->
 <nav class="cat-tabs" role="tablist" aria-label="News categories">
-  <button class="cat-tab" data-cat="national" role="tab" type="button">National</button>
-  <button class="cat-tab" data-cat="state" role="tab" type="button">State</button>
-  <button class="cat-tab" data-cat="politics" role="tab" type="button">Politics</button>
-  <button class="cat-tab" data-cat="business" role="tab" type="button">Business</button>
-  <button class="cat-tab" data-cat="tech" role="tab" type="button">Tech</button>
-  <button class="cat-tab" data-cat="sports" role="tab" type="button">Sports</button>
-  <button class="cat-tab" data-cat="entertainment" role="tab" type="button">Entertainment</button>
-  <button class="cat-tab" data-cat="foryou" role="tab" type="button">For You</button>
-  <button class="cat-tab" data-cat="saved" role="tab" type="button">Read Later</button>
-  <button class="cat-tab" data-cat="cancelled" role="tab" type="button">Cancelled</button>
+  <button class="cat-tab" data-cat="national" role="tab" type="button" aria-label="National news"><span class="cat-ico" translate="no" aria-hidden="true">🏠</span>National</button>
+  <button class="cat-tab" data-cat="state" role="tab" type="button" aria-label="State news"><span class="cat-ico" translate="no" aria-hidden="true">📍</span>State</button>
+  <button class="cat-tab" data-cat="politics" role="tab" type="button" aria-label="Politics news"><span class="cat-ico" translate="no" aria-hidden="true">🏛️</span>Politics</button>
+  <button class="cat-tab" data-cat="business" role="tab" type="button" aria-label="Business news"><span class="cat-ico" translate="no" aria-hidden="true">💼</span>Business</button>
+  <button class="cat-tab" data-cat="tech" role="tab" type="button" aria-label="Technology news"><span class="cat-ico" translate="no" aria-hidden="true">💻</span>Tech</button>
+  <button class="cat-tab" data-cat="sports" role="tab" type="button" aria-label="Sports news"><span class="cat-ico" translate="no" aria-hidden="true">🏏</span>Sports</button>
+  <button class="cat-tab" data-cat="entertainment" role="tab" type="button" aria-label="Entertainment news"><span class="cat-ico" translate="no" aria-hidden="true">🎬</span>Entertainment</button>
+  <button class="cat-tab" data-cat="foryou" role="tab" type="button" aria-label="For You — personalised news"><span class="cat-ico" translate="no" aria-hidden="true">⭐</span>For You</button>
+  <button class="cat-tab" data-cat="saved" role="tab" type="button" aria-label="Read Later — saved news"><span class="cat-ico" translate="no" aria-hidden="true">🔖</span>Read Later</button>
+  <button class="cat-tab" data-cat="cancelled" role="tab" type="button" aria-label="Cancelled — hidden news"><span class="cat-ico" translate="no" aria-hidden="true">🚫</span>Cancelled</button>
 </nav>
 <select id="pick-cat" data-chitti-news-picker aria-label="Category (mirrored by tabs)" style="display:none">
   <option value="national">National</option>
@@ -698,6 +766,33 @@
   <option value="saved">Read Later</option>
   <option value="cancelled">Cancelled</option>
 </select>
+
+<!-- ── How to use Chitti News (onboarding) ──────────────────────────
+     Voice-first + icon-led. Sits above the feed (NOT inside #feed-root,
+     which is wiped on every load). Collapsed state persists per device;
+     auto-reads aloud once for blind users. Added 2026-06-16 per QA. -->
+<section class="howto" id="howto" aria-label="How to use Chitti News">
+  <div class="howto-card">
+    <div class="howto-head">
+      <h2 class="howto-title"><span translate="no" aria-hidden="true">💡</span> How to use Chitti News</h2>
+      <div class="howto-actions">
+        <button class="primary" type="button" id="howto-listen" onclick="speakHowTo()" aria-label="Listen to how to use Chitti News"><span translate="no" aria-hidden="true">🔊</span> Listen</button>
+        <button type="button" id="howto-dismiss" onclick="dismissHowTo()" aria-label="Got it — hide these instructions">Got it</button>
+      </div>
+    </div>
+    <ul class="howto-steps">
+      <li><span class="step-ico" translate="no" aria-hidden="true">🗂️</span><span>Pick your <strong>State</strong> and <strong>Language</strong> at the top.</span></li>
+      <li><span class="step-ico" translate="no" aria-hidden="true">📰</span><span>Tap any news card to <strong>hear the whole story</strong> read aloud.</span></li>
+      <li><span class="step-ico" translate="no" aria-hidden="true">🔊</span><span>Tap <strong>Read top stories</strong> at the top to hear all the headlines.</span></li>
+      <li><span class="step-ico" translate="no" aria-hidden="true">🤖</span><span>Tap the robot to ask <strong>Chitti to explain simply</strong>.</span></li>
+      <li><span class="step-ico" translate="no" aria-hidden="true">👍</span><span>Use <strong>like / dislike</strong> to save or hide a story; the pencil sends feedback.</span></li>
+      <li><span class="step-ico" translate="no" aria-hidden="true">✓</span><span>The <strong>Trust strip</strong> shows how many sources confirm each story.</span></li>
+    </ul>
+  </div>
+</section>
+<div class="howto-reopen" id="howto-reopen" hidden>
+  <button type="button" onclick="reopenHowTo()" aria-label="Show how to use Chitti News again"><span translate="no" aria-hidden="true">💡</span> How to use Chitti News</button>
+</div>
 
 <main>
   <div id="feed-root" role="feed" aria-busy="false"></div>
@@ -1375,6 +1470,26 @@ const LANG_LABELS = {
   pa: 'Punjabi', or: 'Odia', ur: 'Urdu', as: 'Assamese',
 };
 
+// Honest, localised "no sources yet — coming soon" copy for languages
+// whose RSS corpus is empty. Keyed by lang code. Languages absent here
+// fall back to the English string in renderFeed. Kannada is the named
+// gap from QA 2026-06-16 (the chitti_lang.js substrate re-adds kn to the
+// picker, so a user CAN select it and must get an honest reply in kn).
+const NO_CORPUS_MSG = {
+  kn: {
+    h: 'ಚಿಟ್ಟಿ ನ್ಯೂಸ್‌ನಲ್ಲಿ ಇನ್ನೂ ಕನ್ನಡ ಮೂಲಗಳಿಲ್ಲ — ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ.',
+    b: 'ನಾವು ಪ್ರತಿ ವಾರ ಹೊಸ ಪ್ರಕಾಶಕರನ್ನು ಸೇರಿಸುತ್ತಿದ್ದೇವೆ. ಸದ್ಯಕ್ಕೆ ಕೆಳಗಿನ ಭಾಷೆಗಳಲ್ಲಿ ಒಂದನ್ನು ಪ್ರಯತ್ನಿಸಿ.',
+  },
+  or: {
+    h: 'ଚିଟ୍ଟି ନ୍ୟୁଜ୍‌ରେ ଏବେ ସୁଦ୍ଧା ଓଡ଼ିଆ ଉତ୍ସ ନାହିଁ — ଶୀଘ୍ର ଆସୁଛି।',
+    b: 'ଆମେ ପ୍ରତି ସପ୍ତାହ ନୂଆ ପ୍ରକାଶକ ଯୋଡ଼ୁଛୁ। ବର୍ତ୍ତମାନ ତଳର ଭାଷାଗୁଡ଼ିକ ମଧ୍ୟରୁ ଗୋଟିଏ ଚେଷ୍ଟା କରନ୍ତୁ।',
+  },
+  as: {
+    h: 'চিট্টি নিউজত এতিয়াও অসমীয়া উৎস নাই — সোনকালে আহিব।',
+    b: 'আমি প্ৰতি সপ্তাহত নতুন প্ৰকাশক যোগ কৰি আছোঁ। এতিয়ালৈকে তলৰ ভাষাবোৰৰ এটা চেষ্টা কৰক।',
+  },
+};
+
 function renderFeed(items, meta) {
   const root = document.getElementById('feed-root');
   if (!items || items.length === 0) {
@@ -1393,12 +1508,19 @@ function renderFeed(items, meta) {
     const langName = LANG_LABELS[f.lang] || f.lang.toUpperCase();
     const totalInLang = typeof cov.total_in_language === 'number' ? cov.total_in_language : null;
     const noCorpus = totalInLang === 0;
+    // Localised "coming soon" copy for languages with no corpus yet, so a
+    // user who picks Kannada (re-added to the picker by the chitti_lang.js
+    // substrate) hears/reads an honest notice IN THEIR LANGUAGE — not the
+    // English apology decision-A tried to avoid. Sire 2026-06-16 per QA.
+    const loc = NO_CORPUS_MSG[f.lang];
     const headline = noCorpus
-      ? 'Chitti News doesn\'t have ' + langName + ' sources yet.'
+      ? (loc ? loc.h : 'Chitti News doesn\'t have ' + langName + ' sources yet — coming soon.')
       : 'No stories yet.';
     const body = noCorpus
-      ? 'We\'re adding more publishers every week. For now, try one of the languages below.'
+      ? (loc ? loc.b : 'We\'re adding more publishers every week. For now, try one of the languages below.')
       : (meta && meta.speak_en ? meta.speak_en : 'Tap Refresh in a minute.');
+    // Blind-first: speak the honest notice in the selected language.
+    if (noCorpus) { try { speak(headline + ' ' + body, f.lang); } catch (e) {} }
     let html = '<div class="status-card" style="padding:24px 16px;text-align:left;">'
       + '<strong style="font-size:16px;color:var(--navy);">' + esc(headline) + '</strong><br>'
       + '<div style="margin-top:8px;font-size:14px;">' + esc(body) + '</div>';
@@ -1876,9 +1998,135 @@ async function loadFeed(force) {
   }
 }
 
+// ── Global "Read top stories" (P1, QA 2026-06-16) ─────────────────
+// Blind users could only read one card at a time. This reads every
+// loaded headline aloud, in the selected language, in feed order.
+// Toggles: tap once to start, tap again (button now "⏹ Stop") to stop.
+let _readingAll = false;
+function _setReadAllState(on) {
+  _readingAll = on;
+  const b = document.getElementById('readall-btn');
+  if (!b) return;
+  b.classList.toggle('speaking', on);
+  b.textContent = on ? '⏹ Stop' : '🔊 Read top stories';
+  b.setAttribute('aria-label', on ? 'Stop reading the top stories' : 'Read the top stories aloud');
+}
+function _watchSpeechEnd() {
+  if (!window.speechSynthesis) return;
+  // Start watching after speech has had time to begin, so we don't reset
+  // the button before the utterance even starts.
+  setTimeout(function () {
+    const iv = setInterval(function () {
+      try {
+        if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+          clearInterval(iv); _setReadAllState(false);
+        }
+      } catch (e) { clearInterval(iv); _setReadAllState(false); }
+    }, 600);
+  }, 1500);
+}
+function readTopStories() {
+  const lang = getFilter().lang;
+  if (_readingAll) {
+    if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+    _setReadAllState(false);
+    return;
+  }
+  const root = document.getElementById('feed-root');
+  const nodes = root ? root.querySelectorAll('.hero-title, .art-title, .rail-headline') : [];
+  const seen = Object.create(null); const titles = [];
+  nodes.forEach(function (n) {
+    const t = (n.textContent || '').trim();
+    if (t && !seen[t]) { seen[t] = 1; titles.push(t); }
+  });
+  if (!titles.length) {
+    speak(lang === 'hi' ? 'अभी कोई ख़बर लोड नहीं हुई। कृपया रिफ़्रेश करें।'
+                        : 'No stories are loaded yet. Please tap refresh.', lang);
+    return;
+  }
+  const top = titles.slice(0, 12);
+  const lead = (lang === 'hi') ? ('मुख्य ' + top.length + ' ख़बरें। ')
+                               : ('Top ' + top.length + ' stories. ');
+  const bodyTxt = top.map(function (t, i) { return (i + 1) + '. ' + t + '.'; }).join(' ');
+  _setReadAllState(true);
+  speak(lead + bodyTxt, lang);
+  _watchSpeechEnd();
+}
+
+// ── "How to use Chitti News" onboarding (P1, QA 2026-06-16) ────────
+const HOWTO_KEY = 'chitti_news_howto_dismissed';
+const HOWTO_READ_KEY = 'chitti_news_howto_read';
+function _isBlindProfile() {
+  try { const p = JSON.parse(localStorage.getItem('disability_profile') || 'null'); return !!(p && p.blind); }
+  catch (e) { return false; }
+}
+function speakHowTo() {
+  const lang = getFilter().lang;
+  const titleEl = document.querySelector('#howto .howto-title');
+  const title = titleEl ? titleEl.textContent.replace(/💡/g, '').trim() : 'How to use Chitti News';
+  const parts = [];
+  document.querySelectorAll('#howto .howto-steps li').forEach(function (li) {
+    const t = (li.textContent || '').trim(); if (t) parts.push(t);
+  });
+  speak(title + '. ' + parts.join('. '), lang);
+}
+function dismissHowTo() {
+  const p = document.getElementById('howto');
+  const r = document.getElementById('howto-reopen');
+  if (p) p.hidden = true;
+  if (r) r.hidden = false;
+  try { localStorage.setItem(HOWTO_KEY, '1'); } catch (e) {}
+}
+function reopenHowTo() {
+  const p = document.getElementById('howto');
+  const r = document.getElementById('howto-reopen');
+  if (p) p.hidden = false;
+  if (r) r.hidden = true;
+  try { localStorage.removeItem(HOWTO_KEY); } catch (e) {}
+  if (p && p.scrollIntoView) { try { p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }
+}
+function initHowTo() {
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(HOWTO_KEY) === '1'; } catch (e) {}
+  if (dismissed) { dismissHowTo(); }
+  else if (_isBlindProfile()) {
+    // Auto-read once for blind users (mirrors §2d Feature Discovery
+    // auto-read), tracked so it never repeats on the same device.
+    let alreadyRead = false;
+    try { alreadyRead = localStorage.getItem(HOWTO_READ_KEY) === '1'; } catch (e) {}
+    if (!alreadyRead) {
+      setTimeout(function () { try { speakHowTo(); } catch (e) {} }, 1200);
+      try { localStorage.setItem(HOWTO_READ_KEY, '1'); } catch (e) {}
+    }
+  }
+}
+
+// ── ISL auto-enable for deaf / ISL profiles (P3, QA 2026-06-16) ────
+// The chitti_a11y.js substrate already auto-enables ISL when the profile
+// has the explicit `isl` flag, but NOT when the user only flagged `deaf`.
+// Page-scoped fix: also turn ISL on for deaf users — while respecting an
+// explicit "off" the user set via the 🤟 toggle (chitti_isl_mode === '0').
+function initIslForDeaf() {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem('disability_profile') || 'null'); } catch (e) { return; }
+  if (!p || !(p.deaf || p.isl)) return;
+  let saved = null; try { saved = localStorage.getItem('chitti_isl_mode'); } catch (e) {}
+  if (saved === '0') return;  // user explicitly disabled ISL — respect it
+  let n = 0;
+  const iv = setInterval(function () {
+    n++;
+    if (window.Chitti && Chitti.a11y && typeof Chitti.a11y.setIslMode === 'function') {
+      try { Chitti.a11y.setIslMode(true); } catch (e) {}
+      clearInterval(iv);
+    } else if (n > 30) { clearInterval(iv); }
+  }, 300);
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
 hydratePickers();
 loadFeed(false);
+initHowTo();
+initIslForDeaf();
 
 // Sire 2026-06-03 — chitti_a11y.js's chitti-disability-profile-modal
 // was intercepting pointer events on chitti_news.html — tap on a
