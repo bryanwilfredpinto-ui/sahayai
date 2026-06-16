@@ -1,13 +1,15 @@
 /* ─────────────────────────────────────────────────────────────────
  * chitti_theme.css — UNIFIED Indian-flag theme across all Chitti pages
- * Locked 2026-05-15, refreshed to flag-exact spec 2026-05-23.
+ * Locked 2026-05-15, refreshed to flag-exact spec 2026-05-23,
+ * aligned to sahayai_design_system.css tokens 2026-06-16 (navy/bg/font).
  *
  * Locked palette (per Sire's Priority-1 spec):
  *   --saffron: #FF9933   (India saffron — flag top stripe)
  *   --white:   #FFFFFF
  *   --green:   #138808   (India green — flag bottom stripe)
- *   --navy:    #000080   (Ashoka wheel navy)
- *   --bg:      #FAFAFA
+ *   --navy:    #002366   (design-system navy — locked; was #000080)
+ *   --bg:      #F7F7F4   (design-system background — locked; was #FAFAFA)
+ *   base font: 18px      (design-system minimum body size; was 16px)
  *
  * Mobile-first (375 px). Every page <link>s this AFTER its own <style>
  * so cascade wins for shared selectors; inline page styles using
@@ -25,14 +27,14 @@
   --chitti-saffron: #FF9933;       /* Indian flag saffron */
   --chitti-white:   #FFFFFF;       /* Indian flag white */
   --chitti-green:   #138808;       /* Indian flag green */
-  --chitti-navy:    #000080;       /* Ashoka wheel navy */
+  --chitti-navy:    #002366;       /* Design-system navy (locked #002366) */
   --chitti-saffron-deep: #E07B1D;  /* Hover / pressed saffron */
   --chitti-green-deep:   #0E6606;  /* Hover / pressed green */
-  --chitti-navy-deep:    #00004D;  /* Pressed navy */
+  --chitti-navy-deep:    #001A4D;  /* Pressed navy (darker #002366) */
   --chitti-cream:   #FFF7EC;       /* Soft background tint */
 
   /* Semantic tokens (consumed by buttons / banners / chips) */
-  --chitti-bg:        #FAFAFA;
+  --chitti-bg:        #F7F7F4;
   --chitti-bg-soft:   #FFF7EC;
   --chitti-text:      #1a1a1a;
   --chitti-muted:     #666666;
@@ -46,11 +48,11 @@
      pick up the unified palette without each page being rewritten. */
   --saffron: #FF9933;
   --saffron-deep: #E07B1D;
-  --navy:    #000080;
+  --navy:    #002366;
   --gold:    #FF9933;   /* Pages used --gold as an accent — point at saffron */
   --green:   #138808;
   --red:     #CC0000;
-  --bg:      #FAFAFA;
+  --bg:      #F7F7F4;
   --card:    #FFFFFF;
   --card2:   #FFF7EC;
   --text:    #1a1a1a;
@@ -64,9 +66,9 @@
   --sds-saffron: #FF9933;
   --sds-white:   #FFFFFF;
   --sds-green:   #138808;
-  --sds-navy:    #000080;
-  --sds-dark:    #000080;
-  --sds-bg:      #FAFAFA;
+  --sds-navy:    #002366;
+  --sds-dark:    #212121;
+  --sds-bg:      #F7F7F4;
   --sds-muted:   #666666;
   --sds-line:    #e5e7eb;
   --sds-line-strong: #BDBDBD;
@@ -101,7 +103,7 @@ html[dir="rtl"] .chitti-a11y-bar { flex-direction: row-reverse; }
 /* ── Base reset (mobile-first 375 px) ────────────────────────── */
 html, body {
   font-family: var(--chitti-font);
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.5;
   color: var(--chitti-text);
   background: var(--chitti-bg);
