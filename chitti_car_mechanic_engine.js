@@ -845,6 +845,59 @@
 
   function diyVideoLink(query) { return { query: query, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent('how to ' + (query || 'car repair') + ' car DIY India'), note: 'Opens a video search — Chitti does not host videos.', sources: ['user-initiated video search'] }; }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 24. VEHICLE TWIN TIMELINE (competition build #1) — purchase→service→renewals.
+  // Deterministic ordering from whatever the Twin has; symbol+word status.
+  // ═══════════════════════════════════════════════════════════════════════════
+  function vehicleTwinTimeline(twin, asOf) {
+    twin = twin || {}; var today = todayISO(asOf), ev = [];
+    if (twin.model) ev.push({ order: 0, icon: '🚗', label: 'Vehicle: ' + twin.model, detail: (twin.odometerKm ? (twin.odometerKm + ' km') : ''), status: 'info' });
+    // past service events (by km)
+    if (twin.oilLastKm != null) ev.push({ order: 1, icon: '🛢️', label: 'Last engine-oil change', detail: 'at ' + num(twin.oilLastKm) + ' km', status: 'done' });
+    if (twin.tbeltLastKm != null) ev.push({ order: 1, icon: '⏲️', label: 'Last timing belt', detail: 'at ' + num(twin.tbeltLastKm) + ' km', status: 'done' });
+    if (twin.batteryDate) ev.push({ order: 1, icon: '🔋', label: 'Battery installed', detail: twin.batteryDate, status: 'done' });
+    // upcoming renewals (by date, with status)
+    var renew = [['insuranceExpiry', '🛡️', 'Insurance'], ['pucExpiry', '🌫️', 'PUC'], ['rcExpiry', '📄', 'RC'], ['warrantyExpiry', '🧾', 'Warranty'], ['emiDue', '💳', 'EMI']];
+    renew.forEach(function (r) {
+      var d = twin[r[0]]; if (!d) return;
+      var days = daysBetween(today, d);
+      var st = days == null ? 'info' : (days < 0 ? 'overdue' : (days <= 30 ? 'due' : 'ok'));
+      ev.push({ order: 2, date: d, icon: r[1], label: r[2] + (days == null ? '' : (days < 0 ? ' OVERDUE' : ' due in ' + days + ' days')), detail: d, status: st, daysToExpiry: days });
+    });
+    ev.sort(function (a, b) { return (a.order - b.order) || ((a.date || '') < (b.date || '') ? -1 : 1); });
+    return { events: ev, count: ev.length, hasData: ev.length > 0, asOf: today, confidence: 'high', risks: ev.length ? [] : ['Save your car in "My Car" so Chitti can build its timeline.'], sources: ['CEOS §21 Vehicle Twin'] };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 25. GENUINE-vs-FAKE PARTS GUIDE (competition build #5) — verify, never claim.
+  // Routes to OEM verification + hologram/serial checklist. NEVER declares genuine from a photo.
+  // ═══════════════════════════════════════════════════════════════════════════
+  var OEM_VERIFY = [
+    { brand: 'Maruti Suzuki', system: 'Maruti Genuine Parts — Scan & Assure', how: 'Scan the QR on the MGP label; scratch the holographic strip to reveal "Maruti Genuine Parts".' },
+    { brand: 'Bosch', system: 'Bosch / Origify', how: 'Scan the QR + enter the security code; the app checks it against Bosch\'s central DB. Holograms self-void if re-used.' },
+    { brand: 'Hyundai / Kia', system: 'Hyundai-Kia Genuine Parts', how: 'Match the part number on the box to the OEM catalogue; check the hologram + sealed packaging.' },
+    { brand: 'Tata / Mahindra', system: 'OE genuine-parts QR', how: 'Scan the QR; it must resolve on the OEM domain. Verify the printed serial against the box.' }
+  ];
+  function partsGuide(brand) {
+    var b = ('' + (brand || '')).toLowerCase();
+    var matched = OEM_VERIFY.filter(function (o) { return b && o.brand.toLowerCase().indexOf(b.split(' ')[0]) >= 0; });
+    return {
+      oemSystems: matched.length ? matched : OEM_VERIFY,
+      checklist: [
+        'Look for a holographic sticker or a scratch-to-reveal security strip.',
+        'Match the serial / part number on the part to the OEM catalogue or box.',
+        'Scan the QR — it must open on the official OEM domain (not a look-alike).',
+        'Check print/finish quality — blurry text, wrong fonts or loose packaging = suspect.',
+        'Verify the MRP sticker and that the seal is intact.',
+        'Buy from an authorised dealer; keep the GST invoice.'
+      ],
+      rule: 'Chitti NEVER declares a part "genuine" from a photo. Authenticity is confirmed only by the OEM QR/serial check above.',
+      confidence: 'high',
+      risks: ['Counterfeiters now copy holograms/QRs with AI — always verify the code on the OEM system, not the look of the sticker.'],
+      sources: ['CEOS §2b camera intelligence', 'Maruti Scan & Assure', 'Bosch Origify']
+    };
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // PUBLIC API
   // ─────────────────────────────────────────────────────────────────────────
@@ -871,6 +924,7 @@
     savingsTracker: savingsTracker,
     ownershipScores: ownershipScores, healthDashboard: healthDashboard,
     emiCalculator: emiCalculator, vehicleHistoryGuide: vehicleHistoryGuide, diyVideoLink: diyVideoLink,
+    vehicleTwinTimeline: vehicleTwinTimeline, partsGuide: partsGuide, OEM_VERIFY: OEM_VERIFY,
     crisisCheck: crisisCheck,
     twin: { load: twinLoad, save: twinSave, set: twinSet, forget: twinForget, KEY: TWIN_KEY }
   };

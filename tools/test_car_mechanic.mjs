@@ -195,6 +195,20 @@ ok('history lists checks + portals', vh.checks.length >= 5 && vh.portals.length 
 ok('DIY video link builds YouTube search', /youtube\.com/.test(M.diyVideoLink('change a bulb').url));
 ok('charging locator maps link', /google\.com\/maps/.test(M.nearestCentre('charging', { pincode: '560001' }).mapsUrl));
 
+// ── 28. vehicle twin timeline (build #1) ──
+const tl = M.vehicleTwinTimeline({ model: 'Maruti Swift 2022', odometerKm: 42000, oilLastKm: 38000, tbeltLastKm: 0, batteryDate: '2022-01-01', insuranceExpiry: '2026-06-01', pucExpiry: '2026-12-31' }, ASOF);
+ok('timeline has events', tl.count >= 4 && tl.hasData);
+ok('timeline orders vehicle→service→renewal', tl.events[0].order === 0);
+ok('timeline marks overdue insurance', tl.events.some(e => e.status === 'overdue'));
+eq('empty twin → no data (honest)', M.vehicleTwinTimeline({}).hasData, false);
+
+// ── 29. parts guide (build #5) — verify, never declare genuine ──
+const pg = M.partsGuide('Maruti');
+ok('parts guide returns OEM systems', pg.oemSystems.length >= 1);
+ok('parts guide has checklist', pg.checklist.length >= 5);
+ok('parts guide NEVER declares genuine from photo', /never declares a part "genuine" from a photo/i.test(pg.rule));
+ok('parts guide brand match (Maruti)', pg.oemSystems.some(o => /Maruti/i.test(o.brand)));
+
 // ── report ──
 console.log(`\nCHITTI CAR MECHANIC — ENGINE GOLD TEST`);
 console.log(`PASS ${pass} · FAIL ${fail}`);

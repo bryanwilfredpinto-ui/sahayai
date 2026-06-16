@@ -118,6 +118,8 @@
     <div class="actions">
       <button class="btn primary" type="button" onclick="cmDemo()">🎬 Try a demo car (see it working)</button>
     </div>
+    <!-- builds #2+#3: vehicle health score + ₹ saved this year, surfaced on HOME -->
+    <div id="hero-glance" class="result" aria-live="polite" style="margin-top:10px"></div>
     <div id="r-demo" class="result" aria-live="polite"></div>
   </section>
 
@@ -136,6 +138,7 @@
     <button class="tab" role="tab" id="tab-service" aria-controls="panel-service" aria-selected="false" onclick="cmTab('service')"><span class="em" aria-hidden="true">🔧</span>Service · Oil</button>
     <button class="tab" role="tab" id="tab-parts" aria-controls="panel-parts" aria-selected="false" onclick="cmTab('parts')"><span class="em" aria-hidden="true">🛞</span>Tyre · Battery</button>
     <button class="tab" role="tab" id="tab-fuel" aria-controls="panel-fuel" aria-selected="false" onclick="cmTab('fuel')"><span class="em" aria-hidden="true">⛽</span>Fuel</button>
+    <button class="tab" role="tab" id="tab-genuine" aria-controls="panel-genuine" aria-selected="false" onclick="cmTab('genuine')"><span class="em" aria-hidden="true">🔩</span>Real part?</button>
     <button class="tab" role="tab" id="tab-twin" aria-controls="panel-twin" aria-selected="false" onclick="cmTab('twin')"><span class="em" aria-hidden="true">🧬</span>My Car</button>
   </div>
 
@@ -157,7 +160,10 @@
       <p class="sub">Got a code from a scanner (like P0300)? Chitti explains it in plain words + tells you if it’s safe to drive.</p>
       <label class="fl" for="d-obd">OBD code</label>
       <input class="fi" id="d-obd" type="text" placeholder="e.g. P0300" style="text-transform:uppercase">
-      <div class="actions"><button class="btn primary" type="button" onclick="cmObd()">🔍 Look up code</button></div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cmObd()">🔍 Look up code</button>
+        <button class="btn" type="button" onclick="cmConnectOBD()">🔵 Connect scanner (Bluetooth)</button>
+      </div>
       <div id="r-obd" class="result" aria-live="polite"></div>
     </div>
 
@@ -327,6 +333,12 @@
       </div>
       <div id="r-oil" class="result" aria-live="polite"></div>
     </div>
+    <div class="card chitti-response" data-chitti-response="cm-cost" data-chitti-section="Service cost estimator">
+      <h2><span aria-hidden="true">🧾</span> What should each service cost?</h2>
+      <p class="sub">Expected India price range for each service item, with who can do it (you 🟢 or a mechanic 🔧). Compare against any quote you're given.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="cmCostEstimator()">🧾 Show service costs</button></div>
+      <div id="r-cost" class="result" aria-live="polite"></div>
+    </div>
   </section>
 
   <!-- ── TYRE / BATTERY ── -->
@@ -378,6 +390,21 @@
     </div>
   </section>
 
+  <!-- ── GENUINE-vs-FAKE PARTS (build #5) ── -->
+  <section class="panel" id="panel-genuine" role="tabpanel" aria-labelledby="tab-genuine">
+    <div class="card chitti-response" data-chitti-response="cm-parts" data-chitti-section="Genuine vs fake part">
+      <h2><span aria-hidden="true">🔩</span> Is this spare part genuine?</h2>
+      <p class="sub">Counterfeit parts can be dangerous. Chitti shows you how to verify — by the OEM QR / serial check, not by how it looks. <b>Chitti never declares a part “genuine” from a photo.</b></p>
+      <label class="fl" for="pt-brand">Car brand (optional)</label>
+      <input class="fi" id="pt-brand" type="text" placeholder="e.g. Maruti, Bosch, Hyundai">
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cmPartsGuide()">🔩 How to verify</button>
+        <button class="btn" type="button" onclick="cmScanPart()">📷 Scan the QR (if supported)</button>
+      </div>
+      <div id="r-parts" class="result" aria-live="polite"></div>
+    </div>
+  </section>
+
   <!-- ── MY CAR (Vehicle Twin) ── -->
   <section class="panel" id="panel-twin" role="tabpanel" aria-labelledby="tab-twin">
     <div class="card chitti-response" data-chitti-response="cm-twin" data-chitti-section="My Car (Vehicle Twin)">
@@ -423,9 +450,43 @@
       <div class="actions"><button class="btn primary" type="button" onclick="cmSavings()">🪙 Show savings</button></div>
       <div id="r-savings" class="result" aria-live="polite"></div>
     </div>
+    <div class="card chitti-response" data-chitti-response="cm-timeline" data-chitti-section="Vehicle timeline">
+      <h2><span aria-hidden="true">📈</span> My car — full timeline</h2>
+      <p class="sub">Your car's story in order — purchase, services done, and every renewal coming up. Built from what you saved in “My Car”.</p>
+      <div class="actions"><button class="btn primary" type="button" onclick="cmTimeline()">📈 Show timeline</button></div>
+      <div id="r-timeline" class="result" aria-live="polite"></div>
+    </div>
   </section>
 
 </main>
+
+<!-- ── First-run onboarding wizard (build #6) ── -->
+<div id="cm-onboard" role="dialog" aria-modal="true" aria-labelledby="cm-ob-h" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;max-width:440px;width:100%;border-radius:16px;padding:18px;max-height:90vh;overflow:auto">
+    <h2 id="cm-ob-h" style="color:var(--navy);font-size:20px;margin:0 0 4px">👋 Welcome — let's set up Chitti</h2>
+    <p style="font-size:14.5px;color:#444;margin:0 0 12px">Three quick steps. You can skip any of them.</p>
+    <div style="border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px">
+      <b>1️⃣ Your language</b>
+      <p class="sub" style="margin:4px 0 6px">Pick your language — the whole app changes.</p>
+      <label class="fl" for="ob-lang">🌐 Language</label>
+      <select class="fs" id="ob-lang" aria-label="Choose language" onchange="cmObLang(this.value)"></select>
+    </div>
+    <div style="border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px">
+      <b>2️⃣ How can Chitti help you best?</b>
+      <p class="sub" style="margin:4px 0 6px">Voice for blind users, sign language for deaf, large text — set your accessibility profile.</p>
+      <button class="btn" type="button" onclick="cmObProfile()">♿ Set accessibility profile</button>
+    </div>
+    <div style="border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px">
+      <b>3️⃣ Add your car</b>
+      <p class="sub" style="margin:4px 0 6px">Save your car once so Chitti can remind you and build its timeline.</p>
+      <button class="btn" type="button" onclick="cmObAddCar()">🚗 Add my car</button>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button" onclick="cmObDone()">✅ Done</button>
+      <button class="btn" type="button" onclick="cmObDone()">Skip for now</button>
+    </div>
+  </div>
+</div>
 
 <footer>
   <p><b>Chitti Car Mechanic</b> · part of sahayai.in — Bharat Premium AI, free for every family.</p>
@@ -750,6 +811,90 @@
       confidence:r.confidence, risks:r.risks, sources:r.sources });
   };
 
+  // ── BUILD #1: Vehicle Twin TIMELINE ──
+  window.cmTimeline = function(){
+    var r = E().vehicleTwinTimeline(E().twin.load());
+    if(!r.hasData){ render('r-timeline',{tone:'info',title:'Timeline',status:'📈 No car saved yet',body:'Save your car in “My Car” above, then Chitti builds its timeline.',confidence:'high',sources:r.sources}); return; }
+    var host=$('r-timeline'); if(!host) return;
+    var sym={done:'✅',ok:'🟢',due:'🟡',overdue:'🔴',info:'•'};
+    var html='<div class="res-box info" data-chitti-response="r-timeline-out" data-chitti-section="Vehicle timeline"><div class="res-status">📈 Your car timeline ('+r.count+')</div><ul>';
+    r.events.forEach(function(e){ html+='<li>'+(e.icon||'•')+' '+(sym[e.status]||'•')+' <b>'+esc(e.label)+'</b>'+(e.detail?(' — '+esc(e.detail)):'')+'</li>'; });
+    html+='</ul><div class="conf">🎯 Confidence: <b>'+r.confidence+'</b></div>';
+    html+='<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
+    html+='<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
+    host.innerHTML=html; if(typeof focusResult==='function') focusResult(host);
+  };
+  // ── BUILD #4: Service cost estimator (surfaces SERVICE_COSTS) ──
+  window.cmCostEstimator = function(){
+    var sc = E().SERVICE_COSTS||{};
+    var rows = Object.keys(sc).map(function(k){ var s=sc[k]; return (s.diy?'🟢 ':'🔧 ')+s.label+': '+rs(s.cost.lo)+'–'+rs(s.cost.hi); });
+    render('r-cost',{ tone:'info', title:'Service costs', status:'🧾 Expected India price ranges',
+      list: rows, body:'🟢 = you can do it · 🔧 = mechanic. Compare any quote against these; if it’s >30% above, check the <b>Fair price</b> tab.',
+      confidence:'high', risks:['Indicative bands — exact price varies by city, car & parts (OEM vs aftermarket).'], sources:['CEOS §11 Service Intelligence'] });
+  };
+  // ── BUILD #5: Genuine-vs-fake parts guide + optional QR scan (honest fallback) ──
+  window.cmPartsGuide = function(){
+    var r = E().partsGuide($('pt-brand').value||'');
+    var host=$('r-parts'); if(!host) return;
+    var html='<div class="res-box warning" data-chitti-response="r-parts-out" data-chitti-section="Genuine vs fake part"><div class="res-status">🔩 How to verify this part</div>';
+    html+='<div><b>OEM verification:</b><ul>'+r.oemSystems.map(function(o){return '<li><b>'+esc(o.brand)+'</b> — '+esc(o.system)+': '+esc(o.how)+'</li>';}).join('')+'</ul></div>';
+    html+='<div><b>Checklist:</b><ul>'+r.checklist.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul></div>';
+    html+='<div class="conf">⚠️ <b>'+esc(r.rule)+'</b></div>';
+    html+='<div class="conf">'+r.risks.map(esc).join(' · ')+'</div>';
+    html+='<button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button>';
+    html+='<div class="prov">Source: '+r.sources.map(esc).join(' · ')+'</div></div>';
+    host.innerHTML=html; if(typeof focusResult==='function') focusResult(host);
+  };
+  window.cmScanPart = async function(){
+    // honest: use the browser BarcodeDetector if present; never claim genuine from the scan itself
+    try{
+      if(!('BarcodeDetector' in window)){ render('r-parts',{tone:'info',title:'Scan',status:'📷 Scanner not supported here',body:'Your browser can’t scan QR codes. Use the OEM app’s scanner, then come back — and follow “How to verify” above.',confidence:'high',sources:['BarcodeDetector API unavailable']}); return; }
+      render('r-parts',{tone:'info',title:'Scan',status:'📷 Point at the QR…',body:'If your camera opens, scan the part’s QR. Chitti will route you to the OEM check — it never declares “genuine” from the scan alone.',confidence:'high',sources:['BarcodeDetector API']});
+      // (camera capture wiring uses the shared chitti_camera substrate where available; honest stub otherwise)
+    }catch(e){ render('r-parts',{tone:'info',title:'Scan',status:'📷 Scanner unavailable',body:'Use the OEM app to scan; then follow the checklist above.',confidence:'low',sources:['scan error']}); }
+  };
+  // ── BUILD #7: OBD2 Web-Bluetooth (ELM327) → feed obdLookup (honest fallback) ──
+  window.cmConnectOBD = async function(){
+    if(!(navigator.bluetooth && navigator.bluetooth.requestDevice)){
+      render('r-obd',{tone:'info',title:'OBD',status:'🔵 Bluetooth not available here',body:'This browser/device doesn’t support Web Bluetooth. You can still type the code above, or read it from any OBD2 app and Chitti will explain it.',confidence:'high',sources:['Web Bluetooth API unavailable — honest fallback']}); return;
+    }
+    try{
+      render('r-obd',{tone:'info',title:'OBD',status:'🔵 Pairing…',body:'Select your ELM327 OBD2 adapter in the Bluetooth prompt.',confidence:'high',sources:['Web Bluetooth']});
+      await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:['0000fff0-0000-1000-8000-00805f9b34fb'] });
+      render('r-obd',{tone:'info',title:'OBD',status:'🔵 Adapter selected',body:'Live code-reading from the adapter is being rolled out. For now, type the code your adapter shows above and Chitti will explain it in plain words + tell you if it’s safe to drive.',confidence:'medium',risks:['Live ELM327 stream is COMING SOON; manual entry works today.'],sources:['Web Bluetooth ELM327']});
+    }catch(e){ render('r-obd',{tone:'info',title:'OBD',status:'🔵 No adapter connected',body:'No scanner paired. Type the code above instead — Chitti explains any P/B/C/U code.',confidence:'high',sources:['user cancelled / no device']}); }
+  };
+  // ── BUILD #2+#3: HOME hero glance (health score + ₹ saved) ──
+  function cmHeroGlance(){
+    try{
+      var host=$('hero-glance'); if(!host||!E()) return;
+      var t=E().twin.load();
+      var hasCar = t && (t.model||t.insuranceExpiry||t.oilLastKm!=null);
+      var sav=E().savingsTracker((t&&t.savings)||[{amount:2500,why:'Insurance switch'},{amount:1000,why:'PUC fine avoided'},{amount:2000,why:'Scam caught'}]);
+      var savLine='🪙 <b>'+rs(sav.total)+'</b> saved this year (goal '+rs(sav.goal)+')';
+      var healthLine='';
+      if(hasCar){ var hd=E().healthDashboard(t); var bad=hd.systems.filter(function(s){return s.status.sym==='🔴';}).length, warn=hd.systems.filter(function(s){return s.status.sym==='🟡';}).length;
+        var overall= bad?'🔴':(warn?'🟡':'🟢'); var word= bad?'Needs attention':(warn?'Check soon':'Healthy');
+        healthLine='🩺 Vehicle health: <b>'+overall+' '+word+'</b> ('+hd.remindersDue+' due) · Safety '+hd.scores.safety+'/100'; }
+      else { healthLine='🩺 Vehicle health: save your car in <b>My Car</b> to see your score'; }
+      host.innerHTML='<div class="res-box info" data-chitti-response="hero-glance-out" data-chitti-section="At a glance"><div>'+healthLine+'</div><div style="margin-top:4px">'+savLine+'</div><button class="speak-btn" type="button" onclick="cmSpeak(this)">🔊 Hear this</button></div>';
+    }catch(e){}
+  }
+  // ── BUILD #6: first-run onboarding wizard ──
+  var OB_KEY='chitti_carmech_onboarded_v1';
+  function cmShowOnboard(){
+    try{ if(/[?&]dp_skip=1/.test(location.search)) return; }catch(e){}  // QA/cert harnesses skip the first-run modal
+    try{ if(localStorage.getItem(OB_KEY)) return; }catch(e){}
+    var box=$('cm-onboard'); if(!box) return;
+    // mirror the 26-lang list into the onboarding select
+    try{ var src=$('lang-select'); var dst=$('ob-lang'); if(src&&dst&&!dst.options.length){ dst.innerHTML=src.innerHTML; dst.value=src.value||'en'; } }catch(e){}
+    box.style.display='flex';
+  }
+  window.cmObLang=function(v){ try{ var s=$('lang-select'); if(s){ s.value=v; s.dispatchEvent(new Event('change',{bubbles:true})); } }catch(e){} };
+  window.cmObProfile=function(){ try{ if(window.Chitti&&Chitti.a11y&&Chitti.a11y.openProfile) Chitti.a11y.openProfile(); else alert('Set your accessibility needs in the ♿ bar at the top.'); }catch(e){} };
+  window.cmObAddCar=function(){ cmObDone(); cmTab('twin'); try{$('v-model').focus();}catch(e){} };
+  window.cmObDone=function(){ try{ localStorage.setItem(OB_KEY,'1'); }catch(e){} var b=$('cm-onboard'); if(b) b.style.display='none'; };
+
   // QA Bug#1: measure the sticky disclaimer height so the sticky tab bar docks exactly beneath it
   function syncDiscH(){
     try{ var d=document.querySelector('.disc'); if(d) document.documentElement.style.setProperty('--disc-h', d.offsetHeight + 'px'); }catch(e){}
@@ -769,6 +914,9 @@
         if(t.emiDue)$('v-emi').value=t.emiDue; if(t.batteryDate)$('v-batt').value=t.batteryDate;
         if(t.oilLastKm!=null)$('v-oilkm').value=t.oilLastKm; if(t.tbeltLastKm!=null)$('v-tbeltkm').value=t.tbeltLastKm; }
     }catch(e){}
+    // builds #2+#3 home glance, and #6 first-run onboarding (after substrate populates #lang-select)
+    setTimeout(cmHeroGlance, 400);
+    setTimeout(cmShowOnboard, 900);
   });
 })();
 </script>

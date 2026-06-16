@@ -119,7 +119,7 @@ await safe('LANG dropdown populated + switches', async () => {
 check('skip-to-content link', await page.locator('a.skip').count() === 1);
 check('single <h1>', await page.locator('h1').count() === 1);
 check('<main role=main>', await page.locator('main#main').count() === 1);
-check('role=tab tabs (9)', await page.locator('[role="tab"]').count() === 9);
+check('role=tab tabs (10)', await page.locator('[role="tab"]').count() === 10);
 check('aria-live result hosts ≥9', await page.locator('[aria-live="polite"]').count() >= 9);
 check('tricolour stripe present', await page.locator('.stripe').count() === 1);
 check('sticky disclaimer present', await page.locator('.disc').count() === 1);
@@ -221,6 +221,31 @@ await safe('ENGINE vehicle-history honest guide', async () => {
   await page.click('button[onclick="cmHistory()"]');
   await page.waitForTimeout(400);
   check('history shows what to verify (never invents)', /verify|invent/i.test(await page.locator('#r-history').innerText()));
+});
+// ── competition builds #1-#7 ──
+await safe('BUILD#1 Vehicle timeline renders', async () => {
+  await page.click('button[onclick="cmDemo()"]'); await page.waitForTimeout(300);
+  await page.click('#tab-twin'); await page.click('button[onclick="cmTimeline()"]'); await page.waitForTimeout(400);
+  check('BUILD#1 timeline renders events', /timeline/i.test(await page.locator('#r-timeline').innerText()));
+});
+await safe('BUILD#2+3 HOME glance (health + ₹ saved)', async () => {
+  const t = await page.locator('#hero-glance').innerText();
+  check('BUILD#2+3 hero shows health + savings', /health/i.test(t) && /saved this year|₹/i.test(t), t.split('\n')[0]);
+});
+await safe('BUILD#4 Service cost estimator', async () => {
+  await page.click('#tab-service'); await page.click('button[onclick="cmCostEstimator()"]'); await page.waitForTimeout(400);
+  check('BUILD#4 cost estimator lists ₹ ranges', /₹/.test(await page.locator('#r-cost').innerText()));
+});
+await safe('BUILD#5 Parts guide (never genuine from photo)', async () => {
+  await page.click('#tab-genuine'); await page.fill('#pt-brand', 'Maruti'); await page.click('button[onclick="cmPartsGuide()"]'); await page.waitForTimeout(400);
+  const t = await page.locator('#r-parts').innerText();
+  check('BUILD#5 parts guide + never-genuine rule', /verify/i.test(t) && /never declares a part .?genuine.? from a photo/i.test(t), t.split('\n')[0]);
+});
+await safe('BUILD#7 OBD Bluetooth button present + honest', async () => {
+  check('BUILD#7 Connect-scanner button present', await page.locator('button[onclick="cmConnectOBD()"]').count() === 1);
+});
+await safe('BUILD#6 onboarding modal exists in DOM', async () => {
+  check('BUILD#6 onboarding wizard present', await page.locator('#cm-onboard').count() === 1 && await page.locator('#ob-lang').count() === 1);
 });
 
 // ── 6. tap targets ≥44px (authored controls) ──
