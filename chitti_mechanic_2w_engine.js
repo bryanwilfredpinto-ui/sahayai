@@ -186,6 +186,30 @@
     // Nearest-centre search (CEOS §10/§11) — real Google Maps deep-link, works on any device.
     maps_base: 'https://www.google.com/maps/search/',
 
+    // Chain wear vs lube (#2). Lube every 500 km; the chain+sprocket SET wears out ~15,000 km.
+    chain: { replace_km: 15000, lube_km: 500 },
+    unused_days: 60,                  // not-ridden-in-N-days reminder (#3)
+    ev_default_range_km: 100,         // fallback claimed range if user hasn't entered one (#6)
+    // Common spare-parts fair-price bands (#7) — typical India aftermarket; genuine OEM costs more.
+    parts: [
+      { name: 'Brake shoes/pads', price: '₹400–900', tier: 'mechanic' },
+      { name: 'Clutch plates', price: '₹600–1,500', tier: 'mechanic' },
+      { name: 'Air filter', price: '₹150–400', tier: 'safe' },
+      { name: 'Spark plug', price: '₹120–350', tier: 'safe' },
+      { name: 'Chain + sprocket set', price: '₹1,200–3,500', tier: 'mechanic' },
+      { name: 'Battery', price: '₹1,200–2,000 (Li-ion EV ₹8,000+)', tier: 'caution' },
+      { name: 'Headlight bulb', price: '₹80–400', tier: 'safe' },
+      { name: 'CVT belt (scooter)', price: '₹500–1,200', tier: 'mechanic' },
+      { name: 'Tyre (per tyre)', price: '₹1,500–2,800', tier: 'mechanic' }
+    ],
+    fake_part_flags: [
+      'No hologram / QR / serial number on the box',
+      'Packaging print/font looks smudged or off',
+      'Price far below market — too good to be true',
+      'Loose fit or wrong weight vs the genuine part',
+      'Seller refuses a GST bill or won\'t show the sealed box'
+    ],
+
     scam_threshold_pct: 30,           // quote > expected*1.30 → scam alert (CEOS §17/SOP6)
     savings_goal: 10000,              // ₹10k+ honest annual goal (Art.9)
     emergency: { numbers: ['108 (ambulance)', '112 (national emergency)'], note: 'Chitti NEVER auto-dials. It shows the number and asks before any call (Golden Rule).' }
@@ -254,8 +278,13 @@
     }
     // Battery — 24 months.
     if (num(v.batteryMonths) >= 22) add('Battery', num(v.batteryMonths) >= 24, 'Battery is ' + num(v.batteryMonths) + ' months old. Get it tested before it fails you on a bad day.', null);
-    // Chain — every 500 km.
+    // Chain lube — every 500 km.
     if (num(v.chainKmSinceLube) >= 450) add('Chain', num(v.chainKmSinceLube) >= 500, 'Chain cleaning + lube due (every 500 km). 15-min safe DIY.', null);
+    // Chain wear — the chain+sprocket SET wears out ~15,000 km (#2).
+    if (num(v.chainKm) >= RULES.chain.replace_km - 2000) add('Chain wear', num(v.chainKm) >= RULES.chain.replace_km, 'Chain + sprocket set at ' + num(v.chainKm) + '/' + RULES.chain.replace_km + ' km — plan a replacement (≈₹2,000–3,500). A worn set can slip or snap.', null);
+    // Unused bike — not ridden in N days (#3).
+    var dRide = v.lastRideDate ? -(daysUntil(v.lastRideDate, today) || 0) : null;
+    if (dRide !== null && dRide >= RULES.unused_days) add('Unused', dRide >= 120, 'Not ridden in ' + dRide + ' days. Before you ride: check battery charge, tyre pressure, and stale fuel (petrol >2 months can gum the carb/FI).', null);
     // Tyre pressure — monthly nudge (always on).
     add('Tyre pressure', false, 'Monthly: check tyre pressure (typical 28–32 PSI front, 32–36 PSI rear — see your sticker).', null);
 
@@ -376,7 +405,7 @@
   // numeric distance to a named centre would need a paid Places API (Sire/infra) — not faked.
   function nearestQuery(kind, opts) {
     opts = opts || {};
-    var what = { puc: 'PUC pollution check centre', mechanic: '2 wheeler mechanic', tyre: 'two wheeler tyre shop', service: 'two wheeler service centre', petrol: 'petrol pump', rto: 'RTO office' }[kind] || (kind + ' near me');
+    var what = { puc: 'PUC pollution check centre', mechanic: '2 wheeler mechanic', tyre: 'two wheeler tyre shop', service: 'two wheeler service centre', petrol: 'petrol pump', rto: 'RTO office', charging: 'EV charging station' }[kind] || (kind + ' near me');
     var hasGeo = (opts.lat != null && opts.lng != null);
     var url = hasGeo
       ? (RULES.maps_base + encodeURIComponent(what) + '/@' + opts.lat + ',' + opts.lng + ',14z')
@@ -394,7 +423,19 @@
       tyreDeals: RULES.maps_base + encodeURIComponent('two wheeler tyre shop near me'),
       mechanic: RULES.maps_base + encodeURIComponent('2 wheeler mechanic near me'),
       video: function (q) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent((q || 'two wheeler') + ' two wheeler DIY how to'); },
-      sell: function (make) { return 'https://www.olx.in/items/q-' + encodeURIComponent(make || 'bike'); }
+      sell: function (make) { return 'https://www.olx.in/items/q-' + encodeURIComponent(make || 'bike'); },
+      // #5 — official govt portals (RC/insurance/PUC/challan/FASTag). Chitti OPENS the official
+      // site; the real reg-number auto-pull API stays infra (Sire). Honest: "opens the official app".
+      compliance: {
+        mparivahan: 'https://parivahan.gov.in/parivahan/',
+        vahanStatus: 'https://vahan.parivahan.gov.in/nrservices/faces/user/searchstatus.xhtml',
+        echallan: 'https://echallan.parivahan.gov.in/',
+        digilocker: 'https://www.digilocker.gov.in/',
+        fastag: 'https://www.npci.org.in/what-we-do/netc-fastag/product-overview'
+      },
+      // #5/#7 — genuine-part verification (brand official pages) + parts marketplace.
+      verify: { ngk: 'https://www.ngkntk.com/in/', bosch: 'https://www.boschaftermarket.com/in/en/' },
+      boodmo: function (q) { return 'https://boodmo.com/search/?q=' + encodeURIComponent(q || 'spare parts'); }
     };
   }
   // Real .ics calendar file for a reminder — a working, offline reminder mechanism
@@ -680,6 +721,80 @@
   }
 
   // ───────────────────────────────────────────────────────────────────────────
+  // #1 — Free-text symptom → triage, with crisis-keyword detection (never auto-dials).
+  // ───────────────────────────────────────────────────────────────────────────
+  var CRISIS_KW = ['accident', 'crash', 'collision', 'injured', 'injury', 'hospital', 'bleeding', 'fire', 'burning', 'fell down', 'met with'];
+  var SYMPTOM_KW = {
+    no_start_crank: ['not start', 'wont start', "won't start", 'crank', 'clicking', 'weak start', 'self start', 'self-start'],
+    no_start_silent: ['dead', 'no light', 'no lights', 'nothing happens', 'completely dead', 'no power'],
+    noise_start: ['noise when start', 'sound on start', 'grinding'],
+    brake_soft: ['brake', 'braking', 'not stopping', 'spongy', 'wont stop'],
+    overheat: ['overheat', 'heating', 'too hot', 'engine hot', 'burning smell'],
+    low_mileage: ['mileage', 'average', 'fuel economy', 'less average', 'low mileage'],
+    chain_noise: ['chain noise', 'jerk', 'sluggish', 'rattle', 'pickup'],
+    smoke: ['smoke', 'white smoke', 'blue smoke', 'exhaust smoke'],
+    ev_range_drop: ['range', 'less range', 'charge drains', 'battery drains', 'low backup']
+  };
+  function coachFromText(text) {
+    var t = (text || '').toLowerCase().trim();
+    if (!t) return { module: 'coach', found: false, crisis: false, options: RULES.symptoms.map(function (x) { return { id: x.id, q: x.q }; }), summary: 'Type or say what is happening with your bike.', confidence: 'n/a', risks: ['If unsure, treat it as caution and ask a mechanic.'], sources: src() };
+    if (CRISIS_KW.some(function (k) { return t.indexOf(k) > -1; })) {
+      var e = emergency();
+      return { module: 'coach', found: true, crisis: true, tier: 'mechanic', tierSym: '🆘', tierWord: 'Emergency', numbers: e.numbers,
+        summary: '🆘 This sounds like an emergency. ' + e.numbers.join(' · ') + '. If someone is hurt, call now if you can — Chitti will ask before calling, it never auto-dials.',
+        confidence: 'high', risks: e.risks.concat(['Chitti never auto-dials (Golden Rule).']), sources: src() };
+    }
+    var best = null, bestN = 0;
+    RULES.symptoms.forEach(function (s) {
+      var kws = (SYMPTOM_KW[s.id] || []).concat(s.causes.map(function (c) { return c.toLowerCase(); }));
+      var n = kws.reduce(function (a, k) { return a + (t.indexOf(k) > -1 ? 2 : 0) + (t.indexOf(k.split(' ')[0]) > -1 ? 1 : 0); }, 0);
+      if (n > bestN) { bestN = n; best = s; }
+    });
+    if (!best || bestN === 0) return { module: 'coach', found: false, crisis: false, options: RULES.symptoms.map(function (x) { return { id: x.id, q: x.q }; }), summary: 'Chitti could not match that to a known symptom — pick the closest from the list (Chitti never guesses a cause).', confidence: 'low', risks: ['When unsure, treat it as caution and ask a mechanic.'], sources: src() };
+    var r = coach(best.id); r.crisis = false; r.matchedFrom = text; return r;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // #2 — Chain wear (set) vs lube. #6 — EV intelligence. #7 — parts price. #8 — service costs.
+  // ───────────────────────────────────────────────────────────────────────────
+  function chainStatus(v) {
+    v = v || {}; var km = num(v.chainKm); var lube = num(v.chainKmSinceLube);
+    var wear = km >= RULES.chain.replace_km ? 'bad' : km >= RULES.chain.replace_km - 2000 ? 'warning' : 'ok';
+    var status = wear === 'bad' ? 'bad' : (wear === 'warning' || lube >= RULES.chain.lube_km) ? 'warning' : 'ok';
+    return { module: 'chain', km: km, replaceKm: RULES.chain.replace_km, lubeKmSince: lube, wear: wear, status: status,
+      summary: wear === 'bad' ? ('Chain + sprocket past ~' + RULES.chain.replace_km + ' km — replace the SET (≈₹2,000–3,500).') : wear === 'warning' ? ('Chain set nearing end of life (' + km + '/' + RULES.chain.replace_km + ' km) — plan a replacement.') : (lube >= RULES.chain.lube_km ? ('Chain lube due (every ' + RULES.chain.lube_km + ' km) — 15-min DIY.') : ('Chain OK (' + km + '/' + RULES.chain.replace_km + ' km).')),
+      confidence: 'high (km rule)', risks: ['A worn/loose chain can slip or snap — do not delay a worn set.', 'Lube every ~500 km doubles chain life.'], sources: src() };
+  }
+  function evIntel(v) {
+    v = v || {}; var age = num(v.batteryMonths);
+    var degradePct = Math.min(40, Math.round(age * 0.4));   // ~0.4%/mo (~5%/yr) Li-ion, capped
+    var health = 100 - degradePct;
+    var claimed = num(v.evClaimedRangeKm) || RULES.ev_default_range_km;
+    var realRange = Math.round(claimed * health / 100);
+    var status = health >= 85 ? 'ok' : health >= 70 ? 'warning' : 'bad';
+    return { module: 'ev', batteryHealthPct: health, degradePct: degradePct, claimedRangeKm: claimed, estRealRangeKm: realRange, status: status,
+      summary: 'EV battery health ≈ ' + health + '% (' + age + ' mo old). Real range ≈ ' + realRange + ' km vs ' + claimed + ' km claimed.' + (status === 'bad' ? ' Get a battery-health (BMS) check.' : ''),
+      confidence: 'medium — age-based estimate; a BMS report is the real check',
+      risks: ['Range also drops in cold weather, low tyre pressure, and sport mode.', 'Charge to ~80% for daily use to extend Li-ion life.'], sources: src() };
+  }
+  function partsPrice(query) {
+    var q = (query || '').toLowerCase().trim();
+    var matched = q ? RULES.parts.filter(function (p) { var n = p.name.toLowerCase(); return n.indexOf(q.split(' ')[0]) > -1 || q.indexOf(n.split(' ')[0]) > -1; }) : RULES.parts.slice();
+    if (!matched.length) matched = RULES.parts.slice(0, 6);
+    return { module: 'parts', query: query || 'common parts', options: matched.map(function (p) { return { name: p.name, price: p.price, tier: p.tier }; }),
+      redFlags: RULES.fake_part_flags, boodmo: links().boodmo(query),
+      summary: (query ? ('Fair price for "' + query + '": ') : 'Common parts: ') + matched.slice(0, 5).map(function (p) { return p.name + ' ' + p.price; }).join(' · '),
+      confidence: 'medium — typical India aftermarket bands; genuine OEM costs more (worth it)',
+      risks: ['Always insist on a GST bill + the OLD part back.', 'Use the genuine-vs-fake checklist; verify the hologram/QR with the brand.'],
+      sources: src().concat(['Parts price bands: boodmo + aftermarket India 2026']) };
+  }
+  function serviceCosts() {
+    return { module: 'service_costs', items: RULES.service.map(function (s) { return { item: s.item, cost: s.cost, who: s.who, tier: s.tier, every: s.km + ' km / ' + s.months + ' mo' }; }),
+      summary: 'Fair cost bands for common 2W service items — compare any workshop quote to these.',
+      confidence: 'high (catalogue)', risks: ['Genuine OEM parts + city labour vary; these are typical bands, not a promise.'], sources: src() };
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
   // PUBLIC API
   // ───────────────────────────────────────────────────────────────────────────
   var API = {
@@ -700,7 +815,8 @@
     triage: triage,
     sellAssistant: sellAssistant,
     savings: savings,
-    twin: twin, scores: scores, coach: coach,
+    twin: twin, scores: scores, coach: coach, coachFromText: coachFromText,
+    chainStatus: chainStatus, evIntel: evIntel, partsPrice: partsPrice, serviceCosts: serviceCosts,
     emergency: emergency,
     // helpers exposed for the page renderer/tests
     _util: { inr: inr, band: band, daysUntil: daysUntil }
