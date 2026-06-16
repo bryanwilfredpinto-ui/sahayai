@@ -103,6 +103,17 @@ main{padding:14px 16px 110px;max-width:920px;margin:0 auto}
 .sample-card .tag{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(220,38,38,.08);color:var(--red);padding:2px 8px;border-radius:6px;display:inline-block;align-self:flex-start}
 .sample-card .tag.med{background:rgba(234,88,12,.10);color:var(--orange)}
 .sample-card .tag.low{background:rgba(22,163,74,.10);color:var(--green)}
+.sample-card:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.sample-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sample-spk{background:transparent;border:1px solid var(--gold);color:var(--saffron);border-radius:8px;padding:4px 9px;font-size:13px;cursor:pointer;min-height:32px;min-width:38px;flex-shrink:0}
+.sample-spk.playing{background:var(--saffron);color:#fff;animation:micPulse 1.2s ease-in-out infinite}
+
+/* How to use — 4 steps */
+.howto-list{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.howto-list li{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card2)}
+.howto-list .hs-ico{font-size:26px;line-height:1;flex-shrink:0}
+.howto-list .hs-txt{font-size:13px;line-height:1.5;color:var(--text)}
+.howto-list .hs-step{display:block;font-size:11px;font-weight:800;color:var(--saffron);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 
 /* RBI rule cards */
 .rule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
@@ -238,6 +249,21 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 
 <main>
 
+  <!-- ════════ HOW TO USE — 4 steps (P1) ════════ -->
+  <section class="section-card chitti-response" aria-labelledby="howto-title" data-chitti-section="ℹ️ How to use Chitti">
+    <h2 class="section-title" id="howto-title"><span class="ico">ℹ️</span> How to use Chitti — 4 simple steps</h2>
+    <div class="section-sub" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <span>Chitti is your second opinion before you pay. Tap 🔊 to hear these steps aloud.</span>
+      <button class="btn-ghost" style="min-height:36px;padding:6px 12px" onclick="speakHowTo(this)" aria-label="Hear the how-to steps aloud">🔊 Hear steps</button>
+    </div>
+    <ol class="howto-list">
+      <li><span class="hs-ico" aria-hidden="true">📋</span><span class="hs-txt"><span class="hs-step">Step 1 · Paste</span>Paste the message you got — SMS, WhatsApp, or what a caller said. Or tap a sample below.</span></li>
+      <li><span class="hs-ico" aria-hidden="true">🛡️</span><span class="hs-txt"><span class="hs-step">Step 2 · Check</span>Tap Check risk now. Chitti grades it HIGH, MEDIUM, or LOW in seconds.</span></li>
+      <li><span class="hs-ico" aria-hidden="true">🔊</span><span class="hs-txt"><span class="hs-step">Step 3 · Hear</span>Chitti reads the warning aloud and shows you what to do next.</span></li>
+      <li><span class="hs-ico" aria-hidden="true">📞</span><span class="hs-txt"><span class="hs-step">Step 4 · Act</span>Already lost money? Call 1930 or report at cybercrime.gov.in within 1 hour.</span></li>
+    </ol>
+  </section>
+
   <!-- ════════ INPUT ════════ -->
   <section class="section-card chitti-response" aria-labelledby="check-title" data-chitti-section="🔎 Check before you pay">
     <h2 class="section-title" id="check-title"><span class="ico">🔎</span> Check before you pay</h2>
@@ -280,30 +306,30 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
     <h2 class="section-title" id="samples-title"><span class="ico">🧪</span> Try a known scam pattern</h2>
     <div class="section-sub">Tap a card to load it into the box and check it instantly.</div>
     <div class="sample-grid">
-      <button class="sample-card" onclick="loadSample(this)" data-text="Dear customer, your SBI YONO account will be blocked today at 6pm. Update KYC immediately at this link: http://sbi-update-secure.in/kyc — call 9XXXXXXXXX">
-        <span class="tag">KYC scam</span>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: KYC scam — SBI YONO account block warning. Tap to check." data-text="Dear customer, your SBI YONO account will be blocked today at 6pm. Update KYC immediately at this link: http://sbi-update-secure.in/kyc — call 9XXXXXXXXX">
+        <div class="sample-top"><span class="tag">🎣 KYC scam</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>SBI YONO account block warning + suspicious KYC link.</span>
-      </button>
-      <button class="sample-card" onclick="loadSample(this)" data-text="Aapki bijli aaj raat 9 baje kaat di jayegi kyunki aapne pichhle mahine ka bill pay nahi kiya. Turant ₹250 paid karein is number par 9XXXXXXXXX (PhonePe).">
-        <span class="tag">Bijli scam</span>
+      </div>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: Bijli scam — electricity disconnection threat. Tap to check." data-text="Aapki bijli aaj raat 9 baje kaat di jayegi kyunki aapne pichhle mahine ka bill pay nahi kiya. Turant ₹250 paid karein is number par 9XXXXXXXXX (PhonePe).">
+        <div class="sample-top"><span class="tag">⚡ Bijli scam</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>Electricity-disconnection threat + UPI to a personal number.</span>
-      </button>
-      <button class="sample-card" onclick="loadSample(this)" data-text="Hi sir, maine accidentally aapke UPI pe ₹4500 bhej diye, please refund. Yeh mera UPI hai: rohit.k@apl">
-        <span class="tag">Refund trap</span>
+      </div>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: Refund trap — stranger claims wrong payment. Tap to check." data-text="Hi sir, maine accidentally aapke UPI pe ₹4500 bhej diye, please refund. Yeh mera UPI hai: rohit.k@apl">
+        <div class="sample-top"><span class="tag">💸 Refund trap</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>Stranger claims wrong-payment, asks you to "refund".</span>
-      </button>
-      <button class="sample-card" onclick="loadSample(this)" data-text="Congratulations! You have won ₹25,00,000 in KBC lottery. To claim, send ₹2,500 processing fee to upi-id 8XXXXXXXXX@ybl">
-        <span class="tag">Lottery scam</span>
+      </div>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: Lottery scam — KBC lottery with processing fee. Tap to check." data-text="Congratulations! You have won ₹25,00,000 in KBC lottery. To claim, send ₹2,500 processing fee to upi-id 8XXXXXXXXX@ybl">
+        <div class="sample-top"><span class="tag">🎰 Lottery scam</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>KBC lottery + processing fee request.</span>
-      </button>
-      <button class="sample-card" onclick="loadSample(this)" data-text="This is from CBI cyber-cell. A parcel in your name contains drugs. Verify yourself — share your Aadhaar and OTP, or you will be arrested.">
-        <span class="tag">Fake CBI</span>
+      </div>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: Fake CBI — impersonation asking for Aadhaar and OTP. Tap to check." data-text="This is from CBI cyber-cell. A parcel in your name contains drugs. Verify yourself — share your Aadhaar and OTP, or you will be arrested.">
+        <div class="sample-top"><span class="tag">👮 Fake CBI</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>Impersonation + Aadhaar + OTP request.</span>
-      </button>
-      <button class="sample-card" onclick="loadSample(this)" data-text="Paid ₹599 to BIGBASKET DAILY at 09:42 via PhonePe UPI. Ref no UPI/2026031199142. Receipt sent to your registered email.">
-        <span class="tag low">Looks LOW</span>
+      </div>
+      <div class="sample-card" role="button" tabindex="0" onclick="loadSample(this)" onkeydown="sampleKey(event,this)" aria-label="Try sample: Looks LOW — routine grocery payment receipt. Tap to check." data-text="Paid ₹599 to BIGBASKET DAILY at 09:42 via PhonePe UPI. Ref no UPI/2026031199142. Receipt sent to your registered email.">
+        <div class="sample-top"><span class="tag low">✅ Looks LOW</span><button class="sample-spk" onclick="event.stopPropagation();speakSample(this)" aria-label="Hear this example aloud">🔊</button></div>
         <span>Routine grocery payment receipt — should grade LOW.</span>
-      </button>
+      </div>
     </div>
   </section>
 
@@ -401,7 +427,12 @@ function changeLanguage(lang){
 }
 
 /* Speech */
-function bcp47(lang){ return ({hi:'hi-IN',en:'en-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN'})[lang] || 'en-IN'; }
+function bcp47(lang){
+  const m = {hi:'hi-IN',en:'en-IN',ta:'ta-IN',te:'te-IN',bn:'bn-IN',mr:'mr-IN',gu:'gu-IN',kn:'kn-IN',ml:'ml-IN',
+             pa:'pa-IN',or:'or-IN',as:'as-IN',ur:'ur-IN',sa:'sa-IN',ne:'ne-NP',kok:'kok-IN',mai:'mai-IN',
+             doi:'doi-IN',ks:'ks-IN',sd:'sd-IN',mni:'mni-IN',sat:'sat-IN',bho:'bho-IN',raj:'raj-IN',kru:'kru-IN',hoc:'hoc-IN'};
+  return m[lang] || (lang ? lang + '-IN' : 'en-IN');
+}
 function speakText(text, lang, onEnd){
   if (!('speechSynthesis' in window)) { if (onEnd) onEnd(); return; }
   speechSynthesis.cancel();
@@ -479,6 +510,14 @@ async function checkRisk(){
     data = { ok:false, error: 'Network error: ' + e.message };
   }
 
+  // P0: if the AI backend is offline or only returning its caution fallback,
+  // take over with Chitti's deterministic fraud-rule engine so the user still
+  // gets a real HIGH / MEDIUM / LOW grade (rules are the product — no API key
+  // needed). A genuine AI verdict (source not 'fallback') always wins when live.
+  if (!data || !data.ok || data.source === 'fallback' || data.error) {
+    data = localClassify(text, CURRENT_LANG);
+  }
+
   if (!data || !data.ok) {
     document.getElementById('verdict-ico').textContent = '⚠️';
     document.getElementById('verdict-lvl').textContent = 'Error';
@@ -513,11 +552,147 @@ function applyVerdict(d){
   speakText(t, d.language || CURRENT_LANG);
 }
 
+/* ════════ DETERMINISTIC FRAUD-RULE ENGINE (P0) ════════
+   Runs when the AI backend is offline / falling back. No API key needed —
+   "rules are the product". Returns the SAME shape the backend would, so
+   applyVerdict() is unchanged. Known scam signatures => HIGH; a clean
+   completed-transaction receipt => LOW; otherwise MEDIUM. */
+function localClassify(rawText, lang){
+  const text = String(rawText || '').toLowerCase();
+  const ind = [];
+  let critical = false;
+  const has = (re) => re.test(text);
+
+  // OTP / PIN / CVV share request
+  if (has(/\b(otp|o\.t\.p|one[- ]?time|pin|cvv|password|paasvard)\b/) &&
+      has(/\b(share|batao|send|enter|verify|de do|dedo|provide|tell)\b/)) {
+    ind.push('Asks you to share OTP / PIN — no one genuine ever does'); critical = true; }
+  // KYC / Aadhaar / account block threat
+  if (has(/\b(kyc|aadhaar|aadhar|pan card|account|yono)\b/) &&
+      has(/\b(block|blocked|band|suspend|expire|update|verify|frozen|deactivat)\b/)) {
+    ind.push('Threatens an account block unless you "update KYC"'); critical = true; }
+  // A link to click
+  if (has(/https?:\/\/|www\.|click here|is link|link pe|link par/)) {
+    ind.push('Contains a link to click — banks never send KYC links'); critical = true; }
+  // Lottery / prize + fee
+  if (has(/\b(lottery|kbc|jeeta|won|winner|congratulations|lucky draw|prize|inaam)\b/) &&
+      has(/\b(fee|processing|charge|shulk|deposit|pay|bhej|send|transfer)\b/)) {
+    ind.push('A lottery/prize that asks for a fee first — classic scam'); critical = true; }
+  // Refund trap
+  if (has(/\b(refund|wapas|return|galti|accident|wrong|galat|by mistake)\b/) &&
+      has(/\b(bhej diy|sent|send|transfer|upi|paisa|amount|₹|rs|rupee)\b/)) {
+    ind.push('Stranger claims a "wrong payment" and wants a refund — refund trap'); critical = true; }
+  // Authority impersonation + threat
+  if (has(/\b(cbi|police|cyber[- ]?cell|customs|income tax|court|warrant|drugs|parcel|fedex|narcotics)\b/) &&
+      has(/\b(arrest|verify|fine|pay|aadhaar|otp|account|legal action)\b/)) {
+    ind.push('Impersonates police / CBI / customs and threatens you — fake'); critical = true; }
+  // Disconnection / shutdown threat + pay now
+  if (has(/\b(bijli|electricity|disconnect|kaat|cut|gas|connection)\b/) &&
+      has(/\b(pay|paid karein|turant|tonight|raat|baje|pm|number|recharge)\b/)) {
+    ind.push('Threatens to cut your power / connection unless you pay now'); critical = true; }
+  // Urgent payment to a personal mobile number
+  if (has(/\b\d{10}\b/) && has(/\b(pay|paid|paisa|upi|phonepe|gpay|paytm|send|bhej|transfer)\b/) &&
+      has(/\b(turant|immediately|today|aaj|abhi|now|jaldi)\b/)) {
+    ind.push('Urgent payment to a personal mobile number'); }
+  // Urgency / pressure
+  let urgency = false;
+  if (has(/\b(turant|immediately|abhi|right now|aaj|today|tonight|raat|pm|baje|within (1|one) hour|jaldi|urgent|last warning|aakhri)\b/)) {
+    urgency = true; ind.push('Creates false urgency / time pressure'); }
+
+  // Genuine completed-transaction receipt => LOW
+  const receiptShaped = has(/\b(paid|debited|credited|received)\b/) &&
+                        has(/ref(erence)?(\.| )?no|txn|transaction id|utr|upi\/\d/);
+  const asksAction = has(/\b(click|share|otp|pin|kyc|verify|refund|pay now|send|update|call|fee|processing)\b/) ||
+                     has(/https?:\/\//);
+
+  let risk;
+  if (critical) risk = 'HIGH';
+  else if (receiptShaped && !asksAction) risk = 'LOW';
+  else if (ind.length || urgency) risk = 'MEDIUM';
+  else risk = 'LOW';
+
+  const en = lang === 'en';
+  const WARN = {
+    HIGH:   en ? '🚨 DANGER! This looks like a scam. Do NOT send money or share any details.'
+               : '🚨 खतरनाक! यह धोखा लगता है। पैसे मत भेजिए और कोई जानकारी मत दीजिए।',
+    MEDIUM: en ? '⚠️ Be careful — some warning signs are present. Verify before you pay.'
+               : '⚠️ सावधान! कुछ चेतावनी के संकेत हैं। भुगतान से पहले पुष्टि कर लें।',
+    LOW:    en ? '✅ Looks routine. No scam signals found — but always stay alert.'
+               : '✅ सामान्य लगता है। कोई धोखे का संकेत नहीं मिला — फिर भी सतर्क रहें।',
+  };
+  const REASON = {
+    HIGH:   en ? 'Chitti spotted known fraud patterns in this message.'
+               : 'चिट्टी ने इस मैसेज में जाने-पहचाने धोखे के संकेत पाए।',
+    MEDIUM: en ? 'Some risky signs are present. Confirm with the merchant first.'
+               : 'कुछ जोखिम के संकेत हैं। पहले दुकानदार से पुष्टि करें।',
+    LOW:    en ? 'No known scam pattern was detected in this message.'
+               : 'इस मैसेज में कोई जाना-पहचाना धोखा नहीं मिला।',
+  };
+  const ACTIONS = {
+    HIGH:   en ? ['Do NOT click any link or call the number in the message.','Never share OTP, PIN, or Aadhaar with anyone.','Verify with the company on a number you already trust.','If you already paid, call 1930 immediately.']
+               : ['मैसेज के किसी लिंक पर क्लिक मत करें, न उस नंबर पर कॉल करें।','OTP, PIN या आधार किसी से शेयर मत करें।','कंपनी से उस नंबर पर पुष्टि करें जिस पर आप पहले से भरोसा करते हैं।','अगर पैसे चले गए हैं तो तुरंत 1930 पर कॉल करें।'],
+    MEDIUM: en ? ['Verify with the merchant on a number you already trust.','Do not click links or share OTP / PIN.','If unsure, ask Chitti Vaani before paying.']
+               : ['उस नंबर पर दुकानदार से पुष्टि करें जिस पर आप भरोसा करते हैं।','लिंक पर क्लिक या OTP/PIN शेयर मत करें।','संदेह हो तो भुगतान से पहले चिट्टी वाणी से पूछें।'],
+    LOW:    en ? ['Looks like a normal transaction. Still, confirm large amounts independently.']
+               : ['सामान्य लेन-देन लगता है। फिर भी बड़ी रकम अलग से पुष्टि करें।'],
+  };
+  if (!ind.length) ind.push(en ? 'No known scam pattern detected' : 'कोई जाना-पहचाना धोखा नहीं मिला');
+  ind.push(en ? 'Graded by Chitti rule-engine' : 'चिट्टी रूल-इंजन द्वारा जाँचा गया');
+
+  return {
+    ok: true, risk,
+    warning: WARN[risk], reason: REASON[risk],
+    indicators: ind, actions: ACTIONS[risk],
+    legal_lines: ['Fraud hone par turant 1930 pe call karo ya cybercrime.gov.in pe report karo.',
+                  'Chitti ek AI warning tool hai — yeh payment block nahi kar sakta.'],
+    language: lang || CURRENT_LANG, source: 'rules',
+  };
+}
+
 /* Samples */
 function loadSample(btn){
   if (!consentGiven()) { reopenConsent(); return; }
   document.getElementById('user-text').value = btn.getAttribute('data-text');
   checkRisk();
+}
+function sampleKey(e, el){
+  if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); loadSample(el); }
+}
+function speakSample(btn){
+  stopSpeaking();
+  const card = btn.closest('.sample-card'); if (!card) return;
+  const tagEl = card.querySelector('.tag');
+  const descEl = card.querySelector(':scope > span');
+  const tag = tagEl ? tagEl.textContent.trim() : '';
+  const desc = descEl ? descEl.textContent.trim() : '';
+  btn.classList.add('playing');
+  speakText((tag + '. ' + desc).trim(), CURRENT_LANG, () => btn.classList.remove('playing'));
+}
+function speakHowTo(){
+  stopSpeaking();
+  const steps = Array.from(document.querySelectorAll('.howto-list .hs-txt'))
+    .map(s => s.textContent.replace(/\s+/g, ' ').trim());
+  speakText(steps.join('. '), CURRENT_LANG);
+}
+
+/* P3 — align the consent language picker with the header dropdown
+   (both driven by the full Chitti.lang.list; honest fallback to the
+   built-in set if the substrate has not loaded). */
+function buildConsentLangPicker(){
+  const wrap = document.querySelector('.consent-panel .lang-pick');
+  if (!wrap) return;
+  let langs = null;
+  try { if (window.Chitti && Chitti.lang && Chitti.lang.list && Chitti.lang.list.length) langs = Chitti.lang.list; } catch(e){}
+  if (!langs) return; // keep existing static buttons
+  wrap.querySelectorAll('button').forEach(b => b.remove());
+  langs.forEach(l => {
+    const b = document.createElement('button');
+    b.dataset.lang = l.code;
+    b.textContent = l.native || l.label || l.code;
+    b.setAttribute('onclick', "setConsentLang('" + l.code + "')");
+    if (l.code === CONSENT_LANG) b.classList.add('active');
+    wrap.appendChild(b);
+  });
 }
 
 /* RBI 2026 cards */
@@ -579,6 +754,7 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;',
 /* Boot */
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('lang-select'); if (sel) sel.value = CURRENT_LANG;
+  buildConsentLangPicker();   // P3 — align consent picker with header dropdown
   setConsentLang(CURRENT_LANG);
   if (consentGiven()) {
     document.getElementById('consent-overlay').classList.add('hidden');
@@ -613,6 +789,67 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- Chitti i18n substrate — chitti_lang.js?v=20260529r baked T-table + chitti_a11y.js?v=20260529r widget+QR supplement. 2026-05-22 -->
 <script src="chitti_lang.js?v=20260529r"></script>
 <script src="chitti_a11y.js?v=20260529r"></script>
+
+<!-- P4 — page-specific UI strings the shared packs were missing (hi + kn). -->
+<script>
+(function(){
+  function applyUpiI18n(){
+    if(!(window.Chitti && Chitti.lang && Chitti.lang.extend)) return false;
+    Chitti.lang.extend({
+      // Section headings
+      "Check before you pay":            { hi:"भुगतान से पहले जाँचें",        kn:"ಪಾವತಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ" },
+      "Try a known scam pattern":        { hi:"एक जाना-पहचाना धोखा आज़माएँ",   kn:"ತಿಳಿದಿರುವ ವಂಚನೆ ಮಾದರಿ ಪ್ರಯತ್ನಿಸಿ" },
+      "Recent checks":                   { hi:"हाल की जाँचें",               kn:"ಇತ್ತೀಚಿನ ಪರಿಶೀಲನೆಗಳು" },
+      "RBI 2026 protections — know them":{ hi:"RBI 2026 सुरक्षा — इन्हें जानें", kn:"RBI 2026 ರಕ್ಷಣೆಗಳು — ಅವುಗಳನ್ನು ತಿಳಿಯಿರಿ" },
+      "How to use Chitti — 4 simple steps":{ hi:"चिट्टी कैसे उपयोग करें — 4 आसान कदम", kn:"ಚಿಟ್ಟಿಯನ್ನು ಹೇಗೆ ಬಳಸುವುದು — 4 ಸುಲಭ ಹಂತಗಳು" },
+      // How-to steps
+      "Step 1 · Paste": { hi:"कदम 1 · पेस्ट करें", kn:"ಹಂತ 1 · ಅಂಟಿಸಿ" },
+      "Step 2 · Check": { hi:"कदम 2 · जाँचें",   kn:"ಹಂತ 2 · ಪರಿಶೀಲಿಸಿ" },
+      "Step 3 · Hear":  { hi:"कदम 3 · सुनें",    kn:"ಹಂತ 3 · ಕೇಳಿ" },
+      "Step 4 · Act":   { hi:"कदम 4 · कार्रवाई करें", kn:"ಹಂತ 4 · ಕ್ರಮ ಕೈಗೊಳ್ಳಿ" },
+      "Paste the message you got — SMS, WhatsApp, or what a caller said. Or tap a sample below.":
+        { hi:"आपको मिला मैसेज पेस्ट करें — SMS, WhatsApp, या कॉल करने वाले ने जो कहा। या नीचे कोई नमूना दबाएँ।",
+          kn:"ನಿಮಗೆ ಬಂದ ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ — SMS, WhatsApp, ಅಥವಾ ಕರೆ ಮಾಡಿದವರು ಹೇಳಿದ್ದು. ಅಥವಾ ಕೆಳಗಿನ ಮಾದರಿ ಒತ್ತಿ." },
+      "Tap Check risk now. Chitti grades it HIGH, MEDIUM, or LOW in seconds.":
+        { hi:"अभी जोखिम जाँचें दबाएँ। चिट्टी कुछ सेकंड में हाई, मीडियम या लो दर्जा देती है।",
+          kn:"ಈಗ ಅಪಾಯ ಪರಿಶೀಲಿಸಿ ಒತ್ತಿ. ಚಿಟ್ಟಿ ಕೆಲವೇ ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಹೈ, ಮೀಡಿಯಂ ಅಥವಾ ಲೋ ಎಂದು ದರ್ಜೆ ನೀಡುತ್ತದೆ." },
+      "Chitti reads the warning aloud and shows you what to do next.":
+        { hi:"चिट्टी चेतावनी ज़ोर से पढ़ती है और आगे क्या करना है यह दिखाती है।",
+          kn:"ಚಿಟ್ಟಿ ಎಚ್ಚರಿಕೆಯನ್ನು ಜೋರಾಗಿ ಓದುತ್ತದೆ ಮತ್ತು ಮುಂದೆ ಏನು ಮಾಡಬೇಕೆಂದು ತೋರಿಸುತ್ತದೆ." },
+      "Already lost money? Call 1930 or report at cybercrime.gov.in within 1 hour.":
+        { hi:"पैसे चले गए? 1 घंटे के अंदर 1930 पर कॉल करें या cybercrime.gov.in पर रिपोर्ट करें।",
+          kn:"ಹಣ ಕಳೆದುಕೊಂಡಿರಾ? 1 ಗಂಟೆಯೊಳಗೆ 1930 ಗೆ ಕರೆ ಮಾಡಿ ಅಥವಾ cybercrime.gov.in ನಲ್ಲಿ ವರದಿ ಮಾಡಿ." },
+      "Chitti is your second opinion before you pay. Tap 🔊 to hear these steps aloud.":
+        { hi:"भुगतान से पहले चिट्टी आपकी दूसरी राय है। ये कदम सुनने के लिए 🔊 दबाएँ।",
+          kn:"ಪಾವತಿಸುವ ಮೊದಲು ಚಿಟ್ಟಿ ನಿಮ್ಮ ಎರಡನೇ ಅಭಿಪ್ರಾಯ. ಈ ಹಂತಗಳನ್ನು ಕೇಳಲು 🔊 ಒತ್ತಿ." },
+      // Buttons (emoji is part of the text node)
+      "🔊 Hear steps":      { hi:"🔊 कदम सुनें",        kn:"🔊 ಹಂತಗಳನ್ನು ಕೇಳಿ" },
+      "🔊 How to use":      { hi:"🔊 कैसे उपयोग करें",   kn:"🔊 ಹೇಗೆ ಬಳಸುವುದು" },
+      "🗑️ Clear history":  { hi:"🗑️ इतिहास साफ़ करें",  kn:"🗑️ ಇತಿಹಾಸ ಅಳಿಸಿ" },
+      "📜 Re-read T&C":     { hi:"📜 नियम फिर पढ़ें",     kn:"📜 ನಿಯಮಗಳನ್ನು ಮತ್ತೆ ಓದಿ" },
+      "🛡️ Check risk now": { hi:"🛡️ अभी जोखिम जाँचें",  kn:"🛡️ ಈಗ ಅಪಾಯ ಪರಿಶೀಲಿಸಿ" },
+      "🎙️ Speak":          { hi:"🎙️ बोलें",            kn:"🎙️ ಮಾತನಾಡಿ" },
+      "Clear":              { hi:"साफ़ करें",            kn:"ಅಳಿಸಿ" },
+      "🔊 Hear again":      { hi:"🔊 फिर सुनें",         kn:"🔊 ಮತ್ತೆ ಕೇಳಿ" },
+      "⏹ Stop":             { hi:"⏹ रोकें",              kn:"⏹ ನಿಲ್ಲಿಸಿ" },
+      "🎙️ Talk to Vaani":  { hi:"🎙️ वाणी से बात करें",  kn:"🎙️ ವಾಣಿ ಜೊತೆ ಮಾತನಾಡಿ" },
+      "Talk to Vaani":      { hi:"वाणी से बात करें",     kn:"ವಾಣಿ ಜೊತೆ ಮಾತನಾಡಿ" },
+      // Sample-card tags
+      "🎣 KYC scam":     { hi:"🎣 KYC धोखा",     kn:"🎣 KYC ವಂಚನೆ" },
+      "⚡ Bijli scam":    { hi:"⚡ बिजली धोखा",   kn:"⚡ ವಿದ್ಯುತ್ ವಂಚನೆ" },
+      "💸 Refund trap":  { hi:"💸 रिफंड जाल",    kn:"💸 ರಿಫಂಡ್ ಬಲೆ" },
+      "🎰 Lottery scam": { hi:"🎰 लॉटरी धोखा",   kn:"🎰 ಲಾಟರಿ ವಂಚನೆ" },
+      "👮 Fake CBI":     { hi:"👮 नकली CBI",     kn:"👮 ನಕಲಿ CBI" },
+      "✅ Looks LOW":    { hi:"✅ कम जोखिम लगता है", kn:"✅ ಕಡಿಮೆ ಅಪಾಯ" }
+    });
+    return true;
+  }
+  if(!applyUpiI18n()){
+    // substrate not ready yet — retry shortly, then give up honestly (English shows)
+    var tries=0, t=setInterval(function(){ if(applyUpiI18n()||++tries>20) clearInterval(t); }, 150);
+  }
+})();
+</script>
 
 </body>
 </html>
