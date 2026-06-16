@@ -73,8 +73,28 @@
     if (!lang || !map) return;
     LANGDATA[lang] = LANGDATA[lang] || {};
     for (var k in map) { if (Object.prototype.hasOwnProperty.call(map, k)) LANGDATA[lang][k] = map[k]; }
+    // RELIABILITY FIX (lang-switch race): if this pack belongs to the language the user is
+    // currently on, re-apply the moment its data arrives — don't rely on <script> onload
+    // timing. Safe from looping because _applyTranslate disconnects the observer while it runs.
+    try {
+      if (lang === currentLang && !_applying && typeof _applyTranslate === 'function' && document.body) _applyTranslate(lang);
+    } catch (e) {}
   }
   window.__chittiLangRegister = register;
+  // RELIABILITY FIX (lang-switch race): capture-phase delegated listener attached the moment
+  // this substrate runs, so a language change is ALWAYS caught synchronously — even on heavy
+  // pages where wireDropdown()'s direct onchange attaches late or the observer is busy.
+  try {
+    document.addEventListener('change', function (e) {
+      var t = e && e.target;
+      if (!t || t.tagName !== 'SELECT') return;
+      var al = t.getAttribute && t.getAttribute('aria-label');
+      if (t.id === 'lang-select' || t.id === 'lang' || t.id === 'hdr-lang' || t.id === 'pick-lang' || t.id === 'onb-lang' ||
+          al === 'Language' || al === 'Choose language' || al === 'Change language') {
+        try { translateAll(t.value); } catch (err) {}
+      }
+    }, true);
+  } catch (e) {}
   // Drain anything that registered before this runtime was ready (defensive).
   try {
     var pend = window.__chittiLangPending;
@@ -152,11 +172,23 @@
   }
 
   var _applying = false;
+  var _observer = null;  // module-scoped so _applyTranslate can pause it (loop-safety)
 
   // Public entry — sets the language immediately, loads its pack if needed, then applies.
   function translateAll(lang) {
     currentLang = lang;
     try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+    // RELIABILITY FIX (lang-switch race): reflect the chosen language SYNCHRONOUSLY —
+    // set html[lang] + RTL dir + a brief loading flag immediately, so the UI never
+    // appears stuck in English while the per-language pack is still downloading.
+    try {
+      if (document.documentElement) {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = RTL_LANGS[lang] ? 'rtl' : 'ltr';
+        if (lang !== 'en' && !_loaded[lang]) document.documentElement.setAttribute('data-chitti-lang-loading', lang);
+        else document.documentElement.removeAttribute('data-chitti-lang-loading');
+      }
+    } catch (e) {}
     ensureLang(lang, function () {
       // Only apply if this is still the language the user wants (avoids a stale
       // late-arriving pack overwriting a newer switch).
@@ -166,6 +198,11 @@
 
   function _applyTranslate(lang) {
     _applying = true;
+    // LOOP-SAFETY: pause the MutationObserver while WE mutate the DOM. MutationObserver
+    // delivers records asynchronously — the `_applying` flag is already false by the time
+    // they arrive — so an in-flag guard cannot stop our own translations from re-triggering
+    // a rescan→translate loop. Disconnecting around the apply is the only reliable guard.
+    try { if (_observer) _observer.disconnect(); } catch (e) {}
     try {
       snapshotAll();
       document.documentElement.lang = lang;
@@ -184,42 +221,30 @@
         }
       });
       var node;
+      // value-diff before assign: never write an identical value (avoids spurious mutations)
       while ((node = w.nextNode())) {
         var orig = node._chittiOrig;
-        if (lang === 'en') { node.nodeValue = orig; continue; }
-        var t = lookup(orig, lang);
-        node.nodeValue = (t !== null) ? t : orig;
+        var nv = (lang === 'en') ? orig : ((lookup(orig, lang) !== null) ? lookup(orig, lang) : orig);
+        if (node.nodeValue !== nv) node.nodeValue = nv;
       }
-      document.querySelectorAll('[placeholder]').forEach(function (el) {
-        var orig = el.dataset.chittiPhOrig || el.getAttribute('placeholder') || '';
-        if (lang === 'en') { el.setAttribute('placeholder', orig); return; }
-        var t = lookup(orig, lang);
-        el.setAttribute('placeholder', (t !== null) ? t : orig);
-      });
-      document.querySelectorAll('[aria-label]').forEach(function (el) {
-        var orig = el.dataset.chittiAriaOrig || el.getAttribute('aria-label') || '';
-        if (lang === 'en') { el.setAttribute('aria-label', orig); return; }
-        var t = lookup(orig, lang);
-        el.setAttribute('aria-label', (t !== null) ? t : orig);
-      });
-      document.querySelectorAll('[title]').forEach(function (el) {
-        var orig = el.dataset.chittiTitleOrig || el.getAttribute('title') || '';
-        if (lang === 'en') { el.setAttribute('title', orig); return; }
-        var t = lookup(orig, lang);
-        el.setAttribute('title', (t !== null) ? t : orig);
-      });
-      document.querySelectorAll('[alt]').forEach(function (el) {
-        var orig = el.dataset.chittiAltOrig || el.getAttribute('alt') || '';
-        if (lang === 'en') { el.setAttribute('alt', orig); return; }
-        var t = lookup(orig, lang);
-        el.setAttribute('alt', (t !== null) ? t : orig);
-      });
+      function setAttrDiff(el, attr, origKey) {
+        var orig = el.dataset[origKey] || el.getAttribute(attr) || '';
+        var nv = (lang === 'en') ? orig : ((lookup(orig, lang) !== null) ? lookup(orig, lang) : orig);
+        if (el.getAttribute(attr) !== nv) el.setAttribute(attr, nv);
+      }
+      document.querySelectorAll('[placeholder]').forEach(function (el) { setAttrDiff(el, 'placeholder', 'chittiPhOrig'); });
+      document.querySelectorAll('[aria-label]').forEach(function (el) { setAttrDiff(el, 'aria-label', 'chittiAriaOrig'); });
+      document.querySelectorAll('[title]').forEach(function (el) { setAttrDiff(el, 'title', 'chittiTitleOrig'); });
+      document.querySelectorAll('[alt]').forEach(function (el) { setAttrDiff(el, 'alt', 'chittiAltOrig'); });
 
       try {
         document.dispatchEvent(new CustomEvent('chitti:langchange', { detail: { lang: lang }, bubbles: true }));
       } catch (e) {}
     } finally {
       _applying = false;
+      try { if (document.documentElement) document.documentElement.removeAttribute('data-chitti-lang-loading'); } catch (e) {}
+      // reconnect the observer (records queued during apply were dropped by disconnect)
+      try { if (_observer && document.body) _observer.observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
     }
     schedulePreload();
   }
@@ -270,7 +295,7 @@
     }
     if (typeof MutationObserver === 'function') {
       var _scanPending = false;
-      var _observer = new MutationObserver(function (muts) {
+      _observer = new MutationObserver(function (muts) {
         if (_applying) return;  // ignore our own substitutions (loop guard)
         for (var i = 0; i < muts.length; i++) {
           var m = muts[i];
