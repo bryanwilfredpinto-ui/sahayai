@@ -1704,3 +1704,49 @@
     init();
   }
 })();
+
+/* ══════════ PHASE 2 — VAANI HANDOFF (every specialist inherits this) ══════════
+ * When a specialist page is opened by Vaani (?from=vaani&input=<base64>):
+ *  - show a "← Vaani" back button (postMessage closeSpecialist inside the iframe,
+ *    else navigate back to chitti_vaani.html),
+ *  - pre-fill the first textarea / text input from the handoff payload.
+ * Auto-loaded on every page via the a11y substrate — no per-specialist edit.
+ * Opt-out per page: <meta name="chitti-vaani-handoff" content="off">. */
+(function vaaniHandoff(root, doc){
+  'use strict';
+  if (!doc) return;
+  function run(){
+    try{
+      var p = new URLSearchParams(root.location.search || '');
+      if (p.get('from') !== 'vaani') return;
+      var opt = doc.querySelector('meta[name="chitti-vaani-handoff"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content')||'')) return;
+      if (doc.getElementById('back-to-vaani-btn')) return;
+
+      // Back button (44px, saffron) — fixed top-left.
+      var css = doc.createElement('style'); css.id='chitti-vaani-handoff-css';
+      css.textContent='#back-to-vaani-btn{position:fixed;top:12px;left:12px;z-index:99999;background:#E86A17;color:#fff;'+
+        'border:none;border-radius:20px;padding:8px 16px;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer;'+
+        'min-height:44px;box-shadow:0 2px 8px rgba(0,0,0,.18)}';
+      doc.head.appendChild(css);
+      var btn = doc.createElement('button');
+      btn.id='back-to-vaani-btn'; btn.type='button'; btn.textContent='← Vaani';
+      btn.setAttribute('aria-label','Back to Chitti Vaani');
+      btn.onclick=function(){ try{ if (root.parent && root.parent!==root){ root.parent.postMessage({type:'closeSpecialist'},'*'); return; } }catch(e){}
+        root.location.href='chitti_vaani.html'; };
+      (doc.body||doc.documentElement).insertBefore(btn, (doc.body||doc.documentElement).firstChild);
+
+      // Pre-fill the specialist's first text field from the handoff payload.
+      try{
+        var raw = p.get('input'); if(!raw) return;
+        var payload = JSON.parse(decodeURIComponent(escape(atob(raw))));
+        var content = payload && payload.content;
+        if (!content || typeof content !== 'string') return;
+        var field = doc.querySelector('textarea, input[type="text"], input[type="search"]');
+        if (field){ field.value = content; field.dispatchEvent(new Event('input',{bubbles:true})); }
+      }catch(e){}
+    }catch(e){ /* honest skip — never block the specialist page */ }
+  }
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 200); });
+  else setTimeout(run, 200);
+})(typeof window!=='undefined'?window:this, typeof document!=='undefined'?document:null);

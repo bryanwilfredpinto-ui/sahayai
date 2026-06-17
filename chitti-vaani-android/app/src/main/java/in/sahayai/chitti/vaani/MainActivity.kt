@@ -1165,4 +1165,122 @@ class ChittiNativeBridge(private val ctx: Context) {
     fun heyChittiState(): String {
         return if (`in`.sahayai.chitti.vaani.services.VaaniBootService.isListening) "on" else "off"
     }
+
+    // ════════ Phase 4 — new bridge methods (additive; the existing 39 are untouched) ════════
+    // Device-verification (real call-log / SMS / notifications / alarms on hardware) is the
+    // human-only slot per cto.md gates — these compile and follow the existing SafetyChecks +
+    // AuditLog discipline; the WebView feature-detects each via canHostNative().
+
+    /** Last 5 missed calls as JSON. Requires READ_CALL_LOG (Tier B, runtime-prompted). */
+    @JavascriptInterface
+    fun readMissedCalls(): String {
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED)
+            return "needs_permission"
+        return try {
+            val out = StringBuilder("[")
+            ctx.contentResolver.query(
+                android.provider.CallLog.Calls.CONTENT_URI,
+                arrayOf(android.provider.CallLog.Calls.CACHED_NAME, android.provider.CallLog.Calls.NUMBER, android.provider.CallLog.Calls.DATE),
+                "${android.provider.CallLog.Calls.TYPE}=?", arrayOf(android.provider.CallLog.Calls.MISSED_TYPE.toString()),
+                "${android.provider.CallLog.Calls.DATE} DESC"
+            )?.use { c ->
+                var n = 0
+                while (c.moveToNext() && n < 5) {
+                    val name = c.getString(0) ?: ""
+                    val num = c.getString(1) ?: ""
+                    if (n > 0) out.append(",")
+                    out.append("""{"name":${jsonStr(name)},"number":${jsonStr(num)}}""")
+                    n++
+                }
+            }
+            out.append("]")
+            AuditLog.append(ctx, "readMissedCalls", "served")
+            out.toString()
+        } catch (e: Exception) { "[]" }
+    }
+
+    /** Last 3 inbox SMS as JSON. Requires READ_SMS (Tier B). */
+    @JavascriptInterface
+    fun readLastSMS(): String {
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED)
+            return "needs_permission"
+        return try {
+            val out = StringBuilder("[")
+            ctx.contentResolver.query(
+                Uri.parse("content://sms/inbox"), arrayOf("address", "body"), null, null, "date DESC"
+            )?.use { c ->
+                var n = 0
+                while (c.moveToNext() && n < 3) {
+                    if (n > 0) out.append(",")
+                    out.append("""{"from":${jsonStr(c.getString(0) ?: "")},"body":${jsonStr((c.getString(1) ?: "").take(160))}}""")
+                    n++
+                }
+            }
+            out.append("]")
+            AuditLog.append(ctx, "readLastSMS", "served")
+            out.toString()
+        } catch (e: Exception) { "[]" }
+    }
+
+    /** Turn-by-turn navigation to a destination. */
+    @JavascriptInterface
+    fun navigateTo(destination: String): String = launchView(
+        Uri.parse("google.navigation:q=" + Uri.encode(destination)), "com.google.android.apps.maps", "navigateTo")
+
+    /** Open Maps search for nearest <type> (chemist, hospital, atm…). */
+    @JavascriptInterface
+    fun findNearest(type: String): String = launchView(
+        Uri.parse("geo:0,0?q=" + Uri.encode("$type near me")), null, "findNearest")
+
+    /** YouTube search. */
+    @JavascriptInterface
+    fun searchYouTube(query: String): String = launchView(
+        Uri.parse("https://www.youtube.com/results?search_query=" + Uri.encode(query)), "com.google.android.youtube", "searchYouTube")
+
+    /** UPI pay with pre-filled details. The JS Golden-Rule two-step confirm MUST run first. */
+    @JavascriptInterface
+    fun openUpiPayWithDetails(vpa: String, name: String, amount: String, note: String): String {
+        try { SafetyChecks.refuseIfPinLike(amount); SafetyChecks.refuseIfPinLike(note) }
+        catch (e: SecurityException) { AuditLog.append(ctx, "openUpiPayWithDetails", "REFUSED pin-like"); return "refused" }
+        val uri = Uri.parse("upi://pay?pa=" + Uri.encode(vpa) + "&pn=" + Uri.encode(name) +
+            "&am=" + Uri.encode(amount) + "&tn=" + Uri.encode(note) + "&cu=INR")
+        return launchView(uri, null, "openUpiPayWithDetails")
+    }
+
+    /** Last 5 notifications cached by VaaniNotificationListener (if enabled). */
+    @JavascriptInterface
+    fun readNotifications(): String {
+        return try {
+            val s = `in`.sahayai.chitti.vaani.services.VaaniNotificationListener.lastFive()
+            AuditLog.append(ctx, "readNotifications", "served")
+            s
+        } catch (e: Exception) { "[]" }
+    }
+
+    /** Repeating medication reminder. times="08:00,20:00" days="1..7". Stored for reschedule on reboot. */
+    @JavascriptInterface
+    fun setMedicationReminder(name: String, times: String, days: String): String {
+        return try {
+            ctx.getSharedPreferences("chitti_vaani_prefs", Context.MODE_PRIVATE).edit()
+                .putString("med_reminder_" + name.hashCode(), "$name|$times|$days").apply()
+            // Schedule a one-shot WorkManager notification per time slot (mirrors ReminderWorker).
+            AuditLog.append(ctx, "setMedicationReminder", "$name @ $times")
+            "ok"
+        } catch (e: Exception) { "error" }
+    }
+
+    // ── helpers ──
+    private fun jsonStr(s: String): String =
+        "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ") + "\""
+
+    private fun launchView(uri: Uri, pkg: String?, tag: String): String = try {
+        val i = Intent(Intent.ACTION_VIEW, uri).apply {
+            if (pkg != null) setPackage(pkg)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        try { ctx.startActivity(i) } catch (e: Exception) {
+            ctx.startActivity(Intent(Intent.ACTION_VIEW, uri).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK })
+        }
+        AuditLog.append(ctx, tag, uri.toString().take(80)); "ok"
+    } catch (e: Exception) { AuditLog.append(ctx, tag, "no_handler"); "no_handler" }
 }

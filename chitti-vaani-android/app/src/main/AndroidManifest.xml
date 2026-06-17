@@ -240,5 +240,17 @@
             </intent-filter>
         </receiver>
 
+        <!-- Notification listener (Phase 4) — caches the last few notifications so
+             ChittiNative.readNotifications() can read them aloud. Read-only; the user
+             must enable it in Settings → Notification access. -->
+        <service
+            android:name=".services.VaaniNotificationListener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>
