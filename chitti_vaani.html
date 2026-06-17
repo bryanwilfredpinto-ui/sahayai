@@ -1105,43 +1105,27 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <h2 class="section-title" id="mic-title"><span class="ico">🎙️</span> <span data-vai-i18n="vai.hero.title">Chitti से बात करें</span></h2>
     <div class="section-sub"><span data-vai-i18n="vai-hero-sub">हरे माइक को टैप करें। अपनी भाषा में बोलें। Chitti सुनती है, सोचती है, और उत्तर ज़ोर से पढ़ती है।</span></div>
 
-    <div class="mic-stage">
-      <button id="mic-big" class="mic-big" onclick="toggleMic()" aria-label="Tap to start or stop listening">🎙️</button>
-      <div class="mic-hint" id="mic-hint"><strong data-vai-i18n="vai.hero.cta">Bolne ke liye tap karein.</strong> <span data-vai-i18n="vai.hero.hint">Chitti aapki bhasha mein jawaab degi aur padh ke sunayegi.</span></div>
-      <div class="mode-row" role="group" aria-label="Conversation mode">
-        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 <span data-vai-i18n="vai.mode.ask">कुछ भी पूछो</span></button>
-        <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
-        <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
-        <button data-mode="translate" onclick="setMode('translate',this)">🌐 Translate</button>
-      </div>
+    <!-- Phase 0 — 4-INPUT UNIVERSAL INTAKE. Three things on first load:
+         (1) this intake, (2) the response area, (3) the bottom nav.
+         Everything else is one tap away (tabs / collapsed details). -->
+    <div class="vaani-intake" role="group" aria-label="Chitti se baat karo — bolo, dekho, scan, file">
+      <button class="intake-btn intake-mic" id="globalMic" type="button" onclick="toggleMic()" aria-label="Bolo — mic dabao aur apni bhasha mein bolein">
+        <span class="intake-icon" aria-hidden="true">🎤</span><span class="intake-label">Bolo</span>
+      </button>
+      <button class="intake-btn intake-camera" type="button" onclick="vaiOpenCamera()" aria-label="Dekho — camera se medicine, product, bill ya document scan karo">
+        <span class="intake-icon" aria-hidden="true">📷</span><span class="intake-label">Dekho</span>
+      </button>
+      <button class="intake-btn intake-upi" type="button" onclick="vaiOpenUpiScanner()" aria-label="UPI Scan — QR code scan karo, Chitti pehle fraud check karegi">
+        <span class="intake-icon" aria-hidden="true">💳</span><span class="intake-label">UPI Scan</span>
+      </button>
+      <button class="intake-btn intake-file" type="button" onclick="vaiOpenFileUpload()" aria-label="File — document ya PDF upload karo">
+        <span class="intake-icon" aria-hidden="true">📎</span><span class="intake-label">File</span>
+      </button>
+      <input type="file" id="vaiFileInput" accept="image/*,.pdf" style="display:none" onchange="vaiHandleFile(event)">
     </div>
+    <div class="mic-hint" id="mic-hint"><strong data-vai-i18n="vai.hero.cta">Bolne ke liye 🎤 tap karein.</strong> <span data-vai-i18n="vai.hero.hint">Chitti aapki bhasha mein jawaab degi aur padh ke sunayegi.</span></div>
 
-    <!-- Chitti tools — beside the mic. Other Chittis are Vaani's tools; these run
-         INLINE here (no navigation to a separate page). (Sire 2026-06-16/17) -->
-    <div class="vai-tools-row" role="group" aria-label="Chitti tools — scan, photo, fraud check">
-      <button type="button" class="vai-tool-btn" onclick="vaiOpenScanner()" aria-label="Product Scanner — scan medicine, food, bill, prescription or document with the camera">📷 Scanner</button>
-      <button type="button" class="vai-tool-btn" onclick="vaiOpenScanner()" aria-label="Upload a photo — Chitti reads medicine, product, bill, prescription or report">🖼️ Photo upload</button>
-      <button type="button" class="vai-tool-btn" onclick="vaiToolUpi()" aria-label="UPI fraud check — paste a UPI request, SMS or link and Chitti checks it here">🛡️ UPI fraud check</button>
-    </div>
-    <!-- inline tool panel (UPI fraud, etc.) — appears in-place, no page change -->
-    <div id="vai-tool-panel" class="vai-tool-panel" hidden>
-      <label id="vai-tool-label" for="vai-tool-input" class="vai-tool-label"></label>
-      <textarea id="vai-tool-input" class="vai-tool-input" rows="3" aria-label="Paste the message to check"></textarea>
-      <div class="vai-tool-actions">
-        <button type="button" class="btn-saffron" onclick="vaiToolRun()" id="vai-tool-run">🛡️ Check ➜</button>
-        <button type="button" class="btn-ghost" onclick="vaiToolCancel()">Cancel</button>
-      </div>
-    </div>
-
-    <div class="input-row">
-      <textarea id="user-text" placeholder="Or type / paste here — call notes, a question, a paragraph to read aloud…" aria-label="Type your message"></textarea>
-      <div class="btn-row" style="flex-direction:column">
-        <button class="btn-saffron" onclick="sendToChitti()">Send to Chitti ➜</button>
-        <button class="btn-navy" onclick="speakUserText()">🔊 Read my text</button>
-        <button class="btn-ghost" onclick="clearInput()">Clear</button>
-      </div>
-    </div>
-
+    <!-- response area — one of the three always-visible things -->
     <div id="answer-box" class="answer-box" role="status" aria-live="polite">
       <div class="answer-head">
         <span class="who">🪔 Chitti says</span>
@@ -1155,6 +1139,35 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       <div id="answer-text" class="answer-text"></div>
       <div id="answer-meta" class="answer-meta"></div>
     </div>
+
+    <!-- secondary: type / paste + conversation mode + fraud-check — collapsed so
+         no more than 4 primary actions are above the fold. -->
+    <details class="vai-type-instead">
+      <summary>⌨️ <span>Type · paste · change mode · check a message</span></summary>
+      <div class="mode-row" role="group" aria-label="Conversation mode">
+        <button class="active" data-mode="ask" onclick="setMode('ask',this)">💬 <span data-vai-i18n="vai.mode.ask">कुछ भी पूछो</span></button>
+        <button data-mode="call" onclick="setMode('call',this)">📞 Summarise call</button>
+        <button data-mode="read" onclick="setMode('read',this)">📖 Read aloud</button>
+        <button data-mode="translate" onclick="setMode('translate',this)">🌐 Translate</button>
+        <button type="button" onclick="vaiToolUpi()">🛡️ UPI fraud check</button>
+      </div>
+      <div class="input-row">
+        <textarea id="user-text" placeholder="Type / paste here — call notes, a question, a paragraph to read aloud…" aria-label="Type your message"></textarea>
+        <div class="btn-row" style="flex-direction:column">
+          <button class="btn-saffron" onclick="sendToChitti()">Send to Chitti ➜</button>
+          <button class="btn-navy" onclick="speakUserText()">🔊 Read my text</button>
+          <button class="btn-ghost" onclick="clearInput()">Clear</button>
+        </div>
+      </div>
+      <div id="vai-tool-panel" class="vai-tool-panel" hidden>
+        <label id="vai-tool-label" for="vai-tool-input" class="vai-tool-label"></label>
+        <textarea id="vai-tool-input" class="vai-tool-input" rows="3" aria-label="Paste the message to check"></textarea>
+        <div class="vai-tool-actions">
+          <button type="button" class="btn-saffron" onclick="vaiToolRun()" id="vai-tool-run">🛡️ Check ➜</button>
+          <button type="button" class="btn-ghost" onclick="vaiToolCancel()">Cancel</button>
+        </div>
+      </div>
+    </details>
   </section>
 
   <details>
@@ -1677,6 +1690,10 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
     <span class="ico">🚨</span><span data-vai-i18n="tab.sos">SOS</span>
   </button>
 </nav>
+
+<!-- Phase 0 — Emergency SOS: floating, always visible (opens the SOS screen). -->
+<button type="button" id="vai-sos-fab" class="vai-sos-fab" onclick="vaiSwitchTab('sos')"
+        aria-label="Emergency SOS — Chitti aapke parivaar ko ring karega">🚨<span>SOS</span></button>
 
 <!-- ══════════════ GRANDPARENT BAR — 3 buttons only ══════════════ -->
 <div id="vai-gp-bar" role="toolbar" aria-label="Grandparent mode controls">
@@ -8403,6 +8420,77 @@ window.addEventListener('DOMContentLoaded', () => {
     var ut = document.getElementById('user-text'); if (ut) ut.value = framed;
     if (panel) panel.hidden = true;
     try { if (typeof sendToChitti === 'function') sendToChitti(); } catch(e){}
+  };
+})();
+</script>
+<!-- ══════════ PHASE 0 — UI RESTRUCTURE (4-input intake · responsive · floating SOS) ══════════ -->
+<style>
+  /* 4-input universal intake */
+  .vaani-intake{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:420px;margin:8px auto 4px}
+  .intake-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:var(--card,#fff);border:2px solid var(--border,#e5e7eb);border-radius:16px;padding:16px 8px;
+    cursor:pointer;font-family:inherit;min-height:80px;transition:border-color .15s,box-shadow .15s}
+  .intake-btn:hover,.intake-btn:focus-visible{border-color:var(--saffron,#E86A17);box-shadow:0 0 0 3px rgba(232,106,23,.18);outline:none}
+  .intake-mic{border-color:var(--green,#16a34a)}
+  .intake-icon{font-size:28px;line-height:1}
+  .intake-label{font-size:13px;font-weight:700;color:var(--navy,#0E2344)}
+  .vai-type-instead{margin-top:12px;border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:0 12px}
+  .vai-type-instead>summary{cursor:pointer;padding:12px 0;font-weight:700;color:var(--navy,#0E2344);min-height:44px;display:flex;align-items:center;gap:6px}
+  .vai-type-instead[open]{padding-bottom:12px}
+
+  /* Floating SOS — always visible (hidden only in grandparent mode, which has its own SOS) */
+  .vai-sos-fab{position:fixed;right:14px;bottom:84px;z-index:1100;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;width:60px;height:60px;border-radius:50%;border:3px solid #fff;background:var(--red,#dc2626);
+    color:#fff;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 4px 16px rgba(220,38,38,.45)}
+  .vai-sos-fab span{font-size:10px;font-weight:800;letter-spacing:.04em}
+  .vai-sos-fab:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  body.vai-grandparent .vai-sos-fab{display:none}
+
+  /* ── Responsive: 4 breakpoints (mobile-first; primary user is on a phone) ── */
+  /* Tablet 640–1024px: intake in a 1×4 row, centred */
+  @media (min-width:640px){
+    .vaani-intake{grid-template-columns:repeat(4,1fr);max-width:600px}
+  }
+  /* Laptop/Desktop ≥1024px: comfortable centred column + roomier intake.
+     (Full sidebar-nav multi-column desktop layout tracked as Phase 0b — it
+     restructures the bottom-nav into a sidebar and must not regress mobile.) */
+  @media (min-width:1024px){
+    main{max-width:760px;margin:0 auto}
+    .vaani-intake{max-width:680px;gap:16px}
+    .intake-btn{min-height:96px}
+    .intake-icon{font-size:32px}
+    .vai-sos-fab{right:24px;bottom:24px}
+  }
+  @media (min-width:1440px){
+    main{max-width:880px}
+  }
+</style>
+<script>
+(function(){
+  // Phase 0 intake handlers. Camera/UPI use the real camera substrate (no hand-roll).
+  // Phase 1 upgrades these to the full chittiTriage() → bottom-panel routing.
+  window.vaiOpenCamera = function(){ try{ if(typeof vaiOpenScanner==='function') return vaiOpenScanner(); }catch(e){}
+    try{ if(window.ChittiNative && ChittiNative.canHostNative && ChittiNative.canHostNative()) return ChittiNative.openCamera(); }catch(e){}
+    try{ var cu=window.Chitti&&window.Chitti.cameraUniversal; if(cu&&cu.open) cu.open(); }catch(e){} };
+  window.vaiOpenUpiScanner = function(){ // Phase 1: QR → UPI Guard first
+    try{ if(window.ChittiNative && ChittiNative.canHostNative && ChittiNative.canHostNative() && ChittiNative.openCameraCapture) return ChittiNative.openCameraCapture('upi_qr'); }catch(e){}
+    return window.vaiOpenCamera(); };
+  window.vaiOpenFileUpload = function(){ var i=document.getElementById('vaiFileInput'); if(i) i.click(); };
+  window.vaiHandleFile = function(ev){
+    var f = ev.target && ev.target.files && ev.target.files[0]; if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var cu=window.Chitti&&window.Chitti.cameraUniversal;
+        if(/^image\//.test(f.type) && cu && typeof cu.analyze==='function'){
+          var b64=String(r.result||'').split(',').pop();
+          cu.analyze(b64, (cu.MODES&&cu.MODES[0])||null); return;
+        }
+      }catch(e){}
+      // PDF / non-image: honest — full file triage lands in Phase 1.
+      try{ if(typeof speakText==='function') speakText((typeof CURRENT_LANG!=='undefined'&&CURRENT_LANG==='en')?'File received. Full document reading is coming next.':'File mil gayi. Poori document-reading agle update mein.', (typeof CURRENT_LANG!=='undefined'?CURRENT_LANG:'hi')); }catch(e){}
+    };
+    r.readAsDataURL(f); ev.target.value='';
   };
 })();
 </script>
