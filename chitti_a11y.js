@@ -143,6 +143,31 @@
     } catch (e) { /* honest skip */ }
   })();
 
+  // ── chitti_qr.js auto-loader (Sire 2026-06-16: "every Chitti should have a
+  //    QR code in the Settings section") ──
+  // Injects a "📱 Open on phone" QR of the current page into the page's Settings
+  // container (falls back to end-of-main). Skips pages that already render a QR,
+  // so hand-rolled QRs (Vaani, MedUPI, CA, …) are untouched. Opt-out per page via:
+  //   <meta name="chitti-qr" content="off">
+  (function injectChittiQr() {
+    try {
+      var opt = document.querySelector('meta[name="chitti-qr"]');
+      if (opt && /^off$/i.test(opt.getAttribute('content') || '')) return;
+      if (document.querySelector('script[src*="chitti_qr.js"]')) return;
+      var thisScript = document.currentScript ||
+        document.querySelector('script[src*="chitti_a11y.js"]');
+      var srcBase = '';
+      if (thisScript && thisScript.src) {
+        srcBase = thisScript.src.replace(/chitti_a11y\.js.*$/, '');
+      }
+      var s = document.createElement('script');
+      s.src = (srcBase || '') + 'chitti_qr.js';
+      s.defer = true;
+      s.setAttribute('data-injected-by', 'chitti_a11y');
+      document.head.appendChild(s);
+    } catch (e) { /* honest skip */ }
+  })();
+
   // ── chitti_lang.js auto-loader (Sire 2026-05-27, fixes batch-cert
   //    findings) ──
   // Some legacy pages (chitti_isl, chitti_offline, chitti_quality,
