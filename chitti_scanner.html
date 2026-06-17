@@ -7,22 +7,31 @@
 <title>Chitti Product Scanner — Bharat's AI label-reader · Medicine, food, bill, contract</title>
 <meta name="description" content="Snap or type any product label, medicine strip, bill or contract. Chitti reads it, flags warnings, suggests savings, and connects to Jan Aushadhi for cheaper medicines.">
 <meta name="chitti-page-desc" content="Chitti Product Scanner — capture or type a label, Chitti analyses it and reads the result aloud.">
+<link rel="stylesheet" href="sahayai_design_system.css">
 <style>
 :root{
-  --saffron:#E86A17; --navy:#0E2344; --gold:#D4AF37;
+  --saffron:#E86A17; --navy:#002366; --gold:#D4AF37;
   --bg:#f8f4ee; --card:#ffffff; --card2:#fbf8f1;
   --text:#17202a; --muted:#6b7280; --border:#e5e7eb;
   --green:#16a34a; --red:#dc2626; --amber:#D4AF37; --orange:#ea580c;
 }
+button,.btn,input:not([type=checkbox]):not([type=radio]),select,textarea,a.btn{min-height:48px}
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8f4ee,#fff);color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5}
+html,body{margin:0;padding:0;background:#F7F7F4;color:var(--text);font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:18px;line-height:1.5}
 body{min-height:100vh;position:relative}
 body:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 20%,rgba(232,106,23,.10),transparent 25%),radial-gradient(circle at 85% 10%,rgba(212,175,55,.12),transparent 20%),radial-gradient(circle at 50% 80%,rgba(14,35,68,.08),transparent 28%);z-index:0}
 body > *{position:relative;z-index:1}
-.bharat-stripe{height:3px;background:linear-gradient(90deg,#E86A17,#D4AF37,#0E2344)}
+.bharat-stripe{height:6px;background:linear-gradient(90deg,#FF6913 0 33.3%,#FFFFFF 33.3% 66.6%,#046A38 66.6% 100%)}
 
 /* Consent gate */
 .consent-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+/* QA 2026-06-16 bug #4 — the shared theme forces EVERY [role=dialog][aria-modal]
+   (incl. the Disability-Profile substrate modal) to z-index:9000 !important, so
+   the later-injected profile modal painted ON TOP of this consent gate and
+   intercepted clicks. An ID selector (1,0,0) beats the theme's class rule even
+   with !important, so consent is dealt with FIRST; the profile is revealed
+   underneath only after consent closes. Substrate is left fully intact (G3). */
+#consent-overlay.consent-overlay{z-index:100000 !important}
 .consent-overlay.hidden{display:none}
 .consent-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:740px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .consent-panel h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
@@ -51,7 +60,7 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#
 .brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
 .tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
 .switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:10px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:44px;white-space:nowrap}
 .lang-toggle-bharat select{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
 .header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .header-controls button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;min-height:34px;font-weight:600}
@@ -286,6 +295,31 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 <div id="chitti-speak-bar" style="margin:10px 14px 0"></div>
 
 <main>
+
+  <!-- ════════ HOW TO USE (visible + illustrated — QA 2026-06-16 bug #6) ════════ -->
+  <section class="section-card chitti-response" id="how-to-use" aria-labelledby="howto-title" data-chitti-section="How to use Chitti">
+    <h2 class="section-title" id="howto-title"><span class="ico">🧭</span> How to use Chitti
+      <button onclick="speakIntro()" class="btn-ghost" style="margin-left:auto;min-height:44px;padding:10px 14px;font-size:12px" aria-label="Hear how to use Chitti aloud" data-i18n="hear">🔊 Hear</button>
+    </h2>
+    <div class="section-sub" data-i18n="three-easy-steps-pictures-and-voice-too">Three easy steps. Pictures and voice too — no reading needed.</div>
+    <div class="howto-steps" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:4px">
+      <div class="howto-step" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:#fbf8f1;text-align:center">
+        <div style="font-size:30px" aria-hidden="true">1️⃣ 📷</div>
+        <div style="font-weight:800;font-size:13px;margin-top:4px" data-i18n="open-camera">Open camera</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="or-upload-photo">…or 🖼️ Upload photo</div>
+      </div>
+      <div class="howto-step" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:#fbf8f1;text-align:center">
+        <div style="font-size:30px" aria-hidden="true">2️⃣ ⌨️</div>
+        <div style="font-weight:800;font-size:13px;margin-top:4px" data-i18n="type-the-label">Type the label</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="if-camera-is-off-speak-it-with-mic">…if camera is off — or 🎙️ speak it</div>
+      </div>
+      <div class="howto-step" style="border:1px solid var(--border);border-radius:12px;padding:12px;background:#fbf8f1;text-align:center">
+        <div style="font-size:30px" aria-hidden="true">3️⃣ 🔊</div>
+        <div style="font-weight:800;font-size:13px;margin-top:4px" data-i18n="chitti-reads-it-aloud">Chitti reads it aloud</div>
+        <div style="font-size:11px;color:var(--muted)" data-i18n="warns-and-saves-you-money">…warns you, saves you money</div>
+      </div>
+    </div>
+  </section>
 
   <!-- ════════ CAPTURE ════════ -->
   <section class="section-card chitti-response" aria-labelledby="cap-title" data-chitti-section="📷 Capture or upload">
@@ -707,8 +741,12 @@ function speakText(text, lang, onEnd){
 }
 function stopSpeaking(){ if (window.speechSynthesis) speechSynthesis.cancel(); }
 function speakIntro(){
-  const en = "Chitti Scanner is open. Tap camera to take a photo, or type out what the label says. Chitti will read the result aloud.";
-  const hi = "चिट्टी स्कैनर खुला है। कैमरा दबाइए, या लेबल का टेक्स्ट टाइप कीजिए। चिट्टी जवाब बोल कर सुनाएगी।";
+  // Bug #6 — scroll the visible illustrated steps into view (deaf / low-literacy
+  // users get the pictures, not just the audio), then read them aloud.
+  const sec = document.getElementById('how-to-use');
+  if (sec && sec.scrollIntoView) { try { sec.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){} }
+  const en = "Three steps. One: open the camera or upload a photo. Two: or type out what the label says — you can also speak it. Three: Chitti reads the result aloud, warns you, and saves you money.";
+  const hi = "तीन कदम। एक: कैमरा खोलिए या फ़ोटो अपलोड कीजिए। दो: या लेबल का टेक्स्ट टाइप कीजिए — आप बोल भी सकते हैं। तीन: चिट्टी जवाब बोल कर सुनाती है, चेतावनी देती है, और पैसे बचाती है।";
   speakText(CURRENT_LANG === 'en' ? en : hi, CURRENT_LANG);
 }
 function speakResult(){

@@ -183,9 +183,44 @@ _RELEVANCE_TOPICS = {
                         "p/e", "p/b", "roe", "dividend", "ipo", "buy", "sell",
                         "portfolio", "watchlist", "screener", "angel",
                         "शेयर", "बाजार"],
-    "chitti-scanner":  ["scan", "photo", "image", "document", "card", "aadhaar",
-                        "pan", "passport", "bill", "receipt", "medicine strip",
-                        "स्कैन", "फोटो", "दस्तावेज़"],
+    # Scanner is a UNIVERSAL label-reader — it reads whatever the user shows it
+    # (medicine, food, bill, legal notice, vehicle part, ID, garment …). The old
+    # 11-word list bounced legitimate labels (e.g. "Crocin 500mg Paracetamol MRP
+    # 35") as off_topic. Vocabulary now mirrors the frontend Universal Router
+    # categories so a real label is virtually never redirected. QA 2026-06-16.
+    "chitti-scanner":  [
+        # generic capture / document words
+        "scan", "photo", "image", "picture", "label", "document", "card",
+        "pack", "packet", "packaging", "strip", "bottle", "box", "wrapper",
+        "read", "what is this", "tell me", "check this",
+        # medicine
+        "medicine", "tablet", "capsule", "syrup", "mg", "ml", "mcg",
+        "paracetamol", "ibuprofen", "amoxicillin", "antibiotic", "crocin",
+        "composition", "salt", "dosage", "prescription", "batch", "mfg",
+        "exp", "expiry", "best before", "ip", "schedule h",
+        # food
+        "fssai", "ingredients", "nutrition", "kcal", "calorie", "energy",
+        "sugar", "salt", "sodium", "fat", "protein", "preservative",
+        "biscuit", "snack", "noodles", "drink", "juice", "oil",
+        # price / bill
+        "mrp", "rs", "rupee", "price", "bill", "receipt", "invoice",
+        "overcharge", "overcharging", "total", "amount", "gst",
+        # legal / document
+        "notice", "summons", "agreement", "contract", "clause", "section",
+        "demand notice", "eviction", "arbitration", "tenant", "landlord",
+        "terms", "conditions", "policy", "138",
+        # id / government
+        "aadhaar", "aadhar", "pan", "passport", "ration", "voter id",
+        "license", "certificate", "scheme", "yojana",
+        # insurance
+        "insurance", "premium", "policy number", "sum assured", "idv",
+        # vehicle / appliance / fashion (router hands these off)
+        "engine", "tyre", "tire", "warranty", "model", "fabric", "cotton",
+        "wash care", "size",
+        # Hindi
+        "स्कैन", "फोटो", "तस्वीर", "लेबल", "दस्तावेज़", "दवा", "दवाई",
+        "गोली", "एक्सपायरी", "एमआरपी", "बिल", "नोटिस", "कीमत", "पढ़ो", "पढ़ें",
+    ],
     "chitti-upi":      ["upi", "payment", "phonepe", "paytm", "gpay", "scam",
                         "fraud", "kyc", "otp", "vpa", "fishy", "suspicious",
                         "fake", "warning", "blackmail", "lottery", "kbc",
