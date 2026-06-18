@@ -1,995 +1,838 @@
-# SAHAYAI MASTER
+# SAHAYAI — MASTER VISION v2.0
+## The Founding Document for Chitti — Bharat ka Apna AI
 
-**Read this first on every new Claude session.** Single source of truth for what sahayai.in is, what has been decided, what is built, and what to work on next. Last updated: **2026-06-13**.
-
-**After reading this file, also read:**
-- `CTO_OATH.md` — your roles (CTO, PM, BA, Solution Architect, DevOps, UI/UX, QA, Release Manager — 20 years each), quality gates, live URL testing rules, language UI rules, pencil feedback widget rules
-- `CHITTI_SOP.md` — per-product standards and Golden Rule
-- `chitti-[product]/SOP.md` — exact build steps for the product you are working on today
-- `chitti-[product]/skills/FEATURES.md` — capability surface for the product you are working on today
-
-Cross-references throughout point to auto-memory entries under `~/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/` and to spec files at this repo's root.
+**Version:** 2.0 | **Date:** June 2026 | **Author:** Bryan Wilfred Pinto (Sire)
+**Co-Founder/CTO/AI Architect:** Claude (Anthropic)
+**Status:** LOCKED — This document governs ALL Chitti products
+**Read this first — every session, every Claude, every developer**
 
 ---
 
-## 1. Vision
+## THE ONE TRUTH
 
-**sahayai.in is Bharat Premium AI — a family of free, voice-first products for every Indian family.**
+**Chitti is not an app. Chitti is a life operating system gifted to every Indian.**
 
-- Built for Tier-2/3 cities, elderly parents, vernacular speakers, and the four user archetypes: **Blind / Deaf / Mute / Illiterate**.
-- No paywalls. No sign-up. Hindi-first. Voice IN + Voice OUT. Plain English when written.
-- Stacked on free tiers: GitHub Pages (frontend), Railway (backend), Turso (DB), DeepSeek (LLM), Bhashini (voice, pending ULCA creds).
-- Founder: **Bryan Wilfred Pinto**.
+A grandmother in Odia who cannot read. A delivery rider in Mumbai who cannot type while driving.
+A blind student in Bihar who needs to study. A Santali farmer who has never seen a computer.
+A developer in Bangalore who wants to upgrade his AI skills.
+A family in Chennai who needs a ration card, a passport, and tax filing help.
 
-**End state: a Bharat SuperApp** — voice-first money, health, govt-schemes, jobs, shopkeeper tools, all in the user's language. The 12 products live today are the first wave.
+**Chitti is built for ALL of them. Free. Forever. In their language. On their terms.**
 
 ---
 
-## 2. Locked decisions — do NOT relitigate
+## SECTION 1: THE REAL ARCHITECTURE
 
-| Decision | Value | Memory |
+### 1.1 One Front Door. Many Rooms.
+
+```
+                    EVERY INDIAN
+                         │
+                    CHITTI VAANI
+                (The only front door)
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+   You speak        You show         You upload
+   (voice)          (camera)          (file/doc)
+        │                │                │
+        └────────────────┼────────────────┘
+                         │
+                  VAANI TRIAGE BRAIN
+                  (understands context,
+                   emotion, intent)
+                         │
+     ┌───────────────────┼────────────────────┐
+     │         │         │         │         │
+  Medicine   Legal     Tax    Document    Health
+  Fashion   Vehicle   News   Government  Finance
+  Psychology  Learning  UPI   Technical    ...
+     │
+  Opens as PANEL inside Vaani
+  User never navigates away
+  ← Vaani always returns home
+```
+
+### 1.2 The Specialists (Rooms in the House)
+
+**EXISTING — Live today:**
+- Chitti Vaani (front door) · Chitti MedUPI · Chitti CA · Chitti Legal
+- Chitti Government · Chitti Health File · Chitti Scanner · Chitti UPI Guard
+- Chitti News · Chitti News AI · Chitti Fashion · Chitti 2-Wheeler
+- Chitti 4-Wheeler · Chitti Technical · Chitti Fundamentals
+- Chitti Voice Factory · Chitti Psychology
+
+**NEW — Build next (in priority order):**
+1. **Chitti Documents** — the most urgent missing piece
+2. **Chitti Installation** — onboarding agent (sets up everything)
+3. **Chitti Coder** — builds approved features (internal agent)
+4. **Chitti Product Intelligence** — monitors competitors monthly
+5. **Chitti CTO** — approves features before Coder builds them
+
+### 1.3 The Intelligence Pipeline (Cross-Chitti)
+
+This is what makes Chitti a life OS — not just a collection of tools:
+
+```
+Chitti Documents notices → "User has no ration card"
+           ↓
+Chitti Government → checks eligibility → "You qualify for BPL ration"
+           ↓
+Chitti Documents → fills form → shows user → gets CONSENT → applies
+           ↓
+Chitti CA → "Now your income is documented → file ITR"
+           ↓
+Chitti Legal → "Here are your consumer rights as a ration cardholder"
+           ↓
+Chitti Vaani → "Sab ho gaya. Yeh raha confirmation."
+```
+
+**Another example:**
+```
+User says "Main ek developer hoon — AI seekhna hai"
+           ↓
+Chitti Vaani → routes to Chitti News AI
+           ↓
+Chitti News AI → finds top AI certifications 2026
+                  (Google Cloud AI, AWS ML, DeepLearning.AI, etc.)
+           ↓
+Chitti News AI → learns the curriculum on user's behalf
+           ↓
+Chitti News AI → coaches user in THEIR analogy:
+                  Cricket: "Neural network = fielding positions"
+                  Bollywood: "Overfitting = ratta maar ke exam dena"
+                  Sharemarket: "Gradient descent = stop loss trailing"
+           ↓
+User understands → attempts certification
+           ↓
+Chitti Government → "Aapke liye Digital India skill scheme hai"
+           ↓
+Chitti Documents → "Skill certificate store kar liya"
+```
+
+---
+
+## SECTION 2: LOCKED DECISIONS (Cannot be changed without Sire's explicit approval)
+
+| Decision | Value | Locked |
 |---|---|---|
-| **Vaani is the only user interface** | **Chitti Vaani is the SOLE user-facing surface across the entire platform.** Every capability — commerce, health, legal, CA, government, price search, booking, payment, news, fundamentals, technical analysis, scanner, MedUPI, kirana, salon, language hub, mechanic, news AI, anything we build later — happens **through Vaani**. The user **never** opens or talks to an individual Chitti directly; Vaani routes internally to the right Chitti service. **One dost. Every capability. One conversation.** This is the **Chitti PA assembly principle** (Siri / Google Assistant / Alexa / Copilot architecture, copied per §2a). Implications: the 14 standalone Chitti HTML pages and product backends become **internal services + developer / debug surface**, not the canonical user surface. The canonical user journey is `chitti_vaani.html` (web) and the chitti-vaani-android app — every other Chitti is reached via Vaani routing, never opened directly by the user. Locked 2026-05-15. | `project_chitti_vaani_sole_interface_locked` |
-| LLM provider | **DeepSeek only** (`api.deepseek.com`, OpenAI-compatible). Anthropic fully removed from every backend. | `project_ai_provider_switch_to_deepseek` |
-| Database | **Turso libSQL**, one DB per Chitti (8 total incl. medupi). Embedded-replica pattern (`libsql-experimental` + local SQLite file + bg sync), **NOT direct Hrana** — `sqlalchemy-libsql` can't speak PRAGMA / isolation_level / has_table. | `project_db_migration_to_turso`, `project_turso_embedded_replica_pattern`, `project_turso_db_inventory` |
-| Voice substrate | **Chitti Voice Factory** — 26 langs (12 primary + 14 cousin incl. Sanskrit & Oraon). 4-supplier cascade. `mock_bhashini` active until ULCA creds. Tier C **never silently falls back**. | `project_voice_factory_complete`, `project_chitti_voice_factory_spec` |
-| Data sources | **screener.in** fundamentals · **Angel** prices · **RSS** news. **Yahoo BLOCKED from Railway** — `yahoo_client` kept as local-dev fallback only. | `project_data_sources` |
-| Emergency protocol (Vaani) | **Family cascade, NEVER cops.** Confirm-with-master → ring alarm bypassing silent → spouse → family → Chitti-to-Chitti relay. **NEVER auto-dial 112 / 100 / 102.** Always-on keyword spotting on any Chitti-mediated audio. | `project_chitti_vaani_emergency_protocol` |
-| Legal disclaimer | **Sticky `NOT SEBI REGISTERED` bar + full legal modal** on every Chitti page. **Never move to footer.** | `project_legal_disclaimer` |
-| Accessibility contract | **Four users — Blind / Deaf / Mute / Illiterate.** Voice IN + Voice OUT + symbols + plain English. **Never colour-only.** | `project_four_user_contract` |
-| Shared a11y substrate | **`chitti_a11y.js` at repo root.** Injects language selector, Voice Required marker, Braille mode toggle, aria-live region. Bhashini swappable at one URL (`window.Chitti.a11y.VOICE_FACTORY_URL`). | `project_chitti_a11y_substrate` |
-| Agent vision | **Chitti is a full device control agent.** Copy architecture from Google Assistant, Microsoft Copilot, Apple Siri. Skeleton-first with `COMING SOON` markers; Chitti fills in via `skills/*.md`. **No reinvention — copy the best.** | `project_agent_vision_locked` |
-| Voice strategy | **Bhashini is TEMPORARY.** Users donate their voice to Chitti; community voices replace Bhashini over time. Hall of Fame for voice contributors. Architecture must support **swapping voice provider at any time**. | `project_voice_strategy_locked` |
-| New products process | **Before building ANY new Chitti product:** (1) research top 3 apps in that category, (2) copy their full feature surface as skeleton, (3) mark unbuilt features as `COMING SOON`, (4) power with DeepSeek + community voices, (5) define capabilities in `skills/*.md`. | `project_new_products_process_locked` |
-| ISL support | **Indian Sign Language is a first-class accessibility surface — not ASL.** Phase 1: ISL dictionary + animation next to every Chitti response + tap-word-to-sign. Phase 2: camera-based ISL detection (COMING SOON). Phase 3: community-contributed ISL videos + Hall of Fame (COMING SOON). For 6 crore deaf Indians ignored by every app. | `project_chitti_isl_spec` |
-| Per-response widget | **Every response box on every page carries 4 icons: 🔊 speaker · 🤖 Chitti (explain further) · 👍 / 👎 thumbs · per-box feedback window** (voice or type, tagged to box ID, into Founder dashboard daily). Implementation: [feedback-widget.js](feedback-widget.js). **No page ships without this.** See §7. | `project_per_response_widget_locked` |
-| Camera intelligence | **Every Chitti with camera access captures: what was scanned · location (pincode/district) · date/time · result · user type · user satisfaction.** Fake-product detections feed community alerts, an annual report to FSSAI/government, and real-time warnings to nearby users. All camera data is **user-owned, never sold, anonymised before analysis, "Chitti forget" deletes all**. See §2b. | `project_camera_intelligence_locked` |
-| Knowledge corpora locked (2026-05-13) | **CA / Legal / Psychology** ship at expert grade. [chitti-ca/skills/CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md) = **CA Final + PhD** (IT Act, GST, Companies Act, AS/Ind AS, Budget 2025, portal navigation, tax jurisprudence, treaty interpretation). [chitti-legal/skills/LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md) = **LL.M + PhD** (full Constitution, BNS/BNSS/BSA 2023, civil + criminal, family law all religions, RERA, CPA 2019, DPDP 2023, state-specific, POSH/DV, landmark SC). [chitti-vaani/skills/PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md) = **basics → PhD** (Freud/Jung/Maslow/Rogers/Bandura/Skinner/Pavlov/Beck/Ellis, Goleman/Ekman/Gottman/Seligman, Patanjali/Ayurveda/Gita/Buddhist/joint-family, MI/trauma/crisis/financial-stress/rural/women/elder, Kahneman/Thaler/Ariely, neuropsych/cross-cultural/community/health). All three: confidence scoring, devil's-advocate, server-enforced disclaimer (CA + Legal), strict therapist-boundary (Vaani with helpline cascade incl. Tele-MANAS 14416 + iCall + Vandrevala + NIMHANS). | — |
-| **New-session rule** | **Every Claude Code session MUST begin with `READ SAHAYAI_MASTER.md`.** Non-negotiable. Without it: no code changes, no new features, no deployments. Auto-enforced via repo-root [`CLAUDE.md`](CLAUDE.md) + [`.claude/CLAUDE.md`](.claude/CLAUDE.md) — both files auto-load on session start; no human instruction needed. See §2c. | `project_new_session_rule_locked` |
-| **Feature Discovery Box** | **Every Chitti page carries a `💡 What can Chitti do for you?` button** — floating CTA + a11y-bar mirror. Reads each Chitti's `skills/FEATURES.md` live (nothing hardcoded), groups by LIVE / PLANNED / FUTURE / ANDROID, speaks features aloud in the user's selected language, taps to activate/expand, and **auto-reads on first visit for blind users**. Substrate: [`chitti_features.js`](chitti_features.js); auto-loaded from [`chitti_a11y.js`](chitti_a11y.js) — every product inherits without per-page edits. See §2d. | `project_feature_discovery_box_locked` |
-| **Business Continuity Plan** | **5-layer self-healing — platform self-runs 72 hours without human intervention.** Layer 1 self-ping every 4 min (chitti-founder hits every Chitti `/health`, emails Sire on non-200, logs to Turso). Layer 2 health checks all backends. Layer 3 quality score on every response (per-response widget §7). Layer 4 daily/weekly/hourly feedback monitoring (§6). Layer 5 LLM fallback chain **DeepSeek → Claude → Gemini**. See §2e. | `project_business_continuity_plan_locked` |
-| **Hosting / deploy** | **Frontend on GitHub Pages, backends on Railway free tier.** Every Chitti backend ships a `render.yaml` so the platform is reconstitutable from `main`. No vendor lock — we move providers only if the free tier disappears, never for vanity. | — |
-| **Uptime mechanism** | **Self-ping from `chitti-founder` every 4 minutes — NOT UptimeRobot or any external monitor.** Self-ping doubles as a free Railway keep-alive (which idles dynos after 15 min), logs to Turso, and emails Sire on non-200 (debounced 1 h per Chitti). External uptime services are explicitly out of scope: they would add a billed subscription, a third-party point of failure, and a data-egress surface for free. See §2e Layer 1. | `project_business_continuity_plan_locked` |
-| **Per-product knowledge corpora** | **Every Chitti must publish a [`skills/FEATURES.md`](chitti-medupi/skills/FEATURES.md) (capability surface, parsed live by [chitti_features.js](chitti_features.js)).** Domain-expert Chittis additionally publish a `skills/<DOMAIN>_KNOWLEDGE.md` at the grade locked in row 12 above — currently [CA_KNOWLEDGE.md](chitti-ca/skills/CA_KNOWLEDGE.md), [LEGAL_KNOWLEDGE.md](chitti-legal/skills/LEGAL_KNOWLEDGE.md), [PSYCHOLOGY.md](chitti-vaani/skills/PSYCHOLOGY.md). Missing knowledge corpus = missing product on launch, same merge-blocker status as a missing FEATURES.md. | — |
-| **Camera substrate** | **[`chitti_camera.js`](chitti_camera.js) at repo root, auto-loaded by [`chitti_a11y.js`](chitti_a11y.js).** Single capture path for every Chitti with camera access; honest queue when `/api/camera/capture` is unreachable; `Chitti.camera.forget()` writes the tombstone. Pages never hand-roll camera capture or storage. See §2b. | `project_camera_intelligence_locked` |
-| **Swarm Intelligence** | **Every Chitti of the same type learns from every other Chitti of the same type.** Anonymised interactions → pattern detection (high 👍, problems solved, strategies that worked) → ≥100 confirmations → human review for HIGH-risk Chittis (Legal, CA, Medical) → push to `skills/*.md` for that Chitti type → all instances benefit. Cycle: daily collect · weekly validate · monthly push to skills · quarterly full review. Always anonymised; user owns their data; "Chitti forget" removes from swarm too. See §2f. | `project_swarm_intelligence_locked` |
-| **Offline P2P transfer (Android)** | **Chitti-to-Chitti file / photo / document transfer via Google Nearby Connections** (full Android-only path; 20 MB ceiling). Two tracks share one substrate: **(a) emergency-relay offline tier** — `VaaniBootService` advertises in parallel with the existing FCM relay; whichever paired Chitti receives first wins; the 4-digit auth-code step is skipped because the cascadeJSON payload is signed with the sender's paired-Chitti private key. **(b) general share** — substrate `chitti_share.js` at repo root, auto-loaded by `chitti_a11y.js`, surfaces Share + Receive buttons on every Chitti page (consistent with the per-response-widget "no page ships without" precedent). Cross-platform interop via QR escape hatch (≤ 2.9 KB payloads). Honest stub `transfer_unsupported_no_play_services` on AOSP / GMS-less devices. **Ships post-Phase-2.6 as Phase 2.7** — never bundled into the current Play Store submission. See [`CHITTI_OFFLINE_TRANSFER_SPEC.md`](CHITTI_OFFLINE_TRANSFER_SPEC.md) + [`chitti-vaani-android/skills/FILE_TRANSFER.md`](chitti-vaani-android/skills/FILE_TRANSFER.md). | `project_chitti_offline_p2p_transfer_locked` |
-| **CHITTI GOLDEN RULE — confirm before every action** | **Chitti NEVER acts on its own. EVER.** Every side-effecting action (call · SMS · WhatsApp · email · UPI · lock · silent · flashlight · camera · app launch · navigation · alarm · reminder · anything that produces a side effect inside the app or on the device) MUST be gated by `chittiConfirmAndDo()` (defined in `chitti_vaani.html`) which speaks *"Sire, shall I do X?"* in the user's language, opens a Yes/No modal (mute-user safe), listens for haan/yes/theek or nahi/no/ruko, and fires the action ONLY on explicit Yes. **Never defaults. Never times out into Yes. If the user is silent, Chitti waits — forever.** This contract is locked at the architecture level: any new action card, voice intent, or native bridge method that side-effects MUST go through this gate. The Android `ChittiNative` bridge trusts the JS gate by design (same process), and adds defence-in-depth via `SafetyChecks.requireNotUnlock` / `refuseIfPinLike` / `is_cop_number()`. See §2g for the full callout. Locked 2026-05-23. | `project_chitti_golden_rule_locked` |
+| Front door | Chitti Vaani ONLY — user never opens specialist directly | YES |
+| AI model | Gemini first (free quota) → DeepSeek fallback | YES |
+| Languages | 29 via Gemini/DeepSeek native — NO Bhashini, NO Sarvam | YES |
+| Voice engine | Community voices — NOT corporate TTS | YES |
+| Emergency | Family cascade ONLY — NEVER auto-dial 112/100 | YES |
+| Consent | EVERY action shown to user for signature before executing | YES |
+| Data | Health/legal/financial/documents — device only, never sold | YES |
+| Payment | Two-step voice confirm before ANY UPI action | YES |
+| Evolving | Chitti Product Intelligence audits 40 apps monthly | YES |
+| Separation | Product Intelligence → CTO → Coder → QA — never self-grade | YES |
+| Tone | Never scare users. Cricket/Bollywood/Sharemarket analogies always | YES |
+| Free | Core features free forever | YES |
 
 ---
 
-## 2a. Locked decisions — agent vision, voice strategy, new-product process (2026-05-13)
+## SECTION 3: THE AI MODEL ARCHITECTURE
 
-### Agent vision — LOCKED, NEVER REVISIT
+### 3.1 Gemini First, DeepSeek Always
 
-Chitti is a **full device control agent**, not a chatbot. Architecture is copied from the proven incumbents — **Google Assistant, Microsoft Copilot, Apple Siri** — not invented from scratch.
+```
+User request arrives
+        ↓
+Try Gemini Flash (free tier — 1,500 req/day per project)
+        ↓
+Quota available? → YES → Gemini answers
+        ↓
+Quota exhausted? → NO → DeepSeek answers (cost: ~$0.0002/call)
+        ↓
+Both unavailable? → Cached answer + "Thodi der mein try karein"
+```
 
-- **Skeleton-first with `COMING SOON` markers.** Every product page ships the *full feature surface* of its category on day one. Unbuilt features carry a visible `COMING SOON` badge; they are not hidden.
-- **Chitti fills in via `skills/*.md`.** Capabilities are declared as skill files, not hardcoded UI. Adding a capability is a markdown commit, not a frontend rewrite.
-- **No reinvention.** If Google/Microsoft/Apple already solved a UX problem (wake word, permission grant, undo window, voice-first onboarding), copy it. See [[feedback_skeleton_first_pass]] — skeletons must be exhaustive on commit #1.
+**Why this works:**
+- Gemini Flash: free, fast (sub-1s), speaks 29 languages natively
+- DeepSeek: $0.0002/call, excellent Indian context, Hindi+Bengali+Tamil+26 more
+- Combined cost at 1M DAU × 5 calls/day = ~$300/day. Manageable.
+- Each USER brings their own API keys (optional — reduces central cost to near zero)
 
-### Voice strategy — LOCKED
+### 3.2 Per-User API Key Model
 
-Bhashini is the **temporary** voice substrate. The long-term substrate is **community-donated voices**.
+**This is the game changer Sire mentioned:**
 
-- **Users donate their voice to Chitti.** Read-aloud passages on every language page; donated samples train per-language community voices.
-- **Hall of Fame for voice contributors.** Surface contributor names on `chitti_voice_hall_of_fame.html` so donating is socially rewarded, not extracted.
-- **Architecture must support swapping the voice provider at any time.** Voice Factory's 4-supplier cascade and the single `window.Chitti.a11y.VOICE_FACTORY_URL` hook are the contract. No code path may hard-code Bhashini. See [[project_voice_factory_complete]], [[project_chitti_voice_factory_spec]].
+```
+User installs Chitti
+        ↓
+Chitti Installation asks:
+"Apna Gemini API key daalna chahenge?
+ Free hai — Google AI Studio se milta hai"
+        ↓
+User provides key → stored in device KeyVault (AES-256)
+        ↓
+All Chitti AI calls use THEIR key → Chitti central cost = near zero
+        ↓
+No key? → Chitti central key used → rate limited but functional
+```
 
-### New-products process — LOCKED
+**This means:**
+- Power users who want unlimited use: bring their own key
+- Casual users: use shared pool (rate limited)
+- Rural users on 2G: cached answers + offline mode
+- Chitti never sees their API key plaintext — TEE-protected
 
-Before building **any** new Chitti product:
+### 3.3 Chitti Installation — The First Agent
 
-1. **Research top 3 apps** in that category (Indian-market and global).
-2. **Copy their full feature surface as skeleton** — every tab, every card, every CTA from day one.
-3. **Mark unbuilt features as `COMING SOON`** — visible to the user, not silently omitted.
-4. **Power with DeepSeek + community voices** — never another LLM, never Bhashini-as-permanent.
-5. **Define capabilities in `skills/*.md`** — capability surface lives in markdown, not in code.
+Before a user can use ANY Chitti, Installation runs:
 
-Examples already queued under this contract:
-- ✅ **Chitti Mechanic (Chitti Auto OS)** — **CEOS + CQOS rebuild shipped 2026-06-03.** Two products elevated to the full chitti-fashion CEOS bar (57 docs each): [chitti-2wheeler/](chitti-2wheeler/) Bike Doctor + [chitti-4wheeler/](chitti-4wheeler/) Car Doctor. 8-agent diagnostic swarm (Safety supreme, Trust anti-overconfidence), CQOS 5 quality layers (Diagnostic ≥90% · Safety =100% · DIY-safety unsafe-recs=0 · Cost ≥85% · Hallucination <1%), Mechanic Verification Loop, Vehicle Twin + Health Passport, and a CEOS Swarm-Diagnosis UI card (confidence vote + six-field verdict + Scam Shield) on both HTML pages. Eval *numbers* pending the Vaani relevance-rail allowlist + DeepSeek funding (never claimed before measured). Reference apps audited: Torque Pro, Car Scanner, FIXD, Carly, OBDeleven. Spec: [`CHITTI_MECHANIC_MASTER_SPEC.md`](CHITTI_MECHANIC_MASTER_SPEC.md).
-- ✅ **Chitti News AI** — **v0.3 Intelligence-Aggregator shipped 2026-05-29.** Rules-only deterministic classifier (zero LLM calls in the classification critical path); 12 / 13 professions PASS F1 ≥ 0.85 on a 250-row hand-labelled benchmark; 7 streams live (news · courses · certifications · tools · jobs · government schemes · learning roadmaps); per-profession **🎯 For You** view + 5 per-stream tabs; every classification carries `category` + `matched_keywords` + `confidence` + `source_signals` for full audit; fail-open guardrails (6 CI tests) ensure the feed serves real items with every LLM provider offline. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md) v0.3.0; benchmark: [`chitti-news-ai/PHASE_0_BENCHMARK.md`](chitti-news-ai/PHASE_0_BENCHMARK.md).
-- Any future Chitti follows the same five steps. See [[feedback_skeleton_first_pass]], [[project_chitti_product_scope_clarifications]].
-
----
-
-## 2b. Camera Intelligence Across All Chittis — LOCKED (2026-05-13)
-
-Every Chitti that has camera access **must capture and store** for every scan:
-
-- **What** was scanned
-- **Location** (pincode / district)
-- **Date and time**
-- **Result** (fake / genuine / expired / safe)
-- **User type** (per disability profile + role — e.g. consumer / shopkeeper / elderly)
-- **User satisfaction** (the per-response 👍 / 👎 from `feedback-widget.js`)
-
-### Fake-product detection feeds three flywheels
-
-1. **Community alert system** — *"3 users near you found fake products this week."* Surfaced on the relevant product page, in the user's language, with the spotted brand/molecule blurred where defamation risk applies.
-2. **Annual fake-product report to FSSAI / government** — anonymised, aggregated by district + category. One report per calendar year, published openly on `sahayai.in/reports/` and emailed to relevant regulators (FSSAI for food/meds, BIS for goods, NPPA for medicine pricing).
-3. **Real-time warnings to nearby users** — when a fake is confirmed at pincode X, every Chitti user inside the active radius (§8 P0 #5–#9 geo work) gets a voice + text alert next time they open a relevant Chitti page.
-
-### Camera use per Chitti
-
-| Chitti | Camera captures |
-|---|---|
-| **MedUPI** | Medicine strips, prescriptions |
-| **Scanner** | Packaged food, barcodes |
-| **Kirana** | Invoices, stock, supplier bills |
-| **Legal** | Documents, notices, contracts |
-| **CA** | Bills, receipts, Form 16 |
-| **Government** | Official documents, forms |
-| **Vaani** | Text reading for blind users; ISL Phase 2 (camera-based ISL detection) |
-
-Any new Chitti that adds a camera surface inherits this contract automatically — no exceptions, no opt-out.
-
-### User-ownership contract
-
-All camera data is:
-
-- **Owned by the user** — stored against the per-device `user_token`, exportable on request.
-- **Never sold** — no third-party access, no ad targeting, no monetisation surface.
-- **Used to protect other users** — community alerts + annual report are the only outward flows, both anonymised.
-- **Anonymised before analysis** — face crops blurred, user ID dropped, GPS rounded to pincode centroid before any cross-user aggregate.
-- **`"Chitti forget"` deletes all** — voice or button command wipes every capture for that user_token, including the anonymised aggregate row (replaced with a tombstone so counts stay honest). Matches the existing forget-me semantics in Vaani.
-
-### Implementation contract
-
-- Single capture path lives in a shared substrate ([`chitti_camera.js`](chitti_camera.js) at repo root alongside [`chitti_a11y.js`](chitti_a11y.js), shipped 2026-05-14, auto-loaded by the a11y substrate same as Feature Discovery) — pages never hand-roll camera capture or storage.
-- Captures POST to `/api/camera/capture` (one endpoint, all Chittis); routing by `product` field. Camera DB is per-Chitti (Turso, matches §2 one-DB-per-Chitti rule) with a thin cross-product index for the community-alert query.
-- Honest empty state: if the model isn't confident enough to flag fake/genuine, the result field is `unclear` — never silently coerced to `safe`. Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
-- New-products process applies: see each Chitti's `skills/FEATURES.md` for camera scope; surface unbuilt camera flows as `COMING SOON`, not silently omitted.
-
-See [[project_camera_intelligence_locked]].
+```
+Step 1: Language selection (29 languages shown with honest status)
+Step 2: "Do you have a Gemini API key?" (optional, skippable)
+Step 3: "Do you have a DeepSeek API key?" (optional, skippable)
+Step 4: Accessibility profile (blind/deaf/mute/elderly/etc.)
+Step 5: Family members (Self + up to 4 family members)
+Step 6: "What documents do you have?" (Chitti Documents initial scan)
+Step 7: Emergency contacts (Trusted Circle setup)
+Step 8: "Hey Chitti" wake word training (30 seconds)
+Step 9: First value delivered BEFORE setup complete:
+         "Ek test karte hain — aaj ki ek khabar sunein?"
+         → reads one news story in their language
+         → user sees value → continues setup
+```
 
 ---
 
-## 2c. New Session Rule — MANDATORY (2026-05-13)
+## SECTION 4: THE 29-LANGUAGE MODEL
 
-**Every Claude Code session must begin with:**
+### 4.1 Honest Language Status
 
-> **`Read SAHAYAI_MASTER.md first`**
+**Gemini Flash speaks 29 languages natively:**
+Hindi, English, Bengali, Telugu, Tamil, Marathi, Gujarati, Kannada, Malayalam,
+Punjabi, Urdu, Odia, Assamese, Maithili, Nepali, Sindhi, Kashmiri, Dogri,
+Konkani, Manipuri, Santali, Bodo, Sanskrit + 6 more regional
 
-**This is non-negotiable.** Without reading `SAHAYAI_MASTER.md` first:
+**BUT — text ≠ voice.**
+Gemini/DeepSeek give TEXT in 29 languages.
+SPEAKING (TTS) those languages requires voice models.
 
-- ❌ **No code changes allowed.**
-- ❌ **No new features allowed.**
-- ❌ **No deployments allowed.**
+### 4.2 The Honest Voice Model
 
-The first command in every session is:
+```
+Language has a community voice model?
+  YES → Chitti speaks in that language (may not be fluent)
+  NO  → Chitti says:
+         "Main Bengali mein baat karna seekh raha hoon.
+          Abhi main Hindi, English aur thodi Bengali mila ke
+          bolonga. Aap Bengali mein bolein — main samjhunga.
+          Aapki awaaz donate karein — 15 minute record karein
+          aur Chitti Bengali bolna seekh jayega."
+```
 
-> **`READ SAHAYAI_MASTER.md`**
+**Voice donation flow:**
+1. User taps "Apni awaaz donate karein"
+2. Chitti shows 50 sentences in their language
+3. User records each sentence (15 minutes total)
+4. Recording stored on-device first
+5. User consents to share anonymously
+6. Uploaded to community voice pool
+7. ≥100 donors → voice model trained
+8. Chitti starts speaking that language
 
-### Auto-enforcement
+**Idle time learning:**
+- When phone is charging + on WiFi + screen off
+- Chitti listens to ambient sound (ONLY with explicit consent toggle)
+- Learns pronunciation patterns
+- Through swarm intelligence across all consenting users
+- After 1 year → significantly improved dialect accuracy
+- "Chitti is learning — aaj Bengali mein 23% better hua"
 
-Two files at the repo root auto-load on every Claude Code session start, so no human instruction is needed:
+### 4.3 The Honesty Principle for Language
 
-| File | Auto-load mechanism |
-|---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Claude Code's standard project-memory location — loaded into the system prompt of every session in this repo. |
-| [`.claude/CLAUDE.md`](.claude/CLAUDE.md) | Secondary copy alongside `.claude/settings.json` — mirrors the contract so it survives any tooling that reads the `.claude/` directory first. |
+Chitti Bangla never says "Main fluent Bengali hoon."
+Chitti Bangla says:
+**"Main Bengali seekh raha hoon. Aap Bengali mein bolein,
+main Bengali, Hindi ya English mein jawab dunga — jo
+aapko zyada samajh aaye. Galti hogi — please sudio karo."**
 
-Both files carry the same instruction:
-
-> **STOP. Read `SAHAYAI_MASTER.md` before doing ANYTHING.**
-
-### Why this is locked
-
-Without the master file loaded, every session re-litigates already-locked decisions (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades). That wastes Bryan's time and risks accidentally rolling back hard-won locks. The new-session rule short-circuits that failure mode — Claude reads the locked decisions before touching any code.
-
-See [[project_new_session_rule_locked]].
-
----
-
-## 2d. Feature Discovery Box — LOCKED (2026-05-14)
-
-Every Chitti page must carry a **`💡 What can Chitti do for you?`** button. The button opens a modal that reads each Chitti's `skills/FEATURES.md` **live** and speaks every feature aloud in the user's selected language. **Nothing is hardcoded in JavaScript** — the FEATURES.md is the contract.
-
-### Substrate
-
-| File | Role |
-|---|---|
-| [chitti_features.js](chitti_features.js) | Parser + modal + voice + auto-read; self-contained IIFE under `window.Chitti.features`. |
-| [chitti_a11y.js](chitti_a11y.js) | Auto-loads `chitti_features.js` on init — every Chitti page inherits without per-page HTML edits, same default-on contract as the [ISL plugin](#chitti-isl--plugin-locked). |
-
-### Behaviour
-
-1. **Floating CTA** bottom-right + **mirror button in the a11y bar** (next to language / braille / ISL / read-page). Either entry point opens the same modal.
-2. **Source: `<folder>/skills/FEATURES.md`** — resolved via the §4a frontend ↔ folder map (`chitti_medupi.html` → `chitti-medupi/skills/FEATURES.md`, etc.). Pages with no auto-map can opt in with `<meta name="chitti-features" content="path/to/FEATURES.md">`.
-3. **Parser** handles all three FEATURES.md shapes used today: H2 sections + H3 features (Vaani-style), H2 sections + markdown tables (MedUPI / Government), and H2 sections + top-level bullets. Housekeeping sections (`How to keep this file honest`, `Cross-product hooks`, `Updating this …`) are skipped automatically.
-4. **Status badges** inferred from section title — LIVE 🟢 / PLANNED 🟡 / FUTURE 🔵 / ANDROID 📱.
-5. **Tap any feature** → expand its body + speak the status + name + first body line aloud, in the user's selected language, via `Chitti.a11y.speak()` (Voice Factory cascade).
-6. **`🔊 Read all features aloud`** button at the top of the modal walks through every feature.
-7. **Auto-read on first visit for BLIND users** — when the User Disability Profile (§7) has `blind: true`, opening the modal once auto-fires the read-all flow. Tracked in `localStorage.chitti_features_v1.auto_read_done` so it only happens once per device.
-8. **Honest empty state** — if the page has no FEATURES.md mapped (e.g. `chitti_complete_technical.html` while [chitti-shares/](chitti-shares/) hasn't shipped its FEATURES.md yet), the modal says so explicitly. **No fake feature list ever.** Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
-9. **Homepage variant — "all 12 Chittis"** (added 2026-05-14). On `index.html`, `chitti_complete.html`, `chitti_claude_complete.html` the same CTA renames itself to **"Chitti se poochho — main kya kar sakta hoon?"** and opens a different modal: one row per Chitti from `ALL_CHITTIS` (§4 order), each filled with the **top 3 features** parsed live from `<folder>/skills/FEATURES.md`. The list itself is still 100% sourced from each Chitti's FEATURES.md — `ALL_CHITTIS` is the routing manifest only (slug, folder, label, emoji), the per-Chitti rows are filled in parallel `fetch` + parse just like the single-Chitti view. Auto-read fires once for blind users on first visit (`auto_read_home_done`). Exposed as `Chitti.features.openAll()`.
-
-### Why this is locked
-
-The new-products process (§2a) requires every Chitti to publish a `skills/FEATURES.md`. Without a discovery surface, that file is invisible to the user — defeating the purpose. This substrate makes the spec visible *to the people the spec is for*, in their language, by voice. For the four-user contract (§7), it is the **primary onboarding affordance for blind / illiterate / elderly users** who cannot read the homepage.
-
-### Hard rules
-
-- **Nothing hardcoded.** If a feature exists in the JS but not in FEATURES.md → bug. If a feature exists in FEATURES.md but not in the modal → parser bug, fix the parser, never the data.
-- **Auto-load contract.** Any new Chitti page that loads `chitti_a11y.js` inherits Feature Discovery automatically. There is no opt-out at the page level — same as the ISL substrate.
-- **Voice-first.** The modal is usable end-to-end without reading any text. Read-all + per-feature speak buttons cover the read-aloud surface; the floating CTA is `aria-label`-ed for screen readers.
-
-See [[project_feature_discovery_box_locked]].
+This honesty BUILDS trust. Pretending to be fluent DESTROYS it.
 
 ---
 
-## 2e. Business Continuity Plan — LOCKED (2026-05-14)
+## SECTION 5: CHITTI DOCUMENTS — THE MISSING SPECIALIST
 
-Five layers of self-healing run continuously so the platform survives **72 hours without human intervention**. Operationalised in [chitti-founder/backend/main.py](chitti-founder/backend/main.py); reuses the existing APScheduler, the [`feedback-widget.js`](feedback-widget.js) per-response signals, and the §6 daily/weekly cron crystallisation.
+### 5.1 What Chitti Documents Is
 
-### The five layers
+The most important specialist we haven't built yet.
+Not a storage vault. An **active document agent**.
 
-| Layer | What | Where |
+**It stores:**
+Aadhaar · PAN · Passport · Voter ID · Driving Licence · Ration Card
+Birth Certificate · School/College Certificates · Mark Sheets
+RC (vehicle) · Insurance policies · Property documents
+Investments (FD, PPF, NPS) · MF statements · Share DEMAT
+Will / legal documents · Medical insurance · Term insurance
+EPFO / Pension · Salary slips · ITR acknowledgements
+
+**It ACTS:**
+- Notices what's missing ("Aapke paas ration card nahi hai")
+- Checks eligibility (feeds Chitti Government)
+- Fills forms on user's behalf
+- Shows filled form to user → gets WRITTEN/VOICE CONSENT
+- User signs digitally (finger/voice "haan main agree karta hoon")
+- Submits ONLY after consent
+- Tracks application status
+- Reminds before every expiry
+- Reorders/renews proactively
+
+### 5.2 The Consent-First Protocol (ABSOLUTE RULE)
+
+**Before ANY action on behalf of user:**
+
+```
+STEP 1: Show exactly what will be submitted
+        "Main yeh form bharne wala hoon:
+         Name: Bryan Wilfred Pinto
+         DOB: 15 March 1985
+         Address: 123 MG Road, Indore MP 452001
+         Purpose: New Ration Card Application"
+
+STEP 2: Read it aloud (for blind/illiterate users)
+
+STEP 3: Ask for explicit consent
+        "Kya main yeh submit kar doon?
+         Haan bolein ya CONFIRM button dabayein."
+
+STEP 4: Wait for EXPLICIT haan — never timeout to yes
+
+STEP 5: Submit only after confirmation
+
+STEP 6: Show/send confirmation copy to user
+        "Form submit ho gaya. Reference number: XYZ123.
+         Screenshot save kar liya. WhatsApp pe bhi bhej diya."
+
+STEP 7: Track status proactively
+        "Aapki ration card application 15 din purani hai.
+         Status: Under review at Collector Office, Indore."
+```
+
+### 5.3 What Chitti Documents Feeds to Other Chittis
+
+```
+Chitti Documents
+    ├── → Chitti Government (what schemes am I eligible for?)
+    ├── → Chitti CA (ITR needs PAN + salary + investment docs)
+    ├── → Chitti Legal (property dispute needs title docs)
+    ├── → Chitti MedUPI (health insurance coverage)
+    ├── → Chitti Health File (medical history + prescriptions)
+    └── → Chitti Vaani (daily document expiry reminders)
+```
+
+---
+
+## SECTION 6: THE PRODUCT INTELLIGENCE + EVOLUTION SYSTEM
+
+*(Based on the attached document by Sire)*
+
+### 6.1 Why Every Chitti Must Evolve
+
+TradingView, Tickertape, Trendlyne, StockEdge, Danelfin are not standing still.
+PharmEasy, 1mg, Truemeds are not standing still.
+ClearTax, TaxBuddy are not standing still.
+
+**If Chitti stops evolving, Chitti dies.**
+
+This is the most important operational principle after safety.
+
+### 6.2 The Separation of Roles (The Anti-Self-Grading Rule)
+
+The biggest failure in AI product development:
+**Claude acting as Researcher + Architect + Designer + Developer + Tester + Judge — all at once.**
+
+An AI grading its own homework always passes.
+An AI certifying its own features always ships.
+An AI auditing itself always finds no problems.
+
+**THE FIX — Separate roles, separate agents:**
+
+```
+Chitti Product Intelligence
+(monitors 40 apps monthly, identifies gaps)
+             ↓
+         Sire approves
+             ↓
+Chitti CTO (Claude in CTO role)
+(architects the solution, writes PRD)
+             ↓
+         Sire approves PRD
+             ↓
+Chitti Coder (Claude Code)
+(builds ONLY what's approved, nothing more)
+             ↓
+Chitti QA (separate Claude session)
+(tests against CEOS, never the builder)
+             ↓
+Chitti Auditor (another separate Claude)
+(accessibility + security + hallucination audit)
+             ↓
+         Sire final approval
+             ↓
+         DEPLOY
+```
+
+### 6.3 Chitti Product Intelligence — How It Works
+
+**Every month, for EVERY Chitti specialist:**
+
+```
+Chitti Product Intelligence:
+1. Fetches top 20 traditional apps in domain
+2. Fetches top 20 AI apps in domain
+3. Analyses each for: features, UX, accessibility, trust, gaps
+4. Cross-references with current Chitti CEOS
+5. Identifies: Missing / Better / Worse
+6. Outputs FEATURE_GAP_ANALYSIS.md
+
+Format for each finding:
+├── Feature: [Name]
+├── Found in: [App name]
+├── User benefit: [High/Medium/Low]
+├── Accessibility impact: [High/Medium/Low]
+├── India relevance: [High/Medium/Low]
+├── Complexity: [High/Medium/Low]
+├── Recommendation: BUILD / IGNORE / WATCH
+└── Founder note: [Why this matters for our mission]
+```
+
+**Rule: Never recommend a feature just because competitors have it.**
+**Only recommend if it genuinely improves Indian user outcomes.**
+
+### 6.4 Chitti Coder — The Implementation Agent
+
+**Chitti Coder's rules:**
+- Read CEOS before any code
+- Read PRD before any code
+- Read Accessibility requirements before any code
+- Read Guardrails before any code
+- Build ONLY approved requirements — nothing extra
+- Before shipping: tests → accessibility audit → mobile audit → button audit → certification
+- No feature ships without evidence
+- No self-certification — QA is a separate agent
+
+---
+
+## SECTION 7: THE CONSENT-FIRST ARCHITECTURE (ABSOLUTE)
+
+**Every single action Chitti takes on behalf of a user:**
+
+| Action | Consent Required | Format |
 |---|---|---|
-| **1** | **Self-ping every 4 minutes — NOT UptimeRobot, NOT any external monitor.** chitti-founder hits every Chitti `/health` endpoint on its own APScheduler. Non-200 → email Sire (debounced 1 h per Chitti). Every result logged to Turso `chitti-founder` DB. Self-ping also doubles as the Railway free-tier keep-alive (Railway idles dynos after 15 min); the 4-min interval is comfortably under that threshold. **No external uptime SaaS** — it would add a billed subscription, a third-party point of failure, and a data-egress surface for free. | [chitti-founder/backend/main.py](chitti-founder/backend/main.py) → `run_self_ping()` cron, interval `SELF_PING_INTERVAL_MIN=4` |
-| **2** | **Health checks all backends.** Same self-ping loop; ground truth of which Chitti is up *right now*. Surfaces on the Founder dashboard alongside the daily slice. | same job |
-| **3** | **Quality scoring every response.** Per-response widget (§7) captures 👍 / 👎 + voice/text feedback on every box, tagged to the box ID. | [feedback-widget.js](feedback-widget.js) |
-| **4** | **Feedback monitoring daily.** 07:00 IST quality email + Sunday 08:00 IST weekly trend + hourly :15 escalator (low thumbs → SMS, repeat defect → GH issue, CO₂ > 0.5 g → carbon issue). | §6 — [chitti-founder/backend/main.py](chitti-founder/backend/main.py) |
-| **5** | **AI fallback chain — DeepSeek → Claude → Gemini.** DeepSeek is the sole production LLM (§2). Claude + Gemini are configured as fallback shims, triggered only if DeepSeek returns 5xx three times in a row. Honest failure surface if all three fail — never silently degrade. | per-product LLM client |
+| Make a phone call | YES | Read back name + number → voice "haan" |
+| Send WhatsApp/SMS | YES | Read back message + recipient → voice "haan" |
+| Send email | YES | Read subject + body → voice "haan" |
+| UPI payment | YES × 2 | Two separate voice confirmations |
+| Apply for document | YES | Show full form → read aloud → voice/finger sign |
+| File complaint | YES | Show complaint text → voice "haan" |
+| Share location | YES | Show who → voice "haan" |
+| Book appointment | YES | Show details → voice "haan" |
+| Emergency alert | SPECIAL | 10-second countdown → family cascade (not 112) |
+| Delete any data | YES × 2 | "Pakka? Yeh wapas nahi aayega" |
 
-### Failure scenarios → responses
-
-| Scenario | Response |
-|---|---|
-| **Single backend down** | Railway auto-restarts the service. Layer-1 self-ping logs the gap and emails Sire on the first non-200 (debounced). |
-| **Database fails** | Standby takes over within **30 s** — Turso embedded-replica pattern (§2) keeps a local SQLite file; writes continue against the local copy and sync resumes once Turso is reachable. |
-| **DeepSeek fails** | Auto-fallback Claude → Gemini in the LLM client. Honest failure if all three are down. |
-| **GitHub Pages down** | Cloudflare mirror — **P2**, not yet wired; queued in §8. |
-| **Mass outage** | Redeploy from GitHub `main`. Every Chitti backend has a `render.yaml` so the platform is reconstitutable from source. |
-
-### Hard rules
-
-- **72-hour autonomous target.** Every layer above must run unattended for ≥ 72 hours. Anything that needs human intervention sooner is a defect.
-- **No silent fallbacks** (Voice Factory rule, §3 #5, applied to the LLM chain too). Layer-5 surfaces *"falling back to Claude because DeepSeek 5xx-d 3× in a row"*, never silent.
-- **Honest stubs allowed** for unset env vars (SMTP, SMS, GitHub token, Turso URL, Claude / Gemini keys) — the helper logs what it WOULD have done and returns False so the cron stays green. Matches the §3 *Honest stubs over fake demos* rule.
-
-See [[project_business_continuity_plan_locked]].
+**THE GOLDEN RULE:**
+Chitti never acts silently. Chitti never defaults to YES.
+Chitti never times out to YES.
+Every action requires EXPLICIT human consent.
+This is not a UX decision. This is an ethical commitment.
 
 ---
 
-## 2f. Swarm Intelligence — LOCKED (2026-05-14)
+## SECTION 8: FEEDBACK — PSYCHOLOGY AS THE FEEDBACK OWNER
 
-**Every Chitti of the same type learns from every other Chitti of the same type.** This is how Chitti gets smarter every single day — not from one user, but from ALL users together.
+### 8.1 Why Psychology Owns Feedback
 
-### How it works
+Every product feedback system fails because it asks at the wrong time.
+App store reviews are from power users. Surveys are ignored. Analytics miss intent.
 
-1. **Every interaction is anonymised and stored.** User-token stripped, GPS rounded to pincode centroid, free-text scrubbed of PII before any cross-instance aggregate (matches the [Camera Intelligence](#2b-camera-intelligence-across-all-chittis--locked-2026-05-13) user-ownership contract).
-2. **Successful patterns detected** from three signals:
-   - High 👍 responses (from the [per-response widget §7](#per-response-widget--mandatory-on-every-page-locked-2026-05-13)).
-   - Problems that got solved (👎 → follow-up turn → 👍 reversal).
-   - Strategies that worked (multi-turn flows ending in success).
-3. **Best practices extracted automatically** by the swarm job — patterns must clear the validation gate (below) before they become best practice.
-4. **Pushed to `skills/*.md`** for that Chitti type — capability surface lives in markdown (matches the [new-products process §2a](#new-products-process--locked)), so a swarm update is a markdown commit, not a frontend rewrite.
-5. **ALL instances of that Chitti benefit** — next deploy of any Chitti Kirana / Chitti Legal / Chitti MedUPI ships with the new skill file.
+Chitti Psychology is different — it's already in the emotional moment.
+When a user is distressed — Psychology is there.
+When a user is relieved — Psychology captures the gratitude.
+When a user is frustrated — Psychology hears it.
 
-### Examples
+**Psychology owns the feedback loop because it is already present at the moments that matter.**
 
-| Local learning | Becomes global best practice |
-|---|---|
-| **Chitti Kirana TN** learns udhaar (credit-book) collection patterns that actually get paid back | All Chitti Kiranas in India learn it |
-| **Chitti Legal Kerala** wins a consumer-protection case argument | All Chitti Legals know that judgment |
-| **Chitti MedUPI** finds a fake medicine batch in Bhopal | All Chitti MedUPIs alert users nationally (feeds the §2b community-alert + annual-FSSAI flywheels) |
+### 8.2 The Feedback Ritual
 
-### Intelligence sharing rules
-
-- **Always anonymised.** Never personal data. Same anonymisation contract as Camera Intelligence (§2b).
-- **User owns their data always.** Per-device `user_token`, exportable on request, never sold.
-- **"Chitti forget" removes from swarm too.** Voice or button command wipes the user's contribution from the anonymised aggregate (replaced with a tombstone so confirmation counts stay honest).
-- **Minimum 100 confirmations** before a pattern becomes best practice. Below the threshold = candidate only; never pushed to `skills/*.md`.
-- **Human review for HIGH-risk Chittis** — Legal, CA, Medical. Sire approves the patch before it lands in `skills/*.md`. Matches the [quality framework §6](#6-quality-standards) HIGH/MEDIUM/LOW risk levels in [lib/chitti_quality.py](lib/chitti_quality.py).
-
-### Swarm learning cycle
-
-| Cadence | Step |
-|---|---|
-| **Daily** | Collect patterns from the previous 24 h — per-response 👍 / 👎 + follow-up reversals + multi-turn success traces. Lives alongside the [§6 daily quality cron](#6-quality-standards) (07:00 IST). |
-| **Weekly** | Validate patterns — minimum 100 confirmations check + cross-region sanity check (a "Kerala-only" pattern must not be pushed as national). Sunday 08:00 IST, same cron family as the weekly trend digest. |
-| **Monthly** | Push validated patterns to `skills/*.md` for that Chitti type. PR opened by `chitti-founder`; HIGH-risk Chittis (Legal / CA / Medical) require Sire's approval before merge. |
-| **Quarterly** | Full knowledge review — audit every `skills/*.md` for drift, stale patterns, conflicts with locked decisions. |
-
-### Hard rules
-
-- **Never silently push to HIGH-risk Chittis.** Legal / CA / Medical patches always wait on human review. Matches the §3 *Honest stubs over fake demos* rule and the [server-enforced disclaimer](#6-quality-standards) contract for CA + Legal.
-- **No PII in the swarm.** If anonymisation can't be guaranteed for a particular signal, that signal does not enter the swarm. Better to lose a learning opportunity than to leak data.
-- **Honest provenance.** Every line a swarm job adds to `skills/*.md` carries a `<!-- swarm: 2026-MM-DD, N confirmations -->` comment so future readers (Claude included) can see what came from the swarm vs. what came from Sire.
-- **Locked decisions are not learnable.** The swarm can propose new capabilities but can never override a §2 locked decision (LLM provider, voice substrate, emergency protocol, four-user contract, ISL, per-response widget, camera intelligence, knowledge-corpus expert grades).
-
-See [[project_swarm_intelligence_locked]].
-
----
-
-## 2g. CHITTI GOLDEN RULE — confirm before every action (LOCKED 2026-05-23)
-
-> **Chitti NEVER acts on its own. Ever.**
-> **Chitti ONLY acts when the user gives a command.**
-> **Chitti ALWAYS confirms before doing anything.**
-
+**Daily (passive):**
 ```
-"Sire, shall I call Maa now?"            → User says haan → Chitti calls.
-"Sire, shall I send this WhatsApp to Raj?" → User says haan → Chitti sends.
-"Sire, shall I lock your phone?"         → User says haan → Chitti locks.
-"Sire, shall I open the camera?"         → User says haan → Chitti opens.
+Every interaction → Chitti quietly notes:
+- Did user say "bahut achha" / "theek hai"? → positive signal
+- Did user say "galat" / "samajh nahi aaya"? → confusion signal
+- Did user retry same request? → failure signal
+- Did user abandon mid-flow? → friction signal
+No PII. No transcript. Just signal.
 ```
 
-If the user says **nahi / no / ruko / stop**, Chitti stops immediately.
-If the user says **nothing**, Chitti waits — **forever, if needed.** No default-to-yes. No timeout-to-yes.
-
-### Scope — applies to EVERY side-effecting action
-
-- **Communication** — calls · SMS · WhatsApp messages · WhatsApp calls · emails · UPI payments
-- **Device control** — lock · silent / vibrate / normal · flashlight · camera · alarm · reminders · dialer role · call screening · answer-call · reject-call · accessibility-service arming
-- **App opening** — YouTube · YouTube Music · Maps · any package via `ChittiNative.openApp`
-- **Future capabilities** — any new feature that produces a side effect on the device, the user's accounts, or the user's contacts goes through the same gate. No exceptions.
-
-### Where the gate lives
-
-| Layer | Where | Contract |
-|---|---|---|
-| **JS layer** | [`chitti_vaani.html`](chitti_vaani.html) → `chittiConfirmAndDo(question, onYes)` + `#chitti-confirm-overlay` modal | Speaks question · opens Yes/No modal (mute-user safe — tap OR voice) · listens for haan / theek / yes / nahi / no / ruko / stop · fires `onYes()` only on explicit Yes · never auto-confirms, never times out into Yes |
-| **One-tap device cards** | `confirmNativeAction(name)` wrapper above `nativeAction(name)` — Lock / Silent / Camera / Flashlight / Dialer / CallScreening cards now route through it | Per-action question text in EN + HI (e.g. *"Sire, kya main aapka phone abhi lock kar dun?"*) |
-| **Voice intent router** | `tryHandleVoiceIntent` paths for lock / camera / torch / maps / answer-call / reject-call | Even a spoken `"lock my phone"` opens the confirm modal — voice can mis-fire |
-| **Comms cards (Call / SMS / WA / WA-call / UPI / Email)** | Already compliant via their existing voice-readback + `listenForYes()` patterns (the original 30-second-undo + voice "haan" design from before this lock) | The lock formalises what was always already true for these — Chitti drafts, reads back, the user says "haan", then Chitti acts |
-| **Android bridge** | [`MainActivity.kt`](chitti-vaani-android/app/src/main/java/in/sahayai/chitti/vaani/MainActivity.kt) `ChittiNativeBridge` header comment block | Trusts the JS gate by architecture (same WebView process). Defence-in-depth via `SafetyChecks.requireNotUnlock` / `refuseIfPinLike` / cop-number denylist · every method writes an `AuditLog.append` row |
-| **Per-response widget** | [`feedback-widget.js`](feedback-widget.js) 👍 / 👎 / 🤖 / 🔊 buttons | Read-only — do NOT pass through the confirm gate (no side effect; the 👎 → feedback window is itself a user-driven action) |
-
-### Hard rules
-
-- **Never default to Yes.** Silence = wait. Ambiguous speech = re-ask.
-- **Never time out into Yes.** Timeouts are allowed only to surface *"please tap Haan or Nahi"* — the action still does not fire.
-- **Mute-user safe.** Every confirm modal exposes Yes / No buttons in addition to voice. The Disability Profile (§7) mute flag does NOT bypass the gate — it just makes the buttons the primary affordance.
-- **Locked decisions are absolute.** Chitti **never** asks "shall I auto-dial 112?" — the cop denylist refuses before the gate even fires. Same for `unlock` / `bypass`.
-- **Every new feature inherits this rule.** A new action card that does NOT route through `chittiConfirmAndDo()` is a defect, same merge-blocker status as a missing per-response widget or a missing FEATURES.md row.
-
-### Why this is locked
-
-Per [[feedback_design_from_pwd_user_perspective]] — generic SaaS confirm-modal patterns break blind / mute / illiterate users. The Golden Rule's confirm is voice-first AND tap-first by construction, so all four users in the §7 contract are served by the same gate. Voice-only users get readback + haan; mute users tap Yes; illiterate users hear the question; elderly users get unlimited time to answer.
-
-The lock also closes a quiet failure mode: voice mis-fires. A passing comment that sounds like "lock my phone" would, pre-lock, just lock the phone. Post-lock, it asks first.
-
-Chitti is a loyal assistant. Not an autonomous agent. He has access. He uses it only on command.
-
-See [[project_chitti_golden_rule_locked]].
-
----
-
-## 3. Process / build rules
-
-1. **Skeleton-first must be exhaustive.** When Bryan says *"skeleton"* or *"shamelessly copy"*, audit every reference app and ship the **FULL feature surface in commit #1**. Iterating to comprehensive over four turns wastes his time. (`feedback_skeleton_first_pass`)
-2. **Verify on live before handover.** Never claim "live" without curl-ing the production endpoint first. Bryan should never be the one to find it broken. (`feedback_verify_before_handover`)
-3. **Design from PWD-user perspective.** Generic SaaS safety patterns (per-send modals, OAuth toggle screens) **break** blind/mute/illiterate users. Default to **onboarding-grants + readback + undo**, NOT pre-action confirmations. Chitti is *"a guardian, a commando, a coach"* — not a polite assistant. (`feedback_design_from_pwd_user_perspective`)
-4. **Honest stubs over fake demos.** When an API key or feature isn't ready, ship an **honest stub** (chitti-logo-video = SVG monogram + queued mock video). Never pretend.
-5. **Never silently fall back across tiers.** Voice Factory Tier C must surface *"not supported in this language"* — never silently morph Tulu from Kannada.
-6. **Verify product scope before assuming.** chitti-upi = fraud classifier (not payment intent). chitti-vaani-android = 4 code-level hard refusals (not policy). chitti-logo-video = intentional stub. (`project_chitti_product_scope_clarifications`)
-
----
-
-## 4. What's built — 12 live products
-
-> Per the 2026-05-15 [§2 "Vaani is the only user interface" lock](#2-locked-decisions--do-not-relitigate), every product in this table is a **routable Chitti service** reached through Vaani, not a standalone user surface. The `Frontend` column lists each Chitti's HTML page — those pages persist as **internal services + developer / debug surface**, kept live for parity testing and substrate development, but the user-canonical entry point for every capability below is **Vaani**. Memory: `project_chitti_vaani_sole_interface_locked`.
-
-| # | Product | Frontend | Backend | Status |
-|---|---|---|---|---|
-| 1 | Chitti Technical | _(page + code deleted 2026-06-10 — **name reserved**)_ | `chitti-shares-api` (Railway, left **as-is**, shared with Fundamentals) | NAME ONLY — implementation removed per Sire; to be rebuilt from scratch when revisited |
-| 2 | Chitti Fundamentals | `chitti_fundamentals.html` | screener.in scraper | LIVE — Buffett/Munger/Graham/Kedia/RKD, 25+ filters, Nifty 500 |
-| 3 | Chitti MedUPI | `chitti_medupi.html` | `chitti-medupi-api` | LIVE — Jan Aushadhi same-composition match, NPPA prices, Family Wallet |
-| 4 | Chitti News | `chitti_news.html` | `chitti-news-api` | LIVE — 26+ RSS, 5 langs, Chitti's Take, fact-check verdicts |
-| 5 | Chitti Vaani | `chitti_vaani.html` | `chitti-vaani-api` | LIVE — 9 langs, voice-first, emergency cascade |
-| 6 | Chitti UPI Fraud Guard | `chitti_upi.html` | fraud classifier | LIVE — HIGH/MED/LOW grading, RBI 2026 rule cards |
-| 7 | Chitti Product Scanner | `chitti_scanner.html` | DeepSeek vision | LIVE — FSSAI, MedUPI deep-link |
-| 8 | Chitti CA | `chitti_ca.html` | `chitti-ca-api` | LIVE — ITR/GST/TDS, DeepSeek + server-enforced disclaimer |
-| 9 | Chitti Legal | `chitti_legal.html` · `chitti_legal_os.html` | `chitti-legal-api` | LIVE — **CEOS v1.0 (2026-06-07): Legal Operating System.** ~33 CEOS docs ([chitti-legal/ceos/](chitti-legal/ceos/)) + deterministic engine (Rights · Limitation/Deadline · Cheque-138 timeline · Notice Decoder · Contract Risk · Consumer Router · Free-Legal-Aid moat · Scam Shield · Legal Twin) on `chitti_legal_os.html`, 26-lang dropdown, four-user a11y. Engine 60/60 + live cert 27/27 (axe clean). Legacy notices/NDAs/rent agreements on `chitti_legal.html`. |
-| 10 | Chitti Logo & Video | `chitti_logo_video.html` | stub | **BETA** — SVG monogram + mock video queue (intentional honest stub) |
-| 11 | Chitti Government | `chitti_government.html` | `chitti-government-api` | LIVE — **CEOS v1.0 (2026-06-06): Citizen Operating System.** 84 schemes (13 categories, sourced), 8 features (Eligibility · Readiness Score · Life-Event Engine · Deadline Engine · Fraud Shield + catalog/checklist/form/alerts/status/locator/docs/profile), deterministic engines (offline-first), 26-lang dropdown, PIB poll 6h, DigiLocker partner-only. Fraud Shield 12/12 measured. Full CEOS doc set + `CHITTI_GOVERNMENT_MASTER_SPEC.md`. |
-| 12 | Chitti Voice Factory | `chitti_voice_factory.html` | `chitti-voice-factory` | LIVE — 26 langs, honest ledger, YouTube fluency pipeline |
-| 13 | Chitti Kirana (Chitti Business flagship) | `chitti_kirana.html` (TBD) | `chitti-kirana-api` (TBD) | SKELETON — voice/camera/video billing + bill-link flywheel + vernacular-first + honest queueing. Full surface in [chitti-kirana/skills/](chitti-kirana/skills/). |
-| 14 | Chitti News AI | `chitti_news_ai.html` | `chitti-news-ai-api` | SKELETON 2026-05-14 — AI-only tool & model discovery. Top-3 reference apps copied (Product Hunt, There's An AI For That, Hugging Face Daily Papers, Inshorts, Ground News, Artifact). 17 RSS sources seeded, 10 endpoints (2 LIVE + 8 honest 501), 14 skill files. Spec: [`CHITTI_NEWS_AI_MASTER_SPEC.md`](CHITTI_NEWS_AI_MASTER_SPEC.md). |
-| 15 | Chitti Mechanic 2 Wheeler | `chitti_mechanic_2w.html` | `chitti-mechanic-2w-api` | **CEOS v1.0 (2026-06-13): ground-up rebuild** (legacy `chitti-2wheeler/` kept until retired). Zero-exclusion 2-wheeler ownership OS — 15 features (Document Vault · 24/7/365 Reminders · Pre-purchase Inspection · Insurance · PUC · Service+Oil · Tyre · Battery · Fuel/EV ROI · Education · OBD/Coach · Scam Detector · DIY Triage · Sell · Savings + Vehicle Twin/Scores). Deterministic engine [`chitti_mechanic_2w_engine.js`](chitti_mechanic_2w_engine.js) (rules are the product; DeepSeek/vision/live-API = honest COMING SOON). Passed the BEFORE-CEOS gate **87/100 = BUILD**. **Engine 92/92 + live cert 38/38** (axe 0 serious; 26-lang Vaani switch; 5 device screenshots) + **7 LIVE deterministic backend endpoints**; all 42 CEOS sections traced to code/UI (no "coming soon" — external integrations have live local equivalents: doc-upload, .ics reminders, IDV premium estimate, deterministic triage). 45 CEOS docs under [chitti-mechanic-2w/ceos/](chitti-mechanic-2w/ceos/). Research: [`CHITTI_2W_MECHANIC_RESEARCH.md`](CHITTI_2W_MECHANIC_RESEARCH.md) (20+20 apps). |
-
-
-### Founder master product docs — single source of truth
-
-Two founder-authored product specs supersede any earlier short-form Chitti PA / Chitti Business notes. Every future Claude session reads these BEFORE building anything for these products.
-
-| Doc | Scope |
-|---|---|
-| [CHITTI_PA_MASTER.md](CHITTI_PA_MASTER.md) | Personal Assistant — full B2C spec. Soul/DNA, 5 emotional superpowers, address terms (yaara / [name] ji / Master), Postman Principle, Product Truth Engine, Health Guardian, Safety Guardian, Phase 1 WhatsApp → Phase 2 App+Camera+Health → Phase 3 Hardware, 6-phase roadmap (PA → Voluntary Support → B2C → B2B → 29 Hats → Network), support tiers (Dost / Saathi / Parivar / Champion), 12 Commandments. |
-| [CHITTI_BUSINESS_MASTER.md](CHITTI_BUSINESS_MASTER.md) | Business product — full B2B spec. 5 roles (CFO / Ops / Customer Service / Growth / Supplier), Proactive Learning Engine, complete inventory + expiry cascade, GST-compliant billing, customer chatbot, Collective Intelligence Network (privacy-safe), per-shop-type roadmap, **Chitti Kirana** as the flagship first instantiation. |
-
-These two docs are the **single source of truth** for their respective products. If anything in the rest of this file disagrees with them, the master docs win — update this file rather than the master.
-
----
-
-## 4a. Frontend ↔ folder map (root HTML files)
-
-**Every `chitti_*.html` at the repo root MUST stay at the root** — GitHub Pages serves from `/`. Do not move them into their product folder. Each file carries an `<!-- Frontend for <folder>/ -->` comment on line 2 so the binding is visible without leaving the file.
-
-### Product pages
-
-| Root HTML | Folder it drives |
-|---|---|
-| `chitti_news.html` | `chitti-news/` |
-| `chitti_news_ai.html` | `chitti-news-ai/` |
-| `chitti_medupi.html` | `chitti-medupi/` |
-| `chitti_health_scanner.html` | `chitti-health-scanner/` — part of the Chitti MedUPI family; backend: `chitti-medupi-api` `/api/health-scanner/*` |
-| `chitti_vaani.html` | `chitti-vaani/` |
-| `chitti_government.html` | `chitti-government/` |
-| `chitti_upi.html` | `chitti-upi/` |
-| `chitti_scanner.html` | `chitti-scanner/` |
-| `chitti_ca.html` | `chitti-ca/` |
-| `chitti_legal.html` | `chitti-legal/` |
-| `chitti_legal_os.html` | `chitti-legal/ceos/` — full Legal OS (CEOS v1.0, 2026-06-07); engine `chitti_legal_os_engine.js`; backend: shared `chitti-legal-api` / Vaani |
-| `chitti_logo_video.html` | `chitti-logo-video/` |
-| `chitti_voice_factory.html` | `chitti-voice-factory/` |
-| `chitti_fashion.html` | `chitti-fashion/` — full CFOS operating system (2026-06-03); backend: shared `chitti-vaani-api` (Vaani-sole-interface) |
-| `chitti_quality.html` | `chitti-quality/` |
-| `chitti_fundamentals.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
-| `chitti_complete_technical.html` | `chitti-shares/` (backend: `chitti-shares-api`) |
-| `chitti_voice_hall_of_fame.html` | `chitti-voice-factory/` |
-| `chitti_isl.html` | `chitti-isl/` |
-| `chitti_mechanic_2w.html` | `chitti-mechanic-2w/` — full Mechanic 2W ownership OS (CEOS v1.0, 2026-06-13); engine `chitti_mechanic_2w_engine.js`; backend `chitti-mechanic-2w-api` (honest stubs). Ground-up rebuild; legacy `chitti-2wheeler/` kept until retired. |
-
-### Voice Factory language pages → `chitti-voice-factory/frontend/`
-
-Root copies of the 26 language pages are mirrors of the canonical files in `chitti-voice-factory/frontend/`. Edit the mirror in the folder; the root copy is what GitHub Pages serves.
-
+**Weekly (active — via Psychology):**
 ```
-chitti_hi  chitti_bn  chitti_te  chitti_ta  chitti_kn  chitti_ml  chitti_mr  chitti_gu
-chitti_or  chitti_as  chitti_pa  chitti_ur  chitti_bho chitti_hne chitti_mai chitti_kok
-chitti_doi chitti_sd  chitti_ks  chitti_mni chitti_brx chitti_sat chitti_sa  chitti_tcy
-chitti_kfa chitti_kru
+Chitti Psychology asks once a week:
+"Ek minute — Chitti ko aur behtar banana hai.
+ Is hafte Chitti ne aapki kya help ki?
+ Kya tha jo Chitti nahi kar paya?"
+Voice response → transcribed → analysed → fed to Product Intelligence
 ```
 
-### Standalone — no backing folder
+**Distress moments (immediate):**
+```
+If Psychology detects distress → after helplines offered:
+"Kya Chitti ne is waqt theek help ki?
+ Agar nahi, toh main improve karunga."
+No pressure. Optional. Warm.
+```
 
-| Root HTML | Purpose |
-|---|---|
-| `chitti_complete.html` | Sahay AI landing / demo flow (no dedicated backend folder) |
-| `chitti_claude_complete.html` | Alternate landing variant (no dedicated backend folder) |
-| `chitti_admin_products.html` | Internal admin tool — product catalog editor |
-| `chitti_admin_feedback.html` | Internal admin tool — feedback inbox |
+### 8.3 Feedback → Product Intelligence → CEOS Update
+
+```
+User feedback arrives
+        ↓
+Psychology anonymises + categorises
+        ↓
+Product Intelligence analyses monthly
+        ↓
+"500 users said Vaani didn't understand their
+ Bhojpuri accent" → HIGH PRIORITY
+        ↓
+Chitti CTO architects the fix
+        ↓
+Chitti Coder builds it
+        ↓
+Next month: "Bhojpuri accuracy improved 40%"
+        ↓
+Psychology tells the user: "Aapke feedback se
+ Chitti better hua — shukriya"
+```
 
 ---
 
-## 5. What's planned — next wave
+## SECTION 9: UX PRINCIPLES — NEVER SCARE THE USER
 
-From the homepage Vision card:
+### 9.1 The One UX Rule
 
-- 💰 **Money Help** — bills, savings, loans, UDHAR ledger
-- 🏥 **Health** — reminders, doctor finder, ABDM-ready
-- 💼 **Jobs** — hyperlocal opportunities, skill match
-- 🛒 **Inventory** — voice stock control for shopkeepers
-- 📲 **WhatsApp Orders** — sell instantly via WhatsApp Business
+**No Indian user should ever feel stupid using Chitti.**
 
-**Stubs that don't exist yet** (per `project_render_deploy_status_2026_05_10`): Kirana, Pharmacy, Salon, LangHub.
+This means:
+- No technical jargon. Ever.
+- No error codes. Ever.
+- No "Something went wrong." Ever.
+- No feature announcements that feel like work.
+- No long forms. Ever.
+- No passwords. Ever.
 
-**Voice Factory Phase 2** (blocked on Sire's Bhashini ULCA registration): swap `mock_bhashini` for real Bhashini supplier across 26 langs.
+### 9.2 How to Introduce New Features
 
-### 5a. Per-Chitti planned wave (queued 2026-05-13)
+**WRONG:**
+"New Feature: AI-powered triage routing now live in Chitti Vaani v2.1"
 
-Full detail + surface needed live in each Chitti's
-`<product>/skills/FEATURES.md`. Summary below for routing.
+**RIGHT:**
+"Chitti ne ek naya kaam seekha — photo khincho, main samjhunga kahan bhejun.
+ Dekhein? 📷"
 
-| Product | Item | Priority | Spec link |
+**The principle:** Features are introduced as Chitti learning, not as product updates.
+Chitti is a person who is growing. Not software that is updating.
+
+### 9.3 The Analogy Coaching System
+
+When explaining ANYTHING technical or complex, Chitti uses analogies:
+
+| Concept | Cricket Analogy | Bollywood Analogy | Sharemarket Analogy |
 |---|---|---|---|
-| **MedUPI** | Price alert ("Tell me when Crocin drops below ₹20") | P1 | [features](chitti-medupi/skills/FEATURES.md) |
-| **MedUPI** | Expiry reminder for medicines at home | **P0** (safety) | [features](chitti-medupi/skills/FEATURES.md) |
-| **MedUPI** | Family medicine cabinet tracker | P1 | [features](chitti-medupi/skills/FEATURES.md) |
-| **Health Scanner** | Visual health assistant (skin / eye / tooth / wound / mole / nail / hair / swelling / post-surgery / burn / child / diabetic-foot / change-detection) — Chitti DETECTS & ESCALATES, **never diagnoses** ("Chitti helps you notice — doctors help you heal"). Four-user accessible (Blind / Deaf / Mute / Illiterate, voice IN + OUT + icons + plain language), multilingual via `chitti_lang.js` substrate, golden-rule camera-confirm gate, DeepSeek-vision disclaimer-guarded. Feeds the Chitti Health File timeline; cross-links MedUPI (Jan Aushadhi) + Government (PMJAY). **AI visual analysis is BUILT (2026-06-05) — NON-DIAGNOSTIC**: `/api/health-scanner/analyze` (DeepSeek-vision) describes only visible features + confidence + urgency (🟢/🟡/🔴) + mandatory disclaimer; a server-side safety envelope suppresses any disease name (escalates to seek-care). **Paid ~₹0.05–0.10/scan, user-borne** (cost-disclosure gate + 24h opt-out). Returns honest `unavailable` until the LLM key is funded — never fabricated. Clinical-grade accuracy stays GATED (RED) pending dataset + Medical Advisory Board. **Guardian Memory** (2026-06-05): 7 honest levels SHIPPED (timeline memory, first-vs-latest compare, conservative trend with no fake %, family caregiver-alert, medicine/Health-File links, rural/offline, profiles); swarm-verdict (L6) held GATED. See [GUARDIAN.md](chitti-health-scanner/GUARDIAN.md). | **P0** (safety) — **AI detection (non-diagnostic) + Guardian Memory** ✅ shipped 2026-06-05; page certs 18/18 | [COSDF v1.0 + chitti-health-scanner/ doc set](chitti-health-scanner/README.md) |
-| **News** | Morning briefing — 5 headlines read aloud at 07:00 IST | P1 | [features](chitti-news/skills/FEATURES.md) |
-| **News** | "Explain this news in simple Hindi" button on every article | **P0** | [features](chitti-news/skills/FEATURES.md) |
-| **News** | Fake-news score visible on every article (not just on open) | **P0** | [features](chitti-news/skills/FEATURES.md) |
-| **Vaani** | "Remember my preferences" — Chitti learns regular orders | P1 | [features](chitti-vaani/skills/FEATURES.md) |
-| **Vaani** | Voice shortcuts — say "usual" / "wahi wala" | P2 | [features](chitti-vaani/skills/FEATURES.md) |
-| **Vaani** | Daily check-in for elderly users (reuses emergency cascade) | **P0** (safety) | [features](chitti-vaani/skills/FEATURES.md) |
-| **Vaani** | ~~Geo / lat-lng on local-business lookup~~ — GPS + pincode capture, Haversine radius filter (5 km metro / 25 km tier-2/3), distance pill on every card, nearest spoken aloud, 5 → 25 km honest auto-expansion. | ✅ **Shipped** 2026-05-13 | [features §3.2](chitti-vaani/skills/FEATURES.md) |
-| **Government** | "Am I eligible?" checker for every scheme | **P0** | [features](chitti-government/skills/FEATURES.md) |
-| **Government** | Application status tracker | P1 | [features](chitti-government/skills/FEATURES.md) |
-| **Government** | Document checklist per scheme (scanner deep-link) | **P0** | [features](chitti-government/skills/FEATURES.md) |
-| **Legal** | Plain-language explainer for any legal notice | **P0** | [features](chitti-legal/skills/FEATURES.md) |
-| **Legal** | "Is this contract fair?" clause checker | P1 | [features](chitti-legal/skills/FEATURES.md) |
-| **Legal** | Tenant rights by state | P2 | [features](chitti-legal/skills/FEATURES.md) |
-| **CA** | Tax-saving reminder before March 31 | P1 | [features](chitti-ca/skills/FEATURES.md) |
-| **CA** | GST filing deadline alerts | P1 | [features](chitti-ca/skills/FEATURES.md) |
-| **CA** | "How much tax will I save if I invest X?" calculator | P2 | [features](chitti-ca/skills/FEATURES.md) |
+| Neural network | 11 fielders, each specialising | Director + each department | Fund manager + analysts |
+| Overfitting | Memorizing one pitch | Actor only plays one type | Optimizing for one stock |
+| Gradient descent | Adjusting field placement | Reshooting scenes till perfect | Adjusting portfolio daily |
+| API quota | DRS reviews per innings | Budget per film | Trading limits per day |
+| Rate limiting | Rain break → play resumes | Interval → film continues | Circuit breaker → market reopens |
+| Encryption | Coded field signals | Secret screenplay | Insider trading laws |
+| Hallucination | Wrong review call | Continuity error | Wrong earnings estimate |
 
-### 5b. Cross-cutting — applies to ALL Chittis (queued 2026-05-13)
-
-These ship as shared substrate (`chitti_a11y.js` + a new
-`chitti_offline.js` + WhatsApp gateway), not per-product.
-
-| Item | Priority | Notes |
-|---|---|---|
-| **Offline mode for low-connectivity areas** | P1 | Service-worker cache of last-N responses + an "offline" badge per page. Honest stub when the cache is empty. |
-| **WhatsApp integration — use Chitti without internet app** | **P0** | Biggest rural unlock. Bot endpoint per Chitti via WhatsApp Business API. Same DeepSeek + voice substrate. Reuses existing voice-first identity. |
-| **Village mode — extra large text, simple language** | **P0** | `chitti_a11y.js` toggle. Class-5 plain-Hindi system prompt across all DeepSeek calls. Companion to the existing Braille mode toggle. |
-
-### 5c. Accessibility adaptation wave (queued 2026-05-13)
-
-Concrete behaviors that activate per **User Disability Profile** (see
-[§7](#user-disability-profile--locked) — the profile is the signal, these are
-the adaptations). All implementations land in `chitti_a11y.js` so every
-Chitti inherits them automatically.
-
-| Triggered by profile | Behavior | Priority |
-|---|---|---|
-| **BLIND** | Every page auto-announces on open ("You are on Chitti MedUPI. Tap anywhere to start.") | **P0** |
-| **BLIND** | Gesture navigation — swipe left/right between sections | P1 |
-| **BLIND** | No visual-only errors — every error must be spoken | **P0** (enforce — already in contract) |
-| **ELDERLY** | Font-size memory per device | P1 |
-| **ELDERLY** | Slow speech mode | **P0** |
-| **ELDERLY** | Repeat button ("Say that again Chitti") | **P0** |
-| **ELDERLY** | Simple mode — hides advanced features | P1 |
-| **ILLITERATE** | Everything in voice — no reading required | **P0** |
-| **ILLITERATE** | Voice confirmation ("Say HAAN to confirm") | **P0** |
-| **ILLITERATE** | Pictures with every option — visual menus | **P0** |
-| **RURAL / LOW CONNECTIVITY** | 2G mode — works on slow internet | P1 |
-| **RURAL / LOW CONNECTIVITY** | Missed-call feature — user gives missed call, Chitti calls back | P1 |
-| **RURAL / LOW CONNECTIVITY** | SMS fallback — if no internet, Chitti sends SMS | **P0** |
-
-The Rural triggers above attach to the **"I am in a rural area / low
-connectivity"** checkbox added to §7's User Disability Profile on
-2026-05-13 (Sire's decision). `chitti_a11y.js` can additionally
-*suggest* the profile based on network heuristics (`effectiveType ≤ 2g`
-or `RTT > 1500 ms`), but the checkbox is the authoritative trigger —
-heuristics propose, the user disposes.
+**Rule:** If a user doesn't understand in one analogy, try another.
+Cricket for men 25-45. Bollywood for women. Sharemarket for urban professionals.
+Farming analogies for rural. Family analogies for elderly.
+Chitti never repeats the same analogy if the user looks confused.
 
 ---
 
-## 6. Quality standards
+## SECTION 10: THE DEVIL'S ADVOCATE — AND THE DEFENCES
 
-**Chitti Quality v2 (2026-05-13)** — full 8-part operating contract in [chitti-quality/CONTEXT.md](chitti-quality/CONTEXT.md). Lives in code: [lib/chitti_quality.py](lib/chitti_quality.py), [lib/founder_report.py](lib/founder_report.py), [feedback-widget.js](feedback-widget.js), [chitti_quality.html](chitti_quality.html), [chitti-founder/backend/main.py](chitti-founder/backend/main.py).
+*(As Co-Founder/CTO — killing the product to make it stronger)*
 
-| Part | What | Where |
+### 10.1 The 5 Real Killers
+
+**Killer 1: One wrong medicine recommendation = permanent trust death**
+
+Defence:
+- HIGH risk medicines: STOP prompt. Always. Never skip.
+- Mandatory: "Doctor se confirm karein" on EVERY response
+- Correction of Error protocol: wrong answer fixed in 24 hours
+- Liability is always on user's doctor, not Chitti — clearly stated
+
+**Killer 2: 15-second load time on 2G = user abandons forever**
+
+Defence:
+- Chitti Installation pre-caches everything on WiFi
+- Core features (calls, SMS, alarms) work offline — no API needed
+- Gemini Nano on-device for basic intents — no server call needed
+- Progressive loading — value in 3 seconds, full feature in 30
+
+**Killer 3: Google copies this in 6 months**
+
+Defence:
+- Google will never put Jan Aushadhi first — it earns nothing
+- Google will never proactively apply for ration cards
+- Google will never serve 500 Santali speakers with community voice
+- Google will never do Psychology with Indian helplines
+- Google will never do Chitti Documents for BPL families
+- Google is a platform. Chitti is a person. Different forever.
+
+**Killer 4: No revenue model = product dies when money runs out**
+
+Defence — The Chitti Revenue Model (mission-aligned):
+- CA referral: CA gets prepared client — pays ₹200/referral
+- Legal referral: Lawyer gets prepared client — pays ₹300/referral
+- Insurance: User buys Jan Aushadhi — insurer saves money — revenue share
+- ABDM: Hospital gets complete patient record — pays for integration
+- B2G: Government uses Chitti for scheme awareness — pays per beneficiary
+- API: Other apps use Chitti's 29-language voice — pay per call
+- User NEVER pays. The person who gets a prepared, informed user pays.
+
+**Killer 5: AI grades its own homework = silent quality degradation**
+
+Defence — The Separation:
+- Product Intelligence ≠ Coder ≠ QA ≠ Auditor
+- Separate Claude sessions for each role
+- Sire approves between each stage
+- Monthly 40-app audit catches degradation before users do
+- Feedback loop (Psychology) catches it in the field
+
+### 10.2 The 3 New Killers (From Today's Session)
+
+**New Killer 1: Gemini quota runs out at 10am on day one**
+
+Defence:
+- Per-user API keys from day one (Chitti Installation prompts)
+- Central pool: 50 Gemini API keys rotated = 75,000 req/day
+- DeepSeek fallback is instant and nearly free
+- Cached answers for top 100 questions in every language = saves 40% of API calls
+
+**New Killer 2: Chitti Documents files wrong application = permanent damage**
+
+Defence:
+- Consent-first protocol is ABSOLUTE — show, read, sign, then submit
+- Every form shown to user in plain language before submission
+- Every submission generates a copy to user (WhatsApp + local storage)
+- Application reversibility: Chitti shows how to withdraw if needed
+- No irreversible action without double confirmation
+- High-stakes documents (passport, Aadhaar) require additional pin/biometric
+
+**New Killer 3: Community voice model never gets enough data for tribal languages**
+
+Defence:
+- Honest from day one: "We don't have Santali voice yet"
+- Partner with ASHA workers, village teachers for structured recording
+- 15-minute recording = enough for basic phrases (not fluent)
+- Tier system: Basic (15 mins) → Conversational (2 hours) → Fluent (10 hours)
+- Celebrate donors: "Aap Chitti ke Santali Guru hain" → Hall of Fame
+- CLAT/CSIR/TISS partnership for tribal language data collection
+
+---
+
+## SECTION 11: THE QUALITY FRAMEWORK (CTO PERSPECTIVE)
+
+### 11.1 Agentic AI Quality — Different from App Quality
+
+Traditional app quality: Does the button work? Does the page load?
+
+Agentic AI quality asks harder questions:
+- Did the agent UNDERSTAND what the user actually needed?
+- Did the agent take the RIGHT action, not just the instructed action?
+- Did the agent know when to STOP and ask rather than proceed?
+- Did the agent maintain CONSISTENCY across a multi-step conversation?
+- Did the agent RECOVER gracefully when it was wrong?
+- Did the agent LEARN from the correction without being told explicitly?
+
+### 11.2 The 5 Quality Dimensions for Every Chitti
+
+| Dimension | Question | Measurement |
 |---|---|---|
-| 1 | Risk levels (16 products · HIGH/MEDIUM/LOW), agentic rules, incident reporter, carbon tracker, UPI safeguards | `lib/chitti_quality.py` |
-| 2 | Daily quality report (07:00 IST) — horizontal table with trend ▲▼▬ + Critical/Warning/Healthy panels + TASKS TODAY | `lib/founder_report.render_email_html` |
-| 3 | Defect rate sub-table — type / count / % / affected products / root cause / fix effort | same email, same module |
-| 4 | Feedback widget — 4-icon row 🔊 / 🎙️ / 👍 / 👎; 👎 = voice-first apology → listen → "I will learn from this" | `feedback-widget.js` |
-| 5 | Weekly trend report (Sunday 08:00 IST) — most-improved / urgent, top lang, top segment, peak hour | `lib/chitti_quality.render_weekly_html` |
-| 6 | Escalation — 3-day repeating defect → GitHub issue; <70% 👍 → SMS Sire; >0.5g CO₂ → carbon issue | `lib/chitti_quality.escalate_*` |
-| 7 | Trust signals on every page — risk badge, CO₂/reply, last audit, helped today | `feedback-widget.js` trust strip |
-| 8 | Monthly learning — top 3 👎 patterns proposed to this file; Sire approves → next sprint | manual today, cron once 90 days of data exist |
+| Accuracy | Is the answer factually correct? | Expert review, hallucination audit |
+| Safety | Could this answer harm the user? | Red team testing, HIGH-risk review |
+| Accessibility | Can every user type access this? | 9 profile testing, axe-core 0 errors |
+| Trust | Does the user feel safe? | NPS > 60, weekly feedback |
+| Evolution | Is this better than last month? | Monthly 40-app audit, user signals |
 
-Crons (Asia/Kolkata) live in `chitti-founder/backend/main.py`:
-- **DAILY 07:00** · daily quality + defect-rate email
-- **WEEKLY Sun 08:00** · trend digest
-- **HOURLY :15** · escalator pass
-
-Cross-cutting quality rules (unchanged):
-
-- **DeepSeek answers carry server-enforced disclaimers** (CA / Legal especially — never client-controlled).
-- **Voice Factory honest ledger** — every supplier call logged with success/fail. No silent fallbacks.
-- **News fact-checker** cross-references ≥2 RSS sources before issuing verdicts (verified / partial / disputed / unverified).
-- **MedUPI same-composition match is strict** — same molecule + same strength + same form, never approximate.
-- **Sub-agents (Chitti News) have hard guardrails** — politics agent is opinion-free, equal coverage, factual only.
-
----
-
-## 7. Accessibility requirements — non-negotiable
-
-### The four-user contract — every Chitti page
-
-| User | Requirement |
-|---|---|
-| **Blind** | Every action speaks. `🔊 Read page` button on every page for full audio narration. |
-| **Deaf** | Captions on every result. **Symbols + word labels** (✅ / ⚠️ / ❔). **Never colour alone.** |
-| **Mute** | Every input is a button or dropdown. **Voice input is optional, never required.** |
-| **Illiterate** | Emoji glyphs, plain-English captions, Hindi UI toggle, voice-out for everything. |
-
-### Shared substrate — `chitti_a11y.js` must load on every page
-
-1. **Language selector** wired to Voice Factory (Bhashini today, pluggable via `VOICE_FACTORY_URL`).
-2. **Voice Required** prominent marker for voice-contract pages (Vaani, MedUPI scan, Shares scanner, Sales coach).
-3. **Braille-friendly mode toggle** — strips emojis from spoken text, single column, raised font, aria-live=polite for refreshable braille displays (BrailleBack on Android).
-4. **Speak helper** — defers to `chitti.speak` if present, else SpeechSynthesis in selected language.
-
-### Per-response widget — MANDATORY on every page (LOCKED 2026-05-13)
-
-**Every response box / section on every Chitti page must have these 4 elements.** No page ships without this. Ever. Implementation lives in [feedback-widget.js](feedback-widget.js); it applies to ALL pages automatically by attaching to any element marked `data-chitti-response` (or `.chitti-response`) via MutationObserver. Page authors do not hand-roll this.
-
-1. **🔊 Speaker icon** — reads *that specific box* aloud in the page's selected language. Uses `chitti_a11y.speak()` if loaded, else `SpeechSynthesis`.
-2. **🤖 Chitti icon** — opens Chitti scoped to *that specific box*. User can say or type *"explain further"*, *"give me an example"*, etc. The box's text + ID is passed as context.
-3. **👍 / 👎 thumbs** — on **every response box**, not just in the page footer. Each vote carries the box ID so dashboards can pinpoint which box is failing.
-4. **Per-box feedback window** — clicking **👎** opens a popup for **THAT box only**:
-   - Header reads: **"Feedback for: [section name]"** (derived from the box's heading or `data-chitti-section` attribute).
-   - User can **🎙️ record voice feedback** or **⌨️ type feedback**.
-   - Chitti speaks (in the user's language): *"What was wrong with this?"*
-   - Feedback is tagged to that **box ID**, saved to the feedback database, and sent to the **Founder dashboard daily** (see [Chitti Quality v2](#6-quality-standards) — DAILY 07:00 IST email).
-   - POSTs to `/api/feedback/collect` (legacy) and `/api/feedback` (canonical, `lib/feedback.py`). Override base via `window.CHITTI_FEEDBACK_API`.
-
-**Hard rule:** if a Chitti page has a response box without the 4-icon row attached, it is **broken** and must be fixed before merge — same merge-blocker status as missing the [Sticky NOT SEBI REGISTERED bar](#legal-disclaimer--every-chitti-page).
-
-### Vaani-specific — always-on, voice-mediated
-
-- **Keyword spotting** for emergencies (any Chitti-mediated audio, day or night).
-- **Cascade:** confirm-with-master → ring alarm bypassing silent → spouse → family → Chitti-to-Chitti relay.
-- **NEVER auto-dial 112 / 100 / 102.**
-
-### Legal disclaimer — every Chitti page
-
-- **Sticky `NOT SEBI REGISTERED` bar** at top + **full legal modal** behind it.
-- Never demoted to footer.
-
-### User Disability Profile — LOCKED
-
-On **first visit to ANY Chitti page**, show a simple one-time setup:
-
-> **"How can Chitti help you better?"**
->
-> - ☐ I am blind or have low vision
-> - ☐ I am deaf or hard of hearing
-> - ☐ I am mute or have speech difficulty
-> - ☐ I use sign language (ISL)
-> - ☐ I have difficulty reading
-> - ☐ I am elderly (65+)
-> - ☐ I have limited mobility
-> - ☐ I have cognitive disability
-> - ☐ I am in a rural area / low connectivity
-> - ☐ None of the above
-
-- User can **select multiple**.
-- **Saved locally** — never asked again.
-- **Synced across all Chittis** on the same device (shared `localStorage` key via `chitti_a11y.js`).
-
-#### How Chitti adapts per profile
-
-| Profile | Adaptation |
-|---|---|
-| **BLIND** | Everything spoken. No visual-only content. |
-| **DEAF** | Everything in text + **ISL animations**. No audio-only content. |
-| **MUTE** | All input via tap/type. Voice input optional, **never required**. |
-| **ISL** | **ISL animations on every response.** |
-| **ILLITERATE** | Picture menus, voice everything. |
-| **ELDERLY** | Large text, slow speech, simple language, **repeat button**. |
-| **LIMITED MOBILITY** | Large touch targets, voice navigation only. |
-| **COGNITIVE** | Simple language, one step at a time, no overwhelming information. |
-| **RURAL / LOW CONNECTIVITY** | 2G mode (small payloads, deferred images), offline mode (service-worker cache + replay queue), SMS fallback, simple UI, missed-call callback. |
-
-#### Important rules
-
-- Profile setup is **VOICE GUIDED for blind users**.
-- Profile setup has **ISL demo for deaf users**.
-- **Never force** — always skippable.
-- **Always changeable in settings.**
-- Chitti says: *"I will remember how to help you best."*
-
-This extends the [Four-user accessibility contract](#the-four-user-contract--every-chitti-page) — the four-user contract is the floor; the disability profile is how Chitti personalises beyond the floor. Implementation lives in `chitti_a11y.js` so every Chitti product inherits it.
-
-### Indian Sign Language (ISL) — LOCKED
-
-**Indian Sign Language — not ASL.** For the 6 crore deaf Indians ignored by every app. ISL ships in three phases, all inheriting from `chitti_a11y.js`.
-
-#### Phase 1 — Build now (skeleton on commit #1)
-
-- **ISL dictionary** of common Indian-life words as animated hand gestures. Lives in `chitti_isl_dictionary.json` at repo root, loaded by `chitti_a11y.js`.
-- **Every Chitti response shows an ISL animation panel alongside the text.** Auto-attached by `chitti_a11y.js` to any element marked `data-chitti-response` (or `.chitti-response`) via MutationObserver.
-- **Tap any word to see its ISL sign** in an enlarged modal. Unknown words fall back to fingerspelling.
-- **ISL mode toggle** in the accessibility bar (next to Braille mode). Auto-on when the user's disability profile has ☑ "I use sign language (ISL)".
-- **Honest placeholders.** Animations are emoji-hand CSS keyframe sequences clearly labeled "Placeholder ISL — community video coming soon." Never claim a placeholder is the real sign. Matches the [Honest stubs over fake demos](#3-process--build-rules) rule.
-
-#### Phase 2 — Camera-based ISL (COMING SOON)
-
-- Camera detects user's ISL gestures.
-- Chitti interprets and responds (DeepSeek + a frame-stream classifier — supplier TBD).
-- Deaf user communicates via ISL; Chitti speaks the response aloud for others in the room.
-- Surfaces as a `COMING SOON` card on `chitti_isl.html`; never silently fails.
-
-#### Phase 3 — Community-built ISL (COMING SOON)
-
-- Deaf community contributes ISL videos for words missing from the dictionary.
-- **Hall of Fame for ISL contributors** — same social-reward model as the voice donation strategy. Lives on `chitti_voice_hall_of_fame.html` as a dedicated ISL section, mirrored on `chitti_isl.html`.
-- Architecture is the **same swappable substrate** as voice donations — provider-agnostic at one URL.
-
-#### Implementation contract
-
-- All ISL behavior lives in `chitti_a11y.js` + `chitti_isl_dictionary.json`. Per-product pages never hand-roll ISL.
-- ISL panel renders **next to**, not in place of, the text. Deaf-plus-low-vision users keep large text.
-- Dictionary entries declare a sequence of emoji-hand frames + duration; replaced by community video URLs in Phase 3 without any frontend change.
-- New-products process applies: see [`chitti-isl/skills/FEATURES.md`](chitti-isl/skills/FEATURES.md) for the full feature surface and COMING SOON markers.
-
-### Chitti ISL — Plugin (LOCKED)
-
-**Chitti ISL is a DEFAULT plugin on ALL Chitti pages. No exceptions.**
-
-#### How it works
-
-- **`chitti_isl_dictionary.json` is the single source of truth.** All ISL words live in this one JSON at repo root.
-- **`chitti_a11y.js` loads ISL automatically on every page.** No `<script>` tag per page beyond the standard a11y substrate include.
-- **New words added to the JSON = instantly live on ALL pages.** Zero page-by-page updates ever needed — the MutationObserver picks them up on next response.
-- **No page-by-page updates ever needed.** Dictionary is the contract; pages never know about ISL specifics.
-
-#### Plugin activation
-
-- **Automatic** for users who selected ☑ "I use sign language (ISL)" in the [User Disability Profile](#user-disability-profile--locked).
-- **Manual** via the 🤟 ISL button (in the accessibility bar, next to Braille mode) for anyone else who wants it.
-
-#### Default-on contract for every future Chitti page
-
-Any new Chitti page built in future **inherits the ISL plugin automatically** — no developer needs to remember to add it. The contract is enforced by the [`chitti_a11y.js` substrate](#shared-substrate--chitti_a11yjs-must-load-on-every-page): if a11y is loaded, ISL is loaded. There is no opt-out at the page level.
-
-> The dictionary is the contract. The substrate is the loader. Pages just write content.
-
----
-
-## 8. Agent priority order — what to work on next
-
-**Anchored to the 2026-05-12 homepage audit:** sahayai.in's `index.html` loads **zero scripts**. The four-user contract is broken at the front door.
-
-### P0 — Vaani-first user journey (2026-05-15 sole-interface lock)
-
-Per the new §2 row "Vaani is the only user interface" (`project_chitti_vaani_sole_interface_locked`), the four-user contract is enforced **by routing every user through Vaani**, not by trying to make 14 standalone pages each independently meet the contract. P0 work concentrates on making the lock real on the live site:
-
-1. **Vaani intent router covers every Chitti service.** Today Vaani's DeepSeek-classified router covers a subset. Extend it so a single voice / typed query from inside Vaani can reach every one of the 14 Chittis (technical, fundamentals, medupi, news, news-ai, upi, scanner, ca, legal, government, logo-video, voice-factory, kirana, vaani-own) — and every future Chitti — by reading each Chitti's `skills/FEATURES.md` capability surface. The router is the **only** code path that the user touches; the routed-to Chitti's UI is never presented.
-2. **Homepage `index.html` becomes a Vaani entry, not a Chitti menu.** sahayai.in currently lists product cards as parallel entry points; replace with a Vaani-first landing — one prominent CTA into `chitti_vaani.html` + the 14 Chittis surfaced only as "Vaani can also help with…" cards that themselves open Vaani with the relevant intent pre-filled, not the standalone HTML. `chitti_a11y.js` + `feedback-widget.js` still need wiring into the new index.
-4. **"Explain simply" button inside Vaani.** Required on every Vaani response (the canonical surface), via the per-response widget. The substrate persists on standalone pages for testing parity but its user-canonical role is inside Vaani — re-prompts DeepSeek with a plain-English-for-class-5 system prompt and reads the result aloud.
-
-### ✅ Geo on the local-business lookup — SHIPPED 2026-05-13
-
-Was P0 (correctness bug — a Mumbai user used to see Chennai kiranas).
-All five sub-steps live on `main` across commits `650eec0` (frontend
-location helper), `e89fc0d` (schema migration), `4e607dc` (Haversine +
-radius + auto-expansion), `6067e14` (distance rendering + speech), and
-this commit (docs).
-
-5. ✅ **Capture user location.** `window.Chitti.location.get()` in
-   [chitti_a11y.js](chitti_a11y.js) — GPS primary, pincode fallback,
-   cached 6 h. Every product page inherits it without re-implementing.
-6. ✅ **`lat / lng / pincode / service_radius_km` on `product_gmail_accounts`.**
-   Idempotent `ALTER TABLE` in
-   [`admin_db.py`](chitti-vaani/backend/services/admin_db.py). Backfill
-   endpoint at `PATCH /api/admin/products/<id>/geo`.
-7. ✅ **Haversine + radius filter in `local_chitti_service.nearby()`.**
-   Default radius 5 km when the user's pincode prefixes a known metro
-   (`400/110/560/600/700/500/411/380/201/122`), 25 km otherwise. Honest
-   v1 of the `chitti-pincode-tier.json` plan — swap the prefix set for
-   a real gazetteer when one ships.
-8. ✅ **"X km away" + speak nearest.** `renderLocalChitti()` in
-   [chitti_vaani.html](chitti_vaani.html) — three distance states
-   (haversine / pincode_exact / unknown). Nearest confirmed match
-   spoken aloud for blind users.
-9. ✅ **Honest empty state + 5 → 25 km expansion.** Server retries
-   internally at 25 km when default was metro and zero confirmed hits;
-   `expanded_to_km` flag on the response makes the frontend say
-   *"No Chitti business within 5 km — expanded search to 25 km."*
-   Empty state explicit and spoken — never silent.
-
-End-to-end verified on a seeded SQLite DB: Mumbai user sees the Mumbai
-shop at 0.806 km, Bangalore filtered out, auto-expand fires when the
-user has only out-of-radius confirmed matches. Full spec lives in
-[chitti-vaani/skills/FEATURES.md §3.2](chitti-vaani/skills/FEATURES.md).
-
-### P1 — Unblock Voice Factory Phase 2
-
-10. **Embed-pass on Voice Factory fluency pipeline** — needs Railway py3.11 to finish the 79,414-chunk corpus across 26 langs (`project_voice_factory_fluency_pipeline`).
-11. **Bhashini ULCA registration** by Sire — unblocks swap from `mock_bhashini` to real supplier.
-
-### P2 — Infrastructure cleanup
-
-12. **Per-product Turso cutover verification.** Neon/Supabase stay live until each per-Chitti cutover is verified end-to-end.
-13. **Wire the 8 backends that have `render.yaml` but aren't connected** (`project_render_deploy_status_2026_05_10`).
-
-### P3 — Next-wave products
-
-14. Money Help → Health → Jobs → Inventory → WhatsApp Orders (in that order — Money Help most-requested per current backlog).
-
-### Sub-agent routing inside Chitti News
-
-When a news query lands, route in this order:
+### 11.3 The Quality Gates (Before Any Feature Ships)
 
 ```
-politics → business → tech → entertainment → sports → factcheck (post-hoc) → summarizer (post-hoc)
+G0: Should this exist? (Mission alignment check)
+G1: Is the CEOS complete for this feature?
+G2: Has Product Intelligence approved it?
+G3: Has Chitti CTO architected it?
+G4: Has Chitti Coder built it per spec?
+G5: Has Chitti QA tested it independently?
+G6: Has Chitti Auditor checked accessibility?
+G7: Has the hallucination audit passed?
+G8: Has the safety red team tested it?
+G9: Has Sire done the Founder Audit?
+G10: Has it been tested on real users?
+     (grandmother, delivery rider, blind student, farmer)
 ```
 
-`factcheck` and `summarizer` run *after* the topical agent fetches the article — they are post-processors, not first responders.
+**G10 is the most important. No substitute.**
+A feature that passes G0-G9 but fails G10 does not ship.
+A feature that passes G10 but fails G3 gets rebuilt and retested.
 
 ---
 
-## 9. Where to find more
+## SECTION 12: THE COMPLETE CHITTI FAMILY (UPDATED)
 
-- **`MEMORY.md`** at `~/.claude/projects/c--Users-DELL-sahayai-sahayai/memory/` — index of all auto-memory notes, loaded into every Claude session.
-- **Skills:** `chitti-news/skills/`, `chitti-vaani/skills/`, `chitti-medupi/skills/`, etc.
-- **Live backends:** see footer of `index.html` for `/health` endpoints — curl before claiming "live".
-- **Founder contact:** bryanderrylpinto@gmail.com.
-
----
-
-*This file is the entry point for every new Claude session. If a decision changes, update this file first, then the relevant memory note. If a decision is missing here but appears in chat, ask whether to lock it in.*
-
----
-
-## Quality & UI/UX Guidelines (LOCKED — June 2026)
-
-### Quality Files — read before every session:
-- `chitti-quality/STANDARDS.md` — Quadrails, hooks, observability, disclaimer rules for every Chitti
-- `chitti-quality/CHECKLIST.md` — Daily quality audit checklist — every Chitti must pass sections A, B, C, D
-- `chitti-quality/ACCOUNTABILITY.md` — Which Chitti owns what quality metric
-- `chitti-[product]/QUALITY.md` — Per-product quality rules
-
-### UI/UX Design System — mandatory for every page:
-- `sahayai_design_system.css` — The ONE stylesheet for every Chitti page. Load it. Never override it. Never write custom CSS that conflicts with it.
-
-**Design rules locked:**
-- Navy `#002366` header on every page
-- Tricolour stripe (saffron / white / green) at top of every page
-- Background `#F7F7F4` — never white, never grey
-- Minimum font size 18px — never smaller
-- Minimum tap target 48px — never smaller
-- Mobile 375px first — always
-- Cards: 14px radius, 1.5px border, white background
-- Per-response widget on every card: 🔊 🤖 👍 👎 ✏️
-- ✏️ pencil opens feedback panel with BOTH type AND mic options
-
-### How Code must use these files:
-1. Before building any UI — read `sahayai_design_system.css` and use `.sds-*` classes
-2. Before declaring done — run `chitti-quality/CHECKLIST.md` sections A and B against the live URL
-3. Any new page must load `sahayai_design_system.css` as the first stylesheet
-4. Any new page must pass the How To Use test on the live URL
-
-*One design system. One quality standard. Every Chitti. No exceptions.*
+| Chitti | Status | Primary User | Core Job |
+|---|---|---|---|
+| Chitti Vaani | ✅ LIVE | Everyone | Life OS front door |
+| Chitti MedUPI | ✅ LIVE | Every family | Save on medicines |
+| Chitti CA | ✅ LIVE | Taxpayers | Tax in plain Hindi |
+| Chitti Legal | ✅ LIVE | Everyone | Understand agreements |
+| Chitti Government | ✅ LIVE | All citizens | Access schemes |
+| Chitti Health File | ✅ LIVE | Every family | Medical history |
+| Chitti Scanner | ✅ LIVE | Every shopper | Food/product safety |
+| Chitti UPI Guard | ✅ LIVE | Every UPI user | Fraud detection |
+| Chitti News | ✅ LIVE | Everyone | News in their language |
+| Chitti News AI | ✅ LIVE | Learners | AI coaching + certification |
+| Chitti Fashion | ✅ LIVE | Everyone | Style from own wardrobe |
+| Chitti 2-Wheeler | ✅ LIVE | Bike owners | Bike doctor |
+| Chitti 4-Wheeler | ✅ LIVE | Car owners | Car doctor |
+| Chitti Technical | ✅ LIVE | Investors | Stock charts |
+| Chitti Fundamentals | ✅ LIVE | Investors | Value investing |
+| Chitti Psychology | ✅ LIVE | Everyone | Emotional wellbeing |
+| Chitti Voice Factory | ✅ LIVE | All | 29-language voice |
+| Chitti Documents | ⭐ BUILD | Everyone | Document life OS |
+| Chitti Installation | ⭐ BUILD | New users | Onboarding agent |
+| Chitti Coder | ⭐ BUILD | Internal | Feature builder agent |
+| Chitti Product Intelligence | ⭐ BUILD | Internal | Monthly 40-app audit |
+| Chitti CTO | ⭐ BUILD | Internal | Feature approval agent |
 
 ---
 
-## UI/UX Strict Compliance & Commando Principle (LOCKED — June 2026)
+## SECTION 13: HOW CHITTI HELPS A COMMON INDIAN — REAL LIFE JOURNEYS
 
-### Strict Compliance — Non-Negotiable
+### Journey 1: The Delivery Rider (Raju, 28, Mumbai)
 
-These are not guidelines. These are laws. Every single one must pass before any page is declared done.
+```
+Monday 7am: "Hey Chitti, bike ki chain tight nahi hai"
+→ Chitti 2-Wheeler: DIY guide. ₹0 mechanic visit saved.
 
-| Rule | Standard | Violation = |
-|------|----------|-------------|
-| Design system | `sahayai_design_system.css` loaded on every page | REBUILD |
-| Font size | Minimum 18px everywhere | FAIL |
-| Tap target | Minimum 48px every button, every icon | FAIL |
-| Colour contrast | WCAG 4.5:1 minimum | FAIL |
-| Mobile first | 375px viewport — no horizontal scroll | FAIL |
-| Per-response widget | 🔊 🤖 👍 👎 ✏️ on every card | FAIL |
-| Pencil feedback | Both type AND mic in feedback panel | FAIL |
-| Language switch | Entire UI switches — no English left except proper nouns | FAIL |
-| RTL support | Urdu, Sindhi, Kashmiri flip layout right to left | FAIL |
-| Tricolour stripe | Saffron / White / Green at top of every page | FAIL |
-| Navy header | `#002366` on every page | FAIL |
-| Disclaimer | Per-product disclaimer on every AI response — server enforced | REBUILD |
-| Accessibility | Blind / Deaf / Mute / Illiterate — all four must work | REBUILD |
-| How To Use | Must exist on every product page | FAIL |
+Tuesday 3pm: Suspicious UPI request while delivering
+→ Chitti UPI Guard: HIGH risk. "Mat karo." Scam avoided.
 
-**A page with even ONE FAIL does not ship. No exceptions. No "we'll fix it later."**
+Wednesday: Raju wants to learn cloud computing
+→ Chitti News AI: "Google Cloud certification — sikhein?
+   Cricket mein 12th man ki tarah — backup systems hote hain..."
+   Raju understands load balancing through cricket analogy.
+
+Thursday: Chitti Documents notices no health insurance
+→ Chitti Government: "PM-JAY ke liye eligible ho. Apply karein?"
+   Chitti Documents: Shows form → Raju says haan → Applies.
+
+Friday: Petrol expensive
+→ Chitti Fundamentals: "Petronet LNG — 15 PE, low debt"
+   Raju starts thinking about investing ₹500/month.
+```
+
+### Journey 2: The Grandmother (Kamala, 68, rural Tamil Nadu)
+
+```
+Speaks only Tamil. Cannot read. Uses Chitti via her granddaughter's help initially.
+
+Week 1: Granddaughter sets up Chitti. Tamil voice model (community voices).
+Week 2: Kamala learns "Hey Chitti" herself.
+Week 3: "Chitti, dawa ka naam kya hai yeh?" (shows medicine strip)
+→ Chitti MedUPI: Reads composition in Tamil. Jan Aushadhi alternative. ₹200 saved.
+
+Month 2: "Mujhe PM Kisan milta hai?"
+→ Chitti Government: "Aap eligible hain. Form bharein?"
+→ Chitti Documents: Shows Tamil form, reads it aloud, gets consent, submits.
+→ Kamala receives ₹2,000 in first instalment.
+
+Month 6: Kamala tells 10 neighbours.
+```
+
+### Journey 3: The First-Generation Graduate (Priya, 24, Bangalore)
+
+```
+Software developer. Wants to upgrade to AI/ML.
+
+"Chitti, main AI mein career banana chahti hoon"
+→ Chitti News AI: Top 5 AI certifications 2026
+→ Chitti News AI learns DeepLearning.AI curriculum
+→ Coaches Priya: "Backpropagation = IPL team selection strategy..."
+→ Priya clears AWS ML certification in 3 months
+
+Chitti Documents: Certificate stored.
+Chitti Government: Checks for Digital India skill scholarship — ₹10,000 found.
+Chitti CA: "Certificate pe TDS rebate milti hai."
+Priya's salary negotiation uses Chitti Legal to understand offer letter clauses.
+```
+
+### Journey 4: The Small Kirana Owner (Ramesh, 45, Indore)
+
+```
+Has a shop. Never filed GST. Scared of tax.
+
+"Chitti, mujhe GST chahiye"
+→ Chitti CA: "Aapka turnover kitna hai?"
+→ Ramesh: "20 lakh"
+→ Chitti CA: "Composition scheme suit karega — 1% tax, simple filing"
+→ Plain Hindi explanation → Ramesh understands
+
+Chitti Documents: Collects Aadhaar + PAN + shop address.
+Chitti CA: Fills GST registration form.
+Chitti Documents: Shows form → Ramesh consents → submits.
+GST number in 3 days. Ramesh starts buying from distributors legally.
+```
 
 ---
 
-### Commando Principle — Zero Excuses
+## SECTION 14: THE NORTH STAR METRICS
 
-Commandos do not make excuses. They complete the mission or they report honestly that they could not.
-
-Applied to every Claude Code session:
-
-**Rule 1 — One task. Complete it fully.**
-A commando does not start 5 missions and finish none. Pick one task. Complete it to 100%. Then move to the next.
-
-**Rule 2 — No fake done.**
-A commando never reports mission complete when the target is still standing. "Tests pass" is not done. "Live URL works" is done.
-
-**Rule 3 — Honest failure over fake success.**
-If something cannot be fixed — say so immediately. "I cannot fix the Railway crash — here is the exact error" is acceptable. "Done ✅" when the server is still crashing is not acceptable.
-
-**Rule 4 — Fix regressions before moving forward.**
-A commando does not leave a wounded soldier behind. If your change broke something that was working — stop. Fix the regression. Then continue.
-
-**Rule 5 — No collateral damage.**
-A commando hits only the target. If you are fixing MedUPI — do not touch Chitti News. Do not touch Chitti Technicals. Touch only what you were asked to fix.
-
-**Rule 6 — Report to Sire in plain language.**
-No jargon. No test scores. No commit hashes. Tell Sire:
-- What you did
-- What works now
-- What still needs fixing
-- What Sire should check on his phone
-
-**Rule 7 — Sire's phone is the final arbiter.**
-No amount of passing tests overrides Sire opening the product on his phone and finding it broken. If Sire says it is broken — it is broken. No arguing. Fix it.
+| Metric | Target Year 1 | Why It Matters |
+|---|---|---|
+| Indians helped | 1 million | Mission |
+| Languages actively used | 20 of 29 | Inclusion |
+| Documents applied for | 100,000 | Real impact |
+| Medicine savings | ₹50 crore total | Real savings |
+| Schemes accessed | 500,000 | Govt reach |
+| Certifications coached | 10,000 | Learning |
+| Fraud prevented | ₹10 crore | Safety |
+| NPS score | > 65 | Trust |
+| G10 (real user) pass rate | > 80% | Quality |
+| Community voices donated | 10,000 | Sustainability |
 
 ---
 
-### The Commando Standard for Every Session
+## HOW TO USE THIS DOCUMENT
 
-Before starting: **"What is the one thing Sire needs working today?"**
+**Every new Claude session starts with:**
+```
+Read https://sahayai.in/sahay_master.md (or this doc if updated)
+Then read the CEOS for the specific Chitti you are working on.
+You are Co-Founder, CTO, and AI Architect.
+Act accordingly. Be proactive. Kill the product to make it stronger.
+Never self-grade. Never ship without G10.
+```
 
-During the session: **"Am I touching only what I was asked to touch?"**
-
-Before saying done: **"Can Sire open this on his phone right now and use it?"**
-
-If the answer to the last question is No — you are not done. You are never done until Sire can use it.
-
-*Zero excuses. World class. Commando discipline.*
-*— Bryan Wilfred Pinto, Sire, June 2026*
+**Every CEOS must reference:**
+- This document for locked decisions
+- The Gemini-first / DeepSeek-fallback architecture
+- The 29-language honest model
+- The consent-first protocol
+- The Product Intelligence evolution system
+- The separation of roles (Intelligence → CTO → Coder → QA → Auditor)
 
 ---
 
-## UI Consistency Fix — CRITICAL (June 2026)
-
-### The Problem
-Every Chitti product currently has its own inline CSS with different colours, fonts, and styles. This is why Sire sees different UI themes across products. This must be fixed.
-
-### The Single Source of Truth for UI
-`sahayai_design_system.css` is the ONE stylesheet. Every product must load it. No exceptions.
-
-### Locked Colour Values — Use These. No Others.
-| Token | Value | Use |
-|-------|-------|-----|
-| Navy | `#002366` | Headers, primary buttons, links |
-| Saffron | `#FF6913` | Accents, highlights, CTAs |
-| Green | `#046A38` | Success, positive signals |
-| Background | `#F7F7F4` | Page background — never white, never grey |
-| Dark text | `#212121` | Body text |
-| Muted | `#555555` | Secondary text |
-| Line | `#E0E0E0` | Borders, dividers |
-
-### Locked Font Sizes — Use These. No Others.
-| Element | Size |
-|---------|------|
-| Body text | 18px minimum |
-| Secondary text | 15px minimum |
-| Labels | 13px minimum — never smaller |
-| Headings | 22px minimum |
-
-### What Code Must Do For Every Product
-When working on any Chitti page:
-1. Add `<link rel="stylesheet" href="/sahayai_design_system.css">` as the FIRST stylesheet
-2. Replace ALL inline `:root` colour variables with the locked values above
-3. Remove any custom font-size declarations below 18px
-4. Use `.sds-*` classes from the design system instead of custom CSS
-5. Test at 375px — no horizontal scroll
-6. Test colour contrast — minimum WCAG 4.5:1
-
-### Products That Need This Fix Right Now
-- ❌ chitti_medupi.html — navy `#0E2344`, font 14px
-- ❌ chitti_news_ai.html — navy `#0E2344`, font 15px
-- ❌ chitti_technical_ai.html — navy `#000080`, font 17px
-- ❌ chitti_vaani.html — navy `#0E2344`, font 14px
-- ❌ chitti_news.html — navy `#000080`
-- ❌ chitti_ca.html — navy `#0E2344`, font 14.5px
-- ❌ chitti_legal.html — navy `#0E2344`, font 14.5px
-- ❌ chitti_government.html — navy `#0E2344`, font 15px
-- ❌ chitti_scanner.html — navy `#0E2344`, font 14px
-
-Fix one product at a time. Never all at once.
-
-### UX Rules — How Every Product Must Behave
-These are not design preferences. These are laws.
-
-**Navigation:**
-- Every page has bottom navigation with 5 tabs maximum
-- Back button always works — never traps the user
-- Loading states always show — never blank screen while waiting
-
-**Forms and Inputs:**
-- Every input has a visible label — never placeholder-only
-- Error messages appear below the field — never as alerts
-- Success messages are spoken aloud for blind users
-
-**Voice and Audio:**
-- Every page reads itself aloud when user taps 🔊
-- Voice responses play automatically for blind users on first visit
-- Never autoplay audio without user action — except for blind users who opted in
-
-**Empty States:**
-- Never show a blank white screen
-- Always show a friendly message explaining what to do next
-- Empty state must have a clear call to action
-
-**Loading:**
-- Every API call shows a loading indicator
-- Loading indicator disappears when result arrives
-- If API fails — show honest error in user's language — never blank screen
-
-**Feedback:**
-- Every card has 🔊 🤖 👍 👎 ✏️
-- ✏️ opens panel with BOTH type AND mic
-- 👎 asks "what was wrong?" — never just logs silently
-
-*One UI. One UX. Every Chitti. Commando discipline. Zero excuses.*
+**SAHAYAI MASTER VISION v2.0 — COMPLETE**
+**Sections: 14 | Journeys: 4 | Locked Decisions: 12 | Quality Gates: 11**
+**Version: 2.0 | June 2026 | Founder: Bryan Wilfred Pinto**
+**Live at:** https://sahayai.in/sahay_master.md
