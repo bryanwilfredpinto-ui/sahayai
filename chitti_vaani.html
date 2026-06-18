@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!-- Perf: warm up TLS/DNS to the API + QR hosts so substrate calls resolve faster (QA G10 cold-load pass) -->
+<link rel="preconnect" href="https://chitti-vaani-api-production.up.railway.app" crossorigin>
+<link rel="preconnect" href="https://chitti-medupi-api-production.up.railway.app" crossorigin>
+<link rel="dns-prefetch" href="https://chitti-founder-api.up.railway.app">
+<link rel="dns-prefetch" href="https://api.qrserver.com">
 <!-- Opt out of the unified Bharat bottom-nav (chitti_bottom_nav.js).
      Vaani already has its own bespoke bottom tabbar (vai-tabbar) with
      6 product-specific tabs — the universal nav would double-stack.
@@ -36,7 +41,7 @@ body > *{position:relative;z-index:1}
 .consent-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
 .consent-overlay.hidden{display:none}
 .consent-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:740px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.consent-panel h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
+.consent-panel h1,.as-h1{font-size:20px;margin:0 0 4px;color:var(--saffron);font-weight:900}
 .consent-panel .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
 .consent-panel .lang-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:#fbf8f1;border-radius:10px}
 .consent-panel .lang-pick button{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;min-height:32px}
@@ -65,7 +70,7 @@ header[role="banner"]{background:linear-gradient(135deg,#0E2344,#16376a);color:#
 .brand{font-weight:900;font-size:21px;line-height:1.1;color:#fff}
 .tagline{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
 .switch-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:34px;white-space:nowrap}
+.switch-btn-bharat{background:linear-gradient(135deg,rgba(232,106,23,.20),rgba(212,175,55,.20));border:1px solid rgba(212,175,55,.55);color:#fff;padding:7px 12px;font-size:11px;border-radius:8px;cursor:pointer;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:44px;white-space:nowrap}
 .lang-toggle-bharat{display:inline-flex;border:1px solid rgba(255,255,255,.3);border-radius:8px;overflow:hidden;flex-wrap:wrap}
 .lang-toggle-bharat select{background:rgba(255,255,255,.08);color:#fff;border:none;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
 .header-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
@@ -218,7 +223,7 @@ footer small{font-size:11px;color:var(--muted);line-height:1.6}
 .eov{display:none;position:fixed;inset:0;z-index:99000;background:rgba(220,38,38,.92);color:#fff;align-items:center;justify-content:center;padding:24px;flex-direction:column;text-align:center;animation:eovPulse 1s ease-in-out infinite}
 .eov.shown{display:flex}
 @keyframes eovPulse{0%,100%{background:rgba(220,38,38,.92)}50%{background:rgba(127,29,29,.95)}}
-.eov h1{font-size:36px;margin:0 0 6px;font-weight:900;letter-spacing:.04em;line-height:1.1}
+.eov h1,.as-h1{font-size:36px;margin:0 0 6px;font-weight:900;letter-spacing:.04em;line-height:1.1}
 .eov h2{font-size:18px;margin:0 0 16px;font-weight:600;opacity:.95}
 .eov .countdown{font-size:96px;font-weight:900;font-family:'JetBrains Mono','Menlo',monospace;line-height:1;text-shadow:0 4px 12px rgba(0,0,0,.4);margin:18px 0}
 .eov .why{font-size:14px;opacity:.9;max-width:520px;margin:0 0 18px;line-height:1.5;background:rgba(0,0,0,.20);padding:10px 14px;border-radius:10px}
@@ -258,7 +263,7 @@ body:before{display:none}
 /* Existing header stays slim on top */
 header[role="banner"]{padding:10px 14px;border-radius:0 0 18px 18px}
 header .brand{font-size:18px} .tagline{display:none}
-.switch-row{gap:6px} .switch-btn-bharat{font-size:11px;padding:5px 10px;min-height:30px}
+.switch-row{gap:6px} .switch-btn-bharat{font-size:11px;padding:9px 12px;min-height:44px}
 .header-controls{margin-top:6px} .header-controls button{font-size:11px;padding:5px 10px;min-height:30px}
 
 /* Hide old footer + sub-headlines inside the tab layout */
@@ -358,7 +363,7 @@ main .ch-row button{min-height:50px;font-size:15px;border-radius:12px}
 .vai-onb{position:fixed;inset:0;background:#fff;z-index:8800;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:18px;text-align:center}
 .vai-onb.hidden{display:none}
 .vai-onb .logo{width:96px;height:96px;border-radius:24px;background:linear-gradient(135deg,var(--vai-green),#2e7d32);color:#fff;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 16px 40px rgba(27,94,32,.30)}
-.vai-onb h1{font-size:26px;color:var(--vai-green);margin:0;font-weight:900}
+.vai-onb h1,.as-h1{font-size:26px;color:var(--vai-green);margin:0;font-weight:900}
 .vai-onb p{font-size:18px;color:var(--vai-dark);margin:0;line-height:1.55;max-width:360px}
 .vai-onb .opts{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;max-height:60vh;overflow-y:auto}
 .vai-onb .opts button{min-height:60px;border-radius:14px;background:var(--vai-green);color:#fff;border:none;font-size:18px;font-weight:700;cursor:pointer;padding:0 16px}
@@ -558,7 +563,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 .device-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:8500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
 .device-overlay.hidden{display:none}
 .device-panel{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:680px;width:100%;font-size:14px;line-height:1.6;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.device-panel h1{font-size:20px;margin:0 0 6px;color:var(--navy);font-weight:800;display:flex;align-items:center;gap:10px}
+.device-panel h1,.as-h1{font-size:20px;margin:0 0 6px;color:var(--navy);font-weight:800;display:flex;align-items:center;gap:10px}
 .device-panel .sub{color:var(--muted);margin:0 0 14px}
 .device-stepper{display:flex;gap:6px;align-items:center;margin-bottom:14px}
 .device-stepper .dot{width:24px;height:24px;border-radius:50%;background:#eee;color:#9aa;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px}
@@ -983,7 +988,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <!-- ════════════ CONSENT GATE — every feature locked until accepted ════════════ -->
 <div id="consent-overlay" class="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
   <div class="consent-panel">
-    <h1 id="consent-title">Chitti Vaani — Terms &amp; Conditions</h1>
+    <h2 class="as-h1" id="consent-title">Chitti Vaani — Terms &amp; Conditions</h2>
     <div class="sub">First time using Chitti Vaani? Please read each section. Tap 🔊 to hear it spoken in your language. Then tap <strong>I AGREE</strong> to start.</div>
 
     <div class="lang-pick" role="group" aria-label="Choose language">
@@ -1061,7 +1066,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
       </div>
     </div>
     <div class="switch-row">
-      <a class="switch-btn-bharat" href="chitti_complete_technical.html" aria-label="Switch to Chitti Technical">📈 Technical</a>
+      <a class="switch-btn-bharat" href="chitti_technical_ai.html" aria-label="Switch to Chitti Technical">📈 Technical</a>
       <a class="switch-btn-bharat" href="chitti_fundamentals.html" aria-label="Switch to Chitti Fundamentals">📋 Fundamentals</a>
       <a class="switch-btn-bharat" href="chitti_news.html" aria-label="Switch to Chitti News">📰 News</a>
       <a class="switch-btn-bharat" href="chitti_medupi.html" aria-label="Switch to Chitti MedUPI">💊 MedUPI</a>
@@ -1716,7 +1721,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <!-- ══════════════ 3-STEP ONBOARDING OVERLAY ══════════════ -->
 <div class="vai-onb hidden" id="vai-onb" role="dialog" aria-modal="true" aria-labelledby="vai-onb-title">
   <div class="logo" aria-hidden="true">🪔</div>
-  <h1 id="vai-onb-title">Chitti se milye</h1>
+  <h2 class="as-h1" id="vai-onb-title">Chitti se milye</h2>
   <p id="vai-onb-body">Aapki bhasha chunein</p>
   <div class="opts" id="vai-onb-opts"></div>
   <button class="skip" id="vai-onb-skip" onclick="vaiOnbSkip()">Skip · सीधे Chitti se baat karein →</button>
@@ -2412,7 +2417,7 @@ body.vai-fs-130 main .pro-card .lbl{font-size:18px}
 <!-- ════════ EMERGENCY OVERLAY — full-screen stages ════════ -->
 <div id="emergency-overlay" class="eov" role="alertdialog" aria-modal="true" aria-labelledby="eov-title">
   <div class="stage" id="eov-stage">STAGE 1 / 3 — CONFIRM WITH MASTER</div>
-  <h1 id="eov-title">🚨 EMERGENCY DETECTED</h1>
+  <h2 class="as-h1" id="eov-title">🚨 EMERGENCY DETECTED</h2>
   <h2 id="eov-sub">Master, are you OK? Say "theek hun" or tap I'M OK.</h2>
   <div class="countdown" id="eov-countdown">10</div>
   <div class="why" id="eov-why"></div>
@@ -8371,7 +8376,7 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<script src="chitti_disclaimer.js"></script>
+<script src="chitti_disclaimer.js" defer></script>
 <script src="chitti_lang.js?v=20260529r"></script>
 <!-- Chitti feedback widget (locked SAHAYAI §7) -->
 <script src="feedback-widget.js" data-page="chitti_vaani"></script>
@@ -8642,9 +8647,9 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 <!-- chitti_isl.js — Indian Sign Language plugin (G5 frontend gate, SAHAYAI §7) -->
-<script src="chitti_isl.js"></script>
+<script src="chitti_isl.js" defer></script>
 <!-- "How to use Chitti — in 60 seconds" onboarding (mirrors Chitti Technical) -->
-<script src="chitti_vaani_onboarding.js"></script>
+<script src="chitti_vaani_onboarding.js" defer></script>
 
 <!-- Chitti QR (locked 2026-05-21) — open on phone, scan, hand off to mobile -->
 <div class="chitti-qr-block" aria-label="QR code — open this Chitti on your phone" style="margin:32px auto 24px;max-width:480px;padding:18px 20px;background:#F8F4EE;border:1px solid #D4AF37;border-radius:14px;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;gap:18px;box-shadow:0 2px 10px rgba(14,35,68,.08)">
