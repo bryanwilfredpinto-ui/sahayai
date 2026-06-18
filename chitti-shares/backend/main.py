@@ -903,7 +903,26 @@ def api_usage_today():
     from services.usage_tracker import today_ist
     from config import settings
 
-    db = SessionLocal()
+    # Graceful-degrade contract: this endpoint must NEVER 500. A 500 from an
+    # unhandled exception (e.g., Turso read-block) bypasses CORSMiddleware, so
+    # the browser shows a CORS error AND the meter dies. Returning 200 keeps
+    # CORS headers intact and the Chitti-Level meter shows ₹0/degraded instead.
+    _DEGRADED = {
+        "date_ist": "", "total_inr": 0.0, "deepseek_inr": 0.0,
+        "fast2sms_inr": 0.0, "yahoo_inr": 0.0, "calls": 0, "blocked": 0,
+        "soft_cap_inr": getattr(settings, "DAILY_BUDGET_INR", 0),
+        "hard_cap_inr": getattr(settings, "HARD_CAP_INR", 0),
+        "breakdown": [],
+        "pricing": {
+            "deepseek_input_per_million_inr":  22.50,
+            "deepseek_output_per_million_inr": 91.50,
+        },
+        "degraded": True,
+    }
+    try:
+        db = SessionLocal()
+    except Exception:
+        return _DEGRADED
     try:
         date_ist = today_ist()
         summ = db.query(DailyQuotaSummary).filter(
@@ -944,8 +963,13 @@ def api_usage_today():
                 "deepseek_output_per_million_inr": 91.50,
             },
         }
+    except Exception:
+        return _DEGRADED
     finally:
-        db.close()
+        try:
+            db.close()
+        except Exception:
+            pass
 
 
 # =====================================================================
